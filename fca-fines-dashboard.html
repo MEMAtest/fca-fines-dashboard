@@ -1,0 +1,1930 @@
+<!DOCTYPE html>
+<html lang="en-GB">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FCA Fines Analysis Dashboard</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif;
+            background-color: #f5f7fa;
+            color: #333;
+            line-height: 1.6;
+        }
+
+        /* Header Styles */
+        .header {
+            background: linear-gradient(135deg, #003e5a 0%, #007ea7 100%);
+            color: white;
+            padding: 2rem;
+            text-align: center;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 0.5rem;
+            font-weight: 700;
+        }
+
+        .header p {
+            font-size: 1.1rem;
+            opacity: 0.9;
+        }
+
+        .branding {
+            margin-top: 1rem;
+            font-size: 0.9rem;
+            opacity: 0.8;
+        }
+
+        /* Container */
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        /* Summary Cards */
+        .summary-cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .card {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 12px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+            transition: transform 0.2s, box-shadow 0.2s;
+            border-left: 4px solid #007ea7;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, #003e5a, #007ea7, #00a8e8);
+            animation: shimmer 3s ease-in-out infinite;
+        }
+
+        @keyframes shimmer {
+            0% { transform: translateX(-100%); }
+            100% { transform: translateX(100%); }
+        }
+
+        .card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 20px rgba(0,0,0,0.12);
+        }
+
+        .card:nth-child(1) { border-left-color: #003e5a; }
+        .card:nth-child(2) { border-left-color: #007ea7; }
+        .card:nth-child(3) { border-left-color: #00a8e8; }
+        .card:nth-child(4) { border-left-color: #2ecc71; }
+
+        .card-label {
+            font-size: 0.85rem;
+            color: #666;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 0.5rem;
+        }
+
+        .card-value {
+            font-size: 2rem;
+            font-weight: 700;
+            color: #003e5a;
+            margin-bottom: 0.25rem;
+        }
+
+        .card-subtitle {
+            font-size: 0.9rem;
+            color: #777;
+        }
+
+        /* Filters Section */
+        .filters-section {
+            background: white;
+            padding: 2rem;
+            border-radius: 12px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+            margin-bottom: 2rem;
+        }
+
+        .filters-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+        }
+
+        .filters-title {
+            font-size: 1.5rem;
+            color: #003e5a;
+            font-weight: 600;
+        }
+
+        .filter-count {
+            background: #00a8e8;
+            color: white;
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            font-size: 0.85rem;
+        }
+
+        .filters-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .filter-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+            color: #555;
+        }
+
+        .filter-group select,
+        .filter-group input {
+            width: 100%;
+            padding: 0.75rem;
+            border: 2px solid #e0e6ed;
+            border-radius: 8px;
+            font-size: 1rem;
+            transition: border-color 0.2s;
+        }
+
+        .filter-group select:focus,
+        .filter-group input:focus {
+            outline: none;
+            border-color: #007ea7;
+        }
+
+        .multi-select {
+            min-height: 120px;
+            padding: 0.5rem;
+        }
+
+        .multi-select option {
+            padding: 0.25rem 0.5rem;
+            margin: 2px 0;
+        }
+
+        .multi-select option:checked {
+            background: #007ea7;
+            color: white;
+        }
+
+        .filter-actions {
+            display: flex;
+            gap: 1rem;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            padding: 0.75rem 1.5rem;
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .btn::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 0;
+            height: 0;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.2);
+            transform: translate(-50%, -50%);
+            transition: width 0.5s, height 0.5s;
+        }
+
+        .btn:hover::before {
+            width: 300px;
+            height: 300px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #007ea7 0%, #00a8e8 100%);
+            color: white;
+            box-shadow: 0 2px 4px rgba(0, 126, 167, 0.3);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 8px rgba(0, 126, 167, 0.4);
+        }
+
+        .btn-secondary {
+            background: linear-gradient(135deg, #6c757d 0%, #5a6268 100%);
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            background: linear-gradient(135deg, #5a6268 0%, #495057 100%);
+        }
+
+        .btn-success {
+            background: linear-gradient(135deg, #2ecc71 0%, #27ae60 100%);
+            color: white;
+            box-shadow: 0 2px 4px rgba(46, 204, 113, 0.3);
+        }
+
+        .btn-success:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 8px rgba(46, 204, 113, 0.4);
+        }
+
+        /* Insights Section */
+        .insights-section {
+            background: #f8f9fa;
+            padding: 2rem;
+            border-radius: 12px;
+            margin-bottom: 2rem;
+            border: 1px solid #e9ecef;
+        }
+
+        .insights-header {
+            font-size: 1.3rem;
+            color: #003e5a;
+            margin-bottom: 1.5rem;
+            font-weight: 600;
+        }
+
+        .insights-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .insight-card {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 8px;
+            border-left: 4px solid #00a8e8;
+        }
+
+        .insight-title {
+            font-weight: 600;
+            color: #003e5a;
+            margin-bottom: 0.5rem;
+        }
+
+        .insight-value {
+            color: #666;
+        }
+
+        /* Deeper Insights Section */
+        .deeper-insights-section {
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+            padding: 2.5rem;
+            border-radius: 12px;
+            margin-bottom: 2rem;
+            border: 1px solid #dee2e6;
+            position: relative;
+        }
+
+        .deeper-insights-header {
+            font-size: 1.4rem;
+            color: #003e5a;
+            margin-bottom: 2rem;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .deeper-insights-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 2rem;
+        }
+
+        .deep-insight-card {
+            background: white;
+            padding: 2rem;
+            border-radius: 10px;
+            box-shadow: 0 3px 15px rgba(0,0,0,0.1);
+            transition: all 0.3s;
+        }
+
+        .deep-insight-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 5px 25px rgba(0,0,0,0.15);
+        }
+
+        .deep-insight-title {
+            font-weight: 700;
+            color: #003e5a;
+            margin-bottom: 1rem;
+            font-size: 1.1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .deep-insight-content {
+            color: #495057;
+            line-height: 1.6;
+        }
+
+        .metric-value {
+            font-size: 2rem;
+            font-weight: 700;
+            color: #007ea7;
+            margin: 0.5rem 0;
+        }
+
+        .metric-comparison {
+            font-size: 0.9rem;
+            color: #6c757d;
+            margin-top: 0.5rem;
+        }
+
+        .trend-indicator {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.25rem;
+            padding: 0.25rem 0.5rem;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            margin-left: 0.5rem;
+        }
+
+        .trend-up {
+            background: #fce4ec;
+            color: #c2185b;
+        }
+
+        .trend-down {
+            background: #e8f5e9;
+            color: #388e3c;
+        }
+
+        .entity-list {
+            margin-top: 1rem;
+        }
+
+        .entity-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.75rem;
+            margin-bottom: 0.5rem;
+            background: #f8f9fa;
+            border-radius: 6px;
+            transition: background 0.2s;
+            cursor: pointer;
+        }
+
+        .entity-item:hover {
+            background: #e9ecef;
+            transform: translateX(2px);
+        }
+
+        .entity-scrollable {
+            max-height: 300px;
+            overflow-y: auto;
+            padding-right: 0.5rem;
+        }
+
+        .entity-scrollable::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .entity-scrollable::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 3px;
+        }
+
+        .entity-scrollable::-webkit-scrollbar-thumb {
+            background: #007ea7;
+            border-radius: 3px;
+        }
+
+        .entity-scrollable::-webkit-scrollbar-thumb:hover {
+            background: #006587;
+        }
+
+        .entity-name {
+            font-weight: 500;
+            color: #003e5a;
+            flex: 1;
+        }
+
+        .entity-count {
+            background: #007ea7;
+            color: white;
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 600;
+        }
+
+        .icon-trend { color: #f39c12; }
+        .icon-repeat { color: #e74c3c; }
+        .icon-stats { color: #3498db; }
+        .icon-crown { color: #9b59b6; }
+        .icon-pie { color: #2ecc71; }
+
+        /* Charts Grid */
+        .charts-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(500px, 1fr));
+            gap: 2rem;
+            margin-bottom: 2rem;
+        }
+
+        .chart-container {
+            background: white;
+            padding: 2rem;
+            border-radius: 12px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+        }
+
+        .chart-title {
+            font-size: 1.2rem;
+            color: #003e5a;
+            margin-bottom: 1.5rem;
+            font-weight: 600;
+        }
+
+        .chart-wrapper {
+            position: relative;
+            height: 300px;
+        }
+
+        /* Data Table */
+        .table-section {
+            background: white;
+            padding: 2rem;
+            border-radius: 12px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+        }
+
+        .table-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+        }
+
+        .table-title {
+            font-size: 1.3rem;
+            color: #003e5a;
+            font-weight: 600;
+        }
+
+        .table-wrapper {
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th {
+            background: #f8f9fa;
+            padding: 1rem;
+            text-align: left;
+            font-weight: 600;
+            color: #003e5a;
+            border-bottom: 2px solid #dee2e6;
+            cursor: pointer;
+            user-select: none;
+        }
+
+        th:hover {
+            background: #e9ecef;
+        }
+
+        td {
+            padding: 1rem;
+            border-bottom: 1px solid #dee2e6;
+        }
+
+        tr:hover {
+            background: #f8f9fa;
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 500;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            transition: all 0.2s;
+        }
+
+        .badge:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 2px 5px rgba(0,0,0,0.15);
+        }
+
+        .badge-category {
+            background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%);
+            color: #1565c0;
+        }
+
+        .badge-breach {
+            background: linear-gradient(135deg, #fce4ec 0%, #f8bbd0 100%);
+            color: #c2185b;
+        }
+
+        /* Pagination */
+        .pagination {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 0.5rem;
+            margin-top: 2rem;
+        }
+
+        .pagination button {
+            padding: 0.5rem 1rem;
+            border: 1px solid #dee2e6;
+            background: white;
+            cursor: pointer;
+            border-radius: 4px;
+            transition: all 0.2s;
+        }
+
+        .pagination button:hover:not(:disabled) {
+            background: #007ea7;
+            color: white;
+            border-color: #007ea7;
+        }
+
+        .pagination button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .pagination .page-info {
+            margin: 0 1rem;
+            color: #666;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 1.8rem;
+            }
+
+            .charts-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .filters-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .filter-actions {
+                flex-direction: column;
+            }
+
+            .btn {
+                width: 100%;
+                justify-content: center;
+            }
+        }
+
+        /* Print Styles */
+        @media print {
+            body {
+                background: white;
+            }
+
+            .filters-section,
+            .pagination {
+                display: none;
+            }
+
+            .card,
+            .chart-container,
+            .table-section {
+                box-shadow: none;
+                border: 1px solid #dee2e6;
+                break-inside: avoid;
+            }
+        }
+
+        /* Loading Spinner */
+        .loading {
+            display: none;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 1.2rem;
+            color: #007ea7;
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header class="header">
+        <h1>FCA Fines Analysis Dashboard</h1>
+        <p>Comprehensive analysis of regulatory enforcement actions from 2013-2024</p>
+        <div class="branding">Powered by MEMA Consultants | www.memaconsultants.com</div>
+    </header>
+
+    <!-- Main Container -->
+    <div class="container">
+        <!-- Summary Cards -->
+        <div class="summary-cards">
+            <div class="card">
+                <div class="card-label">TOTAL FINE AMOUNT</div>
+                <div class="card-value" id="totalAmount">£0</div>
+                <div class="card-subtitle">Across all enforcement actions</div>
+            </div>
+            <div class="card">
+                <div class="card-label">NUMBER OF FINES</div>
+                <div class="card-value" id="totalCount">0</div>
+                <div class="card-subtitle">Total enforcement actions</div>
+            </div>
+            <div class="card">
+                <div class="card-label">AVERAGE FINE</div>
+                <div class="card-value" id="averageFine">£0</div>
+                <div class="card-subtitle">Mean fine amount</div>
+            </div>
+            <div class="card">
+                <div class="card-label">LARGEST FINE</div>
+                <div class="card-value" id="largestFine">£0</div>
+                <div class="card-subtitle" id="largestFineEntity">-</div>
+            </div>
+        </div>
+
+        <!-- Filters Section -->
+        <div class="filters-section">
+            <div class="filters-header">
+                <h2 class="filters-title">🔍 Filter Data</h2>
+                <span class="filter-count" id="activeFilters">0 active filters</span>
+            </div>
+            
+            <div class="filters-grid">
+                <div class="filter-group">
+                    <label for="yearFilter">Year</label>
+                    <select id="yearFilter" multiple class="multi-select">
+                        <option value="">All Years</option>
+                    </select>
+                </div>
+                
+                <div class="filter-group">
+                    <label for="categoryFilter">Firm Category</label>
+                    <select id="categoryFilter">
+                        <option value="">All Categories</option>
+                    </select>
+                </div>
+                
+                <div class="filter-group">
+                    <label for="breachFilter">Breach Type</label>
+                    <select id="breachFilter">
+                        <option value="">All Breach Types</option>
+                    </select>
+                </div>
+                
+                <div class="filter-group">
+                    <label for="searchFilter">Search</label>
+                    <input type="text" id="searchFilter" placeholder="Search firms or summaries...">
+                </div>
+            </div>
+            
+            <div class="filter-actions">
+                <button class="btn btn-primary" onclick="applyFilters()">🔍 Apply Filters</button>
+                <button class="btn btn-secondary" onclick="resetFilters()">🔄 Reset Filters</button>
+                <button class="btn btn-success" onclick="exportData()">📊 Export Data (CSV)</button>
+            </div>
+        </div>
+
+        <!-- Insights Section -->
+        <div class="insights-section">
+            <h2 class="insights-header">💡 Key Insights</h2>
+            <div class="insights-grid" id="insightsGrid">
+                <!-- Insights will be dynamically generated -->
+            </div>
+        </div>
+
+        <!-- Deeper Insights Section -->
+        <div class="deeper-insights-section">
+            <h2 class="deeper-insights-header">🔍 Deeper Analysis</h2>
+            <div class="deeper-insights-grid" id="deeperInsightsGrid">
+                <!-- Deeper insights will be dynamically generated -->
+            </div>
+        </div>
+
+        <!-- Charts Grid -->
+        <div class="charts-grid">
+            <div class="chart-container">
+                <h3 class="chart-title">Year-over-Year Trends</h3>
+                <div class="chart-wrapper">
+                    <canvas id="trendsChart"></canvas>
+                </div>
+            </div>
+            
+            <div class="chart-container">
+                <h3 class="chart-title">Top Firm Categories</h3>
+                <div class="chart-wrapper">
+                    <canvas id="categoriesChart"></canvas>
+                </div>
+            </div>
+            
+            <div class="chart-container">
+                <h3 class="chart-title">Fine Amount Distribution</h3>
+                <div class="chart-wrapper">
+                    <canvas id="distributionChart"></canvas>
+                </div>
+            </div>
+            
+            <div class="chart-container">
+                <h3 class="chart-title">Top 10 Breach Types</h3>
+                <div class="chart-wrapper">
+                    <canvas id="breachTypesChart"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <!-- Data Table -->
+        <div class="table-section">
+            <div class="table-header">
+                <h2 class="table-title">📋 Fine Details</h2>
+            </div>
+            <div class="table-wrapper">
+                <table id="dataTable">
+                    <thead>
+                        <tr>
+                            <th onclick="sortTable('date')">Date ↕</th>
+                            <th onclick="sortTable('firm')">Firm/Individual ↕</th>
+                            <th onclick="sortTable('amount')">Amount ↕</th>
+                            <th onclick="sortTable('category')">Category ↕</th>
+                            <th onclick="sortTable('breach')">Breach Type ↕</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tableBody">
+                        <!-- Table rows will be dynamically generated -->
+                    </tbody>
+                </table>
+            </div>
+            
+            <div class="pagination" id="pagination">
+                <!-- Pagination controls will be dynamically generated -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Loading Indicator -->
+    <div class="loading" id="loading">Loading...</div>
+
+    <script>
+        // Embedded data array with all 285 FCA/FSA fines
+        const EMBEDDED_DATA = [
+            {"No": 0, "Date_MM/YYYY": "12/2013", "Firm/Individual": "JLT Specialty Limited", "Amount": "£1,876,000", "Summary": "For failing to have in place appropriate checks and controls to guard against the risk of bribery or corruption when making payments to overseas third parties.", "Regulator": "FCA", "Firm Category": "Individual", "Breach Type": "Bribery and Corruption", "Year": 2013},
+            {"No": 1, "Date_MM/YYYY": "12/2013", "Firm/Individual": "Westwood Independent Financial Planners", "Amount": "£100,000", "Summary": "For communications and suitability failings in relation to geared traded endowment policies (GTEPs).", "Regulator": "FCA", "Firm Category": "Financial Planning", "Breach Type": "Unsuitable Advice", "Year": 2013},
+            {"No": 2, "Date_MM/YYYY": "12/2013", "Firm/Individual": "Christopher Willford", "Amount": "£30,000", "Summary": "For misconduct in his performance as a CF1 Director.", "Regulator": "FCA", "Firm Category": "Individual", "Breach Type": "Misconduct", "Year": 2013},
+            {"No": 3, "Date_MM/YYYY": "12/2013", "Firm/Individual": "Lloyds TSB Bank plc\nBank of Scotland plc", "Amount": "£28,038,800", "Summary": "For serious failings in the systems and controls governing financial incentives to sales staff.", "Regulator": "FCA", "Firm Category": "Banking", "Breach Type": "Systems and Controls Failings", "Year": 2013},
+            {"No": 4, "Date_MM/YYYY": "11/2013", "Firm/Individual": "SEI Investments (Europe) Limited", "Amount": "£900,200", "Summary": "For failing to arrange adequate protection for client money for which it was responsible.", "Regulator": "FCA", "Firm Category": "Individual", "Breach Type": "Client Money Failings", "Year": 2013},
+            {"No": 5, "Date_MM/YYYY": "10/2013", "Firm/Individual": "Coöperatieve Centrale Raiffeisen-Boerenleenbank B.A. (Rabobank)", "Amount": "£105,000,000", "Summary": "For systems and controls failings which allowed a trader at Rabobank to make 'wash trades' and share inappropriate information with traders from other banks about the setting of Libor.", "Regulator": "FCA", "Firm Category": "Banking", "Breach Type": "Market Abuse", "Year": 2013},
+            {"No": 6, "Date_MM/YYYY": "10/2013", "Firm/Individual": "Porta Verde Financial Services Limited", "Amount": "£25,000", "Summary": "For failings in relation to selling and recommending retirement income products based on unregulated funds and/or unregulated collective investment schemes.", "Regulator": "FCA", "Firm Category": "Financial Planning", "Breach Type": "Unsuitable Advice", "Year": 2013},
+            {"No": 7, "Date_MM/YYYY": "10/2013", "Firm/Individual": "Mark Bentley-Leek", "Amount": "£525,000", "Summary": "For not reporting his awareness of failings in relation to selling and recommending retirement income products based on unregulated funds and/or unregulated collective investment schemes.", "Regulator": "FCA", "Firm Category": "Individual", "Breach Type": "Systems and Controls Failings", "Year": 2013},
+            {"No": 8, "Date_MM/YYYY": "10/2013", "Firm/Individual": "Mustafa Dervish", "Amount": "£360,000", "Summary": "For not conducting sufficient due diligence in relation to selling and recommending retirement income products based on unregulated funds and/or unregulated collective investment schemes.", "Regulator": "FCA", "Firm Category": "Individual", "Breach Type": "Systems and Controls Failings", "Year": 2013},
+            {"No": 9, "Date_MM/YYYY": "09/2013", "Firm/Individual": "Alison Moran", "Amount": "£20,000", "Summary": "For failing to deal with the FCA in an open and cooperative way", "Regulator": "FCA", "Firm Category": "Individual", "Breach Type": "Other", "Year": 2013},
+            {"No": 10, "Date_MM/YYYY": "09/2013", "Firm/Individual": "Wellesley Investment Managers Ltd", "Amount": "£150,000", "Summary": "For accepting client money without adequate permission from the FCA.", "Regulator": "FCA", "Firm Category": "Individual", "Breach Type": "Regulatory Rules Breach", "Year": 2013},
+            {"No": 11, "Date_MM/YYYY": "09/2013", "Firm/Individual": "Anirudh Singh", "Amount": "£50,000", "Summary": "For failing to report money laundering suspicions.", "Regulator": "FCA", "Firm Category": "Individual", "Breach Type": "Anti-Money Laundering", "Year": 2013},
+            {"No": 12, "Date_MM/YYYY": "08/2013", "Firm/Individual": "Lyxor Asset Management", "Amount": "£18,900", "Summary": "For failings in submitting late and inaccurate transaction reports.", "Regulator": "FCA", "Firm Category": "Asset Management", "Breach Type": "Systems and Controls Failings", "Year": 2013},
+            {"No": 13, "Date_MM/YYYY": "08/2013", "Firm/Individual": "Mark Millner", "Amount": "£7,500", "Summary": "For engaging in a course of conduct constituting manipulative trading practices.", "Regulator": "FCA", "Firm Category": "Individual", "Breach Type": "Market Abuse", "Year": 2013},
+            {"No": 14, "Date_MM/YYYY": "08/2013", "Firm/Individual": "Kevin Milne", "Amount": "£7,500", "Summary": "For engaging in a course of conduct constituting manipulative trading practices.", "Regulator": "FCA", "Firm Category": "Individual", "Breach Type": "Market Abuse", "Year": 2013},
+            {"No": 15, "Date_MM/YYYY": "07/2013", "Firm/Individual": "Xconnect Limited", "Amount": "£50,000", "Summary": "For operating without regulatory permission and failing to segregate client money.", "Regulator": "FCA", "Firm Category": "Individual", "Breach Type": "Regulatory Rules Breach", "Year": 2013},
+            {"No": 16, "Date_MM/YYYY": "07/2013", "Firm/Individual": "Invesco Asset Management Limited", "Amount": "£18,643,200", "Summary": "Incorrectly pricing fixed-rate bonds that caused a risk that retail investors in the Invesco Perpetual High Income Fund and the Invesco Perpetual Income Fund may have been disadvantaged.", "Regulator": "FCA", "Firm Category": "Asset Management", "Breach Type": "Systems and Controls Failings", "Year": 2013},
+            {"No": 17, "Date_MM/YYYY": "06/2013", "Firm/Individual": "JP Morgan Chase Bank NA", "Amount": "£137,610,000", "Summary": "For failings in their conduct as portfolio managers in the Synthetic Credit Portfolio in relation to the London Whale.", "Regulator": "FCA", "Firm Category": "Banking", "Breach Type": "Systems and Controls Failings", "Year": 2013},
+            {"No": 18, "Date_MM/YYYY": "06/2013", "Firm/Individual": "Mark Stevenson", "Amount": "£662,700", "Summary": "For failing to manage risks in the Credit Equities Business adequately in relation to the London Whale.", "Regulator": "FCA", "Firm Category": "Individual", "Breach Type": "Systems and Controls Failings", "Year": 2013},
+            {"No": 19, "Date_MM/YYYY": "06/2013", "Firm/Individual": "State Street Bank Europe Limited", "Amount": "£22,890,700", "Summary": "For failings in conducting its custody business and overcharging clients through not following clients' specific instructions for the custody of their assets and failing to correct this error upon discovery.", "Regulator": "FCA", "Firm Category": "Banking", "Breach Type": "Other", "Year": 2013},
+            {"No": 20, "Date_MM/YYYY": "05/2013", "Firm/Individual": "Steven Griggs", "Amount": "£75,000", "Summary": "For failing to perform an approved person function without FCA approval as a result of a ban order.", "Regulator": "FCA", "Firm Category": "Individual", "Breach Type": "Regulatory Rules Breach", "Year": 2013},
+            {"No": 21, "Date_MM/YYYY": "03/2014", "Firm/Individual": "Guaranty Trust Bank (UK) Limited", "Amount": "£525,000", "Summary": "For not conducting its business with due skill, care and diligence when handling allegations of money laundering activities.", "Regulator": "FCA", "Firm Category": "Banking", "Breach Type": "Anti-Money Laundering", "Year": 2014},
+            {"No": 22, "Date_MM/YYYY": "03/2014", "Firm/Individual": "HomeServe Membership Limited", "Amount": "£30,647,400", "Summary": "Mis-selling and complaints handling failings", "Regulator": "FCA", "Firm Category": "Corporate", "Breach Type": "Misleading Advice", "Year": 2014},
+            {"No": 23, "Date_MM/YYYY": "04/2014", "Firm/Individual": "Richard Anthony Paul Parlour", "Amount": "£50,000", "Summary": "For failings in relation to the FCA's Statements of Principle and Code of Practice for Approved Persons.", "Regulator": "FCA", "Firm Category": "Individual", "Breach Type": "Other", "Year": 2014},
+            {"No": 24, "Date_MM/YYYY": "05/2014", "Firm/Individual": "Barclays Bank PLC", "Amount": "£2,862,300", "Summary": "For failings in relation to the improper sale of interest rate hedging products to retail customers who were unlikely to understand the risks involved and provide adequate information.", "Regulator": "FCA", "Firm Category": "Banking", "Breach Type": "Unsuitable Advice", "Year": 2014},
+            {"No": 25, "Date_MM/YYYY": "05/2014", "Firm/Individual": "Barclays Bank PLC", "Amount": "£37,745,000", "Summary": "For not protecting clients' custody assets as is required.", "Regulator": "FCA", "Firm Category": "Banking", "Breach Type": "Client Money Failings", "Year": 2014},
+            {"No": 26, "Date_MM/YYYY": "05/2014", "Firm/Individual": "Barclays Bank PLC", "Amount": "£26,033,500", "Summary": "For failures to control conflicts of interest over the pricing of investment products it designed and sold.", "Regulator": "FCA", "Firm Category": "Banking", "Breach Type": "Other", "Year": 2014},
+            {"No": 27, "Date_MM/YYYY": "05/2014", "Firm/Individual": "Matthew Edward George Reddall", "Amount": "£13,400", "Summary": "For failings in relation to the FCA's Statements of Principle and Code of Practice for Approved Persons.", "Regulator": "FCA", "Firm Category": "Individual", "Breach Type": "Other", "Year": 2014},
+            {"No": 28, "Date_MM/YYYY": "06/2014", "Firm/Individual": "Cosaint Capital Limited", "Amount": "£175,000", "Summary": "For failings relating to unsuitable advice on Geared Traded Endowment Policies (GTEPs).", "Regulator": "FCA", "Firm Category": "Corporate", "Breach Type": "Unsuitable Advice", "Year": 2014},
+            {"No": 29, "Date_MM/YYYY": "07/2014", "Firm/Individual": "Paul Howard Flowers", "Amount": "£525,000", "Summary": "Following a conviction, Mr Flowers will pay a financial penalty of £525,000 for breach of the FCA's Principles for Approved Persons.", "Regulator": "FCA", "Firm Category": "Individual", "Breach Type": "Other", "Year": 2014},
+            {"No": 30, "Date_MM/YYYY": "07/2014", "Firm/Individual": "Win Morrison (Holdings) Limited", "Amount": "£91,000", "Summary": "For failings relating to financial promotions.", "Regulator": "FCA", "Firm Category": "Corporate", "Breach Type": "Misleading Advice", "Year": 2014},
+            {"No": 31, "Date_MM/YYYY": "08/2014", "Firm/Individual": "St James's Place Wealth Management Plc", "Amount": "£3,339,651", "Summary": "For mis-selling unsuitable advice to customers and failures in its management of advisers.", "Regulator": "FCA", "Firm Category": "Asset Management", "Breach Type": "Unsuitable Advice", "Year": 2014},
+            {"No": 32, "Date_MM/YYYY": "08/2014", "Firm/Individual": "Standard Bank Plc", "Amount": "£7,640,400", "Summary": "For failings in its anti-money laundering (AML) policies and procedures.", "Regulator": "FCA", "Firm Category": "Banking", "Breach Type": "Anti-Money Laundering", "Year": 2014},
+            {"No": 33, "Date_MM/YYYY": "09/2014", "Firm/Individual": "Reckitt Benckiser Group plc", "Amount": "£539,800", "Summary": "for breaching Listing Rules disclosure requirements.", "Regulator": "FCA", "Firm Category": "Corporate", "Breach Type": "Other", "Year": 2014},
+            {"No": 34, "Date_MM/YYYY": "09/2014", "Firm/Individual": "David Caplin", "Amount": "£210,000", "Summary": "For disregarding a customer's interests in his advice to invest in a Traded Life Policy Investment.", "Regulator": "FCA", "Firm Category": "Individual", "Breach Type": "Unsuitable Advice", "Year": 2014},
+            {"No": 35, "Date_MM/YYYY": "09/2014", "Firm/Individual": "Sesame Limited", "Amount": "£1,538,846", "Summary": "For failing to provide suitable advice to their customers.", "Regulator": "FCA", "Firm Category": "Corporate", "Breach Type": "Unsuitable Advice", "Year": 2014},
+            {"No": 36, "Date_MM/YYYY": "10/2014", "Firm/Individual": "Santis Investment Management LLP", "Amount": "£910,000", "Summary": "For failing to manage conflicts of interest fairly.", "Regulator": "FCA", "Firm Category": "Asset Management", "Breach Type": "Other", "Year": 2014},
+            {"No": 37, "Date_MM/YYYY": "10/2014", "Firm/Individual": "Anthony Constantinides", "Amount": "£210,000", "Summary": "For market manipulation by trading in an abusive manner in relation to the issuance, buy-back, conversion, redemption and pricing of bonds of the Newton Overseas Fund (the Fund).", "Regulator": "FCA", "Firm Category": "Individual", "Breach Type": "Market Abuse", "Year": 2014},
+            {"No": 38, "Date_MM/YYYY": "11/2014", "Firm/Individual": "Citibank N.A.", "Amount": "£225,575,000", "Summary": "Five banks - Citigroup, HSBC, JPMorgan Chase, RBS and UBS - fined for failing to control business practices in their foreign exchange trading operations.", "Regulator": "FCA", "Firm Category": "Banking", "Breach Type": "Market Abuse", "Year": 2014},
+            {"No": 39, "Date_MM/YYYY": "11/2014", "Firm/Individual": "HSBC Bank Plc", "Amount": "£216,363,000", "Summary": "Five banks - Citigroup, HSBC, JPMorgan Chase, RBS and UBS - fined for failing to control business practices in their foreign exchange trading operations.", "Regulator": "FCA", "Firm Category": "Banking", "Breach Type": "Market Abuse", "Year": 2014},
+            {"No": 40, "Date_MM/YYYY": "11/2014", "Firm/Individual": "JPMorgan Chase Bank", "Amount": "£222,166,000", "Summary": "Five banks - Citigroup, HSBC, JPMorgan Chase, RBS and UBS - fined for failing to control business practices in their foreign exchange trading operations.", "Regulator": "FCA", "Firm Category": "Banking", "Breach Type": "Market Abuse", "Year": 2014},
+            {"No": 41, "Date_MM/YYYY": "11/2014", "Firm/Individual": "The Royal Bank of Scotland Plc", "Amount": "£217,000,000", "Summary": "Five banks - Citigroup, HSBC, JPMorgan Chase, RBS and UBS - fined for failing to control business practices in their foreign exchange trading operations.", "Regulator": "FCA", "Firm Category": "Banking", "Breach Type": "Market Abuse", "Year": 2014},
+            {"No": 42, "Date_MM/YYYY": "11/2014", "Firm/Individual": "UBS AG", "Amount": "£233,814,000", "Summary": "Five banks - Citigroup, HSBC, JPMorgan Chase, RBS and UBS - fined for failing to control business practices in their foreign exchange trading operations.", "Regulator": "FCA", "Firm Category": "Banking", "Breach Type": "Market Abuse", "Year": 2014},
+            {"No": 43, "Date_MM/YYYY": "12/2014", "Firm/Individual": "Thomas Seiler", "Amount": "£60,000", "Summary": "For failing to meet the requisite standards under the FCA's Statements of Principle and Code of Practice for Approved Persons (APER) when carrying out a significant influence controlled function.", "Regulator": "FCA", "Firm Category": "Individual", "Breach Type": "Other", "Year": 2014},
+            {"No": 44, "Date_MM/YYYY": "01/2015", "Firm/Individual": "Jeremy John Burley", "Amount": "£233,600", "Summary": "Banned from working in the financial services industry and fined for providing unsuitable advice.", "Regulator": "FCA", "Firm Category": "Individual", "Breach Type": "Unsuitable Advice", "Year": 2015},
+            {"No": 45, "Date_MM/YYYY": "01/2015", "Firm/Individual": "Ashleigh Nicole Roberts", "Amount": "£20,000", "Summary": "Former trader fined and banned for market abuse.", "Regulator": "FCA", "Firm Category": "Individual", "Breach Type": "Market Abuse", "Year": 2015},
+            {"No": 46, "Date_MM/YYYY": "01/2015", "Firm/Individual": "Chase de Vere", "Amount": "£2,333,800", "Summary": "Fined for pension transfer failings.", "Regulator": "FCA", "Firm Category": "Financial Planning", "Breach Type": "Unsuitable Advice", "Year": 2015},
+            {"No": 47, "Date_MM/YYYY": "02/2015", "Firm/Individual": "Catalyst Investment Group Limited", "Amount": "£450,000", "Summary": "Fined for failings in the sale of unsuitable corporate bonds to customers, some of whom were vulnerable.", "Regulator": "FCA", "Firm Category": "Corporate", "Breach Type": "Unsuitable Advice", "Year": 2015},
+            {"No": 48, "Date_MM/YYYY": "02/2015", "Firm/Individual": "Aviva Investors", "Amount": "£17,607,000", "Summary": "Fined for systems and controls failings.", "Regulator": "FCA", "Firm Category": "Asset Management", "Breach Type": "Systems and Controls Failings", "Year": 2015},
+            {"No": 49, "Date_MM/YYYY": "03/2015", "Firm/Individual": "Peter Chapman", "Amount": "£70,800", "Summary": "Former broker banned and fined for market abuse.", "Regulator": "FCA", "Firm Category": "Individual", "Breach Type": "Market Abuse", "Year": 2015},
+            {"No": 50, "Date_MM/YYYY": "03/2015", "Firm/Individual": "Parimjit Sidhu", "Amount": "£35,000", "Summary": "Banned from working in financial services for falsifying documents", "Regulator": "FCA", "Firm Category": "Individual", "Breach Type": "Misconduct", "Year": 2015},
+            {"No": 51, "Date_MM/YYYY": "03/2015", "Firm/Individual": "Martin Ellis", "Amount": "£75,000", "Summary": "Former 'significant influence' function holder banned and fined for failing to be open and cooperative with FCA", "Regulator": "FCA", "Firm Category": "Individual", "Breach Type": "Other", "Year": 2015},
+            {"No": 52, "Date_MM/YYYY": "04/2015", "Firm/Individual": "Bank of Beirut (UK) Limited", "Amount": "£2,100,000", "Summary": "Fined for failings in its anti-money laundering controls.", "Regulator": "FCA", "Firm Category": "Banking", "Breach Type": "Anti-Money Laundering", "Year": 2015},
+            {"No": 53, "Date_MM/YYYY": "04/2015", "Firm/Individual": "Deutsche Bank AG", "Amount": "£226,800,000", "Summary": "Fined for LIBOR and EURIBOR failings.", "Regulator": "FCA", "Firm Category": "Banking", "Breach Type": "Market Abuse", "Year": 2015},
+            {"No": 54, "Date_MM/YYYY": "05/2015", "Firm/Individual": "Barclays Bank Plc", "Amount": "£284,432,000", "Summary": "Fined for forex failings.", "Regulator": "FCA", "Firm Category": "Banking", "Breach Type": "Market Abuse", "Year": 2015},
+            {"No": 55, "Date_MM/YYYY": "06/2015", "Firm/Individual": "Stephane Boukhari", "Amount": "£37,198", "Summary": "Individual banned from working in financial services and ordered to pay a fine for disclosing confidential client information.", "Regulator": "FCA", "Firm Category": "Individual", "Breach Type": "Misconduct", "Year": 2015},
+            {"No": 56, "Date_MM/YYYY": "06/2015", "Firm/Individual": "Bank of New York Mellon London Branch & Bank of New York Mellon International Limited", "Amount": "£126,000,000", "Summary": "Fined for failure to comply with Client Assets Sourcebook Rules.", "Regulator": "FCA", "Firm Category": "Banking", "Breach Type": "Client Money Failings", "Year": 2015},
+            {"No": 57, "Date_MM/YYYY": "06/2015", "Firm/Individual": "Macquarie Bank Limited", "Amount": "£2,063,900", "Summary": "Fined for failure to segregate client money", "Regulator": "FCA", "Firm Category": "Banking", "Breach Type": "Client Money Failings", "Year": 2015},
+            {"No": 58, "Date_MM/YYYY": "07/2015", "Firm/Individual": "Sean Horstead", "Amount": "£35,000", "Summary": "Fined for misleading FCA in relation to redress requirements", "Regulator": "FCA", "Firm Category": "Individual", "Breach Type": "Misconduct", "Year": 2015},
+            {"No": 59, "Date_MM/YYYY": "07/2015", "Firm/Individual": "Capital Alternatives Limited", "Amount": "£200,000", "Summary": "Fined for misleading promotions and failure to communicate information in a fair and not misleading way.", "Regulator": "FCA", "Firm Category": "Corporate", "Breach Type": "Misleading Advice", "Year": 2015},
+            {"No": 60, "Date_MM/YYYY": "07/2015", "Firm/Individual": "Ian Hannam", "Amount": "£450,000", "Summary": "Financial penalty for Ian Hannam", "Regulator": "FCA", "Firm Category": "Individual", "Breach Type": "Market Abuse", "Year": 2015},
+            {"No": 61, "Date_MM/YYYY": "08/2015", "Firm/Individual": "Georgi Gerginski", "Amount": "£39,000", "Summary": "Banned from the financial services industry and fined for falsely claiming to have sat a regulatory approved exam.", "Regulator": "FCA", "Firm Category": "Individual", "Breach Type": "Misconduct", "Year": 2015},
+            {"No": 62, "Date_MM/YYYY": "09/2015", "Firm/Individual": "Lloyds Bank plc and Bank of Scotland plc", "Amount": "£105,000,000", "Summary": "Fined for serious failings in relation to Payment Protection Insurance (PPI) complaint handling.", "Regulator": "FCA", "Firm Category": "Banking", "Breach Type": "Misleading Advice", "Year": 2015},
+            {"No": 63, "Date_MM/YYYY": "09/2015", "Firm/Individual": "Timothy Roberts", "Amount": "£450,100", "Summary": "Former broker banned and fined for market abuse.", "Regulator": "FCA", "Firm Category": "Individual", "Breach Type": "Market Abuse", "Year": 2015},
+            {"No": 64, "Date_MM/YYYY": "09/2015", "Firm/Individual": "Samuel Kahn", "Amount": "£105,000", "Summary": "Former broker banned and fined for market abuse.", "Regulator": "FCA", "Firm Category": "Individual", "Breach Type": "Market Abuse", "Year": 2015},
+            {"No": 65, "Date_MM/YYYY": "10/2015", "Firm/Individual": "Canara Bank", "Amount": "£896,100", "Summary": "Fined for AML control failings.", "Regulator": "FCA", "Firm Category": "Banking", "Breach Type": "Anti-Money Laundering", "Year": 2015},
+            {"No": 66, "Date_MM/YYYY": "10/2015", "Firm/Individual": "Simon Pettitt", "Amount": "£30,000", "Summary": "Fined for not being open and cooperative with the FCA.", "Regulator": "FCA", "Firm Category": "Individual", "Breach Type": "Other", "Year": 2015},
+            {"No": 67, "Date_MM/YYYY": "10/2015", "Firm/Individual": "Redstone Mortgages Ltd", "Amount": "£630,000", "Summary": "Fined for failings in relation to the sale of payment protection insurance (PPI) policies.", "Regulator": "FCA", "Firm Category": "Corporate", "Breach Type": "Misleading Advice", "Year": 2015},
+            {"No": 68, "Date_MM/YYYY": "11/2015", "Firm/Individual": "ICAP", "Amount": "£14,066,000", "Summary": "ICAP fined for significant failings in relation to LIBOR", "Regulator": "FCA", "Firm Category": "Trading Firm", "Breach Type": "Market Abuse", "Year": 2015},
+            {"No": 69, "Date_MM/YYYY": "11/2015", "Firm/Individual": "Lloyds Bank plc, Bank of Scotland plc and Black Horse Limited (together Lloyds Banking Group \"LBG\")", "Amount": "£117,430,600", "Summary": "Fine for failing to handle PPI complaints fairly", "Regulator": "FCA", "Firm Category": "Banking", "Breach Type": "Misleading Advice", "Year": 2015},
+            {"No": 70, "Date_MM/YYYY": "12/2015", "Firm/Individual": "Darren Cummings", "Amount": "£29,400", "Summary": "Prohibited from the financial services industry and fined for fabricating documents.", "Regulator": "FCA", "Firm Category": "Individual", "Breach Type": "Misconduct", "Year": 2015},
+            {"No": 71, "Date_MM/YYYY": "01/2016", "Firm/Individual": "Swinton Group Limited", "Amount": "£7,380,800", "Summary": "Fined for mis-selling add-on insurance.", "Regulator": "FCA", "Firm Category": "Insurance", "Breach Type": "Unsuitable Advice", "Year": 2016},
+            {"No": 72, "Date_MM/YYYY": "01/2016", "Firm/Individual": "Clydesdale Bank Plc", "Amount": "£20,678,300", "Summary": "Fined for serious failings in Payment Protection Insurance (PPI) complaint handling.", "Regulator": "FCA", "Firm Category": "Banking", "Breach Type": "Misleading Advice", "Year": 2016},
+            {"No": 73, "Date_MM/YYYY": "02/2016", "Firm/Individual": "Richard George Boath", "Amount": "£37,500", "Summary": "Convicted former Barclays investment banker banned and fined.", "Regulator": "FCA", "Firm Category": "Individual", "Breach Type": "Market Abuse", "Year": 2016},
+            {"No": 74, "Date_MM/YYYY": "02/2016", "Firm/Individual": "Achilles Macris", "Amount": "£792,900", "Summary": "Former JP Morgan trader banned and fined.", "Regulator": "FCA", "Firm Category": "Individual", "Breach Type": "Systems and Controls Failings", "Year": 2016},
+            {"No": 75, "Date_MM/YYYY": "02/2016", "Firm/Individual": "Yorkshire Building Society", "Amount": "£4,178,600", "Summary": "Fined for failings in its controls over financial incentives given to sales staff.", "Regulator": "FCA", "Firm Category": "Financial Planning", "Breach Type": "Systems and Controls Failings", "Year": 2016},
+            {"No": 76, "Date_MM/YYYY": "03/2016", "Firm/Individual": "Life & Pensions Services Limited", "Amount": "£10,500", "Summary": "Fined for inappropriate cold calling.", "Regulator": "FCA", "Firm Category": "Financial Planning", "Breach Type": "Misleading Advice", "Year": 2016},
+            {"No": 77, "Date_MM/YYYY": "04/2016", "Firm/Individual": "Sonali Bank UK Limited", "Amount": "£3,250,600", "Summary": "Fined for anti-money laundering failures.", "Regulator": "FCA", "Firm Category": "Banking", "Breach Type": "Anti-Money Laundering", "Year": 2016},
+            {"No": 78, "Date_MM/YYYY": "05/2016", "Firm/Individual": "Asset Backed Securities SA", "Amount": "£18,900", "Summary": "Fined for failing to comply with new rules on credit rating agencies.", "Regulator": "FCA", "Firm Category": "Corporate", "Breach Type": "Other", "Year": 2016},
+            {"No": 79, "Date_MM/YYYY": "05/2016", "Firm/Individual": "Tesco Personal Finance Plc", "Amount": "£3,253,600", "Summary": "Fined for failing to adequately protect its personal current account holders from fraud.", "Regulator": "FCA", "Firm Category": "Corporate", "Breach Type": "Systems and Controls Failings", "Year": 2016},
+            {"No": 80, "Date_MM/YYYY": "05/2016", "Firm/Individual": "World Spreads Limited", "Amount": "£28,800", "Summary": "The FCA has imposed a financial penalty of £7,800,000 on World Spreads Limited for client money failings.", "Regulator": "FCA", "Firm Category": "Trading Firm", "Breach Type": "Client Money Failings", "Year": 2016},
+            {"No": 81, "Date_MM/YYYY": "06/2016", "Firm/Individual": "William Duncan Rae", "Amount": "£250,000", "Summary": "Former chief executive banned and fined", "Regulator": "FCA", "Firm Category": "Individual", "Breach Type": "Misconduct", "Year": 2016},
+            {"No": 82, "Date_MM/YYYY": "07/2016", "Firm/Individual": "Flowers", "Amount": "£315,000", "Summary": "Fined for market abuse.", "Regulator": "FCA", "Firm Category": "Individual", "Breach Type": "Market Abuse", "Year": 2016},
+            {"No": 83, "Date_MM/YYYY": "09/2016", "Firm/Individual": "AXA Wealth Services Limited", "Amount": "£1,836,800", "Summary": "Fined for unsuitable advice to customers about switching pension benefits.", "Regulator": "FCA", "Firm Category": "Financial Planning", "Breach Type": "Unsuitable Advice", "Year": 2016},
+            {"No": 84, "Date_MM/YYYY": "09/2016", "Firm/Individual": "Aviva Wrap UK Limited", "Amount": "£8,243,200", "Summary": "Fined for failing to ensure that client custody assets were held securely.", "Regulator": "FCA", "Firm Category": "Insurance", "Breach Type": "Client Money Failings", "Year": 2016},
+            {"No": 85, "Date_MM/YYYY": "10/2016", "Firm/Individual": "Tesco Bank", "Amount": "£16,400,000", "Summary": "Fined for failures in 2016 cyber attack", "Regulator": "FCA", "Firm Category": "Banking", "Breach Type": "Systems and Controls Failings", "Year": 2016},
+            {"No": 86, "Date_MM/YYYY": "10/2016", "Firm/Individual": "Mark Taylor", "Amount": "£103,910", "Summary": "Banned from working in financial services and fined for unauthorised trading and deception", "Regulator": "FCA", "Firm Category": "Individual", "Breach Type": "Misconduct", "Year": 2016},
+            {"No": 87, "Date_MM/YYYY": "10/2016", "Firm/Individual": "Numis Securities Ltd", "Amount": "£412,000", "Summary": "Fined for failure to disclose inside information.", "Regulator": "FCA", "Firm Category": "Trading Firm", "Breach Type": "Market Abuse", "Year": 2016},
+            {"No": 88, "Date_MM/YYYY": "11/2016", "Firm/Individual": "Threadneedle Advisors Ltd", "Amount": "£6,038,504", "Summary": "Fined for breaching rules over fund investments.", "Regulator": "FCA", "Firm Category": "Asset Management", "Breach Type": "Other", "Year": 2016},
+            {"No": 89, "Date_MM/YYYY": "12/2016", "Firm/Individual": "Pacific Continental Securities (UK) Limited", "Amount": "£805,000", "Summary": "Investment firm fined for anti-money laundering failures.", "Regulator": "FCA", "Firm Category": "Trading Firm", "Breach Type": "Anti-Money Laundering", "Year": 2016},
+            {"No": 90, "Date_MM/YYYY": "12/2016", "Firm/Individual": "Kenneth George Carver", "Amount": "£35,212", "Summary": "Former trader banned from working in financial services and fined for market abuse", "Regulator": "FCA", "Firm Category": "Individual", "Breach Type": "Market Abuse", "Year": 2016},
+            {"No": 91, "Date_MM/YYYY": "01/2017", "Firm/Individual": "Jes Staley", "Amount": "£642,430", "Summary": "CEO of Barclays Bank fined for his conduct in a whistleblowing case.", "Regulator": "FCA", "Firm Category": "Individual", "Breach Type": "Misconduct", "Year": 2017},
+            {"No": 92, "Date_MM/YYYY": "01/2017", "Firm/Individual": "Sonali Bank UK Limited", "Amount": "£12,047,000", "Summary": "Sonali Bank given an additional fine for anti-money laundering failures.", "Regulator": "FCA", "Firm Category": "Banking", "Breach Type": "Anti-Money Laundering", "Year": 2017},
+            {"No": 93, "Date_MM/YYYY": "01/2017", "Firm/Individual": "Deutsche Bank AG", "Amount": "£163,076,224", "Summary": "Deutsche Bank fined for serious anti-money laundering failings", "Regulator": "FCA", "Firm Category": "Banking", "Breach Type": "Anti-Money Laundering", "Year": 2017},
+            {"No": 94, "Date_MM/YYYY": "02/2017", "Firm/Individual": "BNP Paribas", "Amount": "£15,029,520", "Summary": "Fined for failing to separate client assets from its own.", "Regulator": "FCA", "Firm Category": "Banking", "Breach Type": "Client Money Failings", "Year": 2017},
+            {"No": 95, "Date_MM/YYYY": "02/2017", "Firm/Individual": "Raphaels Bank", "Amount": "£1,891,000", "Summary": "Fined for misleading the FCA and failings in its application for authorisation as a payment services institution.", "Regulator": "FCA", "Firm Category": "Banking", "Breach Type": "Misconduct", "Year": 2017},
+            {"No": 96, "Date_MM/YYYY": "03/2017", "Firm/Individual": "Merrill Lynch International", "Amount": "£34,524,000", "Summary": "Fined for failure to report transactions.", "Regulator": "FCA", "Firm Category": "Trading Firm", "Breach Type": "Systems and Controls Failings", "Year": 2017},
+            {"No": 97, "Date_MM/YYYY": "04/2017", "Firm/Individual": "Rudolph Visser", "Amount": "£14,200", "Summary": "Fined for failing to prevent conflicts of interest.", "Regulator": "FCA", "Firm Category": "Individual", "Breach Type": "Other", "Year": 2017},
+            {"No": 98, "Date_MM/YYYY": "04/2017", "Firm/Individual": "Bluefin Insurance Services Limited", "Amount": "£4,025,000", "Summary": "FCA fines Bluefin Insurance Services Limited for client money failings", "Regulator": "FCA", "Firm Category": "Insurance", "Breach Type": "Client Money Failings", "Year": 2017},
+            {"No": 99, "Date_MM/YYYY": "05/2017", "Firm/Individual": "Rio Tinto plc", "Amount": "£27,385,400", "Summary": "Listed company fined for breaching disclosure rules.", "Regulator": "FCA", "Firm Category": "Corporate", "Breach Type": "Other", "Year": 2017},
+            {"No": 100, "Date_MM/YYYY": "06/2017", "Firm/Individual": "Fabiana Abdel-Malek", "Amount": "£68,600", "Summary": "Convicted insider dealer ordered to pay nearly £70,000", "Regulator": "FCA", "Firm Category": "Individual", "Breach Type": "Market Abuse", "Year": 2017},
+            {"No": 101, "Date_MM/YYYY": "07/2017", "Firm/Individual": "Noguchi", "Amount": "£45,815", "Summary": "Former bank employee banned and fined for misconduct.", "Regulator": "FCA", "Firm Category": "Individual", "Breach Type": "Misconduct", "Year": 2017},
+            {"No": 102, "Date_MM/YYYY": "07/2017", "Firm/Individual": "EFG Private Bank Limited", "Amount": "£4,200,000", "Summary": "Fined for anti-money laundering failures.", "Regulator": "FCA", "Firm Category": "Banking", "Breach Type": "Anti-Money Laundering", "Year": 2017},
+            {"No": 103, "Date_MM/YYYY": "08/2017", "Firm/Individual": "Standard Chartered Bank", "Amount": "£102,163,200", "Summary": "Fined for AML breaches relating to customer due diligence.", "Regulator": "FCA", "Firm Category": "Banking", "Breach Type": "Anti-Money Laundering", "Year": 2017},
+            {"No": 104, "Date_MM/YYYY": "09/2017", "Firm/Individual": "Premium Credit Limited", "Amount": "£2,703,008", "Summary": "Fined for unfair treatment of customers in financial difficulty.", "Regulator": "FCA", "Firm Category": "Corporate", "Breach Type": "Unsuitable Advice", "Year": 2017},
+            {"No": 105, "Date_MM/YYYY": "10/2017", "Firm/Individual": "Vanquis Bank Limited", "Amount": "£1,976,000", "Summary": "Fined for unfair treatment of customers in arrears.", "Regulator": "FCA", "Firm Category": "Banking", "Breach Type": "Unsuitable Advice", "Year": 2017},
+            {"No": 106, "Date_MM/YYYY": "11/2017", "Firm/Individual": "Linear Investments Limited", "Amount": "£409,300", "Summary": "Fined for failings in relation to disclosure", "Regulator": "FCA", "Firm Category": "Corporate", "Breach Type": "Other", "Year": 2017},
+            {"No": 107, "Date_MM/YYYY": "11/2017", "Firm/Individual": "Vallance", "Amount": "£17,500", "Summary": "Mr Vallance was fined £35,000, reduced to £17,500 on account of serious financial hardship and lack of financial benefit as a result of the breach.", "Regulator": "FCA", "Firm Category": "Individual", "Breach Type": "Misconduct", "Year": 2017},
+            {"No": 108, "Date_MM/YYYY": "11/2017", "Firm/Individual": "Aviva Pension Trustees UK Limited", "Amount": "£8,246,800", "Summary": "Fined for failing to ensure that customers got good outcomes when switching pension policies.", "Regulator": "FCA", "Firm Category": "Insurance", "Breach Type": "Unsuitable Advice", "Year": 2017},
+            {"No": 109, "Date_MM/YYYY": "12/2017", "Firm/Individual": "Western Circle Ltd", "Amount": "£7,015,800", "Summary": "Fined for serious client money failings.", "Regulator": "FCA", "Firm Category": "Corporate", "Breach Type": "Client Money Failings", "Year": 2017},
+            {"No": 110, "Date_MM/YYYY": "02/2018", "Firm/Individual": "EXM Capital Ltd", "Amount": "£100,000", "Summary": "Fined for misselling investment products to retail consumers", "Regulator": "FCA", "Firm Category": "Corporate", "Breach Type": "Unsuitable Advice", "Year": 2018},
+            {"No": 111, "Date_MM/YYYY": "02/2018", "Firm/Individual": "David Woodhead", "Amount": "£25,300", "Summary": "Banned from financial services for lacking integrity and fined.", "Regulator": "FCA", "Firm Category": "Individual", "Breach Type": "Misconduct", "Year": 2018},
+            {"No": 112, "Date_MM/YYYY": "02/2018", "Firm/Individual": "National Westminster Bank Plc", "Amount": "£264,772,620", "Summary": "FCA fines RBS £264,772,620 for AML failures relating to money laundering regulations", "Regulator": "FCA", "Firm Category": "Banking", "Breach Type": "Anti-Money Laundering", "Year": 2018},
+            {"No": 113, "Date_MM/YYYY": "03/2018", "Firm/Individual": "Stuart Forsyth", "Amount": "£100,000", "Summary": "Barclays investment bank CEO fined for improper disclosure of information", "Regulator": "FCA", "Firm Category": "Individual", "Breach Type": "Misconduct", "Year": 2018},
+            {"No": 114, "Date_MM/YYYY": "04/2018", "Firm/Individual": "Liberty Mutual Insurance Europe Limited", "Amount": "£5,280,800", "Summary": "FCA fines Liberty Mutual Insurance Europe Limited for failings in its management of mobile phone insurance claims.", "Regulator": "FCA", "Firm Category": "Insurance", "Breach Type": "Systems and Controls Failings", "Year": 2018},
+            {"No": 115, "Date_MM/YYYY": "05/2018", "Firm/Individual": "Santander UK Plc", "Amount": "£32,817,800", "Summary": "FCA fines Santander UK plc for serious and persistent failings in processing deceased customers' accounts", "Regulator": "FCA", "Firm Category": "Banking", "Breach Type": "Systems and Controls Failings", "Year": 2018},
+            {"No": 116, "Date_MM/YYYY": "06/2018", "Firm/Individual": "Aviva Investors", "Amount": "£34,835,200", "Summary": "FCA fines Aviva Investors for failings in managing conflicts of interest.", "Regulator": "FCA", "Firm Category": "Asset Management", "Breach Type": "Other", "Year": 2018},
+            {"No": 117, "Date_MM/YYYY": "07/2018", "Firm/Individual": "Carillion plc", "Amount": "£12,250,000", "Summary": "Carillion and certain of its former directors criticised for failing to exercise reasonable care and skill in preparation of accounts and provision of information to the market", "Regulator": "FCA", "Firm Category": "Corporate", "Breach Type": "Other", "Year": 2018},
+            {"No": 118, "Date_MM/YYYY": "09/2018", "Firm/Individual": "Mark Bycroft", "Amount": "£121,900", "Summary": "Fined for serious failings in combating money laundering.", "Regulator": "FCA", "Firm Category": "Individual", "Breach Type": "Anti-Money Laundering", "Year": 2018},
+            {"No": 119, "Date_MM/YYYY": "09/2018", "Firm/Individual": "Santander UK Plc", "Amount": "£107,793,300", "Summary": "FCA fines Santander £107.8 million over widespread investment advice failings", "Regulator": "FCA", "Firm Category": "Banking", "Breach Type": "Unsuitable Advice", "Year": 2018},
+            {"No": 120, "Date_MM/YYYY": "10/2018", "Firm/Individual": "Cantor Fitzgerald Europe", "Amount": "£1,000,000", "Summary": "CFE fined £1m for failings in client money reconciliations and failure to provide information", "Regulator": "FCA", "Firm Category": "Trading Firm", "Breach Type": "Client Money Failings", "Year": 2018},
+            {"No": 121, "Date_MM/YYYY": "11/2018", "Firm/Individual": "Astradea Ltd", "Amount": "£280,000", "Summary": "FCA fines Astradea £280,000 for market abuse, plus restitution of £658,958.01 to compensate disadvantaged investors.", "Regulator": "FCA", "Firm Category": "Corporate", "Breach Type": "Market Abuse", "Year": 2018},
+            {"No": 122, "Date_MM/YYYY": "11/2018", "Firm/Individual": "Raymond Page", "Amount": "£100,000", "Summary": "Former executive director at Keydata banned and fined for misleading the FCA", "Regulator": "FCA", "Firm Category": "Individual", "Breach Type": "Misconduct", "Year": 2018},
+            {"No": 123, "Date_MM/YYYY": "11/2018", "Firm/Individual": "Peter Middleton", "Amount": "£30,000", "Summary": "Former executive director at Keydata banned for misleading the FCA", "Regulator": "FCA", "Firm Category": "Individual", "Breach Type": "Misconduct", "Year": 2018},
+            {"No": 124, "Date_MM/YYYY": "11/2018", "Firm/Individual": "Lloyds Bank plc", "Amount": "£64,046,800", "Summary": "FCA fines Lloyds Bank £64m for mistreating mortgage customers in arrears", "Regulator": "FCA", "Firm Category": "Banking", "Breach Type": "Unsuitable Advice", "Year": 2018},
+            {"No": 125, "Date_MM/YYYY": "11/2018", "Firm/Individual": "Bank of Scotland plc", "Amount": "£45,483,200", "Summary": "FCA fines Bank of Scotland £45.5m for mistreating mortgage customers in arrears", "Regulator": "FCA", "Firm Category": "Banking", "Breach Type": "Unsuitable Advice", "Year": 2018},
+            {"No": 126, "Date_MM/YYYY": "12/2018", "Firm/Individual": "Tullett Prebon", "Amount": "£15,400,000", "Summary": "FCA fines Tullett Prebon £15.4m for serious broker misconduct", "Regulator": "FCA", "Firm Category": "Trading Firm", "Breach Type": "Misconduct", "Year": 2018},
+            {"No": 127, "Date_MM/YYYY": "12/2018", "Firm/Individual": "R.K. Harrison (Brokers) Limited", "Amount": "£7,557,600", "Summary": "FCA fines R.K. Harrison £7.5m for AML failures", "Regulator": "FCA", "Firm Category": "Trading Firm", "Breach Type": "Anti-Money Laundering", "Year": 2018},
+            {"No": 128, "Date_MM/YYYY": "12/2018", "Firm/Individual": "Stewart Owen Ford", "Amount": "£76,023", "Summary": "Former Keydata CEO banned from working in financial services and fined for concealing and destroying documents during FCA investigation", "Regulator": "FCA", "Firm Category": "Individual", "Breach Type": "Misconduct", "Year": 2018},
+            {"No": 129, "Date_MM/YYYY": "01/2019", "Firm/Individual": "UBS AG", "Amount": "£27,599,400", "Summary": "FCA fines UBS AG £27.6m for transaction reporting failures", "Regulator": "FCA", "Firm Category": "Banking", "Breach Type": "Systems and Controls Failings", "Year": 2019},
+            {"No": 130, "Date_MM/YYYY": "02/2019", "Firm/Individual": "Patrick Haworth", "Amount": "£10,800", "Summary": "Banned from the financial services industry for insider dealing", "Regulator": "FCA", "Firm Category": "Individual", "Breach Type": "Market Abuse", "Year": 2019},
+            {"No": 131, "Date_MM/YYYY": "02/2019", "Firm/Individual": "Friends Life Limited and ALIL", "Amount": "£12,235,000", "Summary": "FCA fines Standard Life Assurance Limited £30.8 million for non-advised sales failures", "Regulator": "FCA", "Firm Category": "Insurance", "Breach Type": "Unsuitable Advice", "Year": 2019},
+            {"No": 132, "Date_MM/YYYY": "02/2019", "Firm/Individual": "Standard Life Assurance Limited", "Amount": "£30,792,500", "Summary": "FCA fines Standard Life Assurance Limited £30.8 million for non-advised sales failures", "Regulator": "FCA", "Firm Category": "Insurance", "Breach Type": "Unsuitable Advice", "Year": 2019},
+            {"No": 133, "Date_MM/YYYY": "03/2019", "Firm/Individual": "Goldman Sachs International", "Amount": "£34,344,100", "Summary": "FCA fines Goldman Sachs International £34.3m for transaction reporting failures", "Regulator": "FCA", "Firm Category": "Banking", "Breach Type": "Systems and Controls Failings", "Year": 2019},
+            {"No": 134, "Date_MM/YYYY": "04/2019", "Firm/Individual": "Interactive Brokers (U.K.) Limited", "Amount": "£1,049,160", "Summary": "FCA fines IBUK £1,049,160 for incorrectly reporting approximately 1.79 billion transactions and failure to conduct annual transaction reporting test.", "Regulator": "FCA", "Firm Category": "Trading Firm", "Breach Type": "Systems and Controls Failings", "Year": 2019},
+            {"No": 135, "Date_MM/YYYY": "06/2019", "Firm/Individual": "Christopher Philip Niehaus", "Amount": "£37,198", "Summary": "Former investment banker sentenced for insider dealing.", "Regulator": "FCA", "Firm Category": "Individual", "Breach Type": "Market Abuse", "Year": 2019},
+            {"No": 136, "Date_MM/YYYY": "07/2019", "Firm/Individual": "Sapien Capital Limited", "Amount": "£178,000", "Summary": "FCA fines former discretionary investment manager £178,000 for unsuitable advice and improper disclosure of conflicts.", "Regulator": "FCA", "Firm Category": "Asset Management", "Breach Type": "Unsuitable Advice", "Year": 2019},
+            {"No": 137, "Date_MM/YYYY": "07/2019", "Firm/Individual": "Carlo Palombo", "Amount": "£80,000", "Summary": "Former Barclays trader Carlo Palombo fined and banned from working in the financial services industry.", "Regulator": "FCA", "Firm Category": "Individual", "Breach Type": "Market Abuse", "Year": 2019},
+            {"No": 138, "Date_MM/YYYY": "09/2019", "Firm/Individual": "Michael Miller", "Amount": "£50,600", "Summary": "The former equity trader has been banned from the financial services industry and fined for attempted insider dealing", "Regulator": "FCA", "Firm Category": "Individual", "Breach Type": "Market Abuse", "Year": 2019},
+            {"No": 139, "Date_MM/YYYY": "10/2019", "Firm/Individual": "James Staley", "Amount": "£1,147,875", "Summary": "Barclays CEO fined £642,430 by the FCA and £505,445 by the PRA for his conduct in attempting to identify a whistleblower", "Regulator": "FCA", "Firm Category": "Individual", "Breach Type": "Misconduct", "Year": 2019},
+            {"No": 140, "Date_MM/YYYY": "10/2019", "Firm/Individual": "Lower", "Amount": "£32,000", "Summary": "Former trader banned and fined after misleading the FCA over market manipulation", "Regulator": "FCA", "Firm Category": "Individual", "Breach Type": "Market Abuse", "Year": 2019},
+            {"No": 141, "Date_MM/YYYY": "11/2019", "Firm/Individual": "Jon Frensham", "Amount": "£250,000", "Summary": "Former ForEx trader sentenced for Euribor manipulation", "Regulator": "FCA", "Firm Category": "Individual", "Breach Type": "Market Abuse", "Year": 2019},
+            {"No": 142, "Date_MM/YYYY": "11/2019", "Firm/Individual": "Linear Investments Limited", "Amount": "£3,985,500", "Summary": "FCA fines Linear Investments Limited £4m for unsuitable advice", "Regulator": "FCA", "Firm Category": "Corporate", "Breach Type": "Unsuitable Advice", "Year": 2019},
+            {"No": 143, "Date_MM/YYYY": "12/2019", "Firm/Individual": "Paul Walter", "Amount": "£60,000", "Summary": "Former Chief Risk Officer banned and fined for misleading the PRA about operational risk in outsourcing arrangement", "Regulator": "FCA", "Firm Category": "Individual", "Breach Type": "Misconduct", "Year": 2019},
+            {"No": 144, "Date_MM/YYYY": "02/2020", "Firm/Individual": "Mex Securities plc", "Amount": "£409,300", "Summary": "FCA fines Mex Securities PLC £409,300 for transaction reporting failings", "Regulator": "FCA", "Firm Category": "Trading Firm", "Breach Type": "Systems and Controls Failings", "Year": 2020},
+            {"No": 145, "Date_MM/YYYY": "04/2020", "Firm/Individual": "Asia Research and Capital Management Ltd", "Amount": "£873,118", "Summary": "The FCA has fined hedge fund manager Asia Research and Capital Management Ltd (ARCM) for market abuse, and ordered it to pay £3,454,701.28 in restitution.", "Regulator": "FCA", "Firm Category": "Asset Management", "Breach Type": "Market Abuse", "Year": 2020},
+            {"No": 146, "Date_MM/YYYY": "04/2020", "Firm/Individual": "Commerzbank AG, London Branch", "Amount": "£37,805,400", "Summary": "FCA fines Commerzbank London £37.8 million over anti-money laundering failures", "Regulator": "FCA", "Firm Category": "Banking", "Breach Type": "Anti-Money Laundering", "Year": 2020},
+            {"No": 147, "Date_MM/YYYY": "07/2020", "Firm/Individual": "The Carphone Warehouse Limited", "Amount": "£29,107,600", "Summary": "FCA fines The Carphone Warehouse Limited £29.1 million for mis-selling 'Geek Squad' insurance and mobile phone insurance", "Regulator": "FCA", "Firm Category": "Corporate", "Breach Type": "Unsuitable Advice", "Year": 2020},
+            {"No": 148, "Date_MM/YYYY": "08/2020", "Firm/Individual": "Charles Schwab UK Limited", "Amount": "£8,961,800", "Summary": "FCA fines Charles Schwab UK Limited £8.96m for overcharging clients", "Regulator": "FCA", "Firm Category": "Trading Firm", "Breach Type": "Other", "Year": 2020},
+            {"No": 149, "Date_MM/YYYY": "10/2020", "Firm/Individual": "Barclays Bank UK PLC", "Amount": "£26,021,400", "Summary": "FCA fines Barclays £26m over treatment of customers in financial difficulty", "Regulator": "FCA", "Firm Category": "Banking", "Breach Type": "Unsuitable Advice", "Year": 2020},
+            {"No": 150, "Date_MM/YYYY": "10/2020", "Firm/Individual": "Gladys Brazier", "Amount": "£160,000", "Summary": "Former Redcentric director sentenced to 12 months' imprisonment for insider dealing", "Regulator": "FCA", "Firm Category": "Individual", "Breach Type": "Market Abuse", "Year": 2020},
+            {"No": 151, "Date_MM/YYYY": "11/2020", "Firm/Individual": "Simon Michael Hussey", "Amount": "£149,152", "Summary": "Former Redcentric CEO sentenced to 12 months' imprisonment for insider dealing", "Regulator": "FCA", "Firm Category": "Individual", "Breach Type": "Market Abuse", "Year": 2020},
+            {"No": 152, "Date_MM/YYYY": "12/2020", "Firm/Individual": "Keydata Investment Services Limited", "Amount": "£98,450", "Summary": "FCA directs firms to compensate Keydata customers - and fines ex-Keydata CEO (separately, Stewart Ford) for concealing and destroying documents", "Regulator": "FCA", "Firm Category": "Corporate", "Breach Type": "Misconduct", "Year": 2020},
+            {"No": 153, "Date_MM/YYYY": "12/2020", "Firm/Individual": "Michael Richard Turner", "Amount": "£37,400", "Summary": "Former Chief Financial Officer of Redcentric PLC to pay £37,400 for insider dealing", "Regulator": "FCA", "Firm Category": "Individual", "Breach Type": "Market Abuse", "Year": 2020},
+            {"No": 154, "Date_MM/YYYY": "01/2021", "Firm/Individual": "Credit Suisse International, Credit Suisse Securities (Europe) Ltd, and Credit Suisse AG", "Amount": "£147,190,200", "Summary": "FCA fines Credit Suisse £147,190,276 for Archegos failings", "Regulator": "FCA", "Firm Category": "Banking", "Breach Type": "Systems and Controls Failings", "Year": 2021},
+            {"No": 155, "Date_MM/YYYY": "01/2021", "Firm/Individual": "HSBC Bank Plc and HSBC UK Bank Plc", "Amount": "£63,946,800", "Summary": "FCA fines HSBC £63.9m for failings in AML processes", "Regulator": "FCA", "Firm Category": "Banking", "Breach Type": "Anti-Money Laundering", "Year": 2021},
+            {"No": 156, "Date_MM/YYYY": "02/2021", "Firm/Individual": "Asif Hafeez", "Amount": "£180,000", "Summary": "Former bonds trader fined and banned from holding senior roles in financial services", "Regulator": "FCA", "Firm Category": "Individual", "Breach Type": "Market Abuse", "Year": 2021},
+            {"No": 157, "Date_MM/YYYY": "03/2021", "Firm/Individual": "Timothy Bungay", "Amount": "£40,000", "Summary": "Former compliance officer banned from working in financial services and fined for failing to act with due skill, care and diligence", "Regulator": "FCA", "Firm Category": "Individual", "Breach Type": "Misconduct", "Year": 2021},
+            {"No": 158, "Date_MM/YYYY": "03/2021", "Firm/Individual": "Wyelands Bank plc", "Amount": "£308,896", "Summary": "FCA fines Wyelands Bank £308,896 for failing to submit complete information in time", "Regulator": "FCA", "Firm Category": "Banking", "Breach Type": "Systems and Controls Failings", "Year": 2021},
+            {"No": 159, "Date_MM/YYYY": "04/2021", "Firm/Individual": "Alexander Stuart", "Amount": "£70,000", "Summary": "FCA fines former NEX chief £70,000 for unlawful disclosure of inside information", "Regulator": "FCA", "Firm Category": "Individual", "Breach Type": "Market Abuse", "Year": 2021},
+            {"No": 160, "Date_MM/YYYY": "04/2021", "Firm/Individual": "FundingSecure Ltd", "Amount": "£90,000", "Summary": "FCA cancels peer-to-peer platform's permissions and issues a fine for operating without safeguarding permissions", "Regulator": "FCA", "Firm Category": "Corporate", "Breach Type": "Regulatory Rules Breach", "Year": 2021},
+            {"No": 161, "Date_MM/YYYY": "05/2021", "Firm/Individual": "W H Ireland Limited", "Amount": "£1,198,800", "Summary": "FCA fines W H Ireland Limited £1.2m for significant failings in its financial crime controls", "Regulator": "FCA", "Firm Category": "Trading Firm", "Breach Type": "Anti-Money Laundering", "Year": 2021},
+            {"No": 162, "Date_MM/YYYY": "07/2021", "Firm/Individual": "Citigroup Global Markets Limited", "Amount": "£12,553,800", "Summary": "FCA fines CGML £12.6 million and requires remediation programme for governance and control failures", "Regulator": "FCA", "Firm Category": "Trading Firm", "Breach Type": "Systems and Controls Failings", "Year": 2021},
+            {"No": 163, "Date_MM/YYYY": "09/2021", "Firm/Individual": "Al Rayan Bank PLC", "Amount": "£4,019,412", "Summary": "FCA fines and censures Al Rayan Bank PLC for anti-money laundering failings", "Regulator": "FCA", "Firm Category": "Banking", "Breach Type": "Anti-Money Laundering", "Year": 2021},
+            {"No": 164, "Date_MM/YYYY": "09/2021", "Firm/Individual": "Julius Baer International Limited", "Amount": "£18,149,040", "Summary": "FCA fines Julius Baer International Limited £18m for relationship management failures", "Regulator": "FCA", "Firm Category": "Banking", "Breach Type": "Systems and Controls Failings", "Year": 2021},
+            {"No": 165, "Date_MM/YYYY": "10/2021", "Firm/Individual": "Sapien Capital Ltd", "Amount": "£608,000", "Summary": "FCA fines Sapien Capital Ltd for investment advice failings", "Regulator": "FCA", "Firm Category": "Asset Management", "Breach Type": "Unsuitable Advice", "Year": 2021},
+            {"No": 166, "Date_MM/YYYY": "11/2021", "Firm/Individual": "TransferGo Ltd", "Amount": "£458,640", "Summary": "FCA fines TransferGo Limited for anti-money laundering failings", "Regulator": "FCA", "Firm Category": "Corporate", "Breach Type": "Anti-Money Laundering", "Year": 2021},
+            {"No": 167, "Date_MM/YYYY": "12/2021", "Firm/Individual": "ADM Investor Services International Limited", "Amount": "£6,472,200", "Summary": "FCA fines ADM Investor Services International Limited for anti-money laundering failings and control weaknesses", "Regulator": "FCA", "Firm Category": "Trading Firm", "Breach Type": "Anti-Money Laundering", "Year": 2021},
+            {"No": 168, "Date_MM/YYYY": "12/2021", "Firm/Individual": "GAM International Management Limited", "Amount": "£9,122,400", "Summary": "FCA fines GAM £9.1m for failure to manage conflicts of interest", "Regulator": "FCA", "Firm Category": "Asset Management", "Breach Type": "Other", "Year": 2021},
+            {"No": 169, "Date_MM/YYYY": "12/2021", "Firm/Individual": "Santander UK Plc", "Amount": "£107,500,000", "Summary": "FCA fines Santander UK plc £107.7m for persistent AML failings", "Regulator": "FCA", "Firm Category": "Banking", "Breach Type": "Anti-Money Laundering", "Year": 2021},
+            {"No": 170, "Date_MM/YYYY": "01/2022", "Firm/Individual": "Nicholas Kyprios", "Amount": "£22,400", "Summary": "Former trader banned from holding a senior position in financial services for fitness and propriety failings", "Regulator": "FCA", "Firm Category": "Individual", "Breach Type": "Misconduct", "Year": 2022},
+            {"No": 171, "Date_MM/YYYY": "01/2022", "Firm/Individual": "Quilter Financial Planning Limited", "Amount": "£3,517,000", "Summary": "FCA fines Quilter Financial Planning Limited £3.5m for providing unsuitable pension transfer advice", "Regulator": "FCA", "Firm Category": "Financial Planning", "Breach Type": "Unsuitable Advice", "Year": 2022},
+            {"No": 172, "Date_MM/YYYY": "02/2022", "Firm/Individual": "ED&F Man Capital Markets Ltd", "Amount": "£17,156,200", "Summary": "FCA fines ED&F Man Capital Markets £17.2m for overcharging clients and market abuse", "Regulator": "FCA", "Firm Category": "Trading Firm", "Breach Type": "Market Abuse", "Year": 2022},
+            {"No": 173, "Date_MM/YYYY": "03/2022", "Firm/Individual": "Liberty Mutual Insurance Europe SE (LMIE)", "Amount": "£5,109,900", "Summary": "FCA fines Liberty Mutual Insurance Europe SE for non-financial misconduct failings", "Regulator": "FCA", "Firm Category": "Insurance", "Breach Type": "Misconduct", "Year": 2022},
+            {"No": 174, "Date_MM/YYYY": "03/2022", "Firm/Individual": "Ghana International Bank Plc", "Amount": "£5,829,900", "Summary": "FCA fines Ghana International Bank £5.8m for AML failures", "Regulator": "FCA", "Firm Category": "Banking", "Breach Type": "Anti-Money Laundering", "Year": 2022},
+            {"No": 175, "Date_MM/YYYY": "03/2022", "Firm/Individual": "Mark Steward", "Amount": "£75,000", "Summary": "FCA Executive Director of Enforcement and Market Oversight fined by the Bank of England for a conflict of interest", "Regulator": "FCA", "Firm Category": "Individual", "Breach Type": "Other", "Year": 2022},
+            {"No": 176, "Date_MM/YYYY": "04/2022", "Firm/Individual": "Equifax Ltd", "Amount": "£11,164,300", "Summary": "FCA fines Equifax Ltd £11,164,300 for cybersecurity failings", "Regulator": "FCA", "Firm Category": "Corporate", "Breach Type": "Systems and Controls Failings", "Year": 2022},
+            {"No": 177, "Date_MM/YYYY": "04/2022", "Firm/Individual": "Amigo Loans Ltd", "Amount": "£72,900", "Summary": "FCA fines Amigo £72,900 for sending misleading emails about compensation", "Regulator": "FCA", "Firm Category": "Corporate", "Breach Type": "Misleading Advice", "Year": 2022},
+            {"No": 178, "Date_MM/YYYY": "05/2022", "Firm/Individual": "Kier Group plc", "Amount": "£16,000", "Summary": "FCA issues low fine to reflect Kier Group plc financial position and fines former CFO for failings in disclosing inside information", "Regulator": "FCA", "Firm Category": "Corporate", "Breach Type": "Other", "Year": 2022},
+            {"No": 179, "Date_MM/YYYY": "05/2022", "Firm/Individual": "Bexhill UK Ltd (trading as Juo Loans)", "Amount": "£112,000", "Summary": "FCA fines Juo Loans £112,000 for illegal regulated credit agreement variations", "Regulator": "FCA", "Firm Category": "Corporate", "Breach Type": "Regulatory Rules Breach", "Year": 2022},
+            {"No": 180, "Date_MM/YYYY": "05/2022", "Firm/Individual": "Tullett Prebon (Europe) Limited", "Amount": "£896,400", "Summary": "FCA fines TP ICAP broking subsidiary £896,400 for submitting inaccurate transaction reports", "Regulator": "FCA", "Firm Category": "Trading Firm", "Breach Type": "Systems and Controls Failings", "Year": 2022},
+            {"No": 181, "Date_MM/YYYY": "05/2022", "Firm/Individual": "Baljinder (Bal) Gill", "Amount": "£60,000", "Summary": "FCA issues low fine to reflect Kier Group plc financial position and fines former CFO for failings in disclosing inside information", "Regulator": "FCA", "Firm Category": "Individual", "Breach Type": "Other", "Year": 2022},
+            {"No": 182, "Date_MM/YYYY": "05/2022", "Firm/Individual": "Hayley Ford", "Amount": "£6,400", "Summary": "FCA issues low fine to reflect Kier Group plc financial position and fines former CFO for failings in disclosing inside information", "Regulator": "FCA", "Firm Category": "Individual", "Breach Type": "Other", "Year": 2022},
+            {"No": 183, "Date_MM/YYYY": "07/2022", "Firm/Individual": "Staley", "Amount": "£1,795,600", "Summary": "FCA and PRA fine former Barclays CEO £1.8m over misleading statements about relationship with Jeffrey Epstein", "Regulator": "FCA", "Firm Category": "Individual", "Breach Type": "Misconduct", "Year": 2022},
+            {"No": 184, "Date_MM/YYYY": "07/2022", "Firm/Individual": "TSB Bank plc", "Amount": "£48,650,000", "Summary": "FCA fines TSB Bank plc £48.65m for widespread communications and delay failings", "Regulator": "FCA", "Firm Category": "Banking", "Breach Type": "Systems and Controls Failings", "Year": 2022},
+            {"No": 185, "Date_MM/YYYY": "08/2022", "Firm/Individual": "Former Redcentric director - unnamed", "Amount": "£17,000", "Summary": "Former Redcentric director ordered to pay £17,000 following FCA insider dealing criminal prosecution", "Regulator": "FCA", "Firm Category": "Individual", "Breach Type": "Market Abuse", "Year": 2022},
+            {"No": 186, "Date_MM/YYYY": "09/2022", "Firm/Individual": "TFS Loans Limited", "Amount": "£165,200", "Summary": "FCA fines TFS Loans £165,200 for illegal regulated credit agreement variations", "Regulator": "FCA", "Firm Category": "Corporate", "Breach Type": "Regulatory Rules Breach", "Year": 2022},
+            {"No": 187, "Date_MM/YYYY": "10/2022", "Firm/Individual": "Sir Chris Hohn", "Amount": "£43,879,150", "Summary": "Sir Christopher Hohn to pay £43m in penalties for unlawful disclosure of inside information", "Regulator": "FCA", "Firm Category": "Individual", "Breach Type": "Market Abuse", "Year": 2022},
+            {"No": 188, "Date_MM/YYYY": "10/2022", "Firm/Individual": "LCF Investment Management Ltd", "Amount": "£81,000", "Summary": "FCA fines LCF related firm and former director for providing false and misleading information", "Regulator": "FCA", "Firm Category": "Corporate", "Breach Type": "Misconduct", "Year": 2022},
+            {"No": 189, "Date_MM/YYYY": "10/2022", "Firm/Individual": "Kotak Mahindra Bank Ltd London Branch", "Amount": "£364,000", "Summary": "FCA fines KMBL £364,000 for AML control failures", "Regulator": "FCA", "Firm Category": "Banking", "Breach Type": "Anti-Money Laundering", "Year": 2022},
+            {"No": 190, "Date_MM/YYYY": "11/2022", "Firm/Individual": "British Steel Ltd", "Amount": "£40,000", "Summary": "FCA fines British Steel Limited £40,000 for providing inaccurate regulatory data", "Regulator": "FCA", "Firm Category": "Corporate", "Breach Type": "Other", "Year": 2022},
+            {"No": 191, "Date_MM/YYYY": "12/2022", "Firm/Individual": "Morgan Stanley & Co. International plc", "Amount": "£5,423,600", "Summary": "FCA fines Morgan Stanley £5.4m for transaction reporting breaches", "Regulator": "FCA", "Firm Category": "Trading Firm", "Breach Type": "Systems and Controls Failings", "Year": 2022},
+            {"No": 192, "Date_MM/YYYY": "01/2023", "Firm/Individual": "Guaranty Trust Bank (UK) Limited", "Amount": "£7,671,800", "Summary": "FCA fines Guaranty Trust Bank £7.6m for repeated anti-money laundering failings", "Regulator": "FCA", "Firm Category": "Banking", "Breach Type": "Anti-Money Laundering", "Year": 2023},
+            {"No": 193, "Date_MM/YYYY": "02/2023", "Firm/Individual": "Norfolk Capital Group Limited", "Amount": "£700,000", "Summary": "FCA fines Norfolk Capital £700,000 for misleading the regulator", "Regulator": "FCA", "Firm Category": "Corporate", "Breach Type": "Misconduct", "Year": 2023},
+            {"No": 194, "Date_MM/YYYY": "02/2023", "Firm/Individual": "BNP Paribas Securities Services", "Amount": "£5,960,640", "Summary": "FCA fines BNP Paribas Securities Services £5.96m for serious custody asset breaches", "Regulator": "FCA", "Firm Category": "Banking", "Breach Type": "Client Money Failings", "Year": 2023},
+            {"No": 195, "Date_MM/YYYY": "03/2023", "Firm/Individual": "Interactive Investor", "Amount": "£3,444,000", "Summary": "FCA fines Interactive Investor £3.4m for overcharging customers", "Regulator": "FCA", "Firm Category": "Trading Firm", "Breach Type": "Other", "Year": 2023},
+            {"No": 196, "Date_MM/YYYY": "03/2023", "Firm/Individual": "JLT Speciality Limited", "Amount": "£7,881,300", "Summary": "FCA fines JLT Specialty Limited £7.9m over aviation insurance broking collusion", "Regulator": "FCA", "Firm Category": "Insurance", "Breach Type": "Market Abuse", "Year": 2023},
+            {"No": 197, "Date_MM/YYYY": "04/2023", "Firm/Individual": "Macquarie Bank Limited", "Amount": "£13,031,400", "Summary": "FCA fines Macquarie Bank £13m for more than 8 years of failings in relation to 'cum-ex' trading", "Regulator": "FCA", "Firm Category": "Banking", "Breach Type": "Market Abuse", "Year": 2023},
+            {"No": 198, "Date_MM/YYYY": "05/2023", "Firm/Individual": "Banque Havilland", "Amount": "£10,298,100", "Summary": "FCA and PRA fine Banque Havilland for failures in governance and risk management", "Regulator": "FCA", "Firm Category": "Banking", "Breach Type": "Systems and Controls Failings", "Year": 2023},
+            {"No": 199, "Date_MM/YYYY": "05/2023", "Firm/Individual": "ADM Investor Services International Limited", "Amount": "£6,467,900", "Summary": "FCA fines ADM Investor Services International Limited £6.5m for third-party payment failings", "Regulator": "FCA", "Firm Category": "Trading Firm", "Breach Type": "Anti-Money Laundering", "Year": 2023},
+            {"No": 200, "Date_MM/YYYY": "05/2023", "Firm/Individual": "Crispin Odey", "Amount": "£350,000", "Summary": "FCA fines Crispin Odey", "Regulator": "FCA", "Firm Category": "Individual", "Breach Type": "Market Abuse", "Year": 2023},
+            {"No": 201, "Date_MM/YYYY": "05/2023", "Firm/Individual": "Odey Asset Management LLP", "Amount": "£700,000", "Summary": "FCA fines Odey Asset Management LLP", "Regulator": "FCA", "Firm Category": "Asset Management", "Breach Type": "Market Abuse", "Year": 2023},
+            {"No": 202, "Date_MM/YYYY": "06/2023", "Firm/Individual": "Metro Bank PLC", "Amount": "£16,675,200", "Summary": "FCA and PRA fine Metro Bank £16.7m for money laundering failings", "Regulator": "FCA", "Firm Category": "Banking", "Breach Type": "Anti-Money Laundering", "Year": 2023},
+            {"No": 203, "Date_MM/YYYY": "07/2023", "Firm/Individual": "Coinbase", "Amount": "£3,503,500", "Summary": "FCA fines CB Payments Limited (Coinbase) £3.5m for anti-money laundering breaches", "Regulator": "FCA", "Firm Category": "Corporate", "Breach Type": "Anti-Money Laundering", "Year": 2023},
+            {"No": 204, "Date_MM/YYYY": "08/2023", "Firm/Individual": "Paul Edward Menage", "Amount": "£5,000", "Summary": "FCA bans and fines Interim CEO of Wyelands Bank for lack of fitness and propriety", "Regulator": "FCA", "Firm Category": "Individual", "Breach Type": "Misconduct", "Year": 2023},
+            {"No": 205, "Date_MM/YYYY": "08/2023", "Firm/Individual": "Bank ABC", "Amount": "£2,104,500", "Summary": "FCA fines Bank ABC £2.1m for financial crime control failings", "Regulator": "FCA", "Firm Category": "Banking", "Breach Type": "Anti-Money Laundering", "Year": 2023},
+            {"No": 206, "Date_MM/YYYY": "09/2023", "Firm/Individual": "Santander Financial Services plc", "Amount": "£2,009,200", "Summary": "FCA fines Santander Financial Services £2m for failing to oversee appointed representatives", "Regulator": "FCA", "Firm Category": "Banking", "Breach Type": "Systems and Controls Failings", "Year": 2023},
+            {"No": 207, "Date_MM/YYYY": "09/2023", "Firm/Individual": "CashEuroNet UK LLC", "Amount": "£3,188,850", "Summary": "FCA fines CashEuroNet UK LLC (trading as QuickQuid) £3.2m for unfair treatment of customers", "Regulator": "FCA", "Firm Category": "Corporate", "Breach Type": "Unsuitable Advice", "Year": 2023},
+            {"No": 208, "Date_MM/YYYY": "09/2023", "Firm/Individual": "Alan Jones", "Amount": "£16,800", "Summary": "FCA fines Interim CEO and Finance Director of Wyelands Bank", "Regulator": "FCA", "Firm Category": "Individual", "Breach Type": "Misconduct", "Year": 2023},
+            {"No": 209, "Date_MM/YYYY": "10/2023", "Firm/Individual": "Link Financial Investments Limited", "Amount": "£1,542,800", "Summary": "FCA fines Link Financial Investments Limited £1.5m over regulated mortgage and home finance business failings", "Regulator": "FCA", "Firm Category": "Corporate", "Breach Type": "Systems and Controls Failings", "Year": 2023},
+            {"No": 210, "Date_MM/YYYY": "10/2023", "Firm/Individual": "Phillip Leslie", "Amount": "£10,000", "Summary": "FCA fines finance directors of Wyelands Bank", "Regulator": "FCA", "Firm Category": "Individual", "Breach Type": "Misconduct", "Year": 2023},
+            {"No": 211, "Date_MM/YYYY": "10/2023", "Firm/Individual": "David Ditchburn", "Amount": "£10,000", "Summary": "FCA fines finance directors of Wyelands Bank", "Regulator": "FCA", "Firm Category": "Individual", "Breach Type": "Misconduct", "Year": 2023},
+            {"No": 212, "Date_MM/YYYY": "11/2023", "Firm/Individual": "Majedie Asset Management Limited", "Amount": "£642,600", "Summary": "FCA fines Majedie Asset Management Limited £643k for transaction reporting breaches", "Regulator": "FCA", "Firm Category": "Asset Management", "Breach Type": "Systems and Controls Failings", "Year": 2023},
+            {"No": 213, "Date_MM/YYYY": "11/2023", "Firm/Individual": "Dolfin Financial (UK) Ltd", "Amount": "£3,325,575", "Summary": "FCA fines Dolfin Financial (UK) Ltd £3.3m in special administration over serious custody asset failings", "Regulator": "FCA", "Firm Category": "Trading Firm", "Breach Type": "Client Money Failings", "Year": 2023},
+            {"No": 214, "Date_MM/YYYY": "12/2023", "Firm/Individual": "Gatehouse Bank Plc", "Amount": "£1,516,800", "Summary": "FCA fines Gatehouse Bank £1.5m for financial crime control failings", "Regulator": "FCA", "Firm Category": "Banking", "Breach Type": "Anti-Money Laundering", "Year": 2023},
+            {"No": 215, "Date_MM/YYYY": "12/2023", "Firm/Individual": "Steven Mark Sandom", "Amount": "£35,000", "Summary": "FCA bans former trader and fines him for market abuse", "Regulator": "FCA", "Firm Category": "Individual", "Breach Type": "Market Abuse", "Year": 2023},
+            {"No": 216, "Date_MM/YYYY": "01/2024", "Firm/Individual": "Wise Payments Limited", "Amount": "£351,000", "Summary": "FCA fines Wise Payments £350k for overcharging customers", "Regulator": "FCA", "Firm Category": "Corporate", "Breach Type": "Other", "Year": 2024},
+            {"No": 217, "Date_MM/YYYY": "01/2024", "Firm/Individual": "Starling Bank Limited", "Amount": "£28,959,426", "Summary": "FCA fines Starling Bank £29m for financial crime failings", "Regulator": "FCA", "Firm Category": "Banking", "Breach Type": "Anti-Money Laundering", "Year": 2024},
+            {"No": 218, "Date_MM/YYYY": "01/2024", "Firm/Individual": "CURO Transatlantic Limited", "Amount": "£100,001", "Summary": "FCA fines CURO Transatlantic £100k and restricts it from taking new customers", "Regulator": "FCA", "Firm Category": "Corporate", "Breach Type": "Unsuitable Advice", "Year": 2024},
+            {"No": 219, "Date_MM/YYYY": "02/2024", "Firm/Individual": "LCF Investment Management Ltd", "Amount": "£178,500", "Summary": "FCA fines LCF-related firm and former director for providing false information", "Regulator": "FCA", "Firm Category": "Corporate", "Breach Type": "Misconduct", "Year": 2024},
+            {"No": 220, "Date_MM/YYYY": "02/2024", "Firm/Individual": "Michael Andrew Thomson", "Amount": "£229,500", "Summary": "FCA fines LCF-related firm and former director for providing false information", "Regulator": "FCA", "Firm Category": "Individual", "Breach Type": "Misconduct", "Year": 2024},
+            {"No": 221, "Date_MM/YYYY": "02/2024", "Firm/Individual": "Lewis Silkin LLP", "Amount": "£1,162,950", "Summary": "FCA fines Lewis Silkin LLP £1.16m and publishes review into non-financial misconduct at the FCA", "Regulator": "FCA", "Firm Category": "Corporate", "Breach Type": "Misconduct", "Year": 2024},
+            {"No": 222, "Date_MM/YYYY": "03/2024", "Firm/Individual": "Arif Hussein", "Amount": "£67,900", "Summary": "FCA bans and fines former CEO of Wealthtek", "Regulator": "FCA", "Firm Category": "Individual", "Breach Type": "Misconduct", "Year": 2024},
+            {"No": 223, "Date_MM/YYYY": "03/2024", "Firm/Individual": "Wealthtek LLP", "Amount": "£60,100", "Summary": "FCA fines and withdraws permissions of Wealthtek", "Regulator": "FCA", "Firm Category": "Corporate", "Breach Type": "Systems and Controls Failings", "Year": 2024},
+            {"No": 224, "Date_MM/YYYY": "04/2024", "Firm/Individual": "Aon UK Limited", "Amount": "£5,439,075", "Summary": "FCA fines Aon UK Limited £5.4m over aviation insurance broking collusion", "Regulator": "FCA", "Firm Category": "Insurance", "Breach Type": "Market Abuse", "Year": 2024},
+            {"No": 225, "Date_MM/YYYY": "04/2024", "Firm/Individual": "USG FX Limited (trading as OFX and UKForex)", "Amount": "£540,540", "Summary": "FCA fines USG FX £540k for financial crime control failings", "Regulator": "FCA", "Firm Category": "Corporate", "Breach Type": "Anti-Money Laundering", "Year": 2024},
+            {"No": 226, "Date_MM/YYYY": "05/2024", "Firm/Individual": "Funding Circle Limited", "Amount": "£3,216,800", "Summary": "FCA fines Funding Circle £3.2m for failing to ensure loans were affordable", "Regulator": "FCA", "Firm Category": "Corporate", "Breach Type": "Unsuitable Advice", "Year": 2024},
+            {"No": 227, "Date_MM/YYYY": "05/2024", "Firm/Individual": "Volkswagen Financial Services (UK) Limited", "Amount": "£5,382,500", "Summary": "FCA fines VW Finance £5.4m for unfair treatment of customers in financial difficulty", "Regulator": "FCA", "Firm Category": "Corporate", "Breach Type": "Unsuitable Advice", "Year": 2024},
+            {"No": 228, "Date_MM/YYYY": "05/2024", "Firm/Individual": "BNP Paribas S.A.", "Amount": "£1,808,016", "Summary": "FCA fines BNP Paribas £1.8m for transaction reporting breaches", "Regulator": "FCA", "Firm Category": "Banking", "Breach Type": "Systems and Controls Failings", "Year": 2024},
+            {"No": 229, "Date_MM/YYYY": "05/2024", "Firm/Individual": "James Alexander Staley", "Amount": "£1,800,000", "Summary": "FCA and PRA fine former Barclays CEO for misleading them about his relationship with Jeffrey Epstein", "Regulator": "FCA", "Firm Category": "Individual", "Breach Type": "Misconduct", "Year": 2024},
+            {"No": 230, "Date_MM/YYYY": "05/2024", "Firm/Individual": "Nikhil Rathi", "Amount": "£7,500", "Summary": "Bank of England fines FCA chief executive for failing to disclose interest in Revolut", "Regulator": "FCA", "Firm Category": "Individual", "Breach Type": "Other", "Year": 2024},
+            {"No": 231, "Date_MM/YYYY": "06/2024", "Firm/Individual": "OANDA Europe Markets Limited", "Amount": "£5,455,680", "Summary": "FCA fines OANDA £5.5m for incorrect reporting of £3bn of transactions", "Regulator": "FCA", "Firm Category": "Trading Firm", "Breach Type": "Systems and Controls Failings", "Year": 2024},
+            {"No": 232, "Date_MM/YYYY": "06/2024", "Firm/Individual": "Hargreaves Lansdown Asset Management Limited", "Amount": "£6,924,000", "Summary": "FCA fines Hargreaves Lansdown Asset Management £6.9m for unsuitable investment advice", "Regulator": "FCA", "Firm Category": "Asset Management", "Breach Type": "Unsuitable Advice", "Year": 2024},
+            {"No": 233, "Date_MM/YYYY": "07/2024", "Firm/Individual": "Optima Worldwide Ltd", "Amount": "£210,000", "Summary": "FCA fines Optima Worldwide £210k for failings relating to company's financial resources and information provided to the FCA", "Regulator": "FCA", "Firm Category": "Corporate", "Breach Type": "Other", "Year": 2024},
+            {"No": 234, "Date_MM/YYYY": "07/2024", "Firm/Individual": "Shilen Dinesh Patel", "Amount": "£47,200", "Summary": "FCA bans and fines former director of Optima Worldwide", "Regulator": "FCA", "Firm Category": "Individual", "Breach Type": "Other", "Year": 2024},
+            {"No": 235, "Date_MM/YYYY": "07/2024", "Firm/Individual": "NatWest Markets plc", "Amount": "£12,919,200", "Summary": "FCA fines NatWest Markets £12.9m for 549 million breaches of transaction reporting", "Regulator": "FCA", "Firm Category": "Banking", "Breach Type": "Systems and Controls Failings", "Year": 2024},
+            {"No": 236, "Date_MM/YYYY": "07/2024", "Firm/Individual": "MUFG Securities (Europe) N.V.", "Amount": "£9,960,300", "Summary": "FCA fines MUFG Securities £10m for incorrectly reporting £26.2bn of transactions", "Regulator": "FCA", "Firm Category": "Trading Firm", "Breach Type": "Systems and Controls Failings", "Year": 2024},
+            {"No": 237, "Date_MM/YYYY": "08/2024", "Firm/Individual": "Barclays Bank UK PLC", "Amount": "£40,008,500", "Summary": "FCA fines Barclays £40m for unfair treatment of retail customers", "Regulator": "FCA", "Firm Category": "Banking", "Breach Type": "Unsuitable Advice", "Year": 2024},
+            {"No": 238, "Date_MM/YYYY": "08/2024", "Firm/Individual": "Julius Baer International Limited", "Amount": "£3,005,100", "Summary": "FCA fines Julius Baer £3m for overcharging custody fees", "Regulator": "FCA", "Firm Category": "Banking", "Breach Type": "Other", "Year": 2024},
+            {"No": 239, "Date_MM/YYYY": "08/2024", "Firm/Individual": "Ardonagh Advisory Ltd", "Amount": "£5,337,600", "Summary": "FCA fines Ardonagh Advisory Ltd £5.3m over insurance broking collusion", "Regulator": "FCA", "Firm Category": "Insurance", "Breach Type": "Market Abuse", "Year": 2024},
+            {"No": 240, "Date_MM/YYYY": "09/2024", "Firm/Individual": "Basset & Gold plc", "Amount": "£2,625,000", "Summary": "FCA fines Basset & Gold plc £2.6m for mis-selling funeral plans", "Regulator": "FCA", "Firm Category": "Corporate", "Breach Type": "Unsuitable Advice", "Year": 2024},
+            {"No": 241, "Date_MM/YYYY": "09/2024", "Firm/Individual": "Bluefin Insurance Services Limited", "Amount": "£882,000", "Summary": "FCA fines Bluefin Insurance Services £882k for customer money and assets failings", "Regulator": "FCA", "Firm Category": "Insurance", "Breach Type": "Client Money Failings", "Year": 2024},
+            {"No": 242, "Date_MM/YYYY": "10/2024", "Firm/Individual": "Thomas Seiler", "Amount": "£17,500", "Summary": "FCA bans and fines former senior manager for lack of integrity", "Regulator": "FCA", "Firm Category": "Individual", "Breach Type": "Misconduct", "Year": 2024},
+            {"No": 243, "Date_MM/YYYY": "10/2024", "Firm/Individual": "Monzo Bank Limited", "Amount": "£400,000", "Summary": "FCA fines Monzo Bank £400k for failures in monitoring money laundering risks", "Regulator": "FCA", "Firm Category": "Banking", "Breach Type": "Anti-Money Laundering", "Year": 2024},
+            {"No": 244, "Date_MM/YYYY": "10/2024", "Firm/Individual": "ADM Investor Services International Limited", "Amount": "£2,331,000", "Summary": "FCA fines ADM Investor Services £2.3m for failing to manage conflicts of interest", "Regulator": "FCA", "Firm Category": "Trading Firm", "Breach Type": "Other", "Year": 2024},
+            {"No": 245, "Date_MM/YYYY": "10/2024", "Firm/Individual": "Abrdn plc", "Amount": "£600,000", "Summary": "FCA fines abrdn £600k for incorrect regulatory information", "Regulator": "FCA", "Firm Category": "Asset Management", "Breach Type": "Other", "Year": 2024},
+            {"No": 246, "Date_MM/YYYY": "10/2024", "Firm/Individual": "Willis Ltd", "Amount": "£6,901,650", "Summary": "FCA fines Willis £6.9m over aviation insurance broking collusion", "Regulator": "FCA", "Firm Category": "Insurance", "Breach Type": "Market Abuse", "Year": 2024},
+            {"No": 247, "Date_MM/YYYY": "11/2024", "Firm/Individual": "Barclays Bank plc", "Amount": "£40,000,000", "Summary": "FCA and PRA fine Barclays £40m for failures in disclosing arrangements with Qatari entities during the 2008 financial crisis", "Regulator": "FCA", "Firm Category": "Banking", "Breach Type": "Other", "Year": 2024},
+            {"No": 248, "Date_MM/YYYY": "11/2024", "Firm/Individual": "Admiral Insurance (Gibraltar) Limited", "Amount": "£648,700", "Summary": "FCA fines Admiral Insurance £649k for failing to provide good outcomes to home insurance customers", "Regulator": "FCA", "Firm Category": "Insurance", "Breach Type": "Unsuitable Advice", "Year": 2024},
+            {"No": 249, "Date_MM/YYYY": "11/2024", "Firm/Individual": "EUI Limited", "Amount": "£1,007,750", "Summary": "FCA fines EUI Ltd £1m for failing to provide good outcomes to home insurance customers", "Regulator": "FCA", "Firm Category": "Insurance", "Breach Type": "Unsuitable Advice", "Year": 2024},
+            {"No": 250, "Date_MM/YYYY": "11/2024", "Firm/Individual": "Wise Europe SA", "Amount": "£11,371,500", "Summary": "FCA fines Wise Europe £11.4m for incorrect share purchase disclosures", "Regulator": "FCA", "Firm Category": "Corporate", "Breach Type": "Other", "Year": 2024},
+            {"No": 251, "Date_MM/YYYY": "01/2024", "Firm/Individual": "Santander UK plc", "Amount": "£22,000,000", "Summary": "FCA fines Santander UK £22m for failing to protect customers from fraud", "Regulator": "FCA", "Firm Category": "Banking", "Breach Type": "Systems and Controls Failings", "Year": 2024},
+            {"No": 252, "Date_MM/YYYY": "11/2024", "Firm/Individual": "PayPal Europe Limited", "Amount": "£8,190,000", "Summary": "FCA fines PayPal Europe £8.2m for incorrectly freezing and restricting customer accounts", "Regulator": "FCA", "Firm Category": "Corporate", "Breach Type": "Unsuitable Advice", "Year": 2024},
+            {"No": 253, "Date_MM/YYYY": "12/2024", "Firm/Individual": "Interactive Brokers (U.K.) Limited", "Amount": "£3,500,000", "Summary": "FCA fines Interactive Brokers £3.5m for failings over negative oil prices in 2020", "Regulator": "FCA", "Firm Category": "Trading Firm", "Breach Type": "Systems and Controls Failings", "Year": 2024},
+            {"No": 254, "Date_MM/YYYY": "03/2024", "Firm/Individual": "J. Aron & Company LLC", "Amount": "£868,155", "Summary": "FCA fines J. Aron & Company £868k for serious failings in relation to transaction reporting", "Regulator": "FCA", "Firm Category": "Trading Firm", "Breach Type": "Systems and Controls Failings", "Year": 2024},
+            {"No": 255, "Date_MM/YYYY": "04/2015", "Firm/Individual": "The Carphone Warehouse Limited", "Amount": "£29,100,000", "Summary": "FCA fines Carphone Warehouse £29.1m for mis-selling Geek Squad and mobile phone insurance", "Regulator": "FCA", "Firm Category": "Corporate", "Breach Type": "Unsuitable Advice", "Year": 2015},
+            {"No": 256, "Date_MM/YYYY": "11/2024", "Firm/Individual": "OFX (formerly trading as UKForex)", "Amount": "£540,000", "Summary": "FCA fines OFX £540k for financial crime control failings", "Regulator": "FCA", "Firm Category": "Corporate", "Breach Type": "Anti-Money Laundering", "Year": 2024},
+            {"No": 257, "Date_MM/YYYY": "12/2018", "Firm/Individual": "ICBC Standard Bank Plc", "Amount": "£10,800,000", "Summary": "FCA fines ICBC Standard Bank £10.8m for failings in its financial crime controls", "Regulator": "FCA", "Firm Category": "Banking", "Breach Type": "Anti-Money Laundering", "Year": 2018},
+            {"No": 258, "Date_MM/YYYY": "09/2024", "Firm/Individual": "Christopher Ashford", "Amount": "£1,965,600", "Summary": "Former finance executive banned from financial services and ordered to pay £2m", "Regulator": "FCA", "Firm Category": "Individual", "Breach Type": "Misconduct", "Year": 2024},
+            {"No": 259, "Date_MM/YYYY": "05/2023", "Firm/Individual": "Edmund John Rowland", "Amount": "£7,500", "Summary": "Former CEO and Chairman banned and fined", "Regulator": "FCA", "Firm Category": "Individual", "Breach Type": "Misconduct", "Year": 2023},
+            {"No": 260, "Date_MM/YYYY": "12/2024", "Firm/Individual": "J.P. Morgan Securities plc", "Amount": "£5,063,374", "Summary": "FCA fines JP Morgan Securities £5m for failing to ensure the safe custody of client assets and money", "Regulator": "FCA", "Firm Category": "Banking", "Breach Type": "Client Money Failings", "Year": 2024},
+            {"No": 261, "Date_MM/YYYY": "10/2015", "Firm/Individual": "LCF Investment Management Ltd", "Amount": "£81,000", "Summary": "FCA fines LCF Investment Management Ltd £81,000 for providing false and misleading information", "Regulator": "FCA", "Firm Category": "Corporate", "Breach Type": "Misconduct", "Year": 2015},
+            {"No": 262, "Date_MM/YYYY": "10/2016", "Firm/Individual": "GlobalReach Group Limited", "Amount": "£27,300", "Summary": "FCA fines GlobalReach Group Limited", "Regulator": "FCA", "Firm Category": "Corporate", "Breach Type": "Regulatory Rules Breach", "Year": 2016},
+            {"No": 263, "Date_MM/YYYY": "10/2022", "Firm/Individual": "Michael Andrew Thomson", "Amount": "£81,000", "Summary": "Former LCF director banned and fined for providing false and misleading information", "Regulator": "FCA", "Firm Category": "Individual", "Breach Type": "Misconduct", "Year": 2022},
+            {"No": 264, "Date_MM/YYYY": "01/2022", "Firm/Individual": "Natixis SA", "Amount": "£7,839,100", "Summary": "FCA fines Natixis £7.83m for incorrectly reporting millions of transactions", "Regulator": "FCA", "Firm Category": "Banking", "Breach Type": "Systems and Controls Failings", "Year": 2022},
+            {"No": 265, "Date_MM/YYYY": "06/2020", "Firm/Individual": "Towergate Underwriting Group Limited", "Amount": "£315,000", "Summary": "FCA fines Towergate Underwriting Group Limited £315,000 for financial crime failings", "Regulator": "FCA", "Firm Category": "Insurance", "Breach Type": "Anti-Money Laundering", "Year": 2020},
+            {"No": 266, "Date_MM/YYYY": "12/2023", "Firm/Individual": "Marsh Limited", "Amount": "£1,893,150", "Summary": "FCA fines Marsh £1.9m over aviation insurance broking collusion", "Regulator": "FCA", "Firm Category": "Insurance", "Breach Type": "Market Abuse", "Year": 2023},
+            {"No": 267, "Date_MM/YYYY": "12/2023", "Firm/Individual": "Jardine Lloyd Thompson Limited", "Amount": "£1,580,175", "Summary": "FCA fines JLT £1.6m over aviation insurance broking collusion", "Regulator": "FCA", "Firm Category": "Insurance", "Breach Type": "Market Abuse", "Year": 2023},
+            {"No": 268, "Date_MM/YYYY": "03/2022", "Firm/Individual": "Avacade Investment Services Limited", "Amount": "£315,000", "Summary": "FCA fines Avacade £315,000 for providing misleading information", "Regulator": "FCA", "Firm Category": "Corporate", "Breach Type": "Misconduct", "Year": 2022},
+            {"No": 269, "Date_MM/YYYY": "09/2016", "Firm/Individual": "John Richard Bartlett", "Amount": "£167,800", "Summary": "Former trader banned from working in financial services for not being a fit and proper person", "Regulator": "FCA", "Firm Category": "Individual", "Breach Type": "Misconduct", "Year": 2016},
+            {"No": 270, "Date_MM/YYYY": "12/2022", "Firm/Individual": "Citigroup Global Markets Limited", "Amount": "£27,767,900", "Summary": "FCA and PRA fine Citi £27.8m for trading control failings that led to $1.4bn error", "Regulator": "FCA", "Firm Category": "Trading Firm", "Breach Type": "Systems and Controls Failings", "Year": 2022},
+            {"No": 271, "Date_MM/YYYY": "12/2024", "Firm/Individual": "H2O Asset Management LLP", "Amount": "£3,988,800", "Summary": "FCA fines H2O Asset Management £4m for serious liquidity risk management failings", "Regulator": "FCA", "Firm Category": "Asset Management", "Breach Type": "Systems and Controls Failings", "Year": 2024},
+            {"No": 272, "Date_MM/YYYY": "09/2021", "Firm/Individual": "GAM International Management Limited", "Amount": "£455,000", "Summary": "FCA censures and fines GAM International Management Limited £455,000 for failure to conduct business with due skill, care and diligence", "Regulator": "FCA", "Firm Category": "Asset Management", "Breach Type": "Systems and Controls Failings", "Year": 2021},
+            {"No": 273, "Date_MM/YYYY": "12/2024", "Firm/Individual": "EQ Investors Limited", "Amount": "£350,000", "Summary": "FCA fines EQ Investors £350k for financial crime control failings", "Regulator": "FCA", "Firm Category": "Asset Management", "Breach Type": "Anti-Money Laundering", "Year": 2024},
+            {"No": 274, "Date_MM/YYYY": "12/2024", "Firm/Individual": "Van Lanschot Kempen N.V.", "Amount": "£3,435,600", "Summary": "FCA fines Van Lanschot Kempen £3.4m for serious compliance failings", "Regulator": "FCA", "Firm Category": "Banking", "Breach Type": "Systems and Controls Failings", "Year": 2024},
+            {"No": 275, "Date_MM/YYYY": "12/2016", "Firm/Individual": "R Raphael & Sons PLC", "Amount": "£2,917,500", "Summary": "FCA fines Raphaels Bank £2.9m for serious failings in anti-money laundering systems", "Regulator": "FCA", "Firm Category": "Banking", "Breach Type": "Anti-Money Laundering", "Year": 2016},
+            {"No": 276, "Date_MM/YYYY": "12/2022", "Firm/Individual": "Avacade Future Solutions Limited", "Amount": "£315,000", "Summary": "FCA fines former trading name Avacade Investment Services Limited for providing misleading information", "Regulator": "FCA", "Firm Category": "Corporate", "Breach Type": "Misconduct", "Year": 2022},
+            {"No": 277, "Date_MM/YYYY": "10/2020", "Firm/Individual": "Aspire Underwriting Agency Ltd", "Amount": "£1,050,000", "Summary": "FCA fines Aspire £1.05m for serious failings in its oversight of delegated authority business", "Regulator": "FCA", "Firm Category": "Insurance", "Breach Type": "Systems and Controls Failings", "Year": 2020},
+            {"No": 278, "Date_MM/YYYY": "09/2023", "Firm/Individual": "Charles Howeson", "Amount": "£102,300", "Summary": "Former CFO banned and fined", "Regulator": "FCA", "Firm Category": "Individual", "Breach Type": "Misconduct", "Year": 2023},
+            {"No": 279, "Date_MM/YYYY": "05/2024", "Firm/Individual": "Astradea Limited", "Amount": "£336,000", "Summary": "FCA fines Astradea Limited for market manipulation", "Regulator": "FCA", "Firm Category": "Corporate", "Breach Type": "Market Abuse", "Year": 2024},
+            {"No": 280, "Date_MM/YYYY": "12/2024", "Firm/Individual": "Brown Shipley & Co Limited", "Amount": "£906,300", "Summary": "FCA fines Brown Shipley £906k for transaction reporting failings", "Regulator": "FCA", "Firm Category": "Banking", "Breach Type": "Systems and Controls Failings", "Year": 2024},
+            {"No": 281, "Date_MM/YYYY": "10/2024", "Firm/Individual": "Terence John Shepherd", "Amount": "£50,000", "Summary": "Former managing partner banned and fined for integrity failings", "Regulator": "FCA", "Firm Category": "Individual", "Breach Type": "Misconduct", "Year": 2024},
+            {"No": 282, "Date_MM/YYYY": "10/2016", "Firm/Individual": "Flowers", "Amount": "£315,000", "Summary": "Fined for market abuse", "Regulator": "FCA", "Firm Category": "Individual", "Breach Type": "Market Abuse", "Year": 2016},
+            {"No": 283, "Date_MM/YYYY": "12/2024", "Firm/Individual": "Interactive Investor Services Limited", "Amount": "£4,463,900", "Summary": "FCA fines Interactive Investor £4.5m for Customer Money and Assets breaches", "Regulator": "FCA", "Firm Category": "Trading Firm", "Breach Type": "Client Money Failings", "Year": 2024},
+            {"No": 284, "Date_MM/YYYY": "09/2024", "Firm/Individual": "Al Rayan Bank PLC", "Amount": "£503,576", "Summary": "FCA fines Al Rayan Bank £503k for anti-money laundering failures", "Regulator": "FCA", "Firm Category": "Banking", "Breach Type": "Anti-Money Laundering", "Year": 2024}
+        ];
+
+        // Global variables
+        let allData = [];
+        let filteredData = [];
+        let charts = {};
+        let currentPage = 1;
+        const rowsPerPage = 10;
+        let sortField = 'date';
+        let sortDirection = 'desc';
+
+        // Column mapping configuration
+        const COLUMN_MAPPINGS = {
+            date: ['Date_MM/YYYY', 'Date (MM/YYYY)', 'Date', 'Fine Date'],
+            firm: ['Firm/Individual', 'Entity', 'Company/Person', 'Name'],
+            amount: ['Amount', 'Amount (£)', 'Fine Amount', 'Penalty'],
+            summary: ['Summary', 'Description', 'Violation', 'Details'],
+            regulator: ['Regulator', 'Regulatory Body', 'Authority'],
+            category: ['Firm Category', 'Category', 'Type', 'Firm Type'],
+            breach: ['Breach Type', 'Violation Type', 'Breach Category']
+        };
+
+        // Initialize dashboard on load
+        document.addEventListener('DOMContentLoaded', function() {
+            processEmbeddedData();
+            initializeFilters();
+            applyFilters();
+        });
+
+        // Process embedded data
+        function processEmbeddedData() {
+            allData = EMBEDDED_DATA.map(record => {
+                // Parse date
+                const dateParts = record['Date_MM/YYYY'].split('/');
+                const month = parseInt(dateParts[0]);
+                const year = parseInt(dateParts[1]);
+                
+                // Parse amount
+                const amountStr = record['Amount'] || '0';
+                const amount = parseFloat(amountStr.replace(/[£,]/g, ''));
+                
+                return {
+                    date: new Date(year, month - 1, 1),
+                    year: year,
+                    month: month,
+                    firm: record['Firm/Individual'] || '',
+                    amount: amount,
+                    summary: record['Summary'] || '',
+                    regulator: record['Regulator'] || 'FCA',
+                    firmCategory: record['Firm Category'] || 'Unknown',
+                    breachType: record['Breach Type'] || 'Unknown'
+                };
+            });
+            
+            filteredData = [...allData];
+        }
+
+        // Initialize filters
+        function initializeFilters() {
+            // Populate year filter
+            const years = [...new Set(allData.map(d => d.year))].sort((a, b) => b - a);
+            const yearFilter = document.getElementById('yearFilter');
+            years.forEach(year => {
+                const option = document.createElement('option');
+                option.value = year;
+                option.textContent = year;
+                yearFilter.appendChild(option);
+            });
+            
+            // Populate category filter
+            const categories = [...new Set(allData.map(d => d.firmCategory))].sort();
+            const categoryFilter = document.getElementById('categoryFilter');
+            categories.forEach(category => {
+                const option = document.createElement('option');
+                option.value = category;
+                option.textContent = category;
+                categoryFilter.appendChild(option);
+            });
+            
+            // Populate breach type filter
+            const breachTypes = [...new Set(allData.map(d => d.breachType))].sort();
+            const breachFilter = document.getElementById('breachFilter');
+            breachTypes.forEach(breach => {
+                const option = document.createElement('option');
+                option.value = breach;
+                option.textContent = breach;
+                breachFilter.appendChild(option);
+            });
+            
+            // Add event listener for search input
+            document.getElementById('searchFilter').addEventListener('input', debounce(applyFilters, 300));
+        }
+
+        // Apply filters
+        function applyFilters() {
+            const yearFilter = document.getElementById('yearFilter');
+            const selectedYears = Array.from(yearFilter.selectedOptions)
+                .map(option => option.value)
+                .filter(value => value !== '');
+            
+            const categoryFilter = document.getElementById('categoryFilter').value;
+            const breachFilter = document.getElementById('breachFilter').value;
+            const searchFilter = document.getElementById('searchFilter').value.toLowerCase();
+            
+            filteredData = allData.filter(row => {
+                // Year filter (multi-select)
+                if (selectedYears.length > 0 && !selectedYears.includes(row.year.toString())) {
+                    return false;
+                }
+                
+                // Category filter
+                if (categoryFilter && row.firmCategory !== categoryFilter) {
+                    return false;
+                }
+                
+                // Breach type filter
+                if (breachFilter && row.breachType !== breachFilter) {
+                    return false;
+                }
+                
+                // Search filter
+                if (searchFilter && 
+                    !row.firm.toLowerCase().includes(searchFilter) && 
+                    !row.summary.toLowerCase().includes(searchFilter)) {
+                    return false;
+                }
+                
+                return true;
+            });
+            
+            // Update active filter count
+            let activeFilters = 0;
+            if (selectedYears.length > 0) activeFilters++;
+            if (categoryFilter) activeFilters++;
+            if (breachFilter) activeFilters++;
+            if (searchFilter) activeFilters++;
+            
+            document.getElementById('activeFilters').textContent = `${activeFilters} active filter${activeFilters !== 1 ? 's' : ''}`;
+            
+            currentPage = 1;
+            updateDashboard();
+        }
+
+        // Reset filters
+        function resetFilters() {
+            document.getElementById('yearFilter').selectedIndex = -1;
+            document.getElementById('categoryFilter').value = '';
+            document.getElementById('breachFilter').value = '';
+            document.getElementById('searchFilter').value = '';
+            applyFilters();
+        }
+
+        // Update dashboard
+        function updateDashboard() {
+            updateSummaryCards();
+            updateInsights();
+            updateDeeperInsights();
+            updateCharts();
+            updateTable();
+        }
+
+        // Update summary cards
+        function updateSummaryCards() {
+            const totalAmount = filteredData.reduce((sum, d) => sum + d.amount, 0);
+            const totalCount = filteredData.length;
+            const averageAmount = totalCount > 0 ? totalAmount / totalCount : 0;
+            
+            let largestFine = { amount: 0, firm: '' };
+            filteredData.forEach(d => {
+                if (d.amount > largestFine.amount) {
+                    largestFine = { amount: d.amount, firm: d.firm };
+                }
+            });
+            
+            document.getElementById('totalAmount').textContent = formatAmount(totalAmount);
+            document.getElementById('totalCount').textContent = totalCount.toLocaleString();
+            document.getElementById('averageFine').textContent = formatAmount(averageAmount);
+            document.getElementById('largestFine').textContent = formatAmount(largestFine.amount);
+            document.getElementById('largestFineEntity').textContent = largestFine.firm || '-';
+        }
+
+        // Update insights
+        function updateInsights() {
+            const insightsGrid = document.getElementById('insightsGrid');
+            insightsGrid.innerHTML = '';
+            
+            // Top category by fine amount
+            const categoryTotals = {};
+            filteredData.forEach(d => {
+                categoryTotals[d.firmCategory] = (categoryTotals[d.firmCategory] || 0) + d.amount;
+            });
+            const topCategory = Object.entries(categoryTotals)
+                .sort((a, b) => b[1] - a[1])[0];
+            
+            // Most common breach type
+            const breachCounts = {};
+            filteredData.forEach(d => {
+                breachCounts[d.breachType] = (breachCounts[d.breachType] || 0) + 1;
+            });
+            const topBreach = Object.entries(breachCounts)
+                .sort((a, b) => b[1] - a[1])[0];
+            
+            // Large penalties
+            const largePenalties = filteredData.filter(d => d.amount > 10000000).length;
+            
+            // Calculate additional insight - Individuals vs Firms
+            const individualFines = filteredData.filter(d => d.firmCategory === 'Individual').length;
+            const totalFines = filteredData.length;
+            const individualPercentage = totalFines > 0 ? ((individualFines / totalFines) * 100).toFixed(1) : 0;
+            
+            // Create insight cards
+            if (topCategory) {
+                insightsGrid.innerHTML += `
+                    <div class="insight-card">
+                        <div class="insight-title">Top Category</div>
+                        <div class="insight-value">${topCategory[0]} accounts for ${formatAmount(topCategory[1])} in fines</div>
+                    </div>
+                `;
+            }
+            
+            if (topBreach) {
+                insightsGrid.innerHTML += `
+                    <div class="insight-card">
+                        <div class="insight-title">Most Common Breach</div>
+                        <div class="insight-value">${topBreach[0]} with ${topBreach[1]} occurrences</div>
+                    </div>
+                `;
+            }
+            
+            insightsGrid.innerHTML += `
+                <div class="insight-card">
+                    <div class="insight-title">Large Penalties</div>
+                    <div class="insight-value">${largePenalties} fines exceeding £10 million</div>
+                </div>
+            `;
+            
+            insightsGrid.innerHTML += `
+                <div class="insight-card">
+                    <div class="insight-title">Individual vs Corporate</div>
+                    <div class="insight-value">${individualPercentage}% of fines are against individuals (${individualFines} of ${totalFines})</div>
+                </div>
+            `;
+        }
+
+        // Update deeper insights
+        function updateDeeperInsights() {
+            const deeperInsightsGrid = document.getElementById('deeperInsightsGrid');
+            deeperInsightsGrid.innerHTML = '';
+            
+            // 1. Most Frequently Fined Entities (with click-through)
+            const entityCounts = {};
+            const entityTotals = {};
+            filteredData.forEach(d => {
+                entityCounts[d.firm] = (entityCounts[d.firm] || 0) + 1;
+                entityTotals[d.firm] = (entityTotals[d.firm] || 0) + d.amount;
+            });
+            
+            const topEntities = Object.entries(entityCounts)
+                .filter(([_, count]) => count > 1)
+                .sort((a, b) => b[1] - a[1])
+                .slice(0, 10);
+            
+            const repeatOffendersHTML = `
+                <div class="deep-insight-card">
+                    <div class="deep-insight-title">
+                        <span class="icon-repeat">🔁</span> Most Frequently Fined Entities
+                    </div>
+                    <div class="deep-insight-content">
+                        ${topEntities.length > 0 ? `
+                            <div class="entity-list">
+                                ${topEntities.map(([firm, count]) => `
+                                    <div class="entity-item" onclick="filterByEntity('${firm.replace(/'/g, "\\'")}')">
+                                        <span class="entity-name">${firm}</span>
+                                        <div style="text-align: right;">
+                                            <span class="entity-count">${count} fines</span>
+                                            <div style="font-size: 0.85rem; color: #6c757d; margin-top: 0.25rem;">
+                                                Total: ${formatAmount(entityTotals[firm])}
+                                            </div>
+                                        </div>
+                                    </div>
+                                `).join('')}
+                            </div>
+                            <div style="margin-top: 1rem; font-size: 0.85rem; color: #6c757d; text-align: center;">
+                                Click on any entity to filter by that firm
+                            </div>
+                        ` : '<p>No entities with multiple fines in current filter</p>'}
+                    </div>
+                </div>
+            `;
+            
+            // 2. Median vs Average Analysis
+            const amounts = filteredData.map(d => d.amount).sort((a, b) => a - b);
+            const median = amounts.length > 0 ? 
+                (amounts.length % 2 === 0 ? 
+                    (amounts[amounts.length / 2 - 1] + amounts[amounts.length / 2]) / 2 : 
+                    amounts[Math.floor(amounts.length / 2)]) : 0;
+            const average = amounts.length > 0 ? 
+                amounts.reduce((sum, a) => sum + a, 0) / amounts.length : 0;
+            
+            const medianVsAvgHTML = `
+                <div class="deep-insight-card">
+                    <div class="deep-insight-title">
+                        <span class="icon-stats">📊</span> Median vs Average Analysis
+                    </div>
+                    <div class="deep-insight-content">
+                        <div style="display: flex; justify-content: space-around; margin-bottom: 1rem;">
+                            <div style="text-align: center;">
+                                <div style="font-size: 0.9rem; color: #6c757d;">Median Fine</div>
+                                <div class="metric-value" style="color: #00a8e8; font-size: 1.5rem;">${formatAmount(median)}</div>
+                            </div>
+                            <div style="text-align: center;">
+                                <div style="font-size: 0.9rem; color: #6c757d;">Average Fine</div>
+                                <div class="metric-value" style="color: #007ea7; font-size: 1.5rem;">${formatAmount(average)}</div>
+                            </div>
+                        </div>
+                        <div class="metric-comparison">
+                            ${median < average ? 
+                                'The median is significantly lower than the average, indicating that large fines are skewing the average upward.' :
+                                'The median and average are relatively close, suggesting a more even distribution of fine amounts.'
+                            }
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            // 3. Largest Fine per Year (with scroll)
+            const largestPerYear = {};
+            filteredData.forEach(d => {
+                if (!largestPerYear[d.year] || d.amount > largestPerYear[d.year].amount) {
+                    largestPerYear[d.year] = { amount: d.amount, firm: d.firm };
+                }
+            });
+            
+            const sortedYears = Object.keys(largestPerYear).sort((a, b) => b - a);
+            
+            const largestPerYearHTML = `
+                <div class="deep-insight-card">
+                    <div class="deep-insight-title">
+                        <span class="icon-crown">👑</span> Largest Fine per Year
+                    </div>
+                    <div class="deep-insight-content">
+                        <div class="entity-list entity-scrollable">
+                            ${sortedYears.map(year => `
+                                <div class="entity-item">
+                                    <div>
+                                        <strong>${year}</strong><br>
+                                        <span style="font-size: 0.9rem; color: #6c757d;">${largestPerYear[year].firm}</span>
+                                    </div>
+                                    <span class="entity-count" style="background: #e74c3c;">${formatAmount(largestPerYear[year].amount)}</span>
+                                </div>
+                            `).join('')}
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            // 4. Distribution by Firm Category
+            const categoryBreakdown = {};
+            let totalAmount = 0;
+            filteredData.forEach(d => {
+                categoryBreakdown[d.firmCategory] = (categoryBreakdown[d.firmCategory] || { count: 0, amount: 0 });
+                categoryBreakdown[d.firmCategory].count++;
+                categoryBreakdown[d.firmCategory].amount += d.amount;
+                totalAmount += d.amount;
+            });
+            
+            const sortedCategories = Object.entries(categoryBreakdown)
+                .sort((a, b) => b[1].amount - a[1].amount);
+            
+            const categoryDistributionHTML = `
+                <div class="deep-insight-card">
+                    <div class="deep-insight-title">
+                        <span class="icon-pie">🥧</span> Distribution by Firm Category
+                    </div>
+                    <div class="deep-insight-content">
+                        <div class="entity-list">
+                            ${sortedCategories.map(([category, data]) => {
+                                const percentage = totalAmount > 0 ? ((data.amount / totalAmount) * 100).toFixed(1) : 0;
+                                return `
+                                    <div class="entity-item">
+                                        <div>
+                                            <strong>${category}</strong><br>
+                                            <span style="font-size: 0.85rem; color: #6c757d;">${data.count} fines</span>
+                                        </div>
+                                        <div style="text-align: right;">
+                                            <div style="font-weight: 600; color: #007ea7;">${percentage}%</div>
+                                            <div style="font-size: 0.85rem; color: #6c757d;">${formatAmount(data.amount)}</div>
+                                        </div>
+                                    </div>
+                                `;
+                            }).join('')}
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            // Add all insights to the grid
+            deeperInsightsGrid.innerHTML = repeatOffendersHTML + medianVsAvgHTML + largestPerYearHTML + categoryDistributionHTML;
+        }
+        
+        // Filter by entity function
+        function filterByEntity(entityName) {
+            document.getElementById('searchFilter').value = entityName;
+            applyFilters();
+            
+            // Scroll to top of page
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+        function updateCharts() {
+            updateTrendsChart();
+            updateCategoriesChart();
+            updateDistributionChart();
+            updateBreachTypesChart();
+        }
+
+        // Update year-over-year trends chart
+        function updateTrendsChart() {
+            const yearData = {};
+            filteredData.forEach(d => {
+                if (!yearData[d.year]) {
+                    yearData[d.year] = { amount: 0, count: 0 };
+                }
+                yearData[d.year].amount += d.amount;
+                yearData[d.year].count += 1;
+            });
+            
+            const years = Object.keys(yearData).sort();
+            const amounts = years.map(y => yearData[y].amount);
+            const counts = years.map(y => yearData[y].count);
+            
+            const ctx = document.getElementById('trendsChart').getContext('2d');
+            
+            if (charts.trends) {
+                charts.trends.destroy();
+            }
+            
+            charts.trends = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: years,
+                    datasets: [{
+                        label: 'Total Fine Amount (£)',
+                        data: amounts,
+                        backgroundColor: '#007ea7',
+                        yAxisID: 'y-amount',
+                        order: 2
+                    }, {
+                        label: 'Number of Fines',
+                        data: counts,
+                        type: 'line',
+                        borderColor: '#e74c3c',
+                        backgroundColor: 'transparent',
+                        yAxisID: 'y-count',
+                        order: 1,
+                        tension: 0.3
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    if (context.dataset.label.includes('Amount')) {
+                                        return context.dataset.label + ': ' + formatAmount(context.parsed.y);
+                                    }
+                                    return context.dataset.label + ': ' + context.parsed.y;
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        'y-amount': {
+                            type: 'linear',
+                            position: 'left',
+                            ticks: {
+                                callback: function(value) {
+                                    return formatAmount(value);
+                                }
+                            }
+                        },
+                        'y-count': {
+                            type: 'linear',
+                            position: 'right',
+                            grid: {
+                                drawOnChartArea: false
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        // Update categories chart
+        function updateCategoriesChart() {
+            const categoryTotals = {};
+            filteredData.forEach(d => {
+                categoryTotals[d.firmCategory] = (categoryTotals[d.firmCategory] || 0) + d.amount;
+            });
+            
+            const sortedCategories = Object.entries(categoryTotals)
+                .sort((a, b) => b[1] - a[1])
+                .slice(0, 7);
+            
+            const otherTotal = Object.entries(categoryTotals)
+                .slice(7)
+                .reduce((sum, [_, amount]) => sum + amount, 0);
+            
+            if (otherTotal > 0) {
+                sortedCategories.push(['Others', otherTotal]);
+            }
+            
+            const ctx = document.getElementById('categoriesChart').getContext('2d');
+            
+            if (charts.categories) {
+                charts.categories.destroy();
+            }
+            
+            charts.categories = new Chart(ctx, {
+                type: 'pie',
+                data: {
+                    labels: sortedCategories.map(c => c[0]),
+                    datasets: [{
+                        data: sortedCategories.map(c => c[1]),
+                        backgroundColor: [
+                            '#003e5a', '#007ea7', '#00a8e8', '#2ecc71',
+                            '#f39c12', '#e74c3c', '#9b59b6', '#95a5a6'
+                        ]
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    const total = context.dataset.data.reduce((sum, val) => sum + val, 0);
+                                    const percentage = ((context.parsed / total) * 100).toFixed(1);
+                                    return context.label + ': ' + formatAmount(context.parsed) + ' (' + percentage + '%)';
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        // Update distribution chart
+        function updateDistributionChart() {
+            const ranges = {
+                'Under £1M': 0,
+                '£1M-£10M': 0,
+                '£10M-£100M': 0,
+                'Over £100M': 0
+            };
+            
+            filteredData.forEach(d => {
+                if (d.amount < 1000000) {
+                    ranges['Under £1M']++;
+                } else if (d.amount < 10000000) {
+                    ranges['£1M-£10M']++;
+                } else if (d.amount < 100000000) {
+                    ranges['£10M-£100M']++;
+                } else {
+                    ranges['Over £100M']++;
+                }
+            });
+            
+            const ctx = document.getElementById('distributionChart').getContext('2d');
+            
+            if (charts.distribution) {
+                charts.distribution.destroy();
+            }
+            
+            charts.distribution = new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: Object.keys(ranges),
+                    datasets: [{
+                        data: Object.values(ranges),
+                        backgroundColor: ['#3498db', '#2ecc71', '#f39c12', '#e74c3c']
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    return context.label + ': ' + context.parsed + ' fines';
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        // Update breach types chart
+        function updateBreachTypesChart() {
+            const breachTotals = {};
+            filteredData.forEach(d => {
+                breachTotals[d.breachType] = (breachTotals[d.breachType] || 0) + d.amount;
+            });
+            
+            const topBreaches = Object.entries(breachTotals)
+                .sort((a, b) => b[1] - a[1])
+                .slice(0, 10);
+            
+            const ctx = document.getElementById('breachTypesChart').getContext('2d');
+            
+            if (charts.breaches) {
+                charts.breaches.destroy();
+            }
+            
+            charts.breaches = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: topBreaches.map(b => truncateLabel(b[0], 30)),
+                    datasets: [{
+                        data: topBreaches.map(b => b[1]),
+                        backgroundColor: topBreaches.map(b => getBreachTypeColor(b[0]))
+                    }]
+                },
+                options: {
+                    indexAxis: 'y',
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: false
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    return formatAmount(context.parsed.x);
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        x: {
+                            ticks: {
+                                callback: function(value) {
+                                    return formatAmount(value);
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        // Update table
+        function updateTable() {
+            const tbody = document.getElementById('tableBody');
+            tbody.innerHTML = '';
+            
+            // Sort data
+            const sortedData = [...filteredData].sort((a, b) => {
+                let aVal, bVal;
+                
+                switch (sortField) {
+                    case 'date':
+                        aVal = a.date;
+                        bVal = b.date;
+                        break;
+                    case 'firm':
+                        aVal = a.firm.toLowerCase();
+                        bVal = b.firm.toLowerCase();
+                        break;
+                    case 'amount':
+                        aVal = a.amount;
+                        bVal = b.amount;
+                        break;
+                    case 'category':
+                        aVal = a.firmCategory.toLowerCase();
+                        bVal = b.firmCategory.toLowerCase();
+                        break;
+                    case 'breach':
+                        aVal = a.breachType.toLowerCase();
+                        bVal = b.breachType.toLowerCase();
+                        break;
+                }
+                
+                if (sortDirection === 'asc') {
+                    return aVal > bVal ? 1 : -1;
+                } else {
+                    return aVal < bVal ? 1 : -1;
+                }
+            });
+            
+            // Paginate
+            const startIndex = (currentPage - 1) * rowsPerPage;
+            const endIndex = startIndex + rowsPerPage;
+            const pageData = sortedData.slice(startIndex, endIndex);
+            
+            // Render rows
+            pageData.forEach(row => {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td>${formatDate(row.date)}</td>
+                    <td>${row.firm}</td>
+                    <td>£${formatNumber(row.amount)}</td>
+                    <td><span class="badge badge-category" style="background-color: ${getCategoryColour(row.firmCategory)}20; color: ${getCategoryColour(row.firmCategory)}">${row.firmCategory}</span></td>
+                    <td><span class="badge badge-breach">${row.breachType}</span></td>
+                `;
+                tbody.appendChild(tr);
+            });
+            
+            // Update pagination
+            updatePagination(sortedData.length);
+        }
+
+        // Update pagination
+        function updatePagination(totalRows) {
+            const totalPages = Math.ceil(totalRows / rowsPerPage);
+            const pagination = document.getElementById('pagination');
+            
+            pagination.innerHTML = `
+                <button onclick="changePage(${currentPage - 1})" ${currentPage === 1 ? 'disabled' : ''}>Previous</button>
+                <span class="page-info">Page ${currentPage} of ${totalPages}</span>
+                <button onclick="changePage(${currentPage + 1})" ${currentPage === totalPages ? 'disabled' : ''}>Next</button>
+            `;
+        }
+
+        // Sort table
+        function sortTable(field) {
+            if (sortField === field) {
+                sortDirection = sortDirection === 'asc' ? 'desc' : 'asc';
+            } else {
+                sortField = field;
+                sortDirection = 'desc';
+            }
+            updateTable();
+        }
+
+        // Change page
+        function changePage(page) {
+            const totalPages = Math.ceil(filteredData.length / rowsPerPage);
+            if (page >= 1 && page <= totalPages) {
+                currentPage = page;
+                updateTable();
+            }
+        }
+
+        // Export data
+        function exportData() {
+            let csv = 'Date,Firm/Individual,Amount,Category,Breach Type,Summary\n';
+            
+            filteredData.forEach(row => {
+                csv += `"${formatDate(row.date)}","${row.firm}","£${formatNumber(row.amount)}",`;
+                csv += `"${row.firmCategory}","${row.breachType}","${row.summary.replace(/"/g, '""')}"\n`;
+            });
+            
+            const blob = new Blob([csv], { type: 'text/csv' });
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `fca_fines_export_${new Date().toISOString().split('T')[0]}.csv`;
+            a.click();
+            window.URL.revokeObjectURL(url);
+        }
+
+        // Utility functions
+        function formatAmount(amount) {
+            if (amount >= 1000000000) {
+                return '£' + (amount / 1000000000).toFixed(2) + 'B';
+            } else if (amount >= 1000000) {
+                return '£' + (amount / 1000000).toFixed(2) + 'M';
+            } else if (amount >= 1000) {
+                return '£' + (amount / 1000).toFixed(0) + 'K';
+            }
+            return '£' + amount.toFixed(0);
+        }
+
+        function formatNumber(num) {
+            return num.toLocaleString('en-GB');
+        }
+
+        function formatDate(date) {
+            const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+            return months[date.getMonth()] + ' ' + date.getFullYear();
+        }
+
+        function truncateLabel(label, maxLength) {
+            return label.length > maxLength ? label.substring(0, maxLength) + '...' : label;
+        }
+
+        function getCategoryColour(category) {
+            const colours = {
+                'Banking': '#003e5a',
+                'Individual': '#007ea7',
+                'Corporate': '#00a8e8',
+                'Asset Management': '#2ecc71',
+                'Trading Firm': '#f39c12',
+                'Insurance': '#e74c3c',
+                'Financial Planning': '#9b59b6'
+            };
+            
+            return colours[category] || '#95a5a6';
+        }
+
+        function getBreachTypeColor(breachType) {
+            const colors = [
+                '#e74c3c', '#3498db', '#2ecc71', '#f39c12', '#9b59b6',
+                '#1abc9c', '#e67e22', '#16a085', '#d35400', '#2980b9'
+            ];
+            
+            let hash = 0;
+            for (let i = 0; i < breachType.length; i++) {
+                hash = ((hash << 5) - hash) + breachType.charCodeAt(i);
+                hash = hash & hash;
+            }
+            
+            return colors[Math.abs(hash) % colors.length];
+        }
+
+        function debounce(func, wait) {
+            let timeout;
+            return function executedFunction(...args) {
+                const later = () => {
+                    clearTimeout(timeout);
+                    func(...args);
+                };
+                clearTimeout(timeout);
+                timeout = setTimeout(later, wait);
+            };
+        }
+    </script>
+</body>
+</html>
