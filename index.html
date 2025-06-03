@@ -45,6 +45,30 @@
             font-size: 0.9rem;
             opacity: 0.8;
         }
+        /* Logo Styles */
+.header-logo {
+    margin-bottom: 1rem;
+}
+
+.logo {
+    height: 60px;
+    width: auto;
+    filter: brightness(0) invert(1); /* Makes logo white for dark header */
+    transition: transform 0.3s ease;
+}
+
+.logo:hover {
+    transform: scale(1.05);
+}
+
+/* Alternative: Keep original logo colours */
+.logo-original {
+    height: 60px;
+    width: auto;
+    background: white;
+    padding: 0.5rem;
+    border-radius: 8px;
+}
 
         /* Container */
         .container {
@@ -692,10 +716,13 @@
 <body>
     <!-- Header -->
     <header class="header">
-        <h1>FCA Fines Analysis Dashboard</h1>
-        <p>Comprehensive analysis of regulatory enforcement actions from 2013-2024</p>
-        <div class="branding">Powered by MEMA Consultants | www.memaconsultants.com</div>
-    </header>
+    <div class="header-logo">
+        <img src="mema-logo.png" alt="MEMA Consultants" class="logo">
+    </div>
+    <h1>FCA Fines Analysis Dashboard</h1>
+    <p>Analysis of regulatory enforcement actions from 2013-2024</p>
+    <div class="branding">www.memaconsultants.com</div>
+</header>
 
     <!-- Main Container -->
     <div class="container">
