@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="en-GB">
 <head>
@@ -47,36 +46,22 @@
             opacity: 0.8;
         }
         /* Logo Styles */
-.header-logo {
-        text-align: center;
-}
+        .header-logo {
+            text-align: center;
+            margin-bottom: 1rem; /* Added for better spacing */
+        }
 
-.logo {
-    height: 50px;
-    width: auto;
-    max-width: 200px;
-    /* Maintains original logo colours for professional appearance */
-}
+        .logo {
+            height: 60px;
+            width: auto;
+            max-width: 200px;
+            transition: transform 0.3s ease;
+            /* Removed the 'filter' property that was causing the issue */
+        }
 
-.logo {
-    height: 60px;
-    width: auto;
-    filter: brightness(0) invert(1); /* Makes logo white for dark header */
-    transition: transform 0.3s ease;
-}
-
-.logo:hover {
-    transform: scale(1.05);
-}
-
-/* Alternative: Keep original logo colours */
-.logo-original {
-    height: 60px;
-    width: auto;
-    background: white;
-    padding: 0.5rem;
-    border-radius: 8px;
-}
+        .logo:hover {
+            transform: scale(1.05);
+        }
 
         /* Container */
         .container {
@@ -672,57 +657,55 @@
             }
         }
 
-     /* Loading Spinner */
-.loading {
-    display: none;
-    position: fixed;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    background: white;
-    padding: 2rem;
-    border-radius: 12px;
-    box-shadow: 0 4px 20px rgba(0,0,0,0.15);
-    text-align: center;
-    z-index: 1000;
-}
+       /* Loading Spinner */
+    .loading {
+        display: none;
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        background: white;
+        padding: 2rem;
+        border-radius: 12px;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+        text-align: center;
+        z-index: 1000;
+    }
 
-.loading::before {
-    content: '';
-    display: inline-block;
-    width: 40px;
-    height: 40px;
-    border: 4px solid #f3f3f3;
-    border-top: 4px solid #007ea7;
-    border-radius: 50%;
-    animation: spin 1s linear infinite;
-    margin-bottom: 1rem;
-}
+    .loading::before {
+        content: '';
+        display: inline-block;
+        width: 40px;
+        height: 40px;
+        border: 4px solid #f3f3f3;
+        border-top: 4px solid #007ea7;
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+        margin-bottom: 1rem;
+    }
 
-@keyframes spin {
-    0% { transform: rotate(0deg); }
-    100% { transform: rotate(360deg); }
-}
+    @keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+    }
 
-.loading-overlay {
-    display: none;
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: rgba(0,0,0,0.3);
-    z-index: 999;
-}  
-<!-- Vercel Analytics -->
-<script>
-  window.va = window.va || function () { (window.vaq = window.vaq || []).push(arguments); };
-</script>
-<script defer src="/_vercel/insights/script.js"></script> 
+    .loading-overlay {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0,0,0,0.3);
+        z-index: 999;
+    }  
+    <script>
+      window.va = window.va || function () { (window.vaq = window.vaq || []).push(arguments); };
+    </script>
+    <script defer src="/_vercel/insights/script.js"></script>  
     </style>
 </head>
 <body>
-    <!-- Header -->
     <header class="header">
     <div class="header-logo">
         <img src="mema-logo.png" alt="MEMA Consultants" class="logo">
@@ -732,9 +715,7 @@
     <div class="branding">www.memaconsultants.com</div>
 </header>
 
-    <!-- Main Container -->
     <div class="container">
-        <!-- Summary Cards -->
         <div class="summary-cards">
             <div class="card">
                 <div class="card-label">TOTAL FINE AMOUNT</div>
@@ -758,7 +739,6 @@
             </div>
         </div>
 
-        <!-- Filters Section -->
         <div class="filters-section">
             <div class="filters-header">
                 <h2 class="filters-title">🔍 Filter Data</h2>
@@ -800,23 +780,18 @@
             </div>
         </div>
 
-        <!-- Insights Section -->
         <div class="insights-section">
             <h2 class="insights-header">💡 Key Insights</h2>
             <div class="insights-grid" id="insightsGrid">
-                <!-- Insights will be dynamically generated -->
-            </div>
+                </div>
         </div>
 
-        <!-- Deeper Insights Section -->
         <div class="deeper-insights-section">
             <h2 class="deeper-insights-header">🔍 Deeper Analysis</h2>
             <div class="deeper-insights-grid" id="deeperInsightsGrid">
-                <!-- Deeper insights will be dynamically generated -->
-            </div>
+                </div>
         </div>
 
-        <!-- Charts Grid -->
         <div class="charts-grid">
             <div class="chart-container">
                 <h3 class="chart-title">Year-over-Year Trends</h3>
@@ -847,7 +822,6 @@
             </div>
         </div>
 
-        <!-- Data Table -->
         <div class="table-section">
             <div class="table-header">
                 <h2 class="table-title">📋 Fine Details</h2>
@@ -864,18 +838,15 @@
                         </tr>
                     </thead>
                     <tbody id="tableBody">
-                        <!-- Table rows will be dynamically generated -->
-                    </tbody>
+                        </tbody>
                 </table>
             </div>
             
             <div class="pagination" id="pagination">
-                <!-- Pagination controls will be dynamically generated -->
-            </div>
+                </div>
         </div>
     </div>
 
-<!-- Loading Indicator -->
 <div class="loading-overlay" id="loadingOverlay"></div>
 <div class="loading" id="loading">
     <div>Loading FCA Fines Data...</div>
