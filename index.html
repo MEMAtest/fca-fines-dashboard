@@ -1,1729 +1,1758 @@
+FCA FINES WORKING CODE- 23 JUNE 
+
 <!DOCTYPE html>
 <html lang="en-GB">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>FCA Fines Analysis Dashboard</title>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FCA Fines Analysis Dashboard</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
 
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif;
-            background-color: #f5f7fa;
-            color: #333;
-            line-height: 1.6;
-        }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif;
+            background-color: #f5f7fa;
+            color: #333;
+            line-height: 1.6;
+        }
 
-        /* Header Styles */
-        .header {
-            background: linear-gradient(135deg, #003e5a 0%, #007ea7 100%);
-            color: white;
-            padding: 2rem;
-            text-align: center;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-        }
+        /* Header Styles */
+        .header {
+            background: linear-gradient(135deg, #003e5a 0%, #007ea7 100%);
+            color: white;
+            padding: 2rem;
+            text-align: center;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
 
-        .header h1 {
-            font-size: 2.5rem;
-            margin-bottom: 0.5rem;
-            font-weight: 700;
-        }
+        .header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 0.5rem;
+            font-weight: 700;
+        }
 
-        .header p {
-            font-size: 1.1rem;
-            opacity: 0.9;
-        }
+        .header p {
+            font-size: 1.1rem;
+            opacity: 0.9;
+        }
 
-        .branding {
-            margin-top: 1rem;
-            font-size: 0.9rem;
-            opacity: 0.8;
-        }
-        /* Logo Styles */
+        .branding {
+            margin-top: 1rem;
+            font-size: 0.9rem;
+            opacity: 0.8;
+        }
+        /* Logo Styles */
 .header-logo {
-        text-align: center;
+        text-align: center;
 }
 
 .logo {
-    height: 50px;
-    width: auto;
-    max-width: 200px;
-    /* Maintains original logo colours for professional appearance */
+    height: 50px;
+    width: auto;
+    max-width: 200px;
+    /* Maintains original logo colours for professional appearance */
 }
 
 .logo {
-    height: 60px;
-    width: auto;
-    filter: brightness(0) invert(1); /* Makes logo white for dark header */
-    transition: transform 0.3s ease;
+    height: 60px;
+    width: auto;
+    filter: brightness(0) invert(1); /* Makes logo white for dark header */
+    transition: transform 0.3s ease;
 }
 
 .logo:hover {
-    transform: scale(1.05);
+    transform: scale(1.05);
 }
 
 /* Alternative: Keep original logo colours */
 .logo-original {
-    height: 60px;
-    width: auto;
-    background: white;
-    padding: 0.5rem;
-    border-radius: 8px;
+    height: 60px;
+    width: auto;
+    background: white;
+    padding: 0.5rem;
+    border-radius: 8px;
 }
 
-        /* Container */
-        .container {
-            max-width: 1400px;
-            margin: 0 auto;
-            padding: 2rem;
-        }
-
-        /* Summary Cards */
-        .summary-cards {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 1.5rem;
-            margin-bottom: 2rem;
-        }
-
-        .card {
-            background: white;
-            padding: 1.5rem;
-            border-radius: 12px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.08);
-            transition: transform 0.2s, box-shadow 0.2s;
-            border-left: 4px solid #007ea7;
-            position: relative;
-            overflow: hidden;
-        }
-
-        .card::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            height: 4px;
-            background: linear-gradient(90deg, #003e5a, #007ea7, #00a8e8);
-            animation: shimmer 3s ease-in-out infinite;
-        }
-
-        @keyframes shimmer {
-            0% { transform: translateX(-100%); }
-            100% { transform: translateX(100%); }
-        }
-
-        .card:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 4px 20px rgba(0,0,0,0.12);
-        }
-
-        .card:nth-child(1) { border-left-color: #003e5a; }
-        .card:nth-child(2) { border-left-color: #007ea7; }
-        .card:nth-child(3) { border-left-color: #00a8e8; }
-        .card:nth-child(4) { border-left-color: #2ecc71; }
-
-        .card-label {
-            font-size: 0.85rem;
-            color: #666;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-            margin-bottom: 0.5rem;
-        }
-
-        .card-value {
-            font-size: 2rem;
-            font-weight: 700;
-            color: #003e5a;
-            margin-bottom: 0.25rem;
-        }
-
-        .card-subtitle {
-            font-size: 0.9rem;
-            color: #777;
-        }
-
-        /* Filters Section */
-        .filters-section {
-            background: white;
-            padding: 2rem;
-            border-radius: 12px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.08);
-            margin-bottom: 2rem;
-        }
-
-        .filters-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 1.5rem;
-        }
-
-        .filters-title {
-            font-size: 1.5rem;
-            color: #003e5a;
-            font-weight: 600;
-        }
-
-        .filter-count {
-            background: #00a8e8;
-            color: white;
-            padding: 0.25rem 0.75rem;
-            border-radius: 20px;
-            font-size: 0.85rem;
-        }
-
-        .filters-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 1.5rem;
-            margin-bottom: 1.5rem;
-        }
-
-        .filter-group label {
-            display: block;
-            margin-bottom: 0.5rem;
-            font-weight: 500;
-            color: #555;
-        }
-
-        .filter-group select,
-        .filter-group input {
-            width: 100%;
-            padding: 0.75rem;
-            border: 2px solid #e0e6ed;
-            border-radius: 8px;
-            font-size: 1rem;
-            transition: border-color 0.2s;
-        }
-
-        .filter-group select:focus,
-        .filter-group input:focus {
-            outline: none;
-            border-color: #007ea7;
-        }
-
-        .multi-select {
-            min-height: 120px;
-            padding: 0.5rem;
-        }
-
-        .multi-select option {
-            padding: 0.25rem 0.5rem;
-            margin: 2px 0;
-        }
-
-        .multi-select option:checked {
-            background: #007ea7;
-            color: white;
-        }
-
-        .filter-actions {
-            display: flex;
-            gap: 1rem;
-            flex-wrap: wrap;
-        }
-
-        .btn {
-            padding: 0.75rem 1.5rem;
-            border: none;
-            border-radius: 8px;
-            font-size: 1rem;
-            font-weight: 500;
-            cursor: pointer;
-            transition: all 0.2s;
-            display: inline-flex;
-            align-items: center;
-            gap: 0.5rem;
-            position: relative;
-            overflow: hidden;
-        }
-
-        .btn::before {
-            content: '';
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            width: 0;
-            height: 0;
-            border-radius: 50%;
-            background: rgba(255, 255, 255, 0.2);
-            transform: translate(-50%, -50%);
-            transition: width 0.5s, height 0.5s;
-        }
-
-        .btn:hover::before {
-            width: 300px;
-            height: 300px;
-        }
-
-        .btn-primary {
-            background: linear-gradient(135deg, #007ea7 0%, #00a8e8 100%);
-            color: white;
-            box-shadow: 0 2px 4px rgba(0, 126, 167, 0.3);
-        }
-
-        .btn-primary:hover {
-            transform: translateY(-1px);
-            box-shadow: 0 4px 8px rgba(0, 126, 167, 0.4);
-        }
-
-        .btn-secondary {
-            background: linear-gradient(135deg, #6c757d 0%, #5a6268 100%);
-            color: white;
-        }
-
-        .btn-secondary:hover {
-            background: linear-gradient(135deg, #5a6268 0%, #495057 100%);
-        }
-
-        .btn-success {
-            background: linear-gradient(135deg, #2ecc71 0%, #27ae60 100%);
-            color: white;
-            box-shadow: 0 2px 4px rgba(46, 204, 113, 0.3);
-        }
-
-        .btn-success:hover {
-            transform: translateY(-1px);
-            box-shadow: 0 4px 8px rgba(46, 204, 113, 0.4);
-        }
-
-        /* Insights Section */
-        .insights-section {
-            background: #f8f9fa;
-            padding: 2rem;
-            border-radius: 12px;
-            margin-bottom: 2rem;
-            border: 1px solid #e9ecef;
-        }
-
-        .insights-header {
-            font-size: 1.3rem;
-            color: #003e5a;
-            margin-bottom: 1.5rem;
-            font-weight: 600;
-        }
-
-        .insights-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-            gap: 1.5rem;
-        }
-
-        .insight-card {
-            background: white;
-            padding: 1.5rem;
-            border-radius: 8px;
-            border-left: 4px solid #00a8e8;
-        }
-
-        .insight-title {
-            font-weight: 600;
-            color: #003e5a;
-            margin-bottom: 0.5rem;
-        }
-
-        .insight-value {
-            color: #666;
-        }
-
-        /* Deeper Insights Section */
-        .deeper-insights-section {
-            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
-            padding: 2.5rem;
-            border-radius: 12px;
-            margin-bottom: 2rem;
-            border: 1px solid #dee2e6;
-            position: relative;
-        }
-
-        .deeper-insights-header {
-            font-size: 1.4rem;
-            color: #003e5a;
-            margin-bottom: 2rem;
-            font-weight: 700;
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-        }
-
-        .deeper-insights-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
-            gap: 2rem;
-        }
-
-        .deep-insight-card {
-            background: white;
-            padding: 2rem;
-            border-radius: 10px;
-            box-shadow: 0 3px 15px rgba(0,0,0,0.1);
-            transition: all 0.3s;
-        }
-
-        .deep-insight-card:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 5px 25px rgba(0,0,0,0.15);
-        }
-
-        .deep-insight-title {
-            font-weight: 700;
-            color: #003e5a;
-            margin-bottom: 1rem;
-            font-size: 1.1rem;
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-        }
-
-        .deep-insight-content {
-            color: #495057;
-            line-height: 1.6;
-        }
-
-        .metric-value {
-            font-size: 2rem;
-            font-weight: 700;
-            color: #007ea7;
-            margin: 0.5rem 0;
-        }
-
-        .metric-comparison {
-            font-size: 0.9rem;
-            color: #6c757d;
-            margin-top: 0.5rem;
-        }
-
-        .trend-indicator {
-            display: inline-flex;
-            align-items: center;
-            gap: 0.25rem;
-            padding: 0.25rem 0.5rem;
-            border-radius: 20px;
-            font-size: 0.85rem;
-            font-weight: 600;
-            margin-left: 0.5rem;
-        }
-
-        .trend-up {
-            background: #fce4ec;
-            color: #c2185b;
-        }
-
-        .trend-down {
-            background: #e8f5e9;
-            color: #388e3c;
-        }
-
-        .entity-list {
-            margin-top: 1rem;
-        }
-
-        .entity-item {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 0.75rem;
-            margin-bottom: 0.5rem;
-            background: #f8f9fa;
-            border-radius: 6px;
-            transition: background 0.2s;
-            cursor: pointer;
-        }
-
-        .entity-item:hover {
-            background: #e9ecef;
-            transform: translateX(2px);
-        }
-
-        .entity-scrollable {
-            max-height: 300px;
-            overflow-y: auto;
-            padding-right: 0.5rem;
-        }
-
-        .entity-scrollable::-webkit-scrollbar {
-            width: 6px;
-        }
-
-        .entity-scrollable::-webkit-scrollbar-track {
-            background: #f1f1f1;
-            border-radius: 3px;
-        }
-
-        .entity-scrollable::-webkit-scrollbar-thumb {
-            background: #007ea7;
-            border-radius: 3px;
-        }
-
-        .entity-scrollable::-webkit-scrollbar-thumb:hover {
-            background: #006587;
-        }
-
-        .entity-name {
-            font-weight: 500;
-            color: #003e5a;
-            flex: 1;
-        }
-
-        .entity-count {
-            background: #007ea7;
-            color: white;
-            padding: 0.25rem 0.75rem;
-            border-radius: 20px;
-            font-size: 0.85rem;
-            font-weight: 600;
-        }
-
-        .icon-trend { color: #f39c12; }
-        .icon-repeat { color: #e74c3c; }
-        .icon-stats { color: #3498db; }
-        .icon-crown { color: #9b59b6; }
-        .icon-pie { color: #2ecc71; }
-
-        /* Charts Grid */
-        .charts-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(500px, 1fr));
-            gap: 2rem;
-            margin-bottom: 2rem;
-        }
-
-        .chart-container {
-            background: white;
-            padding: 2rem;
-            border-radius: 12px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.08);
-        }
-
-        .chart-title {
-            font-size: 1.2rem;
-            color: #003e5a;
-            margin-bottom: 1.5rem;
-            font-weight: 600;
-        }
-
-        .chart-wrapper {
-            position: relative;
-            height: 300px;
-        }
-
-        /* Data Table */
-        .table-section {
-            background: white;
-            padding: 2rem;
-            border-radius: 12px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.08);
-        }
-
-        .table-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 1.5rem;
-        }
-
-        .table-title {
-            font-size: 1.3rem;
-            color: #003e5a;
-            font-weight: 600;
-        }
-
-        .table-wrapper {
-            overflow-x: auto;
-        }
-
-        table {
-            width: 100%;
-            border-collapse: collapse;
-        }
-
-        th {
-            background: #f8f9fa;
-            padding: 1rem;
-            text-align: left;
-            font-weight: 600;
-            color: #003e5a;
-            border-bottom: 2px solid #dee2e6;
-            cursor: pointer;
-            user-select: none;
-        }
-
-        th:hover {
-            background: #e9ecef;
-        }
-
-        td {
-            padding: 1rem;
-            border-bottom: 1px solid #dee2e6;
-        }
-
-        tr:hover {
-            background: #f8f9fa;
-        }
-
-        .badge {
-            display: inline-block;
-            padding: 0.25rem 0.75rem;
-            border-radius: 20px;
-            font-size: 0.85rem;
-            font-weight: 500;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-            transition: all 0.2s;
-        }
-
-        .badge:hover {
-            transform: translateY(-1px);
-            box-shadow: 0 2px 5px rgba(0,0,0,0.15);
-        }
-
-        .badge-category {
-            background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%);
-            color: #1565c0;
-        }
-
-        .badge-breach {
-            background: linear-gradient(135deg, #fce4ec 0%, #f8bbd0 100%);
-            color: #c2185b;
-        }
-
-        /* Pagination */
-        .pagination {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            gap: 0.5rem;
-            margin-top: 2rem;
-        }
-
-        .pagination button {
-            padding: 0.5rem 1rem;
-            border: 1px solid #dee2e6;
-            background: white;
-            cursor: pointer;
-            border-radius: 4px;
-            transition: all 0.2s;
-        }
-
-        .pagination button:hover:not(:disabled) {
-            background: #007ea7;
-            color: white;
-            border-color: #007ea7;
-        }
-
-        .pagination button:disabled {
-            opacity: 0.5;
-            cursor: not-allowed;
-        }
-
-        .pagination .page-info {
-            margin: 0 1rem;
-            color: #666;
-        }
-
-        /* Responsive */
-        @media (max-width: 768px) {
-            .header h1 {
-                font-size: 1.8rem;
-            }
-
-            .charts-grid {
-                grid-template-columns: 1fr;
-            }
-
-            .filters-grid {
-                grid-template-columns: 1fr;
-            }
-
-            .filter-actions {
-                flex-direction: column;
-            }
-
-            .btn {
-                width: 100%;
-                justify-content: center;
-            }
-        }
-
-        /* Print Styles */
-        @media print {
-            body {
-                background: white;
-            }
-
-            .filters-section,
-            .pagination {
-                display: none;
-            }
-
-            .card,
-            .chart-container,
-            .table-section {
-                box-shadow: none;
-                border: 1px solid #dee2e6;
-                break-inside: avoid;
-            }
-        }
-
-     /* Loading Spinner */
+        /* Container */
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        /* Summary Cards */
+        .summary-cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .card {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 12px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+            transition: transform 0.2s, box-shadow 0.2s;
+            border-left: 4px solid #007ea7;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, #003e5a, #007ea7, #00a8e8);
+            animation: shimmer 3s ease-in-out infinite;
+        }
+
+        @keyframes shimmer {
+            0% { transform: translateX(-100%); }
+            100% { transform: translateX(100%); }
+        }
+
+        .card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 20px rgba(0,0,0,0.12);
+        }
+
+        .card:nth-child(1) { border-left-color: #003e5a; }
+        .card:nth-child(2) { border-left-color: #007ea7; }
+        .card:nth-child(3) { border-left-color: #00a8e8; }
+        .card:nth-child(4) { border-left-color: #2ecc71; }
+
+        .card-label {
+            font-size: 0.85rem;
+            color: #666;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 0.5rem;
+        }
+
+        .card-value {
+            font-size: 2rem;
+            font-weight: 700;
+            color: #003e5a;
+            margin-bottom: 0.25rem;
+        }
+
+        .card-subtitle {
+            font-size: 0.9rem;
+            color: #777;
+        }
+
+        /* Filters Section */
+        .filters-section {
+            background: white;
+            padding: 2rem;
+            border-radius: 12px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+            margin-bottom: 2rem;
+        }
+
+        .filters-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+        }
+
+        .filters-title {
+            font-size: 1.5rem;
+            color: #003e5a;
+            font-weight: 600;
+        }
+
+        .filter-count {
+            background: #00a8e8;
+            color: white;
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            font-size: 0.85rem;
+        }
+
+        .filters-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .filter-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+            color: #555;
+        }
+
+        .filter-group select,
+        .filter-group input {
+            width: 100%;
+            padding: 0.75rem;
+            border: 2px solid #e0e6ed;
+            border-radius: 8px;
+            font-size: 1rem;
+            transition: border-color 0.2s;
+        }
+
+        .filter-group select:focus,
+        .filter-group input:focus {
+            outline: none;
+            border-color: #007ea7;
+        }
+
+        .multi-select {
+            min-height: 120px;
+            padding: 0.5rem;
+        }
+
+        .multi-select option {
+            padding: 0.25rem 0.5rem;
+            margin: 2px 0;
+        }
+
+        .multi-select option:checked {
+            background: #007ea7;
+            color: white;
+        }
+
+        .filter-actions {
+            display: flex;
+            gap: 1rem;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            padding: 0.75rem 1.5rem;
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .btn::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 0;
+            height: 0;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.2);
+            transform: translate(-50%, -50%);
+            transition: width 0.5s, height 0.5s;
+        }
+
+        .btn:hover::before {
+            width: 300px;
+            height: 300px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #007ea7 0%, #00a8e8 100%);
+            color: white;
+            box-shadow: 0 2px 4px rgba(0, 126, 167, 0.3);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 8px rgba(0, 126, 167, 0.4);
+        }
+
+        .btn-secondary {
+            background: linear-gradient(135deg, #6c757d 0%, #5a6268 100%);
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            background: linear-gradient(135deg, #5a6268 0%, #495057 100%);
+        }
+
+        .btn-success {
+            background: linear-gradient(135deg, #2ecc71 0%, #27ae60 100%);
+            color: white;
+            box-shadow: 0 2px 4px rgba(46, 204, 113, 0.3);
+        }
+
+        .btn-success:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 8px rgba(46, 204, 113, 0.4);
+        }
+
+        /* Insights Section */
+        .insights-section {
+            background: #f8f9fa;
+            padding: 2rem;
+            border-radius: 12px;
+            margin-bottom: 2rem;
+            border: 1px solid #e9ecef;
+        }
+
+        .insights-header {
+            font-size: 1.3rem;
+            color: #003e5a;
+            margin-bottom: 1.5rem;
+            font-weight: 600;
+        }
+
+        .insights-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .insight-card {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 8px;
+            border-left: 4px solid #00a8e8;
+        }
+
+        .insight-title {
+            font-weight: 600;
+            color: #003e5a;
+            margin-bottom: 0.5rem;
+        }
+
+        .insight-value {
+            color: #666;
+        }
+
+        /* Deeper Insights Section */
+        .deeper-insights-section {
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+            padding: 2.5rem;
+            border-radius: 12px;
+            margin-bottom: 2rem;
+            border: 1px solid #dee2e6;
+            position: relative;
+        }
+
+        .deeper-insights-header {
+            font-size: 1.4rem;
+            color: #003e5a;
+            margin-bottom: 2rem;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .deeper-insights-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 2rem;
+        }
+
+        .deep-insight-card {
+            background: white;
+            padding: 2rem;
+            border-radius: 10px;
+            box-shadow: 0 3px 15px rgba(0,0,0,0.1);
+            transition: all 0.3s;
+        }
+
+        .deep-insight-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 5px 25px rgba(0,0,0,0.15);
+        }
+
+        .deep-insight-title {
+            font-weight: 700;
+            color: #003e5a;
+            margin-bottom: 1rem;
+            font-size: 1.1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .deep-insight-content {
+            color: #495057;
+            line-height: 1.6;
+        }
+
+        .metric-value {
+            font-size: 2rem;
+            font-weight: 700;
+            color: #007ea7;
+            margin: 0.5rem 0;
+        }
+
+        .metric-comparison {
+            font-size: 0.9rem;
+            color: #6c757d;
+            margin-top: 0.5rem;
+        }
+
+        .trend-indicator {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.25rem;
+            padding: 0.25rem 0.5rem;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            margin-left: 0.5rem;
+        }
+
+        .trend-up {
+            background: #fce4ec;
+            color: #c2185b;
+        }
+
+        .trend-down {
+            background: #e8f5e9;
+            color: #388e3c;
+        }
+
+        .entity-list {
+            margin-top: 1rem;
+        }
+
+        .entity-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.75rem;
+            margin-bottom: 0.5rem;
+            background: #f8f9fa;
+            border-radius: 6px;
+            transition: background 0.2s;
+            cursor: pointer;
+        }
+
+        .entity-item:hover {
+            background: #e9ecef;
+            transform: translateX(2px);
+        }
+
+        .entity-scrollable {
+            max-height: 300px;
+            overflow-y: auto;
+            padding-right: 0.5rem;
+        }
+
+        .entity-scrollable::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .entity-scrollable::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 3px;
+        }
+
+        .entity-scrollable::-webkit-scrollbar-thumb {
+            background: #007ea7;
+            border-radius: 3px;
+        }
+
+        .entity-scrollable::-webkit-scrollbar-thumb:hover {
+            background: #006587;
+        }
+
+        .entity-name {
+            font-weight: 500;
+            color: #003e5a;
+            flex: 1;
+        }
+
+        .entity-count {
+            background: #007ea7;
+            color: white;
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 600;
+        }
+
+        .icon-trend { color: #f39c12; }
+        .icon-repeat { color: #e74c3c; }
+        .icon-stats { color: #3498db; }
+        .icon-crown { color: #9b59b6; }
+        .icon-pie { color: #2ecc71; }
+
+        /* Charts Grid */
+        .charts-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(500px, 1fr));
+            gap: 2rem;
+            margin-bottom: 2rem;
+        }
+
+        .chart-container {
+            background: white;
+            padding: 2rem;
+            border-radius: 12px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+        }
+
+        .chart-title {
+            font-size: 1.2rem;
+            color: #003e5a;
+            margin-bottom: 1.5rem;
+            font-weight: 600;
+        }
+
+        .chart-wrapper {
+            position: relative;
+            height: 300px;
+        }
+
+        /* Data Table */
+        .table-section {
+            background: white;
+            padding: 2rem;
+            border-radius: 12px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+        }
+
+        .table-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+        }
+
+        .table-title {
+            font-size: 1.3rem;
+            color: #003e5a;
+            font-weight: 600;
+        }
+
+        .table-wrapper {
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th {
+            background: #f8f9fa;
+            padding: 1rem;
+            text-align: left;
+            font-weight: 600;
+            color: #003e5a;
+            border-bottom: 2px solid #dee2e6;
+            cursor: pointer;
+            user-select: none;
+        }
+
+        th:hover {
+            background: #e9ecef;
+        }
+
+        td {
+            padding: 1rem;
+            border-bottom: 1px solid #dee2e6;
+        }
+
+        tr:hover {
+            background: #f8f9fa;
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 500;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            transition: all 0.2s;
+        }
+
+        .badge:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 2px 5px rgba(0,0,0,0.15);
+        }
+
+        .badge-category {
+            background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%);
+            color: #1565c0;
+        }
+
+        .badge-breach {
+            background: linear-gradient(135deg, #fce4ec 0%, #f8bbd0 100%);
+            color: #c2185b;
+        }
+
+        /* Pagination */
+        .pagination {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 0.5rem;
+            margin-top: 2rem;
+        }
+
+        .pagination button {
+            padding: 0.5rem 1rem;
+            border: 1px solid #dee2e6;
+            background: white;
+            cursor: pointer;
+            border-radius: 4px;
+            transition: all 0.2s;
+        }
+
+        .pagination button:hover:not(:disabled) {
+            background: #007ea7;
+            color: white;
+            border-color: #007ea7;
+        }
+
+        .pagination button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .pagination .page-info {
+            margin: 0 1rem;
+            color: #666;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 1.8rem;
+            }
+
+            .charts-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .filters-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .filter-actions {
+                flex-direction: column;
+            }
+
+            .btn {
+                width: 100%;
+                justify-content: center;
+            }
+        }
+
+        /* Print Styles */
+        @media print {
+            body {
+                background: white;
+            }
+
+            .filters-section,
+            .pagination {
+                display: none;
+            }
+
+            .card,
+            .chart-container,
+            .table-section {
+                box-shadow: none;
+                border: 1px solid #dee2e6;
+                break-inside: avoid;
+            }
+        }
+
+     /* Loading Spinner */
 .loading {
-    display: none;
-    position: fixed;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    background: white;
-    padding: 2rem;
-    border-radius: 12px;
-    box-shadow: 0 4px 20px rgba(0,0,0,0.15);
-    text-align: center;
-    z-index: 1000;
+    display: none;
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: white;
+    padding: 2rem;
+    border-radius: 12px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+    text-align: center;
+    z-index: 1000;
 }
 
 .loading::before {
-    content: '';
-    display: inline-block;
-    width: 40px;
-    height: 40px;
-    border: 4px solid #f3f3f3;
-    border-top: 4px solid #007ea7;
-    border-radius: 50%;
-    animation: spin 1s linear infinite;
-    margin-bottom: 1rem;
+    content: '';
+    display: inline-block;
+    width: 40px;
+    height: 40px;
+    border: 4px solid #f3f3f3;
+    border-top: 4px solid #007ea7;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+    margin-bottom: 1rem;
 }
 
 @keyframes spin {
-    0% { transform: rotate(0deg); }
-    100% { transform: rotate(360deg); }
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
 }
 
 .loading-overlay {
-    display: none;
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: rgba(0,0,0,0.3);
-    z-index: 999;
-}  
-
-    </style>
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0,0,0,0.3);
+    z-index: 999;
+}  
+<!-- Vercel Analytics -->
+<script>
+  window.va = window.va || function () { (window.vaq = window.vaq || []).push(arguments); };
+</script>
+<script defer src="/_vercel/insights/script.js"></script> 
+    </style>
 </head>
 <body>
-        <header class="header">
-    <div class="header-logo">
-        <img src="mema-logo.png" alt="MEMA Consultants" class="logo">
-    </div>
-    <h1>FCA Fines Analysis Dashboard</h1>
-    <p>Analysis of regulatory enforcement actions from 2013-2024</p>
-    <div class="branding">www.memaconsultants.com</div>
+    <!-- Header -->
+    <header class="header">
+    <div class="header-logo">
+        <img src="mema-logo.png" alt="MEMA Consultants" class="logo">
+    </div>
+    <h1>FCA Fines Analysis Dashboard</h1>
+    <p>Analysis of regulatory enforcement actions from 2013-2024</p>
+    <div class="branding">www.memaconsultants.com</div>
 </header>
 
-        <div class="container">
-                <div class="summary-cards">
-            <div class="card">
-                <div class="card-label">TOTAL FINE AMOUNT</div>
-                <div class="card-value" id="totalAmount">£0</div>
-                <div class="card-subtitle">Across all enforcement actions</div>
-            </div>
-            <div class="card">
-                <div class="card-label">NUMBER OF FINES</div>
-                <div class="card-value" id="totalCount">0</div>
-                <div class="card-subtitle">Total enforcement actions</div>
-            </div>
-            <div class="card">
-                <div class="card-label">AVERAGE FINE</div>
-                <div class="card-value" id="averageFine">£0</div>
-                <div class="card-subtitle">Mean fine amount</div>
-            </div>
-            <div class="card">
-                <div class="card-label">LARGEST FINE</div>
-                <div class="card-value" id="largestFine">£0</div>
-                <div class="card-subtitle" id="largestFineEntity">-</div>
-            </div>
-        </div>
+    <!-- Main Container -->
+    <div class="container">
+        <!-- Summary Cards -->
+        <div class="summary-cards">
+            <div class="card">
+                <div class="card-label">TOTAL FINE AMOUNT</div>
+                <div class="card-value" id="totalAmount">£0</div>
+                <div class="card-subtitle">Across all enforcement actions</div>
+            </div>
+            <div class="card">
+                <div class="card-label">NUMBER OF FINES</div>
+                <div class="card-value" id="totalCount">0</div>
+                <div class="card-subtitle">Total enforcement actions</div>
+            </div>
+            <div class="card">
+                <div class="card-label">AVERAGE FINE</div>
+                <div class="card-value" id="averageFine">£0</div>
+                <div class="card-subtitle">Mean fine amount</div>
+            </div>
+            <div class="card">
+                <div class="card-label">LARGEST FINE</div>
+                <div class="card-value" id="largestFine">£0</div>
+                <div class="card-subtitle" id="largestFineEntity">-</div>
+            </div>
+        </div>
 
-                <div class="filters-section">
-            <div class="filters-header">
-                <h2 class="filters-title">🔍 Filter Data</h2>
-                <span class="filter-count" id="activeFilters">0 active filters</span>
-            </div>
-            
-            <div class="filters-grid">
-                <div class="filter-group">
-                    <label for="yearFilter">Year</label>
-                    <select id="yearFilter" multiple class="multi-select">
-                        <option value="">All Years</option>
-                    </select>
-                </div>
-                
-                <div class="filter-group">
-                    <label for="categoryFilter">Firm Category</label>
-                    <select id="categoryFilter">
-                        <option value="">All Categories</option>
-                    </select>
-                </div>
-                
-                <div class="filter-group">
-                    <label for="breachFilter">Breach Type</label>
-                    <select id="breachFilter">
-                        <option value="">All Breach Types</option>
-                    </select>
-                </div>
-                
-                <div class="filter-group">
-                    <label for="searchFilter">Search</label>
-                    <input type="text" id="searchFilter" placeholder="Search firms or summaries...">
-                </div>
-            </div>
-            
-            <div class="filter-actions">
-                <button class="btn btn-primary" onclick="applyFilters()">🔍 Apply Filters</button>
-                <button class="btn btn-secondary" onclick="resetFilters()">🔄 Reset Filters</button>
-                <button class="btn btn-success" onclick="exportData()">📊 Export Data (CSV)</button>
-            </div>
-        </div>
+        <!-- Filters Section -->
+        <div class="filters-section">
+            <div class="filters-header">
+                <h2 class="filters-title">🔍 Filter Data</h2>
+                <span class="filter-count" id="activeFilters">0 active filters</span>
+            </div>
+            
+            <div class="filters-grid">
+                <div class="filter-group">
+                    <label for="yearFilter">Year</label>
+                    <select id="yearFilter" multiple class="multi-select">
+                        <option value="">All Years</option>
+                    </select>
+                </div>
+                
+                <div class="filter-group">
+                    <label for="categoryFilter">Firm Category</label>
+                    <select id="categoryFilter">
+                        <option value="">All Categories</option>
+                    </select>
+                </div>
+                
+                <div class="filter-group">
+                    <label for="breachFilter">Breach Type</label>
+                    <select id="breachFilter">
+                        <option value="">All Breach Types</option>
+                    </select>
+                </div>
+                
+                <div class="filter-group">
+                    <label for="searchFilter">Search</label>
+                    <input type="text" id="searchFilter" placeholder="Search firms or summaries...">
+                </div>
+            </div>
+            
+            <div class="filter-actions">
+                <button class="btn btn-primary" onclick="applyFilters()">🔍 Apply Filters</button>
+                <button class="btn btn-secondary" onclick="resetFilters()">🔄 Reset Filters</button>
+                <button class="btn btn-success" onclick="exportData()">📊 Export Data (CSV)</button>
+            </div>
+        </div>
 
-                <div class="insights-section">
-            <h2 class="insights-header">💡 Key Insights</h2>
-            <div class="insights-grid" id="insightsGrid">
-                            </div>
-        </div>
+        <!-- Insights Section -->
+        <div class="insights-section">
+            <h2 class="insights-header">💡 Key Insights</h2>
+            <div class="insights-grid" id="insightsGrid">
+                <!-- Insights will be dynamically generated -->
+            </div>
+        </div>
 
-                <div class="deeper-insights-section">
-            <h2 class="deeper-insights-header">🔍 Deeper Analysis</h2>
-            <div class="deeper-insights-grid" id="deeperInsightsGrid">
-                            </div>
-        </div>
+        <!-- Deeper Insights Section -->
+        <div class="deeper-insights-section">
+            <h2 class="deeper-insights-header">🔍 Deeper Analysis</h2>
+            <div class="deeper-insights-grid" id="deeperInsightsGrid">
+                <!-- Deeper insights will be dynamically generated -->
+            </div>
+        </div>
 
-                <div class="charts-grid">
-            <div class="chart-container">
-                <h3 class="chart-title">Year-over-Year Trends</h3>
-                <div class="chart-wrapper">
-                    <canvas id="trendsChart"></canvas>
-                </div>
-            </div>
-            
-            <div class="chart-container">
-                <h3 class="chart-title">Top Firm Categories</h3>
-                <div class="chart-wrapper">
-                    <canvas id="categoriesChart"></canvas>
-                </div>
-            </div>
-            
-            <div class="chart-container">
-                <h3 class="chart-title">Fine Amount Distribution</h3>
-                <div class="chart-wrapper">
-                    <canvas id="distributionChart"></canvas>
-                </div>
-            </div>
-            
-            <div class="chart-container">
-                <h3 class="chart-title">Top 10 Breach Types</h3>
-                <div class="chart-wrapper">
-                    <canvas id="breachTypesChart"></canvas>
-                </div>
-            </div>
-        </div>
+        <!-- Charts Grid -->
+        <div class="charts-grid">
+            <div class="chart-container">
+                <h3 class="chart-title">Year-over-Year Trends</h3>
+                <div class="chart-wrapper">
+                    <canvas id="trendsChart"></canvas>
+                </div>
+            </div>
+            
+            <div class="chart-container">
+                <h3 class="chart-title">Top Firm Categories</h3>
+                <div class="chart-wrapper">
+                    <canvas id="categoriesChart"></canvas>
+                </div>
+            </div>
+            
+            <div class="chart-container">
+                <h3 class="chart-title">Fine Amount Distribution</h3>
+                <div class="chart-wrapper">
+                    <canvas id="distributionChart"></canvas>
+                </div>
+            </div>
+            
+            <div class="chart-container">
+                <h3 class="chart-title">Top 10 Breach Types</h3>
+                <div class="chart-wrapper">
+                    <canvas id="breachTypesChart"></canvas>
+                </div>
+            </div>
+        </div>
 
-                <div class="table-section">
-            <div class="table-header">
-                <h2 class="table-title">📋 Fine Details</h2>
-            </div>
-            <div class="table-wrapper">
-                <table id="dataTable">
-                    <thead>
-                        <tr>
-                            <th onclick="sortTable('date')">Date ↕</th>
-                            <th onclick="sortTable('firm')">Firm/Individual ↕</th>
-                            <th onclick="sortTable('amount')">Amount ↕</th>
-                            <th onclick="sortTable('category')">Category ↕</th>
-                            <th onclick="sortTable('breach')">Breach Type ↕</th>
-                        </tr>
-                    </thead>
-                    <tbody id="tableBody">
-                                            </tbody>
-                </table>
-            </div>
-            
-            <div class="pagination" id="pagination">
-                            </div>
-        </div>
-    </div>
+        <!-- Data Table -->
+        <div class="table-section">
+            <div class="table-header">
+                <h2 class="table-title">📋 Fine Details</h2>
+            </div>
+            <div class="table-wrapper">
+                <table id="dataTable">
+                    <thead>
+                        <tr>
+                            <th onclick="sortTable('date')">Date ↕</th>
+                            <th onclick="sortTable('firm')">Firm/Individual ↕</th>
+                            <th onclick="sortTable('amount')">Amount ↕</th>
+                            <th onclick="sortTable('category')">Category ↕</th>
+                            <th onclick="sortTable('breach')">Breach Type ↕</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tableBody">
+                        <!-- Table rows will be dynamically generated -->
+                    </tbody>
+                </table>
+            </div>
+            
+            <div class="pagination" id="pagination">
+                <!-- Pagination controls will be dynamically generated -->
+            </div>
+        </div>
+    </div>
 
+<!-- Loading Indicator -->
 <div class="loading-overlay" id="loadingOverlay"></div>
 <div class="loading" id="loading">
-    <div>Loading FCA Fines Data...</div>
+    <div>Loading FCA Fines Data...</div>
 </div>
 
-    <script>
-         // Supabase configuration
+    <script>
+         // Supabase configuration
 const SUPABASE_URL = 'https://jypcwaskqihgnnasawie.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imp5cGN3YXNrcWloZ25uYXNhd2llIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDg4OTkxOTcsImV4cCI6MjA2NDQ3NTE5N30.wl3g5eOASYSw52IA2jnQo7DMDtiT8BW9waj-kZJpVDE';
 
 // Initialize Supabase client
 const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);;
 
-        // Global variables
-        let allData = [];
-        let filteredData = [];
-        let charts = {};
-        let currentPage = 1;
-        const rowsPerPage = 10;
-        let sortField = 'date';
-        let sortDirection = 'desc';
+        // Global variables
+        let allData = [];
+        let filteredData = [];
+        let charts = {};
+        let currentPage = 1;
+        const rowsPerPage = 10;
+        let sortField = 'date';
+        let sortDirection = 'desc';
 
-        // Column mapping configuration
-        const COLUMN_MAPPINGS = {
-            date: ['Date_MM/YYYY', 'Date (MM/YYYY)', 'Date', 'Fine Date'],
-            firm: ['Firm/Individual', 'Entity', 'Company/Person', 'Name'],
-            amount: ['Amount', 'Amount (£)', 'Fine Amount', 'Penalty'],
-            summary: ['Summary', 'Description', 'Violation', 'Details'],
-            regulator: ['Regulator', 'Regulatory Body', 'Authority'],
-            category: ['Firm Category', 'Category', 'Type', 'Firm Type'],
-            breach: ['Breach Type', 'Violation Type', 'Breach Category']
-        };
+        // Column mapping configuration
+        const COLUMN_MAPPINGS = {
+            date: ['Date_MM/YYYY', 'Date (MM/YYYY)', 'Date', 'Fine Date'],
+            firm: ['Firm/Individual', 'Entity', 'Company/Person', 'Name'],
+            amount: ['Amount', 'Amount (£)', 'Fine Amount', 'Penalty'],
+            summary: ['Summary', 'Description', 'Violation', 'Details'],
+            regulator: ['Regulator', 'Regulatory Body', 'Authority'],
+            category: ['Firm Category', 'Category', 'Type', 'Firm Type'],
+            breach: ['Breach Type', 'Violation Type', 'Breach Category']
+        };
 
-        // Initialize dashboard on load
+        // Initialize dashboard on load
 document.addEventListener('DOMContentLoaded', function() {
-    loadDataFromSupabase();
+    loadDataFromSupabase();
 });
 
 // Load data from Supabase
 async function loadDataFromSupabase() {
-    try {
-        showLoading(true);
-        
-        const { data, error } = await supabase
-            .from('fca_fines')
-            .select('*')
-            .order('date_issued', { ascending: false });
-        
-        if (error) throw error;
-        
-        // Transform data to match existing format
-        allData = data.map(record => ({
-            date: new Date(record.date_issued),
-            year: record.year_issued,
-            month: record.month_issued,
-            firm: record.firm_individual,
-            amount: parseFloat(record.amount),
-            summary: record.summary,
-            regulator: record.regulator,
-            firmCategory: record.firm_category,
-            breachType: record.breach_type
-        }));
-        
-        filteredData = [...allData];
-        initializeFilters();
-        applyFilters();
-        
-    } catch (error) {
-        console.error('Error loading data:', error);
-        showError('Failed to load FCA fines data. Please refresh the page.');
-    } finally {
-        showLoading(false);
-    }
+    try {
+        showLoading(true);
+        
+        const { data, error } = await supabase
+            .from('fca_fines')
+            .select('*')
+            .order('date_issued', { ascending: false });
+        
+        if (error) throw error;
+        
+        // Transform data to match existing format
+        allData = data.map(record => ({
+            date: new Date(record.date_issued),
+            year: record.year_issued,
+            month: record.month_issued,
+            firm: record.firm_individual,
+            amount: parseFloat(record.amount),
+            summary: record.summary,
+            regulator: record.regulator,
+            firmCategory: record.firm_category,
+            breachType: record.breach_type
+        }));
+        
+        filteredData = [...allData];
+        initializeFilters();
+        applyFilters();
+        
+    } catch (error) {
+        console.error('Error loading data:', error);
+        showError('Failed to load FCA fines data. Please refresh the page.');
+    } finally {
+        showLoading(false);
+    }
 }
 
 // Show/hide loading state
 function showLoading(show) {
-    const loading = document.getElementById('loading');
-    const overlay = document.getElementById('loadingOverlay');
-    if (loading && overlay) {
-        loading.style.display = show ? 'block' : 'none';
-        overlay.style.display = show ? 'block' : 'none';
-    }
+    const loading = document.getElementById('loading');
+    const overlay = document.getElementById('loadingOverlay');
+    if (loading && overlay) {
+        loading.style.display = show ? 'block' : 'none';
+        overlay.style.display = show ? 'block' : 'none';
+    }
 }
 
 // Show error message
 function showError(message) {
-    const container = document.querySelector('.container');
-    const errorDiv = document.createElement('div');
-    errorDiv.style.cssText = `
-        background: #fee;
-        border: 1px solid #fcc;
-        color: #c00;
-        padding: 1rem;
-        border-radius: 8px;
-        margin: 1rem 0;
-        text-align: center;
-    `;
-    errorDiv.textContent = message;
-    container.insertBefore(errorDiv, container.firstChild);
+    const container = document.querySelector('.container');
+    const errorDiv = document.createElement('div');
+    errorDiv.style.cssText = `
+        background: #fee;
+        border: 1px solid #fcc;
+        color: #c00;
+        padding: 1rem;
+        border-radius: 8px;
+        margin: 1rem 0;
+        text-align: center;
+    `;
+    errorDiv.textContent = message;
+    container.insertBefore(errorDiv, container.firstChild);
 }
-        // Initialize filters
-        function initializeFilters() {
-            // Populate year filter
-            const years = [...new Set(allData.map(d => d.year))].sort((a, b) => b - a);
-            const yearFilter = document.getElementById('yearFilter');
-            years.forEach(year => {
-                const option = document.createElement('option');
-                option.value = year;
-                option.textContent = year;
-                yearFilter.appendChild(option);
-            });
-            
-            // Populate category filter
-            const categories = [...new Set(allData.map(d => d.firmCategory))].sort();
-            const categoryFilter = document.getElementById('categoryFilter');
-            categories.forEach(category => {
-                const option = document.createElement('option');
-                option.value = category;
-                option.textContent = category;
-                categoryFilter.appendChild(option);
-            });
-            
-            // Populate breach type filter
-            const breachTypes = [...new Set(allData.map(d => d.breachType))].sort();
-            const breachFilter = document.getElementById('breachFilter');
-            breachTypes.forEach(breach => {
-                const option = document.createElement('option');
-                option.value = breach;
-                option.textContent = breach;
-                breachFilter.appendChild(option);
-            });
-            
-            // Add event listener for search input
-            document.getElementById('searchFilter').addEventListener('input', debounce(applyFilters, 300));
-        }
+        // Initialize filters
+        function initializeFilters() {
+            // Populate year filter
+            const years = [...new Set(allData.map(d => d.year))].sort((a, b) => b - a);
+            const yearFilter = document.getElementById('yearFilter');
+            years.forEach(year => {
+                const option = document.createElement('option');
+                option.value = year;
+                option.textContent = year;
+                yearFilter.appendChild(option);
+            });
+            
+            // Populate category filter
+            const categories = [...new Set(allData.map(d => d.firmCategory))].sort();
+            const categoryFilter = document.getElementById('categoryFilter');
+            categories.forEach(category => {
+                const option = document.createElement('option');
+                option.value = category;
+                option.textContent = category;
+                categoryFilter.appendChild(option);
+            });
+            
+            // Populate breach type filter
+            const breachTypes = [...new Set(allData.map(d => d.breachType))].sort();
+            const breachFilter = document.getElementById('breachFilter');
+            breachTypes.forEach(breach => {
+                const option = document.createElement('option');
+                option.value = breach;
+                option.textContent = breach;
+                breachFilter.appendChild(option);
+            });
+            
+            // Add event listener for search input
+            document.getElementById('searchFilter').addEventListener('input', debounce(applyFilters, 300));
+        }
 
-        // Apply filters
-        function applyFilters() {
-            const yearFilter = document.getElementById('yearFilter');
-            const selectedYears = Array.from(yearFilter.selectedOptions)
-                .map(option => option.value)
-                .filter(value => value !== '');
-            
-            const categoryFilter = document.getElementById('categoryFilter').value;
-            const breachFilter = document.getElementById('breachFilter').value;
-            const searchFilter = document.getElementById('searchFilter').value.toLowerCase();
-            
-            filteredData = allData.filter(row => {
-                // Year filter (multi-select)
-                if (selectedYears.length > 0 && !selectedYears.includes(row.year.toString())) {
-                    return false;
-                }
-                
-                // Category filter
-                if (categoryFilter && row.firmCategory !== categoryFilter) {
-                    return false;
-                }
-                
-                // Breach type filter
-                if (breachFilter && row.breachType !== breachFilter) {
-                    return false;
-                }
-                
-                // Search filter
-                if (searchFilter && 
-                    !row.firm.toLowerCase().includes(searchFilter) && 
-                    !row.summary.toLowerCase().includes(searchFilter)) {
-                    return false;
-                }
-                
-                return true;
-            });
-            
-            // Update active filter count
-            let activeFilters = 0;
-            if (selectedYears.length > 0) activeFilters++;
-            if (categoryFilter) activeFilters++;
-            if (breachFilter) activeFilters++;
-            if (searchFilter) activeFilters++;
-            
-            document.getElementById('activeFilters').textContent = `${activeFilters} active filter${activeFilters !== 1 ? 's' : ''}`;
-            
-            currentPage = 1;
-            updateDashboard();
-        }
+        // Apply filters
+        function applyFilters() {
+            const yearFilter = document.getElementById('yearFilter');
+            const selectedYears = Array.from(yearFilter.selectedOptions)
+                .map(option => option.value)
+                .filter(value => value !== '');
+            
+            const categoryFilter = document.getElementById('categoryFilter').value;
+            const breachFilter = document.getElementById('breachFilter').value;
+            const searchFilter = document.getElementById('searchFilter').value.toLowerCase();
+            
+            filteredData = allData.filter(row => {
+                // Year filter (multi-select)
+                if (selectedYears.length > 0 && !selectedYears.includes(row.year.toString())) {
+                    return false;
+                }
+                
+                // Category filter
+                if (categoryFilter && row.firmCategory !== categoryFilter) {
+                    return false;
+                }
+                
+                // Breach type filter
+                if (breachFilter && row.breachType !== breachFilter) {
+                    return false;
+                }
+                
+                // Search filter
+                if (searchFilter && 
+                    !row.firm.toLowerCase().includes(searchFilter) && 
+                    !row.summary.toLowerCase().includes(searchFilter)) {
+                    return false;
+                }
+                
+                return true;
+            });
+            
+            // Update active filter count
+            let activeFilters = 0;
+            if (selectedYears.length > 0) activeFilters++;
+            if (categoryFilter) activeFilters++;
+            if (breachFilter) activeFilters++;
+            if (searchFilter) activeFilters++;
+            
+            document.getElementById('activeFilters').textContent = `${activeFilters} active filter${activeFilters !== 1 ? 's' : ''}`;
+            
+            currentPage = 1;
+            updateDashboard();
+        }
 
-        // Reset filters
-        function resetFilters() {
-            document.getElementById('yearFilter').selectedIndex = -1;
-            document.getElementById('categoryFilter').value = '';
-            document.getElementById('breachFilter').value = '';
-            document.getElementById('searchFilter').value = '';
-            applyFilters();
-        }
+        // Reset filters
+        function resetFilters() {
+            document.getElementById('yearFilter').selectedIndex = -1;
+            document.getElementById('categoryFilter').value = '';
+            document.getElementById('breachFilter').value = '';
+            document.getElementById('searchFilter').value = '';
+            applyFilters();
+        }
 
-        // Update dashboard
-        function updateDashboard() {
-            updateSummaryCards();
-            updateInsights();
-            updateDeeperInsights();
-            updateCharts();
-            updateTable();
-        }
+        // Update dashboard
+        function updateDashboard() {
+            updateSummaryCards();
+            updateInsights();
+            updateDeeperInsights();
+            updateCharts();
+            updateTable();
+        }
 
-        // Update summary cards
-        function updateSummaryCards() {
-            const totalAmount = filteredData.reduce((sum, d) => sum + d.amount, 0);
-            const totalCount = filteredData.length;
-            const averageAmount = totalCount > 0 ? totalAmount / totalCount : 0;
-            
-            let largestFine = { amount: 0, firm: '' };
-            filteredData.forEach(d => {
-                if (d.amount > largestFine.amount) {
-                    largestFine = { amount: d.amount, firm: d.firm };
-                }
-            });
-            
-            document.getElementById('totalAmount').textContent = formatAmount(totalAmount);
-            document.getElementById('totalCount').textContent = totalCount.toLocaleString();
-            document.getElementById('averageFine').textContent = formatAmount(averageAmount);
-            document.getElementById('largestFine').textContent = formatAmount(largestFine.amount);
-            document.getElementById('largestFineEntity').textContent = largestFine.firm || '-';
-        }
+        // Update summary cards
+        function updateSummaryCards() {
+            const totalAmount = filteredData.reduce((sum, d) => sum + d.amount, 0);
+            const totalCount = filteredData.length;
+            const averageAmount = totalCount > 0 ? totalAmount / totalCount : 0;
+            
+            let largestFine = { amount: 0, firm: '' };
+            filteredData.forEach(d => {
+                if (d.amount > largestFine.amount) {
+                    largestFine = { amount: d.amount, firm: d.firm };
+                }
+            });
+            
+            document.getElementById('totalAmount').textContent = formatAmount(totalAmount);
+            document.getElementById('totalCount').textContent = totalCount.toLocaleString();
+            document.getElementById('averageFine').textContent = formatAmount(averageAmount);
+            document.getElementById('largestFine').textContent = formatAmount(largestFine.amount);
+            document.getElementById('largestFineEntity').textContent = largestFine.firm || '-';
+        }
 
-        // Update insights
-        function updateInsights() {
-            const insightsGrid = document.getElementById('insightsGrid');
-            insightsGrid.innerHTML = '';
-            
-            // Top category by fine amount
-            const categoryTotals = {};
-            filteredData.forEach(d => {
-                categoryTotals[d.firmCategory] = (categoryTotals[d.firmCategory] || 0) + d.amount;
-            });
-            const topCategory = Object.entries(categoryTotals)
-                .sort((a, b) => b[1] - a[1])[0];
-            
-            // Most common breach type
-            const breachCounts = {};
-            filteredData.forEach(d => {
-                breachCounts[d.breachType] = (breachCounts[d.breachType] || 0) + 1;
-            });
-            const topBreach = Object.entries(breachCounts)
-                .sort((a, b) => b[1] - a[1])[0];
-            
-            // Large penalties
-            const largePenalties = filteredData.filter(d => d.amount > 10000000).length;
-            
-            // Calculate additional insight - Individuals vs Firms
-            const individualFines = filteredData.filter(d => d.firmCategory === 'Individual').length;
-            const totalFines = filteredData.length;
-            const individualPercentage = totalFines > 0 ? ((individualFines / totalFines) * 100).toFixed(1) : 0;
-            
-            // Create insight cards
-            if (topCategory) {
-                insightsGrid.innerHTML += `
-                    <div class="insight-card">
-                        <div class="insight-title">Top Category</div>
-                        <div class="insight-value">${topCategory[0]} accounts for ${formatAmount(topCategory[1])} in fines</div>
-                    </div>
-                `;
-            }
-            
-            if (topBreach) {
-                insightsGrid.innerHTML += `
-                    <div class="insight-card">
-                        <div class="insight-title">Most Common Breach</div>
-                        <div class="insight-value">${topBreach[0]} with ${topBreach[1]} occurrences</div>
-                    </div>
-                `;
-            }
-            
-            insightsGrid.innerHTML += `
-                <div class="insight-card">
-                    <div class="insight-title">Large Penalties</div>
-                    <div class="insight-value">${largePenalties} fines exceeding £10 million</div>
-                </div>
-            `;
-            
-            insightsGrid.innerHTML += `
-                <div class="insight-card">
-                    <div class="insight-title">Individual vs Corporate</div>
-                    <div class="insight-value">${individualPercentage}% of fines are against individuals (${individualFines} of ${totalFines})</div>
-                </div>
-            `;
-        }
+        // Update insights
+        function updateInsights() {
+            const insightsGrid = document.getElementById('insightsGrid');
+            insightsGrid.innerHTML = '';
+            
+            // Top category by fine amount
+            const categoryTotals = {};
+            filteredData.forEach(d => {
+                categoryTotals[d.firmCategory] = (categoryTotals[d.firmCategory] || 0) + d.amount;
+            });
+            const topCategory = Object.entries(categoryTotals)
+                .sort((a, b) => b[1] - a[1])[0];
+            
+            // Most common breach type
+            const breachCounts = {};
+            filteredData.forEach(d => {
+                breachCounts[d.breachType] = (breachCounts[d.breachType] || 0) + 1;
+            });
+            const topBreach = Object.entries(breachCounts)
+                .sort((a, b) => b[1] - a[1])[0];
+            
+            // Large penalties
+            const largePenalties = filteredData.filter(d => d.amount > 10000000).length;
+            
+            // Calculate additional insight - Individuals vs Firms
+            const individualFines = filteredData.filter(d => d.firmCategory === 'Individual').length;
+            const totalFines = filteredData.length;
+            const individualPercentage = totalFines > 0 ? ((individualFines / totalFines) * 100).toFixed(1) : 0;
+            
+            // Create insight cards
+            if (topCategory) {
+                insightsGrid.innerHTML += `
+                    <div class="insight-card">
+                        <div class="insight-title">Top Category</div>
+                        <div class="insight-value">${topCategory[0]} accounts for ${formatAmount(topCategory[1])} in fines</div>
+                    </div>
+                `;
+            }
+            
+            if (topBreach) {
+                insightsGrid.innerHTML += `
+                    <div class="insight-card">
+                        <div class="insight-title">Most Common Breach</div>
+                        <div class="insight-value">${topBreach[0]} with ${topBreach[1]} occurrences</div>
+                    </div>
+                `;
+            }
+            
+            insightsGrid.innerHTML += `
+                <div class="insight-card">
+                    <div class="insight-title">Large Penalties</div>
+                    <div class="insight-value">${largePenalties} fines exceeding £10 million</div>
+                </div>
+            `;
+            
+            insightsGrid.innerHTML += `
+                <div class="insight-card">
+                    <div class="insight-title">Individual vs Corporate</div>
+                    <div class="insight-value">${individualPercentage}% of fines are against individuals (${individualFines} of ${totalFines})</div>
+                </div>
+            `;
+        }
 
-        // Update deeper insights
-        function updateDeeperInsights() {
-            const deeperInsightsGrid = document.getElementById('deeperInsightsGrid');
-            deeperInsightsGrid.innerHTML = '';
-            
-            // 1. Most Frequently Fined Entities (with click-through)
-            const entityCounts = {};
-            const entityTotals = {};
-            filteredData.forEach(d => {
-                entityCounts[d.firm] = (entityCounts[d.firm] || 0) + 1;
-                entityTotals[d.firm] = (entityTotals[d.firm] || 0) + d.amount;
-            });
-            
-            const topEntities = Object.entries(entityCounts)
-                .filter(([_, count]) => count > 1)
-                .sort((a, b) => b[1] - a[1])
-                .slice(0, 10);
-            
-            const repeatOffendersHTML = `
-                <div class="deep-insight-card">
-                    <div class="deep-insight-title">
-                        <span class="icon-repeat">🔁</span> Most Frequently Fined Entities
-                    </div>
-                    <div class="deep-insight-content">
-                        ${topEntities.length > 0 ? `
-                            <div class="entity-list">
-                                ${topEntities.map(([firm, count]) => `
-                                    <div class="entity-item" onclick="filterByEntity('${firm.replace(/'/g, "\\'")}')">
-                                        <span class="entity-name">${firm}</span>
-                                        <div style="text-align: right;">
-                                            <span class="entity-count">${count} fines</span>
-                                            <div style="font-size: 0.85rem; color: #6c757d; margin-top: 0.25rem;">
-                                                Total: ${formatAmount(entityTotals[firm])}
-                                        </div>
-                                    </div>
-                                `).join('')}
-                            </div>
-                            <div style="margin-top: 1rem; font-size: 0.85rem; color: #6c757d; text-align: center;">
-                                Click on any entity to filter by that firm
-                            </div>
-                        ` : '<p>No entities with multiple fines in current filter</p>'}
-                    </div>
-                </div>
-            `;
-            
-            // 2. Median vs Average Analysis
-            const amounts = filteredData.map(d => d.amount).sort((a, b) => a - b);
-            const median = amounts.length > 0 ? 
-                (amounts.length % 2 === 0 ? 
-                    (amounts[amounts.length / 2 - 1] + amounts[amounts.length / 2]) / 2 : 
-                    amounts[Math.floor(amounts.length / 2)]) : 0;
-            const average = amounts.length > 0 ? 
-                amounts.reduce((sum, a) => sum + a, 0) / amounts.length : 0;
-            
-            const medianVsAvgHTML = `
-                <div class="deep-insight-card">
-                    <div class="deep-insight-title">
-                        <span class="icon-stats">📊</span> Median vs Average Analysis
-                    </div>
-                    <div class="deep-insight-content">
-                        <div style="display: flex; justify-content: space-around; margin-bottom: 1rem;">
-                            <div style="text-align: center;">
-                                <div style="font-size: 0.9rem; color: #6c757d;">Median Fine</div>
-                                <div class="metric-value" style="color: #00a8e8; font-size: 1.5rem;">${formatAmount(median)}</div>
-                            </div>
-                            <div style="text-align: center;">
-                                <div style="font-size: 0.9rem; color: #6c757d;">Average Fine</div>
-                                <div class="metric-value" style="color: #007ea7; font-size: 1.5rem;">${formatAmount(average)}</div>
-                            </div>
-                        </div>
-                        <div class="metric-comparison">
-                            ${median < average ? 
-                                'The median is significantly lower than the average, indicating that large fines are skewing the average upward.' :
-                                'The median and average are relatively close, suggesting a more even distribution of fine amounts.'
-                            }
-                        </div>
-                    </div>
-                </div>
-            `;
-            
-            // 3. Largest Fine per Year (with scroll)
-            const largestPerYear = {};
-            filteredData.forEach(d => {
-                if (!largestPerYear[d.year] || d.amount > largestPerYear[d.year].amount) {
-                    largestPerYear[d.year] = { amount: d.amount, firm: d.firm };
-                }
-            });
-            
-            const sortedYears = Object.keys(largestPerYear).sort((a, b) => b - a);
-            
-            const largestPerYearHTML = `
-                <div class="deep-insight-card">
-                    <div class="deep-insight-title">
-                        <span class="icon-crown">👑</span> Largest Fine per Year
-                    </div>
-                    <div class="deep-insight-content">
-                        <div class="entity-list entity-scrollable">
-                            ${sortedYears.map(year => `
-                                <div class="entity-item">
-                                    <div>
-                                        <strong>${year}</strong><br>
-                                        <span style="font-size: 0.9rem; color: #6c757d;">${largestPerYear[year].firm}</span>
-                                    </div>
-                                    <span class="entity-count" style="background: #e74c3c;">${formatAmount(largestPerYear[year].amount)}</span>
-                                </div>
-                            `).join('')}
-                        </div>
-                    </div>
-                </div>
-            `;
-            
-            // 4. Distribution by Firm Category
-            const categoryBreakdown = {};
-            let totalAmount = 0;
-            filteredData.forEach(d => {
-                categoryBreakdown[d.firmCategory] = (categoryBreakdown[d.firmCategory] || { count: 0, amount: 0 });
-                categoryBreakdown[d.firmCategory].count++;
-                categoryBreakdown[d.firmCategory].amount += d.amount;
-                totalAmount += d.amount;
-            });
-            
-            const sortedCategories = Object.entries(categoryBreakdown)
-                .sort((a, b) => b[1].amount - a[1].amount);
-            
-            const categoryDistributionHTML = `
-                <div class="deep-insight-card">
-                    <div class="deep-insight-title">
-                        <span class="icon-pie">🥧</span> Distribution by Firm Category
-                    </div>
-                    <div class="deep-insight-content">
-                        <div class="entity-list">
-                            ${sortedCategories.map(([category, data]) => {
-                                const percentage = totalAmount > 0 ? ((data.amount / totalAmount) * 100).toFixed(1) : 0;
-                                return `
-                                    <div class="entity-item">
-                                        <div>
-                                            <strong>${category}</strong><br>
-                                            <span style="font-size: 0.85rem; color: #6c757d;">${data.count} fines</span>
-                                        </div>
-                                        <div style="text-align: right;">
-                                            <div style="font-weight: 600; color: #007ea7;">${percentage}%</div>
-                                            <div style="font-size: 0.85rem; color: #6c757d;">${formatAmount(data.amount)}</div>
-                                        </div>
-                                    </div>
-                                `;
-                            }).join('')}
-                        </div>
-                    </div>
-                </div>
-            `;
-            
-            // Add all insights to the grid
-            deeperInsightsGrid.innerHTML = repeatOffendersHTML + medianVsAvgHTML + largestPerYearHTML + categoryDistributionHTML;
-        }
-        
-        // Filter by entity function
-        function filterByEntity(entityName) {
-            document.getElementById('searchFilter').value = entityName;
-            applyFilters();
-            
-            // Scroll to top of page
-            window.scrollTo({ top: 0, behavior: 'smooth' });
-        }
-        function updateCharts() {
-            updateTrendsChart();
-            updateCategoriesChart();
-            updateDistributionChart();
-            updateBreachTypesChart();
-        }
+        // Update deeper insights
+        function updateDeeperInsights() {
+            const deeperInsightsGrid = document.getElementById('deeperInsightsGrid');
+            deeperInsightsGrid.innerHTML = '';
+            
+            // 1. Most Frequently Fined Entities (with click-through)
+            const entityCounts = {};
+            const entityTotals = {};
+            filteredData.forEach(d => {
+                entityCounts[d.firm] = (entityCounts[d.firm] || 0) + 1;
+                entityTotals[d.firm] = (entityTotals[d.firm] || 0) + d.amount;
+            });
+            
+            const topEntities = Object.entries(entityCounts)
+                .filter(([_, count]) => count > 1)
+                .sort((a, b) => b[1] - a[1])
+                .slice(0, 10);
+            
+            const repeatOffendersHTML = `
+                <div class="deep-insight-card">
+                    <div class="deep-insight-title">
+                        <span class="icon-repeat">🔁</span> Most Frequently Fined Entities
+                    </div>
+                    <div class="deep-insight-content">
+                        ${topEntities.length > 0 ? `
+                            <div class="entity-list">
+                                ${topEntities.map(([firm, count]) => `
+                                    <div class="entity-item" onclick="filterByEntity('${firm.replace(/'/g, "\\'")}')">
+                                        <span class="entity-name">${firm}</span>
+                                        <div style="text-align: right;">
+                                            <span class="entity-count">${count} fines</span>
+                                            <div style="font-size: 0.85rem; color: #6c757d; margin-top: 0.25rem;">
+                                                Total: ${formatAmount(entityTotals[firm])}
+                                            </div>
+                                        </div>
+                                    </div>
+                                `).join('')}
+                            </div>
+                            <div style="margin-top: 1rem; font-size: 0.85rem; color: #6c757d; text-align: center;">
+                                Click on any entity to filter by that firm
+                            </div>
+                        ` : '<p>No entities with multiple fines in current filter</p>'}
+                    </div>
+                </div>
+            `;
+            
+            // 2. Median vs Average Analysis
+            const amounts = filteredData.map(d => d.amount).sort((a, b) => a - b);
+            const median = amounts.length > 0 ? 
+                (amounts.length % 2 === 0 ? 
+                    (amounts[amounts.length / 2 - 1] + amounts[amounts.length / 2]) / 2 : 
+                    amounts[Math.floor(amounts.length / 2)]) : 0;
+            const average = amounts.length > 0 ? 
+                amounts.reduce((sum, a) => sum + a, 0) / amounts.length : 0;
+            
+            const medianVsAvgHTML = `
+                <div class="deep-insight-card">
+                    <div class="deep-insight-title">
+                        <span class="icon-stats">📊</span> Median vs Average Analysis
+                    </div>
+                    <div class="deep-insight-content">
+                        <div style="display: flex; justify-content: space-around; margin-bottom: 1rem;">
+                            <div style="text-align: center;">
+                                <div style="font-size: 0.9rem; color: #6c757d;">Median Fine</div>
+                                <div class="metric-value" style="color: #00a8e8; font-size: 1.5rem;">${formatAmount(median)}</div>
+                            </div>
+                            <div style="text-align: center;">
+                                <div style="font-size: 0.9rem; color: #6c757d;">Average Fine</div>
+                                <div class="metric-value" style="color: #007ea7; font-size: 1.5rem;">${formatAmount(average)}</div>
+                            </div>
+                        </div>
+                        <div class="metric-comparison">
+                            ${median < average ? 
+                                'The median is significantly lower than the average, indicating that large fines are skewing the average upward.' :
+                                'The median and average are relatively close, suggesting a more even distribution of fine amounts.'
+                            }
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            // 3. Largest Fine per Year (with scroll)
+            const largestPerYear = {};
+            filteredData.forEach(d => {
+                if (!largestPerYear[d.year] || d.amount > largestPerYear[d.year].amount) {
+                    largestPerYear[d.year] = { amount: d.amount, firm: d.firm };
+                }
+            });
+            
+            const sortedYears = Object.keys(largestPerYear).sort((a, b) => b - a);
+            
+            const largestPerYearHTML = `
+                <div class="deep-insight-card">
+                    <div class="deep-insight-title">
+                        <span class="icon-crown">👑</span> Largest Fine per Year
+                    </div>
+                    <div class="deep-insight-content">
+                        <div class="entity-list entity-scrollable">
+                            ${sortedYears.map(year => `
+                                <div class="entity-item">
+                                    <div>
+                                        <strong>${year}</strong><br>
+                                        <span style="font-size: 0.9rem; color: #6c757d;">${largestPerYear[year].firm}</span>
+                                    </div>
+                                    <span class="entity-count" style="background: #e74c3c;">${formatAmount(largestPerYear[year].amount)}</span>
+                                </div>
+                            `).join('')}
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            // 4. Distribution by Firm Category
+            const categoryBreakdown = {};
+            let totalAmount = 0;
+            filteredData.forEach(d => {
+                categoryBreakdown[d.firmCategory] = (categoryBreakdown[d.firmCategory] || { count: 0, amount: 0 });
+                categoryBreakdown[d.firmCategory].count++;
+                categoryBreakdown[d.firmCategory].amount += d.amount;
+                totalAmount += d.amount;
+            });
+            
+            const sortedCategories = Object.entries(categoryBreakdown)
+                .sort((a, b) => b[1].amount - a[1].amount);
+            
+            const categoryDistributionHTML = `
+                <div class="deep-insight-card">
+                    <div class="deep-insight-title">
+                        <span class="icon-pie">🥧</span> Distribution by Firm Category
+                    </div>
+                    <div class="deep-insight-content">
+                        <div class="entity-list">
+                            ${sortedCategories.map(([category, data]) => {
+                                const percentage = totalAmount > 0 ? ((data.amount / totalAmount) * 100).toFixed(1) : 0;
+                                return `
+                                    <div class="entity-item">
+                                        <div>
+                                            <strong>${category}</strong><br>
+                                            <span style="font-size: 0.85rem; color: #6c757d;">${data.count} fines</span>
+                                        </div>
+                                        <div style="text-align: right;">
+                                            <div style="font-weight: 600; color: #007ea7;">${percentage}%</div>
+                                            <div style="font-size: 0.85rem; color: #6c757d;">${formatAmount(data.amount)}</div>
+                                        </div>
+                                    </div>
+                                `;
+                            }).join('')}
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            // Add all insights to the grid
+            deeperInsightsGrid.innerHTML = repeatOffendersHTML + medianVsAvgHTML + largestPerYearHTML + categoryDistributionHTML;
+        }
+        
+        // Filter by entity function
+        function filterByEntity(entityName) {
+            document.getElementById('searchFilter').value = entityName;
+            applyFilters();
+            
+            // Scroll to top of page
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+        function updateCharts() {
+            updateTrendsChart();
+            updateCategoriesChart();
+            updateDistributionChart();
+            updateBreachTypesChart();
+        }
 
-        // Update year-over-year trends chart
-        function updateTrendsChart() {
-            const yearData = {};
-            filteredData.forEach(d => {
-                if (!yearData[d.year]) {
-                    yearData[d.year] = { amount: 0, count: 0 };
-                }
-                yearData[d.year].amount += d.amount;
-                yearData[d.year].count += 1;
-            });
-            
-            const years = Object.keys(yearData).sort();
-            const amounts = years.map(y => yearData[y].amount);
-            const counts = years.map(y => yearData[y].count);
-            
-            const ctx = document.getElementById('trendsChart').getContext('2d');
-            
-            if (charts.trends) {
-                charts.trends.destroy();
-            }
-            
-            charts.trends = new Chart(ctx, {
-                type: 'bar',
-                data: {
-                    labels: years,
-                    datasets: [{
-                        label: 'Total Fine Amount (£)',
-                        data: amounts,
-                        backgroundColor: '#007ea7',
-                        yAxisID: 'y-amount',
-                        order: 2
-                    }, {
-                        label: 'Number of Fines',
-                        data: counts,
-                        type: 'line',
-                        borderColor: '#e74c3c',
-                        backgroundColor: 'transparent',
-                        yAxisID: 'y-count',
-                        order: 1,
-                        tension: 0.3
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: {
-                        tooltip: {
-                            callbacks: {
-                                label: function(context) {
-                                    if (context.dataset.label.includes('Amount')) {
-                                        return context.dataset.label + ': ' + formatAmount(context.parsed.y);
-                                    }
-                                    return context.dataset.label + ': ' + context.parsed.y;
-                                }
-                            }
-                        }
-                    },
-                    scales: {
-                        'y-amount': {
-                            type: 'linear',
-                            position: 'left',
-                            ticks: {
-                                callback: function(value) {
-                                    return formatAmount(value);
-                                }
-                            }
-                        },
-                        'y-count': {
-                            type: 'linear',
-                            position: 'right',
-                            grid: {
-                                drawOnChartArea: false
-                            }
-                        }
-                    }
-                }
-            });
-        }
+        // Update year-over-year trends chart
+        function updateTrendsChart() {
+            const yearData = {};
+            filteredData.forEach(d => {
+                if (!yearData[d.year]) {
+                    yearData[d.year] = { amount: 0, count: 0 };
+                }
+                yearData[d.year].amount += d.amount;
+                yearData[d.year].count += 1;
+            });
+            
+            const years = Object.keys(yearData).sort();
+            const amounts = years.map(y => yearData[y].amount);
+            const counts = years.map(y => yearData[y].count);
+            
+            const ctx = document.getElementById('trendsChart').getContext('2d');
+            
+            if (charts.trends) {
+                charts.trends.destroy();
+            }
+            
+            charts.trends = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: years,
+                    datasets: [{
+                        label: 'Total Fine Amount (£)',
+                        data: amounts,
+                        backgroundColor: '#007ea7',
+                        yAxisID: 'y-amount',
+                        order: 2
+                    }, {
+                        label: 'Number of Fines',
+                        data: counts,
+                        type: 'line',
+                        borderColor: '#e74c3c',
+                        backgroundColor: 'transparent',
+                        yAxisID: 'y-count',
+                        order: 1,
+                        tension: 0.3
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    if (context.dataset.label.includes('Amount')) {
+                                        return context.dataset.label + ': ' + formatAmount(context.parsed.y);
+                                    }
+                                    return context.dataset.label + ': ' + context.parsed.y;
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        'y-amount': {
+                            type: 'linear',
+                            position: 'left',
+                            ticks: {
+                                callback: function(value) {
+                                    return formatAmount(value);
+                                }
+                            }
+                        },
+                        'y-count': {
+                            type: 'linear',
+                            position: 'right',
+                            grid: {
+                                drawOnChartArea: false
+                            }
+                        }
+                    }
+                }
+            });
+        }
 
-        // Update categories chart
-        function updateCategoriesChart() {
-            const categoryTotals = {};
-            filteredData.forEach(d => {
-                categoryTotals[d.firmCategory] = (categoryTotals[d.firmCategory] || 0) + d.amount;
-            });
-            
-            const sortedCategories = Object.entries(categoryTotals)
-                .sort((a, b) => b[1] - a[1])
-                .slice(0, 7);
-            
-            const otherTotal = Object.entries(categoryTotals)
-                .slice(7)
-                .reduce((sum, [_, amount]) => sum + amount, 0);
-            
-            if (otherTotal > 0) {
-                sortedCategories.push(['Others', otherTotal]);
-            }
-            
-            const ctx = document.getElementById('categoriesChart').getContext('2d');
-            
-            if (charts.categories) {
-                charts.categories.destroy();
-            }
-            
-            charts.categories = new Chart(ctx, {
-                type: 'pie',
-                data: {
-                    labels: sortedCategories.map(c => c[0]),
-                    datasets: [{
-                        data: sortedCategories.map(c => c[1]),
-                        backgroundColor: [
-                            '#003e5a', '#007ea7', '#00a8e8', '#2ecc71',
-                            '#f39c12', '#e74c3c', '#9b59b6', '#95a5a6'
-                        ]
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: {
-                        tooltip: {
-                            callbacks: {
-                                label: function(context) {
-                                    const total = context.dataset.data.reduce((sum, val) => sum + val, 0);
-                                    const percentage = ((context.parsed / total) * 100).toFixed(1);
-                                    return context.label + ': ' + formatAmount(context.parsed) + ' (' + percentage + '%)';
-                                }
-                            }
-                        }
-                    }
-                }
-            });
-        }
+        // Update categories chart
+        function updateCategoriesChart() {
+            const categoryTotals = {};
+            filteredData.forEach(d => {
+                categoryTotals[d.firmCategory] = (categoryTotals[d.firmCategory] || 0) + d.amount;
+            });
+            
+            const sortedCategories = Object.entries(categoryTotals)
+                .sort((a, b) => b[1] - a[1])
+                .slice(0, 7);
+            
+            const otherTotal = Object.entries(categoryTotals)
+                .slice(7)
+                .reduce((sum, [_, amount]) => sum + amount, 0);
+            
+            if (otherTotal > 0) {
+                sortedCategories.push(['Others', otherTotal]);
+            }
+            
+            const ctx = document.getElementById('categoriesChart').getContext('2d');
+            
+            if (charts.categories) {
+                charts.categories.destroy();
+            }
+            
+            charts.categories = new Chart(ctx, {
+                type: 'pie',
+                data: {
+                    labels: sortedCategories.map(c => c[0]),
+                    datasets: [{
+                        data: sortedCategories.map(c => c[1]),
+                        backgroundColor: [
+                            '#003e5a', '#007ea7', '#00a8e8', '#2ecc71',
+                            '#f39c12', '#e74c3c', '#9b59b6', '#95a5a6'
+                        ]
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    const total = context.dataset.data.reduce((sum, val) => sum + val, 0);
+                                    const percentage = ((context.parsed / total) * 100).toFixed(1);
+                                    return context.label + ': ' + formatAmount(context.parsed) + ' (' + percentage + '%)';
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
 
-        // Update distribution chart
-        function updateDistributionChart() {
-            const ranges = {
-                'Under £1M': 0,
-                '£1M-£10M': 0,
-                '£10M-£100M': 0,
-                'Over £100M': 0
-            };
-            
-            filteredData.forEach(d => {
-                if (d.amount < 1000000) {
-                    ranges['Under £1M']++;
-                } else if (d.amount < 10000000) {
-                    ranges['£1M-£10M']++;
-                } else if (d.amount < 100000000) {
-                    ranges['£10M-£100M']++;
-                } else {
-                    ranges['Over £100M']++;
-                }
-            });
-            
-            const ctx = document.getElementById('distributionChart').getContext('2d');
-            
-            if (charts.distribution) {
-                charts.distribution.destroy();
-            }
-            
-            charts.distribution = new Chart(ctx, {
-                type: 'doughnut',
-                data: {
-                    labels: Object.keys(ranges),
-                    datasets: [{
-                        data: Object.values(ranges),
-                        backgroundColor: ['#3498db', '#2ecc71', '#f39c12', '#e74c3c']
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: {
-                        tooltip: {
-                            callbacks: {
-                                label: function(context) {
-                                    return context.label + ': ' + context.parsed + ' fines';
-                                }
-                            }
-                        }
-                    }
-                }
-            });
-        }
+        // Update distribution chart
+        function updateDistributionChart() {
+            const ranges = {
+                'Under £1M': 0,
+                '£1M-£10M': 0,
+                '£10M-£100M': 0,
+                'Over £100M': 0
+            };
+            
+            filteredData.forEach(d => {
+                if (d.amount < 1000000) {
+                    ranges['Under £1M']++;
+                } else if (d.amount < 10000000) {
+                    ranges['£1M-£10M']++;
+                } else if (d.amount < 100000000) {
+                    ranges['£10M-£100M']++;
+                } else {
+                    ranges['Over £100M']++;
+                }
+            });
+            
+            const ctx = document.getElementById('distributionChart').getContext('2d');
+            
+            if (charts.distribution) {
+                charts.distribution.destroy();
+            }
+            
+            charts.distribution = new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: Object.keys(ranges),
+                    datasets: [{
+                        data: Object.values(ranges),
+                        backgroundColor: ['#3498db', '#2ecc71', '#f39c12', '#e74c3c']
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    return context.label + ': ' + context.parsed + ' fines';
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
 
-        // Update breach types chart
-        function updateBreachTypesChart() {
-            const breachTotals = {};
-            filteredData.forEach(d => {
-                breachTotals[d.breachType] = (breachTotals[d.breachType] || 0) + d.amount;
-            });
-            
-            const topBreaches = Object.entries(breachTotals)
-                .sort((a, b) => b[1] - a[1])
-                .slice(0, 10);
-            
-            const ctx = document.getElementById('breachTypesChart').getContext('2d');
-            
-            if (charts.breaches) {
-                charts.breaches.destroy();
-            }
-            
-            charts.breaches = new Chart(ctx, {
-                type: 'bar',
-                data: {
-                    labels: topBreaches.map(b => truncateLabel(b[0], 30)),
-                    datasets: [{
-                        data: topBreaches.map(b => b[1]),
-                        backgroundColor: topBreaches.map(b => getBreachTypeColor(b[0]))
-                    }]
-                },
-                options: {
-                    indexAxis: 'y',
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: {
-                        legend: {
-                            display: false
-                        },
-                        tooltip: {
-                            callbacks: {
-                                label: function(context) {
-                                    return formatAmount(context.parsed.x);
-                                }
-                            }
-                        }
-                    }
-                }
-            });
-        }
+        // Update breach types chart
+        function updateBreachTypesChart() {
+            const breachTotals = {};
+            filteredData.forEach(d => {
+                breachTotals[d.breachType] = (breachTotals[d.breachType] || 0) + d.amount;
+            });
+            
+            const topBreaches = Object.entries(breachTotals)
+                .sort((a, b) => b[1] - a[1])
+                .slice(0, 10);
+            
+            const ctx = document.getElementById('breachTypesChart').getContext('2d');
+            
+            if (charts.breaches) {
+                charts.breaches.destroy();
+            }
+            
+            charts.breaches = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: topBreaches.map(b => truncateLabel(b[0], 30)),
+                    datasets: [{
+                        data: topBreaches.map(b => b[1]),
+                        backgroundColor: topBreaches.map(b => getBreachTypeColor(b[0]))
+                    }]
+                },
+                options: {
+                    indexAxis: 'y',
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: false
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    return formatAmount(context.parsed.x);
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        x: {
+                            ticks: {
+                                callback: function(value) {
+                                    return formatAmount(value);
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
 
-        // Update table
-        function updateTable() {
-            const tbody = document.getElementById('tableBody');
-            tbody.innerHTML = '';
-            
-            // Sort data
-            const sortedData = [...filteredData].sort((a, b) => {
-                let aVal, bVal;
-                
-                switch (sortField) {
-                    case 'date':
-                        aVal = a.date;
-                        bVal = b.date;
-                        break;
-                    case 'firm':
-                        aVal = a.firm.toLowerCase();
-                        bVal = b.firm.toLowerCase();
-                        break;
-                    case 'amount':
-                        aVal = a.amount;
-                        bVal = b.amount;
-                        break;
-                    case 'category':
-                        aVal = a.firmCategory.toLowerCase();
-                        bVal = b.firmCategory.toLowerCase();
-                        break;
-                    case 'breach':
-                        aVal = a.breachType.toLowerCase();
-                        bVal = b.breachType.toLowerCase();
-                        break;
-                }
-                
-                if (sortDirection === 'asc') {
-                    return aVal > bVal ? 1 : -1;
-                } else {
-                    return aVal < bVal ? 1 : -1;
-                }
-            });
-            
-            // Paginate
-            const startIndex = (currentPage - 1) * rowsPerPage;
-            const endIndex = startIndex + rowsPerPage;
-            const pageData = sortedData.slice(startIndex, endIndex);
-            
-            // Render rows
-            pageData.forEach(row => {
-                const tr = document.createElement('tr');
-                tr.innerHTML = `
-                    <td>${formatDate(row.date)}</td>
-                    <td>${row.firm}</td>
-                    <td>£${formatNumber(row.amount)}</td>
-                    <td><span class="badge badge-category" style="background-color: ${getCategoryColour(row.firmCategory)}20; color: ${getCategoryColour(row.firmCategory)}">${row.firmCategory}</span></td>
-                    <td><span class="badge badge-breach">${row.breachType}</span></td>
-                `;
-                tbody.appendChild(tr);
-            });
-            
-            // Update pagination
-            updatePagination(sortedData.length);
-        }
+        // Update table
+        function updateTable() {
+            const tbody = document.getElementById('tableBody');
+            tbody.innerHTML = '';
+            
+            // Sort data
+            const sortedData = [...filteredData].sort((a, b) => {
+                let aVal, bVal;
+                
+                switch (sortField) {
+                    case 'date':
+                        aVal = a.date;
+                        bVal = b.date;
+                        break;
+                    case 'firm':
+                        aVal = a.firm.toLowerCase();
+                        bVal = b.firm.toLowerCase();
+                        break;
+                    case 'amount':
+                        aVal = a.amount;
+                        bVal = b.amount;
+                        break;
+                    case 'category':
+                        aVal = a.firmCategory.toLowerCase();
+                        bVal = b.firmCategory.toLowerCase();
+                        break;
+                    case 'breach':
+                        aVal = a.breachType.toLowerCase();
+                        bVal = b.breachType.toLowerCase();
+                        break;
+                }
+                
+                if (sortDirection === 'asc') {
+                    return aVal > bVal ? 1 : -1;
+                } else {
+                    return aVal < bVal ? 1 : -1;
+                }
+            });
+            
+            // Paginate
+            const startIndex = (currentPage - 1) * rowsPerPage;
+            const endIndex = startIndex + rowsPerPage;
+            const pageData = sortedData.slice(startIndex, endIndex);
+            
+            // Render rows
+            pageData.forEach(row => {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td>${formatDate(row.date)}</td>
+                    <td>${row.firm}</td>
+                    <td>£${formatNumber(row.amount)}</td>
+                    <td><span class="badge badge-category" style="background-color: ${getCategoryColour(row.firmCategory)}20; color: ${getCategoryColour(row.firmCategory)}">${row.firmCategory}</span></td>
+                    <td><span class="badge badge-breach">${row.breachType}</span></td>
+                `;
+                tbody.appendChild(tr);
+            });
+            
+            // Update pagination
+            updatePagination(sortedData.length);
+        }
 
-        // Update pagination
-        function updatePagination(totalRows) {
-            const totalPages = Math.ceil(totalRows / rowsPerPage);
-            const pagination = document.getElementById('pagination');
-            
-            pagination.innerHTML = `
-                <button onclick="changePage(${currentPage - 1})" ${currentPage === 1 ? 'disabled' : ''}>Previous</button>
-                <span class="page-info">Page ${currentPage} of ${totalPages}</span>
-                <button onclick="changePage(${currentPage + 1})" ${currentPage === totalPages ? 'disabled' : ''}>Next</button>
-            `;
-        }
+        // Update pagination
+        function updatePagination(totalRows) {
+            const totalPages = Math.ceil(totalRows / rowsPerPage);
+            const pagination = document.getElementById('pagination');
+            
+            pagination.innerHTML = `
+                <button onclick="changePage(${currentPage - 1})" ${currentPage === 1 ? 'disabled' : ''}>Previous</button>
+                <span class="page-info">Page ${currentPage} of ${totalPages}</span>
+                <button onclick="changePage(${currentPage + 1})" ${currentPage === totalPages ? 'disabled' : ''}>Next</button>
+            `;
+        }
 
-        // Sort table
-        function sortTable(field) {
-            if (sortField === field) {
-                sortDirection = sortDirection === 'asc' ? 'desc' : 'asc';
-            } else {
-                sortField = field;
-                sortDirection = 'desc';
-            }
-            updateTable();
-        }
+        // Sort table
+        function sortTable(field) {
+            if (sortField === field) {
+                sortDirection = sortDirection === 'asc' ? 'desc' : 'asc';
+            } else {
+                sortField = field;
+                sortDirection = 'desc';
+            }
+            updateTable();
+        }
 
-        // Change page
-        function changePage(page) {
-            const totalPages = Math.ceil(filteredData.length / rowsPerPage);
-            if (page >= 1 && page <= totalPages) {
-                currentPage = page;
-                updateTable();
-            }
-        }
+        // Change page
+        function changePage(page) {
+            const totalPages = Math.ceil(filteredData.length / rowsPerPage);
+            if (page >= 1 && page <= totalPages) {
+                currentPage = page;
+                updateTable();
+            }
+        }
 
-        // Export data
-        function exportData() {
-            let csv = 'Date,Firm/Individual,Amount,Category,Breach Type,Summary\n';
-            
-            filteredData.forEach(row => {
-                csv += `"${formatDate(row.date)}","${row.firm}","£${formatNumber(row.amount)}",`;
-                csv += `"${row.firmCategory}","${row.breachType}","${row.summary.replace(/"/g, '""')}"\n`;
-            });
-            
-            const blob = new Blob([csv], { type: 'text/csv' });
-            const url = window.URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = `fca_fines_export_${new Date().toISOString().split('T')[0]}.csv`;
-            a.click();
-            window.URL.revokeObjectURL(url);
-        }
+        // Export data
+        function exportData() {
+            let csv = 'Date,Firm/Individual,Amount,Category,Breach Type,Summary\n';
+            
+            filteredData.forEach(row => {
+                csv += `"${formatDate(row.date)}","${row.firm}","£${formatNumber(row.amount)}",`;
+                csv += `"${row.firmCategory}","${row.breachType}","${row.summary.replace(/"/g, '""')}"\n`;
+            });
+            
+            const blob = new Blob([csv], { type: 'text/csv' });
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `fca_fines_export_${new Date().toISOString().split('T')[0]}.csv`;
+            a.click();
+            window.URL.revokeObjectURL(url);
+        }
 
-        // Utility functions
-        function formatAmount(amount) {
-            if (amount >= 1000000000) {
-                return '£' + (amount / 1000000000).toFixed(2) + 'B';
-            } else if (amount >= 1000000) {
-                return '£' + (amount / 1000000).toFixed(2) + 'M';
-            } else if (amount >= 1000) {
-                return '£' + (amount / 1000).toFixed(0) + 'K';
-            }
-            return '£' + amount.toFixed(0);
-        }
+        // Utility functions
+        function formatAmount(amount) {
+            if (amount >= 1000000000) {
+                return '£' + (amount / 1000000000).toFixed(2) + 'B';
+            } else if (amount >= 1000000) {
+                return '£' + (amount / 1000000).toFixed(2) + 'M';
+            } else if (amount >= 1000) {
+                return '£' + (amount / 1000).toFixed(0) + 'K';
+            }
+            return '£' + amount.toFixed(0);
+        }
 
-        function formatNumber(num) {
-            return num.toLocaleString('en-GB');
-        }
+        function formatNumber(num) {
+            return num.toLocaleString('en-GB');
+        }
 
-        function formatDate(date) {
-            const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-            return months[date.getMonth()] + ' ' + date.getFullYear();
-        }
+        function formatDate(date) {
+            const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+            return months[date.getMonth()] + ' ' + date.getFullYear();
+        }
 
-        function truncateLabel(label, maxLength) {
-            return label.length > maxLength ? label.substring(0, maxLength) + '...' : label;
-        }
+        function truncateLabel(label, maxLength) {
+            return label.length > maxLength ? label.substring(0, maxLength) + '...' : label;
+        }
 
-        function getCategoryColour(category) {
-            const colours = {
-                'Banking': '#003e5a',
-                'Individual': '#007ea7',
-                'Corporate': '#00a8e8',
-                'Asset Management': '#2ecc71',
-                'Trading Firm': '#f39c12',
-                'Insurance': '#e74c3c',
-                'Financial Planning': '#9b59b6'
-            };
-            
-            return colours[category] || '#95a5a6';
-        }
+        function getCategoryColour(category) {
+            const colours = {
+                'Banking': '#003e5a',
+                'Individual': '#007ea7',
+                'Corporate': '#00a8e8',
+                'Asset Management': '#2ecc71',
+                'Trading Firm': '#f39c12',
+                'Insurance': '#e74c3c',
+                'Financial Planning': '#9b59b6'
+            };
+            
+            return colours[category] || '#95a5a6';
+        }
 
-        function getBreachTypeColor(breachType) {
-            const colors = [
-                '#e74c3c', '#3498db', '#2ecc71', '#f39c12', '#9b59b6',
-                '#1abc9c', '#e67e22', '#16a085', '#d35400', '#2980b9'
-            ];
-            
-            let hash = 0;
-            for (let i = 0; i < breachType.length; i++) {
-                hash = ((hash << 5) - hash) + breachType.charCodeAt(i);
-                hash = hash & hash;
-            }
-            
-            return colors[Math.abs(hash) % colors.length];
-        }
+        function getBreachTypeColor(breachType) {
+            const colors = [
+                '#e74c3c', '#3498db', '#2ecc71', '#f39c12', '#9b59b6',
+                '#1abc9c', '#e67e22', '#16a085', '#d35400', '#2980b9'
+            ];
+            
+            let hash = 0;
+            for (let i = 0; i < breachType.length; i++) {
+                hash = ((hash << 5) - hash) + breachType.charCodeAt(i);
+                hash = hash & hash;
+            }
+            
+            return colors[Math.abs(hash) % colors.length];
+        }
 
-        function debounce(func, wait) {
-            let timeout;
-            return function executedFunction(...args) {
-                const later = () => {
-                    clearTimeout(timeout);
-                    func(...args);
-                };
-                clearTimeout(timeout);
-                timeout = setTimeout(later, wait);
-            };
-        }
-    </script>
+        function debounce(func, wait) {
+            let timeout;
+            return function executedFunction(...args) {
+                const later = () => {
+                    clearTimeout(timeout);
+                    func(...args);
+                };
+                clearTimeout(timeout);
+                timeout = setTimeout(later, wait);
+            };
+        }
+    </script>
 </body>
 </html>
