@@ -6,7 +6,10 @@
   "scripts": {
     "scrape": "node scraper.js",
     "scrape:year": "node scraper.js --year",
-    "test": "node scraper.js --year 2025 --dry-run"
+    "test": "node scraper.js --year 2025 --dry-run",
+    "test:logic": "node test-scraper.js",
+    "test:comprehensive": "node test-comprehensive.js",
+    "test:all": "node test-scraper.js && node test-comprehensive.js"
   },
   "keywords": [
     "fca",

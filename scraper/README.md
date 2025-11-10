@@ -82,6 +82,47 @@ npm test
 node scraper.js --year 2025 --dry-run
 ```
 
+## Testing
+
+The scraper includes comprehensive test suites to validate all functionality:
+
+### Test Suites
+
+1. **Logic Tests** (`test-scraper.js`)
+   - Basic parsing and categorization validation
+   - Tests with real 2025 FCA data
+   ```bash
+   npm run test:logic
+   ```
+
+2. **Comprehensive Tests** (`test-comprehensive.js`)
+   - 36 test cases covering all scenarios
+   - Amount parsing (6 tests)
+   - Date parsing (5 tests)
+   - Breach categorization (9 tests)
+   - Firm categorization (9 tests)
+   - Full pipeline (2 tests)
+   - Edge cases (5 tests)
+   ```bash
+   npm run test:comprehensive
+   ```
+
+3. **Run All Tests**
+   ```bash
+   npm run test:all
+   ```
+
+### Test Results
+
+All tests pass with 100% success rate. See [TEST_RESULTS.md](./TEST_RESULTS.md) for detailed results.
+
+**Test Coverage:**
+- ✅ Amount parsing (handles £, commas, decimals)
+- ✅ Date parsing (DD/MM/YYYY to ISO 8601)
+- ✅ Breach type categorization (9 categories)
+- ✅ Firm/individual detection (9 categories)
+- ✅ Edge cases (hyphens, complex names, large amounts)
+
 ## Data Categorization
 
 ### Breach Types

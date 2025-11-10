@@ -41,37 +41,70 @@ function categorizeFirm(reason, firmName) {
     const reasonLower = reason.toLowerCase();
     const firmLower = firmName.toLowerCase();
 
-    // Check if it's an individual (common patterns)
-    if (!firmLower.includes('ltd') &&
-        !firmLower.includes('limited') &&
-        !firmLower.includes('plc') &&
-        !firmLower.includes('llp') &&
-        !firmLower.includes('partnership') &&
-        !firmLower.includes('bank') &&
-        !firmLower.includes('exchange') &&
-        firmName.split(' ').length <= 4 && // Typically individual names are shorter
-        /^[A-Z][a-z]+ [A-Z]/.test(firmName)) { // Starts with capital letter pattern
+    // First check for definite corporate indicators
+    const corporateIndicators = [
+        'ltd', 'limited', 'plc', 'llp', 'inc', 'corp', 'corporation',
+        'partnership', 'bank', 'exchange', 'group', 'holdings',
+        'capital', 'markets', 'securities', 'financial', 'advisors',
+        'international', 'global', 'company', 'companies', 'trust',
+        'management', 'services', 'asset', 'investments'
+    ];
+
+    const isCorporate = corporateIndicators.some(indicator =>
+        firmLower.includes(indicator)
+    );
+
+    // Firm categorization based on keywords (do this first if corporate)
+    if (isCorporate || firmName.split(' ').length > 4) {
+        // It's definitely a company, now categorize the type
+        if (reasonLower.includes('investment bank')) {
+            return 'Investment Banking';
+        } else if (firmLower.includes('bank') || reasonLower.includes('banking')) {
+            return 'Banking';
+        } else if (firmLower.includes('asset') || reasonLower.includes('asset management')) {
+            return 'Asset Management';
+        } else if (reasonLower.includes('trading firm') || firmLower.includes('trading')) {
+            return 'Trading Firm';
+        } else if (firmLower.includes('insurance')) {
+            return 'Insurance';
+        } else if (reasonLower.includes('exchange') || firmLower.includes('exchange')) {
+            return 'Exchange';
+        } else if (reasonLower.includes('mortgage') || reasonLower.includes('pension')) {
+            return 'Financial Planning';
+        } else {
+            return 'Corporate';
+        }
+    }
+
+    // Check if it's an individual (refined patterns)
+    // Individual names typically have 2-4 words and follow name patterns
+    // Allows hyphens in names (e.g., Jean-Noel) where each part starts with capital
+    const wordCount = firmName.split(' ').length;
+    const hasNamePattern = /^([A-Z][a-z]+(-[A-Z][a-z]+)*)(\s+[A-Z][a-z]+(-[A-Z][a-z]+)*)*$/.test(firmName);
+
+    if (wordCount >= 2 && wordCount <= 4 && hasNamePattern) {
         return 'Individual';
     }
 
-    // Firm categorization based on keywords
-    if (firmLower.includes('bank') || reasonLower.includes('banking')) {
-        return 'Banking';
-    } else if (reasonLower.includes('investment bank')) {
+    // If we can't determine, check reason for sector clues
+    if (reasonLower.includes('investment bank')) {
         return 'Investment Banking';
-    } else if (firmLower.includes('asset') || reasonLower.includes('asset management')) {
+    } else if (reasonLower.includes('banking')) {
+        return 'Banking';
+    } else if (reasonLower.includes('asset management')) {
         return 'Asset Management';
-    } else if (reasonLower.includes('trading firm') || firmLower.includes('trading')) {
+    } else if (reasonLower.includes('trading firm')) {
         return 'Trading Firm';
-    } else if (firmLower.includes('insurance')) {
+    } else if (reasonLower.includes('insurance')) {
         return 'Insurance';
-    } else if (reasonLower.includes('exchange') || firmLower.includes('exchange')) {
+    } else if (reasonLower.includes('exchange')) {
         return 'Exchange';
     } else if (reasonLower.includes('mortgage') || reasonLower.includes('pension')) {
         return 'Financial Planning';
-    } else {
-        return 'Corporate';
     }
+
+    // Default to Corporate if uncertain
+    return 'Corporate';
 }
 
 function parseAmount(amountStr) {
