@@ -41,3 +41,14 @@ export interface ListResponse {
   success: boolean;
   data: FineRecord[];
 }
+
+export interface NotificationsResponse {
+  success: boolean;
+  data: Array<{
+    id: string;
+    title: string;
+    detail: string;
+    time: string;
+    read?: boolean;
+  }>;
+}

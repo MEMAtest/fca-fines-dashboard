@@ -1,11 +1,21 @@
+import { FilterChip } from './FilterChip';
+import { SearchAutocomplete } from './SearchAutocomplete';
+
 interface FiltersBarProps {
   year: number;
   availableYears: number[];
   category: string;
   categories: string[];
   resultsCount: number;
+  search: string;
+  searchScope: string;
+  searchData: Array<{ firm: string; summary: string; category: string }>;
+  chips: Array<{ label: string; onRemove?: () => void }>;
   onYearChange: (year: number) => void;
   onCategoryChange: (category: string) => void;
+  onSearchChange: (value: string) => void;
+  onSearchScopeChange: (scope: string) => void;
+  onAdvancedOpen: () => void;
 }
 
 export function FiltersBar({
@@ -14,8 +24,15 @@ export function FiltersBar({
   category,
   categories,
   resultsCount,
+  search,
+  searchScope,
+  searchData,
+  chips,
   onYearChange,
   onCategoryChange,
+  onSearchChange,
+  onSearchScopeChange,
+  onAdvancedOpen,
 }: FiltersBarProps) {
   const focusLabel = year === 0 ? 'All years' : `${year} focus`;
   const categoryLabel = category === 'All' ? 'All breach types' : category;
@@ -56,7 +73,27 @@ export function FiltersBar({
             ))}
           </select>
         </div>
+        <div>
+          <label htmlFor="search-input">
+            Search notices <span className="filters__hint">Press ⌘K</span>
+          </label>
+          <SearchAutocomplete
+            value={search}
+            scope={searchScope}
+            data={searchData}
+            onScopeChange={onSearchScopeChange}
+            onChange={onSearchChange}
+          />
+        </div>
       </div>
+
+      {chips.length > 0 && (
+        <div className="filters__chips">
+          {chips.map((chip) => (
+            <FilterChip key={chip.label} label={chip.label} onRemove={chip.onRemove} />
+          ))}
+        </div>
+      )}
 
       <div className="filters__metrics">
         <div className="filters__metric">
@@ -67,6 +104,9 @@ export function FiltersBar({
           <strong>{categoryLabel}</strong>
           breach focus
         </div>
+        <button type="button" className="btn btn-primary" onClick={onAdvancedOpen}>
+          Show advanced
+        </button>
       </div>
     </section>
   );
@@ -75,15 +115,9 @@ export function FiltersBar({
 function FilterGlyph() {
   return (
     <svg className="filters__glyph" viewBox="0 0 32 32" role="img" aria-hidden="true">
-      <defs>
-        <linearGradient id="lens" x1="0%" y1="0%" x2="100%" y2="100%">
-          <stop offset="0%" stopColor="#10b981" />
-          <stop offset="100%" stopColor="#0ea5e9" />
-        </linearGradient>
-      </defs>
-      <rect x="3" y="5" width="26" height="6" rx="3" fill="url(#lens)" opacity="0.8" />
+      <rect x="3" y="5" width="26" height="6" rx="3" fill="#10b981" opacity="0.8" />
       <rect x="7" y="13" width="18" height="6" rx="3" fill="#0ea5e9" opacity="0.6" />
-      <rect x="11" y="21" width="10" height="6" rx="3" fill="#10b981" opacity="0.8" />
+      <rect x="11" y="21" width="10" height="6" rx="3" fill="#2563eb" opacity="0.8" />
     </svg>
   );
 }

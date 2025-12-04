@@ -1,5 +1,6 @@
 import { ExternalLink } from 'lucide-react';
 import { FineRecord } from '../types';
+import { ExportMenu } from './ExportMenu';
 
 const formatter = new Intl.NumberFormat('en-GB', {
   style: 'currency',
@@ -10,17 +11,22 @@ const formatter = new Intl.NumberFormat('en-GB', {
 interface LatestNoticesProps {
   records: FineRecord[];
   year: number;
+  exportId?: string;
 }
 
-export function LatestNotices({ records, year }: LatestNoticesProps) {
+export function LatestNotices({ records, year, exportId }: LatestNoticesProps) {
   const focusLabel = year === 0 ? '2013 - Today' : year;
+  const panelId = exportId ?? 'latest-notices';
   return (
-    <div className="panel">
+    <div className="panel" id={panelId}>
       <div className="panel__header">
         <div>
           <p className="panel__eyebrow">Latest notices</p>
           <h3>Recent enforcement actions • {focusLabel}</h3>
         </div>
+        {records.length > 0 && (
+          <ExportMenu records={records} filename={`notices-${focusLabel}`} targetElementId={panelId} />
+        )}
       </div>
       {records.length === 0 ? (
         <p className="status">No notices landed for this combination yet.</p>

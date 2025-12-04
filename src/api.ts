@@ -1,6 +1,7 @@
-import type { ListResponse, StatsResponse, TrendsResponse } from './types';
+import type { ListResponse, StatsResponse, TrendsResponse, NotificationsResponse } from './types';
 
-const API_BASE = import.meta.env.VITE_API_BASE || '';
+const fallbackBase = import.meta.env.DEV ? 'http://localhost:4000' : '';
+const API_BASE = import.meta.env.VITE_API_BASE ?? fallbackBase;
 
 async function fetchJSON<T>(path: string): Promise<T> {
   const response = await fetch(`${API_BASE}${path}`);
@@ -21,4 +22,8 @@ export function fetchStats(year: number) {
 
 export function fetchTrends(year: number) {
   return fetchJSON<TrendsResponse>(`/api/fca-fines/trends?period=month&year=${year}`);
+}
+
+export function fetchNotifications() {
+  return fetchJSON<NotificationsResponse>(`/api/fca-fines/notifications`);
 }

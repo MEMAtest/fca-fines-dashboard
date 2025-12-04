@@ -1,0 +1,54 @@
+/* Responsive */
+@media (max-width: 1024px) {
+  .hero {
+    padding: 36px;
+  }
+
+  .hero__content {
+    flex-direction: column;
+  }
+
+  .grid--wide {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 768px) {
+  .app-shell {
+    padding: 48px 16px 80px;
+  }
+
+  .hero {
+    padding: 28px;
+  }
+
+  .hero__stats {
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  }
+
+  .filters {
+    padding: 24px;
+  }
+
+  .filters__controls {
+    grid-template-columns: 1fr;
+  }
+
+  .panel__chart {
+    height: 240px;
+  }
+
+  .mobile-nav {
+    display: flex;
+  }
+}
+
+@media (max-width: 640px) {
+  .hero__stats {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .grid {
+    grid-template-columns: 1fr;
+  }
+}
