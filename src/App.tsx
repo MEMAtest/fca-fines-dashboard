@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { format, startOfMonth, endOfMonth } from 'date-fns';
-import type { FineRecord, StatsResponse } from './types';
+import type { FineRecord, StatsResponse, NotificationItem } from './types';
 import { HeroStats } from './components/HeroStats';
 import { FiltersBar } from './components/FiltersBar';
 import { TimelineChart } from './components/TimelineChart';
@@ -16,7 +16,6 @@ import { MobileNav } from './components/MobileNav';
 import { ComparisonView } from './components/ComparisonView';
 import { BreachByTypeChart } from './components/BreachByTypeChart';
 import { RegulatorImpactChart } from './components/RegulatorImpactChart';
-import type { NotificationItem } from './components/NotificationBell';
 import { exportData } from './utils/export';
 import { useLocalStorage } from './hooks/useLocalStorage';
 import { useNotificationFeed } from './hooks/useNotificationFeed';

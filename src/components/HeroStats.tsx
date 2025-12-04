@@ -4,7 +4,8 @@ import type { ReactNode } from 'react';
 import { format } from 'date-fns';
 import type { FineRecord, StatsResponse } from '../types';
 import { ExportMenu } from './ExportMenu';
-import { NotificationBell, type NotificationItem } from './NotificationBell';
+import { NotificationBell } from './NotificationBell';
+import type { NotificationItem } from '../types';
 
 interface HeroStatsProps {
   stats?: StatsResponse['data'] | null;

@@ -1,12 +1,5 @@
 import { Bell } from 'lucide-react';
-
-export interface NotificationItem {
-  id: string;
-  title: string;
-  detail: string;
-  time: string;
-  read?: boolean;
-}
+import type { NotificationItem } from '../types';
 
 interface NotificationBellProps {
   notifications: NotificationItem[];

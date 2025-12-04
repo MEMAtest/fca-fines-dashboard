@@ -52,3 +52,11 @@ export interface NotificationsResponse {
     read?: boolean;
   }>;
 }
+
+export interface NotificationItem {
+  id: string;
+  title: string;
+  detail: string;
+  time: string;
+  read?: boolean;
+}

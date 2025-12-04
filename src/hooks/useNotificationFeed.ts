@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from 'react';
 import { fetchNotifications } from '../api';
-import type { NotificationItem } from '../components/NotificationBell';
+import type { NotificationItem } from '../types';
 
 export function useNotificationFeed() {
   const [notifications, setNotifications] = useState<NotificationItem[]>([]);
