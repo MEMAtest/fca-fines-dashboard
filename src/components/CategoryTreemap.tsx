@@ -16,7 +16,7 @@ interface CategoryTreemapProps {
 
 const COLORS = [
   '#6366f1',
-  '#8b5cf6',
+  '#0891b2',
   '#ec4899',
   '#f43f5e',
   '#f97316',
@@ -26,7 +26,7 @@ const COLORS = [
   '#06b6d4',
   '#0ea5e9',
   '#3b82f6',
-  '#a855f7',
+  '#0891b2',
 ];
 
 const ICON_MAP: Record<string, LucideIcon> = {

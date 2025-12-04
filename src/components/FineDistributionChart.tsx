@@ -10,7 +10,7 @@ export const AMOUNT_BUCKETS = [
   { label: 'Over £100m', min: 100_000_000, max: Number.POSITIVE_INFINITY },
 ];
 
-const STACK_COLORS = ['#6366f1', '#8b5cf6', '#ec4899', '#f97316', '#0ea5e9', '#14b8a6'];
+const STACK_COLORS = ['#6366f1', '#0891b2', '#ec4899', '#f97316', '#0ea5e9', '#14b8a6'];
 const STACK_OTHER = 'Other';
 
 interface FineDistributionChartProps {

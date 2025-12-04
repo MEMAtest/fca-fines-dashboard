@@ -76,7 +76,7 @@ export function RegulatorImpactChart({ records, exportId }: RegulatorImpactChart
     );
   }
 
-  const colorPalette = ['#3b82f6', '#0ea5e9', '#06b6d4', '#a855f7', '#f472b6'];
+  const colorPalette = ['#3b82f6', '#0ea5e9', '#06b6d4', '#0891b2', '#f472b6'];
   const series = [...aggregates.topCategories, STACK_OTHER];
   const labelFormatter = metric === 'amount' ? '£' : '';
   const axisFormatter =

@@ -51,10 +51,15 @@ export function MonthlyComparisonChart({
           </label>
         </div>
       </div>
-      <p className="panel__description">Compare monthly totals to track acceleration or cooling trends year over year.</p>
+      <p className="panel__description">
+        Compare monthly totals to track acceleration or cooling trends.
+        {data.length === 0 && ' No overlapping data for these years.'}
+      </p>
       <div className="panel__chart panel__chart--compact">
         {loading ? (
           <p className="status">Loading comparison data…</p>
+        ) : data.length === 0 ? (
+          <p className="status">No comparison data available. Select different years.</p>
         ) : (
           <ResponsiveContainer width="100%" height={240}>
             <LineChart data={data}>

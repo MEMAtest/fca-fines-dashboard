@@ -74,17 +74,30 @@ function buildComparisonSeries(
   comparisonYear: number | null
 ) {
   if (!comparisonYear || primaryYear === comparisonYear) return [];
+
   const primary = series.filter((item) => item.year === primaryYear);
   const secondary = series.filter((item) => item.year === comparisonYear);
+
   const monthMap = new Map<number, { month: string; current: number; previous: number }>();
+  const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+
+  // Initialize all 12 months with zeros
+  for (let i = 1; i <= 12; i++) {
+    monthMap.set(i, { month: monthNames[i - 1], current: 0, previous: 0 });
+  }
+
+  // Populate primary year data
   primary.forEach((item) => {
-    monthMap.set(item.period, { month: item.month, current: item.total, previous: 0 });
+    const entry = monthMap.get(item.period)!;
+    entry.current = item.total;
   });
+
+  // Populate comparison year data
   secondary.forEach((item) => {
-    const entry = monthMap.get(item.period) || { month: item.month, current: 0, previous: 0 };
+    const entry = monthMap.get(item.period)!;
     entry.previous = item.total;
-    monthMap.set(item.period, entry);
   });
+
   return Array.from(monthMap.values());
 }
 
@@ -597,7 +610,8 @@ export default function App() {
       {error && <p className="status status--error">{error}</p>}
       {!loading && !error && (
         <>
-          <div className="grid grid--wide">
+          {/* Grid 1: Timeline & Category - 2 columns */}
+          <div className="grid grid--two-col">
             <TimelineChart
               data={timelineForChart}
               year={year}
@@ -614,14 +628,20 @@ export default function App() {
               exportRecords={filteredFines}
               exportId="category-panel"
             />
+          </div>
+
+          {/* Grid 2: Fine Distribution - Full width */}
+          <div className="grid">
             <FineDistributionChart
               records={filteredFines}
               onSelectRange={handleAmountRangeSelect}
               exportId="distribution-panel"
             />
           </div>
+
+          {/* Grid 3: Comparison - 2 columns (conditional) */}
           {comparisonYear && (
-            <div className="grid">
+            <div className="grid grid--two-col">
               <MonthlyComparisonChart
                 currentYear={primaryYear}
                 comparisonYear={comparisonYear}
@@ -631,16 +651,22 @@ export default function App() {
                 data={comparisonData}
                 loading={!recordsByYear[primaryYear] || (comparisonYear && !recordsByYear[comparisonYear])}
               />
-              <button type="button" className="btn btn-ghost" onClick={() => setComparisonOpen(true)}>
-                Open comparison sandbox
-              </button>
+              <div className="panel">
+                <button type="button" className="btn btn-ghost" onClick={() => setComparisonOpen(true)}>
+                  Open comparison sandbox
+                </button>
+              </div>
             </div>
           )}
-          <div className="grid grid--wide">
+
+          {/* Grid 4: Latest Notices & Top Firms - 2 columns */}
+          <div className="grid grid--two-col">
             <LatestNotices records={filteredFines} year={year} exportId="latest-notices" />
             <TopFirms records={filteredFines} onSelectFirm={handleFirmDrilldown} exportId="top-firms" />
           </div>
-          <div className="grid grid--wide">
+
+          {/* Grid 5: Breach charts - 2 columns */}
+          <div className="grid grid--two-col">
             <BreachByTypeChart records={filteredFines} onSelect={handleCategorySelect} />
             <RegulatorImpactChart records={filteredFines} />
           </div>

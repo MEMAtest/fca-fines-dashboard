@@ -13,6 +13,14 @@
   grid-auto-rows: 1fr;
 }
 
+.grid--two-col {
+  grid-template-columns: repeat(auto-fit, minmax(480px, 1fr));
+  gap: 28px;
+  align-items: stretch;
+  grid-auto-rows: 1fr;
+  margin-top: 48px;
+}
+
 .panel {
   background: #ffffff;
   border-radius: var(--radius-xl);

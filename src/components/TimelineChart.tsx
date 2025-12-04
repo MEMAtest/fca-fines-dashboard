@@ -143,7 +143,7 @@ export function TimelineChart({
                 strokeWidth={3}
               />
             )}
-            {showCount && <Bar yAxisId="right" dataKey="count" fill="#a855f7" radius={[8, 8, 0, 0]} opacity={0.85} />}
+            {showCount && <Bar yAxisId="right" dataKey="count" fill="#0891b2" radius={[8, 8, 0, 0]} opacity={0.85} />}
             {showAmount && averageAmount > 0 && (
               <ReferenceLine
                 yAxisId="left"
