@@ -1,5 +1,5 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
-import { getNotifications } from '../../server/services/fcaFines';
+import { getNotifications } from '../../server/services/fcaFines.js';
 
 export default async function handler(_req: VercelRequest, res: VercelResponse) {
   try {

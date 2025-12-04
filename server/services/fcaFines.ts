@@ -1,5 +1,5 @@
 import type { NotificationItem } from '../../src/types';
-import { getSqlClient } from '../db';
+import { getSqlClient } from '../db.js';
 
 const sql = getSqlClient;
 

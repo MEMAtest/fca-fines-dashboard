@@ -3,7 +3,7 @@ import express from 'express';
 import cors from 'cors';
 import path from 'path';
 import { fileURLToPath } from 'url';
-import { listFines, getStats, getTrends, getNotifications } from './server/services/fcaFines';
+import { listFines, getStats, getTrends, getNotifications } from './server/services/fcaFines.js';
 const app = express();
 app.use(cors());
 

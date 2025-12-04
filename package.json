@@ -5,8 +5,8 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "dev:api": "ts-node server.ts",
-    "start": "ts-node server.ts",
+    "dev:api": "node --loader ts-node/esm --experimental-specifier-resolution=node server.ts",
+    "start": "node --loader ts-node/esm --experimental-specifier-resolution=node server.ts",
     "build": "vite build",
     "scrape:fines": "ts-node scripts/scraper/scrapeFcaFines.ts",
     "scrape:fines:dry": "ts-node scripts/scraper/scrapeFcaFines.ts --dry-run"

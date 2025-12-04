@@ -1,5 +1,5 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
-import { listFines } from '../../server/services/fcaFines';
+import { listFines } from '../../server/services/fcaFines.js';
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   try {
