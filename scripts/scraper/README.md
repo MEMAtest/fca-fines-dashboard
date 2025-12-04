@@ -52,6 +52,16 @@ Cron recommendations:
 - **Daily**: `FCA_YEARS=$(date +%Y)` to ingest the current year.
 - **Monthly**: run a mini backfill (`FCA_START_YEAR=2013 FCA_END_YEAR=$(date +%Y)`).
 
+## GitHub Actions automation
+
+The repository ships with `.github/workflows/daily-fca-scraper.yml`, which runs `npm run scrape:fines` every morning at 06:00 UTC (plus on manual dispatch). To enable it:
+
+1. In GitHub ➜ **Settings ➜ Secrets and variables ➜ Actions**, add the following secrets:
+   - `NEON_FCA_FINES_URL` – Neon connection string (required).
+   - `FCA_USER_AGENT` – optional override if FCA blocks the default UA.
+2. (Optional) add repository-level **variables** for `FCA_YEARS`, `FCA_START_YEAR`, `FCA_END_YEAR`, or `FCA_SINCE_DATE` to control the backfill window.
+3. The workflow uses npm caching and a concurrency lock so only one scrape runs at a time. Monitor the Actions tab for success/failure logs.
+
 ## How upserts work
 
 1. Each row generates `content_hash = sha256(firm + amount + date_issued)` to dedupe.

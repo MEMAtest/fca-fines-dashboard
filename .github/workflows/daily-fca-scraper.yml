@@ -1,0 +1,39 @@
+name: Daily FCA fines scrape
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '0 6 * * *' # 06:00 UTC ≈ 06:00 UK during winter / 07:00 during BST
+
+concurrency:
+  group: daily-fca-fines
+  cancel-in-progress: false
+
+jobs:
+  scrape:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run FCA scraper
+        env:
+          NEON_FCA_FINES_URL: ${{ secrets.NEON_FCA_FINES_URL }}
+          FCA_USER_AGENT: ${{ secrets.FCA_USER_AGENT }}
+          FCA_YEARS: ${{ vars.FCA_YEARS }}
+          FCA_START_YEAR: ${{ vars.FCA_START_YEAR }}
+          FCA_END_YEAR: ${{ vars.FCA_END_YEAR }}
+          FCA_SINCE_DATE: ${{ vars.FCA_SINCE_DATE }}
+        run: npm run scrape:fines
