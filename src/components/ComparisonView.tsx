@@ -173,17 +173,11 @@ export function ComparisonView({
   const focusedMonthData = focusedMonth ? chartData.find((row) => row.month === focusedMonth) : null;
 
   return (
-    <section className="panel comparison-view">
+    <div className="comparison-view">
       <div className="comparison-view__hero">
-        <div>
-          <p className="panel__eyebrow">Comparison Sandbox</p>
-          <div className="comparison-view__title">
-            <h3>
-              {primaryYear} vs {comparisonYear}
-            </h3>
-            <p>Track cadence, drill into breach families, and share this custom lens with one click.</p>
-          </div>
-        </div>
+        <p className="comparison-view__intro">
+          Track cadence, drill into breach families, and share this custom lens with one click.
+        </p>
         <div className="comparison-view__actions">
           <button type="button" className="btn btn-ghost" onClick={handleShare}>
             <Share2 size={16} />
@@ -192,9 +186,6 @@ export function ComparisonView({
           <button type="button" className="btn btn-ghost" onClick={handleExport}>
             <Download size={16} />
             Export CSV
-          </button>
-          <button type="button" className="btn btn-link" onClick={onClose}>
-            Close
           </button>
         </div>
       </div>
@@ -535,7 +526,7 @@ export function ComparisonView({
           )}
         </>
       )}
-    </section>
+    </div>
   );
 }
 
@@ -547,7 +538,7 @@ function renderTopList(records: FineRecord[]) {
     <article key={`${record.firm_individual}-${record.date_issued}`} className="comparison-view__card">
       <h5>{record.firm_individual}</h5>
       <p>
-        {new Date(record.date_issued).toLocaleDateString('en-GB')} • £{record.amount.toLocaleString('en-GB')}
+        {new Date(record.date_issued).toLocaleDateString('en-GB')} • £{safeNum(record.amount).toLocaleString('en-GB')}
       </p>
       <span className="badge">{record.breach_categories?.[0] || 'Unclassified'}</span>
     </article>

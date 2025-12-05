@@ -14,6 +14,7 @@ import { AdvancedFilters } from './components/AdvancedFilters';
 import { MonthlyComparisonChart } from './components/MonthlyComparisonChart';
 import { MobileNav } from './components/MobileNav';
 import { ComparisonView } from './components/ComparisonView';
+import { Modal } from './components/Modal';
 import { BreachByTypeChart } from './components/BreachByTypeChart';
 import { RegulatorImpactChart } from './components/RegulatorImpactChart';
 import { LessonsLearnedAnalysis } from './components/LessonsLearnedAnalysis';
@@ -712,25 +713,31 @@ export default function App() {
         onClear={() => setAdvancedFilters(INITIAL_ADVANCED_FILTERS)}
       />
       {comparisonOpen && comparisonYear && (
-        <ComparisonView
-          records={comparisonRecords}
-          availableYears={availableYears}
-          primaryYear={primaryYear}
-          comparisonYear={comparisonYear}
-          categories={comparisonCategoryOptions}
-          selectedCategories={comparisonCategories}
-          shareUrl={shareUrl}
-          loading={!comparisonReady}
-          onPrimaryYearChange={setYear}
-          onComparisonYearChange={setComparisonYear}
-          onCategoryToggle={(value) =>
-            setComparisonCategories((prev) => (prev.includes(value) ? prev.filter((item) => item !== value) : [...prev, value]))
-          }
-          onClearCategories={() => setComparisonCategories([])}
-          onPresetCategories={(categories) => setComparisonCategories(categories)}
-          onNotify={(message, type) => setToast({ message, type })}
+        <Modal
+          title={`${primaryYear} vs ${comparisonYear} Comparison`}
+          subtitle="Comparison Sandbox"
           onClose={() => setComparisonOpen(false)}
-        />
+        >
+          <ComparisonView
+            records={comparisonRecords}
+            availableYears={availableYears}
+            primaryYear={primaryYear}
+            comparisonYear={comparisonYear}
+            categories={comparisonCategoryOptions}
+            selectedCategories={comparisonCategories}
+            shareUrl={shareUrl}
+            loading={!comparisonReady}
+            onPrimaryYearChange={setYear}
+            onComparisonYearChange={setComparisonYear}
+            onCategoryToggle={(value) =>
+              setComparisonCategories((prev) => (prev.includes(value) ? prev.filter((item) => item !== value) : [...prev, value]))
+            }
+            onClearCategories={() => setComparisonCategories([])}
+            onPresetCategories={(categories) => setComparisonCategories(categories)}
+            onNotify={(message, type) => setToast({ message, type })}
+            onClose={() => setComparisonOpen(false)}
+          />
+        </Modal>
       )}
       <MobileNav
         onDashboard={scrollToHero}
