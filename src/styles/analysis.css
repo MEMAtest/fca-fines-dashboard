@@ -3,35 +3,43 @@
 /* Tab Navigation */
 .lessons-tabs {
   display: flex;
-  gap: 4px;
-  padding: 4px;
-  background: var(--surface-secondary);
+  gap: 8px;
+  padding: 6px;
+  background: #f1f5f9;
   border-radius: 12px;
   margin-bottom: 24px;
 }
 
 .lessons-tabs__tab {
   flex: 1;
-  padding: 12px 16px;
+  padding: 14px 20px;
   background: transparent;
   border: none;
-  border-radius: 8px;
+  border-radius: 10px;
   font-size: 14px;
-  font-weight: 500;
-  color: var(--text-secondary);
+  font-weight: 600;
+  color: #64748b;
   cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
   transition: all 0.2s ease;
 }
 
+.lessons-tabs__tab svg {
+  flex-shrink: 0;
+}
+
 .lessons-tabs__tab:hover {
-  color: var(--text-primary);
-  background: rgba(255, 255, 255, 0.5);
+  color: #0f172a;
+  background: rgba(255, 255, 255, 0.6);
 }
 
 .lessons-tabs__tab--active {
   background: white;
-  color: var(--text-primary);
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  color: #0f172a;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
 }
 
 /* Tab Content */

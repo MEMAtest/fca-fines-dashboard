@@ -73,7 +73,7 @@ body {
   margin: 0;
   min-height: 100vh;
   font-family: var(--font-primary);
-  background: #edf0ff;
+  background: #f8fafc;
   color: var(--text-primary);
 }
 
@@ -82,9 +82,9 @@ body {
 }
 
 .app-shell {
-  width: min(1240px, 100%);
+  width: min(1440px, 100%);
   margin: 0 auto;
-  padding: 72px 24px 120px;
+  padding: 40px 32px 80px;
 }
 
 @media (prefers-reduced-motion: reduce) {

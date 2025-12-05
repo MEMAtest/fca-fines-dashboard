@@ -1,5 +1,6 @@
 import { useMemo, useState } from 'react';
 import { ResponsiveContainer, PieChart, Pie, Cell, Tooltip } from 'recharts';
+import { HelpCircle } from 'lucide-react';
 import type { FineRecord } from '../types';
 import { ExportMenu } from './ExportMenu';
 
@@ -73,7 +74,12 @@ export function BreachByTypeChart({ records, onSelect, exportId }: BreachByTypeC
           <p className="panel__eyebrow">Breach mix</p>
           <h3>Top breach categories</h3>
         </div>
-        {records.length > 0 && <ExportMenu records={records} filename="breach-mix" targetElementId={panelId} />}
+        <div className="panel__header-actions">
+          <button className="panel__help" title="Distribution of fines by breach category. Click a slice to filter the dashboard.">
+            <HelpCircle size={16} />
+          </button>
+          {records.length > 0 && <ExportMenu records={records} filename="breach-mix" targetElementId={panelId} />}
+        </div>
       </div>
       <div className="panel__toolbar panel__toolbar--stacked">
         <div className="panel__toolbar-buttons" role="group" aria-label="Breach metric">

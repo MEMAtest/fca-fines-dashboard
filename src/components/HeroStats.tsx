@@ -1,7 +1,7 @@
 import { motion } from 'framer-motion';
-import { Trophy, TrendingUp, ArrowRight, Sparkles } from 'lucide-react';
+import { Trophy, TrendingUp, ArrowRight, Sparkles, Calendar } from 'lucide-react';
 import type { ReactNode } from 'react';
-import { format } from 'date-fns';
+import { format, differenceInDays } from 'date-fns';
 import type { FineRecord, StatsResponse } from '../types';
 import { ExportMenu } from './ExportMenu';
 import { NotificationBell } from './NotificationBell';
@@ -80,8 +80,8 @@ export function HeroStats({
             FCA Enforcement Pulse
           </h1>
           <p className="hero__description">
-            Live intelligence on UK FCA fines from 2013 onwards. Highlight the current year, surface the latest notice, and
-            track the heaviest-hit categories with an interactive lens built for regulatory advisers.
+            Track FCA enforcement actions in real-time. Identify compliance risks, learn from peer penalties,
+            and strengthen your firm's regulatory posture with insights from 2013 onwards.
           </p>
         </div>
         <div className="hero__actions">
@@ -98,9 +98,12 @@ export function HeroStats({
           />
           {latest && (
             <div className="hero__badge hover-lift">
-              <Sparkles size={16} />
+              <Calendar size={16} />
               <div>
-                <span className="hero__badge-label">Latest Final Notice • {format(new Date(latest.date), 'dd MMM yyyy')}</span>
+                <span className="hero__badge-label">
+                  Latest Final Notice • {format(new Date(latest.date), 'dd MMM yyyy')}
+                  <span className="hero__countdown">({differenceInDays(new Date(), new Date(latest.date))} days ago)</span>
+                </span>
                 <a href={latest.url} target="_blank" rel="noreferrer">
                   {latest.firm} — {formatter.format(latest.amount)}
                 </a>

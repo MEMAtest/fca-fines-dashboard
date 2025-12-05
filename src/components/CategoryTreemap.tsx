@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react';
 import type { LucideIcon } from 'lucide-react';
-import { Layers, Shield, Rocket, Activity, AlertTriangle, Landmark, HelpCircle } from 'lucide-react';
+import { Layers, Shield, Rocket, Activity, AlertTriangle, Landmark, HelpCircle, Info } from 'lucide-react';
 import type { FineRecord } from '../types';
 import { ExportMenu } from './ExportMenu';
 
@@ -147,9 +147,14 @@ export function CategoryTreemap({
           <p className="panel__eyebrow">Top categories</p>
           <h3>{title}</h3>
         </div>
-        {exportRecords.length > 0 && (
-          <ExportMenu records={exportRecords} filename={`categories-${year || 'all'}`} targetElementId={panelId} />
-        )}
+        <div className="panel__header-actions">
+          <button className="panel__help" title="Breach categories by total fines. Click a tile to zoom into subcategories or filter the dashboard.">
+            <Info size={16} />
+          </button>
+          {exportRecords.length > 0 && (
+            <ExportMenu records={exportRecords} filename={`categories-${year || 'all'}`} targetElementId={panelId} />
+          )}
+        </div>
       </div>
       {breadcrumbs.length > 1 && (
         <div className="panel__breadcrumbs">

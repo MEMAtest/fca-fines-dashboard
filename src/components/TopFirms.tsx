@@ -1,3 +1,4 @@
+import { HelpCircle } from 'lucide-react';
 import type { FineRecord } from '../types';
 import { ExportMenu } from './ExportMenu';
 
@@ -10,7 +11,7 @@ interface TopFirmsProps {
 }
 
 export function TopFirms({ records, onSelectFirm, exportId }: TopFirmsProps) {
-  const topRecords = [...records].sort((a, b) => b.amount - a.amount).slice(0, 5);
+  const topRecords = [...records].sort((a, b) => b.amount - a.amount).slice(0, 10);
   const panelId = exportId ?? 'top-firms';
 
   return (
@@ -18,11 +19,16 @@ export function TopFirms({ records, onSelectFirm, exportId }: TopFirmsProps) {
       <div className="panel__header">
         <div>
           <p className="panel__eyebrow">Leader board</p>
-          <h3>Highest penalties</h3>
+          <h3>Top 10 Highest Penalties</h3>
         </div>
-        {topRecords.length > 0 && (
-          <ExportMenu records={topRecords} filename="top-firms" targetElementId={panelId} />
-        )}
+        <div className="panel__header-actions">
+          <button className="panel__help" title="The 10 largest fines by amount. Click a firm to filter all data by that entity.">
+            <HelpCircle size={16} />
+          </button>
+          {topRecords.length > 0 && (
+            <ExportMenu records={topRecords} filename="top-firms" targetElementId={panelId} />
+          )}
+        </div>
       </div>
       {topRecords.length === 0 ? (
         <p className="status">No fines match your filters yet.</p>

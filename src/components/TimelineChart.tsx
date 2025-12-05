@@ -11,6 +11,7 @@ import {
   ReferenceLine,
   CartesianGrid,
 } from 'recharts';
+import { HelpCircle } from 'lucide-react';
 import type { FineRecord } from '../types';
 import { ExportMenu } from './ExportMenu';
 
@@ -67,9 +68,14 @@ export function TimelineChart({
           <p className="panel__eyebrow">Monthly cadence</p>
           <h3>{title}</h3>
         </div>
-        {recordsForExport.length > 0 && (
-          <ExportMenu records={recordsForExport} filename={`timeline-${year || 'all'}`} targetElementId={panelId} />
-        )}
+        <div className="panel__header-actions">
+          <button className="panel__help" title="View monthly enforcement totals. Click a bar to filter, or drag the brush to select a date range.">
+            <HelpCircle size={16} />
+          </button>
+          {recordsForExport.length > 0 && (
+            <ExportMenu records={recordsForExport} filename={`timeline-${year || 'all'}`} targetElementId={panelId} />
+          )}
+        </div>
       </div>
       <div className="panel__toolbar">
         <p className="panel__hint">Tap to focus • Brush to filter a window</p>

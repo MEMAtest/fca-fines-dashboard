@@ -216,6 +216,17 @@
   font-weight: 600;
 }
 
+.hero__countdown {
+  display: inline-block;
+  margin-left: 8px;
+  padding: 2px 8px;
+  background: rgba(8, 145, 178, 0.15);
+  color: #0891b2;
+  border-radius: 999px;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+}
+
 .hero__stats {
   position: relative;
   z-index: 1;

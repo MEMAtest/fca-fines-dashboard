@@ -1,4 +1,10 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32">
   <rect width="32" height="32" rx="6" fill="#0891b2"/>
-  <path d="M18 8h-2c-2.2 0-4 1.8-4 4v3h-2v2h2v7h10v-2h-6v-5h4v-2h-4v-3c0-1.1.9-2 2-2h2V8z" fill="#ffffff"/>
+  <!-- Gavel head (rotated rectangle) -->
+  <rect x="6" y="7" width="14" height="6" rx="1.5" fill="white" transform="rotate(-45 13 10)"/>
+  <!-- Gavel handle -->
+  <rect x="13" y="13" width="3" height="12" rx="1" fill="white" transform="rotate(-45 14.5 19)"/>
+  <!-- Sound block base -->
+  <rect x="17" y="23" width="10" height="4" rx="1" fill="white"/>
+  <rect x="19" y="21" width="6" height="2" rx="0.5" fill="white"/>
 </svg>
