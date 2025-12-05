@@ -15,7 +15,7 @@
   background: #ffffff;
   border-radius: var(--radius-xl);
   padding: 32px;
-  width: min(90vw, 960px);
+  width: min(95vw, 1200px);
   max-height: 90vh;
   overflow: hidden;
   display: flex;
@@ -29,6 +29,14 @@
   display: flex;
   justify-content: space-between;
   gap: 16px;
+  flex-shrink: 0;
+}
+
+.modal__body {
+  flex: 1;
+  overflow-y: auto;
+  overflow-x: hidden;
+  min-height: 0;
 }
 
 .modal__eyebrow {
