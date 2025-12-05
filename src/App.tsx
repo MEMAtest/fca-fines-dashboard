@@ -16,6 +16,7 @@ import { MobileNav } from './components/MobileNav';
 import { ComparisonView } from './components/ComparisonView';
 import { BreachByTypeChart } from './components/BreachByTypeChart';
 import { RegulatorImpactChart } from './components/RegulatorImpactChart';
+import { LessonsLearnedAnalysis } from './components/LessonsLearnedAnalysis';
 import { exportData } from './utils/export';
 import { useLocalStorage } from './hooks/useLocalStorage';
 import { useNotificationFeed } from './hooks/useNotificationFeed';
@@ -32,17 +33,25 @@ function getYearsRange() {
   return years;
 }
 
+// Helper to safely get numeric value (handles NaN, undefined, null)
+function safeNum(value: number | undefined | null): number {
+  if (value === undefined || value === null || Number.isNaN(value) || !Number.isFinite(value)) {
+    return 0;
+  }
+  return value;
+}
+
 function buildCategoryAgg(records: FineRecord[]) {
   const map = new Map<string, { size: number; count: number }>();
   records.forEach((fine) => {
     const labels = fine.breach_categories?.length ? fine.breach_categories : ['Unclassified'];
     labels.forEach((label) => {
       const current = map.get(label) || { size: 0, count: 0 };
-      map.set(label, { size: current.size + fine.amount, count: current.count + 1 });
+      map.set(label, { size: current.size + safeNum(fine.amount), count: current.count + 1 });
     });
   });
   return Array.from(map.entries())
-    .map(([name, value]) => ({ name, ...value }))
+    .map(([name, value]) => ({ name, size: safeNum(value.size), count: safeNum(value.count) }))
     .sort((a, b) => b.size - a.size)
     .slice(0, 10);
 }
@@ -669,6 +678,11 @@ export default function App() {
           <div className="grid grid--two-col">
             <BreachByTypeChart records={filteredFines} onSelect={handleCategorySelect} />
             <RegulatorImpactChart records={filteredFines} />
+          </div>
+
+          {/* Grid 6: Lessons Learned Analysis - Full width */}
+          <div className="grid">
+            <LessonsLearnedAnalysis records={filteredFines} year={year} />
           </div>
         </>
       )}

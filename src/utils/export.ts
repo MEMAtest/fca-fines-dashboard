@@ -17,13 +17,18 @@ function formatRecords(records: FineRecord[], transform?: ExportOptions['transfo
     return records.map((record) => transform(record));
   }
   return records.map((record) => ({
-    Date: new Date(record.date_issued).toLocaleDateString('en-GB'),
-    Firm: record.firm_individual,
+    'Reference': record.fine_reference || '—',
+    'Date Issued': new Date(record.date_issued).toLocaleDateString('en-GB'),
+    'Year': record.year_issued,
+    'Month': record.month_issued,
+    'Firm/Individual': record.firm_individual,
     'Firm Category': record.firm_category || '—',
     'Breach Type': record.breach_type || '—',
-    Amount: record.amount,
-    Summary: record.summary,
-    Regulator: record.regulator,
+    'Breach Categories': record.breach_categories?.join('; ') || '—',
+    'Amount (£)': record.amount,
+    'Summary': record.summary,
+    'Regulator': record.regulator,
+    'Final Notice URL': record.final_notice_url || '—',
   }));
 }
 
@@ -47,13 +52,57 @@ export async function exportData({ filename, format, records, elementId, transfo
       const worksheet = XLSX.utils.json_to_sheet(formatted);
       const workbook = XLSX.utils.book_new();
       XLSX.utils.book_append_sheet(workbook, worksheet, 'Fines');
+
+      // Add summary sheet
+      const totalAmount = records.reduce((sum, r) => sum + r.amount, 0);
+      const summary = [
+        { Metric: 'Total Records', Value: records.length },
+        { Metric: 'Total Amount', Value: `£${totalAmount.toLocaleString('en-GB')}` },
+        { Metric: 'Average Fine', Value: `£${Math.round(totalAmount / records.length).toLocaleString('en-GB')}` },
+        { Metric: 'Largest Fine', Value: `£${Math.max(...records.map(r => r.amount)).toLocaleString('en-GB')}` },
+        { Metric: 'Smallest Fine', Value: `£${Math.min(...records.map(r => r.amount)).toLocaleString('en-GB')}` },
+        { Metric: 'Date Range', Value: `${Math.min(...records.map(r => r.year_issued))} - ${Math.max(...records.map(r => r.year_issued))}` },
+        { Metric: 'Export Date', Value: new Date().toLocaleString('en-GB') },
+      ];
+      const summarySheet = XLSX.utils.json_to_sheet(summary);
+      XLSX.utils.book_append_sheet(workbook, summarySheet, 'Summary');
+
       XLSX.writeFile(workbook, `${filename}.xlsx`);
       break;
     }
     case 'pdf': {
       const doc = new jsPDF({ unit: 'pt', format: 'a4' });
-      const content = formatted.map((row) => `${row.Date} – ${row.Firm} – £${row.Amount.toLocaleString('en-GB')}`).join('\n');
-      doc.text(content, 40, 40);
+
+      // Title
+      doc.setFontSize(18);
+      doc.text('FCA Fines Export', 40, 40);
+
+      // Summary stats
+      const totalAmount = records.reduce((sum, r) => sum + r.amount, 0);
+      doc.setFontSize(11);
+      doc.text(`Total Records: ${records.length}`, 40, 70);
+      doc.text(`Total Amount: £${totalAmount.toLocaleString('en-GB')}`, 40, 85);
+      doc.text(`Export Date: ${new Date().toLocaleDateString('en-GB')}`, 40, 100);
+
+      // Separator line
+      doc.setDrawColor(200);
+      doc.line(40, 115, 550, 115);
+
+      // Records
+      doc.setFontSize(9);
+      let yPos = 135;
+      const pageHeight = doc.internal.pageSize.height;
+
+      formatted.forEach((row: Record<string, any>) => {
+        if (yPos > pageHeight - 50) {
+          doc.addPage();
+          yPos = 40;
+        }
+        const text = `${row['Date Issued']} | ${row['Firm/Individual']} | £${Number(row['Amount (£)']).toLocaleString('en-GB')}`;
+        doc.text(text, 40, yPos);
+        yPos += 15;
+      });
+
       doc.save(`${filename}.pdf`);
       break;
     }

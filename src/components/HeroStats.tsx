@@ -100,7 +100,7 @@ export function HeroStats({
             <div className="hero__badge hover-lift">
               <Sparkles size={16} />
               <div>
-                <span className="hero__badge-label">Latest Final Notice</span>
+                <span className="hero__badge-label">Latest Final Notice • {format(new Date(latest.date), 'dd MMM yyyy')}</span>
                 <a href={latest.url} target="_blank" rel="noreferrer">
                   {latest.firm} — {formatter.format(latest.amount)}
                 </a>

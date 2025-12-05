@@ -1,5 +1,4 @@
 import { useMemo, useState } from 'react';
-import { ResponsiveContainer, Treemap } from 'recharts';
 import type { LucideIcon } from 'lucide-react';
 import { Layers, Shield, Rocket, Activity, AlertTriangle, Landmark, HelpCircle } from 'lucide-react';
 import type { FineRecord } from '../types';
@@ -25,8 +24,6 @@ const COLORS = [
   '#14b8a6',
   '#06b6d4',
   '#0ea5e9',
-  '#3b82f6',
-  '#0891b2',
 ];
 
 const ICON_MAP: Record<string, LucideIcon> = {
@@ -43,13 +40,21 @@ function getIcon(name: string): LucideIcon {
   return match ? ICON_MAP[match] : HelpCircle;
 }
 
+// Helper to safely get numeric value (handles NaN, undefined, null)
+function safeNum(value: number | undefined | null): number {
+  if (value === undefined || value === null || Number.isNaN(value) || !Number.isFinite(value)) {
+    return 0;
+  }
+  return value;
+}
+
 function buildChildAggregates(category: string, records: FineRecord[]) {
   const scoped = records.filter((record) => record.breach_categories?.includes(category));
   const map = new Map<string, { size: number; count: number }>();
   scoped.forEach((record) => {
     const key = record.breach_type || record.firm_category || 'Unclassified';
     const current = map.get(key) ?? { size: 0, count: 0 };
-    map.set(key, { size: current.size + record.amount, count: current.count + 1 });
+    map.set(key, { size: current.size + safeNum(record.amount), count: current.count + 1 });
   });
   return Array.from(map.entries()).map(([name, value]) => ({ name, ...value }));
 }
@@ -71,28 +76,39 @@ export function CategoryTreemap({
 
   const totals = useMemo(
     () => ({
-      amount: chartSource.reduce((sum, item) => sum + item.size, 0),
-      count: chartSource.reduce((sum, item) => sum + item.count, 0),
+      amount: chartSource.reduce((sum, item) => sum + safeNum(item.size), 0),
+      count: chartSource.reduce((sum, item) => sum + safeNum(item.count), 0),
     }),
     [chartSource]
   );
-  const totalValue = metric === 'amount' ? totals.amount || 1 : totals.count || 1;
+
+  const totalValue = metric === 'amount' ? (safeNum(totals.amount) || 1) : (safeNum(totals.count) || 1);
+
   const formatted = useMemo(
     () =>
       chartSource
-        .map((item, index) => ({
-          ...item,
-          fill: COLORS[index % COLORS.length],
-          value: metric === 'amount' ? item.size : item.count,
-          share: totalValue ? (((metric === 'amount' ? item.size : item.count) / totalValue) * 100 || 0) : 0,
-          icon: getIcon(item.name),
-        }))
+        .map((item, index) => {
+          const size = safeNum(item.size);
+          const count = safeNum(item.count);
+          const value = metric === 'amount' ? size : count;
+          const share = totalValue > 0 ? (value / totalValue) * 100 : 0;
+          return {
+            ...item,
+            size,
+            count,
+            fill: COLORS[index % COLORS.length],
+            value,
+            share: safeNum(share),
+            icon: getIcon(item.name),
+          };
+        })
         .sort((a, b) => {
           if (sortMode === 'count') return b.count - a.count;
           return b.share - a.share;
         }),
     [chartSource, metric, sortMode, totalValue]
   );
+
   const title = year === 0 ? 'Top concerns across all years' : `Top ${year} concern areas`;
 
   function handleZoom(name: string) {
@@ -117,6 +133,12 @@ export function CategoryTreemap({
   ];
 
   const emptyState = formatted.length === 0;
+
+  // Calculate grid spans based on share percentages
+  const getGridSpan = (share: number): number => {
+    if (share >= 40) return 2;
+    return 1;
+  };
 
   return (
     <div className="panel" id={panelId}>
@@ -192,66 +214,56 @@ export function CategoryTreemap({
               )}
             </div>
           </div>
-          <ResponsiveContainer width="100%" height={280}>
-            <Treemap
-              data={formatted}
-              dataKey="value"
-              stroke="#0f172a"
-              content={({ depth, x, y, width, height, index }) => {
-                if (depth === 1) {
-                  const node = formatted[index];
-                  const Icon = node.icon;
-                  const amountLabel =
-                    metric === 'amount'
-                      ? `£${Math.round((node.size ?? 0) / 1_000_000)}m`
-                      : `${node.count ?? 0} notices`;
-                  const handleClick = () => {
+
+          {/* Grid-based treemap */}
+          <div className="category-grid">
+            {formatted.map((item, index) => {
+              const Icon = item.icon;
+              const span = getGridSpan(item.share);
+              const amountLabel = metric === 'amount'
+                ? `£${(safeNum(item.size) / 1_000_000).toFixed(1)}m`
+                : `${safeNum(item.count)} notices`;
+
+              return (
+                <button
+                  key={item.name}
+                  type="button"
+                  className="category-tile"
+                  style={{
+                    backgroundColor: item.fill,
+                    gridColumn: index === 0 && span === 2 ? 'span 2' : 'span 1',
+                  }}
+                  onClick={() => {
                     if (activeCategory) {
-                      onSelectCategory?.(node.name);
+                      onSelectCategory?.(item.name);
                     } else {
-                      handleZoom(node.name);
+                      handleZoom(item.name);
                     }
-                  };
-                  return (
-                    <g onClick={handleClick} style={{ cursor: 'pointer' }}>
-                      <rect x={x} y={y} width={width} height={height} fill={node.fill} opacity={0.9} rx={12} />
-                      <text x={x + 12} y={y + 26} fill="#0f172a" fontSize={14} fontWeight={700}>
-                        {node.name}
-                      </text>
-                      <text x={x + 12} y={y + 46} fill="#0f172a" fontSize={12}>
-                        {amountLabel}
-                      </text>
-                      <text x={x + 12} y={y + 64} fill="#475467" fontSize={11}>
-                        {node.share.toFixed(1)}% of view
-                      </text>
-                      <foreignObject x={x + width - 40} y={y + 12} width={26} height={26}>
-                        <div className="treemap__chip">
-                          <Icon size={16} />
-                        </div>
-                      </foreignObject>
-                      {onDrilldown && (
-                        <text
-                          x={x + 12}
-                          y={y + 82}
-                          fill="#2563eb"
-                          fontSize={12}
-                          fontWeight={600}
-                          style={{ textDecoration: 'underline' }}
-                          onClick={(event) => {
-                            event.stopPropagation();
-                            onDrilldown(node.name);
-                          }}
-                        >
-                          View notices →
-                        </text>
-                      )}
-                    </g>
-                  );
-                }
-                return null;
-              }}
-            />
-          </ResponsiveContainer>
+                  }}
+                >
+                  <div className="category-tile__header">
+                    <span className="category-tile__name">{item.name}</span>
+                    <span className="category-tile__icon">
+                      <Icon size={18} />
+                    </span>
+                  </div>
+                  <div className="category-tile__value">{amountLabel}</div>
+                  <div className="category-tile__share">{safeNum(item.share).toFixed(1)}% of view</div>
+                  {onDrilldown && (
+                    <span
+                      className="category-tile__link"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        onDrilldown(item.name);
+                      }}
+                    >
+                      View notices →
+                    </span>
+                  )}
+                </button>
+              );
+            })}
+          </div>
         </div>
       )}
     </div>
