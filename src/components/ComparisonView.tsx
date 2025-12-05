@@ -19,6 +19,13 @@ import type { FineRecord } from '../types';
 import { exportData } from '../utils/export';
 import { useLocalStorage } from '../hooks/useLocalStorage';
 
+// Helper to safely get numeric value
+function safeNum(value: number | string | undefined | null): number {
+  if (value === undefined || value === null) return 0;
+  const num = typeof value === 'string' ? parseFloat(value) : value;
+  return Number.isNaN(num) || !Number.isFinite(num) ? 0 : num;
+}
+
 interface ComparisonViewProps {
   records: FineRecord[];
   availableYears: number[];
@@ -563,7 +570,7 @@ function buildYearSeries(records: FineRecord[], targetYear: number, metric: 'amo
     if (record.year_issued !== targetYear) return;
     const period = new Date(record.date_issued).getMonth();
     if (metric === 'amount') {
-      series[period] += record.amount;
+      series[period] += safeNum(record.amount);
     } else {
       series[period] += 1;
     }
@@ -597,7 +604,7 @@ function buildSummary(records: FineRecord[], primaryYear: number, comparisonYear
 
 function summarizeYear(records: FineRecord[], year: number) {
   const scoped = records.filter((record) => record.year_issued === year);
-  const total = scoped.reduce((sum, record) => sum + record.amount, 0);
+  const total = scoped.reduce((sum, record) => sum + safeNum(record.amount), 0);
   const count = scoped.length;
   const average = count ? total / count : 0;
   return { year, total, count, average };
@@ -639,7 +646,7 @@ function buildCategoryRadar(records: FineRecord[], primaryYear: number, comparis
     (record.breach_categories || ['Unclassified']).forEach((category) => {
       const key = category || 'Unclassified';
       const existing = categoryMap.get(key) || { current: 0, previous: 0 };
-      existing[bucket] += record.amount;
+      existing[bucket] += safeNum(record.amount);
       categoryMap.set(key, existing);
     });
   });
@@ -657,7 +664,7 @@ function buildCategorySummary(records: FineRecord[], primaryYear: number, compar
     (record.breach_categories || ['Unclassified']).forEach((category) => {
       const key = category || 'Unclassified';
       const value = map.get(key) || { current: 0, previous: 0 };
-      value[bucket] += record.amount;
+      value[bucket] += safeNum(record.amount);
       map.set(key, value);
     });
   });

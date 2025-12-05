@@ -3,6 +3,13 @@ import { FileText, Target, Lightbulb, AlertTriangle, TrendingUp, Shield, Users, 
 import { format } from 'date-fns';
 import type { FineRecord } from '../types';
 
+// Helper to safely get numeric value
+function safeNum(value: number | string | undefined | null): number {
+  if (value === undefined || value === null) return 0;
+  const num = typeof value === 'string' ? parseFloat(value) : value;
+  return Number.isNaN(num) || !Number.isFinite(num) ? 0 : num;
+}
+
 interface LessonsLearnedProps {
   records: FineRecord[];
   year: number;
@@ -60,7 +67,7 @@ export function LessonsLearnedAnalysis({ records, year }: LessonsLearnedProps) {
       if (sortBy === 'date') {
         return new Date(b.date_issued).getTime() - new Date(a.date_issued).getTime();
       }
-      return b.amount - a.amount;
+      return safeNum(b.amount) - safeNum(a.amount);
     });
   }, [records, sortBy, filterCategory]);
 
@@ -78,16 +85,16 @@ export function LessonsLearnedAnalysis({ records, year }: LessonsLearnedProps) {
     });
 
     const repeatOffenders = Array.from(firmCounts.entries()).filter(([_, count]) => count > 1);
-    const totalAmount = records.reduce((sum, r) => sum + r.amount, 0);
-    const avgFine = totalAmount / records.length;
-    const largeFines = records.filter(r => r.amount > 10_000_000);
+    const totalAmount = records.reduce((sum, r) => sum + safeNum(r.amount), 0);
+    const avgFine = records.length ? totalAmount / records.length : 0;
+    const largeFines = records.filter(r => safeNum(r.amount) > 10_000_000);
 
     return {
-      repeatOffenderRate: (repeatOffenders.length / firmCounts.size) * 100,
+      repeatOffenderRate: firmCounts.size ? (repeatOffenders.length / firmCounts.size) * 100 : 0,
       repeatOffenders: repeatOffenders.length,
       avgFine,
       largeFineCount: largeFines.length,
-      largeFinePercentage: (largeFines.length / records.length) * 100,
+      largeFinePercentage: records.length ? (largeFines.length / records.length) * 100 : 0,
     };
   }, [records]);
 
@@ -363,7 +370,7 @@ function analyzeThemes(records: FineRecord[]): Theme[] {
     cats.forEach(cat => {
       const existing = categoryMap.get(cat) || { count: 0, totalAmount: 0, summaries: [] };
       existing.count += 1;
-      existing.totalAmount += record.amount;
+      existing.totalAmount += safeNum(record.amount);
       if (record.summary) existing.summaries.push(record.summary);
       categoryMap.set(cat, existing);
     });

@@ -33,12 +33,16 @@ function getYearsRange() {
   return years;
 }
 
-// Helper to safely get numeric value (handles NaN, undefined, null)
-function safeNum(value: number | undefined | null): number {
-  if (value === undefined || value === null || Number.isNaN(value) || !Number.isFinite(value)) {
+// Helper to safely get numeric value (handles NaN, undefined, null, strings)
+function safeNum(value: number | string | undefined | null): number {
+  if (value === undefined || value === null) {
     return 0;
   }
-  return value;
+  const num = typeof value === 'string' ? parseFloat(value) : value;
+  if (Number.isNaN(num) || !Number.isFinite(num)) {
+    return 0;
+  }
+  return num;
 }
 
 function buildCategoryAgg(records: FineRecord[]) {
@@ -68,7 +72,7 @@ function buildTimelineSeries(records: FineRecord[]) {
       map.set(key, { month: `${months[period - 1]} ${year}`, period, year, total: 0, count: 0 });
     }
     const entry = map.get(key)!;
-    entry.total += record.amount;
+    entry.total += safeNum(record.amount);
     entry.count += 1;
   });
   return Array.from(map.values()).sort((a, b) => {
@@ -619,7 +623,7 @@ export default function App() {
       {error && <p className="status status--error">{error}</p>}
       {!loading && !error && (
         <>
-          {/* Grid 1: Timeline & Category - 2 columns */}
+          {/* Grid 1: Timeline & Distribution - 2 columns */}
           <div className="grid grid--two-col">
             <TimelineChart
               data={timelineForChart}
@@ -629,6 +633,15 @@ export default function App() {
               recordsForExport={filteredFines}
               exportId="timeline-panel"
             />
+            <FineDistributionChart
+              records={filteredFines}
+              onSelectRange={handleAmountRangeSelect}
+              exportId="distribution-panel"
+            />
+          </div>
+
+          {/* Grid 2: Category Treemap - Full width */}
+          <div className="grid">
             <CategoryTreemap
               data={categoryAggView}
               year={year}
@@ -636,15 +649,6 @@ export default function App() {
               onDrilldown={handleCategoryDrilldown}
               exportRecords={filteredFines}
               exportId="category-panel"
-            />
-          </div>
-
-          {/* Grid 2: Fine Distribution - Full width */}
-          <div className="grid">
-            <FineDistributionChart
-              records={filteredFines}
-              onSelectRange={handleAmountRangeSelect}
-              exportId="distribution-panel"
             />
           </div>
 

@@ -5,6 +5,16 @@ import { CURRENT_YEAR } from './useDashboardState';
 
 export type TrendPoint = { month: string; total: number; count: number; period: number; year: number };
 
+// Normalize record amounts to ensure they are numbers
+function normalizeRecords(records: FineRecord[]): FineRecord[] {
+  return records.map(record => ({
+    ...record,
+    amount: typeof record.amount === 'string' ? parseFloat(record.amount) || 0 : (record.amount || 0),
+    year_issued: typeof record.year_issued === 'string' ? parseInt(record.year_issued, 10) : record.year_issued,
+    month_issued: typeof record.month_issued === 'string' ? parseInt(record.month_issued, 10) : record.month_issued,
+  }));
+}
+
 interface UseFinesDataParams {
   year: number;
   comparisonYear: number | null;
@@ -36,10 +46,11 @@ export function useFinesData({ year, comparisonYear, availableYears }: UseFinesD
 
         const [finesRes, statsRes, trendsRes, prevStatsRes, prevTrendsRes] = await Promise.all(requests);
         if (!mounted) return;
-        setFines(finesRes.data);
+        const normalizedFines = normalizeRecords(finesRes.data);
+        setFines(normalizedFines);
         setStats(statsRes.data);
         setPrevStats(prevStatsRes?.data ?? null);
-        setRecordsByYear((prev) => ({ ...prev, [year]: finesRes.data }));
+        setRecordsByYear((prev) => ({ ...prev, [year]: normalizedFines }));
         setTrendsByYear((prev) => {
           const next = { ...prev, [year]: mapTrendRows(trendsRes.data) };
           if (prevTrendsRes) {
@@ -71,7 +82,7 @@ export function useFinesData({ year, comparisonYear, availableYears }: UseFinesD
             if (!recordsByYear[targetYear]) {
               const finesRes = await fetchFines(targetYear);
               if (!cancelled) {
-                setRecordsByYear((prev) => ({ ...prev, [targetYear]: finesRes.data }));
+                setRecordsByYear((prev) => ({ ...prev, [targetYear]: normalizeRecords(finesRes.data) }));
               }
             }
             if (!trendsByYear[targetYear]) {
@@ -101,7 +112,7 @@ export function useFinesData({ year, comparisonYear, availableYears }: UseFinesD
         if (!recordsByYear[comparisonYear]) {
           const finesRes = await fetchFines(comparisonYear);
           if (!cancelled) {
-            setRecordsByYear((prev) => ({ ...prev, [comparisonYear]: finesRes.data }));
+            setRecordsByYear((prev) => ({ ...prev, [comparisonYear]: normalizeRecords(finesRes.data) }));
           }
         }
         if (!trendsByYear[comparisonYear]) {
@@ -129,7 +140,7 @@ export function useFinesData({ year, comparisonYear, availableYears }: UseFinesD
         if (!recordsByYear[CURRENT_YEAR]) {
           const finesRes = await fetchFines(CURRENT_YEAR);
           if (!cancelled) {
-            setRecordsByYear((prev) => ({ ...prev, [CURRENT_YEAR]: finesRes.data }));
+            setRecordsByYear((prev) => ({ ...prev, [CURRENT_YEAR]: normalizeRecords(finesRes.data) }));
           }
         }
         if (!trendsByYear[CURRENT_YEAR]) {
@@ -154,8 +165,8 @@ export function useFinesData({ year, comparisonYear, availableYears }: UseFinesD
 function mapTrendRows(rows: TrendsResponse['data']): TrendPoint[] {
   return rows.map((row) => ({
     month: new Date(row.year, row.period_value - 1, 1).toLocaleDateString('en-GB', { month: 'short' }),
-    total: row.total_fines,
-    count: row.fine_count,
+    total: typeof row.total_fines === 'string' ? parseFloat(row.total_fines) || 0 : (row.total_fines || 0),
+    count: typeof row.fine_count === 'string' ? parseInt(row.fine_count, 10) : (row.fine_count || 0),
     period: row.period_value,
     year: row.year,
   }));
