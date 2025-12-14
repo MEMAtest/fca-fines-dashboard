@@ -28,7 +28,21 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Run FCA scraper
+      - name: Install Puppeteer
+        run: npm install puppeteer
+
+      - name: Run FCA scraper (Puppeteer)
+        env:
+          NEON_FCA_FINES_URL: ${{ secrets.NEON_FCA_FINES_URL }}
+          FCA_USER_AGENT: ${{ secrets.FCA_USER_AGENT }}
+          FCA_YEARS: ${{ vars.FCA_YEARS }}
+          FCA_START_YEAR: ${{ vars.FCA_START_YEAR }}
+          FCA_END_YEAR: ${{ vars.FCA_END_YEAR }}
+          FCA_SINCE_DATE: ${{ vars.FCA_SINCE_DATE }}
+        run: npm run scrape:fines:puppeteer
+
+      - name: Fallback to standard scraper if Puppeteer fails
+        if: failure()
         env:
           NEON_FCA_FINES_URL: ${{ secrets.NEON_FCA_FINES_URL }}
           FCA_USER_AGENT: ${{ secrets.FCA_USER_AGENT }}
