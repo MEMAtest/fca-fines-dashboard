@@ -9,7 +9,10 @@
     "start": "node --loader ts-node/esm --experimental-specifier-resolution=node server.ts",
     "build": "vite build",
     "scrape:fines": "ts-node scripts/scraper/scrapeFcaFines.ts",
-    "scrape:fines:dry": "ts-node scripts/scraper/scrapeFcaFines.ts --dry-run"
+    "scrape:fines:dry": "ts-node scripts/scraper/scrapeFcaFines.ts --dry-run",
+    "scrape:fines:puppeteer": "ts-node scripts/scraper/scrapeFcaFinesPuppeteer.ts",
+    "scrape:fines:puppeteer:dry": "ts-node scripts/scraper/scrapeFcaFinesPuppeteer.ts --dry-run",
+    "import:fines": "ts-node scripts/scraper/importFinesFromCSV.ts"
   },
   "dependencies": {
     "@neondatabase/serverless": "^0.9.5",

@@ -51,9 +51,41 @@ async function scrapeYear(year: number): Promise<FcaFineRecord[]> {
   console.log(`   ➤ Fetching ${url}`);
   try {
     const response = await axios.get(url, {
-      headers: { 'User-Agent': userAgent },
+      headers: {
+        'User-Agent': userAgent,
+        'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8',
+        'Accept-Language': 'en-GB,en;q=0.9,en-US;q=0.8',
+        'Accept-Encoding': 'gzip, deflate, br',
+        'Connection': 'keep-alive',
+        'Upgrade-Insecure-Requests': '1',
+        'Sec-Fetch-Dest': 'document',
+        'Sec-Fetch-Mode': 'navigate',
+        'Sec-Fetch-Site': 'none',
+        'Sec-Fetch-User': '?1',
+        'Cache-Control': 'max-age=0',
+        'Referer': 'https://www.google.com/'
+      },
       timeout: 30000,
+      maxRedirects: 5,
+      validateStatus: (status) => status < 500, // Don't throw on 4xx errors
     });
+
+    if (response.status === 403) {
+      console.warn(`   ⚠️ ${url} returned 403 Forbidden - FCA may be blocking automated requests`);
+      console.warn(`   💡 Try: 1) Using a VPN, 2) Adding cookies, 3) Manual download, or 4) FCA API if available`);
+      return [];
+    }
+
+    if (response.status === 404) {
+      console.warn(`   ⚠️ ${url} returned 404 (year ${year} may not have a dedicated page yet)`);
+      return [];
+    }
+
+    if (response.status !== 200) {
+      console.warn(`   ⚠️ ${url} returned status ${response.status}`);
+      return [];
+    }
+
     const $ = load(response.data);
     const rows = $('table tbody tr').length ? $('table tbody tr') : $('table tr').slice(1);
     if (!rows.length) {
