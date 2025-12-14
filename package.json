@@ -9,7 +9,8 @@
     "start": "node --loader ts-node/esm --experimental-specifier-resolution=node server.ts",
     "build": "vite build",
     "scrape:fines": "ts-node scripts/scraper/scrapeFcaFines.ts",
-    "scrape:fines:dry": "ts-node scripts/scraper/scrapeFcaFines.ts --dry-run"
+    "scrape:fines:dry": "ts-node scripts/scraper/scrapeFcaFines.ts --dry-run",
+    "verify:setup": "bash scripts/verify-setup.sh"
   },
   "dependencies": {
     "@neondatabase/serverless": "^0.9.5",

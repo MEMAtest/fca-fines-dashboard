@@ -28,6 +28,29 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      - name: Verify environment configuration
+        run: |
+          echo "Checking environment variables..."
+          if [ -z "$NEON_FCA_FINES_URL" ]; then
+            echo "❌ ERROR: NEON_FCA_FINES_URL is not set!"
+            echo "Please configure this secret in GitHub Settings > Secrets and variables > Actions"
+            exit 1
+          else
+            echo "✅ NEON_FCA_FINES_URL is configured"
+          fi
+
+          echo "FCA_YEARS: ${FCA_YEARS:-'not set (will use defaults)'}"
+          echo "FCA_START_YEAR: ${FCA_START_YEAR:-'not set (will use 2013)'}"
+          echo "FCA_END_YEAR: ${FCA_END_YEAR:-'not set (will use current year)'}"
+          echo "FCA_SINCE_DATE: ${FCA_SINCE_DATE:-'not set'}"
+        env:
+          NEON_FCA_FINES_URL: ${{ secrets.NEON_FCA_FINES_URL }}
+          FCA_USER_AGENT: ${{ secrets.FCA_USER_AGENT }}
+          FCA_YEARS: ${{ vars.FCA_YEARS }}
+          FCA_START_YEAR: ${{ vars.FCA_START_YEAR }}
+          FCA_END_YEAR: ${{ vars.FCA_END_YEAR }}
+          FCA_SINCE_DATE: ${{ vars.FCA_SINCE_DATE }}
+
       - name: Run FCA scraper
         env:
           NEON_FCA_FINES_URL: ${{ secrets.NEON_FCA_FINES_URL }}
@@ -36,4 +59,8 @@ jobs:
           FCA_START_YEAR: ${{ vars.FCA_START_YEAR }}
           FCA_END_YEAR: ${{ vars.FCA_END_YEAR }}
           FCA_SINCE_DATE: ${{ vars.FCA_SINCE_DATE }}
-        run: npm run scrape:fines
+          TS_NODE_PROJECT: tsconfig.json
+        run: |
+          echo "Starting FCA fines scraper..."
+          npm run scrape:fines
+          echo "✅ Scraper completed successfully"
