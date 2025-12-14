@@ -16,7 +16,11 @@ import crypto from 'node:crypto';
 // Dynamically import puppeteer (so it's optional)
 let puppeteer: any;
 try {
-  puppeteer = await import('puppeteer');
+  puppeteer = await import('puppeteer').catch(() => null);
+  if (!puppeteer) {
+    console.error('❌ Puppeteer not installed. Run: npm install puppeteer');
+    process.exit(1);
+  }
 } catch (e) {
   console.error('❌ Puppeteer not installed. Run: npm install puppeteer');
   process.exit(1);
@@ -126,7 +130,7 @@ async function scrapeYearWithPuppeteer(year: number): Promise<FcaFineRecord[]> {
     }
 
     // Extract data from table
-    const records = await page.evaluate((year) => {
+    const records = await page.evaluate((year: number) => {
       const rows = Array.from(document.querySelectorAll('table tbody tr'));
       if (!rows.length) {
         return [];
