@@ -4,6 +4,12 @@ on:
   workflow_dispatch:
   schedule:
     - cron: '0 6 * * *' # 06:00 UTC ≈ 06:00 UK during winter / 07:00 during BST
+  push:
+    branches:
+      - 'claude/**'
+    paths:
+      - '.github/workflows/daily-fca-scraper.yml'
+      - 'scripts/scraper/**'
 
 concurrency:
   group: daily-fca-fines
