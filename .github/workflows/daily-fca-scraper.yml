@@ -35,7 +35,7 @@ jobs:
         env:
           NEON_FCA_FINES_URL: ${{ secrets.NEON_FCA_FINES_URL }}
           FCA_USER_AGENT: ${{ secrets.FCA_USER_AGENT }}
-          FCA_YEARS: ${{ vars.FCA_YEARS }}
+          FCA_YEARS: ${{ vars.FCA_YEARS || '2024,2025' }}
           FCA_START_YEAR: ${{ vars.FCA_START_YEAR }}
           FCA_END_YEAR: ${{ vars.FCA_END_YEAR }}
           FCA_SINCE_DATE: ${{ vars.FCA_SINCE_DATE }}
@@ -46,7 +46,7 @@ jobs:
         env:
           NEON_FCA_FINES_URL: ${{ secrets.NEON_FCA_FINES_URL }}
           FCA_USER_AGENT: ${{ secrets.FCA_USER_AGENT }}
-          FCA_YEARS: ${{ vars.FCA_YEARS }}
+          FCA_YEARS: ${{ vars.FCA_YEARS || '2024,2025' }}
           FCA_START_YEAR: ${{ vars.FCA_START_YEAR }}
           FCA_END_YEAR: ${{ vars.FCA_END_YEAR }}
           FCA_SINCE_DATE: ${{ vars.FCA_SINCE_DATE }}
