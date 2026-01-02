@@ -8,8 +8,11 @@
     "dev:api": "node --loader ts-node/esm --experimental-specifier-resolution=node server.ts",
     "start": "node --loader ts-node/esm --experimental-specifier-resolution=node server.ts",
     "build": "vite build",
-    "scrape:fines": "ts-node scripts/scraper/scrapeFcaFines.ts",
-    "scrape:fines:dry": "ts-node scripts/scraper/scrapeFcaFines.ts --dry-run",
+    "test": "vitest",
+    "test:run": "vitest run",
+    "test:coverage": "vitest run --coverage",
+    "scrape:fines": "node --loader ts-node/esm scripts/scraper/scrapeFcaFines.ts",
+    "scrape:fines:dry": "node --loader ts-node/esm scripts/scraper/scrapeFcaFines.ts --dry-run",
     "verify:setup": "bash scripts/verify-setup.sh"
   },
   "dependencies": {
@@ -31,11 +34,16 @@
     "papaparse": "^5.4.1",
     "react": "^19.2.1",
     "react-dom": "^19.2.1",
+    "react-router-dom": "^7.10.1",
     "react-use": "^17.5.0",
     "recharts": "^3.5.1",
+    "resend": "^6.6.0",
     "xlsx": "^0.18.5"
   },
   "devDependencies": {
+    "@testing-library/jest-dom": "^6.9.1",
+    "@testing-library/react": "^16.3.1",
+    "@testing-library/user-event": "^14.6.1",
     "@types/cors": "^2.8.19",
     "@types/express": "^5.0.6",
     "@types/node": "^24.10.1",
@@ -44,8 +52,11 @@
     "@types/react-dom": "^19.2.3",
     "@vercel/node": "^5.5.14",
     "@vitejs/plugin-react": "^5.1.1",
+    "@vitest/coverage-v8": "^4.0.16",
+    "jsdom": "^27.3.0",
     "ts-node": "^10.9.2",
     "typescript": "^5.6.3",
-    "vite": "^7.2.6"
+    "vite": "^7.2.6",
+    "vitest": "^4.0.16"
   }
 }
