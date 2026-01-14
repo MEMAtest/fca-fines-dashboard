@@ -1,0 +1,534 @@
+/* Hero 3D Visualization Styles */
+
+.hero-3d {
+  background: linear-gradient(180deg, #F8FAFB 0%, #FFFFFF 100%);
+  padding: 6rem 2rem 4rem;
+  position: relative;
+  overflow: hidden;
+}
+
+.hero-container {
+  max-width: 1400px;
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 4rem;
+  align-items: center;
+}
+
+.hero-content {
+  z-index: 2;
+}
+
+.hero-content h1 {
+  font-size: 3.5rem;
+  font-weight: 700;
+  line-height: 1.1;
+  color: #1F2937;
+  margin-bottom: 1.5rem;
+  letter-spacing: -0.02em;
+}
+
+.hero-subtitle {
+  font-size: 1.25rem;
+  color: #6B7280;
+  line-height: 1.6;
+  margin-bottom: 2.5rem;
+  max-width: 600px;
+}
+
+.hero-cta {
+  padding: 1rem 2.5rem;
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: #FFFFFF;
+  background: linear-gradient(135deg, #0FA294 0%, #17C3B2 100%);
+  border: none;
+  border-radius: 0.75rem;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 4px 14px rgba(15, 162, 148, 0.3);
+  display: inline-block;
+}
+
+.hero-cta:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(15, 162, 148, 0.4);
+}
+
+/* 3D Scene Container */
+.hero-3d-scene {
+  position: relative;
+  width: 100%;
+  height: 500px;
+  perspective: 1200px;
+  transform-style: preserve-3d;
+  overflow: visible;
+}
+
+/* Circular Backdrop Glow */
+.circular-backdrop {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 350px;
+  height: 350px;
+  background: radial-gradient(
+    circle,
+    rgba(15, 162, 148, 0.15) 0%,
+    rgba(99, 102, 241, 0.1) 40%,
+    transparent 70%
+  );
+  border-radius: 50%;
+  z-index: 0;
+  animation: pulse 4s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%, 100% {
+    transform: translate(-50%, -50%) scale(1);
+    opacity: 0.6;
+  }
+  50% {
+    transform: translate(-50%, -50%) scale(1.1);
+    opacity: 0.9;
+  }
+}
+
+/* Network Grid */
+.network-grid {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%) rotateX(60deg);
+  width: 450px;
+  height: 450px;
+  opacity: 0.4;
+  z-index: 1;
+  pointer-events: none;
+}
+
+/* Central Platform (Large Stacked Server) */
+.central-platform {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -60%) rotateX(-25deg) rotateY(45deg);
+  transform-style: preserve-3d;
+  z-index: 5;
+}
+
+/* Stacked Server Layers for Central Platform */
+.platform-layer {
+  position: relative;
+  width: 100px;
+  height: 22px;
+  transform-style: preserve-3d;
+  margin-bottom: 4px;
+}
+
+/* Individual faces of each layer */
+.platform-layer::before {
+  content: '';
+  position: absolute;
+  width: 100px;
+  height: 50px;
+  background: linear-gradient(135deg,
+    rgba(23, 195, 178, 0.95),
+    rgba(15, 162, 148, 0.95));
+  transform: rotateX(90deg) translateZ(11px);
+  border: 1px solid rgba(255, 255, 255, 0.4);
+  box-shadow: inset 0 0 20px rgba(255, 255, 255, 0.3);
+}
+
+.platform-layer::after {
+  content: '';
+  position: absolute;
+  width: 100px;
+  height: 22px;
+  background: linear-gradient(180deg,
+    rgba(99, 102, 241, 0.95),
+    rgba(79, 70, 229, 0.95));
+  transform: translateZ(25px);
+  border: 1px solid rgba(255, 255, 255, 0.35);
+  box-shadow:
+    inset 0 -3px 10px rgba(0, 0, 0, 0.15),
+    inset 0 3px 10px rgba(255, 255, 255, 0.25);
+}
+
+.platform-layer.layer-1::before,
+.platform-layer.layer-3::before {
+  background: linear-gradient(135deg,
+    rgba(99, 102, 241, 0.9),
+    rgba(129, 140, 248, 0.9));
+}
+
+.platform-layer.layer-1::after,
+.platform-layer.layer-3::after {
+  background: linear-gradient(180deg,
+    rgba(15, 162, 148, 0.95),
+    rgba(13, 140, 128, 0.95));
+}
+
+.platform-glow {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 180px;
+  height: 180px;
+  background: radial-gradient(
+    circle,
+    rgba(15, 162, 148, 0.5),
+    rgba(99, 102, 241, 0.3),
+    transparent
+  );
+  filter: blur(40px);
+  z-index: -1;
+  animation: platformGlow 3s ease-in-out infinite;
+}
+
+@keyframes platformGlow {
+  0%, 100% {
+    opacity: 0.6;
+    transform: translate(-50%, -50%) scale(1);
+  }
+  50% {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1.15);
+  }
+}
+
+/* Central Stat Badge */
+.stat-badge-3d {
+  position: absolute;
+  top: 60%;
+  left: 60%;
+  transform: translate(-30%, -30%);
+  background: linear-gradient(135deg,
+    rgba(255, 255, 255, 0.98),
+    rgba(240, 252, 250, 0.98));
+  border: 1.5px solid rgba(15, 162, 148, 0.25);
+  border-radius: 0.75rem;
+  padding: 1rem 1.75rem;
+  box-shadow:
+    0 10px 35px rgba(15, 162, 148, 0.2),
+    0 0 0 1px rgba(255, 255, 255, 0.9) inset;
+  backdrop-filter: blur(12px);
+  text-align: center;
+  z-index: 20;
+}
+
+/* Secondary stat badge positioning */
+.stat-badge-secondary {
+  top: 25%;
+  left: 15%;
+  transform: translate(-50%, -50%);
+}
+
+/* Tertiary stat badge positioning */
+.stat-badge-tertiary {
+  top: 18%;
+  left: 68%;
+  transform: translate(-50%, -50%);
+}
+
+.stat-label {
+  font-size: 0.75rem;
+  color: #6B7280;
+  font-weight: 500;
+  margin-bottom: 0.25rem;
+}
+
+.stat-value {
+  font-size: 1.75rem;
+  font-weight: 700;
+  background: linear-gradient(135deg, #0FA294, #6366F1);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* Floating Stacked Server Blocks */
+.floating-node {
+  position: absolute;
+  transform: translate(-50%, -50%);
+  z-index: 2;
+  animation: floatNode 6s ease-in-out infinite;
+  will-change: transform;
+  filter: drop-shadow(0 15px 40px rgba(15, 162, 148, 0.35));
+}
+
+.floating-node:nth-child(odd) {
+  animation-delay: 0s;
+}
+
+.floating-node:nth-child(even) {
+  animation-delay: 1.5s;
+}
+
+/* Stacked Block Container */
+.stacked-block {
+  position: relative;
+  transform-style: preserve-3d;
+  transform: rotateX(-25deg) rotateY(45deg);
+}
+
+/* Individual Layer in Stack */
+.block-layer {
+  position: relative;
+  width: 55px;
+  height: 14px;
+  transform-style: preserve-3d;
+  margin-bottom: 3px;
+}
+
+/* Layer Top Face */
+.layer-top {
+  position: absolute;
+  width: 55px;
+  height: 30px;
+  background: linear-gradient(135deg,
+    rgba(23, 195, 178, 0.95),
+    rgba(15, 162, 148, 0.95));
+  transform: rotateX(90deg) translateZ(7px);
+  border: 1px solid rgba(255, 255, 255, 0.4);
+  box-shadow: inset 0 0 15px rgba(255, 255, 255, 0.3);
+}
+
+/* Layer Front Face */
+.layer-front {
+  position: absolute;
+  width: 55px;
+  height: 14px;
+  background: linear-gradient(180deg,
+    rgba(99, 102, 241, 0.9),
+    rgba(79, 70, 229, 0.9));
+  transform: translateZ(15px);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  box-shadow:
+    inset 0 -2px 8px rgba(0, 0, 0, 0.15),
+    inset 0 2px 8px rgba(255, 255, 255, 0.25);
+}
+
+/* Layer Right Face */
+.layer-right {
+  position: absolute;
+  width: 30px;
+  height: 14px;
+  background: linear-gradient(180deg,
+    rgba(13, 125, 112, 0.9),
+    rgba(10, 100, 90, 0.9));
+  transform: rotateY(90deg) translateZ(27.5px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.2);
+}
+
+/* Alternate layer colors */
+.block-layer:nth-child(odd) .layer-front {
+  background: linear-gradient(180deg,
+    rgba(15, 162, 148, 0.9),
+    rgba(13, 140, 128, 0.9));
+}
+
+.block-layer:nth-child(odd) .layer-top {
+  background: linear-gradient(135deg,
+    rgba(99, 102, 241, 0.9),
+    rgba(129, 140, 248, 0.9));
+}
+
+@keyframes floatNode {
+  0%, 100% {
+    transform: translate(-50%, -50%) translateY(0);
+  }
+  50% {
+    transform: translate(-50%, -50%) translateY(-18px);
+  }
+}
+
+/* Connection Lines SVG */
+.connection-lines {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 3;
+  pointer-events: none;
+}
+
+/* Floating Particles with Glow */
+.particle-glow {
+  position: absolute;
+  width: 6px;
+  height: 6px;
+  background: radial-gradient(circle,
+    rgba(15, 162, 148, 1),
+    rgba(99, 102, 241, 0.6),
+    transparent);
+  border-radius: 50%;
+  pointer-events: none;
+  z-index: 2;
+  box-shadow:
+    0 0 10px rgba(15, 162, 148, 0.8),
+    0 0 20px rgba(99, 102, 241, 0.4);
+}
+
+/* Key Insights Section */
+.key-insights {
+  padding: 6rem 2rem;
+  max-width: 1400px;
+  margin: 0 auto;
+  background: #FFFFFF;
+}
+
+.section-title {
+  font-size: 2.75rem;
+  font-weight: 700;
+  text-align: center;
+  color: #1F2937;
+  margin-bottom: 1rem;
+  line-height: 1.2;
+}
+
+.section-subtitle {
+  font-size: 1.125rem;
+  text-align: center;
+  color: #6B7280;
+  margin-bottom: 4rem;
+  max-width: 700px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.insights-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 3rem;
+  margin-top: 4rem;
+}
+
+.insight-card {
+  background: #FFFFFF;
+  border: 1px solid #E5E7EB;
+  border-radius: 1rem;
+  padding: 2.5rem 2rem;
+  text-align: center;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+}
+
+.insight-card:hover {
+  box-shadow: 0 12px 24px rgba(15, 162, 148, 0.15);
+  border-color: rgba(15, 162, 148, 0.3);
+  transform: translateY(-4px);
+}
+
+.insight-icon-wrapper {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 1.5rem;
+}
+
+.insight-title {
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: #1F2937;
+  margin-bottom: 1rem;
+}
+
+.insight-description {
+  font-size: 1rem;
+  color: #6B7280;
+  line-height: 1.6;
+}
+
+/* Responsive Styles */
+@media (max-width: 1024px) {
+  .hero-container {
+    grid-template-columns: 1fr;
+    gap: 3rem;
+  }
+
+  .hero-3d-scene {
+    height: 400px;
+  }
+
+  .insights-grid {
+    grid-template-columns: 1fr;
+    gap: 2rem;
+  }
+
+  .hero-content h1 {
+    font-size: 2.75rem;
+  }
+}
+
+@media (max-width: 768px) {
+  .hero-3d {
+    padding: 4rem 1.5rem 3rem;
+  }
+
+  .hero-content h1 {
+    font-size: 2.25rem;
+  }
+
+  .hero-subtitle {
+    font-size: 1.125rem;
+  }
+
+  .hero-3d-scene {
+    height: 350px;
+  }
+
+  .circular-backdrop {
+    width: 250px;
+    height: 250px;
+  }
+
+  .network-grid {
+    width: 300px;
+    height: 300px;
+  }
+
+  .central-platform {
+    width: 100px;
+    height: 100px;
+  }
+
+  .node-cube {
+    width: 35px;
+    height: 35px;
+  }
+
+  .node-face {
+    width: 35px;
+    height: 35px;
+  }
+
+  .node-face.front {
+    transform: translateZ(17.5px);
+  }
+
+  .node-face.top {
+    transform: rotateX(90deg) translateZ(17.5px);
+  }
+
+  .node-face.right {
+    transform: rotateY(90deg) translateZ(17.5px);
+  }
+
+  .stat-badge-3d {
+    padding: 0.875rem 1.25rem;
+  }
+
+  .stat-value {
+    font-size: 1.5rem;
+  }
+
+  .stat-label {
+    font-size: 0.75rem;
+  }
+}

@@ -1,0 +1,122 @@
+name: Notification Jobs
+
+on:
+  workflow_dispatch:
+    inputs:
+      job_type:
+        description: 'Which job to run'
+        required: true
+        default: 'alerts'
+        type: choice
+        options:
+          - alerts
+          - weekly-digest
+          - monthly-digest
+  schedule:
+    # Process alerts 15 minutes after daily scraper (6:15 AM UTC)
+    - cron: '15 6 * * *'
+    # Weekly digest every Monday at 9 AM UTC
+    - cron: '0 9 * * 1'
+    # Monthly digest on 1st of each month at 9 AM UTC
+    - cron: '0 9 1 * *'
+
+concurrency:
+  group: notification-jobs
+  cancel-in-progress: false
+
+jobs:
+  process-alerts:
+    if: github.event_name == 'workflow_dispatch' && github.event.inputs.job_type == 'alerts' || github.event.schedule == '15 6 * * *'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Process alert notifications
+        env:
+          NEON_FCA_FINES_URL: ${{ secrets.NEON_FCA_FINES_URL }}
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          AWS_SES_REGION: ${{ vars.AWS_SES_REGION || 'eu-west-2' }}
+          SES_FROM_EMAIL: ${{ vars.SES_FROM_EMAIL || 'alerts@memaconsultants.com' }}
+          NEXT_PUBLIC_BASE_URL: ${{ vars.NEXT_PUBLIC_BASE_URL || 'https://fcafines.memaconsultants.com' }}
+        run: |
+          echo "Processing alert notifications..."
+          npx tsx scripts/jobs/processAlerts.ts
+          echo "✅ Alert processing completed"
+
+  send-weekly-digest:
+    if: github.event_name == 'workflow_dispatch' && github.event.inputs.job_type == 'weekly-digest' || github.event.schedule == '0 9 * * 1'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Send weekly digest
+        env:
+          NEON_FCA_FINES_URL: ${{ secrets.NEON_FCA_FINES_URL }}
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          AWS_SES_REGION: ${{ vars.AWS_SES_REGION || 'eu-west-2' }}
+          SES_FROM_EMAIL: ${{ vars.SES_FROM_EMAIL || 'alerts@memaconsultants.com' }}
+          NEXT_PUBLIC_BASE_URL: ${{ vars.NEXT_PUBLIC_BASE_URL || 'https://fcafines.memaconsultants.com' }}
+        run: |
+          echo "Sending weekly digest..."
+          npx tsx scripts/jobs/sendWeeklyDigest.ts weekly
+          echo "✅ Weekly digest completed"
+
+  send-monthly-digest:
+    if: github.event_name == 'workflow_dispatch' && github.event.inputs.job_type == 'monthly-digest' || github.event.schedule == '0 9 1 * *'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Send monthly digest
+        env:
+          NEON_FCA_FINES_URL: ${{ secrets.NEON_FCA_FINES_URL }}
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          AWS_SES_REGION: ${{ vars.AWS_SES_REGION || 'eu-west-2' }}
+          SES_FROM_EMAIL: ${{ vars.SES_FROM_EMAIL || 'alerts@memaconsultants.com' }}
+          NEXT_PUBLIC_BASE_URL: ${{ vars.NEXT_PUBLIC_BASE_URL || 'https://fcafines.memaconsultants.com' }}
+        run: |
+          echo "Sending monthly digest..."
+          npx tsx scripts/jobs/sendWeeklyDigest.ts monthly
+          echo "✅ Monthly digest completed"

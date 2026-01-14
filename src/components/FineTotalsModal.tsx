@@ -56,8 +56,6 @@ export function FineTotalsModal({ open, records, year, title, subtitle, onClose,
   const tableRef = useRef<HTMLDivElement>(null);
   const columnManagerRef = useRef<HTMLDivElement>(null);
 
-  if (!open) return null;
-
   const resolvedTitle = title ?? 'Total fines drilldown';
   const resolvedSubtitle = subtitle ?? (year === 0 ? '2013 – Today' : `${year} snapshot`);
 
@@ -100,6 +98,9 @@ export function FineTotalsModal({ open, records, year, title, subtitle, onClose,
   }, [filtered, sortKey, sortDirection]);
 
   const visibleColumns = useMemo(() => columns.filter((column) => column.visible), [columns]);
+  const totalPages = pageSize === 0 ? 1 : Math.ceil(sorted.length / pageSize);
+  const currentPage = pageSize === 0 ? 0 : Math.min(page, Math.max(totalPages - 1, 0));
+  const shouldVirtualize = pageSize === 0;
 
   useEffect(() => {
     setPage(0);
@@ -145,9 +146,6 @@ export function FineTotalsModal({ open, records, year, title, subtitle, onClose,
     return () => document.removeEventListener('mousedown', handleClick);
   }, [columnsOpen]);
 
-  const totalPages = pageSize === 0 ? 1 : Math.ceil(sorted.length / pageSize);
-  const currentPage = pageSize === 0 ? 0 : Math.min(page, Math.max(totalPages - 1, 0));
-  const shouldVirtualize = pageSize === 0;
   const paginated = useMemo(() => {
     if (shouldVirtualize) {
       return sorted;
@@ -174,6 +172,9 @@ export function FineTotalsModal({ open, records, year, title, subtitle, onClose,
     : Math.min(sorted.length, currentPage * pageSize + paginated.length);
   const totalAmount = filtered.reduce((sum, record) => sum + record.amount, 0);
   const average = filtered.length ? totalAmount / filtered.length : 0;
+
+  // Early return AFTER all hooks to comply with Rules of Hooks
+  if (!open) return null;
 
   function toggleColumn(key: ColumnConfig['key']) {
     setColumns((prev) => {

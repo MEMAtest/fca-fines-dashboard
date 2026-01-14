@@ -1,0 +1,146 @@
+/* Homepage - 3D Visual Design */
+
+.homepage {
+  --homepage-bg: #FFFFFF;
+  --homepage-card-bg: #FFFFFF;
+  --homepage-text-primary: #1F2937;
+  --homepage-text-secondary: #6B7280;
+  --homepage-accent: #0FA294;
+  --homepage-accent-alt: #6366F1;
+  --homepage-accent-light: #E0F7F5;
+  --homepage-border: #E5E7EB;
+
+  background: var(--homepage-bg);
+  min-height: 100vh;
+}
+
+.homepage-3d {
+  background: linear-gradient(180deg, #F8FAFB 0%, #FFFFFF 50%, #F8FAFB 100%);
+}
+
+/* Button Styles */
+.btn-primary {
+  padding: 0.875rem 2rem;
+  font-size: 1rem;
+  font-weight: 600;
+  color: #FFFFFF;
+  background: var(--homepage-accent);
+  border: none;
+  border-radius: 0.5rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.btn-primary:hover {
+  background: #0d7d70;
+  transform: translateY(-1px);
+}
+
+.btn-secondary {
+  padding: 0.875rem 2rem;
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--homepage-accent);
+  background: transparent;
+  border: 1.5px solid var(--homepage-accent);
+  border-radius: 0.5rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.btn-secondary:hover {
+  background: var(--homepage-accent-light);
+}
+
+/* Contact Section */
+.contact-section {
+  padding: 6rem 2rem;
+  background: #FFFFFF;
+}
+
+.contact-wrapper {
+  max-width: 700px;
+  margin: 0 auto;
+}
+
+.contact-intro {
+  text-align: center;
+  margin-bottom: 3rem;
+}
+
+.contact-intro h2 {
+  font-size: 2.25rem;
+  font-weight: 700;
+  color: var(--homepage-text-primary);
+  margin-bottom: 0.75rem;
+}
+
+.contact-intro p {
+  font-size: 1.125rem;
+  color: var(--homepage-text-secondary);
+}
+
+/* Footer */
+.footer {
+  background: var(--homepage-text-primary);
+  padding: 3rem 2rem;
+  color: #FFFFFF;
+}
+
+.footer-content {
+  max-width: 1200px;
+  margin: 0 auto;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 2rem;
+}
+
+.footer-brand {
+  flex: 1;
+}
+
+.footer-logo {
+  font-size: 1.125rem;
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+}
+
+.footer-tagline {
+  font-size: 0.875rem;
+  opacity: 0.7;
+  margin: 0;
+}
+
+.footer-copyright {
+  font-size: 0.875rem;
+  opacity: 0.7;
+  margin: 0;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .contact-section {
+    padding: 4rem 1.5rem;
+  }
+
+  .contact-intro h2 {
+    font-size: 2rem;
+  }
+
+  .footer-content {
+    flex-direction: column;
+    text-align: center;
+  }
+}
+
+@media (max-width: 480px) {
+  .contact-intro h2 {
+    font-size: 1.75rem;
+  }
+
+  .contact-intro p {
+    font-size: 1rem;
+  }
+}

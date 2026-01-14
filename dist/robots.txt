@@ -1,0 +1,8 @@
+# Robots.txt for FCA Fines Dashboard
+# https://fcafines.memaconsultants.com
+
+User-agent: *
+Allow: /
+
+# Sitemap location
+Sitemap: https://fcafines.memaconsultants.com/sitemap.xml

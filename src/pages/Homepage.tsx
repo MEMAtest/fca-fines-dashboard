@@ -1,6 +1,6 @@
 import { motion } from 'framer-motion';
 import { useEffect, useState } from 'react';
-import { useNavigate, useLocation } from 'react-router-dom';
+import { useNavigate, useLocation, useSearchParams } from 'react-router-dom';
 import { useHomepageVisit } from '../hooks/useHomepageVisit';
 import { useHomepageStats, formatAmount } from '../hooks/useHomepageStats';
 import { Hero3DVisualization } from '../components/Hero3DVisualization';
@@ -9,6 +9,7 @@ import { WidgetCard3D, MiniSparkline, MiniBarChart } from '../components/WidgetC
 import { TrendChart3D, Shield3D, Clock3D } from '../components/icons3d';
 import { ContactForm } from '../components/ContactForm';
 import { Modal } from '../components/Modal';
+import { Toast } from '../components/Toast';
 import { TotalAmountChart } from '../components/charts/TotalAmountChart';
 import { PenaltyDistributionChart } from '../components/charts/PenaltyDistributionChart';
 import { RecentActionsList } from '../components/charts/RecentActionsList';
@@ -18,18 +19,64 @@ import '../styles/widgets3d.css';
 import '../styles/contact.css';
 
 type ModalType = 'totalAmount' | 'distribution' | 'recentActions' | null;
+type ToastState = { message: string; type: 'success' | 'error' } | null;
 
 export function Homepage() {
   const navigate = useNavigate();
   const location = useLocation();
+  const [searchParams, setSearchParams] = useSearchParams();
   const { markHomepageVisited } = useHomepageVisit();
   const { stats, loading } = useHomepageStats();
   const [openModal, setOpenModal] = useState<ModalType>(null);
+  const [toast, setToast] = useState<ToastState>(null);
 
   // Mark homepage as visited when component mounts
   useEffect(() => {
     markHomepageVisited();
   }, [markHomepageVisited]);
+
+  // Handle verification/unsubscribe query params and show toast
+  useEffect(() => {
+    const verified = searchParams.get('verified');
+    const unsubscribed = searchParams.get('unsubscribed');
+    const error = searchParams.get('error');
+    const email = searchParams.get('email');
+
+    if (verified) {
+      const messages: Record<string, string> = {
+        alert: `Email verified! You'll now receive alerts${email ? ` at ${email}` : ''}.`,
+        watchlist: `Email verified! You'll be notified when watched firms receive fines.`,
+        digest: `Email verified! You're subscribed to the digest${email ? ` at ${email}` : ''}.`,
+      };
+      setToast({ message: messages[verified] || 'Email verified successfully!', type: 'success' });
+      // Clear query params
+      setSearchParams({}, { replace: true });
+    } else if (unsubscribed) {
+      const messages: Record<string, string> = {
+        alert: 'You have been unsubscribed from alerts.',
+        watchlist: 'Firm removed from your watchlist.',
+        digest: 'You have been unsubscribed from the digest.',
+      };
+      setToast({ message: messages[unsubscribed] || 'Unsubscribed successfully.', type: 'success' });
+      setSearchParams({}, { replace: true });
+    } else if (error) {
+      const messages: Record<string, string> = {
+        invalid_token: 'Invalid or expired verification link.',
+        already_verified: 'This subscription is already verified.',
+        not_found: 'Subscription not found.',
+      };
+      setToast({ message: messages[error] || 'An error occurred.', type: 'error' });
+      setSearchParams({}, { replace: true });
+    }
+  }, [searchParams, setSearchParams]);
+
+  // Auto-dismiss toast after 6 seconds
+  useEffect(() => {
+    if (toast) {
+      const timer = setTimeout(() => setToast(null), 6000);
+      return () => clearTimeout(timer);
+    }
+  }, [toast]);
 
   // Derived values from live stats
   const totalAmountDisplay = stats ? formatAmount(stats.totalAmount) : '£4.9B+';
@@ -49,6 +96,15 @@ export function Homepage() {
 
   return (
     <div className="homepage homepage-3d">
+      {/* Toast notification for verification/unsubscribe */}
+      {toast && (
+        <Toast
+          message={toast.message}
+          type={toast.type}
+          onDismiss={() => setToast(null)}
+        />
+      )}
+
       {/* Hero Section with 3D Visualization */}
       <section className="hero hero-3d">
         <div className="hero-container">

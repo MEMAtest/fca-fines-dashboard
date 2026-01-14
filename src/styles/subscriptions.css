@@ -1,0 +1,534 @@
+/* Subscription Components Styles */
+
+/* Alert Subscribe Modal */
+.alert-subscribe-modal {
+  width: 520px;
+  max-width: 95vw;
+}
+
+.alert-subscribe-modal .modal-header {
+  display: flex;
+  align-items: flex-start;
+  gap: 1rem;
+}
+
+.modal-header-icon {
+  width: 48px;
+  height: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, rgba(15, 162, 148, 0.1), rgba(99, 102, 241, 0.1));
+  border-radius: 12px;
+  color: #0FA294;
+  flex-shrink: 0;
+}
+
+.modal-subtitle {
+  margin: 0.25rem 0 0 0;
+  font-size: 0.9rem;
+  color: #6B7280;
+  font-weight: 400;
+}
+
+/* Watch Firm Modal */
+.watch-firm-modal {
+  width: 420px;
+  max-width: 95vw;
+}
+
+.watch-firm-name {
+  background: linear-gradient(135deg, rgba(15, 162, 148, 0.08), rgba(99, 102, 241, 0.08));
+  border: 1px solid rgba(15, 162, 148, 0.2);
+  border-radius: 12px;
+  padding: 1rem 1.25rem;
+  margin-bottom: 1.5rem;
+}
+
+.watch-firm-name .label {
+  display: block;
+  font-size: 0.75rem;
+  color: #6B7280;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: 0.25rem;
+}
+
+.watch-firm-name .value {
+  display: block;
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #1F2937;
+}
+
+/* Watch Firm Trigger Buttons */
+.watch-firm-trigger {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.watch-firm-trigger.icon {
+  background: transparent;
+  border: none;
+  padding: 0.5rem;
+  border-radius: 6px;
+  color: #6B7280;
+}
+
+.watch-firm-trigger.icon:hover {
+  background: rgba(15, 162, 148, 0.1);
+  color: #0FA294;
+}
+
+.watch-firm-trigger.button {
+  background: linear-gradient(135deg, rgba(15, 162, 148, 0.1), rgba(99, 102, 241, 0.1));
+  border: 1px solid rgba(15, 162, 148, 0.2);
+  padding: 0.5rem 1rem;
+  border-radius: 8px;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: #0FA294;
+}
+
+.watch-firm-trigger.button:hover {
+  background: linear-gradient(135deg, rgba(15, 162, 148, 0.15), rgba(99, 102, 241, 0.15));
+  border-color: rgba(15, 162, 148, 0.3);
+}
+
+.watch-firm-trigger.text {
+  background: transparent;
+  border: none;
+  padding: 0.25rem 0.5rem;
+  font-size: 0.875rem;
+  color: #0FA294;
+}
+
+.watch-firm-trigger.text:hover {
+  text-decoration: underline;
+}
+
+/* Subscribe Form Styles */
+.subscribe-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.subscribe-form .form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.subscribe-form label {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: #374151;
+}
+
+.subscribe-form input[type="email"],
+.subscribe-form input[type="text"],
+.subscribe-form input[type="number"] {
+  padding: 0.875rem 1rem;
+  border: 2px solid #E5E7EB;
+  border-radius: 10px;
+  font-size: 1rem;
+  transition: all 0.2s ease;
+  background: white;
+}
+
+.subscribe-form input:focus {
+  outline: none;
+  border-color: #0FA294;
+  box-shadow: 0 0 0 3px rgba(15, 162, 148, 0.1);
+}
+
+.input-with-suffix {
+  display: flex;
+  align-items: center;
+  border: 2px solid #E5E7EB;
+  border-radius: 10px;
+  overflow: hidden;
+  background: white;
+  transition: all 0.2s ease;
+}
+
+.input-with-suffix:focus-within {
+  border-color: #0FA294;
+  box-shadow: 0 0 0 3px rgba(15, 162, 148, 0.1);
+}
+
+.input-prefix,
+.input-suffix {
+  padding: 0.875rem 0.75rem;
+  background: #F9FAFB;
+  color: #6B7280;
+  font-size: 0.875rem;
+  font-weight: 500;
+}
+
+.input-with-suffix input {
+  flex: 1;
+  border: none;
+  padding: 0.875rem;
+  font-size: 1rem;
+}
+
+.input-with-suffix input:focus {
+  outline: none;
+  box-shadow: none;
+}
+
+.form-hint {
+  font-size: 0.8rem;
+  color: #9CA3AF;
+  margin: 0;
+}
+
+/* Breach Type Grid */
+.breach-type-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.breach-type-chip {
+  padding: 0.5rem 0.875rem;
+  border: 1px solid #E5E7EB;
+  border-radius: 20px;
+  background: white;
+  font-size: 0.8rem;
+  color: #6B7280;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.breach-type-chip:hover {
+  border-color: #0FA294;
+  color: #0FA294;
+}
+
+.breach-type-chip.active {
+  background: linear-gradient(135deg, rgba(15, 162, 148, 0.1), rgba(99, 102, 241, 0.1));
+  border-color: #0FA294;
+  color: #0FA294;
+  font-weight: 500;
+}
+
+/* Frequency Options */
+.frequency-options {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.frequency-option {
+  display: flex;
+  flex-direction: column;
+  padding: 1rem 1.25rem;
+  border: 2px solid #E5E7EB;
+  border-radius: 12px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.frequency-option:hover {
+  border-color: rgba(15, 162, 148, 0.5);
+}
+
+.frequency-option.active {
+  border-color: #0FA294;
+  background: linear-gradient(135deg, rgba(15, 162, 148, 0.05), rgba(99, 102, 241, 0.05));
+}
+
+.frequency-option input[type="radio"] {
+  display: none;
+}
+
+.frequency-label {
+  font-weight: 600;
+  color: #1F2937;
+  font-size: 0.95rem;
+}
+
+.frequency-desc {
+  font-size: 0.8rem;
+  color: #6B7280;
+  margin-top: 0.125rem;
+}
+
+/* Form Error */
+.form-error {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.875rem 1rem;
+  background: rgba(239, 68, 68, 0.1);
+  border: 1px solid rgba(239, 68, 68, 0.2);
+  border-radius: 10px;
+  color: #DC2626;
+  font-size: 0.875rem;
+}
+
+.form-error.compact {
+  padding: 0.5rem 0.75rem;
+  font-size: 0.8rem;
+  margin-top: 0.5rem;
+}
+
+/* Primary Button */
+.btn-primary {
+  background: linear-gradient(135deg, #0FA294, #0D8A7F);
+  color: white;
+  border: none;
+  padding: 1rem 1.5rem;
+  border-radius: 10px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.btn-primary:hover:not(:disabled) {
+  background: linear-gradient(135deg, #0D8A7F, #0B7A70);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(15, 162, 148, 0.3);
+}
+
+.btn-primary:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+.btn-full {
+  width: 100%;
+}
+
+/* Form Footer */
+.form-footer {
+  text-align: center;
+  font-size: 0.8rem;
+  color: #9CA3AF;
+  margin: 0;
+}
+
+/* Success State */
+.subscribe-success {
+  text-align: center;
+  padding: 2rem 1rem;
+}
+
+.subscribe-success .success-icon {
+  color: #0FA294;
+  margin-bottom: 1.5rem;
+}
+
+.subscribe-success h3 {
+  font-size: 1.5rem;
+  color: #1F2937;
+  margin: 0 0 1rem 0;
+}
+
+.subscribe-success p {
+  color: #6B7280;
+  margin: 0.5rem 0;
+  font-size: 0.95rem;
+}
+
+.subscribe-success strong {
+  color: #1F2937;
+}
+
+.subscribe-success .btn {
+  margin-top: 1.5rem;
+}
+
+/* Digest Subscribe Form */
+.digest-subscribe-form {
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.95), rgba(240, 249, 255, 0.95));
+  border: 1px solid rgba(15, 162, 148, 0.2);
+  border-radius: 16px;
+  padding: 1.5rem;
+}
+
+.digest-header {
+  display: flex;
+  align-items: flex-start;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+  color: #0FA294;
+}
+
+.digest-header h3 {
+  margin: 0;
+  font-size: 1.1rem;
+  color: #1F2937;
+}
+
+.digest-header p {
+  margin: 0.25rem 0 0 0;
+  font-size: 0.875rem;
+  color: #6B7280;
+}
+
+.digest-subscribe-form form {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+.frequency-toggle {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.75rem;
+}
+
+.frequency-toggle button {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 1rem;
+  border: 2px solid #E5E7EB;
+  border-radius: 10px;
+  background: white;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-weight: 600;
+  color: #374151;
+}
+
+.frequency-toggle button:hover {
+  border-color: rgba(15, 162, 148, 0.5);
+}
+
+.frequency-toggle button.active {
+  border-color: #0FA294;
+  background: linear-gradient(135deg, rgba(15, 162, 148, 0.05), rgba(99, 102, 241, 0.05));
+  color: #0FA294;
+}
+
+.frequency-toggle .frequency-desc {
+  font-weight: 400;
+  font-size: 0.75rem;
+}
+
+/* Compact Digest Form */
+.digest-subscribe-form.compact {
+  padding: 1rem;
+  background: transparent;
+  border: none;
+}
+
+.compact-form-row {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+}
+
+.compact-input-group {
+  flex: 1;
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.compact-input-group .input-icon {
+  position: absolute;
+  left: 0.75rem;
+  color: #9CA3AF;
+}
+
+.compact-input-group input {
+  width: 100%;
+  padding: 0.625rem 0.75rem 0.625rem 2.25rem;
+  border: 2px solid #E5E7EB;
+  border-radius: 8px;
+  font-size: 0.875rem;
+}
+
+.compact-input-group input:focus {
+  outline: none;
+  border-color: #0FA294;
+}
+
+.frequency-select {
+  padding: 0.625rem 0.75rem;
+  border: 2px solid #E5E7EB;
+  border-radius: 8px;
+  font-size: 0.875rem;
+  background: white;
+  cursor: pointer;
+}
+
+.frequency-select:focus {
+  outline: none;
+  border-color: #0FA294;
+}
+
+.digest-subscribe-form.compact .btn-primary {
+  padding: 0.625rem 1rem;
+  font-size: 0.875rem;
+  white-space: nowrap;
+}
+
+/* Digest Success State */
+.digest-subscribe-form.success {
+  background: linear-gradient(135deg, rgba(15, 162, 148, 0.1), rgba(99, 102, 241, 0.1));
+}
+
+.success-content {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.success-content .success-icon {
+  color: #0FA294;
+  flex-shrink: 0;
+}
+
+.success-title {
+  font-weight: 600;
+  color: #1F2937;
+  margin: 0;
+}
+
+.success-message {
+  font-size: 0.875rem;
+  color: #6B7280;
+  margin: 0.25rem 0 0 0;
+}
+
+/* Responsive */
+@media (max-width: 640px) {
+  .alert-subscribe-modal,
+  .watch-firm-modal {
+    width: 100%;
+  }
+
+  .compact-form-row {
+    flex-wrap: wrap;
+  }
+
+  .compact-input-group {
+    width: 100%;
+  }
+
+  .frequency-select,
+  .digest-subscribe-form.compact .btn-primary {
+    flex: 1;
+  }
+
+  .breach-type-grid {
+    gap: 0.375rem;
+  }
+
+  .breach-type-chip {
+    font-size: 0.75rem;
+    padding: 0.375rem 0.75rem;
+  }
+}

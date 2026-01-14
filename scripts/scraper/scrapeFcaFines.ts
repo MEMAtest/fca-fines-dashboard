@@ -13,15 +13,23 @@ const userAgent =
   process.env.FCA_USER_AGENT ||
   'Mozilla/5.0 (Macintosh; Intel Mac OS X 14_0) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/125 Safari/537.36';
 
+const currentYear = new Date().getFullYear();
 const yearEnv = process.env.FCA_YEARS;
 const yearsToScrape = yearEnv
-  ? yearEnv
-      .split(',')
-      .map((y) => Number(y.trim()))
-      .filter((y) => !Number.isNaN(y))
+  ? (() => {
+      const parsed = yearEnv
+        .split(',')
+        .map((y) => Number(y.trim()))
+        .filter((y) => !Number.isNaN(y));
+      if (!parsed.includes(currentYear)) {
+        console.log(`   ➤ Adding current year ${currentYear} to FCA_YEARS for forward coverage`);
+        parsed.unshift(currentYear);
+      }
+      return Array.from(new Set(parsed));
+    })()
   : (() => {
       const start = Number(process.env.FCA_START_YEAR || 2013);
-      const end = Number(process.env.FCA_END_YEAR || new Date().getFullYear());
+      const end = Number(process.env.FCA_END_YEAR || currentYear);
       const years: number[] = [];
       for (let y = start; y <= end; y++) years.push(y);
       return years;
@@ -187,14 +195,40 @@ function parseCurrency(text: string): number {
 }
 
 const BREACH_KEYWORDS: { pattern: RegExp; label: string }[] = [
-  { pattern: /money laundering|aml/i, label: 'AML' },
-  { pattern: /systems? and controls?|SYSC/i, label: 'SYSTEMS_CONTROLS' },
-  { pattern: /client money|cobs/i, label: 'CLIENT_MONEY' },
-  { pattern: /market abuse|insider dealing|MAR/i, label: 'MARKET_ABUSE' },
-  { pattern: /financial promotion|marketing/i, label: 'FINANCIAL_PROMOTIONS' },
-  { pattern: /consumer duty|treating customers fairly|tcf/i, label: 'CONDUCT' },
-  { pattern: /governance|oversight/i, label: 'GOVERNANCE' },
-  { pattern: /reporting|regulatory reporting/i, label: 'REPORTING' },
+  // Financial Crime & AML
+  { pattern: /money laundering|aml|anti-money|financial crime|proceeds of crime|sanctions?|terrorist financ/i, label: 'AML' },
+  { pattern: /fraud|fraudulent|dishonest|decepti|mislead|false|forgery/i, label: 'FRAUD' },
+
+  // Systems & Controls
+  { pattern: /systems? and controls?|SYSC|control (framework|failure|weakness)|inadequate controls?|risk management|operational risk/i, label: 'SYSTEMS_CONTROLS' },
+  { pattern: /governance|oversight|board|senior management|SM&CR|SMCR|approved person|CF\d|controlled function/i, label: 'GOVERNANCE' },
+
+  // Client Protection
+  { pattern: /client money|client assets?|cass|CASS|segregat|safeguard/i, label: 'CLIENT_MONEY' },
+  { pattern: /consumer duty|treating customers fairly|tcf|customer(s)?( )?('s)? (best )?interest|fair treatment|vulnerable customer/i, label: 'CONDUCT' },
+  { pattern: /mis-?sell|unsuitable|suitability|advice|recommend|inappropriate/i, label: 'MIS_SELLING' },
+  { pattern: /best execution|execution quality|order handling|fair dealing/i, label: 'BEST_EXECUTION' },
+
+  // Market Integrity
+  { pattern: /market abuse|insider (dealing|trading|information)|MAR|market manipulation|front.?running|layering|spoofing/i, label: 'MARKET_ABUSE' },
+  { pattern: /conflict(s)? of interest|chinese wall|information barrier/i, label: 'CONFLICTS' },
+
+  // Communications & Disclosure
+  { pattern: /financial promotion|marketing|advert|promot|communicat|disclosure/i, label: 'FINANCIAL_PROMOTIONS' },
+  { pattern: /report(ing)?|regulatory report|transaction report|SUP|supervision|filing|submit/i, label: 'REPORTING' },
+  { pattern: /record.?keep|documentation|audit trail|data|retention/i, label: 'RECORD_KEEPING' },
+
+  // Specific Products
+  { pattern: /pension|annuit|retirement|SIPP|drawdown/i, label: 'PENSIONS' },
+  { pattern: /mortgage|lending|loan|credit|borrower/i, label: 'LENDING' },
+  { pattern: /insurance|insurer|underwriting|claims?( )?handling|policy/i, label: 'INSURANCE' },
+  { pattern: /investment|portfolio|fund|asset management|wealth management/i, label: 'INVESTMENT' },
+  { pattern: /payment|PSD|e-?money|remittance|transfer/i, label: 'PAYMENTS' },
+
+  // Regulatory Breaches
+  { pattern: /principle(s)?( \d+)?|PRIN|threshold condition|authoris(ation|ed)|permission|regulated activit/i, label: 'PRINCIPLES' },
+  { pattern: /complaint(s)?( )?handling|redress|compensation|refund/i, label: 'COMPLAINTS' },
+  { pattern: /capital|liquidity|prudential|solvency|financial resource/i, label: 'PRUDENTIAL' },
 ];
 
 function detectPrimaryBreach(text: string): string | null {

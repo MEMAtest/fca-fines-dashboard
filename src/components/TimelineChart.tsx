@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useMemo, useState, useRef, useCallback } from 'react';
 import {
   ResponsiveContainer,
   ComposedChart,
@@ -39,6 +39,7 @@ export function TimelineChart({
   const averageAmount = data.length ? data.reduce((sum, item) => sum + item.total, 0) / data.length : 0;
   const panelId = exportId ?? 'timeline-panel';
   const [mode, setMode] = useState<'amount' | 'count'>('amount');
+  const debounceRef = useRef<NodeJS.Timeout | null>(null);
   const formatted = useMemo(
     () =>
       data.map((entry) => ({
@@ -50,16 +51,25 @@ export function TimelineChart({
   const showAmount = mode === 'amount';
   const showCount = mode === 'count';
 
-  function handleBrushChange(range: { startIndex?: number; endIndex?: number } | number[] | null) {
+  const handleBrushChange = useCallback((range: { startIndex?: number; endIndex?: number } | number[] | null) => {
     if (!range || Array.isArray(range)) return;
     const { startIndex, endIndex } = range;
     if (startIndex == null || endIndex == null) return;
-    const startPoint = formatted[Math.max(0, startIndex)];
-    const endPoint = formatted[Math.min(formatted.length - 1, endIndex)];
-    if (startPoint && endPoint) {
-      onRangeSelect?.(startPoint, endPoint);
+
+    // Clear previous debounce timer
+    if (debounceRef.current) {
+      clearTimeout(debounceRef.current);
     }
-  }
+
+    // Debounce the range select to avoid firing on every drag movement
+    debounceRef.current = setTimeout(() => {
+      const startPoint = formatted[Math.max(0, startIndex)];
+      const endPoint = formatted[Math.min(formatted.length - 1, endIndex)];
+      if (startPoint && endPoint && onRangeSelect) {
+        onRangeSelect(startPoint, endPoint);
+      }
+    }, 500);
+  }, [formatted, onRangeSelect]);
 
   return (
     <div className="panel" id={panelId}>

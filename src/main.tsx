@@ -1,6 +1,6 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
-import App from './App';
+import { AppRouter } from './router';
 import { Analytics } from '@vercel/analytics/react';
 import './styles/index.css';
 import { useEffect } from 'react';
@@ -15,7 +15,7 @@ function PageviewTracker() {
 
 ReactDOM.createRoot(document.getElementById('root') as HTMLElement).render(
   <React.StrictMode>
-    <App />
+    <AppRouter />
     <PageviewTracker />
     <Analytics />
   </React.StrictMode>

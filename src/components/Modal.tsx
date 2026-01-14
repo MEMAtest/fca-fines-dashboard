@@ -1,41 +1,53 @@
-import { ReactNode, useEffect, useId } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { X } from 'lucide-react';
+import { ReactNode } from 'react';
+import '../styles/modal.css';
 
 interface ModalProps {
-  title: string;
-  subtitle?: string;
+  isOpen: boolean;
   onClose: () => void;
+  title: string;
   children: ReactNode;
 }
 
-export function Modal({ title, subtitle, onClose, children }: ModalProps) {
-  const titleId = useId();
-  const bodyId = useId();
-  useEffect(() => {
-    function handleKey(event: KeyboardEvent) {
-      if (event.key === 'Escape') {
-        onClose();
-      }
-    }
-    window.addEventListener('keydown', handleKey);
-    return () => window.removeEventListener('keydown', handleKey);
-  }, [onClose]);
-
+export function Modal({ isOpen, onClose, title, children }: ModalProps) {
   return (
-    <div className="modal-overlay" role="dialog" aria-modal="true" aria-labelledby={titleId} aria-describedby={bodyId}>
-      <div className="modal">
-        <header className="modal__header">
-          <div>
-            {subtitle && <p className="modal__eyebrow">{subtitle}</p>}
-            <h3 id={titleId}>{title}</h3>
+    <AnimatePresence>
+      {isOpen && (
+        <>
+          {/* Backdrop */}
+          <motion.div
+            className="modal-backdrop"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            onClick={onClose}
+          />
+
+          {/* Modal Container */}
+          <div className="modal-container" onClick={onClose}>
+            <motion.div
+              className="modal-inner"
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.95 }}
+              transition={{ type: 'spring', damping: 30, stiffness: 400 }}
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div className="modal-header">
+                <h2>{title}</h2>
+                <button className="modal-close" onClick={onClose}>
+                  <X size={24} />
+                </button>
+              </div>
+
+              <div className="modal-content">
+                {children}
+              </div>
+            </motion.div>
           </div>
-          <button className="modal__close" type="button" onClick={onClose} aria-label="Close modal">
-            ×
-          </button>
-        </header>
-        <div className="modal__body" id={bodyId}>
-          {children}
-        </div>
-      </div>
-    </div>
+        </>
+      )}
+    </AnimatePresence>
   );
 }

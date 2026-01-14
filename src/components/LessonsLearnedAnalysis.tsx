@@ -319,8 +319,8 @@ function LearningsTab({ lessons, metrics }: LearningsTabProps) {
         <div className="metric-card">
           <Users size={20} />
           <div>
-            <span className="metric-value">{metrics.repeatOffenders}</span>
-            <span className="metric-label">Repeat Offenders ({metrics.repeatOffenderRate.toFixed(1)}%)</span>
+            <span className="metric-value">{metrics.repeatOffenders} Repeat Offenders</span>
+            <span className="metric-label">({metrics.repeatOffenderRate.toFixed(1)}%)</span>
           </div>
         </div>
         <div className="metric-card">
@@ -333,8 +333,8 @@ function LearningsTab({ lessons, metrics }: LearningsTabProps) {
         <div className="metric-card">
           <AlertTriangle size={20} />
           <div>
-            <span className="metric-value">{metrics.largeFineCount}</span>
-            <span className="metric-label">Fines Over £10m ({metrics.largeFinePercentage.toFixed(1)}%)</span>
+            <span className="metric-value">{metrics.largeFineCount} Fines Over £10m</span>
+            <span className="metric-label">({metrics.largeFinePercentage.toFixed(1)}%)</span>
           </div>
         </div>
       </div>
@@ -427,10 +427,75 @@ function extractCommonIssues(category: string, _summaries: string[]): string[] {
       'Inadequate management information',
       'Weak control frameworks',
     ],
-    'Unclassified': [
-      'Multiple compliance failures identified',
-      'Systemic control weaknesses',
-      'Regulatory requirement breaches',
+    'FRAUD': [
+      'Dishonest conduct by individuals',
+      'Failure to prevent fraudulent activity',
+      'Inadequate fraud detection controls',
+    ],
+    'MIS_SELLING': [
+      'Unsuitable product recommendations',
+      'Inadequate suitability assessments',
+      'Poor advice processes',
+    ],
+    'CONDUCT': [
+      'Failure to treat customers fairly',
+      'Poor customer outcomes',
+      'Consumer Duty breaches',
+    ],
+    'CONFLICTS': [
+      'Failure to manage conflicts of interest',
+      'Inadequate information barriers',
+      'Self-dealing or preferential treatment',
+    ],
+    'PENSIONS': [
+      'Unsuitable pension transfer advice',
+      'Failure to consider safeguarded benefits',
+      'SIPP investment failures',
+    ],
+    'LENDING': [
+      'Irresponsible lending practices',
+      'Inadequate affordability assessments',
+      'Unfair treatment of borrowers',
+    ],
+    'INSURANCE': [
+      'Claims handling failures',
+      'Inadequate policy disclosure',
+      'Unfair policy terms',
+    ],
+    'PRINCIPLES': [
+      'Breach of FCA Principles',
+      'Threshold condition failures',
+      'Unauthorized activities',
+    ],
+    'COMPLAINTS': [
+      'Inadequate complaints handling',
+      'Failure to provide fair redress',
+      'Poor root cause analysis',
+    ],
+    'PRUDENTIAL': [
+      'Capital adequacy failures',
+      'Liquidity management issues',
+      'Financial resource breaches',
+    ],
+    'BEST_EXECUTION': [
+      'Failure to achieve best execution',
+      'Poor order handling practices',
+      'Inadequate execution monitoring',
+    ],
+    'RECORD_KEEPING': [
+      'Inadequate record retention',
+      'Poor documentation practices',
+      'Audit trail failures',
+    ],
+    'INVESTMENT': [
+      'Portfolio management failures',
+      'Inadequate fund oversight',
+      'Investment mandate breaches',
+    ],
+    'PAYMENTS': [
+      'Payment service failures',
+      'Inadequate safeguarding',
+      'Transaction processing issues',
     ],
   };
 
@@ -488,6 +553,46 @@ function extractLessons(records: FineRecord[]): Lesson[] {
       title: 'Enhance Board Oversight',
       description: 'Ensure boards receive adequate management information on compliance risks. Implement clear escalation paths for material issues.',
       icon: <Users size={20} />,
+    },
+    'FRAUD': {
+      title: 'Prevent and Detect Fraud',
+      description: 'Implement robust fraud prevention controls. Establish clear procedures for identifying and reporting suspicious activity.',
+      icon: <AlertTriangle size={20} />,
+    },
+    'MIS_SELLING': {
+      title: 'Ensure Suitability of Advice',
+      description: 'Implement thorough suitability assessment processes. Document rationale for recommendations and ensure advisers are properly trained.',
+      icon: <Target size={20} />,
+    },
+    'CONDUCT': {
+      title: 'Embed Consumer Duty',
+      description: 'Ensure customer outcomes are at the heart of product design and distribution. Regularly monitor and evidence fair treatment of customers.',
+      icon: <Users size={20} />,
+    },
+    'CONFLICTS': {
+      title: 'Manage Conflicts of Interest',
+      description: 'Identify, prevent, and manage conflicts of interest. Maintain appropriate information barriers and disclosure procedures.',
+      icon: <Shield size={20} />,
+    },
+    'PENSIONS': {
+      title: 'Protect Pension Savers',
+      description: 'Ensure pension transfer advice considers safeguarded benefits. Implement robust due diligence on SIPP investments.',
+      icon: <Users size={20} />,
+    },
+    'LENDING': {
+      title: 'Responsible Lending Practices',
+      description: 'Conduct thorough affordability assessments. Treat borrowers fairly, especially those in financial difficulty.',
+      icon: <FileText size={20} />,
+    },
+    'COMPLAINTS': {
+      title: 'Improve Complaints Handling',
+      description: 'Handle complaints fairly and promptly. Use complaints data for root cause analysis and continuous improvement.',
+      icon: <Target size={20} />,
+    },
+    'PRUDENTIAL': {
+      title: 'Maintain Financial Resilience',
+      description: 'Ensure adequate capital and liquidity buffers. Implement robust financial resource monitoring and stress testing.',
+      icon: <TrendingUp size={20} />,
     },
   };
 
