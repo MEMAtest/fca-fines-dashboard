@@ -127,10 +127,10 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       Source: FROM_EMAIL,
       Destination: { ToAddresses: [email] },
       Message: {
-        Subject: { Data: `Verify your watchlist: ${firmName.trim()}` },
+        Subject: { Data: `Verify your watchlist: ${firmName.trim()}`, Charset: 'UTF-8' },
         Body: {
-          Html: { Data: htmlContent },
-          Text: { Data: `Verify your firm watchlist\n\nYou've requested to watch "${firmName.trim()}" for new FCA fines.\n\nClick here to verify: ${verifyUrl}\n\nThis link expires in 24 hours.` },
+          Html: { Data: htmlContent, Charset: 'UTF-8' },
+          Text: { Data: `Verify your firm watchlist\n\nYou've requested to watch "${firmName.trim()}" for new FCA fines.\n\nClick here to verify: ${verifyUrl}\n\nThis link expires in 24 hours.`, Charset: 'UTF-8' },
         },
       },
     }));

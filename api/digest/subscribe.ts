@@ -147,10 +147,10 @@ async function sendVerificationEmail(email: string, frequency: string, token: st
     Source: FROM_EMAIL,
     Destination: { ToAddresses: [email] },
     Message: {
-      Subject: { Data: `Verify your ${frequency} FCA Fines Digest` },
+      Subject: { Data: `Verify your ${frequency} FCA Fines Digest`, Charset: 'UTF-8' },
       Body: {
-        Html: { Data: htmlContent },
-        Text: { Data: `Verify your ${frequency} digest subscription\n\nClick here to verify: ${verifyUrl}\n\nYou'll receive summaries ${frequency === 'weekly' ? 'every Monday' : 'on the 1st of each month'}.\n\nThis link expires in 24 hours.` },
+        Html: { Data: htmlContent, Charset: 'UTF-8' },
+        Text: { Data: `Verify your ${frequency} digest subscription\n\nClick here to verify: ${verifyUrl}\n\nYou'll receive summaries ${frequency === 'weekly' ? 'every Monday' : 'on the 1st of each month'}.\n\nThis link expires in 24 hours.`, Charset: 'UTF-8' },
       },
     },
   }));

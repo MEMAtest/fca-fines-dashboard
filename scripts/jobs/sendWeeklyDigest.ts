@@ -232,10 +232,10 @@ Unsubscribe: ${unsubscribeUrl}`;
     Source: FROM_EMAIL,
     Destination: { ToAddresses: [subscription.email] },
     Message: {
-      Subject: { Data: `${periodLabel}: ${allFines.length} FCA Fines, £${(totalAmount / 1_000_000).toFixed(1)}m Total` },
+      Subject: { Data: `${periodLabel}: ${allFines.length} FCA Fines, £${(totalAmount / 1_000_000).toFixed(1)}m Total`, Charset: 'UTF-8' },
       Body: {
-        Html: { Data: htmlContent },
-        Text: { Data: textContent },
+        Html: { Data: htmlContent, Charset: 'UTF-8' },
+        Text: { Data: textContent, Charset: 'UTF-8' },
       },
     },
   }));

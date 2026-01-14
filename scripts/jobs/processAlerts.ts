@@ -327,10 +327,10 @@ Unsubscribe: ${unsubscribeUrl}`;
     Source: FROM_EMAIL,
     Destination: { ToAddresses: [subscription.email] },
     Message: {
-      Subject: { Data: `FCA Alert: ${fines.length} new fine${fines.length !== 1 ? 's' : ''} detected` },
+      Subject: { Data: `FCA Alert: ${fines.length} new fine${fines.length !== 1 ? 's' : ''} detected`, Charset: 'UTF-8' },
       Body: {
-        Html: { Data: htmlContent },
-        Text: { Data: textContent },
+        Html: { Data: htmlContent, Charset: 'UTF-8' },
+        Text: { Data: textContent, Charset: 'UTF-8' },
       },
     },
   }));
@@ -397,10 +397,10 @@ async function sendWatchlistEmail(entry: WatchlistEntry, fines: Fine[]) {
     Source: FROM_EMAIL,
     Destination: { ToAddresses: [entry.email] },
     Message: {
-      Subject: { Data: `Watchlist Alert: ${entry.firm_name} fined £${totalAmount.toLocaleString('en-GB')}` },
+      Subject: { Data: `Watchlist Alert: ${entry.firm_name} fined £${totalAmount.toLocaleString('en-GB')}`, Charset: 'UTF-8' },
       Body: {
-        Html: { Data: htmlContent },
-        Text: { Data: `Watchlist Alert: ${entry.firm_name}\n\nA firm you're watching has received a new FCA fine.\n\nFines:\n${fines.map(f => `£${f.amount.toLocaleString('en-GB')} - ${f.breach_type}`).join('\n')}\n\nView details: ${BASE_URL}/dashboard\n\nStop watching: ${unsubscribeUrl}` },
+        Html: { Data: htmlContent, Charset: 'UTF-8' },
+        Text: { Data: `Watchlist Alert: ${entry.firm_name}\n\nA firm you're watching has received a new FCA fine.\n\nFines:\n${fines.map(f => `£${f.amount.toLocaleString('en-GB')} - ${f.breach_type}`).join('\n')}\n\nView details: ${BASE_URL}/dashboard\n\nStop watching: ${unsubscribeUrl}`, Charset: 'UTF-8' },
       },
     },
   }));

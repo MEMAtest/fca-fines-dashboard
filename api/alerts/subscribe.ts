@@ -120,10 +120,10 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       Source: FROM_EMAIL,
       Destination: { ToAddresses: [email] },
       Message: {
-        Subject: { Data: 'Verify your FCA Fine Alert subscription' },
+        Subject: { Data: 'Verify your FCA Fine Alert subscription', Charset: 'UTF-8' },
         Body: {
-          Html: { Data: htmlContent },
-          Text: { Data: `Verify your FCA Fine Alert subscription\n\nClick here to verify: ${verifyUrl}\n\nYour criteria:\n${minAmountText}\n${breachText}\nFrequency: ${frequency}` },
+          Html: { Data: htmlContent, Charset: 'UTF-8' },
+          Text: { Data: `Verify your FCA Fine Alert subscription\n\nClick here to verify: ${verifyUrl}\n\nYour criteria:\n${minAmountText}\n${breachText}\nFrequency: ${frequency}`, Charset: 'UTF-8' },
         },
       },
     }));
