@@ -24,6 +24,7 @@ import { useNotificationFeed } from '../hooks/useNotificationFeed';
 import { Toast } from '../components/Toast';
 import { useDashboardState, INITIAL_ADVANCED_FILTERS, CURRENT_YEAR } from '../hooks/useDashboardState';
 import { useFinesData, type TrendPoint } from '../hooks/useFinesData';
+import { AlertSubscribeModal } from '../components/AlertSubscribeModal';
 
 
 function getYearsRange() {
@@ -208,6 +209,7 @@ export function Dashboard() {
   const [modalContext, setModalContext] = useState<{ title?: string; subtitle?: string; records: FineRecord[] } | null>(null);
   const [advancedOpen, setAdvancedOpen] = useState(false);
   const [notificationsOpen, setNotificationsOpen] = useState(false);
+  const [alertsModalOpen, setAlertsModalOpen] = useState(false);
   const [toast, setToast] = useState<{ message: string; type?: 'success' | 'error' } | null>(null);
   const {
     notifications: remoteNotifications,
@@ -603,6 +605,7 @@ export function Dashboard() {
         onNotificationsRefresh={handleNotificationsRefresh}
         notificationsLoading={notificationsLoading}
         notificationsError={notificationsError}
+        onAlertsSubscribe={() => setAlertsModalOpen(true)}
       />
       <FiltersBar
         year={year}
@@ -712,6 +715,7 @@ export function Dashboard() {
         onClose={() => setAdvancedOpen(false)}
         onClear={() => setAdvancedFilters(INITIAL_ADVANCED_FILTERS)}
       />
+      <AlertSubscribeModal isOpen={alertsModalOpen} onClose={() => setAlertsModalOpen(false)} />
       {comparisonOpen && comparisonYear && (
         <Modal
           title={`${primaryYear} vs ${comparisonYear} Comparison`}

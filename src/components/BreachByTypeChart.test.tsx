@@ -116,7 +116,7 @@ describe('BreachByTypeChart', () => {
     it('renders help button with tooltip', () => {
       render(<BreachByTypeChart records={mockFineRecords} />);
 
-      const helpButton = screen.getByTitle(/Distribution of fines by breach category/);
+      const helpButton = screen.getByRole('button', { name: /Distribution of fines by breach category/ });
       expect(helpButton).toBeInTheDocument();
     });
   });

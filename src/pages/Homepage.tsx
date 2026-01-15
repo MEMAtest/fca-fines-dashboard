@@ -51,6 +51,7 @@ export function Homepage() {
       setToast({ message: messages[verified] || 'Email verified successfully!', type: 'success' });
       // Clear query params
       setSearchParams({}, { replace: true });
+      return;
     } else if (unsubscribed) {
       const messages: Record<string, string> = {
         alert: 'You have been unsubscribed from alerts.',
@@ -59,6 +60,7 @@ export function Homepage() {
       };
       setToast({ message: messages[unsubscribed] || 'Unsubscribed successfully.', type: 'success' });
       setSearchParams({}, { replace: true });
+      return;
     } else if (error) {
       const messages: Record<string, string> = {
         invalid_token: 'Invalid or expired verification link.',
@@ -67,6 +69,34 @@ export function Homepage() {
       };
       setToast({ message: messages[error] || 'An error occurred.', type: 'error' });
       setSearchParams({}, { replace: true });
+      return;
+    }
+
+    const dashboardParams = [
+      'year',
+      'category',
+      'search',
+      'scope',
+      'compare',
+      'compareCategories',
+      'filterYears',
+      'amountMin',
+      'amountMax',
+      'breaches',
+      'firms',
+      'startDate',
+      'endDate',
+    ];
+    let changed = false;
+    const nextParams = new URLSearchParams(searchParams);
+    dashboardParams.forEach((key) => {
+      if (nextParams.has(key)) {
+        nextParams.delete(key);
+        changed = true;
+      }
+    });
+    if (changed) {
+      setSearchParams(nextParams, { replace: true });
     }
   }, [searchParams, setSearchParams]);
 

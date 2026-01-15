@@ -1,6 +1,7 @@
 import { HelpCircle } from 'lucide-react';
 import type { FineRecord } from '../types';
 import { ExportMenu } from './ExportMenu';
+import { PanelHelp } from './PanelHelp';
 
 const currency = new Intl.NumberFormat('en-GB', { style: 'currency', currency: 'GBP', maximumFractionDigits: 0 });
 
@@ -22,9 +23,10 @@ export function TopFirms({ records, onSelectFirm, exportId }: TopFirmsProps) {
           <h3>Top 10 Highest Penalties</h3>
         </div>
         <div className="panel__header-actions">
-          <button className="panel__help" title="The 10 largest fines by amount. Click a firm to filter all data by that entity.">
-            <HelpCircle size={16} />
-          </button>
+          <PanelHelp
+            text="The 10 largest fines by amount. Click a firm to filter all data by that entity."
+            icon={<HelpCircle size={16} />}
+          />
           {topRecords.length > 0 && (
             <ExportMenu records={topRecords} filename="top-firms" targetElementId={panelId} />
           )}

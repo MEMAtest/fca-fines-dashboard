@@ -3,6 +3,7 @@ import { ResponsiveContainer, PieChart, Pie, Cell, Tooltip } from 'recharts';
 import { HelpCircle } from 'lucide-react';
 import type { FineRecord } from '../types';
 import { ExportMenu } from './ExportMenu';
+import { PanelHelp } from './PanelHelp';
 
 interface BreachByTypeChartProps {
   records: FineRecord[];
@@ -75,9 +76,10 @@ export function BreachByTypeChart({ records, onSelect, exportId }: BreachByTypeC
           <h3>Top breach categories</h3>
         </div>
         <div className="panel__header-actions">
-          <button className="panel__help" title="Distribution of fines by breach category. Click a slice to filter the dashboard.">
-            <HelpCircle size={16} />
-          </button>
+          <PanelHelp
+            text="Distribution of fines by breach category. Click a slice to filter the dashboard."
+            icon={<HelpCircle size={16} />}
+          />
           {records.length > 0 && <ExportMenu records={records} filename="breach-mix" targetElementId={panelId} />}
         </div>
       </div>

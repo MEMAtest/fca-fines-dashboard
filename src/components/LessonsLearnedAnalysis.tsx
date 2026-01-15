@@ -2,6 +2,7 @@ import { useMemo, useState } from 'react';
 import { FileText, Target, Lightbulb, AlertTriangle, TrendingUp, Shield, Users, ArrowRight, HelpCircle } from 'lucide-react';
 import { format } from 'date-fns';
 import type { FineRecord } from '../types';
+import { PanelHelp } from './PanelHelp';
 
 // Helper to safely get numeric value
 function safeNum(value: number | string | undefined | null): number {
@@ -112,9 +113,10 @@ export function LessonsLearnedAnalysis({ records, year }: LessonsLearnedProps) {
             <p className="panel__eyebrow">Intelligence & Analysis</p>
             <h3>Lessons Learned</h3>
           </div>
-          <button className="panel__help" title="AI-generated insights from enforcement patterns. Browse summaries, identify themes, and learn from regulatory actions.">
-            <HelpCircle size={16} />
-          </button>
+          <PanelHelp
+            text="AI-generated insights from enforcement patterns. Browse summaries, identify themes, and learn from regulatory actions."
+            icon={<HelpCircle size={16} />}
+          />
         </div>
         <p className="status">No records available for analysis.</p>
       </div>
@@ -128,9 +130,10 @@ export function LessonsLearnedAnalysis({ records, year }: LessonsLearnedProps) {
           <p className="panel__eyebrow">Intelligence & Analysis</p>
           <h3>Lessons Learned from {year === 0 ? 'All Years' : year}</h3>
         </div>
-        <button className="panel__help" title="AI-generated insights from enforcement patterns. Browse summaries, identify themes, and learn from regulatory actions.">
-          <HelpCircle size={16} />
-        </button>
+        <PanelHelp
+          text="AI-generated insights from enforcement patterns. Browse summaries, identify themes, and learn from regulatory actions."
+          icon={<HelpCircle size={16} />}
+        />
       </div>
 
       {/* Tab Navigation */}

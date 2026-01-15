@@ -133,7 +133,7 @@ describe('TimelineChart', () => {
     it('renders help button with tooltip', () => {
       render(<TimelineChart {...defaultProps} />);
 
-      const helpButton = screen.getByTitle(/View monthly enforcement totals/);
+      const helpButton = screen.getByRole('button', { name: /View monthly enforcement totals/ });
       expect(helpButton).toBeInTheDocument();
     });
   });

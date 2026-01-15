@@ -49,6 +49,7 @@
     width: 100%;
     justify-content: flex-end;
     gap: 8px;
+    flex-wrap: wrap;
   }
 
   .hero__badge {

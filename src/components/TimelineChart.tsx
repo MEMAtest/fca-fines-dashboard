@@ -14,6 +14,7 @@ import {
 import { HelpCircle } from 'lucide-react';
 import type { FineRecord } from '../types';
 import { ExportMenu } from './ExportMenu';
+import { PanelHelp } from './PanelHelp';
 
 interface TimelineChartProps {
   data: Array<{ month: string; total: number; count: number; period?: number; year?: number }>;
@@ -79,9 +80,10 @@ export function TimelineChart({
           <h3>{title}</h3>
         </div>
         <div className="panel__header-actions">
-          <button className="panel__help" title="View monthly enforcement totals. Click a bar to filter, or drag the brush to select a date range.">
-            <HelpCircle size={16} />
-          </button>
+          <PanelHelp
+            text="View monthly enforcement totals. Click a bar to filter, or drag the brush to select a date range."
+            icon={<HelpCircle size={16} />}
+          />
           {recordsForExport.length > 0 && (
             <ExportMenu records={recordsForExport} filename={`timeline-${year || 'all'}`} targetElementId={panelId} />
           )}

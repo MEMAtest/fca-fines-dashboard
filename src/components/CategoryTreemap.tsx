@@ -3,6 +3,7 @@ import type { LucideIcon } from 'lucide-react';
 import { Layers, Shield, Rocket, Activity, AlertTriangle, Landmark, HelpCircle, Info } from 'lucide-react';
 import type { FineRecord } from '../types';
 import { ExportMenu } from './ExportMenu';
+import { PanelHelp } from './PanelHelp';
 
 interface CategoryTreemapProps {
   data: Array<{ name: string; size: number; count: number }>;
@@ -148,9 +149,10 @@ export function CategoryTreemap({
           <h3>{title}</h3>
         </div>
         <div className="panel__header-actions">
-          <button className="panel__help" title="Breach categories by total fines. Click a tile to zoom into subcategories or filter the dashboard.">
-            <Info size={16} />
-          </button>
+          <PanelHelp
+            text="Breach categories by total fines. Click a tile to zoom into subcategories or filter the dashboard."
+            icon={<Info size={16} />}
+          />
           {exportRecords.length > 0 && (
             <ExportMenu records={exportRecords} filename={`categories-${year || 'all'}`} targetElementId={panelId} />
           )}

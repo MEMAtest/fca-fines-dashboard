@@ -83,6 +83,37 @@
   color: var(--text-primary);
 }
 
+.panel__help-wrap {
+  position: relative;
+  display: inline-flex;
+}
+
+.panel__help-tooltip {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  width: 240px;
+  max-width: 70vw;
+  padding: 10px 12px;
+  border-radius: var(--radius-md);
+  background: #0f172a;
+  color: #f8fafc;
+  font-size: var(--text-xs);
+  line-height: 1.4;
+  box-shadow: var(--shadow-card);
+  opacity: 0;
+  transform: translateY(6px);
+  pointer-events: none;
+  transition: opacity 0.2s ease, transform 0.2s ease;
+  z-index: 20;
+}
+
+.panel__help-tooltip.is-open {
+  opacity: 1;
+  transform: translateY(0);
+  pointer-events: auto;
+}
+
 .panel__eyebrow {
   text-transform: uppercase;
   letter-spacing: 0.2em;

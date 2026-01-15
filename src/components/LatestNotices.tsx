@@ -1,6 +1,7 @@
 import { ExternalLink, HelpCircle } from 'lucide-react';
 import { FineRecord } from '../types';
 import { ExportMenu } from './ExportMenu';
+import { PanelHelp } from './PanelHelp';
 
 const formatter = new Intl.NumberFormat('en-GB', {
   style: 'currency',
@@ -25,9 +26,10 @@ export function LatestNotices({ records, year, exportId }: LatestNoticesProps) {
           <h3>Recent enforcement actions • {focusLabel}</h3>
         </div>
         <div className="panel__header-actions">
-          <button className="panel__help" title="Most recent final notices issued by the FCA. Click 'View notice' to see the full document.">
-            <HelpCircle size={16} />
-          </button>
+          <PanelHelp
+            text="Most recent final notices issued by the FCA. Click 'View notice' to see the full document."
+            icon={<HelpCircle size={16} />}
+          />
           {records.length > 0 && (
             <ExportMenu records={records} filename={`notices-${focusLabel}`} targetElementId={panelId} />
           )}

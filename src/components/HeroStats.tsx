@@ -1,5 +1,5 @@
 import { motion } from 'framer-motion';
-import { Trophy, TrendingUp, ArrowRight, Sparkles, Calendar } from 'lucide-react';
+import { Trophy, TrendingUp, ArrowRight, Sparkles, Calendar, Bell } from 'lucide-react';
 import type { ReactNode } from 'react';
 import { format, differenceInDays } from 'date-fns';
 import type { FineRecord, StatsResponse } from '../types';
@@ -29,6 +29,7 @@ interface HeroStatsProps {
   onNotificationsRefresh?: () => void;
   notificationsLoading?: boolean;
   notificationsError?: string | null;
+  onAlertsSubscribe?: () => void;
 }
 
 interface ChangeBadge {
@@ -65,6 +66,7 @@ export function HeroStats({
   onNotificationsRefresh,
   notificationsLoading,
   notificationsError,
+  onAlertsSubscribe,
 }: HeroStatsProps) {
   const focusLabel = year === 0 ? 'All years live' : `Focused on ${year}`;
   const totalChange = computeChange(stats?.totalAmount, prevStats?.totalAmount);
@@ -72,7 +74,7 @@ export function HeroStats({
   const sparklineData = timeline.map((t) => t.total);
 
   return (
-    <section id="hero-section" className="hero">
+    <section id="hero-section" className="hero hero--dashboard">
       <motion.div className="hero__content" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
         <div>
           <p className="hero__eyebrow">{focusLabel}</p>
@@ -96,6 +98,12 @@ export function HeroStats({
             onMarkAllRead={onNotificationReadAll}
             onRefresh={onNotificationsRefresh}
           />
+          {onAlertsSubscribe && (
+            <button type="button" className="btn btn-primary hero__subscribe" onClick={onAlertsSubscribe}>
+              <Bell size={16} />
+              Get alerts
+            </button>
+          )}
           {latest && (
             <div className="hero__badge hover-lift">
               <Calendar size={16} />
