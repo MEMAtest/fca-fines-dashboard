@@ -424,20 +424,39 @@
   border-collapse: collapse;
   margin: 1.5rem 0;
   font-size: 0.9375rem;
+  border: 1px solid var(--blog-border);
+  border-radius: 0.5rem;
+  overflow: hidden;
 }
 
-.blog-article-content tr {
+.blog-article-content thead {
+  background: var(--blog-accent-light);
+}
+
+.blog-article-content th {
+  padding: 0.875rem 1rem;
+  text-align: left;
+  font-weight: 600;
+  color: var(--blog-text-primary);
+  border-bottom: 2px solid var(--blog-accent);
+}
+
+.blog-article-content tbody tr {
   border-bottom: 1px solid var(--blog-border);
+}
+
+.blog-article-content tbody tr:hover {
+  background: rgba(15, 162, 148, 0.05);
 }
 
 .blog-article-content td {
   padding: 0.75rem 1rem;
   text-align: left;
+  color: var(--blog-text-primary);
 }
 
-.blog-article-content tr:first-child td {
-  font-weight: 600;
-  background: var(--blog-accent-light);
+.blog-article-content tbody tr:last-child {
+  border-bottom: none;
 }
 
 .blog-article-modal-footer {

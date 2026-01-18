@@ -1618,16 +1618,31 @@ export function Blog() {
               itemProp="articleBody"
               dangerouslySetInnerHTML={{
                 __html: selectedArticle.content
+                  // Convert markdown tables to HTML tables
+                  .replace(/(\|.+\|\n)+/g, (tableBlock) => {
+                    const rows = tableBlock.trim().split('\n');
+                    let html = '<table><thead>';
+                    let inBody = false;
+                    rows.forEach((row, index) => {
+                      // Skip separator rows (|---|---|)
+                      if (/^\|[\s\-:]+\|$/.test(row.replace(/\|/g, '|').replace(/[^|\-:\s]/g, ''))) {
+                        html += '</thead><tbody>';
+                        inBody = true;
+                        return;
+                      }
+                      const cells = row.split('|').filter(Boolean).map(cell => cell.trim());
+                      const cellTag = !inBody ? 'th' : 'td';
+                      html += `<tr>${cells.map(cell => `<${cellTag}>${cell}</${cellTag}>`).join('')}</tr>`;
+                    });
+                    html += inBody ? '</tbody></table>' : '</thead></table>';
+                    return html;
+                  })
                   .replace(/^## (.+)$/gm, '<h2>$1</h2>')
                   .replace(/^### (.+)$/gm, '<h3>$1</h3>')
                   .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
                   .replace(/^\- (.+)$/gm, '<li>$1</li>')
                   .replace(/(<li>.*<\/li>\n?)+/g, '<ul>$&</ul>')
                   .replace(/\n\n/g, '</p><p>')
-                  .replace(/\|(.+)\|/g, (match) => {
-                    const cells = match.split('|').filter(Boolean).map(cell => cell.trim());
-                    return `<tr>${cells.map(cell => `<td>${cell}</td>`).join('')}</tr>`;
-                  })
               }}
             />
             <div className="blog-article-modal-footer">
