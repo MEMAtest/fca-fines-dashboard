@@ -273,6 +273,96 @@ export function Homepage() {
         <RecentActionsList />
       </Modal>
 
+      {/* FCA Fines Blog Section */}
+      <section className="blog-section">
+        <h2 className="section-title">FCA Fines Insights</h2>
+        <p className="section-subtitle">
+          Expert analysis of FCA enforcement actions, penalty trends, and compliance lessons
+        </p>
+
+        <div className="blog-grid">
+          {[
+            {
+              title: "FCA Fines in 2024: Key Trends and Record Penalties",
+              excerpt: "Analysis of the FCA's enforcement approach in 2024, including the largest fines and most common breach types targeted by the regulator.",
+              category: "Enforcement Trends",
+              date: "January 2025",
+              url: "https://memaconsultants.com/insights/fca-fines-2024-trends"
+            },
+            {
+              title: "How to Avoid FCA Fines: Lessons from Recent Cases",
+              excerpt: "Practical compliance lessons drawn from recent FCA enforcement actions, helping firms identify and address regulatory risks.",
+              category: "Compliance Guide",
+              date: "December 2024",
+              url: "https://memaconsultants.com/insights/avoid-fca-fines-lessons"
+            },
+            {
+              title: "Understanding FCA Penalty Calculations",
+              excerpt: "A deep dive into how the FCA calculates financial penalties, including aggravating and mitigating factors that affect fine amounts.",
+              category: "Regulatory Analysis",
+              date: "November 2024",
+              url: "https://memaconsultants.com/insights/fca-penalty-calculations"
+            },
+            {
+              title: "Consumer Duty Enforcement: What Fines to Expect",
+              excerpt: "With Consumer Duty now in force, we examine the FCA's likely enforcement approach and potential penalty levels for breaches.",
+              category: "Consumer Duty",
+              date: "October 2024",
+              url: "https://memaconsultants.com/insights/consumer-duty-enforcement-fines"
+            },
+            {
+              title: "AML Failures: The Costliest FCA Fines",
+              excerpt: "Anti-money laundering breaches have attracted some of the FCA's largest penalties. We analyse the key failures and compliance gaps.",
+              category: "Financial Crime",
+              date: "September 2024",
+              url: "https://memaconsultants.com/insights/aml-fca-fines"
+            },
+            {
+              title: "FCA vs PRA: Understanding Dual Regulation Fines",
+              excerpt: "How enforcement differs between the FCA and PRA, and what dual-regulated firms need to know about penalty coordination.",
+              category: "Regulatory Framework",
+              date: "August 2024",
+              url: "https://memaconsultants.com/insights/fca-pra-dual-regulation-fines"
+            },
+          ].map((post, index) => (
+            <motion.a
+              key={post.title}
+              href={post.url}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="blog-card"
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.4, delay: index * 0.1 }}
+            >
+              <div className="blog-card-content">
+                <div className="blog-card-meta">
+                  <span className="blog-category">{post.category}</span>
+                  <span className="blog-date">{post.date}</span>
+                </div>
+                <h3 className="blog-card-title">{post.title}</h3>
+                <p className="blog-card-excerpt">{post.excerpt}</p>
+                <span className="blog-read-more">
+                  Read Article →
+                </span>
+              </div>
+            </motion.a>
+          ))}
+        </div>
+
+        <div className="blog-cta">
+          <a
+            href="https://memaconsultants.com/insights?category=enforcement"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="blog-view-all"
+          >
+            View All Enforcement Insights
+          </a>
+        </div>
+      </section>
+
       {/* Contact Form */}
       <section className="contact-section">
         <div className="contact-wrapper">
