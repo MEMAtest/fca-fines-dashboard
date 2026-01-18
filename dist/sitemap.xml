@@ -1,9 +1,92 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+
+  <!-- Homepage - FCA Fines Database -->
   <url>
     <loc>https://fcafines.memaconsultants.com/</loc>
-    <lastmod>2026-01-14</lastmod>
+    <lastmod>2025-01-18</lastmod>
     <changefreq>daily</changefreq>
     <priority>1.0</priority>
   </url>
+
+  <!-- FCA Fines Dashboard - Interactive Analytics -->
+  <url>
+    <loc>https://fcafines.memaconsultants.com/dashboard</loc>
+    <lastmod>2025-01-18</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.95</priority>
+  </url>
+
+  <!-- Blog/Insights Main Page -->
+  <url>
+    <loc>https://fcafines.memaconsultants.com/blog</loc>
+    <lastmod>2025-01-18</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.9</priority>
+  </url>
+
+  <!-- Featured Article: 20 Biggest FCA Fines -->
+  <url>
+    <loc>https://fcafines.memaconsultants.com/blog/20-biggest-fca-fines-of-all-time</loc>
+    <lastmod>2025-01-15</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.85</priority>
+  </url>
+
+  <!-- Featured Article: FCA Fines 2025 -->
+  <url>
+    <loc>https://fcafines.memaconsultants.com/blog/fca-fines-2025-complete-list</loc>
+    <lastmod>2025-01-18</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.9</priority>
+  </url>
+
+  <!-- Featured Article: FCA Fines Database Guide -->
+  <url>
+    <loc>https://fcafines.memaconsultants.com/blog/fca-fines-database-how-to-search</loc>
+    <lastmod>2025-01-10</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.85</priority>
+  </url>
+
+  <!-- Article: FCA AML Fines -->
+  <url>
+    <loc>https://fcafines.memaconsultants.com/blog/fca-aml-fines-anti-money-laundering</loc>
+    <lastmod>2024-12-20</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+
+  <!-- Article: FCA Fines to Banks -->
+  <url>
+    <loc>https://fcafines.memaconsultants.com/blog/fca-fines-banks-complete-list</loc>
+    <lastmod>2024-11-15</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+
+  <!-- Article: FCA Enforcement Trends -->
+  <url>
+    <loc>https://fcafines.memaconsultants.com/blog/fca-enforcement-trends-2013-2025</loc>
+    <lastmod>2025-01-12</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.75</priority>
+  </url>
+
+  <!-- Article: FCA Final Notices -->
+  <url>
+    <loc>https://fcafines.memaconsultants.com/blog/fca-final-notices-explained</loc>
+    <lastmod>2024-10-25</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.75</priority>
+  </url>
+
+  <!-- Article: Senior Managers Regime -->
+  <url>
+    <loc>https://fcafines.memaconsultants.com/blog/senior-managers-regime-fca-fines</loc>
+    <lastmod>2024-09-18</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.75</priority>
+  </url>
+
 </urlset>
