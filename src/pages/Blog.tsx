@@ -41,7 +41,9 @@ import {
   Fines2025BreachChart,
   CumulativeFinesChart,
 } from '../components/MainArticleCharts';
+import { Blog3DVisualization } from '../components/Blog3DVisualization';
 import '../styles/blog.css';
+import '../styles/blog3d.css';
 
 interface BlogArticle {
   id: string;
@@ -1183,23 +1185,29 @@ export function Blog() {
         </div>
       </header>
 
-      {/* Hero Section - SEO optimized */}
-      <section className="blog-hero">
-        <motion.div
-          className="blog-hero-content"
-          initial={{ opacity: 0, y: 30 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6 }}
-        >
-          <h1>FCA Fines: Expert Analysis & Insights</h1>
-          <p className="blog-hero-subtitle">
-            Comprehensive guides to Financial Conduct Authority fines, enforcement trends,
-            and compliance best practices. Updated for 2025.
-          </p>
-          <p className="blog-hero-stats">
-            Tracking <strong>£4.9+ billion</strong> in FCA fines since 2013
-          </p>
-        </motion.div>
+      {/* Hero Section - SEO optimized with 3D visualization */}
+      <section className="blog-hero-3d">
+        <div className="blog-hero-container">
+          <motion.div
+            className="blog-hero-text"
+            initial={{ opacity: 0, y: 30 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6 }}
+          >
+            <h1>FCA Fines: Expert Analysis & Insights</h1>
+            <p className="blog-hero-subtitle">
+              Comprehensive guides to Financial Conduct Authority fines, enforcement trends,
+              and compliance best practices. Updated for 2025.
+            </p>
+            <p className="blog-hero-stats">
+              Tracking <strong>£4.9+ billion</strong> in FCA fines since 2013
+            </p>
+          </motion.div>
+
+          <div className="blog-hero-visualization">
+            <Blog3DVisualization />
+          </div>
+        </div>
       </section>
 
       {/* Featured Articles */}
