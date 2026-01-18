@@ -698,6 +698,25 @@
   }
 }
 
+/* Article Charts Section */
+.article-charts-section {
+  margin: 2rem 0;
+  padding-top: 1.5rem;
+  border-top: 1px solid var(--blog-border);
+}
+
+.article-charts-section .yearly-chart {
+  margin: 1.5rem 0;
+}
+
+.article-charts-section .yearly-chart:first-child {
+  margin-top: 0;
+}
+
+.article-charts-section .yearly-chart:last-child {
+  margin-bottom: 0;
+}
+
 /* Yearly Analysis Section */
 .yearly-analysis-section {
   padding: 4rem 2rem;

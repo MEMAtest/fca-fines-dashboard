@@ -28,6 +28,19 @@ import {
   TopFirmsChart,
   YearOverYearChart,
 } from '../components/YearlyArticleCharts';
+import {
+  Top20FinesChart,
+  Top20BreachTypesChart,
+  AMLFinesChart,
+  AMLTrendChart,
+  BankFinesComparisonChart,
+  AllYearsEnforcementChart,
+  FinalNoticesBreakdownChart,
+  SMCREnforcementChart,
+  Fines2025MonthlyChart,
+  Fines2025BreachChart,
+  CumulativeFinesChart,
+} from '../components/MainArticleCharts';
 import '../styles/blog.css';
 
 interface BlogArticle {
@@ -423,40 +436,21 @@ The banking sector has historically attracted the largest share of FCA fines, ac
 
 ## Banking Sector Fine Breakdown
 
-### By Sub-Sector
-- **Investment Banking**: 45% of bank fines
-- **Retail Banking**: 35% of bank fines
-- **Private Banking**: 20% of bank fines
+When analysing fines by sub-sector, investment banking accounts for approximately 45% of all bank fines, reflecting the concentration of market conduct and trading-related enforcement in wholesale activities. Retail banking contributes around 35% of penalties, primarily driven by consumer protection and AML failings, while private banking represents the remaining 20%, often linked to enhanced due diligence failures for high-net-worth clients.
 
-### By Breach Type
-- **FX/Market Abuse**: £1.1 billion
-- **AML Failures**: £800 million
-- **Consumer Issues**: £300 million
-- **Systems & Controls**: £200 million
+The distribution by breach type reveals that FX and market abuse cases account for approximately £1.1 billion in fines, heavily concentrated in the 2014-2015 period. AML failures represent around £800 million, spanning the entire period but accelerating from 2019 onwards. Consumer protection issues total approximately £300 million, while systems and controls failings account for £200 million across the banking sector.
 
 ## Why Banks Face Large FCA Fines
 
-1. **Systemic importance** - Banks handle massive transaction volumes
-2. **Regulatory focus** - High priority for FCA supervision
-3. **Complex operations** - Multiple risk areas
-4. **International exposure** - Cross-border activities
+Banks attract the largest FCA penalties for several interconnected reasons. Their systemic importance means they handle massive transaction volumes, creating significant potential for harm when controls fail. The FCA prioritises bank supervision given their central role in the financial system, resulting in more intensive scrutiny and consequently more enforcement actions. Complex banking operations span multiple risk areas from trading to payments to lending, creating numerous opportunities for regulatory breaches. Additionally, international exposure through cross-border activities brings enhanced regulatory requirements and potential for jurisdictional overlap in enforcement.
 
 ## Prevention Strategies for Banks
 
-### Governance
-- Clear accountability under SM&CR
-- Board-level compliance oversight
-- Independent risk functions
+Effective governance forms the foundation of bank compliance, requiring clear accountability structures under SM&CR, genuine board-level compliance oversight rather than delegated responsibility, and truly independent risk functions that can challenge the first line without fear of reprisal.
 
-### Technology
-- Automated surveillance systems
-- Advanced transaction monitoring
-- Real-time risk detection
+Technology investment has become essential for modern banking compliance. Automated surveillance systems provide comprehensive coverage of trading activities, while advanced transaction monitoring catches suspicious patterns that manual review would miss. Real-time risk detection enables prompt intervention before issues escalate into regulatory breaches.
 
-### Culture
-- Tone from the top
-- Aligned incentives
-- Speak-up culture
+Culture ultimately determines whether compliance programmes succeed or fail. This requires genuine tone from the top where senior leaders visibly prioritise compliance, incentive structures that reward good conduct rather than just revenue generation, and a speak-up culture where employees feel safe reporting concerns without fear of retaliation.
     `,
     category: 'Banking Fines',
     readTime: '10 min read',
@@ -497,53 +491,31 @@ Since taking over from the FSA in 2013, the FCA has issued over £4.9 billion in
 
 ## Key Trend Analysis
 
-### 1. Enforcement Cycles
-FCA enforcement follows clear patterns:
-- **2014-2015**: Post-FSA legacy issues, FX scandal
-- **2016-2018**: Consolidation, lower volumes
-- **2019-2021**: AML focus, major bank fines
-- **2022-2025**: Consumer Duty, renewed enforcement
+### Enforcement Cycles
 
-### 2. Average Fine Trends
-- Peak average: £32.7m (2014)
-- Lowest average: £1.5m (2016)
-- Recent average: £10-15m
-- Trend: Increasing again from 2023
+FCA enforcement follows recognisable patterns that compliance professionals can use to anticipate regulatory focus. The period from 2014-2015 saw the resolution of post-FSA legacy issues combined with the major FX manipulation scandal, resulting in record fine totals. From 2016-2018, the regulator entered a consolidation phase with lower volumes as major cases concluded. The period from 2019-2021 saw renewed focus on AML compliance, culminating in major bank fines including the landmark NatWest criminal prosecution. The current cycle from 2022-2025 combines Consumer Duty implementation with renewed enforcement activity.
 
-### 3. Sector Shifts
-- **2013-2017**: Banking dominated (75%)
-- **2018-2021**: Insurance increase (35%)
-- **2022-2025**: Broader distribution
+### Average Fine Trends
 
-### 4. Breach Category Trends
-- **AML**: Consistent priority, largest fines
-- **Market abuse**: Peaked 2014-2015
-- **Consumer issues**: Increasing focus
-- **Operational**: Emerging priority
+Average fine amounts have fluctuated significantly over the FCA's history. The peak average of £32.7 million in 2014 reflected the extraordinary FX scandal fines. The lowest average of £1.5 million occurred in 2016 during the post-scandal quiet period. Recent years have seen averages stabilise around £10-15 million, though the trend has begun increasing again from 2023 as the regulator signals a more aggressive stance.
+
+### Sector Shifts
+
+The distribution of fines across sectors has evolved considerably. During 2013-2017, banking dominated enforcement outcomes, accounting for approximately 75% of total fines. The period from 2018-2021 saw insurance sector fines increase to around 35% of the total as the FCA addressed PPI legacy issues and strengthened insurance supervision. From 2022-2025, enforcement shows broader distribution across sectors including payment services, asset management, and crypto.
+
+### Breach Category Trends
+
+Anti-money laundering has remained a consistent priority throughout the FCA's existence, attracting the largest individual fines. Market abuse enforcement peaked during 2014-2015 with the FX and LIBOR cases but continues at lower levels. Consumer protection issues have received increasing focus, accelerated by Consumer Duty implementation. Operational resilience has emerged as a newer priority area, particularly following high-profile IT failures at major institutions.
 
 ## FCA Enforcement Priorities
 
-### Current Focus Areas (2024-2025)
-1. Anti-money laundering
-2. Consumer Duty compliance
-3. Operational resilience
-4. Financial crime prevention
-5. Crypto asset firms
+Current focus areas for 2024-2025 centre on anti-money laundering compliance, which continues to attract the largest fines. Consumer Duty compliance represents the major new enforcement frontier as the regulation beds in. Operational resilience has become critical following several high-profile failures, while financial crime prevention encompasses a broader range of offences beyond traditional AML. Crypto asset firms face intensified scrutiny as the FCA develops its approach to digital asset regulation.
 
-### Emerging Areas
-1. ESG and greenwashing
-2. AI governance
-3. Third-party risk
-4. Cyber resilience
+Emerging areas on the FCA's radar include ESG and greenwashing claims as sustainable finance grows, AI governance as firms deploy machine learning in decision-making, third-party risk management given increased outsourcing, and cyber resilience given the evolving threat landscape.
 
 ## Predictive Analysis
 
-Based on trends, expect:
-- Continued AML enforcement
-- First Consumer Duty fines
-- Increased crypto enforcement
-- Individual accountability focus
-- Data-driven investigations
+Based on observable trends, compliance teams should anticipate continued AML enforcement with no reduction in intensity, the first significant Consumer Duty fines as implementation gaps emerge, increased crypto enforcement as the sector matures, greater individual accountability focus utilising SM&CR powers, and more sophisticated data-driven investigations leveraging the FCA's improved analytical capabilities.
     `,
     category: 'Trends Analysis',
     readTime: '9 min read',
@@ -565,80 +537,31 @@ FCA final notices are official documents published when the Financial Conduct Au
 
 ## What Final Notices Contain
 
-### Standard Sections
-1. **Summary** - Overview of the case
-2. **Facts and matters** - Detailed findings
-3. **Failings** - Specific breaches identified
-4. **Sanction** - Fine amount and rationale
-5. **Procedural matters** - Settlement details
+Final notices follow a standard structure designed to provide comprehensive information about enforcement outcomes. The summary section provides an overview of the case accessible to non-specialists. Facts and matters details the FCA's detailed findings from investigation. The failings section identifies specific regulatory breaches and the firm's responsibility for them. The sanction section explains the fine amount and the rationale for its calculation. Procedural matters covers settlement details including any discount for early resolution.
 
-### Key Information
-- Firm name and FRN
-- Fine amount
-- Breach period
-- Regulatory provisions breached
-- Aggravating/mitigating factors
-- Settlement discount applied
+Key information in every final notice includes the firm name and Financial Reference Number for identification, the fine amount in pounds sterling, the breach period showing when failings occurred, specific regulatory provisions breached such as FCA Principles or Handbook rules, aggravating and mitigating factors considered in penalty calculation, and any settlement discount applied for cooperation.
 
 ## Types of FCA Notices
 
-### Final Notice
-Issued when enforcement is complete. Published on FCA website. Contains full details of failings and fine.
-
-### Decision Notice
-Issued before final notice if firm doesn't agree. Firm can refer to tribunal.
-
-### Warning Notice
-Initial notice of proposed action. Not usually published.
-
-### Supervisory Notice
-For non-disciplinary actions like requirements or restrictions.
+Understanding the different notice types helps compliance professionals interpret regulatory communications. A final notice is issued when enforcement is complete, published on the FCA website, and contains full details of failings and the imposed fine. A decision notice is issued before a final notice when a firm disagrees with proposed action, giving the firm the right to refer the matter to the Upper Tribunal for independent review. A warning notice represents the initial notice of proposed action and is not usually published to protect the firm's reputation during the process. A supervisory notice is used for non-disciplinary actions such as imposing requirements or restrictions on a firm's permissions.
 
 ## How to Find FCA Final Notices
 
-### FCA Website
-Search the FCA register and news section:
-- Enforcement news stories
-- Final notices database
-- Regulatory decisions
+The FCA website provides several routes to access enforcement decisions. The enforcement news section publishes stories when major fines are announced, providing accessible summaries. The final notices database allows searching of all published notices. The regulatory decisions section covers broader enforcement outcomes beyond financial penalties.
 
-### Our Dashboard
-Use our FCA fines database to:
-- Search by firm name
-- Filter by year
-- Link to original notices
+Our FCA fines dashboard offers an alternative route to access this information, allowing users to search by firm name to find specific enforcement actions, filter by year to identify trends over time, and link directly to original notices on the FCA website for detailed reading.
 
 ## Reading a Final Notice
 
-### Example: Major Bank AML Fine
+Understanding how to read a final notice helps extract maximum value from enforcement decisions. The penalty calculation section explains how the FCA arrived at the fine amount, typically starting with a figure based on firm revenue relevant to the breach, adjusted for seriousness based on factors like harm caused and management involvement, reduced by the standard 30% settlement discount for early resolution, and resulting in the final penalty amount.
 
-**Penalty Calculation:**
-- Starting figure based on revenue
-- Adjusted for seriousness
-- Settlement discount (30%)
-- Final penalty amount
-
-**Common Themes:**
-- "Failed to take reasonable care"
-- "Inadequate systems and controls"
-- "Breach of Principle X"
-- "Did not act with integrity"
+Common themes appear repeatedly across final notices. Phrases such as "failed to take reasonable care" indicate negligence in control design or operation. "Inadequate systems and controls" suggests infrastructure failures rather than isolated incidents. "Breach of Principle X" references specific FCA Principles for Business that were violated. "Did not act with integrity" represents one of the most serious findings and typically results in higher penalties.
 
 ## Using Final Notices for Compliance
 
-### Learning from Others
-Review final notices to:
-- Identify common failures
-- Understand FCA expectations
-- Benchmark your controls
-- Train staff on real cases
+Final notices from enforcement against other firms provide valuable compliance intelligence. Reviewing notices helps identify common failure patterns that may exist in your own organisation, understand FCA expectations and enforcement priorities, benchmark your controls against the standards the regulator expects, and develop training materials using real cases that resonate with staff.
 
-### Risk Assessment
-Use enforcement data to:
-- Prioritise compliance efforts
-- Justify budget requests
-- Update risk assessments
-- Prepare for FCA visits
+Enforcement data also supports risk assessment and planning. This information helps prioritise compliance efforts toward areas attracting regulatory attention, justify budget requests by demonstrating tangible financial risk from enforcement, update risk assessments with current regulatory priorities, and prepare for FCA visits by understanding what supervisors look for.
     `,
     category: 'Regulatory Guide',
     readTime: '8 min read',
@@ -660,76 +583,33 @@ The Senior Managers and Certification Regime (SM&CR) has transformed individual 
 
 ## SM&CR Overview
 
-### Three Pillars
-1. **Senior Managers Regime** - Individual accountability for senior roles
-2. **Certification Regime** - Firm certification of key staff
-3. **Conduct Rules** - Behavioral standards for all staff
+The regime rests on three interconnected pillars. The Senior Managers Regime establishes individual accountability for those in senior roles, requiring regulatory approval before appointment and creating personal responsibility for defined areas of the business. The Certification Regime requires firms to certify that other key staff, while not requiring regulatory approval, are fit and proper for their roles. The Conduct Rules establish behavioural standards applicable to all staff, creating a cultural foundation for individual accountability.
 
-### Key Features
-- Statements of Responsibilities
-- Duty of Responsibility
-- Regulatory references
-- Conduct rule breaches
+Key features of the regime include Statements of Responsibilities that document each senior manager's accountabilities, the Duty of Responsibility that can make senior managers personally liable for breaches in their areas, regulatory references that follow individuals between firms, and conduct rule breach reporting that creates ongoing compliance obligations.
 
 ## Individual FCA Fines Under SM&CR
 
-### Statistics Since 2016
-- **Individuals fined**: 45+
-- **Total individual fines**: £18m+
-- **Average fine**: £400,000
-- **Prohibitions issued**: 120+
+Since full implementation in 2016, the FCA has fined over 45 individuals under SM&CR and related regimes, with total individual fines exceeding £18 million. The average individual fine stands at approximately £400,000, though amounts vary significantly based on seniority and breach severity. The FCA has issued over 120 prohibition orders preventing individuals from working in regulated roles.
 
-### Notable Individual Cases
-
-**Case 1: Chief Compliance Officer - £76,000**
-Failed to ensure adequate AML systems. Lesson: CCOs bear personal responsibility.
-
-**Case 2: CEO - £642,000**
-Failure to act with integrity, misleading FCA. Duty of candour paramount.
-
-**Case 3: Head of Trading - £1.4m + prohibition**
-Market manipulation. Conduct rules apply regardless of commercial pressure.
+Notable individual cases illustrate the regime's application. A Chief Compliance Officer received a £76,000 fine for failing to ensure adequate AML systems, demonstrating that CCOs bear personal responsibility for control effectiveness. A Chief Executive received a £642,000 fine for failure to act with integrity and misleading the FCA, emphasising that the duty of candour to the regulator is paramount. A Head of Trading received a £1.4 million fine plus prohibition for market manipulation, showing that conduct rules apply regardless of commercial pressure to generate profits.
 
 ## The Duty of Responsibility
 
-Senior managers can be held accountable if:
-1. Firm breaches regulatory requirements
-2. Breach occurs in their area of responsibility
-3. They didn't take reasonable steps to prevent it
+Senior managers can be held personally accountable when three conditions are met: the firm must have breached regulatory requirements, the breach must have occurred in the senior manager's area of responsibility as documented in their Statement of Responsibilities, and they must have failed to take reasonable steps to prevent or stop the breach.
 
-### "Reasonable Steps" Factors
-- Nature and complexity of business
-- Resources available
-- Individual's knowledge and experience
-- Actions taken to address known risks
+The assessment of "reasonable steps" considers several factors. These include the nature and complexity of the business being managed, the resources available to the senior manager including budget and headcount, the individual's knowledge and experience relevant to the risks in question, and what actions they took to address known or emerging risks before the breach occurred.
 
 ## Protecting Yourself Under SM&CR
 
-### Documentation
-- Keep records of decisions
-- Document oversight activities
-- Maintain handover records
-- Evidence of challenge
+Maintaining comprehensive documentation provides essential protection for senior managers. This means keeping records of key decisions and the rationale behind them, documenting oversight activities including committee attendance and challenge provided, maintaining thorough handover records when responsibilities change, and evidencing instances where you challenged proposals or escalated concerns.
 
-### Governance
-- Clear delegation
-- Regular MI review
-- Escalation procedures
-- Control testing
+Strong governance practices further protect individuals. This requires clear delegation arrangements that document who is responsible for what, regular management information review with evidence of action on exceptions, escalation procedures that ensure issues reach the right level, and control testing that demonstrates ongoing verification of effectiveness.
 
-### Training
-- Understand your responsibilities
-- Know the conduct rules
-- Regular refresher training
-- Stay updated on enforcement
+Continuous professional development helps senior managers meet their responsibilities. Understanding the full scope of your accountabilities is essential, as is knowing the conduct rules that apply to your role. Regular refresher training keeps knowledge current, while staying updated on enforcement actions helps identify emerging regulatory expectations.
 
 ## Trends in Individual Enforcement
 
-The FCA has signalled increased individual focus:
-- More investigations of senior managers
-- Greater use of prohibition powers
-- Public censure of individuals
-- Higher individual fines
+The FCA has clearly signalled increased focus on individual accountability. This manifests through more investigations specifically targeting senior managers rather than just firms, greater willingness to use prohibition powers that end careers in financial services, increased use of public censure that damages individual reputations even without financial penalty, and a trend toward higher individual fines that create meaningful personal deterrence.
     `,
     category: 'SM&CR',
     readTime: '10 min read',
@@ -1566,6 +1446,59 @@ export function Blog() {
                   .replace(/\n\n/g, '</p><p>')
               }}
             />
+
+            {/* Article-specific charts */}
+            {selectedArticle.id === 'largest-fca-fines-history' && (
+              <div className="article-charts-section">
+                <Top20FinesChart />
+                <Top20BreachTypesChart />
+              </div>
+            )}
+
+            {selectedArticle.id === 'fca-fines-2025' && (
+              <div className="article-charts-section">
+                <Fines2025MonthlyChart />
+                <Fines2025BreachChart />
+              </div>
+            )}
+
+            {selectedArticle.id === 'fca-fines-database-guide' && (
+              <div className="article-charts-section">
+                <CumulativeFinesChart />
+              </div>
+            )}
+
+            {selectedArticle.id === 'fca-aml-fines' && (
+              <div className="article-charts-section">
+                <AMLFinesChart />
+                <AMLTrendChart />
+              </div>
+            )}
+
+            {selectedArticle.id === 'fca-fines-banks' && (
+              <div className="article-charts-section">
+                <BankFinesComparisonChart />
+              </div>
+            )}
+
+            {selectedArticle.id === 'fca-enforcement-trends' && (
+              <div className="article-charts-section">
+                <AllYearsEnforcementChart />
+              </div>
+            )}
+
+            {selectedArticle.id === 'fca-final-notices' && (
+              <div className="article-charts-section">
+                <FinalNoticesBreakdownChart />
+              </div>
+            )}
+
+            {selectedArticle.id === 'senior-managers-regime-fines' && (
+              <div className="article-charts-section">
+                <SMCREnforcementChart />
+              </div>
+            )}
+
             <div className="blog-article-modal-footer">
               <p className="blog-article-keywords">
                 <strong>Related searches:</strong> {selectedArticle.keywords.join(', ')}
