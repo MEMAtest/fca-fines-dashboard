@@ -89,4 +89,96 @@
     <priority>0.75</priority>
   </url>
 
+  <!-- Yearly Analysis Articles -->
+  <url>
+    <loc>https://fcafines.memaconsultants.com/blog/fca-fines-2025-annual-review</loc>
+    <lastmod>2025-01-18</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.85</priority>
+  </url>
+
+  <url>
+    <loc>https://fcafines.memaconsultants.com/blog/fca-fines-2024-annual-review</loc>
+    <lastmod>2025-01-15</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+
+  <url>
+    <loc>https://fcafines.memaconsultants.com/blog/fca-fines-2023-annual-review</loc>
+    <lastmod>2025-01-15</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+
+  <url>
+    <loc>https://fcafines.memaconsultants.com/blog/fca-fines-2022-annual-review</loc>
+    <lastmod>2025-01-15</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+
+  <url>
+    <loc>https://fcafines.memaconsultants.com/blog/fca-fines-2021-annual-review</loc>
+    <lastmod>2025-01-15</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+
+  <url>
+    <loc>https://fcafines.memaconsultants.com/blog/fca-fines-2020-annual-review</loc>
+    <lastmod>2025-01-15</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.75</priority>
+  </url>
+
+  <url>
+    <loc>https://fcafines.memaconsultants.com/blog/fca-fines-2019-annual-review</loc>
+    <lastmod>2025-01-15</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.75</priority>
+  </url>
+
+  <url>
+    <loc>https://fcafines.memaconsultants.com/blog/fca-fines-2018-annual-review</loc>
+    <lastmod>2025-01-15</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.75</priority>
+  </url>
+
+  <url>
+    <loc>https://fcafines.memaconsultants.com/blog/fca-fines-2017-annual-review</loc>
+    <lastmod>2025-01-15</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.75</priority>
+  </url>
+
+  <url>
+    <loc>https://fcafines.memaconsultants.com/blog/fca-fines-2016-annual-review</loc>
+    <lastmod>2025-01-15</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.75</priority>
+  </url>
+
+  <url>
+    <loc>https://fcafines.memaconsultants.com/blog/fca-fines-2015-annual-review</loc>
+    <lastmod>2025-01-15</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.75</priority>
+  </url>
+
+  <url>
+    <loc>https://fcafines.memaconsultants.com/blog/fca-fines-2014-annual-review</loc>
+    <lastmod>2025-01-15</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.75</priority>
+  </url>
+
+  <url>
+    <loc>https://fcafines.memaconsultants.com/blog/fca-fines-2013-annual-review</loc>
+    <lastmod>2025-01-15</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.75</priority>
+  </url>
+
 </urlset>

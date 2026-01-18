@@ -631,3 +631,216 @@
     font-size: 1.0625rem;
   }
 }
+
+/* Yearly Article Charts */
+.yearly-chart {
+  background: linear-gradient(135deg, #F8FAFB 0%, #F1F5F9 100%);
+  border: 1px solid var(--blog-border);
+  border-radius: 12px;
+  padding: 1.5rem;
+  margin: 1.5rem 0;
+}
+
+.yearly-chart--wide {
+  margin: 2rem -1rem;
+}
+
+.yearly-chart-title {
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--blog-text-primary);
+  margin: 0 0 1rem;
+  padding-bottom: 0.75rem;
+  border-bottom: 1px solid var(--blog-border);
+}
+
+.yearly-chart-caption {
+  font-size: 0.8125rem;
+  color: var(--blog-text-secondary);
+  text-align: center;
+  margin: 0.75rem 0 0;
+  font-style: italic;
+}
+
+.yearly-charts-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.5rem;
+  margin: 2rem 0;
+}
+
+@media (max-width: 900px) {
+  .yearly-charts-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .yearly-chart--wide {
+    margin: 1.5rem 0;
+  }
+}
+
+/* Yearly Analysis Section */
+.yearly-analysis-section {
+  padding: 4rem 2rem;
+  background: linear-gradient(135deg, #F8FAFB 0%, #FFFFFF 100%);
+}
+
+.yearly-analysis-grid {
+  max-width: 1200px;
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 1.25rem;
+}
+
+.yearly-card {
+  background: #FFFFFF;
+  border: 1px solid var(--blog-border);
+  border-radius: 12px;
+  padding: 1.25rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  flex-direction: column;
+}
+
+.yearly-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(15, 23, 42, 0.1);
+  border-color: var(--blog-accent);
+}
+
+.yearly-card-year {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--blog-accent);
+  margin: 0;
+}
+
+.yearly-card-stats {
+  display: flex;
+  gap: 1rem;
+  margin-top: 0.75rem;
+  padding-top: 0.75rem;
+  border-top: 1px solid var(--blog-border);
+}
+
+.yearly-card-stat {
+  flex: 1;
+}
+
+.yearly-card-stat-value {
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: var(--blog-text-primary);
+}
+
+.yearly-card-stat-label {
+  font-size: 0.75rem;
+  color: var(--blog-text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+.yearly-card-highlight {
+  font-size: 0.8125rem;
+  color: var(--blog-text-secondary);
+  margin-top: 0.75rem;
+  line-height: 1.4;
+}
+
+/* Article Key Insights Box */
+.article-key-insights {
+  background: linear-gradient(135deg, #E0F7F5 0%, #F0FDFA 100%);
+  border: 1px solid var(--blog-accent-light);
+  border-left: 4px solid var(--blog-accent);
+  border-radius: 8px;
+  padding: 1.25rem;
+  margin: 1.5rem 0;
+}
+
+.article-key-insights h4 {
+  font-size: 0.9375rem;
+  font-weight: 600;
+  color: var(--blog-accent-dark);
+  margin: 0 0 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+.article-key-insights ul {
+  margin: 0;
+  padding-left: 1.25rem;
+}
+
+.article-key-insights li {
+  font-size: 0.9375rem;
+  color: var(--blog-text-primary);
+  margin-bottom: 0.375rem;
+}
+
+/* Professional Analysis Box */
+.professional-analysis {
+  background: #1F2937;
+  color: #FFFFFF;
+  border-radius: 12px;
+  padding: 1.5rem;
+  margin: 2rem 0;
+}
+
+.professional-analysis h4 {
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--blog-accent);
+  margin: 0 0 1rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.professional-analysis p {
+  font-size: 0.9375rem;
+  line-height: 1.7;
+  color: rgba(255, 255, 255, 0.9);
+  margin: 0 0 1rem;
+}
+
+.professional-analysis p:last-child {
+  margin-bottom: 0;
+}
+
+/* Stats Summary Row */
+.stats-summary-row {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 1rem;
+  margin: 1.5rem 0;
+  padding: 1.5rem;
+  background: #F8FAFB;
+  border-radius: 12px;
+  border: 1px solid var(--blog-border);
+}
+
+.stats-summary-item {
+  text-align: center;
+}
+
+.stats-summary-value {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--blog-accent);
+}
+
+.stats-summary-label {
+  font-size: 0.75rem;
+  color: var(--blog-text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  margin-top: 0.25rem;
+}
+
+@media (max-width: 600px) {
+  .stats-summary-row {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
