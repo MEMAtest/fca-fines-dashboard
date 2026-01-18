@@ -14,6 +14,61 @@
   min-height: 100vh;
 }
 
+/* Homepage Header Navigation */
+.homepage-header {
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(10px);
+  border-bottom: 1px solid var(--homepage-border);
+  padding: 1rem 2rem;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+
+.homepage-header-content {
+  max-width: 1200px;
+  margin: 0 auto;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.homepage-logo {
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: var(--homepage-text-primary);
+}
+
+.homepage-nav {
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+}
+
+.homepage-nav-link {
+  color: var(--homepage-text-secondary);
+  text-decoration: none;
+  font-size: 0.9375rem;
+  font-weight: 500;
+  transition: color 0.2s ease;
+}
+
+.homepage-nav-link:hover {
+  color: var(--homepage-accent);
+}
+
+.homepage-nav-link--primary {
+  color: #FFFFFF;
+  background: var(--homepage-accent);
+  padding: 0.5rem 1.25rem;
+  border-radius: 8px;
+}
+
+.homepage-nav-link--primary:hover {
+  color: #FFFFFF;
+  background: #0d7d70;
+}
+
 .homepage-3d {
   background: linear-gradient(180deg, #F8FAFB 0%, #FFFFFF 50%, #F8FAFB 100%);
 }
@@ -119,8 +174,44 @@
   margin: 0;
 }
 
+.footer-nav {
+  display: flex;
+  gap: 2rem;
+}
+
+.footer-link {
+  color: rgba(255, 255, 255, 0.8);
+  text-decoration: none;
+  font-size: 0.9375rem;
+  transition: color 0.2s ease;
+}
+
+.footer-link:hover {
+  color: #FFFFFF;
+}
+
 /* Responsive */
 @media (max-width: 768px) {
+  .homepage-header {
+    padding: 0.875rem 1.25rem;
+  }
+
+  .homepage-logo {
+    font-size: 1rem;
+  }
+
+  .homepage-nav {
+    gap: 1rem;
+  }
+
+  .homepage-nav-link {
+    font-size: 0.875rem;
+  }
+
+  .homepage-nav-link--primary {
+    padding: 0.4375rem 1rem;
+  }
+
   .contact-section {
     padding: 4rem 1.5rem;
   }
@@ -133,9 +224,17 @@
     flex-direction: column;
     text-align: center;
   }
+
+  .footer-nav {
+    gap: 1.5rem;
+  }
 }
 
 @media (max-width: 480px) {
+  .homepage-nav-link:not(.homepage-nav-link--primary) {
+    display: none;
+  }
+
   .contact-intro h2 {
     font-size: 1.75rem;
   }

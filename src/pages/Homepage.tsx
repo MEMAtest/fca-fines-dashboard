@@ -1,6 +1,6 @@
 import { motion } from 'framer-motion';
 import { useEffect, useState } from 'react';
-import { useNavigate, useLocation, useSearchParams } from 'react-router-dom';
+import { useNavigate, useLocation, useSearchParams, Link } from 'react-router-dom';
 import { useHomepageVisit } from '../hooks/useHomepageVisit';
 import { useHomepageStats, formatAmount } from '../hooks/useHomepageStats';
 import { Hero3DVisualization } from '../components/Hero3DVisualization';
@@ -134,6 +134,17 @@ export function Homepage() {
           onDismiss={() => setToast(null)}
         />
       )}
+
+      {/* Navigation Header */}
+      <header className="homepage-header">
+        <div className="homepage-header-content">
+          <span className="homepage-logo">FCA Fines Dashboard</span>
+          <nav className="homepage-nav">
+            <Link to="/blog" className="homepage-nav-link">Insights</Link>
+            <Link to="/dashboard" className="homepage-nav-link homepage-nav-link--primary">Dashboard</Link>
+          </nav>
+        </div>
+      </header>
 
       {/* Hero Section with 3D Visualization */}
       <section className="hero hero-3d">
@@ -291,6 +302,10 @@ export function Homepage() {
             <p className="footer-logo">FCA Fines Dashboard</p>
             <p className="footer-tagline">Powered by MEMA Consultants</p>
           </div>
+          <nav className="footer-nav">
+            <Link to="/blog" className="footer-link">Insights & Blog</Link>
+            <Link to="/dashboard" className="footer-link">Dashboard</Link>
+          </nav>
           <p className="footer-copyright">
             © {new Date().getFullYear()} MEMA Consultants · All rights reserved
           </p>
