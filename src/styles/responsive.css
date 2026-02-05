@@ -120,17 +120,22 @@
     font-size: var(--text-lg);
   }
 
-  /* Notification dropdown - full width on mobile */
+  /* Notification dropdown - absolute on mobile (position:fixed breaks inside framer-motion transforms) */
   .notification-bell__dropdown {
-    position: fixed;
-    top: auto;
-    bottom: 80px;
-    left: 12px;
-    right: 12px;
-    width: auto;
+    position: absolute;
+    top: calc(100% + 8px);
+    bottom: auto;
+    left: auto;
+    right: -8px;
+    width: calc(100vw - 32px);
+    max-width: 360px;
     max-height: 60vh;
     overflow-y: auto;
     z-index: 1000;
+  }
+
+  .hero__content {
+    z-index: 2;
   }
 
   .filters {
