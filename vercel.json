@@ -11,9 +11,8 @@
       ]
     }
   ],
-  "routes": [
-    { "handle": "filesystem" },
-    { "src": "/api/(.*)", "dest": "/api/not-found" },
-    { "src": "/(.*)", "dest": "/index.html" }
+  "rewrites": [
+    { "source": "/api/:path*", "destination": "/api/not-found" },
+    { "source": "/(.*)", "destination": "/index.html" }
   ]
 }
