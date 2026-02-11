@@ -169,7 +169,7 @@
     right: 0;
     bottom: 0;
     background: rgba(0, 0, 0, 0.4);
-    z-index: 200;
+    z-index: 500;
   }
 
   .site-header__mobile-nav {
@@ -181,7 +181,7 @@
     max-width: 80vw;
     background: #FFFFFF;
     box-shadow: -4px 0 20px rgba(0, 0, 0, 0.15);
-    z-index: 201;
+    z-index: 501;
     padding: 2rem 1rem;
     animation: slideInRight 0.25s ease;
   }

@@ -130,7 +130,7 @@
     width: auto;
     max-height: 60vh;
     overflow-y: auto;
-    z-index: 150;
+    z-index: 200;
   }
 
   .filters {
@@ -159,7 +159,8 @@
     grid-template-columns: repeat(2, 1fr);
   }
 
-  .grid {
+  .grid,
+  .grid--wide {
     grid-template-columns: 1fr;
   }
 }

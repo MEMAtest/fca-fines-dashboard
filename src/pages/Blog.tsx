@@ -618,6 +618,103 @@ The FCA has clearly signalled increased focus on individual accountability. This
     dateISO: '2024-09-18',
     icon: <Users className="blog-card-icon" />,
     keywords: ['senior managers regime', 'SM&CR fines', 'individual FCA fines', 'personal liability FCA', 'senior manager accountability']
+  },
+  {
+    id: 'fca-fines-january-2026',
+    slug: 'fca-fines-january-2026',
+    title: 'FCA Fines January 2026: Individual Accountability in Focus',
+    seoTitle: 'FCA Fines January 2026 | Insider Dealing & Market Abuse Penalties',
+    excerpt: 'January 2026 saw five FCA enforcement actions totalling £2.5M. All penalties targeted individuals for market abuse, insider dealing, and dishonest conduct.',
+    content: `
+## FCA Fines January 2026: Individual Accountability in Focus
+
+January 2026 produced five FCA enforcement actions totalling approximately £2.52 million. Every penalty targeted individuals rather than firms, with market abuse and dishonest conduct dominating the enforcement landscape. This month set a clear tone for 2026: the FCA is pursuing personal accountability with renewed vigour.
+
+## Overview: Five Actions, All Individuals
+
+The month's enforcement activity was notable for its exclusive focus on individuals. No firm-level fines were issued in January 2026, a departure from recent patterns where institutional penalties typically feature alongside personal actions. The total of £2.52 million across five cases reflects a mix of substantial legacy matters and newer insider dealing prosecutions.
+
+## Darren Anthony Reynolds — £2,040,000
+
+The largest penalty of the month went to Darren Anthony Reynolds, fined £2.04 million for acting as a corrupt and dishonest financial adviser. The Upper Tribunal upheld the FCA's decision following a contested hearing, finding that Reynolds had systematically abused his position of trust to the detriment of his clients. This case underscores the FCA's willingness to pursue matters through the Tribunal when individuals contest enforcement action, and the significant penalties that can result from sustained dishonest conduct in an advisory role.
+
+## Richard Adam & Zafar Khan — Carillion Legacy
+
+Two former finance directors of Carillion, Richard Adam and Zafar Khan, received fines of £233,000 and £139,000 respectively. These penalties relate to conduct during their tenure at the construction giant, which collapsed in January 2018 in one of the UK's most high-profile corporate failures. The FCA's action against these individuals, coming eight years after the events in question, demonstrates the regulator's persistence in pursuing accountability even in complex, long-running investigations. The fines relate to failures in their responsibilities as senior officers of a listed company.
+
+## Bhavesh Hirani & Dipesh Kerai — Insider Dealing
+
+Bhavesh Hirani and Dipesh Kerai were fined £56,000 and £53,000 respectively for insider dealing contrary to Article 14 of the UK Market Abuse Regulation. These cases involved the misuse of inside information to trade in financial instruments, a category of misconduct the FCA treats with particular seriousness given its direct impact on market integrity. The relatively modest fine amounts likely reflect the scale of the trading profits or losses avoided.
+
+## Key Themes from January 2026
+
+Three themes emerge from January's enforcement activity. First, the exclusive focus on individuals signals the FCA's continued commitment to personal accountability as a regulatory tool. Second, the dominance of market abuse cases — three of five actions involved market misconduct — confirms that protecting market integrity remains a core priority. Third, the Carillion-related fines demonstrate that the FCA will pursue long-running investigations to conclusion, even when they involve complex corporate collapses.
+
+## Compliance Takeaways
+
+For compliance professionals, January 2026 reinforces several important lessons. Personal liability is not theoretical: individuals at all levels face real financial consequences for misconduct. Tribunal enforcement shows the FCA will litigate contested cases rather than settle for reduced outcomes. Legacy investigations continue to produce results, meaning past conduct remains a live risk. Market abuse surveillance and controls should be treated as ongoing priorities given the frequency of insider dealing actions.
+
+The absence of firm-level fines in January should not be interpreted as reduced institutional scrutiny. The FCA's enforcement pipeline typically delivers firm penalties in waves, and the focus on individuals this month likely reflects case timing rather than a strategic shift away from institutional enforcement.
+    `,
+    category: 'FCA Fines 2026',
+    readTime: '6 min read',
+    date: 'January 2026',
+    dateISO: '2026-01-31',
+    icon: <Scale className="blog-card-icon" />,
+    featured: true,
+    keywords: ['FCA fines January 2026', 'FCA fines 2026', 'Darren Reynolds FCA', 'Carillion FCA fine', 'insider dealing FCA 2026', 'market abuse FCA', 'individual FCA fines 2026']
+  },
+  {
+    id: 'fca-enforcement-outlook-february-2026',
+    slug: 'fca-enforcement-outlook-february-2026',
+    title: 'FCA Enforcement Outlook: What to Watch in Early 2026',
+    seoTitle: 'FCA Enforcement Outlook 2026 | Trends & Regulatory Predictions',
+    excerpt: 'Analysis of FCA enforcement trends heading into 2026, examining the shift toward individual accountability and expected regulatory priorities.',
+    content: `
+## FCA Enforcement Outlook: What to Watch in Early 2026
+
+As the FCA enters 2026, the enforcement landscape is evolving in ways that demand attention from compliance professionals, risk managers, and senior leaders across financial services. January's exclusive focus on individual penalties provides a useful lens for understanding likely regulatory priorities through the first half of the year.
+
+## January 2026 Set the Tone
+
+January 2026 delivered five enforcement actions totalling £2.52 million, all targeting individuals. This is significant not just for the penalties themselves, but for what they signal about the FCA's enforcement priorities. Market abuse cases dominated, with insider dealing and dishonest conduct making up the majority of actions. The Carillion-related fines against former finance directors demonstrated that the FCA's enforcement memory is long and that corporate collapses will be followed by individual accountability, regardless of how many years have passed.
+
+## Pipeline Analysis: What Is Coming
+
+Several regulatory themes are likely to produce enforcement actions in the coming months. Consumer Duty remains the most significant regulatory development since MiFID II, and the FCA has had over two years of data since implementation to identify firms falling short. Early enforcement is expected to focus on price and value outcomes, where the regulator has the clearest evidence base. Firms that have not conducted robust fair value assessments face the greatest risk.
+
+Cryptoasset regulation continues to tighten. The FCA's registration regime for cryptoasset firms has created a clear compliance baseline, and firms operating without proper registration or failing to meet anti-money laundering requirements will face enforcement action. The Financial Promotions regime for crypto, effective since October 2023, provides additional grounds for action against firms making misleading claims about digital assets.
+
+Operational resilience requirements are now fully embedded following the March 2025 implementation deadline. The FCA expects firms to have identified important business services, set impact tolerances, and tested their ability to remain within tolerance during disruption. Firms that have treated this as a paper exercise rather than an operational reality face regulatory risk.
+
+## Individual vs Firm Enforcement Trend
+
+The trend toward individual enforcement has been building for several years, but January 2026 brought it into sharp focus. The Senior Managers and Certification Regime provides the FCA with direct tools to hold individuals accountable, and enforcement data suggests increasing willingness to use them.
+
+Between 2013 and 2020, individual fines typically accounted for 10-15% of total FCA penalties by value. Since 2021, that proportion has been rising, with individual actions increasingly forming the majority of enforcement cases by number even if not by total value. This shift reflects the FCA's stated belief that personal accountability is a more effective deterrent than institutional penalties alone.
+
+## Sectors to Watch
+
+Wealth management and financial advice remain under intense scrutiny, as the Reynolds fine in January demonstrated. The combination of Consumer Duty obligations, ongoing suitability requirements, and vulnerability considerations creates a demanding compliance environment for advisory firms.
+
+The appointed representatives regime continues to generate enforcement risk. Several high-profile failures of appointed representative firms have led the FCA to scrutinise principal firms more closely. Principals that fail to exercise adequate oversight of their appointed representatives face both supervisory intervention and potential enforcement action.
+
+Insurance intermediaries face particular focus as Consumer Duty creates heightened expectations around value assessment and fair treatment, particularly in general insurance where pricing practices have already attracted regulatory attention.
+
+## Preparing for Enforcement: Practical Steps
+
+Firms should take several practical steps to prepare for the evolving enforcement environment. Review and document compliance with Consumer Duty requirements, focusing on evidence of good outcomes rather than process compliance alone. Ensure market abuse surveillance systems are calibrated to current trading patterns and asset classes. Verify that operational resilience testing reflects realistic disruption scenarios. Confirm that SM&CR documentation accurately reflects current responsibilities and that handover procedures capture key decisions and rationale.
+
+Individual senior managers should maintain personal records of oversight activities, challenge provided, and decisions taken. The FCA assesses reasonable steps by reference to what the individual knew and did, so contemporaneous evidence is essential.
+
+The FCA's 2026 enforcement activity will likely accelerate through Q2 and Q3 as cases move through the investigation pipeline. Early preparation and genuine compliance engagement, rather than last-minute remediation, remain the most effective risk mitigation strategies.
+    `,
+    category: 'Trends Analysis',
+    readTime: '5 min read',
+    date: 'February 2026',
+    dateISO: '2026-02-10',
+    icon: <TrendingUp className="blog-card-icon" />,
+    keywords: ['FCA enforcement 2026', 'FCA predictions 2026', 'Consumer Duty enforcement', 'FCA individual fines', 'FCA enforcement trends', 'FCA outlook 2026', 'operational resilience FCA']
   }
 ];
 

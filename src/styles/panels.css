@@ -1,20 +1,20 @@
 /* Grid + Panels */
 .grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(min(320px, 100%), 1fr));
   gap: 24px;
   margin-top: 32px;
 }
 
 .grid--wide {
-  grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(min(340px, 100%), 1fr));
   gap: 28px;
   align-items: stretch;
   grid-auto-rows: 1fr;
 }
 
 .grid--two-col {
-  grid-template-columns: repeat(auto-fit, minmax(480px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(min(480px, 100%), 1fr));
   gap: 28px;
   align-items: stretch;
   grid-auto-rows: 1fr;
@@ -633,9 +633,9 @@
 
 .notice {
   border-radius: var(--radius-md);
-  border: 1px solid var(--border-soft);
-  background: var(--surface-soft);
-  padding: 18px;
+  border: 1px solid rgba(148, 163, 184, 0.1);
+  background: rgba(249, 250, 251, 0.4);
+  padding: 16px;
   display: flex;
   flex-direction: column;
   gap: 12px;
@@ -643,8 +643,8 @@
 }
 
 .notice:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 18px 24px rgba(15, 23, 42, 0.12);
+  transform: translateY(-1px);
+  box-shadow: 0 6px 16px rgba(15, 23, 42, 0.05);
 }
 
 .notice header {
@@ -680,15 +680,15 @@
   padding: 4px 10px;
   font-size: var(--text-xs);
   font-weight: 600;
-  background: rgba(99, 102, 241, 0.12);
+  background: rgba(99, 102, 241, 0.06);
   color: var(--primary-600);
 }
 
 .top-firms__item {
-  border: 1px solid rgba(148, 163, 184, 0.3);
+  border: 1px solid rgba(148, 163, 184, 0.1);
   border-radius: var(--radius-md);
-  background: rgba(255, 255, 255, 0.95);
-  padding: 14px;
+  background: rgba(255, 255, 255, 0.5);
+  padding: 12px;
   display: flex;
   gap: 14px;
   align-items: center;
@@ -697,8 +697,8 @@
 }
 
 .top-firms__item:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 14px 24px rgba(15, 23, 42, 0.15);
+  transform: translateY(-1px);
+  box-shadow: 0 6px 16px rgba(15, 23, 42, 0.05);
 }
 
 .top-firms__rank {
