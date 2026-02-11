@@ -18,6 +18,7 @@ interface HeroStatsProps {
   };
   year: number;
   timeline: Array<{ month: string; total: number; count: number; period?: number; year?: number }>;
+  fullTimeline?: Array<{ month: string; total: number; count: number; period?: number; year?: number }>;
   records?: FineRecord[];
   onTotalClick?: () => void;
   notifications: NotificationItem[];
@@ -55,6 +56,7 @@ export function HeroStats({
   latest,
   year,
   timeline,
+  fullTimeline,
   records = [],
   onTotalClick,
   notifications,
@@ -145,7 +147,7 @@ export function HeroStats({
         />
         <StatCard title="Dominant Breach" value={stats?.dominantBreach || '—'} icon={<Sparkles />} />
       </div>
-      <FineVelocityGauge timeline={timeline} />
+      <FineVelocityGauge timeline={timeline} fullTimeline={fullTimeline || timeline} />
     </section>
   );
 }
@@ -210,24 +212,32 @@ function Sparkline({ data }: { data: number[] }) {
   );
 }
 
-function FineVelocityGauge({ timeline }: { timeline: Array<{ total: number; period?: number; year?: number }> }) {
-  if (!timeline.length) return null;
-  const currentEntry = timeline[timeline.length - 1];
-  const previousEntry =
-    timeline
-      .slice(0, -1)
-      .reverse()
-      .find((entry) => entry.year === currentEntry.year && entry.period !== currentEntry.period) || timeline[timeline.length - 2];
+function FineVelocityGauge({
+  timeline,
+  fullTimeline,
+}: {
+  timeline: Array<{ total: number; period?: number; year?: number }>;
+  fullTimeline: Array<{ total: number; period?: number; year?: number }>;
+}) {
+  // Use fullTimeline (all years) for a meaningful baseline, fall back to filtered timeline
+  const source = fullTimeline.length >= 2 ? fullTimeline : timeline;
+  if (source.length < 2) return null;
+
+  const currentEntry = source[source.length - 1];
   const current = currentEntry?.total || 0;
-  const baseline = previousEntry?.total || timeline.reduce((sum, item) => sum + item.total, 0) / timeline.length || 0;
-  const change = computeChange(current, baseline);
-  const ratio = baseline > 0 ? Math.min(current / baseline, 1.2) : 1;
+
+  // Calculate 6-month rolling average from entries before the current one
+  const priorEntries = source.slice(0, -1);
+  const recentEntries = priorEntries.slice(-6);
+  const baseline = recentEntries.length > 0
+    ? recentEntries.reduce((sum, item) => sum + item.total, 0) / recentEntries.length
+    : 0;
+
+  const change = baseline > 0 ? computeChange(current, baseline) : null;
+  const ratio = baseline > 0 ? Math.min(current / baseline, 1.2) : 0;
   const radius = 34;
   const circumference = 2 * Math.PI * radius;
   const dashOffset = circumference - (circumference * ratio) / 1.2;
-  const baselineLabel = previousEntry
-    ? format(new Date(previousEntry.year ?? new Date().getFullYear(), (previousEntry.period ?? 1) - 1, 1), 'MMM yyyy')
-    : 'rolling avg';
 
   return (
     <div className="hero__velocity">
@@ -248,7 +258,7 @@ function FineVelocityGauge({ timeline }: { timeline: Array<{ total: number; peri
           {change ? change.label : '—'}
         </text>
         <text x="50%" y="68%" textAnchor="middle" fontSize="10" fill="#94a3b8">
-          vs avg flow
+          vs 6-mo avg
         </text>
       </svg>
       <div className="hero__velocity-content">
@@ -262,11 +272,11 @@ function FineVelocityGauge({ timeline }: { timeline: Array<{ total: number; peri
           ) : (
             <span className="hero__velocity-chip">Stable</span>
           )}
-          <span className="hero__velocity-baseline">vs {baselineLabel}</span>
+          <span className="hero__velocity-baseline">vs 6-month avg</span>
         </div>
         <p>
           Current month totals compared to recent cadence.{' '}
-          {change ? (change.trend === 'up' ? 'Acceleration detected.' : 'Momentum cooling.') : 'Awaiting more data.'}
+          {change ? (change.trend === 'up' ? 'Acceleration detected.' : 'Momentum cooling.') : 'Insufficient data.'}
         </p>
       </div>
     </div>

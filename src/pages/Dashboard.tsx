@@ -592,6 +592,7 @@ export function Dashboard() {
         latest={latest}
         year={year}
         timeline={heroTimeline}
+        fullTimeline={timeline}
         records={filteredFines}
         onTotalClick={() =>
           openRecordsModal('Total fines drilldown', year === 0 ? '2013 – Today' : `${year} snapshot`, filteredFines)
@@ -627,7 +628,13 @@ export function Dashboard() {
       {error && <p className="status status--error">{error}</p>}
       {!loading && !error && (
         <>
-          {/* Grid 1: Timeline & Distribution - 2 columns */}
+          {/* Grid 1: Latest Notices & Top Firms - 2 columns (promoted to top) */}
+          <div className="grid grid--two-col">
+            <LatestNotices records={filteredFines} year={year} exportId="latest-notices" />
+            <TopFirms records={filteredFines} onSelectFirm={handleFirmDrilldown} exportId="top-firms" />
+          </div>
+
+          {/* Grid 2: Timeline & Distribution - 2 columns */}
           <div className="grid grid--two-col">
             <TimelineChart
               data={timelineForChart}
@@ -644,7 +651,7 @@ export function Dashboard() {
             />
           </div>
 
-          {/* Grid 2: Category Treemap - Full width */}
+          {/* Grid 3: Category Treemap - Full width */}
           <div className="grid">
             <CategoryTreemap
               data={categoryAggView}
@@ -656,7 +663,7 @@ export function Dashboard() {
             />
           </div>
 
-          {/* Grid 3: Comparison - 2 columns (conditional) */}
+          {/* Grid 4: Comparison - 2 columns (conditional) */}
           {comparisonYear && (
             <div className="grid grid--two-col">
               <MonthlyComparisonChart
@@ -675,12 +682,6 @@ export function Dashboard() {
               </div>
             </div>
           )}
-
-          {/* Grid 4: Latest Notices & Top Firms - 2 columns */}
-          <div className="grid grid--two-col">
-            <LatestNotices records={filteredFines} year={year} exportId="latest-notices" />
-            <TopFirms records={filteredFines} onSelectFirm={handleFirmDrilldown} exportId="top-firms" />
-          </div>
 
           {/* Grid 5: Breach charts - 2 columns */}
           <div className="grid grid--two-col">

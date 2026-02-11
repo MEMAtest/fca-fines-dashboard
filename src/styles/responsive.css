@@ -120,7 +120,7 @@
     font-size: var(--text-lg);
   }
 
-  /* Notification dropdown - full width on mobile */
+  /* Notification dropdown - full width on mobile, above MobileNav */
   .notification-bell__dropdown {
     position: fixed;
     top: auto;
@@ -130,7 +130,7 @@
     width: auto;
     max-height: 60vh;
     overflow-y: auto;
-    z-index: 1000;
+    z-index: 150;
   }
 
   .filters {

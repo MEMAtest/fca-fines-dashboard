@@ -2,7 +2,6 @@ import { motion } from 'framer-motion';
 import { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import {
-  ArrowLeft,
   Calendar,
   Clock,
   TrendingUp,
@@ -1172,19 +1171,6 @@ export function Blog() {
 
   return (
     <div className="blog-page">
-      {/* Header */}
-      <header className="blog-header">
-        <div className="blog-header-content">
-          <Link to="/" className="blog-back-link">
-            <ArrowLeft size={20} />
-            <span>FCA Fines Home</span>
-          </Link>
-          <nav className="blog-nav" aria-label="Blog navigation">
-            <Link to="/dashboard" className="blog-nav-link">FCA Fines Dashboard</Link>
-          </nav>
-        </div>
-      </header>
-
       {/* Hero Section - SEO optimized with 3D visualization */}
       <section className="blog-hero-3d">
         <div className="blog-hero-container">

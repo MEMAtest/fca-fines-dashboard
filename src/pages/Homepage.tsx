@@ -135,17 +135,6 @@ export function Homepage() {
         />
       )}
 
-      {/* Navigation Header */}
-      <header className="homepage-header">
-        <div className="homepage-header-content">
-          <span className="homepage-logo">FCA Fines Dashboard</span>
-          <nav className="homepage-nav">
-            <Link to="/blog" className="homepage-nav-link">Insights</Link>
-            <Link to="/dashboard" className="homepage-nav-link homepage-nav-link--primary">Dashboard</Link>
-          </nav>
-        </div>
-      </header>
-
       {/* Hero Section with 3D Visualization */}
       <section className="hero hero-3d">
         <div className="hero-container">

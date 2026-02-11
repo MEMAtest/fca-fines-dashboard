@@ -131,7 +131,7 @@ export async function getNotifications(limit = 5): Promise<NotificationItem[]> {
   );
 
   return rows.map((row) => ({
-    id: row.id,
+    id: `notice-${row.id}`,
     title: `${row.firm_individual} final notice`,
     detail: `${formatAmount(row.amount)}${row.breach_type ? ` • ${row.breach_type}` : ''}`,
     time: formatDate(row.date_issued),
