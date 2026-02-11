@@ -2,6 +2,9 @@ import type { VercelRequest, VercelResponse } from '@vercel/node';
 import { getStats } from '../../server/services/fcaFines.js';
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
+  if (req.method !== 'GET') {
+    return res.status(405).json({ error: 'Method not allowed' });
+  }
   try {
     const requestedYear = Number((req.query?.year as string) ?? new Date().getFullYear());
     const year = requestedYear === 0 ? 0 : requestedYear;

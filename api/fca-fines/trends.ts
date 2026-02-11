@@ -2,6 +2,9 @@ import type { VercelRequest, VercelResponse } from '@vercel/node';
 import { getTrends } from '../../server/services/fcaFines.js';
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
+  if (req.method !== 'GET') {
+    return res.status(405).json({ error: 'Method not allowed' });
+  }
   try {
     const period = ((req.query?.period as string) || 'month').toLowerCase();
     const limit = Math.min(Number((req.query?.limit as string) ?? '12'), 120);
