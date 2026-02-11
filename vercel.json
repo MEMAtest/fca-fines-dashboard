@@ -13,7 +13,7 @@
   ],
   "routes": [
     { "handle": "filesystem" },
-    { "src": "/api/(.*)", "status": 404, "dest": "/api/not-found" },
+    { "src": "/api/(.*)", "dest": "/api/not-found" },
     { "src": "/(.*)", "dest": "/index.html" }
   ]
 }
