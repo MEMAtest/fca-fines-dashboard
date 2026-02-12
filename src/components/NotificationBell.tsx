@@ -1,3 +1,4 @@
+import { useEffect, useRef } from 'react';
 import { Bell } from 'lucide-react';
 import type { NotificationItem } from '../types';
 
@@ -28,10 +29,26 @@ export function NotificationBell({
 }: NotificationBellProps) {
   const hasNotifications = notifications.length > 0;
   const showEmptyState = !loading && !error && !hasNotifications;
+  const dropdownRef = useRef<HTMLDivElement>(null);
+  const bellRef = useRef<HTMLButtonElement>(null);
+
+  useEffect(() => {
+    if (!open) return;
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') onOpenChange(false);
+    };
+    document.addEventListener('keydown', handleKeyDown);
+    dropdownRef.current?.focus();
+    return () => {
+      document.removeEventListener('keydown', handleKeyDown);
+      bellRef.current?.focus();
+    };
+  }, [open, onOpenChange]);
 
   return (
     <div className="notification-bell">
       <button
+        ref={bellRef}
         type="button"
         className="notification-bell__btn hover-lift"
         aria-haspopup="dialog"
@@ -47,13 +64,17 @@ export function NotificationBell({
         <div
           className="notification-bell__overlay"
           onClick={() => onOpenChange(false)}
+          role="presentation"
           aria-hidden="true"
         />
         <div
+          ref={dropdownRef}
+          tabIndex={-1}
           className="notification-bell__dropdown"
           role="dialog"
           aria-label="Latest enforcement alerts"
           aria-busy={loading}
+          onClick={(e) => e.stopPropagation()}
         >
           {loading && (
             <div className="notification-bell__skeletons" aria-live="polite">
