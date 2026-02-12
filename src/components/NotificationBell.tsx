@@ -43,6 +43,12 @@ export function NotificationBell({
         {unreadCount > 0 && <span className="notification-bell__badge">{unreadCount}</span>}
       </button>
       {open && (
+        <>
+        <div
+          className="notification-bell__overlay"
+          onClick={() => onOpenChange(false)}
+          aria-hidden="true"
+        />
         <div
           className="notification-bell__dropdown"
           role="dialog"
@@ -113,6 +119,7 @@ export function NotificationBell({
             </>
           )}
         </div>
+        </>
       )}
     </div>
   );
