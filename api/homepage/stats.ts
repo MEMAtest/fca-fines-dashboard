@@ -17,6 +17,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         MIN(year_issued)::int AS earliest_year,
         MAX(year_issued)::int AS latest_year
       FROM fca_fines
+      WHERE year_issued >= 2013
     `;
 
     // Get latest 10 enforcement notices

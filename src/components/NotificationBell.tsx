@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useRef } from 'react';
+import { createPortal } from 'react-dom';
 import { Bell } from 'lucide-react';
 import type { NotificationItem } from '../types';
 
@@ -65,12 +66,15 @@ export function NotificationBell({
       </button>
       {open && (
         <>
-        <div
-          className="notification-bell__overlay"
-          onClick={() => onOpenChange(false)}
-          role="presentation"
-          aria-hidden="true"
-        />
+        {createPortal(
+          <div
+            className="notification-bell__overlay"
+            onClick={() => onOpenChange(false)}
+            role="presentation"
+            aria-hidden="true"
+          />,
+          document.body
+        )}
         <div
           ref={dropdownRef}
           tabIndex={-1}
