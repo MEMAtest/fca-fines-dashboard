@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react';
+import { useCallback, useEffect, useRef } from 'react';
 import { Bell } from 'lucide-react';
 import type { NotificationItem } from '../types';
 
@@ -31,19 +31,23 @@ export function NotificationBell({
   const showEmptyState = !loading && !error && !hasNotifications;
   const dropdownRef = useRef<HTMLDivElement>(null);
   const bellRef = useRef<HTMLButtonElement>(null);
+  const onOpenChangeRef = useRef(onOpenChange);
+  onOpenChangeRef.current = onOpenChange;
+
+  const closeDropdown = useCallback(() => onOpenChangeRef.current(false), []);
 
   useEffect(() => {
     if (!open) return;
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') onOpenChange(false);
+      if (e.key === 'Escape') closeDropdown();
     };
     document.addEventListener('keydown', handleKeyDown);
     dropdownRef.current?.focus();
     return () => {
       document.removeEventListener('keydown', handleKeyDown);
-      bellRef.current?.focus();
+      queueMicrotask(() => bellRef.current?.focus());
     };
-  }, [open, onOpenChange]);
+  }, [open, closeDropdown]);
 
   return (
     <div className="notification-bell">

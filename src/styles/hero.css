@@ -183,12 +183,16 @@
   border-bottom: none;
 }
 
-.notification-item--unread {
+.notification-item.notification-item--unread {
   background: rgba(59, 130, 246, 0.03);
   border-radius: 8px;
   padding: 8px;
   border-bottom: none;
   margin-bottom: 2px;
+}
+
+.notification-item.notification-item--unread:last-child {
+  margin-bottom: 0;
 }
 .notification-item footer {
   display: flex;
