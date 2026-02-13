@@ -4,13 +4,14 @@ import { ReactNode } from 'react';
 import '../styles/modal.css';
 
 interface ModalProps {
-  isOpen: boolean;
+  isOpen?: boolean;
   onClose: () => void;
   title: string;
+  subtitle?: string;
   children: ReactNode;
 }
 
-export function Modal({ isOpen, onClose, title, children }: ModalProps) {
+export function Modal({ isOpen = true, onClose, title, subtitle, children }: ModalProps) {
   return (
     <AnimatePresence>
       {isOpen && (
@@ -35,7 +36,10 @@ export function Modal({ isOpen, onClose, title, children }: ModalProps) {
               onClick={(e) => e.stopPropagation()}
             >
               <div className="modal-header">
-                <h2>{title}</h2>
+                <div>
+                  <h2>{title}</h2>
+                  {subtitle ? <p className="modal-header__subtitle">{subtitle}</p> : null}
+                </div>
                 <button className="modal-close" onClick={onClose}>
                   <X size={24} />
                 </button>

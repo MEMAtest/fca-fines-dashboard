@@ -175,14 +175,15 @@
   .site-header__mobile-nav {
     position: fixed;
     top: 0;
+    left: 0;
     right: 0;
     bottom: 0;
-    width: 280px;
-    max-width: 80vw;
+    width: auto;
+    max-width: none;
     background: #FFFFFF;
     box-shadow: -4px 0 20px rgba(0, 0, 0, 0.15);
     z-index: 501;
-    padding: 2rem 1rem;
+    padding: calc(1.5rem + env(safe-area-inset-top, 0)) 1rem 1rem;
     animation: slideInRight 0.25s ease;
   }
 

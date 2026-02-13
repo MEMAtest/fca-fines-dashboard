@@ -421,6 +421,10 @@ export function Dashboard() {
   }, [timeline, timelineSeries, primaryYear]);
 
   const comparisonDataSource = year === 0 ? timelineSeries : timeline;
+  const fallbackComparisonYear = useMemo(
+    () => availableYears.find((candidateYear) => candidateYear !== primaryYear) ?? null,
+    [availableYears, primaryYear]
+  );
   const comparisonData = useMemo(
     () => buildComparisonSeries(comparisonDataSource, primaryYear, comparisonYear),
     [comparisonDataSource, primaryYear, comparisonYear]
@@ -719,6 +723,7 @@ export function Dashboard() {
       <AlertSubscribeModal isOpen={alertsModalOpen} onClose={() => setAlertsModalOpen(false)} />
       {comparisonOpen && comparisonYear && (
         <Modal
+          isOpen={comparisonOpen}
           title={`${primaryYear} vs ${comparisonYear} Comparison`}
           subtitle="Comparison Sandbox"
           onClose={() => setComparisonOpen(false)}
@@ -748,7 +753,11 @@ export function Dashboard() {
         onDashboard={scrollToHero}
         onFilters={() => setAdvancedOpen(true)}
         onCompare={() => {
-          if (!comparisonYear) return;
+          const effectiveComparisonYear = comparisonYear ?? fallbackComparisonYear;
+          if (!effectiveComparisonYear) return;
+          if (!comparisonYear) {
+            setComparisonYear(effectiveComparisonYear);
+          }
           setComparisonOpen(true);
         }}
         onExport={handleQuickExport}
@@ -756,7 +765,7 @@ export function Dashboard() {
         onNotifications={() => setNotificationsOpen(true)}
         filterCount={activeChipCount}
         pendingNotifications={unreadNotifications.length}
-        compareEnabled={Boolean(comparisonYear)}
+        compareEnabled={Boolean(comparisonYear ?? fallbackComparisonYear)}
         exportEnabled={filteredFines.length > 0}
         shareEnabled={!!shareUrl}
       />

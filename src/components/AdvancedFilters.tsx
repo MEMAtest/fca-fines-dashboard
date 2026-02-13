@@ -102,6 +102,15 @@ export function AdvancedFilters({
     setDraft(values);
   }, [values]);
 
+  useEffect(() => {
+    if (!open || typeof document === 'undefined') return;
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    return () => {
+      document.body.style.overflow = previousOverflow;
+    };
+  }, [open]);
+
   function toggleValue(list: number[], value: number) {
     return list.includes(value) ? list.filter((v) => v !== value) : [...list, value];
   }
