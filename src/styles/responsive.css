@@ -15,12 +15,6 @@
   .grid--two-col {
     grid-template-columns: 1fr;
   }
-
-  .notification-bell__dropdown {
-    left: 0;
-    right: auto;
-    width: min(340px, calc(100vw - 48px));
-  }
 }
 
 @media (max-width: 768px) {
@@ -126,19 +120,6 @@
     font-size: var(--text-lg);
   }
 
-  /* Notification dropdown - keep anchored to bell on mobile */
-  .notification-bell__dropdown {
-    position: absolute;
-    top: calc(100% + 10px);
-    bottom: auto;
-    left: auto;
-    right: 0;
-    width: min(340px, calc(100vw - 24px));
-    max-height: min(55vh, 420px);
-    overflow-y: auto;
-    z-index: 200;
-  }
-
   .filters {
     padding: 16px;
   }
@@ -161,15 +142,6 @@
 }
 
 @media (max-width: 640px) {
-  .notification-bell__dropdown {
-    position: fixed;
-    top: 84px;
-    right: 12px;
-    left: 12px;
-    width: auto;
-    max-height: min(55vh, 420px);
-  }
-
   .hero__stats {
     grid-template-columns: repeat(2, 1fr);
   }

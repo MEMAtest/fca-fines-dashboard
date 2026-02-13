@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef } from 'react';
+import { useCallback, useEffect, useRef, useState, useLayoutEffect, type CSSProperties } from 'react';
 import { createPortal } from 'react-dom';
 import { Bell } from 'lucide-react';
 import type { NotificationItem } from '../types';
@@ -32,10 +32,37 @@ export function NotificationBell({
   const showEmptyState = !loading && !error && !hasNotifications;
   const dropdownRef = useRef<HTMLDivElement>(null);
   const bellRef = useRef<HTMLButtonElement>(null);
+  const [dropdownStyle, setDropdownStyle] = useState<CSSProperties | null>(null);
   const onOpenChangeRef = useRef(onOpenChange);
   onOpenChangeRef.current = onOpenChange;
 
   const closeDropdown = useCallback(() => onOpenChangeRef.current(false), []);
+
+  const updateDropdownPosition = useCallback(() => {
+    const bell = bellRef.current;
+    if (!bell) return;
+    const rect = bell.getBoundingClientRect();
+    const viewportWidth = window.innerWidth;
+    const viewportHeight = window.innerHeight;
+    const isMobile = viewportWidth <= 640;
+
+    const width = isMobile
+      ? Math.min(340, viewportWidth - 24)
+      : Math.min(340, viewportWidth - 24);
+    const left = isMobile
+      ? 12
+      : Math.max(12, Math.min(rect.right - width, viewportWidth - width - 12));
+    const top = isMobile ? 84 : rect.bottom + 10;
+    const maxHeight = Math.min(420, Math.floor(viewportHeight * 0.55));
+
+    setDropdownStyle({
+      position: 'fixed',
+      top,
+      left,
+      width,
+      maxHeight,
+    });
+  }, []);
 
   useEffect(() => {
     if (!open) return;
@@ -49,6 +76,18 @@ export function NotificationBell({
       queueMicrotask(() => bellRef.current?.focus());
     };
   }, [open, closeDropdown]);
+
+  useLayoutEffect(() => {
+    if (!open) return;
+    updateDropdownPosition();
+    const handleReposition = () => updateDropdownPosition();
+    window.addEventListener('resize', handleReposition);
+    window.addEventListener('scroll', handleReposition, true);
+    return () => {
+      window.removeEventListener('resize', handleReposition);
+      window.removeEventListener('scroll', handleReposition, true);
+    };
+  }, [open, updateDropdownPosition]);
 
   return (
     <div className="notification-bell">
@@ -66,88 +105,92 @@ export function NotificationBell({
       </button>
       {open && (
         <>
-        {createPortal(
-          <div
-            className="notification-bell__overlay"
-            onClick={() => onOpenChange(false)}
-            role="presentation"
-            aria-hidden="true"
-          />,
-          document.body
-        )}
-        <div
-          ref={dropdownRef}
-          tabIndex={-1}
-          className="notification-bell__dropdown"
-          role="dialog"
-          aria-label="Latest enforcement alerts"
-          aria-busy={loading}
-          onClick={(e) => e.stopPropagation()}
-        >
-          {loading && (
-            <div className="notification-bell__skeletons" aria-live="polite">
-              {skeletonPlaceholders.map((_, index) => (
-                <div key={`notification-skeleton-${index}`} className="notification-bell__skeleton skeleton" />
-              ))}
-            </div>
+          {createPortal(
+            <div
+              className="notification-bell__overlay"
+              onClick={() => onOpenChange(false)}
+              role="presentation"
+              aria-hidden="true"
+            />,
+            document.body
           )}
-          {!loading && error && (
-            <div className="notification-bell__empty" role="status" aria-live="assertive">
-              <p>{error}</p>
-              {onRefresh && (
-                <button type="button" onClick={onRefresh}>
-                  Try again
-                </button>
-              )}
-            </div>
-          )}
-          {showEmptyState && (
-            <div className="notification-bell__empty" role="status" aria-live="polite">
-              <p>All quiet — no alerts right now.</p>
-              {onRefresh && (
-                <button type="button" onClick={onRefresh}>
-                  Check again
-                </button>
-              )}
-            </div>
-          )}
-          {!loading && !error && hasNotifications && (
-            <>
-              <div className="notification-bell__dropdown-actions">
-                <span className="notification-bell__status" aria-live="polite">
-                  {unreadCount > 0 ? `${unreadCount} new` : 'Up to date'}
-                </span>
-                <div className="notification-bell__dropdown-buttons">
-                  <button type="button" onClick={onRefresh} disabled={loading}>
-                    {loading ? 'Refreshing…' : 'Refresh'}
-                  </button>
-                  <button type="button" onClick={onMarkAllRead} disabled={unreadCount === 0}>
-                    Mark all read
-                  </button>
+          {createPortal(
+            <div
+              ref={dropdownRef}
+              tabIndex={-1}
+              className="notification-bell__dropdown"
+              role="dialog"
+              aria-label="Latest enforcement alerts"
+              aria-busy={loading}
+              style={dropdownStyle ?? undefined}
+              onClick={(e) => e.stopPropagation()}
+            >
+              {loading && (
+                <div className="notification-bell__skeletons" aria-live="polite">
+                  {skeletonPlaceholders.map((_, index) => (
+                    <div key={`notification-skeleton-${index}`} className="notification-bell__skeleton skeleton" />
+                  ))}
                 </div>
-              </div>
-              {notifications.map((notification) => (
-                <article
-                  key={notification.id}
-                  className={notification.read ? 'notification-item' : 'notification-item notification-item--unread'}
-                >
-                  <div>
-                    <h5>{notification.title}</h5>
-                    <p>{notification.detail}</p>
-                  </div>
-                  <footer>
-                    <span className="notification-item__time">{notification.time}</span>
-                    {!notification.read && (
-                      <button type="button" onClick={() => onMarkAsRead(notification.id)}>
-                        Mark read
+              )}
+              {!loading && error && (
+                <div className="notification-bell__empty" role="status" aria-live="assertive">
+                  <p>{error}</p>
+                  {onRefresh && (
+                    <button type="button" onClick={onRefresh}>
+                      Try again
+                    </button>
+                  )}
+                </div>
+              )}
+              {showEmptyState && (
+                <div className="notification-bell__empty" role="status" aria-live="polite">
+                  <p>All quiet — no alerts right now.</p>
+                  {onRefresh && (
+                    <button type="button" onClick={onRefresh}>
+                      Check again
+                    </button>
+                  )}
+                </div>
+              )}
+              {!loading && !error && hasNotifications && (
+                <>
+                  <div className="notification-bell__dropdown-actions">
+                    <span className="notification-bell__status" aria-live="polite">
+                      {unreadCount > 0 ? `${unreadCount} new` : 'Up to date'}
+                    </span>
+                    <div className="notification-bell__dropdown-buttons">
+                      <button type="button" onClick={onRefresh} disabled={loading}>
+                        {loading ? 'Refreshing…' : 'Refresh'}
                       </button>
-                    )}
-                  </footer>
-                </article>
-              ))}
-            </>
+                      <button type="button" onClick={onMarkAllRead} disabled={unreadCount === 0}>
+                        Mark all read
+                      </button>
+                    </div>
+                  </div>
+                  {notifications.map((notification) => (
+                    <article
+                      key={notification.id}
+                      className={notification.read ? 'notification-item' : 'notification-item notification-item--unread'}
+                    >
+                      <div>
+                        <h5>{notification.title}</h5>
+                        <p>{notification.detail}</p>
+                      </div>
+                      <footer>
+                        <span className="notification-item__time">{notification.time}</span>
+                        {!notification.read && (
+                          <button type="button" onClick={() => onMarkAsRead(notification.id)}>
+                            Mark read
+                          </button>
+                        )}
+                      </footer>
+                    </article>
+                  ))}
+                </>
+              )}
+            </div>,
+            document.body
           )}
-        </div>
         </>
       )}
     </div>
