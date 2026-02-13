@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
+import { createPortal } from 'react-dom';
 import { Link, useLocation } from 'react-router-dom';
 import { Menu, X, ChevronRight } from 'lucide-react';
 import '../styles/siteheader.css';
@@ -36,6 +37,15 @@ export function SiteHeader() {
     document.addEventListener('keydown', handleKeyDown);
     return () => document.removeEventListener('keydown', handleKeyDown);
   }, [mobileOpen, closeMobile]);
+
+  useEffect(() => {
+    if (!mobileOpen || typeof document === 'undefined') return;
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    return () => {
+      document.body.style.overflow = previousOverflow;
+    };
+  }, [mobileOpen]);
 
   return (
     <header className="site-header">
@@ -87,26 +97,29 @@ export function SiteHeader() {
       )}
 
       {/* Mobile overlay */}
-      {mobileOpen && (
-        <div className="site-header__mobile-overlay" onClick={closeMobile}>
-          <nav
-            className="site-header__mobile-nav"
-            onClick={(e) => e.stopPropagation()}
-            aria-label="Mobile navigation"
-          >
-            {NAV_LINKS.map((link) => (
-              <Link
-                key={link.to}
-                to={link.to}
-                className={`site-header__mobile-link${location.pathname === link.to ? ' site-header__mobile-link--active' : ''}`}
-                onClick={closeMobile}
+      {mobileOpen && typeof document !== 'undefined'
+        ? createPortal(
+            <div className="site-header__mobile-overlay" onClick={closeMobile}>
+              <nav
+                className="site-header__mobile-nav"
+                onClick={(e) => e.stopPropagation()}
+                aria-label="Mobile navigation"
               >
-                {link.label}
-              </Link>
-            ))}
-          </nav>
-        </div>
-      )}
+                {NAV_LINKS.map((link) => (
+                  <Link
+                    key={link.to}
+                    to={link.to}
+                    className={`site-header__mobile-link${location.pathname === link.to ? ' site-header__mobile-link--active' : ''}`}
+                    onClick={closeMobile}
+                  >
+                    {link.label}
+                  </Link>
+                ))}
+              </nav>
+            </div>,
+            document.body
+          )
+        : null}
     </header>
   );
 }

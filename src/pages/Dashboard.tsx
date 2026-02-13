@@ -560,17 +560,50 @@ export function Dashboard() {
   }
 
   async function handleShareLink() {
+    const copyWithFallback = async (): Promise<boolean> => {
+      try {
+        if (navigator?.clipboard?.writeText) {
+          await navigator.clipboard.writeText(shareUrl);
+          return true;
+        }
+      } catch (error) {
+        console.error('Clipboard API copy failed', error);
+      }
+
+      try {
+        const textarea = document.createElement('textarea');
+        textarea.value = shareUrl;
+        textarea.setAttribute('readonly', '');
+        textarea.style.position = 'fixed';
+        textarea.style.left = '-9999px';
+        document.body.appendChild(textarea);
+        textarea.select();
+        const copied = document.execCommand('copy');
+        document.body.removeChild(textarea);
+        return copied;
+      } catch (error) {
+        console.error('execCommand copy failed', error);
+        return false;
+      }
+    };
+
     try {
       if (navigator?.share) {
-        await navigator.share({ title: 'FCA Fines Dashboard', url: shareUrl });
-        setToast({ message: 'Share sheet opened', type: 'success' });
-        return;
+        try {
+          await navigator.share({ title: 'FCA Fines Dashboard', url: shareUrl });
+          setToast({ message: 'Share sheet opened', type: 'success' });
+          return;
+        } catch (error) {
+          console.error('Native share failed, falling back to copy', error);
+        }
       }
-      if (navigator?.clipboard?.writeText) {
-        await navigator.clipboard.writeText(shareUrl);
+
+      const copied = await copyWithFallback();
+      if (copied) {
         setToast({ message: 'Link copied to clipboard', type: 'success' });
         return;
       }
+
       throw new Error('Share not supported');
     } catch (err) {
       console.error('Share failed', err);
