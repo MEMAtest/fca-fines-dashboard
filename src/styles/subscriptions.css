@@ -279,8 +279,8 @@
   margin-top: 0.5rem;
 }
 
-/* Primary Button */
-.btn-primary {
+/* Primary Button (alerts modal only) */
+.alert-subscribe-modal .btn-primary {
   background: linear-gradient(135deg, #0FA294, #0D8A7F);
   color: white;
   border: none;
@@ -292,18 +292,18 @@
   transition: all 0.2s ease;
 }
 
-.btn-primary:hover:not(:disabled) {
+.alert-subscribe-modal .btn-primary:hover:not(:disabled) {
   background: linear-gradient(135deg, #0D8A7F, #0B7A70);
   transform: translateY(-1px);
   box-shadow: 0 4px 12px rgba(15, 162, 148, 0.3);
 }
 
-.btn-primary:disabled {
+.alert-subscribe-modal .btn-primary:disabled {
   opacity: 0.7;
   cursor: not-allowed;
 }
 
-.btn-full {
+.alert-subscribe-modal .btn-full {
   width: 100%;
 }
 

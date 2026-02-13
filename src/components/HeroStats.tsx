@@ -89,6 +89,12 @@ export function HeroStats({
           </p>
         </div>
         <div className="hero__actions">
+          {onAlertsSubscribe && (
+            <button type="button" className="btn btn-primary hero__subscribe" onClick={onAlertsSubscribe}>
+              <Bell size={16} />
+              Get alerts
+            </button>
+          )}
           <NotificationBell
             notifications={notifications}
             open={notificationsOpen}
@@ -100,12 +106,6 @@ export function HeroStats({
             onMarkAllRead={onNotificationReadAll}
             onRefresh={onNotificationsRefresh}
           />
-          {onAlertsSubscribe && (
-            <button type="button" className="btn btn-primary hero__subscribe" onClick={onAlertsSubscribe}>
-              <Bell size={16} />
-              Get alerts
-            </button>
-          )}
           {latest && (
             <div className="hero__badge hover-lift">
               <Calendar size={16} />
