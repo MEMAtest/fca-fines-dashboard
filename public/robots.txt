@@ -6,6 +6,7 @@ User-agent: *
 Allow: /
 Allow: /dashboard
 Allow: /blog
+Allow: /blog/
 
 # Disallow API endpoints from indexing
 Disallow: /api/

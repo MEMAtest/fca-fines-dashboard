@@ -7,10 +7,14 @@
     "dev": "vite",
     "dev:api": "node --loader ts-node/esm --experimental-specifier-resolution=node server.ts",
     "start": "node --loader ts-node/esm --experimental-specifier-resolution=node server.ts",
-    "build": "vite build",
+    "build": "vite build && npx tsx scripts/prerender-seo.ts",
     "test": "vitest",
     "test:run": "vitest run",
     "test:coverage": "vitest run --coverage",
+    "test:e2e": "playwright test",
+    "test:e2e:headed": "playwright test --headed",
+    "test:e2e:debug": "playwright test --debug",
+    "test:e2e:report": "playwright show-report",
     "scrape:fines": "node --loader ts-node/esm scripts/scraper/scrapeFcaFines.ts",
     "scrape:fines:dry": "node --loader ts-node/esm scripts/scraper/scrapeFcaFines.ts --dry-run",
     "verify:setup": "bash scripts/verify-setup.sh"
@@ -42,6 +46,7 @@
     "xlsx": "^0.18.5"
   },
   "devDependencies": {
+    "@playwright/test": "^1.58.2",
     "@testing-library/jest-dom": "^6.9.1",
     "@testing-library/react": "^16.3.1",
     "@testing-library/user-event": "^14.6.1",

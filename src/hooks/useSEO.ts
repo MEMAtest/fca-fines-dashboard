@@ -88,7 +88,7 @@ export function useSEO(config: SEOConfig) {
 
     // Cleanup function to reset to defaults when component unmounts
     return () => {
-      document.title = 'FCA Fines Database & Tracker | Complete UK Financial Conduct Authority Penalties 2013-2025';
+      document.title = 'FCA Fines Database & Tracker | Complete UK Financial Conduct Authority Penalties 2013-2026';
     };
   }, [config]);
 }

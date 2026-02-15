@@ -52,6 +52,7 @@ function lazyPage<T>(loader: () => Promise<T>) {
 const Homepage = lazyPage(() => import('./pages/Homepage').then(module => ({ default: module.Homepage })));
 const Dashboard = lazyPage(() => import('./pages/Dashboard').then(module => ({ default: module.Dashboard })));
 const Blog = lazyPage(() => import('./pages/Blog').then(module => ({ default: module.Blog })));
+const BlogPost = lazyPage(() => import('./pages/BlogPost').then(module => ({ default: module.BlogPost })));
 
 const router = createBrowserRouter([
   {
@@ -73,6 +74,14 @@ const router = createBrowserRouter([
               <Dashboard />
             </Suspense>
           </RequireHomepageVisit>
+        ),
+      },
+      {
+        path: '/blog/:slug',
+        element: (
+          <Suspense fallback={<div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>Loading...</div>}>
+            <BlogPost />
+          </Suspense>
         ),
       },
       {
