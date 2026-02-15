@@ -40,8 +40,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       WHERE id = ${subscription.id}
     `;
 
-    // Redirect to success page
-    return res.redirect(`${BASE_URL}?verified=alert&email=${encodeURIComponent(subscription.email)}`);
+    // Redirect to success page (avoid leaking PII in query params)
+    return res.redirect(`${BASE_URL}?verified=alert`);
   } catch (error) {
     console.error('Alert verify error:', error);
     return res.redirect(`${BASE_URL}?error=verification_failed`);

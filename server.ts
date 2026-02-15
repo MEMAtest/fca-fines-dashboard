@@ -7,6 +7,7 @@ import { listFines, getStats, getTrends, getNotifications } from './server/servi
 import { getHomepageStats } from './server/services/homepage.ts';
 import { getYearlySummary } from './server/services/yearlySummary.ts';
 import { submitContactForm } from './server/services/contact.ts';
+import { listBreachCategories, listYears, listSectors, listTopFirms, getFirmDetailsBySlug } from './server/services/hubs.ts';
 
 const app = express();
 app.use(cors());
@@ -60,6 +61,65 @@ app.get('/api/fca-fines/notifications', async (_req, res) => {
   } catch (error) {
     console.error('Notifications endpoint error:', error);
     res.status(500).json({ success: false, error: 'Failed to fetch notifications' });
+  }
+});
+
+app.get('/api/fca-fines/categories', async (_req, res) => {
+  try {
+    const data = await listBreachCategories();
+    res.json({ success: true, data });
+  } catch (error) {
+    console.error('Categories endpoint error:', error);
+    res.status(500).json({ success: false, error: 'Failed to fetch categories' });
+  }
+});
+
+app.get('/api/fca-fines/years', async (_req, res) => {
+  try {
+    const data = await listYears();
+    res.json({ success: true, data });
+  } catch (error) {
+    console.error('Years endpoint error:', error);
+    res.status(500).json({ success: false, error: 'Failed to fetch years' });
+  }
+});
+
+app.get('/api/fca-fines/sectors', async (_req, res) => {
+  try {
+    const data = await listSectors();
+    res.json({ success: true, data });
+  } catch (error) {
+    console.error('Sectors endpoint error:', error);
+    res.status(500).json({ success: false, error: 'Failed to fetch sectors' });
+  }
+});
+
+app.get('/api/fca-fines/firms', async (req, res) => {
+  try {
+    const limit = Math.min(Number(req.query.limit || '100'), 1000);
+    const data = await listTopFirms(limit);
+    res.json({ success: true, data });
+  } catch (error) {
+    console.error('Firms endpoint error:', error);
+    res.status(500).json({ success: false, error: 'Failed to fetch firms' });
+  }
+});
+
+app.get('/api/fca-fines/firm', async (req, res) => {
+  try {
+    const slug = String(req.query.slug || '').trim();
+    if (!slug) {
+      return res.status(400).json({ success: false, error: 'Missing slug' });
+    }
+    const limit = Math.min(Number(req.query.limit || '200'), 5000);
+    const data = await getFirmDetailsBySlug(slug, limit);
+    if (!data) {
+      return res.status(404).json({ success: false, error: 'Firm not found' });
+    }
+    res.json({ success: true, data });
+  } catch (error) {
+    console.error('Firm endpoint error:', error);
+    res.status(500).json({ success: false, error: 'Failed to fetch firm' });
   }
 });
 
@@ -124,7 +184,7 @@ app.get(/.*/, (req, res) => {
   res.sendFile(path.join(distDir, 'index.html'));
 });
 
-const port = Number(process.env.PORT || 3000);
+const port = Number(process.env.PORT || 4000);
 app.listen(port, () => {
   console.log(`FCA fines dashboard running on http://localhost:${port}`);
 });

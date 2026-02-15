@@ -40,8 +40,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       WHERE id = ${watchlist.id}
     `;
 
-    // Redirect to success page
-    return res.redirect(`${BASE_URL}?verified=watchlist&email=${encodeURIComponent(watchlist.email)}&firm=${encodeURIComponent(watchlist.firm_name)}`);
+    // Redirect to success page (avoid leaking PII in query params)
+    return res.redirect(`${BASE_URL}?verified=watchlist`);
   } catch (error) {
     console.error('Watchlist verify error:', error);
     return res.redirect(`${BASE_URL}?error=verification_failed`);

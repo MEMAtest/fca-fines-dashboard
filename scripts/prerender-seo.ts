@@ -3,8 +3,9 @@
  *
  * After `vite build`, this script:
  * 1. Reads dist/index.html as a template
- * 2. For each of 28 routes, generates an index.html with correct <head> meta
- * 3. Generates dist/sitemap.xml from article data
+ * 2. Generates an index.html for key routes with correct <head> meta
+ * 3. Generates dist/sitemap.xml for crawlers
+ * 4. Generates dist/rss.xml for feed readers
  *
  * Vercel serves static files before rewrites, so pre-rendered files are
  * served directly to crawlers with correct meta tags.
@@ -22,6 +23,7 @@ const DIST = join(ROOT, 'dist');
 const BASE_URL = 'https://fcafines.memaconsultants.com';
 const SITE_NAME = 'FCA Fines Dashboard';
 const OG_IMAGE = `${BASE_URL}/og-image.png`;
+const RSS_URL = `${BASE_URL}/rss.xml`;
 
 // ---------------------------------------------------------------------------
 // Import article data (pure TS, no JSX)
@@ -36,6 +38,8 @@ import { blogArticles, yearlyArticles } from '../src/data/blogArticles.js';
 // Helpers
 // ---------------------------------------------------------------------------
 
+const gbp = new Intl.NumberFormat('en-GB', { style: 'currency', currency: 'GBP', maximumFractionDigits: 0 });
+
 function escapeHtml(str: string): string {
   return str
     .replace(/&/g, '&amp;')
@@ -45,8 +49,28 @@ function escapeHtml(str: string): string {
     .replace(/>/g, '&gt;');
 }
 
-function today(): string {
+function todayISO(): string {
   return new Date().toISOString().slice(0, 10);
+}
+
+function clampISODate(value: string, maxValue: string): string {
+  // Both should be YYYY-MM-DD. Lexicographic compare is OK.
+  if (!value) return maxValue;
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(value)) return maxValue;
+  return value > maxValue ? maxValue : value;
+}
+
+function toRfc2822(valueISO: string, fallbackISO: string): string {
+  const safe = clampISODate(valueISO, fallbackISO);
+  const date = new Date(`${safe}T00:00:00.000Z`);
+  if (Number.isNaN(date.getTime())) {
+    return new Date(`${fallbackISO}T00:00:00.000Z`).toUTCString();
+  }
+  return date.toUTCString();
+}
+
+function humanize(label: string) {
+  return label.replace(/_/g, ' ').replace(/[-]+/g, ' ').toLowerCase().replace(/\b[a-z]/g, (c) => c.toUpperCase());
 }
 
 interface PageMeta {
@@ -62,10 +86,10 @@ interface PageMeta {
 }
 
 // ---------------------------------------------------------------------------
-// Build page metadata for all 28 routes
+// Build page metadata
 // ---------------------------------------------------------------------------
 
-function buildPageMetas(): PageMeta[] {
+async function buildPageMetas(): Promise<PageMeta[]> {
   const pages: PageMeta[] = [];
 
   // 1. Homepage
@@ -86,7 +110,53 @@ function buildPageMetas(): PageMeta[] {
     ogType: 'website',
   });
 
-  // 3. Blog listing
+  // 3. Topics (hub landing)
+  pages.push({
+    path: '/topics',
+    title: 'FCA Fines Topics | Breaches, Years, Sectors & Firm Pages',
+    description:
+      'Browse FCA fines by breach type, year, sector, or firm. Explore hub pages and jump into the interactive dashboard for deeper analysis.',
+    keywords:
+      'FCA fines topics, FCA fines by breach, FCA fines by year, FCA fines by firm, FCA fines by sector',
+    ogType: 'website',
+  });
+
+  // 4. Hub list pages
+  pages.push({
+    path: '/breaches',
+    title: 'FCA Fines by Breach Type | Market Abuse, AML, Principles and More',
+    description:
+      'Browse FCA fines by breach category. See which breach types drive the most penalties and jump into the dashboard with filters applied.',
+    keywords: 'FCA fines by breach, market abuse FCA fines, AML FCA fines, FCA principles fines, breach category fines',
+    ogType: 'website',
+  });
+  pages.push({
+    path: '/years',
+    title: 'FCA Fines by Year | 2013-2026 Annual Summaries',
+    description:
+      'Browse FCA fines by year. Compare enforcement totals and jump into the dashboard for each year’s full list of actions.',
+    keywords: 'FCA fines by year, FCA fines 2026, FCA fines 2025, FCA enforcement by year',
+    ogType: 'website',
+  });
+  pages.push({
+    path: '/sectors',
+    title: 'FCA Fines by Sector | Banks, Insurance, Individuals and More',
+    description:
+      'Browse FCA fines by firm category (sector). View which sectors receive the most penalties and jump into filtered dashboard views.',
+    keywords: 'FCA fines by sector, FCA fines banks, FCA fines insurance, FCA fines individuals',
+    ogType: 'website',
+  });
+  pages.push({
+    path: '/firms',
+    title: 'Top FCA Fine Recipients | Firms and Individuals With the Largest Penalties (2013-2026)',
+    description:
+      'Browse the biggest FCA fine recipients across 2013-2026. Open an entity page to see totals, largest penalties, and full enforcement history.',
+    keywords:
+      'top FCA fines firms, biggest FCA fines recipients, FCA fines by firm, FCA fines by individual, largest FCA penalties',
+    ogType: 'website',
+  });
+
+  // 5. Blog listing
   pages.push({
     path: '/blog',
     title: 'FCA Fines Blog | Expert Analysis & Insights on Financial Conduct Authority Penalties',
@@ -95,7 +165,7 @@ function buildPageMetas(): PageMeta[] {
     ogType: 'blog',
   });
 
-  // 4. Blog articles (12)
+  // 6. Blog articles
   for (const article of blogArticles) {
     pages.push({
       path: `/blog/${article.slug}`,
@@ -127,7 +197,7 @@ function buildPageMetas(): PageMeta[] {
     });
   }
 
-  // 5. Yearly review articles (13)
+  // 7. Yearly review articles
   for (const article of yearlyArticles) {
     pages.push({
       path: `/blog/${article.slug}`,
@@ -157,6 +227,59 @@ function buildPageMetas(): PageMeta[] {
         "image": OG_IMAGE,
       },
     });
+  }
+
+  // 8. DB-backed hub detail pages (best-effort; skip if env not available in build)
+  try {
+    const { listBreachCategories, listYears, listSectors, listTopFirms } = await import('../server/services/hubs.js');
+    const [categories, years, sectors, firms] = await Promise.all([
+      listBreachCategories(),
+      listYears(),
+      listSectors(),
+      listTopFirms(120),
+    ]);
+
+    categories.slice(0, 30).forEach((cat: any) => {
+      pages.push({
+        path: `/breaches/${cat.slug}`,
+        title: `${humanize(cat.name)} FCA Fines | ${cat.fineCount} actions totalling ${gbp.format(cat.totalAmount)}`,
+        description: `Explore FCA enforcement actions tagged ${humanize(cat.name)}. ${cat.fineCount} actions totalling ${gbp.format(cat.totalAmount)} across 2013-2026.`,
+        keywords: `FCA ${humanize(cat.name)} fines, ${humanize(cat.name)} enforcement, FCA fines by breach`,
+        ogType: 'website',
+      });
+    });
+
+    years.slice(0, 25).forEach((y: any) => {
+      pages.push({
+        path: `/years/${y.year}`,
+        title: `FCA Fines ${y.year} | ${y.fineCount} actions totalling ${gbp.format(y.totalAmount)}`,
+        description: `Explore FCA fines issued in ${y.year}. ${y.fineCount} actions totalling ${gbp.format(y.totalAmount)}.`,
+        keywords: `FCA fines ${y.year}, FCA penalties ${y.year}, FCA enforcement ${y.year}`,
+        ogType: 'website',
+      });
+    });
+
+    sectors.slice(0, 30).forEach((s: any) => {
+      pages.push({
+        path: `/sectors/${s.slug}`,
+        title: `FCA Fines for ${s.name} | ${s.fineCount} actions totalling ${gbp.format(s.totalAmount)}`,
+        description: `Explore FCA enforcement actions for ${s.name}. ${s.fineCount} actions totalling ${gbp.format(s.totalAmount)} across 2013-2026.`,
+        keywords: `FCA fines ${s.name}, FCA penalties ${s.name}, FCA fines by sector`,
+        ogType: 'website',
+      });
+    });
+
+    firms.slice(0, 120).forEach((f: any) => {
+      pages.push({
+        path: `/firms/${f.slug}`,
+        title: `${f.name} FCA Fines | ${f.fineCount} actions totalling ${gbp.format(f.totalAmount)}`,
+        description: `Explore FCA enforcement actions for ${f.name}. ${f.fineCount} actions totalling ${gbp.format(f.totalAmount)} across 2013-2026.`,
+        keywords: `FCA fines ${f.name}, FCA penalties ${f.name}, FCA enforcement ${f.name}`,
+        ogType: 'website',
+      });
+    });
+  } catch (error) {
+    console.warn('WARN: Skipping DB-backed hub pages in pre-render step:', error instanceof Error ? error.message : String(error));
   }
 
   return pages;
@@ -274,7 +397,7 @@ function renderPage(template: string, meta: PageMeta): string {
 // ---------------------------------------------------------------------------
 
 function generateSitemap(pages: PageMeta[]): string {
-  const buildDate = today();
+  const buildDate = todayISO();
   const lines: string[] = [
     '<?xml version="1.0" encoding="UTF-8"?>',
     '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">',
@@ -293,12 +416,18 @@ function generateSitemap(pages: PageMeta[]): string {
     } else if (page.path === '/dashboard') {
       priority = '0.95';
       changefreq = 'daily';
+    } else if (page.path === '/topics') {
+      priority = '0.9';
+      changefreq = 'weekly';
+    } else if (page.path === '/breaches' || page.path === '/years' || page.path === '/sectors' || page.path === '/firms') {
+      priority = '0.85';
+      changefreq = 'weekly';
     } else if (page.path === '/blog') {
       priority = '0.9';
       changefreq = 'weekly';
     } else if (page.datePublished) {
       // Blog articles use their publish date
-      lastmod = page.dateModified || page.datePublished;
+      lastmod = clampISODate(page.dateModified || page.datePublished, buildDate);
 
       // Featured / recent articles get higher priority
       const isFeatured = blogArticles.some(a => `/blog/${a.slug}` === page.path && a.featured);
@@ -314,6 +443,12 @@ function generateSitemap(pages: PageMeta[]): string {
       } else {
         priority = '0.8';
       }
+    } else if (page.path.startsWith('/breaches/') || page.path.startsWith('/sectors/')) {
+      priority = '0.75';
+      changefreq = 'monthly';
+    } else if (page.path.startsWith('/years/') || page.path.startsWith('/firms/')) {
+      priority = '0.75';
+      changefreq = 'monthly';
     }
 
     lines.push('  <url>');
@@ -329,10 +464,70 @@ function generateSitemap(pages: PageMeta[]): string {
 }
 
 // ---------------------------------------------------------------------------
+// Generate rss.xml
+// ---------------------------------------------------------------------------
+
+function generateRss(): string {
+  const buildDate = todayISO();
+  const items = [
+    ...blogArticles.map((a) => ({
+      title: a.seoTitle,
+      link: `${BASE_URL}/blog/${a.slug}`,
+      guid: `${BASE_URL}/blog/${a.slug}`,
+      description: a.excerpt,
+      pubDate: toRfc2822(a.dateISO, buildDate),
+      category: a.category,
+    })),
+    ...yearlyArticles.map((a) => ({
+      title: a.seoTitle,
+      link: `${BASE_URL}/blog/${a.slug}`,
+      guid: `${BASE_URL}/blog/${a.slug}`,
+      description: a.excerpt,
+      pubDate: toRfc2822(`${a.year}-01-01`, buildDate),
+      category: 'Annual Analysis',
+    })),
+  ].sort((a, b) => new Date(b.pubDate).getTime() - new Date(a.pubDate).getTime());
+
+  const rssItems = items
+    .slice(0, 60)
+    .map((item) => {
+      return [
+        '    <item>',
+        `      <title>${escapeHtml(item.title)}</title>`,
+        `      <link>${item.link}</link>`,
+        `      <guid isPermaLink="true">${item.guid}</guid>`,
+        `      <pubDate>${item.pubDate}</pubDate>`,
+        item.category ? `      <category>${escapeHtml(item.category)}</category>` : '',
+        `      <description>${escapeHtml(item.description)}</description>`,
+        '    </item>',
+      ]
+        .filter(Boolean)
+        .join('\n');
+    })
+    .join('\n');
+
+  return [
+    '<?xml version="1.0" encoding="UTF-8"?>',
+    '<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">',
+    '  <channel>',
+    `    <title>${escapeHtml(SITE_NAME)} Insights</title>`,
+    `    <link>${BASE_URL}/blog</link>`,
+    `    <description>${escapeHtml('Expert analysis of FCA enforcement actions, fines, and compliance insights.')}</description>`,
+    `    <language>en-gb</language>`,
+    `    <lastBuildDate>${toRfc2822(buildDate, buildDate)}</lastBuildDate>`,
+    `    <atom:link href="${RSS_URL}" rel="self" type="application/rss+xml" />`,
+    rssItems,
+    '  </channel>',
+    '</rss>',
+    '',
+  ].join('\n');
+}
+
+// ---------------------------------------------------------------------------
 // Main
 // ---------------------------------------------------------------------------
 
-function main() {
+async function main() {
   const templatePath = join(DIST, 'index.html');
   if (!existsSync(templatePath)) {
     console.error('ERROR: dist/index.html not found. Run `vite build` first.');
@@ -340,7 +535,7 @@ function main() {
   }
 
   const template = readFileSync(templatePath, 'utf-8');
-  const pages = buildPageMetas();
+  const pages = await buildPageMetas();
 
   console.log(`Pre-rendering ${pages.length} pages...`);
 
@@ -375,7 +570,16 @@ function main() {
   writeFileSync(sitemapPath, sitemap, 'utf-8');
   console.log(`  Generated sitemap.xml with ${pages.length} URLs.`);
 
+  // Generate RSS feed
+  const rss = generateRss();
+  const rssPath = join(DIST, 'rss.xml');
+  writeFileSync(rssPath, rss, 'utf-8');
+  console.log(`  Generated rss.xml.`);
+
   console.log('Done!');
 }
 
-main();
+main().catch((error) => {
+  console.error('Pre-render failed:', error);
+  process.exit(1);
+});

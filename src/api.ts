@@ -1,4 +1,14 @@
-import type { ListResponse, StatsResponse, TrendsResponse, NotificationsResponse } from './types';
+import type {
+  CategoriesResponse,
+  FirmResponse,
+  FirmsResponse,
+  ListResponse,
+  NotificationsResponse,
+  SectorsResponse,
+  StatsResponse,
+  TrendsResponse,
+  YearsResponse,
+} from './types';
 
 const fallbackBase = import.meta.env.DEV ? 'http://localhost:4000' : '';
 const API_BASE = import.meta.env.VITE_API_BASE ?? fallbackBase;
@@ -26,4 +36,26 @@ export function fetchTrends(year: number) {
 
 export function fetchNotifications() {
   return fetchJSON<NotificationsResponse>(`/api/fca-fines/notifications`);
+}
+
+export function fetchCategories() {
+  return fetchJSON<CategoriesResponse>(`/api/fca-fines/categories`);
+}
+
+export function fetchYears() {
+  return fetchJSON<YearsResponse>(`/api/fca-fines/years`);
+}
+
+export function fetchSectors() {
+  return fetchJSON<SectorsResponse>(`/api/fca-fines/sectors`);
+}
+
+export function fetchFirms(limit = 100) {
+  return fetchJSON<FirmsResponse>(`/api/fca-fines/firms?limit=${encodeURIComponent(String(limit))}`);
+}
+
+export function fetchFirm(slug: string, limit = 200) {
+  return fetchJSON<FirmResponse>(
+    `/api/fca-fines/firm?slug=${encodeURIComponent(slug)}&limit=${encodeURIComponent(String(limit))}`
+  );
 }

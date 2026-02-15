@@ -1,5 +1,6 @@
 import puppeteer from 'puppeteer';
 import path from 'path';
+import { existsSync } from 'node:fs';
 
 // Mobile viewport configuration (iPhone SE)
 const MOBILE_VIEWPORT = {
@@ -10,10 +11,16 @@ const MOBILE_VIEWPORT = {
   hasTouch: true
 };
 
-const BASE_URL = 'https://fcafines.memaconsultants.com';
+const BASE_URL = process.env.MOBILE_TEST_BASE_URL || 'https://fcafines.memaconsultants.com';
 const SCREENSHOT_DIR = '/tmp';
 
 const delay = (ms) => new Promise(resolve => setTimeout(resolve, ms));
+
+const SYSTEM_CHROME = '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome';
+const EXECUTABLE_PATH =
+  process.env.PUPPETEER_EXECUTABLE_PATH || (existsSync(SYSTEM_CHROME) ? SYSTEM_CHROME : undefined);
+
+const DASHBOARD_URL = process.env.MOBILE_TEST_DASHBOARD_URL || new URL('/dashboard', BASE_URL).toString();
 
 async function runMobileDashboardTest() {
   console.log('🚀 FCA Fines Dashboard - Mobile View Test');
@@ -24,6 +31,7 @@ async function runMobileDashboardTest() {
 
   const browser = await puppeteer.launch({
     headless: true,
+    ...(EXECUTABLE_PATH ? { executablePath: EXECUTABLE_PATH } : {}),
     args: ['--no-sandbox', '--disable-setuid-sandbox']
   });
 
@@ -74,63 +82,22 @@ async function runMobileDashboardTest() {
     });
 
     if (currentPage.isLandingPage) {
-      console.log('[Step 2/6] On landing page, looking for dashboard link...');
+      console.log('[Step 2/6] On landing page, navigating to dashboard...');
 
-      // Try to find and click the dashboard button
-      const dashboardButton = await page.evaluate(() => {
-        const buttons = Array.from(document.querySelectorAll('a, button'));
-        const dashBtn = buttons.find(btn => {
-          const text = btn.textContent.toLowerCase();
-          const href = btn.getAttribute('href') || '';
-          return text.includes('explore') ||
-                 text.includes('dashboard') ||
-                 text.includes('get started') ||
-                 href.includes('dashboard');
-        });
-
-        if (dashBtn) {
-          return {
-            found: true,
-            text: dashBtn.textContent.trim(),
-            href: dashBtn.getAttribute('href'),
-            tag: dashBtn.tagName
-          };
-        }
-        return { found: false };
+      await page.goto(DASHBOARD_URL, {
+        waitUntil: 'networkidle2',
+        timeout: 30000
       });
 
-      if (dashboardButton.found) {
-        console.log(`✓ Found button: "${dashboardButton.text}"`);
-        console.log(`  Navigating to dashboard...`);
+      const newUrl = page.url();
+      console.log(`✓ Navigated to: ${newUrl}`);
+      results.navigatedToDashboard = newUrl.includes('/dashboard');
 
-        // Click the button or navigate directly
-        if (dashboardButton.href && dashboardButton.href.includes('dashboard')) {
-          await page.goto(`${BASE_URL}${dashboardButton.href}`, {
-            waitUntil: 'networkidle2'
-          });
-        } else {
-          // Click using evaluate to avoid selector issues
-          await page.evaluate((buttonText) => {
-            const buttons = Array.from(document.querySelectorAll('a, button'));
-            const btn = buttons.find(b => b.textContent.trim() === buttonText);
-            if (btn) btn.click();
-          }, dashboardButton.text);
-          await delay(2000);
-        }
-
-        const newUrl = page.url();
-        console.log(`✓ Navigated to: ${newUrl}`);
-        results.navigatedToDashboard = true;
-
-        await page.screenshot({
-          path: path.join(SCREENSHOT_DIR, 'mobile-02-dashboard.png'),
-          fullPage: true
-        });
-        console.log('  Screenshot: mobile-02-dashboard.png\n');
-      } else {
-        console.log('⚠️  Dashboard button not found, staying on landing page\n');
-        results.issues.push('Could not navigate to dashboard');
-      }
+      await page.screenshot({
+        path: path.join(SCREENSHOT_DIR, 'mobile-02-dashboard.png'),
+        fullPage: true
+      });
+      console.log('  Screenshot: mobile-02-dashboard.png\n');
     } else {
       console.log('[Step 2/6] Already on dashboard\n');
       results.navigatedToDashboard = true;

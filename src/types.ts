@@ -60,3 +60,67 @@ export interface NotificationItem {
   time: string;
   read?: boolean;
 }
+
+export interface CategorySummary {
+  name: string;
+  slug: string;
+  fineCount: number;
+  totalAmount: number;
+}
+
+export interface YearSummary {
+  year: number;
+  fineCount: number;
+  totalAmount: number;
+}
+
+export interface SectorSummary {
+  name: string;
+  slug: string;
+  fineCount: number;
+  totalAmount: number;
+}
+
+export interface FirmSummary {
+  name: string;
+  slug: string;
+  fineCount: number;
+  totalAmount: number;
+  latestDate: string | null;
+}
+
+export interface FirmDetails {
+  name: string;
+  slug: string;
+  fineCount: number;
+  totalAmount: number;
+  maxFine: number;
+  earliestDate: string | null;
+  latestDate: string | null;
+  records: FineRecord[];
+}
+
+export interface CategoriesResponse {
+  success: boolean;
+  data: CategorySummary[];
+}
+
+export interface YearsResponse {
+  success: boolean;
+  data: YearSummary[];
+}
+
+export interface SectorsResponse {
+  success: boolean;
+  data: SectorSummary[];
+}
+
+export interface FirmsResponse {
+  success: boolean;
+  data: FirmSummary[];
+}
+
+export interface FirmResponse {
+  success: boolean;
+  data: FirmDetails;
+}

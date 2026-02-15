@@ -44,16 +44,12 @@ export function NotificationBell({
     const rect = bell.getBoundingClientRect();
     const viewportWidth = window.innerWidth;
     const viewportHeight = window.innerHeight;
-    const isMobile = viewportWidth <= 640;
 
-    const width = isMobile
-      ? Math.min(340, viewportWidth - 24)
-      : Math.min(340, viewportWidth - 24);
-    const left = isMobile
-      ? 12
-      : Math.max(12, Math.min(rect.right - width, viewportWidth - width - 12));
-    const top = isMobile ? 84 : rect.bottom + 10;
+    const width = Math.min(360, viewportWidth - 24);
+    const left = Math.max(12, Math.min(rect.right - width, viewportWidth - width - 12));
     const maxHeight = Math.min(420, Math.floor(viewportHeight * 0.55));
+    const desiredTop = rect.bottom + 10;
+    const top = Math.max(12, Math.min(desiredTop, viewportHeight - maxHeight - 12));
 
     setDropdownStyle({
       position: 'fixed',

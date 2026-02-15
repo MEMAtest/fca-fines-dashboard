@@ -25,6 +25,7 @@ import { Toast } from '../components/Toast';
 import { useDashboardState, INITIAL_ADVANCED_FILTERS, CURRENT_YEAR } from '../hooks/useDashboardState';
 import { useFinesData, type TrendPoint } from '../hooks/useFinesData';
 import { AlertSubscribeModal } from '../components/AlertSubscribeModal';
+import { useSEO } from '../hooks/useSEO';
 
 
 function getYearsRange() {
@@ -188,6 +189,15 @@ function buildNotifications(records: FineRecord[], stats?: StatsResponse['data']
 }
 
 export function Dashboard() {
+  useSEO({
+    title: 'FCA Fines Dashboard | Interactive Analytics & Search',
+    description:
+      'Interactive FCA fines dashboard. Search all Financial Conduct Authority penalties by firm, year, amount and breach category. Export data and analyse enforcement trends.',
+    keywords: 'FCA fines dashboard, FCA fines search, FCA fines tracker, FCA penalty analytics, FCA fines data',
+    canonicalPath: '/dashboard',
+    ogType: 'website',
+  });
+
   const {
     year,
     setYear,
@@ -210,6 +220,7 @@ export function Dashboard() {
   const [advancedOpen, setAdvancedOpen] = useState(false);
   const [notificationsOpen, setNotificationsOpen] = useState(false);
   const [alertsModalOpen, setAlertsModalOpen] = useState(false);
+  const [shareModalOpen, setShareModalOpen] = useState(false);
   const [toast, setToast] = useState<{ message: string; type?: 'success' | 'error' } | null>(null);
   const {
     notifications: remoteNotifications,
@@ -559,34 +570,34 @@ export function Dashboard() {
     });
   }
 
+  const copyShareUrl = async (): Promise<boolean> => {
+    try {
+      if (navigator?.clipboard?.writeText) {
+        await navigator.clipboard.writeText(shareUrl);
+        return true;
+      }
+    } catch (error) {
+      console.error('Clipboard API copy failed', error);
+    }
+
+    try {
+      const textarea = document.createElement('textarea');
+      textarea.value = shareUrl;
+      textarea.setAttribute('readonly', '');
+      textarea.style.position = 'fixed';
+      textarea.style.left = '-9999px';
+      document.body.appendChild(textarea);
+      textarea.select();
+      const copied = document.execCommand('copy');
+      document.body.removeChild(textarea);
+      return copied;
+    } catch (error) {
+      console.error('execCommand copy failed', error);
+      return false;
+    }
+  };
+
   async function handleShareLink() {
-    const copyWithFallback = async (): Promise<boolean> => {
-      try {
-        if (navigator?.clipboard?.writeText) {
-          await navigator.clipboard.writeText(shareUrl);
-          return true;
-        }
-      } catch (error) {
-        console.error('Clipboard API copy failed', error);
-      }
-
-      try {
-        const textarea = document.createElement('textarea');
-        textarea.value = shareUrl;
-        textarea.setAttribute('readonly', '');
-        textarea.style.position = 'fixed';
-        textarea.style.left = '-9999px';
-        document.body.appendChild(textarea);
-        textarea.select();
-        const copied = document.execCommand('copy');
-        document.body.removeChild(textarea);
-        return copied;
-      } catch (error) {
-        console.error('execCommand copy failed', error);
-        return false;
-      }
-    };
-
     try {
       if (navigator?.share) {
         try {
@@ -594,20 +605,25 @@ export function Dashboard() {
           setToast({ message: 'Share sheet opened', type: 'success' });
           return;
         } catch (error) {
+          // User cancelled the share sheet: treat as a no-op.
+          if (error instanceof DOMException && error.name === 'AbortError') {
+            return;
+          }
           console.error('Native share failed, falling back to copy', error);
         }
       }
 
-      const copied = await copyWithFallback();
+      const copied = await copyShareUrl();
       if (copied) {
         setToast({ message: 'Link copied to clipboard', type: 'success' });
         return;
       }
 
-      throw new Error('Share not supported');
+      // Last-resort fallback: show the link so the user can copy manually.
+      setShareModalOpen(true);
     } catch (err) {
       console.error('Share failed', err);
-      setToast({ message: 'Unable to share link', type: 'error' });
+      setShareModalOpen(true);
     }
   }
 
@@ -754,6 +770,46 @@ export function Dashboard() {
         onClear={() => setAdvancedFilters(INITIAL_ADVANCED_FILTERS)}
       />
       <AlertSubscribeModal isOpen={alertsModalOpen} onClose={() => setAlertsModalOpen(false)} />
+      {shareModalOpen && (
+        <Modal
+          isOpen={shareModalOpen}
+          title="Share This View"
+          subtitle="Copy the link below"
+          onClose={() => setShareModalOpen(false)}
+        >
+          <div style={{ display: 'grid', gap: '0.75rem' }}>
+            <p style={{ margin: 0, color: 'var(--text-secondary)' }}>
+              Some browsers block the share sheet or clipboard. You can copy the link manually.
+            </p>
+            <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'center', flexWrap: 'wrap' }}>
+              <input
+                value={shareUrl}
+                readOnly
+                aria-label="Share link"
+                onFocus={(e) => e.currentTarget.select()}
+                style={{
+                  flex: '1 1 320px',
+                  padding: '0.75rem 0.85rem',
+                  borderRadius: '12px',
+                  border: '1px solid rgba(148, 163, 184, 0.35)',
+                  background: 'rgba(255, 255, 255, 0.95)',
+                }}
+              />
+              <button
+                type="button"
+                className="btn btn-primary"
+                onClick={async () => {
+                  const ok = await copyShareUrl();
+                  setToast({ message: ok ? 'Link copied to clipboard' : 'Select and copy the link', type: ok ? 'success' : 'error' });
+                  if (ok) setShareModalOpen(false);
+                }}
+              >
+                Copy link
+              </button>
+            </div>
+          </div>
+        </Modal>
+      )}
       {comparisonOpen && comparisonYear && (
         <Modal
           isOpen={comparisonOpen}

@@ -30,6 +30,14 @@ test.describe('Build & Pre-rendering', () => {
       expect(html).toContain('FCA Fines Dashboard');
     });
 
+    test('should have pre-rendered topics page', () => {
+      const topicsPath = join(DIST_DIR, 'topics', 'index.html');
+      expect(existsSync(topicsPath)).toBe(true);
+
+      const html = readFileSync(topicsPath, 'utf-8');
+      expect(html).toContain('FCA Fines Topics');
+    });
+
     test('should have pre-rendered blog listing page', () => {
       const blogPath = join(DIST_DIR, 'blog', 'index.html');
       expect(existsSync(blogPath)).toBe(true);
@@ -146,21 +154,26 @@ test.describe('Build & Pre-rendering', () => {
       // Should have dashboard
       expect(sitemap).toContain('<loc>https://fcafines.memaconsultants.com/dashboard</loc>');
 
+      // Should have topics + hub lists
+      expect(sitemap).toContain('<loc>https://fcafines.memaconsultants.com/topics</loc>');
+      expect(sitemap).toContain('<loc>https://fcafines.memaconsultants.com/breaches</loc>');
+      expect(sitemap).toContain('<loc>https://fcafines.memaconsultants.com/years</loc>');
+      expect(sitemap).toContain('<loc>https://fcafines.memaconsultants.com/sectors</loc>');
+      expect(sitemap).toContain('<loc>https://fcafines.memaconsultants.com/firms</loc>');
+
       // Should have blog listing
       expect(sitemap).toContain('<loc>https://fcafines.memaconsultants.com/blog</loc>');
     });
 
-    test('should have all 30 blog article URLs in sitemap', () => {
+    test('should include core URLs and blog URLs in sitemap', () => {
       const sitemapPath = join(DIST_DIR, 'sitemap.xml');
       const sitemap = readFileSync(sitemapPath, 'utf-8');
-
-      // 10 blog articles + 13 yearly articles = 23 blog URLs
-      // Plus homepage, dashboard, blog listing = 30 total URLs
 
       // Count <url> tags
       const urlMatches = sitemap.match(/<url>/g);
       expect(urlMatches).toBeTruthy();
-      expect(urlMatches!.length).toBe(30);
+      // Base set: homepage + dashboard + topics + 4 hub lists + blog listing + 14 blog articles + 13 yearly articles
+      expect(urlMatches!.length).toBeGreaterThanOrEqual(35);
 
       // Check some specific blog URLs
       expect(sitemap).toContain('https://fcafines.memaconsultants.com/blog/20-biggest-fca-fines-of-all-time');
@@ -197,10 +210,23 @@ test.describe('Build & Pre-rendering', () => {
       // Should have <lastmod> tags
       const lastmodMatches = sitemap.match(/<lastmod>/g);
       expect(lastmodMatches).toBeTruthy();
-      expect(lastmodMatches!.length).toBe(30);
+      const urlMatches = sitemap.match(/<url>/g) || [];
+      expect(lastmodMatches!.length).toBe(urlMatches.length);
 
       // Date format should be YYYY-MM-DD
       expect(sitemap).toMatch(/<lastmod>\d{4}-\d{2}-\d{2}<\/lastmod>/);
+    });
+  });
+
+  test.describe('rss.xml', () => {
+    test('should have generated rss.xml', () => {
+      const rssPath = join(DIST_DIR, 'rss.xml');
+      expect(existsSync(rssPath)).toBe(true);
+
+      const rss = readFileSync(rssPath, 'utf-8');
+      expect(rss).toContain('<rss');
+      expect(rss).toContain('<channel>');
+      expect(rss).toContain('<item>');
     });
   });
 

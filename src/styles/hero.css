@@ -53,7 +53,8 @@
   position: fixed;
   inset: 0;
   background: rgba(15, 23, 42, 0.25);
-  z-index: 99;
+  /* Sit above the mobile bottom nav (z-index: 600) but below modals (1000+). */
+  z-index: 900;
 }
 
 .notification-bell__btn {
@@ -97,7 +98,7 @@
   display: flex;
   flex-direction: column;
   gap: 2px;
-  z-index: 200;
+  z-index: 901;
 }
 
 .notification-bell__dropdown-actions {

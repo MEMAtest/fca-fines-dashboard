@@ -1,7 +1,6 @@
 import { createBrowserRouter, RouterProvider } from 'react-router-dom';
 import { lazy, Suspense } from 'react';
 import { DashboardSkeleton } from './components/LoadingSkeletons';
-import { RequireHomepageVisit } from './components/RequireHomepageVisit';
 import { SiteLayout } from './components/SiteLayout';
 
 const CHUNK_RELOAD_STORAGE_KEY = 'fca-chunk-reload-at';
@@ -51,6 +50,15 @@ function lazyPage<T>(loader: () => Promise<T>) {
 // Lazy load pages for code splitting
 const Homepage = lazyPage(() => import('./pages/Homepage').then(module => ({ default: module.Homepage })));
 const Dashboard = lazyPage(() => import('./pages/Dashboard').then(module => ({ default: module.Dashboard })));
+const Topics = lazyPage(() => import('./pages/Topics').then(module => ({ default: module.Topics })));
+const Breaches = lazyPage(() => import('./pages/Breaches').then(module => ({ default: module.Breaches })));
+const BreachHub = lazyPage(() => import('./pages/BreachHub').then(module => ({ default: module.BreachHub })));
+const Years = lazyPage(() => import('./pages/Years').then(module => ({ default: module.Years })));
+const YearHub = lazyPage(() => import('./pages/YearHub').then(module => ({ default: module.YearHub })));
+const Sectors = lazyPage(() => import('./pages/Sectors').then(module => ({ default: module.Sectors })));
+const SectorHub = lazyPage(() => import('./pages/SectorHub').then(module => ({ default: module.SectorHub })));
+const Firms = lazyPage(() => import('./pages/Firms').then(module => ({ default: module.Firms })));
+const FirmPage = lazyPage(() => import('./pages/FirmPage').then(module => ({ default: module.FirmPage })));
 const Blog = lazyPage(() => import('./pages/Blog').then(module => ({ default: module.Blog })));
 const BlogPost = lazyPage(() => import('./pages/BlogPost').then(module => ({ default: module.BlogPost })));
 
@@ -69,11 +77,135 @@ const router = createBrowserRouter([
       {
         path: '/dashboard',
         element: (
-          <RequireHomepageVisit>
-            <Suspense fallback={<DashboardSkeleton />}>
-              <Dashboard />
-            </Suspense>
-          </RequireHomepageVisit>
+          <Suspense fallback={<DashboardSkeleton />}>
+            <Dashboard />
+          </Suspense>
+        ),
+      },
+      {
+        path: '/topics',
+        element: (
+          <Suspense
+            fallback={
+              <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                Loading...
+              </div>
+            }
+          >
+            <Topics />
+          </Suspense>
+        ),
+      },
+      {
+        path: '/breaches',
+        element: (
+          <Suspense
+            fallback={
+              <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                Loading...
+              </div>
+            }
+          >
+            <Breaches />
+          </Suspense>
+        ),
+      },
+      {
+        path: '/breaches/:slug',
+        element: (
+          <Suspense
+            fallback={
+              <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                Loading...
+              </div>
+            }
+          >
+            <BreachHub />
+          </Suspense>
+        ),
+      },
+      {
+        path: '/years',
+        element: (
+          <Suspense
+            fallback={
+              <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                Loading...
+              </div>
+            }
+          >
+            <Years />
+          </Suspense>
+        ),
+      },
+      {
+        path: '/years/:year',
+        element: (
+          <Suspense
+            fallback={
+              <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                Loading...
+              </div>
+            }
+          >
+            <YearHub />
+          </Suspense>
+        ),
+      },
+      {
+        path: '/sectors',
+        element: (
+          <Suspense
+            fallback={
+              <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                Loading...
+              </div>
+            }
+          >
+            <Sectors />
+          </Suspense>
+        ),
+      },
+      {
+        path: '/sectors/:slug',
+        element: (
+          <Suspense
+            fallback={
+              <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                Loading...
+              </div>
+            }
+          >
+            <SectorHub />
+          </Suspense>
+        ),
+      },
+      {
+        path: '/firms',
+        element: (
+          <Suspense
+            fallback={
+              <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                Loading...
+              </div>
+            }
+          >
+            <Firms />
+          </Suspense>
+        ),
+      },
+      {
+        path: '/firms/:slug',
+        element: (
+          <Suspense
+            fallback={
+              <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                Loading...
+              </div>
+            }
+          >
+            <FirmPage />
+          </Suspense>
         ),
       },
       {

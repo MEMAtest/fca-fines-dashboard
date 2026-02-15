@@ -80,9 +80,14 @@ export function useSEO(config: SEOConfig) {
     if (config.articleSection) {
       setMetaTag('article:section', config.articleSection, true);
     }
-    if (config.articleTags) {
-      config.articleTags.forEach((tag, index) => {
-        setMetaTag(`article:tag:${index}`, tag, true);
+    // Open Graph expects repeated `meta property="article:tag"` elements (not indexed names).
+    document.querySelectorAll('meta[property="article:tag"]').forEach((el) => el.remove());
+    if (config.articleTags?.length) {
+      config.articleTags.forEach((tag) => {
+        const element = document.createElement('meta');
+        element.setAttribute('property', 'article:tag');
+        element.setAttribute('content', tag);
+        document.head.appendChild(element);
       });
     }
 

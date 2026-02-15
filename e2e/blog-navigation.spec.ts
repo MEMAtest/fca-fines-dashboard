@@ -53,7 +53,7 @@ test.describe('Blog Navigation', () => {
       await expect(firstYearlyCard.locator('.yearly-card-stats')).toBeVisible();
     });
 
-    test('should open modal when blog card is clicked', async ({ page }) => {
+    test('should navigate to article when blog card is clicked', async ({ page }) => {
       await page.goto('/blog');
 
       // Wait for cards to load
@@ -61,16 +61,16 @@ test.describe('Blog Navigation', () => {
 
       // Click first blog card
       const firstCard = page.locator('.blog-card').first();
-      await firstCard.click();
+      await Promise.all([
+        page.waitForURL(/\/blog\/[^/]+$/),
+        firstCard.click(),
+      ]);
 
-      // Should open a modal (URL stays at /blog)
-      await expect(page).toHaveURL('/blog');
-
-      // Modal should contain article content
-      await expect(page.locator('.blog-article-modal')).toBeVisible();
+      // Article should render
+      await expect(page.locator('h1.blog-post-title')).toBeVisible();
     });
 
-    test('should open modal when yearly card is clicked', async ({ page }) => {
+    test('should navigate to yearly article when yearly card is clicked', async ({ page }) => {
       await page.goto('/blog');
 
       // Wait for yearly cards to load
@@ -78,15 +78,13 @@ test.describe('Blog Navigation', () => {
 
       // Click first yearly card
       const firstYearlyCard = page.locator('.yearly-card').first();
-      await firstYearlyCard.click();
+      await Promise.all([
+        page.waitForURL(/\/blog\/fca-fines-\d{4}-annual-review$/),
+        firstYearlyCard.click(),
+      ]);
 
-      // Should open a modal (URL stays at /blog)
-      await expect(page).toHaveURL('/blog');
-
-      // Modal should show annual analysis content
-      const modal = page.locator('.blog-article-modal');
-      await expect(modal).toBeVisible();
-      await expect(modal.locator('.blog-card-category')).toContainText('Annual Analysis');
+      await expect(page.locator('h1.blog-post-title')).toBeVisible();
+      await expect(page.locator('.blog-card-category')).toContainText('Annual Analysis');
     });
   });
 
@@ -111,10 +109,6 @@ test.describe('Blog Navigation', () => {
     });
 
     test('should navigate from article to dashboard via CTA button', async ({ page }) => {
-      // Visit homepage first to pass RequireHomepageVisit guard
-      await page.goto('/');
-      await expect(page.locator('h1')).toBeVisible();
-
       await page.goto('/blog/20-biggest-fca-fines-of-all-time');
 
       // Wait for article to render

@@ -40,13 +40,12 @@ export function Homepage() {
     const verified = searchParams.get('verified');
     const unsubscribed = searchParams.get('unsubscribed');
     const error = searchParams.get('error');
-    const email = searchParams.get('email');
 
     if (verified) {
       const messages: Record<string, string> = {
-        alert: `Email verified! You'll now receive alerts${email ? ` at ${email}` : ''}.`,
+        alert: `Email verified! You'll now receive alerts.`,
         watchlist: `Email verified! You'll be notified when watched firms receive fines.`,
-        digest: `Email verified! You're subscribed to the digest${email ? ` at ${email}` : ''}.`,
+        digest: `Email verified! You're subscribed to the digest.`,
       };
       setToast({ message: messages[verified] || 'Email verified successfully!', type: 'success' });
       // Clear query params
@@ -64,8 +63,13 @@ export function Homepage() {
     } else if (error) {
       const messages: Record<string, string> = {
         invalid_token: 'Invalid or expired verification link.',
+        invalid_or_expired_token: 'Invalid or expired verification link.',
+        token_expired: 'Verification link has expired. Please subscribe again.',
         already_verified: 'This subscription is already verified.',
         not_found: 'Subscription not found.',
+        not_found_or_already_unsubscribed: 'Subscription not found or already unsubscribed.',
+        verification_failed: 'Unable to verify subscription. Please try again.',
+        unsubscribe_failed: 'Unable to unsubscribe. Please try again.',
       };
       setToast({ message: messages[error] || 'An error occurred.', type: 'error' });
       setSearchParams({}, { replace: true });

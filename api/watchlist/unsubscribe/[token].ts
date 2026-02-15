@@ -25,8 +25,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       return res.redirect(`${BASE_URL}?error=not_found_or_already_unsubscribed`);
     }
 
-    // Redirect to success page
-    return res.redirect(`${BASE_URL}?unsubscribed=watchlist&email=${encodeURIComponent(watchlist.email)}&firm=${encodeURIComponent(watchlist.firm_name)}`);
+    // Redirect to success page (avoid leaking PII in query params)
+    return res.redirect(`${BASE_URL}?unsubscribed=watchlist`);
   } catch (error) {
     console.error('Watchlist unsubscribe error:', error);
     return res.redirect(`${BASE_URL}?error=unsubscribe_failed`);

@@ -7,16 +7,54 @@ import '../styles/siteheader.css';
 const NAV_LINKS = [
   { to: '/', label: 'Home' },
   { to: '/dashboard', label: 'Dashboard' },
+  { to: '/topics', label: 'Topics' },
   { to: '/blog', label: 'Insights' },
 ];
 
-function getBreadcrumbs(pathname: string) {
-  const crumbs = [{ to: '/', label: 'Home' }];
-  if (pathname === '/dashboard') {
-    crumbs.push({ to: '/dashboard', label: 'Dashboard' });
-  } else if (pathname === '/blog') {
-    crumbs.push({ to: '/blog', label: 'Insights' });
+function isNavActive(to: string, pathname: string) {
+  if (to === '/') return pathname === '/';
+  if (to === '/blog') return pathname === '/blog' || pathname.startsWith('/blog/');
+  if (to === '/topics') {
+    return (
+      pathname === '/topics' ||
+      pathname.startsWith('/breaches') ||
+      pathname.startsWith('/years') ||
+      pathname.startsWith('/sectors') ||
+      pathname.startsWith('/firms')
+    );
   }
+  return pathname === to;
+}
+
+function humanizeSegment(segment: string) {
+  return segment
+    .replace(/[_-]+/g, ' ')
+    .replace(/\b[a-z]/g, (c) => c.toUpperCase());
+}
+
+function getBreadcrumbs(pathname: string) {
+  const crumbs: Array<{ to: string; label: string }> = [{ to: '/', label: 'Home' }];
+  if (!pathname || pathname === '/') return crumbs;
+
+  const segments = pathname.split('/').filter(Boolean);
+  let current = '';
+  for (let i = 0; i < segments.length; i += 1) {
+    const seg = segments[i];
+    current += `/${seg}`;
+
+    let label = seg;
+    if (seg === 'dashboard') label = 'Dashboard';
+    else if (seg === 'blog') label = 'Insights';
+    else if (seg === 'topics') label = 'Topics';
+    else if (seg === 'breaches') label = 'Breach Categories';
+    else if (seg === 'years') label = 'Years';
+    else if (seg === 'sectors') label = 'Sectors';
+    else if (seg === 'firms') label = 'Firms';
+    else label = humanizeSegment(seg);
+
+    crumbs.push({ to: current, label });
+  }
+
   return crumbs;
 }
 
@@ -60,7 +98,7 @@ export function SiteHeader() {
             <Link
               key={link.to}
               to={link.to}
-              className={`site-header__link${location.pathname === link.to ? ' site-header__link--active' : ''}`}
+              className={`site-header__link${isNavActive(link.to, location.pathname) ? ' site-header__link--active' : ''}`}
             >
               {link.label}
             </Link>
@@ -109,7 +147,7 @@ export function SiteHeader() {
                   <Link
                     key={link.to}
                     to={link.to}
-                    className={`site-header__mobile-link${location.pathname === link.to ? ' site-header__mobile-link--active' : ''}`}
+                    className={`site-header__mobile-link${isNavActive(link.to, location.pathname) ? ' site-header__mobile-link--active' : ''}`}
                     onClick={closeMobile}
                   >
                     {link.label}

@@ -74,6 +74,24 @@ test.describe('Pre-rendered HTML SEO Meta Tags', () => {
     });
   });
 
+  test.describe('Topics (dist/topics/index.html)', () => {
+    let html: string;
+
+    test.beforeAll(() => {
+      html = readFileSync(join(DIST, 'topics', 'index.html'), 'utf-8');
+    });
+
+    test('should have topics-specific canonical URL', () => {
+      const match = html.match(/<link\s+rel="canonical"\s+href="([^"]+)"/);
+      expect(match).toBeTruthy();
+      expect(match![1]).toBe(`${BASE_URL}/topics`);
+    });
+
+    test('should have OG URL pointing to /topics', () => {
+      expect(html).toContain(`<meta property="og:url" content="${BASE_URL}/topics"`);
+    });
+  });
+
   test.describe('Blog listing (dist/blog/index.html)', () => {
     let html: string;
 
@@ -218,7 +236,9 @@ test.describe('Sitemap Validation', () => {
 
   test('should contain all 30 URLs', () => {
     const urlCount = (sitemap.match(/<loc>/g) || []).length;
-    expect(urlCount).toBe(30);
+    // Base set is: homepage, dashboard, topics + 4 hub list pages, blog listing,
+    // all blog articles, and all yearly review articles.
+    expect(urlCount).toBeGreaterThanOrEqual(35);
   });
 
   test('should contain homepage with priority 1.0', () => {
@@ -231,6 +251,17 @@ test.describe('Sitemap Validation', () => {
 
   test('should contain dashboard URL', () => {
     expect(sitemap).toContain(`<loc>${BASE_URL}/dashboard</loc>`);
+  });
+
+  test('should contain topics URL', () => {
+    expect(sitemap).toContain(`<loc>${BASE_URL}/topics</loc>`);
+  });
+
+  test('should contain hub list URLs', () => {
+    expect(sitemap).toContain(`<loc>${BASE_URL}/breaches</loc>`);
+    expect(sitemap).toContain(`<loc>${BASE_URL}/years</loc>`);
+    expect(sitemap).toContain(`<loc>${BASE_URL}/sectors</loc>`);
+    expect(sitemap).toContain(`<loc>${BASE_URL}/firms</loc>`);
   });
 
   test('should contain blog listing URL', () => {
@@ -268,7 +299,8 @@ test.describe('Sitemap Validation', () => {
 
   test('should have valid lastmod dates in YYYY-MM-DD format', () => {
     const lastmods = sitemap.match(/<lastmod>([^<]+)<\/lastmod>/g) || [];
-    expect(lastmods.length).toBe(30);
+    const urlCount = (sitemap.match(/<loc>/g) || []).length;
+    expect(lastmods.length).toBe(urlCount);
 
     for (const lm of lastmods) {
       const date = lm.replace(/<\/?lastmod>/g, '');
@@ -278,7 +310,8 @@ test.describe('Sitemap Validation', () => {
 
   test('should have valid priorities between 0 and 1', () => {
     const priorities = sitemap.match(/<priority>([^<]+)<\/priority>/g) || [];
-    expect(priorities.length).toBe(30);
+    const urlCount = (sitemap.match(/<loc>/g) || []).length;
+    expect(priorities.length).toBe(urlCount);
 
     for (const p of priorities) {
       const val = parseFloat(p.replace(/<\/?priority>/g, ''));
@@ -300,12 +333,7 @@ test.describe('Homepage and Dashboard Live Routes', () => {
     await expect(page.locator('nav').first()).toBeVisible();
   });
 
-  test('dashboard should render after homepage visit', async ({ page }) => {
-    // Dashboard has RequireHomepageVisit guard — visit homepage first
-    await page.goto('/');
-    await expect(page.locator('h1')).toBeVisible();
-
-    // Now navigate to dashboard
+  test('dashboard should render', async ({ page }) => {
     await page.goto('/dashboard');
     await expect(page).toHaveURL('/dashboard');
 
@@ -320,14 +348,9 @@ test.describe('Homepage and Dashboard Live Routes', () => {
   });
 
   test('dashboard should have FCA Fines in document title', async ({ page }) => {
-    // Visit homepage first to pass RequireHomepageVisit guard
-    await page.goto('/');
-    await expect(page.locator('h1')).toBeVisible();
     await page.goto('/dashboard');
     await expect(page).toHaveURL('/dashboard');
     await expect(page.locator('h1')).toBeVisible();
-    // Dashboard doesn't call useSEO client-side (SEO is handled by pre-rendered HTML)
-    // so the title stays as the last page's title; just verify it contains FCA Fines
-    await expect(page).toHaveTitle(/FCA Fines/);
+    await expect(page).toHaveTitle(/Dashboard/);
   });
 });
