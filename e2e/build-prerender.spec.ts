@@ -109,6 +109,8 @@ test.describe('Build & Pre-rendering', () => {
         'fca-enforcement-outlook-february-2026',
         'fca-fines-february-2026',
         'fca-fines-individuals-personal-accountability',
+        'fca-fines-march-2026',
+        'fca-fines-insurance-sector',
       ];
 
       for (const slug of blogArticles) {
@@ -148,17 +150,17 @@ test.describe('Build & Pre-rendering', () => {
       expect(sitemap).toContain('<loc>https://fcafines.memaconsultants.com/blog</loc>');
     });
 
-    test('should have all 28 blog article URLs in sitemap', () => {
+    test('should have all 30 blog article URLs in sitemap', () => {
       const sitemapPath = join(DIST_DIR, 'sitemap.xml');
       const sitemap = readFileSync(sitemapPath, 'utf-8');
 
       // 10 blog articles + 13 yearly articles = 23 blog URLs
-      // Plus homepage, dashboard, blog listing = 28 total URLs
+      // Plus homepage, dashboard, blog listing = 30 total URLs
 
       // Count <url> tags
       const urlMatches = sitemap.match(/<url>/g);
       expect(urlMatches).toBeTruthy();
-      expect(urlMatches!.length).toBe(28);
+      expect(urlMatches!.length).toBe(30);
 
       // Check some specific blog URLs
       expect(sitemap).toContain('https://fcafines.memaconsultants.com/blog/20-biggest-fca-fines-of-all-time');
@@ -195,7 +197,7 @@ test.describe('Build & Pre-rendering', () => {
       // Should have <lastmod> tags
       const lastmodMatches = sitemap.match(/<lastmod>/g);
       expect(lastmodMatches).toBeTruthy();
-      expect(lastmodMatches!.length).toBe(28);
+      expect(lastmodMatches!.length).toBe(30);
 
       // Date format should be YYYY-MM-DD
       expect(sitemap).toMatch(/<lastmod>\d{4}-\d{2}-\d{2}<\/lastmod>/);

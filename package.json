@@ -17,7 +17,10 @@
     "test:e2e:report": "playwright show-report",
     "scrape:fines": "node --loader ts-node/esm scripts/scraper/scrapeFcaFines.ts",
     "scrape:fines:dry": "node --loader ts-node/esm scripts/scraper/scrapeFcaFines.ts --dry-run",
-    "verify:setup": "bash scripts/verify-setup.sh"
+    "verify:setup": "bash scripts/verify-setup.sh",
+    "blog:monthly": "npx tsx scripts/generate-blog.ts monthly",
+    "blog:topical": "npx tsx scripts/generate-blog.ts topical",
+    "blog:help": "npx tsx scripts/generate-blog.ts --help"
   },
   "dependencies": {
     "@aws-sdk/client-ses": "^3.969.0",

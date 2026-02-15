@@ -216,9 +216,9 @@ test.describe('Sitemap Validation', () => {
     expect(sitemap).toContain('</urlset>');
   });
 
-  test('should contain all 28 URLs', () => {
+  test('should contain all 30 URLs', () => {
     const urlCount = (sitemap.match(/<loc>/g) || []).length;
-    expect(urlCount).toBe(28);
+    expect(urlCount).toBe(30);
   });
 
   test('should contain homepage with priority 1.0', () => {
@@ -251,6 +251,8 @@ test.describe('Sitemap Validation', () => {
       'fca-enforcement-outlook-february-2026',
       'fca-fines-february-2026',
       'fca-fines-individuals-personal-accountability',
+      'fca-fines-march-2026',
+      'fca-fines-insurance-sector',
     ];
 
     for (const slug of blogSlugs) {
@@ -266,7 +268,7 @@ test.describe('Sitemap Validation', () => {
 
   test('should have valid lastmod dates in YYYY-MM-DD format', () => {
     const lastmods = sitemap.match(/<lastmod>([^<]+)<\/lastmod>/g) || [];
-    expect(lastmods.length).toBe(28);
+    expect(lastmods.length).toBe(30);
 
     for (const lm of lastmods) {
       const date = lm.replace(/<\/?lastmod>/g, '');
@@ -276,7 +278,7 @@ test.describe('Sitemap Validation', () => {
 
   test('should have valid priorities between 0 and 1', () => {
     const priorities = sitemap.match(/<priority>([^<]+)<\/priority>/g) || [];
-    expect(priorities.length).toBe(28);
+    expect(priorities.length).toBe(30);
 
     for (const p of priorities) {
       const val = parseFloat(p.replace(/<\/?priority>/g, ''));

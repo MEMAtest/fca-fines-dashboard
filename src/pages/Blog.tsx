@@ -76,6 +76,8 @@ const iconMap: Record<string, React.ReactNode> = {
   'fca-enforcement-outlook-february-2026': <TrendingUp className="blog-card-icon" />,
   'fca-fines-february-2026': <PoundSterling className="blog-card-icon" />,
   'fca-fines-individuals': <Users className="blog-card-icon" />,
+  'fca-fines-march-2026': <PoundSterling className="blog-card-icon" />,
+  'fca-fines-insurance': <Shield className="blog-card-icon" />,
 };
 
 // Merge icon into each article

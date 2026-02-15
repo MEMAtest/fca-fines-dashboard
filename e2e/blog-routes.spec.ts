@@ -15,6 +15,8 @@ test.describe('Blog Routes - Individual Article Pages', () => {
       'fca-enforcement-outlook-february-2026',
       'fca-fines-february-2026',
       'fca-fines-individuals-personal-accountability',
+      'fca-fines-march-2026',
+      'fca-fines-insurance-sector',
     ];
 
     for (const slug of blogArticleSlugs) {

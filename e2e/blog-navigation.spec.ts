@@ -27,7 +27,7 @@ test.describe('Blog Navigation', () => {
       // Should have multiple blog cards
       const blogCards = page.locator('.blog-card');
       await expect(blogCards.first()).toBeVisible();
-      await expect(blogCards).toHaveCount(12); // 12 blog articles
+      await expect(blogCards).toHaveCount(14); // 12 blog articles
 
       // First card should have required elements
       const firstCard = blogCards.first();
@@ -129,18 +129,18 @@ test.describe('Blog Navigation', () => {
   });
 
   test.describe('Blog Data Import from Shared Module', () => {
-    test('should render all 12 blog articles from shared data module', async ({ page }) => {
+    test('should render all 14 blog articles from shared data module', async ({ page }) => {
       await page.goto('/blog');
 
       // Wait for cards to render
       await expect(page.locator('.blog-card').first()).toBeVisible();
 
-      // Should have exactly 12 blog article cards
+      // Should have exactly 14 blog article cards
       const blogCards = page.locator('.blog-card');
-      await expect(blogCards).toHaveCount(12);
+      await expect(blogCards).toHaveCount(14);
 
       // All cards should have valid content (no undefined/null)
-      for (let i = 0; i < 12; i++) {
+      for (let i = 0; i < 14; i++) {
         const card = blogCards.nth(i);
         await expect(card.locator('h3')).not.toBeEmpty();
         await expect(card.locator('.blog-card-excerpt')).not.toBeEmpty();
