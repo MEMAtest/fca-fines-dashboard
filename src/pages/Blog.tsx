@@ -111,7 +111,7 @@ export function Blog() {
     keywords:
       'FCA fines blog, FCA fines analysis, FCA enforcement insights, biggest FCA fines, FCA fines 2025, FCA AML fines, FCA compliance guide',
     canonicalPath: '/blog',
-    ogType: 'blog',
+    ogType: 'website',
   });
 
   useEffect(() => {

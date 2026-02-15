@@ -114,7 +114,7 @@ export function HeroStats({
                   Latest Final Notice • {format(new Date(latest.date), 'dd MMM yyyy')}
                   <span className="hero__countdown">({differenceInDays(new Date(), new Date(latest.date))} days ago)</span>
                 </span>
-                <a href={latest.url} target="_blank" rel="noreferrer">
+                <a href={latest.url} target="_blank" rel="noreferrer noopener">
                   {latest.firm} — {formatter.format(latest.amount)}
                 </a>
               </div>

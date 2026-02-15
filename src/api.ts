@@ -1,9 +1,11 @@
 import type {
+  BreachResponse,
   CategoriesResponse,
   FirmResponse,
   FirmsResponse,
   ListResponse,
   NotificationsResponse,
+  SectorResponse,
   SectorsResponse,
   StatsResponse,
   TrendsResponse,
@@ -57,5 +59,21 @@ export function fetchFirms(limit = 100) {
 export function fetchFirm(slug: string, limit = 200) {
   return fetchJSON<FirmResponse>(
     `/api/fca-fines/firm?slug=${encodeURIComponent(slug)}&limit=${encodeURIComponent(String(limit))}`
+  );
+}
+
+export function fetchBreach(slug: string, limitPenalties = 10, limitFirms = 10) {
+  return fetchJSON<BreachResponse>(
+    `/api/fca-fines/breach?slug=${encodeURIComponent(slug)}&limitPenalties=${encodeURIComponent(
+      String(limitPenalties)
+    )}&limitFirms=${encodeURIComponent(String(limitFirms))}`
+  );
+}
+
+export function fetchSector(slug: string, limitPenalties = 10, limitBreaches = 10) {
+  return fetchJSON<SectorResponse>(
+    `/api/fca-fines/sector?slug=${encodeURIComponent(slug)}&limitPenalties=${encodeURIComponent(
+      String(limitPenalties)
+    )}&limitBreaches=${encodeURIComponent(String(limitBreaches))}`
   );
 }

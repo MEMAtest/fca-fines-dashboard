@@ -111,8 +111,8 @@ test.describe('Pre-rendered HTML SEO Meta Tags', () => {
       expect(match![1]).toBe(`${BASE_URL}/blog`);
     });
 
-    test('should have og:type blog', () => {
-      expect(html).toContain('<meta property="og:type" content="blog"');
+    test('should have og:type website', () => {
+      expect(html).toContain('<meta property="og:type" content="website"');
     });
   });
 

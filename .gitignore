@@ -6,3 +6,4 @@ test-results/
 backups/
 playwright-report/
 .vercel
+E2E_TEST_COVERAGE_REPORT*.md

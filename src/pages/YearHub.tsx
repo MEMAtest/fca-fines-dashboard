@@ -165,7 +165,7 @@ export function YearHub() {
                       <td>{new Date(r.date_issued).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' })}</td>
                       <td>{currency.format(r.amount)}</td>
                       <td>
-                        <a className="hub-link" href={r.final_notice_url} target="_blank" rel="noreferrer">
+                        <a className="hub-link" href={r.final_notice_url} target="_blank" rel="noreferrer noopener">
                           View
                         </a>
                       </td>
@@ -180,4 +180,3 @@ export function YearHub() {
     </div>
   );
 }
-

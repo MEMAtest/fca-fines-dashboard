@@ -57,7 +57,7 @@ export function LatestNotices({ records, year, exportId }: LatestNoticesProps) {
                     </span>
                   ))}
                 </div>
-                <a href={record.final_notice_url} target="_blank" rel="noreferrer">
+                <a href={record.final_notice_url} target="_blank" rel="noreferrer noopener">
                   View notice <ExternalLink size={14} />
                 </a>
               </footer>

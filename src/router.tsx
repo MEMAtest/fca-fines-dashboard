@@ -5,6 +5,7 @@ import { SiteLayout } from './components/SiteLayout';
 
 const CHUNK_RELOAD_STORAGE_KEY = 'fca-chunk-reload-at';
 const CHUNK_RELOAD_COOLDOWN_MS = 15_000;
+let chunkReloadFallbackAt = 0;
 
 function isChunkLoadError(error: unknown): boolean {
   const message = error instanceof Error ? error.message : String(error);
@@ -14,15 +15,21 @@ function isChunkLoadError(error: unknown): boolean {
 }
 
 function shouldReloadForChunkError(): boolean {
+  const now = Date.now();
   try {
-    const now = Date.now();
     const lastReloadAt = Number(sessionStorage.getItem(CHUNK_RELOAD_STORAGE_KEY) ?? '0');
     if (!Number.isFinite(lastReloadAt) || now - lastReloadAt > CHUNK_RELOAD_COOLDOWN_MS) {
       sessionStorage.setItem(CHUNK_RELOAD_STORAGE_KEY, String(now));
       return true;
     }
   } catch {
-    return true;
+    // sessionStorage can be unavailable (blocked cookies / strict privacy mode).
+    // Fall back to an in-memory cooldown to avoid infinite reload loops.
+    if (!chunkReloadFallbackAt || now - chunkReloadFallbackAt > CHUNK_RELOAD_COOLDOWN_MS) {
+      chunkReloadFallbackAt = now;
+      return true;
+    }
+    return false;
   }
   return false;
 }

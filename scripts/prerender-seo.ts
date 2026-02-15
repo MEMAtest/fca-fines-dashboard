@@ -162,7 +162,7 @@ async function buildPageMetas(): Promise<PageMeta[]> {
     title: 'FCA Fines Blog | Expert Analysis & Insights on Financial Conduct Authority Penalties',
     description: 'Expert analysis of FCA fines, biggest penalties, enforcement trends, and compliance guidance. Covering the 20 largest FCA fines, AML enforcement, banking sector penalties, and 2025 fines.',
     keywords: 'FCA fines blog, FCA fines analysis, FCA enforcement insights, biggest FCA fines, FCA fines 2025, FCA AML fines, FCA compliance guide',
-    ogType: 'blog',
+    ogType: 'website',
   });
 
   // 6. Blog articles

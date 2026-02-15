@@ -7,7 +7,15 @@ import { listFines, getStats, getTrends, getNotifications } from './server/servi
 import { getHomepageStats } from './server/services/homepage.ts';
 import { getYearlySummary } from './server/services/yearlySummary.ts';
 import { submitContactForm } from './server/services/contact.ts';
-import { listBreachCategories, listYears, listSectors, listTopFirms, getFirmDetailsBySlug } from './server/services/hubs.ts';
+import {
+  listBreachCategories,
+  listYears,
+  listSectors,
+  listTopFirms,
+  getFirmDetailsBySlug,
+  getBreachDetailsBySlug,
+  getSectorDetailsBySlug,
+} from './server/services/hubs.ts';
 
 const app = express();
 app.use(cors());
@@ -120,6 +128,44 @@ app.get('/api/fca-fines/firm', async (req, res) => {
   } catch (error) {
     console.error('Firm endpoint error:', error);
     res.status(500).json({ success: false, error: 'Failed to fetch firm' });
+  }
+});
+
+app.get('/api/fca-fines/breach', async (req, res) => {
+  try {
+    const slug = String(req.query.slug || '').trim();
+    if (!slug) {
+      return res.status(400).json({ success: false, error: 'Missing slug' });
+    }
+    const limitPenalties = Math.min(Number(req.query.limitPenalties || '10'), 50);
+    const limitFirms = Math.min(Number(req.query.limitFirms || '10'), 50);
+    const data = await getBreachDetailsBySlug(slug, limitPenalties, limitFirms);
+    if (!data) {
+      return res.status(404).json({ success: false, error: 'Breach not found' });
+    }
+    res.json({ success: true, data });
+  } catch (error) {
+    console.error('Breach endpoint error:', error);
+    res.status(500).json({ success: false, error: 'Failed to fetch breach' });
+  }
+});
+
+app.get('/api/fca-fines/sector', async (req, res) => {
+  try {
+    const slug = String(req.query.slug || '').trim();
+    if (!slug) {
+      return res.status(400).json({ success: false, error: 'Missing slug' });
+    }
+    const limitPenalties = Math.min(Number(req.query.limitPenalties || '10'), 50);
+    const limitBreaches = Math.min(Number(req.query.limitBreaches || '10'), 50);
+    const data = await getSectorDetailsBySlug(slug, limitPenalties, limitBreaches);
+    if (!data) {
+      return res.status(404).json({ success: false, error: 'Sector not found' });
+    }
+    res.json({ success: true, data });
+  } catch (error) {
+    console.error('Sector endpoint error:', error);
+    res.status(500).json({ success: false, error: 'Failed to fetch sector' });
   }
 });
 

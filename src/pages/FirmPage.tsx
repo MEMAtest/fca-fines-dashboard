@@ -181,7 +181,7 @@ export function FirmPage() {
                       <td>{r.regulator}</td>
                       <td>{(r.breach_categories?.length ? r.breach_categories : ['Unclassified']).join(', ')}</td>
                       <td>
-                        <a className="hub-link" href={r.final_notice_url} target="_blank" rel="noreferrer">
+                        <a className="hub-link" href={r.final_notice_url} target="_blank" rel="noreferrer noopener">
                           View
                         </a>
                       </td>
@@ -196,4 +196,3 @@ export function FirmPage() {
     </div>
   );
 }
-

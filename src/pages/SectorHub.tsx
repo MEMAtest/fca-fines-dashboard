@@ -1,21 +1,17 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
-import { fetchFines, fetchSectors } from '../api';
+import { fetchSector } from '../api';
 import { useSEO } from '../hooks/useSEO';
-import type { FineRecord, SectorSummary } from '../types';
+import type { SectorDetails } from '../types';
 
 const currency = new Intl.NumberFormat('en-GB', { style: 'currency', currency: 'GBP', maximumFractionDigits: 0 });
 
-function sumAmount(records: FineRecord[]) {
-  return records.reduce((acc, r) => acc + (Number(r.amount) || 0), 0);
-}
-
 export function SectorHub() {
   const { slug } = useParams<{ slug: string }>();
-  const [sector, setSector] = useState<SectorSummary | null>(null);
-  const [records, setRecords] = useState<FineRecord[]>([]);
+  const [data, setData] = useState<SectorDetails | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const sector = data?.sector ?? null;
 
   useSEO({
     title: sector ? `FCA Fines for ${sector.name} | Largest Penalties and Trends (2013-2026)` : 'FCA Fines by Sector',
@@ -33,12 +29,11 @@ export function SectorHub() {
     async function load() {
       setLoading(true);
       setError(null);
+      setData(null);
       try {
-        const [sectorsRes, finesRes] = await Promise.all([fetchSectors(), fetchFines(0)]);
+        const res = await fetchSector(slug, 10, 10);
         if (!mounted) return;
-        const found = sectorsRes.data.find((s) => s.slug === slug) || null;
-        setSector(found);
-        setRecords(finesRes.data);
+        setData(res.data);
       } catch (e) {
         console.error(e);
         if (mounted) setError('Unable to load this sector. Please try again.');
@@ -52,28 +47,12 @@ export function SectorHub() {
     };
   }, [slug]);
 
-  const scoped = useMemo(() => {
-    if (!sector) return [];
-    return records.filter((r) => (r.firm_category || '') === sector.name);
-  }, [records, sector]);
-
-  const totals = useMemo(() => ({ count: scoped.length, amount: sumAmount(scoped) }), [scoped]);
-  const topPenalties = useMemo(() => [...scoped].sort((a, b) => b.amount - a.amount).slice(0, 10), [scoped]);
-
-  const topBreaches = useMemo(() => {
-    const map = new Map<string, { name: string; count: number; total: number }>();
-    scoped.forEach((r) => {
-      const categories = r.breach_categories?.length ? r.breach_categories : ['Unclassified'];
-      categories.forEach((c) => {
-        const key = c || 'Unclassified';
-        const existing = map.get(key) || { name: key, count: 0, total: 0 };
-        existing.count += 1;
-        existing.total += Number(r.amount) || 0;
-        map.set(key, existing);
-      });
-    });
-    return Array.from(map.values()).sort((a, b) => b.total - a.total).slice(0, 10);
-  }, [scoped]);
+  const totals = {
+    count: sector?.fineCount ?? 0,
+    amount: sector?.totalAmount ?? 0,
+  };
+  const topPenalties = data?.topPenalties ?? [];
+  const topBreaches = data?.topBreaches ?? [];
 
   if (!slug) {
     return (
@@ -134,14 +113,14 @@ export function SectorHub() {
                 </thead>
                 <tbody>
                   {topBreaches.map((b) => (
-                    <tr key={b.name}>
+                    <tr key={b.slug}>
                       <td>
                         <Link className="hub-link" to={`/dashboard?year=0&firms=${encodeURIComponent(sector.name)}&breaches=${encodeURIComponent(b.name)}`}>
                           {b.name}
                         </Link>
                       </td>
-                      <td>{b.count}</td>
-                      <td>{currency.format(b.total)}</td>
+                      <td>{b.fineCount}</td>
+                      <td>{currency.format(b.totalAmount)}</td>
                     </tr>
                   ))}
                 </tbody>
@@ -166,7 +145,7 @@ export function SectorHub() {
                       <td>{new Date(r.date_issued).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' })}</td>
                       <td>{currency.format(r.amount)}</td>
                       <td>
-                        <a className="hub-link" href={r.final_notice_url} target="_blank" rel="noreferrer">
+                        <a className="hub-link" href={r.final_notice_url} target="_blank" rel="noreferrer noopener">
                           View
                         </a>
                       </td>
@@ -181,4 +160,3 @@ export function SectorHub() {
     </div>
   );
 }
-

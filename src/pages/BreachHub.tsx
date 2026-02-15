@@ -1,8 +1,8 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
-import { fetchCategories, fetchFines } from '../api';
+import { fetchBreach } from '../api';
 import { useSEO } from '../hooks/useSEO';
-import type { CategorySummary, FineRecord } from '../types';
+import type { BreachDetails } from '../types';
 
 const currency = new Intl.NumberFormat('en-GB', { style: 'currency', currency: 'GBP', maximumFractionDigits: 0 });
 
@@ -11,16 +11,12 @@ function humanize(label: string) {
   return withSpaces.replace(/\b[a-z]/g, (c) => c.toUpperCase());
 }
 
-function sumAmount(records: FineRecord[]) {
-  return records.reduce((acc, r) => acc + (Number(r.amount) || 0), 0);
-}
-
 export function BreachHub() {
   const { slug } = useParams<{ slug: string }>();
-  const [category, setCategory] = useState<CategorySummary | null>(null);
-  const [records, setRecords] = useState<FineRecord[]>([]);
+  const [data, setData] = useState<BreachDetails | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const category = data?.category ?? null;
 
   useSEO({
     title: category
@@ -42,12 +38,11 @@ export function BreachHub() {
     async function load() {
       setLoading(true);
       setError(null);
+      setData(null);
       try {
-        const [catsRes, finesRes] = await Promise.all([fetchCategories(), fetchFines(0)]);
+        const res = await fetchBreach(slug, 10, 10);
         if (!mounted) return;
-        const found = catsRes.data.find((c) => c.slug === slug) || null;
-        setCategory(found);
-        setRecords(finesRes.data);
+        setData(res.data);
       } catch (e) {
         console.error(e);
         if (mounted) setError('Unable to load this topic. Please try again.');
@@ -61,28 +56,12 @@ export function BreachHub() {
     };
   }, [slug]);
 
-  const scoped = useMemo(() => {
-    if (!category) return [];
-    return records.filter((r) => r.breach_categories?.includes(category.name));
-  }, [records, category]);
-
-  const totals = useMemo(() => ({ count: scoped.length, amount: sumAmount(scoped) }), [scoped]);
-
-  const topPenalties = useMemo(() => {
-    return [...scoped].sort((a, b) => b.amount - a.amount).slice(0, 10);
-  }, [scoped]);
-
-  const topFirms = useMemo(() => {
-    const map = new Map<string, { firm: string; total: number; count: number }>();
-    scoped.forEach((r) => {
-      const key = r.firm_individual;
-      const existing = map.get(key) || { firm: key, total: 0, count: 0 };
-      existing.total += Number(r.amount) || 0;
-      existing.count += 1;
-      map.set(key, existing);
-    });
-    return Array.from(map.values()).sort((a, b) => b.total - a.total).slice(0, 10);
-  }, [scoped]);
+  const totals = {
+    count: category?.fineCount ?? 0,
+    amount: category?.totalAmount ?? 0,
+  };
+  const topPenalties = data?.topPenalties ?? [];
+  const topFirms = data?.topFirms ?? [];
 
   if (!slug) {
     return (
@@ -149,17 +128,17 @@ export function BreachHub() {
                 </thead>
                 <tbody>
                   {topFirms.map((row) => (
-                    <tr key={row.firm}>
+                    <tr key={row.slug}>
                       <td>
                         <Link
                           className="hub-link"
-                          to={`/dashboard?search=${encodeURIComponent(row.firm)}&scope=firm&year=0&breaches=${encodeURIComponent(category.name)}`}
+                          to={`/dashboard?search=${encodeURIComponent(row.name)}&scope=firm&year=0&breaches=${encodeURIComponent(category.name)}`}
                         >
-                          {row.firm}
+                          {row.name}
                         </Link>
                       </td>
-                      <td>{row.count}</td>
-                      <td>{currency.format(row.total)}</td>
+                      <td>{row.fineCount}</td>
+                      <td>{currency.format(row.totalAmount)}</td>
                     </tr>
                   ))}
                 </tbody>
@@ -184,7 +163,7 @@ export function BreachHub() {
                       <td>{new Date(r.date_issued).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' })}</td>
                       <td>{currency.format(r.amount)}</td>
                       <td>
-                        <a className="hub-link" href={r.final_notice_url} target="_blank" rel="noreferrer">
+                        <a className="hub-link" href={r.final_notice_url} target="_blank" rel="noreferrer noopener">
                           View
                         </a>
                       </td>
@@ -199,4 +178,3 @@ export function BreachHub() {
     </div>
   );
 }
-

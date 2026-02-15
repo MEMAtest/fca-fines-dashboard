@@ -178,9 +178,9 @@ test.describe('SEO Meta Tags', () => {
       const canonical = await page.locator('link[rel="canonical"]').getAttribute('href');
       expect(canonical).toContain('/blog');
 
-      // Open Graph type should be blog
+      // Open Graph type should be website
       const ogType = await page.locator('meta[property="og:type"]').getAttribute('content');
-      expect(ogType).toBe('blog');
+      expect(ogType).toBe('website');
     });
   });
 

@@ -1,5 +1,5 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
-import { getFirmDetailsBySlug } from '../../server/services/hubs.js';
+import { getSectorDetailsBySlug } from '../../server/services/hubs.js';
 
 const CACHE_CONTROL = 'public, max-age=0, s-maxage=300, stale-while-revalidate=86400';
 
@@ -14,16 +14,20 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     if (!slug) {
       return res.status(400).json({ success: false, error: 'Missing slug' });
     }
-    const limit = Math.min(Number((req.query?.limit as string) ?? '200'), 5000);
 
-    const data = await getFirmDetailsBySlug(slug, limit);
+    const limitPenalties = Math.min(Number((req.query?.limitPenalties as string) ?? '10'), 50);
+    const limitBreaches = Math.min(Number((req.query?.limitBreaches as string) ?? '10'), 50);
+
+    const data = await getSectorDetailsBySlug(slug, limitPenalties, limitBreaches);
     if (!data) {
-      return res.status(404).json({ success: false, error: 'Firm not found' });
+      return res.status(404).json({ success: false, error: 'Sector not found' });
     }
+
     res.setHeader('Cache-Control', CACHE_CONTROL);
     return res.status(200).json({ success: true, data });
   } catch (error) {
-    console.error('Vercel firm endpoint error:', error);
-    return res.status(500).json({ success: false, error: 'Failed to fetch firm details' });
+    console.error('Vercel sector endpoint error:', error);
+    return res.status(500).json({ success: false, error: 'Failed to fetch sector details' });
   }
 }
+

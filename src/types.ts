@@ -100,6 +100,24 @@ export interface FirmDetails {
   records: FineRecord[];
 }
 
+export interface BreachDetails {
+  category: CategorySummary;
+  maxFine: number;
+  earliestDate: string | null;
+  latestDate: string | null;
+  topFirms: FirmSummary[];
+  topPenalties: FineRecord[];
+}
+
+export interface SectorDetails {
+  sector: SectorSummary;
+  maxFine: number;
+  earliestDate: string | null;
+  latestDate: string | null;
+  topBreaches: CategorySummary[];
+  topPenalties: FineRecord[];
+}
+
 export interface CategoriesResponse {
   success: boolean;
   data: CategorySummary[];
@@ -123,4 +141,14 @@ export interface FirmsResponse {
 export interface FirmResponse {
   success: boolean;
   data: FirmDetails;
+}
+
+export interface BreachResponse {
+  success: boolean;
+  data: BreachDetails;
+}
+
+export interface SectorResponse {
+  success: boolean;
+  data: SectorDetails;
 }
