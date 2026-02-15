@@ -1,4 +1,4 @@
-import type { FineRecord } from '../../src/types';
+import type { FineRecord } from '../../src/types.js';
 import { getSqlClient } from '../db.js';
 import { firmSlug, hubSlug } from '../utils/slugify.js';
 
@@ -71,7 +71,7 @@ async function getFirmSlugMap(): Promise<Map<string, string>> {
   }
 
   const sql = getSqlClient();
-  const rows = await sql`SELECT DISTINCT firm_individual FROM fca_fines`;
+  const rows = (await sql`SELECT DISTINCT firm_individual FROM fca_fines`) as any[];
   const map = new Map<string, string>();
   rows.forEach((row: any) => {
     const name = String(row.firm_individual);
@@ -112,7 +112,7 @@ async function getSectorSlugMap(): Promise<Map<string, string>> {
 
 export async function listBreachCategories(): Promise<CategorySummary[]> {
   const sql = getSqlClient();
-  const rows = await sql`
+  const rows = (await sql`
     SELECT
       cat.category AS category,
       COUNT(*)::int AS fine_count,
@@ -121,7 +121,7 @@ export async function listBreachCategories(): Promise<CategorySummary[]> {
     CROSS JOIN LATERAL jsonb_array_elements_text(f.breach_categories) AS cat(category)
     GROUP BY cat.category
     ORDER BY total_amount DESC, fine_count DESC, cat.category ASC
-  `;
+  `) as any[];
 
   return rows.map((row: any) => ({
     name: String(row.category),
@@ -133,7 +133,7 @@ export async function listBreachCategories(): Promise<CategorySummary[]> {
 
 export async function listYears(): Promise<YearSummary[]> {
   const sql = getSqlClient();
-  const rows = await sql`
+  const rows = (await sql`
     SELECT
       year_issued::int AS year,
       COUNT(*)::int AS fine_count,
@@ -141,7 +141,7 @@ export async function listYears(): Promise<YearSummary[]> {
     FROM fca_fines
     GROUP BY year_issued
     ORDER BY year DESC
-  `;
+  `) as any[];
 
   return rows.map((row: any) => ({
     year: Number(row.year) || 0,
@@ -152,7 +152,7 @@ export async function listYears(): Promise<YearSummary[]> {
 
 export async function listSectors(): Promise<SectorSummary[]> {
   const sql = getSqlClient();
-  const rows = await sql`
+  const rows = (await sql`
     SELECT
       firm_category AS sector,
       COUNT(*)::int AS fine_count,
@@ -161,7 +161,7 @@ export async function listSectors(): Promise<SectorSummary[]> {
     WHERE firm_category IS NOT NULL AND firm_category <> ''
     GROUP BY firm_category
     ORDER BY total_amount DESC, fine_count DESC, firm_category ASC
-  `;
+  `) as any[];
 
   return rows.map((row: any) => ({
     name: String(row.sector),
@@ -174,7 +174,7 @@ export async function listSectors(): Promise<SectorSummary[]> {
 export async function listTopFirms(limit = 100): Promise<FirmSummary[]> {
   const sql = getSqlClient();
   const clamped = Math.max(1, Math.min(limit, 1000));
-  const rows = await sql`
+  const rows = (await sql`
     SELECT
       firm_individual,
       COUNT(*)::int AS fine_count,
@@ -184,7 +184,7 @@ export async function listTopFirms(limit = 100): Promise<FirmSummary[]> {
     GROUP BY firm_individual
     ORDER BY total_amount DESC, fine_count DESC, firm_individual ASC
     LIMIT ${clamped}
-  `;
+  `) as any[];
 
   return rows.map((row: any) => ({
     name: String(row.firm_individual),
@@ -204,7 +204,7 @@ export async function getFirmDetailsBySlug(slug: string, limit = 200): Promise<F
 
   if (!firmName) return null;
 
-  const [summary] = await sql`
+  const summaryRows = (await sql`
     SELECT
       COUNT(*)::int AS fine_count,
       COALESCE(SUM(amount), 0)::float8 AS total_amount,
@@ -213,7 +213,8 @@ export async function getFirmDetailsBySlug(slug: string, limit = 200): Promise<F
       MAX(date_issued)::text AS latest_date
     FROM fca_fines
     WHERE firm_individual = ${firmName}
-  `;
+  `) as any[];
+  const summary = summaryRows[0];
 
   const clamped = Math.max(1, Math.min(limit, 5000));
   const records = await sql(
@@ -247,7 +248,7 @@ export async function getBreachDetailsBySlug(slug: string, limitPenalties = 10, 
   const categoryName = categorySlugMap.get(slug) ?? null;
   if (!categoryName) return null;
 
-  const [summary] = await sql`
+  const summaryRows = (await sql`
     SELECT
       COUNT(*)::int AS fine_count,
       COALESCE(SUM(amount), 0)::float8 AS total_amount,
@@ -256,10 +257,11 @@ export async function getBreachDetailsBySlug(slug: string, limitPenalties = 10, 
       MAX(date_issued)::text AS latest_date
     FROM fca_fines
     WHERE breach_categories IS NOT NULL AND breach_categories ? ${categoryName}
-  `;
+  `) as any[];
+  const summary = summaryRows[0];
 
   const firmsLimit = Math.max(1, Math.min(limitFirms, 50));
-  const topFirmRows = await sql`
+  const topFirmRows = (await sql`
     SELECT
       firm_individual,
       COUNT(*)::int AS fine_count,
@@ -270,7 +272,7 @@ export async function getBreachDetailsBySlug(slug: string, limitPenalties = 10, 
     GROUP BY firm_individual
     ORDER BY total_amount DESC, fine_count DESC, firm_individual ASC
     LIMIT ${firmsLimit}
-  `;
+  `) as any[];
 
   const penaltiesLimit = Math.max(1, Math.min(limitPenalties, 50));
   const penalties = await sql(
@@ -317,7 +319,7 @@ export async function getSectorDetailsBySlug(slug: string, limitPenalties = 10, 
   const sectorName = sectorSlugMap.get(slug) ?? null;
   if (!sectorName) return null;
 
-  const [summary] = await sql`
+  const summaryRows = (await sql`
     SELECT
       COUNT(*)::int AS fine_count,
       COALESCE(SUM(amount), 0)::float8 AS total_amount,
@@ -326,10 +328,11 @@ export async function getSectorDetailsBySlug(slug: string, limitPenalties = 10, 
       MAX(date_issued)::text AS latest_date
     FROM fca_fines
     WHERE firm_category = ${sectorName}
-  `;
+  `) as any[];
+  const summary = summaryRows[0];
 
   const clampedBreaches = Math.max(1, Math.min(limitBreaches, 50));
-  const breachRows = await sql`
+  const breachRows = (await sql`
     SELECT
       COALESCE(cat.category, 'Unclassified') AS category,
       COUNT(*)::int AS fine_count,
@@ -342,7 +345,7 @@ export async function getSectorDetailsBySlug(slug: string, limitPenalties = 10, 
     GROUP BY category
     ORDER BY total_amount DESC, fine_count DESC, category ASC
     LIMIT ${clampedBreaches}
-  `;
+  `) as any[];
 
   const penaltiesLimit = Math.max(1, Math.min(limitPenalties, 50));
   const penalties = await sql(

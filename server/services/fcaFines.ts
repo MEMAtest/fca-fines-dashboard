@@ -1,4 +1,4 @@
-import type { NotificationItem } from '../../src/types';
+import type { NotificationItem } from '../../src/types.js';
 import { getSqlClient } from '../db.js';
 
 const sql = getSqlClient;
@@ -42,7 +42,8 @@ export async function getStats(year: number) {
     FROM fca_fines
     ${where}
   `;
-  const stats = (await instance(statsQuery, params))[0];
+  const statsRows = (await instance(statsQuery, params)) as any[];
+  const stats = statsRows[0];
 
   const maxQuery = `
     SELECT firm_individual
@@ -51,7 +52,8 @@ export async function getStats(year: number) {
     ORDER BY amount DESC
     LIMIT 1
   `;
-  const maxRow = (await instance(maxQuery, params))[0];
+  const maxRows = (await instance(maxQuery, params)) as any[];
+  const maxRow = maxRows[0];
 
   const breachQuery = `
     SELECT
@@ -64,7 +66,8 @@ export async function getStats(year: number) {
     ORDER BY category_count DESC
     LIMIT 1
   `;
-  const breachRow = (await instance(breachQuery, params))[0];
+  const breachRows = (await instance(breachQuery, params)) as any[];
+  const breachRow = breachRows[0];
 
   return {
     totalFines: stats?.total_fines || 0,
@@ -93,7 +96,7 @@ export async function getTrends(period: string, year: number, limit: number) {
     query += ` ORDER BY year DESC, period_value DESC LIMIT $${params.length}`;
   }
 
-  const rows = await instance(query, params);
+  const rows = (await instance(query, params)) as any[];
   return year > 0 ? rows : rows.reverse();
 }
 
@@ -120,7 +123,7 @@ function formatDate(value: string | Date) {
 
 export async function getNotifications(limit = 5): Promise<NotificationItem[]> {
   const instance = sql();
-  const rows = await instance(
+  const rows = (await instance(
     `
       SELECT id, firm_individual, breach_type, amount, date_issued
       FROM fca_fines
@@ -128,9 +131,9 @@ export async function getNotifications(limit = 5): Promise<NotificationItem[]> {
       LIMIT $1
     `,
     [limit],
-  );
+  )) as any[];
 
-  return rows.map((row) => ({
+  return rows.map((row: any) => ({
     id: `notice-${row.id}`,
     title: `${row.firm_individual} final notice`,
     detail: `${formatAmount(row.amount)}${row.breach_type ? ` • ${row.breach_type}` : ''}`,

@@ -41,28 +41,30 @@ export async function getDailySummary(since: Date): Promise<DailySummary> {
   const sql = getSqlClient();
   const sinceIso = since.toISOString();
 
-  const [{ total_pageviews }] = await sql`
+  const totalRows = (await sql`
     SELECT COUNT(*)::int AS total_pageviews
     FROM fca_pageviews
     WHERE created_at >= ${sinceIso}
-  `;
+  `) as any[];
+  const total_pageviews = totalRows[0]?.total_pageviews;
 
-  const topPaths = await sql`
+  const topPaths = (await sql`
     SELECT path, COUNT(*)::int AS hits
     FROM fca_pageviews
     WHERE created_at >= ${sinceIso}
     GROUP BY path
     ORDER BY hits DESC
     LIMIT 5
-  `;
+  `) as any[];
 
-  const [latestNotice] = await sql`
+  const latestRows = (await sql`
     SELECT firm_individual, amount, date_issued
     FROM fca_fines
     WHERE date_issued >= (NOW() - INTERVAL '1 day')
     ORDER BY date_issued DESC, amount DESC
     LIMIT 1
-  `;
+  `) as any[];
+  const latestNotice = latestRows[0];
 
   return {
     totalPageviews: total_pageviews || 0,
