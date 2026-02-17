@@ -672,3 +672,316 @@ export function CumulativeFinesChart() {
     </div>
   );
 }
+
+// ─── March 2026 Monthly Roundup Charts ─────────────────────────────────────────
+
+// Q1 2026 enforcement tracker - monthly breakdown
+const q1_2026_Data = [
+  { month: 'Jan', fines: 2_520_000, actions: 5, firms: 0, individuals: 5 },
+  { month: 'Feb', fines: 0, actions: 0, firms: 0, individuals: 0 },
+  { month: 'Mar', fines: 0, actions: 0, firms: 0, individuals: 0 },
+];
+
+export function Q1_2026_EnforcementChart() {
+  return (
+    <div className="yearly-chart yearly-chart--wide">
+      <h4 className="yearly-chart-title">Q1 2026 Enforcement Activity by Month</h4>
+      <ResponsiveContainer width="100%" height={280}>
+        <ComposedChart data={q1_2026_Data}>
+          <CartesianGrid strokeDasharray="3 3" stroke="rgba(148,163,184,0.3)" />
+          <XAxis dataKey="month" tick={{ fill: '#6B7280', fontSize: 12 }} />
+          <YAxis
+            yAxisId="left"
+            tickFormatter={(v) => formatCurrency(v)}
+            tick={{ fill: '#6B7280', fontSize: 11 }}
+            width={65}
+          />
+          <YAxis
+            yAxisId="right"
+            orientation="right"
+            tick={{ fill: '#6B7280', fontSize: 11 }}
+            width={40}
+          />
+          <Tooltip
+            contentStyle={{
+              background: '#1F2937',
+              border: 'none',
+              borderRadius: '8px',
+              color: '#fff',
+            }}
+            formatter={(value: number, name: string) => {
+              if (name === 'fines') return [formatCurrency(value), 'Total Fines'];
+              if (name === 'individuals') return [value, 'Individuals'];
+              if (name === 'firms') return [value, 'Firms'];
+              return [value, 'Total Actions'];
+            }}
+          />
+          <Legend />
+          <Bar yAxisId="left" dataKey="fines" fill="#0FA294" radius={[4, 4, 0, 0]} name="Total Fines" />
+          <Line yAxisId="right" type="monotone" dataKey="actions" stroke="#6366F1" strokeWidth={3} dot={{ fill: '#6366F1', strokeWidth: 2 }} name="Total Actions" />
+        </ComposedChart>
+      </ResponsiveContainer>
+      <p className="yearly-chart-caption">
+        Updated as new enforcement actions are announced | January 2026: 5 individual actions totalling £2.52m
+      </p>
+    </div>
+  );
+}
+
+// 2026 enforcement breakdown by action type (individuals vs firms)
+const enforcement2026TypeData = [
+  { category: 'Individual Financial Penalties', count: 3, amount: 2_160_000 },
+  { category: 'Prohibition Orders', count: 2, amount: 360_000 },
+  { category: 'Firm Penalties', count: 0, amount: 0 },
+  { category: 'Criminal Prosecutions', count: 0, amount: 0 },
+];
+
+export function Enforcement2026BreakdownChart() {
+  const activeData = enforcement2026TypeData.filter(d => d.count > 0);
+  return (
+    <div className="yearly-chart">
+      <h4 className="yearly-chart-title">2026 Enforcement Actions by Type</h4>
+      <ResponsiveContainer width="100%" height={280}>
+        <PieChart>
+          <Pie
+            data={activeData.length > 0 ? activeData : [{ category: 'No data yet', count: 1, amount: 0 }]}
+            dataKey="count"
+            nameKey="category"
+            cx="50%"
+            cy="50%"
+            outerRadius={90}
+            innerRadius={50}
+            label={({ category, count }) => `${category} (${count})`}
+            labelLine={{ stroke: '#94a3b8', strokeWidth: 1 }}
+          >
+            {(activeData.length > 0 ? activeData : [{ category: 'No data', count: 1, amount: 0 }]).map((_, index) => (
+              <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+            ))}
+          </Pie>
+          <Tooltip
+            contentStyle={{
+              background: '#1F2937',
+              border: 'none',
+              borderRadius: '8px',
+              color: '#fff',
+            }}
+            formatter={(value: number, _name: string, props: any) => [
+              `${value} actions`,
+              formatCurrency(props.payload.amount)
+            ]}
+          />
+          <Legend
+            verticalAlign="bottom"
+            height={36}
+            formatter={(value) => <span style={{ color: '#6B7280', fontSize: '12px' }}>{value}</span>}
+          />
+        </PieChart>
+      </ResponsiveContainer>
+      <p className="yearly-chart-caption">
+        2026 YTD: 100% of enforcement actions target individuals | Updated as new actions announced
+      </p>
+    </div>
+  );
+}
+
+// ─── Insurance Sector Charts ────────────────────────────────────────────────────
+
+// Top insurance company fines
+const insuranceFinesData = [
+  { firm: 'Aviva Insurance', amount: 30_600_000, year: 2016, breach: 'Non-advised Sales' },
+  { firm: 'Prudential', amount: 23_875_000, year: 2013, breach: 'AML Failures' },
+  { firm: 'RSA Insurance', amount: 5_600_000, year: 2014, breach: 'Financial Reporting' },
+  { firm: 'Stonebridge Int.', amount: 8_015_000, year: 2014, breach: 'PPI Mis-selling' },
+  { firm: 'Homeserve', amount: 30_647_400, year: 2014, breach: 'Mis-selling & Complaints' },
+  { firm: "Lloyd's of London", amount: 18_000_000, year: 2013, breach: 'Conduct Standards' },
+  { firm: 'Swinton Group', amount: 7_380_000, year: 2013, breach: 'Mis-selling' },
+  { firm: 'Liberty Mutual', amount: 5_300_000, year: 2018, breach: 'Claims Handling' },
+  { firm: 'Ageas Insurance', amount: 3_500_000, year: 2015, breach: 'Claims Delays' },
+  { firm: 'Zurich Insurance', amount: 2_275_000, year: 2014, breach: 'Data Security' },
+];
+
+export function InsuranceFinesChart() {
+  const chartData = insuranceFinesData
+    .sort((a, b) => b.amount - a.amount)
+    .map((item) => ({
+      ...item,
+      shortFirm: item.firm.length > 16 ? item.firm.substring(0, 16) + '...' : item.firm,
+    }));
+
+  return (
+    <div className="yearly-chart yearly-chart--wide">
+      <h4 className="yearly-chart-title">Largest FCA Fines Against Insurance Companies</h4>
+      <ResponsiveContainer width="100%" height={360}>
+        <BarChart data={chartData} layout="vertical" margin={{ left: 10 }}>
+          <CartesianGrid strokeDasharray="3 3" stroke="rgba(148,163,184,0.3)" />
+          <XAxis
+            type="number"
+            tickFormatter={(v) => formatCurrency(v)}
+            tick={{ fill: '#6B7280', fontSize: 11 }}
+          />
+          <YAxis
+            type="category"
+            dataKey="shortFirm"
+            tick={{ fill: '#6B7280', fontSize: 11 }}
+            width={110}
+          />
+          <Tooltip
+            contentStyle={{
+              background: '#1F2937',
+              border: 'none',
+              borderRadius: '8px',
+              color: '#fff',
+            }}
+            formatter={(value: number, _name: string, props: any) => [
+              formatCurrency(value),
+              `${props.payload.breach} (${props.payload.year})`
+            ]}
+          />
+          <Bar dataKey="amount" radius={[0, 4, 4, 0]}>
+            {chartData.map((_, index) => (
+              <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+            ))}
+          </Bar>
+        </BarChart>
+      </ResponsiveContainer>
+      <p className="yearly-chart-caption">
+        Total insurance sector fines shown: £135m+ | Mis-selling and AML failures dominate
+      </p>
+    </div>
+  );
+}
+
+// Insurance fines by breach category
+const insuranceBreachData = [
+  { category: 'Mis-selling / Product', amount: 76_642_400, count: 4 },
+  { category: 'AML / Financial Crime', amount: 23_875_000, count: 1 },
+  { category: 'Conduct Standards', amount: 18_000_000, count: 1 },
+  { category: 'Claims Handling', amount: 8_800_000, count: 2 },
+  { category: 'Financial Reporting', amount: 5_600_000, count: 1 },
+  { category: 'Data / Systems', amount: 2_275_000, count: 1 },
+];
+
+export function InsuranceBreachChart() {
+  const total = insuranceBreachData.reduce((sum, item) => sum + item.amount, 0);
+
+  return (
+    <div className="yearly-chart">
+      <h4 className="yearly-chart-title">Insurance Fines by Breach Category</h4>
+      <ResponsiveContainer width="100%" height={300}>
+        <PieChart>
+          <Pie
+            data={insuranceBreachData}
+            dataKey="amount"
+            nameKey="category"
+            cx="50%"
+            cy="50%"
+            outerRadius={95}
+            innerRadius={55}
+            label={({ category, percent }) => `${category.split('/')[0].trim()} (${(percent * 100).toFixed(0)}%)`}
+            labelLine={{ stroke: '#94a3b8', strokeWidth: 1 }}
+          >
+            {insuranceBreachData.map((_, index) => (
+              <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+            ))}
+          </Pie>
+          <Tooltip
+            contentStyle={{
+              background: '#1F2937',
+              border: 'none',
+              borderRadius: '8px',
+              color: '#fff',
+            }}
+            formatter={(value: number, _name: string, props: any) => [
+              formatCurrency(value),
+              `${props.payload.count} fines`
+            ]}
+          />
+          <Legend
+            verticalAlign="bottom"
+            height={36}
+            formatter={(value) => <span style={{ color: '#6B7280', fontSize: '12px' }}>{value}</span>}
+          />
+        </PieChart>
+      </ResponsiveContainer>
+      <p className="yearly-chart-caption">
+        Total: {formatCurrency(total)} | Mis-selling accounts for 57% of insurance sector fines
+      </p>
+    </div>
+  );
+}
+
+// Insurance enforcement trend over years
+const insuranceTrendData = [
+  { year: '2013', amount: 49_255_000, count: 8 },
+  { year: '2014', amount: 21_490_000, count: 12 },
+  { year: '2015', amount: 7_100_000, count: 6 },
+  { year: '2016', amount: 32_400_000, count: 5 },
+  { year: '2017', amount: 4_200_000, count: 3 },
+  { year: '2018', amount: 8_900_000, count: 4 },
+  { year: '2019', amount: 3_600_000, count: 3 },
+  { year: '2020', amount: 2_100_000, count: 2 },
+  { year: '2021', amount: 5_400_000, count: 4 },
+  { year: '2022', amount: 6_800_000, count: 3 },
+  { year: '2023', amount: 12_300_000, count: 5 },
+  { year: '2024', amount: 8_700_000, count: 4 },
+  { year: '2025', amount: 4_200_000, count: 2 },
+];
+
+export function InsuranceTrendChart() {
+  return (
+    <div className="yearly-chart yearly-chart--wide">
+      <h4 className="yearly-chart-title">Insurance Sector Enforcement Trend (2013-2025)</h4>
+      <ResponsiveContainer width="100%" height={280}>
+        <ComposedChart data={insuranceTrendData}>
+          <CartesianGrid strokeDasharray="3 3" stroke="rgba(148,163,184,0.3)" />
+          <XAxis dataKey="year" tick={{ fill: '#6B7280', fontSize: 12 }} />
+          <YAxis
+            yAxisId="left"
+            tickFormatter={(v) => formatCurrency(v)}
+            tick={{ fill: '#6B7280', fontSize: 11 }}
+            width={65}
+          />
+          <YAxis
+            yAxisId="right"
+            orientation="right"
+            tick={{ fill: '#6B7280', fontSize: 11 }}
+            width={40}
+          />
+          <Tooltip
+            contentStyle={{
+              background: '#1F2937',
+              border: 'none',
+              borderRadius: '8px',
+              color: '#fff',
+            }}
+            formatter={(value: number, name: string) => {
+              if (name === 'amount') return [formatCurrency(value), 'Total Fines'];
+              return [value, 'Actions'];
+            }}
+          />
+          <Legend />
+          <Area
+            yAxisId="left"
+            type="monotone"
+            dataKey="amount"
+            fill="rgba(99, 102, 241, 0.2)"
+            stroke="#6366F1"
+            strokeWidth={2}
+            name="Total Fines"
+          />
+          <Bar
+            yAxisId="right"
+            dataKey="count"
+            fill="#0FA294"
+            radius={[4, 4, 0, 0]}
+            name="Actions"
+            opacity={0.8}
+          />
+        </ComposedChart>
+      </ResponsiveContainer>
+      <p className="yearly-chart-caption">
+        Area: Annual fine totals | Bars: Number of actions | 2013-2014 saw peak insurance enforcement activity
+      </p>
+    </div>
+  );
+}

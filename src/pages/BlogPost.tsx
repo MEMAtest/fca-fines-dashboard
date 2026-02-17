@@ -30,6 +30,11 @@ import {
   Fines2025MonthlyChart,
   Fines2025BreachChart,
   CumulativeFinesChart,
+  Q1_2026_EnforcementChart,
+  Enforcement2026BreakdownChart,
+  InsuranceFinesChart,
+  InsuranceBreachChart,
+  InsuranceTrendChart,
 } from '../components/MainArticleCharts';
 import '../styles/blog.css';
 
@@ -205,6 +210,21 @@ function BlogArticlePage({ article }: { article: BlogArticleMeta }) {
           {article.id === 'senior-managers-regime-fines' && (
             <div className="article-charts-section">
               <SMCREnforcementChart />
+            </div>
+          )}
+
+          {article.id === 'fca-fines-march-2026' && (
+            <div className="article-charts-section">
+              <Q1_2026_EnforcementChart />
+              <Enforcement2026BreakdownChart />
+            </div>
+          )}
+
+          {article.id === 'fca-fines-insurance' && (
+            <div className="article-charts-section">
+              <InsuranceFinesChart />
+              <InsuranceBreachChart />
+              <InsuranceTrendChart />
             </div>
           )}
 
