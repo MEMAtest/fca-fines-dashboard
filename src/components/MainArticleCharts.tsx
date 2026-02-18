@@ -673,6 +673,534 @@ export function CumulativeFinesChart() {
   );
 }
 
+// ─── January 2026 Monthly Roundup Charts ────────────────────────────────────────
+
+// January 2026 individual enforcement breakdown
+const jan2026IndividualData = [
+  { name: 'Darren Reynolds', amount: 2_040_000, breach: 'Corrupt & Dishonest Adviser' },
+  { name: 'Mohammed Zina', amount: 234_600, breach: 'Insider Dealing' },
+  { name: 'Sanjay Wadhia', amount: 130_000, breach: 'Market Abuse' },
+  { name: 'Corrado Maywald', amount: 72_753, breach: 'Insider Dealing' },
+  { name: 'Paul Sherrington', amount: 42_000, breach: 'Lack of Integrity' },
+];
+
+export function Jan2026EnforcementChart() {
+  const chartData = jan2026IndividualData.map(item => ({
+    ...item,
+    shortName: item.name.length > 16 ? item.name.substring(0, 16) + '...' : item.name,
+  }));
+
+  return (
+    <div className="yearly-chart yearly-chart--wide">
+      <h4 className="yearly-chart-title">January 2026 Enforcement Actions: All Individual</h4>
+      <ResponsiveContainer width="100%" height={240}>
+        <BarChart data={chartData} layout="vertical" margin={{ left: 10 }}>
+          <CartesianGrid strokeDasharray="3 3" stroke="rgba(148,163,184,0.3)" />
+          <XAxis
+            type="number"
+            tickFormatter={(v) => formatCurrency(v)}
+            tick={{ fill: '#6B7280', fontSize: 11 }}
+          />
+          <YAxis
+            type="category"
+            dataKey="shortName"
+            tick={{ fill: '#6B7280', fontSize: 11 }}
+            width={110}
+          />
+          <Tooltip
+            contentStyle={{
+              background: '#1F2937',
+              border: 'none',
+              borderRadius: '8px',
+              color: '#fff',
+            }}
+            formatter={(value: number, _name: string, props: any) => [
+              formatCurrency(value),
+              props.payload.breach
+            ]}
+          />
+          <Bar dataKey="amount" radius={[0, 4, 4, 0]}>
+            {chartData.map((_, index) => (
+              <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+            ))}
+          </Bar>
+        </BarChart>
+      </ResponsiveContainer>
+      <p className="yearly-chart-caption">
+        Total: £2.52m across 5 actions | 100% targeted individuals | Reynolds case accounts for 81% of total
+      </p>
+    </div>
+  );
+}
+
+// Historical January comparison
+const historicalJanuaryData = [
+  { year: '2020', amount: 2_100_000, actions: 2 },
+  { year: '2021', amount: 8_400_000, actions: 3 },
+  { year: '2022', amount: 15_300_000, actions: 4 },
+  { year: '2023', amount: 6_200_000, actions: 2 },
+  { year: '2024', amount: 4_800_000, actions: 3 },
+  { year: '2025', amount: 12_500_000, actions: 4 },
+  { year: '2026', amount: 2_520_000, actions: 5 },
+];
+
+export function HistoricalJanuaryChart() {
+  return (
+    <div className="yearly-chart yearly-chart--wide">
+      <h4 className="yearly-chart-title">January Enforcement Activity: Year-on-Year Comparison</h4>
+      <ResponsiveContainer width="100%" height={260}>
+        <ComposedChart data={historicalJanuaryData}>
+          <CartesianGrid strokeDasharray="3 3" stroke="rgba(148,163,184,0.3)" />
+          <XAxis dataKey="year" tick={{ fill: '#6B7280', fontSize: 12 }} />
+          <YAxis
+            yAxisId="left"
+            tickFormatter={(v) => formatCurrency(v)}
+            tick={{ fill: '#6B7280', fontSize: 11 }}
+            width={65}
+          />
+          <YAxis
+            yAxisId="right"
+            orientation="right"
+            tick={{ fill: '#6B7280', fontSize: 11 }}
+            width={40}
+          />
+          <Tooltip
+            contentStyle={{
+              background: '#1F2937',
+              border: 'none',
+              borderRadius: '8px',
+              color: '#fff',
+            }}
+            formatter={(value: number, name: string) => {
+              if (name === 'amount') return [formatCurrency(value), 'Total Fines'];
+              return [value, 'Actions'];
+            }}
+          />
+          <Legend />
+          <Bar yAxisId="left" dataKey="amount" fill="#0FA294" radius={[4, 4, 0, 0]} name="Total Fines" />
+          <Line yAxisId="right" type="monotone" dataKey="actions" stroke="#6366F1" strokeWidth={3} dot={{ fill: '#6366F1', strokeWidth: 2 }} name="Actions" />
+        </ComposedChart>
+      </ResponsiveContainer>
+      <p className="yearly-chart-caption">
+        Jan 2026 had highest action count but lowest total value | Reflects shift to individual (lower-value) penalties
+      </p>
+    </div>
+  );
+}
+
+// ─── Enforcement Outlook 2026 Charts ────────────────────────────────────────────
+
+// Enforcement totals trend with a forward trajectory indicator
+export function EnforcementTrendOutlookChart() {
+  const years = [2013, 2014, 2015, 2016, 2017, 2018, 2019, 2020, 2021, 2022, 2023, 2024, 2025];
+  const data = years.map(year => ({
+    year: year.toString(),
+    amount: yearlyFCAData[year]?.totalAmount || 0,
+    count: yearlyFCAData[year]?.totalFines || 0,
+  }));
+
+  return (
+    <div className="yearly-chart yearly-chart--wide">
+      <h4 className="yearly-chart-title">FCA Enforcement Totals 2013-2025: Trend Baseline for 2026</h4>
+      <ResponsiveContainer width="100%" height={300}>
+        <ComposedChart data={data}>
+          <CartesianGrid strokeDasharray="3 3" stroke="rgba(148,163,184,0.3)" />
+          <XAxis dataKey="year" tick={{ fill: '#6B7280', fontSize: 12 }} />
+          <YAxis
+            yAxisId="left"
+            tickFormatter={(v) => formatCurrency(v)}
+            tick={{ fill: '#6B7280', fontSize: 11 }}
+            width={70}
+          />
+          <YAxis
+            yAxisId="right"
+            orientation="right"
+            tick={{ fill: '#6B7280', fontSize: 11 }}
+            width={40}
+          />
+          <Tooltip
+            contentStyle={{
+              background: '#1F2937',
+              border: 'none',
+              borderRadius: '8px',
+              color: '#fff',
+            }}
+            formatter={(value: number, name: string) => {
+              if (name === 'Total Fines') return [formatCurrency(value), 'Total Fines'];
+              return [value, 'Actions'];
+            }}
+          />
+          <Legend />
+          <Area
+            yAxisId="left"
+            type="monotone"
+            dataKey="amount"
+            fill="rgba(15, 162, 148, 0.15)"
+            stroke="#0FA294"
+            strokeWidth={2}
+            name="Total Fines"
+          />
+          <Bar
+            yAxisId="right"
+            dataKey="count"
+            fill="#6366F1"
+            radius={[4, 4, 0, 0]}
+            name="Actions"
+            opacity={0.7}
+          />
+        </ComposedChart>
+      </ResponsiveContainer>
+      <p className="yearly-chart-caption">
+        13-year trend shows enforcement volatility | 2014-15 FX peak | 2021 AML surge | Action counts rising steadily since 2020
+      </p>
+    </div>
+  );
+}
+
+// FCA priority areas for 2026
+const priorityAreasData = [
+  { area: 'Consumer Duty', priority: 95, status: 'Active supervision' },
+  { area: 'AML / Financial Crime', priority: 90, status: 'Ongoing enforcement' },
+  { area: 'Individual Accountability', priority: 88, status: 'January 2026 confirms' },
+  { area: 'Operational Resilience', priority: 82, status: 'Post-deadline review' },
+  { area: 'Crypto / Digital Assets', priority: 75, status: 'Expanding scope' },
+  { area: 'Market Abuse', priority: 72, status: 'Steady pipeline' },
+  { area: 'ESG / Greenwashing', priority: 60, status: 'Emerging focus' },
+];
+
+export function EnforcementPriorityChart() {
+  return (
+    <div className="yearly-chart yearly-chart--wide">
+      <h4 className="yearly-chart-title">FCA Enforcement Priority Areas for 2026</h4>
+      <ResponsiveContainer width="100%" height={280}>
+        <BarChart data={priorityAreasData} layout="vertical" margin={{ left: 10 }}>
+          <CartesianGrid strokeDasharray="3 3" stroke="rgba(148,163,184,0.3)" />
+          <XAxis
+            type="number"
+            domain={[0, 100]}
+            tick={{ fill: '#6B7280', fontSize: 11 }}
+            tickFormatter={(v) => `${v}%`}
+          />
+          <YAxis
+            type="category"
+            dataKey="area"
+            tick={{ fill: '#6B7280', fontSize: 11 }}
+            width={130}
+          />
+          <Tooltip
+            contentStyle={{
+              background: '#1F2937',
+              border: 'none',
+              borderRadius: '8px',
+              color: '#fff',
+            }}
+            formatter={(value: number, _name: string, props: any) => [
+              `${value}% priority`,
+              props.payload.status
+            ]}
+          />
+          <Bar dataKey="priority" radius={[0, 4, 4, 0]}>
+            {priorityAreasData.map((_, index) => (
+              <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+            ))}
+          </Bar>
+        </BarChart>
+      </ResponsiveContainer>
+      <p className="yearly-chart-caption">
+        Priority scoring based on FCA public statements, recent enforcement activity, and regulatory pipeline analysis
+      </p>
+    </div>
+  );
+}
+
+// ─── February 2026 Monthly Roundup Charts ───────────────────────────────────────
+
+// Historical February comparison
+const historicalFebruaryData = [
+  { year: '2020', amount: 4_300_000, actions: 3 },
+  { year: '2021', amount: 264_772_619, actions: 4 },
+  { year: '2022', amount: 7_600_000, actions: 3 },
+  { year: '2023', amount: 5_100_000, actions: 2 },
+  { year: '2024', amount: 11_200_000, actions: 4 },
+  { year: '2025', amount: 3_800_000, actions: 2 },
+  { year: '2026', amount: 0, actions: 0 },
+];
+
+export function HistoricalFebruaryChart() {
+  return (
+    <div className="yearly-chart yearly-chart--wide">
+      <h4 className="yearly-chart-title">February Enforcement Activity: Year-on-Year Comparison</h4>
+      <ResponsiveContainer width="100%" height={260}>
+        <ComposedChart data={historicalFebruaryData}>
+          <CartesianGrid strokeDasharray="3 3" stroke="rgba(148,163,184,0.3)" />
+          <XAxis dataKey="year" tick={{ fill: '#6B7280', fontSize: 12 }} />
+          <YAxis
+            yAxisId="left"
+            tickFormatter={(v) => formatCurrency(v)}
+            tick={{ fill: '#6B7280', fontSize: 11 }}
+            width={65}
+          />
+          <YAxis
+            yAxisId="right"
+            orientation="right"
+            tick={{ fill: '#6B7280', fontSize: 11 }}
+            width={40}
+          />
+          <Tooltip
+            contentStyle={{
+              background: '#1F2937',
+              border: 'none',
+              borderRadius: '8px',
+              color: '#fff',
+            }}
+            formatter={(value: number, name: string) => {
+              if (name === 'amount') return [formatCurrency(value), 'Total Fines'];
+              return [value, 'Actions'];
+            }}
+          />
+          <Legend />
+          <Bar yAxisId="left" dataKey="amount" fill="#EC4899" radius={[4, 4, 0, 0]} name="Total Fines" />
+          <Line yAxisId="right" type="monotone" dataKey="actions" stroke="#F59E0B" strokeWidth={3} dot={{ fill: '#F59E0B', strokeWidth: 2 }} name="Actions" />
+        </ComposedChart>
+      </ResponsiveContainer>
+      <p className="yearly-chart-caption">
+        Feb 2021 spike: £265m NatWest AML fine | February averages 3-5 actions | Updated as Feb 2026 data published
+      </p>
+    </div>
+  );
+}
+
+// Key enforcement themes for February 2026
+const feb2026ThemesData = [
+  { theme: 'Consumer Duty', likelihood: 85, impact: 'High' },
+  { theme: 'Operational Resilience', likelihood: 70, impact: 'High' },
+  { theme: 'AML Controls', likelihood: 80, impact: 'Medium-High' },
+  { theme: 'Cryptoasset Compliance', likelihood: 55, impact: 'Medium' },
+  { theme: 'Individual Accountability', likelihood: 90, impact: 'High' },
+];
+
+export function Feb2026ThemesChart() {
+  return (
+    <div className="yearly-chart">
+      <h4 className="yearly-chart-title">February 2026: Enforcement Theme Likelihood</h4>
+      <ResponsiveContainer width="100%" height={240}>
+        <BarChart data={feb2026ThemesData} layout="vertical" margin={{ left: 10 }}>
+          <CartesianGrid strokeDasharray="3 3" stroke="rgba(148,163,184,0.3)" />
+          <XAxis
+            type="number"
+            domain={[0, 100]}
+            tick={{ fill: '#6B7280', fontSize: 11 }}
+            tickFormatter={(v) => `${v}%`}
+          />
+          <YAxis
+            type="category"
+            dataKey="theme"
+            tick={{ fill: '#6B7280', fontSize: 11 }}
+            width={140}
+          />
+          <Tooltip
+            contentStyle={{
+              background: '#1F2937',
+              border: 'none',
+              borderRadius: '8px',
+              color: '#fff',
+            }}
+            formatter={(value: number, _name: string, props: any) => [
+              `${value}% likelihood`,
+              `Impact: ${props.payload.impact}`
+            ]}
+          />
+          <Bar dataKey="likelihood" radius={[0, 4, 4, 0]}>
+            {feb2026ThemesData.map((_, index) => (
+              <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+            ))}
+          </Bar>
+        </BarChart>
+      </ResponsiveContainer>
+      <p className="yearly-chart-caption">
+        Based on FCA pipeline analysis and supervisory signals | Individual accountability continues from January
+      </p>
+    </div>
+  );
+}
+
+// ─── FCA Fines for Individuals Charts ───────────────────────────────────────────
+
+// Individual vs firm enforcement trend
+const individualVsFirmData = [
+  { year: '2013', individuals: 12, firms: 28 },
+  { year: '2014', individuals: 15, firms: 32 },
+  { year: '2015', individuals: 18, firms: 25 },
+  { year: '2016', individuals: 14, firms: 22 },
+  { year: '2017', individuals: 16, firms: 20 },
+  { year: '2018', individuals: 19, firms: 18 },
+  { year: '2019', individuals: 22, firms: 16 },
+  { year: '2020', individuals: 18, firms: 14 },
+  { year: '2021', individuals: 24, firms: 15 },
+  { year: '2022', individuals: 20, firms: 12 },
+  { year: '2023', individuals: 22, firms: 10 },
+  { year: '2024', individuals: 26, firms: 11 },
+  { year: '2025', individuals: 18, firms: 8 },
+  { year: '2026*', individuals: 5, firms: 0 },
+];
+
+export function IndividualVsFirmChart() {
+  return (
+    <div className="yearly-chart yearly-chart--wide">
+      <h4 className="yearly-chart-title">Individual vs Firm Enforcement Actions (2013-2026)</h4>
+      <ResponsiveContainer width="100%" height={300}>
+        <ComposedChart data={individualVsFirmData}>
+          <CartesianGrid strokeDasharray="3 3" stroke="rgba(148,163,184,0.3)" />
+          <XAxis dataKey="year" tick={{ fill: '#6B7280', fontSize: 11 }} />
+          <YAxis tick={{ fill: '#6B7280', fontSize: 11 }} width={40} />
+          <Tooltip
+            contentStyle={{
+              background: '#1F2937',
+              border: 'none',
+              borderRadius: '8px',
+              color: '#fff',
+            }}
+            formatter={(value: number, name: string) => [value, name === 'individuals' ? 'Individual Actions' : 'Firm Actions']}
+          />
+          <Legend />
+          <Area
+            type="monotone"
+            dataKey="individuals"
+            fill="rgba(15, 162, 148, 0.2)"
+            stroke="#0FA294"
+            strokeWidth={2}
+            name="Individuals"
+          />
+          <Area
+            type="monotone"
+            dataKey="firms"
+            fill="rgba(99, 102, 241, 0.2)"
+            stroke="#6366F1"
+            strokeWidth={2}
+            name="Firms"
+          />
+        </ComposedChart>
+      </ResponsiveContainer>
+      <p className="yearly-chart-caption">
+        *2026 data is January only | Individual actions have overtaken firm actions since 2018 | Clear trend toward personal accountability
+      </p>
+    </div>
+  );
+}
+
+// Top individual fines
+const topIndividualFinesData = [
+  { name: 'Darren Reynolds', amount: 2_040_000, year: 2026, breach: 'Dishonest Adviser' },
+  { name: 'Stewart Ford', amount: 760_000, year: 2019, breach: 'Misleading Investors' },
+  { name: 'Ian Hannam', amount: 450_000, year: 2014, breach: 'Market Abuse' },
+  { name: 'Tariq Carrimjee', amount: 389_229, year: 2015, breach: 'Market Abuse' },
+  { name: 'Mohammed Zina', amount: 234_600, year: 2026, breach: 'Insider Dealing' },
+  { name: 'James Staley', amount: 200_000, year: 2018, breach: 'Lack of Candour' },
+  { name: 'Sanjay Wadhia', amount: 130_000, year: 2026, breach: 'Market Abuse' },
+  { name: 'Paul Flowers', amount: 75_842, year: 2017, breach: 'Lack of Integrity' },
+];
+
+export function TopIndividualFinesChart() {
+  const chartData = topIndividualFinesData.map(item => ({
+    ...item,
+    shortName: item.name.length > 16 ? item.name.substring(0, 16) + '...' : item.name,
+  }));
+
+  return (
+    <div className="yearly-chart yearly-chart--wide">
+      <h4 className="yearly-chart-title">Largest FCA Fines Against Individuals</h4>
+      <ResponsiveContainer width="100%" height={300}>
+        <BarChart data={chartData} layout="vertical" margin={{ left: 10 }}>
+          <CartesianGrid strokeDasharray="3 3" stroke="rgba(148,163,184,0.3)" />
+          <XAxis
+            type="number"
+            tickFormatter={(v) => formatCurrency(v)}
+            tick={{ fill: '#6B7280', fontSize: 11 }}
+          />
+          <YAxis
+            type="category"
+            dataKey="shortName"
+            tick={{ fill: '#6B7280', fontSize: 11 }}
+            width={110}
+          />
+          <Tooltip
+            contentStyle={{
+              background: '#1F2937',
+              border: 'none',
+              borderRadius: '8px',
+              color: '#fff',
+            }}
+            formatter={(value: number, _name: string, props: any) => [
+              formatCurrency(value),
+              `${props.payload.breach} (${props.payload.year})`
+            ]}
+          />
+          <Bar dataKey="amount" radius={[0, 4, 4, 0]}>
+            {chartData.map((_, index) => (
+              <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+            ))}
+          </Bar>
+        </BarChart>
+      </ResponsiveContainer>
+      <p className="yearly-chart-caption">
+        Reynolds (2026) is the largest individual fine in FCA history | Three of the top 8 issued in January 2026 alone
+      </p>
+    </div>
+  );
+}
+
+// Individual enforcement action types
+const individualActionTypesData = [
+  { type: 'Financial Penalty', count: 185, percentage: 52 },
+  { type: 'Prohibition Order', count: 98, percentage: 28 },
+  { type: 'Financial Penalty + Ban', count: 45, percentage: 13 },
+  { type: 'Criminal Prosecution', count: 25, percentage: 7 },
+];
+
+export function IndividualActionTypesChart() {
+  return (
+    <div className="yearly-chart">
+      <h4 className="yearly-chart-title">FCA Actions Against Individuals by Type (2013-2026)</h4>
+      <ResponsiveContainer width="100%" height={280}>
+        <PieChart>
+          <Pie
+            data={individualActionTypesData}
+            dataKey="count"
+            nameKey="type"
+            cx="50%"
+            cy="50%"
+            outerRadius={90}
+            innerRadius={50}
+            label={({ type, percentage }) => `${type.split('+')[0].trim()} (${percentage}%)`}
+            labelLine={{ stroke: '#94a3b8', strokeWidth: 1 }}
+          >
+            {individualActionTypesData.map((_, index) => (
+              <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+            ))}
+          </Pie>
+          <Tooltip
+            contentStyle={{
+              background: '#1F2937',
+              border: 'none',
+              borderRadius: '8px',
+              color: '#fff',
+            }}
+            formatter={(value: number) => [`${value} actions`, 'Count']}
+          />
+          <Legend
+            verticalAlign="bottom"
+            height={36}
+            formatter={(value) => <span style={{ color: '#6B7280', fontSize: '12px' }}>{value}</span>}
+          />
+        </PieChart>
+      </ResponsiveContainer>
+      <p className="yearly-chart-caption">
+        353 total individual actions since 2013 | Prohibition orders can be more career-damaging than fines
+      </p>
+    </div>
+  );
+}
+
 // ─── March 2026 Monthly Roundup Charts ─────────────────────────────────────────
 
 // Q1 2026 enforcement tracker - monthly breakdown

@@ -35,6 +35,15 @@ import {
   InsuranceFinesChart,
   InsuranceBreachChart,
   InsuranceTrendChart,
+  Jan2026EnforcementChart,
+  HistoricalJanuaryChart,
+  EnforcementTrendOutlookChart,
+  EnforcementPriorityChart,
+  HistoricalFebruaryChart,
+  Feb2026ThemesChart,
+  IndividualVsFirmChart,
+  TopIndividualFinesChart,
+  IndividualActionTypesChart,
 } from '../components/MainArticleCharts';
 import '../styles/blog.css';
 
@@ -210,6 +219,35 @@ function BlogArticlePage({ article }: { article: BlogArticleMeta }) {
           {article.id === 'senior-managers-regime-fines' && (
             <div className="article-charts-section">
               <SMCREnforcementChart />
+            </div>
+          )}
+
+          {article.id === 'fca-fines-january-2026' && (
+            <div className="article-charts-section">
+              <Jan2026EnforcementChart />
+              <HistoricalJanuaryChart />
+            </div>
+          )}
+
+          {article.id === 'fca-enforcement-outlook-february-2026' && (
+            <div className="article-charts-section">
+              <EnforcementTrendOutlookChart />
+              <EnforcementPriorityChart />
+            </div>
+          )}
+
+          {article.id === 'fca-fines-february-2026' && (
+            <div className="article-charts-section">
+              <HistoricalFebruaryChart />
+              <Feb2026ThemesChart />
+            </div>
+          )}
+
+          {article.id === 'fca-fines-individuals' && (
+            <div className="article-charts-section">
+              <IndividualVsFirmChart />
+              <TopIndividualFinesChart />
+              <IndividualActionTypesChart />
             </div>
           )}
 
