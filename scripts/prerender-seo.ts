@@ -85,6 +85,7 @@ interface PageMeta {
   articleSection?: string;
   jsonLd?: object;
   extraJsonLd?: object[];  // Additional JSON-LD blocks (e.g. FAQPage alongside Article)
+  breadcrumbLabel?: string; // Short name for last breadcrumb item (defaults to humanized slug)
 }
 
 // ---------------------------------------------------------------------------
@@ -114,83 +115,94 @@ function generateBreadcrumbItems(path: string): Array<{ name: string; item: stri
   return crumbs;
 }
 
+// Pages that describe or provide access to the dataset get Dataset schema
+const DATASET_PAGES = new Set(['/', '/dashboard', '/topics', '/breaches', '/years', '/sectors', '/firms']);
+
 function generatePageGraph(meta: PageMeta): object {
   const crumbs = generateBreadcrumbItems(meta.path);
+
+  // Override last crumb name with breadcrumbLabel if provided (uses actual title instead of slug)
+  if (meta.breadcrumbLabel && crumbs.length > 1) {
+    crumbs[crumbs.length - 1].name = meta.breadcrumbLabel;
+  }
+
   const pageUrl = meta.path === '/' ? BASE_URL : `${BASE_URL}${meta.path}`;
   const today = todayISO();
 
-  return {
-    "@context": "https://schema.org",
-    "@graph": [
-      {
-        "@type": "Organization",
-        "@id": `${BASE_URL}/#organization`,
-        "name": "MEMA Consultants",
-        "url": "https://memaconsultants.com",
-        "logo": { "@type": "ImageObject", "url": `${BASE_URL}/mema-logo.png` },
-        "description": "Compliance consultancy specialising in FCA regulatory data and analysis",
-        "sameAs": []
+  const graph: object[] = [
+    {
+      "@type": "Organization",
+      "@id": `${BASE_URL}/#organization`,
+      "name": "MEMA Consultants",
+      "url": "https://memaconsultants.com",
+      "logo": { "@type": "ImageObject", "url": `${BASE_URL}/mema-logo.png` },
+      "description": "Compliance consultancy specialising in FCA regulatory data and analysis"
+    },
+    {
+      "@type": "WebSite",
+      "@id": `${BASE_URL}/#website`,
+      "url": `${BASE_URL}/`,
+      "name": SITE_NAME,
+      "description": "Complete database of FCA fines and Financial Conduct Authority enforcement actions",
+      "publisher": { "@id": `${BASE_URL}/#organization` },
+      "potentialAction": {
+        "@type": "SearchAction",
+        "target": { "@type": "EntryPoint", "urlTemplate": `${BASE_URL}/dashboard?search={search_term_string}` },
+        "query-input": "required name=search_term_string"
       },
-      {
-        "@type": "WebSite",
-        "@id": `${BASE_URL}/#website`,
-        "url": `${BASE_URL}/`,
-        "name": SITE_NAME,
-        "description": "Complete database of FCA fines and Financial Conduct Authority enforcement actions",
-        "publisher": { "@id": `${BASE_URL}/#organization` },
-        "potentialAction": {
-          "@type": "SearchAction",
-          "target": { "@type": "EntryPoint", "urlTemplate": `${BASE_URL}/dashboard?search={search_term_string}` },
-          "query-input": "required name=search_term_string"
-        },
-        "inLanguage": "en-GB"
-      },
-      {
-        "@type": "WebPage",
-        "@id": `${pageUrl}/#webpage`,
-        "url": pageUrl,
-        "name": meta.title,
-        "isPartOf": { "@id": `${BASE_URL}/#website` },
-        "about": { "@id": `${BASE_URL}/#organization` },
-        "description": meta.description,
-        "breadcrumb": { "@id": `${pageUrl}/#breadcrumb` },
-        "inLanguage": "en-GB",
-        "dateModified": meta.dateModified || today,
-        "potentialAction": [{ "@type": "ReadAction", "target": [pageUrl] }]
-      },
-      {
-        "@type": "BreadcrumbList",
-        "@id": `${pageUrl}/#breadcrumb`,
-        "itemListElement": crumbs.map((c, i) => ({
-          "@type": "ListItem",
-          "position": i + 1,
-          "name": c.name,
-          "item": c.item
-        }))
-      },
-      {
-        "@type": "Dataset",
-        "name": "FCA Fines Database",
-        "description": "Comprehensive database of all Financial Conduct Authority (FCA) fines and enforcement actions issued from 2013 to present, including penalty amounts, breach categories, and firm details.",
-        "url": `${BASE_URL}/dashboard`,
-        "keywords": ["FCA fines", "Financial Conduct Authority", "regulatory fines", "enforcement actions", "UK financial regulation"],
-        "creator": { "@id": `${BASE_URL}/#organization` },
-        "temporalCoverage": "2013/..",
-        "spatialCoverage": { "@type": "Place", "name": "United Kingdom" },
-        "license": "https://creativecommons.org/licenses/by-nc/4.0/",
-        "isAccessibleForFree": true,
-        "dateModified": today,
-        "variableMeasured": [
-          { "@type": "PropertyValue", "name": "Fine Amount", "unitText": "GBP" },
-          { "@type": "PropertyValue", "name": "Date Issued" },
-          { "@type": "PropertyValue", "name": "Breach Category" },
-          { "@type": "PropertyValue", "name": "Firm Name" },
-          { "@type": "PropertyValue", "name": "Sector" },
-          { "@type": "PropertyValue", "name": "Final Notice Reference" }
-        ]
-      }
-    ]
-  };
+      "inLanguage": "en-GB"
+    },
+    {
+      "@type": "WebPage",
+      "@id": `${pageUrl}/#webpage`,
+      "url": pageUrl,
+      "name": meta.title,
+      "isPartOf": { "@id": `${BASE_URL}/#website` },
+      "about": { "@id": `${BASE_URL}/#organization` },
+      "description": meta.description,
+      "breadcrumb": { "@id": `${pageUrl}/#breadcrumb` },
+      "inLanguage": "en-GB",
+      "dateModified": meta.dateModified || today,
+      "potentialAction": [{ "@type": "ReadAction", "target": [pageUrl] }]
+    },
+    {
+      "@type": "BreadcrumbList",
+      "@id": `${pageUrl}/#breadcrumb`,
+      "itemListElement": crumbs.map((c, i) => ({
+        "@type": "ListItem",
+        "position": i + 1,
+        "name": c.name,
+        "item": c.item
+      }))
+    },
+  ];
+
+  // Only include Dataset schema on pages that describe or provide access to the data
+  if (DATASET_PAGES.has(meta.path)) {
+    graph.push({
+      "@type": "Dataset",
+      "name": "FCA Fines Database",
+      "description": "Comprehensive database of all Financial Conduct Authority (FCA) fines and enforcement actions issued from 2013 to present, including penalty amounts, breach categories, and firm details.",
+      "url": `${BASE_URL}/dashboard`,
+      "keywords": ["FCA fines", "Financial Conduct Authority", "regulatory fines", "enforcement actions", "UK financial regulation"],
+      "creator": { "@id": `${BASE_URL}/#organization` },
+      "temporalCoverage": "2013/..",
+      "spatialCoverage": { "@type": "Place", "name": "United Kingdom" },
+      "license": "https://creativecommons.org/licenses/by-nc/4.0/",
+      "isAccessibleForFree": true,
+      "dateModified": today,
+      "variableMeasured": [
+        { "@type": "PropertyValue", "name": "Fine Amount", "unitText": "GBP" },
+        { "@type": "PropertyValue", "name": "Date Issued" },
+        { "@type": "PropertyValue", "name": "Breach Category" },
+        { "@type": "PropertyValue", "name": "Firm Name" },
+        { "@type": "PropertyValue", "name": "Sector" },
+        { "@type": "PropertyValue", "name": "Final Notice Reference" }
+      ]
+    });
+  }
+
+  return { "@context": "https://schema.org", "@graph": graph };
 }
 
 // ---------------------------------------------------------------------------
@@ -297,6 +309,7 @@ async function buildPageMetas(): Promise<PageMeta[]> {
       datePublished: article.dateISO,
       dateModified: article.dateISO,
       articleSection: article.category,
+      breadcrumbLabel: article.title,
       jsonLd: {
         "@context": "https://schema.org",
         "@type": "Article",
@@ -320,8 +333,11 @@ async function buildPageMetas(): Promise<PageMeta[]> {
   }
 
   // 7. Yearly review articles (Article schema + FAQPage schema)
+  const buildDate = todayISO();
   for (const article of yearlyArticles) {
     const yearlyFaqs = getFaqsForYearlyArticle(article.year);
+    const yearEnd = `${article.year}-12-31`;
+    const clampedDateModified = clampISODate(yearEnd, buildDate);
     pages.push({
       path: `/blog/${article.slug}`,
       title: article.seoTitle,
@@ -329,15 +345,16 @@ async function buildPageMetas(): Promise<PageMeta[]> {
       keywords: article.keywords.join(', '),
       ogType: 'article',
       datePublished: `${article.year}-01-01`,
-      dateModified: `${article.year}-12-31`,
+      dateModified: clampedDateModified,
       articleSection: 'Annual Analysis',
+      breadcrumbLabel: article.title,
       jsonLd: {
         "@context": "https://schema.org",
         "@type": "Article",
         "headline": article.seoTitle,
         "description": article.excerpt,
         "datePublished": `${article.year}-01-01`,
-        "dateModified": `${article.year}-12-31`,
+        "dateModified": clampedDateModified,
         "author": { "@type": "Organization", "name": "MEMA Consultants", "url": "https://memaconsultants.com", "description": "Compliance consultancy specialising in FCA regulatory data and analysis" },
         "publisher": {
           "@type": "Organization",

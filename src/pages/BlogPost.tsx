@@ -161,16 +161,22 @@ function renderMarkdownContent(content: string) {
     .replace(/\n\n/g, '</p><p>');
 }
 
+function clampToToday(dateISO: string): string {
+  const today = new Date().toISOString().slice(0, 10);
+  return dateISO > today ? today : dateISO;
+}
+
 function generateArticleSchema(article: BlogArticleMeta | YearlyArticleMeta) {
   const isYearly = 'year' in article;
   const slug = article.slug;
+  const dateModified = isYearly ? clampToToday(`${article.year}-12-31`) : article.dateISO;
   return {
     "@context": "https://schema.org",
     "@type": "Article",
     "headline": article.seoTitle,
     "description": article.excerpt,
     "datePublished": isYearly ? `${article.year}-01-01` : article.dateISO,
-    "dateModified": isYearly ? `${article.year}-12-31` : article.dateISO,
+    "dateModified": dateModified,
     "author": {
       "@type": "Organization",
       "name": "MEMA Consultants",
@@ -401,7 +407,7 @@ function YearlyArticlePage({ article }: { article: YearlyArticleMeta }) {
     canonicalPath: `/blog/${article.slug}`,
     ogType: 'article',
     articlePublishedTime: `${article.year}-01-01`,
-    articleModifiedTime: `${article.year}-12-31`,
+    articleModifiedTime: clampToToday(`${article.year}-12-31`),
     articleSection: 'Annual Analysis',
     articleTags: article.keywords,
   });
