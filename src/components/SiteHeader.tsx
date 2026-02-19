@@ -58,6 +58,8 @@ function getBreadcrumbs(pathname: string) {
   return crumbs;
 }
 
+const BASE_URL = 'https://fcafines.memaconsultants.com';
+
 export function SiteHeader() {
   const location = useLocation();
   const [mobileOpen, setMobileOpen] = useState(false);
@@ -65,6 +67,37 @@ export function SiteHeader() {
   const showBreadcrumbs = location.pathname !== '/';
 
   const closeMobile = useCallback(() => setMobileOpen(false), []);
+
+  // Inject BreadcrumbList JSON-LD for search engines
+  useEffect(() => {
+    if (!showBreadcrumbs || breadcrumbs.length < 2) {
+      const existing = document.querySelector('script[data-breadcrumb-ld]');
+      if (existing) existing.remove();
+      return;
+    }
+
+    const schema = {
+      '@context': 'https://schema.org',
+      '@type': 'BreadcrumbList',
+      itemListElement: breadcrumbs.map((crumb, i) => ({
+        '@type': 'ListItem',
+        position: i + 1,
+        name: crumb.label,
+        item: `${BASE_URL}${crumb.to}`,
+      })),
+    };
+
+    const existing = document.querySelector('script[data-breadcrumb-ld]');
+    if (existing) existing.remove();
+
+    const script = document.createElement('script');
+    script.type = 'application/ld+json';
+    script.setAttribute('data-breadcrumb-ld', 'true');
+    script.textContent = JSON.stringify(schema);
+    document.head.appendChild(script);
+
+    return () => { script.remove(); };
+  }, [location.pathname]);
 
   // Close mobile menu on Escape key
   useEffect(() => {

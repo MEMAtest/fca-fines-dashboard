@@ -88,6 +88,112 @@ interface PageMeta {
 }
 
 // ---------------------------------------------------------------------------
+// Per-page @graph generation (BreadcrumbList, Dataset, WebPage, SearchAction)
+// ---------------------------------------------------------------------------
+
+function generateBreadcrumbItems(path: string): Array<{ name: string; item: string }> {
+  const crumbs = [{ name: 'Home', item: `${BASE_URL}/` }];
+  if (path === '/') return crumbs;
+
+  const segments = path.split('/').filter(Boolean);
+  let current = '';
+  for (const seg of segments) {
+    current += `/${seg}`;
+    let name = seg;
+    if (seg === 'dashboard') name = 'Dashboard';
+    else if (seg === 'blog') name = 'Insights';
+    else if (seg === 'topics') name = 'Topics';
+    else if (seg === 'breaches') name = 'Breach Categories';
+    else if (seg === 'years') name = 'Years';
+    else if (seg === 'sectors') name = 'Sectors';
+    else if (seg === 'firms') name = 'Firms';
+    else if (seg === 'faq') name = 'FAQ';
+    else name = humanize(seg);
+    crumbs.push({ name, item: `${BASE_URL}${current}` });
+  }
+  return crumbs;
+}
+
+function generatePageGraph(meta: PageMeta): object {
+  const crumbs = generateBreadcrumbItems(meta.path);
+  const pageUrl = meta.path === '/' ? BASE_URL : `${BASE_URL}${meta.path}`;
+  const today = todayISO();
+
+  return {
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": "Organization",
+        "@id": `${BASE_URL}/#organization`,
+        "name": "MEMA Consultants",
+        "url": "https://memaconsultants.com",
+        "logo": { "@type": "ImageObject", "url": `${BASE_URL}/mema-logo.png` },
+        "description": "Compliance consultancy specialising in FCA regulatory data and analysis",
+        "sameAs": []
+      },
+      {
+        "@type": "WebSite",
+        "@id": `${BASE_URL}/#website`,
+        "url": `${BASE_URL}/`,
+        "name": SITE_NAME,
+        "description": "Complete database of FCA fines and Financial Conduct Authority enforcement actions",
+        "publisher": { "@id": `${BASE_URL}/#organization` },
+        "potentialAction": {
+          "@type": "SearchAction",
+          "target": { "@type": "EntryPoint", "urlTemplate": `${BASE_URL}/dashboard?search={search_term_string}` },
+          "query-input": "required name=search_term_string"
+        },
+        "inLanguage": "en-GB"
+      },
+      {
+        "@type": "WebPage",
+        "@id": `${pageUrl}/#webpage`,
+        "url": pageUrl,
+        "name": meta.title,
+        "isPartOf": { "@id": `${BASE_URL}/#website` },
+        "about": { "@id": `${BASE_URL}/#organization` },
+        "description": meta.description,
+        "breadcrumb": { "@id": `${pageUrl}/#breadcrumb` },
+        "inLanguage": "en-GB",
+        "dateModified": meta.dateModified || today,
+        "potentialAction": [{ "@type": "ReadAction", "target": [pageUrl] }]
+      },
+      {
+        "@type": "BreadcrumbList",
+        "@id": `${pageUrl}/#breadcrumb`,
+        "itemListElement": crumbs.map((c, i) => ({
+          "@type": "ListItem",
+          "position": i + 1,
+          "name": c.name,
+          "item": c.item
+        }))
+      },
+      {
+        "@type": "Dataset",
+        "name": "FCA Fines Database",
+        "description": "Comprehensive database of all Financial Conduct Authority (FCA) fines and enforcement actions issued from 2013 to present, including penalty amounts, breach categories, and firm details.",
+        "url": `${BASE_URL}/dashboard`,
+        "keywords": ["FCA fines", "Financial Conduct Authority", "regulatory fines", "enforcement actions", "UK financial regulation"],
+        "creator": { "@id": `${BASE_URL}/#organization` },
+        "temporalCoverage": "2013/..",
+        "spatialCoverage": { "@type": "Place", "name": "United Kingdom" },
+        "license": "https://creativecommons.org/licenses/by-nc/4.0/",
+        "isAccessibleForFree": true,
+        "dateModified": today,
+        "variableMeasured": [
+          { "@type": "PropertyValue", "name": "Fine Amount", "unitText": "GBP" },
+          { "@type": "PropertyValue", "name": "Date Issued" },
+          { "@type": "PropertyValue", "name": "Breach Category" },
+          { "@type": "PropertyValue", "name": "Firm Name" },
+          { "@type": "PropertyValue", "name": "Sector" },
+          { "@type": "PropertyValue", "name": "Final Notice Reference" }
+        ]
+      }
+    ]
+  };
+}
+
+// ---------------------------------------------------------------------------
 // Build page metadata
 // ---------------------------------------------------------------------------
 
@@ -198,7 +304,7 @@ async function buildPageMetas(): Promise<PageMeta[]> {
         "description": article.excerpt,
         "datePublished": article.dateISO,
         "dateModified": article.dateISO,
-        "author": { "@type": "Organization", "name": "MEMA Consultants", "url": "https://memaconsultants.com" },
+        "author": { "@type": "Organization", "name": "MEMA Consultants", "url": "https://memaconsultants.com", "description": "Compliance consultancy specialising in FCA regulatory data and analysis" },
         "publisher": {
           "@type": "Organization",
           "name": SITE_NAME,
@@ -232,7 +338,7 @@ async function buildPageMetas(): Promise<PageMeta[]> {
         "description": article.excerpt,
         "datePublished": `${article.year}-01-01`,
         "dateModified": `${article.year}-12-31`,
-        "author": { "@type": "Organization", "name": "MEMA Consultants", "url": "https://memaconsultants.com" },
+        "author": { "@type": "Organization", "name": "MEMA Consultants", "url": "https://memaconsultants.com", "description": "Compliance consultancy specialising in FCA regulatory data and analysis" },
         "publisher": {
           "@type": "Organization",
           "name": SITE_NAME,
@@ -388,6 +494,13 @@ function renderPage(template: string, meta: PageMeta): string {
   html = html.replace(
     /<meta\s+name="twitter:description"[^>]*\/>/,
     `<meta name="twitter:description" content="${escapeHtml(meta.description)}" />`
+  );
+
+  // Replace the static @graph with per-page version (correct BreadcrumbList, WebPage, Dataset)
+  const pageGraph = generatePageGraph(meta);
+  html = html.replace(
+    /<script type="application\/ld\+json">[\s\S]*?<\/script>/,
+    `<script type="application/ld+json">\n    ${JSON.stringify(pageGraph)}\n    </script>`
   );
 
   // Inject JSON-LD and article meta before </head>

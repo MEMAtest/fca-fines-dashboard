@@ -59,6 +59,81 @@ const formatYearlyCurrency = (amount: number): string => {
   return `£${(amount / 1_000).toFixed(0)}k`;
 };
 
+// Related articles mapping for internal linking
+const RELATED_ARTICLES: Record<string, string[]> = {
+  '20-biggest-fca-fines-of-all-time': ['fca-fines-banks-complete-list', 'fca-enforcement-trends-2013-2025'],
+  'fca-fines-2025-complete-list': ['fca-enforcement-trends-2013-2025', '20-biggest-fca-fines-of-all-time'],
+  'fca-fines-database-how-to-search': ['fca-final-notices-explained', '20-biggest-fca-fines-of-all-time'],
+  'fca-aml-fines-anti-money-laundering': ['fca-fines-banks-complete-list', '20-biggest-fca-fines-of-all-time'],
+  'fca-fines-banks-complete-list': ['20-biggest-fca-fines-of-all-time', 'fca-aml-fines-anti-money-laundering'],
+  'fca-enforcement-trends-2013-2025': ['20-biggest-fca-fines-of-all-time', 'fca-fines-2025-complete-list'],
+  'fca-final-notices-explained': ['fca-fines-database-how-to-search', 'senior-managers-regime-fca-fines'],
+  'senior-managers-regime-fca-fines': ['fca-fines-individuals-personal-accountability', 'fca-final-notices-explained'],
+  'fca-fines-january-2026': ['fca-fines-february-2026', 'fca-enforcement-outlook-february-2026'],
+  'fca-enforcement-outlook-february-2026': ['fca-fines-february-2026', 'fca-fines-january-2026'],
+  'fca-fines-february-2026': ['fca-fines-january-2026', 'fca-fines-march-2026'],
+  'fca-fines-individuals-personal-accountability': ['senior-managers-regime-fca-fines', 'fca-final-notices-explained'],
+  'fca-fines-march-2026': ['fca-fines-february-2026', 'fca-fines-january-2026'],
+  'fca-fines-insurance-sector': ['fca-fines-banks-complete-list', 'fca-aml-fines-anti-money-laundering'],
+};
+
+function RelatedArticles({ currentSlug }: { currentSlug: string }) {
+  const relatedSlugs = RELATED_ARTICLES[currentSlug] || [];
+  const related = relatedSlugs
+    .map(slug => blogArticles.find(a => a.slug === slug))
+    .filter((a): a is BlogArticleMeta => !!a);
+
+  if (related.length === 0) return null;
+
+  return (
+    <nav className="related-articles" aria-label="Related articles">
+      <h3 className="related-articles__title">Related Articles</h3>
+      <div className="related-articles__grid">
+        {related.map(article => (
+          <Link key={article.slug} to={`/blog/${article.slug}`} className="related-articles__card">
+            <span className="related-articles__category">{article.category}</span>
+            <span className="related-articles__headline">{article.title}</span>
+            <span className="related-articles__meta">{article.date} &middot; {article.readTime}</span>
+          </Link>
+        ))}
+      </div>
+    </nav>
+  );
+}
+
+function RelatedYearlyArticles({ currentYear }: { currentYear: number }) {
+  const adjacent = yearlyArticles
+    .filter(a => Math.abs(a.year - currentYear) === 1)
+    .sort((a, b) => b.year - a.year);
+
+  const trendsArticle = blogArticles.find(a => a.slug === 'fca-enforcement-trends-2013-2025');
+  const items: Array<{ slug: string; title: string; category: string; meta: string }> = [];
+
+  for (const a of adjacent) {
+    items.push({ slug: a.slug, title: a.title, category: 'Annual Analysis', meta: `${a.year} Review` });
+  }
+  if (trendsArticle) {
+    items.push({ slug: trendsArticle.slug, title: trendsArticle.title, category: trendsArticle.category, meta: trendsArticle.date });
+  }
+
+  if (items.length === 0) return null;
+
+  return (
+    <nav className="related-articles" aria-label="Related articles">
+      <h3 className="related-articles__title">Related Articles</h3>
+      <div className="related-articles__grid">
+        {items.map(item => (
+          <Link key={item.slug} to={`/blog/${item.slug}`} className="related-articles__card">
+            <span className="related-articles__category">{item.category}</span>
+            <span className="related-articles__headline">{item.title}</span>
+            <span className="related-articles__meta">{item.meta}</span>
+          </Link>
+        ))}
+      </div>
+    </nav>
+  );
+}
+
 function renderMarkdownContent(content: string) {
   return content
     .replace(/(\|.+\|\n)+/g, (tableBlock) => {
@@ -99,7 +174,8 @@ function generateArticleSchema(article: BlogArticleMeta | YearlyArticleMeta) {
     "author": {
       "@type": "Organization",
       "name": "MEMA Consultants",
-      "url": "https://memaconsultants.com"
+      "url": "https://memaconsultants.com",
+      "description": "Compliance consultancy specialising in FCA regulatory data and analysis"
     },
     "publisher": {
       "@type": "Organization",
@@ -294,6 +370,8 @@ function BlogArticlePage({ article }: { article: BlogArticleMeta }) {
             </div>
           )}
 
+          <RelatedArticles currentSlug={article.slug} />
+
           <div className="blog-article-modal-footer">
             <p className="blog-article-keywords">
               <strong>Related searches:</strong> {article.keywords.join(', ')}
@@ -485,6 +563,8 @@ function YearlyArticlePage({ article }: { article: YearlyArticleMeta }) {
               </div>
             </div>
           )}
+
+          <RelatedYearlyArticles currentYear={article.year} />
 
           <div className="blog-article-modal-footer">
             <p className="blog-article-keywords">
