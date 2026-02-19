@@ -143,6 +143,17 @@ export function SiteHeader() {
                 onClick={(e) => e.stopPropagation()}
                 aria-label="Mobile navigation"
               >
+                <div className="site-header__mobile-nav-header">
+                  <span className="site-header__mobile-nav-title">Menu</span>
+                  <button
+                    type="button"
+                    className="site-header__mobile-close"
+                    aria-label="Close menu"
+                    onClick={closeMobile}
+                  >
+                    <X size={20} />
+                  </button>
+                </div>
                 {NAV_LINKS.map((link) => (
                   <Link
                     key={link.to}

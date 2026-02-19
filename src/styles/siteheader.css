@@ -124,6 +124,34 @@
   padding: 1rem;
 }
 
+.site-header__mobile-nav-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 0.5rem;
+}
+
+.site-header__mobile-nav-title {
+  font-size: 0.875rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #6B7280;
+}
+
+.site-header__mobile-close {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 999px;
+  border: 1px solid #E5E7EB;
+  background: #F9FAFB;
+  color: #1F2937;
+  cursor: pointer;
+}
+
 .site-header__mobile-link {
   display: block;
   padding: 0.875rem 1rem;
@@ -141,7 +169,7 @@
 
 .site-header__mobile-link--active {
   color: #0FA294;
-  background: rgba(15, 162, 148, 0.08);
+  background: #EAF7F5;
   font-weight: 600;
 }
 
@@ -169,7 +197,7 @@
     right: 0;
     bottom: 0;
     background: rgba(0, 0, 0, 0.4);
-    z-index: 500;
+    z-index: 950;
   }
 
   .site-header__mobile-nav {
@@ -182,8 +210,10 @@
     max-width: none;
     background: #FFFFFF;
     box-shadow: -4px 0 20px rgba(0, 0, 0, 0.15);
-    z-index: 501;
-    padding: calc(1.5rem + env(safe-area-inset-top, 0)) 1rem 1rem;
+    z-index: 951;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    padding: calc(1.25rem + env(safe-area-inset-top, 0)) 1rem calc(1rem + env(safe-area-inset-bottom, 0));
     animation: slideInRight 0.25s ease;
   }
 

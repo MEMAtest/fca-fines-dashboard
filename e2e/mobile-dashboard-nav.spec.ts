@@ -1,12 +1,16 @@
-import { test, expect } from '@playwright/test';
+import { test, expect, type Page } from '@playwright/test';
 
 test.describe('Mobile Dashboard Navigation', () => {
-  test('compare opens the comparison modal on mobile', async ({ page }) => {
+  async function openMobileDashboard(page: Page) {
     await page.setViewportSize({ width: 375, height: 667 });
     await page.goto('/dashboard?year=0');
 
     const mobileNav = page.locator('.mobile-nav');
     await expect(mobileNav).toBeVisible();
+  }
+
+  test('compare opens the comparison modal on mobile', async ({ page }) => {
+    await openMobileDashboard(page);
 
     await page.getByRole('button', { name: /Compare/i }).click();
 
@@ -16,11 +20,7 @@ test.describe('Mobile Dashboard Navigation', () => {
   });
 
   test('share shows feedback on mobile (toast or share modal)', async ({ page }) => {
-    await page.setViewportSize({ width: 375, height: 667 });
-    await page.goto('/dashboard?year=0');
-
-    const mobileNav = page.locator('.mobile-nav');
-    await expect(mobileNav).toBeVisible();
+    await openMobileDashboard(page);
 
     await page.getByRole('button', { name: /Share/i }).click();
 
@@ -33,5 +33,28 @@ test.describe('Mobile Dashboard Navigation', () => {
     if (!toastVisible) {
       await expect(shareModal).toBeVisible();
     }
+  });
+
+  test('menu drawer opens and closes with drawer close button', async ({ page }) => {
+    await openMobileDashboard(page);
+
+    await page.getByRole('button', { name: /Open menu/i }).click();
+    const drawer = page.locator('.site-header__mobile-nav');
+    await expect(drawer).toBeVisible();
+
+    const drawerCloseButton = page.locator('.site-header__mobile-close');
+    await expect(drawerCloseButton).toBeVisible();
+    await drawerCloseButton.click();
+
+    await expect(drawer).toBeHidden();
+    await expect(page.getByRole('button', { name: /Open menu/i })).toBeVisible();
+  });
+
+  test('get alerts opens the subscription modal on mobile', async ({ page }) => {
+    await openMobileDashboard(page);
+
+    await page.getByRole('button', { name: /Get alerts/i }).click();
+    await expect(page.locator('.alert-subscribe-modal')).toBeVisible();
+    await expect(page.locator('.alert-subscribe-modal h2')).toContainText(/Get Fine Alerts/i);
   });
 });

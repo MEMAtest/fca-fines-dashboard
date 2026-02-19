@@ -21,7 +21,9 @@ export function SiteLayout() {
     <>
       <PageviewTracker />
       <SiteHeader />
-      <Outlet />
+      <main id="main-content">
+        <Outlet />
+      </main>
     </>
   );
 }

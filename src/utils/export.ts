@@ -1,8 +1,4 @@
 import type { FineRecord } from '../types';
-import Papa from 'papaparse';
-import * as XLSX from 'xlsx';
-import jsPDF from 'jspdf';
-import html2canvas from 'html2canvas';
 
 export interface ExportOptions {
   filename: string;
@@ -40,6 +36,7 @@ export async function exportData({ filename, format, records, elementId, transfo
 
   switch (format) {
     case 'csv': {
+      const { default: Papa } = await import('papaparse');
       const csv = Papa.unparse(formatted);
       downloadBlob(csv, `${filename}.csv`, 'text/csv;charset=utf-8;');
       break;
@@ -49,6 +46,7 @@ export async function exportData({ filename, format, records, elementId, transfo
       break;
     }
     case 'xlsx': {
+      const XLSX = await import('xlsx');
       const worksheet = XLSX.utils.json_to_sheet(formatted);
       const workbook = XLSX.utils.book_new();
       XLSX.utils.book_append_sheet(workbook, worksheet, 'Fines');
@@ -71,6 +69,7 @@ export async function exportData({ filename, format, records, elementId, transfo
       break;
     }
     case 'pdf': {
+      const { default: jsPDF } = await import('jspdf');
       const doc = new jsPDF({ unit: 'pt', format: 'a4' });
 
       // Title
@@ -110,6 +109,7 @@ export async function exportData({ filename, format, records, elementId, transfo
       if (!elementId) throw new Error('elementId is required for PNG export');
       const element = document.getElementById(elementId);
       if (!element) throw new Error('Unable to find element to export');
+      const { default: html2canvas } = await import('html2canvas');
       const canvas = await html2canvas(element);
       const link = document.createElement('a');
       link.href = canvas.toDataURL('image/png');

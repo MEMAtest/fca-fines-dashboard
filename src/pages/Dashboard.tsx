@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { lazy, Suspense, useEffect, useMemo, useRef, useState } from 'react';
 import { format, startOfMonth, endOfMonth } from 'date-fns';
 import type { FineRecord, StatsResponse, NotificationItem } from '../types';
 import { HeroStats } from '../components/HeroStats';
@@ -8,12 +8,9 @@ import { CategoryTreemap } from '../components/CategoryTreemap';
 import { LatestNotices } from '../components/LatestNotices';
 import { FineDistributionChart } from '../components/FineDistributionChart';
 import { TopFirms } from '../components/TopFirms';
-import { FineTotalsModal } from '../components/FineTotalsModal';
 import { DashboardSkeleton } from '../components/LoadingSkeletons';
-import { AdvancedFilters } from '../components/AdvancedFilters';
 import { MonthlyComparisonChart } from '../components/MonthlyComparisonChart';
 import { MobileNav } from '../components/MobileNav';
-import { ComparisonView} from '../components/ComparisonView';
 import { Modal } from '../components/Modal';
 import { BreachByTypeChart } from '../components/BreachByTypeChart';
 import { RegulatorImpactChart } from '../components/RegulatorImpactChart';
@@ -24,8 +21,20 @@ import { useNotificationFeed } from '../hooks/useNotificationFeed';
 import { Toast } from '../components/Toast';
 import { useDashboardState, INITIAL_ADVANCED_FILTERS, CURRENT_YEAR } from '../hooks/useDashboardState';
 import { useFinesData, type TrendPoint } from '../hooks/useFinesData';
-import { AlertSubscribeModal } from '../components/AlertSubscribeModal';
 import { useSEO } from '../hooks/useSEO';
+
+const LazyFineTotalsModal = lazy(() =>
+  import('../components/FineTotalsModal').then((module) => ({ default: module.FineTotalsModal }))
+);
+const LazyAdvancedFilters = lazy(() =>
+  import('../components/AdvancedFilters').then((module) => ({ default: module.AdvancedFilters }))
+);
+const LazyAlertSubscribeModal = lazy(() =>
+  import('../components/AlertSubscribeModal').then((module) => ({ default: module.AlertSubscribeModal }))
+);
+const LazyComparisonView = lazy(() =>
+  import('../components/ComparisonView').then((module) => ({ default: module.ComparisonView }))
+);
 
 
 function getYearsRange() {
@@ -748,28 +757,40 @@ export function Dashboard() {
           </div>
         </>
       )}
-      <FineTotalsModal
-        open={!!modalContext}
-        records={modalContext?.records ?? []}
-        year={year}
-        title={modalContext?.title}
-        subtitle={modalContext?.subtitle}
-        onClose={() => setModalContext(null)}
-        onNotify={(message, type) => setToast({ message, type })}
-        onFirmFilter={handleModalFirmFilter}
-      />
-      <AdvancedFilters
-        open={advancedOpen}
-        availableYears={availableYears}
-        breachOptions={breachOptions}
-        firmOptions={firmOptions}
-        values={advancedFilters}
-        currentYear={primaryYear}
-        onApply={(values) => setAdvancedFilters(values)}
-        onClose={() => setAdvancedOpen(false)}
-        onClear={() => setAdvancedFilters(INITIAL_ADVANCED_FILTERS)}
-      />
-      <AlertSubscribeModal isOpen={alertsModalOpen} onClose={() => setAlertsModalOpen(false)} />
+      {modalContext && (
+        <Suspense fallback={null}>
+          <LazyFineTotalsModal
+            open
+            records={modalContext.records}
+            year={year}
+            title={modalContext.title}
+            subtitle={modalContext.subtitle}
+            onClose={() => setModalContext(null)}
+            onNotify={(message, type) => setToast({ message, type })}
+            onFirmFilter={handleModalFirmFilter}
+          />
+        </Suspense>
+      )}
+      {advancedOpen && (
+        <Suspense fallback={null}>
+          <LazyAdvancedFilters
+            open
+            availableYears={availableYears}
+            breachOptions={breachOptions}
+            firmOptions={firmOptions}
+            values={advancedFilters}
+            currentYear={primaryYear}
+            onApply={(values) => setAdvancedFilters(values)}
+            onClose={() => setAdvancedOpen(false)}
+            onClear={() => setAdvancedFilters(INITIAL_ADVANCED_FILTERS)}
+          />
+        </Suspense>
+      )}
+      {alertsModalOpen && (
+        <Suspense fallback={null}>
+          <LazyAlertSubscribeModal isOpen onClose={() => setAlertsModalOpen(false)} />
+        </Suspense>
+      )}
       {shareModalOpen && (
         <Modal
           isOpen={shareModalOpen}
@@ -817,25 +838,27 @@ export function Dashboard() {
           subtitle="Comparison Sandbox"
           onClose={() => setComparisonOpen(false)}
         >
-          <ComparisonView
-            records={comparisonRecords}
-            availableYears={availableYears}
-            primaryYear={primaryYear}
-            comparisonYear={comparisonYear}
-            categories={comparisonCategoryOptions}
-            selectedCategories={comparisonCategories}
-            shareUrl={shareUrl}
-            loading={!comparisonReady}
-            onPrimaryYearChange={setYear}
-            onComparisonYearChange={setComparisonYear}
-            onCategoryToggle={(value) =>
-              setComparisonCategories((prev) => (prev.includes(value) ? prev.filter((item) => item !== value) : [...prev, value]))
-            }
-            onClearCategories={() => setComparisonCategories([])}
-            onPresetCategories={(categories) => setComparisonCategories(categories)}
-            onNotify={(message, type) => setToast({ message, type })}
-            onClose={() => setComparisonOpen(false)}
-          />
+          <Suspense fallback={<p className="status">Loading comparison…</p>}>
+            <LazyComparisonView
+              records={comparisonRecords}
+              availableYears={availableYears}
+              primaryYear={primaryYear}
+              comparisonYear={comparisonYear}
+              categories={comparisonCategoryOptions}
+              selectedCategories={comparisonCategories}
+              shareUrl={shareUrl}
+              loading={!comparisonReady}
+              onPrimaryYearChange={setYear}
+              onComparisonYearChange={setComparisonYear}
+              onCategoryToggle={(value) =>
+                setComparisonCategories((prev) => (prev.includes(value) ? prev.filter((item) => item !== value) : [...prev, value]))
+              }
+              onClearCategories={() => setComparisonCategories([])}
+              onPresetCategories={(categories) => setComparisonCategories(categories)}
+              onNotify={(message, type) => setToast({ message, type })}
+              onClose={() => setComparisonOpen(false)}
+            />
+          </Suspense>
         </Modal>
       )}
       <MobileNav
