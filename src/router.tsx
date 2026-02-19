@@ -68,6 +68,7 @@ const Firms = lazyPage(() => import('./pages/Firms').then(module => ({ default: 
 const FirmPage = lazyPage(() => import('./pages/FirmPage').then(module => ({ default: module.FirmPage })));
 const Blog = lazyPage(() => import('./pages/Blog').then(module => ({ default: module.Blog })));
 const BlogPost = lazyPage(() => import('./pages/BlogPost').then(module => ({ default: module.BlogPost })));
+const FAQPage = lazyPage(() => import('./pages/FAQ').then(module => ({ default: module.FAQ })));
 
 const router = createBrowserRouter([
   {
@@ -228,6 +229,14 @@ const router = createBrowserRouter([
         element: (
           <Suspense fallback={<div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>Loading...</div>}>
             <Blog />
+          </Suspense>
+        ),
+      },
+      {
+        path: '/faq',
+        element: (
+          <Suspense fallback={<div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>Loading...</div>}>
+            <FAQPage />
           </Suspense>
         ),
       },

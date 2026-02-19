@@ -33,6 +33,7 @@ const RSS_URL = `${BASE_URL}/rss.xml`;
 // However since the project uses "type": "module" and ts-node/esm, the import
 // resolves the .ts source directly.
 import { blogArticles, yearlyArticles } from '../src/data/blogArticles.js';
+import { faqItems, getFaqsForArticle, getFaqsForYearlyArticle, getHomepageFaqs, generateFaqSchema } from '../src/data/faqData.js';
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -83,6 +84,7 @@ interface PageMeta {
   dateModified?: string;
   articleSection?: string;
   jsonLd?: object;
+  extraJsonLd?: object[];  // Additional JSON-LD blocks (e.g. FAQPage alongside Article)
 }
 
 // ---------------------------------------------------------------------------
@@ -92,13 +94,15 @@ interface PageMeta {
 async function buildPageMetas(): Promise<PageMeta[]> {
   const pages: PageMeta[] = [];
 
-  // 1. Homepage
+  // 1. Homepage (with FAQPage schema for top questions)
+  const homepageFaqs = getHomepageFaqs();
   pages.push({
     path: '/',
     title: 'FCA Fines Database & Tracker | Complete UK Financial Conduct Authority Penalties 2013-2026',
     description: 'The definitive FCA fines database tracking all Financial Conduct Authority penalties, enforcement actions and regulatory fines from 2013-2026. Analyze £4.9B+ in FCA fines with interactive charts, breach categories, and compliance insights. Updated daily.',
     keywords: 'FCA fines, FCA fines list, FCA fines database, FCA fines 2025, FCA fines 2026, FCA enforcement actions, Financial Conduct Authority fines, UK financial fines',
     ogType: 'website',
+    extraJsonLd: homepageFaqs.length > 0 ? [generateFaqSchema(homepageFaqs)] : [],
   });
 
   // 2. Dashboard
@@ -165,8 +169,19 @@ async function buildPageMetas(): Promise<PageMeta[]> {
     ogType: 'website',
   });
 
-  // 6. Blog articles
+  // 5b. FAQ page (with full FAQPage schema)
+  pages.push({
+    path: '/faq',
+    title: 'FCA Fines FAQ | Frequently Asked Questions About Financial Conduct Authority Penalties',
+    description: 'Answers to common questions about FCA fines, enforcement actions, and financial penalties. Learn how the FCA calculates fines, the biggest fines ever issued, and what happens when a firm is fined.',
+    keywords: 'FCA fines FAQ, FCA fines questions, biggest FCA fine, FCA fine calculation, FCA Final Notice, SM&CR fines, FCA money laundering fine, financial crime penalties',
+    ogType: 'website',
+    jsonLd: generateFaqSchema(faqItems),
+  });
+
+  // 6. Blog articles (Article schema + FAQPage schema where mapped)
   for (const article of blogArticles) {
+    const articleFaqs = getFaqsForArticle(article.slug);
     pages.push({
       path: `/blog/${article.slug}`,
       title: article.seoTitle,
@@ -194,11 +209,13 @@ async function buildPageMetas(): Promise<PageMeta[]> {
         "articleSection": article.category,
         "image": OG_IMAGE,
       },
+      extraJsonLd: articleFaqs.length > 0 ? [generateFaqSchema(articleFaqs)] : [],
     });
   }
 
-  // 7. Yearly review articles
+  // 7. Yearly review articles (Article schema + FAQPage schema)
   for (const article of yearlyArticles) {
+    const yearlyFaqs = getFaqsForYearlyArticle(article.year);
     pages.push({
       path: `/blog/${article.slug}`,
       title: article.seoTitle,
@@ -226,6 +243,7 @@ async function buildPageMetas(): Promise<PageMeta[]> {
         "articleSection": "Annual Analysis",
         "image": OG_IMAGE,
       },
+      extraJsonLd: yearlyFaqs.length > 0 ? [generateFaqSchema(yearlyFaqs)] : [],
     });
   }
 
@@ -372,20 +390,32 @@ function renderPage(template: string, meta: PageMeta): string {
     `<meta name="twitter:description" content="${escapeHtml(meta.description)}" />`
   );
 
-  // Inject article-specific meta + JSON-LD for articles
-  if (meta.ogType === 'article' && meta.jsonLd) {
-    // Add article meta tags before </head>
-    const articleMeta = [
-      meta.datePublished ? `<meta property="article:published_time" content="${meta.datePublished}" />` : '',
-      meta.dateModified ? `<meta property="article:modified_time" content="${meta.dateModified}" />` : '',
-      meta.articleSection ? `<meta property="article:section" content="${escapeHtml(meta.articleSection)}" />` : '',
-    ].filter(Boolean).join('\n    ');
+  // Inject JSON-LD and article meta before </head>
+  const headInjections: string[] = [];
 
-    const jsonLdScript = `<script type="application/ld+json">\n    ${JSON.stringify(meta.jsonLd)}\n    </script>`;
+  if (meta.ogType === 'article') {
+    // Article meta tags
+    if (meta.datePublished) headInjections.push(`<meta property="article:published_time" content="${meta.datePublished}" />`);
+    if (meta.dateModified) headInjections.push(`<meta property="article:modified_time" content="${meta.dateModified}" />`);
+    if (meta.articleSection) headInjections.push(`<meta property="article:section" content="${escapeHtml(meta.articleSection)}" />`);
+  }
 
+  // Primary JSON-LD (Article schema or FAQPage for /faq)
+  if (meta.jsonLd) {
+    headInjections.push(`<script type="application/ld+json">\n    ${JSON.stringify(meta.jsonLd)}\n    </script>`);
+  }
+
+  // Extra JSON-LD blocks (e.g. FAQPage alongside Article)
+  if (meta.extraJsonLd?.length) {
+    for (const ld of meta.extraJsonLd) {
+      headInjections.push(`<script type="application/ld+json">\n    ${JSON.stringify(ld)}\n    </script>`);
+    }
+  }
+
+  if (headInjections.length > 0) {
     html = html.replace(
       '</head>',
-      `    ${articleMeta}\n    ${jsonLdScript}\n  </head>`
+      `    ${headInjections.join('\n    ')}\n  </head>`
     );
   }
 
@@ -425,6 +455,9 @@ function generateSitemap(pages: PageMeta[]): string {
     } else if (page.path === '/blog') {
       priority = '0.9';
       changefreq = 'weekly';
+    } else if (page.path === '/faq') {
+      priority = '0.9';
+      changefreq = 'monthly';
     } else if (page.datePublished) {
       // Blog articles use their publish date
       lastmod = clampISODate(page.dateModified || page.datePublished, buildDate);

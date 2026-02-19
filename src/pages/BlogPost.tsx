@@ -11,6 +11,7 @@ import {
 import { useSEO, injectStructuredData } from '../hooks/useSEO';
 import { blogArticles, yearlyArticles } from '../data/blogArticles.js';
 import type { BlogArticleMeta, YearlyArticleMeta } from '../data/blogArticles.js';
+import { getFaqsForArticle, getFaqsForYearlyArticle, generateFaqSchema } from '../data/faqData';
 import {
   yearlyFCAData,
   MonthlyFinesChart,
@@ -119,6 +120,7 @@ function generateArticleSchema(article: BlogArticleMeta | YearlyArticleMeta) {
 
 function BlogArticlePage({ article }: { article: BlogArticleMeta }) {
   const navigate = useNavigate();
+  const articleFaqs = getFaqsForArticle(article.slug);
 
   useSEO({
     title: article.seoTitle,
@@ -136,6 +138,17 @@ function BlogArticlePage({ article }: { article: BlogArticleMeta }) {
     const cleanup = injectStructuredData(generateArticleSchema(article));
     return cleanup;
   }, [article]);
+
+  // Inject second JSON-LD block for FAQPage schema (alongside Article schema)
+  useEffect(() => {
+    if (articleFaqs.length === 0) return;
+    const script = document.createElement('script');
+    script.type = 'application/ld+json';
+    script.setAttribute('data-faq-ld', 'true');
+    script.textContent = JSON.stringify(generateFaqSchema(articleFaqs));
+    document.head.appendChild(script);
+    return () => { script.remove(); };
+  }, [article.slug]);
 
   return (
     <div className="blog-page">
@@ -266,6 +279,21 @@ function BlogArticlePage({ article }: { article: BlogArticleMeta }) {
             </div>
           )}
 
+          {/* FAQ Section — question-based H2s for PAA extraction */}
+          {articleFaqs.length > 0 && (
+            <div className="article-faq-section">
+              <div className="article-faq-badge">FAQ</div>
+              <div className="blog-article-content">
+                {articleFaqs.map(faq => (
+                  <div key={faq.slug} id={faq.slug} className="faq-item">
+                    <h2 className="faq-question">{faq.question}</h2>
+                    <p>{faq.answer}</p>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
           <div className="blog-article-modal-footer">
             <p className="blog-article-keywords">
               <strong>Related searches:</strong> {article.keywords.join(', ')}
@@ -286,6 +314,7 @@ function BlogArticlePage({ article }: { article: BlogArticleMeta }) {
 
 function YearlyArticlePage({ article }: { article: YearlyArticleMeta }) {
   const navigate = useNavigate();
+  const yearlyFaqs = getFaqsForYearlyArticle(article.year);
 
   useSEO({
     title: article.seoTitle,
@@ -303,6 +332,17 @@ function YearlyArticlePage({ article }: { article: YearlyArticleMeta }) {
     const cleanup = injectStructuredData(generateArticleSchema(article));
     return cleanup;
   }, [article]);
+
+  // Inject FAQPage JSON-LD for yearly review
+  useEffect(() => {
+    if (yearlyFaqs.length === 0) return;
+    const script = document.createElement('script');
+    script.type = 'application/ld+json';
+    script.setAttribute('data-faq-ld', 'true');
+    script.textContent = JSON.stringify(generateFaqSchema(yearlyFaqs));
+    document.head.appendChild(script);
+    return () => { script.remove(); };
+  }, [article.year]);
 
   return (
     <div className="blog-page">
@@ -430,6 +470,21 @@ function YearlyArticlePage({ article }: { article: YearlyArticleMeta }) {
               />
             )}
           </div>
+
+          {/* FAQ Section — question-based H2s for PAA extraction */}
+          {yearlyFaqs.length > 0 && (
+            <div className="article-faq-section">
+              <div className="article-faq-badge">FAQ</div>
+              <div className="blog-article-content">
+                {yearlyFaqs.map(faq => (
+                  <div key={faq.slug} id={faq.slug} className="faq-item">
+                    <h2 className="faq-question">{faq.question}</h2>
+                    <p>{faq.answer}</p>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
 
           <div className="blog-article-modal-footer">
             <p className="blog-article-keywords">

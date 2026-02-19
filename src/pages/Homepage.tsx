@@ -13,6 +13,7 @@ import { Toast } from '../components/Toast';
 import { TotalAmountChart } from '../components/charts/TotalAmountChart';
 import { PenaltyDistributionChart } from '../components/charts/PenaltyDistributionChart';
 import { RecentActionsList } from '../components/charts/RecentActionsList';
+import { getHomepageFaqs, generateFaqSchema } from '../data/faqData';
 import '../styles/homepage.css';
 import '../styles/hero3d.css';
 import '../styles/widgets3d.css';
@@ -367,6 +368,9 @@ export function Homepage() {
         </div>
       </section>
 
+      {/* FAQ Section */}
+      <HomepageFAQ />
+
       {/* Contact Form */}
       <section className="contact-section">
         <div className="contact-wrapper">
@@ -395,5 +399,74 @@ export function Homepage() {
         </div>
       </footer>
     </div>
+  );
+}
+
+// ── Homepage FAQ Accordion ─────────────────────────────────────────────────
+
+function HomepageFAQ() {
+  const [openIndex, setOpenIndex] = useState<number | null>(null);
+  const faqs = getHomepageFaqs();
+
+  // Inject FAQPage JSON-LD for homepage
+  useEffect(() => {
+    const script = document.createElement('script');
+    script.type = 'application/ld+json';
+    script.setAttribute('data-faq-ld', 'true');
+    script.textContent = JSON.stringify(generateFaqSchema(faqs));
+    document.head.appendChild(script);
+    return () => { script.remove(); };
+  }, []);
+
+  return (
+    <section className="homepage-faq-section">
+      <div className="homepage-faq-container">
+        <div className="homepage-faq-header">
+          <span className="homepage-faq-badge">FAQ</span>
+          <h2>Frequently Asked Questions</h2>
+          <p>Common questions about FCA fines, enforcement actions, and regulatory compliance.</p>
+        </div>
+
+        <div className="homepage-faq-list">
+          {faqs.map((faq, index) => (
+            <div
+              key={faq.slug}
+              className={`homepage-faq-item ${openIndex === index ? 'homepage-faq-item--open' : ''}`}
+            >
+              <button
+                onClick={() => setOpenIndex(openIndex === index ? null : index)}
+                className="homepage-faq-trigger"
+              >
+                <h3>{faq.question}</h3>
+                <svg
+                  className={`homepage-faq-chevron ${openIndex === index ? 'homepage-faq-chevron--open' : ''}`}
+                  width="20"
+                  height="20"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
+                  <path d="M6 9l6 6 6-6" />
+                </svg>
+              </button>
+              {openIndex === index && (
+                <div className="homepage-faq-answer">
+                  <p>{faq.answer}</p>
+                </div>
+              )}
+            </div>
+          ))}
+        </div>
+
+        <div className="homepage-faq-cta">
+          <Link to="/faq" className="homepage-faq-link">
+            View all frequently asked questions →
+          </Link>
+        </div>
+      </div>
+    </section>
   );
 }
