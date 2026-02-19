@@ -196,7 +196,13 @@ function generateArticleSchema(article: BlogArticleMeta | YearlyArticleMeta) {
       "@id": `https://fcafines.memaconsultants.com/blog/${slug}`
     },
     "keywords": article.keywords.join(", "),
-    "image": "https://fcafines.memaconsultants.com/og-image.png",
+    "image": {
+      "@type": "ImageObject",
+      "url": "https://fcafines.memaconsultants.com/og-image.png",
+      "width": 1200,
+      "height": 630,
+      "caption": "FCA Fines Dashboard - Financial Conduct Authority Enforcement Data"
+    },
   };
 }
 

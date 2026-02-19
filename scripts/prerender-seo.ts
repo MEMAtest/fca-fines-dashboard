@@ -109,6 +109,8 @@ function generateBreadcrumbItems(path: string): Array<{ name: string; item: stri
     else if (seg === 'sectors') name = 'Sectors';
     else if (seg === 'firms') name = 'Firms';
     else if (seg === 'faq') name = 'FAQ';
+    else if (seg === 'guide') name = 'Guide';
+    else if (seg === 'sitemap') name = 'Sitemap';
     else name = humanize(seg);
     crumbs.push({ name, item: `${BASE_URL}${current}` });
   }
@@ -278,16 +280,76 @@ async function buildPageMetas(): Promise<PageMeta[]> {
     ogType: 'website',
   });
 
-  // 5. Blog listing
+  // 5. Blog listing (with ItemList schema for carousel/list rich results)
+  const allBlogItems = [
+    ...blogArticles.filter(a => a.featured),
+    ...blogArticles.filter(a => !a.featured),
+    ...yearlyArticles,
+  ];
   pages.push({
     path: '/blog',
     title: 'FCA Fines Blog | Expert Analysis & Insights on Financial Conduct Authority Penalties',
     description: 'Expert analysis of FCA fines, biggest penalties, enforcement trends, and compliance guidance. Covering the 20 largest FCA fines, AML enforcement, banking sector penalties, and 2025 fines.',
     keywords: 'FCA fines blog, FCA fines analysis, FCA enforcement insights, biggest FCA fines, FCA fines 2025, FCA AML fines, FCA compliance guide',
     ogType: 'website',
+    extraJsonLd: [{
+      "@context": "https://schema.org",
+      "@type": "ItemList",
+      "itemListElement": allBlogItems.map((article, index) => ({
+        "@type": "ListItem",
+        "position": index + 1,
+        "url": `${BASE_URL}/blog/${article.slug}`,
+      })),
+    }],
   });
 
-  // 5b. FAQ page (with full FAQPage schema)
+  // 5b. Sitemap page
+  pages.push({
+    path: '/sitemap',
+    title: 'Sitemap | FCA Fines Dashboard',
+    description: 'Complete sitemap of the FCA Fines Dashboard. Browse all pages including the interactive dashboard, blog articles, annual reviews, and hub pages.',
+    keywords: 'FCA fines sitemap, FCA fines pages, FCA fines navigation',
+    ogType: 'website',
+  });
+
+  // 5c. Pillar page: Complete Guide to FCA Enforcement
+  pages.push({
+    path: '/guide/fca-enforcement',
+    title: 'Complete Guide to FCA Enforcement & Fines | From Investigation to Penalty',
+    description: 'Comprehensive guide covering how the FCA enforces financial regulation, how fines are calculated, the biggest penalties of all time, enforcement by year, sector, and breach type.',
+    keywords: 'FCA enforcement guide, FCA fines guide, FCA fines explained, how FCA fines work, FCA enforcement process, FCA penalties guide',
+    ogType: 'article',
+    datePublished: '2026-02-01',
+    dateModified: todayISO(),
+    articleSection: 'Guide',
+    breadcrumbLabel: 'Complete Guide to FCA Enforcement',
+    jsonLd: {
+      "@context": "https://schema.org",
+      "@type": "Article",
+      "headline": "Complete Guide to FCA Enforcement & Fines | From Investigation to Penalty",
+      "description": "Comprehensive guide covering how the FCA enforces financial regulation, how fines are calculated, the biggest penalties of all time, enforcement by year, sector, and breach type.",
+      "datePublished": "2026-02-01",
+      "dateModified": todayISO(),
+      "author": { "@type": "Organization", "name": "MEMA Consultants", "url": "https://memaconsultants.com", "description": "Compliance consultancy specialising in FCA regulatory data and analysis" },
+      "publisher": {
+        "@type": "Organization",
+        "name": SITE_NAME,
+        "logo": { "@type": "ImageObject", "url": `${BASE_URL}/mema-logo.png` }
+      },
+      "mainEntityOfPage": { "@type": "WebPage", "@id": `${BASE_URL}/guide/fca-enforcement` },
+      "keywords": "FCA enforcement guide, FCA fines guide, FCA fines explained, how FCA fines work, FCA enforcement process",
+      "articleSection": "Guide",
+      "image": {
+        "@type": "ImageObject",
+        "url": OG_IMAGE,
+        "width": 1200,
+        "height": 630,
+        "caption": "FCA Fines Dashboard - Financial Conduct Authority Enforcement Data"
+      },
+    },
+  });
+
+  // 5d. FAQ page (with full FAQPage schema)
   pages.push({
     path: '/faq',
     title: 'FCA Fines FAQ | Frequently Asked Questions About Financial Conduct Authority Penalties',
@@ -326,7 +388,13 @@ async function buildPageMetas(): Promise<PageMeta[]> {
         "mainEntityOfPage": { "@type": "WebPage", "@id": `${BASE_URL}/blog/${article.slug}` },
         "keywords": article.keywords.join(", "),
         "articleSection": article.category,
-        "image": OG_IMAGE,
+        "image": {
+          "@type": "ImageObject",
+          "url": OG_IMAGE,
+          "width": 1200,
+          "height": 630,
+          "caption": "FCA Fines Dashboard - Financial Conduct Authority Enforcement Data"
+        },
       },
       extraJsonLd: articleFaqs.length > 0 ? [generateFaqSchema(articleFaqs)] : [],
     });
@@ -364,7 +432,13 @@ async function buildPageMetas(): Promise<PageMeta[]> {
         "mainEntityOfPage": { "@type": "WebPage", "@id": `${BASE_URL}/blog/${article.slug}` },
         "keywords": article.keywords.join(", "),
         "articleSection": "Annual Analysis",
-        "image": OG_IMAGE,
+        "image": {
+          "@type": "ImageObject",
+          "url": OG_IMAGE,
+          "width": 1200,
+          "height": 630,
+          "caption": "FCA Fines Dashboard - Financial Conduct Authority Enforcement Data"
+        },
       },
       extraJsonLd: yearlyFaqs.length > 0 ? [generateFaqSchema(yearlyFaqs)] : [],
     });
@@ -588,6 +662,12 @@ function generateSitemap(pages: PageMeta[]): string {
     } else if (page.path === '/faq') {
       priority = '0.9';
       changefreq = 'monthly';
+    } else if (page.path === '/sitemap') {
+      priority = '0.5';
+      changefreq = 'monthly';
+    } else if (page.path === '/guide/fca-enforcement') {
+      priority = '0.9';
+      changefreq = 'weekly';
     } else if (page.datePublished) {
       // Blog articles use their publish date
       lastmod = clampISODate(page.dateModified || page.datePublished, buildDate);

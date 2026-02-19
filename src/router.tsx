@@ -1,7 +1,19 @@
-import { createBrowserRouter, RouterProvider } from 'react-router-dom';
+import { createBrowserRouter, RouterProvider, useRouteError, Link } from 'react-router-dom';
 import { lazy, Suspense } from 'react';
 import { DashboardSkeleton } from './components/LoadingSkeletons';
 import { SiteLayout } from './components/SiteLayout';
+
+function RouteErrorBoundary() {
+  const error = useRouteError();
+  const message = error instanceof Error ? error.message : 'An unexpected error occurred';
+  return (
+    <div style={{ minHeight: '60vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '2rem', textAlign: 'center' }}>
+      <h1 style={{ fontSize: '1.5rem', marginBottom: '0.75rem' }}>Something went wrong</h1>
+      <p style={{ color: '#64748b', marginBottom: '1.5rem', maxWidth: '480px' }}>{message}</p>
+      <Link to="/" style={{ color: 'var(--primary-500, #3b82f6)', textDecoration: 'underline' }}>Return to homepage</Link>
+    </div>
+  );
+}
 
 const CHUNK_RELOAD_STORAGE_KEY = 'fca-chunk-reload-at';
 const CHUNK_RELOAD_COOLDOWN_MS = 15_000;
@@ -69,10 +81,13 @@ const FirmPage = lazyPage(() => import('./pages/FirmPage').then(module => ({ def
 const Blog = lazyPage(() => import('./pages/Blog').then(module => ({ default: module.Blog })));
 const BlogPost = lazyPage(() => import('./pages/BlogPost').then(module => ({ default: module.BlogPost })));
 const FAQPage = lazyPage(() => import('./pages/FAQ').then(module => ({ default: module.FAQ })));
+const SitemapPage = lazyPage(() => import('./pages/Sitemap').then(module => ({ default: module.Sitemap })));
+const PillarPage = lazyPage(() => import('./pages/PillarPage').then(module => ({ default: module.PillarPage })));
 
 const router = createBrowserRouter([
   {
     element: <SiteLayout />,
+    errorElement: <RouteErrorBoundary />,
     children: [
       {
         path: '/',
@@ -237,6 +252,22 @@ const router = createBrowserRouter([
         element: (
           <Suspense fallback={<div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>Loading...</div>}>
             <FAQPage />
+          </Suspense>
+        ),
+      },
+      {
+        path: '/sitemap',
+        element: (
+          <Suspense fallback={<div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>Loading...</div>}>
+            <SitemapPage />
+          </Suspense>
+        ),
+      },
+      {
+        path: '/guide/fca-enforcement',
+        element: (
+          <Suspense fallback={<div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>Loading...</div>}>
+            <PillarPage />
           </Suspense>
         ),
       },

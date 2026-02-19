@@ -392,6 +392,7 @@ export function Homepage() {
           <nav className="footer-nav">
             <Link to="/blog" className="footer-link">Insights & Blog</Link>
             <Link to="/dashboard" className="footer-link">Dashboard</Link>
+            <Link to="/sitemap" className="footer-link">Sitemap</Link>
           </nav>
           <p className="footer-copyright">
             © {new Date().getFullYear()} MEMA Consultants · All rights reserved

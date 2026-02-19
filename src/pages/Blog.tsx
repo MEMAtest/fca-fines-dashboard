@@ -19,24 +19,13 @@ import {
 import { Blog3DVisualization } from '../components/Blog3DVisualization';
 import { yearlyFCAData } from '../components/YearlyArticleCharts';
 import { blogArticles as blogArticlesMeta, yearlyArticles as yearlyArticlesMeta } from '../data/blogArticles.js';
+import type { BlogArticleMeta } from '../data/blogArticles.js';
 import { injectStructuredData, useSEO } from '../hooks/useSEO';
 import '../styles/blog.css';
 import '../styles/blog3d.css';
 
-interface BlogArticle {
-  id: string;
-  slug: string;
-  title: string;
-  seoTitle: string;
-  excerpt: string;
-  content: string;
-  category: string;
-  readTime: string;
-  date: string;
-  dateISO: string;
+interface BlogArticle extends BlogArticleMeta {
   icon: React.ReactNode;
-  featured?: boolean;
-  keywords: string[];
 }
 
 const MotionLink = motion.create(Link);
@@ -75,6 +64,23 @@ const formatYearlyCurrency = (amount: number): string => {
   }
   return `£${(amount / 1_000).toFixed(0)}k`;
 };
+
+function generateItemListSchema() {
+  const allArticles = [
+    ...blogArticlesMeta.filter(a => a.featured),
+    ...blogArticlesMeta.filter(a => !a.featured),
+    ...yearlyArticlesMeta,
+  ];
+  return {
+    '@context': 'https://schema.org',
+    '@type': 'ItemList',
+    itemListElement: allArticles.map((article, index) => ({
+      '@type': 'ListItem',
+      position: index + 1,
+      url: `https://fcafines.memaconsultants.com/blog/${article.slug}`,
+    })),
+  };
+}
 
 function generateBlogListSchema() {
   return {
@@ -116,6 +122,11 @@ export function Blog() {
 
   useEffect(() => {
     const cleanup = injectStructuredData(generateBlogListSchema());
+    return cleanup;
+  }, []);
+
+  useEffect(() => {
+    const cleanup = injectStructuredData(generateItemListSchema());
     return cleanup;
   }, []);
 
@@ -349,6 +360,7 @@ export function Blog() {
             <Link to="/">Home</Link>
             <Link to="/dashboard">Dashboard</Link>
             <Link to="/blog">Blog</Link>
+            <Link to="/sitemap">Sitemap</Link>
           </nav>
           <p className="blog-footer-copyright">
             © {new Date().getFullYear()} MEMA Consultants · All rights reserved

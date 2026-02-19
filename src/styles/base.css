@@ -91,6 +91,14 @@ body {
   padding: 40px 32px 80px;
 }
 
+.dashboard-freshness {
+  text-align: right;
+  font-size: var(--text-xs);
+  color: var(--text-tertiary, #94a3b8);
+  margin: -0.25rem 0 0.75rem;
+  padding: 0 0.25rem;
+}
+
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,

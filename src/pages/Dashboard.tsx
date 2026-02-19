@@ -426,6 +426,14 @@ export function Dashboard() {
     };
   }, [fines]);
 
+  const latestDateIssued = useMemo(() => {
+    if (!fines.length) return null;
+    return fines.reduce((max, fine) => {
+      const d = fine.date_issued;
+      return d > max ? d : max;
+    }, fines[0].date_issued);
+  }, [fines]);
+
   const timelineForChart = useMemo(() => {
     if (year === 0) {
       return timelineSeries.length ? timelineSeries : timeline;
@@ -670,6 +678,14 @@ export function Dashboard() {
         notificationsError={notificationsError}
         onAlertsSubscribe={() => setAlertsModalOpen(true)}
       />
+      {latestDateIssued && (
+        <p className="dashboard-freshness">
+          Data current as of{' '}
+          <time dateTime={latestDateIssued}>
+            {new Date(latestDateIssued).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' })}
+          </time>
+        </p>
+      )}
       <FiltersBar
         year={year}
         availableYears={availableYears}
