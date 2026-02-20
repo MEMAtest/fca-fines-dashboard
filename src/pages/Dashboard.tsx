@@ -5,6 +5,7 @@ import { HeroStats } from '../components/HeroStats';
 import { FiltersBar } from '../components/FiltersBar';
 import { TimelineChart } from '../components/TimelineChart';
 import { CategoryTreemap } from '../components/CategoryTreemap';
+import { LazyVisible } from '../components/LazyVisible';
 import { LatestNotices } from '../components/LatestNotices';
 import { FineDistributionChart } from '../components/FineDistributionChart';
 import { TopFirms } from '../components/TopFirms';
@@ -21,7 +22,7 @@ import { useNotificationFeed } from '../hooks/useNotificationFeed';
 import { Toast } from '../components/Toast';
 import { useDashboardState, INITIAL_ADVANCED_FILTERS, CURRENT_YEAR } from '../hooks/useDashboardState';
 import { useFinesData, type TrendPoint } from '../hooks/useFinesData';
-import { useSEO } from '../hooks/useSEO';
+import { useSEO, injectStructuredData } from '../hooks/useSEO';
 
 const LazyFineTotalsModal = lazy(() =>
   import('../components/FineTotalsModal').then((module) => ({ default: module.FineTotalsModal }))
@@ -206,6 +207,46 @@ export function Dashboard() {
     canonicalPath: '/dashboard',
     ogType: 'website',
   });
+
+  // DataFeed schema for Google Dataset Search
+  useEffect(() => {
+    const cleanup = injectStructuredData({
+      "@context": "https://schema.org",
+      "@type": "DataFeed",
+      "name": "FCA Fines Live Data Feed",
+      "description": "Real-time feed of Financial Conduct Authority fines and enforcement actions, updated as new penalties are published.",
+      "url": "https://fcafines.memaconsultants.com/dashboard",
+      "dateModified": new Date().toISOString().slice(0, 10),
+      "potentialAction": [
+        {
+          "@type": "SearchAction",
+          "name": "Search FCA Fines",
+          "target": {
+            "@type": "EntryPoint",
+            "urlTemplate": "https://fcafines.memaconsultants.com/dashboard?search={query}"
+          },
+          "query-input": "required name=query"
+        },
+        {
+          "@type": "FilterAction",
+          "name": "Filter by Year",
+          "target": {
+            "@type": "EntryPoint",
+            "urlTemplate": "https://fcafines.memaconsultants.com/dashboard?year={year}"
+          }
+        },
+        {
+          "@type": "DownloadAction",
+          "name": "Export FCA Fines CSV",
+          "target": {
+            "@type": "EntryPoint",
+            "urlTemplate": "https://fcafines.memaconsultants.com/dashboard"
+          }
+        }
+      ]
+    });
+    return cleanup;
+  }, []);
 
   const {
     year,
@@ -730,47 +771,55 @@ export function Dashboard() {
           </div>
 
           {/* Grid 3: Category Treemap - Full width */}
-          <div className="grid">
-            <CategoryTreemap
-              data={categoryAggView}
-              year={year}
-              onSelectCategory={handleCategorySelect}
-              onDrilldown={handleCategoryDrilldown}
-              exportRecords={filteredFines}
-              exportId="category-panel"
-            />
-          </div>
+          <LazyVisible fallback={<div style={{ minHeight: 400 }} />}>
+            <div className="grid">
+              <CategoryTreemap
+                data={categoryAggView}
+                year={year}
+                onSelectCategory={handleCategorySelect}
+                onDrilldown={handleCategoryDrilldown}
+                exportRecords={filteredFines}
+                exportId="category-panel"
+              />
+            </div>
+          </LazyVisible>
 
           {/* Grid 4: Comparison - 2 columns (conditional) */}
           {comparisonYear && (
-            <div className="grid grid--two-col">
-              <MonthlyComparisonChart
-                currentYear={primaryYear}
-                comparisonYear={comparisonYear}
-                availableYears={availableYears}
-                onCurrentYearChange={setYear}
-                onComparisonYearChange={setComparisonYear}
-                data={comparisonData}
-                loading={!recordsByYear[primaryYear] || (comparisonYear && !recordsByYear[comparisonYear])}
-              />
-              <div className="panel">
-                <button type="button" className="btn btn-ghost" onClick={() => setComparisonOpen(true)}>
-                  Open comparison sandbox
-                </button>
+            <LazyVisible fallback={<div style={{ minHeight: 300 }} />}>
+              <div className="grid grid--two-col">
+                <MonthlyComparisonChart
+                  currentYear={primaryYear}
+                  comparisonYear={comparisonYear}
+                  availableYears={availableYears}
+                  onCurrentYearChange={setYear}
+                  onComparisonYearChange={setComparisonYear}
+                  data={comparisonData}
+                  loading={!recordsByYear[primaryYear] || (comparisonYear && !recordsByYear[comparisonYear])}
+                />
+                <div className="panel">
+                  <button type="button" className="btn btn-ghost" onClick={() => setComparisonOpen(true)}>
+                    Open comparison sandbox
+                  </button>
+                </div>
               </div>
-            </div>
+            </LazyVisible>
           )}
 
           {/* Grid 5: Breach charts - 2 columns */}
-          <div className="grid grid--two-col">
-            <BreachByTypeChart records={filteredFines} onSelect={handleCategorySelect} />
-            <RegulatorImpactChart records={filteredFines} />
-          </div>
+          <LazyVisible fallback={<div style={{ minHeight: 300 }} />}>
+            <div className="grid grid--two-col">
+              <BreachByTypeChart records={filteredFines} onSelect={handleCategorySelect} />
+              <RegulatorImpactChart records={filteredFines} />
+            </div>
+          </LazyVisible>
 
           {/* Grid 6: Lessons Learned Analysis - Full width */}
-          <div className="grid">
-            <LessonsLearnedAnalysis records={filteredFines} year={year} />
-          </div>
+          <LazyVisible fallback={<div style={{ minHeight: 300 }} />}>
+            <div className="grid">
+              <LessonsLearnedAnalysis records={filteredFines} year={year} />
+            </div>
+          </LazyVisible>
         </>
       )}
       {modalContext && (

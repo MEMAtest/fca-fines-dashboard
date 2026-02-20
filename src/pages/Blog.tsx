@@ -1,6 +1,6 @@
 import { motion } from 'framer-motion';
-import { useEffect } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { useEffect, useRef } from 'react';
+import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import {
   AlertTriangle,
   BookOpen,
@@ -17,6 +17,7 @@ import {
   Users,
 } from 'lucide-react';
 import { Blog3DVisualization } from '../components/Blog3DVisualization';
+import { LazyVisible } from '../components/LazyVisible';
 import { yearlyFCAData } from '../components/YearlyArticleCharts';
 import { blogArticles as blogArticlesMeta, yearlyArticles as yearlyArticlesMeta } from '../data/blogArticles.js';
 import type { BlogArticleMeta } from '../data/blogArticles.js';
@@ -107,8 +108,26 @@ function generateBlogListSchema() {
   };
 }
 
+const ITEMS_PER_PAGE = 6;
+
 export function Blog() {
   const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
+  const currentPage = Math.max(1, parseInt(searchParams.get('page') || '1', 10));
+  const regularSectionRef = useRef<HTMLElement>(null);
+
+  const featuredArticles = blogArticles.filter((article) => article.featured);
+  const regularArticles = blogArticles.filter((article) => !article.featured);
+  const totalPages = Math.ceil(regularArticles.length / ITEMS_PER_PAGE);
+  const safePage = Math.min(currentPage, totalPages);
+  const paginatedArticles = regularArticles.slice(
+    (safePage - 1) * ITEMS_PER_PAGE,
+    safePage * ITEMS_PER_PAGE
+  );
+
+  const baseUrl = 'https://fcafines.memaconsultants.com';
+  const relNext = safePage < totalPages ? `${baseUrl}/blog?page=${safePage + 1}` : undefined;
+  const relPrev = safePage > 1 ? `${baseUrl}/blog?page=${safePage - 1}` : undefined;
 
   useSEO({
     title: 'FCA Fines Blog | Expert Analysis & Insights on Financial Conduct Authority Penalties',
@@ -118,6 +137,8 @@ export function Blog() {
       'FCA fines blog, FCA fines analysis, FCA enforcement insights, biggest FCA fines, FCA fines 2025, FCA AML fines, FCA compliance guide',
     canonicalPath: '/blog',
     ogType: 'website',
+    relNext,
+    relPrev,
   });
 
   useEffect(() => {
@@ -130,8 +151,14 @@ export function Blog() {
     return cleanup;
   }, []);
 
-  const featuredArticles = blogArticles.filter((article) => article.featured);
-  const regularArticles = blogArticles.filter((article) => !article.featured);
+  function goToPage(page: number) {
+    if (page === 1) {
+      setSearchParams({});
+    } else {
+      setSearchParams({ page: String(page) });
+    }
+    regularSectionRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
 
   return (
     <div className="blog-page">
@@ -155,7 +182,9 @@ export function Blog() {
           </motion.div>
 
           <div className="blog-hero-visualization">
-            <Blog3DVisualization />
+            <LazyVisible rootMargin="0px" fallback={<div style={{ minHeight: 300 }} />}>
+              <Blog3DVisualization />
+            </LazyVisible>
           </div>
         </div>
       </section>
@@ -214,14 +243,14 @@ export function Blog() {
       </section>
 
       {/* All Articles */}
-      <section className="blog-section blog-section--alt" aria-labelledby="all-articles-heading">
+      <section className="blog-section blog-section--alt" aria-labelledby="all-articles-heading" ref={regularSectionRef}>
         <div className="blog-section-header">
           <h2 id="all-articles-heading">All FCA Fines Articles</h2>
           <p>Complete coverage of FCA enforcement, AML fines, banking penalties, and compliance</p>
         </div>
 
         <div className="blog-grid">
-          {regularArticles.map((article, index) => (
+          {paginatedArticles.map((article, index) => (
             <MotionLink
               key={article.id}
               to={`/blog/${article.slug}`}
@@ -263,6 +292,36 @@ export function Blog() {
             </MotionLink>
           ))}
         </div>
+
+        {/* Pagination */}
+        {totalPages > 1 && (
+          <nav className="blog-pagination" aria-label="Blog articles pagination">
+            <button
+              className="blog-pagination__btn"
+              disabled={safePage <= 1}
+              onClick={() => goToPage(safePage - 1)}
+            >
+              Previous
+            </button>
+            {Array.from({ length: totalPages }, (_, i) => i + 1).map(page => (
+              <button
+                key={page}
+                className={`blog-pagination__btn${page === safePage ? ' blog-pagination__btn--active' : ''}`}
+                onClick={() => goToPage(page)}
+                aria-current={page === safePage ? 'page' : undefined}
+              >
+                {page}
+              </button>
+            ))}
+            <button
+              className="blog-pagination__btn"
+              disabled={safePage >= totalPages}
+              onClick={() => goToPage(safePage + 1)}
+            >
+              Next
+            </button>
+          </nav>
+        )}
       </section>
 
       {/* Yearly Analysis Section */}

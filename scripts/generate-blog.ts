@@ -195,6 +195,131 @@ For a complete interactive view of all FCA enforcement actions, explore our FCA 
   }`;
 }
 
+// ─── Data Fetch (optional --with-data mode) ─────────────────────────────────────
+
+interface MonthFineRecord {
+  firm_individual: string;
+  amount: number;
+  date_issued: string;
+  breach_type: string;
+  breach_categories: string[];
+}
+
+async function fetchMonthData(month: number, year: number): Promise<MonthFineRecord[] | null> {
+  try {
+    const { neon } = await import('@neondatabase/serverless');
+    const { default: dotenv } = await import('dotenv');
+    dotenv.config();
+    if (!process.env.DATABASE_URL) {
+      console.warn('  WARN: DATABASE_URL not set, skipping data fetch');
+      return null;
+    }
+    const sql = neon(process.env.DATABASE_URL);
+    const rows = await sql`
+      SELECT firm_individual, amount, date_issued, breach_type, breach_categories
+      FROM fca_fines
+      WHERE year_issued = ${year} AND month_issued = ${month}
+      ORDER BY amount DESC
+    `;
+    return rows as MonthFineRecord[];
+  } catch (error) {
+    console.warn('  WARN: Could not fetch data:', error instanceof Error ? error.message : String(error));
+    return null;
+  }
+}
+
+function formatGbp(amount: number): string {
+  if (amount >= 1_000_000) return `£${(amount / 1_000_000).toFixed(1)}m`;
+  if (amount >= 1_000) return `£${(amount / 1_000).toFixed(0)}k`;
+  return `£${amount.toLocaleString('en-GB')}`;
+}
+
+function enrichContentWithData(content: string, data: MonthFineRecord[], monthName: string, year: number): string {
+  const totalFines = data.reduce((sum, r) => sum + r.amount, 0);
+  const firmCount = new Set(data.filter(r => !r.firm_individual.match(/^[A-Z][a-z]+ [A-Z][a-z]+$/)).map(r => r.firm_individual)).size;
+  const individualCount = data.length - firmCount;
+
+  // Replace running total table
+  content = content.replace(
+    /\| Total Fines \| Updated as announced \|[\s\S]*?\| Individuals Fined \| Updated as announced \|/,
+    `| Total Fines | ${formatGbp(totalFines)} |
+| Number of Actions | ${data.length} |
+| Firms Fined | ${firmCount > 0 ? firmCount : 'Updated as announced'} |
+| Individuals Fined | ${individualCount > 0 ? individualCount : 'Updated as announced'} |`
+  );
+
+  // Add Notable Enforcement Actions section if data available
+  if (data.length > 0) {
+    const notable = data.slice(0, 5);
+    const notableSection = `\n\n## Notable Enforcement Actions\n\n${notable.map(r =>
+      `**${r.firm_individual}** — ${formatGbp(r.amount)} (${new Date(r.date_issued).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' })}): ${r.breach_type || 'Regulatory breach'}`
+    ).join('\n\n')}`;
+
+    // Insert before "## Context: How" section
+    content = content.replace(
+      `## Context: How ${monthName} Compares`,
+      `${notableSection}\n\n## Context: How ${monthName} Compares`
+    );
+  }
+
+  // Replace template themes with actual breach categories
+  if (data.length > 0) {
+    const breachCounts = new Map<string, number>();
+    data.forEach(r => {
+      const cats = r.breach_categories?.length ? r.breach_categories : [r.breach_type || 'Other'];
+      cats.forEach(c => breachCounts.set(c, (breachCounts.get(c) || 0) + 1));
+    });
+    const topBreaches = Array.from(breachCounts.entries())
+      .sort((a, b) => b[1] - a[1])
+      .slice(0, 3)
+      .map(([name]) => name);
+
+    if (topBreaches.length > 0) {
+      content = content.replace(
+        /## Key Themes to Watch[\s\S]*?## Compliance Implications/,
+        `## Key Themes — ${monthName} ${year}\n\n${topBreaches.map(theme =>
+          `**${theme}** — This breach category featured in ${monthName} ${year} enforcement actions, reinforcing the FCA's continued focus on this area.`
+        ).join('\n\n')}\n\n## Compliance Implications`
+      );
+    }
+  }
+
+  return content;
+}
+
+// ─── Auto-update RELATED_ARTICLES ─────────────────────────────────────────────
+
+const BLOG_POST_PATH = join(ROOT, 'src', 'pages', 'BlogPost.tsx');
+
+function addRelatedArticle(newSlug: string, month: string, year: number, dryRun: boolean): void {
+  const src = readFileSync(BLOG_POST_PATH, 'utf-8');
+  const prev = prevMonth(monthIndex(month));
+  const prevSlug = `fca-fines-${prev.name.toLowerCase()}-${prev.idx === 11 ? year - 1 : year}`;
+
+  // Check if entry already exists
+  if (src.includes(`'${newSlug}':`)) return;
+
+  const relatedLine = `  '${newSlug}': ['${prevSlug}', 'fca-enforcement-trends-2013-2025', '20-biggest-fca-fines-of-all-time'],`;
+
+  // Find the end of RELATED_ARTICLES object
+  const relatedStart = src.indexOf('const RELATED_ARTICLES');
+  if (relatedStart === -1) return;
+  const afterRelated = src.slice(relatedStart);
+  const closeMatch = afterRelated.match(/\n\};\n/);
+  if (!closeMatch || closeMatch.index === undefined) return;
+
+  const insertPos = relatedStart + closeMatch.index;
+  const newSrc = src.slice(0, insertPos) + '\n' + relatedLine + src.slice(insertPos);
+
+  if (dryRun) {
+    console.log(`  [dry-run] Would add RELATED_ARTICLES entry for '${newSlug}'`);
+    return;
+  }
+
+  writeFileSync(BLOG_POST_PATH, newSrc, 'utf-8');
+  console.log(`  ✓ Added RELATED_ARTICLES entry for '${newSlug}'`);
+}
+
 // ─── File Manipulation ─────────────────────────────────────────────────────────
 
 function insertArticle(entry: string, dryRun: boolean): void {
@@ -276,12 +401,17 @@ function printUsage() {
 Blog Post Generator — FCA Fines Dashboard
 
 Usage:
-  npx tsx scripts/generate-blog.ts monthly <month> <year> [--dry-run]
+  npx tsx scripts/generate-blog.ts monthly <month> <year> [--dry-run] [--with-data]
   npx tsx scripts/generate-blog.ts topical --slug=<slug> --title=<title> --category=<cat> --date=<YYYY-MM-DD> [--keywords=<kw1,kw2>] [--dry-run]
+
+Options:
+  --with-data    Fetch actual fine data from database to populate content (monthly only)
+  --dry-run      Preview changes without writing files
 
 Examples:
   npx tsx scripts/generate-blog.ts monthly april 2026
-  npx tsx scripts/generate-blog.ts topical --slug="fca-consumer-duty-fines" --title="FCA Consumer Duty Fines & Enforcement" --category="Regulatory Guide" --date="2026-04-15"
+  npx tsx scripts/generate-blog.ts monthly march 2026 --with-data
+  npx tsx scripts/generate-blog.ts topical --slug="fca-consumer-duty-fines" --title="FCA Consumer Duty Fines" --category="Regulatory Guide" --date="2026-04-15"
 
 After running, execute: npm run build
 `);
@@ -302,7 +432,7 @@ function parseArgs(argv: string[]): Record<string, string> {
   return result;
 }
 
-function main() {
+async function main() {
   const args = process.argv.slice(2);
   if (args.length === 0 || args[0] === '--help' || args[0] === '-h') {
     printUsage();
@@ -312,6 +442,7 @@ function main() {
   const type = args[0];
   const flags = parseArgs(args);
   const dryRun = flags['dry-run'] === 'true';
+  const withData = flags['with-data'] === 'true';
 
   if (dryRun) console.log('🔍 Dry run mode — no files will be modified.\n');
 
@@ -323,8 +454,10 @@ function main() {
       process.exit(1);
     }
 
+    const mIdx = monthIndex(month);
+    const monthName = MONTHS[mIdx];
     const slug = `fca-fines-${month.toLowerCase()}-${year}`;
-    console.log(`Generating monthly roundup: ${MONTHS[monthIndex(month)]} ${year}`);
+    console.log(`Generating monthly roundup: ${monthName} ${year}`);
     console.log(`  Slug: ${slug}`);
 
     // Check if already exists
@@ -334,11 +467,30 @@ function main() {
       process.exit(1);
     }
 
-    const entry = generateMonthlyEntry(month, year);
+    let entry = generateMonthlyEntry(month, year);
+
+    // Optionally enrich with actual fine data from database
+    if (withData) {
+      console.log('  Fetching enforcement data from database...');
+      const data = await fetchMonthData(mIdx + 1, year);
+      if (data && data.length > 0) {
+        console.log(`  Found ${data.length} enforcement action(s)`);
+        // Extract the content template from the entry, enrich it, and replace
+        const contentMatch = entry.match(/content: \`([\s\S]*?)\`,\n/);
+        if (contentMatch) {
+          const enriched = enrichContentWithData(contentMatch[1], data, monthName, year);
+          entry = entry.replace(contentMatch[1], enriched);
+        }
+      } else {
+        console.log('  No data found — generating template content');
+      }
+    }
+
     insertArticle(entry, dryRun);
     addIcon(slug, 'PoundSterling', dryRun);
+    addRelatedArticle(slug, month, year, dryRun);
 
-    console.log(`\n✅ Monthly roundup for ${MONTHS[monthIndex(month)]} ${year} generated.`);
+    console.log(`\n✅ Monthly roundup for ${monthName} ${year} generated.`);
     if (!dryRun) console.log('   Run: npm run build');
 
   } else if (type === 'topical') {

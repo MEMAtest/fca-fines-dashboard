@@ -8,10 +8,13 @@ interface SEOConfig {
   ogTitle?: string;
   ogDescription?: string;
   ogType?: string;
+  ogImage?: string;
   articlePublishedTime?: string;
   articleModifiedTime?: string;
   articleSection?: string;
   articleTags?: string[];
+  relNext?: string;
+  relPrev?: string;
 }
 
 const BASE_URL = 'https://fcafines.memaconsultants.com';
@@ -53,17 +56,28 @@ export function useSEO(config: SEOConfig) {
     }
 
     // Canonical URL
+    const fullUrl = `${BASE_URL}${config.canonicalPath || ''}`;
     if (config.canonicalPath) {
-      setLinkTag('canonical', `${BASE_URL}${config.canonicalPath}`);
+      setLinkTag('canonical', fullUrl);
     }
+
+    // Update hreflang tags to match current page URL
+    (['en-gb', 'en', 'en-us', 'x-default'] as const).forEach(lang => {
+      const el = document.querySelector(`link[hreflang="${lang}"]`);
+      if (el) el.setAttribute('href', fullUrl);
+    });
 
     // Open Graph
     setMetaTag('og:title', config.ogTitle || config.title, true);
     setMetaTag('og:description', config.ogDescription || config.description, true);
-    setMetaTag('og:url', `${BASE_URL}${config.canonicalPath || ''}`, true);
+    setMetaTag('og:url', fullUrl, true);
     setMetaTag('og:site_name', SITE_NAME, true);
     if (config.ogType) {
       setMetaTag('og:type', config.ogType, true);
+    }
+    if (config.ogImage) {
+      setMetaTag('og:image', config.ogImage, true);
+      setMetaTag('twitter:image', config.ogImage);
     }
 
     // Twitter
@@ -91,9 +105,39 @@ export function useSEO(config: SEOConfig) {
       });
     }
 
+    // Pagination rel links
+    const existingNext = document.querySelector('link[rel="next"]');
+    const existingPrev = document.querySelector('link[rel="prev"]');
+    if (config.relNext) {
+      if (existingNext) {
+        existingNext.setAttribute('href', config.relNext);
+      } else {
+        const link = document.createElement('link');
+        link.setAttribute('rel', 'next');
+        link.setAttribute('href', config.relNext);
+        document.head.appendChild(link);
+      }
+    } else {
+      existingNext?.remove();
+    }
+    if (config.relPrev) {
+      if (existingPrev) {
+        existingPrev.setAttribute('href', config.relPrev);
+      } else {
+        const link = document.createElement('link');
+        link.setAttribute('rel', 'prev');
+        link.setAttribute('href', config.relPrev);
+        document.head.appendChild(link);
+      }
+    } else {
+      existingPrev?.remove();
+    }
+
     // Cleanup function to reset to defaults when component unmounts
     return () => {
       document.title = 'FCA Fines Database & Tracker | Complete UK Financial Conduct Authority Penalties 2013-2026';
+      document.querySelector('link[rel="next"]')?.remove();
+      document.querySelector('link[rel="prev"]')?.remove();
     };
   }, [config]);
 }

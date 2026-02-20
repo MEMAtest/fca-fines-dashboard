@@ -86,7 +86,61 @@ interface PageMeta {
   jsonLd?: object;
   extraJsonLd?: object[];  // Additional JSON-LD blocks (e.g. FAQPage alongside Article)
   breadcrumbLabel?: string; // Short name for last breadcrumb item (defaults to humanized slug)
+  bodyContent?: string;     // Pre-rendered HTML body for SSG (injected into #root)
+  ogImage?: string;         // Custom OG image URL
 }
+
+// ---------------------------------------------------------------------------
+// Markdown → HTML renderer (pure regex, mirrors BlogPost.tsx renderMarkdownContent)
+// ---------------------------------------------------------------------------
+
+function renderMarkdownToHtml(content: string): string {
+  return content
+    .replace(/(\|.+\|\n)+/g, (tableBlock) => {
+      const rows = tableBlock.trim().split('\n');
+      let html = '<table><thead>';
+      let inBody = false;
+      rows.forEach((row) => {
+        if (/^\|[\s\-:]+\|$/.test(row.replace(/\|/g, '|').replace(/[^|\-:\s]/g, ''))) {
+          html += '</thead><tbody>';
+          inBody = true;
+          return;
+        }
+        const cells = row.split('|').filter(Boolean).map(cell => cell.trim());
+        const cellTag = !inBody ? 'th' : 'td';
+        html += `<tr>${cells.map(cell => `<${cellTag}>${cell}</${cellTag}>`).join('')}</tr>`;
+      });
+      html += inBody ? '</tbody></table>' : '</thead></table>';
+      return html;
+    })
+    .replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2">$1</a>')
+    .replace(/^## (.+)$/gm, '<h2>$1</h2>')
+    .replace(/^### (.+)$/gm, '<h3>$1</h3>')
+    .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
+    .replace(/^\- (.+)$/gm, '<li>$1</li>')
+    .replace(/(<li>.*<\/li>\n?)+/g, '<ul>$&</ul>')
+    .replace(/\n\n/g, '</p><p>');
+}
+
+function wrapArticleShell(title: string, renderedContent: string): string {
+  return `<div class="blog-page"><div class="blog-post-container"><article class="blog-article-modal"><h1 class="blog-post-title">${escapeHtml(title)}</h1><div class="blog-article-content">${renderedContent}</div></article></div></div>`;
+}
+
+// HowTo schema for database guide
+const HOWTO_SCHEMA = {
+  "@context": "https://schema.org",
+  "@type": "HowTo",
+  "name": "How to Search the FCA Fines Database",
+  "description": "Step-by-step guide to searching and filtering FCA fines using the interactive dashboard.",
+  "step": [
+    { "@type": "HowToStep", "position": 1, "name": "Navigate to Dashboard", "text": "Open the FCA Fines Dashboard at fcafines.memaconsultants.com/dashboard to access the complete database of Financial Conduct Authority penalties.", "url": `${BASE_URL}/dashboard` },
+    { "@type": "HowToStep", "position": 2, "name": "Search by Firm", "text": "Use the search bar to find fines by firm or individual name. Type a company name like 'Barclays' or 'HSBC' to filter results instantly." },
+    { "@type": "HowToStep", "position": 3, "name": "Filter by Year", "text": "Select a specific year from the year dropdown to view all FCA fines issued in that period, from 2013 to the current year." },
+    { "@type": "HowToStep", "position": 4, "name": "Filter by Breach Category", "text": "Choose a breach category such as AML, Market Abuse, or Consumer Protection to see fines grouped by the type of regulatory failure." },
+    { "@type": "HowToStep", "position": 5, "name": "Filter by Amount", "text": "Use the advanced filters to set a minimum and maximum fine amount, helping you identify the largest or smallest penalties." },
+    { "@type": "HowToStep", "position": 6, "name": "Export Data", "text": "Click the export button to download the filtered results as a CSV file for further analysis in Excel or other tools." },
+  ]
+};
 
 // ---------------------------------------------------------------------------
 // Per-page @graph generation (BreadcrumbList, Dataset, WebPage, SearchAction)
@@ -225,13 +279,26 @@ async function buildPageMetas(): Promise<PageMeta[]> {
     extraJsonLd: homepageFaqs.length > 0 ? [generateFaqSchema(homepageFaqs)] : [],
   });
 
-  // 2. Dashboard
+  // 2. Dashboard (with DataFeed schema)
   pages.push({
     path: '/dashboard',
     title: 'FCA Fines Dashboard | Interactive Analytics & Search',
     description: 'Interactive FCA fines dashboard. Search all Financial Conduct Authority penalties by firm, year, amount and breach category. Export data and analyse enforcement trends.',
     keywords: 'FCA fines dashboard, FCA fines search, FCA fines tracker, FCA penalty analytics, FCA fines data',
     ogType: 'website',
+    extraJsonLd: [{
+      "@context": "https://schema.org",
+      "@type": "DataFeed",
+      "name": "FCA Fines Live Data Feed",
+      "description": "Real-time feed of Financial Conduct Authority fines and enforcement actions, updated as new penalties are published.",
+      "url": `${BASE_URL}/dashboard`,
+      "dateModified": todayISO(),
+      "potentialAction": [
+        { "@type": "SearchAction", "name": "Search FCA Fines", "target": { "@type": "EntryPoint", "urlTemplate": `${BASE_URL}/dashboard?search={query}` }, "query-input": "required name=query" },
+        { "@type": "FilterAction", "name": "Filter by Year", "target": { "@type": "EntryPoint", "urlTemplate": `${BASE_URL}/dashboard?year={year}` } },
+        { "@type": "DownloadAction", "name": "Export FCA Fines CSV", "target": { "@type": "EntryPoint", "urlTemplate": `${BASE_URL}/dashboard` } },
+      ]
+    }],
   });
 
   // 3. Topics (hub landing)
@@ -359,9 +426,15 @@ async function buildPageMetas(): Promise<PageMeta[]> {
     jsonLd: generateFaqSchema(faqItems),
   });
 
-  // 6. Blog articles (Article schema + FAQPage schema where mapped)
+  // 6. Blog articles (Article schema + FAQPage schema where mapped + SSG body + OG images)
   for (const article of blogArticles) {
     const articleFaqs = getFaqsForArticle(article.slug);
+    const articleOgImage = `${BASE_URL}/og/${article.slug}.png`;
+    const renderedBody = wrapArticleShell(article.title, renderMarkdownToHtml(article.content));
+    const extraLd: object[] = [];
+    if (articleFaqs.length > 0) extraLd.push(generateFaqSchema(articleFaqs));
+    // HowTo schema for database guide
+    if (article.id === 'fca-fines-database-guide') extraLd.push(HOWTO_SCHEMA);
     pages.push({
       path: `/blog/${article.slug}`,
       title: article.seoTitle,
@@ -372,6 +445,8 @@ async function buildPageMetas(): Promise<PageMeta[]> {
       dateModified: article.dateISO,
       articleSection: article.category,
       breadcrumbLabel: article.title,
+      bodyContent: renderedBody,
+      ogImage: articleOgImage,
       jsonLd: {
         "@context": "https://schema.org",
         "@type": "Article",
@@ -390,22 +465,34 @@ async function buildPageMetas(): Promise<PageMeta[]> {
         "articleSection": article.category,
         "image": {
           "@type": "ImageObject",
-          "url": OG_IMAGE,
+          "url": articleOgImage,
           "width": 1200,
           "height": 630,
           "caption": "FCA Fines Dashboard - Financial Conduct Authority Enforcement Data"
         },
       },
-      extraJsonLd: articleFaqs.length > 0 ? [generateFaqSchema(articleFaqs)] : [],
+      extraJsonLd: extraLd,
     });
   }
 
-  // 7. Yearly review articles (Article schema + FAQPage schema)
+  // 7. Yearly review articles (AnalysisNewsArticle schema + FAQPage schema + SSG body + OG images)
   const buildDate = todayISO();
   for (const article of yearlyArticles) {
     const yearlyFaqs = getFaqsForYearlyArticle(article.year);
     const yearEnd = `${article.year}-12-31`;
     const clampedDateModified = clampISODate(yearEnd, buildDate);
+    const yearlyOgImage = `${BASE_URL}/og/${article.slug}.png`;
+
+    // Build SSG body for yearly articles from structured sections
+    const yearlyBodyParts = [
+      `<h2>Executive Summary</h2>${article.executiveSummary.split('\n\n').map(p => `<p>${p}</p>`).join('')}`,
+      `<h2>Regulatory Context</h2>${article.regulatoryContext.split('\n\n').map(p => `<p>${p}</p>`).join('')}`,
+      `<h2>Key Enforcement Themes</h2><ul>${article.keyEnforcementThemes.map(t => `<li>${t}</li>`).join('')}</ul>`,
+      `<h2>Professional Insight</h2>${article.professionalInsight.split('\n\n').map(p => `<p>${p}</p>`).join('')}`,
+      `<h2>Looking Ahead</h2>${article.lookingAhead.split('\n\n').map(p => `<p>${p}</p>`).join('')}`,
+    ].join('');
+    const yearlyBody = wrapArticleShell(article.title, yearlyBodyParts);
+
     pages.push({
       path: `/blog/${article.slug}`,
       title: article.seoTitle,
@@ -416,9 +503,11 @@ async function buildPageMetas(): Promise<PageMeta[]> {
       dateModified: clampedDateModified,
       articleSection: 'Annual Analysis',
       breadcrumbLabel: article.title,
+      bodyContent: yearlyBody,
+      ogImage: yearlyOgImage,
       jsonLd: {
         "@context": "https://schema.org",
-        "@type": "Article",
+        "@type": "AnalysisNewsArticle",
         "headline": article.seoTitle,
         "description": article.excerpt,
         "datePublished": `${article.year}-01-01`,
@@ -434,7 +523,7 @@ async function buildPageMetas(): Promise<PageMeta[]> {
         "articleSection": "Annual Analysis",
         "image": {
           "@type": "ImageObject",
-          "url": OG_IMAGE,
+          "url": yearlyOgImage,
           "width": 1200,
           "height": 630,
           "caption": "FCA Fines Dashboard - Financial Conduct Authority Enforcement Data"
@@ -541,7 +630,7 @@ function renderPage(template: string, meta: PageMeta): string {
     `<link rel="canonical" href="${canonicalUrl}" />`
   );
 
-  // Replace hreflang URLs
+  // Replace hreflang URLs (including en-us)
   html = html.replace(
     /<link\s+rel="alternate"\s+hreflang="en-gb"\s+href="[^"]*"\s*\/?>/,
     `<link rel="alternate" hreflang="en-gb" href="${canonicalUrl}" />`
@@ -549,6 +638,10 @@ function renderPage(template: string, meta: PageMeta): string {
   html = html.replace(
     /<link\s+rel="alternate"\s+hreflang="en"\s+href="[^"]*"\s*\/?>/,
     `<link rel="alternate" hreflang="en" href="${canonicalUrl}" />`
+  );
+  html = html.replace(
+    /<link\s+rel="alternate"\s+hreflang="en-us"\s+href="[^"]*"\s*\/?>/,
+    `<link rel="alternate" hreflang="en-us" href="${canonicalUrl}" />`
   );
   html = html.replace(
     /<link\s+rel="alternate"\s+hreflang="x-default"\s+href="[^"]*"\s*\/?>/,
@@ -586,6 +679,26 @@ function renderPage(template: string, meta: PageMeta): string {
     /<meta\s+name="twitter:description"[^>]*\/>/,
     `<meta name="twitter:description" content="${escapeHtml(meta.description)}" />`
   );
+
+  // Replace OG image and Twitter image when custom ogImage is set
+  if (meta.ogImage) {
+    html = html.replace(
+      /<meta\s+property="og:image"\s+content="[^"]*"\s*\/?>/,
+      `<meta property="og:image" content="${meta.ogImage}" />`
+    );
+    html = html.replace(
+      /<meta\s+name="twitter:image"\s+content="[^"]*"\s*\/?>/,
+      `<meta name="twitter:image" content="${meta.ogImage}" />`
+    );
+  }
+
+  // Inject SSG body content into <div id="root"> (React hydrates over it)
+  if (meta.bodyContent) {
+    html = html.replace(
+      '<div id="root"></div>',
+      `<div id="root">${meta.bodyContent}</div>`
+    );
+  }
 
   // Replace the static @graph with per-page version (correct BreadcrumbList, WebPage, Dataset)
   const pageGraph = generatePageGraph(meta);

@@ -1122,6 +1122,59 @@
   color: var(--blog-text-secondary);
 }
 
+/* ── Blog Pagination ──────────────────────────────────────────────────── */
+
+.blog-pagination {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 0.5rem;
+  margin-top: 2.5rem;
+  padding-top: 1.5rem;
+  flex-wrap: wrap;
+}
+
+.blog-pagination__btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 40px;
+  height: 40px;
+  padding: 0.5rem 0.75rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--blog-text-secondary);
+  background: var(--blog-card-bg);
+  border: 1px solid var(--blog-border);
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.blog-pagination__btn:hover:not(:disabled) {
+  color: var(--blog-accent);
+  border-color: var(--blog-accent);
+  background: var(--blog-accent-light);
+}
+
+.blog-pagination__btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.blog-pagination__btn--active {
+  color: #FFFFFF;
+  background: var(--blog-accent);
+  border-color: var(--blog-accent);
+  font-weight: 600;
+}
+
+.blog-pagination__btn--active:hover {
+  background: var(--blog-accent-dark);
+  color: #FFFFFF;
+  border-color: var(--blog-accent-dark);
+}
+
 @media (max-width: 600px) {
   .related-articles__grid {
     grid-template-columns: 1fr;

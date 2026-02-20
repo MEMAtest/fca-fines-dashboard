@@ -59,22 +59,69 @@ const formatYearlyCurrency = (amount: number): string => {
   return `£${(amount / 1_000).toFixed(0)}k`;
 };
 
+// HowTo schema for the database guide article
+const HOWTO_SCHEMA = {
+  "@context": "https://schema.org",
+  "@type": "HowTo",
+  "name": "How to Search the FCA Fines Database",
+  "description": "Step-by-step guide to searching and filtering FCA fines using the interactive dashboard.",
+  "step": [
+    {
+      "@type": "HowToStep",
+      "position": 1,
+      "name": "Navigate to Dashboard",
+      "text": "Open the FCA Fines Dashboard at fcafines.memaconsultants.com/dashboard to access the complete database of Financial Conduct Authority penalties.",
+      "url": "https://fcafines.memaconsultants.com/dashboard"
+    },
+    {
+      "@type": "HowToStep",
+      "position": 2,
+      "name": "Search by Firm",
+      "text": "Use the search bar to find fines by firm or individual name. Type a company name like 'Barclays' or 'HSBC' to filter results instantly."
+    },
+    {
+      "@type": "HowToStep",
+      "position": 3,
+      "name": "Filter by Year",
+      "text": "Select a specific year from the year dropdown to view all FCA fines issued in that period, from 2013 to the current year."
+    },
+    {
+      "@type": "HowToStep",
+      "position": 4,
+      "name": "Filter by Breach Category",
+      "text": "Choose a breach category such as AML, Market Abuse, or Consumer Protection to see fines grouped by the type of regulatory failure."
+    },
+    {
+      "@type": "HowToStep",
+      "position": 5,
+      "name": "Filter by Amount",
+      "text": "Use the advanced filters to set a minimum and maximum fine amount, helping you identify the largest or smallest penalties."
+    },
+    {
+      "@type": "HowToStep",
+      "position": 6,
+      "name": "Export Data",
+      "text": "Click the export button to download the filtered results as a CSV file for further analysis in Excel or other tools."
+    }
+  ]
+};
+
 // Related articles mapping for internal linking
 const RELATED_ARTICLES: Record<string, string[]> = {
-  '20-biggest-fca-fines-of-all-time': ['fca-fines-banks-complete-list', 'fca-enforcement-trends-2013-2025'],
-  'fca-fines-2025-complete-list': ['fca-enforcement-trends-2013-2025', '20-biggest-fca-fines-of-all-time'],
-  'fca-fines-database-how-to-search': ['fca-final-notices-explained', '20-biggest-fca-fines-of-all-time'],
-  'fca-aml-fines-anti-money-laundering': ['fca-fines-banks-complete-list', '20-biggest-fca-fines-of-all-time'],
-  'fca-fines-banks-complete-list': ['20-biggest-fca-fines-of-all-time', 'fca-aml-fines-anti-money-laundering'],
-  'fca-enforcement-trends-2013-2025': ['20-biggest-fca-fines-of-all-time', 'fca-fines-2025-complete-list'],
-  'fca-final-notices-explained': ['fca-fines-database-how-to-search', 'senior-managers-regime-fca-fines'],
-  'senior-managers-regime-fca-fines': ['fca-fines-individuals-personal-accountability', 'fca-final-notices-explained'],
-  'fca-fines-january-2026': ['fca-fines-february-2026', 'fca-enforcement-outlook-february-2026'],
-  'fca-enforcement-outlook-february-2026': ['fca-fines-february-2026', 'fca-fines-january-2026'],
-  'fca-fines-february-2026': ['fca-fines-january-2026', 'fca-fines-march-2026'],
-  'fca-fines-individuals-personal-accountability': ['senior-managers-regime-fca-fines', 'fca-final-notices-explained'],
-  'fca-fines-march-2026': ['fca-fines-february-2026', 'fca-fines-january-2026'],
-  'fca-fines-insurance-sector': ['fca-fines-banks-complete-list', 'fca-aml-fines-anti-money-laundering'],
+  '20-biggest-fca-fines-of-all-time': ['fca-fines-banks-complete-list', 'fca-enforcement-trends-2013-2025', 'fca-aml-fines-anti-money-laundering'],
+  'fca-fines-2025-complete-list': ['fca-enforcement-trends-2013-2025', '20-biggest-fca-fines-of-all-time', 'fca-aml-fines-anti-money-laundering'],
+  'fca-fines-database-how-to-search': ['fca-final-notices-explained', '20-biggest-fca-fines-of-all-time', 'fca-enforcement-trends-2013-2025'],
+  'fca-aml-fines-anti-money-laundering': ['fca-fines-banks-complete-list', '20-biggest-fca-fines-of-all-time', 'fca-enforcement-trends-2013-2025'],
+  'fca-fines-banks-complete-list': ['20-biggest-fca-fines-of-all-time', 'fca-aml-fines-anti-money-laundering', 'fca-fines-insurance-sector'],
+  'fca-enforcement-trends-2013-2025': ['20-biggest-fca-fines-of-all-time', 'fca-fines-2025-complete-list', 'fca-aml-fines-anti-money-laundering'],
+  'fca-final-notices-explained': ['fca-fines-database-how-to-search', 'senior-managers-regime-fca-fines', 'fca-enforcement-trends-2013-2025'],
+  'senior-managers-regime-fca-fines': ['fca-fines-individuals-personal-accountability', 'fca-final-notices-explained', '20-biggest-fca-fines-of-all-time'],
+  'fca-fines-january-2026': ['fca-fines-february-2026', 'fca-enforcement-outlook-february-2026', 'fca-enforcement-trends-2013-2025'],
+  'fca-enforcement-outlook-february-2026': ['fca-fines-february-2026', 'fca-fines-january-2026', 'fca-enforcement-trends-2013-2025'],
+  'fca-fines-february-2026': ['fca-fines-january-2026', 'fca-fines-march-2026', 'fca-enforcement-trends-2013-2025'],
+  'fca-fines-individuals-personal-accountability': ['senior-managers-regime-fca-fines', 'fca-final-notices-explained', '20-biggest-fca-fines-of-all-time'],
+  'fca-fines-march-2026': ['fca-fines-february-2026', 'fca-fines-january-2026', 'fca-enforcement-trends-2013-2025'],
+  'fca-fines-insurance-sector': ['fca-fines-banks-complete-list', 'fca-aml-fines-anti-money-laundering', '20-biggest-fca-fines-of-all-time'],
 };
 
 function RelatedArticles({ currentSlug }: { currentSlug: string }) {
@@ -153,6 +200,7 @@ function renderMarkdownContent(content: string) {
       html += inBody ? '</tbody></table>' : '</thead></table>';
       return html;
     })
+    .replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2">$1</a>')
     .replace(/^## (.+)$/gm, '<h2>$1</h2>')
     .replace(/^### (.+)$/gm, '<h3>$1</h3>')
     .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
@@ -172,7 +220,7 @@ function generateArticleSchema(article: BlogArticleMeta | YearlyArticleMeta) {
   const dateModified = isYearly ? clampToToday(`${article.year}-12-31`) : article.dateISO;
   return {
     "@context": "https://schema.org",
-    "@type": "Article",
+    "@type": isYearly ? "AnalysisNewsArticle" : "Article",
     "headline": article.seoTitle,
     "description": article.excerpt,
     "datePublished": isYearly ? `${article.year}-01-01` : article.dateISO,
@@ -216,6 +264,7 @@ function BlogArticlePage({ article }: { article: BlogArticleMeta }) {
     keywords: article.keywords.join(', '),
     canonicalPath: `/blog/${article.slug}`,
     ogType: 'article',
+    ogImage: `https://fcafines.memaconsultants.com/og/${article.slug}.png`,
     articlePublishedTime: article.dateISO,
     articleModifiedTime: article.dateISO,
     articleSection: article.category,
@@ -237,6 +286,17 @@ function BlogArticlePage({ article }: { article: BlogArticleMeta }) {
     document.head.appendChild(script);
     return () => { script.remove(); };
   }, [article.slug]);
+
+  // Inject HowTo schema for the database guide article
+  useEffect(() => {
+    if (article.id !== 'fca-fines-database-guide') return;
+    const script = document.createElement('script');
+    script.type = 'application/ld+json';
+    script.setAttribute('data-howto-ld', 'true');
+    script.textContent = JSON.stringify(HOWTO_SCHEMA);
+    document.head.appendChild(script);
+    return () => { script.remove(); };
+  }, [article.id]);
 
   return (
     <div className="blog-page">
@@ -412,6 +472,7 @@ function YearlyArticlePage({ article }: { article: YearlyArticleMeta }) {
     keywords: article.keywords.join(', '),
     canonicalPath: `/blog/${article.slug}`,
     ogType: 'article',
+    ogImage: `https://fcafines.memaconsultants.com/og/${article.slug}.png`,
     articlePublishedTime: `${article.year}-01-01`,
     articleModifiedTime: clampToToday(`${article.year}-12-31`),
     articleSection: 'Annual Analysis',
