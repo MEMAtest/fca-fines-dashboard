@@ -7,7 +7,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   }
 
   try {
-    const sql = postgres(process.env.DATABASE_URL || process.env.NEON_FCA_FINES_URL!);
+    const sql = postgres(process.env.DATABASE_URL);
 
     // Get aggregate statistics
     const stats = await sql`

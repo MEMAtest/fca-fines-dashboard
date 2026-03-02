@@ -207,20 +207,21 @@ interface MonthFineRecord {
 
 async function fetchMonthData(month: number, year: number): Promise<MonthFineRecord[] | null> {
   try {
-    const { neon } = await import('@neondatabase/serverless');
+    const { default: postgres } = await import('postgres');
     const { default: dotenv } = await import('dotenv');
     dotenv.config();
     if (!process.env.DATABASE_URL) {
       console.warn('  WARN: DATABASE_URL not set, skipping data fetch');
       return null;
     }
-    const sql = neon(process.env.DATABASE_URL);
+    const sql = postgres(process.env.DATABASE_URL);
     const rows = await sql`
       SELECT firm_individual, amount, date_issued, breach_type, breach_categories
       FROM fca_fines
       WHERE year_issued = ${year} AND month_issued = ${month}
       ORDER BY amount DESC
     `;
+    await sql.end();
     return rows as MonthFineRecord[];
   } catch (error) {
     console.warn('  WARN: Could not fetch data:', error instanceof Error ? error.message : String(error));

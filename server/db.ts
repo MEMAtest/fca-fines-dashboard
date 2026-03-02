@@ -2,11 +2,7 @@ import postgres from 'postgres';
 
 const CONNECTION_ENV_KEYS = [
   'DATABASE_URL',
-  'NEON_FCA_FINES_URL',
-  'HORIZON_DB_URL',
-  'NEON_DATABASE_URL',
   'POSTGRES_URL',
-  'POSTGRES_PRISMA_URL',
 ] as const;
 
 function resolveConnectionString() {

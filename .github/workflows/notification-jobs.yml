@@ -46,7 +46,7 @@ jobs:
 
       - name: Process alert notifications
         env:
-          NEON_FCA_FINES_URL: ${{ secrets.NEON_FCA_FINES_URL }}
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           AWS_SES_REGION: ${{ vars.AWS_SES_REGION || 'eu-west-2' }}
@@ -78,7 +78,7 @@ jobs:
 
       - name: Send weekly digest
         env:
-          NEON_FCA_FINES_URL: ${{ secrets.NEON_FCA_FINES_URL }}
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           AWS_SES_REGION: ${{ vars.AWS_SES_REGION || 'eu-west-2' }}
@@ -110,7 +110,7 @@ jobs:
 
       - name: Send monthly digest
         env:
-          NEON_FCA_FINES_URL: ${{ secrets.NEON_FCA_FINES_URL }}
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           AWS_SES_REGION: ${{ vars.AWS_SES_REGION || 'eu-west-2' }}

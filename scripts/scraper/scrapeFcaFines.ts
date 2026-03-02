@@ -6,7 +6,7 @@ import postgres from 'postgres';
 
 const BASE_URL = 'https://www.fca.org.uk';
 const FINES_PATH = 'news/news-stories';
-const neonUrl = process.env.DATABASE_URL || process.env.NEON_FCA_FINES_URL;
+const neonUrl = process.env.DATABASE_URL;
 const dryRun = process.argv.includes('--dry-run') && !process.argv.includes('--upsert');
 const sinceCutoff = process.env.FCA_SINCE_DATE ? new Date(process.env.FCA_SINCE_DATE) : null;
 const userAgent =
@@ -36,7 +36,7 @@ const yearsToScrape = yearEnv
     })();
 
 if (!neonUrl && !dryRun) {
-  throw new Error('DATABASE_URL (or NEON_FCA_FINES_URL) is required unless running in --dry-run mode');
+  throw new Error('DATABASE_URL is required unless running in --dry-run mode');
 }
 
 interface FcaFineRecord {

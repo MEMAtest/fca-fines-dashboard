@@ -31,12 +31,12 @@ jobs:
       - name: Verify environment configuration
         run: |
           echo "Checking environment variables..."
-          if [ -z "$NEON_FCA_FINES_URL" ]; then
-            echo "❌ ERROR: NEON_FCA_FINES_URL is not set!"
+          if [ -z "$DATABASE_URL" ]; then
+            echo "❌ ERROR: DATABASE_URL is not set!"
             echo "Please configure this secret in GitHub Settings > Secrets and variables > Actions"
             exit 1
           else
-            echo "✅ NEON_FCA_FINES_URL is configured"
+            echo "✅ DATABASE_URL is configured"
           fi
 
           echo "FCA_YEARS: ${FCA_YEARS:-'not set (will use defaults)'}"
@@ -44,7 +44,7 @@ jobs:
           echo "FCA_END_YEAR: ${FCA_END_YEAR:-'not set (will use current year)'}"
           echo "FCA_SINCE_DATE: ${FCA_SINCE_DATE:-'not set'}"
         env:
-          NEON_FCA_FINES_URL: ${{ secrets.NEON_FCA_FINES_URL }}
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
           FCA_USER_AGENT: ${{ secrets.FCA_USER_AGENT }}
           FCA_YEARS: ${{ vars.FCA_YEARS }}
           FCA_START_YEAR: ${{ vars.FCA_START_YEAR }}
@@ -53,7 +53,7 @@ jobs:
 
       - name: Run FCA scraper
         env:
-          NEON_FCA_FINES_URL: ${{ secrets.NEON_FCA_FINES_URL }}
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
           FCA_USER_AGENT: ${{ secrets.FCA_USER_AGENT }}
           FCA_YEARS: ${{ vars.FCA_YEARS }}
           FCA_START_YEAR: ${{ vars.FCA_START_YEAR }}

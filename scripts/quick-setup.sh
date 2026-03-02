@@ -32,8 +32,8 @@ REPO="MEMAtest/fca-fines-dashboard"
 
 # Configure secrets
 echo "🔒 Configuring secrets..."
-echo "$NEON_FCA_FINES_URL" | gh secret set NEON_FCA_FINES_URL --repo="$REPO"
-echo "✅ NEON_FCA_FINES_URL set"
+echo "$DATABASE_URL" | gh secret set DATABASE_URL --repo="$REPO"
+echo "✅ DATABASE_URL set"
 
 if [ -n "$FCA_USER_AGENT" ]; then
     echo "$FCA_USER_AGENT" | gh secret set FCA_USER_AGENT --repo="$REPO"

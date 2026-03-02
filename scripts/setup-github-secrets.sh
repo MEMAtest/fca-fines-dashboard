@@ -52,16 +52,16 @@ echo ""
 echo "🔒 Configuring GitHub Secrets..."
 echo "================================="
 
-# Set NEON_FCA_FINES_URL secret
-if [ -z "$NEON_FCA_FINES_URL" ]; then
-    echo "❌ NEON_FCA_FINES_URL not found in environment"
+# Set DATABASE_URL secret
+if [ -z "$DATABASE_URL" ]; then
+    echo "❌ DATABASE_URL not found in environment"
     echo "   Please set it in .env file or environment variable"
     exit 1
 fi
 
-echo "Setting NEON_FCA_FINES_URL..."
-echo "$NEON_FCA_FINES_URL" | gh secret set NEON_FCA_FINES_URL --repo="$REPO"
-echo "✅ NEON_FCA_FINES_URL configured"
+echo "Setting DATABASE_URL..."
+echo "$DATABASE_URL" | gh secret set DATABASE_URL --repo="$REPO"
+echo "✅ DATABASE_URL configured"
 
 # Set FCA_USER_AGENT secret (optional)
 if [ -n "$FCA_USER_AGENT" ]; then

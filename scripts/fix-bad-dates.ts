@@ -3,7 +3,7 @@ import * as dotenv from 'dotenv';
 
 dotenv.config();
 
-const sql = postgres(process.env.DATABASE_URL || process.env.NEON_FCA_FINES_URL!);
+const sql = postgres(process.env.DATABASE_URL);
 
 async function fixBadDates() {
   console.log('🔍 Finding records with bad dates (year < 2000)...\n');

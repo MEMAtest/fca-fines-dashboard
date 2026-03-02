@@ -19,9 +19,9 @@ echo ""
 echo "Checking required environment variables:"
 echo ""
 
-# Check NEON_FCA_FINES_URL
-if [ -z "$NEON_FCA_FINES_URL" ]; then
-    echo "❌ NEON_FCA_FINES_URL is NOT set"
+# Check DATABASE_URL
+if [ -z "$DATABASE_URL" ]; then
+    echo "❌ DATABASE_URL is NOT set"
     echo "   This is required for the scraper to work!"
     echo "   Set it in:"
     echo "   - Local: Add to .env file"
@@ -29,8 +29,8 @@ if [ -z "$NEON_FCA_FINES_URL" ]; then
     EXIT_CODE=1
 else
     # Show partial connection string (hide password)
-    MASKED_URL=$(echo "$NEON_FCA_FINES_URL" | sed -E 's/(:[^:@]+@)/:*****@/')
-    echo "✅ NEON_FCA_FINES_URL is set"
+    MASKED_URL=$(echo "$DATABASE_URL" | sed -E 's/(:[^:@]+@)/:*****@/')
+    echo "✅ DATABASE_URL is set"
     echo "   Connection: $MASKED_URL"
 fi
 
@@ -80,7 +80,7 @@ if [ "${EXIT_CODE:-0}" -eq 1 ]; then
     echo "❌ Setup verification FAILED"
     echo ""
     echo "Required action:"
-    echo "1. Set NEON_FCA_FINES_URL in your environment"
+    echo "1. Set DATABASE_URL in your environment"
     echo "2. Run this script again to verify"
     exit 1
 else
