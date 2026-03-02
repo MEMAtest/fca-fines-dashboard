@@ -1,7 +1,7 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
-import postgres from 'postgres';
+import { getSqlClient } from '../../../server/db.js';
 
-const sql = postgres(process.env.DATABASE_URL);
+const sql = getSqlClient();
 const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || 'https://fcafines.memaconsultants.com';
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {

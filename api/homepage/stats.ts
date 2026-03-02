@@ -1,5 +1,7 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
-import postgres from 'postgres';
+import { getSqlClient } from '../../server/db.js';
+
+const sql = getSqlClient();
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   if (req.method !== 'GET') {
@@ -7,7 +9,6 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   }
 
   try {
-    const sql = postgres(process.env.DATABASE_URL);
 
     // Get aggregate statistics
     const stats = await sql`

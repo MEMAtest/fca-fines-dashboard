@@ -1,9 +1,9 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
-import postgres from 'postgres';
+import { getSqlClient } from '../../server/db.js';
 import { randomUUID } from 'crypto';
 import { SESClient, SendEmailCommand } from '@aws-sdk/client-ses';
 
-const sql = postgres(process.env.DATABASE_URL);
+const sql = getSqlClient();
 
 const ses = new SESClient({
   region: process.env.AWS_SES_REGION || 'eu-west-2',
