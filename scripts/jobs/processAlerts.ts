@@ -7,10 +7,10 @@
  * 3. Send notification emails via AWS SES
  */
 
-import { neon } from '@neondatabase/serverless';
+import postgres from 'postgres';
 import { SESClient, SendEmailCommand } from '@aws-sdk/client-ses';
 
-const sql = neon(process.env.NEON_FCA_FINES_URL!);
+const sql = postgres(process.env.DATABASE_URL || process.env.NEON_FCA_FINES_URL!);
 
 const ses = new SESClient({
   region: process.env.AWS_SES_REGION || 'eu-west-2',

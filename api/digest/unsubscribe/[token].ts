@@ -1,7 +1,7 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
-import { neon } from '@neondatabase/serverless';
+import postgres from 'postgres';
 
-const sql = neon(process.env.NEON_FCA_FINES_URL!);
+const sql = postgres(process.env.DATABASE_URL || process.env.NEON_FCA_FINES_URL!);
 const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || 'https://fcafines.memaconsultants.com';
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {

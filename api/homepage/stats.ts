@@ -1,5 +1,5 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
-import { neon } from '@neondatabase/serverless';
+import postgres from 'postgres';
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   if (req.method !== 'GET') {
@@ -7,7 +7,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   }
 
   try {
-    const sql = neon(process.env.NEON_FCA_FINES_URL!);
+    const sql = postgres(process.env.DATABASE_URL || process.env.NEON_FCA_FINES_URL!);
 
     // Get aggregate statistics
     const stats = await sql`
