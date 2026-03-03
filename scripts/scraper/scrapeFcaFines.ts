@@ -311,6 +311,7 @@ async function upsertRecords(records: FcaFineRecord[]) {
     `;
   }
   await sql`SELECT refresh_fca_fine_trends();`;
+  await sql.end();
 }
 
 async function main() {
@@ -340,7 +341,9 @@ async function main() {
   console.log('Upsert complete.');
 }
 
-main().catch((error) => {
-  console.error('Scraper failed:', error);
-  process.exit(1);
-});
+main()
+  .then(() => process.exit(0))
+  .catch((error) => {
+    console.error('Scraper failed:', error);
+    process.exit(1);
+  });

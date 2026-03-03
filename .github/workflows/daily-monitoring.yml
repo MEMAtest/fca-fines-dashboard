@@ -1,0 +1,221 @@
+name: Daily Infrastructure Monitoring
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '0 7 * * *' # 07:00 UTC — after scraper (06:00) and alerts (06:15)
+
+jobs:
+  monitor:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Install postgres client
+        run: sudo apt-get install -y postgresql-client
+
+      - name: Check PostgreSQL connectivity
+        id: pg_check
+        continue-on-error: true
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+        run: |
+          echo "Checking PostgreSQL connectivity..."
+          RESULT=$(psql "$DATABASE_URL" -c "SELECT count(*) AS total FROM fca_fines;" -t -A 2>&1)
+          if [ $? -eq 0 ]; then
+            echo "✅ PostgreSQL OK — $RESULT fines in database"
+            echo "status=ok" >> $GITHUB_OUTPUT
+            echo "detail=PostgreSQL OK — $RESULT fines in database" >> $GITHUB_OUTPUT
+          else
+            echo "❌ PostgreSQL FAILED: $RESULT"
+            echo "status=fail" >> $GITHUB_OUTPUT
+            echo "detail=PostgreSQL FAILED: $RESULT" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Check Coolify dashboard
+        id: coolify_check
+        continue-on-error: true
+        run: |
+          echo "Checking Coolify dashboard..."
+          HTTP_CODE=$(curl -sf -o /dev/null -w "%{http_code}" --connect-timeout 10 http://89.167.95.173:8000 2>&1 || echo "000")
+          if [ "$HTTP_CODE" -ge 200 ] && [ "$HTTP_CODE" -lt 400 ]; then
+            echo "✅ Coolify OK (HTTP $HTTP_CODE)"
+            echo "status=ok" >> $GITHUB_OUTPUT
+            echo "detail=Coolify OK (HTTP $HTTP_CODE)" >> $GITHUB_OUTPUT
+          else
+            echo "❌ Coolify FAILED (HTTP $HTTP_CODE)"
+            echo "status=fail" >> $GITHUB_OUTPUT
+            echo "detail=Coolify FAILED (HTTP $HTTP_CODE)" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Check pgAdmin
+        id: pgadmin_check
+        continue-on-error: true
+        run: |
+          echo "Checking pgAdmin..."
+          HTTP_CODE=$(curl -sf -o /dev/null -w "%{http_code}" --connect-timeout 10 http://89.167.95.173:5050 2>&1 || echo "000")
+          if [ "$HTTP_CODE" -ge 200 ] && [ "$HTTP_CODE" -lt 400 ]; then
+            echo "✅ pgAdmin OK (HTTP $HTTP_CODE)"
+            echo "status=ok" >> $GITHUB_OUTPUT
+            echo "detail=pgAdmin OK (HTTP $HTTP_CODE)" >> $GITHUB_OUTPUT
+          else
+            echo "❌ pgAdmin FAILED (HTTP $HTTP_CODE)"
+            echo "status=fail" >> $GITHUB_OUTPUT
+            echo "detail=pgAdmin FAILED (HTTP $HTTP_CODE)" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Check FCA Fines API
+        id: fcafines_check
+        continue-on-error: true
+        run: |
+          echo "Checking FCA Fines API..."
+          HTTP_CODE=$(curl -sf -o /dev/null -w "%{http_code}" --connect-timeout 10 https://fcafines.memaconsultants.com/api/fca-fines/years 2>&1 || echo "000")
+          if [ "$HTTP_CODE" -ge 200 ] && [ "$HTTP_CODE" -lt 400 ]; then
+            echo "✅ FCA Fines API OK (HTTP $HTTP_CODE)"
+            echo "status=ok" >> $GITHUB_OUTPUT
+            echo "detail=FCA Fines API OK (HTTP $HTTP_CODE)" >> $GITHUB_OUTPUT
+          else
+            echo "❌ FCA Fines API FAILED (HTTP $HTTP_CODE)"
+            echo "status=fail" >> $GITHUB_OUTPUT
+            echo "detail=FCA Fines API FAILED (HTTP $HTTP_CODE)" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Check MEMA Platform
+        id: mema_check
+        continue-on-error: true
+        run: |
+          echo "Checking MEMA Platform..."
+          HTTP_CODE=$(curl -sf -o /dev/null -w "%{http_code}" --connect-timeout 10 https://memaconsultants.com 2>&1 || echo "000")
+          if [ "$HTTP_CODE" -ge 200 ] && [ "$HTTP_CODE" -lt 400 ]; then
+            echo "✅ MEMA Platform OK (HTTP $HTTP_CODE)"
+            echo "status=ok" >> $GITHUB_OUTPUT
+            echo "detail=MEMA Platform OK (HTTP $HTTP_CODE)" >> $GITHUB_OUTPUT
+          else
+            echo "❌ MEMA Platform FAILED (HTTP $HTTP_CODE)"
+            echo "status=fail" >> $GITHUB_OUTPUT
+            echo "detail=MEMA Platform FAILED (HTTP $HTTP_CODE)" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Check Horizon Scanner
+        id: horizon_check
+        continue-on-error: true
+        run: |
+          echo "Checking Horizon Scanner..."
+          HTTP_CODE=$(curl -sf -o /dev/null -w "%{http_code}" --connect-timeout 10 https://regcanary.com 2>&1 || echo "000")
+          if [ "$HTTP_CODE" -ge 200 ] && [ "$HTTP_CODE" -lt 400 ]; then
+            echo "✅ Horizon Scanner OK (HTTP $HTTP_CODE)"
+            echo "status=ok" >> $GITHUB_OUTPUT
+            echo "detail=Horizon Scanner OK (HTTP $HTTP_CODE)" >> $GITHUB_OUTPUT
+          else
+            echo "❌ Horizon Scanner FAILED (HTTP $HTTP_CODE)"
+            echo "status=fail" >> $GITHUB_OUTPUT
+            echo "detail=Horizon Scanner FAILED (HTTP $HTTP_CODE)" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Check FOS Complaints
+        id: fos_check
+        continue-on-error: true
+        run: |
+          echo "Checking FOS Complaints..."
+          HTTP_CODE=$(curl -sf -o /dev/null -w "%{http_code}" --connect-timeout 10 https://foscomplaints.memaconsultants.com 2>&1 || echo "000")
+          if [ "$HTTP_CODE" -ge 200 ] && [ "$HTTP_CODE" -lt 400 ]; then
+            echo "✅ FOS Complaints OK (HTTP $HTTP_CODE)"
+            echo "status=ok" >> $GITHUB_OUTPUT
+            echo "detail=FOS Complaints OK (HTTP $HTTP_CODE)" >> $GITHUB_OUTPUT
+          else
+            echo "❌ FOS Complaints FAILED (HTTP $HTTP_CODE)"
+            echo "status=fail" >> $GITHUB_OUTPUT
+            echo "detail=FOS Complaints FAILED (HTTP $HTTP_CODE)" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Compile results and alert on failure
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          AWS_DEFAULT_REGION: eu-west-2
+        run: |
+          echo "========================================="
+          echo "  Daily Infrastructure Monitoring Report"
+          echo "========================================="
+          echo ""
+
+          FAILURES=""
+
+          # PostgreSQL
+          PG="${{ steps.pg_check.outputs.detail }}"
+          echo "1. ${PG:-PostgreSQL: no output}"
+          if [ "${{ steps.pg_check.outputs.status }}" != "ok" ]; then
+            FAILURES="${FAILURES}\n- ${PG:-PostgreSQL connectivity failed}"
+          fi
+
+          # Coolify
+          COOL="${{ steps.coolify_check.outputs.detail }}"
+          echo "2. ${COOL:-Coolify: no output}"
+          if [ "${{ steps.coolify_check.outputs.status }}" != "ok" ]; then
+            FAILURES="${FAILURES}\n- ${COOL:-Coolify dashboard unreachable}"
+          fi
+
+          # pgAdmin
+          PGA="${{ steps.pgadmin_check.outputs.detail }}"
+          echo "3. ${PGA:-pgAdmin: no output}"
+          if [ "${{ steps.pgadmin_check.outputs.status }}" != "ok" ]; then
+            FAILURES="${FAILURES}\n- ${PGA:-pgAdmin unreachable}"
+          fi
+
+          # FCA Fines API
+          FCA="${{ steps.fcafines_check.outputs.detail }}"
+          echo "4. ${FCA:-FCA Fines API: no output}"
+          if [ "${{ steps.fcafines_check.outputs.status }}" != "ok" ]; then
+            FAILURES="${FAILURES}\n- ${FCA:-FCA Fines API unreachable}"
+          fi
+
+          # MEMA Platform
+          MEMA="${{ steps.mema_check.outputs.detail }}"
+          echo "5. ${MEMA:-MEMA Platform: no output}"
+          if [ "${{ steps.mema_check.outputs.status }}" != "ok" ]; then
+            FAILURES="${FAILURES}\n- ${MEMA:-MEMA Platform unreachable}"
+          fi
+
+          # Horizon Scanner
+          HOR="${{ steps.horizon_check.outputs.detail }}"
+          echo "6. ${HOR:-Horizon Scanner: no output}"
+          if [ "${{ steps.horizon_check.outputs.status }}" != "ok" ]; then
+            FAILURES="${FAILURES}\n- ${HOR:-Horizon Scanner unreachable}"
+          fi
+
+          # FOS Complaints
+          FOS="${{ steps.fos_check.outputs.detail }}"
+          echo "7. ${FOS:-FOS Complaints: no output}"
+          if [ "${{ steps.fos_check.outputs.status }}" != "ok" ]; then
+            FAILURES="${FAILURES}\n- ${FOS:-FOS Complaints unreachable}"
+          fi
+
+          echo ""
+          echo "========================================="
+
+          if [ -n "$FAILURES" ]; then
+            echo "❌ FAILURES DETECTED — sending alert email"
+
+            SUBJECT="ALERT: Infrastructure monitoring failures detected"
+            BODY="Daily Infrastructure Monitoring Report\n\nThe following checks FAILED:\n${FAILURES}\n\nFull Results:\n1. ${PG}\n2. ${COOL}\n3. ${PGA}\n4. ${FCA}\n5. ${MEMA}\n6. ${HOR}\n7. ${FOS}\n\nTimestamp: $(date -u '+%Y-%m-%d %H:%M:%S UTC')\nWorkflow: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+
+            aws ses send-email \
+              --from "alerts@memaconsultants.com" \
+              --destination "ToAddresses=ademola@memaconsultants.com" \
+              --message "Subject={Data='${SUBJECT}'},Body={Text={Data='$(echo -e "$BODY")'}}" \
+              --region eu-west-2
+
+            echo "Alert email sent"
+            exit 1
+          else
+            echo "✅ All checks passed — no alert needed"
+          fi

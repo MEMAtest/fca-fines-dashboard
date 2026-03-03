@@ -113,8 +113,10 @@ async function main() {
     }
 
     console.log('Digest processing completed');
+    await sql.end();
   } catch (error) {
     console.error('Digest processing failed:', error);
+    await sql.end();
     process.exit(1);
   }
 }
@@ -241,4 +243,9 @@ Unsubscribe: ${unsubscribeUrl}`;
   }));
 }
 
-main().catch(console.error);
+main()
+  .then(() => process.exit(0))
+  .catch((error) => {
+    console.error(error);
+    process.exit(1);
+  });

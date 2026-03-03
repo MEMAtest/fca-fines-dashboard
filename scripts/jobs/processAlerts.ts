@@ -80,8 +80,10 @@ async function main() {
     await processWatchlistAlerts(recentFines);
 
     console.log('Alert processing completed');
+    await sql.end();
   } catch (error) {
     console.error('Alert processing failed:', error);
+    await sql.end();
     process.exit(1);
   }
 }
@@ -406,4 +408,9 @@ async function sendWatchlistEmail(entry: WatchlistEntry, fines: Fine[]) {
   }));
 }
 
-main().catch(console.error);
+main()
+  .then(() => process.exit(0))
+  .catch((error) => {
+    console.error(error);
+    process.exit(1);
+  });
