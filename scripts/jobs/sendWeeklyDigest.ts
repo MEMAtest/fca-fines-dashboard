@@ -51,17 +51,17 @@ async function main() {
 
   try {
     // Get the date range based on frequency
-    const interval = frequency === 'weekly' ? '7 days' : '30 days';
+    const days = frequency === 'weekly' ? 7 : 30;
 
     // Get fines from the period
     const fines = await sql`
       SELECT id, firm_individual, amount, date_issued, breach_type, final_notice_url
       FROM fca_fines
-      WHERE date_issued >= NOW() - INTERVAL '${interval}'
+      WHERE date_issued >= NOW() - make_interval(days => ${days})
       ORDER BY amount DESC
     ` as Fine[];
 
-    console.log(`Found ${fines.length} fines in the last ${interval}`);
+    console.log(`Found ${fines.length} fines in the last ${days} days`);
 
     if (fines.length === 0) {
       console.log('No fines to report in digest');
