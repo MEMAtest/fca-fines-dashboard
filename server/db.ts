@@ -20,7 +20,12 @@ export interface SqlClient {
 }
 
 function createSqlClient(connectionString: string): SqlClient {
-  const pool = new pg.Pool({ connectionString });
+  const pool = new pg.Pool({
+    connectionString,
+    ssl: connectionString.includes('sslmode=require')
+      ? { rejectUnauthorized: false }
+      : undefined,
+  });
 
   const handler = function (stringsOrQuery: TemplateStringsArray | string, ...values: unknown[]) {
     if (typeof stringsOrQuery === 'string') {
