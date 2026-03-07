@@ -5,14 +5,25 @@ import { CURRENT_YEAR } from './useDashboardState';
 
 export type TrendPoint = { month: string; total: number; count: number; period: number; year: number };
 
-// Normalize record amounts to ensure they are numbers
+// Normalize record fields to ensure correct types
 function normalizeRecords(records: FineRecord[]): FineRecord[] {
   return records.map(record => ({
     ...record,
     amount: typeof record.amount === 'string' ? parseFloat(record.amount) || 0 : (record.amount || 0),
     year_issued: typeof record.year_issued === 'string' ? parseInt(record.year_issued, 10) : record.year_issued,
     month_issued: typeof record.month_issued === 'string' ? parseInt(record.month_issued, 10) : record.month_issued,
+    breach_categories: parseBreachCategories(record.breach_categories),
   }));
+}
+
+// Handle double-encoded JSONB: 312/316 rows store breach_categories as a JSON
+// string like '["AML","PRINCIPLES"]' instead of a native array.
+function parseBreachCategories(val: unknown): string[] {
+  if (Array.isArray(val)) return val;
+  if (typeof val === 'string') {
+    try { const parsed = JSON.parse(val); if (Array.isArray(parsed)) return parsed; } catch {}
+  }
+  return [];
 }
 
 interface UseFinesDataParams {
