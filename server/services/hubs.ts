@@ -252,43 +252,48 @@ export async function getBreachDetailsBySlug(slug: string, limitPenalties = 10, 
   const categoryName = categorySlugMap.get(slug) ?? null;
   if (!categoryName) return null;
 
-  const summaryRows = (await sql`
-    SELECT
+  // Handle double-encoded breach_categories: 312/316 rows store a JSON string
+  // instead of a native array, so the ? operator won't match them directly.
+  const catFilter = `(CASE WHEN jsonb_typeof(breach_categories) = 'string'
+    THEN (breach_categories #>> '{}')::jsonb ELSE breach_categories END)`;
+
+  const summaryRows = (await sql(
+    `SELECT
       COUNT(*)::int AS fine_count,
       COALESCE(SUM(amount), 0)::float8 AS total_amount,
       COALESCE(MAX(amount), 0)::float8 AS max_fine,
       MIN(date_issued)::text AS earliest_date,
       MAX(date_issued)::text AS latest_date
     FROM fca_fines
-    WHERE breach_categories IS NOT NULL AND breach_categories ? ${categoryName}
-  `) as any[];
+    WHERE breach_categories IS NOT NULL AND ${catFilter} ? $1`,
+    [categoryName],
+  )) as any[];
   const summary = summaryRows[0];
 
   const firmsLimit = Math.max(1, Math.min(limitFirms, 50));
-  const topFirmRows = (await sql`
-    SELECT
+  const topFirmRows = (await sql(
+    `SELECT
       firm_individual,
       COUNT(*)::int AS fine_count,
       COALESCE(SUM(amount), 0)::float8 AS total_amount,
       MAX(date_issued)::text AS latest_date
     FROM fca_fines
-    WHERE breach_categories IS NOT NULL AND breach_categories ? ${categoryName}
+    WHERE breach_categories IS NOT NULL AND ${catFilter} ? $1
     GROUP BY firm_individual
     ORDER BY total_amount DESC, fine_count DESC, firm_individual ASC
-    LIMIT ${firmsLimit}
-  `) as any[];
+    LIMIT $2`,
+    [categoryName, firmsLimit],
+  )) as any[];
 
   const penaltiesLimit = Math.max(1, Math.min(limitPenalties, 50));
   const penalties = await sql(
-    `
-      SELECT fine_reference, firm_individual, firm_category, regulator,
+    `SELECT fine_reference, firm_individual, firm_category, regulator,
              final_notice_url, summary, breach_type, breach_categories,
              amount, date_issued, year_issued, month_issued
       FROM fca_fines
-      WHERE breach_categories IS NOT NULL AND breach_categories ? $1
+      WHERE breach_categories IS NOT NULL AND ${catFilter} ? $1
       ORDER BY amount DESC, date_issued DESC
-      LIMIT $2
-    `,
+      LIMIT $2`,
     [categoryName, penaltiesLimit],
   );
 
