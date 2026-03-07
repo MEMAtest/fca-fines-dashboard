@@ -31,7 +31,6 @@ export async function listFines(year: number, limit: number) {
 export async function getStats(year: number) {
   const instance = sql();
   const { text: where, params } = buildWhereClause(year);
-  const breachWhere = where ? `${where} AND` : 'WHERE';
 
   const statsQuery = `
     SELECT
@@ -55,14 +54,19 @@ export async function getStats(year: number) {
   const maxRows = (await instance(maxQuery, params)) as any[];
   const maxRow = maxRows[0];
 
+  const breachWhere = where
+    ? where.replace('date_issued', 'f.date_issued') + ' AND'
+    : 'WHERE';
+
   const breachQuery = `
     SELECT
-      jsonb_array_elements_text(breach_categories) AS category,
+      cat.category,
       COUNT(*) AS category_count
-    FROM fca_fines
-    ${breachWhere} breach_categories IS NOT NULL
-      AND breach_categories != '[]'::jsonb
-    GROUP BY category
+    FROM fca_fines f
+    CROSS JOIN LATERAL jsonb_array_elements_text(f.breach_categories) AS cat(category)
+    ${breachWhere} f.breach_categories IS NOT NULL
+      AND f.breach_categories != '[]'::jsonb
+    GROUP BY cat.category
     ORDER BY category_count DESC
     LIMIT 1
   `;
