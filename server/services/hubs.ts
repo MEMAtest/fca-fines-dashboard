@@ -118,7 +118,11 @@ export async function listBreachCategories(): Promise<CategorySummary[]> {
       COUNT(*)::int AS fine_count,
       COALESCE(SUM(f.amount), 0)::float8 AS total_amount
     FROM fca_fines f
-    CROSS JOIN LATERAL jsonb_array_elements_text(f.breach_categories) AS cat(category)
+    CROSS JOIN LATERAL jsonb_array_elements_text(
+      CASE WHEN jsonb_typeof(f.breach_categories) = 'string'
+           THEN (f.breach_categories #>> '{}')::jsonb
+           ELSE f.breach_categories END
+    ) AS cat(category)
     GROUP BY cat.category
     ORDER BY total_amount DESC, fine_count DESC, cat.category ASC
   `) as any[];
@@ -339,7 +343,11 @@ export async function getSectorDetailsBySlug(slug: string, limitPenalties = 10, 
       COALESCE(SUM(f.amount), 0)::float8 AS total_amount
     FROM fca_fines f
     LEFT JOIN LATERAL (
-      SELECT jsonb_array_elements_text(f.breach_categories) AS category
+      SELECT jsonb_array_elements_text(
+        CASE WHEN jsonb_typeof(f.breach_categories) = 'string'
+             THEN (f.breach_categories #>> '{}')::jsonb
+             ELSE f.breach_categories END
+      ) AS category
     ) AS cat ON TRUE
     WHERE f.firm_category = ${sectorName}
     GROUP BY category

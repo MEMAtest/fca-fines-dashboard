@@ -63,9 +63,12 @@ export async function getStats(year: number) {
       cat.category,
       COUNT(*) AS category_count
     FROM fca_fines f
-    CROSS JOIN LATERAL jsonb_array_elements_text(f.breach_categories) AS cat(category)
+    CROSS JOIN LATERAL jsonb_array_elements_text(
+      CASE WHEN jsonb_typeof(f.breach_categories) = 'string'
+           THEN (f.breach_categories #>> '{}')::jsonb
+           ELSE f.breach_categories END
+    ) AS cat(category)
     ${breachWhere} f.breach_categories IS NOT NULL
-      AND f.breach_categories != '[]'::jsonb
     GROUP BY cat.category
     ORDER BY category_count DESC
     LIMIT 1
