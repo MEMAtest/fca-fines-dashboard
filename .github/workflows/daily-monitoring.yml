@@ -124,6 +124,22 @@ jobs:
             echo "detail=Plannetic FAILED (HTTP $HTTP_CODE)" >> $GITHUB_OUTPUT
           fi
 
+      - name: Check Writing Assistant API
+        id: writing_check
+        continue-on-error: true
+        run: |
+          echo "Checking Writing Assistant API..."
+          HTTP_CODE=$(curl -sf -o /dev/null -w "%{http_code}" --connect-timeout 10 http://89.167.95.173:8787/ready 2>&1 || echo "000")
+          if [ "$HTTP_CODE" -ge 200 ] && [ "$HTTP_CODE" -lt 400 ]; then
+            echo "✅ Writing Assistant OK (HTTP $HTTP_CODE)"
+            echo "status=ok" >> $GITHUB_OUTPUT
+            echo "detail=Writing Assistant OK (HTTP $HTTP_CODE)" >> $GITHUB_OUTPUT
+          else
+            echo "❌ Writing Assistant FAILED (HTTP $HTTP_CODE)"
+            echo "status=fail" >> $GITHUB_OUTPUT
+            echo "detail=Writing Assistant FAILED (HTTP $HTTP_CODE)" >> $GITHUB_OUTPUT
+          fi
+
       - name: Compile results and alert on failure
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
@@ -180,6 +196,13 @@ jobs:
             FAILURES="${FAILURES}\n- ${PLAN:-Plannetic unreachable}"
           fi
 
+          # Writing Assistant
+          WRT="${{ steps.writing_check.outputs.detail }}"
+          echo "7. ${WRT:-Writing Assistant: no output}"
+          if [ "${{ steps.writing_check.outputs.status }}" != "ok" ]; then
+            FAILURES="${FAILURES}\n- ${WRT:-Writing Assistant API unreachable}"
+          fi
+
           echo ""
           echo "========================================="
 
@@ -187,7 +210,7 @@ jobs:
             echo "❌ FAILURES DETECTED — sending alert email"
 
             SUBJECT="ALERT: Infrastructure monitoring failures detected"
-            BODY="Daily Infrastructure Monitoring Report (External Reachability)\n\nThe following checks FAILED:\n${FAILURES}\n\nFull Results:\n1. ${PG}\n2. ${FCA}\n3. ${MEMA}\n4. ${HOR}\n5. ${FOS}\n6. ${PLAN}\n\nNote: Deep checks (DB health, disk, backups, data quality) run on Hetzner at 07:15 UTC.\n\nTimestamp: $(date -u '+%Y-%m-%d %H:%M:%S UTC')\nWorkflow: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+            BODY="Daily Infrastructure Monitoring Report (External Reachability)\n\nThe following checks FAILED:\n${FAILURES}\n\nFull Results:\n1. ${PG}\n2. ${FCA}\n3. ${MEMA}\n4. ${HOR}\n5. ${FOS}\n6. ${PLAN}\n7. ${WRT}\n\nNote: Deep checks (DB health, disk, backups, data quality) run on Hetzner at 07:15 UTC.\n\nTimestamp: $(date -u '+%Y-%m-%d %H:%M:%S UTC')\nWorkflow: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
 
             aws ses send-email \
               --from "alerts@memaconsultants.com" \
