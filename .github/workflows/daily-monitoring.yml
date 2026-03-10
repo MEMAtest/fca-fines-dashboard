@@ -28,10 +28,12 @@ jobs:
         continue-on-error: true
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
-          PGSSLMODE: no-verify
+          PGSSLMODE: require
         run: |
           echo "Checking PostgreSQL connectivity..."
-          RESULT=$(psql "$DATABASE_URL" -c "SELECT count(*) AS total FROM fca_fines;" -t -A 2>&1)
+          # Strip sslmode param from URL since PGSSLMODE env var handles it
+          CLEAN_URL=$(echo "$DATABASE_URL" | sed 's/[?&]sslmode=[^&]*//')
+          RESULT=$(psql "$CLEAN_URL" -c "SELECT count(*) AS total FROM fca_fines;" -t -A 2>&1)
           if [ $? -eq 0 ]; then
             echo "✅ PostgreSQL OK — $RESULT fines in database"
             echo "status=ok" >> $GITHUB_OUTPUT
