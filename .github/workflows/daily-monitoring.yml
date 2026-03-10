@@ -3,7 +3,7 @@ name: Daily Infrastructure Monitoring
 on:
   workflow_dispatch:
   schedule:
-    - cron: '0 7 * * *' # 07:00 UTC — after scraper (06:00) and alerts (06:15)
+    - cron: '0 7 * * *' # 07:00 UTC — external reachability check
 
 jobs:
   monitor:
@@ -28,6 +28,7 @@ jobs:
         continue-on-error: true
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          PGSSLMODE: no-verify
         run: |
           echo "Checking PostgreSQL connectivity..."
           RESULT=$(psql "$DATABASE_URL" -c "SELECT count(*) AS total FROM fca_fines;" -t -A 2>&1)
@@ -39,38 +40,6 @@ jobs:
             echo "❌ PostgreSQL FAILED: $RESULT"
             echo "status=fail" >> $GITHUB_OUTPUT
             echo "detail=PostgreSQL FAILED: $RESULT" >> $GITHUB_OUTPUT
-          fi
-
-      - name: Check Coolify dashboard
-        id: coolify_check
-        continue-on-error: true
-        run: |
-          echo "Checking Coolify dashboard..."
-          HTTP_CODE=$(curl -sf -o /dev/null -w "%{http_code}" --connect-timeout 10 http://89.167.95.173:8000 2>&1 || echo "000")
-          if [ "$HTTP_CODE" -ge 200 ] && [ "$HTTP_CODE" -lt 400 ]; then
-            echo "✅ Coolify OK (HTTP $HTTP_CODE)"
-            echo "status=ok" >> $GITHUB_OUTPUT
-            echo "detail=Coolify OK (HTTP $HTTP_CODE)" >> $GITHUB_OUTPUT
-          else
-            echo "❌ Coolify FAILED (HTTP $HTTP_CODE)"
-            echo "status=fail" >> $GITHUB_OUTPUT
-            echo "detail=Coolify FAILED (HTTP $HTTP_CODE)" >> $GITHUB_OUTPUT
-          fi
-
-      - name: Check pgAdmin
-        id: pgadmin_check
-        continue-on-error: true
-        run: |
-          echo "Checking pgAdmin..."
-          HTTP_CODE=$(curl -sf -o /dev/null -w "%{http_code}" --connect-timeout 10 http://89.167.95.173:5050 2>&1 || echo "000")
-          if [ "$HTTP_CODE" -ge 200 ] && [ "$HTTP_CODE" -lt 400 ]; then
-            echo "✅ pgAdmin OK (HTTP $HTTP_CODE)"
-            echo "status=ok" >> $GITHUB_OUTPUT
-            echo "detail=pgAdmin OK (HTTP $HTTP_CODE)" >> $GITHUB_OUTPUT
-          else
-            echo "❌ pgAdmin FAILED (HTTP $HTTP_CODE)"
-            echo "status=fail" >> $GITHUB_OUTPUT
-            echo "detail=pgAdmin FAILED (HTTP $HTTP_CODE)" >> $GITHUB_OUTPUT
           fi
 
       - name: Check FCA Fines API
@@ -137,6 +106,22 @@ jobs:
             echo "detail=FOS Complaints FAILED (HTTP $HTTP_CODE)" >> $GITHUB_OUTPUT
           fi
 
+      - name: Check Plannetic
+        id: plannetic_check
+        continue-on-error: true
+        run: |
+          echo "Checking Plannetic..."
+          HTTP_CODE=$(curl -sf -o /dev/null -w "%{http_code}" --connect-timeout 10 https://plannetic.com 2>&1 || echo "000")
+          if [ "$HTTP_CODE" -ge 200 ] && [ "$HTTP_CODE" -lt 400 ]; then
+            echo "✅ Plannetic OK (HTTP $HTTP_CODE)"
+            echo "status=ok" >> $GITHUB_OUTPUT
+            echo "detail=Plannetic OK (HTTP $HTTP_CODE)" >> $GITHUB_OUTPUT
+          else
+            echo "❌ Plannetic FAILED (HTTP $HTTP_CODE)"
+            echo "status=fail" >> $GITHUB_OUTPUT
+            echo "detail=Plannetic FAILED (HTTP $HTTP_CODE)" >> $GITHUB_OUTPUT
+          fi
+
       - name: Compile results and alert on failure
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
@@ -145,6 +130,7 @@ jobs:
         run: |
           echo "========================================="
           echo "  Daily Infrastructure Monitoring Report"
+          echo "  (External Reachability Check)"
           echo "========================================="
           echo ""
 
@@ -157,46 +143,39 @@ jobs:
             FAILURES="${FAILURES}\n- ${PG:-PostgreSQL connectivity failed}"
           fi
 
-          # Coolify
-          COOL="${{ steps.coolify_check.outputs.detail }}"
-          echo "2. ${COOL:-Coolify: no output}"
-          if [ "${{ steps.coolify_check.outputs.status }}" != "ok" ]; then
-            FAILURES="${FAILURES}\n- ${COOL:-Coolify dashboard unreachable}"
-          fi
-
-          # pgAdmin
-          PGA="${{ steps.pgadmin_check.outputs.detail }}"
-          echo "3. ${PGA:-pgAdmin: no output}"
-          if [ "${{ steps.pgadmin_check.outputs.status }}" != "ok" ]; then
-            FAILURES="${FAILURES}\n- ${PGA:-pgAdmin unreachable}"
-          fi
-
           # FCA Fines API
           FCA="${{ steps.fcafines_check.outputs.detail }}"
-          echo "4. ${FCA:-FCA Fines API: no output}"
+          echo "2. ${FCA:-FCA Fines API: no output}"
           if [ "${{ steps.fcafines_check.outputs.status }}" != "ok" ]; then
             FAILURES="${FAILURES}\n- ${FCA:-FCA Fines API unreachable}"
           fi
 
           # MEMA Platform
           MEMA="${{ steps.mema_check.outputs.detail }}"
-          echo "5. ${MEMA:-MEMA Platform: no output}"
+          echo "3. ${MEMA:-MEMA Platform: no output}"
           if [ "${{ steps.mema_check.outputs.status }}" != "ok" ]; then
             FAILURES="${FAILURES}\n- ${MEMA:-MEMA Platform unreachable}"
           fi
 
           # Horizon Scanner
           HOR="${{ steps.horizon_check.outputs.detail }}"
-          echo "6. ${HOR:-Horizon Scanner: no output}"
+          echo "4. ${HOR:-Horizon Scanner: no output}"
           if [ "${{ steps.horizon_check.outputs.status }}" != "ok" ]; then
             FAILURES="${FAILURES}\n- ${HOR:-Horizon Scanner unreachable}"
           fi
 
           # FOS Complaints
           FOS="${{ steps.fos_check.outputs.detail }}"
-          echo "7. ${FOS:-FOS Complaints: no output}"
+          echo "5. ${FOS:-FOS Complaints: no output}"
           if [ "${{ steps.fos_check.outputs.status }}" != "ok" ]; then
             FAILURES="${FAILURES}\n- ${FOS:-FOS Complaints unreachable}"
+          fi
+
+          # Plannetic
+          PLAN="${{ steps.plannetic_check.outputs.detail }}"
+          echo "6. ${PLAN:-Plannetic: no output}"
+          if [ "${{ steps.plannetic_check.outputs.status }}" != "ok" ]; then
+            FAILURES="${FAILURES}\n- ${PLAN:-Plannetic unreachable}"
           fi
 
           echo ""
@@ -206,7 +185,7 @@ jobs:
             echo "❌ FAILURES DETECTED — sending alert email"
 
             SUBJECT="ALERT: Infrastructure monitoring failures detected"
-            BODY="Daily Infrastructure Monitoring Report\n\nThe following checks FAILED:\n${FAILURES}\n\nFull Results:\n1. ${PG}\n2. ${COOL}\n3. ${PGA}\n4. ${FCA}\n5. ${MEMA}\n6. ${HOR}\n7. ${FOS}\n\nTimestamp: $(date -u '+%Y-%m-%d %H:%M:%S UTC')\nWorkflow: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+            BODY="Daily Infrastructure Monitoring Report (External Reachability)\n\nThe following checks FAILED:\n${FAILURES}\n\nFull Results:\n1. ${PG}\n2. ${FCA}\n3. ${MEMA}\n4. ${HOR}\n5. ${FOS}\n6. ${PLAN}\n\nNote: Deep checks (DB health, disk, backups, data quality) run on Hetzner at 07:15 UTC.\n\nTimestamp: $(date -u '+%Y-%m-%d %H:%M:%S UTC')\nWorkflow: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
 
             aws ses send-email \
               --from "alerts@memaconsultants.com" \
