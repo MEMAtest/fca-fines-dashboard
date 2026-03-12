@@ -129,7 +129,7 @@ jobs:
         continue-on-error: true
         run: |
           echo "Checking Writing Assistant API..."
-          HTTP_CODE=$(curl -sf -o /dev/null -w "%{http_code}" --connect-timeout 10 http://89.167.95.173:8787/ready 2>&1 || echo "000")
+          HTTP_CODE=$(curl -sf -o /dev/null -w "%{http_code}" --connect-timeout 10 https://write-89-167-95-173.sslip.io/ready 2>&1 || echo "000")
           if [ "$HTTP_CODE" -ge 200 ] && [ "$HTTP_CODE" -lt 400 ]; then
             echo "✅ Writing Assistant OK (HTTP $HTTP_CODE)"
             echo "status=ok" >> $GITHUB_OUTPUT
