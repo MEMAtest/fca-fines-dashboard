@@ -196,6 +196,9 @@
 }
 
 .breach-type-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
   padding: 0.5rem 0.875rem;
   border: 1px solid #E5E7EB;
   border-radius: 20px;
@@ -227,8 +230,9 @@
 
 .frequency-option {
   display: flex;
-  flex-direction: column;
-  padding: 1rem 1.25rem;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.875rem 1.25rem;
   border: 2px solid #E5E7EB;
   border-radius: 12px;
   cursor: pointer;
@@ -248,6 +252,12 @@
   display: none;
 }
 
+.frequency-option-content {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+}
+
 .frequency-label {
   font-weight: 600;
   color: #1F2937;
@@ -258,6 +268,14 @@
   font-size: 0.8rem;
   color: #6B7280;
   margin-top: 0.125rem;
+}
+
+.frequency-check {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #0FA294;
+  flex-shrink: 0;
 }
 
 /* Form Error */
@@ -307,6 +325,31 @@
   width: 100%;
 }
 
+/* Modal Footer Button (alert subscribe modal) */
+.alert-subscribe-modal .modal-footer .btn-primary {
+  background: linear-gradient(135deg, #0FA294, #0D8A7F);
+  color: white;
+  border: none;
+  padding: 1rem 1.5rem;
+  border-radius: 10px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  width: 100%;
+}
+
+.alert-subscribe-modal .modal-footer .btn-primary:hover:not(:disabled) {
+  background: linear-gradient(135deg, #0D8A7F, #0B7A70);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(15, 162, 148, 0.3);
+}
+
+.alert-subscribe-modal .modal-footer .btn-primary:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
 /* Form Footer */
 .form-footer {
   text-align: center;
@@ -344,6 +387,51 @@
 
 .subscribe-success .btn {
   margin-top: 1.5rem;
+}
+
+/* Subscription Summary (shown in success state) */
+.subscribe-summary {
+  margin-top: 1.5rem;
+  background: linear-gradient(135deg, rgba(15, 162, 148, 0.05), rgba(99, 102, 241, 0.05));
+  border: 1px solid rgba(15, 162, 148, 0.2);
+  border-radius: 12px;
+  padding: 1rem 1.25rem;
+  text-align: left;
+}
+
+.subscribe-summary-title {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #6B7280;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: 0.75rem;
+}
+
+.subscribe-summary-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 1rem;
+  padding: 0.375rem 0;
+  border-top: 1px solid rgba(15, 162, 148, 0.1);
+}
+
+.subscribe-summary-row:first-of-type {
+  border-top: none;
+}
+
+.subscribe-summary-label {
+  font-size: 0.8rem;
+  color: #6B7280;
+  flex-shrink: 0;
+}
+
+.subscribe-summary-value {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: #1F2937;
+  text-align: right;
 }
 
 /* Digest Subscribe Form */

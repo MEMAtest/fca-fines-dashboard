@@ -1,6 +1,6 @@
 import { useState, FormEvent, ChangeEvent } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, Bell, CheckCircle, AlertCircle } from 'lucide-react';
+import { X, Bell, CheckCircle, AlertCircle, Check } from 'lucide-react';
 
 interface AlertSubscribeModalProps {
   isOpen: boolean;
@@ -130,12 +130,30 @@ export function AlertSubscribeModal({ isOpen, onClose }: AlertSubscribeModalProp
                     <h3>Check your inbox!</h3>
                     <p>We've sent a verification email to <strong>{email}</strong>.</p>
                     <p>Click the link in the email to activate your alerts.</p>
-                    <button className="btn btn-primary" onClick={handleClose}>
-                      Done
-                    </button>
+                    <div className="subscribe-summary">
+                      <div className="subscribe-summary-title">Your subscription settings</div>
+                      <div className="subscribe-summary-row">
+                        <span className="subscribe-summary-label">Frequency</span>
+                        <span className="subscribe-summary-value">
+                          {FREQUENCY_OPTIONS.find(o => o.value === frequency)?.label}
+                        </span>
+                      </div>
+                      <div className="subscribe-summary-row">
+                        <span className="subscribe-summary-label">Min. fine amount</span>
+                        <span className="subscribe-summary-value">
+                          {minAmount ? `£${minAmount}m+` : 'All fines'}
+                        </span>
+                      </div>
+                      <div className="subscribe-summary-row">
+                        <span className="subscribe-summary-label">Breach types</span>
+                        <span className="subscribe-summary-value">
+                          {breachTypes.length === 0 ? 'All types' : breachTypes.join(', ')}
+                        </span>
+                      </div>
+                    </div>
                   </div>
                 ) : (
-                  <form onSubmit={handleSubmit} className="subscribe-form">
+                  <form id="subscribe-form" onSubmit={handleSubmit} className="subscribe-form">
                     <div className="form-group">
                       <label htmlFor="alert-email">Email address *</label>
                       <input
@@ -176,6 +194,7 @@ export function AlertSubscribeModal({ isOpen, onClose }: AlertSubscribeModalProp
                             className={`breach-type-chip ${breachTypes.includes(type) ? 'active' : ''}`}
                             onClick={() => handleBreachTypeToggle(type)}
                           >
+                            {breachTypes.includes(type) && <Check size={12} />}
                             {type}
                           </button>
                         ))}
@@ -202,32 +221,46 @@ export function AlertSubscribeModal({ isOpen, onClose }: AlertSubscribeModalProp
                               checked={frequency === option.value}
                               onChange={(e) => setFrequency(e.target.value)}
                             />
-                            <span className="frequency-label">{option.label}</span>
-                            <span className="frequency-desc">{option.description}</span>
+                            <div className="frequency-option-content">
+                              <span className="frequency-label">{option.label}</span>
+                              <span className="frequency-desc">{option.description}</span>
+                            </div>
+                            {frequency === option.value && (
+                              <span className="frequency-check"><Check size={16} /></span>
+                            )}
                           </label>
                         ))}
                       </div>
                     </div>
+                  </form>
+                )}
+              </div>
 
+              <div className="modal-footer">
+                {status === 'success' ? (
+                  <button className="btn btn-primary btn-full" onClick={handleClose}>
+                    Done
+                  </button>
+                ) : (
+                  <>
                     {(status === 'error' || errorMessage) && (
                       <div className="form-error">
                         <AlertCircle size={16} />
                         <span>{errorMessage || 'Something went wrong. Please try again.'}</span>
                       </div>
                     )}
-
                     <button
                       type="submit"
+                      form="subscribe-form"
                       className="btn btn-primary btn-full"
                       disabled={status === 'submitting'}
                     >
                       {status === 'submitting' ? 'Subscribing...' : 'Subscribe to Alerts'}
                     </button>
-
                     <p className="form-footer">
                       You can unsubscribe at any time via the link in our emails.
                     </p>
-                  </form>
+                  </>
                 )}
               </div>
             </motion.div>
