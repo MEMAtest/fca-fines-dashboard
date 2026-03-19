@@ -261,7 +261,9 @@ function hashRecord(firm: string, amount: number, dateKey: string): string {
 
 async function upsertRecords(records: FcaFineRecord[]) {
   if (!neonUrl) return;
-  const sql = postgres(neonUrl);
+  const sql = postgres(neonUrl, {
+    ssl: neonUrl.includes('sslmode=') ? { rejectUnauthorized: false } : false,
+  });
   for (const record of records) {
     await sql`
       INSERT INTO fca_fines (
