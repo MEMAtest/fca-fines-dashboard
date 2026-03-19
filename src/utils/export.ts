@@ -69,40 +69,100 @@ export async function exportData({ filename, format, records, elementId, transfo
       break;
     }
     case 'pdf': {
-      const { default: jsPDF } = await import('jspdf');
-      const doc = new jsPDF({ unit: 'pt', format: 'a4' });
+      const { PDFDocument, rgb } = await import('pdf-lib');
+      const pdfDoc = await PDFDocument.create();
+
+      // A4 dimensions in points: 595 x 842
+      const pageWidth = 595;
+      const pageHeight = 842;
+      const margin = 40;
+      const lineHeight = 15;
+
+      let page = pdfDoc.addPage([pageWidth, pageHeight]);
+      let yPos = pageHeight - margin;
+
+      // Helper to add new page when needed
+      const checkNewPage = () => {
+        if (yPos < margin + 50) {
+          page = pdfDoc.addPage([pageWidth, pageHeight]);
+          yPos = pageHeight - margin;
+        }
+      };
 
       // Title
-      doc.setFontSize(18);
-      doc.text('FCA Fines Export', 40, 40);
+      page.drawText('FCA Fines Export', {
+        x: margin,
+        y: yPos,
+        size: 18,
+        color: rgb(0, 0, 0),
+      });
+      yPos -= 30;
 
       // Summary stats
       const totalAmount = records.reduce((sum, r) => sum + r.amount, 0);
-      doc.setFontSize(11);
-      doc.text(`Total Records: ${records.length}`, 40, 70);
-      doc.text(`Total Amount: £${totalAmount.toLocaleString('en-GB')}`, 40, 85);
-      doc.text(`Export Date: ${new Date().toLocaleDateString('en-GB')}`, 40, 100);
+      page.drawText(`Total Records: ${records.length}`, {
+        x: margin,
+        y: yPos,
+        size: 11,
+        color: rgb(0, 0, 0),
+      });
+      yPos -= lineHeight;
+
+      page.drawText(`Total Amount: £${totalAmount.toLocaleString('en-GB')}`, {
+        x: margin,
+        y: yPos,
+        size: 11,
+        color: rgb(0, 0, 0),
+      });
+      yPos -= lineHeight;
+
+      page.drawText(`Export Date: ${new Date().toLocaleDateString('en-GB')}`, {
+        x: margin,
+        y: yPos,
+        size: 11,
+        color: rgb(0, 0, 0),
+      });
+      yPos -= 25;
 
       // Separator line
-      doc.setDrawColor(200);
-      doc.line(40, 115, 550, 115);
+      page.drawLine({
+        start: { x: margin, y: yPos },
+        end: { x: pageWidth - margin, y: yPos },
+        thickness: 0.5,
+        color: rgb(0.78, 0.78, 0.78),
+      });
+      yPos -= 20;
 
       // Records
-      doc.setFontSize(9);
-      let yPos = 135;
-      const pageHeight = doc.internal.pageSize.height;
-
       formatted.forEach((row: Record<string, any>) => {
-        if (yPos > pageHeight - 50) {
-          doc.addPage();
-          yPos = 40;
-        }
+        checkNewPage();
+
         const text = `${row['Date Issued']} | ${row['Firm/Individual']} | £${Number(row['Amount (£)']).toLocaleString('en-GB')}`;
-        doc.text(text, 40, yPos);
-        yPos += 15;
+        // Truncate text if too long to fit on page
+        const maxWidth = pageWidth - (margin * 2);
+        const fontSize = 9;
+        const truncatedText = text.length > 85 ? text.substring(0, 82) + '...' : text;
+
+        page.drawText(truncatedText, {
+          x: margin,
+          y: yPos,
+          size: fontSize,
+          color: rgb(0, 0, 0),
+        });
+        yPos -= lineHeight;
       });
 
-      doc.save(`${filename}.pdf`);
+      // Save PDF
+      const pdfBytes = await pdfDoc.save();
+      const blob = new Blob([pdfBytes], { type: 'application/pdf' });
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `${filename}.pdf`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(url);
       break;
     }
     case 'png': {

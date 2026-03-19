@@ -6,15 +6,15 @@ import { SESClient, SendEmailCommand } from '@aws-sdk/client-ses';
 const sql = getSqlClient();
 
 const ses = new SESClient({
-  region: process.env.AWS_SES_REGION || 'eu-west-2',
+  region: process.env.AWS_SES_REGION?.trim() || 'eu-west-2',
   credentials: {
-    accessKeyId: process.env.AWS_ACCESS_KEY_ID || '',
-    secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY || '',
+    accessKeyId: process.env.AWS_ACCESS_KEY_ID?.trim() || '',
+    secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY?.trim() || '',
   },
 });
 
-const FROM_EMAIL = process.env.SES_FROM_EMAIL || 'alerts@memaconsultants.com';
-const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || 'https://fcafines.memaconsultants.com';
+const FROM_EMAIL = process.env.SES_FROM_EMAIL?.trim() || 'alerts@memaconsultants.com';
+const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL?.trim() || 'https://fcafines.memaconsultants.com';
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   if (req.method !== 'POST') {

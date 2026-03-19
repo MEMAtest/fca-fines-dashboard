@@ -6,15 +6,15 @@ import { SESClient, SendEmailCommand } from '@aws-sdk/client-ses';
 const sql = getSqlClient();
 
 const ses = new SESClient({
-  region: process.env.AWS_SES_REGION || 'eu-west-2',
+  region: process.env.AWS_SES_REGION?.trim() || 'eu-west-2',
   credentials: {
-    accessKeyId: process.env.AWS_ACCESS_KEY_ID || '',
-    secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY || '',
+    accessKeyId: process.env.AWS_ACCESS_KEY_ID?.trim() || '',
+    secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY?.trim() || '',
   },
 });
 
-const FROM_EMAIL = process.env.SES_FROM_EMAIL || 'alerts@memaconsultants.com';
-const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || 'https://fcafines.memaconsultants.com';
+const FROM_EMAIL = process.env.SES_FROM_EMAIL?.trim() || 'alerts@memaconsultants.com';
+const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL?.trim() || 'https://fcafines.memaconsultants.com';
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   if (req.method !== 'POST') {
@@ -26,6 +26,31 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
     if (!email || !email.includes('@')) {
       return res.status(400).json({ error: 'Valid email is required' });
+    }
+
+    // Rate limiting: Check IP address (max 5 attempts per hour)
+    const clientIp = (req.headers['x-forwarded-for'] as string)?.split(',')[0]?.trim() ||
+                     (req.headers['x-real-ip'] as string) ||
+                     'unknown';
+
+    const oneHourAgo = new Date(Date.now() - 60 * 60 * 1000);
+    const recentAttempts = await sql`
+      SELECT COUNT(*) as count FROM alert_subscriptions
+      WHERE created_at > ${oneHourAgo.toISOString()}
+      AND (
+        email = ${email}
+        OR verification_token IN (
+          SELECT verification_token FROM alert_subscriptions
+          WHERE email = ${email}
+        )
+      )
+    `;
+
+    const attemptCount = parseInt(recentAttempts[0]?.count || '0');
+    if (attemptCount >= 5) {
+      return res.status(429).json({
+        error: 'Too many subscription attempts. Please try again in an hour.'
+      });
     }
 
     // Check for existing subscription
