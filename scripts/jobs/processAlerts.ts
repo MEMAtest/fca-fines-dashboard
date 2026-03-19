@@ -10,7 +10,9 @@
 import postgres from 'postgres';
 import { SESClient, SendEmailCommand } from '@aws-sdk/client-ses';
 
-const sql = postgres(process.env.DATABASE_URL?.trim());
+const sql = postgres(process.env.DATABASE_URL?.trim() || '', {
+  ssl: process.env.DATABASE_URL?.includes('sslmode=') ? 'require' : undefined
+});
 
 const ses = new SESClient({
   region: process.env.AWS_SES_REGION?.trim() || 'eu-west-2',
@@ -48,7 +50,6 @@ interface WatchlistEntry {
   email: string;
   firm_name: string;
   firm_name_normalized: string;
-  notify_threshold: number | null;
   last_notified_at: string | null;
   unsubscribe_token: string;
 }
@@ -132,7 +133,7 @@ async function processImmediateAlerts(fines: Fine[]) {
         SELECT fine_ids FROM notification_log
         WHERE email = ${subscription.email}
         AND notification_type = 'alert'
-        AND sent_at >= NOW() - INTERVAL '24 hours'
+        AND created_at >= NOW() - INTERVAL '24 hours'
       `;
 
       const alreadyNotified = new Set<string>();
@@ -178,7 +179,7 @@ async function processWatchlistAlerts(fines: Fine[]) {
   // Get active watchlist entries
   const watchlistEntries = await sql`
     SELECT id, email, firm_name, firm_name_normalized,
-           notify_threshold, last_notified_at, unsubscribe_token
+           last_notified_at, unsubscribe_token
     FROM firm_watchlist
     WHERE status = 'active'
     AND email_verified = TRUE
@@ -198,11 +199,7 @@ async function processWatchlistAlerts(fines: Fine[]) {
           return false;
         }
 
-        // Check threshold if set
-        if (entry.notify_threshold && fine.amount < entry.notify_threshold) {
-          return false;
-        }
-
+        // Always notify for watchlist matches (no threshold in current schema)
         return true;
       });
 
@@ -216,7 +213,7 @@ async function processWatchlistAlerts(fines: Fine[]) {
         SELECT fine_ids FROM notification_log
         WHERE email = ${entry.email}
         AND notification_type = 'watchlist'
-        AND sent_at >= NOW() - INTERVAL '24 hours'
+        AND created_at >= NOW() - INTERVAL '24 hours'
       `;
 
       const alreadyNotified = new Set<string>();

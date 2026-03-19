@@ -9,7 +9,9 @@
 import postgres from 'postgres';
 import { SESClient, SendEmailCommand } from '@aws-sdk/client-ses';
 
-const sql = postgres(process.env.DATABASE_URL?.trim());
+const sql = postgres(process.env.DATABASE_URL?.trim() || '', {
+  ssl: process.env.DATABASE_URL?.includes('sslmode=') ? 'require' : undefined
+});
 
 const ses = new SESClient({
   region: process.env.AWS_SES_REGION?.trim() || 'eu-west-2',

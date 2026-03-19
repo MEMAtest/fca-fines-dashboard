@@ -46,7 +46,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       // Reactivate if previously unsubscribed
       if (existing[0].status === 'unsubscribed') {
         const verificationToken = randomUUID();
-        const expiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000);
+        const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
 
         await sql`
           UPDATE digest_subscriptions
@@ -70,7 +70,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
     // Generate tokens
     const verificationToken = randomUUID();
-    const expiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000);
+    const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
 
     // Create subscription
     await sql`
@@ -133,7 +133,7 @@ async function sendVerificationEmail(email: string, frequency: string, token: st
       <div class="frequency">${frequency} Digest</div>
       <p>You'll receive a summary of all new FCA fines ${frequency === 'weekly' ? 'every Monday' : 'on the 1st of each month'}.</p>
       <a href="${verifyUrl}" class="button">Verify & Subscribe</a>
-      <p style="font-size: 14px; color: #6b7280;">This link expires in 24 hours.</p>
+      <p style="font-size: 14px; color: #6b7280;">This link expires in 7 days.</p>
     </div>
     <div class="footer">
       <p>FCA Fines Dashboard · Powered by MEMA Consultants</p>
@@ -150,7 +150,7 @@ async function sendVerificationEmail(email: string, frequency: string, token: st
       Subject: { Data: `Verify your ${frequency} FCA Fines Digest`, Charset: 'UTF-8' },
       Body: {
         Html: { Data: htmlContent, Charset: 'UTF-8' },
-        Text: { Data: `Verify your ${frequency} digest subscription\n\nClick here to verify: ${verifyUrl}\n\nYou'll receive summaries ${frequency === 'weekly' ? 'every Monday' : 'on the 1st of each month'}.\n\nThis link expires in 24 hours.`, Charset: 'UTF-8' },
+        Text: { Data: `Verify your ${frequency} digest subscription\n\nClick here to verify: ${verifyUrl}\n\nYou'll receive summaries ${frequency === 'weekly' ? 'every Monday' : 'on the 1st of each month'}.\n\nThis link expires in 7 days.`, Charset: 'UTF-8' },
       },
     },
   }));

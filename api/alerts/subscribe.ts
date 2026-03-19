@@ -71,7 +71,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
     // Generate tokens
     const verificationToken = randomUUID();
-    const expiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24 hours
+    const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000); // 7 days
 
     // Create subscription - handle array type explicitly
     const breachTypesArray = breachTypes?.length ? `{${breachTypes.join(',')}}` : null;
@@ -131,7 +131,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         Frequency: ${frequency}
       </div>
       <a href="${verifyUrl}" class="button">Verify Email Address</a>
-      <p style="font-size: 14px; color: #6b7280;">This link expires in 24 hours.</p>
+      <p style="font-size: 14px; color: #6b7280;">This link expires in 7 days.</p>
     </div>
     <div class="footer">
       <p>FCA Fines Dashboard · Powered by MEMA Consultants</p>

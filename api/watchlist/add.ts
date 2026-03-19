@@ -66,7 +66,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
     // Generate tokens
     const verificationToken = randomUUID();
-    const expiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000);
+    const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
 
     // Create watchlist entry
     if (existing.length === 0) {
@@ -113,7 +113,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       <div class="firm-name">${firmName.trim()}</div>
       <p>You'll be notified whenever this firm receives a new fine from the FCA.</p>
       <a href="${verifyUrl}" class="button">Verify & Start Watching</a>
-      <p style="font-size: 14px; color: #6b7280;">This link expires in 24 hours.</p>
+      <p style="font-size: 14px; color: #6b7280;">This link expires in 7 days.</p>
     </div>
     <div class="footer">
       <p>FCA Fines Dashboard · Powered by MEMA Consultants</p>
@@ -130,7 +130,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         Subject: { Data: `Verify your watchlist: ${firmName.trim()}`, Charset: 'UTF-8' },
         Body: {
           Html: { Data: htmlContent, Charset: 'UTF-8' },
-          Text: { Data: `Verify your firm watchlist\n\nYou've requested to watch "${firmName.trim()}" for new FCA fines.\n\nClick here to verify: ${verifyUrl}\n\nThis link expires in 24 hours.`, Charset: 'UTF-8' },
+          Text: { Data: `Verify your firm watchlist\n\nYou've requested to watch "${firmName.trim()}" for new FCA fines.\n\nClick here to verify: ${verifyUrl}\n\nThis link expires in 7 days.`, Charset: 'UTF-8' },
         },
       },
     }));
