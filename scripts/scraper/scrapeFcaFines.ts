@@ -6,7 +6,7 @@ import postgres from 'postgres';
 
 const BASE_URL = 'https://www.fca.org.uk';
 const FINES_PATH = 'news/news-stories';
-const neonUrl = process.env.DATABASE_URL;
+const neonUrl = process.env.DATABASE_URL?.trim();
 const dryRun = process.argv.includes('--dry-run') && !process.argv.includes('--upsert');
 const sinceCutoff = process.env.FCA_SINCE_DATE ? new Date(process.env.FCA_SINCE_DATE) : null;
 const userAgent =
@@ -264,56 +264,59 @@ async function upsertRecords(records: FcaFineRecord[]) {
   const sql = postgres(neonUrl, {
     ssl: neonUrl.includes('sslmode=') ? { rejectUnauthorized: false } : false,
   });
-  for (const record of records) {
-    await sql`
-      INSERT INTO fca_fines (
-        content_hash,
-        fine_reference,
-        firm_individual,
-        firm_category,
-        regulator,
-        final_notice_url,
-        summary,
-        breach_type,
-        breach_categories,
-        amount,
-        date_issued,
-        year_issued,
-        month_issued,
-        raw_payload
-      ) VALUES (
-        ${record.contentHash},
-        ${record.fineReference},
-        ${record.firm},
-        ${record.firmCategory},
-        ${record.regulator},
-        ${record.finalNoticeUrl},
-        ${record.summary},
-        ${record.breachType},
-        ${JSON.stringify(record.breachCategories)},
-        ${record.amount},
-        ${record.dateIssued.toISOString().slice(0, 10)},
-        ${record.dateIssued.getUTCFullYear()},
-        ${record.dateIssued.getUTCMonth() + 1},
-        ${JSON.stringify(record.rawPayload)}
-      )
-      ON CONFLICT (content_hash) DO UPDATE SET
-        firm_individual = EXCLUDED.firm_individual,
-        firm_category = EXCLUDED.firm_category,
-        regulator = EXCLUDED.regulator,
-        final_notice_url = EXCLUDED.final_notice_url,
-        summary = EXCLUDED.summary,
-        breach_type = EXCLUDED.breach_type,
-        breach_categories = EXCLUDED.breach_categories,
-        amount = EXCLUDED.amount,
-        date_issued = EXCLUDED.date_issued,
-        year_issued = EXCLUDED.year_issued,
-        month_issued = EXCLUDED.month_issued,
-        raw_payload = EXCLUDED.raw_payload;
-    `;
+  try {
+    for (const record of records) {
+      await sql`
+        INSERT INTO fca_fines (
+          content_hash,
+          fine_reference,
+          firm_individual,
+          firm_category,
+          regulator,
+          final_notice_url,
+          summary,
+          breach_type,
+          breach_categories,
+          amount,
+          date_issued,
+          year_issued,
+          month_issued,
+          raw_payload
+        ) VALUES (
+          ${record.contentHash},
+          ${record.fineReference},
+          ${record.firm},
+          ${record.firmCategory},
+          ${record.regulator},
+          ${record.finalNoticeUrl},
+          ${record.summary},
+          ${record.breachType},
+          ${JSON.stringify(record.breachCategories)},
+          ${record.amount},
+          ${record.dateIssued.toISOString().slice(0, 10)},
+          ${record.dateIssued.getUTCFullYear()},
+          ${record.dateIssued.getUTCMonth() + 1},
+          ${JSON.stringify(record.rawPayload)}
+        )
+        ON CONFLICT (content_hash) DO UPDATE SET
+          firm_individual = EXCLUDED.firm_individual,
+          firm_category = EXCLUDED.firm_category,
+          regulator = EXCLUDED.regulator,
+          final_notice_url = EXCLUDED.final_notice_url,
+          summary = EXCLUDED.summary,
+          breach_type = EXCLUDED.breach_type,
+          breach_categories = EXCLUDED.breach_categories,
+          amount = EXCLUDED.amount,
+          date_issued = EXCLUDED.date_issued,
+          year_issued = EXCLUDED.year_issued,
+          month_issued = EXCLUDED.month_issued,
+          raw_payload = EXCLUDED.raw_payload;
+      `;
+    }
+    await sql`SELECT refresh_fca_fine_trends();`;
+  } finally {
+    await sql.end();
   }
-  await sql`SELECT refresh_fca_fine_trends();`;
-  await sql.end();
 }
 
 async function main() {

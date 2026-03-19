@@ -213,8 +213,8 @@ jobs:
             BODY="Daily Infrastructure Monitoring Report (External Reachability)\n\nThe following checks FAILED:\n${FAILURES}\n\nFull Results:\n1. ${PG}\n2. ${FCA}\n3. ${MEMA}\n4. ${HOR}\n5. ${FOS}\n6. ${PLAN}\n7. ${WRT}\n\nNote: Deep checks (DB health, disk, backups, data quality) run on Hetzner at 07:15 UTC.\n\nTimestamp: $(date -u '+%Y-%m-%d %H:%M:%S UTC')\nWorkflow: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
 
             aws ses send-email \
-              --from "alerts@memaconsultants.com" \
-              --destination "ToAddresses=ademola@memaconsultants.com" \
+              --source "alerts@memaconsultants.com" \
+              --destination "ToAddresses=${{ vars.ALERT_EMAIL || 'ademola@memaconsultants.com' }}" \
               --message "Subject={Data='${SUBJECT}'},Body={Text={Data='$(echo -e "$BODY")'}}" \
               --region eu-west-2
 

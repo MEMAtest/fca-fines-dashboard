@@ -230,6 +230,14 @@ app.get(/.*/, (req, res) => {
   res.sendFile(path.join(distDir, 'index.html'));
 });
 
+// Global error handler (must be last)
+app.use((err: any, req: express.Request, res: express.Response, next: express.NextFunction) => {
+  console.error('Unhandled error:', err);
+  if (!res.headersSent) {
+    res.status(500).json({ success: false, error: 'Internal server error' });
+  }
+});
+
 const port = Number(process.env.PORT || 4000);
 app.listen(port, () => {
   console.log(`FCA fines dashboard running on http://localhost:${port}`);

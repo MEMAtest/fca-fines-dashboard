@@ -13,8 +13,8 @@ on:
           - weekly-digest
           - monthly-digest
   schedule:
-    # Process alerts 15 minutes after daily scraper (6:15 AM UTC)
-    - cron: '15 6 * * *'
+    # Process alerts 30 minutes after daily scraper (6:30 AM UTC)
+    - cron: '30 6 * * *'
     # Weekly digest every Monday at 9 AM UTC
     - cron: '0 9 * * 1'
     # Monthly digest on 1st of each month at 9 AM UTC
@@ -26,7 +26,7 @@ concurrency:
 
 jobs:
   process-alerts:
-    if: github.event_name == 'workflow_dispatch' && github.event.inputs.job_type == 'alerts' || github.event.schedule == '15 6 * * *'
+    if: (github.event_name == 'workflow_dispatch' && github.event.inputs.job_type == 'alerts') || github.event_name == 'schedule'
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
@@ -58,7 +58,7 @@ jobs:
           echo "✅ Alert processing completed"
 
   send-weekly-digest:
-    if: github.event_name == 'workflow_dispatch' && github.event.inputs.job_type == 'weekly-digest' || github.event.schedule == '0 9 * * 1'
+    if: (github.event_name == 'workflow_dispatch' && github.event.inputs.job_type == 'weekly-digest') || github.event_name == 'schedule'
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
@@ -90,7 +90,7 @@ jobs:
           echo "✅ Weekly digest completed"
 
   send-monthly-digest:
-    if: github.event_name == 'workflow_dispatch' && github.event.inputs.job_type == 'monthly-digest' || github.event.schedule == '0 9 1 * *'
+    if: (github.event_name == 'workflow_dispatch' && github.event.inputs.job_type == 'monthly-digest') || github.event_name == 'schedule'
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
