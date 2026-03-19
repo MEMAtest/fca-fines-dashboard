@@ -18,6 +18,8 @@
     "test:e2e:report": "playwright show-report",
     "scrape:fines": "node --loader ts-node/esm scripts/scraper/scrapeFcaFines.ts",
     "scrape:fines:dry": "node --loader ts-node/esm scripts/scraper/scrapeFcaFines.ts --dry-run",
+    "scrape:esma": "npx tsx scripts/scraper/scrapeEsma.ts",
+    "scrape:bafin": "npx tsx scripts/scraper/scrapeBafin.ts",
     "verify:setup": "bash scripts/verify-setup.sh",
     "blog:monthly": "npx tsx scripts/generate-blog.ts monthly",
     "blog:topical": "npx tsx scripts/generate-blog.ts topical",
