@@ -149,7 +149,7 @@ export function Homepage() {
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6 }}
             >
-              Real-Time FCA
+              Global Regulatory
               <br />
               Enforcement Intelligence
             </motion.h1>
@@ -160,8 +160,8 @@ export function Homepage() {
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6, delay: 0.1 }}
             >
-              Track over {totalAmountDisplay} in fines. Identify risks.
-              Strengthen your compliance posture.
+              Track {totalAmountDisplay} in fines from FCA, BaFin, AMF, and 5 more UK & EU regulators.
+              Identify risks. Strengthen your compliance posture.
             </motion.p>
 
             <motion.button

@@ -83,6 +83,7 @@ const BlogPost = lazyPage(() => import('./pages/BlogPost').then(module => ({ def
 const FAQPage = lazyPage(() => import('./pages/FAQ').then(module => ({ default: module.FAQ })));
 const SitemapPage = lazyPage(() => import('./pages/Sitemap').then(module => ({ default: module.Sitemap })));
 const PillarPage = lazyPage(() => import('./pages/PillarPage').then(module => ({ default: module.PillarPage })));
+const RegulatorHub = lazyPage(() => import('./pages/RegulatorHub').then(module => ({ default: module.RegulatorHub })));
 
 const router = createBrowserRouter([
   {
@@ -268,6 +269,14 @@ const router = createBrowserRouter([
         element: (
           <Suspense fallback={<div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>Loading...</div>}>
             <PillarPage />
+          </Suspense>
+        ),
+      },
+      {
+        path: '/regulators/:regulatorCode',
+        element: (
+          <Suspense fallback={<div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>Loading...</div>}>
+            <RegulatorHub />
           </Suspense>
         ),
       },

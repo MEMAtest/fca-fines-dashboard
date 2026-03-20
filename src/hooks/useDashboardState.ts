@@ -84,7 +84,7 @@ export function useDashboardState() {
     currency,
     setCurrency,
     shareUrl,
-  };
+  } as const;
 }
 
 function getInitialQueryState(): QueryState {

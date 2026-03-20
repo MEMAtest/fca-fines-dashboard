@@ -122,7 +122,7 @@ export function SiteHeader() {
     <header className="site-header">
       <div className="site-header__inner">
         <Link to="/" className="site-header__logo">
-          FCA Fines Dashboard
+          Regulatory Fines
         </Link>
 
         {/* Desktop nav */}

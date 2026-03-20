@@ -1,8 +1,9 @@
 {
-  "name": "fca-fines-dashboard",
-  "version": "0.1.0",
+  "name": "regulatory-fines-dashboard",
+  "version": "0.2.0",
   "private": true,
   "type": "module",
+  "description": "Comprehensive UK & EU regulatory fines tracker - FCA, BaFin, AMF, and 5 more financial regulators",
   "scripts": {
     "dev": "vite",
     "dev:api": "node --loader ts-node/esm --experimental-specifier-resolution=node server.ts",
