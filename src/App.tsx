@@ -24,6 +24,7 @@ import { useNotificationFeed } from './hooks/useNotificationFeed';
 import { Toast } from './components/Toast';
 import { useDashboardState, INITIAL_ADVANCED_FILTERS, CURRENT_YEAR } from './hooks/useDashboardState';
 import { useFinesData, type TrendPoint } from './hooks/useFinesData';
+import { useUnifiedData } from './hooks/useUnifiedData';
 
 
 function getYearsRange() {
@@ -222,11 +223,26 @@ export default function App() {
     refresh: refreshNotifications,
   } = useNotificationFeed();
   const availableYears = useMemo(() => getYearsRange(), []);
-  const { fines, stats, prevStats, recordsByYear, trendsByYear, loading, error } = useFinesData({
+
+  // Use unified data when multi-regulator filters are active
+  const useMultiRegulator = regulator !== 'All' || country !== 'All';
+
+  const unifiedData = useUnifiedData({
+    regulator,
+    country,
+    year,
+    currency,
+  });
+
+  const fcaData = useFinesData({
     year,
     comparisonYear,
     availableYears,
   });
+
+  // Use unified data when filters are active, otherwise use FCA data for backward compatibility
+  const { fines, stats, loading, error } = useMultiRegulator ? unifiedData : fcaData;
+  const { prevStats, recordsByYear, trendsByYear } = fcaData; // Keep these from FCA data for now
   useEffect(() => {
     if (!toast) return;
     const timer = setTimeout(() => setToast(null), 3500);

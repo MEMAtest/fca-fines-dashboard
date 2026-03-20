@@ -1,4 +1,5 @@
 export interface FineRecord {
+  id?: string;
   fine_reference: string | null;
   firm_individual: string;
   firm_category: string | null;
@@ -11,6 +12,14 @@ export interface FineRecord {
   date_issued: string;
   year_issued: number;
   month_issued: number;
+  created_at?: string;
+  updated_at?: string;
+  // Unified API fields (optional for backward compatibility)
+  regulator_full_name?: string;
+  country_code?: string;
+  country_name?: string;
+  amount_eur?: number;
+  amount_gbp?: number;
 }
 
 export interface StatsResponse {
