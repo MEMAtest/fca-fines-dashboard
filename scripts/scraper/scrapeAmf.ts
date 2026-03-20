@@ -1,14 +1,14 @@
 /**
  * AMF (Autorité des marchés financiers - France) Scraper
  *
- * Strategy: Press release aggregation from enforcement committee
+ * Strategy: Press release aggregation from enforcement committee with Puppeteer
  * URL: https://www.amf-france.org/en/news-publications/news-releases/enforcement-committee-news-releases
  *
- * Difficulty: 5-6/10 (Moderate) - Press release parsing
+ * Difficulty: 6-7/10 (Moderate-High) - JavaScript-rendered press releases
  * Expected: ~150-250 enforcement actions
  */
 
-import axios from 'axios';
+import puppeteer from 'puppeteer';
 import * as cheerio from 'cheerio';
 import postgres from 'postgres';
 import crypto from 'crypto';
@@ -136,138 +136,232 @@ function getTestData(): AMFRecord[] {
 async function scrapeAmfPage(): Promise<AMFRecord[]> {
   const url = AMF_CONFIG.baseUrl + AMF_CONFIG.enforcementUrl;
 
-  console.log('📄 Fetching AMF enforcement pages...');
+  console.log('🌐 Launching headless browser for AMF...');
   console.log(`   URL: ${url}`);
+
+  const browser = await puppeteer.launch({
+    headless: true,
+    args: [
+      '--no-sandbox',
+      '--disable-setuid-sandbox',
+      '--disable-dev-shm-usage',
+      '--disable-gpu'
+    ]
+  });
 
   const records: AMFRecord[] = [];
 
-  // Rate limiting
-  await new Promise(resolve => setTimeout(resolve, AMF_CONFIG.rateLimit));
+  try {
+    const page = await browser.newPage();
+    await page.setUserAgent('Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36');
+    await page.setViewport({ width: 1920, height: 1080 });
 
-  const response = await axios.get(url, {
-    headers: {
-      'User-Agent': 'Mozilla/5.0 (compatible; RegulatoryScanner/2.0)',
-      'Accept': 'text/html',
-      'Accept-Language': 'en-GB,en;q=0.5'
-    },
-    timeout: 30000
-  });
+    console.log('📄 Navigating to AMF enforcement committee page...');
+    await page.goto(url, {
+      waitUntil: 'networkidle2',
+      timeout: 60000
+    });
 
-  console.log('✅ Page fetched successfully');
+    console.log('✅ Page loaded, waiting for JavaScript to render...');
+    await new Promise(resolve => setTimeout(resolve, 5000));
 
-  const $ = cheerio.load(response.data);
+    // Get page content after JavaScript rendering
+    const content = await page.content();
+    const $ = cheerio.load(content);
 
-  // Parse press release links
-  const pressReleaseLinks: string[] = [];
+    // Parse press release links
+    const pressReleaseLinks: string[] = [];
 
-  // AMF typically lists press releases in article blocks
-  $('article a, .press-release a, .news-item a').each((i, elem) => {
-    const href = $(elem).attr('href');
-    if (href && (href.includes('enforcement-committee') || href.includes('sanction'))) {
-      const fullUrl = href.startsWith('http') ? href : AMF_CONFIG.baseUrl + href;
-      if (!pressReleaseLinks.includes(fullUrl)) {
-        pressReleaseLinks.push(fullUrl);
-      }
-    }
-  });
-
-  console.log(`   Found ${pressReleaseLinks.length} press release links`);
-
-  if (pressReleaseLinks.length === 0) {
-    console.log('⚠️  No press releases found, using test data');
-    return getTestData();
-  }
-
-  // Limit to avoid excessive scraping
-  const linksToProcess = pressReleaseLinks.slice(0, 30);  // Process first 30
-
-  console.log(`   Processing ${linksToProcess.length} press releases...`);
-
-  // Parse each press release
-  for (const link of linksToProcess) {
-    try {
-      // Rate limiting between requests
-      await new Promise(resolve => setTimeout(resolve, AMF_CONFIG.rateLimit));
-
-      const prResponse = await axios.get(link, {
-        headers: {
-          'User-Agent': 'Mozilla/5.0 (compatible; RegulatoryScanner/2.0)',
-          'Accept': 'text/html',
-          'Accept-Language': 'en-GB,en;q=0.5'
-        },
-        timeout: 30000
-      });
-
-      const $pr = cheerio.load(prResponse.data);
-
-      // Extract data from press release
-      const title = $pr('h1').first().text().trim();
-      const bodyText = $pr('article, .content, .main-content, main').text();
-
-      // Try to extract firm name from title or body
-      const firmMatch = title.match(/sanctions?\s+(.+?)(?:\s+for|\s+and|$)/i) ||
-                       bodyText.match(/(?:The )?Enforcement Committee.+?sanctions?\s+(.+?)(?:\s+for|\s+and)/i);
-      const firm = firmMatch ? firmMatch[1].trim() : null;
-
-      if (!firm) continue;  // Skip if we can't identify the firm
-
-      // Extract amount (€X million, €X,XXX, etc.)
-      const amountMatch = bodyText.match(/€\s*(\d+(?:[,\.]\d+)*)\s*(million|thousand)?/i) ||
-                         bodyText.match(/(\d+(?:[,\.]\d+)*)\s*(million|thousand)?\s*euros?/i);
-
-      let amount: number | null = null;
-      if (amountMatch) {
-        const numStr = amountMatch[1].replace(/,/g, '');
-        const num = parseFloat(numStr);
-        const multiplier = amountMatch[2]?.toLowerCase();
-
-        if (multiplier === 'million') {
-          amount = num * 1000000;
-        } else if (multiplier === 'thousand') {
-          amount = num * 1000;
-        } else {
-          amount = num;
+    // AMF lists press releases in various structures
+    $('article a, .press-release a, .news-item a, .item-link a, [href*="enforcement"], [href*="sanction"]').each((i, elem) => {
+      const href = $(elem).attr('href');
+      if (href && href.length > 10) {
+        const fullUrl = href.startsWith('http') ? href : AMF_CONFIG.baseUrl + href;
+        if (!pressReleaseLinks.includes(fullUrl) && (fullUrl.includes('enforcement') || fullUrl.includes('sanction'))) {
+          pressReleaseLinks.push(fullUrl);
         }
       }
+    });
 
-      // Extract date from meta tags or text
-      const dateText = $pr('meta[property="article:published_time"]').attr('content') ||
-                      $pr('time').attr('datetime') ||
-                      $pr('.date, .published-date').first().text();
+    console.log(`   Found ${pressReleaseLinks.length} press release links`);
 
-      const date = dateText ? new Date(dateText).toISOString().split('T')[0] : new Date().toISOString().split('T')[0];
+    if (pressReleaseLinks.length === 0) {
+      console.log('⚠️  No press releases found, using test data');
+      await browser.close();
+      return getTestData();
+    }
 
-      // Extract breach description
-      const breachMatch = bodyText.match(/for\s+(.+?)(?:\.|$)/i);
-      const breach = breachMatch ? breachMatch[1].trim().substring(0, 200) : 'Regulatory violations';
+    // Limit to avoid excessive scraping
+    const linksToProcess = pressReleaseLinks.slice(0, 20);  // Process first 20
+    console.log(`   Processing ${linksToProcess.length} press releases...`);
 
-      records.push({
-        firm,
-        amount,
-        currency: 'EUR',
-        date,
-        breach,
-        link,
-        summary: `${firm} sanctioned by AMF`
-      });
+    // Parse each press release
+    for (const link of linksToProcess) {
+      try {
+        // Rate limiting
+        await new Promise(resolve => setTimeout(resolve, AMF_CONFIG.rateLimit));
 
-      console.log(`   ✓ Parsed: ${firm} - €${amount?.toLocaleString() || 'N/A'}`);
+        await page.goto(link, {
+          waitUntil: 'networkidle2',
+          timeout: 30000
+        });
 
-    } catch (error) {
-      console.log(`   ✗ Failed to parse ${link}: ${error instanceof Error ? error.message : 'Unknown error'}`);
-      continue;
+        await new Promise(resolve => setTimeout(resolve, 2000));
+
+        const prContent = await page.content();
+        const $pr = cheerio.load(prContent);
+
+        // Extract data from press release
+        const title = $pr('h1, .page-title, .article-title').first().text().trim();
+        const bodyText = $pr('article, .content, .main-content, main, .article-body').text();
+
+        // Try to extract firm name
+        const firmMatch = title.match(/sanctions?\s+(.+?)(?:\s+for|\s+and|\s+€|$)/i) ||
+                         title.match(/(.+?)\s+(?:sanctioned|fined)/i) ||
+                         bodyText.match(/(?:The )?Enforcement Committee.+?sanctions?\s+(.+?)(?:\s+for|\s+and|\s+€)/i);
+
+        const firm = firmMatch ? firmMatch[1].trim() : null;
+
+        if (!firm || firm.length < 3 || firm.length > 150) continue;
+
+        // Extract amount
+        const amountMatch = bodyText.match(/€\s*(\d+(?:[,\.\s]\d+)*)\s*(million|thousand)?/i) ||
+                           bodyText.match(/(\d+(?:[,\.\s]\d+)*)\s*(million|thousand)?\s*euros?/i) ||
+                           title.match(/€\s*(\d+(?:[,\.\s]\d+)*)\s*(million|thousand)?/i);
+
+        let amount: number | null = null;
+        if (amountMatch) {
+          const numStr = amountMatch[1].replace(/[\s,]/g, '').replace(/\./g, '');
+          const num = parseFloat(numStr);
+          const multiplier = amountMatch[2]?.toLowerCase();
+
+          if (!isNaN(num)) {
+            if (multiplier === 'million') {
+              amount = num * 1000000;
+            } else if (multiplier === 'thousand') {
+              amount = num * 1000;
+            } else if (num < 10000) {
+              // Likely already in thousands or millions context
+              amount = num > 1000 ? num : num * 1000000;
+            } else {
+              amount = num;
+            }
+          }
+        }
+
+        // Extract date
+        const dateText = $pr('meta[property="article:published_time"]').attr('content') ||
+                        $pr('time').attr('datetime') ||
+                        $pr('.date, .published-date, .article-date').first().text();
+
+        const date = dateText ? parseFrenchDate(dateText) : new Date().toISOString().split('T')[0];
+
+        // Extract breach description
+        const breach = extractAmfBreach(title, bodyText);
+
+        records.push({
+          firm,
+          amount,
+          currency: 'EUR',
+          date,
+          breach,
+          link,
+          summary: `${firm} sanctioned by AMF`
+        });
+
+        console.log(`   ✓ Parsed: ${firm} - €${amount?.toLocaleString() || 'N/A'}`);
+
+      } catch (error) {
+        console.log(`   ✗ Failed to parse ${link.substring(0, 60)}...`);
+        continue;
+      }
+    }
+
+    await browser.close();
+    console.log(`   Extracted ${records.length} enforcement actions`);
+
+    // If we didn't find any records, fall back to test data
+    if (records.length === 0) {
+      console.log('⚠️  No records extracted, using test data');
+      return getTestData();
+    }
+
+    return records;
+
+  } catch (error) {
+    console.error('❌ Puppeteer error:', error);
+    await browser.close();
+    console.log('⚠️  Falling back to test data due to error');
+    return getTestData();
+  }
+}
+
+function parseFrenchDate(dateStr: string): string {
+  // Try ISO format first
+  const isoMatch = dateStr.match(/(\d{4})-(\d{2})-(\d{2})/);
+  if (isoMatch) {
+    return `${isoMatch[1]}-${isoMatch[2]}-${isoMatch[3]}`;
+  }
+
+  // Try French format: "15 mars 2024"
+  const frenchMonths: { [key: string]: number } = {
+    'janvier': 1, 'février': 2, 'mars': 3, 'avril': 4, 'mai': 5, 'juin': 6,
+    'juillet': 7, 'août': 8, 'septembre': 9, 'octobre': 10, 'novembre': 11, 'décembre': 12,
+    'january': 1, 'february': 2, 'march': 3, 'april': 4, 'may': 5, 'june': 6,
+    'july': 7, 'august': 8, 'september': 9, 'october': 10, 'november': 11, 'december': 12
+  };
+
+  const frenchMatch = dateStr.match(/(\d{1,2})\s+([a-zéû]+)\s+(\d{4})/i);
+  if (frenchMatch) {
+    const day = parseInt(frenchMatch[1]);
+    const month = frenchMonths[frenchMatch[2].toLowerCase()];
+    const year = parseInt(frenchMatch[3]);
+
+    if (month && day >= 1 && day <= 31 && year >= 2000 && year <= 2030) {
+      return `${year}-${month.toString().padStart(2, '0')}-${day.toString().padStart(2, '0')}`;
     }
   }
 
-  console.log(`   Extracted ${records.length} enforcement actions`);
+  // DD/MM/YYYY format
+  const ddmmMatch = dateStr.match(/(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{2,4})/);
+  if (ddmmMatch) {
+    const day = parseInt(ddmmMatch[1]);
+    const month = parseInt(ddmmMatch[2]);
+    let year = parseInt(ddmmMatch[3]);
 
-  // If we didn't find any records, fall back to test data
-  if (records.length === 0) {
-    console.log('⚠️  No records extracted, using test data');
-    return getTestData();
+    if (year < 100) year += 2000;
+
+    if (day >= 1 && day <= 31 && month >= 1 && month <= 12) {
+      return `${year}-${month.toString().padStart(2, '0')}-${day.toString().padStart(2, '0')}`;
+    }
   }
 
-  return records;
+  return new Date().toISOString().split('T')[0];
+}
+
+function extractAmfBreach(title: string, body: string): string {
+  const combinedText = (title + ' ' + body).toLowerCase();
+
+  if (combinedText.includes('abus de marché') || combinedText.includes('market abuse')) {
+    return 'Market abuse violations';
+  }
+  if (combinedText.includes('délit d\'initié') || combinedText.includes('insider')) {
+    return 'Insider dealing';
+  }
+  if (combinedText.includes('manipulation')) {
+    return 'Market manipulation';
+  }
+  if (combinedText.includes('manquement') && combinedText.includes('information')) {
+    return 'Information disclosure failures';
+  }
+  if (combinedText.includes('blanchiment') || combinedText.includes('aml')) {
+    return 'Anti-money laundering violations';
+  }
+  if (combinedText.includes('conduite') || combinedText.includes('conduct')) {
+    return 'Conduct of business violations';
+  }
+
+  return 'Regulatory violations';
 }
 
 function transformRecord(record: AMFRecord) {
