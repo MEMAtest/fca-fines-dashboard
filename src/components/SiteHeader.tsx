@@ -11,6 +11,17 @@ const NAV_LINKS = [
   { to: '/blog', label: 'Insights' },
 ];
 
+const REGULATOR_LINKS = [
+  { to: '/regulators/fca', label: 'FCA', flag: '🇬🇧', country: 'United Kingdom' },
+  { to: '/regulators/bafin', label: 'BaFin', flag: '🇩🇪', country: 'Germany' },
+  { to: '/regulators/amf', label: 'AMF', flag: '🇫🇷', country: 'France' },
+  { to: '/regulators/cnmv', label: 'CNMV', flag: '🇪🇸', country: 'Spain' },
+  { to: '/regulators/cbi', label: 'CBI', flag: '🇮🇪', country: 'Ireland' },
+  { to: '/regulators/afm', label: 'AFM', flag: '🇳🇱', country: 'Netherlands' },
+  { to: '/regulators/dnb', label: 'DNB', flag: '🇳🇱', country: 'Netherlands' },
+  { to: '/regulators/esma', label: 'ESMA', flag: '🇪🇺', country: 'European Union' },
+];
+
 function isNavActive(to: string, pathname: string) {
   if (to === '/') return pathname === '/';
   if (to === '/blog') return pathname === '/blog' || pathname.startsWith('/blog/');
@@ -63,10 +74,12 @@ const BASE_URL = 'https://fcafines.memaconsultants.com';
 export function SiteHeader() {
   const location = useLocation();
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [regulatorDropdownOpen, setRegulatorDropdownOpen] = useState(false);
   const breadcrumbs = getBreadcrumbs(location.pathname);
   const showBreadcrumbs = location.pathname !== '/';
 
   const closeMobile = useCallback(() => setMobileOpen(false), []);
+  const closeRegulatorDropdown = useCallback(() => setRegulatorDropdownOpen(false), []);
 
   // Inject BreadcrumbList JSON-LD for search engines
   useEffect(() => {
@@ -136,6 +149,39 @@ export function SiteHeader() {
               {link.label}
             </Link>
           ))}
+
+          {/* Regulator Dropdown */}
+          <div className="site-header__dropdown">
+            <button
+              type="button"
+              className={`site-header__dropdown-trigger${location.pathname.startsWith('/regulators') ? ' site-header__link--active' : ''}`}
+              onClick={() => setRegulatorDropdownOpen(!regulatorDropdownOpen)}
+              aria-expanded={regulatorDropdownOpen}
+              aria-haspopup="true"
+            >
+              Regulators
+              <ChevronRight size={14} style={{ transform: regulatorDropdownOpen ? 'rotate(90deg)' : 'none', transition: 'transform 0.2s' }} />
+            </button>
+
+            {regulatorDropdownOpen && (
+              <div className="site-header__dropdown-menu" onMouseLeave={closeRegulatorDropdown}>
+                {REGULATOR_LINKS.map((regulator) => (
+                  <Link
+                    key={regulator.to}
+                    to={regulator.to}
+                    className="site-header__dropdown-item"
+                    onClick={closeRegulatorDropdown}
+                  >
+                    <span className="site-header__dropdown-flag">{regulator.flag}</span>
+                    <div>
+                      <div className="site-header__dropdown-label">{regulator.label}</div>
+                      <div className="site-header__dropdown-country">{regulator.country}</div>
+                    </div>
+                  </Link>
+                ))}
+              </div>
+            )}
+          </div>
         </nav>
 
         {/* Mobile hamburger */}

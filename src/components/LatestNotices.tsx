@@ -2,6 +2,7 @@ import { ExternalLink, HelpCircle } from 'lucide-react';
 import { FineRecord } from '../types';
 import { ExportMenu } from './ExportMenu';
 import { PanelHelp } from './PanelHelp';
+import RegulatorBadge from './RegulatorBadge';
 
 const formatter = new Intl.NumberFormat('en-GB', {
   style: 'currency',
@@ -43,7 +44,10 @@ export function LatestNotices({ records, year, exportId }: LatestNoticesProps) {
             <article key={`${record.firm_individual}-${record.date_issued}`} className="notice">
               <header>
                 <div>
-                  <h4>{record.firm_individual}</h4>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.25rem' }}>
+                    {record.regulator && <RegulatorBadge regulator={record.regulator} size="small" />}
+                    <h4 style={{ margin: 0 }}>{record.firm_individual}</h4>
+                  </div>
                   <p>{new Date(record.date_issued).toLocaleDateString('en-GB')}</p>
                 </div>
                 <span className="notice__amount">{formatter.format(record.amount)}</span>
