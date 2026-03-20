@@ -18,6 +18,9 @@ interface QueryState {
   comparisonYear?: number | null;
   comparisonCategories?: string[];
   advancedFilters: AdvancedFilterValues;
+  regulator?: string;
+  country?: string;
+  currency?: string;
 }
 
 export function useDashboardState() {
@@ -29,6 +32,9 @@ export function useDashboardState() {
   const [comparisonYear, setComparisonYear] = useState<number | null>(initialQuery.comparisonYear ?? CURRENT_YEAR - 1);
   const [comparisonCategories, setComparisonCategories] = useState<string[]>(initialQuery.comparisonCategories ?? []);
   const [advancedFilters, setAdvancedFilters] = useState<AdvancedFilterValues>(initialQuery.advancedFilters ?? INITIAL_ADVANCED_FILTERS);
+  const [regulator, setRegulator] = useState(initialQuery.regulator ?? 'All');
+  const [country, setCountry] = useState(initialQuery.country ?? 'All');
+  const [currency, setCurrency] = useState(initialQuery.currency ?? 'GBP');
 
   const shareState = useMemo(
     () => ({
@@ -39,8 +45,11 @@ export function useDashboardState() {
       comparisonYear,
       comparisonCategories,
       advancedFilters,
+      regulator,
+      country,
+      currency,
     }),
-    [year, category, search, searchScope, comparisonYear, comparisonCategories, advancedFilters]
+    [year, category, search, searchScope, comparisonYear, comparisonCategories, advancedFilters, regulator, country, currency]
   );
   const shareUrl = useMemo(() => buildShareUrl(shareState), [shareState]);
 
@@ -68,6 +77,12 @@ export function useDashboardState() {
     setComparisonCategories,
     advancedFilters,
     setAdvancedFilters,
+    regulator,
+    setRegulator,
+    country,
+    setCountry,
+    currency,
+    setCurrency,
     shareUrl,
   };
 }
@@ -119,6 +134,9 @@ function getInitialQueryState(): QueryState {
     comparisonYear: parseNumber(params.get('compare')) ?? undefined,
     comparisonCategories: parseStringList(params.get('compareCategories')),
     advancedFilters,
+    regulator: params.get('regulator') || undefined,
+    country: params.get('country') || undefined,
+    currency: params.get('currency') || undefined,
   };
 }
 
@@ -130,6 +148,9 @@ function buildShareParams(state: {
   comparisonYear: number | null;
   comparisonCategories: string[];
   advancedFilters: AdvancedFilterValues;
+  regulator: string;
+  country: string;
+  currency: string;
 }) {
   const params = new URLSearchParams();
   if (state.year !== CURRENT_YEAR) {
@@ -149,6 +170,15 @@ function buildShareParams(state: {
   }
   if (state.comparisonCategories.length) {
     params.set('compareCategories', state.comparisonCategories.join(','));
+  }
+  if (state.regulator !== 'All') {
+    params.set('regulator', state.regulator);
+  }
+  if (state.country !== 'All') {
+    params.set('country', state.country);
+  }
+  if (state.currency !== 'GBP') {
+    params.set('currency', state.currency);
   }
   const { advancedFilters } = state;
   if (advancedFilters.years.length) {
@@ -183,6 +213,9 @@ function buildShareUrl(state: {
   comparisonYear: number | null;
   comparisonCategories: string[];
   advancedFilters: AdvancedFilterValues;
+  regulator: string;
+  country: string;
+  currency: string;
 }) {
   if (typeof window === 'undefined') return '';
   const params = buildShareParams(state);

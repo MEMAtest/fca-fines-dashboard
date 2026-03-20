@@ -202,6 +202,12 @@ export default function App() {
     setComparisonCategories,
     advancedFilters,
     setAdvancedFilters,
+    regulator,
+    setRegulator,
+    country,
+    setCountry,
+    currency,
+    setCurrency,
     shareUrl,
   } = useDashboardState();
   const [comparisonOpen, setComparisonOpen] = useState(false);
@@ -609,6 +615,9 @@ export default function App() {
         availableYears={availableYears}
         category={category}
         categories={categoryOptions.slice(1)}
+        regulator={regulator}
+        country={country}
+        currency={currency}
         resultsCount={filteredFines.length}
         search={search}
         searchScope={searchScope}
@@ -616,6 +625,9 @@ export default function App() {
         chips={activeChips}
         onYearChange={setYear}
         onCategoryChange={setCategory}
+        onRegulatorChange={setRegulator}
+        onCountryChange={setCountry}
+        onCurrencyChange={setCurrency}
         onSearchChange={setSearch}
         onSearchScopeChange={setSearchScope}
         onAdvancedOpen={() => setAdvancedOpen(true)}
