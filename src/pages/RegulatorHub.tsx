@@ -63,7 +63,7 @@ export function RegulatorHub() {
 
   // Get breach category breakdown
   const breachCounts = fines.reduce((acc, fine) => {
-    const category = fine.breach_category || 'Unknown';
+    const category = fine.breach_type || 'Unknown';
     acc[category] = (acc[category] || 0) + 1;
     return acc;
   }, {} as Record<string, number>);
@@ -74,8 +74,8 @@ export function RegulatorHub() {
 
   // Get year distribution
   const yearCounts = fines.reduce((acc, fine) => {
-    const year = fine.year || new Date(fine.date_of_notice || '').getFullYear();
-    if (year) {
+    const year = fine.year_issued;
+    if (year && !isNaN(year)) {
       acc[year] = (acc[year] || 0) + 1;
     }
     return acc;
@@ -250,9 +250,9 @@ export function RegulatorHub() {
                           {formatCurrency(fine.amount || 0, currency)}
                         </td>
                         <td className="regulator-hub__date">
-                          {new Date(fine.date_of_notice || '').toLocaleDateString('en-GB')}
+                          {new Date(fine.date_issued).toLocaleDateString('en-GB')}
                         </td>
-                        <td className="regulator-hub__breach">{fine.breach_category}</td>
+                        <td className="regulator-hub__breach">{fine.breach_type}</td>
                       </tr>
                     ))}
                   </tbody>

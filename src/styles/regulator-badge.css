@@ -1,0 +1,61 @@
+/* RegulatorBadge Component Styles */
+
+.regulator-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  border-radius: 0.375rem;
+  font-weight: 500;
+  transition: all 0.2s;
+}
+
+.regulator-badge:hover {
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+}
+
+.regulator-badge--small {
+  font-size: 0.75rem;
+  padding: 0.125rem 0.375rem;
+}
+
+.regulator-badge--medium {
+  font-size: 0.875rem;
+  padding: 0.25rem 0.5rem;
+}
+
+.regulator-badge--large {
+  font-size: 1rem;
+  padding: 0.375rem 0.75rem;
+}
+
+.regulator-badge__flag {
+  line-height: 1;
+}
+
+.regulator-badge__flag--small {
+  font-size: 0.75rem;
+}
+
+.regulator-badge__flag--medium {
+  font-size: 0.875rem;
+}
+
+.regulator-badge__flag--large {
+  font-size: 1rem;
+}
+
+.regulator-badge__code {
+  font-weight: 600;
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border-width: 0;
+}

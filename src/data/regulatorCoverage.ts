@@ -136,9 +136,14 @@ export const REGULATOR_COVERAGE: Record<string, RegulatorCoverage> = {
 export const REGULATOR_CODES = Object.keys(REGULATOR_COVERAGE);
 
 export function getRegulatorCoverage(code: string): RegulatorCoverage | null {
-  return REGULATOR_COVERAGE[code] || null;
+  // Case-insensitive lookup
+  const entry = Object.entries(REGULATOR_COVERAGE).find(
+    ([key]) => key.toUpperCase() === code.toUpperCase()
+  );
+  return entry ? entry[1] : null;
 }
 
 export function isValidRegulatorCode(code: string): boolean {
-  return REGULATOR_CODES.includes(code);
+  // Case-insensitive validation
+  return REGULATOR_CODES.some(key => key.toUpperCase() === code.toUpperCase());
 }

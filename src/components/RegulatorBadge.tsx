@@ -10,6 +10,7 @@
  */
 
 import React from 'react';
+import '../styles/regulator-badge.css';
 
 interface RegulatorBadgeProps {
   regulator: string;
@@ -99,25 +100,9 @@ const RegulatorBadge: React.FC<RegulatorBadgeProps> = ({
     bgColor: '#f3f4f6' // gray-100
   };
 
-  const sizeClasses = {
-    small: 'text-xs px-1.5 py-0.5',
-    medium: 'text-sm px-2 py-1',
-    large: 'text-base px-3 py-1.5'
-  };
-
-  const flagSizes = {
-    small: 'text-xs',
-    medium: 'text-sm',
-    large: 'text-base'
-  };
-
   return (
     <span
-      className={`
-        inline-flex items-center gap-1.5 rounded-md font-medium
-        ${sizeClasses[size]}
-        transition-all duration-200 hover:shadow-sm
-      `}
+      className={`regulator-badge regulator-badge--${size}`}
       style={{
         color: config.color,
         backgroundColor: config.bgColor
@@ -126,10 +111,10 @@ const RegulatorBadge: React.FC<RegulatorBadgeProps> = ({
       role="img"
       aria-label={`${regulator} - ${config.fullName}`}
     >
-      <span className={flagSizes[size]} aria-hidden="true">
+      <span className={`regulator-badge__flag regulator-badge__flag--${size}`} aria-hidden="true">
         {config.flag}
       </span>
-      <span className="font-semibold">
+      <span className="regulator-badge__code">
         {regulator}
       </span>
       {showTooltip && (
@@ -158,16 +143,16 @@ export const RegulatorBadgeList: React.FC<{
   const remainingCount = regulators.length - maxDisplay;
 
   return (
-    <div className="flex flex-wrap items-center gap-1.5">
-      {displayRegulators.map((regulator, index) => (
+    <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: '0.375rem' }}>
+      {displayRegulators.map((regulator) => (
         <RegulatorBadge
-          key={`${regulator}-${index}`}
+          key={regulator}
           regulator={regulator}
           size={size}
         />
       ))}
       {remainingCount > 0 && (
-        <span className="text-xs text-gray-500 ml-1">
+        <span style={{ fontSize: '0.75rem', color: '#6b7280', marginLeft: '0.25rem' }}>
           +{remainingCount} more
         </span>
       )}
