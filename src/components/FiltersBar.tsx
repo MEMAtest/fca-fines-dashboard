@@ -6,6 +6,9 @@ interface FiltersBarProps {
   availableYears: number[];
   category: string;
   categories: string[];
+  regulator: string;
+  country: string;
+  currency: string;
   resultsCount: number;
   search: string;
   searchScope: string;
@@ -13,6 +16,9 @@ interface FiltersBarProps {
   chips: Array<{ label: string; onRemove?: () => void }>;
   onYearChange: (year: number) => void;
   onCategoryChange: (category: string) => void;
+  onRegulatorChange: (regulator: string) => void;
+  onCountryChange: (country: string) => void;
+  onCurrencyChange: (currency: string) => void;
   onSearchChange: (value: string) => void;
   onSearchScopeChange: (scope: string) => void;
   onAdvancedOpen: () => void;
@@ -23,6 +29,9 @@ export function FiltersBar({
   availableYears,
   category,
   categories,
+  regulator,
+  country,
+  currency,
   resultsCount,
   search,
   searchScope,
@@ -30,12 +39,17 @@ export function FiltersBar({
   chips,
   onYearChange,
   onCategoryChange,
+  onRegulatorChange,
+  onCountryChange,
+  onCurrencyChange,
   onSearchChange,
   onSearchScopeChange,
   onAdvancedOpen,
 }: FiltersBarProps) {
   const focusLabel = year === 0 ? 'All years' : `${year} focus`;
   const categoryLabel = category === 'All' ? 'All breach types' : category;
+  const regulatorLabel = regulator === 'All' ? 'All regulators' : regulator;
+  const countryLabel = country === 'All' ? 'All countries' : country;
 
   return (
     <section className="filters">
@@ -51,6 +65,47 @@ export function FiltersBar({
       </div>
 
       <div className="filters__controls">
+        <div>
+          <label htmlFor="regulator-select">Regulator</label>
+          <select id="regulator-select" value={regulator} onChange={(e) => onRegulatorChange(e.target.value)}>
+            <option value="All">All Regulators</option>
+            <optgroup label="United Kingdom">
+              <option value="FCA">🇬🇧 FCA - Financial Conduct Authority</option>
+            </optgroup>
+            <optgroup label="European Union">
+              <option value="ESMA">🇪🇺 ESMA - European Securities Authority</option>
+            </optgroup>
+            <optgroup label="Germany">
+              <option value="BaFin">🇩🇪 BaFin - Federal Financial Supervisory</option>
+            </optgroup>
+            <optgroup label="France">
+              <option value="AMF">🇫🇷 AMF - Autorité des marchés financiers</option>
+            </optgroup>
+            <optgroup label="Spain">
+              <option value="CNMV">🇪🇸 CNMV - Comisión Nacional del Mercado</option>
+            </optgroup>
+            <optgroup label="Ireland">
+              <option value="CBI">🇮🇪 CBI - Central Bank of Ireland</option>
+            </optgroup>
+            <optgroup label="Netherlands">
+              <option value="AFM">🇳🇱 AFM - Authority for Financial Markets</option>
+              <option value="DNB">🇳🇱 DNB - De Nederlandsche Bank</option>
+            </optgroup>
+          </select>
+        </div>
+        <div>
+          <label htmlFor="country-select">Country</label>
+          <select id="country-select" value={country} onChange={(e) => onCountryChange(e.target.value)}>
+            <option value="All">All Countries</option>
+            <option value="UK">🇬🇧 United Kingdom</option>
+            <option value="EU">🇪🇺 European Union</option>
+            <option value="DE">🇩🇪 Germany</option>
+            <option value="FR">🇫🇷 France</option>
+            <option value="ES">🇪🇸 Spain</option>
+            <option value="IE">🇮🇪 Ireland</option>
+            <option value="NL">🇳🇱 Netherlands</option>
+          </select>
+        </div>
         <div>
           <label htmlFor="year-select">Year</label>
           <select id="year-select" value={year} onChange={(e) => onYearChange(Number(e.target.value))}>
@@ -71,6 +126,13 @@ export function FiltersBar({
                 {cat}
               </option>
             ))}
+          </select>
+        </div>
+        <div>
+          <label htmlFor="currency-select">Currency</label>
+          <select id="currency-select" value={currency} onChange={(e) => onCurrencyChange(e.target.value)}>
+            <option value="GBP">£ GBP</option>
+            <option value="EUR">€ EUR</option>
           </select>
         </div>
         <div>
@@ -101,8 +163,20 @@ export function FiltersBar({
           records in view
         </div>
         <div className="filters__metric">
+          <strong>{regulatorLabel}</strong>
+          regulator
+        </div>
+        <div className="filters__metric">
+          <strong>{countryLabel}</strong>
+          country
+        </div>
+        <div className="filters__metric">
           <strong>{categoryLabel}</strong>
           breach focus
+        </div>
+        <div className="filters__metric">
+          <strong>{currency}</strong>
+          currency
         </div>
         <button type="button" className="btn btn-primary" onClick={onAdvancedOpen}>
           Show advanced
