@@ -24,6 +24,7 @@
     "scrape:cnmv": "npx tsx scripts/scraper/scrapeCnmv.ts",
     "scrape:afm": "npx tsx scripts/scraper/scrapeAfm.ts",
     "scrape:dnb": "npx tsx scripts/scraper/scrapeDnb.ts",
+    "scrape:cbi": "npx tsx scripts/scraper/scrapeCbi.ts",
     "verify:setup": "bash scripts/verify-setup.sh",
     "blog:monthly": "npx tsx scripts/generate-blog.ts monthly",
     "blog:topical": "npx tsx scripts/generate-blog.ts topical",
