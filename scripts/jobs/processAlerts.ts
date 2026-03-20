@@ -11,7 +11,9 @@ import postgres from 'postgres';
 import { SESClient, SendEmailCommand } from '@aws-sdk/client-ses';
 
 const sql = postgres(process.env.DATABASE_URL?.trim() || '', {
-  ssl: process.env.DATABASE_URL?.includes('sslmode=') ? 'require' : undefined
+  ssl: process.env.DATABASE_URL?.includes('sslmode=')
+    ? { rejectUnauthorized: false }
+    : false
 });
 
 const ses = new SESClient({
@@ -58,12 +60,14 @@ async function main() {
   console.log('Starting alert processing...');
 
   try {
-    // Get fines from the last 24 hours
+    // Get fines from the last 24 hours (created recently AND issued recently)
+    // This prevents alerts for historical data being backfilled
     const recentFines = await sql`
       SELECT id, firm_individual, amount, date_issued, breach_type,
              breach_categories, final_notice_url
       FROM fca_fines
       WHERE created_at >= NOW() - INTERVAL '24 hours'
+        AND date_issued >= NOW() - INTERVAL '90 days'
       ORDER BY date_issued DESC
     ` as Fine[];
 

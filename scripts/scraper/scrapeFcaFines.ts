@@ -135,8 +135,12 @@ function parseDate(text: string): Date | null {
   const parts = cleaned.split(/[\/-]/).map((part) => part.trim());
   if (parts.length !== 3) return null;
   let [day, month, year] = parts;
-  const yearNum = Number(year);
+  let yearNum = Number(year);
   if (Number.isNaN(yearNum)) return null;
+  // Handle 2-digit years: assume 2000-2099
+  if (yearNum < 100) {
+    yearNum += 2000;
+  }
   let monthNum = Number(month);
   if (Number.isNaN(monthNum)) {
     const monthMap: Record<string, number> = {
