@@ -237,6 +237,10 @@ $$;
 GRANT SELECT ON eu_fines TO monitor_readonly;
 GRANT SELECT ON all_regulatory_fines TO monitor_readonly;
 
+-- Grant application user full access to eu_fines table
+GRANT SELECT, INSERT, UPDATE, DELETE ON eu_fines TO fca_app;
+GRANT SELECT ON all_regulatory_fines TO fca_app;
+
 COMMENT ON TABLE eu_fines IS 'European regulatory fines from ESMA, BaFin, AMF, CNMV, AFM, DNB, CONSOB';
 COMMENT ON MATERIALIZED VIEW all_regulatory_fines IS 'Unified view of FCA + EU regulatory fines';
 COMMENT ON FUNCTION refresh_all_fines() IS 'Refresh materialized view after scraper runs';

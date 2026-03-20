@@ -28,8 +28,10 @@ async function runMigration() {
 
     console.log('📄 Running migration from:', migrationPath);
 
-    // Execute migration
-    await sql.unsafe(migrationSql);
+    // Execute migration within transaction for atomicity
+    await sql.begin(async (tx) => {
+      await tx.unsafe(migrationSql);
+    });
 
     console.log('✅ Migration completed successfully!\n');
 

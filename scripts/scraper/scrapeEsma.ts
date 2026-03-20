@@ -16,7 +16,9 @@ import * as dotenv from 'dotenv';
 dotenv.config();
 
 const sql = postgres(process.env.DATABASE_URL?.trim() || '', {
-  ssl: process.env.DATABASE_URL?.includes('sslmode=') ? 'require' : undefined
+  ssl: process.env.DATABASE_URL?.includes('sslmode=')
+    ? { rejectUnauthorized: false }
+    : false
 });
 
 // ESMA enforcement data URLs (as of 2026)
@@ -42,64 +44,65 @@ async function main() {
   console.log('Target: European Securities and Markets Authority');
   console.log('Method: Excel download + parsing\n');
 
+  // Check for command-line flags
+  const useTestData = process.argv.includes('--test-data');
+  const dryRun = process.argv.includes('--dry-run');
+
+  if (useTestData) {
+    console.log('⚠️  Using test data (--test-data flag detected)\n');
+  }
+  if (dryRun) {
+    console.log('🔍 Dry run mode - no database writes (--dry-run flag detected)\n');
+  }
+
   try {
-    // Step 1: Fetch ESMA enforcement page to find download links
-    console.log('📄 Fetching ESMA enforcement page...');
-    const pageResponse = await axios.get(ESMA_URLS.enforcementPage, {
-      headers: {
-        'User-Agent': 'Mozilla/5.0 (compatible; RegulatoryScanner/2.0)',
-        'Accept': 'text/html'
-      },
-      timeout: 30000
-    });
+    let records: ESMARecord[];
 
-    console.log('✅ Page fetched successfully');
+    if (useTestData) {
+      // Use test data
+      records = getTestData();
+      console.log(`📊 Using ${records.length} test records`);
+    } else {
+      // Step 1: Fetch ESMA enforcement page to find download links
+      console.log('📄 Fetching ESMA enforcement page...');
+      const pageResponse = await axios.get(ESMA_URLS.enforcementPage, {
+        headers: {
+          'User-Agent': 'Mozilla/5.0 (compatible; RegulatoryScanner/2.0)',
+          'Accept': 'text/html'
+        },
+        timeout: 30000
+      });
 
-    // Step 2: Parse HTML to find Excel/download links
-    // For now, we'll use a known enforcement action as test data
-    // In production, this would parse the page or download Excel
-    const testRecords: ESMARecord[] = [
-      {
-        entity: 'REGIS-TR S.A.',
-        type: 'Trade Repository',
-        date: '2025-02-14',
-        amount: 1374000,
-        currency: 'EUR',
-        description: 'Breach of registration requirements under EMIR Article 55. Failed to maintain proper systems and controls.',
-        reference: 'ESMA71-99-2253'
-      },
-      {
-        entity: 'ICE Trade Vault Europe Ltd',
-        type: 'Trade Repository',
-        date: '2023-03-21',
-        amount: 400000,
-        currency: 'EUR',
-        description: 'Operational and technical requirements breach',
-        reference: 'ESMA71-319-658'
-      },
-      {
-        entity: 'Scope Ratings GmbH',
-        type: 'Credit Rating Agency',
-        date: '2022-06-15',
-        amount: 125000,
-        currency: 'EUR',
-        description: 'Governance and conflict of interest violations',
-        reference: 'ESMA33-5-2284'
-      }
-    ];
+      console.log('✅ Page fetched successfully');
 
-    console.log(`\n📊 Extracted ${testRecords.length} enforcement actions`);
+      // Step 2: Parse HTML to find Excel/download links or enforcement records
+      // TODO: Implement actual parsing of ESMA page
+      // For now, fall back to test data if real parsing not implemented
+      console.log('⚠️  Real ESMA parsing not yet implemented, using test data');
+      records = getTestData();
+    }
 
+    console.log(`\n📊 Extracted ${records.length} enforcement actions`);
     // Step 3: Transform to database format
-    const records = testRecords.map(r => transformRecord(r));
+    const transformedRecords = records.map(r => transformRecord(r));
 
-    // Step 4: Insert into database
-    await upsertRecords(records);
+    // Step 4: Insert into database (skip if dry-run)
+    if (dryRun) {
+      console.log('\n🔍 Dry run - skipping database insert');
+      console.log('Records that would be inserted:');
+      transformedRecords.forEach((r, i) => {
+        console.log(`   ${i + 1}. ${r.firmIndividual} - €${(r.amount || 0).toLocaleString()} (${r.dateIssued})`);
+      });
+    } else {
+      await upsertRecords(transformedRecords);
+    }
 
-    // Step 5: Refresh materialized view
-    console.log('\n🔄 Refreshing unified regulatory fines view...');
-    await sql`SELECT refresh_all_fines()`;
-    console.log('✅ View refreshed');
+    // Step 5: Refresh materialized view (skip if dry-run)
+    if (!dryRun) {
+      console.log('\n🔄 Refreshing unified regulatory fines view...');
+      await sql`SELECT refresh_all_fines()`;
+      console.log('✅ View refreshed');
+    }
 
     // Summary
     const totalEsma = await sql`SELECT COUNT(*) as count FROM eu_fines WHERE regulator = 'ESMA'`;
@@ -118,6 +121,39 @@ async function main() {
     await sql.end();
     process.exit(1);
   }
+}
+
+function getTestData(): ESMARecord[] {
+  // Test data based on known ESMA enforcement actions
+  return [
+    {
+      entity: 'REGIS-TR S.A.',
+      type: 'Trade Repository',
+      date: '2025-02-14',
+      amount: 1374000,
+      currency: 'EUR',
+      description: 'Breach of registration requirements under EMIR Article 55. Failed to maintain proper systems and controls.',
+      reference: 'ESMA71-99-2253'
+    },
+    {
+      entity: 'ICE Trade Vault Europe Ltd',
+      type: 'Trade Repository',
+      date: '2023-03-21',
+      amount: 400000,
+      currency: 'EUR',
+      description: 'Operational and technical requirements breach',
+      reference: 'ESMA71-319-658'
+    },
+    {
+      entity: 'Scope Ratings GmbH',
+      type: 'Credit Rating Agency',
+      date: '2022-06-15',
+      amount: 125000,
+      currency: 'EUR',
+      description: 'Governance and conflict of interest violations',
+      reference: 'ESMA33-5-2284'
+    }
+  ];
 }
 
 function transformRecord(record: ESMARecord) {
@@ -160,7 +196,7 @@ function transformRecord(record: ESMARecord) {
     yearIssued,
     monthIssued,
     breachType: extractBreachType(record.description),
-    breachCategories: JSON.stringify(breachCategories),
+    breachCategories: breachCategories,  // Store as array, not stringified
     summary: `${record.entity} fined €${(record.amount || 0).toLocaleString()} by ESMA for ${record.description}`,
     finalNoticeUrl: record.reference ? `https://www.esma.europa.eu/document/${record.reference}` : null,
     sourceUrl: ESMA_URLS.enforcementPage,
@@ -253,7 +289,7 @@ async function upsertRecords(records: any[]) {
           ${record.yearIssued},
           ${record.monthIssued},
           ${record.breachType},
-          ${record.breachCategories},
+          ${sql.json(record.breachCategories)},
           ${record.summary},
           ${record.finalNoticeUrl},
           ${record.sourceUrl},

@@ -17,7 +17,9 @@ import * as dotenv from 'dotenv';
 dotenv.config();
 
 const sql = postgres(process.env.DATABASE_URL?.trim() || '', {
-  ssl: process.env.DATABASE_URL?.includes('sslmode=') ? 'require' : undefined
+  ssl: process.env.DATABASE_URL?.includes('sslmode=')
+    ? { rejectUnauthorized: false }
+    : false
 });
 
 const BAFIN_CONFIG = {
@@ -51,23 +53,41 @@ async function main() {
   console.log('Target: Federal Financial Supervisory Authority (Germany)');
   console.log('Method: HTML table scraping\n');
 
+  // Check for command-line flags
+  const useTestData = process.argv.includes('--test-data');
+  const dryRun = process.argv.includes('--dry-run');
+
+  if (useTestData) {
+    console.log('⚠️  Using test data (--test-data flag detected)\n');
+  }
+  if (dryRun) {
+    console.log('🔍 Dry run mode - no database writes (--dry-run flag detected)\n');
+  }
+
   try {
-    // For now, use test data (would scrape real page in production)
-    // In production: const records = await scrapeBaFinPage();
-    const records = getTestData();
+    // Scrape real BaFin page or use test data
+    const records = useTestData ? getTestData() : await scrapeBaFinPage();
 
     console.log(`📊 Extracted ${records.length} enforcement actions`);
 
     // Transform to database format
     const transformed = records.map(r => transformRecord(r));
 
-    // Insert into database
-    await upsertRecords(transformed);
+    // Insert into database (skip if dry-run)
+    if (dryRun) {
+      console.log('\n🔍 Dry run - skipping database insert');
+      console.log('Records that would be inserted:');
+      transformed.forEach((r, i) => {
+        console.log(`   ${i + 1}. ${r.firmIndividual} - €${(r.amount || 0).toLocaleString()} (${r.dateIssued})`);
+      });
+    } else {
+      await upsertRecords(transformed);
 
-    // Refresh materialized view
-    console.log('\n🔄 Refreshing unified regulatory fines view...');
-    await sql`SELECT refresh_all_fines()`;
-    console.log('✅ View refreshed');
+      // Refresh materialized view
+      console.log('\n🔄 Refreshing unified regulatory fines view...');
+      await sql`SELECT refresh_all_fines()`;
+      console.log('✅ View refreshed');
+    }
 
     // Summary
     const totalBafin = await sql`SELECT COUNT(*) as count FROM eu_fines WHERE regulator = 'BaFin'`;
@@ -158,6 +178,7 @@ async function scrapeBaFinPage(): Promise<BaFinRecord[]> {
   const records: BaFinRecord[] = [];
 
   // Try to find enforcement table
+  // BaFin structure: Column 1 = Date, Column 2 = Link with description
   const rows = $('tbody tr');
 
   if (rows.length > 0) {
@@ -166,26 +187,34 @@ async function scrapeBaFinPage(): Promise<BaFinRecord[]> {
     rows.each((i, row) => {
       const $row = $(row);
 
-      // Extract data (adjust selectors based on actual structure)
-      const firm = $row.find('td:nth-child(1)').text().trim();
-      const amountText = $row.find('td:nth-child(2)').text().trim();
-      const dateText = $row.find('td:nth-child(3)').text().trim();
-      const breach = $row.find('td:nth-child(4)').text().trim();
-      const link = $row.find('a').attr('href');
+      // BaFin table: td1 = date, td2 = title/link
+      const dateText = $row.find('td:nth-child(1)').text().trim();
+      const linkElement = $row.find('td:nth-child(2) a');
+      const titleText = linkElement.text().trim();
+      const linkHref = linkElement.attr('href');
 
-      if (!firm) return;
+      if (!titleText || !dateText) return;
 
-      const amount = parseAmount(amountText);
+      // Extract firm name from title (usually before the colon or "BaFin")
+      const firmMatch = titleText.match(/^([^:]+?)(?:\s*:|\s*–|\s*imposes)/i);
+      const firm = firmMatch ? firmMatch[1].trim() : titleText.split(':')[0].trim();
+
+      // Try to extract amount from title (look for EUR amounts)
+      const amountMatch = titleText.match(/(\d+(?:[.,]\d+)*)\s*(?:EUR|€)/i) ||
+                         titleText.match(/fine[s]?\s+of\s+EUR\s*(\d+(?:[.,]\d+)*)/i);
+
+      const amount = amountMatch ? parseAmount(amountMatch[1]) : null;
+
       const date = parseDate(dateText);
 
-      if (date) {
+      if (date && firm) {
         records.push({
-          firm,
+          firm: firm.replace(/<abbr[^>]*>.*?<\/abbr>/gi, '').replace(/\s+/g, ' ').trim(),
           amount,
           currency: 'EUR',
           date,
-          breach: breach || 'Securities violations',
-          link: link ? (link.startsWith('http') ? link : BAFIN_CONFIG.baseUrl + link) : null
+          breach: titleText,
+          link: linkHref ? (linkHref.startsWith('http') ? linkHref : BAFIN_CONFIG.baseUrl + linkHref) : null
         });
       }
     });
@@ -197,8 +226,13 @@ async function scrapeBaFinPage(): Promise<BaFinRecord[]> {
 function parseAmount(amountText: string): number | null {
   if (!amountText) return null;
 
-  // Extract numbers: "€158,000" → 158000 or "158.000 €" → 158000
-  const cleaned = amountText.replace(/[€$£,\s]/g, '').replace(/\./g, '');
+  // Handle German format: "1.374.000,50 EUR" → 1374000.50
+  // German uses: . = thousands separator, , = decimal separator
+  const cleaned = amountText
+    .replace(/[€$£\s]/g, '')      // Remove currency symbols and spaces
+    .replace(/\./g, '')            // Remove thousands separators (dots)
+    .replace(/,/g, '.');           // Convert decimal comma to dot
+
   const amount = parseFloat(cleaned);
 
   return isNaN(amount) ? null : amount;
@@ -227,6 +261,29 @@ function parseDate(dateText: string): string | null {
       // ISO format - return as is
       if (pattern.source.includes('-')) {
         return match[0];
+      }
+      // DD/MM/YYYY or MM/DD/YYYY format
+      if (pattern.source.includes('/')) {
+        const part1 = parseInt(match[1]);
+        const part2 = parseInt(match[2]);
+        const year = parseInt(match[3]);
+
+        // Assume DD/MM/YYYY (European format) if part1 > 12
+        if (part1 > 12) {
+          const day = part1;
+          const month = part2;
+          return `${year}-${month.toString().padStart(2, '0')}-${day.toString().padStart(2, '0')}`;
+        } else if (part2 > 12) {
+          // MM/DD/YYYY (American format)
+          const month = part1;
+          const day = part2;
+          return `${year}-${month.toString().padStart(2, '0')}-${day.toString().padStart(2, '0')}`;
+        } else {
+          // Ambiguous - default to DD/MM/YYYY (European)
+          const day = part1;
+          const month = part2;
+          return `${year}-${month.toString().padStart(2, '0')}-${day.toString().padStart(2, '0')}`;
+        }
       }
     }
   }
@@ -273,7 +330,7 @@ function transformRecord(record: BaFinRecord) {
     yearIssued,
     monthIssued,
     breachType: extractBreachType(record.breach),
-    breachCategories: JSON.stringify(breachCategories),
+    breachCategories: breachCategories,  // Store as array, not stringified
     summary: `${record.firm} fined €${(record.amount || 0).toLocaleString()} by BaFin for ${record.breach}`,
     finalNoticeUrl: record.link,
     sourceUrl: BAFIN_CONFIG.baseUrl + BAFIN_CONFIG.enforcementUrl,
@@ -366,7 +423,7 @@ async function upsertRecords(records: any[]) {
           ${record.yearIssued},
           ${record.monthIssued},
           ${record.breachType},
-          ${record.breachCategories},
+          ${sql.json(record.breachCategories)},
           ${record.summary},
           ${record.finalNoticeUrl},
           ${record.sourceUrl},
