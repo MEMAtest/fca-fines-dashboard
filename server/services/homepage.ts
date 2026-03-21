@@ -1,6 +1,6 @@
 import { getSqlClient } from '../db.ts';
 
-const sql = getSqlClient;
+const sql = getSqlClient();
 
 export interface HomepageStats {
   totalFines: number;
@@ -18,7 +18,7 @@ export interface HomepageStats {
  * Get aggregate statistics and latest fines for homepage display
  */
 export async function getHomepageStats(): Promise<HomepageStats> {
-  const instance = sql();
+  const instance = sql;
 
   // Get aggregate statistics
   const stats = await instance(`

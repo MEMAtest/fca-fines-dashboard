@@ -22,6 +22,7 @@ import { useNotificationFeed } from '../hooks/useNotificationFeed';
 import { Toast } from '../components/Toast';
 import { useDashboardState, INITIAL_ADVANCED_FILTERS, CURRENT_YEAR } from '../hooks/useDashboardState';
 import { useFinesData, type TrendPoint } from '../hooks/useFinesData';
+import { useUnifiedData } from '../hooks/useUnifiedData';
 import { useSEO, injectStructuredData } from '../hooks/useSEO';
 
 const LazyFineTotalsModal = lazy(() =>
@@ -263,6 +264,12 @@ export function Dashboard() {
     setComparisonCategories,
     advancedFilters,
     setAdvancedFilters,
+    regulator,
+    setRegulator,
+    country,
+    setCountry,
+    currency,
+    setCurrency,
     shareUrl,
   } = useDashboardState();
   const [comparisonOpen, setComparisonOpen] = useState(false);
@@ -279,11 +286,20 @@ export function Dashboard() {
     refresh: refreshNotifications,
   } = useNotificationFeed();
   const availableYears = useMemo(() => getYearsRange(), []);
-  const { fines, stats, prevStats, recordsByYear, trendsByYear, loading, error } = useFinesData({
+  const useMultiRegulator = regulator !== 'All' || country !== 'All';
+  const unifiedData = useUnifiedData({
+    regulator,
+    country,
+    year,
+    currency,
+  });
+  const fcaData = useFinesData({
     year,
     comparisonYear,
     availableYears,
   });
+  const { fines, stats, loading, error } = useMultiRegulator ? unifiedData : fcaData;
+  const { prevStats, recordsByYear, trendsByYear } = fcaData;
   useEffect(() => {
     if (!toast) return;
     const timer = setTimeout(() => setToast(null), 3500);
@@ -416,6 +432,15 @@ export function Dashboard() {
     if (category !== 'All') {
       chips.push({ label: `Category: ${category}`, onRemove: () => setCategory('All') });
     }
+    if (regulator !== 'All') {
+      chips.push({ label: `Regulator: ${regulator}`, onRemove: () => setRegulator('All') });
+    }
+    if (country !== 'All') {
+      chips.push({ label: `Country: ${country}`, onRemove: () => setCountry('All') });
+    }
+    if (currency !== 'GBP') {
+      chips.push({ label: `Currency: ${currency}`, onRemove: () => setCurrency('GBP') });
+    }
     if (year === 0 && advancedFilters.years.length) {
       chips.push({
         label: `Years: ${advancedFilters.years.join(', ')}`,
@@ -452,7 +477,7 @@ export function Dashboard() {
       });
     }
     return chips;
-  }, [search, category, year, advancedFilters]);
+  }, [search, category, regulator, country, currency, year, advancedFilters, setAdvancedFilters, setCategory, setCountry, setCurrency, setRegulator, setSearch]);
   const activeChipCount = activeChips.length;
 
   const latest = useMemo(() => {
@@ -476,18 +501,24 @@ export function Dashboard() {
   }, [fines]);
 
   const timelineForChart = useMemo(() => {
+    if (useMultiRegulator) {
+      return timelineSeries;
+    }
     if (year === 0) {
       return timelineSeries.length ? timelineSeries : timeline;
     }
     const filtered = timelineSeries.filter((entry) => entry.year === year);
     return filtered.length ? filtered : timeline.filter((entry) => entry.year === year);
-  }, [timelineSeries, timeline, year]);
+  }, [timelineSeries, timeline, useMultiRegulator, year]);
 
   const heroTimeline = useMemo(() => {
+    if (useMultiRegulator) {
+      return timelineSeries.filter((entry) => entry.year === primaryYear);
+    }
     const aggregated = timeline.filter((entry) => entry.year === primaryYear);
     if (aggregated.length) return aggregated;
     return timelineSeries.filter((entry) => entry.year === primaryYear);
-  }, [timeline, timelineSeries, primaryYear]);
+  }, [timeline, timelineSeries, useMultiRegulator, primaryYear]);
 
   const comparisonDataSource = year === 0 ? timelineSeries : timeline;
   const fallbackComparisonYear = useMemo(
@@ -699,11 +730,11 @@ export function Dashboard() {
     <div className="app-shell">
       <HeroStats
         stats={stats}
-        prevStats={prevStats}
+        prevStats={useMultiRegulator ? null : prevStats}
         latest={latest}
         year={year}
         timeline={heroTimeline}
-        fullTimeline={timeline}
+        fullTimeline={useMultiRegulator ? timelineSeries : timeline}
         records={filteredFines}
         onTotalClick={() =>
           openRecordsModal('Total fines drilldown', year === 0 ? '2013 – Today' : `${year} snapshot`, filteredFines)
@@ -732,6 +763,9 @@ export function Dashboard() {
         availableYears={availableYears}
         category={category}
         categories={categoryOptions.slice(1)}
+        regulator={regulator}
+        country={country}
+        currency={currency}
         resultsCount={filteredFines.length}
         search={search}
         searchScope={searchScope}
@@ -739,6 +773,9 @@ export function Dashboard() {
         chips={activeChips}
         onYearChange={setYear}
         onCategoryChange={setCategory}
+        onRegulatorChange={setRegulator}
+        onCountryChange={setCountry}
+        onCurrencyChange={setCurrency}
         onSearchChange={setSearch}
         onSearchScopeChange={setSearchScope}
         onAdvancedOpen={() => setAdvancedOpen(true)}
@@ -785,7 +822,7 @@ export function Dashboard() {
           </LazyVisible>
 
           {/* Grid 4: Comparison - 2 columns (conditional) */}
-          {comparisonYear && (
+          {!useMultiRegulator && comparisonYear && (
             <LazyVisible fallback={<div style={{ minHeight: 300 }} />}>
               <div className="grid grid--two-col">
                 <MonthlyComparisonChart
@@ -896,7 +933,7 @@ export function Dashboard() {
           </div>
         </Modal>
       )}
-      {comparisonOpen && comparisonYear && (
+      {!useMultiRegulator && comparisonOpen && comparisonYear && (
         <Modal
           isOpen={comparisonOpen}
           title={`${primaryYear} vs ${comparisonYear} Comparison`}
@@ -930,6 +967,7 @@ export function Dashboard() {
         onDashboard={scrollToHero}
         onFilters={() => setAdvancedOpen(true)}
         onCompare={() => {
+          if (useMultiRegulator) return;
           const effectiveComparisonYear = comparisonYear ?? fallbackComparisonYear;
           if (!effectiveComparisonYear) return;
           if (!comparisonYear) {
@@ -942,7 +980,7 @@ export function Dashboard() {
         onNotifications={() => setNotificationsOpen(true)}
         filterCount={activeChipCount}
         pendingNotifications={unreadNotifications.length}
-        compareEnabled={Boolean(comparisonYear ?? fallbackComparisonYear)}
+        compareEnabled={!useMultiRegulator && Boolean(comparisonYear ?? fallbackComparisonYear)}
         exportEnabled={filteredFines.length > 0}
         shareEnabled={!!shareUrl}
       />

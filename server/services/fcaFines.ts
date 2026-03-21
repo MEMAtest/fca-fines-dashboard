@@ -1,7 +1,7 @@
 import type { NotificationItem } from '../../src/types.js';
 import { getSqlClient } from '../db.js';
 
-const sql = getSqlClient;
+const sql = getSqlClient();
 
 function buildWhereClause(year: number) {
   if (year > 0) {
@@ -14,7 +14,7 @@ function buildWhereClause(year: number) {
 }
 
 export async function listFines(year: number, limit: number) {
-  const instance = sql();
+  const instance = sql;
   const { text: where, params } = buildWhereClause(year);
   const query = `
     SELECT fine_reference, firm_individual, firm_category, regulator,
@@ -29,7 +29,7 @@ export async function listFines(year: number, limit: number) {
 }
 
 export async function getStats(year: number) {
-  const instance = sql();
+  const instance = sql;
   const { text: where, params } = buildWhereClause(year);
 
   const statsQuery = `
@@ -87,7 +87,7 @@ export async function getStats(year: number) {
 }
 
 export async function getTrends(period: string, year: number, limit: number) {
-  const instance = sql();
+  const instance = sql;
   const params: Array<string | number> = [period];
   let query = `
     SELECT period_type, year, period_value, fine_count, total_fines, average_fine
@@ -129,7 +129,7 @@ function formatDate(value: string | Date) {
 }
 
 export async function getNotifications(limit = 5): Promise<NotificationItem[]> {
-  const instance = sql();
+  const instance = sql;
   const rows = (await instance(
     `
       SELECT id, firm_individual, breach_type, amount, date_issued

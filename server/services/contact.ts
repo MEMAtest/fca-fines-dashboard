@@ -1,7 +1,7 @@
 import { Resend } from 'resend';
 import { getSqlClient } from '../db.ts';
 
-const sql = getSqlClient;
+const sql = getSqlClient();
 
 const resend = new Resend(process.env.RESEND_API_KEY?.trim());
 
@@ -27,7 +27,7 @@ export interface ContactSubmissionResult {
 export async function submitContactForm(
   data: ContactFormData
 ): Promise<ContactSubmissionResult> {
-  const instance = sql();
+  const instance = sql;
 
   try {
     // Validate required fields

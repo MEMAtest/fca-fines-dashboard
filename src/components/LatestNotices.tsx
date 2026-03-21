@@ -14,9 +14,10 @@ interface LatestNoticesProps {
   records: FineRecord[];
   year: number;
   exportId?: string;
+  helpText?: string;
 }
 
-export function LatestNotices({ records, year, exportId }: LatestNoticesProps) {
+export function LatestNotices({ records, year, exportId, helpText }: LatestNoticesProps) {
   const focusLabel = year === 0 ? '2013 - Today' : year;
   const panelId = exportId ?? 'latest-notices';
   return (
@@ -28,7 +29,7 @@ export function LatestNotices({ records, year, exportId }: LatestNoticesProps) {
         </div>
         <div className="panel__header-actions">
           <PanelHelp
-            text="Most recent final notices issued by the FCA. Click 'View notice' to see the full document."
+            text={helpText || "Most recent final notices issued by the FCA. Click 'View notice' to see the full document."}
             icon={<HelpCircle size={16} />}
           />
           {records.length > 0 && (

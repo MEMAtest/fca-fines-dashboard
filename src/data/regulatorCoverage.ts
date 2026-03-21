@@ -16,6 +16,9 @@ export interface RegulatorCoverage {
   note: string | null;
   earliestYear: number;
   latestYear: number;
+  defaultCurrency: 'GBP' | 'EUR';
+  maturity: 'anchor' | 'emerging' | 'limited';
+  dashboardEnabled: boolean;
 }
 
 export const REGULATOR_COVERAGE: Record<string, RegulatorCoverage> = {
@@ -32,6 +35,9 @@ export const REGULATOR_COVERAGE: Record<string, RegulatorCoverage> = {
     note: 'Complete historical dataset - 14 years of comprehensive coverage',
     earliestYear: 2013,
     latestYear: 2026,
+    defaultCurrency: 'GBP',
+    maturity: 'anchor',
+    dashboardEnabled: true,
   },
   BaFin: {
     code: 'BaFin',
@@ -46,6 +52,9 @@ export const REGULATOR_COVERAGE: Record<string, RegulatorCoverage> = {
     note: null, // User decision: don't show BaFin data quality warning
     earliestYear: 2023,
     latestYear: 2026,
+    defaultCurrency: 'EUR',
+    maturity: 'emerging',
+    dashboardEnabled: true,
   },
   DNB: {
     code: 'DNB',
@@ -60,6 +69,9 @@ export const REGULATOR_COVERAGE: Record<string, RegulatorCoverage> = {
     note: 'Very limited sample size - emerging data collection',
     earliestYear: 2023,
     latestYear: 2024,
+    defaultCurrency: 'EUR',
+    maturity: 'limited',
+    dashboardEnabled: true,
   },
   CBI: {
     code: 'CBI',
@@ -74,6 +86,9 @@ export const REGULATOR_COVERAGE: Record<string, RegulatorCoverage> = {
     note: null,
     earliestYear: 2021,
     latestYear: 2025,
+    defaultCurrency: 'EUR',
+    maturity: 'emerging',
+    dashboardEnabled: true,
   },
   AMF: {
     code: 'AMF',
@@ -88,6 +103,9 @@ export const REGULATOR_COVERAGE: Record<string, RegulatorCoverage> = {
     note: 'Limited coverage - emerging data collection',
     earliestYear: 2023,
     latestYear: 2024,
+    defaultCurrency: 'EUR',
+    maturity: 'limited',
+    dashboardEnabled: true,
   },
   CNMV: {
     code: 'CNMV',
@@ -102,6 +120,9 @@ export const REGULATOR_COVERAGE: Record<string, RegulatorCoverage> = {
     note: 'Limited coverage - emerging data collection',
     earliestYear: 2023,
     latestYear: 2024,
+    defaultCurrency: 'EUR',
+    maturity: 'limited',
+    dashboardEnabled: true,
   },
   AFM: {
     code: 'AFM',
@@ -116,6 +137,9 @@ export const REGULATOR_COVERAGE: Record<string, RegulatorCoverage> = {
     note: 'Limited coverage - emerging data collection',
     earliestYear: 2023,
     latestYear: 2024,
+    defaultCurrency: 'EUR',
+    maturity: 'limited',
+    dashboardEnabled: true,
   },
   ESMA: {
     code: 'ESMA',
@@ -130,6 +154,9 @@ export const REGULATOR_COVERAGE: Record<string, RegulatorCoverage> = {
     note: 'EU-wide regulator - limited sample size',
     earliestYear: 2022,
     latestYear: 2025,
+    defaultCurrency: 'EUR',
+    maturity: 'limited',
+    dashboardEnabled: true,
   },
 };
 

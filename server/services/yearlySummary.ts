@@ -1,6 +1,6 @@
 import { getSqlClient } from '../db.ts';
 
-const sql = getSqlClient;
+const sql = getSqlClient();
 
 export interface YearlySummary {
   year: number;
@@ -22,7 +22,7 @@ export interface YearlySummary {
  * Falls back to auto-generated summary if manual one doesn't exist
  */
 export async function getYearlySummary(year: number): Promise<YearlySummary> {
-  const instance = sql();
+  const instance = sql;
 
   // Try to get manually created summary first
   const summary = await instance(
@@ -49,7 +49,7 @@ export async function getYearlySummary(year: number): Promise<YearlySummary> {
  * Auto-generate a basic summary from the data for a given year
  */
 async function generateAutoSummary(year: number): Promise<YearlySummary> {
-  const instance = sql();
+  const instance = sql;
 
   // Get top 5 cases by amount
   const topCases = await instance(`

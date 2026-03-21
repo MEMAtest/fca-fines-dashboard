@@ -10,17 +10,24 @@ import { TrendChart3D, Shield3D, Clock3D } from '../components/icons3d';
 import { ContactForm } from '../components/ContactForm';
 import { Modal } from '../components/Modal';
 import { Toast } from '../components/Toast';
+import RegulatorCard from '../components/RegulatorCard';
 import { TotalAmountChart } from '../components/charts/TotalAmountChart';
 import { PenaltyDistributionChart } from '../components/charts/PenaltyDistributionChart';
 import { RecentActionsList } from '../components/charts/RecentActionsList';
+import { REGULATOR_COVERAGE } from '../data/regulatorCoverage';
 import { getHomepageFaqs, generateFaqSchema } from '../data/faqData';
 import '../styles/homepage.css';
 import '../styles/hero3d.css';
+import '../styles/regulators-showcase.css';
 import '../styles/widgets3d.css';
 import '../styles/contact.css';
 
 type ModalType = 'totalAmount' | 'distribution' | 'recentActions' | null;
 type ToastState = { message: string; type: 'success' | 'error' } | null;
+
+const REGULATOR_ORDER = ['FCA', 'BaFin', 'AMF', 'CNMV', 'CBI', 'AFM', 'DNB', 'ESMA'] as const;
+const ANCHOR_REGULATOR = 'FCA' as const;
+const ADDITIONAL_REGULATORS = REGULATOR_ORDER.filter((code) => code !== ANCHOR_REGULATOR);
 
 export function Homepage() {
   const navigate = useNavigate();
@@ -121,6 +128,10 @@ export function Homepage() {
   const latestFineAmount = latestFine ? formatAmount(latestFine.amount) : '£44m';
   const latestFirmName = latestFine?.firm || 'Latest Firm';
   const yearsRange = stats ? `${stats.earliestYear}-${stats.latestYear}` : '2013-2025';
+  const showcaseCoverage = REGULATOR_ORDER.map((code) => REGULATOR_COVERAGE[code]);
+  const anchorCoverage = REGULATOR_COVERAGE[ANCHOR_REGULATOR];
+  const overallCoverageStart = Math.min(...showcaseCoverage.map((coverage) => coverage.earliestYear));
+  const overallCoverageEnd = Math.max(...showcaseCoverage.map((coverage) => coverage.latestYear));
 
   // Handle CTA click - navigate to dashboard or original destination
   const handleExplorePlatform = () => {
@@ -149,9 +160,9 @@ export function Homepage() {
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6 }}
             >
-              Global Regulatory
+              Multi-regulator
               <br />
-              Enforcement Intelligence
+              enforcement intelligence
             </motion.h1>
 
             <motion.p
@@ -160,8 +171,7 @@ export function Homepage() {
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6, delay: 0.1 }}
             >
-              Track {totalAmountDisplay} in fines from FCA, BaFin, AMF, and 5 more UK & EU regulators.
-              Identify risks. Strengthen your compliance posture.
+              Historical FCA depth with cross-regulator intelligence beyond the UK.
             </motion.p>
 
             <motion.button
@@ -173,11 +183,120 @@ export function Homepage() {
             >
               Explore the Platform
             </motion.button>
+
+            <motion.div
+              className="hero-stat-strip"
+              initial={{ opacity: 0, y: 30 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6, delay: 0.3 }}
+            >
+              <div className="hero-stat-strip__item">
+                <strong>308 FCA actions</strong>
+                <span>since 2013</span>
+              </div>
+              <div className="hero-stat-strip__item">
+                <strong>{REGULATOR_ORDER.length} regulators</strong>
+                <span>tracked</span>
+              </div>
+              <div className="hero-stat-strip__item">
+                <strong>Cross-regulator</strong>
+                <span>intelligence</span>
+              </div>
+              <div className="hero-stat-strip__item">
+                <strong>
+                  {overallCoverageStart}-{overallCoverageEnd}
+                </strong>
+                <span>coverage</span>
+              </div>
+            </motion.div>
+
+            <motion.div
+              className="hero-regulator-strip"
+              initial={{ opacity: 0, y: 30 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6, delay: 0.4 }}
+            >
+              {showcaseCoverage.map((coverage) => (
+                <Link key={coverage.code} to={`/regulators/${coverage.code.toLowerCase()}`} className="hero-regulator-strip__pill">
+                  <span>{coverage.flag}</span>
+                  <span>{coverage.code}</span>
+                </Link>
+              ))}
+            </motion.div>
           </div>
 
           <div className="hero-visualization">
             <Hero3DVisualization />
           </div>
+        </div>
+      </section>
+
+      <section className="regulators-showcase">
+        <div className="regulators-showcase__header">
+          <span className="regulators-showcase__eyebrow">Current live coverage</span>
+          <h2>Current regulatory coverage</h2>
+          <p>
+            Built on deep FCA history, with additional insight from other financial regulators and room to expand globally.
+          </p>
+        </div>
+
+        <div className="regulators-showcase__regions">
+          <div className="regulators-showcase__region regulators-showcase__region--anchor">
+            <div className="regulators-showcase__region-header">
+              <div>
+                <span className="regulators-showcase__region-kicker">Anchor dataset</span>
+                <h3>{anchorCoverage.fullName}</h3>
+              </div>
+              <p>Deep historical enforcement coverage from 2013 onwards.</p>
+            </div>
+            <div className="regulators-showcase__grid regulators-showcase__grid--single">
+              <RegulatorCard
+                code="FCA"
+                name={anchorCoverage.fullName}
+                coverage={anchorCoverage.years}
+                finesCount={anchorCoverage.count}
+                dataQuality={anchorCoverage.dataQuality}
+                badge="Anchor dataset"
+                to="/regulators/fca"
+              />
+            </div>
+          </div>
+
+          <div className="regulators-showcase__region regulators-showcase__region--additional">
+            <div className="regulators-showcase__region-header">
+              <div>
+                <span className="regulators-showcase__region-kicker">Additional regulator coverage</span>
+                <h3>Broaden the regulatory lens</h3>
+              </div>
+              <p>Use other regulators to benchmark themes, compare enforcement patterns, and broaden compliance insight.</p>
+            </div>
+            <div className="regulators-showcase__grid">
+              {ADDITIONAL_REGULATORS.map((code) => {
+                const coverage = REGULATOR_COVERAGE[code];
+                return (
+                  <RegulatorCard
+                    key={coverage.code}
+                    code={coverage.code}
+                    name={coverage.fullName}
+                    coverage={coverage.years}
+                    finesCount={coverage.count}
+                    dataQuality={coverage.dataQuality}
+                    badge={coverage.note ? 'Emerging dataset' : undefined}
+                    to={`/regulators/${coverage.code.toLowerCase()}`}
+                  />
+                );
+              })}
+            </div>
+          </div>
+        </div>
+
+        <div className="regulators-showcase__footer">
+          <p>
+            Start with the FCA historical archive, then use additional regulators to benchmark priorities, spot recurring themes, and widen your enforcement perspective.
+          </p>
+          <Link to="/dashboard" className="regulators-showcase__cta">
+            Explore enforcement intelligence
+          </Link>
         </div>
       </section>
 

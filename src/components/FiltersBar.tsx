@@ -22,6 +22,8 @@ interface FiltersBarProps {
   onSearchChange: (value: string) => void;
   onSearchScopeChange: (scope: string) => void;
   onAdvancedOpen: () => void;
+  showRegulatorFilter?: boolean;
+  showCountryFilter?: boolean;
 }
 
 export function FiltersBar({
@@ -45,6 +47,8 @@ export function FiltersBar({
   onSearchChange,
   onSearchScopeChange,
   onAdvancedOpen,
+  showRegulatorFilter = true,
+  showCountryFilter = true,
 }: FiltersBarProps) {
   const focusLabel = year === 0 ? 'All years' : `${year} focus`;
   const categoryLabel = category === 'All' ? 'All breach types' : category;
@@ -65,47 +69,51 @@ export function FiltersBar({
       </div>
 
       <div className="filters__controls">
-        <div>
-          <label htmlFor="regulator-select">Regulator</label>
-          <select id="regulator-select" value={regulator} onChange={(e) => onRegulatorChange(e.target.value)}>
-            <option value="All">All Regulators</option>
-            <optgroup label="United Kingdom">
-              <option value="FCA">🇬🇧 FCA - Financial Conduct Authority</option>
-            </optgroup>
-            <optgroup label="European Union">
-              <option value="ESMA">🇪🇺 ESMA - European Securities Authority</option>
-            </optgroup>
-            <optgroup label="Germany">
-              <option value="BaFin">🇩🇪 BaFin - Federal Financial Supervisory</option>
-            </optgroup>
-            <optgroup label="France">
-              <option value="AMF">🇫🇷 AMF - Autorité des marchés financiers</option>
-            </optgroup>
-            <optgroup label="Spain">
-              <option value="CNMV">🇪🇸 CNMV - Comisión Nacional del Mercado</option>
-            </optgroup>
-            <optgroup label="Ireland">
-              <option value="CBI">🇮🇪 CBI - Central Bank of Ireland</option>
-            </optgroup>
-            <optgroup label="Netherlands">
-              <option value="AFM">🇳🇱 AFM - Authority for Financial Markets</option>
-              <option value="DNB">🇳🇱 DNB - De Nederlandsche Bank</option>
-            </optgroup>
-          </select>
-        </div>
-        <div>
-          <label htmlFor="country-select">Country</label>
-          <select id="country-select" value={country} onChange={(e) => onCountryChange(e.target.value)}>
-            <option value="All">All Countries</option>
-            <option value="UK">🇬🇧 United Kingdom</option>
-            <option value="EU">🇪🇺 European Union</option>
-            <option value="DE">🇩🇪 Germany</option>
-            <option value="FR">🇫🇷 France</option>
-            <option value="ES">🇪🇸 Spain</option>
-            <option value="IE">🇮🇪 Ireland</option>
-            <option value="NL">🇳🇱 Netherlands</option>
-          </select>
-        </div>
+        {showRegulatorFilter && (
+          <div>
+            <label htmlFor="regulator-select">Regulator</label>
+            <select id="regulator-select" value={regulator} onChange={(e) => onRegulatorChange(e.target.value)}>
+              <option value="All">All Regulators</option>
+              <optgroup label="United Kingdom">
+                <option value="FCA">🇬🇧 FCA - Financial Conduct Authority</option>
+              </optgroup>
+              <optgroup label="European Union">
+                <option value="ESMA">🇪🇺 ESMA - European Securities Authority</option>
+              </optgroup>
+              <optgroup label="Germany">
+                <option value="BaFin">🇩🇪 BaFin - Federal Financial Supervisory</option>
+              </optgroup>
+              <optgroup label="France">
+                <option value="AMF">🇫🇷 AMF - Autorité des marchés financiers</option>
+              </optgroup>
+              <optgroup label="Spain">
+                <option value="CNMV">🇪🇸 CNMV - Comisión Nacional del Mercado</option>
+              </optgroup>
+              <optgroup label="Ireland">
+                <option value="CBI">🇮🇪 CBI - Central Bank of Ireland</option>
+              </optgroup>
+              <optgroup label="Netherlands">
+                <option value="AFM">🇳🇱 AFM - Authority for Financial Markets</option>
+                <option value="DNB">🇳🇱 DNB - De Nederlandsche Bank</option>
+              </optgroup>
+            </select>
+          </div>
+        )}
+        {showCountryFilter && (
+          <div>
+            <label htmlFor="country-select">Country</label>
+            <select id="country-select" value={country} onChange={(e) => onCountryChange(e.target.value)}>
+              <option value="All">All Countries</option>
+              <option value="UK">🇬🇧 United Kingdom</option>
+              <option value="EU">🇪🇺 European Union</option>
+              <option value="DE">🇩🇪 Germany</option>
+              <option value="FR">🇫🇷 France</option>
+              <option value="ES">🇪🇸 Spain</option>
+              <option value="IE">🇮🇪 Ireland</option>
+              <option value="NL">🇳🇱 Netherlands</option>
+            </select>
+          </div>
+        )}
         <div>
           <label htmlFor="year-select">Year</label>
           <select id="year-select" value={year} onChange={(e) => onYearChange(Number(e.target.value))}>
