@@ -9,7 +9,7 @@ import {
   BarChart3,
 } from 'lucide-react';
 import { useSEO, injectStructuredData } from '../hooks/useSEO';
-import { blogArticles, yearlyArticles } from '../data/blogArticles.js';
+import { allBlogArticles as blogArticles, yearlyArticles } from '../data/blogArticles.js';
 import type { BlogArticleMeta, YearlyArticleMeta } from '../data/blogArticles.js';
 import { getFaqsForArticle, getFaqsForYearlyArticle, generateFaqSchema } from '../data/faqData';
 import {

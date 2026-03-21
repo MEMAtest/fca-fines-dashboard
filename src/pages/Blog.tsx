@@ -19,7 +19,7 @@ import {
 import { Blog3DVisualization } from '../components/Blog3DVisualization';
 import { LazyVisible } from '../components/LazyVisible';
 import { yearlyFCAData } from '../components/YearlyArticleCharts';
-import { blogArticles as blogArticlesMeta, yearlyArticles as yearlyArticlesMeta } from '../data/blogArticles.js';
+import { allBlogArticles as blogArticlesMeta, yearlyArticles as yearlyArticlesMeta } from '../data/blogArticles.js';
 import type { BlogArticleMeta } from '../data/blogArticles.js';
 import { injectStructuredData, useSEO } from '../hooks/useSEO';
 import '../styles/blog.css';
@@ -47,6 +47,15 @@ const iconMap: Record<string, React.ReactNode> = {
   'fca-fines-individuals': <Users className="blog-card-icon" />,
   'fca-fines-march-2026': <PoundSterling className="blog-card-icon" />,
   'fca-fines-insurance': <Shield className="blog-card-icon" />,
+  // Regulator enforcement guides
+  'fca-enforcement-guide': <Landmark className="blog-card-icon" />,
+  'bafin-enforcement-guide': <Landmark className="blog-card-icon" />,
+  'amf-enforcement-guide': <Landmark className="blog-card-icon" />,
+  'cnmv-enforcement-guide': <Landmark className="blog-card-icon" />,
+  'cbi-enforcement-guide': <Landmark className="blog-card-icon" />,
+  'afm-enforcement-guide': <Landmark className="blog-card-icon" />,
+  'dnb-enforcement-guide': <Landmark className="blog-card-icon" />,
+  'esma-enforcement-guide': <Landmark className="blog-card-icon" />,
 };
 
 // Merge icon into each article

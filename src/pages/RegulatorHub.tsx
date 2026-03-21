@@ -4,20 +4,36 @@ import { ArrowLeft, TrendingUp, Calendar, Building2 } from 'lucide-react';
 import { getRegulatorCoverage, isValidRegulatorCode } from '../data/regulatorCoverage';
 import { DataCoverageNotice } from '../components/DataCoverageNotice';
 import { useUnifiedData } from '../hooks/useUnifiedData';
+import { useSEO, injectStructuredData } from '../hooks/useSEO';
 import '../styles/regulator-hub.css';
 
+function toNumber(value: unknown): number {
+  if (typeof value === 'number') {
+    return Number.isFinite(value) ? value : 0;
+  }
+
+  if (typeof value === 'string') {
+    const parsed = Number(value.replace(/,/g, ''));
+    return Number.isFinite(parsed) ? parsed : 0;
+  }
+
+  const parsed = Number(value ?? 0);
+  return Number.isFinite(parsed) ? parsed : 0;
+}
+
 function formatCurrency(value: number, currency: 'GBP' | 'EUR'): string {
+  const numeric = toNumber(value);
   const symbol = currency === 'GBP' ? '£' : '€';
-  if (value >= 1_000_000_000) {
-    return `${symbol}${(value / 1_000_000_000).toFixed(2)}B`;
+  if (numeric >= 1_000_000_000) {
+    return `${symbol}${(numeric / 1_000_000_000).toFixed(2)}B`;
   }
-  if (value >= 1_000_000) {
-    return `${symbol}${(value / 1_000_000).toFixed(2)}M`;
+  if (numeric >= 1_000_000) {
+    return `${symbol}${(numeric / 1_000_000).toFixed(2)}M`;
   }
-  if (value >= 1_000) {
-    return `${symbol}${(value / 1_000).toFixed(0)}K`;
+  if (numeric >= 1_000) {
+    return `${symbol}${(numeric / 1_000).toFixed(0)}K`;
   }
-  return `${symbol}${value.toLocaleString()}`;
+  return `${symbol}${numeric.toLocaleString('en-GB', { maximumFractionDigits: 0 })}`;
 }
 
 export function RegulatorHub() {
@@ -50,15 +66,75 @@ export function RegulatorHub() {
     return null; // Will redirect in useEffect
   }
 
+  // SEO metadata
+  const metaTitle = `${coverage.code} Fines Database | ${coverage.fullName} Enforcement Actions`;
+  const metaDescription = `Track all ${coverage.fullName} (${coverage.code}) fines and enforcement actions. ${coverage.count} penalties from ${coverage.years}. Complete database with stats, trends, and analysis.`;
+  const canonicalPath = `/regulators/${coverage.code.toLowerCase()}`;
+  const keywords = `${coverage.code} fines, ${coverage.fullName}, regulatory enforcement, financial penalties, ${coverage.country}, compliance data, ${coverage.code} enforcement`;
+
+  useSEO({
+    title: metaTitle,
+    description: metaDescription,
+    keywords,
+    canonicalPath,
+    ogTitle: metaTitle,
+    ogDescription: metaDescription,
+    ogType: 'website',
+    ogImage: `https://fcafines.memaconsultants.com/og/${coverage.code.toLowerCase()}-hub.png`,
+  });
+
+  // Inject JSON-LD structured data
+  useEffect(() => {
+    const cleanupDataset = injectStructuredData({
+      '@context': 'https://schema.org',
+      '@type': 'Dataset',
+      name: `${coverage.code} Fines Database`,
+      description: `${coverage.fullName} enforcement actions and financial penalties from ${coverage.years}`,
+      url: `https://fcafines.memaconsultants.com${canonicalPath}`,
+      keywords: [
+        `${coverage.code} fines`,
+        coverage.fullName,
+        'regulatory enforcement',
+        'financial penalties',
+        coverage.country,
+        'compliance database',
+      ],
+      temporalCoverage: coverage.years,
+      spatialCoverage: {
+        '@type': 'Place',
+        name: coverage.country,
+      },
+      creator: {
+        '@type': 'Organization',
+        name: 'MEMA Consultants',
+        url: 'https://memaconsultants.com',
+      },
+      variableMeasured: [
+        { '@type': 'PropertyValue', name: 'Fine Amount', unitText: coverage.defaultCurrency },
+        { '@type': 'PropertyValue', name: 'Enforcement Date' },
+        { '@type': 'PropertyValue', name: 'Breach Category' },
+        { '@type': 'PropertyValue', name: 'Firm/Individual Name' },
+      ],
+      distribution: {
+        '@type': 'DataDownload',
+        encodingFormat: 'application/json',
+        contentUrl: `https://fcafines.memaconsultants.com/api/unified/search?regulator=${coverage.code}`,
+      },
+    });
+
+    return cleanupDataset;
+  }, [coverage, canonicalPath]);
+
   // Calculate regulator-specific stats
+  const amounts = fines.map((fine) => toNumber(fine.amount)).filter((amount) => amount > 0);
   const totalFines = fines.length;
-  const totalAmount = fines.reduce((sum, fine) => sum + (fine.amount || 0), 0);
-  const largestFine = fines.length > 0 ? Math.max(...fines.map(f => f.amount || 0)) : 0;
-  const averageFine = totalFines > 0 ? totalAmount / totalFines : 0;
+  const totalAmount = amounts.reduce((sum, amount) => sum + amount, 0);
+  const largestFine = amounts.length > 0 ? Math.max(...amounts) : 0;
+  const averageFine = amounts.length > 0 ? totalAmount / amounts.length : 0;
 
   // Get top 10 fines
   const topFines = [...fines]
-    .sort((a, b) => (b.amount || 0) - (a.amount || 0))
+    .sort((a, b) => toNumber(b.amount) - toNumber(a.amount))
     .slice(0, 10);
 
   // Get breach category breakdown
@@ -263,9 +339,9 @@ export function RegulatorHub() {
 
           {/* CTA to Dashboard */}
           <div className="regulator-hub__cta">
-            <p>Explore more detailed analytics and cross-regulator comparisons</p>
-            <Link to="/dashboard" className="regulator-hub__cta-button">
-              Go to Full Dashboard
+            <p>Open a dedicated analytics workspace for {coverage.fullName}</p>
+            <Link to={`/regulators/${coverage.code.toLowerCase()}/dashboard`} className="regulator-hub__cta-button">
+              Open {coverage.code} Dashboard
             </Link>
           </div>
         </>

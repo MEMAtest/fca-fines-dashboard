@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom';
-import { blogArticles, yearlyArticles } from '../data/blogArticles.js';
+import { allBlogArticles as blogArticles, yearlyArticles } from '../data/blogArticles.js';
 import { useSEO } from '../hooks/useSEO';
 import '../styles/blog.css';
 

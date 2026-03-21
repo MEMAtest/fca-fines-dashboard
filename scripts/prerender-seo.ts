@@ -32,8 +32,9 @@ const RSS_URL = `${BASE_URL}/rss.xml`;
 // We can't import .ts directly (no bundler), so we require the compiled output.
 // However since the project uses "type": "module" and ts-node/esm, the import
 // resolves the .ts source directly.
-import { blogArticles, yearlyArticles } from '../src/data/blogArticles.js';
+import { allBlogArticles as blogArticles, yearlyArticles } from '../src/data/blogArticles.js';
 import { faqItems, getFaqsForArticle, getFaqsForYearlyArticle, getHomepageFaqs, generateFaqSchema } from '../src/data/faqData.js';
+import { REGULATOR_COVERAGE, REGULATOR_CODES } from '../src/data/regulatorCoverage.js';
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -345,6 +346,60 @@ async function buildPageMetas(): Promise<PageMeta[]> {
     keywords:
       'top FCA fines firms, biggest FCA fines recipients, FCA fines by firm, FCA fines by individual, largest FCA penalties',
     ogType: 'website',
+  });
+
+  // 4b. Regulator Hub Pages
+  REGULATOR_CODES.forEach(code => {
+    const coverage = REGULATOR_COVERAGE[code];
+    const path = `/regulators/${code.toLowerCase()}`;
+    const title = `${code} Fines Database | ${coverage.fullName} Enforcement Actions`;
+    const description = `Track all ${coverage.fullName} (${code}) fines and enforcement actions. ${coverage.count} penalties from ${coverage.years}. Complete database with stats, trends, and analysis.`;
+    const keywords = `${code} fines, ${coverage.fullName}, regulatory enforcement, financial penalties, ${coverage.country}, compliance data, ${code} enforcement`;
+
+    pages.push({
+      path,
+      title,
+      description,
+      keywords,
+      ogType: 'website',
+      ogImage: `${BASE_URL}/og/${code.toLowerCase()}-hub.png`,
+      extraJsonLd: [{
+        '@context': 'https://schema.org',
+        '@type': 'Dataset',
+        name: `${code} Fines Database`,
+        description: `${coverage.fullName} enforcement actions and financial penalties from ${coverage.years}`,
+        url: `${BASE_URL}${path}`,
+        keywords: [
+          `${code} fines`,
+          coverage.fullName,
+          'regulatory enforcement',
+          'financial penalties',
+          coverage.country,
+          'compliance database',
+        ],
+        temporalCoverage: coverage.years,
+        spatialCoverage: {
+          '@type': 'Place',
+          name: coverage.country,
+        },
+        creator: {
+          '@type': 'Organization',
+          name: 'MEMA Consultants',
+          url: 'https://memaconsultants.com',
+        },
+        variableMeasured: [
+          { '@type': 'PropertyValue', name: 'Fine Amount', unitText: coverage.defaultCurrency },
+          { '@type': 'PropertyValue', name: 'Enforcement Date' },
+          { '@type': 'PropertyValue', name: 'Breach Category' },
+          { '@type': 'PropertyValue', name: 'Firm/Individual Name' },
+        ],
+        distribution: {
+          '@type': 'DataDownload',
+          encodingFormat: 'application/json',
+          contentUrl: `${BASE_URL}/api/unified/search?regulator=${code}`,
+        },
+      }],
+    });
   });
 
   // 5. Blog listing (with ItemList schema for carousel/list rich results)
@@ -767,6 +822,10 @@ function generateSitemap(pages: PageMeta[]): string {
       priority = '0.9';
       changefreq = 'weekly';
     } else if (page.path === '/breaches' || page.path === '/years' || page.path === '/sectors' || page.path === '/firms') {
+      priority = '0.85';
+      changefreq = 'weekly';
+    } else if (page.path.startsWith('/regulators/')) {
+      // Regulator hub pages
       priority = '0.85';
       changefreq = 'weekly';
     } else if (page.path === '/blog') {

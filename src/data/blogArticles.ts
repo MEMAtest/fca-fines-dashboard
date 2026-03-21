@@ -1,6 +1,8 @@
 // Shared blog article metadata — consumed by both React components and build scripts.
 // NO React/JSX imports here. The `icon` field lives in Blog.tsx only.
 
+import { regulatorBlogs } from './regulatorBlogs';
+
 export interface BlogArticleMeta {
   id: string;
   slug: string;
@@ -1508,9 +1510,13 @@ The regulatory emphasis on cultural change would evolve from rhetoric to operati
   },
 ];
 
+// Merge regulator blogs with main blog articles
+// Export combined array for consumption by Blog.tsx and other components
+export const allBlogArticles: BlogArticleMeta[] = [...blogArticles, ...regulatorBlogs];
+
 // Helper: get all articles (blog + yearly) for sitemap/prerender
 export function getAllArticleSlugs(): { slug: string; dateISO: string; type: 'blog' | 'yearly' }[] {
-  const blog = blogArticles.map(a => ({ slug: a.slug, dateISO: a.dateISO, type: 'blog' as const }));
+  const blog = allBlogArticles.map(a => ({ slug: a.slug, dateISO: a.dateISO, type: 'blog' as const }));
   const yearly = yearlyArticles.map(a => ({ slug: a.slug, dateISO: `${a.year}-12-31`, type: 'yearly' as const }));
   return [...blog, ...yearly];
 }
