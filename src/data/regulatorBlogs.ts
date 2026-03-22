@@ -3,16 +3,20 @@
  * Provides comprehensive SEO content for all 8 regulators
  */
 
-import { REGULATOR_COVERAGE } from './regulatorCoverage';
+import { REGULATOR_COVERAGE, REGULATOR_CODES } from './regulatorCoverage';
 import type { BlogArticleMeta } from './blogArticles';
+
+// Fixed publication date to ensure slug stability and consistent SEO
+const PUBLICATION_YEAR = 2026;
+const PUBLICATION_DATE = '2026-03-21'; // Date of initial publication
+const PUBLICATION_DATE_ISO = '2026-03-21T00:00:00.000Z';
 
 function generateRegulatorBlog(code: string): BlogArticleMeta {
   const coverage = REGULATOR_COVERAGE[code];
   if (!coverage) throw new Error(`Unknown regulator: ${code}`);
 
-  const slug = `${code.toLowerCase()}-fines-enforcement-guide-2026`;
-  const currentYear = new Date().getFullYear();
-  const currentDate = new Date().toISOString();
+  const slug = `${code.toLowerCase()}-fines-enforcement-guide`;
+  const currentYear = PUBLICATION_YEAR;
 
   const content = `
 ## ${coverage.fullName} Fines & Enforcement: Complete Guide
@@ -100,7 +104,7 @@ ${code === 'FCA'
 ## Recent ${code} Enforcement Trends
 
 ${code === 'FCA'
-  ? `With over 300 enforcement actions since 2013, the FCA maintains the most comprehensive enforcement record in our database.
+  ? `With ${coverage.count} enforcement actions from ${coverage.years}, the FCA maintains the most comprehensive enforcement record in our database.
 
 **Recent Trends (2024-2026)**:
 - **Financial Crime Prevention**: Increased AML enforcement with £176M HSBC fine (2021) highlighting systemic failures
@@ -144,7 +148,7 @@ With ${coverage.count} cases tracked, we observe:
 ### ${code === 'FCA' ? 'UK vs EU Enforcement Landscape' : code === 'ESMA' ? 'EU-Wide vs National Enforcement' : `${code} vs FCA Enforcement`}
 
 ${code === 'FCA'
-  ? `**FCA (UK)**: 308 fines, 2013-2026, £4.8B+ total penalties
+  ? `**FCA (UK)**: ${coverage.count} fines, ${coverage.years}, £4.8B+ total penalties
 
 The FCA maintains one of the strictest enforcement regimes globally:
 - **Average Fine Size**: Significantly higher than most EU regulators
@@ -170,7 +174,7 @@ As the EU's coordinating regulator, ESMA's role differs from national regulators
 - ESMA penalties focus on EU-wide entities and systemic issues
 - National regulators (FCA, BaFin, AMF, etc.) handle firm-specific enforcement`
   : `**${code} (${coverage.country})**: ${coverage.count} fines, ${coverage.years}
-**FCA (UK)**: 308 fines, 2013-2026, £4.8B+ total
+**FCA (UK)**: ${REGULATOR_COVERAGE.FCA.count} fines, ${REGULATOR_COVERAGE.FCA.years}, £4.8B+ total
 
 ${code}'s enforcement approach reflects ${coverage.country === 'European Union' ? 'EU-wide' : coverage.country} regulatory priorities:
 
@@ -304,7 +308,7 @@ ${code === 'BaFin'
   ? `As our ${code} dataset expands, more detailed comparisons with FCA enforcement will become available.`
   : `Both regulators share common EU regulatory foundations (for periods of EU membership/alignment) but reflect distinct national priorities and enforcement philosophies.`
 }`
-  : `The FCA has the most comprehensive enforcement record in our database with 308 fines spanning 14 years (2013-2026), representing one of the strictest enforcement regimes globally.
+  : `The FCA has the most comprehensive enforcement record in our database with ${REGULATOR_COVERAGE.FCA.count} fines spanning ${REGULATOR_COVERAGE.FCA.years}, representing one of the strictest enforcement regimes globally.
 
 **FCA Enforcement Characteristics**:
 - **Credible Deterrence**: High-profile enforcement actions designed to deter industry-wide misconduct
@@ -449,7 +453,7 @@ ${coverage.fullName} enforcement data provides ${code === 'FCA' ? 'deep historic
 ### Key Takeaways
 
 ${code === 'FCA'
-  ? `1. **Scale Matters**: 308 enforcement actions totaling £4.8B+ demonstrate aggressive deterrence
+  ? `1. **Scale Matters**: ${coverage.count} enforcement actions totaling £4.8B+ demonstrate aggressive deterrence
 2. **Senior Accountability**: SM&CR creates personal liability for senior managers
 3. **Forward-Looking**: FCA prevents harm proactively, not just punishing breaches
 4. **Global Standard**: FCA enforcement sets benchmarks referenced worldwide
@@ -486,7 +490,7 @@ ${code === 'FCA'
 
 ---
 
-**Last Updated**: ${new Date().toLocaleDateString('en-GB', { year: 'numeric', month: 'long', day: 'numeric' })}
+**Last Updated**: 21 March 2026
 
 *Comprehensive ${code} enforcement intelligence at [fcafines.memaconsultants.com/regulators/${code.toLowerCase()}](https://fcafines.memaconsultants.com/regulators/${code.toLowerCase()})*
 `;
@@ -496,14 +500,14 @@ ${code === 'FCA'
   return {
     id: `${code.toLowerCase()}-enforcement-guide`,
     slug,
-    title: `${coverage.fullName} (${code}) Fines & Enforcement Guide ${currentYear}`,
-    seoTitle: `${code} Fines Database | ${coverage.fullName} Enforcement ${currentYear}`,
+    title: `${coverage.fullName} (${code}) Fines & Enforcement Guide`,
+    seoTitle: `${code} Fines Database | ${coverage.fullName} Enforcement`,
     excerpt: `Complete guide to ${coverage.fullName} (${code}) fines and enforcement. ${coverage.count} actions tracked from ${coverage.years}. Analysis, trends, compliance insights.`,
     content,
     category: 'Regulatory Intelligence',
     readTime: `${readingTime} min read`,
-    date: new Date().toLocaleDateString('en-GB', { year: 'numeric', month: 'long', day: 'numeric' }),
-    dateISO: currentDate,
+    date: PUBLICATION_DATE,
+    dateISO: PUBLICATION_DATE_ISO,
     featured: code === 'FCA', // Feature FCA article
     keywords: [
       `${code} fines`,
@@ -513,12 +517,10 @@ ${code === 'FCA'
       coverage.country,
       'financial regulation',
       'compliance database',
-      `${code} enforcement ${currentYear}`,
+      `${code} enforcement`,
     ],
   };
 }
 
-// Generate blogs for all 8 regulators
-export const REGULATOR_CODES = ['FCA', 'BaFin', 'AMF', 'CNMV', 'CBI', 'AFM', 'DNB', 'ESMA'] as const;
-
+// Generate blogs for all 8 regulators (using REGULATOR_CODES from regulatorCoverage.ts)
 export const regulatorBlogs: BlogArticleMeta[] = REGULATOR_CODES.map(code => generateRegulatorBlog(code));
