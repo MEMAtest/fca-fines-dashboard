@@ -5,6 +5,7 @@ import { Modal } from './Modal';
 import { ExportMenu } from './ExportMenu';
 import { useLocalStorage } from '../hooks/useLocalStorage';
 import { exportData } from '../utils/export';
+import { getBestRecordSourceUrl, getRecordSourceLabel, hasVerifiedRecordSource } from '../utils/sourceLinks';
 
 const currency = new Intl.NumberFormat('en-GB', { style: 'currency', currency: 'GBP', maximumFractionDigits: 0 });
 const PAGE_SIZES = [25, 50, 100, 250, 0];
@@ -473,6 +474,8 @@ function RowActions({
   onFilter: () => void;
 }) {
   const menuRef = useRef<HTMLDivElement>(null);
+  const hasSourceLink = hasVerifiedRecordSource(record);
+  const sourceLabel = getRecordSourceLabel(record);
 
   useEffect(() => {
     function handleClick(event: MouseEvent) {
@@ -493,18 +496,22 @@ function RowActions({
       </button>
       {isOpen && (
         <div className="modal__row-menu">
-          <button type="button" onClick={() => {
-            onView();
-            onCloseMenu();
-          }}>
-            <ExternalLink size={14} /> View notice
-          </button>
-          <button type="button" onClick={() => {
-            onCopy();
-            onCloseMenu();
-          }}>
-            <Copy size={14} /> Copy link
-          </button>
+          {hasSourceLink ? (
+            <button type="button" onClick={() => {
+              onView();
+              onCloseMenu();
+            }}>
+              <ExternalLink size={14} /> {sourceLabel}
+            </button>
+          ) : null}
+          {hasSourceLink ? (
+            <button type="button" onClick={() => {
+              onCopy();
+              onCloseMenu();
+            }}>
+              <Copy size={14} /> Copy link
+            </button>
+          ) : null}
           <button type="button" onClick={() => {
             onFilter();
             onCloseMenu();
@@ -518,22 +525,24 @@ function RowActions({
 }
 
 function handleViewNotice(record: FineRecord, onNotify?: FineTotalsModalProps['onNotify']) {
-  if (!record.final_notice_url) {
+  const sourceUrl = getBestRecordSourceUrl(record);
+  if (!sourceUrl) {
     onNotify?.('No notice link available for this record', 'error');
     return;
   }
-  window.open(record.final_notice_url, '_blank', 'noopener');
-  onNotify?.('Final notice opened in new tab', 'success');
+  window.open(sourceUrl, '_blank', 'noopener');
+  onNotify?.(`${getRecordSourceLabel(record)} opened in new tab`, 'success');
 }
 
 async function handleCopyLink(record: FineRecord, onNotify?: FineTotalsModalProps['onNotify']) {
-  if (!record.final_notice_url || !navigator?.clipboard) {
+  const sourceUrl = getBestRecordSourceUrl(record);
+  if (!sourceUrl || !navigator?.clipboard) {
     onNotify?.('Unable to copy link for this notice', 'error');
     return;
   }
   try {
-    await navigator.clipboard.writeText(record.final_notice_url);
-    onNotify?.('Notice link copied', 'success');
+    await navigator.clipboard.writeText(sourceUrl);
+    onNotify?.('Source link copied', 'success');
   } catch (error) {
     console.error('Copy failed', error);
     onNotify?.('Copy failed', 'error');

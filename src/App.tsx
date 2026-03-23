@@ -19,6 +19,7 @@ import { BreachByTypeChart } from './components/BreachByTypeChart';
 import { RegulatorImpactChart } from './components/RegulatorImpactChart';
 import { LessonsLearnedAnalysis } from './components/LessonsLearnedAnalysis';
 import { exportData } from './utils/export';
+import { getBestRecordSourceUrl } from './utils/sourceLinks';
 import { useLocalStorage } from './hooks/useLocalStorage';
 import { useNotificationFeed } from './hooks/useNotificationFeed';
 import { Toast } from './components/Toast';
@@ -418,11 +419,15 @@ export default function App() {
     if (!fines.length) return undefined;
     const sorted = [...fines].sort((a, b) => new Date(b.date_issued).getTime() - new Date(a.date_issued).getTime());
     const record = sorted[0];
+    const sourceUrl = getBestRecordSourceUrl(record);
+    if (!sourceUrl) {
+      return undefined;
+    }
     return {
       firm: record.firm_individual,
       amount: record.amount,
       date: record.date_issued,
-      url: record.final_notice_url,
+      url: sourceUrl,
     };
   }, [fines]);
 

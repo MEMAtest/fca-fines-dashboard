@@ -3,6 +3,7 @@ import { FileText, Target, Lightbulb, AlertTriangle, TrendingUp, Shield, Users, 
 import { format } from 'date-fns';
 import type { FineRecord } from '../types';
 import { PanelHelp } from './PanelHelp';
+import { getBestRecordSourceUrl, getRecordSourceLabel } from '../utils/sourceLinks';
 
 // Helper to safely get numeric value
 function safeNum(value: number | string | undefined | null): number {
@@ -216,6 +217,8 @@ function SummariesTab({ records, sortBy, onSortChange, filterCategory, onFilterC
         {records.slice(0, 20).map((record) => {
           const recordId = `${record.firm_individual}-${record.date_issued}`;
           const isExpanded = expandedId === recordId;
+          const sourceUrl = getBestRecordSourceUrl(record);
+          const sourceLabel = getRecordSourceLabel(record);
 
           return (
             <article
@@ -241,15 +244,15 @@ function SummariesTab({ records, sortBy, onSortChange, filterCategory, onFilterC
                   ))}
                 </div>
               )}
-              {record.final_notice_url && (
+              {sourceUrl && (
                 <a
-                  href={record.final_notice_url}
+                  href={sourceUrl}
                   target="_blank"
                   rel="noreferrer"
                   className="summary-card__link"
                   onClick={(e) => e.stopPropagation()}
                 >
-                  View Full Notice <ArrowRight size={14} />
+                  {sourceLabel} <ArrowRight size={14} />
                 </a>
               )}
             </article>

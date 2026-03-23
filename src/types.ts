@@ -4,7 +4,7 @@ export interface FineRecord {
   firm_individual: string;
   firm_category: string | null;
   regulator: string;
-  final_notice_url: string;
+  final_notice_url: string | null;
   summary: string;
   breach_type: string | null;
   breach_categories: string[];
@@ -20,6 +20,12 @@ export interface FineRecord {
   country_name?: string;
   amount_eur?: number;
   amount_gbp?: number;
+  source_url?: string | null;
+  listing_url?: string | null;
+  detail_url?: string | null;
+  official_publication_url?: string | null;
+  source_link_status?: 'verified_detail' | 'verified_publication' | 'listing_only' | 'missing';
+  source_link_label?: string | null;
 }
 
 export interface StatsResponse {

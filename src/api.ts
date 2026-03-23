@@ -113,8 +113,13 @@ export interface UnifiedSearchResponse {
     breach_type: string;
     breach_categories: string[];
     summary: string;
-    notice_url: string;
-    source_url: string;
+    notice_url: string | null;
+    source_url: string | null;
+    listing_url?: string | null;
+    detail_url?: string | null;
+    official_publication_url?: string | null;
+    source_link_status?: 'verified_detail' | 'verified_publication' | 'listing_only' | 'missing' | null;
+    source_link_label?: string | null;
     created_at: string;
   }>;
   pagination: {

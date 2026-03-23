@@ -3,6 +3,7 @@ import { FineRecord } from '../types';
 import { ExportMenu } from './ExportMenu';
 import { PanelHelp } from './PanelHelp';
 import RegulatorBadge from './RegulatorBadge';
+import { getBestRecordSourceUrl, getRecordSourceLabel } from '../utils/sourceLinks';
 
 const formatter = new Intl.NumberFormat('en-GB', {
   style: 'currency',
@@ -42,31 +43,40 @@ export function LatestNotices({ records, year, exportId, helpText }: LatestNotic
       ) : (
         <div className="notices">
           {records.slice(0, 8).map((record) => (
-            <article key={`${record.firm_individual}-${record.date_issued}`} className="notice">
-              <header>
-                <div>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.25rem' }}>
-                    {record.regulator && <RegulatorBadge regulator={record.regulator} size="small" />}
-                    <h4 style={{ margin: 0 }}>{record.firm_individual}</h4>
-                  </div>
-                  <p>{new Date(record.date_issued).toLocaleDateString('en-GB')}</p>
-                </div>
-                <span className="notice__amount">{formatter.format(record.amount)}</span>
-              </header>
-              <p className="notice__summary">{record.summary}</p>
-              <footer>
-                <div className="notice__tags">
-                  {record.breach_categories?.slice(0, 3).map((category) => (
-                    <span key={category} className="badge">
-                      {category}
-                    </span>
-                  ))}
-                </div>
-                <a href={record.final_notice_url} target="_blank" rel="noreferrer noopener">
-                  View notice <ExternalLink size={14} />
-                </a>
-              </footer>
-            </article>
+            (() => {
+              const sourceUrl = getBestRecordSourceUrl(record);
+              const sourceLabel = getRecordSourceLabel(record);
+
+              return (
+                <article key={`${record.firm_individual}-${record.date_issued}`} className="notice">
+                  <header>
+                    <div>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.25rem' }}>
+                        {record.regulator && <RegulatorBadge regulator={record.regulator} size="small" />}
+                        <h4 style={{ margin: 0 }}>{record.firm_individual}</h4>
+                      </div>
+                      <p>{new Date(record.date_issued).toLocaleDateString('en-GB')}</p>
+                    </div>
+                    <span className="notice__amount">{formatter.format(record.amount)}</span>
+                  </header>
+                  <p className="notice__summary">{record.summary}</p>
+                  <footer>
+                    <div className="notice__tags">
+                      {record.breach_categories?.slice(0, 3).map((category) => (
+                        <span key={category} className="badge">
+                          {category}
+                        </span>
+                      ))}
+                    </div>
+                    {sourceUrl ? (
+                      <a href={sourceUrl} target="_blank" rel="noreferrer noopener">
+                        {sourceLabel} <ExternalLink size={14} />
+                      </a>
+                    ) : null}
+                  </footer>
+                </article>
+              );
+            })()
           ))}
         </div>
       )}

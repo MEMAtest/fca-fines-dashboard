@@ -14,7 +14,7 @@ interface HeroStatsProps {
     firm: string;
     amount: number;
     date: string;
-    url: string;
+    url: string | null;
   };
   year: number;
   timeline: Array<{ month: string; total: number; count: number; period?: number; year?: number }>;
@@ -114,9 +114,13 @@ export function HeroStats({
                   Latest Final Notice • {format(new Date(latest.date), 'dd MMM yyyy')}
                   <span className="hero__countdown">({differenceInDays(new Date(), new Date(latest.date))} days ago)</span>
                 </span>
-                <a href={latest.url} target="_blank" rel="noreferrer noopener">
-                  {latest.firm} — {formatter.format(latest.amount)}
-                </a>
+                {latest.url ? (
+                  <a href={latest.url} target="_blank" rel="noreferrer noopener">
+                    {latest.firm} — {formatter.format(latest.amount)}
+                  </a>
+                ) : (
+                  <span>{latest.firm} — {formatter.format(latest.amount)}</span>
+                )}
               </div>
             </div>
           )}

@@ -1,4 +1,5 @@
 import type { FineRecord } from '../types';
+import { getBestRecordSourceUrl } from './sourceLinks';
 
 export interface ExportOptions {
   filename: string;
@@ -24,7 +25,7 @@ function formatRecords(records: FineRecord[], transform?: ExportOptions['transfo
     'Amount (£)': record.amount,
     'Summary': record.summary,
     'Regulator': record.regulator,
-    'Final Notice URL': record.final_notice_url || '—',
+    'Official Source URL': getBestRecordSourceUrl(record) || '—',
   }));
 }
 

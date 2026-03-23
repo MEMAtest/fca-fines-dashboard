@@ -1,0 +1,110 @@
+.regulator-hub-sources {
+  margin: 1.5rem 0 2.5rem;
+  padding: 1.5rem;
+  border: 1px solid #e5e7eb;
+  border-radius: 16px;
+  background:
+    radial-gradient(circle at top right, rgba(59, 130, 246, 0.08), transparent 32%),
+    linear-gradient(135deg, #ffffff 0%, #f9fafb 100%);
+}
+
+.regulator-hub-sources__header {
+  margin-bottom: 1.25rem;
+}
+
+.regulator-hub-sources__eyebrow {
+  margin: 0 0 0.4rem;
+  color: #0f766e;
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.regulator-hub-sources__title {
+  margin: 0;
+  color: #111827;
+  font-size: 1.35rem;
+  font-weight: 700;
+}
+
+.regulator-hub-sources__intro {
+  max-width: 60rem;
+  margin: 0.6rem 0 0;
+  color: #4b5563;
+  font-size: 0.95rem;
+  line-height: 1.6;
+}
+
+.regulator-hub-sources__grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 1rem;
+}
+
+.regulator-hub-sources__card {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.9rem;
+  min-height: 132px;
+  padding: 1rem;
+  border: 1px solid #dbe3ea;
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.9);
+  text-decoration: none;
+  transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+}
+
+.regulator-hub-sources__card:hover {
+  transform: translateY(-2px);
+  border-color: rgba(15, 162, 148, 0.35);
+  box-shadow: 0 12px 24px rgba(15, 23, 42, 0.08);
+}
+
+.regulator-hub-sources__card-copy {
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+}
+
+.regulator-hub-sources__card-label {
+  color: #111827;
+  font-size: 0.95rem;
+  font-weight: 700;
+  line-height: 1.4;
+}
+
+.regulator-hub-sources__card-description {
+  color: #6b7280;
+  font-size: 0.875rem;
+  line-height: 1.55;
+}
+
+.regulator-hub-sources__card-icon {
+  color: #0f766e;
+  flex-shrink: 0;
+  margin-top: 0.1rem;
+}
+
+.regulator-hub-sources__footnote {
+  margin: 1rem 0 0;
+  color: #6b7280;
+  font-size: 0.875rem;
+  line-height: 1.6;
+}
+
+@media (max-width: 768px) {
+  .regulator-hub-sources {
+    padding: 1.25rem 1rem;
+    margin-bottom: 2rem;
+  }
+
+  .regulator-hub-sources__title {
+    font-size: 1.15rem;
+  }
+
+  .regulator-hub-sources__card {
+    min-height: auto;
+  }
+}

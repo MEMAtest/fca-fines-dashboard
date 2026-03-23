@@ -1,11 +1,12 @@
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { useEffect, useState } from 'react';
-import { ArrowLeft, TrendingUp, Calendar, Building2 } from 'lucide-react';
+import { ArrowLeft, TrendingUp, Calendar, Building2, ExternalLink } from 'lucide-react';
 import { getRegulatorCoverage, isValidRegulatorCode } from '../data/regulatorCoverage';
 import { DataCoverageNotice } from '../components/DataCoverageNotice';
 import { useUnifiedData } from '../hooks/useUnifiedData';
 import { useSEO, injectStructuredData } from '../hooks/useSEO';
 import '../styles/regulator-hub.css';
+import '../styles/regulator-hub-sources.css';
 
 function toNumber(value: unknown): number {
   if (typeof value === 'number') {
@@ -54,8 +55,14 @@ export function RegulatorHub() {
 
   const coverage = normalizedCode ? getRegulatorCoverage(normalizedCode) : null;
 
+  useEffect(() => {
+    if (coverage) {
+      setCurrency(coverage.defaultCurrency);
+    }
+  }, [coverage?.code, coverage?.defaultCurrency]);
+
   // Fetch data for this regulator
-  const { fines, stats, loading, error } = useUnifiedData({
+  const { fines, loading, error } = useUnifiedData({
     regulator: normalizedCode || 'FCA',
     country: 'All',
     year: 0,
@@ -198,6 +205,45 @@ export function RegulatorHub() {
 
       {/* Data Coverage Notice */}
       <DataCoverageNotice coverage={coverage} />
+
+      {/* Official sources */}
+      {coverage.officialSources.length > 0 && (
+        <section className="regulator-hub-sources" aria-labelledby="official-sources-title">
+          <div className="regulator-hub-sources__header">
+            <p className="regulator-hub-sources__eyebrow">Official sources</p>
+            <h2 id="official-sources-title" className="regulator-hub-sources__title">
+              Go to {coverage.code}&apos;s own enforcement pages
+            </h2>
+            <p className="regulator-hub-sources__intro">
+              Use these curated regulator-level sources when you want to verify published sanctions,
+              decisions, or official register entries directly at the source.
+            </p>
+          </div>
+
+          <div className="regulator-hub-sources__grid">
+            {coverage.officialSources.map((source) => (
+              <a
+                key={source.url}
+                href={source.url}
+                target="_blank"
+                rel="noreferrer"
+                className="regulator-hub-sources__card"
+              >
+                <div className="regulator-hub-sources__card-copy">
+                  <span className="regulator-hub-sources__card-label">{source.label}</span>
+                  <span className="regulator-hub-sources__card-description">{source.description}</span>
+                </div>
+                <ExternalLink size={18} className="regulator-hub-sources__card-icon" />
+              </a>
+            ))}
+          </div>
+
+          <p className="regulator-hub-sources__footnote">
+            These are curated regulator-level entry points. Case-level source links may vary while
+            non-FCA source coverage continues to be deepened.
+          </p>
+        </section>
+      )}
 
       {/* Loading/Error States */}
       {loading && (

@@ -8,6 +8,7 @@
 import { useEffect, useState, useMemo } from 'react';
 import { fetchUnifiedSearch, type UnifiedSearchResponse } from '../api';
 import type { FineRecord, StatsResponse } from '../types';
+import { getRecordSourceStatus } from '../utils/sourceLinks';
 
 interface UseUnifiedDataParams {
   regulator: string;
@@ -71,6 +72,23 @@ function transformUnifiedRecord(record: UnifiedSearchResponse['results'][0], cur
     breach_categories: parseBreachCategories(record.breach_categories),
     summary: record.summary,
     final_notice_url: record.notice_url,
+    source_url: record.source_url,
+    listing_url: record.listing_url || record.source_url,
+    detail_url: record.detail_url || record.notice_url,
+    official_publication_url: record.official_publication_url || null,
+    source_link_status:
+      record.source_link_status ||
+      getRecordSourceStatus({
+        regulator: record.regulator,
+        final_notice_url: record.notice_url,
+        source_url: record.source_url,
+        listing_url: record.listing_url || record.source_url,
+        detail_url: record.detail_url || record.notice_url,
+        official_publication_url: record.official_publication_url || null,
+        source_link_status: null,
+        source_link_label: record.source_link_label || null,
+      }),
+    source_link_label: record.source_link_label || null,
     created_at: record.created_at,
     updated_at: record.created_at,
     // Add unified-specific fields
