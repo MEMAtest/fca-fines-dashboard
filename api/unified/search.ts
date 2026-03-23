@@ -15,6 +15,9 @@ const sql = postgres(process.env.DATABASE_URL?.trim() || '', {
     : false
 });
 
+// Public regulators only (AFM, DNB, ESMA excluded until real parsers exist)
+const PUBLIC_REGULATORS = ['FCA', 'BaFin', 'AMF', 'CNMV', 'CBI'];
+
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   // CORS headers
   res.setHeader('Access-Control-Allow-Origin', '*');
@@ -64,6 +67,10 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     if (regulator) {
       conditions.push(`regulator = $${paramIndex++}`);
       params.push(regulator);
+    } else {
+      // Default: only show public regulators (hide AFM, DNB, ESMA)
+      conditions.push(`regulator = ANY($${paramIndex++})`);
+      params.push(PUBLIC_REGULATORS);
     }
 
     if (country) {

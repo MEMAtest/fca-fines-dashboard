@@ -8,7 +8,6 @@
  * Expected: ~50-100 enforcement actions
  */
 
-import axios from 'axios';
 import postgres from 'postgres';
 import crypto from 'crypto';
 import * as dotenv from 'dotenv';
@@ -63,23 +62,7 @@ async function main() {
       records = getTestData();
       console.log(`📊 Using ${records.length} test records`);
     } else {
-      // Step 1: Fetch ESMA enforcement page to find download links
-      console.log('📄 Fetching ESMA enforcement page...');
-      const pageResponse = await axios.get(ESMA_URLS.enforcementPage, {
-        headers: {
-          'User-Agent': 'Mozilla/5.0 (compatible; RegulatoryScanner/2.0)',
-          'Accept': 'text/html'
-        },
-        timeout: 30000
-      });
-
-      console.log('✅ Page fetched successfully');
-
-      // Step 2: Parse HTML to find Excel/download links or enforcement records
-      // TODO: Implement actual parsing of ESMA page
-      // For now, fall back to test data if real parsing not implemented
-      console.log('⚠️  Real ESMA parsing not yet implemented, using test data');
-      records = getTestData();
+      throw new Error('ESMA live workbook parsing is not implemented yet. Use --test-data only for local fixture runs.');
     }
 
     console.log(`\n📊 Extracted ${records.length} enforcement actions`);
@@ -198,7 +181,7 @@ function transformRecord(record: ESMARecord) {
     breachType: extractBreachType(record.description),
     breachCategories: breachCategories,  // Store as array, not stringified
     summary: `${record.entity} fined €${(record.amount || 0).toLocaleString()} by ESMA for ${record.description}`,
-    finalNoticeUrl: record.reference ? `https://www.esma.europa.eu/document/${record.reference}` : null,
+    finalNoticeUrl: record.reference && /^https?:\/\//i.test(record.reference) ? record.reference : null,
     sourceUrl: ESMA_URLS.enforcementPage,
     rawPayload: JSON.stringify(record)
   };

@@ -139,8 +139,6 @@ async function scrapeDnbPage(): Promise<DNBRecord[]> {
   console.log('📄 Fetching DNB enforcement pages...');
   console.log(`   URL: ${url}`);
 
-  const records: DNBRecord[] = [];
-
   // Rate limiting
   await new Promise(resolve => setTimeout(resolve, DNB_CONFIG.rateLimit));
 
@@ -173,13 +171,13 @@ async function scrapeDnbPage(): Promise<DNBRecord[]> {
 
   console.log(`   Found ${pressReleaseLinks.length} press release links`);
 
-  // Limit to avoid excessive scraping
-  const linksToProcess = pressReleaseLinks.slice(0, 50);
+  if (pressReleaseLinks.length === 0) {
+    throw new Error('No DNB enforcement links were found on the live page.');
+  }
 
-  // TODO: Implement actual press release parsing
-  // For now, fall back to test data if real parsing not complete
-  console.log('⚠️  Real DNB press release parsing not yet implemented, using test data');
-  return getTestData();
+  throw new Error(
+    `DNB live scraping is not implemented yet. Found ${Math.min(pressReleaseLinks.length, 50)} candidate links but refusing to write fixture data on a live run.`
+  );
 }
 
 function transformRecord(record: DNBRecord) {

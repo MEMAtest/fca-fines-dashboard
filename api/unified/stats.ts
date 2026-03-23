@@ -18,6 +18,10 @@ const sql = postgres(process.env.DATABASE_URL?.trim() || '', {
     : false
 });
 
+// Public regulators only (AFM, DNB, ESMA excluded until real parsers exist)
+const PUBLIC_REGULATORS = ['FCA', 'BaFin', 'AMF', 'CNMV', 'CBI'];
+const PUBLIC_EU_REGULATORS = ['BaFin', 'AMF', 'CNMV', 'CBI'];
+
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   // CORS headers
   res.setHeader('Access-Control-Allow-Origin', '*');
@@ -50,7 +54,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       WHERE regulator = 'FCA' ${year ? `AND year_issued = ${parseInt(year)}` : ''}
     `);
 
-    // EU stats (all EU regulators)
+    // EU stats (public EU regulators only - excludes AFM, DNB, ESMA)
     const euStats = await sql.unsafe(`
       SELECT
         COUNT(*) as count,
@@ -60,10 +64,10 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         MIN(date_issued) as earliest_date,
         MAX(date_issued) as latest_date
       FROM all_regulatory_fines
-      WHERE regulator != 'FCA' ${year ? `AND year_issued = ${parseInt(year)}` : ''}
+      WHERE regulator IN (${PUBLIC_EU_REGULATORS.map(r => `'${r}'`).join(', ')}) ${year ? `AND year_issued = ${parseInt(year)}` : ''}
     `);
 
-    // Per-regulator breakdown
+    // Per-regulator breakdown (public regulators only)
     const byRegulator = await sql.unsafe(`
       SELECT
         regulator,
@@ -75,12 +79,13 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         COALESCE(AVG(${amountColumn}), 0)::numeric(18,2) as average,
         COALESCE(MAX(${amountColumn}), 0)::numeric(18,2) as max_fine
       FROM all_regulatory_fines
-      ${yearFilter}
+      WHERE regulator IN (${PUBLIC_REGULATORS.map(r => `'${r}'`).join(', ')})
+      ${year ? `AND year_issued = ${parseInt(year)}` : ''}
       GROUP BY regulator, regulator_full_name, country_code, country_name
       ORDER BY total DESC
     `);
 
-    // Top 10 fines (all regulators)
+    // Top 10 fines (public regulators only)
     const topFines = await sql.unsafe(`
       SELECT
         id,
@@ -93,25 +98,27 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         summary,
         notice_url
       FROM all_regulatory_fines
-      ${yearFilter}
+      WHERE regulator IN (${PUBLIC_REGULATORS.map(r => `'${r}'`).join(', ')})
+      ${year ? `AND year_issued = ${parseInt(year)}` : ''}
       ORDER BY ${amountColumn} DESC NULLS LAST
       LIMIT 10
     `);
 
-    // Breach category distribution
+    // Breach category distribution (public regulators only)
     const breachDistribution = await sql.unsafe(`
       SELECT
         breach_type,
         COUNT(*) as count,
         COALESCE(SUM(${amountColumn}), 0)::numeric(18,2) as total
       FROM all_regulatory_fines
-      ${yearFilter}
+      WHERE regulator IN (${PUBLIC_REGULATORS.map(r => `'${r}'`).join(', ')})
+      ${year ? `AND year_issued = ${parseInt(year)}` : ''}
       GROUP BY breach_type
       ORDER BY count DESC
       LIMIT 20
     `);
 
-    // Cross-border analysis (firms fined by multiple regulators)
+    // Cross-border analysis (firms fined by multiple public regulators)
     const crossBorderFirms = await sql.unsafe(`
       SELECT
         firm_individual,
@@ -120,14 +127,15 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         COUNT(*) as total_fines,
         COALESCE(SUM(${amountColumn}), 0)::numeric(18,2) as total_amount
       FROM all_regulatory_fines
-      ${yearFilter}
+      WHERE regulator IN (${PUBLIC_REGULATORS.map(r => `'${r}'`).join(', ')})
+      ${year ? `AND year_issued = ${parseInt(year)}` : ''}
       GROUP BY firm_individual
       HAVING COUNT(DISTINCT regulator) > 1
       ORDER BY total_amount DESC
       LIMIT 10
     `);
 
-    // Time series (monthly trends)
+    // Time series (monthly trends - public regulators only)
     const monthlyTrends = await sql.unsafe(`
       SELECT
         year_issued,
@@ -136,7 +144,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         COUNT(*) as count,
         COALESCE(SUM(${amountColumn}), 0)::numeric(18,2) as total
       FROM all_regulatory_fines
-      ${yearFilter}
+      WHERE regulator IN (${PUBLIC_REGULATORS.map(r => `'${r}'`).join(', ')})
+      ${year ? `AND year_issued = ${parseInt(year)}` : ''}
       GROUP BY year_issued, month_issued, regulator
       ORDER BY year_issued DESC, month_issued DESC, regulator
       LIMIT 100

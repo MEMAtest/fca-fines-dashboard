@@ -1,14 +1,15 @@
 /**
- * AMF (Autorité des marchés financiers - France) Scraper
+ * AMF (Autorite des marches financiers - France) Scraper
  *
- * Strategy: Press release aggregation from enforcement committee with Puppeteer
+ * Strategy: Fetch the live JSON listing endpoint used by the AMF page,
+ * then enrich each enforcement article via its canonical detail page.
  * URL: https://www.amf-france.org/en/news-publications/news-releases/enforcement-committee-news-releases
  *
- * Difficulty: 6-7/10 (Moderate-High) - JavaScript-rendered press releases
- * Expected: ~150-250 enforcement actions
+ * Difficulty: 5-6/10 (Moderate) - JSON listing + article metadata parsing
+ * Expected: 100+ enforcement actions
  */
 
-import puppeteer from 'puppeteer';
+import axios from 'axios';
 import * as cheerio from 'cheerio';
 import postgres from 'postgres';
 import crypto from 'crypto';
@@ -25,10 +26,28 @@ const sql = postgres(process.env.DATABASE_URL?.trim() || '', {
 const AMF_CONFIG = {
   baseUrl: 'https://www.amf-france.org',
   enforcementUrl: '/en/news-publications/news-releases/enforcement-committee-news-releases',
-  rateLimit: 3000,  // 3 seconds (respectful for France)
+  rateLimit: 900,
+  detailRateLimit: 700,
   maxRetries: 3,
-  maxPages: 10,  // Limit pagination to avoid excessive scraping
+  maxRecords: 300,
 };
+
+interface AMFListingConfig {
+  endpoint: string;
+  listingUrl: string;
+}
+
+interface AMFListingItem {
+  date: string;
+  theme: string;
+  infos?: {
+    title?: string;
+    text?: string;
+    link?: {
+      url?: string;
+    };
+  };
+}
 
 interface AMFRecord {
   firm: string;
@@ -38,14 +57,15 @@ interface AMFRecord {
   breach: string;
   link: string;
   summary: string;
+  theme: string;
+  listingUrl: string;
 }
 
 async function main() {
   console.log('🇫🇷 AMF Enforcement Actions Scraper\n');
-  console.log('Target: Autorité des marchés financiers (France)');
-  console.log('Method: Press release parsing\n');
+  console.log('Target: Autorite des marches financiers (France)');
+  console.log('Method: Listing API + article metadata parsing\n');
 
-  // Check for command-line flags
   const useTestData = process.argv.includes('--test-data');
   const dryRun = process.argv.includes('--dry-run');
 
@@ -57,31 +77,26 @@ async function main() {
   }
 
   try {
-    // Scrape real AMF page or use test data
     const records = useTestData ? getTestData() : await scrapeAmfPage();
 
     console.log(`📊 Extracted ${records.length} enforcement actions`);
 
-    // Transform to database format
-    const transformed = records.map(r => transformRecord(r));
+    const transformed = records.map((record) => transformRecord(record));
 
-    // Insert into database (skip if dry-run)
     if (dryRun) {
       console.log('\n🔍 Dry run - skipping database insert');
       console.log('Records that would be inserted:');
-      transformed.forEach((r, i) => {
-        console.log(`   ${i + 1}. ${r.firmIndividual} - €${(r.amount || 0).toLocaleString()} (${r.dateIssued})`);
+      transformed.forEach((record, index) => {
+        console.log(`   ${index + 1}. ${record.firmIndividual} - €${(record.amount || 0).toLocaleString()} (${record.dateIssued})`);
       });
     } else {
       await upsertRecords(transformed);
 
-      // Refresh materialized view
       console.log('\n🔄 Refreshing unified regulatory fines view...');
       await sql`SELECT refresh_all_fines()`;
       console.log('✅ View refreshed');
     }
 
-    // Summary
     const totalAmf = await sql`SELECT COUNT(*) as count FROM eu_fines WHERE regulator = 'AMF'`;
     const totalAll = await sql`SELECT COUNT(*) as count FROM all_regulatory_fines`;
 
@@ -92,7 +107,6 @@ async function main() {
     console.log('\n✅ AMF scraper completed successfully!');
     await sql.end();
     process.exit(0);
-
   } catch (error) {
     console.error('❌ AMF scraper failed:', error);
     await sql.end();
@@ -101,263 +115,453 @@ async function main() {
 }
 
 function getTestData(): AMFRecord[] {
-  // Test data based on known AMF enforcement actions
   return [
     {
       firm: 'Natixis Investment Managers International',
       amount: 35000000,
       currency: 'EUR',
       date: '2024-07-04',
-      breach: 'Manquement aux obligations de bonne conduite et respect des procédures',
+      breach: 'Manquement aux obligations de bonne conduite et respect des procedures',
       link: 'https://www.amf-france.org/en/news-publications/news-releases/enforcement-committee-news/enforcement-committee-sanctions-natixis-investment-managers-international-and-its',
-      summary: 'Failure to comply with conduct of business obligations and respect procedures'
+      summary: 'Failure to comply with conduct of business obligations and respect procedures.',
+      theme: 'Sanctions & settlements',
+      listingUrl: AMF_CONFIG.baseUrl + AMF_CONFIG.enforcementUrl,
     },
     {
       firm: 'CACEIS Bank',
-      amount: 3000000,
+      amount: 3500000,
       currency: 'EUR',
-      date: '2024-02-29',
-      breach: 'Défaillances dans le dispositif de contrôle interne et lutte contre le blanchiment',
-      link: 'https://www.amf-france.org/en/news-publications/news-releases/enforcement-committee-news/enforcement-committee-sanctions-caceis-bank',
-      summary: 'Failures in internal control system and anti-money laundering'
+      date: '2025-12-22',
+      breach: 'Deficiencies in professional obligations and internal controls',
+      link: 'https://www.amf-france.org/en/news-publications/news-releases/enforcement-committee-news-releases/amf-enforcement-committee-fines-depositary-caceis-bank-breaches-its-professional-obligations',
+      summary: 'In its decision of 17 December 2025, the Enforcement Committee imposed a fine of €3.5 million on CACEIS Bank and issued it with a warning.',
+      theme: 'Sanctions & settlements',
+      listingUrl: AMF_CONFIG.baseUrl + AMF_CONFIG.enforcementUrl,
     },
-    {
-      firm: 'Kepler Cheuvreux',
-      amount: 4000000,
-      currency: 'EUR',
-      date: '2023-12-14',
-      breach: 'Market abuse and suspicious trading patterns',
-      link: 'https://www.amf-france.org/en/news-publications/news-releases/enforcement-committee-news/enforcement-committee-sanctions-kepler-cheuvreux',
-      summary: 'Market manipulation violations'
-    }
   ];
 }
 
 async function scrapeAmfPage(): Promise<AMFRecord[]> {
-  const url = AMF_CONFIG.baseUrl + AMF_CONFIG.enforcementUrl;
+  console.log('📄 Fetching AMF enforcement listing configuration...');
 
-  console.log('🌐 Launching headless browser for AMF...');
-  console.log(`   URL: ${url}`);
+  const listingConfig = await getListingConfig();
+  console.log(`   Listing endpoint: ${listingConfig.endpoint}`);
 
-  const browser = await puppeteer.launch({
-    headless: true,
-    args: [
-      '--no-sandbox',
-      '--disable-setuid-sandbox',
-      '--disable-dev-shm-usage',
-      '--disable-gpu'
-    ]
-  });
+  const payload = await fetchJsonWithRetry<{ data?: AMFListingItem[] }>(listingConfig.endpoint);
+  const items = Array.isArray(payload.data) ? payload.data : [];
+
+  if (items.length === 0) {
+    throw new Error('No AMF enforcement listing items were returned by the live endpoint.');
+  }
+
+  console.log(`   Found ${items.length} listing entries`);
 
   const records: AMFRecord[] = [];
+  const seen = new Set<string>();
 
-  try {
-    const page = await browser.newPage();
-    await page.setUserAgent('Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36');
-    await page.setViewport({ width: 1920, height: 1080 });
+  for (const item of items) {
+    const title = normalizeText(item.infos?.title || '');
+    const detailUrl = normalizeAbsoluteUrl(item.infos?.link?.url || '', AMF_CONFIG.baseUrl);
 
-    console.log('📄 Navigating to AMF enforcement committee page...');
-    await page.goto(url, {
-      waitUntil: 'networkidle2',
-      timeout: 60000
-    });
-
-    console.log('✅ Page loaded, waiting for JavaScript to render...');
-    await new Promise(resolve => setTimeout(resolve, 5000));
-
-    // Get page content after JavaScript rendering
-    const content = await page.content();
-    const $ = cheerio.load(content);
-
-    // Parse press release links
-    const pressReleaseLinks: string[] = [];
-
-    // AMF lists press releases in various structures
-    $('article a, .press-release a, .news-item a, .item-link a, [href*="enforcement"], [href*="sanction"]').each((i, elem) => {
-      const href = $(elem).attr('href');
-      if (href && href.length > 10) {
-        const fullUrl = href.startsWith('http') ? href : AMF_CONFIG.baseUrl + href;
-        if (!pressReleaseLinks.includes(fullUrl) && (fullUrl.includes('enforcement') || fullUrl.includes('sanction'))) {
-          pressReleaseLinks.push(fullUrl);
-        }
-      }
-    });
-
-    console.log(`   Found ${pressReleaseLinks.length} press release links`);
-
-    if (pressReleaseLinks.length === 0) {
-      console.log('⚠️  No press releases found, using test data');
-      await browser.close();
-      return getTestData();
+    if (!title || !detailUrl || !isAmfEnforcementTitle(title)) {
+      continue;
     }
 
-    // Limit to avoid excessive scraping
-    const linksToProcess = pressReleaseLinks.slice(0, 20);  // Process first 20
-    console.log(`   Processing ${linksToProcess.length} press releases...`);
+    const key = `${detailUrl}|${item.date}`;
+    if (seen.has(key)) {
+      continue;
+    }
+    seen.add(key);
 
-    // Parse each press release
-    for (const link of linksToProcess) {
-      try {
-        // Rate limiting
-        await new Promise(resolve => setTimeout(resolve, AMF_CONFIG.rateLimit));
+    if (records.length >= AMF_CONFIG.maxRecords) {
+      break;
+    }
 
-        await page.goto(link, {
-          waitUntil: 'networkidle2',
-          timeout: 30000
-        });
+    if (records.length > 0) {
+      await sleep(AMF_CONFIG.detailRateLimit);
+    }
 
-        await new Promise(resolve => setTimeout(resolve, 2000));
-
-        const prContent = await page.content();
-        const $pr = cheerio.load(prContent);
-
-        // Extract data from press release
-        const title = $pr('h1, .page-title, .article-title').first().text().trim();
-        const bodyText = $pr('article, .content, .main-content, main, .article-body').text();
-
-        // Try to extract firm name
-        const firmMatch = title.match(/sanctions?\s+(.+?)(?:\s+for|\s+and|\s+€|$)/i) ||
-                         title.match(/(.+?)\s+(?:sanctioned|fined)/i) ||
-                         bodyText.match(/(?:The )?Enforcement Committee.+?sanctions?\s+(.+?)(?:\s+for|\s+and|\s+€)/i);
-
-        const firm = firmMatch ? firmMatch[1].trim() : null;
-
-        if (!firm || firm.length < 3 || firm.length > 150) continue;
-
-        // Extract amount
-        const amountMatch = bodyText.match(/€\s*(\d+(?:[,\.\s]\d+)*)\s*(million|thousand)?/i) ||
-                           bodyText.match(/(\d+(?:[,\.\s]\d+)*)\s*(million|thousand)?\s*euros?/i) ||
-                           title.match(/€\s*(\d+(?:[,\.\s]\d+)*)\s*(million|thousand)?/i);
-
-        let amount: number | null = null;
-        if (amountMatch) {
-          const numStr = amountMatch[1].replace(/[\s,]/g, '').replace(/\./g, '');
-          const num = parseFloat(numStr);
-          const multiplier = amountMatch[2]?.toLowerCase();
-
-          if (!isNaN(num)) {
-            if (multiplier === 'million') {
-              amount = num * 1000000;
-            } else if (multiplier === 'thousand') {
-              amount = num * 1000;
-            } else if (num < 10000) {
-              // Likely already in thousands or millions context
-              amount = num > 1000 ? num : num * 1000000;
-            } else {
-              amount = num;
-            }
-          }
-        }
-
-        // Extract date
-        const dateText = $pr('meta[property="article:published_time"]').attr('content') ||
-                        $pr('time').attr('datetime') ||
-                        $pr('.date, .published-date, .article-date').first().text();
-
-        const date = dateText ? parseFrenchDate(dateText) : new Date().toISOString().split('T')[0];
-
-        // Extract breach description
-        const breach = extractAmfBreach(title, bodyText);
-
-        records.push({
-          firm,
-          amount,
-          currency: 'EUR',
-          date,
-          breach,
-          link,
-          summary: `${firm} sanctioned by AMF`
-        });
-
-        console.log(`   ✓ Parsed: ${firm} - €${amount?.toLocaleString() || 'N/A'}`);
-
-      } catch (error) {
-        console.log(`   ✗ Failed to parse ${link.substring(0, 60)}...`);
+    try {
+      const record = await enrichAmfListingItem(item, detailUrl, listingConfig.listingUrl);
+      if (!record) {
         continue;
       }
+
+      records.push(record);
+      console.log(`   ✓ Parsed: ${record.firm} - €${record.amount?.toLocaleString() || 'N/A'}`);
+    } catch (error) {
+      console.log(`   ✗ Failed to parse ${detailUrl}`);
     }
-
-    await browser.close();
-    console.log(`   Extracted ${records.length} enforcement actions`);
-
-    // If we didn't find any records, fall back to test data
-    if (records.length === 0) {
-      console.log('⚠️  No records extracted, using test data');
-      return getTestData();
-    }
-
-    return records;
-
-  } catch (error) {
-    console.error('❌ Puppeteer error:', error);
-    await browser.close();
-    console.log('⚠️  Falling back to test data due to error');
-    return getTestData();
   }
+
+  if (records.length === 0) {
+    throw new Error('No AMF enforcement records were parsed from the live listing.');
+  }
+
+  return records;
+}
+
+async function getListingConfig(): Promise<AMFListingConfig> {
+  const listingUrl = AMF_CONFIG.baseUrl + AMF_CONFIG.enforcementUrl;
+  const html = await fetchTextWithRetry(listingUrl);
+  const $ = cheerio.load(html);
+
+  const lang = $('html').attr('lang') || 'en';
+  const nid = $('body').attr('data-nid');
+  const format = $('input[name="format"]').first().attr('value') || 'format';
+  const filtre = $('input[name="filtre"]').first().attr('value');
+  const filtreActeur = $('input[name="filtre_acteur"]').first().attr('value') || 'all';
+
+  if (!nid || !filtre) {
+    throw new Error('Unable to derive AMF listing parameters from the live page.');
+  }
+
+  return {
+    listingUrl,
+    endpoint: `${AMF_CONFIG.baseUrl}/${lang}/getlisting/${format}/${filtre}/${filtreActeur || 'all'}/all/all/all/${nid}`,
+  };
+}
+
+async function enrichAmfListingItem(item: AMFListingItem, detailUrl: string, listingUrl: string): Promise<AMFRecord | null> {
+  const detailHtml = await fetchTextWithRetry(detailUrl);
+  const $ = cheerio.load(detailHtml);
+
+  const title = normalizeText(
+    $('meta[property="og:title"]').attr('content')
+    || $('title').first().text().replace(/\s*\|\s*AMF\s*$/i, '')
+    || item.infos?.title
+    || ''
+  );
+  const metaDescription = normalizeText($('meta[name="description"]').attr('content') || $('meta[property="og:description"]').attr('content') || '');
+  const canonicalUrl = normalizeAbsoluteUrl($('link[rel="canonical"]').attr('href') || detailUrl, AMF_CONFIG.baseUrl);
+  const bodyText = extractAmfBodyText($);
+  const summary = normalizeText(metaDescription || bodyText || title);
+  const firm = extractAmfFirm(title, summary) || title;
+
+  if (!firm) {
+    return null;
+  }
+
+  return {
+    firm,
+    amount: extractAmfAmount([title, summary, bodyText]),
+    currency: 'EUR',
+    date: parseAmfTimestamp(item.date),
+    breach: extractAmfBreach(`${title} ${summary}`, bodyText),
+    link: canonicalUrl,
+    summary,
+    theme: normalizeText(item.theme || ''),
+    listingUrl,
+  };
+}
+
+async function fetchTextWithRetry(url: string) {
+  let lastError: unknown;
+
+  for (let attempt = 1; attempt <= AMF_CONFIG.maxRetries; attempt += 1) {
+    try {
+      const response = await axios.get(url, {
+        headers: {
+          'User-Agent': 'Mozilla/5.0 (compatible; RegulatoryScanner/2.0)',
+          'Accept': 'text/html,application/xhtml+xml',
+          'Accept-Language': 'en-GB,en;q=0.5',
+        },
+        timeout: 30000,
+      });
+
+      return response.data as string;
+    } catch (error) {
+      lastError = error;
+      if (attempt < AMF_CONFIG.maxRetries) {
+        await sleep(AMF_CONFIG.rateLimit * attempt);
+      }
+    }
+  }
+
+  throw lastError;
+}
+
+async function fetchJsonWithRetry<T>(url: string) {
+  let lastError: unknown;
+
+  for (let attempt = 1; attempt <= AMF_CONFIG.maxRetries; attempt += 1) {
+    try {
+      const response = await axios.get<T>(url, {
+        headers: {
+          'User-Agent': 'Mozilla/5.0 (compatible; RegulatoryScanner/2.0)',
+          'Accept': 'application/json,text/plain,*/*',
+          'Accept-Language': 'en-GB,en;q=0.5',
+          'X-Requested-With': 'XMLHttpRequest',
+        },
+        timeout: 30000,
+      });
+
+      return response.data;
+    } catch (error) {
+      lastError = error;
+      if (attempt < AMF_CONFIG.maxRetries) {
+        await sleep(AMF_CONFIG.rateLimit * attempt);
+      }
+    }
+  }
+
+  throw lastError;
+}
+
+function extractAmfBodyText($: cheerio.CheerioAPI) {
+  const selectors = [
+    'main .field--name-body p',
+    'main .paragraph p',
+    'main article p',
+    'main .wrapper-wysiwyg p',
+    'main .content p',
+  ];
+
+  for (const selector of selectors) {
+    const parts = $(selector)
+      .map((_, element) => normalizeText($(element).text()))
+      .get()
+      .filter((part) => part.length > 40);
+
+    if (parts.length > 0) {
+      return normalizeText(parts.slice(0, 4).join(' '));
+    }
+  }
+
+  return '';
+}
+
+function extractAmfFirm(title: string, summary: string) {
+  const candidates = [
+    title.match(/fines?\s+(?:the\s+)?(.+?)\s+for\b/i),
+    title.match(/fines?\s+(?:the\s+)?(.+?)\s+a total of\b/i),
+    title.match(/fines?\s+(?:the\s+)?(.+?)\s+and its\b/i),
+    title.match(/sanctions?\s+(?:the\s+)?(.+?)\s+a total of\b/i),
+    title.match(/sanctions?\s+(?:the\s+)?(.+?)\s+for\b/i),
+    title.match(/clears?\s+(?:the\s+)?(.+?)(?:\s+of all charges|\s+and|\s*$)/i),
+    summary.match(/imposed fines? of .*? on\s+(.+?)(?:\s+for|\s+in relation|\.\s|,\s|$)/i),
+    summary.match(/imposed a fine of .*? on\s+(.+?)(?:\s+for|\s+in relation|\.\s|,\s|$)/i),
+    summary.match(/respectively on\s+(.+?)(?:\s+and|\s+for|\.\s|,\s|$)/i),
+  ];
+
+  for (const candidate of candidates) {
+    if (candidate?.[1]) {
+      const cleaned = normalizeFirmName(candidate[1]);
+      if (cleaned) {
+        return cleaned;
+      }
+    }
+  }
+
+  const strippedTitle = normalizeFirmName(
+    title
+      .replace(/^The AMF Enforcement Committee fines?\s+/i, '')
+      .replace(/^AMF Enforcement Committee fines?\s+/i, '')
+      .replace(/^The AMF Enforcement Committee sanctions?\s+/i, '')
+      .replace(/^AMF Enforcement Committee sanctions?\s+/i, '')
+      .replace(/^The AMF Enforcement Committee clears?\s+/i, '')
+      .replace(/^AMF Enforcement Committee clears?\s+/i, '')
+      .replace(/\s+for\b[\s\S]*$/i, '')
+      .replace(/\s+a total of\b[\s\S]*$/i, '')
+      .replace(/\s+totalling\b[\s\S]*$/i, '')
+  );
+
+  return strippedTitle || null;
+}
+
+function normalizeFirmName(value: string) {
+  const cleaned = normalizeText(
+    value
+      .replace(/^the\s+/i, '')
+      .replace(/\s+a total of\s+€[\d.,\s]+(?:\s*(?:million|thousand|billion))?/gi, '')
+      .replace(/\s+totalling\s+€[\d.,\s]+(?:\s*(?:million|thousand|billion))?/gi, '')
+      .replace(/\s+€[\d.,\s]+(?:\s*(?:million|thousand|billion))?/gi, '')
+      .replace(/[.;:,]+$/g, '')
+      .replace(/\s+respectively$/i, '')
+      .replace(/\s+-\s*$/g, '')
+  );
+
+  if (!cleaned || cleaned.length < 3 || cleaned.length > 160) {
+    return null;
+  }
+
+  return cleaned;
+}
+
+function extractAmfAmount(texts: string[]) {
+  for (const text of texts) {
+    if (!text) {
+      continue;
+    }
+
+    const totalMatch = text.match(/(?:a\s+total\s+of|totalling)\s+€\s*([\d.,\s]+)(?:\s*(million|thousand|billion))?/i)
+      || text.match(/(?:a\s+total\s+of|totalling)\s+([\d.,\s]+)\s*(million|thousand|billion)?\s*euros?/i);
+
+    if (totalMatch) {
+      const total = parseScaledAmount(totalMatch[1], totalMatch[2]);
+      if (total !== null) {
+        return total;
+      }
+    }
+  }
+
+  const amounts: number[] = [];
+
+  for (const text of texts) {
+    if (!text) {
+      continue;
+    }
+
+    const euroMatches = text.matchAll(/€\s*([\d.,\s]+)(?:\s*(million|thousand|billion))?/gi);
+    for (const match of euroMatches) {
+      const parsed = parseScaledAmount(match[1], match[2]);
+      if (parsed !== null) {
+        amounts.push(parsed);
+      }
+    }
+
+    const wordMatches = text.matchAll(/([\d.,\s]+)\s*(million|thousand|billion)?\s*euros?/gi);
+    for (const match of wordMatches) {
+      const parsed = parseScaledAmount(match[1], match[2]);
+      if (parsed !== null) {
+        amounts.push(parsed);
+      }
+    }
+  }
+
+  const unique = [...new Set(amounts)];
+  if (unique.length === 0) {
+    return null;
+  }
+  if (unique.length === 1) {
+    return unique[0];
+  }
+
+  return unique.reduce((sum, amount) => sum + amount, 0);
+}
+
+function parseScaledAmount(rawAmount: string, scale: string | undefined) {
+  const cleaned = rawAmount.replace(/\s+/g, '').replace(/,/g, '');
+  const numeric = Number.parseFloat(cleaned);
+
+  if (!Number.isFinite(numeric)) {
+    return null;
+  }
+
+  const multiplier = scale?.toLowerCase();
+  if (multiplier === 'billion') {
+    return numeric * 1_000_000_000;
+  }
+  if (multiplier === 'million') {
+    return numeric * 1_000_000;
+  }
+  if (multiplier === 'thousand') {
+    return numeric * 1_000;
+  }
+
+  return numeric;
+}
+
+function parseAmfTimestamp(rawValue: string) {
+  if (/^\d{9,}$/.test(rawValue)) {
+    const timestamp = Number.parseInt(rawValue, 10) * 1000;
+    return new Date(timestamp).toISOString().split('T')[0];
+  }
+
+  return parseFrenchDate(rawValue);
+}
+
+function normalizeAbsoluteUrl(rawUrl: string, baseUrl: string) {
+  if (!rawUrl) {
+    return '';
+  }
+
+  const absolute = rawUrl.startsWith('http') ? rawUrl : new URL(rawUrl, baseUrl).toString();
+  return absolute.replace(/#.*$/, '');
+}
+
+function normalizeText(value: string) {
+  return value
+    .replace(/\u00a0/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+
+function sleep(ms: number) {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+function isAmfEnforcementTitle(title: string) {
+  const lower = title.toLowerCase();
+
+  if (lower.includes('appoint') || lower.includes('becomes chair') || lower.includes('becomes chairman')) {
+    return false;
+  }
+
+  return lower.includes('fine')
+    || lower.includes('sanction')
+    || lower.includes('clear');
 }
 
 function parseFrenchDate(dateStr: string): string {
-  // Try ISO format first
   const isoMatch = dateStr.match(/(\d{4})-(\d{2})-(\d{2})/);
   if (isoMatch) {
     return `${isoMatch[1]}-${isoMatch[2]}-${isoMatch[3]}`;
   }
 
-  // Try French format: "15 mars 2024"
-  const frenchMonths: { [key: string]: number } = {
-    'janvier': 1, 'février': 2, 'mars': 3, 'avril': 4, 'mai': 5, 'juin': 6,
-    'juillet': 7, 'août': 8, 'septembre': 9, 'octobre': 10, 'novembre': 11, 'décembre': 12,
-    'january': 1, 'february': 2, 'march': 3, 'april': 4, 'may': 5, 'june': 6,
-    'july': 7, 'august': 8, 'september': 9, 'october': 10, 'november': 11, 'december': 12
+  const frenchMonths: Record<string, number> = {
+    janvier: 1, fevrier: 2, février: 2, mars: 3, avril: 4, mai: 5, juin: 6,
+    juillet: 7, aout: 8, août: 8, septembre: 9, octobre: 10, novembre: 11, decembre: 12, décembre: 12,
+    january: 1, february: 2, march: 3, april: 4, may: 5, june: 6,
+    july: 7, august: 8, september: 9, october: 10, november: 11, december: 12,
   };
 
-  const frenchMatch = dateStr.match(/(\d{1,2})\s+([a-zéû]+)\s+(\d{4})/i);
-  if (frenchMatch) {
-    const day = parseInt(frenchMatch[1]);
-    const month = frenchMonths[frenchMatch[2].toLowerCase()];
-    const year = parseInt(frenchMatch[3]);
+  const monthMatch = dateStr.match(/(\d{1,2})\s+([a-zéûôîêèç]+)\s+(\d{4})/i);
+  if (monthMatch) {
+    const day = Number.parseInt(monthMatch[1], 10);
+    const month = frenchMonths[monthMatch[2].toLowerCase()];
+    const year = Number.parseInt(monthMatch[3], 10);
 
-    if (month && day >= 1 && day <= 31 && year >= 2000 && year <= 2030) {
+    if (month && day >= 1 && day <= 31) {
       return `${year}-${month.toString().padStart(2, '0')}-${day.toString().padStart(2, '0')}`;
     }
   }
 
-  // DD/MM/YYYY format
-  const ddmmMatch = dateStr.match(/(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{2,4})/);
-  if (ddmmMatch) {
-    const day = parseInt(ddmmMatch[1]);
-    const month = parseInt(ddmmMatch[2]);
-    let year = parseInt(ddmmMatch[3]);
+  const dayMonthMatch = dateStr.match(/(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{2,4})/);
+  if (dayMonthMatch) {
+    const day = Number.parseInt(dayMonthMatch[1], 10);
+    const month = Number.parseInt(dayMonthMatch[2], 10);
+    let year = Number.parseInt(dayMonthMatch[3], 10);
 
-    if (year < 100) year += 2000;
-
-    if (day >= 1 && day <= 31 && month >= 1 && month <= 12) {
-      return `${year}-${month.toString().padStart(2, '0')}-${day.toString().padStart(2, '0')}`;
+    if (year < 100) {
+      year += 2000;
     }
+
+    return `${year}-${month.toString().padStart(2, '0')}-${day.toString().padStart(2, '0')}`;
   }
 
   return new Date().toISOString().split('T')[0];
 }
 
 function extractAmfBreach(title: string, body: string): string {
-  const combinedText = (title + ' ' + body).toLowerCase();
+  const combinedText = `${title} ${body}`.toLowerCase();
 
-  if (combinedText.includes('abus de marché') || combinedText.includes('market abuse')) {
+  if (combinedText.includes('abus de marche') || combinedText.includes('market abuse')) {
     return 'Market abuse violations';
   }
-  if (combinedText.includes('délit d\'initié') || combinedText.includes('insider')) {
+  if (combinedText.includes('delit d\'initie') || combinedText.includes('délit d\'initié') || combinedText.includes('insider')) {
     return 'Insider dealing';
   }
   if (combinedText.includes('manipulation')) {
     return 'Market manipulation';
   }
-  if (combinedText.includes('manquement') && combinedText.includes('information')) {
-    return 'Information disclosure failures';
-  }
-  if (combinedText.includes('blanchiment') || combinedText.includes('aml')) {
+  if (combinedText.includes('blanchiment') || combinedText.includes('anti-money laundering') || combinedText.includes('aml')) {
     return 'Anti-money laundering violations';
   }
-  if (combinedText.includes('conduite') || combinedText.includes('conduct')) {
+  if (combinedText.includes('control') || combinedText.includes('controle interne') || combinedText.includes('contrôle interne')) {
+    return 'Internal controls and governance failures';
+  }
+  if (combinedText.includes('conduct') || combinedText.includes('bonne conduite')) {
     return 'Conduct of business violations';
   }
 
@@ -368,23 +572,20 @@ function transformRecord(record: AMFRecord) {
   const dateIssued = new Date(record.date);
   const yearIssued = dateIssued.getFullYear();
   const monthIssued = dateIssued.getMonth() + 1;
-
-  // Currency conversion
   const amountEur = record.amount;
   const amountGbp = amountEur ? Math.round(amountEur * 0.85 * 100) / 100 : null;
 
-  // Generate content hash
   const contentHash = crypto
     .createHash('sha256')
     .update(JSON.stringify({
       regulator: 'AMF',
       firm: record.firm,
       date: record.date,
-      amount: record.amount
+      amount: record.amount,
+      link: record.link,
     }))
     .digest('hex');
 
-  // Categorize breach
   const breachCategories = categorizeBreachType(record.breach);
 
   return {
@@ -403,37 +604,33 @@ function transformRecord(record: AMFRecord) {
     yearIssued,
     monthIssued,
     breachType: extractBreachType(record.breach),
-    breachCategories: breachCategories,
-    summary: `${record.firm} fined €${(record.amount || 0).toLocaleString()} by AMF for ${record.summary}`,
+    breachCategories,
+    summary: record.summary,
     finalNoticeUrl: record.link,
-    sourceUrl: AMF_CONFIG.baseUrl + AMF_CONFIG.enforcementUrl,
-    rawPayload: JSON.stringify(record)
+    sourceUrl: record.listingUrl,
+    rawPayload: JSON.stringify(record),
   };
 }
 
 function extractBreachType(description: string): string {
   const lower = description.toLowerCase();
 
-  // French breach type mapping
-  if (lower.includes('abus de marché') || lower.includes('market abuse')) {
+  if (lower.includes('market abuse')) {
     return 'Market Abuse';
   }
-  if (lower.includes('délit d\'initié') || lower.includes('insider')) {
+  if (lower.includes('insider')) {
     return 'Insider Dealing';
   }
-  if (lower.includes('manipulation de cours') || lower.includes('market manipulation')) {
+  if (lower.includes('manipulation')) {
     return 'Market Manipulation';
   }
-  if (lower.includes('manquement') && lower.includes('information')) {
-    return 'Disclosure Failures';
-  }
-  if (lower.includes('blanchiment') || lower.includes('aml')) {
+  if (lower.includes('anti-money laundering') || lower.includes('aml')) {
     return 'Anti-Money Laundering Violations';
   }
-  if (lower.includes('conduite') || lower.includes('conduct')) {
+  if (lower.includes('conduct')) {
     return 'Conduct of Business Violations';
   }
-  if (lower.includes('contrôle interne') || lower.includes('internal control')) {
+  if (lower.includes('control') || lower.includes('governance')) {
     return 'Internal Controls';
   }
 
@@ -444,30 +641,23 @@ function categorizeBreachType(description: string): string[] {
   const categories: string[] = [];
   const lower = description.toLowerCase();
 
-  // French to English category mapping
-  if (lower.includes('abus de marché') || lower.includes('market abuse')) {
+  if (lower.includes('market abuse')) {
     categories.push('MARKET_ABUSE');
   }
-  if (lower.includes('délit d\'initié') || lower.includes('insider')) {
+  if (lower.includes('insider')) {
     categories.push('INSIDER_DEALING');
   }
   if (lower.includes('manipulation')) {
     categories.push('MARKET_MANIPULATION');
   }
-  if (lower.includes('information') && (lower.includes('trompeuse') || lower.includes('misleading'))) {
-    categories.push('MISLEADING_INFORMATION');
-  }
-  if (lower.includes('blanchiment') || lower.includes('aml')) {
+  if (lower.includes('anti-money laundering') || lower.includes('aml')) {
     categories.push('AML');
   }
-  if (lower.includes('conduite') || lower.includes('conduct')) {
+  if (lower.includes('conduct')) {
     categories.push('CONDUCT');
   }
-  if (lower.includes('contrôle') || lower.includes('control')) {
+  if (lower.includes('control') || lower.includes('governance')) {
     categories.push('GOVERNANCE');
-  }
-  if (lower.includes('procédure') || lower.includes('procedure')) {
-    categories.push('PROCEDURAL');
   }
 
   return categories.length > 0 ? categories : ['OTHER'];
@@ -516,6 +706,9 @@ async function upsertRecords(records: any[]) {
         )
         ON CONFLICT (content_hash) DO UPDATE SET
           summary = EXCLUDED.summary,
+          final_notice_url = EXCLUDED.final_notice_url,
+          source_url = EXCLUDED.source_url,
+          raw_payload = EXCLUDED.raw_payload,
           updated_at = NOW()
         RETURNING (xmax = 0) AS inserted
       `;
@@ -539,5 +732,4 @@ async function upsertRecords(records: any[]) {
   console.log(`   - Errors: ${errors}`);
 }
 
-// Run scraper
 main();

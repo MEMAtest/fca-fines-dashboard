@@ -34,7 +34,7 @@ const RSS_URL = `${BASE_URL}/rss.xml`;
 // resolves the .ts source directly.
 import { allBlogArticles as blogArticles, yearlyArticles } from '../src/data/blogArticles.js';
 import { faqItems, getFaqsForArticle, getFaqsForYearlyArticle, getHomepageFaqs, generateFaqSchema } from '../src/data/faqData.js';
-import { REGULATOR_COVERAGE, REGULATOR_CODES } from '../src/data/regulatorCoverage.js';
+import { REGULATOR_COVERAGE, PUBLIC_REGULATOR_CODES } from '../src/data/regulatorCoverage.js';
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -349,7 +349,7 @@ async function buildPageMetas(): Promise<PageMeta[]> {
   });
 
   // 4b. Regulator Hub Pages
-  REGULATOR_CODES.forEach(code => {
+  PUBLIC_REGULATOR_CODES.forEach(code => {
     const coverage = REGULATOR_COVERAGE[code];
     const path = `/regulators/${code.toLowerCase()}`;
     const title = `${code} Fines Database | ${coverage.fullName} Enforcement Actions`;

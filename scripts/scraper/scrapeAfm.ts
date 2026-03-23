@@ -148,8 +148,6 @@ async function scrapeAfmPage(): Promise<AFMRecord[]> {
   console.log('📄 Fetching AFM enforcement decisions...');
   console.log(`   URL: ${url}`);
 
-  const records: AFMRecord[] = [];
-
   // Rate limiting
   await new Promise(resolve => setTimeout(resolve, AFM_CONFIG.rateLimit));
 
@@ -182,13 +180,13 @@ async function scrapeAfmPage(): Promise<AFMRecord[]> {
 
   console.log(`   Found ${decisionLinks.length} decision links`);
 
-  // Limit to avoid excessive scraping
-  const linksToProcess = decisionLinks.slice(0, AFM_CONFIG.maxRecords);
+  if (decisionLinks.length === 0) {
+    throw new Error('No AFM enforcement decision links were found on the live page.');
+  }
 
-  // TODO: Implement actual decision page parsing
-  // For now, fall back to test data if real parsing not complete
-  console.log('⚠️  Real AFM decision parsing not yet implemented, using test data');
-  return getTestData();
+  throw new Error(
+    `AFM live scraping is not implemented yet. Found ${Math.min(decisionLinks.length, AFM_CONFIG.maxRecords)} candidate links but refusing to write fixture data on a live run.`
+  );
 }
 
 function transformRecord(record: AFMRecord) {

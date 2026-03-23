@@ -1,14 +1,15 @@
 /**
  * CNMV (Comisión Nacional del Mercado de Valores - Spain) Scraper
  *
- * Strategy: Interactive database scraping with Puppeteer (JavaScript-rendered content)
- * URL: https://www.cnmv.es/portal/consultas/registrosanciones/iniregsanciones.aspx?lang=en
+ * Strategy: Paginated HTML register scraping
+ * URL: https://www.cnmv.es/portal/consultas/registrosanciones/verregsanciones?lang=en
  *
- * Difficulty: 6-7/10 (Moderate-High) - Requires headless browser for JS content
- * Expected: ~100-150 enforcement actions
+ * Difficulty: 4-5/10 (Moderate) - Static paginated register with PDF links
+ * Expected: ~150-200 enforcement actions
  */
 
-import puppeteer from 'puppeteer';
+import axios from 'axios';
+import * as cheerio from 'cheerio';
 import postgres from 'postgres';
 import crypto from 'crypto';
 import * as dotenv from 'dotenv';
@@ -23,28 +24,29 @@ const sql = postgres(process.env.DATABASE_URL?.trim() || '', {
 
 const CNMV_CONFIG = {
   baseUrl: 'https://www.cnmv.es',
-  registroUrl: 'https://www.cnmv.es/portal/consultas/registrosanciones/iniregsanciones.aspx?lang=en',
-  rateLimit: 5000,  // 5 seconds (respectful for Spain)
+  registroUrl: 'https://www.cnmv.es/portal/consultas/registrosanciones/verregsanciones?lang=en',
+  rateLimit: 1200,
   maxRetries: 3,
-  maxRecords: 100,  // Limit to avoid excessive scraping
-  headless: true,
+  maxRecords: 250,
 };
 
 interface CNMVRecord {
   firm: string;
+  resolution: string;
   sanctionType: string;
   amount: number | null;
   currency: string;
   date: string;
   reference: string | null;
+  detailUrl: string | null;
+  listingUrl: string;
 }
 
 async function main() {
   console.log('🇪🇸 CNMV Enforcement Actions Scraper\n');
   console.log('Target: Comisión Nacional del Mercado de Valores (Spain)');
-  console.log('Method: Interactive database scraping with Puppeteer\n');
+  console.log('Method: Paginated HTML register scraping\n');
 
-  // Check for command-line flags
   const useTestData = process.argv.includes('--test-data');
   const dryRun = process.argv.includes('--dry-run');
 
@@ -56,31 +58,26 @@ async function main() {
   }
 
   try {
-    // Scrape real CNMV page or use test data
     const records = useTestData ? getTestData() : await scrapeCnmvPage();
 
     console.log(`📊 Extracted ${records.length} enforcement actions`);
 
-    // Transform to database format
-    const transformed = records.map(r => transformRecord(r));
+    const transformed = records.map((record) => transformRecord(record));
 
-    // Insert into database (skip if dry-run)
     if (dryRun) {
       console.log('\n🔍 Dry run - skipping database insert');
       console.log('Records that would be inserted:');
-      transformed.forEach((r, i) => {
-        console.log(`   ${i + 1}. ${r.firmIndividual} - €${(r.amount || 0).toLocaleString()} (${r.dateIssued})`);
+      transformed.forEach((record, index) => {
+        console.log(`   ${index + 1}. ${record.firmIndividual} - €${(record.amount || 0).toLocaleString()} (${record.dateIssued})`);
       });
     } else {
       await upsertRecords(transformed);
 
-      // Refresh materialized view
       console.log('\n🔄 Refreshing unified regulatory fines view...');
       await sql`SELECT refresh_all_fines()`;
       console.log('✅ View refreshed');
     }
 
-    // Summary
     const totalCnmv = await sql`SELECT COUNT(*) as count FROM eu_fines WHERE regulator = 'CNMV'`;
     const totalAll = await sql`SELECT COUNT(*) as count FROM all_regulatory_fines`;
 
@@ -91,7 +88,6 @@ async function main() {
     console.log('\n✅ CNMV scraper completed successfully!');
     await sql.end();
     process.exit(0);
-
   } catch (error) {
     console.error('❌ CNMV scraper failed:', error);
     await sql.end();
@@ -100,180 +96,145 @@ async function main() {
 }
 
 function getTestData(): CNMVRecord[] {
-  // Test data based on known CNMV enforcement actions
   return [
     {
       firm: 'X (formerly Twitter)',
+      resolution: 'Resolución de ejemplo sobre sanción por infracción muy grave a X (formerly Twitter).',
       sanctionType: 'Very serious infringement',
       amount: 5000000,
       currency: 'EUR',
       date: '2024-11-15',
-      reference: 'S/2024/123'
+      reference: 'S/2024/123',
+      detailUrl: 'https://www.cnmv.es/webservices/verdocumento/ver?e=test1',
+      listingUrl: CNMV_CONFIG.registroUrl,
     },
     {
       firm: 'Banco Santander SA',
+      resolution: 'Resolución de ejemplo sobre sanción por infracción grave a Banco Santander SA.',
       sanctionType: 'Serious infringement',
       amount: 250000,
       currency: 'EUR',
       date: '2024-06-20',
-      reference: 'S/2024/089'
+      reference: 'S/2024/089',
+      detailUrl: 'https://www.cnmv.es/webservices/verdocumento/ver?e=test2',
+      listingUrl: CNMV_CONFIG.registroUrl,
     },
-    {
-      firm: 'BBVA',
-      sanctionType: 'Serious infringement',
-      amount: 180000,
-      currency: 'EUR',
-      date: '2023-12-10',
-      reference: 'S/2023/201'
-    },
-    {
-      firm: 'Renta 4 Banco SA',
-      sanctionType: 'Minor infringement',
-      amount: 50000,
-      currency: 'EUR',
-      date: '2023-09-05',
-      reference: 'S/2023/167'
-    }
   ];
 }
 
 async function scrapeCnmvPage(): Promise<CNMVRecord[]> {
-  console.log('🌐 Launching headless browser...');
+  console.log('📄 Fetching CNMV sanctions register...');
 
-  const browser = await puppeteer.launch({
-    headless: CNMV_CONFIG.headless,
-    args: [
-      '--no-sandbox',
-      '--disable-setuid-sandbox',
-      '--disable-dev-shm-usage',
-      '--disable-gpu'
-    ]
-  });
-
+  const firstPage = await fetchCnmvPageHtml(0);
+  const totalPages = extractTotalPages(firstPage.$);
+  const seen = new Set<string>();
   const records: CNMVRecord[] = [];
 
-  try {
-    const page = await browser.newPage();
+  console.log(`   Found ${totalPages} CNMV result pages`);
 
-    // Set user agent and viewport
-    await page.setUserAgent('Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36');
-    await page.setViewport({ width: 1920, height: 1080 });
+  for (let pageIndex = 0; pageIndex < totalPages; pageIndex += 1) {
+    const pageData = pageIndex === 0 ? firstPage : await fetchCnmvPageHtml(pageIndex);
+    const pageRecords = extractPageRecords(pageData.$, pageData.url);
 
-    console.log('📄 Navigating to CNMV sanctions register...');
-    await page.goto(CNMV_CONFIG.registroUrl, {
-      waitUntil: 'networkidle2',
-      timeout: 60000
+    console.log(`   Page ${pageIndex + 1}/${totalPages}: ${pageRecords.length} records`);
+
+    pageRecords.forEach((record) => {
+      const key = record.detailUrl || `${record.date}|${record.firm}|${record.resolution}`;
+      if (seen.has(key)) {
+        return;
+      }
+      seen.add(key);
+      records.push(record);
     });
 
-    console.log('✅ Page loaded, analyzing structure...');
-
-    // Wait for results table or content to appear
-    await new Promise(resolve => setTimeout(resolve, 3000));
-
-    // Try to extract sanctions data from the page
-    const pageContent = await page.content();
-
-    // Check if there's a results table
-    const hasTable = await page.$('table') || await page.$('.grid-table') || await page.$('[id*="sanctions"]');
-
-    if (hasTable) {
-      console.log('📊 Found sanctions table, extracting data...');
-
-      // Extract table rows
-      const tableData = await page.evaluate(() => {
-        const results: any[] = [];
-        const tables = document.querySelectorAll('table, .grid-table, [class*="sanction"]');
-
-        tables.forEach(table => {
-          const rows = table.querySelectorAll('tr, .row, [class*="item"]');
-
-          rows.forEach(row => {
-            const cells = row.querySelectorAll('td, .cell, [class*="col"]');
-            if (cells.length >= 2) {
-              const text = Array.from(cells).map(cell => (cell as HTMLElement).innerText.trim());
-              if (text.some(t => t.length > 0)) {
-                results.push(text);
-              }
-            }
-          });
-        });
-
-        return results;
-      });
-
-      console.log(`   Extracted ${tableData.length} potential rows`);
-
-      // Parse extracted data
-      for (const row of tableData) {
-        try {
-          // Try to extract firm, amount, date from row data
-          const firmMatch = row.join(' ').match(/([A-Z][A-Za-z\s\.]+(?:S\.?A\.?|Bank|Ltd|Limited|Inc)?)/);
-          const amountMatch = row.join(' ').match(/([\d,\.]+)\s*(?:EUR|€|euros?)/i);
-          const dateMatch = row.join(' ').match(/(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{2,4})/);
-
-          if (firmMatch) {
-            const firm = firmMatch[1].trim();
-            const amount = amountMatch ? parseFloat(amountMatch[1].replace(/,/g, '')) : null;
-            const date = dateMatch ? parseSpanishDate(dateMatch[0]) : null;
-
-            if (firm.length > 3 && firm.length < 100) {
-              records.push({
-                firm,
-                sanctionType: extractSanctionType(row.join(' ')),
-                amount,
-                currency: 'EUR',
-                date: date || new Date().toISOString().split('T')[0],
-                reference: extractReference(row.join(' '))
-              });
-            }
-          }
-        } catch (error) {
-          // Skip invalid rows
-        }
-      }
-
-      // Limit records
-      const limitedRecords = records.slice(0, CNMV_CONFIG.maxRecords);
-      console.log(`✅ Extracted ${limitedRecords.length} valid enforcement actions`);
-
-    } else {
-      console.log('⚠️  No sanctions table found on page');
+    if (records.length >= CNMV_CONFIG.maxRecords) {
+      break;
     }
 
-    await browser.close();
-
-    // If we didn't extract enough data, fall back to test data
-    if (records.length === 0) {
-      console.log('⚠️  No records extracted, using test data as fallback');
-      return getTestData();
+    if (pageIndex < totalPages - 1) {
+      await new Promise((resolve) => setTimeout(resolve, CNMV_CONFIG.rateLimit));
     }
-
-    return records.slice(0, CNMV_CONFIG.maxRecords);
-
-  } catch (error) {
-    console.error('❌ Puppeteer error:', error);
-    await browser.close();
-
-    // Fall back to test data on error
-    console.log('⚠️  Falling back to test data due to error');
-    return getTestData();
   }
+
+  if (records.length === 0) {
+    throw new Error('No CNMV sanctions were extracted from the live register.');
+  }
+
+  return records.slice(0, CNMV_CONFIG.maxRecords);
+}
+
+async function fetchCnmvPageHtml(pageIndex: number) {
+  const url = pageIndex === 0 ? CNMV_CONFIG.registroUrl : `${CNMV_CONFIG.registroUrl}&page=${pageIndex}`;
+  const response = await axios.get(url, {
+    headers: {
+      'User-Agent': 'Mozilla/5.0 (compatible; RegulatoryScanner/2.0)',
+      'Accept': 'text/html',
+      'Accept-Language': 'en-GB,en;q=0.5',
+    },
+    timeout: 30000,
+  });
+
+  return {
+    url,
+    $: cheerio.load(response.data),
+  };
+}
+
+function extractTotalPages($: cheerio.CheerioAPI) {
+  const text = $('#ctl00_ContentPrincipal_ctl00_lblInfoPaginacion, .PagActivaTXT').first().text().trim();
+  const match = text.match(/Page\s+\d+\s+out\s+of\s+(\d+)/i);
+  return match ? parseInt(match[1], 10) : 1;
+}
+
+function extractPageRecords($: cheerio.CheerioAPI, pageUrl: string): CNMVRecord[] {
+  const records: CNMVRecord[] = [];
+
+  $('td[data-th="Date of incorporation into the register"]').each((_, cell) => {
+    const row = $(cell).closest('tr');
+    const dateLink = row.find('td[data-th="Date of incorporation into the register"] a').first();
+    const resolution = normalizeText(row.find('td[data-th="Resolution"]').first().text());
+    const dateText = normalizeText(dateLink.text());
+
+    if (!resolution || !dateText) {
+      return;
+    }
+
+    const detailHref = dateLink.attr('href') || null;
+    const detailUrl = detailHref ? new URL(detailHref, CNMV_CONFIG.baseUrl).toString() : null;
+    const firm = extractFirmFromResolution(resolution);
+
+    if (!firm) {
+      return;
+    }
+
+    records.push({
+      firm,
+      resolution,
+      sanctionType: extractSanctionType(resolution),
+      amount: extractEuroAmount(resolution),
+      currency: 'EUR',
+      date: parseSpanishDate(dateText),
+      reference: extractReference(resolution),
+      detailUrl,
+      listingUrl: pageUrl,
+    });
+  });
+
+  return records;
 }
 
 function parseSpanishDate(dateStr: string): string {
-  // Parse Spanish date formats: DD/MM/YYYY or DD-MM-YYYY
   const parts = dateStr.split(/[\/\-]/);
   if (parts.length === 3) {
-    const day = parseInt(parts[0]);
-    const month = parseInt(parts[1]);
-    let year = parseInt(parts[2]);
+    const day = parseInt(parts[0], 10);
+    const month = parseInt(parts[1], 10);
+    let year = parseInt(parts[2], 10);
 
-    // Handle 2-digit years
     if (year < 100) {
       year += 2000;
     }
 
-    if (day >= 1 && day <= 31 && month >= 1 && month <= 12 && year >= 2000 && year <= 2030) {
+    if (day >= 1 && day <= 31 && month >= 1 && month <= 12 && year >= 2000 && year <= 2035) {
       return `${year}-${month.toString().padStart(2, '0')}-${day.toString().padStart(2, '0')}`;
     }
   }
@@ -281,7 +242,11 @@ function parseSpanishDate(dateStr: string): string {
   return new Date().toISOString().split('T')[0];
 }
 
-function extractSanctionType(text: string): string {
+function normalizeText(value: string) {
+  return value.replace(/\s+/g, ' ').trim();
+}
+
+function extractSanctionType(text: string) {
   const lower = text.toLowerCase();
 
   if (lower.includes('muy grave') || lower.includes('very serious')) {
@@ -298,9 +263,36 @@ function extractSanctionType(text: string): string {
 }
 
 function extractReference(text: string): string | null {
-  // Try to extract reference number like S/2024/123
   const refMatch = text.match(/S\/\d{4}\/\d+/i);
   return refMatch ? refMatch[0] : null;
+}
+
+function extractEuroAmount(text: string): number | null {
+  const match = text.match(/(?:€|EUR)\s*(\d[\d.,\s]*)/i) || text.match(/(\d[\d.,\s]*)\s*(?:euros?|EUR)/i);
+  if (!match) {
+    return null;
+  }
+
+  const parsed = Number(match[1].replace(/\./g, '').replace(/,/g, '.').replace(/\s+/g, ''));
+  return Number.isFinite(parsed) ? parsed : null;
+}
+
+function extractFirmFromResolution(resolution: string) {
+  const normalized = normalizeText(resolution);
+  const patterns = [
+    /sanci[oó]n(?:es)?(?:\s+por\s+infracciones?)?(?:\s+\w+)*\s+a\s+(.+?)(?:\s+\(BOE|\.$)/i,
+    /infracci[oó]n(?:es)?(?:\s+\w+)*\s+a\s+(.+?)(?:\s+\(BOE|\.$)/i,
+  ];
+
+  for (const pattern of patterns) {
+    const match = normalized.match(pattern);
+    if (match?.[1]) {
+      return match[1].trim();
+    }
+  }
+
+  const fallback = normalized.match(/a\s+([A-ZÁÉÍÓÚÑ][^.]+?)(?:\s+\(BOE|\.$)/);
+  return fallback?.[1]?.trim() || null;
 }
 
 function transformRecord(record: CNMVRecord) {
@@ -308,22 +300,20 @@ function transformRecord(record: CNMVRecord) {
   const yearIssued = dateIssued.getFullYear();
   const monthIssued = dateIssued.getMonth() + 1;
 
-  // Currency conversion
   const amountEur = record.amount;
   const amountGbp = amountEur ? Math.round(amountEur * 0.85 * 100) / 100 : null;
 
-  // Generate content hash
   const contentHash = crypto
     .createHash('sha256')
     .update(JSON.stringify({
       regulator: 'CNMV',
       firm: record.firm,
       date: record.date,
-      amount: record.amount
+      amount: record.amount,
+      detailUrl: record.detailUrl,
     }))
     .digest('hex');
 
-  // Categorize breach
   const breachCategories = categorizeBreachType(record.sanctionType);
 
   return {
@@ -342,11 +332,11 @@ function transformRecord(record: CNMVRecord) {
     yearIssued,
     monthIssued,
     breachType: extractBreachType(record.sanctionType),
-    breachCategories: breachCategories,
-    summary: `${record.firm} fined €${(record.amount || 0).toLocaleString()} by CNMV for ${record.sanctionType}`,
-    finalNoticeUrl: record.reference ? `${CNMV_CONFIG.baseUrl}/portal/consultas/registrosanciones/${record.reference}` : null,
-    sourceUrl: CNMV_CONFIG.registroUrl,
-    rawPayload: JSON.stringify(record)
+    breachCategories,
+    summary: record.resolution,
+    finalNoticeUrl: record.detailUrl,
+    sourceUrl: record.listingUrl,
+    rawPayload: JSON.stringify(record),
   };
 }
 
@@ -489,5 +479,4 @@ async function upsertRecords(records: any[]) {
   console.log(`   - Errors: ${errors}`);
 }
 
-// Run scraper
 main();

@@ -3,7 +3,7 @@
  * Provides comprehensive SEO content for all 8 regulators
  */
 
-import { REGULATOR_COVERAGE, REGULATOR_CODES } from './regulatorCoverage';
+import { REGULATOR_COVERAGE, PUBLIC_REGULATOR_CODES } from './regulatorCoverage';
 import type { BlogArticleMeta } from './blogArticles';
 
 // Fixed publication date to ensure slug stability and consistent SEO
@@ -522,5 +522,5 @@ ${code === 'FCA'
   };
 }
 
-// Generate blogs for all 8 regulators (using REGULATOR_CODES from regulatorCoverage.ts)
-export const regulatorBlogs: BlogArticleMeta[] = REGULATOR_CODES.map(code => generateRegulatorBlog(code));
+// Generate blogs for public regulators only (AFM, DNB, ESMA excluded until real parsers exist)
+export const regulatorBlogs: BlogArticleMeta[] = PUBLIC_REGULATOR_CODES.map(code => generateRegulatorBlog(code));

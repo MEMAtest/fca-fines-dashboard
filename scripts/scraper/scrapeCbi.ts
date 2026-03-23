@@ -1,11 +1,11 @@
 /**
  * CBI (Central Bank of Ireland) Scraper
  *
- * Strategy: Parse JavaScript data from enforcement actions page
+ * Strategy: Parse the published appData array from the enforcement actions page
  * URL: https://www.centralbank.ie/news-media/legal-notices/enforcement-actions
  *
- * Difficulty: 7/10 (High) - JavaScript-rendered Vue.js table
- * Expected: ~50-100 enforcement actions
+ * Difficulty: 5-6/10 (Moderate) - Large in-page JavaScript dataset with PDFs
+ * Expected: 100+ enforcement actions
  */
 
 import axios from 'axios';
@@ -13,6 +13,7 @@ import * as cheerio from 'cheerio';
 import postgres from 'postgres';
 import crypto from 'crypto';
 import * as dotenv from 'dotenv';
+import { runInNewContext } from 'node:vm';
 
 dotenv.config();
 
@@ -25,9 +26,9 @@ const sql = postgres(process.env.DATABASE_URL?.trim() || '', {
 const CBI_CONFIG = {
   baseUrl: 'https://www.centralbank.ie',
   enforcementUrl: '/news-media/legal-notices/enforcement-actions',
-  rateLimit: 3000,  // 3 seconds (respectful for Ireland)
+  rateLimit: 1000,
   maxRetries: 3,
-  maxRecords: 50,
+  maxRecords: 500,
 };
 
 interface CBIRecord {
@@ -43,9 +44,8 @@ interface CBIRecord {
 async function main() {
   console.log('🇮🇪 Central Bank of Ireland Enforcement Actions Scraper\n');
   console.log('Target: Central Bank of Ireland');
-  console.log('Method: JavaScript data parsing\n');
+  console.log('Method: In-page appData extraction\n');
 
-  // Check for command-line flags
   const useTestData = process.argv.includes('--test-data');
   const dryRun = process.argv.includes('--dry-run');
 
@@ -57,31 +57,26 @@ async function main() {
   }
 
   try {
-    // Scrape real CBI page or use test data
     const records = useTestData ? getTestData() : await scrapeCbiPage();
 
     console.log(`📊 Extracted ${records.length} enforcement actions`);
 
-    // Transform to database format
-    const transformed = records.map(r => transformRecord(r));
+    const transformed = records.map((record) => transformRecord(record));
 
-    // Insert into database (skip if dry-run)
     if (dryRun) {
       console.log('\n🔍 Dry run - skipping database insert');
       console.log('Records that would be inserted:');
-      transformed.forEach((r, i) => {
-        console.log(`   ${i + 1}. ${r.firmIndividual} - €${(r.amount || 0).toLocaleString()} (${r.dateIssued})`);
+      transformed.forEach((record, index) => {
+        console.log(`   ${index + 1}. ${record.firmIndividual} - €${(record.amount || 0).toLocaleString()} (${record.dateIssued})`);
       });
     } else {
       await upsertRecords(transformed);
 
-      // Refresh materialized view
       console.log('\n🔄 Refreshing unified regulatory fines view...');
       await sql`SELECT refresh_all_fines()`;
       console.log('✅ View refreshed');
     }
 
-    // Summary
     const totalCbi = await sql`SELECT COUNT(*) as count FROM eu_fines WHERE regulator = 'CBI'`;
     const totalAll = await sql`SELECT COUNT(*) as count FROM all_regulatory_fines`;
 
@@ -92,7 +87,6 @@ async function main() {
     console.log('\n✅ CBI scraper completed successfully!');
     await sql.end();
     process.exit(0);
-
   } catch (error) {
     console.error('❌ CBI scraper failed:', error);
     await sql.end();
@@ -101,53 +95,25 @@ async function main() {
 }
 
 function getTestData(): CBIRecord[] {
-  // Test data based on known CBI enforcement actions
   return [
     {
       firm: 'Coinbase Europe Limited',
       amount: 3398975,
       currency: 'EUR',
       date: '2025-11-06',
-      breach: 'Breach of anti-money laundering requirements',
-      link: 'https://www.centralbank.ie/docs/default-source/news-and-media/legal-notices/settlement-agreements/settlement-notice-coinbase-europe-limited.pdf',
-      summary: 'AML compliance failures'
+      breach: 'Settlement notice',
+      link: 'https://www.centralbank.ie/docs/default-source/news-and-media/legal-notices/settlement-agreements/settlement-notice-coinbase-europe-limited-(sanctions-confirmed-by-the-high-court).pdf',
+      summary: 'Settlement Notice - Coinbase Europe Limited (Sanctions confirmed by the High Court)',
     },
     {
-      firm: 'Revolut Payments UAB',
-      amount: 1750000,
+      firm: 'Cantor Fitzgerald Ireland Limited',
+      amount: null,
       currency: 'EUR',
-      date: '2024-09-20',
-      breach: 'Systems and controls deficiencies',
-      link: null,
-      summary: 'Inadequate systems and controls'
+      date: '2025-02-27',
+      breach: 'Enforcement action',
+      link: 'https://www.centralbank.ie/docs/default-source/news-and-media/legal-notices/settlement-agreements/public-statement-enforcement-action-between-central-bank-of-ireland-and-cantor-fitzgerald-ireland-limited.pdf',
+      summary: 'Public statement relating to Enforcement Action between Central Bank of Ireland and Cantor Fitzgerald Ireland Limited',
     },
-    {
-      firm: 'Bank of Ireland',
-      amount: 24500000,
-      currency: 'EUR',
-      date: '2024-07-11',
-      breach: 'Tracker mortgage examination failures',
-      link: null,
-      summary: 'Tracker mortgage redress failings'
-    },
-    {
-      firm: 'Ulster Bank Ireland DAC',
-      amount: 37800000,
-      currency: 'EUR',
-      date: '2023-12-14',
-      breach: 'Tracker mortgage examination failures',
-      link: null,
-      summary: 'Tracker mortgage redress failings'
-    },
-    {
-      firm: 'Davy',
-      amount: 4131875,
-      currency: 'EUR',
-      date: '2021-06-23',
-      breach: 'Market abuse and conflicts of interest',
-      link: null,
-      summary: 'Bond transaction conflicts'
-    }
   ];
 }
 
@@ -157,106 +123,135 @@ async function scrapeCbiPage(): Promise<CBIRecord[]> {
   console.log('📄 Fetching CBI enforcement page...');
   console.log(`   URL: ${url}`);
 
-  const records: CBIRecord[] = [];
-
-  // Rate limiting
-  await new Promise(resolve => setTimeout(resolve, CBI_CONFIG.rateLimit));
+  await new Promise((resolve) => setTimeout(resolve, CBI_CONFIG.rateLimit));
 
   const response = await axios.get(url, {
     headers: {
       'User-Agent': 'Mozilla/5.0 (compatible; RegulatoryScanner/2.0)',
       'Accept': 'text/html',
-      'Accept-Language': 'en-GB,en;q=0.5'
+      'Accept-Language': 'en-GB,en;q=0.5',
     },
-    timeout: 30000
+    timeout: 30000,
   });
 
   console.log('✅ Page fetched successfully');
 
-  // Try to extract JavaScript data
-  const htmlContent = response.data;
+  const data = extractPublishedAppData(response.data);
+  console.log(`   Found ${data.length} enforcement actions in page data`);
 
-  // Look for embedded Vue.js data or JavaScript arrays
-  const dataMatch = htmlContent.match(/enforcementActions\s*=\s*(\[.*?\]);/s) ||
-                    htmlContent.match(/data:\s*function\s*\(\)\s*{\s*return\s*{[^}]*items:\s*(\[.*?\])/s);
+  const records = data
+    .slice(0, CBI_CONFIG.maxRecords)
+    .map((item) => normalizeCbiRecord(item))
+    .filter((record): record is CBIRecord => Boolean(record));
 
-  if (dataMatch) {
-    try {
-      const dataString = dataMatch[1];
-      const data = JSON.parse(dataString);
-
-      console.log(`   Found ${data.length} enforcement actions in JavaScript data`);
-
-      // Parse each enforcement action
-      data.slice(0, CBI_CONFIG.maxRecords).forEach((item: any) => {
-        const firm = extractFirmName(item.name || item.title || '');
-        const dateStr = item.date || item.publicationDate || '';
-        const link = item.url || item.link || null;
-
-        if (firm && dateStr) {
-          records.push({
-            firm,
-            amount: null,  // Amounts are in PDFs, not in the list
-            currency: 'EUR',
-            date: parseIrishDate(dateStr),
-            breach: item.breach || 'Regulatory violations',
-            link: link ? (link.startsWith('http') ? link : CBI_CONFIG.baseUrl + link) : null,
-            summary: `${firm} sanctioned by Central Bank of Ireland`
-          });
-        }
-      });
-    } catch (error) {
-      console.log('   ⚠️  Failed to parse JavaScript data');
-    }
-  }
-
-  // If no data extracted, fall back to test data
   if (records.length === 0) {
-    console.log('⚠️  No enforcement actions extracted, using test data');
-    return getTestData();
+    throw new Error('No CBI enforcement actions were extracted from the live page.');
   }
 
   return records;
 }
 
-function extractFirmName(title: string): string {
-  // Extract firm name from titles like:
-  // "Settlement Notice - Coinbase Europe Limited (Sanctions confirmed by the High Court)"
-  // "Settlement Agreement - Bank of Ireland"
+function extractPublishedAppData(html: string) {
+  const match = html.match(/var\s+appData\s*=\s*(\[[\s\S]*?\]);/);
+  if (!match?.[1]) {
+    throw new Error('Unable to locate appData on the CBI enforcement page.');
+  }
 
+  const data = runInNewContext(match[1], {
+    decodeTitle: decodeHtmlEntities,
+  });
+
+  if (!Array.isArray(data)) {
+    throw new Error('CBI appData did not evaluate to an array.');
+  }
+
+  return data as Array<Record<string, unknown>>;
+}
+
+function normalizeCbiRecord(item: Record<string, unknown>): CBIRecord | null {
+  const documentName = String(item.documentName || item.name || item.title || '').trim();
+  const date = String(item.date || item.publicationDate || '').trim();
+  const url = typeof item.url === 'string' ? item.url : typeof item.link === 'string' ? item.link : null;
+
+  if (!documentName || !date || !url) {
+    return null;
+  }
+
+  if (/summary of actions under part iiic/i.test(documentName)) {
+    return null;
+  }
+
+  const firm = extractFirmName(documentName);
+  if (!firm) {
+    return null;
+  }
+
+  return {
+    firm,
+    amount: null,
+    currency: 'EUR',
+    date: parseIrishDate(date),
+    breach: classifyCbiNotice(documentName),
+    link: normalizeCbiLink(url),
+    summary: documentName,
+  };
+}
+
+function decodeHtmlEntities(value: string) {
+  const $ = cheerio.load('<div></div>');
+  return $('<div>').html(value).text();
+}
+
+function normalizeCbiLink(link: string) {
+  return link.startsWith('http') ? link : new URL(link, CBI_CONFIG.baseUrl).toString();
+}
+
+function extractFirmName(title: string): string | null {
   const matches = [
     title.match(/Settlement (?:Notice|Agreement)\s*-\s*([^(]+)/i),
-    title.match(/^([^-]+?)\s*-\s*Settlement/i),
-    title.match(/^([A-Z][^-]+)(?:\s*-|\s*\()/),
+    title.match(/Public statement relating to (?:Settlement Agreement between the Central Bank of Ireland and|Settlement Agreement between the Financial Regulator and)\s+(.+?)(?:\s*\(|$)/i),
+    title.match(/Public statement relating to Enforcement Action between Central Bank of Ireland and\s+(.+?)(?:\s*\(|$)/i),
+    title.match(/Public statement relating to Enforcement Action against\s+(.+?)(?:\s*\(|$)/i),
+    title.match(/^([A-Z][^-]+?)\s*-\s*Settlement/i),
   ];
 
   for (const match of matches) {
-    if (match && match[1]) {
+    if (match?.[1]) {
       return match[1].trim();
     }
   }
 
-  // Fallback: take first significant part
-  return title.split(/[-:(]/)[0].trim();
+  return null;
+}
+
+function classifyCbiNotice(title: string) {
+  const lower = title.toLowerCase();
+  if (lower.includes('settlement notice')) {
+    return 'Settlement notice';
+  }
+  if (lower.includes('settlement agreement')) {
+    return 'Settlement agreement';
+  }
+  if (lower.includes('enforcement action')) {
+    return 'Enforcement action';
+  }
+  return 'Regulatory notice';
 }
 
 function parseIrishDate(dateStr: string): string {
-  // Parse Irish dates: "06/11/2025" (DD/MM/YYYY)
   const match = dateStr.match(/(\d{1,2})\/(\d{1,2})\/(\d{4})/);
 
   if (match) {
-    const day = parseInt(match[1]);
-    const month = parseInt(match[2]);
-    const year = parseInt(match[3]);
+    const day = parseInt(match[1], 10);
+    const month = parseInt(match[2], 10);
+    const year = parseInt(match[3], 10);
     return `${year}-${month.toString().padStart(2, '0')}-${day.toString().padStart(2, '0')}`;
   }
 
-  // Try ISO format
   if (dateStr.match(/^\d{4}-\d{2}-\d{2}$/)) {
     return dateStr;
   }
 
-  // Fallback to current date
   return new Date().toISOString().split('T')[0];
 }
 
@@ -265,22 +260,19 @@ function transformRecord(record: CBIRecord) {
   const yearIssued = dateIssued.getFullYear();
   const monthIssued = dateIssued.getMonth() + 1;
 
-  // Currency conversion
   const amountEur = record.amount;
   const amountGbp = amountEur ? Math.round(amountEur * 0.85 * 100) / 100 : null;
 
-  // Generate content hash
   const contentHash = crypto
     .createHash('sha256')
     .update(JSON.stringify({
       regulator: 'CBI',
       firm: record.firm,
       date: record.date,
-      amount: record.amount
+      link: record.link,
     }))
     .digest('hex');
 
-  // Categorize breach
   const breachCategories = categorizeBreachType(record.breach);
 
   return {
@@ -299,11 +291,11 @@ function transformRecord(record: CBIRecord) {
     yearIssued,
     monthIssued,
     breachType: extractBreachType(record.breach),
-    breachCategories: breachCategories,
-    summary: `${record.firm} fined €${(record.amount || 0).toLocaleString()} by CBI for ${record.summary}`,
+    breachCategories,
+    summary: record.summary,
     finalNoticeUrl: record.link,
     sourceUrl: CBI_CONFIG.baseUrl + CBI_CONFIG.enforcementUrl,
-    rawPayload: JSON.stringify(record)
+    rawPayload: JSON.stringify(record),
   };
 }
 
@@ -313,7 +305,7 @@ function determineFirmCategory(firmName: string): string {
   if (lower.includes('bank') || lower.includes('ulster') || lower.includes('aib')) {
     return 'Bank';
   }
-  if (lower.includes('revolut') || lower.includes('coinbase') || lower.includes('paypal')) {
+  if (lower.includes('revolut') || lower.includes('coinbase') || lower.includes('paypal') || lower.includes('payment')) {
     return 'Fintech/Payment Services';
   }
   if (lower.includes('insurance') || lower.includes('assurance')) {
@@ -322,6 +314,9 @@ function determineFirmCategory(firmName: string): string {
   if (lower.includes('davy') || lower.includes('broker')) {
     return 'Investment Firm';
   }
+  if (lower.includes('credit union')) {
+    return 'Credit Union';
+  }
 
   return 'Financial Institution';
 }
@@ -329,25 +324,15 @@ function determineFirmCategory(firmName: string): string {
 function extractBreachType(description: string): string {
   const lower = description.toLowerCase();
 
-  if (lower.includes('aml') || lower.includes('anti-money laundering')) {
-    return 'Anti-Money Laundering Violations';
+  if (lower.includes('settlement notice')) {
+    return 'Settlement Notice';
   }
-  if (lower.includes('tracker mortgage')) {
-    return 'Tracker Mortgage Failures';
+  if (lower.includes('settlement agreement')) {
+    return 'Settlement Agreement';
   }
-  if (lower.includes('market abuse') || lower.includes('conflict')) {
-    return 'Market Abuse';
+  if (lower.includes('enforcement action')) {
+    return 'Enforcement Action';
   }
-  if (lower.includes('systems') || lower.includes('controls')) {
-    return 'Systems and Controls Deficiencies';
-  }
-  if (lower.includes('governance')) {
-    return 'Governance Failures';
-  }
-  if (lower.includes('consumer protection')) {
-    return 'Consumer Protection Violations';
-  }
-
   return 'Regulatory Breach';
 }
 
@@ -355,26 +340,14 @@ function categorizeBreachType(description: string): string[] {
   const categories: string[] = [];
   const lower = description.toLowerCase();
 
-  if (lower.includes('aml') || lower.includes('anti-money laundering')) {
-    categories.push('AML');
+  if (lower.includes('settlement notice')) {
+    categories.push('SETTLEMENT_NOTICE');
   }
-  if (lower.includes('tracker mortgage')) {
-    categories.push('TRACKER_MORTGAGE');
+  if (lower.includes('settlement agreement')) {
+    categories.push('SETTLEMENT_AGREEMENT');
   }
-  if (lower.includes('market abuse')) {
-    categories.push('MARKET_ABUSE');
-  }
-  if (lower.includes('systems') || lower.includes('controls')) {
-    categories.push('SYSTEMS_CONTROLS');
-  }
-  if (lower.includes('governance')) {
-    categories.push('GOVERNANCE');
-  }
-  if (lower.includes('consumer protection')) {
-    categories.push('CONSUMER_PROTECTION');
-  }
-  if (lower.includes('conflict')) {
-    categories.push('CONFLICTS_OF_INTEREST');
+  if (lower.includes('enforcement action')) {
+    categories.push('ENFORCEMENT_ACTION');
   }
 
   return categories.length > 0 ? categories : ['OTHER'];
@@ -446,5 +419,4 @@ async function upsertRecords(records: any[]) {
   console.log(`   - Errors: ${errors}`);
 }
 
-// Run scraper
 main();

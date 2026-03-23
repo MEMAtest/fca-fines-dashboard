@@ -1,7 +1,8 @@
 import { useState, useEffect, useCallback } from 'react';
 import { createPortal } from 'react-dom';
 import { Link, useLocation } from 'react-router-dom';
-import { Menu, X, ChevronRight } from 'lucide-react';
+import { Menu, X, ChevronDown, ChevronRight } from 'lucide-react';
+import { PUBLIC_REGULATOR_NAV_ITEMS } from '../data/regulatorCoverage';
 import '../styles/siteheader.css';
 
 const NAV_LINKS = [
@@ -9,17 +10,6 @@ const NAV_LINKS = [
   { to: '/dashboard', label: 'Dashboard' },
   { to: '/topics', label: 'Topics' },
   { to: '/blog', label: 'Insights' },
-];
-
-const REGULATOR_LINKS = [
-  { to: '/regulators/fca', label: 'FCA', flag: '🇬🇧', country: 'United Kingdom' },
-  { to: '/regulators/bafin', label: 'BaFin', flag: '🇩🇪', country: 'Germany' },
-  { to: '/regulators/amf', label: 'AMF', flag: '🇫🇷', country: 'France' },
-  { to: '/regulators/cnmv', label: 'CNMV', flag: '🇪🇸', country: 'Spain' },
-  { to: '/regulators/cbi', label: 'CBI', flag: '🇮🇪', country: 'Ireland' },
-  { to: '/regulators/afm', label: 'AFM', flag: '🇳🇱', country: 'Netherlands' },
-  { to: '/regulators/dnb', label: 'DNB', flag: '🇳🇱', country: 'Netherlands' },
-  { to: '/regulators/esma', label: 'ESMA', flag: '🇪🇺', country: 'European Union' },
 ];
 
 function isNavActive(to: string, pathname: string) {
@@ -35,6 +25,10 @@ function isNavActive(to: string, pathname: string) {
     );
   }
   return pathname === to;
+}
+
+function isRegulatorActive(overviewPath: string, pathname: string) {
+  return pathname === overviewPath || pathname.startsWith(`${overviewPath}/`);
 }
 
 function humanizeSegment(segment: string) {
@@ -57,11 +51,15 @@ function getBreadcrumbs(pathname: string) {
     if (seg === 'dashboard') label = 'Dashboard';
     else if (seg === 'blog') label = 'Insights';
     else if (seg === 'topics') label = 'Topics';
+    else if (seg === 'regulators') label = 'Regulators';
     else if (seg === 'breaches') label = 'Breach Categories';
     else if (seg === 'years') label = 'Years';
     else if (seg === 'sectors') label = 'Sectors';
     else if (seg === 'firms') label = 'Firms';
-    else label = humanizeSegment(seg);
+    else {
+      const regulatorMatch = PUBLIC_REGULATOR_NAV_ITEMS.find((item) => item.overviewPath === current);
+      label = regulatorMatch ? regulatorMatch.code : humanizeSegment(seg);
+    }
 
     crumbs.push({ to: current, label });
   }
@@ -75,6 +73,7 @@ export function SiteHeader() {
   const location = useLocation();
   const [mobileOpen, setMobileOpen] = useState(false);
   const [regulatorDropdownOpen, setRegulatorDropdownOpen] = useState(false);
+  const [mobileRegulatorsOpen, setMobileRegulatorsOpen] = useState(location.pathname.startsWith('/regulators'));
   const breadcrumbs = getBreadcrumbs(location.pathname);
   const showBreadcrumbs = location.pathname !== '/';
 
@@ -131,6 +130,12 @@ export function SiteHeader() {
     };
   }, [mobileOpen]);
 
+  useEffect(() => {
+    setMobileOpen(false);
+    setRegulatorDropdownOpen(false);
+    setMobileRegulatorsOpen(location.pathname.startsWith('/regulators'));
+  }, [location.pathname]);
+
   return (
     <header className="site-header">
       <div className="site-header__inner">
@@ -165,16 +170,16 @@ export function SiteHeader() {
 
             {regulatorDropdownOpen && (
               <div className="site-header__dropdown-menu" onMouseLeave={closeRegulatorDropdown}>
-                {REGULATOR_LINKS.map((regulator) => (
+                {PUBLIC_REGULATOR_NAV_ITEMS.map((regulator) => (
                   <Link
-                    key={regulator.to}
-                    to={regulator.to}
-                    className="site-header__dropdown-item"
+                    key={regulator.code}
+                    to={regulator.overviewPath}
+                    className={`site-header__dropdown-item${isRegulatorActive(regulator.overviewPath, location.pathname) ? ' site-header__dropdown-item--active' : ''}`}
                     onClick={closeRegulatorDropdown}
                   >
                     <span className="site-header__dropdown-flag">{regulator.flag}</span>
                     <div>
-                      <div className="site-header__dropdown-label">{regulator.label}</div>
+                      <div className="site-header__dropdown-label">{regulator.code}</div>
                       <div className="site-header__dropdown-country">{regulator.country}</div>
                     </div>
                   </Link>
@@ -243,6 +248,41 @@ export function SiteHeader() {
                     {link.label}
                   </Link>
                 ))}
+
+                <div className="site-header__mobile-group">
+                  <button
+                    type="button"
+                    className={`site-header__mobile-accordion-trigger${location.pathname.startsWith('/regulators') ? ' site-header__mobile-accordion-trigger--active' : ''}`}
+                    onClick={() => setMobileRegulatorsOpen((open) => !open)}
+                    aria-expanded={mobileRegulatorsOpen}
+                    aria-controls="mobile-regulators-panel"
+                  >
+                    <span>Regulators</span>
+                    <ChevronDown
+                      size={18}
+                      className={`site-header__mobile-accordion-icon${mobileRegulatorsOpen ? ' site-header__mobile-accordion-icon--open' : ''}`}
+                    />
+                  </button>
+
+                  {mobileRegulatorsOpen && (
+                    <div id="mobile-regulators-panel" className="site-header__mobile-accordion-panel">
+                      {PUBLIC_REGULATOR_NAV_ITEMS.map((regulator) => (
+                        <Link
+                          key={regulator.code}
+                          to={regulator.overviewPath}
+                          className={`site-header__mobile-regulator-link${isRegulatorActive(regulator.overviewPath, location.pathname) ? ' site-header__mobile-regulator-link--active' : ''}`}
+                          onClick={closeMobile}
+                        >
+                          <span className="site-header__mobile-regulator-flag" aria-hidden="true">{regulator.flag}</span>
+                          <span className="site-header__mobile-regulator-copy">
+                            <span className="site-header__mobile-regulator-code">{regulator.code}</span>
+                            <span className="site-header__mobile-regulator-country">{regulator.country}</span>
+                          </span>
+                        </Link>
+                      ))}
+                    </div>
+                  )}
+                </div>
               </nav>
             </div>,
             document.body
