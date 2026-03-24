@@ -175,6 +175,42 @@ export const REGULATOR_COVERAGE: Record<string, RegulatorCoverage> = {
       },
     ],
   },
+  SFC: {
+    code: 'SFC',
+    name: 'SFC',
+    fullName: 'Securities and Futures Commission',
+    country: 'Hong Kong',
+    countryCode: 'HK',
+    flag: '🇭🇰',
+    navOrder: 6,
+    overviewPath: '/regulators/sfc',
+    years: '2020-2026',
+    count: 221,
+    dataQuality: '100%',
+    note: null,
+    earliestYear: 2020,
+    latestYear: 2026,
+    defaultCurrency: 'GBP',
+    maturity: 'emerging',
+    dashboardEnabled: true,
+    officialSources: [
+      {
+        label: 'SFC press releases',
+        url: 'https://www.sfc.hk/en/RSS-Feeds/Press-releases',
+        description: 'Official SFC press releases RSS feed with enforcement actions.',
+      },
+      {
+        label: 'SFC enforcement actions',
+        url: 'https://www.sfc.hk/en/Regulatory-functions/Enforcement/Enforcement-actions',
+        description: 'SFC enforcement framework and enforcement news.',
+      },
+      {
+        label: 'SFC enforcement statistics',
+        url: 'https://www.sfc.hk/en/Regulatory-functions/Enforcement/Enforcement-actions/Enforcement-statistics',
+        description: 'Statistics on enforcement proceedings and investigations.',
+      },
+    ],
+  },
   AMF: {
     code: 'AMF',
     name: 'AMF',
@@ -332,7 +368,7 @@ export const REGULATOR_CODES = REGULATOR_NAV_ITEMS.map((coverage) => coverage.co
  * AFM, DNB, and ESMA are excluded until real scrapers are implemented.
  * Use this for: navigation, filters, homepage stats, blog articles, SEO prerender.
  */
-export const PUBLIC_REGULATOR_CODES = ['FCA', 'BaFin', 'AMF', 'CNMV', 'CBI'] as const;
+export const PUBLIC_REGULATOR_CODES = ['FCA', 'BaFin', 'AMF', 'CNMV', 'CBI', 'SFC'] as const;
 
 export const PUBLIC_REGULATOR_NAV_ITEMS = REGULATOR_NAV_ITEMS.filter(
   (coverage) => PUBLIC_REGULATOR_CODES.includes(coverage.code as any)

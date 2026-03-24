@@ -19,8 +19,8 @@ const sql = postgres(process.env.DATABASE_URL?.trim() || '', {
 });
 
 // Public regulators only (AFM, DNB, ESMA excluded until real parsers exist)
-const PUBLIC_REGULATORS = ['FCA', 'BaFin', 'AMF', 'CNMV', 'CBI'];
-const PUBLIC_EU_REGULATORS = ['BaFin', 'AMF', 'CNMV', 'CBI'];
+const PUBLIC_REGULATORS = ['FCA', 'BaFin', 'AMF', 'CNMV', 'CBI', 'SFC'];
+const PUBLIC_EU_REGULATORS = ['BaFin', 'AMF', 'CNMV', 'CBI', 'SFC'];
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   // CORS headers
