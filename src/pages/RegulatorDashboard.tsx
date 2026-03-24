@@ -766,8 +766,7 @@ export function RegulatorDashboard() {
                 </div>
                 <div style={{ display: 'grid', gap: '1rem' }}>
                   <p className="status" style={{ margin: 0 }}>
-                    This dashboard intentionally stays scoped to {coverage.fullName}. It does not blend FCA or other regulator
-                    data into the charts, rankings, or filters.
+                    This dashboard intentionally stays scoped to {coverage.fullName}. It does not blend data from other regulators into the charts, rankings, or filters.
                   </p>
                   <div className="filters__metrics" style={{ marginTop: 0 }}>
                     <div className="filters__metric">

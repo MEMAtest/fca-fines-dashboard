@@ -85,6 +85,7 @@ const SitemapPage = lazyPage(() => import('./pages/Sitemap').then(module => ({ d
 const PillarPage = lazyPage(() => import('./pages/PillarPage').then(module => ({ default: module.PillarPage })));
 const RegulatorHub = lazyPage(() => import('./pages/RegulatorHub').then(module => ({ default: module.RegulatorHub })));
 const RegulatorDashboard = lazyPage(() => import('./pages/RegulatorDashboard').then(module => ({ default: module.RegulatorDashboard })));
+const Regulators = lazyPage(() => import('./pages/Regulators').then(module => ({ default: module.Regulators })));
 
 const router = createBrowserRouter([
   {
@@ -278,6 +279,14 @@ const router = createBrowserRouter([
         element: (
           <Suspense fallback={<div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>Loading...</div>}>
             <RegulatorDashboard />
+          </Suspense>
+        ),
+      },
+      {
+        path: '/regulators',
+        element: (
+          <Suspense fallback={<div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>Loading...</div>}>
+            <Regulators />
           </Suspense>
         ),
       },

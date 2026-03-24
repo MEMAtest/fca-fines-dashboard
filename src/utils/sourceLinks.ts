@@ -72,7 +72,8 @@ export function deriveSourceLinkStatus(
     return 'missing';
   }
 
-  if (normalizedRegulator === 'FCA' && detail) {
+  // Apply PDF detection to all regulators, not just FCA
+  if (detail) {
     return isPdfUrl(detail) ? 'verified_publication' : 'verified_detail';
   }
 
