@@ -86,6 +86,7 @@ const PillarPage = lazyPage(() => import('./pages/PillarPage').then(module => ({
 const RegulatorHub = lazyPage(() => import('./pages/RegulatorHub').then(module => ({ default: module.RegulatorHub })));
 const RegulatorDashboard = lazyPage(() => import('./pages/RegulatorDashboard').then(module => ({ default: module.RegulatorDashboard })));
 const Regulators = lazyPage(() => import('./pages/Regulators').then(module => ({ default: module.Regulators })));
+const Search = lazyPage(() => import('./pages/Search').then(module => ({ default: module.Search })));
 
 const router = createBrowserRouter([
   {
@@ -105,6 +106,14 @@ const router = createBrowserRouter([
         element: (
           <Suspense fallback={<DashboardSkeleton />}>
             <Dashboard />
+          </Suspense>
+        ),
+      },
+      {
+        path: '/search',
+        element: (
+          <Suspense fallback={<div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>Loading search...</div>}>
+            <Search />
           </Suspense>
         ),
       },
