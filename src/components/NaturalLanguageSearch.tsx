@@ -192,30 +192,83 @@ export function NaturalLanguageSearch() {
   };
 
   return (
-    <div className="natural-language-search">
-      {/* Search Header */}
-      <div className="bg-gradient-to-r from-blue-600 to-blue-800 text-white py-12 px-6">
-        <div className="max-w-4xl mx-auto">
-          <h1 className="text-3xl font-bold mb-2">Natural Language Search</h1>
-          <p className="text-blue-100 mb-6">
-            Search across {PUBLIC_REGULATOR_NAV_ITEMS.length} regulators using natural language queries
+    <div className="natural-language-search" style={{ background: '#f8f9fa', minHeight: '100vh' }}>
+      {/* Hero Search Section */}
+      <div style={{
+        background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+        padding: '4rem 1.5rem 3rem',
+        boxShadow: '0 4px 6px rgba(0,0,0,0.1)'
+      }}>
+        <div style={{ maxWidth: '900px', margin: '0 auto' }}>
+          <h1 style={{
+            fontSize: '2.5rem',
+            fontWeight: '700',
+            color: 'white',
+            marginBottom: '0.75rem',
+            letterSpacing: '-0.02em'
+          }}>
+            Natural Language Search
+          </h1>
+          <p style={{
+            fontSize: '1.1rem',
+            color: 'rgba(255,255,255,0.9)',
+            marginBottom: '2rem'
+          }}>
+            Search across {PUBLIC_REGULATOR_NAV_ITEMS.length} regulators • 1,100+ enforcement actions • Powered by AI
           </p>
 
           {/* Search Form */}
-          <form onSubmit={handleSubmit} className="relative">
-            <div className="relative">
-              <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400" size={20} />
+          <form onSubmit={handleSubmit}>
+            <div style={{ position: 'relative', marginBottom: '1.5rem' }}>
+              <Search
+                style={{
+                  position: 'absolute',
+                  left: '1.25rem',
+                  top: '50%',
+                  transform: 'translateY(-50%)',
+                  color: '#9ca3af',
+                  zIndex: 1
+                }}
+                size={22}
+              />
               <input
                 type="text"
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
-                placeholder="e.g., 'AML transaction monitoring failures' or 'Goldman Sachs enforcement actions'"
-                className="w-full pl-12 pr-32 py-4 rounded-lg text-gray-900 text-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                placeholder='Try: "AML transaction monitoring" or "Goldman Sachs enforcement"'
+                style={{
+                  width: '100%',
+                  padding: '1.25rem 10rem 1.25rem 3.5rem',
+                  fontSize: '1.1rem',
+                  border: 'none',
+                  borderRadius: '12px',
+                  boxShadow: '0 10px 25px rgba(0,0,0,0.15)',
+                  outline: 'none',
+                  transition: 'box-shadow 0.3s'
+                }}
+                onFocus={(e) => e.target.style.boxShadow = '0 15px 35px rgba(0,0,0,0.2)'}
+                onBlur={(e) => e.target.style.boxShadow = '0 10px 25px rgba(0,0,0,0.15)'}
               />
               <button
                 type="submit"
                 disabled={loading || !query.trim()}
-                className="absolute right-2 top-1/2 transform -translate-y-1/2 bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 text-white px-6 py-2 rounded-md font-medium transition-colors"
+                style={{
+                  position: 'absolute',
+                  right: '0.5rem',
+                  top: '50%',
+                  transform: 'translateY(-50%)',
+                  background: loading || !query.trim() ? '#9ca3af' : '#4f46e5',
+                  color: 'white',
+                  padding: '0.875rem 2rem',
+                  borderRadius: '8px',
+                  border: 'none',
+                  fontSize: '1rem',
+                  fontWeight: '600',
+                  cursor: loading || !query.trim() ? 'not-allowed' : 'pointer',
+                  transition: 'background 0.2s'
+                }}
+                onMouseEnter={(e) => !loading && query.trim() && (e.currentTarget.style.background = '#4338ca')}
+                onMouseLeave={(e) => !loading && query.trim() && (e.currentTarget.style.background = '#4f46e5')}
               >
                 {loading ? 'Searching...' : 'Search'}
               </button>
@@ -223,14 +276,33 @@ export function NaturalLanguageSearch() {
           </form>
 
           {/* Suggested Queries */}
-          <div className="mt-4">
-            <p className="text-sm text-blue-100 mb-2">Suggested queries:</p>
-            <div className="flex flex-wrap gap-2">
+          <div>
+            <p style={{ fontSize: '0.875rem', color: 'rgba(255,255,255,0.85)', marginBottom: '0.75rem' }}>
+              Popular searches:
+            </p>
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem' }}>
               {suggestedQueries.slice(0, 4).map((suggested, idx) => (
                 <button
                   key={idx}
                   onClick={() => handleSuggestedQuery(suggested)}
-                  className="text-sm px-3 py-1 bg-blue-700 hover:bg-blue-600 rounded-full transition-colors"
+                  style={{
+                    fontSize: '0.875rem',
+                    padding: '0.5rem 1rem',
+                    background: 'rgba(255,255,255,0.2)',
+                    color: 'white',
+                    border: '1px solid rgba(255,255,255,0.3)',
+                    borderRadius: '20px',
+                    cursor: 'pointer',
+                    transition: 'all 0.2s'
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.background = 'rgba(255,255,255,0.3)';
+                    e.currentTarget.style.borderColor = 'rgba(255,255,255,0.5)';
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.background = 'rgba(255,255,255,0.2)';
+                    e.currentTarget.style.borderColor = 'rgba(255,255,255,0.3)';
+                  }}
                 >
                   {suggested}
                 </button>
@@ -241,18 +313,36 @@ export function NaturalLanguageSearch() {
           {/* Filter Toggle */}
           <button
             onClick={() => setShowFilters(!showFilters)}
-            className="mt-4 flex items-center gap-2 text-sm text-blue-100 hover:text-white transition-colors"
+            style={{
+              marginTop: '1.5rem',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '0.5rem',
+              fontSize: '0.9rem',
+              color: 'rgba(255,255,255,0.9)',
+              background: 'none',
+              border: 'none',
+              cursor: 'pointer',
+              transition: 'color 0.2s'
+            }}
+            onMouseEnter={(e) => e.currentTarget.style.color = 'white'}
+            onMouseLeave={(e) => e.currentTarget.style.color = 'rgba(255,255,255,0.9)'}
           >
             <Filter size={16} />
-            {showFilters ? 'Hide Filters' : 'Show Advanced Filters'}
+            {showFilters ? 'Hide Advanced Filters' : 'Show Advanced Filters'}
           </button>
         </div>
       </div>
 
       {/* Advanced Filters */}
       {showFilters && (
-        <div className="bg-gray-50 border-b border-gray-200 py-6 px-6">
-          <div className="max-w-4xl mx-auto">
+        <div style={{
+          background: 'white',
+          borderBottom: '1px solid #e5e7eb',
+          padding: '2rem 1.5rem',
+          boxShadow: '0 2px 4px rgba(0,0,0,0.05)'
+        }}>
+          <div style={{ maxWidth: '900px', margin: '0 auto' }}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
               {/* Regulator Filter */}
               <div>
@@ -393,23 +483,35 @@ export function NaturalLanguageSearch() {
       )}
 
       {/* Results Section */}
-      <div className="max-w-4xl mx-auto px-6 py-8">
+      <div style={{ maxWidth: '900px', margin: '0 auto', padding: '2.5rem 1.5rem' }}
         {/* Error State */}
         {error && (
-          <div className="bg-red-50 border border-red-200 text-red-800 px-4 py-3 rounded-lg mb-6">
-            <strong className="font-medium">Error:</strong> {error}
+          <div style={{
+            background: '#fef2f2',
+            border: '1px solid #fecaca',
+            color: '#991b1b',
+            padding: '1.25rem',
+            borderRadius: '12px',
+            marginBottom: '2rem'
+          }}>
+            <strong style={{ fontWeight: '600' }}>Error:</strong> {error}
           </div>
         )}
 
         {/* Results Header */}
         {pagination && !loading && (
-          <div className="mb-6">
-            <h2 className="text-xl font-semibold text-gray-900 mb-2">
-              Found {pagination.total.toLocaleString()} results for "{query}"
+          <div style={{ marginBottom: '2rem' }}>
+            <h2 style={{
+              fontSize: '1.5rem',
+              fontWeight: '600',
+              color: '#111827',
+              marginBottom: '0.5rem'
+            }}>
+              Found <span style={{ color: '#4f46e5' }}>{pagination.total.toLocaleString()}</span> results for "<span style={{ fontStyle: 'italic' }}>{query}</span>"
             </h2>
             {searchTerms.length > 0 && (
-              <p className="text-sm text-gray-600">
-                Search terms: {searchTerms.join(', ')}
+              <p style={{ fontSize: '0.875rem', color: '#6b7280' }}>
+                Search terms: <span style={{ fontWeight: '500', color: '#374151' }}>{searchTerms.join(', ')}</span>
               </p>
             )}
           </div>
@@ -417,20 +519,49 @@ export function NaturalLanguageSearch() {
 
         {/* Results List */}
         {results.length > 0 && (
-          <div className="space-y-6">
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
             {results.map((result) => (
               <div
                 key={result.id}
-                className="bg-white border border-gray-200 rounded-lg p-6 hover:shadow-lg transition-shadow"
+                style={{
+                  background: 'white',
+                  border: '1px solid #e5e7eb',
+                  borderRadius: '12px',
+                  padding: '1.75rem',
+                  boxShadow: '0 1px 3px rgba(0,0,0,0.1)',
+                  transition: 'all 0.2s'
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.boxShadow = '0 8px 20px rgba(0,0,0,0.12)';
+                  e.currentTarget.style.transform = 'translateY(-2px)';
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.boxShadow = '0 1px 3px rgba(0,0,0,0.1)';
+                  e.currentTarget.style.transform = 'translateY(0)';
+                }}
               >
                 {/* Header */}
-                <div className="flex items-start justify-between mb-3">
-                  <div className="flex-1">
-                    <h3 className="text-lg font-semibold text-gray-900 mb-1">
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '1rem' }}>
+                  <div style={{ flex: 1 }}>
+                    <h3 style={{
+                      fontSize: '1.25rem',
+                      fontWeight: '600',
+                      color: '#111827',
+                      marginBottom: '0.5rem',
+                      lineHeight: '1.4'
+                    }}>
                       {result.firm}
                     </h3>
-                    <div className="flex items-center gap-3 text-sm text-gray-600">
-                      <span className="font-medium">{result.regulator}</span>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', fontSize: '0.875rem', color: '#6b7280' }}>
+                      <span style={{
+                        fontWeight: '600',
+                        color: '#4f46e5',
+                        background: '#eef2ff',
+                        padding: '0.25rem 0.75rem',
+                        borderRadius: '6px'
+                      }}>
+                        {result.regulator}
+                      </span>
                       <span>•</span>
                       <span>{result.countryName}</span>
                       <span>•</span>
@@ -439,40 +570,84 @@ export function NaturalLanguageSearch() {
                   </div>
 
                   {/* Relevance Score */}
-                  <div className={`px-3 py-1 rounded-full text-xs font-medium ${getRelevanceColor(result.relevance)}`}>
-                    <TrendingUp size={12} className="inline mr-1" />
+                  <div style={{
+                    padding: '0.5rem 0.875rem',
+                    borderRadius: '20px',
+                    fontSize: '0.75rem',
+                    fontWeight: '600',
+                    whiteSpace: 'nowrap',
+                    ...(() => {
+                      const score = parseFloat(result.relevance);
+                      if (score >= 0.15) return { background: '#dcfce7', color: '#166534' };
+                      if (score >= 0.10) return { background: '#fef3c7', color: '#92400e' };
+                      return { background: '#f3f4f6', color: '#6b7280' };
+                    })()
+                  }}>
+                    <TrendingUp size={12} style={{ display: 'inline', marginRight: '0.25rem', verticalAlign: 'middle' }} />
                     {(parseFloat(result.relevance) * 100).toFixed(1)}% match
                   </div>
                 </div>
 
                 {/* Breach Type & Amount */}
-                <div className="flex items-center gap-4 mb-3">
+                <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '1rem', flexWrap: 'wrap' }}>
                   {result.breachType && (
-                    <span className="inline-block px-3 py-1 bg-red-50 text-red-700 text-sm font-medium rounded-full">
+                    <span style={{
+                      display: 'inline-block',
+                      padding: '0.375rem 0.875rem',
+                      background: '#fef2f2',
+                      color: '#991b1b',
+                      fontSize: '0.875rem',
+                      fontWeight: '600',
+                      borderRadius: '6px',
+                      border: '1px solid #fecaca'
+                    }}>
                       {result.breachType}
                     </span>
                   )}
-                  <span className="text-lg font-bold text-gray-900">
-                    {formatAmount(currency === 'EUR' ? result.amountEur : result.amountGbp, currency)}
-                  </span>
+                  {(currency === 'EUR' ? result.amountEur : result.amountGbp) > 0 && (
+                    <span style={{
+                      fontSize: '1.25rem',
+                      fontWeight: '700',
+                      color: '#111827'
+                    }}>
+                      {formatAmount(currency === 'EUR' ? result.amountEur : result.amountGbp, currency)}
+                    </span>
+                  )}
                 </div>
 
                 {/* Snippet (highlighted excerpt) */}
                 {result.snippet && (
                   <div
-                    className="text-sm text-gray-700 mb-3 leading-relaxed"
+                    style={{
+                      fontSize: '0.9375rem',
+                      color: '#374151',
+                      marginBottom: '1.25rem',
+                      lineHeight: '1.7',
+                      padding: '1rem',
+                      background: '#f9fafb',
+                      borderLeft: '3px solid #4f46e5',
+                      borderRadius: '6px'
+                    }}
                     dangerouslySetInnerHTML={{ __html: result.snippet }}
                   />
                 )}
 
                 {/* Actions */}
-                <div className="flex gap-3">
+                <div style={{ display: 'flex', gap: '1rem', paddingTop: '0.75rem', borderTop: '1px solid #f3f4f6' }}>
                   {result.noticeUrl && (
                     <a
                       href={result.noticeUrl}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="text-sm text-blue-600 hover:text-blue-800 font-medium"
+                      style={{
+                        fontSize: '0.875rem',
+                        color: '#4f46e5',
+                        fontWeight: '600',
+                        textDecoration: 'none',
+                        transition: 'color 0.2s'
+                      }}
+                      onMouseEnter={(e) => e.currentTarget.style.color = '#4338ca'}
+                      onMouseLeave={(e) => e.currentTarget.style.color = '#4f46e5'}
                     >
                       View Notice →
                     </a>
@@ -482,7 +657,14 @@ export function NaturalLanguageSearch() {
                       href={result.sourceUrl}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="text-sm text-gray-600 hover:text-gray-800"
+                      style={{
+                        fontSize: '0.875rem',
+                        color: '#6b7280',
+                        textDecoration: 'none',
+                        transition: 'color 0.2s'
+                      }}
+                      onMouseEnter={(e) => e.currentTarget.style.color = '#111827'}
+                      onMouseLeave={(e) => e.currentTarget.style.color = '#6b7280'}
                     >
                       Source →
                     </a>
@@ -495,40 +677,94 @@ export function NaturalLanguageSearch() {
 
         {/* Pagination */}
         {pagination && pagination.pages > 1 && (
-          <div className="mt-8 flex justify-center items-center gap-2">
+          <div style={{
+            marginTop: '3rem',
+            display: 'flex',
+            justifyContent: 'center',
+            alignItems: 'center',
+            gap: '1rem'
+          }}>
             <button
               onClick={() => performSearch(currentPage - 1)}
               disabled={currentPage === 1 || loading}
-              className="px-4 py-2 border border-gray-300 rounded-md disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50"
+              style={{
+                padding: '0.75rem 1.5rem',
+                border: '1px solid #d1d5db',
+                borderRadius: '8px',
+                background: 'white',
+                color: currentPage === 1 || loading ? '#9ca3af' : '#374151',
+                cursor: currentPage === 1 || loading ? 'not-allowed' : 'pointer',
+                fontWeight: '500',
+                transition: 'all 0.2s'
+              }}
+              onMouseEnter={(e) => currentPage !== 1 && !loading && (e.currentTarget.style.background = '#f9fafb')}
+              onMouseLeave={(e) => e.currentTarget.style.background = 'white'}
             >
-              Previous
+              ← Previous
             </button>
 
-            <span className="px-4 py-2 text-gray-700">
-              Page {currentPage} of {pagination.pages}
+            <span style={{
+              padding: '0.75rem 1.25rem',
+              color: '#374151',
+              fontWeight: '500'
+            }}>
+              Page <span style={{ color: '#4f46e5', fontWeight: '600' }}>{currentPage}</span> of {pagination.pages}
             </span>
 
             <button
               onClick={() => performSearch(currentPage + 1)}
               disabled={!pagination.hasMore || loading}
-              className="px-4 py-2 border border-gray-300 rounded-md disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50"
+              style={{
+                padding: '0.75rem 1.5rem',
+                border: '1px solid #d1d5db',
+                borderRadius: '8px',
+                background: 'white',
+                color: !pagination.hasMore || loading ? '#9ca3af' : '#374151',
+                cursor: !pagination.hasMore || loading ? 'not-allowed' : 'pointer',
+                fontWeight: '500',
+                transition: 'all 0.2s'
+              }}
+              onMouseEnter={(e) => pagination.hasMore && !loading && (e.currentTarget.style.background = '#f9fafb')}
+              onMouseLeave={(e) => e.currentTarget.style.background = 'white'}
             >
-              Next
+              Next →
             </button>
           </div>
         )}
 
         {/* Empty State */}
         {!loading && results.length === 0 && query && !error && (
-          <div className="text-center py-12">
-            <Search size={48} className="mx-auto text-gray-400 mb-4" />
-            <h3 className="text-lg font-medium text-gray-900 mb-2">No results found</h3>
-            <p className="text-gray-600 mb-4">
+          <div style={{ textAlign: 'center', padding: '4rem 1.5rem' }}>
+            <Search size={56} style={{ margin: '0 auto 1.5rem', color: '#d1d5db' }} />
+            <h3 style={{
+              fontSize: '1.25rem',
+              fontWeight: '600',
+              color: '#111827',
+              marginBottom: '0.75rem'
+            }}>
+              No results found
+            </h3>
+            <p style={{
+              fontSize: '1rem',
+              color: '#6b7280',
+              marginBottom: '1.5rem'
+            }}>
               Try adjusting your search terms or filters
             </p>
             <button
               onClick={clearFilters}
-              className="text-blue-600 hover:text-blue-800 font-medium"
+              style={{
+                padding: '0.75rem 1.5rem',
+                background: '#4f46e5',
+                color: 'white',
+                border: 'none',
+                borderRadius: '8px',
+                fontWeight: '600',
+                cursor: 'pointer',
+                transition: 'background 0.2s'
+              }}
+              onMouseEnter={(e) => e.currentTarget.style.background = '#4338ca'}
+              onMouseLeave={(e) => e.currentTarget.style.background = '#4f46e5'}
             >
               Clear all filters
             </button>
@@ -537,23 +773,74 @@ export function NaturalLanguageSearch() {
 
         {/* Initial State (before first search) */}
         {!loading && !query && results.length === 0 && (
-          <div className="text-center py-12">
-            <Search size={48} className="mx-auto text-gray-400 mb-4" />
-            <h3 className="text-lg font-medium text-gray-900 mb-2">
+          <div style={{ textAlign: 'center', padding: '3rem 1.5rem' }}>
+            <div style={{
+              width: '80px',
+              height: '80px',
+              margin: '0 auto 2rem',
+              background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+              borderRadius: '20px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center'
+            }}>
+              <Search size={40} style={{ color: 'white' }} />
+            </div>
+            <h3 style={{
+              fontSize: '1.5rem',
+              fontWeight: '600',
+              color: '#111827',
+              marginBottom: '0.75rem'
+            }}>
               Start searching enforcement actions
             </h3>
-            <p className="text-gray-600 mb-6">
-              Use natural language to find relevant cases across all regulators
+            <p style={{
+              fontSize: '1.1rem',
+              color: '#6b7280',
+              marginBottom: '3rem',
+              maxWidth: '600px',
+              margin: '0 auto 3rem'
+            }}>
+              Use natural language to find relevant cases across {PUBLIC_REGULATOR_NAV_ITEMS.length} regulators
             </p>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-3 max-w-2xl mx-auto">
+            <div style={{
+              display: 'grid',
+              gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))',
+              gap: '1rem',
+              maxWidth: '800px',
+              margin: '0 auto'
+            }}>
               {suggestedQueries.map((suggested, idx) => (
                 <button
                   key={idx}
                   onClick={() => handleSuggestedQuery(suggested)}
-                  className="px-4 py-3 bg-gray-50 hover:bg-gray-100 rounded-lg text-left text-sm text-gray-700 transition-colors"
+                  style={{
+                    padding: '1.25rem',
+                    background: 'white',
+                    border: '2px solid #e5e7eb',
+                    borderRadius: '12px',
+                    textAlign: 'left',
+                    fontSize: '0.9375rem',
+                    color: '#374151',
+                    cursor: 'pointer',
+                    transition: 'all 0.2s',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '0.75rem'
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.borderColor = '#4f46e5';
+                    e.currentTarget.style.background = '#f8f9ff';
+                    e.currentTarget.style.transform = 'translateY(-2px)';
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.borderColor = '#e5e7eb';
+                    e.currentTarget.style.background = 'white';
+                    e.currentTarget.style.transform = 'translateY(0)';
+                  }}
                 >
-                  <Search size={14} className="inline mr-2 text-gray-400" />
-                  {suggested}
+                  <Search size={18} style={{ color: '#9ca3af', flexShrink: 0 }} />
+                  <span>{suggested}</span>
                 </button>
               ))}
             </div>
