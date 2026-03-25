@@ -156,6 +156,8 @@
   padding: 10px 12px;
   font-size: var(--text-sm);
   background: var(--surface-soft);
+  max-width: 140px;
+  min-width: 120px;
 }
 
 .search-autocomplete__input {
