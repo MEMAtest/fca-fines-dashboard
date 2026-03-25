@@ -792,6 +792,7 @@ async function upsertRecords(records: any[]) {
           NOW()
         )
         ON CONFLICT (content_hash) DO UPDATE SET
+          firm_individual = EXCLUDED.firm_individual,
           summary = EXCLUDED.summary,
           final_notice_url = EXCLUDED.final_notice_url,
           source_url = EXCLUDED.source_url,
