@@ -219,7 +219,7 @@ export function NaturalLanguageSearch() {
 
           {/* Search Form */}
           <form onSubmit={handleSubmit}>
-            <div style={{ position: 'relative', marginBottom: '1.5rem' }}>
+            <div style={{ position: 'relative', marginBottom: '1.5rem', width: '100%', maxWidth: '100%' }}>
               <Search
                 style={{
                   position: 'absolute',
@@ -238,13 +238,14 @@ export function NaturalLanguageSearch() {
                 placeholder='Try: "AML transaction monitoring" or "Goldman Sachs enforcement"'
                 style={{
                   width: '100%',
-                  padding: '1.25rem 10rem 1.25rem 3.5rem',
-                  fontSize: '1.1rem',
+                  padding: '1.25rem 9rem 1.25rem 3.5rem',
+                  fontSize: '1.05rem',
                   border: 'none',
                   borderRadius: '12px',
                   boxShadow: '0 10px 25px rgba(0,0,0,0.15)',
                   outline: 'none',
-                  transition: 'box-shadow 0.3s'
+                  transition: 'box-shadow 0.3s',
+                  boxSizing: 'border-box'
                 }}
                 onFocus={(e) => e.target.style.boxShadow = '0 15px 35px rgba(0,0,0,0.2)'}
                 onBlur={(e) => e.target.style.boxShadow = '0 10px 25px rgba(0,0,0,0.15)'}
@@ -259,13 +260,14 @@ export function NaturalLanguageSearch() {
                   transform: 'translateY(-50%)',
                   background: loading || !query.trim() ? '#9ca3af' : '#4f46e5',
                   color: 'white',
-                  padding: '0.875rem 2rem',
+                  padding: '0.875rem 1.75rem',
                   borderRadius: '8px',
                   border: 'none',
-                  fontSize: '1rem',
+                  fontSize: '0.95rem',
                   fontWeight: '600',
                   cursor: loading || !query.trim() ? 'not-allowed' : 'pointer',
-                  transition: 'background 0.2s'
+                  transition: 'background 0.2s',
+                  whiteSpace: 'nowrap'
                 }}
                 onMouseEnter={(e) => !loading && query.trim() && (e.currentTarget.style.background = '#4338ca')}
                 onMouseLeave={(e) => !loading && query.trim() && (e.currentTarget.style.background = '#4f46e5')}
