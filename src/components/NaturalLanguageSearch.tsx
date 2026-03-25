@@ -342,7 +342,7 @@ export function NaturalLanguageSearch() {
           padding: '2rem 1.5rem',
           boxShadow: '0 2px 4px rgba(0,0,0,0.05)'
         }}>
-          <div style={{ maxWidth: '900px', margin: '0 auto' }}
+          <div style={{ maxWidth: '900px', margin: '0 auto' }}>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
               {/* Regulator Filter */}
               <div>
@@ -483,7 +483,7 @@ export function NaturalLanguageSearch() {
       )}
 
       {/* Results Section */}
-      <div style={{ maxWidth: '900px', margin: '0 auto', padding: '2.5rem 1.5rem' }}
+      <div style={{ maxWidth: '900px', margin: '0 auto', padding: '2.5rem 1.5rem' }}>
         {/* Error State */}
         {error && (
           <div style={{
