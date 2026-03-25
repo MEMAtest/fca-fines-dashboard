@@ -366,10 +366,19 @@ function extractAmfFirm(title: string, summary: string, bodyText: string = '') {
     }
   }
 
-  // Pattern: "imposed a fine of €X on [FIRM/PERSON]"
-  const singleFineMatch = summary.match(/imposed (?:a fine|fines?) of .*? on\s+(.+?)(?:\s+for|\s+in relation|\s+and issued|\.\s|$)/i);
+  // Pattern: "imposed a fine/penalty of €X on [FIRM/PERSON]"
+  const singleFineMatch = summary.match(/imposed (?:a (?:fine|financial penalty|penalty)|fines?|penalties) of .*? on\s+(.+?)(?:\s+for|\s+in relation|\s+and issued|\.\s|$)/i);
   if (singleFineMatch?.[1]) {
     const cleaned = normalizeFirmName(singleFineMatch[1]);
+    if (cleaned && !isGenericDescription(cleaned)) {
+      return cleaned;
+    }
+  }
+
+  // Pattern: "penalty on [FIRM]" or "fine on [FIRM]" (without amount)
+  const simplePenaltyMatch = summary.match(/(?:fine|penalty|financial penalty)\s+on\s+(.+?)(?:\s+for|\s+in relation|\s+and issued|\.\s|$)/i);
+  if (simplePenaltyMatch?.[1]) {
+    const cleaned = normalizeFirmName(simplePenaltyMatch[1]);
     if (cleaned && !isGenericDescription(cleaned)) {
       return cleaned;
     }
