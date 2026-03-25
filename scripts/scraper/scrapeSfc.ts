@@ -133,22 +133,22 @@ async function scrapeSfc() {
   ];
 
   const enforcementItems = allItems.filter(item => {
-    const title = item.title[0].toLowerCase();
-    const refNo = item.guid[0];
+    const title = item.title?.[0]?.toLowerCase() || '';
+    const refNo = String(item.guid?.[0] || '');
 
     // Include if title contains enforcement keywords OR if it's a PR reference
     // (we'll fetch full title later for historical items)
-    return enforcementKeywords.some(keyword => title.includes(keyword)) || refNo.match(/^\d{2}PR\d+$/);
+    return enforcementKeywords.some(keyword => title.includes(keyword)) || /^\d{2}PR\d+$/.test(refNo);
   });
 
   console.log(`🎯 Filtered to ${enforcementItems.length} potential enforcement press releases\n`);
 
   // Process each enforcement item
   for (const item of enforcementItems) {
-    const title = item.title[0].trim();
-    const link = item.link[0];
-    const pubDate = new Date(item.pubDate[0]);
-    const refNo = item.guid[0];
+    const title = String(item.title?.[0] || '').trim();
+    const link = String(item.link?.[0] || '');
+    const pubDate = new Date(String(item.pubDate?.[0] || new Date().toISOString()));
+    const refNo = String(item.guid?.[0] || '');
 
     console.log(`📰 Processing: ${title}`);
     console.log(`   Date: ${pubDate.toISOString().split('T')[0]}`);
