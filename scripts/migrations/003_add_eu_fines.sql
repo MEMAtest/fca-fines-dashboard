@@ -127,11 +127,12 @@ CREATE INDEX IF NOT EXISTS idx_all_fines_year ON all_regulatory_fines(year_issue
 -- ============================================================================
 -- Function: Refresh Materialized View
 -- Called after EU scraper runs to update unified view
+-- Note: Non-concurrent refresh to avoid unique index requirement across UNION ALL
 -- ============================================================================
 CREATE OR REPLACE FUNCTION refresh_all_fines()
 RETURNS void AS $$
 BEGIN
-  REFRESH MATERIALIZED VIEW CONCURRENTLY all_regulatory_fines;
+  REFRESH MATERIALIZED VIEW all_regulatory_fines;
 END;
 $$ LANGUAGE plpgsql;
 

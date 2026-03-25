@@ -166,11 +166,36 @@ async function scrapeSfc() {
     }
 
     // Extract firm/individual name from title
-    // Pattern: "SFC [action] [name] for..."
+    // Multiple patterns to capture various title formats
     let firmIndividual = 'Unknown';
-    const nameMatch = title.match(/SFC (?:bans?|fines?|reprimands?|suspends?|prohibits?) (.+?) (?:for|and)/i);
-    if (nameMatch) {
-      firmIndividual = nameMatch[1].trim();
+
+    const patterns = [
+      // "SFC [action] [name] for..."
+      /SFC (?:bans?|fines?|reprimands?|suspends?|prohibits?) (.+?) (?:for|and)/i,
+      // "SFAT affirms [decision] against [name]"
+      /SFAT affirms .+? against (.+?)(?:\s*(?:for|and|$))/i,
+      // "SFAT [action] [name]"
+      /SFAT (?:affirms?|upholds?|dismisses?) .+? (?:of|against|on) (.+?)(?:\s*(?:for|and|\(|$))/i,
+      // "[Name] fined/banned..."
+      /^([A-Z][^-]+?)\s+(?:fined|banned|reprimanded|suspended)/i,
+      // "SFC and [name]"
+      /SFC and (.+?) (?:enter|reach|agree)/i,
+    ];
+
+    for (const pattern of patterns) {
+      const match = title.match(pattern);
+      if (match?.[1]) {
+        firmIndividual = match[1].trim();
+        break;
+      }
+    }
+
+    // If still Unknown, try to extract first substantial phrase before common keywords
+    if (firmIndividual === 'Unknown') {
+      const fallbackMatch = title.match(/^([A-Z][^:;]+?)(?:\s*(?:-|:|;|fined|banned|reprimanded))/);
+      if (fallbackMatch?.[1] && fallbackMatch[1].length > 3 && fallbackMatch[1].length < 150) {
+        firmIndividual = fallbackMatch[1].trim();
+      }
     }
 
     // Determine breach type from title

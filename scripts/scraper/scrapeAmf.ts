@@ -236,7 +236,7 @@ async function enrichAmfListingItem(item: AMFListingItem, detailUrl: string, lis
   const canonicalUrl = normalizeAbsoluteUrl($('link[rel="canonical"]').attr('href') || detailUrl, AMF_CONFIG.baseUrl);
   const bodyText = extractAmfBodyText($);
   const summary = normalizeText(metaDescription || bodyText || title);
-  const firm = extractAmfFirm(title, summary) || title;
+  const firm = extractAmfFirm(title, summary, bodyText) || title;
 
   if (!firm) {
     return null;
@@ -309,6 +309,15 @@ async function fetchJsonWithRetry<T>(url: string) {
 }
 
 function extractAmfBodyText($: cheerio.CheerioAPI) {
+  // Always use the full main text to ensure we capture enforcement decision details
+  const mainText = $('main').text().trim();
+
+  if (mainText.length > 100) {
+    // Return the full text (up to reasonable limit for processing)
+    return normalizeText(mainText.substring(0, 5000));
+  }
+
+  // Fallback to specific selectors if main is empty
   const selectors = [
     'main .field--name-body p',
     'main .paragraph p',
@@ -324,35 +333,68 @@ function extractAmfBodyText($: cheerio.CheerioAPI) {
       .filter((part) => part.length > 40);
 
     if (parts.length > 0) {
-      return normalizeText(parts.slice(0, 4).join(' '));
+      return normalizeText(parts.slice(0, 10).join(' '));
     }
   }
 
   return '';
 }
 
-function extractAmfFirm(title: string, summary: string) {
-  const candidates = [
+function extractAmfFirm(title: string, summary: string, bodyText: string = '') {
+  // First, try to extract the COMPLETE list from body text "respectively on [FIRM, PERSON1, PERSON2]"
+  if (bodyText && bodyText.length > 100) {
+    const bodyRespectivelyMatch = bodyText.match(/respectively on\s+(.+?)(?:\s+for|\s+in relation|\s+and issued|,\s+with effect|\.\s)/i);
+    if (bodyRespectivelyMatch?.[1]) {
+      const fullList = bodyRespectivelyMatch[1].trim();
+      // Clean up the list (remove trailing commas, etc.)
+      const cleaned = fullList.replace(/,\s*$/, '').trim();
+
+      // Only use if it's not generic and contains actual names
+      if (cleaned.length > 10 && cleaned.length < 300 && !isGenericDescription(cleaned)) {
+        return normalizeFirmName(cleaned);
+      }
+    }
+  }
+
+  // Fallback to summary extraction
+  // Pattern: "imposed fines of €X, €Y and €Z respectively on [FIRM], [PERSON 1] and [PERSON 2]"
+  const respectivelyMatch = summary.match(/respectively on\s+(.+?)(?:\s+for|\s+in relation|\s+and issued|\.\s|$)/i);
+  if (respectivelyMatch?.[1]) {
+    const names = extractNamesFromList(respectivelyMatch[1]);
+    if (names) {
+      return names;
+    }
+  }
+
+  // Pattern: "imposed a fine of €X on [FIRM/PERSON]"
+  const singleFineMatch = summary.match(/imposed (?:a fine|fines?) of .*? on\s+(.+?)(?:\s+for|\s+in relation|\s+and issued|\.\s|$)/i);
+  if (singleFineMatch?.[1]) {
+    const cleaned = normalizeFirmName(singleFineMatch[1]);
+    if (cleaned && !isGenericDescription(cleaned)) {
+      return cleaned;
+    }
+  }
+
+  // Try title patterns
+  const titleCandidates = [
     title.match(/fines?\s+(?:the\s+)?(.+?)\s+for\b/i),
     title.match(/fines?\s+(?:the\s+)?(.+?)\s+a total of\b/i),
     title.match(/fines?\s+(?:the\s+)?(.+?)\s+and its\b/i),
     title.match(/sanctions?\s+(?:the\s+)?(.+?)\s+a total of\b/i),
     title.match(/sanctions?\s+(?:the\s+)?(.+?)\s+for\b/i),
     title.match(/clears?\s+(?:the\s+)?(.+?)(?:\s+of all charges|\s+and|\s*$)/i),
-    summary.match(/imposed fines? of .*? on\s+(.+?)(?:\s+for|\s+in relation|\.\s|,\s|$)/i),
-    summary.match(/imposed a fine of .*? on\s+(.+?)(?:\s+for|\s+in relation|\.\s|,\s|$)/i),
-    summary.match(/respectively on\s+(.+?)(?:\s+and|\s+for|\.\s|,\s|$)/i),
   ];
 
-  for (const candidate of candidates) {
+  for (const candidate of titleCandidates) {
     if (candidate?.[1]) {
       const cleaned = normalizeFirmName(candidate[1]);
-      if (cleaned) {
+      if (cleaned && !isGenericDescription(cleaned)) {
         return cleaned;
       }
     }
   }
 
+  // Fallback to stripped title
   const strippedTitle = normalizeFirmName(
     title
       .replace(/^The AMF Enforcement Committee fines?\s+/i, '')
@@ -367,6 +409,42 @@ function extractAmfFirm(title: string, summary: string) {
   );
 
   return strippedTitle || null;
+}
+
+function extractNamesFromList(text: string): string | null {
+  // Extract actual firm/individual names from list like "M Capital Partners, Rudy Secco and Isabelle Palisse"
+  // or "CACEIS Bank" or "Gilbert Rodriguez and Jean-Pierre Martin"
+
+  const cleaned = text
+    .replace(/\s+for\b.*$/i, '')
+    .replace(/\s+in relation.*$/i, '')
+    .replace(/\s+and issued.*$/i, '')
+    .trim();
+
+  // Check if it contains multiple names separated by commas or "and"
+  if (cleaned.includes(',') || (cleaned.includes(' and ') && cleaned.split(' and ').length <= 4)) {
+    return normalizeFirmName(cleaned);
+  }
+
+  // Single name/firm
+  return normalizeFirmName(cleaned);
+}
+
+function isGenericDescription(text: string): boolean {
+  const lower = text.toLowerCase();
+
+  // Check if it's a generic description rather than an actual firm/individual name
+  // Must START with generic terms (not just contain them)
+  const genericPatterns = [
+    /^an? (?:asset management company|investment services provider|financial|depositary)/,
+    /^the (?:asset management company|investment services provider|financial|depositary)/,
+    /^(?:asset management company|investment services provider) and its (?:directors?|managers?)/,
+  ];
+
+  // Additional check: if it's ONLY generic (no actual names), reject it
+  const isOnlyGeneric = /^an? (?:asset management company|investment services provider|financial investment advisor|depositary)(?:\s+and its (?:directors?|managers?|former director|two managers))?$/i.test(text);
+
+  return genericPatterns.some(pattern => pattern.test(lower)) || isOnlyGeneric;
 }
 
 function normalizeFirmName(value: string) {
