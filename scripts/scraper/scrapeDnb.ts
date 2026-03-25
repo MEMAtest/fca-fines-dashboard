@@ -1,20 +1,15 @@
 /**
  * DNB (De Nederlandsche Bank - Dutch Central Bank) Scraper
  *
- * Strategy: Press release parsing (banking sector focus)
- * URL: https://www.dnb.nl/en/sector-information/enforcement/
+ * Strategy: RSS feed parsing with enforcement keyword filtering
+ * URL: https://www.dnb.nl/en/rss/16451/6882 (General news RSS feed)
  *
- * Difficulty: 5-6/10 (Moderate) - Press release parsing
- * Expected: ~30-50 enforcement actions
+ * Run: DATABASE_URL="postgresql://fca_app:...@89.167.95.173:5432/fcafines?sslmode=no-verify" npx tsx scripts/scraper/scrapeDnb.ts
  */
 
-import axios from 'axios';
-import * as cheerio from 'cheerio';
 import postgres from 'postgres';
+import { parseStringPromise } from 'xml2js';
 import crypto from 'crypto';
-import * as dotenv from 'dotenv';
-
-dotenv.config();
 
 const sql = postgres(process.env.DATABASE_URL?.trim() || '', {
   ssl: process.env.DATABASE_URL?.includes('sslmode=')
@@ -24,10 +19,8 @@ const sql = postgres(process.env.DATABASE_URL?.trim() || '', {
 
 const DNB_CONFIG = {
   baseUrl: 'https://www.dnb.nl',
-  enforcementUrl: '/en/sector-information/enforcement/',
-  rateLimit: 3000,  // 3 seconds (respectful for Netherlands)
-  maxRetries: 3,
-  maxPages: 5,  // Limit pagination to avoid excessive scraping
+  rssUrl: 'https://www.dnb.nl/en/rss/16451/6882',  // General news RSS feed
+  rateLimit: 1000,  // 1 second between requests
 };
 
 interface DNBRecord {
@@ -134,50 +127,150 @@ function getTestData(): DNBRecord[] {
 }
 
 async function scrapeDnbPage(): Promise<DNBRecord[]> {
-  const url = DNB_CONFIG.baseUrl + DNB_CONFIG.enforcementUrl;
+  console.log('📡 Fetching DNB RSS feed...');
+  console.log(`   URL: ${DNB_CONFIG.rssUrl}`);
 
-  console.log('📄 Fetching DNB enforcement pages...');
-  console.log(`   URL: ${url}`);
+  const response = await fetch(DNB_CONFIG.rssUrl);
+  const xmlText = await response.text();
 
-  // Rate limiting
-  await new Promise(resolve => setTimeout(resolve, DNB_CONFIG.rateLimit));
+  const parsed = await parseStringPromise(xmlText);
+  const items = parsed.rss.channel[0].item || [];
 
-  const response = await axios.get(url, {
-    headers: {
-      'User-Agent': 'Mozilla/5.0 (compatible; RegulatoryScanner/2.0)',
-      'Accept': 'text/html',
-      'Accept-Language': 'en-GB,en;q=0.5'
-    },
-    timeout: 30000
-  });
+  console.log(`✅ Fetched ${items.length} items from RSS feed`);
 
-  console.log('✅ Page fetched successfully');
+  // Filter for enforcement-related items
+  const enforcementKeywords = [
+    'fine', 'fines', 'fined', 'boete', 'boetes',
+    'penalty', 'penalties',
+    'sanction', 'sanctions', 'sanctioned', 'sanctie',
+    'enforcement', 'handhaving',
+    'measure', 'maatregel',
+    'breach', 'violation', 'overtreding'
+  ];
 
-  const $ = cheerio.load(response.data);
+  const records: DNBRecord[] = [];
 
-  // Parse press release links
-  const pressReleaseLinks: string[] = [];
+  for (const item of items) {
+    const title = item.title?.[0] || '';
+    const link = item.link?.[0] || '';
+    const pubDateStr = item.pubDate?.[0] || '';
+    const pubDate = new Date(pubDateStr);
 
-  // DNB typically lists enforcement actions in news/press release sections
-  $('article a, .news-item a, .press-release a, .enforcement-item a').each((i, elem) => {
-    const href = $(elem).attr('href');
-    if (href && (href.includes('enforcement') || href.includes('fine') || href.includes('sanction'))) {
-      const fullUrl = href.startsWith('http') ? href : DNB_CONFIG.baseUrl + href;
-      if (!pressReleaseLinks.includes(fullUrl)) {
-        pressReleaseLinks.push(fullUrl);
-      }
+    const titleLower = title.toLowerCase();
+    const linkLower = link.toLowerCase();
+
+    // Filter by keywords OR URL pattern (enforcement-measures-YYYY)
+    const isEnforcement = enforcementKeywords.some(kw => titleLower.includes(kw)) ||
+                          linkLower.includes('/enforcement-measures-');
+
+    if (!isEnforcement) continue;
+
+    console.log(`\n📄 Processing: ${title}`);
+
+    // Fetch detail page
+    await new Promise(resolve => setTimeout(resolve, DNB_CONFIG.rateLimit));
+
+    try {
+      const detailResponse = await fetch(link);
+      const html = await detailResponse.text();
+
+      // Extract metadata
+      const metaDescMatch = html.match(/<meta name="description" content="([^"]+)"/i);
+      const description = metaDescMatch ? metaDescMatch[1] : '';
+
+      // Extract firm name from title
+      const firm = extractFirmName(title);
+
+      // Extract fine amount
+      const amount = extractFineAmount(title, html);
+
+      // Extract breach type
+      const breach = classifyBreachType(title, html);
+
+      records.push({
+        firm,
+        amount,
+        currency: 'EUR',
+        date: pubDate.toISOString().split('T')[0],
+        breach,
+        link,
+        summary: description || title
+      });
+
+      console.log(`   👤 Firm: ${firm}`);
+      console.log(`   💰 Amount: ${amount ? `€${amount.toLocaleString()}` : 'Not specified'}`);
+      console.log(`   ⚖️  Breach: ${breach}`);
+    } catch (error) {
+      console.error(`   ⚠️  Failed to fetch ${link}:`, error);
     }
-  });
-
-  console.log(`   Found ${pressReleaseLinks.length} press release links`);
-
-  if (pressReleaseLinks.length === 0) {
-    throw new Error('No DNB enforcement links were found on the live page.');
   }
 
-  throw new Error(
-    `DNB live scraping is not implemented yet. Found ${Math.min(pressReleaseLinks.length, 50)} candidate links but refusing to write fixture data on a live run.`
-  );
+  console.log(`\n🎯 Filtered to ${records.length} enforcement-related items`);
+  return records;
+}
+
+function extractFirmName(title: string): string {
+  // Pattern 1: "DNB fines [Firm]" or "Fine imposed on [Firm]"
+  const pattern1 = /(?:DNB fines?|Fine imposed on|Boete opgelegd aan)\s+([^for]+?)(?:\s+for|\s+wegens|$)/i;
+  const match1 = title.match(pattern1);
+  if (match1) return match1[1].trim();
+
+  // Pattern 2: Company names (B.V., N.V., etc.)
+  const pattern2 = /([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*\s+(?:B\.V\.|N\.V\.|Bank|Group))/;
+  const match2 = title.match(pattern2);
+  if (match2) return match2[1].trim();
+
+  // Pattern 3: "[Firm] fined"
+  const pattern3 = /^([A-Z][^\s]+(?:\s+[A-Z][^\s]+)*)\s+fined/i;
+  const match3 = title.match(pattern3);
+  if (match3) return match3[1].trim();
+
+  // Fallback
+  return title.slice(0, 100);
+}
+
+function extractFineAmount(title: string, html: string): number | null {
+  const text = `${title} ${html}`;
+
+  // Patterns: €10,125 or €2.6 million (Dutch/English formats)
+  const patterns = [
+    /€\s*([\d,\.]+)\s*(?:million|miljoen|mln)?/i,
+    /EUR\s*([\d,\.]+)\s*(?:million|miljoen|mln)?/i,
+    /([\d,\.]+)\s*euro/i
+  ];
+
+  for (const pattern of patterns) {
+    const match = text.match(pattern);
+    if (match) {
+      // Handle Dutch number format
+      let amount = match[1].replace(/\./g, '').replace(/,/g, '');
+      let numAmount = parseFloat(amount);
+
+      // Check if in millions
+      if (text.toLowerCase().includes('million') || text.toLowerCase().includes('miljoen') || text.toLowerCase().includes('mln')) {
+        numAmount *= 1_000_000;
+      }
+
+      return numAmount;
+    }
+  }
+
+  return null;
+}
+
+function classifyBreachType(title: string, html: string): string {
+  const text = `${title} ${html}`.toLowerCase();
+
+  if (text.includes('aml') || text.includes('wwft') || text.includes('money laundering') || text.includes('witwassen')) return 'AML_CTF';
+  if (text.includes('capital') || text.includes('kapitaal')) return 'CAPITAL_REQUIREMENTS';
+  if (text.includes('liquidity') || text.includes('liquiditeit')) return 'LIQUIDITY';
+  if (text.includes('governance') || text.includes('bestuur')) return 'GOVERNANCE';
+  if (text.includes('prudential') || text.includes('prudentieel')) return 'PRUDENTIAL';
+  if (text.includes('risk management') || text.includes('risicobeheer')) return 'RISK_MANAGEMENT';
+  if (text.includes('reporting') || text.includes('rapportage')) return 'REPORTING';
+  if (text.includes('cdd') || text.includes('customer due diligence')) return 'CDD';
+
+  return 'OTHER';
 }
 
 function transformRecord(record: DNBRecord) {

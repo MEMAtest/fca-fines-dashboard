@@ -115,7 +115,7 @@ export const REGULATOR_COVERAGE: Record<string, RegulatorCoverage> = {
     years: '2023-2024',
     count: 3,
     dataQuality: '100%',
-    note: 'Very limited sample size - emerging data collection',
+    note: 'Test data - major enforcement actions (ABN AMRO €480M, ING, Rabobank)',
     earliestYear: 2023,
     latestYear: 2024,
     defaultCurrency: 'EUR',
@@ -290,12 +290,12 @@ export const REGULATOR_COVERAGE: Record<string, RegulatorCoverage> = {
     country: 'Netherlands',
     countryCode: 'NL',
     flag: '🇳🇱',
-    navOrder: 6,
+    navOrder: 8,
     overviewPath: '/regulators/afm',
     years: '2023-2024',
     count: 4,
     dataQuality: '100%',
-    note: 'Limited coverage - emerging data collection',
+    note: 'Test data - major enforcement actions (ABN AMRO, ING, DEGIRO, Rabobank)',
     earliestYear: 2023,
     latestYear: 2024,
     defaultCurrency: 'EUR',
@@ -365,10 +365,11 @@ export const REGULATOR_CODES = REGULATOR_NAV_ITEMS.map((coverage) => coverage.co
 
 /**
  * Production-ready regulators with real data parsers.
- * AFM, DNB, and ESMA are excluded until real scrapers are implemented.
+ * ESMA is excluded until real scrapers are implemented.
+ * AFM and DNB use test data (4 and 3 records respectively) - Phase 5.
  * Use this for: navigation, filters, homepage stats, blog articles, SEO prerender.
  */
-export const PUBLIC_REGULATOR_CODES = ['FCA', 'BaFin', 'AMF', 'CNMV', 'CBI', 'SFC'] as const;
+export const PUBLIC_REGULATOR_CODES = ['FCA', 'BaFin', 'AMF', 'CNMV', 'CBI', 'SFC', 'AFM', 'DNB'] as const;
 
 export const PUBLIC_REGULATOR_NAV_ITEMS = REGULATOR_NAV_ITEMS.filter(
   (coverage) => PUBLIC_REGULATOR_CODES.includes(coverage.code as any)

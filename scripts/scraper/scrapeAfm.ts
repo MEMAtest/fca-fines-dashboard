@@ -1,20 +1,15 @@
 /**
  * AFM (Netherlands Authority for the Financial Markets) Scraper
  *
- * Strategy: Decision page scraping from enforcement register
- * URL: https://www.afm.nl/en/sector/registers/enforcementdecisions
+ * Strategy: RSS feed parsing with enforcement keyword filtering
+ * URL: https://www.afm.nl/en/rss-feed/nieuws-professionals
  *
- * Difficulty: 6-7/10 (Moderate) - Individual decision page parsing
- * Expected: ~50-100 enforcement actions
+ * Run: DATABASE_URL="postgresql://fca_app:...@89.167.95.173:5432/fcafines?sslmode=no-verify" npx tsx scripts/scraper/scrapeAfm.ts
  */
 
-import axios from 'axios';
-import * as cheerio from 'cheerio';
 import postgres from 'postgres';
+import { parseStringPromise } from 'xml2js';
 import crypto from 'crypto';
-import * as dotenv from 'dotenv';
-
-dotenv.config();
 
 const sql = postgres(process.env.DATABASE_URL?.trim() || '', {
   ssl: process.env.DATABASE_URL?.includes('sslmode=')
@@ -24,10 +19,8 @@ const sql = postgres(process.env.DATABASE_URL?.trim() || '', {
 
 const AFM_CONFIG = {
   baseUrl: 'https://www.afm.nl',
-  enforcementUrl: '/en/sector/registers/enforcementdecisions',
-  rateLimit: 3000,  // 3 seconds (respectful for Netherlands)
-  maxRetries: 3,
-  maxRecords: 50,  // Limit to avoid excessive scraping
+  rssUrl: 'https://www.afm.nl/en/rss-feed/nieuws-professionals',
+  rateLimit: 1000,  // 1 second between requests
 };
 
 interface AFMRecord {
@@ -143,50 +136,145 @@ function getTestData(): AFMRecord[] {
 }
 
 async function scrapeAfmPage(): Promise<AFMRecord[]> {
-  const url = AFM_CONFIG.baseUrl + AFM_CONFIG.enforcementUrl;
+  console.log('📡 Fetching AFM RSS feed...');
+  console.log(`   URL: ${AFM_CONFIG.rssUrl}`);
 
-  console.log('📄 Fetching AFM enforcement decisions...');
-  console.log(`   URL: ${url}`);
+  const response = await fetch(AFM_CONFIG.rssUrl);
+  const xmlText = await response.text();
 
-  // Rate limiting
-  await new Promise(resolve => setTimeout(resolve, AFM_CONFIG.rateLimit));
+  const parsed = await parseStringPromise(xmlText);
+  const items = parsed.rss.channel[0].item || [];
 
-  const response = await axios.get(url, {
-    headers: {
-      'User-Agent': 'Mozilla/5.0 (compatible; RegulatoryScanner/2.0)',
-      'Accept': 'text/html',
-      'Accept-Language': 'en-GB,en;q=0.5'
-    },
-    timeout: 30000
-  });
+  console.log(`✅ Fetched ${items.length} items from RSS feed`);
 
-  console.log('✅ Page fetched successfully');
+  // Filter for enforcement-related items
+  const enforcementKeywords = [
+    'fine', 'fines', 'fined', 'penalty', 'penalties',
+    'sanction', 'sanctions', 'sanctioned',
+    'ban', 'banned', 'bans',
+    'enforcement', 'measure', 'disciplinary',
+    'breach', 'violation', 'boete', 'boetes'
+  ];
 
-  const $ = cheerio.load(response.data);
+  const records: AFMRecord[] = [];
 
-  // Parse enforcement decision links
-  const decisionLinks: string[] = [];
+  for (const item of items) {
+    const title = item.title?.[0] || '';
+    const link = item.link?.[0] || '';
+    const pubDateStr = item.pubDate?.[0] || '';
+    const pubDate = new Date(pubDateStr);
 
-  // AFM typically lists decisions in article blocks or tables
-  $('article a, .decision-list a, .enforcement-item a, table a').each((i, elem) => {
-    const href = $(elem).attr('href');
-    if (href && (href.includes('enforcement') || href.includes('decision') || href.includes('sanction'))) {
-      const fullUrl = href.startsWith('http') ? href : AFM_CONFIG.baseUrl + href;
-      if (!decisionLinks.includes(fullUrl)) {
-        decisionLinks.push(fullUrl);
-      }
+    const titleLower = title.toLowerCase();
+    const isEnforcement = enforcementKeywords.some(kw => titleLower.includes(kw));
+
+    if (!isEnforcement) continue;
+
+    console.log(`\n📄 Processing: ${title}`);
+
+    // Fetch detail page
+    await new Promise(resolve => setTimeout(resolve, AFM_CONFIG.rateLimit));
+
+    try {
+      const detailResponse = await fetch(link);
+      const html = await detailResponse.text();
+
+      // Extract metadata
+      const metaDescMatch = html.match(/<meta name="description" content="([^"]+)"/i);
+      const description = metaDescMatch ? metaDescMatch[1] : '';
+
+      // Extract firm name from title
+      const firm = extractFirmName(title);
+
+      // Extract fine amount
+      const amount = extractFineAmount(title, html);
+
+      // Extract breach type
+      const breach = classifyBreachType(title, html);
+
+      records.push({
+        firm,
+        amount,
+        currency: 'EUR',
+        date: pubDate.toISOString().split('T')[0],
+        breach,
+        link,
+        summary: description || title
+      });
+
+      console.log(`   👤 Firm: ${firm}`);
+      console.log(`   💰 Amount: ${amount ? `€${amount.toLocaleString()}` : 'Not specified'}`);
+      console.log(`   ⚖️  Breach: ${breach}`);
+    } catch (error) {
+      console.error(`   ⚠️  Failed to fetch ${link}:`, error);
     }
-  });
-
-  console.log(`   Found ${decisionLinks.length} decision links`);
-
-  if (decisionLinks.length === 0) {
-    throw new Error('No AFM enforcement decision links were found on the live page.');
   }
 
-  throw new Error(
-    `AFM live scraping is not implemented yet. Found ${Math.min(decisionLinks.length, AFM_CONFIG.maxRecords)} candidate links but refusing to write fixture data on a live run.`
-  );
+  console.log(`\n🎯 Filtered to ${records.length} enforcement-related items`);
+  return records;
+}
+
+function extractFirmName(title: string): string {
+  // Pattern 1: "AFM fines [Firm] for..."
+  const pattern1 = /AFM (?:fines?|sancties|sanctions?) ([^for]+) (?:for|wegens)/i;
+  const match1 = title.match(pattern1);
+  if (match1) return match1[1].trim();
+
+  // Pattern 2: "[Firm] fined..."
+  const pattern2 = /^([A-Z][^\s]+(?:\s+[A-Z][^\s]+)*)\s+(?:fined|sanctioned)/i;
+  const match2 = title.match(pattern2);
+  if (match2) return match2[1].trim();
+
+  // Pattern 3: Company names (B.V., N.V., etc.)
+  const pattern3 = /([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*\s+(?:B\.V\.|N\.V\.|Ltd\.|Inc\.|AG|GmbH))/;
+  const match3 = title.match(pattern3);
+  if (match3) return match3[1].trim();
+
+  // Fallback
+  return title.slice(0, 100);
+}
+
+function extractFineAmount(title: string, html: string): number | null {
+  const text = `${title} ${html}`;
+
+  // Patterns: €300,000 or €1.600.000 (Dutch format)
+  const patterns = [
+    /€\s*([\d,\.]+)\s*(?:million|miljoen|mln)?/i,
+    /EUR\s*([\d,\.]+)\s*(?:million|miljoen|mln)?/i,
+    /([\d,\.]+)\s*euro/i
+  ];
+
+  for (const pattern of patterns) {
+    const match = text.match(pattern);
+    if (match) {
+      // Handle Dutch number format (dots as thousand separators)
+      let amount = match[1].replace(/\./g, '').replace(/,/g, '');
+      let numAmount = parseFloat(amount);
+
+      // Check if in millions
+      if (text.toLowerCase().includes('million') || text.toLowerCase().includes('miljoen') || text.toLowerCase().includes('mln')) {
+        numAmount *= 1_000_000;
+      }
+
+      return numAmount;
+    }
+  }
+
+  return null;
+}
+
+function classifyBreachType(title: string, html: string): string {
+  const text = `${title} ${html}`.toLowerCase();
+
+  if (text.includes('advertising') || text.includes('reclame')) return 'ADVERTISING_BREACH';
+  if (text.includes('aml') || text.includes('wwft') || text.includes('money laundering')) return 'AML_CTF';
+  if (text.includes('exam') || text.includes('fraud')) return 'FRAUD';
+  if (text.includes('conduct') || text.includes('gedrag')) return 'CONDUCT';
+  if (text.includes('disclosure') || text.includes('reporting')) return 'DISCLOSURE';
+  if (text.includes('governance') || text.includes('bestuur')) return 'GOVERNANCE';
+  if (text.includes('client') || text.includes('klant')) return 'CLIENT_PROTECTION';
+  if (text.includes('license') || text.includes('vergunning')) return 'UNAUTHORIZED_ACTIVITY';
+
+  return 'OTHER';
 }
 
 function transformRecord(record: AFMRecord) {
