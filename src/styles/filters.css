@@ -41,7 +41,7 @@
 
 .filters__controls {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
   gap: 24px;
 }
 
@@ -170,6 +170,9 @@
   padding: 12px 14px;
   font-size: var(--text-base);
   background: var(--surface-soft);
+  text-overflow: ellipsis;
+  overflow: hidden;
+  white-space: nowrap;
 }
 
 .search-autocomplete__dropdown {
