@@ -70,43 +70,44 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     const minRelevanceNum = parseFloat(minRelevance) || 0.01;
     const amountColumn = currency === 'EUR' ? 'amount_eur' : 'amount_gbp';
 
-    // Build WHERE conditions
-    const conditions = [];
-    const params: any[] = [];
-    let paramIndex = 1;
-
-    // Add search vector condition (REQUIRED)
-    conditions.push(`search_vector @@ plainto_tsquery('english', $${paramIndex++})`);
-    params.push(q.trim());
+    // Build WHERE conditions (using sql.unsafe for simpler query building)
+    const conditions = [`search_vector @@ plainto_tsquery('english', '${q.trim().replace(/'/g, "''")}')`];
 
     // Filter by public regulators only (unless specific regulator requested)
     if (regulator) {
-      conditions.push(`regulator = $${paramIndex++}`);
-      params.push(regulator);
+      conditions.push(`regulator = '${regulator.replace(/'/g, "''")}'`);
     } else {
-      conditions.push(`regulator = ANY($${paramIndex++})`);
-      params.push(PUBLIC_REGULATOR_CODES);
+      const regulatorList = PUBLIC_REGULATOR_CODES.map(r => `'${r}'`).join(', ');
+      conditions.push(`regulator IN (${regulatorList})`);
     }
 
     if (country) {
-      conditions.push(`country_code = $${paramIndex++}`);
-      params.push(country);
+      conditions.push(`country_code = '${country.replace(/'/g, "''")}'`);
     }
 
     if (year) {
-      conditions.push(`year_issued = $${paramIndex++}`);
-      params.push(parseInt(year));
+      const yearNum = parseInt(year);
+      if (!isNaN(yearNum)) {
+        conditions.push(`year_issued = ${yearNum}`);
+      }
     }
 
     if (minAmount) {
-      conditions.push(`${amountColumn} >= $${paramIndex++}`);
-      params.push(parseFloat(minAmount));
+      const minAmountNum = parseFloat(minAmount);
+      if (!isNaN(minAmountNum)) {
+        conditions.push(`${amountColumn} >= ${minAmountNum}`);
+      }
     }
 
     if (maxAmount) {
-      conditions.push(`${amountColumn} <= $${paramIndex++}`);
-      params.push(parseFloat(maxAmount));
+      const maxAmountNum = parseFloat(maxAmount);
+      if (!isNaN(maxAmountNum)) {
+        conditions.push(`${amountColumn} <= ${maxAmountNum}`);
+      }
     }
+
+    // Add minimum relevance filter
+    conditions.push(`ts_rank_cd(search_vector, plainto_tsquery('english', '${q.trim().replace(/'/g, "''")}')) > ${minRelevanceNum}`);
 
     const whereClause = `WHERE ${conditions.join(' AND ')}`;
 
@@ -134,30 +135,26 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         notice_url,
         source_url,
         created_at,
-        ts_rank_cd(search_vector, plainto_tsquery('english', $1)) AS relevance,
-        ts_headline('english', summary, plainto_tsquery('english', $1),
+        ts_rank_cd(search_vector, plainto_tsquery('english', '${q.trim().replace(/'/g, "''")}')) AS relevance,
+        ts_headline('english', COALESCE(summary, ''), plainto_tsquery('english', '${q.trim().replace(/'/g, "''")}'),
                    'MaxWords=50, MinWords=30, MaxFragments=1') AS snippet
       FROM all_regulatory_fines
       ${whereClause}
-        AND ts_rank_cd(search_vector, plainto_tsquery('english', $1)) > $${paramIndex++}
       ORDER BY relevance DESC, date_issued DESC
-      LIMIT $${paramIndex++}
-      OFFSET $${paramIndex++}
+      LIMIT ${limitNum}
+      OFFSET ${offsetNum}
     `;
 
-    params.push(minRelevanceNum, limitNum, offsetNum);
-
-    const results = await sql.unsafe(query, params);
+    const results = await sql.unsafe(query);
 
     // Query for total count (without limit/offset)
     const countQuery = `
       SELECT COUNT(*) as count
       FROM all_regulatory_fines
       ${whereClause}
-        AND ts_rank_cd(search_vector, plainto_tsquery('english', $1)) > $${paramIndex - 2}
     `;
 
-    const countResult = await sql.unsafe(countQuery, params.slice(0, -2)); // Remove limit/offset
+    const countResult = await sql.unsafe(countQuery);
     const totalCount = parseInt(countResult[0]?.count || 0);
 
     // Extract search terms for highlighting
