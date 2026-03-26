@@ -238,7 +238,7 @@ async function enrichAmfListingItem(item: AMFListingItem, detailUrl: string, lis
   const canonicalUrl = normalizeAbsoluteUrl($('link[rel="canonical"]').attr('href') || detailUrl, AMF_CONFIG.baseUrl);
   const bodyText = extractAmfBodyText($);
   const summary = normalizeText(metaDescription || bodyText || title);
-  const firm = extractAmfFirm(title, summary, bodyText) || title;
+  const firm = extractAmfFirm(title, summary, bodyText) || 'Unknown';
 
   if (!firm) {
     return null;
