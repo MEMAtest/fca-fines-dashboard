@@ -4,9 +4,10 @@
  * Strategy: RSS feed parsing with enforcement keyword filtering
  * URL: https://www.afm.nl/en/rss-feed/nieuws-professionals
  *
- * Run: DATABASE_URL="postgresql://fca_app:...@89.167.95.173:5432/fcafines?sslmode=no-verify" npx tsx scripts/scraper/scrapeAfm.ts
+ * Run: npx tsx scripts/scraper/scrapeAfm.ts
  */
 
+import 'dotenv/config';
 import postgres from 'postgres';
 import { parseStringPromise } from 'xml2js';
 import crypto from 'crypto';

@@ -4,9 +4,10 @@
  * Strategy: RSS feed parsing with enforcement keyword filtering
  * URL: https://www.dnb.nl/en/rss/16451/6882 (General news RSS feed)
  *
- * Run: DATABASE_URL="postgresql://fca_app:...@89.167.95.173:5432/fcafines?sslmode=no-verify" npx tsx scripts/scraper/scrapeDnb.ts
+ * Run: npx tsx scripts/scraper/scrapeDnb.ts
  */
 
+import 'dotenv/config';
 import postgres from 'postgres';
 import { parseStringPromise } from 'xml2js';
 import crypto from 'crypto';

@@ -4,6 +4,7 @@
  * Focuses on enforcement signals: fines, bans, sanctions
  */
 
+import 'dotenv/config';
 import postgres from 'postgres';
 import { parseStringPromise } from 'xml2js';
 import crypto from 'crypto';
