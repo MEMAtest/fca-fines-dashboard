@@ -1,5 +1,5 @@
-import { useParams, useNavigate, Link } from 'react-router-dom';
-import { useEffect } from 'react';
+import { useParams, useNavigate, Link } from "react-router-dom";
+import { useEffect } from "react";
 import {
   Calendar,
   Clock,
@@ -7,18 +7,32 @@ import {
   ExternalLink,
   Briefcase,
   BarChart3,
-} from 'lucide-react';
-import { useSEO, injectStructuredData } from '../hooks/useSEO';
-import { allBlogArticles as blogArticles, yearlyArticles } from '../data/blogArticles.js';
-import type { BlogArticleMeta, YearlyArticleMeta } from '../data/blogArticles.js';
-import { getFaqsForArticle, getFaqsForYearlyArticle, generateFaqSchema } from '../data/faqData';
+} from "lucide-react";
+import { useSEO, injectStructuredData } from "../hooks/useSEO.js";
+import {
+  allBlogArticles as blogArticles,
+  yearlyArticles,
+} from "../data/blogArticles.js";
+import type {
+  BlogArticleMeta,
+  StructuredRegulatorArticle,
+  StructuredRegulatorLink,
+  StructuredRegulatorMetric,
+  StructuredRegulatorSection,
+  YearlyArticleMeta,
+} from "../data/blogArticles.js";
+import {
+  getFaqsForArticle,
+  getFaqsForYearlyArticle,
+  generateFaqSchema,
+} from "../data/faqData.js";
 import {
   yearlyFCAData,
   MonthlyFinesChart,
   BreachCategoryChart,
   TopFirmsChart,
   YearOverYearChart,
-} from '../components/YearlyArticleCharts';
+} from "../components/YearlyArticleCharts.js";
 import {
   Top20FinesChart,
   Top20BreachTypesChart,
@@ -45,8 +59,8 @@ import {
   IndividualVsFirmChart,
   TopIndividualFinesChart,
   IndividualActionTypesChart,
-} from '../components/MainArticleCharts';
-import '../styles/blog.css';
+} from "../components/MainArticleCharts.js";
+import "../styles/blog.css";
 
 // Helper function to format currency (same as Blog.tsx)
 const formatYearlyCurrency = (amount: number): string => {
@@ -63,71 +77,128 @@ const formatYearlyCurrency = (amount: number): string => {
 const HOWTO_SCHEMA = {
   "@context": "https://schema.org",
   "@type": "HowTo",
-  "name": "How to Search the FCA Fines Database",
-  "description": "Step-by-step guide to searching and filtering FCA fines using the interactive dashboard.",
-  "step": [
+  name: "How to Search the FCA Fines Database",
+  description:
+    "Step-by-step guide to searching and filtering FCA fines using the interactive dashboard.",
+  step: [
     {
       "@type": "HowToStep",
-      "position": 1,
-      "name": "Navigate to Dashboard",
-      "text": "Open the FCA Fines Dashboard at fcafines.memaconsultants.com/dashboard to access the complete database of Financial Conduct Authority penalties.",
-      "url": "https://fcafines.memaconsultants.com/dashboard"
+      position: 1,
+      name: "Navigate to Dashboard",
+      text: "Open the FCA Fines Dashboard at fcafines.memaconsultants.com/dashboard to access the complete database of Financial Conduct Authority penalties.",
+      url: "https://fcafines.memaconsultants.com/dashboard",
     },
     {
       "@type": "HowToStep",
-      "position": 2,
-      "name": "Search by Firm",
-      "text": "Use the search bar to find fines by firm or individual name. Type a company name like 'Barclays' or 'HSBC' to filter results instantly."
+      position: 2,
+      name: "Search by Firm",
+      text: "Use the search bar to find fines by firm or individual name. Type a company name like 'Barclays' or 'HSBC' to filter results instantly.",
     },
     {
       "@type": "HowToStep",
-      "position": 3,
-      "name": "Filter by Year",
-      "text": "Select a specific year from the year dropdown to view all FCA fines issued in that period, from 2013 to the current year."
+      position: 3,
+      name: "Filter by Year",
+      text: "Select a specific year from the year dropdown to view all FCA fines issued in that period, from 2013 to the current year.",
     },
     {
       "@type": "HowToStep",
-      "position": 4,
-      "name": "Filter by Breach Category",
-      "text": "Choose a breach category such as AML, Market Abuse, or Consumer Protection to see fines grouped by the type of regulatory failure."
+      position: 4,
+      name: "Filter by Breach Category",
+      text: "Choose a breach category such as AML, Market Abuse, or Consumer Protection to see fines grouped by the type of regulatory failure.",
     },
     {
       "@type": "HowToStep",
-      "position": 5,
-      "name": "Filter by Amount",
-      "text": "Use the advanced filters to set a minimum and maximum fine amount, helping you identify the largest or smallest penalties."
+      position: 5,
+      name: "Filter by Amount",
+      text: "Use the advanced filters to set a minimum and maximum fine amount, helping you identify the largest or smallest penalties.",
     },
     {
       "@type": "HowToStep",
-      "position": 6,
-      "name": "Export Data",
-      "text": "Click the export button to download the filtered results as a CSV file for further analysis in Excel or other tools."
-    }
-  ]
+      position: 6,
+      name: "Export Data",
+      text: "Click the export button to download the filtered results as a CSV file for further analysis in Excel or other tools.",
+    },
+  ],
 };
 
 // Related articles mapping for internal linking
 const RELATED_ARTICLES: Record<string, string[]> = {
-  '20-biggest-fca-fines-of-all-time': ['fca-fines-banks-complete-list', 'fca-enforcement-trends-2013-2025', 'fca-aml-fines-anti-money-laundering'],
-  'fca-fines-2025-complete-list': ['fca-enforcement-trends-2013-2025', '20-biggest-fca-fines-of-all-time', 'fca-aml-fines-anti-money-laundering'],
-  'fca-fines-database-how-to-search': ['fca-final-notices-explained', '20-biggest-fca-fines-of-all-time', 'fca-enforcement-trends-2013-2025'],
-  'fca-aml-fines-anti-money-laundering': ['fca-fines-banks-complete-list', '20-biggest-fca-fines-of-all-time', 'fca-enforcement-trends-2013-2025'],
-  'fca-fines-banks-complete-list': ['20-biggest-fca-fines-of-all-time', 'fca-aml-fines-anti-money-laundering', 'fca-fines-insurance-sector'],
-  'fca-enforcement-trends-2013-2025': ['20-biggest-fca-fines-of-all-time', 'fca-fines-2025-complete-list', 'fca-aml-fines-anti-money-laundering'],
-  'fca-final-notices-explained': ['fca-fines-database-how-to-search', 'senior-managers-regime-fca-fines', 'fca-enforcement-trends-2013-2025'],
-  'senior-managers-regime-fca-fines': ['fca-fines-individuals-personal-accountability', 'fca-final-notices-explained', '20-biggest-fca-fines-of-all-time'],
-  'fca-fines-january-2026': ['fca-fines-february-2026', 'fca-enforcement-outlook-february-2026', 'fca-enforcement-trends-2013-2025'],
-  'fca-enforcement-outlook-february-2026': ['fca-fines-february-2026', 'fca-fines-january-2026', 'fca-enforcement-trends-2013-2025'],
-  'fca-fines-february-2026': ['fca-fines-january-2026', 'fca-fines-march-2026', 'fca-enforcement-trends-2013-2025'],
-  'fca-fines-individuals-personal-accountability': ['senior-managers-regime-fca-fines', 'fca-final-notices-explained', '20-biggest-fca-fines-of-all-time'],
-  'fca-fines-march-2026': ['fca-fines-february-2026', 'fca-fines-january-2026', 'fca-enforcement-trends-2013-2025'],
-  'fca-fines-insurance-sector': ['fca-fines-banks-complete-list', 'fca-aml-fines-anti-money-laundering', '20-biggest-fca-fines-of-all-time'],
+  "20-biggest-fca-fines-of-all-time": [
+    "fca-fines-banks-complete-list",
+    "fca-enforcement-trends-2013-2025",
+    "fca-aml-fines-anti-money-laundering",
+  ],
+  "fca-fines-2025-complete-list": [
+    "fca-enforcement-trends-2013-2025",
+    "20-biggest-fca-fines-of-all-time",
+    "fca-aml-fines-anti-money-laundering",
+  ],
+  "fca-fines-database-how-to-search": [
+    "fca-final-notices-explained",
+    "20-biggest-fca-fines-of-all-time",
+    "fca-enforcement-trends-2013-2025",
+  ],
+  "fca-aml-fines-anti-money-laundering": [
+    "fca-fines-banks-complete-list",
+    "20-biggest-fca-fines-of-all-time",
+    "fca-enforcement-trends-2013-2025",
+  ],
+  "fca-fines-banks-complete-list": [
+    "20-biggest-fca-fines-of-all-time",
+    "fca-aml-fines-anti-money-laundering",
+    "fca-fines-insurance-sector",
+  ],
+  "fca-enforcement-trends-2013-2025": [
+    "20-biggest-fca-fines-of-all-time",
+    "fca-fines-2025-complete-list",
+    "fca-aml-fines-anti-money-laundering",
+  ],
+  "fca-final-notices-explained": [
+    "fca-fines-database-how-to-search",
+    "senior-managers-regime-fca-fines",
+    "fca-enforcement-trends-2013-2025",
+  ],
+  "senior-managers-regime-fca-fines": [
+    "fca-fines-individuals-personal-accountability",
+    "fca-final-notices-explained",
+    "20-biggest-fca-fines-of-all-time",
+  ],
+  "fca-fines-january-2026": [
+    "fca-fines-february-2026",
+    "fca-enforcement-outlook-february-2026",
+    "fca-enforcement-trends-2013-2025",
+  ],
+  "fca-enforcement-outlook-february-2026": [
+    "fca-fines-february-2026",
+    "fca-fines-january-2026",
+    "fca-enforcement-trends-2013-2025",
+  ],
+  "fca-fines-february-2026": [
+    "fca-fines-january-2026",
+    "fca-fines-march-2026",
+    "fca-enforcement-trends-2013-2025",
+  ],
+  "fca-fines-individuals-personal-accountability": [
+    "senior-managers-regime-fca-fines",
+    "fca-final-notices-explained",
+    "20-biggest-fca-fines-of-all-time",
+  ],
+  "fca-fines-march-2026": [
+    "fca-fines-february-2026",
+    "fca-fines-january-2026",
+    "fca-enforcement-trends-2013-2025",
+  ],
+  "fca-fines-insurance-sector": [
+    "fca-fines-banks-complete-list",
+    "fca-aml-fines-anti-money-laundering",
+    "20-biggest-fca-fines-of-all-time",
+  ],
 };
 
 function RelatedArticles({ currentSlug }: { currentSlug: string }) {
   const relatedSlugs = RELATED_ARTICLES[currentSlug] || [];
   const related = relatedSlugs
-    .map(slug => blogArticles.find(a => a.slug === slug))
+    .map((slug) => blogArticles.find((a) => a.slug === slug))
     .filter((a): a is BlogArticleMeta => !!a);
 
   if (related.length === 0) return null;
@@ -136,11 +207,19 @@ function RelatedArticles({ currentSlug }: { currentSlug: string }) {
     <nav className="related-articles" aria-label="Related articles">
       <h3 className="related-articles__title">Related Articles</h3>
       <div className="related-articles__grid">
-        {related.map(article => (
-          <Link key={article.slug} to={`/blog/${article.slug}`} className="related-articles__card">
-            <span className="related-articles__category">{article.category}</span>
+        {related.map((article) => (
+          <Link
+            key={article.slug}
+            to={`/blog/${article.slug}`}
+            className="related-articles__card"
+          >
+            <span className="related-articles__category">
+              {article.category}
+            </span>
             <span className="related-articles__headline">{article.title}</span>
-            <span className="related-articles__meta">{article.date} &middot; {article.readTime}</span>
+            <span className="related-articles__meta">
+              {article.date} &middot; {article.readTime}
+            </span>
           </Link>
         ))}
       </div>
@@ -150,17 +229,34 @@ function RelatedArticles({ currentSlug }: { currentSlug: string }) {
 
 function RelatedYearlyArticles({ currentYear }: { currentYear: number }) {
   const adjacent = yearlyArticles
-    .filter(a => Math.abs(a.year - currentYear) === 1)
+    .filter((a) => Math.abs(a.year - currentYear) === 1)
     .sort((a, b) => b.year - a.year);
 
-  const trendsArticle = blogArticles.find(a => a.slug === 'fca-enforcement-trends-2013-2025');
-  const items: Array<{ slug: string; title: string; category: string; meta: string }> = [];
+  const trendsArticle = blogArticles.find(
+    (a) => a.slug === "fca-enforcement-trends-2013-2025",
+  );
+  const items: Array<{
+    slug: string;
+    title: string;
+    category: string;
+    meta: string;
+  }> = [];
 
   for (const a of adjacent) {
-    items.push({ slug: a.slug, title: a.title, category: 'Annual Analysis', meta: `${a.year} Review` });
+    items.push({
+      slug: a.slug,
+      title: a.title,
+      category: "Annual Analysis",
+      meta: `${a.year} Review`,
+    });
   }
   if (trendsArticle) {
-    items.push({ slug: trendsArticle.slug, title: trendsArticle.title, category: trendsArticle.category, meta: trendsArticle.date });
+    items.push({
+      slug: trendsArticle.slug,
+      title: trendsArticle.title,
+      category: trendsArticle.category,
+      meta: trendsArticle.date,
+    });
   }
 
   if (items.length === 0) return null;
@@ -169,8 +265,12 @@ function RelatedYearlyArticles({ currentYear }: { currentYear: number }) {
     <nav className="related-articles" aria-label="Related articles">
       <h3 className="related-articles__title">Related Articles</h3>
       <div className="related-articles__grid">
-        {items.map(item => (
-          <Link key={item.slug} to={`/blog/${item.slug}`} className="related-articles__card">
+        {items.map((item) => (
+          <Link
+            key={item.slug}
+            to={`/blog/${item.slug}`}
+            className="related-articles__card"
+          >
             <span className="related-articles__category">{item.category}</span>
             <span className="related-articles__headline">{item.title}</span>
             <span className="related-articles__meta">{item.meta}</span>
@@ -184,29 +284,288 @@ function RelatedYearlyArticles({ currentYear }: { currentYear: number }) {
 function renderMarkdownContent(content: string) {
   return content
     .replace(/(\|.+\|\n)+/g, (tableBlock) => {
-      const rows = tableBlock.trim().split('\n');
-      let html = '<table><thead>';
+      const rows = tableBlock.trim().split("\n");
+      let html = "<table><thead>";
       let inBody = false;
       rows.forEach((row) => {
-        if (/^\|[\s\-:]+\|$/.test(row.replace(/\|/g, '|').replace(/[^|\-:\s]/g, ''))) {
-          html += '</thead><tbody>';
+        if (
+          /^\|[\s\-:]+\|$/.test(
+            row.replace(/\|/g, "|").replace(/[^|\-:\s]/g, ""),
+          )
+        ) {
+          html += "</thead><tbody>";
           inBody = true;
           return;
         }
-        const cells = row.split('|').filter(Boolean).map(cell => cell.trim());
-        const cellTag = !inBody ? 'th' : 'td';
-        html += `<tr>${cells.map(cell => `<${cellTag}>${cell}</${cellTag}>`).join('')}</tr>`;
+        const cells = row
+          .split("|")
+          .filter(Boolean)
+          .map((cell) => cell.trim());
+        const cellTag = !inBody ? "th" : "td";
+        html += `<tr>${cells.map((cell) => `<${cellTag}>${cell}</${cellTag}>`).join("")}</tr>`;
       });
-      html += inBody ? '</tbody></table>' : '</thead></table>';
+      html += inBody ? "</tbody></table>" : "</thead></table>";
       return html;
     })
     .replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2">$1</a>')
-    .replace(/^## (.+)$/gm, '<h2>$1</h2>')
-    .replace(/^### (.+)$/gm, '<h3>$1</h3>')
-    .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
-    .replace(/^\- (.+)$/gm, '<li>$1</li>')
-    .replace(/(<li>.*<\/li>\n?)+/g, '<ul>$&</ul>')
-    .replace(/\n\n/g, '</p><p>');
+    .replace(/^## (.+)$/gm, "<h2>$1</h2>")
+    .replace(/^### (.+)$/gm, "<h3>$1</h3>")
+    .replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>")
+    .replace(/^\- (.+)$/gm, "<li>$1</li>")
+    .replace(/(<li>.*<\/li>\n?)+/g, "<ul>$&</ul>")
+    .replace(/\n\n/g, "</p><p>");
+}
+
+function isStructuredRegulatorArticle(
+  article: BlogArticleMeta,
+): article is BlogArticleMeta & {
+  structuredArticle: StructuredRegulatorArticle;
+} {
+  return Boolean(article.structuredArticle);
+}
+
+function StructuredMetricCard({
+  metric,
+}: {
+  metric: StructuredRegulatorMetric;
+}) {
+  return (
+    <div className="regulator-metric-card">
+      <span className="regulator-metric-card__label">{metric.label}</span>
+      <strong className="regulator-metric-card__value">{metric.value}</strong>
+      {metric.note && (
+        <span className="regulator-metric-card__note">{metric.note}</span>
+      )}
+    </div>
+  );
+}
+
+function StructuredSectionBlock({
+  section,
+}: {
+  section: StructuredRegulatorSection;
+}) {
+  return (
+    <section className="regulator-section">
+      <h2>{section.heading}</h2>
+      <p>{section.intro}</p>
+      <ul className="regulator-section__bullets">
+        {section.bullets.map((bullet, index) => (
+          <li key={`${section.heading}-${index}`}>{bullet}</li>
+        ))}
+      </ul>
+    </section>
+  );
+}
+
+function StructuredSourceCard({ link }: { link: StructuredRegulatorLink }) {
+  return (
+    <a
+      className="regulator-source-card"
+      href={link.url}
+      target="_blank"
+      rel="noreferrer"
+    >
+      <span className="regulator-source-card__label">{link.label}</span>
+      <span className="regulator-source-card__description">
+        {link.description}
+      </span>
+      <span className="regulator-source-card__cta">
+        Open source
+        <ExternalLink size={14} />
+      </span>
+    </a>
+  );
+}
+
+function StructuredRegulatorArticlePage({
+  article,
+}: {
+  article: BlogArticleMeta & { structuredArticle: StructuredRegulatorArticle };
+}) {
+  const navigate = useNavigate();
+  const structured = article.structuredArticle;
+  const articleFaqs = getFaqsForArticle(article.slug);
+  const regulatorSlug = article.slug.replace(/-fines-enforcement-guide$/, "");
+
+  useSEO({
+    title: article.seoTitle,
+    description: article.excerpt,
+    keywords: article.keywords.join(", "),
+    canonicalPath: `/blog/${article.slug}`,
+    ogType: "article",
+    ogImage: `https://fcafines.memaconsultants.com/og/${article.slug}.png`,
+    articlePublishedTime: article.dateISO,
+    articleModifiedTime: article.dateISO,
+    articleSection: article.category,
+    articleTags: article.keywords,
+  });
+
+  useEffect(() => {
+    const cleanup = injectStructuredData(generateArticleSchema(article));
+    return cleanup;
+  }, [article]);
+
+  useEffect(() => {
+    if (articleFaqs.length === 0) return;
+    const script = document.createElement("script");
+    script.type = "application/ld+json";
+    script.setAttribute("data-faq-ld", "true");
+    script.textContent = JSON.stringify(generateFaqSchema(articleFaqs));
+    document.head.appendChild(script);
+    return () => {
+      script.remove();
+    };
+  }, [article.slug]);
+
+  return (
+    <div className="blog-page">
+      <div className="blog-post-container">
+        <nav className="blog-post-nav">
+          <Link to="/blog" className="blog-post-back">
+            <ChevronLeft size={18} />
+            Back to Blog
+          </Link>
+        </nav>
+
+        <article
+          className="blog-article-modal"
+          itemScope
+          itemType="https://schema.org/Article"
+        >
+          <h1 className="blog-post-title" itemProp="headline">
+            {article.title}
+          </h1>
+
+          <div className="blog-article-modal-header">
+            <span className="blog-card-category" itemProp="articleSection">
+              {article.category}
+            </span>
+            <div className="blog-card-meta">
+              <span className="blog-card-meta-item">
+                <Calendar size={14} />
+                <time dateTime={article.dateISO} itemProp="datePublished">
+                  {article.date}
+                </time>
+              </span>
+              <span className="blog-card-meta-item">
+                <Clock size={14} />
+                {article.readTime}
+              </span>
+            </div>
+          </div>
+
+          <div
+            className="blog-article-content blog-article-content--structured"
+            itemProp="articleBody"
+          >
+            <section className="regulator-article-intro">
+              <p>{structured.introduction}</p>
+            </section>
+
+            <section
+              className="regulator-metrics-grid"
+              aria-label="Coverage summary"
+            >
+              {structured.metrics.map((metric) => (
+                <StructuredMetricCard key={metric.label} metric={metric} />
+              ))}
+            </section>
+
+            {structured.sections.map((section) => (
+              <StructuredSectionBlock key={section.heading} section={section} />
+            ))}
+
+            <section
+              className="regulator-sources-section"
+              aria-labelledby="official-sources-heading"
+            >
+              <div className="regulator-section-heading">
+                <h2 id="official-sources-heading">Official Sources</h2>
+                <p>
+                  Primary public pages used to track enforcement or sanctions
+                  data.
+                </p>
+              </div>
+              <div className="regulator-source-grid">
+                {structured.sourceLinks.map((link) => (
+                  <StructuredSourceCard key={link.url} link={link} />
+                ))}
+              </div>
+            </section>
+
+            <section className="regulator-takeaways">
+              <div className="regulator-section-heading">
+                <h2>Compliance Takeaways</h2>
+                <p>
+                  What a UK/EU compliance team should take from this regulator
+                  feed.
+                </p>
+              </div>
+              <ul className="regulator-takeaways__list">
+                {structured.takeaways.map((item, index) => (
+                  <li key={`${article.slug}-takeaway-${index}`}>{item}</li>
+                ))}
+              </ul>
+            </section>
+
+            <section className="regulator-related-links">
+              <div className="regulator-section-heading">
+                <h2>Related Reading</h2>
+                <p>
+                  Internal links to the matching regulator hub and FCA benchmark
+                  analysis.
+                </p>
+              </div>
+              <div className="regulator-related-links__grid">
+                {structured.relatedLinks.map((link) => (
+                  <Link
+                    key={link.url}
+                    to={link.url}
+                    className="regulator-related-links__card"
+                  >
+                    <span className="regulator-related-links__label">
+                      {link.label}
+                    </span>
+                    <span className="regulator-related-links__description">
+                      {link.description}
+                    </span>
+                  </Link>
+                ))}
+              </div>
+            </section>
+
+            {articleFaqs.length > 0 && (
+              <div className="article-faq-section">
+                <div className="article-faq-badge">FAQ</div>
+                <div className="blog-article-content">
+                  {articleFaqs.map((faq) => (
+                    <div key={faq.slug} id={faq.slug} className="faq-item">
+                      <h2 className="faq-question">{faq.question}</h2>
+                      <p>{faq.answer}</p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            <div className="blog-article-modal-footer">
+              <p className="blog-article-keywords">
+                <strong>Related searches:</strong> {article.keywords.join(", ")}
+              </p>
+              <button
+                className="blog-cta-button"
+                onClick={() => navigate(`/regulators/${regulatorSlug}`)}
+              >
+                Open Regulator Hub
+                <ExternalLink size={18} />
+              </button>
+            </div>
+          </div>
+        </article>
+      </div>
+    </div>
+  );
 }
 
 function clampToToday(dateISO: string): string {
@@ -215,41 +574,45 @@ function clampToToday(dateISO: string): string {
 }
 
 function generateArticleSchema(article: BlogArticleMeta | YearlyArticleMeta) {
-  const isYearly = 'year' in article;
+  const isYearly = "year" in article;
   const slug = article.slug;
-  const dateModified = isYearly ? clampToToday(`${article.year}-12-31`) : article.dateISO;
+  const dateModified = isYearly
+    ? clampToToday(`${article.year}-12-31`)
+    : article.dateISO;
   return {
     "@context": "https://schema.org",
     "@type": isYearly ? "AnalysisNewsArticle" : "Article",
-    "headline": article.seoTitle,
-    "description": article.excerpt,
-    "datePublished": isYearly ? `${article.year}-01-01` : article.dateISO,
-    "dateModified": dateModified,
-    "author": {
+    headline: article.seoTitle,
+    description: article.excerpt,
+    datePublished: isYearly ? `${article.year}-01-01` : article.dateISO,
+    dateModified: dateModified,
+    author: {
       "@type": "Organization",
-      "name": "MEMA Consultants",
-      "url": "https://memaconsultants.com",
-      "description": "Compliance consultancy specialising in FCA regulatory data and analysis"
+      name: "MEMA Consultants",
+      url: "https://memaconsultants.com",
+      description:
+        "Compliance consultancy specialising in FCA regulatory data and analysis",
     },
-    "publisher": {
+    publisher: {
       "@type": "Organization",
-      "name": "FCA Fines Dashboard",
-      "logo": {
+      name: "FCA Fines Dashboard",
+      logo: {
         "@type": "ImageObject",
-        "url": "https://fcafines.memaconsultants.com/mema-logo.png"
-      }
+        url: "https://fcafines.memaconsultants.com/mema-logo.png",
+      },
     },
-    "mainEntityOfPage": {
+    mainEntityOfPage: {
       "@type": "WebPage",
-      "@id": `https://fcafines.memaconsultants.com/blog/${slug}`
+      "@id": `https://fcafines.memaconsultants.com/blog/${slug}`,
     },
-    "keywords": article.keywords.join(", "),
-    "image": {
+    keywords: article.keywords.join(", "),
+    image: {
       "@type": "ImageObject",
-      "url": "https://fcafines.memaconsultants.com/og-image.png",
-      "width": 1200,
-      "height": 630,
-      "caption": "FCA Fines Dashboard - Financial Conduct Authority Enforcement Data"
+      url: "https://fcafines.memaconsultants.com/og-image.png",
+      width: 1200,
+      height: 630,
+      caption:
+        "FCA Fines Dashboard - Financial Conduct Authority Enforcement Data",
     },
   };
 }
@@ -261,9 +624,9 @@ function BlogArticlePage({ article }: { article: BlogArticleMeta }) {
   useSEO({
     title: article.seoTitle,
     description: article.excerpt,
-    keywords: article.keywords.join(', '),
+    keywords: article.keywords.join(", "),
     canonicalPath: `/blog/${article.slug}`,
-    ogType: 'article',
+    ogType: "article",
     ogImage: `https://fcafines.memaconsultants.com/og/${article.slug}.png`,
     articlePublishedTime: article.dateISO,
     articleModifiedTime: article.dateISO,
@@ -279,23 +642,27 @@ function BlogArticlePage({ article }: { article: BlogArticleMeta }) {
   // Inject second JSON-LD block for FAQPage schema (alongside Article schema)
   useEffect(() => {
     if (articleFaqs.length === 0) return;
-    const script = document.createElement('script');
-    script.type = 'application/ld+json';
-    script.setAttribute('data-faq-ld', 'true');
+    const script = document.createElement("script");
+    script.type = "application/ld+json";
+    script.setAttribute("data-faq-ld", "true");
     script.textContent = JSON.stringify(generateFaqSchema(articleFaqs));
     document.head.appendChild(script);
-    return () => { script.remove(); };
+    return () => {
+      script.remove();
+    };
   }, [article.slug]);
 
   // Inject HowTo schema for the database guide article
   useEffect(() => {
-    if (article.id !== 'fca-fines-database-guide') return;
-    const script = document.createElement('script');
-    script.type = 'application/ld+json';
-    script.setAttribute('data-howto-ld', 'true');
+    if (article.id !== "fca-fines-database-guide") return;
+    const script = document.createElement("script");
+    script.type = "application/ld+json";
+    script.setAttribute("data-howto-ld", "true");
     script.textContent = JSON.stringify(HOWTO_SCHEMA);
     document.head.appendChild(script);
-    return () => { script.remove(); };
+    return () => {
+      script.remove();
+    };
   }, [article.id]);
 
   return (
@@ -308,15 +675,25 @@ function BlogArticlePage({ article }: { article: BlogArticleMeta }) {
           </Link>
         </nav>
 
-        <article className="blog-article-modal" itemScope itemType="https://schema.org/Article">
-          <h1 className="blog-post-title" itemProp="headline">{article.title}</h1>
+        <article
+          className="blog-article-modal"
+          itemScope
+          itemType="https://schema.org/Article"
+        >
+          <h1 className="blog-post-title" itemProp="headline">
+            {article.title}
+          </h1>
 
           <div className="blog-article-modal-header">
-            <span className="blog-card-category" itemProp="articleSection">{article.category}</span>
+            <span className="blog-card-category" itemProp="articleSection">
+              {article.category}
+            </span>
             <div className="blog-card-meta">
               <span className="blog-card-meta-item">
                 <Calendar size={14} />
-                <time dateTime={article.dateISO} itemProp="datePublished">{article.date}</time>
+                <time dateTime={article.dateISO} itemProp="datePublished">
+                  {article.date}
+                </time>
               </span>
               <span className="blog-card-meta-item">
                 <Clock size={14} />
@@ -328,83 +705,85 @@ function BlogArticlePage({ article }: { article: BlogArticleMeta }) {
           <div
             className="blog-article-content"
             itemProp="articleBody"
-            dangerouslySetInnerHTML={{ __html: renderMarkdownContent(article.content) }}
+            dangerouslySetInnerHTML={{
+              __html: renderMarkdownContent(article.content),
+            }}
           />
 
           {/* Article-specific charts */}
-          {article.id === 'largest-fca-fines-history' && (
+          {article.id === "largest-fca-fines-history" && (
             <div className="article-charts-section">
               <Top20FinesChart />
               <Top20BreachTypesChart />
             </div>
           )}
 
-          {article.id === 'fca-fines-2025' && (
+          {article.id === "fca-fines-2025" && (
             <div className="article-charts-section">
               <Fines2025MonthlyChart />
               <Fines2025BreachChart />
             </div>
           )}
 
-          {article.id === 'fca-fines-database-guide' && (
+          {article.id === "fca-fines-database-guide" && (
             <div className="article-charts-section">
               <CumulativeFinesChart />
             </div>
           )}
 
-          {article.id === 'fca-aml-fines' && (
+          {article.id === "fca-aml-fines" && (
             <div className="article-charts-section">
               <AMLFinesChart />
               <AMLTrendChart />
             </div>
           )}
 
-          {article.id === 'fca-fines-banks' && (
+          {article.id === "fca-fines-banks" && (
             <div className="article-charts-section">
               <BankFinesComparisonChart />
             </div>
           )}
 
-          {article.id === 'fca-enforcement-trends' && (
+          {article.id === "fca-enforcement-trends" && (
             <div className="article-charts-section">
               <AllYearsEnforcementChart />
             </div>
           )}
 
-          {article.id === 'fca-final-notices' && (
+          {article.id === "fca-final-notices" && (
             <div className="article-charts-section">
               <FinalNoticesBreakdownChart />
             </div>
           )}
 
-          {article.id === 'senior-managers-regime-fines' && (
+          {article.id === "senior-managers-regime-fines" && (
             <div className="article-charts-section">
               <SMCREnforcementChart />
             </div>
           )}
 
-          {article.id === 'fca-fines-january-2026' && (
+          {article.id === "fca-fines-january-2026" && (
             <div className="article-charts-section">
               <Jan2026EnforcementChart />
               <HistoricalJanuaryChart />
             </div>
           )}
 
-          {article.id === 'fca-enforcement-outlook-february-2026' && (
+          {article.id === "fca-enforcement-outlook-february-2026" && (
             <div className="article-charts-section">
               <EnforcementTrendOutlookChart />
               <EnforcementPriorityChart />
             </div>
           )}
 
-          {article.id === 'fca-fines-february-2026' && (
+          {article.id === "fca-fines-february-2026" && (
             <div className="article-charts-section">
               <HistoricalFebruaryChart />
               <Feb2026ThemesChart />
             </div>
           )}
 
-          {article.id === 'fca-fines-individuals' && (
+          {article.id === "fca-fines-individuals" && (
             <div className="article-charts-section">
               <IndividualVsFirmChart />
               <TopIndividualFinesChart />
@@ -412,14 +791,14 @@ function BlogArticlePage({ article }: { article: BlogArticleMeta }) {
             </div>
           )}
 
-          {article.id === 'fca-fines-march-2026' && (
+          {article.id === "fca-fines-march-2026" && (
             <div className="article-charts-section">
               <Q1_2026_EnforcementChart />
               <Enforcement2026BreakdownChart />
             </div>
           )}
 
-          {article.id === 'fca-fines-insurance' && (
+          {article.id === "fca-fines-insurance" && (
             <div className="article-charts-section">
               <InsuranceFinesChart />
               <InsuranceBreachChart />
@@ -432,7 +811,7 @@ function BlogArticlePage({ article }: { article: BlogArticleMeta }) {
             <div className="article-faq-section">
               <div className="article-faq-badge">FAQ</div>
               <div className="blog-article-content">
-                {articleFaqs.map(faq => (
+                {articleFaqs.map((faq) => (
                   <div key={faq.slug} id={faq.slug} className="faq-item">
                     <h2 className="faq-question">{faq.question}</h2>
                     <p>{faq.answer}</p>
@@ -446,11 +825,11 @@ function BlogArticlePage({ article }: { article: BlogArticleMeta }) {
 
           <div className="blog-article-modal-footer">
             <p className="blog-article-keywords">
-              <strong>Related searches:</strong> {article.keywords.join(', ')}
+              <strong>Related searches:</strong> {article.keywords.join(", ")}
             </p>
             <button
               className="blog-cta-button"
-              onClick={() => navigate('/dashboard')}
+              onClick={() => navigate("/dashboard")}
             >
               Explore FCA Fines Dashboard
               <ExternalLink size={18} />
@@ -469,13 +848,13 @@ function YearlyArticlePage({ article }: { article: YearlyArticleMeta }) {
   useSEO({
     title: article.seoTitle,
     description: article.excerpt,
-    keywords: article.keywords.join(', '),
+    keywords: article.keywords.join(", "),
     canonicalPath: `/blog/${article.slug}`,
-    ogType: 'article',
+    ogType: "article",
     ogImage: `https://fcafines.memaconsultants.com/og/${article.slug}.png`,
     articlePublishedTime: `${article.year}-01-01`,
     articleModifiedTime: clampToToday(`${article.year}-12-31`),
-    articleSection: 'Annual Analysis',
+    articleSection: "Annual Analysis",
     articleTags: article.keywords,
   });
 
@@ -487,12 +866,14 @@ function YearlyArticlePage({ article }: { article: YearlyArticleMeta }) {
   // Inject FAQPage JSON-LD for yearly review
   useEffect(() => {
     if (yearlyFaqs.length === 0) return;
-    const script = document.createElement('script');
-    script.type = 'application/ld+json';
-    script.setAttribute('data-faq-ld', 'true');
+    const script = document.createElement("script");
+    script.type = "application/ld+json";
+    script.setAttribute("data-faq-ld", "true");
     script.textContent = JSON.stringify(generateFaqSchema(yearlyFaqs));
     document.head.appendChild(script);
-    return () => { script.remove(); };
+    return () => {
+      script.remove();
+    };
   }, [article.year]);
 
   return (
@@ -505,12 +886,18 @@ function YearlyArticlePage({ article }: { article: YearlyArticleMeta }) {
           </Link>
         </nav>
 
-        <article className="blog-article-modal" itemScope itemType="https://schema.org/Article">
-          <h1 className="blog-post-title" itemProp="headline">{article.title}</h1>
+        <article
+          className="blog-article-modal"
+          itemScope
+          itemType="https://schema.org/Article"
+        >
+          <h1 className="blog-post-title" itemProp="headline">
+            {article.title}
+          </h1>
 
           <div className="blog-article-modal-header">
             <span className="blog-card-category">
-              <BarChart3 size={14} style={{ marginRight: '0.375rem' }} />
+              <BarChart3 size={14} style={{ marginRight: "0.375rem" }} />
               Annual Analysis
             </span>
             <div className="blog-card-meta">
@@ -531,7 +918,9 @@ function YearlyArticlePage({ article }: { article: YearlyArticleMeta }) {
               <div className="stats-summary-row">
                 <div className="stats-summary-item">
                   <div className="stats-summary-value">
-                    {formatYearlyCurrency(yearlyFCAData[article.year].totalAmount)}
+                    {formatYearlyCurrency(
+                      yearlyFCAData[article.year].totalAmount,
+                    )}
                   </div>
                   <div className="stats-summary-label">Total Fines</div>
                 </div>
@@ -549,7 +938,9 @@ function YearlyArticlePage({ article }: { article: YearlyArticleMeta }) {
                 </div>
                 <div className="stats-summary-item">
                   <div className="stats-summary-value">
-                    {formatYearlyCurrency(yearlyFCAData[article.year].largestFine.amount)}
+                    {formatYearlyCurrency(
+                      yearlyFCAData[article.year].largestFine.amount,
+                    )}
                   </div>
                   <div className="stats-summary-label">Largest Fine</div>
                 </div>
@@ -557,7 +948,7 @@ function YearlyArticlePage({ article }: { article: YearlyArticleMeta }) {
             )}
 
             <h2>Executive Summary</h2>
-            {article.executiveSummary.split('\n\n').map((para, i) => (
+            {article.executiveSummary.split("\n\n").map((para, i) => (
               <p key={i}>{para}</p>
             ))}
 
@@ -570,7 +961,7 @@ function YearlyArticlePage({ article }: { article: YearlyArticleMeta }) {
             )}
 
             <h2>Regulatory Context</h2>
-            {article.regulatoryContext.split('\n\n').map((para, i) => (
+            {article.regulatoryContext.split("\n\n").map((para, i) => (
               <p key={i}>{para}</p>
             ))}
 
@@ -604,20 +995,23 @@ function YearlyArticlePage({ article }: { article: YearlyArticleMeta }) {
                 <Briefcase size={18} />
                 Professional Analysis
               </h4>
-              {article.professionalInsight.split('\n\n').map((para, i) => (
+              {article.professionalInsight.split("\n\n").map((para, i) => (
                 <p key={i}>{para}</p>
               ))}
             </div>
 
             <h2>Looking Ahead</h2>
-            {article.lookingAhead.split('\n\n').map((para, i) => (
+            {article.lookingAhead.split("\n\n").map((para, i) => (
               <p key={i}>{para}</p>
             ))}
 
             {/* Year Comparison Chart */}
             {article.year >= 2015 && (
               <YearOverYearChart
-                years={[2013, 2014, 2015, 2016, 2017, 2018, 2019, 2020, 2021, 2022, 2023, 2024, 2025].filter(y => y <= article.year)}
+                years={[
+                  2013, 2014, 2015, 2016, 2017, 2018, 2019, 2020, 2021, 2022,
+                  2023, 2024, 2025,
+                ].filter((y) => y <= article.year)}
               />
             )}
           </div>
@@ -627,7 +1021,7 @@ function YearlyArticlePage({ article }: { article: YearlyArticleMeta }) {
             <div className="article-faq-section">
               <div className="article-faq-badge">FAQ</div>
               <div className="blog-article-content">
-                {yearlyFaqs.map(faq => (
+                {yearlyFaqs.map((faq) => (
                   <div key={faq.slug} id={faq.slug} className="faq-item">
                     <h2 className="faq-question">{faq.question}</h2>
                     <p>{faq.answer}</p>
@@ -641,11 +1035,11 @@ function YearlyArticlePage({ article }: { article: YearlyArticleMeta }) {
 
           <div className="blog-article-modal-footer">
             <p className="blog-article-keywords">
-              <strong>Related searches:</strong> {article.keywords.join(', ')}
+              <strong>Related searches:</strong> {article.keywords.join(", ")}
             </p>
             <button
               className="blog-cta-button"
-              onClick={() => navigate('/dashboard')}
+              onClick={() => navigate("/dashboard")}
             >
               Explore FCA Fines Dashboard
               <ExternalLink size={18} />
@@ -667,10 +1061,14 @@ function NotFoundPage() {
             Back to Blog
           </Link>
         </nav>
-        <div style={{ textAlign: 'center', padding: '4rem 1rem' }}>
+        <div style={{ textAlign: "center", padding: "4rem 1rem" }}>
           <h1>Article Not Found</h1>
           <p>The article you're looking for doesn't exist.</p>
-          <Link to="/blog" className="blog-cta-button" style={{ display: 'inline-flex', marginTop: '1.5rem' }}>
+          <Link
+            to="/blog"
+            className="blog-cta-button"
+            style={{ display: "inline-flex", marginTop: "1.5rem" }}
+          >
             Browse All Articles
           </Link>
         </div>
@@ -683,10 +1081,13 @@ export function BlogPost() {
   const { slug } = useParams<{ slug: string }>();
 
   // Look up in both blog articles and yearly articles
-  const blogArticle = blogArticles.find(a => a.slug === slug);
-  const yearlyArticle = yearlyArticles.find(a => a.slug === slug);
+  const blogArticle = blogArticles.find((a) => a.slug === slug);
+  const yearlyArticle = yearlyArticles.find((a) => a.slug === slug);
 
   if (blogArticle) {
+    if (isStructuredRegulatorArticle(blogArticle)) {
+      return <StructuredRegulatorArticlePage article={blogArticle} />;
+    }
     return <BlogArticlePage article={blogArticle} />;
   }
 

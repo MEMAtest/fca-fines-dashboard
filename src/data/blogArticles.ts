@@ -1,7 +1,7 @@
 // Shared blog article metadata — consumed by both React components and build scripts.
 // NO React/JSX imports here. The `icon` field lives in Blog.tsx only.
 
-import { regulatorBlogs } from './regulatorBlogs';
+import { regulatorBlogs } from "./regulatorBlogs.js";
 
 export interface BlogArticleMeta {
   id: string;
@@ -15,7 +15,35 @@ export interface BlogArticleMeta {
   date: string;
   dateISO: string;
   featured?: boolean;
+  structuredArticle?: StructuredRegulatorArticle;
   keywords: string[];
+}
+
+export interface StructuredRegulatorMetric {
+  label: string;
+  value: string;
+  note?: string;
+}
+
+export interface StructuredRegulatorSection {
+  heading: string;
+  intro: string;
+  bullets: string[];
+}
+
+export interface StructuredRegulatorLink {
+  label: string;
+  url: string;
+  description: string;
+}
+
+export interface StructuredRegulatorArticle {
+  introduction: string;
+  metrics: StructuredRegulatorMetric[];
+  sections: StructuredRegulatorSection[];
+  takeaways: string[];
+  sourceLinks: StructuredRegulatorLink[];
+  relatedLinks: StructuredRegulatorLink[];
 }
 
 export interface YearlyArticleMeta {
@@ -34,11 +62,13 @@ export interface YearlyArticleMeta {
 
 export const blogArticles: BlogArticleMeta[] = [
   {
-    id: 'largest-fca-fines-history',
-    slug: '20-biggest-fca-fines-of-all-time',
-    title: '20 Biggest FCA Fines of All Time: Complete List & Analysis',
-    seoTitle: '20 Biggest FCA Fines of All Time | Largest Financial Conduct Authority Penalties',
-    excerpt: 'Complete list of the 20 largest FCA fines ever issued, from Barclays\' record £284 million penalty to Deutsche Bank\'s £227 million fine. Updated for 2025.',
+    id: "largest-fca-fines-history",
+    slug: "20-biggest-fca-fines-of-all-time",
+    title: "20 Biggest FCA Fines of All Time: Complete List & Analysis",
+    seoTitle:
+      "20 Biggest FCA Fines of All Time | Largest Financial Conduct Authority Penalties",
+    excerpt:
+      "Complete list of the 20 largest FCA fines ever issued, from Barclays' record £284 million penalty to Deutsche Bank's £227 million fine. Updated for 2025.",
     content: `
 ## The 20 Largest FCA Fines in History
 
@@ -123,19 +153,28 @@ Since 2013, the FCA has issued over £4.9 billion in total fines, with the avera
 
 For a comprehensive overview of how FCA enforcement works — from investigation to penalty calculation — read our [Complete Guide to FCA Enforcement & Fines](/guide/fca-enforcement).
     `,
-    category: 'FCA Fines List',
-    readTime: '12 min read',
-    date: 'January 2025',
-    dateISO: '2025-01-15',
+    category: "FCA Fines List",
+    readTime: "12 min read",
+    date: "January 2025",
+    dateISO: "2025-01-15",
     featured: true,
-    keywords: ['biggest FCA fines', 'largest FCA fines', '20 biggest FCA fines', 'FCA fines list', 'top FCA fines', 'FCA fines of all time']
+    keywords: [
+      "biggest FCA fines",
+      "largest FCA fines",
+      "20 biggest FCA fines",
+      "FCA fines list",
+      "top FCA fines",
+      "FCA fines of all time",
+    ],
   },
   {
-    id: 'fca-fines-2025',
-    slug: 'fca-fines-2025-complete-list',
-    title: 'FCA Fines 2025: Complete List of All Penalties This Year',
-    seoTitle: 'FCA Fines 2025 | Complete List of Financial Conduct Authority Penalties',
-    excerpt: 'Track all FCA fines issued in 2025. Updated list includes Nationwide £44m, Barclays £39m, and all enforcement actions. See total fines and trends.',
+    id: "fca-fines-2025",
+    slug: "fca-fines-2025-complete-list",
+    title: "FCA Fines 2025: Complete List of All Penalties This Year",
+    seoTitle:
+      "FCA Fines 2025 | Complete List of Financial Conduct Authority Penalties",
+    excerpt:
+      "Track all FCA fines issued in 2025. Updated list includes Nationwide £44m, Barclays £39m, and all enforcement actions. See total fines and trends.",
     content: `
 ## FCA Fines 2025 - Complete List
 
@@ -189,19 +228,28 @@ Enforcement activity against crypto firms has intensified, targeting both unregi
 
 Firms seeking to minimise regulatory risk should ensure their AML controls are genuinely effective, with transaction monitoring capable of detecting suspicious activity. Consumer Duty implementation requires thorough gap analysis and meaningful remediation rather than a superficial compliance exercise. Governance structures must provide clear accountability under SM&CR — see our [SM&CR enforcement analysis](/blog/senior-managers-regime-fca-fines) — supported by appropriate investment in compliance technology and regular, role-specific training for all staff. For more context on the biggest penalties, explore our [20 biggest FCA fines of all time](/blog/20-biggest-fca-fines-of-all-time).
     `,
-    category: 'FCA Fines 2025',
-    readTime: '8 min read',
-    date: 'January 2025',
-    dateISO: '2025-01-18',
+    category: "FCA Fines 2025",
+    readTime: "8 min read",
+    date: "January 2025",
+    dateISO: "2025-01-18",
     featured: true,
-    keywords: ['FCA fines 2025', 'FCA fines today', 'FCA fines this year', 'latest FCA fines', 'recent FCA fines', 'FCA enforcement 2025']
+    keywords: [
+      "FCA fines 2025",
+      "FCA fines today",
+      "FCA fines this year",
+      "latest FCA fines",
+      "recent FCA fines",
+      "FCA enforcement 2025",
+    ],
   },
   {
-    id: 'fca-fines-database-guide',
-    slug: 'fca-fines-database-how-to-search',
-    title: 'FCA Fines Database: How to Search & Track All Penalties',
-    seoTitle: 'FCA Fines Database | Search All Financial Conduct Authority Penalties',
-    excerpt: 'Learn how to use the FCA fines database to search enforcement actions, track penalties by firm, and analyse regulatory trends from 2013-2025.',
+    id: "fca-fines-database-guide",
+    slug: "fca-fines-database-how-to-search",
+    title: "FCA Fines Database: How to Search & Track All Penalties",
+    seoTitle:
+      "FCA Fines Database | Search All Financial Conduct Authority Penalties",
+    excerpt:
+      "Learn how to use the FCA fines database to search enforcement actions, track penalties by firm, and analyse regulatory trends from 2013-2025.",
     content: `
 ## FCA Fines Database Guide
 
@@ -260,19 +308,26 @@ Our interactive dashboard provides visual analytics through charts showing fine 
 
 The FCA publishes enforcement information through several official channels. Final Notices provide detailed findings for concluded cases — learn more in our [FCA Final Notices explained](/blog/fca-final-notices-explained) article. Decision Notices set out the regulator's reasoning, Warning Notices indicate potential enforcement action, and the Annual Enforcement Report offers high-level statistics and strategic priorities. To understand the biggest penalties in the database, see our [20 biggest FCA fines of all time](/blog/20-biggest-fca-fines-of-all-time).
     `,
-    category: 'Database Guide',
-    readTime: '10 min read',
-    date: 'January 2025',
-    dateISO: '2025-01-10',
+    category: "Database Guide",
+    readTime: "10 min read",
+    date: "January 2025",
+    dateISO: "2025-01-10",
     featured: true,
-    keywords: ['FCA fines database', 'FCA fines search', 'FCA enforcement database', 'FCA fines tracker', 'FCA penalty database']
+    keywords: [
+      "FCA fines database",
+      "FCA fines search",
+      "FCA enforcement database",
+      "FCA fines tracker",
+      "FCA penalty database",
+    ],
   },
   {
-    id: 'fca-aml-fines',
-    slug: 'fca-aml-fines-anti-money-laundering',
-    title: 'FCA AML Fines: Complete Guide to Anti-Money Laundering Penalties',
-    seoTitle: 'FCA AML Fines | Anti-Money Laundering Penalties & Enforcement',
-    excerpt: 'Comprehensive analysis of FCA AML fines totalling over £1.2 billion. Understand why anti-money laundering failures attract the largest FCA penalties.',
+    id: "fca-aml-fines",
+    slug: "fca-aml-fines-anti-money-laundering",
+    title: "FCA AML Fines: Complete Guide to Anti-Money Laundering Penalties",
+    seoTitle: "FCA AML Fines | Anti-Money Laundering Penalties & Enforcement",
+    excerpt:
+      "Comprehensive analysis of FCA AML fines totalling over £1.2 billion. Understand why anti-money laundering failures attract the largest FCA penalties.",
     content: `
 ## FCA AML Fines Overview
 
@@ -346,18 +401,25 @@ Firms seeking to minimise AML enforcement risk should invest in modern transacti
 
 For the full picture of FCA enforcement — including how fines are calculated and the biggest penalties of all time — read our [Complete Guide to FCA Enforcement & Fines](/guide/fca-enforcement).
     `,
-    category: 'AML Fines',
-    readTime: '11 min read',
-    date: 'December 2024',
-    dateISO: '2024-12-20',
-    keywords: ['FCA AML fines', 'anti-money laundering fines', 'AML fines UK', 'FCA money laundering fines', 'AML enforcement']
+    category: "AML Fines",
+    readTime: "11 min read",
+    date: "December 2024",
+    dateISO: "2024-12-20",
+    keywords: [
+      "FCA AML fines",
+      "anti-money laundering fines",
+      "AML fines UK",
+      "FCA money laundering fines",
+      "AML enforcement",
+    ],
   },
   {
-    id: 'fca-fines-banks',
-    slug: 'fca-fines-banks-complete-list',
-    title: 'FCA Fines to Banks: Complete List of Banking Sector Penalties',
-    seoTitle: 'FCA Fines Banks | Complete List of Banking Sector Penalties',
-    excerpt: 'Complete list of FCA fines issued to banks including Barclays, HSBC, Lloyds, NatWest, and more. Banking sector accounts for 65% of all FCA penalties.',
+    id: "fca-fines-banks",
+    slug: "fca-fines-banks-complete-list",
+    title: "FCA Fines to Banks: Complete List of Banking Sector Penalties",
+    seoTitle: "FCA Fines Banks | Complete List of Banking Sector Penalties",
+    excerpt:
+      "Complete list of FCA fines issued to banks including Barclays, HSBC, Lloyds, NatWest, and more. Banking sector accounts for 65% of all FCA penalties.",
     content: `
 ## FCA Fines to Banks
 
@@ -429,18 +491,26 @@ Technology investment has become essential for modern banking compliance. Automa
 
 Culture ultimately determines whether compliance programmes succeed or fail. This requires genuine tone from the top where senior leaders visibly prioritise compliance, incentive structures that reward good conduct rather than just revenue generation, and a speak-up culture where employees feel safe reporting concerns without fear of retaliation. For insights into how the [insurance sector](/blog/fca-fines-insurance-sector) compares, or to see the [20 biggest FCA fines of all time](/blog/20-biggest-fca-fines-of-all-time), follow the links.
     `,
-    category: 'Banking Fines',
-    readTime: '10 min read',
-    date: 'November 2024',
-    dateISO: '2024-11-15',
-    keywords: ['FCA fines banks', 'FCA fines Barclays', 'FCA fines HSBC', 'FCA fines Lloyds', 'FCA fines NatWest', 'banking fines UK']
+    category: "Banking Fines",
+    readTime: "10 min read",
+    date: "November 2024",
+    dateISO: "2024-11-15",
+    keywords: [
+      "FCA fines banks",
+      "FCA fines Barclays",
+      "FCA fines HSBC",
+      "FCA fines Lloyds",
+      "FCA fines NatWest",
+      "banking fines UK",
+    ],
   },
   {
-    id: 'fca-enforcement-trends',
-    slug: 'fca-enforcement-trends-2013-2025',
-    title: 'FCA Enforcement Trends: Analysis of Fines 2013-2025',
-    seoTitle: 'FCA Enforcement Trends | Fines Analysis 2013-2025',
-    excerpt: 'Detailed analysis of FCA enforcement trends from 2013-2025. Track how total fines, average penalties, and regulatory focus areas have evolved.',
+    id: "fca-enforcement-trends",
+    slug: "fca-enforcement-trends-2013-2025",
+    title: "FCA Enforcement Trends: Analysis of Fines 2013-2025",
+    seoTitle: "FCA Enforcement Trends | Fines Analysis 2013-2025",
+    excerpt:
+      "Detailed analysis of FCA enforcement trends from 2013-2025. Track how total fines, average penalties, and regulatory focus areas have evolved.",
     content: `
 ## FCA Enforcement Trends 2013-2025
 
@@ -497,18 +567,25 @@ Based on observable trends, compliance teams should anticipate continued AML enf
 
 For a comprehensive overview of every aspect of FCA enforcement — from the biggest fines to sector-by-sector analysis — read our [Complete Guide to FCA Enforcement & Fines](/guide/fca-enforcement).
     `,
-    category: 'Trends Analysis',
-    readTime: '9 min read',
-    date: 'January 2025',
-    dateISO: '2025-01-12',
-    keywords: ['FCA enforcement trends', 'FCA fines history', 'FCA fines statistics', 'FCA fines data', 'FCA enforcement data']
+    category: "Trends Analysis",
+    readTime: "9 min read",
+    date: "January 2025",
+    dateISO: "2025-01-12",
+    keywords: [
+      "FCA enforcement trends",
+      "FCA fines history",
+      "FCA fines statistics",
+      "FCA fines data",
+      "FCA enforcement data",
+    ],
   },
   {
-    id: 'fca-final-notices',
-    slug: 'fca-final-notices-explained',
-    title: 'FCA Final Notices: Understanding Enforcement Decisions',
-    seoTitle: 'FCA Final Notices | Understanding FCA Enforcement Decisions',
-    excerpt: 'Complete guide to FCA final notices - what they are, what they contain, and how to find enforcement decisions for any firm.',
+    id: "fca-final-notices",
+    slug: "fca-final-notices-explained",
+    title: "FCA Final Notices: Understanding Enforcement Decisions",
+    seoTitle: "FCA Final Notices | Understanding FCA Enforcement Decisions",
+    excerpt:
+      "Complete guide to FCA final notices - what they are, what they contain, and how to find enforcement decisions for any firm.",
     content: `
 ## What are FCA Final Notices?
 
@@ -546,18 +623,25 @@ Enforcement data also supports risk assessment and planning. This information he
 
 For a comprehensive overview of the entire FCA enforcement process — from investigation through to penalty — read our [Complete Guide to FCA Enforcement & Fines](/guide/fca-enforcement).
     `,
-    category: 'Regulatory Guide',
-    readTime: '8 min read',
-    date: 'October 2024',
-    dateISO: '2024-10-25',
-    keywords: ['FCA final notices', 'FCA decision notices', 'FCA enforcement decisions', 'FCA warning notices', 'FCA regulatory decisions']
+    category: "Regulatory Guide",
+    readTime: "8 min read",
+    date: "October 2024",
+    dateISO: "2024-10-25",
+    keywords: [
+      "FCA final notices",
+      "FCA decision notices",
+      "FCA enforcement decisions",
+      "FCA warning notices",
+      "FCA regulatory decisions",
+    ],
   },
   {
-    id: 'senior-managers-regime-fines',
-    slug: 'senior-managers-regime-fca-fines',
-    title: 'Senior Managers Regime: Personal Liability & FCA Fines',
-    seoTitle: 'Senior Managers Regime Fines | SM&CR Personal Liability',
-    excerpt: 'How the Senior Managers & Certification Regime affects personal liability for FCA fines. Individual enforcement actions and accountability.',
+    id: "senior-managers-regime-fines",
+    slug: "senior-managers-regime-fca-fines",
+    title: "Senior Managers Regime: Personal Liability & FCA Fines",
+    seoTitle: "Senior Managers Regime Fines | SM&CR Personal Liability",
+    excerpt:
+      "How the Senior Managers & Certification Regime affects personal liability for FCA fines. Individual enforcement actions and accountability.",
     content: `
 ## Senior Managers Regime and FCA Fines
 
@@ -597,18 +681,26 @@ The FCA has clearly signalled increased focus on individual accountability. This
 
 For a comprehensive overview of all aspects of FCA enforcement — from the biggest fines to sector analysis and trends — read our [Complete Guide to FCA Enforcement & Fines](/guide/fca-enforcement).
     `,
-    category: 'SM&CR',
-    readTime: '10 min read',
-    date: 'September 2024',
-    dateISO: '2024-09-18',
-    keywords: ['senior managers regime', 'SM&CR fines', 'individual FCA fines', 'personal liability FCA', 'senior manager accountability']
+    category: "SM&CR",
+    readTime: "10 min read",
+    date: "September 2024",
+    dateISO: "2024-09-18",
+    keywords: [
+      "senior managers regime",
+      "SM&CR fines",
+      "individual FCA fines",
+      "personal liability FCA",
+      "senior manager accountability",
+    ],
   },
   {
-    id: 'fca-fines-january-2026',
-    slug: 'fca-fines-january-2026',
-    title: 'FCA Fines January 2026: Individual Accountability in Focus',
-    seoTitle: 'FCA Fines January 2026 | Insider Dealing & Market Abuse Penalties',
-    excerpt: 'January 2026 saw five FCA enforcement actions totalling £2.5M. All penalties targeted individuals for market abuse, insider dealing, and dishonest conduct.',
+    id: "fca-fines-january-2026",
+    slug: "fca-fines-january-2026",
+    title: "FCA Fines January 2026: Individual Accountability in Focus",
+    seoTitle:
+      "FCA Fines January 2026 | Insider Dealing & Market Abuse Penalties",
+    excerpt:
+      "January 2026 saw five FCA enforcement actions totalling £2.5M. All penalties targeted individuals for market abuse, insider dealing, and dishonest conduct.",
     content: `
 ## FCA Fines January 2026: Individual Accountability in Focus
 
@@ -640,19 +732,28 @@ For compliance professionals, January 2026 reinforces several important lessons.
 
 The absence of firm-level fines in January should not be interpreted as reduced institutional scrutiny. The FCA's enforcement pipeline typically delivers firm penalties in waves, and the focus on individuals this month likely reflects case timing rather than a strategic shift away from institutional enforcement.
     `,
-    category: 'FCA Fines 2026',
-    readTime: '6 min read',
-    date: 'January 2026',
-    dateISO: '2026-01-31',
+    category: "FCA Fines 2026",
+    readTime: "6 min read",
+    date: "January 2026",
+    dateISO: "2026-01-31",
     featured: true,
-    keywords: ['FCA fines January 2026', 'FCA fines 2026', 'Darren Reynolds FCA', 'Carillion FCA fine', 'insider dealing FCA 2026', 'market abuse FCA', 'individual FCA fines 2026']
+    keywords: [
+      "FCA fines January 2026",
+      "FCA fines 2026",
+      "Darren Reynolds FCA",
+      "Carillion FCA fine",
+      "insider dealing FCA 2026",
+      "market abuse FCA",
+      "individual FCA fines 2026",
+    ],
   },
   {
-    id: 'fca-enforcement-outlook-february-2026',
-    slug: 'fca-enforcement-outlook-february-2026',
-    title: 'FCA Enforcement Outlook: What to Watch in Early 2026',
-    seoTitle: 'FCA Enforcement Outlook 2026 | Trends & Regulatory Predictions',
-    excerpt: 'Analysis of FCA enforcement trends heading into 2026, examining the shift toward individual accountability and expected regulatory priorities.',
+    id: "fca-enforcement-outlook-february-2026",
+    slug: "fca-enforcement-outlook-february-2026",
+    title: "FCA Enforcement Outlook: What to Watch in Early 2026",
+    seoTitle: "FCA Enforcement Outlook 2026 | Trends & Regulatory Predictions",
+    excerpt:
+      "Analysis of FCA enforcement trends heading into 2026, examining the shift toward individual accountability and expected regulatory priorities.",
     content: `
 ## FCA Enforcement Outlook: What to Watch in Early 2026
 
@@ -692,18 +793,28 @@ Individual senior managers should maintain personal records of oversight activit
 
 The FCA's 2026 enforcement activity will likely accelerate through Q2 and Q3 as cases move through the investigation pipeline. Early preparation and genuine compliance engagement, rather than last-minute remediation, remain the most effective risk mitigation strategies.
     `,
-    category: 'Trends Analysis',
-    readTime: '5 min read',
-    date: 'February 2026',
-    dateISO: '2026-02-10',
-    keywords: ['FCA enforcement 2026', 'FCA predictions 2026', 'Consumer Duty enforcement', 'FCA individual fines', 'FCA enforcement trends', 'FCA outlook 2026', 'operational resilience FCA']
+    category: "Trends Analysis",
+    readTime: "5 min read",
+    date: "February 2026",
+    dateISO: "2026-02-10",
+    keywords: [
+      "FCA enforcement 2026",
+      "FCA predictions 2026",
+      "Consumer Duty enforcement",
+      "FCA individual fines",
+      "FCA enforcement trends",
+      "FCA outlook 2026",
+      "operational resilience FCA",
+    ],
   },
   {
-    id: 'fca-fines-february-2026',
-    slug: 'fca-fines-february-2026',
-    title: 'FCA Fines February 2026: Complete Monthly List of Penalties',
-    seoTitle: 'FCA Fines February 2026 | Complete List of Financial Conduct Authority Penalties This Month',
-    excerpt: 'Complete tracker of all FCA fines and enforcement actions issued in February 2026. Updated throughout the month with firm names, penalty amounts, and breach details.',
+    id: "fca-fines-february-2026",
+    slug: "fca-fines-february-2026",
+    title: "FCA Fines February 2026: Complete Monthly List of Penalties",
+    seoTitle:
+      "FCA Fines February 2026 | Complete List of Financial Conduct Authority Penalties This Month",
+    excerpt:
+      "Complete tracker of all FCA fines and enforcement actions issued in February 2026. Updated throughout the month with firm names, penalty amounts, and breach details.",
     content: `
 ## FCA Fines February 2026: Complete Monthly Tracker
 
@@ -760,19 +871,28 @@ For compliance professionals monitoring FCA enforcement in real-time, February 2
 
 This page will be updated throughout February 2026 as new enforcement actions are published. For a complete historical view of all FCA fines, explore our interactive dashboard.
     `,
-    category: 'FCA Fines 2026',
-    readTime: '5 min read',
-    date: 'February 2026',
-    dateISO: '2026-02-01',
+    category: "FCA Fines 2026",
+    readTime: "5 min read",
+    date: "February 2026",
+    dateISO: "2026-02-01",
     featured: true,
-    keywords: ['FCA fines February 2026', 'FCA fines this month', 'FCA fines today', 'FCA enforcement February 2026', 'latest FCA fines', 'FCA penalties February 2026']
+    keywords: [
+      "FCA fines February 2026",
+      "FCA fines this month",
+      "FCA fines today",
+      "FCA enforcement February 2026",
+      "latest FCA fines",
+      "FCA penalties February 2026",
+    ],
   },
   {
-    id: 'fca-fines-individuals',
-    slug: 'fca-fines-individuals-personal-accountability',
-    title: 'FCA Fines for Individuals: Personal Accountability & Penalties',
-    seoTitle: 'FCA Fines for Individuals | Personal Accountability, Bans & Penalties',
-    excerpt: 'Complete analysis of FCA fines against individuals. Covers personal liability under SM&CR, prohibition orders, financial penalties, and how the FCA holds individuals accountable.',
+    id: "fca-fines-individuals",
+    slug: "fca-fines-individuals-personal-accountability",
+    title: "FCA Fines for Individuals: Personal Accountability & Penalties",
+    seoTitle:
+      "FCA Fines for Individuals | Personal Accountability, Bans & Penalties",
+    excerpt:
+      "Complete analysis of FCA fines against individuals. Covers personal liability under SM&CR, prohibition orders, financial penalties, and how the FCA holds individuals accountable.",
     content: `
 ## FCA Fines for Individuals: The Complete Guide to Personal Accountability
 
@@ -881,18 +1001,28 @@ Expected developments include expanded use of the SM&CR framework for enforcemen
 
 For anyone working in UK financial services, understanding the FCA's approach to individual enforcement is not optional — it is essential to protecting both your career and your clients.
     `,
-    category: 'Regulatory Guide',
-    readTime: '12 min read',
-    date: 'February 2026',
-    dateISO: '2026-02-16',
-    keywords: ['FCA fines individuals', 'FCA personal fines', 'FCA prohibition orders', 'SM&CR fines', 'individual accountability FCA', 'FCA criminal prosecution', 'senior manager fines FCA']
+    category: "Regulatory Guide",
+    readTime: "12 min read",
+    date: "February 2026",
+    dateISO: "2026-02-16",
+    keywords: [
+      "FCA fines individuals",
+      "FCA personal fines",
+      "FCA prohibition orders",
+      "SM&CR fines",
+      "individual accountability FCA",
+      "FCA criminal prosecution",
+      "senior manager fines FCA",
+    ],
   },
   {
-    id: 'fca-fines-march-2026',
-    slug: 'fca-fines-march-2026',
-    title: 'FCA Fines March 2026: Complete Monthly List of Penalties',
-    seoTitle: 'FCA Fines March 2026 | Complete List of Financial Conduct Authority Penalties This Month',
-    excerpt: 'Complete tracker of all FCA fines and enforcement actions issued in March 2026. Updated throughout the month with firm names, penalty amounts, and breach details.',
+    id: "fca-fines-march-2026",
+    slug: "fca-fines-march-2026",
+    title: "FCA Fines March 2026: Complete Monthly List of Penalties",
+    seoTitle:
+      "FCA Fines March 2026 | Complete List of Financial Conduct Authority Penalties This Month",
+    excerpt:
+      "Complete tracker of all FCA fines and enforcement actions issued in March 2026. Updated throughout the month with firm names, penalty amounts, and breach details.",
     content: `
 ## FCA Fines March 2026: Complete Monthly Tracker
 
@@ -953,19 +1083,29 @@ March's position at the quarter end makes it a critical month for compliance pla
 
 This page will be updated throughout March 2026 as new enforcement actions are published. For a complete historical view of all FCA fines, explore our interactive dashboard.
     `,
-    category: 'FCA Fines 2026',
-    readTime: '5 min read',
-    date: 'March 2026',
-    dateISO: '2026-03-01',
+    category: "FCA Fines 2026",
+    readTime: "5 min read",
+    date: "March 2026",
+    dateISO: "2026-03-01",
     featured: true,
-    keywords: ['FCA fines March 2026', 'FCA fines this month', 'FCA fines today', 'FCA enforcement March 2026', 'latest FCA fines', 'FCA penalties March 2026', 'FCA fines Q1 2026']
+    keywords: [
+      "FCA fines March 2026",
+      "FCA fines this month",
+      "FCA fines today",
+      "FCA enforcement March 2026",
+      "latest FCA fines",
+      "FCA penalties March 2026",
+      "FCA fines Q1 2026",
+    ],
   },
   {
-    id: 'fca-fines-insurance',
-    slug: 'fca-fines-insurance-sector',
-    title: 'FCA Fines for Insurance Companies: Complete Sector Analysis',
-    seoTitle: 'FCA Fines for Insurance Companies | Penalties, Enforcement Actions & Sector Analysis',
-    excerpt: 'Comprehensive analysis of FCA fines against insurance companies. Covers general insurers, life insurers, brokers, and Lloyd\'s market participants — including penalty amounts, breach types, and regulatory trends.',
+    id: "fca-fines-insurance",
+    slug: "fca-fines-insurance-sector",
+    title: "FCA Fines for Insurance Companies: Complete Sector Analysis",
+    seoTitle:
+      "FCA Fines for Insurance Companies | Penalties, Enforcement Actions & Sector Analysis",
+    excerpt:
+      "Comprehensive analysis of FCA fines against insurance companies. Covers general insurers, life insurers, brokers, and Lloyd's market participants — including penalty amounts, breach types, and regulatory trends.",
     content: `
 ## FCA Fines for Insurance Companies: Sector Enforcement Analysis
 
@@ -1074,21 +1214,31 @@ The FCA's enforcement approach to the insurance sector reflects its broader stra
 
 For a complete interactive view of all FCA enforcement actions, including insurance sector penalties, explore our FCA Fines Dashboard.
     `,
-    category: 'Sector Analysis',
-    readTime: '14 min read',
-    date: 'March 2026',
-    dateISO: '2026-03-16',
-    keywords: ['FCA fines insurance', 'FCA insurance penalties', 'FCA fines insurers', 'insurance company fines UK', 'FCA insurance enforcement', 'Lloyd\'s fines FCA', 'insurance broker fines', 'Consumer Duty insurance']
-  }
+    category: "Sector Analysis",
+    readTime: "14 min read",
+    date: "March 2026",
+    dateISO: "2026-03-16",
+    keywords: [
+      "FCA fines insurance",
+      "FCA insurance penalties",
+      "FCA fines insurers",
+      "insurance company fines UK",
+      "FCA insurance enforcement",
+      "Lloyd's fines FCA",
+      "insurance broker fines",
+      "Consumer Duty insurance",
+    ],
+  },
 ];
 
 export const yearlyArticles: YearlyArticleMeta[] = [
   {
     year: 2025,
-    slug: 'fca-fines-2025-annual-review',
-    title: 'FCA Fines 2025: Annual Enforcement Review & Analysis',
-    seoTitle: 'FCA Fines 2025 | Complete Annual Enforcement Analysis',
-    excerpt: 'Professional analysis of FCA enforcement in 2025, including Nationwide £44m and Barclays £39m fines. Consumer Duty enforcement begins.',
+    slug: "fca-fines-2025-annual-review",
+    title: "FCA Fines 2025: Annual Enforcement Review & Analysis",
+    seoTitle: "FCA Fines 2025 | Complete Annual Enforcement Analysis",
+    excerpt:
+      "Professional analysis of FCA enforcement in 2025, including Nationwide £44m and Barclays £39m fines. Consumer Duty enforcement begins.",
     executiveSummary: `The Financial Conduct Authority entered 2025 with renewed enforcement vigour, signalling that the post-pandemic pause in major regulatory action has definitively ended. With total fines already exceeding £179 million in the first quarter, 2025 is on track to be a significant enforcement year.
 
 The headline actions against Nationwide Building Society (£44 million) and Barclays Bank (£39.3 million) for financial crime control failures demonstrate the regulator's continued prioritisation of anti-money laundering compliance. Notably, both fines relate to conduct that occurred several years prior, reflecting the FCA's methodical approach to building evidence-based cases.`,
@@ -1098,11 +1248,11 @@ The FCA's published Business Plan emphasises three strategic priorities: reducin
 
 From a regulatory architecture perspective, the FCA continues to operate alongside the Prudential Regulation Authority (PRA) under the post-financial crisis 'twin peaks' model. The coordination between regulators remains critical, particularly for dual-regulated firms.`,
     keyEnforcementThemes: [
-      'Financial crime controls remain paramount - AML/CTF failures attract substantial penalties',
-      'Consumer Duty first enforcement actions expected mid-2025',
-      'Operational resilience requirements now fully in force',
-      'Cryptoasset firm scrutiny intensifying',
-      'Individual accountability under SM&CR increasingly applied'
+      "Financial crime controls remain paramount - AML/CTF failures attract substantial penalties",
+      "Consumer Duty first enforcement actions expected mid-2025",
+      "Operational resilience requirements now fully in force",
+      "Cryptoasset firm scrutiny intensifying",
+      "Individual accountability under SM&CR increasingly applied",
     ],
     professionalInsight: `Having observed FCA enforcement patterns over multiple cycles, the early 2025 actions suggest a deliberate strategy to set expectations for the year ahead. The Nationwide and Barclays fines serve as clear signals to the industry that financial crime control deficiencies will be pursued vigorously.
 
@@ -1112,14 +1262,22 @@ The anticipated Consumer Duty enforcement will likely focus on price and value o
     lookingAhead: `The remainder of 2025 will likely see the first Consumer Duty enforcement actions, potentially in retail banking or insurance sectors. The FCA has indicated that it will take a proportionate approach, but firms demonstrating systemic failures to consider customer outcomes should expect robust regulatory response.
 
 Cryptoasset enforcement will accelerate as the FCA's registration regime matures and firms fail to meet anti-money laundering requirements. The appointed representatives regime also remains under scrutiny following principal firm failures.`,
-    keywords: ['FCA fines 2025', 'FCA enforcement 2025', 'Nationwide FCA fine', 'Barclays AML fine 2025', 'Consumer Duty enforcement', 'FCA annual review 2025']
+    keywords: [
+      "FCA fines 2025",
+      "FCA enforcement 2025",
+      "Nationwide FCA fine",
+      "Barclays AML fine 2025",
+      "Consumer Duty enforcement",
+      "FCA annual review 2025",
+    ],
   },
   {
     year: 2024,
-    slug: 'fca-fines-2024-annual-review',
-    title: 'FCA Fines 2024: Annual Enforcement Review & Analysis',
-    seoTitle: 'FCA Fines 2024 | Complete Annual Enforcement Analysis',
-    excerpt: 'Comprehensive review of FCA enforcement in 2024: £176m total fines, operational resilience focus, and TSB IT failure fine of £48.6m.',
+    slug: "fca-fines-2024-annual-review",
+    title: "FCA Fines 2024: Annual Enforcement Review & Analysis",
+    seoTitle: "FCA Fines 2024 | Complete Annual Enforcement Analysis",
+    excerpt:
+      "Comprehensive review of FCA enforcement in 2024: £176m total fines, operational resilience focus, and TSB IT failure fine of £48.6m.",
     executiveSummary: `2024 represented a transitional year for FCA enforcement, with total fines of approximately £176 million across 27 enforcement actions. While this figure is lower than peak enforcement years, it reflects the FCA's strategic shift towards proactive supervision and early intervention rather than reliance on ex-post penalties.
 
 The year's most significant enforcement action was the £48.65 million fine against TSB Bank for its 2018 IT migration failure. This case, which took over six years to conclude, illustrates the complexity of major enforcement investigations and the FCA's thorough approach to evidence gathering.`,
@@ -1129,11 +1287,11 @@ Operational resilience requirements became increasingly prominent, with the FCA 
 
 The regulatory landscape also saw continued evolution of the cryptoasset framework, with the FCA maintaining its consumer warnings while processing registration applications under the MLR regime.`,
     keyEnforcementThemes: [
-      'Operational resilience failures attract significant penalties',
-      'IT system migrations require robust governance and testing',
-      'Consumer Duty implementation assessment ongoing',
-      'Data protection and cyber security remain priorities',
-      'Continued focus on AML systems and controls'
+      "Operational resilience failures attract significant penalties",
+      "IT system migrations require robust governance and testing",
+      "Consumer Duty implementation assessment ongoing",
+      "Data protection and cyber security remain priorities",
+      "Continued focus on AML systems and controls",
     ],
     professionalInsight: `The TSB enforcement action provides crucial lessons for the industry. The £48.65 million fine reflected not only the IT migration failure itself, but fundamental governance weaknesses in project oversight. Boards must ensure they receive adequate management information on major technology programmes and maintain appropriate challenge of executive assurances.
 
@@ -1143,14 +1301,22 @@ The Consumer Duty implementation work revealed significant variance in firm appr
     lookingAhead: `2024 set the stage for more intensive Consumer Duty enforcement in 2025. The FCA accumulated substantial data through implementation reviews and will use this to identify outlier firms for closer scrutiny.
 
 Operational resilience will remain a priority, particularly as firms increasingly rely on third-party technology providers. The FCA's interest in concentration risk in critical third parties will likely drive future supervisory and potentially enforcement action.`,
-    keywords: ['FCA fines 2024', 'TSB FCA fine', 'FCA enforcement 2024', 'operational resilience FCA', 'IT migration failures', 'FCA annual review 2024']
+    keywords: [
+      "FCA fines 2024",
+      "TSB FCA fine",
+      "FCA enforcement 2024",
+      "operational resilience FCA",
+      "IT migration failures",
+      "FCA annual review 2024",
+    ],
   },
   {
     year: 2023,
-    slug: 'fca-fines-2023-annual-review',
-    title: 'FCA Fines 2023: Annual Enforcement Review & Analysis',
-    seoTitle: 'FCA Fines 2023 | Complete Annual Enforcement Analysis',
-    excerpt: 'Analysis of FCA enforcement in 2023: £53m total fines, Credit Suisse Archegos failures, and individual accountability focus.',
+    slug: "fca-fines-2023-annual-review",
+    title: "FCA Fines 2023: Annual Enforcement Review & Analysis",
+    seoTitle: "FCA Fines 2023 | Complete Annual Enforcement Analysis",
+    excerpt:
+      "Analysis of FCA enforcement in 2023: £53m total fines, Credit Suisse Archegos failures, and individual accountability focus.",
     executiveSummary: `2023 was characterised by relatively modest total fine values (approximately £53 million across 19 actions) but significant thematic importance. The FCA's enforcement actions reflected post-pandemic priorities: addressing risk management failures exposed by market volatility and pursuing individual accountability with renewed focus.
 
 The Credit Suisse fine of £14.7 million for Archegos-related failures marked the UK regulatory conclusion to a global scandal that contributed to the firm's eventual demise. While modest compared to US penalties, the case demonstrated the FCA's willingness to pursue international institutions for UK-relevant conduct failures.`,
@@ -1160,11 +1326,11 @@ The collapse of Silicon Valley Bank UK and subsequent rescue by HSBC in March 20
 
 Cryptoasset regulation continued to evolve, with the FCA maintaining a cautious approach while the government developed the future regulatory framework through Treasury consultations.`,
     keyEnforcementThemes: [
-      'Risk management failures from 2021 market volatility addressed',
-      'Individual accountability increasingly pursued under SM&CR',
-      'AML enforcement continued but at lower intensity',
-      'Consumer Duty preparation dominated supervisory focus',
-      'Smaller firms faced proportionate enforcement for specific breaches'
+      "Risk management failures from 2021 market volatility addressed",
+      "Individual accountability increasingly pursued under SM&CR",
+      "AML enforcement continued but at lower intensity",
+      "Consumer Duty preparation dominated supervisory focus",
+      "Smaller firms faced proportionate enforcement for specific breaches",
     ],
     professionalInsight: `The Credit Suisse enforcement action provides essential lessons on risk management governance. The firm's failures were fundamentally about inadequate limits, poor escalation, and insufficient board challenge - classic governance failures that transcend specific market events.
 
@@ -1174,14 +1340,22 @@ The relatively low total fine volume in 2023 should not be interpreted as reduce
     lookingAhead: `2023 positioned the industry for the Consumer Duty era. Firms that invested genuinely in understanding customer outcomes and embedding appropriate governance would be well-placed for the new regulatory environment. Those treating compliance as a documentation exercise would face increasing supervisory pressure and eventual enforcement risk.
 
 The Credit Suisse collapse, while driven by multiple factors, served as a reminder that accumulated regulatory and risk management failures can prove existential for even systemically important institutions.`,
-    keywords: ['FCA fines 2023', 'Credit Suisse FCA fine', 'Archegos FCA', 'FCA enforcement 2023', 'individual accountability FCA', 'FCA annual review 2023']
+    keywords: [
+      "FCA fines 2023",
+      "Credit Suisse FCA fine",
+      "Archegos FCA",
+      "FCA enforcement 2023",
+      "individual accountability FCA",
+      "FCA annual review 2023",
+    ],
   },
   {
     year: 2022,
-    slug: 'fca-fines-2022-annual-review',
-    title: 'FCA Fines 2022: Annual Enforcement Review & Analysis',
-    seoTitle: 'FCA Fines 2022 | Complete Annual Enforcement Analysis',
-    excerpt: 'Comprehensive review of FCA enforcement in 2022: £215m total fines led by Santander £108m AML penalty. Audit quality focus emerges.',
+    slug: "fca-fines-2022-annual-review",
+    title: "FCA Fines 2022: Annual Enforcement Review & Analysis",
+    seoTitle: "FCA Fines 2022 | Complete Annual Enforcement Analysis",
+    excerpt:
+      "Comprehensive review of FCA enforcement in 2022: £215m total fines led by Santander £108m AML penalty. Audit quality focus emerges.",
     executiveSummary: `2022 saw FCA enforcement return to more typical levels following the pandemic-affected period, with total fines of approximately £215 million across 24 actions. The headline case was Santander UK's £107.8 million fine for serious and persistent AML control gaps - the largest AML fine since the NatWest criminal prosecution.
 
 The year also marked increased attention to audit quality, with KPMG facing a £14.4 million fine for audit failures - reflecting coordinated regulatory focus alongside the Financial Reporting Council on audit standards in the financial services sector.`,
@@ -1191,11 +1365,11 @@ The Russia-Ukraine conflict prompted extensive sanctions compliance work across 
 
 Operational resilience rules took effect in March 2022, requiring firms to identify important business services and set impact tolerances. The three-year transition period began, with firms required to demonstrate compliance by March 2025.`,
     keyEnforcementThemes: [
-      'AML system failures attract record retail banking fine',
-      'Audit quality receives coordinated regulatory attention',
-      'PEP (Politically Exposed Persons) due diligence scrutinised',
-      'Consumer credit firm enforcement continues',
-      'Individual accountability cases progress through the system'
+      "AML system failures attract record retail banking fine",
+      "Audit quality receives coordinated regulatory attention",
+      "PEP (Politically Exposed Persons) due diligence scrutinised",
+      "Consumer credit firm enforcement continues",
+      "Individual accountability cases progress through the system",
     ],
     professionalInsight: `The Santander fine warrants careful analysis by compliance professionals. The FCA identified that the bank opened over 49,000 business accounts without completing required AML checks - a systemic failure rather than isolated incidents. The penalty calculation reflected both the seriousness and the persistence of the failings.
 
@@ -1205,14 +1379,22 @@ The KPMG fine signals that auditors of financial services firms face regulatory 
     lookingAhead: `2022 enforcement actions set the scene for continued AML focus in subsequent years. The FCA demonstrated willingness to pursue large retail institutions, not just wholesale or international banks. Firms should assume their AML controls will face supervisory scrutiny regardless of their business model.
 
 The Consumer Duty implementation deadline created significant work for 2023, with firms needing to demonstrate genuine customer outcome focus rather than compliance box-ticking.`,
-    keywords: ['FCA fines 2022', 'Santander FCA fine', 'AML fines 2022', 'KPMG FCA fine', 'FCA enforcement 2022', 'FCA annual review 2022']
+    keywords: [
+      "FCA fines 2022",
+      "Santander FCA fine",
+      "AML fines 2022",
+      "KPMG FCA fine",
+      "FCA enforcement 2022",
+      "FCA annual review 2022",
+    ],
   },
   {
     year: 2021,
-    slug: 'fca-fines-2021-annual-review',
-    title: 'FCA Fines 2021: Annual Enforcement Review & Analysis',
-    seoTitle: 'FCA Fines 2021 | Complete Annual Enforcement Analysis',
-    excerpt: 'Historic year: £568m total FCA fines including first criminal prosecution (NatWest £265m) and HSBC £176m AML fine.',
+    slug: "fca-fines-2021-annual-review",
+    title: "FCA Fines 2021: Annual Enforcement Review & Analysis",
+    seoTitle: "FCA Fines 2021 | Complete Annual Enforcement Analysis",
+    excerpt:
+      "Historic year: £568m total FCA fines including first criminal prosecution (NatWest £265m) and HSBC £176m AML fine.",
     executiveSummary: `2021 was a watershed year for FCA enforcement, with total fines reaching approximately £568 million - the highest since the FX scandal years of 2014-15. Two cases dominated: NatWest's criminal prosecution resulting in a £264.8 million fine (the first criminal conviction of a bank by the FCA), and HSBC's £176 million penalty for transaction monitoring failures.
 
 These landmark cases demonstrated the FCA's willingness to use its full range of enforcement powers, including criminal prosecution for money laundering offences. The message to the industry was unambiguous: AML compliance failures carry existential risks.`,
@@ -1222,11 +1404,11 @@ The FCA published its Transformation Programme, committing to become a more inno
 
 The COVID-19 pandemic continued to affect regulatory priorities, with the FCA maintaining business interruption insurance investigation while also addressing emerging conduct risks in the retail investment market, particularly around high-risk investments and financial promotions.`,
     keyEnforcementThemes: [
-      'Criminal prosecution used for first time against major bank',
-      'Transaction monitoring systems face intensive scrutiny',
-      'Cash deposit monitoring highlighted as critical control',
-      'AML leadership and governance under spotlight',
-      'Post-pandemic enforcement activity accelerates'
+      "Criminal prosecution used for first time against major bank",
+      "Transaction monitoring systems face intensive scrutiny",
+      "Cash deposit monitoring highlighted as critical control",
+      "AML leadership and governance under spotlight",
+      "Post-pandemic enforcement activity accelerates",
     ],
     professionalInsight: `The NatWest criminal prosecution represents a paradigm shift in UK AML enforcement. The case demonstrated that the FCA will use criminal powers where evidence supports charges, regardless of institutional size or reputation. The offence - failing to prevent money laundering through inadequate suspicious activity reporting - sets a precedent with significant implications for compliance frameworks.
 
@@ -1238,14 +1420,22 @@ For MLROs and compliance leaders, 2021 established that personal accountability 
     lookingAhead: `The 2021 enforcement actions set a new baseline for AML expectations. Firms should assume that their transaction monitoring systems will face detailed supervisory review and that criminal prosecution remains available for serious failures.
 
 The Consumer Duty consultation published in December 2021 signalled the next major regulatory development, with implementation expected to reshape conduct standards across retail financial services.`,
-    keywords: ['FCA fines 2021', 'NatWest criminal prosecution', 'NatWest FCA fine', 'HSBC AML fine', 'FCA enforcement 2021', 'money laundering prosecution UK']
+    keywords: [
+      "FCA fines 2021",
+      "NatWest criminal prosecution",
+      "NatWest FCA fine",
+      "HSBC AML fine",
+      "FCA enforcement 2021",
+      "money laundering prosecution UK",
+    ],
   },
   {
     year: 2020,
-    slug: 'fca-fines-2020-annual-review',
-    title: 'FCA Fines 2020: Annual Enforcement Review & Analysis',
-    seoTitle: 'FCA Fines 2020 | Complete Annual Enforcement Analysis',
-    excerpt: 'COVID-impacted year: £189m fines including Goldman Sachs 1MDB £34m and Commerzbank £38m AML penalties.',
+    slug: "fca-fines-2020-annual-review",
+    title: "FCA Fines 2020: Annual Enforcement Review & Analysis",
+    seoTitle: "FCA Fines 2020 | Complete Annual Enforcement Analysis",
+    excerpt:
+      "COVID-impacted year: £189m fines including Goldman Sachs 1MDB £34m and Commerzbank £38m AML penalties.",
     executiveSummary: `2020 was inevitably shaped by the COVID-19 pandemic, with total FCA fines of approximately £189 million across 22 enforcement actions. While lower than preceding years, enforcement continued for cases already in the pipeline, with notable actions against Goldman Sachs International (£34.3 million for 1MDB-related failures) and Commerzbank AG London (£37.8 million for AML deficiencies).
 
 The pandemic prompted the FCA to prioritise operational continuity and consumer protection over enforcement activity, though the regulator maintained that firms remained accountable for conduct standards regardless of operational challenges.`,
@@ -1255,11 +1445,11 @@ The operational shift to remote working raised new conduct risks, particularly a
 
 Brexit preparations continued alongside pandemic response, with firms required to maintain implementation plans despite resource constraints. The end of the transition period on 31 December 2020 marked the beginning of the UK's independent regulatory path.`,
     keyEnforcementThemes: [
-      'International bribery and corruption enforcement (1MDB)',
-      'AML controls at overseas branches of UK-supervised firms',
-      'Pre-pandemic conduct failures continued through enforcement',
-      'COVID-19 not accepted as excuse for compliance failures',
-      'Remote working conduct risks emerge as supervisory focus'
+      "International bribery and corruption enforcement (1MDB)",
+      "AML controls at overseas branches of UK-supervised firms",
+      "Pre-pandemic conduct failures continued through enforcement",
+      "COVID-19 not accepted as excuse for compliance failures",
+      "Remote working conduct risks emerge as supervisory focus",
     ],
     professionalInsight: `The Goldman Sachs 1MDB fine illustrates the extraterritorial reach of UK enforcement and the importance of subsidiary governance. The failures occurred primarily in Goldman's Asia-Pacific operations, but the FCA pursued the London-supervised entity for control failures that enabled the misconduct.
 
@@ -1271,14 +1461,22 @@ The pandemic response demonstrated the FCA's capacity to adapt its supervisory a
     lookingAhead: `2020 established that pandemic conditions would not indefinitely pause enforcement. Cases under investigation continued to progress, with the major NatWest and HSBC AML actions emerging in 2021.
 
 The FCA's 'Dear CEO' letters during 2020 signalled post-pandemic priorities, including operational resilience, financial crime controls, and treatment of customers in financial difficulty.`,
-    keywords: ['FCA fines 2020', 'Goldman Sachs FCA fine', '1MDB UK', 'Commerzbank AML fine', 'COVID-19 FCA', 'FCA enforcement 2020']
+    keywords: [
+      "FCA fines 2020",
+      "Goldman Sachs FCA fine",
+      "1MDB UK",
+      "Commerzbank AML fine",
+      "COVID-19 FCA",
+      "FCA enforcement 2020",
+    ],
   },
   {
     year: 2019,
-    slug: 'fca-fines-2019-annual-review',
-    title: 'FCA Fines 2019: Annual Enforcement Review & Analysis',
-    seoTitle: 'FCA Fines 2019 | Complete Annual Enforcement Analysis',
-    excerpt: 'Strong enforcement year: £392m total fines including Standard Chartered £102m AML and Bank of Scotland £45.5m HBOS fraud case.',
+    slug: "fca-fines-2019-annual-review",
+    title: "FCA Fines 2019: Annual Enforcement Review & Analysis",
+    seoTitle: "FCA Fines 2019 | Complete Annual Enforcement Analysis",
+    excerpt:
+      "Strong enforcement year: £392m total fines including Standard Chartered £102m AML and Bank of Scotland £45.5m HBOS fraud case.",
     executiveSummary: `2019 represented a return to robust enforcement levels with total fines of approximately £392 million across 28 actions. The year was marked by the Standard Chartered £102.2 million AML fine - one of the largest ever for correspondent banking failures - and the long-awaited conclusion of the HBOS fraud accountability cases against Bank of Scotland and Lloyds Bank (£45.5 million each).
 
 The Senior Managers and Certification Regime (SM&CR) extended to solo-regulated firms in December 2019, significantly expanding the population of senior managers subject to enhanced accountability requirements.`,
@@ -1288,11 +1486,11 @@ The extension of SM&CR to approximately 47,000 solo-regulated firms represented 
 
 The cryptoasset regulatory perimeter debate intensified, with the FCA assuming anti-money laundering supervision of cryptoasset firms from January 2020. The registration regime established high barriers that many firms subsequently failed to meet.`,
     keyEnforcementThemes: [
-      'Correspondent banking AML controls face intensive scrutiny',
-      'HBOS fraud accountability finally achieved',
-      'SM&CR extension creates new individual accountability',
-      'Customer due diligence standards reinforced',
-      'Insurance sector enforcement activity increases'
+      "Correspondent banking AML controls face intensive scrutiny",
+      "HBOS fraud accountability finally achieved",
+      "SM&CR extension creates new individual accountability",
+      "Customer due diligence standards reinforced",
+      "Insurance sector enforcement activity increases",
     ],
     professionalInsight: `The Standard Chartered case provides a masterclass in correspondent banking AML requirements. The FCA found failures in customer risk assessment, transaction monitoring, and enhanced due diligence for higher-risk relationships. Critically, the bank failed to implement lessons from a 2012 enforcement action - demonstrating that repeat failures attract more severe penalties.
 
@@ -1304,14 +1502,22 @@ The SM&CR extension required solo-regulated firms to implement governance framew
     lookingAhead: `2019 positioned the FCA for the challenges of 2020, though no one anticipated the pandemic's impact. The correspondent banking enforcement activity signalled continued focus on cross-border AML risks, while SM&CR extension promised future individual accountability cases.
 
 The cryptoasset registration deadline of January 2020 set up inevitable enforcement action against firms operating without authorisation.`,
-    keywords: ['FCA fines 2019', 'Standard Chartered FCA fine', 'HBOS fraud FCA', 'Bank of Scotland fine', 'SM&CR extension', 'correspondent banking AML']
+    keywords: [
+      "FCA fines 2019",
+      "Standard Chartered FCA fine",
+      "HBOS fraud FCA",
+      "Bank of Scotland fine",
+      "SM&CR extension",
+      "correspondent banking AML",
+    ],
   },
   {
     year: 2018,
-    slug: 'fca-fines-2018-annual-review',
-    title: 'FCA Fines 2018: Annual Enforcement Review & Analysis',
-    seoTitle: 'FCA Fines 2018 | Complete Annual Enforcement Analysis',
-    excerpt: 'Transitional year with £60m total fines. Tesco Bank £16.4m cyber attack fine sets precedent. SM&CR beds in.',
+    slug: "fca-fines-2018-annual-review",
+    title: "FCA Fines 2018: Annual Enforcement Review & Analysis",
+    seoTitle: "FCA Fines 2018 | Complete Annual Enforcement Analysis",
+    excerpt:
+      "Transitional year with £60m total fines. Tesco Bank £16.4m cyber attack fine sets precedent. SM&CR beds in.",
     executiveSummary: `2018 was a transitional year for FCA enforcement with relatively modest total fines of approximately £60 million across 18 actions. The most significant case was Tesco Bank's £16.4 million fine for failures in responding to a 2016 cyber attack that affected over 9,000 customers.
 
 The year represented a strategic recalibration following the major FX and LIBOR enforcement programmes, with the FCA focusing on cultural change and proactive supervision rather than solely backward-looking punishment.`,
@@ -1321,11 +1527,11 @@ The Senior Managers and Certification Regime continued its staged rollout, with 
 
 The FCA's Business Plan for 2018/19 emphasised 'transforming culture in financial services' - a recognition that compliance alone is insufficient without underlying behavioural change. This philosophical shift influenced both supervisory approach and enforcement prioritisation.`,
     keyEnforcementThemes: [
-      'Cyber security emerges as enforcement area',
-      'MiFID II implementation prioritised over enforcement',
-      'Cultural change emphasis in regulatory approach',
-      'Consumer credit firm enforcement continues',
-      'Individual accountability investigations progress'
+      "Cyber security emerges as enforcement area",
+      "MiFID II implementation prioritised over enforcement",
+      "Cultural change emphasis in regulatory approach",
+      "Consumer credit firm enforcement continues",
+      "Individual accountability investigations progress",
     ],
     professionalInsight: `The Tesco Bank case established important precedents for cyber security expectations. The FCA found that the bank failed to exercise due skill, care and diligence in protecting customers from foreseeable risks. Critically, vulnerabilities in the debit card system had been identified internally but not adequately addressed.
 
@@ -1337,14 +1543,22 @@ The MiFID II implementation experience demonstrated the FCA's capacity for pragm
     lookingAhead: `2018 positioned the industry for accelerating enforcement in subsequent years. The FCA's transformation programme was beginning to deliver enhanced data capabilities that would inform more targeted supervision and enforcement.
 
 The cyber security precedent set by Tesco Bank would prove increasingly relevant as digital banking expanded and threat landscapes evolved.`,
-    keywords: ['FCA fines 2018', 'Tesco Bank cyber attack fine', 'FCA enforcement 2018', 'MiFID II implementation', 'cyber security FCA', 'FCA annual review 2018']
+    keywords: [
+      "FCA fines 2018",
+      "Tesco Bank cyber attack fine",
+      "FCA enforcement 2018",
+      "MiFID II implementation",
+      "cyber security FCA",
+      "FCA annual review 2018",
+    ],
   },
   {
     year: 2017,
-    slug: 'fca-fines-2017-annual-review',
-    title: 'FCA Fines 2017: Annual Enforcement Review & Analysis',
-    seoTitle: 'FCA Fines 2017 | Complete Annual Enforcement Analysis',
-    excerpt: 'Landmark year: Deutsche Bank £163m Russian mirror trades AML fine dominates. Total fines £229m across 25 actions.',
+    slug: "fca-fines-2017-annual-review",
+    title: "FCA Fines 2017: Annual Enforcement Review & Analysis",
+    seoTitle: "FCA Fines 2017 | Complete Annual Enforcement Analysis",
+    excerpt:
+      "Landmark year: Deutsche Bank £163m Russian mirror trades AML fine dominates. Total fines £229m across 25 actions.",
     executiveSummary: `2017 was dominated by the Deutsche Bank AG enforcement action, with a £163 million fine for failures in AML controls related to Russian 'mirror trades' - a scheme that moved approximately $10 billion out of Russia using simultaneous buy and sell transactions in equities. This case remains one of the most significant AML enforcement actions globally.
 
 Total fines reached approximately £229 million across 25 actions, with AML failures accounting for the majority of the value. The year marked a shift from the FX/benchmark manipulation cases that dominated 2014-15 towards financial crime enforcement.`,
@@ -1354,11 +1568,11 @@ The FCA published its first Annual Perimeter Report, reflecting increased focus 
 
 The Senior Managers and Certification Regime implementation continued, with 'extended scope' firms preparing for December 2018 requirements. The regime's emphasis on clear accountability was influencing both firm governance and the FCA's enforcement targeting.`,
     keyEnforcementThemes: [
-      'Russian money laundering through mirror trades exposed',
-      'AML controls at major international banks scrutinised',
-      'Transaction reporting failures attract penalties',
-      'Individual accountability increasingly emphasised',
-      'Consumer protection enforcement continues'
+      "Russian money laundering through mirror trades exposed",
+      "AML controls at major international banks scrutinised",
+      "Transaction reporting failures attract penalties",
+      "Individual accountability increasingly emphasised",
+      "Consumer protection enforcement continues",
     ],
     professionalInsight: `The Deutsche Bank case warrants detailed analysis by every AML professional. The mirror trades scheme was relatively simple: clients in Moscow would buy Russian equities for roubles, while related clients in London would simultaneously sell the same securities for dollars. The net effect was capital flight from Russia through ostensibly legitimate transactions.
 
@@ -1370,14 +1584,22 @@ The £163 million fine, while substantial, represented a fraction of the volumes
     lookingAhead: `2017 established AML enforcement as a strategic priority that would continue through subsequent years. The Deutsche Bank case demonstrated the FCA's capacity to pursue complex international schemes, even where the conduct occurred primarily outside the UK.
 
 The transaction reporting theme would evolve as MiFID II approached, with new requirements creating both compliance challenges and enforcement opportunities.`,
-    keywords: ['FCA fines 2017', 'Deutsche Bank FCA fine', 'Russian mirror trades', 'AML enforcement UK', 'FCA enforcement 2017', 'money laundering fine']
+    keywords: [
+      "FCA fines 2017",
+      "Deutsche Bank FCA fine",
+      "Russian mirror trades",
+      "AML enforcement UK",
+      "FCA enforcement 2017",
+      "money laundering fine",
+    ],
   },
   {
     year: 2016,
-    slug: 'fca-fines-2016-annual-review',
-    title: 'FCA Fines 2016: Annual Enforcement Review & Analysis',
-    seoTitle: 'FCA Fines 2016 | Complete Annual Enforcement Analysis',
-    excerpt: 'Quietest enforcement year: £22m total fines. Post-FX scandal consolidation. Consumer protection focus emerges.',
+    slug: "fca-fines-2016-annual-review",
+    title: "FCA Fines 2016: Annual Enforcement Review & Analysis",
+    seoTitle: "FCA Fines 2016 | Complete Annual Enforcement Analysis",
+    excerpt:
+      "Quietest enforcement year: £22m total fines. Post-FX scandal consolidation. Consumer protection focus emerges.",
     executiveSummary: `2016 was the quietest enforcement year since the FCA's establishment, with total fines of approximately £22 million across just 15 actions. This dramatic reduction from the £905 million of 2015 reflected the conclusion of the major FX and benchmark manipulation cases rather than reduced regulatory intensity.
 
 The year marked a transitional period as the FCA recalibrated its enforcement approach, with increased emphasis on proactive supervision and early intervention alongside traditional enforcement activity.`,
@@ -1387,11 +1609,11 @@ The Senior Managers and Certification Regime took effect for major banks in Marc
 
 Brexit referendum implications began to be assessed, though the regulatory impact would only emerge in subsequent years. The FCA maintained its European and international engagement while preparing for potential structural changes.`,
     keyEnforcementThemes: [
-      'Post-FX scandal enforcement consolidation',
-      'Consumer protection cases predominate',
-      'Insurance sector conduct issues addressed',
-      'SM&CR implementation for large banks begins',
-      'Regulatory strategy recalibration evident'
+      "Post-FX scandal enforcement consolidation",
+      "Consumer protection cases predominate",
+      "Insurance sector conduct issues addressed",
+      "SM&CR implementation for large banks begins",
+      "Regulatory strategy recalibration evident",
     ],
     professionalInsight: `The 2016 enforcement lull provides useful perspective on the FCA's strategic approach. The regulator explicitly chose to invest in cultural change and proactive supervision rather than pursue lower-impact enforcement cases that would consume resource without materially improving outcomes.
 
@@ -1403,14 +1625,22 @@ The insurance sector cases - particularly Aviva's £8.2 million fine for non-adv
     lookingAhead: `2016 set the stage for resumed major enforcement in 2017, particularly the Deutsche Bank AML case. The FCA's investment in financial crime expertise and systems would deliver significant cases in subsequent years.
 
 The SM&CR bedding-in period would eventually produce individual accountability cases, though the regime's effectiveness would take time to demonstrate through enforcement.`,
-    keywords: ['FCA fines 2016', 'FCA enforcement 2016', 'SM&CR implementation', 'Aviva FCA fine', 'FCA annual review 2016', 'consumer protection FCA']
+    keywords: [
+      "FCA fines 2016",
+      "FCA enforcement 2016",
+      "SM&CR implementation",
+      "Aviva FCA fine",
+      "FCA annual review 2016",
+      "consumer protection FCA",
+    ],
   },
   {
     year: 2015,
-    slug: 'fca-fines-2015-annual-review',
-    title: 'FCA Fines 2015: Annual Enforcement Review & Analysis',
-    seoTitle: 'FCA Fines 2015 | Complete Annual Enforcement Analysis',
-    excerpt: 'Record year: £905m total fines. Barclays £284m FX manipulation fine - largest ever. PPI enforcement intensifies.',
+    slug: "fca-fines-2015-annual-review",
+    title: "FCA Fines 2015: Annual Enforcement Review & Analysis",
+    seoTitle: "FCA Fines 2015 | Complete Annual Enforcement Analysis",
+    excerpt:
+      "Record year: £905m total fines. Barclays £284m FX manipulation fine - largest ever. PPI enforcement intensifies.",
     executiveSummary: `2015 delivered the second-highest annual fine total in FCA history (approximately £905 million across 40 actions), driven by the continuation and conclusion of FX manipulation cases. The year culminated in November with Barclays Bank receiving the largest ever FCA fine at £284.4 million for FX benchmark manipulation.
 
 Alongside wholesale market enforcement, 2015 saw significant retail conduct cases, including Lloyds Banking Group's £117 million fine for PPI complaint handling failures - demonstrating the FCA's breadth across both institutional and consumer-facing misconduct.`,
@@ -1420,11 +1650,11 @@ The FCA's approach to early settlement discounts remained critical to case resol
 
 Preparation for the Senior Managers and Certification Regime intensified, with implementation scheduled for March 2016 for major banks. The regime promised to transform individual accountability by creating clear responsibility maps and evidential standards.`,
     keyEnforcementThemes: [
-      'FX manipulation enforcement concludes at Barclays',
-      'PPI complaint handling failures attract major fines',
-      'Financial crime controls scrutinised',
-      'Individual accountability increasingly emphasised',
-      'Settlement efficiency enables case throughput'
+      "FX manipulation enforcement concludes at Barclays",
+      "PPI complaint handling failures attract major fines",
+      "Financial crime controls scrutinised",
+      "Individual accountability increasingly emphasised",
+      "Settlement efficiency enables case throughput",
     ],
     professionalInsight: `The Barclays FX fine merits detailed analysis for its scale and scope. The bank failed for six years (2008-2014) to adequately control its FX operations, with traders sharing confidential client information and attempting to manipulate benchmark rates. The £284.4 million penalty reflected the seriousness and duration of the failings.
 
@@ -1436,14 +1666,22 @@ For compliance leaders, 2015 reinforced that major enforcement reflects accumula
     lookingAhead: `2015 marked the end of the FX manipulation enforcement cycle, with subsequent years showing dramatically lower total fines as the pipeline cleared. The FCA's attention would shift towards AML and financial crime cases while also building capacity for new challenges.
 
 The PPI enforcement signalled that retail conduct would remain a priority even as the redress scheme matured towards eventual conclusion.`,
-    keywords: ['FCA fines 2015', 'Barclays FX fine', 'largest FCA fine', 'FX manipulation', 'Lloyds PPI fine', 'FCA enforcement 2015']
+    keywords: [
+      "FCA fines 2015",
+      "Barclays FX fine",
+      "largest FCA fine",
+      "FX manipulation",
+      "Lloyds PPI fine",
+      "FCA enforcement 2015",
+    ],
   },
   {
     year: 2014,
-    slug: 'fca-fines-2014-annual-review',
-    title: 'FCA Fines 2014: Annual Enforcement Review & Analysis',
-    seoTitle: 'FCA Fines 2014 | Complete Annual Enforcement Analysis',
-    excerpt: 'Historic peak: £1.47bn total fines - FCA record. Coordinated FX enforcement against five major banks. Industry transformation begins.',
+    slug: "fca-fines-2014-annual-review",
+    title: "FCA Fines 2014: Annual Enforcement Review & Analysis",
+    seoTitle: "FCA Fines 2014 | Complete Annual Enforcement Analysis",
+    excerpt:
+      "Historic peak: £1.47bn total fines - FCA record. Coordinated FX enforcement against five major banks. Industry transformation begins.",
     executiveSummary: `2014 established the all-time record for FCA annual fines at approximately £1.47 billion across 45 enforcement actions. The November 2014 coordinated enforcement against five major banks for FX manipulation (UBS, Citibank, JP Morgan, RBS, and HSBC) resulted in combined fines exceeding £1.1 billion - an unprecedented regulatory action.
 
 This extraordinary enforcement year reflected the culmination of the FCA's market integrity programme and fundamentally reshaped expectations for conduct standards in wholesale markets.`,
@@ -1453,11 +1691,11 @@ The enforcement programme was enabled by the whistleblower intelligence and inte
 
 Fair and Effective Markets Review preparations began, eventually producing recommendations that would reshape wholesale market conduct expectations. The FCA's role as conduct regulator for wholesale markets was firmly established.`,
     keyEnforcementThemes: [
-      'Coordinated international FX enforcement achieves record fines',
-      'Five major banks sanctioned simultaneously',
-      'Trader chat room misconduct exposed globally',
-      'Benchmark manipulation penalties continue from LIBOR',
-      'Settlement cooperation reduces individual penalties'
+      "Coordinated international FX enforcement achieves record fines",
+      "Five major banks sanctioned simultaneously",
+      "Trader chat room misconduct exposed globally",
+      "Benchmark manipulation penalties continue from LIBOR",
+      "Settlement cooperation reduces individual penalties",
     ],
     professionalInsight: `The November 2014 FX enforcement actions represent a watershed moment in financial regulation. The simultaneous announcement against UBS (£233.8m), Citibank (£225.6m), JP Morgan (£222.2m), RBS (£217m), and HSBC (£216.4m) demonstrated that no institution is too large for regulatory accountability.
 
@@ -1471,14 +1709,23 @@ From a governance perspective, boards faced fundamental questions about control 
     lookingAhead: `2014 set expectations that would influence the industry for years. The message was clear: wholesale market misconduct attracts severe consequences, and international coordination makes regulatory arbitrage ineffective.
 
 The Barclays FX case remained outstanding, eventually settling in 2015 for the record £284.4 million fine. The FCA's enforcement pipeline remained substantial even after the November announcements.`,
-    keywords: ['FCA fines 2014', 'FX manipulation fines', 'UBS FCA fine', 'Citibank FCA fine', 'JP Morgan FCA fine', 'RBS FCA fine', 'record FCA fines']
+    keywords: [
+      "FCA fines 2014",
+      "FX manipulation fines",
+      "UBS FCA fine",
+      "Citibank FCA fine",
+      "JP Morgan FCA fine",
+      "RBS FCA fine",
+      "record FCA fines",
+    ],
   },
   {
     year: 2013,
-    slug: 'fca-fines-2013-annual-review',
-    title: 'FCA Fines 2013: Annual Enforcement Review & Analysis',
-    seoTitle: 'FCA Fines 2013 | Complete Annual Enforcement Analysis',
-    excerpt: 'FCA established April 2013. £474m total fines including JPMorgan £138m London Whale and Rabobank £105m LIBOR cases.',
+    slug: "fca-fines-2013-annual-review",
+    title: "FCA Fines 2013: Annual Enforcement Review & Analysis",
+    seoTitle: "FCA Fines 2013 | Complete Annual Enforcement Analysis",
+    excerpt:
+      "FCA established April 2013. £474m total fines including JPMorgan £138m London Whale and Rabobank £105m LIBOR cases.",
     executiveSummary: `2013 marked the establishment of the Financial Conduct Authority on 1 April 2013, succeeding the Financial Services Authority. Total fines reached approximately £474 million across 35 actions, demonstrating immediate enforcement capability in the new regulatory structure.
 
 The year was characterised by two major cases: JPMorgan's £137.6 million fine for the 'London Whale' trading losses, and Rabobank's £105 million LIBOR manipulation penalty. Both cases reflected the FCA's inheritance of complex investigations from the FSA and its capacity to bring them to successful conclusion.`,
@@ -1488,11 +1735,11 @@ The new regulator inherited the FSA's enforcement caseload, including the advanc
 
 The regulatory philosophy emphasised judgment-based supervision and early intervention, with enforcement as one of multiple tools for achieving better outcomes. However, the scale of inherited cases meant that traditional enforcement activity remained prominent in the FCA's first year.`,
     keyEnforcementThemes: [
-      'FCA established and immediately demonstrates enforcement capability',
-      'London Whale case addresses risk management failures',
-      'LIBOR manipulation enforcement continues from FSA',
-      'Consumer protection cases prosecuted alongside wholesale',
-      'New regulatory structure beds in during active enforcement'
+      "FCA established and immediately demonstrates enforcement capability",
+      "London Whale case addresses risk management failures",
+      "LIBOR manipulation enforcement continues from FSA",
+      "Consumer protection cases prosecuted alongside wholesale",
+      "New regulatory structure beds in during active enforcement",
     ],
     professionalInsight: `The JPMorgan London Whale case provides essential lessons in risk governance. The bank's Chief Investment Office built a derivatives position that ultimately generated over $6 billion in losses. The FCA's £137.6 million fine addressed failures in risk management, governance, and market conduct.
 
@@ -1506,17 +1753,39 @@ The FCA's first year established that the new regulator would maintain robust en
     lookingAhead: `2013 set the foundation for the FCA's enforcement identity. The FX manipulation investigations were underway, positioning 2014 for record enforcement. The new regulator had demonstrated capability; the following years would establish whether this translated into lasting industry change.
 
 The regulatory emphasis on cultural change would evolve from rhetoric to operational reality through SM&CR development and implementation.`,
-    keywords: ['FCA fines 2013', 'FCA established', 'JPMorgan London Whale', 'Rabobank LIBOR fine', 'FCA enforcement 2013', 'FCA first year']
+    keywords: [
+      "FCA fines 2013",
+      "FCA established",
+      "JPMorgan London Whale",
+      "Rabobank LIBOR fine",
+      "FCA enforcement 2013",
+      "FCA first year",
+    ],
   },
 ];
 
 // Merge regulator blogs with main blog articles
 // Export combined array for consumption by Blog.tsx and other components
-export const allBlogArticles: BlogArticleMeta[] = [...blogArticles, ...regulatorBlogs];
+export const allBlogArticles: BlogArticleMeta[] = [
+  ...blogArticles,
+  ...regulatorBlogs,
+];
 
 // Helper: get all articles (blog + yearly) for sitemap/prerender
-export function getAllArticleSlugs(): { slug: string; dateISO: string; type: 'blog' | 'yearly' }[] {
-  const blog = allBlogArticles.map(a => ({ slug: a.slug, dateISO: a.dateISO, type: 'blog' as const }));
-  const yearly = yearlyArticles.map(a => ({ slug: a.slug, dateISO: `${a.year}-12-31`, type: 'yearly' as const }));
+export function getAllArticleSlugs(): {
+  slug: string;
+  dateISO: string;
+  type: "blog" | "yearly";
+}[] {
+  const blog = allBlogArticles.map((a) => ({
+    slug: a.slug,
+    dateISO: a.dateISO,
+    type: "blog" as const,
+  }));
+  const yearly = yearlyArticles.map((a) => ({
+    slug: a.slug,
+    dateISO: `${a.year}-12-31`,
+    type: "yearly" as const,
+  }));
   return [...blog, ...yearly];
 }

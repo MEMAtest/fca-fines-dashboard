@@ -1,6 +1,6 @@
-import type { FineRecord } from '../../src/types.js';
-import { getSqlClient } from '../db.js';
-import { firmSlug, hubSlug } from '../utils/slugify.js';
+import type { FineRecord } from "../../src/types.js";
+import { getSqlClient } from "../db.js";
+import { firmSlug, hubSlug } from "../utils/slugify.js";
 
 export interface CategorySummary {
   name: string;
@@ -60,9 +60,14 @@ export interface SectorDetails {
 }
 
 const HUB_INDEX_TTL_MS = 15 * 60_000;
-let cachedFirmSlugMap: { builtAt: number; map: Map<string, string> } | null = null;
-let cachedCategorySlugMap: { builtAt: number; map: Map<string, string> } | null = null;
-let cachedSectorSlugMap: { builtAt: number; map: Map<string, string> } | null = null;
+let cachedFirmSlugMap: { builtAt: number; map: Map<string, string> } | null =
+  null;
+let cachedCategorySlugMap: {
+  builtAt: number;
+  map: Map<string, string>;
+} | null = null;
+let cachedSectorSlugMap: { builtAt: number; map: Map<string, string> } | null =
+  null;
 
 async function getFirmSlugMap(): Promise<Map<string, string>> {
   const now = Date.now();
@@ -71,7 +76,8 @@ async function getFirmSlugMap(): Promise<Map<string, string>> {
   }
 
   const sql = getSqlClient();
-  const rows = (await sql`SELECT DISTINCT firm_individual FROM fca_fines`) as any[];
+  const rows =
+    (await sql`SELECT DISTINCT firm_individual FROM fca_fines`) as any[];
   const map = new Map<string, string>();
   rows.forEach((row: any) => {
     const name = String(row.firm_individual);
@@ -84,7 +90,10 @@ async function getFirmSlugMap(): Promise<Map<string, string>> {
 
 async function getCategorySlugMap(): Promise<Map<string, string>> {
   const now = Date.now();
-  if (cachedCategorySlugMap && now - cachedCategorySlugMap.builtAt < HUB_INDEX_TTL_MS) {
+  if (
+    cachedCategorySlugMap &&
+    now - cachedCategorySlugMap.builtAt < HUB_INDEX_TTL_MS
+  ) {
     return cachedCategorySlugMap.map;
   }
 
@@ -98,7 +107,10 @@ async function getCategorySlugMap(): Promise<Map<string, string>> {
 
 async function getSectorSlugMap(): Promise<Map<string, string>> {
   const now = Date.now();
-  if (cachedSectorSlugMap && now - cachedSectorSlugMap.builtAt < HUB_INDEX_TTL_MS) {
+  if (
+    cachedSectorSlugMap &&
+    now - cachedSectorSlugMap.builtAt < HUB_INDEX_TTL_MS
+  ) {
     return cachedSectorSlugMap.map;
   }
 
@@ -199,7 +211,10 @@ export async function listTopFirms(limit = 100): Promise<FirmSummary[]> {
   }));
 }
 
-export async function getFirmDetailsBySlug(slug: string, limit = 200): Promise<FirmDetails | null> {
+export async function getFirmDetailsBySlug(
+  slug: string,
+  limit = 200,
+): Promise<FirmDetails | null> {
   const sql = getSqlClient();
 
   // Resolve slug -> firm name (stable firmSlug() includes a short hash).
@@ -221,7 +236,7 @@ export async function getFirmDetailsBySlug(slug: string, limit = 200): Promise<F
   const summary = summaryRows[0];
 
   const clamped = Math.max(1, Math.min(limit, 5000));
-  const records = await sql(
+  const records = (await sql(
     `
       SELECT fine_reference, firm_individual, firm_category, regulator,
              final_notice_url, summary, breach_type, breach_categories,
@@ -232,7 +247,7 @@ export async function getFirmDetailsBySlug(slug: string, limit = 200): Promise<F
       LIMIT $2
     `,
     [firmName, clamped],
-  );
+  )) as unknown as FineRecord[];
 
   return {
     name: firmName,
@@ -242,11 +257,15 @@ export async function getFirmDetailsBySlug(slug: string, limit = 200): Promise<F
     maxFine: Number(summary?.max_fine) || 0,
     earliestDate: summary?.earliest_date ? String(summary.earliest_date) : null,
     latestDate: summary?.latest_date ? String(summary.latest_date) : null,
-    records: records as FineRecord[],
+    records,
   };
 }
 
-export async function getBreachDetailsBySlug(slug: string, limitPenalties = 10, limitFirms = 10): Promise<BreachDetails | null> {
+export async function getBreachDetailsBySlug(
+  slug: string,
+  limitPenalties = 10,
+  limitFirms = 10,
+): Promise<BreachDetails | null> {
   const sql = getSqlClient();
   const categorySlugMap = await getCategorySlugMap();
   const categoryName = categorySlugMap.get(slug) ?? null;
@@ -286,7 +305,7 @@ export async function getBreachDetailsBySlug(slug: string, limitPenalties = 10, 
   )) as any[];
 
   const penaltiesLimit = Math.max(1, Math.min(limitPenalties, 50));
-  const penalties = await sql(
+  const penalties = (await sql(
     `SELECT fine_reference, firm_individual, firm_category, regulator,
              final_notice_url, summary, breach_type, breach_categories,
              amount, date_issued, year_issued, month_issued
@@ -295,7 +314,7 @@ export async function getBreachDetailsBySlug(slug: string, limitPenalties = 10, 
       ORDER BY amount DESC, date_issued DESC
       LIMIT $2`,
     [categoryName, penaltiesLimit],
-  );
+  )) as unknown as FineRecord[];
 
   const category: CategorySummary = {
     name: categoryName,
@@ -318,11 +337,15 @@ export async function getBreachDetailsBySlug(slug: string, limitPenalties = 10, 
     earliestDate: summary?.earliest_date ? String(summary.earliest_date) : null,
     latestDate: summary?.latest_date ? String(summary.latest_date) : null,
     topFirms,
-    topPenalties: penalties as FineRecord[],
+    topPenalties: penalties,
   };
 }
 
-export async function getSectorDetailsBySlug(slug: string, limitPenalties = 10, limitBreaches = 10): Promise<SectorDetails | null> {
+export async function getSectorDetailsBySlug(
+  slug: string,
+  limitPenalties = 10,
+  limitBreaches = 10,
+): Promise<SectorDetails | null> {
   const sql = getSqlClient();
   const sectorSlugMap = await getSectorSlugMap();
   const sectorName = sectorSlugMap.get(slug) ?? null;
@@ -361,7 +384,7 @@ export async function getSectorDetailsBySlug(slug: string, limitPenalties = 10, 
   `) as any[];
 
   const penaltiesLimit = Math.max(1, Math.min(limitPenalties, 50));
-  const penalties = await sql(
+  const penalties = (await sql(
     `
       SELECT fine_reference, firm_individual, firm_category, regulator,
              final_notice_url, summary, breach_type, breach_categories,
@@ -372,7 +395,7 @@ export async function getSectorDetailsBySlug(slug: string, limitPenalties = 10, 
       LIMIT $2
     `,
     [sectorName, penaltiesLimit],
-  );
+  )) as unknown as FineRecord[];
 
   const sector: SectorSummary = {
     name: sectorName,
@@ -394,6 +417,6 @@ export async function getSectorDetailsBySlug(slug: string, limitPenalties = 10, 
     earliestDate: summary?.earliest_date ? String(summary.earliest_date) : null,
     latestDate: summary?.latest_date ? String(summary.latest_date) : null,
     topBreaches,
-    topPenalties: penalties as FineRecord[],
+    topPenalties: penalties,
   };
 }
