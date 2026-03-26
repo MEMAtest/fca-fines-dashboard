@@ -10,6 +10,8 @@
 import postgres from 'postgres';
 import { parseStringPromise } from 'xml2js';
 import crypto from 'crypto';
+import { extractNameFromBodyText } from './lib/bodyTextExtractor.js';
+import { validateExtractedName } from './lib/nameValidation.js';
 
 const sql = postgres(process.env.DATABASE_URL?.trim() || '', {
   ssl: process.env.DATABASE_URL?.includes('sslmode=')
@@ -182,8 +184,8 @@ async function scrapeAfmPage(): Promise<AFMRecord[]> {
       const metaDescMatch = html.match(/<meta name="description" content="([^"]+)"/i);
       const description = metaDescMatch ? metaDescMatch[1] : '';
 
-      // Extract firm name from title
-      const firm = extractFirmName(title);
+      // PHASE 3 FIX: Extract firm name with body text fallback
+      const firm = extractFirmName(title, html);
 
       // Extract fine amount
       const amount = extractFineAmount(title, html);
@@ -213,24 +215,41 @@ async function scrapeAfmPage(): Promise<AFMRecord[]> {
   return records;
 }
 
-function extractFirmName(title: string): string {
+function extractFirmName(title: string, html?: string): string {
   // Pattern 1: "AFM fines [Firm] for..."
   const pattern1 = /AFM (?:fines?|sancties|sanctions?) ([^for]+) (?:for|wegens)/i;
   const match1 = title.match(pattern1);
-  if (match1) return match1[1].trim();
+  if (match1) {
+    const candidate = validateExtractedName(match1[1].trim());
+    if (candidate) return candidate;
+  }
 
   // Pattern 2: "[Firm] fined..."
   const pattern2 = /^([A-Z][^\s]+(?:\s+[A-Z][^\s]+)*)\s+(?:fined|sanctioned)/i;
   const match2 = title.match(pattern2);
-  if (match2) return match2[1].trim();
+  if (match2) {
+    const candidate = validateExtractedName(match2[1].trim());
+    if (candidate) return candidate;
+  }
 
   // Pattern 3: Company names (B.V., N.V., etc.)
   const pattern3 = /([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*\s+(?:B\.V\.|N\.V\.|Ltd\.|Inc\.|AG|GmbH))/;
   const match3 = title.match(pattern3);
-  if (match3) return match3[1].trim();
+  if (match3) {
+    const candidate = validateExtractedName(match3[1].trim());
+    if (candidate) return candidate;
+  }
 
-  // Fallback
-  return title.slice(0, 100);
+  // PHASE 3 FIX: Try body text extraction if HTML provided
+  if (html) {
+    const bodyExtraction = extractNameFromBodyText(html, 'nl');
+    if (bodyExtraction) {
+      return bodyExtraction;
+    }
+  }
+
+  // PHASE 3 FIX: Reduce fallback length from 100 to 60
+  return title.slice(0, 60);
 }
 
 function extractFineAmount(title: string, html: string): number | null {
@@ -319,7 +338,7 @@ function transformRecord(record: AFMRecord) {
     breachCategories: breachCategories,
     summary: `${record.firm} fined €${(record.amount || 0).toLocaleString()} by AFM for ${record.summary}`,
     finalNoticeUrl: record.link,
-    sourceUrl: AFM_CONFIG.baseUrl + AFM_CONFIG.enforcementUrl,
+    sourceUrl: AFM_CONFIG.rssUrl,
     rawPayload: JSON.stringify(record)
   };
 }

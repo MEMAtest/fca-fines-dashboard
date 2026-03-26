@@ -1,8 +1,9 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import { createPortal } from 'react-dom';
 import { Link, useLocation } from 'react-router-dom';
 import { Menu, X, ChevronDown, ChevronRight } from 'lucide-react';
 import { PUBLIC_REGULATOR_NAV_ITEMS } from '../data/regulatorCoverage';
+import type { RegulatorCoverage } from '../data/regulatorCoverage';
 import '../styles/siteheader.css';
 
 const NAV_LINKS = [
@@ -71,6 +72,9 @@ function getBreadcrumbs(pathname: string) {
 
 const BASE_URL = 'https://fcafines.memaconsultants.com';
 
+// Phase 5: Group regulators by region for mega menu
+const REGION_ORDER = ['UK', 'Europe', 'MENA', 'APAC', 'North America', 'Offshore'];
+
 export function SiteHeader() {
   const location = useLocation();
   const [mobileOpen, setMobileOpen] = useState(false);
@@ -81,6 +85,26 @@ export function SiteHeader() {
 
   const closeMobile = useCallback(() => setMobileOpen(false), []);
   const closeRegulatorDropdown = useCallback(() => setRegulatorDropdownOpen(false), []);
+
+  // Phase 5: Group regulators by region
+  const regulatorsByRegion = useMemo(() => {
+    const groups: Record<string, RegulatorCoverage[]> = {};
+
+    for (const regulator of PUBLIC_REGULATOR_NAV_ITEMS) {
+      const region = regulator.region;
+      if (!groups[region]) {
+        groups[region] = [];
+      }
+      groups[region].push(regulator);
+    }
+
+    // Sort each region's regulators by navOrder
+    for (const region of Object.keys(groups)) {
+      groups[region].sort((a, b) => a.navOrder - b.navOrder);
+    }
+
+    return groups;
+  }, []);
 
   // Inject BreadcrumbList JSON-LD for search engines
   useEffect(() => {
@@ -171,21 +195,37 @@ export function SiteHeader() {
             </button>
 
             {regulatorDropdownOpen && (
-              <div className="site-header__dropdown-menu" onMouseLeave={closeRegulatorDropdown}>
-                {PUBLIC_REGULATOR_NAV_ITEMS.map((regulator) => (
-                  <Link
-                    key={regulator.code}
-                    to={regulator.overviewPath}
-                    className={`site-header__dropdown-item${isRegulatorActive(regulator.overviewPath, location.pathname) ? ' site-header__dropdown-item--active' : ''}`}
-                    onClick={closeRegulatorDropdown}
-                  >
-                    <span className="site-header__dropdown-flag">{regulator.flag}</span>
-                    <div>
-                      <div className="site-header__dropdown-label">{regulator.code}</div>
-                      <div className="site-header__dropdown-country">{regulator.country}</div>
+              <div
+                className="site-header__dropdown-menu site-header__dropdown-menu--mega"
+                onMouseLeave={closeRegulatorDropdown}
+              >
+                <div className="site-header__mega-grid">
+                  {REGION_ORDER.filter(region => regulatorsByRegion[region]).map((region) => (
+                    <div key={region} className="site-header__mega-column">
+                      <h3 className="site-header__mega-heading">{region}</h3>
+                      <div className="site-header__mega-items">
+                        {regulatorsByRegion[region].map((regulator) => (
+                          <Link
+                            key={regulator.code}
+                            to={regulator.overviewPath}
+                            className={`site-header__dropdown-item${
+                              isRegulatorActive(regulator.overviewPath, location.pathname)
+                                ? ' site-header__dropdown-item--active'
+                                : ''
+                            }`}
+                            onClick={closeRegulatorDropdown}
+                          >
+                            <span className="site-header__dropdown-flag">{regulator.flag}</span>
+                            <div>
+                              <div className="site-header__dropdown-label">{regulator.code}</div>
+                              <div className="site-header__dropdown-country">{regulator.country}</div>
+                            </div>
+                          </Link>
+                        ))}
+                      </div>
                     </div>
-                  </Link>
-                ))}
+                  ))}
+                </div>
               </div>
             )}
           </div>

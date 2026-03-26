@@ -14,6 +14,8 @@ import * as cheerio from 'cheerio';
 import postgres from 'postgres';
 import crypto from 'crypto';
 import * as dotenv from 'dotenv';
+import { isGenericDescription, validateExtractedName, normalizeFirmName as sharedNormalizeFirmName } from './lib/nameValidation.js';
+import { extractNameFromBodyText } from './lib/bodyTextExtractor.js';
 
 dotenv.config();
 
@@ -341,8 +343,10 @@ function extractAmfBodyText($: cheerio.CheerioAPI) {
 }
 
 function extractAmfFirm(title: string, summary: string, bodyText: string = '') {
+  // PHASE 2 FIX: Enhanced body text extraction with French patterns
   // First, try to extract the COMPLETE list from body text "respectively on [FIRM, PERSON1, PERSON2]"
   if (bodyText && bodyText.length > 100) {
+    // Scan first 3 paragraphs for "respectively on" pattern
     const bodyRespectivelyMatch = bodyText.match(/respectively on\s+(.+?)(?:\s+for|\s+in relation|\s+and issued|,\s+with effect|\.\s)/i);
     if (bodyRespectivelyMatch?.[1]) {
       const fullList = bodyRespectivelyMatch[1].trim();
@@ -353,6 +357,29 @@ function extractAmfFirm(title: string, summary: string, bodyText: string = '') {
       if (cleaned.length > 10 && cleaned.length < 300 && !isGenericDescription(cleaned)) {
         return normalizeFirmName(cleaned);
       }
+    }
+
+    // Try French-specific patterns
+    const frenchPatterns = [
+      /la société\s+([A-Z][A-Za-zéèàçùÉÈÀÇÙ\s&\.]{3,60})/i,
+      /l'entreprise\s+([A-Z][A-Za-zéèàçùÉÈÀÇÙ\s&\.]{3,60})/i,
+      /M\.\s+([A-Z][a-zéèàçù]+\s+[A-Z][a-zéèàçù]+)/i  // Mr. FirstName LastName
+    ];
+
+    for (const pattern of frenchPatterns) {
+      const match = bodyText.match(pattern);
+      if (match?.[1]) {
+        const candidate = normalizeFirmName(match[1]);
+        if (candidate && !isGenericDescription(candidate)) {
+          return candidate;
+        }
+      }
+    }
+
+    // Try generic body text extraction as final attempt
+    const bodyExtraction = extractNameFromBodyText(bodyText, 'fr');
+    if (bodyExtraction && !isGenericDescription(bodyExtraction)) {
+      return normalizeFirmName(bodyExtraction);
     }
   }
 
@@ -403,7 +430,7 @@ function extractAmfFirm(title: string, summary: string, bodyText: string = '') {
     }
   }
 
-  // Fallback to stripped title - remove enforcement committee boilerplate
+  // PHASE 2 FIX: Reduced aggressive title stripping to preserve context
   const strippedTitle = normalizeFirmName(
     title
       .replace(/^The AMF Enforcement Committee fines?\s+/i, '')
@@ -422,12 +449,18 @@ function extractAmfFirm(title: string, summary: string, bodyText: string = '') {
       .replace(/\s+and (?:given|ordered).*$/i, '')
   );
 
-  // Reject if still looks like a title
+  // PHASE 2 FIX: Reject if still looks like title boilerplate
   if (strippedTitle && /^(?:The|AMF|Enforcement Committee)/i.test(strippedTitle)) {
     return null;
   }
 
-  return strippedTitle || null;
+  // PHASE 2 FIX: Only use if reasonable length (not full title)
+  if (strippedTitle && strippedTitle.length > 100) {
+    return null; // Too long, likely full title
+  }
+
+  // Final validation
+  return validateExtractedName(strippedTitle);
 }
 
 function extractNamesFromList(text: string): string | null {
@@ -449,24 +482,10 @@ function extractNamesFromList(text: string): string | null {
   return normalizeFirmName(cleaned);
 }
 
-function isGenericDescription(text: string): boolean {
-  const lower = text.toLowerCase();
+// PHASE 2 FIX: Use shared utilities - local functions removed, replaced by imports
+// isGenericDescription and normalizeFirmName now imported from lib/nameValidation.js
 
-  // Check if it's a generic description rather than an actual firm/individual name
-  // Must START with generic terms (not just contain them)
-  const genericPatterns = [
-    /^an? (?:asset management company|investment services provider|financial|depositary)/,
-    /^the (?:asset management company|investment services provider|financial|depositary)/,
-    /^(?:asset management company|investment services provider) and its (?:directors?|managers?)/,
-  ];
-
-  // Additional check: if it's ONLY generic (no actual names), reject it
-  const isOnlyGeneric = /^an? (?:asset management company|investment services provider|financial investment advisor|depositary)(?:\s+and its (?:directors?|managers?|former director|two managers))?$/i.test(text);
-
-  return genericPatterns.some(pattern => pattern.test(lower)) || isOnlyGeneric;
-}
-
-function normalizeFirmName(value: string) {
+function normalizeFirmName(value: string): string | null {
   const cleaned = normalizeText(
     value
       .replace(/^the\s+/i, '')
@@ -482,7 +501,8 @@ function normalizeFirmName(value: string) {
     return null;
   }
 
-  return cleaned;
+  // Use shared normalization for final cleanup
+  return sharedNormalizeFirmName(cleaned);
 }
 
 function extractAmfAmount(texts: string[]) {

@@ -166,9 +166,19 @@ async function scrapeSfc() {
     }
 
     // Extract firm/individual name from title
-    // Multiple patterns to capture various title formats
+    // CRITICAL FIX: Clean title BEFORE pattern matching to prevent "and fines" prefix artifacts
     let firmIndividual = 'Unknown';
 
+    // Step 1: Pre-clean the title to remove common artifacts
+    const cleanedTitle = title
+      .replace(/\s*(and|&)\s+fines?/gi, '')
+      .replace(/\s*(and|&)\s+bans?/gi, '')
+      .replace(/\s*(and|&)\s+(?:reprimands?|suspends?|prohibits?)/gi, '')
+      .replace(/\s+US?\$[\d.,]+\s*(?:million|billion|thousand)?/gi, '')
+      .replace(/\s+HK\$[\d.,]+\s*(?:million|billion|thousand)?/gi, '')
+      .trim();
+
+    // Step 2: Apply extraction patterns to cleaned title
     const patterns = [
       // "SFC [action] [name] for..."
       /SFC (?:bans?|fines?|reprimands?|suspends?|prohibits?) (.+?) (?:for|and)/i,
@@ -183,25 +193,36 @@ async function scrapeSfc() {
     ];
 
     for (const pattern of patterns) {
-      const match = title.match(pattern);
+      const match = cleanedTitle.match(pattern);
       if (match?.[1]) {
-        firmIndividual = match[1].trim();
+        const candidate = match[1].trim();
+
+        // Validate: reject if still contains artifacts
+        if (
+          candidate.toLowerCase().includes(' and fines') ||
+          candidate.toLowerCase().includes(' and bans') ||
+          candidate.toLowerCase().includes(' and reprimand')
+        ) {
+          continue; // Try next pattern
+        }
+
+        firmIndividual = candidate;
         break;
       }
     }
 
-    // Clean up common extraction artifacts
+    // Step 3: Final cleanup pass (belt-and-suspenders)
     firmIndividual = firmIndividual
       .replace(/^and fines?\s+/i, '')
       .replace(/^and bans?\s+/i, '')
       .replace(/^and (?:reprimands?|suspends?|prohibits?)\s+/i, '')
-      .replace(/\s+US?\$[\d.]+\s+(?:million|billion).*$/i, '')
-      .replace(/\s+HK\$[\d.]+\s+(?:million|billion).*$/i, '')
+      .replace(/\s+US?\$[\d.,]+\s*(?:million|billion|thousand)?/gi, '')
+      .replace(/\s+HK\$[\d.,]+\s*(?:million|billion|thousand)?/gi, '')
       .trim();
 
     // If still Unknown, try to extract first substantial phrase before common keywords
     if (firmIndividual === 'Unknown') {
-      const fallbackMatch = title.match(/^([A-Z][^:;]+?)(?:\s*(?:-|:|;|fined|banned|reprimanded))/);
+      const fallbackMatch = cleanedTitle.match(/^([A-Z][^:;]+?)(?:\s*(?:-|:|;|fined|banned|reprimanded))/);
       if (fallbackMatch?.[1] && fallbackMatch[1].length > 3 && fallbackMatch[1].length < 150) {
         firmIndividual = fallbackMatch[1].trim();
       }
