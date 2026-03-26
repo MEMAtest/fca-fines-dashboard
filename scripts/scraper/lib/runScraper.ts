@@ -19,9 +19,10 @@ export async function runScraper(options: RunnerOptions) {
 
   console.log(`${options.name}\n`);
 
-  let records = flags.useTestData && options.testLoader
-    ? await options.testLoader()
-    : await options.liveLoader();
+  let records =
+    flags.useTestData && options.testLoader
+      ? await options.testLoader()
+      : await options.liveLoader();
 
   records = limitRecords(records, flags.limit);
 
@@ -42,9 +43,9 @@ export async function runScraper(options: RunnerOptions) {
     console.log(`   Updated: ${result.updated}`);
     console.log(`   Errors: ${result.errors}`);
 
-    console.log('\n🔄 Refreshing unified regulatory fines view...');
+    console.log("\n🔄 Refreshing unified regulatory fines view...");
     await refreshUnifiedView(sql);
-    console.log('✅ View refreshed');
+    console.log("✅ View refreshed");
   } finally {
     await sql.end();
   }
@@ -56,11 +57,13 @@ async function refreshUnifiedView(sql: ReturnType<typeof createSqlClient>) {
   } catch (error) {
     const message = error instanceof Error ? error.message : String(error);
 
-    if (!message.includes('cannot refresh materialized view')) {
+    if (!message.includes("cannot refresh materialized view")) {
       throw error;
     }
 
-    console.warn('⚠️ Concurrent refresh unavailable, falling back to standard refresh');
+    console.warn(
+      "⚠️ Concurrent refresh unavailable, falling back to standard refresh",
+    );
     await sql`REFRESH MATERIALIZED VIEW all_regulatory_fines`;
   }
 }
