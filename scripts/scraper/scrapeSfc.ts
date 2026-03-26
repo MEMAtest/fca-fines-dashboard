@@ -190,6 +190,15 @@ async function scrapeSfc() {
       }
     }
 
+    // Clean up common extraction artifacts
+    firmIndividual = firmIndividual
+      .replace(/^and fines?\s+/i, '')
+      .replace(/^and bans?\s+/i, '')
+      .replace(/^and (?:reprimands?|suspends?|prohibits?)\s+/i, '')
+      .replace(/\s+US?\$[\d.]+\s+(?:million|billion).*$/i, '')
+      .replace(/\s+HK\$[\d.]+\s+(?:million|billion).*$/i, '')
+      .trim();
+
     // If still Unknown, try to extract first substantial phrase before common keywords
     if (firmIndividual === 'Unknown') {
       const fallbackMatch = title.match(/^([A-Z][^:;]+?)(?:\s*(?:-|:|;|fined|banned|reprimanded))/);

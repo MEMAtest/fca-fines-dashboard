@@ -403,7 +403,7 @@ function extractAmfFirm(title: string, summary: string, bodyText: string = '') {
     }
   }
 
-  // Fallback to stripped title
+  // Fallback to stripped title - remove enforcement committee boilerplate
   const strippedTitle = normalizeFirmName(
     title
       .replace(/^The AMF Enforcement Committee fines?\s+/i, '')
@@ -412,10 +412,20 @@ function extractAmfFirm(title: string, summary: string, bodyText: string = '') {
       .replace(/^AMF Enforcement Committee sanctions?\s+/i, '')
       .replace(/^The AMF Enforcement Committee clears?\s+/i, '')
       .replace(/^AMF Enforcement Committee clears?\s+/i, '')
+      .replace(/\s+fined by the Enforcement Committee.*$/i, '')
+      .replace(/\s+by the Enforcement Committee.*$/i, '')
+      .replace(/\s+by the Autorité.*$/i, '')
       .replace(/\s+for\b[\s\S]*$/i, '')
       .replace(/\s+a total of\b[\s\S]*$/i, '')
       .replace(/\s+totalling\b[\s\S]*$/i, '')
+      .replace(/\s+and issued.*$/i, '')
+      .replace(/\s+and (?:given|ordered).*$/i, '')
   );
+
+  // Reject if still looks like a title
+  if (strippedTitle && /^(?:The|AMF|Enforcement Committee)/i.test(strippedTitle)) {
+    return null;
+  }
 
   return strippedTitle || null;
 }
