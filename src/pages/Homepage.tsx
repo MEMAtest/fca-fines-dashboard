@@ -1,33 +1,48 @@
-import { motion } from 'framer-motion';
-import { useEffect, useState } from 'react';
-import { useNavigate, useLocation, useSearchParams, Link } from 'react-router-dom';
-import { useHomepageVisit } from '../hooks/useHomepageVisit';
-import { useHomepageStats, formatAmount } from '../hooks/useHomepageStats';
-import { Hero3DVisualization } from '../components/Hero3DVisualization';
-import { KeyInsightCard } from '../components/KeyInsightCard';
-import { WidgetCard3D, MiniSparkline, MiniBarChart } from '../components/WidgetCard3D';
-import { TrendChart3D, Shield3D, Clock3D } from '../components/icons3d';
-import { ContactForm } from '../components/ContactForm';
-import { Modal } from '../components/Modal';
-import { Toast } from '../components/Toast';
-import RegulatorCard from '../components/RegulatorCard';
-import { TotalAmountChart } from '../components/charts/TotalAmountChart';
-import { PenaltyDistributionChart } from '../components/charts/PenaltyDistributionChart';
-import { RecentActionsList } from '../components/charts/RecentActionsList';
-import { REGULATOR_COVERAGE } from '../data/regulatorCoverage';
-import { getHomepageFaqs, generateFaqSchema } from '../data/faqData';
-import '../styles/homepage.css';
-import '../styles/hero3d.css';
-import '../styles/regulators-showcase.css';
-import '../styles/widgets3d.css';
-import '../styles/contact.css';
+import { motion } from "framer-motion";
+import { useEffect, useState } from "react";
+import {
+  useNavigate,
+  useLocation,
+  useSearchParams,
+  Link,
+} from "react-router-dom";
+import { useHomepageVisit } from "../hooks/useHomepageVisit.js";
+import { useHomepageStats, formatAmount } from "../hooks/useHomepageStats.js";
+import { Hero3DVisualization } from "../components/Hero3DVisualization.js";
+import { KeyInsightCard } from "../components/KeyInsightCard.js";
+import {
+  WidgetCard3D,
+  MiniSparkline,
+  MiniBarChart,
+} from "../components/WidgetCard3D.js";
+import { TrendChart3D, Shield3D, Clock3D } from "../components/icons3d.js";
+import { ContactForm } from "../components/ContactForm.js";
+import { Modal } from "../components/Modal.js";
+import { Toast } from "../components/Toast.js";
+import RegulatorCard from "../components/RegulatorCard.js";
+import { TotalAmountChart } from "../components/charts/TotalAmountChart.js";
+import { PenaltyDistributionChart } from "../components/charts/PenaltyDistributionChart.js";
+import { RecentActionsList } from "../components/charts/RecentActionsList.js";
+import {
+  LIVE_REGULATOR_NAV_ITEMS,
+  PIPELINE_REGULATOR_NAV_ITEMS,
+} from "../data/regulatorCoverage.js";
+import { getHomepageFaqs, generateFaqSchema } from "../data/faqData.js";
+import "../styles/homepage.css";
+import "../styles/hero3d.css";
+import "../styles/regulators-showcase.css";
+import "../styles/widgets3d.css";
+import "../styles/contact.css";
 
-type ModalType = 'totalAmount' | 'distribution' | 'recentActions' | null;
-type ToastState = { message: string; type: 'success' | 'error' } | null;
+type ModalType = "totalAmount" | "distribution" | "recentActions" | null;
+type ToastState = { message: string; type: "success" | "error" } | null;
 
-const REGULATOR_ORDER = ['FCA', 'BaFin', 'AMF', 'CNMV', 'CBI', 'AFM', 'DNB', 'ESMA'] as const;
-const ANCHOR_REGULATOR = 'FCA' as const;
-const ADDITIONAL_REGULATORS = REGULATOR_ORDER.filter((code) => code !== ANCHOR_REGULATOR);
+const ANCHOR_REGULATOR = "FCA" as const;
+const PIPELINE_PREVIEW_COUNT = 6;
+
+function formatScrapeMode(mode: string) {
+  return mode.replace(/_/g, " ");
+}
 
 export function Homepage() {
   const navigate = useNavigate();
@@ -45,9 +60,9 @@ export function Homepage() {
 
   // Handle verification/unsubscribe query params and show toast
   useEffect(() => {
-    const verified = searchParams.get('verified');
-    const unsubscribed = searchParams.get('unsubscribed');
-    const error = searchParams.get('error');
+    const verified = searchParams.get("verified");
+    const unsubscribed = searchParams.get("unsubscribed");
+    const error = searchParams.get("error");
 
     if (verified) {
       const messages: Record<string, string> = {
@@ -55,49 +70,59 @@ export function Homepage() {
         watchlist: `Email verified! You'll be notified when watched firms receive fines.`,
         digest: `Email verified! You're subscribed to the digest.`,
       };
-      setToast({ message: messages[verified] || 'Email verified successfully!', type: 'success' });
+      setToast({
+        message: messages[verified] || "Email verified successfully!",
+        type: "success",
+      });
       // Clear query params
       setSearchParams({}, { replace: true });
       return;
     } else if (unsubscribed) {
       const messages: Record<string, string> = {
-        alert: 'You have been unsubscribed from alerts.',
-        watchlist: 'Firm removed from your watchlist.',
-        digest: 'You have been unsubscribed from the digest.',
+        alert: "You have been unsubscribed from alerts.",
+        watchlist: "Firm removed from your watchlist.",
+        digest: "You have been unsubscribed from the digest.",
       };
-      setToast({ message: messages[unsubscribed] || 'Unsubscribed successfully.', type: 'success' });
+      setToast({
+        message: messages[unsubscribed] || "Unsubscribed successfully.",
+        type: "success",
+      });
       setSearchParams({}, { replace: true });
       return;
     } else if (error) {
       const messages: Record<string, string> = {
-        invalid_token: 'Invalid or expired verification link.',
-        invalid_or_expired_token: 'Invalid or expired verification link.',
-        token_expired: 'Verification link has expired. Please subscribe again.',
-        already_verified: 'This subscription is already verified.',
-        not_found: 'Subscription not found.',
-        not_found_or_already_unsubscribed: 'Subscription not found or already unsubscribed.',
-        verification_failed: 'Unable to verify subscription. Please try again.',
-        unsubscribe_failed: 'Unable to unsubscribe. Please try again.',
+        invalid_token: "Invalid or expired verification link.",
+        invalid_or_expired_token: "Invalid or expired verification link.",
+        token_expired: "Verification link has expired. Please subscribe again.",
+        already_verified: "This subscription is already verified.",
+        not_found: "Subscription not found.",
+        not_found_or_already_unsubscribed:
+          "Subscription not found or already unsubscribed.",
+        verification_failed: "Unable to verify subscription. Please try again.",
+        unsubscribe_failed: "Unable to unsubscribe. Please try again.",
       };
-      setToast({ message: messages[error] || 'An error occurred.', type: 'error' });
+      setToast({
+        message: messages[error] || "An error occurred.",
+        type: "error",
+      });
       setSearchParams({}, { replace: true });
       return;
     }
 
     const dashboardParams = [
-      'year',
-      'category',
-      'search',
-      'scope',
-      'compare',
-      'compareCategories',
-      'filterYears',
-      'amountMin',
-      'amountMax',
-      'breaches',
-      'firms',
-      'startDate',
-      'endDate',
+      "year",
+      "category",
+      "search",
+      "scope",
+      "compare",
+      "compareCategories",
+      "filterYears",
+      "amountMin",
+      "amountMax",
+      "breaches",
+      "firms",
+      "startDate",
+      "endDate",
     ];
     let changed = false;
     const nextParams = new URLSearchParams(searchParams);
@@ -121,23 +146,39 @@ export function Homepage() {
   }, [toast]);
 
   // Derived values from live stats
-  const totalAmountDisplay = stats ? formatAmount(stats.totalAmount) : '£4.9B+';
+  const totalAmountDisplay = stats ? formatAmount(stats.totalAmount) : "£4.9B+";
   const totalFinesDisplay = stats ? stats.totalFines : 311;
-  const yoyDisplay = stats?.yoyChange ? `↗ ${stats.yoyChange}%` : '';
+  const yoyDisplay = stats?.yoyChange ? `↗ ${stats.yoyChange}%` : "";
   const latestFine = stats?.latestFines?.[0];
-  const latestFineAmount = latestFine ? formatAmount(latestFine.amount) : '£44m';
-  const latestFirmName = latestFine?.firm || 'Latest Firm';
-  const yearsRange = stats ? `${stats.earliestYear}-${stats.latestYear}` : '2013-2025';
-  const showcaseCoverage = REGULATOR_ORDER.map((code) => REGULATOR_COVERAGE[code]);
-  const anchorCoverage = REGULATOR_COVERAGE[ANCHOR_REGULATOR];
-  const overallCoverageStart = Math.min(...showcaseCoverage.map((coverage) => coverage.earliestYear));
-  const overallCoverageEnd = Math.max(...showcaseCoverage.map((coverage) => coverage.latestYear));
+  const latestFineAmount = latestFine
+    ? formatAmount(latestFine.amount)
+    : "£44m";
+  const latestFirmName = latestFine?.firm || "Latest Firm";
+  const yearsRange = stats
+    ? `${stats.earliestYear}-${stats.latestYear}`
+    : "2013-2025";
+  const showcaseCoverage = LIVE_REGULATOR_NAV_ITEMS;
+  const anchorCoverage = showcaseCoverage.find(
+    (coverage) => coverage.code === ANCHOR_REGULATOR,
+  )!;
+  const additionalCoverage = showcaseCoverage.filter(
+    (coverage) => coverage.code !== ANCHOR_REGULATOR,
+  );
+  const pipelinePreview = PIPELINE_REGULATOR_NAV_ITEMS.filter(
+    (coverage) => coverage.priorityTier === 1,
+  ).slice(0, PIPELINE_PREVIEW_COUNT);
+  const overallCoverageStart = Math.min(
+    ...showcaseCoverage.map((coverage) => coverage.earliestYear),
+  );
+  const overallCoverageEnd = Math.max(
+    ...showcaseCoverage.map((coverage) => coverage.latestYear),
+  );
 
   // Handle CTA click - navigate to dashboard or original destination
   const handleExplorePlatform = () => {
     const state = location.state as { from?: string } | null;
     const intendedDestination = state?.from;
-    navigate(intendedDestination || '/dashboard');
+    navigate(intendedDestination || "/dashboard");
   };
 
   return (
@@ -171,7 +212,8 @@ export function Homepage() {
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6, delay: 0.1 }}
             >
-              Historical FCA depth with cross-regulator intelligence beyond the UK.
+              Historical FCA depth with cross-regulator intelligence beyond the
+              UK.
             </motion.p>
 
             <motion.button
@@ -195,12 +237,14 @@ export function Homepage() {
                 <span>since 2013</span>
               </div>
               <div className="hero-stat-strip__item">
-                <strong>{REGULATOR_ORDER.length} regulators</strong>
-                <span>tracked</span>
+                <strong>{showcaseCoverage.length} live regulators</strong>
+                <span>dashboard coverage</span>
               </div>
               <div className="hero-stat-strip__item">
-                <strong>Cross-regulator</strong>
-                <span>intelligence</span>
+                <strong>
+                  {PIPELINE_REGULATOR_NAV_ITEMS.length} next targets
+                </strong>
+                <span>validated sources</span>
               </div>
               <div className="hero-stat-strip__item">
                 <strong>
@@ -217,7 +261,11 @@ export function Homepage() {
               transition={{ duration: 0.6, delay: 0.4 }}
             >
               {showcaseCoverage.map((coverage) => (
-                <Link key={coverage.code} to={`/regulators/${coverage.code.toLowerCase()}`} className="hero-regulator-strip__pill">
+                <Link
+                  key={coverage.code}
+                  to={`/regulators/${coverage.code.toLowerCase()}`}
+                  className="hero-regulator-strip__pill"
+                >
                   <span>{coverage.flag}</span>
                   <span>{coverage.code}</span>
                 </Link>
@@ -233,10 +281,13 @@ export function Homepage() {
 
       <section className="regulators-showcase">
         <div className="regulators-showcase__header">
-          <span className="regulators-showcase__eyebrow">Current live coverage</span>
+          <span className="regulators-showcase__eyebrow">
+            Current live coverage
+          </span>
           <h2>Current regulatory coverage</h2>
           <p>
-            Built on deep FCA history, with additional insight from other financial regulators and room to expand globally.
+            Built on deep FCA history, with additional insight from other
+            financial regulators and room to expand globally.
           </p>
         </div>
 
@@ -244,7 +295,9 @@ export function Homepage() {
           <div className="regulators-showcase__region regulators-showcase__region--anchor">
             <div className="regulators-showcase__region-header">
               <div>
-                <span className="regulators-showcase__region-kicker">Anchor dataset</span>
+                <span className="regulators-showcase__region-kicker">
+                  Anchor dataset
+                </span>
                 <h3>{anchorCoverage.fullName}</h3>
               </div>
               <p>Deep historical enforcement coverage from 2013 onwards.</p>
@@ -254,8 +307,10 @@ export function Homepage() {
                 code="FCA"
                 name={anchorCoverage.fullName}
                 coverage={anchorCoverage.years}
-                finesCount={anchorCoverage.count}
-                dataQuality={anchorCoverage.dataQuality}
+                primaryStatValue={anchorCoverage.count}
+                primaryStatLabel="Actions tracked"
+                secondaryStatValue={anchorCoverage.dataQuality}
+                secondaryStatLabel="Data quality"
                 badge="Anchor dataset"
                 to="/regulators/fca"
               />
@@ -265,38 +320,96 @@ export function Homepage() {
           <div className="regulators-showcase__region regulators-showcase__region--additional">
             <div className="regulators-showcase__region-header">
               <div>
-                <span className="regulators-showcase__region-kicker">Additional regulator coverage</span>
+                <span className="regulators-showcase__region-kicker">
+                  Additional regulator coverage
+                </span>
                 <h3>Broaden the regulatory lens</h3>
               </div>
-              <p>Use other regulators to benchmark themes, compare enforcement patterns, and broaden compliance insight.</p>
+              <p>
+                Use other regulators to benchmark themes, compare enforcement
+                patterns, and broaden compliance insight.
+              </p>
             </div>
             <div className="regulators-showcase__grid">
-              {ADDITIONAL_REGULATORS.map((code) => {
-                const coverage = REGULATOR_COVERAGE[code];
-                return (
-                  <RegulatorCard
-                    key={coverage.code}
-                    code={coverage.code}
-                    name={coverage.fullName}
-                    coverage={coverage.years}
-                    finesCount={coverage.count}
-                    dataQuality={coverage.dataQuality}
-                    badge={coverage.note ? 'Emerging dataset' : undefined}
-                    to={`/regulators/${coverage.code.toLowerCase()}`}
-                  />
-                );
-              })}
+              {additionalCoverage.map((coverage) => (
+                <RegulatorCard
+                  key={coverage.code}
+                  code={coverage.code}
+                  name={coverage.fullName}
+                  coverage={coverage.years}
+                  primaryStatValue={coverage.count}
+                  primaryStatLabel="Actions tracked"
+                  secondaryStatValue={coverage.dataQuality}
+                  secondaryStatLabel="Data quality"
+                  badge={coverage.note ? "Emerging dataset" : undefined}
+                  to={`/regulators/${coverage.code.toLowerCase()}`}
+                />
+              ))}
             </div>
           </div>
         </div>
 
         <div className="regulators-showcase__footer">
           <p>
-            Start with the FCA historical archive, then use additional regulators to benchmark priorities, spot recurring themes, and widen your enforcement perspective.
+            Start with the FCA historical archive, then use additional
+            regulators to benchmark priorities, spot recurring themes, and widen
+            your enforcement perspective.
           </p>
           <Link to="/dashboard" className="regulators-showcase__cta">
             Explore enforcement intelligence
           </Link>
+        </div>
+
+        <div className="regulators-showcase__region regulators-showcase__region--pipeline">
+          <div className="regulators-showcase__region-header">
+            <div>
+              <span className="regulators-showcase__region-kicker">
+                Validated next wave
+              </span>
+              <h3>US banking, APAC and global expansion queue</h3>
+            </div>
+            <p>
+              Official public sources are validated. These regulators are mapped
+              for ingestion next, but are not yet live dashboards.
+            </p>
+          </div>
+
+          <div className="regulators-showcase__grid">
+            {pipelinePreview.map((coverage) => (
+              <RegulatorCard
+                key={coverage.code}
+                code={coverage.code}
+                name={coverage.fullName}
+                coverage={`${coverage.country} · ${coverage.sourceType === "sro" ? "SRO source" : "Official regulator source"}`}
+                primaryStatValue={`Tier ${coverage.priorityTier}`}
+                primaryStatLabel="Priority"
+                secondaryStatValue={formatScrapeMode(coverage.scrapeMode)}
+                secondaryStatLabel="Source surface"
+                badge={
+                  coverage.strategicBucket === "gulf_and_ifc"
+                    ? "Dubai / UAE"
+                    : coverage.strategicBucket === "offshore_wealth_centres"
+                      ? "Offshore"
+                      : coverage.sourceType === "sro"
+                        ? "SRO"
+                        : "Global next"
+                }
+                href={coverage.officialSources[0]?.url}
+                footerLabel="Review official source"
+              />
+            ))}
+          </div>
+
+          <div className="regulators-showcase__pipeline-footer">
+            <p>
+              See the full roadmap covering US banking regulators, APAC market
+              supervisors, offshore centres, and other global enforcement
+              sources.
+            </p>
+            <Link to="/regulators" className="regulators-showcase__cta">
+              View regulator roadmap
+            </Link>
+          </div>
         </div>
       </section>
 
@@ -304,7 +417,8 @@ export function Homepage() {
       <section className="key-insights">
         <h2 className="section-title">Key Insights</h2>
         <p className="section-subtitle">
-          Powerful analytics to help you understand regulatory enforcement patterns
+          Powerful analytics to help you understand regulatory enforcement
+          patterns
         </p>
 
         <div className="insights-grid">
@@ -339,8 +453,8 @@ export function Homepage() {
           Regulatory Landscape
         </h2>
         <p className="section-subtitle">
-          Drill down into penalty distributions and timeline trends
-          with unparalleled clarity.
+          Drill down into penalty distributions and timeline trends with
+          unparalleled clarity.
         </p>
 
         <div className="widgets-container">
@@ -350,7 +464,7 @@ export function Homepage() {
             value={totalAmountDisplay}
             trend={yoyDisplay}
             chart={<MiniSparkline />}
-            onClick={() => setOpenModal('totalAmount')}
+            onClick={() => setOpenModal("totalAmount")}
           />
 
           <WidgetCard3D
@@ -358,7 +472,7 @@ export function Homepage() {
             label="Penalty Distribution"
             value=""
             chart={<MiniBarChart />}
-            onClick={() => setOpenModal('distribution')}
+            onClick={() => setOpenModal("distribution")}
           />
 
           <WidgetCard3D
@@ -367,14 +481,14 @@ export function Homepage() {
             value={latestFineAmount}
             trend={latestFirmName}
             chart={null}
-            onClick={() => setOpenModal('recentActions')}
+            onClick={() => setOpenModal("recentActions")}
           />
         </div>
       </section>
 
       {/* Modals */}
       <Modal
-        isOpen={openModal === 'totalAmount'}
+        isOpen={openModal === "totalAmount"}
         onClose={() => setOpenModal(null)}
         title={`Total Fines Amount (${yearsRange})`}
       >
@@ -382,7 +496,7 @@ export function Homepage() {
       </Modal>
 
       <Modal
-        isOpen={openModal === 'distribution'}
+        isOpen={openModal === "distribution"}
         onClose={() => setOpenModal(null)}
         title="Penalty Distribution by Sector"
       >
@@ -390,7 +504,7 @@ export function Homepage() {
       </Modal>
 
       <Modal
-        isOpen={openModal === 'recentActions'}
+        isOpen={openModal === "recentActions"}
         onClose={() => setOpenModal(null)}
         title={`Recent Enforcement Actions (${stats?.latestYear || new Date().getFullYear()})`}
       >
@@ -401,52 +515,59 @@ export function Homepage() {
       <section className="blog-section">
         <h2 className="section-title">FCA Fines Insights</h2>
         <p className="section-subtitle">
-          Expert analysis of FCA enforcement actions, penalty trends, and compliance lessons
+          Expert analysis of FCA enforcement actions, penalty trends, and
+          compliance lessons
         </p>
 
         <div className="blog-grid">
           {[
             {
               title: "FCA Fines in 2024: Key Trends and Record Penalties",
-              excerpt: "Analysis of the FCA's enforcement approach in 2024, including the largest fines and most common breach types targeted by the regulator.",
+              excerpt:
+                "Analysis of the FCA's enforcement approach in 2024, including the largest fines and most common breach types targeted by the regulator.",
               category: "Enforcement Trends",
               date: "January 2025",
-              url: "https://memaconsultants.com/insights/fca-fines-2024-trends"
+              url: "https://memaconsultants.com/insights/fca-fines-2024-trends",
             },
             {
               title: "How to Avoid FCA Fines: Lessons from Recent Cases",
-              excerpt: "Practical compliance lessons drawn from recent FCA enforcement actions, helping firms identify and address regulatory risks.",
+              excerpt:
+                "Practical compliance lessons drawn from recent FCA enforcement actions, helping firms identify and address regulatory risks.",
               category: "Compliance Guide",
               date: "December 2024",
-              url: "https://memaconsultants.com/insights/avoid-fca-fines-lessons"
+              url: "https://memaconsultants.com/insights/avoid-fca-fines-lessons",
             },
             {
               title: "Understanding FCA Penalty Calculations",
-              excerpt: "A deep dive into how the FCA calculates financial penalties, including aggravating and mitigating factors that affect fine amounts.",
+              excerpt:
+                "A deep dive into how the FCA calculates financial penalties, including aggravating and mitigating factors that affect fine amounts.",
               category: "Regulatory Analysis",
               date: "November 2024",
-              url: "https://memaconsultants.com/insights/fca-penalty-calculations"
+              url: "https://memaconsultants.com/insights/fca-penalty-calculations",
             },
             {
               title: "Consumer Duty Enforcement: What Fines to Expect",
-              excerpt: "With Consumer Duty now in force, we examine the FCA's likely enforcement approach and potential penalty levels for breaches.",
+              excerpt:
+                "With Consumer Duty now in force, we examine the FCA's likely enforcement approach and potential penalty levels for breaches.",
               category: "Consumer Duty",
               date: "October 2024",
-              url: "https://memaconsultants.com/insights/consumer-duty-enforcement-fines"
+              url: "https://memaconsultants.com/insights/consumer-duty-enforcement-fines",
             },
             {
               title: "AML Failures: The Costliest FCA Fines",
-              excerpt: "Anti-money laundering breaches have attracted some of the FCA's largest penalties. We analyse the key failures and compliance gaps.",
+              excerpt:
+                "Anti-money laundering breaches have attracted some of the FCA's largest penalties. We analyse the key failures and compliance gaps.",
               category: "Financial Crime",
               date: "September 2024",
-              url: "https://memaconsultants.com/insights/aml-fca-fines"
+              url: "https://memaconsultants.com/insights/aml-fca-fines",
             },
             {
               title: "FCA vs PRA: Understanding Dual Regulation Fines",
-              excerpt: "How enforcement differs between the FCA and PRA, and what dual-regulated firms need to know about penalty coordination.",
+              excerpt:
+                "How enforcement differs between the FCA and PRA, and what dual-regulated firms need to know about penalty coordination.",
               category: "Regulatory Framework",
               date: "August 2024",
-              url: "https://memaconsultants.com/insights/fca-pra-dual-regulation-fines"
+              url: "https://memaconsultants.com/insights/fca-pra-dual-regulation-fines",
             },
           ].map((post, index) => (
             <motion.a
@@ -467,9 +588,7 @@ export function Homepage() {
                 </div>
                 <h3 className="blog-card-title">{post.title}</h3>
                 <p className="blog-card-excerpt">{post.excerpt}</p>
-                <span className="blog-read-more">
-                  Read Article →
-                </span>
+                <span className="blog-read-more">Read Article →</span>
               </div>
             </motion.a>
           ))}
@@ -509,9 +628,15 @@ export function Homepage() {
             <p className="footer-tagline">Powered by MEMA Consultants</p>
           </div>
           <nav className="footer-nav">
-            <Link to="/blog" className="footer-link">Insights & Blog</Link>
-            <Link to="/dashboard" className="footer-link">Dashboard</Link>
-            <Link to="/sitemap" className="footer-link">Sitemap</Link>
+            <Link to="/blog" className="footer-link">
+              Insights & Blog
+            </Link>
+            <Link to="/dashboard" className="footer-link">
+              Dashboard
+            </Link>
+            <Link to="/sitemap" className="footer-link">
+              Sitemap
+            </Link>
           </nav>
           <p className="footer-copyright">
             © {new Date().getFullYear()} MEMA Consultants · All rights reserved
@@ -530,12 +655,14 @@ function HomepageFAQ() {
 
   // Inject FAQPage JSON-LD for homepage
   useEffect(() => {
-    const script = document.createElement('script');
-    script.type = 'application/ld+json';
-    script.setAttribute('data-faq-ld', 'true');
+    const script = document.createElement("script");
+    script.type = "application/ld+json";
+    script.setAttribute("data-faq-ld", "true");
     script.textContent = JSON.stringify(generateFaqSchema(faqs));
     document.head.appendChild(script);
-    return () => { script.remove(); };
+    return () => {
+      script.remove();
+    };
   }, []);
 
   return (
@@ -544,14 +671,17 @@ function HomepageFAQ() {
         <div className="homepage-faq-header">
           <span className="homepage-faq-badge">FAQ</span>
           <h2>Frequently Asked Questions</h2>
-          <p>Common questions about FCA fines, enforcement actions, and regulatory compliance.</p>
+          <p>
+            Common questions about FCA fines, enforcement actions, and
+            regulatory compliance.
+          </p>
         </div>
 
         <div className="homepage-faq-list">
           {faqs.map((faq, index) => (
             <div
               key={faq.slug}
-              className={`homepage-faq-item ${openIndex === index ? 'homepage-faq-item--open' : ''}`}
+              className={`homepage-faq-item ${openIndex === index ? "homepage-faq-item--open" : ""}`}
             >
               <button
                 onClick={() => setOpenIndex(openIndex === index ? null : index)}
@@ -559,7 +689,7 @@ function HomepageFAQ() {
               >
                 <h3>{faq.question}</h3>
                 <svg
-                  className={`homepage-faq-chevron ${openIndex === index ? 'homepage-faq-chevron--open' : ''}`}
+                  className={`homepage-faq-chevron ${openIndex === index ? "homepage-faq-chevron--open" : ""}`}
                   width="20"
                   height="20"
                   viewBox="0 0 24 24"

@@ -1,27 +1,35 @@
-import { Link } from 'react-router-dom';
-import RegulatorBadge from './RegulatorBadge';
+import { Link } from "react-router-dom";
+import RegulatorBadge from "./RegulatorBadge.js";
 
 interface RegulatorCardProps {
   code: string;
   name: string;
   coverage: string;
-  finesCount: number;
-  dataQuality?: string;
+  primaryStatValue: number | string;
+  primaryStatLabel: string;
+  secondaryStatValue?: number | string;
+  secondaryStatLabel?: string;
   badge?: string;
-  to: string;
+  to?: string;
+  href?: string;
+  footerLabel?: string;
 }
 
 export default function RegulatorCard({
   code,
   name,
   coverage,
-  finesCount,
-  dataQuality,
+  primaryStatValue,
+  primaryStatLabel,
+  secondaryStatValue,
+  secondaryStatLabel,
   badge,
   to,
+  href,
+  footerLabel,
 }: RegulatorCardProps) {
-  return (
-    <Link to={to} className="regulator-card">
+  const content = (
+    <>
       <div className="regulator-card__header">
         <RegulatorBadge regulator={code} size="medium" />
         {badge ? <span className="regulator-card__badge">{badge}</span> : null}
@@ -34,19 +42,49 @@ export default function RegulatorCard({
 
       <div className="regulator-card__stats">
         <div>
-          <span className="regulator-card__stat-value">{finesCount}</span>
-          <span className="regulator-card__stat-label">Actions tracked</span>
+          <span className="regulator-card__stat-value">{primaryStatValue}</span>
+          <span className="regulator-card__stat-label">{primaryStatLabel}</span>
         </div>
         <div>
-          <span className="regulator-card__stat-value">{dataQuality ?? 'N/A'}</span>
-          <span className="regulator-card__stat-label">Data quality</span>
+          <span className="regulator-card__stat-value">
+            {secondaryStatValue ?? "N/A"}
+          </span>
+          <span className="regulator-card__stat-label">
+            {secondaryStatLabel ?? "Data quality"}
+          </span>
         </div>
       </div>
 
       <div className="regulator-card__footer">
-        <span>Open regulator hub</span>
-        <span aria-hidden="true">{'->'}</span>
+        <span>
+          {footerLabel ??
+            (href ? "Review official source" : "Open regulator hub")}
+        </span>
+        <span aria-hidden="true">{"->"}</span>
       </div>
-    </Link>
+    </>
   );
+
+  if (href) {
+    return (
+      <a
+        href={href}
+        target="_blank"
+        rel="noopener noreferrer"
+        className="regulator-card"
+      >
+        {content}
+      </a>
+    );
+  }
+
+  if (to) {
+    return (
+      <Link to={to} className="regulator-card">
+        {content}
+      </Link>
+    );
+  }
+
+  return <div className="regulator-card">{content}</div>;
 }
