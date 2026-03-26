@@ -662,13 +662,13 @@ function transformRecord(record: AMFRecord) {
   const amountEur = record.amount;
   const amountGbp = amountEur ? Math.round(amountEur * 0.85 * 100) / 100 : null;
 
+  // Content hash for deduplication - uses stable fields (regulator, date, link)
+  // Excludes firm name so improved extraction updates existing records instead of creating duplicates
   const contentHash = crypto
     .createHash('sha256')
     .update(JSON.stringify({
       regulator: 'AMF',
-      firm: record.firm,
       date: record.date,
-      amount: record.amount,
       link: record.link,
     }))
     .digest('hex');
