@@ -49,6 +49,7 @@
     "cheerio": "^1.1.2",
     "classnames": "^2.5.1",
     "cors": "^2.8.5",
+    "csv-parse": "^6.2.1",
     "date-fns": "^3.6.0",
     "dom-to-image": "^2.6.0",
     "dotenv": "^16.4.7",
