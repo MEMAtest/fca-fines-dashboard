@@ -10,7 +10,7 @@
 
 import { useState, useEffect } from 'react';
 import { Search, Filter, X, TrendingUp, Calendar, DollarSign, Globe } from 'lucide-react';
-import { PUBLIC_REGULATOR_NAV_ITEMS } from '../data/regulatorCoverage';
+import { PUBLIC_REGULATOR_NAV_ITEMS } from '../data/regulatorCoverage.js';
 
 interface SearchResult {
   id: string;
@@ -98,7 +98,10 @@ export function NaturalLanguageSearch() {
   ];
 
   // Get unique countries from regulators
-  const countries = Array.from(new Set(PUBLIC_REGULATOR_NAV_ITEMS.map(r => r.country))).sort();
+  const countries = Array.from(
+    new Set<string>(PUBLIC_REGULATOR_NAV_ITEMS.map((regulator) => regulator.country)),
+  ).sort();
+  const totalTrackedActions = PUBLIC_REGULATOR_NAV_ITEMS.reduce((sum, regulator) => sum + regulator.count, 0);
 
   // Get years (2010-2026)
   const years = Array.from({ length: 17 }, (_, i) => 2026 - i);
@@ -214,7 +217,7 @@ export function NaturalLanguageSearch() {
             color: 'rgba(255,255,255,0.9)',
             marginBottom: '2rem'
           }}>
-            Search across {PUBLIC_REGULATOR_NAV_ITEMS.length} regulators • 1,100+ enforcement actions • Powered by AI
+            Search across {PUBLIC_REGULATOR_NAV_ITEMS.length} regulators • {totalTrackedActions.toLocaleString()} enforcement actions • Powered by AI
           </p>
 
           {/* Search Form */}

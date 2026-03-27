@@ -3,13 +3,13 @@
  * Phase 6A: Full-text search across all enforcement actions
  */
 
-import { NaturalLanguageSearch } from '../components/NaturalLanguageSearch';
-import { useSEO } from '../hooks/useSEO';
+import { NaturalLanguageSearch } from '../components/NaturalLanguageSearch.js';
+import { useSEO } from '../hooks/useSEO.js';
 
 export function Search() {
   useSEO({
     title: 'Search Enforcement Actions | Natural Language Search',
-    description: 'Search across regulatory enforcement actions from FCA, BaFin, AMF, CNMV, CBI, SFC, AFM, and DNB using natural language queries.',
+    description: 'Search across live global regulatory enforcement actions from FCA, SEC, SEBI, ECB, DFSA, and other tracked regulators using natural language queries.',
     keywords: 'enforcement search, AML search, compliance search, regulatory fines search, natural language search',
   });
 

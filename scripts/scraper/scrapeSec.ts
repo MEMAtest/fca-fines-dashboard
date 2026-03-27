@@ -300,8 +300,6 @@ export async function loadSecLiveRecords() {
   const pageCount = extractSecPageCount(firstPageHtml);
   const rows = [...parseSecPressReleaseListing(firstPageHtml)];
 
-  console.log(`   Found ${pageCount} SEC archive pages`);
-
   for (let pageIndex = 1; pageIndex < pageCount; pageIndex += 1) {
     const pageHtml = await fetchSecListingPage(pageIndex);
     const pageRows = parseSecPressReleaseListing(pageHtml);
@@ -316,10 +314,6 @@ export async function loadSecLiveRecords() {
       break;
     }
 
-    if ((pageIndex + 1) % 25 === 0 || pageIndex === pageCount - 1) {
-      console.log(`   Indexed ${pageIndex + 1}/${pageCount} pages (oldest year seen: ${oldestYear})`);
-    }
-
     await sleep(SEC_LISTING_PAGE_DELAY_MS);
   }
 
@@ -332,8 +326,6 @@ export async function loadSecLiveRecords() {
     ).values(),
   );
 
-  console.log(`   Identified ${candidateRows.length} candidate enforcement releases since ${SEC_DEFAULT_SINCE_YEAR}`);
-
   const records = [];
 
   for (let index = 0; index < candidateRows.length; index += SEC_DETAIL_BATCH_SIZE) {
@@ -344,11 +336,6 @@ export async function loadSecLiveRecords() {
       if (result.status === 'fulfilled' && result.value) {
         records.push(result.value);
       }
-    }
-
-    const processed = Math.min(index + SEC_DETAIL_BATCH_SIZE, candidateRows.length);
-    if (processed % 60 === 0 || processed === candidateRows.length) {
-      console.log(`   Enriched ${processed}/${candidateRows.length} candidate releases`);
     }
 
     if (index + SEC_DETAIL_BATCH_SIZE < candidateRows.length) {

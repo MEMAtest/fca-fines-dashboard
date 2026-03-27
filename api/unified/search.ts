@@ -8,16 +8,13 @@
 
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 import postgres from 'postgres';
+import { PUBLIC_REGULATOR_CODES } from '../../src/data/regulatorCoverage.js';
 
 const sql = postgres(process.env.DATABASE_URL?.trim() || '', {
   ssl: process.env.DATABASE_URL?.includes('sslmode=')
     ? { rejectUnauthorized: false }
     : false
 });
-
-// Public regulators only (ESMA excluded until real parsers exist)
-// AFM and DNB added in Phase 5 with test data
-const PUBLIC_REGULATORS = ['FCA', 'BaFin', 'AMF', 'CNMV', 'CBI', 'SFC', 'AFM', 'DNB'];
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   // CORS headers
@@ -69,9 +66,9 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       conditions.push(`regulator = $${paramIndex++}`);
       params.push(regulator);
     } else {
-      // Default: only show public regulators (hide AFM, DNB, ESMA)
+      // Default: only show live/public regulators from the shared registry
       conditions.push(`regulator = ANY($${paramIndex++})`);
-      params.push(PUBLIC_REGULATORS);
+      params.push(PUBLIC_REGULATOR_CODES);
     }
 
     if (country) {
