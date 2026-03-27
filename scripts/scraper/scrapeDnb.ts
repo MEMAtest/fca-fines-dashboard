@@ -303,14 +303,14 @@ function transformRecord(record: DNBRecord) {
   const amountEur = record.amount;
   const amountGbp = amountEur ? Math.round(amountEur * 0.85 * 100) / 100 : null;
 
-  // Generate content hash
+  // Generate content hash using link instead of firm name to avoid collisions
+  // when multiple records have 'Unknown' as firm name on the same date
   const contentHash = crypto
     .createHash('sha256')
     .update(JSON.stringify({
       regulator: 'DNB',
-      firm: record.firm,
-      date: record.date,
-      amount: record.amount
+      link: record.link,
+      date: record.date
     }))
     .digest('hex');
 

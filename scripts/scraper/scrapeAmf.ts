@@ -240,9 +240,8 @@ async function enrichAmfListingItem(item: AMFListingItem, detailUrl: string, lis
   const summary = normalizeText(metaDescription || bodyText || title);
   const firm = extractAmfFirm(title, summary, bodyText) || 'Unknown';
 
-  if (!firm) {
-    return null;
-  }
+  // Note: We intentionally keep records with 'Unknown' firm names
+  // Better to have honest unknowns than misleading title fragments
 
   return {
     firm,

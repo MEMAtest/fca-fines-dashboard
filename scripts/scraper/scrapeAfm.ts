@@ -266,12 +266,13 @@ function extractFineAmount(title: string, html: string): number | null {
   for (const pattern of patterns) {
     const match = text.match(pattern);
     if (match) {
-      // Handle Dutch number format (dots as thousand separators)
-      let amount = match[1].replace(/\./g, '').replace(/,/g, '');
+      // Handle Dutch number format (periods as thousand separators, commas as decimals)
+      let amount = match[1].replace(/\./g, '').replace(/,/g, '.');
       let numAmount = parseFloat(amount);
 
-      // Check if in millions
-      if (text.toLowerCase().includes('million') || text.toLowerCase().includes('miljoen') || text.toLowerCase().includes('mln')) {
+      // Only multiply by 1M if the number is small (< 1000) AND text contains "million"
+      // This prevents double-counting when amounts are already in full euros (e.g., "€300,000")
+      if (numAmount < 1000 && (text.toLowerCase().includes('million') || text.toLowerCase().includes('miljoen') || text.toLowerCase().includes('mln'))) {
         numAmount *= 1_000_000;
       }
 
