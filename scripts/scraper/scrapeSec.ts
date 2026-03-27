@@ -6,8 +6,8 @@ import {
   fetchText,
   makeAbsoluteUrl,
   normalizeWhitespace,
-} from './lib/euFineHelpers.ts';
-import { runScraper } from './lib/runScraper.ts';
+} from './lib/euFineHelpers.js';
+import { runScraper } from './lib/runScraper.js';
 
 const SEC_PRESS_RELEASES_URL = 'https://www.sec.gov/newsroom/press-releases';
 const SEC_DEFAULT_SINCE_YEAR = Number.parseInt(process.env.SEC_SINCE_YEAR || '2012', 10);

@@ -4,7 +4,7 @@ import {
   isLikelySecEnforcementTitle,
   parseSecMonetaryRelief,
   parseSecPressReleaseListing,
-} from '../scrapeSec.ts';
+} from '../scrapeSec.js';
 
 describe('SEC scraper', () => {
   it('parses SEC press release listing rows', () => {

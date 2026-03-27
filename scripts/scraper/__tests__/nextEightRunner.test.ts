@@ -3,14 +3,17 @@ import { createRequire } from "node:module";
 import type { ChildProcess } from "node:child_process";
 import { describe, expect, it, vi } from "vitest";
 
+type SpawnArgs = [command: string, args: string[]];
+type SpawnFn = (...args: SpawnArgs) => ChildProcess;
+
 const require = createRequire(import.meta.url);
 const childProcess = require("node:child_process") as {
-  spawn: typeof import("node:child_process").spawn;
+  spawn: SpawnFn;
 };
 
 describe("next-eight runner", () => {
   it("runs the validated scraper set in order and forwards CLI args", async () => {
-    const spawnMock = vi.fn(() => {
+    const spawnMock = vi.fn<SpawnFn>((_command, _args) => {
       const child = new EventEmitter();
       queueMicrotask(() => child.emit("exit", 0));
       return child as unknown as ChildProcess;
@@ -23,7 +26,7 @@ describe("next-eight runner", () => {
     process.argv = ["node", "scrapeNextEight.ts", "--test-data", "--limit=2"];
 
     try {
-      const { main: runNextEight } = await import("../scrapeNextEight.ts");
+      const { main: runNextEight } = await import("../scrapeNextEight.js");
       await runNextEight();
     } finally {
       childProcess.spawn = originalSpawn;

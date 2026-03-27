@@ -7,8 +7,8 @@ import {
   normalizeWhitespace,
   parseLargestAmountFromText,
   parseMonthNameDate,
-} from './lib/euFineHelpers.ts';
-import { runScraper } from './lib/runScraper.ts';
+} from './lib/euFineHelpers.js';
+import { runScraper } from './lib/runScraper.js';
 
 const JFSC_RSS_URL = 'https://www.jerseyfsc.org/subscribe-to-our-rss/jfsc-public-statements-and-warnings/';
 const JFSC_SITEMAP_URL = 'https://www.jerseyfsc.org/sitemapxml';
@@ -96,11 +96,12 @@ function isJfscNewsUrl(detailUrl: string) {
 }
 
 function buildJfscFallbackTitle(detailUrl: string) {
-  const slug = detailUrl.split('/').filter(Boolean).at(-1) || '';
+  const pathParts = detailUrl.split('/').filter(Boolean);
+  const slug = pathParts[pathParts.length - 1] || '';
   return normalizeWhitespace(
     slug
       .split('-')
-      .map((part) => (part ? part[0].toUpperCase() + part.slice(1) : part))
+      .map((part: string) => (part ? part[0].toUpperCase() + part.slice(1) : part))
       .join(' '),
   );
 }
@@ -121,13 +122,17 @@ async function fetchJfscRecord(entry: JfscSitemapEntry): Promise<JfscRecord | nu
 export async function loadJfscLiveRecords() {
   const xml = await fetchText(JFSC_SITEMAP_URL);
   const items = (await parseJfscSitemap(xml))
-    .filter((entry) => isJfscNewsUrl(entry.loc))
-    .sort((left, right) => (right.lastmod || '').localeCompare(left.lastmod || ''));
+    .filter((entry: JfscSitemapEntry) => isJfscNewsUrl(entry.loc))
+    .sort((left: JfscSitemapEntry, right: JfscSitemapEntry) =>
+      (right.lastmod || '').localeCompare(left.lastmod || ''),
+    );
   const records: JfscRecord[] = [];
 
   for (let index = 0; index < items.length; index += 6) {
     const batch = items.slice(index, index + 6);
-    const settled = await Promise.allSettled(batch.map((item) => fetchJfscRecord(item)));
+    const settled = await Promise.allSettled(
+      batch.map((item: JfscSitemapEntry) => fetchJfscRecord(item)),
+    );
 
     for (const result of settled) {
       if (result.status === 'fulfilled' && result.value) {

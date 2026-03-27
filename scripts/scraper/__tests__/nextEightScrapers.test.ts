@@ -1,20 +1,20 @@
 import { describe, expect, it } from "vitest";
-import { loadDfsaArchiveRecords } from "../scrapeDfsa.ts";
-import { loadCbuaeArchiveRecords } from "../scrapeCbuae.ts";
+import { loadDfsaArchiveRecords } from "../scrapeDfsa.js";
+import { loadCbuaeArchiveRecords } from "../scrapeCbuae.js";
 import {
   extractCiroFirm,
   loadCiroSnapshotRecords,
   parseCiroListingHtml,
-} from "../scrapeCiro.ts";
-import { buildEcbRecords, parseEcbHtml } from "../scrapeEcb.ts";
-import { parseFsraHtml } from "../scrapeFsra.ts";
-import { buildGfscRecords, parseGfscHtml } from "../scrapeGfsc.ts";
+} from "../scrapeCiro.js";
+import { buildEcbRecords, parseEcbHtml } from "../scrapeEcb.js";
+import { parseFsraHtml } from "../scrapeFsra.js";
+import { buildGfscRecords, parseGfscHtml } from "../scrapeGfsc.js";
 import {
   extractJfscRecordFromBody,
   parseJfscFeed,
   parseJfscSitemap,
-} from "../scrapeJfsc.ts";
-import { extractSebiFirm, parseSebiListingHtml } from "../scrapeSebi.ts";
+} from "../scrapeJfsc.js";
+import { extractSebiFirm, parseSebiListingHtml } from "../scrapeSebi.js";
 
 describe("next-eight regulator coverage", () => {
   it("loads DFSA archive records", () => {

@@ -7,8 +7,8 @@ import {
   normalizeWhitespace,
   parseLargestAmountFromText,
   parseMonthNameDate,
-} from './lib/euFineHelpers.ts';
-import { runScraper } from './lib/runScraper.ts';
+} from './lib/euFineHelpers.js';
+import { runScraper } from './lib/runScraper.js';
 
 const FSRA_URL =
   'https://www.adgm.com/operating-in-adgm/additional-obligations-of-financial-services-entities/enforcement/regulatory-actions';

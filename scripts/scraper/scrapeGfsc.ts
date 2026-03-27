@@ -6,8 +6,8 @@ import {
   normalizeWhitespace,
   parseMonthNameDate,
   parsePlainAmount,
-} from './lib/euFineHelpers.ts';
-import { runScraper } from './lib/runScraper.ts';
+} from './lib/euFineHelpers.js';
+import { runScraper } from './lib/runScraper.js';
 
 const GFSC_URL = 'https://www.gfsc.gg/commission/enforcement/public-statements';
 
