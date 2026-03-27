@@ -1,5 +1,5 @@
 import { AlertCircle, Info } from 'lucide-react';
-import type { RegulatorCoverage } from '../data/regulatorCoverage';
+import type { RegulatorCoverage } from '../data/regulatorCoverage.js';
 import '../styles/data-coverage-notice.css';
 
 interface DataCoverageNoticeProps {
@@ -8,12 +8,20 @@ interface DataCoverageNoticeProps {
 }
 
 export function DataCoverageNotice({ coverage, showWarning = true }: DataCoverageNoticeProps) {
+  const isLowerConfidence =
+    coverage.stage === 'live' && coverage.operationalConfidence === 'lower';
   const isLimitedSample = coverage.count < 10;
-  const isEmerging = coverage.earliestYear >= 2021;
-  const shouldShowWarning = showWarning && (isLimitedSample || isEmerging);
+  const isRecentWindow = coverage.earliestYear >= 2021;
+  const shouldShowWarning =
+    showWarning && (isLowerConfidence || isLimitedSample || isRecentWindow);
+  const modifierClass = shouldShowWarning
+    ? isLowerConfidence
+      ? 'data-coverage--caution'
+      : 'data-coverage--warning'
+    : 'data-coverage--info';
 
   return (
-    <div className={`data-coverage ${shouldShowWarning ? 'data-coverage--warning' : 'data-coverage--info'}`}>
+    <div className={`data-coverage ${modifierClass}`}>
       <div className="data-coverage__icon">
         {shouldShowWarning ? <AlertCircle size={20} /> : <Info size={20} />}
       </div>
@@ -25,9 +33,23 @@ export function DataCoverageNotice({ coverage, showWarning = true }: DataCoverag
         {coverage.note && (
           <p className="data-coverage__note">{coverage.note}</p>
         )}
+        {isLowerConfidence && (
+          <p className="data-coverage__warning-text">
+            This regulator is live, but the collection path still depends on
+            curated archive discovery or thinner official-source coverage than
+            the anchor feeds. Treat trend comparisons as directional while the
+            feed matures.
+          </p>
+        )}
         {isLimitedSample && (
           <p className="data-coverage__warning-text">
-            ⚠️ Small sample size ({coverage.count} fines) - statistics may not be fully representative
+            Small sample size ({coverage.count} actions). Statistics may not yet
+            be fully representative.
+          </p>
+        )}
+        {!isLowerConfidence && !isLimitedSample && isRecentWindow && (
+          <p className="data-coverage__warning-text">
+            The currently published live window begins in {coverage.earliestYear}. Earlier archive coverage is still being expanded.
           </p>
         )}
       </div>

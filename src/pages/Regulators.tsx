@@ -44,6 +44,22 @@ function getPipelineBadge(coverage: RegulatorCoverage) {
   return "Global next";
 }
 
+function getLiveBadge(coverage: RegulatorCoverage) {
+  if (coverage.operationalConfidence === "lower") {
+    return "Lower-confidence live";
+  }
+
+  if (coverage.maturity === "anchor") {
+    return "Anchor dataset";
+  }
+
+  if (coverage.maturity === "emerging") {
+    return "Emerging live";
+  }
+
+  return "Live";
+}
+
 export function Regulators() {
   useSEO({
     title:
@@ -98,7 +114,9 @@ export function Regulators() {
               </div>
               <p>
                 These regulators are already available in the live dashboard,
-                regulator hubs, and current SEO surfaces.
+                regulator hubs, and current SEO surfaces. Lower-confidence live
+                feeds are labelled explicitly while their collection paths are
+                still being hardened.
               </p>
             </div>
 
@@ -113,13 +131,7 @@ export function Regulators() {
                   primaryStatLabel="Actions tracked"
                   secondaryStatValue={regulator.dataQuality}
                   secondaryStatLabel="Data quality"
-                  badge={
-                    regulator.maturity === "anchor"
-                      ? "Anchor dataset"
-                      : regulator.note
-                        ? "Emerging dataset"
-                        : "Live"
-                  }
+                  badge={getLiveBadge(regulator)}
                   to={regulator.overviewPath}
                 />
               ))}

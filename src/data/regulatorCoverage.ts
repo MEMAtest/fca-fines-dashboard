@@ -47,6 +47,7 @@ export interface RegulatorCoverage {
   defaultCurrency: "GBP" | "EUR";
   coverageStatus: "anchor" | "growing" | "emerging";
   maturity: "anchor" | "emerging" | "limited";
+  operationalConfidence: "standard" | "lower";
   dashboardEnabled: boolean;
   officialSources: RegulatorOfficialSource[];
 }
@@ -57,10 +58,19 @@ export interface RegulatorOfficialSource {
   description: string;
 }
 
+type RegulatorCoverageSeed = Omit<RegulatorCoverage, "operationalConfidence">;
+
 const PIPELINE_NOTE =
   "Official enforcement source validated. Ingestion and editorial coverage are not yet live.";
 
-export const REGULATOR_COVERAGE: Record<string, RegulatorCoverage> = {
+const LOW_CONFIDENCE_LIVE_REGULATOR_SET = new Set([
+  "DFSA",
+  "CBUAE",
+  "JFSC",
+  "CIRO",
+]);
+
+const REGULATOR_COVERAGE_SEED: Record<string, RegulatorCoverageSeed> = {
   FCA: {
     code: "FCA",
     name: "FCA",
@@ -452,7 +462,7 @@ export const REGULATOR_COVERAGE: Record<string, RegulatorCoverage> = {
     sourceType: "regulator",
     scrapeMode: "open_data",
     priorityTier: 2,
-    stage: "live",
+    stage: "internal",
     blogEnabled: false,
     flag: "🇪🇺",
     navOrder: 9,
@@ -467,7 +477,7 @@ export const REGULATOR_COVERAGE: Record<string, RegulatorCoverage> = {
     defaultCurrency: "EUR",
     coverageStatus: "emerging",
     maturity: "limited",
-    dashboardEnabled: true,
+    dashboardEnabled: false,
     officialSources: [
       {
         label: "ESMA sanctions and enforcement",
@@ -861,22 +871,22 @@ export const REGULATOR_COVERAGE: Record<string, RegulatorCoverage> = {
     sourceType: "regulator",
     scrapeMode: "open_data",
     priorityTier: 1,
-    stage: "live",
+    stage: "pipeline",
     blogEnabled: false,
     flag: "🇧🇷",
     navOrder: 20,
     overviewPath: "/regulators/cvm",
-    years: "2023-2024",
-    count: 3,
-    dataQuality: "100%",
-    note: "Brazil securities regulator - test data",
-    earliestYear: 2023,
-    latestYear: 2024,
+    years: "Planned",
+    count: 0,
+    dataQuality: "Source validated",
+    note: PIPELINE_NOTE,
+    earliestYear: 0,
+    latestYear: 0,
     nativeCurrency: "BRL",
     defaultCurrency: "GBP",
     coverageStatus: "emerging",
     maturity: "limited",
-    dashboardEnabled: true,
+    dashboardEnabled: false,
     officialSources: [
       {
         label: "CVM sanctions dataset",
@@ -1289,22 +1299,22 @@ export const REGULATOR_COVERAGE: Record<string, RegulatorCoverage> = {
     sourceType: "regulator",
     scrapeMode: "archive",
     priorityTier: 2,
-    stage: "live",
+    stage: "pipeline",
     blogEnabled: false,
     flag: "🇺🇸",
     navOrder: 32,
     overviewPath: "/regulators/fdic",
-    years: "2023-2024",
-    count: 3,
-    dataQuality: "100%",
-    note: "US banking regulator - test data",
-    earliestYear: 2023,
-    latestYear: 2024,
+    years: "Planned",
+    count: 0,
+    dataQuality: "Source validated",
+    note: PIPELINE_NOTE,
+    earliestYear: 0,
+    latestYear: 0,
     nativeCurrency: "USD",
     defaultCurrency: "GBP",
     coverageStatus: "emerging",
     maturity: "limited",
-    dashboardEnabled: true,
+    dashboardEnabled: false,
     officialSources: [
       {
         label: "FDIC press releases",
@@ -1325,22 +1335,22 @@ export const REGULATOR_COVERAGE: Record<string, RegulatorCoverage> = {
     sourceType: "regulator",
     scrapeMode: "archive",
     priorityTier: 2,
-    stage: "live",
+    stage: "pipeline",
     blogEnabled: false,
     flag: "🇺🇸",
     navOrder: 33,
     overviewPath: "/regulators/frb",
-    years: "2023-2024",
-    count: 4,
-    dataQuality: "100%",
-    note: "US Federal Reserve - test data",
-    earliestYear: 2023,
-    latestYear: 2024,
+    years: "Planned",
+    count: 0,
+    dataQuality: "Source validated",
+    note: PIPELINE_NOTE,
+    earliestYear: 0,
+    latestYear: 0,
     nativeCurrency: "USD",
     defaultCurrency: "GBP",
     coverageStatus: "emerging",
     maturity: "limited",
-    dashboardEnabled: true,
+    dashboardEnabled: false,
     officialSources: [
       {
         label: "Federal Reserve enforcement actions",
@@ -1388,6 +1398,19 @@ export const REGULATOR_COVERAGE: Record<string, RegulatorCoverage> = {
   },
 };
 
+export const REGULATOR_COVERAGE: Record<string, RegulatorCoverage> =
+  Object.fromEntries(
+    Object.entries(REGULATOR_COVERAGE_SEED).map(([code, coverage]) => [
+      code,
+      {
+        ...coverage,
+        operationalConfidence: LOW_CONFIDENCE_LIVE_REGULATOR_SET.has(code)
+          ? "lower"
+          : "standard",
+      },
+    ]),
+  ) as Record<string, RegulatorCoverage>;
+
 export const REGULATOR_NAV_ITEMS = Object.values(REGULATOR_COVERAGE).sort(
   (left, right) => left.navOrder - right.navOrder,
 );
@@ -1425,6 +1448,18 @@ export const PUBLIC_EU_REGULATOR_CODES = PUBLIC_REGULATOR_NAV_ITEMS.filter(
 export const BLOG_REGULATOR_CODES = PUBLIC_REGULATOR_NAV_ITEMS.filter(
   (coverage) => coverage.blogEnabled,
 ).map((coverage) => coverage.code);
+
+export const LOWER_CONFIDENCE_LIVE_REGULATOR_CODES =
+  LIVE_REGULATOR_NAV_ITEMS.filter(
+    (coverage) => coverage.operationalConfidence === "lower",
+  ).map((coverage) => coverage.code);
+
+export const DAILY_LIVE_REGULATOR_CODES = LIVE_REGULATOR_NAV_ITEMS.filter(
+  (coverage) => coverage.operationalConfidence === "standard",
+).map((coverage) => coverage.code);
+
+export const FRAGILE_LIVE_REGULATOR_CODES =
+  LOWER_CONFIDENCE_LIVE_REGULATOR_CODES;
 
 export function getRegulatorCoverage(code: string): RegulatorCoverage | null {
   const entry = Object.entries(REGULATOR_COVERAGE).find(

@@ -1,10 +1,10 @@
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { useEffect, useState } from 'react';
 import { ArrowLeft, TrendingUp, Calendar, Building2, ExternalLink } from 'lucide-react';
-import { getRegulatorCoverage, isValidRegulatorCode } from '../data/regulatorCoverage';
-import { DataCoverageNotice } from '../components/DataCoverageNotice';
-import { useUnifiedData } from '../hooks/useUnifiedData';
-import { useSEO, injectStructuredData } from '../hooks/useSEO';
+import { getRegulatorCoverage, isValidRegulatorCode } from '../data/regulatorCoverage.js';
+import { DataCoverageNotice } from '../components/DataCoverageNotice.js';
+import { useUnifiedData } from '../hooks/useUnifiedData.js';
+import { useSEO, injectStructuredData } from '../hooks/useSEO.js';
 import '../styles/regulator-hub.css';
 import '../styles/regulator-hub-sources.css';
 
@@ -152,6 +152,7 @@ export function RegulatorHub() {
   }, {} as Record<string, number>);
 
   const topBreaches = Object.entries(breachCounts)
+    .map(([category, count]) => [category, count] as [string, number])
     .sort((a, b) => b[1] - a[1])
     .slice(0, 5);
 
@@ -165,7 +166,7 @@ export function RegulatorHub() {
   }, {} as Record<number, number>);
 
   const yearData = Object.entries(yearCounts)
-    .map(([year, count]) => ({ year: parseInt(year), count }))
+    .map(([year, count]) => ({ year: parseInt(year, 10), count: Number(count) }))
     .sort((a, b) => a.year - b.year);
 
   return (

@@ -54,13 +54,19 @@ Cron recommendations:
 
 ## GitHub Actions automation
 
-The repository ships with `.github/workflows/daily-fca-scraper.yml`, which runs `npm run scrape:fines` every morning at 06:00 UTC (plus on manual dispatch). To enable it:
+The repository ships with two live-regulator workflows:
+
+- `.github/workflows/daily-fca-scraper.yml` for the stable daily live set at `05:45 UTC`
+- `.github/workflows/fragile-live-regulator-scrapers.yml` for lower-confidence live feeds on `Monday` and `Thursday` at `06:15 UTC`
+
+Each batch is followed by `npm run check:live-freshness` so stale or missing live feeds fail visibly in Actions. To enable the workflows:
 
 1. In GitHub ➜ **Settings ➜ Secrets and variables ➜ Actions**, add the following secrets:
-   - `NEON_FCA_FINES_URL` – Neon connection string (required).
+   - `DATABASE_URL` – database connection string (required).
    - `FCA_USER_AGENT` – optional override if FCA blocks the default UA.
-2. (Optional) add repository-level **variables** for `FCA_YEARS`, `FCA_START_YEAR`, `FCA_END_YEAR`, or `FCA_SINCE_DATE` to control the backfill window.
-3. The workflow uses npm caching and a concurrency lock so only one scrape runs at a time. Monitor the Actions tab for success/failure logs.
+   - `SEC_USER_AGENT` – required identifying user agent for the SEC scraper.
+2. (Optional) add repository-level **variables** for `FCA_YEARS`, `FCA_START_YEAR`, `FCA_END_YEAR`, `FCA_SINCE_DATE`, `SEC_SINCE_YEAR`, `SEBI_SINCE_YEAR`, or `SEBI_ENRICH_LIMIT` to control crawl windows.
+3. The workflows use per-regulator matrix jobs with isolated concurrency groups so one source failure does not block the full live batch. Monitor the Actions tab for success/failure logs and freshness-check output.
 
 ## How upserts work
 

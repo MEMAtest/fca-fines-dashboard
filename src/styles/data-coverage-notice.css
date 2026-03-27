@@ -20,6 +20,12 @@
   color: #92400e;
 }
 
+.data-coverage--caution {
+  background: linear-gradient(135deg, rgba(249, 115, 22, 0.08) 0%, rgba(251, 146, 60, 0.08) 100%);
+  border-left-color: #ea580c;
+  color: #9a3412;
+}
+
 .data-coverage__icon {
   flex-shrink: 0;
   margin-top: 0.125rem;
@@ -31,6 +37,10 @@
 
 .data-coverage--warning .data-coverage__icon {
   color: #f59e0b;
+}
+
+.data-coverage--caution .data-coverage__icon {
+  color: #ea580c;
 }
 
 .data-coverage__content {

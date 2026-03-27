@@ -1,14 +1,14 @@
 import 'dotenv/config';
 import * as cheerio from 'cheerio';
 import { fileURLToPath } from 'node:url';
-import { CIRO_SNAPSHOT_RECORDS } from './data/ciroSnapshot.ts';
+import { CIRO_SNAPSHOT_RECORDS } from './data/ciroSnapshot.js';
 import {
   buildEuFineRecord,
   fetchText,
   makeAbsoluteUrl,
   normalizeWhitespace,
-} from './lib/euFineHelpers.ts';
-import { runScraper } from './lib/runScraper.ts';
+} from './lib/euFineHelpers.js';
+import { runScraper } from './lib/runScraper.js';
 
 const CIRO_PUBLICATIONS_URL = 'https://www.ciro.ca/newsroom/publications?field_type_of_publication=471';
 

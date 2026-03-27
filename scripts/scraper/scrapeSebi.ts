@@ -9,8 +9,8 @@ import {
   normalizeWhitespace,
   parseLargestAmountFromText,
   parseSebiDate,
-} from './lib/euFineHelpers.ts';
-import { runScraper } from './lib/runScraper.ts';
+} from './lib/euFineHelpers.js';
+import { runScraper } from './lib/runScraper.js';
 
 const SEBI_LIST_URL =
   'https://www.sebi.gov.in/sebiweb/home/HomeAction.do?doListing=yes&sid=2&smid=133&ssid=9';

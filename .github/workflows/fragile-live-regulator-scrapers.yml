@@ -1,48 +1,30 @@
-name: Daily Live Regulator Scrapers
+name: Fragile Live Regulator Scrapers
 
 on:
   workflow_dispatch:
   schedule:
-    - cron: '45 5 * * *' # 05:45 UTC daily stable live-regulator batch
+    - cron: '15 6 * * 1,4' # 06:15 UTC on Monday and Thursday for lower-confidence live feeds
 
 jobs:
   scrape:
     name: Scrape ${{ matrix.code }}
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    timeout-minutes: 25
     concurrency:
-      group: live-regulator-${{ matrix.code }}
+      group: fragile-live-regulator-${{ matrix.code }}
       cancel-in-progress: false
     strategy:
       fail-fast: false
       matrix:
         include:
-          - code: FCA
-            script: scrape:fines
-          - code: BaFin
-            script: scrape:bafin
-          - code: AMF
-            script: scrape:amf
-          - code: CNMV
-            script: scrape:cnmv
-          - code: CBI
-            script: scrape:cbi
-          - code: SFC
-            script: scrape:sfc
-          - code: AFM
-            script: scrape:afm
-          - code: DNB
-            script: scrape:dnb
-          - code: ECB
-            script: scrape:ecb
-          - code: FSRA
-            script: scrape:fsra
-          - code: GFSC
-            script: scrape:gfsc
-          - code: SEC
-            script: scrape:sec
-          - code: SEBI
-            script: scrape:sebi
+          - code: DFSA
+            script: scrape:dfsa
+          - code: CBUAE
+            script: scrape:cbuae
+          - code: JFSC
+            script: scrape:jfsc
+          - code: CIRO
+            script: scrape:ciro
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -61,15 +43,9 @@ jobs:
       - name: Verify environment configuration
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
-          SEC_USER_AGENT: ${{ secrets.SEC_USER_AGENT }}
         run: |
           if [ -z "$DATABASE_URL" ]; then
             echo "DATABASE_URL is not set."
-            exit 1
-          fi
-
-          if [ "${{ matrix.code }}" = "SEC" ] && [ -z "$SEC_USER_AGENT" ]; then
-            echo "SEC_USER_AGENT is required for SEC scraping."
             exit 1
           fi
 
@@ -78,15 +54,6 @@ jobs:
       - name: Run ${{ matrix.code }} scraper
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
-          FCA_USER_AGENT: ${{ secrets.FCA_USER_AGENT }}
-          FCA_YEARS: ${{ vars.FCA_YEARS }}
-          FCA_START_YEAR: ${{ vars.FCA_START_YEAR }}
-          FCA_END_YEAR: ${{ vars.FCA_END_YEAR }}
-          FCA_SINCE_DATE: ${{ vars.FCA_SINCE_DATE }}
-          SEC_USER_AGENT: ${{ secrets.SEC_USER_AGENT }}
-          SEC_SINCE_YEAR: ${{ vars.SEC_SINCE_YEAR }}
-          SEBI_SINCE_YEAR: ${{ vars.SEBI_SINCE_YEAR }}
-          SEBI_ENRICH_LIMIT: ${{ vars.SEBI_ENRICH_LIMIT }}
           TS_NODE_PROJECT: tsconfig.json
           SCRAPER_RUN_SUMMARY_FILE: /tmp/${{ matrix.code }}-scrape-summary.json
         run: |
@@ -105,7 +72,7 @@ jobs:
           fi
 
   freshness:
-    name: Check live-regulator freshness
+    name: Check fragile live-regulator freshness
     if: always()
     needs: scrape
     runs-on: ubuntu-latest
@@ -125,8 +92,8 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Run freshness check for daily live regulators
+      - name: Run freshness check for fragile live regulators
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
         run: |
-          npm run check:live-freshness -- --cadence=daily
+          npm run check:live-freshness -- --cadence=fragile

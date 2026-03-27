@@ -2,32 +2,36 @@ import { lazy, Suspense, useEffect, useMemo, useState } from 'react';
 import { endOfMonth, format, startOfMonth } from 'date-fns';
 import { ArrowLeft, Calendar, Globe2, Layers3, Share2 } from 'lucide-react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
-import type { AdvancedFilterValues } from '../components/AdvancedFilters';
-import { BreachByTypeChart } from '../components/BreachByTypeChart';
-import { CategoryTreemap } from '../components/CategoryTreemap';
-import { DataCoverageNotice } from '../components/DataCoverageNotice';
-import { FiltersBar } from '../components/FiltersBar';
-import { FineDistributionChart } from '../components/FineDistributionChart';
-import { LatestNotices } from '../components/LatestNotices';
-import { LazyVisible } from '../components/LazyVisible';
-import { DashboardSkeleton } from '../components/LoadingSkeletons';
-import { Modal } from '../components/Modal';
-import { TimelineChart } from '../components/TimelineChart';
-import { Toast } from '../components/Toast';
-import { TopFirms } from '../components/TopFirms';
-import { getRegulatorCoverage, isValidRegulatorCode } from '../data/regulatorCoverage';
-import { INITIAL_ADVANCED_FILTERS } from '../hooks/useDashboardState';
-import { useSEO } from '../hooks/useSEO';
-import { useUnifiedData } from '../hooks/useUnifiedData';
-import type { FineRecord } from '../types';
-import { exportData } from '../utils/export';
+import type { AdvancedFilterValues } from '../components/AdvancedFilters.js';
+import { BreachByTypeChart } from '../components/BreachByTypeChart.js';
+import { CategoryTreemap } from '../components/CategoryTreemap.js';
+import { DataCoverageNotice } from '../components/DataCoverageNotice.js';
+import { FiltersBar } from '../components/FiltersBar.js';
+import { FineDistributionChart } from '../components/FineDistributionChart.js';
+import { LatestNotices } from '../components/LatestNotices.js';
+import { LazyVisible } from '../components/LazyVisible.js';
+import { DashboardSkeleton } from '../components/LoadingSkeletons.js';
+import { Modal } from '../components/Modal.js';
+import { TimelineChart } from '../components/TimelineChart.js';
+import { Toast } from '../components/Toast.js';
+import { TopFirms } from '../components/TopFirms.js';
+import {
+  getRegulatorCoverage,
+  isValidRegulatorCode,
+  type RegulatorCoverage,
+} from '../data/regulatorCoverage.js';
+import { INITIAL_ADVANCED_FILTERS } from '../hooks/useDashboardState.js';
+import { useSEO } from '../hooks/useSEO.js';
+import { useUnifiedData } from '../hooks/useUnifiedData.js';
+import type { FineRecord } from '../types.js';
+import { exportData } from '../utils/export.js';
 import '../styles/regulator-dashboard.css';
 
 const LazyFineTotalsModal = lazy(() =>
-  import('../components/FineTotalsModal').then((module) => ({ default: module.FineTotalsModal }))
+  import('../components/FineTotalsModal.js').then((module) => ({ default: module.FineTotalsModal }))
 );
 const LazyAdvancedFilters = lazy(() =>
-  import('../components/AdvancedFilters').then((module) => ({ default: module.AdvancedFilters }))
+  import('../components/AdvancedFilters.js').then((module) => ({ default: module.AdvancedFilters }))
 );
 
 interface RegulatorDashboardQueryState {
@@ -107,6 +111,12 @@ function getMaturityLabel(maturity: 'anchor' | 'emerging' | 'limited') {
   if (maturity === 'anchor') return 'Anchor archive';
   if (maturity === 'emerging') return 'Emerging coverage';
   return 'Limited coverage';
+}
+
+function getOperationalConfidenceLabel(
+  confidence: RegulatorCoverage['operationalConfidence'],
+) {
+  return confidence === 'lower' ? 'Lower-confidence live feed' : 'Standard live feed';
 }
 
 function getInitialQueryState(defaultCurrency: 'GBP' | 'EUR'): RegulatorDashboardQueryState {
@@ -213,6 +223,10 @@ export function RegulatorDashboard() {
   const normalizedCode = regulatorCode?.toUpperCase();
   const isValid = normalizedCode && isValidRegulatorCode(normalizedCode);
   const coverage = normalizedCode ? getRegulatorCoverage(normalizedCode) : null;
+  const coverageCode = coverage?.code ?? normalizedCode ?? 'FCA';
+  const coverageFullName = coverage?.fullName ?? 'Regulator';
+  const coverageLatestYear = coverage?.latestYear ?? new Date().getFullYear();
+  const coverageDefaultCurrency = coverage?.defaultCurrency ?? 'GBP';
   const initialQuery = useMemo(
     () => getInitialQueryState(coverage?.defaultCurrency ?? 'GBP'),
     [coverage?.code, coverage?.defaultCurrency]
@@ -316,7 +330,9 @@ export function RegulatorDashboard() {
     );
     if (advancedFilters.breachTypes.length) {
       scoped = scoped.filter((fine) =>
-        fine.breach_categories?.some((entry) => advancedFilters.breachTypes.includes(entry || ''))
+        fine.breach_categories?.some((entry: string | null) =>
+          advancedFilters.breachTypes.includes(entry || ''),
+        )
       );
     }
     if (advancedFilters.firmCategories.length) {
@@ -343,7 +359,9 @@ export function RegulatorDashboard() {
         if (searchScope === 'category') {
           return (
             (fine.breach_type || '').toLowerCase().includes(term) ||
-            fine.breach_categories?.some((entry) => (entry || '').toLowerCase().includes(term))
+            fine.breach_categories?.some((entry: string | null) =>
+              (entry || '').toLowerCase().includes(term),
+            )
           );
         }
         return (
@@ -376,7 +394,9 @@ export function RegulatorDashboard() {
   const categoryOptions = useMemo(() => ['All', ...categoryAggAll.map((item) => item.name)], [categoryAggAll]);
   const breachOptions = useMemo(() => {
     const set = new Set<string>();
-    fines.forEach((fine) => fine.breach_categories?.forEach((entry) => entry && set.add(entry)));
+    fines.forEach((fine) =>
+      fine.breach_categories?.forEach((entry: string | null) => entry && set.add(entry)),
+    );
     return Array.from(set).sort();
   }, [fines]);
   const firmOptions = useMemo(() => {
@@ -402,8 +422,11 @@ export function RegulatorDashboard() {
     if (category !== 'All') {
       chips.push({ label: `Category: ${category}`, onRemove: () => setCategory('All') });
     }
-    if (currency !== coverage.defaultCurrency) {
-      chips.push({ label: `Currency: ${currency}`, onRemove: () => setCurrency(coverage.defaultCurrency) });
+    if (currency !== coverageDefaultCurrency) {
+      chips.push({
+        label: `Currency: ${currency}`,
+        onRemove: () => setCurrency(coverageDefaultCurrency),
+      });
     }
     if (year === 0 && advancedFilters.years.length) {
       chips.push({
@@ -441,7 +464,7 @@ export function RegulatorDashboard() {
       });
     }
     return chips;
-  }, [search, category, currency, coverage.defaultCurrency, year, advancedFilters]);
+  }, [search, category, currency, coverageDefaultCurrency, year, advancedFilters]);
 
   function openRecordsModal(title: string, subtitle: string, records: FineRecord[]) {
     setModalContext({ title, subtitle, records });
@@ -479,7 +502,7 @@ export function RegulatorDashboard() {
 
   function handleSelectMonth(period?: number, targetYearParam?: number) {
     if (!period) return;
-    const targetYearValue = targetYearParam || coverage.latestYear;
+    const targetYearValue = targetYearParam || coverageLatestYear;
     const monthRecords = filteredFines.filter(
       (fine) => fine.year_issued === targetYearValue && fine.month_issued === period
     );
@@ -501,8 +524,12 @@ export function RegulatorDashboard() {
     end?: { period?: number; year?: number }
   ) {
     if (!start || !end) return;
-    const startDate = startOfMonth(new Date(start.year ?? coverage.latestYear, (start.period ?? 1) - 1, 1));
-    const endDate = endOfMonth(new Date(end.year ?? coverage.latestYear, (end.period ?? 1) - 1, 1));
+    const startDate = startOfMonth(
+      new Date(start.year ?? coverageLatestYear, (start.period ?? 1) - 1, 1),
+    );
+    const endDate = endOfMonth(
+      new Date(end.year ?? coverageLatestYear, (end.period ?? 1) - 1, 1),
+    );
     const scoped = filteredFines.filter((fine) => {
       const issued = new Date(fine.date_issued);
       return issued >= startDate && issued <= endDate;
@@ -525,7 +552,7 @@ export function RegulatorDashboard() {
     try {
       if (!filteredFines.length) return;
       await exportData({
-        filename: `${coverage.code.toLowerCase()}-dashboard-${year || 'all'}`,
+        filename: `${coverageCode.toLowerCase()}-dashboard-${year || 'all'}`,
         format: 'csv',
         records: filteredFines,
       });
@@ -567,7 +594,7 @@ export function RegulatorDashboard() {
     try {
       if (navigator?.share) {
         try {
-          await navigator.share({ title: `${coverage.fullName} Dashboard`, url: shareUrl });
+          await navigator.share({ title: `${coverageFullName} Dashboard`, url: shareUrl });
           setToast({ message: 'Share sheet opened', type: 'success' });
           return;
         } catch (error) {
@@ -614,6 +641,12 @@ export function RegulatorDashboard() {
                 <Layers3 size={16} />
                 {getMaturityLabel(coverage.maturity)}
               </span>
+              {coverage.operationalConfidence === 'lower' && (
+                <span className="regulator-dashboard__pill">
+                  <Globe2 size={16} />
+                  {getOperationalConfidenceLabel(coverage.operationalConfidence)}
+                </span>
+              )}
               <span className="regulator-dashboard__pill">
                 <Calendar size={16} />
                 {coverage.years}
@@ -868,7 +901,13 @@ export function RegulatorDashboard() {
         </Modal>
       )}
 
-      {toast && <Toast message={toast.message} type={toast.type} onClose={() => setToast(null)} />}
+      {toast && (
+        <Toast
+          message={toast.message}
+          type={toast.type}
+          onDismiss={() => setToast(null)}
+        />
+      )}
     </div>
   );
 }

@@ -8,8 +8,8 @@ import {
   normalizeWhitespace,
   parsePlainAmount,
   parseSlashDate,
-} from './lib/euFineHelpers.ts';
-import { runScraper } from './lib/runScraper.ts';
+} from './lib/euFineHelpers.js';
+import { runScraper } from './lib/runScraper.js';
 
 const ECB_URL =
   'https://www.bankingsupervision.europa.eu/activities/sanctions/supervisory-sanctions/html/index.en.html';
