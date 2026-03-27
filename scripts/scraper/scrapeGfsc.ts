@@ -1,3 +1,4 @@
+import 'dotenv/config';
 import * as cheerio from 'cheerio';
 import { fileURLToPath } from 'node:url';
 import {

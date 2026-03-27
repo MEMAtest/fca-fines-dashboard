@@ -1,3 +1,4 @@
+import 'dotenv/config';
 import { fileURLToPath } from "node:url";
 import { DFSA_SNAPSHOT_RECORDS } from "./data/dfsaSnapshot.js";
 import { buildEuFineRecord } from "./lib/euFineHelpers.js";

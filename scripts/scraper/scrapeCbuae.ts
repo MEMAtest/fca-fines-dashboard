@@ -1,3 +1,4 @@
+import 'dotenv/config';
 import { fileURLToPath } from "node:url";
 import { CBUAE_SNAPSHOT_RECORDS } from "./data/cbuaeSnapshot.js";
 import { buildEuFineRecord } from "./lib/euFineHelpers.js";

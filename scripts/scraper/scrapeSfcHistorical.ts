@@ -5,6 +5,7 @@
  * Uses concurrent requests for speed
  */
 
+import 'dotenv/config';
 import postgres from 'postgres';
 import crypto from 'crypto';
 

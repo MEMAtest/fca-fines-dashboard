@@ -184,6 +184,11 @@ async function scrapeDnbPage(): Promise<DNBRecord[]> {
       // PHASE 3 FIX: Extract firm name with body text fallback
       const firm = extractFirmName(title, html);
 
+      // Log when firm name extraction fails for manual review
+      if (firm === 'Unknown') {
+        console.warn(`   ⚠️  Unknown firm: "${title.substring(0, 60)}..." - ${link}`);
+      }
+
       // Extract fine amount
       const amount = extractFineAmount(title, html);
 
@@ -249,13 +254,46 @@ function extractFirmName(title: string, html?: string): string {
   return 'Unknown';
 }
 
+function extractBodyText(html: string): string {
+  // Extract main article content, excluding navigation, headers, footers
+  // Common DNB article selectors
+  const articlePatterns = [
+    /<article[^>]*>([\s\S]*?)<\/article>/i,
+    /<main[^>]*>([\s\S]*?)<\/main>/i,
+    /<div[^>]*class="[^"]*content[^"]*"[^>]*>([\s\S]*?)<\/div>/i,
+  ];
+
+  for (const pattern of articlePatterns) {
+    const match = html.match(pattern);
+    if (match && match[1]) {
+      // Strip HTML tags and normalize whitespace
+      return match[1]
+        .replace(/<[^>]+>/g, ' ')
+        .replace(/\s+/g, ' ')
+        .trim()
+        .substring(0, 5000); // Limit to 5000 chars for performance
+    }
+  }
+
+  // Fallback: strip all HTML tags from full page (less ideal but works)
+  return html
+    .replace(/<script[\s\S]*?<\/script>/gi, '')
+    .replace(/<style[\s\S]*?<\/style>/gi, '')
+    .replace(/<[^>]+>/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim()
+    .substring(0, 5000);
+}
+
 function extractFineAmount(title: string, html: string): number | null {
-  const text = `${title} ${html}`;
+  const bodyText = extractBodyText(html);
+  const text = `${title} ${bodyText}`;
 
   // Patterns: €10,125 or €2.6 million (Dutch/English formats)
+  // Capture scale word in group 2 for more precise multiplier logic
   const patterns = [
-    /€\s*([\d,\.]+)\s*(?:million|miljoen|mln)?/i,
-    /EUR\s*([\d,\.]+)\s*(?:million|miljoen|mln)?/i,
+    /€\s*([\d,\.]+)\s*(million|miljoen|mln)?/i,
+    /EUR\s*([\d,\.]+)\s*(million|miljoen|mln)?/i,
     /([\d,\.]+)\s*euro/i
   ];
 
@@ -266,9 +304,10 @@ function extractFineAmount(title: string, html: string): number | null {
       let amount = match[1].replace(/\./g, '').replace(/,/g, '.');
       let numAmount = parseFloat(amount);
 
-      // Only multiply by 1M if the number is small (< 1000) AND text contains "million"
-      // This prevents double-counting when amounts are already in full euros (e.g., "€3,325,000")
-      if (numAmount < 1000 && (text.toLowerCase().includes('million') || text.toLowerCase().includes('miljoen') || text.toLowerCase().includes('mln'))) {
+      // Use captured scale word (group 2) if present and number is small
+      // This is more precise than searching the entire text
+      const scaleWord = match[2]?.toLowerCase();
+      if (scaleWord && numAmount < 1000) {
         numAmount *= 1_000_000;
       }
 
@@ -280,7 +319,8 @@ function extractFineAmount(title: string, html: string): number | null {
 }
 
 function classifyBreachType(title: string, html: string): string {
-  const text = `${title} ${html}`.toLowerCase();
+  const bodyText = extractBodyText(html);
+  const text = `${title} ${bodyText}`.toLowerCase();
 
   if (text.includes('aml') || text.includes('wwft') || text.includes('money laundering') || text.includes('witwassen')) return 'AML_CTF';
   if (text.includes('capital') || text.includes('kapitaal')) return 'CAPITAL_REQUIREMENTS';

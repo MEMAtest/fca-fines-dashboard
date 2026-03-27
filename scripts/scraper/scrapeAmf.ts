@@ -240,6 +240,11 @@ async function enrichAmfListingItem(item: AMFListingItem, detailUrl: string, lis
   const summary = normalizeText(metaDescription || bodyText || title);
   const firm = extractAmfFirm(title, summary, bodyText) || 'Unknown';
 
+  // Log when firm name extraction fails for manual review
+  if (firm === 'Unknown') {
+    console.warn(`⚠️  Unknown firm: "${title.substring(0, 80)}..." - ${canonicalUrl}`);
+  }
+
   // Note: We intentionally keep records with 'Unknown' firm names
   // Better to have honest unknowns than misleading title fragments
 
