@@ -79,7 +79,8 @@ export async function runScraper(options: RunnerOptions) {
     console.log("✅ View refreshed");
   } catch (error) {
     summary.status = "error";
-    summary.errorMessage = error instanceof Error ? error.message : String(error);
+    summary.errorMessage =
+      error instanceof Error ? error.message : String(error);
     throw error;
   } finally {
     if (sql) {

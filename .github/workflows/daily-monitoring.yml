@@ -3,7 +3,7 @@ name: Daily Infrastructure Monitoring
 on:
   workflow_dispatch:
   schedule:
-    - cron: '0 7 * * *' # 07:00 UTC — external reachability check
+    - cron: "0 7 * * *" # 07:00 UTC — external reachability check
 
 jobs:
   monitor:

@@ -1,24 +1,27 @@
-import { AlertCircle, Info } from 'lucide-react';
-import type { RegulatorCoverage } from '../data/regulatorCoverage.js';
-import '../styles/data-coverage-notice.css';
+import { AlertCircle, Info } from "lucide-react";
+import type { RegulatorCoverage } from "../data/regulatorCoverage.js";
+import "../styles/data-coverage-notice.css";
 
 interface DataCoverageNoticeProps {
   coverage: RegulatorCoverage;
   showWarning?: boolean;
 }
 
-export function DataCoverageNotice({ coverage, showWarning = true }: DataCoverageNoticeProps) {
+export function DataCoverageNotice({
+  coverage,
+  showWarning = true,
+}: DataCoverageNoticeProps) {
   const isLowerConfidence =
-    coverage.stage === 'live' && coverage.operationalConfidence === 'lower';
+    coverage.stage === "live" && coverage.operationalConfidence === "lower";
   const isLimitedSample = coverage.count < 10;
   const isRecentWindow = coverage.earliestYear >= 2021;
   const shouldShowWarning =
     showWarning && (isLowerConfidence || isLimitedSample || isRecentWindow);
   const modifierClass = shouldShowWarning
     ? isLowerConfidence
-      ? 'data-coverage--caution'
-      : 'data-coverage--warning'
-    : 'data-coverage--info';
+      ? "data-coverage--caution"
+      : "data-coverage--warning"
+    : "data-coverage--info";
 
   return (
     <div className={`data-coverage ${modifierClass}`}>
@@ -28,7 +31,9 @@ export function DataCoverageNotice({ coverage, showWarning = true }: DataCoverag
       <div className="data-coverage__content">
         <div className="data-coverage__header">
           <strong>Data Coverage: {coverage.years}</strong>
-          <span className="data-coverage__badge">{coverage.count} enforcement actions</span>
+          <span className="data-coverage__badge">
+            {coverage.count} enforcement actions
+          </span>
         </div>
         {coverage.note && (
           <p className="data-coverage__note">{coverage.note}</p>
@@ -49,7 +54,9 @@ export function DataCoverageNotice({ coverage, showWarning = true }: DataCoverag
         )}
         {!isLowerConfidence && !isLimitedSample && isRecentWindow && (
           <p className="data-coverage__warning-text">
-            The currently published live window begins in {coverage.earliestYear}. Earlier archive coverage is still being expanded.
+            The currently published live window begins in{" "}
+            {coverage.earliestYear}. Earlier archive coverage is still being
+            expanded.
           </p>
         )}
       </div>

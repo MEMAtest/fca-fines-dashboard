@@ -49,8 +49,7 @@ function parseCliOptions(): CliOptions {
   const regulator = getStringArg("regulator");
 
   return {
-    cadence:
-      cadence === "daily" || cadence === "fragile" ? cadence : "all",
+    cadence: cadence === "daily" || cadence === "fragile" ? cadence : "all",
     json: process.argv.includes("--json"),
     regulator: regulator ? regulator.toUpperCase() : null,
   };
@@ -62,7 +61,9 @@ function getStringArg(name: string) {
   return value ? value.slice(prefix.length).trim() : null;
 }
 
-function printHumanReport(results: ReturnType<typeof buildLiveRegulatorHealthReport>) {
+function printHumanReport(
+  results: ReturnType<typeof buildLiveRegulatorHealthReport>,
+) {
   console.log("Live regulator freshness report\n");
 
   for (const result of results) {

@@ -3,7 +3,7 @@ name: Fragile Live Regulator Scrapers
 on:
   workflow_dispatch:
   schedule:
-    - cron: '15 6 * * 1,4' # 06:15 UTC on Monday and Thursday for lower-confidence live feeds
+    - cron: "15 6 * * 1,4" # 06:15 UTC on Monday and Thursday for lower-confidence live feeds
 
 jobs:
   scrape:

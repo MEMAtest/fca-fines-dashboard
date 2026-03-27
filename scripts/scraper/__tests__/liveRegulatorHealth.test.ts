@@ -20,7 +20,11 @@ describe("liveRegulatorHealth", () => {
 
     expect(coverage).not.toBeNull();
 
-    const result = evaluateLiveRegulatorHealth(coverage!, undefined, new Date("2026-03-27T00:00:00Z"));
+    const result = evaluateLiveRegulatorHealth(
+      coverage!,
+      undefined,
+      new Date("2026-03-27T00:00:00Z"),
+    );
 
     expect(result.status).toBe("missing");
     expect(result.message).toContain("No live records");
@@ -74,7 +78,11 @@ describe("liveRegulatorHealth", () => {
     );
 
     expect(results.some((result) => result.regulator === "DFSA")).toBe(false);
-    expect(results.find((result) => result.regulator === "FCA")?.status).toBe("ok");
-    expect(results.find((result) => result.regulator === "SEC")?.status).toBe("ok");
+    expect(results.find((result) => result.regulator === "FCA")?.status).toBe(
+      "ok",
+    );
+    expect(results.find((result) => result.regulator === "SEC")?.status).toBe(
+      "ok",
+    );
   });
 });

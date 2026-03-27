@@ -1,6 +1,6 @@
-import 'dotenv/config';
-import * as cheerio from 'cheerio';
-import { fileURLToPath } from 'node:url';
+import "dotenv/config";
+import * as cheerio from "cheerio";
+import { fileURLToPath } from "node:url";
 import {
   buildEuFineRecord,
   fetchText,
@@ -8,11 +8,11 @@ import {
   normalizeWhitespace,
   parsePlainAmount,
   parseSlashDate,
-} from './lib/euFineHelpers.js';
-import { runScraper } from './lib/runScraper.js';
+} from "./lib/euFineHelpers.js";
+import { runScraper } from "./lib/runScraper.js";
 
 const ECB_URL =
-  'https://www.bankingsupervision.europa.eu/activities/sanctions/supervisory-sanctions/html/index.en.html';
+  "https://www.bankingsupervision.europa.eu/activities/sanctions/supervisory-sanctions/html/index.en.html";
 
 interface EcbRow {
   dateIssued: string;
@@ -33,9 +33,9 @@ export function parseEcbHtml(html: string): EcbRow[] {
   let currentFurtherLink: string | null = null;
   let currentStatus: string | null = null;
 
-  $('table tr').each((_, element) => {
+  $("table tr").each((_, element) => {
     const row = $(element);
-    const headerText = normalizeWhitespace(row.find('th').first().text());
+    const headerText = normalizeWhitespace(row.find("th").first().text());
 
     if (/Date of ECB decision/i.test(headerText)) {
       return;
@@ -45,7 +45,7 @@ export function parseEcbHtml(html: string): EcbRow[] {
       currentDate = parseSlashDate(headerText);
     }
 
-    const cells = row.find('td');
+    const cells = row.find("td");
     if (cells.length === 0 || !currentDate) {
       return;
     }
@@ -54,7 +54,7 @@ export function parseEcbHtml(html: string): EcbRow[] {
       currentEntity = normalizeWhitespace($(cells[0]).text());
       currentFurtherLink = makeAbsoluteUrl(
         ECB_URL,
-        $(cells[3]).find('a').first().attr('href') || '',
+        $(cells[3]).find("a").first().attr("href") || "",
       );
       currentStatus = normalizeWhitespace($(cells[4]).text());
 
@@ -62,7 +62,7 @@ export function parseEcbHtml(html: string): EcbRow[] {
         dateIssued: currentDate,
         firmIndividual: currentEntity,
         amount: parsePlainAmount($(cells[1]).text()),
-        currency: 'EUR',
+        currency: "EUR",
         area: normalizeWhitespace($(cells[2]).text()),
         finalNoticeUrl: currentFurtherLink,
         sourceUrl: ECB_URL,
@@ -77,11 +77,11 @@ export function parseEcbHtml(html: string): EcbRow[] {
         dateIssued: currentDate,
         firmIndividual: currentEntity,
         amount: parsePlainAmount($(cells[0]).text()),
-        currency: 'EUR',
+        currency: "EUR",
         area: normalizeWhitespace($(cells[1]).text()),
         finalNoticeUrl: currentFurtherLink,
         sourceUrl: ECB_URL,
-        decisionStatus: currentStatus || '',
+        decisionStatus: currentStatus || "",
       });
     }
   });
@@ -92,18 +92,18 @@ export function parseEcbHtml(html: string): EcbRow[] {
 export function buildEcbRecords(rows: EcbRow[]) {
   return rows.map((row) =>
     buildEuFineRecord({
-      regulator: 'ECB',
-      regulatorFullName: 'European Central Bank Banking Supervision',
-      countryCode: 'EU',
-      countryName: 'European Union',
+      regulator: "ECB",
+      regulatorFullName: "European Central Bank Banking Supervision",
+      countryCode: "EU",
+      countryName: "European Union",
       firmIndividual: row.firmIndividual,
-      firmCategory: 'Credit Institution',
+      firmCategory: "Credit Institution",
       amount: row.amount,
       currency: row.currency,
       dateIssued: row.dateIssued,
       breachType: row.area,
       breachCategories: categorizeEcbArea(row.area),
-      summary: `${row.firmIndividual} was sanctioned by the ECB for ${row.area}. Status: ${row.decisionStatus || 'Not stated'}.`,
+      summary: `${row.firmIndividual} was sanctioned by the ECB for ${row.area}. Status: ${row.decisionStatus || "Not stated"}.`,
       finalNoticeUrl: row.finalNoticeUrl,
       sourceUrl: row.sourceUrl,
       rawPayload: row,
@@ -115,20 +115,20 @@ function categorizeEcbArea(area: string) {
   const normalized = area.toLowerCase();
   const categories: string[] = [];
 
-  if (normalized.includes('report')) {
-    categories.push('REPORTING');
+  if (normalized.includes("report")) {
+    categories.push("REPORTING");
   }
-  if (normalized.includes('capital')) {
-    categories.push('CAPITAL');
+  if (normalized.includes("capital")) {
+    categories.push("CAPITAL");
   }
-  if (normalized.includes('large exposure')) {
-    categories.push('LARGE_EXPOSURES');
+  if (normalized.includes("large exposure")) {
+    categories.push("LARGE_EXPOSURES");
   }
-  if (normalized.includes('governance')) {
-    categories.push('GOVERNANCE');
+  if (normalized.includes("governance")) {
+    categories.push("GOVERNANCE");
   }
 
-  return categories.length > 0 ? categories : ['BANKING_SUPERVISION'];
+  return categories.length > 0 ? categories : ["BANKING_SUPERVISION"];
 }
 
 export async function loadEcbLiveRecords() {
@@ -138,7 +138,7 @@ export async function loadEcbLiveRecords() {
 
 export async function main() {
   await runScraper({
-    name: '🇪🇺 ECB Supervisory Sanctions Scraper',
+    name: "🇪🇺 ECB Supervisory Sanctions Scraper",
     liveLoader: loadEcbLiveRecords,
     testLoader: loadEcbLiveRecords,
   });
@@ -146,7 +146,7 @@ export async function main() {
 
 if (process.argv[1] && fileURLToPath(import.meta.url) === process.argv[1]) {
   main().catch((error) => {
-    console.error('❌ ECB scraper failed:', error);
+    console.error("❌ ECB scraper failed:", error);
     process.exit(1);
   });
 }

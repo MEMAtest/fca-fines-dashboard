@@ -11,7 +11,9 @@ describe("DataCoverageNotice", () => {
 
     render(<DataCoverageNotice coverage={coverage!} />);
 
-    expect(screen.getByText(/This regulator is live, but the collection path/i)).toBeInTheDocument();
+    expect(
+      screen.getByText(/This regulator is live, but the collection path/i),
+    ).toBeInTheDocument();
     expect(screen.getByText(/19 enforcement actions/i)).toBeInTheDocument();
   });
 

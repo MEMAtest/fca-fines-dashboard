@@ -3,7 +3,7 @@ name: Daily Live Regulator Scrapers
 on:
   workflow_dispatch:
   schedule:
-    - cron: '45 5 * * *' # 05:45 UTC daily stable live-regulator batch
+    - cron: "45 5 * * *" # 05:45 UTC daily stable live-regulator batch
 
 jobs:
   scrape:

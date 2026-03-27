@@ -18,11 +18,11 @@ Neon (horizon database)
 
 ### Components
 
-| File | Purpose |
-| ---- | ------- |
-| `fca_fines_schema.sql` | Creates `fca_fines`, `fca_fine_trends` and the refresh helper |
-| `scrapeFcaFines.ts` | Fetches each `/{year}-fines` page, parses the table, and upserts rows |
-| `.env.example` | Documents the required environment variables (`NEON_FCA_FINES_URL`, `FCA_YEARS`, etc.) |
+| File                   | Purpose                                                                                |
+| ---------------------- | -------------------------------------------------------------------------------------- |
+| `fca_fines_schema.sql` | Creates `fca_fines`, `fca_fine_trends` and the refresh helper                          |
+| `scrapeFcaFines.ts`    | Fetches each `/{year}-fines` page, parses the table, and upserts rows                  |
+| `.env.example`         | Documents the required environment variables (`NEON_FCA_FINES_URL`, `FCA_YEARS`, etc.) |
 
 ## Running locally
 
@@ -49,6 +49,7 @@ Neon (horizon database)
    ```
 
 Cron recommendations:
+
 - **Daily**: `FCA_YEARS=$(date +%Y)` to ingest the current year.
 - **Monthly**: run a mini backfill (`FCA_START_YEAR=2013 FCA_END_YEAR=$(date +%Y)`).
 

@@ -54,9 +54,9 @@ describe("regulatorCoverage", () => {
 
   it("keeps the intended live roster isolated from internal and pipeline regulators", () => {
     expect(LIVE_REGULATOR_NAV_ITEMS).toHaveLength(17);
-    expect(INTERNAL_REGULATOR_NAV_ITEMS.map((coverage) => coverage.code)).toEqual(
-      ["ESMA"],
-    );
+    expect(
+      INTERNAL_REGULATOR_NAV_ITEMS.map((coverage) => coverage.code),
+    ).toEqual(["ESMA"]);
     expect(getRegulatorCoverage("ESMA")?.stage).toBe("internal");
     expect(getRegulatorCoverage("CVM")?.stage).toBe("pipeline");
     expect(getRegulatorCoverage("FDIC")?.stage).toBe("pipeline");

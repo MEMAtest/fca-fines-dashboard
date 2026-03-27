@@ -9,19 +9,31 @@
 }
 
 .data-coverage--info {
-  background: linear-gradient(135deg, rgba(59, 130, 246, 0.05) 0%, rgba(147, 197, 253, 0.05) 100%);
+  background: linear-gradient(
+    135deg,
+    rgba(59, 130, 246, 0.05) 0%,
+    rgba(147, 197, 253, 0.05) 100%
+  );
   border-left-color: #3b82f6;
   color: #1e40af;
 }
 
 .data-coverage--warning {
-  background: linear-gradient(135deg, rgba(251, 191, 36, 0.05) 0%, rgba(252, 211, 77, 0.05) 100%);
+  background: linear-gradient(
+    135deg,
+    rgba(251, 191, 36, 0.05) 0%,
+    rgba(252, 211, 77, 0.05) 100%
+  );
   border-left-color: #f59e0b;
   color: #92400e;
 }
 
 .data-coverage--caution {
-  background: linear-gradient(135deg, rgba(249, 115, 22, 0.08) 0%, rgba(251, 146, 60, 0.08) 100%);
+  background: linear-gradient(
+    135deg,
+    rgba(249, 115, 22, 0.08) 0%,
+    rgba(251, 146, 60, 0.08) 100%
+  );
   border-left-color: #ea580c;
   color: #9a3412;
 }

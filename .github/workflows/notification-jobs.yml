@@ -4,9 +4,9 @@ on:
   workflow_dispatch:
     inputs:
       job_type:
-        description: 'Which job to run'
+        description: "Which job to run"
         required: true
-        default: 'alerts'
+        default: "alerts"
         type: choice
         options:
           - alerts
@@ -14,11 +14,11 @@ on:
           - monthly-digest
   schedule:
     # Process alerts after the live-regulator scraper batches
-    - cron: '45 6 * * *'
+    - cron: "45 6 * * *"
     # Weekly digest every Monday at 9 AM UTC
-    - cron: '0 9 * * 1'
+    - cron: "0 9 * * 1"
     # Monthly digest on 1st of each month at 9 AM UTC
-    - cron: '0 9 1 * *'
+    - cron: "0 9 1 * *"
 
 concurrency:
   group: notification-jobs

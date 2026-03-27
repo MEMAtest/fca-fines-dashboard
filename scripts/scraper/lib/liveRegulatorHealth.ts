@@ -127,7 +127,9 @@ export function buildLiveRegulatorHealthReport(
   );
   const targetCodes = new Set(getTargetLiveRegulatorCodes(cadence));
 
-  return LIVE_REGULATOR_NAV_ITEMS.filter((coverage) => targetCodes.has(coverage.code))
+  return LIVE_REGULATOR_NAV_ITEMS.filter((coverage) =>
+    targetCodes.has(coverage.code),
+  )
     .map((coverage) =>
       evaluateLiveRegulatorHealth(
         coverage,
