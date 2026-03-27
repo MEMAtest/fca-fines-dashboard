@@ -67,10 +67,19 @@ describe("BlogPost", () => {
       }),
     ).toBeInTheDocument();
     expect(
-      screen.getByRole("heading", { name: "Official Sources" }),
+      screen.getByRole("heading", { name: "Executive Summary" }),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole("heading", { name: "Signals Worth Tracking" }),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole("heading", { name: "Questions For Compliance Leaders" }),
     ).toBeInTheDocument();
     expect(
       screen.getByRole("heading", { name: "Compliance Takeaways" }),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole("heading", { name: "Official Sources" }),
     ).toBeInTheDocument();
     expect(
       screen.getByRole("link", { name: /BaFin measures and sanctions/i }),
@@ -78,6 +87,14 @@ describe("BlogPost", () => {
       "href",
       "https://www.bafin.de/EN/Aufsicht/BoersenMaerkte/Massnahmen/massnahmen_sanktionen_node.html",
     );
+    expect(
+      screen.getByText(/Governance Under Supervisory Pressure/i),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole("heading", {
+        name: /Why does BaFin matter if a firm mainly benchmarks against the FCA\?/i,
+      }),
+    ).toBeInTheDocument();
     expect(
       screen.getByRole("link", { name: /BaFin regulator hub/i }),
     ).toHaveAttribute("href", "/regulators/bafin");
@@ -105,5 +122,24 @@ describe("BlogPost", () => {
     expect(
       screen.queryByRole("button", { name: /Open Regulator Hub/i }),
     ).not.toBeInTheDocument();
+  });
+
+  it("renders SFC-specific regulator analysis instead of the generic fallback", () => {
+    renderBlogPost("sfc-fines-enforcement-guide");
+
+    expect(
+      screen.getByText(/Hong Kong enforcement intelligence/i),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole("heading", { name: "Why SFC Matters" }),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole("heading", { name: "Intermediary Standards" }),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole("heading", {
+        name: /Why is the SFC guide important for non-Hong-Kong firms\?/i,
+      }),
+    ).toBeInTheDocument();
   });
 });

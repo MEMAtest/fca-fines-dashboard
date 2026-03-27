@@ -53,12 +53,16 @@ describe("regulatorCoverage", () => {
   });
 
   it("keeps the intended live roster isolated from internal and pipeline regulators", () => {
-    expect(LIVE_REGULATOR_NAV_ITEMS).toHaveLength(17);
+    expect(LIVE_REGULATOR_NAV_ITEMS).toHaveLength(21);
     expect(
       INTERNAL_REGULATOR_NAV_ITEMS.map((coverage) => coverage.code),
     ).toEqual(["ESMA"]);
     expect(getRegulatorCoverage("ESMA")?.stage).toBe("internal");
     expect(getRegulatorCoverage("CVM")?.stage).toBe("pipeline");
+    expect(getRegulatorCoverage("CNBV")?.stage).toBe("live");
+    expect(getRegulatorCoverage("CMF")?.stage).toBe("live");
+    expect(getRegulatorCoverage("FINMA")?.stage).toBe("live");
+    expect(getRegulatorCoverage("SESC")?.stage).toBe("live");
     expect(getRegulatorCoverage("FDIC")?.stage).toBe("pipeline");
     expect(getRegulatorCoverage("FRB")?.stage).toBe("pipeline");
   });
@@ -81,7 +85,7 @@ describe("regulatorCoverage", () => {
     expect(getRegulatorCoverage("SEC")?.operationalConfidence).toBe("standard");
   });
 
-  it("adds the next prestige regulators to the validated pipeline backlog", () => {
+  it("keeps the remaining prestige regulators in the validated pipeline backlog", () => {
     expect(
       PIPELINE_REGULATOR_NAV_ITEMS.map((coverage) => coverage.code),
     ).toEqual(
@@ -90,8 +94,6 @@ describe("regulatorCoverage", () => {
         "ASIC",
         "MAS",
         "OCC",
-        "FINMA",
-        "SESC",
         "FSCA",
         "FMANZ",
         "CSRC",
@@ -105,19 +107,24 @@ describe("regulatorCoverage", () => {
     expect(getRegulatorCoverage("fsca")?.region).toBe("Africa");
   });
 
-  it("keeps the newest global pipeline regulators out of live navigation", () => {
+  it("keeps the remaining global backlog out of live navigation while promoted regulators stay live", () => {
     expect(
       PIPELINE_REGULATOR_NAV_ITEMS.map((coverage) => coverage.code),
-    ).toEqual(expect.arrayContaining(["TWFSC", "CVM", "CNBV", "CMF"]));
+    ).toEqual(expect.arrayContaining(["TWFSC", "CVM"]));
     expect(
       PIPELINE_REGULATOR_NAV_ITEMS.every(
         (coverage) => coverage.stage === "pipeline",
       ),
     ).toBe(true);
 
-    ["TWFSC", "CVM", "CNBV", "CMF"].forEach((code) => {
+    ["TWFSC", "CVM"].forEach((code) => {
       expect(PUBLIC_REGULATOR_CODES).not.toContain(code);
       expect(getRegulatorCoverage(code)?.stage).toBe("pipeline");
+    });
+
+    ["CNBV", "CMF"].forEach((code) => {
+      expect(PUBLIC_REGULATOR_CODES).toContain(code);
+      expect(getRegulatorCoverage(code)?.stage).toBe("live");
     });
 
     expect(getRegulatorCoverage("twfsc")?.country).toBe("Taiwan");

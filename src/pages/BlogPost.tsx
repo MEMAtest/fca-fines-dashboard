@@ -16,9 +16,11 @@ import {
 import type {
   BlogArticleMeta,
   StructuredRegulatorArticle,
+  StructuredRegulatorFaq,
   StructuredRegulatorLink,
   StructuredRegulatorMetric,
   StructuredRegulatorSection,
+  StructuredRegulatorSignal,
   YearlyArticleMeta,
 } from "../data/blogArticles.js";
 import {
@@ -348,13 +350,31 @@ function StructuredSectionBlock({
   return (
     <section className="regulator-section">
       <h2>{section.heading}</h2>
-      <p>{section.intro}</p>
-      <ul className="regulator-section__bullets">
-        {section.bullets.map((bullet, index) => (
-          <li key={`${section.heading}-${index}`}>{bullet}</li>
-        ))}
-      </ul>
+      {section.intro && <p>{section.intro}</p>}
+      {(section.paragraphs ?? []).map((paragraph, index) => (
+        <p key={`${section.heading}-paragraph-${index}`}>{paragraph}</p>
+      ))}
+      {(section.bullets?.length ?? 0) > 0 && (
+        <ul className="regulator-section__bullets">
+          {(section.bullets ?? []).map((bullet, index) => (
+            <li key={`${section.heading}-${index}`}>{bullet}</li>
+          ))}
+        </ul>
+      )}
     </section>
+  );
+}
+
+function StructuredSignalCard({
+  signal,
+}: {
+  signal: StructuredRegulatorSignal;
+}) {
+  return (
+    <article className="regulator-signal-card">
+      <h3>{signal.title}</h3>
+      <p>{signal.detail}</p>
+    </article>
   );
 }
 
@@ -378,6 +398,21 @@ function StructuredSourceCard({ link }: { link: StructuredRegulatorLink }) {
   );
 }
 
+function generateStructuredFaqSchema(items: StructuredRegulatorFaq[]) {
+  return {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    mainEntity: items.map((item) => ({
+      "@type": "Question",
+      name: item.question,
+      acceptedAnswer: {
+        "@type": "Answer",
+        text: item.answer,
+      },
+    })),
+  };
+}
+
 function StructuredRegulatorArticlePage({
   article,
 }: {
@@ -385,7 +420,6 @@ function StructuredRegulatorArticlePage({
 }) {
   const navigate = useNavigate();
   const structured = article.structuredArticle;
-  const articleFaqs = getFaqsForArticle(article.slug);
   const regulatorSlug = article.slug.replace(/-fines-enforcement-guide$/, "");
 
   useSEO({
@@ -407,16 +441,18 @@ function StructuredRegulatorArticlePage({
   }, [article]);
 
   useEffect(() => {
-    if (articleFaqs.length === 0) return;
+    if (structured.faqs.length === 0) return;
     const script = document.createElement("script");
     script.type = "application/ld+json";
     script.setAttribute("data-faq-ld", "true");
-    script.textContent = JSON.stringify(generateFaqSchema(articleFaqs));
+    script.textContent = JSON.stringify(
+      generateStructuredFaqSchema(structured.faqs),
+    );
     document.head.appendChild(script);
     return () => {
       script.remove();
     };
-  }, [article.slug]);
+  }, [structured.faqs]);
 
   return (
     <div className="blog-page">
@@ -459,8 +495,26 @@ function StructuredRegulatorArticlePage({
             className="blog-article-content blog-article-content--structured"
             itemProp="articleBody"
           >
-            <section className="regulator-article-intro">
+            <section className="regulator-article-intro regulator-article-intro--analysis">
+              <span className="regulator-article-intro__eyebrow">
+                {structured.eyebrow}
+              </span>
               <p>{structured.introduction}</p>
+            </section>
+
+            <section className="regulator-summary-panel">
+              <div className="regulator-section-heading">
+                <h2>Executive Summary</h2>
+                <p>
+                  The shortest route to what this regulator feed is actually
+                  good for.
+                </p>
+              </div>
+              <div className="regulator-summary-panel__body">
+                {structured.executiveSummary.map((paragraph, index) => (
+                  <p key={`${article.slug}-summary-${index}`}>{paragraph}</p>
+                ))}
+              </div>
             </section>
 
             <section
@@ -475,6 +529,36 @@ function StructuredRegulatorArticlePage({
             {structured.sections.map((section) => (
               <StructuredSectionBlock key={section.heading} section={section} />
             ))}
+
+            <section className="regulator-signals-section">
+              <div className="regulator-section-heading">
+                <h2>Signals Worth Tracking</h2>
+                <p>
+                  Themes that should change how a compliance team reads this
+                  regulator, not just how it counts actions.
+                </p>
+              </div>
+              <div className="regulator-signals-grid">
+                {structured.signals.map((signal) => (
+                  <StructuredSignalCard key={signal.title} signal={signal} />
+                ))}
+              </div>
+            </section>
+
+            <section className="regulator-board-questions">
+              <div className="regulator-section-heading">
+                <h2>Questions For Compliance Leaders</h2>
+                <p>
+                  Practical prompts for board, executive, and committee
+                  discussion.
+                </p>
+              </div>
+              <ul className="regulator-board-questions__list">
+                {structured.boardQuestions.map((question, index) => (
+                  <li key={`${article.slug}-question-${index}`}>{question}</li>
+                ))}
+              </ul>
+            </section>
 
             <section
               className="regulator-sources-section"
@@ -535,12 +619,15 @@ function StructuredRegulatorArticlePage({
               </div>
             </section>
 
-            {articleFaqs.length > 0 && (
+            {structured.faqs.length > 0 && (
               <div className="article-faq-section">
                 <div className="article-faq-badge">FAQ</div>
                 <div className="blog-article-content">
-                  {articleFaqs.map((faq) => (
-                    <div key={faq.slug} id={faq.slug} className="faq-item">
+                  {structured.faqs.map((faq, index) => (
+                    <div
+                      key={`${article.slug}-faq-${index}`}
+                      className="faq-item"
+                    >
                       <h2 className="faq-question">{faq.question}</h2>
                       <p>{faq.answer}</p>
                     </div>

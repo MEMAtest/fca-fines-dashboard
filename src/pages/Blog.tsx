@@ -58,6 +58,7 @@ const iconMap: Record<string, React.ReactNode> = {
   "amf-enforcement-guide": <Landmark className="blog-card-icon" />,
   "cnmv-enforcement-guide": <Landmark className="blog-card-icon" />,
   "cbi-enforcement-guide": <Landmark className="blog-card-icon" />,
+  "sfc-enforcement-guide": <Landmark className="blog-card-icon" />,
   "afm-enforcement-guide": <Landmark className="blog-card-icon" />,
   "dnb-enforcement-guide": <Landmark className="blog-card-icon" />,
   "esma-enforcement-guide": <Landmark className="blog-card-icon" />,
@@ -101,9 +102,9 @@ function generateBlogListSchema() {
   return {
     "@context": "https://schema.org",
     "@type": "Blog",
-    name: "FCA Fines Insights & Analysis",
+    name: "Regulatory Enforcement Insights & Analysis",
     description:
-      "Expert analysis of FCA fines, enforcement trends, and compliance guidance",
+      "Expert analysis of FCA fines, regulator enforcement trends, and compliance guidance",
     url: "https://fcafines.memaconsultants.com/blog",
     publisher: {
       "@type": "Organization",
@@ -151,11 +152,11 @@ export function Blog() {
 
   useSEO({
     title:
-      "FCA Fines Blog | Expert Analysis & Insights on Financial Conduct Authority Penalties",
+      "Regulatory Enforcement Blog | FCA Benchmarks, Regulator Guides & Analysis",
     description:
-      "Expert analysis of FCA fines, biggest penalties, enforcement trends, and compliance guidance. Covering the 20 largest FCA fines, AML enforcement, banking sector penalties, and 2025 fines.",
+      "Expert analysis of FCA fines, cross-regulator enforcement trends, and compliance guidance. Covers flagship FCA articles alongside regulator guides for BaFin, AMF, CNMV, CBI, SFC, AFM, and DNB.",
     keywords:
-      "FCA fines blog, FCA fines analysis, FCA enforcement insights, biggest FCA fines, FCA fines 2025, FCA AML fines, FCA compliance guide",
+      "regulatory enforcement blog, FCA fines analysis, regulator enforcement insights, BaFin guide, AMF guide, SFC guide, FCA compliance guide",
     canonicalPath: "/blog",
     ogType: "website",
     relNext,
@@ -195,13 +196,15 @@ export function Blog() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6 }}
           >
-            <h1>FCA Fines: Expert Analysis & Insights</h1>
+            <h1>Regulatory Enforcement Analysis & FCA Benchmarks</h1>
             <p className="blog-hero-subtitle">
-              Comprehensive guides to Financial Conduct Authority fines,
-              enforcement trends, and compliance best practices.
+              Published analysis of FCA fines, annual enforcement trends, and
+              regulator-by-regulator intelligence across major financial
+              centres.
             </p>
             <p className="blog-hero-stats">
-              Tracking <strong>£4.9+ billion</strong> in FCA fines since 2013
+              Tracking <strong>17 live regulators</strong> alongside the
+              flagship FCA enforcement archive
             </p>
           </motion.div>
 

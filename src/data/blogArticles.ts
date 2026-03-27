@@ -27,8 +27,9 @@ export interface StructuredRegulatorMetric {
 
 export interface StructuredRegulatorSection {
   heading: string;
-  intro: string;
-  bullets: string[];
+  intro?: string;
+  paragraphs?: string[];
+  bullets?: string[];
 }
 
 export interface StructuredRegulatorLink {
@@ -37,13 +38,28 @@ export interface StructuredRegulatorLink {
   description: string;
 }
 
+export interface StructuredRegulatorSignal {
+  title: string;
+  detail: string;
+}
+
+export interface StructuredRegulatorFaq {
+  question: string;
+  answer: string;
+}
+
 export interface StructuredRegulatorArticle {
+  eyebrow: string;
   introduction: string;
+  executiveSummary: string[];
   metrics: StructuredRegulatorMetric[];
   sections: StructuredRegulatorSection[];
+  signals: StructuredRegulatorSignal[];
+  boardQuestions: string[];
   takeaways: string[];
   sourceLinks: StructuredRegulatorLink[];
   relatedLinks: StructuredRegulatorLink[];
+  faqs: StructuredRegulatorFaq[];
 }
 
 export interface YearlyArticleMeta {
