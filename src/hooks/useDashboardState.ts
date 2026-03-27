@@ -1,5 +1,5 @@
-import { useEffect, useMemo, useState } from 'react';
-import type { AdvancedFilterValues } from '../components/AdvancedFilters';
+import { useEffect, useMemo, useState } from "react";
+import type { AdvancedFilterValues } from "../components/AdvancedFilters.js";
 
 export const CURRENT_YEAR = new Date().getFullYear();
 export const INITIAL_ADVANCED_FILTERS: AdvancedFilterValues = {
@@ -7,7 +7,7 @@ export const INITIAL_ADVANCED_FILTERS: AdvancedFilterValues = {
   amountRange: [0, 500_000_000],
   breachTypes: [],
   firmCategories: [],
-  dateRange: { start: '', end: '' },
+  dateRange: { start: "", end: "" },
 };
 
 interface QueryState {
@@ -26,15 +26,23 @@ interface QueryState {
 export function useDashboardState() {
   const initialQuery = useMemo(() => getInitialQueryState(), []);
   const [year, setYear] = useState(initialQuery.year ?? CURRENT_YEAR);
-  const [category, setCategory] = useState(initialQuery.category ?? 'All');
-  const [search, setSearch] = useState(initialQuery.search ?? '');
-  const [searchScope, setSearchScope] = useState(initialQuery.searchScope ?? 'all');
-  const [comparisonYear, setComparisonYear] = useState<number | null>(initialQuery.comparisonYear ?? CURRENT_YEAR - 1);
-  const [comparisonCategories, setComparisonCategories] = useState<string[]>(initialQuery.comparisonCategories ?? []);
-  const [advancedFilters, setAdvancedFilters] = useState<AdvancedFilterValues>(initialQuery.advancedFilters ?? INITIAL_ADVANCED_FILTERS);
-  const [regulator, setRegulator] = useState(initialQuery.regulator ?? 'All');
-  const [country, setCountry] = useState(initialQuery.country ?? 'All');
-  const [currency, setCurrency] = useState(initialQuery.currency ?? 'GBP');
+  const [category, setCategory] = useState(initialQuery.category ?? "All");
+  const [search, setSearch] = useState(initialQuery.search ?? "");
+  const [searchScope, setSearchScope] = useState(
+    initialQuery.searchScope ?? "all",
+  );
+  const [comparisonYear, setComparisonYear] = useState<number | null>(
+    initialQuery.comparisonYear ?? CURRENT_YEAR - 1,
+  );
+  const [comparisonCategories, setComparisonCategories] = useState<string[]>(
+    initialQuery.comparisonCategories ?? [],
+  );
+  const [advancedFilters, setAdvancedFilters] = useState<AdvancedFilterValues>(
+    initialQuery.advancedFilters ?? INITIAL_ADVANCED_FILTERS,
+  );
+  const [regulator, setRegulator] = useState(initialQuery.regulator ?? "All");
+  const [country, setCountry] = useState(initialQuery.country ?? "All");
+  const [currency, setCurrency] = useState(initialQuery.currency ?? "GBP");
 
   const shareState = useMemo(
     () => ({
@@ -49,17 +57,28 @@ export function useDashboardState() {
       country,
       currency,
     }),
-    [year, category, search, searchScope, comparisonYear, comparisonCategories, advancedFilters, regulator, country, currency]
+    [
+      year,
+      category,
+      search,
+      searchScope,
+      comparisonYear,
+      comparisonCategories,
+      advancedFilters,
+      regulator,
+      country,
+      currency,
+    ],
   );
   const shareUrl = useMemo(() => buildShareUrl(shareState), [shareState]);
 
   useEffect(() => {
-    if (typeof window === 'undefined') return;
+    if (typeof window === "undefined") return;
     const params = buildShareParams(shareState);
     const base = `${window.location.origin}${window.location.pathname}`;
     const query = params.toString();
     const next = query ? `${base}?${query}` : base;
-    window.history.replaceState({}, '', next);
+    window.history.replaceState({}, "", next);
   }, [shareState]);
 
   return {
@@ -88,7 +107,7 @@ export function useDashboardState() {
 }
 
 function getInitialQueryState(): QueryState {
-  if (typeof window === 'undefined') {
+  if (typeof window === "undefined") {
     return { advancedFilters: INITIAL_ADVANCED_FILTERS };
   }
   const params = new URLSearchParams(window.location.search);
@@ -100,43 +119,45 @@ function getInitialQueryState(): QueryState {
   const parseNumberList = (value: string | null) => {
     if (!value) return [];
     return value
-      .split(',')
+      .split(",")
       .map((item) => Number(item.trim()))
       .filter((num) => !Number.isNaN(num));
   };
   const parseStringList = (value: string | null) => {
     if (!value) return [];
     return value
-      .split(',')
+      .split(",")
       .map((item) => item.trim())
       .filter((item) => item.length > 0);
   };
 
   const advancedFilters: AdvancedFilterValues = {
-    years: parseNumberList(params.get('filterYears')),
+    years: parseNumberList(params.get("filterYears")),
     amountRange: [
-      parseNumber(params.get('amountMin')) ?? INITIAL_ADVANCED_FILTERS.amountRange[0],
-      parseNumber(params.get('amountMax')) ?? INITIAL_ADVANCED_FILTERS.amountRange[1],
+      parseNumber(params.get("amountMin")) ??
+        INITIAL_ADVANCED_FILTERS.amountRange[0],
+      parseNumber(params.get("amountMax")) ??
+        INITIAL_ADVANCED_FILTERS.amountRange[1],
     ],
-    breachTypes: parseStringList(params.get('breaches')),
-    firmCategories: parseStringList(params.get('firms')),
+    breachTypes: parseStringList(params.get("breaches")),
+    firmCategories: parseStringList(params.get("firms")),
     dateRange: {
-      start: params.get('startDate') || '',
-      end: params.get('endDate') || '',
+      start: params.get("startDate") || "",
+      end: params.get("endDate") || "",
     },
   };
 
   return {
-    year: parseNumber(params.get('year')) ?? undefined,
-    category: params.get('category') || undefined,
-    search: params.get('search') || undefined,
-    searchScope: params.get('scope') || undefined,
-    comparisonYear: parseNumber(params.get('compare')) ?? undefined,
-    comparisonCategories: parseStringList(params.get('compareCategories')),
+    year: parseNumber(params.get("year")) ?? undefined,
+    category: params.get("category") || undefined,
+    search: params.get("search") || undefined,
+    searchScope: params.get("scope") || undefined,
+    comparisonYear: parseNumber(params.get("compare")) ?? undefined,
+    comparisonCategories: parseStringList(params.get("compareCategories")),
     advancedFilters,
-    regulator: params.get('regulator') || undefined,
-    country: params.get('country') || undefined,
-    currency: params.get('currency') || undefined,
+    regulator: params.get("regulator") || undefined,
+    country: params.get("country") || undefined,
+    currency: params.get("currency") || undefined,
   };
 }
 
@@ -154,53 +175,57 @@ function buildShareParams(state: {
 }) {
   const params = new URLSearchParams();
   if (state.year !== CURRENT_YEAR) {
-    params.set('year', String(state.year));
+    params.set("year", String(state.year));
   }
-  if (state.category !== 'All') {
-    params.set('category', state.category);
+  if (state.category !== "All") {
+    params.set("category", state.category);
   }
   if (state.search.trim()) {
-    params.set('search', state.search.trim());
+    params.set("search", state.search.trim());
   }
-  if (state.searchScope !== 'all') {
-    params.set('scope', state.searchScope);
+  if (state.searchScope !== "all") {
+    params.set("scope", state.searchScope);
   }
   if (state.comparisonYear) {
-    params.set('compare', String(state.comparisonYear));
+    params.set("compare", String(state.comparisonYear));
   }
   if (state.comparisonCategories.length) {
-    params.set('compareCategories', state.comparisonCategories.join(','));
+    params.set("compareCategories", state.comparisonCategories.join(","));
   }
-  if (state.regulator !== 'All') {
-    params.set('regulator', state.regulator);
+  if (state.regulator !== "All") {
+    params.set("regulator", state.regulator);
   }
-  if (state.country !== 'All') {
-    params.set('country', state.country);
+  if (state.country !== "All") {
+    params.set("country", state.country);
   }
-  if (state.currency !== 'GBP') {
-    params.set('currency', state.currency);
+  if (state.currency !== "GBP") {
+    params.set("currency", state.currency);
   }
   const { advancedFilters } = state;
   if (advancedFilters.years.length) {
-    params.set('filterYears', advancedFilters.years.join(','));
+    params.set("filterYears", advancedFilters.years.join(","));
   }
-  if (advancedFilters.amountRange[0] !== INITIAL_ADVANCED_FILTERS.amountRange[0]) {
-    params.set('amountMin', String(advancedFilters.amountRange[0]));
+  if (
+    advancedFilters.amountRange[0] !== INITIAL_ADVANCED_FILTERS.amountRange[0]
+  ) {
+    params.set("amountMin", String(advancedFilters.amountRange[0]));
   }
-  if (advancedFilters.amountRange[1] !== INITIAL_ADVANCED_FILTERS.amountRange[1]) {
-    params.set('amountMax', String(advancedFilters.amountRange[1]));
+  if (
+    advancedFilters.amountRange[1] !== INITIAL_ADVANCED_FILTERS.amountRange[1]
+  ) {
+    params.set("amountMax", String(advancedFilters.amountRange[1]));
   }
   if (advancedFilters.breachTypes.length) {
-    params.set('breaches', advancedFilters.breachTypes.join(','));
+    params.set("breaches", advancedFilters.breachTypes.join(","));
   }
   if (advancedFilters.firmCategories.length) {
-    params.set('firms', advancedFilters.firmCategories.join(','));
+    params.set("firms", advancedFilters.firmCategories.join(","));
   }
   if (advancedFilters.dateRange.start) {
-    params.set('startDate', advancedFilters.dateRange.start);
+    params.set("startDate", advancedFilters.dateRange.start);
   }
   if (advancedFilters.dateRange.end) {
-    params.set('endDate', advancedFilters.dateRange.end);
+    params.set("endDate", advancedFilters.dateRange.end);
   }
   return params;
 }
@@ -217,7 +242,7 @@ function buildShareUrl(state: {
   country: string;
   currency: string;
 }) {
-  if (typeof window === 'undefined') return '';
+  if (typeof window === "undefined") return "";
   const params = buildShareParams(state);
   const base = `${window.location.origin}${window.location.pathname}`;
   const query = params.toString();

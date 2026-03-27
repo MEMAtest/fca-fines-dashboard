@@ -1,29 +1,30 @@
-import { useState, useEffect, useCallback, useMemo } from 'react';
-import { createPortal } from 'react-dom';
-import { Link, useLocation } from 'react-router-dom';
-import { Menu, X, ChevronDown, ChevronRight } from 'lucide-react';
-import { PUBLIC_REGULATOR_NAV_ITEMS } from '../data/regulatorCoverage';
-import type { RegulatorCoverage } from '../data/regulatorCoverage';
-import '../styles/siteheader.css';
+import { useState, useEffect, useCallback, useMemo } from "react";
+import { createPortal } from "react-dom";
+import { Link, useLocation } from "react-router-dom";
+import { Menu, X, ChevronDown, ChevronRight } from "lucide-react";
+import { PUBLIC_REGULATOR_NAV_ITEMS } from "../data/regulatorCoverage.js";
+import type { RegulatorCoverage } from "../data/regulatorCoverage.js";
+import "../styles/siteheader.css";
 
 const NAV_LINKS = [
-  { to: '/', label: 'Home' },
-  { to: '/dashboard', label: 'Dashboard' },
-  { to: '/search', label: 'Search' },
-  { to: '/topics', label: 'Topics' },
-  { to: '/blog', label: 'Insights' },
+  { to: "/", label: "Home" },
+  { to: "/dashboard", label: "Dashboard" },
+  { to: "/search", label: "Search" },
+  { to: "/topics", label: "Topics" },
+  { to: "/blog", label: "Insights" },
 ];
 
 function isNavActive(to: string, pathname: string) {
-  if (to === '/') return pathname === '/';
-  if (to === '/blog') return pathname === '/blog' || pathname.startsWith('/blog/');
-  if (to === '/topics') {
+  if (to === "/") return pathname === "/";
+  if (to === "/blog")
+    return pathname === "/blog" || pathname.startsWith("/blog/");
+  if (to === "/topics") {
     return (
-      pathname === '/topics' ||
-      pathname.startsWith('/breaches') ||
-      pathname.startsWith('/years') ||
-      pathname.startsWith('/sectors') ||
-      pathname.startsWith('/firms')
+      pathname === "/topics" ||
+      pathname.startsWith("/breaches") ||
+      pathname.startsWith("/years") ||
+      pathname.startsWith("/sectors") ||
+      pathname.startsWith("/firms")
     );
   }
   return pathname === to;
@@ -35,32 +36,36 @@ function isRegulatorActive(overviewPath: string, pathname: string) {
 
 function humanizeSegment(segment: string) {
   return segment
-    .replace(/[_-]+/g, ' ')
+    .replace(/[_-]+/g, " ")
     .replace(/\b[a-z]/g, (c) => c.toUpperCase());
 }
 
 function getBreadcrumbs(pathname: string) {
-  const crumbs: Array<{ to: string; label: string }> = [{ to: '/', label: 'Home' }];
-  if (!pathname || pathname === '/') return crumbs;
+  const crumbs: Array<{ to: string; label: string }> = [
+    { to: "/", label: "Home" },
+  ];
+  if (!pathname || pathname === "/") return crumbs;
 
-  const segments = pathname.split('/').filter(Boolean);
-  let current = '';
+  const segments = pathname.split("/").filter(Boolean);
+  let current = "";
   for (let i = 0; i < segments.length; i += 1) {
     const seg = segments[i];
     current += `/${seg}`;
 
     let label = seg;
-    if (seg === 'dashboard') label = 'Dashboard';
-    else if (seg === 'search') label = 'Search';
-    else if (seg === 'blog') label = 'Insights';
-    else if (seg === 'topics') label = 'Topics';
-    else if (seg === 'regulators') label = 'Regulators';
-    else if (seg === 'breaches') label = 'Breach Categories';
-    else if (seg === 'years') label = 'Years';
-    else if (seg === 'sectors') label = 'Sectors';
-    else if (seg === 'firms') label = 'Firms';
+    if (seg === "dashboard") label = "Dashboard";
+    else if (seg === "search") label = "Search";
+    else if (seg === "blog") label = "Insights";
+    else if (seg === "topics") label = "Topics";
+    else if (seg === "regulators") label = "Regulators";
+    else if (seg === "breaches") label = "Breach Categories";
+    else if (seg === "years") label = "Years";
+    else if (seg === "sectors") label = "Sectors";
+    else if (seg === "firms") label = "Firms";
     else {
-      const regulatorMatch = PUBLIC_REGULATOR_NAV_ITEMS.find((item) => item.overviewPath === current);
+      const regulatorMatch = PUBLIC_REGULATOR_NAV_ITEMS.find(
+        (item) => item.overviewPath === current,
+      );
       label = regulatorMatch ? regulatorMatch.code : humanizeSegment(seg);
     }
 
@@ -70,21 +75,33 @@ function getBreadcrumbs(pathname: string) {
   return crumbs;
 }
 
-const BASE_URL = 'https://fcafines.memaconsultants.com';
+const BASE_URL = "https://fcafines.memaconsultants.com";
 
 // Phase 5: Group regulators by region for mega menu
-const REGION_ORDER = ['UK', 'Europe', 'MENA', 'APAC', 'North America', 'Offshore'];
+const REGION_ORDER = [
+  "UK",
+  "Europe",
+  "MENA",
+  "APAC",
+  "North America",
+  "Offshore",
+];
 
 export function SiteHeader() {
   const location = useLocation();
   const [mobileOpen, setMobileOpen] = useState(false);
   const [regulatorDropdownOpen, setRegulatorDropdownOpen] = useState(false);
-  const [mobileRegulatorsOpen, setMobileRegulatorsOpen] = useState(location.pathname.startsWith('/regulators'));
+  const [mobileRegulatorsOpen, setMobileRegulatorsOpen] = useState(
+    location.pathname.startsWith("/regulators"),
+  );
   const breadcrumbs = getBreadcrumbs(location.pathname);
-  const showBreadcrumbs = location.pathname !== '/';
+  const showBreadcrumbs = location.pathname !== "/";
 
   const closeMobile = useCallback(() => setMobileOpen(false), []);
-  const closeRegulatorDropdown = useCallback(() => setRegulatorDropdownOpen(false), []);
+  const closeRegulatorDropdown = useCallback(
+    () => setRegulatorDropdownOpen(false),
+    [],
+  );
 
   // Phase 5: Group regulators by region
   const regulatorsByRegion = useMemo(() => {
@@ -109,48 +126,50 @@ export function SiteHeader() {
   // Inject BreadcrumbList JSON-LD for search engines
   useEffect(() => {
     if (!showBreadcrumbs || breadcrumbs.length < 2) {
-      const existing = document.querySelector('script[data-breadcrumb-ld]');
+      const existing = document.querySelector("script[data-breadcrumb-ld]");
       if (existing) existing.remove();
       return;
     }
 
     const schema = {
-      '@context': 'https://schema.org',
-      '@type': 'BreadcrumbList',
+      "@context": "https://schema.org",
+      "@type": "BreadcrumbList",
       itemListElement: breadcrumbs.map((crumb, i) => ({
-        '@type': 'ListItem',
+        "@type": "ListItem",
         position: i + 1,
         name: crumb.label,
         item: `${BASE_URL}${crumb.to}`,
       })),
     };
 
-    const existing = document.querySelector('script[data-breadcrumb-ld]');
+    const existing = document.querySelector("script[data-breadcrumb-ld]");
     if (existing) existing.remove();
 
-    const script = document.createElement('script');
-    script.type = 'application/ld+json';
-    script.setAttribute('data-breadcrumb-ld', 'true');
+    const script = document.createElement("script");
+    script.type = "application/ld+json";
+    script.setAttribute("data-breadcrumb-ld", "true");
     script.textContent = JSON.stringify(schema);
     document.head.appendChild(script);
 
-    return () => { script.remove(); };
+    return () => {
+      script.remove();
+    };
   }, [location.pathname]);
 
   // Close mobile menu on Escape key
   useEffect(() => {
     if (!mobileOpen) return;
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') closeMobile();
+      if (e.key === "Escape") closeMobile();
     };
-    document.addEventListener('keydown', handleKeyDown);
-    return () => document.removeEventListener('keydown', handleKeyDown);
+    document.addEventListener("keydown", handleKeyDown);
+    return () => document.removeEventListener("keydown", handleKeyDown);
   }, [mobileOpen, closeMobile]);
 
   useEffect(() => {
-    if (!mobileOpen || typeof document === 'undefined') return;
+    if (!mobileOpen || typeof document === "undefined") return;
     const previousOverflow = document.body.style.overflow;
-    document.body.style.overflow = 'hidden';
+    document.body.style.overflow = "hidden";
     return () => {
       document.body.style.overflow = previousOverflow;
     };
@@ -159,7 +178,7 @@ export function SiteHeader() {
   useEffect(() => {
     setMobileOpen(false);
     setRegulatorDropdownOpen(false);
-    setMobileRegulatorsOpen(location.pathname.startsWith('/regulators'));
+    setMobileRegulatorsOpen(location.pathname.startsWith("/regulators"));
   }, [location.pathname]);
 
   return (
@@ -175,7 +194,7 @@ export function SiteHeader() {
             <Link
               key={link.to}
               to={link.to}
-              className={`site-header__link${isNavActive(link.to, location.pathname) ? ' site-header__link--active' : ''}`}
+              className={`site-header__link${isNavActive(link.to, location.pathname) ? " site-header__link--active" : ""}`}
             >
               {link.label}
             </Link>
@@ -185,13 +204,19 @@ export function SiteHeader() {
           <div className="site-header__dropdown">
             <button
               type="button"
-              className={`site-header__dropdown-trigger${location.pathname.startsWith('/regulators') ? ' site-header__link--active' : ''}`}
+              className={`site-header__dropdown-trigger${location.pathname.startsWith("/regulators") ? " site-header__link--active" : ""}`}
               onClick={() => setRegulatorDropdownOpen(!regulatorDropdownOpen)}
               aria-expanded={regulatorDropdownOpen}
               aria-haspopup="true"
             >
               Regulators
-              <ChevronRight size={14} style={{ transform: regulatorDropdownOpen ? 'rotate(90deg)' : 'none', transition: 'transform 0.2s' }} />
+              <ChevronRight
+                size={14}
+                style={{
+                  transform: regulatorDropdownOpen ? "rotate(90deg)" : "none",
+                  transition: "transform 0.2s",
+                }}
+              />
             </button>
 
             {regulatorDropdownOpen && (
@@ -200,7 +225,9 @@ export function SiteHeader() {
                 onMouseLeave={closeRegulatorDropdown}
               >
                 <div className="site-header__mega-grid">
-                  {REGION_ORDER.filter(region => regulatorsByRegion[region]).map((region) => (
+                  {REGION_ORDER.filter(
+                    (region) => regulatorsByRegion[region],
+                  ).map((region) => (
                     <div key={region} className="site-header__mega-column">
                       <h3 className="site-header__mega-heading">{region}</h3>
                       <div className="site-header__mega-items">
@@ -209,16 +236,25 @@ export function SiteHeader() {
                             key={regulator.code}
                             to={regulator.overviewPath}
                             className={`site-header__dropdown-item${
-                              isRegulatorActive(regulator.overviewPath, location.pathname)
-                                ? ' site-header__dropdown-item--active'
-                                : ''
+                              isRegulatorActive(
+                                regulator.overviewPath,
+                                location.pathname,
+                              )
+                                ? " site-header__dropdown-item--active"
+                                : ""
                             }`}
                             onClick={closeRegulatorDropdown}
                           >
-                            <span className="site-header__dropdown-flag">{regulator.flag}</span>
+                            <span className="site-header__dropdown-flag">
+                              {regulator.flag}
+                            </span>
                             <div>
-                              <div className="site-header__dropdown-label">{regulator.code}</div>
-                              <div className="site-header__dropdown-country">{regulator.country}</div>
+                              <div className="site-header__dropdown-label">
+                                {regulator.code}
+                              </div>
+                              <div className="site-header__dropdown-country">
+                                {regulator.country}
+                              </div>
                             </div>
                           </Link>
                         ))}
@@ -236,7 +272,7 @@ export function SiteHeader() {
           type="button"
           className="site-header__hamburger"
           onClick={() => setMobileOpen(!mobileOpen)}
-          aria-label={mobileOpen ? 'Close menu' : 'Open menu'}
+          aria-label={mobileOpen ? "Close menu" : "Open menu"}
         >
           {mobileOpen ? <X size={22} /> : <Menu size={22} />}
         </button>
@@ -248,11 +284,17 @@ export function SiteHeader() {
           <div className="site-header__breadcrumbs-inner">
             {breadcrumbs.map((crumb, i) => (
               <span key={crumb.to} className="site-header__crumb">
-                {i > 0 && <ChevronRight size={14} className="site-header__crumb-sep" />}
+                {i > 0 && (
+                  <ChevronRight size={14} className="site-header__crumb-sep" />
+                )}
                 {i === breadcrumbs.length - 1 ? (
-                  <span className="site-header__crumb-current">{crumb.label}</span>
+                  <span className="site-header__crumb-current">
+                    {crumb.label}
+                  </span>
                 ) : (
-                  <Link to={crumb.to} className="site-header__crumb-link">{crumb.label}</Link>
+                  <Link to={crumb.to} className="site-header__crumb-link">
+                    {crumb.label}
+                  </Link>
                 )}
               </span>
             ))}
@@ -261,7 +303,7 @@ export function SiteHeader() {
       )}
 
       {/* Mobile overlay */}
-      {mobileOpen && typeof document !== 'undefined'
+      {mobileOpen && typeof document !== "undefined"
         ? createPortal(
             <div className="site-header__mobile-overlay" onClick={closeMobile}>
               <nav
@@ -284,7 +326,7 @@ export function SiteHeader() {
                   <Link
                     key={link.to}
                     to={link.to}
-                    className={`site-header__mobile-link${isNavActive(link.to, location.pathname) ? ' site-header__mobile-link--active' : ''}`}
+                    className={`site-header__mobile-link${isNavActive(link.to, location.pathname) ? " site-header__mobile-link--active" : ""}`}
                     onClick={closeMobile}
                   >
                     {link.label}
@@ -294,7 +336,7 @@ export function SiteHeader() {
                 <div className="site-header__mobile-group">
                   <button
                     type="button"
-                    className={`site-header__mobile-accordion-trigger${location.pathname.startsWith('/regulators') ? ' site-header__mobile-accordion-trigger--active' : ''}`}
+                    className={`site-header__mobile-accordion-trigger${location.pathname.startsWith("/regulators") ? " site-header__mobile-accordion-trigger--active" : ""}`}
                     onClick={() => setMobileRegulatorsOpen((open) => !open)}
                     aria-expanded={mobileRegulatorsOpen}
                     aria-controls="mobile-regulators-panel"
@@ -302,23 +344,35 @@ export function SiteHeader() {
                     <span>Regulators</span>
                     <ChevronDown
                       size={18}
-                      className={`site-header__mobile-accordion-icon${mobileRegulatorsOpen ? ' site-header__mobile-accordion-icon--open' : ''}`}
+                      className={`site-header__mobile-accordion-icon${mobileRegulatorsOpen ? " site-header__mobile-accordion-icon--open" : ""}`}
                     />
                   </button>
 
                   {mobileRegulatorsOpen && (
-                    <div id="mobile-regulators-panel" className="site-header__mobile-accordion-panel">
+                    <div
+                      id="mobile-regulators-panel"
+                      className="site-header__mobile-accordion-panel"
+                    >
                       {PUBLIC_REGULATOR_NAV_ITEMS.map((regulator) => (
                         <Link
                           key={regulator.code}
                           to={regulator.overviewPath}
-                          className={`site-header__mobile-regulator-link${isRegulatorActive(regulator.overviewPath, location.pathname) ? ' site-header__mobile-regulator-link--active' : ''}`}
+                          className={`site-header__mobile-regulator-link${isRegulatorActive(regulator.overviewPath, location.pathname) ? " site-header__mobile-regulator-link--active" : ""}`}
                           onClick={closeMobile}
                         >
-                          <span className="site-header__mobile-regulator-flag" aria-hidden="true">{regulator.flag}</span>
+                          <span
+                            className="site-header__mobile-regulator-flag"
+                            aria-hidden="true"
+                          >
+                            {regulator.flag}
+                          </span>
                           <span className="site-header__mobile-regulator-copy">
-                            <span className="site-header__mobile-regulator-code">{regulator.code}</span>
-                            <span className="site-header__mobile-regulator-country">{regulator.country}</span>
+                            <span className="site-header__mobile-regulator-code">
+                              {regulator.code}
+                            </span>
+                            <span className="site-header__mobile-regulator-country">
+                              {regulator.country}
+                            </span>
                           </span>
                         </Link>
                       ))}
@@ -327,7 +381,7 @@ export function SiteHeader() {
                 </div>
               </nav>
             </div>,
-            document.body
+            document.body,
           )
         : null}
     </header>

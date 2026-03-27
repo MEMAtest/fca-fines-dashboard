@@ -10,9 +10,9 @@ import type {
   StatsResponse,
   TrendsResponse,
   YearsResponse,
-} from './types';
+} from "./types.js";
 
-const fallbackBase = import.meta.env.DEV ? 'http://localhost:4000' : '';
+const fallbackBase = import.meta.env.DEV ? "http://localhost:4000" : "";
 const API_BASE = import.meta.env.VITE_API_BASE ?? fallbackBase;
 
 async function fetchJSON<T>(path: string): Promise<T> {
@@ -25,7 +25,9 @@ async function fetchJSON<T>(path: string): Promise<T> {
 
 export function fetchFines(year: number) {
   const yearParam = year === 0 ? 0 : year;
-  return fetchJSON<ListResponse>(`/api/fca-fines/list?year=${yearParam}&limit=5000`);
+  return fetchJSON<ListResponse>(
+    `/api/fca-fines/list?year=${yearParam}&limit=5000`,
+  );
 }
 
 export function fetchStats(year: number) {
@@ -33,7 +35,9 @@ export function fetchStats(year: number) {
 }
 
 export function fetchTrends(year: number) {
-  return fetchJSON<TrendsResponse>(`/api/fca-fines/trends?period=month&year=${year}`);
+  return fetchJSON<TrendsResponse>(
+    `/api/fca-fines/trends?period=month&year=${year}`,
+  );
 }
 
 export function fetchNotifications() {
@@ -53,28 +57,38 @@ export function fetchSectors() {
 }
 
 export function fetchFirms(limit = 100) {
-  return fetchJSON<FirmsResponse>(`/api/fca-fines/firms?limit=${encodeURIComponent(String(limit))}`);
+  return fetchJSON<FirmsResponse>(
+    `/api/fca-fines/firms?limit=${encodeURIComponent(String(limit))}`,
+  );
 }
 
 export function fetchFirm(slug: string, limit = 200) {
   return fetchJSON<FirmResponse>(
-    `/api/fca-fines/firm?slug=${encodeURIComponent(slug)}&limit=${encodeURIComponent(String(limit))}`
+    `/api/fca-fines/firm?slug=${encodeURIComponent(slug)}&limit=${encodeURIComponent(String(limit))}`,
   );
 }
 
-export function fetchBreach(slug: string, limitPenalties = 10, limitFirms = 10) {
+export function fetchBreach(
+  slug: string,
+  limitPenalties = 10,
+  limitFirms = 10,
+) {
   return fetchJSON<BreachResponse>(
     `/api/fca-fines/breach?slug=${encodeURIComponent(slug)}&limitPenalties=${encodeURIComponent(
-      String(limitPenalties)
-    )}&limitFirms=${encodeURIComponent(String(limitFirms))}`
+      String(limitPenalties),
+    )}&limitFirms=${encodeURIComponent(String(limitFirms))}`,
   );
 }
 
-export function fetchSector(slug: string, limitPenalties = 10, limitBreaches = 10) {
+export function fetchSector(
+  slug: string,
+  limitPenalties = 10,
+  limitBreaches = 10,
+) {
   return fetchJSON<SectorResponse>(
     `/api/fca-fines/sector?slug=${encodeURIComponent(slug)}&limitPenalties=${encodeURIComponent(
-      String(limitPenalties)
-    )}&limitBreaches=${encodeURIComponent(String(limitBreaches))}`
+      String(limitPenalties),
+    )}&limitBreaches=${encodeURIComponent(String(limitBreaches))}`,
   );
 }
 
@@ -118,7 +132,12 @@ export interface UnifiedSearchResponse {
     listing_url?: string | null;
     detail_url?: string | null;
     official_publication_url?: string | null;
-    source_link_status?: 'verified_detail' | 'verified_publication' | 'listing_only' | 'missing' | null;
+    source_link_status?:
+      | "verified_detail"
+      | "verified_publication"
+      | "listing_only"
+      | "missing"
+      | null;
     source_link_label?: string | null;
     created_at: string;
   }>;
@@ -186,36 +205,50 @@ export interface UnifiedStatsResponse {
 export function fetchUnifiedSearch(params: UnifiedSearchParams = {}) {
   const queryParams = new URLSearchParams();
 
-  if (params.regulator && params.regulator !== 'All') queryParams.set('regulator', params.regulator);
-  if (params.country && params.country !== 'All') queryParams.set('country', params.country);
-  if (params.year && params.year !== 0) queryParams.set('year', String(params.year));
-  if (params.minAmount !== undefined) queryParams.set('minAmount', String(params.minAmount));
-  if (params.maxAmount !== undefined) queryParams.set('maxAmount', String(params.maxAmount));
-  if (params.breachCategory) queryParams.set('breachCategory', params.breachCategory);
-  if (params.currency) queryParams.set('currency', params.currency);
-  if (params.firmName) queryParams.set('firmName', params.firmName);
-  if (params.sortBy) queryParams.set('sortBy', params.sortBy);
-  if (params.order) queryParams.set('order', params.order);
-  if (params.limit) queryParams.set('limit', String(params.limit));
-  if (params.offset) queryParams.set('offset', String(params.offset));
+  if (params.regulator && params.regulator !== "All")
+    queryParams.set("regulator", params.regulator);
+  if (params.country && params.country !== "All")
+    queryParams.set("country", params.country);
+  if (params.year && params.year !== 0)
+    queryParams.set("year", String(params.year));
+  if (params.minAmount !== undefined)
+    queryParams.set("minAmount", String(params.minAmount));
+  if (params.maxAmount !== undefined)
+    queryParams.set("maxAmount", String(params.maxAmount));
+  if (params.breachCategory)
+    queryParams.set("breachCategory", params.breachCategory);
+  if (params.currency) queryParams.set("currency", params.currency);
+  if (params.firmName) queryParams.set("firmName", params.firmName);
+  if (params.sortBy) queryParams.set("sortBy", params.sortBy);
+  if (params.order) queryParams.set("order", params.order);
+  if (params.limit) queryParams.set("limit", String(params.limit));
+  if (params.offset) queryParams.set("offset", String(params.offset));
 
   const queryString = queryParams.toString();
-  return fetchJSON<UnifiedSearchResponse>(`/api/unified/search${queryString ? `?${queryString}` : ''}`);
+  return fetchJSON<UnifiedSearchResponse>(
+    `/api/unified/search${queryString ? `?${queryString}` : ""}`,
+  );
 }
 
-export function fetchUnifiedStats(year?: number, currency = 'GBP') {
+export function fetchUnifiedStats(year?: number, currency = "GBP") {
   const params = new URLSearchParams();
-  if (year && year !== 0) params.set('year', String(year));
-  params.set('currency', currency);
+  if (year && year !== 0) params.set("year", String(year));
+  params.set("currency", currency);
 
-  return fetchJSON<UnifiedStatsResponse>(`/api/unified/stats?${params.toString()}`);
+  return fetchJSON<UnifiedStatsResponse>(
+    `/api/unified/stats?${params.toString()}`,
+  );
 }
 
-export function fetchUnifiedCompare(regulators: string[], year?: number, currency = 'GBP') {
+export function fetchUnifiedCompare(
+  regulators: string[],
+  year?: number,
+  currency = "GBP",
+) {
   const params = new URLSearchParams();
-  params.set('regulators', regulators.join(','));
-  if (year && year !== 0) params.set('year', String(year));
-  params.set('currency', currency);
+  params.set("regulators", regulators.join(","));
+  if (year && year !== 0) params.set("year", String(year));
+  params.set("currency", currency);
 
   return fetchJSON<any>(`/api/unified/compare?${params.toString()}`);
 }

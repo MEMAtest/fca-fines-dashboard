@@ -1,5 +1,5 @@
-import { Resend } from 'resend';
-import { getSqlClient } from '../db.ts';
+import { Resend } from "resend";
+import { getSqlClient } from "../db.js";
 
 const sql = getSqlClient();
 
@@ -25,7 +25,7 @@ export interface ContactSubmissionResult {
  * Submit contact form: Store in database and send email via Resend
  */
 export async function submitContactForm(
-  data: ContactFormData
+  data: ContactFormData,
 ): Promise<ContactSubmissionResult> {
   const instance = sql;
 
@@ -34,7 +34,7 @@ export async function submitContactForm(
     if (!data.name || !data.email || !data.reason || !data.message) {
       return {
         success: false,
-        error: 'Missing required fields',
+        error: "Missing required fields",
       };
     }
 
@@ -51,21 +51,25 @@ export async function submitContactForm(
         data.message,
         data.ip_address || null,
         data.user_agent || null,
-      ]
+      ],
     );
 
-    const submissionId = result[0].id;
+    const submissionId =
+      typeof result[0]?.id === "string" ? result[0].id : undefined;
 
     // Send email via Resend (only if API key is configured)
-    if (process.env.RESEND_API_KEY && !process.env.RESEND_API_KEY.includes('REPLACE')) {
+    if (
+      process.env.RESEND_API_KEY &&
+      !process.env.RESEND_API_KEY.includes("REPLACE")
+    ) {
       try {
         await sendContactEmail(data);
       } catch (emailError) {
-        console.error('Failed to send email, but form was saved:', emailError);
+        console.error("Failed to send email, but form was saved:", emailError);
         // Continue even if email fails - form is still saved
       }
     } else {
-      console.log('Resend API key not configured - skipping email send');
+      console.log("Resend API key not configured - skipping email send");
     }
 
     return {
@@ -73,10 +77,10 @@ export async function submitContactForm(
       id: submissionId,
     };
   } catch (error: any) {
-    console.error('Contact form submission error:', error);
+    console.error("Contact form submission error:", error);
     return {
       success: false,
-      error: error.message || 'Failed to submit contact form',
+      error: error.message || "Failed to submit contact form",
     };
   }
 }
@@ -86,15 +90,16 @@ export async function submitContactForm(
  */
 async function sendContactEmail(data: ContactFormData): Promise<void> {
   const reasonLabels: Record<string, string> = {
-    demo: 'Demo Request',
-    inquiry: 'General Inquiry',
-    partnership: 'Partnership Opportunity',
-    support: 'Technical Support',
-    other: 'Other',
+    demo: "Demo Request",
+    inquiry: "General Inquiry",
+    partnership: "Partnership Opportunity",
+    support: "Technical Support",
+    other: "Other",
   };
 
   const reasonText = reasonLabels[data.reason] || data.reason;
-  const contactEmail = process.env.CONTACT_EMAIL || 'contact@memaconsultants.com';
+  const contactEmail =
+    process.env.CONTACT_EMAIL || "contact@memaconsultants.com";
 
   const emailHtml = `
     <!DOCTYPE html>
@@ -183,12 +188,16 @@ async function sendContactEmail(data: ContactFormData): Promise<void> {
             </div>
           </div>
 
-          ${data.company ? `
+          ${
+            data.company
+              ? `
           <div class="field">
             <div class="field-label">Company</div>
             <div class="field-value">${data.company}</div>
           </div>
-          ` : ''}
+          `
+              : ""
+          }
 
           <div class="field">
             <div class="field-label">Reason for Contact</div>
@@ -197,16 +206,16 @@ async function sendContactEmail(data: ContactFormData): Promise<void> {
 
           <div class="field">
             <div class="field-label">Message</div>
-            <div class="message-box">${data.message.replace(/\n/g, '<br>')}</div>
+            <div class="message-box">${data.message.replace(/\n/g, "<br>")}</div>
           </div>
         </div>
 
         <div class="footer">
           <p>This email was sent from the FCA Fines Dashboard contact form.<br/>
-          Received on ${new Date().toLocaleString('en-GB', {
-            dateStyle: 'long',
-            timeStyle: 'short',
-            timeZone: 'Europe/London',
+          Received on ${new Date().toLocaleString("en-GB", {
+            dateStyle: "long",
+            timeStyle: "short",
+            timeZone: "Europe/London",
           })}</p>
         </div>
       </body>
@@ -218,21 +227,21 @@ New Contact Form Submission - FCA Fines Dashboard
 
 Contact Person: ${data.name}
 Email: ${data.email}
-${data.company ? `Company: ${data.company}\n` : ''}Reason: ${reasonText}
+${data.company ? `Company: ${data.company}\n` : ""}Reason: ${reasonText}
 
 Message:
 ${data.message}
 
 ---
-Received on ${new Date().toLocaleString('en-GB', {
-    dateStyle: 'long',
-    timeStyle: 'short',
-    timeZone: 'Europe/London',
+Received on ${new Date().toLocaleString("en-GB", {
+    dateStyle: "long",
+    timeStyle: "short",
+    timeZone: "Europe/London",
   })}
   `;
 
   await resend.emails.send({
-    from: 'FCA Fines Dashboard <noreply@memaconsultants.com>',
+    from: "FCA Fines Dashboard <noreply@memaconsultants.com>",
     to: [contactEmail],
     replyTo: data.email,
     subject: `New Contact: ${reasonText} - ${data.name}`,

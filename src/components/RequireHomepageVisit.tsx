@@ -1,5 +1,5 @@
-import { Navigate, useLocation } from 'react-router-dom';
-import { useHomepageVisit } from '../hooks/useHomepageVisit';
+import { Navigate, useLocation } from "react-router-dom";
+import { useHomepageVisit } from "../hooks/useHomepageVisit.js";
 
 interface Props {
   children: React.ReactNode;

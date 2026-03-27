@@ -1,4 +1,4 @@
-import { getSqlClient } from '../db.ts';
+import { getSqlClient } from "../db.js";
 
 const sql = getSqlClient();
 
@@ -12,6 +12,33 @@ export interface HomepageStats {
     date_issued: string;
     breach_type: string;
   }>;
+}
+
+interface HomepageStatsRow {
+  total_fines: unknown;
+  total_amount: unknown;
+  earliest_year: unknown;
+  latest_year: unknown;
+}
+
+interface HomepageFineRow {
+  firm_individual: unknown;
+  amount: unknown;
+  date_issued: unknown;
+  breach_type: unknown;
+}
+
+function toNumber(value: unknown): number {
+  if (typeof value === "number") return Number.isFinite(value) ? value : 0;
+  if (typeof value === "string") {
+    const parsed = Number(value);
+    return Number.isFinite(parsed) ? parsed : 0;
+  }
+  return 0;
+}
+
+function toString(value: unknown): string {
+  return typeof value === "string" ? value : "";
 }
 
 /**
@@ -42,17 +69,27 @@ export async function getHomepageStats(): Promise<HomepageStats> {
     LIMIT 3
   `);
 
-  const { total_fines, total_amount, earliest_year, latest_year } = stats[0];
+  const statsRow = (stats[0] ?? {
+    total_fines: 0,
+    total_amount: 0,
+    earliest_year: 0,
+    latest_year: 0,
+  }) as unknown as HomepageStatsRow;
+  const totalFines = toNumber(statsRow.total_fines);
+  const totalAmount = toNumber(statsRow.total_amount);
+  const earliestYear = toNumber(statsRow.earliest_year);
+  const latestYear = toNumber(statsRow.latest_year);
 
   return {
-    totalFines: total_fines,
-    totalAmount: total_amount,
-    yearsCovered: latest_year - earliest_year + 1,
-    latestFines: latestFines.map(fine => ({
-      firm_individual: fine.firm_individual,
-      amount: Number(fine.amount),
-      date_issued: fine.date_issued,
-      breach_type: fine.breach_type,
+    totalFines,
+    totalAmount,
+    yearsCovered:
+      latestYear && earliestYear ? latestYear - earliestYear + 1 : 0,
+    latestFines: (latestFines as unknown as HomepageFineRow[]).map((fine) => ({
+      firm_individual: toString(fine.firm_individual),
+      amount: toNumber(fine.amount),
+      date_issued: toString(fine.date_issued),
+      breach_type: toString(fine.breach_type),
     })),
   };
 }

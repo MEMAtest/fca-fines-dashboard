@@ -1,13 +1,16 @@
-import { ExternalLink, HelpCircle } from 'lucide-react';
-import { FineRecord } from '../types';
-import { ExportMenu } from './ExportMenu';
-import { PanelHelp } from './PanelHelp';
-import RegulatorBadge from './RegulatorBadge';
-import { getBestRecordSourceUrl, getRecordSourceLabel } from '../utils/sourceLinks';
+import { ExternalLink, HelpCircle } from "lucide-react";
+import { FineRecord } from "../types.js";
+import { ExportMenu } from "./ExportMenu.js";
+import { PanelHelp } from "./PanelHelp.js";
+import RegulatorBadge from "./RegulatorBadge.js";
+import {
+  getBestRecordSourceUrl,
+  getRecordSourceLabel,
+} from "../utils/sourceLinks.js";
 
-const formatter = new Intl.NumberFormat('en-GB', {
-  style: 'currency',
-  currency: 'GBP',
+const formatter = new Intl.NumberFormat("en-GB", {
+  style: "currency",
+  currency: "GBP",
   maximumFractionDigits: 0,
 });
 
@@ -18,9 +21,14 @@ interface LatestNoticesProps {
   helpText?: string;
 }
 
-export function LatestNotices({ records, year, exportId, helpText }: LatestNoticesProps) {
-  const focusLabel = year === 0 ? '2013 - Today' : year;
-  const panelId = exportId ?? 'latest-notices';
+export function LatestNotices({
+  records,
+  year,
+  exportId,
+  helpText,
+}: LatestNoticesProps) {
+  const focusLabel = year === 0 ? "2013 - Today" : year;
+  const panelId = exportId ?? "latest-notices";
   return (
     <div className="panel" id={panelId}>
       <div className="panel__header">
@@ -30,11 +38,18 @@ export function LatestNotices({ records, year, exportId, helpText }: LatestNotic
         </div>
         <div className="panel__header-actions">
           <PanelHelp
-            text={helpText || "Most recent final notices issued by the FCA. Click 'View notice' to see the full document."}
+            text={
+              helpText ||
+              "Most recent final notices issued by the FCA. Click 'View notice' to see the full document."
+            }
             icon={<HelpCircle size={16} />}
           />
           {records.length > 0 && (
-            <ExportMenu records={records} filename={`notices-${focusLabel}`} targetElementId={panelId} />
+            <ExportMenu
+              records={records}
+              filename={`notices-${focusLabel}`}
+              targetElementId={panelId}
+            />
           )}
         </div>
       </div>
@@ -42,22 +57,43 @@ export function LatestNotices({ records, year, exportId, helpText }: LatestNotic
         <p className="status">No notices landed for this combination yet.</p>
       ) : (
         <div className="notices">
-          {records.slice(0, 8).map((record) => (
+          {records.slice(0, 8).map((record) =>
             (() => {
               const sourceUrl = getBestRecordSourceUrl(record);
               const sourceLabel = getRecordSourceLabel(record);
 
               return (
-                <article key={`${record.firm_individual}-${record.date_issued}`} className="notice">
+                <article
+                  key={`${record.firm_individual}-${record.date_issued}`}
+                  className="notice"
+                >
                   <header>
                     <div>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.25rem' }}>
-                        {record.regulator && <RegulatorBadge regulator={record.regulator} size="small" />}
+                      <div
+                        style={{
+                          display: "flex",
+                          alignItems: "center",
+                          gap: "0.5rem",
+                          marginBottom: "0.25rem",
+                        }}
+                      >
+                        {record.regulator && (
+                          <RegulatorBadge
+                            regulator={record.regulator}
+                            size="small"
+                          />
+                        )}
                         <h4 style={{ margin: 0 }}>{record.firm_individual}</h4>
                       </div>
-                      <p>{new Date(record.date_issued).toLocaleDateString('en-GB')}</p>
+                      <p>
+                        {new Date(record.date_issued).toLocaleDateString(
+                          "en-GB",
+                        )}
+                      </p>
                     </div>
-                    <span className="notice__amount">{formatter.format(record.amount)}</span>
+                    <span className="notice__amount">
+                      {formatter.format(record.amount)}
+                    </span>
                   </header>
                   <p className="notice__summary">{record.summary}</p>
                   <footer>
@@ -69,15 +105,19 @@ export function LatestNotices({ records, year, exportId, helpText }: LatestNotic
                       ))}
                     </div>
                     {sourceUrl ? (
-                      <a href={sourceUrl} target="_blank" rel="noreferrer noopener">
+                      <a
+                        href={sourceUrl}
+                        target="_blank"
+                        rel="noreferrer noopener"
+                      >
                         {sourceLabel} <ExternalLink size={14} />
                       </a>
                     ) : null}
                   </footer>
                 </article>
               );
-            })()
-          ))}
+            })(),
+          )}
         </div>
       )}
     </div>

@@ -1,9 +1,13 @@
-import { HelpCircle } from 'lucide-react';
-import type { FineRecord } from '../types';
-import { ExportMenu } from './ExportMenu';
-import { PanelHelp } from './PanelHelp';
+import { HelpCircle } from "lucide-react";
+import type { FineRecord } from "../types.js";
+import { ExportMenu } from "./ExportMenu.js";
+import { PanelHelp } from "./PanelHelp.js";
 
-const currency = new Intl.NumberFormat('en-GB', { style: 'currency', currency: 'GBP', maximumFractionDigits: 0 });
+const currency = new Intl.NumberFormat("en-GB", {
+  style: "currency",
+  currency: "GBP",
+  maximumFractionDigits: 0,
+});
 
 interface TopFirmsProps {
   records: FineRecord[];
@@ -12,8 +16,10 @@ interface TopFirmsProps {
 }
 
 export function TopFirms({ records, onSelectFirm, exportId }: TopFirmsProps) {
-  const topRecords = [...records].sort((a, b) => b.amount - a.amount).slice(0, 10);
-  const panelId = exportId ?? 'top-firms';
+  const topRecords = [...records]
+    .sort((a, b) => b.amount - a.amount)
+    .slice(0, 10);
+  const panelId = exportId ?? "top-firms";
 
   return (
     <div className="panel" id={panelId}>
@@ -28,7 +34,11 @@ export function TopFirms({ records, onSelectFirm, exportId }: TopFirmsProps) {
             icon={<HelpCircle size={16} />}
           />
           {topRecords.length > 0 && (
-            <ExportMenu records={topRecords} filename="top-firms" targetElementId={panelId} />
+            <ExportMenu
+              records={topRecords}
+              filename="top-firms"
+              targetElementId={panelId}
+            />
           )}
         </div>
       </div>
@@ -46,9 +56,11 @@ export function TopFirms({ records, onSelectFirm, exportId }: TopFirmsProps) {
               <div className="top-firms__content">
                 <div>
                   <h4>{record.firm_individual}</h4>
-                  <p>{record.firm_category || 'Unclassified'}</p>
+                  <p>{record.firm_category || "Unclassified"}</p>
                 </div>
-                <span className="top-firms__amount">{currency.format(record.amount)}</span>
+                <span className="top-firms__amount">
+                  {currency.format(record.amount)}
+                </span>
               </div>
             </article>
           ))}

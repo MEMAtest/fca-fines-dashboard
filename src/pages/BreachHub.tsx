@@ -1,13 +1,17 @@
-import { useEffect, useState } from 'react';
-import { Link, useParams } from 'react-router-dom';
-import { fetchBreach } from '../api';
-import { useSEO } from '../hooks/useSEO';
-import type { BreachDetails } from '../types';
+import { useEffect, useState } from "react";
+import { Link, useParams } from "react-router-dom";
+import { fetchBreach } from "../api.js";
+import { useSEO } from "../hooks/useSEO.js";
+import type { BreachDetails } from "../types.js";
 
-const currency = new Intl.NumberFormat('en-GB', { style: 'currency', currency: 'GBP', maximumFractionDigits: 0 });
+const currency = new Intl.NumberFormat("en-GB", {
+  style: "currency",
+  currency: "GBP",
+  maximumFractionDigits: 0,
+});
 
 function humanize(label: string) {
-  const withSpaces = label.replace(/_/g, ' ').toLowerCase();
+  const withSpaces = label.replace(/_/g, " ").toLowerCase();
   return withSpaces.replace(/\b[a-z]/g, (c) => c.toUpperCase());
 }
 
@@ -21,31 +25,33 @@ export function BreachHub() {
   useSEO({
     title: category
       ? `${humanize(category.name)} FCA Fines | Cases, Totals and Largest Penalties (2013-2026)`
-      : 'FCA Fines by Breach Category',
+      : "FCA Fines by Breach Category",
     description: category
       ? `Explore FCA enforcement actions tagged ${humanize(category.name)}. See totals, top firms and the largest penalties, and jump into the dashboard filters.`
-      : 'Explore FCA fines by breach category. Jump into the dashboard with filters applied.',
+      : "Explore FCA fines by breach category. Jump into the dashboard with filters applied.",
     keywords: category
       ? `FCA ${humanize(category.name)} fines, ${humanize(category.name)} enforcement, FCA breach category fines`
-      : 'FCA fines breach category, market abuse FCA fines, AML FCA fines',
-    canonicalPath: slug ? `/breaches/${slug}` : '/breaches',
-    ogType: 'website',
+      : "FCA fines breach category, market abuse FCA fines, AML FCA fines",
+    canonicalPath: slug ? `/breaches/${slug}` : "/breaches",
+    ogType: "website",
   });
 
   useEffect(() => {
-    if (!slug) return;
+    const breachSlug = slug;
+    if (typeof breachSlug !== "string") return;
+    const stableBreachSlug: string = breachSlug;
     let mounted = true;
     async function load() {
       setLoading(true);
       setError(null);
       setData(null);
       try {
-        const res = await fetchBreach(slug, 10, 10);
+        const res = await fetchBreach(stableBreachSlug, 10, 10);
         if (!mounted) return;
         setData(res.data);
       } catch (e) {
         console.error(e);
-        if (mounted) setError('Unable to load this topic. Please try again.');
+        if (mounted) setError("Unable to load this topic. Please try again.");
       } finally {
         if (mounted) setLoading(false);
       }
@@ -68,7 +74,9 @@ export function BreachHub() {
       <div className="hub-page">
         <div className="hub-container">
           <p className="status">Missing category.</p>
-          <Link to="/breaches" className="btn btn-primary">Back</Link>
+          <Link to="/breaches" className="btn btn-primary">
+            Back
+          </Link>
         </div>
       </div>
     );
@@ -78,11 +86,11 @@ export function BreachHub() {
     <div className="hub-page">
       <div className="hub-container">
         <header className="hub-hero">
-          <h1>{category ? humanize(category.name) : 'Breach Category'}</h1>
+          <h1>{category ? humanize(category.name) : "Breach Category"}</h1>
           <p>
             {category
               ? `A breakdown of FCA enforcement actions tagged ${humanize(category.name)} across 2013-2026.`
-              : 'Loading breach category...'}
+              : "Loading breach category..."}
           </p>
           <div className="hub-hero__actions">
             {category && (
@@ -93,7 +101,9 @@ export function BreachHub() {
                 View in Dashboard
               </Link>
             )}
-            <Link to="/breaches" className="btn btn-ghost">All Breaches</Link>
+            <Link to="/breaches" className="btn btn-ghost">
+              All Breaches
+            </Link>
           </div>
         </header>
 
@@ -105,14 +115,17 @@ export function BreachHub() {
           <p className="status">Topic not found.</p>
         ) : (
           <>
-            <div className="hub-card" style={{ marginBottom: '1rem' }}>
+            <div className="hub-card" style={{ marginBottom: "1rem" }}>
               <div className="hub-card__meta">
                 <span className="hub-chip">{totals.count} actions</span>
-                <span className="hub-chip hub-chip--neutral">{currency.format(totals.amount)}</span>
+                <span className="hub-chip hub-chip--neutral">
+                  {currency.format(totals.amount)}
+                </span>
               </div>
               <h3>At A Glance</h3>
               <p>
-                Use the dashboard filter to explore timelines, compare years, and export results for {humanize(category.name)} cases.
+                Use the dashboard filter to explore timelines, compare years,
+                and export results for {humanize(category.name)} cases.
               </p>
             </div>
 
@@ -158,12 +171,25 @@ export function BreachHub() {
                 </thead>
                 <tbody>
                   {topPenalties.map((r) => (
-                    <tr key={`${r.firm_individual}-${r.date_issued}-${r.amount}`}>
+                    <tr
+                      key={`${r.firm_individual}-${r.date_issued}-${r.amount}`}
+                    >
                       <td>{r.firm_individual}</td>
-                      <td>{new Date(r.date_issued).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' })}</td>
+                      <td>
+                        {new Date(r.date_issued).toLocaleDateString("en-GB", {
+                          day: "2-digit",
+                          month: "short",
+                          year: "numeric",
+                        })}
+                      </td>
                       <td>{currency.format(r.amount)}</td>
                       <td>
-                        <a className="hub-link" href={r.final_notice_url} target="_blank" rel="noreferrer noopener">
+                        <a
+                          className="hub-link"
+                          href={r.final_notice_url ?? undefined}
+                          target="_blank"
+                          rel="noreferrer noopener"
+                        >
                           View
                         </a>
                       </td>

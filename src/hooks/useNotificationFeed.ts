@@ -1,6 +1,6 @@
-import { useCallback, useEffect, useState } from 'react';
-import { fetchNotifications } from '../api';
-import type { NotificationItem } from '../types';
+import { useCallback, useEffect, useState } from "react";
+import { fetchNotifications } from "../api.js";
+import type { NotificationItem } from "../types.js";
 
 export function useNotificationFeed() {
   const [notifications, setNotifications] = useState<NotificationItem[]>([]);
@@ -24,8 +24,8 @@ export function useNotificationFeed() {
       }
       return true;
     } catch (err) {
-      console.error('Notification feed failed', err);
-      setError('Unable to load alerts');
+      console.error("Notification feed failed", err);
+      setError("Unable to load alerts");
       return false;
     } finally {
       setLoading(false);

@@ -1,4 +1,4 @@
-import { useMemo, useState, useRef, useCallback } from 'react';
+import { useMemo, useState, useRef, useCallback } from "react";
 import {
   ResponsiveContainer,
   ComposedChart,
@@ -10,19 +10,25 @@ import {
   Brush,
   ReferenceLine,
   CartesianGrid,
-} from 'recharts';
-import { HelpCircle } from 'lucide-react';
-import type { FineRecord } from '../types';
-import { ExportMenu } from './ExportMenu';
-import { PanelHelp } from './PanelHelp';
+} from "recharts";
+import { HelpCircle } from "lucide-react";
+import type { FineRecord } from "../types.js";
+import { ExportMenu } from "./ExportMenu.js";
+import { PanelHelp } from "./PanelHelp.js";
 
 interface TimelineChartProps {
-  data: Array<{ month: string; total: number; count: number; period?: number; year?: number }>;
+  data: Array<{
+    month: string;
+    total: number;
+    count: number;
+    period?: number;
+    year?: number;
+  }>;
   year: number;
   onSelectMonth?: (periodValue?: number, year?: number) => void;
   onRangeSelect?: (
     start?: { period?: number; year?: number },
-    end?: { period?: number; year?: number }
+    end?: { period?: number; year?: number },
   ) => void;
   recordsForExport?: FineRecord[];
   exportId?: string;
@@ -36,10 +42,13 @@ export function TimelineChart({
   recordsForExport = [],
   exportId,
 }: TimelineChartProps) {
-  const title = year === 0 ? 'All enforcement flow' : `${year} enforcement flow`;
-  const averageAmount = data.length ? data.reduce((sum, item) => sum + item.total, 0) / data.length : 0;
-  const panelId = exportId ?? 'timeline-panel';
-  const [mode, setMode] = useState<'amount' | 'count'>('amount');
+  const title =
+    year === 0 ? "All enforcement flow" : `${year} enforcement flow`;
+  const averageAmount = data.length
+    ? data.reduce((sum, item) => sum + item.total, 0) / data.length
+    : 0;
+  const panelId = exportId ?? "timeline-panel";
+  const [mode, setMode] = useState<"amount" | "count">("amount");
   const debounceRef = useRef<NodeJS.Timeout | null>(null);
   const formatted = useMemo(
     () =>
@@ -47,30 +56,33 @@ export function TimelineChart({
         ...entry,
         label: `${entry.month}`,
       })),
-    [data]
+    [data],
   );
-  const showAmount = mode === 'amount';
-  const showCount = mode === 'count';
+  const showAmount = mode === "amount";
+  const showCount = mode === "count";
 
-  const handleBrushChange = useCallback((range: { startIndex?: number; endIndex?: number } | number[] | null) => {
-    if (!range || Array.isArray(range)) return;
-    const { startIndex, endIndex } = range;
-    if (startIndex == null || endIndex == null) return;
+  const handleBrushChange = useCallback(
+    (range: { startIndex?: number; endIndex?: number } | number[] | null) => {
+      if (!range || Array.isArray(range)) return;
+      const { startIndex, endIndex } = range;
+      if (startIndex == null || endIndex == null) return;
 
-    // Clear previous debounce timer
-    if (debounceRef.current) {
-      clearTimeout(debounceRef.current);
-    }
-
-    // Debounce the range select to avoid firing on every drag movement
-    debounceRef.current = setTimeout(() => {
-      const startPoint = formatted[Math.max(0, startIndex)];
-      const endPoint = formatted[Math.min(formatted.length - 1, endIndex)];
-      if (startPoint && endPoint && onRangeSelect) {
-        onRangeSelect(startPoint, endPoint);
+      // Clear previous debounce timer
+      if (debounceRef.current) {
+        clearTimeout(debounceRef.current);
       }
-    }, 500);
-  }, [formatted, onRangeSelect]);
+
+      // Debounce the range select to avoid firing on every drag movement
+      debounceRef.current = setTimeout(() => {
+        const startPoint = formatted[Math.max(0, startIndex)];
+        const endPoint = formatted[Math.min(formatted.length - 1, endIndex)];
+        if (startPoint && endPoint && onRangeSelect) {
+          onRangeSelect(startPoint, endPoint);
+        }
+      }, 500);
+    },
+    [formatted, onRangeSelect],
+  );
 
   return (
     <div className="panel" id={panelId}>
@@ -85,69 +97,91 @@ export function TimelineChart({
             icon={<HelpCircle size={16} />}
           />
           {recordsForExport.length > 0 && (
-            <ExportMenu records={recordsForExport} filename={`timeline-${year || 'all'}`} targetElementId={panelId} />
+            <ExportMenu
+              records={recordsForExport}
+              filename={`timeline-${year || "all"}`}
+              targetElementId={panelId}
+            />
           )}
         </div>
       </div>
       <div className="panel__toolbar">
         <p className="panel__hint">Tap to focus • Brush to filter a window</p>
-        <div className="panel__toolbar-buttons" role="group" aria-label="Timeline metric">
+        <div
+          className="panel__toolbar-buttons"
+          role="group"
+          aria-label="Timeline metric"
+        >
           <button
             type="button"
-            className={`btn btn-ghost btn--compact ${showAmount ? 'btn--active' : ''}`}
-            onClick={() => setMode('amount')}
+            className={`btn btn-ghost btn--compact ${showAmount ? "btn--active" : ""}`}
+            onClick={() => setMode("amount")}
           >
             Amount
           </button>
           <button
             type="button"
-            className={`btn btn-ghost btn--compact ${showCount ? 'btn--active' : ''}`}
-            onClick={() => setMode('count')}
+            className={`btn btn-ghost btn--compact ${showCount ? "btn--active" : ""}`}
+            onClick={() => setMode("count")}
           >
             Notices
           </button>
         </div>
       </div>
-      <p className="panel__description">Tap a month to focus filters. Brush across the chart to isolate a range.</p>
+      <p className="panel__description">
+        Tap a month to focus filters. Brush across the chart to isolate a range.
+      </p>
       <div className="panel__chart">
         <ResponsiveContainer width="100%" height={280}>
           <ComposedChart
             data={formatted}
             onClick={(state) => {
               if (state?.activeTooltipIndex != null) {
-                const entry = formatted[state.activeTooltipIndex];
+                const entryIndex = Number(state.activeTooltipIndex);
+                const entry = Number.isInteger(entryIndex)
+                  ? formatted[entryIndex]
+                  : undefined;
                 onSelectMonth?.(entry?.period, entry?.year);
               }
             }}
           >
-            <CartesianGrid strokeDasharray="3 3" stroke="rgba(148,163,184,0.35)" />
-            <XAxis dataKey="month" tick={{ fill: '#94a3b8' }} axisLine={false} tickLine={false} />
+            <CartesianGrid
+              strokeDasharray="3 3"
+              stroke="rgba(148,163,184,0.35)"
+            />
+            <XAxis
+              dataKey="month"
+              tick={{ fill: "#94a3b8" }}
+              axisLine={false}
+              tickLine={false}
+            />
             {showAmount && (
               <YAxis
                 yAxisId="left"
                 orientation="left"
                 tickFormatter={(value) => `£${Math.round(value / 1_000_000)}m`}
-                tick={{ fill: '#94a3b8' }}
+                tick={{ fill: "#94a3b8" }}
               />
             )}
             {showCount && (
               <YAxis
                 yAxisId="right"
                 orientation="right"
-                tick={{ fill: '#94a3b8' }}
+                tick={{ fill: "#94a3b8" }}
                 tickFormatter={(value) => `${value} notices`}
               />
             )}
             <Tooltip
               contentStyle={{
-                background: '#0f172a',
-                border: '1px solid rgba(148,163,184,0.3)',
-                borderRadius: '16px',
-                color: '#fff',
+                background: "#0f172a",
+                border: "1px solid rgba(148,163,184,0.3)",
+                borderRadius: "16px",
+                color: "#fff",
               }}
               formatter={(value: any, name: string) => {
-                if (name === 'total') return [`£${Number(value).toLocaleString()}`, 'Total amount'];
-                if (name === 'count') return [value, 'Fines'];
+                if (name === "total")
+                  return [`£${Number(value).toLocaleString()}`, "Total amount"];
+                if (name === "count") return [value, "Fines"];
                 return [value, name];
               }}
             />
@@ -161,17 +195,34 @@ export function TimelineChart({
                 strokeWidth={3}
               />
             )}
-            {showCount && <Bar yAxisId="right" dataKey="count" fill="#0891b2" radius={[8, 8, 0, 0]} opacity={0.85} />}
+            {showCount && (
+              <Bar
+                yAxisId="right"
+                dataKey="count"
+                fill="#0891b2"
+                radius={[8, 8, 0, 0]}
+                opacity={0.85}
+              />
+            )}
             {showAmount && averageAmount > 0 && (
               <ReferenceLine
                 yAxisId="left"
                 y={averageAmount}
                 stroke="#f97316"
                 strokeDasharray="4 4"
-                label={{ value: 'Avg', fill: '#f97316', position: 'insideTopRight' }}
+                label={{
+                  value: "Avg",
+                  fill: "#f97316",
+                  position: "insideTopRight",
+                }}
               />
             )}
-            <Brush height={20} stroke="#3b82f6" travellerWidth={12} onChange={handleBrushChange} />
+            <Brush
+              height={20}
+              stroke="#3b82f6"
+              travellerWidth={12}
+              onChange={handleBrushChange}
+            />
           </ComposedChart>
         </ResponsiveContainer>
       </div>

@@ -1,19 +1,24 @@
-import { useEffect, useMemo, useState } from 'react';
-import { Link } from 'react-router-dom';
-import { fetchYears } from '../api';
-import { useSEO } from '../hooks/useSEO';
-import type { YearSummary } from '../types';
+import { useEffect, useMemo, useState } from "react";
+import { Link } from "react-router-dom";
+import { fetchYears } from "../api.js";
+import { useSEO } from "../hooks/useSEO.js";
+import type { YearSummary } from "../types.js";
 
-const currency = new Intl.NumberFormat('en-GB', { style: 'currency', currency: 'GBP', maximumFractionDigits: 0 });
+const currency = new Intl.NumberFormat("en-GB", {
+  style: "currency",
+  currency: "GBP",
+  maximumFractionDigits: 0,
+});
 
 export function Years() {
   useSEO({
-    title: 'FCA Fines by Year | 2013-2026 Annual Summaries',
+    title: "FCA Fines by Year | 2013-2026 Annual Summaries",
     description:
-      'Browse FCA fines by year. Compare enforcement totals and jump into the dashboard for each year’s full list of actions.',
-    keywords: 'FCA fines by year, FCA fines 2026, FCA fines 2025, FCA enforcement by year',
-    canonicalPath: '/years',
-    ogType: 'website',
+      "Browse FCA fines by year. Compare enforcement totals and jump into the dashboard for each year’s full list of actions.",
+    keywords:
+      "FCA fines by year, FCA fines 2026, FCA fines 2025, FCA enforcement by year",
+    canonicalPath: "/years",
+    ogType: "website",
   });
 
   const [years, setYears] = useState<YearSummary[]>([]);
@@ -29,7 +34,8 @@ export function Years() {
         setYears(res.data);
       } catch (e) {
         console.error(e);
-        if (mounted) setError('Unable to load yearly summaries. Please try again.');
+        if (mounted)
+          setError("Unable to load yearly summaries. Please try again.");
       } finally {
         if (mounted) setLoading(false);
       }
@@ -47,10 +53,17 @@ export function Years() {
       <div className="hub-container">
         <header className="hub-hero">
           <h1>FCA Fines by Year</h1>
-          <p>Annual summaries across the full enforcement dataset. Use the dashboard for the complete record and exports.</p>
+          <p>
+            Annual summaries across the full enforcement dataset. Use the
+            dashboard for the complete record and exports.
+          </p>
           <div className="hub-hero__actions">
-            <Link to="/dashboard?year=0" className="btn btn-primary">Explore All Years</Link>
-            <Link to="/topics" className="btn btn-ghost">Back to Topics</Link>
+            <Link to="/dashboard?year=0" className="btn btn-primary">
+              Explore All Years
+            </Link>
+            <Link to="/topics" className="btn btn-ghost">
+              Back to Topics
+            </Link>
           </div>
         </header>
 
@@ -61,13 +74,22 @@ export function Years() {
         ) : (
           <div className="hub-grid">
             {top.map((y) => (
-              <Link key={y.year} to={`/years/${y.year}`} className="hub-card hover-lift">
+              <Link
+                key={y.year}
+                to={`/years/${y.year}`}
+                className="hub-card hover-lift"
+              >
                 <div className="hub-card__meta">
                   <span className="hub-chip">{y.fineCount} actions</span>
-                  <span className="hub-chip hub-chip--neutral">{currency.format(y.totalAmount)}</span>
+                  <span className="hub-chip hub-chip--neutral">
+                    {currency.format(y.totalAmount)}
+                  </span>
                 </div>
                 <h3>{y.year}</h3>
-                <p>Open the full {y.year} list, largest penalties, and year-level patterns.</p>
+                <p>
+                  Open the full {y.year} list, largest penalties, and year-level
+                  patterns.
+                </p>
               </Link>
             ))}
           </div>
@@ -76,4 +98,3 @@ export function Years() {
     </div>
   );
 }
-

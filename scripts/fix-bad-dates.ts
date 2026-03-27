@@ -1,12 +1,17 @@
-import postgres from 'postgres';
-import * as dotenv from 'dotenv';
+import postgres from "postgres";
+import * as dotenv from "dotenv";
 
 dotenv.config();
 
-const sql = postgres(process.env.DATABASE_URL?.trim());
+const databaseUrl = process.env.DATABASE_URL?.trim();
+if (!databaseUrl) {
+  throw new Error("DATABASE_URL is required");
+}
+
+const sql = postgres(databaseUrl);
 
 async function fixBadDates() {
-  console.log('🔍 Finding records with bad dates (year < 2000)...\n');
+  console.log("🔍 Finding records with bad dates (year < 2000)...\n");
 
   // Find all records with bad years
   const badRecords = await sql`
@@ -19,15 +24,17 @@ async function fixBadDates() {
   console.log(`Found ${badRecords.length} records with bad dates:\n`);
 
   for (const record of badRecords) {
-    console.log(`  - ${record.firm_individual}: ${record.date_issued} (year: ${record.year_issued})`);
+    console.log(
+      `  - ${record.firm_individual}: ${record.date_issued} (year: ${record.year_issued})`,
+    );
   }
 
   if (badRecords.length === 0) {
-    console.log('✅ No bad records found!');
+    console.log("✅ No bad records found!");
     return;
   }
 
-  console.log('\n🔧 Fixing dates by adding 100 years...\n');
+  console.log("\n🔧 Fixing dates by adding 100 years...\n");
 
   // Fix each record
   for (const record of badRecords) {
@@ -37,7 +44,9 @@ async function fixBadDates() {
     newDate.setFullYear(newYear);
 
     console.log(`  Fixing ${record.firm_individual}:`);
-    console.log(`    Old: ${oldDate.toISOString()} (year: ${record.year_issued})`);
+    console.log(
+      `    Old: ${oldDate.toISOString()} (year: ${record.year_issued})`,
+    );
     console.log(`    New: ${newDate.toISOString()} (year: ${newYear})`);
 
     await sql`
@@ -52,7 +61,7 @@ async function fixBadDates() {
     console.log(`    ✅ Updated\n`);
   }
 
-  console.log('🎉 All bad dates fixed!');
+  console.log("🎉 All bad dates fixed!");
 
   // Verify the fix
   const remaining = await sql`
@@ -61,7 +70,9 @@ async function fixBadDates() {
     WHERE year_issued < 2000
   `;
 
-  console.log(`\n📊 Verification: ${remaining[0].count} records remaining with year < 2000`);
+  console.log(
+    `\n📊 Verification: ${remaining[0].count} records remaining with year < 2000`,
+  );
 }
 
 fixBadDates().catch(console.error);

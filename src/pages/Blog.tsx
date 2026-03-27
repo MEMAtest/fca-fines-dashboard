@@ -1,6 +1,6 @@
-import { motion } from 'framer-motion';
-import { useEffect, useRef } from 'react';
-import { Link, useNavigate, useSearchParams } from 'react-router-dom';
+import { motion } from "framer-motion";
+import { useEffect, useRef } from "react";
+import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import {
   AlertTriangle,
   BookOpen,
@@ -15,15 +15,18 @@ import {
   Shield,
   TrendingUp,
   Users,
-} from 'lucide-react';
-import { Blog3DVisualization } from '../components/Blog3DVisualization';
-import { LazyVisible } from '../components/LazyVisible';
-import { yearlyFCAData } from '../components/YearlyArticleCharts';
-import { allBlogArticles as blogArticlesMeta, yearlyArticles as yearlyArticlesMeta } from '../data/blogArticles.js';
-import type { BlogArticleMeta } from '../data/blogArticles.js';
-import { injectStructuredData, useSEO } from '../hooks/useSEO';
-import '../styles/blog.css';
-import '../styles/blog3d.css';
+} from "lucide-react";
+import { Blog3DVisualization } from "../components/Blog3DVisualization.js";
+import { LazyVisible } from "../components/LazyVisible.js";
+import { yearlyFCAData } from "../components/YearlyArticleCharts.js";
+import {
+  allBlogArticles as blogArticlesMeta,
+  yearlyArticles as yearlyArticlesMeta,
+} from "../data/blogArticles.js";
+import type { BlogArticleMeta } from "../data/blogArticles.js";
+import { injectStructuredData, useSEO } from "../hooks/useSEO.js";
+import "../styles/blog.css";
+import "../styles/blog3d.css";
 
 interface BlogArticle extends BlogArticleMeta {
   icon: React.ReactNode;
@@ -33,29 +36,31 @@ const MotionLink = motion.create(Link);
 
 // Map article IDs to their icons (JSX stays in this file)
 const iconMap: Record<string, React.ReactNode> = {
-  'largest-fca-fines-history': <Scale className="blog-card-icon" />,
-  'fca-fines-2025': <PoundSterling className="blog-card-icon" />,
-  'fca-fines-database-guide': <BookOpen className="blog-card-icon" />,
-  'fca-aml-fines': <AlertTriangle className="blog-card-icon" />,
-  'fca-fines-banks': <Building2 className="blog-card-icon" />,
-  'fca-enforcement-trends': <TrendingUp className="blog-card-icon" />,
-  'fca-final-notices': <Landmark className="blog-card-icon" />,
-  'senior-managers-regime-fines': <Users className="blog-card-icon" />,
-  'fca-fines-january-2026': <Scale className="blog-card-icon" />,
-  'fca-enforcement-outlook-february-2026': <TrendingUp className="blog-card-icon" />,
-  'fca-fines-february-2026': <PoundSterling className="blog-card-icon" />,
-  'fca-fines-individuals': <Users className="blog-card-icon" />,
-  'fca-fines-march-2026': <PoundSterling className="blog-card-icon" />,
-  'fca-fines-insurance': <Shield className="blog-card-icon" />,
+  "largest-fca-fines-history": <Scale className="blog-card-icon" />,
+  "fca-fines-2025": <PoundSterling className="blog-card-icon" />,
+  "fca-fines-database-guide": <BookOpen className="blog-card-icon" />,
+  "fca-aml-fines": <AlertTriangle className="blog-card-icon" />,
+  "fca-fines-banks": <Building2 className="blog-card-icon" />,
+  "fca-enforcement-trends": <TrendingUp className="blog-card-icon" />,
+  "fca-final-notices": <Landmark className="blog-card-icon" />,
+  "senior-managers-regime-fines": <Users className="blog-card-icon" />,
+  "fca-fines-january-2026": <Scale className="blog-card-icon" />,
+  "fca-enforcement-outlook-february-2026": (
+    <TrendingUp className="blog-card-icon" />
+  ),
+  "fca-fines-february-2026": <PoundSterling className="blog-card-icon" />,
+  "fca-fines-individuals": <Users className="blog-card-icon" />,
+  "fca-fines-march-2026": <PoundSterling className="blog-card-icon" />,
+  "fca-fines-insurance": <Shield className="blog-card-icon" />,
   // Regulator enforcement guides
-  'fca-enforcement-guide': <Landmark className="blog-card-icon" />,
-  'bafin-enforcement-guide': <Landmark className="blog-card-icon" />,
-  'amf-enforcement-guide': <Landmark className="blog-card-icon" />,
-  'cnmv-enforcement-guide': <Landmark className="blog-card-icon" />,
-  'cbi-enforcement-guide': <Landmark className="blog-card-icon" />,
-  'afm-enforcement-guide': <Landmark className="blog-card-icon" />,
-  'dnb-enforcement-guide': <Landmark className="blog-card-icon" />,
-  'esma-enforcement-guide': <Landmark className="blog-card-icon" />,
+  "fca-enforcement-guide": <Landmark className="blog-card-icon" />,
+  "bafin-enforcement-guide": <Landmark className="blog-card-icon" />,
+  "amf-enforcement-guide": <Landmark className="blog-card-icon" />,
+  "cnmv-enforcement-guide": <Landmark className="blog-card-icon" />,
+  "cbi-enforcement-guide": <Landmark className="blog-card-icon" />,
+  "afm-enforcement-guide": <Landmark className="blog-card-icon" />,
+  "dnb-enforcement-guide": <Landmark className="blog-card-icon" />,
+  "esma-enforcement-guide": <Landmark className="blog-card-icon" />,
 };
 
 // Merge icon into each article
@@ -77,15 +82,15 @@ const formatYearlyCurrency = (amount: number): string => {
 
 function generateItemListSchema() {
   const allArticles = [
-    ...blogArticlesMeta.filter(a => a.featured),
-    ...blogArticlesMeta.filter(a => !a.featured),
+    ...blogArticlesMeta.filter((a) => a.featured),
+    ...blogArticlesMeta.filter((a) => !a.featured),
     ...yearlyArticlesMeta,
   ];
   return {
-    '@context': 'https://schema.org',
-    '@type': 'ItemList',
+    "@context": "https://schema.org",
+    "@type": "ItemList",
     itemListElement: allArticles.map((article, index) => ({
-      '@type': 'ListItem',
+      "@type": "ListItem",
       position: index + 1,
       url: `https://fcafines.memaconsultants.com/blog/${article.slug}`,
     })),
@@ -94,24 +99,25 @@ function generateItemListSchema() {
 
 function generateBlogListSchema() {
   return {
-    '@context': 'https://schema.org',
-    '@type': 'Blog',
-    name: 'FCA Fines Insights & Analysis',
-    description: 'Expert analysis of FCA fines, enforcement trends, and compliance guidance',
-    url: 'https://fcafines.memaconsultants.com/blog',
+    "@context": "https://schema.org",
+    "@type": "Blog",
+    name: "FCA Fines Insights & Analysis",
+    description:
+      "Expert analysis of FCA fines, enforcement trends, and compliance guidance",
+    url: "https://fcafines.memaconsultants.com/blog",
     publisher: {
-      '@type': 'Organization',
-      name: 'MEMA Consultants',
+      "@type": "Organization",
+      name: "MEMA Consultants",
     },
     blogPost: blogArticles.map((article) => ({
-      '@type': 'BlogPosting',
+      "@type": "BlogPosting",
       headline: article.title,
       description: article.excerpt,
       datePublished: article.dateISO,
       url: `https://fcafines.memaconsultants.com/blog/${article.slug}`,
       author: {
-        '@type': 'Organization',
-        name: 'MEMA Consultants',
+        "@type": "Organization",
+        name: "MEMA Consultants",
       },
     })),
   };
@@ -122,7 +128,10 @@ const ITEMS_PER_PAGE = 6;
 export function Blog() {
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
-  const currentPage = Math.max(1, parseInt(searchParams.get('page') || '1', 10));
+  const currentPage = Math.max(
+    1,
+    parseInt(searchParams.get("page") || "1", 10),
+  );
   const regularSectionRef = useRef<HTMLElement>(null);
 
   const featuredArticles = blogArticles.filter((article) => article.featured);
@@ -131,21 +140,24 @@ export function Blog() {
   const safePage = Math.min(currentPage, totalPages);
   const paginatedArticles = regularArticles.slice(
     (safePage - 1) * ITEMS_PER_PAGE,
-    safePage * ITEMS_PER_PAGE
+    safePage * ITEMS_PER_PAGE,
   );
 
-  const baseUrl = 'https://fcafines.memaconsultants.com';
-  const relNext = safePage < totalPages ? `${baseUrl}/blog?page=${safePage + 1}` : undefined;
-  const relPrev = safePage > 1 ? `${baseUrl}/blog?page=${safePage - 1}` : undefined;
+  const baseUrl = "https://fcafines.memaconsultants.com";
+  const relNext =
+    safePage < totalPages ? `${baseUrl}/blog?page=${safePage + 1}` : undefined;
+  const relPrev =
+    safePage > 1 ? `${baseUrl}/blog?page=${safePage - 1}` : undefined;
 
   useSEO({
-    title: 'FCA Fines Blog | Expert Analysis & Insights on Financial Conduct Authority Penalties',
+    title:
+      "FCA Fines Blog | Expert Analysis & Insights on Financial Conduct Authority Penalties",
     description:
-      'Expert analysis of FCA fines, biggest penalties, enforcement trends, and compliance guidance. Covering the 20 largest FCA fines, AML enforcement, banking sector penalties, and 2025 fines.',
+      "Expert analysis of FCA fines, biggest penalties, enforcement trends, and compliance guidance. Covering the 20 largest FCA fines, AML enforcement, banking sector penalties, and 2025 fines.",
     keywords:
-      'FCA fines blog, FCA fines analysis, FCA enforcement insights, biggest FCA fines, FCA fines 2025, FCA AML fines, FCA compliance guide',
-    canonicalPath: '/blog',
-    ogType: 'website',
+      "FCA fines blog, FCA fines analysis, FCA enforcement insights, biggest FCA fines, FCA fines 2025, FCA AML fines, FCA compliance guide",
+    canonicalPath: "/blog",
+    ogType: "website",
     relNext,
     relPrev,
   });
@@ -166,7 +178,10 @@ export function Blog() {
     } else {
       setSearchParams({ page: String(page) });
     }
-    regularSectionRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    regularSectionRef.current?.scrollIntoView({
+      behavior: "smooth",
+      block: "start",
+    });
   }
 
   return (
@@ -182,8 +197,8 @@ export function Blog() {
           >
             <h1>FCA Fines: Expert Analysis & Insights</h1>
             <p className="blog-hero-subtitle">
-              Comprehensive guides to Financial Conduct Authority fines, enforcement trends,
-              and compliance best practices.
+              Comprehensive guides to Financial Conduct Authority fines,
+              enforcement trends, and compliance best practices.
             </p>
             <p className="blog-hero-stats">
               Tracking <strong>£4.9+ billion</strong> in FCA fines since 2013
@@ -191,7 +206,10 @@ export function Blog() {
           </motion.div>
 
           <div className="blog-hero-visualization">
-            <LazyVisible rootMargin="0px" fallback={<div style={{ minHeight: 300 }} />}>
+            <LazyVisible
+              rootMargin="0px"
+              fallback={<div style={{ minHeight: 300 }} />}
+            >
               <Blog3DVisualization />
             </LazyVisible>
           </div>
@@ -201,8 +219,13 @@ export function Blog() {
       {/* Featured Articles */}
       <section className="blog-section" aria-labelledby="featured-heading">
         <div className="blog-section-header">
-          <h2 id="featured-heading">Featured: Biggest FCA Fines & 2026 Updates</h2>
-          <p>Essential reading on the largest Financial Conduct Authority penalties</p>
+          <h2 id="featured-heading">
+            Featured: Biggest FCA Fines & 2026 Updates
+          </h2>
+          <p>
+            Essential reading on the largest Financial Conduct Authority
+            penalties
+          </p>
         </div>
 
         <div className="blog-featured-grid">
@@ -242,7 +265,10 @@ export function Blog() {
                   {article.readTime}
                 </span>
               </div>
-              <span className="blog-card-cta" aria-label={`Read article: ${article.title}`}>
+              <span
+                className="blog-card-cta"
+                aria-label={`Read article: ${article.title}`}
+              >
                 Read Article
                 <ChevronRight size={16} />
               </span>
@@ -252,10 +278,17 @@ export function Blog() {
       </section>
 
       {/* All Articles */}
-      <section className="blog-section blog-section--alt" aria-labelledby="all-articles-heading" ref={regularSectionRef}>
+      <section
+        className="blog-section blog-section--alt"
+        aria-labelledby="all-articles-heading"
+        ref={regularSectionRef}
+      >
         <div className="blog-section-header">
           <h2 id="all-articles-heading">All FCA Fines Articles</h2>
-          <p>Complete coverage of FCA enforcement, AML fines, banking penalties, and compliance</p>
+          <p>
+            Complete coverage of FCA enforcement, AML fines, banking penalties,
+            and compliance
+          </p>
         </div>
 
         <div className="blog-grid">
@@ -294,7 +327,10 @@ export function Blog() {
                   {article.readTime}
                 </span>
               </div>
-              <span className="blog-card-cta" aria-label={`Read article: ${article.title}`}>
+              <span
+                className="blog-card-cta"
+                aria-label={`Read article: ${article.title}`}
+              >
                 Read Article
                 <ChevronRight size={16} />
               </span>
@@ -304,7 +340,10 @@ export function Blog() {
 
         {/* Pagination */}
         {totalPages > 1 && (
-          <nav className="blog-pagination" aria-label="Blog articles pagination">
+          <nav
+            className="blog-pagination"
+            aria-label="Blog articles pagination"
+          >
             <button
               className="blog-pagination__btn"
               disabled={safePage <= 1}
@@ -312,12 +351,12 @@ export function Blog() {
             >
               Previous
             </button>
-            {Array.from({ length: totalPages }, (_, i) => i + 1).map(page => (
+            {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
               <button
                 key={page}
-                className={`blog-pagination__btn${page === safePage ? ' blog-pagination__btn--active' : ''}`}
+                className={`blog-pagination__btn${page === safePage ? " blog-pagination__btn--active" : ""}`}
                 onClick={() => goToPage(page)}
-                aria-current={page === safePage ? 'page' : undefined}
+                aria-current={page === safePage ? "page" : undefined}
               >
                 {page}
               </button>
@@ -334,10 +373,18 @@ export function Blog() {
       </section>
 
       {/* Yearly Analysis Section */}
-      <section className="yearly-analysis-section" aria-labelledby="yearly-heading">
+      <section
+        className="yearly-analysis-section"
+        aria-labelledby="yearly-heading"
+      >
         <div className="blog-section-header">
-          <h2 id="yearly-heading">FCA Fines by Year: Professional Analysis 2013-2025</h2>
-          <p>In-depth regulatory analysis with data visualisations for each enforcement year</p>
+          <h2 id="yearly-heading">
+            FCA Fines by Year: Professional Analysis 2013-2025
+          </h2>
+          <p>
+            In-depth regulatory analysis with data visualisations for each
+            enforcement year
+          </p>
         </div>
 
         <div className="yearly-analysis-grid">
@@ -361,14 +408,16 @@ export function Blog() {
                     <div className="yearly-card-stat-label">Total Fines</div>
                   </div>
                   <div className="yearly-card-stat">
-                    <div className="yearly-card-stat-value">{yearData?.totalFines || 0}</div>
+                    <div className="yearly-card-stat-value">
+                      {yearData?.totalFines || 0}
+                    </div>
                     <div className="yearly-card-stat-label">Actions</div>
                   </div>
                 </div>
                 <p className="yearly-card-highlight">
-                  Largest: {yearData?.largestFine.firm.split(' ').slice(0, 3).join(' ')} -
-                  {' '}
-                  {formatYearlyCurrency(yearData?.largestFine.amount || 0)}
+                  Largest:{" "}
+                  {yearData?.largestFine.firm.split(" ").slice(0, 3).join(" ")}{" "}
+                  - {formatYearlyCurrency(yearData?.largestFine.amount || 0)}
                 </p>
               </MotionLink>
             );
@@ -381,23 +430,37 @@ export function Blog() {
         <div className="blog-seo-content">
           <h2>About the FCA Fines Database</h2>
           <p>
-            Our <strong>FCA fines database</strong> is the most comprehensive resource for tracking
-            Financial Conduct Authority enforcement actions. Since the FCA was established in 2013,
-            it has issued over <strong>£4.9 billion in fines</strong> to financial services firms
+            Our <strong>FCA fines database</strong> is the most comprehensive
+            resource for tracking Financial Conduct Authority enforcement
+            actions. Since the FCA was established in 2013, it has issued over{" "}
+            <strong>£4.9 billion in fines</strong> to financial services firms
             and individuals.
           </p>
           <p>
-            Use our <Link to="/dashboard">interactive FCA fines dashboard</Link> to search all penalties,
-            filter by year, firm, or breach category, and export data for compliance reporting.
+            Use our <Link to="/dashboard">interactive FCA fines dashboard</Link>{" "}
+            to search all penalties, filter by year, firm, or breach category,
+            and export data for compliance reporting.
           </p>
 
           <h3>Most Searched FCA Fines Topics</h3>
           <ul className="blog-seo-links">
-            <li><strong>Biggest FCA fines</strong> - The 20 largest penalties ever issued</li>
-            <li><strong>FCA fines 2026</strong> - This year's enforcement actions</li>
-            <li><strong>FCA AML fines</strong> - Anti-money laundering penalties</li>
-            <li><strong>FCA fines to banks</strong> - Banking sector enforcement</li>
-            <li><strong>FCA final notices</strong> - Official enforcement decisions</li>
+            <li>
+              <strong>Biggest FCA fines</strong> - The 20 largest penalties ever
+              issued
+            </li>
+            <li>
+              <strong>FCA fines 2026</strong> - This year's enforcement actions
+            </li>
+            <li>
+              <strong>FCA AML fines</strong> - Anti-money laundering penalties
+            </li>
+            <li>
+              <strong>FCA fines to banks</strong> - Banking sector enforcement
+            </li>
+            <li>
+              <strong>FCA final notices</strong> - Official enforcement
+              decisions
+            </li>
           </ul>
         </div>
       </section>
@@ -407,10 +470,13 @@ export function Blog() {
         <div className="blog-cta-content">
           <h2>Search the Complete FCA Fines Database</h2>
           <p>
-            Access our interactive dashboard to search all FCA fines from 2013-2026.
-            Filter by firm, year, amount, and breach category.
+            Access our interactive dashboard to search all FCA fines from
+            2013-2026. Filter by firm, year, amount, and breach category.
           </p>
-          <button className="blog-cta-button" onClick={() => navigate('/dashboard')}>
+          <button
+            className="blog-cta-button"
+            onClick={() => navigate("/dashboard")}
+          >
             Open FCA Fines Dashboard
             <ExternalLink size={18} />
           </button>
@@ -422,7 +488,9 @@ export function Blog() {
         <div className="blog-footer-content">
           <div className="blog-footer-brand">
             <p className="blog-footer-logo">FCA Fines Dashboard</p>
-            <p className="blog-footer-tagline">The definitive FCA fines database | Powered by MEMA Consultants</p>
+            <p className="blog-footer-tagline">
+              The definitive FCA fines database | Powered by MEMA Consultants
+            </p>
           </div>
           <nav className="blog-footer-nav" aria-label="Footer navigation">
             <Link to="/">Home</Link>

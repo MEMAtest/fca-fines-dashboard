@@ -1,5 +1,5 @@
-import { FilterChip } from './FilterChip';
-import { SearchAutocomplete } from './SearchAutocomplete';
+import { FilterChip } from "./FilterChip.js";
+import { SearchAutocomplete } from "./SearchAutocomplete.js";
 
 interface FiltersBarProps {
   year: number;
@@ -50,10 +50,10 @@ export function FiltersBar({
   showRegulatorFilter = true,
   showCountryFilter = true,
 }: FiltersBarProps) {
-  const focusLabel = year === 0 ? 'All years' : `${year} focus`;
-  const categoryLabel = category === 'All' ? 'All breach types' : category;
-  const regulatorLabel = regulator === 'All' ? 'All regulators' : regulator;
-  const countryLabel = country === 'All' ? 'All countries' : country;
+  const focusLabel = year === 0 ? "All years" : `${year} focus`;
+  const categoryLabel = category === "All" ? "All breach types" : category;
+  const regulatorLabel = regulator === "All" ? "All regulators" : regulator;
+  const countryLabel = country === "All" ? "All countries" : country;
 
   return (
     <section className="filters">
@@ -72,28 +72,44 @@ export function FiltersBar({
         {showRegulatorFilter && (
           <div>
             <label htmlFor="regulator-select">Regulator</label>
-            <select id="regulator-select" value={regulator} onChange={(e) => onRegulatorChange(e.target.value)}>
+            <select
+              id="regulator-select"
+              value={regulator}
+              onChange={(e) => onRegulatorChange(e.target.value)}
+            >
               <option value="All">All Regulators</option>
               <optgroup label="United Kingdom">
-                <option value="FCA">🇬🇧 FCA - Financial Conduct Authority</option>
+                <option value="FCA">
+                  🇬🇧 FCA - Financial Conduct Authority
+                </option>
               </optgroup>
               <optgroup label="European Union">
-                <option value="ESMA">🇪🇺 ESMA - European Securities Authority</option>
+                <option value="ESMA">
+                  🇪🇺 ESMA - European Securities Authority
+                </option>
               </optgroup>
               <optgroup label="Germany">
-                <option value="BaFin">🇩🇪 BaFin - Federal Financial Supervisory</option>
+                <option value="BaFin">
+                  🇩🇪 BaFin - Federal Financial Supervisory
+                </option>
               </optgroup>
               <optgroup label="France">
-                <option value="AMF">🇫🇷 AMF - Autorité des marchés financiers</option>
+                <option value="AMF">
+                  🇫🇷 AMF - Autorité des marchés financiers
+                </option>
               </optgroup>
               <optgroup label="Spain">
-                <option value="CNMV">🇪🇸 CNMV - Comisión Nacional del Mercado</option>
+                <option value="CNMV">
+                  🇪🇸 CNMV - Comisión Nacional del Mercado
+                </option>
               </optgroup>
               <optgroup label="Ireland">
                 <option value="CBI">🇮🇪 CBI - Central Bank of Ireland</option>
               </optgroup>
               <optgroup label="Netherlands">
-                <option value="AFM">🇳🇱 AFM - Authority for Financial Markets</option>
+                <option value="AFM">
+                  🇳🇱 AFM - Authority for Financial Markets
+                </option>
                 <option value="DNB">🇳🇱 DNB - De Nederlandsche Bank</option>
               </optgroup>
             </select>
@@ -102,7 +118,11 @@ export function FiltersBar({
         {showCountryFilter && (
           <div>
             <label htmlFor="country-select">Country</label>
-            <select id="country-select" value={country} onChange={(e) => onCountryChange(e.target.value)}>
+            <select
+              id="country-select"
+              value={country}
+              onChange={(e) => onCountryChange(e.target.value)}
+            >
               <option value="All">All Countries</option>
               <option value="UK">🇬🇧 United Kingdom</option>
               <option value="EU">🇪🇺 European Union</option>
@@ -116,7 +136,11 @@ export function FiltersBar({
         )}
         <div>
           <label htmlFor="year-select">Year</label>
-          <select id="year-select" value={year} onChange={(e) => onYearChange(Number(e.target.value))}>
+          <select
+            id="year-select"
+            value={year}
+            onChange={(e) => onYearChange(Number(e.target.value))}
+          >
             <option value={0}>All Years</option>
             {availableYears.map((yr) => (
               <option key={yr} value={yr}>
@@ -127,7 +151,11 @@ export function FiltersBar({
         </div>
         <div>
           <label htmlFor="category-select">Breach type</label>
-          <select id="category-select" value={category} onChange={(e) => onCategoryChange(e.target.value)}>
+          <select
+            id="category-select"
+            value={category}
+            onChange={(e) => onCategoryChange(e.target.value)}
+          >
             <option value="All">All Categories</option>
             {categories.map((cat) => (
               <option key={cat} value={cat}>
@@ -138,7 +166,11 @@ export function FiltersBar({
         </div>
         <div>
           <label htmlFor="currency-select">Currency</label>
-          <select id="currency-select" value={currency} onChange={(e) => onCurrencyChange(e.target.value)}>
+          <select
+            id="currency-select"
+            value={currency}
+            onChange={(e) => onCurrencyChange(e.target.value)}
+          >
             <option value="GBP">£ GBP</option>
             <option value="EUR">€ EUR</option>
           </select>
@@ -160,7 +192,11 @@ export function FiltersBar({
       {chips.length > 0 && (
         <div className="filters__chips">
           {chips.map((chip) => (
-            <FilterChip key={chip.label} label={chip.label} onRemove={chip.onRemove} />
+            <FilterChip
+              key={chip.label}
+              label={chip.label}
+              onRemove={chip.onRemove}
+            />
           ))}
         </div>
       )}
@@ -186,7 +222,11 @@ export function FiltersBar({
           <strong>{currency}</strong>
           currency
         </div>
-        <button type="button" className="btn btn-primary" onClick={onAdvancedOpen}>
+        <button
+          type="button"
+          className="btn btn-primary"
+          onClick={onAdvancedOpen}
+        >
           Show advanced
         </button>
       </div>
@@ -196,10 +236,39 @@ export function FiltersBar({
 
 function FilterGlyph() {
   return (
-    <svg className="filters__glyph" viewBox="0 0 32 32" role="img" aria-hidden="true">
-      <rect x="3" y="5" width="26" height="6" rx="3" fill="#10b981" opacity="0.8" />
-      <rect x="7" y="13" width="18" height="6" rx="3" fill="#0ea5e9" opacity="0.6" />
-      <rect x="11" y="21" width="10" height="6" rx="3" fill="#2563eb" opacity="0.8" />
+    <svg
+      className="filters__glyph"
+      viewBox="0 0 32 32"
+      role="img"
+      aria-hidden="true"
+    >
+      <rect
+        x="3"
+        y="5"
+        width="26"
+        height="6"
+        rx="3"
+        fill="#10b981"
+        opacity="0.8"
+      />
+      <rect
+        x="7"
+        y="13"
+        width="18"
+        height="6"
+        rx="3"
+        fill="#0ea5e9"
+        opacity="0.6"
+      />
+      <rect
+        x="11"
+        y="21"
+        width="10"
+        height="6"
+        rx="3"
+        fill="#2563eb"
+        opacity="0.8"
+      />
     </svg>
   );
 }

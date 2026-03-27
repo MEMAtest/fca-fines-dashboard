@@ -1,5 +1,5 @@
-import { useEffect, useMemo, useState } from 'react';
-import { useLocalStorage } from '../hooks/useLocalStorage';
+import { useEffect, useMemo, useState } from "react";
+import { useLocalStorage } from "../hooks/useLocalStorage.js";
 
 export interface AdvancedFilterValues {
   years: number[];
@@ -9,7 +9,7 @@ export interface AdvancedFilterValues {
   dateRange: { start: string; end: string };
 }
 
-interface AdvancedFiltersProps {
+export interface AdvancedFiltersProps {
   open: boolean;
   availableYears: number[];
   breachOptions: string[];
@@ -37,7 +37,10 @@ interface QuickPreset {
   apply: (draft: AdvancedFilterValues) => AdvancedFilterValues;
 }
 
-function buildQuickPresets(currentYear: number, availableYears: number[]): QuickPreset[] {
+function buildQuickPresets(
+  currentYear: number,
+  availableYears: number[],
+): QuickPreset[] {
   const yearsSlice = availableYears.slice(0, 3);
   const last12Start = new Date();
   last12Start.setFullYear(last12Start.getFullYear() - 1);
@@ -45,39 +48,46 @@ function buildQuickPresets(currentYear: number, availableYears: number[]): Quick
   const todayIso = new Date().toISOString().slice(0, 10);
   return [
     {
-      id: 'focus',
-      label: 'Current year',
-      description: 'Focus entirely on the active year.',
-      apply: (draft) => ({ ...draft, years: [currentYear], dateRange: { start: '', end: '' } }),
+      id: "focus",
+      label: "Current year",
+      description: "Focus entirely on the active year.",
+      apply: (draft) => ({
+        ...draft,
+        years: [currentYear],
+        dateRange: { start: "", end: "" },
+      }),
     },
     {
-      id: 'recent',
-      label: 'Last 3 years',
-      description: `Quickly view ${yearsSlice.join(', ')} data.`,
+      id: "recent",
+      label: "Last 3 years",
+      description: `Quickly view ${yearsSlice.join(", ")} data.`,
       apply: (draft) => ({ ...draft, years: yearsSlice }),
     },
     {
-      id: 'high-penalty',
-      label: '£10m+ penalties',
-      description: 'Highlight major enforcement activity.',
+      id: "high-penalty",
+      label: "£10m+ penalties",
+      description: "Highlight major enforcement activity.",
       apply: (draft) => ({ ...draft, amountRange: [10_000_000, AMOUNT_MAX] }),
     },
     {
-      id: 'last-year',
-      label: 'Last 12 months',
-      description: 'Rolling 12-month cadence.',
-      apply: (draft) => ({ ...draft, dateRange: { start: isoStart, end: todayIso } }),
+      id: "last-year",
+      label: "Last 12 months",
+      description: "Rolling 12-month cadence.",
+      apply: (draft) => ({
+        ...draft,
+        dateRange: { start: isoStart, end: todayIso },
+      }),
     },
     {
-      id: 'reset',
-      label: 'Reset filters',
-      description: 'Clear all advanced controls.',
+      id: "reset",
+      label: "Reset filters",
+      description: "Clear all advanced controls.",
       apply: () => ({
         years: [],
         amountRange: [0, AMOUNT_MAX],
         breachTypes: [],
         firmCategories: [],
-        dateRange: { start: '', end: '' },
+        dateRange: { start: "", end: "" },
       }),
     },
   ];
@@ -95,28 +105,38 @@ export function AdvancedFilters({
   onClear,
 }: AdvancedFiltersProps) {
   const [draft, setDraft] = useState(values);
-  const [savedPresets, setSavedPresets] = useLocalStorage<SavedPreset[]>('fca-filter-presets', []);
-  const quickPresets = useMemo(() => buildQuickPresets(currentYear, availableYears), [currentYear, availableYears]);
+  const [savedPresets, setSavedPresets] = useLocalStorage<SavedPreset[]>(
+    "fca-filter-presets",
+    [],
+  );
+  const quickPresets = useMemo(
+    () => buildQuickPresets(currentYear, availableYears),
+    [currentYear, availableYears],
+  );
 
   useEffect(() => {
     setDraft(values);
   }, [values]);
 
   useEffect(() => {
-    if (!open || typeof document === 'undefined') return;
+    if (!open || typeof document === "undefined") return;
     const previousOverflow = document.body.style.overflow;
-    document.body.style.overflow = 'hidden';
+    document.body.style.overflow = "hidden";
     return () => {
       document.body.style.overflow = previousOverflow;
     };
   }, [open]);
 
   function toggleValue(list: number[], value: number) {
-    return list.includes(value) ? list.filter((v) => v !== value) : [...list, value];
+    return list.includes(value)
+      ? list.filter((v) => v !== value)
+      : [...list, value];
   }
 
   function toggleStringValue(list: string[], value: string) {
-    return list.includes(value) ? list.filter((v) => v !== value) : [...list, value];
+    return list.includes(value)
+      ? list.filter((v) => v !== value)
+      : [...list, value];
   }
 
   function applyChanges() {
@@ -125,10 +145,10 @@ export function AdvancedFilters({
   }
 
   function handleSavePreset() {
-    const name = window.prompt('Name this preset');
+    const name = window.prompt("Name this preset");
     if (!name) return;
     const generatedId =
-      typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function'
+      typeof crypto !== "undefined" && typeof crypto.randomUUID === "function"
         ? crypto.randomUUID()
         : String(Date.now());
     const snapshot: AdvancedFilterValues = {
@@ -143,7 +163,9 @@ export function AdvancedFilters({
       name,
       values: snapshot,
     };
-    setSavedPresets((prev) => [preset, ...prev].slice(0, MAX_PRESETS));
+    setSavedPresets((prev: SavedPreset[]) =>
+      [preset, ...prev].slice(0, MAX_PRESETS),
+    );
   }
 
   function applyPreset(valuesToApply: AdvancedFilterValues) {
@@ -151,7 +173,9 @@ export function AdvancedFilters({
   }
 
   function deletePreset(id: string) {
-    setSavedPresets((prev) => prev.filter((preset) => preset.id !== id));
+    setSavedPresets((prev: SavedPreset[]) =>
+      prev.filter((preset: SavedPreset) => preset.id !== id),
+    );
   }
 
   if (!open) return null;
@@ -163,7 +187,10 @@ export function AdvancedFilters({
           <div>
             <p className="panel__eyebrow">Advanced filters</p>
             <h3>Slice enforcement trends your way</h3>
-            <p className="panel__description">Apply quick presets, save views for later, and use the dual sliders to zero-in on precise amounts.</p>
+            <p className="panel__description">
+              Apply quick presets, save views for later, and use the dual
+              sliders to zero-in on precise amounts.
+            </p>
           </div>
           <div className="advanced-panel__actions">
             <button type="button" onClick={onClear} className="btn btn-link">
@@ -172,7 +199,11 @@ export function AdvancedFilters({
             <button type="button" onClick={onClose} className="btn btn-ghost">
               Close
             </button>
-            <button type="button" onClick={applyChanges} className="btn btn-primary">
+            <button
+              type="button"
+              onClick={applyChanges}
+              className="btn btn-primary"
+            >
               Apply
             </button>
           </div>
@@ -186,7 +217,9 @@ export function AdvancedFilters({
                   key={preset.id}
                   type="button"
                   className="preset-btn"
-                  onClick={() => setDraft((prev) => preset.apply(prev))}
+                  onClick={() =>
+                    setDraft((prev: AdvancedFilterValues) => preset.apply(prev))
+                  }
                 >
                   <span>{preset.label}</span>
                   <small>{preset.description}</small>
@@ -197,25 +230,43 @@ export function AdvancedFilters({
           <section>
             <div className="preset-header">
               <h4>Saved presets</h4>
-              <button type="button" className="btn btn-ghost btn--compact" onClick={handleSavePreset}>
+              <button
+                type="button"
+                className="btn btn-ghost btn--compact"
+                onClick={handleSavePreset}
+              >
                 Save current
               </button>
             </div>
             {savedPresets.length === 0 ? (
-              <p className="status">No saved presets yet—capture frequently used combinations here.</p>
+              <p className="status">
+                No saved presets yet—capture frequently used combinations here.
+              </p>
             ) : (
               <div className="preset-list">
-                {savedPresets.map((preset) => (
+                {savedPresets.map((preset: SavedPreset) => (
                   <article key={preset.id} className="preset-card">
                     <div>
                       <strong>{preset.name}</strong>
-                      <p>{preset.values.years.length ? `Years: ${preset.values.years.join(', ')}` : 'All years'}</p>
+                      <p>
+                        {preset.values.years.length
+                          ? `Years: ${preset.values.years.join(", ")}`
+                          : "All years"}
+                      </p>
                     </div>
                     <div className="preset-card__actions">
-                      <button type="button" className="btn btn-ghost btn--compact" onClick={() => applyPreset(preset.values)}>
+                      <button
+                        type="button"
+                        className="btn btn-ghost btn--compact"
+                        onClick={() => applyPreset(preset.values)}
+                      >
                         Apply
                       </button>
-                      <button type="button" className="btn btn-link btn--compact" onClick={() => deletePreset(preset.id)}>
+                      <button
+                        type="button"
+                        className="btn btn-link btn--compact"
+                        onClick={() => deletePreset(preset.id)}
+                      >
                         Remove
                       </button>
                     </div>
@@ -231,8 +282,15 @@ export function AdvancedFilters({
                 <button
                   key={year}
                   type="button"
-                  className={draft.years.includes(year) ? 'chip chip--active' : 'chip'}
-                  onClick={() => setDraft((prev) => ({ ...prev, years: toggleValue(prev.years, year) }))}
+                  className={
+                    draft.years.includes(year) ? "chip chip--active" : "chip"
+                  }
+                  onClick={() =>
+                    setDraft((prev) => ({
+                      ...prev,
+                      years: toggleValue(prev.years, year),
+                    }))
+                  }
                 >
                   {year}
                 </button>
@@ -252,7 +310,10 @@ export function AdvancedFilters({
                   onChange={(e) =>
                     setDraft((prev) => ({
                       ...prev,
-                      amountRange: [Math.min(Number(e.target.value), prev.amountRange[1]), prev.amountRange[1]],
+                      amountRange: [
+                        Math.min(Number(e.target.value), prev.amountRange[1]),
+                        prev.amountRange[1],
+                      ],
                     }))
                   }
                 />
@@ -267,7 +328,10 @@ export function AdvancedFilters({
                   onChange={(e) =>
                     setDraft((prev) => ({
                       ...prev,
-                      amountRange: [prev.amountRange[0], Math.max(Number(e.target.value), prev.amountRange[0])],
+                      amountRange: [
+                        prev.amountRange[0],
+                        Math.max(Number(e.target.value), prev.amountRange[0]),
+                      ],
                     }))
                   }
                 />
@@ -283,7 +347,10 @@ export function AdvancedFilters({
                 onChange={(e) =>
                   setDraft((prev) => ({
                     ...prev,
-                    amountRange: [Math.min(Number(e.target.value), prev.amountRange[1]), prev.amountRange[1]],
+                    amountRange: [
+                      Math.min(Number(e.target.value), prev.amountRange[1]),
+                      prev.amountRange[1],
+                    ],
                   }))
                 }
               />
@@ -296,14 +363,21 @@ export function AdvancedFilters({
                 onChange={(e) =>
                   setDraft((prev) => ({
                     ...prev,
-                    amountRange: [prev.amountRange[0], Math.max(Number(e.target.value), prev.amountRange[0])],
+                    amountRange: [
+                      prev.amountRange[0],
+                      Math.max(Number(e.target.value), prev.amountRange[0]),
+                    ],
                   }))
                 }
               />
             </div>
             <div className="amount-slider__values">
               <span>£{(draft.amountRange[0] / 1_000_000).toFixed(1)}m</span>
-              <span>{draft.amountRange[1] >= AMOUNT_MAX ? '£500m+' : `£${(draft.amountRange[1] / 1_000_000).toFixed(1)}m`}</span>
+              <span>
+                {draft.amountRange[1] >= AMOUNT_MAX
+                  ? "£500m+"
+                  : `£${(draft.amountRange[1] / 1_000_000).toFixed(1)}m`}
+              </span>
             </div>
           </section>
           <section>
@@ -313,8 +387,17 @@ export function AdvancedFilters({
                 <button
                   key={option}
                   type="button"
-                  className={draft.breachTypes.includes(option) ? 'chip chip--active' : 'chip'}
-                  onClick={() => setDraft((prev) => ({ ...prev, breachTypes: toggleStringValue(prev.breachTypes, option) }))}
+                  className={
+                    draft.breachTypes.includes(option)
+                      ? "chip chip--active"
+                      : "chip"
+                  }
+                  onClick={() =>
+                    setDraft((prev) => ({
+                      ...prev,
+                      breachTypes: toggleStringValue(prev.breachTypes, option),
+                    }))
+                  }
                 >
                   {option}
                 </button>
@@ -328,9 +411,19 @@ export function AdvancedFilters({
                 <button
                   key={option}
                   type="button"
-                  className={draft.firmCategories.includes(option) ? 'chip chip--active' : 'chip'}
+                  className={
+                    draft.firmCategories.includes(option)
+                      ? "chip chip--active"
+                      : "chip"
+                  }
                   onClick={() =>
-                    setDraft((prev) => ({ ...prev, firmCategories: toggleStringValue(prev.firmCategories, option) }))
+                    setDraft((prev) => ({
+                      ...prev,
+                      firmCategories: toggleStringValue(
+                        prev.firmCategories,
+                        option,
+                      ),
+                    }))
                   }
                 >
                   {option}
@@ -346,7 +439,12 @@ export function AdvancedFilters({
                 <input
                   type="date"
                   value={draft.dateRange.start}
-                  onChange={(e) => setDraft((prev) => ({ ...prev, dateRange: { ...prev.dateRange, start: e.target.value } }))}
+                  onChange={(e) =>
+                    setDraft((prev) => ({
+                      ...prev,
+                      dateRange: { ...prev.dateRange, start: e.target.value },
+                    }))
+                  }
                 />
               </label>
               <label>
@@ -354,7 +452,12 @@ export function AdvancedFilters({
                 <input
                   type="date"
                   value={draft.dateRange.end}
-                  onChange={(e) => setDraft((prev) => ({ ...prev, dateRange: { ...prev.dateRange, end: e.target.value } }))}
+                  onChange={(e) =>
+                    setDraft((prev) => ({
+                      ...prev,
+                      dateRange: { ...prev.dateRange, end: e.target.value },
+                    }))
+                  }
                 />
               </label>
             </div>

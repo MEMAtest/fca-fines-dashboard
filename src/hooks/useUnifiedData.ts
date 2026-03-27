@@ -5,10 +5,10 @@
  * This replaces useFinesData for the multi-regulator dashboard
  */
 
-import { useEffect, useState, useMemo } from 'react';
-import { fetchUnifiedSearch, type UnifiedSearchResponse } from '../api';
-import type { FineRecord, StatsResponse } from '../types';
-import { getRecordSourceStatus } from '../utils/sourceLinks';
+import { useEffect, useState, useMemo } from "react";
+import { fetchUnifiedSearch, type UnifiedSearchResponse } from "../api.js";
+import type { FineRecord, StatsResponse } from "../types.js";
+import { getRecordSourceStatus } from "../utils/sourceLinks.js";
 
 interface UseUnifiedDataParams {
   regulator: string;
@@ -18,12 +18,12 @@ interface UseUnifiedDataParams {
 }
 
 function toNumber(value: unknown): number {
-  if (typeof value === 'number') {
+  if (typeof value === "number") {
     return Number.isFinite(value) ? value : 0;
   }
 
-  if (typeof value === 'string') {
-    const parsed = Number(value.replace(/,/g, ''));
+  if (typeof value === "string") {
+    const parsed = Number(value.replace(/,/g, ""));
     return Number.isFinite(parsed) ? parsed : 0;
   }
 
@@ -37,14 +37,19 @@ function toInteger(value: unknown): number {
 
 function parseBreachCategories(value: unknown): string[] {
   if (Array.isArray(value)) {
-    return value.filter((entry): entry is string => typeof entry === 'string' && entry.length > 0);
+    return value.filter(
+      (entry): entry is string => typeof entry === "string" && entry.length > 0,
+    );
   }
 
-  if (typeof value === 'string') {
+  if (typeof value === "string") {
     try {
       const parsed = JSON.parse(value);
       if (Array.isArray(parsed)) {
-        return parsed.filter((entry): entry is string => typeof entry === 'string' && entry.length > 0);
+        return parsed.filter(
+          (entry): entry is string =>
+            typeof entry === "string" && entry.length > 0,
+        );
       }
     } catch {
       return value ? [value] : [];
@@ -55,7 +60,10 @@ function parseBreachCategories(value: unknown): string[] {
 }
 
 // Transform unified API response to match FineRecord interface
-function transformUnifiedRecord(record: UnifiedSearchResponse['results'][0], currency: string): FineRecord {
+function transformUnifiedRecord(
+  record: UnifiedSearchResponse["results"][0],
+  currency: string,
+): FineRecord {
   const amountGbp = toNumber(record.amount_gbp);
   const amountEur = toNumber(record.amount_eur);
 
@@ -63,8 +71,8 @@ function transformUnifiedRecord(record: UnifiedSearchResponse['results'][0], cur
     id: record.id,
     fine_reference: record.id, // Use id as reference since unified doesn't have fine_reference
     firm_individual: record.firm_individual,
-    firm_category: record.firm_category || '',
-    amount: currency === 'EUR' ? amountEur : amountGbp,
+    firm_category: record.firm_category || "",
+    amount: currency === "EUR" ? amountEur : amountGbp,
     date_issued: record.date_issued,
     year_issued: toInteger(record.year_issued),
     month_issued: toInteger(record.month_issued),
@@ -101,7 +109,7 @@ function transformUnifiedRecord(record: UnifiedSearchResponse['results'][0], cur
   };
 }
 
-function buildStats(records: FineRecord[]): StatsResponse['data'] {
+function buildStats(records: FineRecord[]): StatsResponse["data"] {
   if (!records.length) {
     return {
       totalFines: 0,
@@ -126,14 +134,19 @@ function buildStats(records: FineRecord[]): StatsResponse['data'] {
       maxFirmName = record.firm_individual;
     }
 
-    const labels = record.breach_categories?.length ? record.breach_categories : record.breach_type ? [record.breach_type] : [];
-    labels.forEach((label) => {
+    const labels = record.breach_categories?.length
+      ? record.breach_categories
+      : record.breach_type
+        ? [record.breach_type]
+        : [];
+    labels.forEach((label: string) => {
       breachCounts.set(label, (breachCounts.get(label) ?? 0) + 1);
     });
   });
 
   const dominantBreach =
-    Array.from(breachCounts.entries()).sort((a, b) => b[1] - a[1])[0]?.[0] ?? null;
+    Array.from(breachCounts.entries()).sort((a, b) => b[1] - a[1])[0]?.[0] ??
+    null;
 
   return {
     totalFines: records.length,
@@ -145,22 +158,30 @@ function buildStats(records: FineRecord[]): StatsResponse['data'] {
   };
 }
 
-export function useUnifiedData({ regulator, country, year, currency }: UseUnifiedDataParams) {
+export function useUnifiedData({
+  regulator,
+  country,
+  year,
+  currency,
+}: UseUnifiedDataParams) {
   const [fines, setFines] = useState<FineRecord[]>([]);
-  const [stats, setStats] = useState<StatsResponse['data'] | null>(null);
+  const [stats, setStats] = useState<StatsResponse["data"] | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   // Memoize search params to avoid unnecessary refetches
-  const searchParams = useMemo(() => ({
-    regulator: regulator !== 'All' ? regulator : undefined,
-    country: country !== 'All' ? country : undefined,
-    year: year !== 0 ? year : undefined,
-    currency,
-    limit: 5000, // Fetch all records (same as FCA endpoint)
-    sortBy: 'date_issued',
-    order: 'desc' as const,
-  }), [regulator, country, year, currency]);
+  const searchParams = useMemo(
+    () => ({
+      regulator: regulator !== "All" ? regulator : undefined,
+      country: country !== "All" ? country : undefined,
+      year: year !== 0 ? year : undefined,
+      currency,
+      limit: 5000, // Fetch all records (same as FCA endpoint)
+      sortBy: "date_issued",
+      order: "desc" as const,
+    }),
+    [regulator, country, year, currency],
+  );
 
   useEffect(() => {
     let mounted = true;
@@ -174,15 +195,17 @@ export function useUnifiedData({ regulator, country, year, currency }: UseUnifie
 
         if (!mounted) return;
 
-        const transformedFines = searchRes.results.map((record) => transformUnifiedRecord(record, currency));
+        const transformedFines = searchRes.results.map(
+          (record: UnifiedSearchResponse["results"][number]) =>
+            transformUnifiedRecord(record, currency),
+        );
 
         setFines(transformedFines);
         setStats(buildStats(transformedFines));
-
       } catch (err) {
-        console.error('Unified data fetch error:', err);
+        console.error("Unified data fetch error:", err);
         if (mounted) {
-          setError('Unable to load regulatory data. Please try again.');
+          setError("Unable to load regulatory data. Please try again.");
         }
       } finally {
         if (mounted) {

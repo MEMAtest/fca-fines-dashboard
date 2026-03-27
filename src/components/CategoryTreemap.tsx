@@ -1,9 +1,18 @@
-import { useMemo, useState } from 'react';
-import type { LucideIcon } from 'lucide-react';
-import { Layers, Shield, Rocket, Activity, AlertTriangle, Landmark, HelpCircle, Info } from 'lucide-react';
-import type { FineRecord } from '../types';
-import { ExportMenu } from './ExportMenu';
-import { PanelHelp } from './PanelHelp';
+import { useMemo, useState } from "react";
+import type { LucideIcon } from "lucide-react";
+import {
+  Layers,
+  Shield,
+  Rocket,
+  Activity,
+  AlertTriangle,
+  Landmark,
+  HelpCircle,
+  Info,
+} from "lucide-react";
+import type { FineRecord } from "../types.js";
+import { ExportMenu } from "./ExportMenu.js";
+import { PanelHelp } from "./PanelHelp.js";
 
 interface CategoryTreemapProps {
   data: Array<{ name: string; size: number; count: number }>;
@@ -15,47 +24,59 @@ interface CategoryTreemapProps {
 }
 
 const COLORS = [
-  '#6366f1',
-  '#0891b2',
-  '#ec4899',
-  '#f43f5e',
-  '#f97316',
-  '#fbbf24',
-  '#10b981',
-  '#14b8a6',
-  '#06b6d4',
-  '#0ea5e9',
+  "#6366f1",
+  "#0891b2",
+  "#ec4899",
+  "#f43f5e",
+  "#f97316",
+  "#fbbf24",
+  "#10b981",
+  "#14b8a6",
+  "#06b6d4",
+  "#0ea5e9",
 ];
 
 const ICON_MAP: Record<string, LucideIcon> = {
   Market: Activity,
-  'Financial crime': Shield,
-  'Systems & controls': Layers,
+  "Financial crime": Shield,
+  "Systems & controls": Layers,
   Prudential: Landmark,
   Governance: Rocket,
   Conduct: AlertTriangle,
 };
 
 function getIcon(name: string): LucideIcon {
-  const match = Object.keys(ICON_MAP).find((key) => name.toLowerCase().includes(key.toLowerCase()));
+  const match = Object.keys(ICON_MAP).find((key) =>
+    name.toLowerCase().includes(key.toLowerCase()),
+  );
   return match ? ICON_MAP[match] : HelpCircle;
 }
 
 // Helper to safely get numeric value (handles NaN, undefined, null)
 function safeNum(value: number | undefined | null): number {
-  if (value === undefined || value === null || Number.isNaN(value) || !Number.isFinite(value)) {
+  if (
+    value === undefined ||
+    value === null ||
+    Number.isNaN(value) ||
+    !Number.isFinite(value)
+  ) {
     return 0;
   }
   return value;
 }
 
 function buildChildAggregates(category: string, records: FineRecord[]) {
-  const scoped = records.filter((record) => record.breach_categories?.includes(category));
+  const scoped = records.filter((record) =>
+    record.breach_categories?.includes(category),
+  );
   const map = new Map<string, { size: number; count: number }>();
   scoped.forEach((record) => {
-    const key = record.breach_type || record.firm_category || 'Unclassified';
+    const key = record.breach_type || record.firm_category || "Unclassified";
     const current = map.get(key) ?? { size: 0, count: 0 };
-    map.set(key, { size: current.size + safeNum(record.amount), count: current.count + 1 });
+    map.set(key, {
+      size: current.size + safeNum(record.amount),
+      count: current.count + 1,
+    });
   });
   return Array.from(map.entries()).map(([name, value]) => ({ name, ...value }));
 }
@@ -68,22 +89,27 @@ export function CategoryTreemap({
   exportRecords = [],
   exportId,
 }: CategoryTreemapProps) {
-  const [metric, setMetric] = useState<'amount' | 'count'>('amount');
-  const [sortMode, setSortMode] = useState<'share' | 'count'>('share');
+  const [metric, setMetric] = useState<"amount" | "count">("amount");
+  const [sortMode, setSortMode] = useState<"share" | "count">("share");
   const [viewStack, setViewStack] = useState<string[]>([]);
-  const panelId = exportId ?? 'category-panel';
+  const panelId = exportId ?? "category-panel";
   const activeCategory = viewStack[viewStack.length - 1] ?? null;
-  const chartSource = activeCategory ? buildChildAggregates(activeCategory, exportRecords) : data;
+  const chartSource = activeCategory
+    ? buildChildAggregates(activeCategory, exportRecords)
+    : data;
 
   const totals = useMemo(
     () => ({
       amount: chartSource.reduce((sum, item) => sum + safeNum(item.size), 0),
       count: chartSource.reduce((sum, item) => sum + safeNum(item.count), 0),
     }),
-    [chartSource]
+    [chartSource],
   );
 
-  const totalValue = metric === 'amount' ? (safeNum(totals.amount) || 1) : (safeNum(totals.count) || 1);
+  const totalValue =
+    metric === "amount"
+      ? safeNum(totals.amount) || 1
+      : safeNum(totals.count) || 1;
 
   const formatted = useMemo(
     () =>
@@ -91,7 +117,7 @@ export function CategoryTreemap({
         .map((item, index) => {
           const size = safeNum(item.size);
           const count = safeNum(item.count);
-          const value = metric === 'amount' ? size : count;
+          const value = metric === "amount" ? size : count;
           const share = totalValue > 0 ? (value / totalValue) * 100 : 0;
           return {
             ...item,
@@ -104,13 +130,14 @@ export function CategoryTreemap({
           };
         })
         .sort((a, b) => {
-          if (sortMode === 'count') return b.count - a.count;
+          if (sortMode === "count") return b.count - a.count;
           return b.share - a.share;
         }),
-    [chartSource, metric, sortMode, totalValue]
+    [chartSource, metric, sortMode, totalValue],
   );
 
-  const title = year === 0 ? 'Top concerns across all years' : `Top ${year} concern areas`;
+  const title =
+    year === 0 ? "Top concerns across all years" : `Top ${year} concern areas`;
 
   function handleZoom(name: string) {
     if (!exportRecords.length) return;
@@ -126,7 +153,7 @@ export function CategoryTreemap({
   }
 
   const breadcrumbs = [
-    { label: 'All categories', onClick: () => handleBreadcrumb(-1) },
+    { label: "All categories", onClick: () => handleBreadcrumb(-1) },
     ...viewStack.map((crumb, index) => ({
       label: crumb,
       onClick: () => handleBreadcrumb(index),
@@ -154,7 +181,11 @@ export function CategoryTreemap({
             icon={<Info size={16} />}
           />
           {exportRecords.length > 0 && (
-            <ExportMenu records={exportRecords} filename={`categories-${year || 'all'}`} targetElementId={panelId} />
+            <ExportMenu
+              records={exportRecords}
+              filename={`categories-${year || "all"}`}
+              targetElementId={panelId}
+            />
           )}
         </div>
       </div>
@@ -164,58 +195,74 @@ export function CategoryTreemap({
             <button
               key={crumb.label}
               type="button"
-              className={`panel__breadcrumb ${index === breadcrumbs.length - 1 ? 'panel__breadcrumb--active' : ''}`}
+              className={`panel__breadcrumb ${index === breadcrumbs.length - 1 ? "panel__breadcrumb--active" : ""}`}
               onClick={crumb.onClick}
             >
               {crumb.label}
-              {index < breadcrumbs.length - 1 && <span aria-hidden="true">›</span>}
+              {index < breadcrumbs.length - 1 && (
+                <span aria-hidden="true">›</span>
+              )}
             </button>
           ))}
         </div>
       )}
       {emptyState ? (
-        <p className="status">No breach categories surfaced for this view yet.</p>
+        <p className="status">
+          No breach categories surfaced for this view yet.
+        </p>
       ) : (
         <div className="treemap">
           <div className="panel__toolbar panel__toolbar--stacked">
             <p className="panel__hint">
               {activeCategory
                 ? `Zoomed into ${activeCategory}. Click a tile to filter or use reset to go back.`
-                : 'Click a tile to zoom or drill into notices.'}
+                : "Click a tile to zoom or drill into notices."}
             </p>
-            <div className="panel__toolbar-buttons" role="group" aria-label="Category metric">
+            <div
+              className="panel__toolbar-buttons"
+              role="group"
+              aria-label="Category metric"
+            >
               <button
                 type="button"
-                className={`btn btn-ghost btn--compact ${metric === 'amount' ? 'btn--active' : ''}`}
-                onClick={() => setMetric('amount')}
+                className={`btn btn-ghost btn--compact ${metric === "amount" ? "btn--active" : ""}`}
+                onClick={() => setMetric("amount")}
               >
                 Amount
               </button>
               <button
                 type="button"
-                className={`btn btn-ghost btn--compact ${metric === 'count' ? 'btn--active' : ''}`}
-                onClick={() => setMetric('count')}
+                className={`btn btn-ghost btn--compact ${metric === "count" ? "btn--active" : ""}`}
+                onClick={() => setMetric("count")}
               >
                 Notices
               </button>
             </div>
-            <div className="panel__toolbar-buttons" role="group" aria-label="Category sort">
+            <div
+              className="panel__toolbar-buttons"
+              role="group"
+              aria-label="Category sort"
+            >
               <button
                 type="button"
-                className={`btn btn-ghost btn--compact ${sortMode === 'share' ? 'btn--active' : ''}`}
-                onClick={() => setSortMode('share')}
+                className={`btn btn-ghost btn--compact ${sortMode === "share" ? "btn--active" : ""}`}
+                onClick={() => setSortMode("share")}
               >
                 Share
               </button>
               <button
                 type="button"
-                className={`btn btn-ghost btn--compact ${sortMode === 'count' ? 'btn--active' : ''}`}
-                onClick={() => setSortMode('count')}
+                className={`btn btn-ghost btn--compact ${sortMode === "count" ? "btn--active" : ""}`}
+                onClick={() => setSortMode("count")}
               >
                 Count
               </button>
               {activeCategory && (
-                <button type="button" className="btn btn-ghost btn--compact" onClick={() => setViewStack([])}>
+                <button
+                  type="button"
+                  className="btn btn-ghost btn--compact"
+                  onClick={() => setViewStack([])}
+                >
                   Reset zoom
                 </button>
               )}
@@ -227,9 +274,10 @@ export function CategoryTreemap({
             {formatted.map((item, index) => {
               const Icon = item.icon;
               const span = getGridSpan(item.share);
-              const amountLabel = metric === 'amount'
-                ? `£${(safeNum(item.size) / 1_000_000).toFixed(1)}m`
-                : `${safeNum(item.count)} notices`;
+              const amountLabel =
+                metric === "amount"
+                  ? `£${(safeNum(item.size) / 1_000_000).toFixed(1)}m`
+                  : `${safeNum(item.count)} notices`;
 
               return (
                 <button
@@ -238,7 +286,7 @@ export function CategoryTreemap({
                   className="category-tile"
                   style={{
                     backgroundColor: item.fill,
-                    gridColumn: index === 0 && span === 2 ? 'span 2' : 'span 1',
+                    gridColumn: index === 0 && span === 2 ? "span 2" : "span 1",
                   }}
                   onClick={() => {
                     if (activeCategory) {
@@ -255,7 +303,9 @@ export function CategoryTreemap({
                     </span>
                   </div>
                   <div className="category-tile__value">{amountLabel}</div>
-                  <div className="category-tile__share">{safeNum(item.share).toFixed(1)}% of view</div>
+                  <div className="category-tile__share">
+                    {safeNum(item.share).toFixed(1)}% of view
+                  </div>
                   {onDrilldown && (
                     <span
                       className="category-tile__link"

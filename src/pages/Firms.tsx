@@ -1,33 +1,42 @@
-import { useEffect, useMemo, useState } from 'react';
-import { Link } from 'react-router-dom';
-import { fetchFirms } from '../api';
-import { useSEO } from '../hooks/useSEO';
-import type { FirmSummary } from '../types';
+import { useEffect, useMemo, useState } from "react";
+import { Link } from "react-router-dom";
+import { fetchFirms } from "../api.js";
+import { useSEO } from "../hooks/useSEO.js";
+import type { FirmSummary } from "../types.js";
 
-const currency = new Intl.NumberFormat('en-GB', { style: 'currency', currency: 'GBP', maximumFractionDigits: 0 });
+const currency = new Intl.NumberFormat("en-GB", {
+  style: "currency",
+  currency: "GBP",
+  maximumFractionDigits: 0,
+});
 
 function formatDate(value: string | null) {
-  if (!value) return '—';
+  if (!value) return "—";
   const date = new Date(value);
-  if (Number.isNaN(date.getTime())) return '—';
-  return date.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
+  if (Number.isNaN(date.getTime())) return "—";
+  return date.toLocaleDateString("en-GB", {
+    day: "2-digit",
+    month: "short",
+    year: "numeric",
+  });
 }
 
 export function Firms() {
   useSEO({
-    title: 'Top FCA Fine Recipients | Firms and Individuals With the Largest Penalties (2013-2026)',
+    title:
+      "Top FCA Fine Recipients | Firms and Individuals With the Largest Penalties (2013-2026)",
     description:
-      'Browse the biggest FCA fine recipients across 2013-2026. Open an entity page to see totals, largest penalties, and full enforcement history.',
+      "Browse the biggest FCA fine recipients across 2013-2026. Open an entity page to see totals, largest penalties, and full enforcement history.",
     keywords:
-      'top FCA fines firms, biggest FCA fines recipients, FCA fines by firm, FCA fines by individual, largest FCA penalties',
-    canonicalPath: '/firms',
-    ogType: 'website',
+      "top FCA fines firms, biggest FCA fines recipients, FCA fines by firm, FCA fines by individual, largest FCA penalties",
+    canonicalPath: "/firms",
+    ogType: "website",
   });
 
   const [firms, setFirms] = useState<FirmSummary[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [query, setQuery] = useState('');
+  const [query, setQuery] = useState("");
 
   useEffect(() => {
     let mounted = true;
@@ -40,7 +49,8 @@ export function Firms() {
         setFirms(res.data);
       } catch (e) {
         console.error(e);
-        if (mounted) setError('Unable to load firms right now. Please try again.');
+        if (mounted)
+          setError("Unable to load firms right now. Please try again.");
       } finally {
         if (mounted) setLoading(false);
       }
@@ -63,7 +73,8 @@ export function Firms() {
         <header className="hub-hero">
           <h1>Top Firms and Individuals</h1>
           <p>
-            A ranked list of the biggest FCA fine recipients across the dataset. Open an entity page for totals, largest penalties, and history.
+            A ranked list of the biggest FCA fine recipients across the dataset.
+            Open an entity page for totals, largest penalties, and history.
           </p>
           <div className="hub-hero__actions">
             <Link to="/dashboard?year=0" className="btn btn-primary">
@@ -75,9 +86,14 @@ export function Firms() {
           </div>
         </header>
 
-        <div className="hub-card" style={{ marginBottom: '1rem' }}>
-          <div className="hub-card__meta" style={{ justifyContent: 'space-between', width: '100%' }}>
-            <span className="hub-chip hub-chip--neutral">{filtered.length} results</span>
+        <div className="hub-card" style={{ marginBottom: "1rem" }}>
+          <div
+            className="hub-card__meta"
+            style={{ justifyContent: "space-between", width: "100%" }}
+          >
+            <span className="hub-chip hub-chip--neutral">
+              {filtered.length} results
+            </span>
             <input
               type="search"
               value={query}
@@ -85,11 +101,11 @@ export function Firms() {
               placeholder="Search firms and individuals..."
               aria-label="Search firms"
               style={{
-                width: 'min(420px, 100%)',
-                padding: '0.6rem 0.75rem',
-                borderRadius: '12px',
-                border: '1px solid rgba(148, 163, 184, 0.35)',
-                background: 'rgba(255, 255, 255, 0.95)',
+                width: "min(420px, 100%)",
+                padding: "0.6rem 0.75rem",
+                borderRadius: "12px",
+                border: "1px solid rgba(148, 163, 184, 0.35)",
+                background: "rgba(255, 255, 255, 0.95)",
               }}
             />
           </div>
@@ -131,4 +147,3 @@ export function Firms() {
     </div>
   );
 }
-

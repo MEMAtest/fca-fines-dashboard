@@ -1,4 +1,4 @@
-import { getSqlClient } from '../db.ts';
+import { getSqlClient } from "../db.js";
 
 const sql = getSqlClient();
 
@@ -13,8 +13,74 @@ export interface YearlySummary {
     breach_type: string;
     summary: string;
   }>;
-  generated_by: 'manual' | 'auto' | 'ai';
-  metadata?: any;
+  generated_by: "manual" | "auto" | "ai";
+  metadata?: Record<string, unknown> | null;
+}
+
+interface StoredYearlySummaryRow {
+  year: unknown;
+  narrative: unknown;
+  regulatory_focus: unknown;
+  top_cases: unknown;
+  generated_by: unknown;
+  metadata: unknown;
+}
+
+interface TopCaseRow {
+  firm_individual: unknown;
+  amount: unknown;
+  date_issued: unknown;
+  breach_type: unknown;
+  summary: unknown;
+}
+
+interface StatsRow {
+  total_count: unknown;
+  total_amount: unknown;
+  avg_amount: unknown;
+}
+
+interface BreachTypeRow {
+  breach_type: unknown;
+}
+
+function toNumber(value: unknown): number {
+  if (typeof value === "number") return Number.isFinite(value) ? value : 0;
+  if (typeof value === "string") {
+    const parsed = Number(value);
+    return Number.isFinite(parsed) ? parsed : 0;
+  }
+  return 0;
+}
+
+function toString(value: unknown): string {
+  return typeof value === "string" ? value : "";
+}
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === "object" && value !== null;
+}
+
+function toGeneratedBy(value: unknown): YearlySummary["generated_by"] {
+  return value === "manual" || value === "auto" || value === "ai"
+    ? value
+    : "auto";
+}
+
+function toStringArray(value: unknown): string[] {
+  if (!Array.isArray(value)) return [];
+  return value.filter((entry): entry is string => typeof entry === "string");
+}
+
+function mapStoredTopCases(value: unknown): YearlySummary["top_cases"] {
+  if (!Array.isArray(value)) return [];
+  return value.filter(isRecord).map((entry) => ({
+    firm: toString(entry.firm),
+    amount: toNumber(entry.amount),
+    date: toString(entry.date),
+    breach_type: toString(entry.breach_type),
+    summary: toString(entry.summary),
+  }));
 }
 
 /**
@@ -26,18 +92,19 @@ export async function getYearlySummary(year: number): Promise<YearlySummary> {
 
   // Try to get manually created summary first
   const summary = await instance(
-    'SELECT * FROM yearly_summaries WHERE year = $1',
-    [year]
+    "SELECT * FROM yearly_summaries WHERE year = $1",
+    [year],
   );
 
   if (summary.length > 0) {
+    const row = summary[0] as unknown as StoredYearlySummaryRow;
     return {
-      year: summary[0].year,
-      narrative: summary[0].narrative,
-      regulatory_focus: summary[0].regulatory_focus || [],
-      top_cases: summary[0].top_cases || [],
-      generated_by: summary[0].generated_by,
-      metadata: summary[0].metadata,
+      year: toNumber(row.year),
+      narrative: toString(row.narrative),
+      regulatory_focus: toStringArray(row.regulatory_focus),
+      top_cases: mapStoredTopCases(row.top_cases),
+      generated_by: toGeneratedBy(row.generated_by),
+      metadata: isRecord(row.metadata) ? row.metadata : null,
     };
   }
 
@@ -52,7 +119,8 @@ async function generateAutoSummary(year: number): Promise<YearlySummary> {
   const instance = sql;
 
   // Get top 5 cases by amount
-  const topCases = await instance(`
+  const topCases = await instance(
+    `
     SELECT
       firm_individual,
       amount,
@@ -63,20 +131,26 @@ async function generateAutoSummary(year: number): Promise<YearlySummary> {
     WHERE year_issued = $1
     ORDER BY amount DESC
     LIMIT 5
-  `, [year]);
+  `,
+    [year],
+  );
 
   // Get aggregate statistics for the year
-  const stats = await instance(`
+  const stats = await instance(
+    `
     SELECT
       COUNT(*)::int AS total_count,
       COALESCE(SUM(amount), 0)::float8 AS total_amount,
       COALESCE(AVG(amount), 0)::float8 AS avg_amount
     FROM fca_fines
     WHERE year_issued = $1
-  `, [year]);
+  `,
+    [year],
+  );
 
   // Get breach type distribution
-  const breachTypes = await instance(`
+  const breachTypes = await instance(
+    `
     SELECT
       breach_type,
       COUNT(*)::int AS count
@@ -85,27 +159,45 @@ async function generateAutoSummary(year: number): Promise<YearlySummary> {
     GROUP BY breach_type
     ORDER BY count DESC
     LIMIT 3
-  `, [year]);
+  `,
+    [year],
+  );
 
-  const topBreaches = breachTypes.map(b => b.breach_type).join(', ');
-  const { total_count, total_amount, avg_amount } = stats[0];
+  const typedTopCases = topCases as unknown as TopCaseRow[];
+  const typedBreachTypes = breachTypes as unknown as BreachTypeRow[];
+  const statsRow = (stats[0] ?? {
+    total_count: 0,
+    total_amount: 0,
+    avg_amount: 0,
+  }) as unknown as StatsRow;
+  const totalCount = toNumber(statsRow.total_count);
+  const totalAmount = toNumber(statsRow.total_amount);
+  const avgAmount = toNumber(statsRow.avg_amount);
+  const topBreaches = typedBreachTypes
+    .map((breach) => toString(breach.breach_type))
+    .filter((breach) => breach.length > 0)
+    .join(", ");
+  const leadingCase = typedTopCases[0];
 
   // Generate narrative
-  const narrative = topCases.length > 0
-    ? `Auto-generated summary for ${year}: The FCA issued ${total_count} enforcement actions totaling £${(total_amount / 1000000).toFixed(1)}m, with an average fine of £${(avg_amount / 1000000).toFixed(2)}m. Key enforcement areas included ${topBreaches}. The largest penalty was £${(topCases[0].amount / 1000000).toFixed(1)}m issued to ${topCases[0].firm_individual} for ${topCases[0].breach_type}.`
-    : `No enforcement data available for ${year}.`;
+  const narrative =
+    typedTopCases.length > 0 && leadingCase
+      ? `Auto-generated summary for ${year}: The FCA issued ${totalCount} enforcement actions totaling £${(totalAmount / 1000000).toFixed(1)}m, with an average fine of £${(avgAmount / 1000000).toFixed(2)}m. Key enforcement areas included ${topBreaches}. The largest penalty was £${(toNumber(leadingCase.amount) / 1000000).toFixed(1)}m issued to ${toString(leadingCase.firm_individual)} for ${toString(leadingCase.breach_type)}.`
+      : `No enforcement data available for ${year}.`;
 
   return {
     year,
     narrative,
-    regulatory_focus: breachTypes.slice(0, 5).map(b => b.breach_type),
-    top_cases: topCases.map(c => ({
-      firm: c.firm_individual,
-      amount: Number(c.amount),
-      date: c.date_issued,
-      breach_type: c.breach_type,
-      summary: c.summary || 'No summary available',
+    regulatory_focus: typedBreachTypes
+      .slice(0, 5)
+      .map((breach) => toString(breach.breach_type)),
+    top_cases: typedTopCases.map((topCase) => ({
+      firm: toString(topCase.firm_individual),
+      amount: toNumber(topCase.amount),
+      date: toString(topCase.date_issued),
+      breach_type: toString(topCase.breach_type),
+      summary: toString(topCase.summary) || "No summary available",
     })),
-    generated_by: 'auto',
+    generated_by: "auto",
   };
 }

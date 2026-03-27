@@ -1,7 +1,14 @@
-import { useCallback, useEffect, useRef, useState, useLayoutEffect, type CSSProperties } from 'react';
-import { createPortal } from 'react-dom';
-import { Bell } from 'lucide-react';
-import type { NotificationItem } from '../types';
+import {
+  useCallback,
+  useEffect,
+  useRef,
+  useState,
+  useLayoutEffect,
+  type CSSProperties,
+} from "react";
+import { createPortal } from "react-dom";
+import { Bell } from "lucide-react";
+import type { NotificationItem } from "../types.js";
 
 interface NotificationBellProps {
   notifications: NotificationItem[];
@@ -32,7 +39,9 @@ export function NotificationBell({
   const showEmptyState = !loading && !error && !hasNotifications;
   const dropdownRef = useRef<HTMLDivElement>(null);
   const bellRef = useRef<HTMLButtonElement>(null);
-  const [dropdownStyle, setDropdownStyle] = useState<CSSProperties | null>(null);
+  const [dropdownStyle, setDropdownStyle] = useState<CSSProperties | null>(
+    null,
+  );
   const onOpenChangeRef = useRef(onOpenChange);
   onOpenChangeRef.current = onOpenChange;
 
@@ -46,13 +55,19 @@ export function NotificationBell({
     const viewportHeight = window.innerHeight;
 
     const width = Math.min(360, viewportWidth - 24);
-    const left = Math.max(12, Math.min(rect.right - width, viewportWidth - width - 12));
+    const left = Math.max(
+      12,
+      Math.min(rect.right - width, viewportWidth - width - 12),
+    );
     const maxHeight = Math.min(420, Math.floor(viewportHeight * 0.55));
     const desiredTop = rect.bottom + 10;
-    const top = Math.max(12, Math.min(desiredTop, viewportHeight - maxHeight - 12));
+    const top = Math.max(
+      12,
+      Math.min(desiredTop, viewportHeight - maxHeight - 12),
+    );
 
     setDropdownStyle({
-      position: 'fixed',
+      position: "fixed",
       top,
       left,
       width,
@@ -63,12 +78,12 @@ export function NotificationBell({
   useEffect(() => {
     if (!open) return;
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') closeDropdown();
+      if (e.key === "Escape") closeDropdown();
     };
-    document.addEventListener('keydown', handleKeyDown);
+    document.addEventListener("keydown", handleKeyDown);
     dropdownRef.current?.focus();
     return () => {
-      document.removeEventListener('keydown', handleKeyDown);
+      document.removeEventListener("keydown", handleKeyDown);
       queueMicrotask(() => bellRef.current?.focus());
     };
   }, [open, closeDropdown]);
@@ -77,11 +92,11 @@ export function NotificationBell({
     if (!open) return;
     updateDropdownPosition();
     const handleReposition = () => updateDropdownPosition();
-    window.addEventListener('resize', handleReposition);
-    window.addEventListener('scroll', handleReposition, true);
+    window.addEventListener("resize", handleReposition);
+    window.addEventListener("scroll", handleReposition, true);
     return () => {
-      window.removeEventListener('resize', handleReposition);
-      window.removeEventListener('scroll', handleReposition, true);
+      window.removeEventListener("resize", handleReposition);
+      window.removeEventListener("scroll", handleReposition, true);
     };
   }, [open, updateDropdownPosition]);
 
@@ -93,11 +108,17 @@ export function NotificationBell({
         className="notification-bell__btn hover-lift"
         aria-haspopup="dialog"
         aria-expanded={open}
-        aria-label={unreadCount > 0 ? `${unreadCount} unread alerts` : 'Open notifications'}
+        aria-label={
+          unreadCount > 0
+            ? `${unreadCount} unread alerts`
+            : "Open notifications"
+        }
         onClick={() => onOpenChange(!open)}
       >
         <Bell size={18} />
-        {unreadCount > 0 && <span className="notification-bell__badge">{unreadCount}</span>}
+        {unreadCount > 0 && (
+          <span className="notification-bell__badge">{unreadCount}</span>
+        )}
       </button>
       {open && (
         <>
@@ -108,7 +129,7 @@ export function NotificationBell({
               role="presentation"
               aria-hidden="true"
             />,
-            document.body
+            document.body,
           )}
           {createPortal(
             <div
@@ -122,14 +143,24 @@ export function NotificationBell({
               onClick={(e) => e.stopPropagation()}
             >
               {loading && (
-                <div className="notification-bell__skeletons" aria-live="polite">
+                <div
+                  className="notification-bell__skeletons"
+                  aria-live="polite"
+                >
                   {skeletonPlaceholders.map((_, index) => (
-                    <div key={`notification-skeleton-${index}`} className="notification-bell__skeleton skeleton" />
+                    <div
+                      key={`notification-skeleton-${index}`}
+                      className="notification-bell__skeleton skeleton"
+                    />
                   ))}
                 </div>
               )}
               {!loading && error && (
-                <div className="notification-bell__empty" role="status" aria-live="assertive">
+                <div
+                  className="notification-bell__empty"
+                  role="status"
+                  aria-live="assertive"
+                >
                   <p>{error}</p>
                   {onRefresh && (
                     <button type="button" onClick={onRefresh}>
@@ -139,7 +170,11 @@ export function NotificationBell({
                 </div>
               )}
               {showEmptyState && (
-                <div className="notification-bell__empty" role="status" aria-live="polite">
+                <div
+                  className="notification-bell__empty"
+                  role="status"
+                  aria-live="polite"
+                >
                   <p>All quiet — no alerts right now.</p>
                   {onRefresh && (
                     <button type="button" onClick={onRefresh}>
@@ -151,14 +186,25 @@ export function NotificationBell({
               {!loading && !error && hasNotifications && (
                 <>
                   <div className="notification-bell__dropdown-actions">
-                    <span className="notification-bell__status" aria-live="polite">
-                      {unreadCount > 0 ? `${unreadCount} new` : 'Up to date'}
+                    <span
+                      className="notification-bell__status"
+                      aria-live="polite"
+                    >
+                      {unreadCount > 0 ? `${unreadCount} new` : "Up to date"}
                     </span>
                     <div className="notification-bell__dropdown-buttons">
-                      <button type="button" onClick={onRefresh} disabled={loading}>
-                        {loading ? 'Refreshing…' : 'Refresh'}
+                      <button
+                        type="button"
+                        onClick={onRefresh}
+                        disabled={loading}
+                      >
+                        {loading ? "Refreshing…" : "Refresh"}
                       </button>
-                      <button type="button" onClick={onMarkAllRead} disabled={unreadCount === 0}>
+                      <button
+                        type="button"
+                        onClick={onMarkAllRead}
+                        disabled={unreadCount === 0}
+                      >
                         Mark all read
                       </button>
                     </div>
@@ -166,16 +212,25 @@ export function NotificationBell({
                   {notifications.map((notification) => (
                     <article
                       key={notification.id}
-                      className={notification.read ? 'notification-item' : 'notification-item notification-item--unread'}
+                      className={
+                        notification.read
+                          ? "notification-item"
+                          : "notification-item notification-item--unread"
+                      }
                     >
                       <div>
                         <h5>{notification.title}</h5>
                         <p>{notification.detail}</p>
                       </div>
                       <footer>
-                        <span className="notification-item__time">{notification.time}</span>
+                        <span className="notification-item__time">
+                          {notification.time}
+                        </span>
                         {!notification.read && (
-                          <button type="button" onClick={() => onMarkAsRead(notification.id)}>
+                          <button
+                            type="button"
+                            onClick={() => onMarkAsRead(notification.id)}
+                          >
                             Mark read
                           </button>
                         )}
@@ -185,7 +240,7 @@ export function NotificationBell({
                 </>
               )}
             </div>,
-            document.body
+            document.body,
           )}
         </>
       )}

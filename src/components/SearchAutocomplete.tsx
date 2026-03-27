@@ -1,7 +1,7 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
-import Fuse from 'fuse.js';
-import { useDebounce } from '../hooks/useDebounce';
-import { useLocalStorage } from '../hooks/useLocalStorage';
+import { useEffect, useMemo, useRef, useState } from "react";
+import Fuse from "fuse.js";
+import { useDebounce } from "../hooks/useDebounce.js";
+import { useLocalStorage } from "../hooks/useLocalStorage.js";
 
 interface SearchAutocompleteProps {
   value: string;
@@ -12,21 +12,30 @@ interface SearchAutocompleteProps {
 }
 
 const OPTIONS = [
-  { value: 'all', label: 'All data' },
-  { value: 'firm', label: 'Firms/individuals' },
-  { value: 'summary', label: 'Final notice summary' },
-  { value: 'category', label: 'Breach category' },
+  { value: "all", label: "All data" },
+  { value: "firm", label: "Firms/individuals" },
+  { value: "summary", label: "Final notice summary" },
+  { value: "category", label: "Breach category" },
 ];
 
-export function SearchAutocomplete({ value, scope, data, onScopeChange, onChange }: SearchAutocompleteProps) {
+export function SearchAutocomplete({
+  value,
+  scope,
+  data,
+  onScopeChange,
+  onChange,
+}: SearchAutocompleteProps) {
   const [open, setOpen] = useState(false);
   const debouncedValue = useDebounce(value, 200);
-  const [recentSearches, setRecentSearches] = useLocalStorage<string[]>('fca-search-history', []);
+  const [recentSearches, setRecentSearches] = useLocalStorage<string[]>(
+    "fca-search-history",
+    [],
+  );
   const inputRef = useRef<HTMLInputElement>(null);
 
   const fuse = useMemo(() => {
     return new Fuse(data, {
-      keys: ['firm', 'summary', 'category'],
+      keys: ["firm", "summary", "category"],
       threshold: 0.35,
       minMatchCharLength: 2,
     });
@@ -40,21 +49,24 @@ export function SearchAutocomplete({ value, scope, data, onScopeChange, onChange
 
   useEffect(() => {
     function handleShortcut(event: KeyboardEvent) {
-      if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === 'k') {
+      if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === "k") {
         event.preventDefault();
         inputRef.current?.focus();
         setOpen(true);
       }
     }
-    window.addEventListener('keydown', handleShortcut);
-    return () => window.removeEventListener('keydown', handleShortcut);
+    window.addEventListener("keydown", handleShortcut);
+    return () => window.removeEventListener("keydown", handleShortcut);
   }, []);
 
   function addRecentSearch(text: string) {
     const term = text.trim();
     if (!term) return;
     setRecentSearches((prev) => {
-      const next = [term, ...prev.filter((entry) => entry.toLowerCase() !== term.toLowerCase())];
+      const next = [
+        term,
+        ...prev.filter((entry) => entry.toLowerCase() !== term.toLowerCase()),
+      ];
       return next.slice(0, 6);
     });
   }
@@ -66,7 +78,7 @@ export function SearchAutocomplete({ value, scope, data, onScopeChange, onChange
   }
 
   function handleKeyDown(event: React.KeyboardEvent<HTMLInputElement>) {
-    if (event.key === 'Enter') {
+    if (event.key === "Enter") {
       addRecentSearch(event.currentTarget.value);
       setOpen(false);
     }
@@ -75,7 +87,7 @@ export function SearchAutocomplete({ value, scope, data, onScopeChange, onChange
   function highlight(text: string) {
     const term = debouncedValue.trim();
     if (!term) return text;
-    const regex = new RegExp(`(${escapeRegExp(term)})`, 'ig');
+    const regex = new RegExp(`(${escapeRegExp(term)})`, "ig");
     const parts = text.split(regex);
     return (
       <>
@@ -84,7 +96,7 @@ export function SearchAutocomplete({ value, scope, data, onScopeChange, onChange
             <mark key={`${part}-${index}`}>{part}</mark>
           ) : (
             <span key={`${part}-${index}`}>{part}</span>
-          )
+          ),
         )}
       </>
     );
@@ -117,9 +129,15 @@ export function SearchAutocomplete({ value, scope, data, onScopeChange, onChange
           <div className="search-autocomplete__dropdown">
             {suggestions.length > 0 && (
               <>
-                <div className="search-autocomplete__dropdown-header">Matches</div>
+                <div className="search-autocomplete__dropdown-header">
+                  Matches
+                </div>
                 {suggestions.map((item) => (
-                  <button key={`${item.firm}-${item.category}`} type="button" onMouseDown={() => handleSelect(item.firm)}>
+                  <button
+                    key={`${item.firm}-${item.category}`}
+                    type="button"
+                    onMouseDown={() => handleSelect(item.firm)}
+                  >
                     <strong>{highlight(item.firm)}</strong>
                     <span>{item.category}</span>
                   </button>
@@ -128,10 +146,16 @@ export function SearchAutocomplete({ value, scope, data, onScopeChange, onChange
             )}
             {!debouncedValue.trim() && recentSearches.length > 0 && (
               <>
-                <div className="search-autocomplete__dropdown-header">Recent searches</div>
+                <div className="search-autocomplete__dropdown-header">
+                  Recent searches
+                </div>
                 <div className="search-autocomplete__recent">
                   {recentSearches.map((recent) => (
-                    <button key={recent} type="button" onMouseDown={() => handleSelect(recent)}>
+                    <button
+                      key={recent}
+                      type="button"
+                      onMouseDown={() => handleSelect(recent)}
+                    >
                       {recent}
                     </button>
                   ))}
@@ -146,5 +170,5 @@ export function SearchAutocomplete({ value, scope, data, onScopeChange, onChange
 }
 
 function escapeRegExp(text: string) {
-  return text.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  return text.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 }

@@ -1,15 +1,20 @@
-import postgres from 'postgres';
-import * as dotenv from 'dotenv';
+import postgres from "postgres";
+import * as dotenv from "dotenv";
 
 dotenv.config();
 
-const sql = postgres(process.env.DATABASE_URL);
+const databaseUrl = process.env.DATABASE_URL?.trim();
+if (!databaseUrl) {
+  throw new Error("DATABASE_URL is required");
+}
+
+const sql = postgres(databaseUrl);
 
 async function runMigration() {
-  console.log('🚀 Running notification tables migration...\n');
+  console.log("🚀 Running notification tables migration...\n");
 
   // Table 1: Alert Subscriptions
-  console.log('Creating alert_subscriptions table...');
+  console.log("Creating alert_subscriptions table...");
   await sql`
     CREATE TABLE IF NOT EXISTS alert_subscriptions (
       id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -28,10 +33,10 @@ async function runMigration() {
       updated_at TIMESTAMPTZ DEFAULT NOW()
     )
   `;
-  console.log('✅ alert_subscriptions created\n');
+  console.log("✅ alert_subscriptions created\n");
 
   // Table 2: Firm Watchlist
-  console.log('Creating firm_watchlist table...');
+  console.log("Creating firm_watchlist table...");
   await sql`
     CREATE TABLE IF NOT EXISTS firm_watchlist (
       id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -50,10 +55,10 @@ async function runMigration() {
       UNIQUE(email, firm_name_normalized)
     )
   `;
-  console.log('✅ firm_watchlist created\n');
+  console.log("✅ firm_watchlist created\n");
 
   // Table 3: Digest Subscriptions
-  console.log('Creating digest_subscriptions table...');
+  console.log("Creating digest_subscriptions table...");
   await sql`
     CREATE TABLE IF NOT EXISTS digest_subscriptions (
       id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -69,10 +74,10 @@ async function runMigration() {
       updated_at TIMESTAMPTZ DEFAULT NOW()
     )
   `;
-  console.log('✅ digest_subscriptions created\n');
+  console.log("✅ digest_subscriptions created\n");
 
   // Table 4: Notification Log
-  console.log('Creating notification_log table...');
+  console.log("Creating notification_log table...");
   await sql`
     CREATE TABLE IF NOT EXISTS notification_log (
       id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -86,10 +91,10 @@ async function runMigration() {
       created_at TIMESTAMPTZ DEFAULT NOW()
     )
   `;
-  console.log('✅ notification_log created\n');
+  console.log("✅ notification_log created\n");
 
   // Create indexes
-  console.log('Creating indexes...');
+  console.log("Creating indexes...");
 
   // Alert subscription indexes
   await sql`CREATE INDEX IF NOT EXISTS idx_alert_subs_email ON alert_subscriptions(email)`;
@@ -109,7 +114,7 @@ async function runMigration() {
   await sql`CREATE INDEX IF NOT EXISTS idx_notif_log_type ON notification_log(notification_type)`;
   await sql`CREATE INDEX IF NOT EXISTS idx_notif_log_created ON notification_log(created_at DESC)`;
 
-  console.log('✅ All indexes created\n');
+  console.log("✅ All indexes created\n");
 
   // Verify tables
   const tables = await sql`
@@ -120,9 +125,9 @@ async function runMigration() {
     ORDER BY table_name
   `;
 
-  console.log('📊 Verification - Tables created:');
-  tables.forEach(t => console.log(`   - ${t.table_name}`));
-  console.log('\n🎉 Migration complete!');
+  console.log("📊 Verification - Tables created:");
+  tables.forEach((t) => console.log(`   - ${t.table_name}`));
+  console.log("\n🎉 Migration complete!");
 }
 
 runMigration().catch(console.error);

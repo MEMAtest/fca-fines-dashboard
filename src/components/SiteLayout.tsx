@@ -1,6 +1,6 @@
-import { Outlet, useLocation } from 'react-router-dom';
-import { SiteHeader } from './SiteHeader';
-import { useEffect } from 'react';
+import { Outlet, useLocation } from "react-router-dom";
+import { SiteHeader } from "./SiteHeader.js";
+import { useEffect } from "react";
 
 function PageviewTracker() {
   const location = useLocation();
@@ -10,7 +10,9 @@ function PageviewTracker() {
 
     // Never include query params in analytics (can contain PII).
     const path = location.pathname;
-    fetch('/api/pageview?path=' + encodeURIComponent(path), { keepalive: true }).catch(() => {});
+    fetch("/api/pageview?path=" + encodeURIComponent(path), {
+      keepalive: true,
+    }).catch(() => {});
   }, [location.pathname]);
 
   return null;
