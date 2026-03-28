@@ -67,6 +67,7 @@ Each batch is followed by `npm run check:live-freshness` so stale or missing liv
    - `FCA_USER_AGENT` – optional override if FCA blocks the default UA.
    - `SEC_USER_AGENT` – required identifying user agent for the SEC scraper.
 2. (Optional) add repository-level **variables** for `FCA_YEARS`, `FCA_START_YEAR`, `FCA_END_YEAR`, `FCA_SINCE_DATE`, `SEC_SINCE_YEAR`, `SEBI_SINCE_YEAR`, or `SEBI_ENRICH_LIMIT` to control crawl windows.
+   - `SEBI_ENRICH_LIMIT` now defaults to the full current listing. Set it only if you want to cap local or CI enrichment work for faster diagnostics.
 3. The workflows use per-regulator matrix jobs with isolated concurrency groups so one source failure does not block the full live batch. Monitor the Actions tab for success/failure logs and freshness-check output.
 
 ## How upserts work

@@ -20,15 +20,22 @@ const DEFAULT_SINCE_YEAR = Number.parseInt(
   process.env.SEBI_SINCE_YEAR || "1900",
   10,
 );
-const DEFAULT_ENRICH_LIMIT = Number.parseInt(
-  process.env.SEBI_ENRICH_LIMIT || "120",
-  10,
-);
+const DEFAULT_ENRICH_LIMIT =
+  process.env.SEBI_ENRICH_LIMIT?.trim() &&
+  Number.isFinite(Number.parseInt(process.env.SEBI_ENRICH_LIMIT, 10))
+    ? Number.parseInt(process.env.SEBI_ENRICH_LIMIT, 10)
+    : Number.MAX_SAFE_INTEGER;
+const SEBI_OPERATIVE_TEXT_WINDOW = 8000;
 
 interface SebiRow {
   dateIssued: string;
   title: string;
   detailUrl: string;
+}
+
+interface SebiDetailDocument {
+  documentUrl: string;
+  text: string;
 }
 
 export function parseSebiListingHtml(html: string): SebiRow[] {
@@ -139,7 +146,7 @@ export function extractSebiFirm(title: string) {
   return fallback;
 }
 
-function categorizeSebiTitle(title: string) {
+function categorizeSebiTitle(title: string, hasMonetaryAmount: boolean) {
   const normalized = title.toLowerCase();
   const categories: string[] = [];
 
@@ -162,20 +169,140 @@ function categorizeSebiTitle(title: string) {
     categories.push("MARKET_INTERMEDIARY");
   }
 
+  categories.push(hasMonetaryAmount ? "MONETARY_PENALTY" : "NON_MONETARY_ORDER");
+
   return categories.length > 0 ? categories : ["SEBI_ORDER"];
+}
+
+function extractSebiPdfUrl(url: string) {
+  try {
+    const parsedUrl = new URL(url);
+    const fileParam = parsedUrl.searchParams.get("file");
+    if (fileParam) {
+      const decoded = decodeURIComponent(fileParam);
+      return makeAbsoluteUrl(url, decoded);
+    }
+  } catch {
+    return /\.pdf(?:$|\?)/i.test(url) ? url : null;
+  }
+
+  return /\.pdf(?:$|\?)/i.test(url) ? url : null;
+}
+
+export function resolveSebiDocumentUrl(detailUrl: string, html: string) {
+  const $ = cheerio.load(html);
+  const candidates = [
+    $("iframe[src]").first().attr("src"),
+    $("embed[src]").first().attr("src"),
+    $("object[data]").first().attr("data"),
+  ].filter((value): value is string => Boolean(value));
+
+  for (const candidate of candidates) {
+    const absoluteUrl = makeAbsoluteUrl(detailUrl, candidate);
+    const pdfUrl = extractSebiPdfUrl(absoluteUrl);
+    if (pdfUrl) {
+      return pdfUrl;
+    }
+
+    if (absoluteUrl) {
+      return absoluteUrl;
+    }
+  }
+
+  return detailUrl;
+}
+
+export function extractSebiPenaltyAmount(text: string) {
+  const normalized = normalizeWhitespace(text);
+  // SEBI PDFs often discuss prior proceedings and transaction values earlier in
+  // the document, so bias extraction toward the operative tail section.
+  const operativeText = normalized.slice(-SEBI_OPERATIVE_TEXT_WINDOW);
+
+  if (
+    /without issuance of any direction[^.]{0,240}(?:monetary penalty|penalty)/i.test(
+      operativeText,
+    ) ||
+    /no monetary penalty/i.test(operativeText) ||
+    /penalty is not imposed/i.test(operativeText)
+  ) {
+    return null;
+  }
+
+  const penaltySentences = operativeText
+    .split(/(?<=[.;])\s+/)
+    .map((sentence) => sentence.trim())
+    .filter(
+      (sentence) =>
+        sentence.length > 0 &&
+        /(?:monetary penalty|penalty)/i.test(sentence) &&
+        !/penalty be not imposed/i.test(sentence),
+    );
+
+  if (penaltySentences.length === 0) {
+    return null;
+  }
+
+  const amountPattern =
+    /(?:INR|Rs\.?|Rupees|₹)\s*([\d,]+(?:\.\d+)?)\s*(crores?|lakhs?|million|billion|thousand)?/gi;
+  const amounts = new Map<string, number>();
+
+  for (const sentence of penaltySentences) {
+    for (const match of sentence.matchAll(amountPattern)) {
+      const amount = parseLargestAmountFromText(match[0], {
+        currency: "INR",
+        symbols: ["Rs.", "Rs", "₹", "Rupees"],
+        keywords: ["penalty", "monetary penalty"],
+      });
+
+      if (amount !== null) {
+        amounts.set(`${match.index}-${match[0]}`, amount);
+      }
+    }
+  }
+
+  if (amounts.size === 0) {
+    return null;
+  }
+
+  return Array.from(amounts.values()).reduce((sum, amount) => sum + amount, 0);
+}
+
+async function fetchSebiDetailDocument(url: string): Promise<SebiDetailDocument> {
+  const directPdfUrl = extractSebiPdfUrl(url);
+  if (directPdfUrl) {
+    return {
+      documentUrl: directPdfUrl,
+      text: await extractPdfTextFromUrl(directPdfUrl),
+    };
+  }
+
+  const html = await fetchText(url);
+  const documentUrl = resolveSebiDocumentUrl(url, html);
+  const pdfUrl = extractSebiPdfUrl(documentUrl);
+
+  if (pdfUrl) {
+    return {
+      documentUrl: pdfUrl,
+      text: await extractPdfTextFromUrl(pdfUrl),
+    };
+  }
+
+  const text = cheerio.load(html)("body").text();
+  return {
+    documentUrl,
+    text: normalizeWhitespace(text),
+  };
 }
 
 async function enrichSebiRow(row: SebiRow, shouldEnrichAmount: boolean) {
   let amount: number | null = null;
+  let finalNoticeUrl = row.detailUrl;
 
   if (shouldEnrichAmount) {
     try {
-      const detailText = await fetchSebiDetailText(row.detailUrl);
-      amount = parseLargestAmountFromText(detailText, {
-        currency: "INR",
-        symbols: ["Rs.", "Rs", "₹"],
-        keywords: ["penalty", "fine", "disgorgement", "monetary penalty"],
-      });
+      const detailDocument = await fetchSebiDetailDocument(row.detailUrl);
+      amount = extractSebiPenaltyAmount(detailDocument.text);
+      finalNoticeUrl = detailDocument.documentUrl;
     } catch {
       amount = null;
     }
@@ -192,9 +319,9 @@ async function enrichSebiRow(row: SebiRow, shouldEnrichAmount: boolean) {
     currency: "INR",
     dateIssued: row.dateIssued,
     breachType: row.title,
-    breachCategories: categorizeSebiTitle(row.title),
+    breachCategories: categorizeSebiTitle(row.title, amount !== null),
     summary: row.title,
-    finalNoticeUrl: row.detailUrl,
+    finalNoticeUrl,
     sourceUrl: SEBI_LIST_URL,
     rawPayload: row,
   });

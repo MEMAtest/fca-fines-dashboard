@@ -14,7 +14,12 @@ import {
   parseJfscFeed,
   parseJfscSitemap,
 } from "../scrapeJfsc.js";
-import { extractSebiFirm, parseSebiListingHtml } from "../scrapeSebi.js";
+import {
+  extractSebiFirm,
+  extractSebiPenaltyAmount,
+  parseSebiListingHtml,
+  resolveSebiDocumentUrl,
+} from "../scrapeSebi.js";
 
 describe("next-eight regulator coverage", () => {
   it("loads DFSA archive records", () => {
@@ -208,5 +213,34 @@ describe("next-eight regulator coverage", () => {
         "Final Order in respect of inspection of Elite Investment Advisory Services",
       ),
     ).toBe("Elite Investment Advisory Services");
+  });
+
+  it("resolves SEBI wrapper pages to the underlying PDF and extracts penalty totals", () => {
+    const html = `
+      <div class="cover">
+        <iframe src="https://www.sebi.gov.in/web/?file=https://www.sebi.gov.in/sebi_data/attachdocs/feb-2026/ORDER_1770363450.pdf"></iframe>
+      </div>
+    `;
+    const text = `
+      29. In view of the foregoing, a penalty of INR 5,00,000 was imposed under section 15HA of the SEBI Act and INR 1,00,000 under section 15EB of the SEBI Act.
+    `;
+
+    expect(
+      resolveSebiDocumentUrl(
+        "https://www.sebi.gov.in/enforcement/orders/feb-2026/sample-order.html",
+        html,
+      ),
+    ).toBe(
+      "https://www.sebi.gov.in/sebi_data/attachdocs/feb-2026/ORDER_1770363450.pdf",
+    );
+    expect(extractSebiPenaltyAmount(text)).toBe(600000);
+  });
+
+  it("does not invent a SEBI amount when the final order says no penalty", () => {
+    const text = `
+      Disposal of SCN 109. In view of the above, the SCN dated November 10, 2023, in the present matter is disposed of without issuance of any direction, including with regard to disgorgement, or imposition of any monetary penalty.
+    `;
+
+    expect(extractSebiPenaltyAmount(text)).toBeNull();
   });
 });
