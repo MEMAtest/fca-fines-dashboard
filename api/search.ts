@@ -328,7 +328,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
               )
               THEN 15
             ELSE 0
-          END AS country_theme_synergy_score,
+          END AS country_theme_synergy_score
         FROM filtered_results
         WHERE
           firm_match_score > 0
