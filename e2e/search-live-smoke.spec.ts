@@ -28,6 +28,16 @@ test.describe('Enforcement Search live smoke', () => {
     await expect(page.getByText(/Found \d+ results for/i)).toBeVisible();
 
     await page.getByLabel('Search enforcement actions').fill(
+      'transaction monitoring',
+    );
+    await page.getByRole('button', { name: /^Search$/ }).click();
+    await expect(page.getByText(/Found \d+ results for/i)).toBeVisible();
+
+    await page.getByLabel('Search enforcement actions').fill('the and of');
+    await page.getByRole('button', { name: /^Search$/ }).click();
+    await expect(page.getByText('No results found')).toBeVisible();
+
+    await page.getByLabel('Search enforcement actions').fill(
       'zzzzzz impossible zebra compliance',
     );
     await page.getByRole('button', { name: /^Search$/ }).click();

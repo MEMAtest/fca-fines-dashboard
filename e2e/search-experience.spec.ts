@@ -89,6 +89,41 @@ test.describe('Enforcement Search', () => {
     ).toBeVisible();
   });
 
+  test('returns results for short transaction monitoring theme queries', async ({
+    page,
+  }) => {
+    await openSearch(page);
+    await submitSearch(page, 'transaction monitoring');
+
+    await expect(page.getByText(/Found \d+ results for/i)).toBeVisible();
+    await expect(page.getByRole('heading', { name: /Omda Exchange/i })).toBeVisible();
+  });
+
+  test('returns focused smcr results', async ({ page }) => {
+    await openSearch(page);
+    await submitSearch(page, 'SMCR');
+
+    await expect(
+      page.getByRole('heading', { name: /NorthBridge Wealth Ltd/i }),
+    ).toBeVisible();
+    await expect(
+      page.getByText('Senior Managers and Certification Regime failures', {
+        exact: true,
+      }),
+    ).toBeVisible();
+  });
+
+  test('returns aml cft results for counter terrorist financing queries', async ({
+    page,
+  }) => {
+    await openSearch(page);
+    await submitSearch(page, 'counter terrorist financing');
+
+    await expect(
+      page.getByRole('heading', { name: /Lion City Remittance Pte Ltd/i }),
+    ).toBeVisible();
+  });
+
   test('supports acronym expansion for AML queries', async ({ page }) => {
     await openSearch(page);
     await submitSearch(page, 'anti money laundering');
@@ -194,6 +229,16 @@ test.describe('Enforcement Search', () => {
       page.getByText(/Try a broader firm name, regulator, or enforcement theme/i),
     ).toBeVisible();
     await expect(page.getByRole('button', { name: /Clear filters/i })).toHaveCount(0);
+  });
+
+  test('does not return noisy matches for stopword-only queries', async ({ page }) => {
+    await openSearch(page);
+    await submitSearch(page, 'the and of');
+
+    await expect(page.getByText('No results found')).toBeVisible();
+    await expect(
+      page.getByText(/Try a broader firm name, regulator, or enforcement theme/i),
+    ).toBeVisible();
   });
 
   test('shows an error banner when the API fails', async ({ page }) => {

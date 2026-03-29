@@ -53,6 +53,67 @@ function toFiniteNumber(value: string | number | null | undefined) {
   return Number.isFinite(parsed) ? parsed : 0;
 }
 
+function buildEmptySearchResponse({
+  query,
+  regulator,
+  country,
+  year,
+  minAmount,
+  maxAmount,
+  currency,
+  limit,
+  offset,
+  searchTerms,
+  reason,
+}: {
+  query: string;
+  regulator: string | null;
+  country: string | null;
+  year: string | undefined;
+  minAmount: string | undefined;
+  maxAmount: string | undefined;
+  currency: string;
+  limit: number;
+  offset: number;
+  searchTerms: string[];
+  reason: string;
+}) {
+  return {
+    query,
+    results: [],
+    pagination: {
+      total: 0,
+      limit,
+      offset,
+      hasMore: false,
+      pages: 0,
+      currentPage: 1,
+    },
+    filters: {
+      query,
+      regulator,
+      country,
+      year: year ? Number.parseInt(year, 10) : null,
+      minAmount: minAmount ? Number.parseFloat(minAmount) : null,
+      maxAmount: maxAmount ? Number.parseFloat(maxAmount) : null,
+      currency,
+      minRelevance: 0,
+    },
+    searchTerms,
+    metadata: {
+      searchMethod: 'hybrid',
+      indexType: 'full-text + ilike fallback',
+      language: 'english',
+      reason,
+      weights: {
+        firm: 'exact / phrase firm matches',
+        fullText: 'search_vector full-text ranking',
+        fallback: 'phrase and token fallback matching',
+      },
+    },
+  };
+}
+
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'GET, OPTIONS');
@@ -92,10 +153,29 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     const amountColumn = currency === 'EUR' ? 'amount_eur' : 'amount_gbp';
     const normalizedCountryCode = normalizeCountryCode(country);
     const prepared = prepareEnforcementSearch(q);
+    const searchQuery = prepared.searchQuery;
+
+    if (!prepared.hasSearchIntent) {
+      return res.status(200).json(
+        buildEmptySearchResponse({
+          query: q,
+          regulator: regulator || null,
+          country: normalizedCountryCode || null,
+          year,
+          minAmount,
+          maxAmount,
+          currency,
+          limit: limitNum,
+          offset: offsetNum,
+          searchTerms: prepared.searchTerms,
+          reason: 'Query contained only low-signal terms',
+        }),
+      );
+    }
 
     const conditions: string[] = [];
     const params: Array<string | number | readonly string[] | null> = [
-      prepared.normalizedQuery,
+      searchQuery,
       prepared.phrasePattern,
       prepared.searchPatterns,
       prepared.minimumTokenMatches,
@@ -184,15 +264,21 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
             ELSE 0
           END AS country_hint_score,
           CASE
-            WHEN search_vector @@ websearch_to_tsquery('english', $1)
+            WHEN $1 <> ''
+              AND search_vector @@ websearch_to_tsquery('english', $1)
               THEN ts_rank_cd(search_vector, websearch_to_tsquery('english', $1))
             ELSE 0
           END AS full_text_rank,
           CASE
-            WHEN COALESCE(summary, '') ILIKE $2
-              OR COALESCE(breach_type, '') ILIKE $2
-              OR COALESCE(country_name, '') ILIKE $2
-              OR COALESCE(regulator, '') ILIKE $2
+            WHEN $2 <> ''
+              AND (
+                COALESCE(summary, '') ILIKE $2
+                OR COALESCE(breach_type, '') ILIKE $2
+                OR COALESCE(firm_individual, '') ILIKE $2
+                OR COALESCE(country_name, '') ILIKE $2
+                OR COALESCE(regulator, '') ILIKE $2
+                OR COALESCE(regulator_full_name, '') ILIKE $2
+              )
               THEN 50
             ELSE 0
           END AS phrase_match_score,
@@ -207,7 +293,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
               OR COALESCE(regulator_full_name, '') ILIKE pattern
           ) AS token_match_score,
           CASE
-            WHEN search_vector @@ websearch_to_tsquery('english', $1)
+            WHEN $1 <> ''
+              AND search_vector @@ websearch_to_tsquery('english', $1)
               THEN ts_headline(
                 'english',
                 COALESCE(summary, breach_type, firm_individual, ''),
@@ -222,14 +309,26 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       ranked_results AS (
         SELECT
           *,
-          (
-            firm_match_score
-            + regulator_hint_score
-            + country_hint_score
-            + phrase_match_score
-            + token_match_score
-            + (full_text_rank * 100)
-          ) AS combined_score
+          CASE
+            WHEN regulator_hint_score > 0
+              AND (
+                phrase_match_score > 0
+                OR token_match_score >= GREATEST($4, 1)
+                OR full_text_rank > 0
+              )
+              THEN 25
+            ELSE 0
+          END AS regulator_theme_synergy_score,
+          CASE
+            WHEN country_hint_score > 0
+              AND (
+                phrase_match_score > 0
+                OR token_match_score >= GREATEST($4, 1)
+                OR full_text_rank > 0
+              )
+              THEN 15
+            ELSE 0
+          END AS country_theme_synergy_score,
         FROM filtered_results
         WHERE
           firm_match_score > 0
@@ -238,6 +337,21 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
           OR full_text_rank > 0
           OR phrase_match_score > 0
           OR token_match_score >= $4
+      ),
+      scored_results AS (
+        SELECT
+          *,
+          (
+            firm_match_score
+            + regulator_hint_score
+            + country_hint_score
+            + regulator_theme_synergy_score
+            + country_theme_synergy_score
+            + phrase_match_score
+            + token_match_score
+            + (full_text_rank * 100)
+          ) AS combined_score
+        FROM ranked_results
       )
       SELECT
         id,
@@ -262,9 +376,11 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         created_at,
         combined_score AS relevance_score,
         highlighted_snippet AS snippet
-      FROM ranked_results
+      FROM scored_results
       ORDER BY
         firm_match_score DESC,
+        regulator_theme_synergy_score DESC,
+        country_theme_synergy_score DESC,
         regulator_hint_score DESC,
         country_hint_score DESC,
         full_text_rank DESC,
@@ -302,15 +418,21 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
             ELSE 0
           END AS country_hint_score,
           CASE
-            WHEN search_vector @@ websearch_to_tsquery('english', $1)
+            WHEN $1 <> ''
+              AND search_vector @@ websearch_to_tsquery('english', $1)
               THEN ts_rank_cd(search_vector, websearch_to_tsquery('english', $1))
             ELSE 0
           END AS full_text_rank,
           CASE
-            WHEN COALESCE(summary, '') ILIKE $2
-              OR COALESCE(breach_type, '') ILIKE $2
-              OR COALESCE(country_name, '') ILIKE $2
-              OR COALESCE(regulator, '') ILIKE $2
+            WHEN $2 <> ''
+              AND (
+                COALESCE(summary, '') ILIKE $2
+                OR COALESCE(breach_type, '') ILIKE $2
+                OR COALESCE(firm_individual, '') ILIKE $2
+                OR COALESCE(country_name, '') ILIKE $2
+                OR COALESCE(regulator, '') ILIKE $2
+                OR COALESCE(regulator_full_name, '') ILIKE $2
+              )
               THEN 50
             ELSE 0
           END AS phrase_match_score,

@@ -199,6 +199,52 @@ const CORE_RESULTS: MockSearchResult[] = [
     createdAt: '2025-05-02T00:00:00.000Z',
   }),
   createResult({
+    id: 'fca-smcr',
+    regulator: 'FCA',
+    regulatorFullName: 'Financial Conduct Authority',
+    countryCode: 'GB',
+    countryName: 'United Kingdom',
+    firm: 'NorthBridge Wealth Ltd',
+    firmCategory: 'Firm',
+    amountOriginal: 725000,
+    currency: 'GBP',
+    amountGbp: 725000,
+    amountEur: 842000,
+    dateIssued: '2025-04-18T00:00:00.000Z',
+    year: 2025,
+    month: 4,
+    breachType: 'Senior Managers and Certification Regime failures',
+    breachCategories: ['GOVERNANCE', 'SMCR'],
+    summary:
+      'The FCA fined NorthBridge Wealth Ltd for Senior Managers and Certification Regime failures, weak manager accountability, and conduct rules governance breaches.',
+    noticeUrl: 'https://example.com/fca-smcr',
+    sourceUrl: 'https://example.com/fca-smcr-source',
+    createdAt: '2025-04-18T00:00:00.000Z',
+  }),
+  createResult({
+    id: 'mas-cft',
+    regulator: 'MAS',
+    regulatorFullName: 'Monetary Authority of Singapore',
+    countryCode: 'SG',
+    countryName: 'Singapore',
+    firm: 'Lion City Remittance Pte Ltd',
+    firmCategory: 'Firm',
+    amountOriginal: 1850000,
+    currency: 'SGD',
+    amountGbp: 1080000,
+    amountEur: 1250000,
+    dateIssued: '2025-08-20T00:00:00.000Z',
+    year: 2025,
+    month: 8,
+    breachType: 'AML and counter-terrorist financing controls failures',
+    breachCategories: ['AML', 'CFT', 'SYSTEMS_AND_CONTROLS'],
+    summary:
+      'MAS sanctioned Lion City Remittance Pte Ltd for anti money laundering and counter-terrorist financing controls failures, customer due diligence weaknesses, and monitoring gaps.',
+    noticeUrl: 'https://example.com/mas-cft',
+    sourceUrl: 'https://example.com/mas-cft-source',
+    createdAt: '2025-08-20T00:00:00.000Z',
+  }),
+  createResult({
     id: 'cbuae-omda',
     regulator: 'CBUAE',
     regulatorFullName: 'Central Bank of the UAE',
@@ -272,13 +318,17 @@ function normalizeHaystack(value: string) {
 
 function scoreResult(result: MockSearchResult, query: string) {
   const prepared = prepareEnforcementSearch(query);
+  if (!prepared.hasSearchIntent) {
+    return 0;
+  }
+
   const haystack = normalizeHaystack(buildHaystack(result));
-  const normalizedQuery = prepared.normalizedQuery.toLowerCase();
+  const searchQuery = prepared.searchQuery.toLowerCase();
   let score = 0;
 
-  if (result.firm.toLowerCase() === normalizedQuery) {
+  if (searchQuery && result.firm.toLowerCase() === searchQuery) {
     score += 300;
-  } else if (result.firm.toLowerCase().includes(normalizedQuery)) {
+  } else if (searchQuery && result.firm.toLowerCase().includes(searchQuery)) {
     score += 200;
   }
 
@@ -291,17 +341,32 @@ function scoreResult(result: MockSearchResult, query: string) {
   }
 
   if (
-    result.summary.toLowerCase().includes(normalizedQuery) ||
-    result.breachType.toLowerCase().includes(normalizedQuery)
+    searchQuery &&
+    (
+      result.summary.toLowerCase().includes(searchQuery) ||
+      result.breachType.toLowerCase().includes(searchQuery) ||
+      result.firm.toLowerCase().includes(searchQuery) ||
+      result.regulatorFullName.toLowerCase().includes(searchQuery)
+    )
   ) {
     score += 50;
   }
 
+  let tokenHits = 0;
   for (const pattern of prepared.searchPatterns) {
     const fragment = normalizeHaystack(pattern.replaceAll('%', ' '));
     if (fragment && haystack.includes(fragment)) {
-      score += 5;
+      tokenHits += 1;
     }
+  }
+  score += tokenHits * 5;
+
+  if (prepared.regulatorHints.includes(result.regulator) && tokenHits >= 1) {
+    score += 25;
+  }
+
+  if (prepared.countryHints.includes(result.countryCode) && tokenHits >= 1) {
+    score += 15;
   }
 
   return score;
@@ -319,6 +384,42 @@ export function buildMockSearchResponse(params: URLSearchParams) {
   const offset = Number.parseInt(params.get('offset') ?? '0', 10) || 0;
   const prepared = prepareEnforcementSearch(query);
 
+  if (!prepared.hasSearchIntent) {
+    return {
+      query,
+      results: [],
+      pagination: {
+        total: 0,
+        limit,
+        offset,
+        hasMore: false,
+        pages: 0,
+        currentPage: 1,
+      },
+      filters: {
+        query,
+        regulator: regulator || null,
+        country: country || null,
+        year: year ? Number.parseInt(year, 10) : null,
+        minAmount: minAmount ? Number.parseFloat(minAmount) : null,
+        maxAmount: maxAmount ? Number.parseFloat(maxAmount) : null,
+        currency,
+      },
+      searchTerms: prepared.searchTerms,
+      metadata: {
+        searchMethod: 'hybrid',
+        indexType: 'fixture',
+        language: 'english',
+        reason: 'Query contained only low-signal terms',
+        weights: {
+          firm: 'exact / phrase firm matches',
+          fullText: 'mocked',
+          fallback: 'phrase and token fallback matching',
+        },
+      },
+    };
+  }
+
   const matched = SEARCH_FIXTURES
     .filter((result) => {
       if (regulator && result.regulator !== regulator) return false;
@@ -329,7 +430,7 @@ export function buildMockSearchResponse(params: URLSearchParams) {
       if (minAmount && selectedAmount < Number.parseFloat(minAmount)) return false;
       if (maxAmount && selectedAmount > Number.parseFloat(maxAmount)) return false;
 
-      return scoreResult(result, query) >= prepared.minimumTokenMatches * 5;
+      return scoreResult(result, query) >= Math.max(prepared.minimumTokenMatches, 1) * 5;
     })
     .map((result) => ({
       ...result,
