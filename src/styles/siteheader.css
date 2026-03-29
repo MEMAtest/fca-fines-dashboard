@@ -265,6 +265,10 @@
 .site-header__mobile-regulator-country {
   font-size: 0.8125rem;
   color: #6B7280;
+  /* Mobile truncation with ellipsis */
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 /* Responsive: show hamburger, hide desktop nav at <=768px */
@@ -392,11 +396,27 @@
   font-weight: 600;
   font-size: 0.9375rem;
   color: #111827;
+  /* Safety truncation for long regulator codes */
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .site-header__dropdown-country {
   font-size: 0.8125rem;
   color: #6b7280;
+  /* Truncate long country names with ellipsis */
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  cursor: help; /* Indicate tooltip available */
+}
+
+/* Ensure flex child wrapper allows truncation */
+.site-header__dropdown-item > div {
+  min-width: 0; /* Critical: allows flex child to shrink below content size */
+  flex: 1; /* Take remaining space after flag */
+  overflow: hidden; /* Clip children */
 }
 
 @keyframes dropdownFadeIn {

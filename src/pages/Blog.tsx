@@ -62,6 +62,25 @@ const iconMap: Record<string, React.ReactNode> = {
   "afm-enforcement-guide": <Landmark className="blog-card-icon" />,
   "dnb-enforcement-guide": <Landmark className="blog-card-icon" />,
   "esma-enforcement-guide": <Landmark className="blog-card-icon" />,
+  // Phase 1 regulators (deployed 2026-03-29)
+  "cvm-fines-enforcement-guide": <Landmark className="blog-card-icon" />,
+  "fdic-fines-enforcement-guide": <Landmark className="blog-card-icon" />,
+  "frb-fines-enforcement-guide": <Landmark className="blog-card-icon" />,
+  // Phase 2 regulators
+  "cnbv-fines-enforcement-guide": <Landmark className="blog-card-icon" />,
+  "cmf-fines-enforcement-guide": <Landmark className="blog-card-icon" />,
+  "finma-fines-enforcement-guide": <Landmark className="blog-card-icon" />,
+  "sesc-fines-enforcement-guide": <Landmark className="blog-card-icon" />,
+  // Phase 3 regulators
+  "twfsc-fines-enforcement-guide": <Landmark className="blog-card-icon" />,
+  "hkma-fines-enforcement-guide": <Landmark className="blog-card-icon" />,
+  "asic-fines-enforcement-guide": <Landmark className="blog-card-icon" />,
+  "mas-fines-enforcement-guide": <Landmark className="blog-card-icon" />,
+  "occ-fines-enforcement-guide": <Landmark className="blog-card-icon" />,
+  "fsca-fines-enforcement-guide": <Landmark className="blog-card-icon" />,
+  "fmanz-fines-enforcement-guide": <Landmark className="blog-card-icon" />,
+  "csrc-fines-enforcement-guide": <Landmark className="blog-card-icon" />,
+  "cmasa-fines-enforcement-guide": <Landmark className="blog-card-icon" />,
 };
 
 // Merge icon into each article

@@ -249,10 +249,16 @@ export function SiteHeader() {
                               {regulator.flag}
                             </span>
                             <div>
-                              <div className="site-header__dropdown-label">
+                              <div
+                                className="site-header__dropdown-label"
+                                title={regulator.fullName}
+                              >
                                 {regulator.code}
                               </div>
-                              <div className="site-header__dropdown-country">
+                              <div
+                                className="site-header__dropdown-country"
+                                title={regulator.country}
+                              >
                                 {regulator.country}
                               </div>
                             </div>
@@ -367,10 +373,16 @@ export function SiteHeader() {
                             {regulator.flag}
                           </span>
                           <span className="site-header__mobile-regulator-copy">
-                            <span className="site-header__mobile-regulator-code">
+                            <span
+                              className="site-header__mobile-regulator-code"
+                              title={regulator.fullName}
+                            >
                               {regulator.code}
                             </span>
-                            <span className="site-header__mobile-regulator-country">
+                            <span
+                              className="site-header__mobile-regulator-country"
+                              title={regulator.country}
+                            >
                               {regulator.country}
                             </span>
                           </span>
