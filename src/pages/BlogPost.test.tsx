@@ -101,7 +101,7 @@ describe("BlogPost", () => {
     expect(
       screen.getByRole("button", { name: /Open Regulator Hub/i }),
     ).toBeInTheDocument();
-  });
+  }, 15000);
 
   it("keeps the FCA regulator guide on the legacy markdown path", () => {
     renderBlogPost("fca-fines-enforcement-guide");

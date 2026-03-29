@@ -1,15 +1,14 @@
 /**
- * Natural Language Search Component - Phase 6A
+ * Enforcement Search Component
  *
- * Full-text search across all enforcement actions with:
- * - Semantic search queries (e.g., "AML transaction monitoring failures")
- * - Relevance-ranked results with snippets
- * - Advanced filters (regulator, country, year, amount)
- * - Highlighted search terms in results
+ * Hybrid keyword search across all enforcement actions with:
+ * - firm, regulator, and breach-theme matching
+ * - advanced filters
+ * - fallback snippets when highlights are unavailable
  */
 
-import { useState, useEffect } from 'react';
-import { Search, Filter, X, TrendingUp, Calendar, DollarSign, Globe } from 'lucide-react';
+import { useState } from 'react';
+import { Search, Filter, X, Calendar, DollarSign, Globe } from 'lucide-react';
 import { PUBLIC_REGULATOR_NAV_ITEMS } from '../data/regulatorCoverage.js';
 
 interface SearchResult {
@@ -67,13 +66,12 @@ interface SearchResponse {
   };
 }
 
-export function NaturalLanguageSearch() {
+export function EnforcementSearch() {
   const [query, setQuery] = useState('');
   const [results, setResults] = useState<SearchResult[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [pagination, setPagination] = useState<SearchResponse['pagination'] | null>(null);
-  const [searchTerms, setSearchTerms] = useState<string[]>([]);
 
   // Filter states
   const [showFilters, setShowFilters] = useState(false);
@@ -88,39 +86,51 @@ export function NaturalLanguageSearch() {
   // Suggested queries
   const suggestedQueries = [
     'AML transaction monitoring failures',
-    'market manipulation insider trading',
     'Goldman Sachs enforcement',
-    'compliance failures Germany',
-    'SMCR senior managers regime',
-    'client money segregation',
-    'financial crime controls',
-    'market abuse regulation'
+    'Coinbase Europe AML',
+    'Barclays financial crime controls',
+    'market manipulation insider trading',
+    'Germany compliance failures',
+    'SEBI anti money laundering',
+    'DFSA exchange sanction',
   ];
 
   // Get unique countries from regulators
   const countries = Array.from(
-    new Set<string>(PUBLIC_REGULATOR_NAV_ITEMS.map((regulator) => regulator.country)),
-  ).sort();
+    new Map(
+      PUBLIC_REGULATOR_NAV_ITEMS.map((regulator) => [
+        regulator.countryCode,
+        {
+          code: regulator.countryCode,
+          name: regulator.country,
+        },
+      ]),
+    ).values(),
+  ).sort((left, right) => left.name.localeCompare(right.name));
   const totalTrackedActions = PUBLIC_REGULATOR_NAV_ITEMS.reduce((sum, regulator) => sum + regulator.count, 0);
+  const hasActiveFilters = Boolean(
+    selectedRegulator || selectedCountry || selectedYear || minAmount || maxAmount,
+  );
 
   // Get years (2010-2026)
   const years = Array.from({ length: 17 }, (_, i) => 2026 - i);
 
-  const performSearch = async (page: number = 1) => {
-    if (!query.trim()) {
+  const performSearch = async (nextQuery: string, page: number = 1) => {
+    if (!nextQuery.trim()) {
       setError('Please enter a search query');
       return;
     }
 
+    const trimmedQuery = nextQuery.trim();
     setLoading(true);
     setError(null);
 
     try {
       const params = new URLSearchParams({
-        q: query.trim(),
+        q: trimmedQuery,
         currency,
         limit: '20',
-        offset: String((page - 1) * 20)
+        offset: String((page - 1) * 20),
       });
 
       if (selectedRegulator) params.append('regulator', selectedRegulator);
@@ -139,7 +149,6 @@ export function NaturalLanguageSearch() {
       const data: SearchResponse = await response.json();
       setResults(data.results);
       setPagination(data.pagination);
-      setSearchTerms(data.searchTerms || []);
       setCurrentPage(page);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Unknown error');
@@ -153,19 +162,13 @@ export function NaturalLanguageSearch() {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     setCurrentPage(1);
-    performSearch(1);
+    void performSearch(query, 1);
   };
 
   const handleSuggestedQuery = (suggested: string) => {
     setQuery(suggested);
     setCurrentPage(1);
-    // Auto-search when clicking suggested query
-    setTimeout(() => {
-      const form = document.querySelector('form');
-      if (form) {
-        form.dispatchEvent(new Event('submit', { bubbles: true, cancelable: true }));
-      }
-    }, 100);
+    void performSearch(suggested, 1);
   };
 
   const clearFilters = () => {
@@ -187,15 +190,8 @@ export function NaturalLanguageSearch() {
     }
   };
 
-  const getRelevanceColor = (relevance: string) => {
-    const score = parseFloat(relevance);
-    if (score >= 0.15) return 'text-green-600 bg-green-50';
-    if (score >= 0.10) return 'text-yellow-600 bg-yellow-50';
-    return 'text-gray-600 bg-gray-50';
-  };
-
   return (
-    <div className="natural-language-search" style={{ background: '#f8f9fa', minHeight: '100vh' }}>
+    <div className="enforcement-search" style={{ background: '#f8f9fa', minHeight: '100vh' }}>
       {/* Hero Search Section */}
       <div style={{
         background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
@@ -210,14 +206,14 @@ export function NaturalLanguageSearch() {
             marginBottom: '0.75rem',
             letterSpacing: '-0.02em'
           }}>
-            Natural Language Search
+            Enforcement Search
           </h1>
           <p style={{
             fontSize: '1.1rem',
             color: 'rgba(255,255,255,0.9)',
             marginBottom: '2rem'
           }}>
-            Search across {PUBLIC_REGULATOR_NAV_ITEMS.length} regulators • {totalTrackedActions.toLocaleString()} enforcement actions • Powered by AI
+            Search across {PUBLIC_REGULATOR_NAV_ITEMS.length} regulators and {totalTrackedActions.toLocaleString()} enforcement actions
           </p>
 
           {/* Search Form */}
@@ -238,7 +234,8 @@ export function NaturalLanguageSearch() {
                 type="text"
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
-                placeholder='Try: "AML transaction monitoring" or "Goldman Sachs enforcement"'
+                aria-label="Search enforcement actions"
+                placeholder='Try: "AML failures" or "Goldman Sachs enforcement"'
                 style={{
                   width: '100%',
                   padding: '1.25rem 9rem 1.25rem 3.5rem',
@@ -334,7 +331,7 @@ export function NaturalLanguageSearch() {
             onMouseLeave={(e) => e.currentTarget.style.color = 'rgba(255,255,255,0.9)'}
           >
             <Filter size={16} />
-            {showFilters ? 'Hide Advanced Filters' : 'Show Advanced Filters'}
+            {showFilters ? 'Hide Filters' : 'Show Filters'}
           </button>
         </div>
       </div>
@@ -358,6 +355,7 @@ export function NaturalLanguageSearch() {
                 <select
                   value={selectedRegulator}
                   onChange={(e) => setSelectedRegulator(e.target.value)}
+                  aria-label="Filter by regulator"
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                 >
                   <option value="">All Regulators</option>
@@ -378,12 +376,13 @@ export function NaturalLanguageSearch() {
                 <select
                   value={selectedCountry}
                   onChange={(e) => setSelectedCountry(e.target.value)}
+                  aria-label="Filter by country"
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                 >
                   <option value="">All Countries</option>
                   {countries.map((country) => (
-                    <option key={country} value={country}>
-                      {country}
+                    <option key={country.code} value={country.code}>
+                      {country.name}
                     </option>
                   ))}
                 </select>
@@ -398,6 +397,7 @@ export function NaturalLanguageSearch() {
                 <select
                   value={selectedYear}
                   onChange={(e) => setSelectedYear(e.target.value)}
+                  aria-label="Filter by year"
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                 >
                   <option value="">All Years</option>
@@ -421,6 +421,7 @@ export function NaturalLanguageSearch() {
                   type="number"
                   value={minAmount}
                   onChange={(e) => setMinAmount(e.target.value)}
+                  aria-label={`Min Amount (${currency})`}
                   placeholder="0"
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                 />
@@ -436,6 +437,7 @@ export function NaturalLanguageSearch() {
                   type="number"
                   value={maxAmount}
                   onChange={(e) => setMaxAmount(e.target.value)}
+                  aria-label={`Max Amount (${currency})`}
                   placeholder="No limit"
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                 />
@@ -472,7 +474,7 @@ export function NaturalLanguageSearch() {
             </div>
 
             {/* Clear Filters */}
-            {(selectedRegulator || selectedCountry || selectedYear || minAmount || maxAmount) && (
+            {hasActiveFilters && (
               <div className="mt-4 flex justify-end">
                 <button
                   onClick={clearFilters}
@@ -514,11 +516,6 @@ export function NaturalLanguageSearch() {
             }}>
               Found <span style={{ color: '#4f46e5' }}>{pagination.total.toLocaleString()}</span> results for "<span style={{ fontStyle: 'italic' }}>{query}</span>"
             </h2>
-            {searchTerms.length > 0 && (
-              <p style={{ fontSize: '0.875rem', color: '#6b7280' }}>
-                Search terms: <span style={{ fontWeight: '500', color: '#374151' }}>{searchTerms.join(', ')}</span>
-              </p>
-            )}
           </div>
         )}
 
@@ -573,24 +570,6 @@ export function NaturalLanguageSearch() {
                       <span>{new Date(result.dateIssued).toLocaleDateString('en-GB')}</span>
                     </div>
                   </div>
-
-                  {/* Relevance Score */}
-                  <div style={{
-                    padding: '0.5rem 0.875rem',
-                    borderRadius: '20px',
-                    fontSize: '0.75rem',
-                    fontWeight: '600',
-                    whiteSpace: 'nowrap',
-                    ...(() => {
-                      const score = parseFloat(result.relevance);
-                      if (score >= 0.15) return { background: '#dcfce7', color: '#166534' };
-                      if (score >= 0.10) return { background: '#fef3c7', color: '#92400e' };
-                      return { background: '#f3f4f6', color: '#6b7280' };
-                    })()
-                  }}>
-                    <TrendingUp size={12} style={{ display: 'inline', marginRight: '0.25rem', verticalAlign: 'middle' }} />
-                    {(parseFloat(result.relevance) * 100).toFixed(1)}% match
-                  </div>
                 </div>
 
                 {/* Breach Type & Amount */}
@@ -633,8 +612,9 @@ export function NaturalLanguageSearch() {
                       borderLeft: '3px solid #4f46e5',
                       borderRadius: '6px'
                     }}
-                    dangerouslySetInnerHTML={{ __html: result.snippet }}
-                  />
+                  >
+                    {result.snippet}
+                  </div>
                 )}
 
                 {/* Actions */}
@@ -690,7 +670,7 @@ export function NaturalLanguageSearch() {
             gap: '1rem'
           }}>
             <button
-              onClick={() => performSearch(currentPage - 1)}
+              onClick={() => void performSearch(query, currentPage - 1)}
               disabled={currentPage === 1 || loading}
               style={{
                 padding: '0.75rem 1.5rem',
@@ -717,7 +697,7 @@ export function NaturalLanguageSearch() {
             </span>
 
             <button
-              onClick={() => performSearch(currentPage + 1)}
+              onClick={() => void performSearch(query, currentPage + 1)}
               disabled={!pagination.hasMore || loading}
               style={{
                 padding: '0.75rem 1.5rem',
@@ -754,25 +734,27 @@ export function NaturalLanguageSearch() {
               color: '#6b7280',
               marginBottom: '1.5rem'
             }}>
-              Try adjusting your search terms or filters
+              Try a broader firm name, regulator, or enforcement theme.
             </p>
-            <button
-              onClick={clearFilters}
-              style={{
-                padding: '0.75rem 1.5rem',
-                background: '#4f46e5',
-                color: 'white',
-                border: 'none',
-                borderRadius: '8px',
-                fontWeight: '600',
-                cursor: 'pointer',
-                transition: 'background 0.2s'
-              }}
-              onMouseEnter={(e) => e.currentTarget.style.background = '#4338ca'}
-              onMouseLeave={(e) => e.currentTarget.style.background = '#4f46e5'}
-            >
-              Clear all filters
-            </button>
+            {hasActiveFilters && (
+              <button
+                onClick={clearFilters}
+                style={{
+                  padding: '0.75rem 1.5rem',
+                  background: '#4f46e5',
+                  color: 'white',
+                  border: 'none',
+                  borderRadius: '8px',
+                  fontWeight: '600',
+                  cursor: 'pointer',
+                  transition: 'background 0.2s'
+                }}
+                onMouseEnter={(e) => e.currentTarget.style.background = '#4338ca'}
+                onMouseLeave={(e) => e.currentTarget.style.background = '#4f46e5'}
+              >
+                Clear filters
+              </button>
+            )}
           </div>
         )}
 
@@ -806,7 +788,7 @@ export function NaturalLanguageSearch() {
               maxWidth: '600px',
               margin: '0 auto 3rem'
             }}>
-              Use natural language to find relevant cases across {PUBLIC_REGULATOR_NAV_ITEMS.length} regulators
+              Search by firm name, regulator, or enforcement theme across {PUBLIC_REGULATOR_NAV_ITEMS.length} regulators
             </p>
             <div style={{
               display: 'grid',
