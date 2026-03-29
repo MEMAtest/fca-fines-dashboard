@@ -409,7 +409,7 @@
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  cursor: help; /* Indicate tooltip available */
+  cursor: default; /* Native tooltip via title attribute */
 }
 
 /* Ensure flex child wrapper allows truncation */

@@ -84,6 +84,8 @@ const REGION_ORDER = [
   "MENA",
   "APAC",
   "North America",
+  "Latin America",
+  "Africa",
   "Offshore",
 ];
 
