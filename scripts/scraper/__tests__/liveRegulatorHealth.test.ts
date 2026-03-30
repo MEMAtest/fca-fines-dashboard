@@ -27,6 +27,7 @@ describe("liveRegulatorHealth", () => {
     );
 
     expect(result.status).toBe("missing");
+    expect(result.automationLevel).toBe("automated");
     expect(result.message).toContain("No live records");
   });
 
@@ -47,6 +48,7 @@ describe("liveRegulatorHealth", () => {
     );
 
     expect(result.status).toBe("stale");
+    expect(result.automationLevel).toBe("curated_archive");
     expect(result.ageDays).toBe(26);
     expect(result.message).toContain("10-day fragile window");
   });

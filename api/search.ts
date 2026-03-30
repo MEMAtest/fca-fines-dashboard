@@ -105,6 +105,11 @@ function buildEmptySearchResponse({
       indexType: 'full-text + ilike fallback',
       language: 'english',
       reason,
+      indexSignals: {
+        conceptEnrichment: true,
+        breachCategoryFallback: true,
+        lowSignalGuard: true,
+      },
       weights: {
         firm: 'exact / phrase firm matches',
         fullText: 'search_vector full-text ranking',
@@ -274,6 +279,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
               AND (
                 COALESCE(summary, '') ILIKE $2
                 OR COALESCE(breach_type, '') ILIKE $2
+                OR COALESCE(array_to_string(breach_categories, ' '), '') ILIKE $2
                 OR COALESCE(firm_individual, '') ILIKE $2
                 OR COALESCE(country_name, '') ILIKE $2
                 OR COALESCE(regulator, '') ILIKE $2
@@ -287,6 +293,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
             FROM unnest($3::text[]) AS pattern
             WHERE COALESCE(firm_individual, '') ILIKE pattern
               OR COALESCE(breach_type, '') ILIKE pattern
+              OR COALESCE(array_to_string(breach_categories, ' '), '') ILIKE pattern
               OR COALESCE(summary, '') ILIKE pattern
               OR COALESCE(country_name, '') ILIKE pattern
               OR COALESCE(regulator, '') ILIKE pattern
@@ -428,6 +435,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
               AND (
                 COALESCE(summary, '') ILIKE $2
                 OR COALESCE(breach_type, '') ILIKE $2
+                OR COALESCE(array_to_string(breach_categories, ' '), '') ILIKE $2
                 OR COALESCE(firm_individual, '') ILIKE $2
                 OR COALESCE(country_name, '') ILIKE $2
                 OR COALESCE(regulator, '') ILIKE $2
@@ -441,6 +449,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
             FROM unnest($3::text[]) AS pattern
             WHERE COALESCE(firm_individual, '') ILIKE pattern
               OR COALESCE(breach_type, '') ILIKE pattern
+              OR COALESCE(array_to_string(breach_categories, ' '), '') ILIKE pattern
               OR COALESCE(summary, '') ILIKE pattern
               OR COALESCE(country_name, '') ILIKE pattern
               OR COALESCE(regulator, '') ILIKE pattern
@@ -517,6 +526,11 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         searchMethod: 'hybrid',
         indexType: 'full-text + ilike fallback',
         language: 'english',
+        indexSignals: {
+          conceptEnrichment: true,
+          breachCategoryFallback: true,
+          lowSignalGuard: true,
+        },
         weights: {
           firm: 'exact / phrase firm matches',
           fullText: 'search_vector full-text ranking',

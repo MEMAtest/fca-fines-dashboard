@@ -43,6 +43,30 @@ export function loadCiroSnapshotRecords() {
   );
 }
 
+export function mergeCiroRecords(
+  liveRecords: ReturnType<typeof loadCiroSnapshotRecords>,
+  snapshotRecords = loadCiroSnapshotRecords(),
+) {
+  const merged = new Map<string, ReturnType<typeof loadCiroSnapshotRecords>[number]>();
+
+  for (const record of [...snapshotRecords, ...liveRecords]) {
+    const key = record.sourceUrl || record.finalNoticeUrl || record.firmIndividual;
+    const existing = merged.get(key);
+
+    if (
+      !existing
+      || (existing.amount === null && record.amount !== null)
+      || (existing.summary || '').length < (record.summary || '').length
+    ) {
+      merged.set(key, record);
+    }
+  }
+
+  return Array.from(merged.values()).sort((left, right) =>
+    right.dateIssued.localeCompare(left.dateIssued),
+  );
+}
+
 export function parseCiroListingHtml(html: string): CiroListingRow[] {
   const $ = cheerio.load(html);
   const rows: CiroListingRow[] = [];
@@ -200,7 +224,7 @@ export async function loadCiroLiveRecords() {
   const uniqueRows = Array.from(
     new Map(rows.map((row) => [row.detailUrl, row])).values(),
   );
-  return uniqueRows.map((row) => buildCiroListingRecord(row));
+  return mergeCiroRecords(uniqueRows.map((row) => buildCiroListingRecord(row)));
 }
 
 export async function main() {

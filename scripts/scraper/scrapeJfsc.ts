@@ -25,6 +25,11 @@ interface JfscSitemapEntry {
   lastmod: string | null;
 }
 
+interface JfscSourceEntry {
+  loc: string;
+  publishedAt: string | null;
+}
+
 interface JfscRecord {
   dateIssued: string;
   firmIndividual: string;
@@ -107,7 +112,40 @@ function buildJfscFallbackTitle(detailUrl: string) {
   );
 }
 
-async function fetchJfscRecord(entry: JfscSitemapEntry): Promise<JfscRecord | null> {
+export function buildJfscSourceEntries(
+  rssItems: JfscRssItem[],
+  sitemapEntries: JfscSitemapEntry[],
+) {
+  const combined = [
+    ...rssItems.map((item) => ({
+      loc: normalizeWhitespace(item.link?.[0] || ''),
+      publishedAt: normalizeWhitespace(item.pubDate?.[0] || '') || null,
+    })),
+    ...sitemapEntries.map((entry) => ({
+      loc: entry.loc,
+      publishedAt: entry.lastmod,
+    })),
+  ].filter((entry) => entry.loc && isJfscNewsUrl(entry.loc));
+
+  return Array.from(
+    combined.reduce((entries, entry) => {
+      const existing = entries.get(entry.loc);
+      if (
+        !existing
+        || (entry.publishedAt || '').localeCompare(existing.publishedAt || '') > 0
+      ) {
+        entries.set(entry.loc, entry);
+      }
+      return entries;
+    }, new Map<string, JfscSourceEntry>()),
+  )
+    .map(([, entry]) => entry)
+    .sort((left, right) =>
+      (right.publishedAt || '').localeCompare(left.publishedAt || ''),
+    );
+}
+
+async function fetchJfscRecord(entry: JfscSourceEntry): Promise<JfscRecord | null> {
   const detailUrl = entry.loc;
   if (!isJfscNewsUrl(detailUrl)) {
     return null;
@@ -117,22 +155,24 @@ async function fetchJfscRecord(entry: JfscSitemapEntry): Promise<JfscRecord | nu
   const $ = cheerio.load(html);
   const title = normalizeWhitespace($('h1').first().text()) || buildJfscFallbackTitle(detailUrl);
   const bodyText = normalizeWhitespace(($('main').text() || $('body').text() || '').trim());
-  return extractJfscRecordFromBody(title, detailUrl, bodyText, entry.lastmod || undefined);
+  return extractJfscRecordFromBody(title, detailUrl, bodyText, entry.publishedAt || undefined);
 }
 
 export async function loadJfscLiveRecords() {
-  const xml = await fetchText(JFSC_SITEMAP_URL);
-  const items = (await parseJfscSitemap(xml))
-    .filter((entry: JfscSitemapEntry) => isJfscNewsUrl(entry.loc))
-    .sort((left: JfscSitemapEntry, right: JfscSitemapEntry) =>
-      (right.lastmod || '').localeCompare(left.lastmod || ''),
-    );
+  const [rssXml, sitemapXml] = await Promise.all([
+    fetchText(JFSC_RSS_URL),
+    fetchText(JFSC_SITEMAP_URL),
+  ]);
+  const items = buildJfscSourceEntries(
+    await parseJfscFeed(rssXml),
+    await parseJfscSitemap(sitemapXml),
+  );
   const records: JfscRecord[] = [];
 
   for (let index = 0; index < items.length; index += 6) {
     const batch = items.slice(index, index + 6);
     const settled = await Promise.allSettled(
-      batch.map((item: JfscSitemapEntry) => fetchJfscRecord(item)),
+      batch.map((item: JfscSourceEntry) => fetchJfscRecord(item)),
     );
 
     for (const result of settled) {

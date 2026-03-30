@@ -6,9 +6,20 @@ const ACRONYM_EXPANSIONS: Record<string, string[]> = {
     'senior managers and certification regime',
     'senior managers regime',
     'certification regime',
+    'conduct rules',
+    'approved person',
+    'controlled function',
   ],
-  cft: ['counter terrorist financing'],
-  ctf: ['counter terrorist financing'],
+  cft: [
+    'counter terrorist financing',
+    'anti money laundering and counter terrorist financing',
+    'aml cft',
+  ],
+  ctf: [
+    'counter terrorist financing',
+    'anti money laundering and counter terrorist financing',
+    'aml cft',
+  ],
 };
 
 const COUNTRY_ALIASES: Record<string, string> = {
@@ -119,6 +130,17 @@ function isMeaningfulToken(token: string) {
 
 function expandThemePhrases(tokens: string[]) {
   const expanded: string[] = [];
+  const hasSmcrIntent =
+    tokens.includes('smcr')
+    || (tokens.includes('senior') && tokens.includes('managers'))
+    || (tokens.includes('conduct') && tokens.includes('rules'));
+  const hasCftIntent =
+    tokens.includes('cft')
+    || tokens.includes('ctf')
+    || (
+      tokens.includes('terrorist')
+      && (tokens.includes('financing') || tokens.includes('finance'))
+    );
 
   if (tokens.includes('transaction') && tokens.includes('monitoring')) {
     expanded.push(
@@ -130,15 +152,32 @@ function expandThemePhrases(tokens: string[]) {
     );
   }
 
-  if (
-    tokens.includes('terrorist') &&
-    (tokens.includes('financing') || tokens.includes('finance'))
-  ) {
+  if (hasSmcrIntent) {
+    expanded.push(
+      'smcr',
+      'senior managers and certification regime',
+      'conduct rules',
+      'approved person',
+      'controlled function',
+      'senior management',
+      'manager accountability',
+      'governance',
+    );
+  }
+
+  if (hasCftIntent) {
     expanded.push(
       'counter terrorist financing',
+      'counter-terrorist financing',
       'counter terrorist financing controls',
+      'countering the financing of terrorism',
       'anti money laundering and counter terrorist financing',
+      'anti money laundering and countering the financing of terrorism',
       'aml cft',
+      'aml',
+      'anti money laundering',
+      'customer due diligence',
+      'sanctions compliance',
     );
   }
 

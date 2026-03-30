@@ -85,7 +85,10 @@ describe("regulatorCoverage", () => {
     expect(DAILY_LIVE_REGULATOR_CODES).toContain("SFC");
     expect(DAILY_LIVE_REGULATOR_CODES).not.toContain("DFSA");
     expect(getRegulatorCoverage("DFSA")?.operationalConfidence).toBe("lower");
+    expect(getRegulatorCoverage("DFSA")?.automationLevel).toBe("curated_archive");
+    expect(getRegulatorCoverage("JFSC")?.automationLevel).toBe("sparse_source");
     expect(getRegulatorCoverage("SEC")?.operationalConfidence).toBe("standard");
+    expect(getRegulatorCoverage("SEC")?.automationLevel).toBe("automated");
   });
 
   it("keeps newly promoted global regulators public while preserving dashboard gating", () => {

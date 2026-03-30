@@ -17,6 +17,12 @@ export function DataCoverageNotice({
   const isRecentWindow = coverage.earliestYear >= 2021;
   const shouldShowWarning =
     showWarning && (isLowerConfidence || isLimitedSample || isRecentWindow);
+  const lowerConfidenceMessage =
+    coverage.automationLevel === "curated_archive"
+      ? "This regulator is live, but the collection path still depends on curated archive discovery from official documents and manifests. Treat trend comparisons as directional while the feed matures."
+      : coverage.automationLevel === "sparse_source"
+        ? "This regulator is live, but the official source publishes very few explicit monetary penalties. Trend views are directionally useful, but the source itself remains sparse."
+        : "This regulator is live, but the collection path still depends on thinner official-source coverage than the anchor feeds. Treat trend comparisons as directional while the feed matures.";
   const modifierClass = shouldShowWarning
     ? isLowerConfidence
       ? "data-coverage--caution"
@@ -40,10 +46,7 @@ export function DataCoverageNotice({
         )}
         {isLowerConfidence && (
           <p className="data-coverage__warning-text">
-            This regulator is live, but the collection path still depends on
-            curated archive discovery or thinner official-source coverage than
-            the anchor feeds. Treat trend comparisons as directional while the
-            feed matures.
+            {lowerConfidenceMessage}
           </p>
         )}
         {isLimitedSample && (

@@ -12,9 +12,21 @@ describe("DataCoverageNotice", () => {
     render(<DataCoverageNotice coverage={coverage!} />);
 
     expect(
-      screen.getByText(/This regulator is live, but the collection path/i),
+      screen.getByText(/curated archive discovery from official documents/i),
     ).toBeInTheDocument();
     expect(screen.getByText(/19 enforcement actions/i)).toBeInTheDocument();
+  });
+
+  it("explains sparse source coverage for thin official feeds", () => {
+    const coverage = getRegulatorCoverage("JFSC");
+
+    expect(coverage).not.toBeNull();
+
+    render(<DataCoverageNotice coverage={coverage!} />);
+
+    expect(
+      screen.getByText(/official source publishes very few explicit monetary penalties/i),
+    ).toBeInTheDocument();
   });
 
   it("does not show the lower-confidence warning for standard live regulators", () => {

@@ -58,6 +58,8 @@ describe('enforcementSearch helpers', () => {
       expect.arrayContaining([
         '%counter terrorist financing%',
         '%anti money laundering and counter terrorist financing%',
+        '%aml%',
+        '%customer due diligence%',
       ]),
     );
   });
@@ -71,6 +73,9 @@ describe('enforcementSearch helpers', () => {
         'smcr',
         'senior managers and certification regime',
         'certification regime',
+        'conduct rules',
+        'approved person',
+        'controlled function',
       ]),
     );
   });

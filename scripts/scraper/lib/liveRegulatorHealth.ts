@@ -20,6 +20,7 @@ export interface LiveRegulatorHealthResult {
   fullName: string;
   cadence: LiveRegulatorCadence;
   confidence: RegulatorCoverage["operationalConfidence"];
+  automationLevel: RegulatorCoverage["automationLevel"];
   recordCount: number;
   earliestRecordDate: string | null;
   latestRecordDate: string | null;
@@ -74,6 +75,7 @@ export function evaluateLiveRegulatorHealth(
       fullName: coverage.fullName,
       cadence,
       confidence: coverage.operationalConfidence,
+      automationLevel: coverage.automationLevel,
       recordCount: stats?.recordCount ?? 0,
       earliestRecordDate: stats?.earliestRecordDate ?? null,
       latestRecordDate: stats?.latestRecordDate ?? null,
@@ -92,6 +94,7 @@ export function evaluateLiveRegulatorHealth(
       fullName: coverage.fullName,
       cadence,
       confidence: coverage.operationalConfidence,
+      automationLevel: coverage.automationLevel,
       recordCount: stats.recordCount,
       earliestRecordDate: stats.earliestRecordDate,
       latestRecordDate: stats.latestRecordDate,
@@ -107,6 +110,7 @@ export function evaluateLiveRegulatorHealth(
     fullName: coverage.fullName,
     cadence,
     confidence: coverage.operationalConfidence,
+    automationLevel: coverage.automationLevel,
     recordCount: stats.recordCount,
     earliestRecordDate: stats.earliestRecordDate,
     latestRecordDate: stats.latestRecordDate,

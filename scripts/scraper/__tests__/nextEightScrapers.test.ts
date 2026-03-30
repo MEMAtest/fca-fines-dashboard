@@ -4,6 +4,7 @@ import { loadCbuaeArchiveRecords } from "../scrapeCbuae.js";
 import {
   extractCiroFirm,
   loadCiroSnapshotRecords,
+  mergeCiroRecords,
   parseCiroListingHtml,
 } from "../scrapeCiro.js";
 import { buildEcbRecords, parseEcbHtml } from "../scrapeEcb.js";
@@ -11,6 +12,7 @@ import { parseFsraHtml } from "../scrapeFsra.js";
 import { buildGfscRecords, parseGfscHtml } from "../scrapeGfsc.js";
 import {
   extractJfscRecordFromBody,
+  buildJfscSourceEntries,
   parseJfscFeed,
   parseJfscSitemap,
 } from "../scrapeJfsc.js";
@@ -183,6 +185,53 @@ describe("next-eight regulator coverage", () => {
       "jfsc-enforces-first-financial-penalty-on-local-firm",
     );
     expect(items[0].lastmod).toBe("2018-02-20T13:00:00+00:00");
+  });
+
+  it("merges JFSC RSS and sitemap discovery without duplicate URLs", async () => {
+    const rssItems = await parseJfscFeed(`
+      <rss version="2.0">
+        <channel>
+          <item>
+            <title>Garfield Bennett Trust Company Limited</title>
+            <link>https://www.jerseyfsc.org/news-and-events/garfield-bennett-trust-company-limited/</link>
+            <pubDate>Wed, 06 Aug 2025 00:00:00 GMT</pubDate>
+          </item>
+        </channel>
+      </rss>
+    `);
+    const sitemapItems = await parseJfscSitemap(`
+      <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+        <url>
+          <loc>https://www.jerseyfsc.org/news-and-events/garfield-bennett-trust-company-limited/</loc>
+          <lastmod>2025-08-01T00:00:00+00:00</lastmod>
+        </url>
+        <url>
+          <loc>https://www.jerseyfsc.org/news-and-events/jfsc-enforces-first-financial-penalty-on-local-firm/</loc>
+          <lastmod>2018-02-20T13:00:00+00:00</lastmod>
+        </url>
+      </urlset>
+    `);
+
+    const entries = buildJfscSourceEntries(rssItems, sitemapItems);
+
+    expect(entries).toHaveLength(2);
+    expect(entries[0].loc).toContain("garfield-bennett-trust-company-limited");
+    expect(entries[0].publishedAt).toBe("Wed, 06 Aug 2025 00:00:00 GMT");
+  });
+
+  it("merges CIRO live records with snapshots while preferring monetary coverage", () => {
+    const snapshot = loadCiroSnapshotRecords()[0];
+    const merged = mergeCiroRecords([
+      {
+        ...snapshot,
+        amount: null,
+        summary: "Short summary",
+      },
+    ], [snapshot]);
+
+    expect(merged).toHaveLength(1);
+    expect(merged[0].amount).not.toBeNull();
+    expect(merged[0].summary.length).toBeGreaterThan("Short summary".length);
   });
 
   it("parses SEBI listing rows and extracts firm names", () => {

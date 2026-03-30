@@ -48,6 +48,7 @@ export interface RegulatorCoverage {
   coverageStatus: "anchor" | "growing" | "emerging";
   maturity: "anchor" | "emerging" | "limited";
   operationalConfidence: "standard" | "lower";
+  automationLevel: "automated" | "curated_archive" | "sparse_source";
   dashboardEnabled: boolean;
   officialSources: RegulatorOfficialSource[];
 }
@@ -58,7 +59,10 @@ export interface RegulatorOfficialSource {
   description: string;
 }
 
-type RegulatorCoverageSeed = Omit<RegulatorCoverage, "operationalConfidence">;
+type RegulatorCoverageSeed = Omit<
+  RegulatorCoverage,
+  "operationalConfidence" | "automationLevel"
+>;
 
 const PIPELINE_NOTE =
   "Official enforcement source validated. Ingestion and editorial coverage are not yet live.";
@@ -69,6 +73,9 @@ const LOW_CONFIDENCE_LIVE_REGULATOR_SET = new Set([
   "JFSC",
   "CIRO",
 ]);
+
+const CURATED_ARCHIVE_REGULATOR_SET = new Set(["DFSA", "CBUAE"]);
+const SPARSE_SOURCE_REGULATOR_SET = new Set(["JFSC"]);
 
 const REGULATOR_COVERAGE_SEED: Record<string, RegulatorCoverageSeed> = {
   FCA: {
@@ -1407,6 +1414,11 @@ export const REGULATOR_COVERAGE: Record<string, RegulatorCoverage> =
         operationalConfidence: LOW_CONFIDENCE_LIVE_REGULATOR_SET.has(code)
           ? "lower"
           : "standard",
+        automationLevel: SPARSE_SOURCE_REGULATOR_SET.has(code)
+          ? "sparse_source"
+          : CURATED_ARCHIVE_REGULATOR_SET.has(code)
+            ? "curated_archive"
+            : "automated",
       },
     ]),
   ) as Record<string, RegulatorCoverage>;
