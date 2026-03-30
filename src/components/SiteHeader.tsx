@@ -2,8 +2,10 @@ import { useState, useEffect, useCallback, useMemo } from "react";
 import { createPortal } from "react-dom";
 import { Link, useLocation } from "react-router-dom";
 import { Menu, X, ChevronDown, ChevronRight } from "lucide-react";
-import { PUBLIC_REGULATOR_NAV_ITEMS } from "../data/regulatorCoverage.js";
-import type { RegulatorCoverage } from "../data/regulatorCoverage.js";
+import {
+  PUBLIC_REGULATOR_SHELL_ITEMS,
+  type RegulatorShellNavItem,
+} from "../data/regulatorShellNav.js";
 import "../styles/siteheader.css";
 
 const NAV_LINKS = [
@@ -63,7 +65,7 @@ function getBreadcrumbs(pathname: string) {
     else if (seg === "sectors") label = "Sectors";
     else if (seg === "firms") label = "Firms";
     else {
-      const regulatorMatch = PUBLIC_REGULATOR_NAV_ITEMS.find(
+      const regulatorMatch = PUBLIC_REGULATOR_SHELL_ITEMS.find(
         (item) => item.overviewPath === current,
       );
       label = regulatorMatch ? regulatorMatch.code : humanizeSegment(seg);
@@ -107,9 +109,9 @@ export function SiteHeader() {
 
   // Phase 5: Group regulators by region
   const regulatorsByRegion = useMemo(() => {
-    const groups: Record<string, RegulatorCoverage[]> = {};
+    const groups: Record<string, RegulatorShellNavItem[]> = {};
 
-    for (const regulator of PUBLIC_REGULATOR_NAV_ITEMS) {
+    for (const regulator of PUBLIC_REGULATOR_SHELL_ITEMS) {
       const region = regulator.region;
       if (!groups[region]) {
         groups[region] = [];
@@ -361,7 +363,7 @@ export function SiteHeader() {
                       id="mobile-regulators-panel"
                       className="site-header__mobile-accordion-panel"
                     >
-                      {PUBLIC_REGULATOR_NAV_ITEMS.map((regulator) => (
+                      {PUBLIC_REGULATOR_SHELL_ITEMS.map((regulator) => (
                         <Link
                           key={regulator.code}
                           to={regulator.overviewPath}
