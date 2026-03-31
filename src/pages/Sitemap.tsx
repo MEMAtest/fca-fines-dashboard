@@ -36,6 +36,9 @@ export function Sitemap() {
                 <Link to="/dashboard">Dashboard</Link>
               </li>
               <li>
+                <Link to="/board-pack">Board Pack Studio</Link>
+              </li>
+              <li>
                 <Link to="/topics">Topics</Link>
               </li>
               <li>
@@ -129,6 +132,7 @@ export function Sitemap() {
           <nav className="blog-footer-nav" aria-label="Footer navigation">
             <Link to="/">Home</Link>
             <Link to="/dashboard">Dashboard</Link>
+            <Link to="/board-pack">Board Pack</Link>
             <Link to="/blog">Blog</Link>
             <Link to="/sitemap">Sitemap</Link>
           </nav>

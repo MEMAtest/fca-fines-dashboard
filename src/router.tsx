@@ -193,6 +193,11 @@ const Regulators = lazyPage(() =>
 const Search = lazyPage(() =>
   import("./pages/Search.js").then((module) => ({ default: module.Search })),
 );
+const BoardIntelligence = lazyPage(() =>
+  import("./pages/BoardIntelligence.js").then((module) => ({
+    default: module.BoardIntelligence,
+  })),
+);
 
 const router = createBrowserRouter([
   {
@@ -225,6 +230,27 @@ const router = createBrowserRouter([
         element: (
           <Suspense fallback={<DashboardSkeleton />}>
             <Dashboard />
+          </Suspense>
+        ),
+      },
+      {
+        path: "/board-pack",
+        element: (
+          <Suspense
+            fallback={
+              <div
+                style={{
+                  minHeight: "100vh",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                }}
+              >
+                Loading board pack...
+              </div>
+            }
+          >
+            <BoardIntelligence />
           </Suspense>
         ),
       },

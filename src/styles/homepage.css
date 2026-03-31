@@ -237,6 +237,97 @@
   color: #FFFFFF;
 }
 
+/* Board Pack Preview */
+.board-pack-preview {
+  padding: 1rem 2rem 5rem;
+}
+
+.board-pack-preview__content {
+  max-width: 1200px;
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: 1.1fr 0.9fr;
+  gap: 1.5rem;
+  align-items: stretch;
+}
+
+.board-pack-preview__copy,
+.board-pack-preview__card {
+  background: rgba(255, 255, 255, 0.92);
+  border: 1px solid rgba(15, 162, 148, 0.14);
+  border-radius: 24px;
+  box-shadow: 0 18px 40px rgba(15, 23, 42, 0.08);
+}
+
+.board-pack-preview__copy {
+  padding: 2rem;
+}
+
+.board-pack-preview__eyebrow {
+  display: inline-block;
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--homepage-accent);
+}
+
+.board-pack-preview__copy h2 {
+  font-size: clamp(2rem, 3vw, 3rem);
+  line-height: 1;
+  margin: 0.75rem 0 1rem;
+}
+
+.board-pack-preview__copy p,
+.board-pack-preview__card p {
+  color: var(--homepage-text-secondary);
+  line-height: 1.7;
+}
+
+.board-pack-preview__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.9rem;
+  margin-top: 1.5rem;
+}
+
+.board-pack-preview__secondary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.875rem 1.4rem;
+  border-radius: 999px;
+  text-decoration: none;
+  font-weight: 600;
+  color: var(--homepage-accent);
+  border: 1px solid rgba(15, 162, 148, 0.22);
+  background: #fff;
+}
+
+.board-pack-preview__secondary:hover {
+  background: var(--homepage-accent-light);
+}
+
+.board-pack-preview__grid {
+  display: grid;
+  gap: 1rem;
+}
+
+.board-pack-preview__card {
+  padding: 1.25rem 1.35rem;
+}
+
+.board-pack-preview__card svg {
+  color: var(--homepage-accent-alt);
+  margin-bottom: 0.65rem;
+}
+
+.board-pack-preview__card h3 {
+  margin: 0 0 0.4rem;
+  font-size: 1.08rem;
+  color: var(--homepage-text-primary);
+}
+
 /* Homepage FAQ Section */
 .homepage-faq-section {
   padding: 5rem 2rem;
@@ -464,6 +555,23 @@
 
   .homepage .blog-card-title {
     font-size: 1rem;
+  }
+
+  .board-pack-preview {
+    padding: 0 1.25rem 4rem;
+  }
+
+  .board-pack-preview__content {
+    grid-template-columns: 1fr;
+  }
+
+  .board-pack-preview__actions {
+    flex-direction: column;
+  }
+
+  .board-pack-preview__secondary,
+  .board-pack-preview .regulators-showcase__cta {
+    width: 100%;
   }
 }
 

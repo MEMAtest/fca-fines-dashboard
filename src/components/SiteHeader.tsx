@@ -11,6 +11,7 @@ import "../styles/siteheader.css";
 const NAV_LINKS = [
   { to: "/", label: "Home" },
   { to: "/dashboard", label: "Dashboard" },
+  { to: "/board-pack", label: "Board Pack" },
   { to: "/search", label: "Search" },
   { to: "/topics", label: "Topics" },
   { to: "/blog", label: "Insights" },
@@ -56,6 +57,7 @@ function getBreadcrumbs(pathname: string) {
 
     let label = seg;
     if (seg === "dashboard") label = "Dashboard";
+    else if (seg === "board-pack") label = "Board Pack";
     else if (seg === "search") label = "Search";
     else if (seg === "blog") label = "Insights";
     else if (seg === "topics") label = "Topics";

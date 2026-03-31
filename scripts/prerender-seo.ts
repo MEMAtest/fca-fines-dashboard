@@ -157,6 +157,7 @@ function generateBreadcrumbItems(path: string): Array<{ name: string; item: stri
     current += `/${seg}`;
     let name = seg;
     if (seg === 'dashboard') name = 'Dashboard';
+    else if (seg === 'board-pack') name = 'Board Pack';
     else if (seg === 'blog') name = 'Insights';
     else if (seg === 'topics') name = 'Topics';
     else if (seg === 'breaches') name = 'Breach Categories';
@@ -300,6 +301,16 @@ async function buildPageMetas(): Promise<PageMeta[]> {
         { "@type": "DownloadAction", "name": "Export FCA Fines CSV", "target": { "@type": "EntryPoint", "urlTemplate": `${BASE_URL}/dashboard` } },
       ]
     }],
+  });
+
+  pages.push({
+    path: '/board-pack',
+    title: 'Board Pack Studio | Enforcement Exposure and Controls Challenge',
+    description:
+      'Generate a board-ready enforcement pack with exposure scoring, peer-case evidence, scenario bands, and control challenge prompts.',
+    keywords:
+      'board pack, enforcement exposure, board intelligence, compliance committee pack, controls challenge, peer enforcement analysis',
+    ogType: 'website',
   });
 
   // 3. Topics (hub landing)

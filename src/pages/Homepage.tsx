@@ -1,5 +1,6 @@
 import { motion } from "framer-motion";
 import { useEffect, useState } from "react";
+import { FileCheck2, Radar, ShieldAlert } from "lucide-react";
 import {
   useNavigate,
   useLocation,
@@ -413,6 +414,57 @@ export function Homepage() {
         </div>
       </section>
 
+      <section className="board-pack-preview">
+        <div className="board-pack-preview__content">
+          <div className="board-pack-preview__copy">
+            <span className="board-pack-preview__eyebrow">
+              Unique product layer
+            </span>
+            <h2>Turn enforcement history into a board pack</h2>
+            <p>
+              Move beyond raw fines data. Generate a board-ready brief with
+              exposure scoring, peer cases, scenario bands, and control
+              challenge prompts built from the tracked enforcement record.
+            </p>
+            <div className="board-pack-preview__actions">
+              <Link to="/board-pack" className="regulators-showcase__cta">
+                Open Board Pack Studio
+              </Link>
+              <Link to="/search" className="board-pack-preview__secondary">
+                Review matching cases
+              </Link>
+            </div>
+          </div>
+
+          <div className="board-pack-preview__grid">
+            <article className="board-pack-preview__card">
+              <Radar size={20} />
+              <h3>Exposure scorecard</h3>
+              <p>
+                See where enforcement pressure concentrates by regulator, theme,
+                and peer pattern.
+              </p>
+            </article>
+            <article className="board-pack-preview__card">
+              <ShieldAlert size={20} />
+              <h3>Scenario bands</h3>
+              <p>
+                Use severity bands and real comparator cases instead of false
+                precision on exact fine prediction.
+              </p>
+            </article>
+            <article className="board-pack-preview__card">
+              <FileCheck2 size={20} />
+              <h3>Controls challenge</h3>
+              <p>
+                Pressure-test the evidence behind key controls and sharpen the
+                board challenge agenda.
+              </p>
+            </article>
+          </div>
+        </div>
+      </section>
+
       {/* Key Insights Section */}
       <section className="key-insights">
         <h2 className="section-title">Key Insights</h2>
@@ -628,6 +680,9 @@ export function Homepage() {
             <p className="footer-tagline">Powered by MEMA Consultants</p>
           </div>
           <nav className="footer-nav">
+            <Link to="/board-pack" className="footer-link">
+              Board Pack
+            </Link>
             <Link to="/blog" className="footer-link">
               Insights & Blog
             </Link>
