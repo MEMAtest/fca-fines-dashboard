@@ -21,6 +21,7 @@ const DIST = join(ROOT, "dist");
 const OG_DIR = join(DIST, "og");
 
 import { blogArticles, yearlyArticles } from "../src/data/blogArticles.js";
+import { regulatorBlogs } from "../src/data/regulatorBlogs.js";
 
 const WIDTH = 1200;
 const HEIGHT = 630;
@@ -53,6 +54,11 @@ async function main() {
       slug: a.slug,
       title: a.title,
       category: "Annual Analysis",
+    })),
+    ...regulatorBlogs.map((a) => ({
+      slug: a.slug,
+      title: a.title,
+      category: "Regulator Analysis",
     })),
   ];
 

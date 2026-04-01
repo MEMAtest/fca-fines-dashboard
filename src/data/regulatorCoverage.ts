@@ -1001,10 +1001,10 @@ const REGULATOR_COVERAGE_SEED: Record<string, RegulatorCoverageSeed> = {
     dashboardEnabled: true,
     officialSources: [
       {
-        label: "HKMA disciplinary actions",
-        url: "https://www.hkma.gov.hk/eng/regulatory-resources/enforcement/disciplinary-actions/",
+        label: "HKMA enforcement press releases",
+        url: "https://www.hkma.gov.hk/eng/news-and-media/press-releases/enforcement/",
         description:
-          "Official HKMA disciplinary-actions archive and penalty notices.",
+          "Official HKMA enforcement actions and penalty notices.",
       },
     ],
   },
