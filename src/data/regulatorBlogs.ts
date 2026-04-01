@@ -1513,80 +1513,57 @@ function getRegulatorProfile(code: string): RegulatorProfile {
         sections: [
           buildCoverageAssessment(REGULATOR_COVERAGE.SESC),
           {
-            heading: "Why SESC Matters Beyond Japan",
+            heading: "Why SESC Matters & 2024 Enforcement Priorities",
             intro:
-              "SESC relevance extends beyond Tokyo-listed firms through three mechanisms: cross-border enforcement cooperation via IOSCO (130+ signatory authorities), precedent-setting crypto regulations influencing global digital asset supervision, and insights into Asia Pacific's largest securities market conduct expectations.",
+              "¥996.3T market cap (world's 4th-largest, Asia Pacific's largest exchange), IOSCO cross-border cooperation (130+ authorities), and crypto regulation leadership make SESC relevant beyond Tokyo-listed firms.",
             paragraphs: [
-              "**Tokyo Market Significance:** With ¥996.3 trillion market capitalization (December 2024 decade-high), Tokyo Stock Exchange ranks as world's 4th largest and Asia Pacific's largest exchange, supervising 3,900+ listed companies including multinational corporations. Firms with Japanese securities listings, Tokyo trading desks, Japanese institutional clients, or cross-border M&A involving Japanese targets face SESC oversight of Japan-related activities. Recent enforcement demonstrates extraterritorial reach: 2023 cases against individuals abroad (ZOZO stock, Pacific Metals) show SESC leveraging IOSCO information-sharing frameworks to investigate non-residents trading on Japanese material non-public information.",
-              "**Crypto Regulation Global Leadership:** Japan's September 2025 move to bring crypto-assets under comprehensive Financial Instruments and Exchange Act represents first major jurisdiction applying traditional insider trading prohibitions to digital assets at national law level. This empowers SESC to investigate token listings, protocol governance decisions, exchange employee trading, and other scenarios where material non-public information advantage exists in crypto markets. Global regulators (FCA, SEC, MAS) monitoring Japan's implementation as potential blueprint—particularly enforcement against decentralized protocols and cross-border crypto insider trading via IOSCO cooperation.",
-              "**M&A Intelligence for Cross-Border Transactions:** SESC's aggressive prosecution of tender offer-related insider trading (three of seven FY2024 criminal cases) provides compliance insights for foreign firms acquiring Japanese targets or partnering with Japanese companies in strategic transactions. December 2024 criminal charges against FSA official and Tokyo Stock Exchange employee signal zero tolerance extends even to regulatory insiders and market infrastructure personnel—reinforces need for robust information barriers during Japanese corporate transactions.",
+              "**Insider Trading Dominance & M&A Focus:** 77% of 2024 actions involved insider trading, with 3 of 7 criminal cases targeting tender offer violations. December 2024 criminal charges against FSA official and Tokyo Stock Exchange employee signal zero tolerance extends to regulatory insiders. 2023 extraterritorial cases (ZOZO stock, Pacific Metals—individuals abroad trading on Japanese material non-public information) demonstrate IOSCO information-sharing frameworks enable cross-border investigations. Firms acquiring Japanese targets or partnering with Japanese companies need robust information barriers—SESC prosecutes tippees and secondary recipients aggressively.",
+              "**Crypto Insider Trading Global First:** September 2025 FSA announcement brings crypto-assets under Financial Instruments and Exchange Act—empowers SESC to investigate token listings, protocol governance, exchange employee trading where material non-public information advantage exists. First major jurisdiction applying traditional insider trading prohibitions to digital assets at national law level. FCA, SEC, MAS monitoring Japan's implementation as blueprint. SESC enforcement expected mid-2025 onward—watch for interpretive guidance on decentralized protocols, cross-border crypto trading jurisdiction.",
+              "**Two-Stage Enforcement Model:** SESC investigates and recommends, FSA decides and punishes—no direct penalty authority but possesses criminal investigation powers (court-authorized search/seizure under FIEA Article 211). Recommendations publicly disclosed before FSA administrative trials commence, creating transparency. Fixed income oversight: September 2024 Nomura ¥21.76M JGB futures manipulation penalty demonstrates multi-asset market conduct scrutiny.",
             ],
+          },
+          {
+            heading: "Monitoring & Compliance Integration",
             bullets: [
-              "Monitor SESC if your firm has Tokyo Stock Exchange listings, Japan trading operations, or Japanese institutional clients subject to SESC market surveillance",
-              "Use for cross-border M&A compliance: SESC prosecutes tender offer insider trading aggressively, including tippees and secondary recipients of material non-public information",
-              "Track crypto enforcement precedents: Japan's insider trading regime for digital assets (effective 2025) likely influences FCA, SEC, MAS approaches to crypto market abuse",
-              "Benchmark against IOSCO peer regulators: SESC participates in multilateral information sharing with 130+ authorities, enabling coordinated cross-border investigations",
-            ],
-          },
-          {
-            heading: "How SESC Enforcement Appears Publicly",
-            intro:
-              "SESC publishes enforcement outcomes through structured press releases in English (subset of total actions) and comprehensive Japanese-language annual reports. Unlike regulators with public enforcement databases, SESC uses chronological press release archives requiring manual review.",
-            paragraphs: [
-              "**Publication Structure:** SESC maintains three English-language press release categories: (1) Recommendations for Administrative Monetary Penalties—formal recommendations to FSA Commissioner including violation details, recommended penalty amounts, legal basis; (2) Charges Filed (Criminal Cases)—notifications when SESC refers matters to public prosecutor for criminal prosecution, typically involving severe or repeat violations; (3) Annual Reports—comprehensive statistics and thematic analysis published annually. Note: SESC website states 'not all our press releases were translated in English'—complete enforcement statistics require accessing Japanese-language sources or annual report aggregates.",
-              "**Recommendation-to-Decision Timeline:** When SESC recommends administrative monetary penalty, FSA commences trial procedure through independent trial examiners. Upon receiving trial examiner decision, FSA Commissioner issues final payment order. This two-stage process creates transparency (SESC recommendation publicly disclosed before FSA trial) but delays final outcomes compared to single-authority regulators. Monitoring requires tracking both SESC recommendations (enforcement initiated) and subsequent FSA orders (final penalties imposed).",
-            ],
-          },
-          {
-            heading: "Best Use of SESC Intelligence in Compliance Programs",
-            intro:
-              "SESC monitoring provides three strategic values: M&A insider trading enforcement patterns for transaction compliance, crypto regulation early warning (Japan leads global digital asset insider trading prohibition), and IOSCO-coordinated cross-border investigation insights.",
-            paragraphs: [
-              "**Quarterly Review Approach:** Monitor SESC English press releases quarterly (chronological archive at www.fsa.go.jp/sesc/english/news/reco.html) for new recommendations and criminal referrals. Annual report (published February each year, e.g., February 2026 report covers FY2024 April-March) provides comprehensive statistics and thematic analysis unavailable in individual press releases. For firms without Japanese-reading capability, focus on: (1) English press releases for specific case details, legal interpretations, penalty amounts; (2) Annual report executive summary for aggregate trends, strategic priorities, emerging enforcement themes.",
-              "**Integration with M&A Compliance:** Use SESC tender offer cases to validate information barrier effectiveness during Japanese corporate transactions. Key lessons from FY2024 enforcement: (1) Tippee liability extends to secondary recipients (not just direct insiders); (2) SESC prosecutes even small trading profits when material non-public information clearly identified; (3) FSA/TSE employees subject to same standards as market participants—insider status no defense. For compliance teams supporting Japan M&A, SESC cases provide Asia Pacific benchmark for disclosure timing, blackout periods, watch list management.",
-              "**Crypto Compliance Preparation (2025 Regime):** Japan's September 2025 announcement brings crypto under FIEA starting 2025-2026—SESC gains insider trading enforcement powers over digital assets. Monitor SESC's first crypto enforcement actions (expected mid-2025 onward) for interpretive guidance on: (1) What constitutes 'material non-public information' in decentralized protocols; (2) Who qualifies as 'insider' (protocol developers, exchange employees, token foundation members); (3) How SESC applies territorial jurisdiction to cross-border crypto trading. Early SESC crypto cases likely set Asia Pacific precedent and influence global regulatory approaches.",
+              "**Quarterly Review:** Monitor SESC English press releases (www.fsa.go.jp/sesc/english/aboutsesc/actions.html) for recommendations, criminal referrals. February annual report (covers prior fiscal year April-March) provides comprehensive statistics. Note: Not all press releases translated—English coverage subset of total enforcement.",
+              "**M&A Compliance Lessons:** Tippee liability extends to secondary recipients; SESC prosecutes small trading profits when material non-public information identified; FSA/TSE employees subject to same standards (insider status no defense). Use SESC tender offer cases to validate information barriers, disclosure timing, blackout periods for Japan transactions.",
+              "**Crypto Regime Preparation:** Japan's 2025 FIEA expansion brings digital assets under SESC insider trading enforcement. Monitor first crypto actions (mid-2025+) for guidance on: material non-public information in decentralized protocols, 'insider' definition (developers, exchange employees, token foundations), cross-border crypto trading jurisdiction.",
+              "**IOSCO Cross-Border Cooperation:** SESC participates in multilateral frameworks with 130+ authorities—can share information with FCA, SEC, MAS for coordinated investigations. Extraterritorial reach demonstrated in 2023 cases against non-residents.",
             ],
           },
         ],
         signals: [
           {
-            title: "M&A Insider Trading Crackdown",
+            title: "M&A Insider Trading Crackdown & Regulatory Insider Prosecutions",
             detail:
-              "Three of seven criminal insider trading cases in FY2024 involved tender offer-related facts, with prosecutions targeting corporate officers, negotiating parties, and tippees. December 2024 criminal charges against FSA official and Tokyo Stock Exchange employee demonstrate zero tolerance extending to regulatory insiders. Pattern shows SESC aggressively investigating information flows during Japanese corporate transactions, with particular focus on tender offers and material M&A announcements. Compliance implication: Enhanced information barriers and trading restrictions required during Japan-related strategic transactions.",
+              "3 of 7 criminal cases in FY2024 involved tender offer violations—corporate officers, negotiating parties, tippees prosecuted. December 2024 criminal charges against FSA official and Tokyo Stock Exchange employee demonstrate zero tolerance extends to regulatory insiders. Pattern: SESC aggressively investigates information flows during Japanese corporate transactions, particularly tender offers. Compliance implication: Enhanced information barriers, trading restrictions required for Japan-related M&A. 2023 extraterritorial cases (ZOZO, Pacific Metals) show IOSCO cooperation enables cross-border investigations.",
           },
           {
-            title: "Crypto Insider Trading Regime (2025 Expansion)",
+            title: "Crypto Insider Trading Regime—Global First (2025)",
             detail:
-              "September 2025 FSA announcement brings crypto-assets under Financial Instruments and Exchange Act, empowering SESC to pursue insider trading, tipping, and front-running in digital asset markets for first time under national law. Regulatory shift follows DMM Bitcoin ¥48 billion ($305M) hack (May 2024) and concerns about exchange employee trading advantages. Japan becomes first major jurisdiction applying comprehensive insider trading prohibitions to crypto—SESC enforcement expected mid-2025 onward. Watch for interpretive guidance on decentralized protocol governance, token listing material information, cross-border crypto trading jurisdiction.",
-          },
-          {
-            title: "Fixed Income Market Manipulation Oversight",
-            detail:
-              "September 2024 Nomura Securities administrative monetary penalty (¥21.76 million, approximately $150,000 USD) for JGB futures market manipulation demonstrates SESC oversight extending beyond equities to government bond markets. Case involved algorithmic trading strategies creating false liquidity signals in Japanese Government Bond futures. Signals SESC monitoring fixed income market conduct with same intensity as equity markets—relevant for firms operating multi-asset trading desks in Tokyo.",
+              "September 2025 FSA brings crypto under Financial Instruments and Exchange Act—empowers SESC to pursue insider trading, tipping, front-running in digital assets. First major jurisdiction applying comprehensive insider trading prohibitions to crypto at national law level. Follows DMM Bitcoin ¥48B ($305M) hack (May 2024), exchange employee trading concerns. SESC enforcement expected mid-2025 onward. Watch for guidance on: decentralized protocol governance, token listing material information, cross-border crypto trading jurisdiction. FCA, SEC, MAS monitoring Japan's blueprint.",
           },
         ],
         boardQuestions: [
-          "If the firm conducts or supports M&A transactions involving Japanese targets or partners, do we have adequate information barriers, trading restrictions, and tippee liability controls to address SESC's aggressive tender offer insider trading enforcement (three of seven FY2024 criminal cases)?",
-          "Does management understand the two-stage SESC enforcement model (SESC investigates and recommends, FSA decides and punishes) and how SESC's criminal investigation powers (court-authorized search and seizure) differ from administrative penalty processes?",
-          "With Japan bringing crypto-assets under insider trading prohibitions (September 2025 FSA announcement), how is the firm preparing for SESC enforcement against digital asset trading on material non-public information—particularly if we operate crypto trading desks, token listings, or protocol governance activities with Japan nexus?",
+          "Japan M&A transactions: Adequate information barriers, trading restrictions, tippee liability controls (SESC prosecuted 3 of 7 FY2024 criminal cases for tender offer violations)?",
+          "Understand SESC two-stage model (investigates/recommends → FSA decides/punishes) and criminal investigation powers (court-authorized search/seizure)?",
+          "Crypto trading with Japan nexus: Prepared for SESC digital asset insider trading enforcement (2025 FIEA expansion)—token listings, protocol governance, exchange operations?",
         ],
         takeaways: [
-          "Monitor SESC for M&A Insider Trading Enforcement Patterns—77% of 2024 actions involved insider trading, with tender offer violations generating criminal referrals; use to benchmark information barrier effectiveness for Japan transactions",
-          "Japan Leads Global Crypto Insider Trading Regulation—September 2025 FSA move brings digital assets under FIEA, empowering SESC to prosecute crypto market abuse; early enforcement cases (expected mid-2025) likely set Asia Pacific precedent",
-          "Two-Stage Enforcement Creates Transparency—SESC recommendations publicly disclosed before FSA trials commence, allowing firms to track enforcement initiated vs. final penalties imposed; unlike single-authority models, offers advance notice of regulatory interpretation",
+          "M&A insider trading focus—77% of 2024 actions, 3 of 7 criminal cases tender offer violations; benchmark information barriers for Japan transactions",
+          "Crypto regulation global first—September 2025 FIEA brings digital assets under SESC insider trading enforcement; mid-2025 cases likely set Asia Pacific precedent",
+          "Two-stage transparency—SESC recommendations public before FSA trials, enabling advance tracking of enforcement initiated vs final penalties",
         ],
         faqs: [
           {
-            question:
-              "How does SESC differ from FSA, and why does Japan use this two-stage enforcement model?",
+            question: "How does SESC differ from FSA in Japan's two-stage enforcement?",
             answer:
-              "SESC investigates market misconduct and recommends enforcement actions, but has no direct power to impose penalties. After SESC recommendation, FSA conducts administrative trial through independent trial examiners and issues final payment orders. This separation—investigation vs. adjudication—was established in 1992 following securities scandals to ensure market surveillance independence from FSA's broader supervisory functions, creating checks and balances. SESC possesses criminal investigation powers (search, seizure with court warrants under FIEA Article 211) for severe cases, referring matters to public prosecutor. For compliance monitoring: track SESC recommendations (enforcement initiated, legal interpretation visible) and subsequent FSA orders (final penalties confirmed).",
+              "SESC investigates and recommends, FSA decides and punishes—separation established 1992 following securities scandals to ensure market surveillance independence. SESC has no direct penalty power but possesses criminal investigation powers (court-authorized search/seizure under FIEA Article 211), referring severe cases to public prosecutor. FSA conducts administrative trial via independent examiners, issues final payment orders. For monitoring: track SESC recommendations (enforcement initiated, legal interpretation) and FSA orders (final penalties). Transparency advantage: SESC recommendations publicly disclosed before FSA trials.",
           },
           {
-            question:
-              "Why monitor SESC if my firm doesn't have Tokyo Stock Exchange listings?",
+            question: "Why monitor SESC without Tokyo Stock Exchange listings?",
             answer:
-              "Three reasons: (1) **Cross-Border M&A**: If your firm acquires Japanese targets, partners with Japanese companies, or advises on Japan transactions, SESC tender offer enforcement (three of seven FY2024 criminal cases) provides critical compliance insights on information barriers and tippee liability. (2) **IOSCO Information Sharing**: SESC participates in multilateral memorandum with 130+ authorities—can share information with FCA, SEC, MAS for coordinated cross-border investigations. 2023 cases against individuals abroad demonstrate extraterritorial reach. (3) **Crypto Regulation Leadership**: Japan's September 2025 move to apply insider trading prohibitions to crypto-assets positions SESC as global standard-setter for digital asset market abuse enforcement—early cases likely influence FCA, SEC, MAS approaches regardless of your firm's Japan presence.",
+              "Three cross-border exposures: (1) **M&A Transactions**: Acquiring Japanese targets or partnering with Japanese companies requires information barriers aligned with SESC tender offer enforcement (3 of 7 FY2024 criminal cases). (2) **IOSCO Cooperation**: SESC shares information with 130+ authorities including FCA, SEC, MAS—2023 extraterritorial cases (individuals abroad trading Japanese stocks) demonstrate coordinated cross-border investigations. (3) **Crypto Regulation Blueprint**: September 2025 FIEA expansion brings digital assets under insider trading prohibitions—SESC's mid-2025 enforcement likely influences global FCA, SEC, MAS approaches regardless of Japan operations.",
           },
         ],
         sourceLinks: [
@@ -1622,80 +1599,57 @@ function getRegulatorProfile(code: string): RegulatorProfile {
         sections: [
           buildCoverageAssessment(REGULATOR_COVERAGE.TWFSC),
           {
-            heading: "Why FSC Taiwan Matters Beyond Taiwan",
+            heading: "Why FSC Taiwan Matters & 2024-2025 Priorities",
             intro:
-              "FSC enforcement and regulatory innovation provide early indicators of Asia Pacific supervisory direction, particularly for digital assets, climate disclosure, and cross-border AML enforcement through IOSCO cooperation.",
+              "VASP regulation leadership (local presence mandate, criminal sanctions), comprehensive climate disclosure (all listed companies 2025), and IOSCO cooperation make FSC relevant beyond Taiwan as Asia Pacific regulatory innovation preview.",
             paragraphs: [
-              "**VASP Regulation Leadership:** Taiwan's accelerated VASP registration timeline (November 2024 vs January 2025 originally planned) and mandatory local presence requirements for offshore operators demonstrate how mid-sized financial centers can lead digital asset regulation when major markets remain fragmented. The July 2024 MLCA amendments requiring offshore VASPs to establish local entities or cease Taiwan operations create precedent for jurisdictional enforcement of crypto AML—relevant as UK, Singapore, Hong Kong refine crypto regulatory perimeters. Criminal penalties (NT$5 million, imprisonment) for unregistered VASP operations signal zero tolerance, contrasting with UK's phased FCA authorization approach.",
-              "**Climate Disclosure Expansion:** Taiwan's requirement that ALL listed companies (not just financial institutions) disclose GHG emissions and climate risks from 2025 represents Asia Pacific's most comprehensive ESG reporting mandate. The TCFD-aligned framework with 'comply or explain' flexibility offers pragmatic template contrasting UK's mandatory TCFD regime. FSC's partnership with CDP (accessing data from 1,100 companies, 86% of market cap) demonstrates leveraging third-party ESG infrastructure for regulatory oversight—approach potentially replicable in other jurisdictions.",
-              "**Cross-Border AML Coordination:** As IOSCO APRC member, FSC participates in supervisory cooperation frameworks enabling information sharing with 130+ authorities globally. The NT$22 million Bank of Taiwan penalty (2024) for AML control failures—including inadequate response to joint defense notification system alerts and employee conduct oversight lapses—demonstrates FSC's willingness to sanction major state-linked institutions, enhancing regulatory credibility for cross-border enforcement cooperation.",
+              "**VASP Registration & Criminal Enforcement:** Accelerated deadline November 30, 2024 (vs January 2025). July 2024 MLCA amendments: offshore VASPs must establish Taiwan local presence or cease operations. Criminal penalties NT$5M + imprisonment for unregistered activity. Zero tolerance vs UK's phased FCA authorization. Creates jurisdictional precedent for crypto AML enforcement—relevant as UK, Singapore, Hong Kong refine perimeters. UK firms with crypto trading/custody/exchange services + Taiwan nexus must verify offshore VASP registration. Watch Q1 2025 post-deadline enforcement wave.",
+              "**Climate Disclosure Comprehensive Scope & Bank of Taiwan AML:** ALL listed companies (not just financial institutions) must file ESG reports with GHG emissions from 2025 (August 31 deadline). TCFD-aligned with 'comply or explain' flexibility vs UK's mandatory regime. FSC-CDP partnership (1,100 companies, 86% market cap) demonstrates third-party ESG infrastructure. Exceeds regional peers: Hong Kong >HK$500M cap, Singapore Phase 2 non-listed, Taiwan entire listed market. NT$22M Bank of Taiwan AML penalty (largest 2024): inadequate joint defense system alert response (7 alerts 2023-2024, only examined 2), weak customer due diligence, employee conduct lapses. State-linked institution enforcement enhances IOSCO cross-border credibility.",
+              "**Integrated Supervision & Enforcement Trends:** 2,400+ entities across banking (23 institutions), securities (1,900+), insurance (50), futures. 2024 Jan-Aug penalties NT$129.02M (down from NT$254M 2023)—signals preventive supervision shift vs escalating enforcement. IOSCO APRC member enabling information sharing with 130+ authorities. FSC can trigger parallel FCA investigations for cross-border market abuse/AML.",
             ],
+          },
+          {
+            heading: "Monitoring & Compliance Integration",
             bullets: [
-              "Monitor FSC if your firm provides services to Taiwan clients, operates Taiwan trading desks, or manages cross-border payments involving Taiwan counterparties subject to enhanced AML due diligence",
-              "Use for digital asset compliance benchmarking: Taiwan's VASP framework (local presence mandate, criminal sanctions) may influence FCA, MAS, HKMA crypto approaches over 12-18 months",
-              "Track climate disclosure implementation: FSC's 'comply or explain' model for TCFD reporting offers alternative to mandatory regimes, with lessons on phased rollout to entire listed market",
-              "Leverage IOSCO cooperation: FSC can share information with UK FCA, triggering parallel investigations for cross-border market abuse or AML violations",
-            ],
-          },
-          {
-            heading: "How FSC Enforcement Appears Publicly",
-            intro:
-              "FSC publishes enforcement outcomes through bureau-specific press releases (English and Mandarin) and comprehensive annual statistics. Unlike centralized databases, enforcement requires monitoring four bureau channels plus FSC corporate announcements.",
-            paragraphs: [
-              "**Publication Structure:** Banking Bureau, Securities and Futures Bureau, and Insurance Bureau each maintain separate press release archives with penalty announcements. Major enforcement actions (e.g., NT$22M Bank of Taiwan AML fine) appear as dedicated press releases with breach details, legal basis, remediation requirements. Annual aggregate statistics published January-February covering prior calendar year. Note: Not all enforcement disclosed in English—Mandarin sources provide more granular detail on routine violations.",
-              "**Enforcement Volume Trends:** 2023 total penalties: NT$254 million (lowest since 2019). 2024 Jan-Aug: NT$129.02 million, with banking fines NT$39.72M (down 52% YoY), insurance NT$36M (down 27% YoY). Declining penalty totals coincide with accelerated regulatory guidance issuance (climate handbooks, fintech frameworks)—signals shift toward preventive supervision rather than escalating enforcement.",
-            ],
-          },
-          {
-            heading: "Best Use of FSC Intelligence in Compliance Programs",
-            intro:
-              "FSC monitoring provides three strategic values: VASP regulatory precedent (Taiwan leads Asia Pacific on crypto local presence), climate disclosure implementation lessons (full listed market scope), and AML enforcement patterns for cross-border transaction due diligence.",
-            paragraphs: [
-              "**Quarterly Review Cadence:** Monitor FSC website (www.fsc.gov.tw/en) quarterly for new enforcement press releases across four bureaus. January-February window provides annual statistics (total penalties, violation breakdowns). Review Green Finance Action Plan updates (October annually) and regulatory plan publications (typically Q4) for forward supervisory priorities. For firms without Mandarin capability, English press releases cover major penalties but may miss routine violations.",
-              "**Integration with VASP Compliance (2024-2025 Priority):** Taiwan's November 30, 2024 VASP registration deadline and criminal penalties for non-compliance create hard cutoff for crypto firms serving Taiwan customers. UK firms operating crypto trading, custody, or exchange services with Taiwan nexus should verify offshore VASP registration requirements. FSC's enforcement against MaiCoin and BitoPro exchanges (referenced in research) demonstrates willingness to sanction non-compliant operators. Monitor for post-deadline enforcement wave (expected Q1 2025).",
-              "**Climate Disclosure Preparation:** Taiwan's mandatory ESG reporting for all listed companies (effective 2025) with GHG emissions requires annual filing by August 31. UK firms with Taiwan subsidiaries or Taiwan-listed securities face new disclosure obligations. FSC's 'comply or explain' framework allows phased quality improvement—use Taiwan implementation experience to inform UK TCFD compliance strategies, particularly for scope 3 emissions challenges.",
+              "**Quarterly Review:** www.fsc.gov.tw/en for press releases across Banking, Securities/Futures, Insurance Bureaus. January-February: annual statistics (penalties, violations). October: Green Finance Action Plan updates. Q4: regulatory plans. English covers major penalties; Mandarin granular detail. Banking Bureau: www.banking.gov.tw/en",
+              "**VASP Compliance (November 2024 Deadline):** Criminal penalties for unregistered operations. UK firms with Taiwan crypto services: verify offshore registration, local presence requirements. MaiCoin, BitoPro enforcement demonstrates willingness to sanction. Q1 2025: watch post-deadline enforcement wave.",
+              "**ESG Reporting (2025 Effective):** All listed companies + Taiwan subsidiaries: August 31 GHG emissions deadline. 'Comply or explain' allows phased quality improvement. Use Taiwan implementation for UK TCFD scope 3 emissions strategies. Watch Q3 2025 enforcement for incomplete/late filings.",
+              "**AML Benchmarking:** Bank of Taiwan NT$22M demonstrates joint defense system alert response scrutiny, employee conduct oversight. Cross-institutional alert tracking, customer due diligence, conduct monitoring signal priorities.",
             ],
           },
         ],
         signals: [
           {
-            title: "VASP Local Presence Mandate (July 2024 MLCA Amendments)",
+            title: "VASP Local Presence & Criminal Penalties (Nov 30, 2024 Deadline)",
             detail:
-              "FSC accelerated VASP registration deadline to November 30, 2024 (from January 2025), requiring offshore operators to establish Taiwan local presence or cease operations. July 2024 Money Laundering Control Act amendments introduce criminal penalties (NT$5 million fines, imprisonment) for unregistered VASP activity. This creates hard jurisdictional enforcement vs. voluntary registration approaches in other markets. Watch for Q1 2025 enforcement against offshore operators continuing Taiwan service without registration—likely sets Asia Pacific precedent for extra-territorial crypto AML enforcement.",
+              "FSC accelerated VASP registration to November 30, 2024 (from January 2025). July 2024 MLCA amendments: offshore operators must establish Taiwan local presence or cease operations. Criminal penalties NT$5M + imprisonment for unregistered activity. Hard jurisdictional enforcement vs voluntary registration (UK FCA phased authorization). Watch Q1 2025 enforcement against offshore operators continuing Taiwan service without registration—likely sets Asia Pacific precedent for extra-territorial crypto AML. MaiCoin, BitoPro enforcement demonstrates willingness to sanction non-compliant exchanges.",
           },
           {
-            title: "Bank of Taiwan NT$22 Million AML Penalty (2024)",
+            title: "Bank of Taiwan NT$22M AML—State Institution Enforcement",
             detail:
-              "FSC's largest 2024 banking penalty targeted Bank of Taiwan for AML control deficiencies: failure to investigate joint defense system alerts (corporate account triggered 7 alerts 2023-2024, bank only examined first 2), inadequate customer due diligence, out-of-branch account opening violations, and employee conduct oversight lapses. Enforcement against major state-linked institution demonstrates FSC credibility—political considerations won't shield systemically important firms. Signals enhanced scrutiny of cross-institutional alert response systems and employee trading/conduct monitoring.",
-          },
-          {
-            title: "Mandatory ESG Reporting for All Listed Companies (2025 Effective)",
-            detail:
-              "Taiwan requires ALL listed companies (not just financial institutions) to file ESG reports with GHG emissions data annually from 2025 (deadline August 31). TCFD-aligned framework covers governance, strategy, climate risks, targets. Scope exceeds most regional peers—Hong Kong requires climate disclosure for listed companies >HK$500M market cap; Singapore Phase 2 covers large non-listed issuers; Taiwan applies to entire listed market. 'Comply or explain' flexibility allows phased quality improvement. Watch for enforcement against incomplete/late filings starting Q3 2025.",
+              "FSC's largest 2024 banking penalty: Bank of Taiwan AML deficiencies—failure to investigate joint defense system alerts (corporate account triggered 7 alerts 2023-2024, only examined 2), inadequate customer due diligence, out-of-branch account opening violations, employee conduct oversight lapses. Major state-linked institution enforcement demonstrates FSC credibility—political considerations won't shield systemically important firms. Signals enhanced scrutiny: cross-institutional alert response systems, employee trading/conduct monitoring. IOSCO cooperation credibility enhanced for cross-border AML investigations.",
           },
         ],
         boardQuestions: [
-          "Does the firm have Taiwan operations, clients, or cross-border payment flows subject to FSC's July 2024 enhanced AML due diligence requirements—particularly involving virtual assets where VASP registration obligations apply from November 30, 2024?",
-          "If the firm operates crypto trading, custody, or exchange services with any Taiwan customer nexus, have we verified compliance with FSC VASP registration requirements and local presence mandates to avoid criminal penalties (NT$5 million fines, imprisonment)?",
-          "For firms with Taiwan-listed securities or subsidiaries: Are we prepared for mandatory ESG reporting effective 2025, including annual GHG emissions disclosure by August 31 under FSC's TCFD-aligned framework?",
+          "Taiwan operations/clients/payments: Subject to July 2024 enhanced AML due diligence—particularly virtual assets with November 30, 2024 VASP registration obligations?",
+          "Crypto trading/custody/exchange with Taiwan nexus: Verified FSC VASP registration + local presence compliance to avoid criminal penalties (NT$5M, imprisonment)?",
+          "Taiwan-listed securities/subsidiaries: Prepared for mandatory ESG reporting 2025 (August 31 GHG emissions deadline, TCFD-aligned)?",
         ],
         takeaways: [
-          "Monitor FSC for VASP Regulatory Leadership—November 2024 registration deadline with criminal sanctions and local presence mandates sets Asia Pacific precedent for jurisdictional crypto enforcement; likely influences FCA, MAS, HKMA approaches",
-          "Taiwan Leads on Comprehensive ESG Scope—mandatory climate disclosure for ALL listed companies (not just financial institutions) from 2025 exceeds regional peers; 'comply or explain' framework offers pragmatic template for phased implementation",
-          "AML Enforcement Extends to State-Linked Institutions—NT$22M Bank of Taiwan penalty demonstrates FSC won't shield systemically important firms for political reasons; enhances regulatory credibility for IOSCO cross-border cooperation",
+          "VASP precedent—November 2024 deadline + criminal sanctions + local presence mandates sets Asia Pacific crypto enforcement standard; likely influences FCA, MAS, HKMA",
+          "Comprehensive ESG scope—ALL listed companies (not just financial institutions) 2025 exceeds regional peers; 'comply or explain' offers phased implementation template",
+          "State institution enforcement—NT$22M Bank of Taiwan demonstrates FSC won't shield systemically important firms; enhances IOSCO cross-border credibility",
         ],
         faqs: [
           {
-            question:
-              "Why should UK firms monitor Taiwan's FSC when it's not a major European counterparty?",
+            question: "Why monitor Taiwan's FSC without major Taiwan exposure?",
             answer:
-              "Three cross-border exposure points: (1) **VASP Jurisdiction**: Taiwan's November 2024 registration deadline with criminal penalties and mandatory local presence applies to ANY offshore crypto operator serving Taiwan customers—UK firms with Asia Pacific crypto services must verify registration status. (2) **IOSCO Information Sharing**: FSC participates in multilateral MoU with 130+ authorities enabling coordinated investigations; FSC findings on cross-border market abuse can trigger FCA parallel enforcement. (3) **Regulatory Innovation Preview**: Taiwan's compressed VASP timeline and full-market ESG reporting demonstrate rapid implementation of frameworks other jurisdictions debate—provides 6-18 month early warning of global supervisory direction in digital assets and climate disclosure.",
+              "Three cross-border exposures: (1) **VASP Jurisdiction**: November 2024 deadline + criminal penalties + local presence applies to ANY offshore crypto operator serving Taiwan customers—UK firms with Asia Pacific crypto services must verify registration. (2) **IOSCO Cooperation**: FSC participates in multilateral MoU with 130+ authorities; cross-border market abuse findings can trigger FCA parallel enforcement. (3) **Regulatory Preview**: Taiwan's compressed VASP timeline, full-market ESG reporting demonstrate rapid implementation of frameworks other jurisdictions debate—provides 6-18 month early warning for digital assets, climate disclosure.",
           },
           {
-            question:
-              "How does Taiwan's climate disclosure framework differ from UK's mandatory TCFD reporting?",
+            question: "How do Taiwan's and UK's climate disclosure frameworks differ?",
             answer:
-              "Taiwan FSC requires TCFD-aligned climate disclosure from all listed companies (effective 2025) with 'comply or explain' flexibility—firms can phase disclosure quality over time vs. UK's binary mandatory compliance. Key differences: (1) **Scope**: Taiwan covers ALL listed companies; UK focuses on premium-listed commercial companies, banks, insurers. (2) **Enforcement**: Taiwan allows progressive strengthening of qualitative/quantitative content; UK expects full compliance from day one. (3) **GHG Emissions**: Taiwan mandates annual emissions data (August 31 deadline); UK requires emissions under existing regulatory frameworks, not specific TCFD deadline. Taiwan approach offers pragmatic template for jurisdictions wanting ambitious scope without prohibitive compliance burden—watch FSC 2025 enforcement for lessons on phased rollout effectiveness.",
+              "Taiwan: TCFD-aligned for ALL listed companies (2025) with 'comply or explain'—phased quality improvement vs UK's binary mandatory compliance. Key differences: (1) **Scope**: Taiwan ALL listed companies; UK premium-listed commercial, banks, insurers. (2) **Enforcement**: Taiwan progressive strengthening; UK full compliance day one. (3) **GHG**: Taiwan annual emissions (August 31); UK emissions under existing frameworks, no specific TCFD deadline. Taiwan offers pragmatic template for ambitious scope without prohibitive burden—watch FSC 2025 enforcement for phased rollout lessons.",
           },
         ],
         sourceLinks: [
@@ -1731,81 +1685,57 @@ function getRegulatorProfile(code: string): RegulatorProfile {
         sections: [
           buildCoverageAssessment(REGULATOR_COVERAGE.CVM),
           {
-            heading: "Why CVM Brazil Matters Beyond Brazil",
+            heading: "Why CVM Matters & 2025 Enforcement Priorities",
             intro:
-              "CVM enforcement relevance extends beyond Brazil through IOSCO Enhanced MMoU cooperation (enabling information sharing with 130+ authorities), ISSB sustainability standard adoption (global ESG reporting precedent), and digital asset framework clarity (security token jurisdiction established via CVM Opinion No. 40/2022).",
+              "IOSCO Enhanced MMoU cooperation (information sharing with 130+ authorities), ISSB sustainability standard adoption (global ESG precedent), and security token framework (Opinion No. 40/2022) make CVM relevant beyond Brazil.",
             paragraphs: [
-              "**Cross-Border Listings & Capital Raising:** Foreign companies listing on B3 (São Paulo Stock Exchange) or raising capital from Brazilian investors fall under CVM jurisdiction for disclosure, corporate governance, securities law compliance. CVM can impose sanctions on foreign entities operating in Brazil's capital markets. IOSCO Enhanced MMoU signatory status enables bilateral information sharing with FCA, SEC, CSRC—CVM can coordinate enforcement across borders for insider trading, market manipulation involving international participants.",
-              "**ISSB Sustainability Reporting Precedent:** Brazil's mandatory IFRS S1 (general sustainability) and S2 (climate) disclosure from January 2026 creates new compliance obligations for domestic and foreign issuers accessing Brazilian capital markets. CVM partnership with CDP (accessing data from 1,100 companies, 86% of market cap) demonstrates leveraging third-party ESG infrastructure for regulatory oversight. Non-EU firms face dual reporting: ESMA's CSRD regime (for EU operations) and CVM's ISSB framework (for Brazil exposure)—watch CVM 2026 enforcement for ISSB implementation lessons applicable globally.",
-              "**Digital Asset Regulatory Clarity:** CVM Opinion No. 40/2022 established taxonomy distinguishing security tokens (under CVM oversight) from payment/utility tokens. Security token offerings require full CVM registration regardless of issuer location—international crypto firms offering tokens qualifying as securities to Brazilian investors must comply. December 2024 regulatory agenda includes September 2025 public consultation on tokenization frameworks, modernizing crowdfunding rules to incorporate digital assets. Firms operating global token issuances should monitor CVM's security token perimeter for jurisdictional enforcement triggers.",
+              "**ISSB Climate Disclosure Global First:** Mandatory IFRS S1/S2 from January 2026 (all publicly held companies, funds, securitization vehicles) makes Brazil first major jurisdiction enforcing ISSB standards. CVM Resolutions 217, 218, 219 (October 2024): governance, strategy, climate risks, GHG emissions, targets, third-party assurance required. CVM-CDP partnership (1,100 companies, 86% market cap) demonstrates third-party ESG infrastructure leverage. Non-EU firms face dual reporting: ESMA CSRD (EU) + CVM ISSB (Brazil). Watch Q2-Q3 2026 enforcement for implementation lessons applicable globally.",
+              "**Americanas Scandal & Corporate Fraud Enforcement:** 448 investigations 2025 (up 4%), 828 ongoing processes, 48 sanctions totaling R$472M (despite lower volume, shift to high-value). Americanas R$20B undisclosed liabilities: October 2024 insider trading accusations against eight executives including CEO Miguel Gutierrez, December 2024 R$340,000 fine against CEO João Guerra for disclosure failures. Multi-year investigation demonstrates persistence for systemic violations, C-suite accountability. Foreign companies listing B3 or raising capital from Brazilian investors fall under CVM jurisdiction—IOSCO MMoU enables cross-border coordination with FCA, SEC, CSRC.",
+              "**Security Token Jurisdiction:** CVM Opinion No. 40/2022 distinguishes security tokens (CVM oversight, full registration required) from payment/utility tokens. September 2025 public consultation on tokenization frameworks: modernizing crowdfunding for digital assets, FÁCIL regime (SME capital access). May clarify DeFi protocol tokens, governance rights, staking rewards. International crypto firms offering tokens qualifying as securities to Brazilian investors must comply regardless of issuer location.",
             ],
+          },
+          {
+            heading: "Monitoring & Compliance Integration",
             bullets: [
-              "Monitor CVM if your firm has B3 listings, raises capital from Brazilian investors, or operates cross-border fund distribution into Brazil—direct CVM jurisdiction applies",
-              "Use for ISSB climate disclosure benchmarking: Brazil's January 2026 mandatory regime provides early implementation lessons for firms planning IFRS S1/S2 adoption in other markets",
-              "Track digital asset framework: CVM Opinion No. 40/2022 security token definition and upcoming tokenization consultation clarify when crypto offerings require securities registration",
-              "Leverage IOSCO cooperation: CVM Enhanced MMoU signatory status enables information sharing with FCA for coordinated insider trading/market manipulation investigations",
-            ],
-          },
-          {
-            heading: "How CVM Enforcement Appears Publicly",
-            intro:
-              "CVM publishes enforcement outcomes through press releases (Portuguese and English), administrative proceeding decisions, and monthly/annual enforcement statistics accessible via official website (www.gov.br/cvm/en). Major cases receive dedicated press coverage; routine violations summarized in periodic reports.",
-            paragraphs: [
-              "**Publication Format:** High-profile enforcement (Americanas scandal, major insider trading) announced via press releases with case details, legal basis, penalty amounts. Administrative Proceedings Board (Colegiado) decisions published as formal rulings accessible on CVM website. Monthly enforcement bulletins aggregate new investigations, ongoing proceedings, closed cases. Annual reports (typically published Q1 following year) provide comprehensive statistics: total investigations, sanctions issued, penalty amounts, breach categories.",
-              "**English Language Availability:** Major enforcement actions receive English press releases; routine violations often Portuguese-only. CVM website (www.gov.br/cvm/en) provides English navigation for key sections (enforcement, regulations), but granular proceeding details may require Portuguese translation. For international firms, monitor English press releases quarterly; engage local counsel for Portuguese administrative proceeding tracking where direct exposure exists.",
-            ],
-          },
-          {
-            heading: "Best Use of CVM Intelligence in Compliance Programs",
-            intro:
-              "CVM monitoring provides strategic value for ISSB climate disclosure preparation (Brazil first-mover on mandatory IFRS S1/S2), digital asset security token jurisdiction (CVM Opinion No. 40/2022), and emerging market enforcement precedents (corporate fraud, insider trading patterns applicable regionally).",
-            paragraphs: [
-              "**Quarterly Review Approach:** Monitor CVM English press releases (www.gov.br/cvm/en/news) quarterly for major enforcement. January-February window provides annual statistics (investigations, sanctions, penalties). Review regulatory agenda (published December annually) for upcoming priorities—2025 agenda highlights FÁCIL regime (SME capital access), tokenization consultation (September 2025), FIPs governance updates.",
-              "**ISSB Climate Disclosure Preparation (January 2026 Effective):** Brazil's mandatory IFRS S1/S2 sustainability reporting for all publicly held companies, funds, securitization vehicles creates new compliance obligations. Firms with Brazil operations should engage with CVM Resolutions 217, 218, 219 (October 2024 final rules) establishing detailed disclosure requirements. Third-party assurance required—plan auditor engagement H2 2025 for January 2026 reports. CVM enforcement expected Q2-Q3 2026 for non-compliance/late filing.",
-              "**Digital Asset Security Token Monitoring:** CVM's 2025 regulatory agenda includes September 2025 public consultation on tokenization frameworks. Firms issuing tokens globally should participate to shape CVM's security perimeter definition—particularly distinguishing utility tokens (outside CVM) vs security tokens (full registration required). CVM Opinion No. 40/2022 establishes current framework but upcoming consultation may refine applicability to DeFi, governance tokens, staking rewards.",
+              "**Quarterly Review:** www.gov.br/cvm/en/news for English press releases. January-February: annual statistics (investigations, sanctions, penalties). December regulatory agenda for upcoming priorities (2025: tokenization consultation, FÁCIL regime, FIPs governance). Major enforcement English; routine Portuguese-only—engage local counsel for granular tracking.",
+              "**ISSB Preparation (January 2026):** Resolutions 217, 218, 219 (October 2024) establish detailed IFRS S1/S2 obligations. Third-party assurance required—engage auditor H2 2025 for January 2026 reports. Enforcement expected Q2-Q3 2026 for non-compliance/late filing.",
+              "**Security Token Monitoring:** September 2025 tokenization consultation—participate to shape perimeter definition. Opinion No. 40/2022: current framework, but consultation may refine DeFi, governance tokens, staking treatment. Global token issuances: assess whether qualify as securities under Brazilian law triggering registration.",
+              "**Cross-Border Coordination:** IOSCO Enhanced MMoU enables information sharing with FCA, SEC. Americanas case demonstrates multi-year corporate fraud pursuit—benchmark disclosure controls, insider trading prevention for material events.",
             ],
           },
         ],
         signals: [
           {
-            title: "Americanas Scandal Multi-Year Enforcement (2023-2024)",
+            title: "Americanas R$20B Scandal—Multi-Year Corporate Fraud Pursuit",
             detail:
-              "CVM investigation into R$20 billion (~$4B USD) undisclosed liabilities at retailer Americanas resulted in October 2024 insider trading accusations against eight former executives including CEO Miguel Gutierrez, plus December 2024 R$340,000 fine against CEO João Guerra for conference call disclosure failures. Scandal triggered 90%+ market value collapse and bankruptcy proceedings. Multi-year investigation demonstrates CVM's persistence in complex accounting fraud cases. Signals enforcement priorities: disclosure accuracy at systemically important companies, insider trading during corporate distress, C-suite accountability for material misstatements. Watch for final sanctions 2025-2026 (administrative proceedings ongoing).",
+              "CVM investigation into R$20B (~$4B USD) undisclosed liabilities at retailer Americanas: October 2024 insider trading accusations against eight executives including CEO Miguel Gutierrez, December 2024 R$340,000 fine against CEO João Guerra for conference call disclosure failures. Scandal triggered 90%+ market collapse, bankruptcy. Multi-year investigation demonstrates persistence for complex accounting fraud. Signals priorities: disclosure accuracy at systemically important companies, insider trading during corporate distress, C-suite accountability for misstatements. Administrative proceedings ongoing—watch for final sanctions 2025-2026.",
           },
           {
-            title: "ISSB Sustainability Reporting (Mandatory January 1, 2026)",
+            title: "ISSB IFRS S1/S2—Mandatory January 2026, First Major Jurisdiction",
             detail:
-              "CVM Resolution 193 (October 2023) adopted ISSB IFRS S1 (general sustainability) and S2 (climate) standards with mandatory compliance from January 1, 2026 for publicly held companies, investment funds, securitization companies. October 2024 Resolutions 217, 218, 219 finalized detailed obligations: governance, strategy, climate risks, GHG emissions, targets, third-party assurance. CVM-CDP partnership provides regulatory access to 1,100 companies' climate data (86% Brazil market cap). Non-compliance from 2026 exposes firms to CVM enforcement—first test of ISSB standards in major jurisdiction. Watch Q2-Q3 2026 for inaugural enforcement actions against incomplete/late filings.",
-          },
-          {
-            title:
-              "Tokenization Framework Consultation (September 2025 Expected)",
-            detail:
-              "CVM's 2025 regulatory agenda includes public consultation on tokenization frameworks (expected September 2025) as part of FÁCIL regime (capital market access for SMEs). Focus: modernizing crowdfunding rules to incorporate security tokens, updating CVM Resolutions 135/31 for digital assets. Builds on CVM Opinion No. 40/2022 taxonomy (security tokens under CVM jurisdiction; payment/utility tokens outside). Consultation may clarify: DeFi protocol tokens, governance rights as securities, staking rewards treatment. International crypto firms should monitor—Brazil's security token perimeter may influence regional Latin American approaches.",
+              "CVM Resolution 193 (October 2023) adopted ISSB IFRS S1 (general sustainability), S2 (climate) with mandatory compliance January 2026 for publicly held companies, investment funds, securitization companies. October 2024 Resolutions 217, 218, 219: governance, strategy, climate risks, GHG emissions, targets, third-party assurance detailed. CVM-CDP partnership: regulatory access to 1,100 companies (86% market cap). Non-compliance exposes firms to enforcement—first test of ISSB standards in major jurisdiction. Watch Q2-Q3 2026 for inaugural actions against incomplete/late filings.",
           },
         ],
         boardQuestions: [
-          "If the firm has B3 listings, Brazilian fund offerings, or capital raising from Brazilian investors: Are we prepared for mandatory ISSB IFRS S1/S2 sustainability reporting effective January 1, 2026, including third-party assurance arrangements and GHG emissions quantification?",
-          "Does management understand CVM's security token jurisdiction under Opinion No. 40/2022—and have we assessed whether any tokens issued globally qualify as securities under Brazilian law, triggering CVM registration requirements?",
-          "For firms monitoring emerging market enforcement trends: How do we use CVM's Americanas investigation (multi-year corporate fraud pursuit, C-suite accountability) to validate our disclosure controls and insider trading prevention for material corporate events?",
+          "B3 listings/Brazilian capital raising: Prepared for mandatory ISSB IFRS S1/S2 (January 2026)—third-party assurance arranged, GHG emissions quantification ready?",
+          "Understand CVM security token jurisdiction (Opinion No. 40/2022)—assessed whether global token issuances qualify as securities under Brazilian law requiring registration?",
+          "Validated disclosure controls, insider trading prevention using Americanas lessons (multi-year corporate fraud pursuit, C-suite accountability)?",
         ],
         takeaways: [
-          "Monitor CVM for ISSB Climate Disclosure Implementation—Brazil's January 2026 mandatory IFRS S1/S2 regime provides early lessons for global firms planning sustainability reporting; watch Q2-Q3 2026 enforcement for compliance expectations",
-          "Brazil First-Mover on Security Token Framework—CVM Opinion No. 40/2022 establishes security vs utility token distinction; September 2025 consultation may refine DeFi, governance, staking treatment—likely influences Latin American regional approaches",
-          "IOSCO Enhanced MMoU Enables Cross-Border Coordination—CVM can share information with FCA, SEC, CSRC for insider trading/market manipulation investigations; Americanas case demonstrates multi-year enforcement persistence against systemically important companies",
+          "ISSB global first—Brazil's January 2026 mandatory IFRS S1/S2 provides early implementation lessons; watch Q2-Q3 2026 enforcement for compliance expectations",
+          "Security token precedent—Opinion No. 40/2022 distinguishes security vs utility tokens; September 2025 consultation may refine DeFi/governance/staking, influencing LATAM approaches",
+          "IOSCO cross-border coordination—Enhanced MMoU enables information sharing with FCA, SEC; Americanas demonstrates multi-year corporate fraud persistence",
         ],
         faqs: [
           {
-            question:
-              "Why monitor CVM if my firm doesn't have Brazil operations?",
+            question: "Why monitor CVM without Brazil operations?",
             answer:
-              "Three cross-border implications: (1) **ISSB Reporting Precedent**: Brazil's January 2026 mandatory IFRS S1/S2 climate disclosure makes CVM the first major regulator enforcing ISSB standards—implementation lessons applicable to firms planning ISSB adoption in other jurisdictions (UK, Singapore, Hong Kong considering ISSB frameworks). (2) **IOSCO Information Sharing**: CVM Enhanced MMoU signatory status enables coordination with 130+ authorities including FCA; cross-border market abuse investigations can trigger parallel UK enforcement. (3) **Emerging Market Patterns**: Brazil represents significant emerging market where corporate governance, disclosure, insider trading enforcement trends often preview regional Latin American approaches—CVM enforcement provides benchmark for firms with LATAM exposure beyond Brazil.",
+              "Three cross-border implications: (1) **ISSB Precedent**: Brazil's January 2026 mandatory IFRS S1/S2 makes CVM first major regulator enforcing ISSB standards—implementation lessons applicable to UK, Singapore, Hong Kong considering ISSB frameworks. (2) **IOSCO Cooperation**: CVM Enhanced MMoU enables coordination with 130+ authorities including FCA; cross-border market abuse investigations can trigger parallel UK enforcement. (3) **Emerging Market Benchmark**: Brazil corporate governance, disclosure, insider trading trends preview regional LATAM approaches—CVM provides benchmark for LATAM exposure beyond Brazil.",
           },
           {
-            question:
-              "How does CVM's ISSB sustainability reporting differ from ESMA's CSRD regime?",
+            question: "How do CVM's ISSB and ESMA's CSRD sustainability reporting differ?",
             answer:
-              "CVM adopted ISSB IFRS S1 (general sustainability) and S2 (climate) standards; ESMA implements Corporate Sustainability Reporting Directive (CSRD) with European Sustainability Reporting Standards (ESRS). Key differences: (1) **Standard Source**: CVM uses international ISSB framework; ESMA uses EU-specific ESRS tailored to European double materiality. (2) **Scope**: CVM covers all publicly held companies, funds, securitization vehicles from January 2026; ESMA phases large companies 2024, SMEs 2026. (3) **Assurance**: Both require third-party verification but ESMA mandates limited assurance initially (reasonable assurance later); CVM details TBD in implementation. (4) **Global vs Regional**: ISSB designed for global convergence; ESRS reflects EU policy priorities (taxonomy alignment, Just Transition). Firms operating in both jurisdictions face dual reporting—Brazil ISSB and EU ESRS—requiring mapping between frameworks.",
+              "CVM: IFRS S1/S2 (ISSB international standards). ESMA: CSRD with ESRS (EU-specific standards). Key differences: (1) **Standard**: CVM international ISSB; ESMA EU double materiality ESRS. (2) **Scope**: CVM all publicly held companies/funds/securitization (January 2026); ESMA phases large 2024, SMEs 2026. (3) **Assurance**: ESMA limited initially (reasonable later); CVM TBD. (4) **Design**: ISSB global convergence; ESRS EU policy (taxonomy, Just Transition). Firms in both jurisdictions: dual reporting requires mapping ISSB ↔ ESRS frameworks.",
           },
         ],
         sourceLinks: [
@@ -1841,77 +1771,57 @@ function getRegulatorProfile(code: string): RegulatorProfile {
         sections: [
           buildCoverageAssessment(REGULATOR_COVERAGE.CNBV),
           {
-            heading: "Why CNBV Mexico Matters Beyond Mexico",
+            heading: "Why CNBV Matters & 2025 Enforcement Priorities",
             intro:
-              "CNBV regulatory framework carries strategic importance through USMCA financial services harmonization (Chapter 17 cross-border treatment), fintech leadership (1,000+ providers influencing regional innovation), and intensified U.S. AML cooperation creating spillover enforcement effects for North American financial services.",
+              "USMCA Chapter 17 harmonization, fintech leadership (1,000+ providers), and U.S.-Mexico AML coordination make CNBV relevant beyond Mexico for North American regulatory convergence and LATAM fintech innovation.",
             paragraphs: [
-              "**USMCA Financial Services Framework:** United States-Mexico-Canada Agreement Chapter 17 harmonizes financial services treatment and ensures equal treatment of companies across member countries. CNBV enforcement priorities (AML, fraud prevention, capital adequacy) create cross-border regulatory spillover—Mexican subsidiaries of U.S./Canadian banks face identical standards, with group-wide control framework implications. USMCA financial services committee coordinates supervisory approaches, making CNBV enforcement visible to Federal Reserve, OCC, OSFI for benchmarking purposes.",
-              "**Latin America Fintech Leadership:** Mexico hosts 1,000+ fintech providers under CNBV-supervised Fintech Law (Ley Fintech, 2018)—specialized licenses for cryptocurrency exchanges, crowdfunding platforms, payment institutions. CNBV's regulatory innovation (sandbox regimes, open banking standards, crypto exchange licensing) influences broader Latin American approaches. Firms operating regional fintech models should monitor CNBV frameworks as precedent for Brazil CVM, Chile CMF, Colombia Superfinanciera approaches to digital financial services.",
-              "**U.S.-Mexico AML Enforcement Coordination:** 2025 MXN 185M penalties against CIBanco/Intercam followed U.S. Treasury sanctions, demonstrating FinCEN-CNBV coordination on cross-border AML. CNBV's assumption of temporary management (extraordinary measure) signals zero tolerance for institutions with U.S. sanctions exposure. UK firms with correspondent banking relationships to Mexican institutions or cross-border payment corridors face heightened AML due diligence expectations given U.S.-Mexico enforcement cooperation intensity.",
+              "**U.S.-Mexico AML Coordination & Temporary Management:** 2025 MXN 185M penalties (Intercam MXN 92.15M/26 fines, CIBanco MXN 66.61M/20 fines, Vector MXN 26.46M/6 fines) followed U.S. Treasury sanctions—demonstrates FinCEN-CNBV coordination. CNBV assumed temporary management CIBanco/Intercam (extraordinary measure) signaling zero tolerance for U.S. sanctions exposure. UK firms with correspondent banking to Mexican institutions, cross-border payment corridors face heightened AML due diligence. Firms should review: (1) U.S. sanctions screening integration, (2) beneficial ownership verification, (3) SAR thresholds, (4) CNBV administrative process compliance (timely responses, examination cooperation). Temporary management represents escalation beyond fines—operational intervention risk for severe AML failures.",
+              "**Fintech Leadership & Fraud Prevention Framework:** 1,000+ fintech providers under Ley Fintech (2018)—specialized licenses for crypto exchanges, crowdfunding, payments. CNBV innovation (sandbox, open banking, crypto licensing) influences regional CVM (Brazil), CMF (Chile), Superfinanciera (Colombia). June 2024 fraud prevention regulations: fraud management plan submission 180 days (December 2024), implementation 10 months (April 2025), transaction controls 16 months (October 2025). Prescriptive requirements: fraud typologies, internal controls, information sharing, complaint processes. Watch Q4 2025 enforcement for missed deadlines.",
+              "**USMCA Spillover & Capital Adequacy:** USMCA Chapter 17 harmonizes financial services treatment, equal treatment across U.S.-Mexico-Canada. CNBV priorities (AML, fraud, capital) create cross-border spillover—Mexican subsidiaries of U.S./Canadian banks face identical standards, group-wide implications. USMCA financial services committee coordinates approaches—CNBV enforcement visible to Federal Reserve, OCC. December 2024 SOFIPO (Financiera Auxi) license revocation after 15 months capital non-compliance demonstrates strict capital enforcement. Basel III implementation: SIBs face higher ratios phasing 2025.",
             ],
+          },
+          {
+            heading: "Monitoring & Compliance Integration",
             bullets: [
-              "Monitor CNBV if your firm has Mexican operations, cross-border payment corridors through Mexico, or correspondent banking relationships with Mexican institutions subject to enhanced AML scrutiny",
-              "Use for fintech regulatory innovation: Mexico's 1,000+ fintech providers operate under CNBV frameworks (crypto exchange licensing, crowdfunding, open banking) likely influencing UK FCA, Brazil CVM approaches",
-              "Track USMCA financial services coordination: CNBV enforcement visible to Federal Reserve/OCC creates North American supervisory convergence on AML, capital adequacy, fraud prevention",
-              "Benchmark fraud prevention frameworks: June 2024 regulations with prescriptive timelines (180-day plans, 10-month implementation) offer model for systematizing fraud risk management",
-            ],
-          },
-          {
-            heading: "How CNBV Enforcement Appears Publicly",
-            intro:
-              "CNBV publishes enforcement outcomes through official communications (Spanish), press releases, and annual reports accessible via www.gob.mx/cnbv. Major enforcement actions receive dedicated press coverage; routine violations summarized in periodic bulletins.",
-            paragraphs: [
-              "**Publication Format:** High-profile cases (MXN 185M AML penalties, license revocations) announced via press releases with legal basis, penalty amounts, remediation requirements. Administrative proceedings published as formal rulings. Annual reports (published Q1 following year) provide comprehensive statistics: enforcement volume, penalty aggregates, breach categories, regulatory priorities. CNBV website maintains enforcement archive but granular search functionality limited—requires manual review of chronological announcements.",
-              "**Language Availability:** Most enforcement disclosed Spanish-only; major cases may receive English summaries via international financial press (Bloomberg, Reuters). For international firms, engage local counsel for Spanish administrative proceeding tracking where direct CNBV exposure exists.",
-            ],
-          },
-          {
-            heading: "Best Use of CNBV Intelligence in Compliance Programs",
-            intro:
-              "CNBV monitoring provides strategic value for U.S.-Mexico AML coordination patterns (FinCEN cooperation precedent), fintech regulatory frameworks (crypto licensing, open banking), and fraud prevention implementation lessons (June 2024 prescriptive timelines).",
-            paragraphs: [
-              "**Quarterly Review Approach:** Monitor CNBV press releases (www.gob.mx/cnbv/prensa) quarterly for major enforcement. January-March window provides annual reports with enforcement statistics. For firms with Mexico operations, subscribe to CNBV official communications (Comunicados) for real-time regulatory updates. Language barrier: Consider Spanish-fluent compliance staff or local legal counsel for granular monitoring.",
-              "**AML Program Enhancement (2025 Priority):** MXN 185M penalties against CIBanco/Intercam for 'administrative process non-compliance' signal CNBV-FinCEN coordination on cross-border AML. Firms with Mexican correspondent banking, payment processing, or remittance operations should review: (1) U.S. sanctions screening integration with Mexican AML controls, (2) beneficial ownership verification processes, (3) suspicious activity reporting thresholds, (4) CNBV administrative process compliance (timely responses to information requests, examination cooperation). CNBV's temporary management assumption (CIBanco/Intercam) represents escalation beyond monetary penalties—signals operational intervention risk for severe AML failures.",
-              "**Fraud Prevention Framework Implementation:** June 2024 regulations mandate: fraud management plan submission within 180 days (December 2024 deadline passed), plan implementation within 10 months (April 2025), user transaction amount controls within 16 months (October 2025). UK firms with Mexico operations should benchmark: (1) fraud typology definitions, (2) internal control integration, (3) information sharing protocols, (4) complaint process enhancements. CNBV enforcement expected Q4 2025 for non-compliance with implementation deadlines.",
+              "**Quarterly Review:** www.gob.mx/cnbv/prensa for major enforcement (Spanish). Q1 annual reports: enforcement volume, penalty aggregates, categories. Subscribe to Comunicados for real-time regulatory updates. Major cases may receive English summaries (Bloomberg, Reuters)—engage local counsel for granular Spanish tracking.",
+              "**AML Enhancement:** MXN 185M penalties signal FinCEN-CNBV coordination. Correspondent banking/payment processing/remittance operations: validate U.S. sanctions integration, beneficial ownership processes, SAR thresholds, CNBV administrative compliance. Temporary management (CIBanco/Intercam) demonstrates operational intervention risk beyond fines.",
+              "**Fraud Prevention Implementation:** June 2024 regulations: fraud plans December 2024 (deadline passed), implementation April 2025, transaction controls October 2025. Benchmark: fraud typologies, internal control integration, information sharing, complaint processes. Watch Q4 2025 enforcement for deadline non-compliance.",
+              "**USMCA Coordination:** CNBV enforcement visible to Federal Reserve, OCC—North American supervisory convergence on AML, capital, fraud. Mexican subsidiaries face identical standards with group-wide control implications.",
             ],
           },
         ],
         signals: [
           {
-            title:
-              "U.S.-Mexico AML Coordination: MXN 185 Million Penalties (2025)",
+            title: "U.S.-Mexico AML Coordination & Temporary Management (2025)",
             detail:
-              "CNBV imposed MXN 185 million ($9.8M USD) fines on Intercam (MXN 92.15M, 26 fines), CIBanco (MXN 66.61M, 20 fines), Vector Casa de Bolsa (MXN 26.46M, 6 fines) for AML administrative process failures following U.S. Treasury sanctions. CNBV assumed temporary management of CIBanco and Intercam—extraordinary intervention demonstrating zero tolerance for U.S. sanctions exposure. Signals: (1) FinCEN-CNBV information sharing operational, (2) U.S. sanctions trigger Mexican regulatory action, (3) correspondent banking/cross-border payment AML controls under heightened scrutiny. Watch for additional enforcement against institutions with U.S. sanctions red flags 2025-2026.",
+              "CNBV imposed MXN 185M ($9.8M) fines: Intercam MXN 92.15M (26 fines), CIBanco MXN 66.61M (20 fines), Vector MXN 26.46M (6 fines) for AML administrative process failures following U.S. Treasury sanctions. CNBV assumed temporary management CIBanco and Intercam—extraordinary intervention demonstrating zero tolerance for U.S. sanctions exposure. Signals: (1) FinCEN-CNBV information sharing operational, (2) U.S. sanctions trigger Mexican regulatory action, (3) correspondent banking/cross-border payment AML heightened scrutiny. Temporary management escalation beyond monetary penalties—operational intervention risk. Watch additional enforcement against institutions with U.S. sanctions red flags 2025-2026.",
           },
           {
-            title:
-              "License Revocation for Persistent Capital Deficiency (December 2024)",
+            title: "License Revocation for Persistent Capital Deficiency (Dec 2024)",
             detail:
-              "CNBV revoked SOFIPO (Financiera Auxi) operating license after 15 consecutive months of capitalization requirement non-compliance. Represents most severe sanction available—operational shutdown. 15-month tolerance period demonstrates regulator's willingness to provide remediation opportunity, but ultimate unwillingness to accept persistent non-compliance. Systemically Important Banks (SIBs) face higher capital ratio requirements phasing through 2025. Signals capital management top supervisory priority; firms with persistent capital adequacy issues face existential risk. Watch for heightened capital adequacy enforcement 2025 as Basel III implementation completes.",
-          },
-          {
-            title:
-              "Fraud Prevention Regulation with Compressed Timelines (June 2024)",
-            detail:
-              "June 14, 2024 CNBV regulation redefined fraud prevention requirements effective June 15, 2024 with mandatory deadlines: fraud management plan submission within 180 days (December 2024), implementation within 10 months (April 2025), user transaction amount controls within 16 months (October 2025). Prescriptive requirements: fraud typology definitions, internal control strengthening, information sharing protocols, enhanced complaint processes. Reflects proactive approach to emerging fraud risks in digital financial ecosystem. Signals: immediate resource allocation required, system upgrades necessary, fraud prevention integrated into core risk management. Watch Q4 2025 for enforcement against missed implementation deadlines.",
+              "CNBV revoked SOFIPO (Financiera Auxi) operating license after 15 consecutive months capitalization non-compliance. Most severe sanction—operational shutdown. 15-month tolerance demonstrates remediation opportunity, but ultimate unwillingness to accept persistent non-compliance. Systemically Important Banks face higher capital ratios phasing 2025. Signals: capital management top supervisory priority, persistent adequacy issues = existential risk. Watch heightened capital enforcement 2025 as Basel III completes.",
           },
         ],
         boardQuestions: [
-          "If the firm operates in Mexico or maintains correspondent banking/payment processing relationships with Mexican institutions: Have we assessed AML control integration with U.S. sanctions screening given CNBV-FinCEN coordination demonstrated in 2025 MXN 185M penalties and temporary management actions?",
-          "For firms with Mexico operations: Are we compliant with CNBV's June 2024 fraud prevention regulations including April 2025 implementation deadline and October 2025 transaction control requirements—and have we allocated resources for mandatory fraud management plan deployment?",
-          "Does management understand CNBV's capital adequacy enforcement approach (15-month tolerance for remediation, ultimate license revocation for persistent non-compliance)—and are our Mexico subsidiaries maintaining capital ratios with adequate buffer above regulatory minimums?",
+          "Mexico operations/correspondent banking: Assessed AML control integration with U.S. sanctions screening (CNBV-FinCEN coordination, MXN 185M penalties, temporary management)?",
+          "Mexico operations: Compliant with June 2024 fraud prevention regulations (April 2025 implementation, October 2025 transaction controls)—resources allocated for mandatory plans?",
+          "Understand CNBV capital adequacy approach (15-month tolerance, ultimate license revocation)—Mexico subsidiaries maintain capital ratios with adequate buffer?",
         ],
         takeaways: [
-          "Monitor CNBV for U.S.-Mexico AML Coordination Patterns—MXN 185M penalties following Treasury sanctions demonstrate FinCEN information sharing; firms with cross-border payment corridors face heightened AML due diligence expectations",
-          "Mexico Leads Latin America Fintech Innovation—1,000+ CNBV-supervised fintech providers operate under specialized frameworks (crypto exchanges, crowdfunding, open banking); regulatory approaches likely influence regional CVM, CMF, Superfinanciera models",
-          "Fraud Prevention Framework Prescriptive Timelines—June 2024 regulations mandate 180-day plans, 10-month implementation, 16-month transaction controls; Q4 2025 enforcement expected for missed deadlines",
+          "U.S.-Mexico AML coordination—MXN 185M penalties + temporary management demonstrate FinCEN information sharing; cross-border payment corridors face heightened due diligence",
+          "Fintech innovation leadership—1,000+ providers under specialized frameworks (crypto, crowdfunding, open banking) influence regional CVM, CMF, Superfinanciera",
+          "Fraud prevention timelines—June 2024 regulations: 180-day plans, 10-month implementation, 16-month transaction controls; Q4 2025 enforcement for missed deadlines",
         ],
         faqs: [
           {
-            question:
-              "Why should UK/European firms monitor CNBV enforcement trends?",
+            question: "Why monitor CNBV without Mexico operations?",
             answer:
-              "CNBV carries strategic importance through: (1) **USMCA Framework**: Chapter 17 harmonizes financial services treatment across U.S.-Mexico-Canada, creating cross-border regulatory spillover. Mexican subsidiaries of UK banks with North American operations face identical CNBV standards with group-wide control implications. (2) **Fintech Leadership**: Mexico's 1,000+ fintech providers under CNBV supervision pioneer regulatory frameworks (crypto exchange licensing, open banking, sandbox regimes) influencing UK FCA, Brazil CVM approaches to digital financial services. (3) **U.S. AML Cooperation**: 2025 MXN 185M penalties demonstrate FinCEN-CNBV coordination—UK firms with correspondent banking to Mexican institutions or cross-border payment corridors face exposure to joint U.S.-Mexico AML enforcement. (4) **Regional Influence**: CNBV frameworks preview broader Latin American supervisory direction given Mexico's economic/regulatory leadership in region.",
+              "Four cross-border exposures: (1) **USMCA**: Chapter 17 harmonizes U.S.-Mexico-Canada financial services—Mexican subsidiaries face identical CNBV standards with group-wide control implications. (2) **Fintech Leadership**: 1,000+ providers pioneer frameworks (crypto licensing, open banking, sandbox) influencing UK FCA, Brazil CVM digital financial services approaches. (3) **U.S. AML Cooperation**: MXN 185M penalties + temporary management demonstrate FinCEN-CNBV coordination—correspondent banking/payment corridors face joint U.S.-Mexico AML enforcement exposure. (4) **Regional Preview**: CNBV frameworks signal LATAM supervisory direction given Mexico's economic/regulatory leadership.",
+          },
+          {
+            question: "How does CNBV's temporary management differ from standard enforcement?",
+            answer:
+              "Temporary management represents extraordinary intervention beyond monetary penalties—CNBV assumes operational control of institution (CIBanco, Intercam 2025 for AML failures following U.S. Treasury sanctions). Standard enforcement: fines, remediation orders, activity restrictions while institution maintains management. Temporary management: CNBV appoints administrators, directs operations, suspends board/executives until deficiencies resolved or orderly wind-down completed. Signals: zero tolerance for severe AML/sanctions exposure, operational intervention risk beyond fines, escalation pathway if monetary penalties insufficient. Watch for application to capital adequacy failures (SOFIPO license revocation demonstrates similar existential enforcement approach).",
           },
         ],
         sourceLinks: [
@@ -1941,76 +1851,57 @@ function getRegulatorProfile(code: string): RegulatorProfile {
         sections: [
           buildCoverageAssessment(REGULATOR_COVERAGE.CMF),
           {
-            heading: "Why CMF Chile Matters Beyond Chile",
+            heading: "Why CMF Matters & 2024-2025 Enforcement Priorities",
             intro:
-              "CMF's integrated supervision model, UF inflation-indexed penalty system, and leadership in Latin American financial market development provide regulatory innovation insights relevant for jurisdictions evaluating consolidated supervision architectures and enforcement framework design.",
+              "Latin America's first integrated supervisor (2019), UF inflation-indexed penalty system, and Open Finance/Basel III leadership make CMF relevant beyond Chile for integrated supervision insights and LATAM regulatory direction.",
             paragraphs: [
-              "**Integrated Supervision Precedent:** CMF represents Latin America's first consolidated financial regulator merging previously separate banking (Superintendencia de Bancos), securities (Superintendencia de Valores), and insurance (Superintendencia de Seguros) authorities. This structural innovation—predating similar consolidation in other regional markets—offers lessons on: (1) unified prudential/conduct supervision reducing regulatory arbitrage, (2) cross-sector risk identification (e.g., bank-insurance conglomerate oversight), (3) regulatory efficiency through shared examination resources. UK firms evaluating FCA/PRA coordination or regional regulators considering integration should monitor CMF's operational effectiveness.",
-              "**UF Penalty System Innovation:** Chile's Unidad de Fomento inflation-indexed unit ensures penalties maintain economic deterrent value regardless of peso devaluation or inflation. This contrasts fixed-currency fines that erode over time. As of March 2025, 1 UF ≈ USD $40, making UF 60,000 = $2.4M. System allows proportional calibration (UF 700 simplified procedures vs UF 60,000+ ordinary procedures) while protecting against inflation. International relevance: jurisdictions facing high inflation or currency volatility may adopt similar indexed enforcement to preserve deterrent effect.",
-              "**Latin American Financial Integration Role:** CMF participates in IOSCO, ASBA (Association of Banking Supervisors of the Americas), IAIS (insurance), Basel Committee on Banking Supervision—positioning Chile as regional standard-setter. CMF's 2024-2025 regulatory priorities (Open Finance implementation, Basel III capital standards, parametric insurance frameworks) often preview broader Latin American supervisory direction. Firms with regional LATAM strategies should monitor CMF as bellwether for CVM (Brazil), CNBV (Mexico), Superfinanciera (Colombia) approaches.",
+              "**Integrated Supervision & UF Penalty Innovation:** CMF consolidated banking, securities, insurance (2,400+ entities, 6 systemically important banks) reducing regulatory arbitrage, enabling cross-sector risk identification. UF (Unidad de Fomento) inflation-indexed penalties ensure deterrent value maintained regardless of peso devaluation/inflation. 1 UF ≈ $40 USD (March 2025), adjusts daily per CPI. System: UF 700 simplified procedures vs UF 60,000+ ordinary (largest 2025: LarrainVial UF 60,000/$2.4M for fund asset overvaluation). International relevance: template for jurisdictions facing currency volatility/high inflation preserving enforcement impact.",
+              "**2024-2025 Priorities & Regional Leadership:** LarrainVial UF 60,000 (inducing investors via deceptive practices, overvalued fund assets), insider trading UF 14,000 total (Felipe Navarrete director + sisters tippees, criminal referrals), reporting failures UF 3,720 (Santander, COOPEUCH debtor registry; 13 fund managers Article 94). IOSCO, ASBA, Basel Committee participation positions CMF as LATAM standard-setter. Open Finance implementation, Basel III capital standards (75% December 2024), parametric insurance frameworks preview regional CVM (Brazil), CNBV (Mexico), Superfinanciera (Colombia) approaches.",
+              "**Fund Management & Insider Trading Enforcement:** LarrainVial demonstrates priorities: accurate asset valuation for illiquid/distressed holdings, conflicts of interest in related-party transactions, investor protection from misrepresentation. Navarrete case (traced information through family, dual administrative/criminal approach) shows capability to pursue directors, tippees during corporate transactions. UK fund managers with Chile exposure: validate valuation policies, insider lists, information barriers.",
             ],
+          },
+          {
+            heading: "Monitoring & Compliance Integration",
             bullets: [
-              "Monitor CMF if your firm operates in Chile, serves Chilean clients, or manages cross-border investments involving Chilean securities/insurance products",
-              "Use for integrated supervision insights: CMF's 2019 consolidation model offers lessons on unified prudential/conduct oversight, particularly for jurisdictions evaluating FCA/PRA-type coordination vs full integration",
-              "Track UF penalty system: Inflation-indexed enforcement framework provides template for jurisdictions facing currency volatility or high inflation seeking to preserve deterrent value",
-              "Benchmark Latin American financial innovation: CMF's Open Finance, parametric insurance, Basel III implementation often preview regional CVM, CNBV, Superfinanciera approaches",
-            ],
-          },
-          {
-            heading: "How CMF Enforcement Appears Publicly",
-            intro:
-              "CMF publishes enforcement outcomes through official communications (Spanish), press releases, and annual reports accessible via www.cmfchile.cl. Major enforcement actions receive dedicated announcements; routine violations summarized in periodic bulletins.",
-            paragraphs: [
-              "**Publication Structure:** High-profile cases (UF 60,000 LarrainVial penalty, UF 10,000 insider trading) announced via press releases (Comunicados de Prensa) with legal basis, UF penalty amounts, individual sanctions, remediation requirements. Administrative proceedings published as formal rulings (Resoluciones). Annual reports provide enforcement statistics but less granular than monthly bulletins. CMF maintains enforcement archive (www.cmfchile.cl/portal/principal/613/) organized chronologically—manual review required for thematic analysis.",
-              "**Language & Accessibility:** Most enforcement disclosed Spanish-only; major cases may receive English summaries via Latin American financial press. For international firms, CMF website navigation available in English but detailed enforcement rulings Spanish-only. Consider local counsel for Spanish administrative proceeding tracking where direct CMF exposure exists.",
-            ],
-          },
-          {
-            heading: "Best Use of CMF Intelligence in Compliance Programs",
-            intro:
-              "CMF monitoring provides strategic value for integrated supervision operational insights (single-regulator prudential/conduct model), Latin American financial market development (Open Finance, parametric insurance), and UF-denominated penalty benchmarking (inflation-protected enforcement).",
-            paragraphs: [
-              "**Quarterly Review Cadence:** Monitor CMF press releases (www.cmfchile.cl/portal/prensa/) quarterly for major enforcement. Annual reports (published Q1-Q2) provide enforcement statistics, regulatory priorities, supervised entity counts. CMF 2024-2025 Regulatory Plan (published annually) outlines upcoming priorities—useful for forward compliance planning. Language: Spanish fluency or local counsel recommended for detailed monitoring.",
-              "**Insider Trading & Market Conduct Enforcement:** CMF's July 2022 insider trading case (Felipe Navarrete UF 10,000, sisters UF 2,000 each) demonstrates capability to trace information flows and pursue tippees. Enforcement included criminal referral to Public Prosecutor's Office (Articles 60(E), (G), (H) Securities Market Law)—showing dual administrative/criminal approach. UK firms with Chilean securities exposure should benchmark: (1) insider list management, (2) personal account dealing restrictions, (3) information barrier effectiveness during M&A/corporate transactions. CMF enforcement demonstrates willingness to sanction directors, family members for misuse of material nonpublic information.",
-              "**Fund Management Compliance (LarrainVial Precedent):** August 2025 UF 60,000 penalty against LarrainVial fund manager for overvaluing fund assets (treating deteriorated loans as equity stakes), acquiring impaired debt without risk discounts, breaching fiduciary duties signals CMF priorities: (1) accurate fund asset valuation, (2) conflicts of interest in related-party transactions, (3) investor protection from misleading information about institutional participation. UK fund managers operating Chile funds or serving Chilean investors should review: valuation policies for illiquid assets, related-party transaction protocols, marketing materials accuracy, fiduciary duty frameworks.",
+              "**Quarterly Review:** www.cmfchile.cl/portal/prensa/ for major enforcement (Comunicados de Prensa—Spanish). Q1-Q2 annual reports: statistics, priorities. CMF 2024-2025 Regulatory Plan outlines upcoming initiatives. English navigation available but detailed rulings Spanish-only—local counsel for direct exposure.",
+              "**Publication Structure:** High-profile cases receive press releases (UF amounts, legal basis, individual sanctions). Administrative proceedings: formal Resoluciones. Enforcement archive chronological (www.cmfchile.cl/portal/principal/613/)—manual review for themes. Major cases may receive English summaries via LATAM financial press.",
+              "**Fund Compliance (LarrainVial Lessons):** Accurate valuation for illiquid assets (treating deteriorated loans as equity = violation), related-party transaction protocols preventing conflicts, marketing material accuracy (misleading institutional participation info = violation). Review: valuation policies, fiduciary duty frameworks, disclosure accuracy.",
+              "**Insider Trading Benchmarking:** Navarrete UF 10,000 + sisters UF 2,000 each + criminal referrals (Articles 60(E), (G), (H) Securities Market Law) demonstrate family network tracing, dual administrative/criminal approach. Validate: insider lists, personal account dealing restrictions, information barriers for M&A/corporate transactions.",
             ],
           },
         ],
         signals: [
           {
-            title:
-              "LarrainVial Fund Manager UF 60,000 Penalty (August 2025)",
+            title: "LarrainVial Fund Manager UF 60,000—Largest 2024-25 Penalty",
             detail:
-              "CMF's largest 2024-25 enforcement imposed UF 60,000 (≈$2.4M USD) on LarrainVial Activos fund manager plus UF 8,000 on STF Capital for inducing investors via deceptive practices: overvaluing Capital Estructurado I fund assets (treating deteriorated loans as equity), acquiring impaired debt without risk discounts despite debtor's compromised condition, breaching fiduciary duties, providing misleading institutional investor participation information. Individual sanctions: former general manager UF 15,000, five directors UF 5,000 each, STF general manager UF 8,000. Demonstrates CMF willingness to pursue corporate entities plus individual executives for market conduct violations. Signals priorities: fund asset valuation accuracy, conflicts of interest, investor protection from misrepresentation. Watch for heightened fund management supervision 2025-2026.",
+              "August 2025 CMF imposed UF 60,000 (~$2.4M) on LarrainVial Activos + UF 8,000 on STF Capital for inducing investors via deceptive practices: overvaluing Capital Estructurado I fund assets (treating deteriorated loans as equity), acquiring impaired debt without risk discounts, breaching fiduciary duties, misleading institutional participation information. Individual sanctions: former general manager UF 15,000, five directors UF 5,000 each, STF general manager UF 8,000. Demonstrates CMF pursues corporate entities + individual executives. Signals: fund asset valuation accuracy, conflicts of interest, investor protection from misrepresentation top priorities. Watch for heightened fund management supervision 2025-2026.",
           },
           {
-            title: "Insider Trading Enforcement with Criminal Referrals (2022)",
+            title: "Insider Trading with Criminal Referrals & Tippee Liability",
             detail:
-              "CMF sanctioned Invercap director Felipe Navarrete UF 10,000 for purchasing CAP stock while possessing material nonpublic information about Invercap's planned 6.77% CAP acquisition (December 2020 board decision). Navarrete disclosed information to sisters Ruth and Anamaría Navarrete (January 2021), who purchased CAP stock same day—each fined UF 2,000 as tippees. CMF reported Navarrete to Public Prosecutor's Office for potential criminal violations (Articles 60(E), (G), (H) Securities Market Law). Demonstrates: (1) CMF capability to trace information flows through family networks, (2) dual administrative/criminal enforcement approach for serious market abuse, (3) willingness to sanction both primary insiders and tippees. Signals enhanced scrutiny of director trading during corporate transactions.",
-          },
-          {
-            title:
-              "Banking Registry of Debtors Reporting Enforcement (2024)",
-            detail:
-              "CMF sanctioned Banco Santander-Chile UF 2,500 and COOPEUCH UF 1,000 for deficiencies in Registry of Debtors information submissions. Registry critical supervisory tool for monitoring credit risk across financial system—accurate debtor information enables cross-institutional risk assessment and consumer protection. Graduated penalties based on institutional size/systemic importance. Additionally, January 2023 CMF sanctioned 13 private investment fund managers (AFIPs) totaling 220 UF for Article 94 reporting obligation failures (Law No. 20,712). Demonstrates systematic approach to ongoing reporting compliance with penalties incentivizing timely/accurate submissions. Watch for continued emphasis on data quality and regulatory reporting 2025-2026.",
+              "CMF sanctioned Invercap director Felipe Navarrete UF 10,000 for purchasing CAP stock with material nonpublic information (Invercap's planned 6.77% CAP acquisition, December 2020). Navarrete disclosed to sisters Ruth and Anamaría Navarrete (January 2021)—each fined UF 2,000 as tippees, same-day stock purchases. CMF reported Navarrete to Public Prosecutor for criminal violations (Articles 60(E), (G), (H) Securities Market Law). Demonstrates: (1) capability to trace information flows through family networks, (2) dual administrative/criminal enforcement, (3) willingness to sanction primary insiders + tippees. Signals enhanced director trading scrutiny during corporate transactions.",
           },
         ],
         boardQuestions: [
-          "If the firm operates Chile funds or serves Chilean investors: Have we reviewed fund asset valuation policies for illiquid/distressed assets, conflicts of interest protocols for related-party transactions, and marketing material accuracy following CMF's UF 60,000 LarrainVial enforcement demonstrating zero tolerance for investor deception?",
-          "Does management understand CMF's insider trading enforcement capability (Felipe Navarrete case tracking information flows through family networks, UF 14,000 total penalties, criminal referrals)—and do our personal account dealing restrictions and information barriers adequately address Chile Securities Market Law Articles 60(E), (G), (H)?",
-          "For firms with Chile operations: Are we meeting CMF's regulatory reporting obligations (Registry of Debtors for banks, Article 94 for fund managers) given systematic enforcement approach demonstrated in 2023-2024 sanctions totaling UF 3,720 across 15 entities?",
+          "Chile funds/investors: Reviewed fund asset valuation for illiquid/distressed assets, conflicts of interest protocols, marketing accuracy (LarrainVial UF 60,000 for investor deception)?",
+          "Understand CMF insider trading capability (Navarrete traced family network, UF 14,000, criminal referrals)—personal account dealing, information barriers adequate for Articles 60(E), (G), (H)?",
+          "Chile operations: Meeting CMF reporting obligations (debtor registry for banks, Article 94 for fund managers) given UF 3,720 sanctions across 15 entities (2023-2024)?",
         ],
         takeaways: [
-          "Monitor CMF for Integrated Supervision Operational Insights—Latin America's first consolidated banking/securities/insurance regulator (2019) offers lessons on unified prudential/conduct oversight, cross-sector risk identification, regulatory efficiency",
-          "UF Inflation-Indexed Penalty System Protects Deterrent Value—penalties measured in Unidades de Fomento (1 UF ≈ $40 USD, adjusts daily per CPI) maintain economic impact regardless of inflation; template for jurisdictions facing currency volatility",
-          "Latin American Financial Innovation Preview—CMF's Open Finance implementation, Basel III capital standards, parametric insurance regulation often set regional precedent for CVM, CNBV, Superfinanciera approaches",
+          "Integrated supervision model—LATAM's first consolidated banking/securities/insurance (2019) demonstrates unified prudential/conduct oversight, cross-sector risk identification",
+          "UF inflation-indexed penalties—measured in Unidades de Fomento (1 UF ≈ $40, daily CPI adjustment) maintain deterrent value regardless of inflation; template for currency-volatile jurisdictions",
+          "LATAM regulatory preview—Open Finance, Basel III, parametric insurance often set precedent for regional CVM (Brazil), CNBV (Mexico), Superfinanciera (Colombia)",
         ],
         faqs: [
           {
-            question:
-              "How does Chile's CMF use the Unidad de Fomento (UF) system for enforcement penalties, and what are practical implications?",
+            question: "How does CMF's UF (Unidad de Fomento) penalty system work?",
             answer:
-              "CMF measures all administrative penalties in Unidades de Fomento (UF), an inflation-indexed unit authorized by Chile's Central Bank that adjusts daily based on Consumer Price Index. As of March 2025, 1 UF ≈ USD $40, meaning UF 10,000 penalty = $400,000. System ensures penalty values remain economically meaningful over time regardless of peso devaluation or inflation. CMF simplified procedures allow penalties up to UF 700 (≈$28,000) for routine violations; ordinary procedures substantially higher (UF 60,000 LarrainVial = $2.4M). **Practical implications**: (1) Inflation protection—unlike fixed-currency fines, UF penalties maintain deterrent value; (2) Proportionality—allows precise calibration to firm size/violation severity; (3) Transparency—market participants can compare historical enforcement since UF values standardized. CMF also uses UF for capital requirements, technical reserves, regulatory metrics, creating unified framework. For international firms: UF penalties require specialized compliance budgeting accounting for peso-dollar exchange rates AND CPI movements.",
+              "CMF measures penalties in Unidades de Fomento (UF), inflation-indexed units adjusted daily per Consumer Price Index. 1 UF ≈ $40 USD (March 2025), so UF 10,000 = $400,000. System ensures economic deterrent maintained regardless of peso devaluation/inflation. Simplified procedures: up to UF 700 (~$28,000). Ordinary procedures: UF 60,000+ (LarrainVial $2.4M). **Practical implications:** (1) Inflation protection unlike fixed-currency fines, (2) Proportional calibration to firm size/violation, (3) Transparent historical comparison via standardized values. CMF uses UF for capital requirements, technical reserves, regulatory metrics. International firms: budgeting requires accounting for peso-dollar exchange AND CPI movements.",
+          },
+          {
+            question: "Why monitor CMF for Latin American regulatory direction?",
+            answer:
+              "CMF participates in IOSCO, ASBA (Association of Banking Supervisors of the Americas), IAIS, Basel Committee—positioning Chile as LATAM standard-setter. 2024-2025 priorities often preview regional approaches: (1) Open Finance System implementation (broader LATAM adoption likely), (2) Basel III capital standards (75% December 2024 phase-in), (3) parametric insurance regulation (innovative framework). CMF's integrated supervision model (2019, banking/securities/insurance consolidation) influences regional consolidation debates. Firms with LATAM strategies: CMF enforcement themes (fund valuation, insider trading, reporting) signal emerging regional priorities at CVM (Brazil), CNBV (Mexico), Superfinanciera (Colombia). IOSCO cooperation enables cross-border information sharing—CMF findings can inform peer regulator investigations.",
           },
         ],
         sourceLinks: [
@@ -2046,76 +1937,57 @@ function getRegulatorProfile(code: string): RegulatorProfile {
         sections: [
           buildCoverageAssessment(REGULATOR_COVERAGE.FDIC),
           {
-            heading: "Why FDIC Matters Beyond State Non-Member Banks",
+            heading: "Why FDIC Matters & 2024 Enforcement Priorities",
             intro:
-              "FDIC enforcement complements OCC/Federal Reserve supervision through fintech partnership oversight (banking-as-a-service focus), consumer protection emphasis (TILA violations, credit reporting), and deposit insurance authority affecting all insured institutions regardless of charter—providing comprehensive view of U.S. banking enforcement alongside OCC's national bank and Federal Reserve's holding company actions.",
+              "BaaS fintech partnership oversight, consumer protection (TILA/credit reporting), and deposit insurance authority across all insured institutions create comprehensive U.S. banking enforcement view complementing OCC/Federal Reserve.",
             paragraphs: [
-              "**Banking-as-a-Service Regulatory Scrutiny:** FDIC's February-May 2024 consent orders against Piermont, Sutton, Thread, Lineage Banks for BaaS unsafe practices demonstrate regulatory concern about banks outsourcing customer-facing services without adequate oversight. Common themes: inadequate due diligence on fintech partners, insufficient monitoring of third-party compliance, weak information systems for aggregating partner activity, unclear accountability for outsourced functions. UK firms partnering with U.S. banks for payment processing, card issuance, lending programs should monitor FDIC BaaS enforcement for control framework expectations—particularly if partner bank is state non-member (direct FDIC supervision).",
-              "**Consumer Protection Complementary to CFPB:** While Consumer Financial Protection Bureau holds primary consumer compliance authority, FDIC examines state non-member banks for TILA, FCRA, ECOA violations. 2024's 470 Truth in Lending Act violations (37% of total) signal common disclosure/calculation errors in credit products. Credit reporting disputes (18% of complaints) and transaction errors (9%) provide additional enforcement themes. FDIC's 97% satisfactory consumer compliance rating (2024) suggests most violations corrected through examination vs formal enforcement—but firms should benchmark control effectiveness against identified deficiency patterns.",
-              "**Deposit Insurance Authority Across All Banks:** FDIC administers deposit insurance for ALL insured institutions (national banks supervised by OCC, state member banks supervised by Federal Reserve, state non-member banks supervised by FDIC). This creates overarching enforcement authority for deposit insurance-related violations (insurance assessments, reporting requirements, unsafe/unsound practices threatening fund) regardless of primary supervisor. FDIC enforcement provides systemic view of banking sector risks complementing charter-specific OCC/FRB actions.",
+              "**BaaS Crackdown & Third-Party Risk:** February-May 2024 consent orders against Piermont, Sutton, Thread, Lineage Banks for unsafe BaaS practices: inadequate fintech partner due diligence, insufficient third-party compliance monitoring, weak information systems aggregating partner activity, unclear outsourced function accountability. June 2023 Interagency Guidance implementation visible—third-party complaints up 13% (116 apparent violations 2024). UK firms partnering with U.S. banks for payment processing, card issuance, lending should validate partner bank third-party risk framework, particularly state non-member banks under direct FDIC supervision.",
+              "**Consumer Compliance & BSA/AML Intensity:** 1,275 violations identified 2024—TILA 470 cases (37%, disclosure/APR calculation errors), credit reporting 18%, transaction errors 9%. 97% satisfactory consumer compliance ratings suggest examination-driven correction vs formal enforcement. 30+ BSA/AML actions 2024 (deficient independent testing, inadequate training programs common violations). Consumer Response Unit processed 26,451 complaints/inquiries (14% increase YoY). Complements CFPB primary consumer authority; FDIC examines state non-member banks for TILA, FCRA, ECOA.",
+              "**Deposit Insurance Authority & Systemic View:** FDIC administers deposit insurance for ALL insured institutions regardless of charter (OCC national banks, Federal Reserve state members, FDIC state non-members)—creates overarching enforcement authority for deposit insurance violations affecting fund safety. FDIC enforcement (3,200 state non-member banks) + OCC + Federal Reserve provides complete U.S. banking picture.",
             ],
+          },
+          {
+            heading: "Monitoring & Compliance Integration",
             bullets: [
-              "Monitor FDIC if your firm partners with U.S. banks for fintech services (BaaS), payment processing, or embedded finance—particularly state non-member banks under direct FDIC supervision",
-              "Use for consumer compliance benchmarking: FDIC's 1,275 2024 violations (470 TILA, 18% credit reporting, 9% transaction errors) reveal common control gaps in credit disclosure, reporting accuracy, transaction processing",
-              "Track third-party risk management evolution: June 2023 Interagency Guidance implementation visible through FDIC BaaS enforcement—expect continued scrutiny of fintech partnerships 2025-2026",
-              "Complement OCC/FRB monitoring: FDIC covers state non-member banks, providing complete U.S. banking enforcement picture alongside OCC (national banks) and Federal Reserve (state member banks, holding companies)",
-            ],
-          },
-          {
-            heading: "How FDIC Enforcement Appears Publicly",
-            intro:
-              "FDIC publishes enforcement outcomes through Enforcement Decisions and Orders Database (orders.fdic.gov/s/), monthly press releases, and annual Consumer Compliance Supervisory Highlights. Database searchable by institution, action type, date; press releases provide monthly enforcement summaries.",
-            paragraphs: [
-              "**Publication Structure:** Enforcement Decisions and Orders Database (orders.fdic.gov/s/) contains full-text consent orders, civil money penalty orders, prohibition orders, deposit insurance terminations—searchable and downloadable. Monthly press releases aggregate new enforcement actions with institution names, violation summaries, penalty amounts. Annual Consumer Compliance Supervisory Highlights (published January-February) provide comprehensive statistics: violation types, complaint trends, supervisory focus areas. Unlike OCC's quarterly enforcement report, FDIC uses monthly + annual cadence.",
-              "**Accessibility:** Database real-time updated, freely accessible, no registration required. Press releases available at www.fdic.gov/news/press-releases/. Consumer Compliance Highlights published as Financial Institution Letter (FIL). For systematic monitoring: subscribe to FDIC press release email alerts, review database monthly for new consent orders in relevant institution categories (BaaS banks, fintech partners, specific geographic regions).",
-            ],
-          },
-          {
-            heading: "Best Use of FDIC Intelligence in Compliance Programs",
-            intro:
-              "FDIC monitoring provides strategic value for fintech partnership due diligence (BaaS enforcement patterns), consumer compliance control validation (TILA/FCRA/ECOA violation themes), and third-party risk management framework benchmarking (June 2023 Interagency Guidance implementation).",
-            paragraphs: [
-              "**Monthly Review Cadence:** Review FDIC Enforcement Decisions and Orders Database monthly for new consent orders. Focus areas: BaaS banks (Piermont, Sutton precedents), BSA/AML failures (30+ actions 2024), consumer compliance violations (TILA, FCRA). Subscribe to FDIC press release emails for real-time enforcement notifications. January-February window: review Consumer Compliance Supervisory Highlights for annual statistics, emerging violation trends, supervisory priorities.",
-              "**Fintech Partnership Due Diligence (BaaS Priority):** FDIC's 2024 BaaS consent orders mandate: (1) comprehensive third-party risk management program, (2) due diligence proportional to relationship complexity/risk, (3) ongoing monitoring of partner compliance, (4) information systems aggregating partner activity, (5) clear accountability for outsourced functions. UK firms evaluating U.S. bank partnerships for payment processing, lending, card issuance should validate partner bank's third-party risk framework meets FDIC expectations—particularly if state non-member (direct FDIC supervision). Request: copies of third-party policies, recent examination findings, remediation status for identified deficiencies.",
-              "**Consumer Compliance Control Validation:** FDIC's 470 TILA violations (2024) concentrate in credit disclosure accuracy, APR calculation, rescission rights. Credit reporting disputes (18% of complaints) involve FCRA accuracy, timely corrections, consumer notification. UK firms with U.S. consumer credit operations should benchmark: (1) Truth in Lending disclosure templates vs FDIC violation patterns, (2) credit bureau reporting accuracy processes, (3) transaction error correction procedures, (4) complaint handling effectiveness (26,451 FDIC Consumer Response Unit inquiries 2024, 14% increase YoY).",
+              "**Monthly Database Review:** orders.fdic.gov/s/ for consent orders (BaaS banks, BSA/AML failures, consumer compliance). Subscribe to FDIC press release emails for real-time notifications. January-February: Consumer Compliance Supervisory Highlights annual statistics (violation types, complaint trends, priorities).",
+              "**BaaS Partnership Due Diligence:** FDIC 2024 orders mandate: (1) third-party risk management proportional to complexity, (2) ongoing partner compliance monitoring, (3) information systems aggregating partner activity, (4) clear outsourced function accountability. Validate partner bank framework if state non-member (FDIC supervision). Request: third-party policies, recent examination findings, remediation status.",
+              "**Consumer Compliance Benchmarking:** TILA 470 violations concentrate in disclosure accuracy, APR calculation, rescission rights. Credit reporting (18% complaints): FCRA accuracy, corrections, notifications. UK firms with U.S. consumer credit: validate disclosure templates, credit bureau processes, transaction error correction.",
+              "**Regulatory Assignment:** FDIC supervises state-chartered non-Federal Reserve member banks. OCC: national banks. Federal Reserve: state members + ALL holding companies. Identify which regulator(s) supervise U.S. banking partners for appropriate enforcement monitoring.",
             ],
           },
         ],
         signals: [
           {
-            title:
-              "Banking-as-a-Service Consent Orders (February-May 2024)",
+            title: "BaaS Consent Orders & Third-Party Risk (Feb-May 2024)",
             detail:
-              "FDIC issued consent orders against Piermont Bank (February 26), Sutton Bank (February 1), Thread Bank (May 21), Lineage Bank for unsafe/unsound BaaS practices: inadequate internal controls commensurate with third-party relationship scope/risk, insufficient information systems for monitoring fintech partner activity, weak due diligence on partner compliance capabilities. Implements June 2023 Interagency Guidance on Third-Party Relationships emphasizing sound risk management across relationship lifecycle. Third-party complaints increased 13% in 2024 with 116 apparent violations. Signals: (1) FDIC intensifying BaaS supervision, (2) banks cannot outsource compliance accountability, (3) information systems must aggregate partner activity for oversight. Watch for additional BaaS enforcement 2025-2026 as Interagency Guidance implementation continues.",
+              "FDIC issued consent orders against Piermont Bank (Feb 26), Sutton Bank (Feb 1), Thread Bank (May 21), Lineage Bank for unsafe BaaS practices: inadequate controls commensurate with third-party risk, insufficient information systems monitoring fintech partners, weak due diligence on partner compliance. Implements June 2023 Interagency Guidance on Third-Party Relationships. Third-party complaints up 13% (116 violations 2024). Signals: (1) FDIC intensifying BaaS supervision, (2) banks cannot outsource compliance accountability, (3) information systems must aggregate partner activity. Watch for additional BaaS enforcement 2025-2026.",
           },
           {
-            title: "BSA/AML Enforcement Wave (2024)",
+            title: "BSA/AML Wave & Consumer Compliance Concentration (2024)",
             detail:
-              "Federal regulators (FDIC, OCC, Federal Reserve) announced 30+ Bank Secrecy Act/AML enforcement actions in 2024, with deficient independent testing and inadequate training programs representing common violations. FDIC-supervised institutions cited for: insufficient transaction monitoring, inadequate customer due diligence, weak suspicious activity reporting, ineffective AML program governance. Pattern shows BSA/AML remains top enforcement priority across all federal banking regulators. Compliance implication: independent AML testing must be truly independent (not compliance self-assessment), staff training must be role-specific and documented, transaction monitoring systems require periodic validation vs emerging typologies. Watch for continued BSA/AML intensity 2025.",
-          },
-          {
-            title:
-              "Consumer Compliance Violations Concentration (2024)",
-            detail:
-              "FDIC examinations identified 1,275 violations in 2024: Truth in Lending Act 470 cases (37%), credit reporting 18%, transaction errors 9%. TILA violations concentrate in APR calculation errors, incomplete disclosures, rescission rights failures. Credit reporting issues involve FCRA accuracy, timely corrections, consumer notifications. Transaction errors include unauthorized charges, incorrect amounts, delayed credits. Despite violations, 97% of FDIC institutions received satisfactory or better consumer compliance ratings—suggests most deficiencies corrected through examination vs formal enforcement. Signals: routine examinations effective at identifying/correcting violations before escalation. Watch for enforcement against repeat violators or institutions ignoring examination findings.",
+              "30+ BSA/AML actions across federal regulators (FDIC, OCC, Federal Reserve)—deficient independent testing, inadequate training programs common violations. FDIC institutions cited for: insufficient transaction monitoring, weak customer due diligence, ineffective SAR, poor AML governance. 1,275 consumer compliance violations 2024: TILA 470 (37%, APR calculation/disclosure errors), credit reporting 18%, transaction errors 9%. Despite violations, 97% institutions received satisfactory ratings—suggests examination-driven correction. Signals: BSA/AML top priority across regulators; independent testing must be truly independent; consumer violations concentrated in TILA/FCRA. Watch for repeat violator enforcement.",
           },
         ],
         boardQuestions: [
-          "If the firm partners with U.S. banks for fintech services (BaaS), payment processing, or embedded finance: Does our partner bank (particularly if state non-member under FDIC supervision) have adequate third-party risk management framework meeting June 2023 Interagency Guidance expectations, and have we reviewed recent FDIC examination findings?",
-          "For firms with U.S. consumer credit operations: How do our Truth in Lending disclosures, credit bureau reporting accuracy, and transaction error correction processes compare to FDIC's 2024 violation patterns (470 TILA, 18% credit reporting complaints, 9% transaction errors)?",
-          "Does management understand the difference between FDIC, OCC, and Federal Reserve supervision—and have we identified which regulator(s) supervise our U.S. banking partners to ensure appropriate enforcement monitoring?",
+          "U.S. bank fintech partnerships (BaaS, payments, embedded finance): Partner bank third-party risk framework meets June 2023 Interagency Guidance (particularly state non-members under FDIC supervision)?",
+          "U.S. consumer credit operations: TILA disclosures, credit bureau reporting, transaction error processes aligned with FDIC 2024 patterns (470 TILA, 18% reporting, 9% transaction errors)?",
+          "Identified which regulator(s) supervise U.S. banking partners (FDIC state non-members, OCC national banks, Federal Reserve state members/holding companies)?",
         ],
         takeaways: [
-          "Monitor FDIC for BaaS Fintech Partnership Risks—February-May 2024 consent orders (Piermont, Sutton, Thread, Lineage) mandate adequate third-party risk management, ongoing partner monitoring, information systems for oversight; third-party complaints up 13% signals continued scrutiny",
-          "Consumer Compliance Violations Concentrate in TILA/Credit Reporting—470 TILA violations (37% of 2024 total), 18% credit reporting disputes provide benchmarking data for disclosure accuracy, FCRA compliance, transaction error processes",
-          "FDIC Complements OCC/FRB Enforcement—state non-member bank supervision (3,200 institutions) plus deposit insurance authority across all banks provides comprehensive U.S. banking enforcement view alongside charter-specific regulators",
+          "BaaS partnership risk—Feb-May 2024 consent orders (Piermont, Sutton, Thread, Lineage) mandate third-party risk management, partner monitoring, oversight systems; complaints up 13%",
+          "Consumer compliance patterns—470 TILA violations (37% 2024), 18% credit reporting, 9% transaction errors benchmark disclosure accuracy, FCRA compliance",
+          "Completes U.S. banking picture—3,200 state non-member banks + deposit insurance authority across all insured institutions (OCC national, Federal Reserve state members, FDIC state non-members)",
         ],
         faqs: [
           {
-            question:
-              "What is the difference between FDIC, OCC, and Federal Reserve supervision of banks?",
+            question: "How do FDIC, OCC, and Federal Reserve banking supervision differ?",
             answer:
-              "U.S. 'dual banking system' assigns supervisory authority by charter type and membership: (1) **OCC**: Supervises nationally-chartered banks and federal savings associations (~1,000 institutions)—if bank has 'National Association' or 'N.A.' in name, OCC is primary supervisor. (2) **Federal Reserve**: Supervises state-chartered banks that join Federal Reserve System, plus ALL bank holding companies, foreign banking offices, Edge Act corporations—holding company authority makes Federal Reserve consolidated supervisor for largest financial institutions. (3) **FDIC**: Supervises state-chartered banks that are NOT Federal Reserve members (~3,200 institutions)—if state-chartered bank chooses not to join Federal Reserve, FDIC becomes primary federal supervisor alongside state regulator. Jurisdictions rarely overlap for individual banks: state banks choose Federal Reserve membership (Federal Reserve supervises) or not (FDIC supervises); national banks always OCC. All three maintain deposit insurance through FDIC, but examination authority distinct. This creates 'regulatory choice' when selecting charter type.",
+              "U.S. 'dual banking system' by charter/membership: (1) **OCC**: Nationally-chartered banks and federal savings associations (~1,000 institutions)—'National Association' or 'N.A.' in name signals OCC supervision. (2) **Federal Reserve**: State-chartered banks joining Federal Reserve System PLUS ALL bank holding companies—holding company authority makes Federal Reserve consolidated supervisor for largest institutions. (3) **FDIC**: State-chartered banks NOT in Federal Reserve System (~3,200 institutions)—state banks choosing non-membership get FDIC federal supervision. Jurisdictions rarely overlap: state banks choose membership (Federal Reserve) or not (FDIC); national banks always OCC. All maintain FDIC deposit insurance, but examination authority distinct.",
+          },
+          {
+            question: "Why monitor FDIC for BaaS/fintech partnership compliance?",
+            answer:
+              "Feb-May 2024 consent orders against Piermont, Sutton, Thread, Lineage Banks demonstrate FDIC BaaS enforcement intensity. Common deficiencies: inadequate third-party risk management, insufficient fintech partner monitoring, weak information systems aggregating partner activity, unclear outsourced function accountability. June 2023 Interagency Guidance (FDIC, OCC, Federal Reserve) requires sound third-party risk management across lifecycle. Third-party complaints up 13% (116 violations 2024). UK firms partnering with U.S. banks for payments, lending, card issuance should validate partner bank framework—particularly state non-members under direct FDIC supervision. Request: third-party policies, recent examination findings, remediation status.",
           },
         ],
         sourceLinks: [
@@ -2151,77 +2023,56 @@ function getRegulatorProfile(code: string): RegulatorProfile {
         sections: [
           buildCoverageAssessment(REGULATOR_COVERAGE.FRB),
           {
-            heading: "Why Federal Reserve Matters Beyond Direct Supervision",
+            heading: "Why Federal Reserve Matters & 2024 Enforcement",
             intro:
-              "Federal Reserve's exclusive jurisdiction over bank holding companies (regardless of subsidiary charter) positions it as consolidated supervisor for systemically important institutions, with enforcement revealing group-wide control expectations and systemic risk priorities complementing OCC (national banks) and FDIC (state non-member banks) charter-specific supervision.",
+              "Exclusive jurisdiction over ALL bank holding companies (regardless of subsidiary charter) and 8 U.S. G-SIBs creates consolidated supervisory view with group-wide control expectations.",
             paragraphs: [
-              "**Holding Company Consolidated Supervision:** Federal Reserve holds unique authority over ALL bank holding companies regardless of subsidiary bank charter—national bank subsidiary supervised by OCC, state member bank by Federal Reserve, state non-member by FDIC, but holding company always Federal Reserve. This creates consolidated supervisory view across entire organization: capital planning, stress testing, governance, enterprise risk management, third-party dependencies. UK firms analyzing U.S. bank holding company enforcement should recognize Federal Reserve examines parent + consolidated entity vs OCC/FDIC focus on individual bank subsidiaries.",
-              "**Systemically Important Institution Focus:** Federal Reserve supervises 8 U.S. global systemically important banks (G-SIBs): JPMorgan Chase, Bank of America, Citigroup, Wells Fargo, Goldman Sachs, Morgan Stanley, Bank of New York Mellon, State Street. Enhanced prudential standards apply: higher capital/liquidity buffers, resolution planning (living wills), stress testing (CCAR/DFAST), single-counterparty credit limits. Federal Reserve enforcement against G-SIBs (Citigroup $60.6M 2024, JPMorgan Chase $98.2M trading surveillance) provides benchmark for systemically important financial institution control expectations globally—relevant for UK firms with G-SIB subsidiaries or analyzing cross-border SIFI supervision.",
-              "**Liquidity & Capital Planning Weaknesses:** 2024 horizontal supervisory reviews identified liquidity risk management weaknesses at large institutions: deposit trend monitoring, funding strategy contingencies, stress testing capabilities, liquidity buffer composition. Approximately two-thirds of large financial institutions rated less-than-satisfactory in at least one LFI rating framework component. Federal Reserve emphasizes contingency funding plans and operational readiness for discount window access. Firms should monitor for enforcement escalation if liquidity weaknesses persist into 2025-2026, particularly post-Silicon Valley Bank/Signature Bank stress testing reforms.",
+              "**Holding Company & G-SIB Supervision:** Federal Reserve supervises all holding companies regardless of subsidiary charter (national bank→OCC, state member→FRB, state non-member→FDIC, but holding company always FRB). 8 G-SIBs: JPMorgan Chase, Bank of America, Citigroup, Wells Fargo, Goldman Sachs, Morgan Stanley, BNY Mellon, State Street. Enhanced prudential standards: higher capital/liquidity buffers, resolution planning (living wills), stress testing (CCAR/DFAST), single-counterparty limits. Citigroup $60.6M (July 2024) for violating 2020 enforcement action demonstrates escalation against G-SIBs failing multi-year remediation.",
+              "**2024 Priorities:** 58 formal actions, $372M penalties. Citigroup $60.6M (data quality/risk governance—concurrent with OCC $75M against Citibank). Multiple November 2024 BSA/AML cease and desist orders (Kansas, Pennsylvania state banks: inadequate monitoring, OFAC gaps). Liquidity weaknesses: 2024 horizontal reviews found two-thirds of large institutions less-than-satisfactory in at least one LFI component (deposit monitoring, funding contingencies, stress testing). Post-SVB reforms emphasize uninsured deposit concentrations, interest rate risk, social media-driven flight.",
             ],
+          },
+          {
+            heading: "Monitoring & Compliance Integration",
             bullets: [
-              "Monitor Federal Reserve if your firm analyzes U.S. bank holding companies, G-SIBs, or operates as subsidiary within U.S. banking group—consolidated supervision provides group-wide control expectations",
-              "Use for systemically important institution benchmarking: Federal Reserve enforcement against Citigroup, JPMorgan Chase reveals enhanced prudential standards for capital planning, operational resilience, third-party risk, governance",
-              "Track liquidity risk management evolution: 2024 horizontal reviews identified weaknesses in deposit trends, funding strategies, stress testing; expect enforcement escalation if deficiencies persist",
-              "Complement OCC/FDIC monitoring: Federal Reserve covers holding companies + state member banks, providing complete U.S. banking enforcement picture alongside OCC (national banks) and FDIC (state non-member banks)",
-            ],
-          },
-          {
-            heading: "How Federal Reserve Enforcement Appears Publicly",
-            intro:
-              "Federal Reserve publishes enforcement outcomes through enforcement actions database (www.federalreserve.gov/supervisionreg/enforcementactions.htm), Supervision and Regulation annual reports, and periodic enforcement-related speeches/testimonies. Database searchable by institution, action type, date.",
-            paragraphs: [
-              "**Publication Structure:** Enforcement Actions page maintains chronological archive of formal actions (cease and desist orders, written agreements, civil money penalties, prohibition orders, prompt corrective action directives) with full-text documents. Annual Supervision and Regulation Report (published spring following fiscal year) provides comprehensive statistics: enforcement volume, examination/inspection counts, supervisory themes, emerging risks, policy initiatives. November 2024 Supervision and Regulation Report offers semi-annual update on current supervisory focus.",
-              "**Accessibility & Granularity:** Database real-time updated, freely accessible, downloadable full-text orders. Unlike OCC's quarterly enforcement report format, Federal Reserve uses ongoing database updates + annual comprehensive report. For high-value enforcement (Citigroup $60.6M), Board issues press releases with penalty context, violation summaries, remediation requirements. Speech database contains enforcement-related remarks by Governors and Federal Reserve Bank presidents—useful for supervisory priorities, emerging risk signals.",
-            ],
-          },
-          {
-            heading: "Best Use of Federal Reserve Intelligence in Compliance Programs",
-            intro:
-              "Federal Reserve monitoring provides strategic value for holding company consolidated supervision insights (group-wide capital planning, stress testing, governance), G-SIB enhanced prudential standards (operational resilience, third-party risk), and liquidity risk management benchmarking (deposit monitoring, contingency funding).",
-            paragraphs: [
-              "**Quarterly Review Cadence:** Monitor Federal Reserve Enforcement Actions database (www.federalreserve.gov/supervisionreg/enforcementactions.htm) quarterly for new formal actions. Focus: holding company enforcement (capital planning, stress testing deficiencies), state member bank BSA/AML failures, G-SIB operational resilience/data quality violations. Spring window (April-May): review annual Supervision and Regulation Report for comprehensive enforcement statistics, supervisory themes, policy direction. November: review semi-annual Supervision and Regulation Report for mid-year updates.",
-              "**Operational Resilience Benchmarking (Citigroup Precedent):** July 2024 $60.6M Citigroup penalty for violating 2020 enforcement action demonstrates Federal Reserve escalation approach: initial consent order (2020 data quality/risk management deficiencies) → follow-up examination identifies ongoing weaknesses (2023 NY Fed exam) → civil money penalty for non-compliance with original order. Lessons: (1) consent order remediation must fully address root causes, (2) compensating controls insufficient if underlying deficiencies persist, (3) Federal Reserve will impose monetary penalties on systemically important institutions failing multi-year remediation. UK firms with U.S. G-SIB subsidiaries should validate: remediation plans address root causes vs symptoms, governance oversight effectiveness, independent validation of control improvements.",
-              "**Capital Planning & Stress Testing (LFI Framework):** Two-thirds of large financial institutions rated less-than-satisfactory in at least one LFI rating component (capital planning, liquidity risk management, governance) signals Federal Reserve heightened standards for G-SIBs and large regional banks. CCAR (Comprehensive Capital Analysis and Review) and DFAST (Dodd-Frank Act Stress Testing) annual exercises evaluate capital adequacy under adverse scenarios. Firms should monitor for enforcement against institutions with repeat stress testing deficiencies or inadequate capital planning processes—particularly post-SVB reforms emphasizing liquidity and interest rate risk.",
+              "**Quarterly Database Review:** www.federalreserve.gov/supervisionreg/enforcementactions.htm for holding company capital planning, state member BSA/AML, G-SIB operational resilience violations. Spring: annual Supervision & Regulation Report (comprehensive stats, themes). November: semi-annual update.",
+              "**Citigroup Escalation Model:** Initial 2020 consent order → 2023 NY Fed exam finds ongoing deficiencies → July 2024 $60.6M penalty. Lessons: remediation must address root causes (compensating controls insufficient), consent order violations trigger monetary penalties at G-SIBs.",
+              "**Capital/Liquidity Benchmarking:** Two-thirds less-than-satisfactory LFI ratings signal heightened G-SIB/large regional bank standards. CCAR/DFAST stress testing evaluates capital adequacy. Monitor for enforcement against repeat stress testing deficiencies (post-SVB liquidity/interest rate risk focus).",
+              "**Complement OCC/FDIC:** Federal Reserve (holding companies + state member banks) + OCC (national banks) + FDIC (state non-member) provides complete U.S. banking enforcement picture. Holding company consolidated view reveals group-wide expectations vs bank-level focus.",
             ],
           },
         ],
         signals: [
           {
-            title:
-              "Citigroup $60.6 Million Data Quality Penalty (July 2024)",
+            title: "Citigroup $60.6M Escalation & G-SIB Operational Resilience",
             detail:
-              "Federal Reserve imposed $60.6M civil money penalty on Citigroup for violating 2020 enforcement action requiring data quality management and risk governance improvements. 2023 Federal Reserve Bank of New York examination identified ongoing deficiencies in data quality management and ineffective compensating controls mitigating associated risks. Concurrent with OCC $75M penalty against Citibank. Demonstrates: (1) Federal Reserve escalates enforcement against systemically important institutions failing multi-year remediation, (2) compensating controls insufficient if root causes unresolved, (3) holding company + bank subsidiary face parallel penalties (FRB $60.6M Citigroup, OCC $75M Citibank). Signals operational resilience, data governance, technology risk top priorities for G-SIBs. Watch for additional enforcement if 2025 exams find persistent deficiencies.",
+              "July 2024 Citigroup $60.6M penalty for violating 2020 enforcement action (data quality/risk governance). 2023 NY Fed exam found ongoing deficiencies, ineffective compensating controls. Concurrent OCC $75M against Citibank. Demonstrates: Federal Reserve escalates against G-SIBs failing multi-year remediation, compensating controls insufficient if root causes unresolved, holding company + bank parallel penalties. Operational resilience, data governance, technology risk top G-SIB priorities. Watch for 2025 exam enforcement if deficiencies persist.",
           },
           {
-            title:
-              "AML/BSA Enforcement Wave (November 2024)",
+            title: "BSA/AML Priority & Liquidity Weaknesses",
             detail:
-              "Federal Reserve issued multiple cease and desist orders November 2024 against state-chartered banks (Kansas, Pennsylvania) for BSA/AML compliance deficiencies: inadequate AML monitoring systems, OFAC compliance gaps, insufficient customer due diligence, weak suspicious activity reporting. Remediation requirements: enhanced board oversight of compliance programs, new staff training initiatives, independent AML program testing. More than three dozen BSA/AML enforcement actions announced across federal regulators (Federal Reserve, OCC, FDIC) during 2024. Pattern shows BSA/AML remains top priority across all banking supervisors. Compliance implication: independent testing must be truly independent, training must be role-specific/documented, transaction monitoring systems require periodic validation. Watch for continued BSA/AML intensity 2025.",
-          },
-          {
-            title:
-              "Liquidity Risk Management Weaknesses (2024 Horizontal Reviews)",
-            detail:
-              "Federal Reserve horizontal supervisory reviews during 2024 identified liquidity risk management weaknesses at large financial institutions: deposit trend monitoring gaps, funding strategy contingency deficiencies, stress testing capability limitations, liquidity buffer composition inadequacies. Approximately two-thirds of large institutions received less-than-satisfactory ratings in at least one LFI rating framework component. Federal Reserve emphasizes contingency funding plans and operational readiness for discount window (lender of last resort facility). Post-SVB/Signature Bank collapses, heightened focus on uninsured deposit concentrations, interest rate risk, social media-driven deposit flight. Signals: liquidity risk management enforcement likely escalates if weaknesses persist 2025-2026. Watch for formal actions against institutions with repeat horizontal review deficiencies.",
+              "November 2024 multiple cease and desist orders (Kansas, Pennsylvania state banks): inadequate AML monitoring, OFAC gaps, weak SAR. Enhanced board oversight, training, independent testing mandated. 36+ BSA/AML actions across federal regulators 2024. 2024 horizontal reviews: two-thirds large institutions less-than-satisfactory in at least one LFI component (deposit monitoring, funding contingencies, stress testing). Post-SVB focus: uninsured deposits, interest rate risk, social media deposit flight. Watch for BSA/AML intensity continuing 2025, liquidity enforcement escalation if weaknesses persist.",
           },
         ],
         boardQuestions: [
-          "If the firm operates within U.S. bank holding company structure or analyzes G-SIB control frameworks: How do our operational resilience, data quality management, and technology risk controls compare to Federal Reserve expectations visible in Citigroup $60.6M penalty for violating multi-year remediation commitments?",
-          "Does management understand the Federal Reserve's escalation approach for consent order violations (initial order → follow-up exam → civil money penalty if non-compliance)—and do our remediation processes address root causes vs implementing compensating controls that may prove insufficient?",
-          "For firms subject to Federal Reserve stress testing (CCAR/DFAST): Given two-thirds of large institutions rated less-than-satisfactory in at least one LFI component, have we validated capital planning robustness, liquidity risk management effectiveness, and governance oversight adequacy vs Federal Reserve supervisory expectations?",
+          "For U.S. bank holding company/G-SIB operations: Do operational resilience, data quality, technology risk controls meet Federal Reserve expectations (Citigroup $60.6M for violating multi-year remediation)?",
+          "Understand Federal Reserve escalation (consent order → exam → penalty if non-compliance)? Do remediation processes address root causes vs compensating controls (proved insufficient at Citigroup)?",
+          "For CCAR/DFAST firms: Validated capital planning, liquidity risk management, governance adequacy given two-thirds large institutions less-than-satisfactory in at least one LFI component?",
         ],
         takeaways: [
-          "Monitor Federal Reserve for Holding Company Consolidated Supervision—exclusive federal jurisdiction over ALL bank holding companies regardless of subsidiary charter creates group-wide control expectations complementing OCC/FDIC bank-level supervision",
-          "G-SIB Enforcement Sets Enhanced Prudential Standards—Citigroup $60.6M, JPMorgan $98.2M penalties demonstrate Federal Reserve willingness to impose monetary sanctions on systemically important institutions for operational resilience, data quality, trading surveillance failures",
-          "Liquidity Risk Management Under Heightened Scrutiny—2024 horizontal reviews found weaknesses in deposit trends, funding strategies, stress testing at two-thirds of large institutions; expect enforcement escalation if deficiencies persist post-SVB reforms",
+          "Monitor Federal Reserve for holding company consolidated supervision—ALL bank holding companies under FRB jurisdiction regardless of subsidiary charter (complements OCC/FDIC bank-level oversight)",
+          "Citigroup $60.6M escalation demonstrates Federal Reserve imposes monetary penalties on G-SIBs failing multi-year remediation (concurrent with OCC $75M against Citibank subsidiary)",
+          "Post-SVB liquidity focus—two-thirds large institutions less-than-satisfactory in at least one LFI component; expect enforcement if weaknesses persist",
         ],
         faqs: [
           {
-            question:
-              "What is the difference between Federal Reserve, OCC, and FDIC jurisdiction in banking supervision?",
+            question: "How do Federal Reserve, OCC, and FDIC supervision differ?",
             answer:
-              "U.S. banking supervision divides by charter and holding company structure: (1) **OCC**: Primary supervisor for nationally-chartered banks (~1,000 institutions)—'National Association' or 'N.A.' in name signals OCC jurisdiction. (2) **FDIC**: Supervises state-chartered banks NOT in Federal Reserve System (~3,200 state non-member banks) + administers deposit insurance for all insured institutions. (3) **Federal Reserve**: Supervises state-chartered banks choosing Federal Reserve membership PLUS holds exclusive federal jurisdiction over ALL bank holding companies regardless of subsidiary charter. This means large banking organizations face multiple regulators: national bank subsidiary examined by OCC for safety/soundness, by FDIC for deposit insurance, by Federal Reserve if operates within holding company structure. Federal Reserve's unique holding company authority positions it as consolidated supervisor for nation's largest financial institutions including 8 G-SIBs—capital planning, stress testing, resolution planning, enterprise risk management conducted at holding company level under Federal Reserve oversight.",
+              "U.S. banking divides by charter and structure: **OCC** supervises nationally-chartered banks (~1,000 institutions with 'N.A.' in name). **FDIC** supervises state non-member banks (~3,200 institutions) plus deposit insurance. **Federal Reserve** supervises state member banks PLUS ALL bank holding companies regardless of subsidiary charter. Large banks face multiple regulators: subsidiary examined by OCC/FDIC for safety/soundness, holding company by Federal Reserve for consolidated supervision. Federal Reserve's unique holding company authority makes it consolidated supervisor for 8 G-SIBs (JPMorgan Chase, Bank of America, Citigroup, Wells Fargo, Goldman Sachs, Morgan Stanley, BNY Mellon, State Street) conducting capital planning, stress testing, resolution planning at enterprise level.",
+          },
+          {
+            question: "Why monitor Federal Reserve if my firm isn't a U.S. bank?",
+            answer:
+              "Federal Reserve enforcement reveals group-wide control expectations at G-SIBs with UK operations. Citigroup $60.6M (data quality/risk governance) concurrent with OCC $75M against Citibank demonstrates parent holding company + subsidiary parallel enforcement. JPMorgan, Bank of America, Goldman Sachs, Morgan Stanley operate in London—Federal Reserve operational resilience, capital planning, liquidity standards apply enterprise-wide. UK firms with U.S. intermediate holding companies (IHC requirement for foreign banks >$50B assets) face direct Federal Reserve supervision. BSA/AML patterns, capital stress testing, technology risk themes preview global regulatory direction 6-12 months before FCA/ECB enforcement.",
           },
         ],
         sourceLinks: [
@@ -2257,78 +2108,57 @@ function getRegulatorProfile(code: string): RegulatorProfile {
         sections: [
           buildCoverageAssessment(REGULATOR_COVERAGE.CSRC),
           {
-            heading: "Why CSRC China Matters Beyond China",
+            heading: "Why CSRC Matters & 2024 Enforcement Priorities",
             intro:
-              "CSRC enforcement relevance extends through overseas listing filing requirements (PRC companies must file with CSRC before foreign listings), UK-CSRC regulatory cooperation framework (FCA memorandum enables cross-border surveillance), Mutual Recognition of Funds scheme (cross-border fund offerings Hong Kong-Mainland), and supply chain/counterparty risk (major corporate fraud triggers defaults affecting UK parent companies).",
+              "Overseas listing jurisdiction (PRC companies + foreign underwriters file with CSRC), FCA-CSRC cooperation framework (MoU enables cross-border surveillance), supply chain risk (corporate fraud affects UK counterparties), and Mutual Recognition of Funds (Mainland-Hong Kong distribution) create direct relevance.",
             paragraphs: [
-              "**Overseas Listing Jurisdiction:** PRC companies listing overseas must file with CSRC, which retains authority to accept or reject applications. International securities firms serving as sponsors or lead underwriters must file within 10 working days of signing engagement agreements and submit annual reports by January 31. CSRC can impose penalties on foreign intermediaries for filing non-compliance. UK investment banks underwriting Chinese company IPOs in London, New York, Hong Kong face direct CSRC regulatory exposure—Evergrande ¥4.18B enforcement demonstrates reputational risk from association with fraudulent issuers.",
-              "**UK-CSRC Cooperation Framework:** FCA-CSRC memorandum of understanding enables regulatory cooperation including exchanges on cross-border surveillance, market risks, trading mechanisms. IOSCO multilateral frameworks (CSRC maintains 67 bilateral MoUs globally) facilitate information sharing for insider trading, market manipulation investigations. CSRC findings on market abuse by firms with UK operations can trigger parallel FCA investigations—particularly cross-border trading activities involving Chinese securities.",
-              "**Supply Chain & Counterparty Risk:** UK firms with Chinese subsidiaries, joint ventures, or significant supply chain dependencies need visibility into CSRC enforcement trends. Evergrande's ¥564 billion revenue inflation (50-78.5% overstatement 2019-2020) triggered bankruptcy, payment defaults, reputational damage affecting international counterparties. CSRC's 2024 enforcement intensification (¥15.3B penalties, 739 cases) signals heightened corporate fraud detection—UK parent companies should stress-test China subsidiary financial statements, related-party transaction controls, disclosure accuracy.",
-              "**Mutual Recognition of Funds (MRF):** Framework enables cross-border fund offerings between Chinese Mainland and Hong Kong, broadening investment channels. UK asset managers distributing funds through Hong Kong into Mainland China via MRF face CSRC oversight of fund structures, investment restrictions, disclosure requirements. CSRC enforcement against fund managers (included in 2024 case load) provides compliance benchmarks for MRF participants.",
+              "**Overseas Listing Jurisdiction & Evergrande Lessons:** PRC companies listing overseas must file with CSRC; sponsors/underwriters file within 10 days of engagement, annual reports by January 31. UK investment banks underwriting Chinese IPOs in London/New York/Hong Kong face direct CSRC exposure. Evergrande ¥4.18B (revenue inflation ¥564B across 2019-2020, 50-78.5% overstatement) + PwC ¥400M audit penalty demonstrate reputational/regulatory risk from fraudulent issuer association. Enhanced due diligence essential: independent financial verification beyond auditor, related-party transaction analysis, disclosure completeness validation.",
+              "**2024 Enforcement Intensity & Corporate Fraud Detection:** 739 cases handled (vs 717 in 2023), 592 punishment decisions, ¥15.3B penalties (139% increase from ¥6.39B 2023). Financial fraud focus: 658 cases, ¥11B fines (first 10 months 2024). Systematic detection via double-random inspection policy (DRIP): provincial branches randomly audit 5%+ listed firms annually. Quantitative trading regulation (October 2024): 'reporting before trading' requires algorithmic strategy disclosure (account, financial, trade, software information) addressing HFT risks. May 2024 insider trading crackdown: 50+ arrests, cases exceeding ¥9B.",
+              "**UK Firm Cross-Border Exposure:** (1) FCA-CSRC MoU enables information sharing for market abuse investigations—CSRC findings can trigger parallel UK enforcement. (2) Supply chain risk: Evergrande bankruptcy/defaults affecting international counterparties—UK firms with China subsidiaries/JVs should stress-test financial statements, related-party controls. (3) MRF cross-border funds: UK asset managers distributing via Hong Kong into Mainland face CSRC oversight of structures, restrictions, disclosures. CSRC maintains 67 bilateral MoUs globally for cross-border cooperation.",
             ],
+          },
+          {
+            heading: "Monitoring & Compliance Integration",
             bullets: [
-              "Monitor CSRC if your firm underwrites Chinese company overseas listings (direct filing obligations), manages MRF cross-border funds (Mainland-Hong Kong distribution), or operates Chinese subsidiaries (corporate fraud enforcement affects parent companies)",
-              "Use for supply chain risk assessment: Evergrande ¥564B revenue inflation and PwC ¥400M audit failure penalty demonstrate financial statement accuracy risks at Chinese counterparties—stress-test subsidiary/supplier disclosures",
-              "Track quantitative trading regulation: October 2024 'reporting before trading' framework with algorithmic strategy transparency may influence UK FCA, EU ESMA approaches to HFT oversight",
-              "Leverage FCA-CSRC cooperation: MoU enables information sharing for cross-border market abuse investigations—CSRC findings can trigger parallel UK enforcement",
-            ],
-          },
-          {
-            heading: "How CSRC Enforcement Appears Publicly",
-            intro:
-              "CSRC publishes enforcement outcomes through official website (www.csrc.gov.cn/csrc_en/ for English), press releases, and annual enforcement statistics. Major cases receive dedicated announcements; routine violations summarized in periodic bulletins.",
-            paragraphs: [
-              "**Publication Structure:** High-profile enforcement (Evergrande ¥4.18B, major insider trading/IPO fraud) announced via press releases with case details, legal basis, penalty amounts, individual sanctions. Administrative punishment decisions published as formal rulings accessible on CSRC website. Annual enforcement statistics (published November-December) aggregate total cases handled, punishment decisions issued, penalty amounts, breach categories. Global Times, China Daily provide English coverage of major enforcement.",
-              "**Language & Granularity:** English CSRC website (www.csrc.gov.cn/csrc_en/) provides major enforcement announcements, policy initiatives, annual statistics. Granular case details often Chinese-only—English coverage relies on financial press (CNBC, Bloomberg, Reuters) for major cases like Evergrande. For systematic monitoring: follow English press releases quarterly; engage Mandarin-fluent compliance staff or local counsel for detailed administrative proceeding tracking where direct China exposure exists.",
-            ],
-          },
-          {
-            heading: "Best Use of CSRC Intelligence in Compliance Programs",
-            intro:
-              "CSRC monitoring provides strategic value for overseas listing filing compliance (PRC companies + foreign underwriters), corporate fraud detection patterns (financial statement accuracy, related-party transactions), quantitative trading regulation precedent (algorithmic transparency requirements), and China subsidiary governance validation (board oversight, disclosure controls).",
-            paragraphs: [
-              "**Quarterly Review Approach:** Monitor CSRC English website (www.csrc.gov.cn/csrc_en/) quarterly for major enforcement press releases. November-December window: review annual enforcement statistics (cases, penalties, thematic trends). For firms underwriting Chinese overseas listings or operating China subsidiaries, subscribe to Global Times, China Daily financial sections for real-time English enforcement coverage. Engage local counsel for Mandarin administrative proceeding tracking where direct CSRC exposure exists.",
-              "**Overseas Listing Due Diligence (Filing Compliance):** UK investment banks underwriting Chinese company IPOs must ensure CSRC filing compliance: sponsor/underwriter filing within 10 working days of engagement agreement, annual report submission by January 31. Evergrande ¥4.18B enforcement (revenue inflation 50-78.5%) and PwC ¥400M audit penalty demonstrate reputational/regulatory risk from association with fraudulent issuers. Enhanced due diligence: (1) independent financial statement verification beyond auditor reliance, (2) related-party transaction analysis (Evergrande undisclosed debts), (3) disclosure completeness validation (Evergrande failed to disclose lawsuits, annual results), (4) beneficiary ownership transparency.",
-              "**China Subsidiary Corporate Governance:** CSRC's 658 financial fraud cases (¥11B fines, first 10 months 2024) signal systematic detection capabilities via double-random inspection policy (DRIP)—provincial branches randomly audit 5%+ of listed firms annually. UK parent companies should validate China subsidiary controls: (1) board independence and effective challenge (Evergrande governance failures), (2) financial statement accuracy (revenue recognition, asset valuation, liability disclosure), (3) related-party transaction arms-length pricing, (4) internal audit effectiveness. Request: copies of CSRC examination findings, remediation status, independent audit reports with emphasis on fraud risk assessment.",
+              "**Quarterly Review:** Monitor CSRC English website (www.csrc.gov.cn/csrc_en/) for major enforcement press releases. November-December: review annual statistics (cases, penalties, themes). English coverage: Global Times, China Daily financial sections. Granular details often Chinese-only—engage local counsel where direct exposure exists.",
+              "**Overseas Listing Filing Compliance:** UK investment banks must ensure 10-day sponsor filing, January 31 annual reports. Evergrande ¥4.18B + PwC ¥400M penalties demonstrate reputational risk. Due diligence: independent financial verification, related-party analysis, disclosure completeness, beneficial ownership transparency.",
+              "**China Subsidiary Governance:** CSRC's 658 fraud cases (¥11B fines) + DRIP audits (5%+ firms annually) signal detection capabilities. Validate: board independence, financial statement accuracy (revenue, assets, liabilities), related-party arms-length pricing, internal audit effectiveness. Request CSRC examination findings, remediation status.",
+              "**Quantitative Trading Regulation:** October 2024 'reporting before trading' framework may preview UK FCA, EU ESMA HFT approaches. If operating China trading desks, ensure algorithmic strategy disclosure compliance.",
             ],
           },
         ],
         signals: [
           {
-            title:
-              "Evergrande ¥4.18 Billion Revenue Inflation Enforcement (May 2024)",
+            title: "Evergrande ¥4.18B Revenue Inflation & Auditor Accountability",
             detail:
-              "CSRC fined Hengda Real Estate Group ¥4.18 billion yuan ($577M USD) for inflating revenue ¥213.99 billion (50%) in 2019 and ¥350 billion (78.5%) in 2020, totaling ¥564 billion fabricated revenue, plus failure to disclose annual results, lawsuits, outstanding debts. Founder Hui Ka Yan received ¥47 million fine and lifetime market ban. Represents strictest penalty in China bond market regulatory history. PwC fined ¥400 million (6-month ban) for inadequate audit work. Demonstrates: (1) CSRC zero-tolerance for systemic disclosure fraud at major companies, (2) C-suite accountability (lifetime bans), (3) gatekeeper enforcement (auditor penalties). Signals corporate governance, financial statement accuracy, related-party disclosure top priorities. Watch for continued enforcement against property sector, systemically important companies 2025-2026.",
+              "May 2024 CSRC fined Hengda Real Estate Group ¥4.18B ($577M) for inflating revenue ¥564B across 2019-2020 (50-78.5% overstatement), failure to disclose annual results, lawsuits, debts. Founder Hui Ka Yan: ¥47M fine + lifetime market ban. PwC: ¥400M penalty, 6-month ban for inadequate audit. Strictest China bond market penalty. Demonstrates: zero-tolerance for systemic disclosure fraud, C-suite accountability (lifetime bans), gatekeeper enforcement (auditor penalties). Corporate governance, financial statement accuracy, related-party disclosure top priorities. Watch property sector, systemically important company enforcement 2025-2026.",
           },
           {
-            title:
-              "Quantitative Trading Regulation (October 8, 2024 Effective)",
+            title: "Quantitative Trading Regulation & Insider Trading Crackdown",
             detail:
-              "CSRC implemented comprehensive quantitative trading regulation requiring 'reporting before trading'—algorithmic traders must disclose account, financial, trade, software information before deployment. Activities must not affect exchange system security or normal trading orders. Addresses high-frequency trading risks, algorithmic manipulation, flash crash vulnerabilities. Unprecedented transparency requirements for proprietary trading strategies. Follows May 2024 insider trading crackdown (Ministry of Public Security + CSRC arrested 50+ individuals, cases exceeding ¥9 billion). Signals: (1) algorithmic trading under heightened scrutiny, (2) market manipulation via HFT systems enforcement priority, (3) exchange operational resilience protected from algorithm-driven instability. Watch for enforcement against non-compliant quant funds, proprietary trading desks 2025.",
-          },
-          {
-            title:
-              "IPO Fraud Enforcement Intensity (2024)",
-            detail:
-              "CSRC fined S2C EDA semiconductor startup ¥16.5 million ($3.13M USD) February 2024 for inflating earnings during 2021 STAR market IPO application. Part of broader 2024 crackdown: 658 financial fraud cases, ¥11 billion fines (first 10 months). Systematic detection via double-random inspection policy (DRIP): provincial branches randomly audit 5%+ of listed firms annually for information disclosure, governance practices. Demonstrates: (1) pre-IPO due diligence failures trigger post-listing enforcement, (2) STAR market (Shanghai tech board) under same scrutiny as main exchanges, (3) financial statement accuracy enforcement applies throughout capital raising lifecycle. Signals IPO underwriters must conduct independent financial verification—reliance on auditor alone insufficient given PwC ¥400M Evergrande penalty.",
+              "October 2024 CSRC implemented 'reporting before trading'—algorithmic traders must disclose account, financial, trade, software information before deployment. Addresses HFT risks, algorithmic manipulation, flash crash vulnerabilities. Unprecedented proprietary strategy transparency. May 2024 insider trading crackdown: 50+ arrests, cases exceeding ¥9B. Signals: (1) algorithmic trading heightened scrutiny, (2) HFT market manipulation enforcement priority, (3) exchange operational resilience protection. Watch enforcement against non-compliant quant funds, proprietary desks 2025.",
           },
         ],
         boardQuestions: [
-          "If the firm underwrites Chinese company overseas listings or operates as sponsor/lead underwriter: Have we implemented enhanced due diligence processes addressing CSRC's Evergrande enforcement lessons—independent financial statement verification, related-party transaction analysis, disclosure completeness validation, beneficial ownership transparency?",
-          "For firms with Chinese subsidiaries or significant China supply chain dependencies: How do we validate financial statement accuracy, related-party transaction controls, and disclosure completeness given CSRC's 658 financial fraud cases (¥11B fines) in first 10 months 2024 and systematic detection via double-random inspection policy?",
-          "Does management understand CSRC's quantitative trading regulation (October 2024 effective) requiring 'reporting before trading' for algorithmic strategies—and if we operate China trading desks, have we filed required disclosures (account, financial, trade, software information)?",
+          "For Chinese IPO underwriting: Enhanced due diligence addresses Evergrande lessons (independent financial verification, related-party analysis, disclosure completeness, beneficial ownership transparency)?",
+          "China subsidiaries/supply chain: Validated financial statement accuracy, related-party controls given CSRC's 658 fraud cases (¥11B fines) and double-random inspection audits?",
+          "China trading desks: Complied with October 2024 quantitative trading regulation ('reporting before trading', algorithmic strategy disclosure)?",
         ],
         takeaways: [
-          "Monitor CSRC for Corporate Fraud Detection Patterns—¥15.3B penalties 2024 (139% increase), 658 financial fraud cases, Evergrande ¥564B revenue inflation demonstrate systematic enforcement; UK firms with China subsidiaries/suppliers should stress-test financial statement accuracy",
-          "Overseas Listing Filing Compliance Critical—PRC companies + foreign underwriters must file with CSRC; Evergrande ¥4.18B, PwC ¥400M penalties show reputational/regulatory risk from fraudulent issuer association; enhanced due diligence essential",
-          "Quantitative Trading Transparency Precedent—October 2024 'reporting before trading' regulation requiring algorithmic strategy disclosure may influence UK FCA, EU ESMA HFT oversight approaches; watch enforcement against non-compliant quant funds 2025",
+          "Corporate fraud intensity—¥15.3B penalties 2024 (139% increase), 658 cases, Evergrande ¥564B revenue inflation; stress-test China subsidiary/supplier financial statements",
+          "Overseas listing filing compliance critical—PRC companies + foreign underwriters file with CSRC; Evergrande ¥4.18B, PwC ¥400M demonstrate reputational/regulatory risk",
+          "Quantitative trading precedent—October 2024 'reporting before trading' algorithmic disclosure may preview UK FCA, EU ESMA HFT approaches",
         ],
         faqs: [
           {
-            question:
-              "Why should UK financial services firms monitor CSRC enforcement if they don't have China operations?",
+            question: "Why monitor CSRC if my firm doesn't have China operations?",
             answer:
-              "Four cross-border exposure points: (1) **Overseas Listing Intermediaries**: UK investment banks underwriting Chinese company IPOs in London/New York/Hong Kong must comply with CSRC filing requirements (10-day sponsor filing, January 31 annual reports)—Evergrande ¥4.18B enforcement demonstrates reputational risk from fraudulent issuer association. (2) **FCA-CSRC Information Sharing**: MoU enables cross-border surveillance coordination; CSRC market abuse findings can trigger parallel FCA investigations for UK-linked entities. (3) **Supply Chain Risk**: Major Chinese corporate fraud (Evergrande ¥564B revenue inflation) triggers defaults, payment failures affecting UK parent companies with subsidiaries/JVs/supply chain dependencies—CSRC enforcement provides early warning. (4) **MRF Cross-Border Funds**: UK asset managers distributing funds Hong Kong → Mainland via Mutual Recognition of Funds face CSRC oversight of structures, restrictions, disclosures. CSRC's 2024 enforcement doubling (¥15.3B penalties, 739 cases) elevates all four exposure categories.",
+              "Four cross-border exposures: (1) **Overseas Listing Intermediaries**: UK investment banks underwriting Chinese IPOs in London/New York/Hong Kong must comply with CSRC filing (10-day sponsor filing, January 31 annual reports)—Evergrande ¥4.18B demonstrates reputational risk. (2) **FCA-CSRC MoU**: Cross-border surveillance coordination enables information sharing; CSRC market abuse findings can trigger parallel FCA investigations. (3) **Supply Chain Risk**: Major corporate fraud (Evergrande ¥564B revenue inflation) triggers defaults affecting UK firms with China subsidiaries/JVs/suppliers. (4) **MRF Cross-Border Funds**: UK asset managers distributing via Mutual Recognition of Funds face CSRC oversight. 2024 enforcement doubling (¥15.3B, 739 cases) elevates all exposures.",
+          },
+          {
+            question: "How does CSRC's quantitative trading regulation compare to UK approaches?",
+            answer:
+              "CSRC's October 2024 'reporting before trading' framework requires unprecedented algorithmic strategy transparency (account, financial, trade, software information disclosure before deployment) addressing HFT risks. UK FCA currently uses MiFID II transaction reporting, algorithm testing/monitoring requirements, but no pre-deployment strategy disclosure. CSRC approach more prescriptive than UK principles-based regime. May preview EU ESMA, UK FCA evolution toward algorithmic transparency as HFT market manipulation concerns grow. China enforcement against non-compliant quant funds 2025 will test framework effectiveness—watch for lessons applicable to UK HFT oversight.",
           },
         ],
         sourceLinks: [
