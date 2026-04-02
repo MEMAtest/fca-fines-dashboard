@@ -13,7 +13,7 @@ describe("BreachByTypeChart", () => {
       render(<BreachByTypeChart records={mockFineRecords} />);
 
       expect(screen.getByText("Top breach categories")).toBeInTheDocument();
-      expect(screen.getByText("Breach mix")).toBeInTheDocument();
+      expect(screen.getByText("Breach types")).toBeInTheDocument();
     });
 
     it("renders metric toggle buttons", () => {
@@ -38,7 +38,7 @@ describe("BreachByTypeChart", () => {
 
       // Should show breach categories in legend
       expect(screen.getByText(/AML/)).toBeInTheDocument();
-      expect(screen.getByText(/MARKET_ABUSE/)).toBeInTheDocument();
+      expect(screen.getByText(/Market Abuse/)).toBeInTheDocument();
     });
 
     it("handles records without breach categories (Unclassified)", () => {

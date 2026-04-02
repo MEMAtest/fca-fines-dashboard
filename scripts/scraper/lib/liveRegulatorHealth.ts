@@ -6,7 +6,7 @@ import {
 } from "../../../src/data/regulatorCoverage.js";
 
 export type LiveRegulatorCadence = "daily" | "fragile";
-export type LiveRegulatorHealthStatus = "ok" | "stale" | "missing";
+export type LiveRegulatorHealthStatus = "ok" | "warning" | "stale" | "missing";
 
 export interface LiveRegulatorStatsRow {
   regulator: string;
@@ -26,6 +26,10 @@ export interface LiveRegulatorHealthResult {
   latestRecordDate: string | null;
   ageDays: number | null;
   freshnessWindowDays: number;
+  minimumHealthyRecords: number;
+  zeroResultPolicy: RegulatorCoverage["feedContract"]["zeroResultPolicy"];
+  sourceContractSummary: string;
+  operatorAction: string;
   status: LiveRegulatorHealthStatus;
   message: string;
 }
@@ -81,6 +85,10 @@ export function evaluateLiveRegulatorHealth(
       latestRecordDate: stats?.latestRecordDate ?? null,
       ageDays: null,
       freshnessWindowDays,
+      minimumHealthyRecords: coverage.feedContract.minimumHealthyRecords,
+      zeroResultPolicy: coverage.feedContract.zeroResultPolicy,
+      sourceContractSummary: coverage.feedContract.sourceContractSummary,
+      operatorAction: coverage.feedContract.operatorAction,
       status: "missing",
       message: "No live records were found in all_regulatory_fines.",
     };
@@ -100,8 +108,36 @@ export function evaluateLiveRegulatorHealth(
       latestRecordDate: stats.latestRecordDate,
       ageDays,
       freshnessWindowDays,
+      minimumHealthyRecords: coverage.feedContract.minimumHealthyRecords,
+      zeroResultPolicy: coverage.feedContract.zeroResultPolicy,
+      sourceContractSummary: coverage.feedContract.sourceContractSummary,
+      operatorAction: coverage.feedContract.operatorAction,
       status: "stale",
       message: `Latest record is ${ageDays} days old, outside the ${freshnessWindowDays}-day ${cadence} window.`,
+    };
+  }
+
+  if (
+    coverage.feedContract.minimumHealthyRecords > 0
+    && stats.recordCount < coverage.feedContract.minimumHealthyRecords
+  ) {
+    return {
+      regulator: coverage.code,
+      fullName: coverage.fullName,
+      cadence,
+      confidence: coverage.operationalConfidence,
+      automationLevel: coverage.automationLevel,
+      recordCount: stats.recordCount,
+      earliestRecordDate: stats.earliestRecordDate,
+      latestRecordDate: stats.latestRecordDate,
+      ageDays,
+      freshnessWindowDays,
+      minimumHealthyRecords: coverage.feedContract.minimumHealthyRecords,
+      zeroResultPolicy: coverage.feedContract.zeroResultPolicy,
+      sourceContractSummary: coverage.feedContract.sourceContractSummary,
+      operatorAction: coverage.feedContract.operatorAction,
+      status: "warning",
+      message: `Record count is ${stats.recordCount}, below the healthy floor of ${coverage.feedContract.minimumHealthyRecords} for this feed contract.`,
     };
   }
 
@@ -116,6 +152,10 @@ export function evaluateLiveRegulatorHealth(
     latestRecordDate: stats.latestRecordDate,
     ageDays,
     freshnessWindowDays,
+    minimumHealthyRecords: coverage.feedContract.minimumHealthyRecords,
+    zeroResultPolicy: coverage.feedContract.zeroResultPolicy,
+    sourceContractSummary: coverage.feedContract.sourceContractSummary,
+    operatorAction: coverage.feedContract.operatorAction,
     status: "ok",
     message: `Latest record is ${ageDays} days old and within the ${freshnessWindowDays}-day ${cadence} window.`,
   };

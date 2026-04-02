@@ -18,6 +18,7 @@ import { RegulatorImpactChart } from "../components/RegulatorImpactChart.js";
 import { LessonsLearnedAnalysis } from "../components/LessonsLearnedAnalysis.js";
 import type { AdvancedFilterValues } from "../components/AdvancedFilters.js";
 import { exportData } from "../utils/export.js";
+import { formatBreachCategory } from "../utils/labelConversion.js";
 import { getBestRecordSourceUrl } from "../utils/sourceLinks.js";
 import { useLocalStorage } from "../hooks/useLocalStorage.js";
 import { useNotificationFeed } from "../hooks/useNotificationFeed.js";
@@ -560,7 +561,7 @@ export function Dashboard() {
     }
     if (category !== "All") {
       chips.push({
-        label: `Category: ${category}`,
+        label: `Category: ${formatBreachCategory(category)}`,
         onRemove: () => setCategory("All"),
       });
     }
@@ -610,7 +611,7 @@ export function Dashboard() {
     }
     if (advancedFilters.breachTypes.length) {
       chips.push({
-        label: `Breaches: ${advancedFilters.breachTypes.join(", ")}`,
+        label: `Breaches: ${advancedFilters.breachTypes.map(formatBreachCategory).join(", ")}`,
         onRemove: () =>
           setAdvancedFilters((prev: AdvancedFilterValues) => ({
             ...prev,

@@ -77,6 +77,17 @@ test.describe('Enforcement Search', () => {
     await expect(firstResultTitle).toContainText('Goldman Sachs & Co. LLC');
   });
 
+  test('keeps mixed firm and regulator queries anchored on the expected entity', async ({
+    page,
+  }) => {
+    await openSearch(page);
+    await submitSearch(page, 'CBI Coinbase AML');
+
+    await expect(page.locator('h3').first()).toContainText(
+      'Coinbase Europe Limited',
+    );
+  });
+
   test('supports breach-theme searches', async ({ page }) => {
     await openSearch(page);
     await submitSearch(page, 'market manipulation insider trading');
@@ -111,6 +122,17 @@ test.describe('Enforcement Search', () => {
         exact: true,
       }),
     ).toBeVisible();
+  });
+
+  test('prioritizes governance matches for regulator-led governance queries', async ({
+    page,
+  }) => {
+    await openSearch(page);
+    await submitSearch(page, 'FCA governance accountability');
+
+    await expect(page.locator('h3').first()).toContainText(
+      'NorthBridge Wealth Ltd',
+    );
   });
 
   test('returns aml cft results for counter terrorist financing queries', async ({
@@ -205,6 +227,26 @@ test.describe('Enforcement Search', () => {
     await expect(page.getByText(/Page 2 of/i)).toBeVisible();
     await page.getByRole('button', { name: /Previous/i }).click();
     await expect(page.getByText(/Page 1 of/i)).toBeVisible();
+  });
+
+  test('retains the search query across pagination requests', async ({ page }) => {
+    const seenQueries: string[] = [];
+    const seenOffsets: string[] = [];
+
+    await page.route('**/api/search**', async (route) => {
+      const url = new URL(route.request().url());
+      seenQueries.push(url.searchParams.get('q') ?? '');
+      seenOffsets.push(url.searchParams.get('offset') ?? '0');
+      await fulfillSearch(route);
+    });
+
+    await page.goto('/search');
+    await submitSearch(page, 'AML');
+    await page.getByRole('button', { name: /Next/i }).click();
+
+    expect(seenQueries.at(-1)).toBe('AML');
+    expect(seenOffsets.at(-1)).not.toBe('0');
+    await expect(page.getByText(/Page 2 of/i)).toBeVisible();
   });
 
   test('clears filters without clearing the current query', async ({ page }) => {

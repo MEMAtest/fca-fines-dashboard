@@ -11,22 +11,22 @@ describe("TimelineChart", () => {
   };
 
   describe("rendering", () => {
-    it('renders the chart with "All enforcement flow" title for year 0', () => {
+    it('renders the chart with "All years timeline" title for year 0', () => {
       render(<TimelineChart {...defaultProps} year={0} />);
 
-      expect(screen.getByText("All enforcement flow")).toBeInTheDocument();
+      expect(screen.getByText("All years timeline")).toBeInTheDocument();
     });
 
     it("renders year-specific title when year is provided", () => {
       render(<TimelineChart {...defaultProps} year={2024} />);
 
-      expect(screen.getByText("2024 enforcement flow")).toBeInTheDocument();
+      expect(screen.getByText("2024 timeline")).toBeInTheDocument();
     });
 
-    it("renders the Monthly cadence eyebrow", () => {
+    it("renders the Monthly pattern eyebrow", () => {
       render(<TimelineChart {...defaultProps} />);
 
-      expect(screen.getByText("Monthly cadence")).toBeInTheDocument();
+      expect(screen.getByText("Monthly pattern")).toBeInTheDocument();
     });
 
     it("renders metric toggle buttons", () => {
@@ -94,7 +94,7 @@ describe("TimelineChart", () => {
 
       // The callback should be attached to chart click events
       // We can't easily test Recharts click events, but we verify the prop is accepted
-      expect(screen.getByText("All enforcement flow")).toBeInTheDocument();
+      expect(screen.getByText("All years timeline")).toBeInTheDocument();
     });
 
     it("calls onRangeSelect with debounce when brush changes", () => {
@@ -103,7 +103,7 @@ describe("TimelineChart", () => {
 
       // The callback should be attached to brush events
       // We verify the component renders without error
-      expect(screen.getByText("All enforcement flow")).toBeInTheDocument();
+      expect(screen.getByText("All years timeline")).toBeInTheDocument();
     });
   });
 
@@ -111,7 +111,7 @@ describe("TimelineChart", () => {
     it("renders without crashing when data is empty", () => {
       render(<TimelineChart data={[]} year={2024} />);
 
-      expect(screen.getByText("2024 enforcement flow")).toBeInTheDocument();
+      expect(screen.getByText("2024 timeline")).toBeInTheDocument();
     });
 
     it("handles data with single entry", () => {
@@ -127,7 +127,7 @@ describe("TimelineChart", () => {
 
       render(<TimelineChart data={singleEntry} year={2024} />);
 
-      expect(screen.getByText("2024 enforcement flow")).toBeInTheDocument();
+      expect(screen.getByText("2024 timeline")).toBeInTheDocument();
     });
   });
 
@@ -178,7 +178,7 @@ describe("TimelineChart", () => {
       render(<TimelineChart {...defaultProps} />);
 
       // The component should process and format the data
-      expect(screen.getByText("All enforcement flow")).toBeInTheDocument();
+      expect(screen.getByText("All years timeline")).toBeInTheDocument();
     });
   });
 

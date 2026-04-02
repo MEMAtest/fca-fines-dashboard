@@ -2,6 +2,9 @@ import { PUBLIC_REGULATOR_NAV_ITEMS } from '../../src/data/regulatorCoverage.js'
 
 const ACRONYM_EXPANSIONS: Record<string, string[]> = {
   aml: ['anti money laundering'],
+  cdd: ['customer due diligence', 'know your customer', 'source of funds'],
+  kyc: ['know your customer', 'customer due diligence', 'source of wealth'],
+  sar: ['suspicious activity reporting', 'suspicious transaction reporting'],
   smcr: [
     'senior managers and certification regime',
     'senior managers regime',
@@ -91,6 +94,7 @@ export interface PreparedEnforcementSearch {
   minimumTokenMatches: number;
   regulatorHints: string[];
   countryHints: string[];
+  categoryHints: string[];
   hasSearchIntent: boolean;
 }
 
@@ -152,6 +156,29 @@ function expandThemePhrases(tokens: string[]) {
     );
   }
 
+  if (
+    tokens.includes('customer')
+    && (tokens.includes('diligence') || tokens.includes('onboarding'))
+  ) {
+    expanded.push(
+      'customer due diligence',
+      'know your customer',
+      'source of funds',
+      'source of wealth',
+    );
+  }
+
+  if (
+    tokens.includes('suspicious')
+    && (tokens.includes('activity') || tokens.includes('transaction'))
+  ) {
+    expanded.push(
+      'suspicious activity reporting',
+      'suspicious transaction reporting',
+      'suspicious activity review',
+    );
+  }
+
   if (hasSmcrIntent) {
     expanded.push(
       'smcr',
@@ -162,6 +189,9 @@ function expandThemePhrases(tokens: string[]) {
       'senior management',
       'manager accountability',
       'governance',
+      'board oversight',
+      'committee oversight',
+      'management information',
     );
   }
 
@@ -197,7 +227,81 @@ function expandThemePhrases(tokens: string[]) {
     );
   }
 
+  if (tokens.includes('governance') || tokens.includes('accountability')) {
+    expanded.push(
+      'governance',
+      'accountability',
+      'board oversight',
+      'committee oversight',
+      'management information',
+      'senior management',
+    );
+  }
+
+  if (
+    tokens.includes('books')
+    && (tokens.includes('records') || tokens.includes('recordkeeping'))
+  ) {
+    expanded.push('books and records', 'record keeping', 'recordkeeping');
+  }
+
   return unique(expanded);
+}
+
+function deriveCategoryHints(tokens: string[], themePhrases: string[]) {
+  const haystack = new Set([...tokens, ...themePhrases]);
+  const categoryHints = new Set<string>();
+
+  const push = (...categories: string[]) => {
+    categories.forEach((category) => categoryHints.add(category));
+  };
+
+  if (
+    haystack.has('aml')
+    || haystack.has('anti money laundering')
+    || haystack.has('transaction monitoring')
+    || haystack.has('customer due diligence')
+    || haystack.has('know your customer')
+    || haystack.has('suspicious activity reporting')
+  ) {
+    push('AML', 'FINANCIAL_CRIME', 'SYSTEMS_AND_CONTROLS', 'CONTROLS');
+  }
+
+  if (
+    haystack.has('counter terrorist financing')
+    || haystack.has('anti money laundering and counter terrorist financing')
+    || haystack.has('sanctions compliance')
+  ) {
+    push('AML', 'CFT', 'CTF', 'SANCTIONS', 'SYSTEMS_AND_CONTROLS');
+  }
+
+  if (
+    haystack.has('smcr')
+    || haystack.has('governance')
+    || haystack.has('accountability')
+    || haystack.has('board oversight')
+    || haystack.has('senior managers and certification regime')
+  ) {
+    push('GOVERNANCE', 'SMCR', 'CONDUCT', 'SYSTEMS_AND_CONTROLS');
+  }
+
+  if (
+    haystack.has('market abuse')
+    || haystack.has('market manipulation')
+    || haystack.has('insider trading')
+  ) {
+    push('MARKET_ABUSE', 'INSIDER_DEALING', 'TRADING', 'SURVEILLANCE');
+  }
+
+  if (
+    haystack.has('books and records')
+    || haystack.has('record keeping')
+    || haystack.has('recordkeeping')
+  ) {
+    push('DISCLOSURE', 'REPORTING', 'BOOKS_AND_RECORDS');
+  }
+
+  return Array.from(categoryHints);
 }
 
 export function expandSearchTerms(tokens: string[]) {
@@ -279,6 +383,7 @@ export function prepareEnforcementSearch(query: string): PreparedEnforcementSear
   );
   const hasSearchIntent =
     meaningfulTokens.length > 0 || regulatorHints.length > 0 || countryHints.length > 0;
+  const categoryHints = deriveCategoryHints(baseTokens, themePhrases);
 
   return {
     normalizedQuery,
@@ -290,6 +395,7 @@ export function prepareEnforcementSearch(query: string): PreparedEnforcementSear
     minimumTokenMatches,
     regulatorHints,
     countryHints,
+    categoryHints,
     hasSearchIntent,
   };
 }

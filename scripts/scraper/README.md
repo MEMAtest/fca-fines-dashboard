@@ -69,6 +69,22 @@ Each batch is followed by `npm run check:live-freshness` so stale or missing liv
 2. (Optional) add repository-level **variables** for `FCA_YEARS`, `FCA_START_YEAR`, `FCA_END_YEAR`, `FCA_SINCE_DATE`, `SEC_SINCE_YEAR`, `SEBI_SINCE_YEAR`, or `SEBI_ENRICH_LIMIT` to control crawl windows.
    - `SEBI_ENRICH_LIMIT` now defaults to the full current listing. Set it only if you want to cap local or CI enrichment work for faster diagnostics.
 3. The workflows use per-regulator matrix jobs with isolated concurrency groups so one source failure does not block the full live batch. Monitor the Actions tab for success/failure logs and freshness-check output.
+4. Freshness jobs now emit both:
+   - a GitHub step summary with per-regulator status, cadence, and operator guidance
+   - an artifact JSON payload (`daily-live-regulator-health` or `fragile-live-regulator-health`) so multi-cycle monitoring can compare runs over time
+
+### Freshness statuses
+
+- `OK` – feed is inside its cadence window and above the minimum healthy record floor
+- `WARN` – feed is fresh, but live archive volume has dropped below the expected floor for that source contract
+- `STALE` – latest record is outside the allowed cadence window
+- `MISSING` – no live records were found for that regulator in `all_regulatory_fines`
+
+Lower-confidence live feeds have explicit source contracts:
+
+- `DFSA`, `CBUAE` – curated official-document archive ingestion from challenge-protected public indexes
+- `JFSC` – sparse-source public statements feed where low volume may be normal
+- `CIRO` – automated live listing ingestion, but still treated as lower-confidence while source normalization matures
 
 ## How upserts work
 

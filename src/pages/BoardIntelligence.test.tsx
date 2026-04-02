@@ -80,10 +80,13 @@ function createLocalStorageMock() {
   };
 }
 
+let localStorageMock: ReturnType<typeof createLocalStorageMock>;
+
 describe("BoardIntelligence", () => {
   beforeEach(() => {
+    localStorageMock = createLocalStorageMock();
     Object.defineProperty(window, "localStorage", {
-      value: createLocalStorageMock(),
+      value: localStorageMock,
       configurable: true,
     });
   });
@@ -136,5 +139,72 @@ describe("BoardIntelligence", () => {
         name: /^NorthStar Payments$/,
       }),
     ).toHaveLength(2);
+  });
+
+  it("shows a consultant advisory note and working-copy detail when selected", () => {
+    renderPage();
+
+    fireEvent.click(screen.getByRole("button", { name: /Refine profile/i }));
+    fireEvent.change(screen.getByLabelText(/Audience mode/i), {
+      target: { value: "working" },
+    });
+    fireEvent.change(screen.getByLabelText(/MEMA advisory note/i), {
+      target: { value: "Escalate remediation evidence on AML controls." },
+    });
+    fireEvent.click(
+      screen.getByRole("button", { name: /Generate board pack/i }),
+    );
+
+    expect(
+      screen.getByRole("heading", { name: /MEMA advisory note/i }),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByText(/Escalate remediation evidence on AML controls/i),
+    ).toBeInTheDocument();
+    expect(screen.getAllByLabelText(/Control status for/i).length).toBeGreaterThan(0);
+  });
+
+  it("loads saved profile snapshots from local storage", () => {
+    localStorageMock.setItem(
+      "board-pack-saved-profiles-v1",
+      JSON.stringify([
+        {
+          id: "saved-1",
+          label: "NorthStar Board Pack",
+          updatedAt: "2026-04-01T10:00:00.000Z",
+          profile: {
+            firmName: "NorthStar Board Pack",
+            archetypeId: "retail-bank",
+            boardFocus: "assurance",
+            priorityRegulators: ["FCA", "ECB"],
+            focusRegions: ["UK", "Europe"],
+            priorityThemeIds: [
+              "aml-controls",
+              "governance-accountability",
+              "systems-and-controls",
+            ],
+          },
+          settings: {
+            viewMode: "board",
+            brandingMode: "client-ready",
+            clientLabel: "NorthStar plc",
+            confidentialityLabel: "Board Use Only",
+            analystNote: "Use this pack for the April committee pack.",
+            templateId: "committee-core",
+          },
+        },
+      ]),
+    );
+
+    renderPage();
+    fireEvent.click(screen.getByRole("button", { name: /^Load$/i }));
+
+    expect(
+      screen.getAllByRole("heading", {
+        level: 2,
+        name: /^NorthStar Board Pack$/,
+      }),
+    ).toHaveLength(2);
+    expect(screen.getAllByText(/Prepared for NorthStar plc/i)).toHaveLength(2);
   });
 });

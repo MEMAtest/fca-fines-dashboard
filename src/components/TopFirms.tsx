@@ -30,7 +30,7 @@ export function TopFirms({ records, onSelectFirm, exportId }: TopFirmsProps) {
         </div>
         <div className="panel__header-actions">
           <PanelHelp
-            text="The 10 largest fines by amount. Click a firm to filter all data by that entity."
+            text="The 10 largest fines by amount. Click an entity to filter all data."
             icon={<HelpCircle size={16} />}
           />
           {topRecords.length > 0 && (
@@ -56,7 +56,7 @@ export function TopFirms({ records, onSelectFirm, exportId }: TopFirmsProps) {
               <div className="top-firms__content">
                 <div>
                   <h4>{record.firm_individual}</h4>
-                  <p>{record.firm_category || "Unclassified"}</p>
+                  {record.firm_category && <p>{record.firm_category}</p>}
                 </div>
                 <span className="top-firms__amount">
                   {currency.format(record.amount)}

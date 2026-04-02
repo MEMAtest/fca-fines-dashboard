@@ -1,4 +1,5 @@
 import "dotenv/config";
+import { appendFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import {
   buildLiveRegulatorHealthReport,
@@ -70,6 +71,8 @@ function printHumanReport(
     const statusIcon =
       result.status === "ok"
         ? "OK"
+        : result.status === "warning"
+          ? "WARN"
         : result.status === "stale"
           ? "STALE"
           : "MISSING";
@@ -78,7 +81,36 @@ function printHumanReport(
       `${statusIcon} ${result.regulator} | cadence=${result.cadence} | confidence=${result.confidence} | records=${result.recordCount} | latest=${result.latestRecordDate ?? "none"} | ageDays=${result.ageDays ?? "n/a"}`,
     );
     console.log(`   ${result.message}`);
+    console.log(`   Source contract: ${result.sourceContractSummary}`);
+    console.log(`   Operator action: ${result.operatorAction}`);
   }
+}
+
+function writeGitHubSummary(
+  results: ReturnType<typeof buildLiveRegulatorHealthReport>,
+  checked: number,
+  failing: number,
+) {
+  const summaryPath = process.env.GITHUB_STEP_SUMMARY;
+  if (!summaryPath) {
+    return;
+  }
+
+  const lines = [
+    "## Live regulator freshness",
+    "",
+    `Checked ${checked} live regulators; ${failing} require attention.`,
+    "",
+    "| Regulator | Status | Cadence | Records | Latest | Guidance |",
+    "| --- | --- | --- | ---: | --- | --- |",
+    ...results.map(
+      (result) =>
+        `| ${result.regulator} | ${result.status.toUpperCase()} | ${result.cadence} | ${result.recordCount} | ${result.latestRecordDate ?? "none"} | ${result.operatorAction} |`,
+    ),
+    "",
+  ];
+
+  appendFileSync(summaryPath, `${lines.join("\n")}\n`);
 }
 
 export async function main() {
@@ -114,6 +146,8 @@ export async function main() {
       `Checked ${payload.totals.checked} live regulators; ${payload.totals.failing} require attention.`,
     );
   }
+
+  writeGitHubSummary(results, payload.totals.checked, payload.totals.failing);
 
   if (results.length === 0) {
     throw new Error(

@@ -1,5 +1,6 @@
 import { FilterChip } from "./FilterChip.js";
 import { SearchAutocomplete } from "./SearchAutocomplete.js";
+import { formatBreachCategory } from "../utils/labelConversion.js";
 
 interface FiltersBarProps {
   year: number;
@@ -51,7 +52,7 @@ export function FiltersBar({
   showCountryFilter = true,
 }: FiltersBarProps) {
   const focusLabel = year === 0 ? "All years" : `${year} focus`;
-  const categoryLabel = category === "All" ? "All breach types" : category;
+  const categoryLabel = category === "All" ? "All breach types" : formatBreachCategory(category);
   const regulatorLabel = regulator === "All" ? "All regulators" : regulator;
   const countryLabel = country === "All" ? "All countries" : country;
 
@@ -159,7 +160,7 @@ export function FiltersBar({
             <option value="All">All Categories</option>
             {categories.map((cat) => (
               <option key={cat} value={cat}>
-                {cat}
+                {formatBreachCategory(cat)}
               </option>
             ))}
           </select>
@@ -202,25 +203,21 @@ export function FiltersBar({
       )}
 
       <div className="filters__metrics">
-        <div className="filters__metric">
+        <div className="filters__metric filters__metric--primary">
           <strong>{resultsCount}</strong>
-          records in view
+          <span>penalty notice{resultsCount !== 1 ? 's' : ''} found</span>
         </div>
         <div className="filters__metric">
-          <strong>{regulatorLabel}</strong>
-          regulator
+          <strong>{regulatorLabel === "All regulators" ? "All regulators" : `${regulatorLabel} only`}</strong>
         </div>
         <div className="filters__metric">
-          <strong>{countryLabel}</strong>
-          country
+          <strong>{countryLabel === "All countries" ? "All countries" : `${countryLabel} only`}</strong>
         </div>
         <div className="filters__metric">
-          <strong>{categoryLabel}</strong>
-          breach focus
+          <strong>{categoryLabel === "All breach types" ? "All breach types" : `${categoryLabel} focus`}</strong>
         </div>
         <div className="filters__metric">
           <strong>{currency}</strong>
-          currency
         </div>
         <button
           type="button"

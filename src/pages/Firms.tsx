@@ -99,7 +99,7 @@ export function Firms() {
               value={query}
               onChange={(e) => setQuery(e.target.value)}
               placeholder="Search firms and individuals..."
-              aria-label="Search firms"
+              aria-label="Search firms and individuals"
               style={{
                 width: "min(420px, 100%)",
                 padding: "0.6rem 0.75rem",

@@ -54,6 +54,38 @@ export interface BoardFirmProfile {
   priorityThemeIds: BoardThemeId[];
 }
 
+export type BoardPackViewMode = "board" | "working";
+export type BoardPackBrandingMode = "mema" | "client-ready";
+export type BoardPackTemplateId =
+  | "committee-core"
+  | "remediation-intensive"
+  | "expansion-entry";
+
+export interface BoardPackPresentationSettings {
+  viewMode: BoardPackViewMode;
+  brandingMode: BoardPackBrandingMode;
+  clientLabel: string;
+  confidentialityLabel: string;
+  analystNote: string;
+  templateId: BoardPackTemplateId | null;
+}
+
+export interface SavedBoardPackProfile {
+  id: string;
+  label: string;
+  profile: BoardFirmProfile;
+  settings: BoardPackPresentationSettings;
+  updatedAt: string;
+}
+
+export interface BoardPackTemplate {
+  id: BoardPackTemplateId;
+  label: string;
+  description: string;
+  profile: BoardFirmProfile;
+  settings: Partial<BoardPackPresentationSettings>;
+}
+
 export const BOARD_THEME_DEFINITIONS: Record<
   BoardThemeId,
   BoardThemeDefinition
@@ -446,3 +478,78 @@ export const DEFAULT_BOARD_PROFILE: BoardFirmProfile = {
     "systems-and-controls",
   ],
 };
+
+export const DEFAULT_BOARD_PACK_SETTINGS: BoardPackPresentationSettings = {
+  viewMode: "board",
+  brandingMode: "mema",
+  clientLabel: "",
+  confidentialityLabel: "Board / Risk Committee Use",
+  analystNote: "",
+  templateId: "committee-core",
+};
+
+export const BOARD_PACK_TEMPLATES: BoardPackTemplate[] = [
+  {
+    id: "committee-core",
+    label: "Committee core pack",
+    description:
+      "Default board and risk committee version with concise advisory framing and a compressed appendix.",
+    profile: DEFAULT_BOARD_PROFILE,
+    settings: {
+      viewMode: "board",
+      brandingMode: "mema",
+      confidentialityLabel: "Board / Risk Committee Use",
+      templateId: "committee-core",
+    },
+  },
+  {
+    id: "remediation-intensive",
+    label: "Remediation intensive",
+    description:
+      "Sharper remediation and control-evidence lens for firms already managing material delivery risk.",
+    profile: {
+      ...DEFAULT_BOARD_PROFILE,
+      boardFocus: "remediation",
+      priorityThemeIds: [
+        "aml-controls",
+        "governance-accountability",
+        "systems-and-controls",
+        "sanctions-screening",
+      ],
+    },
+    settings: {
+      viewMode: "working",
+      brandingMode: "client-ready",
+      confidentialityLabel: "Working Copy / Remediation Committee Use",
+      templateId: "remediation-intensive",
+    },
+  },
+  {
+    id: "expansion-entry",
+    label: "Expansion / market entry",
+    description:
+      "Cross-border expansion template that emphasizes regulator spread, onboarding, and financial-crime watchpoints.",
+    profile: {
+      ...DEFAULT_BOARD_PROFILE,
+      boardFocus: "expansion",
+      priorityThemeIds: [
+        "aml-controls",
+        "sanctions-screening",
+        "systems-and-controls",
+        "governance-accountability",
+      ],
+      priorityRegulators: ["FCA", "DFSA", "FSRA", "CBUAE", "SEC", "SEBI"],
+      focusRegions: ["UK", "Europe", "MENA", "North America", "APAC"],
+    },
+    settings: {
+      viewMode: "board",
+      brandingMode: "client-ready",
+      confidentialityLabel: "Board Strategy Pack",
+      templateId: "expansion-entry",
+    },
+  },
+];
+
+export const BOARD_PACK_TEMPLATES_BY_ID = Object.fromEntries(
+  BOARD_PACK_TEMPLATES.map((template) => [template.id, template]),
+) as Record<BoardPackTemplateId, BoardPackTemplate>;

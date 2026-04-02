@@ -129,4 +129,13 @@ jobs:
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
         run: |
-          npm run check:live-freshness -- --cadence=daily
+          npm run check:live-freshness -- --cadence=daily --json > /tmp/daily-live-regulator-health.json
+          cat /tmp/daily-live-regulator-health.json
+
+      - name: Upload daily live-regulator health summary
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: daily-live-regulator-health
+          path: /tmp/daily-live-regulator-health.json
+          if-no-files-found: ignore

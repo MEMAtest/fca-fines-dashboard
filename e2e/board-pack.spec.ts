@@ -140,6 +140,21 @@ test.describe("Board Pack", () => {
       page.getByRole("heading", { name: "Board challenge agenda" }),
     ).toBeVisible();
     await expect(page.getByRole("heading", { name: "Appendix" })).toBeVisible();
+
+    const slideHeadings = await page.locator("section h2").allTextContents();
+    expect(slideHeadings).toEqual(
+      expect.arrayContaining([
+        "Executive summary",
+        "Why now",
+        "Exposure overview",
+        "Key exposure themes",
+        "Peer cases worth taking to the board",
+        "Implications for the firm",
+        "Board challenge agenda",
+        "Immediate next steps",
+        "Appendix",
+      ]),
+    );
   });
 
   test("regenerates the pack for a renamed firm profile", async ({ page }) => {
@@ -158,5 +173,85 @@ test.describe("Board Pack", () => {
         })
         .first(),
     ).toBeVisible();
+  });
+
+  test("supports print and working-copy mode", async ({ page }) => {
+    await page.route("**/api/unified/search**", fulfillBoardPackSearch);
+    await page.addInitScript(() => {
+      (window as unknown as { __printCount?: number }).__printCount = 0;
+      window.print = () => {
+        (window as unknown as { __printCount: number }).__printCount += 1;
+      };
+    });
+    await page.goto("/board-pack");
+
+    await page.getByRole("button", { name: "Refine profile" }).click();
+    await page.getByLabel("Audience mode").selectOption("working");
+    await page.getByLabel("MEMA advisory note").fill(
+      "Escalate control evidence before the next committee cycle.",
+    );
+    await page.getByRole("button", { name: "Generate board pack" }).click();
+
+    await page.getByRole("button", { name: "Print / Save PDF" }).click();
+    await expect(
+      page.getByRole("heading", { name: "MEMA advisory note" }),
+    ).toBeVisible();
+    await expect(
+      page.getByLabel(/Control status for/i).first(),
+    ).toBeVisible();
+
+    const printCount = await page.evaluate(
+      () => (window as unknown as { __printCount: number }).__printCount,
+    );
+    expect(printCount).toBe(1);
+  });
+
+  test("loads a saved board-pack snapshot from local storage", async ({
+    page,
+  }) => {
+    await page.route("**/api/unified/search**", fulfillBoardPackSearch);
+    await page.addInitScript(() => {
+      window.localStorage.setItem(
+        "board-pack-saved-profiles-v1",
+        JSON.stringify([
+          {
+            id: "saved-1",
+            label: "NorthStar Board Pack",
+            updatedAt: "2026-04-01T10:00:00.000Z",
+            profile: {
+              firmName: "NorthStar Board Pack",
+              archetypeId: "retail-bank",
+              boardFocus: "assurance",
+              priorityRegulators: ["FCA", "ECB"],
+              focusRegions: ["UK", "Europe"],
+              priorityThemeIds: [
+                "aml-controls",
+                "governance-accountability",
+                "systems-and-controls",
+              ],
+            },
+            settings: {
+              viewMode: "board",
+              brandingMode: "client-ready",
+              clientLabel: "NorthStar plc",
+              confidentialityLabel: "Board Use Only",
+              analystNote: "Use this pack for the April committee pack.",
+              templateId: "committee-core",
+            },
+          },
+        ]),
+      );
+    });
+
+    await page.goto("/board-pack");
+    await page.getByRole("button", { name: /^Load$/ }).click();
+
+    await expect(
+      page.getByRole("heading", {
+        level: 2,
+        name: "NorthStar Board Pack",
+      }).first(),
+    ).toBeVisible();
+    await expect(page.getByText(/Prepared for NorthStar plc/i).first()).toBeVisible();
   });
 });

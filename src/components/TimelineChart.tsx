@@ -43,7 +43,7 @@ export function TimelineChart({
   exportId,
 }: TimelineChartProps) {
   const title =
-    year === 0 ? "All enforcement flow" : `${year} enforcement flow`;
+    year === 0 ? "All years timeline" : `${year} timeline`;
   const averageAmount = data.length
     ? data.reduce((sum, item) => sum + item.total, 0) / data.length
     : 0;
@@ -88,7 +88,7 @@ export function TimelineChart({
     <div className="panel" id={panelId}>
       <div className="panel__header">
         <div>
-          <p className="panel__eyebrow">Monthly cadence</p>
+          <p className="panel__eyebrow">Monthly pattern</p>
           <h3>{title}</h3>
         </div>
         <div className="panel__header-actions">

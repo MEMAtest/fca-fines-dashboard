@@ -116,7 +116,7 @@ export function SearchAutocomplete({
       <div className="search-autocomplete__input">
         <input
           type="search"
-          placeholder="Search firm, summary, keyword…"
+          placeholder="Search entity, summary, keyword…"
           value={value}
           ref={inputRef}
           onFocus={() => setOpen(true)}

@@ -7,6 +7,10 @@ interface DataCoverageNoticeProps {
   showWarning?: boolean;
 }
 
+function formatRecordCount(value: number) {
+  return `${value.toLocaleString()} ${value === 1 ? "record" : "records"}`;
+}
+
 export function DataCoverageNotice({
   coverage,
   showWarning = true,
@@ -44,6 +48,10 @@ export function DataCoverageNotice({
         {coverage.note && (
           <p className="data-coverage__note">{coverage.note}</p>
         )}
+        <p className="data-coverage__note">
+          Collection method: {coverage.feedContract.collectionMethod}.{" "}
+          {coverage.feedContract.sourceContractSummary}
+        </p>
         {isLowerConfidence && (
           <p className="data-coverage__warning-text">
             {lowerConfidenceMessage}
@@ -62,6 +70,13 @@ export function DataCoverageNotice({
             expanded.
           </p>
         )}
+        <p className="data-coverage__note">
+          Healthy feed floor: at least{" "}
+          {formatRecordCount(coverage.feedContract.minimumHealthyRecords)} in
+          the current archive, with review inside a{" "}
+          {coverage.feedContract.staleAfterDays}-day{" "}
+          {coverage.feedContract.cadence} window.
+        </p>
       </div>
     </div>
   );

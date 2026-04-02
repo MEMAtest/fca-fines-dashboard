@@ -51,6 +51,30 @@ describe("liveRegulatorHealth", () => {
     expect(result.automationLevel).toBe("curated_archive");
     expect(result.ageDays).toBe(26);
     expect(result.message).toContain("10-day fragile window");
+    expect(result.minimumHealthyRecords).toBe(9);
+    expect(result.sourceContractSummary).toContain("challenge-protected");
+  });
+
+  it("warns when live archive volume collapses below the healthy floor", () => {
+    const coverage = getRegulatorCoverage("CIRO");
+
+    expect(coverage).not.toBeNull();
+
+    const result = evaluateLiveRegulatorHealth(
+      coverage!,
+      {
+        regulator: "CIRO",
+        recordCount: 40,
+        earliestRecordDate: "2019-11-18",
+        latestRecordDate: "2026-03-26",
+      },
+      new Date("2026-03-27T00:00:00Z"),
+    );
+
+    expect(result.status).toBe("warning");
+    expect(result.minimumHealthyRecords).toBe(139);
+    expect(result.operatorAction).toContain("selector drift");
+    expect(result.message).toContain("below the healthy floor");
   });
 
   it("builds a report for the selected live cadence group", () => {

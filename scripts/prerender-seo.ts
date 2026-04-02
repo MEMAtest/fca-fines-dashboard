@@ -425,6 +425,16 @@ async function buildPageMetas(): Promise<PageMeta[]> {
     ogType: "website",
   });
 
+  pages.push({
+    path: "/search",
+    title: "Enforcement Search | Search Enforcement Actions by Firm, Regulator, and Theme",
+    description:
+      "Search enforcement actions by firm, regulator, jurisdiction, and theme across the live regulatory coverage set.",
+    keywords:
+      "enforcement search, regulator fines search, enforcement actions search, compliance enforcement database",
+    ogType: "website",
+  });
+
   // 3. Topics (hub landing)
   pages.push({
     path: "/topics",

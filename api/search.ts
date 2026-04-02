@@ -108,6 +108,7 @@ function buildEmptySearchResponse({
       indexSignals: {
         conceptEnrichment: true,
         breachCategoryFallback: true,
+        categoryHints: true,
         lowSignalGuard: true,
       },
       weights: {
@@ -186,6 +187,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       prepared.minimumTokenMatches,
       prepared.regulatorHints,
       prepared.countryHints,
+      prepared.categoryHints,
     ];
 
     if (regulator) {
@@ -269,6 +271,16 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
             ELSE 0
           END AS country_hint_score,
           CASE
+            WHEN COALESCE(array_length($7::text[], 1), 0) > 0
+              AND EXISTS (
+                SELECT 1
+                FROM unnest($7::text[]) AS category
+                WHERE COALESCE(breach_categories::text, '') ILIKE '%' || category || '%'
+              )
+              THEN 30
+            ELSE 0
+          END AS category_match_score,
+          CASE
             WHEN $1 <> ''
               AND search_vector @@ websearch_to_tsquery('english', $1)
               THEN ts_rank_cd(search_vector, websearch_to_tsquery('english', $1))
@@ -336,11 +348,23 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
               THEN 15
             ELSE 0
           END AS country_theme_synergy_score
+          ,
+          CASE
+            WHEN category_match_score > 0
+              AND (
+                phrase_match_score > 0
+                OR token_match_score >= GREATEST($4, 1)
+                OR full_text_rank > 0
+              )
+              THEN 18
+            ELSE 0
+          END AS category_theme_synergy_score
         FROM filtered_results
         WHERE
           firm_match_score > 0
           OR regulator_hint_score > 0
           OR country_hint_score > 0
+          OR category_match_score > 0
           OR full_text_rank > 0
           OR phrase_match_score > 0
           OR token_match_score >= $4
@@ -352,8 +376,10 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
             firm_match_score
             + regulator_hint_score
             + country_hint_score
+            + category_match_score
             + regulator_theme_synergy_score
             + country_theme_synergy_score
+            + category_theme_synergy_score
             + phrase_match_score
             + token_match_score
             + (full_text_rank * 100)
@@ -388,8 +414,10 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         firm_match_score DESC,
         regulator_theme_synergy_score DESC,
         country_theme_synergy_score DESC,
+        category_theme_synergy_score DESC,
         regulator_hint_score DESC,
         country_hint_score DESC,
+        category_match_score DESC,
         full_text_rank DESC,
         phrase_match_score DESC,
         token_match_score DESC,
@@ -424,6 +452,16 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
               THEN 20
             ELSE 0
           END AS country_hint_score,
+          CASE
+            WHEN COALESCE(array_length($7::text[], 1), 0) > 0
+              AND EXISTS (
+                SELECT 1
+                FROM unnest($7::text[]) AS category
+                WHERE COALESCE(breach_categories::text, '') ILIKE '%' || category || '%'
+              )
+              THEN 30
+            ELSE 0
+          END AS category_match_score,
           CASE
             WHEN $1 <> ''
               AND search_vector @@ websearch_to_tsquery('english', $1)
@@ -464,6 +502,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         firm_match_score > 0
         OR regulator_hint_score > 0
         OR country_hint_score > 0
+        OR category_match_score > 0
         OR full_text_rank > 0
         OR phrase_match_score > 0
         OR token_match_score >= $4

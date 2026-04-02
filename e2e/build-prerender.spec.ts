@@ -6,6 +6,18 @@ import { fileURLToPath } from 'url';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
+function extractJsonLdBlocks(html: string) {
+  const matches =
+    html.match(/<script type="application\/ld\+json">\s*([\s\S]*?)\s*<\/script>/g) ||
+    [];
+
+  return matches.map((match) =>
+    JSON.parse(
+      match.replace(/<script[^>]*>\s*/, '').replace(/\s*<\/script>/, ''),
+    ),
+  );
+}
+
 test.describe('Build & Pre-rendering', () => {
   const DIST_DIR = join(__dirname, '..', 'dist');
 
@@ -28,6 +40,20 @@ test.describe('Build & Pre-rendering', () => {
 
       const html = readFileSync(dashboardPath, 'utf-8');
       expect(html).toContain('FCA Fines Dashboard');
+    });
+
+    test('should have pre-rendered search and board-pack pages', () => {
+      const searchPath = join(DIST_DIR, 'search', 'index.html');
+      const boardPackPath = join(DIST_DIR, 'board-pack', 'index.html');
+
+      expect(existsSync(searchPath)).toBe(true);
+      expect(existsSync(boardPackPath)).toBe(true);
+
+      const searchHtml = readFileSync(searchPath, 'utf-8');
+      const boardPackHtml = readFileSync(boardPackPath, 'utf-8');
+
+      expect(searchHtml).toContain('Enforcement Search');
+      expect(boardPackHtml).toContain('Board Pack');
     });
 
     test('should have pre-rendered topics page', () => {
@@ -58,15 +84,10 @@ test.describe('Build & Pre-rendering', () => {
       expect(html).toContain('article:published_time');
       expect(html).toContain('application/ld+json');
 
-      // Should have Article JSON-LD structured data (last JSON-LD block)
-      const jsonLdMatches = html.match(/<script type="application\/ld\+json">\s*([\s\S]*?)\s*<\/script>/g);
-      expect(jsonLdMatches).toBeTruthy();
-      expect(jsonLdMatches!.length).toBeGreaterThanOrEqual(2);
-
-      // The article-specific JSON-LD is the last one
-      const lastMatch = jsonLdMatches![jsonLdMatches!.length - 1];
-      const jsonContent = lastMatch.replace(/<script[^>]*>\s*/, '').replace(/\s*<\/script>/, '');
-      const jsonLd = JSON.parse(jsonContent);
+      const jsonLd = extractJsonLdBlocks(html).find((block) =>
+        typeof block['@type'] === 'string' && block['@type'].includes('Article'),
+      );
+      expect(jsonLd).toBeTruthy();
       expect(jsonLd['@type']).toBe('Article');
       expect(jsonLd.headline).toBeTruthy();
     });
@@ -91,14 +112,10 @@ test.describe('Build & Pre-rendering', () => {
       expect(html).toContain('Annual Analysis');
       expect(html).toContain('article:section" content="Annual Analysis"');
 
-      // Should have Article JSON-LD with year dates (last JSON-LD block)
-      const jsonLdMatches = html.match(/<script type="application\/ld\+json">\s*([\s\S]*?)\s*<\/script>/g);
-      expect(jsonLdMatches).toBeTruthy();
-      expect(jsonLdMatches!.length).toBeGreaterThanOrEqual(2);
-
-      const lastMatch = jsonLdMatches![jsonLdMatches!.length - 1];
-      const jsonContent = lastMatch.replace(/<script[^>]*>\s*/, '').replace(/\s*<\/script>/, '');
-      const jsonLd = JSON.parse(jsonContent);
+      const jsonLd = extractJsonLdBlocks(html).find((block) =>
+        typeof block['@type'] === 'string' && block['@type'].includes('Article'),
+      );
+      expect(jsonLd).toBeTruthy();
       expect(jsonLd.datePublished).toBe('2024-01-01');
       expect(jsonLd.dateModified).toBe('2024-12-31');
     });
@@ -243,6 +260,29 @@ test.describe('Build & Pre-rendering', () => {
       // Should have sitemap reference
       expect(robots).toContain('Sitemap:');
       expect(robots).toContain('sitemap.xml');
+    });
+  });
+
+  test.describe('Route preload hygiene', () => {
+    test('should keep the search shell free of heavy blog and export preloads', () => {
+      const searchPath = join(DIST_DIR, 'search', 'index.html');
+      expect(existsSync(searchPath)).toBe(true);
+
+      const html = readFileSync(searchPath, 'utf-8');
+      expect(html).not.toContain('content-blog');
+      expect(html).not.toContain('exportPdf');
+      expect(html).not.toContain('html2canvas');
+      expect(html).not.toContain('xlsx');
+    });
+
+    test('should keep the homepage shell free of heavy export preloads', () => {
+      const homepagePath = join(DIST_DIR, 'index.html');
+      expect(existsSync(homepagePath)).toBe(true);
+
+      const html = readFileSync(homepagePath, 'utf-8');
+      expect(html).not.toContain('exportPdf');
+      expect(html).not.toContain('html2canvas');
+      expect(html).not.toContain('xlsx');
     });
   });
 });

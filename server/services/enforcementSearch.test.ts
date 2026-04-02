@@ -62,6 +62,9 @@ describe('enforcementSearch helpers', () => {
         '%customer due diligence%',
       ]),
     );
+    expect(cftPrepared.categoryHints).toEqual(
+      expect.arrayContaining(['AML', 'CFT', 'SANCTIONS']),
+    );
   });
 
   it('expands smcr into the full supervisory phrase', () => {
@@ -77,6 +80,31 @@ describe('enforcementSearch helpers', () => {
         'approved person',
         'controlled function',
       ]),
+    );
+    expect(prepared.categoryHints).toEqual(
+      expect.arrayContaining(['GOVERNANCE', 'SMCR']),
+    );
+  });
+
+  it('adds customer due diligence and books-and-records search expansions', () => {
+    const diligencePrepared = prepareEnforcementSearch('CDD onboarding failures');
+    const booksPrepared = prepareEnforcementSearch('books and records');
+
+    expect(diligencePrepared.searchPatterns).toEqual(
+      expect.arrayContaining([
+        '%customer due diligence%',
+        '%know your customer%',
+        '%source of funds%',
+      ]),
+    );
+    expect(booksPrepared.searchPatterns).toEqual(
+      expect.arrayContaining([
+        '%books and records%',
+        '%record keeping%',
+      ]),
+    );
+    expect(booksPrepared.categoryHints).toEqual(
+      expect.arrayContaining(['DISCLOSURE', 'REPORTING', 'BOOKS_AND_RECORDS']),
     );
   });
 

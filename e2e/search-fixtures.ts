@@ -341,6 +341,14 @@ function scoreResult(result: MockSearchResult, query: string) {
   }
 
   if (
+    prepared.categoryHints.some((category) =>
+      result.breachCategories.includes(category),
+    )
+  ) {
+    score += 30;
+  }
+
+  if (
     searchQuery &&
     (
       result.summary.toLowerCase().includes(searchQuery) ||
@@ -367,6 +375,15 @@ function scoreResult(result: MockSearchResult, query: string) {
 
   if (prepared.countryHints.includes(result.countryCode) && tokenHits >= 1) {
     score += 15;
+  }
+
+  if (
+    prepared.categoryHints.some((category) =>
+      result.breachCategories.includes(category),
+    )
+    && tokenHits >= 1
+  ) {
+    score += 18;
   }
 
   return score;

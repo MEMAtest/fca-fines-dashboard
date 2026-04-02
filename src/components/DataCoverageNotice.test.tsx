@@ -14,6 +14,12 @@ describe("DataCoverageNotice", () => {
     expect(
       screen.getByText(/curated archive discovery from official documents/i),
     ).toBeInTheDocument();
+    expect(
+      screen.getByText(/Collection method: Curated official-document archive ingestion/i),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByText(/Healthy feed floor: at least 9 records/i),
+    ).toBeInTheDocument();
     expect(screen.getByText(/19 enforcement actions/i)).toBeInTheDocument();
   });
 
@@ -25,7 +31,12 @@ describe("DataCoverageNotice", () => {
     render(<DataCoverageNotice coverage={coverage!} />);
 
     expect(
-      screen.getByText(/official source publishes very few explicit monetary penalties/i),
+      screen.getAllByText(
+        /official source publishes very few explicit monetary penalties/i,
+      ),
+    ).toHaveLength(2);
+    expect(
+      screen.getByText(/Healthy feed floor: at least 1 record/i),
     ).toBeInTheDocument();
   });
 

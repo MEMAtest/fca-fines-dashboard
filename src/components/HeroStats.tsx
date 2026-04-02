@@ -13,6 +13,7 @@ import type { FineRecord, StatsResponse } from "../types.js";
 import { ExportMenu } from "./ExportMenu.js";
 import { NotificationBell } from "./NotificationBell.js";
 import type { NotificationItem } from "../types.js";
+import { formatBreachCategory } from "../utils/labelConversion.js";
 
 interface HeroStatsProps {
   stats?: StatsResponse["data"] | null;
@@ -199,8 +200,8 @@ export function HeroStats({
           icon={<Trophy />}
         />
         <StatCard
-          title="Dominant Breach"
-          value={stats?.dominantBreach || "—"}
+          title="Most Common Breach"
+          value={stats?.dominantBreach ? formatBreachCategory(stats.dominantBreach) : "—"}
           icon={<Sparkles />}
         />
       </div>
@@ -349,7 +350,7 @@ function FineVelocityGauge({
         </text>
       </svg>
       <div className="hero__velocity-content">
-        <h4>Fine velocity</h4>
+        <h4>Recent Trend</h4>
         <p className="hero__velocity-value stat-number">
           {formatter.format(current)}
         </p>
@@ -366,11 +367,11 @@ function FineVelocityGauge({
           <span className="hero__velocity-baseline">vs 6-month avg</span>
         </div>
         <p>
-          Current month totals compared to recent cadence.{" "}
+          Current month compared to 6-month average.{" "}
           {change
             ? change.trend === "up"
-              ? "Acceleration detected."
-              : "Momentum cooling."
+              ? "Enforcement activity increasing."
+              : "Enforcement activity cooling."
             : "Insufficient data."}
         </p>
       </div>
@@ -382,7 +383,7 @@ function computeChange(
   current?: number | null,
   previous?: number | null,
 ): ChangeBadge | null {
-  if (!current || !previous || previous === 0) return null;
+  if (current == null || previous == null || previous === 0) return null;
   const delta = ((current - previous) / previous) * 100;
   const trend = delta >= 0 ? "up" : "down";
   const label = `${delta > 0 ? "+" : ""}${delta.toFixed(1)}%`;

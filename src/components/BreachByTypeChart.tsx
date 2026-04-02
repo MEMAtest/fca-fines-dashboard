@@ -4,6 +4,7 @@ import { HelpCircle } from "lucide-react";
 import type { FineRecord } from "../types.js";
 import { ExportMenu } from "./ExportMenu.js";
 import { PanelHelp } from "./PanelHelp.js";
+import { formatBreachCategory } from "../utils/labelConversion.js";
 
 interface BreachByTypeChartProps {
   records: FineRecord[];
@@ -93,7 +94,7 @@ export function BreachByTypeChart({
     <div className="panel" id={panelId}>
       <div className="panel__header">
         <div>
-          <p className="panel__eyebrow">Breach mix</p>
+          <p className="panel__eyebrow">Breach types</p>
           <h3>Top breach categories</h3>
         </div>
         <div className="panel__header-actions">
@@ -163,9 +164,9 @@ export function BreachByTypeChart({
             <Tooltip
               formatter={(value: any, name: string) => {
                 if (metric === "amount") {
-                  return [`£${Number(value).toLocaleString()}`, name];
+                  return [`£${Number(value).toLocaleString()}`, formatBreachCategory(name)];
                 }
-                return [`${value} notices`, name];
+                return [`${value} notices`, formatBreachCategory(name)];
               }}
             />
           </PieChart>
@@ -174,7 +175,7 @@ export function BreachByTypeChart({
       <div className="panel__meta">
         {activeSlice ? (
           <p>
-            Focused on <strong>{activeSlice}</strong> •{" "}
+            Focused on <strong>{formatBreachCategory(activeSlice)}</strong> •{" "}
             {metric === "amount"
               ? `£${Number(data.find((item) => item.name === activeSlice)?.amount ?? 0).toLocaleString()}`
               : `${data.find((item) => item.name === activeSlice)?.count ?? 0} notices`}
@@ -204,7 +205,7 @@ export function BreachByTypeChart({
               style={{ backgroundColor: COLORS[index % COLORS.length] }}
             />
             <span>
-              {entry.name} •{" "}
+              {formatBreachCategory(entry.name)} •{" "}
               {metric === "amount"
                 ? `£${Math.round((entry.amount / 1_000_000) * 10) / 10}m`
                 : `${entry.count} notices`}

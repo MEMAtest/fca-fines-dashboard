@@ -49,8 +49,19 @@ export interface RegulatorCoverage {
   maturity: "anchor" | "emerging" | "limited";
   operationalConfidence: "standard" | "lower";
   automationLevel: "automated" | "curated_archive" | "sparse_source";
+  feedContract: RegulatorFeedContract;
   dashboardEnabled: boolean;
   officialSources: RegulatorOfficialSource[];
+}
+
+export interface RegulatorFeedContract {
+  cadence: "daily" | "fragile";
+  collectionMethod: string;
+  sourceContractSummary: string;
+  zeroResultPolicy: "investigate" | "sparse_source";
+  staleAfterDays: number;
+  minimumHealthyRecords: number;
+  operatorAction: string;
 }
 
 export interface RegulatorOfficialSource {
@@ -61,7 +72,7 @@ export interface RegulatorOfficialSource {
 
 type RegulatorCoverageSeed = Omit<
   RegulatorCoverage,
-  "operationalConfidence" | "automationLevel"
+  "operationalConfidence" | "automationLevel" | "feedContract"
 >;
 
 const PIPELINE_NOTE =
@@ -1419,6 +1430,7 @@ export const REGULATOR_COVERAGE: Record<string, RegulatorCoverage> =
           : CURATED_ARCHIVE_REGULATOR_SET.has(code)
             ? "curated_archive"
             : "automated",
+        feedContract: buildFeedContract(code, coverage),
       },
     ]),
   ) as Record<string, RegulatorCoverage>;
@@ -1485,4 +1497,57 @@ export function isValidRegulatorCode(code: string): boolean {
   return Boolean(
     coverage && coverage.stage === "live" && coverage.dashboardEnabled,
   );
+}
+
+function buildFeedContract(
+  code: string,
+  coverage: RegulatorCoverageSeed,
+): RegulatorFeedContract {
+  const cadence = LOW_CONFIDENCE_LIVE_REGULATOR_SET.has(code)
+    ? "fragile"
+    : "daily";
+  const staleAfterDays = cadence === "fragile" ? 10 : 3;
+
+  if (SPARSE_SOURCE_REGULATOR_SET.has(code)) {
+    return {
+      cadence,
+      collectionMethod: "Sparse official public statements feed",
+      sourceContractSummary:
+        "Official source publishes very few explicit monetary penalties, so low volume can be normal even when the feed is healthy.",
+      zeroResultPolicy: "sparse_source",
+      staleAfterDays,
+      minimumHealthyRecords: Math.max(1, Math.floor(coverage.count * 0.8)),
+      operatorAction:
+        "Confirm whether the source has published any new monetary penalties before treating unchanged volume as an issue.",
+    };
+  }
+
+  if (CURATED_ARCHIVE_REGULATOR_SET.has(code)) {
+    return {
+      cadence,
+      collectionMethod: "Curated official-document archive ingestion",
+      sourceContractSummary:
+        "The public index is challenge-protected, so collection relies on verified official documents and maintained archive manifests.",
+      zeroResultPolicy: "investigate",
+      staleAfterDays,
+      minimumHealthyRecords: Math.max(1, Math.floor(coverage.count * 0.5)),
+      operatorAction:
+        "Review manifest freshness, confirm new official notices, and widen the maintained archive if publication patterns have changed.",
+    };
+  }
+
+  return {
+    cadence,
+    collectionMethod: "Automated official-source scraping",
+    sourceContractSummary:
+      coverage.stage === "live"
+        ? "Collection runs directly from the regulator’s official public source without a maintained manifest."
+        : "Official source validated but not yet promoted into the live automation set.",
+    zeroResultPolicy: "investigate",
+    staleAfterDays,
+    minimumHealthyRecords:
+      coverage.stage === "live" ? Math.max(1, Math.floor(coverage.count * 0.5)) : 0,
+    operatorAction:
+      "Investigate selector drift, source changes, or an upstream publication gap before treating the feed as healthy.",
+  };
 }
