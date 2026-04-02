@@ -73,10 +73,15 @@ describe("boardIntelligence", () => {
 
     expect(pack.relevantActionCount).toBeGreaterThan(0);
     expect(pack.exposureScore).toBeGreaterThan(0);
+    expect(pack.executiveSummaryBullets.length).toBeGreaterThan(2);
+    expect(pack.pillarScores).toHaveLength(4);
+    expect(pack.peerBaselineScore).toBeGreaterThan(0);
     expect(pack.topThemes.map((theme) => theme.id)).toContain("aml-controls");
+    expect(pack.topThemes[0]?.score).toBeGreaterThan(0);
     expect(pack.notableCases.map((caseStudy) => caseStudy.firm)).toContain(
       "NorthBridge Wealth Ltd",
     );
+    expect(pack.appendix.methodology.length).toBeGreaterThan(0);
     expect(pack.scenarios[0]?.band).toMatch(/material|severe|moderate/);
   });
 

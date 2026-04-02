@@ -36,7 +36,7 @@ export function Sitemap() {
                 <Link to="/dashboard">Dashboard</Link>
               </li>
               <li>
-                <Link to="/board-pack">Board Pack Studio</Link>
+                <Link to="/board-pack">Board Pack</Link>
               </li>
               <li>
                 <Link to="/topics">Topics</Link>

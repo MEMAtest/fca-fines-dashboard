@@ -422,13 +422,14 @@ export function Homepage() {
             </span>
             <h2>Turn enforcement history into a board pack</h2>
             <p>
-              Move beyond raw fines data. Generate a board-ready brief with
-              exposure scoring, peer cases, scenario bands, and control
-              challenge prompts built from the tracked enforcement record.
+              Move beyond raw fines data. Generate a printable advisory deck
+              with exposure scoring, peer cases, board challenge questions, and
+              appendix-ready control evidence prompts built from the tracked
+              enforcement record.
             </p>
             <div className="board-pack-preview__actions">
               <Link to="/board-pack" className="regulators-showcase__cta">
-                Open Board Pack Studio
+                Open Board Pack
               </Link>
               <Link to="/search" className="board-pack-preview__secondary">
                 Review matching cases

@@ -11,17 +11,17 @@
  * served directly to crawlers with correct meta tags.
  */
 
-import { readFileSync, writeFileSync, mkdirSync, existsSync } from 'node:fs';
-import { join, dirname } from 'node:path';
-import { fileURLToPath } from 'node:url';
+import { readFileSync, writeFileSync, mkdirSync, existsSync } from "node:fs";
+import { join, dirname } from "node:path";
+import { fileURLToPath } from "node:url";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
-const ROOT = join(__dirname, '..');
-const DIST = join(ROOT, 'dist');
+const ROOT = join(__dirname, "..");
+const DIST = join(ROOT, "dist");
 
-const BASE_URL = 'https://fcafines.memaconsultants.com';
-const SITE_NAME = 'FCA Fines Dashboard';
+const BASE_URL = "https://fcafines.memaconsultants.com";
+const SITE_NAME = "FCA Fines Dashboard";
 const OG_IMAGE = `${BASE_URL}/og-image.png`;
 const RSS_URL = `${BASE_URL}/rss.xml`;
 
@@ -32,23 +32,39 @@ const RSS_URL = `${BASE_URL}/rss.xml`;
 // We can't import .ts directly (no bundler), so we require the compiled output.
 // However since the project uses "type": "module" and ts-node/esm, the import
 // resolves the .ts source directly.
-import { allBlogArticles as blogArticles, yearlyArticles } from '../src/data/blogArticles.js';
-import { faqItems, getFaqsForArticle, getFaqsForYearlyArticle, getHomepageFaqs, generateFaqSchema } from '../src/data/faqData.js';
-import { REGULATOR_COVERAGE, PUBLIC_REGULATOR_CODES } from '../src/data/regulatorCoverage.js';
+import {
+  allBlogArticles as blogArticles,
+  yearlyArticles,
+} from "../src/data/blogArticles.js";
+import {
+  faqItems,
+  getFaqsForArticle,
+  getFaqsForYearlyArticle,
+  getHomepageFaqs,
+  generateFaqSchema,
+} from "../src/data/faqData.js";
+import {
+  REGULATOR_COVERAGE,
+  PUBLIC_REGULATOR_CODES,
+} from "../src/data/regulatorCoverage.js";
 
 // ---------------------------------------------------------------------------
 // Helpers
 // ---------------------------------------------------------------------------
 
-const gbp = new Intl.NumberFormat('en-GB', { style: 'currency', currency: 'GBP', maximumFractionDigits: 0 });
+const gbp = new Intl.NumberFormat("en-GB", {
+  style: "currency",
+  currency: "GBP",
+  maximumFractionDigits: 0,
+});
 
 function escapeHtml(str: string): string {
   return str
-    .replace(/&/g, '&amp;')
-    .replace(/"/g, '&quot;')
-    .replace(/'/g, '&#39;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;');
+    .replace(/&/g, "&amp;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#39;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;");
 }
 
 function todayISO(): string {
@@ -72,23 +88,27 @@ function toRfc2822(valueISO: string, fallbackISO: string): string {
 }
 
 function humanize(label: string) {
-  return label.replace(/_/g, ' ').replace(/[-]+/g, ' ').toLowerCase().replace(/\b[a-z]/g, (c) => c.toUpperCase());
+  return label
+    .replace(/_/g, " ")
+    .replace(/[-]+/g, " ")
+    .toLowerCase()
+    .replace(/\b[a-z]/g, (c) => c.toUpperCase());
 }
 
 interface PageMeta {
-  path: string;         // e.g. '/blog/fca-fines-2025-complete-list'
+  path: string; // e.g. '/blog/fca-fines-2025-complete-list'
   title: string;
   description: string;
   keywords: string;
-  ogType: string;       // 'website' | 'article'
+  ogType: string; // 'website' | 'article'
   datePublished?: string;
   dateModified?: string;
   articleSection?: string;
   jsonLd?: object;
-  extraJsonLd?: object[];  // Additional JSON-LD blocks (e.g. FAQPage alongside Article)
+  extraJsonLd?: object[]; // Additional JSON-LD blocks (e.g. FAQPage alongside Article)
   breadcrumbLabel?: string; // Short name for last breadcrumb item (defaults to humanized slug)
-  bodyContent?: string;     // Pre-rendered HTML body for SSG (injected into #root)
-  ogImage?: string;         // Custom OG image URL
+  bodyContent?: string; // Pre-rendered HTML body for SSG (injected into #root)
+  ogImage?: string; // Custom OG image URL
 }
 
 // ---------------------------------------------------------------------------
@@ -98,29 +118,36 @@ interface PageMeta {
 function renderMarkdownToHtml(content: string): string {
   return content
     .replace(/(\|.+\|\n)+/g, (tableBlock) => {
-      const rows = tableBlock.trim().split('\n');
-      let html = '<table><thead>';
+      const rows = tableBlock.trim().split("\n");
+      let html = "<table><thead>";
       let inBody = false;
       rows.forEach((row) => {
-        if (/^\|[\s\-:]+\|$/.test(row.replace(/\|/g, '|').replace(/[^|\-:\s]/g, ''))) {
-          html += '</thead><tbody>';
+        if (
+          /^\|[\s\-:]+\|$/.test(
+            row.replace(/\|/g, "|").replace(/[^|\-:\s]/g, ""),
+          )
+        ) {
+          html += "</thead><tbody>";
           inBody = true;
           return;
         }
-        const cells = row.split('|').filter(Boolean).map(cell => cell.trim());
-        const cellTag = !inBody ? 'th' : 'td';
-        html += `<tr>${cells.map(cell => `<${cellTag}>${cell}</${cellTag}>`).join('')}</tr>`;
+        const cells = row
+          .split("|")
+          .filter(Boolean)
+          .map((cell) => cell.trim());
+        const cellTag = !inBody ? "th" : "td";
+        html += `<tr>${cells.map((cell) => `<${cellTag}>${cell}</${cellTag}>`).join("")}</tr>`;
       });
-      html += inBody ? '</tbody></table>' : '</thead></table>';
+      html += inBody ? "</tbody></table>" : "</thead></table>";
       return html;
     })
     .replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2">$1</a>')
-    .replace(/^## (.+)$/gm, '<h2>$1</h2>')
-    .replace(/^### (.+)$/gm, '<h3>$1</h3>')
-    .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
-    .replace(/^\- (.+)$/gm, '<li>$1</li>')
-    .replace(/(<li>.*<\/li>\n?)+/g, '<ul>$&</ul>')
-    .replace(/\n\n/g, '</p><p>');
+    .replace(/^## (.+)$/gm, "<h2>$1</h2>")
+    .replace(/^### (.+)$/gm, "<h3>$1</h3>")
+    .replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>")
+    .replace(/^\- (.+)$/gm, "<li>$1</li>")
+    .replace(/(<li>.*<\/li>\n?)+/g, "<ul>$&</ul>")
+    .replace(/\n\n/g, "</p><p>");
 }
 
 function wrapArticleShell(title: string, renderedContent: string): string {
@@ -131,42 +158,76 @@ function wrapArticleShell(title: string, renderedContent: string): string {
 const HOWTO_SCHEMA = {
   "@context": "https://schema.org",
   "@type": "HowTo",
-  "name": "How to Search the FCA Fines Database",
-  "description": "Step-by-step guide to searching and filtering FCA fines using the interactive dashboard.",
-  "step": [
-    { "@type": "HowToStep", "position": 1, "name": "Navigate to Dashboard", "text": "Open the FCA Fines Dashboard at fcafines.memaconsultants.com/dashboard to access the complete database of Financial Conduct Authority penalties.", "url": `${BASE_URL}/dashboard` },
-    { "@type": "HowToStep", "position": 2, "name": "Search by Firm", "text": "Use the search bar to find fines by firm or individual name. Type a company name like 'Barclays' or 'HSBC' to filter results instantly." },
-    { "@type": "HowToStep", "position": 3, "name": "Filter by Year", "text": "Select a specific year from the year dropdown to view all FCA fines issued in that period, from 2013 to the current year." },
-    { "@type": "HowToStep", "position": 4, "name": "Filter by Breach Category", "text": "Choose a breach category such as AML, Market Abuse, or Consumer Protection to see fines grouped by the type of regulatory failure." },
-    { "@type": "HowToStep", "position": 5, "name": "Filter by Amount", "text": "Use the advanced filters to set a minimum and maximum fine amount, helping you identify the largest or smallest penalties." },
-    { "@type": "HowToStep", "position": 6, "name": "Export Data", "text": "Click the export button to download the filtered results as a CSV file for further analysis in Excel or other tools." },
-  ]
+  name: "How to Search the FCA Fines Database",
+  description:
+    "Step-by-step guide to searching and filtering FCA fines using the interactive dashboard.",
+  step: [
+    {
+      "@type": "HowToStep",
+      position: 1,
+      name: "Navigate to Dashboard",
+      text: "Open the FCA Fines Dashboard at fcafines.memaconsultants.com/dashboard to access the complete database of Financial Conduct Authority penalties.",
+      url: `${BASE_URL}/dashboard`,
+    },
+    {
+      "@type": "HowToStep",
+      position: 2,
+      name: "Search by Firm",
+      text: "Use the search bar to find fines by firm or individual name. Type a company name like 'Barclays' or 'HSBC' to filter results instantly.",
+    },
+    {
+      "@type": "HowToStep",
+      position: 3,
+      name: "Filter by Year",
+      text: "Select a specific year from the year dropdown to view all FCA fines issued in that period, from 2013 to the current year.",
+    },
+    {
+      "@type": "HowToStep",
+      position: 4,
+      name: "Filter by Breach Category",
+      text: "Choose a breach category such as AML, Market Abuse, or Consumer Protection to see fines grouped by the type of regulatory failure.",
+    },
+    {
+      "@type": "HowToStep",
+      position: 5,
+      name: "Filter by Amount",
+      text: "Use the advanced filters to set a minimum and maximum fine amount, helping you identify the largest or smallest penalties.",
+    },
+    {
+      "@type": "HowToStep",
+      position: 6,
+      name: "Export Data",
+      text: "Click the export button to download the filtered results as a CSV file for further analysis in Excel or other tools.",
+    },
+  ],
 };
 
 // ---------------------------------------------------------------------------
 // Per-page @graph generation (BreadcrumbList, Dataset, WebPage, SearchAction)
 // ---------------------------------------------------------------------------
 
-function generateBreadcrumbItems(path: string): Array<{ name: string; item: string }> {
-  const crumbs = [{ name: 'Home', item: `${BASE_URL}/` }];
-  if (path === '/') return crumbs;
+function generateBreadcrumbItems(
+  path: string,
+): Array<{ name: string; item: string }> {
+  const crumbs = [{ name: "Home", item: `${BASE_URL}/` }];
+  if (path === "/") return crumbs;
 
-  const segments = path.split('/').filter(Boolean);
-  let current = '';
+  const segments = path.split("/").filter(Boolean);
+  let current = "";
   for (const seg of segments) {
     current += `/${seg}`;
     let name = seg;
-    if (seg === 'dashboard') name = 'Dashboard';
-    else if (seg === 'board-pack') name = 'Board Pack';
-    else if (seg === 'blog') name = 'Insights';
-    else if (seg === 'topics') name = 'Topics';
-    else if (seg === 'breaches') name = 'Breach Categories';
-    else if (seg === 'years') name = 'Years';
-    else if (seg === 'sectors') name = 'Sectors';
-    else if (seg === 'firms') name = 'Firms';
-    else if (seg === 'faq') name = 'FAQ';
-    else if (seg === 'guide') name = 'Guide';
-    else if (seg === 'sitemap') name = 'Sitemap';
+    if (seg === "dashboard") name = "Dashboard";
+    else if (seg === "board-pack") name = "Board Pack";
+    else if (seg === "blog") name = "Insights";
+    else if (seg === "topics") name = "Topics";
+    else if (seg === "breaches") name = "Breach Categories";
+    else if (seg === "years") name = "Years";
+    else if (seg === "sectors") name = "Sectors";
+    else if (seg === "firms") name = "Firms";
+    else if (seg === "faq") name = "FAQ";
+    else if (seg === "guide") name = "Guide";
+    else if (seg === "sitemap") name = "Sitemap";
     else name = humanize(seg);
     crumbs.push({ name, item: `${BASE_URL}${current}` });
   }
@@ -174,7 +235,15 @@ function generateBreadcrumbItems(path: string): Array<{ name: string; item: stri
 }
 
 // Pages that describe or provide access to the dataset get Dataset schema
-const DATASET_PAGES = new Set(['/', '/dashboard', '/topics', '/breaches', '/years', '/sectors', '/firms']);
+const DATASET_PAGES = new Set([
+  "/",
+  "/dashboard",
+  "/topics",
+  "/breaches",
+  "/years",
+  "/sectors",
+  "/firms",
+]);
 
 function generatePageGraph(meta: PageMeta): object {
   const crumbs = generateBreadcrumbItems(meta.path);
@@ -184,54 +253,59 @@ function generatePageGraph(meta: PageMeta): object {
     crumbs[crumbs.length - 1].name = meta.breadcrumbLabel;
   }
 
-  const pageUrl = meta.path === '/' ? BASE_URL : `${BASE_URL}${meta.path}`;
+  const pageUrl = meta.path === "/" ? BASE_URL : `${BASE_URL}${meta.path}`;
   const today = todayISO();
 
   const graph: object[] = [
     {
       "@type": "Organization",
       "@id": `${BASE_URL}/#organization`,
-      "name": "MEMA Consultants",
-      "url": "https://memaconsultants.com",
-      "logo": { "@type": "ImageObject", "url": `${BASE_URL}/mema-logo.png` },
-      "description": "Compliance consultancy specialising in FCA regulatory data and analysis"
+      name: "MEMA Consultants",
+      url: "https://memaconsultants.com",
+      logo: { "@type": "ImageObject", url: `${BASE_URL}/mema-logo.png` },
+      description:
+        "Compliance consultancy specialising in FCA regulatory data and analysis",
     },
     {
       "@type": "WebSite",
       "@id": `${BASE_URL}/#website`,
-      "url": `${BASE_URL}/`,
-      "name": SITE_NAME,
-      "description": "Complete database of FCA fines and Financial Conduct Authority enforcement actions",
-      "publisher": { "@id": `${BASE_URL}/#organization` },
-      "potentialAction": {
+      url: `${BASE_URL}/`,
+      name: SITE_NAME,
+      description:
+        "Complete database of FCA fines and Financial Conduct Authority enforcement actions",
+      publisher: { "@id": `${BASE_URL}/#organization` },
+      potentialAction: {
         "@type": "SearchAction",
-        "target": { "@type": "EntryPoint", "urlTemplate": `${BASE_URL}/dashboard?search={search_term_string}` },
-        "query-input": "required name=search_term_string"
+        target: {
+          "@type": "EntryPoint",
+          urlTemplate: `${BASE_URL}/dashboard?search={search_term_string}`,
+        },
+        "query-input": "required name=search_term_string",
       },
-      "inLanguage": "en-GB"
+      inLanguage: "en-GB",
     },
     {
       "@type": "WebPage",
       "@id": `${pageUrl}/#webpage`,
-      "url": pageUrl,
-      "name": meta.title,
-      "isPartOf": { "@id": `${BASE_URL}/#website` },
-      "about": { "@id": `${BASE_URL}/#organization` },
-      "description": meta.description,
-      "breadcrumb": { "@id": `${pageUrl}/#breadcrumb` },
-      "inLanguage": "en-GB",
-      "dateModified": meta.dateModified || today,
-      "potentialAction": [{ "@type": "ReadAction", "target": [pageUrl] }]
+      url: pageUrl,
+      name: meta.title,
+      isPartOf: { "@id": `${BASE_URL}/#website` },
+      about: { "@id": `${BASE_URL}/#organization` },
+      description: meta.description,
+      breadcrumb: { "@id": `${pageUrl}/#breadcrumb` },
+      inLanguage: "en-GB",
+      dateModified: meta.dateModified || today,
+      potentialAction: [{ "@type": "ReadAction", target: [pageUrl] }],
     },
     {
       "@type": "BreadcrumbList",
       "@id": `${pageUrl}/#breadcrumb`,
-      "itemListElement": crumbs.map((c, i) => ({
+      itemListElement: crumbs.map((c, i) => ({
         "@type": "ListItem",
-        "position": i + 1,
-        "name": c.name,
-        "item": c.item
-      }))
+        position: i + 1,
+        name: c.name,
+        item: c.item,
+      })),
     },
   ];
 
@@ -239,24 +313,31 @@ function generatePageGraph(meta: PageMeta): object {
   if (DATASET_PAGES.has(meta.path)) {
     graph.push({
       "@type": "Dataset",
-      "name": "FCA Fines Database",
-      "description": "Comprehensive database of all Financial Conduct Authority (FCA) fines and enforcement actions issued from 2013 to present, including penalty amounts, breach categories, and firm details.",
-      "url": `${BASE_URL}/dashboard`,
-      "keywords": ["FCA fines", "Financial Conduct Authority", "regulatory fines", "enforcement actions", "UK financial regulation"],
-      "creator": { "@id": `${BASE_URL}/#organization` },
-      "temporalCoverage": "2013/..",
-      "spatialCoverage": { "@type": "Place", "name": "United Kingdom" },
-      "license": "https://creativecommons.org/licenses/by-nc/4.0/",
-      "isAccessibleForFree": true,
-      "dateModified": today,
-      "variableMeasured": [
-        { "@type": "PropertyValue", "name": "Fine Amount", "unitText": "GBP" },
-        { "@type": "PropertyValue", "name": "Date Issued" },
-        { "@type": "PropertyValue", "name": "Breach Category" },
-        { "@type": "PropertyValue", "name": "Firm Name" },
-        { "@type": "PropertyValue", "name": "Sector" },
-        { "@type": "PropertyValue", "name": "Final Notice Reference" }
-      ]
+      name: "FCA Fines Database",
+      description:
+        "Comprehensive database of all Financial Conduct Authority (FCA) fines and enforcement actions issued from 2013 to present, including penalty amounts, breach categories, and firm details.",
+      url: `${BASE_URL}/dashboard`,
+      keywords: [
+        "FCA fines",
+        "Financial Conduct Authority",
+        "regulatory fines",
+        "enforcement actions",
+        "UK financial regulation",
+      ],
+      creator: { "@id": `${BASE_URL}/#organization` },
+      temporalCoverage: "2013/..",
+      spatialCoverage: { "@type": "Place", name: "United Kingdom" },
+      license: "https://creativecommons.org/licenses/by-nc/4.0/",
+      isAccessibleForFree: true,
+      dateModified: today,
+      variableMeasured: [
+        { "@type": "PropertyValue", name: "Fine Amount", unitText: "GBP" },
+        { "@type": "PropertyValue", name: "Date Issued" },
+        { "@type": "PropertyValue", name: "Breach Category" },
+        { "@type": "PropertyValue", name: "Firm Name" },
+        { "@type": "PropertyValue", name: "Sector" },
+        { "@type": "PropertyValue", name: "Final Notice Reference" },
+      ],
     });
   }
 
@@ -273,94 +354,129 @@ async function buildPageMetas(): Promise<PageMeta[]> {
   // 1. Homepage (with FAQPage schema for top questions)
   const homepageFaqs = getHomepageFaqs();
   pages.push({
-    path: '/',
-    title: 'FCA Fines Database & Tracker | Complete UK Financial Conduct Authority Penalties 2013-2026',
-    description: 'The definitive FCA fines database tracking all Financial Conduct Authority penalties, enforcement actions and regulatory fines from 2013-2026. Analyze £4.9B+ in FCA fines with interactive charts, breach categories, and compliance insights. Updated daily.',
-    keywords: 'FCA fines, FCA fines list, FCA fines database, FCA fines 2025, FCA fines 2026, FCA enforcement actions, Financial Conduct Authority fines, UK financial fines',
-    ogType: 'website',
-    extraJsonLd: homepageFaqs.length > 0 ? [generateFaqSchema(homepageFaqs)] : [],
+    path: "/",
+    title:
+      "FCA Fines Database & Tracker | Complete UK Financial Conduct Authority Penalties 2013-2026",
+    description:
+      "The definitive FCA fines database tracking all Financial Conduct Authority penalties, enforcement actions and regulatory fines from 2013-2026. Analyze £4.9B+ in FCA fines with interactive charts, breach categories, and compliance insights. Updated daily.",
+    keywords:
+      "FCA fines, FCA fines list, FCA fines database, FCA fines 2025, FCA fines 2026, FCA enforcement actions, Financial Conduct Authority fines, UK financial fines",
+    ogType: "website",
+    extraJsonLd:
+      homepageFaqs.length > 0 ? [generateFaqSchema(homepageFaqs)] : [],
   });
 
   // 2. Dashboard (with DataFeed schema)
   pages.push({
-    path: '/dashboard',
-    title: 'FCA Fines Dashboard | Interactive Analytics & Search',
-    description: 'Interactive FCA fines dashboard. Search all Financial Conduct Authority penalties by firm, year, amount and breach category. Export data and analyse enforcement trends.',
-    keywords: 'FCA fines dashboard, FCA fines search, FCA fines tracker, FCA penalty analytics, FCA fines data',
-    ogType: 'website',
-    extraJsonLd: [{
-      "@context": "https://schema.org",
-      "@type": "DataFeed",
-      "name": "FCA Fines Live Data Feed",
-      "description": "Real-time feed of Financial Conduct Authority fines and enforcement actions, updated as new penalties are published.",
-      "url": `${BASE_URL}/dashboard`,
-      "dateModified": todayISO(),
-      "potentialAction": [
-        { "@type": "SearchAction", "name": "Search FCA Fines", "target": { "@type": "EntryPoint", "urlTemplate": `${BASE_URL}/dashboard?search={query}` }, "query-input": "required name=query" },
-        { "@type": "FilterAction", "name": "Filter by Year", "target": { "@type": "EntryPoint", "urlTemplate": `${BASE_URL}/dashboard?year={year}` } },
-        { "@type": "DownloadAction", "name": "Export FCA Fines CSV", "target": { "@type": "EntryPoint", "urlTemplate": `${BASE_URL}/dashboard` } },
-      ]
-    }],
+    path: "/dashboard",
+    title: "FCA Fines Dashboard | Interactive Analytics & Search",
+    description:
+      "Interactive FCA fines dashboard. Search all Financial Conduct Authority penalties by firm, year, amount and breach category. Export data and analyse enforcement trends.",
+    keywords:
+      "FCA fines dashboard, FCA fines search, FCA fines tracker, FCA penalty analytics, FCA fines data",
+    ogType: "website",
+    extraJsonLd: [
+      {
+        "@context": "https://schema.org",
+        "@type": "DataFeed",
+        name: "FCA Fines Live Data Feed",
+        description:
+          "Real-time feed of Financial Conduct Authority fines and enforcement actions, updated as new penalties are published.",
+        url: `${BASE_URL}/dashboard`,
+        dateModified: todayISO(),
+        potentialAction: [
+          {
+            "@type": "SearchAction",
+            name: "Search FCA Fines",
+            target: {
+              "@type": "EntryPoint",
+              urlTemplate: `${BASE_URL}/dashboard?search={query}`,
+            },
+            "query-input": "required name=query",
+          },
+          {
+            "@type": "FilterAction",
+            name: "Filter by Year",
+            target: {
+              "@type": "EntryPoint",
+              urlTemplate: `${BASE_URL}/dashboard?year={year}`,
+            },
+          },
+          {
+            "@type": "DownloadAction",
+            name: "Export FCA Fines CSV",
+            target: {
+              "@type": "EntryPoint",
+              urlTemplate: `${BASE_URL}/dashboard`,
+            },
+          },
+        ],
+      },
+    ],
   });
 
   pages.push({
-    path: '/board-pack',
-    title: 'Board Pack Studio | Enforcement Exposure and Controls Challenge',
+    path: "/board-pack",
+    title: "Board Pack | Board and Risk Committee Enforcement Advisory",
     description:
-      'Generate a board-ready enforcement pack with exposure scoring, peer-case evidence, scenario bands, and control challenge prompts.',
+      "Generate a MEMA board pack with exposure scoring, peer-case evidence, board challenge points, and appendix-ready controls detail.",
     keywords:
-      'board pack, enforcement exposure, board intelligence, compliance committee pack, controls challenge, peer enforcement analysis',
-    ogType: 'website',
+      "board pack, board advisory pack, enforcement exposure, board intelligence, compliance committee pack, peer enforcement analysis",
+    ogType: "website",
   });
 
   // 3. Topics (hub landing)
   pages.push({
-    path: '/topics',
-    title: 'FCA Fines Topics | Breaches, Years, Sectors & Firm Pages',
+    path: "/topics",
+    title: "FCA Fines Topics | Breaches, Years, Sectors & Firm Pages",
     description:
-      'Browse FCA fines by breach type, year, sector, or firm. Explore hub pages and jump into the interactive dashboard for deeper analysis.',
+      "Browse FCA fines by breach type, year, sector, or firm. Explore hub pages and jump into the interactive dashboard for deeper analysis.",
     keywords:
-      'FCA fines topics, FCA fines by breach, FCA fines by year, FCA fines by firm, FCA fines by sector',
-    ogType: 'website',
+      "FCA fines topics, FCA fines by breach, FCA fines by year, FCA fines by firm, FCA fines by sector",
+    ogType: "website",
   });
 
   // 4. Hub list pages
   pages.push({
-    path: '/breaches',
-    title: 'FCA Fines by Breach Type | Market Abuse, AML, Principles and More',
+    path: "/breaches",
+    title: "FCA Fines by Breach Type | Market Abuse, AML, Principles and More",
     description:
-      'Browse FCA fines by breach category. See which breach types drive the most penalties and jump into the dashboard with filters applied.',
-    keywords: 'FCA fines by breach, market abuse FCA fines, AML FCA fines, FCA principles fines, breach category fines',
-    ogType: 'website',
-  });
-  pages.push({
-    path: '/years',
-    title: 'FCA Fines by Year | 2013-2026 Annual Summaries',
-    description:
-      'Browse FCA fines by year. Compare enforcement totals and jump into the dashboard for each year’s full list of actions.',
-    keywords: 'FCA fines by year, FCA fines 2026, FCA fines 2025, FCA enforcement by year',
-    ogType: 'website',
-  });
-  pages.push({
-    path: '/sectors',
-    title: 'FCA Fines by Sector | Banks, Insurance, Individuals and More',
-    description:
-      'Browse FCA fines by firm category (sector). View which sectors receive the most penalties and jump into filtered dashboard views.',
-    keywords: 'FCA fines by sector, FCA fines banks, FCA fines insurance, FCA fines individuals',
-    ogType: 'website',
-  });
-  pages.push({
-    path: '/firms',
-    title: 'Top FCA Fine Recipients | Firms and Individuals With the Largest Penalties (2013-2026)',
-    description:
-      'Browse the biggest FCA fine recipients across 2013-2026. Open an entity page to see totals, largest penalties, and full enforcement history.',
+      "Browse FCA fines by breach category. See which breach types drive the most penalties and jump into the dashboard with filters applied.",
     keywords:
-      'top FCA fines firms, biggest FCA fines recipients, FCA fines by firm, FCA fines by individual, largest FCA penalties',
-    ogType: 'website',
+      "FCA fines by breach, market abuse FCA fines, AML FCA fines, FCA principles fines, breach category fines",
+    ogType: "website",
+  });
+  pages.push({
+    path: "/years",
+    title: "FCA Fines by Year | 2013-2026 Annual Summaries",
+    description:
+      "Browse FCA fines by year. Compare enforcement totals and jump into the dashboard for each year’s full list of actions.",
+    keywords:
+      "FCA fines by year, FCA fines 2026, FCA fines 2025, FCA enforcement by year",
+    ogType: "website",
+  });
+  pages.push({
+    path: "/sectors",
+    title: "FCA Fines by Sector | Banks, Insurance, Individuals and More",
+    description:
+      "Browse FCA fines by firm category (sector). View which sectors receive the most penalties and jump into filtered dashboard views.",
+    keywords:
+      "FCA fines by sector, FCA fines banks, FCA fines insurance, FCA fines individuals",
+    ogType: "website",
+  });
+  pages.push({
+    path: "/firms",
+    title:
+      "Top FCA Fine Recipients | Firms and Individuals With the Largest Penalties (2013-2026)",
+    description:
+      "Browse the biggest FCA fine recipients across 2013-2026. Open an entity page to see totals, largest penalties, and full enforcement history.",
+    keywords:
+      "top FCA fines firms, biggest FCA fines recipients, FCA fines by firm, FCA fines by individual, largest FCA penalties",
+    ogType: "website",
   });
 
   // 4b. Regulator Hub Pages
-  PUBLIC_REGULATOR_CODES.forEach(code => {
+  PUBLIC_REGULATOR_CODES.forEach((code) => {
     const coverage = REGULATOR_COVERAGE[code];
     const path = `/regulators/${code.toLowerCase()}`;
     const title = `${code} Fines Database | ${coverage.fullName} Enforcement Actions`;
@@ -372,123 +488,154 @@ async function buildPageMetas(): Promise<PageMeta[]> {
       title,
       description,
       keywords,
-      ogType: 'website',
+      ogType: "website",
       ogImage: `${BASE_URL}/og/${code.toLowerCase()}-hub.png`,
-      extraJsonLd: [{
-        '@context': 'https://schema.org',
-        '@type': 'Dataset',
-        name: `${code} Fines Database`,
-        description: `${coverage.fullName} enforcement actions and financial penalties from ${coverage.years}`,
-        url: `${BASE_URL}${path}`,
-        keywords: [
-          `${code} fines`,
-          coverage.fullName,
-          'regulatory enforcement',
-          'financial penalties',
-          coverage.country,
-          'compliance database',
-        ],
-        temporalCoverage: coverage.years,
-        spatialCoverage: {
-          '@type': 'Place',
-          name: coverage.country,
+      extraJsonLd: [
+        {
+          "@context": "https://schema.org",
+          "@type": "Dataset",
+          name: `${code} Fines Database`,
+          description: `${coverage.fullName} enforcement actions and financial penalties from ${coverage.years}`,
+          url: `${BASE_URL}${path}`,
+          keywords: [
+            `${code} fines`,
+            coverage.fullName,
+            "regulatory enforcement",
+            "financial penalties",
+            coverage.country,
+            "compliance database",
+          ],
+          temporalCoverage: coverage.years,
+          spatialCoverage: {
+            "@type": "Place",
+            name: coverage.country,
+          },
+          creator: {
+            "@type": "Organization",
+            name: "MEMA Consultants",
+            url: "https://memaconsultants.com",
+          },
+          variableMeasured: [
+            {
+              "@type": "PropertyValue",
+              name: "Fine Amount",
+              unitText: coverage.defaultCurrency,
+            },
+            { "@type": "PropertyValue", name: "Enforcement Date" },
+            { "@type": "PropertyValue", name: "Breach Category" },
+            { "@type": "PropertyValue", name: "Firm/Individual Name" },
+          ],
+          distribution: {
+            "@type": "DataDownload",
+            encodingFormat: "application/json",
+            contentUrl: `${BASE_URL}/api/unified/search?regulator=${code}`,
+          },
         },
-        creator: {
-          '@type': 'Organization',
-          name: 'MEMA Consultants',
-          url: 'https://memaconsultants.com',
-        },
-        variableMeasured: [
-          { '@type': 'PropertyValue', name: 'Fine Amount', unitText: coverage.defaultCurrency },
-          { '@type': 'PropertyValue', name: 'Enforcement Date' },
-          { '@type': 'PropertyValue', name: 'Breach Category' },
-          { '@type': 'PropertyValue', name: 'Firm/Individual Name' },
-        ],
-        distribution: {
-          '@type': 'DataDownload',
-          encodingFormat: 'application/json',
-          contentUrl: `${BASE_URL}/api/unified/search?regulator=${code}`,
-        },
-      }],
+      ],
     });
   });
 
   // 5. Blog listing (with ItemList schema for carousel/list rich results)
   const allBlogItems = [
-    ...blogArticles.filter(a => a.featured),
-    ...blogArticles.filter(a => !a.featured),
+    ...blogArticles.filter((a) => a.featured),
+    ...blogArticles.filter((a) => !a.featured),
     ...yearlyArticles,
   ];
   pages.push({
-    path: '/blog',
-    title: 'FCA Fines Blog | Expert Analysis & Insights on Financial Conduct Authority Penalties',
-    description: 'Expert analysis of FCA fines, biggest penalties, enforcement trends, and compliance guidance. Covering the 20 largest FCA fines, AML enforcement, banking sector penalties, and 2025 fines.',
-    keywords: 'FCA fines blog, FCA fines analysis, FCA enforcement insights, biggest FCA fines, FCA fines 2025, FCA AML fines, FCA compliance guide',
-    ogType: 'website',
-    extraJsonLd: [{
-      "@context": "https://schema.org",
-      "@type": "ItemList",
-      "itemListElement": allBlogItems.map((article, index) => ({
-        "@type": "ListItem",
-        "position": index + 1,
-        "url": `${BASE_URL}/blog/${article.slug}`,
-      })),
-    }],
+    path: "/blog",
+    title:
+      "FCA Fines Blog | Expert Analysis & Insights on Financial Conduct Authority Penalties",
+    description:
+      "Expert analysis of FCA fines, biggest penalties, enforcement trends, and compliance guidance. Covering the 20 largest FCA fines, AML enforcement, banking sector penalties, and 2025 fines.",
+    keywords:
+      "FCA fines blog, FCA fines analysis, FCA enforcement insights, biggest FCA fines, FCA fines 2025, FCA AML fines, FCA compliance guide",
+    ogType: "website",
+    extraJsonLd: [
+      {
+        "@context": "https://schema.org",
+        "@type": "ItemList",
+        itemListElement: allBlogItems.map((article, index) => ({
+          "@type": "ListItem",
+          position: index + 1,
+          url: `${BASE_URL}/blog/${article.slug}`,
+        })),
+      },
+    ],
   });
 
   // 5b. Sitemap page
   pages.push({
-    path: '/sitemap',
-    title: 'Sitemap | FCA Fines Dashboard',
-    description: 'Complete sitemap of the FCA Fines Dashboard. Browse all pages including the interactive dashboard, blog articles, annual reviews, and hub pages.',
-    keywords: 'FCA fines sitemap, FCA fines pages, FCA fines navigation',
-    ogType: 'website',
+    path: "/sitemap",
+    title: "Sitemap | FCA Fines Dashboard",
+    description:
+      "Complete sitemap of the FCA Fines Dashboard. Browse all pages including the interactive dashboard, blog articles, annual reviews, and hub pages.",
+    keywords: "FCA fines sitemap, FCA fines pages, FCA fines navigation",
+    ogType: "website",
   });
 
   // 5c. Pillar page: Complete Guide to FCA Enforcement
   pages.push({
-    path: '/guide/fca-enforcement',
-    title: 'Complete Guide to FCA Enforcement & Fines | From Investigation to Penalty',
-    description: 'Comprehensive guide covering how the FCA enforces financial regulation, how fines are calculated, the biggest penalties of all time, enforcement by year, sector, and breach type.',
-    keywords: 'FCA enforcement guide, FCA fines guide, FCA fines explained, how FCA fines work, FCA enforcement process, FCA penalties guide',
-    ogType: 'article',
-    datePublished: '2026-02-01',
+    path: "/guide/fca-enforcement",
+    title:
+      "Complete Guide to FCA Enforcement & Fines | From Investigation to Penalty",
+    description:
+      "Comprehensive guide covering how the FCA enforces financial regulation, how fines are calculated, the biggest penalties of all time, enforcement by year, sector, and breach type.",
+    keywords:
+      "FCA enforcement guide, FCA fines guide, FCA fines explained, how FCA fines work, FCA enforcement process, FCA penalties guide",
+    ogType: "article",
+    datePublished: "2026-02-01",
     dateModified: todayISO(),
-    articleSection: 'Guide',
-    breadcrumbLabel: 'Complete Guide to FCA Enforcement',
+    articleSection: "Guide",
+    breadcrumbLabel: "Complete Guide to FCA Enforcement",
     jsonLd: {
       "@context": "https://schema.org",
       "@type": "Article",
-      "headline": "Complete Guide to FCA Enforcement & Fines | From Investigation to Penalty",
-      "description": "Comprehensive guide covering how the FCA enforces financial regulation, how fines are calculated, the biggest penalties of all time, enforcement by year, sector, and breach type.",
-      "datePublished": "2026-02-01",
-      "dateModified": todayISO(),
-      "author": { "@type": "Organization", "name": "MEMA Consultants", "url": "https://memaconsultants.com", "description": "Compliance consultancy specialising in FCA regulatory data and analysis" },
-      "publisher": {
+      headline:
+        "Complete Guide to FCA Enforcement & Fines | From Investigation to Penalty",
+      description:
+        "Comprehensive guide covering how the FCA enforces financial regulation, how fines are calculated, the biggest penalties of all time, enforcement by year, sector, and breach type.",
+      datePublished: "2026-02-01",
+      dateModified: todayISO(),
+      author: {
         "@type": "Organization",
-        "name": SITE_NAME,
-        "logo": { "@type": "ImageObject", "url": `${BASE_URL}/mema-logo.png` }
+        name: "MEMA Consultants",
+        url: "https://memaconsultants.com",
+        description:
+          "Compliance consultancy specialising in FCA regulatory data and analysis",
       },
-      "mainEntityOfPage": { "@type": "WebPage", "@id": `${BASE_URL}/guide/fca-enforcement` },
-      "keywords": "FCA enforcement guide, FCA fines guide, FCA fines explained, how FCA fines work, FCA enforcement process",
-      "articleSection": "Guide",
-      "image": {
+      publisher: {
+        "@type": "Organization",
+        name: SITE_NAME,
+        logo: { "@type": "ImageObject", url: `${BASE_URL}/mema-logo.png` },
+      },
+      mainEntityOfPage: {
+        "@type": "WebPage",
+        "@id": `${BASE_URL}/guide/fca-enforcement`,
+      },
+      keywords:
+        "FCA enforcement guide, FCA fines guide, FCA fines explained, how FCA fines work, FCA enforcement process",
+      articleSection: "Guide",
+      image: {
         "@type": "ImageObject",
-        "url": OG_IMAGE,
-        "width": 1200,
-        "height": 630,
-        "caption": "FCA Fines Dashboard - Financial Conduct Authority Enforcement Data"
+        url: OG_IMAGE,
+        width: 1200,
+        height: 630,
+        caption:
+          "FCA Fines Dashboard - Financial Conduct Authority Enforcement Data",
       },
     },
   });
 
   // 5d. FAQ page (with full FAQPage schema)
   pages.push({
-    path: '/faq',
-    title: 'FCA Fines FAQ | Frequently Asked Questions About Financial Conduct Authority Penalties',
-    description: 'Answers to common questions about FCA fines, enforcement actions, and financial penalties. Learn how the FCA calculates fines, the biggest fines ever issued, and what happens when a firm is fined.',
-    keywords: 'FCA fines FAQ, FCA fines questions, biggest FCA fine, FCA fine calculation, FCA Final Notice, SM&CR fines, FCA money laundering fine, financial crime penalties',
-    ogType: 'website',
+    path: "/faq",
+    title:
+      "FCA Fines FAQ | Frequently Asked Questions About Financial Conduct Authority Penalties",
+    description:
+      "Answers to common questions about FCA fines, enforcement actions, and financial penalties. Learn how the FCA calculates fines, the biggest fines ever issued, and what happens when a firm is fined.",
+    keywords:
+      "FCA fines FAQ, FCA fines questions, biggest FCA fine, FCA fine calculation, FCA Final Notice, SM&CR fines, FCA money laundering fine, financial crime penalties",
+    ogType: "website",
     jsonLd: generateFaqSchema(faqItems),
   });
 
@@ -496,17 +643,20 @@ async function buildPageMetas(): Promise<PageMeta[]> {
   for (const article of blogArticles) {
     const articleFaqs = getFaqsForArticle(article.slug);
     const articleOgImage = `${BASE_URL}/og/${article.slug}.png`;
-    const renderedBody = wrapArticleShell(article.title, renderMarkdownToHtml(article.content));
+    const renderedBody = wrapArticleShell(
+      article.title,
+      renderMarkdownToHtml(article.content),
+    );
     const extraLd: object[] = [];
     if (articleFaqs.length > 0) extraLd.push(generateFaqSchema(articleFaqs));
     // HowTo schema for database guide
-    if (article.id === 'fca-fines-database-guide') extraLd.push(HOWTO_SCHEMA);
+    if (article.id === "fca-fines-database-guide") extraLd.push(HOWTO_SCHEMA);
     pages.push({
       path: `/blog/${article.slug}`,
       title: article.seoTitle,
       description: article.excerpt,
-      keywords: article.keywords.join(', '),
-      ogType: 'article',
+      keywords: article.keywords.join(", "),
+      ogType: "article",
       datePublished: article.dateISO,
       dateModified: article.dateISO,
       articleSection: article.category,
@@ -516,25 +666,35 @@ async function buildPageMetas(): Promise<PageMeta[]> {
       jsonLd: {
         "@context": "https://schema.org",
         "@type": "Article",
-        "headline": article.seoTitle,
-        "description": article.excerpt,
-        "datePublished": article.dateISO,
-        "dateModified": article.dateISO,
-        "author": { "@type": "Organization", "name": "MEMA Consultants", "url": "https://memaconsultants.com", "description": "Compliance consultancy specialising in FCA regulatory data and analysis" },
-        "publisher": {
+        headline: article.seoTitle,
+        description: article.excerpt,
+        datePublished: article.dateISO,
+        dateModified: article.dateISO,
+        author: {
           "@type": "Organization",
-          "name": SITE_NAME,
-          "logo": { "@type": "ImageObject", "url": `${BASE_URL}/mema-logo.png` }
+          name: "MEMA Consultants",
+          url: "https://memaconsultants.com",
+          description:
+            "Compliance consultancy specialising in FCA regulatory data and analysis",
         },
-        "mainEntityOfPage": { "@type": "WebPage", "@id": `${BASE_URL}/blog/${article.slug}` },
-        "keywords": article.keywords.join(", "),
-        "articleSection": article.category,
-        "image": {
+        publisher: {
+          "@type": "Organization",
+          name: SITE_NAME,
+          logo: { "@type": "ImageObject", url: `${BASE_URL}/mema-logo.png` },
+        },
+        mainEntityOfPage: {
+          "@type": "WebPage",
+          "@id": `${BASE_URL}/blog/${article.slug}`,
+        },
+        keywords: article.keywords.join(", "),
+        articleSection: article.category,
+        image: {
           "@type": "ImageObject",
-          "url": articleOgImage,
-          "width": 1200,
-          "height": 630,
-          "caption": "FCA Fines Dashboard - Financial Conduct Authority Enforcement Data"
+          url: articleOgImage,
+          width: 1200,
+          height: 630,
+          caption:
+            "FCA Fines Dashboard - Financial Conduct Authority Enforcement Data",
         },
       },
       extraJsonLd: extraLd,
@@ -551,48 +711,70 @@ async function buildPageMetas(): Promise<PageMeta[]> {
 
     // Build SSG body for yearly articles from structured sections
     const yearlyBodyParts = [
-      `<h2>Executive Summary</h2>${article.executiveSummary.split('\n\n').map(p => `<p>${p}</p>`).join('')}`,
-      `<h2>Regulatory Context</h2>${article.regulatoryContext.split('\n\n').map(p => `<p>${p}</p>`).join('')}`,
-      `<h2>Key Enforcement Themes</h2><ul>${article.keyEnforcementThemes.map(t => `<li>${t}</li>`).join('')}</ul>`,
-      `<h2>Professional Insight</h2>${article.professionalInsight.split('\n\n').map(p => `<p>${p}</p>`).join('')}`,
-      `<h2>Looking Ahead</h2>${article.lookingAhead.split('\n\n').map(p => `<p>${p}</p>`).join('')}`,
-    ].join('');
+      `<h2>Executive Summary</h2>${article.executiveSummary
+        .split("\n\n")
+        .map((p) => `<p>${p}</p>`)
+        .join("")}`,
+      `<h2>Regulatory Context</h2>${article.regulatoryContext
+        .split("\n\n")
+        .map((p) => `<p>${p}</p>`)
+        .join("")}`,
+      `<h2>Key Enforcement Themes</h2><ul>${article.keyEnforcementThemes.map((t) => `<li>${t}</li>`).join("")}</ul>`,
+      `<h2>Professional Insight</h2>${article.professionalInsight
+        .split("\n\n")
+        .map((p) => `<p>${p}</p>`)
+        .join("")}`,
+      `<h2>Looking Ahead</h2>${article.lookingAhead
+        .split("\n\n")
+        .map((p) => `<p>${p}</p>`)
+        .join("")}`,
+    ].join("");
     const yearlyBody = wrapArticleShell(article.title, yearlyBodyParts);
 
     pages.push({
       path: `/blog/${article.slug}`,
       title: article.seoTitle,
       description: article.excerpt,
-      keywords: article.keywords.join(', '),
-      ogType: 'article',
+      keywords: article.keywords.join(", "),
+      ogType: "article",
       datePublished: `${article.year}-01-01`,
       dateModified: clampedDateModified,
-      articleSection: 'Annual Analysis',
+      articleSection: "Annual Analysis",
       breadcrumbLabel: article.title,
       bodyContent: yearlyBody,
       ogImage: yearlyOgImage,
       jsonLd: {
         "@context": "https://schema.org",
         "@type": "AnalysisNewsArticle",
-        "headline": article.seoTitle,
-        "description": article.excerpt,
-        "datePublished": `${article.year}-01-01`,
-        "dateModified": clampedDateModified,
-        "author": { "@type": "Organization", "name": "MEMA Consultants", "url": "https://memaconsultants.com", "description": "Compliance consultancy specialising in FCA regulatory data and analysis" },
-        "publisher": {
+        headline: article.seoTitle,
+        description: article.excerpt,
+        datePublished: `${article.year}-01-01`,
+        dateModified: clampedDateModified,
+        author: {
           "@type": "Organization",
-          "name": SITE_NAME,
-          "logo": { "@type": "ImageObject", "url": `${BASE_URL}/mema-logo.png` }
+          name: "MEMA Consultants",
+          url: "https://memaconsultants.com",
+          description:
+            "Compliance consultancy specialising in FCA regulatory data and analysis",
         },
-        "mainEntityOfPage": { "@type": "WebPage", "@id": `${BASE_URL}/blog/${article.slug}` },
-        "keywords": article.keywords.join(", "),
-        "articleSection": "Annual Analysis",
-        "image": {
+        publisher: {
+          "@type": "Organization",
+          name: SITE_NAME,
+          logo: { "@type": "ImageObject", url: `${BASE_URL}/mema-logo.png` },
+        },
+        mainEntityOfPage: {
+          "@type": "WebPage",
+          "@id": `${BASE_URL}/blog/${article.slug}`,
+        },
+        keywords: article.keywords.join(", "),
+        articleSection: "Annual Analysis",
+        image: {
           "@type": "ImageObject",
-          "url": yearlyOgImage,
-          "width": 1200,
-          "height": 630,
-          "caption": "FCA Fines Dashboard - Financial Conduct Authority Enforcement Data"
+          url: yearlyOgImage,
+          width: 1200,
+          height: 630,
+          caption:
+            "FCA Fines Dashboard - Financial Conduct Authority Enforcement Data",
         },
       },
       extraJsonLd: yearlyFaqs.length > 0 ? [generateFaqSchema(yearlyFaqs)] : [],
@@ -601,7 +783,8 @@ async function buildPageMetas(): Promise<PageMeta[]> {
 
   // 8. DB-backed hub detail pages (best-effort; skip if env not available in build)
   try {
-    const { listBreachCategories, listYears, listSectors, listTopFirms } = await import('../server/services/hubs.js');
+    const { listBreachCategories, listYears, listSectors, listTopFirms } =
+      await import("../server/services/hubs.js");
     const [categories, years, sectors, firms] = await Promise.all([
       listBreachCategories(),
       listYears(),
@@ -615,7 +798,7 @@ async function buildPageMetas(): Promise<PageMeta[]> {
         title: `${humanize(cat.name)} FCA Fines | ${cat.fineCount} actions totalling ${gbp.format(cat.totalAmount)}`,
         description: `Explore FCA enforcement actions tagged ${humanize(cat.name)}. ${cat.fineCount} actions totalling ${gbp.format(cat.totalAmount)} across 2013-2026.`,
         keywords: `FCA ${humanize(cat.name)} fines, ${humanize(cat.name)} enforcement, FCA fines by breach`,
-        ogType: 'website',
+        ogType: "website",
       });
     });
 
@@ -625,7 +808,7 @@ async function buildPageMetas(): Promise<PageMeta[]> {
         title: `FCA Fines ${y.year} | ${y.fineCount} actions totalling ${gbp.format(y.totalAmount)}`,
         description: `Explore FCA fines issued in ${y.year}. ${y.fineCount} actions totalling ${gbp.format(y.totalAmount)}.`,
         keywords: `FCA fines ${y.year}, FCA penalties ${y.year}, FCA enforcement ${y.year}`,
-        ogType: 'website',
+        ogType: "website",
       });
     });
 
@@ -635,7 +818,7 @@ async function buildPageMetas(): Promise<PageMeta[]> {
         title: `FCA Fines for ${s.name} | ${s.fineCount} actions totalling ${gbp.format(s.totalAmount)}`,
         description: `Explore FCA enforcement actions for ${s.name}. ${s.fineCount} actions totalling ${gbp.format(s.totalAmount)} across 2013-2026.`,
         keywords: `FCA fines ${s.name}, FCA penalties ${s.name}, FCA fines by sector`,
-        ogType: 'website',
+        ogType: "website",
       });
     });
 
@@ -645,11 +828,14 @@ async function buildPageMetas(): Promise<PageMeta[]> {
         title: `${f.name} FCA Fines | ${f.fineCount} actions totalling ${gbp.format(f.totalAmount)}`,
         description: `Explore FCA enforcement actions for ${f.name}. ${f.fineCount} actions totalling ${gbp.format(f.totalAmount)} across 2013-2026.`,
         keywords: `FCA fines ${f.name}, FCA penalties ${f.name}, FCA enforcement ${f.name}`,
-        ogType: 'website',
+        ogType: "website",
       });
     });
   } catch (error) {
-    console.warn('WARN: Skipping DB-backed hub pages in pre-render step:', error instanceof Error ? error.message : String(error));
+    console.warn(
+      "WARN: Skipping DB-backed hub pages in pre-render step:",
+      error instanceof Error ? error.message : String(error),
+    );
   }
 
   return pages;
@@ -661,7 +847,7 @@ async function buildPageMetas(): Promise<PageMeta[]> {
 
 function renderPage(template: string, meta: PageMeta): string {
   const fullUrl = `${BASE_URL}${meta.path}`;
-  const canonicalPath = meta.path === '/' ? '/' : meta.path;
+  const canonicalPath = meta.path === "/" ? "/" : meta.path;
   const canonicalUrl = `${BASE_URL}${canonicalPath}`;
 
   let html = template;
@@ -669,92 +855,92 @@ function renderPage(template: string, meta: PageMeta): string {
   // Replace <title>
   html = html.replace(
     /<title>[\s\S]*?<\/title>/,
-    `<title>${escapeHtml(meta.title)}</title>`
+    `<title>${escapeHtml(meta.title)}</title>`,
   );
 
   // Replace meta[name="title"]
   html = html.replace(
     /<meta\s+name="title"\s+content="[^"]*"\s*\/?>/,
-    `<meta name="title" content="${escapeHtml(meta.title)}" />`
+    `<meta name="title" content="${escapeHtml(meta.title)}" />`,
   );
 
   // Replace meta[name="description"] — use [^>]* to avoid catastrophic backtracking
   html = html.replace(
     /<meta\s+name="description"[^>]*\/>/,
-    `<meta name="description" content="${escapeHtml(meta.description)}" />`
+    `<meta name="description" content="${escapeHtml(meta.description)}" />`,
   );
 
   // Replace meta[name="keywords"]
   html = html.replace(
     /<meta\s+name="keywords"[^>]*\/>/,
-    `<meta name="keywords" content="${escapeHtml(meta.keywords)}" />`
+    `<meta name="keywords" content="${escapeHtml(meta.keywords)}" />`,
   );
 
   // Replace canonical
   html = html.replace(
     /<link\s+rel="canonical"\s+href="[^"]*"\s*\/?>/,
-    `<link rel="canonical" href="${canonicalUrl}" />`
+    `<link rel="canonical" href="${canonicalUrl}" />`,
   );
 
   // Replace hreflang URLs (including en-us)
   html = html.replace(
     /<link\s+rel="alternate"\s+hreflang="en-gb"\s+href="[^"]*"\s*\/?>/,
-    `<link rel="alternate" hreflang="en-gb" href="${canonicalUrl}" />`
+    `<link rel="alternate" hreflang="en-gb" href="${canonicalUrl}" />`,
   );
   html = html.replace(
     /<link\s+rel="alternate"\s+hreflang="en"\s+href="[^"]*"\s*\/?>/,
-    `<link rel="alternate" hreflang="en" href="${canonicalUrl}" />`
+    `<link rel="alternate" hreflang="en" href="${canonicalUrl}" />`,
   );
   html = html.replace(
     /<link\s+rel="alternate"\s+hreflang="en-us"\s+href="[^"]*"\s*\/?>/,
-    `<link rel="alternate" hreflang="en-us" href="${canonicalUrl}" />`
+    `<link rel="alternate" hreflang="en-us" href="${canonicalUrl}" />`,
   );
   html = html.replace(
     /<link\s+rel="alternate"\s+hreflang="x-default"\s+href="[^"]*"\s*\/?>/,
-    `<link rel="alternate" hreflang="x-default" href="${canonicalUrl}" />`
+    `<link rel="alternate" hreflang="x-default" href="${canonicalUrl}" />`,
   );
 
   // Replace OG tags
   html = html.replace(
     /<meta\s+property="og:type"\s+content="[^"]*"\s*\/?>/,
-    `<meta property="og:type" content="${meta.ogType}" />`
+    `<meta property="og:type" content="${meta.ogType}" />`,
   );
   html = html.replace(
     /<meta\s+property="og:url"\s+content="[^"]*"\s*\/?>/,
-    `<meta property="og:url" content="${fullUrl}" />`
+    `<meta property="og:url" content="${fullUrl}" />`,
   );
   html = html.replace(
     /<meta\s+property="og:title"\s+content="[^"]*"\s*\/?>/,
-    `<meta property="og:title" content="${escapeHtml(meta.title)}" />`
+    `<meta property="og:title" content="${escapeHtml(meta.title)}" />`,
   );
   html = html.replace(
     /<meta\s+property="og:description"[^>]*\/>/,
-    `<meta property="og:description" content="${escapeHtml(meta.description)}" />`
+    `<meta property="og:description" content="${escapeHtml(meta.description)}" />`,
   );
 
   // Replace Twitter tags
   html = html.replace(
     /<meta\s+name="twitter:url"\s+content="[^"]*"\s*\/?>/,
-    `<meta name="twitter:url" content="${fullUrl}" />`
+    `<meta name="twitter:url" content="${fullUrl}" />`,
   );
   html = html.replace(
     /<meta\s+name="twitter:title"\s+content="[^"]*"\s*\/?>/,
-    `<meta name="twitter:title" content="${escapeHtml(meta.title)}" />`
+    `<meta name="twitter:title" content="${escapeHtml(meta.title)}" />`,
   );
   html = html.replace(
     /<meta\s+name="twitter:description"[^>]*\/>/,
-    `<meta name="twitter:description" content="${escapeHtml(meta.description)}" />`
+    `<meta name="twitter:description" content="${escapeHtml(meta.description)}" />`,
   );
 
   // Replace OG image and Twitter image when custom ogImage is set
   if (meta.ogImage) {
     html = html.replace(
       /<meta\s+property="og:image"\s+content="[^"]*"\s*\/?>/,
-      `<meta property="og:image" content="${meta.ogImage}" />`
+      `<meta property="og:image" content="${meta.ogImage}" />`,
     );
     html = html.replace(
       /<meta\s+name="twitter:image"\s+content="[^"]*"\s*\/?>/,
-      `<meta name="twitter:image" content="${meta.ogImage}" />`
+      `<meta name="twitter:image" content="${meta.ogImage}" />`,
     );
   }
 
@@ -762,7 +948,7 @@ function renderPage(template: string, meta: PageMeta): string {
   if (meta.bodyContent) {
     html = html.replace(
       '<div id="root"></div>',
-      `<div id="root">${meta.bodyContent}</div>`
+      `<div id="root">${meta.bodyContent}</div>`,
     );
   }
 
@@ -770,35 +956,48 @@ function renderPage(template: string, meta: PageMeta): string {
   const pageGraph = generatePageGraph(meta);
   html = html.replace(
     /<script type="application\/ld\+json">[\s\S]*?<\/script>/,
-    `<script type="application/ld+json">\n    ${JSON.stringify(pageGraph)}\n    </script>`
+    `<script type="application/ld+json">\n    ${JSON.stringify(pageGraph)}\n    </script>`,
   );
 
   // Inject JSON-LD and article meta before </head>
   const headInjections: string[] = [];
 
-  if (meta.ogType === 'article') {
+  if (meta.ogType === "article") {
     // Article meta tags
-    if (meta.datePublished) headInjections.push(`<meta property="article:published_time" content="${meta.datePublished}" />`);
-    if (meta.dateModified) headInjections.push(`<meta property="article:modified_time" content="${meta.dateModified}" />`);
-    if (meta.articleSection) headInjections.push(`<meta property="article:section" content="${escapeHtml(meta.articleSection)}" />`);
+    if (meta.datePublished)
+      headInjections.push(
+        `<meta property="article:published_time" content="${meta.datePublished}" />`,
+      );
+    if (meta.dateModified)
+      headInjections.push(
+        `<meta property="article:modified_time" content="${meta.dateModified}" />`,
+      );
+    if (meta.articleSection)
+      headInjections.push(
+        `<meta property="article:section" content="${escapeHtml(meta.articleSection)}" />`,
+      );
   }
 
   // Primary JSON-LD (Article schema or FAQPage for /faq)
   if (meta.jsonLd) {
-    headInjections.push(`<script type="application/ld+json">\n    ${JSON.stringify(meta.jsonLd)}\n    </script>`);
+    headInjections.push(
+      `<script type="application/ld+json">\n    ${JSON.stringify(meta.jsonLd)}\n    </script>`,
+    );
   }
 
   // Extra JSON-LD blocks (e.g. FAQPage alongside Article)
   if (meta.extraJsonLd?.length) {
     for (const ld of meta.extraJsonLd) {
-      headInjections.push(`<script type="application/ld+json">\n    ${JSON.stringify(ld)}\n    </script>`);
+      headInjections.push(
+        `<script type="application/ld+json">\n    ${JSON.stringify(ld)}\n    </script>`,
+      );
     }
   }
 
   if (headInjections.length > 0) {
     html = html.replace(
-      '</head>',
-      `    ${headInjections.join('\n    ')}\n  </head>`
+      "</head>",
+      `    ${headInjections.join("\n    ")}\n  </head>`,
     );
   }
 
@@ -820,73 +1019,89 @@ function generateSitemap(pages: PageMeta[]): string {
     const fullUrl = `${BASE_URL}${page.path}`;
 
     let lastmod = buildDate;
-    let changefreq = 'monthly';
-    let priority = '0.75';
+    let changefreq = "monthly";
+    let priority = "0.75";
 
-    if (page.path === '/') {
-      priority = '1.0';
-      changefreq = 'daily';
-    } else if (page.path === '/dashboard') {
-      priority = '0.95';
-      changefreq = 'daily';
-    } else if (page.path === '/topics') {
-      priority = '0.9';
-      changefreq = 'weekly';
-    } else if (page.path === '/breaches' || page.path === '/years' || page.path === '/sectors' || page.path === '/firms') {
-      priority = '0.85';
-      changefreq = 'weekly';
-    } else if (page.path.startsWith('/regulators/')) {
+    if (page.path === "/") {
+      priority = "1.0";
+      changefreq = "daily";
+    } else if (page.path === "/dashboard") {
+      priority = "0.95";
+      changefreq = "daily";
+    } else if (page.path === "/topics") {
+      priority = "0.9";
+      changefreq = "weekly";
+    } else if (
+      page.path === "/breaches" ||
+      page.path === "/years" ||
+      page.path === "/sectors" ||
+      page.path === "/firms"
+    ) {
+      priority = "0.85";
+      changefreq = "weekly";
+    } else if (page.path.startsWith("/regulators/")) {
       // Regulator hub pages
-      priority = '0.85';
-      changefreq = 'weekly';
-    } else if (page.path === '/blog') {
-      priority = '0.9';
-      changefreq = 'weekly';
-    } else if (page.path === '/faq') {
-      priority = '0.9';
-      changefreq = 'monthly';
-    } else if (page.path === '/sitemap') {
-      priority = '0.5';
-      changefreq = 'monthly';
-    } else if (page.path === '/guide/fca-enforcement') {
-      priority = '0.9';
-      changefreq = 'weekly';
+      priority = "0.85";
+      changefreq = "weekly";
+    } else if (page.path === "/blog") {
+      priority = "0.9";
+      changefreq = "weekly";
+    } else if (page.path === "/faq") {
+      priority = "0.9";
+      changefreq = "monthly";
+    } else if (page.path === "/sitemap") {
+      priority = "0.5";
+      changefreq = "monthly";
+    } else if (page.path === "/guide/fca-enforcement") {
+      priority = "0.9";
+      changefreq = "weekly";
     } else if (page.datePublished) {
       // Blog articles use their publish date
-      lastmod = clampISODate(page.dateModified || page.datePublished, buildDate);
+      lastmod = clampISODate(
+        page.dateModified || page.datePublished,
+        buildDate,
+      );
 
       // Featured / recent articles get higher priority
-      const isFeatured = blogArticles.some(a => `/blog/${a.slug}` === page.path && a.featured);
+      const isFeatured = blogArticles.some(
+        (a) => `/blog/${a.slug}` === page.path && a.featured,
+      );
       if (isFeatured) {
-        priority = '0.9';
-        changefreq = 'weekly';
-      } else if (page.path.includes('annual-review')) {
+        priority = "0.9";
+        changefreq = "weekly";
+      } else if (page.path.includes("annual-review")) {
         // Yearly reviews: recent years get higher priority
         const yearMatch = page.path.match(/(\d{4})-annual-review/);
         const year = yearMatch ? parseInt(yearMatch[1]) : 0;
-        priority = year >= 2023 ? '0.85' : '0.75';
-        changefreq = year >= 2024 ? 'weekly' : 'monthly';
+        priority = year >= 2023 ? "0.85" : "0.75";
+        changefreq = year >= 2024 ? "weekly" : "monthly";
       } else {
-        priority = '0.8';
+        priority = "0.8";
       }
-    } else if (page.path.startsWith('/breaches/') || page.path.startsWith('/sectors/')) {
-      priority = '0.75';
-      changefreq = 'monthly';
-    } else if (page.path.startsWith('/years/') || page.path.startsWith('/firms/')) {
-      priority = '0.75';
-      changefreq = 'monthly';
+    } else if (
+      page.path.startsWith("/breaches/") ||
+      page.path.startsWith("/sectors/")
+    ) {
+      priority = "0.75";
+      changefreq = "monthly";
+    } else if (
+      page.path.startsWith("/years/") ||
+      page.path.startsWith("/firms/")
+    ) {
+      priority = "0.75";
+      changefreq = "monthly";
     }
 
-    lines.push('  <url>');
+    lines.push("  <url>");
     lines.push(`    <loc>${fullUrl}</loc>`);
     lines.push(`    <lastmod>${lastmod}</lastmod>`);
     lines.push(`    <changefreq>${changefreq}</changefreq>`);
     lines.push(`    <priority>${priority}</priority>`);
-    lines.push('  </url>');
+    lines.push("  </url>");
   }
 
-  lines.push('</urlset>');
-  return lines.join('\n') + '\n';
+  lines.push("</urlset>");
+  return lines.join("\n") + "\n";
 }
 
 // ---------------------------------------------------------------------------
@@ -910,43 +1125,47 @@ function generateRss(): string {
       guid: `${BASE_URL}/blog/${a.slug}`,
       description: a.excerpt,
       pubDate: toRfc2822(`${a.year}-01-01`, buildDate),
-      category: 'Annual Analysis',
+      category: "Annual Analysis",
     })),
-  ].sort((a, b) => new Date(b.pubDate).getTime() - new Date(a.pubDate).getTime());
+  ].sort(
+    (a, b) => new Date(b.pubDate).getTime() - new Date(a.pubDate).getTime(),
+  );
 
   const rssItems = items
     .slice(0, 60)
     .map((item) => {
       return [
-        '    <item>',
+        "    <item>",
         `      <title>${escapeHtml(item.title)}</title>`,
         `      <link>${item.link}</link>`,
         `      <guid isPermaLink="true">${item.guid}</guid>`,
         `      <pubDate>${item.pubDate}</pubDate>`,
-        item.category ? `      <category>${escapeHtml(item.category)}</category>` : '',
+        item.category
+          ? `      <category>${escapeHtml(item.category)}</category>`
+          : "",
         `      <description>${escapeHtml(item.description)}</description>`,
-        '    </item>',
+        "    </item>",
       ]
         .filter(Boolean)
-        .join('\n');
+        .join("\n");
     })
-    .join('\n');
+    .join("\n");
 
   return [
     '<?xml version="1.0" encoding="UTF-8"?>',
     '<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">',
-    '  <channel>',
+    "  <channel>",
     `    <title>${escapeHtml(SITE_NAME)} Insights</title>`,
     `    <link>${BASE_URL}/blog</link>`,
-    `    <description>${escapeHtml('Expert analysis of FCA enforcement actions, fines, and compliance insights.')}</description>`,
+    `    <description>${escapeHtml("Expert analysis of FCA enforcement actions, fines, and compliance insights.")}</description>`,
     `    <language>en-gb</language>`,
     `    <lastBuildDate>${toRfc2822(buildDate, buildDate)}</lastBuildDate>`,
     `    <atom:link href="${RSS_URL}" rel="self" type="application/rss+xml" />`,
     rssItems,
-    '  </channel>',
-    '</rss>',
-    '',
-  ].join('\n');
+    "  </channel>",
+    "</rss>",
+    "",
+  ].join("\n");
 }
 
 // ---------------------------------------------------------------------------
@@ -954,13 +1173,13 @@ function generateRss(): string {
 // ---------------------------------------------------------------------------
 
 async function main() {
-  const templatePath = join(DIST, 'index.html');
+  const templatePath = join(DIST, "index.html");
   if (!existsSync(templatePath)) {
-    console.error('ERROR: dist/index.html not found. Run `vite build` first.');
+    console.error("ERROR: dist/index.html not found. Run `vite build` first.");
     process.exit(1);
   }
 
-  const template = readFileSync(templatePath, 'utf-8');
+  const template = readFileSync(templatePath, "utf-8");
   const pages = await buildPageMetas();
 
   console.log(`Pre-rendering ${pages.length} pages...`);
@@ -971,12 +1190,12 @@ async function main() {
 
     // Determine output path
     let outPath: string;
-    if (page.path === '/') {
+    if (page.path === "/") {
       // Homepage — already dist/index.html, overwrite with correct meta
-      outPath = join(DIST, 'index.html');
+      outPath = join(DIST, "index.html");
     } else {
       // e.g. /blog/some-slug → dist/blog/some-slug/index.html
-      outPath = join(DIST, page.path.slice(1), 'index.html');
+      outPath = join(DIST, page.path.slice(1), "index.html");
     }
 
     const outDir = dirname(outPath);
@@ -984,7 +1203,7 @@ async function main() {
       mkdirSync(outDir, { recursive: true });
     }
 
-    writeFileSync(outPath, html, 'utf-8');
+    writeFileSync(outPath, html, "utf-8");
     created++;
   }
 
@@ -992,20 +1211,20 @@ async function main() {
 
   // Generate sitemap
   const sitemap = generateSitemap(pages);
-  const sitemapPath = join(DIST, 'sitemap.xml');
-  writeFileSync(sitemapPath, sitemap, 'utf-8');
+  const sitemapPath = join(DIST, "sitemap.xml");
+  writeFileSync(sitemapPath, sitemap, "utf-8");
   console.log(`  Generated sitemap.xml with ${pages.length} URLs.`);
 
   // Generate RSS feed
   const rss = generateRss();
-  const rssPath = join(DIST, 'rss.xml');
-  writeFileSync(rssPath, rss, 'utf-8');
+  const rssPath = join(DIST, "rss.xml");
+  writeFileSync(rssPath, rss, "utf-8");
   console.log(`  Generated rss.xml.`);
 
-  console.log('Done!');
+  console.log("Done!");
 }
 
 main().catch((error) => {
-  console.error('Pre-render failed:', error);
+  console.error("Pre-render failed:", error);
   process.exit(1);
 });

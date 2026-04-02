@@ -112,40 +112,51 @@ async function fulfillBoardPackSearch(route: Route) {
   });
 }
 
-test.describe("Board Pack Studio", () => {
-  test("renders the board pack route and generated sections", async ({ page }) => {
+test.describe("Board Pack", () => {
+  test("renders the board pack route and generated sections", async ({
+    page,
+  }) => {
     await page.route("**/api/unified/search**", fulfillBoardPackSearch);
     await page.goto("/board-pack");
 
     await expect(
-      page.getByRole("heading", { level: 1, name: "Board Pack Studio" }),
+      page.getByRole("heading", { level: 1, name: "Board Pack" }),
     ).toBeVisible();
     await expect(
-      page.getByRole("heading", {
-        level: 2,
-        name: "NorthStar Compliance Profile",
-      }),
+      page
+        .getByRole("heading", {
+          level: 2,
+          name: "NorthStar Compliance Profile",
+        })
+        .first(),
     ).toBeVisible();
     await expect(
-      page.getByRole("heading", { name: "Exposure outlook" }),
+      page.getByRole("heading", { name: "Executive summary" }),
     ).toBeVisible();
     await expect(
-      page.getByRole("heading", { name: "Controls challenge" }),
+      page.getByRole("heading", { name: "Exposure overview" }),
     ).toBeVisible();
+    await expect(
+      page.getByRole("heading", { name: "Board challenge agenda" }),
+    ).toBeVisible();
+    await expect(page.getByRole("heading", { name: "Appendix" })).toBeVisible();
   });
 
   test("regenerates the pack for a renamed firm profile", async ({ page }) => {
     await page.route("**/api/unified/search**", fulfillBoardPackSearch);
     await page.goto("/board-pack");
 
+    await page.getByRole("button", { name: "Refine profile" }).click();
     await page.getByLabel("Firm or profile name").fill("NorthStar Payments");
     await page.getByRole("button", { name: "Generate board pack" }).click();
 
     await expect(
-      page.getByRole("heading", {
-        level: 2,
-        name: "NorthStar Payments",
-      }),
+      page
+        .getByRole("heading", {
+          level: 2,
+          name: "NorthStar Payments",
+        })
+        .first(),
     ).toBeVisible();
   });
 });

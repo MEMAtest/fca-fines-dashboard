@@ -92,25 +92,38 @@ describe("BoardIntelligence", () => {
     renderPage();
 
     expect(
-      screen.getByRole("heading", { name: /Board Pack Studio/i }),
+      screen.getByRole("heading", { name: /^Board Pack$/i }),
     ).toBeInTheDocument();
     expect(
-      screen.getByRole("heading", {
+      screen.getAllByRole("heading", {
         level: 2,
         name: /^NorthStar Compliance Profile$/,
       }),
+    ).toHaveLength(2);
+    expect(
+      screen.queryByRole("heading", { name: /Exposure outlook/i }),
+    ).not.toBeInTheDocument();
+    expect(
+      screen.getByRole("heading", { name: /Executive summary/i }),
     ).toBeInTheDocument();
     expect(
-      screen.getByRole("heading", { name: /Exposure outlook/i }),
+      screen.getByRole("heading", { name: /Why now/i }),
     ).toBeInTheDocument();
     expect(
-      screen.getByRole("heading", { name: /Controls challenge/i }),
+      screen.getByRole("heading", { name: /Exposure overview/i }),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole("heading", { name: /Key exposure themes/i }),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole("heading", { name: /Appendix/i }),
     ).toBeInTheDocument();
   });
 
   it("regenerates the pack when the profile is changed", () => {
     renderPage();
 
+    fireEvent.click(screen.getByRole("button", { name: /Refine profile/i }));
     const input = screen.getByLabelText(/Firm or profile name/i);
     fireEvent.change(input, { target: { value: "NorthStar Payments" } });
     fireEvent.click(
@@ -118,10 +131,10 @@ describe("BoardIntelligence", () => {
     );
 
     expect(
-      screen.getByRole("heading", {
+      screen.getAllByRole("heading", {
         level: 2,
         name: /^NorthStar Payments$/,
       }),
-    ).toBeInTheDocument();
+    ).toHaveLength(2);
   });
 });

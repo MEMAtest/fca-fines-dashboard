@@ -34,6 +34,7 @@ type RegulatorProfile = {
   boardQuestions: string[];
   takeaways: string[];
   faqs: StructuredRegulatorFaq[];
+  sourceLinks?: StructuredRegulatorLink[];
   crossLinks: StructuredRegulatorLink[];
 };
 
@@ -108,13 +109,13 @@ function buildCrossLinks(
 
 function getRegionContext(region: string): string {
   const contexts: Record<string, string> = {
-    "Europe": "European",
-    "APAC": "Asia-Pacific",
+    Europe: "European",
+    APAC: "Asia-Pacific",
     "North America": "North American",
     "Latin America": "Latin American",
-    "Africa": "African",
-    "MENA": "Middle East",
-    "Offshore": "offshore jurisdiction",
+    Africa: "African",
+    MENA: "Middle East",
+    Offshore: "offshore jurisdiction",
   };
   return contexts[region] || "international";
 }
@@ -131,11 +132,11 @@ function describeSupervisorType(coverage: RegulatorCoverage): string {
 
 function getRegionalUseCase(region: string): string {
   const useCases: Record<string, string> = {
-    "APAC": "Asia-Pacific market entry and cross-border",
-    "Europe": "European regulatory benchmarking and MiFID II",
+    APAC: "Asia-Pacific market entry and cross-border",
+    Europe: "European regulatory benchmarking and MiFID II",
     "Latin America": "emerging markets and regional expansion",
-    "Africa": "African market development and correspondent banking",
-    "MENA": "Middle East financial services and Islamic finance",
+    Africa: "African market development and correspondent banking",
+    MENA: "Middle East financial services and Islamic finance",
     "North America": "US banking and securities supervision",
   };
   return useCases[region] || "cross-border";
@@ -1207,7 +1208,8 @@ function getRegulatorProfile(code: string): RegulatorProfile {
               "**US Banking Dominance:** OCC-supervised institutions hold $16T assets—world's largest supervised banking concentration, establishing de facto global benchmarks for risk management, BSA/AML, operational resilience. **Basel III:** OCC serves on Basel Committee; July 2023 'Basel III Endgame' affects international banks with US operations and influences G20 capital adequacy interpretation. **Cross-Border:** UK/EU banks with US federal branches (49 supervised) face direct OCC oversight. **Enforcement Precedents:** TD Bank $3.1B BSA (largest in history) signals global AML enforcement direction—FCA, ECB, FINMA studying for lessons. **Correspondent Banking:** International banks using US correspondents must ensure counterparty AML adequacy. **Forward Intelligence:** Semiannual Risk Perspectives identify risks 6-12 months before UK/EU supervisory priorities.",
           },
           {
-            question: "How does OCC compare to UK PRA and EU ECB Banking Supervision?",
+            question:
+              "How does OCC compare to UK PRA and EU ECB Banking Supervision?",
             answer:
               "**OCC vs PRA:** OCC combines prudential + conduct (BSA/AML, consumer protection); PRA focuses prudential (FCA handles conduct). OCC: 1,040 institutions, $16T; PRA: all UK deposit-takers. OCC has chartering authority; PRA does not. Both risk-based with tiers (OCC: Large/Global, Regional, Community; PRA: Cat 1-4). **OCC vs ECB:** ECB supervises significant institutions >€30B (117 SIs, ~€26T); OCC all national banks regardless of size. ECB uses Joint Supervisory Teams; OCC dedicated exam teams (large) or periodic exams. ECB prioritizes NPL reduction, climate, digitalization; OCC prioritizes BSA/AML, CRE, cybersecurity, third-party risk. **Geography:** OCC covers US federal banks; PRA covers UK; ECB covers 21 Euro Area countries.",
           },
@@ -1300,7 +1302,8 @@ function getRegulatorProfile(code: string): RegulatorProfile {
         ],
         signals: [
           {
-            title: "AML/CFT Continuous Monitoring—Zero Tolerance for Multi-Year Gaps",
+            title:
+              "AML/CFT Continuous Monitoring—Zero Tolerance for Multi-Year Gaps",
             detail:
               "HK$27M+ 2024 penalties: DBS HK$10M (2012-2019), Hua Nan HK$9M (2012-2018), China CITIC HK$4M (2015-2018 detection rule errors), Fubon HK$4M (2019-2022). Supervisory intolerance for systematic monitoring gaps spanning multi-year periods. Key themes: transaction monitoring configuration errors sanctionable even when money laundering not proven (China CITIC), risk-based enhanced due diligence required for PEPs/cross-border (DBS), CDD refresh on time intervals + events (Fubon), prompt SAR filing (Hua Nan). HKMA doubled on-site AML examinations 2024, AI feasibility studies deadline March 2025. Watch for escalating penalties when gaps persist 3+ years.",
           },
@@ -1534,7 +1537,8 @@ function getRegulatorProfile(code: string): RegulatorProfile {
         ],
         signals: [
           {
-            title: "M&A Insider Trading Crackdown & Regulatory Insider Prosecutions",
+            title:
+              "M&A Insider Trading Crackdown & Regulatory Insider Prosecutions",
             detail:
               "3 of 7 criminal cases in FY2024 involved tender offer violations—corporate officers, negotiating parties, tippees prosecuted. December 2024 criminal charges against FSA official and Tokyo Stock Exchange employee demonstrate zero tolerance extends to regulatory insiders. Pattern: SESC aggressively investigates information flows during Japanese corporate transactions, particularly tender offers. Compliance implication: Enhanced information barriers, trading restrictions required for Japan-related M&A. 2023 extraterritorial cases (ZOZO, Pacific Metals) show IOSCO cooperation enables cross-border investigations.",
           },
@@ -1556,7 +1560,8 @@ function getRegulatorProfile(code: string): RegulatorProfile {
         ],
         faqs: [
           {
-            question: "How does SESC differ from FSA in Japan's two-stage enforcement?",
+            question:
+              "How does SESC differ from FSA in Japan's two-stage enforcement?",
             answer:
               "SESC investigates and recommends, FSA decides and punishes—separation established 1992 following securities scandals to ensure market surveillance independence. SESC has no direct penalty power but possesses criminal investigation powers (court-authorized search/seizure under FIEA Article 211), referring severe cases to public prosecutor. FSA conducts administrative trial via independent examiners, issues final payment orders. For monitoring: track SESC recommendations (enforcement initiated, legal interpretation) and FSA orders (final penalties). Transparency advantage: SESC recommendations publicly disclosed before FSA trials.",
           },
@@ -1620,7 +1625,8 @@ function getRegulatorProfile(code: string): RegulatorProfile {
         ],
         signals: [
           {
-            title: "VASP Local Presence & Criminal Penalties (Nov 30, 2024 Deadline)",
+            title:
+              "VASP Local Presence & Criminal Penalties (Nov 30, 2024 Deadline)",
             detail:
               "FSC accelerated VASP registration to November 30, 2024 (from January 2025). July 2024 MLCA amendments: offshore operators must establish Taiwan local presence or cease operations. Criminal penalties NT$5M + imprisonment for unregistered activity. Hard jurisdictional enforcement vs voluntary registration (UK FCA phased authorization). Watch Q1 2025 enforcement against offshore operators continuing Taiwan service without registration—likely sets Asia Pacific precedent for extra-territorial crypto AML. MaiCoin, BitoPro enforcement demonstrates willingness to sanction non-compliant exchanges.",
           },
@@ -1647,7 +1653,8 @@ function getRegulatorProfile(code: string): RegulatorProfile {
               "Three cross-border exposures: (1) **VASP Jurisdiction**: November 2024 deadline + criminal penalties + local presence applies to ANY offshore crypto operator serving Taiwan customers—UK firms with Asia Pacific crypto services must verify registration. (2) **IOSCO Cooperation**: FSC participates in multilateral MoU with 130+ authorities; cross-border market abuse findings can trigger FCA parallel enforcement. (3) **Regulatory Preview**: Taiwan's compressed VASP timeline, full-market ESG reporting demonstrate rapid implementation of frameworks other jurisdictions debate—provides 6-18 month early warning for digital assets, climate disclosure.",
           },
           {
-            question: "How do Taiwan's and UK's climate disclosure frameworks differ?",
+            question:
+              "How do Taiwan's and UK's climate disclosure frameworks differ?",
             answer:
               "Taiwan: TCFD-aligned for ALL listed companies (2025) with 'comply or explain'—phased quality improvement vs UK's binary mandatory compliance. Key differences: (1) **Scope**: Taiwan ALL listed companies; UK premium-listed commercial, banks, insurers. (2) **Enforcement**: Taiwan progressive strengthening; UK full compliance day one. (3) **GHG**: Taiwan annual emissions (August 31); UK emissions under existing frameworks, no specific TCFD deadline. Taiwan offers pragmatic template for ambitious scope without prohibitive burden—watch FSC 2025 enforcement for phased rollout lessons.",
           },
@@ -1706,12 +1713,14 @@ function getRegulatorProfile(code: string): RegulatorProfile {
         ],
         signals: [
           {
-            title: "Americanas R$20B Scandal—Multi-Year Corporate Fraud Pursuit",
+            title:
+              "Americanas R$20B Scandal—Multi-Year Corporate Fraud Pursuit",
             detail:
               "CVM investigation into R$20B (~$4B USD) undisclosed liabilities at retailer Americanas: October 2024 insider trading accusations against eight executives including CEO Miguel Gutierrez, December 2024 R$340,000 fine against CEO João Guerra for conference call disclosure failures. Scandal triggered 90%+ market collapse, bankruptcy. Multi-year investigation demonstrates persistence for complex accounting fraud. Signals priorities: disclosure accuracy at systemically important companies, insider trading during corporate distress, C-suite accountability for misstatements. Administrative proceedings ongoing—watch for final sanctions 2025-2026.",
           },
           {
-            title: "ISSB IFRS S1/S2—Mandatory January 2026, First Major Jurisdiction",
+            title:
+              "ISSB IFRS S1/S2—Mandatory January 2026, First Major Jurisdiction",
             detail:
               "CVM Resolution 193 (October 2023) adopted ISSB IFRS S1 (general sustainability), S2 (climate) with mandatory compliance January 2026 for publicly held companies, investment funds, securitization companies. October 2024 Resolutions 217, 218, 219: governance, strategy, climate risks, GHG emissions, targets, third-party assurance detailed. CVM-CDP partnership: regulatory access to 1,100 companies (86% market cap). Non-compliance exposes firms to enforcement—first test of ISSB standards in major jurisdiction. Watch Q2-Q3 2026 for inaugural actions against incomplete/late filings.",
           },
@@ -1733,7 +1742,8 @@ function getRegulatorProfile(code: string): RegulatorProfile {
               "Three cross-border implications: (1) **ISSB Precedent**: Brazil's January 2026 mandatory IFRS S1/S2 makes CVM first major regulator enforcing ISSB standards—implementation lessons applicable to UK, Singapore, Hong Kong considering ISSB frameworks. (2) **IOSCO Cooperation**: CVM Enhanced MMoU enables coordination with 130+ authorities including FCA; cross-border market abuse investigations can trigger parallel UK enforcement. (3) **Emerging Market Benchmark**: Brazil corporate governance, disclosure, insider trading trends preview regional LATAM approaches—CVM provides benchmark for LATAM exposure beyond Brazil.",
           },
           {
-            question: "How do CVM's ISSB and ESMA's CSRD sustainability reporting differ?",
+            question:
+              "How do CVM's ISSB and ESMA's CSRD sustainability reporting differ?",
             answer:
               "CVM: IFRS S1/S2 (ISSB international standards). ESMA: CSRD with ESRS (EU-specific standards). Key differences: (1) **Standard**: CVM international ISSB; ESMA EU double materiality ESRS. (2) **Scope**: CVM all publicly held companies/funds/securitization (January 2026); ESMA phases large 2024, SMEs 2026. (3) **Assurance**: ESMA limited initially (reasonable later); CVM TBD. (4) **Design**: ISSB global convergence; ESRS EU policy (taxonomy, Just Transition). Firms in both jurisdictions: dual reporting requires mapping ISSB ↔ ESRS frameworks.",
           },
@@ -1797,7 +1807,8 @@ function getRegulatorProfile(code: string): RegulatorProfile {
               "CNBV imposed MXN 185M ($9.8M) fines: Intercam MXN 92.15M (26 fines), CIBanco MXN 66.61M (20 fines), Vector MXN 26.46M (6 fines) for AML administrative process failures following U.S. Treasury sanctions. CNBV assumed temporary management CIBanco and Intercam—extraordinary intervention demonstrating zero tolerance for U.S. sanctions exposure. Signals: (1) FinCEN-CNBV information sharing operational, (2) U.S. sanctions trigger Mexican regulatory action, (3) correspondent banking/cross-border payment AML heightened scrutiny. Temporary management escalation beyond monetary penalties—operational intervention risk. Watch additional enforcement against institutions with U.S. sanctions red flags 2025-2026.",
           },
           {
-            title: "License Revocation for Persistent Capital Deficiency (Dec 2024)",
+            title:
+              "License Revocation for Persistent Capital Deficiency (Dec 2024)",
             detail:
               "CNBV revoked SOFIPO (Financiera Auxi) operating license after 15 consecutive months capitalization non-compliance. Most severe sanction—operational shutdown. 15-month tolerance demonstrates remediation opportunity, but ultimate unwillingness to accept persistent non-compliance. Systemically Important Banks face higher capital ratios phasing 2025. Signals: capital management top supervisory priority, persistent adequacy issues = existential risk. Watch heightened capital enforcement 2025 as Basel III completes.",
           },
@@ -1819,7 +1830,8 @@ function getRegulatorProfile(code: string): RegulatorProfile {
               "Four cross-border exposures: (1) **USMCA**: Chapter 17 harmonizes U.S.-Mexico-Canada financial services—Mexican subsidiaries face identical CNBV standards with group-wide control implications. (2) **Fintech Leadership**: 1,000+ providers pioneer frameworks (crypto licensing, open banking, sandbox) influencing UK FCA, Brazil CVM digital financial services approaches. (3) **U.S. AML Cooperation**: MXN 185M penalties + temporary management demonstrate FinCEN-CNBV coordination—correspondent banking/payment corridors face joint U.S.-Mexico AML enforcement exposure. (4) **Regional Preview**: CNBV frameworks signal LATAM supervisory direction given Mexico's economic/regulatory leadership.",
           },
           {
-            question: "How does CNBV's temporary management differ from standard enforcement?",
+            question:
+              "How does CNBV's temporary management differ from standard enforcement?",
             answer:
               "Temporary management represents extraordinary intervention beyond monetary penalties—CNBV assumes operational control of institution (CIBanco, Intercam 2025 for AML failures following U.S. Treasury sanctions). Standard enforcement: fines, remediation orders, activity restrictions while institution maintains management. Temporary management: CNBV appoints administrators, directs operations, suspends board/executives until deficiencies resolved or orderly wind-down completed. Signals: zero tolerance for severe AML/sanctions exposure, operational intervention risk beyond fines, escalation pathway if monetary penalties insufficient. Watch for application to capital adequacy failures (SOFIPO license revocation demonstrates similar existential enforcement approach).",
           },
@@ -1894,12 +1906,14 @@ function getRegulatorProfile(code: string): RegulatorProfile {
         ],
         faqs: [
           {
-            question: "How does CMF's UF (Unidad de Fomento) penalty system work?",
+            question:
+              "How does CMF's UF (Unidad de Fomento) penalty system work?",
             answer:
               "CMF measures penalties in Unidades de Fomento (UF), inflation-indexed units adjusted daily per Consumer Price Index. 1 UF ≈ $40 USD (March 2025), so UF 10,000 = $400,000. System ensures economic deterrent maintained regardless of peso devaluation/inflation. Simplified procedures: up to UF 700 (~$28,000). Ordinary procedures: UF 60,000+ (LarrainVial $2.4M). **Practical implications:** (1) Inflation protection unlike fixed-currency fines, (2) Proportional calibration to firm size/violation, (3) Transparent historical comparison via standardized values. CMF uses UF for capital requirements, technical reserves, regulatory metrics. International firms: budgeting requires accounting for peso-dollar exchange AND CPI movements.",
           },
           {
-            question: "Why monitor CMF for Latin American regulatory direction?",
+            question:
+              "Why monitor CMF for Latin American regulatory direction?",
             answer:
               "CMF participates in IOSCO, ASBA (Association of Banking Supervisors of the Americas), IAIS, Basel Committee—positioning Chile as LATAM standard-setter. 2024-2025 priorities often preview regional approaches: (1) Open Finance System implementation (broader LATAM adoption likely), (2) Basel III capital standards (75% December 2024 phase-in), (3) parametric insurance regulation (innovative framework). CMF's integrated supervision model (2019, banking/securities/insurance consolidation) influences regional consolidation debates. Firms with LATAM strategies: CMF enforcement themes (fund valuation, insider trading, reporting) signal emerging regional priorities at CVM (Brazil), CNBV (Mexico), Superfinanciera (Colombia). IOSCO cooperation enables cross-border information sharing—CMF findings can inform peer regulator investigations.",
           },
@@ -1980,12 +1994,14 @@ function getRegulatorProfile(code: string): RegulatorProfile {
         ],
         faqs: [
           {
-            question: "How do FDIC, OCC, and Federal Reserve banking supervision differ?",
+            question:
+              "How do FDIC, OCC, and Federal Reserve banking supervision differ?",
             answer:
               "U.S. 'dual banking system' by charter/membership: (1) **OCC**: Nationally-chartered banks and federal savings associations (~1,000 institutions)—'National Association' or 'N.A.' in name signals OCC supervision. (2) **Federal Reserve**: State-chartered banks joining Federal Reserve System PLUS ALL bank holding companies—holding company authority makes Federal Reserve consolidated supervisor for largest institutions. (3) **FDIC**: State-chartered banks NOT in Federal Reserve System (~3,200 institutions)—state banks choosing non-membership get FDIC federal supervision. Jurisdictions rarely overlap: state banks choose membership (Federal Reserve) or not (FDIC); national banks always OCC. All maintain FDIC deposit insurance, but examination authority distinct.",
           },
           {
-            question: "Why monitor FDIC for BaaS/fintech partnership compliance?",
+            question:
+              "Why monitor FDIC for BaaS/fintech partnership compliance?",
             answer:
               "Feb-May 2024 consent orders against Piermont, Sutton, Thread, Lineage Banks demonstrate FDIC BaaS enforcement intensity. Common deficiencies: inadequate third-party risk management, insufficient fintech partner monitoring, weak information systems aggregating partner activity, unclear outsourced function accountability. June 2023 Interagency Guidance (FDIC, OCC, Federal Reserve) requires sound third-party risk management across lifecycle. Third-party complaints up 13% (116 violations 2024). UK firms partnering with U.S. banks for payments, lending, card issuance should validate partner bank framework—particularly state non-members under direct FDIC supervision. Request: third-party policies, recent examination findings, remediation status.",
           },
@@ -2065,12 +2081,14 @@ function getRegulatorProfile(code: string): RegulatorProfile {
         ],
         faqs: [
           {
-            question: "How do Federal Reserve, OCC, and FDIC supervision differ?",
+            question:
+              "How do Federal Reserve, OCC, and FDIC supervision differ?",
             answer:
               "U.S. banking divides by charter and structure: **OCC** supervises nationally-chartered banks (~1,000 institutions with 'N.A.' in name). **FDIC** supervises state non-member banks (~3,200 institutions) plus deposit insurance. **Federal Reserve** supervises state member banks PLUS ALL bank holding companies regardless of subsidiary charter. Large banks face multiple regulators: subsidiary examined by OCC/FDIC for safety/soundness, holding company by Federal Reserve for consolidated supervision. Federal Reserve's unique holding company authority makes it consolidated supervisor for 8 G-SIBs (JPMorgan Chase, Bank of America, Citigroup, Wells Fargo, Goldman Sachs, Morgan Stanley, BNY Mellon, State Street) conducting capital planning, stress testing, resolution planning at enterprise level.",
           },
           {
-            question: "Why monitor Federal Reserve if my firm isn't a U.S. bank?",
+            question:
+              "Why monitor Federal Reserve if my firm isn't a U.S. bank?",
             answer:
               "Federal Reserve enforcement reveals group-wide control expectations at G-SIBs with UK operations. Citigroup $60.6M (data quality/risk governance) concurrent with OCC $75M against Citibank demonstrates parent holding company + subsidiary parallel enforcement. JPMorgan, Bank of America, Goldman Sachs, Morgan Stanley operate in London—Federal Reserve operational resilience, capital planning, liquidity standards apply enterprise-wide. UK firms with U.S. intermediate holding companies (IHC requirement for foreign banks >$50B assets) face direct Federal Reserve supervision. BSA/AML patterns, capital stress testing, technology risk themes preview global regulatory direction 6-12 months before FCA/ECB enforcement.",
           },
@@ -2129,12 +2147,14 @@ function getRegulatorProfile(code: string): RegulatorProfile {
         ],
         signals: [
           {
-            title: "Evergrande ¥4.18B Revenue Inflation & Auditor Accountability",
+            title:
+              "Evergrande ¥4.18B Revenue Inflation & Auditor Accountability",
             detail:
               "May 2024 CSRC fined Hengda Real Estate Group ¥4.18B ($577M) for inflating revenue ¥564B across 2019-2020 (50-78.5% overstatement), failure to disclose annual results, lawsuits, debts. Founder Hui Ka Yan: ¥47M fine + lifetime market ban. PwC: ¥400M penalty, 6-month ban for inadequate audit. Strictest China bond market penalty. Demonstrates: zero-tolerance for systemic disclosure fraud, C-suite accountability (lifetime bans), gatekeeper enforcement (auditor penalties). Corporate governance, financial statement accuracy, related-party disclosure top priorities. Watch property sector, systemically important company enforcement 2025-2026.",
           },
           {
-            title: "Quantitative Trading Regulation & Insider Trading Crackdown",
+            title:
+              "Quantitative Trading Regulation & Insider Trading Crackdown",
             detail:
               "October 2024 CSRC implemented 'reporting before trading'—algorithmic traders must disclose account, financial, trade, software information before deployment. Addresses HFT risks, algorithmic manipulation, flash crash vulnerabilities. Unprecedented proprietary strategy transparency. May 2024 insider trading crackdown: 50+ arrests, cases exceeding ¥9B. Signals: (1) algorithmic trading heightened scrutiny, (2) HFT market manipulation enforcement priority, (3) exchange operational resilience protection. Watch enforcement against non-compliant quant funds, proprietary desks 2025.",
           },
@@ -2151,12 +2171,14 @@ function getRegulatorProfile(code: string): RegulatorProfile {
         ],
         faqs: [
           {
-            question: "Why monitor CSRC if my firm doesn't have China operations?",
+            question:
+              "Why monitor CSRC if my firm doesn't have China operations?",
             answer:
               "Four cross-border exposures: (1) **Overseas Listing Intermediaries**: UK investment banks underwriting Chinese IPOs in London/New York/Hong Kong must comply with CSRC filing (10-day sponsor filing, January 31 annual reports)—Evergrande ¥4.18B demonstrates reputational risk. (2) **FCA-CSRC MoU**: Cross-border surveillance coordination enables information sharing; CSRC market abuse findings can trigger parallel FCA investigations. (3) **Supply Chain Risk**: Major corporate fraud (Evergrande ¥564B revenue inflation) triggers defaults affecting UK firms with China subsidiaries/JVs/suppliers. (4) **MRF Cross-Border Funds**: UK asset managers distributing via Mutual Recognition of Funds face CSRC oversight. 2024 enforcement doubling (¥15.3B, 739 cases) elevates all exposures.",
           },
           {
-            question: "How does CSRC's quantitative trading regulation compare to UK approaches?",
+            question:
+              "How does CSRC's quantitative trading regulation compare to UK approaches?",
             answer:
               "CSRC's October 2024 'reporting before trading' framework requires unprecedented algorithmic strategy transparency (account, financial, trade, software information disclosure before deployment) addressing HFT risks. UK FCA currently uses MiFID II transaction reporting, algorithm testing/monitoring requirements, but no pre-deployment strategy disclosure. CSRC approach more prescriptive than UK principles-based regime. May preview EU ESMA, UK FCA evolution toward algorithmic transparency as HFT market manipulation concerns grow. China enforcement against non-compliant quant funds 2025 will test framework effectiveness—watch for lessons applicable to UK HFT oversight.",
           },
@@ -2366,7 +2388,7 @@ function getRegulatorProfile(code: string): RegulatorProfile {
               "Three channels: (1) **Enforcement Cases (fma.govt.nz/about-us/enforcement/cases):** Searchable database with case summaries, outcomes, penalties. (2) **Media Releases (fma.govt.nz/news/all-releases/media-releases):** Individual case announcements (Cigna NZ$3.5M, Vero NZ$3.9M, Oceania Natural NZ$2.17M). (3) **FMA Outlook (annual):** Strategic priorities, enforcement themes. Effective coverage: quarterly Enforcement Cases review + annual Outlook analysis. CoFI regime (March 2025) creates new guidance publications—monitor for Fair Conduct Programme interpretation.",
           },
         ],
-        officialSources: [
+        sourceLinks: [
           {
             label: "FMA Enforcement Cases Database",
             url: "https://www.fma.govt.nz/about-us/enforcement/cases/",
@@ -2466,7 +2488,7 @@ function getRegulatorProfile(code: string): RegulatorProfile {
               "Three channels: (1) **CMA News (cma.gov.sa/en/MediaCenter/NEWS):** Individual case announcements with penalties, violation summaries (SAR 11.1M social media manipulation, SAR 4.8M insider trading). (2) **CMA Annual Report (cma.gov.sa):** Aggregate statistics (171 decisions, SAR 389M compensation 2024), strategic priorities. (3) **Vision 2030 FSDP Updates (vision2030.gov.sa):** Financial Sector Development Program annual reports—pipeline visibility for opportunities. Effective coverage: quarterly CMA News review + annual report analysis + FSDP tracking for strategic context. Monitor IOSCO committee outputs where CMA participates for regulatory direction.",
           },
         ],
-        officialSources: [
+        sourceLinks: [
           {
             label: "CMA Enforcement Announcements",
             url: "https://cma.gov.sa/en/MediaCenter/NEWS",
@@ -2598,7 +2620,7 @@ function buildStructuredArticle(code: string): StructuredRegulatorArticle {
     signals: profile.signals,
     boardQuestions: profile.boardQuestions,
     takeaways: profile.takeaways,
-    sourceLinks: coverage.officialSources,
+    sourceLinks: profile.sourceLinks ?? coverage.officialSources,
     relatedLinks: profile.crossLinks,
     faqs: profile.faqs,
   };
