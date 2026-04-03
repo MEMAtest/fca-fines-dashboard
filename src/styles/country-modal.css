@@ -1,0 +1,329 @@
+/* Country Modal Styles */
+
+.country-modal-container {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1001;
+  padding: 1rem;
+  pointer-events: none;
+}
+
+.country-modal {
+  background: white;
+  border-radius: 16px;
+  width: 520px;
+  max-width: 92vw;
+  max-height: 85vh;
+  overflow-y: auto;
+  box-shadow:
+    0 25px 60px rgba(0, 0, 0, 0.15),
+    0 10px 24px rgba(0, 0, 0, 0.08);
+  border: 1px solid #e5e7eb;
+  pointer-events: auto;
+}
+
+/* Custom scrollbar */
+.country-modal::-webkit-scrollbar {
+  width: 6px;
+}
+
+.country-modal::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.country-modal::-webkit-scrollbar-thumb {
+  background: rgba(13, 148, 136, 0.25);
+  border-radius: 3px;
+}
+
+.country-modal::-webkit-scrollbar-thumb:hover {
+  background: rgba(13, 148, 136, 0.4);
+}
+
+/* Header */
+.country-modal__header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  padding: 1.5rem 1.75rem;
+  border-bottom: 1px solid #e5e7eb;
+  background: linear-gradient(135deg, #f8fafb, #f0fdf9);
+  border-radius: 16px 16px 0 0;
+}
+
+.country-modal__title {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #111827;
+  margin: 0;
+  line-height: 1.2;
+}
+
+.country-modal__subtitle {
+  font-size: 0.8125rem;
+  color: #6b7280;
+  margin: 0.25rem 0 0;
+  font-weight: 500;
+}
+
+.country-modal__close {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  border: none;
+  color: #9ca3af;
+  cursor: pointer;
+  padding: 0.375rem;
+  border-radius: 8px;
+  transition: all 0.15s ease;
+  flex-shrink: 0;
+  margin-top: 0.125rem;
+}
+
+.country-modal__close:hover {
+  background: rgba(0, 0, 0, 0.06);
+  color: #374151;
+}
+
+/* Summary stats row */
+.country-modal__stats {
+  display: flex;
+  gap: 0.75rem;
+  padding: 1.25rem 1.75rem;
+  border-bottom: 1px solid #f3f4f6;
+}
+
+.stat-card {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.875rem 0.75rem;
+  background: #f8fafb;
+  border: 1px solid #e5e7eb;
+  border-radius: 10px;
+}
+
+.stat-card__label {
+  font-size: 0.6875rem;
+  font-weight: 600;
+  color: #6b7280;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.stat-card__value {
+  font-size: 1.375rem;
+  font-weight: 700;
+  color: #0d9488;
+  font-variant-numeric: tabular-nums;
+}
+
+/* Regulators section */
+.country-modal__regulators {
+  padding: 1.25rem 1.75rem;
+}
+
+.country-modal__regulators h3 {
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: #6b7280;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin: 0 0 0.875rem;
+}
+
+.regulator-cards {
+  display: flex;
+  flex-direction: column;
+  gap: 0.625rem;
+}
+
+/* Individual regulator card */
+.regulator-card {
+  background: white;
+  border: 1px solid #e5e7eb;
+  border-radius: 10px;
+  padding: 1rem 1.125rem;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.regulator-card:hover {
+  border-color: #d1d5db;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+}
+
+.regulator-card__header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.25rem;
+}
+
+.regulator-card__code {
+  font-size: 0.9375rem;
+  font-weight: 700;
+  color: #111827;
+  letter-spacing: 0.02em;
+}
+
+.regulator-card__count {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #0d9488;
+  background: rgba(13, 148, 136, 0.08);
+  padding: 0.2rem 0.6rem;
+  border-radius: 6px;
+  font-variant-numeric: tabular-nums;
+}
+
+.regulator-card__name {
+  font-size: 0.8125rem;
+  color: #6b7280;
+  margin: 0 0 0.5rem;
+  line-height: 1.4;
+}
+
+.regulator-card__fines {
+  display: flex;
+  gap: 1rem;
+  margin-bottom: 0.625rem;
+  padding: 0.5rem 0.625rem;
+  background: #f8fafb;
+  border-radius: 6px;
+}
+
+.regulator-card__fine-item {
+  display: flex;
+  flex-direction: column;
+  gap: 0.125rem;
+}
+
+.regulator-card__fine-label {
+  font-size: 0.625rem;
+  font-weight: 600;
+  color: #9ca3af;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.regulator-card__fine-value {
+  font-size: 0.9375rem;
+  font-weight: 700;
+  color: #111827;
+  font-variant-numeric: tabular-nums;
+}
+
+.regulator-card__link {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: #0d9488;
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  transition: color 0.15s ease;
+}
+
+.regulator-card__link:hover {
+  color: #0f766e;
+}
+
+.regulator-card__link svg {
+  flex-shrink: 0;
+}
+
+/* Footer CTA */
+.country-modal__footer {
+  padding: 1rem 1.75rem 1.5rem;
+  border-top: 1px solid #f3f4f6;
+}
+
+.btn--primary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  width: 100%;
+  padding: 0.75rem 1.25rem;
+  font-size: 0.9375rem;
+  font-weight: 600;
+  color: white;
+  background: #0d9488;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 1px 3px rgba(13, 148, 136, 0.2);
+}
+
+.btn--primary:hover {
+  background: #0f766e;
+  box-shadow: 0 4px 12px rgba(13, 148, 136, 0.3);
+  transform: translateY(-1px);
+}
+
+.btn--primary:active {
+  transform: translateY(0);
+}
+
+/* Responsive */
+@media (max-width: 640px) {
+  .country-modal-container {
+    align-items: flex-end;
+    padding: 0;
+  }
+
+  .country-modal {
+    width: 100%;
+    max-width: 100%;
+    max-height: 90vh;
+    border-radius: 12px 12px 0 0;
+  }
+
+  .country-modal__header {
+    padding: 1.25rem 1.25rem;
+    border-radius: 12px 12px 0 0;
+  }
+
+  .country-modal__title {
+    font-size: 1.25rem;
+  }
+
+  .country-modal__stats {
+    padding: 1rem 1.25rem;
+  }
+
+  .stat-card {
+    padding: 0.75rem 0.5rem;
+  }
+
+  .stat-card__value {
+    font-size: 1.125rem;
+  }
+
+  .country-modal__regulators {
+    padding: 1rem 1.25rem;
+  }
+
+  .regulator-card {
+    padding: 0.875rem 1rem;
+  }
+
+  .regulator-card__fines {
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+
+  .country-modal__footer {
+    padding: 0.875rem 1.25rem 1.25rem;
+  }
+}

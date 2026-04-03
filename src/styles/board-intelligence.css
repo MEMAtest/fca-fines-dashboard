@@ -648,6 +648,11 @@
   display: block;
 }
 
+.board-intelligence__signal-mark {
+  display: inline-flex !important;
+  align-items: center;
+}
+
 .board-intelligence__exposure-header p {
   margin: 0.15rem 0 0;
   font-size: 0.88rem;

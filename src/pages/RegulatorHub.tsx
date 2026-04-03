@@ -12,6 +12,7 @@ import {
   isValidRegulatorCode,
 } from "../data/regulatorCoverage.js";
 import { DataCoverageNotice } from "../components/DataCoverageNotice.js";
+import RegulatorMark from "../components/RegulatorMark.js";
 import { useUnifiedData } from "../hooks/useUnifiedData.js";
 import { useSEO, injectStructuredData } from "../hooks/useSEO.js";
 import "../styles/regulator-hub.css";
@@ -204,7 +205,15 @@ export function RegulatorHub() {
 
         <div className="regulator-hub__title-row">
           <div>
-            <div className="regulator-hub__flag">{coverage.flag}</div>
+            <div className="regulator-hub__flag">
+              <RegulatorMark
+                regulator={coverage.code}
+                label={coverage.fullName}
+                country={coverage.country}
+                size="large"
+                decorative
+              />
+            </div>
             <h1 className="regulator-hub__title">{coverage.fullName}</h1>
             <p className="regulator-hub__subtitle">
               {coverage.country} • {coverage.code}

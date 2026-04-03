@@ -198,6 +198,16 @@ const BoardIntelligence = lazyPage(() =>
     default: module.BoardIntelligence,
   })),
 );
+const Roadmap = lazyPage(() =>
+  import("./pages/Roadmap.js").then((module) => ({
+    default: module.Roadmap,
+  })),
+);
+const Features = lazyPage(() =>
+  import("./pages/Features.js").then((module) => ({
+    default: module.Features,
+  })),
+);
 
 const router = createBrowserRouter([
   {
@@ -251,6 +261,48 @@ const router = createBrowserRouter([
             }
           >
             <BoardIntelligence />
+          </Suspense>
+        ),
+      },
+      {
+        path: "/roadmap",
+        element: (
+          <Suspense
+            fallback={
+              <div
+                style={{
+                  minHeight: "100vh",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                }}
+              >
+                Loading roadmap...
+              </div>
+            }
+          >
+            <Roadmap />
+          </Suspense>
+        ),
+      },
+      {
+        path: "/features",
+        element: (
+          <Suspense
+            fallback={
+              <div
+                style={{
+                  minHeight: "100vh",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                }}
+              >
+                Loading features...
+              </div>
+            }
+          >
+            <Features />
           </Suspense>
         ),
       },

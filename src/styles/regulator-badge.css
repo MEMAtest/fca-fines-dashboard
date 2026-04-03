@@ -1,51 +1,290 @@
-/* RegulatorBadge Component Styles */
+/* Shared regulator mark and badge styles */
+
+.regulator-mark {
+  --regulator-ink: #1f2937;
+  --regulator-surface: #e5e7eb;
+  --regulator-ring: #cbd5e1;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  min-width: 0;
+}
+
+.regulator-mark__icon {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  border-radius: 1rem;
+  background:
+    radial-gradient(circle at 28% 24%, rgba(255, 255, 255, 0.9), transparent 42%),
+    linear-gradient(
+      145deg,
+      color-mix(in srgb, var(--regulator-surface) 82%, white 18%),
+      color-mix(in srgb, var(--regulator-surface) 88%, var(--regulator-ring) 12%)
+    );
+  color: var(--regulator-ink);
+  border: 1px solid color-mix(in srgb, var(--regulator-ring) 72%, white 28%);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.55),
+    0 10px 18px rgba(15, 23, 42, 0.08);
+  overflow: hidden;
+}
+
+.regulator-mark__icon--light-box {
+  background: rgba(255, 255, 255, 0.96);
+}
+
+.regulator-mark__image {
+  display: block;
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+}
+
+.regulator-mark__sigil {
+  position: relative;
+  width: 74%;
+  height: 74%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.regulator-mark__sigil-orbit,
+.regulator-mark__sigil-core,
+.regulator-mark__sigil-beam,
+.regulator-mark__sigil-spark {
+  position: absolute;
+  display: block;
+}
+
+.regulator-mark__sigil-orbit {
+  inset: 16%;
+  border-radius: 999px;
+  border: 1.4px solid color-mix(in srgb, var(--regulator-ink) 28%, white 72%);
+  background: rgba(255, 255, 255, 0.22);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.35);
+}
+
+.regulator-mark__sigil-core {
+  width: 28%;
+  height: 28%;
+  left: 36%;
+  top: 36%;
+  border-radius: 999px;
+  background: var(--regulator-ink);
+  box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.72);
+}
+
+.regulator-mark__sigil-beam {
+  left: 18%;
+  right: 18%;
+  top: calc(50% - 1px);
+  height: 2px;
+  border-radius: 999px;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    color-mix(in srgb, var(--regulator-ink) 55%, white 45%) 20%,
+    var(--regulator-ink) 50%,
+    color-mix(in srgb, var(--regulator-ink) 55%, white 45%) 80%,
+    transparent 100%
+  );
+  opacity: 0.88;
+  transform-origin: center;
+}
+
+.regulator-mark__sigil-spark {
+  width: 11%;
+  height: 11%;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--regulator-ink) 72%, white 28%);
+  box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.55);
+}
+
+.regulator-mark__sigil-spark--a {
+  top: 12%;
+  right: 18%;
+}
+
+.regulator-mark__sigil-spark--b {
+  bottom: 16%;
+  left: 20%;
+  width: 9%;
+  height: 9%;
+}
+
+.regulator-mark__sigil--1 .regulator-mark__sigil-beam {
+  transform: rotate(32deg);
+}
+
+.regulator-mark__sigil--1 .regulator-mark__sigil-spark--a {
+  top: 17%;
+  left: 18%;
+  right: auto;
+}
+
+.regulator-mark__sigil--1 .regulator-mark__sigil-spark--b {
+  bottom: 14%;
+  right: 20%;
+  left: auto;
+}
+
+.regulator-mark__sigil--2 .regulator-mark__sigil-beam {
+  transform: rotate(90deg);
+}
+
+.regulator-mark__sigil--2 .regulator-mark__sigil-spark--a {
+  top: 20%;
+  right: auto;
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+.regulator-mark__sigil--2 .regulator-mark__sigil-spark--b {
+  bottom: 18%;
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+.regulator-mark__sigil--3 .regulator-mark__sigil-beam {
+  transform: rotate(-28deg);
+}
+
+.regulator-mark__sigil--3 .regulator-mark__sigil-spark--a {
+  top: auto;
+  bottom: 16%;
+  right: 17%;
+}
+
+.regulator-mark__sigil--3 .regulator-mark__sigil-spark--b {
+  top: 17%;
+  left: 18%;
+  bottom: auto;
+}
+
+.regulator-mark__sigil--4 .regulator-mark__sigil-beam {
+  transform: scaleX(0.82);
+}
+
+.regulator-mark__sigil--4 .regulator-mark__sigil-orbit {
+  inset: 12%;
+  border-radius: 38%;
+}
+
+.regulator-mark__code {
+  color: inherit;
+  white-space: nowrap;
+  font-weight: 650;
+  letter-spacing: 0.01em;
+  text-transform: none;
+}
+
+.regulator-mark--small {
+  font-size: 0.75rem;
+}
+
+.regulator-mark--small .regulator-mark__icon {
+  width: 1.38rem;
+  height: 1.38rem;
+  padding: 0.14rem;
+}
+
+.regulator-mark--medium {
+  font-size: 0.875rem;
+}
+
+.regulator-mark--medium .regulator-mark__icon {
+  width: 1.95rem;
+  height: 1.95rem;
+  padding: 0.18rem;
+}
+
+.regulator-mark--large {
+  font-size: 1rem;
+}
+
+.regulator-mark--large .regulator-mark__icon {
+  width: 2.5rem;
+  height: 2.5rem;
+  padding: 0.22rem;
+}
+
+.regulator-mark--dark {
+  color: #f8fafc;
+}
+
+.regulator-mark--dark .regulator-mark__code {
+  color: #f8fafc;
+}
+
+.regulator-mark--dark .regulator-mark__icon {
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.14),
+    0 10px 18px rgba(2, 6, 23, 0.35);
+}
+
+.regulator-mark--official .regulator-mark__icon {
+  border-radius: 0.95rem;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.98), rgba(248, 250, 252, 0.94));
+  border-color: color-mix(in srgb, var(--regulator-ring) 60%, white 40%);
+}
+
+.regulator-mark--official.regulator-mark--medium .regulator-mark__icon {
+  width: 2.4rem;
+  height: 1.9rem;
+  padding: 0.22rem 0.28rem;
+}
+
+.regulator-mark--official.regulator-mark--large .regulator-mark__icon {
+  width: 3.05rem;
+  height: 2.35rem;
+  padding: 0.3rem 0.36rem;
+}
 
 .regulator-badge {
   display: inline-flex;
   align-items: center;
-  gap: 0.375rem;
-  border-radius: 0.375rem;
-  font-weight: 500;
-  transition: all 0.2s;
+  gap: 0.45rem;
+  border-radius: 999px;
+  border: 1px solid rgba(148, 163, 184, 0.28);
+  background: rgba(255, 255, 255, 0.92);
+  color: #0f172a;
+  font-weight: 600;
+  box-shadow: 0 8px 20px rgba(15, 23, 42, 0.06);
+  transition:
+    transform 0.18s ease,
+    box-shadow 0.18s ease,
+    border-color 0.18s ease;
 }
 
 .regulator-badge:hover {
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+  transform: translateY(-1px);
+  border-color: rgba(15, 23, 42, 0.16);
+  box-shadow: 0 10px 24px rgba(15, 23, 42, 0.08);
 }
 
 .regulator-badge--small {
   font-size: 0.75rem;
-  padding: 0.125rem 0.375rem;
+  padding: 0.18rem 0.45rem;
 }
 
 .regulator-badge--medium {
   font-size: 0.875rem;
-  padding: 0.25rem 0.5rem;
+  padding: 0.24rem 0.55rem;
 }
 
 .regulator-badge--large {
   font-size: 1rem;
-  padding: 0.375rem 0.75rem;
-}
-
-.regulator-badge__flag {
-  line-height: 1;
-}
-
-.regulator-badge__flag--small {
-  font-size: 0.75rem;
-}
-
-.regulator-badge__flag--medium {
-  font-size: 0.875rem;
-}
-
-.regulator-badge__flag--large {
-  font-size: 1rem;
+  padding: 0.35rem 0.7rem;
 }
 
 .regulator-badge__code {
-  font-weight: 600;
+  font-weight: 700;
+  letter-spacing: 0.01em;
 }
 
 .sr-only {

@@ -1,9 +1,10 @@
 import { Link } from "react-router-dom";
-import RegulatorBadge from "./RegulatorBadge.js";
+import RegulatorMark from "./RegulatorMark.js";
 
 interface RegulatorCardProps {
   code: string;
   name: string;
+  country?: string;
   coverage: string;
   primaryStatValue: number | string;
   primaryStatLabel: string;
@@ -18,6 +19,7 @@ interface RegulatorCardProps {
 export default function RegulatorCard({
   code,
   name,
+  country,
   coverage,
   primaryStatValue,
   primaryStatLabel,
@@ -31,7 +33,14 @@ export default function RegulatorCard({
   const content = (
     <>
       <div className="regulator-card__header">
-        <RegulatorBadge regulator={code} size="medium" />
+        <RegulatorMark
+          regulator={code}
+          label={name}
+          country={country}
+          size="medium"
+          showCode
+          decorative
+        />
         {badge ? <span className="regulator-card__badge">{badge}</span> : null}
       </div>
 

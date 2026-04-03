@@ -409,7 +409,7 @@ export function EnforcementSearch() {
                   <option value="">All Regulators</option>
                   {PUBLIC_REGULATOR_SHELL_ITEMS.map((reg) => (
                     <option key={reg.code} value={reg.code}>
-                      {reg.flag} {reg.code} - {reg.fullName}
+                      {reg.code} - {reg.fullName}
                     </option>
                   ))}
                 </select>

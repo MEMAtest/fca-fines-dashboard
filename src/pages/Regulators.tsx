@@ -126,6 +126,7 @@ export function Regulators() {
                   key={regulator.code}
                   code={regulator.code}
                   name={regulator.fullName}
+                  country={regulator.country}
                   coverage={regulator.years}
                   primaryStatValue={regulator.count}
                   primaryStatLabel="Actions tracked"
@@ -183,6 +184,7 @@ export function Regulators() {
                         key={regulator.code}
                         code={regulator.code}
                         name={regulator.fullName}
+                        country={regulator.country}
                         coverage={`${regulator.country} · ${regulator.sourceType === "sro" ? "Self-regulatory source" : "Official regulator source"}`}
                         primaryStatValue={`Tier ${regulator.priorityTier}`}
                         primaryStatLabel="Priority"

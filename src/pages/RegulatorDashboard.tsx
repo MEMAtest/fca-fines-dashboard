@@ -12,6 +12,7 @@ import { LatestNotices } from "../components/LatestNotices.js";
 import { LazyVisible } from "../components/LazyVisible.js";
 import { DashboardSkeleton } from "../components/LoadingSkeletons.js";
 import { Modal } from "../components/Modal.js";
+import RegulatorMark from "../components/RegulatorMark.js";
 import { TimelineChart } from "../components/TimelineChart.js";
 import { Toast } from "../components/Toast.js";
 import { TopFirms } from "../components/TopFirms.js";
@@ -791,7 +792,16 @@ export function RegulatorDashboard() {
         <div className="regulator-dashboard__hero-row">
           <div>
             <p className="regulator-dashboard__eyebrow">
-              {coverage.flag} {coverage.country} • {coverage.code}
+              <RegulatorMark
+                regulator={coverage.code}
+                label={coverage.fullName}
+                country={coverage.country}
+                size="small"
+                decorative
+              />{" "}
+              <span>
+                {coverage.country} • {coverage.code}
+              </span>
             </p>
             <h1 className="regulator-dashboard__title">
               {coverage.fullName} Dashboard

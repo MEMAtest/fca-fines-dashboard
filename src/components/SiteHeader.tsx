@@ -6,15 +6,16 @@ import {
   PUBLIC_REGULATOR_SHELL_ITEMS,
   type RegulatorShellNavItem,
 } from "../data/regulatorShellNav.js";
+import RegulatorMark from "./RegulatorMark.js";
 import "../styles/siteheader.css";
 
 const NAV_LINKS = [
   { to: "/", label: "Home" },
   { to: "/dashboard", label: "Dashboard" },
-  { to: "/board-pack", label: "Board Pack" },
-  { to: "/search", label: "Search" },
-  { to: "/topics", label: "Topics" },
+  { to: "/roadmap", label: "Roadmap" },
+  { to: "/features", label: "Features" },
   { to: "/blog", label: "Insights" },
+  { to: "/search", label: "Search" },
 ];
 
 function isNavActive(to: string, pathname: string) {
@@ -251,9 +252,14 @@ export function SiteHeader() {
                             }`}
                             onClick={closeRegulatorDropdown}
                           >
-                            <span className="site-header__dropdown-flag">
-                              {regulator.flag}
-                            </span>
+                            <RegulatorMark
+                              regulator={regulator.code}
+                              label={regulator.fullName}
+                              country={regulator.country}
+                              size="small"
+                              decorative
+                              className="site-header__dropdown-flag"
+                            />
                             <div>
                               <div
                                 className="site-header__dropdown-label"
@@ -372,12 +378,14 @@ export function SiteHeader() {
                           className={`site-header__mobile-regulator-link${isRegulatorActive(regulator.overviewPath, location.pathname) ? " site-header__mobile-regulator-link--active" : ""}`}
                           onClick={closeMobile}
                         >
-                          <span
+                          <RegulatorMark
+                            regulator={regulator.code}
+                            label={regulator.fullName}
+                            country={regulator.country}
+                            size="small"
+                            decorative
                             className="site-header__mobile-regulator-flag"
-                            aria-hidden="true"
-                          >
-                            {regulator.flag}
-                          </span>
+                          />
                           <span className="site-header__mobile-regulator-copy">
                             <span
                               className="site-header__mobile-regulator-code"

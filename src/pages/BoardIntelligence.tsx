@@ -16,6 +16,7 @@ import {
   Sparkles,
   Target,
 } from "lucide-react";
+import RegulatorMark from "../components/RegulatorMark.js";
 import {
   BOARD_ARCHETYPES,
   BOARD_ARCHETYPES_BY_ID,
@@ -758,7 +759,13 @@ export function BoardIntelligence() {
                         }))
                       }
                     >
-                      <span>{coverage.flag}</span>
+                      <RegulatorMark
+                        regulator={coverage.code}
+                        label={coverage.fullName}
+                        country={coverage.country}
+                        size="small"
+                        decorative
+                      />
                       <span>{coverage.code}</span>
                     </button>
                   );
@@ -953,9 +960,7 @@ export function BoardIntelligence() {
                 </article>
                 <article className="board-intelligence__metric-card">
                   <span>Primary regulators</span>
-                  <strong>
-                    {pack.primaryRegulators.slice(0, 3).join(", ")}
-                  </strong>
+                  <strong>{pack.primaryRegulators.slice(0, 3).join(", ")}</strong>
                   <small>{pack.activeRegulatorCount} regulators in scope</small>
                 </article>
               </div>
@@ -1057,7 +1062,16 @@ export function BoardIntelligence() {
                       className={`board-intelligence__signal-card board-intelligence__signal-card--${signal.band}`}
                     >
                       <div className="board-intelligence__signal-header">
-                        <strong>{signal.code}</strong>
+                        <strong className="board-intelligence__signal-mark">
+                          <RegulatorMark
+                            regulator={signal.code}
+                            label={signal.label}
+                            size="small"
+                            surface="light"
+                            decorative
+                          />
+                          <span>{signal.code}</span>
+                        </strong>
                         <span>{signal.score}/100</span>
                       </div>
                       <p>{signal.rationale}</p>
