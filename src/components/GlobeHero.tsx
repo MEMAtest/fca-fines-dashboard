@@ -5,12 +5,11 @@
 
 import { useRef, useEffect, useState, useMemo, useCallback, Suspense, lazy, type MutableRefObject } from 'react';
 import { motion } from 'framer-motion';
+import { Gavel, Users, Calendar, Activity, Flag } from 'lucide-react';
 import { getRegulatorsForCountry, getCoveredCountries, getAllCountryInfo } from '../data/countryRegulatorMapping.js';
 import { FloatingStats, type FloatingStat } from './FloatingStats.js';
-import {
-  LIVE_REGULATOR_NAV_ITEMS,
-  PIPELINE_REGULATOR_NAV_ITEMS,
-} from '../data/regulatorCoverage.js';
+import { RegulatorMark } from './RegulatorMark.js';
+import { LIVE_REGULATOR_NAV_ITEMS } from '../data/regulatorCoverage.js';
 import '../styles/globe-hero.css';
 
 const Globe = lazy(() => import('react-globe.gl'));
@@ -93,12 +92,31 @@ const COVERED_COUNTRIES_COUNT = getCoveredCountries().length;
 const EARLIEST_YEAR = Math.min(...LIVE_REGULATOR_NAV_ITEMS.map(r => r.earliestYear));
 const LATEST_YEAR = Math.max(...LIVE_REGULATOR_NAV_ITEMS.map(r => r.latestYear));
 const FCA_DATA = LIVE_REGULATOR_NAV_ITEMS.find(r => r.code === 'FCA');
-const PIPELINE_COUNT = PIPELINE_REGULATOR_NAV_ITEMS.length;
 
-const REGULATOR_BADGES = LIVE_REGULATOR_NAV_ITEMS.map(r => ({
-  code: r.code,
-  overviewPath: r.overviewPath,
-}));
+// Group live regulators by merged region for display
+const REGION_LABELS: Record<string, string> = {
+  'UK': 'UK & Europe',
+  'Europe': 'UK & Europe',
+  'North America': 'Americas',
+  'Latin America': 'Americas',
+  'APAC': 'Asia-Pacific',
+  'MENA': 'Middle East & Africa',
+  'Offshore': 'Offshore',
+  'Africa': 'Middle East & Africa',
+};
+
+const REGULATORS_BY_REGION = (() => {
+  const grouped = new Map<string, { code: string; name: string; overviewPath: string }[]>();
+  for (const r of LIVE_REGULATOR_NAV_ITEMS) {
+    const label = REGION_LABELS[r.region] ?? r.region;
+    if (!grouped.has(label)) grouped.set(label, []);
+    grouped.get(label)!.push({ code: r.code, name: r.name, overviewPath: r.overviewPath });
+  }
+  const displayOrder = ['UK & Europe', 'Americas', 'Asia-Pacific', 'Middle East & Africa', 'Offshore'];
+  return displayOrder
+    .filter(label => grouped.has(label))
+    .map(label => ({ label, regulators: grouped.get(label)! }));
+})();
 
 // Auto-rotate resume delay after user interaction (ms)
 const AUTO_ROTATE_RESUME_MS = 5000;
@@ -125,12 +143,12 @@ function useGlobeSize(): number {
   return size;
 }
 
-// 4 floating data cards around the globe
+// 4 floating data cards around the globe (dark translucent panels with icons)
 const GLOBE_STATS: FloatingStat[] = [
-  { value: TOTAL_ACTIONS.toLocaleString(), label: 'Enforcement Actions', variant: 'outside', size: 'lg', top: '10%', left: '5%' },
-  { value: `${COVERED_COUNTRIES_COUNT}`, label: 'Countries Monitored', variant: 'outside', size: 'md', top: '8%', right: '5%' },
-  { value: `${TOTAL_REGULATORS}`, label: 'Live Regulators', variant: 'outside', size: 'md', bottom: '18%', left: '5%' },
-  { value: `${EARLIEST_YEAR}\u2013${LATEST_YEAR}`, label: 'Historical Depth', variant: 'outside', size: 'lg', bottom: '18%', right: '2%' },
+  { value: TOTAL_ACTIONS.toLocaleString(), label: 'Total Enforcement Actions', variant: 'inside', size: 'lg', top: '10%', left: '5%', icon: <Activity size={16} /> },
+  { value: `${COVERED_COUNTRIES_COUNT}`, label: 'Countries Monitored', variant: 'inside', size: 'md', top: '8%', right: '5%', icon: <Flag size={16} /> },
+  { value: `${TOTAL_REGULATORS}`, label: 'Live Regulators on Dashboard', variant: 'inside', size: 'md', bottom: '18%', left: '5%', icon: <Users size={16} /> },
+  { value: `${EARLIEST_YEAR}\u2013${LATEST_YEAR}`, label: 'Historical Depth Coverage', variant: 'inside', size: 'lg', bottom: '18%', right: '2%', icon: <Calendar size={16} /> },
 ];
 
 export function GlobeHero({ onCountryClick }: GlobeHeroProps) {
@@ -317,7 +335,7 @@ export function GlobeHero({ onCountryClick }: GlobeHeroProps) {
           transition={{ duration: 0.6, delay: 0.25 }}
           className="globe-hero__cta"
         >
-          Explore the Platform
+          Access the Intelligence Hub
         </motion.a>
 
         <motion.div
@@ -326,24 +344,22 @@ export function GlobeHero({ onCountryClick }: GlobeHeroProps) {
           transition={{ duration: 0.6, delay: 0.35 }}
           className="globe-hero__stats-row"
         >
-          <div className="hero-stat-card">
+          <div className="hero-stat-card hero-stat-card--premium">
+            <div className="hero-stat-card__icon-row"><Gavel size={18} className="hero-stat-card__icon" /></div>
             <div className="hero-stat-card__value">{FCA_DATA?.count ?? 308} FCA</div>
             <div className="hero-stat-card__label">actions</div>
             <div className="hero-stat-card__sub">SINCE {FCA_DATA?.earliestYear ?? 2013}</div>
           </div>
-          <div className="hero-stat-card">
+          <div className="hero-stat-card hero-stat-card--premium">
+            <div className="hero-stat-card__icon-row"><Users size={18} className="hero-stat-card__icon" /></div>
             <div className="hero-stat-card__value">{TOTAL_REGULATORS} live</div>
             <div className="hero-stat-card__label">regulators</div>
             <div className="hero-stat-card__sub">DASHBOARD COVERAGE</div>
           </div>
-          <div className="hero-stat-card">
-            <div className="hero-stat-card__value">{PIPELINE_COUNT} next</div>
-            <div className="hero-stat-card__label">targets</div>
-            <div className="hero-stat-card__sub">VALIDATED SOURCES</div>
-          </div>
-          <div className="hero-stat-card">
+          <div className="hero-stat-card hero-stat-card--premium">
+            <div className="hero-stat-card__icon-row"><Calendar size={18} className="hero-stat-card__icon" /></div>
             <div className="hero-stat-card__value">{EARLIEST_YEAR}&ndash;{LATEST_YEAR}</div>
-            <div className="hero-stat-card__label">COVERAGE</div>
+            <div className="hero-stat-card__label">coverage</div>
           </div>
         </motion.div>
 
@@ -351,10 +367,24 @@ export function GlobeHero({ onCountryClick }: GlobeHeroProps) {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, delay: 0.45 }}
-          className="globe-hero__badges"
+          className="globe-hero__regulator-grid-section"
         >
-          {REGULATOR_BADGES.map(({ code, overviewPath }) => (
-            <a key={code} href={overviewPath} className="hero-badge">{code}</a>
+          <h3 className="globe-hero__regulator-grid-header">
+            Active Regulators Covered (Total {TOTAL_REGULATORS})
+          </h3>
+          {REGULATORS_BY_REGION.map(({ label, regulators }) => (
+            <div key={label} className="globe-hero__region-group">
+              <span className="globe-hero__region-label">{label}</span>
+              <div className="globe-hero__regulator-grid">
+                {regulators.map(({ code, name, overviewPath }) => (
+                  <a key={code} href={overviewPath} className="globe-hero__regulator-item">
+                    <RegulatorMark regulator={code} size="small" />
+                    <span className="globe-hero__regulator-code">{code}</span>
+                    <span className="globe-hero__regulator-name">{name}</span>
+                  </a>
+                ))}
+              </div>
+            </div>
           ))}
         </motion.div>
       </div>
@@ -398,14 +428,6 @@ export function GlobeHero({ onCountryClick }: GlobeHeroProps) {
 
           {/* 4 floating data cards around globe */}
           <FloatingStats stats={GLOBE_STATS} />
-
-          {/* Currency symbols */}
-          <div className="currency-symbols">
-            <span className="currency-symbol" style={{ top: '12%', right: '25%' }}>&pound;</span>
-            <span className="currency-symbol" style={{ top: '50%', right: '5%' }}>$</span>
-            <span className="currency-symbol" style={{ bottom: '15%', right: '22%' }}>&euro;</span>
-            <span className="currency-symbol" style={{ bottom: '30%', left: '20%' }}>&yen;</span>
-          </div>
         </div>
       </div>
     </div>

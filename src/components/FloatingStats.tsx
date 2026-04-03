@@ -1,11 +1,11 @@
 /**
  * FloatingStats - Data labels positioned around the globe
  *
- * Two visual styles matching reference design:
- * - "inside" labels: teal text on dark semi-transparent backgrounds (inside globe container)
- * - "outside" labels: white cards with drop shadows (overlapping globe container edge)
+ * Visual style:
+ * - "inside" labels: teal text on dark semi-transparent backgrounds with cyan glow
  */
 
+import { type ReactNode } from 'react';
 import { motion } from 'framer-motion';
 
 export interface FloatingStat {
@@ -21,6 +21,8 @@ export interface FloatingStat {
   variant: 'inside' | 'outside';
   /** Optional size */
   size?: 'sm' | 'md' | 'lg';
+  /** Optional icon rendered above the value */
+  icon?: ReactNode;
 }
 
 interface FloatingStatsProps {
@@ -45,6 +47,7 @@ export function FloatingStats({ stats }: FloatingStatsProps) {
             left: stat.left,
           }}
         >
+          {stat.icon && <div className="floating-stat__icon">{stat.icon}</div>}
           <div className="floating-stat__value">{stat.value}</div>
           <div className="floating-stat__label">{stat.label}</div>
           {stat.sublabel && (

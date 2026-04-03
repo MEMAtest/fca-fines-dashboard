@@ -109,6 +109,20 @@
   box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
 }
 
+.hero-stat-card--premium {
+  background: transparent;
+  border: none;
+  box-shadow: none;
+}
+
+.hero-stat-card__icon-row {
+  margin-bottom: 0.35rem;
+}
+
+.hero-stat-card__icon {
+  color: #0d9488;
+}
+
 .hero-stat-card__value {
   font-size: 1.25rem;
   font-weight: 700;
@@ -131,45 +145,67 @@
   margin-top: 0.25rem;
 }
 
-/* Regulator badges */
-.globe-hero__badges {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.4rem;
+/* Regulator grid */
+.globe-hero__regulator-grid-section {
   max-width: 480px;
 }
 
-.hero-badge {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.35rem;
-  padding: 0.3rem 0.7rem;
-  font-size: 0.6875rem;
+.globe-hero__regulator-grid-header {
+  font-size: 0.8125rem;
   font-weight: 600;
   color: #374151;
-  background: white;
-  border: 1px solid #e5e7eb;
-  border-radius: 5px;
-  transition: all 0.15s;
+  margin: 0 0 0.75rem;
+  letter-spacing: 0.01em;
+}
+
+.globe-hero__region-group {
+  margin-bottom: 0.625rem;
+}
+
+.globe-hero__region-label {
+  display: block;
+  font-size: 0.6875rem;
+  font-weight: 600;
+  color: #9ca3af;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: 0.35rem;
+}
+
+.globe-hero__regulator-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+  gap: 0.4rem;
+}
+
+.globe-hero__regulator-item {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
   text-decoration: none;
-  cursor: pointer;
+  padding: 0.25rem 0.35rem;
+  border-radius: 6px;
+  transition: background 0.15s;
 }
 
-.hero-badge::before {
-  content: '';
-  display: inline-block;
-  width: 6px;
-  height: 6px;
-  border-radius: 50%;
-  background: #0d9488;
-  flex-shrink: 0;
+.globe-hero__regulator-item:hover {
+  background: rgba(13, 148, 136, 0.06);
 }
 
-.hero-badge:hover {
-  color: #0d9488;
-  border-color: #0d9488;
-  transform: translateY(-1px);
-  box-shadow: 0 2px 6px rgba(13, 148, 136, 0.15);
+.globe-hero__regulator-code {
+  font-size: 0.6875rem;
+  font-weight: 700;
+  color: #374151;
+  white-space: nowrap;
+}
+
+.globe-hero__regulator-name {
+  font-size: 0.625rem;
+  color: #9ca3af;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  min-width: 0;
 }
 
 /* ========== RIGHT COLUMN - Globe ========== */
@@ -193,67 +229,24 @@
   display: block !important;
 }
 
-/* ========== FLOATING DATA CARDS (white cards with shadow) ========== */
-.floating-stat--outside {
-  background: white;
-  border: 1px solid #e5e7eb;
-  border-radius: 10px;
-  padding: 0.85rem 1.1rem;
-  z-index: 15;
-  box-shadow:
-    0 8px 24px rgba(0, 0, 0, 0.08),
-    0 2px 6px rgba(0, 0, 0, 0.04);
-  pointer-events: none;
-}
+/* ========== FLOATING DATA CARDS ========== */
 
-.floating-stat--outside .floating-stat__value {
-  font-size: 1.375rem;
-  font-weight: 700;
-  color: #0d9488;
-  white-space: nowrap;
-}
-
-.floating-stat--outside .floating-stat__label {
-  font-size: 0.6875rem;
-  font-weight: 600;
-  color: #6b7280;
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
-}
-
-.floating-stat--outside .floating-stat__sublabel {
-  font-size: 0.625rem;
-  color: #9ca3af;
-  margin-top: 0.15rem;
-}
-
-.floating-stat--outside.floating-stat--sm {
-  padding: 0.6rem 0.85rem;
-}
-
-.floating-stat--outside.floating-stat--sm .floating-stat__value {
-  font-size: 0.9rem;
-  color: #374151;
-  font-weight: 600;
-}
-
-.floating-stat--outside.floating-stat--md .floating-stat__value {
-  font-size: 1.25rem;
-}
-
-.floating-stat--outside.floating-stat--lg .floating-stat__value {
-  font-size: 1.5rem;
-}
-
-/* Inside variant (teal on dark - for hover tooltip context) */
+/* Inside variant (dark translucent panels with cyan glow) */
 .floating-stat--inside {
   background: rgba(6, 30, 50, 0.75);
   backdrop-filter: blur(8px);
-  border: 1px solid rgba(6, 182, 212, 0.25);
-  border-radius: 8px;
-  padding: 0.6rem 0.9rem;
+  border: 1px solid rgba(6, 182, 212, 0.30);
+  border-radius: 10px;
+  padding: 0.7rem 1rem;
   z-index: 12;
   pointer-events: none;
+  box-shadow: 0 0 20px rgba(6, 182, 212, 0.08);
+}
+
+.floating-stat--inside .floating-stat__icon {
+  color: #22d3ee;
+  display: flex;
+  margin-bottom: 0.3rem;
 }
 
 .floating-stat--inside .floating-stat__value {
@@ -269,30 +262,12 @@
   white-space: nowrap;
 }
 
-/* ========== CURRENCY SYMBOLS ========== */
-.currency-symbols {
-  position: absolute;
-  inset: 0;
-  pointer-events: none;
-  z-index: 5;
+.floating-stat--inside.floating-stat--md .floating-stat__value {
+  font-size: 1.25rem;
 }
 
-.currency-symbol {
-  position: absolute;
-  font-size: 2rem;
-  font-weight: 300;
-  color: rgba(13, 148, 136, 0.2);
-  animation: floatCurrency 5s ease-in-out infinite;
-}
-
-.currency-symbol:nth-child(1) { animation-delay: 0s; }
-.currency-symbol:nth-child(2) { animation-delay: 1.3s; }
-.currency-symbol:nth-child(3) { animation-delay: 2.6s; }
-.currency-symbol:nth-child(4) { animation-delay: 3.9s; }
-
-@keyframes floatCurrency {
-  0%, 100% { transform: translateY(0); opacity: 0.2; }
-  50% { transform: translateY(-12px); opacity: 0.35; }
+.floating-stat--inside.floating-stat--lg .floating-stat__value {
+  font-size: 1.5rem;
 }
 
 /* ========== HOVER TOOLTIP ========== */
@@ -450,9 +425,12 @@
     flex-wrap: wrap;
   }
 
-  .globe-hero__badges {
-    justify-content: center;
+  .globe-hero__regulator-grid-section {
     max-width: 600px;
+  }
+
+  .globe-hero__regulator-grid-header {
+    text-align: center;
   }
 
   .globe-hero-wrapper__right {
@@ -482,8 +460,7 @@
   }
 
   .globe-hero__stats-row {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
+    display: flex;
     gap: 0.5rem;
   }
 
@@ -491,10 +468,8 @@
     font-size: 1.0625rem;
   }
 
-  .currency-symbols { display: none; }
-
-  .floating-stat--outside.floating-stat--sm {
-    display: none;
+  .globe-hero__regulator-grid {
+    grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
   }
 }
 
@@ -507,7 +482,11 @@
     min-height: 350px;
   }
 
-  .floating-stat--outside { display: none; }
+  .floating-stat--inside { display: none; }
+
+  .globe-hero__stats-row {
+    flex-direction: column;
+  }
 
   .globe-tooltip {
     left: 0.75rem;
@@ -518,12 +497,4 @@
   }
 }
 
-/* ========== ANIMATIONS ========== */
-@keyframes fadeIn {
-  from { opacity: 0; }
-  to { opacity: 1; }
-}
-
-.globe-hero-wrapper > * {
-  animation: fadeIn 0.6s ease-out;
-}
+/* Animations handled by Framer Motion in GlobeHero.tsx */
