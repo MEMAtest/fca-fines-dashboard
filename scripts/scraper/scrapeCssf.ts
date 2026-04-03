@@ -91,8 +91,30 @@ export function parseCssfDetailHtml(html: string, detailUrl: string): CssfDetail
 }
 
 export function extractCssfDate(title: string) {
+  const normalized = normalizeWhitespace(title)
+    .replace(/^Administrative sanctions?\s+of\s+/i, "");
+  const singleDate = parseMonthNameDate(normalized);
+  if (singleDate) {
+    return singleDate;
+  }
+
+  const multiDateMatch = normalized.match(
+    /^(\d{1,2}(?:\s*,\s*\d{1,2})*(?:\s+and\s+\d{1,2})?)\s+([A-Za-z]+)\s+(\d{4})$/i,
+  );
+  if (!multiDateMatch) {
+    return null;
+  }
+
+  const days = multiDateMatch[1]
+    .split(/(?:,|\band\b)/i)
+    .map((part) => Number.parseInt(part.trim(), 10))
+    .filter((day) => Number.isFinite(day));
+  if (days.length === 0) {
+    return null;
+  }
+
   return parseMonthNameDate(
-    normalizeWhitespace(title).replace(/^Administrative sanction of\s+/i, ""),
+    `${Math.max(...days)} ${multiDateMatch[2]} ${multiDateMatch[3]}`,
   );
 }
 

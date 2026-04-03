@@ -133,6 +133,8 @@ describe("europe phase 1 scrapers", () => {
     );
     expect(extractCssfDate(detail.title)).toBe("2026-04-01");
     expect(extractCssfFirm(detail.subtitle)).toBe("BigRep SE");
+    expect(extractCssfDate("Administrative sanctions of 4 and 17 May 2022"))
+      .toBe("2022-05-17");
   });
 
   it("parses FSMA sanction table rows and extracts firms", () => {
