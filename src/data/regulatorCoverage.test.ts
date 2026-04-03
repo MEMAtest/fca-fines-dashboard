@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import {
   DAILY_LIVE_REGULATOR_CODES,
   BLOG_REGULATOR_CODES,
+  EUROPE_EEA_COVERAGE_PHASES,
   FRAGILE_LIVE_REGULATOR_CODES,
   INTERNAL_REGULATOR_NAV_ITEMS,
   LIVE_REGULATOR_NAV_ITEMS,
@@ -52,13 +53,14 @@ describe("regulatorCoverage", () => {
     expect(PUBLIC_EU_REGULATOR_CODES).toContain("ECB");
     expect(PUBLIC_EU_REGULATOR_CODES).not.toContain("ESMA");
     expect(PUBLIC_EU_REGULATOR_CODES).not.toContain("FINMA");
+    expect(PUBLIC_EU_REGULATOR_CODES).not.toContain("CONSOB");
     expect(PUBLIC_EU_REGULATOR_CODES).not.toContain("SFC");
   });
 
   it("keeps the current live roster aligned with the shared exports", () => {
     expect(LIVE_REGULATOR_NAV_ITEMS).toHaveLength(17);
     expect(INTERNAL_REGULATOR_NAV_ITEMS).toHaveLength(1);
-    expect(PIPELINE_REGULATOR_NAV_ITEMS).toHaveLength(17);
+    expect(PIPELINE_REGULATOR_NAV_ITEMS).toHaveLength(33);
     expect(PUBLIC_REGULATOR_CODES).toHaveLength(LIVE_REGULATOR_NAV_ITEMS.length);
     expect(getRegulatorCoverage("ESMA")?.stage).toBe("internal");
     expect(getRegulatorCoverage("CVM")?.stage).toBe("pipeline");
@@ -69,6 +71,10 @@ describe("regulatorCoverage", () => {
     expect(getRegulatorCoverage("FDIC")?.stage).toBe("pipeline");
     expect(getRegulatorCoverage("FRB")?.stage).toBe("pipeline");
     expect(getRegulatorCoverage("OSC")?.stage).toBe("pipeline");
+    expect(getRegulatorCoverage("CONSOB")?.stage).toBe("pipeline");
+    expect(getRegulatorCoverage("BDI")?.stage).toBe("pipeline");
+    expect(getRegulatorCoverage("ACPR")?.stage).toBe("pipeline");
+    expect(getRegulatorCoverage("CSSF")?.stage).toBe("pipeline");
   });
 
   it("flags lower-confidence live regulators separately from the stable daily set", () => {
@@ -123,5 +129,26 @@ describe("regulatorCoverage", () => {
     expect(getRegulatorCoverage("cnbv")?.country).toBe("Mexico");
     expect(getRegulatorCoverage("cmf")?.country).toBe("Chile");
     expect(getRegulatorCoverage("osc")?.country).toBe("Canada");
+  });
+
+  it("groups the Europe and EEA rollout into three explicit phases", () => {
+    expect(EUROPE_EEA_COVERAGE_PHASES).toHaveLength(3);
+    expect(EUROPE_EEA_COVERAGE_PHASES[0]?.codes).toEqual([
+      "CONSOB",
+      "BDI",
+      "FINMA",
+      "ACPR",
+      "CSSF",
+      "FSMA",
+      "FMAAT",
+    ]);
+    expect(EUROPE_EEA_COVERAGE_PHASES[1]?.codes).toContain("CMVM");
+    expect(EUROPE_EEA_COVERAGE_PHASES[1]?.codes).toContain("BDP");
+    expect(EUROPE_EEA_COVERAGE_PHASES[1]?.codes).toContain("FTNO");
+    expect(EUROPE_EEA_COVERAGE_PHASES[2]?.codes).toEqual(["MFSA", "IVASS"]);
+    expect(getRegulatorCoverage("FINMA")?.rolloutPhase).toBe(1);
+    expect(getRegulatorCoverage("CONSOB")?.countryCluster).toBe("Italy");
+    expect(getRegulatorCoverage("BDI")?.countryCluster).toBe("Italy");
+    expect(getRegulatorCoverage("FTNO")?.regionCluster).toBe("EEA");
   });
 });

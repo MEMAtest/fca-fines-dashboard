@@ -14,6 +14,12 @@ const PIPELINE_BUCKETS: Array<{
   description: string;
 }> = [
   {
+    key: "europe_eea_expansion",
+    title: "Europe and EEA Expansion",
+    description:
+      "Italy, Switzerland, Luxembourg, Belgium, Austria, Portugal, Cyprus, Czechia, and the Nordics in a staged Europe rollout.",
+  },
+  {
     key: "gulf_and_ifc",
     title: "Dubai, UAE and Gulf IFCs",
     description:
@@ -39,6 +45,11 @@ function formatScrapeMode(mode: RegulatorCoverage["scrapeMode"]) {
 
 function getPipelineBadge(coverage: RegulatorCoverage) {
   if (coverage.sourceType === "sro") return "SRO";
+  if (coverage.strategicBucket === "europe_eea_expansion") {
+    return coverage.rolloutPhase
+      ? `Europe phase ${coverage.rolloutPhase}`
+      : "Europe next";
+  }
   if (coverage.strategicBucket === "gulf_and_ifc") return "Dubai / UAE";
   if (coverage.strategicBucket === "offshore_wealth_centres") return "Offshore";
   return "Global next";
@@ -65,7 +76,7 @@ export function Regulators() {
     title:
       "Global Regulatory Enforcement Coverage | Live Hubs and Expansion Pipeline",
     description:
-      "Browse live enforcement coverage across multiple regulators and review the validated pipeline for US banking, APAC, offshore, and other global enforcement sources.",
+      "Browse live enforcement coverage across multiple regulators and review the validated Europe, EEA, US banking, APAC, offshore, and other global expansion pipeline.",
   });
 
   return (
@@ -151,8 +162,9 @@ export function Regulators() {
             <h2>Next regulators to add</h2>
             <p>
               These regulators have official public enforcement sources
-              validated already. They are queued for ingestion and should not
-              yet be treated as live dashboards or article destinations.
+              validated already. They are queued by Europe phase, Gulf/offshore
+              fit, and wider global priority, and should not yet be treated as
+              live dashboards or article destinations.
             </p>
           </div>
 

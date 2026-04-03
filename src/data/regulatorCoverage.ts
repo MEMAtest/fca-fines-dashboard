@@ -9,6 +9,15 @@ export interface RegulatorCoverage {
   fullName: string;
   country: string;
   countryCode: string;
+  regionCluster:
+    | "UK"
+    | "EU"
+    | "EEA"
+    | "Switzerland"
+    | "EU-level"
+    | "Global";
+  countryCluster: string | null;
+  rolloutPhase: 1 | 2 | 3 | null;
   region:
     | "UK"
     | "Europe"
@@ -20,6 +29,7 @@ export interface RegulatorCoverage {
     | "Africa";
   strategicBucket:
     | "core"
+    | "europe_eea_expansion"
     | "gulf_and_ifc"
     | "offshore_wealth_centres"
     | "high_signal_global";
@@ -72,8 +82,24 @@ export interface RegulatorOfficialSource {
 
 type RegulatorCoverageSeed = Omit<
   RegulatorCoverage,
-  "operationalConfidence" | "automationLevel" | "feedContract"
+  | "regionCluster"
+  | "countryCluster"
+  | "rolloutPhase"
+  | "operationalConfidence"
+  | "automationLevel"
+  | "feedContract"
 >;
+
+export interface CoverageRoadmapPhase {
+  id: string;
+  phase: 1 | 2 | 3;
+  label: string;
+  title: string;
+  targetWindow: string;
+  description: string;
+  spotlight: string;
+  codes: string[];
+}
 
 const PIPELINE_NOTE =
   "Official enforcement source validated. Ingestion and editorial coverage are not yet live.";
@@ -87,6 +113,38 @@ const LOW_CONFIDENCE_LIVE_REGULATOR_SET = new Set([
 
 const CURATED_ARCHIVE_REGULATOR_SET = new Set(["DFSA", "CBUAE"]);
 const SPARSE_SOURCE_REGULATOR_SET = new Set(["JFSC"]);
+
+const EUROPE_EEA_PHASE_CODE_MAP = {
+  1: ["CONSOB", "BDI", "FINMA", "ACPR", "CSSF", "FSMA", "FMAAT"],
+  2: ["CNBCZ", "CMVM", "BDP", "CYSEC", "FISE", "FTDK", "FINFSA", "FTNO"],
+  3: ["MFSA", "IVASS"],
+} as const satisfies Record<1 | 2 | 3, string[]>;
+
+const EUROPE_EEA_PHASE_BY_CODE = Object.fromEntries(
+  Object.entries(EUROPE_EEA_PHASE_CODE_MAP).flatMap(([phase, codes]) =>
+    codes.map((code) => [code, Number(phase)]),
+  ),
+) as Partial<Record<string, 1 | 2 | 3>>;
+
+const COUNTRY_CLUSTER_BY_CODE: Partial<Record<string, string>> = {
+  FINMA: "Switzerland",
+  CONSOB: "Italy",
+  BDI: "Italy",
+  IVASS: "Italy",
+  ACPR: "France",
+  CSSF: "Luxembourg",
+  FSMA: "Belgium",
+  FMAAT: "Austria",
+  CNBCZ: "Central Europe",
+  CMVM: "Portugal",
+  BDP: "Portugal",
+  CYSEC: "Cyprus",
+  FISE: "Nordics",
+  FTDK: "Nordics",
+  FINFSA: "Nordics",
+  FTNO: "Nordics",
+  MFSA: "Malta",
+};
 
 const REGULATOR_COVERAGE_SEED: Record<string, RegulatorCoverageSeed> = {
   FCA: {
@@ -1133,7 +1191,7 @@ const REGULATOR_COVERAGE_SEED: Record<string, RegulatorCoverageSeed> = {
     country: "Switzerland",
     countryCode: "CH",
     region: "Europe",
-    strategicBucket: "high_signal_global",
+    strategicBucket: "europe_eea_expansion",
     sourceType: "regulator",
     scrapeMode: "detail_pages",
     priorityTier: 1,
@@ -1456,7 +1514,605 @@ const REGULATOR_COVERAGE_SEED: Record<string, RegulatorCoverageSeed> = {
       },
     ],
   },
+  CONSOB: {
+    code: "CONSOB",
+    name: "CONSOB",
+    fullName: "Commissione Nazionale per le Società e la Borsa",
+    country: "Italy",
+    countryCode: "IT",
+    region: "Europe",
+    strategicBucket: "europe_eea_expansion",
+    sourceType: "regulator",
+    scrapeMode: "search_register",
+    priorityTier: 1,
+    stage: "pipeline",
+    blogEnabled: false,
+    flag: "🇮🇹",
+    navOrder: 36,
+    overviewPath: "/regulators/consob",
+    years: "Pending",
+    count: 0,
+    dataQuality: "Validated",
+    note: PIPELINE_NOTE,
+    earliestYear: 0,
+    latestYear: 0,
+    nativeCurrency: "EUR",
+    defaultCurrency: "EUR",
+    coverageStatus: "emerging",
+    maturity: "limited",
+    dashboardEnabled: false,
+    officialSources: [
+      {
+        label: "CONSOB sanctions",
+        url: "https://www.consob.it/it/web/area-pubblica/sanzioni",
+        description:
+          "Official CONSOB public sanctions and disciplinary publications.",
+      },
+    ],
+  },
+  BDI: {
+    code: "BDI",
+    name: "Bank of Italy",
+    fullName: "Banca d'Italia",
+    country: "Italy",
+    countryCode: "IT",
+    region: "Europe",
+    strategicBucket: "europe_eea_expansion",
+    sourceType: "regulator",
+    scrapeMode: "archive",
+    priorityTier: 1,
+    stage: "pipeline",
+    blogEnabled: false,
+    flag: "🇮🇹",
+    navOrder: 37,
+    overviewPath: "/regulators/bdi",
+    years: "Pending",
+    count: 0,
+    dataQuality: "Validated",
+    note: PIPELINE_NOTE,
+    earliestYear: 0,
+    latestYear: 0,
+    nativeCurrency: "EUR",
+    defaultCurrency: "EUR",
+    coverageStatus: "emerging",
+    maturity: "limited",
+    dashboardEnabled: false,
+    officialSources: [
+      {
+        label: "Banca d'Italia sanctions",
+        url: "https://www.bancaditalia.it/compiti/vigilanza/provvedimenti-sanzionatori/",
+        description:
+          "Official Banca d'Italia administrative and supervisory sanctions archive.",
+      },
+    ],
+  },
+  ACPR: {
+    code: "ACPR",
+    name: "ACPR",
+    fullName: "Autorité de contrôle prudentiel et de résolution",
+    country: "France",
+    countryCode: "FR",
+    region: "Europe",
+    strategicBucket: "europe_eea_expansion",
+    sourceType: "regulator",
+    scrapeMode: "archive",
+    priorityTier: 1,
+    stage: "pipeline",
+    blogEnabled: false,
+    flag: "🇫🇷",
+    navOrder: 38,
+    overviewPath: "/regulators/acpr",
+    years: "Pending",
+    count: 0,
+    dataQuality: "Validated",
+    note: PIPELINE_NOTE,
+    earliestYear: 0,
+    latestYear: 0,
+    nativeCurrency: "EUR",
+    defaultCurrency: "EUR",
+    coverageStatus: "emerging",
+    maturity: "limited",
+    dashboardEnabled: false,
+    officialSources: [
+      {
+        label: "ACPR recueil des sanctions",
+        url: "https://acpr.banque-france.fr/fr/reglementation/recueil-des-sanctions",
+        description:
+          "Official ACPR sanctions compendium and prudential enforcement archive.",
+      },
+    ],
+  },
+  CSSF: {
+    code: "CSSF",
+    name: "CSSF",
+    fullName: "Commission de Surveillance du Secteur Financier",
+    country: "Luxembourg",
+    countryCode: "LU",
+    region: "Europe",
+    strategicBucket: "europe_eea_expansion",
+    sourceType: "regulator",
+    scrapeMode: "mixed",
+    priorityTier: 1,
+    stage: "pipeline",
+    blogEnabled: false,
+    flag: "🇱🇺",
+    navOrder: 39,
+    overviewPath: "/regulators/cssf",
+    years: "Pending",
+    count: 0,
+    dataQuality: "Validated",
+    note: PIPELINE_NOTE,
+    earliestYear: 0,
+    latestYear: 0,
+    nativeCurrency: "EUR",
+    defaultCurrency: "EUR",
+    coverageStatus: "emerging",
+    maturity: "limited",
+    dashboardEnabled: false,
+    officialSources: [
+      {
+        label: "CSSF credit institutions sanctions context",
+        url: "https://www.cssf.lu/en/credit-institutions/",
+        description:
+          "Official CSSF supervisory page exposing administrative sanctions references and prudential supervision context.",
+      },
+      {
+        label: "CSSF market abuse supervision",
+        url: "https://www.cssf.lu/en/market-abuse/",
+        description:
+          "Official CSSF market-abuse supervision page with sanction and measure context.",
+      },
+    ],
+  },
+  FSMA: {
+    code: "FSMA",
+    name: "FSMA Belgium",
+    fullName: "Financial Services and Markets Authority",
+    country: "Belgium",
+    countryCode: "BE",
+    region: "Europe",
+    strategicBucket: "europe_eea_expansion",
+    sourceType: "regulator",
+    scrapeMode: "detail_pages",
+    priorityTier: 1,
+    stage: "pipeline",
+    blogEnabled: false,
+    flag: "🇧🇪",
+    navOrder: 40,
+    overviewPath: "/regulators/fsma",
+    years: "Pending",
+    count: 0,
+    dataQuality: "Validated",
+    note: PIPELINE_NOTE,
+    earliestYear: 0,
+    latestYear: 0,
+    nativeCurrency: "EUR",
+    defaultCurrency: "EUR",
+    coverageStatus: "emerging",
+    maturity: "limited",
+    dashboardEnabled: false,
+    officialSources: [
+      {
+        label: "FSMA administrative sanctions",
+        url: "https://www.fsma.be/fr/reglements-transactionnels",
+        description:
+          "Official FSMA administrative sanctions and settlement decisions archive.",
+      },
+    ],
+  },
+  FMAAT: {
+    code: "FMAAT",
+    name: "FMA Austria",
+    fullName: "Financial Market Authority Austria",
+    country: "Austria",
+    countryCode: "AT",
+    region: "Europe",
+    strategicBucket: "europe_eea_expansion",
+    sourceType: "regulator",
+    scrapeMode: "archive",
+    priorityTier: 1,
+    stage: "pipeline",
+    blogEnabled: false,
+    flag: "🇦🇹",
+    navOrder: 41,
+    overviewPath: "/regulators/fmaat",
+    years: "Pending",
+    count: 0,
+    dataQuality: "Validated",
+    note: PIPELINE_NOTE,
+    earliestYear: 0,
+    latestYear: 0,
+    nativeCurrency: "EUR",
+    defaultCurrency: "EUR",
+    coverageStatus: "emerging",
+    maturity: "limited",
+    dashboardEnabled: false,
+    officialSources: [
+      {
+        label: "FMA Austria sanctions announcements",
+        url: "https://www.fma.gv.at/en/category/news-en/sanction/",
+        description:
+          "Official FMA Austria sanctions and enforcement announcements archive.",
+      },
+    ],
+  },
+  CNBCZ: {
+    code: "CNBCZ",
+    name: "Czech National Bank",
+    fullName: "Czech National Bank",
+    country: "Czech Republic",
+    countryCode: "CZ",
+    region: "Europe",
+    strategicBucket: "europe_eea_expansion",
+    sourceType: "regulator",
+    scrapeMode: "archive",
+    priorityTier: 2,
+    stage: "pipeline",
+    blogEnabled: false,
+    flag: "🇨🇿",
+    navOrder: 42,
+    overviewPath: "/regulators/cnbcz",
+    years: "Pending",
+    count: 0,
+    dataQuality: "Validated",
+    note: PIPELINE_NOTE,
+    earliestYear: 0,
+    latestYear: 0,
+    nativeCurrency: "CZK",
+    defaultCurrency: "EUR",
+    coverageStatus: "emerging",
+    maturity: "limited",
+    dashboardEnabled: false,
+    officialSources: [
+      {
+        label: "Czech National Bank final decisions and sanctions",
+        url: "https://www.cnb.cz/en/supervision-financial-market/cnb-final-decisions/",
+        description:
+          "Official Czech National Bank supervision and final decisions archive.",
+      },
+    ],
+  },
+  CMVM: {
+    code: "CMVM",
+    name: "CMVM",
+    fullName: "Comissão do Mercado de Valores Mobiliários",
+    country: "Portugal",
+    countryCode: "PT",
+    region: "Europe",
+    strategicBucket: "europe_eea_expansion",
+    sourceType: "regulator",
+    scrapeMode: "archive",
+    priorityTier: 2,
+    stage: "pipeline",
+    blogEnabled: false,
+    flag: "🇵🇹",
+    navOrder: 43,
+    overviewPath: "/regulators/cmvm",
+    years: "Pending",
+    count: 0,
+    dataQuality: "Validated",
+    note: PIPELINE_NOTE,
+    earliestYear: 0,
+    latestYear: 0,
+    nativeCurrency: "EUR",
+    defaultCurrency: "EUR",
+    coverageStatus: "emerging",
+    maturity: "limited",
+    dashboardEnabled: false,
+    officialSources: [
+      {
+        label: "CMVM sanctions and supervision",
+        url: "https://www.cmvm.pt/en/Pages/home.aspx",
+        description:
+          "Official CMVM site where supervision, sanctions, and market-enforcement publications are published.",
+      },
+    ],
+  },
+  BDP: {
+    code: "BDP",
+    name: "Banco de Portugal",
+    fullName: "Banco de Portugal",
+    country: "Portugal",
+    countryCode: "PT",
+    region: "Europe",
+    strategicBucket: "europe_eea_expansion",
+    sourceType: "regulator",
+    scrapeMode: "archive",
+    priorityTier: 2,
+    stage: "pipeline",
+    blogEnabled: false,
+    flag: "🇵🇹",
+    navOrder: 44,
+    overviewPath: "/regulators/bdp",
+    years: "Pending",
+    count: 0,
+    dataQuality: "Validated",
+    note: PIPELINE_NOTE,
+    earliestYear: 0,
+    latestYear: 0,
+    nativeCurrency: "EUR",
+    defaultCurrency: "EUR",
+    coverageStatus: "emerging",
+    maturity: "limited",
+    dashboardEnabled: false,
+    officialSources: [
+      {
+        label: "Banco de Portugal administrative offence proceedings",
+        url: "https://www.bportugal.pt/en/page/administrative-offence-proceedings",
+        description:
+          "Official Banco de Portugal page for administrative offence proceedings and sanctions context.",
+      },
+    ],
+  },
+  CYSEC: {
+    code: "CYSEC",
+    name: "CySEC",
+    fullName: "Cyprus Securities and Exchange Commission",
+    country: "Cyprus",
+    countryCode: "CY",
+    region: "Europe",
+    strategicBucket: "europe_eea_expansion",
+    sourceType: "regulator",
+    scrapeMode: "detail_pages",
+    priorityTier: 2,
+    stage: "pipeline",
+    blogEnabled: false,
+    flag: "🇨🇾",
+    navOrder: 45,
+    overviewPath: "/regulators/cysec",
+    years: "Pending",
+    count: 0,
+    dataQuality: "Validated",
+    note: PIPELINE_NOTE,
+    earliestYear: 0,
+    latestYear: 0,
+    nativeCurrency: "EUR",
+    defaultCurrency: "EUR",
+    coverageStatus: "emerging",
+    maturity: "limited",
+    dashboardEnabled: false,
+    officialSources: [
+      {
+        label: "CySEC administrative sanctions",
+        url: "https://www.cysec.gov.cy/en-GB/public-info/decisions/",
+        description:
+          "Official CySEC public decisions and sanctions archive.",
+      },
+    ],
+  },
+  FISE: {
+    code: "FISE",
+    name: "Finansinspektionen",
+    fullName: "Finansinspektionen",
+    country: "Sweden",
+    countryCode: "SE",
+    region: "Europe",
+    strategicBucket: "europe_eea_expansion",
+    sourceType: "regulator",
+    scrapeMode: "archive",
+    priorityTier: 2,
+    stage: "pipeline",
+    blogEnabled: false,
+    flag: "🇸🇪",
+    navOrder: 46,
+    overviewPath: "/regulators/fise",
+    years: "Pending",
+    count: 0,
+    dataQuality: "Validated",
+    note: PIPELINE_NOTE,
+    earliestYear: 0,
+    latestYear: 0,
+    nativeCurrency: "SEK",
+    defaultCurrency: "EUR",
+    coverageStatus: "emerging",
+    maturity: "limited",
+    dashboardEnabled: false,
+    officialSources: [
+      {
+        label: "Finansinspektionen sanctions for financial firms",
+        url: "https://www.fi.se/en/published/sanctions/financial-firms/",
+        description:
+          "Official Finansinspektionen sanctions archive for financial firms.",
+      },
+    ],
+  },
+  FTDK: {
+    code: "FTDK",
+    name: "Finanstilsynet Denmark",
+    fullName: "Danish Financial Supervisory Authority",
+    country: "Denmark",
+    countryCode: "DK",
+    region: "Europe",
+    strategicBucket: "europe_eea_expansion",
+    sourceType: "regulator",
+    scrapeMode: "archive",
+    priorityTier: 2,
+    stage: "pipeline",
+    blogEnabled: false,
+    flag: "🇩🇰",
+    navOrder: 47,
+    overviewPath: "/regulators/ftdk",
+    years: "Pending",
+    count: 0,
+    dataQuality: "Validated",
+    note: PIPELINE_NOTE,
+    earliestYear: 0,
+    latestYear: 0,
+    nativeCurrency: "DKK",
+    defaultCurrency: "EUR",
+    coverageStatus: "emerging",
+    maturity: "limited",
+    dashboardEnabled: false,
+    officialSources: [
+      {
+        label: "Finanstilsynet inspections and decisions",
+        url: "https://www.finanstilsynet.dk/tilsyn/inspektion-og-afgoerelser",
+        description:
+          "Official Danish FSA inspection findings, decisions, and sanctions archive.",
+      },
+    ],
+  },
+  FINFSA: {
+    code: "FINFSA",
+    name: "FIN-FSA",
+    fullName: "Finnish Financial Supervisory Authority",
+    country: "Finland",
+    countryCode: "FI",
+    region: "Europe",
+    strategicBucket: "europe_eea_expansion",
+    sourceType: "regulator",
+    scrapeMode: "mixed",
+    priorityTier: 2,
+    stage: "pipeline",
+    blogEnabled: false,
+    flag: "🇫🇮",
+    navOrder: 48,
+    overviewPath: "/regulators/finfsa",
+    years: "Pending",
+    count: 0,
+    dataQuality: "Validated",
+    note: PIPELINE_NOTE,
+    earliestYear: 0,
+    latestYear: 0,
+    nativeCurrency: "EUR",
+    defaultCurrency: "EUR",
+    coverageStatus: "emerging",
+    maturity: "limited",
+    dashboardEnabled: false,
+    officialSources: [
+      {
+        label: "FIN-FSA sanctions and penalty payments",
+        url: "https://www.finanssivalvonta.fi/en/publications-and-press-releases/penalty-payments-and-other-sanctions/",
+        description:
+          "Official FIN-FSA sanctions and penalty payments publications.",
+      },
+    ],
+  },
+  FTNO: {
+    code: "FTNO",
+    name: "Finanstilsynet Norway",
+    fullName: "Financial Supervisory Authority of Norway",
+    country: "Norway",
+    countryCode: "NO",
+    region: "Europe",
+    strategicBucket: "europe_eea_expansion",
+    sourceType: "regulator",
+    scrapeMode: "detail_pages",
+    priorityTier: 2,
+    stage: "pipeline",
+    blogEnabled: false,
+    flag: "🇳🇴",
+    navOrder: 49,
+    overviewPath: "/regulators/ftno",
+    years: "Pending",
+    count: 0,
+    dataQuality: "Validated",
+    note: PIPELINE_NOTE,
+    earliestYear: 0,
+    latestYear: 0,
+    nativeCurrency: "NOK",
+    defaultCurrency: "EUR",
+    coverageStatus: "emerging",
+    maturity: "limited",
+    dashboardEnabled: false,
+    officialSources: [
+      {
+        label: "Finanstilsynet Norway market conduct sanctions",
+        url: "https://www.finanstilsynet.no/en/supervision/market-conduct/general-information-about-sanctioning-for-infringement-of-the-market-conduct-regulations/",
+        description:
+          "Official Finanstilsynet Norway sanctions guidance and published market-conduct action context.",
+      },
+    ],
+  },
+  MFSA: {
+    code: "MFSA",
+    name: "MFSA",
+    fullName: "Malta Financial Services Authority",
+    country: "Malta",
+    countryCode: "MT",
+    region: "Europe",
+    strategicBucket: "europe_eea_expansion",
+    sourceType: "regulator",
+    scrapeMode: "detail_pages",
+    priorityTier: 3,
+    stage: "pipeline",
+    blogEnabled: false,
+    flag: "🇲🇹",
+    navOrder: 50,
+    overviewPath: "/regulators/mfsa",
+    years: "Pending",
+    count: 0,
+    dataQuality: "Validated",
+    note: PIPELINE_NOTE,
+    earliestYear: 0,
+    latestYear: 0,
+    nativeCurrency: "EUR",
+    defaultCurrency: "EUR",
+    coverageStatus: "emerging",
+    maturity: "limited",
+    dashboardEnabled: false,
+    officialSources: [
+      {
+        label: "MFSA enforcement directorate",
+        url: "https://www.mfsa.mt/our-work/enforcement/",
+        description:
+          "Official MFSA enforcement directorate and administrative-action publications.",
+      },
+    ],
+  },
+  IVASS: {
+    code: "IVASS",
+    name: "IVASS",
+    fullName: "Institute for the Supervision of Insurance",
+    country: "Italy",
+    countryCode: "IT",
+    region: "Europe",
+    strategicBucket: "europe_eea_expansion",
+    sourceType: "regulator",
+    scrapeMode: "archive",
+    priorityTier: 3,
+    stage: "pipeline",
+    blogEnabled: false,
+    flag: "🇮🇹",
+    navOrder: 51,
+    overviewPath: "/regulators/ivass",
+    years: "Pending",
+    count: 0,
+    dataQuality: "Validated",
+    note: PIPELINE_NOTE,
+    earliestYear: 0,
+    latestYear: 0,
+    nativeCurrency: "EUR",
+    defaultCurrency: "EUR",
+    coverageStatus: "emerging",
+    maturity: "limited",
+    dashboardEnabled: false,
+    officialSources: [
+      {
+        label: "IVASS sanctioning measures",
+        url: "https://www.ivass.it/consumatori/provvedimenti-sanzionatori/index.html",
+        description:
+          "Official IVASS sanctioning-measures archive and insurance-supervision actions.",
+      },
+    ],
+  },
 };
+
+function buildRegionCluster(
+  code: string,
+  coverage: RegulatorCoverageSeed,
+): RegulatorCoverage["regionCluster"] {
+  if (coverage.region === "UK") return "UK";
+  if (code === "FINMA") return "Switzerland";
+  if (coverage.region === "Europe" && coverage.country === "European Union") {
+    return "EU-level";
+  }
+  if (coverage.region === "Europe" && coverage.countryCode === "NO") {
+    return "EEA";
+  }
+  if (coverage.region === "Europe") return "EU";
+  return "Global";
+}
 
 export const REGULATOR_COVERAGE: Record<string, RegulatorCoverage> =
   Object.fromEntries(
@@ -1464,6 +2120,9 @@ export const REGULATOR_COVERAGE: Record<string, RegulatorCoverage> =
       code,
       {
         ...coverage,
+        regionCluster: buildRegionCluster(code, coverage),
+        countryCluster: COUNTRY_CLUSTER_BY_CODE[code] ?? null,
+        rolloutPhase: EUROPE_EEA_PHASE_BY_CODE[code] ?? null,
         operationalConfidence: LOW_CONFIDENCE_LIVE_REGULATOR_SET.has(code)
           ? "lower"
           : "standard",
@@ -1487,6 +2146,18 @@ export const REGULATOR_CODES = REGULATOR_NAV_ITEMS.map(
   (coverage) => coverage.code,
 );
 
+export const REGULATOR_STAGE_COUNTS = {
+  live: REGULATOR_NAV_ITEMS.filter((coverage) => coverage.stage === "live")
+    .length,
+  internal: REGULATOR_NAV_ITEMS.filter(
+    (coverage) => coverage.stage === "internal",
+  ).length,
+  pipeline: REGULATOR_NAV_ITEMS.filter(
+    (coverage) => coverage.stage === "pipeline",
+  ).length,
+  total: REGULATOR_NAV_ITEMS.length,
+} as const;
+
 export const LIVE_REGULATOR_NAV_ITEMS = REGULATOR_NAV_ITEMS.filter(
   (coverage) => coverage.stage === "live",
 );
@@ -1498,6 +2169,42 @@ export const INTERNAL_REGULATOR_NAV_ITEMS = REGULATOR_NAV_ITEMS.filter(
 export const PIPELINE_REGULATOR_NAV_ITEMS = REGULATOR_NAV_ITEMS.filter(
   (coverage) => coverage.stage === "pipeline",
 );
+
+export const EUROPE_EEA_COVERAGE_PHASES: CoverageRoadmapPhase[] = [
+  {
+    id: "phase-1",
+    phase: 1,
+    label: "Phase 1",
+    title: "Core Europe credibility gap",
+    targetWindow: "2026 Q2",
+    description:
+      "Close the obvious Europe holes first: Italy, Switzerland, France banking completion, Luxembourg, Belgium, and Austria.",
+    spotlight: "Italy first",
+    codes: [...EUROPE_EEA_PHASE_CODE_MAP[1]],
+  },
+  {
+    id: "phase-2",
+    phase: 2,
+    label: "Phase 2",
+    title: "Europe breadth and regional depth",
+    targetWindow: "2026 Q3",
+    description:
+      "Expand into Portugal, Czechia, Cyprus, and the Nordics to remove the Europe middle-gap.",
+    spotlight: "Nordics cluster",
+    codes: [...EUROPE_EEA_PHASE_CODE_MAP[2]],
+  },
+  {
+    id: "phase-3",
+    phase: 3,
+    label: "Phase 3",
+    title: "Strategic completeness",
+    targetWindow: "2026 Q4",
+    description:
+      "Round out Europe with Malta and broader Italy remit coverage once the core banking and securities layer is in place.",
+    spotlight: "Specialist markets",
+    codes: [...EUROPE_EEA_PHASE_CODE_MAP[3]],
+  },
+];
 
 /**
  * Production-ready regulators with live hubs and dashboards.

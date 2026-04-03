@@ -1,466 +1,556 @@
-/**
- * Roadmap Page
- *
- * Interactive platform roadmap showing:
- * - Timeline visualization of upcoming features and regulators
- * - Filterable table with year/status/category filters
- * - Progress indicators for in-flight items
- */
+import { useMemo, useState } from "react";
+import { motion } from "framer-motion";
+import {
+  ArrowRight,
+  BellRing,
+  BookOpenText,
+  Braces,
+  Database,
+  Radar,
+  Sparkles,
+} from "lucide-react";
+import { Link } from "react-router-dom";
+import RegulatorMark from "../components/RegulatorMark.js";
+import {
+  EUROPE_EEA_COVERAGE_PHASES,
+  LIVE_REGULATOR_NAV_ITEMS,
+  REGULATOR_STAGE_COUNTS,
+  getRegulatorCoverage,
+  type CoverageRoadmapPhase,
+  type RegulatorCoverage,
+} from "../data/regulatorCoverage.js";
+import { useSEO } from "../hooks/useSEO.js";
+import "../styles/roadmap.css";
 
-import { useState, useMemo } from 'react';
-import { motion } from 'framer-motion';
-import { Check, Clock, Target, Filter, Globe, Zap, Database, Shield } from 'lucide-react';
-import { PIPELINE_REGULATOR_NAV_ITEMS } from '../data/regulatorCoverage.js';
-import '../styles/roadmap.css';
+type RoadmapTab = "coverage" | "product";
 
-type RoadmapStatus = 'completed' | 'in-progress' | 'planned';
-type RoadmapCategory = 'regulator' | 'feature' | 'data' | 'platform';
-
-interface RoadmapItem {
+interface ProductRoadmapItem {
   id: string;
   title: string;
+  targetWindow: string;
+  status: "in-progress" | "planned";
   description: string;
-  category: RoadmapCategory;
-  status: RoadmapStatus;
-  year: number;
-  quarter?: string;
-  priority: 'high' | 'medium' | 'low';
+  outcome: string;
+  icon: typeof BellRing;
 }
 
-const ROADMAP_ITEMS: RoadmapItem[] = [
-  // Completed
+const PRODUCT_ROADMAP_ITEMS: ProductRoadmapItem[] = [
   {
-    id: 'fca-core',
-    title: 'FCA Enforcement Database',
-    description: 'Complete historical FCA enforcement data since 2013',
-    category: 'regulator',
-    status: 'completed',
-    year: 2024,
-    quarter: 'Q1',
-    priority: 'high',
+    id: "alerts",
+    title: "Search and alert precision",
+    targetWindow: "2026 Q2",
+    status: "in-progress",
+    description:
+      "Tighten thematic search ranking, alert quality, and enforcement signal grouping.",
+    outcome: "Sharper firm, regulator, and concept-led monitoring.",
+    icon: BellRing,
   },
   {
-    id: 'multi-regulator',
-    title: 'Multi-Regulator Dashboard',
-    description: 'Cross-regulator comparison and unified analytics',
-    category: 'platform',
-    status: 'completed',
-    year: 2024,
-    quarter: 'Q3',
-    priority: 'high',
+    id: "board-pack",
+    title: "Board pack persistence",
+    targetWindow: "2026 Q3",
+    status: "planned",
+    description:
+      "Move board-pack profiles and consultant workflow beyond local browser storage.",
+    outcome: "Reusable advisory packs and easier internal collaboration.",
+    icon: BookOpenText,
   },
   {
-    id: 'eu-regulators',
-    title: 'European Regulators Coverage',
-    description: 'BaFin, AMF, CNMV, CBI, AFM, DNB, ECB, ESMA',
-    category: 'regulator',
-    status: 'completed',
-    year: 2025,
-    quarter: 'Q1',
-    priority: 'high',
-  },
-
-  // In Progress
-  {
-    id: 'apac-regulators',
-    title: 'Asia-Pacific Expansion',
-    description: 'SFC Hong Kong, MAS Singapore, ASIC, SEBI, and more',
-    category: 'regulator',
-    status: 'in-progress',
-    year: 2026,
-    quarter: 'Q1',
-    priority: 'high',
+    id: "exports",
+    title: "Branded export and sharing",
+    targetWindow: "2026 Q3",
+    status: "planned",
+    description:
+      "Improve print/export fidelity for board packs, regulator views, and search outputs.",
+    outcome: "Cleaner committee-ready and client-facing deliverables.",
+    icon: Database,
   },
   {
-    id: 'mena-regulators',
-    title: 'MENA Region Coverage',
-    description: 'DFSA Dubai, FSRA Abu Dhabi, CBUAE, Saudi CMA',
-    category: 'regulator',
-    status: 'in-progress',
-    year: 2026,
-    quarter: 'Q2',
-    priority: 'medium',
-  },
-  {
-    id: 'advanced-alerts',
-    title: 'Smart Alerts & Notifications',
-    description: 'AI-powered enforcement alerts with custom triggers',
-    category: 'feature',
-    status: 'in-progress',
-    year: 2026,
-    quarter: 'Q2',
-    priority: 'medium',
-  },
-
-  // Planned
-  {
-    id: 'americas-regulators',
-    title: 'Americas Coverage',
-    description: 'SEC, FDIC, FRB, OCC (US), CVM Brazil, CNBV Mexico',
-    category: 'regulator',
-    status: 'planned',
-    year: 2026,
-    quarter: 'Q3',
-    priority: 'high',
-  },
-  {
-    id: 'offshore-regulators',
-    title: 'Offshore Wealth Centers',
-    description: 'JFSC Jersey, GFSC Guernsey, Cayman, BVI',
-    category: 'regulator',
-    status: 'planned',
-    year: 2026,
-    quarter: 'Q3',
-    priority: 'medium',
-  },
-  {
-    id: 'api-access',
-    title: 'Developer API',
-    description: 'RESTful API for programmatic data access',
-    category: 'platform',
-    status: 'planned',
-    year: 2026,
-    quarter: 'Q4',
-    priority: 'high',
-  },
-  {
-    id: 'ml-insights',
-    title: 'Machine Learning Insights',
-    description: 'Predictive analytics and enforcement trend forecasting',
-    category: 'feature',
-    status: 'planned',
-    year: 2027,
-    quarter: 'Q1',
-    priority: 'medium',
-  },
-  {
-    id: 'historical-depth',
-    title: 'Extended Historical Data',
-    description: 'Pre-2013 FCA data and expanded EU historical coverage',
-    category: 'data',
-    status: 'planned',
-    year: 2027,
-    quarter: 'Q2',
-    priority: 'low',
-  },
-  {
-    id: 'custom-reports',
-    title: 'Custom Report Builder',
-    description: 'Build and export custom compliance reports',
-    category: 'feature',
-    status: 'planned',
-    year: 2027,
-    quarter: 'Q3',
-    priority: 'medium',
+    id: "api",
+    title: "API and embedded surfaces",
+    targetWindow: "2026 Q4",
+    status: "planned",
+    description:
+      "Expose regulated search and coverage data through embed-friendly and API-ready interfaces.",
+    outcome: "Reusable enforcement intelligence across client and internal stacks.",
+    icon: Braces,
   },
 ];
 
-const CATEGORY_ICONS = {
-  regulator: Globe,
-  feature: Zap,
-  data: Database,
-  platform: Shield,
+const LIVE_EUROPE_REGULATORS = LIVE_REGULATOR_NAV_ITEMS.filter(
+  (coverage) => coverage.region === "Europe" || coverage.region === "UK",
+);
+
+function getClusterOptions(phases: RoadmapPhaseWithRegulators[]) {
+  return Array.from(
+    new Set(
+      phases.flatMap((phase) =>
+        phase.regulators
+          .map((regulator) => regulator.countryCluster)
+          .filter((value): value is string => Boolean(value)),
+      ),
+    ),
+  );
+}
+
+type RoadmapPhaseWithRegulators = CoverageRoadmapPhase & {
+  regulators: RegulatorCoverage[];
 };
 
-const CATEGORY_LABELS = {
-  regulator: 'Regulator Coverage',
-  feature: 'Platform Features',
-  data: 'Data Enhancements',
-  platform: 'Platform Infrastructure',
-};
+function buildCoveragePhases(): RoadmapPhaseWithRegulators[] {
+  return EUROPE_EEA_COVERAGE_PHASES.map((phase) => ({
+    ...phase,
+    regulators: phase.codes
+      .map((code) => getRegulatorCoverage(code))
+      .filter((coverage): coverage is RegulatorCoverage => Boolean(coverage)),
+  }));
+}
 
-const STATUS_LABELS = {
-  completed: 'Completed',
-  'in-progress': 'In Progress',
-  planned: 'Planned',
-};
+function formatPriority(coverage: RegulatorCoverage) {
+  return `Priority ${coverage.priorityTier}`;
+}
+
+function formatCollectionMode(coverage: RegulatorCoverage) {
+  if (coverage.automationLevel === "curated_archive") {
+    return "Manifest-driven";
+  }
+  if (coverage.automationLevel === "sparse_source") {
+    return "Sparse-source";
+  }
+  return "Automated-ready";
+}
+
+function getPhaseStatusLabel(phase: CoverageRoadmapPhase["phase"]) {
+  if (phase === 1) return "Validated next";
+  if (phase === 2) return "In build queue";
+  return "Later wave";
+}
 
 export function Roadmap() {
-  const [selectedStatus, setSelectedStatus] = useState<RoadmapStatus | 'all'>('all');
-  const [selectedCategory, setSelectedCategory] = useState<RoadmapCategory | 'all'>('all');
-  const [selectedYear, setSelectedYear] = useState<number | 'all'>('all');
+  useSEO({
+    title: "Coverage Roadmap | Europe Expansion and Product Delivery",
+    description:
+      "Track the Europe and EEA regulator rollout in phased coverage waves, alongside the next product work for enforcement intelligence.",
+    canonicalPath: "/roadmap",
+  });
 
-  // Filter items
-  const filteredItems = useMemo(() => {
-    return ROADMAP_ITEMS.filter((item) => {
-      if (selectedStatus !== 'all' && item.status !== selectedStatus) return false;
-      if (selectedCategory !== 'all' && item.category !== selectedCategory) return false;
-      if (selectedYear !== 'all' && item.year !== selectedYear) return false;
-      return true;
-    });
-  }, [selectedStatus, selectedCategory, selectedYear]);
+  const [activeTab, setActiveTab] = useState<RoadmapTab>("coverage");
+  const coveragePhases = useMemo(buildCoveragePhases, []);
+  const clusterOptions = useMemo(
+    () => ["all", ...getClusterOptions(coveragePhases)],
+    [coveragePhases],
+  );
+  const [selectedCluster, setSelectedCluster] = useState<string>("all");
+  const [selectedCode, setSelectedCode] = useState<string>(
+    coveragePhases[0]?.regulators[0]?.code ?? "FINMA",
+  );
 
-  // Get unique years
-  const years = useMemo(() => {
-    return Array.from(new Set(ROADMAP_ITEMS.map((item) => item.year))).sort();
-  }, []);
+  const filteredPhases = useMemo(() => {
+    if (selectedCluster === "all") return coveragePhases;
 
-  // Timeline milestones (grouped by year and quarter)
-  const timelineMilestones = useMemo(() => {
-    const grouped = new Map<string, RoadmapItem[]>();
+    return coveragePhases
+      .map((phase) => ({
+        ...phase,
+        regulators: phase.regulators.filter(
+          (regulator) => regulator.countryCluster === selectedCluster,
+        ),
+      }))
+      .filter((phase) => phase.regulators.length > 0);
+  }, [coveragePhases, selectedCluster]);
 
-    ROADMAP_ITEMS.forEach((item) => {
-      const key = item.quarter ? `${item.year} ${item.quarter}` : `${item.year}`;
-      if (!grouped.has(key)) {
-        grouped.set(key, []);
-      }
-      grouped.get(key)!.push(item);
-    });
+  const visibleCodes = filteredPhases.flatMap((phase) =>
+    phase.regulators.map((regulator) => regulator.code),
+  );
 
-    return Array.from(grouped.entries()).map(([key, items]) => ({
-      key,
-      items,
-    }));
-  }, []);
+  const selectedCoverage =
+    (visibleCodes.includes(selectedCode)
+      ? getRegulatorCoverage(selectedCode)
+      : filteredPhases[0]?.regulators[0]) ?? null;
 
   return (
     <div className="roadmap-page">
-      {/* Hero Section */}
       <section className="roadmap-hero">
         <div className="roadmap-hero__container">
+          <div className="roadmap-hero__eyebrow">
+            <Sparkles size={16} />
+            <span>Mission control</span>
+          </div>
           <motion.h1
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6 }}
+            transition={{ duration: 0.55 }}
             className="roadmap-hero__title"
           >
-            Platform Roadmap
+            Coverage roadmap
           </motion.h1>
           <motion.p
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, delay: 0.2 }}
+            transition={{ duration: 0.55, delay: 0.1 }}
             className="roadmap-hero__description"
           >
-            Track our progress as we expand global regulator coverage and build
-            powerful new features for regulatory intelligence.
+            Europe comes first. Italy, Switzerland, France banking completion,
+            Luxembourg, Belgium, Austria, Portugal, Cyprus, and the Nordics are
+            now mapped into an explicit three-phase rollout instead of a vague
+            backlog.
           </motion.p>
 
           <motion.div
-            initial={{ opacity: 0, y: 20 }}
+            initial={{ opacity: 0, y: 16 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, delay: 0.4 }}
+            transition={{ duration: 0.55, delay: 0.2 }}
             className="roadmap-hero__stats"
           >
-            <div className="stat">
-              <span className="stat__value">
-                {ROADMAP_ITEMS.filter((i) => i.status === 'completed').length}
-              </span>
-              <span className="stat__label">Completed</span>
-            </div>
-            <div className="stat">
-              <span className="stat__value">
-                {ROADMAP_ITEMS.filter((i) => i.status === 'in-progress').length}
-              </span>
-              <span className="stat__label">In Progress</span>
-            </div>
-            <div className="stat">
-              <span className="stat__value">
-                {ROADMAP_ITEMS.filter((i) => i.status === 'planned').length}
-              </span>
-              <span className="stat__label">Planned</span>
-            </div>
+            <HeroStat
+              value={REGULATOR_STAGE_COUNTS.live}
+              label="Live now"
+              helper="Public hubs and dashboards"
+            />
+            <HeroStat
+              value={coveragePhases.flatMap((phase) => phase.regulators).length}
+              label="Europe / EEA next"
+              helper="Validated phase rollout"
+            />
+            <HeroStat
+              value={REGULATOR_STAGE_COUNTS.pipeline}
+              label="Validated next"
+              helper="Queued regulators"
+            />
+            <HeroStat
+              value={REGULATOR_STAGE_COUNTS.total}
+              label="Tracked total"
+              helper="Live, internal, and pipeline"
+            />
           </motion.div>
-        </div>
-      </section>
 
-      {/* Timeline Section */}
-      <section className="roadmap-timeline">
-        <div className="roadmap-timeline__container">
-          <h2 className="roadmap-timeline__title">Development Timeline</h2>
-
-          <div className="timeline">
-            <div className="timeline__line" />
-            {timelineMilestones.map((milestone, index) => (
-              <TimelineMilestone
-                key={milestone.key}
-                label={milestone.key}
-                items={milestone.items}
-                isLast={index === timelineMilestones.length - 1}
-              />
-            ))}
+          <div className="roadmap-tabs" role="tablist" aria-label="Roadmap view">
+            <TabButton
+              active={activeTab === "coverage"}
+              label="Coverage Roadmap"
+              onClick={() => setActiveTab("coverage")}
+            />
+            <TabButton
+              active={activeTab === "product"}
+              label="Product Roadmap"
+              onClick={() => setActiveTab("product")}
+            />
           </div>
         </div>
       </section>
 
-      {/* Filters & Table Section */}
-      <section className="roadmap-table-section">
-        <div className="roadmap-table-section__container">
-          <h2 className="roadmap-table-section__title">All Roadmap Items</h2>
-
-          {/* Filters */}
-          <div className="roadmap-filters">
-            <div className="filter-group">
-              <label className="filter-group__label">
-                <Filter size={16} />
-                Status
-              </label>
-              <div className="filter-buttons">
-                <button
-                  className={`filter-button ${selectedStatus === 'all' ? 'filter-button--active' : ''}`}
-                  onClick={() => setSelectedStatus('all')}
-                >
-                  All
-                </button>
-                <button
-                  className={`filter-button ${selectedStatus === 'completed' ? 'filter-button--active' : ''}`}
-                  onClick={() => setSelectedStatus('completed')}
-                >
-                  Completed
-                </button>
-                <button
-                  className={`filter-button ${selectedStatus === 'in-progress' ? 'filter-button--active' : ''}`}
-                  onClick={() => setSelectedStatus('in-progress')}
-                >
-                  In Progress
-                </button>
-                <button
-                  className={`filter-button ${selectedStatus === 'planned' ? 'filter-button--active' : ''}`}
-                  onClick={() => setSelectedStatus('planned')}
-                >
-                  Planned
-                </button>
+      <section className="roadmap-console">
+        <div className="roadmap-console__container">
+          {activeTab === "coverage" ? (
+            <>
+              <div className="roadmap-console__topline">
+                <div>
+                  <span className="roadmap-console__kicker">
+                    Europe + EEA rollout
+                  </span>
+                  <h2>Horizontal delivery rail</h2>
+                </div>
+                <p>
+                  The coverage tab is registry-driven. Every card below is tied
+                  to a tracked regulator entry, official source set, and phase.
+                </p>
               </div>
-            </div>
 
-            <div className="filter-group">
-              <label className="filter-group__label">Category</label>
-              <div className="filter-buttons">
-                <button
-                  className={`filter-button ${selectedCategory === 'all' ? 'filter-button--active' : ''}`}
-                  onClick={() => setSelectedCategory('all')}
-                >
-                  All
-                </button>
-                {Object.entries(CATEGORY_LABELS).map(([key, label]) => (
+              <div className="roadmap-filter-chips">
+                {clusterOptions.map((cluster) => (
                   <button
-                    key={key}
-                    className={`filter-button ${selectedCategory === key ? 'filter-button--active' : ''}`}
-                    onClick={() => setSelectedCategory(key as RoadmapCategory)}
+                    key={cluster}
+                    type="button"
+                    className={
+                      cluster === selectedCluster
+                        ? "roadmap-chip roadmap-chip--active"
+                        : "roadmap-chip"
+                    }
+                    onClick={() => setSelectedCluster(cluster)}
                   >
-                    {label}
+                    {cluster === "all" ? "All clusters" : cluster}
                   </button>
                 ))}
               </div>
-            </div>
 
-            <div className="filter-group">
-              <label className="filter-group__label">Year</label>
-              <div className="filter-buttons">
-                <button
-                  className={`filter-button ${selectedYear === 'all' ? 'filter-button--active' : ''}`}
-                  onClick={() => setSelectedYear('all')}
-                >
-                  All
-                </button>
-                {years.map((year) => (
-                  <button
-                    key={year}
-                    className={`filter-button ${selectedYear === year ? 'filter-button--active' : ''}`}
-                    onClick={() => setSelectedYear(year)}
+              <div className="roadmap-live-strip" data-testid="coverage-live-strip">
+                <div className="roadmap-live-strip__header">
+                  <span>Live now</span>
+                  <strong>{LIVE_EUROPE_REGULATORS.length} European anchors</strong>
+                </div>
+                <div className="roadmap-live-strip__items">
+                  {LIVE_EUROPE_REGULATORS.map((coverage) => (
+                    <Link
+                      key={coverage.code}
+                      to={coverage.overviewPath}
+                      className="roadmap-live-pill"
+                    >
+                      <RegulatorMark
+                        regulator={coverage.code}
+                        label={coverage.fullName}
+                        country={coverage.country}
+                        size="small"
+                        showCode
+                        decorative
+                      />
+                    </Link>
+                  ))}
+                </div>
+              </div>
+
+              <div
+                className="roadmap-rail"
+                role="region"
+                aria-label="Coverage roadmap phases"
+                data-testid="coverage-roadmap-rail"
+              >
+                {filteredPhases.map((phase) => (
+                  <section
+                    key={phase.id}
+                    className="roadmap-phase"
+                    data-testid={`coverage-phase-${phase.phase}`}
                   >
-                    {year}
-                  </button>
+                    <div className="roadmap-phase__header">
+                      <div>
+                        <span className="roadmap-phase__label">{phase.label}</span>
+                        <h3>{phase.title}</h3>
+                      </div>
+                      <div className="roadmap-phase__meta">
+                        <span>{phase.targetWindow}</span>
+                        <span>{getPhaseStatusLabel(phase.phase)}</span>
+                      </div>
+                    </div>
+
+                    <p className="roadmap-phase__description">
+                      {phase.description}
+                    </p>
+
+                    <div className="roadmap-phase__spotlight">
+                      <Radar size={16} />
+                      <span>{phase.spotlight}</span>
+                    </div>
+
+                    <div className="roadmap-phase__cards">
+                      {phase.regulators.map((coverage) => (
+                        <button
+                          key={coverage.code}
+                          type="button"
+                          className={
+                            selectedCoverage?.code === coverage.code
+                              ? "roadmap-regulator-card roadmap-regulator-card--active"
+                              : "roadmap-regulator-card"
+                          }
+                          onClick={() => setSelectedCode(coverage.code)}
+                          data-testid={`coverage-card-${coverage.code.toLowerCase()}`}
+                        >
+                          <div className="roadmap-regulator-card__header">
+                            <RegulatorMark
+                              regulator={coverage.code}
+                              label={coverage.fullName}
+                              country={coverage.country}
+                              size="small"
+                              showCode
+                              decorative
+                            />
+                            <span className="roadmap-stage-badge">
+                              {formatPriority(coverage)}
+                            </span>
+                          </div>
+
+                          <h4>{coverage.fullName}</h4>
+                          <p>
+                            {coverage.countryCluster ?? coverage.country} ·{" "}
+                            {coverage.country}
+                          </p>
+
+                          <div className="roadmap-regulator-card__meta">
+                            <span>{coverage.scrapeMode.replace(/_/g, " ")}</span>
+                            <span>{formatCollectionMode(coverage)}</span>
+                          </div>
+                        </button>
+                      ))}
+                    </div>
+                  </section>
                 ))}
               </div>
-            </div>
-          </div>
 
-          {/* Results Count */}
-          <div className="roadmap-results">
-            Showing {filteredItems.length} of {ROADMAP_ITEMS.length} items
-          </div>
+              {selectedCoverage ? (
+                <div
+                  className="roadmap-detail"
+                  data-testid="coverage-detail-panel"
+                >
+                  <div className="roadmap-detail__hero">
+                    <div className="roadmap-detail__mark">
+                      <RegulatorMark
+                        regulator={selectedCoverage.code}
+                        label={selectedCoverage.fullName}
+                        country={selectedCoverage.country}
+                        size="large"
+                        showCode
+                        decorative
+                        surface="dark"
+                      />
+                    </div>
+                    <div className="roadmap-detail__copy">
+                      <span className="roadmap-console__kicker">
+                        {selectedCoverage.rolloutPhase
+                          ? `Europe phase ${selectedCoverage.rolloutPhase}`
+                          : "Pipeline"}
+                      </span>
+                      <h3>{selectedCoverage.fullName}</h3>
+                      <p>
+                        {selectedCoverage.country} ·{" "}
+                        {selectedCoverage.countryCluster ?? selectedCoverage.regionCluster}
+                      </p>
+                    </div>
+                    <div className="roadmap-detail__stats">
+                      <DetailStat
+                        label="Source surface"
+                        value={selectedCoverage.scrapeMode.replace(/_/g, " ")}
+                      />
+                      <DetailStat
+                        label="Collection mode"
+                        value={formatCollectionMode(selectedCoverage)}
+                      />
+                      <DetailStat
+                        label="Status"
+                        value={getPhaseStatusLabel(
+                          selectedCoverage.rolloutPhase ?? 3,
+                        )}
+                      />
+                    </div>
+                  </div>
 
-          {/* Table */}
-          <div className="roadmap-table">
-            {filteredItems.map((item) => (
-              <RoadmapItemCard key={item.id} item={item} />
-            ))}
-          </div>
+                  <div className="roadmap-detail__body">
+                    <div className="roadmap-detail__panel">
+                      <h4>Why it belongs in the rollout</h4>
+                      <p>
+                        {selectedCoverage.stage === "pipeline"
+                          ? selectedCoverage.feedContract.sourceContractSummary
+                          : (selectedCoverage.note ??
+                            selectedCoverage.feedContract.sourceContractSummary)}
+                      </p>
+                    </div>
+                    <div className="roadmap-detail__panel">
+                      <h4>Official sources</h4>
+                      <ul className="roadmap-source-list">
+                        {selectedCoverage.officialSources.map((source) => (
+                          <li key={source.url}>
+                            <a
+                              href={source.url}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                            >
+                              <span>{source.label}</span>
+                              <ArrowRight size={14} />
+                            </a>
+                            <p>{source.description}</p>
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  </div>
+                </div>
+              ) : null}
+            </>
+          ) : (
+            <>
+              <div className="roadmap-console__topline">
+                <div>
+                  <span className="roadmap-console__kicker">Product track</span>
+                  <h2>Platform work that follows the coverage push</h2>
+                </div>
+                <p>
+                  Product items stay separate from regulator rollout so the
+                  coverage story is no longer diluted by mixed roadmap cards.
+                </p>
+              </div>
+
+              <div className="roadmap-product-grid" data-testid="product-roadmap-grid">
+                {PRODUCT_ROADMAP_ITEMS.map((item) => {
+                  const Icon = item.icon;
+                  return (
+                    <div key={item.id} className="roadmap-product-card">
+                      <div className="roadmap-product-card__header">
+                        <div className="roadmap-product-card__icon">
+                          <Icon size={18} />
+                        </div>
+                        <span
+                          className={
+                            item.status === "in-progress"
+                              ? "roadmap-stage-badge roadmap-stage-badge--amber"
+                              : "roadmap-stage-badge"
+                          }
+                        >
+                          {item.status === "in-progress"
+                            ? "In progress"
+                            : "Planned"}
+                        </span>
+                      </div>
+                      <h3>{item.title}</h3>
+                      <p>{item.description}</p>
+                      <div className="roadmap-product-card__footer">
+                        <span>{item.targetWindow}</span>
+                        <strong>{item.outcome}</strong>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </>
+          )}
         </div>
       </section>
     </div>
   );
 }
 
-/**
- * TimelineMilestone - Single milestone on the timeline
- */
-function TimelineMilestone({
+function HeroStat({
+  value,
   label,
-  items,
-  isLast,
+  helper,
 }: {
+  value: number;
   label: string;
-  items: RoadmapItem[];
-  isLast: boolean;
+  helper: string;
 }) {
-  const allCompleted = items.every((item) => item.status === 'completed');
-  const hasInProgress = items.some((item) => item.status === 'in-progress');
-
   return (
-    <div className="timeline-milestone">
-      <div className={`timeline-milestone__marker ${allCompleted ? 'timeline-milestone__marker--completed' : hasInProgress ? 'timeline-milestone__marker--in-progress' : ''}`}>
-        {allCompleted ? <Check size={16} /> : hasInProgress ? <Clock size={16} /> : <Target size={16} />}
-      </div>
-      <div className="timeline-milestone__content">
-        <div className="timeline-milestone__label">{label}</div>
-        <div className="timeline-milestone__items">
-          {items.map((item) => {
-            const Icon = CATEGORY_ICONS[item.category];
-            return (
-              <div key={item.id} className="timeline-item">
-                <Icon size={14} />
-                <span>{item.title}</span>
-              </div>
-            );
-          })}
-        </div>
-      </div>
+    <div className="roadmap-stat">
+      <strong>{value}</strong>
+      <span>{label}</span>
+      <small>{helper}</small>
     </div>
   );
 }
 
-/**
- * RoadmapItemCard - Individual roadmap item in the table
- */
-function RoadmapItemCard({ item }: { item: RoadmapItem }) {
-  const Icon = CATEGORY_ICONS[item.category];
-
+function DetailStat({ label, value }: { label: string; value: string }) {
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 10 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.3 }}
-      className="roadmap-item-card"
-    >
-      <div className="roadmap-item-card__header">
-        <div className="roadmap-item-card__title-row">
-          <div className="roadmap-item-card__icon">
-            <Icon size={20} />
-          </div>
-          <h3 className="roadmap-item-card__title">{item.title}</h3>
-        </div>
-        <div className="roadmap-item-card__badges">
-          <span className={`status-badge status-badge--${item.status}`}>
-            {STATUS_LABELS[item.status]}
-          </span>
-          <span className={`priority-badge priority-badge--${item.priority}`}>
-            {item.priority}
-          </span>
-        </div>
-      </div>
-
-      <p className="roadmap-item-card__description">{item.description}</p>
-
-      <div className="roadmap-item-card__footer">
-        <span className="roadmap-item-card__category">
-          {CATEGORY_LABELS[item.category]}
-        </span>
-        <span className="roadmap-item-card__timeline">
-          {item.quarter ? `${item.quarter} ` : ''}{item.year}
-        </span>
-      </div>
-    </motion.div>
+    <div className="roadmap-detail-stat">
+      <span>{label}</span>
+      <strong>{value}</strong>
+    </div>
   );
 }
+
+function TabButton({
+  active,
+  label,
+  onClick,
+}: {
+  active: boolean;
+  label: string;
+  onClick: () => void;
+}) {
+  return (
+    <button
+      type="button"
+      role="tab"
+      aria-selected={active}
+      className={active ? "roadmap-tab roadmap-tab--active" : "roadmap-tab"}
+      onClick={onClick}
+    >
+      {label}
+    </button>
+  );
+}
+
+export default Roadmap;
