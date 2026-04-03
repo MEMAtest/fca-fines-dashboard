@@ -9,19 +9,34 @@ import {
   hasOfficialRegulatorLogo,
   isOfficialLogoApprovedForSurface,
 } from "./regulatorLogos.js";
+import { REGULATOR_CODES } from "./regulatorCoverage.js";
 
 describe("regulator logo registry", () => {
-  it("resolves official logos for the seeded regulators", () => {
+  it("resolves managed logo assets for every regulator in scope", () => {
     expect(hasOfficialRegulatorLogo("FCA")).toBe(true);
+    expect(hasOfficialRegulatorLogo("BaFin")).toBe(true);
+    expect(hasOfficialRegulatorLogo("SEC")).toBe(true);
     expect(hasOfficialRegulatorLogo("SEBI")).toBe(true);
-    expect(getOfficialRegulatorLogo("SEC")).toBeNull();
+    expect(hasOfficialRegulatorLogo("OSC")).toBe(true);
+    REGULATOR_CODES.forEach((code) => {
+      expect(hasOfficialRegulatorLogo(code)).toBe(true);
+    });
     expect(getOfficialRegulatorLogo("FCA")).toMatchObject({
-      assetPath: "/regulator-logos/fca.png",
-      sourceUrl: "https://www.fca.org.uk/themes/custom/fca/images/logo.png",
+      assetPath: "/regulator-logos/fca.ico",
+      sourceUrl: "https://www.fca.org.uk/themes/custom/fca/favicon.ico",
     });
     expect(getOfficialRegulatorLogo("SEBI")).toMatchObject({
       assetPath: "/regulator-logos/sebi.png",
       sourceUrl: "https://www.sebi.gov.in/images/icons/sebi-icon.png",
+    });
+    expect(getOfficialRegulatorLogo("OSC")).toMatchObject({
+      assetPath: "/regulator-logos/osc.png",
+      sourceUrl: "https://www.osc.ca/themes/custom/osc_glider/192x192.png",
+    });
+    expect(getOfficialRegulatorLogo("DNB")).toMatchObject({
+      compactLogo: {
+        assetPath: "/regulator-logos/dnb-compact.svg",
+      },
     });
   });
 
@@ -34,6 +49,15 @@ describe("regulator logo registry", () => {
         logo!.assetPath.replace(/^\//, ""),
       );
       expect(existsSync(assetPath)).toBe(true);
+
+      if (logo?.compactLogo) {
+        const compactAssetPath = join(
+          process.cwd(),
+          "public",
+          logo.compactLogo.assetPath.replace(/^\//, ""),
+        );
+        expect(existsSync(compactAssetPath)).toBe(true);
+      }
     });
   });
 
@@ -58,7 +82,13 @@ describe("regulator logo registry", () => {
     expect(isOfficialLogoApprovedForSurface(syntheticLogo, "dark")).toBe(false);
     expect(isOfficialLogoApprovedForSurface(syntheticLogo, "print")).toBe(true);
     expect(getRenderableOfficialRegulatorLogo("FCA", "dark")).toMatchObject({
-      assetPath: "/regulator-logos/fca.png",
+      assetPath: "/regulator-logos/fca.ico",
+    });
+    expect(getRenderableOfficialRegulatorLogo("DNB", "light", "small")).toMatchObject({
+      assetPath: "/regulator-logos/dnb-compact.svg",
+    });
+    expect(getRenderableOfficialRegulatorLogo("DNB", "light", "medium")).toMatchObject({
+      assetPath: "/regulator-logos/dnb.svg",
     });
   });
 });

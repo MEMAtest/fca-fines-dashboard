@@ -24,7 +24,14 @@ import {
   Calendar,
   Shield,
 } from 'lucide-react';
+import {
+  LIVE_REGULATOR_NAV_ITEMS,
+  REGULATOR_NAV_ITEMS,
+} from '../data/regulatorCoverage.js';
 import '../styles/features.css';
+
+const LIVE_REGULATOR_COUNT = LIVE_REGULATOR_NAV_ITEMS.length;
+const TRACKED_REGULATOR_COUNT = REGULATOR_NAV_ITEMS.length;
 
 const FEATURES = [
   {
@@ -77,9 +84,9 @@ const FEATURES = [
     description:
       'Track enforcement actions from financial regulators across UK, EU, APAC, MENA, and the Americas.',
     highlights: [
-      '30+ live regulators',
+      `${LIVE_REGULATOR_COUNT} live regulators`,
+      `${TRACKED_REGULATOR_COUNT} regulators tracked`,
       'Historical depth',
-      'Daily updates',
     ],
   },
   {

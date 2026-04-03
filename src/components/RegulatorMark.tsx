@@ -33,10 +33,8 @@ export function RegulatorMark({
   className,
 }: RegulatorMarkProps) {
   const config = getRegulatorLogoConfig(regulator);
-  const officialLogo = getRenderableOfficialRegulatorLogo(regulator, surface);
-  const showOfficialLogo = Boolean(
-    officialLogo && !(size === "small" && officialLogo.backgroundMode === "light-box-required"),
-  );
+  const officialLogo = getRenderableOfficialRegulatorLogo(regulator, surface, size);
+  const showOfficialLogo = Boolean(officialLogo);
   const accessibleLabel = label || regulator;
   const sigilVariant = getRegulatorSigilVariant(regulator);
   const title = country ? `${accessibleLabel} (${country})` : accessibleLabel;

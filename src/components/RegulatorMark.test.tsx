@@ -19,31 +19,31 @@ describe("RegulatorMark", () => {
     ).toBeInTheDocument();
     expect(document.querySelector(".regulator-mark__image")).toHaveAttribute(
       "src",
-      "/regulator-logos/fca.png",
+      "/regulator-logos/fca.ico",
     );
     expect(screen.getByText("FCA")).toBeInTheDocument();
   });
 
-  it("renders a fallback sigil when no official logo is approved", () => {
+  it("renders a fallback sigil only for unknown regulators", () => {
     render(
       <RegulatorMark
-        regulator="SEC"
-        label="U.S. Securities and Exchange Commission"
-        country="United States"
+        regulator="ZZZ"
+        label="Unknown regulator"
+        country="Unknown"
         decorative={false}
       />,
     );
 
     expect(
       screen.getByRole("img", {
-        name: /U\.S\. Securities and Exchange Commission/,
+        name: /Unknown regulator/,
       }),
     ).toBeInTheDocument();
     expect(document.querySelector(".regulator-mark__sigil")).toBeTruthy();
     expect(document.querySelector(".regulator-mark__image")).toBeFalsy();
   });
 
-  it("uses the fallback sigil for tiny official logos in compact marks", () => {
+  it("uses the managed logo even in compact marks", () => {
     render(
       <RegulatorMark
         regulator="FCA"
@@ -56,8 +56,30 @@ describe("RegulatorMark", () => {
     );
 
     expect(screen.getByText("FCA")).toBeInTheDocument();
-    expect(document.querySelector(".regulator-mark__sigil")).toBeTruthy();
-    expect(document.querySelector(".regulator-mark__image")).toBeFalsy();
+    expect(document.querySelector(".regulator-mark__sigil")).toBeFalsy();
+    expect(document.querySelector(".regulator-mark__image")).toHaveAttribute(
+      "src",
+      "/regulator-logos/fca.ico",
+    );
+  });
+
+  it("switches to a compact official asset for small badges when configured", () => {
+    render(
+      <RegulatorMark
+        regulator="DNB"
+        label="De Nederlandsche Bank"
+        country="Netherlands"
+        size="small"
+        showCode
+        decorative={false}
+      />,
+    );
+
+    expect(screen.getByText("DNB")).toBeInTheDocument();
+    expect(document.querySelector(".regulator-mark__image")).toHaveAttribute(
+      "src",
+      "/regulator-logos/dnb-compact.svg",
+    );
   });
 
   it("is decorative by default inside larger labeled UI", () => {

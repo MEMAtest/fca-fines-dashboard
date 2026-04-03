@@ -18,10 +18,10 @@ describe("regulatorCoverage", () => {
     expect(PUBLIC_REGULATOR_CODES).toContain("FCA");
     expect(PUBLIC_REGULATOR_CODES).toContain("DFSA");
     expect(PUBLIC_REGULATOR_CODES).toContain("SEC");
-    expect(PUBLIC_REGULATOR_CODES).toContain("ESMA");
-    expect(PUBLIC_REGULATOR_CODES).toContain("CVM");
-    expect(PUBLIC_REGULATOR_CODES).toContain("FDIC");
-    expect(PUBLIC_REGULATOR_CODES).toContain("FRB");
+    expect(PUBLIC_REGULATOR_CODES).not.toContain("ESMA");
+    expect(PUBLIC_REGULATOR_CODES).not.toContain("CVM");
+    expect(PUBLIC_REGULATOR_CODES).not.toContain("FDIC");
+    expect(PUBLIC_REGULATOR_CODES).not.toContain("FRB");
   });
 
   it("keeps blog generation limited to live enabled regulators", () => {
@@ -50,24 +50,25 @@ describe("regulatorCoverage", () => {
     expect(PUBLIC_EU_REGULATOR_CODES).toContain("BaFin");
     expect(PUBLIC_EU_REGULATOR_CODES).toContain("CBI");
     expect(PUBLIC_EU_REGULATOR_CODES).toContain("ECB");
-    expect(PUBLIC_EU_REGULATOR_CODES).toContain("ESMA");
-    expect(PUBLIC_EU_REGULATOR_CODES).toContain("FINMA");
+    expect(PUBLIC_EU_REGULATOR_CODES).not.toContain("ESMA");
+    expect(PUBLIC_EU_REGULATOR_CODES).not.toContain("FINMA");
     expect(PUBLIC_EU_REGULATOR_CODES).not.toContain("SFC");
   });
 
   it("keeps the current live roster aligned with the shared exports", () => {
-    expect(LIVE_REGULATOR_NAV_ITEMS).toHaveLength(34);
-    expect(INTERNAL_REGULATOR_NAV_ITEMS).toEqual([]);
-    expect(PIPELINE_REGULATOR_NAV_ITEMS).toEqual([]);
+    expect(LIVE_REGULATOR_NAV_ITEMS).toHaveLength(17);
+    expect(INTERNAL_REGULATOR_NAV_ITEMS).toHaveLength(1);
+    expect(PIPELINE_REGULATOR_NAV_ITEMS).toHaveLength(17);
     expect(PUBLIC_REGULATOR_CODES).toHaveLength(LIVE_REGULATOR_NAV_ITEMS.length);
-    expect(getRegulatorCoverage("ESMA")?.stage).toBe("live");
-    expect(getRegulatorCoverage("CVM")?.stage).toBe("live");
-    expect(getRegulatorCoverage("CNBV")?.stage).toBe("live");
-    expect(getRegulatorCoverage("CMF")?.stage).toBe("live");
-    expect(getRegulatorCoverage("FINMA")?.stage).toBe("live");
-    expect(getRegulatorCoverage("SESC")?.stage).toBe("live");
-    expect(getRegulatorCoverage("FDIC")?.stage).toBe("live");
-    expect(getRegulatorCoverage("FRB")?.stage).toBe("live");
+    expect(getRegulatorCoverage("ESMA")?.stage).toBe("internal");
+    expect(getRegulatorCoverage("CVM")?.stage).toBe("pipeline");
+    expect(getRegulatorCoverage("CNBV")?.stage).toBe("pipeline");
+    expect(getRegulatorCoverage("CMF")?.stage).toBe("pipeline");
+    expect(getRegulatorCoverage("FINMA")?.stage).toBe("pipeline");
+    expect(getRegulatorCoverage("SESC")?.stage).toBe("pipeline");
+    expect(getRegulatorCoverage("FDIC")?.stage).toBe("pipeline");
+    expect(getRegulatorCoverage("FRB")?.stage).toBe("pipeline");
+    expect(getRegulatorCoverage("OSC")?.stage).toBe("pipeline");
   });
 
   it("flags lower-confidence live regulators separately from the stable daily set", () => {
@@ -97,29 +98,30 @@ describe("regulatorCoverage", () => {
     expect(getRegulatorCoverage("SEC")?.automationLevel).toBe("automated");
   });
 
-  it("keeps newly promoted global regulators public while preserving dashboard gating", () => {
+  it("keeps global targets in pipeline until their datasets are genuinely live", () => {
     ["HKMA", "ASIC", "MAS", "OCC", "FSCA", "FMANZ", "CSRC", "FDIC", "FRB", "CMASA"].forEach(
       (code) => {
-        expect(PUBLIC_REGULATOR_CODES).toContain(code);
-        expect(getRegulatorCoverage(code)?.stage).toBe("live");
+        expect(PUBLIC_REGULATOR_CODES).not.toContain(code);
+        expect(getRegulatorCoverage(code)?.stage).toBe("pipeline");
       },
     );
-    expect(getRegulatorCoverage("hkma")?.dashboardEnabled).toBe(true);
-    expect(getRegulatorCoverage("occ")?.dashboardEnabled).toBe(true);
+    expect(getRegulatorCoverage("hkma")?.dashboardEnabled).toBe(false);
+    expect(getRegulatorCoverage("occ")?.dashboardEnabled).toBe(false);
     expect(getRegulatorCoverage("fdic")?.dashboardEnabled).toBe(false);
     expect(getRegulatorCoverage("frb")?.dashboardEnabled).toBe(false);
     expect(getRegulatorCoverage("fsca")?.region).toBe("Africa");
   });
 
-  it("keeps the wider global set in public navigation once promoted", () => {
-    ["TWFSC", "CVM", "CNBV", "CMF"].forEach((code) => {
-      expect(PUBLIC_REGULATOR_CODES).toContain(code);
-      expect(getRegulatorCoverage(code)?.stage).toBe("live");
+  it("keeps the wider global set queued alongside the new Canada regulator", () => {
+    ["TWFSC", "CVM", "CNBV", "CMF", "OSC"].forEach((code) => {
+      expect(PUBLIC_REGULATOR_CODES).not.toContain(code);
+      expect(getRegulatorCoverage(code)?.stage).toBe("pipeline");
     });
 
     expect(getRegulatorCoverage("twfsc")?.country).toBe("Taiwan");
     expect(getRegulatorCoverage("cvm")?.country).toBe("Brazil");
     expect(getRegulatorCoverage("cnbv")?.country).toBe("Mexico");
     expect(getRegulatorCoverage("cmf")?.country).toBe("Chile");
+    expect(getRegulatorCoverage("osc")?.country).toBe("Canada");
   });
 });

@@ -458,7 +458,7 @@ export function BoardIntelligence() {
             <small>{activeBoardFocus?.description}</small>
           </div>
           <div className="board-intelligence__hero-stat">
-            <span>Coverage in scope</span>
+            <span>Coverage tracked</span>
             <strong>{REGULATOR_OPTIONS.length} live regulators</strong>
             <small>
               {fines.length.toLocaleString()} tracked actions available
