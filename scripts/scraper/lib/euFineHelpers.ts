@@ -159,7 +159,7 @@ export async function fetchBinary(url: string, config: AxiosRequestConfig = {}) 
   return Buffer.from(response.data);
 }
 
-async function requestWithRetry<T>(config: AxiosRequestConfig, attempts = 3) {
+async function requestWithRetry<T>(config: AxiosRequestConfig, attempts = 4) {
   let lastError: unknown;
 
   for (let attempt = 1; attempt <= attempts; attempt += 1) {
@@ -172,7 +172,7 @@ async function requestWithRetry<T>(config: AxiosRequestConfig, attempts = 3) {
         throw error;
       }
 
-      await sleep(500 * attempt);
+      await sleep(getRetryDelayMs(error, attempt));
     }
   }
 
@@ -194,6 +194,24 @@ function shouldRetryRequest(error: unknown) {
 
 function sleep(ms: number) {
   return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+function getRetryDelayMs(error: unknown, attempt: number) {
+  if (axios.isAxiosError(error)) {
+    const retryAfterHeader = error.response?.headers?.["retry-after"];
+    if (retryAfterHeader) {
+      const retryAfterSeconds = Number.parseInt(String(retryAfterHeader), 10);
+      if (Number.isFinite(retryAfterSeconds) && retryAfterSeconds > 0) {
+        return retryAfterSeconds * 1000;
+      }
+    }
+
+    if (error.response?.status === 429) {
+      return 3_000 * attempt;
+    }
+  }
+
+  return 750 * attempt;
 }
 
 export async function extractPdfTextFromUrl(url: string) {
@@ -262,6 +280,33 @@ export function parseMonthNameDate(input: string) {
     direct.getUTCFullYear(),
     direct.getUTCMonth() + 1,
     direct.getUTCDate(),
+  );
+}
+
+export function parseLocalizedDayMonthYear(
+  input: string,
+  monthMap: Record<string, number>,
+) {
+  const cleaned = normalizeWhitespace(input)
+    .replace(/,/g, "")
+    .replace(/\b1er\b/i, "1");
+  const match = cleaned.match(/^(\d{1,2})\s+([A-Za-zÀ-ÿ.'’]+)\s+(\d{4})$/);
+  if (!match) {
+    return null;
+  }
+
+  const normalizedMonth = match[2]
+    .toLowerCase()
+    .replace(/[.’']/g, "");
+  const month = monthMap[normalizedMonth];
+  if (!month) {
+    return null;
+  }
+
+  return toIsoDateFromParts(
+    Number.parseInt(match[3], 10),
+    month,
+    Number.parseInt(match[1], 10),
   );
 }
 
@@ -404,8 +449,8 @@ export function parseLargestAmountFromText(
     .join('|');
 
   const contextualPatterns = [
-    new RegExp(`(?:${keywordGroup})[^\\dA-Z$£€₹]{0,30}(?:${currencyPattern})?\\s*([\\d,]+(?:\\.\\d+)?)\\s*(crore|lakhs?|million|thousand|bn|mn|m|k)?`, 'gi'),
-    new RegExp(`(?:${currencyPattern})\\s*([\\d,]+(?:\\.\\d+)?)\\s*(crore|lakhs?|million|thousand|bn|mn|m|k)?`, 'gi'),
+    new RegExp(`(?:${keywordGroup})[^\\dA-Z$£€₹]{0,30}(?:${currencyPattern})?\\s*([\\d\\s,]+(?:\\.\\d+)?)\\s*(crore|lakhs?|million|thousand|bn|mn|m|k)?`, 'gi'),
+    new RegExp(`(?:${currencyPattern})\\s*([\\d\\s,]+(?:\\.\\d+)?)\\s*(crore|lakhs?|million|thousand|bn|mn|m|k)?`, 'gi'),
   ];
 
   for (const pattern of contextualPatterns) {
@@ -593,4 +638,31 @@ export function makeAbsoluteUrl(baseUrl: string, maybeRelative: string) {
   }
 
   return new URL(maybeRelative, baseUrl).toString();
+}
+
+export async function mapWithConcurrency<T, U>(
+  items: T[],
+  concurrency: number,
+  mapper: (item: T, index: number) => Promise<U>,
+) {
+  const results = new Array<U>(items.length);
+  let currentIndex = 0;
+
+  await Promise.all(
+    Array.from({ length: Math.min(Math.max(concurrency, 1), items.length || 1) })
+      .map(async () => {
+        while (true) {
+          const index = currentIndex;
+          currentIndex += 1;
+
+          if (index >= items.length) {
+            return;
+          }
+
+          results[index] = await mapper(items[index], index);
+        }
+      }),
+  );
+
+  return results;
 }

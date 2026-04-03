@@ -222,7 +222,7 @@ export function Blog() {
               centres.
             </p>
             <p className="blog-hero-stats">
-              Tracking <strong>17 live regulators</strong> alongside the
+              Tracking <strong>21 live regulators</strong> alongside the
               flagship FCA enforcement archive
             </p>
           </motion.div>

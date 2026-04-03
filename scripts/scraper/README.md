@@ -86,6 +86,18 @@ Lower-confidence live feeds have explicit source contracts:
 - `JFSC` – sparse-source public statements feed where low volume may be normal
 - `CIRO` – automated live listing ingestion, but still treated as lower-confidence while source normalization matures
 
+### Europe Phase 1 live commands
+
+The viable first Europe expansion wave now ships with dedicated scrapers and a batch runner:
+
+- `npm run scrape:bdi`
+- `npm run scrape:acpr`
+- `npm run scrape:cssf`
+- `npm run scrape:fsma`
+- `npm run scrape:europe-phase-one`
+
+These loaders are wired into the stable daily live-regulator workflow. `CONSOB`, `FMA Austria`, and `FINMA` remain outside the live batch until their official-source access paths are production-grade from this environment.
+
 ## How upserts work
 
 1. Each row generates `content_hash = sha256(firm + amount + date_issued)` to dedupe.

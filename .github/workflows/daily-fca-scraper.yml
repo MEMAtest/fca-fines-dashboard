@@ -35,6 +35,14 @@ jobs:
             script: scrape:dnb
           - code: ECB
             script: scrape:ecb
+          - code: BDI
+            script: scrape:bdi
+          - code: ACPR
+            script: scrape:acpr
+          - code: CSSF
+            script: scrape:cssf
+          - code: FSMA
+            script: scrape:fsma
           - code: FSRA
             script: scrape:fsra
           - code: GFSC
