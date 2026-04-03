@@ -75,11 +75,12 @@ export function CountryModal({ countryCode, onClose }: CountryModalProps) {
 
   const totalRecords = countryInfo.totalRecords;
 
-  const handleViewDashboard = (regulatorCode?: string) => {
-    if (regulatorCode) {
-      navigate(`/dashboard?regulator=${regulatorCode}`);
+  const handleViewRegulator = (regulatorCode: string) => {
+    // FCA uses the main dashboard; all others use the regulator hub
+    if (regulatorCode === 'FCA') {
+      navigate('/dashboard');
     } else {
-      navigate(`/dashboard?regulator=${countryInfo.regulators[0].code}`);
+      navigate(`/regulators/${regulatorCode.toLowerCase()}`);
     }
     onClose();
   };
@@ -173,7 +174,7 @@ export function CountryModal({ countryCode, onClose }: CountryModalProps) {
                           </div>
                         )}
                         <button
-                          onClick={() => handleViewDashboard(reg.code)}
+                          onClick={() => handleViewRegulator(reg.code)}
                           className="regulator-card__link"
                         >
                           View enforcement data <ExternalLink size={14} />
@@ -187,7 +188,7 @@ export function CountryModal({ countryCode, onClose }: CountryModalProps) {
               {/* Footer CTA */}
               <div className="country-modal__footer">
                 <button
-                  onClick={() => handleViewDashboard()}
+                  onClick={() => handleViewRegulator(countryInfo.regulators[0].code)}
                   className="btn btn--primary"
                 >
                   <TrendingUp size={18} />
