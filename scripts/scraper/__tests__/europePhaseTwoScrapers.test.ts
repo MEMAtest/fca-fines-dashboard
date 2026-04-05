@@ -408,5 +408,47 @@ describe("europe phase 2 scrapers", () => {
         "Combined penalty payments imposed on three natural persons for late notification of managers’ transactions",
       ),
     ).toBeNull();
+    expect(
+      extractFinfsaFirm(
+        "Penalty payment of EUR 125,000 for LocalTapiola Asset Management Ltd due to omissions concerning arrangements for transaction reporting",
+        "The Financial Supervisory Authority (FIN-FSA) has imposed a penalty payment of EUR 125,000 on LocalTapiola Asset Management Ltd. In the period between January 2018 and July 2020, the company failed to comply with the provisions concerning the arrangements for transaction reporting.",
+      ),
+    ).toBe("LocalTapiola Asset Management Ltd");
+    expect(
+      extractFinfsaFirm(
+        "FIN-FSA imposes a penalty payment of EUR 1,650,000 on S-Bank Plc for omissions in the detection of suspicious transactions",
+        "The Financial Supervisory Authority (FIN-FSA) has imposed on S-Bank Plc a penalty payment of EUR 1,650,000. The Bank has between July 2016 and November 2018 failed to comply with the obligations related to the monitoring arrangements of customer trading activities as required by the EU’s Market Abuse Regulation.",
+      ),
+    ).toBe("S-Bank Plc");
+    expect(
+      extractFinfsaFirm(
+        "FIN-FSA imposes a penalty payment and a public warning on POP Bank Centre coop",
+        "The Financial Supervisory Authority (FIN-FSA) has imposed a penalty payment on POP Bank Centre coop for omissions in the management of the amalgamation’s operational risks. The FIN-FSA has also imposed a public warning on POP Bank Centre coop for breaches of the obligation to control and supervise the amalgamation.",
+      ),
+    ).toBe("POP Bank Centre coop");
+    expect(
+      extractFinfsaFirm(
+        "Helsinki Administrative Court rejects appeal by Privanet Capital Markets Ltd against penalty payment imposed by FIN-FSA",
+        "On 1 February 2022, Helsinki Administrative Court issued a decision concerning the appeal by Privanet Capital Markets Ltd (also referred to below as ‘the company’) against a EUR 450,000 penalty payment imposed on the company by the Financial Supervisory Authority (FIN-FSA) in July 2020.",
+      ),
+    ).toBe("Privanet Capital Markets Ltd");
+    expect(
+      extractFinfsaFirm(
+        "Combined penalty payments imposed on three natural persons for late notification of managers’ transactions",
+        "The Financial Supervisory Authority (FIN-FSA) has imposed a combined penalty payment for several omissions on each of Pekka Jalovaara, Jarmo Halonen and Ahti Paananen.",
+      ),
+    ).toBe("Pekka Jalovaara; Jarmo Halonen; Ahti Paananen");
+    expect(
+      extractFinfsaFirm(
+        "Penalty payments to three companies for late notification of managers’ transaction",
+        "The Financial Supervisory Authority (FIN-FSA) has imposed a penalty payment on Meriaura Invest Oy and Pokela Oy Iso Omena, and a joint penalty payment for several omissions on Myvision Oy.",
+      ),
+    ).toBe("Meriaura Invest Oy; Pokela Oy Iso Omena; Myvision Oy");
+    expect(
+      extractFinfsaFirm(
+        "Penalty payment imposed on former board member of listed company for violation of prohibition on transactions",
+        "The Financial Supervisory Authority (FIN-FSA) has imposed a penalty payment of EUR 60,000 on former Tecnotree Oyj board member Markku Wilenius.",
+      ),
+    ).toBe("Markku Wilenius");
   });
 });

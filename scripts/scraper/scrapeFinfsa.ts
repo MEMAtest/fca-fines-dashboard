@@ -58,49 +58,107 @@ function isNonNominativeFinfsaEntity(entity: string) {
   );
 }
 
+function cleanFinfsaEntitySegment(segment: string) {
+  const normalized = normalizeWhitespace(segment)
+    .replace(/^the\s+/i, "")
+    .replace(/^former\s+.+?\s+board member\s+/i, "")
+    .replace(/^a\s+joint\s+penalty\s+payment\s+for\s+several\s+omissions\s+on\s+/i, "")
+    .replace(/^combined\s+penalty\s+payment\s+for\s+several\s+omissions\s+on\s+each\s+of\s+/i, "")
+    .replace(/^penalty payment\s+on\s+/i, "")
+    .replace(/^public warning\s+to\s+/i, "")
+    .replace(/\s+(?:due to|because|against)\b.*$/i, "")
+    .replace(/\s+for\s+(?:omissions?|failures?|breaches?|violation|late notification|non-compliance|shortcomings?)\b.*$/i, "")
+    .replace(/\s+payable\b.*$/i, "")
+    .replace(/[.;,:-]+$/g, "");
+
+  if (!normalized) {
+    return null;
+  }
+
+  const lower = normalized.toLowerCase();
+  if (
+    isNonNominativeFinfsaEntity(normalized)
+    || /^(?:a person closely associated with.+|persons discharging managerial responsibilities.*|former board member of listed company|former listed company|the company|the bank|the individuals in question|notify|interviews are coordinated by fin-fsa communications|omissions\b.+|control and supervise the amalgamation|requirements\b.+)$/i.test(
+      normalized,
+    )
+    || !/[A-ZÅÄÖ]/.test(normalized)
+    || lower === normalized
+  ) {
+    return null;
+  }
+
+  return normalized;
+}
+
+function finalizeFinfsaEntityList(candidate: string) {
+  const normalized = normalizeWhitespace(candidate)
+    .replace(
+      /,\s+and\s+a\s+joint\s+penalty\s+payment\s+for\s+several\s+omissions\s+on\s+/ig,
+      "; ",
+    )
+    .replace(
+      /\s+and\s+a\s+joint\s+penalty\s+payment\s+for\s+several\s+omissions\s+on\s+/ig,
+      "; ",
+    )
+    .replace(/\s+and\s+issued\s+a\s+public\s+warning\s+to\s+/ig, "; ")
+    .replace(/\s+and\s+a\s+public\s+warning\s+on\s+/ig, "; ");
+
+  const splitCandidates = normalized
+    .split(/\s*;\s*|,\s+(?=[A-ZÅÄÖ])|\s+and\s+(?=[A-ZÅÄÖ])/)
+    .map(cleanFinfsaEntitySegment)
+    .filter((segment): segment is string => Boolean(segment));
+
+  const deduped = [...new Set(splitCandidates)];
+  return deduped.length > 0 ? deduped.join("; ") : null;
+}
+
 export function extractFinfsaFirm(title: string, body = "") {
   const normalizedTitle = stripFinfsaDecisionAppendixPrefix(title);
+  const normalizedBody = normalizeWhitespace(body);
+
+  const bodyPatterns = [
+    /appeal by\s+(.+?)\s+against penalty payment imposed by FIN-FSA/i,
+    /has ordered\s+(.+?)\s+to pay the supplementary amounts/i,
+    /has imposed (?:a )?(?:combined )?penalty payment(?:s)?(?: for several omissions)? on each of\s+(.+?)(?:\.|\s+They\b)/i,
+    /has imposed (?:a )?penalty payment on\s+(.+?),\s+and\s+a\s+joint\s+penalty\s+payment\s+for\s+several\s+omissions\s+on\s+(.+?)\./i,
+    /has imposed (?:a )?(?:combined )?penalty payment(?: of [^.]+?)?\s+on\s+(.+?)(?:\.|\s+(?:because|due to|for)\b)/i,
+    /has imposed on\s+(.+?)\s+a penalty payment(?: of [^.]+?)?(?:\.|\s+(?:because|due to|for)\b)/i,
+    /has also imposed a public warning on\s+(.+?)(?:\.|\s+(?:because|due to|for)\b)/i,
+    /has issued a public warning to\s+(.+?)(?:\.|\s+(?:because|due to|for)\b)/i,
+  ];
+
+  for (const pattern of bodyPatterns) {
+    const match = normalizedBody.match(pattern);
+    if (!match) {
+      continue;
+    }
+
+    const finalized = finalizeFinfsaEntityList(match.slice(1).filter(Boolean).join("; "));
+    if (finalized) {
+      return finalized;
+    }
+  }
+
   const titlePatterns = [
-    /supplementary amounts of conditional fine imposed on (.+?) payable/i,
-    /conditional fine imposed on (.+?) payable/i,
-    /penalty payment imposed on (.+?)(?: due to| for |$)/i,
-    /public warning imposed on (.+?)(?: due to| for |$)/i,
-    /public warning for (.+?)(?: due to| for |$)/i,
-    /penalty payment(?:s)?(?: imposed)? of .*?\bto\s+(.+?)(?: due to| for |$)/i,
-    /penalty payment(?:s)?(?: imposed)? of .*?\bfor\s+(.+?)(?: due to|$)/i,
-    /administrative fine(?:s)? of .*?\bto\s+(.+?)(?: due to| for |$)/i,
-    /administrative fine(?:s)? of .*?\bfor\s+(.+?)(?: due to|$)/i,
-    /administrative fine\s+for\s+(.+?)(?: due to| for |$)/i,
+    /helsinki administrative court rejects appeal by\s+(.+?)\s+against penalty payment imposed by FIN-FSA/i,
+    /supplementary amounts of conditional fine imposed on\s+(.+?)\s+payable/i,
+    /conditional fine imposed on\s+(.+?)\s+payable/i,
+    /penalty payment imposed on\s+(.+?)(?:\s+(?:due to|for)\b|$)/i,
+    /public warning imposed on\s+(.+?)(?:\s+(?:due to|for)\b|$)/i,
+    /public warning to\s+(.+?)(?:\s+(?:due to|for)\b|$)/i,
+    /public warning for\s+(.+?)(?:\s+(?:due to|for)\b|$)/i,
+    /fin-fsa imposes a penalty payment(?: and a public warning)? on\s+(.+?)(?:\s+(?:due to|for)\b|$)/i,
+    /(?:combined\s+)?penalty payment(?:s)?(?: imposed)?\s+of\s+(?:EUR|euro|€)?[\d\s,.]+(?:\s+and\s+public warning)?\s+(?:to|for)\s+(.+?)(?:\s+(?:due to|for|because)\b|$)/i,
+    /administrative fine(?:s)?\s+of\s+(?:EUR|euro|€)?[\d\s,.]+\s+(?:to|for)\s+(.+?)(?:\s+(?:due to|for|because)\b|$)/i,
+    /administrative fine\s+for\s+(.+?)(?:\s+(?:due to|for)\b|$)/i,
   ];
 
   for (const pattern of titlePatterns) {
     const match = normalizedTitle.match(pattern);
     if (match?.[1]) {
-      const candidate = normalizeWhitespace(match[1])
-        .replace(/\s+for\s+omissions.*$/i, "")
-        .replace(/\s+due to.*$/i, "")
-        .replace(/[.;,:-]+$/g, "");
-      if (candidate && !isNonNominativeFinfsaEntity(candidate)) {
-        return candidate;
-      }
-    }
-  }
-
-  const normalizedBody = normalizeWhitespace(body);
-  const bodyPatterns = [
-    /(?:imposed a penalty payment|issued a public warning).*?\bto\s+(.+?)(?:,| because|\.)/i,
-    /(?:penalty payment|public warning).*?\bfor\s+(.+?)(?:,| because|\.)/i,
-  ];
-
-  for (const pattern of bodyPatterns) {
-    const match = normalizedBody.match(pattern);
-    if (match?.[1]) {
-      const candidate = normalizeWhitespace(match[1])
-        .replace(/\s+for\s+omissions.*$/i, "")
-        .replace(/\s+due to.*$/i, "")
-        .replace(/[.;,:-]+$/g, "");
-      if (candidate && !isNonNominativeFinfsaEntity(candidate)) {
-        return candidate;
+      const finalized = finalizeFinfsaEntityList(match[1]);
+      if (finalized) {
+        return finalized;
       }
     }
   }
