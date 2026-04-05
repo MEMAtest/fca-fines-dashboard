@@ -149,7 +149,7 @@ async function loadCssfEntries(limit: number | null) {
   let nextPageUrl: string | null = CSSF_SEARCH_URL;
 
   while (nextPageUrl) {
-    const html = await fetchText(nextPageUrl);
+    const html = await fetchText(nextPageUrl, { timeout: 120_000 });
     const page = parseCssfSearchPage(html, nextPageUrl);
 
     for (const entry of page.entries) {
@@ -166,7 +166,7 @@ async function loadCssfEntries(limit: number | null) {
 }
 
 async function enrichCssfEntry(entry: CssfSearchEntry) {
-  const detailHtml = await fetchText(entry.detailUrl);
+  const detailHtml = await fetchText(entry.detailUrl, { timeout: 120_000 });
   const detail = parseCssfDetailHtml(detailHtml, entry.detailUrl);
   const dateIssued = extractCssfDate(detail.title || entry.title);
   const firmIndividual = extractCssfFirm(detail.subtitle);
@@ -221,7 +221,7 @@ async function enrichCssfEntry(entry: CssfSearchEntry) {
 export async function loadCssfLiveRecords() {
   const flags = getCliFlags();
   const entries = await loadCssfEntries(flags.limit && flags.limit > 0 ? flags.limit : null);
-  return mapWithConcurrency(entries, 2, enrichCssfEntry);
+  return mapWithConcurrency(entries, 1, enrichCssfEntry);
 }
 
 export async function main() {
