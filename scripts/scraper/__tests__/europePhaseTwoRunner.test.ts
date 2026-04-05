@@ -38,7 +38,7 @@ describe("europe phase 2 runner", () => {
       process.argv = originalArgv;
     }
 
-    expect(spawnMock).toHaveBeenCalledTimes(4);
+    expect(spawnMock).toHaveBeenCalledTimes(6);
 
     const invokedModules = spawnMock.mock.calls.map(([, args]) => {
       const command = String(args[3]);
@@ -50,6 +50,8 @@ describe("europe phase 2 runner", () => {
       "scrapeFtdk.ts",
       "scrapeFtno.ts",
       "scrapeCnbcz.ts",
+      "scrapeCysec.ts",
+      "scrapeFinfsa.ts",
     ]);
 
     for (const [, args] of spawnMock.mock.calls) {

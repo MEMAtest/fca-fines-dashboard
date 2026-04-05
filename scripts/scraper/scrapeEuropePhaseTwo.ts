@@ -11,6 +11,8 @@ const scrapers = [
   "scrapeFtdk.ts",
   "scrapeFtno.ts",
   "scrapeCnbcz.ts",
+  "scrapeCysec.ts",
+  "scrapeFinfsa.ts",
 ];
 
 export async function main() {

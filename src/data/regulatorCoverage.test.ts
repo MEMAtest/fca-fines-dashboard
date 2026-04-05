@@ -27,6 +27,8 @@ describe("regulatorCoverage", () => {
     expect(PUBLIC_REGULATOR_CODES).toContain("FTDK");
     expect(PUBLIC_REGULATOR_CODES).toContain("FTNO");
     expect(PUBLIC_REGULATOR_CODES).toContain("CNBCZ");
+    expect(PUBLIC_REGULATOR_CODES).toContain("CYSEC");
+    expect(PUBLIC_REGULATOR_CODES).toContain("FINFSA");
     expect(PUBLIC_REGULATOR_CODES).not.toContain("ESMA");
     expect(PUBLIC_REGULATOR_CODES).not.toContain("CVM");
     expect(PUBLIC_REGULATOR_CODES).not.toContain("FDIC");
@@ -67,6 +69,8 @@ describe("regulatorCoverage", () => {
     expect(PUBLIC_EU_REGULATOR_CODES).toContain("FTDK");
     expect(PUBLIC_EU_REGULATOR_CODES).toContain("FTNO");
     expect(PUBLIC_EU_REGULATOR_CODES).toContain("CNBCZ");
+    expect(PUBLIC_EU_REGULATOR_CODES).toContain("CYSEC");
+    expect(PUBLIC_EU_REGULATOR_CODES).toContain("FINFSA");
     expect(PUBLIC_EU_REGULATOR_CODES).not.toContain("ESMA");
     expect(PUBLIC_EU_REGULATOR_CODES).not.toContain("FINMA");
     expect(PUBLIC_EU_REGULATOR_CODES).not.toContain("CONSOB");
@@ -74,9 +78,9 @@ describe("regulatorCoverage", () => {
   });
 
   it("keeps the current live roster aligned with the shared exports", () => {
-    expect(LIVE_REGULATOR_NAV_ITEMS).toHaveLength(25);
+    expect(LIVE_REGULATOR_NAV_ITEMS).toHaveLength(27);
     expect(INTERNAL_REGULATOR_NAV_ITEMS).toHaveLength(1);
-    expect(PIPELINE_REGULATOR_NAV_ITEMS).toHaveLength(25);
+    expect(PIPELINE_REGULATOR_NAV_ITEMS).toHaveLength(23);
     expect(PUBLIC_REGULATOR_CODES).toHaveLength(LIVE_REGULATOR_NAV_ITEMS.length);
     expect(getRegulatorCoverage("ESMA")?.stage).toBe("internal");
     expect(getRegulatorCoverage("CVM")?.stage).toBe("pipeline");
@@ -94,14 +98,19 @@ describe("regulatorCoverage", () => {
     expect(getRegulatorCoverage("FSMA")?.stage).toBe("live");
     expect(getRegulatorCoverage("FISE")?.stage).toBe("live");
     expect(getRegulatorCoverage("FTDK")?.stage).toBe("live");
+    expect(getRegulatorCoverage("CYSEC")?.stage).toBe("live");
+    expect(getRegulatorCoverage("FINFSA")?.stage).toBe("live");
     expect(getRegulatorCoverage("FTNO")?.stage).toBe("live");
     expect(getRegulatorCoverage("CNBCZ")?.stage).toBe("live");
+    expect(getRegulatorCoverage("FINMA")?.count).toBe(0);
     expect(getRegulatorCoverage("BDI")?.count).toBe(153);
     expect(getRegulatorCoverage("ACPR")?.count).toBe(75);
     expect(getRegulatorCoverage("CSSF")?.count).toBe(163);
     expect(getRegulatorCoverage("FSMA")?.count).toBe(182);
     expect(getRegulatorCoverage("FISE")?.count).toBe(39);
     expect(getRegulatorCoverage("FTDK")?.count).toBe(51);
+    expect(getRegulatorCoverage("CYSEC")?.count).toBe(1116);
+    expect(getRegulatorCoverage("FINFSA")?.count).toBe(44);
     expect(getRegulatorCoverage("FTNO")?.count).toBe(40);
     expect(getRegulatorCoverage("CNBCZ")?.count).toBe(1742);
   });

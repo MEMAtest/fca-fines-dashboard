@@ -51,6 +51,10 @@ jobs:
             script: scrape:ftno
           - code: CNBCZ
             script: scrape:cnbcz
+          - code: CYSEC
+            script: scrape:cysec
+          - code: FINFSA
+            script: scrape:finfsa
           - code: FSRA
             script: scrape:fsra
           - code: GFSC
@@ -105,6 +109,7 @@ jobs:
           SEBI_ENRICH_LIMIT: ${{ vars.SEBI_ENRICH_LIMIT }}
           CNBCZ_SINCE_YEAR: ${{ vars.CNBCZ_SINCE_YEAR }}
           CNBCZ_PDF_ENRICH_LIMIT: ${{ vars.CNBCZ_PDF_ENRICH_LIMIT }}
+          CYSEC_PDF_ENRICH_LIMIT: ${{ vars.CYSEC_PDF_ENRICH_LIMIT }}
           TS_NODE_PROJECT: tsconfig.json
           SCRAPER_RUN_SUMMARY_FILE: /tmp/${{ matrix.code }}-scrape-summary.json
         run: |

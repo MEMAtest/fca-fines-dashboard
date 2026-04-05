@@ -21,6 +21,16 @@ import {
   parseCnbczDetailHtml,
   parseCnbczListHtml,
 } from "../scrapeCnbcz.js";
+import {
+  extractCysecFirm,
+  parseCysecAmount,
+  parseCysecPageHtml,
+} from "../scrapeCysec.js";
+import {
+  extractFinfsaFirm,
+  parseFinfsaArchiveHtml,
+  parseFinfsaDetailHtml,
+} from "../scrapeFinfsa.js";
 
 describe("europe phase 2 scrapers", () => {
   it("parses Finansinspektionen sanctions listings and detail pages", () => {
@@ -245,5 +255,158 @@ describe("europe phase 2 scrapers", () => {
 
     expect(parseCnbczAmount(text)).toBe(100_000);
     expect(parseCnbczAmount(scaledText)).toBe(15_000_000);
+  });
+
+  it("parses CySEC board-decision cards and skips Greek duplicate entries", () => {
+    const pageHtml = `
+      <div class="card card-custom card-custom-nofooter h-100">
+        <div class="card-header fw-bold">Lydya Financial Ltd</div>
+        <div class="card-body">
+          <div class="row">
+            <div class="col-12 pb-1">
+              <strong>Announcement Date:</strong>
+              <a href="/CMSPages/GetFile.aspx?guid=3cd37d44-ee74-461e-9695-c803fd1f9f06">19 Mar. 2026</a>
+            </div>
+            <div class="col-12 pb-1">
+              <strong>Board Decision  Date:</strong>
+              09 Mar. 2026
+            </div>
+            <div class="col-12 pb-1 d-none">
+              <strong>Regarding:</strong>
+              Lydya Financial Ltd
+            </div>
+            <div class="col-12 pb-1">
+              <strong>Legislation:</strong>
+              The Investment Services and Activities and Regulated Markets Law
+            </div>
+            <div class="col-12 pb-1">
+              <strong>Subject:</strong>
+              Influence exercised by Mr. David Masika to the sound and prudent management of the CIF Lydya Financial Ltd
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="card card-custom card-custom-nofooter h-100">
+        <div class="card-header fw-bold">Τοξότης Επενδύσεις Δημόσια Λτδ</div>
+        <div class="card-body">
+          <div class="row">
+            <div class="col-12 pb-1">
+              <strong>Announcement Date:</strong>
+              <a href="/CMSPages/GetFile.aspx?guid=590884c0-f4e8-4cdf-b6c6-6704982dee6e">03 Feb. 2026</a>
+            </div>
+            <div class="col-12 pb-1">
+              <strong>Board Decision  Date:</strong>
+              26 Jan. 2026
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="PagerControl">
+        <div class="PagerNumberArea">
+          <a href="/en-GB/public-info/decisions/?page=2">2</a>
+          <a href="/en-GB/public-info/decisions/?page=46">&gt;|</a>
+        </div>
+      </div>
+    `;
+
+    const parsed = parseCysecPageHtml(
+      pageHtml,
+      "https://www.cysec.gov.cy/en-GB/public-info/decisions/",
+    );
+
+    expect(parsed.entries).toHaveLength(1);
+    expect(parsed.totalPages).toBe(46);
+    expect(parsed.entries[0]?.dateIssued).toBe("2026-03-09");
+    expect(parsed.entries[0]?.pdfUrl).toBe(
+      "https://www.cysec.gov.cy/CMSPages/GetFile.aspx?guid=3cd37d44-ee74-461e-9695-c803fd1f9f06",
+    );
+    expect(parseCysecAmount("Settlement €70.000")).toBe(70_000);
+    expect(extractCysecFirm("Board of Directors of Exelcius Prime Ltd")).toBe(
+      "Board of Directors of Exelcius Prime Ltd",
+    );
+  });
+
+  it("parses FIN-FSA sanction archive entries and detail articles", () => {
+    const archiveHtml = `
+      <li>
+        <div class="page-list-block-time">
+          <span>Press release</span>
+          <time class="meta">3 June 2025</time>
+        </div>
+        <a href="/en/publications-and-press-releases/Press-release/2025/penalty-payment-of-eur-500000-to-localbitcoins-oy-for-failures-to-comply-with-anti-money-laundering-regulations/">
+          Penalty payment of EUR 500,000 to LocalBitcoins Oy for failures to comply with anti-money laundering regulations
+        </a>
+        <div class="page-list-block-time">
+          <span>press release</span>
+          <span>fin-fsa</span>
+          <span>penalty payment</span>
+          <span>anti-money laundering</span>
+        </div>
+      </li>
+      <li>
+        <div class="page-list-block-time">
+          <span>Press release</span>
+          <time class="meta">26 May 2025</time>
+        </div>
+        <a href="/en/publications-and-press-releases/Press-release/2025/a-decision-appendix-has-been-added-combined-penalty-payment-of-eur-7670000-and-public-warning-for-s-bank-plc/">
+          A Decision Appendix has been added: Combined penalty payment of EUR 7,670,000 and public warning for S-Bank Plc
+        </a>
+      </li>
+    `;
+    const detailHtml = `
+      <article class="col-sm-12">
+        Press release 9 May 2022
+        <h1 class="h1-content-page">Penalty payment of EUR 25,000 and public warning for Nada express osk due to omissions concerning compliance with anti-money laundering regulations</h1>
+        <span class="lead-text">
+          The omissions relate to various obligations under the regulations on preventing money laundering and terrorist financing.
+        </span>
+        <p>The Financial Supervisory Authority (FIN-FSA) has imposed a penalty payment of EUR 25,000 and issued a public warning to Nada express osk, because it has not satisfactorily performed customer due diligence.</p>
+        <p>The penalty payment is payable to the State.</p>
+        <h3>Appendix</h3>
+        <p><a href="/globalassets/fi/finanssivalvonta/toimivalta-ja-rahoitus/toimivalta/hallinnolliset-seuraamukset/finanssivalvonta_paatos_06052022.pdf">FIN-FSA decision</a></p>
+        <footer>
+          <a class="tag">FIN-FSA</a>
+          <a class="tag">Penalty payment</a>
+          <a class="tag">Public warning</a>
+        </footer>
+      </article>
+    `;
+
+    const archiveEntries = parseFinfsaArchiveHtml(archiveHtml);
+    expect(archiveEntries).toHaveLength(1);
+    expect(archiveEntries[0]?.dateIssued).toBe("2025-06-03");
+    expect(archiveEntries[0]?.detailUrl).toBe(
+      "https://www.finanssivalvonta.fi/en/publications-and-press-releases/Press-release/2025/penalty-payment-of-eur-500000-to-localbitcoins-oy-for-failures-to-comply-with-anti-money-laundering-regulations/",
+    );
+
+    const detail = parseFinfsaDetailHtml(
+      detailHtml,
+      "https://www.finanssivalvonta.fi/en/publications-and-press-releases/Press-release/2022/penalty-payment-of-eur-25000-and-public-warning-for-nada-express-osk-due-to-omissions-concerning-compliance-with-anti-money-laundering-regulations/",
+    );
+    expect(detail.dateIssued).toBe("2022-05-09");
+    expect(detail.pdfUrl).toBe(
+      "https://www.finanssivalvonta.fi/globalassets/fi/finanssivalvonta/toimivalta-ja-rahoitus/toimivalta/hallinnolliset-seuraamukset/finanssivalvonta_paatos_06052022.pdf",
+    );
+    expect(extractFinfsaFirm(archiveEntries[0]?.title || "")).toBe(
+      "LocalBitcoins Oy",
+    );
+    expect(extractFinfsaFirm(detail.title, detail.body)).toBe(
+      "Nada express osk",
+    );
+    expect(
+      extractFinfsaFirm(
+        "Administrative fine for Ålandsbanken Abp (Bank of Åland Plc) for omissions concerning the custody of customer assets",
+      ),
+    ).toBe("Ålandsbanken Abp (Bank of Åland Plc)");
+    expect(
+      extractFinfsaFirm(
+        "Penalty payment imposed on Example Advisory Oy due to repeated reporting failures",
+      ),
+    ).toBe("Example Advisory Oy");
+    expect(
+      extractFinfsaFirm(
+        "Combined penalty payments imposed on three natural persons for late notification of managers’ transactions",
+      ),
+    ).toBeNull();
   });
 });
