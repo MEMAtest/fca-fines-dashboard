@@ -1,10 +1,9 @@
 /**
  * Homepage - Redesigned with 3D Interactive Globe
  *
- * New structure:
+ * Structure:
  * - 3D Globe Hero (interactive world map)
  * - Country Modal (click globe to open)
- * - Regulator Showcase
  * - Quick Links (to roadmap, features, blog)
  * - FAQ
  * - Contact Form
@@ -13,19 +12,13 @@
 
 import { motion } from 'framer-motion';
 import { useEffect, useState, Suspense, lazy } from 'react';
-import { useNavigate, useSearchParams, Link } from 'react-router-dom';
+import { useSearchParams, Link } from 'react-router-dom';
 import { Map, Zap, FileText, Globe2 } from 'lucide-react';
 import { useHomepageVisit } from '../hooks/useHomepageVisit.js';
 import { Toast } from '../components/Toast.js';
 import { ContactForm } from '../components/ContactForm.js';
-import {
-  LIVE_REGULATOR_NAV_ITEMS,
-  PIPELINE_REGULATOR_NAV_ITEMS,
-} from '../data/regulatorCoverage.js';
 import { getHomepageFaqs, generateFaqSchema } from '../data/faqData.js';
-import RegulatorCard from '../components/RegulatorCard.js';
 import '../styles/homepage.css';
-import '../styles/regulators-showcase.css';
 import '../styles/contact.css';
 
 // Lazy load globe components
@@ -34,11 +27,7 @@ const CountryModal = lazy(() => import('../components/CountryModal.js').then(m =
 
 type ToastState = { message: string; type: 'success' | 'error' } | null;
 
-const ANCHOR_REGULATOR = 'FCA' as const;
-const PIPELINE_PREVIEW_COUNT = 6;
-
 export function Homepage() {
-  const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
   const { markHomepageVisited } = useHomepageVisit();
   const [selectedCountry, setSelectedCountry] = useState<string | null>(null);
@@ -108,18 +97,6 @@ export function Homepage() {
     }
   }, [toast]);
 
-  // Regulator showcase data
-  const showcaseCoverage = LIVE_REGULATOR_NAV_ITEMS;
-  const anchorCoverage = showcaseCoverage.find(
-    (coverage) => coverage.code === ANCHOR_REGULATOR,
-  )!;
-  const additionalCoverage = showcaseCoverage.filter(
-    (coverage) => coverage.code !== ANCHOR_REGULATOR,
-  );
-  const pipelinePreview = PIPELINE_REGULATOR_NAV_ITEMS.filter(
-    (coverage) => coverage.priorityTier === 1,
-  ).slice(0, PIPELINE_PREVIEW_COUNT);
-
   // FAQ data
   const faqs = getHomepageFaqs();
 
@@ -151,92 +128,6 @@ export function Homepage() {
           onClose={() => setSelectedCountry(null)}
         />
       </Suspense>
-
-      {/* Regulator Showcase Section */}
-      <section className="regulators-showcase">
-        <div className="regulators-showcase__container">
-          {/* Anchor Regulator (FCA) */}
-          <div className="regulators-showcase__section">
-            <div className="regulators-showcase__header">
-              <h2>Anchor Coverage</h2>
-              <p>
-                Deep historical depth with comprehensive FCA enforcement data
-                since 2013.
-              </p>
-            </div>
-            <div className="regulators-showcase__grid regulators-showcase__grid--anchor">
-              <RegulatorCard
-                code={anchorCoverage.code}
-                name={anchorCoverage.fullName}
-                country={anchorCoverage.country}
-                coverage={anchorCoverage.years}
-                primaryStatValue={anchorCoverage.count}
-                primaryStatLabel="Actions tracked"
-                secondaryStatValue={anchorCoverage.dataQuality}
-                secondaryStatLabel="Data quality"
-                badge="Anchor dataset"
-                to={anchorCoverage.overviewPath}
-              />
-            </div>
-          </div>
-
-          {/* Additional Live Coverage */}
-          <div className="regulators-showcase__section">
-            <div className="regulators-showcase__header">
-              <h2>Additional Coverage</h2>
-              <p>
-                {additionalCoverage.length} additional financial regulators across
-                Europe, Asia-Pacific, MENA, and the Americas.
-              </p>
-            </div>
-            <div className="regulators-showcase__grid">
-              {additionalCoverage.map((coverage) => (
-                <RegulatorCard
-                  key={coverage.code}
-                  code={coverage.code}
-                  name={coverage.fullName}
-                  country={coverage.country}
-                  coverage={coverage.years}
-                  primaryStatValue={coverage.count}
-                  primaryStatLabel="Actions tracked"
-                  secondaryStatValue={coverage.dataQuality}
-                  secondaryStatLabel="Data quality"
-                  badge={coverage.note ? "Emerging dataset" : undefined}
-                  to={coverage.overviewPath}
-                />
-              ))}
-            </div>
-          </div>
-
-          {/* Pipeline Preview */}
-          <div className="regulators-showcase__section">
-            <div className="regulators-showcase__header">
-              <h2>Pipeline</h2>
-              <p>
-                {pipelinePreview.length} high-priority regulators with validated
-                sources, ready for ingestion.
-              </p>
-            </div>
-            <div className="regulators-showcase__grid">
-              {pipelinePreview.map((coverage) => (
-                <RegulatorCard
-                  key={coverage.code}
-                  code={coverage.code}
-                  name={coverage.fullName}
-                  country={coverage.country}
-                  coverage={`${coverage.country} · ${coverage.sourceType === "sro" ? "SRO source" : "Official regulator source"}`}
-                  primaryStatValue={`Tier ${coverage.priorityTier}`}
-                  primaryStatLabel="Priority"
-                  secondaryStatValue={coverage.scrapeMode.replace(/_/g, " ")}
-                  secondaryStatLabel="Source surface"
-                  badge="Pipeline"
-                  href={coverage.officialSources[0]?.url}
-                />
-              ))}
-            </div>
-          </div>
-        </div>
-      </section>
 
       {/* Quick Links Section */}
       <section className="homepage-quicklinks">

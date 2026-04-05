@@ -192,7 +192,8 @@ export function SiteHeader() {
     <header className="site-header">
       <div className="site-header__inner">
         <Link to="/" className="site-header__logo">
-          Regulatory Fines
+          <img src="/regactions-mark.svg" alt="" className="site-header__logo-img" />
+          RegActions
         </Link>
 
         {/* Desktop nav */}
@@ -231,6 +232,15 @@ export function SiteHeader() {
                 className="site-header__dropdown-menu site-header__dropdown-menu--mega"
                 onMouseLeave={closeRegulatorDropdown}
               >
+                <div className="site-header__mega-top">
+                  <Link
+                    to="/regulators"
+                    className="site-header__mega-view-all"
+                    onClick={closeRegulatorDropdown}
+                  >
+                    View all regulators →
+                  </Link>
+                </div>
                 <div className="site-header__mega-grid">
                   {REGION_ORDER.filter(
                     (region) => regulatorsByRegion[region],
@@ -371,6 +381,13 @@ export function SiteHeader() {
                       id="mobile-regulators-panel"
                       className="site-header__mobile-accordion-panel"
                     >
+                      <Link
+                        to="/regulators"
+                        className="site-header__mobile-regulator-link site-header__mobile-view-all"
+                        onClick={closeMobile}
+                      >
+                        View all regulators →
+                      </Link>
                       {PUBLIC_REGULATOR_SHELL_ITEMS.map((regulator) => (
                         <Link
                           key={regulator.code}

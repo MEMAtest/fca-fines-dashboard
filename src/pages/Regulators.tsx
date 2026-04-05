@@ -1,235 +1,234 @@
+import { useState, useMemo } from "react";
 import { Link } from "react-router-dom";
-import RegulatorCard from "../components/RegulatorCard.js";
+import { RegulatorMark } from "../components/RegulatorMark.js";
 import {
   LIVE_REGULATOR_NAV_ITEMS,
   PIPELINE_REGULATOR_NAV_ITEMS,
+  REGULATOR_NAV_ITEMS,
   type RegulatorCoverage,
 } from "../data/regulatorCoverage.js";
 import { useSEO } from "../hooks/useSEO.js";
-import "../styles/regulators-showcase.css";
+import "../styles/regulators-grid.css";
 
-const PIPELINE_BUCKETS: Array<{
-  key: RegulatorCoverage["strategicBucket"];
-  title: string;
-  description: string;
-}> = [
-  {
-    key: "europe_eea_expansion",
-    title: "Europe and EEA Expansion",
-    description:
-      "Italy, Switzerland, Luxembourg, Belgium, Austria, Portugal, Cyprus, Czechia, and the Nordics in a staged Europe rollout.",
-  },
-  {
-    key: "gulf_and_ifc",
-    title: "Dubai, UAE and Gulf IFCs",
-    description:
-      "Priority sources for DIFC, ADGM and broader UAE enforcement coverage.",
-  },
-  {
-    key: "offshore_wealth_centres",
-    title: "Offshore Wealth Centres",
-    description:
-      "High-fit regulators for private wealth, fiduciary services, and cross-border structures.",
-  },
-  {
-    key: "high_signal_global",
-    title: "High-Signal Global Expansion",
-    description:
-      "Large or strategically important public enforcement surfaces outside the current live footprint.",
-  },
+type RegionFilter =
+  | "all"
+  | "europe"
+  | "americas"
+  | "apac"
+  | "mena_africa"
+  | "offshore";
+
+type SortMode = "actions_desc" | "actions_asc" | "name_asc";
+
+const REGION_TABS: Array<{ key: RegionFilter; label: string }> = [
+  { key: "all", label: "All" },
+  { key: "europe", label: "Europe" },
+  { key: "americas", label: "Americas" },
+  { key: "apac", label: "APAC" },
+  { key: "mena_africa", label: "MENA & Africa" },
+  { key: "offshore", label: "Offshore" },
 ];
 
-function formatScrapeMode(mode: RegulatorCoverage["scrapeMode"]) {
-  return mode.replace(/_/g, " ");
+function matchesRegion(
+  coverage: RegulatorCoverage,
+  filter: RegionFilter,
+): boolean {
+  if (filter === "all") return true;
+  switch (filter) {
+    case "europe":
+      return coverage.region === "UK" || coverage.region === "Europe";
+    case "americas":
+      return (
+        coverage.region === "North America" ||
+        coverage.region === "Latin America"
+      );
+    case "apac":
+      return coverage.region === "APAC";
+    case "mena_africa":
+      return coverage.region === "MENA" || coverage.region === "Africa";
+    case "offshore":
+      return coverage.region === "Offshore";
+    default:
+      return true;
+  }
 }
 
-function getPipelineBadge(coverage: RegulatorCoverage) {
-  if (coverage.sourceType === "sro") return "SRO";
-  if (coverage.strategicBucket === "europe_eea_expansion") {
-    return coverage.rolloutPhase
-      ? `Europe phase ${coverage.rolloutPhase}`
-      : "Europe next";
+function sortRegulators(
+  items: RegulatorCoverage[],
+  mode: SortMode,
+): RegulatorCoverage[] {
+  const sorted = [...items];
+  switch (mode) {
+    case "actions_desc":
+      return sorted.sort((a, b) => b.count - a.count);
+    case "actions_asc":
+      return sorted.sort((a, b) => a.count - b.count);
+    case "name_asc":
+      return sorted.sort((a, b) => a.code.localeCompare(b.code));
+    default:
+      return sorted;
   }
-  if (coverage.strategicBucket === "gulf_and_ifc") return "Dubai / UAE";
-  if (coverage.strategicBucket === "offshore_wealth_centres") return "Offshore";
-  return "Global next";
-}
-
-function getLiveBadge(coverage: RegulatorCoverage) {
-  if (coverage.operationalConfidence === "lower") {
-    return "Lower-confidence live";
-  }
-
-  if (coverage.maturity === "anchor") {
-    return "Anchor dataset";
-  }
-
-  if (coverage.maturity === "emerging") {
-    return "Emerging live";
-  }
-
-  return "Live";
 }
 
 export function Regulators() {
   useSEO({
     title:
-      "Global Regulatory Enforcement Coverage | Live Hubs and Expansion Pipeline",
+      "Consolidated Global Regulator Intelligence | Live Hubs & Expansion Pipeline",
     description:
-      "Browse live enforcement coverage across multiple regulators and review the validated Europe, EEA, US banking, APAC, offshore, and other global expansion pipeline.",
+      "Interactive grid of live and pipeline financial regulators. Filter by region, sort by enforcement actions, and explore regulator hubs.",
   });
 
+  const [regionFilter, setRegionFilter] = useState<RegionFilter>("all");
+  const [sortMode, setSortMode] = useState<SortMode>("actions_desc");
+  const [showAll, setShowAll] = useState(false);
+
+  const allItems = REGULATOR_NAV_ITEMS;
+
+  const filteredItems = useMemo(() => {
+    const base = showAll ? allItems : LIVE_REGULATOR_NAV_ITEMS;
+    const regionFiltered = base.filter((r) => matchesRegion(r, regionFilter));
+    return sortRegulators(regionFiltered, sortMode);
+  }, [allItems, showAll, regionFilter, sortMode]);
+
+  const liveCount = LIVE_REGULATOR_NAV_ITEMS.length;
+  const pipelineCount = PIPELINE_REGULATOR_NAV_ITEMS.length;
+  const totalActions = LIVE_REGULATOR_NAV_ITEMS.reduce(
+    (sum, r) => sum + r.count,
+    0,
+  );
+
   return (
-    <div className="regulators-index">
-      <div
-        className="container"
-        style={{
-          maxWidth: "1200px",
-          margin: "0 auto",
-          padding: "3rem 1.5rem 4rem",
-        }}
-      >
-        <div style={{ maxWidth: "52rem", marginBottom: "3rem" }}>
-          <h1
-            style={{
-              fontSize: "2.75rem",
-              fontWeight: "700",
-              marginBottom: "1rem",
-              color: "#0f172a",
-            }}
-          >
-            Global enforcement coverage
-          </h1>
-          <p
-            style={{
-              fontSize: "1.125rem",
-              color: "#526071",
-              lineHeight: "1.8",
-              margin: 0,
-            }}
-          >
-            Live regulator hubs are listed first. Below that is the validated
-            expansion pipeline, grouped by the next markets and source surfaces
-            worth adding.
-          </p>
+    <div className="reg-grid-page">
+      <div className="reg-grid-page__header">
+        <h1 className="reg-grid-page__title">
+          Consolidated Global Regulator Intelligence
+        </h1>
+        <p className="reg-grid-page__subtitle">
+          Built on deep FCA history, with additional insights from{" "}
+          {liveCount - 1} other financial regulators.{" "}
+          {pipelineCount} more in the validated pipeline.
+        </p>
+      </div>
+
+      {/* Controls */}
+      <div className="reg-grid__controls">
+        <div className="reg-grid__filters">
+          {REGION_TABS.map((tab) => (
+            <button
+              key={tab.key}
+              className={`reg-grid__filter-tab${regionFilter === tab.key ? " reg-grid__filter-tab--active" : ""}`}
+              onClick={() => setRegionFilter(tab.key)}
+            >
+              {tab.label}
+            </button>
+          ))}
         </div>
 
-        <section style={{ marginBottom: "3rem" }}>
-          <div className="regulators-showcase__region regulators-showcase__region--anchor">
-            <div className="regulators-showcase__region-header">
-              <div>
-                <span className="regulators-showcase__region-kicker">
-                  Live coverage
-                </span>
-                <h3>Current regulator hubs</h3>
-              </div>
-              <p>
-                These regulators are already available in the live dashboard,
-                regulator hubs, and current SEO surfaces. Lower-confidence live
-                feeds are labelled explicitly while their collection paths are
-                still being hardened.
-              </p>
-            </div>
-
-            <div className="regulators-showcase__grid">
-              {LIVE_REGULATOR_NAV_ITEMS.map((regulator) => (
-                <RegulatorCard
-                  key={regulator.code}
-                  code={regulator.code}
-                  name={regulator.fullName}
-                  country={regulator.country}
-                  coverage={regulator.years}
-                  primaryStatValue={regulator.count}
-                  primaryStatLabel="Actions tracked"
-                  secondaryStatValue={regulator.dataQuality}
-                  secondaryStatLabel="Data quality"
-                  badge={getLiveBadge(regulator)}
-                  to={regulator.overviewPath}
-                />
-              ))}
-            </div>
-          </div>
-        </section>
-
-        <section>
-          <div
-            className="regulators-showcase__header"
-            style={{ marginBottom: "2rem" }}
-          >
-            <span className="regulators-showcase__eyebrow">
-              Validated roadmap
-            </span>
-            <h2>Next regulators to add</h2>
-            <p>
-              These regulators have official public enforcement sources
-              validated already. They are queued by Europe phase, Gulf/offshore
-              fit, and wider global priority, and should not yet be treated as
-              live dashboards or article destinations.
-            </p>
-          </div>
-
-          <div className="regulators-showcase__regions">
-            {PIPELINE_BUCKETS.map((bucket) => {
-              const regulators = PIPELINE_REGULATOR_NAV_ITEMS.filter(
-                (coverage) => coverage.strategicBucket === bucket.key,
-              );
-              if (!regulators.length) return null;
-
-              return (
-                <div
-                  key={bucket.key}
-                  className="regulators-showcase__region regulators-showcase__region--pipeline"
-                >
-                  <div className="regulators-showcase__region-header">
-                    <div>
-                      <span className="regulators-showcase__region-kicker">
-                        Pipeline
-                      </span>
-                      <h3>{bucket.title}</h3>
-                    </div>
-                    <p>{bucket.description}</p>
-                  </div>
-
-                  <div className="regulators-showcase__grid">
-                    {regulators.map((regulator) => (
-                      <RegulatorCard
-                        key={regulator.code}
-                        code={regulator.code}
-                        name={regulator.fullName}
-                        country={regulator.country}
-                        coverage={`${regulator.country} · ${regulator.sourceType === "sro" ? "Self-regulatory source" : "Official regulator source"}`}
-                        primaryStatValue={`Tier ${regulator.priorityTier}`}
-                        primaryStatLabel="Priority"
-                        secondaryStatValue={formatScrapeMode(
-                          regulator.scrapeMode,
-                        )}
-                        secondaryStatLabel="Source surface"
-                        badge={getPipelineBadge(regulator)}
-                        href={regulator.officialSources[0]?.url}
-                        footerLabel="Review official source"
-                      />
-                    ))}
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-        </section>
-
-        <div
-          className="regulators-showcase__footer"
-          style={{ marginTop: "3rem" }}
+        <select
+          className="reg-grid__sort"
+          value={sortMode}
+          onChange={(e) => setSortMode(e.target.value as SortMode)}
         >
-          <p>
-            The current live product remains anchored in FCA depth. The roadmap
-            is designed to expand that into US banking, APAC, Gulf, offshore,
-            and other global public enforcement feeds without adding weak
-            placeholder pages.
-          </p>
-          <Link to="/dashboard" className="regulators-showcase__cta">
-            Open live dashboard
-          </Link>
-        </div>
+          <option value="actions_desc">Actions: High → Low</option>
+          <option value="actions_asc">Actions: Low → High</option>
+          <option value="name_asc">Name: A → Z</option>
+        </select>
+
+        <button
+          className={`reg-grid__toggle${showAll ? " reg-grid__toggle--active" : ""}`}
+          onClick={() => setShowAll(!showAll)}
+        >
+          {showAll ? "Live + Pipeline" : "Live only"}
+        </button>
+      </div>
+
+      {/* Summary stats */}
+      <div className="reg-grid__stats">
+        <span>
+          Showing <strong>{filteredItems.length}</strong> regulators
+        </span>
+        <span>
+          <strong>{liveCount}</strong> live
+        </span>
+        <span>
+          <strong>{totalActions.toLocaleString()}</strong> actions tracked
+        </span>
+      </div>
+
+      {/* Grid */}
+      <div className="reg-grid">
+        {filteredItems.map((reg) => {
+          const isLive = reg.stage === "live";
+
+          const cardContent = (
+            <>
+              <div className="reg-grid__card-top">
+                <RegulatorMark
+                  regulator={reg.code}
+                  size="small"
+                  country={reg.country}
+                  decorative
+                />
+                <span className="reg-grid__card-code">{reg.code}</span>
+                <span
+                  className={`reg-grid__card-badge ${isLive ? "reg-grid__card-badge--live" : "reg-grid__card-badge--pipeline"}`}
+                >
+                  {isLive ? "Live" : "Pipeline"}
+                </span>
+              </div>
+
+              <span className="reg-grid__card-count">
+                {reg.count > 0 ? reg.count.toLocaleString() : "\u2014"}
+              </span>
+
+              <span className="reg-grid__card-country">{reg.country}</span>
+            </>
+          );
+
+          if (isLive) {
+            return (
+              <Link
+                key={reg.code}
+                to={reg.overviewPath}
+                className="reg-grid__card"
+              >
+                {cardContent}
+              </Link>
+            );
+          }
+
+          const pipelineHref = reg.officialSources[0]?.url;
+          return pipelineHref ? (
+            <a
+              key={reg.code}
+              href={pipelineHref}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="reg-grid__card reg-grid__card--pipeline"
+            >
+              {cardContent}
+            </a>
+          ) : (
+            <div
+              key={reg.code}
+              className="reg-grid__card reg-grid__card--pipeline"
+            >
+              {cardContent}
+            </div>
+          );
+        })}
+      </div>
+
+      {/* Footer */}
+      <div className="reg-grid__footer">
+        <p>
+          The current live product is anchored in FCA depth and expanding into
+          global public enforcement feeds. Pipeline regulators have validated
+          official sources, ready for ingestion.
+        </p>
+        <Link to="/dashboard" className="reg-grid__footer-cta">
+          Open live dashboard
+        </Link>
       </div>
     </div>
   );

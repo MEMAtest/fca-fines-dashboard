@@ -584,3 +584,288 @@
     font-size: 1rem;
   }
 }
+
+/* ── Quick Links Section ── */
+
+.homepage-quicklinks {
+  padding: 5rem 2rem;
+  background: #ffffff;
+}
+
+.homepage-quicklinks__container {
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.homepage-quicklinks__title {
+  text-align: center;
+  font-size: 2.25rem;
+  font-weight: 700;
+  color: #0f172a;
+  margin: 0 0 2.5rem;
+}
+
+.quicklinks-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1.5rem;
+}
+
+.quicklink-card {
+  background: #ffffff;
+  border: 1px solid #e5e7eb;
+  border-radius: 16px;
+  box-shadow: 0 4px 20px rgba(15, 23, 42, 0.06);
+  transition: transform 0.25s ease, box-shadow 0.25s ease, border-color 0.25s ease;
+}
+
+.quicklink-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 12px 36px rgba(15, 23, 42, 0.1);
+  border-color: #0fa294;
+}
+
+.quicklink-card__link {
+  display: flex;
+  flex-direction: column;
+  padding: 2rem 1.75rem;
+  text-decoration: none;
+  color: inherit;
+  height: 100%;
+}
+
+.quicklink-card__icon {
+  color: #0fa294;
+  margin-bottom: 1.25rem;
+}
+
+.quicklink-card__title {
+  font-size: 1.2rem;
+  font-weight: 700;
+  color: #0f172a;
+  margin: 0 0 0.6rem;
+}
+
+.quicklink-card__description {
+  font-size: 0.95rem;
+  color: #526071;
+  line-height: 1.65;
+  margin: 0;
+  flex: 1;
+}
+
+.quicklink-card__arrow {
+  margin-top: 1.25rem;
+  font-size: 1.25rem;
+  color: #0fa294;
+  font-weight: 600;
+}
+
+/* ── FAQ Section ── */
+
+.homepage-faq {
+  padding: 5rem 2rem;
+  background: #f8fafb;
+}
+
+.homepage-faq__container {
+  max-width: 720px;
+  margin: 0 auto;
+}
+
+.homepage-faq__title {
+  text-align: center;
+  font-size: 2rem;
+  font-weight: 700;
+  color: #0f172a;
+  margin: 0 0 2.5rem;
+}
+
+.faq-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.faq-item {
+  background: #ffffff;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  overflow: hidden;
+  transition: border-color 0.2s ease;
+}
+
+.faq-item:hover,
+.faq-item--open {
+  border-color: #0fa294;
+}
+
+.faq-item__question {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  padding: 1.25rem 1.5rem;
+  background: none;
+  border: none;
+  cursor: pointer;
+  text-align: left;
+  font: inherit;
+  font-size: 1rem;
+  font-weight: 600;
+  color: #0f172a;
+  gap: 1rem;
+  line-height: 1.4;
+}
+
+.faq-item__toggle {
+  flex-shrink: 0;
+  color: #6b7280;
+  font-size: 1.25rem;
+  font-weight: 300;
+  width: 24px;
+  text-align: center;
+}
+
+.faq-item__answer {
+  padding: 0 1.5rem 1.25rem;
+}
+
+.faq-item__answer p {
+  margin: 0;
+  font-size: 0.9375rem;
+  color: #526071;
+  line-height: 1.7;
+}
+
+/* ── Contact Section ── */
+
+.homepage-contact {
+  padding: 5rem 2rem;
+  background: #ffffff;
+}
+
+.homepage-contact__container {
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+.homepage-contact__header {
+  text-align: center;
+  margin-bottom: 2.5rem;
+}
+
+.homepage-contact__header h2 {
+  font-size: 2rem;
+  font-weight: 700;
+  color: #0f172a;
+  margin: 0 0 0.75rem;
+}
+
+.homepage-contact__header p {
+  font-size: 1.05rem;
+  color: #526071;
+  line-height: 1.65;
+  margin: 0;
+}
+
+/* ── Footer ── */
+
+.homepage-footer {
+  background: #0f172a;
+  padding: 3rem 2rem;
+  color: #e2e8f0;
+}
+
+.homepage-footer__container {
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.homepage-footer__content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+  text-align: center;
+}
+
+.homepage-footer__brand {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: #ffffff;
+}
+
+.homepage-footer__brand svg {
+  color: #14b8a6;
+}
+
+.homepage-footer__tagline {
+  margin: 0;
+  font-size: 0.92rem;
+  color: rgba(226, 232, 240, 0.7);
+}
+
+.homepage-footer__links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1.5rem;
+  justify-content: center;
+  margin: 0.5rem 0;
+}
+
+.homepage-footer__links a {
+  color: rgba(226, 232, 240, 0.8);
+  text-decoration: none;
+  font-size: 0.9375rem;
+  transition: color 0.2s ease;
+}
+
+.homepage-footer__links a:hover {
+  color: #ffffff;
+}
+
+.homepage-footer__copyright {
+  margin: 0.5rem 0 0;
+  font-size: 0.85rem;
+  color: rgba(226, 232, 240, 0.5);
+}
+
+/* ── Responsive: Quick Links + FAQ + Contact ── */
+
+@media (max-width: 768px) {
+  .quicklinks-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .homepage-quicklinks__title {
+    font-size: 1.75rem;
+  }
+
+  .homepage-faq {
+    padding: 3.5rem 1.25rem;
+  }
+
+  .homepage-faq__title {
+    font-size: 1.5rem;
+  }
+
+  .faq-item__question {
+    padding: 1rem 1.25rem;
+  }
+
+  .faq-item__answer {
+    padding: 0 1.25rem 1rem;
+  }
+
+  .homepage-contact {
+    padding: 3.5rem 1.25rem;
+  }
+
+  .homepage-footer__links {
+    gap: 1rem;
+  }
+}

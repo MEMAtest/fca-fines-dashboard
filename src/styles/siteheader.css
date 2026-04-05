@@ -18,14 +18,22 @@
 }
 
 .site-header__logo {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
   font-size: 1.125rem;
   font-weight: 600;
   color: #1F2937;
   text-decoration: none;
 }
 
+.site-header__logo-img {
+  height: 32px;
+  width: auto;
+}
+
 .site-header__logo:hover {
-  color: #0FA294;
+  color: #0d9488;
 }
 
 /* Desktop nav */
@@ -46,11 +54,11 @@
 }
 
 .site-header__link:hover {
-  color: #0FA294;
+  color: #0d9488;
 }
 
 .site-header__link--active {
-  color: #0FA294;
+  color: #0d9488;
   background: rgba(15, 162, 148, 0.08);
   font-weight: 600;
 }
@@ -104,7 +112,7 @@
 }
 
 .site-header__crumb-link:hover {
-  color: #0FA294;
+  color: #0d9488;
 }
 
 .site-header__crumb-current {
@@ -168,7 +176,7 @@
 }
 
 .site-header__mobile-link--active {
-  color: #0FA294;
+  color: #0d9488;
   background: #EAF7F5;
   font-weight: 600;
 }
@@ -202,7 +210,7 @@
 }
 
 .site-header__mobile-accordion-trigger--active {
-  color: #0FA294;
+  color: #0d9488;
   background: #EAF7F5;
 }
 
@@ -213,7 +221,7 @@
 
 .site-header__mobile-accordion-icon--open {
   transform: rotate(180deg);
-  color: #0FA294;
+  color: #0d9488;
 }
 
 .site-header__mobile-accordion-panel {
@@ -426,6 +434,38 @@
     opacity: 1;
     transform: translateY(0);
   }
+}
+
+/* View all regulators link at top of mega menu */
+.site-header__mega-top {
+  padding: 0 0.5rem 0.65rem;
+  border-bottom: 1px solid #e5e7eb;
+  margin-bottom: 0.75rem;
+}
+
+.site-header__mega-view-all {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: #0d9488;
+  text-decoration: none;
+  padding: 0.4rem 0.6rem;
+  border-radius: 6px;
+  transition: background 0.15s ease;
+}
+
+.site-header__mega-view-all:hover {
+  background: rgba(15, 162, 148, 0.08);
+}
+
+/* Mobile "View all" link */
+.site-header__mobile-accordion-panel .site-header__mobile-view-all {
+  font-weight: 700;
+  color: #0d9488;
+  border-color: rgba(15, 162, 148, 0.25);
+  background: #F2FBF9;
 }
 
 /* Phase 5: Mega Menu Dropdown Styles */
