@@ -66,8 +66,10 @@ Each batch is followed by `npm run check:live-freshness` so stale or missing liv
    - `DATABASE_URL` – database connection string (required).
    - `FCA_USER_AGENT` – optional override if FCA blocks the default UA.
    - `SEC_USER_AGENT` – required identifying user agent for the SEC scraper.
-2. (Optional) add repository-level **variables** for `FCA_YEARS`, `FCA_START_YEAR`, `FCA_END_YEAR`, `FCA_SINCE_DATE`, `SEC_SINCE_YEAR`, `SEBI_SINCE_YEAR`, or `SEBI_ENRICH_LIMIT` to control crawl windows.
+2. (Optional) add repository-level **variables** for `FCA_YEARS`, `FCA_START_YEAR`, `FCA_END_YEAR`, `FCA_SINCE_DATE`, `SEC_SINCE_YEAR`, `SEBI_SINCE_YEAR`, `SEBI_ENRICH_LIMIT`, `CNBCZ_SINCE_YEAR`, or `CNBCZ_PDF_ENRICH_LIMIT` to control crawl windows.
    - `SEBI_ENRICH_LIMIT` now defaults to the full current listing. Set it only if you want to cap local or CI enrichment work for faster diagnostics.
+   - `CNBCZ_SINCE_YEAR` lets daily Czech runs stay recent-year only after an initial backfill.
+   - `CNBCZ_PDF_ENRICH_LIMIT` caps how many Czech decisions fetch PDFs for amount extraction on each run. Older decisions still load as records even when PDF enrichment is skipped.
 3. The workflows use per-regulator matrix jobs with isolated concurrency groups so one source failure does not block the full live batch. Monitor the Actions tab for success/failure logs and freshness-check output.
 4. Freshness jobs now emit both:
    - a GitHub step summary with per-regulator status, cadence, and operator guidance
@@ -97,6 +99,18 @@ The viable first Europe expansion wave now ships with dedicated scrapers and a b
 - `npm run scrape:europe-phase-one`
 
 These loaders are wired into the stable daily live-regulator workflow. `CONSOB`, `FMA Austria`, and `FINMA` remain outside the live batch until their official-source access paths are production-grade from this environment.
+
+### Europe Phase 2 live commands
+
+The current viable second Europe wave also has dedicated scrapers and can run independently or through its batch runner:
+
+- `npm run scrape:fise`
+- `npm run scrape:ftdk`
+- `npm run scrape:ftno`
+- `npm run scrape:cnbcz`
+- `npm run scrape:europe-phase-two`
+
+`FISE`, `FTDK`, `FTNO`, and `CNBCZ` are wired into the stable daily live-regulator workflow. For `CNBCZ`, use `CNBCZ_SINCE_YEAR` and `CNBCZ_PDF_ENRICH_LIMIT` in CI so the daily job stays incremental after the initial archive backfill.
 
 ## How upserts work
 

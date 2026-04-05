@@ -43,6 +43,14 @@ jobs:
             script: scrape:cssf
           - code: FSMA
             script: scrape:fsma
+          - code: FISE
+            script: scrape:fise
+          - code: FTDK
+            script: scrape:ftdk
+          - code: FTNO
+            script: scrape:ftno
+          - code: CNBCZ
+            script: scrape:cnbcz
           - code: FSRA
             script: scrape:fsra
           - code: GFSC
@@ -95,6 +103,8 @@ jobs:
           SEC_SINCE_YEAR: ${{ vars.SEC_SINCE_YEAR }}
           SEBI_SINCE_YEAR: ${{ vars.SEBI_SINCE_YEAR }}
           SEBI_ENRICH_LIMIT: ${{ vars.SEBI_ENRICH_LIMIT }}
+          CNBCZ_SINCE_YEAR: ${{ vars.CNBCZ_SINCE_YEAR }}
+          CNBCZ_PDF_ENRICH_LIMIT: ${{ vars.CNBCZ_PDF_ENRICH_LIMIT }}
           TS_NODE_PROJECT: tsconfig.json
           SCRAPER_RUN_SUMMARY_FILE: /tmp/${{ matrix.code }}-scrape-summary.json
         run: |
