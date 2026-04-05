@@ -21,6 +21,8 @@ import { getHomepageFaqs, generateFaqSchema } from '../data/faqData.js';
 import '../styles/homepage.css';
 import '../styles/contact.css';
 
+const HOMEPAGE_FAQS = getHomepageFaqs();
+
 // Lazy load globe components
 const GlobeHero = lazy(() => import('../components/GlobeHero.js').then(m => ({ default: m.GlobeHero })));
 const CountryModal = lazy(() => import('../components/CountryModal.js').then(m => ({ default: m.CountryModal })));
@@ -97,8 +99,15 @@ export function Homepage() {
     }
   }, [toast]);
 
-  // FAQ data
-  const faqs = getHomepageFaqs();
+  // Inject FAQ JSON-LD into <head> for SEO
+  useEffect(() => {
+    const script = document.createElement('script');
+    script.type = 'application/ld+json';
+    script.setAttribute('data-faq-ld', 'true');
+    script.textContent = JSON.stringify(generateFaqSchema(HOMEPAGE_FAQS));
+    document.head.appendChild(script);
+    return () => { script.remove(); };
+  }, []);
 
   return (
     <div className="homepage homepage-3d">
@@ -110,11 +119,6 @@ export function Homepage() {
           onDismiss={() => setToast(null)}
         />
       )}
-
-      {/* Add FAQ schema for SEO */}
-      <script type="application/ld+json">
-        {JSON.stringify(generateFaqSchema(faqs))}
-      </script>
 
       {/* 3D Globe Hero Section */}
       <Suspense fallback={<div className="globe-loading">Loading interactive globe...</div>}>
@@ -179,8 +183,8 @@ export function Homepage() {
           </motion.h2>
 
           <div className="faq-list">
-            {faqs.map((faq, index) => (
-              <FAQItem key={index} question={faq.question} answer={faq.answer} />
+            {HOMEPAGE_FAQS.map((faq) => (
+              <FAQItem key={faq.slug} id={faq.slug} question={faq.question} answer={faq.answer} />
             ))}
           </div>
         </div>
@@ -270,8 +274,9 @@ function QuickLinkCard({
 /**
  * FAQItem - Expandable FAQ question/answer
  */
-function FAQItem({ question, answer }: { question: string; answer: string }) {
+function FAQItem({ id, question, answer }: { id: string; question: string; answer: string }) {
   const [isOpen, setIsOpen] = useState(false);
+  const panelId = `faq-answer-${id}`;
 
   return (
     <motion.div
@@ -282,20 +287,25 @@ function FAQItem({ question, answer }: { question: string; answer: string }) {
       className={`faq-item ${isOpen ? 'faq-item--open' : ''}`}
     >
       <button
+        id={`faq-q-${id}`}
         className="faq-item__question"
         onClick={() => setIsOpen(!isOpen)}
         aria-expanded={isOpen}
+        aria-controls={panelId}
       >
         <span>{question}</span>
         <span className="faq-item__toggle">{isOpen ? '−' : '+'}</span>
       </button>
       {isOpen && (
         <motion.div
+          id={panelId}
           initial={{ height: 0, opacity: 0 }}
           animate={{ height: 'auto', opacity: 1 }}
           exit={{ height: 0, opacity: 0 }}
           transition={{ duration: 0.3 }}
           className="faq-item__answer"
+          role="region"
+          aria-labelledby={`faq-q-${id}`}
         >
           <p>{answer}</p>
         </motion.div>

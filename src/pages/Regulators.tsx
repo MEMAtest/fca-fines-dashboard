@@ -118,6 +118,7 @@ export function Regulators() {
               key={tab.key}
               className={`reg-grid__filter-tab${regionFilter === tab.key ? " reg-grid__filter-tab--active" : ""}`}
               onClick={() => setRegionFilter(tab.key)}
+              aria-pressed={regionFilter === tab.key}
             >
               {tab.label}
             </button>
@@ -137,6 +138,7 @@ export function Regulators() {
         <button
           className={`reg-grid__toggle${showAll ? " reg-grid__toggle--active" : ""}`}
           onClick={() => setShowAll(!showAll)}
+          aria-pressed={showAll}
         >
           {showAll ? "Live + Pipeline" : "Live only"}
         </button>

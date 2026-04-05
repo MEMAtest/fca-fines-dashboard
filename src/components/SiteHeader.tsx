@@ -163,15 +163,18 @@ export function SiteHeader() {
     };
   }, [location.pathname]);
 
-  // Close mobile menu on Escape key
+  // Close mobile menu or desktop dropdown on Escape key
   useEffect(() => {
-    if (!mobileOpen) return;
+    if (!mobileOpen && !regulatorDropdownOpen) return;
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === "Escape") closeMobile();
+      if (e.key === "Escape") {
+        if (mobileOpen) closeMobile();
+        else if (regulatorDropdownOpen) closeRegulatorDropdown();
+      }
     };
     document.addEventListener("keydown", handleKeyDown);
     return () => document.removeEventListener("keydown", handleKeyDown);
-  }, [mobileOpen, closeMobile]);
+  }, [mobileOpen, regulatorDropdownOpen, closeMobile, closeRegulatorDropdown]);
 
   useEffect(() => {
     if (!mobileOpen || typeof document === "undefined") return;
