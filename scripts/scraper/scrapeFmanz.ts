@@ -1,161 +1,254 @@
-/**
- * FMANZ (Financial Markets Authority - New Zealand) Scraper
- *
- * Strategy: Scrape enforcement actions with detail pages
- * URL: https://www.fma.govt.nz/enforcement/
- *
- * Difficulty: 7/10 (High) - Detail pages with varying structure
- * Expected: 30-60 enforcement actions
- *
- * Run: npx tsx scripts/scraper/scrapeFmanz.ts
- */
-
-import 'dotenv/config';
+import "dotenv/config";
+import * as cheerio from "cheerio";
+import { execFile } from "node:child_process";
+import { promisify } from "node:util";
+import { fileURLToPath } from "node:url";
 import {
-  type ParsedEnforcementRecord,
   buildEuFineRecord,
-  createSqlClient,
-  upsertEuFines,
-  printDryRunSummary,
-} from './lib/euFineHelpers.js';
+  getCliFlags,
+  makeAbsoluteUrl,
+  mapWithConcurrency,
+  normalizeWhitespace,
+  parseLargestAmountFromText,
+  parseMonthNameDate,
+} from "./lib/euFineHelpers.js";
+import { runScraper } from "./lib/runScraper.js";
 
-const FMANZ_CONFIG = {
-  baseUrl: 'https://www.fma.govt.nz',
-  enforcementUrl: 'https://www.fma.govt.nz/enforcement/',
-};
+const FMANZ_BASE_URL = "https://www.fma.govt.nz";
+const FMANZ_LIST_URL = "https://www.fma.govt.nz/about-us/enforcement/cases/0/";
+const execFileAsync = promisify(execFile);
 
-const sql = createSqlClient();
-
-interface FMANZRecord {
-  firm: string;
-  amount: number | null;
-  currency: string;
-  date: string;
-  actionType: string;
-  breach: string;
-  link: string | null;
-  summary: string;
+export interface FmanzListEntry {
+  title: string;
+  detailUrl: string;
+  dateIssued: string;
+  intro: string;
 }
 
-async function main() {
-  console.log('🇳🇿 FMANZ Enforcement Actions Scraper\n');
-  console.log('Target: Financial Markets Authority (New Zealand)');
-  console.log('Method: Enforcement actions scraping\n');
+interface FmanzListPage {
+  entries: FmanzListEntry[];
+  nextPageUrl: string | null;
+}
 
-  const useTestData = process.argv.includes('--test-data');
-  const dryRun = process.argv.includes('--dry-run');
+interface FmanzDetail {
+  title: string;
+  dateIssued: string | null;
+  summary: string;
+  body: string;
+  pdfUrl: string | null;
+}
 
-  if (useTestData) console.log('⚠️  Using test data (--test-data flag detected)\n');
-  if (dryRun) console.log('🔍 Dry run mode - no database writes (--dry-run flag detected)\n');
+function parseFmanzDate(input: string) {
+  const cleaned = normalizeWhitespace(input)
+    .replace(/^published\s+/i, "")
+    .replace(/^updated\s+/i, "");
+  return parseMonthNameDate(cleaned);
+}
 
-  try {
-    const records = useTestData ? getTestData() : await scrapeFmanzData();
+export function parseFmanzAmount(text: string) {
+  return parseLargestAmountFromText(text, {
+    currency: "NZD",
+    symbols: ["$"],
+    keywords: [
+      "pecuniary penalty",
+      "civil penalty",
+      "penalty",
+      "settlement",
+      "agreed to pay",
+      "ordered to pay",
+      "pay a total of",
+      "payment",
+    ],
+  });
+}
 
-    console.log(`\n📊 Extracted ${records.length} enforcement actions`);
+export function parseFmanzListingHtml(html: string, pageUrl: string): FmanzListPage {
+  const $ = cheerio.load(html);
+  const entries = new Map<string, FmanzListEntry>();
 
-    const parsedRecords = records.map((r) => transformToEnforcementRecord(r));
-    const dbRecords = parsedRecords.map((r) => buildEuFineRecord(r));
+  $("li.search-results-semantic__result-item").each((_, element) => {
+    const item = $(element);
+    const link = item.find("h3 a[href]").first();
+    const href = normalizeWhitespace(link.attr("href") || "");
+    const title = normalizeWhitespace(link.text());
+    const intro = normalizeWhitespace(item.find("section p").first().text());
+    const dateIssued = parseFmanzDate(
+      item.find(".search-results-semantic__date").first().text(),
+    );
 
-    if (dryRun) {
-      printDryRunSummary(dbRecords);
-    } else {
-      await upsertEuFines(sql, dbRecords);
-      console.log('\n🔄 Refreshing unified regulatory fines view...');
-      await sql`SELECT refresh_all_fines()`;
-      console.log('✅ View refreshed');
+    if (!href || !title || !dateIssued) {
+      return;
     }
 
-    const totalFmanz = await sql`SELECT COUNT(*) as count FROM eu_fines WHERE regulator = 'FMANZ'`;
-    const totalAll = await sql`SELECT COUNT(*) as count FROM all_regulatory_fines`;
+    const detailUrl = makeAbsoluteUrl(pageUrl, href);
+    entries.set(detailUrl, {
+      title,
+      detailUrl,
+      dateIssued,
+      intro,
+    });
+  });
 
-    console.log('\n📈 Database Summary:');
-    console.log(`   - FMANZ enforcement actions: ${totalFmanz[0].count}`);
-    console.log(`   - Total regulatory fines (FCA + EU): ${totalAll[0].count}`);
+  const nextHref = normalizeWhitespace(
+    $("a.next.page-link[href]").first().attr("href") || "",
+  );
 
-    console.log('\n✅ FMANZ scraper completed successfully!');
-    await sql.end();
-    process.exit(0);
-  } catch (error) {
-    console.error('❌ FMANZ scraper failed:', error);
-    await sql.end();
-    process.exit(1);
-  }
-}
-
-function getTestData(): FMANZRecord[] {
-  return [
-    {
-      firm: 'ANZ Bank New Zealand Limited',
-      amount: 1800000,
-      currency: 'NZD',
-      date: '2024-03-20',
-      actionType: 'Pecuniary Penalty',
-      breach: 'Breach of fair dealing provisions',
-      link: null,
-      summary: 'Fair dealing violations',
-    },
-    {
-      firm: 'ASB Bank Limited',
-      amount: 1200000,
-      currency: 'NZD',
-      date: '2023-10-12',
-      actionType: 'Pecuniary Penalty',
-      breach: 'Failure to comply with disclosure requirements',
-      link: null,
-      summary: 'Disclosure requirement failures',
-    },
-    {
-      firm: 'Westpac New Zealand Limited',
-      amount: 950000,
-      currency: 'NZD',
-      date: '2023-06-28',
-      actionType: 'Pecuniary Penalty',
-      breach: 'Conduct obligations violations',
-      link: null,
-      summary: 'Conduct obligations breaches',
-    },
-  ];
-}
-
-async function scrapeFmanzData(): Promise<FMANZRecord[]> {
-  throw new Error('FMANZ live scraping is not implemented yet. Use --test-data flag for now.');
-}
-
-function transformToEnforcementRecord(record: FMANZRecord): ParsedEnforcementRecord {
   return {
-    regulator: 'FMANZ',
-    regulatorFullName: 'Financial Markets Authority',
-    countryCode: 'NZ',
-    countryName: 'New Zealand',
-    firmIndividual: record.firm,
-    firmCategory: null,
-    amount: record.amount,
-    currency: record.currency,
-    dateIssued: record.date,
-    breachType: extractBreachType(record.breach),
-    breachCategories: categorizeBreachType(record.breach),
-    summary: `${record.firm} fined NZ$${(record.amount || 0).toLocaleString('en-NZ')} by FMA. ${record.summary}`,
-    finalNoticeUrl: record.link,
-    sourceUrl: FMANZ_CONFIG.enforcementUrl,
-    rawPayload: record,
+    entries: [...entries.values()],
+    nextPageUrl: nextHref ? makeAbsoluteUrl(pageUrl, nextHref) : null,
   };
 }
 
-function extractBreachType(breach: string): string {
-  const lower = breach.toLowerCase();
-  if (lower.includes('fair dealing')) return 'Fair Dealing Violations';
-  if (lower.includes('disclosure')) return 'Disclosure Violations';
-  if (lower.includes('conduct')) return 'Conduct Obligations';
-  return 'Regulatory Breach';
+export function parseFmanzDetailHtml(html: string, detailUrl: string): FmanzDetail {
+  const $ = cheerio.load(html);
+  const contentRoot = $(".registry-item-page__body-wrap-main--elemental").first();
+  const summary =
+    normalizeWhitespace(contentRoot.children("div, p").first().text()) ||
+    normalizeWhitespace(contentRoot.find("p").first().text());
+  const narrativeSegments = contentRoot
+    .find("p, li")
+    .map((_, element) => normalizeWhitespace($(element).text()))
+    .get()
+    .filter(Boolean);
+  const pdfHref = normalizeWhitespace(
+    contentRoot.find('a[href$=".pdf"]').first().attr("href") || "",
+  );
+
+  return {
+    title:
+      normalizeWhitespace(
+        $(".registry-item-page__heading-wrap--title-item").first().text(),
+      ) || normalizeWhitespace($("h1").first().text()),
+    dateIssued: parseFmanzDate(
+      $(".registry-item-page__heading-wrap--date-published").first().text(),
+    ),
+    summary,
+    body: normalizeWhitespace([summary, ...narrativeSegments].join(" ")),
+    pdfUrl: pdfHref ? makeAbsoluteUrl(detailUrl, pdfHref) : null,
+  };
 }
 
-function categorizeBreachType(breach: string): string[] {
+function categorizeFmanzRecord(text: string) {
+  const corpus = text.toLowerCase();
   const categories: string[] = [];
-  const lower = breach.toLowerCase();
-  if (lower.includes('dealing')) categories.push('FAIR_DEALING');
-  if (lower.includes('disclosure')) categories.push('DISCLOSURE');
-  if (lower.includes('conduct')) categories.push('CONDUCT');
-  return categories.length > 0 ? categories : ['OTHER'];
+
+  if (/fair dealing|misleading|deceptive|representation/.test(corpus)) {
+    categories.push("CONDUCT");
+  }
+  if (/disclosure|offer document|prospectus|continuous disclosure/.test(corpus)) {
+    categories.push("DISCLOSURE");
+  }
+  if (/licence|licensing|fap licence|authorisation|registration/.test(corpus)) {
+    categories.push("LICENSING");
+  }
+  if (/market manipulation|insider|market abuse|trading/.test(corpus)) {
+    categories.push("MARKET_ABUSE");
+  }
+  if (/anti-money laundering|aml|terrorism financing|ctf/.test(corpus)) {
+    categories.push("AML");
+  }
+  if (/governance|systems and processes|controls/.test(corpus)) {
+    categories.push("GOVERNANCE");
+  }
+
+  return categories.length > 0 ? categories : ["SUPERVISORY_SANCTION"];
 }
 
-main();
+export async function loadFmanzEntries(limit: number | null) {
+  const entries = new Map<string, FmanzListEntry>();
+  const visited = new Set<string>();
+  let nextPageUrl: string | null = FMANZ_LIST_URL;
+
+  while (nextPageUrl) {
+    if (visited.has(nextPageUrl)) {
+      break;
+    }
+    visited.add(nextPageUrl);
+
+    const html = await requestFmanzHtml(nextPageUrl);
+    const page = parseFmanzListingHtml(html, nextPageUrl);
+
+    for (const entry of page.entries) {
+      entries.set(entry.detailUrl, entry);
+      if (limit && entries.size >= limit) {
+        return [...entries.values()];
+      }
+    }
+
+    nextPageUrl = page.nextPageUrl;
+  }
+
+  return [...entries.values()];
+}
+
+async function enrichFmanzEntry(entry: FmanzListEntry) {
+  const detailHtml = await requestFmanzHtml(entry.detailUrl);
+  const detail = parseFmanzDetailHtml(detailHtml, entry.detailUrl);
+  const textCorpus = `${entry.title} ${entry.intro} ${detail.summary} ${detail.body}`;
+
+  return buildEuFineRecord({
+    regulator: "FMANZ",
+    regulatorFullName: "Financial Markets Authority",
+    countryCode: "NZ",
+    countryName: "New Zealand",
+    firmIndividual: detail.title || entry.title,
+    firmCategory: "Financial Entity",
+    amount: parseFmanzAmount(textCorpus),
+    currency: "NZD",
+    dateIssued: detail.dateIssued || entry.dateIssued,
+    breachType: entry.intro || detail.summary || detail.title,
+    breachCategories: categorizeFmanzRecord(textCorpus),
+    summary: detail.summary || entry.intro || detail.title,
+    finalNoticeUrl: detail.pdfUrl || entry.detailUrl,
+    sourceUrl: entry.detailUrl,
+    rawPayload: {
+      entry,
+      detail,
+    },
+  });
+}
+
+export async function loadFmanzLiveRecords() {
+  const flags = getCliFlags();
+  const entries = await loadFmanzEntries(
+    flags.limit && flags.limit > 0 ? flags.limit : null,
+  );
+  const records = await mapWithConcurrency(entries, 4, enrichFmanzEntry);
+  return records.filter((record) => record !== null);
+}
+
+async function requestFmanzHtml(url: string) {
+  const { stdout } = await execFileAsync(
+    "curl",
+    [
+      "-sSL",
+      "--retry",
+      "3",
+      "--retry-all-errors",
+      "--connect-timeout",
+      "30",
+      "--max-time",
+      "120",
+      url,
+    ],
+    {
+    maxBuffer: 10 * 1024 * 1024,
+    },
+  );
+  return stdout;
+}
+
+export async function main() {
+  await runScraper({
+    name: "🇳🇿 FMA New Zealand Enforcement Cases Scraper",
+    liveLoader: loadFmanzLiveRecords,
+    testLoader: loadFmanzLiveRecords,
+  });
+}
+
+if (process.argv[1] && fileURLToPath(import.meta.url) === process.argv[1]) {
+  main().catch((error) => {
+    console.error("❌ FMANZ scraper failed:", error);
+    process.exit(1);
+  });
+}

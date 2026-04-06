@@ -50,6 +50,8 @@
     "scrape:ciro": "node --import tsx/esm scripts/scraper/scrapeCiro.ts --",
     "scrape:sebi": "node --import tsx/esm scripts/scraper/scrapeSebi.ts --",
     "scrape:sec": "node --import tsx/esm scripts/scraper/scrapeSec.ts --",
+    "scrape:asic": "node --import tsx/esm scripts/scraper/scrapeAsic.ts --",
+    "scrape:fmanz": "node --import tsx/esm scripts/scraper/scrapeFmanz.ts --",
     "scrape:next-eight": "node --import tsx/esm scripts/scraper/scrapeNextEight.ts --",
     "check:live-freshness": "node --import tsx/esm scripts/scraper/checkLiveRegulatorFreshness.ts --",
     "verify:setup": "bash scripts/verify-setup.sh",

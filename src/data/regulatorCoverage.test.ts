@@ -30,6 +30,8 @@ describe("regulatorCoverage", () => {
     expect(PUBLIC_REGULATOR_CODES).toContain("CNBCZ");
     expect(PUBLIC_REGULATOR_CODES).toContain("CYSEC");
     expect(PUBLIC_REGULATOR_CODES).toContain("FINFSA");
+    expect(PUBLIC_REGULATOR_CODES).toContain("ASIC");
+    expect(PUBLIC_REGULATOR_CODES).toContain("FMANZ");
     expect(PUBLIC_REGULATOR_CODES).not.toContain("ESMA");
     expect(PUBLIC_REGULATOR_CODES).not.toContain("CVM");
     expect(PUBLIC_REGULATOR_CODES).not.toContain("FDIC");
@@ -55,6 +57,8 @@ describe("regulatorCoverage", () => {
     expect(hasPublicRegulatorHub("BDI")).toBe(true);
     expect(hasPublicRegulatorHub("ACPR")).toBe(true);
     expect(hasPublicRegulatorHub("CSSF")).toBe(true);
+    expect(hasPublicRegulatorHub("ASIC")).toBe(true);
+    expect(hasPublicRegulatorHub("FMANZ")).toBe(true);
     expect(hasPublicRegulatorHub("FDIC")).toBe(false);
     expect(hasPublicRegulatorHub("ESMA")).toBe(false);
   });
@@ -64,6 +68,8 @@ describe("regulatorCoverage", () => {
     expect(isValidRegulatorCode("DFSA")).toBe(true);
     expect(isValidRegulatorCode("SEC")).toBe(true);
     expect(isValidRegulatorCode("BDI")).toBe(false);
+    expect(isValidRegulatorCode("ASIC")).toBe(true);
+    expect(isValidRegulatorCode("FMANZ")).toBe(true);
     expect(isValidRegulatorCode("FDIC")).toBe(false);
     expect(isValidRegulatorCode("ESMA")).toBe(false);
   });
@@ -89,9 +95,9 @@ describe("regulatorCoverage", () => {
   });
 
   it("keeps the current live roster aligned with the shared exports", () => {
-    expect(LIVE_REGULATOR_NAV_ITEMS).toHaveLength(27);
+    expect(LIVE_REGULATOR_NAV_ITEMS).toHaveLength(29);
     expect(INTERNAL_REGULATOR_NAV_ITEMS).toHaveLength(1);
-    expect(PIPELINE_REGULATOR_NAV_ITEMS).toHaveLength(23);
+    expect(PIPELINE_REGULATOR_NAV_ITEMS).toHaveLength(21);
     expect(PUBLIC_REGULATOR_CODES).toHaveLength(LIVE_REGULATOR_NAV_ITEMS.length);
     expect(getRegulatorCoverage("ESMA")?.stage).toBe("internal");
     expect(getRegulatorCoverage("CVM")?.stage).toBe("pipeline");
@@ -103,6 +109,8 @@ describe("regulatorCoverage", () => {
     expect(getRegulatorCoverage("FRB")?.stage).toBe("pipeline");
     expect(getRegulatorCoverage("OSC")?.stage).toBe("pipeline");
     expect(getRegulatorCoverage("CONSOB")?.stage).toBe("pipeline");
+    expect(getRegulatorCoverage("ASIC")?.stage).toBe("live");
+    expect(getRegulatorCoverage("FMANZ")?.stage).toBe("live");
     expect(getRegulatorCoverage("BDI")?.stage).toBe("live");
     expect(getRegulatorCoverage("ACPR")?.stage).toBe("live");
     expect(getRegulatorCoverage("CSSF")?.stage).toBe("live");
@@ -124,6 +132,8 @@ describe("regulatorCoverage", () => {
     expect(getRegulatorCoverage("FINFSA")?.count).toBe(44);
     expect(getRegulatorCoverage("FTNO")?.count).toBe(40);
     expect(getRegulatorCoverage("CNBCZ")?.count).toBe(1742);
+    expect(getRegulatorCoverage("ASIC")?.count).toBe(112);
+    expect(getRegulatorCoverage("FMANZ")?.count).toBe(99);
   });
 
   it("flags lower-confidence live regulators separately from the stable daily set", () => {
@@ -154,7 +164,7 @@ describe("regulatorCoverage", () => {
   });
 
   it("keeps global targets in pipeline until their datasets are genuinely live", () => {
-    ["HKMA", "ASIC", "MAS", "OCC", "FSCA", "FMANZ", "CSRC", "FDIC", "FRB", "CMASA"].forEach(
+    ["HKMA", "MAS", "OCC", "FSCA", "CSRC", "FDIC", "FRB", "CMASA"].forEach(
       (code) => {
         expect(PUBLIC_REGULATOR_CODES).not.toContain(code);
         expect(getRegulatorCoverage(code)?.stage).toBe("pipeline");

@@ -63,6 +63,10 @@ jobs:
             script: scrape:sec
           - code: SEBI
             script: scrape:sebi
+          - code: ASIC
+            script: scrape:asic
+          - code: FMANZ
+            script: scrape:fmanz
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -162,3 +166,58 @@ jobs:
           name: daily-live-regulator-health
           path: /tmp/daily-live-regulator-health.json
           if-no-files-found: ignore
+
+      - name: Check for consecutive failures and alert
+        if: always()
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          AWS_DEFAULT_REGION: eu-west-2
+          ALERT_EMAIL: ${{ vars.ALERT_EMAIL || 'ademola@memaconsultants.com' }}
+          WORKFLOW_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        run: |
+          set +e
+          FAILING_REGULATORS=$(node -e "
+            const pg = require('pg');
+            const client = new pg.Client({ connectionString: process.env.DATABASE_URL, ssl: { rejectUnauthorized: false } });
+            client.connect().then(async () => {
+              const { rows } = await client.query(\`
+                WITH recent AS (
+                  SELECT regulator, status,
+                    ROW_NUMBER() OVER (PARTITION BY regulator ORDER BY started_at DESC) AS rn
+                  FROM scraper_runs
+                  WHERE started_at > NOW() - INTERVAL '7 days'
+                )
+                SELECT regulator
+                FROM recent
+                WHERE rn <= 2 AND status = 'error'
+                GROUP BY regulator
+                HAVING COUNT(*) = 2
+              \`);
+              if (rows.length > 0) {
+                process.stdout.write(rows.map(r => r.regulator).join(', '));
+              }
+              await client.end();
+            }).catch(() => { process.exit(0); });
+          " 2>/dev/null)
+          set -e
+
+          if [ -n "$FAILING_REGULATORS" ]; then
+            echo "⚠️ Consecutive failures detected for: $FAILING_REGULATORS"
+
+            cat > /tmp/ses-alert.json <<SESEOF
+          {
+            "Source": "alerts@memaconsultants.com",
+            "Destination": { "ToAddresses": ["${ALERT_EMAIL}"] },
+            "Message": {
+              "Subject": { "Data": "SCRAPER ALERT: Consecutive failures for ${FAILING_REGULATORS}" },
+              "Body": { "Text": { "Data": "The following regulators have failed 2 consecutive scraper runs:\n\n${FAILING_REGULATORS}\n\nPlease investigate.\n\nWorkflow: ${WORKFLOW_URL}" } }
+            }
+          }
+          SESEOF
+
+            aws ses send-email --cli-input-json file:///tmp/ses-alert.json --region eu-west-2 || echo "Failed to send alert email"
+          else
+            echo "✅ No consecutive scraper failures detected"
+          fi

@@ -24,6 +24,7 @@ import {
   yearlyArticles as yearlyArticlesMeta,
 } from "../data/blogArticles.js";
 import type { BlogArticleMeta } from "../data/blogArticles.js";
+import { LIVE_REGULATOR_NAV_ITEMS } from "../data/regulatorCoverage.js";
 import { injectStructuredData, useSEO } from "../hooks/useSEO.js";
 import "../styles/blog.css";
 import "../styles/blog3d.css";
@@ -33,6 +34,7 @@ interface BlogArticle extends BlogArticleMeta {
 }
 
 const MotionLink = motion.create(Link);
+const LIVE_REGULATOR_COUNT = LIVE_REGULATOR_NAV_ITEMS.length;
 
 // Map article IDs to their icons (JSX stays in this file)
 const iconMap: Record<string, React.ReactNode> = {
@@ -222,7 +224,7 @@ export function Blog() {
               centres.
             </p>
             <p className="blog-hero-stats">
-              Tracking <strong>21 live regulators</strong> alongside the
+              Tracking <strong>{LIVE_REGULATOR_COUNT} live regulators</strong> alongside the
               flagship FCA enforcement archive
             </p>
           </motion.div>
