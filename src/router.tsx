@@ -208,6 +208,11 @@ const Features = lazyPage(() =>
     default: module.Features,
   })),
 );
+const NotFound = lazyPage(() =>
+  import("./pages/NotFound.js").then((module) => ({
+    default: module.NotFound,
+  })),
+);
 
 const router = createBrowserRouter([
   {
@@ -622,6 +627,27 @@ const router = createBrowserRouter([
         ),
       },
       {
+        path: "/404",
+        element: (
+          <Suspense
+            fallback={
+              <div
+                style={{
+                  minHeight: "100vh",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                }}
+              >
+                Loading...
+              </div>
+            }
+          >
+            <NotFound />
+          </Suspense>
+        ),
+      },
+      {
         path: "/regulators/:regulatorCode/dashboard",
         element: (
           <Suspense
@@ -681,6 +707,27 @@ const router = createBrowserRouter([
             }
           >
             <RegulatorHub />
+          </Suspense>
+        ),
+      },
+      {
+        path: "*",
+        element: (
+          <Suspense
+            fallback={
+              <div
+                style={{
+                  minHeight: "100vh",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                }}
+              >
+                Loading...
+              </div>
+            }
+          >
+            <NotFound />
           </Suspense>
         ),
       },

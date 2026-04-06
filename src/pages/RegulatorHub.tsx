@@ -1,4 +1,4 @@
-import { useParams, Link, useNavigate } from "react-router-dom";
+import { useParams, Link, Navigate } from "react-router-dom";
 import { useEffect, useState } from "react";
 import {
   ArrowLeft,
@@ -49,19 +49,11 @@ function formatCurrency(value: number, currency: "GBP" | "EUR"): string {
 
 export function RegulatorHub() {
   const { regulatorCode } = useParams<{ regulatorCode: string }>();
-  const navigate = useNavigate();
   const [currency, setCurrency] = useState<"GBP" | "EUR">("GBP");
 
   // Validate regulator code
   const normalizedCode = regulatorCode?.toUpperCase();
   const isValid = normalizedCode && isValidRegulatorCode(normalizedCode);
-
-  useEffect(() => {
-    if (!isValid) {
-      // Invalid regulator code - redirect to 404
-      navigate("/404", { replace: true });
-    }
-  }, [isValid, navigate]);
 
   const coverage = normalizedCode ? getRegulatorCoverage(normalizedCode) : null;
 
@@ -80,7 +72,7 @@ export function RegulatorHub() {
   });
 
   if (!isValid || !coverage) {
-    return null; // Will redirect in useEffect
+    return <Navigate to="/404" replace />;
   }
 
   // SEO metadata

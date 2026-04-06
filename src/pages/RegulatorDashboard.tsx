@@ -1,7 +1,7 @@
 import { lazy, Suspense, useEffect, useMemo, useState } from "react";
 import { endOfMonth, format, startOfMonth } from "date-fns";
 import { ArrowLeft, Calendar, Globe2, Layers3, Share2 } from "lucide-react";
-import { Link, useNavigate, useParams } from "react-router-dom";
+import { Link, Navigate, useParams } from "react-router-dom";
 import type { AdvancedFilterValues } from "../components/AdvancedFilters.js";
 import { BreachByTypeChart } from "../components/BreachByTypeChart.js";
 import { CategoryTreemap } from "../components/CategoryTreemap.js";
@@ -277,7 +277,6 @@ function buildShareParams(state: {
 
 export function RegulatorDashboard() {
   const { regulatorCode } = useParams<{ regulatorCode: string }>();
-  const navigate = useNavigate();
   const normalizedCode = regulatorCode?.toUpperCase();
   const isValid = normalizedCode && isValidRegulatorCode(normalizedCode);
   const coverage = normalizedCode ? getRegulatorCoverage(normalizedCode) : null;
@@ -315,12 +314,6 @@ export function RegulatorDashboard() {
   } | null>(null);
 
   useEffect(() => {
-    if (!isValid) {
-      navigate("/404", { replace: true });
-    }
-  }, [isValid, navigate]);
-
-  useEffect(() => {
     if (!coverage) return;
     const next = getInitialQueryState(coverage.defaultCurrency);
     setYear(next.year ?? 0);
@@ -338,7 +331,7 @@ export function RegulatorDashboard() {
   }, [toast]);
 
   if (!isValid || !coverage || !coverage.dashboardEnabled) {
-    return null;
+    return <Navigate to="/404" replace />;
   }
 
   useSEO({
