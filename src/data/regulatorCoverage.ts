@@ -2244,6 +2244,11 @@ export function isValidRegulatorCode(code: string): boolean {
   );
 }
 
+export function hasPublicRegulatorHub(code: string): boolean {
+  const coverage = getRegulatorCoverage(code);
+  return Boolean(coverage && coverage.stage === "live");
+}
+
 function buildFeedContract(
   code: string,
   coverage: RegulatorCoverageSeed,

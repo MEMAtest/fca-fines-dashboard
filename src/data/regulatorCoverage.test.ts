@@ -11,6 +11,7 @@ import {
   PUBLIC_EU_REGULATOR_CODES,
   PUBLIC_REGULATOR_CODES,
   getRegulatorCoverage,
+  hasPublicRegulatorHub,
   isValidRegulatorCode,
 } from "./regulatorCoverage.js";
 
@@ -49,10 +50,20 @@ describe("regulatorCoverage", () => {
     expect(coverage?.stage).toBe("live");
   });
 
-  it("only treats live regulators as valid routed hubs", () => {
+  it("treats all live regulators as valid public hubs", () => {
+    expect(hasPublicRegulatorHub("FCA")).toBe(true);
+    expect(hasPublicRegulatorHub("BDI")).toBe(true);
+    expect(hasPublicRegulatorHub("ACPR")).toBe(true);
+    expect(hasPublicRegulatorHub("CSSF")).toBe(true);
+    expect(hasPublicRegulatorHub("FDIC")).toBe(false);
+    expect(hasPublicRegulatorHub("ESMA")).toBe(false);
+  });
+
+  it("only treats dashboard-enabled live regulators as valid dashboard routes", () => {
     expect(isValidRegulatorCode("FCA")).toBe(true);
     expect(isValidRegulatorCode("DFSA")).toBe(true);
     expect(isValidRegulatorCode("SEC")).toBe(true);
+    expect(isValidRegulatorCode("BDI")).toBe(false);
     expect(isValidRegulatorCode("FDIC")).toBe(false);
     expect(isValidRegulatorCode("ESMA")).toBe(false);
   });

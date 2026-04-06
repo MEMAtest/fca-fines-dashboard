@@ -9,7 +9,7 @@ import {
 } from "lucide-react";
 import {
   getRegulatorCoverage,
-  isValidRegulatorCode,
+  hasPublicRegulatorHub,
 } from "../data/regulatorCoverage.js";
 import { DataCoverageNotice } from "../components/DataCoverageNotice.js";
 import RegulatorMark from "../components/RegulatorMark.js";
@@ -53,7 +53,7 @@ export function RegulatorHub() {
 
   // Validate regulator code
   const normalizedCode = regulatorCode?.toUpperCase();
-  const isValid = normalizedCode && isValidRegulatorCode(normalizedCode);
+  const isValid = normalizedCode && hasPublicRegulatorHub(normalizedCode);
 
   const coverage = normalizedCode ? getRegulatorCoverage(normalizedCode) : null;
 
