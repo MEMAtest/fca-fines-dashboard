@@ -434,6 +434,18 @@ describe("europe phase 2 scrapers", () => {
     ).toBe("Privanet Capital Markets Ltd");
     expect(
       extractFinfsaFirm(
+        "FIN-FSA imposes penalty payment and public warning on Privanet Capital Markets Ltd for actions in the marketing and sales of Lapis Group shares and debt certificates",
+        "The Financial Supervisory Authority (FIN-FSA) has imposed a penalty payment of EUR 450,000 on investment firm Privanet Capital Markets Ltd and issued the firm a public warning for several violations and failures to comply with the Securities Markets Act and the Investment Services Act.",
+      ),
+    ).toBe("Privanet Capital Markets Ltd");
+    expect(
+      extractFinfsaFirm(
+        "FIN-FSA issues public warning to and imposes penalty payment on Aalto Bankers Ltd",
+        "The FIN-FSA has issued a public warning to the company and imposed on the company a penalty payment of EUR 20,000.",
+      ),
+    ).toBe("Aalto Bankers Ltd");
+    expect(
+      extractFinfsaFirm(
         "Combined penalty payments imposed on three natural persons for late notification of managers’ transactions",
         "The Financial Supervisory Authority (FIN-FSA) has imposed a combined penalty payment for several omissions on each of Pekka Jalovaara, Jarmo Halonen and Ahti Paananen.",
       ),

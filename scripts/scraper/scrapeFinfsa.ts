@@ -61,11 +61,21 @@ function isNonNominativeFinfsaEntity(entity: string) {
 function cleanFinfsaEntitySegment(segment: string) {
   const normalized = normalizeWhitespace(segment)
     .replace(/^the\s+/i, "")
+    .replace(/^(?:investment firm|investment company|bank)\s+/i, "")
     .replace(/^former\s+.+?\s+board member\s+/i, "")
     .replace(/^a\s+joint\s+penalty\s+payment\s+for\s+several\s+omissions\s+on\s+/i, "")
     .replace(/^combined\s+penalty\s+payment\s+for\s+several\s+omissions\s+on\s+each\s+of\s+/i, "")
     .replace(/^penalty payment\s+on\s+/i, "")
     .replace(/^public warning\s+to\s+/i, "")
+    .replace(
+      /\s+and\s+issued\s+(?:the\s+)?(?:firm|company)\s+a\s+public\s+warning\b.*$/i,
+      "",
+    )
+    .replace(
+      /\s+and\s+imposed\s+on\s+(?:the\s+)?(?:firm|company)\s+a\s+penalty\s+payment\b.*$/i,
+      "",
+    )
+    .replace(/\s+and\s+imposed\s+on\s+(?:the\s+)?(?:firm|company)\b.*$/i, "")
     .replace(/\s+(?:due to|because|against)\b.*$/i, "")
     .replace(/\s+for\s+(?:omissions?|failures?|breaches?|violation|late notification|non-compliance|shortcomings?)\b.*$/i, "")
     .replace(/\s+payable\b.*$/i, "")
@@ -81,6 +91,8 @@ function cleanFinfsaEntitySegment(segment: string) {
     || /^(?:a person closely associated with.+|persons discharging managerial responsibilities.*|former board member of listed company|former listed company|the company|the bank|the individuals in question|notify|interviews are coordinated by fin-fsa communications|omissions\b.+|control and supervise the amalgamation|requirements\b.+)$/i.test(
       normalized,
     )
+    || /\b(?:the company|the firm)\b/i.test(normalized)
+    || /\b(?:issued|imposed)\s+(?:on\s+)?the\s+(?:company|firm)\b/i.test(normalized)
     || !/[A-ZÅÄÖ]/.test(normalized)
     || lower === normalized
   ) {
@@ -141,6 +153,7 @@ export function extractFinfsaFirm(title: string, body = "") {
 
   const titlePatterns = [
     /helsinki administrative court rejects appeal by\s+(.+?)\s+against penalty payment imposed by FIN-FSA/i,
+    /issues public warning to and imposes penalty payment on\s+(.+?)(?:\s+(?:due to|for)\b|$)/i,
     /supplementary amounts of conditional fine imposed on\s+(.+?)\s+payable/i,
     /conditional fine imposed on\s+(.+?)\s+payable/i,
     /penalty payment imposed on\s+(.+?)(?:\s+(?:due to|for)\b|$)/i,
