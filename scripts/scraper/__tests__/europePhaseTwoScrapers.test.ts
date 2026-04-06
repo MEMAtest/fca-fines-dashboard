@@ -446,6 +446,20 @@ describe("europe phase 2 scrapers", () => {
     ).toBe("Aalto Bankers Ltd");
     expect(
       extractFinfsaFirm(
+        "Financial Supervisory Authority imposes penalty payment of EUR 100,000 on Navi Group Ltd",
+        "The Financial Supervisory Authority (FIN-FSA) has imposed a penalty payment in the amount of EUR 100,000 on Navi Group Ltd. The company violated several legal provisions during the period 31 December 2011 – 22 November 2013.",
+      ),
+    ).toBe("Navi Group Ltd");
+    expect(
+      extractFinfsaFirm(
+        "Financial Supervisory Authority issues public warnings to and imposes penalty payments on four companies",
+        "The public warnings were issued for non-compliance with the obligation to obtain information and non-compliance with the suitability assessments. The penalty payments, in turn, were imposed for omissions regarding documentation requirements and for failure to identify and prevent conflicts of interest. The most significant shortcomings at Nordea Bank AB (publ), Finnish Branch, were related to obtaining information on customers’ investment objectives. The most significant shortcomings at Helsinki Area Cooperative Bank were related to obtaining information on customers’ investment objectives. The most significant shortcomings at Alexandria Pankkiiriliike Oyj were related to obtaining information on matters regarding customers’ investment objectives. The most significant shortcomings at Investium Ltd were related to obtaining information on matters regarding customers’ investment objectives.",
+      ),
+    ).toBe(
+      "Nordea Bank AB (publ), Finnish Branch; Helsinki Area Cooperative Bank; Alexandria Pankkiiriliike Oyj; Investium Ltd",
+    );
+    expect(
+      extractFinfsaFirm(
         "Combined penalty payments imposed on three natural persons for late notification of managers’ transactions",
         "The Financial Supervisory Authority (FIN-FSA) has imposed a combined penalty payment for several omissions on each of Pekka Jalovaara, Jarmo Halonen and Ahti Paananen.",
       ),

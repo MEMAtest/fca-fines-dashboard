@@ -104,6 +104,7 @@ function cleanFinfsaEntitySegment(segment: string) {
 
 function finalizeFinfsaEntityList(candidate: string) {
   const normalized = normalizeWhitespace(candidate)
+    .replace(/,\s+Finnish Branch\b/gi, "__FINNISH_BRANCH__")
     .replace(
       /,\s+and\s+a\s+joint\s+penalty\s+payment\s+for\s+several\s+omissions\s+on\s+/ig,
       "; ",
@@ -117,6 +118,7 @@ function finalizeFinfsaEntityList(candidate: string) {
 
   const splitCandidates = normalized
     .split(/\s*;\s*|,\s+(?=[A-ZÅÄÖ])|\s+and\s+(?=[A-ZÅÄÖ])/)
+    .map((segment) => segment.replace(/__FINNISH_BRANCH__/g, ", Finnish Branch"))
     .map(cleanFinfsaEntitySegment)
     .filter((segment): segment is string => Boolean(segment));
 
@@ -127,13 +129,27 @@ function finalizeFinfsaEntityList(candidate: string) {
 export function extractFinfsaFirm(title: string, body = "") {
   const normalizedTitle = stripFinfsaDecisionAppendixPrefix(title);
   const normalizedBody = normalizeWhitespace(body);
+  const repeatedBodyEntities = [
+    ...normalizedBody.matchAll(
+      /The most significant shortcomings at\s+(.+?)\s+were/gi,
+    ),
+  ]
+    .map((match) => match[1])
+    .filter(Boolean);
+
+  if (repeatedBodyEntities.length >= 2) {
+    const finalized = finalizeFinfsaEntityList(repeatedBodyEntities.join("; "));
+    if (finalized) {
+      return finalized;
+    }
+  }
 
   const bodyPatterns = [
     /appeal by\s+(.+?)\s+against penalty payment imposed by FIN-FSA/i,
     /has ordered\s+(.+?)\s+to pay the supplementary amounts/i,
     /has imposed (?:a )?(?:combined )?penalty payment(?:s)?(?: for several omissions)? on each of\s+(.+?)(?:\.|\s+They\b)/i,
     /has imposed (?:a )?penalty payment on\s+(.+?),\s+and\s+a\s+joint\s+penalty\s+payment\s+for\s+several\s+omissions\s+on\s+(.+?)\./i,
-    /has imposed (?:a )?(?:combined )?penalty payment(?: of [^.]+?)?\s+on\s+(.+?)(?:\.|\s+(?:because|due to|for)\b)/i,
+    /has imposed (?:a )?(?:combined )?penalty payment(?:(?: of| in the amount of) [^.]+?)?\s+on\s+(.+?)(?:\.|\s+(?:because|due to|for)\b)/i,
     /has imposed on\s+(.+?)\s+a penalty payment(?: of [^.]+?)?(?:\.|\s+(?:because|due to|for)\b)/i,
     /has also imposed a public warning on\s+(.+?)(?:\.|\s+(?:because|due to|for)\b)/i,
     /has issued a public warning to\s+(.+?)(?:\.|\s+(?:because|due to|for)\b)/i,
@@ -156,6 +172,7 @@ export function extractFinfsaFirm(title: string, body = "") {
     /issues public warning to and imposes penalty payment on\s+(.+?)(?:\s+(?:due to|for)\b|$)/i,
     /supplementary amounts of conditional fine imposed on\s+(.+?)\s+payable/i,
     /conditional fine imposed on\s+(.+?)\s+payable/i,
+    /(?:financial supervisory authority|fin-fsa)\s+imposes?\s+(?:a\s+)?penalty payment(?:(?: of| in the amount of) [^.]+?)?\s+on\s+(.+?)(?:\s+(?:due to|for)\b|$)/i,
     /penalty payment imposed on\s+(.+?)(?:\s+(?:due to|for)\b|$)/i,
     /public warning imposed on\s+(.+?)(?:\s+(?:due to|for)\b|$)/i,
     /public warning to\s+(.+?)(?:\s+(?:due to|for)\b|$)/i,
