@@ -20,10 +20,9 @@ describe("Roadmap", () => {
     renderPage();
 
     expect(
-      screen.getByRole("heading", { name: /Coverage roadmap/i }),
+      screen.getByRole("heading", { name: /Platform Roadmap/i }),
     ).toBeInTheDocument();
-    expect(screen.getByText(/Core Europe credibility gap/i)).toBeInTheDocument();
-    expect(screen.getByTestId("coverage-phase-1")).toBeInTheDocument();
+    expect(screen.getByTestId("coverage-live-strip")).toBeInTheDocument();
     expect(
       screen.getByTestId("coverage-card-consob"),
     ).toBeInTheDocument();
@@ -31,28 +30,27 @@ describe("Roadmap", () => {
     expect(screen.getByTestId("coverage-card-finma")).toBeInTheDocument();
   });
 
-  it("switches to the product roadmap tab", () => {
+  it("switches to the product roadmap filter", () => {
     renderPage();
 
-    fireEvent.click(
-      screen.getByRole("tab", { name: /Product Roadmap/i }),
-    );
+    fireEvent.click(screen.getByRole("button", { name: /^Features$/i }));
 
-    expect(screen.getByTestId("product-roadmap-grid")).toBeInTheDocument();
+    expect(screen.getByTestId("product-card-feat-board-pack")).toBeInTheDocument();
+    expect(screen.getByTestId("product-card-feat-api")).toBeInTheDocument();
     expect(
-      screen.getByRole("heading", { name: /Board pack persistence/i }),
-    ).toBeInTheDocument();
+      screen.queryByTestId("coverage-card-consob"),
+    ).not.toBeInTheDocument();
   });
 
-  it("filters the coverage rail by cluster", () => {
+  it("filters the coverage rail by quarter", () => {
     renderPage();
 
-    fireEvent.click(screen.getByRole("button", { name: /^Italy$/i }));
+    fireEvent.click(screen.getByRole("button", { name: /^Q2 2026$/i }));
 
     expect(screen.getByTestId("coverage-card-consob")).toBeInTheDocument();
     expect(screen.getByTestId("coverage-card-bdi")).toBeInTheDocument();
     expect(
-      screen.queryByTestId("coverage-card-finma"),
+      screen.queryByTestId("coverage-card-cnbcz"),
     ).not.toBeInTheDocument();
   });
 });

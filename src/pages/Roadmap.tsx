@@ -1,12 +1,12 @@
-import { useMemo, useState } from "react";
-import { motion } from "framer-motion";
+import { useMemo, useRef, useState } from "react";
+import { motion, useScroll, useTransform, AnimatePresence } from "framer-motion";
 import {
   ArrowRight,
   BellRing,
   BookOpenText,
   Braces,
+  ChevronRight,
   Database,
-  Radar,
   Sparkles,
 } from "lucide-react";
 import { Link } from "react-router-dom";
@@ -22,7 +22,39 @@ import {
 import { useSEO } from "../hooks/useSEO.js";
 import "../styles/roadmap.css";
 
-type RoadmapTab = "coverage" | "product";
+/* ------------------------------------------------------------------ */
+/*  Types                                                              */
+/* ------------------------------------------------------------------ */
+
+type TimelineCategory = "regulator" | "feature";
+type TimelineStatus = "live" | "in-progress" | "planned" | "future";
+
+interface TimelineItem {
+  id: string;
+  category: TimelineCategory;
+  title: string;
+  subtitle: string;
+  quarter: string;
+  status: TimelineStatus;
+  regulatorCode?: string;
+  coverage?: RegulatorCoverage;
+  icon?: typeof BellRing;
+  description?: string;
+  outcome?: string;
+  targetWindow?: string;
+}
+
+interface QuarterGroup {
+  quarter: string;
+  items: TimelineItem[];
+}
+
+type CategoryFilter = "all" | "regulator" | "feature";
+type QuarterFilter = string; // "all" or "Q2 2026" etc.
+
+/* ------------------------------------------------------------------ */
+/*  Product roadmap data                                               */
+/* ------------------------------------------------------------------ */
 
 interface ProductRoadmapItem {
   id: string;
@@ -77,46 +109,123 @@ const PRODUCT_ROADMAP_ITEMS: ProductRoadmapItem[] = [
   },
 ];
 
+/* ------------------------------------------------------------------ */
+/*  Helpers                                                            */
+/* ------------------------------------------------------------------ */
+
 const LIVE_EUROPE_REGULATORS = LIVE_REGULATOR_NAV_ITEMS.filter(
-  (coverage) => coverage.region === "Europe" || coverage.region === "UK",
+  (c) => c.region === "Europe" || c.region === "UK",
 );
 
-function getClusterOptions(phases: RoadmapPhaseWithRegulators[]) {
-  return Array.from(
-    new Set(
-      phases.flatMap((phase) =>
-        phase.regulators
-          .map((regulator) => regulator.countryCluster)
-          .filter((value): value is string => Boolean(value)),
-      ),
-    ),
-  );
+function phaseToQuarter(phase: CoverageRoadmapPhase): string {
+  return phase.targetWindow.replace(/(\d{4})\s+(Q\d)/, "$2 $1");
 }
 
-type RoadmapPhaseWithRegulators = CoverageRoadmapPhase & {
-  regulators: RegulatorCoverage[];
+function productWindowToQuarter(targetWindow: string): string {
+  return targetWindow.replace(/(\d{4})\s+(Q\d)/, "$2 $1");
+}
+
+function phaseToStatus(phase: 1 | 2 | 3): TimelineStatus {
+  if (phase === 1) return "planned";
+  if (phase === 2) return "planned";
+  return "future";
+}
+
+function buildTimelineItems(): TimelineItem[] {
+  const items: TimelineItem[] = [];
+
+  // Regulator items from coverage phases
+  for (const phase of EUROPE_EEA_COVERAGE_PHASES) {
+    const quarter = phaseToQuarter(phase);
+    for (const code of phase.codes) {
+      const coverage = getRegulatorCoverage(code);
+      if (!coverage) continue;
+      items.push({
+        id: `reg-${code}`,
+        category: "regulator",
+        title: coverage.code,
+        subtitle: `${coverage.country}${coverage.countryCluster ? ` \u00b7 ${coverage.countryCluster}` : ""}`,
+        quarter,
+        status: phaseToStatus(phase.phase),
+        regulatorCode: coverage.code,
+        coverage,
+      });
+    }
+  }
+
+  // Product items
+  for (const item of PRODUCT_ROADMAP_ITEMS) {
+    items.push({
+      id: `feat-${item.id}`,
+      category: "feature",
+      title: item.title,
+      subtitle: item.outcome,
+      quarter: productWindowToQuarter(item.targetWindow),
+      status: item.status === "in-progress" ? "in-progress" : "planned",
+      icon: item.icon,
+      description: item.description,
+      outcome: item.outcome,
+      targetWindow: item.targetWindow,
+    });
+  }
+
+  return items;
+}
+
+const QUARTER_SORT_ORDER: Record<string, number> = {
+  "Q2 2026": 1,
+  "Q3 2026": 2,
+  "Q4 2026": 3,
 };
 
-function buildCoveragePhases(): RoadmapPhaseWithRegulators[] {
-  return EUROPE_EEA_COVERAGE_PHASES.map((phase) => ({
-    ...phase,
-    regulators: phase.codes
-      .map((code) => getRegulatorCoverage(code))
-      .filter((coverage): coverage is RegulatorCoverage => Boolean(coverage)),
-  }));
+function groupByQuarter(items: TimelineItem[]): QuarterGroup[] {
+  const map = new Map<string, TimelineItem[]>();
+  for (const item of items) {
+    const existing = map.get(item.quarter);
+    if (existing) {
+      existing.push(item);
+    } else {
+      map.set(item.quarter, [item]);
+    }
+  }
+
+  return Array.from(map.entries())
+    .sort(
+      ([a], [b]) =>
+        (QUARTER_SORT_ORDER[a] ?? 99) - (QUARTER_SORT_ORDER[b] ?? 99),
+    )
+    .map(([quarter, items]) => ({ quarter, items }));
 }
 
-function formatPriority(coverage: RegulatorCoverage) {
-  return `Priority ${coverage.priorityTier}`;
+function getStatusColor(status: TimelineStatus): string {
+  switch (status) {
+    case "live":
+      return "#10b981";
+    case "in-progress":
+      return "#f59e0b";
+    case "planned":
+      return "#3b82f6";
+    case "future":
+      return "#94a3b8";
+  }
+}
+
+function getStatusLabel(status: TimelineStatus): string {
+  switch (status) {
+    case "live":
+      return "Live";
+    case "in-progress":
+      return "In progress";
+    case "planned":
+      return "Planned";
+    case "future":
+      return "Future";
+  }
 }
 
 function formatCollectionMode(coverage: RegulatorCoverage) {
-  if (coverage.automationLevel === "curated_archive") {
-    return "Manifest-driven";
-  }
-  if (coverage.automationLevel === "sparse_source") {
-    return "Sparse-source";
-  }
+  if (coverage.automationLevel === "curated_archive") return "Manifest-driven";
+  if (coverage.automationLevel === "sparse_source") return "Sparse-source";
   return "Automated-ready";
 }
 
@@ -126,430 +235,488 @@ function getPhaseStatusLabel(phase: CoverageRoadmapPhase["phase"]) {
   return "Later wave";
 }
 
+/* ------------------------------------------------------------------ */
+/*  Main component                                                     */
+/* ------------------------------------------------------------------ */
+
 export function Roadmap() {
   useSEO({
-    title: "Coverage Roadmap | Europe Expansion and Product Delivery",
+    title: "Platform Roadmap | Regulator Coverage and Product Delivery",
     description:
       "Track the Europe and EEA regulator rollout in phased coverage waves, alongside the next product work for enforcement intelligence.",
     canonicalPath: "/roadmap",
   });
 
-  const [activeTab, setActiveTab] = useState<RoadmapTab>("coverage");
-  const coveragePhases = useMemo(buildCoveragePhases, []);
-  const clusterOptions = useMemo(
-    () => ["all", ...getClusterOptions(coveragePhases)],
-    [coveragePhases],
-  );
-  const [selectedCluster, setSelectedCluster] = useState<string>("all");
-  const [selectedCode, setSelectedCode] = useState<string>(
-    coveragePhases[0]?.regulators[0]?.code ?? "FINMA",
+  const allItems = useMemo(buildTimelineItems, []);
+  const allQuarters = useMemo(
+    () => Array.from(new Set(allItems.map((i) => i.quarter))).sort(
+      (a, b) => (QUARTER_SORT_ORDER[a] ?? 99) - (QUARTER_SORT_ORDER[b] ?? 99),
+    ),
+    [allItems],
   );
 
-  const filteredPhases = useMemo(() => {
-    if (selectedCluster === "all") return coveragePhases;
+  const [categoryFilter, setCategoryFilter] = useState<CategoryFilter>("all");
+  const [quarterFilter, setQuarterFilter] = useState<QuarterFilter>("all");
+  const [expandedId, setExpandedId] = useState<string | null>(null);
 
-    return coveragePhases
-      .map((phase) => ({
-        ...phase,
-        regulators: phase.regulators.filter(
-          (regulator) => regulator.countryCluster === selectedCluster,
-        ),
-      }))
-      .filter((phase) => phase.regulators.length > 0);
-  }, [coveragePhases, selectedCluster]);
+  const filteredItems = useMemo(() => {
+    return allItems.filter((item) => {
+      if (categoryFilter !== "all" && item.category !== categoryFilter) return false;
+      if (quarterFilter !== "all" && item.quarter !== quarterFilter) return false;
+      return true;
+    });
+  }, [allItems, categoryFilter, quarterFilter]);
 
-  const visibleCodes = filteredPhases.flatMap((phase) =>
-    phase.regulators.map((regulator) => regulator.code),
+  const quarterGroups = useMemo(() => groupByQuarter(filteredItems), [filteredItems]);
+
+  const timelineRef = useRef<HTMLDivElement>(null);
+  const { scrollYProgress } = useScroll({
+    target: timelineRef,
+    offset: ["start center", "end center"],
+  });
+  const lineHeight = useTransform(scrollYProgress, [0, 1], ["0%", "100%"]);
+
+  const europeNextCount = EUROPE_EEA_COVERAGE_PHASES.reduce(
+    (sum, phase) => sum + phase.codes.length,
+    0,
   );
 
-  const selectedCoverage =
-    (visibleCodes.includes(selectedCode)
-      ? getRegulatorCoverage(selectedCode)
-      : filteredPhases[0]?.regulators[0]) ?? null;
+  function toggleExpanded(id: string) {
+    setExpandedId((prev) => (prev === id ? null : id));
+  }
 
   return (
     <div className="roadmap-page">
-      <section className="roadmap-hero">
-        <div className="roadmap-hero__container">
-          <div className="roadmap-hero__eyebrow">
+      {/* ── Hero ── */}
+      <section className="tl-hero">
+        <div className="tl-hero__container">
+          <div className="tl-hero__eyebrow">
             <Sparkles size={16} />
             <span>Mission control</span>
           </div>
+
           <motion.h1
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.55 }}
-            className="roadmap-hero__title"
+            className="tl-hero__title"
           >
-            Coverage roadmap
+            Platform Roadmap
           </motion.h1>
+
           <motion.p
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.55, delay: 0.1 }}
-            className="roadmap-hero__description"
+            className="tl-hero__subtitle"
           >
-            Europe comes first. Italy, Switzerland, France banking completion,
-            Luxembourg, Belgium, Austria, Portugal, Cyprus, and the Nordics are
-            now mapped into an explicit three-phase rollout instead of a vague
-            backlog.
+            <strong>{REGULATOR_STAGE_COUNTS.live}</strong> live{" \u00b7 "}
+            <strong>{europeNextCount}</strong> Europe next{" \u00b7 "}
+            <strong>{REGULATOR_STAGE_COUNTS.total}</strong> tracked total
           </motion.p>
 
+          {/* ── Filters ── */}
           <motion.div
             initial={{ opacity: 0, y: 16 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.55, delay: 0.2 }}
-            className="roadmap-hero__stats"
+            className="tl-filters"
           >
-            <HeroStat
-              value={REGULATOR_STAGE_COUNTS.live}
-              label="Live now"
-              helper="Public hubs and dashboards"
-            />
-            <HeroStat
-              value={coveragePhases.flatMap((phase) => phase.regulators).length}
-              label="Europe / EEA next"
-              helper="Validated phase rollout"
-            />
-            <HeroStat
-              value={REGULATOR_STAGE_COUNTS.pipeline}
-              label="Validated next"
-              helper="Queued regulators"
-            />
-            <HeroStat
-              value={REGULATOR_STAGE_COUNTS.total}
-              label="Tracked total"
-              helper="Live, internal, and pipeline"
-            />
+            <div className="tl-filters__group" role="group" aria-label="Filter by category">
+              {(["all", "regulator", "feature"] as const).map((cat) => (
+                <button
+                  key={cat}
+                  type="button"
+                  className={`tl-chip${categoryFilter === cat ? " tl-chip--active" : ""}`}
+                  aria-pressed={categoryFilter === cat}
+                  onClick={() => setCategoryFilter(cat)}
+                >
+                  {cat === "all"
+                    ? "All"
+                    : cat === "regulator"
+                      ? "Regulators"
+                      : "Features"}
+                </button>
+              ))}
+            </div>
+            <span className="tl-filters__divider" aria-hidden="true" />
+            <div className="tl-filters__group" role="group" aria-label="Filter by quarter">
+              <button
+                type="button"
+                className={`tl-chip${quarterFilter === "all" ? " tl-chip--active" : ""}`}
+                aria-pressed={quarterFilter === "all"}
+                onClick={() => setQuarterFilter("all")}
+              >
+                All quarters
+              </button>
+              {allQuarters.map((q) => (
+                <button
+                  key={q}
+                  type="button"
+                  className={`tl-chip${quarterFilter === q ? " tl-chip--active" : ""}`}
+                  aria-pressed={quarterFilter === q}
+                  onClick={() => setQuarterFilter(q)}
+                >
+                  {q}
+                </button>
+              ))}
+            </div>
           </motion.div>
+        </div>
+      </section>
 
-          <div className="roadmap-tabs" role="tablist" aria-label="Roadmap view">
-            <TabButton
-              active={activeTab === "coverage"}
-              label="Coverage Roadmap"
-              onClick={() => setActiveTab("coverage")}
-            />
-            <TabButton
-              active={activeTab === "product"}
-              label="Product Roadmap"
-              onClick={() => setActiveTab("product")}
-            />
+      {/* ── Timeline body ── */}
+      <section className="tl-body" aria-label="Timeline">
+        <div className="tl-body__container">
+          {/* Live regulators strip */}
+          {categoryFilter !== "feature" && quarterFilter === "all" && (
+            <motion.div
+              className="tl-live-strip"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5 }}
+              data-testid="coverage-live-strip"
+            >
+              <div className="tl-live-strip__header">
+                <span className="tl-live-strip__label">Live now</span>
+                <strong>
+                  {LIVE_EUROPE_REGULATORS.length} European anchors
+                </strong>
+              </div>
+              <div className="tl-live-strip__items">
+                {LIVE_EUROPE_REGULATORS.map((coverage) => (
+                  <Link
+                    key={coverage.code}
+                    to={coverage.overviewPath}
+                    className="tl-live-pill"
+                    aria-label={`${coverage.fullName} overview`}
+                  >
+                    <RegulatorMark
+                      regulator={coverage.code}
+                      label={coverage.fullName}
+                      country={coverage.country}
+                      size="small"
+                      showCode
+                      decorative
+                    />
+                  </Link>
+                ))}
+              </div>
+            </motion.div>
+          )}
+
+          {/* Timeline */}
+          <div className="tl-timeline" ref={timelineRef}>
+            {/* Progress line */}
+            {filteredItems.length > 0 && (
+              <div className="tl-timeline__track" aria-hidden="true">
+                <motion.div
+                  className="tl-timeline__progress"
+                  style={{ height: lineHeight }}
+                />
+              </div>
+            )}
+
+            {quarterGroups.map((group, groupIdx) => (
+              <div key={group.quarter} className="tl-quarter">
+                {/* Quarter divider */}
+                <motion.div
+                  className="tl-quarter__divider"
+                  initial={{ opacity: 0, x: -20 }}
+                  whileInView={{ opacity: 1, x: 0 }}
+                  viewport={{ once: true, margin: "-60px" }}
+                  transition={{ duration: 0.4 }}
+                >
+                  <span className="tl-quarter__dot" aria-hidden="true" />
+                  <span className="tl-quarter__label">{group.quarter}</span>
+                </motion.div>
+
+                {/* Milestones */}
+                {group.items.map((item, itemIdx) => (
+                  <TimelineMilestone
+                    key={item.id}
+                    item={item}
+                    isExpanded={expandedId === item.id}
+                    onToggle={() => toggleExpanded(item.id)}
+                    delay={groupIdx * 0.05 + itemIdx * 0.06}
+                  />
+                ))}
+              </div>
+            ))}
+
+            {filteredItems.length === 0 && (
+              <div className="tl-empty">
+                <p>No milestones match the current filters.</p>
+              </div>
+            )}
           </div>
         </div>
       </section>
+    </div>
+  );
+}
 
-      <section className="roadmap-console">
-        <div className="roadmap-console__container">
-          {activeTab === "coverage" ? (
-            <>
-              <div className="roadmap-console__topline">
-                <div>
-                  <span className="roadmap-console__kicker">
-                    Europe + EEA rollout
-                  </span>
-                  <h2>Horizontal delivery rail</h2>
-                </div>
-                <p>
-                  The coverage tab is registry-driven. Every card below is tied
-                  to a tracked regulator entry, official source set, and phase.
-                </p>
-              </div>
+/* ------------------------------------------------------------------ */
+/*  Timeline Milestone                                                 */
+/* ------------------------------------------------------------------ */
 
-              <div className="roadmap-filter-chips">
-                {clusterOptions.map((cluster) => (
-                  <button
-                    key={cluster}
-                    type="button"
-                    className={
-                      cluster === selectedCluster
-                        ? "roadmap-chip roadmap-chip--active"
-                        : "roadmap-chip"
-                    }
-                    onClick={() => setSelectedCluster(cluster)}
-                  >
-                    {cluster === "all" ? "All clusters" : cluster}
-                  </button>
-                ))}
-              </div>
+function TimelineMilestone({
+  item,
+  isExpanded,
+  onToggle,
+  delay,
+}: {
+  item: TimelineItem;
+  isExpanded: boolean;
+  onToggle: () => void;
+  delay: number;
+}) {
+  const statusColor = getStatusColor(item.status);
+  const Icon = item.icon;
 
-              <div className="roadmap-live-strip" data-testid="coverage-live-strip">
-                <div className="roadmap-live-strip__header">
-                  <span>Live now</span>
-                  <strong>{LIVE_EUROPE_REGULATORS.length} European anchors</strong>
-                </div>
-                <div className="roadmap-live-strip__items">
-                  {LIVE_EUROPE_REGULATORS.map((coverage) => (
-                    <Link
-                      key={coverage.code}
-                      to={coverage.overviewPath}
-                      className="roadmap-live-pill"
-                    >
-                      <RegulatorMark
-                        regulator={coverage.code}
-                        label={coverage.fullName}
-                        country={coverage.country}
-                        size="small"
-                        showCode
-                        decorative
-                      />
-                    </Link>
-                  ))}
-                </div>
-              </div>
+  return (
+    <motion.div
+      className="tl-milestone"
+      initial={{ opacity: 0, x: 30 }}
+      whileInView={{ opacity: 1, x: 0 }}
+      viewport={{ once: true, margin: "-40px" }}
+      transition={{ duration: 0.45, delay: Math.min(delay, 0.3) }}
+    >
+      {/* Node on the timeline */}
+      <div
+        className={`tl-node tl-node--${item.status}`}
+        style={{ "--node-color": statusColor } as React.CSSProperties}
+        aria-label={`${item.title} - ${getStatusLabel(item.status)}`}
+      />
 
-              <div
-                className="roadmap-rail"
-                role="region"
-                aria-label="Coverage roadmap phases"
-                data-testid="coverage-roadmap-rail"
-              >
-                {filteredPhases.map((phase) => (
-                  <section
-                    key={phase.id}
-                    className="roadmap-phase"
-                    data-testid={`coverage-phase-${phase.phase}`}
-                  >
-                    <div className="roadmap-phase__header">
-                      <div>
-                        <span className="roadmap-phase__label">{phase.label}</span>
-                        <h3>{phase.title}</h3>
-                      </div>
-                      <div className="roadmap-phase__meta">
-                        <span>{phase.targetWindow}</span>
-                        <span>{getPhaseStatusLabel(phase.phase)}</span>
-                      </div>
-                    </div>
+      {/* Connector line */}
+      <div className="tl-connector" aria-hidden="true" />
 
-                    <p className="roadmap-phase__description">
-                      {phase.description}
-                    </p>
-
-                    <div className="roadmap-phase__spotlight">
-                      <Radar size={16} />
-                      <span>{phase.spotlight}</span>
-                    </div>
-
-                    <div className="roadmap-phase__cards">
-                      {phase.regulators.map((coverage) => (
-                        <button
-                          key={coverage.code}
-                          type="button"
-                          className={
-                            selectedCoverage?.code === coverage.code
-                              ? "roadmap-regulator-card roadmap-regulator-card--active"
-                              : "roadmap-regulator-card"
-                          }
-                          onClick={() => setSelectedCode(coverage.code)}
-                          data-testid={`coverage-card-${coverage.code.toLowerCase()}`}
-                        >
-                          <div className="roadmap-regulator-card__header">
-                            <RegulatorMark
-                              regulator={coverage.code}
-                              label={coverage.fullName}
-                              country={coverage.country}
-                              size="small"
-                              showCode
-                              decorative
-                            />
-                            <span className="roadmap-stage-badge">
-                              {formatPriority(coverage)}
-                            </span>
-                          </div>
-
-                          <h4>{coverage.fullName}</h4>
-                          <p>
-                            {coverage.countryCluster ?? coverage.country} ·{" "}
-                            {coverage.country}
-                          </p>
-
-                          <div className="roadmap-regulator-card__meta">
-                            <span>{coverage.scrapeMode.replace(/_/g, " ")}</span>
-                            <span>{formatCollectionMode(coverage)}</span>
-                          </div>
-                        </button>
-                      ))}
-                    </div>
-                  </section>
-                ))}
-              </div>
-
-              {selectedCoverage ? (
-                <div
-                  className="roadmap-detail"
-                  data-testid="coverage-detail-panel"
-                >
-                  <div className="roadmap-detail__hero">
-                    <div className="roadmap-detail__mark">
-                      <RegulatorMark
-                        regulator={selectedCoverage.code}
-                        label={selectedCoverage.fullName}
-                        country={selectedCoverage.country}
-                        size="large"
-                        showCode
-                        decorative
-                        surface="dark"
-                      />
-                    </div>
-                    <div className="roadmap-detail__copy">
-                      <span className="roadmap-console__kicker">
-                        {selectedCoverage.rolloutPhase
-                          ? `Europe phase ${selectedCoverage.rolloutPhase}`
-                          : "Pipeline"}
-                      </span>
-                      <h3>{selectedCoverage.fullName}</h3>
-                      <p>
-                        {selectedCoverage.country} ·{" "}
-                        {selectedCoverage.countryCluster ?? selectedCoverage.regionCluster}
-                      </p>
-                    </div>
-                    <div className="roadmap-detail__stats">
-                      <DetailStat
-                        label="Source surface"
-                        value={selectedCoverage.scrapeMode.replace(/_/g, " ")}
-                      />
-                      <DetailStat
-                        label="Collection mode"
-                        value={formatCollectionMode(selectedCoverage)}
-                      />
-                      <DetailStat
-                        label="Status"
-                        value={getPhaseStatusLabel(
-                          selectedCoverage.rolloutPhase ?? 3,
-                        )}
-                      />
-                    </div>
-                  </div>
-
-                  <div className="roadmap-detail__body">
-                    <div className="roadmap-detail__panel">
-                      <h4>Why it belongs in the rollout</h4>
-                      <p>
-                        {selectedCoverage.stage === "pipeline"
-                          ? selectedCoverage.feedContract.sourceContractSummary
-                          : (selectedCoverage.note ??
-                            selectedCoverage.feedContract.sourceContractSummary)}
-                      </p>
-                    </div>
-                    <div className="roadmap-detail__panel">
-                      <h4>Official sources</h4>
-                      <ul className="roadmap-source-list">
-                        {selectedCoverage.officialSources.map((source) => (
-                          <li key={source.url}>
-                            <a
-                              href={source.url}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                            >
-                              <span>{source.label}</span>
-                              <ArrowRight size={14} />
-                            </a>
-                            <p>{source.description}</p>
-                          </li>
-                        ))}
-                      </ul>
-                    </div>
-                  </div>
-                </div>
+      {/* Card */}
+      <div className="tl-card-wrapper">
+        <button
+          type="button"
+          className={`tl-card${isExpanded ? " tl-card--expanded" : ""}`}
+          onClick={onToggle}
+          aria-expanded={isExpanded}
+          aria-controls={`detail-${item.id}`}
+          data-testid={
+            item.category === "regulator"
+              ? `coverage-card-${item.regulatorCode?.toLowerCase()}`
+              : `product-card-${item.id}`
+          }
+        >
+          <div className="tl-card__row">
+            {/* Icon */}
+            <div className="tl-card__icon">
+              {item.category === "regulator" && item.regulatorCode ? (
+                <RegulatorMark
+                  regulator={item.regulatorCode}
+                  label={item.coverage?.fullName}
+                  country={item.coverage?.country}
+                  size="small"
+                  showCode
+                  decorative
+                />
+              ) : Icon ? (
+                <span className="tl-card__feature-icon">
+                  <Icon size={18} />
+                </span>
               ) : null}
-            </>
-          ) : (
-            <>
-              <div className="roadmap-console__topline">
-                <div>
-                  <span className="roadmap-console__kicker">Product track</span>
-                  <h2>Platform work that follows the coverage push</h2>
-                </div>
-                <p>
-                  Product items stay separate from regulator rollout so the
-                  coverage story is no longer diluted by mixed roadmap cards.
-                </p>
-              </div>
+            </div>
 
-              <div className="roadmap-product-grid" data-testid="product-roadmap-grid">
-                {PRODUCT_ROADMAP_ITEMS.map((item) => {
-                  const Icon = item.icon;
-                  return (
-                    <div key={item.id} className="roadmap-product-card">
-                      <div className="roadmap-product-card__header">
-                        <div className="roadmap-product-card__icon">
-                          <Icon size={18} />
-                        </div>
-                        <span
-                          className={
-                            item.status === "in-progress"
-                              ? "roadmap-stage-badge roadmap-stage-badge--amber"
-                              : "roadmap-stage-badge"
-                          }
-                        >
-                          {item.status === "in-progress"
-                            ? "In progress"
-                            : "Planned"}
-                        </span>
-                      </div>
-                      <h3>{item.title}</h3>
-                      <p>{item.description}</p>
-                      <div className="roadmap-product-card__footer">
-                        <span>{item.targetWindow}</span>
-                        <strong>{item.outcome}</strong>
-                      </div>
-                    </div>
-                  );
-                })}
+            {/* Title + subtitle */}
+            <div className="tl-card__text">
+              <span className="tl-card__title">{item.title}</span>
+              <span className="tl-card__subtitle">{item.subtitle}</span>
+            </div>
+
+            {/* Badges */}
+            <div className="tl-card__badges">
+              <span
+                className="tl-badge"
+                style={
+                  {
+                    "--badge-color": statusColor,
+                  } as React.CSSProperties
+                }
+              >
+                {getStatusLabel(item.status)}
+              </span>
+              <span className="tl-badge tl-badge--quarter">{item.quarter}</span>
+            </div>
+
+            {/* Chevron */}
+            <motion.span
+              className="tl-card__chevron"
+              animate={{ rotate: isExpanded ? 90 : 0 }}
+              transition={{ duration: 0.2 }}
+            >
+              <ChevronRight size={18} />
+            </motion.span>
+          </div>
+        </button>
+
+        {/* Expanded detail */}
+        <AnimatePresence>
+          {isExpanded && (
+            <motion.div
+              id={`detail-${item.id}`}
+              className="tl-detail"
+              role="region"
+              initial={{ height: 0, opacity: 0 }}
+              animate={{ height: "auto", opacity: 1 }}
+              exit={{ height: 0, opacity: 0 }}
+              transition={{
+                duration: 0.3,
+                ease: "easeInOut",
+                opacity: { duration: 0.15 },
+              }}
+            >
+              <div className="tl-detail__inner">
+                {item.category === "regulator" && item.coverage ? (
+                  <RegulatorDetail coverage={item.coverage} />
+                ) : (
+                  <FeatureDetail item={item} />
+                )}
               </div>
-            </>
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </div>
+    </motion.div>
+  );
+}
+
+/* ------------------------------------------------------------------ */
+/*  Regulator detail (expanded)                                        */
+/* ------------------------------------------------------------------ */
+
+function RegulatorDetail({ coverage }: { coverage: RegulatorCoverage }) {
+  return (
+    <div className="tl-reg-detail">
+      <div className="tl-reg-detail__top">
+        <div className="tl-reg-detail__mark">
+          <RegulatorMark
+            regulator={coverage.code}
+            label={coverage.fullName}
+            country={coverage.country}
+            size="large"
+            showCode
+            decorative
+            surface="dark"
+          />
+        </div>
+        <div className="tl-reg-detail__meta">
+          <h4>{coverage.fullName}</h4>
+          <p>
+            {coverage.country}
+            {coverage.countryCluster
+              ? ` \u00b7 ${coverage.countryCluster}`
+              : coverage.regionCluster
+                ? ` \u00b7 ${coverage.regionCluster}`
+                : ""}
+          </p>
+          <div className="tl-reg-detail__stats">
+            <DetailStat
+              label="Source surface"
+              value={coverage.scrapeMode.replace(/_/g, " ")}
+            />
+            <DetailStat
+              label="Collection mode"
+              value={formatCollectionMode(coverage)}
+            />
+            <DetailStat
+              label="Status"
+              value={getPhaseStatusLabel(coverage.rolloutPhase ?? 3)}
+            />
+          </div>
+        </div>
+      </div>
+
+      <div className="tl-reg-detail__body">
+        <div className="tl-reg-detail__panel">
+          <h5>Why it belongs in the rollout</h5>
+          <p>
+            {coverage.stage === "pipeline"
+              ? coverage.feedContract.sourceContractSummary
+              : (coverage.note ?? coverage.feedContract.sourceContractSummary)}
+          </p>
+        </div>
+        <div className="tl-reg-detail__panel">
+          <h5>Official sources</h5>
+          <ul className="tl-source-list">
+            {coverage.officialSources.map((source) => (
+              <li key={source.url}>
+                <a
+                  href={source.url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  <span>{source.label}</span>
+                  <ArrowRight size={14} />
+                </a>
+                <p>{source.description}</p>
+              </li>
+            ))}
+          </ul>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* ------------------------------------------------------------------ */
+/*  Feature detail (expanded)                                          */
+/* ------------------------------------------------------------------ */
+
+function FeatureDetail({ item }: { item: TimelineItem }) {
+  const Icon = item.icon;
+  return (
+    <div className="tl-feat-detail">
+      <div className="tl-feat-detail__top">
+        {Icon && (
+          <div className="tl-feat-detail__icon-lg">
+            <Icon size={28} />
+          </div>
+        )}
+        <div>
+          <h4>{item.title}</h4>
+          {item.targetWindow && (
+            <span className="tl-feat-detail__window">
+              Target: {item.targetWindow}
+            </span>
           )}
         </div>
-      </section>
+      </div>
+
+      {item.description && (
+        <div className="tl-feat-detail__section">
+          <h5>Description</h5>
+          <p>{item.description}</p>
+        </div>
+      )}
+
+      {item.outcome && (
+        <div className="tl-feat-detail__section">
+          <h5>Expected outcome</h5>
+          <p>{item.outcome}</p>
+        </div>
+      )}
     </div>
   );
 }
 
-function HeroStat({
-  value,
-  label,
-  helper,
-}: {
-  value: number;
-  label: string;
-  helper: string;
-}) {
-  return (
-    <div className="roadmap-stat">
-      <strong>{value}</strong>
-      <span>{label}</span>
-      <small>{helper}</small>
-    </div>
-  );
-}
+/* ------------------------------------------------------------------ */
+/*  Detail stat                                                        */
+/* ------------------------------------------------------------------ */
 
 function DetailStat({ label, value }: { label: string; value: string }) {
   return (
-    <div className="roadmap-detail-stat">
-      <span>{label}</span>
-      <strong>{value}</strong>
+    <div className="tl-detail-stat">
+      <span className="tl-detail-stat__label">{label}</span>
+      <strong className="tl-detail-stat__value">{value}</strong>
     </div>
-  );
-}
-
-function TabButton({
-  active,
-  label,
-  onClick,
-}: {
-  active: boolean;
-  label: string;
-  onClick: () => void;
-}) {
-  return (
-    <button
-      type="button"
-      role="tab"
-      aria-selected={active}
-      className={active ? "roadmap-tab roadmap-tab--active" : "roadmap-tab"}
-      onClick={onClick}
-    >
-      {label}
-    </button>
   );
 }
 
