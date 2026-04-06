@@ -345,6 +345,38 @@ export async function main() {
     name: "🇫🇮 FIN-FSA Sanctions Press Release Scraper",
     liveLoader: loadFinfsaLiveRecords,
     testLoader: loadFinfsaLiveRecords,
+    afterUpsert: async (sql, records) => {
+      if (records.length === 0) {
+        return;
+      }
+
+      const deletedDuplicates = await sql`
+        WITH ranked AS (
+          SELECT
+            id,
+            ROW_NUMBER() OVER (
+              PARTITION BY regulator, source_url
+              ORDER BY created_at DESC, updated_at DESC NULLS LAST, id DESC
+            ) AS row_number
+          FROM eu_fines
+          WHERE regulator = 'FINFSA'
+            AND source_url IS NOT NULL
+        )
+        DELETE FROM eu_fines
+        WHERE id IN (
+          SELECT id
+          FROM ranked
+          WHERE row_number > 1
+        )
+        RETURNING id
+      `;
+
+      if (deletedDuplicates.length > 0) {
+        console.log(
+          `🧹 Removed ${deletedDuplicates.length} stale FIN-FSA duplicate rows`,
+        );
+      }
+    },
   });
 }
 

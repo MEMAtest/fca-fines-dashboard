@@ -14,6 +14,10 @@ interface RunnerOptions {
   name: string;
   liveLoader: () => Promise<DbReadyRecord[]>;
   testLoader?: () => Promise<DbReadyRecord[]>;
+  afterUpsert?: (
+    sql: ReturnType<typeof createSqlClient>,
+    records: DbReadyRecord[],
+  ) => Promise<void>;
 }
 
 interface ScraperRunSummary {
@@ -73,6 +77,10 @@ export async function runScraper(options: RunnerOptions) {
     console.log(`   Inserted: ${result.inserted}`);
     console.log(`   Updated: ${result.updated}`);
     console.log(`   Errors: ${result.errors}`);
+
+    if (options.afterUpsert) {
+      await options.afterUpsert(sql, records);
+    }
 
     console.log("\n🔄 Refreshing unified regulatory fines view...");
     await refreshUnifiedView(sql);
