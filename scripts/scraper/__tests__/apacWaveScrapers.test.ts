@@ -8,6 +8,18 @@ import {
   parseFmanzDetailHtml,
   parseFmanzListingHtml,
 } from "../scrapeFmanz.js";
+import {
+  isHkmaEnforcementTitle,
+  parseHkmaAmount,
+  parseHkmaApiPayload,
+  parseHkmaDetailHtml,
+} from "../scrapeHkma.js";
+import {
+  isMasEnforcementTitle,
+  parseMasAmount,
+  parseMasDetailPayload,
+  parseMasListingPayload,
+} from "../scrapeMas.js";
 
 describe("apac wave scrapers", () => {
   it("parses ASIC infringement-register rows and linked media releases", () => {
@@ -125,5 +137,106 @@ describe("apac wave scrapers", () => {
     });
     expect(detail.summary).toContain("series of enforcement actions");
     expect(parseFmanzAmount(detail.body)).toBe(19_000_000);
+  });
+
+  it("parses HKMA enforcement candidates and detail pages", () => {
+    const payload = {
+      result: {
+        records: [
+          {
+            title:
+              "Monetary Authority takes disciplinary action against China CITIC Bank International Limited for contraventions of Anti-Money Laundering and Counter-Terrorist Financing Ordinance",
+            link: "https://www.hkma.gov.hk/eng/news-and-media/press-releases/2024/12/20241206-6/",
+            date: "2024-12-06",
+          },
+          {
+            title: "HKMA Launches Inaugural FiNETech to Promote Fintech Adoption",
+            link: "https://www.hkma.gov.hk/eng/news-and-media/press-releases/2024/04/20240426-4/",
+            date: "2024-04-26",
+          },
+        ],
+      },
+    };
+    const html = `
+      <div class="content-area">
+        <h1>Monetary Authority takes disciplinary action against China CITIC Bank International Limited for contraventions of Anti-Money Laundering and Counter-Terrorist Financing Ordinance</h1>
+        <p>The Monetary Authority has taken disciplinary action against China CITIC Bank International Limited and imposed a pecuniary penalty of HK$7.5 million.</p>
+        <p>The disciplinary action follows contraventions of the Anti-Money Laundering and Counter-Terrorist Financing Ordinance and weaknesses in internal controls.</p>
+      </div>
+    `;
+
+    const entries = parseHkmaApiPayload(payload);
+    expect(entries).toHaveLength(1);
+    expect(entries[0]).toMatchObject({
+      title:
+        "Monetary Authority takes disciplinary action against China CITIC Bank International Limited for contraventions of Anti-Money Laundering and Counter-Terrorist Financing Ordinance",
+      detailUrl:
+        "https://www.hkma.gov.hk/eng/news-and-media/press-releases/2024/12/20241206-6/",
+      dateIssued: "2024-12-06",
+    });
+    expect(isHkmaEnforcementTitle(payload.result.records[0].title)).toBe(true);
+    expect(isHkmaEnforcementTitle(payload.result.records[1].title)).toBe(false);
+
+    const detail = parseHkmaDetailHtml(html);
+    expect(detail.summary).toContain("China CITIC Bank International Limited");
+    expect(parseHkmaAmount(detail.body)).toBe(7_500_000);
+  });
+
+  it("parses MAS SGPC listings, detail payloads, and amount extraction", () => {
+    const listPayload = {
+      result: {
+        totalPagesCount: 4,
+        items: [
+          {
+            DateTime: "2026-03-17T17:01:28.28",
+            Title:
+              "MAS Issues Prohibition Orders against former Relationship Managers, Mr Wang Qiming and Mr Liu Kai",
+            Url: "/media_releases/mas/press_release/P-20260317-1",
+          },
+          {
+            DateTime: "2026-04-01T12:00:00",
+            Title: "Key Enforcement Actions Taken by MAS in Q1 2026",
+            Url: "/media_releases/mas/press_release/P-20260401-1",
+          },
+        ],
+      },
+    };
+    const detailPayload = {
+      result: {
+        Title:
+          "MAS Issues Prohibition Orders against former Relationship Managers, Mr Wang Qiming and Mr Liu Kai",
+        DateTime: "17 Mar 2026",
+        DocumentContent:
+          "<p>MAS has issued prohibition orders against Mr Wang Qiming and Mr Liu Kai.</p><p>The former relationship managers were involved in misconduct and must pay S$250,000 in penalties.</p>",
+        RelatedDocuments: [
+          {
+            FileName:
+              "MAS Issues Prohibition Orders against former Relationship Managers Mr Wang Qiming and Mr Liu Kai - For media.pdf",
+            Path:
+              "/sgpcmedia/media_releases/mas/press_release/P-20260317-1/attachment/MAS Issues Prohibition Orders against former Relationship Managers Mr Wang Qiming and Mr Liu Kai - For media.pdf",
+          },
+        ],
+      },
+    };
+
+    const parsedList = parseMasListingPayload(listPayload);
+    expect(parsedList.totalPages).toBe(4);
+    expect(parsedList.entries).toHaveLength(1);
+    expect(parsedList.entries[0]).toMatchObject({
+      title:
+        "MAS Issues Prohibition Orders against former Relationship Managers, Mr Wang Qiming and Mr Liu Kai",
+      detailPath: "/media_releases/mas/press_release/P-20260317-1",
+      dateIssued: "2026-03-17",
+    });
+    expect(isMasEnforcementTitle(listPayload.result.items[0].Title)).toBe(true);
+    expect(isMasEnforcementTitle(listPayload.result.items[1].Title)).toBe(false);
+
+    const detail = parseMasDetailPayload(
+      detailPayload,
+      "/media_releases/mas/press_release/P-20260317-1",
+    );
+    expect(detail.summary).toContain("MAS has issued prohibition orders");
+    expect(detail.pdfUrl).toContain("/api/file/getfile/");
+    expect(parseMasAmount(`${detail.summary} ${detail.body}`)).toBe(250_000);
   });
 });

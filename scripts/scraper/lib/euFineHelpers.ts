@@ -35,6 +35,23 @@ const EUR_RATES: Record<string, number> = {
   BRL: 0.17,
   MXN: 0.046,
   CLP: 0.00096,
+  ZAR: 0.051,
+  AUD: 0.60,
+  SGD: 0.69,
+  NZD: 0.55,
+  JPY: 0.0061,
+  CNY: 0.13,
+  KRW: 0.00067,
+  SAR: 0.24,
+  NGN: 0.00058,
+  IDR: 0.000057,
+  THB: 0.026,
+  COP: 0.00022,
+  ARS: 0.00083,
+  KES: 0.0071,
+  MYR: 0.21,
+  KYD: 1.10,
+  BMD: 0.92,
 };
 
 const GBP_RATES: Record<string, number> = {
@@ -54,6 +71,23 @@ const GBP_RATES: Record<string, number> = {
   BRL: 0.14,
   MXN: 0.039,
   CLP: 0.00081,
+  ZAR: 0.043,
+  AUD: 0.51,
+  SGD: 0.58,
+  NZD: 0.47,
+  JPY: 0.0052,
+  CNY: 0.11,
+  KRW: 0.00057,
+  SAR: 0.21,
+  NGN: 0.00049,
+  IDR: 0.000048,
+  THB: 0.022,
+  COP: 0.00019,
+  ARS: 0.00070,
+  KES: 0.0060,
+  MYR: 0.18,
+  KYD: 0.94,
+  BMD: 0.78,
 };
 
 export interface CliFlags {
@@ -486,6 +520,7 @@ export function convertToEur(amount: number | null, currency: string) {
 
   const rate = EUR_RATES[currency.toUpperCase()];
   if (!rate) {
+    console.warn(`⚠️ Missing EUR exchange rate for currency "${currency}" — amount_eur will be null`);
     return null;
   }
 
@@ -499,6 +534,7 @@ export function convertToGbp(amount: number | null, currency: string) {
 
   const rate = GBP_RATES[currency.toUpperCase()];
   if (!rate) {
+    console.warn(`⚠️ Missing GBP exchange rate for currency "${currency}" — amount_gbp will be null`);
     return null;
   }
 

@@ -1,161 +1,317 @@
-/**
- * HKMA (Hong Kong Monetary Authority) Scraper
- *
- * Strategy: Scrape enforcement actions archive with detail pages
- * URL: https://www.hkma.gov.hk/eng/key-functions/banking-stability/enforcement/
- *
- * Difficulty: 7/10 (High) - Detail pages with complex structure
- * Expected: 50-100 enforcement actions
- *
- * Run: npx tsx scripts/scraper/scrapeHkma.ts
- */
-
-import 'dotenv/config';
+import "dotenv/config";
+import axios from "axios";
+import * as cheerio from "cheerio";
+import { fileURLToPath } from "node:url";
 import {
-  type ParsedEnforcementRecord,
   buildEuFineRecord,
-  createSqlClient,
-  upsertEuFines,
-  printDryRunSummary,
-} from './lib/euFineHelpers.js';
+  getCliFlags,
+  mapWithConcurrency,
+  normalizeWhitespace,
+  parseLargestAmountFromText,
+  parseMonthNameDate,
+} from "./lib/euFineHelpers.js";
+import { runScraper } from "./lib/runScraper.js";
 
-const HKMA_CONFIG = {
-  baseUrl: 'https://www.hkma.gov.hk',
-  enforcementUrl: 'https://www.hkma.gov.hk/eng/key-functions/banking-stability/enforcement/',
-};
+const HKMA_API_URL = "https://api.hkma.gov.hk/public/press-releases";
+const HKMA_LIST_PAGE_SIZE = 500;
 
-const sql = createSqlClient();
-
-interface HKMARecord {
-  firm: string;
-  amount: number | null;
-  currency: string;
-  date: string;
-  actionType: string;
-  breach: string;
-  link: string | null;
-  summary: string;
+interface HkmaApiRecord {
+  title?: string;
+  link?: string;
+  date?: string;
 }
 
-async function main() {
-  console.log('🇭🇰 HKMA Enforcement Actions Scraper\n');
-  console.log('Target: Hong Kong Monetary Authority');
-  console.log('Method: Enforcement archive scraping\n');
-
-  const useTestData = process.argv.includes('--test-data');
-  const dryRun = process.argv.includes('--dry-run');
-
-  if (useTestData) console.log('⚠️  Using test data (--test-data flag detected)\n');
-  if (dryRun) console.log('🔍 Dry run mode - no database writes (--dry-run flag detected)\n');
-
-  try {
-    const records = useTestData ? getTestData() : await scrapeHkmaData();
-
-    console.log(`\n📊 Extracted ${records.length} enforcement actions`);
-
-    const parsedRecords = records.map((r) => transformToEnforcementRecord(r));
-    const dbRecords = parsedRecords.map((r) => buildEuFineRecord(r));
-
-    if (dryRun) {
-      printDryRunSummary(dbRecords);
-    } else {
-      await upsertEuFines(sql, dbRecords);
-      console.log('\n🔄 Refreshing unified regulatory fines view...');
-      await sql`SELECT refresh_all_fines()`;
-      console.log('✅ View refreshed');
-    }
-
-    const totalHkma = await sql`SELECT COUNT(*) as count FROM eu_fines WHERE regulator = 'HKMA'`;
-    const totalAll = await sql`SELECT COUNT(*) as count FROM all_regulatory_fines`;
-
-    console.log('\n📈 Database Summary:');
-    console.log(`   - HKMA enforcement actions: ${totalHkma[0].count}`);
-    console.log(`   - Total regulatory fines (FCA + EU): ${totalAll[0].count}`);
-
-    console.log('\n✅ HKMA scraper completed successfully!');
-    await sql.end();
-    process.exit(0);
-  } catch (error) {
-    console.error('❌ HKMA scraper failed:', error);
-    await sql.end();
-    process.exit(1);
-  }
-}
-
-function getTestData(): HKMARecord[] {
-  return [
-    {
-      firm: 'HSBC Bank (Hong Kong) Limited',
-      amount: 4000000,
-      currency: 'HKD',
-      date: '2024-07-15',
-      actionType: 'Reprimand and Fine',
-      breach: 'AML/CFT compliance deficiencies',
-      link: null,
-      summary: 'Anti-money laundering failures',
-    },
-    {
-      firm: 'Standard Chartered Bank (Hong Kong) Limited',
-      amount: 3200000,
-      currency: 'HKD',
-      date: '2023-11-28',
-      actionType: 'Reprimand and Fine',
-      breach: 'Breach of Banking Ordinance requirements',
-      link: null,
-      summary: 'Regulatory compliance failures',
-    },
-    {
-      firm: 'Bank of China (Hong Kong) Limited',
-      amount: 2800000,
-      currency: 'HKD',
-      date: '2023-08-10',
-      actionType: 'Reprimand and Fine',
-      breach: 'Internal controls deficiencies',
-      link: null,
-      summary: 'Internal control weaknesses',
-    },
-  ];
-}
-
-async function scrapeHkmaData(): Promise<HKMARecord[]> {
-  throw new Error('HKMA live scraping is not implemented yet. Use --test-data flag for now.');
-}
-
-function transformToEnforcementRecord(record: HKMARecord): ParsedEnforcementRecord {
-  return {
-    regulator: 'HKMA',
-    regulatorFullName: 'Hong Kong Monetary Authority',
-    countryCode: 'HK',
-    countryName: 'Hong Kong',
-    firmIndividual: record.firm,
-    firmCategory: null,
-    amount: record.amount,
-    currency: record.currency,
-    dateIssued: record.date,
-    breachType: extractBreachType(record.breach),
-    breachCategories: categorizeBreachType(record.breach),
-    summary: `${record.firm} fined HK$${(record.amount || 0).toLocaleString('en-HK')} by HKMA. ${record.summary}`,
-    finalNoticeUrl: record.link,
-    sourceUrl: HKMA_CONFIG.enforcementUrl,
-    rawPayload: record,
+interface HkmaApiResponse {
+  result?: {
+    records?: HkmaApiRecord[];
   };
 }
 
-function extractBreachType(breach: string): string {
-  const lower = breach.toLowerCase();
-  if (lower.includes('aml') || lower.includes('cft')) return 'AML/CFT Violations';
-  if (lower.includes('ordinance')) return 'Banking Ordinance Breach';
-  if (lower.includes('control')) return 'Internal Controls';
-  return 'Regulatory Breach';
+export interface HkmaEntry {
+  title: string;
+  detailUrl: string;
+  dateIssued: string;
 }
 
-function categorizeBreachType(breach: string): string[] {
+interface HkmaDetail {
+  title: string;
+  dateIssued: string | null;
+  summary: string;
+  body: string;
+}
+
+const HKMA_TITLE_POSITIVE_PATTERNS = [
+  /takes disciplinary action/i,
+  /takes disciplinary actions/i,
+  /reprimands and fines/i,
+  /suspends registration/i,
+  /\bbans?\b/i,
+  /orders a fine/i,
+  /enforcement collaboration between hkma and sfc/i,
+  /enforcement collaboration between ia and hkma/i,
+];
+
+const HKMA_TITLE_NEGATIVE_PATTERNS = [
+  /finetech/i,
+  /regtech lab/i,
+  /launches/i,
+  /seminar/i,
+  /forum/i,
+];
+
+function firstSentence(text: string) {
+  const normalized = normalizeWhitespace(text);
+  if (!normalized) {
+    return "";
+  }
+
+  return normalized.split(/(?<=[.!?])\s+/)[0] || normalized;
+}
+
+function parseHkmaDate(input: string | null | undefined) {
+  const cleaned = normalizeWhitespace(input || "");
+  if (!cleaned) {
+    return null;
+  }
+
+  const isoMatch = cleaned.match(/^(\d{4})-(\d{2})-(\d{2})/);
+  if (isoMatch) {
+    return `${isoMatch[1]}-${isoMatch[2]}-${isoMatch[3]}`;
+  }
+
+  return parseMonthNameDate(cleaned);
+}
+
+export function isHkmaEnforcementTitle(title: string) {
+  const normalized = normalizeWhitespace(title);
+  if (!normalized) {
+    return false;
+  }
+
+  if (HKMA_TITLE_NEGATIVE_PATTERNS.some((pattern) => pattern.test(normalized))) {
+    return false;
+  }
+
+  return HKMA_TITLE_POSITIVE_PATTERNS.some((pattern) => pattern.test(normalized));
+}
+
+export function parseHkmaAmount(text: string) {
+  return parseLargestAmountFromText(text, {
+    currency: "HKD",
+    symbols: ["HK$"],
+    keywords: [
+      "fine",
+      "fines",
+      "fined",
+      "penalty",
+      "disciplinary action",
+      "orders a fine",
+    ],
+  });
+}
+
+export function parseHkmaApiPayload(payload: HkmaApiResponse) {
+  const entries = new Map<string, HkmaEntry>();
+
+  for (const item of payload.result?.records || []) {
+    const title = normalizeWhitespace(item.title || "");
+    const detailUrl = normalizeWhitespace(item.link || "");
+    const dateIssued = parseHkmaDate(item.date);
+
+    if (!title || !detailUrl || !dateIssued || !isHkmaEnforcementTitle(title)) {
+      continue;
+    }
+
+    entries.set(detailUrl, {
+      title,
+      detailUrl,
+      dateIssued,
+    });
+  }
+
+  return [...entries.values()];
+}
+
+export function parseHkmaDetailHtml(html: string) {
+  const $ = cheerio.load(html);
+  const title =
+    normalizeWhitespace($("h1").first().text())
+    || normalizeWhitespace($(".sub-page-heading").first().text());
+  const container = $(".content-area").first();
+  const paragraphs = container
+    .find("p, li")
+    .map((_, element) => normalizeWhitespace($(element).text()))
+    .get()
+    .filter(Boolean);
+  const dateIssued =
+    parseHkmaDate(
+      $(".post-meta .date, .entry-date, time, .date").first().text(),
+    );
+  const body = normalizeWhitespace([title, ...paragraphs].join(" "));
+
+  return {
+    title,
+    dateIssued,
+    summary: paragraphs[0] || firstSentence(body),
+    body,
+  } satisfies HkmaDetail;
+}
+
+function extractHkmaFirm(title: string, body = "") {
+  const normalizedTitle = normalizeWhitespace(title);
+  const normalizedBody = normalizeWhitespace(body);
+  const cleanCandidate = (value: string) =>
+    normalizeWhitespace(
+      value
+        .replace(/\.\s+Monetary Authority takes disciplinary actions?.*$/i, "")
+        .replace(/\.\s+The Hong Kong Monetary Authority .*$/i, ""),
+    );
+  const titlePatterns = [
+    /fines?\s+(.+?)\s+HK\$/i,
+    /against\s+(.+?)(?:\s+for|\s+under|\s+after|\s+in relation|\s+relating to|$)/i,
+    /suspends registration of\s+(.+?)(?:\s+for|$)/i,
+    /bans?\s+(.+?)(?:\s+for|$)/i,
+  ];
+
+  for (const pattern of titlePatterns) {
+    const match = normalizedTitle.match(pattern);
+    if (match?.[1]) {
+      const candidate = cleanCandidate(match[1]);
+      if (!/^(?:one|two|three|four|five|six|seven|eight|nine|ten)\s+\w+/i.test(candidate)) {
+        return candidate;
+      }
+    }
+  }
+
+  const bodyPatterns = [
+    /in relation to three banks:\s+(.+?)\s+The Monetary Authority \(MA\) has:/i,
+    /disciplinary actions? against\s+(.+?)(?:\s+for|\s+under|$)/i,
+    /reprimanded and fined\s+(.+?)(?:\s+HK\$| for |$)/i,
+    /suspended registration of\s+(.+?)(?:\s+for|$)/i,
+    /orders? a fine of .*? against\s+(.+?)(?:\s+for|$)/i,
+  ];
+
+  for (const pattern of bodyPatterns) {
+    const match = normalizedBody.match(pattern);
+    if (match?.[1]) {
+      return cleanCandidate(match[1]);
+    }
+  }
+
+  return null;
+}
+
+function categorizeHkmaRecord(text: string) {
+  const corpus = text.toLowerCase();
   const categories: string[] = [];
-  const lower = breach.toLowerCase();
-  if (lower.includes('aml')) categories.push('AML');
-  if (lower.includes('ordinance')) categories.push('REGULATORY');
-  if (lower.includes('control')) categories.push('RISK_MANAGEMENT');
-  return categories.length > 0 ? categories : ['OTHER'];
+
+  if (/anti-money laundering|counter-terrorist financing|aml/.test(corpus)) {
+    categories.push("AML");
+  }
+  if (/payment systems|stored value facilities/.test(corpus)) {
+    categories.push("PAYMENTS");
+  }
+  if (/internal control|controls|record-keeping/.test(corpus)) {
+    categories.push("CONTROLS");
+  }
+  if (/selling practices|disclosure|research reports/.test(corpus)) {
+    categories.push("DISCLOSURE");
+  }
+  if (/registration|licen[cs]e|prohibition/.test(corpus)) {
+    categories.push("LICENSING");
+  }
+
+  return categories.length > 0 ? categories : ["SUPERVISORY_SANCTION"];
 }
 
-main();
+async function loadHkmaEntries(limit: number | null) {
+  const entries = new Map<string, HkmaEntry>();
+
+  for (let offset = 0; ; offset += HKMA_LIST_PAGE_SIZE) {
+    const response = await axios.get<HkmaApiResponse>(HKMA_API_URL, {
+      params: {
+        lang: "en",
+        offset,
+        pagesize: HKMA_LIST_PAGE_SIZE,
+        sortby: "date",
+        sortorder: "desc",
+      },
+      timeout: 120000,
+    });
+
+    const records = response.data.result?.records || [];
+    for (const entry of parseHkmaApiPayload(response.data)) {
+      entries.set(entry.detailUrl, entry);
+      if (limit && entries.size >= limit) {
+        return [...entries.values()];
+      }
+    }
+
+    if (records.length < HKMA_LIST_PAGE_SIZE) {
+      break;
+    }
+  }
+
+  return [...entries.values()];
+}
+
+async function enrichHkmaEntry(entry: HkmaEntry) {
+  const html = (
+    await axios.get<string>(entry.detailUrl, {
+      responseType: "text",
+      timeout: 120000,
+    })
+  ).data;
+  const detail = parseHkmaDetailHtml(html);
+  const textCorpus = normalizeWhitespace(
+    [entry.title, detail.summary, detail.body].filter(Boolean).join(" "),
+  );
+  const firmIndividual = extractHkmaFirm(entry.title, textCorpus);
+
+  if (!firmIndividual) {
+    return null;
+  }
+
+  return buildEuFineRecord({
+    regulator: "HKMA",
+    regulatorFullName: "Hong Kong Monetary Authority",
+    countryCode: "HK",
+    countryName: "Hong Kong",
+    firmIndividual,
+    firmCategory: "Financial Institution",
+    amount: parseHkmaAmount(textCorpus),
+    currency: "HKD",
+    dateIssued: detail.dateIssued || entry.dateIssued,
+    breachType: detail.title || entry.title,
+    breachCategories: categorizeHkmaRecord(textCorpus),
+    summary: detail.summary || firstSentence(textCorpus) || entry.title,
+    finalNoticeUrl: entry.detailUrl,
+    sourceUrl: entry.detailUrl,
+    rawPayload: {
+      entry,
+      detail,
+    },
+  });
+}
+
+export async function loadHkmaLiveRecords() {
+  const flags = getCliFlags();
+  const entries = await loadHkmaEntries(flags.limit && flags.limit > 0 ? flags.limit : null);
+  const records = await mapWithConcurrency(entries, 4, enrichHkmaEntry);
+  return records.filter((record) => record !== null);
+}
+
+export async function main() {
+  await runScraper({
+    name: "🇭🇰 HKMA Enforcement Actions Scraper",
+    liveLoader: loadHkmaLiveRecords,
+    testLoader: loadHkmaLiveRecords,
+  });
+}
+
+if (process.argv[1] && fileURLToPath(import.meta.url) === process.argv[1]) {
+  main().catch((error) => {
+    console.error("❌ HKMA scraper failed:", error);
+    process.exit(1);
+  });
+}

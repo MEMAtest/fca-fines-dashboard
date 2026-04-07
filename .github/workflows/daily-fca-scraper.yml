@@ -65,8 +65,12 @@ jobs:
             script: scrape:sebi
           - code: ASIC
             script: scrape:asic
+          - code: HKMA
+            script: scrape:hkma
           - code: FMANZ
             script: scrape:fmanz
+          - code: MAS
+            script: scrape:mas
           - code: SC
             script: scrape:sc
           - code: BMA
