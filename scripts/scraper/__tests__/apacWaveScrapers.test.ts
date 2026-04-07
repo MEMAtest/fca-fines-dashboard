@@ -9,12 +9,14 @@ import {
   parseFmanzListingHtml,
 } from "../scrapeFmanz.js";
 import {
+  extractHkmaActionFragments,
   isHkmaEnforcementTitle,
   parseHkmaAmount,
   parseHkmaApiPayload,
   parseHkmaDetailHtml,
 } from "../scrapeHkma.js";
 import {
+  extractMasFirm,
   isMasEnforcementTitle,
   parseMasAmount,
   parseMasDetailPayload,
@@ -150,6 +152,12 @@ describe("apac wave scrapers", () => {
             date: "2024-12-06",
           },
           {
+            title:
+              "Enforcement collaboration between HKMA and SFC - SFC reprimands and fines HSBC HK$4.2 million for disclosure failures in research reports",
+            link: "https://www.hkma.gov.hk/eng/news-and-media/press-releases/2025/08/20250826-4/",
+            date: "2025-08-26",
+          },
+          {
             title: "HKMA Launches Inaugural FiNETech to Promote Fintech Adoption",
             link: "https://www.hkma.gov.hk/eng/news-and-media/press-releases/2024/04/20240426-4/",
             date: "2024-04-26",
@@ -176,10 +184,71 @@ describe("apac wave scrapers", () => {
     });
     expect(isHkmaEnforcementTitle(payload.result.records[0].title)).toBe(true);
     expect(isHkmaEnforcementTitle(payload.result.records[1].title)).toBe(false);
+    expect(isHkmaEnforcementTitle(payload.result.records[2].title)).toBe(false);
 
     const detail = parseHkmaDetailHtml(html);
     expect(detail.summary).toContain("China CITIC Bank International Limited");
     expect(parseHkmaAmount(detail.body)).toBe(7_500_000);
+  });
+
+  it("splits HKMA multi-bank disciplinary notices into firm-level action fragments", () => {
+    const threeBankBody = `
+      Monetary Authority takes disciplinary actions against three banks for contraventions of Anti-Money Laundering and Counter-Terrorist Financing Ordinance
+      The Hong Kong Monetary Authority (HKMA) announced today (22 July) that it had completed investigations and disciplinary proceedings under the Anti-Money Laundering and Counter-Terrorist Financing Ordinance in relation to three banks: Indian Overseas Bank, Hong Kong Branch (IOBHK), Bank of Communications (Hong Kong) Limited (BCOM(HK)) and Bank of Communications Co., Ltd., Hong Kong Branch (BCOM Hong Kong Branch).
+      The Monetary Authority (MA) has: (i) reprimanded IOBHK; (ii) ordered IOBHK to conduct a look-back review; and (iii) imposed a pecuniary penalty of HK$8,500,000 on IOBHK.
+      Separately, the MA has imposed pecuniary penalties of HK$4,000,000 on BCOM(HK) and HK$3,700,000 on BCOM Hong Kong Branch.
+    `;
+    const fourBankBody = `
+      The Monetary Authority takes disciplinary actions against four banks for contraventions of the Anti-Money Laundering and Counter-Terrorist Financing Ordinance.
+      The Monetary Authority (MA) has imposed pecuniary penalties of a total of HK$44,200,000 against China Construction Bank (Asia) Corporation Limited (CCBA), CTBC Bank Co., Ltd., Hong Kong Branch (CTBCHK), Industrial and Commercial Bank of China (Asia) Limited (ICBCA) and UBS AG, Hong Kong Branch (UBSHK), as well as issued orders for remedying the contraventions where warranted.
+    `;
+
+    expect(extractHkmaActionFragments(threeBankBody)).toEqual([
+      {
+        firmIndividual: "Indian Overseas Bank, Hong Kong Branch",
+        amount: 8_500_000,
+        summary:
+          "The Monetary Authority (MA) has: (i) reprimanded IOBHK; (ii) ordered IOBHK to conduct a look-back review; and (iii) imposed a pecuniary penalty of HK$8,500,000 on IOBHK.",
+      },
+      {
+        firmIndividual: "Bank of Communications (Hong Kong) Limited",
+        amount: 4_000_000,
+        summary:
+          "Separately, the MA has imposed pecuniary penalties of HK$4,000,000 on BCOM(HK) and HK$3,700,000 on BCOM Hong Kong Branch.",
+      },
+      {
+        firmIndividual: "Bank of Communications Co., Ltd., Hong Kong Branch",
+        amount: 3_700_000,
+        summary:
+          "Separately, the MA has imposed pecuniary penalties of HK$4,000,000 on BCOM(HK) and HK$3,700,000 on BCOM Hong Kong Branch.",
+      },
+    ]);
+    expect(extractHkmaActionFragments(fourBankBody)).toEqual([
+      {
+        firmIndividual: "China Construction Bank (Asia) Corporation Limited",
+        amount: null,
+        summary:
+          "The Monetary Authority (MA) has imposed pecuniary penalties of a total of HK$44,200,000 against China Construction Bank (Asia) Corporation Limited (CCBA), CTBC Bank Co., Ltd., Hong Kong Branch (CTBCHK), Industrial and Commercial Bank of China (Asia) Limited (ICBCA) and UBS AG, Hong Kong Branch (UBSHK), as well as issued orders for remedying the contraventions where warranted.",
+      },
+      {
+        firmIndividual: "CTBC Bank Co., Ltd., Hong Kong Branch",
+        amount: null,
+        summary:
+          "The Monetary Authority (MA) has imposed pecuniary penalties of a total of HK$44,200,000 against China Construction Bank (Asia) Corporation Limited (CCBA), CTBC Bank Co., Ltd., Hong Kong Branch (CTBCHK), Industrial and Commercial Bank of China (Asia) Limited (ICBCA) and UBS AG, Hong Kong Branch (UBSHK), as well as issued orders for remedying the contraventions where warranted.",
+      },
+      {
+        firmIndividual: "Industrial and Commercial Bank of China (Asia) Limited",
+        amount: null,
+        summary:
+          "The Monetary Authority (MA) has imposed pecuniary penalties of a total of HK$44,200,000 against China Construction Bank (Asia) Corporation Limited (CCBA), CTBC Bank Co., Ltd., Hong Kong Branch (CTBCHK), Industrial and Commercial Bank of China (Asia) Limited (ICBCA) and UBS AG, Hong Kong Branch (UBSHK), as well as issued orders for remedying the contraventions where warranted.",
+      },
+      {
+        firmIndividual: "UBS AG, Hong Kong Branch",
+        amount: null,
+        summary:
+          "The Monetary Authority (MA) has imposed pecuniary penalties of a total of HK$44,200,000 against China Construction Bank (Asia) Corporation Limited (CCBA), CTBC Bank Co., Ltd., Hong Kong Branch (CTBCHK), Industrial and Commercial Bank of China (Asia) Limited (ICBCA) and UBS AG, Hong Kong Branch (UBSHK), as well as issued orders for remedying the contraventions where warranted.",
+      },
+    ]);
   });
 
   it("parses MAS SGPC listings, detail payloads, and amount extraction", () => {
@@ -238,5 +307,33 @@ describe("apac wave scrapers", () => {
     expect(detail.summary).toContain("MAS has issued prohibition orders");
     expect(detail.pdfUrl).toContain("/api/file/getfile/");
     expect(parseMasAmount(`${detail.summary} ${detail.body}`)).toBe(250_000);
+  });
+
+  it("cleans MAS entity extraction and ignores bogus low-value amount artifacts", () => {
+    expect(
+      extractMasFirm(
+        "MAS Reprimands Mr Tan Chuan Lam for Failing to Discharge his Duty and Function as Chief Executive Officer and Director",
+      ),
+    ).toBe("Mr Tan Chuan Lam");
+    expect(
+      extractMasFirm(
+        "MAS Imposes Civil Penalty of $3.9 million on Credit Suisse AG for Misconduct by its Relationship Managers",
+      ),
+    ).toBe("Credit Suisse AG");
+    expect(
+      extractMasFirm(
+        "MAS Bans Mr Ng Chong Hwa for Life",
+      ),
+    ).toBe("Mr Ng Chong Hwa");
+    expect(
+      parseMasAmount(
+        "The Monetary Authority of Singapore has issued a lifetime prohibition order against Mr Ng Chong Hwa, a former Managing Director of Goldman Sachs (Singapore) Pte. Ltd.",
+      ),
+    ).toBeNull();
+    expect(
+      parseMasAmount(
+        "MAS has imposed a civil penalty of S$70,000 on Mr Tay Joo Heng for insider trading in the shares of GS Holdings Limited.",
+      ),
+    ).toBe(70_000);
   });
 });

@@ -110,6 +110,15 @@ function stripHtmlToText(html: string) {
   return normalizeWhitespace($.text());
 }
 
+function stripMasBoilerplate(text: string) {
+  return normalizeWhitespace(
+    text.replace(
+      /^Monetary Authority of Singapore .*? FOR IMMEDIATE RELEASE\s*/i,
+      "",
+    ),
+  );
+}
+
 export function isMasEnforcementTitle(title: string) {
   const normalized = normalizeWhitespace(title);
   if (!normalized) {
@@ -124,7 +133,11 @@ export function isMasEnforcementTitle(title: string) {
 }
 
 export function parseMasAmount(text: string) {
-  return parseLargestAmountFromText(text, {
+  const normalized = normalizeWhitespace(text);
+  const hasExplicitMonetarySanctionLanguage = /(civil penalty|composition penalty|composition fine|financial penalty|imposes civil penalty|imposed a civil penalty|pay a total of .*?(?:penalty|fine)|ordered to pay .*?(?:penalty|fine))/i.test(
+    normalized,
+  );
+  const options = {
     currency: "SGD",
     symbols: ["S$", "$"],
     keywords: [
@@ -137,7 +150,25 @@ export function parseMasAmount(text: string) {
       "pay",
       "payment",
     ],
-  });
+  };
+  const explicitPatterns = [
+    /(?:imposed|pay(?:ing)?|paid)[^.!?]{0,80}(?:civil penalty|composition penalty|composition fine|financial penalty|penalty|fine)[^.!?]{0,40}(?:S\$|\$)\s*[\d,]+(?:\.\d+)?\s*(?:million|thousand|bn|mn|m|k)?/i,
+    /(?:civil penalty|composition penalty|composition fine|financial penalty|penalty|fine)[^.!?]{0,40}(?:S\$|\$)\s*[\d,]+(?:\.\d+)?\s*(?:million|thousand|bn|mn|m|k)?/i,
+    /(?:pay(?:ing)?|paid)[^.!?]{0,40}(?:a total of\s+)?(?:S\$|\$)\s*[\d,]+(?:\.\d+)?\s*(?:million|thousand|bn|mn|m|k)?/i,
+  ];
+
+  for (const pattern of explicitPatterns) {
+    const match = normalized.match(pattern);
+    if (match?.[0]) {
+      return parseLargestAmountFromText(match[0], options);
+    }
+  }
+
+  if (!hasExplicitMonetarySanctionLanguage) {
+    return null;
+  }
+
+  return parseLargestAmountFromText(normalized, options);
 }
 
 export function parseMasListingPayload(payload: MasListApiResponse) {
@@ -181,7 +212,7 @@ function buildMasPdfUrl(document: MasDetailDocument | null | undefined) {
 
 export function parseMasDetailPayload(payload: MasDetailApiResponse, detailPath: string): MasDetail {
   const result = payload.result || {};
-  const body = stripHtmlToText(result.DocumentContent || "");
+  const body = stripMasBoilerplate(stripHtmlToText(result.DocumentContent || ""));
   const detailUrl = `${SGPC_BASE_URL}/detail?HomePage=home&page=%2Fdetail&url=${encodeURIComponent(detailPath)}`;
   const pdfUrl = buildMasPdfUrl(result.RelatedDocuments?.[0]);
 
@@ -195,29 +226,56 @@ export function parseMasDetailPayload(payload: MasDetailApiResponse, detailPath:
   };
 }
 
-function extractMasFirm(title: string, text = "") {
+export function extractMasFirm(title: string, text = "") {
   const normalizedTitle = normalizeWhitespace(title);
   const normalizedText = normalizeWhitespace(text);
+  const cleanCandidate = (value: string) =>
+    normalizeWhitespace(
+      value
+        .replace(/^former [^,]+,\s*/i, "")
+        .replace(/\s+for life$/i, "")
+        .replace(/\s+for .*$/i, "")
+        .replace(/\s+following .*$/i, ""),
+    );
+  const isGenericCandidate = (value: string) =>
+    /^(?:one|two|three|four|five|six|seven|eight|nine|ten)\s+(?:individuals?|former representatives?|persons?|banks?)$/i.test(value)
+    || /financial institutions found to have breached/i.test(value);
   const titlePatterns = [
     /^MAS Issues Prohibition Orders? against (.+?)(?: for |$)/i,
     /^MAS Issues? a Prohibition Order against (.+?)(?: for |$)/i,
-    /^MAS reprimands (.+)$/i,
-    /^MAS bans (.+)$/i,
-    /^MAS withdraws .*? of (.+)$/i,
-    /^MAS revokes .*? of (.+)$/i,
-    /^MAS issues? directions to (.+)$/i,
+    /^MAS issues? Prohibition Orders? against (.+?)(?: for |$)/i,
+    /^MAS issues? Prohibition Order against (.+?)(?: for |$)/i,
+    /^MAS reprimands (.+?)(?: for |$)/i,
+    /^MAS Reprimands (.+?)(?: for |$)/i,
+    /^MAS bans (.+?)(?: for |$)/i,
+    /^MAS Bans (.+?)(?: for |$)/i,
+    /^MAS withdraws .*? of (.+?)(?: for |$)/i,
+    /^MAS revokes .*? of (.+?)(?: for |$)/i,
+    /^MAS issues? directions to (.+?)(?: for |$)/i,
     /^Civil penalty against (.+?)(?: for |$)/i,
+    /^Civil Penalty Action Taken against (.+?)(?: for |$)/i,
+    /^Civil Penalty Action Taken Against (.+?)(?: for |$)/i,
+    /^MAS Imposes Civil Penalty .*? on (.+?)(?: for |$)/i,
   ];
 
   for (const pattern of titlePatterns) {
     const match = normalizedTitle.match(pattern);
     if (match?.[1]) {
-      return normalizeWhitespace(match[1].replace(/^former [^,]+,\s*/i, ""));
+      const candidate = cleanCandidate(match[1]);
+      if (candidate && !isGenericCandidate(candidate)) {
+        return candidate;
+      }
     }
   }
 
   const textPatterns = [
-    /against (.+?)(?: for | after | relating to |$)/i,
+    /has imposed a civil penalty of .*? on (.+?)(?: for |\.|$)/i,
+    /has issued prohibition orders? .*? against (.+?)(?: following| for |\.|$)/i,
+    /has issued a prohibition order .*? against (.+?)(?: following| for |\.|$)/i,
+    /has reprimanded (.+?)(?: for |\.|$)/i,
+    /has banned (.+?)(?: for |\.|$)/i,
+    /against ((?:Mr|Ms|Mrs|Mdm)[^.]+?)\./i,
+    /against (.+?)(?: for | after | relating to | following |$)/i,
     /issued to (.+?)(?: for | after |$)/i,
     /against former [^,]+,\s*(.+?)(?: for | after |$)/i,
   ];
@@ -225,7 +283,10 @@ function extractMasFirm(title: string, text = "") {
   for (const pattern of textPatterns) {
     const match = normalizedText.match(pattern);
     if (match?.[1]) {
-      return normalizeWhitespace(match[1]);
+      const candidate = cleanCandidate(match[1]);
+      if (candidate && !isGenericCandidate(candidate)) {
+        return candidate;
+      }
     }
   }
 
@@ -326,7 +387,7 @@ async function enrichMasEntry(entry: MasEntry) {
   }
 
   const textCorpus = normalizeWhitespace(
-    [entry.title, detail.summary, detail.body, pdfText].filter(Boolean).join(" "),
+    [entry.title, detail.summary, detail.body, stripMasBoilerplate(pdfText)].filter(Boolean).join(" "),
   );
   const firmIndividual = extractMasFirm(entry.title, textCorpus);
 

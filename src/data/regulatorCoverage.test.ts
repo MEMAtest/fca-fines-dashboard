@@ -141,9 +141,9 @@ describe("regulatorCoverage", () => {
     expect(getRegulatorCoverage("FTNO")?.count).toBe(40);
     expect(getRegulatorCoverage("CNBCZ")?.count).toBe(1742);
     expect(getRegulatorCoverage("ASIC")?.count).toBe(112);
-    expect(getRegulatorCoverage("HKMA")?.count).toBe(24);
+    expect(getRegulatorCoverage("HKMA")?.count).toBe(23);
     expect(getRegulatorCoverage("FMANZ")?.count).toBe(99);
-    expect(getRegulatorCoverage("MAS")?.count).toBe(20);
+    expect(getRegulatorCoverage("MAS")?.count).toBe(21);
   });
 
   it("flags lower-confidence live regulators separately from the stable daily set", () => {

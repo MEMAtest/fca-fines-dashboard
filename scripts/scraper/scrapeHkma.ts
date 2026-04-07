@@ -4,6 +4,7 @@ import * as cheerio from "cheerio";
 import { fileURLToPath } from "node:url";
 import {
   buildEuFineRecord,
+  type DbReadyRecord,
   getCliFlags,
   mapWithConcurrency,
   normalizeWhitespace,
@@ -47,8 +48,6 @@ const HKMA_TITLE_POSITIVE_PATTERNS = [
   /suspends registration/i,
   /\bbans?\b/i,
   /orders a fine/i,
-  /enforcement collaboration between hkma and sfc/i,
-  /enforcement collaboration between ia and hkma/i,
 ];
 
 const HKMA_TITLE_NEGATIVE_PATTERNS = [
@@ -57,6 +56,9 @@ const HKMA_TITLE_NEGATIVE_PATTERNS = [
   /launches/i,
   /seminar/i,
   /forum/i,
+  /joint sfc\/hkma enforcement action/i,
+  /enforcement collaboration between hkma and sfc/i,
+  /enforcement collaboration between ia and hkma/i,
 ];
 
 function firstSentence(text: string) {
@@ -108,6 +110,105 @@ export function parseHkmaAmount(text: string) {
       "orders a fine",
     ],
   });
+}
+
+function buildHkmaRecord(
+  entry: HkmaEntry,
+  detail: HkmaDetail,
+  textCorpus: string,
+  firmIndividual: string,
+  amountOverride: number | null = parseHkmaAmount(textCorpus),
+  summaryOverride: string | null = null,
+) {
+  return buildEuFineRecord({
+    regulator: "HKMA",
+    regulatorFullName: "Hong Kong Monetary Authority",
+    countryCode: "HK",
+    countryName: "Hong Kong",
+    firmIndividual,
+    firmCategory: "Financial Institution",
+    amount: amountOverride,
+    currency: "HKD",
+    dateIssued: detail.dateIssued || entry.dateIssued,
+    breachType: detail.title || entry.title,
+    breachCategories: categorizeHkmaRecord(textCorpus),
+    summary: summaryOverride || detail.summary || firstSentence(textCorpus) || entry.title,
+    finalNoticeUrl: entry.detailUrl,
+    sourceUrl: entry.detailUrl,
+    rawPayload: {
+      entry,
+      detail,
+    },
+  });
+}
+
+function extractHkmaSentence(text: string, pattern: RegExp) {
+  const match = text.match(pattern);
+  return normalizeWhitespace(match?.[0] || "");
+}
+
+function parseHkmaPenaltySnippet(snippet: string) {
+  return parseHkmaAmount(snippet);
+}
+
+export function extractHkmaActionFragments(body: string) {
+  const normalizedBody = normalizeWhitespace(body);
+
+  const threeBankSentence =
+    extractHkmaSentence(
+      normalizedBody,
+      /The Hong Kong Monetary Authority \(HKMA\) announced today .*? BCOM Hong Kong Branch\./i,
+    ) || normalizedBody;
+  const threeBankPenaltySentence = extractHkmaSentence(
+    normalizedBody,
+    /Separately, the MA has imposed pecuniary penalties of HK\$[\d,]+\s+on BCOM\(HK\)\s+and HK\$[\d,]+\s+on BCOM Hong Kong Branch\./i,
+  );
+  const threeBankPrimarySentence = extractHkmaSentence(
+    normalizedBody,
+    /The Monetary Authority \(MA\) has: \(i\) reprimanded IOBHK;.*?HK\$[\d,]+\s+on IOBHK\./i,
+  );
+  const threeBankMatch = threeBankSentence.match(
+    /in relation to three banks:\s*(.+?)\s+\(IOBHK\),\s*(.+?)\s+\(BCOM\(HK\)\)\s+and\s+(.+?)\s+\(BCOM Hong Kong Branch\)\./i,
+  );
+  if (threeBankMatch) {
+    return [
+      {
+        firmIndividual: normalizeWhitespace(threeBankMatch[1]),
+        amount: parseHkmaPenaltySnippet(threeBankPrimarySentence),
+        summary: threeBankPrimarySentence,
+      },
+      {
+        firmIndividual: normalizeWhitespace(threeBankMatch[2]),
+        amount: parseHkmaPenaltySnippet(threeBankPenaltySentence),
+        summary: threeBankPenaltySentence,
+      },
+      {
+        firmIndividual: normalizeWhitespace(threeBankMatch[3]),
+        amount: parseHkmaPenaltySnippet(
+          extractHkmaSentence(threeBankPenaltySentence, /and HK\$[\d,]+\s+on BCOM Hong Kong Branch\./i),
+        ),
+        summary: threeBankPenaltySentence,
+      },
+    ];
+  }
+
+  const fourBankStartMarker =
+    "The Monetary Authority (MA) has imposed pecuniary penalties of a total of HK$";
+  const fourBankSnippet = normalizedBody.includes(fourBankStartMarker)
+    ? normalizedBody.slice(normalizedBody.indexOf(fourBankStartMarker))
+    : normalizedBody;
+  const fourBankMatch = fourBankSnippet.match(
+    /The Monetary Authority \(MA\) has imposed pecuniary penalties of a total of HK\$[\d,]+\s+against\s+(.+?)\s+\(CCBA\),\s+(.+?)\s+\(CTBCHK\),\s+(.+?)\s+\(ICBCA\)\s+and\s+(.+?)\s+\(UBSHK\),\s+as well as issued orders/i,
+  );
+  if (fourBankMatch) {
+    return fourBankMatch.slice(1, 5).map((firmIndividual) => ({
+      firmIndividual: normalizeWhitespace(firmIndividual),
+      amount: null,
+      summary: firstSentence(fourBankSnippet),
+    }));
+  }
+
+  return null;
 }
 
 export function parseHkmaApiPayload(payload: HkmaApiResponse) {
@@ -255,7 +356,7 @@ async function loadHkmaEntries(limit: number | null) {
   return [...entries.values()];
 }
 
-async function enrichHkmaEntry(entry: HkmaEntry) {
+async function enrichHkmaEntry(entry: HkmaEntry): Promise<DbReadyRecord[]> {
   const html = (
     await axios.get<string>(entry.detailUrl, {
       responseType: "text",
@@ -266,39 +367,35 @@ async function enrichHkmaEntry(entry: HkmaEntry) {
   const textCorpus = normalizeWhitespace(
     [entry.title, detail.summary, detail.body].filter(Boolean).join(" "),
   );
+  const actionFragments = extractHkmaActionFragments(detail.body);
+
+  if (actionFragments?.length) {
+    return actionFragments.map((fragment) =>
+      buildHkmaRecord(
+        entry,
+        detail,
+        textCorpus,
+        fragment.firmIndividual,
+        fragment.amount,
+        fragment.summary || null,
+      ),
+    );
+  }
+
   const firmIndividual = extractHkmaFirm(entry.title, textCorpus);
 
   if (!firmIndividual) {
-    return null;
+    return [];
   }
 
-  return buildEuFineRecord({
-    regulator: "HKMA",
-    regulatorFullName: "Hong Kong Monetary Authority",
-    countryCode: "HK",
-    countryName: "Hong Kong",
-    firmIndividual,
-    firmCategory: "Financial Institution",
-    amount: parseHkmaAmount(textCorpus),
-    currency: "HKD",
-    dateIssued: detail.dateIssued || entry.dateIssued,
-    breachType: detail.title || entry.title,
-    breachCategories: categorizeHkmaRecord(textCorpus),
-    summary: detail.summary || firstSentence(textCorpus) || entry.title,
-    finalNoticeUrl: entry.detailUrl,
-    sourceUrl: entry.detailUrl,
-    rawPayload: {
-      entry,
-      detail,
-    },
-  });
+  return [buildHkmaRecord(entry, detail, textCorpus, firmIndividual)];
 }
 
 export async function loadHkmaLiveRecords() {
   const flags = getCliFlags();
   const entries = await loadHkmaEntries(flags.limit && flags.limit > 0 ? flags.limit : null);
-  const records = await mapWithConcurrency(entries, 4, enrichHkmaEntry);
-  return records.filter((record) => record !== null);
+  const recordGroups = await mapWithConcurrency(entries, 4, enrichHkmaEntry);
+  return recordGroups.flatMap((group) => group);
 }
 
 export async function main() {
