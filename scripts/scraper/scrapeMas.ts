@@ -82,6 +82,33 @@ const MAS_ENFORCEMENT_TITLE_EXCLUSIONS = [
   /^Key Enforcement Actions Taken by MAS in Q\d/i,
 ];
 
+function sleep(ms: number) {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+async function fetchMasApi<T>(url: string, params: Record<string, string | number>, attempts = 4) {
+  let lastError: unknown;
+
+  for (let attempt = 1; attempt <= attempts; attempt += 1) {
+    try {
+      return await axios.get<T>(url, {
+        params,
+        timeout: 120000,
+      });
+    } catch (error) {
+      lastError = error;
+      const status = axios.isAxiosError(error) ? error.response?.status || 0 : 0;
+      if (![429, 500, 502, 503, 504].includes(status) || attempt === attempts) {
+        throw error;
+      }
+
+      await sleep(attempt * 1_500);
+    }
+  }
+
+  throw lastError;
+}
+
 function parseMasDate(input: string | null | undefined) {
   const cleaned = normalizeWhitespace(input || "");
   if (!cleaned) {
@@ -317,9 +344,8 @@ function categorizeMasRecord(text: string) {
 }
 
 async function loadMasDetail(detailPath: string) {
-  const response = await axios.get<MasDetailApiResponse>(MAS_DETAIL_API_URL, {
-    params: { url: detailPath },
-    timeout: 120000,
+  const response = await fetchMasApi<MasDetailApiResponse>(MAS_DETAIL_API_URL, {
+    url: detailPath,
   });
 
   return parseMasDetailPayload(response.data, detailPath);
@@ -333,13 +359,10 @@ export async function loadMasEntries(limit: number | null) {
   do {
     let response;
     try {
-      response = await axios.get<MasListApiResponse>(MAS_LIST_API_URL, {
-        params: {
-          Agency: "MAS",
-          Type: "Press Release",
-          page,
-        },
-        timeout: 120000,
+      response = await fetchMasApi<MasListApiResponse>(MAS_LIST_API_URL, {
+        Agency: "MAS",
+        Type: "Press Release",
+        page,
       });
     } catch (error) {
       if (
