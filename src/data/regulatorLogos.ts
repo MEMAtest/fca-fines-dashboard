@@ -57,6 +57,7 @@ const REGULATOR_PALETTES: Record<string, RegulatorPalette> = {
   SEBI: { ink: "#9f1239", surface: "#ffe4e6", ring: "#fda4af" },
   HKMA: { ink: "#0f766e", surface: "#ccfbf1", ring: "#5eead4" },
   ASIC: { ink: "#1d4ed8", surface: "#dbeafe", ring: "#93c5fd" },
+  AUSTRAC: { ink: "#0f766e", surface: "#ccfbf1", ring: "#5eead4" },
   MAS: { ink: "#166534", surface: "#dcfce7", ring: "#86efac" },
   OCC: { ink: "#4338ca", surface: "#e0e7ff", ring: "#a5b4fc" },
   FINMA: { ink: "#991b1b", surface: "#fee2e2", ring: "#fca5a5" },
@@ -371,6 +372,15 @@ export const OFFICIAL_REGULATOR_LOGOS: Partial<
       approvedForPrint: true,
       lastReviewedAt: "2026-04-03",
     },
+  },
+  AUSTRAC: {
+    assetPath: "/regulator-logos/austrac.svg",
+    sourceUrl: "https://www.austrac.gov.au/news-and-media/media-release",
+    sourceType: "official-site",
+    backgroundMode: "transparent",
+    approvedForDarkUi: true,
+    approvedForPrint: true,
+    lastReviewedAt: "2026-04-07",
   },
   MAS: {
     assetPath: "/regulator-logos/mas.png",

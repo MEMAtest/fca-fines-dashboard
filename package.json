@@ -51,6 +51,7 @@
     "scrape:sebi": "node --import tsx/esm scripts/scraper/scrapeSebi.ts --",
     "scrape:sec": "node --import tsx/esm scripts/scraper/scrapeSec.ts --",
     "scrape:asic": "node --import tsx/esm scripts/scraper/scrapeAsic.ts --",
+    "scrape:austrac": "node --import tsx/esm scripts/scraper/scrapeAustrac.ts --",
     "scrape:hkma": "node --import tsx/esm scripts/scraper/scrapeHkma.ts --",
     "scrape:fmanz": "node --import tsx/esm scripts/scraper/scrapeFmanz.ts --",
     "scrape:mas": "node --import tsx/esm scripts/scraper/scrapeMas.ts --",

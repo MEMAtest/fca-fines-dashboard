@@ -25,6 +25,8 @@ jobs:
             script: scrape:jfsc
           - code: CIRO
             script: scrape:ciro
+          - code: AUSTRAC
+            script: scrape:austrac
     steps:
       - name: Checkout repository
         uses: actions/checkout@v6

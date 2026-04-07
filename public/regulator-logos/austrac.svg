@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" role="img" aria-label="AUSTRAC">
+  <rect width="128" height="128" rx="28" fill="#0f766e"/>
+  <path d="M34 94 55 34h18l21 60H79l-4-12H53l-4 12H34Zm23-25h14L64 47 57 69Z" fill="#ffffff"/>
+  <path d="M92 33h-9v62h9c7 0 13-6 13-13V46c0-7-6-13-13-13Zm-1 13h4v36h-4V46Z" fill="#99f6e4"/>
+</svg>

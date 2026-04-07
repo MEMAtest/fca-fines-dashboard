@@ -97,12 +97,12 @@ const COUNTRY_COORDS: Record<string, { lat: number; lng: number }> = {
   GG: { lat: 49.4560, lng: -2.5370 },
 };
 
-// Compute real stats from live regulator data
-const TOTAL_ACTIONS = LIVE_REGULATOR_NAV_ITEMS.reduce((sum, r) => sum + r.count, 0);
-const TOTAL_REGULATORS = LIVE_REGULATOR_NAV_ITEMS.length;
-const COVERED_COUNTRIES_COUNT = getCoveredCountries().length;
-const EARLIEST_YEAR = Math.min(...LIVE_REGULATOR_NAV_ITEMS.map(r => r.earliestYear));
-const LATEST_YEAR = Math.max(...LIVE_REGULATOR_NAV_ITEMS.map(r => r.latestYear));
+// Fallback stats (used if API fetch fails)
+const FALLBACK_TOTAL_ACTIONS = LIVE_REGULATOR_NAV_ITEMS.reduce((sum, r) => sum + r.count, 0);
+const FALLBACK_TOTAL_REGULATORS = LIVE_REGULATOR_NAV_ITEMS.length;
+const FALLBACK_COVERED_COUNTRIES = getCoveredCountries().length;
+const FALLBACK_EARLIEST_YEAR = Math.min(...LIVE_REGULATOR_NAV_ITEMS.map(r => r.earliestYear));
+const FALLBACK_LATEST_YEAR = Math.max(...LIVE_REGULATOR_NAV_ITEMS.map(r => r.latestYear));
 const FCA_DATA = LIVE_REGULATOR_NAV_ITEMS.find(r => r.code === 'FCA');
 
 // Group live regulators by merged region for display
@@ -155,14 +155,6 @@ function useGlobeSize(): number {
   return size;
 }
 
-// 4 floating data cards around the globe (dark translucent panels with icons)
-const GLOBE_STATS: FloatingStat[] = [
-  { value: TOTAL_ACTIONS.toLocaleString(), label: 'Total Enforcement Actions', variant: 'inside', size: 'lg', top: '10%', left: '5%', icon: <Activity size={16} /> },
-  { value: `${COVERED_COUNTRIES_COUNT}`, label: 'Countries Monitored', variant: 'inside', size: 'md', top: '8%', right: '5%', icon: <Flag size={16} /> },
-  { value: `${TOTAL_REGULATORS}`, label: 'Live Regulators on Dashboard', variant: 'inside', size: 'md', bottom: '18%', left: '5%', icon: <Users size={16} /> },
-  { value: `${EARLIEST_YEAR}\u2013${LATEST_YEAR}`, label: 'Historical Depth Coverage', variant: 'inside', size: 'lg', bottom: '18%', right: '2%', icon: <Calendar size={16} /> },
-];
-
 export function GlobeHero({ onCountryClick }: GlobeHeroProps) {
   const globeEl = useRef<any>(null);
   const resumeTimer = useRef<ReturnType<typeof setTimeout> | null>(null) as MutableRefObject<ReturnType<typeof setTimeout> | null>;
@@ -171,6 +163,42 @@ export function GlobeHero({ onCountryClick }: GlobeHeroProps) {
   const [hoveredCountry, setHoveredCountry] = useState<string | null>(null);
   const [countries, setCountries] = useState<{ features: any[] }>({ features: [] });
   const [isLoading, setIsLoading] = useState(true);
+
+  // Dynamic stats from API
+  const [stats, setStats] = useState({
+    totalActions: FALLBACK_TOTAL_ACTIONS,
+    totalRegulators: FALLBACK_TOTAL_REGULATORS,
+    totalCountries: FALLBACK_COVERED_COUNTRIES,
+    earliestYear: FALLBACK_EARLIEST_YEAR,
+    latestYear: FALLBACK_LATEST_YEAR,
+  });
+
+  // Fetch real-time stats from API
+  useEffect(() => {
+    fetch('/api/globe/stats')
+      .then(res => res.json())
+      .then(data => {
+        setStats({
+          totalActions: data.totalActions,
+          totalRegulators: data.totalRegulators,
+          totalCountries: data.totalCountries,
+          earliestYear: data.earliestYear,
+          latestYear: data.latestYear,
+        });
+      })
+      .catch(err => {
+        console.warn('Failed to fetch globe stats, using fallback:', err);
+        // Keep fallback values
+      });
+  }, []);
+
+  // 4 floating data cards around the globe (dark translucent panels with icons)
+  const globeStats: FloatingStat[] = useMemo(() => [
+    { value: stats.totalActions.toLocaleString(), label: 'Total Enforcement Actions', variant: 'inside', size: 'lg', top: '10%', left: '5%', icon: <Activity size={16} /> },
+    { value: `${stats.totalCountries}`, label: 'Countries Monitored', variant: 'inside', size: 'md', top: '8%', right: '5%', icon: <Flag size={16} /> },
+    { value: `${stats.totalRegulators}`, label: 'Live Regulators on Dashboard', variant: 'inside', size: 'md', bottom: '18%', left: '5%', icon: <Users size={16} /> },
+    { value: `${stats.earliestYear}\u2013${stats.latestYear}`, label: 'Historical Depth Coverage', variant: 'inside', size: 'lg', bottom: '18%', right: '2%', icon: <Calendar size={16} /> },
+  ], [stats]);
 
   const coveredCountries = useMemo(() => new Set(getCoveredCountries()), []);
 
@@ -364,13 +392,13 @@ export function GlobeHero({ onCountryClick }: GlobeHeroProps) {
           </div>
           <div className="hero-stat-card hero-stat-card--premium">
             <div className="hero-stat-card__icon-row"><Users size={18} className="hero-stat-card__icon" /></div>
-            <div className="hero-stat-card__value">{TOTAL_REGULATORS} live</div>
+            <div className="hero-stat-card__value">{stats.totalRegulators} live</div>
             <div className="hero-stat-card__label">regulators</div>
             <div className="hero-stat-card__sub">DASHBOARD COVERAGE</div>
           </div>
           <div className="hero-stat-card hero-stat-card--premium">
             <div className="hero-stat-card__icon-row"><Calendar size={18} className="hero-stat-card__icon" /></div>
-            <div className="hero-stat-card__value">{EARLIEST_YEAR}&ndash;{LATEST_YEAR}</div>
+            <div className="hero-stat-card__value">{stats.earliestYear}&ndash;{stats.latestYear}</div>
             <div className="hero-stat-card__label">coverage</div>
           </div>
         </motion.div>
@@ -382,7 +410,7 @@ export function GlobeHero({ onCountryClick }: GlobeHeroProps) {
           className="globe-hero__regulator-grid-section"
         >
           <h3 className="globe-hero__regulator-grid-header">
-            Active Regulators Covered (Total {TOTAL_REGULATORS})
+            Active Regulators Covered (Total {stats.totalRegulators})
           </h3>
           {REGULATORS_BY_REGION.map(({ label, regulators }) => (
             <div key={label} className="globe-hero__region-group">
@@ -439,7 +467,7 @@ export function GlobeHero({ onCountryClick }: GlobeHeroProps) {
           {hoveredCountry && <HoverTooltip countryCode={hoveredCountry} />}
 
           {/* 4 floating data cards around globe */}
-          <FloatingStats stats={GLOBE_STATS} />
+          <FloatingStats stats={globeStats} />
         </div>
       </div>
     </div>

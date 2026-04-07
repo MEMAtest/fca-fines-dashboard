@@ -34,6 +34,7 @@ describe("regulatorCoverage", () => {
     expect(PUBLIC_REGULATOR_CODES).toContain("HKMA");
     expect(PUBLIC_REGULATOR_CODES).toContain("FMANZ");
     expect(PUBLIC_REGULATOR_CODES).toContain("MAS");
+    expect(PUBLIC_REGULATOR_CODES).toContain("AUSTRAC");
     expect(PUBLIC_REGULATOR_CODES).not.toContain("ESMA");
     expect(PUBLIC_REGULATOR_CODES).not.toContain("CVM");
     expect(PUBLIC_REGULATOR_CODES).not.toContain("FDIC");
@@ -63,6 +64,7 @@ describe("regulatorCoverage", () => {
     expect(hasPublicRegulatorHub("HKMA")).toBe(true);
     expect(hasPublicRegulatorHub("FMANZ")).toBe(true);
     expect(hasPublicRegulatorHub("MAS")).toBe(true);
+    expect(hasPublicRegulatorHub("AUSTRAC")).toBe(true);
     expect(hasPublicRegulatorHub("FDIC")).toBe(false);
     expect(hasPublicRegulatorHub("ESMA")).toBe(false);
   });
@@ -71,11 +73,12 @@ describe("regulatorCoverage", () => {
     expect(isValidRegulatorCode("FCA")).toBe(true);
     expect(isValidRegulatorCode("DFSA")).toBe(true);
     expect(isValidRegulatorCode("SEC")).toBe(true);
-    expect(isValidRegulatorCode("BDI")).toBe(false);
+    expect(isValidRegulatorCode("BDI")).toBe(true);
     expect(isValidRegulatorCode("ASIC")).toBe(true);
     expect(isValidRegulatorCode("HKMA")).toBe(true);
     expect(isValidRegulatorCode("FMANZ")).toBe(true);
     expect(isValidRegulatorCode("MAS")).toBe(true);
+    expect(isValidRegulatorCode("AUSTRAC")).toBe(true);
     expect(isValidRegulatorCode("FDIC")).toBe(false);
     expect(isValidRegulatorCode("ESMA")).toBe(false);
   });
@@ -101,7 +104,7 @@ describe("regulatorCoverage", () => {
   });
 
   it("keeps the current live roster aligned with the shared exports", () => {
-    expect(LIVE_REGULATOR_NAV_ITEMS).toHaveLength(31);
+    expect(LIVE_REGULATOR_NAV_ITEMS).toHaveLength(32);
     expect(INTERNAL_REGULATOR_NAV_ITEMS).toHaveLength(1);
     expect(PIPELINE_REGULATOR_NAV_ITEMS).toHaveLength(25);
     expect(PUBLIC_REGULATOR_CODES).toHaveLength(LIVE_REGULATOR_NAV_ITEMS.length);
@@ -115,6 +118,7 @@ describe("regulatorCoverage", () => {
     expect(getRegulatorCoverage("FRB")?.stage).toBe("pipeline");
     expect(getRegulatorCoverage("OSC")?.stage).toBe("pipeline");
     expect(getRegulatorCoverage("CONSOB")?.stage).toBe("pipeline");
+    expect(getRegulatorCoverage("AUSTRAC")?.stage).toBe("live");
     expect(getRegulatorCoverage("ASIC")?.stage).toBe("live");
     expect(getRegulatorCoverage("HKMA")?.stage).toBe("live");
     expect(getRegulatorCoverage("FMANZ")?.stage).toBe("live");
@@ -144,6 +148,7 @@ describe("regulatorCoverage", () => {
     expect(getRegulatorCoverage("HKMA")?.count).toBe(23);
     expect(getRegulatorCoverage("FMANZ")?.count).toBe(99);
     expect(getRegulatorCoverage("MAS")?.count).toBe(21);
+    expect(getRegulatorCoverage("AUSTRAC")?.count).toBe(66);
   });
 
   it("flags lower-confidence live regulators separately from the stable daily set", () => {
@@ -152,6 +157,7 @@ describe("regulatorCoverage", () => {
       "CBUAE",
       "JFSC",
       "CIRO",
+      "AUSTRAC",
     ]);
     expect(FRAGILE_LIVE_REGULATOR_CODES).toEqual(
       LOWER_CONFIDENCE_LIVE_REGULATOR_CODES,
@@ -160,7 +166,12 @@ describe("regulatorCoverage", () => {
     expect(DAILY_LIVE_REGULATOR_CODES).toContain("SEC");
     expect(DAILY_LIVE_REGULATOR_CODES).toContain("SFC");
     expect(DAILY_LIVE_REGULATOR_CODES).not.toContain("DFSA");
+    expect(DAILY_LIVE_REGULATOR_CODES).not.toContain("AUSTRAC");
     expect(getRegulatorCoverage("DFSA")?.operationalConfidence).toBe("lower");
+    expect(getRegulatorCoverage("AUSTRAC")?.operationalConfidence).toBe("lower");
+    expect(getRegulatorCoverage("AUSTRAC")?.feedContract.cadence).toBe(
+      "fragile",
+    );
     expect(getRegulatorCoverage("DFSA")?.automationLevel).toBe("curated_archive");
     expect(getRegulatorCoverage("DFSA")?.feedContract.collectionMethod).toBe(
       "Curated official-document archive ingestion",
@@ -182,6 +193,7 @@ describe("regulatorCoverage", () => {
     );
     expect(PUBLIC_REGULATOR_CODES).toContain("HKMA");
     expect(PUBLIC_REGULATOR_CODES).toContain("MAS");
+    expect(PUBLIC_REGULATOR_CODES).toContain("AUSTRAC");
     expect(getRegulatorCoverage("occ")?.dashboardEnabled).toBe(false);
     expect(getRegulatorCoverage("fdic")?.dashboardEnabled).toBe(false);
     expect(getRegulatorCoverage("frb")?.dashboardEnabled).toBe(false);

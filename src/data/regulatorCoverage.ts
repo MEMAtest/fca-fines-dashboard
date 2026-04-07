@@ -109,6 +109,7 @@ const LOW_CONFIDENCE_LIVE_REGULATOR_SET = new Set([
   "CBUAE",
   "JFSC",
   "CIRO",
+  "AUSTRAC",
 ]);
 
 const CURATED_ARCHIVE_REGULATOR_SET = new Set(["DFSA", "CBUAE"]);
@@ -1124,6 +1125,49 @@ const REGULATOR_COVERAGE_SEED: Record<string, RegulatorCoverageSeed> = {
         url: "https://www.asic.gov.au/about-asic/news-centre/find-a-media-release/",
         description:
           "Official ASIC media-release archive used to enrich infringement-notice summaries and disclosed amounts.",
+      },
+    ],
+  },
+  AUSTRAC: {
+    code: "AUSTRAC",
+    name: "AUSTRAC",
+    fullName: "Australian Transaction Reports and Analysis Centre",
+    country: "Australia",
+    countryCode: "AU",
+    region: "APAC",
+    strategicBucket: "high_signal_global",
+    sourceType: "regulator",
+    scrapeMode: "detail_pages",
+    priorityTier: 1,
+    stage: "live",
+    blogEnabled: true,
+    flag: "🇦🇺",
+    navOrder: 58,
+    overviewPath: "/regulators/austrac",
+    years: "2009-2025",
+    count: 66,
+    dataQuality: "Tested live loader",
+    note:
+      "Official browser-fetched enforcement-actions coverage across court proceedings, undertakings, infringement notices, and remedial directions.",
+    earliestYear: 2009,
+    latestYear: 2025,
+    nativeCurrency: "AUD",
+    defaultCurrency: "GBP",
+    coverageStatus: "growing",
+    maturity: "emerging",
+    dashboardEnabled: true,
+    officialSources: [
+      {
+        label: "AUSTRAC enforcement actions taken",
+        url: "https://www.austrac.gov.au/about-us/record-our-actions/enforcement-actions-taken",
+        description:
+          "Official AUSTRAC enforcement-actions page covering court proceedings, enforceable undertakings, infringement notices, and remedial directions.",
+      },
+      {
+        label: "AUSTRAC media release RSS",
+        url: "https://www.austrac.gov.au/news-and-media/media-release",
+        description:
+          "Official AUSTRAC media-release surface that advertises the media RSS feed for freshness monitoring.",
       },
     ],
   },

@@ -1,5 +1,9 @@
 import { describe, expect, it } from "vitest";
 import {
+  parseAustracAmount,
+  parseAustracEnforcementHtml,
+} from "../scrapeAustrac.js";
+import {
   parseAsicAmount,
   parseAsicRegisterHtml,
 } from "../scrapeAsic.js";
@@ -24,6 +28,172 @@ import {
 } from "../scrapeMas.js";
 
 describe("apac wave scrapers", () => {
+  it("parses AUSTRAC enforcement sections across court, undertakings, notices, and remedial directions", () => {
+    const html = `
+      <main>
+        <h1>Enforcement actions taken</h1>
+        <h2>Current Court Proceedings</h2>
+        <h3>Mount Pritchard and District Community Club Ltd (Mounties)</h3>
+        <p>On 30 July 2025, AUSTRAC applied for civil penalty orders against Mount Pritchard and District Community Club Ltd for alleged serious and systemic non-compliance with Australia’s AML/CTF laws.</p>
+        <ul>
+          <li><a href="/media-release/mounties">Media release</a></li>
+        </ul>
+        <h2>Concluded Court Proceedings</h2>
+        <h3>SkyCity Adelaide Pty Ltd</h3>
+        <p>On 7 December 2022, AUSTRAC applied for civil penalty orders against SkyCity Adelaide Pty Ltd.</p>
+        <p>On 7 June 2024 the Federal Court of Australia ordered SkyCity to pay the $67 million penalty for its breaches of the Act.</p>
+        <ul>
+          <li><a href="https://example.com/skycity-judgment.pdf">Federal Court judgement</a></li>
+        </ul>
+        <h2>Ongoing enforceable undertakings</h2>
+        <h2>2025</h2>
+        <ul>
+          <li><a href="/undertakings/cryptolink.pdf">Cryptolink Pty Ltd</a> (PDF, 136KB) Ongoing</li>
+        </ul>
+        <h2>Concluded enforceable undertakings</h2>
+        <ul>
+          <li><a href="/undertakings/gold.pdf">Gold Corporation</a> (PDF, 1.76MB) 2023</li>
+        </ul>
+        <h2>Infringement notices</h2>
+        <h3>2025</h3>
+        <ul>
+          <li><a href="/notices/revolut.pdf">Infringement notice issued to Revolut Australia Pty Ltd</a> (PDF, 236KB)</li>
+        </ul>
+        <h2>Remedial directions</h2>
+        <h3>2015</h3>
+        <ul>
+          <li><a href="/remedial/classicbet.docx">Remedial direction issued to ClassicBet Pty Ltd</a> (Word, 49KB)</li>
+          <li><a href="/remedial/classicbet.pdf">Remedial direction issued to ClassicBet Pty Ltd</a> (PDF, 69KB)</li>
+        </ul>
+      </main>
+    `;
+
+    const entries = parseAustracEnforcementHtml(
+      html,
+      "https://www.austrac.gov.au/about-us/record-our-actions/enforcement-actions-taken",
+    );
+
+    expect(entries).toHaveLength(6);
+    expect(entries[0]).toMatchObject({
+      firmIndividual: "Mount Pritchard and District Community Club Ltd",
+      actionType: "Current court proceeding",
+      dateIssued: "2025-07-30",
+      amount: null,
+      finalNoticeUrl: "https://www.austrac.gov.au/media-release/mounties",
+    });
+    expect(entries[1]).toMatchObject({
+      firmIndividual: "SkyCity Adelaide Pty Ltd",
+      actionType: "Concluded court proceeding",
+      dateIssued: "2022-12-07",
+      amount: 67_000_000,
+      finalNoticeUrl: "https://example.com/skycity-judgment.pdf",
+    });
+    expect(entries[2]).toMatchObject({
+      firmIndividual: "Cryptolink Pty Ltd",
+      actionType: "Ongoing enforceable undertaking",
+      dateIssued: "2025-01-01",
+    });
+    expect(entries[3]).toMatchObject({
+      firmIndividual: "Gold Corporation",
+      actionType: "Concluded enforceable undertaking",
+      dateIssued: "2023-01-01",
+    });
+    expect(entries[4]).toMatchObject({
+      firmIndividual: "Revolut Australia Pty Ltd",
+      actionType: "Infringement notice",
+      dateIssued: "2025-01-01",
+    });
+    expect(entries[5]).toMatchObject({
+      firmIndividual: "ClassicBet Pty Ltd",
+      actionType: "Remedial direction",
+      dateIssued: "2015-01-01",
+    });
+    expect(parseAustracAmount("Federal Court ordered a $1.3 billion penalty")).toBe(
+      1_300_000_000,
+    );
+  });
+
+  it("splits AUSTRAC combined court headings when the official text says proceedings are separate", () => {
+    const html = `
+      <main>
+        <h2>Current Court Proceedings</h2>
+        <h3>Castra and Princeton</h3>
+        <p>On 15 November 2024, AUSTRAC commenced separate proceedings against Castra and Princeton for alleged AML/CTF compliance failures.</p>
+        <ul>
+          <li><a href="/media-release/castra-princeton">Media release</a></li>
+        </ul>
+      </main>
+    `;
+
+    const entries = parseAustracEnforcementHtml(
+      html,
+      "https://www.austrac.gov.au/about-us/record-our-actions/enforcement-actions-taken",
+    );
+
+    expect(entries).toHaveLength(2);
+    expect(entries.map((entry) => entry.firmIndividual)).toEqual([
+      "Castra",
+      "Princeton",
+    ]);
+    expect(entries[0]?.dateIssued).toBe("2024-11-15");
+    expect(entries[1]?.finalNoticeUrl).toBe(
+      "https://www.austrac.gov.au/media-release/castra-princeton",
+    );
+  });
+
+  it("parses AUSTRAC accordion buttons and table-based undertaking rows", () => {
+    const html = `
+      <main>
+        <h2>Ongoing enforceable undertakings</h2>
+        <h2>2025</h2>
+        <table>
+          <tbody>
+            <tr>
+              <td><a href="/undertakings/cryptolink.pdf">Cryptolink Pty Ltd</a></td>
+              <td>Ongoing</td>
+            </tr>
+          </tbody>
+        </table>
+        <h2>Concluded enforceable undertakings</h2>
+        <table>
+          <tbody>
+            <tr>
+              <td><a href="/undertakings/gold.pdf">Gold Corporation</a></td>
+              <td>2023</td>
+            </tr>
+          </tbody>
+        </table>
+        <button class="accordion-term clearfix" type="button">Infringement notices</button>
+        <h3>2024</h3>
+        <ul>
+          <li><a href="/notices/katoomba.pdf">Infringement notice issued to Katoomba RSL</a></li>
+        </ul>
+        <button class="accordion-term clearfix" type="button">Remedial directions</button>
+        <h3>2021</h3>
+        <ul>
+          <li><a href="/remedial/amb.pdf">Remedial direction issued to Australian Military Bank Ltd</a></li>
+        </ul>
+      </main>
+    `;
+
+    const entries = parseAustracEnforcementHtml(
+      html,
+      "https://www.austrac.gov.au/about-us/record-our-actions/enforcement-actions-taken",
+    );
+
+    expect(entries).toHaveLength(4);
+    expect(entries.map((entry) => entry.firmIndividual)).toEqual([
+      "Cryptolink Pty Ltd",
+      "Gold Corporation",
+      "Katoomba RSL",
+      "Australian Military Bank Ltd",
+    ]);
+    expect(entries[0]?.dateIssued).toBe("2025-01-01");
+    expect(entries[1]?.dateIssued).toBe("2023-01-01");
+    expect(entries[2]?.actionType).toBe("Infringement notice");
+    expect(entries[3]?.actionType).toBe("Remedial direction");
+  });
+
   it("parses ASIC infringement-register rows and linked media releases", () => {
     const html = `
       <table class="asic-table">
