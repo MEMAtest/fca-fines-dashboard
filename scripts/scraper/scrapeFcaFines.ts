@@ -7,6 +7,7 @@ import postgres from 'postgres';
 const BASE_URL = 'https://www.fca.org.uk';
 const FINES_PATH = 'news/news-stories';
 const neonUrl = process.env.DATABASE_URL?.trim();
+const horizonUrl = process.env.HORIZON_DB_URL?.trim();
 const dryRun = process.argv.includes('--dry-run') && !process.argv.includes('--upsert');
 const sinceCutoff = process.env.FCA_SINCE_DATE ? new Date(process.env.FCA_SINCE_DATE) : null;
 const userAgent =
@@ -37,6 +38,10 @@ const yearsToScrape = yearEnv
 
 if (!neonUrl && !dryRun) {
   throw new Error('DATABASE_URL is required unless running in --dry-run mode');
+}
+
+if (!horizonUrl && !dryRun) {
+  console.warn('⚠️  HORIZON_DB_URL not set - skipping sync to horizon_scanning database');
 }
 
 interface FcaFineRecord {
@@ -265,11 +270,25 @@ function hashRecord(firm: string, amount: number, dateKey: string): string {
 
 async function upsertRecords(records: FcaFineRecord[]) {
   if (!neonUrl) return;
+
+  // Connect to fcafines database
   const sql = postgres(neonUrl, {
     ssl: neonUrl.includes('sslmode=') ? { rejectUnauthorized: false } : false,
   });
+
+  // Connect to horizon_scanning database (if configured)
+  const horizonSql = horizonUrl
+    ? postgres(horizonUrl, {
+        ssl: horizonUrl.includes('sslmode=') ? { rejectUnauthorized: false } : false,
+      })
+    : null;
+
   try {
+    let fcaSuccess = 0;
+    let horizonSuccess = 0;
+
     for (const record of records) {
+      // Write to fcafines.fca_fines (source of truth)
       await sql`
         INSERT INTO fca_fines (
           content_hash,
@@ -316,10 +335,66 @@ async function upsertRecords(records: FcaFineRecord[]) {
           month_issued = EXCLUDED.month_issued,
           raw_payload = EXCLUDED.raw_payload;
       `;
+      fcaSuccess++;
+
+      // Write to horizon_scanning.fca_fines (for RegCanary/MEMA consumption)
+      if (horizonSql) {
+        await horizonSql`
+          INSERT INTO fca_fines (
+            fine_reference,
+            firm_individual,
+            firm_category,
+            final_notice_url,
+            summary,
+            breach_type,
+            breach_categories,
+            amount,
+            date_issued,
+            year_issued,
+            month_issued,
+            source_url
+          ) VALUES (
+            ${record.fineReference},
+            ${record.firm},
+            ${record.firmCategory},
+            ${record.finalNoticeUrl},
+            ${record.summary},
+            ${record.breachType},
+            ${JSON.stringify(record.breachCategories)},
+            ${record.amount},
+            ${record.dateIssued.toISOString().slice(0, 10)},
+            ${record.dateIssued.getUTCFullYear()},
+            ${record.dateIssued.getUTCMonth() + 1},
+            ${record.rawPayload.source}
+          )
+          ON CONFLICT (fine_reference) DO UPDATE SET
+            firm_individual = EXCLUDED.firm_individual,
+            firm_category = EXCLUDED.firm_category,
+            final_notice_url = EXCLUDED.final_notice_url,
+            summary = EXCLUDED.summary,
+            breach_type = EXCLUDED.breach_type,
+            breach_categories = EXCLUDED.breach_categories,
+            amount = EXCLUDED.amount,
+            date_issued = EXCLUDED.date_issued,
+            year_issued = EXCLUDED.year_issued,
+            month_issued = EXCLUDED.month_issued,
+            source_url = EXCLUDED.source_url;
+        `;
+        horizonSuccess++;
+      }
     }
+
     await sql`SELECT refresh_fca_fine_trends();`;
+
+    console.log(`   ✓ Wrote ${fcaSuccess} fines to fcafines.fca_fines`);
+    if (horizonSql) {
+      console.log(`   ✓ Wrote ${horizonSuccess} fines to horizon_scanning.fca_fines`);
+    }
   } finally {
     await sql.end();
+    if (horizonSql) {
+      await horizonSql.end();
+    }
   }
 }
 
