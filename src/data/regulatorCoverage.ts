@@ -553,7 +553,7 @@ const REGULATOR_COVERAGE_SEED: Record<string, RegulatorCoverageSeed> = {
     defaultCurrency: "EUR",
     coverageStatus: "emerging",
     maturity: "limited",
-    dashboardEnabled: false,
+    dashboardEnabled: true,
     officialSources: [
       {
         label: "ESMA sanctions and enforcement",
@@ -962,7 +962,7 @@ const REGULATOR_COVERAGE_SEED: Record<string, RegulatorCoverageSeed> = {
     defaultCurrency: "GBP",
     coverageStatus: "emerging",
     maturity: "limited",
-    dashboardEnabled: false,
+    dashboardEnabled: true,
     officialSources: [
       {
         label: "CVM sanctions dataset",
@@ -1231,7 +1231,7 @@ const REGULATOR_COVERAGE_SEED: Record<string, RegulatorCoverageSeed> = {
     defaultCurrency: "EUR",
     coverageStatus: "emerging",
     maturity: "limited",
-    dashboardEnabled: false,
+    dashboardEnabled: true,
     officialSources: [
       {
         label: "FINMA selected rulings and enforcement reporting",
@@ -1412,7 +1412,7 @@ const REGULATOR_COVERAGE_SEED: Record<string, RegulatorCoverageSeed> = {
     defaultCurrency: "GBP",
     coverageStatus: "emerging",
     maturity: "limited",
-    dashboardEnabled: false,
+    dashboardEnabled: true,
     officialSources: [
       {
         label: "FDIC press releases",
@@ -1448,7 +1448,7 @@ const REGULATOR_COVERAGE_SEED: Record<string, RegulatorCoverageSeed> = {
     defaultCurrency: "GBP",
     coverageStatus: "emerging",
     maturity: "limited",
-    dashboardEnabled: false,
+    dashboardEnabled: true,
     officialSources: [
       {
         label: "Federal Reserve enforcement actions",
@@ -1520,7 +1520,7 @@ const REGULATOR_COVERAGE_SEED: Record<string, RegulatorCoverageSeed> = {
     defaultCurrency: "GBP",
     coverageStatus: "emerging",
     maturity: "limited",
-    dashboardEnabled: false,
+    dashboardEnabled: true,
     officialSources: [
       {
         label: "OSC enforcement news and releases",
@@ -1562,7 +1562,7 @@ const REGULATOR_COVERAGE_SEED: Record<string, RegulatorCoverageSeed> = {
     defaultCurrency: "EUR",
     coverageStatus: "emerging",
     maturity: "limited",
-    dashboardEnabled: false,
+    dashboardEnabled: true,
     officialSources: [
       {
         label: "CONSOB sanctions",
@@ -1598,7 +1598,7 @@ const REGULATOR_COVERAGE_SEED: Record<string, RegulatorCoverageSeed> = {
     defaultCurrency: "EUR",
     coverageStatus: "emerging",
     maturity: "limited",
-    dashboardEnabled: false,
+    dashboardEnabled: true,
     officialSources: [
       {
         label: "Banca d'Italia sanctions",
@@ -1634,7 +1634,7 @@ const REGULATOR_COVERAGE_SEED: Record<string, RegulatorCoverageSeed> = {
     defaultCurrency: "EUR",
     coverageStatus: "emerging",
     maturity: "limited",
-    dashboardEnabled: false,
+    dashboardEnabled: true,
     officialSources: [
       {
         label: "ACPR recueil des sanctions",
@@ -1670,7 +1670,7 @@ const REGULATOR_COVERAGE_SEED: Record<string, RegulatorCoverageSeed> = {
     defaultCurrency: "EUR",
     coverageStatus: "emerging",
     maturity: "limited",
-    dashboardEnabled: false,
+    dashboardEnabled: true,
     officialSources: [
       {
         label: "CSSF sanctions search",
@@ -1706,7 +1706,7 @@ const REGULATOR_COVERAGE_SEED: Record<string, RegulatorCoverageSeed> = {
     defaultCurrency: "EUR",
     coverageStatus: "emerging",
     maturity: "limited",
-    dashboardEnabled: false,
+    dashboardEnabled: true,
     officialSources: [
       {
         label: "FSMA administrative sanctions",
@@ -1742,7 +1742,7 @@ const REGULATOR_COVERAGE_SEED: Record<string, RegulatorCoverageSeed> = {
     defaultCurrency: "EUR",
     coverageStatus: "emerging",
     maturity: "limited",
-    dashboardEnabled: false,
+    dashboardEnabled: true,
     officialSources: [
       {
         label: "FMA Austria sanctions announcements",
@@ -1778,7 +1778,7 @@ const REGULATOR_COVERAGE_SEED: Record<string, RegulatorCoverageSeed> = {
     defaultCurrency: "EUR",
     coverageStatus: "emerging",
     maturity: "limited",
-    dashboardEnabled: false,
+    dashboardEnabled: true,
     officialSources: [
       {
         label: "Czech National Bank final decisions and sanctions",
@@ -1814,7 +1814,7 @@ const REGULATOR_COVERAGE_SEED: Record<string, RegulatorCoverageSeed> = {
     defaultCurrency: "EUR",
     coverageStatus: "emerging",
     maturity: "limited",
-    dashboardEnabled: false,
+    dashboardEnabled: true,
     officialSources: [
       {
         label: "CMVM sanctions and supervision",
@@ -1850,7 +1850,7 @@ const REGULATOR_COVERAGE_SEED: Record<string, RegulatorCoverageSeed> = {
     defaultCurrency: "EUR",
     coverageStatus: "emerging",
     maturity: "limited",
-    dashboardEnabled: false,
+    dashboardEnabled: true,
     officialSources: [
       {
         label: "Banco de Portugal administrative offence proceedings",
@@ -1886,7 +1886,7 @@ const REGULATOR_COVERAGE_SEED: Record<string, RegulatorCoverageSeed> = {
     defaultCurrency: "EUR",
     coverageStatus: "emerging",
     maturity: "limited",
-    dashboardEnabled: false,
+    dashboardEnabled: true,
     officialSources: [
       {
         label: "CySEC administrative sanctions",
@@ -1922,7 +1922,7 @@ const REGULATOR_COVERAGE_SEED: Record<string, RegulatorCoverageSeed> = {
     defaultCurrency: "EUR",
     coverageStatus: "emerging",
     maturity: "limited",
-    dashboardEnabled: false,
+    dashboardEnabled: true,
     officialSources: [
       {
         label: "Finansinspektionen sanctions for financial firms",
@@ -1958,7 +1958,7 @@ const REGULATOR_COVERAGE_SEED: Record<string, RegulatorCoverageSeed> = {
     defaultCurrency: "EUR",
     coverageStatus: "emerging",
     maturity: "limited",
-    dashboardEnabled: false,
+    dashboardEnabled: true,
     officialSources: [
       {
         label: "Finanstilsynet inspections and decisions",
@@ -1994,7 +1994,7 @@ const REGULATOR_COVERAGE_SEED: Record<string, RegulatorCoverageSeed> = {
     defaultCurrency: "EUR",
     coverageStatus: "emerging",
     maturity: "limited",
-    dashboardEnabled: false,
+    dashboardEnabled: true,
     officialSources: [
       {
         label: "FIN-FSA sanctions press releases",
@@ -2030,7 +2030,7 @@ const REGULATOR_COVERAGE_SEED: Record<string, RegulatorCoverageSeed> = {
     defaultCurrency: "EUR",
     coverageStatus: "emerging",
     maturity: "limited",
-    dashboardEnabled: false,
+    dashboardEnabled: true,
     officialSources: [
       {
         label: "Finanstilsynet Norway market conduct sanctions",
@@ -2066,7 +2066,7 @@ const REGULATOR_COVERAGE_SEED: Record<string, RegulatorCoverageSeed> = {
     defaultCurrency: "EUR",
     coverageStatus: "emerging",
     maturity: "limited",
-    dashboardEnabled: false,
+    dashboardEnabled: true,
     officialSources: [
       {
         label: "MFSA enforcement directorate",
@@ -2102,7 +2102,7 @@ const REGULATOR_COVERAGE_SEED: Record<string, RegulatorCoverageSeed> = {
     defaultCurrency: "EUR",
     coverageStatus: "emerging",
     maturity: "limited",
-    dashboardEnabled: false,
+    dashboardEnabled: true,
     officialSources: [
       {
         label: "IVASS sanctioning measures",
@@ -2138,7 +2138,7 @@ const REGULATOR_COVERAGE_SEED: Record<string, RegulatorCoverageSeed> = {
     defaultCurrency: "EUR",
     coverageStatus: "emerging",
     maturity: "emerging",
-    dashboardEnabled: false,
+    dashboardEnabled: true,
     officialSources: [
       {
         label: "FINRA Disciplinary Actions Online",
@@ -2216,7 +2216,7 @@ const REGULATOR_COVERAGE_SEED: Record<string, RegulatorCoverageSeed> = {
     defaultCurrency: "EUR",
     coverageStatus: "emerging",
     maturity: "emerging",
-    dashboardEnabled: false,
+    dashboardEnabled: true,
     officialSources: [
       {
         label: "FSC Press Releases",
@@ -2330,7 +2330,7 @@ const REGULATOR_COVERAGE_SEED: Record<string, RegulatorCoverageSeed> = {
     defaultCurrency: "EUR",
     coverageStatus: "emerging",
     maturity: "limited",
-    dashboardEnabled: false,
+    dashboardEnabled: true,
     officialSources: [
       {
         label: "CBN Press Releases",
