@@ -144,6 +144,22 @@ jobs:
             echo "detail=Writing Assistant FAILED (HTTP $HTTP_CODE)" >> $GITHUB_OUTPUT
           fi
 
+      - name: Check Nasara Connect
+        id: nasara_check
+        continue-on-error: true
+        run: |
+          echo "Checking Nasara Connect..."
+          HTTP_CODE=$(curl -sf -o /dev/null -w "%{http_code}" --connect-timeout 10 https://nasaraconnect.com 2>&1 || echo "000")
+          if [ "$HTTP_CODE" -ge 200 ] && [ "$HTTP_CODE" -lt 400 ]; then
+            echo "✅ Nasara Connect OK (HTTP $HTTP_CODE)"
+            echo "status=ok" >> $GITHUB_OUTPUT
+            echo "detail=Nasara Connect OK (HTTP $HTTP_CODE)" >> $GITHUB_OUTPUT
+          else
+            echo "❌ Nasara Connect FAILED (HTTP $HTTP_CODE)"
+            echo "status=fail" >> $GITHUB_OUTPUT
+            echo "detail=Nasara Connect FAILED (HTTP $HTTP_CODE)" >> $GITHUB_OUTPUT
+          fi
+
       - name: Check live regulator freshness
         id: scraper_health
         continue-on-error: true
@@ -181,6 +197,26 @@ jobs:
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           AWS_DEFAULT_REGION: eu-west-2
+          PG_STATUS: ${{ steps.pg_check.outputs.status }}
+          PG_DETAIL: ${{ steps.pg_check.outputs.detail }}
+          FCA_STATUS: ${{ steps.fcafines_check.outputs.status }}
+          FCA_DETAIL: ${{ steps.fcafines_check.outputs.detail }}
+          MEMA_STATUS: ${{ steps.mema_check.outputs.status }}
+          MEMA_DETAIL: ${{ steps.mema_check.outputs.detail }}
+          HOR_STATUS: ${{ steps.horizon_check.outputs.status }}
+          HOR_DETAIL: ${{ steps.horizon_check.outputs.detail }}
+          FOS_STATUS: ${{ steps.fos_check.outputs.status }}
+          FOS_DETAIL: ${{ steps.fos_check.outputs.detail }}
+          PLAN_STATUS: ${{ steps.plannetic_check.outputs.status }}
+          PLAN_DETAIL: ${{ steps.plannetic_check.outputs.detail }}
+          WRT_STATUS: ${{ steps.writing_check.outputs.status }}
+          WRT_DETAIL: ${{ steps.writing_check.outputs.detail }}
+          NAS_STATUS: ${{ steps.nasara_check.outputs.status }}
+          NAS_DETAIL: ${{ steps.nasara_check.outputs.detail }}
+          SCRAPE_STATUS: ${{ steps.scraper_health.outputs.status }}
+          SCRAPE_DETAIL: ${{ steps.scraper_health.outputs.detail }}
+          ALERT_EMAIL: ${{ vars.ALERT_EMAIL || 'ademola@memaconsultants.com' }}
+          WORKFLOW_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
         run: |
           echo "========================================="
           echo "  Daily Infrastructure Monitoring Report"
@@ -190,61 +226,24 @@ jobs:
 
           FAILURES=""
 
-          # PostgreSQL
-          PG="${{ steps.pg_check.outputs.detail }}"
-          echo "1. ${PG:-PostgreSQL: no output}"
-          if [ "${{ steps.pg_check.outputs.status }}" != "ok" ]; then
-            FAILURES="${FAILURES}\n- ${PG:-PostgreSQL connectivity failed}"
-          fi
+          check_result() {
+            local num="$1" name="$2" status="$3" detail="$4" fallback="$5"
+            echo "${num}. ${detail:-${fallback}}"
+            if [ "$status" != "ok" ]; then
+              FAILURES="${FAILURES}
+          - ${detail:-${fallback}}"
+            fi
+          }
 
-          # FCA Fines API
-          FCA="${{ steps.fcafines_check.outputs.detail }}"
-          echo "2. ${FCA:-FCA Fines API: no output}"
-          if [ "${{ steps.fcafines_check.outputs.status }}" != "ok" ]; then
-            FAILURES="${FAILURES}\n- ${FCA:-FCA Fines API unreachable}"
-          fi
-
-          # MEMA Platform
-          MEMA="${{ steps.mema_check.outputs.detail }}"
-          echo "3. ${MEMA:-MEMA Platform: no output}"
-          if [ "${{ steps.mema_check.outputs.status }}" != "ok" ]; then
-            FAILURES="${FAILURES}\n- ${MEMA:-MEMA Platform unreachable}"
-          fi
-
-          # Horizon Scanner
-          HOR="${{ steps.horizon_check.outputs.detail }}"
-          echo "4. ${HOR:-Horizon Scanner: no output}"
-          if [ "${{ steps.horizon_check.outputs.status }}" != "ok" ]; then
-            FAILURES="${FAILURES}\n- ${HOR:-Horizon Scanner unreachable}"
-          fi
-
-          # FOS Complaints
-          FOS="${{ steps.fos_check.outputs.detail }}"
-          echo "5. ${FOS:-FOS Complaints: no output}"
-          if [ "${{ steps.fos_check.outputs.status }}" != "ok" ]; then
-            FAILURES="${FAILURES}\n- ${FOS:-FOS Complaints unreachable}"
-          fi
-
-          # Plannetic
-          PLAN="${{ steps.plannetic_check.outputs.detail }}"
-          echo "6. ${PLAN:-Plannetic: no output}"
-          if [ "${{ steps.plannetic_check.outputs.status }}" != "ok" ]; then
-            FAILURES="${FAILURES}\n- ${PLAN:-Plannetic unreachable}"
-          fi
-
-          # Writing Assistant
-          WRT="${{ steps.writing_check.outputs.detail }}"
-          echo "7. ${WRT:-Writing Assistant: no output}"
-          if [ "${{ steps.writing_check.outputs.status }}" != "ok" ]; then
-            FAILURES="${FAILURES}\n- ${WRT:-Writing Assistant API unreachable}"
-          fi
-
-          # Live regulator freshness
-          SCRAPE="${{ steps.scraper_health.outputs.detail }}"
-          echo "8. ${SCRAPE:-Live regulator freshness: no output}"
-          if [ "${{ steps.scraper_health.outputs.status }}" != "ok" ]; then
-            FAILURES="${FAILURES}\n- ${SCRAPE:-Live regulator freshness check failed}"
-          fi
+          check_result "1" "PostgreSQL"         "$PG_STATUS"     "$PG_DETAIL"     "PostgreSQL connectivity failed"
+          check_result "2" "FCA Fines API"      "$FCA_STATUS"    "$FCA_DETAIL"    "FCA Fines API unreachable"
+          check_result "3" "MEMA Platform"      "$MEMA_STATUS"   "$MEMA_DETAIL"   "MEMA Platform unreachable"
+          check_result "4" "Horizon Scanner"    "$HOR_STATUS"    "$HOR_DETAIL"    "Horizon Scanner unreachable"
+          check_result "5" "FOS Complaints"     "$FOS_STATUS"    "$FOS_DETAIL"    "FOS Complaints unreachable"
+          check_result "6" "Plannetic"          "$PLAN_STATUS"   "$PLAN_DETAIL"   "Plannetic unreachable"
+          check_result "7" "Writing Assistant"  "$WRT_STATUS"    "$WRT_DETAIL"    "Writing Assistant API unreachable"
+          check_result "8" "Nasara Connect"     "$NAS_STATUS"    "$NAS_DETAIL"    "Nasara Connect unreachable"
+          check_result "9" "Scraper freshness"  "$SCRAPE_STATUS" "$SCRAPE_DETAIL" "Live regulator freshness check failed"
 
           echo ""
           echo "========================================="
@@ -252,14 +251,26 @@ jobs:
           if [ -n "$FAILURES" ]; then
             echo "❌ FAILURES DETECTED — sending alert email"
 
-            SUBJECT="ALERT: Infrastructure monitoring failures detected"
-            BODY="Daily Infrastructure Monitoring Report (External Reachability)\n\nThe following checks FAILED:\n${FAILURES}\n\nFull Results:\n1. ${PG}\n2. ${FCA}\n3. ${MEMA}\n4. ${HOR}\n5. ${FOS}\n6. ${PLAN}\n7. ${WRT}\n8. ${SCRAPE}\n\nNote: Deep checks (DB health, disk, backups, data quality) run on Hetzner at 07:15 UTC.\n\nTimestamp: $(date -u '+%Y-%m-%d %H:%M:%S UTC')\nWorkflow: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+            cat > /tmp/ses-email.json <<SESEOF
+          {
+            "Source": "alerts@memaconsultants.com",
+            "Destination": {
+              "ToAddresses": ["${ALERT_EMAIL}"]
+            },
+            "Message": {
+              "Subject": {
+                "Data": "ALERT: Infrastructure monitoring failures detected"
+              },
+              "Body": {
+                "Text": {
+                  "Data": "Daily Infrastructure Monitoring Report (External Reachability)\n\nThe following checks FAILED:\n${FAILURES}\n\nFull Results:\n1. ${PG_DETAIL}\n2. ${FCA_DETAIL}\n3. ${MEMA_DETAIL}\n4. ${HOR_DETAIL}\n5. ${FOS_DETAIL}\n6. ${PLAN_DETAIL}\n7. ${WRT_DETAIL}\n8. ${NAS_DETAIL}\n9. ${SCRAPE_DETAIL}\n\nNote: Deep checks (DB health, disk, backups, data quality) run on Hetzner at 07:15 UTC.\n\nTimestamp: $(date -u '+%Y-%m-%d %H:%M:%S UTC')\nWorkflow: ${WORKFLOW_URL}"
+                }
+              }
+            }
+          }
+          SESEOF
 
-            aws ses send-email \
-              --source "alerts@memaconsultants.com" \
-              --destination "ToAddresses=${{ vars.ALERT_EMAIL || 'ademola@memaconsultants.com' }}" \
-              --message "Subject={Data='${SUBJECT}'},Body={Text={Data='$(echo -e "$BODY")'}}" \
-              --region eu-west-2
+            aws ses send-email --cli-input-json file:///tmp/ses-email.json --region eu-west-2
 
             echo "Alert email sent"
             exit 1
