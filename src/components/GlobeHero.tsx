@@ -41,11 +41,12 @@ interface Point {
  */
 const ISO_NUMERIC_TO_ALPHA2: Record<string, string> = {
   '826': 'GB', '276': 'DE', '250': 'FR', '724': 'ES', '528': 'NL',
-  '372': 'IE', '196': 'CY', '840': 'US', '344': 'HK', '702': 'SG',
-  '036': 'AU', '554': 'NZ', '784': 'AE', '682': 'SA', '076': 'BR',
-  '484': 'MX', '152': 'CL', '710': 'ZA', '158': 'TW', '156': 'CN',
-  '392': 'JP', '356': 'IN', '124': 'CA', '756': 'CH', '832': 'JE',
-  '831': 'GG',
+  '372': 'IE', '196': 'CY', '380': 'IT', '056': 'BE', '442': 'LU',
+  '203': 'CZ', '208': 'DK', '246': 'FI', '578': 'NO', '752': 'SE',
+  '840': 'US', '344': 'HK', '702': 'SG', '036': 'AU', '554': 'NZ',
+  '784': 'AE', '682': 'SA', '076': 'BR', '484': 'MX', '152': 'CL',
+  '710': 'ZA', '158': 'TW', '156': 'CN', '392': 'JP', '356': 'IN',
+  '124': 'CA', '756': 'CH', '832': 'JE', '831': 'GG',
 };
 
 function getAlpha2(polygon: any): string | null {
@@ -65,9 +66,18 @@ const COUNTRY_COORDS: Record<string, { lat: number; lng: number }> = {
   DE: { lat: 52.5200, lng: 13.4050 },
   FR: { lat: 48.8566, lng: 2.3522 },
   ES: { lat: 40.4168, lng: -3.7038 },
+  IT: { lat: 41.9028, lng: 12.4964 },
+  BE: { lat: 50.8503, lng: 4.3517 },
+  LU: { lat: 49.6116, lng: 6.1319 },
   NL: { lat: 52.3676, lng: 4.9041 },
   IE: { lat: 53.3498, lng: -6.2603 },
   CY: { lat: 35.1264, lng: 33.4299 },
+  CZ: { lat: 50.0755, lng: 14.4378 },
+  DK: { lat: 55.6761, lng: 12.5683 },
+  FI: { lat: 60.1699, lng: 24.9384 },
+  NO: { lat: 59.9139, lng: 10.7522 },
+  SE: { lat: 59.3293, lng: 18.0686 },
+  CA: { lat: 43.6532, lng: -79.3832 },
   US: { lat: 38.9072, lng: -77.0369 },
   HK: { lat: 22.3193, lng: 114.1694 },
   SG: { lat: 1.3521, lng: 103.8198 },
@@ -83,6 +93,8 @@ const COUNTRY_COORDS: Record<string, { lat: number; lng: number }> = {
   CN: { lat: 39.9042, lng: 116.4074 },
   JP: { lat: 35.6762, lng: 139.6503 },
   IN: { lat: 28.6139, lng: 77.2090 },
+  JE: { lat: 49.1880, lng: -2.1070 },
+  GG: { lat: 49.4560, lng: -2.5370 },
 };
 
 // Compute real stats from live regulator data
