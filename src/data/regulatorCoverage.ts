@@ -2180,7 +2180,7 @@ const REGULATOR_COVERAGE_SEED: Record<string, RegulatorCoverageSeed> = {
     defaultCurrency: "EUR",
     coverageStatus: "emerging",
     maturity: "emerging",
-    dashboardEnabled: false,
+    dashboardEnabled: true,
     officialSources: [
       {
         label: "SC Enforcement Actions",
@@ -2252,7 +2252,7 @@ const REGULATOR_COVERAGE_SEED: Record<string, RegulatorCoverageSeed> = {
     defaultCurrency: "EUR",
     coverageStatus: "emerging",
     maturity: "emerging",
-    dashboardEnabled: false,
+    dashboardEnabled: true,
     officialSources: [
       {
         label: "CIMA Enforcement Notices",
@@ -2294,7 +2294,7 @@ const REGULATOR_COVERAGE_SEED: Record<string, RegulatorCoverageSeed> = {
     defaultCurrency: "EUR",
     coverageStatus: "emerging",
     maturity: "emerging",
-    dashboardEnabled: false,
+    dashboardEnabled: true,
     officialSources: [
       {
         label: "BMA Enforcement Actions",
