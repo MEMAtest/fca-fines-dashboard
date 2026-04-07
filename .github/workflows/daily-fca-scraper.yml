@@ -67,6 +67,12 @@ jobs:
             script: scrape:asic
           - code: FMANZ
             script: scrape:fmanz
+          - code: SC
+            script: scrape:sc
+          - code: BMA
+            script: scrape:bma
+          - code: CIMA
+            script: scrape:cima
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
