@@ -13,14 +13,17 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     const fcaCount = await sql`SELECT COUNT(*)::int as count FROM fca_fines`;
     const euCount = await sql`SELECT COUNT(*)::int as count FROM eu_fines`;
 
-    // Get year range from both tables
+    // Get year range from both tables (filter out invalid years > current year)
+    const currentYear = new Date().getFullYear();
     const fcaYears = await sql`
       SELECT MIN(year_issued)::int as min_year, MAX(year_issued)::int as max_year
       FROM fca_fines
+      WHERE year_issued <= ${currentYear}
     `;
     const euYears = await sql`
       SELECT MIN(year_issued)::int as min_year, MAX(year_issued)::int as max_year
       FROM eu_fines
+      WHERE year_issued <= ${currentYear}
     `;
 
     // Get unique regulators count
