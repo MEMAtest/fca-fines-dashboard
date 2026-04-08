@@ -25,6 +25,8 @@ jobs:
             script: scrape:jfsc
           - code: CIRO
             script: scrape:ciro
+          - code: FMAAT
+            script: scrape:fmaat
           - code: AUSTRAC
             script: scrape:austrac
     steps:
