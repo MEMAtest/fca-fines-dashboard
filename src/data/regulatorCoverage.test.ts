@@ -32,6 +32,7 @@ describe("regulatorCoverage", () => {
     expect(PUBLIC_REGULATOR_CODES).toContain("CYSEC");
     expect(PUBLIC_REGULATOR_CODES).toContain("FINFSA");
     expect(PUBLIC_REGULATOR_CODES).toContain("FMAAT");
+    expect(PUBLIC_REGULATOR_CODES).toContain("IVASS");
     expect(PUBLIC_REGULATOR_CODES).toContain("ASIC");
     expect(PUBLIC_REGULATOR_CODES).toContain("HKMA");
     expect(PUBLIC_REGULATOR_CODES).toContain("FMANZ");
@@ -63,6 +64,7 @@ describe("regulatorCoverage", () => {
     expect(hasPublicRegulatorHub("ACPR")).toBe(true);
     expect(hasPublicRegulatorHub("CSSF")).toBe(true);
     expect(hasPublicRegulatorHub("FMAAT")).toBe(true);
+    expect(hasPublicRegulatorHub("IVASS")).toBe(true);
     expect(hasPublicRegulatorHub("ASIC")).toBe(true);
     expect(hasPublicRegulatorHub("HKMA")).toBe(true);
     expect(hasPublicRegulatorHub("FMANZ")).toBe(true);
@@ -78,6 +80,7 @@ describe("regulatorCoverage", () => {
     expect(isValidRegulatorCode("SEC")).toBe(true);
     expect(isValidRegulatorCode("BDI")).toBe(true);
     expect(isValidRegulatorCode("FMAAT")).toBe(true);
+    expect(isValidRegulatorCode("IVASS")).toBe(true);
     expect(isValidRegulatorCode("ASIC")).toBe(true);
     expect(isValidRegulatorCode("HKMA")).toBe(true);
     expect(isValidRegulatorCode("FMANZ")).toBe(true);
@@ -102,6 +105,7 @@ describe("regulatorCoverage", () => {
     expect(PUBLIC_EU_REGULATOR_CODES).toContain("CYSEC");
     expect(PUBLIC_EU_REGULATOR_CODES).toContain("FINFSA");
     expect(PUBLIC_EU_REGULATOR_CODES).toContain("FMAAT");
+    expect(PUBLIC_EU_REGULATOR_CODES).toContain("IVASS");
     expect(PUBLIC_EU_REGULATOR_CODES).not.toContain("ESMA");
     expect(PUBLIC_EU_REGULATOR_CODES).not.toContain("FINMA");
     expect(PUBLIC_EU_REGULATOR_CODES).not.toContain("CONSOB");
@@ -134,6 +138,7 @@ describe("regulatorCoverage", () => {
     expect(getRegulatorCoverage("CSSF")?.stage).toBe("live");
     expect(getRegulatorCoverage("FSMA")?.stage).toBe("live");
     expect(getRegulatorCoverage("FMAAT")?.stage).toBe("live");
+    expect(getRegulatorCoverage("IVASS")?.stage).toBe("live");
     expect(getRegulatorCoverage("MFSA")?.stage).toBe("pipeline");
     expect(getRegulatorCoverage("FISE")?.stage).toBe("live");
     expect(getRegulatorCoverage("FTDK")?.stage).toBe("live");
@@ -147,6 +152,7 @@ describe("regulatorCoverage", () => {
     expect(getRegulatorCoverage("CSSF")?.count).toBe(163);
     expect(getRegulatorCoverage("FSMA")?.count).toBe(182);
     expect(getRegulatorCoverage("FMAAT")?.count).toBe(118);
+    expect(getRegulatorCoverage("IVASS")?.count).toBe(111);
     expect(getRegulatorCoverage("FISE")?.count).toBe(39);
     expect(getRegulatorCoverage("FTDK")?.count).toBe(51);
     expect(getRegulatorCoverage("CYSEC")?.count).toBe(1116);

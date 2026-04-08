@@ -55,6 +55,8 @@ jobs:
             script: scrape:cysec
           - code: FINFSA
             script: scrape:finfsa
+          - code: IVASS
+            script: scrape:ivass
           - code: FSRA
             script: scrape:fsra
           - code: GFSC

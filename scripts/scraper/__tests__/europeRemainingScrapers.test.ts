@@ -11,6 +11,10 @@ import {
   parseMfsaDetailHtml,
   parseMfsaListingHtml,
 } from "../scrapeMfsa.js";
+import {
+  parseIvassLandingHtml,
+  parseIvassWorkbookRows,
+} from "../scrapeIvass.js";
 
 describe("remaining Europe scrapers", () => {
   it("parses FMA Austria listing pages and detail pages", () => {
@@ -133,5 +137,83 @@ describe("remaining Europe scrapers", () => {
         detail.body,
       ),
     ).toBe("Yacht Lift Malta plc");
+  });
+
+  it("extracts annual IVASS workbook links from the official sanctions archive", () => {
+    const html = `
+      <ol>
+        <li>
+          <a href="/consumatori/sanzioni/2024/dati-annuali-2024/Tav1_Anno2024.xlsm?force_download=1">
+            <span class="link-title">Anno 2024 - Provvedimenti di ingiunzione totali - Dati individuali per impresa - All. 1</span>
+          </a>
+        </li>
+        <li>
+          <a href="/consumatori/sanzioni/2024/1-sem-2024/Tav1_Isem2024.xlsm?force_download=1">
+            <span class="link-title">1°sem.2024 - Provvedimenti di ingiunzione totali - Dati individuali per impresa - All. 1</span>
+          </a>
+        </li>
+      </ol>
+    `;
+
+    expect(parseIvassLandingHtml(html)).toEqual([
+      {
+        year: 2024,
+        title:
+          "Anno 2024 - Provvedimenti di ingiunzione totali - Dati individuali per impresa - All. 1",
+        workbookUrl:
+          "https://www.ivass.it/consumatori/sanzioni/2024/dati-annuali-2024/Tav1_Anno2024.xlsm?force_download=1",
+      },
+    ]);
+  });
+
+  it("parses IVASS annual workbook rows and skips totals", () => {
+    const rows = [
+      [
+        "Click sul pulsante",
+        "",
+        "Tavola 1",
+        "",
+        "",
+        "",
+        "",
+      ],
+      [
+        "Tipologia imprese",
+        "",
+        "Numero",
+        "Numero provvedimenti",
+        "Importo",
+        "Importo provvedimenti",
+        "Importo medio",
+      ],
+      ["", "Denominazione impresa", "", "", "", "", ""],
+      ["Impresa italiana", "ALLEANZA ASSICURAZIONI S.P.A.", 1, 0.1, 30000, 3.4, 30000],
+      ["Impresa estera", "ADMIRAL EUROPE COMPAÑIA DE SEGUROS S.A. (LPS)", 2, 0.2, 140316, 4.2, 70158],
+      ["", "Totale Imprese Italiane", 40, 0.3, 12354574.5, 130.8, 308864.36],
+    ];
+
+    expect(
+      parseIvassWorkbookRows(rows, {
+        year: 2024,
+        workbookUrl: "https://www.ivass.it/example.xlsm",
+      }),
+    ).toEqual([
+      {
+        insurerType: "Impresa italiana",
+        insurerName: "ALLEANZA ASSICURAZIONI S.P.A.",
+        sanctionCount: 1,
+        amount: 30000,
+        year: 2024,
+        workbookUrl: "https://www.ivass.it/example.xlsm",
+      },
+      {
+        insurerType: "Impresa estera",
+        insurerName: "ADMIRAL EUROPE COMPAÑIA DE SEGUROS S.A. (LPS)",
+        sanctionCount: 2,
+        amount: 140316,
+        year: 2024,
+        workbookUrl: "https://www.ivass.it/example.xlsm",
+      },
+    ]);
   });
 });
