@@ -1,4 +1,5 @@
 import 'dotenv/config';
+import axios from 'axios';
 import * as cheerio from 'cheerio';
 import { fileURLToPath } from 'node:url';
 import {
@@ -14,10 +15,12 @@ const SEC_DEFAULT_SINCE_YEAR = Number.parseInt(process.env.SEC_SINCE_YEAR || '20
 const SEC_LISTING_PAGE_DELAY_MS = Number.parseInt(process.env.SEC_LISTING_PAGE_DELAY_MS || '150', 10);
 const SEC_DETAIL_BATCH_DELAY_MS = Number.parseInt(process.env.SEC_DETAIL_BATCH_DELAY_MS || '250', 10);
 const SEC_DETAIL_BATCH_SIZE = Number.parseInt(process.env.SEC_DETAIL_BATCH_SIZE || '3', 10);
+const SEC_USER_AGENT = (process.env.SEC_USER_AGENT || '').trim() || 'MEMA Consultants research@memaconsultants.com';
 const SEC_HEADERS = {
   // SEC Fair Access policy expects an identifying user agent with contact info.
-  'User-Agent': process.env.SEC_USER_AGENT || 'MEMA Consultants research@memaconsultants.com',
+  'User-Agent': SEC_USER_AGENT,
   'Accept-Language': 'en-US,en;q=0.9',
+  'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
 };
 
 const SEC_TITLE_PREFIX_REGEX =
@@ -258,13 +261,15 @@ async function fetchSecListingPage(pageIndex: number) {
 }
 
 async function enrichSecRelease(row: SecPressReleaseRow) {
-  const html = await fetchText(row.detailUrl, {
-    headers: SEC_HEADERS,
-  });
-  const detail = parseSecDetail(html);
-  if (!isSecEnforcementBody(detail.bodyText)) {
-    return null;
-  }
+  try {
+    const html = await fetchText(row.detailUrl, {
+      headers: SEC_HEADERS,
+      timeout: 90000, // 90 seconds timeout
+    });
+    const detail = parseSecDetail(html);
+    if (!isSecEnforcementBody(detail.bodyText)) {
+      return null;
+    }
 
   const amount = parseSecMonetaryRelief(detail.bodyText);
   const summary = detail.subtitle
@@ -293,9 +298,22 @@ async function enrichSecRelease(row: SecPressReleaseRow) {
       amount,
     },
   });
+  } catch (error) {
+    console.warn(`⚠️ Failed to enrich SEC release: ${row.title} (${row.detailUrl})`);
+    if (axios.isAxiosError(error)) {
+      console.warn(`   HTTP ${error.response?.status || 'N/A'} - ${error.code || 'UNKNOWN'}: ${error.message}`);
+    } else {
+      console.warn(`   Error:`, error instanceof Error ? error.message : String(error));
+    }
+    throw error; // Re-throw to be caught by Promise.allSettled
+  }
 }
 
 export async function loadSecLiveRecords() {
+  console.log('🇺🇸 SEC Scraper starting...');
+  console.log(`   User-Agent: ${SEC_USER_AGENT}`);
+  console.log(`   Since year: ${SEC_DEFAULT_SINCE_YEAR}`);
+
   const firstPageHtml = await fetchSecListingPage(0);
   const pageCount = extractSecPageCount(firstPageHtml);
   const rows = [...parseSecPressReleaseListing(firstPageHtml)];
@@ -327,14 +345,20 @@ export async function loadSecLiveRecords() {
   );
 
   const records = [];
+  let rejectedCount = 0;
 
   for (let index = 0; index < candidateRows.length; index += SEC_DETAIL_BATCH_SIZE) {
     const batch = candidateRows.slice(index, index + SEC_DETAIL_BATCH_SIZE);
     const settled = await Promise.allSettled(batch.map((row) => enrichSecRelease(row)));
 
-    for (const result of settled) {
+    for (let i = 0; i < settled.length; i += 1) {
+      const result = settled[i];
       if (result.status === 'fulfilled' && result.value) {
         records.push(result.value);
+      } else if (result.status === 'rejected') {
+        rejectedCount += 1;
+        const row = batch[i];
+        console.warn(`⚠️ SEC enrichment failed for "${row.title}" (${row.detailUrl}): ${result.reason}`);
       }
     }
 
@@ -343,12 +367,17 @@ export async function loadSecLiveRecords() {
     }
   }
 
+  if (rejectedCount > 0) {
+    console.warn(`⚠️ ${rejectedCount} SEC enrichment(s) failed out of ${candidateRows.length} candidates`);
+  }
+
   return records;
 }
 
 export async function main() {
   await runScraper({
     name: '🇺🇸 SEC Press Release Enforcement Scraper',
+    region: 'North America',
     liveLoader: loadSecLiveRecords,
     testLoader: loadSecLiveRecords,
   });

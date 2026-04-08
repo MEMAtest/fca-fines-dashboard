@@ -329,6 +329,7 @@ async function loadHkmaEntries(limit: number | null) {
   const entries = new Map<string, HkmaEntry>();
 
   for (let offset = 0; ; offset += HKMA_LIST_PAGE_SIZE) {
+    console.log(`📡 Fetching HKMA API page (offset: ${offset})...`);
     const response = await axios.get<HkmaApiResponse>(HKMA_API_URL, {
       params: {
         lang: "en",
@@ -337,7 +338,12 @@ async function loadHkmaEntries(limit: number | null) {
         sortby: "date",
         sortorder: "desc",
       },
-      timeout: 120000,
+      timeout: 180000, // Increased from 120s to 180s (3 minutes)
+      headers: {
+        'User-Agent': 'Mozilla/5.0 (compatible; MEMA-Regulatory-Scraper/1.0; +https://fcafines.memaconsultants.com)',
+        'Accept': 'application/json, text/plain, */*',
+        'Accept-Language': 'en-US,en;q=0.9',
+      },
     });
 
     const records = response.data.result?.records || [];
@@ -357,12 +363,18 @@ async function loadHkmaEntries(limit: number | null) {
 }
 
 async function enrichHkmaEntry(entry: HkmaEntry): Promise<DbReadyRecord[]> {
-  const html = (
-    await axios.get<string>(entry.detailUrl, {
-      responseType: "text",
-      timeout: 120000,
-    })
-  ).data;
+  try {
+    const html = (
+      await axios.get<string>(entry.detailUrl, {
+        responseType: "text",
+        timeout: 180000, // Increased from 120s to 180s (3 minutes)
+        headers: {
+          'User-Agent': 'Mozilla/5.0 (compatible; MEMA-Regulatory-Scraper/1.0; +https://fcafines.memaconsultants.com)',
+          'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
+          'Accept-Language': 'en-US,en;q=0.9',
+        },
+      })
+    ).data;
   const detail = parseHkmaDetailHtml(html);
   const textCorpus = normalizeWhitespace(
     [entry.title, detail.summary, detail.body].filter(Boolean).join(" "),
@@ -389,6 +401,15 @@ async function enrichHkmaEntry(entry: HkmaEntry): Promise<DbReadyRecord[]> {
   }
 
   return [buildHkmaRecord(entry, detail, textCorpus, firmIndividual)];
+  } catch (error) {
+    console.warn(`⚠️ Failed to enrich HKMA entry: ${entry.title} (${entry.detailUrl})`);
+    if (axios.isAxiosError(error)) {
+      console.warn(`   Error: ${error.code || 'UNKNOWN'} - ${error.message}`);
+    } else {
+      console.warn(`   Error:`, error);
+    }
+    return [];
+  }
 }
 
 export async function loadHkmaLiveRecords() {

@@ -1,4 +1,5 @@
 import "dotenv/config";
+import axios from "axios";
 import * as cheerio from "cheerio";
 import { fileURLToPath } from "node:url";
 import {
@@ -16,6 +17,19 @@ const SEBI_LIST_URL =
   "https://www.sebi.gov.in/sebiweb/home/HomeAction.do?doListing=yes&sid=2&smid=133&ssid=9";
 const SEBI_AJAX_URL =
   "https://www.sebi.gov.in/sebiweb/ajax/home/getnewslistinfo.jsp";
+const SEBI_HEADERS = {
+  'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36',
+  'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8',
+  'Accept-Language': 'en-US,en;q=0.9',
+  'Accept-Encoding': 'gzip, deflate, br',
+  'Connection': 'keep-alive',
+  'Upgrade-Insecure-Requests': '1',
+  'Sec-Fetch-Dest': 'document',
+  'Sec-Fetch-Mode': 'navigate',
+  'Sec-Fetch-Site': 'none',
+  'Sec-Fetch-User': '?1',
+  'Cache-Control': 'max-age=0',
+};
 const DEFAULT_SINCE_YEAR = Number.parseInt(
   process.env.SEBI_SINCE_YEAR || "1900",
   10,
@@ -84,23 +98,52 @@ async function fetchSebiAjaxPage(pageIndex: number) {
     doDirect: String(pageIndex),
   });
 
-  const response = await fetchText(SEBI_AJAX_URL, {
-    method: "POST",
-    headers: { "Content-Type": "application/x-www-form-urlencoded" },
-    data: body.toString(),
-  });
+  try {
+    const response = await fetchText(SEBI_AJAX_URL, {
+      method: "POST",
+      headers: {
+        ...SEBI_HEADERS,
+        "Content-Type": "application/x-www-form-urlencoded",
+        "Referer": SEBI_LIST_URL,
+        "Origin": "https://www.sebi.gov.in",
+      },
+      data: body.toString(),
+      timeout: 120000, // 2 minute timeout
+    });
 
-  return response.split("#@#")[0] || "";
+    return response.split("#@#")[0] || "";
+  } catch (error) {
+    console.warn(`⚠️ Failed to fetch SEBI AJAX page ${pageIndex}`);
+    if (axios.isAxiosError(error)) {
+      console.warn(`   HTTP ${error.response?.status || 'N/A'} - ${error.code || 'UNKNOWN'}: ${error.message}`);
+      // HTTP 530 is often Cloudflare "origin unreachable" - wait longer before retry
+      if (error.response?.status === 530) {
+        console.warn(`   ⏳ HTTP 530 detected - server may be temporarily down. This error is automatically retried.`);
+      }
+    }
+    throw error;
+  }
 }
 
 async function fetchSebiDetailText(url: string) {
-  if (/\.pdf(?:$|\?)/i.test(url)) {
-    return extractPdfTextFromUrl(url);
-  }
+  try {
+    if (/\.pdf(?:$|\?)/i.test(url)) {
+      return extractPdfTextFromUrl(url);
+    }
 
-  const html = await fetchText(url);
-  const text = cheerio.load(html)("body").text();
-  return normalizeWhitespace(text);
+    const html = await fetchText(url, {
+      headers: SEBI_HEADERS,
+      timeout: 120000,
+    });
+    const text = cheerio.load(html)("body").text();
+    return normalizeWhitespace(text);
+  } catch (error) {
+    console.warn(`⚠️ Failed to fetch SEBI detail: ${url}`);
+    if (axios.isAxiosError(error)) {
+      console.warn(`   HTTP ${error.response?.status || 'N/A'} - ${error.code || 'UNKNOWN'}`);
+    }
+    throw error;
+  }
 }
 
 export function extractSebiFirm(title: string) {
@@ -328,7 +371,14 @@ async function enrichSebiRow(row: SebiRow, shouldEnrichAmount: boolean) {
 }
 
 export async function loadSebiLiveRecords() {
-  const firstPageHtml = await fetchText(SEBI_LIST_URL);
+  console.log('🇮🇳 SEBI Scraper starting...');
+  console.log(`   List URL: ${SEBI_LIST_URL}`);
+  console.log(`   Since year: ${DEFAULT_SINCE_YEAR}`);
+
+  const firstPageHtml = await fetchText(SEBI_LIST_URL, {
+    headers: SEBI_HEADERS,
+    timeout: 120000,
+  });
   const initialRows = parseSebiListingHtml(firstPageHtml);
   const rows: SebiRow[] = [...initialRows];
 

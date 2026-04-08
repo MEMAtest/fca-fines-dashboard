@@ -136,8 +136,38 @@ async function scrapeDnbPage(): Promise<DNBRecord[]> {
   const response = await fetch(DNB_CONFIG.rssUrl);
   const xmlText = await response.text();
 
-  const parsed = await parseStringPromise(xmlText);
-  const items = parsed.rss.channel[0].item || [];
+  let parsed;
+  try {
+    parsed = await parseStringPromise(xmlText, {
+      trim: true,
+      normalize: true,
+      normalizeTags: false,
+      explicitArray: true,
+      // Add error tolerance for malformed XML
+      strict: false,
+      // Ignore attributes that might cause issues
+      ignoreAttrs: false,
+    });
+  } catch (parseError) {
+    console.error('❌ XML parsing failed. Saving raw XML for debugging...');
+    console.error(`   Error: ${parseError instanceof Error ? parseError.message : String(parseError)}`);
+    console.error(`   XML preview (first 500 chars): ${xmlText.substring(0, 500)}`);
+
+    // Try to salvage data with more lenient parsing
+    try {
+      parsed = await parseStringPromise(xmlText, {
+        strict: false,
+        async: false,
+        attrkey: 'attributes',
+        charkey: 'value',
+      });
+    } catch (secondError) {
+      console.error('❌ Even lenient parsing failed. Giving up on this RSS feed.');
+      throw parseError; // Throw original error
+    }
+  }
+
+  const items = parsed?.rss?.channel?.[0]?.item || [];
 
   console.log(`✅ Fetched ${items.length} items from RSS feed`);
 
