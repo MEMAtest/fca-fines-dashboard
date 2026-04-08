@@ -4,7 +4,7 @@
 
 import { useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, ExternalLink, TrendingUp, MapPin, Building2, FileText, Coins } from 'lucide-react';
+import { X, ExternalLink, TrendingUp, MapPin, Landmark, Database, Coins } from 'lucide-react';
 import { getRegulatorsForCountry, type CountryRegulatorInfo } from '../data/countryRegulatorMapping.js';
 import { fetchUnifiedStats } from '../api.js';
 import { formatAmount } from '../hooks/useHomepageStats.js';
@@ -122,7 +122,10 @@ export function CountryModal({ countryCode, onClose }: CountryModalProps) {
                 <div className="country-modal__header-title">
                   <MapPin className="country-modal__country-icon" size={24} />
                   <div>
-                    <h2 className="country-modal__title">{countryInfo.countryName}</h2>
+                    <h2 className="country-modal__title">
+                      {countryInfo.flag && <span className="country-modal__flag">{countryInfo.flag}</span>}
+                      {countryInfo.countryName}
+                    </h2>
                     <p className="country-modal__subtitle">{countryInfo.region} Region</p>
                   </div>
                 </div>
@@ -138,12 +141,12 @@ export function CountryModal({ countryCode, onClose }: CountryModalProps) {
               {/* Stats */}
               <div className="country-modal__stats">
                 <div className="stat-card">
-                  <Building2 className="stat-card__icon" size={20} />
+                  <Landmark className="stat-card__icon" size={24} />
                   <span className="stat-card__label">Regulators</span>
                   <span className="stat-card__value">{countryInfo.regulators.length}</span>
                 </div>
                 <div className="stat-card">
-                  <FileText className="stat-card__icon" size={20} />
+                  <Database className="stat-card__icon" size={24} />
                   <span className="stat-card__label">Total Records</span>
                   <span className="stat-card__value">{totalRecords.toLocaleString()}</span>
                 </div>

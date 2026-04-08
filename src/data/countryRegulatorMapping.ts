@@ -17,6 +17,7 @@ export interface CountryRegulatorInfo {
 export interface CountryInfo {
   countryCode: string;
   countryName: string;
+  flag?: string;
   regulators: CountryRegulatorInfo[];
   region: string;
   hasData: boolean;
@@ -47,6 +48,7 @@ function buildCountryMapping(): Map<string, CountryInfo> {
       mapping.set(reg.countryCode, {
         countryCode: reg.countryCode,
         countryName: reg.country,
+        flag: reg.flag,
         regulators: [{
           code: reg.code,
           fullName: reg.fullName,
