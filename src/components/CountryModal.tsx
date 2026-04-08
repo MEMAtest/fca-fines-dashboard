@@ -4,11 +4,13 @@
 
 import { useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, ExternalLink, TrendingUp } from 'lucide-react';
+import { X, ExternalLink, TrendingUp, MapPin, Building2, FileText, Coins } from 'lucide-react';
 import { getRegulatorsForCountry, type CountryRegulatorInfo } from '../data/countryRegulatorMapping.js';
 import { fetchUnifiedStats } from '../api.js';
 import { formatAmount } from '../hooks/useHomepageStats.js';
 import { useNavigate } from 'react-router-dom';
+import { RegulatorMark } from './RegulatorMark.js';
+import { getRegulatorPalette } from '../data/regulatorLogos.js';
 import '../styles/country-modal.css';
 
 interface RegulatorFines {
@@ -117,9 +119,12 @@ export function CountryModal({ countryCode, onClose }: CountryModalProps) {
             >
               {/* Header */}
               <div className="country-modal__header">
-                <div>
-                  <h2 className="country-modal__title">{countryInfo.countryName}</h2>
-                  <p className="country-modal__subtitle">{countryInfo.region} Region</p>
+                <div className="country-modal__header-title">
+                  <MapPin className="country-modal__country-icon" size={24} />
+                  <div>
+                    <h2 className="country-modal__title">{countryInfo.countryName}</h2>
+                    <p className="country-modal__subtitle">{countryInfo.region} Region</p>
+                  </div>
                 </div>
                 <button
                   onClick={onClose}
@@ -133,10 +138,12 @@ export function CountryModal({ countryCode, onClose }: CountryModalProps) {
               {/* Stats */}
               <div className="country-modal__stats">
                 <div className="stat-card">
+                  <Building2 className="stat-card__icon" size={20} />
                   <span className="stat-card__label">Regulators</span>
                   <span className="stat-card__value">{countryInfo.regulators.length}</span>
                 </div>
                 <div className="stat-card">
+                  <FileText className="stat-card__icon" size={20} />
                   <span className="stat-card__label">Total Records</span>
                   <span className="stat-card__value">{totalRecords.toLocaleString()}</span>
                 </div>
@@ -148,10 +155,25 @@ export function CountryModal({ countryCode, onClose }: CountryModalProps) {
                 <div className="regulator-cards">
                   {countryInfo.regulators.map((reg: CountryRegulatorInfo) => {
                     const fines = finesByRegulator.get(reg.code);
+                    const palette = getRegulatorPalette(reg.code);
                     return (
-                      <div key={reg.code} className="regulator-card">
+                      <div
+                        key={reg.code}
+                        className="regulator-card"
+                        style={{
+                          '--regulator-ink': palette?.ink || '#0d9488',
+                          '--regulator-surface': palette?.surface || '#f0fdfa',
+                          '--regulator-ring': palette?.ring || '#5eead4',
+                        } as React.CSSProperties}
+                      >
                         <div className="regulator-card__header">
-                          <span className="regulator-card__code">{reg.code}</span>
+                          <RegulatorMark
+                            regulator={reg.code}
+                            size="medium"
+                            surface="light"
+                            showCode={true}
+                            className="regulator-card__logo"
+                          />
                           <span className="regulator-card__count">
                             {reg.count.toLocaleString()} records
                           </span>
@@ -160,16 +182,22 @@ export function CountryModal({ countryCode, onClose }: CountryModalProps) {
                         {fines && fines.total > 0 && (
                           <div className="regulator-card__fines">
                             <div className="regulator-card__fine-item">
-                              <span className="regulator-card__fine-label">Total Fines</span>
-                              <span className="regulator-card__fine-value">
-                                {formatAmount(fines.total)}
-                              </span>
+                              <Coins size={14} className="fine-stat-icon" />
+                              <div>
+                                <span className="regulator-card__fine-label">Total Fines</span>
+                                <span className="regulator-card__fine-value">
+                                  {formatAmount(fines.total)}
+                                </span>
+                              </div>
                             </div>
                             <div className="regulator-card__fine-item">
-                              <span className="regulator-card__fine-label">Largest Fine</span>
-                              <span className="regulator-card__fine-value">
-                                {formatAmount(fines.maxFine)}
-                              </span>
+                              <TrendingUp size={14} className="fine-stat-icon" />
+                              <div>
+                                <span className="regulator-card__fine-label">Largest Fine</span>
+                                <span className="regulator-card__fine-value">
+                                  {formatAmount(fines.maxFine)}
+                                </span>
+                              </div>
                             </div>
                           </div>
                         )}

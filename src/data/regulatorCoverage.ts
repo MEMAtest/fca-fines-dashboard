@@ -1513,7 +1513,7 @@ const REGULATOR_COVERAGE_SEED: Record<string, RegulatorCoverageSeed> = {
     sourceType: "regulator",
     scrapeMode: "detail_pages",
     priorityTier: 2,
-    stage: "pipeline",
+    stage: "live",
     blogEnabled: true,
     flag: "🇸🇦",
     navOrder: 34,

@@ -54,6 +54,18 @@
   border-radius: 16px 16px 0 0;
 }
 
+.country-modal__header-title {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+}
+
+.country-modal__country-icon {
+  color: #0d9488;
+  flex-shrink: 0;
+  margin-top: 0.125rem;
+}
+
 .country-modal__title {
   font-size: 1.5rem;
   font-weight: 700;
@@ -107,6 +119,13 @@
   background: #f8fafb;
   border: 1px solid #e5e7eb;
   border-radius: 10px;
+  position: relative;
+}
+
+.stat-card__icon {
+  color: #0d9488;
+  opacity: 0.7;
+  margin-bottom: 0.125rem;
 }
 
 .stat-card__label {
@@ -148,13 +167,16 @@
 .regulator-card {
   background: white;
   border: 1px solid #e5e7eb;
+  border-left: 3px solid var(--regulator-ink, #0d9488);
   border-radius: 10px;
   padding: 1rem 1.125rem;
   transition: border-color 0.15s ease, box-shadow 0.15s ease;
+  position: relative;
 }
 
 .regulator-card:hover {
   border-color: #d1d5db;
+  border-left-color: var(--regulator-ink, #0d9488);
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
 }
 
@@ -162,14 +184,11 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 0.25rem;
+  margin-bottom: 0.5rem;
 }
 
-.regulator-card__code {
-  font-size: 0.9375rem;
-  font-weight: 700;
-  color: #111827;
-  letter-spacing: 0.02em;
+.regulator-card__logo {
+  margin-bottom: 0;
 }
 
 .regulator-card__count {
@@ -200,8 +219,21 @@
 
 .regulator-card__fine-item {
   display: flex;
+  align-items: flex-start;
+  gap: 0.5rem;
+}
+
+.regulator-card__fine-item > div {
+  display: flex;
   flex-direction: column;
   gap: 0.125rem;
+}
+
+.fine-stat-icon {
+  color: #0d9488;
+  opacity: 0.6;
+  margin-top: 0.125rem;
+  flex-shrink: 0;
 }
 
 .regulator-card__fine-label {
