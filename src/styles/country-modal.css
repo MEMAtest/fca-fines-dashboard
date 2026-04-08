@@ -131,10 +131,11 @@
   position: relative;
 }
 
-.stat-card__icon {
-  color: #0d9488;
-  opacity: 0.7;
-  margin-bottom: 0.125rem;
+.stat-card__emoji {
+  font-size: 2rem;
+  line-height: 1;
+  margin-bottom: 0.25rem;
+  display: block;
 }
 
 .stat-card__label {

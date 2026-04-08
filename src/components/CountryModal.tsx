@@ -4,7 +4,7 @@
 
 import { useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, ExternalLink, TrendingUp, MapPin, Landmark, Database, Coins } from 'lucide-react';
+import { X, ExternalLink, TrendingUp, MapPin, Coins } from 'lucide-react';
 import { getRegulatorsForCountry, type CountryRegulatorInfo } from '../data/countryRegulatorMapping.js';
 import { fetchUnifiedStats } from '../api.js';
 import { formatAmount } from '../hooks/useHomepageStats.js';
@@ -141,12 +141,12 @@ export function CountryModal({ countryCode, onClose }: CountryModalProps) {
               {/* Stats */}
               <div className="country-modal__stats">
                 <div className="stat-card">
-                  <Landmark className="stat-card__icon" size={24} />
+                  <span className="stat-card__emoji">🏛️</span>
                   <span className="stat-card__label">Regulators</span>
                   <span className="stat-card__value">{countryInfo.regulators.length}</span>
                 </div>
                 <div className="stat-card">
-                  <Database className="stat-card__icon" size={24} />
+                  <span className="stat-card__emoji">📊</span>
                   <span className="stat-card__label">Total Records</span>
                   <span className="stat-card__value">{totalRecords.toLocaleString()}</span>
                 </div>
