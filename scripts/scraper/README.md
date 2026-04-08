@@ -99,7 +99,7 @@ The viable first Europe expansion wave now ships with dedicated scrapers and a b
 - `npm run scrape:fsma`
 - `npm run scrape:europe-phase-one`
 
-These loaders are wired into the stable daily live-regulator workflow. `CONSOB`, `FMA Austria`, and `FINMA` remain outside the live batch until their official-source access paths are production-grade from this environment.
+These loaders are wired into the stable daily live-regulator workflow. `CONSOB` remains outside the live batch until its official-source access path is production-grade from this environment.
 
 ### Europe Phase 2 live commands
 
@@ -115,11 +115,17 @@ The current viable second Europe wave also has dedicated scrapers and can run in
 
 `FISE`, `FTDK`, `FTNO`, `CNBCZ`, `CYSEC`, and `FINFSA` are wired into the stable daily live-regulator workflow. For `CNBCZ`, use `CNBCZ_SINCE_YEAR` and `CNBCZ_PDF_ENRICH_LIMIT` in CI so the daily job stays incremental after the initial archive backfill.
 
+### Fragile live commands
+
+Browser-backed or lower-confidence live loaders run through the fragile cadence workflow:
+
+- `npm run scrape:fmaat`
+- `npm run scrape:finma`
+- `npm run scrape:austrac`
+
 The remaining core Europe targets stay outside the live batch until their official-source position improves from this environment:
 
 - `CONSOB` and `Banco de Portugal` are challenge-protected from this environment
-- `FMA Austria` is Cloudflare-blocked from this environment
-- `FINMA` remains pipeline until an official nominative enforcement feed is production-grade rather than test-data-backed
 - `CMVM` and `MFSA` remain pipeline until a stable official enforcement surface is confirmed
 
 ## How upserts work

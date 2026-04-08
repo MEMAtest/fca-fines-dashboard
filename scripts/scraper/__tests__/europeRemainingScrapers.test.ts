@@ -15,6 +15,10 @@ import {
   parseIvassLandingHtml,
   parseIvassWorkbookRows,
 } from "../scrapeIvass.js";
+import {
+  parseFinmaDetailHtml,
+  parseFinmaListingHtml,
+} from "../scrapeFinma.js";
 
 describe("remaining Europe scrapers", () => {
   it("parses FMA Austria listing pages and detail pages", () => {
@@ -215,5 +219,68 @@ describe("remaining Europe scrapers", () => {
         workbookUrl: "https://www.ivass.it/example.xlsm",
       },
     ]);
+  });
+
+  it("parses FINMA published final rulings list and detail pages", () => {
+    const listHtml = `
+      <div class="mod mod-filter-result">
+        <div class="mod mod-teaser js-results">
+          <table class="e-table vertical-sorting table-sorting">
+            <tbody>
+              <tr>
+                <td data-title="Name">
+                  <a class="e-text text-link-std bold" href="/en/enforcement/enforcement-tools/publication-of-final-rulings/hodan-parreaux/">Hodan Parreaux</a>
+                </td>
+                <td data-title="Ruling dated" data-sort-value="638991900000000000">20.11.2025</td>
+              </tr>
+              <tr>
+                <td data-title="Name">
+                  <a class="e-text text-link-std bold" href="/en/enforcement/enforcement-tools/publication-of-final-rulings/cem-yilmaz/">Cem Yilmaz</a>
+                </td>
+                <td data-title="Ruling dated" data-sort-value="636572700000000000">22.03.2018</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    `;
+    const detailHtml = `
+      <div class="e-text text-heading-underline"><h1>Unterlassungsanweisung</h1></div>
+      <table class="e-table vertical">
+        <tr><th>Name</th><td>Hodan Parreaux</td></tr>
+        <tr><th>Ruling dated</th><td>20.11.2025</td></tr>
+        <tr><th>Details</th><td><p>Ordre est donné à <strong>Hodan Parreaux</strong> de s’abstenir d'exercer sans l'autorisation nécessaire toute activité soumise à autorisation selon les lois sur les marchés financiers.</p></td></tr>
+      </table>
+    `;
+
+    expect(
+      parseFinmaListingHtml(
+        listHtml,
+        "https://www.finma.ch/en/enforcement/enforcement-tools/publication-of-final-rulings/",
+      ),
+    ).toEqual([
+      {
+        name: "Hodan Parreaux",
+        detailUrl:
+          "https://www.finma.ch/en/enforcement/enforcement-tools/publication-of-final-rulings/hodan-parreaux/",
+        dateIssued: "2025-11-20",
+      },
+      {
+        name: "Cem Yilmaz",
+        detailUrl:
+          "https://www.finma.ch/en/enforcement/enforcement-tools/publication-of-final-rulings/cem-yilmaz/",
+        dateIssued: "2018-03-22",
+      },
+    ]);
+
+    expect(parseFinmaDetailHtml(detailHtml)).toEqual({
+      rulingType: "Unterlassungsanweisung",
+      firmIndividual: "Hodan Parreaux",
+      dateIssued: "2025-11-20",
+      body:
+        "Ordre est donné à Hodan Parreaux de s’abstenir d'exercer sans l'autorisation nécessaire toute activité soumise à autorisation selon les lois sur les marchés financiers.",
+      summary:
+        "Ordre est donné à Hodan Parreaux de s’abstenir d'exercer sans l'autorisation nécessaire toute activité soumise à autorisation selon les lois sur les marchés financiers.",
+    });
   });
 });

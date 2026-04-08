@@ -106,8 +106,8 @@ describe("regulatorCoverage", () => {
     expect(PUBLIC_EU_REGULATOR_CODES).toContain("FINFSA");
     expect(PUBLIC_EU_REGULATOR_CODES).toContain("FMAAT");
     expect(PUBLIC_EU_REGULATOR_CODES).toContain("IVASS");
+    expect(PUBLIC_EU_REGULATOR_CODES).toContain("FINMA");
     expect(PUBLIC_EU_REGULATOR_CODES).not.toContain("ESMA");
-    expect(PUBLIC_EU_REGULATOR_CODES).not.toContain("FINMA");
     expect(PUBLIC_EU_REGULATOR_CODES).not.toContain("CONSOB");
     expect(PUBLIC_EU_REGULATOR_CODES).not.toContain("MFSA");
     expect(PUBLIC_EU_REGULATOR_CODES).not.toContain("SFC");
@@ -122,7 +122,7 @@ describe("regulatorCoverage", () => {
     expect(getRegulatorCoverage("CVM")?.stage).toBe("pipeline");
     expect(getRegulatorCoverage("CNBV")?.stage).toBe("pipeline");
     expect(getRegulatorCoverage("CMF")?.stage).toBe("pipeline");
-    expect(getRegulatorCoverage("FINMA")?.stage).toBe("pipeline");
+    expect(getRegulatorCoverage("FINMA")?.stage).toBe("live");
     expect(getRegulatorCoverage("SESC")?.stage).toBe("pipeline");
     expect(getRegulatorCoverage("FDIC")?.stage).toBe("pipeline");
     expect(getRegulatorCoverage("FRB")?.stage).toBe("pipeline");
@@ -146,7 +146,7 @@ describe("regulatorCoverage", () => {
     expect(getRegulatorCoverage("FINFSA")?.stage).toBe("live");
     expect(getRegulatorCoverage("FTNO")?.stage).toBe("live");
     expect(getRegulatorCoverage("CNBCZ")?.stage).toBe("live");
-    expect(getRegulatorCoverage("FINMA")?.count).toBe(0);
+    expect(getRegulatorCoverage("FINMA")?.count).toBe(23);
     expect(getRegulatorCoverage("BDI")?.count).toBe(153);
     expect(getRegulatorCoverage("ACPR")?.count).toBe(75);
     expect(getRegulatorCoverage("CSSF")?.count).toBe(163);
@@ -172,6 +172,7 @@ describe("regulatorCoverage", () => {
       "CBUAE",
       "JFSC",
       "CIRO",
+      "FINMA",
       "FMAAT",
       "AUSTRAC",
     ]);
@@ -183,14 +184,19 @@ describe("regulatorCoverage", () => {
     expect(DAILY_LIVE_REGULATOR_CODES).toContain("SFC");
     expect(DAILY_LIVE_REGULATOR_CODES).not.toContain("DFSA");
     expect(DAILY_LIVE_REGULATOR_CODES).not.toContain("FMAAT");
+    expect(DAILY_LIVE_REGULATOR_CODES).not.toContain("FINMA");
     expect(DAILY_LIVE_REGULATOR_CODES).not.toContain("AUSTRAC");
     expect(getRegulatorCoverage("DFSA")?.operationalConfidence).toBe("lower");
     expect(getRegulatorCoverage("FMAAT")?.operationalConfidence).toBe("lower");
+    expect(getRegulatorCoverage("FINMA")?.operationalConfidence).toBe("lower");
     expect(getRegulatorCoverage("AUSTRAC")?.operationalConfidence).toBe("lower");
     expect(getRegulatorCoverage("AUSTRAC")?.feedContract.cadence).toBe(
       "fragile",
     );
     expect(getRegulatorCoverage("FMAAT")?.feedContract.cadence).toBe(
+      "fragile",
+    );
+    expect(getRegulatorCoverage("FINMA")?.feedContract.cadence).toBe(
       "fragile",
     );
     expect(getRegulatorCoverage("DFSA")?.automationLevel).toBe("curated_archive");
