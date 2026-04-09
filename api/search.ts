@@ -275,7 +275,13 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
               AND EXISTS (
                 SELECT 1
                 FROM unnest($7::text[]) AS category
-                WHERE COALESCE(breach_categories::text, '') ILIKE '%' || category || '%'
+                WHERE COALESCE(
+                  CASE WHEN jsonb_typeof(breach_categories) = 'string'
+                    THEN (breach_categories #>> '{}')
+                    ELSE breach_categories::text
+                  END,
+                  ''
+                ) ILIKE '%' || category || '%'
               )
               THEN 30
             ELSE 0
@@ -291,7 +297,13 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
               AND (
                 COALESCE(summary, '') ILIKE $2
                 OR COALESCE(breach_type, '') ILIKE $2
-                OR COALESCE(breach_categories::text, '') ILIKE $2
+                OR COALESCE(
+                  CASE WHEN jsonb_typeof(breach_categories) = 'string'
+                    THEN (breach_categories #>> '{}')
+                    ELSE breach_categories::text
+                  END,
+                  ''
+                ) ILIKE $2
                 OR COALESCE(firm_individual, '') ILIKE $2
                 OR COALESCE(country_name, '') ILIKE $2
                 OR COALESCE(regulator, '') ILIKE $2
@@ -305,7 +317,13 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
             FROM unnest($3::text[]) AS pattern
             WHERE COALESCE(firm_individual, '') ILIKE pattern
               OR COALESCE(breach_type, '') ILIKE pattern
-              OR COALESCE(breach_categories::text, '') ILIKE pattern
+              OR COALESCE(
+                CASE WHEN jsonb_typeof(breach_categories) = 'string'
+                  THEN (breach_categories #>> '{}')
+                  ELSE breach_categories::text
+                END,
+                ''
+              ) ILIKE pattern
               OR COALESCE(summary, '') ILIKE pattern
               OR COALESCE(country_name, '') ILIKE pattern
               OR COALESCE(regulator, '') ILIKE pattern
@@ -457,7 +475,13 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
               AND EXISTS (
                 SELECT 1
                 FROM unnest($7::text[]) AS category
-                WHERE COALESCE(breach_categories::text, '') ILIKE '%' || category || '%'
+                WHERE COALESCE(
+                  CASE WHEN jsonb_typeof(breach_categories) = 'string'
+                    THEN (breach_categories #>> '{}')
+                    ELSE breach_categories::text
+                  END,
+                  ''
+                ) ILIKE '%' || category || '%'
               )
               THEN 30
             ELSE 0
@@ -473,7 +497,13 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
               AND (
                 COALESCE(summary, '') ILIKE $2
                 OR COALESCE(breach_type, '') ILIKE $2
-                OR COALESCE(breach_categories::text, '') ILIKE $2
+                OR COALESCE(
+                  CASE WHEN jsonb_typeof(breach_categories) = 'string'
+                    THEN (breach_categories #>> '{}')
+                    ELSE breach_categories::text
+                  END,
+                  ''
+                ) ILIKE $2
                 OR COALESCE(firm_individual, '') ILIKE $2
                 OR COALESCE(country_name, '') ILIKE $2
                 OR COALESCE(regulator, '') ILIKE $2
@@ -487,7 +517,13 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
             FROM unnest($3::text[]) AS pattern
             WHERE COALESCE(firm_individual, '') ILIKE pattern
               OR COALESCE(breach_type, '') ILIKE pattern
-              OR COALESCE(breach_categories::text, '') ILIKE pattern
+              OR COALESCE(
+                CASE WHEN jsonb_typeof(breach_categories) = 'string'
+                  THEN (breach_categories #>> '{}')
+                  ELSE breach_categories::text
+                END,
+                ''
+              ) ILIKE pattern
               OR COALESCE(summary, '') ILIKE pattern
               OR COALESCE(country_name, '') ILIKE pattern
               OR COALESCE(regulator, '') ILIKE pattern

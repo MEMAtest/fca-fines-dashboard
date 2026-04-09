@@ -92,7 +92,16 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     }
 
     if (breachCategory) {
-      conditions.push(`breach_categories @> $${paramIndex++}::jsonb`);
+      // Handle double-encoded JSONB (312/316 rows store JSON string instead of array)
+      conditions.push(`
+        COALESCE(
+          CASE WHEN jsonb_typeof(breach_categories) = 'string'
+            THEN (breach_categories #>> '{}')::jsonb
+            ELSE breach_categories
+          END,
+          '[]'::jsonb
+        ) @> $${paramIndex++}::jsonb
+      `);
       params.push(JSON.stringify([breachCategory]));
     }
 
@@ -171,10 +180,12 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     });
 
   } catch (error) {
-    console.error('Unified search error:', error);
+    console.error('Unified search error:', {
+      error: error instanceof Error ? error.message : error
+    });
     return res.status(500).json({
-      error: 'Search failed',
-      message: error instanceof Error ? error.message : 'Unknown error'
+      error: 'Search failed'
+      // Schema details removed for security
     });
   }
 }
