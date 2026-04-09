@@ -3,10 +3,20 @@ import {
   RouterProvider,
   useRouteError,
   Link,
+  Navigate,
+  useLocation,
 } from "react-router-dom";
 import { lazy, Suspense, type ComponentType } from "react";
 import { DashboardSkeleton } from "./components/LoadingSkeletons.js";
 import { SiteLayout } from "./components/SiteLayout.js";
+
+/**
+ * Redirect /dashboard to /regulators/fca/dashboard preserving query params
+ */
+function DashboardRedirect() {
+  const location = useLocation();
+  return <Navigate to={`/regulators/fca/dashboard${location.search}`} replace />;
+}
 
 function RouteErrorBoundary() {
   const error = useRouteError();
@@ -242,11 +252,7 @@ const router = createBrowserRouter([
       },
       {
         path: "/dashboard",
-        element: (
-          <Suspense fallback={<DashboardSkeleton />}>
-            <Dashboard />
-          </Suspense>
-        ),
+        element: <DashboardRedirect />,
       },
       {
         path: "/board-pack",

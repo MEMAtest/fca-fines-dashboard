@@ -6,7 +6,7 @@ const sql = getSqlClient();
 function buildWhereClause(year: number) {
   if (year > 0) {
     return {
-      text: 'WHERE EXTRACT(YEAR FROM date_issued) = $1',
+      text: 'WHERE year_issued = $1',
       params: [year],
     };
   }
