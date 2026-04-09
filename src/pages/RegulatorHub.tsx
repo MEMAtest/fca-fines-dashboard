@@ -190,7 +190,7 @@ export function RegulatorHub() {
     <div className="regulator-hub">
       {/* Header */}
       <div className="regulator-hub__header">
-        <Link to="/dashboard" className="regulator-hub__back">
+        <Link to="/regulators" className="regulator-hub__back">
           <ArrowLeft size={16} />
           Back to Dashboard
         </Link>

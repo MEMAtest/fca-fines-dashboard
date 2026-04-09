@@ -202,9 +202,23 @@
 .globe-hero__regulator-name {
   font-size: 0.625rem;
   color: #9ca3af;
-  white-space: nowrap;
+
+  /* Allow wrapping to 2 lines */
+  white-space: normal;
   overflow: hidden;
   text-overflow: ellipsis;
+
+  /* Line clamp */
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+
+  line-height: 1.4;
+  max-height: calc(0.625rem * 1.4 * 2);
+
+  /* Handle long single words */
+  overflow-wrap: anywhere;
+
   min-width: 0;
 }
 

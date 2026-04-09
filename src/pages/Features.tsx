@@ -310,11 +310,8 @@ export function Features() {
               inform your compliance strategy.
             </p>
             <div className="features-cta__buttons">
-              <Link to="/dashboard" className="btn btn--primary">
+              <Link to="/regulators" className="btn btn--primary">
                 Explore Dashboard
-              </Link>
-              <Link to="/contact" className="btn btn--secondary">
-                Contact Sales
               </Link>
             </div>
           </motion.div>

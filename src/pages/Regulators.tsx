@@ -228,7 +228,7 @@ export function Regulators() {
           global public enforcement feeds. Pipeline regulators have validated
           official sources, ready for ingestion.
         </p>
-        <Link to="/dashboard" className="reg-grid__footer-cta">
+        <Link to="/regulators" className="reg-grid__footer-cta">
           Open live dashboard
         </Link>
       </div>

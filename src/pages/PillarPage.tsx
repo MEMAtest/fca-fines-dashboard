@@ -333,7 +333,7 @@ export function PillarPage() {
               fines database
             </p>
             <Link
-              to="/dashboard"
+              to="/regulators"
               className="blog-cta-button"
               style={{ display: "inline-flex" }}
             >
@@ -354,7 +354,7 @@ export function PillarPage() {
           </div>
           <nav className="blog-footer-nav" aria-label="Footer navigation">
             <Link to="/">Home</Link>
-            <Link to="/dashboard">Dashboard</Link>
+            <Link to="/regulators">Dashboard</Link>
             <Link to="/blog">Blog</Link>
             <Link to="/sitemap">Sitemap</Link>
           </nav>

@@ -227,7 +227,7 @@ export function Homepage() {
               <Link to="/roadmap">Roadmap</Link>
               <Link to="/features">Features</Link>
               <Link to="/blog">Blog</Link>
-              <Link to="/dashboard">Dashboard</Link>
+              <Link to="/regulators">Dashboard</Link>
             </div>
             <p className="homepage-footer__copyright">
               © {new Date().getFullYear()} MEMA Consultants. All rights reserved.

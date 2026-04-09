@@ -1,4 +1,11 @@
 {
+  "redirects": [
+    {
+      "source": "/dashboard",
+      "destination": "/regulators",
+      "permanent": true
+    }
+  ],
   "headers": [
     {
       "source": "/assets/(.*)",

@@ -461,7 +461,7 @@ export function Blog() {
             and individuals.
           </p>
           <p>
-            Use our <Link to="/dashboard">interactive FCA fines dashboard</Link>{" "}
+            Use our <Link to="/regulators">interactive FCA fines dashboard</Link>{" "}
             to search all penalties, filter by year, firm, or breach category,
             and export data for compliance reporting.
           </p>
@@ -518,7 +518,7 @@ export function Blog() {
           </div>
           <nav className="blog-footer-nav" aria-label="Footer navigation">
             <Link to="/">Home</Link>
-            <Link to="/dashboard">Dashboard</Link>
+            <Link to="/regulators">Dashboard</Link>
             <Link to="/blog">Blog</Link>
             <Link to="/sitemap">Sitemap</Link>
           </nav>

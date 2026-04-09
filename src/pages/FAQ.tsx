@@ -125,7 +125,7 @@ export function FAQ() {
               actions, financial conduct authority penalties, FCA Final Notices,
               SM&CR
             </p>
-            <Link to="/dashboard" className="blog-cta-button">
+            <Link to="/regulators" className="blog-cta-button">
               Explore FCA Fines Dashboard
               <ChevronRight size={18} />
             </Link>

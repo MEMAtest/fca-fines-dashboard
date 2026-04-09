@@ -22,7 +22,7 @@ export function Topics() {
             enforcement, firm sectors, and the biggest firms and individuals.
           </p>
           <div className="hub-hero__actions">
-            <Link to="/dashboard" className="btn btn-primary">
+            <Link to="/regulators" className="btn btn-primary">
               Open Dashboard
             </Link>
             <Link to="/blog" className="btn btn-ghost">
