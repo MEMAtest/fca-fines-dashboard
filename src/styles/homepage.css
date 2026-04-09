@@ -42,6 +42,21 @@
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   gap: 1.5rem;
+  perspective: 1000px; /* Enable 3D for child elements */
+}
+
+/* Wrapper for continuous float animation */
+.quicklink-card-wrapper {
+  animation: cardFloat 6s ease-in-out infinite;
+}
+
+.quicklink-card-wrapper:nth-child(1) { animation-delay: 0s; }
+.quicklink-card-wrapper:nth-child(2) { animation-delay: 2s; }
+.quicklink-card-wrapper:nth-child(3) { animation-delay: 4s; }
+
+@keyframes cardFloat {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-8px); }
 }
 
 .quicklink-card {
@@ -49,13 +64,15 @@
   border: 1px solid #e5e7eb;
   border-radius: 16px;
   box-shadow: 0 4px 20px rgba(15, 23, 42, 0.06);
-  transition: transform 0.25s ease, box-shadow 0.25s ease, border-color 0.25s ease;
+  transition: box-shadow 0.25s ease, border-color 0.25s ease;
+  transform-style: preserve-3d;
+  /* Framer Motion controls transform for 3D hover */
 }
 
 .quicklink-card:hover {
-  transform: translateY(-4px);
   box-shadow: 0 12px 36px rgba(15, 23, 42, 0.1);
   border-color: #0fa294;
+  /* No transform here - Framer handles 3D tilt */
 }
 
 .quicklink-card__link {
@@ -70,6 +87,21 @@
 .quicklink-card__icon {
   color: #0fa294;
   margin-bottom: 1.25rem;
+  animation: iconPulse 3s ease-in-out infinite;
+}
+
+@keyframes iconPulse {
+  0%, 100% {
+    filter: drop-shadow(0 0 0px rgba(15, 162, 148, 0.4));
+  }
+  50% {
+    filter: drop-shadow(0 0 12px rgba(15, 162, 148, 0.6));
+  }
+}
+
+/* Pause animations on hover for better UX */
+.quicklink-card:hover .quicklink-card__icon {
+  animation-play-state: paused;
 }
 
 .quicklink-card__title {
@@ -269,7 +301,20 @@
 
 /* ── Responsive ── */
 
+/* Accessibility: respect reduced motion preference */
+@media (prefers-reduced-motion: reduce) {
+  .quicklink-card-wrapper,
+  .quicklink-card__icon {
+    animation: none !important;
+  }
+}
+
+/* Mobile: disable GPU-heavy effects for performance */
 @media (max-width: 768px) {
+  .quicklink-card-wrapper {
+    animation: none;
+  }
+
   .quicklinks-grid {
     grid-template-columns: 1fr;
   }

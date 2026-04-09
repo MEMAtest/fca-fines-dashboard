@@ -10,7 +10,7 @@
  * - Footer
  */
 
-import { motion } from 'framer-motion';
+import { motion, useReducedMotion } from 'framer-motion';
 import { useEffect, useState, Suspense, lazy } from 'react';
 import { useSearchParams, Link } from 'react-router-dom';
 import { Map, Zap, FileText, Globe2 } from 'lucide-react';
@@ -152,18 +152,21 @@ export function Homepage() {
               title="Platform Roadmap"
               description="See what's next: upcoming regulators, features, and data expansions"
               icon={<Map size={32} />}
+              index={0}
             />
             <QuickLinkCard
               to="/features"
               title="Platform Features"
               description="Explore analytics, exports, alerts, and embeddable widgets"
               icon={<Zap size={32} />}
+              index={1}
             />
             <QuickLinkCard
               to="/blog"
               title="Insights & Analysis"
               description="Monthly enforcement trends, regulatory updates, and commentary"
               icon={<FileText size={32} />}
+              index={2}
             />
           </div>
         </div>
@@ -240,34 +243,61 @@ export function Homepage() {
 }
 
 /**
- * QuickLinkCard - Navigational card for platform sections
+ * QuickLinkCard - Navigational card with 3D hover effects
  */
 function QuickLinkCard({
   to,
   title,
   description,
   icon,
+  index,
 }: {
   to: string;
   title: string;
   description: string;
   icon: React.ReactNode;
+  index: number;
 }) {
+  const shouldReduceMotion = useReducedMotion();
+
+  const cardVariants = {
+    initial: { opacity: 0, y: 20 },
+    animate: {
+      opacity: 1,
+      y: 0,
+      transition: {
+        duration: 0.6,
+        delay: index * 0.15,
+      }
+    },
+    hover: shouldReduceMotion ? {} : {
+      scale: 1.02,
+      rotateX: -2,
+      rotateY: 5,
+      z: 20,
+      transition: { duration: 0.3 }
+    }
+  };
+
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      whileInView={{ opacity: 1, y: 0 }}
-      viewport={{ once: true }}
-      transition={{ duration: 0.6 }}
-      className="quicklink-card"
-    >
-      <Link to={to} className="quicklink-card__link">
-        <div className="quicklink-card__icon">{icon}</div>
-        <h3 className="quicklink-card__title">{title}</h3>
-        <p className="quicklink-card__description">{description}</p>
-        <div className="quicklink-card__arrow">→</div>
-      </Link>
-    </motion.div>
+    <div className="quicklink-card-wrapper">
+      <motion.div
+        custom={index}
+        variants={cardVariants}
+        initial="initial"
+        whileInView="animate"
+        whileHover="hover"
+        viewport={{ once: true }}
+        className="quicklink-card"
+      >
+        <Link to={to} className="quicklink-card__link">
+          <div className="quicklink-card__icon">{icon}</div>
+          <h3 className="quicklink-card__title">{title}</h3>
+          <p className="quicklink-card__description">{description}</p>
+          <div className="quicklink-card__arrow">→</div>
+        </Link>
+      </motion.div>
+    </div>
   );
 }
 
