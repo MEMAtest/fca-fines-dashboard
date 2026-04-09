@@ -20,6 +20,7 @@ const MFSA_BASE_URL = "https://www.mfsa.mt";
 const MFSA_LIST_URL = "https://www.mfsa.mt/news/administrative-measures-and-penalties/";
 const MFSA_BROWSER_USER_AGENT =
   "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/135.0.0.0 Safari/537.36";
+const MFSA_HEADLESS = process.env.SCRAPER_BROWSER_HEADLESS !== "false";
 
 const execFileAsync = promisify(execFile);
 
@@ -299,7 +300,7 @@ async function requestMfsaHtml(url: string) {
   }
 
   const browser = await puppeteer.launch({
-    headless: true,
+    headless: MFSA_HEADLESS,
     args: [
       "--no-sandbox",
       "--disable-setuid-sandbox",
@@ -334,7 +335,7 @@ async function requestMfsaHtml(url: string) {
 
 async function loadMfsaArchiveEntries() {
   const browser = await puppeteer.launch({
-    headless: true,
+    headless: MFSA_HEADLESS,
     args: [
       "--no-sandbox",
       "--disable-setuid-sandbox",
@@ -412,7 +413,7 @@ export async function loadMfsaEntries(limit: number | null) {
 
 async function loadMfsaCurrentEntries(limit: number | null) {
   const browser = await puppeteer.launch({
-    headless: true,
+    headless: MFSA_HEADLESS,
     args: [
       "--no-sandbox",
       "--disable-setuid-sandbox",

@@ -46,6 +46,7 @@
     "scrape:cysec": "node --import tsx/esm scripts/scraper/scrapeCysec.ts --",
     "scrape:finfsa": "node --import tsx/esm scripts/scraper/scrapeFinfsa.ts --",
     "scrape:mfsa": "node --import tsx/esm scripts/scraper/scrapeMfsa.ts --",
+    "scrape:mfsa:headed": "xvfb-run -a env SCRAPER_BROWSER_HEADLESS=false node --import tsx/esm scripts/scraper/scrapeMfsa.ts --",
     "scrape:europe-phase-two": "node --import tsx/esm scripts/scraper/scrapeEuropePhaseTwo.ts --",
     "scrape:dfsa": "node --import tsx/esm scripts/scraper/scrapeDfsa.ts --",
     "scrape:fsra": "node --import tsx/esm scripts/scraper/scrapeFsra.ts --",
