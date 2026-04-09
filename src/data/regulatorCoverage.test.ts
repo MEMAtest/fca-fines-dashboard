@@ -38,6 +38,7 @@ describe("regulatorCoverage", () => {
     expect(PUBLIC_REGULATOR_CODES).toContain("FMANZ");
     expect(PUBLIC_REGULATOR_CODES).toContain("MAS");
     expect(PUBLIC_REGULATOR_CODES).toContain("AUSTRAC");
+    expect(PUBLIC_REGULATOR_CODES).toContain("CMVM");
     expect(PUBLIC_REGULATOR_CODES).not.toContain("ESMA");
     expect(PUBLIC_REGULATOR_CODES).not.toContain("CVM");
     expect(PUBLIC_REGULATOR_CODES).not.toContain("FDIC");
@@ -70,6 +71,7 @@ describe("regulatorCoverage", () => {
     expect(hasPublicRegulatorHub("FMANZ")).toBe(true);
     expect(hasPublicRegulatorHub("MAS")).toBe(true);
     expect(hasPublicRegulatorHub("AUSTRAC")).toBe(true);
+    expect(hasPublicRegulatorHub("CMVM")).toBe(true);
     expect(hasPublicRegulatorHub("FDIC")).toBe(false);
     expect(hasPublicRegulatorHub("ESMA")).toBe(false);
   });
@@ -107,6 +109,7 @@ describe("regulatorCoverage", () => {
     expect(PUBLIC_EU_REGULATOR_CODES).toContain("FMAAT");
     expect(PUBLIC_EU_REGULATOR_CODES).toContain("IVASS");
     expect(PUBLIC_EU_REGULATOR_CODES).toContain("FINMA");
+    expect(PUBLIC_EU_REGULATOR_CODES).toContain("CMVM");
     expect(PUBLIC_EU_REGULATOR_CODES).not.toContain("ESMA");
     expect(PUBLIC_EU_REGULATOR_CODES).not.toContain("CONSOB");
     expect(PUBLIC_EU_REGULATOR_CODES).not.toContain("MFSA");
@@ -128,6 +131,7 @@ describe("regulatorCoverage", () => {
     expect(getRegulatorCoverage("FRB")?.stage).toBe("pipeline");
     expect(getRegulatorCoverage("OSC")?.stage).toBe("pipeline");
     expect(getRegulatorCoverage("CONSOB")?.stage).toBe("pipeline");
+    expect(getRegulatorCoverage("CMVM")?.stage).toBe("live");
     expect(getRegulatorCoverage("AUSTRAC")?.stage).toBe("live");
     expect(getRegulatorCoverage("ASIC")?.stage).toBe("live");
     expect(getRegulatorCoverage("HKMA")?.stage).toBe("live");
@@ -159,6 +163,7 @@ describe("regulatorCoverage", () => {
     expect(getRegulatorCoverage("FINFSA")?.count).toBe(44);
     expect(getRegulatorCoverage("FTNO")?.count).toBe(40);
     expect(getRegulatorCoverage("CNBCZ")?.count).toBe(1742);
+    expect(getRegulatorCoverage("CMVM")?.count).toBe(88);
     expect(getRegulatorCoverage("ASIC")?.count).toBe(112);
     expect(getRegulatorCoverage("HKMA")?.count).toBe(23);
     expect(getRegulatorCoverage("FMANZ")?.count).toBe(99);
@@ -174,6 +179,7 @@ describe("regulatorCoverage", () => {
       "CIRO",
       "FINMA",
       "FMAAT",
+      "CMVM",
       "AUSTRAC",
     ]);
     expect(FRAGILE_LIVE_REGULATOR_CODES).toEqual(
@@ -185,10 +191,12 @@ describe("regulatorCoverage", () => {
     expect(DAILY_LIVE_REGULATOR_CODES).not.toContain("DFSA");
     expect(DAILY_LIVE_REGULATOR_CODES).not.toContain("FMAAT");
     expect(DAILY_LIVE_REGULATOR_CODES).not.toContain("FINMA");
+    expect(DAILY_LIVE_REGULATOR_CODES).not.toContain("CMVM");
     expect(DAILY_LIVE_REGULATOR_CODES).not.toContain("AUSTRAC");
     expect(getRegulatorCoverage("DFSA")?.operationalConfidence).toBe("lower");
     expect(getRegulatorCoverage("FMAAT")?.operationalConfidence).toBe("lower");
     expect(getRegulatorCoverage("FINMA")?.operationalConfidence).toBe("lower");
+    expect(getRegulatorCoverage("CMVM")?.operationalConfidence).toBe("lower");
     expect(getRegulatorCoverage("AUSTRAC")?.operationalConfidence).toBe("lower");
     expect(getRegulatorCoverage("AUSTRAC")?.feedContract.cadence).toBe(
       "fragile",
@@ -197,6 +205,9 @@ describe("regulatorCoverage", () => {
       "fragile",
     );
     expect(getRegulatorCoverage("FINMA")?.feedContract.cadence).toBe(
+      "fragile",
+    );
+    expect(getRegulatorCoverage("CMVM")?.feedContract.cadence).toBe(
       "fragile",
     );
     expect(getRegulatorCoverage("DFSA")?.automationLevel).toBe("curated_archive");

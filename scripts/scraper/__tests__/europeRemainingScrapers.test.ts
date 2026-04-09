@@ -19,6 +19,11 @@ import {
   parseFinmaDetailHtml,
   parseFinmaListingHtml,
 } from "../scrapeFinma.js";
+import {
+  extractCmvmFirm,
+  parseCmvmAmount,
+  parseCmvmElasticResponse,
+} from "../scrapeCmvm.js";
 
 describe("remaining Europe scrapers", () => {
   it("parses FMA Austria listing pages and detail pages", () => {
@@ -282,5 +287,64 @@ describe("remaining Europe scrapers", () => {
       summary:
         "Ordre est donné à Hodan Parreaux de s’abstenir d'exercer sans l'autorisation nécessaire toute activité soumise à autorisation selon les lois sur les marchés financiers.",
     });
+  });
+
+  it("parses CMVM elastic search results and preserves official content URLs", () => {
+    const payload = {
+      data: {
+        Results: {
+          List: [
+            {
+              Titulo:
+                "Decisão do Conselho Directivo da CMVM num Processo de Contra-Ordenação Muito Grave Instaurado ao Banco Millennium BCP Investimento, SA por Factos Ocorridos em 2003 e 2004",
+              DataPublicacao: "2007-07-25T14:24:08Z",
+              Encrypted: "ABC123",
+              Ambito: "Media",
+              Highlight: {
+                Textos: {
+                  List: [
+                    "Fincor - €50.000 com suspensão parcial da execução de €40.000 da <em>coima</em> aplicada, pelo prazo de dois anos",
+                  ],
+                },
+              },
+            },
+            {
+              Titulo: "CMVM divulgou hoje três decisões de contraordenação",
+              DataPublicacao: "2023-09-28T15:01:00Z",
+              Encrypted: "XYZ789",
+              Ambito: "Media",
+              Highlight: {
+                Textos: {
+                  List: [
+                    "Foi aplicada uma <em>coima</em> única de 60.000 euros e, no outro, foi aplicada uma <em>coima</em> única no montante de 15.000 euros.",
+                  ],
+                },
+              },
+            },
+          ],
+        },
+      },
+    };
+
+    const entries = parseCmvmElasticResponse(payload);
+    expect(entries).toHaveLength(2);
+    expect(entries[0]?.dateIssued).toBe("2007-07-25");
+    expect(entries[0]?.sourceUrl).toBe(
+      "https://www.cmvm.pt/PInstitucional/Content?Input=ABC123",
+    );
+    expect(
+      extractCmvmFirm(entries[0]?.title || "", entries[0]?.highlights || []),
+    ).toBe(
+      "Decisão do Conselho Directivo da CMVM num Processo de Contra-Ordenação Muito Grave Instaurado ao Banco Millennium BCP Investimento, SA por Factos Ocorridos em 2003 e 2004",
+    );
+    expect(parseCmvmAmount(entries[0]?.highlights.join(" ") || "")).toBe(
+      50000,
+    );
+    expect(
+      extractCmvmFirm(entries[1]?.title || "", entries[1]?.highlights || []),
+    ).toBe("CMVM divulgou hoje três decisões de contraordenação");
+    expect(parseCmvmAmount(entries[1]?.highlights.join(" ") || "")).toBe(
+      60000,
+    );
   });
 });

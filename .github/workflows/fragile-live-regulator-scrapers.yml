@@ -29,6 +29,8 @@ jobs:
             script: scrape:fmaat
           - code: FINMA
             script: scrape:finma
+          - code: CMVM
+            script: scrape:cmvm
           - code: AUSTRAC
             script: scrape:austrac
     steps:

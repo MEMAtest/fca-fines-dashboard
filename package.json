@@ -37,6 +37,7 @@
     "scrape:fmaat": "node --import tsx/esm scripts/scraper/scrapeFmaat.ts --",
     "scrape:ivass": "node --import tsx/esm scripts/scraper/scrapeIvass.ts --",
     "scrape:finma": "node --import tsx/esm scripts/scraper/scrapeFinma.ts --",
+    "scrape:cmvm": "node --import tsx/esm scripts/scraper/scrapeCmvm.ts --",
     "scrape:europe-phase-one": "node --import tsx/esm scripts/scraper/scrapeEuropePhaseOne.ts --",
     "scrape:fise": "node --import tsx/esm scripts/scraper/scrapeFise.ts --",
     "scrape:ftdk": "node --import tsx/esm scripts/scraper/scrapeFtdk.ts --",
