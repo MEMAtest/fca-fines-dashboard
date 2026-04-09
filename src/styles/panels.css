@@ -798,3 +798,16 @@
   background: #fee2e2;
   color: #b91c1c;
 }
+
+/* Recharts Brush cursor feedback */
+.recharts-brush-slide {
+  cursor: grab;
+}
+
+.recharts-brush-slide:active {
+  cursor: grabbing;
+}
+
+.recharts-brush-traveller {
+  cursor: ew-resize;
+}

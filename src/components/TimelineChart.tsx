@@ -49,7 +49,7 @@ export function TimelineChart({
     : 0;
   const panelId = exportId ?? "timeline-panel";
   const [mode, setMode] = useState<"amount" | "count">("amount");
-  const debounceRef = useRef<NodeJS.Timeout | null>(null);
+  const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const formatted = useMemo(
     () =>
       data.map((entry) => ({
@@ -72,14 +72,14 @@ export function TimelineChart({
         clearTimeout(debounceRef.current);
       }
 
-      // Debounce the range select to avoid firing on every drag movement
+      // Reduced debounce from 500ms to 150ms for better responsiveness
       debounceRef.current = setTimeout(() => {
         const startPoint = formatted[Math.max(0, startIndex)];
         const endPoint = formatted[Math.min(formatted.length - 1, endIndex)];
         if (startPoint && endPoint && onRangeSelect) {
           onRangeSelect(startPoint, endPoint);
         }
-      }, 500);
+      }, 150);
     },
     [formatted, onRangeSelect],
   );
