@@ -11,7 +11,7 @@ import "../styles/siteheader.css";
 
 const NAV_LINKS = [
   { to: "/", label: "Home" },
-  { to: "/dashboard", label: "Dashboard" },
+  { to: "/regulators", label: "Dashboard" },
   { to: "/roadmap", label: "Roadmap" },
   { to: "/features", label: "Features" },
   { to: "/blog", label: "Insights" },

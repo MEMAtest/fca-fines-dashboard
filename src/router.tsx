@@ -11,11 +11,11 @@ import { DashboardSkeleton } from "./components/LoadingSkeletons.js";
 import { SiteLayout } from "./components/SiteLayout.js";
 
 /**
- * Redirect /dashboard to /regulators/fca/dashboard preserving query params
+ * Redirect /dashboard to /regulators (regulator listing page)
  */
 function DashboardRedirect() {
   const location = useLocation();
-  return <Navigate to={`/regulators/fca/dashboard${location.search}`} replace />;
+  return <Navigate to={`/regulators${location.search}`} replace />;
 }
 
 function RouteErrorBoundary() {
