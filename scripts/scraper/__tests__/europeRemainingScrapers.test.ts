@@ -6,6 +6,7 @@ import {
   parseFmaatListingHtml,
 } from "../scrapeFmaat.js";
 import {
+  buildMfsaArchiveEntriesFromRows,
   extractMfsaFirm,
   parseMfsaAmount,
   parseMfsaDetailHtml,
@@ -146,6 +147,47 @@ describe("remaining Europe scrapers", () => {
         detail.body,
       ),
     ).toBe("Yacht Lift Malta plc");
+  });
+
+  it("parses MFSA archive table rows exposed through the official DataTable", () => {
+    const entries = buildMfsaArchiveEntriesFromRows([
+      {
+        cells: [
+          "29/04/2019",
+          "Mare Nostrum Melita Limited",
+          "On the 25th of April 2019, the Malta Financial Services Authority imposed an administrative penalty amounting to eight thousand Euros (EUR 8,000) on Mare Nostrum Melita Limited.",
+        ],
+      },
+      {
+        cells: [
+          "05/05/2010",
+          "European Insurance Group Ltd",
+          "On the 26th April 2010, ISVAP issued Provvedimento n.2798 in relation to European Insurance Group Ltd. <a href=\"/wp-content/uploads/2018/12/example.pdf\">- view attached file -</a>",
+        ],
+        link: "/wp-content/uploads/2018/12/example.pdf",
+      },
+    ]);
+
+    expect(entries).toEqual([
+      {
+        publicationDate: "2019-04-29",
+        title: "Mare Nostrum Melita Limited",
+        body:
+          "On the 25th of April 2019, the Malta Financial Services Authority imposed an administrative penalty amounting to eight thousand Euros (EUR 8,000) on Mare Nostrum Melita Limited.",
+        detailUrl: null,
+      },
+      {
+        publicationDate: "2010-05-05",
+        title: "European Insurance Group Ltd",
+        body:
+          "On the 26th April 2010, ISVAP issued Provvedimento n.2798 in relation to European Insurance Group Ltd. <a href=\"/wp-content/uploads/2018/12/example.pdf\">- view attached file -</a>",
+        detailUrl: "https://www.mfsa.mt/wp-content/uploads/2018/12/example.pdf",
+      },
+    ]);
+    expect(parseMfsaAmount(entries[0]?.body || "")).toBe(8000);
+    expect(extractMfsaFirm(entries[0]?.title || "", entries[0]?.body || "")).toBe(
+      "Mare Nostrum Melita Limited",
+    );
   });
 
   it("extracts annual IVASS workbook links from the official sanctions archive", () => {
