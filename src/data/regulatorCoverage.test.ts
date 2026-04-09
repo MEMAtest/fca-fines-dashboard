@@ -163,7 +163,7 @@ describe("regulatorCoverage", () => {
     expect(getRegulatorCoverage("FINFSA")?.count).toBe(44);
     expect(getRegulatorCoverage("FTNO")?.count).toBe(40);
     expect(getRegulatorCoverage("CNBCZ")?.count).toBe(1742);
-    expect(getRegulatorCoverage("CMVM")?.count).toBe(88);
+    expect(getRegulatorCoverage("CMVM")?.count).toBe(133);
     expect(getRegulatorCoverage("ASIC")?.count).toBe(112);
     expect(getRegulatorCoverage("HKMA")?.count).toBe(23);
     expect(getRegulatorCoverage("FMANZ")?.count).toBe(99);

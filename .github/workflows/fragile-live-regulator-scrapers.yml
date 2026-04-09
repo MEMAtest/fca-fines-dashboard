@@ -31,8 +31,6 @@ jobs:
             script: scrape:finma
           - code: CMVM
             script: scrape:cmvm
-          - code: MFSA
-            script: scrape:mfsa:headed
           - code: AUSTRAC
             script: scrape:austrac
     steps:

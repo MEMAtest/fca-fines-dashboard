@@ -126,7 +126,7 @@ Browser-backed or lower-confidence live loaders run through the fragile cadence 
 The remaining core Europe targets stay outside the live batch until their official-source position improves from this environment:
 
 - `CONSOB` and `Banco de Portugal` are challenge-protected from this environment
-- `CMVM` and `MFSA` remain pipeline until a stable official enforcement surface is confirmed
+- `MFSA` remains pipeline until a stable official enforcement surface is confirmed
 
 ## How upserts work
 
