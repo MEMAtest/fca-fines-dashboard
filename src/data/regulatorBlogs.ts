@@ -91,7 +91,7 @@ function buildCrossLinks(
       description: `Open the live ${label} coverage page.`,
     },
     {
-      label: "FCA enforcement benchmark",
+      label: "FCA enforcement guide",
       url: "/blog/fca-enforcement-trends-2013-2025",
       description: benchmarkDescription,
     },
@@ -191,7 +191,7 @@ function buildCoverageAssessment(
   return {
     heading: "Coverage Assessment",
     intro:
-      "This guide treats the regulator feed as public enforcement intelligence. It is designed to show what the public record is good for, and where the current dataset is still lighter than the flagship FCA archive.",
+      "This guide treats the regulator feed as public enforcement intelligence. It is designed to show what the public record is good for, and where the current dataset may have coverage gaps or formatting differences compared to other major regulators.",
     paragraphs: [
       `${coverage.fullName} is currently tracked across ${coverage.years}, with ${coverage.count} published actions normalised into the dashboard.`,
       describeCoverageStatus(coverage),
@@ -217,7 +217,7 @@ function getRegulatorProfile(code: string): RegulatorProfile {
           "BaFin is one of the most useful European comparators when you want prudential and conduct outcomes in the same monitoring lane. It sits closer to the real operating complexity of a universal financial-services group than a pure securities regulator does.",
         executiveSummary: [
           "For cross-border compliance teams, **BaFin matters because Germany is large enough that supervisory pressure there can become group-wide governance work**, not just a local filing issue.",
-          "The feed is strongest when you use it to read **governance, prudential control, and market-conduct signals together**, rather than expecting a single neat sanctions ledger in the FCA style.",
+          "The feed is strongest when you use it to read **governance, prudential control, and market-conduct signals together**, rather than expecting a single unified sanctions ledger.",
         ],
         sections: [
           {

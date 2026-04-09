@@ -365,7 +365,7 @@ export function GlobeHero({ onCountryClick }: GlobeHeroProps) {
           transition={{ duration: 0.6, delay: 0.15 }}
           className="globe-hero__description"
         >
-          Historical FCA depth with cross-regulator intelligence beyond the UK.
+          Global enforcement intelligence across 30+ financial regulators worldwide.
         </motion.p>
 
         <motion.a

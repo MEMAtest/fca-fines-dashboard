@@ -79,9 +79,9 @@ const formatYearlyCurrency = (amount: number): string => {
 const HOWTO_SCHEMA = {
   "@context": "https://schema.org",
   "@type": "HowTo",
-  name: "How to Search the FCA Fines Database",
+  name: "How to Search the Global Regulatory Fines Database",
   description:
-    "Step-by-step guide to searching and filtering FCA fines using the interactive dashboard.",
+    "Step-by-step guide to searching and filtering regulatory fines across 30+ global regulators using the interactive dashboard.",
   step: [
     {
       "@type": "HowToStep",

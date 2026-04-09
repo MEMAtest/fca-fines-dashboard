@@ -82,7 +82,7 @@ const FEATURES = [
     icon: Globe,
     title: 'Multi-Regulator Coverage',
     description:
-      'Track enforcement actions from financial regulators across UK, EU, APAC, MENA, and the Americas.',
+      'Track enforcement actions from financial regulators across the Americas, APAC, EMEA, and offshore jurisdictions.',
     highlights: [
       `${LIVE_REGULATOR_COUNT} live regulators`,
       `${TRACKED_REGULATOR_COUNT} regulators tracked`,

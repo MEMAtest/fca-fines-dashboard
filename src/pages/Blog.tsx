@@ -125,7 +125,7 @@ function generateBlogListSchema() {
     "@type": "Blog",
     name: "Regulatory Enforcement Insights & Analysis",
     description:
-      "Expert analysis of FCA fines, regulator enforcement trends, and compliance guidance",
+      "Expert analysis of global regulator enforcement trends, fines intelligence, and compliance guidance",
     url: "https://fcafines.memaconsultants.com/blog",
     publisher: {
       "@type": "Organization",
@@ -175,7 +175,7 @@ export function Blog() {
     title:
       "Regulatory Enforcement Blog | FCA Benchmarks, Regulator Guides & Analysis",
     description:
-      "Expert analysis of FCA fines, cross-regulator enforcement trends, and compliance guidance. Covers flagship FCA articles alongside regulator guides for BaFin, AMF, CNMV, CBI, SFC, AFM, and DNB.",
+      "Expert analysis of global regulator enforcement trends, fines intelligence, and compliance guidance. Covers major regulators including BaFin, SEC, FCA, AMF, CNMV, CBI, SFC, AFM, and DNB.",
     keywords:
       "regulatory enforcement blog, FCA fines analysis, regulator enforcement insights, BaFin guide, AMF guide, SFC guide, FCA compliance guide",
     canonicalPath: "/blog",
