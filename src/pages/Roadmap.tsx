@@ -20,7 +20,7 @@ import {
   type RegulatorCoverage,
 } from "../data/regulatorCoverage.js";
 import { useSEO } from "../hooks/useSEO.js";
-import "../styles/roadmap.css";
+import "../styles/Roadmap.css";
 
 /* ------------------------------------------------------------------ */
 /*  Types                                                              */
