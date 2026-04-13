@@ -1,0 +1,12 @@
+{
+  "timestamp": "2026-04-13T14:49:24Z",
+  "status": "FAILURE",
+  "totalTests": 6,
+  "passed": 5,
+  "failed": 1,
+  "message": "Test suite failed with exit code 1",
+  "failures": [
+    "Meta description does not include '34+' and 'global'"
+  ],
+  "logFile": "/Users/omosanya_main/Documents/fca-fines-dashboard/feature-validation/logs/test_results_20260413_154924.json"
+}

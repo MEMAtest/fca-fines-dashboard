@@ -1,0 +1,98 @@
+{
+  "description": "Forbidden FCA-centric phrases - MUST NOT appear in any messaging update files",
+  "severity": "CRITICAL",
+  "lastUpdated": "2026-04-13",
+  "forbiddenPhrases": [
+    {
+      "phrase": "flagship FCA",
+      "reason": "Positions FCA as primary/superior, not global",
+      "context": "marketing copy, headings, descriptions",
+      "alternatives": ["leading regulator", "major regulator", "global enforcement"]
+    },
+    {
+      "phrase": "FCA benchmark",
+      "reason": "Sets FCA as the standard for others, not neutral",
+      "context": "comparative analysis, positioning",
+      "alternatives": ["industry standard", "regulatory reference", "enforcement example"]
+    },
+    {
+      "phrase": "in the FCA style",
+      "reason": "Implies FCA is the model, not one of many",
+      "context": "descriptions of similar enforcement actions",
+      "alternatives": ["regulatory style", "enforcement pattern", "similar approach"]
+    },
+    {
+      "phrase": "FCA fines database",
+      "reason": "Product is called 'RegActions' covering 34+ regulators",
+      "context": "product name, meta descriptions, CTAs",
+      "alternatives": ["regulatory fines database", "enforcement intelligence", "RegActions dashboard"]
+    },
+    {
+      "phrase": "historical FCA depth",
+      "reason": "Implies FCA depth is the measure of value, not global coverage",
+      "context": "value propositions, feature descriptions",
+      "alternatives": ["historical coverage depth", "multi-regulator timeline", "comprehensive enforcement history"]
+    },
+    {
+      "phrase": "FCA enforcement guide",
+      "reason": "Individual guide titles OK, but not if all guides are FCA-focused",
+      "context": "only restrict if 90%+ of guides are FCA",
+      "alternatives": ["Regulatory Enforcement Guides", "Global Enforcement Resources"]
+    },
+    {
+      "phrase": "FCA fines 2025",
+      "reason": "Individual article OK, but not if most articles are FCA",
+      "context": "only restrict if blog is FCA-dominant",
+      "alternatives": ["Regulatory Fines 2025", "Enforcement Trends 2025"]
+    },
+    {
+      "phrase": "Featured FCA",
+      "reason": "Featured section should showcase diversity, not FCA exclusively",
+      "context": "section headers, featured article labels",
+      "alternatives": ["Featured Articles", "Major Enforcement Actions", "Regulatory Highlights"]
+    },
+    {
+      "phrase": "FCA fines enforcement benchmark",
+      "reason": "Compound FCA-benchmarking phrase",
+      "context": "comparative positioning",
+      "alternatives": ["enforcement benchmark", "regulatory standard"]
+    },
+    {
+      "phrase": "Alongside the flagship FCA",
+      "reason": "Positions FCA as the main thing, others as supplementary",
+      "context": "descriptions of coverage",
+      "alternatives": ["Alongside 34+ global regulators", "With major regulators worldwide"]
+    },
+    {
+      "phrase": "lighter than the flagship",
+      "reason": "Implies FCA is the standard, others are 'lighter'",
+      "context": "comparative analysis",
+      "alternatives": ["different enforcement style", "varied regulatory approach"]
+    },
+    {
+      "phrase": "FCA-centric",
+      "reason": "Meta phrase indicating FCA focus - defeats globalization",
+      "context": "any use",
+      "alternatives": ["regulator-neutral", "global", "multi-regulator"]
+    },
+    {
+      "phrase": "FCA benchmark standard",
+      "reason": "Implies FCA is the measure for others",
+      "context": "standards/comparison content",
+      "alternatives": ["regulatory standard", "enforcement benchmark"]
+    }
+  ],
+  "allowedContexts": {
+    "articleTitles": "Can mention specific regulators (e.g., 'FCA Enforcement Guide', 'BaFin Fines 2025')",
+    "multiRegulatorContext": "OK to say 'FCA and other regulators' if listing all equally",
+    "historicalReferences": "OK to reference 'FCA fines from 2013' in data context, not marketing"
+  },
+  "testingStrategy": {
+    "unitTests": "Check all source files against phrase list",
+    "e2eTests": "Verify rendered HTML/meta tags don't contain phrases",
+    "schemaValidation": "JSON-LD structured data must have global focus",
+    "manualReview": "Spot-check blog posts and marketing copy"
+  },
+  "failureMode": "FAIL-LOUD",
+  "exitCode": 1
+}

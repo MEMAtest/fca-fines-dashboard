@@ -174,7 +174,7 @@ export function Blog() {
 
   useSEO({
     title:
-      "Regulatory Enforcement Blog | FCA Benchmarks, Regulator Guides & Analysis",
+      "Regulatory Enforcement Intelligence | Global Insights & Analysis",
     description:
       "Expert analysis of global regulator enforcement trends, fines intelligence, and compliance guidance. Covers major regulators including BaFin, SEC, FCA, AMF, CNMV, CBI, SFC, AFM, and DNB.",
     keywords:
@@ -515,9 +515,9 @@ export function Blog() {
       <footer className="blog-footer">
         <div className="blog-footer-content">
           <div className="blog-footer-brand">
-            <p className="blog-footer-logo">FCA Fines Dashboard</p>
+            <p className="blog-footer-logo">RegActions</p>
             <p className="blog-footer-tagline">
-              The definitive FCA fines database | Powered by MEMA Consultants
+              Global enforcement intelligence platform | Powered by MEMA Consultants
             </p>
           </div>
           <nav className="blog-footer-nav" aria-label="Footer navigation">

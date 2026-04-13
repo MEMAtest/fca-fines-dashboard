@@ -121,7 +121,7 @@ export function FAQ() {
           {/* Bottom CTA */}
           <div className="blog-article-modal-footer">
             <p className="blog-article-keywords">
-              <strong>Related:</strong> FCA fines database, FCA enforcement
+              <strong>Related:</strong> Regulatory fines database, multi-regulator enforcement
               actions, financial conduct authority penalties, FCA Final Notices,
               SM&CR
             </p>

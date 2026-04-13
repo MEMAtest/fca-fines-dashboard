@@ -598,8 +598,8 @@ function StructuredRegulatorArticlePage({
               <div className="regulator-section-heading">
                 <h2>Related Reading</h2>
                 <p>
-                  Internal links to the matching regulator hub and FCA benchmark
-                  analysis.
+                  Internal links to the matching regulator hub and related
+                  enforcement analysis.
                 </p>
               </div>
               <div className="regulator-related-links__grid">

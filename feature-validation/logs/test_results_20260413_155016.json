@@ -1,0 +1,15 @@
+{
+  "timestamp": "2026-04-13T14:50:16Z",
+  "status": "FAILURE",
+  "totalTests": 12,
+  "passed": 8,
+  "failed": 4,
+  "message": "Test suite failed with exit code 1",
+  "failures": [
+    "FORBIDDEN PHRASE FOUND in /Users/omosanya_main/Documents/fca-fines-dashboard/index.html: 'FCA fines database'"
+    "FORBIDDEN PHRASE FOUND in /Users/omosanya_main/Documents/fca-fines-dashboard/src/pages/Blog.tsx: 'FCA benchmark'"
+    "FORBIDDEN PHRASE FOUND in /Users/omosanya_main/Documents/fca-fines-dashboard/src/pages/Blog.tsx: 'FCA fines database'"
+    "FORBIDDEN PHRASE FOUND in /Users/omosanya_main/Documents/fca-fines-dashboard/src/pages/BlogPost.tsx: 'FCA benchmark'"
+  ],
+  "logFile": "/Users/omosanya_main/Documents/fca-fines-dashboard/feature-validation/logs/test_results_20260413_155016.json"
+}

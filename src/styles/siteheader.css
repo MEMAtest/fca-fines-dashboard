@@ -472,6 +472,9 @@
 .site-header__dropdown-menu--mega {
   min-width: 600px;
   max-width: 800px;
+  max-height: calc(100vh - 120px);
+  overflow-y: auto;
+  overflow-x: hidden;
 }
 
 .site-header__mega-grid {
