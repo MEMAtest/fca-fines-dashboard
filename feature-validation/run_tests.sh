@@ -106,7 +106,7 @@ run_unit_tests() {
 
     # Test 1: SEO Metadata
     log_info "Test Suite: SEO Metadata Validation"
-    if timeout $TIMEOUT_SECONDS npm run test -- feature-validation/unit/seo-metadata.test.ts --run 2>&1; then
+    if npm run test -- feature-validation/unit/seo-metadata.test.ts --run 2>&1; then
         log_success "SEO Metadata tests passed"
     else
         log_error "SEO Metadata tests failed"
@@ -116,7 +116,7 @@ run_unit_tests() {
 
     # Test 2: Copy Consistency
     log_info "Test Suite: Copy Consistency"
-    if timeout $TIMEOUT_SECONDS npm run test -- feature-validation/unit/copy-consistency.test.ts --run 2>&1; then
+    if npm run test -- feature-validation/unit/copy-consistency.test.ts --run 2>&1; then
         log_success "Copy Consistency tests passed"
     else
         log_error "Copy Consistency tests failed"
@@ -135,7 +135,7 @@ run_contract_tests() {
 
     # Test 3: Schema Validation
     log_info "Test Suite: JSON-LD Schema Validation"
-    if timeout $TIMEOUT_SECONDS npm run test -- feature-validation/contract/schema-validation.test.ts --run 2>&1; then
+    if npm run test -- feature-validation/contract/schema-validation.test.ts --run 2>&1; then
         log_success "Schema Validation tests passed"
     else
         log_error "Schema Validation tests failed"

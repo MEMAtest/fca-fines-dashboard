@@ -11,6 +11,7 @@ export default defineConfig({
       'src/**/*.{test,spec}.{ts,tsx}',
       'server/**/*.{test,spec}.{ts,tsx}',
       'scripts/scraper/__tests__/**/*.{test,spec}.{ts,tsx}',
+      'feature-validation/**/*.{test,spec}.{ts,tsx}',
     ],
     coverage: {
       provider: 'v8',
