@@ -28,6 +28,7 @@ import {
   LIVE_REGULATOR_NAV_ITEMS,
   REGULATOR_NAV_ITEMS,
 } from '../data/regulatorCoverage.js';
+import { REGULATOR_COUNT } from '../constants/site.js';
 import '../styles/features.css';
 
 const LIVE_REGULATOR_COUNT = LIVE_REGULATOR_NAV_ITEMS.length;

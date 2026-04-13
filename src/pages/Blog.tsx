@@ -26,6 +26,7 @@ import {
 import type { BlogArticleMeta } from "../data/blogArticles.js";
 import { LIVE_REGULATOR_NAV_ITEMS } from "../data/regulatorCoverage.js";
 import { injectStructuredData, useSEO } from "../hooks/useSEO.js";
+import { REGULATOR_COUNT } from "../constants/site.js";
 import "../styles/blog.css";
 import "../styles/blog3d.css";
 
