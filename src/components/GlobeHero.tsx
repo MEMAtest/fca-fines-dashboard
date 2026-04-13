@@ -5,6 +5,7 @@
 
 import { useRef, useEffect, useState, useMemo, useCallback, Suspense, lazy, type MutableRefObject } from 'react';
 import { motion } from 'framer-motion';
+import { REGULATOR_COUNT } from '../constants/site.js';
 import { Gavel, Users, Calendar, Activity, Flag } from 'lucide-react';
 import { getRegulatorsForCountry, getCoveredCountries, getAllCountryInfo } from '../data/countryRegulatorMapping.js';
 import { FloatingStats, type FloatingStat } from './FloatingStats.js';
@@ -365,7 +366,7 @@ export function GlobeHero({ onCountryClick }: GlobeHeroProps) {
           transition={{ duration: 0.6, delay: 0.15 }}
           className="globe-hero__description"
         >
-          Global enforcement intelligence across 30+ financial regulators worldwide.
+          Global enforcement intelligence across {REGULATOR_COUNT} financial regulators worldwide.
         </motion.p>
 
         <motion.a

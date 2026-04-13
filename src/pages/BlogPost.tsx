@@ -9,6 +9,7 @@ import {
   BarChart3,
 } from "lucide-react";
 import { useSEO, injectStructuredData } from "../hooks/useSEO.js";
+import { REGULATOR_COUNT } from "../constants/site.js";
 import {
   allBlogArticles as blogArticles,
   yearlyArticles,
@@ -81,7 +82,7 @@ const HOWTO_SCHEMA = {
   "@type": "HowTo",
   name: "How to Search the Global Regulatory Fines Database",
   description:
-    "Step-by-step guide to searching and filtering regulatory fines across 30+ global regulators using the interactive dashboard.",
+    `Step-by-step guide to searching and filtering regulatory fines across ${REGULATOR_COUNT} global regulators using the interactive dashboard.`,
   step: [
     {
       "@type": "HowToStep",

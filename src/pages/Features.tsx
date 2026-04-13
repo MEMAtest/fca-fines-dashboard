@@ -49,7 +49,7 @@ const FEATURES = [
     icon: Search,
     title: 'Advanced Search & Filters',
     description:
-      'Search across 30+ regulators with powerful filters for breach categories, firms, amounts, and dates.',
+      `Search across ${REGULATOR_COUNT} regulators with powerful filters for breach categories, firms, amounts, and dates.`,
     highlights: [
       'Full-text search',
       'Boolean operators',

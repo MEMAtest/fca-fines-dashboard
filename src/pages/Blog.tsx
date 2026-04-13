@@ -217,15 +217,14 @@ export function Blog() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6 }}
           >
-            <h1>Regulatory Enforcement Analysis & FCA Benchmarks</h1>
+            <h1>Global Regulatory Enforcement Intelligence</h1>
             <p className="blog-hero-subtitle">
-              Published analysis of FCA fines, annual enforcement trends, and
-              regulator-by-regulator intelligence across major financial
-              centres.
+              In-depth analysis of enforcement trends, regulatory fines, and
+              compliance intelligence across <strong>{REGULATOR_COUNT}</strong> global financial regulators.
             </p>
             <p className="blog-hero-stats">
-              Tracking <strong>{LIVE_REGULATOR_COUNT} live regulators</strong> alongside the
-              flagship FCA enforcement archive
+              Tracking <strong>{LIVE_REGULATOR_COUNT} live regulators</strong> with
+              comprehensive multi-regulator enforcement analysis
             </p>
           </motion.div>
 
@@ -244,11 +243,11 @@ export function Blog() {
       <section className="blog-section" aria-labelledby="featured-heading">
         <div className="blog-section-header">
           <h2 id="featured-heading">
-            Featured: Biggest FCA Fines & 2026 Updates
+            Featured: Major Enforcement Actions & 2026 Updates
           </h2>
           <p>
-            Essential reading on the largest Financial Conduct Authority
-            penalties
+            Essential reading on significant regulatory penalties and
+            enforcement trends
           </p>
         </div>
 
@@ -308,10 +307,10 @@ export function Blog() {
         ref={regularSectionRef}
       >
         <div className="blog-section-header">
-          <h2 id="all-articles-heading">All FCA Fines Articles</h2>
+          <h2 id="all-articles-heading">All Enforcement Intelligence</h2>
           <p>
-            Complete coverage of FCA enforcement, AML fines, banking penalties,
-            and compliance
+            In-depth analysis of global enforcement trends, AML fines, regulatory
+            penalties, and compliance insights
           </p>
         </div>
 
@@ -452,38 +451,41 @@ export function Blog() {
       {/* SEO Content Section */}
       <section className="blog-seo-section">
         <div className="blog-seo-content">
-          <h2>About the FCA Fines Database</h2>
+          <h2>About RegActions Enforcement Intelligence</h2>
           <p>
-            Our <strong>FCA fines database</strong> is the most comprehensive
-            resource for tracking Financial Conduct Authority enforcement
-            actions. Since the FCA was established in 2013, it has issued over{" "}
-            <strong>£4.9 billion in fines</strong> to financial services firms
-            and individuals.
+            <strong>RegActions</strong> is the most comprehensive multi-regulator
+            enforcement intelligence platform, tracking <strong>{REGULATOR_COUNT}</strong> global financial
+            regulators including FCA, BaFin, SEC, AMF, and more. Our database
+            covers over <strong>£5 billion in enforcement actions</strong> across
+            multiple jurisdictions.
           </p>
           <p>
-            Use our <Link to="/regulators">interactive FCA fines dashboard</Link>{" "}
-            to search all penalties, filter by year, firm, or breach category,
-            and export data for compliance reporting.
+            Use our <Link to="/regulators">interactive dashboard</Link> to search
+            enforcement actions across all regulators, filter by year, firm, breach
+            category, and export data for compliance reporting.
           </p>
 
-          <h3>Most Searched FCA Fines Topics</h3>
+          <h3>Most Searched Enforcement Topics</h3>
           <ul className="blog-seo-links">
             <li>
-              <strong>Biggest FCA fines</strong> - The 20 largest penalties ever
-              issued
+              <strong>Largest regulatory fines</strong> - The biggest penalties
+              across global regulators
             </li>
             <li>
-              <strong>FCA fines 2026</strong> - This year's enforcement actions
+              <strong>Enforcement actions 2026</strong> - This year's regulatory
+              penalties and trends
             </li>
             <li>
-              <strong>FCA AML fines</strong> - Anti-money laundering penalties
+              <strong>AML fines</strong> - Anti-money laundering penalties across
+              regulators
             </li>
             <li>
-              <strong>FCA fines to banks</strong> - Banking sector enforcement
+              <strong>Banking sector enforcement</strong> - Regulatory actions
+              against financial institutions
             </li>
             <li>
-              <strong>FCA final notices</strong> - Official enforcement
-              decisions
+              <strong>Enforcement notices</strong> - Official regulatory decisions
+              and final notices
             </li>
           </ul>
         </div>
@@ -492,16 +494,17 @@ export function Blog() {
       {/* CTA Section */}
       <section className="blog-cta-section">
         <div className="blog-cta-content">
-          <h2>Search the Complete FCA Fines Database</h2>
+          <h2>Search the Complete Enforcement Database</h2>
           <p>
-            Access our interactive dashboard to search all FCA fines from
-            2013-2026. Filter by firm, year, amount, and breach category.
+            Access our interactive dashboard to search enforcement actions across
+            <strong> {REGULATOR_COUNT}</strong> global regulators from 2013-2026. Filter by regulator, firm, year,
+            amount, and breach category.
           </p>
           <button
             className="blog-cta-button"
-            onClick={() => navigate("/dashboard")}
+            onClick={() => navigate("/regulators")}
           >
-            Open FCA Fines Dashboard
+            Explore All Regulators
             <ExternalLink size={18} />
           </button>
         </div>
