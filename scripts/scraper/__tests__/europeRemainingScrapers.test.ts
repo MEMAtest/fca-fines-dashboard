@@ -131,6 +131,7 @@ describe("remaining Europe scrapers", () => {
 
     const detail = parseMfsaDetailHtml(detailHtml);
     expect(detail.dateIssued).toBe("2026-03-27");
+    expect(detail.publicationDate).toBe("2026-03-27");
     expect(
       extractMfsaFirm(page.entries[0]?.title || "", detail.body),
     ).toBe("Alpha Asset Management Ltd");

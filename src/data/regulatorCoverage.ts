@@ -112,6 +112,7 @@ const LOW_CONFIDENCE_LIVE_REGULATOR_SET = new Set([
   "FMAAT",
   "FINMA",
   "CMVM",
+  "MFSA",
   "AUSTRAC",
 ]);
 
@@ -2101,17 +2102,18 @@ const REGULATOR_COVERAGE_SEED: Record<string, RegulatorCoverageSeed> = {
     sourceType: "regulator",
     scrapeMode: "detail_pages",
     priorityTier: 3,
-    stage: "pipeline",
+    stage: "live",
     blogEnabled: false,
     flag: "🇲🇹",
     navOrder: 50,
     overviewPath: "/regulators/mfsa",
-    years: "Pending",
-    count: 0,
-    dataQuality: "Validated",
-    note: PIPELINE_NOTE,
-    earliestYear: 0,
-    latestYear: 0,
+    years: "2007-2024",
+    count: 52,
+    dataQuality: "Tested browser archive loader",
+    note:
+      "Live MFSA browser-cleared enforcement loader tested against the official archive table and current publications. Feed runs in the fragile lane because the public pages sit behind a JavaScript challenge and rely on browser clearance before extraction.",
+    earliestYear: 2007,
+    latestYear: 2024,
     nativeCurrency: "EUR",
     defaultCurrency: "EUR",
     coverageStatus: "emerging",
@@ -2123,6 +2125,18 @@ const REGULATOR_COVERAGE_SEED: Record<string, RegulatorCoverageSeed> = {
         url: "https://www.mfsa.mt/our-work/enforcement/",
         description:
           "Official MFSA enforcement directorate and administrative-action publications.",
+      },
+      {
+        label: "MFSA administrative measures and penalties",
+        url: "https://www.mfsa.mt/news/administrative-measures-and-penalties/",
+        description:
+          "Official MFSA current administrative measures and penalties publications.",
+      },
+      {
+        label: "MFSA administrative measures and penalties archive",
+        url: "https://www.mfsa.mt/news/administrative-measures-and-penalties/administrative-measures-and-penalties-archive/",
+        description:
+          "Official MFSA archive table of administrative measures and penalties.",
       },
     ],
   },

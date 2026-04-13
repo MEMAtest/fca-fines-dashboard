@@ -3,7 +3,7 @@ import * as cheerio from "cheerio";
 import { execFile } from "node:child_process";
 import { fileURLToPath } from "node:url";
 import { promisify } from "node:util";
-import puppeteer from "puppeteer";
+import puppeteer, { type Page } from "puppeteer";
 import {
   buildEuFineRecord,
   fetchText,
@@ -14,6 +14,7 @@ import {
   parseLargestAmountFromText,
   parseMonthNameDate,
 } from "./lib/euFineHelpers.js";
+import { discoverOfficialUrlsViaBingRss } from "./lib/officialSearchDiscovery.js";
 import { runScraper } from "./lib/runScraper.js";
 
 const MFSA_BASE_URL = "https://www.mfsa.mt";
@@ -58,10 +59,42 @@ interface MfsaDetail {
   summary: string;
   body: string;
   dateIssued: string | null;
+  publicationDate: string | null;
 }
 
 function parseMfsaDate(input: string) {
   return parseMonthNameDate(normalizeWhitespace(input));
+}
+
+async function waitForMfsaChallengeClear(
+  page: Page,
+  contentSelector: string,
+  timeoutMs = 45000,
+) {
+  const startedAt = Date.now();
+
+  while (Date.now() - startedAt < timeoutMs) {
+    const state = await page.evaluate((selector) => {
+      const title = document.title || "";
+      const bodyText = document.body?.innerText || "";
+      const blocked = /attention required|sorry,\s+you have been blocked/i.test(
+        `${title} ${bodyText}`,
+      );
+
+      return {
+        blocked,
+        hasContent: Boolean(document.querySelector(selector)),
+      };
+    }, contentSelector);
+
+    if (!state.blocked && state.hasContent) {
+      return;
+    }
+
+    await new Promise((resolve) => setTimeout(resolve, 1000));
+  }
+
+  throw new Error(`MFSA challenge did not clear for selector ${contentSelector}`);
 }
 
 function cleanMfsaEntity(input: string) {
@@ -203,6 +236,10 @@ export function parseMfsaDetailHtml(html: string): MfsaDetail {
     summary: paragraphs[0] || body,
     body,
     dateIssued: parseMfsaActionDate(body),
+    publicationDate:
+      parseMfsaDate($(".date-published").first().text())
+      || parseMfsaDate($("time").first().text())
+      || parseMfsaActionDate(body),
   };
 }
 
@@ -314,14 +351,11 @@ async function requestMfsaHtml(url: string) {
     await page.setUserAgent(MFSA_BROWSER_USER_AGENT);
     await page.setExtraHTTPHeaders({ "accept-language": "en-GB,en;q=0.9" });
     await page.goto(url, { waitUntil: "domcontentloaded", timeout: 120000 });
-    await page.waitForSelector(".single-publication, .single-publication-content", {
-      timeout: 60000,
-    }).catch(() => null);
-    await page.waitForFunction(
-      () =>
-        document.querySelectorAll(".single-publication, .single-publication-content").length > 0,
-      { timeout: 15000 },
-    ).catch(() => null);
+    await waitForMfsaChallengeClear(
+      page,
+      ".single-publication, .single-publication-content",
+      60000,
+    );
     await new Promise((resolve) => setTimeout(resolve, 1500));
     const html = await page.content();
     if (/attention required|sorry,\s+you have been blocked/i.test(html)) {
@@ -333,7 +367,7 @@ async function requestMfsaHtml(url: string) {
   }
 }
 
-async function loadMfsaArchiveEntries() {
+export async function loadMfsaArchiveEntries() {
   const browser = await puppeteer.launch({
     headless: MFSA_HEADLESS,
     args: [
@@ -349,9 +383,17 @@ async function loadMfsaArchiveEntries() {
     await page.setUserAgent(MFSA_BROWSER_USER_AGENT);
     await page.setExtraHTTPHeaders({ "accept-language": "en-GB,en;q=0.9" });
     await page.goto(`${MFSA_LIST_URL}administrative-measures-and-penalties-archive/`, {
-      waitUntil: "networkidle2",
+      waitUntil: "domcontentloaded",
       timeout: 120000,
     });
+    await waitForMfsaChallengeClear(page, "#tablepress-17", 60000);
+    await page.waitForFunction(
+      () => {
+        const dtFactory = (window as typeof window & { jQuery?: any }).jQuery;
+        return Boolean(dtFactory?.("#tablepress-17").DataTable?.());
+      },
+      { timeout: 30000 },
+    );
 
     const rows = await page.evaluate(() => {
       const dtFactory = (window as typeof window & { jQuery?: any }).jQuery;
@@ -363,7 +405,7 @@ async function loadMfsaArchiveEntries() {
 
       const data = dt.rows().data().toArray();
       const nodes = dt.rows().nodes().toArray();
-      return data.map((cells, index) => {
+      return data.map((cells: unknown[], index: number) => {
         const anchor = nodes[index]?.querySelector?.("a[href]") as HTMLAnchorElement | null;
         return {
           cells: Array.from(cells),
@@ -378,12 +420,65 @@ async function loadMfsaArchiveEntries() {
   }
 }
 
-export async function loadMfsaEntries(limit: number | null) {
+export async function loadMfsaDiscoveredEntries(limit: number | null) {
+  const discovered = await discoverOfficialUrlsViaBingRss({
+    queries: [
+      'site:mfsa.mt/publication/ "administrative penalty" "Malta Financial Services Authority"',
+      'site:mfsa.mt/publication/ "administrative measures and penalties" mfsa',
+      'site:mfsa.mt/publication/ "Ref:" "MFSA"',
+    ],
+    allowedHosts: ["mfsa.mt"],
+    requiredPathSubstrings: ["/publication/"],
+    limit,
+  });
+
   const entries = new Map<string, MfsaListEntry>();
-  const firstPage = parseMfsaListingHtml(
-    await requestMfsaHtml(MFSA_LIST_URL),
-    MFSA_LIST_URL,
-  );
+
+  for (const item of discovered) {
+    const detail = parseMfsaDetailHtml(await requestMfsaHtml(item.link));
+    const publicationDate = detail.publicationDate || detail.dateIssued;
+
+    if (!detail.title || !publicationDate) {
+      continue;
+    }
+
+    entries.set(item.link, {
+      title: detail.title,
+      detailUrl: item.link,
+      publicationDate,
+      excerpt: detail.summary,
+    });
+
+    if (limit && entries.size >= limit) {
+      break;
+    }
+  }
+
+  return [...entries.values()];
+}
+
+export async function loadMfsaEntries(limit: number | null) {
+  if (!limit) {
+  try {
+    const browserEntries = await loadMfsaCurrentEntries(null);
+      if (browserEntries.length > 0) {
+        return browserEntries;
+      }
+    } catch {
+      // Fall back to lighter-weight discovery paths below
+    }
+  }
+
+  const entries = new Map<string, MfsaListEntry>();
+  const firstPageHtml = await requestMfsaHtml(MFSA_LIST_URL).catch(() => null);
+  if (!firstPageHtml) {
+    return loadMfsaDiscoveredEntries(limit);
+  }
+
+  const firstPage = parseMfsaListingHtml(firstPageHtml, MFSA_LIST_URL);
+  if (firstPage.entries.length === 0) {
+    return loadMfsaDiscoveredEntries(limit);
+  }
 
   for (const entry of firstPage.entries) {
     entries.set(entry.detailUrl, entry);
@@ -411,7 +506,7 @@ export async function loadMfsaEntries(limit: number | null) {
   return [...entries.values()];
 }
 
-async function loadMfsaCurrentEntries(limit: number | null) {
+export async function loadMfsaCurrentEntries(limit: number | null) {
   const browser = await puppeteer.launch({
     headless: MFSA_HEADLESS,
     args: [
@@ -430,9 +525,7 @@ async function loadMfsaCurrentEntries(limit: number | null) {
       waitUntil: "domcontentloaded",
       timeout: 120000,
     });
-    await page.waitForSelector(".single-publication, .pagination", {
-      timeout: 60000,
-    });
+    await waitForMfsaChallengeClear(page, ".single-publication, .pagination", 60000);
 
     const entries = new Map<string, MfsaListEntry>();
 
@@ -572,19 +665,24 @@ function buildMfsaArchiveRecord(entry: MfsaArchiveEntry) {
 
 export async function loadMfsaLiveRecords() {
   const flags = getCliFlags();
-  const currentEntries = await loadMfsaCurrentEntries(
-    flags.limit && flags.limit > 0 ? flags.limit : null,
-  );
-  const currentRecords = await mapWithConcurrency(currentEntries, 2, enrichMfsaEntry);
-
-  if (flags.limit && flags.limit > 0) {
-    return currentRecords.filter((record) => record !== null);
-  }
-
-  const archiveEntries = await loadMfsaArchiveEntries();
+  const archiveEntries = await loadMfsaArchiveEntries().catch(() => []);
   const archiveRecords = archiveEntries
     .map(buildMfsaArchiveRecord)
     .filter((record) => record !== null);
+
+  const currentEntries = await loadMfsaEntries(
+    flags.limit && flags.limit > 0 ? flags.limit : null,
+  ).catch(() => []);
+  const currentRecords = await mapWithConcurrency(currentEntries, 2, enrichMfsaEntry).catch(() => []);
+  const usableCurrentRecords = currentRecords.filter((record) => record !== null);
+
+  if (flags.limit && flags.limit > 0) {
+    if (usableCurrentRecords.length >= flags.limit) {
+      return usableCurrentRecords;
+    }
+
+    return [...usableCurrentRecords, ...archiveRecords].slice(0, flags.limit);
+  }
 
   const deduped = new Map<string, NonNullable<(typeof archiveRecords)[number]>>();
   for (const record of [...currentRecords, ...archiveRecords]) {
@@ -592,7 +690,7 @@ export async function loadMfsaLiveRecords() {
       continue;
     }
 
-    const key = `${record.firm_individual}|${record.date_issued}|${record.breach_type}`;
+    const key = `${record.firmIndividual}|${record.dateIssued}|${record.breachType}`;
     deduped.set(key, record);
   }
 
