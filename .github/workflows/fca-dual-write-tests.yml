@@ -1,0 +1,195 @@
+name: FCA Fines Dual-Write Test Suite
+
+on:
+  push:
+    branches: [main, develop]
+    paths:
+      - 'scripts/scraper/scrapeFcaFines.ts'
+      - 'feature-validation/**'
+  pull_request:
+    branches: [main, develop]
+    paths:
+      - 'scripts/scraper/scrapeFcaFines.ts'
+      - 'feature-validation/**'
+  schedule:
+    - cron: '0 8 * * *' # Daily at 08:00 UTC
+
+jobs:
+  unit-tests:
+    name: Unit Tests (Scraper + Monitoring)
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      TEST_DATABASE_URL: ${{ secrets.TEST_DATABASE_URL }}
+      TEST_HORIZON_DB_URL: ${{ secrets.TEST_HORIZON_DB_URL }}
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run scraper unit tests
+        run: npm run test -- feature-validation/unit/scraper.test.ts --run
+
+      - name: Run monitoring unit tests
+        run: npm run test -- feature-validation/unit/monitoring.test.ts --run
+
+  integration-tests:
+    name: Integration Tests (Dual-Write)
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    needs: unit-tests
+    env:
+      TEST_DATABASE_URL: ${{ secrets.TEST_DATABASE_URL }}
+      TEST_HORIZON_DB_URL: ${{ secrets.TEST_HORIZON_DB_URL }}
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run database write tests
+        run: npm run test -- feature-validation/integration/database-writes.test.ts --run
+
+      - name: Run dual-write atomicity tests
+        run: npm run test -- feature-validation/integration/dual-write-atomicity.test.ts --run
+
+  contract-tests:
+    name: Contract Tests (DB Schema)
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    needs: unit-tests
+    env:
+      TEST_DATABASE_URL: ${{ secrets.TEST_DATABASE_URL }}
+      TEST_HORIZON_DB_URL: ${{ secrets.TEST_HORIZON_DB_URL }}
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run database schema tests
+        run: npm run test -- feature-validation/contract/database-schemas.test.ts --run
+
+  e2e-tests:
+    name: E2E Tests (Sync Break Recovery)
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    needs: [unit-tests, integration-tests, contract-tests]
+    env:
+      TEST_DATABASE_URL: ${{ secrets.TEST_DATABASE_URL }}
+      TEST_HORIZON_DB_URL: ${{ secrets.TEST_HORIZON_DB_URL }}
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run sync break recovery test
+        run: npm run test -- feature-validation/e2e/sync-break-recovery.test.ts --run
+
+  post-deployment-smoke:
+    name: Production Smoke Tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    needs: [unit-tests, integration-tests, contract-tests, e2e-tests]
+    if: github.ref == 'refs/heads/main'
+
+    steps:
+      - name: Check RegCanary latest fine
+        run: |
+          RESPONSE=$(curl -sf https://regcanary.com/api/updates/recent?limit=1)
+          if [ -z "$RESPONSE" ]; then
+            echo "❌ RegCanary API returned empty response"
+            exit 1
+          fi
+          echo "✅ RegCanary API responding"
+
+      - name: Check FCA Fines API
+        run: |
+          RESPONSE=$(curl -sf https://fcafines.memaconsultants.com/api/fca-fines/stats)
+          if [ -z "$RESPONSE" ]; then
+            echo "❌ FCA Fines API returned empty response"
+            exit 1
+          fi
+          echo "✅ FCA Fines API responding"
+
+  test-summary:
+    name: Test Summary
+    runs-on: ubuntu-latest
+    needs: [unit-tests, integration-tests, contract-tests, e2e-tests]
+    if: always()
+
+    steps:
+      - name: Check all results
+        run: |
+          FAILED=0
+
+          if [ "${{ needs.unit-tests.result }}" != "success" ]; then
+            echo "❌ Unit tests failed"
+            FAILED=1
+          fi
+
+          if [ "${{ needs.integration-tests.result }}" != "success" ]; then
+            echo "❌ Integration tests failed"
+            FAILED=1
+          fi
+
+          if [ "${{ needs.contract-tests.result }}" != "success" ]; then
+            echo "❌ Contract tests failed"
+            FAILED=1
+          fi
+
+          if [ "${{ needs.e2e-tests.result }}" != "success" ]; then
+            echo "❌ E2E tests failed"
+            FAILED=1
+          fi
+
+          if [ $FAILED -eq 0 ]; then
+            echo "✅ All tests passed"
+            exit 0
+          else
+            echo "❌ Some tests failed - deployment blocked"
+            exit 1
+          fi
+
+      - name: Upload test report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-results
+          path: |
+            feature-validation/logs/
+          retention-days: 30
