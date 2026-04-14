@@ -1,10 +1,9 @@
 /**
  * Regulator blog generation.
  *
- * FCA keeps a markdown-first article path so the flagship FCA content and SEO
- * stay intact. Non-FCA regulator guides use a richer structured article model
- * with explicit coverage assessment, practical watchpoints, and regulator-
- * specific FAQ content.
+ * FCA uses a markdown-first article path for historical SEO preservation.
+ * Non-FCA regulator guides use a richer structured article model with explicit
+ * coverage assessment, practical watchpoints, and regulator-specific FAQ content.
  */
 
 import {
@@ -300,7 +299,7 @@ function getRegulatorProfile(code: string): RegulatorProfile {
         crossLinks: buildCrossLinks(
           code,
           "BaFin",
-          "Compare BaFin patterns with the FCA benchmark.",
+          "Compare BaFin patterns with other regulators.",
         ),
       };
     case "AMF":
@@ -659,7 +658,7 @@ function getRegulatorProfile(code: string): RegulatorProfile {
         crossLinks: buildCrossLinks(
           code,
           "SFC",
-          "Compare Hong Kong patterns with the FCA benchmark.",
+          "Compare Hong Kong patterns with other regulators.",
         ),
       };
     case "AFM":
