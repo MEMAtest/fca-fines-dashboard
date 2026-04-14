@@ -1,161 +1,187 @@
-/**
- * OCC (Office of the Comptroller of the Currency - USA) Scraper
- *
- * Strategy: Scrape enforcement actions database/register
- * URL: https://www.occ.gov/topics/supervision-and-examination/enforcement-actions/index-enforcement-actions.html
- *
- * Difficulty: 7/10 (High) - Search register with complex structure
- * Expected: 300-500 enforcement actions
- *
- * Run: npx tsx scripts/scraper/scrapeOcc.ts
- */
-
-import 'dotenv/config';
+import "dotenv/config";
+import { fileURLToPath } from "node:url";
 import {
-  type ParsedEnforcementRecord,
   buildEuFineRecord,
-  createSqlClient,
-  upsertEuFines,
-  printDryRunSummary,
-} from './lib/euFineHelpers.js';
+  fetchText,
+  normalizeWhitespace,
+  parseLargestAmountFromText,
+} from "./lib/euFineHelpers.js";
+import { runScraper } from "./lib/runScraper.js";
 
-const OCC_CONFIG = {
-  baseUrl: 'https://www.occ.gov',
-  enforcementUrl: 'https://www.occ.gov/topics/supervision-and-examination/enforcement-actions/index-enforcement-actions.html',
-};
+const OCC_SEARCH_URL = "https://apps.occ.gov/EASearch";
+const OCC_EXPORT_URL = `${OCC_SEARCH_URL}/Search/ExportToJSON?q=&cat=&srt=&pgsz=100`;
+const OCC_TIMEOUT_MS = Number.parseInt(process.env.OCC_TIMEOUT_MS || "120000", 10);
 
-const sql = createSqlClient();
-
-interface OCCRecord {
-  firm: string;
-  amount: number | null;
-  currency: string;
-  date: string;
-  actionType: string;
-  breach: string;
-  link: string | null;
-  summary: string;
+export interface OccExportRow {
+  Institution: string;
+  CharterNumber: string;
+  Company: string;
+  Individual: string;
+  Location: string;
+  TypeCode: string;
+  TypeDescription: string;
+  Amount: string;
+  StartDate: string;
+  StartDocuments: string[];
+  TerminationDate: string;
+  TerminationDocuments: string[];
+  DocketNumber: string;
+  SubjectMatters: string[];
 }
 
-async function main() {
-  console.log('🇺🇸 OCC Enforcement Actions Scraper\n');
-  console.log('Target: Office of the Comptroller of the Currency (USA)');
-  console.log('Method: Enforcement actions database scraping\n');
-
-  const useTestData = process.argv.includes('--test-data');
-  const dryRun = process.argv.includes('--dry-run');
-
-  if (useTestData) console.log('⚠️  Using test data (--test-data flag detected)\n');
-  if (dryRun) console.log('🔍 Dry run mode - no database writes (--dry-run flag detected)\n');
-
-  try {
-    const records = useTestData ? getTestData() : await scrapeOccData();
-
-    console.log(`\n📊 Extracted ${records.length} enforcement actions`);
-
-    const parsedRecords = records.map((r) => transformToEnforcementRecord(r));
-    const dbRecords = parsedRecords.map((r) => buildEuFineRecord(r));
-
-    if (dryRun) {
-      printDryRunSummary(dbRecords);
-    } else {
-      await upsertEuFines(sql, dbRecords);
-      console.log('\n🔄 Refreshing unified regulatory fines view...');
-      await sql`SELECT refresh_all_fines()`;
-      console.log('✅ View refreshed');
-    }
-
-    const totalOcc = await sql`SELECT COUNT(*) as count FROM eu_fines WHERE regulator = 'OCC'`;
-    const totalAll = await sql`SELECT COUNT(*) as count FROM all_regulatory_fines`;
-
-    console.log('\n📈 Database Summary:');
-    console.log(`   - OCC enforcement actions: ${totalOcc[0].count}`);
-    console.log(`   - Total regulatory fines (FCA + EU): ${totalAll[0].count}`);
-
-    console.log('\n✅ OCC scraper completed successfully!');
-    await sql.end();
-    process.exit(0);
-  } catch (error) {
-    console.error('❌ OCC scraper failed:', error);
-    await sql.end();
-    process.exit(1);
+function parseUsSlashDate(input: string) {
+  const match = normalizeWhitespace(input).match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/);
+  if (!match) {
+    return null;
   }
+
+  const month = Number.parseInt(match[1] || "0", 10);
+  const day = Number.parseInt(match[2] || "0", 10);
+  const year = Number.parseInt(match[3] || "0", 10);
+
+  if (month < 1 || month > 12 || day < 1 || day > 31 || year < 1900) {
+    return null;
+  }
+
+  return `${year.toString().padStart(4, "0")}-${month
+    .toString()
+    .padStart(2, "0")}-${day.toString().padStart(2, "0")}`;
 }
 
-function getTestData(): OCCRecord[] {
-  return [
-    {
-      firm: 'JPMorgan Chase Bank, N.A.',
-      amount: 65000000,
-      currency: 'USD',
-      date: '2024-05-22',
-      actionType: 'Civil Money Penalty',
-      breach: 'BSA/AML compliance program deficiencies',
-      link: null,
-      summary: 'BSA/AML program failures',
-    },
-    {
-      firm: 'Bank of America, N.A.',
-      amount: 45000000,
-      currency: 'USD',
-      date: '2023-10-18',
-      actionType: 'Civil Money Penalty',
-      breach: 'Consumer protection violations',
-      link: null,
-      summary: 'Consumer protection failures',
-    },
-    {
-      firm: 'Capital One, N.A.',
-      amount: 38000000,
-      currency: 'USD',
-      date: '2023-06-30',
-      actionType: 'Civil Money Penalty',
-      breach: 'Risk management and internal controls deficiencies',
-      link: null,
-      summary: 'Risk management deficiencies',
-    },
-  ];
+function parseOccAmount(input: string) {
+  const amount = Number.parseFloat(String(input || "0").replace(/,/g, ""));
+  return Number.isFinite(amount) ? amount : null;
 }
 
-async function scrapeOccData(): Promise<OCCRecord[]> {
-  throw new Error('OCC live scraping is not implemented yet. Use --test-data flag for now.');
+function buildOccEntity(row: OccExportRow) {
+  return (
+    normalizeWhitespace(row.Institution) ||
+    normalizeWhitespace(row.Company) ||
+    normalizeWhitespace(row.Individual)
+  );
 }
 
-function transformToEnforcementRecord(record: OCCRecord): ParsedEnforcementRecord {
-  return {
-    regulator: 'OCC',
-    regulatorFullName: 'Office of the Comptroller of the Currency',
-    countryCode: 'US',
-    countryName: 'United States',
-    firmIndividual: record.firm,
-    firmCategory: null,
-    amount: record.amount,
-    currency: record.currency,
-    dateIssued: record.date,
-    breachType: extractBreachType(record.breach),
-    breachCategories: categorizeBreachType(record.breach),
-    summary: `${record.firm} fined $${(record.amount || 0).toLocaleString('en-US')} by OCC. ${record.summary}`,
-    finalNoticeUrl: record.link,
-    sourceUrl: OCC_CONFIG.enforcementUrl,
-    rawPayload: record,
-  };
+function buildOccSourceUrl(row: OccExportRow) {
+  const query = encodeURIComponent(
+    buildOccEntity(row) || normalizeWhitespace(row.DocketNumber) || "",
+  );
+  return query ? `${OCC_SEARCH_URL}?q=${query}&cat=&srt=&pgsz=100` : OCC_SEARCH_URL;
 }
 
-function extractBreachType(breach: string): string {
-  const lower = breach.toLowerCase();
-  if (lower.includes('bsa') || lower.includes('aml')) return 'BSA/AML Violations';
-  if (lower.includes('consumer')) return 'Consumer Protection';
-  if (lower.includes('risk management')) return 'Risk Management';
-  return 'Regulatory Breach';
+function buildOccFinalNoticeUrl(row: OccExportRow) {
+  const code = normalizeWhitespace(row.StartDocuments?.[0] || "");
+
+  if (/^\d{4}-\d{3}$/.test(code)) {
+    return `https://occ.gov/static/enforcement-actions/ea${code}.pdf`;
+  }
+
+  return null;
 }
 
-function categorizeBreachType(breach: string): string[] {
+export function parseOccExportJson(json: string) {
+  const rows = JSON.parse(json) as OccExportRow[];
+  return rows.filter((row) => {
+    const entity = buildOccEntity(row);
+    const dateIssued = parseUsSlashDate(row.StartDate);
+    return Boolean(entity && dateIssued && normalizeWhitespace(row.TypeDescription));
+  });
+}
+
+function categorizeOccRecord(row: OccExportRow) {
+  const corpus = `${row.TypeDescription} ${row.SubjectMatters.join(" ")}`.toLowerCase();
   const categories: string[] = [];
-  const lower = breach.toLowerCase();
-  if (lower.includes('bsa') || lower.includes('aml')) categories.push('AML');
-  if (lower.includes('consumer')) categories.push('CONSUMER_PROTECTION');
-  if (lower.includes('risk')) categories.push('RISK_MANAGEMENT');
-  return categories.length > 0 ? categories : ['OTHER'];
+
+  if (/bsa|aml|sar|ctr|due diligence/.test(corpus)) {
+    categories.push("AML");
+  }
+  if (/consumer|fair lending|flood insurance|truth in lending/.test(corpus)) {
+    categories.push("CONSUMER_PROTECTION");
+  }
+  if (/board|management|governance|strategic planning/.test(corpus)) {
+    categories.push("GOVERNANCE");
+  }
+  if (/capital|liquidity|earnings|asset quality|camels/.test(corpus)) {
+    categories.push("PRUDENTIAL");
+  }
+  if (/books and records|false statements|obstruction/.test(corpus)) {
+    categories.push("DISCLOSURE");
+  }
+
+  return categories.length > 0 ? categories : ["SUPERVISORY_SANCTION"];
 }
 
-main();
+function buildOccSummary(row: OccExportRow, entity: string) {
+  const parts = [
+    `${entity} subject to OCC ${normalizeWhitespace(row.TypeDescription)}`,
+  ];
+
+  const amount = parseOccAmount(row.Amount);
+  if (amount && amount > 0) {
+    parts.push(`Amount $${amount.toLocaleString("en-US")}`);
+  }
+
+  if (row.SubjectMatters?.length) {
+    parts.push(`Subject matters: ${row.SubjectMatters.join("; ")}`);
+  }
+
+  if (normalizeWhitespace(row.DocketNumber)) {
+    parts.push(`Docket ${normalizeWhitespace(row.DocketNumber)}`);
+  }
+
+  return parts.join(". ");
+}
+
+function buildOccRecords(rows: OccExportRow[]) {
+  return rows.map((row) => {
+    const entity = buildOccEntity(row);
+    const dateIssued = parseUsSlashDate(row.StartDate) || "1900-01-01";
+    const summary = buildOccSummary(row, entity);
+
+    return buildEuFineRecord({
+      regulator: "OCC",
+      regulatorFullName: "Office of the Comptroller of the Currency",
+      countryCode: "US",
+      countryName: "United States",
+      firmIndividual: entity,
+      firmCategory: normalizeWhitespace(row.Institution) ? "Bank" : "Financial Entity",
+      amount: parseOccAmount(row.Amount),
+      currency: "USD",
+      dateIssued,
+      breachType: normalizeWhitespace(row.TypeDescription) || "OCC enforcement action",
+      breachCategories: categorizeOccRecord(row),
+      summary,
+      finalNoticeUrl: buildOccFinalNoticeUrl(row),
+      sourceUrl: buildOccSourceUrl(row),
+      rawPayload: row,
+    });
+  });
+}
+
+export async function loadOccLiveRecords() {
+  const json = await fetchText(OCC_EXPORT_URL, {
+    timeout: OCC_TIMEOUT_MS,
+    headers: {
+      Accept: "application/json,text/plain,*/*",
+    },
+  });
+
+  const rows = parseOccExportJson(json);
+  console.log(`📊 OCC extracted ${rows.length} enforcement actions`);
+  return buildOccRecords(rows);
+}
+
+export async function main() {
+  await runScraper({
+    name: "🇺🇸 OCC Enforcement Actions Scraper",
+    region: "North America",
+    liveLoader: loadOccLiveRecords,
+    testLoader: loadOccLiveRecords,
+  });
+}
+
+if (process.argv[1] && fileURLToPath(import.meta.url) === process.argv[1]) {
+  main().catch((error) => {
+    console.error("❌ OCC scraper failed:", error);
+    process.exit(1);
+  });
+}

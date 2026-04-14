@@ -13,6 +13,10 @@ import { runScraper } from "./lib/runScraper.js";
 
 const SC_BASE_URL = "https://www.sc.com.my";
 const SC_ACTIONS_BASE_URL = `${SC_BASE_URL}/regulation/enforcement/actions`;
+const SC_FETCH_TIMEOUT_MS = Number.parseInt(
+  process.env.SC_FETCH_TIMEOUT_MS || "120000",
+  10,
+);
 
 // Years to scrape (can be overridden by env var)
 const YEARS_TO_SCRAPE = process.env.SC_YEARS?.split(",").map((y) => y.trim()) || [
@@ -176,7 +180,9 @@ export async function loadScMalaysiaLiveRecords() {
 
     try {
       console.log(`   Fetching ${year}...`);
-      const html = await fetchText(url);
+      const html = await fetchText(url, {
+        timeout: SC_FETCH_TIMEOUT_MS,
+      });
       const rows = parseScActionsHtml(html, year, url);
       allRows.push(...rows);
       console.log(`   Found ${rows.length} actions in ${year}`);

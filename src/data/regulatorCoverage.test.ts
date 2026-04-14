@@ -39,6 +39,9 @@ describe("regulatorCoverage", () => {
     expect(PUBLIC_REGULATOR_CODES).toContain("FMANZ");
     expect(PUBLIC_REGULATOR_CODES).toContain("MAS");
     expect(PUBLIC_REGULATOR_CODES).toContain("AUSTRAC");
+    expect(PUBLIC_REGULATOR_CODES).toContain("OCC");
+    expect(PUBLIC_REGULATOR_CODES).toContain("FINCEN");
+    expect(PUBLIC_REGULATOR_CODES).toContain("SC");
     expect(PUBLIC_REGULATOR_CODES).toContain("CMVM");
     expect(PUBLIC_REGULATOR_CODES).not.toContain("ESMA");
     expect(PUBLIC_REGULATOR_CODES).not.toContain("CVM");
@@ -73,6 +76,9 @@ describe("regulatorCoverage", () => {
     expect(hasPublicRegulatorHub("FMANZ")).toBe(true);
     expect(hasPublicRegulatorHub("MAS")).toBe(true);
     expect(hasPublicRegulatorHub("AUSTRAC")).toBe(true);
+    expect(hasPublicRegulatorHub("OCC")).toBe(true);
+    expect(hasPublicRegulatorHub("FINCEN")).toBe(true);
+    expect(hasPublicRegulatorHub("SC")).toBe(true);
     expect(hasPublicRegulatorHub("CMVM")).toBe(true);
     expect(hasPublicRegulatorHub("FDIC")).toBe(false);
     expect(hasPublicRegulatorHub("ESMA")).toBe(false);
@@ -91,6 +97,9 @@ describe("regulatorCoverage", () => {
     expect(isValidRegulatorCode("FMANZ")).toBe(true);
     expect(isValidRegulatorCode("MAS")).toBe(true);
     expect(isValidRegulatorCode("AUSTRAC")).toBe(true);
+    expect(isValidRegulatorCode("OCC")).toBe(true);
+    expect(isValidRegulatorCode("FINCEN")).toBe(true);
+    expect(isValidRegulatorCode("SC")).toBe(true);
     expect(isValidRegulatorCode("FDIC")).toBe(false);
     expect(isValidRegulatorCode("ESMA")).toBe(false);
   });
@@ -130,11 +139,14 @@ describe("regulatorCoverage", () => {
     expect(getRegulatorCoverage("CMF")?.stage).toBe("pipeline");
     expect(getRegulatorCoverage("FINMA")?.stage).toBe("live");
     expect(getRegulatorCoverage("SESC")?.stage).toBe("pipeline");
+    expect(getRegulatorCoverage("OCC")?.stage).toBe("live");
     expect(getRegulatorCoverage("FDIC")?.stage).toBe("pipeline");
     expect(getRegulatorCoverage("FRB")?.stage).toBe("pipeline");
     expect(getRegulatorCoverage("OSC")?.stage).toBe("pipeline");
     expect(getRegulatorCoverage("CONSOB")?.stage).toBe("pipeline");
     expect(getRegulatorCoverage("CMVM")?.stage).toBe("live");
+    expect(getRegulatorCoverage("FINCEN")?.stage).toBe("live");
+    expect(getRegulatorCoverage("SC")?.stage).toBe("live");
     expect(getRegulatorCoverage("AUSTRAC")?.stage).toBe("live");
     expect(getRegulatorCoverage("ASIC")?.stage).toBe("live");
     expect(getRegulatorCoverage("HKMA")?.stage).toBe("live");
@@ -168,6 +180,9 @@ describe("regulatorCoverage", () => {
     expect(getRegulatorCoverage("FTNO")?.count).toBe(40);
     expect(getRegulatorCoverage("CNBCZ")?.count).toBe(1742);
     expect(getRegulatorCoverage("CMVM")?.count).toBe(133);
+    expect(getRegulatorCoverage("OCC")?.count).toBe(6026);
+    expect(getRegulatorCoverage("FINCEN")?.count).toBe(118);
+    expect(getRegulatorCoverage("SC")?.count).toBe(88);
     expect(getRegulatorCoverage("ASIC")?.count).toBe(112);
     expect(getRegulatorCoverage("HKMA")?.count).toBe(23);
     expect(getRegulatorCoverage("FMANZ")?.count).toBe(99);
@@ -192,7 +207,10 @@ describe("regulatorCoverage", () => {
     );
     expect(DAILY_LIVE_REGULATOR_CODES).toContain("FCA");
     expect(DAILY_LIVE_REGULATOR_CODES).toContain("SEC");
+    expect(DAILY_LIVE_REGULATOR_CODES).toContain("OCC");
+    expect(DAILY_LIVE_REGULATOR_CODES).toContain("FINCEN");
     expect(DAILY_LIVE_REGULATOR_CODES).toContain("SFC");
+    expect(DAILY_LIVE_REGULATOR_CODES).toContain("SC");
     expect(DAILY_LIVE_REGULATOR_CODES).not.toContain("DFSA");
     expect(DAILY_LIVE_REGULATOR_CODES).not.toContain("FMAAT");
     expect(DAILY_LIVE_REGULATOR_CODES).not.toContain("FINMA");
@@ -233,16 +251,27 @@ describe("regulatorCoverage", () => {
   });
 
   it("keeps global targets in pipeline until their datasets are genuinely live", () => {
-    ["OCC", "FSCA", "CSRC", "FDIC", "FRB"].forEach(
+    ["FSCA", "CSRC", "FDIC", "FRB"].forEach(
       (code) => {
         expect(PUBLIC_REGULATOR_CODES).not.toContain(code);
         expect(getRegulatorCoverage(code)?.stage).toBe("pipeline");
       },
     );
+    expect(PUBLIC_REGULATOR_CODES).toContain("OCC");
+    expect(PUBLIC_REGULATOR_CODES).toContain("FINCEN");
+    expect(PUBLIC_REGULATOR_CODES).toContain("SC");
     expect(PUBLIC_REGULATOR_CODES).toContain("HKMA");
     expect(PUBLIC_REGULATOR_CODES).toContain("MAS");
     expect(PUBLIC_REGULATOR_CODES).toContain("AUSTRAC");
-    expect(getRegulatorCoverage("occ")?.dashboardEnabled).toBe(false);
+    expect(getRegulatorCoverage("occ")?.dashboardEnabled).toBe(true);
+    expect(getRegulatorCoverage("occ")?.count).toBe(6026);
+    expect(getRegulatorCoverage("fincen")?.country).toBe("United States");
+    expect(getRegulatorCoverage("fincen")?.overviewPath).toBe(
+      "/regulators/fincen",
+    );
+    expect(getRegulatorCoverage("fincen")?.latestYear).toBe(2026);
+    expect(getRegulatorCoverage("sc")?.country).toBe("Malaysia");
+    expect(getRegulatorCoverage("sc")?.count).toBe(88);
     expect(getRegulatorCoverage("fdic")?.dashboardEnabled).toBe(false);
     expect(getRegulatorCoverage("frb")?.dashboardEnabled).toBe(false);
     expect(getRegulatorCoverage("fsca")?.region).toBe("Africa");

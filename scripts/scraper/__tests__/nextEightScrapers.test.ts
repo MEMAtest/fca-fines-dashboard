@@ -22,6 +22,13 @@ import {
   parseSebiListingHtml,
   resolveSebiDocumentUrl,
 } from "../scrapeSebi.js";
+import { parseFinraAmount, parseFinraArchiveHtml } from "../scrapeFinra.js";
+import {
+  extractFincenEntity,
+  parseFincenEnforcementHtml,
+} from "../scrapeFincen.js";
+import { parseOccExportJson } from "../scrapeOcc.js";
+import { parseScActionsHtml } from "../scrapeScMalaysia.js";
 
 describe("next-eight regulator coverage", () => {
   it("loads DFSA archive records", () => {
@@ -291,5 +298,124 @@ describe("next-eight regulator coverage", () => {
     `;
 
     expect(extractSebiPenaltyAmount(text)).toBeNull();
+  });
+
+  it("parses FINRA archive rows and splits multi-respondent cases", () => {
+    const html = `
+      <table class="table views-table views-view-table cols-5">
+        <tbody>
+          <tr>
+            <td><span class="tablesaw-cell-content"><a href="/sites/default/files/fda_documents/2020068495402.pdf">2020068495402</a></span></td>
+            <td><span class="tablesaw-cell-content">Pursuant to FINRA Rule 9216, Respondents NatAlliance Securities, LLC and Jason Adams submit this Letter of Acceptance, Waiver, and Consent. The respondents are fined $35,000.</span></td>
+            <td><span class="tablesaw-cell-content">AWCs (Letters of Acceptance, Waiver, and Consent)</span></td>
+            <td><span class="tablesaw-cell-content"><div class="table-layout"><div class="row"><span class="cell">NatAlliance Securities, LLC</span></div></div><div><div class="table-layout"><div class="row"><span class="cell wraplines">Jason Adams</span></div></div></div></span></td>
+            <td><span class="tablesaw-cell-content">03/27/2023</span></td>
+          </tr>
+        </tbody>
+      </table>
+      <nav><a href="?page=12">13</a></nav>
+    `;
+
+    const page = parseFinraArchiveHtml(
+      html,
+      "https://www.finra.org/rules-guidance/oversight-enforcement/finra-disciplinary-actions",
+    );
+
+    expect(page.totalPages).toBe(13);
+    expect(page.entries).toHaveLength(2);
+    expect(page.entries[0]?.caseNumber).toBe("2020068495402");
+    expect(page.entries[0]?.dateIssued).toBe("2023-03-27");
+    expect(page.entries[1]?.respondent).toBe("Jason Adams");
+    expect(page.entries[0]?.actionUrl).toContain("/sites/default/files/");
+    expect(parseFinraAmount(page.entries[0]?.summary || "")).toBe(35000);
+  });
+
+  it("parses FinCEN enforcement rows from the official table", () => {
+    const html = `
+      <table class="usa-table usa-table--striped cols-4">
+        <tbody>
+          <tr>
+            <td><a href="/system/files/2026-03/Canaccord-Consent-Order-No-2026-01.pdf">In the Matter of Canaccord Genuity LLC</a></td>
+            <td><time datetime="2026-03-06T12:00:00Z">03/06/2026</time></td>
+            <td>2026-01</td>
+            <td>Securities and Futures</td>
+          </tr>
+        </tbody>
+      </table>
+    `;
+
+    const rows = parseFincenEnforcementHtml(
+      html,
+      "https://www.fincen.gov/news/enforcement-actions",
+    );
+
+    expect(rows).toHaveLength(1);
+    expect(rows[0]?.entity).toBe("Canaccord Genuity LLC");
+    expect(rows[0]?.dateIssued).toBe("2026-03-06");
+    expect(rows[0]?.matterNumber).toBe("2026-01");
+    expect(rows[0]?.financialInstitutionType).toBe("Securities and Futures");
+    expect(
+      extractFincenEntity("In the Matter of TD Bank, N.A. and TD Bank USA, N.A."),
+    ).toBe("TD Bank, N.A. and TD Bank USA, N.A.");
+  });
+
+  it("parses OCC export rows from the official search export", () => {
+    const json = JSON.stringify([
+      {
+        Institution: "1st National Bank",
+        CharterNumber: "8709",
+        Company: "",
+        Individual: "",
+        Location: "Lebanon, OH",
+        TypeCode: "CMP",
+        TypeDescription: "Civil Money Penalty (CMP)",
+        Amount: "1000.00",
+        StartDate: "08/18/2009",
+        StartDocuments: ["2009-195"],
+        TerminationDate: "N/A",
+        TerminationDocuments: ["N/A"],
+        DocketNumber: "AA-EC-09-51",
+        SubjectMatters: [],
+      },
+    ]);
+
+    const rows = parseOccExportJson(json);
+
+    expect(rows).toHaveLength(1);
+    expect(rows[0]?.Institution).toBe("1st National Bank");
+    expect(rows[0]?.TypeCode).toBe("CMP");
+    expect(rows[0]?.StartDocuments).toEqual(["2009-195"]);
+  });
+
+  it("parses SC Malaysia administrative actions tables", () => {
+    const html = `
+      <table>
+        <tr>
+          <th>No.</th><th>Nature of Misconduct</th><th>Parties Involved</th><th>Brief description</th><th>Action Taken</th><th>Date of Action</th>
+        </tr>
+        <tr>
+          <td>1</td>
+          <td>False trading</td>
+          <td><a href="/regulation/enforcement/actions/muamalat-invest">Muamalat Invest Sdn Bhd</a></td>
+          <td>Failed to comply with internal controls.</td>
+          <td>Administrative penalty of RM48,000</td>
+          <td>05 February 2026</td>
+        </tr>
+      </table>
+    `;
+
+    const rows = parseScActionsHtml(
+      html,
+      "2026",
+      "https://www.sc.com.my/regulation/enforcement/actions/administrative-actions/administrative-actions-in-2026",
+    );
+
+    expect(rows).toHaveLength(1);
+    expect(rows[0]?.entity).toBe("Muamalat Invest Sdn Bhd");
+    expect(rows[0]?.date).toBe("2026-02-05");
+    expect(rows[0]?.actionUrl).toContain(
+      "/regulation/enforcement/actions/muamalat-invest",
+    );
+    expect(rows[0]?.action).toContain("Administrative penalty of RM48,000");
   });
 });

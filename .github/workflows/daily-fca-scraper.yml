@@ -63,6 +63,10 @@ jobs:
             script: scrape:gfsc
           - code: SEC
             script: scrape:sec
+          - code: OCC
+            script: scrape:occ
+          - code: FINCEN
+            script: scrape:fincen
           - code: SEBI
             script: scrape:sebi
           - code: ASIC

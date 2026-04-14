@@ -60,6 +60,7 @@ const REGULATOR_PALETTES: Record<string, RegulatorPalette> = {
   AUSTRAC: { ink: "#0f766e", surface: "#ccfbf1", ring: "#5eead4" },
   MAS: { ink: "#166534", surface: "#dcfce7", ring: "#86efac" },
   OCC: { ink: "#4338ca", surface: "#e0e7ff", ring: "#a5b4fc" },
+  FINCEN: { ink: "#0f766e", surface: "#ccfbf1", ring: "#5eead4" },
   FINMA: { ink: "#991b1b", surface: "#fee2e2", ring: "#fca5a5" },
   SESC: { ink: "#9f1239", surface: "#ffe4e6", ring: "#fda4af" },
   FSCA: { ink: "#166534", surface: "#dcfce7", ring: "#86efac" },
@@ -399,6 +400,15 @@ export const OFFICIAL_REGULATOR_LOGOS: Partial<
     approvedForDarkUi: true,
     approvedForPrint: true,
     lastReviewedAt: "2026-04-03",
+  },
+  FINCEN: {
+    assetPath: "/regulator-logos/fincen.ico",
+    sourceUrl: "https://www.fincen.gov/themes/custom/fincen/favicon.ico",
+    sourceType: "official-site",
+    backgroundMode: "transparent",
+    approvedForDarkUi: true,
+    approvedForPrint: true,
+    lastReviewedAt: "2026-04-13",
   },
   FINMA: {
     assetPath: "/regulator-logos/finma.png",
