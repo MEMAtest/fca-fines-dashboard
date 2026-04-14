@@ -1242,8 +1242,8 @@ const REGULATOR_COVERAGE_SEED: Record<string, RegulatorCoverageSeed> = {
     latestYear: 2026,
     nativeCurrency: "USD",
     defaultCurrency: "GBP",
-    coverageStatus: "extensive",
-    maturity: "standard",
+    coverageStatus: "growing",
+    maturity: "limited",
     dashboardEnabled: true,
     officialSources: [
       {
@@ -1278,7 +1278,7 @@ const REGULATOR_COVERAGE_SEED: Record<string, RegulatorCoverageSeed> = {
     nativeCurrency: "USD",
     defaultCurrency: "GBP",
     coverageStatus: "growing",
-    maturity: "standard",
+    maturity: "limited",
     dashboardEnabled: true,
     officialSources: [
       {
@@ -2279,7 +2279,7 @@ const REGULATOR_COVERAGE_SEED: Record<string, RegulatorCoverageSeed> = {
     nativeCurrency: "MYR",
     defaultCurrency: "EUR",
     coverageStatus: "growing",
-    maturity: "standard",
+    maturity: "limited",
     dashboardEnabled: true,
     officialSources: [
       {
