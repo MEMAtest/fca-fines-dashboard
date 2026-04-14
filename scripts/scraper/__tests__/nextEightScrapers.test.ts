@@ -22,7 +22,11 @@ import {
   parseSebiListingHtml,
   resolveSebiDocumentUrl,
 } from "../scrapeSebi.js";
-import { parseFinraAmount, parseFinraArchiveHtml } from "../scrapeFinra.js";
+import {
+  buildFinraMonthWindows,
+  parseFinraAmount,
+  parseFinraArchiveHtml,
+} from "../scrapeFinra.js";
 import {
   extractFincenEntity,
   parseFincenEnforcementHtml,
@@ -328,6 +332,15 @@ describe("next-eight regulator coverage", () => {
     expect(page.entries[1]?.respondent).toBe("Jason Adams");
     expect(page.entries[0]?.actionUrl).toContain("/sites/default/files/");
     expect(parseFinraAmount(page.entries[0]?.summary || "")).toBe(35000);
+  });
+
+  it("builds descending FINRA month windows with archive filters", () => {
+    const windows = buildFinraMonthWindows(2026, 2026);
+
+    expect(windows[0]?.label).toBe("2026-04");
+    expect(windows.at(-1)?.label).toBe("2026-01");
+    expect(windows[0]?.url).toContain("field_core_official_dt%5Bmin%5D=04%2F01%2F2026");
+    expect(windows.at(-1)?.url).toContain("field_core_official_dt%5Bmax%5D=01%2F31%2F2026");
   });
 
   it("parses FinCEN enforcement rows from the official table", () => {

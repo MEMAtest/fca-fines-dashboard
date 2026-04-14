@@ -1,9 +1,10 @@
 import "dotenv/config";
 import * as cheerio from "cheerio";
+import { execFile } from "node:child_process";
+import { promisify } from "node:util";
 import { fileURLToPath } from "node:url";
 import {
   buildEuFineRecord,
-  fetchText,
   makeAbsoluteUrl,
   normalizeWhitespace,
   parseLargestAmountFromText,
@@ -25,6 +26,11 @@ const FINRA_PAGE_TIMEOUT_MS = Number.parseInt(
   10,
 );
 const FINRA_MAX_PAGES = Number.parseInt(process.env.FINRA_MAX_PAGES || "0", 10);
+const FINRA_START_YEAR = Number.parseInt(process.env.FINRA_START_YEAR || "2005", 10);
+const FINRA_END_YEAR = Number.parseInt(
+  process.env.FINRA_END_YEAR || String(new Date().getUTCFullYear()),
+  10,
+);
 
 export interface FinraActionEntry {
   caseNumber: string;
@@ -39,6 +45,15 @@ interface FinraArchivePage {
   entries: FinraActionEntry[];
   totalPages: number;
 }
+
+interface FinraMonthWindow {
+  label: string;
+  min: string;
+  max: string;
+  url: string;
+}
+
+const execFileAsync = promisify(execFile);
 
 function sleep(ms: number) {
   return new Promise((resolve) => setTimeout(resolve, ms));
@@ -61,6 +76,46 @@ function parseUsSlashDate(input: string) {
   return `${year.toString().padStart(4, "0")}-${month
     .toString()
     .padStart(2, "0")}-${day.toString().padStart(2, "0")}`;
+}
+
+function formatFinraDateQuery(value: Date) {
+  return `${String(value.getUTCMonth() + 1).padStart(2, "0")}/${String(value.getUTCDate()).padStart(2, "0")}/${value.getUTCFullYear()}`;
+}
+
+export function buildFinraMonthWindows(startYear = FINRA_START_YEAR, endYear = FINRA_END_YEAR) {
+  const windows: FinraMonthWindow[] = [];
+  const now = new Date();
+  const lastMonthIndex = now.getUTCFullYear() * 12 + now.getUTCMonth();
+
+  for (let year = startYear; year <= endYear; year += 1) {
+    for (let month = 0; month < 12; month += 1) {
+      const absoluteMonthIndex = year * 12 + month;
+      if (absoluteMonthIndex > lastMonthIndex) {
+        break;
+      }
+
+      const monthStart = new Date(Date.UTC(year, month, 1));
+      const monthEnd = new Date(Date.UTC(year, month + 1, 0));
+      const params = new URLSearchParams({
+        "field_core_official_dt[min]": formatFinraDateQuery(monthStart),
+        "field_core_official_dt[max]": formatFinraDateQuery(monthEnd),
+        field_fda_case_id_txt: "",
+        field_fda_document_type_tax: "All",
+        firms: "",
+        individuals: "",
+        search: "",
+      });
+
+      windows.push({
+        label: `${year}-${String(month + 1).padStart(2, "0")}`,
+        min: formatFinraDateQuery(monthStart),
+        max: formatFinraDateQuery(monthEnd),
+        url: `${FINRA_ACTIONS_URL}?${params.toString()}`,
+      });
+    }
+  }
+
+  return windows.reverse();
 }
 
 export function parseFinraAmount(text: string) {
@@ -197,51 +252,82 @@ function buildFinraRecords(entries: FinraActionEntry[]) {
   });
 }
 
-async function fetchFinraArchivePage(pageIndex: number) {
-  const url = pageIndex === 0 ? FINRA_ACTIONS_URL : `${FINRA_ACTIONS_URL}?page=${pageIndex}`;
-  return fetchText(url, {
-    timeout: FINRA_PAGE_TIMEOUT_MS,
-  });
+async function fetchFinraFilteredArchivePage(baseUrl: string, pageIndex: number) {
+  const pageUrl = new URL(baseUrl);
+  if (pageIndex > 0) {
+    pageUrl.searchParams.set("page", String(pageIndex));
+  } else {
+    pageUrl.searchParams.delete("page");
+  }
+
+  const url = pageUrl.toString();
+  const { stdout } = await execFileAsync("curl", [
+    "-4",
+    "-sSL",
+    "--retry",
+    "4",
+    "--retry-all-errors",
+    "--retry-delay",
+    "2",
+    "--max-time",
+    String(Math.max(Math.ceil(FINRA_PAGE_TIMEOUT_MS / 1000), 30)),
+    url,
+  ]);
+  return stdout;
 }
 
 export async function loadFinraLiveRecords() {
-  const firstHtml = await fetchFinraArchivePage(0);
-  const firstPage = parseFinraArchiveHtml(firstHtml);
-  const totalPages =
-    FINRA_MAX_PAGES > 0
-      ? Math.min(firstPage.totalPages, FINRA_MAX_PAGES)
-      : firstPage.totalPages;
+  const windows = buildFinraMonthWindows();
+  console.log(`📅 FINRA month windows: ${windows.length} (${windows.at(-1)?.label} → ${windows[0]?.label})`);
 
-  console.log(`📄 FINRA archive pages detected: ${firstPage.totalPages}`);
-  if (FINRA_MAX_PAGES > 0 && totalPages < firstPage.totalPages) {
-    console.log(`⚠️ Limiting FINRA scrape to ${totalPages} pages via FINRA_MAX_PAGES`);
-  }
+  const entries: FinraActionEntry[] = [];
+  let processedPages = 0;
 
-  const entries = [...firstPage.entries];
+  for (const window of windows) {
+    const firstHtml = await fetchFinraFilteredArchivePage(window.url, 0);
+    const firstPage = parseFinraArchiveHtml(firstHtml, window.url);
+    const totalPages =
+      FINRA_MAX_PAGES > 0
+        ? Math.min(firstPage.totalPages, FINRA_MAX_PAGES)
+        : firstPage.totalPages;
 
-  for (let start = 1; start < totalPages; start += FINRA_PAGE_BATCH_SIZE) {
-    const pageIndices = Array.from(
-      { length: Math.min(FINRA_PAGE_BATCH_SIZE, totalPages - start) },
-      (_, offset) => start + offset,
-    );
+    entries.push(...firstPage.entries);
+    processedPages += 1;
 
-    const pages = await Promise.all(
-      pageIndices.map(async (pageIndex) => {
-        const html = await fetchFinraArchivePage(pageIndex);
-        return parseFinraArchiveHtml(
-          html,
-          `${FINRA_ACTIONS_URL}?page=${pageIndex}`,
-        );
-      }),
-    );
-
-    pages.forEach((page) => {
-      entries.push(...page.entries);
-    });
-
-    if (start + FINRA_PAGE_BATCH_SIZE < totalPages) {
-      await sleep(FINRA_PAGE_DELAY_MS);
+    if (firstPage.entries.length > 0) {
+      console.log(
+        `   ${window.label}: ${firstPage.entries.length} entries on page 1` +
+          (totalPages > 1 ? `, ${totalPages} pages total` : ""),
+      );
     }
+
+    for (let start = 1; start < totalPages; start += FINRA_PAGE_BATCH_SIZE) {
+      const pageIndices = Array.from(
+        { length: Math.min(FINRA_PAGE_BATCH_SIZE, totalPages - start) },
+        (_, offset) => start + offset,
+      );
+
+      const pages = await Promise.all(
+        pageIndices.map(async (pageIndex) => {
+          const html = await fetchFinraFilteredArchivePage(window.url, pageIndex);
+          return parseFinraArchiveHtml(
+            html,
+            `${window.url}&page=${pageIndex}`,
+          );
+        }),
+      );
+
+      pages.forEach((page) => {
+        entries.push(...page.entries);
+      });
+      processedPages += pageIndices.length;
+
+      if (start + FINRA_PAGE_BATCH_SIZE < totalPages) {
+        await sleep(FINRA_PAGE_DELAY_MS);
+      }
+    }
+
+    await sleep(FINRA_PAGE_DELAY_MS);
   }
 
   const dedupedEntries = [...new Map(
@@ -251,6 +337,7 @@ export async function loadFinraLiveRecords() {
     ]),
   ).values()];
 
+  console.log(`📄 FINRA filtered pages fetched: ${processedPages}`);
   console.log(`📊 FINRA extracted ${dedupedEntries.length} respondent-level actions`);
   return buildFinraRecords(dedupedEntries);
 }
