@@ -21,7 +21,7 @@ const ROOT = join(__dirname, "..");
 const DIST = join(ROOT, "dist");
 
 const BASE_URL = "https://fcafines.memaconsultants.com";
-const SITE_NAME = "FCA Fines Dashboard";
+const SITE_NAME = "RegActions";
 const OG_IMAGE = `${BASE_URL}/og-image.png`;
 const RSS_URL = `${BASE_URL}/rss.xml`;
 
@@ -158,28 +158,28 @@ function wrapArticleShell(title: string, renderedContent: string): string {
 const HOWTO_SCHEMA = {
   "@context": "https://schema.org",
   "@type": "HowTo",
-  name: "How to Search the FCA Fines Database",
+  name: "How to Search the Global Regulatory Fines Database",
   description:
-    "Step-by-step guide to searching and filtering FCA fines using the interactive dashboard.",
+    "Step-by-step guide to searching and filtering enforcement actions from 34+ global financial regulators using the interactive dashboard.",
   step: [
     {
       "@type": "HowToStep",
       position: 1,
       name: "Navigate to Dashboard",
-      text: "Open the FCA Fines Dashboard at fcafines.memaconsultants.com/dashboard to access the complete database of Financial Conduct Authority penalties.",
+      text: "Open the RegActions Dashboard at fcafines.memaconsultants.com/dashboard to access the complete database of regulatory fines and enforcement actions from global financial regulators.",
       url: `${BASE_URL}/dashboard`,
     },
     {
       "@type": "HowToStep",
       position: 2,
       name: "Search by Firm",
-      text: "Use the search bar to find fines by firm or individual name. Type a company name like 'Barclays' or 'HSBC' to filter results instantly.",
+      text: "Use the search bar to find fines by firm or individual name. Type a company name to filter results instantly across all regulators.",
     },
     {
       "@type": "HowToStep",
       position: 3,
       name: "Filter by Year",
-      text: "Select a specific year from the year dropdown to view all FCA fines issued in that period, from 2013 to the current year.",
+      text: "Select a specific year from the year dropdown to view all regulatory fines issued in that period, from 2013 to the current year.",
     },
     {
       "@type": "HowToStep",
@@ -260,11 +260,11 @@ function generatePageGraph(meta: PageMeta): object {
     {
       "@type": "Organization",
       "@id": `${BASE_URL}/#organization`,
-      name: "MEMA Consultants",
-      url: "https://memaconsultants.com",
-      logo: { "@type": "ImageObject", url: `${BASE_URL}/mema-logo.png` },
+      name: "RegActions",
+      url: BASE_URL,
+      logo: { "@type": "ImageObject", url: `${BASE_URL}/regactions-mark.png` },
       description:
-        "Compliance consultancy specialising in FCA regulatory data and analysis",
+        "Global regulatory enforcement intelligence from 34+ financial regulators worldwide",
     },
     {
       "@type": "WebSite",
@@ -272,7 +272,7 @@ function generatePageGraph(meta: PageMeta): object {
       url: `${BASE_URL}/`,
       name: SITE_NAME,
       description:
-        "Complete database of FCA fines and Financial Conduct Authority enforcement actions",
+        "Regulatory fines and enforcement intelligence from 34+ global financial regulators including FCA, BaFin, AMF, SEC, and more",
       publisher: { "@id": `${BASE_URL}/#organization` },
       potentialAction: {
         "@type": "SearchAction",
@@ -313,20 +313,31 @@ function generatePageGraph(meta: PageMeta): object {
   if (DATASET_PAGES.has(meta.path)) {
     graph.push({
       "@type": "Dataset",
-      name: "FCA Fines Database",
+      name: "RegActions Regulatory Fines Database",
       description:
-        "Comprehensive database of all Financial Conduct Authority (FCA) fines and enforcement actions issued from 2013 to present, including penalty amounts, breach categories, and firm details.",
+        "Comprehensive database of regulatory fines and enforcement actions from 34+ global financial regulators. Includes penalty amounts, breach categories, and firm details.",
       url: `${BASE_URL}/dashboard`,
       keywords: [
-        "FCA fines",
-        "Financial Conduct Authority",
         "regulatory fines",
-        "enforcement actions",
-        "UK financial regulation",
+        "BaFin fines",
+        "SEC fines",
+        "AMF fines",
+        "FCA fines",
+        "global financial regulators",
+        "financial enforcement",
+        "cross-border enforcement",
+        "regulatory compliance",
       ],
       creator: { "@id": `${BASE_URL}/#organization` },
       temporalCoverage: "2013/..",
-      spatialCoverage: { "@type": "Place", name: "United Kingdom" },
+      spatialCoverage: [
+        { "@type": "Place", name: "Europe" },
+        { "@type": "Place", name: "North America" },
+        { "@type": "Place", name: "Asia Pacific" },
+        { "@type": "Place", name: "Middle East" },
+        { "@type": "Place", name: "Caribbean" },
+        { "@type": "Place", name: "Africa" },
+      ],
       license: "https://creativecommons.org/licenses/by-nc/4.0/",
       isAccessibleForFree: true,
       dateModified: today,
@@ -356,11 +367,11 @@ async function buildPageMetas(): Promise<PageMeta[]> {
   pages.push({
     path: "/",
     title:
-      "FCA Fines Database & Tracker | Complete UK Financial Conduct Authority Penalties 2013-2026",
+      "RegActions | Global Regulatory Fines & Enforcement Intelligence",
     description:
-      "The definitive FCA fines database tracking all Financial Conduct Authority penalties, enforcement actions and regulatory fines from 2013-2026. Analyze £4.9B+ in FCA fines with interactive charts, breach categories, and compliance insights. Updated daily.",
+      "Track fines from 34+ global financial regulators including BaFin, SEC, FCA, AMF, and more. Analyze £5B+ in enforcement actions from 2013-2026 with interactive charts, breach categories, and compliance insights.",
     keywords:
-      "FCA fines, FCA fines list, FCA fines database, FCA fines 2025, FCA fines 2026, FCA enforcement actions, Financial Conduct Authority fines, UK financial fines",
+      "regulatory fines, financial regulator fines, enforcement actions, BaFin fines, SEC fines, FCA fines, AMF fines, CNMV fines, global fines database, multi-regulator tracker, financial compliance",
     ogType: "website",
     extraJsonLd:
       homepageFaqs.length > 0 ? [generateFaqSchema(homepageFaqs)] : [],
@@ -369,25 +380,25 @@ async function buildPageMetas(): Promise<PageMeta[]> {
   // 2. Dashboard (with DataFeed schema)
   pages.push({
     path: "/dashboard",
-    title: "FCA Fines Dashboard | Interactive Analytics & Search",
+    title: "RegActions Dashboard | Global Regulatory Fines Analytics & Search",
     description:
-      "Interactive FCA fines dashboard. Search all Financial Conduct Authority penalties by firm, year, amount and breach category. Export data and analyse enforcement trends.",
+      "Interactive multi-regulator dashboard. Search enforcement actions from 34+ global financial regulators by firm, year, amount and breach category. Export data and analyze enforcement trends.",
     keywords:
-      "FCA fines dashboard, FCA fines search, FCA fines tracker, FCA penalty analytics, FCA fines data",
+      "regulatory fines dashboard, global enforcement tracker, multi-regulator search, BaFin fines, SEC fines, FCA fines, regulatory analytics",
     ogType: "website",
     extraJsonLd: [
       {
         "@context": "https://schema.org",
         "@type": "DataFeed",
-        name: "FCA Fines Live Data Feed",
+        name: "RegActions Live Enforcement Feed",
         description:
-          "Real-time feed of Financial Conduct Authority fines and enforcement actions, updated as new penalties are published.",
+          "Real-time feed of regulatory fines and enforcement actions from 34+ global financial regulators, updated as new penalties are published.",
         url: `${BASE_URL}/dashboard`,
         dateModified: todayISO(),
         potentialAction: [
           {
             "@type": "SearchAction",
-            name: "Search FCA Fines",
+            name: "Search Global Regulatory Fines",
             target: {
               "@type": "EntryPoint",
               urlTemplate: `${BASE_URL}/dashboard?search={query}`,
@@ -404,7 +415,7 @@ async function buildPageMetas(): Promise<PageMeta[]> {
           },
           {
             "@type": "DownloadAction",
-            name: "Export FCA Fines CSV",
+            name: "Export Regulatory Fines CSV",
             target: {
               "@type": "EntryPoint",
               urlTemplate: `${BASE_URL}/dashboard`,
