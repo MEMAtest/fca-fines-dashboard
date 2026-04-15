@@ -71,6 +71,8 @@ jobs:
             script: scrape:finra
           - code: OSC
             script: scrape:osc
+          - code: CVM
+            script: scrape:cvm
           - code: SEBI
             script: scrape:sebi
           - code: ASIC

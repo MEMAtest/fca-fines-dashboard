@@ -32,6 +32,10 @@ import {
   parseOscProceedingHtml,
 } from "../scrapeOsc.js";
 import {
+  buildCvmSanctionRecords,
+  isCvmSanctionStatus,
+} from "../scrapeCvm.js";
+import {
   extractFincenEntity,
   parseFincenEnforcementHtml,
 } from "../scrapeFincen.js";
@@ -471,6 +475,52 @@ describe("next-eight regulator coverage", () => {
     expect(proceeding.sanctionDate).toBe("2023-06-22");
     expect(proceeding.sanctionDocumentType).toBe("Order");
     expect(proceeding.sanctionUrl).toContain("order-matter-first-global-data");
+  });
+
+  it("classifies CVM sanction statuses from the official accused dataset", () => {
+    expect(isCvmSanctionStatus("GCP envia GRU para pagamento de multa")).toBe(
+      true,
+    );
+    expect(
+      isCvmSanctionStatus(
+        "GCP intima acusado da condenação em 2a instância (CRSFN)",
+      ),
+    ).toBe(true);
+    expect(isCvmSanctionStatus("Acusado envia defesa")).toBe(false);
+  });
+
+  it("builds CVM accused-level sanction records from process and accused rows", () => {
+    const rows = buildCvmSanctionRecords(
+      [
+        {
+          NUP: "19957000198202011",
+          Objeto: "Apurar irregularidades em ofertas e intermediação.",
+          Ementa: "Condenação em processo sancionador com envio de GRU.",
+          Fase_Atual: "Finalizado",
+          Subfase_Atual: "Condenação",
+        },
+      ],
+      [
+        {
+          NUP: "19957000198202011",
+          Nome_Acusado: "AGINALDO APARECIDO DE OLIVEIRA",
+          Situacao: "GCP envia GRU para pagamento de multa",
+          Data_Situacao: "2022-07-01",
+        },
+        {
+          NUP: "19957000198202011",
+          Nome_Acusado: "AGINALDO APARECIDO DE OLIVEIRA",
+          Situacao: "Acusado envia defesa",
+          Data_Situacao: "2022-05-01",
+        },
+      ],
+    );
+
+    expect(rows).toHaveLength(1);
+    expect(rows[0]?.firm).toBe("AGINALDO APARECIDO DE OLIVEIRA");
+    expect(rows[0]?.date).toBe("2022-07-01");
+    expect(rows[0]?.status).toContain("pagamento de multa");
+    expect(rows[0]?.description).toContain("Condenação");
   });
 
   it("parses OCC export rows from the official search export", () => {

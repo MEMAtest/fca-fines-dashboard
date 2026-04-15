@@ -1,390 +1,265 @@
-/**
- * CVM (Comissão de Valores Mobiliários - Brazil) Scraper
- *
- * Strategy: Download ZIP file from open data portal, parse CSV
- * URL: https://dados.cvm.gov.br/dados/PROCESSO/SANCIONADOR/DADOS/processo_sancionador.zip
- *
- * Difficulty: 2/10 (Very Easy) - Direct download, structured CSV
- * Expected: 100-500 enforcement actions
- *
- * Run: npx tsx scripts/scraper/scrapeCvm.ts
- */
-
-import 'dotenv/config';
-import { createReadStream } from 'fs';
-import { mkdir, rm, writeFile } from 'fs/promises';
-import { tmpdir } from 'os';
-import { join } from 'path';
-import { parse } from 'csv-parse';
+import "dotenv/config";
+import { createReadStream } from "node:fs";
+import { mkdir, rm, writeFile } from "node:fs/promises";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
+import { parse } from "csv-parse";
+import { execFile } from "node:child_process";
+import { promisify } from "node:util";
+import { fileURLToPath } from "node:url";
 import {
-  type ParsedEnforcementRecord,
   buildEuFineRecord,
-  createSqlClient,
   fetchBinary,
   normalizeWhitespace,
-  parseMonthNameDate,
-  parseSlashDate,
-  upsertEuFines,
-  printDryRunSummary,
-} from './lib/euFineHelpers.js';
+  parseLargestAmountFromText,
+} from "./lib/euFineHelpers.js";
+import { runScraper } from "./lib/runScraper.js";
+
+const execFileAsync = promisify(execFile);
 
 const CVM_CONFIG = {
-  zipUrl: 'https://dados.cvm.gov.br/dados/PROCESSO/SANCIONADOR/DADOS/processo_sancionador.zip',
-  baseUrl: 'https://www.gov.br/cvm',
-  rateLimit: 1000,
+  zipUrl:
+    "https://dados.cvm.gov.br/dados/PROCESSO/SANCIONADOR/DADOS/processo_sancionador.zip",
+  datasetUrl: "https://dados.cvm.gov.br/dataset/processo-sancionador",
 };
 
-const sql = createSqlClient();
-
-interface CVMRawRecord {
-  ID_PROCESSO?: string;
-  NUMERO_PROCESSO?: string;
-  DATA_INICIO?: string;
-  DATA_FIM?: string;
-  SITUACAO?: string;
-  NOME_ACUSADO?: string;
-  TIPO_ACUSADO?: string;
-  MULTA?: string;
-  DESCRICAO?: string;
-  INABILITACAO?: string;
-  [key: string]: string | undefined;
+interface CVMProcessRecord {
+  NUP?: string;
+  Objeto?: string;
+  Ementa?: string;
+  Data_Abertura?: string;
+  Componente_Organizacional_Instrucao?: string;
+  Fase_Atual?: string;
+  Subfase_Atual?: string;
+  Local_Atual?: string;
+  Data_Ultima_Movimentacao?: string;
 }
 
-interface CVMRecord {
+interface CVMAccusedRecord {
+  NUP?: string;
+  Nome_Acusado?: string;
+  Situacao?: string;
+  Data_Situacao?: string;
+}
+
+interface CVMSanctionRecord {
   processId: string;
-  processNumber: string;
   firm: string;
-  firmType: string | null;
-  amount: number | null;
-  currency: string;
+  status: string;
   date: string;
+  amount: number | null;
   description: string;
-  link: string | null;
+  processObject: string;
+  processPhase: string | null;
 }
 
-async function main() {
-  console.log('🇧🇷 CVM Enforcement Actions Scraper\n');
-  console.log('Target: Comissão de Valores Mobiliários (Brazil)');
-  console.log('Method: Open data ZIP download + CSV parsing\n');
+const CVM_STATUS_PATTERNS = [
+  "multa",
+  "condena",
+  "negativa do recurso",
+  "manutencao das multas",
+  "pagamento de multas",
+];
 
-  // Check for command-line flags
-  const useTestData = process.argv.includes('--test-data');
-  const dryRun = process.argv.includes('--dry-run');
-
-  if (useTestData) {
-    console.log('⚠️  Using test data (--test-data flag detected)\n');
-  }
-  if (dryRun) {
-    console.log('🔍 Dry run mode - no database writes (--dry-run flag detected)\n');
-  }
-
-  try {
-    // Scrape real CVM data or use test data
-    const records = useTestData ? getTestData() : await scrapeCvmData();
-
-    console.log(`\n📊 Extracted ${records.length} enforcement actions`);
-
-    // Transform to ParsedEnforcementRecord format
-    const parsedRecords = records.map((r) => transformToEnforcementRecord(r));
-
-    // Build database records
-    const dbRecords = parsedRecords.map((r) => buildEuFineRecord(r));
-
-    // Insert into database (skip if dry-run)
-    if (dryRun) {
-      printDryRunSummary(dbRecords);
-    } else {
-      await upsertEuFines(sql, dbRecords);
-
-      // Refresh materialized view
-      console.log('\n🔄 Refreshing unified regulatory fines view...');
-      await sql`SELECT refresh_all_fines()`;
-      console.log('✅ View refreshed');
-    }
-
-    // Summary
-    const totalCvm = await sql`SELECT COUNT(*) as count FROM eu_fines WHERE regulator = 'CVM'`;
-    const totalAll = await sql`SELECT COUNT(*) as count FROM all_regulatory_fines`;
-
-    console.log('\n📈 Database Summary:');
-    console.log(`   - CVM enforcement actions: ${totalCvm[0].count}`);
-    console.log(`   - Total regulatory fines (FCA + EU): ${totalAll[0].count}`);
-
-    console.log('\n✅ CVM scraper completed successfully!');
-    await sql.end();
-    process.exit(0);
-  } catch (error) {
-    console.error('❌ CVM scraper failed:', error);
-    await sql.end();
-    process.exit(1);
-  }
+function normalizeForMatch(input: string) {
+  return normalizeWhitespace(input)
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase();
 }
 
-function getTestData(): CVMRecord[] {
-  // Test data based on known CVM enforcement actions
-  return [
-    {
-      processId: 'RJ2021-12345',
-      processNumber: 'RJ2021/12345',
-      firm: 'XP Investimentos CCTVM S/A',
-      firmType: 'Corretora',
-      amount: 500000,
-      currency: 'BRL',
-      date: '2024-06-15',
-      description: 'Violação às normas de conduta e ética profissional',
-      link: null,
-    },
-    {
-      processId: 'SP2020-67890',
-      processNumber: 'SP2020/67890',
-      firm: 'BTG Pactual S.A.',
-      firmType: 'Banco de Investimento',
-      amount: 1200000,
-      currency: 'BRL',
-      date: '2023-11-22',
-      description: 'Descumprimento de regras de divulgação de informações',
-      link: null,
-    },
-    {
-      processId: 'RJ2019-54321',
-      processNumber: 'RJ2019/54321',
-      firm: 'Itaú Unibanco S.A.',
-      firmType: 'Banco Múltiplo',
-      amount: 800000,
-      currency: 'BRL',
-      date: '2023-03-10',
-      description: 'Irregularidades na prestação de serviços de custódia',
-      link: null,
-    },
-  ];
+export function isCvmSanctionStatus(status: string) {
+  const normalized = normalizeForMatch(status);
+  return CVM_STATUS_PATTERNS.some((pattern) => normalized.includes(pattern));
 }
 
-async function scrapeCvmData(): Promise<CVMRecord[]> {
-  console.log('📡 Downloading CVM enforcement data ZIP...');
-  console.log(`   URL: ${CVM_CONFIG.zipUrl}`);
-
-  // Download ZIP file
-  const zipBuffer = await fetchBinary(CVM_CONFIG.zipUrl);
-  console.log(`✅ Downloaded ${(zipBuffer.length / 1024 / 1024).toFixed(2)} MB`);
-
-  // Create temp directory
-  const tempDir = join(tmpdir(), `cvm-scraper-${Date.now()}`);
-  await mkdir(tempDir, { recursive: true });
-
-  try {
-    // Save ZIP to temp
-    const zipPath = join(tempDir, 'processo_sancionador.zip');
-    await writeFile(zipPath, zipBuffer);
-
-    // Unzip and parse CSV
-    console.log('\n📊 Extracting and parsing CSV data...');
-    const rawRecords = await extractAndParseZip(tempDir);
-
-    console.log(`   Found ${rawRecords.length} total records`);
-
-    // Filter and transform records
-    const cvmRecords = transformRawRecords(rawRecords);
-    console.log(`   Filtered to ${cvmRecords.length} enforcement actions with sanctions`);
-
-    return cvmRecords;
-  } finally {
-    // Cleanup temp directory
-    await rm(tempDir, { recursive: true, force: true });
-  }
+export function parseCvmAmount(text: string) {
+  return parseLargestAmountFromText(text, {
+    currency: "BRL",
+    symbols: ["R$"],
+    keywords: ["multa", "multas", "penalidade"],
+  });
 }
 
-async function extractAndParseZip(tempDir: string): Promise<CVMRawRecord[]> {
-  // Note: The CVM ZIP might contain multiple CSVs. We need to inspect the actual structure.
-  // For now, we'll assume there's a main CSV file inside.
-
-  // Since Node.js doesn't have built-in ZIP extraction, we'll use unzip command
-  const { execFile } = await import('child_process');
-  const { promisify } = await import('util');
-  const execFileAsync = promisify(execFile);
-
-  const zipPath = join(tempDir, 'processo_sancionador.zip');
-
-  try {
-    await execFileAsync('unzip', ['-o', zipPath, '-d', tempDir]);
-  } catch (error) {
-    console.error('Failed to unzip file:', error);
-    throw new Error('ZIP extraction failed. Ensure unzip command is available.');
-  }
-
-  // Find CSV file(s) in extracted directory
-  const { readdir } = await import('fs/promises');
-  const files = await readdir(tempDir);
-  const csvFiles = files.filter((f) => f.endsWith('.csv') || f.endsWith('.CSV'));
-
-  if (csvFiles.length === 0) {
-    throw new Error('No CSV files found in ZIP archive');
-  }
-
-  console.log(`   Found CSV files: ${csvFiles.join(', ')}`);
-
-  // Parse the first/main CSV file
-  const csvPath = join(tempDir, csvFiles[0]);
-  return await parseCsvFile(csvPath);
-}
-
-async function parseCsvFile(csvPath: string): Promise<CVMRawRecord[]> {
-  return new Promise((resolve, reject) => {
-    const records: CVMRawRecord[] = [];
+async function parseCsvFile<T extends Record<string, string | undefined>>(
+  csvPath: string,
+) {
+  return new Promise<T[]>((resolve, reject) => {
+    const records: T[] = [];
 
     createReadStream(csvPath)
       .pipe(
         parse({
           columns: true,
-          delimiter: ';', // CVM uses semicolon delimiter
+          delimiter: ";",
           skip_empty_lines: true,
-          trim: true,
-          bom: true, // Handle UTF-8 BOM
-          relax_column_count: true, // Handle inconsistent column counts
-        })
+          bom: true,
+          relax_column_count: true,
+          relax_quotes: true,
+        }),
       )
-      .on('data', (record) => {
-        records.push(record as CVMRawRecord);
+      .on("data", (record) => {
+        records.push(record as T);
       })
-      .on('end', () => {
-        resolve(records);
-      })
-      .on('error', (error) => {
-        reject(error);
-      });
+      .on("end", () => resolve(records))
+      .on("error", reject);
   });
 }
 
-function transformRawRecords(rawRecords: CVMRawRecord[]): CVMRecord[] {
-  const cvmRecords: CVMRecord[] = [];
+async function extractZipData(tempDir: string) {
+  const zipBuffer = await fetchBinary(CVM_CONFIG.zipUrl);
+  const zipPath = join(tempDir, "processo_sancionador.zip");
+  await writeFile(zipPath, zipBuffer);
 
-  for (const raw of rawRecords) {
-    // Skip if no accused name or if process is not concluded
-    if (!raw.NOME_ACUSADO || raw.SITUACAO?.toLowerCase() !== 'concluído') {
+  await execFileAsync("unzip", ["-o", zipPath, "-d", tempDir]);
+
+  const processPath = join(tempDir, "processo_sancionador.csv");
+  const accusedPath = join(tempDir, "processo_sancionador_acusado.csv");
+
+  const [processes, accused] = await Promise.all([
+    parseCsvFile<CVMProcessRecord>(processPath),
+    parseCsvFile<CVMAccusedRecord>(accusedPath),
+  ]);
+
+  return { processes, accused };
+}
+
+export function buildCvmSanctionRecords(
+  processes: CVMProcessRecord[],
+  accused: CVMAccusedRecord[],
+) {
+  const processMap = new Map(
+    processes.map((record) => [normalizeWhitespace(record.NUP || ""), record]),
+  );
+
+  const latestAccusedRows = new Map<string, CVMAccusedRecord>();
+
+  for (const row of accused) {
+    const processId = normalizeWhitespace(row.NUP || "");
+    const firm = normalizeWhitespace(row.Nome_Acusado || "");
+    const status = normalizeWhitespace(row.Situacao || "");
+    const date = normalizeWhitespace(row.Data_Situacao || "");
+
+    if (!processId || !firm || !status || !date || !isCvmSanctionStatus(status)) {
       continue;
     }
 
-    // Parse fine amount (could be in various formats: "1.000,00", "1000.00", etc.)
-    let amount: number | null = null;
-    if (raw.MULTA) {
-      const cleanedAmount = raw.MULTA
-        .replace(/[^\d,.-]/g, '') // Remove currency symbols and letters
-        .replace(/\./g, '') // Remove thousand separators (Brazilian format uses dots)
-        .replace(/,/g, '.'); // Replace decimal comma with period
-
-      const parsed = parseFloat(cleanedAmount);
-      if (!isNaN(parsed) && parsed > 0) {
-        amount = Math.round(parsed * 100) / 100; // Round to 2 decimal places
-      }
+    const key = `${processId}::${firm}`;
+    const existing = latestAccusedRows.get(key);
+    if (!existing || date > normalizeWhitespace(existing.Data_Situacao || "")) {
+      latestAccusedRows.set(key, row);
     }
+  }
 
-    // Skip if no fine amount
-    if (!amount) {
-      continue;
-    }
+  const records: CVMSanctionRecord[] = [];
 
-    // Parse date (try different formats)
-    let date = '';
-    if (raw.DATA_FIM) {
-      const parsed = parseSlashDate(raw.DATA_FIM) || parseMonthNameDate(raw.DATA_FIM);
-      if (parsed) {
-        date = parsed;
-      }
-    }
+  for (const row of latestAccusedRows.values()) {
+    const processId = normalizeWhitespace(row.NUP || "");
+    const firm = normalizeWhitespace(row.Nome_Acusado || "");
+    const status = normalizeWhitespace(row.Situacao || "");
+    const date = normalizeWhitespace(row.Data_Situacao || "");
+    const process = processMap.get(processId);
+    const processObject = normalizeWhitespace(
+      process?.Ementa || process?.Objeto || "CVM sanction proceeding",
+    );
+    const processPhase = normalizeWhitespace(
+      [process?.Fase_Atual, process?.Subfase_Atual].filter(Boolean).join(" / "),
+    );
+    const amount = parseCvmAmount(`${status} ${processObject}`);
 
-    // Skip if no valid date
-    if (!date) {
-      continue;
-    }
-
-    cvmRecords.push({
-      processId: raw.ID_PROCESSO || raw.NUMERO_PROCESSO || 'Unknown',
-      processNumber: raw.NUMERO_PROCESSO || raw.ID_PROCESSO || 'Unknown',
-      firm: normalizeWhitespace(raw.NOME_ACUSADO),
-      firmType: raw.TIPO_ACUSADO ? normalizeWhitespace(raw.TIPO_ACUSADO) : null,
-      amount,
-      currency: 'BRL',
+    records.push({
+      processId,
+      firm,
+      status,
       date,
-      description: raw.DESCRICAO ? normalizeWhitespace(raw.DESCRICAO) : 'Enforcement action',
-      link: null, // CVM doesn't provide direct links in CSV
+      amount,
+      description: processObject,
+      processObject,
+      processPhase: processPhase || null,
     });
   }
 
-  return cvmRecords;
+  return records.sort((left, right) => {
+    if (left.date !== right.date) return left.date.localeCompare(right.date);
+    return left.firm.localeCompare(right.firm);
+  });
 }
 
-function transformToEnforcementRecord(record: CVMRecord): ParsedEnforcementRecord {
-  return {
-    regulator: 'CVM',
-    regulatorFullName: 'Comissão de Valores Mobiliários',
-    countryCode: 'BR',
-    countryName: 'Brazil',
-    firmIndividual: record.firm,
-    firmCategory: record.firmType,
-    amount: record.amount,
-    currency: record.currency,
-    dateIssued: record.date,
-    breachType: extractBreachType(record.description),
-    breachCategories: categorizeBreachType(record.description),
-    summary: `${record.firm} fined R$${(record.amount || 0).toLocaleString('pt-BR')} by CVM. ${record.description.substring(0, 100)}${record.description.length > 100 ? '...' : ''}`,
-    finalNoticeUrl: record.link,
-    sourceUrl: CVM_CONFIG.baseUrl,
-    rawPayload: record,
-  };
+function extractBreachType(status: string, description: string) {
+  const corpus = normalizeForMatch(`${status} ${description}`);
+
+  if (corpus.includes("multa")) return "Administrative monetary penalty";
+  if (corpus.includes("condena")) return "Sanction decision";
+  if (corpus.includes("recurso")) return "Appeal outcome";
+  return "Sanction proceeding outcome";
 }
 
-function extractBreachType(description: string): string {
-  const lower = description.toLowerCase();
+function categorizeBreachType(status: string, description: string) {
+  const corpus = normalizeForMatch(`${status} ${description}`);
+  const categories = ["SUPERVISORY_SANCTION"];
 
-  if (lower.includes('insider') || lower.includes('informação privilegiada')) {
-    return 'Insider Trading';
-  }
-  if (lower.includes('manipulação') || lower.includes('manipulation')) {
-    return 'Market Manipulation';
-  }
-  if (lower.includes('divulgação') || lower.includes('disclosure')) {
-    return 'Disclosure Violations';
-  }
-  if (lower.includes('custódia') || lower.includes('custody')) {
-    return 'Custody Violations';
-  }
-  if (lower.includes('conduta') || lower.includes('conduct') || lower.includes('ética')) {
-    return 'Conduct Violations';
-  }
-  if (lower.includes('registr') || lower.includes('licen')) {
-    return 'Registration Violations';
-  }
+  if (corpus.includes("multa")) categories.push("MONETARY_PENALTY");
+  if (corpus.includes("recurso")) categories.push("APPEAL_OUTCOME");
+  if (corpus.includes("condena")) categories.push("ENFORCEMENT_ORDER");
 
-  return 'Regulatory Breach';
+  return categories;
 }
 
-function categorizeBreachType(description: string): string[] {
-  const categories: string[] = [];
-  const lower = description.toLowerCase();
-
-  if (lower.includes('insider') || lower.includes('informação privilegiada')) {
-    categories.push('INSIDER_TRADING');
-  }
-  if (lower.includes('manipulação') || lower.includes('manipulation')) {
-    categories.push('MARKET_MANIPULATION');
-  }
-  if (lower.includes('divulgação') || lower.includes('disclosure')) {
-    categories.push('DISCLOSURE');
-  }
-  if (lower.includes('custódia') || lower.includes('custody')) {
-    categories.push('CUSTODY');
-  }
-  if (lower.includes('conduta') || lower.includes('conduct') || lower.includes('ética')) {
-    categories.push('CONDUCT');
-  }
-  if (lower.includes('registr') || lower.includes('licen') || lower.includes('autorização')) {
-    categories.push('AUTHORISATION');
-  }
-  if (lower.includes('fraude') || lower.includes('fraud')) {
-    categories.push('FRAUD');
-  }
-
-  return categories.length > 0 ? categories : ['OTHER'];
+function toDbRecords(records: CVMSanctionRecord[]) {
+  return records.map((record) =>
+    buildEuFineRecord({
+      regulator: "CVM",
+      regulatorFullName: "Comissão de Valores Mobiliários",
+      countryCode: "BR",
+      countryName: "Brazil",
+      firmIndividual: record.firm,
+      firmCategory: "Accused Respondent",
+      amount: record.amount,
+      currency: "BRL",
+      dateIssued: record.date,
+      breachType: extractBreachType(record.status, record.description),
+      breachCategories: categorizeBreachType(record.status, record.description),
+      summary: `${record.firm} appears in the official CVM sanction-proceedings dataset under process ${record.processId}. Status: ${record.status}. ${record.processObject}${record.processPhase ? ` Phase: ${record.processPhase}.` : ""}`,
+      finalNoticeUrl: null,
+      sourceUrl: CVM_CONFIG.datasetUrl,
+      rawPayload: record,
+    }),
+  );
 }
 
-// Run scraper
-main();
+export async function loadCvmLiveRecords() {
+  console.log("📡 Downloading CVM sanction-proceedings ZIP...");
+  console.log(`   URL: ${CVM_CONFIG.zipUrl}`);
+
+  const tempDir = join(tmpdir(), `cvm-scraper-${Date.now()}`);
+  await mkdir(tempDir, { recursive: true });
+
+  try {
+    const { processes, accused } = await extractZipData(tempDir);
+    console.log(`   Processes: ${processes.length}`);
+    console.log(`   Accused rows: ${accused.length}`);
+
+    const records = buildCvmSanctionRecords(processes, accused);
+    console.log(`📊 CVM extracted ${records.length} accused-level sanction outcomes`);
+
+    return toDbRecords(records);
+  } finally {
+    await rm(tempDir, { recursive: true, force: true });
+  }
+}
+
+export async function main() {
+  await runScraper({
+    name: "🇧🇷 CVM Sanction Proceedings Scraper",
+    region: "Latin America",
+    liveLoader: loadCvmLiveRecords,
+    testLoader: loadCvmLiveRecords,
+  });
+}
+
+if (process.argv[1] && fileURLToPath(import.meta.url) === process.argv[1]) {
+  main().catch((error) => {
+    console.error("❌ CVM scraper failed:", error);
+    process.exit(1);
+  });
+}

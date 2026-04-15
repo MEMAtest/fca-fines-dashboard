@@ -45,7 +45,7 @@ describe("regulatorCoverage", () => {
     expect(PUBLIC_REGULATOR_CODES).toContain("SC");
     expect(PUBLIC_REGULATOR_CODES).toContain("CMVM");
     expect(PUBLIC_REGULATOR_CODES).not.toContain("ESMA");
-    expect(PUBLIC_REGULATOR_CODES).not.toContain("CVM");
+    expect(PUBLIC_REGULATOR_CODES).toContain("CVM");
     expect(PUBLIC_REGULATOR_CODES).not.toContain("FDIC");
     expect(PUBLIC_REGULATOR_CODES).not.toContain("FRB");
   });
@@ -82,6 +82,7 @@ describe("regulatorCoverage", () => {
     expect(hasPublicRegulatorHub("FINRA")).toBe(true);
     expect(hasPublicRegulatorHub("SC")).toBe(true);
     expect(hasPublicRegulatorHub("CMVM")).toBe(true);
+    expect(hasPublicRegulatorHub("CVM")).toBe(true);
     expect(hasPublicRegulatorHub("FDIC")).toBe(false);
     expect(hasPublicRegulatorHub("ESMA")).toBe(false);
   });
@@ -137,7 +138,7 @@ describe("regulatorCoverage", () => {
     expect(PIPELINE_REGULATOR_NAV_ITEMS).toHaveLength(REGULATOR_STAGE_COUNTS.pipeline);
     expect(PUBLIC_REGULATOR_CODES).toHaveLength(LIVE_REGULATOR_NAV_ITEMS.length);
     expect(getRegulatorCoverage("ESMA")?.stage).toBe("internal");
-    expect(getRegulatorCoverage("CVM")?.stage).toBe("pipeline");
+    expect(getRegulatorCoverage("CVM")?.stage).toBe("live");
     expect(getRegulatorCoverage("CNBV")?.stage).toBe("pipeline");
     expect(getRegulatorCoverage("CMF")?.stage).toBe("pipeline");
     expect(getRegulatorCoverage("FINMA")?.stage).toBe("live");
@@ -147,6 +148,7 @@ describe("regulatorCoverage", () => {
     expect(getRegulatorCoverage("FDIC")?.stage).toBe("pipeline");
     expect(getRegulatorCoverage("FRB")?.stage).toBe("pipeline");
     expect(getRegulatorCoverage("OSC")?.stage).toBe("live");
+    expect(getRegulatorCoverage("CVM")?.stage).toBe("live");
     expect(getRegulatorCoverage("CONSOB")?.stage).toBe("pipeline");
     expect(getRegulatorCoverage("CMVM")?.stage).toBe("live");
     expect(getRegulatorCoverage("FINCEN")?.stage).toBe("live");
@@ -287,13 +289,17 @@ describe("regulatorCoverage", () => {
   });
 
   it("keeps the wider global set queued alongside the new Canada regulator", () => {
-    ["TWFSC", "CVM", "CNBV", "CMF"].forEach((code) => {
+    ["TWFSC", "CNBV", "CMF"].forEach((code) => {
       expect(PUBLIC_REGULATOR_CODES).not.toContain(code);
       expect(getRegulatorCoverage(code)?.stage).toBe("pipeline");
     });
 
+    expect(PUBLIC_REGULATOR_CODES).toContain("CVM");
+    expect(getRegulatorCoverage("CVM")?.stage).toBe("live");
+    expect(getRegulatorCoverage("CVM")?.count).toBe(557);
     expect(getRegulatorCoverage("twfsc")?.country).toBe("Taiwan");
     expect(getRegulatorCoverage("cvm")?.country).toBe("Brazil");
+    expect(getRegulatorCoverage("cvm")?.count).toBe(557);
     expect(getRegulatorCoverage("cnbv")?.country).toBe("Mexico");
     expect(getRegulatorCoverage("cmf")?.country).toBe("Chile");
     expect(getRegulatorCoverage("osc")?.country).toBe("Canada");
