@@ -1596,7 +1596,7 @@ const REGULATOR_COVERAGE_SEED: Record<string, RegulatorCoverageSeed> = {
     navOrder: 35,
     overviewPath: "/regulators/osc",
     years: "2003-2025",
-    count: 482,
+    count: 483,
     dataQuality: "Tested live loader",
     note: "Live OSC unpaid sanctions register published from the official delinquent-respondent list and linked Capital Markets Tribunal proceeding pages. A small residual legacy subset still falls back to list-only dates when specific tribunal pages time out.",
     earliestYear: 2003,

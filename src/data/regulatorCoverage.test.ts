@@ -187,7 +187,7 @@ describe("regulatorCoverage", () => {
     expect(getRegulatorCoverage("OCC")?.count).toBe(5579);
     expect(getRegulatorCoverage("FINCEN")?.count).toBe(118);
     expect(getRegulatorCoverage("FINRA")?.count).toBe(3987);
-    expect(getRegulatorCoverage("OSC")?.count).toBe(482);
+    expect(getRegulatorCoverage("OSC")?.count).toBe(483);
     expect(getRegulatorCoverage("SC")?.count).toBe(88);
     expect(getRegulatorCoverage("ASIC")?.count).toBe(112);
     expect(getRegulatorCoverage("HKMA")?.count).toBe(23);
@@ -297,7 +297,7 @@ describe("regulatorCoverage", () => {
     expect(getRegulatorCoverage("cnbv")?.country).toBe("Mexico");
     expect(getRegulatorCoverage("cmf")?.country).toBe("Chile");
     expect(getRegulatorCoverage("osc")?.country).toBe("Canada");
-    expect(getRegulatorCoverage("osc")?.count).toBe(482);
+    expect(getRegulatorCoverage("osc")?.count).toBe(483);
   });
 
   it("groups the Europe and EEA rollout into three explicit phases", () => {
