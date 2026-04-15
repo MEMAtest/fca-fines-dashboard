@@ -69,6 +69,8 @@ jobs:
             script: scrape:fincen
           - code: FINRA
             script: scrape:finra
+          - code: OSC
+            script: scrape:osc
           - code: SEBI
             script: scrape:sebi
           - code: ASIC

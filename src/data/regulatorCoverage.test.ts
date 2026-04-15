@@ -146,7 +146,7 @@ describe("regulatorCoverage", () => {
     expect(getRegulatorCoverage("OCC")?.stage).toBe("live");
     expect(getRegulatorCoverage("FDIC")?.stage).toBe("pipeline");
     expect(getRegulatorCoverage("FRB")?.stage).toBe("pipeline");
-    expect(getRegulatorCoverage("OSC")?.stage).toBe("pipeline");
+    expect(getRegulatorCoverage("OSC")?.stage).toBe("live");
     expect(getRegulatorCoverage("CONSOB")?.stage).toBe("pipeline");
     expect(getRegulatorCoverage("CMVM")?.stage).toBe("live");
     expect(getRegulatorCoverage("FINCEN")?.stage).toBe("live");
@@ -187,6 +187,7 @@ describe("regulatorCoverage", () => {
     expect(getRegulatorCoverage("OCC")?.count).toBe(5579);
     expect(getRegulatorCoverage("FINCEN")?.count).toBe(118);
     expect(getRegulatorCoverage("FINRA")?.count).toBe(3987);
+    expect(getRegulatorCoverage("OSC")?.count).toBe(482);
     expect(getRegulatorCoverage("SC")?.count).toBe(88);
     expect(getRegulatorCoverage("ASIC")?.count).toBe(112);
     expect(getRegulatorCoverage("HKMA")?.count).toBe(23);
@@ -215,6 +216,7 @@ describe("regulatorCoverage", () => {
     expect(DAILY_LIVE_REGULATOR_CODES).toContain("OCC");
     expect(DAILY_LIVE_REGULATOR_CODES).toContain("FINCEN");
     expect(DAILY_LIVE_REGULATOR_CODES).toContain("FINRA");
+    expect(DAILY_LIVE_REGULATOR_CODES).toContain("OSC");
     expect(DAILY_LIVE_REGULATOR_CODES).toContain("SFC");
     expect(DAILY_LIVE_REGULATOR_CODES).toContain("SC");
     expect(DAILY_LIVE_REGULATOR_CODES).not.toContain("DFSA");
@@ -285,7 +287,7 @@ describe("regulatorCoverage", () => {
   });
 
   it("keeps the wider global set queued alongside the new Canada regulator", () => {
-    ["TWFSC", "CVM", "CNBV", "CMF", "OSC"].forEach((code) => {
+    ["TWFSC", "CVM", "CNBV", "CMF"].forEach((code) => {
       expect(PUBLIC_REGULATOR_CODES).not.toContain(code);
       expect(getRegulatorCoverage(code)?.stage).toBe("pipeline");
     });
@@ -295,6 +297,7 @@ describe("regulatorCoverage", () => {
     expect(getRegulatorCoverage("cnbv")?.country).toBe("Mexico");
     expect(getRegulatorCoverage("cmf")?.country).toBe("Chile");
     expect(getRegulatorCoverage("osc")?.country).toBe("Canada");
+    expect(getRegulatorCoverage("osc")?.count).toBe(482);
   });
 
   it("groups the Europe and EEA rollout into three explicit phases", () => {

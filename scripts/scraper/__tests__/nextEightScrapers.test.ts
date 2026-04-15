@@ -28,6 +28,10 @@ import {
   parseFinraArchiveHtml,
 } from "../scrapeFinra.js";
 import {
+  parseOscListingHtml,
+  parseOscProceedingHtml,
+} from "../scrapeOsc.js";
+import {
   extractFincenEntity,
   parseFincenEnforcementHtml,
 } from "../scrapeFincen.js";
@@ -370,6 +374,103 @@ describe("next-eight regulator coverage", () => {
     expect(
       extractFincenEntity("In the Matter of TD Bank, N.A. and TD Bank USA, N.A."),
     ).toBe("TD Bank, N.A. and TD Bank USA, N.A.");
+  });
+
+  it("parses OSC delinquent respondent rows", () => {
+    const html = `
+      <div class="table-listings__content" aria-label="List of Respondent Delinquents">
+        <div class="table-row">
+          <div class="table-row__content">
+            <div class="column-2">Respondent</div>
+            <div class="column-3">Related order</div>
+            <div class="column-2">Amount owing individually</div>
+            <div class="column-3">Amount owing jointly</div>
+            <div class="column-2">Amount outstanding</div>
+          </div>
+        </div>
+        <div class="table-row">
+          <div class="table-row__content">
+            <div class="column-2"><span>1778445 Ontario Inc.</span></div>
+            <div class="column-3"><a href="https://www.capitalmarketstribunal.ca/en/proceedings/smith-re-0">Smith (Re)</a></div>
+            <div class="column-2">$41,150.00</div>
+            <div class="column-3">$37,658.18 (1778445 Ontario Inc. and Willoughby Smith)</div>
+            <div class="column-2">Full</div>
+          </div>
+        </div>
+      </div>
+      <nav class="pager pager--default">
+        <a href="?page=0">1</a>
+        <a href="?page=24">25</a>
+      </nav>
+    `;
+
+    const page = parseOscListingHtml(
+      html,
+      "https://www.osc.ca/en/enforcement/osc-sanctions/individuals-or-companies-unpaid-osc-sanctions?page=0",
+    );
+
+    expect(page.totalPages).toBe(25);
+    expect(page.rows).toHaveLength(1);
+    expect(page.rows[0]?.respondent).toBe("1778445 Ontario Inc.");
+    expect(page.rows[0]?.proceedingName).toBe("Smith (Re)");
+    expect(page.rows[0]?.amountOwingIndividually).toBe(41150);
+    expect(page.rows[0]?.amountOwingJointly).toBe(37658.18);
+    expect(page.rows[0]?.amountOutstandingStatus).toBe("Full");
+  });
+
+  it("parses OSC tribunal proceeding metadata", () => {
+    const html = `
+      <h1 class="title">1415409 Ontario Inc (Re)</h1>
+      <div class="info-card__table__row">
+        <div class="info-card__table__row__label">Notice of Hearing:</div>
+        <div class="info-card__table__row__value">
+          <time datetime="2015-03-17T12:00:00Z">March 17, 2015</time>
+        </div>
+      </div>
+      <div class="table-listings__content" aria-label="List of Documents">
+        <div class="table-row">
+          <div class="table-row__content">
+            <div class="column-2"><time datetime="2015-08-27T12:00:00Z">August 27, 2015</time></div>
+            <div class="column-2">Order</div>
+            <div class="column-6">Order: In the Matter Of 1415409 Ontario Inc. et al.</div>
+            <div class="column-1"><a href="/en/proceedings/1415409-ontario-inc-re/order-matter-1415409-ontario-inc-et-al">HTML</a></div>
+            <div class="column-1"><a href="/sites/default/files/pdfs/proceedings/rad_20150827_1415409-ontario_0.pdf">PDF</a></div>
+          </div>
+        </div>
+      </div>
+    `;
+
+    const proceeding = parseOscProceedingHtml(
+      html,
+      "https://www.capitalmarketstribunal.ca/en/proceedings/1415409-ontario-inc-re",
+    );
+
+    expect(proceeding.proceedingName).toBe("1415409 Ontario Inc (Re)");
+    expect(proceeding.noticeDate).toBe("2015-03-17");
+    expect(proceeding.sanctionDate).toBe("2015-08-27");
+    expect(proceeding.sanctionDocumentType).toBe("Order");
+    expect(proceeding.sanctionUrl).toContain(
+      "/order-matter-1415409-ontario-inc-et-al",
+    );
+  });
+
+  it("parses OSC order subpages directly when the link resolves to a specific order", () => {
+    const html = `
+      <h1 class="title">Order: In the Matter of First Global Data Ltd et al.</h1>
+      <div class="proceeding-document-full__date">
+        <time datetime="2023-06-22T12:00:00Z">June 22, 2023</time>
+        <span class="tag tag--white">Order</span>
+      </div>
+    `;
+
+    const proceeding = parseOscProceedingHtml(
+      html,
+      "https://www.capitalmarketstribunal.ca/en/proceedings/first-global-data-ltd-re/order-matter-first-global-data-ltd-et-al-18",
+    );
+
+    expect(proceeding.sanctionDate).toBe("2023-06-22");
+    expect(proceeding.sanctionDocumentType).toBe("Order");
+    expect(proceeding.sanctionUrl).toContain("order-matter-first-global-data");
   });
 
   it("parses OCC export rows from the official search export", () => {

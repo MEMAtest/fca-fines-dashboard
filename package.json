@@ -64,6 +64,7 @@
     "scrape:occ": "node --import tsx/esm scripts/scraper/scrapeOcc.ts --",
     "scrape:finra": "node --import tsx/esm scripts/scraper/scrapeFinra.ts --",
     "scrape:fincen": "node --import tsx/esm scripts/scraper/scrapeFincen.ts --",
+    "scrape:osc": "node --import tsx/esm scripts/scraper/scrapeOsc.ts --",
     "scrape:sc": "node --import tsx/esm scripts/scraper/scrapeScMalaysia.ts --",
     "scrape:fsc-kr": "node --import tsx/esm scripts/scraper/scrapeFscKr.ts --",
     "scrape:cima": "node --import tsx/esm scripts/scraper/scrapeCima.ts --",
