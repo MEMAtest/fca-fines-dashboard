@@ -35,6 +35,7 @@ import {
   buildCvmSanctionRecords,
   isCvmSanctionStatus,
 } from "../scrapeCvm.js";
+import { buildEuFineRecord } from "../lib/euFineHelpers.js";
 import {
   extractFincenEntity,
   parseFincenEnforcementHtml,
@@ -521,6 +522,39 @@ describe("next-eight regulator coverage", () => {
     expect(rows[0]?.date).toBe("2022-07-01");
     expect(rows[0]?.status).toContain("pagamento de multa");
     expect(rows[0]?.description).toContain("Condenação");
+  });
+
+  it("keeps distinct CVM proceedings separate when firm and date match", () => {
+    const baseRecord = {
+      regulator: "CVM",
+      regulatorFullName: "Comissão de Valores Mobiliários",
+      countryCode: "BR",
+      countryName: "Brazil",
+      firmIndividual: "PAOLO PAPERINI",
+      firmCategory: "Accused Respondent",
+      amount: null,
+      currency: "BRL",
+      dateIssued: "2022-10-07",
+      breachType: "Administrative monetary penalty",
+      breachCategories: ["SUPERVISORY_SANCTION", "MONETARY_PENALTY"],
+      summary:
+        "PAOLO PAPERINI appears in the official CVM sanction-proceedings dataset.",
+      finalNoticeUrl: null,
+      sourceUrl: "https://dados.cvm.gov.br/dataset/processo-sancionador",
+    } as const;
+
+    const first = buildEuFineRecord({
+      ...baseRecord,
+      dedupeKey: "19957004869202195::PAOLO PAPERINI",
+      rawPayload: { processId: "19957004869202195" },
+    });
+    const second = buildEuFineRecord({
+      ...baseRecord,
+      dedupeKey: "19957009140201818::PAOLO PAPERINI",
+      rawPayload: { processId: "19957009140201818" },
+    });
+
+    expect(first.contentHash).not.toBe(second.contentHash);
   });
 
   it("parses OCC export rows from the official search export", () => {

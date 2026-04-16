@@ -112,6 +112,7 @@ export interface ParsedEnforcementRecord {
   summary: string;
   finalNoticeUrl: string | null;
   sourceUrl: string;
+  dedupeKey?: string | null;
   rawPayload: unknown;
 }
 
@@ -562,6 +563,7 @@ export function buildEuFineRecord(record: ParsedEnforcementRecord): DbReadyRecor
       dateIssued: record.dateIssued,
       finalNoticeUrl: record.finalNoticeUrl,
       sourceUrl: record.sourceUrl,
+      dedupeKey: record.dedupeKey ?? null,
     }))
     .digest('hex');
 

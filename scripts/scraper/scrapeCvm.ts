@@ -87,7 +87,7 @@ async function parseCsvFile<T extends Record<string, string | undefined>>(
   return new Promise<T[]>((resolve, reject) => {
     const records: T[] = [];
 
-    createReadStream(csvPath)
+    createReadStream(csvPath, { encoding: "latin1" })
       .pipe(
         parse({
           columns: true,
@@ -222,6 +222,7 @@ function toDbRecords(records: CVMSanctionRecord[]) {
       summary: `${record.firm} appears in the official CVM sanction-proceedings dataset under process ${record.processId}. Status: ${record.status}. ${record.processObject}${record.processPhase ? ` Phase: ${record.processPhase}.` : ""}`,
       finalNoticeUrl: null,
       sourceUrl: CVM_CONFIG.datasetUrl,
+      dedupeKey: `${record.processId}::${record.firm}`,
       rawPayload: record,
     }),
   );
@@ -254,6 +255,22 @@ export async function main() {
     region: "Latin America",
     liveLoader: loadCvmLiveRecords,
     testLoader: loadCvmLiveRecords,
+    afterUpsert: async (sql, records) => {
+      const keepHashes = new Set(records.map((record) => record.contentHash));
+      const existing = await sql<{ id: string; content_hash: string }[]>`
+        select id, content_hash
+        from eu_fines
+        where regulator = 'CVM'
+      `;
+      const staleIds = existing
+        .filter((row) => !keepHashes.has(row.content_hash))
+        .map((row) => row.id);
+
+      if (staleIds.length > 0) {
+        await sql`delete from eu_fines where id in ${sql(staleIds)}`;
+        console.log(`🧹 Removed ${staleIds.length} stale CVM rows`);
+      }
+    },
   });
 }
 
