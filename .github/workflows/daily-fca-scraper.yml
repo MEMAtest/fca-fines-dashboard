@@ -73,6 +73,8 @@ jobs:
             script: scrape:osc
           - code: CVM
             script: scrape:cvm
+          - code: SESC
+            script: scrape:sesc
           - code: SEBI
             script: scrape:sebi
           - code: ASIC

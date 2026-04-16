@@ -26,6 +26,12 @@ import {
   parseMasDetailPayload,
   parseMasListingPayload,
 } from "../scrapeMas.js";
+import {
+  extractSescFirm,
+  parseSescAmount,
+  parseSescListPage,
+  parseSescTopicsPage,
+} from "../scrapeSesc.js";
 
 describe("apac wave scrapers", () => {
   it("parses AUSTRAC enforcement sections across court, undertakings, notices, and remedial directions", () => {
@@ -505,5 +511,136 @@ describe("apac wave scrapers", () => {
         "MAS has imposed a civil penalty of S$70,000 on Mr Tay Joo Heng for insider trading in the shares of GS Holdings Limited.",
       ),
     ).toBe(70_000);
+  });
+
+  it("parses SESC year-grouped listing pages", () => {
+    const html = `
+      <div id="main">
+        <h2>Press Releases of 2026</h2>
+        <ul>
+          <li>
+            <a href="/sesc/english/news/reco/20260331-1.html">
+              Recommendation for Administrative Monetary Penalty Payment Order for Market Manipulation in Shares of ANYCOLOR, Inc. and Four Other Securities by Sigmago Co., Ltd. (March 31, 2026)
+            </a>
+          </li>
+        </ul>
+        <h2>Press Releases of 2022</h2>
+        <ul>
+          <li>
+            <a href="/sesc/english/news/reco/20220823-2.htm">
+              Recommendation for Administrative Action Based on Findings of the Inspection of Japan Advisory LLC (June 29, 2012)
+            </a>
+          </li>
+        </ul>
+      </div>
+    `;
+
+    const entries = parseSescListPage(
+      html,
+      "MARKET_MISCONDUCT",
+      "https://www.fsa.go.jp/sesc/english/news/market_misconduct.html",
+    );
+
+    expect(entries).toHaveLength(1);
+    expect(entries[0]).toMatchObject({
+      title:
+        "Recommendation for Administrative Monetary Penalty Payment Order for Market Manipulation in Shares of ANYCOLOR, Inc. and Four Other Securities by Sigmago Co., Ltd.",
+      dateIssued: "2026-03-31",
+      category: "MARKET_MISCONDUCT",
+      detailUrl:
+        "https://www.fsa.go.jp/sesc/english/news/reco/20260331-1.html",
+    });
+    expect(extractSescFirm(entries[0]?.title || "")).toBe("Sigmago Co., Ltd.");
+  });
+
+  it("parses SESC topics pages with multiple anchored recommendation blocks", () => {
+    const html = `
+      <div id="main">
+        <table class="linenone3">
+          <tr>
+            <th>
+              <a id="topics03"></a>December 5,<br />
+              2025:<br /><br />
+              <a id="topics04"></a>December 5,<br />
+              2025:
+            </th>
+            <td class="no-border">
+              <p>
+                <a href="/sesc/news/c_2025/2025/20251205-1.html">
+                  Recommendation for an administrative monetary penalty payment order against Kushim, Inc. for making false statements in its disclosure documents.
+                </a>
+              </p>
+              <p>
+                &lt;Summary&gt;<br />
+                The SESC recommended an administrative monetary penalty payment order of 6,000,000 yen against Quantum Solutions CO., Ltd.
+              </p>
+              <p>
+                <a href="/sesc/news/c_2025/2025/20251205-2.html">
+                  Recommendation for an administrative monetary penalty payment order against FISCO Ltd. for making false statements in its disclosure documents.
+                </a>
+              </p>
+              <p>
+                &lt;Summary&gt;<br />
+                The SESC recommended an administrative monetary penalty payment order of 15,000,000 yen against FISCO Ltd.
+              </p>
+            </td>
+          </tr>
+        </table>
+      </div>
+    `;
+
+    const blocks = parseSescTopicsPage(
+      html,
+      "https://www.fsa.go.jp/sesc/english/topics/20260123.html",
+    );
+
+    expect(blocks.get("topics03")).toMatchObject({
+      dateIssued: "2025-12-05",
+      title:
+        "Recommendation for an administrative monetary penalty payment order against Kushim, Inc. for making false statements in its disclosure documents.",
+      detailUrl:
+        "https://www.fsa.go.jp/sesc/news/c_2025/2025/20251205-1.html",
+    });
+    expect(blocks.get("topics04")).toMatchObject({
+      dateIssued: "2025-12-05",
+      title:
+        "Recommendation for an administrative monetary penalty payment order against FISCO Ltd. for making false statements in its disclosure documents.",
+      detailUrl:
+        "https://www.fsa.go.jp/sesc/news/c_2025/2025/20251205-2.html",
+    });
+    expect(parseSescAmount(blocks.get("topics04")?.summary || "")).toBe(
+      15_000_000,
+    );
+    expect(
+      extractSescFirm(
+        blocks.get("topics04")?.title || "",
+        blocks.get("topics04")?.summary || "",
+      ),
+    ).toBe("FISCO Ltd.");
+    expect(
+      extractSescFirm(
+        "Recommendation for an administrative monetary penalty payment order for insider trading related to a tender offer for shares of EPS Holdings, Inc. (“the Company”) by an employee (“the Employee”) of the Company.",
+      ),
+    ).toBe("EPS Holdings, Inc.");
+    expect(
+      extractSescFirm(
+        "Filing of a Criminal Charge Regarding Insider Trading Involving Shares of Makino Milling Machine Co., Ltd.",
+      ),
+    ).toBe("Makino Milling Machine Co., Ltd.");
+    expect(
+      extractSescFirm(
+        "Filing of a Criminal Charges in Connection with Insider Trading of Shares of the Toyo Securities Co., Ltd.",
+      ),
+    ).toBe("Toyo Securities Co., Ltd.");
+    expect(
+      parseSescAmount(
+        "The amount of the administrative monetary penalty applicable to the above violations is 1,470,000 yen.",
+      ),
+    ).toBe(1_470_000);
+    expect(
+      parseSescAmount(
+        "The three suspects purchased shares for a total amount of approximately 2,349,800,000 yen before disclosure.",
+      ),
+    ).toBeNull();
   });
 });

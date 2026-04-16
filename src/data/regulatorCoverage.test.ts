@@ -142,7 +142,7 @@ describe("regulatorCoverage", () => {
     expect(getRegulatorCoverage("CNBV")?.stage).toBe("pipeline");
     expect(getRegulatorCoverage("CMF")?.stage).toBe("pipeline");
     expect(getRegulatorCoverage("FINMA")?.stage).toBe("live");
-    expect(getRegulatorCoverage("SESC")?.stage).toBe("pipeline");
+    expect(getRegulatorCoverage("SESC")?.stage).toBe("live");
     expect(getRegulatorCoverage("FINRA")?.stage).toBe("live");
     expect(getRegulatorCoverage("OCC")?.stage).toBe("live");
     expect(getRegulatorCoverage("FDIC")?.stage).toBe("pipeline");
