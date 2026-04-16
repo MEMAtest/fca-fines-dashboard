@@ -324,6 +324,9 @@ function isGenericSescFirmCandidate(candidate: string) {
     || /^(?:one|two|three|four|five|six|seven|eight|nine|ten)\s+suspects?\b/.test(
       normalized,
     )
+    || /^(?:one|two|three|four|five|six|seven|eight|nine|ten)\s+persons?\b/.test(
+      normalized,
+    )
     || /^(?:one|two|three|four|five|six|seven|eight|nine|ten)\s+(?:corporation|individual)\b/.test(
       normalized,
     )
@@ -335,15 +338,21 @@ export function extractSescFirm(title: string, summary = "") {
   const normalizedTitle = normalizeWhitespace(title);
   const normalizedSummary = normalizeWhitespace(summary);
   const patterns = [
+    /recommendation based on inspection results for\s+(.+?)(?:\.|$)/i,
     /order against\s+(.+?)\s+for\b/i,
     /action based on findings of (?:the inspection of )?(.+?)(?:\.|$)/i,
+    /by\s+\w+\s+employees?\s+of\s+(.+?)(?:\s+\(|\s+and\b|\.|$)/i,
+    /entered into an agreement with\s+(.+?)(?:\s+\(|\.|$)/i,
     /by\s+(.+)$/i,
+    /against market manipulation in the shares of\s+(.+?)(?:\s+\(|$)/i,
+    /(?:insider trading|market manipulation)\s+(?:related to|relating to|in)\s+(?:the\s+)?shares of\s+(.+?)(?:\s+\(|\s+using\b|\s+by\b|$)/i,
     /of shares of\s+(.+)$/i,
     /involving shares of\s+(.+)$/i,
     /for shares of\s+(.+?)(?:\s+by\b|$)/i,
     /in shares of\s+(.+?)(?:\s+by\b|$)/i,
     /related to .*?shares of\s+(.+?)(?:\s+by\b|$)/i,
-    /(?:against|for)\s+(.+?)\s+for\b/i,
+    /related to\s+(.+?)(?:\.|$)/i,
+    /against\s+(.+?)\s+for\b/i,
     /against\s+(.+?)(?:\.|$)/i,
   ];
 
@@ -358,6 +367,7 @@ export function extractSescFirm(title: string, summary = "") {
   }
 
   const summaryPatterns = [
+    /inspection of\s+(.+?)\s+\(/i,
     /the suspected corporation,\s+(.+?)\s+\(hereinafter/i,
     /penalty payment order(?: be issued)?(?: of [¥\d, ]+yen)? against\s+(.+?)(?:\s+for\b|\.|$)/i,
     /(?:against|by)\s+(.+?)(?:\s+for|\s+in\b|\.|,|$)/i,

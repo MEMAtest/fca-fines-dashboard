@@ -633,6 +633,26 @@ describe("apac wave scrapers", () => {
       ),
     ).toBe("Toyo Securities Co., Ltd.");
     expect(
+      extractSescFirm(
+        "Recommendation based on Inspection Results for Yamabiko Investment Advisor Inc.",
+      ),
+    ).toBe("Yamabiko Investment Advisor Inc");
+    expect(
+      extractSescFirm(
+        "Recommendation for an administrative monetary penalty payment order and order to submit amended reports against Alphax Food System Co., LTD. for making false statements in its disclosure documents.",
+      ),
+    ).toBe("Alphax Food System Co., LTD.");
+    expect(
+      extractSescFirm(
+        "Recommendation for administrative monetary penalty payment orders for insider trading in the shares of Yoshimura Food Holdings K.K. (“Company”) by four persons who were tipped by a contract negotiator (“Contract Negotiator\") having negotiations to enter into an agreement with the Company.",
+      ),
+    ).toBe("Yoshimura Food Holdings K.K.");
+    expect(
+      extractSescFirm(
+        "Recommendation for an administrative monetary penalty payment order against market manipulation in the shares of JAPAN Creative Platform Group Co., Ltd. (“Company”).",
+      ),
+    ).toBe("JAPAN Creative Platform Group Co., Ltd.");
+    expect(
       parseSescAmount(
         "The amount of the administrative monetary penalty applicable to the above violations is 1,470,000 yen.",
       ),
