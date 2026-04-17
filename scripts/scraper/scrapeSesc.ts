@@ -1,5 +1,6 @@
 import "dotenv/config";
 import * as cheerio from "cheerio";
+import type { Element } from "domhandler";
 import { fileURLToPath } from "node:url";
 import {
   buildEuFineRecord,
@@ -157,7 +158,7 @@ export function parseSescListPage(
 
 function extractTopicAnchors(
   $: cheerio.CheerioAPI,
-  headerCell: cheerio.Cheerio<cheerio.Element>,
+  headerCell: cheerio.Cheerio<Element>,
 ) {
   const anchors: Array<{ anchorId: string; dateIssued: string | null }> = [];
   let currentId: string | null = null;
@@ -299,9 +300,9 @@ function cleanSescFirmCandidate(candidate: string) {
   return normalizeWhitespace(
     candidate
       .replace(/\s*\((?:“[^”]*”|"[^"]*"|'[^']*')\)\s*/g, " ")
-      .replace(/^[Tt]he\s+/, "")
+      .replace(/^the\s+/i, "")
       .replace(
-        /\s+and\s+(?:one|two|three|four|five|six|seven|eight|nine|ten|\d+)\s+other\s+(?:shares?|securities?)$/i,
+        /\s+and\s+(?:(?:one|two|three|four|five|six|seven|eight|nine|ten|\d+)\s+)?other\s+(?:shares?|securities?)$/i,
         "",
       )
       .replace(/[,:;。]+$/, ""),
@@ -320,7 +321,7 @@ function isGenericSescFirmCandidate(candidate: string) {
     "the officer",
     "officer",
   ].includes(normalized)
-    || /^(?:an?|the)\s+(?:employee|officer|suspect|individual)\b/.test(normalized)
+    || /^(?:an?|the)\s+(?:employee|officer|suspect|individual|person|tippee|offender|recipient)\b/.test(normalized)
     || /^(?:one|two|three|four|five|six|seven|eight|nine|ten)\s+suspects?\b/.test(
       normalized,
     )
@@ -339,15 +340,21 @@ export function extractSescFirm(title: string, summary = "") {
   const normalizedSummary = normalizeWhitespace(summary);
   const patterns = [
     /recommendation based on inspection results for\s+(.+?)(?:\.|$)/i,
+    /key members of\s+(.+?)(?:\.|$)/i,
+    /against the president of\s+(.+?)(?:\s+\(|$)/i,
+    /in regard to making false statements in\s+(.+?)['’]s disclosure documents/i,
+    /insider trading in\s+(.+?)\s+stock\b/i,
     /order against\s+(.+?)\s+for\b/i,
     /action based on findings of (?:the inspection of )?(.+?)(?:\.|$)/i,
     /by\s+\w+\s+employees?\s+of\s+(.+?)(?:\s+\(|\s+and\b|\.|$)/i,
+    /negotiated an agreement with\s+(.+?)(?:\.|$)/i,
     /entered into an agreement with\s+(.+?)(?:\s+\(|\.|$)/i,
     /by\s+(.+)$/i,
-    /against market manipulation in the shares of\s+(.+?)(?:\s+\(|$)/i,
-    /(?:insider trading|market manipulation)\s+(?:related to|relating to|in)\s+(?:the\s+)?shares of\s+(.+?)(?:\s+\(|\s+using\b|\s+by\b|$)/i,
     /of shares of\s+(.+)$/i,
     /involving shares of\s+(.+)$/i,
+    /against market manipulation in the shares of\s+(.+?)(?:\s+\(|$)/i,
+    /(?:insider trading|market manipulation)\s+(?:related to|relating to|in)\s+(?:the\s+)?shares of\s+(.+?)(?:\s+\(|\s+using\b|\s+by\b|$)/i,
+    /shares? of\s+(.+?)(?:\s+using\b|\s+by\b|\s+and\s+against\b|\s+and\s+other\b|\s+[("“]|\s+stock\b|\.|$)/i,
     /for shares of\s+(.+?)(?:\s+by\b|$)/i,
     /in shares of\s+(.+?)(?:\s+by\b|$)/i,
     /related to .*?shares of\s+(.+?)(?:\s+by\b|$)/i,
@@ -384,6 +391,13 @@ export function extractSescFirm(title: string, summary = "") {
   }
 
   return normalizedTitle;
+}
+
+function isGenericSescDetailTitle(title: string) {
+  const normalized = normalizeWhitespace(title).toLowerCase();
+  return normalized.startsWith("sesc latest topics")
+    || normalized.startsWith("what's new on the sesc website")
+    || normalized.startsWith("whats new on the sesc website");
 }
 
 function extractSescBreachType(title: string, summary: string) {
@@ -482,7 +496,9 @@ async function enrichSescEntry(
     sourceDetailUrl = block.detailUrl || entry.detailUrl;
   } else {
     const detail = parseSescDetailHtml(html, entry.detailUrl);
-    title = detail.title || title;
+    title = detail.title && !isGenericSescDetailTitle(detail.title)
+      ? detail.title
+      : title;
     dateIssued = detail.dateIssued || dateIssued;
     summary = detail.summary || summary;
   }

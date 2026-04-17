@@ -621,7 +621,7 @@ describe("apac wave scrapers", () => {
       extractSescFirm(
         "Recommendation for an administrative monetary penalty payment order for insider trading related to a tender offer for shares of EPS Holdings, Inc. (“the Company”) by an employee (“the Employee”) of the Company.",
       ),
-    ).toBe("EPS Holdings, Inc.");
+    ).toBe("EPS Holdings, Inc");
     expect(
       extractSescFirm(
         "Filing of a Criminal Charge Regarding Insider Trading Involving Shares of Makino Milling Machine Co., Ltd.",
@@ -652,6 +652,41 @@ describe("apac wave scrapers", () => {
         "Recommendation for an administrative monetary penalty payment order against market manipulation in the shares of JAPAN Creative Platform Group Co., Ltd. (“Company”).",
       ),
     ).toBe("JAPAN Creative Platform Group Co., Ltd.");
+    expect(
+      extractSescFirm(
+        "Recommendation for an administrative monetary penalty payment order against insider trading in the shares of THE NIPPON ROAD CO., LTD. (“Company”) by a person (“Tippee”) who was tipped by an employee (“Employee”) of a party to negotiations to enter into an agreement with a tender offeror.",
+      ),
+    ).toBe("NIPPON ROAD CO., LTD.");
+    expect(
+      extractSescFirm(
+        "Recommendation for an administrative monetary penalty payment order against insider trading in the shares of MINKABU THE INFONOID, Inc. (“Company”) by a person (“Tippee”) who was tipped by an officer of the Company.",
+      ),
+    ).toBe("MINKABU THE INFONOID, Inc.");
+    expect(
+      extractSescFirm(
+        "Recommendation for Administrative Monetary Penalty Payment Orders against a Person for Insider Trading and an Employee for Giving Insider Information While Their Company Negotiated an Agreement with Stream Media Corporation",
+      ),
+    ).toBe("Stream Media Corporation");
+    expect(
+      extractSescFirm(
+        "Recommendation for an administrative monetary penalty payment order against a person for a violation in regard to making false statements in DDS CO. LTD’s disclosure documents.",
+      ),
+    ).toBe("DDS CO. LTD");
+    expect(
+      extractSescFirm(
+        "Recommendation for Administrative Monetary Penalty Payment Order for Insider Trading in ZOZO, Inc. Stock by an Individual Residing Abroad.",
+      ),
+    ).toBe("ZOZO, Inc.");
+    expect(
+      extractSescFirm(
+        "Court issuance of prohibition and stay order against a manager and key members of Global Investment Lab Inc.",
+      ),
+    ).toBe("Global Investment Lab Inc");
+    expect(
+      extractSescFirm(
+        "Court issuance of prohibition and stay order against the president of Mt.light (MTL).",
+      ),
+    ).toBe("Mt.light");
     expect(
       parseSescAmount(
         "The amount of the administrative monetary penalty applicable to the above violations is 1,470,000 yen.",
