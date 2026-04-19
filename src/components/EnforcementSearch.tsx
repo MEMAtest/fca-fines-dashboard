@@ -7,8 +7,9 @@
  * - fallback snippets when highlights are unavailable
  */
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Search, Filter, X, Calendar, DollarSign, Globe } from "lucide-react";
+import { useSearchParams } from "react-router-dom";
 import { PUBLIC_REGULATOR_SHELL_ITEMS } from "../data/regulatorShellNav.js";
 
 interface SearchResult {
@@ -66,8 +67,53 @@ interface SearchResponse {
   };
 }
 
+type SearchCurrency = "GBP" | "EUR";
+
+interface SearchUrlState {
+  query: string;
+  regulator: string;
+  country: string;
+  year: string;
+  minAmount: string;
+  maxAmount: string;
+  currency: SearchCurrency;
+  page: number;
+}
+
+function parseSearchParams(params: URLSearchParams): SearchUrlState {
+  const currency = params.get("currency") === "EUR" ? "EUR" : "GBP";
+  const page = Number.parseInt(params.get("page") ?? "1", 10);
+
+  return {
+    query: params.get("q")?.trim() ?? "",
+    regulator: params.get("regulator") ?? "",
+    country: params.get("country") ?? "",
+    year: params.get("year") ?? "",
+    minAmount: params.get("minAmount") ?? "",
+    maxAmount: params.get("maxAmount") ?? "",
+    currency,
+    page: Number.isFinite(page) && page > 0 ? page : 1,
+  };
+}
+
+function buildSearchParams(state: SearchUrlState) {
+  const params = new URLSearchParams();
+  if (state.query.trim()) params.set("q", state.query.trim());
+  if (state.regulator) params.set("regulator", state.regulator);
+  if (state.country) params.set("country", state.country);
+  if (state.year) params.set("year", state.year);
+  if (state.minAmount) params.set("minAmount", state.minAmount);
+  if (state.maxAmount) params.set("maxAmount", state.maxAmount);
+  if (state.currency !== "GBP") params.set("currency", state.currency);
+  if (state.page > 1) params.set("page", String(state.page));
+  return params;
+}
+
 export function EnforcementSearch() {
-  const [query, setQuery] = useState("");
+  const [searchParams, setSearchParams] = useSearchParams();
+  const initialUrlState = parseSearchParams(searchParams);
+  const serializedSearchParams = searchParams.toString();
+  const [query, setQuery] = useState(initialUrlState.query);
   const [results, setResults] = useState<SearchResult[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -76,14 +122,26 @@ export function EnforcementSearch() {
   >(null);
 
   // Filter states
-  const [showFilters, setShowFilters] = useState(false);
-  const [selectedRegulator, setSelectedRegulator] = useState<string>("");
-  const [selectedCountry, setSelectedCountry] = useState<string>("");
-  const [selectedYear, setSelectedYear] = useState<string>("");
-  const [minAmount, setMinAmount] = useState<string>("");
-  const [maxAmount, setMaxAmount] = useState<string>("");
-  const [currency, setCurrency] = useState<"GBP" | "EUR">("GBP");
-  const [currentPage, setCurrentPage] = useState(1);
+  const [showFilters, setShowFilters] = useState(
+    Boolean(
+      initialUrlState.regulator ||
+        initialUrlState.country ||
+        initialUrlState.year ||
+        initialUrlState.minAmount ||
+        initialUrlState.maxAmount,
+    ),
+  );
+  const [selectedRegulator, setSelectedRegulator] = useState<string>(
+    initialUrlState.regulator,
+  );
+  const [selectedCountry, setSelectedCountry] = useState<string>(
+    initialUrlState.country,
+  );
+  const [selectedYear, setSelectedYear] = useState<string>(initialUrlState.year);
+  const [minAmount, setMinAmount] = useState<string>(initialUrlState.minAmount);
+  const [maxAmount, setMaxAmount] = useState<string>(initialUrlState.maxAmount);
+  const [currency, setCurrency] = useState<SearchCurrency>(initialUrlState.currency);
+  const [currentPage, setCurrentPage] = useState(initialUrlState.page);
 
   // Suggested queries
   const suggestedQueries = [
@@ -124,29 +182,71 @@ export function EnforcementSearch() {
   // Get years (2010-2026)
   const years = Array.from({ length: 17 }, (_, i) => 2026 - i);
 
-  const performSearch = async (nextQuery: string, page: number = 1) => {
-    if (!nextQuery.trim()) {
-      setError("Please enter a search query");
+  const activeSearchState = parseSearchParams(searchParams);
+  const activeQuery = activeSearchState.query;
+
+  useEffect(() => {
+    const nextState = parseSearchParams(searchParams);
+    setQuery(nextState.query);
+    setSelectedRegulator(nextState.regulator);
+    setSelectedCountry(nextState.country);
+    setSelectedYear(nextState.year);
+    setMinAmount(nextState.minAmount);
+    setMaxAmount(nextState.maxAmount);
+    setCurrency(nextState.currency);
+    setCurrentPage(nextState.page);
+    setShowFilters(
+      Boolean(
+        nextState.regulator ||
+          nextState.country ||
+          nextState.year ||
+          nextState.minAmount ||
+          nextState.maxAmount,
+      ),
+    );
+  }, [serializedSearchParams]);
+
+  const commitSearch = (overrides: Partial<SearchUrlState> = {}) => {
+    const nextState: SearchUrlState = {
+      query,
+      regulator: selectedRegulator,
+      country: selectedCountry,
+      year: selectedYear,
+      minAmount,
+      maxAmount,
+      currency,
+      page: 1,
+      ...overrides,
+    };
+    setSearchParams(buildSearchParams(nextState));
+  };
+
+  const executeSearch = async (state: SearchUrlState) => {
+    if (!state.query.trim()) {
+      setResults([]);
+      setPagination(null);
+      setError(null);
+      setLoading(false);
       return;
     }
 
-    const trimmedQuery = nextQuery.trim();
+    const trimmedQuery = state.query.trim();
     setLoading(true);
     setError(null);
 
     try {
       const params = new URLSearchParams({
         q: trimmedQuery,
-        currency,
+        currency: state.currency,
         limit: "20",
-        offset: String((page - 1) * 20),
+        offset: String((state.page - 1) * 20),
       });
 
-      if (selectedRegulator) params.append("regulator", selectedRegulator);
-      if (selectedCountry) params.append("country", selectedCountry);
-      if (selectedYear) params.append("year", selectedYear);
-      if (minAmount) params.append("minAmount", minAmount);
-      if (maxAmount) params.append("maxAmount", maxAmount);
+      if (state.regulator) params.append("regulator", state.regulator);
+      if (state.country) params.append("country", state.country);
+      if (state.year) params.append("year", state.year);
+      if (state.minAmount) params.append("minAmount", state.minAmount);
+      if (state.maxAmount) params.append("maxAmount", state.maxAmount);
 
       const response = await fetch(`/api/search?${params.toString()}`);
 
@@ -158,7 +258,7 @@ export function EnforcementSearch() {
       const data: SearchResponse = await response.json();
       setResults(data.results);
       setPagination(data.pagination);
-      setCurrentPage(page);
+      setCurrentPage(data.pagination.currentPage);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Unknown error");
       setResults([]);
@@ -168,16 +268,22 @@ export function EnforcementSearch() {
     }
   };
 
+  useEffect(() => {
+    void executeSearch(activeSearchState);
+  }, [serializedSearchParams]);
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    setCurrentPage(1);
-    void performSearch(query, 1);
+    if (!query.trim()) {
+      setError("Please enter a search query");
+      return;
+    }
+    commitSearch({ query, page: 1 });
   };
 
   const handleSuggestedQuery = (suggested: string) => {
     setQuery(suggested);
-    setCurrentPage(1);
-    void performSearch(suggested, 1);
+    commitSearch({ query: suggested, page: 1 });
   };
 
   const clearFilters = () => {
@@ -186,6 +292,18 @@ export function EnforcementSearch() {
     setSelectedYear("");
     setMinAmount("");
     setMaxAmount("");
+    setSearchParams(
+      buildSearchParams({
+        query,
+        regulator: "",
+        country: "",
+        year: "",
+        minAmount: "",
+        maxAmount: "",
+        currency,
+        page: 1,
+      }),
+    );
   };
 
   const formatAmount = (amount: number, curr: "GBP" | "EUR") => {
@@ -578,7 +696,7 @@ export function EnforcementSearch() {
               <span style={{ color: "#4f46e5" }}>
                 {pagination.total.toLocaleString()}
               </span>{" "}
-              results for "<span style={{ fontStyle: "italic" }}>{query}</span>"
+              results for "<span style={{ fontStyle: "italic" }}>{activeQuery}</span>"
             </h2>
           </div>
         )}
@@ -796,7 +914,7 @@ export function EnforcementSearch() {
             }}
           >
             <button
-              onClick={() => void performSearch(query, currentPage - 1)}
+              onClick={() => commitSearch({ page: currentPage - 1 })}
               disabled={currentPage === 1 || loading}
               style={{
                 padding: "0.75rem 1.5rem",
@@ -834,7 +952,7 @@ export function EnforcementSearch() {
             </span>
 
             <button
-              onClick={() => void performSearch(query, currentPage + 1)}
+              onClick={() => commitSearch({ page: currentPage + 1 })}
               disabled={!pagination.hasMore || loading}
               style={{
                 padding: "0.75rem 1.5rem",
@@ -860,7 +978,7 @@ export function EnforcementSearch() {
         )}
 
         {/* Empty State */}
-        {!loading && results.length === 0 && query && !error && (
+        {!loading && results.length === 0 && activeQuery && !error && (
           <div style={{ textAlign: "center", padding: "4rem 1.5rem" }}>
             <Search
               size={56}
@@ -912,7 +1030,7 @@ export function EnforcementSearch() {
         )}
 
         {/* Initial State (before first search) */}
-        {!loading && !query && results.length === 0 && (
+        {!loading && !activeQuery && results.length === 0 && (
           <div style={{ textAlign: "center", padding: "3rem 1.5rem" }}>
             <div
               style={{

@@ -1,3 +1,4 @@
+import Fuse from 'fuse.js';
 import { PUBLIC_REGULATOR_NAV_ITEMS } from '../../src/data/regulatorCoverage.js';
 
 const ACRONYM_EXPANSIONS: Record<string, string[]> = {
@@ -84,6 +85,34 @@ const LOW_SIGNAL_SEARCH_TOKENS = new Set([
   'sanctions',
 ]);
 
+const BASE_FUZZY_SEARCH_PHRASES = unique([
+  ...PUBLIC_REGULATOR_NAV_ITEMS.flatMap((coverage) => [
+    coverage.code,
+    coverage.fullName,
+    coverage.country,
+  ]),
+  ...Object.keys(ACRONYM_EXPANSIONS),
+  ...Object.values(ACRONYM_EXPANSIONS).flat(),
+  'anti money laundering',
+  'financial crime',
+  'transaction monitoring',
+  'customer due diligence',
+  'know your customer',
+  'source of funds',
+  'source of wealth',
+  'suspicious activity reporting',
+  'counter terrorist financing',
+  'sanctions compliance',
+  'market abuse',
+  'market manipulation',
+  'insider trading',
+  'governance',
+  'accountability',
+  'board oversight',
+  'books and records',
+  'record keeping',
+]);
+
 export interface PreparedEnforcementSearch {
   normalizedQuery: string;
   searchQuery: string;
@@ -98,8 +127,24 @@ export interface PreparedEnforcementSearch {
   hasSearchIntent: boolean;
 }
 
+export interface FuzzySearchResolution {
+  correctedTerms: string[];
+  correctedQuery: string;
+  corrections: Array<{ from: string; to: string }>;
+  changed: boolean;
+}
+
 function unique<T>(values: T[]) {
   return Array.from(new Set(values));
+}
+
+function tokenizeFuzzyPhrase(value: string) {
+  return unique(
+    normalizeSearchQuery(value)
+      .toLowerCase()
+      .split(/[^a-z0-9]+/i)
+      .filter((token) => token.length >= 3 && !LOW_SIGNAL_SEARCH_TOKENS.has(token)),
+  );
 }
 
 function toLikePatterns(term: string) {
@@ -308,6 +353,76 @@ export function expandSearchTerms(tokens: string[]) {
   return unique(
     tokens.flatMap((token) => [token, ...(ACRONYM_EXPANSIONS[token] ?? [])]),
   );
+}
+
+export function buildFuzzySearchVocabulary(candidatePhrases: string[]) {
+  return unique([
+    ...BASE_FUZZY_SEARCH_PHRASES.flatMap((phrase) => tokenizeFuzzyPhrase(phrase)),
+    ...candidatePhrases.flatMap((phrase) => tokenizeFuzzyPhrase(phrase)),
+  ]);
+}
+
+export function resolveFuzzySearchTerms(
+  terms: string[],
+  candidatePhrases: string[],
+): FuzzySearchResolution {
+  const vocabulary = buildFuzzySearchVocabulary(candidatePhrases);
+  if (terms.length === 0 || vocabulary.length === 0) {
+    return {
+      correctedTerms: terms,
+      correctedQuery: terms.join(' '),
+      corrections: [],
+      changed: false,
+    };
+  }
+
+  const exactVocabulary = new Set(vocabulary);
+  const fuse = new Fuse(
+    vocabulary.map((value) => ({ value })),
+    {
+      keys: ['value'],
+      threshold: 0.24,
+      ignoreLocation: true,
+      includeScore: true,
+      minMatchCharLength: 3,
+    },
+  );
+
+  const corrections: Array<{ from: string; to: string }> = [];
+  const correctedTerms = terms.map((term) => {
+    if (
+      term.length < 4
+      || exactVocabulary.has(term)
+      || COMMON_STOPWORDS.has(term)
+      || LOW_SIGNAL_SEARCH_TOKENS.has(term)
+    ) {
+      return term;
+    }
+
+    const bestMatch = fuse.search(term, { limit: 1 })[0];
+    const candidate = bestMatch?.item.value;
+    const score = bestMatch?.score;
+    if (
+      !candidate
+      || score == null
+      || score > 0.24
+      || candidate === term
+      || candidate[0] !== term[0]
+      || Math.abs(candidate.length - term.length) > 3
+    ) {
+      return term;
+    }
+
+    corrections.push({ from: term, to: candidate });
+    return candidate;
+  });
+
+  return {
+    correctedTerms,
+    correctedQuery: correctedTerms.join(' ').trim(),
+    corrections,
+    changed: corrections.length > 0,
+  };
 }
 
 export function normalizeCountryCode(country: string | null | undefined) {

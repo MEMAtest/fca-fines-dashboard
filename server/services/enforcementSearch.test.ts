@@ -1,9 +1,11 @@
 import { describe, expect, it } from 'vitest';
 import {
   buildFallbackSnippet,
+  buildFuzzySearchVocabulary,
   normalizeCountryCode,
   normalizeSearchQuery,
   prepareEnforcementSearch,
+  resolveFuzzySearchTerms,
   stripSnippetHtml,
 } from './enforcementSearch.js';
 
@@ -113,6 +115,32 @@ describe('enforcementSearch helpers', () => {
 
     expect(prepared.regulatorHints).toContain('SEBI');
     expect(prepared.countryHints).toContain('AE');
+  });
+
+  it('builds a fuzzy vocabulary from static and dynamic search phrases', () => {
+    const vocabulary = buildFuzzySearchVocabulary(['Goldman Sachs & Co. LLC']);
+
+    expect(vocabulary).toEqual(
+      expect.arrayContaining(['goldman', 'sachs', 'anti', 'laundering']),
+    );
+  });
+
+  it('corrects typoed search terms against candidate phrases', () => {
+    const resolution = resolveFuzzySearchTerms(
+      ['goldmn', 'sachs', 'laundring'],
+      ['Goldman Sachs & Co. LLC', 'anti money laundering'],
+    );
+
+    expect(resolution.correctedTerms).toEqual([
+      'goldman',
+      'sachs',
+      'laundering',
+    ]);
+    expect(resolution.corrections).toEqual([
+      { from: 'goldmn', to: 'goldman' },
+      { from: 'laundring', to: 'laundering' },
+    ]);
+    expect(resolution.changed).toBe(true);
   });
 
   it('marks stopword-only queries as low-signal', () => {

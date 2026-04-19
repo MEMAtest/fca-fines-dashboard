@@ -77,6 +77,15 @@ test.describe('Enforcement Search', () => {
     await expect(firstResultTitle).toContainText('Goldman Sachs & Co. LLC');
   });
 
+  test('rescues typoed firm-name searches with fuzzy matching', async ({ page }) => {
+    await openSearch(page);
+    await submitSearch(page, 'Goldmn Sachs enforcement');
+
+    await expect(page.locator('h3').first()).toContainText(
+      'Goldman Sachs & Co. LLC',
+    );
+  });
+
   test('keeps mixed firm and regulator queries anchored on the expected entity', async ({
     page,
   }) => {
@@ -162,19 +171,12 @@ test.describe('Enforcement Search', () => {
   test('submits the country filter as a canonical country code', async ({
     page,
   }) => {
-    const requestedCountries: string[] = [];
-    await page.route('**/api/search**', async (route) => {
-      const url = new URL(route.request().url());
-      requestedCountries.push(url.searchParams.get('country') ?? '');
-      await fulfillSearch(route);
-    });
-
-    await page.goto('/search');
+    await openSearch(page);
     await page.getByRole('button', { name: /Show Filters/i }).click();
     await page.getByLabel('Filter by country').selectOption('DE');
     await submitSearch(page, 'Germany compliance failures');
 
-    expect(requestedCountries.at(-1)).toBe('DE');
+    await expect(page).toHaveURL(/country=DE/);
     await expect(
       page.getByRole('heading', { name: /NordWest Broker GmbH/i }),
     ).toBeVisible();
@@ -230,23 +232,25 @@ test.describe('Enforcement Search', () => {
   });
 
   test('retains the search query across pagination requests', async ({ page }) => {
-    const seenQueries: string[] = [];
-    const seenOffsets: string[] = [];
-
-    await page.route('**/api/search**', async (route) => {
-      const url = new URL(route.request().url());
-      seenQueries.push(url.searchParams.get('q') ?? '');
-      seenOffsets.push(url.searchParams.get('offset') ?? '0');
-      await fulfillSearch(route);
-    });
-
-    await page.goto('/search');
+    await openSearch(page);
     await submitSearch(page, 'AML');
     await page.getByRole('button', { name: /Next/i }).click();
 
-    expect(seenQueries.at(-1)).toBe('AML');
-    expect(seenOffsets.at(-1)).not.toBe('0');
+    await expect(page).toHaveURL(/q=AML/);
+    await expect(page).toHaveURL(/page=2/);
     await expect(page.getByText(/Page 2 of/i)).toBeVisible();
+  });
+
+  test('hydrates query and filters from the url', async ({ page }) => {
+    await page.route('**/api/search**', fulfillSearch);
+    await page.goto('/search?q=Coinbase%20Europe%20AML&regulator=CBI&country=IE&page=1');
+
+    await expect(page.getByLabel('Search enforcement actions')).toHaveValue(
+      'Coinbase Europe AML',
+    );
+    await expect(page.getByRole('heading', { name: /Coinbase Europe Limited/i })).toBeVisible();
+    await expect(page.getByLabel('Filter by regulator')).toHaveValue('CBI');
+    await expect(page.getByLabel('Filter by country')).toHaveValue('IE');
   });
 
   test('clears filters without clearing the current query', async ({ page }) => {
@@ -257,8 +261,9 @@ test.describe('Enforcement Search', () => {
     await page.getByLabel('Filter by country').selectOption('US');
     await page.getByRole('button', { name: /Clear All Filters/i }).click();
 
-    await expect(page.getByLabel('Filter by regulator')).toHaveValue('');
-    await expect(page.getByLabel('Filter by country')).toHaveValue('');
+    await expect(page).toHaveURL(/q=AML/);
+    await expect(page).not.toHaveURL(/regulator=/);
+    await expect(page).not.toHaveURL(/country=/);
     await expect(page.getByLabel('Search enforcement actions')).toHaveValue('AML');
   });
 

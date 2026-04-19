@@ -14,6 +14,7 @@ import {
   buildFallbackSnippet,
   normalizeCountryCode,
   prepareEnforcementSearch,
+  resolveFuzzySearchTerms,
   stripSnippetHtml,
 } from '../server/services/enforcementSearch.js';
 
@@ -51,6 +52,74 @@ interface SearchRow {
 function toFiniteNumber(value: string | number | null | undefined) {
   const parsed = Number(value ?? 0);
   return Number.isFinite(parsed) ? parsed : 0;
+}
+
+async function fetchFuzzyCandidatePhrases({
+  regulator,
+  countryCode,
+  year,
+}: {
+  regulator: string | undefined;
+  countryCode: string | null;
+  year: string | undefined;
+}) {
+  const conditions: string[] = [`firm_individual IS NOT NULL`, `firm_individual <> ''`];
+  const params: Array<string | number | readonly string[]> = [];
+
+  if (regulator) {
+    params.push(regulator);
+    conditions.push(`regulator = $${params.length}`);
+  } else {
+    params.push(PUBLIC_REGULATOR_CODES);
+    conditions.push(`regulator = ANY($${params.length})`);
+  }
+
+  if (countryCode) {
+    params.push(countryCode);
+    conditions.push(`country_code = $${params.length}`);
+  }
+
+  if (year) {
+    const yearNum = Number.parseInt(year, 10);
+    if (!Number.isNaN(yearNum)) {
+      params.push(yearNum);
+      conditions.push(`year_issued = $${params.length}`);
+    }
+  }
+
+  const rows = await sql.unsafe<
+    Array<{
+      firm_individual: string | null;
+      regulator: string | null;
+      regulator_full_name: string | null;
+      country_name: string | null;
+      breach_type: string | null;
+    }>
+  >(
+    `
+      SELECT DISTINCT ON (firm_individual)
+        firm_individual,
+        regulator,
+        regulator_full_name,
+        country_name,
+        breach_type
+      FROM all_regulatory_fines
+      WHERE ${conditions.join(' AND ')}
+      ORDER BY firm_individual, date_issued DESC
+      LIMIT 1200
+    `,
+    params,
+  );
+
+  return rows.flatMap((row) =>
+    [
+      row.firm_individual,
+      row.regulator,
+      row.regulator_full_name,
+      row.country_name,
+      row.breach_type,
+    ].filter((value): value is string => Boolean(value && value.trim())),
+  );
 }
 
 function buildEmptySearchResponse({
@@ -179,6 +248,28 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       );
     }
 
+    const shouldAttemptFuzzyCorrection = prepared.meaningfulTerms.some(
+      (term) => term.length >= 4,
+    );
+    const fuzzyCandidatePhrases = shouldAttemptFuzzyCorrection
+      ? await fetchFuzzyCandidatePhrases({
+          regulator,
+          countryCode: normalizedCountryCode,
+          year,
+        })
+      : [];
+    const fuzzyResolution = shouldAttemptFuzzyCorrection
+      ? resolveFuzzySearchTerms(prepared.meaningfulTerms, fuzzyCandidatePhrases)
+      : {
+          correctedTerms: prepared.meaningfulTerms,
+          correctedQuery: prepared.meaningfulTerms.join(' '),
+          corrections: [],
+          changed: false,
+        };
+    const fuzzyPrepared = fuzzyResolution.changed
+      ? prepareEnforcementSearch(fuzzyResolution.correctedQuery)
+      : null;
+
     const conditions: string[] = [];
     const params: Array<string | number | readonly string[] | null> = [
       searchQuery,
@@ -188,6 +279,10 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       prepared.regulatorHints,
       prepared.countryHints,
       prepared.categoryHints,
+      fuzzyPrepared?.searchQuery ?? '',
+      fuzzyPrepared?.phrasePattern ?? '',
+      fuzzyPrepared?.searchPatterns ?? [],
+      fuzzyPrepared?.minimumTokenMatches ?? 0,
     ];
 
     if (regulator) {
@@ -259,6 +354,11 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
             ELSE 0
           END AS firm_match_score,
           CASE
+            WHEN $8 <> '' AND LOWER(COALESCE(firm_individual, '')) = LOWER($8) THEN 180
+            WHEN $9 <> '' AND COALESCE(firm_individual, '') ILIKE $9 THEN 120
+            ELSE 0
+          END AS fuzzy_firm_match_score,
+          CASE
             WHEN COALESCE(array_length($5::text[], 1), 0) > 0
               AND regulator = ANY($5::text[])
               THEN 35
@@ -293,6 +393,12 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
             ELSE 0
           END AS full_text_rank,
           CASE
+            WHEN $8 <> ''
+              AND search_vector @@ websearch_to_tsquery('english', $8)
+              THEN ts_rank_cd(search_vector, websearch_to_tsquery('english', $8))
+            ELSE 0
+          END AS fuzzy_full_text_rank,
+          CASE
             WHEN $2 <> ''
               AND (
                 COALESCE(summary, '') ILIKE $2
@@ -312,6 +418,26 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
               THEN 50
             ELSE 0
           END AS phrase_match_score,
+          CASE
+            WHEN $9 <> ''
+              AND (
+                COALESCE(summary, '') ILIKE $9
+                OR COALESCE(breach_type, '') ILIKE $9
+                OR COALESCE(
+                  CASE WHEN jsonb_typeof(breach_categories) = 'string'
+                    THEN (breach_categories #>> '{}')
+                    ELSE breach_categories::text
+                  END,
+                  ''
+                ) ILIKE $9
+                OR COALESCE(firm_individual, '') ILIKE $9
+                OR COALESCE(country_name, '') ILIKE $9
+                OR COALESCE(regulator, '') ILIKE $9
+                OR COALESCE(regulator_full_name, '') ILIKE $9
+              )
+              THEN 25
+            ELSE 0
+          END AS fuzzy_phrase_match_score,
           (
             SELECT COUNT(*)::int
             FROM unnest($3::text[]) AS pattern
@@ -329,6 +455,23 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
               OR COALESCE(regulator, '') ILIKE pattern
               OR COALESCE(regulator_full_name, '') ILIKE pattern
           ) AS token_match_score,
+          (
+            SELECT COUNT(*)::int
+            FROM unnest($10::text[]) AS pattern
+            WHERE COALESCE(firm_individual, '') ILIKE pattern
+              OR COALESCE(breach_type, '') ILIKE pattern
+              OR COALESCE(
+                CASE WHEN jsonb_typeof(breach_categories) = 'string'
+                  THEN (breach_categories #>> '{}')
+                  ELSE breach_categories::text
+                END,
+                ''
+              ) ILIKE pattern
+              OR COALESCE(summary, '') ILIKE pattern
+              OR COALESCE(country_name, '') ILIKE pattern
+              OR COALESCE(regulator, '') ILIKE pattern
+              OR COALESCE(regulator_full_name, '') ILIKE pattern
+          ) AS fuzzy_token_match_score,
           CASE
             WHEN $1 <> ''
               AND search_vector @@ websearch_to_tsquery('english', $1)
@@ -336,6 +479,14 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
                 'english',
                 COALESCE(summary, breach_type, firm_individual, ''),
                 websearch_to_tsquery('english', $1),
+                'MaxWords=45, MinWords=20, MaxFragments=1'
+              )
+            WHEN $8 <> ''
+              AND search_vector @@ websearch_to_tsquery('english', $8)
+              THEN ts_headline(
+                'english',
+                COALESCE(summary, breach_type, firm_individual, ''),
+                websearch_to_tsquery('english', $8),
                 'MaxWords=45, MinWords=20, MaxFragments=1'
               )
             ELSE NULL
@@ -380,18 +531,23 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         FROM filtered_results
         WHERE
           firm_match_score > 0
+          OR fuzzy_firm_match_score > 0
           OR regulator_hint_score > 0
           OR country_hint_score > 0
           OR category_match_score > 0
           OR full_text_rank > 0
+          OR fuzzy_full_text_rank > 0
           OR phrase_match_score > 0
+          OR fuzzy_phrase_match_score > 0
           OR token_match_score >= $4
+          OR fuzzy_token_match_score >= $11
       ),
       scored_results AS (
         SELECT
           *,
           (
             firm_match_score
+            + fuzzy_firm_match_score
             + regulator_hint_score
             + country_hint_score
             + category_match_score
@@ -399,8 +555,11 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
             + country_theme_synergy_score
             + category_theme_synergy_score
             + phrase_match_score
+            + fuzzy_phrase_match_score
             + token_match_score
+            + fuzzy_token_match_score
             + (full_text_rank * 100)
+            + (fuzzy_full_text_rank * 60)
           ) AS combined_score
         FROM ranked_results
       )
@@ -430,6 +589,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       FROM scored_results
       ORDER BY
         firm_match_score DESC,
+        fuzzy_firm_match_score DESC,
         regulator_theme_synergy_score DESC,
         country_theme_synergy_score DESC,
         category_theme_synergy_score DESC,
@@ -437,8 +597,11 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         country_hint_score DESC,
         category_match_score DESC,
         full_text_rank DESC,
+        fuzzy_full_text_rank DESC,
         phrase_match_score DESC,
+        fuzzy_phrase_match_score DESC,
         token_match_score DESC,
+        fuzzy_token_match_score DESC,
         date_issued DESC
       LIMIT $${params.length + 1}
       OFFSET $${params.length + 2}
@@ -458,6 +621,11 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
             WHEN COALESCE(firm_individual, '') ILIKE $2 THEN 200
             ELSE 0
           END AS firm_match_score,
+          CASE
+            WHEN $8 <> '' AND LOWER(COALESCE(firm_individual, '')) = LOWER($8) THEN 180
+            WHEN $9 <> '' AND COALESCE(firm_individual, '') ILIKE $9 THEN 120
+            ELSE 0
+          END AS fuzzy_firm_match_score,
           CASE
             WHEN COALESCE(array_length($5::text[], 1), 0) > 0
               AND regulator = ANY($5::text[])
@@ -493,6 +661,12 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
             ELSE 0
           END AS full_text_rank,
           CASE
+            WHEN $8 <> ''
+              AND search_vector @@ websearch_to_tsquery('english', $8)
+              THEN ts_rank_cd(search_vector, websearch_to_tsquery('english', $8))
+            ELSE 0
+          END AS fuzzy_full_text_rank,
+          CASE
             WHEN $2 <> ''
               AND (
                 COALESCE(summary, '') ILIKE $2
@@ -512,6 +686,26 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
               THEN 50
             ELSE 0
           END AS phrase_match_score,
+          CASE
+            WHEN $9 <> ''
+              AND (
+                COALESCE(summary, '') ILIKE $9
+                OR COALESCE(breach_type, '') ILIKE $9
+                OR COALESCE(
+                  CASE WHEN jsonb_typeof(breach_categories) = 'string'
+                    THEN (breach_categories #>> '{}')
+                    ELSE breach_categories::text
+                  END,
+                  ''
+                ) ILIKE $9
+                OR COALESCE(firm_individual, '') ILIKE $9
+                OR COALESCE(country_name, '') ILIKE $9
+                OR COALESCE(regulator, '') ILIKE $9
+                OR COALESCE(regulator_full_name, '') ILIKE $9
+              )
+              THEN 25
+            ELSE 0
+          END AS fuzzy_phrase_match_score,
           (
             SELECT COUNT(*)::int
             FROM unnest($3::text[]) AS pattern
@@ -528,7 +722,24 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
               OR COALESCE(country_name, '') ILIKE pattern
               OR COALESCE(regulator, '') ILIKE pattern
               OR COALESCE(regulator_full_name, '') ILIKE pattern
-          ) AS token_match_score
+          ) AS token_match_score,
+          (
+            SELECT COUNT(*)::int
+            FROM unnest($10::text[]) AS pattern
+            WHERE COALESCE(firm_individual, '') ILIKE pattern
+              OR COALESCE(breach_type, '') ILIKE pattern
+              OR COALESCE(
+                CASE WHEN jsonb_typeof(breach_categories) = 'string'
+                  THEN (breach_categories #>> '{}')
+                  ELSE breach_categories::text
+                END,
+                ''
+              ) ILIKE pattern
+              OR COALESCE(summary, '') ILIKE pattern
+              OR COALESCE(country_name, '') ILIKE pattern
+              OR COALESCE(regulator, '') ILIKE pattern
+              OR COALESCE(regulator_full_name, '') ILIKE pattern
+          ) AS fuzzy_token_match_score
         FROM all_regulatory_fines
         ${filterWhereClause}
       )
@@ -536,12 +747,16 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       FROM filtered_results
       WHERE
         firm_match_score > 0
+        OR fuzzy_firm_match_score > 0
         OR regulator_hint_score > 0
         OR country_hint_score > 0
         OR category_match_score > 0
         OR full_text_rank > 0
+        OR fuzzy_full_text_rank > 0
         OR phrase_match_score > 0
+        OR fuzzy_phrase_match_score > 0
         OR token_match_score >= $4
+        OR fuzzy_token_match_score >= $11
     `;
 
     const countResult = await sql.unsafe<{ count: number }[]>(countQuery, params);
@@ -601,15 +816,23 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         searchMethod: 'hybrid',
         indexType: 'full-text + ilike fallback',
         language: 'english',
+        correction: fuzzyResolution.changed
+          ? {
+              correctedQuery: fuzzyResolution.correctedQuery,
+              corrections: fuzzyResolution.corrections,
+            }
+          : null,
         indexSignals: {
           conceptEnrichment: true,
           breachCategoryFallback: true,
           lowSignalGuard: true,
+          fuzzyTermCorrection: fuzzyResolution.changed,
         },
         weights: {
           firm: 'exact / phrase firm matches',
           fullText: 'search_vector full-text ranking',
           fallback: 'phrase and token fallback matching',
+          fuzzy: 'typo-tolerant token correction with lower ranking weight',
         },
       },
     });

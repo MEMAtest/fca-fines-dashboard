@@ -1,6 +1,7 @@
 import {
   normalizeCountryCode,
   prepareEnforcementSearch,
+  resolveFuzzySearchTerms,
 } from '../server/services/enforcementSearch.js';
 
 export interface MockSearchResult {
@@ -322,8 +323,23 @@ function scoreResult(result: MockSearchResult, query: string) {
     return 0;
   }
 
+  const fuzzyResolution = resolveFuzzySearchTerms(
+    prepared.meaningfulTerms,
+    SEARCH_FIXTURES.flatMap((candidate) => [
+      candidate.firm,
+      candidate.regulator,
+      candidate.regulatorFullName,
+      candidate.countryName,
+      candidate.breachType,
+    ]),
+  );
+  const fuzzyPrepared = fuzzyResolution.changed
+    ? prepareEnforcementSearch(fuzzyResolution.correctedQuery)
+    : null;
+
   const haystack = normalizeHaystack(buildHaystack(result));
   const searchQuery = prepared.searchQuery.toLowerCase();
+  const fuzzySearchQuery = fuzzyPrepared?.searchQuery.toLowerCase() ?? '';
   let score = 0;
 
   if (searchQuery && result.firm.toLowerCase() === searchQuery) {
@@ -360,6 +376,23 @@ function scoreResult(result: MockSearchResult, query: string) {
     score += 50;
   }
 
+  if (fuzzySearchQuery) {
+    if (result.firm.toLowerCase() === fuzzySearchQuery) {
+      score += 120;
+    } else if (result.firm.toLowerCase().includes(fuzzySearchQuery)) {
+      score += 80;
+    }
+
+    if (
+      result.summary.toLowerCase().includes(fuzzySearchQuery) ||
+      result.breachType.toLowerCase().includes(fuzzySearchQuery) ||
+      result.firm.toLowerCase().includes(fuzzySearchQuery) ||
+      result.regulatorFullName.toLowerCase().includes(fuzzySearchQuery)
+    ) {
+      score += 25;
+    }
+  }
+
   let tokenHits = 0;
   for (const pattern of prepared.searchPatterns) {
     const fragment = normalizeHaystack(pattern.replaceAll('%', ' '));
@@ -368,6 +401,17 @@ function scoreResult(result: MockSearchResult, query: string) {
     }
   }
   score += tokenHits * 5;
+
+  if (fuzzyPrepared) {
+    let fuzzyTokenHits = 0;
+    for (const pattern of fuzzyPrepared.searchPatterns) {
+      const fragment = normalizeHaystack(pattern.replaceAll('%', ' '));
+      if (fragment && haystack.includes(fragment)) {
+        fuzzyTokenHits += 1;
+      }
+    }
+    score += fuzzyTokenHits * 3;
+  }
 
   if (prepared.regulatorHints.includes(result.regulator) && tokenHits >= 1) {
     score += 25;
