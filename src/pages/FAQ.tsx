@@ -35,9 +35,9 @@ const categoryDescriptions: Record<FAQItem["category"], string> = {
 export function FAQ() {
   useSEO({
     title:
-      "Regulatory Fines FAQ | Questions About Global Financial Enforcement | RegActions",
+      "Regulatory Fines FAQ | Global Financial Enforcement | RegActions",
     description:
-      "Answers to common questions about regulatory fines and enforcement actions from 45+ global financial regulators including FCA, BaFin, SEC, ASIC, and MAS. Compare enforcement approaches, learn how fines are calculated, and understand global trends.",
+      "Answers to common questions about regulatory fines from 45+ global financial regulators including FCA, BaFin, SEC, ASIC, and MAS. Compare enforcement trends.",
     keywords:
       "regulatory fines FAQ, global enforcement questions, FCA fines, BaFin fines, SEC enforcement, ASIC fines, MAS penalties, ESMA regulation, financial regulator comparison, AML enforcement, biggest regulatory fines, RegActions",
     canonicalPath: "/faq",

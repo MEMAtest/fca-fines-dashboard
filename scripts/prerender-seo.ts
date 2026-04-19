@@ -160,7 +160,7 @@ const HOWTO_SCHEMA = {
   "@type": "HowTo",
   name: "How to Search the Global Regulatory Fines Database",
   description:
-    "Step-by-step guide to searching and filtering enforcement actions from 34+ global financial regulators using the interactive dashboard.",
+    "Step-by-step guide to searching and filtering enforcement actions from 45+ global financial regulators using the interactive dashboard.",
   step: [
     {
       "@type": "HowToStep",
@@ -264,7 +264,7 @@ function generatePageGraph(meta: PageMeta): object {
       url: BASE_URL,
       logo: { "@type": "ImageObject", url: `${BASE_URL}/regactions-mark.png` },
       description:
-        "Global regulatory enforcement intelligence from 34+ financial regulators worldwide",
+        "Global regulatory enforcement intelligence from 45+ financial regulators worldwide",
     },
     {
       "@type": "WebSite",
@@ -272,7 +272,7 @@ function generatePageGraph(meta: PageMeta): object {
       url: `${BASE_URL}/`,
       name: SITE_NAME,
       description:
-        "Regulatory fines and enforcement intelligence from 34+ global financial regulators including FCA, BaFin, AMF, SEC, and more",
+        "Regulatory fines and enforcement intelligence from 45+ global financial regulators including FCA, BaFin, AMF, SEC, and more",
       publisher: { "@id": `${BASE_URL}/#organization` },
       potentialAction: {
         "@type": "SearchAction",
@@ -315,7 +315,7 @@ function generatePageGraph(meta: PageMeta): object {
       "@type": "Dataset",
       name: "RegActions Regulatory Fines Database",
       description:
-        "Comprehensive database of regulatory fines and enforcement actions from 34+ global financial regulators. Includes penalty amounts, breach categories, and firm details.",
+        "Comprehensive database of regulatory fines and enforcement actions from 45+ global financial regulators. Includes penalty amounts, breach categories, and firm details.",
       url: `${BASE_URL}/dashboard`,
       keywords: [
         "regulatory fines",
@@ -369,7 +369,7 @@ async function buildPageMetas(): Promise<PageMeta[]> {
     title:
       "RegActions | Global Regulatory Fines & Enforcement Intelligence",
     description:
-      "Track fines from 34+ global financial regulators including BaFin, SEC, FCA, AMF, and more. Analyze £5B+ in enforcement actions from 2013-2026 with interactive charts, breach categories, and compliance insights.",
+      "Track fines from 45+ global financial regulators including BaFin, SEC, FCA, AMF, and more. Analyze £5B+ in enforcement actions from 2013-2026 with interactive charts, breach categories, and compliance insights.",
     keywords:
       "regulatory fines, financial regulator fines, enforcement actions, BaFin fines, SEC fines, FCA fines, AMF fines, CNMV fines, global fines database, multi-regulator tracker, financial compliance",
     ogType: "website",
@@ -382,7 +382,7 @@ async function buildPageMetas(): Promise<PageMeta[]> {
     path: "/dashboard",
     title: "RegActions Dashboard | Global Regulatory Fines Analytics & Search",
     description:
-      "Interactive multi-regulator dashboard. Search enforcement actions from 34+ global financial regulators by firm, year, amount and breach category. Export data and analyze enforcement trends.",
+      "Interactive multi-regulator dashboard. Search enforcement actions from 45+ global financial regulators by firm, year, amount and breach category. Export data and analyze enforcement trends.",
     keywords:
       "regulatory fines dashboard, global enforcement tracker, multi-regulator search, BaFin fines, SEC fines, FCA fines, regulatory analytics",
     ogType: "website",
@@ -392,7 +392,7 @@ async function buildPageMetas(): Promise<PageMeta[]> {
         "@type": "DataFeed",
         name: "RegActions Live Enforcement Feed",
         description:
-          "Real-time feed of regulatory fines and enforcement actions from 34+ global financial regulators, updated as new penalties are published.",
+          "Real-time feed of regulatory fines and enforcement actions from 45+ global financial regulators, updated as new penalties are published.",
         url: `${BASE_URL}/dashboard`,
         dateModified: todayISO(),
         potentialAction: [
@@ -651,9 +651,9 @@ async function buildPageMetas(): Promise<PageMeta[]> {
   pages.push({
     path: "/faq",
     title:
-      "Regulatory Fines FAQ | Questions About Global Financial Enforcement | RegActions",
+      "Regulatory Fines FAQ | Global Financial Enforcement | RegActions",
     description:
-      "Answers to common questions about regulatory fines and enforcement actions from 45+ global financial regulators including FCA, BaFin, SEC, ASIC, and MAS. Compare enforcement approaches, learn how fines are calculated, and understand global trends.",
+      "Answers to common questions about regulatory fines from 45+ global financial regulators including FCA, BaFin, SEC, ASIC, and MAS. Compare enforcement trends.",
     keywords:
       "regulatory fines FAQ, global enforcement questions, FCA fines, BaFin fines, SEC enforcement, ASIC fines, MAS penalties, ESMA regulation, FINRA, CNMV, AMF, financial regulator comparison, AML enforcement, biggest regulatory fines, RegActions",
     ogType: "website",

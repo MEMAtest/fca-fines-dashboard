@@ -25,7 +25,7 @@ export const faqItems: FAQItem[] = [
   // ── Global Enforcement ─────────────────────────────────────────────────────
   {
     question: 'Which financial regulator issues the largest fines globally?',
-    answer: 'The US SEC and CFTC have historically issued the largest individual fines, with penalties exceeding $1 billion in some cases. In Europe, the FCA and BaFin lead with fines reaching hundreds of millions. ASIC in Australia and MAS in Singapore are also significant enforcers. Fine sizes vary by jurisdiction, legal framework, and the severity of the misconduct.',
+    answer: 'The US SEC and CFTC have historically issued the largest individual fines, with penalties exceeding $1 billion in some cases. In Europe, the FCA leads with fines reaching hundreds of millions of pounds, while BaFin and other EU regulators impose significant but typically smaller penalties. ASIC in Australia and MAS in Singapore are also major enforcers.',
     category: 'Global Enforcement',
     slug: 'largest-fines-globally',
   },
