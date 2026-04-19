@@ -58,13 +58,22 @@ async function fetchFuzzyCandidatePhrases({
   regulator,
   countryCode,
   year,
+  meaningfulTerms,
 }: {
   regulator: string | undefined;
   countryCode: string | null;
   year: string | undefined;
+  meaningfulTerms: string[];
 }) {
   const conditions: string[] = [`firm_individual IS NOT NULL`, `firm_individual <> ''`];
   const params: Array<string | number | readonly string[]> = [];
+  const candidatePrefixes = Array.from(
+    new Set(
+      meaningfulTerms
+        .filter((term) => term.length >= 4)
+        .map((term) => term.slice(0, Math.min(2, term.length)).toLowerCase()),
+    ),
+  );
 
   if (regulator) {
     params.push(regulator);
@@ -85,6 +94,20 @@ async function fetchFuzzyCandidatePhrases({
       params.push(yearNum);
       conditions.push(`year_issued = $${params.length}`);
     }
+  }
+
+  if (candidatePrefixes.length > 0) {
+    params.push(candidatePrefixes);
+    conditions.push(`
+      EXISTS (
+        SELECT 1
+        FROM unnest($${params.length}::text[]) AS prefix
+        WHERE LOWER(COALESCE(firm_individual, '')) LIKE prefix || '%'
+          OR LOWER(COALESCE(regulator_full_name, '')) LIKE prefix || '%'
+          OR LOWER(COALESCE(country_name, '')) LIKE prefix || '%'
+          OR LOWER(COALESCE(breach_type, '')) LIKE prefix || '%'
+      )
+    `);
   }
 
   const rows = await sql.unsafe<
@@ -256,6 +279,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
           regulator,
           countryCode: normalizedCountryCode,
           year,
+          meaningfulTerms: prepared.meaningfulTerms,
         })
       : [];
     const fuzzyResolution = shouldAttemptFuzzyCorrection
