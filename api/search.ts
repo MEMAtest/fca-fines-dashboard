@@ -540,7 +540,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
           OR phrase_match_score > 0
           OR fuzzy_phrase_match_score > 0
           OR token_match_score >= $4
-          OR fuzzy_token_match_score >= $11
+          OR ($8 <> '' AND fuzzy_token_match_score >= GREATEST($11, 1))
       ),
       scored_results AS (
         SELECT
@@ -756,7 +756,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         OR phrase_match_score > 0
         OR fuzzy_phrase_match_score > 0
         OR token_match_score >= $4
-        OR fuzzy_token_match_score >= $11
+        OR ($8 <> '' AND fuzzy_token_match_score >= GREATEST($11, 1))
     `;
 
     const countResult = await sql.unsafe<{ count: number }[]>(countQuery, params);

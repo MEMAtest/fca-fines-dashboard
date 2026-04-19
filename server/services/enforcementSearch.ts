@@ -138,6 +138,37 @@ function unique<T>(values: T[]) {
   return Array.from(new Set(values));
 }
 
+function computeEditDistance(left: string, right: string) {
+  if (left === right) {
+    return 0;
+  }
+
+  const rows = left.length + 1;
+  const cols = right.length + 1;
+  const matrix = Array.from({ length: rows }, () => Array<number>(cols).fill(0));
+
+  for (let row = 0; row < rows; row += 1) {
+    matrix[row][0] = row;
+  }
+
+  for (let col = 0; col < cols; col += 1) {
+    matrix[0][col] = col;
+  }
+
+  for (let row = 1; row < rows; row += 1) {
+    for (let col = 1; col < cols; col += 1) {
+      const substitutionCost = left[row - 1] === right[col - 1] ? 0 : 1;
+      matrix[row][col] = Math.min(
+        matrix[row - 1][col] + 1,
+        matrix[row][col - 1] + 1,
+        matrix[row - 1][col - 1] + substitutionCost,
+      );
+    }
+  }
+
+  return matrix[left.length][right.length];
+}
+
 function tokenizeFuzzyPhrase(value: string) {
   return unique(
     normalizeSearchQuery(value)
@@ -402,13 +433,17 @@ export function resolveFuzzySearchTerms(
     const bestMatch = fuse.search(term, { limit: 1 })[0];
     const candidate = bestMatch?.item.value;
     const score = bestMatch?.score;
+    const editDistance = candidate ? computeEditDistance(term, candidate) : Number.POSITIVE_INFINITY;
+    const maxEditDistance = term.length >= 8 ? 2 : 1;
     if (
       !candidate
       || score == null
       || score > 0.24
       || candidate === term
       || candidate[0] !== term[0]
-      || Math.abs(candidate.length - term.length) > 3
+      || candidate[candidate.length - 1] !== term[term.length - 1]
+      || Math.abs(candidate.length - term.length) > 2
+      || editDistance > maxEditDistance
     ) {
       return term;
     }

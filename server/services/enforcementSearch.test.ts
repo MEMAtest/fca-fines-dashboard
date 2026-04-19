@@ -128,7 +128,7 @@ describe('enforcementSearch helpers', () => {
   it('corrects typoed search terms against candidate phrases', () => {
     const resolution = resolveFuzzySearchTerms(
       ['goldmn', 'sachs', 'laundring'],
-      ['Goldman Sachs & Co. LLC', 'anti money laundering'],
+      ['Goldman Sachs & Co. LLC', 'Goldmeier Sachs LLP', 'anti money laundering'],
     );
 
     expect(resolution.correctedTerms).toEqual([
