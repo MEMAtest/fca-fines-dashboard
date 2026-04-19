@@ -4,12 +4,130 @@
 export interface FAQItem {
   question: string
   answer: string
-  category: 'Biggest Fines' | 'How FCA Works' | 'By Year' | 'By Sector' | 'Specific Cases' | 'Financial Crime' | 'General'
+  category:
+    | 'Global Enforcement'
+    | 'Platform & Data'
+    | 'EU Regulators'
+    | 'APAC Regulators'
+    | 'Americas Regulators'
+    | 'Biggest Fines'
+    | 'How FCA Works'
+    | 'By Year'
+    | 'By Sector'
+    | 'Specific Cases'
+    | 'Financial Crime'
+    | 'General'
   slug: string
   relatedArticle?: string // slug of related blog post
 }
 
 export const faqItems: FAQItem[] = [
+  // ── Global Enforcement ─────────────────────────────────────────────────────
+  {
+    question: 'Which financial regulator issues the largest fines globally?',
+    answer: 'The US SEC and CFTC have historically issued the largest individual fines, with penalties exceeding $1 billion in some cases. In Europe, the FCA and BaFin lead with fines reaching hundreds of millions. ASIC in Australia and MAS in Singapore are also significant enforcers. Fine sizes vary by jurisdiction, legal framework, and the severity of the misconduct.',
+    category: 'Global Enforcement',
+    slug: 'largest-fines-globally',
+  },
+  {
+    question: 'What is AML enforcement and which regulators lead globally?',
+    answer: 'Anti-money laundering (AML) enforcement penalises firms for failing to detect and prevent money laundering. The FCA, BaFin, FinCEN (US), AUSTRAC (Australia), and MAS (Singapore) are the most active AML enforcers. Penalties for AML failures have increased sharply worldwide since 2015, often representing the largest fines issued by each regulator.',
+    category: 'Global Enforcement',
+    slug: 'aml-enforcement-global',
+  },
+  {
+    question: 'Which countries have the strictest financial regulators?',
+    answer: 'The UK (FCA), US (SEC and CFTC), Germany (BaFin), Australia (ASIC), and Singapore (MAS) are widely regarded as the strictest financial regulators. Each has broad enforcement powers, high fine ceilings, and a track record of pursuing significant penalties for regulatory breaches, particularly in AML, market abuse, and consumer protection.',
+    category: 'Global Enforcement',
+    slug: 'strictest-financial-regulators',
+  },
+  {
+    question: 'What trends are emerging in global financial enforcement?',
+    answer: 'Key trends in 2025-2026 include increased cross-border cooperation between regulators, rising penalties for crypto and digital asset firms, greater focus on ESG and greenwashing enforcement, and higher personal accountability for senior managers. AML enforcement continues to intensify globally, and regulators are investing in data-driven surveillance.',
+    category: 'Global Enforcement',
+    slug: 'global-enforcement-trends',
+  },
+
+  // ── Platform & Data ────────────────────────────────────────────────────────
+  {
+    question: 'How many regulators does RegActions track?',
+    answer: 'RegActions tracks enforcement actions from 45+ financial regulators across Europe, the Americas, Asia-Pacific, the Middle East, and the Caribbean. Coverage includes major regulators like the FCA, BaFin, SEC, AMF, ASIC, MAS, FINMA, and many more, providing the most comprehensive global view of regulatory enforcement available.',
+    category: 'Platform & Data',
+    slug: 'how-many-regulators',
+  },
+  {
+    question: 'How does RegActions collect enforcement data?',
+    answer: 'RegActions uses automated scrapers that monitor official regulator websites for new enforcement actions, final notices, and penalty decisions. Data is collected daily, normalised into a common format with breach categories and fine amounts, and validated before publication. Each entry links back to the original regulator source for verification.',
+    category: 'Platform & Data',
+    slug: 'how-data-collected',
+  },
+  {
+    question: 'How often is RegActions enforcement data updated?',
+    answer: 'Enforcement data is updated daily. Automated scrapers run every 24 hours across all 45+ regulators, checking for new enforcement actions and penalty decisions. New fines typically appear on RegActions within 24-48 hours of publication by the regulator. Historical data is also periodically refreshed to capture corrections or amendments.',
+    category: 'Platform & Data',
+    slug: 'data-update-frequency',
+  },
+  {
+    question: 'Can I compare fines across different regulators?',
+    answer: 'Yes, RegActions provides cross-regulator comparison tools. You can search and filter enforcement actions across all 45+ regulators simultaneously, compare penalty amounts, breach categories, and enforcement trends. The unified dashboard normalises data from different jurisdictions so you can benchmark enforcement activity across regions.',
+    category: 'Platform & Data',
+    slug: 'compare-across-regulators',
+  },
+  {
+    question: 'What types of regulatory fines does RegActions track?',
+    answer: 'RegActions tracks all types of financial regulatory enforcement including monetary penalties, censures, suspensions, and bans. Fines are categorised by breach type such as AML failures, market abuse, consumer protection, conduct, prudential, and governance failings. Each action includes the penalty amount, date, firm, and breach details.',
+    category: 'Platform & Data',
+    slug: 'types-of-fines-tracked',
+  },
+
+  // ── EU Regulators ──────────────────────────────────────────────────────────
+  {
+    question: 'What is BaFin and what does it regulate?',
+    answer: 'BaFin (Bundesanstalt fur Finanzdienstleistungsaufsicht) is Germany\'s federal financial supervisory authority. It regulates banks, insurance companies, and securities trading in Germany. BaFin has issued significant fines for AML failures, market manipulation, and governance breaches, with enforcement activity increasing notably since 2020.',
+    category: 'EU Regulators',
+    slug: 'what-is-bafin',
+  },
+  {
+    question: 'What is ESMA\'s role in EU financial regulation?',
+    answer: 'ESMA (European Securities and Markets Authority) is an EU-wide body that coordinates securities regulation across member states. It sets common standards, directly supervises credit rating agencies and trade repositories, and can restrict harmful financial products. ESMA works alongside national regulators like BaFin, AMF, and CNMV.',
+    category: 'EU Regulators',
+    slug: 'esma-role-eu-regulation',
+  },
+  {
+    question: 'How do EU regulators coordinate enforcement?',
+    answer: 'EU regulators coordinate through ESMA, the EBA (banking), and EIOPA (insurance). They share intelligence, conduct joint investigations, and apply harmonised rules under MiFID II, MAR, and AMLD. National regulators like BaFin, AMF, and CONSOB retain primary enforcement powers but cooperate on cross-border cases through formal agreements.',
+    category: 'EU Regulators',
+    slug: 'eu-enforcement-coordination',
+  },
+
+  // ── APAC Regulators ────────────────────────────────────────────────────────
+  {
+    question: 'Which APAC regulators are most active in enforcement?',
+    answer: 'ASIC (Australia), MAS (Singapore), HKMA and SFC (Hong Kong), and SEBI (India) are the most active APAC enforcers. ASIC issues significant fines for market misconduct and consumer protection failures. MAS has increased AML enforcement since the 1MDB scandal. SEBI pursues insider trading and market manipulation aggressively.',
+    category: 'APAC Regulators',
+    slug: 'apac-active-regulators',
+  },
+  {
+    question: 'How does ASIC enforce financial regulation in Australia?',
+    answer: 'ASIC (Australian Securities and Investments Commission) regulates financial services, markets, and consumer credit in Australia. It has broad powers to issue fines, ban individuals, and pursue civil and criminal proceedings. ASIC has intensified enforcement since the 2019 Royal Commission, particularly targeting misconduct in banking and insurance.',
+    category: 'APAC Regulators',
+    slug: 'asic-enforcement-australia',
+  },
+
+  // ── Americas Regulators ────────────────────────────────────────────────────
+  {
+    question: 'How does the SEC\'s enforcement approach differ from the FCA?',
+    answer: 'The SEC (US) and FCA (UK) differ significantly. The SEC can pursue both civil and criminal enforcement with penalties often exceeding $100 million. The FCA relies on civil penalties with a 30% early settlement discount. The SEC\'s enforcement tends to be more litigation-driven, while the FCA favours negotiated settlements.',
+    category: 'Americas Regulators',
+    slug: 'sec-vs-fca-enforcement',
+  },
+  {
+    question: 'What does FINRA do and how does it issue fines?',
+    answer: 'FINRA (Financial Industry Regulatory Authority) is a self-regulatory organisation overseeing US broker-dealers. It conducts examinations, investigates misconduct, and issues fines for violations of securities rules. FINRA fines range from thousands to tens of millions of dollars, targeting issues like unsuitable recommendations, AML failures, and supervisory breakdowns.',
+    category: 'Americas Regulators',
+    slug: 'what-is-finra',
+  },
+
   // ── Biggest Fines ──────────────────────────────────────────────────────────
   {
     question: 'What is the biggest FCA fine ever issued?',
@@ -133,8 +251,9 @@ export function getFaqsByCategory(category: FAQItem['category']): FAQItem[] {
 }
 
 const CATEGORY_ORDER: FAQItem['category'][] = [
-  'Biggest Fines', 'How FCA Works', 'By Year', 'Specific Cases',
-  'Financial Crime', 'By Sector', 'General',
+  'Global Enforcement', 'Platform & Data', 'EU Regulators', 'APAC Regulators',
+  'Americas Regulators', 'Biggest Fines', 'How FCA Works', 'By Year',
+  'Specific Cases', 'Financial Crime', 'By Sector', 'General',
 ];
 
 export function getFaqCategories(): FAQItem['category'][] {
@@ -158,15 +277,15 @@ export function generateFaqSchema(items: FAQItem[]) {
   };
 }
 
-// ── Homepage FAQ (top 6 most PAA-valuable) ─────────────────────────────────
+// ── Homepage FAQ (top 6: globally balanced mix) ──────────────────────────────
 
 const HOMEPAGE_FAQ_SLUGS = [
+  'largest-fines-globally',
+  'how-many-regulators',
   'biggest-fca-fine-ever',
-  'how-fca-calculates-fines',
-  'biggest-fca-fine-2025',
+  'global-enforcement-trends',
   'can-fca-fine-individuals',
-  'seven-types-financial-crime',
-  'total-fca-fines-since-2013',
+  'how-data-collected',
 ];
 
 export function getHomepageFaqs(): FAQItem[] {
@@ -182,9 +301,9 @@ const ARTICLE_FAQ_MAP: Record<string, string[]> = {
   '20-biggest-fca-fines-of-all-time': ['biggest-fca-fine-ever', 'banks-fined-most-by-fca'],
   'fca-fines-2025-complete-list': ['biggest-fca-fine-2025', 'how-many-fca-fines-2025'],
   'fca-fines-database-how-to-search': ['how-fca-calculates-fines', 'what-is-fca-final-notice'],
-  'fca-aml-fines-anti-money-laundering': ['fca-penalty-money-laundering', 'seven-types-financial-crime'],
+  'fca-aml-fines-anti-money-laundering': ['fca-penalty-money-laundering', 'seven-types-financial-crime', 'aml-enforcement-global'],
   'fca-fines-banks-complete-list': ['banks-fined-most-by-fca', 'total-fca-fines-since-2013'],
-  'fca-enforcement-trends-2013-2025': ['how-many-fca-fines-2025', 'total-fca-fines-since-2013'],
+  'fca-enforcement-trends-2013-2025': ['how-many-fca-fines-2025', 'total-fca-fines-since-2013', 'global-enforcement-trends'],
   'fca-final-notices-explained': ['what-is-fca-final-notice', 'what-happens-when-fca-fines-company'],
   'senior-managers-regime-fca-fines': ['smcr-and-fca-fines', 'can-fca-fine-individuals'],
   'fca-fines-january-2026': ['biggest-fca-fines-2026', 'how-many-fca-fines-2025'],

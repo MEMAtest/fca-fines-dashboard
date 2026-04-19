@@ -651,11 +651,11 @@ async function buildPageMetas(): Promise<PageMeta[]> {
   pages.push({
     path: "/faq",
     title:
-      "FCA Fines FAQ | Frequently Asked Questions About Financial Conduct Authority Penalties",
+      "Regulatory Fines FAQ | Questions About Global Financial Enforcement | RegActions",
     description:
-      "Answers to common questions about FCA fines, enforcement actions, and financial penalties. Learn how the FCA calculates fines, the biggest fines ever issued, and what happens when a firm is fined.",
+      "Answers to common questions about regulatory fines and enforcement actions from 45+ global financial regulators including FCA, BaFin, SEC, ASIC, and MAS. Compare enforcement approaches, learn how fines are calculated, and understand global trends.",
     keywords:
-      "FCA fines FAQ, FCA fines questions, biggest FCA fine, FCA fine calculation, FCA Final Notice, SM&CR fines, FCA money laundering fine, financial crime penalties",
+      "regulatory fines FAQ, global enforcement questions, FCA fines, BaFin fines, SEC enforcement, ASIC fines, MAS penalties, ESMA regulation, FINRA, CNMV, AMF, financial regulator comparison, AML enforcement, biggest regulatory fines, RegActions",
     ogType: "website",
     jsonLd: generateFaqSchema(faqItems),
   });

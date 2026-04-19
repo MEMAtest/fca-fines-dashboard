@@ -12,6 +12,16 @@ import type { FAQItem } from "../data/faqData.js";
 import "../styles/blog.css";
 
 const categoryDescriptions: Record<FAQItem["category"], string> = {
+  "Global Enforcement":
+    "Cross-regulator comparisons, global trends, and enforcement leaders.",
+  "Platform & Data":
+    "How RegActions works, data coverage, methodology, and update frequency.",
+  "EU Regulators":
+    "BaFin, AMF, ESMA, CNMV, and other European financial regulators.",
+  "APAC Regulators":
+    "ASIC, MAS, HKMA, SFC, SEBI, and other Asia-Pacific regulators.",
+  "Americas Regulators":
+    "SEC, FINRA, CIRO, and other regulators across the Americas.",
   "Biggest Fines": "The largest financial penalties ever imposed by the FCA.",
   "How FCA Works": "How the FCA investigates, calculates, and enforces fines.",
   "By Year": "FCA enforcement activity broken down by year.",
@@ -25,11 +35,11 @@ const categoryDescriptions: Record<FAQItem["category"], string> = {
 export function FAQ() {
   useSEO({
     title:
-      "FCA Fines FAQ | Frequently Asked Questions About Financial Conduct Authority Penalties",
+      "Regulatory Fines FAQ | Questions About Global Financial Enforcement | RegActions",
     description:
-      "Answers to common questions about FCA fines, enforcement actions, and financial penalties. Learn how the FCA calculates fines, the biggest fines ever issued, and what happens when a firm is fined.",
+      "Answers to common questions about regulatory fines and enforcement actions from 45+ global financial regulators including FCA, BaFin, SEC, ASIC, and MAS. Compare enforcement approaches, learn how fines are calculated, and understand global trends.",
     keywords:
-      "FCA fines FAQ, FCA fines questions, biggest FCA fine, FCA fine calculation, FCA Final Notice, SM&CR fines, FCA money laundering fine, financial crime penalties, FCA fines 2025, FCA fines 2026",
+      "regulatory fines FAQ, global enforcement questions, FCA fines, BaFin fines, SEC enforcement, ASIC fines, MAS penalties, ESMA regulation, financial regulator comparison, AML enforcement, biggest regulatory fines, RegActions",
     canonicalPath: "/faq",
     ogType: "website",
   });
@@ -53,13 +63,13 @@ export function FAQ() {
 
         <article className="blog-article-modal">
           <h1 className="blog-post-title">
-            FCA Fines: Frequently Asked Questions
+            Regulatory Enforcement: Frequently Asked Questions
           </h1>
 
           <p className="faq-intro">
-            Answers to the most common questions about Financial Conduct
-            Authority fines, enforcement actions, and regulatory penalties in
-            the UK.
+            Answers to the most common questions about regulatory fines and
+            enforcement actions from 45+ financial regulators across Europe,
+            the Americas, Asia-Pacific, the Middle East, and the Caribbean.
           </p>
 
           {/* Quick navigation */}
@@ -121,12 +131,11 @@ export function FAQ() {
           {/* Bottom CTA */}
           <div className="blog-article-modal-footer">
             <p className="blog-article-keywords">
-              <strong>Related:</strong> Regulatory fines database, multi-regulator enforcement
-              actions, financial conduct authority penalties, FCA Final Notices,
-              SM&CR
+              <strong>Related:</strong> Global regulatory fines database, multi-regulator enforcement
+              tracker, FCA, BaFin, SEC, ASIC, MAS, ESMA, AML enforcement, financial penalties
             </p>
             <Link to="/regulators" className="blog-cta-button">
-              Explore FCA Fines Dashboard
+              Explore Global Enforcement Data
               <ChevronRight size={18} />
             </Link>
           </div>
