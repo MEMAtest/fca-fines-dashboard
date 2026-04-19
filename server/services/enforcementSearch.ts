@@ -430,26 +430,44 @@ export function resolveFuzzySearchTerms(
       return term;
     }
 
-    const bestMatch = fuse.search(term, { limit: 1 })[0];
-    const candidate = bestMatch?.item.value;
-    const score = bestMatch?.score;
-    const editDistance = candidate ? computeEditDistance(term, candidate) : Number.POSITIVE_INFINITY;
     const maxEditDistance = term.length >= 8 ? 2 : 1;
-    if (
-      !candidate
-      || score == null
-      || score > 0.24
-      || candidate === term
-      || candidate[0] !== term[0]
-      || candidate[candidate.length - 1] !== term[term.length - 1]
-      || Math.abs(candidate.length - term.length) > 2
-      || editDistance > maxEditDistance
-    ) {
+    const candidates = fuse.search(term, { limit: 8 });
+    let acceptedCandidate: { value: string; score: number; editDistance: number } | null = null;
+
+    for (const match of candidates) {
+      const candidate = match.item.value;
+      const score = match.score;
+      const editDistance = computeEditDistance(term, candidate);
+      if (
+        score == null
+        || score > 0.24
+        || candidate === term
+        || candidate[0] !== term[0]
+        || candidate[candidate.length - 1] !== term[term.length - 1]
+        || Math.abs(candidate.length - term.length) > 2
+        || editDistance > maxEditDistance
+      ) {
+        continue;
+      }
+
+      if (
+        !acceptedCandidate
+        || editDistance < acceptedCandidate.editDistance
+        || (
+          editDistance === acceptedCandidate.editDistance
+          && score < acceptedCandidate.score
+        )
+      ) {
+        acceptedCandidate = { value: candidate, score, editDistance };
+      }
+    }
+
+    if (!acceptedCandidate) {
       return term;
     }
 
-    corrections.push({ from: term, to: candidate });
-    return candidate;
+    corrections.push({ from: term, to: acceptedCandidate.value });
+    return acceptedCandidate.value;
   });
 
   return {
