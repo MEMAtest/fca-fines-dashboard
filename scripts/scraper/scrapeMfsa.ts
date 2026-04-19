@@ -6,6 +6,7 @@ import { promisify } from "node:util";
 import puppeteer, { type Page } from "puppeteer";
 import {
   buildEuFineRecord,
+  type DbReadyRecord,
   fetchText,
   getCliFlags,
   makeAbsoluteUrl,
@@ -663,18 +664,23 @@ function buildMfsaArchiveRecord(entry: MfsaArchiveEntry) {
   });
 }
 
-export async function loadMfsaLiveRecords() {
+export async function loadMfsaLiveRecords(): Promise<DbReadyRecord[]> {
   const flags = getCliFlags();
   const archiveEntries = await loadMfsaArchiveEntries().catch(() => []);
-  const archiveRecords = archiveEntries
+  const archiveRecords: DbReadyRecord[] = archiveEntries
     .map(buildMfsaArchiveRecord)
-    .filter((record) => record !== null);
+    .filter(isDbReadyRecord);
 
   const currentEntries = await loadMfsaEntries(
     flags.limit && flags.limit > 0 ? flags.limit : null,
   ).catch(() => []);
   const currentRecords = await mapWithConcurrency(currentEntries, 2, enrichMfsaEntry).catch(() => []);
-  const usableCurrentRecords = currentRecords.filter((record) => record !== null);
+  const usableCurrentRecords: DbReadyRecord[] = [];
+  for (const record of currentRecords) {
+    if (record) {
+      usableCurrentRecords.push(record);
+    }
+  }
 
   if (flags.limit && flags.limit > 0) {
     if (usableCurrentRecords.length >= flags.limit) {
@@ -695,6 +701,10 @@ export async function loadMfsaLiveRecords() {
   }
 
   return [...deduped.values()];
+}
+
+function isDbReadyRecord(value: DbReadyRecord | null): value is DbReadyRecord {
+  return value !== null;
 }
 
 export async function main() {

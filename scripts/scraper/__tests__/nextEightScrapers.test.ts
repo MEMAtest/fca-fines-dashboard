@@ -345,11 +345,12 @@ describe("next-eight regulator coverage", () => {
 
   it("builds descending FINRA month windows with archive filters", () => {
     const windows = buildFinraMonthWindows(2026, 2026);
+    const lastWindow = windows[windows.length - 1];
 
     expect(windows[0]?.label).toBe("2026-04");
-    expect(windows.at(-1)?.label).toBe("2026-01");
+    expect(lastWindow?.label).toBe("2026-01");
     expect(windows[0]?.url).toContain("field_core_official_dt%5Bmin%5D=04%2F01%2F2026");
-    expect(windows.at(-1)?.url).toContain("field_core_official_dt%5Bmax%5D=01%2F31%2F2026");
+    expect(lastWindow?.url).toContain("field_core_official_dt%5Bmax%5D=01%2F31%2F2026");
   });
 
   it("parses FinCEN enforcement rows from the official table", () => {
@@ -541,7 +542,7 @@ describe("next-eight regulator coverage", () => {
         "PAOLO PAPERINI appears in the official CVM sanction-proceedings dataset.",
       finalNoticeUrl: null,
       sourceUrl: "https://dados.cvm.gov.br/dataset/processo-sancionador",
-    } as const;
+    };
 
     const first = buildEuFineRecord({
       ...baseRecord,

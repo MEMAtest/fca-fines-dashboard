@@ -81,7 +81,7 @@ export function parseCvmAmount(text: string) {
   });
 }
 
-async function parseCsvFile<T extends Record<string, string | undefined>>(
+async function parseCsvFile<T extends object>(
   csvPath: string,
 ) {
   return new Promise<T[]>((resolve, reject) => {

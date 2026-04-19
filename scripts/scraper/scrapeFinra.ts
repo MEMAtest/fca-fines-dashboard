@@ -278,7 +278,10 @@ async function fetchFinraFilteredArchivePage(baseUrl: string, pageIndex: number)
 
 export async function loadFinraLiveRecords() {
   const windows = buildFinraMonthWindows();
-  console.log(`📅 FINRA month windows: ${windows.length} (${windows.at(-1)?.label} → ${windows[0]?.label})`);
+  const oldestWindow = windows[windows.length - 1];
+  console.log(
+    `📅 FINRA month windows: ${windows.length} (${oldestWindow?.label} → ${windows[0]?.label})`,
+  );
 
   const entries: FinraActionEntry[] = [];
   let processedPages = 0;
