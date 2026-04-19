@@ -1,4 +1,3 @@
-import Fuse from 'fuse.js';
 import { PUBLIC_REGULATOR_NAV_ITEMS } from '../../src/data/regulatorCoverage.js';
 
 const ACRONYM_EXPANSIONS: Record<string, string[]> = {
@@ -408,16 +407,6 @@ export function resolveFuzzySearchTerms(
   }
 
   const exactVocabulary = new Set(vocabulary);
-  const fuse = new Fuse(
-    vocabulary.map((value) => ({ value })),
-    {
-      keys: ['value'],
-      threshold: 0.24,
-      ignoreLocation: true,
-      includeScore: true,
-      minMatchCharLength: 3,
-    },
-  );
 
   const corrections: Array<{ from: string; to: string }> = [];
   const correctedTerms = terms.map((term) => {
@@ -431,20 +420,16 @@ export function resolveFuzzySearchTerms(
     }
 
     const maxEditDistance = term.length >= 8 ? 2 : 1;
-    const candidates = fuse.search(term, { limit: 8 });
-    let acceptedCandidate: { value: string; score: number; editDistance: number } | null = null;
+    let acceptedCandidate: { value: string; editDistance: number; lengthDelta: number } | null = null;
 
-    for (const match of candidates) {
-      const candidate = match.item.value;
-      const score = match.score;
+    for (const candidate of vocabulary) {
       const editDistance = computeEditDistance(term, candidate);
+      const lengthDelta = Math.abs(candidate.length - term.length);
       if (
-        score == null
-        || score > 0.24
-        || candidate === term
+        candidate === term
         || candidate[0] !== term[0]
         || candidate[candidate.length - 1] !== term[term.length - 1]
-        || Math.abs(candidate.length - term.length) > 2
+        || lengthDelta > 2
         || editDistance > maxEditDistance
       ) {
         continue;
@@ -455,10 +440,10 @@ export function resolveFuzzySearchTerms(
         || editDistance < acceptedCandidate.editDistance
         || (
           editDistance === acceptedCandidate.editDistance
-          && score < acceptedCandidate.score
+          && lengthDelta < acceptedCandidate.lengthDelta
         )
       ) {
-        acceptedCandidate = { value: candidate, score, editDistance };
+        acceptedCandidate = { value: candidate, editDistance, lengthDelta };
       }
     }
 
