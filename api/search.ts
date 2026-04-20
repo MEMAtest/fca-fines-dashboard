@@ -401,7 +401,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
           CASE
             WHEN COALESCE(array_length($6::text[], 1), 0) > 0
               AND country_code = ANY($6::text[])
-              THEN 20
+              THEN 55
             ELSE 0
           END AS country_hint_score,
           CASE
@@ -474,6 +474,26 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
           END AS fuzzy_phrase_match_score,
           (
             SELECT COUNT(*)::int
+            FROM unnest($12::text[]) AS token
+            WHERE token <> ''
+              AND (
+                COALESCE(firm_individual, '') ILIKE '%' || token || '%'
+                OR COALESCE(breach_type, '') ILIKE '%' || token || '%'
+                OR COALESCE(
+                  CASE WHEN jsonb_typeof(breach_categories) = 'string'
+                    THEN (breach_categories #>> '{}')
+                    ELSE breach_categories::text
+                  END,
+                  ''
+                ) ILIKE '%' || token || '%'
+                OR COALESCE(summary, '') ILIKE '%' || token || '%'
+                OR COALESCE(country_name, '') ILIKE '%' || token || '%'
+                OR COALESCE(regulator, '') ILIKE '%' || token || '%'
+                OR COALESCE(regulator_full_name, '') ILIKE '%' || token || '%'
+              )
+          ) AS raw_token_match_score,
+          (
+            SELECT COUNT(*)::int
             FROM unnest($3::text[]) AS pattern
             WHERE COALESCE(firm_individual, '') ILIKE pattern
               OR COALESCE(breach_type, '') ILIKE pattern
@@ -489,6 +509,26 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
               OR COALESCE(regulator, '') ILIKE pattern
               OR COALESCE(regulator_full_name, '') ILIKE pattern
           ) AS token_match_score,
+          (
+            SELECT COUNT(*)::int
+            FROM unnest($13::text[]) AS token
+            WHERE token <> ''
+              AND (
+                COALESCE(firm_individual, '') ILIKE '%' || token || '%'
+                OR COALESCE(breach_type, '') ILIKE '%' || token || '%'
+                OR COALESCE(
+                  CASE WHEN jsonb_typeof(breach_categories) = 'string'
+                    THEN (breach_categories #>> '{}')
+                    ELSE breach_categories::text
+                  END,
+                  ''
+                ) ILIKE '%' || token || '%'
+                OR COALESCE(summary, '') ILIKE '%' || token || '%'
+                OR COALESCE(country_name, '') ILIKE '%' || token || '%'
+                OR COALESCE(regulator, '') ILIKE '%' || token || '%'
+                OR COALESCE(regulator_full_name, '') ILIKE '%' || token || '%'
+              )
+          ) AS fuzzy_raw_token_match_score,
           (
             SELECT COUNT(*)::int
             FROM unnest($10::text[]) AS pattern
@@ -534,7 +574,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
           CASE
             WHEN regulator_hint_score > 0
               AND (
-                phrase_match_score > 0
+                raw_token_match_score >= GREATEST($4, 1)
+                OR phrase_match_score > 0
                 OR token_match_score >= GREATEST($4, 1)
                 OR full_text_rank > 0
               )
@@ -544,18 +585,20 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
           CASE
             WHEN country_hint_score > 0
               AND (
-                phrase_match_score > 0
+                raw_token_match_score >= GREATEST($4 - 1, 1)
+                OR phrase_match_score > 0
                 OR token_match_score >= GREATEST($4, 1)
                 OR full_text_rank > 0
               )
-              THEN 15
+              THEN 45
             ELSE 0
           END AS country_theme_synergy_score
           ,
           CASE
             WHEN category_match_score > 0
               AND (
-                phrase_match_score > 0
+                raw_token_match_score >= GREATEST($4, 1)
+                OR phrase_match_score > 0
                 OR token_match_score >= GREATEST($4, 1)
                 OR full_text_rank > 0
               )
@@ -568,15 +611,43 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
           OR firm_token_match_score > 0
           OR fuzzy_firm_match_score > 0
           OR fuzzy_firm_token_match_score > 0
-          OR regulator_hint_score > 0
-          OR country_hint_score > 0
-          OR category_match_score > 0
-          OR full_text_rank > 0
-          OR fuzzy_full_text_rank > 0
-          OR phrase_match_score > 0
-          OR fuzzy_phrase_match_score > 0
-          OR token_match_score >= $4
-          OR ($8 <> '' AND fuzzy_token_match_score >= GREATEST($11, 1))
+          OR raw_token_match_score >= GREATEST($4, 1)
+          OR ($8 <> '' AND fuzzy_raw_token_match_score >= GREATEST($11, 1))
+          OR (
+            regulator_hint_score > 0
+            AND (
+              raw_token_match_score >= GREATEST($4 - 1, 1)
+              OR token_match_score >= GREATEST($4, 1)
+              OR category_match_score > 0
+              OR full_text_rank > 0
+              OR ($8 <> '' AND fuzzy_raw_token_match_score >= GREATEST($11 - 1, 1))
+              OR ($8 <> '' AND fuzzy_token_match_score >= GREATEST($11, 1))
+              OR fuzzy_full_text_rank > 0
+            )
+          )
+          OR (
+            country_hint_score > 0
+            AND (
+              raw_token_match_score >= GREATEST($4 - 1, 1)
+              OR token_match_score >= GREATEST($4, 1)
+              OR category_match_score > 0
+              OR full_text_rank > 0
+              OR ($8 <> '' AND fuzzy_raw_token_match_score >= GREATEST($11 - 1, 1))
+              OR ($8 <> '' AND fuzzy_token_match_score >= GREATEST($11, 1))
+              OR fuzzy_full_text_rank > 0
+            )
+          )
+          OR (
+            category_match_score > 0
+            AND (
+              raw_token_match_score >= GREATEST($4, 1)
+              OR token_match_score >= GREATEST($4, 1)
+              OR full_text_rank > 0
+              OR ($8 <> '' AND fuzzy_raw_token_match_score >= GREATEST($11 - 1, 1))
+              OR ($8 <> '' AND fuzzy_token_match_score >= GREATEST($11, 1))
+              OR fuzzy_full_text_rank > 0
+            )
+          )
       ),
       scored_results AS (
         SELECT
@@ -586,6 +657,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
             + (firm_token_match_score * 45)
             + fuzzy_firm_match_score
             + (fuzzy_firm_token_match_score * 30)
+            + (raw_token_match_score * 20)
+            + (fuzzy_raw_token_match_score * 12)
             + regulator_hint_score
             + country_hint_score
             + category_match_score
@@ -630,6 +703,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         firm_token_match_score DESC,
         fuzzy_firm_match_score DESC,
         fuzzy_firm_token_match_score DESC,
+        combined_score DESC,
         regulator_theme_synergy_score DESC,
         country_theme_synergy_score DESC,
         category_theme_synergy_score DESC,
@@ -687,7 +761,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
           CASE
             WHEN COALESCE(array_length($6::text[], 1), 0) > 0
               AND country_code = ANY($6::text[])
-              THEN 20
+              THEN 55
             ELSE 0
           END AS country_hint_score,
           CASE
@@ -760,6 +834,26 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
           END AS fuzzy_phrase_match_score,
           (
             SELECT COUNT(*)::int
+            FROM unnest($12::text[]) AS token
+            WHERE token <> ''
+              AND (
+                COALESCE(firm_individual, '') ILIKE '%' || token || '%'
+                OR COALESCE(breach_type, '') ILIKE '%' || token || '%'
+                OR COALESCE(
+                  CASE WHEN jsonb_typeof(breach_categories) = 'string'
+                    THEN (breach_categories #>> '{}')
+                    ELSE breach_categories::text
+                  END,
+                  ''
+                ) ILIKE '%' || token || '%'
+                OR COALESCE(summary, '') ILIKE '%' || token || '%'
+                OR COALESCE(country_name, '') ILIKE '%' || token || '%'
+                OR COALESCE(regulator, '') ILIKE '%' || token || '%'
+                OR COALESCE(regulator_full_name, '') ILIKE '%' || token || '%'
+              )
+          ) AS raw_token_match_score,
+          (
+            SELECT COUNT(*)::int
             FROM unnest($3::text[]) AS pattern
             WHERE COALESCE(firm_individual, '') ILIKE pattern
               OR COALESCE(breach_type, '') ILIKE pattern
@@ -775,6 +869,26 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
               OR COALESCE(regulator, '') ILIKE pattern
               OR COALESCE(regulator_full_name, '') ILIKE pattern
           ) AS token_match_score,
+          (
+            SELECT COUNT(*)::int
+            FROM unnest($13::text[]) AS token
+            WHERE token <> ''
+              AND (
+                COALESCE(firm_individual, '') ILIKE '%' || token || '%'
+                OR COALESCE(breach_type, '') ILIKE '%' || token || '%'
+                OR COALESCE(
+                  CASE WHEN jsonb_typeof(breach_categories) = 'string'
+                    THEN (breach_categories #>> '{}')
+                    ELSE breach_categories::text
+                  END,
+                  ''
+                ) ILIKE '%' || token || '%'
+                OR COALESCE(summary, '') ILIKE '%' || token || '%'
+                OR COALESCE(country_name, '') ILIKE '%' || token || '%'
+                OR COALESCE(regulator, '') ILIKE '%' || token || '%'
+                OR COALESCE(regulator_full_name, '') ILIKE '%' || token || '%'
+              )
+          ) AS fuzzy_raw_token_match_score,
           (
             SELECT COUNT(*)::int
             FROM unnest($10::text[]) AS pattern
@@ -802,15 +916,43 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         OR firm_token_match_score > 0
         OR fuzzy_firm_match_score > 0
         OR fuzzy_firm_token_match_score > 0
-        OR regulator_hint_score > 0
-        OR country_hint_score > 0
-        OR category_match_score > 0
-        OR full_text_rank > 0
-        OR fuzzy_full_text_rank > 0
-        OR phrase_match_score > 0
-        OR fuzzy_phrase_match_score > 0
-        OR token_match_score >= $4
-        OR ($8 <> '' AND fuzzy_token_match_score >= GREATEST($11, 1))
+        OR raw_token_match_score >= GREATEST($4, 1)
+        OR ($8 <> '' AND fuzzy_raw_token_match_score >= GREATEST($11, 1))
+        OR (
+          regulator_hint_score > 0
+          AND (
+            raw_token_match_score >= GREATEST($4 - 1, 1)
+            OR token_match_score >= GREATEST($4, 1)
+            OR category_match_score > 0
+            OR full_text_rank > 0
+            OR ($8 <> '' AND fuzzy_raw_token_match_score >= GREATEST($11 - 1, 1))
+            OR ($8 <> '' AND fuzzy_token_match_score >= GREATEST($11, 1))
+            OR fuzzy_full_text_rank > 0
+          )
+        )
+        OR (
+          country_hint_score > 0
+          AND (
+            raw_token_match_score >= GREATEST($4 - 1, 1)
+            OR token_match_score >= GREATEST($4, 1)
+            OR category_match_score > 0
+            OR full_text_rank > 0
+            OR ($8 <> '' AND fuzzy_raw_token_match_score >= GREATEST($11 - 1, 1))
+            OR ($8 <> '' AND fuzzy_token_match_score >= GREATEST($11, 1))
+            OR fuzzy_full_text_rank > 0
+          )
+        )
+        OR (
+          category_match_score > 0
+          AND (
+            raw_token_match_score >= GREATEST($4, 1)
+            OR token_match_score >= GREATEST($4, 1)
+            OR full_text_rank > 0
+            OR ($8 <> '' AND fuzzy_raw_token_match_score >= GREATEST($11 - 1, 1))
+            OR ($8 <> '' AND fuzzy_token_match_score >= GREATEST($11, 1))
+            OR fuzzy_full_text_rank > 0
+          )
+        )
     `;
 
     const countResult = await sql.unsafe<{ count: number }[]>(countQuery, params);

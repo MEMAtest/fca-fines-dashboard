@@ -26,6 +26,25 @@ const ACRONYM_EXPANSIONS: Record<string, string[]> = {
 };
 
 const COUNTRY_ALIASES: Record<string, string> = {
+  austrian: 'AT',
+  belgian: 'BE',
+  canadian: 'CA',
+  czech: 'CZ',
+  danish: 'DK',
+  dutch: 'NL',
+  finnish: 'FI',
+  french: 'FR',
+  german: 'DE',
+  irish: 'IE',
+  italian: 'IT',
+  japanese: 'JP',
+  maltese: 'MT',
+  norwegian: 'NO',
+  portuguese: 'PT',
+  singaporean: 'SG',
+  spanish: 'ES',
+  swedish: 'SE',
+  swiss: 'CH',
   uk: 'GB',
   us: 'US',
   usa: 'US',
@@ -227,6 +246,16 @@ function expandThemePhrases(tokens: string[]) {
       tokens.includes('terrorist')
       && (tokens.includes('financing') || tokens.includes('finance'))
     );
+  const hasCryptoIntent =
+    tokens.includes('crypto')
+    || tokens.includes('cryptoasset')
+    || tokens.includes('cryptoassets')
+    || tokens.includes('cryptocurrency')
+    || tokens.includes('cryptocurrencies')
+    || (
+      (tokens.includes('virtual') || tokens.includes('digital'))
+      && (tokens.includes('asset') || tokens.includes('assets'))
+    );
 
   if (tokens.includes('transaction') && tokens.includes('monitoring')) {
     expanded.push(
@@ -281,6 +310,7 @@ function expandThemePhrases(tokens: string[]) {
     expanded.push(
       'counter terrorist financing',
       'counter-terrorist financing',
+      'terrorist financing',
       'counter terrorist financing controls',
       'countering the financing of terrorism',
       'anti money laundering and counter terrorist financing',
@@ -290,6 +320,37 @@ function expandThemePhrases(tokens: string[]) {
       'anti money laundering',
       'customer due diligence',
       'sanctions compliance',
+    );
+  }
+
+  if (hasCryptoIntent) {
+    expanded.push(
+      'crypto asset',
+      'crypto assets',
+      'cryptoasset',
+      'cryptoassets',
+      'cryptocurrency',
+      'cryptocurrencies',
+      'virtual asset',
+      'virtual assets',
+      'digital asset',
+      'digital assets',
+      'virtual asset service provider',
+      'virtual asset service providers',
+      'vasp',
+      'digital token',
+      'digital tokens',
+    );
+  }
+
+  if (tokens.includes('compliance')) {
+    expanded.push(
+      'systems and controls',
+      'controls failures',
+      'control failures',
+      'compliance controls',
+      'policies and procedures',
+      'internal controls',
     );
   }
 
@@ -350,11 +411,40 @@ function deriveCategoryHints(tokens: string[], themePhrases: string[]) {
   }
 
   if (
+    haystack.has('crypto')
+    || haystack.has('crypto asset')
+    || haystack.has('crypto assets')
+    || haystack.has('cryptoasset')
+    || haystack.has('cryptoassets')
+    || haystack.has('cryptocurrency')
+    || haystack.has('virtual asset')
+    || haystack.has('virtual assets')
+    || haystack.has('digital asset')
+    || haystack.has('digital assets')
+    || haystack.has('virtual asset service provider')
+    || haystack.has('vasp')
+  ) {
+    push('AML', 'FINANCIAL_CRIME', 'CRYPTO', 'VASP');
+  }
+
+  if (
     haystack.has('counter terrorist financing')
+    || haystack.has('terrorist financing')
     || haystack.has('anti money laundering and counter terrorist financing')
     || haystack.has('sanctions compliance')
   ) {
     push('AML', 'CFT', 'CTF', 'SANCTIONS', 'SYSTEMS_AND_CONTROLS');
+  }
+
+  if (
+    haystack.has('compliance')
+    || haystack.has('systems and controls')
+    || haystack.has('compliance controls')
+    || haystack.has('control failures')
+    || haystack.has('controls failures')
+    || haystack.has('internal controls')
+  ) {
+    push('SYSTEMS_AND_CONTROLS', 'CONTROLS', 'GOVERNANCE');
   }
 
   if (

@@ -117,6 +117,41 @@ describe('enforcementSearch helpers', () => {
     expect(prepared.countryHints).toContain('AE');
   });
 
+  it('maps country adjectives and crypto intent into richer search terms', () => {
+    const prepared = prepareEnforcementSearch('irish crypto aml failures');
+
+    expect(prepared.countryHints).toEqual(['IE']);
+    expect(prepared.searchTerms).toEqual(
+      expect.arrayContaining([
+        'crypto',
+        'virtual asset',
+        'crypto asset',
+        'cryptocurrency',
+        'anti money laundering',
+      ]),
+    );
+    expect(prepared.categoryHints).toEqual(
+      expect.arrayContaining(['AML', 'FINANCIAL_CRIME', 'CRYPTO', 'VASP']),
+    );
+  });
+
+  it('expands compliance-led queries into control-oriented categories', () => {
+    const prepared = prepareEnforcementSearch('Germany compliance failures');
+
+    expect(prepared.countryHints).toEqual(['DE']);
+    expect(prepared.searchTerms).toEqual(
+      expect.arrayContaining([
+        'compliance',
+        'systems and controls',
+        'control failures',
+        'policies and procedures',
+      ]),
+    );
+    expect(prepared.categoryHints).toEqual(
+      expect.arrayContaining(['SYSTEMS_AND_CONTROLS', 'CONTROLS', 'GOVERNANCE']),
+    );
+  });
+
   it('builds a fuzzy vocabulary from static and dynamic search phrases', () => {
     const vocabulary = buildFuzzySearchVocabulary(['Goldman Sachs & Co. LLC']);
 
