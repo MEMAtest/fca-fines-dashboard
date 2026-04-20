@@ -16,6 +16,8 @@
     "test:e2e:all": "npm run build && playwright test",
     "test:e2e:search": "npm run build && playwright test e2e/search-experience.spec.ts --project=chromium",
     "test:e2e:search:live": "PLAYWRIGHT_BASE_URL=https://fcafines.memaconsultants.com playwright test e2e/search-live-smoke.spec.ts --project=chromium",
+    "search:eval": "npx tsx scripts/evaluateSearchRelevance.ts",
+    "search:eval:prod": "npx tsx scripts/evaluateSearchRelevance.ts https://fcafines.memaconsultants.com research/search-relevance-eval-set.json",
     "test:e2e:headed": "playwright test --headed",
     "test:e2e:debug": "playwright test --debug",
     "test:e2e:report": "playwright show-report",

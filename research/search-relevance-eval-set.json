@@ -1,0 +1,84 @@
+[
+  {
+    "id": "exact-goldman",
+    "query": "Goldman Sachs enforcement",
+    "expectedAnyTop": ["Goldman Sachs", "Goldman Sachs & Co. LLC", "Goldman Sachs & Co."],
+    "maxRank": 3,
+    "notes": "Exact firm query should rank Goldman variants at the very top."
+  },
+  {
+    "id": "typo-goldman",
+    "query": "Goldmn Sachs enforcement",
+    "expectedAnyTop": ["Goldman Sachs", "Goldman Sachs & Co. LLC", "Goldman Sachs & Co."],
+    "maxRank": 3,
+    "notes": "Single-token typo rescue should still recover Goldman near the top."
+  },
+  {
+    "id": "coinbase-aml",
+    "query": "Coinbase Europe AML",
+    "expectedAnyTop": ["Coinbase Europe Limited"],
+    "maxRank": 1,
+    "notes": "Firm + geography + AML should put the live Irish Coinbase action first."
+  },
+  {
+    "id": "coinbase-typo",
+    "query": "Coinbsae Europe AML",
+    "expectedAnyTop": ["Coinbase Europe Limited"],
+    "maxRank": 3,
+    "notes": "Transposition typo should still recover Coinbase Europe."
+  },
+  {
+    "id": "barclays-aml-controls",
+    "query": "barclays fined for aml controls",
+    "expectedAnyTop": ["Barclays Bank plc", "Barclays"],
+    "maxRank": 5,
+    "notes": "Firm-led AML controls query should surface Barclays in the first page, ideally top 5."
+  },
+  {
+    "id": "irish-crypto-aml",
+    "query": "irish crypto aml failures",
+    "expectedAnyTop": ["Coinbase Europe Limited"],
+    "maxRank": 3,
+    "notes": "Geography + sector + AML should find the Irish crypto enforcement quickly."
+  },
+  {
+    "id": "fca-governance",
+    "query": "FCA governance accountability",
+    "expectedRegulatorTop": ["FCA"],
+    "maxRegulatorRank": 3,
+    "notes": "Regulator-scoped governance query should keep FCA rows at the top."
+  },
+  {
+    "id": "ctf-theme",
+    "query": "counter terrorist financing",
+    "expectedRegulatorTop": ["HKMA", "MAS"],
+    "maxRegulatorRank": 3,
+    "notes": "CFT theme queries should rank obviously AML/CFT-related regulators high."
+  },
+  {
+    "id": "germany-compliance",
+    "query": "Germany compliance failures",
+    "expectedRegulatorTop": ["BaFin"],
+    "maxRegulatorRank": 3,
+    "notes": "Country-led broad compliance query should prefer German regulator results."
+  },
+  {
+    "id": "sebi-aml",
+    "query": "SEBI anti money laundering",
+    "expectedRegulatorTop": ["SEBI"],
+    "maxRegulatorRank": 3,
+    "notes": "Regulator token should keep SEBI rows near the top for AML-related results."
+  },
+  {
+    "id": "stopwords-only",
+    "query": "the and of",
+    "expectZeroResults": true,
+    "notes": "Low-signal stopword queries should be rejected cleanly."
+  },
+  {
+    "id": "impossible-query",
+    "query": "zzzzzz impossible zebra compliance",
+    "expectZeroResults": true,
+    "notes": "Nonsense queries should return zero results rather than noisy broad matches."
+  }
+]
