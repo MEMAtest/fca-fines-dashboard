@@ -60,57 +60,50 @@ function toFiniteNumber(value: string | number | null | undefined) {
 
 async function recordSearchAnalytics(record: SearchAnalyticsRecord) {
   try {
-    await sql.unsafe(
-      `
-        INSERT INTO search_query_analytics (
-          query_hash,
-          query_text,
-          query_normalized,
-          query_length,
-          meaningful_term_count,
-          firm_intent_term_count,
-          regulator_hint_count,
-          country_hint_count,
-          category_hint_count,
-          filters_applied,
-          result_count,
-          zero_result,
-          low_signal,
-          correction_count,
-          corrected_query,
-          correction_pairs,
-          top_firms,
-          top_regulators,
-          latency_ms
-        )
-        VALUES (
-          $1, $2, $3, $4, $5, $6, $7, $8, $9,
-          $10::jsonb, $11, $12, $13, $14, $15,
-          $16::jsonb, $17::jsonb, $18::jsonb, $19
-        )
-      `,
-      [
-        record.queryHash,
-        record.queryText,
-        record.queryNormalized,
-        record.queryLength,
-        record.meaningfulTermCount,
-        record.firmIntentTermCount,
-        record.regulatorHintCount,
-        record.countryHintCount,
-        record.categoryHintCount,
-        JSON.stringify(record.filtersApplied),
-        record.resultCount,
-        record.zeroResult,
-        record.lowSignal,
-        record.correctionCount,
-        record.correctedQuery,
-        JSON.stringify(record.correctionPairs),
-        JSON.stringify(record.topFirms),
-        JSON.stringify(record.topRegulators),
-        record.latencyMs,
-      ],
-    );
+    await sql`
+      INSERT INTO search_query_analytics (
+        query_hash,
+        query_text,
+        query_normalized,
+        query_length,
+        meaningful_term_count,
+        firm_intent_term_count,
+        regulator_hint_count,
+        country_hint_count,
+        category_hint_count,
+        filters_applied,
+        result_count,
+        zero_result,
+        low_signal,
+        correction_count,
+        corrected_query,
+        correction_pairs,
+        top_firms,
+        top_regulators,
+        latency_ms
+      )
+      VALUES (
+        ${record.queryHash},
+        ${record.queryText},
+        ${record.queryNormalized},
+        ${record.queryLength},
+        ${record.meaningfulTermCount},
+        ${record.firmIntentTermCount},
+        ${record.regulatorHintCount},
+        ${record.countryHintCount},
+        ${record.categoryHintCount},
+        ${sql.json(record.filtersApplied)},
+        ${record.resultCount},
+        ${record.zeroResult},
+        ${record.lowSignal},
+        ${record.correctionCount},
+        ${record.correctedQuery},
+        ${sql.json(record.correctionPairs)},
+        ${sql.json(record.topFirms)},
+        ${sql.json(record.topRegulators)},
+        ${record.latencyMs}
+      )
+    `;
   } catch (error) {
     const message = error instanceof Error ? error.message : 'Unknown error';
     if (message.includes('search_query_analytics')) {

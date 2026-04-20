@@ -7,6 +7,7 @@ interface AnalyticsSearchResult {
 }
 
 interface SearchAnalyticsFilters {
+  [key: string]: string | number | null;
   regulator: string | null;
   country: string | null;
   year: number | null;

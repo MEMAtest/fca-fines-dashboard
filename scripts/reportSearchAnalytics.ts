@@ -19,6 +19,18 @@ function parseIntArg(value: string | undefined, fallback: number) {
   return Number.isFinite(parsed) && parsed > 0 ? parsed : fallback;
 }
 
+function normalizeJsonArrayExpression(columnName: string) {
+  return `
+    CASE
+      WHEN jsonb_typeof(${columnName}) = 'array' THEN ${columnName}
+      WHEN jsonb_typeof(${columnName}) = 'string'
+        AND (${columnName} #>> '{}') LIKE '[%'
+        THEN (${columnName} #>> '{}')::jsonb
+      ELSE '[]'::jsonb
+    END
+  `;
+}
+
 async function main() {
   const windowDays = parseIntArg(process.argv[2], 30);
   const limit = parseIntArg(process.argv[3], 10);
@@ -117,7 +129,9 @@ async function main() {
       correction ->> 'to' AS to_term,
       COUNT(*)::int AS uses
     FROM search_query_analytics,
-      LATERAL jsonb_array_elements(correction_pairs) AS correction
+      LATERAL jsonb_array_elements(
+        ${sql.unsafe(normalizeJsonArrayExpression('correction_pairs'))}
+      ) AS correction
     WHERE created_at >= NOW() - (${windowDays} || ' days')::interval
     GROUP BY 1, 2
     ORDER BY uses DESC, from_term ASC
