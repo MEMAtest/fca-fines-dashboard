@@ -17,6 +17,10 @@ import {
   resolveFuzzySearchTerms,
   stripSnippetHtml,
 } from '../server/services/enforcementSearch.js';
+import {
+  buildSearchAnalyticsRecord,
+  type SearchAnalyticsRecord,
+} from '../server/services/searchAnalytics.js';
 
 const sql = postgres(process.env.DATABASE_URL?.trim() || '', {
   ssl: process.env.DATABASE_URL?.includes('sslmode=')
@@ -52,6 +56,69 @@ interface SearchRow {
 function toFiniteNumber(value: string | number | null | undefined) {
   const parsed = Number(value ?? 0);
   return Number.isFinite(parsed) ? parsed : 0;
+}
+
+async function recordSearchAnalytics(record: SearchAnalyticsRecord) {
+  try {
+    await sql.unsafe(
+      `
+        INSERT INTO search_query_analytics (
+          query_hash,
+          query_text,
+          query_normalized,
+          query_length,
+          meaningful_term_count,
+          firm_intent_term_count,
+          regulator_hint_count,
+          country_hint_count,
+          category_hint_count,
+          filters_applied,
+          result_count,
+          zero_result,
+          low_signal,
+          correction_count,
+          corrected_query,
+          correction_pairs,
+          top_firms,
+          top_regulators,
+          latency_ms
+        )
+        VALUES (
+          $1, $2, $3, $4, $5, $6, $7, $8, $9,
+          $10::jsonb, $11, $12, $13, $14, $15,
+          $16::jsonb, $17::jsonb, $18::jsonb, $19
+        )
+      `,
+      [
+        record.queryHash,
+        record.queryText,
+        record.queryNormalized,
+        record.queryLength,
+        record.meaningfulTermCount,
+        record.firmIntentTermCount,
+        record.regulatorHintCount,
+        record.countryHintCount,
+        record.categoryHintCount,
+        JSON.stringify(record.filtersApplied),
+        record.resultCount,
+        record.zeroResult,
+        record.lowSignal,
+        record.correctionCount,
+        record.correctedQuery,
+        JSON.stringify(record.correctionPairs),
+        JSON.stringify(record.topFirms),
+        JSON.stringify(record.topRegulators),
+        record.latencyMs,
+      ],
+    );
+  } catch (error) {
+    const message = error instanceof Error ? error.message : 'Unknown error';
+    if (message.includes('search_query_analytics')) {
+      console.warn('⚠️ search_query_analytics table not available yet');
+      return;
+    }
+    console.warn('⚠️ Failed to record search analytics', error);
+  }
 }
 
 async function fetchFuzzyCandidatePhrases({
@@ -209,6 +276,7 @@ function buildEmptySearchResponse({
 }
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
+  const startedAt = Date.now();
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'GET, OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
@@ -248,23 +316,42 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     const normalizedCountryCode = normalizeCountryCode(country);
     const prepared = prepareEnforcementSearch(q);
     const searchQuery = prepared.searchQuery;
+    const analyticsFilters = {
+      regulator: regulator || null,
+      country: normalizedCountryCode || null,
+      year: year ? Number.parseInt(year, 10) : null,
+      minAmount: minAmount ? Number.parseFloat(minAmount) : null,
+      maxAmount: maxAmount ? Number.parseFloat(maxAmount) : null,
+      currency,
+    };
 
     if (!prepared.hasSearchIntent) {
-      return res.status(200).json(
-        buildEmptySearchResponse({
+      const payload = buildEmptySearchResponse({
+        query: q,
+        regulator: regulator || null,
+        country: normalizedCountryCode || null,
+        year,
+        minAmount,
+        maxAmount,
+        currency,
+        limit: limitNum,
+        offset: offsetNum,
+        searchTerms: prepared.searchTerms,
+        reason: 'Query contained only low-signal terms',
+      });
+      await recordSearchAnalytics(
+        buildSearchAnalyticsRecord({
           query: q,
-          regulator: regulator || null,
-          country: normalizedCountryCode || null,
-          year,
-          minAmount,
-          maxAmount,
-          currency,
-          limit: limitNum,
-          offset: offsetNum,
-          searchTerms: prepared.searchTerms,
-          reason: 'Query contained only low-signal terms',
+          prepared,
+          fuzzyResolution: null,
+          filters: analyticsFilters,
+          results: [],
+          totalCount: 0,
+          latencyMs: Date.now() - startedAt,
+          lowSignal: true,
         }),
       );
+      return res.status(200).json(payload);
     }
 
     const shouldAttemptFuzzyCorrection = prepared.meaningfulTerms.some(
@@ -960,7 +1047,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     const countResult = await sql.unsafe<{ count: number }[]>(countQuery, params);
     const totalCount = countResult[0]?.count ?? 0;
 
-    return res.status(200).json({
+    const payload = {
       query: q,
       results: results.map((row) => ({
         id: row.id,
@@ -1033,7 +1120,25 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
           fuzzy: 'typo-tolerant token correction with lower ranking weight',
         },
       },
-    });
+    };
+
+    await recordSearchAnalytics(
+      buildSearchAnalyticsRecord({
+        query: q,
+        prepared,
+        fuzzyResolution,
+        filters: analyticsFilters,
+        results: payload.results.map((result) => ({
+          firm: result.firm,
+          regulator: result.regulator,
+        })),
+        totalCount,
+        latencyMs: Date.now() - startedAt,
+        lowSignal: false,
+      }),
+    );
+
+    return res.status(200).json(payload);
   } catch (error) {
     console.error('Enforcement search error:', error);
     return res.status(500).json({

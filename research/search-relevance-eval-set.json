@@ -1,48 +1,215 @@
 [
   {
     "id": "exact-goldman",
+    "category": "exact_firm",
     "query": "Goldman Sachs enforcement",
     "expectedAnyTop": ["Goldman Sachs", "Goldman Sachs & Co. LLC", "Goldman Sachs & Co."],
     "maxRank": 3,
     "notes": "Exact firm query should rank Goldman variants at the very top."
   },
   {
-    "id": "typo-goldman",
-    "query": "Goldmn Sachs enforcement",
-    "expectedAnyTop": ["Goldman Sachs", "Goldman Sachs & Co. LLC", "Goldman Sachs & Co."],
-    "maxRank": 3,
-    "notes": "Single-token typo rescue should still recover Goldman near the top."
-  },
-  {
-    "id": "coinbase-aml",
+    "id": "exact-coinbase-aml",
+    "category": "exact_firm",
     "query": "Coinbase Europe AML",
     "expectedAnyTop": ["Coinbase Europe Limited"],
     "maxRank": 1,
     "notes": "Firm + geography + AML should put the live Irish Coinbase action first."
   },
   {
-    "id": "coinbase-typo",
-    "query": "Coinbsae Europe AML",
+    "id": "exact-coinbase-limited",
+    "category": "exact_firm",
+    "query": "Coinbase Europe Limited enforcement",
     "expectedAnyTop": ["Coinbase Europe Limited"],
+    "maxRank": 2,
+    "notes": "Long-form exact firm query should keep the Irish Coinbase entity at the top."
+  },
+  {
+    "id": "exact-barclays-plc",
+    "category": "exact_firm",
+    "query": "Barclays Bank plc enforcement",
+    "expectedAnyTop": ["Barclays Bank plc", "Barclays Bank Plc"],
     "maxRank": 3,
-    "notes": "Transposition typo should still recover Coinbase Europe."
+    "notes": "Exact Barclays legal entity query should keep Barclays plc results first."
+  },
+  {
+    "id": "exact-dbs-hk",
+    "category": "exact_firm",
+    "query": "DBS Bank Hong Kong AML",
+    "expectedAnyTop": ["DBS Bank (Hong Kong) Limited"],
+    "maxRank": 2,
+    "notes": "Hong Kong AML bank query should surface DBS quickly."
+  },
+  {
+    "id": "exact-china-citic",
+    "category": "exact_firm",
+    "query": "China CITIC Bank AML",
+    "expectedAnyTop": ["China CITIC Bank International Limited"],
+    "maxRank": 2,
+    "notes": "Exact bank name plus AML should keep the HKMA CITIC action in the first two results."
+  },
+  {
+    "id": "exact-state-bank-india-hk",
+    "category": "exact_firm",
+    "query": "State Bank of India Hong Kong AML",
+    "expectedAnyTop": ["State Bank of India, Hong Kong Branch"],
+    "maxRank": 2,
+    "notes": "Exact HK branch query should recover the State Bank of India Hong Kong action."
+  },
+  {
+    "id": "exact-ulster-bank-ireland",
+    "category": "exact_firm",
+    "query": "Ulster Bank Ireland enforcement",
+    "expectedAnyTop": ["Ulster Bank Ireland DAC", "Ulster Bank Ireland Limited"],
+    "maxRank": 2,
+    "notes": "Irish bank exact query should keep Ulster Bank near the top."
+  },
+  {
+    "id": "exact-julius-baer-fca",
+    "category": "exact_firm",
+    "query": "Julius Baer FCA enforcement",
+    "expectedAnyTop": ["Julius Baer International Limited"],
+    "maxRank": 2,
+    "notes": "Mixed firm and regulator query should return Julius Baer before unrelated FCA firms."
   },
   {
     "id": "barclays-aml-controls",
+    "category": "exact_firm",
     "query": "barclays fined for aml controls",
     "expectedAnyTop": ["Barclays Bank plc", "Barclays"],
     "maxRank": 5,
     "notes": "Firm-led AML controls query should surface Barclays in the first page, ideally top 5."
   },
   {
+    "id": "typo-goldman",
+    "category": "typo_firm",
+    "query": "Goldmn Sachs enforcement",
+    "expectedAnyTop": ["Goldman Sachs", "Goldman Sachs & Co. LLC", "Goldman Sachs & Co."],
+    "maxRank": 3,
+    "notes": "Single-token typo rescue should still recover Goldman near the top."
+  },
+  {
+    "id": "coinbase-typo",
+    "category": "typo_firm",
+    "query": "Coinbsae Europe AML",
+    "expectedAnyTop": ["Coinbase Europe Limited"],
+    "maxRank": 3,
+    "notes": "Transposition typo should still recover Coinbase Europe."
+  },
+  {
+    "id": "typo-coinbase-limited",
+    "category": "typo_firm",
+    "query": "Coinbsae Europe Limited enforcement",
+    "expectedAnyTop": ["Coinbase Europe Limited"],
+    "maxRank": 2,
+    "notes": "Long-form typo query should still keep Coinbase Europe first."
+  },
+  {
+    "id": "typo-dbs-hk",
+    "category": "typo_firm",
+    "query": "DBS Bnak Hong Kong AML",
+    "expectedAnyTop": ["DBS Bank (Hong Kong) Limited"],
+    "maxRank": 2,
+    "notes": "Bank-name transposition should still recover DBS Hong Kong quickly."
+  },
+  {
+    "id": "typo-china-citic",
+    "category": "typo_firm",
+    "query": "China CITC Bank AML",
+    "expectedAnyTop": ["China CITIC Bank International Limited"],
+    "maxRank": 2,
+    "notes": "Single missing character should still recover China CITIC."
+  },
+  {
+    "id": "typo-state-bank-india-hk",
+    "category": "typo_firm",
+    "query": "State Bnak of India Hong Kong AML",
+    "expectedAnyTop": ["State Bank of India, Hong Kong Branch"],
+    "maxRank": 2,
+    "notes": "State Bank typo query should still rank the HK branch first."
+  },
+  {
+    "id": "typo-ulster-bank-ireland",
+    "category": "typo_firm",
+    "query": "Ulster Bnak Ireland enforcement",
+    "expectedAnyTop": ["Ulster Bank Ireland DAC", "Ulster Bank Ireland Limited"],
+    "maxRank": 2,
+    "notes": "Ulster Bank transposition should still return the Irish bank first."
+  },
+  {
+    "id": "typo-deutsche-bank",
+    "category": "typo_firm",
+    "query": "Deutsche Bnak AG enforcement",
+    "expectedAnyTop": ["Deutsche Bank AG", "Deutsche Bank"],
+    "maxRank": 2,
+    "notes": "German bank transposition should still recover Deutsche Bank."
+  },
+  {
+    "id": "typo-barclays-plc",
+    "category": "typo_firm",
+    "query": "Barclays Bnak plc enforcement",
+    "expectedAnyTop": ["Barclays Bank plc", "Barclays PLC", "Barclays"],
+    "maxRank": 3,
+    "notes": "Barclays typo query should still keep a Barclays entity inside the first three results."
+  },
+  {
     "id": "irish-crypto-aml",
+    "category": "geo_theme",
     "query": "irish crypto aml failures",
     "expectedAnyTop": ["Coinbase Europe Limited"],
     "maxRank": 3,
     "notes": "Geography + sector + AML should find the Irish crypto enforcement quickly."
   },
   {
+    "id": "coinbase-ireland-crypto-aml",
+    "category": "geo_theme",
+    "query": "coinbase ireland crypto aml",
+    "expectedAnyTop": ["Coinbase Europe Limited"],
+    "maxRank": 2,
+    "notes": "Explicit Ireland and crypto context should keep Coinbase Europe at the top."
+  },
+  {
+    "id": "hong-kong-aml-bank",
+    "category": "geo_theme",
+    "query": "hong kong aml bank",
+    "expectedRegulatorTop": ["HKMA"],
+    "maxRegulatorRank": 2,
+    "notes": "Hong Kong AML bank queries should stay anchored to HKMA."
+  },
+  {
+    "id": "hong-kong-ctf",
+    "category": "geo_theme",
+    "query": "hong kong counter terrorist financing",
+    "expectedRegulatorTop": ["HKMA"],
+    "maxRegulatorRank": 2,
+    "notes": "Hong Kong CTF query should rank HKMA before other regulators."
+  },
+  {
+    "id": "uae-aml-controls-dfsa",
+    "category": "geo_theme",
+    "query": "uae aml controls dfsa",
+    "expectedRegulatorTop": ["DFSA"],
+    "maxRegulatorRank": 2,
+    "notes": "UAE AML controls query should keep DFSA at the top."
+  },
+  {
+    "id": "singapore-aml-bank",
+    "category": "geo_theme",
+    "query": "singapore aml bank",
+    "expectedRegulatorTop": ["MAS"],
+    "maxRegulatorRank": 2,
+    "notes": "Singapore AML bank query should rank MAS ahead of unrelated regulators."
+  },
+  {
+    "id": "irish-bank-governance",
+    "category": "geo_theme",
+    "query": "irish bank governance",
+    "expectedRegulatorTop": ["CBI"],
+    "maxRegulatorRank": 2,
+    "notes": "Irish bank governance searches should stay anchored to the Central Bank of Ireland."
+  },
+  {
     "id": "fca-governance",
+    "category": "regulator_theme",
     "query": "FCA governance accountability",
     "expectedRegulatorTop": ["FCA"],
     "maxRegulatorRank": 3,
@@ -50,6 +217,7 @@
   },
   {
     "id": "ctf-theme",
+    "category": "regulator_theme",
     "query": "counter terrorist financing",
     "expectedRegulatorTop": ["HKMA", "MAS"],
     "maxRegulatorRank": 3,
@@ -57,6 +225,7 @@
   },
   {
     "id": "germany-compliance",
+    "category": "regulator_theme",
     "query": "Germany compliance failures",
     "expectedRegulatorTop": ["BaFin"],
     "maxRegulatorRank": 3,
@@ -64,21 +233,60 @@
   },
   {
     "id": "sebi-aml",
+    "category": "regulator_theme",
     "query": "SEBI anti money laundering",
     "expectedRegulatorTop": ["SEBI"],
     "maxRegulatorRank": 3,
     "notes": "Regulator token should keep SEBI rows near the top for AML-related results."
   },
   {
+    "id": "julius-baer-governance-fca",
+    "category": "regulator_theme",
+    "query": "Julius Baer governance FCA",
+    "expectedAnyTop": ["Julius Baer International Limited"],
+    "maxRank": 2,
+    "notes": "Firm plus governance plus regulator should still surface Julius Baer first."
+  },
+  {
     "id": "stopwords-only",
+    "category": "no_match",
     "query": "the and of",
     "expectZeroResults": true,
     "notes": "Low-signal stopword queries should be rejected cleanly."
   },
   {
+    "id": "stopwords-fines-only",
+    "category": "no_match",
+    "query": "fines penalties sanctions",
+    "expectZeroResults": true,
+    "notes": "Generic enforcement nouns without entity or theme intent should return zero results."
+  },
+  {
+    "id": "stopwords-notice-order",
+    "category": "no_match",
+    "query": "notice order penalty",
+    "expectZeroResults": true,
+    "notes": "Low-signal notice/order terms should be rejected rather than producing noise."
+  },
+  {
     "id": "impossible-query",
+    "category": "no_match",
     "query": "zzzzzz impossible zebra compliance",
     "expectZeroResults": true,
     "notes": "Nonsense queries should return zero results rather than noisy broad matches."
+  },
+  {
+    "id": "impossible-random-letters",
+    "category": "no_match",
+    "query": "asdfgh qwerty zxcvb",
+    "expectZeroResults": true,
+    "notes": "Random-letter nonsense should return zero results."
+  },
+  {
+    "id": "impossible-lorem-zebra",
+    "category": "no_match",
+    "query": "lorem ipsum compliance zebra",
+    "expectZeroResults": true,
+    "notes": "Broad but meaningless mixed queries should return zero results once firm-intent separation is in place."
   }
 ]

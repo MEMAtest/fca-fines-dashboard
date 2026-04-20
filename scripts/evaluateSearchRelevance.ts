@@ -3,6 +3,7 @@ import path from 'node:path';
 
 interface EvalCase {
   id: string;
+  category?: string;
   query: string;
   expectedAnyTop?: string[];
   maxRank?: number;
@@ -60,6 +61,10 @@ async function main() {
   const raw = fs.readFileSync(evalSetPath, 'utf8');
   const evalSet = JSON.parse(raw) as EvalCase[];
   const failures: string[] = [];
+  const categoryStats = new Map<
+    string,
+    { total: number; passed: number; failedIds: string[] }
+  >();
 
   for (const testCase of evalSet) {
     const url = `${baseUrl.replace(/\/$/, '')}/api/search?q=${encodeURIComponent(testCase.query)}`;
@@ -121,7 +126,32 @@ async function main() {
     if (!passed) {
       failures.push(testCase.id);
     }
+
+    const category = testCase.category ?? 'uncategorized';
+    const current = categoryStats.get(category) ?? {
+      total: 0,
+      passed: 0,
+      failedIds: [],
+    };
+    current.total += 1;
+    if (passed) {
+      current.passed += 1;
+    } else {
+      current.failedIds.push(testCase.id);
+    }
+    categoryStats.set(category, current);
   }
+
+  const categorySummary = Array.from(categoryStats.entries())
+    .map(([category, stats]) => ({
+      category,
+      totalCases: stats.total,
+      passedCases: stats.passed,
+      failedCases: stats.total - stats.passed,
+      passRate: Number(((stats.passed / stats.total) * 100).toFixed(1)),
+      failedIds: stats.failedIds,
+    }))
+    .sort((left, right) => left.category.localeCompare(right.category));
 
   console.log(
     JSON.stringify(
@@ -131,6 +161,7 @@ async function main() {
         totalCases: evalSet.length,
         failedCases: failures.length,
         failures,
+        categorySummary,
       },
       null,
       2,
