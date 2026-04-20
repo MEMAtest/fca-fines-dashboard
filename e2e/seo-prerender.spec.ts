@@ -194,12 +194,83 @@ test.describe('Pre-rendered HTML SEO Meta Tags', () => {
     }
   });
 
+  test.describe('FAQ page (dist/faq/index.html)', () => {
+    let html: string;
+
+    test.beforeAll(() => {
+      html = readFileSync(join(DIST, 'faq', 'index.html'), 'utf-8');
+    });
+
+    test('should have correct title under 65 chars', () => {
+      const match = html.match(/<title>([^<]+)<\/title>/);
+      expect(match).toBeTruthy();
+      expect(match![1]).toContain('Regulatory Fines FAQ');
+      expect(match![1].length).toBeLessThanOrEqual(65);
+    });
+
+    test('should have meta description under 160 chars', () => {
+      const match = html.match(/<meta\s+name="description"\s+content="([^"]+)"/);
+      expect(match).toBeTruthy();
+      expect(match![1].length).toBeLessThanOrEqual(160);
+      expect(match![1]).toContain('45+');
+    });
+
+    test('should have correct canonical URL', () => {
+      const match = html.match(/<link\s+rel="canonical"\s+href="([^"]+)"/);
+      expect(match).toBeTruthy();
+      expect(match![1]).toBe(`${BASE_URL}/faq`);
+    });
+
+    test('should have OG tags', () => {
+      expect(html).toContain(`<meta property="og:url" content="${BASE_URL}/faq"`);
+      expect(html).toContain('<meta property="og:type" content="website"');
+    });
+
+    test('should have global keywords', () => {
+      const match = html.match(/<meta\s+name="keywords"\s+content="([^"]+)"/);
+      expect(match).toBeTruthy();
+      const keywords = match![1].toLowerCase();
+      expect(keywords).toContain('bafin');
+      expect(keywords).toContain('sec');
+      expect(keywords).toContain('asic');
+    });
+
+    test('should have FAQPage JSON-LD schema', () => {
+      const jsonLdMatches = html.match(/<script\s+type="application\/ld\+json">\s*([\s\S]*?)\s*<\/script>/g);
+      expect(jsonLdMatches).toBeTruthy();
+
+      // Find FAQPage schema
+      let hasFaqPage = false;
+      for (const block of jsonLdMatches!) {
+        const content = block.replace(/<script[^>]*>/, '').replace(/<\/script>/, '').trim();
+        try {
+          const schema = JSON.parse(content);
+          if (schema['@type'] === 'FAQPage') {
+            hasFaqPage = true;
+            expect(schema.mainEntity.length).toBeGreaterThanOrEqual(30);
+          }
+          if (schema['@graph']) {
+            const faqNode = schema['@graph'].find((n: any) => n['@type'] === 'FAQPage');
+            if (faqNode) {
+              hasFaqPage = true;
+              expect(faqNode.mainEntity.length).toBeGreaterThanOrEqual(30);
+            }
+          }
+        } catch {
+          // skip invalid JSON-LD
+        }
+      }
+      expect(hasFaqPage).toBe(true);
+    });
+  });
+
   test.describe('All pre-rendered files have distinct titles (no duplicates)', () => {
     test('no two pages share the same title', () => {
       const paths = [
         'index.html',
         'dashboard/index.html',
         'blog/index.html',
+        'faq/index.html',
         'blog/20-biggest-fca-fines-of-all-time/index.html',
         'blog/fca-fines-2025-complete-list/index.html',
         'blog/fca-fines-2021-annual-review/index.html',

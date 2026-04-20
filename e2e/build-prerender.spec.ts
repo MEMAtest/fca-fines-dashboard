@@ -263,6 +263,61 @@ test.describe('Build & Pre-rendering', () => {
     });
   });
 
+  test.describe('FAQ page', () => {
+    test('should have pre-rendered FAQ page', () => {
+      const faqPath = join(DIST_DIR, 'faq', 'index.html');
+      expect(existsSync(faqPath)).toBe(true);
+
+      const html = readFileSync(faqPath, 'utf-8');
+      expect(html).toContain('Regulatory Fines FAQ');
+      expect(html).toContain('<meta name="description"');
+      expect(html).toContain('application/ld+json');
+    });
+
+    test('should have FAQPage JSON-LD schema with 31 items', () => {
+      const faqPath = join(DIST_DIR, 'faq', 'index.html');
+      const html = readFileSync(faqPath, 'utf-8');
+
+      const jsonLdBlocks = extractJsonLdBlocks(html);
+      const faqSchema = jsonLdBlocks.find(
+        (block: any) =>
+          block['@type'] === 'FAQPage' ||
+          (block['@graph'] && block['@graph'].some((n: any) => n['@type'] === 'FAQPage')),
+      );
+      expect(faqSchema).toBeTruthy();
+
+      // Find the FAQPage node (could be top-level or inside @graph)
+      let faqNode: any;
+      if (faqSchema['@type'] === 'FAQPage') {
+        faqNode = faqSchema;
+      } else if (faqSchema['@graph']) {
+        faqNode = faqSchema['@graph'].find((n: any) => n['@type'] === 'FAQPage');
+      }
+      expect(faqNode).toBeTruthy();
+      expect(faqNode.mainEntity).toBeTruthy();
+      expect(faqNode.mainEntity.length).toBeGreaterThanOrEqual(30);
+    });
+
+    test('FAQ JSON-LD should contain global regulator questions', () => {
+      const faqPath = join(DIST_DIR, 'faq', 'index.html');
+      const html = readFileSync(faqPath, 'utf-8');
+
+      // Check HTML contains global questions
+      expect(html).toContain('Which financial regulator issues the largest fines globally?');
+      expect(html).toContain('How many regulators does RegActions track?');
+      expect(html).toContain('What is BaFin and what does it regulate?');
+    });
+
+    test('FAQ page should not contain stale "34+" references', () => {
+      const faqPath = join(DIST_DIR, 'faq', 'index.html');
+      const html = readFileSync(faqPath, 'utf-8');
+
+      // Should use 45+, not 34+
+      expect(html).not.toContain('34+');
+      expect(html).toContain('45+');
+    });
+  });
+
   test.describe('Route preload hygiene', () => {
     test('should keep the search shell free of heavy blog and export preloads', () => {
       const searchPath = join(DIST_DIR, 'search', 'index.html');
