@@ -131,16 +131,36 @@ describe('enforcementSearch helpers', () => {
       ['Goldman Sachs & Co. LLC', 'Goldmeier Sachs LLP', 'anti money laundering'],
     );
 
-    expect(resolution.correctedTerms).toEqual([
-      'goldman',
-      'sachs',
-      'laundering',
-    ]);
+    expect(resolution.correctedTerms).toEqual(['goldman', 'sachs', 'laundring']);
+    expect(resolution.corrections).toEqual([{ from: 'goldmn', to: 'goldman' }]);
+    expect(resolution.changed).toBe(true);
+  });
+
+  it('prefers typo corrections that share phrase context with other query terms', () => {
+    const resolution = resolveFuzzySearchTerms(
+      ['goldmn', 'sachs'],
+      ['Goldman Sachs & Co. LLC', 'Golden State Finance'],
+    );
+
+    expect(resolution.correctedTerms).toEqual(['goldman', 'sachs']);
     expect(resolution.corrections).toEqual([
       { from: 'goldmn', to: 'goldman' },
-      { from: 'laundring', to: 'laundering' },
     ]);
-    expect(resolution.changed).toBe(true);
+  });
+
+  it('does not force unrelated typo corrections when there is no contextual support', () => {
+    const resolution = resolveFuzzySearchTerms(
+      ['barclays', 'fined', 'aml', 'controls'],
+      ['Barclays Bank plc', 'anti money laundering controls'],
+    );
+
+    expect(resolution.correctedTerms).toEqual([
+      'barclays',
+      'fined',
+      'aml',
+      'controls',
+    ]);
+    expect(resolution.corrections).toEqual([]);
   });
 
   it('marks stopword-only queries as low-signal', () => {

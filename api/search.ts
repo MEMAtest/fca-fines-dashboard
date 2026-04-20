@@ -105,7 +105,6 @@ async function fetchFuzzyCandidatePhrases({
         WHERE LOWER(COALESCE(firm_individual, '')) LIKE prefix || '%'
           OR LOWER(COALESCE(regulator_full_name, '')) LIKE prefix || '%'
           OR LOWER(COALESCE(country_name, '')) LIKE prefix || '%'
-          OR LOWER(COALESCE(breach_type, '')) LIKE prefix || '%'
       )
     `);
   }
@@ -116,7 +115,6 @@ async function fetchFuzzyCandidatePhrases({
       regulator: string | null;
       regulator_full_name: string | null;
       country_name: string | null;
-      breach_type: string | null;
     }>
   >(
     `
@@ -124,8 +122,7 @@ async function fetchFuzzyCandidatePhrases({
         firm_individual,
         regulator,
         regulator_full_name,
-        country_name,
-        breach_type
+        country_name
       FROM all_regulatory_fines
       WHERE ${conditions.join(' AND ')}
       ORDER BY firm_individual, date_issued DESC
@@ -140,7 +137,6 @@ async function fetchFuzzyCandidatePhrases({
       row.regulator,
       row.regulator_full_name,
       row.country_name,
-      row.breach_type,
     ].filter((value): value is string => Boolean(value && value.trim())),
   );
 }
@@ -307,6 +303,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       fuzzyPrepared?.phrasePattern ?? '',
       fuzzyPrepared?.searchPatterns ?? [],
       fuzzyPrepared?.minimumTokenMatches ?? 0,
+      prepared.meaningfulTerms,
+      fuzzyPrepared?.meaningfulTerms ?? [],
     ];
 
     if (regulator) {
@@ -377,11 +375,23 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
             WHEN COALESCE(firm_individual, '') ILIKE $2 THEN 200
             ELSE 0
           END AS firm_match_score,
+          (
+            SELECT COUNT(*)::int
+            FROM unnest($12::text[]) AS token
+            WHERE token <> ''
+              AND COALESCE(firm_individual, '') ILIKE '%' || token || '%'
+          ) AS firm_token_match_score,
           CASE
             WHEN $8 <> '' AND LOWER(COALESCE(firm_individual, '')) = LOWER($8) THEN 180
             WHEN $9 <> '' AND COALESCE(firm_individual, '') ILIKE $9 THEN 120
             ELSE 0
           END AS fuzzy_firm_match_score,
+          (
+            SELECT COUNT(*)::int
+            FROM unnest($13::text[]) AS token
+            WHERE token <> ''
+              AND COALESCE(firm_individual, '') ILIKE '%' || token || '%'
+          ) AS fuzzy_firm_token_match_score,
           CASE
             WHEN COALESCE(array_length($5::text[], 1), 0) > 0
               AND regulator = ANY($5::text[])
@@ -555,7 +565,9 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         FROM filtered_results
         WHERE
           firm_match_score > 0
+          OR firm_token_match_score > 0
           OR fuzzy_firm_match_score > 0
+          OR fuzzy_firm_token_match_score > 0
           OR regulator_hint_score > 0
           OR country_hint_score > 0
           OR category_match_score > 0
@@ -571,7 +583,9 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
           *,
           (
             firm_match_score
+            + (firm_token_match_score * 45)
             + fuzzy_firm_match_score
+            + (fuzzy_firm_token_match_score * 30)
             + regulator_hint_score
             + country_hint_score
             + category_match_score
@@ -613,7 +627,9 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       FROM scored_results
       ORDER BY
         firm_match_score DESC,
+        firm_token_match_score DESC,
         fuzzy_firm_match_score DESC,
+        fuzzy_firm_token_match_score DESC,
         regulator_theme_synergy_score DESC,
         country_theme_synergy_score DESC,
         category_theme_synergy_score DESC,
@@ -645,11 +661,23 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
             WHEN COALESCE(firm_individual, '') ILIKE $2 THEN 200
             ELSE 0
           END AS firm_match_score,
+          (
+            SELECT COUNT(*)::int
+            FROM unnest($12::text[]) AS token
+            WHERE token <> ''
+              AND COALESCE(firm_individual, '') ILIKE '%' || token || '%'
+          ) AS firm_token_match_score,
           CASE
             WHEN $8 <> '' AND LOWER(COALESCE(firm_individual, '')) = LOWER($8) THEN 180
             WHEN $9 <> '' AND COALESCE(firm_individual, '') ILIKE $9 THEN 120
             ELSE 0
           END AS fuzzy_firm_match_score,
+          (
+            SELECT COUNT(*)::int
+            FROM unnest($13::text[]) AS token
+            WHERE token <> ''
+              AND COALESCE(firm_individual, '') ILIKE '%' || token || '%'
+          ) AS fuzzy_firm_token_match_score,
           CASE
             WHEN COALESCE(array_length($5::text[], 1), 0) > 0
               AND regulator = ANY($5::text[])
@@ -771,7 +799,9 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       FROM filtered_results
       WHERE
         firm_match_score > 0
+        OR firm_token_match_score > 0
         OR fuzzy_firm_match_score > 0
+        OR fuzzy_firm_token_match_score > 0
         OR regulator_hint_score > 0
         OR country_hint_score > 0
         OR category_match_score > 0

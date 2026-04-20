@@ -177,6 +177,13 @@ function tokenizeFuzzyPhrase(value: string) {
   );
 }
 
+function buildPhraseTokenSets(candidatePhrases: string[]) {
+  return candidatePhrases.map((phrase) => ({
+    phrase,
+    tokens: new Set(tokenizeFuzzyPhrase(phrase)),
+  }));
+}
+
 function toLikePatterns(term: string) {
   const normalized = term.toLowerCase();
   return unique([
@@ -397,6 +404,7 @@ export function resolveFuzzySearchTerms(
   candidatePhrases: string[],
 ): FuzzySearchResolution {
   const vocabulary = buildFuzzySearchVocabulary(candidatePhrases);
+  const phraseTokenSets = buildPhraseTokenSets(candidatePhrases);
   if (terms.length === 0 || vocabulary.length === 0) {
     return {
       correctedTerms: terms,
@@ -407,6 +415,12 @@ export function resolveFuzzySearchTerms(
   }
 
   const exactVocabulary = new Set(vocabulary);
+  type CandidateMatch = {
+    value: string;
+    editDistance: number;
+    lengthDelta: number;
+    phraseContextScore: number;
+  };
 
   const corrections: Array<{ from: string; to: string }> = [];
   const correctedTerms = terms.map((term) => {
@@ -420,30 +434,57 @@ export function resolveFuzzySearchTerms(
     }
 
     const maxEditDistance = term.length >= 8 ? 2 : 1;
-    let acceptedCandidate: { value: string; editDistance: number; lengthDelta: number } | null = null;
+    const contextTerms = new Set(
+      terms.filter((candidateTerm) => candidateTerm !== term && candidateTerm.length >= 3),
+    );
+    let acceptedCandidate: CandidateMatch | null = null;
 
     for (const candidate of vocabulary) {
       const editDistance = computeEditDistance(term, candidate);
       const lengthDelta = Math.abs(candidate.length - term.length);
+      const phraseContextScore = phraseTokenSets.reduce((score, entry) => {
+        if (!entry.tokens.has(candidate)) {
+          return score;
+        }
+
+        for (const contextTerm of contextTerms) {
+          if (entry.tokens.has(contextTerm)) {
+            return score + 1;
+          }
+        }
+
+        return score;
+      }, 0);
       if (
         candidate === term
         || candidate[0] !== term[0]
         || candidate[candidate.length - 1] !== term[term.length - 1]
         || lengthDelta > 2
         || editDistance > maxEditDistance
+        || (contextTerms.size > 0 && phraseContextScore === 0)
       ) {
         continue;
       }
 
       if (
         !acceptedCandidate
-        || editDistance < acceptedCandidate.editDistance
+        || phraseContextScore > acceptedCandidate.phraseContextScore
         || (
-          editDistance === acceptedCandidate.editDistance
+          phraseContextScore === acceptedCandidate.phraseContextScore
+          && editDistance < acceptedCandidate.editDistance
+        )
+        || (
+          phraseContextScore === acceptedCandidate.phraseContextScore
+          && editDistance === acceptedCandidate.editDistance
           && lengthDelta < acceptedCandidate.lengthDelta
         )
       ) {
-        acceptedCandidate = { value: candidate, editDistance, lengthDelta };
+        acceptedCandidate = {
+          value: candidate,
+          editDistance,
+          lengthDelta,
+          phraseContextScore,
+        };
       }
     }
 
