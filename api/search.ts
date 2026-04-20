@@ -303,6 +303,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       fuzzyPrepared?.phrasePattern ?? '',
       fuzzyPrepared?.searchPatterns ?? [],
       fuzzyPrepared?.minimumTokenMatches ?? 0,
+      prepared.firmIntentTerms,
+      fuzzyPrepared?.firmIntentTerms ?? [],
       prepared.meaningfulTerms,
       fuzzyPrepared?.meaningfulTerms ?? [],
     ];
@@ -474,7 +476,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
           END AS fuzzy_phrase_match_score,
           (
             SELECT COUNT(*)::int
-            FROM unnest($12::text[]) AS token
+            FROM unnest($14::text[]) AS token
             WHERE token <> ''
               AND (
                 COALESCE(firm_individual, '') ILIKE '%' || token || '%'
@@ -511,7 +513,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
           ) AS token_match_score,
           (
             SELECT COUNT(*)::int
-            FROM unnest($13::text[]) AS token
+            FROM unnest($15::text[]) AS token
             WHERE token <> ''
               AND (
                 COALESCE(firm_individual, '') ILIKE '%' || token || '%'
@@ -834,7 +836,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
           END AS fuzzy_phrase_match_score,
           (
             SELECT COUNT(*)::int
-            FROM unnest($12::text[]) AS token
+            FROM unnest($14::text[]) AS token
             WHERE token <> ''
               AND (
                 COALESCE(firm_individual, '') ILIKE '%' || token || '%'
@@ -871,7 +873,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
           ) AS token_match_score,
           (
             SELECT COUNT(*)::int
-            FROM unnest($13::text[]) AS token
+            FROM unnest($15::text[]) AS token
             WHERE token <> ''
               AND (
                 COALESCE(firm_individual, '') ILIKE '%' || token || '%'

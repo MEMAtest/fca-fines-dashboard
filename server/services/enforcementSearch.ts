@@ -103,6 +103,27 @@ const LOW_SIGNAL_SEARCH_TOKENS = new Set([
   'sanctions',
 ]);
 
+const GENERIC_THEME_SEARCH_TOKENS = new Set([
+  'accountability',
+  'aml',
+  'cft',
+  'compliance',
+  'control',
+  'controls',
+  'counter',
+  'crypto',
+  'ctf',
+  'failure',
+  'failures',
+  'financing',
+  'fined',
+  'governance',
+  'irish',
+  'germany',
+  'monitoring',
+  'terrorist',
+]);
+
 const BASE_FUZZY_SEARCH_PHRASES = unique([
   ...PUBLIC_REGULATOR_NAV_ITEMS.flatMap((coverage) => [
     coverage.code,
@@ -138,6 +159,7 @@ export interface PreparedEnforcementSearch {
   searchPatterns: string[];
   searchTerms: string[];
   meaningfulTerms: string[];
+  firmIntentTerms: string[];
   minimumTokenMatches: number;
   regulatorHints: string[];
   countryHints: string[];
@@ -231,6 +253,24 @@ function isMeaningfulToken(token: string) {
     !COMMON_STOPWORDS.has(token) &&
     !LOW_SIGNAL_SEARCH_TOKENS.has(token)
   );
+}
+
+function deriveFirmIntentTerms(tokens: string[]) {
+  return tokens.filter((token) => {
+    if (GENERIC_THEME_SEARCH_TOKENS.has(token)) {
+      return false;
+    }
+
+    if (REGULATOR_CODE_TO_MATCH.has(token)) {
+      return false;
+    }
+
+    if (normalizeCountryCode(token)) {
+      return false;
+    }
+
+    return true;
+  });
 }
 
 function expandThemePhrases(tokens: string[]) {
@@ -343,7 +383,18 @@ function expandThemePhrases(tokens: string[]) {
     );
   }
 
-  if (tokens.includes('compliance')) {
+  if (
+    tokens.includes('compliance')
+    && (
+      tokens.includes('failure')
+      || tokens.includes('failures')
+      || tokens.includes('control')
+      || tokens.includes('controls')
+      || tokens.includes('governance')
+      || tokens.includes('monitoring')
+      || tokens.includes('systems')
+    )
+  ) {
     expanded.push(
       'systems and controls',
       'controls failures',
@@ -649,6 +700,7 @@ export function prepareEnforcementSearch(query: string): PreparedEnforcementSear
   ]);
   const minimumTokenMatches =
     meaningfulTokens.length >= 3 ? 2 : meaningfulTokens.length >= 1 ? 1 : 0;
+  const firmIntentTerms = deriveFirmIntentTerms(meaningfulTokens);
   const regulatorHints = unique(
     rawTokens
       .map((token) => REGULATOR_CODE_TO_MATCH.get(token))
@@ -676,6 +728,7 @@ export function prepareEnforcementSearch(query: string): PreparedEnforcementSear
     searchPatterns,
     searchTerms: unique([...rawTokens, ...expandedTerms, ...themePhrases]),
     meaningfulTerms: meaningfulTokens,
+    firmIntentTerms,
     minimumTokenMatches,
     regulatorHints,
     countryHints,

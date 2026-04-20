@@ -121,6 +121,7 @@ describe('enforcementSearch helpers', () => {
     const prepared = prepareEnforcementSearch('irish crypto aml failures');
 
     expect(prepared.countryHints).toEqual(['IE']);
+    expect(prepared.firmIntentTerms).toEqual([]);
     expect(prepared.searchTerms).toEqual(
       expect.arrayContaining([
         'crypto',
@@ -139,6 +140,7 @@ describe('enforcementSearch helpers', () => {
     const prepared = prepareEnforcementSearch('Germany compliance failures');
 
     expect(prepared.countryHints).toEqual(['DE']);
+    expect(prepared.firmIntentTerms).toEqual([]);
     expect(prepared.searchTerms).toEqual(
       expect.arrayContaining([
         'compliance',
@@ -150,6 +152,12 @@ describe('enforcementSearch helpers', () => {
     expect(prepared.categoryHints).toEqual(
       expect.arrayContaining(['SYSTEMS_AND_CONTROLS', 'CONTROLS', 'GOVERNANCE']),
     );
+  });
+
+  it('keeps firm-like tokens separate from theme and geography terms', () => {
+    const prepared = prepareEnforcementSearch('barclays fined for aml controls');
+
+    expect(prepared.firmIntentTerms).toEqual(['barclays']);
   });
 
   it('builds a fuzzy vocabulary from static and dynamic search phrases', () => {
