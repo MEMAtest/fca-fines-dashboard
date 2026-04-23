@@ -2507,6 +2507,261 @@ function getRegulatorProfile(code: string): RegulatorProfile {
           "Compare CMA's Vision 2030 transformation, February 2026 market opening, and MENA market dominance with the UK baseline.",
         ),
       };
+    case "SEC":
+      return {
+        eyebrow: "US securities enforcement intelligence",
+        introduction:
+          "The SEC is the world's largest securities enforcement agency, with over 1,700 tracked actions spanning fraud, insider trading, market manipulation, and registration violations. For any firm with US securities exposure, SEC enforcement patterns are essential monitoring — and increasingly relevant to UK firms as cross-border cooperation intensifies.",
+        executiveSummary: [
+          "**Enforcement Scale:** The SEC Division of Enforcement employs over 1,300 staff and pursues 700+ standalone actions annually, with total monetary remedies frequently exceeding $4 billion per year.",
+          "**Cross-Border Relevance:** SEC enforcement themes regularly preview FCA priorities by 12-18 months. Parallel investigations between SEC and FCA have become standard for major cross-border cases.",
+          "**Unique Powers:** Unlike the FCA, the SEC pursues both civil court actions and administrative proceedings, and refers criminal matters to the DOJ — creating a three-tier enforcement threat.",
+        ],
+        sections: [
+          {
+            heading: "Why SEC Matters For UK Compliance Teams",
+            intro:
+              "The SEC's enforcement reach extends well beyond US borders, making it directly relevant to UK-regulated firms with any US nexus.",
+            bullets: [
+              "SEC enforcement themes in fraud, market abuse, and ESG disclosure often preview FCA enforcement 12-18 months later.",
+              "UK firms with US-listed securities, ADRs, or US investor exposure face direct SEC jurisdiction.",
+              "Cross-border cooperation via IOSCO MMoU means SEC intelligence flows to the FCA and vice versa.",
+              "SEC whistleblower programme generates case referrals that can surface in UK investigations.",
+            ],
+          },
+          {
+            heading: "Key Enforcement Areas",
+            intro:
+              "SEC enforcement spans several major categories, each with distinct compliance implications.",
+            bullets: [
+              "**Securities fraud and offering fraud**: The largest category by case volume, ranging from Ponzi schemes to complex accounting fraud.",
+              "**Insider trading**: Aggressively pursued through the Market Abuse Unit using sophisticated data analytics.",
+              "**Investment adviser and broker-dealer misconduct**: Fee disclosure, conflicts, custody, and suitability obligations.",
+              "**Public company reporting**: Material misstatements, inadequate disclosures, and internal controls failures under SOX.",
+              "**Crypto and digital assets**: Growing enforcement against unregistered offerings and exchanges.",
+            ],
+          },
+          {
+            heading: "SEC vs FCA Comparison",
+            intro:
+              "Understanding key differences helps calibrate dual-jurisdiction compliance programmes.",
+            bullets: [
+              "SEC penalties regularly exceed $100 million; FCA penalties are typically lower but significant relative to UK market size.",
+              "SEC refers criminal cases to DOJ; the FCA has its own criminal prosecution powers.",
+              "Both incentivise cooperation, but the SEC's credit programme is more formalised.",
+              "The SEC focuses on securities markets; the FCA covers banking, insurance, and investment under one roof.",
+            ],
+          },
+        ],
+        signals: [
+          {
+            title: "Crypto Enforcement Escalation",
+            detail:
+              "SEC crypto enforcement has accelerated significantly, targeting unregistered exchanges, token offerings, and DeFi platforms. Watch for themes that preview EU MiCA and UK FCA crypto enforcement.",
+          },
+          {
+            title: "ESG and Climate Disclosure",
+            detail:
+              "SEC climate disclosure rules are driving enforcement for greenwashing and inadequate ESG disclosures. UK firms with US exposure should prepare for convergent SEC/FCA ESG expectations.",
+          },
+          {
+            title: "Whistleblower-Driven Cases",
+            detail:
+              "The SEC Whistleblower Program has awarded over $1 billion, creating a powerful referral pipeline. Cases originating from whistleblowers often involve cross-border conduct.",
+          },
+        ],
+        boardQuestions: [
+          "Do we have any US securities exposure (listings, ADRs, US investors) that creates SEC jurisdictional risk?",
+          "Are our market abuse surveillance capabilities calibrated to SEC expectations for cross-border monitoring?",
+          "How do our ESG disclosures align with emerging SEC climate rules and FCA expectations simultaneously?",
+        ],
+        takeaways: [
+          "Monitor SEC enforcement even without direct US operations — themes consistently preview FCA priorities",
+          "Treat SEC cooperation credit and whistleblower programmes as systemic risks requiring compliance programme design",
+          "Use SEC enforcement patterns as external benchmarks for fraud detection, market abuse surveillance, and disclosure standards",
+        ],
+        faqs: [
+          {
+            question:
+              "Why should UK firms monitor SEC enforcement?",
+            answer:
+              "SEC enforcement themes regularly preview FCA priorities by 12-18 months, and cross-border cooperation means SEC intelligence reaches the FCA. UK firms with any US nexus — listings, ADRs, US investors, or US-dollar transactions — face direct SEC jurisdictional exposure.",
+          },
+          {
+            question:
+              "How does the SEC enforcement model differ from the FCA?",
+            answer:
+              "The SEC pursues both civil court actions and administrative proceedings, and refers criminal matters to the DOJ — creating three enforcement tiers. The FCA has its own criminal powers but typically uses civil penalties. SEC penalties are frequently larger in absolute terms.",
+          },
+        ],
+        crossLinks: buildCrossLinks(
+          "SEC",
+          "U.S. Securities and Exchange Commission",
+          "Compare SEC enforcement scale, penalty frameworks, and cross-border cooperation with the UK FCA baseline.",
+        ),
+      };
+    case "SEBI":
+      return {
+        eyebrow: "Indian securities enforcement intelligence",
+        introduction:
+          "SEBI is one of the highest-volume securities enforcers globally, with 408+ tracked actions targeting insider trading, market manipulation, and corporate governance failures across India's rapidly growing capital markets. India's retail investor participation boom makes SEBI enforcement increasingly relevant for international firms with Indian exposure.",
+        executiveSummary: [
+          "**High Enforcement Volume:** SEBI pursues 408+ tracked actions across insider trading, market manipulation, intermediary misconduct, and corporate governance failures — one of the highest volumes in APAC.",
+          "**Broad Powers:** SEBI can impose monetary penalties, debarment orders, disgorgement of unlawful gains, and directions to stock exchanges — combining administrative and quasi-judicial authority.",
+          "**Growth Market:** India's capital market growth (NSE is the world's largest derivatives exchange by volume) is expanding SEBI's enforcement mandate and international relevance.",
+        ],
+        sections: [
+          {
+            heading: "Why SEBI Belongs On The Watchlist",
+            intro:
+              "SEBI's enforcement patterns offer valuable intelligence for firms with Indian market exposure or considering entry.",
+            bullets: [
+              "India's capital market capitalisation exceeds $4 trillion, making SEBI supervision globally significant.",
+              "SEBI pursues insider trading more aggressively than many APAC peers, with substantial penalty volumes.",
+              "SEBI's IOSCO membership enables cross-border cooperation with the FCA, SEC, and other major regulators.",
+              "Corporate governance enforcement at Indian listed companies creates compliance benchmarks for international investors.",
+            ],
+          },
+          {
+            heading: "Key Enforcement Areas",
+            intro:
+              "SEBI enforcement spans several categories relevant to international compliance teams.",
+            bullets: [
+              "**Insider trading**: High-volume enforcement using trading pattern analysis and corporate information flow tracing.",
+              "**Market manipulation**: Including algorithmic manipulation, price rigging, and fraudulent trading schemes.",
+              "**Intermediary misconduct**: Broker-dealers, depository participants, and investment advisers face regular enforcement.",
+              "**Corporate governance**: Listed company compliance with SEBI LODR regulations and board governance standards.",
+            ],
+          },
+        ],
+        signals: [
+          {
+            title: "Retail Investor Protection",
+            detail:
+              "India's retail investor participation has surged, driving SEBI enforcement focus on mis-selling, unsuitable recommendations, and retail fraud. Watch for themes relevant to Consumer Duty-style expectations.",
+          },
+          {
+            title: "Algorithmic Trading Oversight",
+            detail:
+              "SEBI is developing enforcement capability around algorithmic and high-frequency trading, with implications for international firms operating on Indian exchanges.",
+          },
+          {
+            title: "Cross-Border Cooperation",
+            detail:
+              "SEBI's IOSCO MMoU participation enables information exchange with the FCA and SEC. Expect increasing cross-border enforcement for matters involving Indian markets.",
+          },
+        ],
+        boardQuestions: [
+          "Do we have direct or indirect exposure to Indian capital markets that creates SEBI jurisdictional or compliance risk?",
+          "Are our compliance frameworks calibrated for SEBI's insider trading enforcement standards if we have Indian-listed securities exposure?",
+          "How do SEBI corporate governance expectations compare to our standards for investee companies?",
+        ],
+        takeaways: [
+          "Monitor SEBI when Indian capital market exposure matters — insider trading enforcement is particularly aggressive",
+          "Use SEBI enforcement as a benchmark for APAC compliance standards alongside MAS, SFC, and ASIC",
+          "Track SEBI's evolving approach to algorithmic trading and retail investor protection for early signals",
+        ],
+        faqs: [
+          {
+            question:
+              "Why monitor SEBI if we don't operate in India?",
+            answer:
+              "SEBI enforcement provides valuable intelligence for firms with Indian investment exposure, portfolio allocations, or considering Indian market entry. India's capital market capitalisation exceeds $4 trillion, making SEBI enforcement globally relevant. SEBI also participates in IOSCO cross-border cooperation.",
+          },
+          {
+            question:
+              "How does SEBI compare to other APAC securities regulators?",
+            answer:
+              "SEBI has one of the highest enforcement volumes in APAC (408+ tracked actions), particularly for insider trading. ASIC focuses more on consumer protection, MAS on AML, and the SFC on market misconduct. SEBI's administrative model differs from ASIC's litigation approach.",
+          },
+        ],
+        crossLinks: buildCrossLinks(
+          "SEBI",
+          "Securities and Exchange Board of India",
+          "Compare SEBI's high-volume enforcement approach with the UK FCA baseline and APAC peers.",
+        ),
+      };
+    case "CIRO":
+      return {
+        eyebrow: "Canadian SRO enforcement intelligence",
+        introduction:
+          "CIRO is Canada's unified self-regulatory organisation, formed in 2023 from the merger of IIROC and MFDA. With 279 tracked enforcement actions, CIRO provides intelligence on North American dealer conduct standards, supervisory expectations, and SRO enforcement — useful for firms benchmarking against both US FINRA and Canadian frameworks.",
+        executiveSummary: [
+          "**Unified Canadian SRO:** CIRO merged IIROC and MFDA in 2023, creating a single SRO covering investment dealers and mutual fund dealers across Canada — simplifying the regulatory landscape for cross-border firms.",
+          "**Conduct-Focused Enforcement:** CIRO enforcement targets unsuitable recommendations, supervisory failures, conduct breaches, and compliance deficiencies through disciplinary hearings and settlement agreements.",
+          "**North American Benchmark:** CIRO enforcement patterns provide a useful comparator to FINRA (US SRO) and SEC enforcement, helping firms calibrate North American compliance programmes.",
+        ],
+        sections: [
+          {
+            heading: "Why CIRO Matters",
+            intro:
+              "CIRO's enforcement is relevant for firms operating in Canadian capital markets or benchmarking North American compliance standards.",
+            bullets: [
+              "Canada's capital markets are the world's 8th largest, with significant cross-border linkage to US markets.",
+              "CIRO's merger of IIROC and MFDA created enforcement precedent for SRO consolidation that other jurisdictions are studying.",
+              "Canadian enforcement coordination with the OSC (Ontario) and other provincial regulators creates multi-layered compliance requirements.",
+              "Many decisions involve non-monetary outcomes (suspensions, conditions) that provide granular conduct intelligence.",
+            ],
+          },
+          {
+            heading: "Key Enforcement Areas",
+            intro:
+              "CIRO enforcement spans dealer conduct, supervision, and compliance obligations.",
+            bullets: [
+              "**Suitability and KYC**: Unsuitable investment recommendations and inadequate client assessment processes.",
+              "**Supervisory failures**: Branch managers and compliance departments failing to detect and address misconduct.",
+              "**Outside business activities**: Registered representatives engaging in undisclosed outside activities or selling away.",
+              "**Books and records**: Documentation failures, false entries, and inadequate transaction recording.",
+            ],
+          },
+        ],
+        signals: [
+          {
+            title: "Post-Merger Enforcement Evolution",
+            detail:
+              "CIRO's merger is still evolving — watch for enforcement policy changes as the unified SRO establishes its approach, potentially diverging from pre-merger IIROC and MFDA patterns.",
+          },
+          {
+            title: "Client Focused Reforms",
+            detail:
+              "CIRO is implementing Client Focused Reforms (CFR) that parallel the FCA's Consumer Duty — enforcement around conflict management and suitability is expected to intensify.",
+          },
+          {
+            title: "Crypto and Digital Asset Dealers",
+            detail:
+              "CIRO-registered dealers offering crypto products face emerging enforcement expectations around custody, disclosure, and suitability for digital asset investments.",
+          },
+        ],
+        boardQuestions: [
+          "Do we have Canadian operations or registrations that create CIRO jurisdictional obligations?",
+          "How do our suitability and supervision frameworks compare to CIRO's Client Focused Reforms expectations?",
+          "Are we benchmarking Canadian compliance against both CIRO and relevant provincial securities commission requirements?",
+        ],
+        takeaways: [
+          "Monitor CIRO when Canadian market exposure matters — particularly for dealer conduct and suitability standards",
+          "Compare CIRO enforcement with FINRA to calibrate North American compliance programmes holistically",
+          "Track Client Focused Reforms enforcement for parallels with the FCA's Consumer Duty approach",
+        ],
+        faqs: [
+          {
+            question:
+              "What changed when CIRO replaced IIROC and MFDA?",
+            answer:
+              "CIRO unified investment dealer (IIROC) and mutual fund dealer (MFDA) regulation under a single SRO in 2023. This creates consistent enforcement standards across both dealer types and simplifies the regulatory landscape for firms operating in Canadian capital markets.",
+          },
+          {
+            question:
+              "How does CIRO compare to FINRA?",
+            answer:
+              "Both are SROs overseeing dealers, but FINRA supervises approximately 3,400 US broker-dealers versus CIRO's smaller Canadian population. FINRA penalties tend to be larger, reflecting US market scale. CIRO's Client Focused Reforms create suitability obligations similar to FINRA's Reg BI.",
+          },
+        ],
+        crossLinks: buildCrossLinks(
+          "CIRO",
+          "Canadian Investment Regulatory Organization",
+          "Compare CIRO's SRO enforcement model with the UK FCA approach and US FINRA patterns.",
+        ),
+      };
     default: {
       const coverage = REGULATOR_COVERAGE[code];
       const regionContext = getRegionContext(coverage.region);

@@ -22,6 +22,8 @@ const categoryDescriptions: Record<FAQItem["category"], string> = {
     "ASIC, MAS, HKMA, SFC, SEBI, and other Asia-Pacific regulators.",
   "Americas Regulators":
     "SEC, FINRA, CIRO, and other regulators across the Americas.",
+  "Regulator Profiles":
+    "Individual regulator overviews covering enforcement powers, jurisdiction, and key statistics.",
   "Biggest Fines": "The largest financial penalties ever imposed by the FCA.",
   "How FCA Works": "How the FCA investigates, calculates, and enforces fines.",
   "By Year": "FCA enforcement activity broken down by year.",

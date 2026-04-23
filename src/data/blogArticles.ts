@@ -1245,6 +1245,815 @@ For a complete interactive view of all FCA enforcement actions, including insura
       "Consumer Duty insurance",
     ],
   },
+
+  // ── HIGH Priority: Multi-regulator & thematic articles ─────────────────
+  {
+    id: "sec-enforcement-guide",
+    slug: "sec-enforcement-guide-fines-data",
+    title: "SEC Enforcement Actions: Complete Data & Analysis Across 1,700+ Cases",
+    seoTitle: "SEC Enforcement Actions | Complete Data & Analysis | 1,700+ Cases",
+    excerpt:
+      "Comprehensive analysis of SEC enforcement actions across 1,700+ cases. Covers penalties, insider trading, fraud, market manipulation, and how SEC enforcement compares to the FCA and OCC.",
+    content: `
+## SEC Enforcement Actions: Complete Data & Analysis
+
+**The U.S. Securities and Exchange Commission has pursued over 1,700 enforcement actions tracked in our database, with individual penalties regularly exceeding $100 million.** The SEC's enforcement reach extends across securities fraud, insider trading, market manipulation, registration violations, and accounting fraud. This analysis examines the full scope of SEC enforcement, drawing comparisons with the FCA and other global regulators.
+
+## The Scale of SEC Enforcement
+
+The SEC's Division of Enforcement is the largest securities enforcement operation globally, employing over 1,300 staff across its headquarters and 11 regional offices. Unlike the FCA, which relies primarily on civil penalties, the SEC can pursue both civil actions in federal court and administrative proceedings before its own administrative law judges. The SEC can also refer matters to the Department of Justice for criminal prosecution.
+
+Annual SEC enforcement statistics consistently show over 700 standalone actions per year, with total monetary remedies (penalties plus disgorgement) frequently exceeding $4 billion. The SEC's Whistleblower Program, established under Dodd-Frank, has generated over $1 billion in awards to tipsters, creating a powerful pipeline of case referrals.
+
+## Key Enforcement Areas
+
+### Securities Fraud and Offering Fraud
+
+Securities fraud represents the SEC's largest enforcement category by case volume. Cases range from Ponzi schemes affecting retail investors to complex accounting frauds at public companies. The SEC's ability to obtain asset freezes and emergency relief makes it particularly effective at halting ongoing fraud schemes.
+
+### Insider Trading
+
+The SEC pursues insider trading aggressively through both direct evidence and circumstantial cases built on trading pattern analysis. The SEC's Market Abuse Unit uses sophisticated data analytics to detect suspicious trading ahead of material announcements.
+
+### Investment Adviser and Broker-Dealer Misconduct
+
+The SEC regulates approximately 15,000 registered investment advisers and works alongside FINRA to supervise broker-dealers. Enforcement actions target fee disclosure failures, conflicts of interest, custody violations, and unsuitable recommendations.
+
+### Public Company Reporting and Accounting
+
+The SEC enforces reporting obligations under the Securities Exchange Act, pursuing companies and individuals for material misstatements, inadequate disclosures, and internal controls failures. The Sarbanes-Oxley Act strengthened the SEC's ability to pursue accounting fraud.
+
+## SEC vs FCA: Key Differences
+
+The SEC and FCA differ fundamentally in structure, powers, and approach:
+
+- **Penalty scale**: SEC penalties regularly exceed $100 million; the FCA's penalties are typically lower in absolute terms but significant relative to UK market size
+- **Criminal powers**: The SEC refers criminal cases to the DOJ; the FCA has its own criminal prosecution powers for market abuse
+- **Settlement culture**: Both regulators incentivise cooperation, but the SEC's cooperation credit programme is more formalised
+- **Scope**: The SEC focuses on securities markets; the FCA covers banking, insurance, and investment under one roof
+
+## Practical Implications
+
+For compliance professionals at firms operating in both the US and UK, understanding SEC enforcement priorities is essential. The SEC's enforcement themes often preview issues that the FCA pursues 12-18 months later, making SEC monitoring valuable even for purely UK-regulated firms. Cross-border enforcement cooperation between the SEC and FCA has intensified since 2015, with parallel investigations becoming increasingly common.
+    `,
+    category: "Regulatory Guide",
+    readTime: "10 min read",
+    date: "April 2026",
+    dateISO: "2026-04-21",
+    keywords: [
+      "SEC enforcement actions",
+      "SEC fines",
+      "SEC penalties",
+      "securities enforcement",
+      "SEC vs FCA",
+      "insider trading enforcement",
+      "SEC enforcement data",
+    ],
+  },
+  {
+    id: "occ-enforcement-guide",
+    slug: "occ-enforcement-actions-complete-guide",
+    title: "OCC Enforcement Actions: 5,500+ Banking Penalties from America's Oldest Regulator",
+    seoTitle: "OCC Enforcement Actions | 5,500+ Banking Penalties | Complete Guide",
+    excerpt:
+      "Complete guide to OCC enforcement actions spanning 5,500+ cases from 1987 to 2026. Covers cease-and-desist orders, civil money penalties, consent orders, and how OCC enforcement affects global banks.",
+    content: `
+## OCC Enforcement Actions: Complete Guide
+
+**The Office of the Comptroller of the Currency has the deepest public enforcement archive of any financial regulator globally, with over 5,500 tracked actions dating back to 1987.** As the primary supervisor of US national banks and federal savings associations, the OCC's enforcement decisions directly affect many of the world's largest banking institutions.
+
+## Understanding OCC Enforcement
+
+The OCC supervises approximately 1,100 national banks and federal savings associations, which collectively hold nearly $14 trillion in assets — roughly two-thirds of all US commercial banking assets. This concentration means OCC enforcement actions carry outsized importance for global banking supervision.
+
+### Types of OCC Enforcement Actions
+
+Unlike regulators that primarily impose monetary penalties, the OCC uses a broader toolkit:
+
+- **Cease and Desist Orders (C&Ds)**: Formal orders requiring banks to stop unsafe practices and take corrective action
+- **Consent Orders**: Negotiated agreements where banks accept binding remediation requirements
+- **Civil Money Penalties (CMPs)**: Monetary fines ranging from thousands to billions of dollars
+- **Prompt Corrective Action**: Capital-related directives for undercapitalised institutions
+- **Personal Actions**: Removal and prohibition orders against individuals
+
+The majority of OCC actions are non-monetary (consent orders and C&Ds), which is why the raw action count of 5,500+ significantly exceeds the monetary penalty count. However, when the OCC does impose CMPs, they can be substantial — the agency participated in the $1.1 billion Wells Fargo penalty in 2018.
+
+## Key Enforcement Themes
+
+### BSA/AML Compliance
+
+Bank Secrecy Act and anti-money laundering compliance represents the OCC's highest-profile enforcement area. Major AML actions have targeted transaction monitoring failures, inadequate customer due diligence, and suspicious activity reporting deficiencies. The OCC coordinates closely with FinCEN on AML enforcement.
+
+### Safety and Soundness
+
+The OCC's prudential mandate means it pursues enforcement for capital adequacy failures, excessive risk-taking, and unsafe banking practices that other conduct-focused regulators might not address. This creates a compliance dimension that differs from FCA or SEC enforcement.
+
+### Consumer Protection
+
+Under Dodd-Frank, the OCC retained consumer compliance authority for banks with assets over $10 billion. Enforcement covers fair lending violations, unfair or deceptive practices, and mortgage servicing failures.
+
+## OCC Enforcement vs Other US Regulators
+
+The OCC operates alongside the FDIC (for state-chartered insured banks), the FRB (for bank holding companies), and FinCEN (for BSA/AML). A single banking institution can face enforcement from all four agencies simultaneously, creating a multi-regulator enforcement landscape unique to the US.
+
+## Practical Implications
+
+For UK-headquartered banking groups with US operations, OCC enforcement creates direct compliance obligations. Understanding the OCC's enforcement priorities helps anticipate supervisory expectations and calibrate control frameworks for US banking subsidiaries and branches.
+    `,
+    category: "Regulatory Guide",
+    readTime: "9 min read",
+    date: "April 2026",
+    dateISO: "2026-04-21",
+    keywords: [
+      "OCC enforcement actions",
+      "OCC fines",
+      "OCC penalties",
+      "banking enforcement",
+      "OCC consent orders",
+      "US banking regulation",
+      "OCC enforcement data",
+    ],
+  },
+  {
+    id: "global-aml-enforcement",
+    slug: "global-aml-enforcement-comparison-2026",
+    title: "Global AML Enforcement 2026: Which Regulators Fine the Most for Money Laundering?",
+    seoTitle: "Global AML Enforcement 2026 | Biggest Money Laundering Fines",
+    excerpt:
+      "Cross-regulator comparison of AML enforcement globally. Covers FCA, AUSTRAC, FinCEN, OCC, BaFin, MAS, CBI, and DNB with penalty data, enforcement trends, and compliance implications.",
+    content: `
+## Global AML Enforcement 2026: Which Regulators Fine the Most?
+
+**Anti-money laundering enforcement has intensified globally, with cumulative AML penalties exceeding $50 billion across all regulators since 2010.** AUSTRAC's $1.3 billion Westpac fine, FinCEN's billion-dollar HSBC penalty, and the FCA's criminal prosecution of NatWest demonstrate that AML failures now carry existential financial and reputational consequences.
+
+## The Global AML Enforcement Landscape
+
+AML enforcement varies dramatically by jurisdiction — in penalty calculation methodology, enforcement philosophy, and practical consequences for firms. Understanding these differences is essential for compliance teams managing multi-jurisdictional AML programmes.
+
+### Highest Individual AML Penalties
+
+The largest AML penalties have been imposed by:
+
+- **AUSTRAC** (Australia): $1.3 billion against Westpac (2020) — calculated on a per-breach basis across 23 million reporting failures
+- **US regulators** (DOJ/FinCEN/OCC): $1.9 billion against HSBC (2012) — combined federal enforcement across multiple agencies
+- **FCA** (UK): £264.8 million against NatWest (2021) — notably a criminal prosecution under the Proceeds of Crime Act
+- **BaFin/DOJ**: €630 million against Deutsche Bank (2017) — for Russian mirror trade laundering
+- **MAS** (Singapore): Multiple actions post-1MDB totalling hundreds of millions in combined penalties and licence revocations
+
+### Regional Enforcement Approaches
+
+**Americas**: The US multi-agency model means banks face penalties from FinCEN, OCC, FDIC, FRB, and state regulators simultaneously. Criminal prosecution through the DOJ adds imprisonment risk for individuals. Combined US AML penalties regularly exceed $1 billion per case.
+
+**Europe**: The FCA leads by penalty value, while BaFin and the DNB have intensified AML enforcement following Scandinavian banking scandals. The CBI has increased AML focus post-Brexit as Dublin gains financial services operations. EU-wide AML coordination through the EBA's AML/CFT unit is strengthening.
+
+**Asia-Pacific**: AUSTRAC's per-breach model creates enormous penalty exposure. MAS combines financial penalties with licence conditions and prohibition orders. HKMA focuses on correspondent banking AML controls.
+
+## Enforcement Trends
+
+AML enforcement is evolving in several key dimensions:
+
+1. **Criminal prosecution**: More regulators are pursuing criminal AML charges, following the FCA's NatWest precedent
+2. **Per-breach calculation**: AUSTRAC's model is being studied by other jurisdictions as a deterrence tool
+3. **Technology expectations**: Regulators increasingly expect sophisticated transaction monitoring, not just rule-based screening
+4. **Beneficial ownership**: Enhanced due diligence on beneficial ownership is a global enforcement priority
+5. **Sanctions integration**: AML and sanctions enforcement are converging, particularly post-Russia-Ukraine
+
+## Practical Implications
+
+For firms operating across multiple jurisdictions, the cumulative AML enforcement risk far exceeds any single regulator's penalties. A global bank facing parallel AML investigations in the US, UK, and Australia could face combined penalties exceeding $5 billion. Compliance programmes must be calibrated to the highest standard across all jurisdictions of operation.
+    `,
+    category: "Thematic Analysis",
+    readTime: "11 min read",
+    date: "April 2026",
+    dateISO: "2026-04-21",
+    keywords: [
+      "AML enforcement global",
+      "anti-money laundering fines",
+      "AML penalties comparison",
+      "AUSTRAC fines",
+      "FinCEN enforcement",
+      "FCA AML fines",
+      "money laundering enforcement",
+      "global AML compliance",
+    ],
+  },
+  {
+    id: "eu-financial-regulators-guide",
+    slug: "eu-financial-regulators-enforcement-guide",
+    title: "EU Financial Enforcement: Complete Guide to BaFin, AMF, CNMV, CBI and 15+ Regulators",
+    seoTitle: "EU Financial Enforcement | BaFin, AMF, CNMV, CBI & More",
+    excerpt:
+      "Comprehensive guide to enforcement across 18+ EU/EEA financial regulators. Covers BaFin, AMF, CNMV, CBI, DNB, CONSOB, CSSF, CySEC, and Nordic regulators with enforcement data and compliance implications.",
+    content: `
+## EU Financial Enforcement: Complete Guide
+
+**The European Union's fragmented regulatory landscape means firms operating across EU markets face enforcement risk from 27+ national regulators, three EU-level authorities (ESMA, EBA, EIOPA), and the ECB's Single Supervisory Mechanism.** This guide maps the key enforcers, their priorities, and practical implications for compliance teams.
+
+## The EU Enforcement Architecture
+
+Unlike the US (where federal regulators dominate) or the UK (single conduct regulator), EU financial enforcement operates through a complex multi-layered system:
+
+- **National competent authorities** (BaFin, AMF, CNMV, CBI, etc.) retain primary enforcement powers
+- **ESMA** coordinates securities regulation and can directly supervise credit rating agencies and trade repositories
+- **EBA** coordinates banking supervision and AML standards
+- **ECB/SSM** directly supervises the largest eurozone banks and can withdraw licences
+
+### Key National Regulators
+
+**BaFin (Germany)**: Europe's largest financial market by banking assets. BaFin's enforcement spans banking, insurance, and securities with a distinctive governance-focused approach. Recent priorities include AML controls, Wirecard-prompted governance reforms, and ESG disclosure.
+
+**AMF (France)**: Strong market abuse enforcement with penalties up to €100 million or ten times profit. The AMF's Sanctions Commission operates with judicial-level independence. Key focus areas include insider trading, market manipulation, and asset management governance.
+
+**CNMV (Spain)**: Active enforcement following 2015 penalty framework reform. Focuses on MiFID II compliance, market abuse under MAR, and investor protection. Spanish banking sector enforcement has increased following NPL resolution.
+
+**CBI (Ireland)**: Strategically important post-Brexit as firms relocate EU operations to Dublin. The CBI's Administrative Sanctions Procedure delivers meaningful fines for AML, conduct, and governance failures. The CBI supervises a growing population of fund managers, payment institutions, and fintech firms.
+
+**DNB/AFM (Netherlands)**: Dual regulatory model where the DNB handles prudential supervision and the AFM covers conduct. Dutch AML enforcement intensified after ING's €775 million settlement in 2018.
+
+**CONSOB (Italy)**: Italian securities enforcement focuses on market abuse, prospectus obligations, and listed company governance. CONSOB coordinates with the Bank of Italy on dual-regulated entities.
+
+## Cross-Border Enforcement Trends
+
+EU enforcement is converging through several mechanisms:
+
+1. **MAR harmonisation**: The Market Abuse Regulation creates common standards across all EU states
+2. **MiFID II enforcement**: National regulators enforce EU-wide conduct rules with increasing consistency
+3. **AML coordination**: The EBA's AML/CFT mandate strengthens cross-border cooperation
+4. **ESG enforcement**: Emerging SFDR and Taxonomy enforcement will create new cross-border cases
+
+## Practical Implications
+
+For UK firms operating in the EU post-Brexit, understanding the enforcement landscape is essential for calibrating compliance resources. Firms with EU subsidiaries or branches face direct local enforcement risk, while those distributing products into the EU face host-state conduct regulation through reverse solicitation and equivalence frameworks.
+    `,
+    category: "Regional Benchmark",
+    readTime: "12 min read",
+    date: "April 2026",
+    dateISO: "2026-04-21",
+    keywords: [
+      "EU financial regulators",
+      "BaFin enforcement",
+      "AMF fines",
+      "CNMV enforcement",
+      "CBI Ireland enforcement",
+      "EU enforcement guide",
+      "European financial regulation",
+      "MiFID II enforcement",
+    ],
+  },
+  {
+    id: "apac-enforcement-comparison",
+    slug: "apac-financial-enforcement-comparison",
+    title: "APAC Financial Enforcement: ASIC, MAS, SEBI, HKMA, SFC & SESC Compared",
+    seoTitle: "APAC Financial Enforcement | ASIC, MAS, SEBI, HKMA & SFC",
+    excerpt:
+      "Cross-regulator comparison of enforcement across 10 Asia-Pacific financial regulators. Covers ASIC, MAS, SEBI, HKMA, SFC, SESC, CSRC and others with enforcement data and regional trends.",
+    content: `
+## APAC Financial Enforcement: Regional Comparison
+
+**Asia-Pacific financial enforcement has undergone dramatic transformation since 2015, driven by Australia's Royal Commission, Singapore's 1MDB response, India's market growth, and Hong Kong's dual regulatory model.** APAC regulators now collectively pursue thousands of enforcement actions annually, with penalty values rivalling US and European levels.
+
+## Regional Enforcement Landscape
+
+### ASIC (Australia)
+
+ASIC transformed following the 2019 Royal Commission into Financial Services, which exposed widespread misconduct across banking, insurance, and superannuation. Post-Commission enforcement has targeted fees-for-no-service scandals, insurance claims handling failures, and financial advice misconduct. ASIC's litigation-driven model takes cases to court rather than using administrative penalties, creating detailed judicial precedent.
+
+### MAS (Singapore)
+
+MAS intensified enforcement after the 1MDB scandal exposed weaknesses in Singapore's AML framework. The regulator revoked BSI Bank's licence (the first bank closure in Singapore in 32 years) and imposed significant penalties on multiple institutions. MAS enforcement focuses on AML/CFT, market conduct, and technology risk.
+
+### SEBI (India)
+
+SEBI has one of the highest enforcement volumes in APAC, with 408+ tracked actions. The regulator aggressively pursues insider trading and market manipulation, using administrative penalties, debarment orders, and disgorgement. India's growing capital markets and retail investor participation drive SEBI's expanding enforcement mandate.
+
+### HKMA & SFC (Hong Kong)
+
+Hong Kong's dual regulatory model creates enforcement complexity. The HKMA supervises banking conduct and AML, while the SFC handles securities regulation. Both regulators have intensified enforcement since 2018, with AML penalties dominating HKMA actions and market misconduct driving SFC enforcement.
+
+### SESC/FSA (Japan)
+
+Japan's split-function model separates investigation (SESC) from adjudication (FSA). The SESC investigates securities violations and recommends action to the FSA, which imposes administrative penalties. Recent enforcement has targeted insider trading and market manipulation, with increasing attention to cross-border cases.
+
+## Regional Trends
+
+APAC enforcement is evolving through several common themes: intensifying AML requirements, growing focus on retail investor protection, technology and cyber risk enforcement, and increasing cross-border cooperation through IOSCO and bilateral agreements.
+
+## Practical Implications
+
+For firms expanding into APAC markets, understanding the diverse enforcement landscape is critical. Each jurisdiction has distinct enforcement culture, penalty frameworks, and supervisory priorities that must be reflected in local compliance programmes.
+    `,
+    category: "Regional Benchmark",
+    readTime: "10 min read",
+    date: "April 2026",
+    dateISO: "2026-04-21",
+    keywords: [
+      "APAC financial enforcement",
+      "ASIC enforcement",
+      "MAS enforcement",
+      "SEBI enforcement",
+      "HKMA fines",
+      "SFC enforcement",
+      "Asia-Pacific regulation",
+      "APAC compliance",
+    ],
+  },
+  {
+    id: "board-guide-aml-controls",
+    slug: "board-guide-aml-controls-global-enforcement",
+    title: "Board Guide: What Global AML Enforcement Data Tells You About Your Controls",
+    seoTitle: "Board Guide: Global AML Enforcement & Your Controls",
+    excerpt:
+      "Board-ready analysis of global AML enforcement data from FCA, SEC, AUSTRAC, FinCEN, BaFin, MAS, and CBI. Translates enforcement patterns into actionable board questions and control effectiveness indicators.",
+    content: `
+## Board Guide: What Global AML Enforcement Data Tells You About Your Controls
+
+**Global AML enforcement data reveals that the same control failures — transaction monitoring gaps, inadequate customer due diligence, and weak suspicious activity reporting — appear repeatedly across every major jurisdiction.** This guide translates enforcement patterns into practical board-level questions about your firm's AML control effectiveness.
+
+## Why Boards Should Monitor Global AML Enforcement
+
+Board members are personally accountable for AML compliance under the Senior Managers regime (UK), the OCC's BSA/AML framework (US), and equivalent regimes globally. Enforcement data from peer institutions and comparable firms provides essential external benchmarks for evaluating your own control adequacy.
+
+## The Five Universal AML Control Failures
+
+Analysis of major AML enforcement actions across the FCA, SEC, AUSTRAC, FinCEN, BaFin, MAS, and CBI reveals five recurring control failures:
+
+### 1. Transaction Monitoring Gaps
+
+Every major AML penalty involves transaction monitoring failures. Common deficiencies include monitoring rules that fail to detect known typologies, inadequate tuning producing excessive false positives that overwhelm investigation capacity, and systems that cannot handle transaction volumes.
+
+### 2. Customer Due Diligence Deficiencies
+
+Onboarding failures cascade through the entire AML framework. When customer risk assessments are incomplete or inaccurate, subsequent monitoring operates with fundamental information gaps.
+
+### 3. Suspicious Activity Reporting Failures
+
+Regulators consistently penalise firms for failing to file SARs promptly, filing defensive SARs without genuine investigation, and maintaining inadequate SAR decision documentation.
+
+### 4. Governance and Oversight Weaknesses
+
+Senior management failures to provide adequate AML resources, challenge compliance reporting, and escalate concerns to the board feature prominently in enforcement cases.
+
+### 5. Remediation Failures
+
+Repeated enforcement against the same institution — Standard Chartered (fined twice by the FCA for AML), Deutsche Bank (multiple jurisdictions), and major US banks — demonstrates that initial remediation was inadequate.
+
+## Board Questions
+
+- Can management demonstrate that transaction monitoring rules are calibrated to current typologies and operating effectively?
+- When was the last independent assessment of our AML control framework, and what were the findings?
+- How do our SAR filing rates and investigation quality compare to peer institutions?
+- If a regulator examined our AML controls tomorrow, which areas would they prioritise and what would they find?
+- Are we investing adequately in AML technology and staffing relative to our risk profile?
+
+## Control Effectiveness Indicators
+
+Use enforcement data to calibrate expectations. If peer institutions with similar business models have been fined for specific AML failures, your board should ask whether your controls adequately address those same risks.
+    `,
+    category: "Board Guide",
+    readTime: "8 min read",
+    date: "April 2026",
+    dateISO: "2026-04-21",
+    keywords: [
+      "board guide AML",
+      "AML controls board",
+      "AML enforcement board",
+      "global AML compliance",
+      "board AML questions",
+      "AML control effectiveness",
+      "senior manager AML accountability",
+    ],
+  },
+
+  // ── MEDIUM Priority articles ───────────────────────────────────────────
+  {
+    id: "cbi-ireland-guide",
+    slug: "cbi-ireland-enforcement-guide",
+    title: "Central Bank of Ireland Enforcement: Complete Guide for Post-Brexit Compliance",
+    seoTitle: "Central Bank of Ireland Enforcement Guide | Post-Brexit Compliance",
+    excerpt:
+      "Complete guide to CBI enforcement for firms with Irish operations post-Brexit. Covers Administrative Sanctions Procedure, AML enforcement, fund governance, and CBI enforcement trends.",
+    content: `
+## Central Bank of Ireland Enforcement: Post-Brexit Guide
+
+**The Central Bank of Ireland has become strategically critical post-Brexit as firms relocate EU operations to Dublin, expanding the CBI's supervised population and enforcement mandate.** With 119 tracked enforcement actions, the CBI's Administrative Sanctions Procedure delivers meaningful penalties for AML failures, conduct breaches, and governance deficiencies.
+
+## Why CBI Matters Post-Brexit
+
+Brexit prompted significant financial services relocations to Ireland, with major banks, asset managers, and payment institutions establishing or expanding Dublin operations. This growth has expanded the CBI's supervisory population and increased enforcement activity.
+
+## CBI Enforcement Framework
+
+The CBI's Administrative Sanctions Procedure (ASP) enables the regulator to impose fines, disqualifications, and public censures. The CBI has demonstrated willingness to pursue significant penalties, including a €21.3 million fine against permanent tsb in 2022 for tracker mortgage failures.
+
+## Key Enforcement Areas
+
+The CBI's enforcement priorities include AML/CFT compliance, fitness and probity assessments, fund governance, and consumer protection. For UK firms with Irish entities, understanding CBI expectations alongside FCA requirements is essential for managing dual-jurisdiction compliance.
+
+## Practical Implications
+
+Post-Brexit substance requirements mean CBI-authorised entities must maintain genuine local management, governance, and compliance capabilities — not merely shell operations directed from London.
+    `,
+    category: "Regulatory Guide",
+    readTime: "7 min read",
+    date: "April 2026",
+    dateISO: "2026-04-21",
+    keywords: [
+      "Central Bank of Ireland enforcement",
+      "CBI fines",
+      "CBI enforcement",
+      "Ireland financial regulation",
+      "post-Brexit Ireland",
+      "CBI Administrative Sanctions",
+      "Dublin financial regulation",
+    ],
+  },
+  {
+    id: "finra-ciro-comparison",
+    slug: "finra-ciro-sro-enforcement-comparison",
+    title: "FINRA vs CIRO: How Self-Regulatory Organisations Enforce in the US and Canada",
+    seoTitle: "FINRA vs CIRO | Self-Regulatory Organisation Enforcement Comparison",
+    excerpt:
+      "Comparison of FINRA (US) and CIRO (Canada) self-regulatory enforcement. Covers disciplinary procedures, penalty frameworks, and how SRO enforcement interacts with statutory regulators.",
+    content: `
+## FINRA vs CIRO: Self-Regulatory Enforcement Compared
+
+**FINRA and CIRO represent the two largest self-regulatory organisations in North America, collectively overseeing thousands of investment dealers and their registered representatives.** Their enforcement approaches reflect distinct regulatory cultures while sharing a common SRO model.
+
+## FINRA: US Self-Regulatory Enforcement
+
+FINRA oversees approximately 3,400 broker-dealer firms and 624,000 registered representatives. FINRA's enforcement division conducts examinations, investigates misconduct, and imposes fines, suspensions, and bars. Major enforcement themes include AML compliance, suitability obligations, and supervisory failures.
+
+## CIRO: Canada's Unified SRO
+
+CIRO was formed in 2023 from the merger of IIROC and MFDA, creating a single Canadian SRO for investment and mutual fund dealers. With 279 tracked enforcement actions, CIRO pursues unsuitable recommendations, conduct breaches, and supervisory failures through disciplinary proceedings.
+
+## Key Differences
+
+FINRA operates under SEC oversight with significant autonomy, while CIRO coordinates with provincial securities commissions (primarily the OSC). FINRA's penalties tend to be larger, reflecting the scale difference between US and Canadian markets. Both SROs use a cooperative approach with statutory regulators for cases requiring broader enforcement powers.
+
+## Practical Implications
+
+For firms operating in both markets, understanding SRO enforcement alongside statutory regulation is essential. SRO rules often impose obligations beyond statutory requirements, particularly around supervision, suitability, and continuing education.
+    `,
+    category: "Thematic Analysis",
+    readTime: "7 min read",
+    date: "April 2026",
+    dateISO: "2026-04-21",
+    keywords: [
+      "FINRA enforcement",
+      "CIRO enforcement",
+      "self-regulatory organisation",
+      "FINRA vs CIRO",
+      "SRO enforcement",
+      "broker-dealer regulation",
+      "investment dealer enforcement",
+    ],
+  },
+  {
+    id: "market-abuse-global",
+    slug: "market-abuse-enforcement-global-comparison",
+    title: "Market Abuse Enforcement: How the FCA, SEC, AMF, SEBI and SFC Compare",
+    seoTitle: "Market Abuse Enforcement Global | FCA, SEC, AMF, SEBI & SFC Compared",
+    excerpt:
+      "Cross-jurisdictional comparison of market abuse enforcement covering insider trading, market manipulation, and benchmark rigging. Compares enforcement approaches across the FCA, SEC, AMF, SEBI, SESC, and SFC.",
+    content: `
+## Market Abuse Enforcement: Global Comparison
+
+**Market abuse enforcement is one of the most internationally coordinated areas of financial regulation, yet enforcement approaches vary dramatically across jurisdictions.** The FCA, SEC, AMF, SEBI, and SFC each bring distinct powers, penalty frameworks, and prosecution strategies to insider trading and market manipulation cases.
+
+## How Regulators Compare
+
+### Criminal vs Civil Enforcement
+
+The SEC primarily pursues civil enforcement, referring criminal cases to the DOJ. The FCA has its own criminal prosecution powers for insider dealing and market manipulation. The AMF operates through a Sanctions Commission with judicial independence. SEBI uses administrative penalties, while the SESC investigates and recommends FSA action.
+
+### Penalty Frameworks
+
+SEC penalties can include disgorgement of profits plus civil penalties up to three times the profit gained. FCA penalties use a five-step framework based on revenue from the relevant activity. AMF penalties reach €100 million or ten times profit. SEBI penalties are calculated on a per-breach basis.
+
+### Detection Capabilities
+
+All major regulators invest heavily in surveillance technology. The SEC's Market Abuse Unit uses data analytics to detect suspicious trading patterns. The FCA operates market surveillance through its Intelligence and Oversight division. ESMA coordinates cross-border market abuse detection across EU markets.
+
+## Enforcement Trends
+
+Market abuse enforcement is evolving through enhanced data analytics, cross-border cooperation via IOSCO, increased personal accountability for traders and compliance officers, and growing attention to new market manipulation techniques including social media-driven schemes.
+
+## Practical Implications
+
+Firms operating across jurisdictions face compound market abuse risk — the same conduct can trigger enforcement in multiple jurisdictions simultaneously. Cross-border information sharing means regulators can pursue parallel investigations with shared evidence.
+    `,
+    category: "Thematic Analysis",
+    readTime: "8 min read",
+    date: "April 2026",
+    dateISO: "2026-04-21",
+    keywords: [
+      "market abuse enforcement",
+      "insider trading enforcement",
+      "market manipulation fines",
+      "FCA market abuse",
+      "SEC insider trading",
+      "MAR enforcement",
+      "global market abuse",
+    ],
+  },
+  {
+    id: "switzerland-offshore-enforcement",
+    slug: "switzerland-offshore-enforcement-finma-jfsc-gfsc",
+    title: "FINMA, JFSC and GFSC: Enforcement in Switzerland and Offshore Centres",
+    seoTitle: "FINMA, JFSC, GFSC Enforcement | Switzerland & Offshore Centre Guide",
+    excerpt:
+      "Enforcement analysis covering FINMA (Switzerland), JFSC (Jersey), GFSC (Guernsey), and DFSA (Dubai). Examines how offshore and wealth management centres approach regulatory enforcement.",
+    content: `
+## FINMA, JFSC and GFSC: Offshore Centre Enforcement
+
+**Switzerland and the Crown Dependencies occupy a distinctive position in global financial regulation — serving as major wealth management and fund administration centres while maintaining enforcement standards that satisfy international supervisory expectations.** This guide examines how FINMA, JFSC, GFSC, and DFSA approach enforcement within their specialised markets.
+
+## FINMA: Swiss Enforcement
+
+FINMA regulates banks, insurers, exchanges, and asset managers in Switzerland with 23 tracked enforcement actions. FINMA's enforcement philosophy emphasises supervisory tools over monetary penalties — it can order disgorgement of profits, impose industry bans, and revoke licences, but large monetary fines are less common than in the UK or US.
+
+## JFSC and GFSC: Crown Dependencies
+
+Jersey and Guernsey regulate significant fund administration, trust, and private banking sectors. Both jurisdictions enforce against AML failures, governance weaknesses, and conduct breaches. Their enforcement is particularly relevant for firms using Channel Islands structures for wealth management and fund operations.
+
+## DFSA: Dubai Enforcement
+
+The DFSA regulates the Dubai International Financial Centre with standards explicitly aligned with international best practice. DFSA enforcement covers market abuse, AML, and conduct failures within the DIFC.
+
+## Common Themes
+
+Offshore centre enforcement shares several characteristics: emphasis on AML and beneficial ownership controls, governance-focused enforcement reflecting complex structures, and increasing international cooperation that reduces opportunities for regulatory arbitrage.
+
+## Practical Implications
+
+For firms using Swiss, Channel Islands, or DIFC structures, understanding local enforcement expectations is essential. International cooperation means conduct identified in one jurisdiction can trigger enforcement across multiple offshore centres simultaneously.
+    `,
+    category: "Regional Benchmark",
+    readTime: "7 min read",
+    date: "April 2026",
+    dateISO: "2026-04-21",
+    keywords: [
+      "FINMA enforcement",
+      "JFSC enforcement",
+      "GFSC enforcement",
+      "DFSA enforcement",
+      "Switzerland financial regulation",
+      "offshore centre enforcement",
+      "wealth management regulation",
+    ],
+  },
+  {
+    id: "board-guide-governance-accountability",
+    slug: "board-guide-governance-accountability-enforcement",
+    title: "Board Guide: Senior Manager Accountability Across 10 Regulators",
+    seoTitle: "Board Guide: Senior Manager Accountability | 10 Regulator Comparison",
+    excerpt:
+      "Board-ready comparison of senior manager accountability regimes across the FCA, SEC, BaFin, ASIC, MAS, HKMA, CBI, SEBI, OCC, and FINMA. Covers personal liability, fitness and propriety, and enforcement trends.",
+    content: `
+## Board Guide: Senior Manager Accountability Across 10 Regulators
+
+**Individual accountability for senior managers is the fastest-growing area of global financial enforcement.** The UK's SM&CR model is being adopted or adapted by regulators worldwide, creating personal enforcement risk for executives of international financial groups.
+
+## The Global Accountability Landscape
+
+### UK: SM&CR (FCA/PRA)
+
+The Senior Managers and Certification Regime establishes the most comprehensive individual accountability framework globally. Senior managers must take reasonable steps to prevent regulatory breaches in their areas, with the burden of proof sitting with the regulator.
+
+### Australia: BEAR/FAR (ASIC/APRA)
+
+The Financial Accountability Regime, building on BEAR, creates enforceable accountability obligations for directors and senior executives of banking, insurance, and superannuation entities.
+
+### Hong Kong: Manager-in-Charge (HKMA/SFC)
+
+Hong Kong's Manager-in-Charge regime identifies individuals responsible for core functions, creating clear accountability lines for enforcement purposes.
+
+### Singapore: Individual Accountability (MAS)
+
+MAS Guidelines on Individual Accountability and Conduct establish expectations without formal legislation, relying on supervisory guidance and enforcement precedent.
+
+### Ireland: SEAR (CBI)
+
+The Senior Executive Accountability Regime is Ireland's adaptation of SM&CR principles, creating individual accountability obligations for CBI-regulated firms.
+
+## Board Questions
+
+- Which jurisdictions' accountability regimes apply to our senior managers?
+- Do our Statements of Responsibilities accurately reflect how the business actually operates?
+- Can each senior manager demonstrate reasonable steps to prevent regulatory breaches?
+- How do we ensure consistent accountability standards across jurisdictions?
+
+## Practical Implications
+
+For boards of international groups, managing multiple accountability regimes requires careful mapping of responsibilities, consistent documentation standards, and regular assessment of compliance with each jurisdiction's requirements.
+    `,
+    category: "Board Guide",
+    readTime: "8 min read",
+    date: "April 2026",
+    dateISO: "2026-04-21",
+    keywords: [
+      "senior manager accountability",
+      "SM&CR global",
+      "board accountability",
+      "individual accountability enforcement",
+      "senior manager fines",
+      "governance enforcement",
+      "accountability regime comparison",
+    ],
+  },
+  {
+    id: "fincen-enforcement-guide",
+    slug: "fincen-bsa-enforcement-guide",
+    title: "FinCEN Enforcement Actions: Complete Guide to BSA/AML Penalties",
+    seoTitle: "FinCEN Enforcement Actions | Complete BSA/AML Penalties Guide",
+    excerpt:
+      "Complete guide to FinCEN enforcement actions covering BSA/AML penalties, civil money penalties, and geographic targeting orders. Covers how FinCEN coordinates with OCC, SEC, and state regulators.",
+    content: `
+## FinCEN Enforcement Actions: BSA/AML Penalties Guide
+
+**The Financial Crimes Enforcement Network (FinCEN) administers the Bank Secrecy Act and has imposed some of the largest AML penalties globally, including a $185 million fine against Capital One in 2018 and coordinated billion-dollar actions against major banks.** With 118 tracked enforcement actions spanning 1999-2026, FinCEN's enforcement directly shapes global AML compliance standards.
+
+## FinCEN's Unique Role
+
+FinCEN occupies a distinctive position in US financial regulation — it is both the administrator of the BSA and a law enforcement agency within the Treasury Department. This dual role means FinCEN enforcement carries both regulatory and criminal dimensions.
+
+## Enforcement Powers
+
+FinCEN can impose civil money penalties for BSA violations, issue special measures against foreign jurisdictions or institutions, deploy geographic targeting orders, and assess penalties against individuals. FinCEN coordinates extensively with the OCC, FDIC, FRB, and SEC on enforcement actions against institutions.
+
+## Key Enforcement Themes
+
+### Suspicious Activity Reporting
+
+Failure to file SARs, filing incomplete SARs, and maintaining inadequate SAR processes represent FinCEN's core enforcement area. FinCEN expects firms to have effective monitoring systems and timely reporting procedures.
+
+### Customer Due Diligence
+
+The CDD Rule (2018) strengthened beneficial ownership requirements, creating new enforcement exposure for firms failing to identify and verify controlling persons.
+
+### Money Services Businesses
+
+FinCEN actively pursues unregistered money services businesses and registered MSBs with inadequate AML programmes, particularly in the crypto and remittance sectors.
+
+## Practical Implications
+
+For non-US firms with US correspondent banking relationships or US-dollar transactions, FinCEN's enforcement creates indirect compliance obligations. Understanding FinCEN priorities helps calibrate AML programmes for firms with any US nexus.
+    `,
+    category: "Regulatory Guide",
+    readTime: "7 min read",
+    date: "April 2026",
+    dateISO: "2026-04-21",
+    keywords: [
+      "FinCEN enforcement",
+      "FinCEN fines",
+      "BSA AML enforcement",
+      "FinCEN penalties",
+      "Bank Secrecy Act enforcement",
+      "US AML regulation",
+      "FinCEN civil money penalty",
+    ],
+  },
+
+  // ── LOW Priority articles ──────────────────────────────────────────────
+  {
+    id: "systems-controls-enforcement",
+    slug: "systems-controls-enforcement-global",
+    title: "Systems and Controls Failures: Why Regulators Are Fining for Operational Weakness",
+    seoTitle: "Systems & Controls Enforcement | Global Regulatory Fines for Operational Failures",
+    excerpt:
+      "Analysis of enforcement for systems and controls failures across FCA, BaFin, ASIC, MAS, OCC, and SEC. Covers operational resilience, technology failures, and governance weaknesses.",
+    content: `
+## Systems and Controls Failures: Global Enforcement Analysis
+
+**Systems and controls enforcement has expanded beyond a catch-all regulatory category into a strategic enforcement tool, with regulators worldwide using operational failures as the basis for some of their largest penalties.** The FCA's TSB fine (£48.65 million for IT migration failure), the OCC's Wells Fargo actions, and ASIC's pursuit of banking operational failures demonstrate that operational weakness is now a primary enforcement target.
+
+## Why Systems and Controls Matter
+
+Regulators increasingly view systems and controls failures as root causes rather than incidental findings. A firm with adequate AML transaction monitoring systems is less likely to facilitate money laundering. A firm with robust governance structures is less likely to experience conduct failures. This causal logic drives enforcement investment in operational standards.
+
+## Common Failure Patterns
+
+Analysis of enforcement actions across the FCA, BaFin, ASIC, MAS, OCC, and SEC reveals recurring patterns: technology implementation failures, inadequate management information and reporting, governance structures that exist on paper but lack practical effectiveness, and change management programmes that underestimate operational risk.
+
+## Operational Resilience Enforcement
+
+The FCA and PRA's operational resilience framework creates new enforcement exposure for firms that fail to identify important business services, set impact tolerances, and test their ability to remain within tolerance during disruption. Similar frameworks are emerging in other jurisdictions.
+
+## Practical Implications
+
+Systems and controls enforcement creates compliance obligations that span technology, governance, risk management, and operational resilience. Firms should treat operational effectiveness as a regulatory requirement, not merely a business efficiency objective.
+    `,
+    category: "Thematic Analysis",
+    readTime: "7 min read",
+    date: "April 2026",
+    dateISO: "2026-04-21",
+    keywords: [
+      "systems controls enforcement",
+      "operational resilience fines",
+      "IT failure regulatory fines",
+      "governance enforcement",
+      "operational weakness fines",
+      "technology risk enforcement",
+      "systems and controls FCA",
+    ],
+  },
+  {
+    id: "middle-east-enforcement",
+    slug: "middle-east-enforcement-dfsa-fsra-cbuae",
+    title: "DFSA, FSRA, CBUAE and Saudi CMA: Enforcement in the Middle East",
+    seoTitle: "Middle East Financial Enforcement | DFSA, FSRA, CBUAE & Saudi CMA",
+    excerpt:
+      "Enforcement guide covering DFSA (Dubai), FSRA (Abu Dhabi), CBUAE, and Saudi CMA. Examines enforcement in the Middle East's growing financial centres with trends and compliance implications.",
+    content: `
+## Middle East Financial Enforcement: Regional Guide
+
+**The Middle East's financial centres — Dubai (DIFC), Abu Dhabi (ADGM), Saudi Arabia, and the wider UAE — are developing increasingly sophisticated enforcement capabilities as they attract global financial institutions.** This guide examines enforcement approaches across the region's key regulators.
+
+## DFSA (Dubai International Financial Centre)
+
+The DFSA regulates firms operating within the DIFC, applying standards explicitly aligned with international best practice. DFSA enforcement covers market abuse, AML, and conduct failures. The DFSA has demonstrated willingness to pursue meaningful penalties and individual enforcement actions.
+
+## FSRA (Abu Dhabi Global Market)
+
+The FSRA supervises firms within ADGM, Abu Dhabi's international financial centre. As a newer jurisdiction, FSRA enforcement is developing but has signalled strong supervisory expectations, particularly around AML and governance.
+
+## CBUAE (Central Bank of the UAE)
+
+The CBUAE regulates banks, insurance companies, and payment service providers across the broader UAE. Recent enforcement has focused on AML compliance and prudential requirements, reflecting the UAE's position on the FATF grey list and subsequent remediation efforts.
+
+## Saudi CMA
+
+The Capital Market Authority of Saudi Arabia supervises the region's largest securities market ($2.7 trillion). Enforcement has increased 40% between 2022-2024, with focus on market manipulation, insider trading, and social media-related violations.
+
+## Regional Trends
+
+Middle Eastern enforcement is maturing through FATF-driven AML improvements, growing international cooperation, and the development of local enforcement expertise and judicial capacity. The region's strategic importance as a financial hub ensures continued enforcement development.
+
+## Practical Implications
+
+For firms with Middle East operations, understanding the distinct enforcement approaches of DIFC, ADGM, onshore UAE, and Saudi Arabia is essential. Each jurisdiction has different enforcement powers, procedures, and priorities.
+    `,
+    category: "Regional Benchmark",
+    readTime: "7 min read",
+    date: "April 2026",
+    dateISO: "2026-04-21",
+    keywords: [
+      "DFSA enforcement",
+      "FSRA enforcement",
+      "CBUAE enforcement",
+      "Saudi CMA enforcement",
+      "Middle East financial regulation",
+      "Dubai financial enforcement",
+      "UAE financial regulation",
+    ],
+  },
+  {
+    id: "latin-america-enforcement",
+    slug: "latin-america-enforcement-cvm-cnbv-cmf",
+    title: "CVM, CNBV and CMF: Financial Enforcement in Brazil, Mexico and Chile",
+    seoTitle: "Latin America Financial Enforcement | CVM, CNBV & CMF Guide",
+    excerpt:
+      "Enforcement analysis covering CVM (Brazil), CNBV (Mexico), and CMF (Chile). Examines how Latin America's largest economies approach financial regulation and enforcement.",
+    content: `
+## Latin America Financial Enforcement: Regional Guide
+
+**Latin America's three largest financial markets — Brazil, Mexico, and Chile — have developed distinct enforcement approaches reflecting their unique regulatory histories and market structures.** The CVM, CNBV, and CMF collectively supervise markets worth over $2 trillion.
+
+## CVM (Brazil)
+
+The CVM (Comissão de Valores Mobiliários) is Latin America's most active securities enforcer, with 557 tracked actions. The CVM pursues insider trading, market manipulation, and corporate governance failures through administrative proceedings. Brazil's capital market growth has expanded the CVM's enforcement mandate.
+
+## CNBV (Mexico)
+
+The CNBV (Comisión Nacional Bancaria y de Valores) supervises Mexico's banking and securities sectors. Enforcement focuses on prudential compliance, market conduct, and AML requirements. Mexico's fintech law (2018) has expanded CNBV's supervisory scope to cover technology-based financial services.
+
+## CMF (Chile)
+
+The CMF (Comisión para el Mercado Financiero) was formed in 2017 by merging Chile's banking and securities regulators. CMF enforcement covers market abuse, disclosure obligations, and prudential requirements. Chile's pension system (AFP model) creates unique enforcement dimensions around retirement fund management.
+
+## Regional Cooperation
+
+Latin American regulators cooperate through the Consejo de Reguladores Financieros de las Américas and bilateral agreements. Cross-border cooperation is particularly important for cases involving multinational corporations operating across the region.
+
+## Practical Implications
+
+For firms with Latin American operations or investment exposure, understanding each regulator's enforcement approach helps calibrate compliance programmes. The region's growing capital markets and fintech sectors are driving enforcement modernisation.
+    `,
+    category: "Regional Benchmark",
+    readTime: "6 min read",
+    date: "April 2026",
+    dateISO: "2026-04-21",
+    keywords: [
+      "CVM enforcement Brazil",
+      "CNBV enforcement Mexico",
+      "CMF enforcement Chile",
+      "Latin America financial regulation",
+      "Brazil securities enforcement",
+      "Mexico financial regulation",
+      "Latin America compliance",
+    ],
+  },
 ];
 
 export const yearlyArticles: YearlyArticleMeta[] = [

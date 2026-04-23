@@ -16,8 +16,8 @@ import type { FAQItem } from '../../src/data/faqData';
 import { REGULATOR_COUNT } from '../../src/constants/site';
 
 describe('FAQ Items - Data Integrity', () => {
-  it('should have at least 30 FAQ items (15 original + 16 global)', () => {
-    expect(faqItems.length).toBeGreaterThanOrEqual(30);
+  it('should have at least 58 FAQ items (31 original + 28 expansion)', () => {
+    expect(faqItems.length).toBeGreaterThanOrEqual(58);
   });
 
   it('every item must have a non-empty question, answer, category, and slug', () => {
@@ -93,9 +93,9 @@ describe('FAQ Categories', () => {
     }
   });
 
-  it('should have at least 10 active categories', () => {
+  it('should have at least 12 active categories', () => {
     const categories = getFaqCategories();
-    expect(categories.length).toBeGreaterThanOrEqual(10);
+    expect(categories.length).toBeGreaterThanOrEqual(12);
   });
 
   it('every FAQ item category must appear in getFaqCategories()', () => {
@@ -138,7 +138,7 @@ describe('Homepage FAQs', () => {
 describe('Global Regulator Coverage', () => {
   it('FAQ answers should mention multiple regulators', () => {
     const allText = faqItems.map(item => item.answer).join(' ');
-    const regulators = ['FCA', 'BaFin', 'SEC', 'ASIC', 'MAS', 'ESMA', 'AMF', 'FINRA'];
+    const regulators = ['FCA', 'BaFin', 'SEC', 'ASIC', 'MAS', 'ESMA', 'AMF', 'FINRA', 'OCC', 'SEBI', 'CBI', 'CIRO', 'CVM', 'AUSTRAC', 'SESC', 'FinCEN'];
 
     for (const reg of regulators) {
       expect(allText, `No FAQ mentions ${reg}`).toContain(reg);

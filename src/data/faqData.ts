@@ -10,6 +10,7 @@ export interface FAQItem {
     | 'EU Regulators'
     | 'APAC Regulators'
     | 'Americas Regulators'
+    | 'Regulator Profiles'
     | 'Biggest Fines'
     | 'How FCA Works'
     | 'By Year'
@@ -242,6 +243,192 @@ export const faqItems: FAQItem[] = [
     slug: 'total-fca-fines-since-2013',
     relatedArticle: 'fca-enforcement-trends-2013-2025',
   },
+
+  // ── Regulator Profiles ───────────────────────────────────────────────────
+  {
+    question: 'How does the SEC enforce securities law in the United States?',
+    answer: 'The SEC enforces US securities law through civil and administrative proceedings, with penalties regularly exceeding $100 million for major cases. It pursues insider trading, fraud, market manipulation, and registration violations across 1,700+ tracked enforcement actions. The SEC can also refer criminal matters to the Department of Justice for prosecution.',
+    category: 'Regulator Profiles',
+    slug: 'sec-enforcement-overview',
+    relatedArticle: 'sec-enforcement-guide-fines-data',
+  },
+  {
+    question: 'What is the OCC and why does it have thousands of enforcement actions?',
+    answer: 'The OCC (Office of the Comptroller of the Currency) supervises US national banks and federal savings associations. With over 5,500 tracked enforcement actions dating back to 1987, the OCC has one of the deepest public enforcement records globally. Actions range from cease-and-desist orders to multi-billion-dollar civil money penalties for AML and governance failures.',
+    category: 'Regulator Profiles',
+    slug: 'occ-enforcement-overview',
+    relatedArticle: 'occ-enforcement-actions-complete-guide',
+  },
+  {
+    question: 'How does the Central Bank of Ireland enforce financial regulation?',
+    answer: 'The Central Bank of Ireland (CBI) uses an Administrative Sanctions Procedure to impose fines for regulatory breaches across banking, insurance, and investment sectors. Post-Brexit, the CBI has gained strategic importance as firms relocate EU operations to Dublin. With 119 tracked enforcement actions, the CBI increasingly focuses on AML, conduct, and governance failures.',
+    category: 'Regulator Profiles',
+    slug: 'cbi-enforcement-overview',
+    relatedArticle: 'cbi-ireland-enforcement-guide',
+  },
+  {
+    question: 'What enforcement powers does the AMF have in France?',
+    answer: 'The AMF (Autorité des marchés financiers) regulates French financial markets and enforces through its Sanctions Commission. With 112 tracked enforcement actions, the AMF pursues market abuse, insider trading, and disclosure failures. The AMF can impose fines up to €100 million or ten times the profit made, and publishes decisions that serve as influential EU precedents.',
+    category: 'Regulator Profiles',
+    slug: 'amf-enforcement-overview',
+  },
+  {
+    question: 'How does CNMV regulate and enforce in Spain?',
+    answer: 'CNMV (Comisión Nacional del Mercado de Valores) supervises Spanish securities markets and investment services. With 94 tracked enforcement actions, the CNMV focuses on market abuse, MiFID II compliance, and investor protection. Spain\'s financial penalty framework was significantly reformed in 2015, aligning CNMV\'s enforcement powers more closely with EU standards.',
+    category: 'Regulator Profiles',
+    slug: 'cnmv-enforcement-overview',
+  },
+  {
+    question: 'How does FINMA enforce financial regulation in Switzerland?',
+    answer: 'FINMA (Swiss Financial Market Supervisory Authority) regulates banks, insurers, exchanges, and asset managers in Switzerland. With 23 tracked enforcement actions, FINMA emphasises supervisory tools over monetary penalties but can order disgorgement of profits, impose industry bans, and revoke licences. Its enforcement is particularly relevant to cross-border wealth management.',
+    category: 'Regulator Profiles',
+    slug: 'finma-enforcement-overview',
+  },
+  {
+    question: 'What is MAS and how does it enforce financial regulation in Singapore?',
+    answer: 'MAS (Monetary Authority of Singapore) serves as both central bank and financial regulator for Singapore. With 21 tracked enforcement actions, MAS intensified AML enforcement after the 1MDB scandal and pursues market abuse, conduct failures, and technology risk breaches. MAS also uses prohibition orders and licence revocations as enforcement tools.',
+    category: 'Regulator Profiles',
+    slug: 'mas-enforcement-overview',
+  },
+  {
+    question: 'How does SEBI enforce securities regulation in India?',
+    answer: 'SEBI (Securities and Exchange Board of India) regulates Indian securities markets with broad enforcement powers. With 408 tracked enforcement actions, SEBI aggressively pursues insider trading, market manipulation, and corporate governance failures. SEBI can impose monetary penalties, issue debarment orders, and direct disgorgement of unlawful gains.',
+    category: 'Regulator Profiles',
+    slug: 'sebi-enforcement-overview',
+  },
+  {
+    question: 'What is the CVM and how does it enforce in Brazil?',
+    answer: 'The CVM (Comissão de Valores Mobiliários) is Brazil\'s securities regulator, overseeing Latin America\'s largest capital market. With 557 tracked enforcement actions, the CVM pursues insider trading, market manipulation, and corporate governance failures. CVM penalties can include fines, suspensions, and bans from the securities market.',
+    category: 'Regulator Profiles',
+    slug: 'cvm-enforcement-overview',
+  },
+  {
+    question: 'What is CIRO and how does it regulate investment dealers in Canada?',
+    answer: 'CIRO (Canadian Investment Regulatory Organization) is Canada\'s self-regulatory organisation overseeing investment dealers and mutual fund dealers. Formed in 2023 from the merger of IIROC and MFDA, CIRO has 279 tracked enforcement actions. It pursues unsuitable recommendations, supervisory failures, and conduct breaches through disciplinary hearings and settlement agreements.',
+    category: 'Regulator Profiles',
+    slug: 'ciro-enforcement-overview',
+  },
+
+  // ── Global Enforcement (new additions) ───────────────────────────────────
+  {
+    question: 'How does enforcement differ between EU, APAC, and Americas regulators?',
+    answer: 'EU regulators like BaFin and AMF tend to emphasise governance and supervisory measures alongside monetary penalties. Americas regulators such as the SEC and OCC issue the highest individual fines, often exceeding $100 million. APAC regulators including ASIC, MAS, and SEBI vary widely, from Australia\'s litigation-driven model to Singapore\'s supervisory approach and India\'s high-volume administrative enforcement.',
+    category: 'Global Enforcement',
+    slug: 'eu-vs-apac-vs-americas-enforcement',
+  },
+  {
+    question: 'How do financial regulators cooperate on cross-border enforcement?',
+    answer: 'Financial regulators cooperate through formal mechanisms including IOSCO\'s Multilateral Memorandum of Understanding (MMoU), EU-level coordination through ESMA and the EBA, and bilateral agreements. Cross-border cooperation has intensified since 2015, with regulators sharing intelligence, conducting parallel investigations, and coordinating simultaneous enforcement announcements against global banks.',
+    category: 'Global Enforcement',
+    slug: 'cross-border-enforcement-cooperation',
+  },
+  {
+    question: 'Which regulators issue the most fines by volume versus by total value?',
+    answer: 'By volume, the OCC leads globally with over 5,500 enforcement actions, followed by the SEC (1,700+), CVM (557+), and SEBI (408+). By total penalty value, the SEC and CFTC dominate with individual fines exceeding $1 billion, followed by the FCA (£4.9 billion since 2013). High-volume regulators like the OCC issue many non-monetary actions, while high-value regulators concentrate on fewer, larger penalties.',
+    category: 'Global Enforcement',
+    slug: 'enforcement-volume-vs-penalty-size',
+  },
+  {
+    question: 'Which regulators are leading on consumer protection and conduct enforcement?',
+    answer: 'The FCA leads globally on consumer conduct enforcement through the Consumer Duty framework introduced in 2023. ASIC has intensified consumer protection enforcement since Australia\'s 2019 Royal Commission. The SEC pursues investor protection through fraud and disclosure cases. SEBI and MAS have expanded retail investor protection programmes, while EU regulators enforce MiFID II suitability and product governance requirements.',
+    category: 'Global Enforcement',
+    slug: 'consumer-duty-global-enforcement',
+  },
+
+  // ── EU Regulators (new additions) ────────────────────────────────────────
+  {
+    question: 'Why is the CSSF in Luxembourg important for fund managers?',
+    answer: 'The CSSF (Commission de Surveillance du Secteur Financier) supervises Luxembourg\'s financial sector, which hosts over €5 trillion in investment fund assets. Luxembourg is Europe\'s largest fund domicile, making CSSF oversight critical for UCITS and AIFMD-regulated funds. CSSF enforcement focuses on AML compliance, fund governance, and management company obligations, with particular relevance for UK managers distributing into the EU.',
+    category: 'EU Regulators',
+    slug: 'cssf-luxembourg-enforcement',
+  },
+  {
+    question: 'How do Nordic financial regulators approach enforcement?',
+    answer: 'Nordic regulators including Finansinspektionen (Sweden), Finanstilsynet (Denmark and Norway), and FIN-FSA (Finland) take a proportionate, transparency-focused approach to enforcement. Nordic enforcement tends to emphasise supervisory measures and public censures alongside monetary penalties. Recent enforcement has intensified around AML following high-profile Scandinavian banking scandals including Danske Bank and Swedbank.',
+    category: 'EU Regulators',
+    slug: 'nordic-regulators-enforcement',
+  },
+  {
+    question: 'Why does CySEC have over 1,000 enforcement actions?',
+    answer: 'CySEC (Cyprus Securities and Exchange Commission) has an unusually high volume of enforcement actions because Cyprus became an EU gateway for retail forex and CFD brokers under MiFID passporting rules. Many firms chose Cyprus for licensing, creating a large supervised population of broker-dealers. CySEC enforcement focuses on client fund protection, marketing compliance, and AML controls for cross-border retail investment firms.',
+    category: 'EU Regulators',
+    slug: 'cysec-enforcement-eu-gateway',
+  },
+
+  // ── APAC Regulators (new additions) ──────────────────────────────────────
+  {
+    question: 'What is AUSTRAC and why are its AML fines so large?',
+    answer: 'AUSTRAC (Australian Transaction Reports and Analysis Centre) is Australia\'s AML/CTF regulator with power to impose massive penalties. AUSTRAC issued a $1.3 billion penalty against Westpac in 2020 for 23 million breaches of AML reporting requirements — one of the largest AML fines globally. AUSTRAC\'s civil penalty regime calculates fines per-breach, creating exponential penalty exposure for systemic failures in transaction reporting.',
+    category: 'APAC Regulators',
+    slug: 'austrac-aml-enforcement-australia',
+  },
+  {
+    question: 'How does the SESC enforce securities regulation in Japan?',
+    answer: 'The SESC (Securities and Exchange Surveillance Commission) investigates securities violations in Japan and recommends enforcement action to the FSA (Financial Services Agency). The SESC focuses on insider trading, market manipulation, and disclosure violations. Japan\'s enforcement model is distinctive because the SESC investigates but the FSA issues administrative penalties, creating a split between investigation and adjudication.',
+    category: 'APAC Regulators',
+    slug: 'sesc-japan-enforcement',
+  },
+  {
+    question: 'How do the HKMA and SFC share enforcement responsibilities in Hong Kong?',
+    answer: 'Hong Kong operates a dual regulatory model where the HKMA supervises banks and the SFC regulates securities and futures markets. Both can pursue enforcement independently. The SFC handles market misconduct, insider dealing, and intermediary conduct, while the HKMA focuses on banking conduct, AML, and prudential failures. Dual-regulated entities face enforcement risk from both regulators simultaneously.',
+    category: 'APAC Regulators',
+    slug: 'hong-kong-dual-enforcement',
+  },
+
+  // ── Americas Regulators (new additions) ──────────────────────────────────
+  {
+    question: 'How many US financial regulators can fine the same firm?',
+    answer: 'A single US financial institution can face enforcement from multiple federal and state regulators simultaneously. The SEC, CFTC, OCC, FDIC, FRB, FinCEN, and state regulators all have overlapping jurisdiction. Major banks have been fined by five or more regulators for the same underlying conduct, with combined penalties exceeding $10 billion in cases like the FX manipulation scandal.',
+    category: 'Americas Regulators',
+    slug: 'us-multi-agency-enforcement',
+  },
+  {
+    question: 'How does the Ontario Securities Commission enforce in Canada?',
+    answer: 'The Ontario Securities Commission (OSC) is Canada\'s largest provincial securities regulator, supervising Ontario\'s capital markets which represent approximately 80% of Canadian securities trading. The OSC pursues insider trading, fraud, market manipulation, and registration violations through administrative proceedings and can impose penalties, disgorgement orders, and market bans.',
+    category: 'Americas Regulators',
+    slug: 'osc-enforcement-canada',
+  },
+
+  // ── Financial Crime (new additions) ──────────────────────────────────────
+  {
+    question: 'Which regulators impose the largest AML fines globally?',
+    answer: 'AUSTRAC (Australia) imposed the largest single AML fine at $1.3 billion against Westpac in 2020. FinCEN (US) and the OCC have issued penalties exceeding $500 million against individual banks. The FCA\'s largest AML fine was £264.8 million against NatWest in 2021 — notably a criminal prosecution. BaFin, MAS, and the DNB are increasingly active AML enforcers in their respective regions.',
+    category: 'Financial Crime',
+    slug: 'aml-fines-comparison-global',
+    relatedArticle: 'global-aml-enforcement-comparison-2026',
+  },
+  {
+    question: 'Which regulators are most active in sanctions evasion enforcement?',
+    answer: 'The US leads sanctions enforcement through OFAC (Treasury), FinCEN, and the SEC, with penalties regularly exceeding $100 million. The FCA enforces UK sanctions compliance and has increased scrutiny since the Russia-Ukraine conflict. EU regulators coordinate through ESMA and national authorities. Singapore\'s MAS and Hong Kong\'s HKMA have intensified sanctions screening requirements following geopolitical developments.',
+    category: 'Financial Crime',
+    slug: 'sanctions-evasion-enforcement',
+  },
+
+  // ── By Sector (new additions — revives dead category) ────────────────────
+  {
+    question: 'Which regulators fine banks the most?',
+    answer: 'The OCC leads by volume with thousands of banking enforcement actions. The SEC and CFTC impose the largest individual bank penalties, often exceeding $500 million. The FCA\'s bank enforcement has totalled over £3 billion since 2013, driven by FX manipulation and AML cases. AUSTRAC\'s per-breach penalty model produced the $1.3 billion Westpac fine. BaFin, CBI, and MAS also actively enforce against banks.',
+    category: 'By Sector',
+    slug: 'banking-sector-enforcement-global',
+  },
+  {
+    question: 'How are insurance companies regulated and fined across jurisdictions?',
+    answer: 'Insurance enforcement varies significantly by jurisdiction. The FCA regulates conduct for UK insurers with fines for mis-selling, claims handling failures, and AML weaknesses. BaFin and EIOPA oversee EU insurance supervision. ASIC pursues Australian insurers for product design and claims failures. US insurance regulation is primarily state-based, though the NAIC coordinates standards across 50 state regulators.',
+    category: 'By Sector',
+    slug: 'insurance-sector-enforcement-global',
+  },
+  {
+    question: 'Which regulators are fining crypto and fintech firms?',
+    answer: 'The SEC leads crypto enforcement by volume, pursuing unregistered securities offerings and exchange operations. The FCA has refused registration to over 80% of crypto firm applicants and issued consumer warnings. MAS and ASIC regulate crypto under existing securities frameworks. BaFin, AMF, and the CSSF enforce EU crypto rules under MiCA. FinCEN pursues AML failures at crypto exchanges and money service businesses.',
+    category: 'By Sector',
+    slug: 'crypto-fintech-enforcement-global',
+  },
+  {
+    question: 'How is market abuse enforced differently across regulators?',
+    answer: 'The SEC and DOJ pursue market abuse criminally and civilly, with penalties including imprisonment. The FCA uses both civil penalties and criminal prosecution for insider dealing and market manipulation. The AMF and BaFin enforce under the EU Market Abuse Regulation (MAR). SEBI and SFC use administrative penalties and market bans. The SESC investigates in Japan but the FSA adjudicates, creating a distinctive split-function model.',
+    category: 'By Sector',
+    slug: 'market-abuse-enforcement-global',
+  },
 ];
 
 // ── Helpers ────────────────────────────────────────────────────────────────
@@ -252,8 +439,8 @@ export function getFaqsByCategory(category: FAQItem['category']): FAQItem[] {
 
 const CATEGORY_ORDER: FAQItem['category'][] = [
   'Global Enforcement', 'Platform & Data', 'EU Regulators', 'APAC Regulators',
-  'Americas Regulators', 'Biggest Fines', 'How FCA Works', 'By Year',
-  'Specific Cases', 'Financial Crime', 'By Sector', 'General',
+  'Americas Regulators', 'Regulator Profiles', 'Biggest Fines', 'How FCA Works',
+  'By Year', 'Specific Cases', 'Financial Crime', 'By Sector', 'General',
 ];
 
 export function getFaqCategories(): FAQItem['category'][] {
@@ -312,6 +499,22 @@ const ARTICLE_FAQ_MAP: Record<string, string[]> = {
   'fca-fines-individuals-personal-accountability': ['can-fca-fine-individuals', 'smcr-and-fca-fines'],
   'fca-fines-march-2026': ['biggest-fca-fines-2026', 'how-fca-calculates-fines'],
   'fca-fines-insurance-sector': ['total-fca-fines-since-2013', 'how-fca-calculates-fines'],
+  // New blog articles
+  'sec-enforcement-guide-fines-data': ['sec-enforcement-overview', 'us-multi-agency-enforcement', 'enforcement-volume-vs-penalty-size'],
+  'occ-enforcement-actions-complete-guide': ['occ-enforcement-overview', 'us-multi-agency-enforcement', 'banking-sector-enforcement-global'],
+  'global-aml-enforcement-comparison-2026': ['aml-fines-comparison-global', 'aml-enforcement-global', 'sanctions-evasion-enforcement'],
+  'eu-financial-regulators-enforcement-guide': ['cssf-luxembourg-enforcement', 'nordic-regulators-enforcement', 'cysec-enforcement-eu-gateway', 'eu-enforcement-coordination'],
+  'apac-financial-enforcement-comparison': ['austrac-aml-enforcement-australia', 'hong-kong-dual-enforcement', 'sesc-japan-enforcement', 'apac-active-regulators'],
+  'board-guide-aml-controls-global-enforcement': ['aml-fines-comparison-global', 'aml-enforcement-global', 'banking-sector-enforcement-global'],
+  'cbi-ireland-enforcement-guide': ['cbi-enforcement-overview', 'cssf-luxembourg-enforcement'],
+  'finra-ciro-sro-enforcement-comparison': ['ciro-enforcement-overview', 'osc-enforcement-canada'],
+  'market-abuse-enforcement-global-comparison': ['market-abuse-enforcement-global', 'sec-enforcement-overview'],
+  'switzerland-offshore-enforcement-finma-jfsc-gfsc': ['finma-enforcement-overview', 'eu-enforcement-coordination'],
+  'board-guide-governance-accountability-enforcement': ['consumer-duty-global-enforcement', 'enforcement-volume-vs-penalty-size'],
+  'fincen-bsa-enforcement-guide': ['aml-fines-comparison-global', 'sanctions-evasion-enforcement', 'us-multi-agency-enforcement'],
+  'systems-controls-enforcement-global': ['banking-sector-enforcement-global', 'consumer-duty-global-enforcement'],
+  'middle-east-enforcement-dfsa-fsra-cbuae': ['cross-border-enforcement-cooperation', 'eu-vs-apac-vs-americas-enforcement'],
+  'latin-america-enforcement-cvm-cnbv-cmf': ['cvm-enforcement-overview', 'cross-border-enforcement-cooperation'],
 };
 
 export function getFaqsForArticle(articleSlug: string): FAQItem[] {
