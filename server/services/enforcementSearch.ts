@@ -312,8 +312,15 @@ function isMeaningfulToken(token: string) {
   );
 }
 
-function deriveFirmIntentTerms(tokens: string[]) {
-  return tokens.filter((token) => {
+function deriveFirmIntentTerms(
+  tokens: string[],
+  countryPhraseTokens = new Set<string>(),
+) {
+  const hasDistinctiveFirmTerm = tokens.some((token) => {
+    if (countryPhraseTokens.has(token)) {
+      return false;
+    }
+
     if (GENERIC_THEME_SEARCH_TOKENS.has(token)) {
       return false;
     }
@@ -330,8 +337,63 @@ function deriveFirmIntentTerms(tokens: string[]) {
       return false;
     }
 
+    return !BROAD_SINGLE_TOKEN_FIRM_TERMS.has(token);
+  });
+
+  return tokens.filter((token) => {
+    if (countryPhraseTokens.has(token)) {
+      return false;
+    }
+
+    if (GENERIC_THEME_SEARCH_TOKENS.has(token)) {
+      return false;
+    }
+
+    if (LEGAL_ENTITY_SUFFIX_TOKENS.has(token) && !hasDistinctiveFirmTerm) {
+      return false;
+    }
+
+    if (REGULATOR_CODE_TO_MATCH.has(token)) {
+      return false;
+    }
+
+    if (normalizeCountryCode(token)) {
+      return false;
+    }
+
     return true;
   });
+}
+
+function deriveCountryPhraseHints(normalizedQuery: string) {
+  const normalizedForPhrase = ` ${normalizedQuery
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, ' ')} `;
+  const hints: string[] = [];
+  const phraseTokens = new Set<string>();
+
+  for (const coverage of PUBLIC_REGULATOR_NAV_ITEMS) {
+    const countryName = coverage.country.toLowerCase();
+    if (!countryName.includes(' ')) {
+      continue;
+    }
+
+    const normalizedCountryName = countryName.replace(/[^a-z0-9]+/g, ' ');
+    if (!normalizedForPhrase.includes(` ${normalizedCountryName} `)) {
+      continue;
+    }
+
+    hints.push(coverage.countryCode);
+    normalizedCountryName
+      .split(/\s+/)
+      .filter(Boolean)
+      .forEach((token) => phraseTokens.add(token));
+  }
+
+  return {
+    hints: unique(hints),
+    phraseTokens,
+  };
 }
 
 function stripTrailingLegalSuffixTerms(tokens: string[]) {
@@ -799,7 +861,11 @@ export function prepareEnforcementSearch(query: string): PreparedEnforcementSear
   ]);
   const minimumTokenMatches =
     meaningfulTokens.length >= 3 ? 2 : meaningfulTokens.length >= 1 ? 1 : 0;
-  const firmIntentTerms = deriveFirmIntentTerms(meaningfulTokens);
+  const countryPhraseHints = deriveCountryPhraseHints(normalizedQuery);
+  const firmIntentTerms = deriveFirmIntentTerms(
+    meaningfulTokens,
+    countryPhraseHints.phraseTokens,
+  );
   const firmIntentQuery = firmIntentTerms.join(' ').trim();
   const firmIntentQueryWithoutLegalSuffix =
     stripTrailingLegalSuffixTerms(firmIntentTerms).join(' ').trim() ||
@@ -810,15 +876,18 @@ export function prepareEnforcementSearch(query: string): PreparedEnforcementSear
       .filter((token): token is string => Boolean(token)),
   );
   const countryHints = unique(
-    rawTokens
-      .map((token) => {
-        if (COUNTRY_ALIASES[token]) {
-          return COUNTRY_ALIASES[token];
-        }
+    [
+      ...countryPhraseHints.hints,
+      ...rawTokens
+        .map((token) => {
+          if (COUNTRY_ALIASES[token]) {
+            return COUNTRY_ALIASES[token];
+          }
 
-        return normalizeCountryCode(token);
-      })
-      .filter((token): token is string => Boolean(token)),
+          return normalizeCountryCode(token);
+        })
+        .filter((token): token is string => Boolean(token)),
+    ],
   );
   const hasSearchIntent =
     meaningfulTokens.length > 0 || regulatorHints.length > 0 || countryHints.length > 0;

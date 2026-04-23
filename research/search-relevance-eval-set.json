@@ -83,15 +83,15 @@
     "id": "short-wise",
     "category": "short_brand",
     "query": "wise",
-    "expectedAnyTop": ["SHINWA WISE HOLDINGS"],
+    "expectedAnyTop": ["Wise Payments Limited"],
     "maxRank": 1,
-    "notes": "Bare short brand query should prefer a whole-word Wise firm over Bitwise, Wisely, or Wiseman substring noise."
+    "notes": "Bare short brand query should prefer the direct Wise entity over incidental Wise/Wisely substring noise."
   },
   {
     "id": "short-wise-enforcement",
     "category": "short_brand",
     "query": "wise enforcement",
-    "expectedAnyTop": ["SHINWA WISE HOLDINGS"],
+    "expectedAnyTop": ["Wise Payments Limited"],
     "maxRank": 3,
     "notes": "Low-signal enforcement suffix should not cause fuzzy or theme matches to outrank the Wise firm candidate."
   },
@@ -99,7 +99,7 @@
     "id": "short-wise-aml",
     "category": "short_brand",
     "query": "wise aml",
-    "expectedAnyTop": ["SHINWA WISE HOLDINGS"],
+    "expectedAnyTop": ["Wise Payments Limited"],
     "maxRank": 3,
     "notes": "Firm-led short query with an AML theme should keep the Wise firm candidate high while preserving mixed search results."
   },

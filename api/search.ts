@@ -1090,6 +1090,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         highlighted_snippet AS snippet
       FROM scored_results
       ORDER BY
+        regulator_hint_score DESC,
+        country_hint_score DESC,
         firm_match_score DESC,
         firm_token_match_score DESC,
         fuzzy_firm_match_score DESC,
@@ -1098,8 +1100,6 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         regulator_theme_synergy_score DESC,
         country_theme_synergy_score DESC,
         category_theme_synergy_score DESC,
-        regulator_hint_score DESC,
-        country_hint_score DESC,
         category_match_score DESC,
         full_text_rank DESC,
         fuzzy_full_text_rank DESC,

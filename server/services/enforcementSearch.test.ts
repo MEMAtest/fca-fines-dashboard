@@ -112,9 +112,14 @@ describe('enforcementSearch helpers', () => {
 
   it('extracts regulator and country hints from short query tokens', () => {
     const prepared = prepareEnforcementSearch('SEBI UAE AML');
+    const hongKongPrepared = prepareEnforcementSearch(
+      'hong kong counter terrorist financing',
+    );
 
     expect(prepared.regulatorHints).toContain('SEBI');
     expect(prepared.countryHints).toContain('AE');
+    expect(hongKongPrepared.countryHints).toContain('HK');
+    expect(hongKongPrepared.firmIntentTerms).toEqual([]);
   });
 
   it('maps country adjectives and crypto intent into richer search terms', () => {
@@ -162,9 +167,10 @@ describe('enforcementSearch helpers', () => {
     expect(prepared.isShortFirmLikeQuery).toBe(false);
   });
 
-  it('marks short firm-like queries without treating legal suffixes as distinctive', () => {
+  it('marks short firm-like queries while preserving legal suffix precision', () => {
     const wisePrepared = prepareEnforcementSearch('wise aml');
     const legalPrepared = prepareEnforcementSearch('Wise Limited');
+    const plcPrepared = prepareEnforcementSearch('Barclays Bank plc enforcement');
     const broadPrepared = prepareEnforcementSearch('bank');
 
     expect(wisePrepared.firmIntentTerms).toEqual(['wise']);
@@ -172,9 +178,15 @@ describe('enforcementSearch helpers', () => {
     expect(wisePrepared.firmIntentQueryWithoutLegalSuffix).toBe('wise');
     expect(wisePrepared.isShortFirmLikeQuery).toBe(true);
 
-    expect(legalPrepared.firmIntentTerms).toEqual(['wise']);
-    expect(legalPrepared.firmIntentQuery).toBe('wise');
+    expect(legalPrepared.firmIntentTerms).toEqual(['wise', 'limited']);
+    expect(legalPrepared.firmIntentQuery).toBe('wise limited');
+    expect(legalPrepared.firmIntentQueryWithoutLegalSuffix).toBe('wise');
     expect(legalPrepared.isShortFirmLikeQuery).toBe(true);
+
+    expect(plcPrepared.firmIntentTerms).toEqual(['barclays', 'bank', 'plc']);
+    expect(plcPrepared.firmIntentQuery).toBe('barclays bank plc');
+    expect(plcPrepared.firmIntentQueryWithoutLegalSuffix).toBe('barclays bank');
+    expect(plcPrepared.isShortFirmLikeQuery).toBe(false);
 
     expect(broadPrepared.firmIntentTerms).toEqual(['bank']);
     expect(broadPrepared.isShortFirmLikeQuery).toBe(false);
