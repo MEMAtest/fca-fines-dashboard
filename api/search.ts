@@ -8,9 +8,9 @@
  */
 
 import type { VercelRequest, VercelResponse } from '@vercel/node';
-import postgres from 'postgres';
 import { PUBLIC_REGULATOR_CODES } from '../src/data/regulatorCoverage.js';
 import { UK_ENFORCEMENT_REGULATOR_CODES } from '../src/data/ukEnforcement.js';
+import { getSqlClient } from '../server/db.js';
 import {
   buildFallbackSnippet,
   normalizeCountryCode,
@@ -23,12 +23,6 @@ import {
   buildSearchAnalyticsRecord,
   type SearchAnalyticsRecord,
 } from '../server/services/searchAnalytics.js';
-
-const sql = postgres(process.env.DATABASE_URL?.trim() || '', {
-  ssl: process.env.DATABASE_URL?.includes('sslmode=')
-    ? { rejectUnauthorized: false }
-    : false,
-});
 
 const SEARCHABLE_REGULATOR_CODES = [
   ...new Set([...PUBLIC_REGULATOR_CODES, ...UK_ENFORCEMENT_REGULATOR_CODES]),
@@ -162,6 +156,13 @@ function toFiniteNumber(value: string | number | null | undefined) {
   return Number.isFinite(parsed) ? parsed : 0;
 }
 
+async function queryRows<T>(
+  query: string,
+  params: unknown[] = [],
+) {
+  return getSqlClient()(query, params) as Promise<T[]>;
+}
+
 function firmBoundaryCondition(expression: string, placeholder: string) {
   return `(
     ${placeholder} <> ''
@@ -213,7 +214,8 @@ function determineSearchQueryMode(
 
 async function recordSearchAnalytics(record: SearchAnalyticsRecord) {
   try {
-    await sql`
+    await queryRows(
+      `
       INSERT INTO search_query_analytics (
         query_hash,
         query_text,
@@ -240,31 +242,57 @@ async function recordSearchAnalytics(record: SearchAnalyticsRecord) {
         latency_ms
       )
       VALUES (
-        ${record.queryHash},
-        ${record.queryText},
-        ${record.queryNormalized},
-        ${record.queryMode},
-        ${record.queryLength},
-        ${record.meaningfulTermCount},
-        ${record.firmIntentTermCount},
-        ${record.shortQuery},
-        ${record.strongFirmCandidate},
-        ${record.regulatorHintCount},
-        ${record.countryHintCount},
-        ${record.categoryHintCount},
-        ${sql.json(record.filtersApplied)},
-        ${record.resultCount},
-        ${record.zeroResult},
-        ${record.lowSignal},
-        ${record.correctionCount},
-        ${record.correctedQuery},
-        ${sql.json(record.correctionPairs)},
-        ${record.fuzzySuppressedByFirmCandidate},
-        ${sql.json(record.topFirms)},
-        ${sql.json(record.topRegulators)},
-        ${record.latencyMs}
+        $1,
+        $2,
+        $3,
+        $4,
+        $5,
+        $6,
+        $7,
+        $8,
+        $9,
+        $10,
+        $11,
+        $12,
+        $13::jsonb,
+        $14,
+        $15,
+        $16,
+        $17,
+        $18,
+        $19::jsonb,
+        $20,
+        $21::jsonb,
+        $22::jsonb,
+        $23
       )
-    `;
+      `,
+      [
+        record.queryHash,
+        record.queryText,
+        record.queryNormalized,
+        record.queryMode,
+        record.queryLength,
+        record.meaningfulTermCount,
+        record.firmIntentTermCount,
+        record.shortQuery,
+        record.strongFirmCandidate,
+        record.regulatorHintCount,
+        record.countryHintCount,
+        record.categoryHintCount,
+        JSON.stringify(record.filtersApplied),
+        record.resultCount,
+        record.zeroResult,
+        record.lowSignal,
+        record.correctionCount,
+        record.correctedQuery,
+        JSON.stringify(record.correctionPairs),
+        record.fuzzySuppressedByFirmCandidate,
+        JSON.stringify(record.topFirms),
+        JSON.stringify(record.topRegulators),
+        record.latencyMs,
+      ],
+    );
   } catch (error) {
     const message = error instanceof Error ? error.message : 'Unknown error';
     if (message.includes('search_query_analytics')) {
@@ -330,14 +358,12 @@ async function fetchFuzzyCandidatePhrases({
     `);
   }
 
-  const rows = await sql.unsafe<
-    Array<{
+  const rows = await queryRows<{
       firm_individual: string | null;
       regulator: string | null;
       regulator_full_name: string | null;
       country_name: string | null;
-    }>
-  >(
+    }>(
     `
       WITH ${SEARCHABLE_ENFORCEMENT_CTE}
       SELECT DISTINCT ON (firm_individual)
@@ -423,12 +449,10 @@ async function fetchStrongFirmCandidateSignal({
     '$3',
   );
 
-  const rows = await sql.unsafe<
-    Array<{
+  const rows = await queryRows<{
       firm_individual: string | null;
       candidate_tier: number;
-    }>
-  >(
+    }>(
     `
       WITH ${SEARCHABLE_ENFORCEMENT_CTE},
       candidates AS (
@@ -673,7 +697,6 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       fuzzyPrepared?.meaningfulTerms ?? [],
       prepared.firmIntentQuery,
       prepared.firmIntentQueryWithoutLegalSuffix,
-      queryMode === 'firm_lookup',
       prepared.isShortFirmLikeQuery,
     ];
 
@@ -748,14 +771,14 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
             WHEN $17 <> '' AND firm_norm.normalized_name LIKE $17 || ' %' THEN 300
             WHEN ${firmBoundaryCondition('firm_norm.normalized_name', '$17')} THEN 250
             WHEN LOWER(COALESCE(firm_individual, '')) = LOWER($1) THEN 230
-            WHEN ($19 = FALSE) AND COALESCE(firm_individual, '') ILIKE $2 THEN 180
+            WHEN ($18 = FALSE) AND COALESCE(firm_individual, '') ILIKE $2 THEN 180
             ELSE 0
           END AS firm_match_score,
           ${firmTokenBoundaryCondition('firm_norm.normalized_name', '$12')} AS firm_token_match_score,
           CASE
             WHEN $8 <> '' AND firm_norm.normalized_name = $8 THEN 180
             WHEN $8 <> '' AND firm_legal.legal_stripped_name = $8 THEN 170
-            WHEN $9 <> '' AND ($19 = FALSE) AND COALESCE(firm_individual, '') ILIKE $9 THEN 120
+            WHEN $9 <> '' AND ($18 = FALSE) AND COALESCE(firm_individual, '') ILIKE $9 THEN 120
             ELSE 0
           END AS fuzzy_firm_match_score,
           ${firmTokenBoundaryCondition('firm_norm.normalized_name', '$13')} AS fuzzy_firm_token_match_score,
@@ -1089,7 +1112,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       OFFSET $${params.length + 2}
     `;
 
-    const results = await sql.unsafe<SearchRow[]>(rankedQuery, [
+    const results = await queryRows<SearchRow>(rankedQuery, [
       ...params,
       limitNum,
       offsetNum,
@@ -1106,14 +1129,14 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
             WHEN $17 <> '' AND firm_norm.normalized_name LIKE $17 || ' %' THEN 300
             WHEN ${firmBoundaryCondition('firm_norm.normalized_name', '$17')} THEN 250
             WHEN LOWER(COALESCE(firm_individual, '')) = LOWER($1) THEN 230
-            WHEN ($19 = FALSE) AND COALESCE(firm_individual, '') ILIKE $2 THEN 180
+            WHEN ($18 = FALSE) AND COALESCE(firm_individual, '') ILIKE $2 THEN 180
             ELSE 0
           END AS firm_match_score,
           ${firmTokenBoundaryCondition('firm_norm.normalized_name', '$12')} AS firm_token_match_score,
           CASE
             WHEN $8 <> '' AND firm_norm.normalized_name = $8 THEN 180
             WHEN $8 <> '' AND firm_legal.legal_stripped_name = $8 THEN 170
-            WHEN $9 <> '' AND ($19 = FALSE) AND COALESCE(firm_individual, '') ILIKE $9 THEN 120
+            WHEN $9 <> '' AND ($18 = FALSE) AND COALESCE(firm_individual, '') ILIKE $9 THEN 120
             ELSE 0
           END AS fuzzy_firm_match_score,
           ${firmTokenBoundaryCondition('firm_norm.normalized_name', '$13')} AS fuzzy_firm_token_match_score,
@@ -1321,7 +1344,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         )
     `;
 
-    const countResult = await sql.unsafe<{ count: number }[]>(countQuery, params);
+    const countResult = await queryRows<{ count: number }>(countQuery, params);
     const totalCount = countResult[0]?.count ?? 0;
 
     const payload = {
