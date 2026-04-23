@@ -162,6 +162,51 @@ async function main() {
     LIMIT ${limit}
   `;
 
+  const queryModeSummary = await sql<
+    Array<{
+      query_mode: string;
+      total_queries: number;
+      zero_result_queries: number;
+      avg_result_count: number;
+    }>
+  >`
+    SELECT
+      query_mode,
+      COUNT(*)::int AS total_queries,
+      COUNT(*) FILTER (WHERE zero_result)::int AS zero_result_queries,
+      ROUND(AVG(result_count))::int AS avg_result_count
+    FROM search_query_analytics
+    WHERE created_at >= NOW() - (${windowDays} || ' days')::interval
+    GROUP BY query_mode
+    ORDER BY total_queries DESC
+  `;
+
+  const shortFirmLookupQueries = await sql<
+    Array<{
+      query_normalized: string;
+      searches: number;
+      avg_result_count: number;
+      corrected_searches: number;
+      suppressed_fuzzy_searches: number;
+      last_seen: string;
+    }>
+  >`
+    SELECT
+      query_normalized,
+      COUNT(*)::int AS searches,
+      ROUND(AVG(result_count))::int AS avg_result_count,
+      COUNT(*) FILTER (WHERE correction_count > 0)::int AS corrected_searches,
+      COUNT(*) FILTER (WHERE fuzzy_suppressed_by_firm_candidate)::int
+        AS suppressed_fuzzy_searches,
+      MAX(created_at)::text AS last_seen
+    FROM search_query_analytics
+    WHERE created_at >= NOW() - (${windowDays} || ' days')::interval
+      AND short_query = TRUE
+    GROUP BY query_normalized
+    ORDER BY searches DESC, suppressed_fuzzy_searches DESC, avg_result_count DESC
+    LIMIT ${limit}
+  `;
+
   const report = {
     windowDays,
     summary: {
@@ -177,6 +222,8 @@ async function main() {
     topLowSignalQueries,
     topCorrections,
     broadAmbiguousQueries,
+    queryModeSummary,
+    shortFirmLookupQueries,
   };
 
   console.log(JSON.stringify(report, null, 2));

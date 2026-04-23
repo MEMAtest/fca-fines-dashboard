@@ -21,6 +21,11 @@ import {
   getBreachDetailsBySlug,
   getSectorDetailsBySlug,
 } from "./server/services/hubs.js";
+import {
+  getUKEnforcementStats,
+  listUKEnforcementActions,
+} from "./server/services/ukEnforcement.js";
+import searchHandler from "./api/search.js";
 
 const app = express();
 app.use(cors());
@@ -192,6 +197,38 @@ app.get("/api/fca-fines/sector", async (req, res) => {
   }
 });
 
+app.get("/api/uk-enforcement/search", async (req, res) => {
+  try {
+    const data = await listUKEnforcementActions(
+      req.query as Record<string, string>,
+    );
+    res.json(data);
+  } catch (error) {
+    console.error("UK enforcement search endpoint error:", error);
+    res
+      .status(500)
+      .json({ success: false, error: "Failed to fetch UK enforcement data" });
+  }
+});
+
+app.get("/api/uk-enforcement/stats", async (req, res) => {
+  try {
+    const data = await getUKEnforcementStats(
+      req.query as Record<string, string>,
+    );
+    res.json(data);
+  } catch (error) {
+    console.error("UK enforcement stats endpoint error:", error);
+    res
+      .status(500)
+      .json({ success: false, error: "Failed to fetch UK enforcement stats" });
+  }
+});
+
+app.get("/api/search", async (req, res) => {
+  await searchHandler(req as any, res as any);
+});
+
 // Homepage stats endpoint
 app.get("/api/homepage/stats", async (_req, res) => {
   try {
@@ -277,6 +314,8 @@ app.use(
 );
 
 const port = Number(process.env.PORT || 4000);
-app.listen(port, () => {
+const server = app.listen(port, () => {
   console.log(`FCA fines dashboard running on http://localhost:${port}`);
 });
+
+void server;

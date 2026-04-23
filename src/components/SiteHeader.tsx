@@ -12,6 +12,7 @@ import "../styles/siteheader.css";
 const NAV_LINKS = [
   { to: "/", label: "Home" },
   { to: "/regulators", label: "Dashboard" },
+  { to: "/uk-enforcement", label: "UK Enforcement" },
   { to: "/roadmap", label: "Roadmap" },
   { to: "/features", label: "Features" },
   { to: "/blog", label: "Insights" },
@@ -60,6 +61,7 @@ function getBreadcrumbs(pathname: string) {
     if (seg === "dashboard") label = "Dashboard";
     else if (seg === "board-pack") label = "Board Pack";
     else if (seg === "search") label = "Search";
+    else if (seg === "uk-enforcement") label = "UK Enforcement";
     else if (seg === "blog") label = "Insights";
     else if (seg === "topics") label = "Topics";
     else if (seg === "regulators") label = "Regulators";

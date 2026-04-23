@@ -1,0 +1,12 @@
+node_modules
+dist
+test-results
+playwright-report
+feature-validation/logs
+backups
+.env*
+fcafines.db
+*.sqlite
+*.sqlite3
+*.db
+.DS_Store

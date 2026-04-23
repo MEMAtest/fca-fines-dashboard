@@ -203,6 +203,11 @@ const Regulators = lazyPage(() =>
 const Search = lazyPage(() =>
   import("./pages/Search.js").then((module) => ({ default: module.Search })),
 );
+const UKEnforcement = lazyPage(() =>
+  import("./pages/UKEnforcement.js").then((module) => ({
+    default: module.UKEnforcement,
+  })),
+);
 const BoardIntelligence = lazyPage(() =>
   import("./pages/BoardIntelligence.js").then((module) => ({
     default: module.BoardIntelligence,
@@ -335,6 +340,27 @@ const router = createBrowserRouter([
             }
           >
             <Search />
+          </Suspense>
+        ),
+      },
+      {
+        path: "/uk-enforcement",
+        element: (
+          <Suspense
+            fallback={
+              <div
+                style={{
+                  minHeight: "100vh",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                }}
+              >
+                Loading UK enforcement...
+              </div>
+            }
+          >
+            <UKEnforcement />
           </Suspense>
         ),
       },

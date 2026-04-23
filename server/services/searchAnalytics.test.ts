@@ -25,12 +25,19 @@ describe('searchAnalytics helpers', () => {
       totalCount: 343,
       latencyMs: 148.3,
       lowSignal: false,
+      queryMode: 'theme',
+      strongFirmCandidate: false,
+      fuzzySuppressedByFirmCandidate: false,
     });
 
     expect(record.queryText).toBe('irish crypto aml failures');
     expect(record.queryNormalized).toBe('irish crypto aml failures');
     expect(record.queryHash).toHaveLength(64);
     expect(record.firmIntentTermCount).toBe(0);
+    expect(record.queryMode).toBe('theme');
+    expect(record.shortQuery).toBe(false);
+    expect(record.strongFirmCandidate).toBe(false);
+    expect(record.fuzzySuppressedByFirmCandidate).toBe(false);
     expect(record.countryHintCount).toBe(1);
     expect(record.zeroResult).toBe(false);
     expect(record.topFirms).toEqual([

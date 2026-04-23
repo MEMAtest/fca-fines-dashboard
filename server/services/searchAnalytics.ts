@@ -20,9 +20,12 @@ export interface SearchAnalyticsRecord {
   queryHash: string;
   queryText: string;
   queryNormalized: string;
+  queryMode: 'firm_lookup' | 'mixed' | 'theme';
   queryLength: number;
   meaningfulTermCount: number;
   firmIntentTermCount: number;
+  shortQuery: boolean;
+  strongFirmCandidate: boolean;
   regulatorHintCount: number;
   countryHintCount: number;
   categoryHintCount: number;
@@ -33,6 +36,7 @@ export interface SearchAnalyticsRecord {
   correctionCount: number;
   correctedQuery: string | null;
   correctionPairs: Array<{ from: string; to: string }>;
+  fuzzySuppressedByFirmCandidate: boolean;
   topFirms: string[];
   topRegulators: string[];
   latencyMs: number;
@@ -60,6 +64,9 @@ export function buildSearchAnalyticsRecord({
   totalCount,
   latencyMs,
   lowSignal,
+  queryMode,
+  strongFirmCandidate,
+  fuzzySuppressedByFirmCandidate,
 }: {
   query: string;
   prepared: PreparedEnforcementSearch;
@@ -69,6 +76,9 @@ export function buildSearchAnalyticsRecord({
   totalCount: number;
   latencyMs: number;
   lowSignal: boolean;
+  queryMode: 'firm_lookup' | 'mixed' | 'theme';
+  strongFirmCandidate: boolean;
+  fuzzySuppressedByFirmCandidate: boolean;
 }): SearchAnalyticsRecord {
   const normalizedQuery = clampText(normalizeQueryForHash(query), 280);
   const topFirms = unique(
@@ -94,9 +104,12 @@ export function buildSearchAnalyticsRecord({
     queryHash: crypto.createHash('sha256').update(normalizedQuery).digest('hex'),
     queryText: clampText(query, 280),
     queryNormalized: normalizedQuery,
+    queryMode,
     queryLength: query.trim().length,
     meaningfulTermCount: prepared.meaningfulTerms.length,
     firmIntentTermCount: prepared.firmIntentTerms.length,
+    shortQuery: prepared.isShortFirmLikeQuery,
+    strongFirmCandidate,
     regulatorHintCount: prepared.regulatorHints.length,
     countryHintCount: prepared.countryHints.length,
     categoryHintCount: prepared.categoryHints.length,
@@ -107,6 +120,7 @@ export function buildSearchAnalyticsRecord({
     correctionCount: correctionPairs.length,
     correctedQuery,
     correctionPairs,
+    fuzzySuppressedByFirmCandidate,
     topFirms,
     topRegulators,
     latencyMs: Math.max(0, Math.round(latencyMs)),

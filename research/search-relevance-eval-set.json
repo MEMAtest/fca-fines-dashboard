@@ -80,6 +80,54 @@
     "notes": "Firm-led AML controls query should surface Barclays in the first page, ideally top 5."
   },
   {
+    "id": "short-wise",
+    "category": "short_brand",
+    "query": "wise",
+    "expectedAnyTop": ["SHINWA WISE HOLDINGS"],
+    "maxRank": 1,
+    "notes": "Bare short brand query should prefer a whole-word Wise firm over Bitwise, Wisely, or Wiseman substring noise."
+  },
+  {
+    "id": "short-wise-enforcement",
+    "category": "short_brand",
+    "query": "wise enforcement",
+    "expectedAnyTop": ["SHINWA WISE HOLDINGS"],
+    "maxRank": 3,
+    "notes": "Low-signal enforcement suffix should not cause fuzzy or theme matches to outrank the Wise firm candidate."
+  },
+  {
+    "id": "short-wise-aml",
+    "category": "short_brand",
+    "query": "wise aml",
+    "expectedAnyTop": ["SHINWA WISE HOLDINGS"],
+    "maxRank": 3,
+    "notes": "Firm-led short query with an AML theme should keep the Wise firm candidate high while preserving mixed search results."
+  },
+  {
+    "id": "short-bybit",
+    "category": "short_brand",
+    "query": "bybit",
+    "expectedAnyTop": ["Bybit Technology Limited", "Bybit Fintech Limited"],
+    "maxRank": 1,
+    "notes": "Short crypto brand query should rank the direct Bybit firm record first."
+  },
+  {
+    "id": "short-huobi",
+    "category": "short_brand",
+    "query": "huobi",
+    "expectedAnyTop": ["Huobi Global Limited"],
+    "maxRank": 1,
+    "notes": "Short common crypto brand query should rank the direct Huobi firm record first."
+  },
+  {
+    "id": "short-etoro",
+    "category": "short_brand",
+    "query": "etoro",
+    "expectedAnyTop": ["eToro"],
+    "maxRank": 1,
+    "notes": "Short brand query should rank the eToro action first."
+  },
+  {
     "id": "typo-goldman",
     "category": "typo_firm",
     "query": "Goldmn Sachs enforcement",

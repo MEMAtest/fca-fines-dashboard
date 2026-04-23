@@ -17,14 +17,16 @@ const sql = postgres(databaseUrl, {
 });
 
 async function main() {
-  const migrationPath = path.resolve(
-    process.cwd(),
+  const migrationPaths = [
     'migrations/20260420_search_query_analytics.sql',
-  );
-  const migrationSql = fs.readFileSync(migrationPath, 'utf8');
+    'migrations/20260423_search_query_modes.sql',
+  ].map((migration) => path.resolve(process.cwd(), migration));
 
   console.log('🚀 Running search query analytics migration...');
-  await sql.unsafe(migrationSql);
+  for (const migrationPath of migrationPaths) {
+    const migrationSql = fs.readFileSync(migrationPath, 'utf8');
+    await sql.unsafe(migrationSql);
+  }
 
   const verification = await sql`
     SELECT table_name

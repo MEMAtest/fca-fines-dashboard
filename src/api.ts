@@ -252,3 +252,161 @@ export function fetchUnifiedCompare(
 
   return fetchJSON<any>(`/api/unified/compare?${params.toString()}`);
 }
+
+export interface UKEnforcementSearchParams {
+  q?: string;
+  firmName?: string;
+  regulator?: string;
+  domain?: string;
+  year?: number;
+  minAmount?: number;
+  maxAmount?: number;
+  currency?: string;
+  sortBy?: string;
+  order?: string;
+  limit?: number;
+  offset?: number;
+}
+
+export interface UKEnforcementAction {
+  id: string;
+  regulator: string;
+  regulator_full_name: string;
+  source_domain: string;
+  country_code: string;
+  country_name: string;
+  firm_individual: string;
+  firm_category: string | null;
+  amount_original: number | null;
+  currency: string;
+  amount_gbp: number | null;
+  amount_eur: number | null;
+  display_amount: number | null;
+  date_issued: string;
+  year_issued: number;
+  month_issued: number;
+  breach_type: string | null;
+  breach_categories: string[];
+  summary: string | null;
+  notice_url: string | null;
+  source_url: string | null;
+  source_window_note: string | null;
+  aliases: string[];
+  source_layer: string;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface UKEnforcementSearchResponse {
+  success: boolean;
+  results: UKEnforcementAction[];
+  pagination: {
+    total: number;
+    limit: number;
+    offset: number;
+    hasMore: boolean;
+    pages: number;
+    currentPage: number;
+  };
+  filters: {
+    q: string | null;
+    regulator: string | null;
+    domain: string | null;
+    year: number | null;
+    minAmount: number | null;
+    maxAmount: number | null;
+    currency: string;
+  };
+  metadata: {
+    aliasExpanded: boolean;
+  };
+}
+
+export interface UKEnforcementStatsResponse {
+  success: boolean;
+  summary: {
+    count: number;
+    total: number;
+    maxFine: number;
+    earliestDate: string | null;
+    latestDate: string | null;
+    currency: string;
+  };
+  byRegulator: Array<{
+    regulator: string;
+    regulatorFullName: string;
+    domain: string;
+    domainLabel: string;
+    sourceWindowNote: string | null;
+    count: number;
+    total: number;
+    maxFine: number;
+  }>;
+  byDomain: Array<{
+    domain: string;
+    label: string;
+    count: number;
+    total: number;
+  }>;
+  topActions: Array<{
+    id: string;
+    regulator: string;
+    domain: string;
+    firm: string;
+    amount: number;
+    currency: string;
+    date: string;
+    breachType: string | null;
+    summary: string | null;
+    url: string | null;
+  }>;
+  filters: {
+    year: number | null;
+    domain: string | null;
+    currency: string;
+  };
+}
+
+export function fetchUKEnforcementSearch(
+  params: UKEnforcementSearchParams = {},
+) {
+  const queryParams = new URLSearchParams();
+
+  if (params.q) queryParams.set("q", params.q);
+  if (params.firmName) queryParams.set("firmName", params.firmName);
+  if (params.regulator && params.regulator !== "All")
+    queryParams.set("regulator", params.regulator);
+  if (params.domain && params.domain !== "all")
+    queryParams.set("domain", params.domain);
+  if (params.year && params.year !== 0)
+    queryParams.set("year", String(params.year));
+  if (params.minAmount !== undefined)
+    queryParams.set("minAmount", String(params.minAmount));
+  if (params.maxAmount !== undefined)
+    queryParams.set("maxAmount", String(params.maxAmount));
+  if (params.currency) queryParams.set("currency", params.currency);
+  if (params.sortBy) queryParams.set("sortBy", params.sortBy);
+  if (params.order) queryParams.set("order", params.order);
+  if (params.limit) queryParams.set("limit", String(params.limit));
+  if (params.offset) queryParams.set("offset", String(params.offset));
+
+  const queryString = queryParams.toString();
+  return fetchJSON<UKEnforcementSearchResponse>(
+    `/api/uk-enforcement/search${queryString ? `?${queryString}` : ""}`,
+  );
+}
+
+export function fetchUKEnforcementStats(
+  year?: number,
+  domain?: string,
+  currency = "GBP",
+) {
+  const params = new URLSearchParams();
+  if (year && year !== 0) params.set("year", String(year));
+  if (domain && domain !== "all") params.set("domain", domain);
+  params.set("currency", currency);
+
+  return fetchJSON<UKEnforcementStatsResponse>(
+    `/api/uk-enforcement/stats?${params.toString()}`,
+  );
+}

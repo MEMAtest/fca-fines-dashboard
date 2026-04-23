@@ -158,6 +158,26 @@ describe('enforcementSearch helpers', () => {
     const prepared = prepareEnforcementSearch('barclays fined for aml controls');
 
     expect(prepared.firmIntentTerms).toEqual(['barclays']);
+    expect(prepared.firmIntentQuery).toBe('barclays');
+    expect(prepared.isShortFirmLikeQuery).toBe(false);
+  });
+
+  it('marks short firm-like queries without treating legal suffixes as distinctive', () => {
+    const wisePrepared = prepareEnforcementSearch('wise aml');
+    const legalPrepared = prepareEnforcementSearch('Wise Limited');
+    const broadPrepared = prepareEnforcementSearch('bank');
+
+    expect(wisePrepared.firmIntentTerms).toEqual(['wise']);
+    expect(wisePrepared.firmIntentQuery).toBe('wise');
+    expect(wisePrepared.firmIntentQueryWithoutLegalSuffix).toBe('wise');
+    expect(wisePrepared.isShortFirmLikeQuery).toBe(true);
+
+    expect(legalPrepared.firmIntentTerms).toEqual(['wise']);
+    expect(legalPrepared.firmIntentQuery).toBe('wise');
+    expect(legalPrepared.isShortFirmLikeQuery).toBe(true);
+
+    expect(broadPrepared.firmIntentTerms).toEqual(['bank']);
+    expect(broadPrepared.isShortFirmLikeQuery).toBe(false);
   });
 
   it('builds a fuzzy vocabulary from static and dynamic search phrases', () => {

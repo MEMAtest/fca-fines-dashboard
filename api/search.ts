@@ -10,10 +10,12 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 import postgres from 'postgres';
 import { PUBLIC_REGULATOR_CODES } from '../src/data/regulatorCoverage.js';
+import { UK_ENFORCEMENT_REGULATOR_CODES } from '../src/data/ukEnforcement.js';
 import {
   buildFallbackSnippet,
   normalizeCountryCode,
   prepareEnforcementSearch,
+  type PreparedEnforcementSearch,
   resolveFuzzySearchTerms,
   stripSnippetHtml,
 } from '../server/services/enforcementSearch.js';
@@ -27,6 +29,10 @@ const sql = postgres(process.env.DATABASE_URL?.trim() || '', {
     ? { rejectUnauthorized: false }
     : false,
 });
+
+const SEARCHABLE_REGULATOR_CODES = [
+  ...new Set([...PUBLIC_REGULATOR_CODES, ...UK_ENFORCEMENT_REGULATOR_CODES]),
+];
 
 interface SearchRow {
   id: string;
@@ -53,9 +59,156 @@ interface SearchRow {
   snippet: string | null;
 }
 
+type SearchQueryMode = 'firm_lookup' | 'mixed' | 'theme';
+
+interface FirmCandidateSignal {
+  strong: boolean;
+  candidateCount: number;
+  bestTier: number;
+}
+
+const FIRM_NORMALIZATION_JOIN = `
+  CROSS JOIN LATERAL (
+    SELECT TRIM(
+      REGEXP_REPLACE(
+        LOWER(COALESCE(firm_individual, '')),
+        '[^a-z0-9]+',
+        ' ',
+        'g'
+      )
+    ) AS normalized_name
+  ) AS firm_norm
+  CROSS JOIN LATERAL (
+    SELECT TRIM(
+      REGEXP_REPLACE(
+        firm_norm.normalized_name,
+        '([[:space:]]+(limited|ltd|plc|llc|llp|inc|incorporated|corp|corporation|company|co|ag|sa|se|nv|bv|gmbh|pte|pty|dac|uab|sicav|sarl|spa|sro))+$',
+        '',
+        'i'
+      )
+    ) AS legal_stripped_name
+  ) AS firm_legal
+`;
+
+const SEARCHABLE_ENFORCEMENT_CTE = `
+  searchable_enforcement AS (
+    SELECT
+      id,
+      regulator,
+      regulator_full_name,
+      country_code,
+      country_name,
+      firm_individual,
+      firm_category,
+      amount_original,
+      currency,
+      amount_gbp,
+      amount_eur,
+      date_issued,
+      year_issued,
+      month_issued,
+      breach_type,
+      breach_categories,
+      summary,
+      notice_url,
+      source_url,
+      created_at,
+      search_vector
+    FROM all_regulatory_fines
+
+    UNION ALL
+
+    SELECT
+      id,
+      regulator,
+      regulator_full_name,
+      country_code,
+      country_name,
+      firm_individual,
+      firm_category,
+      amount_original,
+      currency,
+      amount_gbp,
+      amount_eur,
+      date_issued,
+      year_issued,
+      month_issued,
+      breach_type,
+      breach_categories,
+      summary,
+      notice_url,
+      source_url,
+      created_at,
+      to_tsvector(
+        'english',
+        concat_ws(
+          ' ',
+          firm_individual,
+          regulator,
+          regulator_full_name,
+          country_name,
+          breach_type,
+          breach_categories::text,
+          summary,
+          aliases::text
+        )
+      ) AS search_vector
+    FROM uk_enforcement_actions
+  )
+`;
+
 function toFiniteNumber(value: string | number | null | undefined) {
   const parsed = Number(value ?? 0);
   return Number.isFinite(parsed) ? parsed : 0;
+}
+
+function firmBoundaryCondition(expression: string, placeholder: string) {
+  return `(
+    ${placeholder} <> ''
+    AND (
+      ${expression} = ${placeholder}
+      OR ${expression} LIKE ${placeholder} || ' %'
+      OR ${expression} LIKE '% ' || ${placeholder} || ' %'
+      OR ${expression} LIKE '% ' || ${placeholder}
+    )
+  )`;
+}
+
+function firmTokenBoundaryCondition(expression: string, placeholder: string) {
+  return `(
+    SELECT COUNT(*)::int
+    FROM unnest(${placeholder}::text[]) AS token
+    WHERE token <> ''
+      AND (
+        ${expression} = token
+        OR ${expression} LIKE token || ' %'
+        OR ${expression} LIKE '% ' || token || ' %'
+        OR ${expression} LIKE '% ' || token
+      )
+  )`;
+}
+
+function determineSearchQueryMode(
+  prepared: PreparedEnforcementSearch,
+  firmCandidateSignal: FirmCandidateSignal,
+): SearchQueryMode {
+  if (prepared.isShortFirmLikeQuery && firmCandidateSignal.strong) {
+    return 'firm_lookup';
+  }
+
+  if (
+    prepared.firmIntentTerms.length > 0 &&
+    (
+      prepared.regulatorHints.length > 0 ||
+      prepared.countryHints.length > 0 ||
+      prepared.categoryHints.length > 0 ||
+      prepared.meaningfulTerms.length !== prepared.firmIntentTerms.length
+    )
+  ) {
+    return 'mixed';
+  }
+
+  return 'theme';
 }
 
 async function recordSearchAnalytics(record: SearchAnalyticsRecord) {
@@ -65,9 +218,12 @@ async function recordSearchAnalytics(record: SearchAnalyticsRecord) {
         query_hash,
         query_text,
         query_normalized,
+        query_mode,
         query_length,
         meaningful_term_count,
         firm_intent_term_count,
+        short_query,
+        strong_firm_candidate,
         regulator_hint_count,
         country_hint_count,
         category_hint_count,
@@ -78,6 +234,7 @@ async function recordSearchAnalytics(record: SearchAnalyticsRecord) {
         correction_count,
         corrected_query,
         correction_pairs,
+        fuzzy_suppressed_by_firm_candidate,
         top_firms,
         top_regulators,
         latency_ms
@@ -86,9 +243,12 @@ async function recordSearchAnalytics(record: SearchAnalyticsRecord) {
         ${record.queryHash},
         ${record.queryText},
         ${record.queryNormalized},
+        ${record.queryMode},
         ${record.queryLength},
         ${record.meaningfulTermCount},
         ${record.firmIntentTermCount},
+        ${record.shortQuery},
+        ${record.strongFirmCandidate},
         ${record.regulatorHintCount},
         ${record.countryHintCount},
         ${record.categoryHintCount},
@@ -99,6 +259,7 @@ async function recordSearchAnalytics(record: SearchAnalyticsRecord) {
         ${record.correctionCount},
         ${record.correctedQuery},
         ${sql.json(record.correctionPairs)},
+        ${record.fuzzySuppressedByFirmCandidate},
         ${sql.json(record.topFirms)},
         ${sql.json(record.topRegulators)},
         ${record.latencyMs}
@@ -139,7 +300,7 @@ async function fetchFuzzyCandidatePhrases({
     params.push(regulator);
     conditions.push(`regulator = $${params.length}`);
   } else {
-    params.push(PUBLIC_REGULATOR_CODES);
+    params.push(SEARCHABLE_REGULATOR_CODES);
     conditions.push(`regulator = ANY($${params.length})`);
   }
 
@@ -178,12 +339,13 @@ async function fetchFuzzyCandidatePhrases({
     }>
   >(
     `
+      WITH ${SEARCHABLE_ENFORCEMENT_CTE}
       SELECT DISTINCT ON (firm_individual)
         firm_individual,
         regulator,
         regulator_full_name,
         country_name
-      FROM all_regulatory_fines
+      FROM searchable_enforcement
       WHERE ${conditions.join(' AND ')}
       ORDER BY firm_individual, date_issued DESC
       LIMIT 1200
@@ -199,6 +361,114 @@ async function fetchFuzzyCandidatePhrases({
       row.country_name,
     ].filter((value): value is string => Boolean(value && value.trim())),
   );
+}
+
+async function fetchStrongFirmCandidateSignal({
+  regulator,
+  countryCode,
+  year,
+  prepared,
+}: {
+  regulator: string | undefined;
+  countryCode: string | null;
+  year: string | undefined;
+  prepared: PreparedEnforcementSearch;
+}): Promise<FirmCandidateSignal> {
+  if (!prepared.isShortFirmLikeQuery) {
+    return { strong: false, candidateCount: 0, bestTier: 0 };
+  }
+
+  const firmQuery = prepared.firmIntentQuery;
+  const firmQueryWithoutLegalSuffix = prepared.firmIntentQueryWithoutLegalSuffix;
+  if (!firmQueryWithoutLegalSuffix) {
+    return { strong: false, candidateCount: 0, bestTier: 0 };
+  }
+
+  const params: Array<string | number | readonly string[]> = [
+    firmQuery,
+    firmQueryWithoutLegalSuffix,
+    prepared.firmIntentTerms,
+  ];
+  const conditions: string[] = [];
+
+  if (regulator) {
+    params.push(regulator);
+    conditions.push(`regulator = $${params.length}`);
+  } else {
+    params.push(SEARCHABLE_REGULATOR_CODES);
+    conditions.push(`regulator = ANY($${params.length})`);
+  }
+
+  if (countryCode) {
+    params.push(countryCode);
+    conditions.push(`country_code = $${params.length}`);
+  }
+
+  if (year) {
+    const yearNum = Number.parseInt(year, 10);
+    if (!Number.isNaN(yearNum)) {
+      params.push(yearNum);
+      conditions.push(`year_issued = $${params.length}`);
+    }
+  }
+
+  const filterWhereClause =
+    conditions.length > 0 ? `WHERE ${conditions.join(' AND ')}` : '';
+  const wholeFirmQueryCondition = firmBoundaryCondition(
+    'firm_norm.normalized_name',
+    '$2',
+  );
+  const tokenBoundaryMatchCount = firmTokenBoundaryCondition(
+    'firm_norm.normalized_name',
+    '$3',
+  );
+
+  const rows = await sql.unsafe<
+    Array<{
+      firm_individual: string | null;
+      candidate_tier: number;
+    }>
+  >(
+    `
+      WITH ${SEARCHABLE_ENFORCEMENT_CTE},
+      candidates AS (
+        SELECT
+          firm_individual,
+          CASE
+            WHEN $1 <> '' AND firm_norm.normalized_name = $1 THEN 5
+            WHEN $2 <> '' AND firm_legal.legal_stripped_name = $2 THEN 5
+            WHEN $2 <> '' AND firm_norm.normalized_name = $2 THEN 4
+            WHEN $2 <> '' AND firm_norm.normalized_name LIKE $2 || ' %' THEN 3
+            WHEN ${wholeFirmQueryCondition} THEN 2
+            WHEN ${tokenBoundaryMatchCount} > 0 THEN 1
+            ELSE 0
+          END AS candidate_tier
+        FROM searchable_enforcement
+        ${FIRM_NORMALIZATION_JOIN}
+        ${filterWhereClause}
+      )
+      SELECT DISTINCT ON (firm_individual)
+        firm_individual,
+        candidate_tier
+      FROM candidates
+      WHERE candidate_tier > 0
+      ORDER BY firm_individual, candidate_tier DESC
+      LIMIT 30
+    `,
+    params,
+  );
+
+  const candidateCount = rows.length;
+  const bestTier = rows.reduce(
+    (highest, row) => Math.max(highest, Number(row.candidate_tier ?? 0)),
+    0,
+  );
+  const strong =
+    bestTier >= 3 ||
+    (bestTier >= 2 && candidateCount <= 20) ||
+    (bestTier === 1 && candidateCount <= 10);
+
+  return { strong, candidateCount, bestTier };
 }
 
 function buildEmptySearchResponse({
@@ -342,14 +612,28 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
           totalCount: 0,
           latencyMs: Date.now() - startedAt,
           lowSignal: true,
+          queryMode: 'theme',
+          strongFirmCandidate: false,
+          fuzzySuppressedByFirmCandidate: false,
         }),
       );
       return res.status(200).json(payload);
     }
 
-    const shouldAttemptFuzzyCorrection = prepared.meaningfulTerms.some(
-      (term) => term.length >= 4,
-    );
+    const firmCandidateSignal = await fetchStrongFirmCandidateSignal({
+      regulator,
+      countryCode: normalizedCountryCode,
+      year,
+      prepared,
+    });
+    const queryMode = determineSearchQueryMode(prepared, firmCandidateSignal);
+    const fuzzySuppressedByFirmCandidate =
+      prepared.isShortFirmLikeQuery &&
+      firmCandidateSignal.strong &&
+      prepared.meaningfulTerms.some((term) => term.length >= 4);
+    const shouldAttemptFuzzyCorrection =
+      !fuzzySuppressedByFirmCandidate &&
+      prepared.meaningfulTerms.some((term) => term.length >= 4);
     const fuzzyCandidatePhrases = shouldAttemptFuzzyCorrection
       ? await fetchFuzzyCandidatePhrases({
           regulator,
@@ -371,7 +655,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       : null;
 
     const conditions: string[] = [];
-    const params: Array<string | number | readonly string[] | null> = [
+    const params: Array<string | number | boolean | readonly string[] | null> = [
       searchQuery,
       prepared.phrasePattern,
       prepared.searchPatterns,
@@ -387,13 +671,17 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       fuzzyPrepared?.firmIntentTerms ?? [],
       prepared.meaningfulTerms,
       fuzzyPrepared?.meaningfulTerms ?? [],
+      prepared.firmIntentQuery,
+      prepared.firmIntentQueryWithoutLegalSuffix,
+      queryMode === 'firm_lookup',
+      prepared.isShortFirmLikeQuery,
     ];
 
     if (regulator) {
       params.push(regulator);
       conditions.push(`regulator = $${params.length}`);
     } else {
-      params.push(PUBLIC_REGULATOR_CODES);
+      params.push(SEARCHABLE_REGULATOR_CODES);
       conditions.push(`regulator = ANY($${params.length})`);
     }
 
@@ -430,7 +718,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       conditions.length > 0 ? `WHERE ${conditions.join(' AND ')}` : '';
 
     const rankedQuery = `
-      WITH filtered_results AS (
+      WITH ${SEARCHABLE_ENFORCEMENT_CTE},
+      filtered_results AS (
         SELECT
           id,
           regulator,
@@ -453,27 +742,23 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
           source_url,
           created_at,
           CASE
-            WHEN LOWER(COALESCE(firm_individual, '')) = LOWER($1) THEN 300
-            WHEN COALESCE(firm_individual, '') ILIKE $2 THEN 200
+            WHEN $16 <> '' AND firm_norm.normalized_name = $16 THEN 430
+            WHEN $17 <> '' AND firm_legal.legal_stripped_name = $17 THEN 410
+            WHEN $17 <> '' AND firm_norm.normalized_name = $17 THEN 390
+            WHEN $17 <> '' AND firm_norm.normalized_name LIKE $17 || ' %' THEN 300
+            WHEN ${firmBoundaryCondition('firm_norm.normalized_name', '$17')} THEN 250
+            WHEN LOWER(COALESCE(firm_individual, '')) = LOWER($1) THEN 230
+            WHEN ($19 = FALSE) AND COALESCE(firm_individual, '') ILIKE $2 THEN 180
             ELSE 0
           END AS firm_match_score,
-          (
-            SELECT COUNT(*)::int
-            FROM unnest($12::text[]) AS token
-            WHERE token <> ''
-              AND COALESCE(firm_individual, '') ILIKE '%' || token || '%'
-          ) AS firm_token_match_score,
+          ${firmTokenBoundaryCondition('firm_norm.normalized_name', '$12')} AS firm_token_match_score,
           CASE
-            WHEN $8 <> '' AND LOWER(COALESCE(firm_individual, '')) = LOWER($8) THEN 180
-            WHEN $9 <> '' AND COALESCE(firm_individual, '') ILIKE $9 THEN 120
+            WHEN $8 <> '' AND firm_norm.normalized_name = $8 THEN 180
+            WHEN $8 <> '' AND firm_legal.legal_stripped_name = $8 THEN 170
+            WHEN $9 <> '' AND ($19 = FALSE) AND COALESCE(firm_individual, '') ILIKE $9 THEN 120
             ELSE 0
           END AS fuzzy_firm_match_score,
-          (
-            SELECT COUNT(*)::int
-            FROM unnest($13::text[]) AS token
-            WHERE token <> ''
-              AND COALESCE(firm_individual, '') ILIKE '%' || token || '%'
-          ) AS fuzzy_firm_token_match_score,
+          ${firmTokenBoundaryCondition('firm_norm.normalized_name', '$13')} AS fuzzy_firm_token_match_score,
           CASE
             WHEN COALESCE(array_length($5::text[], 1), 0) > 0
               AND regulator = ANY($5::text[])
@@ -647,7 +932,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
               )
             ELSE NULL
           END AS highlighted_snippet
-        FROM all_regulatory_fines
+        FROM searchable_enforcement
+        ${FIRM_NORMALIZATION_JOIN}
         ${filterWhereClause}
       ),
       ranked_results AS (
@@ -810,30 +1096,27 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     ]);
 
     const countQuery = `
-      WITH filtered_results AS (
+      WITH ${SEARCHABLE_ENFORCEMENT_CTE},
+      filtered_results AS (
         SELECT
           CASE
-            WHEN LOWER(COALESCE(firm_individual, '')) = LOWER($1) THEN 300
-            WHEN COALESCE(firm_individual, '') ILIKE $2 THEN 200
+            WHEN $16 <> '' AND firm_norm.normalized_name = $16 THEN 430
+            WHEN $17 <> '' AND firm_legal.legal_stripped_name = $17 THEN 410
+            WHEN $17 <> '' AND firm_norm.normalized_name = $17 THEN 390
+            WHEN $17 <> '' AND firm_norm.normalized_name LIKE $17 || ' %' THEN 300
+            WHEN ${firmBoundaryCondition('firm_norm.normalized_name', '$17')} THEN 250
+            WHEN LOWER(COALESCE(firm_individual, '')) = LOWER($1) THEN 230
+            WHEN ($19 = FALSE) AND COALESCE(firm_individual, '') ILIKE $2 THEN 180
             ELSE 0
           END AS firm_match_score,
-          (
-            SELECT COUNT(*)::int
-            FROM unnest($12::text[]) AS token
-            WHERE token <> ''
-              AND COALESCE(firm_individual, '') ILIKE '%' || token || '%'
-          ) AS firm_token_match_score,
+          ${firmTokenBoundaryCondition('firm_norm.normalized_name', '$12')} AS firm_token_match_score,
           CASE
-            WHEN $8 <> '' AND LOWER(COALESCE(firm_individual, '')) = LOWER($8) THEN 180
-            WHEN $9 <> '' AND COALESCE(firm_individual, '') ILIKE $9 THEN 120
+            WHEN $8 <> '' AND firm_norm.normalized_name = $8 THEN 180
+            WHEN $8 <> '' AND firm_legal.legal_stripped_name = $8 THEN 170
+            WHEN $9 <> '' AND ($19 = FALSE) AND COALESCE(firm_individual, '') ILIKE $9 THEN 120
             ELSE 0
           END AS fuzzy_firm_match_score,
-          (
-            SELECT COUNT(*)::int
-            FROM unnest($13::text[]) AS token
-            WHERE token <> ''
-              AND COALESCE(firm_individual, '') ILIKE '%' || token || '%'
-          ) AS fuzzy_firm_token_match_score,
+          ${firmTokenBoundaryCondition('firm_norm.normalized_name', '$13')} AS fuzzy_firm_token_match_score,
           CASE
             WHEN COALESCE(array_length($5::text[], 1), 0) > 0
               AND regulator = ANY($5::text[])
@@ -988,7 +1271,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
               OR COALESCE(regulator, '') ILIKE pattern
               OR COALESCE(regulator_full_name, '') ILIKE pattern
           ) AS fuzzy_token_match_score
-        FROM all_regulatory_fines
+        FROM searchable_enforcement
+        ${FIRM_NORMALIZATION_JOIN}
         ${filterWhereClause}
       )
       SELECT COUNT(*)::int AS count
@@ -1094,6 +1378,12 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         searchMethod: 'hybrid',
         indexType: 'full-text + ilike fallback',
         language: 'english',
+        queryMode,
+        firmCandidate: {
+          strong: firmCandidateSignal.strong,
+          candidateCount: firmCandidateSignal.candidateCount,
+          bestTier: firmCandidateSignal.bestTier,
+        },
         correction: fuzzyResolution.changed
           ? {
               correctedQuery: fuzzyResolution.correctedQuery,
@@ -1105,9 +1395,10 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
           breachCategoryFallback: true,
           lowSignalGuard: true,
           fuzzyTermCorrection: fuzzyResolution.changed,
+          fuzzySuppressedByFirmCandidate,
         },
         weights: {
-          firm: 'exact / phrase firm matches',
+          firm: 'exact / normalized / whole-word firm matches',
           fullText: 'search_vector full-text ranking',
           fallback: 'phrase and token fallback matching',
           fuzzy: 'typo-tolerant token correction with lower ranking weight',
@@ -1128,6 +1419,9 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         totalCount,
         latencyMs: Date.now() - startedAt,
         lowSignal: false,
+        queryMode,
+        strongFirmCandidate: firmCandidateSignal.strong,
+        fuzzySuppressedByFirmCandidate,
       }),
     );
 

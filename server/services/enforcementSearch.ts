@@ -124,6 +124,60 @@ const GENERIC_THEME_SEARCH_TOKENS = new Set([
   'terrorist',
 ]);
 
+const LEGAL_ENTITY_SUFFIX_TOKENS = new Set([
+  'ag',
+  'bv',
+  'co',
+  'company',
+  'corp',
+  'corporation',
+  'dac',
+  'gmbh',
+  'inc',
+  'incorporated',
+  'limited',
+  'llc',
+  'llp',
+  'ltd',
+  'nv',
+  'plc',
+  'pty',
+  'sa',
+  'sarl',
+  'se',
+  'sicav',
+  'spa',
+  'sro',
+  'uab',
+]);
+
+const BROAD_SINGLE_TOKEN_FIRM_TERMS = new Set([
+  'asset',
+  'assets',
+  'bank',
+  'capital',
+  'finance',
+  'financial',
+  'fund',
+  'funds',
+  'global',
+  'group',
+  'holding',
+  'holdings',
+  'insurance',
+  'international',
+  'investment',
+  'investments',
+  'management',
+  'market',
+  'markets',
+  'payment',
+  'payments',
+  'securities',
+  'services',
+  'trust',
+]);
+
 const BASE_FUZZY_SEARCH_PHRASES = unique([
   ...PUBLIC_REGULATOR_NAV_ITEMS.flatMap((coverage) => [
     coverage.code,
@@ -160,6 +214,9 @@ export interface PreparedEnforcementSearch {
   searchTerms: string[];
   meaningfulTerms: string[];
   firmIntentTerms: string[];
+  firmIntentQuery: string;
+  firmIntentQueryWithoutLegalSuffix: string;
+  isShortFirmLikeQuery: boolean;
   minimumTokenMatches: number;
   regulatorHints: string[];
   countryHints: string[];
@@ -261,6 +318,10 @@ function deriveFirmIntentTerms(tokens: string[]) {
       return false;
     }
 
+    if (LEGAL_ENTITY_SUFFIX_TOKENS.has(token)) {
+      return false;
+    }
+
     if (REGULATOR_CODE_TO_MATCH.has(token)) {
       return false;
     }
@@ -271,6 +332,44 @@ function deriveFirmIntentTerms(tokens: string[]) {
 
     return true;
   });
+}
+
+function stripTrailingLegalSuffixTerms(tokens: string[]) {
+  const stripped = [...tokens];
+
+  while (
+    stripped.length > 0 &&
+    LEGAL_ENTITY_SUFFIX_TOKENS.has(stripped[stripped.length - 1])
+  ) {
+    stripped.pop();
+  }
+
+  return stripped;
+}
+
+function isShortFirmLikeQuery({
+  meaningfulTerms,
+  firmIntentTerms,
+}: {
+  meaningfulTerms: string[];
+  firmIntentTerms: string[];
+}) {
+  if (
+    meaningfulTerms.length === 0 ||
+    meaningfulTerms.length > 2 ||
+    firmIntentTerms.length === 0
+  ) {
+    return false;
+  }
+
+  if (
+    firmIntentTerms.length === 1 &&
+    BROAD_SINGLE_TOKEN_FIRM_TERMS.has(firmIntentTerms[0])
+  ) {
+    return false;
+  }
+
+  return true;
 }
 
 function expandThemePhrases(tokens: string[]) {
@@ -701,6 +800,10 @@ export function prepareEnforcementSearch(query: string): PreparedEnforcementSear
   const minimumTokenMatches =
     meaningfulTokens.length >= 3 ? 2 : meaningfulTokens.length >= 1 ? 1 : 0;
   const firmIntentTerms = deriveFirmIntentTerms(meaningfulTokens);
+  const firmIntentQuery = firmIntentTerms.join(' ').trim();
+  const firmIntentQueryWithoutLegalSuffix =
+    stripTrailingLegalSuffixTerms(firmIntentTerms).join(' ').trim() ||
+    firmIntentQuery;
   const regulatorHints = unique(
     rawTokens
       .map((token) => REGULATOR_CODE_TO_MATCH.get(token))
@@ -729,6 +832,12 @@ export function prepareEnforcementSearch(query: string): PreparedEnforcementSear
     searchTerms: unique([...rawTokens, ...expandedTerms, ...themePhrases]),
     meaningfulTerms: meaningfulTokens,
     firmIntentTerms,
+    firmIntentQuery,
+    firmIntentQueryWithoutLegalSuffix,
+    isShortFirmLikeQuery: isShortFirmLikeQuery({
+      meaningfulTerms: meaningfulTokens,
+      firmIntentTerms,
+    }),
     minimumTokenMatches,
     regulatorHints,
     countryHints,
