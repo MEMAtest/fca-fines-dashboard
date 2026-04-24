@@ -20,20 +20,11 @@
 .site-header__logo {
   display: flex;
   align-items: center;
-  gap: 0.5rem;
-  font-size: 1.125rem;
-  font-weight: 600;
-  color: #1F2937;
   text-decoration: none;
 }
 
-.site-header__logo-img {
-  height: 32px;
-  width: auto;
-}
-
 .site-header__logo:hover {
-  color: #0d9488;
+  opacity: 0.85;
 }
 
 /* Desktop nav */

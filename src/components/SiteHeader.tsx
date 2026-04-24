@@ -7,6 +7,7 @@ import {
   type RegulatorShellNavItem,
 } from "../data/regulatorShellNav.js";
 import RegulatorMark from "./RegulatorMark.js";
+import { LogoLockup, BRAND } from "./RegActionsLogo.js";
 import "../styles/siteheader.css";
 
 const NAV_LINKS = [
@@ -197,8 +198,14 @@ export function SiteHeader() {
     <header className="site-header">
       <div className="site-header__inner">
         <Link to="/" className="site-header__logo">
-          <img src="/regactions-mark.svg" alt="" className="site-header__logo-img" />
-          RegActions
+          <LogoLockup
+            markSize={32}
+            wordSize={19}
+            wordWeight={600}
+            color={BRAND.navy}
+            accent={BRAND.teal}
+            gap={10}
+          />
         </Link>
 
         {/* Desktop nav */}

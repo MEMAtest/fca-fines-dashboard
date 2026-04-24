@@ -1,7 +1,10 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32">
-  <rect width="32" height="32" rx="6" fill="#0891b2"/>
-  <rect x="6" y="7" width="14" height="6" rx="1.5" fill="white" transform="rotate(-45 13 10)"/>
-  <rect x="13" y="13" width="3" height="12" rx="1" fill="white" transform="rotate(-45 14.5 19)"/>
-  <rect x="17" y="23" width="10" height="4" rx="1" fill="white"/>
-  <rect x="19" y="21" width="6" height="2" rx="0.5" fill="white"/>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48">
+  <!-- Dark navy rounded square -->
+  <rect width="48" height="48" rx="10" fill="#0B1F2A"/>
+  <!-- Meridian B globe mark — thicker strokes for 16px readability -->
+  <circle cx="24" cy="24" r="14" stroke="#F7F9FA" stroke-width="3" fill="none"/>
+  <ellipse cx="24" cy="24" rx="5.4" ry="14" stroke="#F7F9FA" stroke-width="3" fill="none"/>
+  <path d="M10 24h28" stroke="#F7F9FA" stroke-width="3" stroke-linecap="round"/>
+  <circle cx="24" cy="18.2" r="2.5" fill="#19C9E6"/>
+  <circle cx="24" cy="18.2" r="5" stroke="#19C9E6" stroke-width="0.8" opacity="0.35" fill="none"/>
 </svg>

@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" fill="none">
+  <!-- Meridian B — Offset Marker + Halo -->
+  <circle cx="24" cy="24" r="18" stroke="#0B1F2A" stroke-width="2.2"/>
+  <ellipse cx="24" cy="24" rx="7" ry="18" stroke="#0B1F2A" stroke-width="2.2"/>
+  <path d="M6 24h36" stroke="#0B1F2A" stroke-width="2.2" stroke-linecap="round"/>
+  <circle cx="24" cy="16.5" r="3.2" fill="#0FA77D"/>
+  <circle cx="24" cy="16.5" r="6.5" stroke="#0FA77D" stroke-width="1" opacity="0.35"/>
+</svg>
