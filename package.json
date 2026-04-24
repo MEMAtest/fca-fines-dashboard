@@ -23,6 +23,7 @@
     "search:analytics:prune": "npx tsx scripts/pruneSearchAnalytics.ts",
     "uk-enforcement:migrate": "npx tsx scripts/run-uk-enforcement-migration.ts",
     "scrape:uk-enforcement": "node --import tsx/esm scripts/scraper/scrapeUkEnforcement.ts --",
+    "check:uk-enforcement-health": "node --import tsx/esm scripts/scraper/checkUkEnforcementHealth.ts --",
     "test:e2e:headed": "playwright test --headed",
     "test:e2e:debug": "playwright test --debug",
     "test:e2e:report": "playwright show-report",

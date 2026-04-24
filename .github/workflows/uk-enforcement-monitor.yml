@@ -1,0 +1,80 @@
+name: UK Enforcement Monitor
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "20 6 * * 1,4" # 06:20 UTC on Monday and Thursday
+
+jobs:
+  scrape-and-check:
+    name: Scrape and check UK enforcement
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    concurrency:
+      group: uk-enforcement-monitor
+      cancel-in-progress: false
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 1
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Verify environment configuration
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+        run: |
+          if [ -z "$DATABASE_URL" ]; then
+            echo "DATABASE_URL is not set."
+            exit 1
+          fi
+          echo "Environment validation passed for UK enforcement."
+
+      - name: Run UK enforcement scraper
+        id: scraper
+        continue-on-error: true
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          TS_NODE_PROJECT: tsconfig.json
+        run: npm run scrape:uk-enforcement
+
+      - name: Run UK enforcement health check
+        id: health
+        if: always()
+        continue-on-error: true
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+        run: |
+          npm run check:uk-enforcement-health -- --json > /tmp/uk-enforcement-health.json
+          cat /tmp/uk-enforcement-health.json
+
+      - name: Upload UK enforcement health summary
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: uk-enforcement-health
+          path: /tmp/uk-enforcement-health.json
+          if-no-files-found: ignore
+
+      - name: Fail on UK enforcement monitor errors
+        if: always()
+        run: |
+          if [ "${{ steps.scraper.outcome }}" != "success" ]; then
+            echo "UK enforcement scraper failed."
+            exit 1
+          fi
+
+          if [ "${{ steps.health.outcome }}" != "success" ]; then
+            echo "UK enforcement health check failed."
+            exit 1
+          fi
+
+          echo "UK enforcement monitor completed successfully."

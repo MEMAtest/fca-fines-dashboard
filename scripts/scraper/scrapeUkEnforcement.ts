@@ -8,7 +8,16 @@ import {
   limitRecords,
 } from "./lib/euFineHelpers.js";
 import { UK_ENFORCEMENT_SEED_RECORDS, type UKEnforcementSeedRecord } from "./data/ukEnforcementSeed.js";
-import { scrapeAllUKEnforcementSources } from "./ukEnforcementScrapers.js";
+import {
+  scrapeAllUKEnforcementSources,
+  scrapeCmaEnforcement,
+  scrapeFrcEnforcement,
+  scrapeIcoEnforcement,
+  scrapeOfsiEnforcement,
+  scrapePraEnforcement,
+  scrapePsrEnforcement,
+  scrapeTprEnforcement,
+} from "./ukEnforcementScrapers.js";
 
 interface DbUKEnforcementRecord extends UKEnforcementSeedRecord {
   id: string;
@@ -18,6 +27,33 @@ interface DbUKEnforcementRecord extends UKEnforcementSeedRecord {
   yearIssued: number;
   monthIssued: number;
 }
+
+interface UKEnforcementSourceLoader {
+  regulator: string;
+  load: () => Promise<UKEnforcementSeedRecord[]>;
+}
+
+interface SuccessfulSourceRun {
+  regulator: string;
+  records: UKEnforcementSeedRecord[];
+  runId: number | null;
+  startedAt: Date;
+}
+
+interface FailedSourceRun {
+  regulator: string;
+  error: Error;
+}
+
+const UK_ENFORCEMENT_SOURCE_LOADERS: UKEnforcementSourceLoader[] = [
+  { regulator: "PRA", load: scrapePraEnforcement },
+  { regulator: "PSR", load: scrapePsrEnforcement },
+  { regulator: "OFSI", load: scrapeOfsiEnforcement },
+  { regulator: "ICO", load: scrapeIcoEnforcement },
+  { regulator: "CMA", load: scrapeCmaEnforcement },
+  { regulator: "FRC", load: scrapeFrcEnforcement },
+  { regulator: "TPR", load: scrapeTprEnforcement },
+];
 
 function getCliFlags() {
   const limitArg = process.argv.find((arg) => arg.startsWith("--limit="));
@@ -85,6 +121,17 @@ async function upsertUKEnforcementRecords(
 ) {
   let inserted = 0;
   let updated = 0;
+  const byRegulator = new Map<string, { inserted: number; updated: number }>();
+
+  const recordOutcome = (regulator: string, insertedRow: boolean) => {
+    const current = byRegulator.get(regulator) ?? { inserted: 0, updated: 0 };
+    if (insertedRow) {
+      current.inserted += 1;
+    } else {
+      current.updated += 1;
+    }
+    byRegulator.set(regulator, current);
+  };
 
   if (replaceRegulators && records.length > 0) {
     const regulators = [...new Set(records.map((record) => record.regulator))];
@@ -173,26 +220,202 @@ async function upsertUKEnforcementRecords(
 
     if (result[0]?.inserted) {
       inserted += 1;
+      recordOutcome(record.regulator, true);
     } else {
       updated += 1;
+      recordOutcome(record.regulator, false);
     }
   }
 
-  return { inserted, updated };
+  return { inserted, updated, byRegulator };
+}
+
+function getWorkflowRunUrl() {
+  const server = process.env.GITHUB_SERVER_URL;
+  const repository = process.env.GITHUB_REPOSITORY;
+  const runId = process.env.GITHUB_RUN_ID;
+
+  return server && repository && runId
+    ? `${server}/${repository}/actions/runs/${runId}`
+    : null;
+}
+
+async function insertScraperRun(
+  sql: postgres.Sql,
+  regulator: string,
+  startedAt: Date,
+) {
+  try {
+    const result = await sql`
+      INSERT INTO scraper_runs (
+        regulator,
+        region,
+        started_at,
+        status,
+        source,
+        run_url
+      )
+      VALUES (
+        ${regulator},
+        ${"UK Enforcement"},
+        ${startedAt.toISOString()},
+        ${"running"},
+        ${process.env.GITHUB_ACTIONS ? "github-actions" : "manual"},
+        ${getWorkflowRunUrl()}
+      )
+      RETURNING id
+    `;
+
+    return Number(result[0]?.id ?? null) || null;
+  } catch {
+    console.warn(`Could not create scraper_runs row for ${regulator}`);
+    return null;
+  }
+}
+
+async function updateScraperRun(
+  sql: postgres.Sql,
+  runId: number | null,
+  {
+    status,
+    recordsPrepared,
+    inserted,
+    updated,
+    errorMessage,
+    startedAt,
+  }: {
+    status: "success" | "error";
+    recordsPrepared: number;
+    inserted: number;
+    updated: number;
+    errorMessage: string | null;
+    startedAt: Date;
+  },
+) {
+  if (!runId) return;
+
+  const finishedAt = new Date();
+
+  try {
+    await sql`
+      UPDATE scraper_runs
+      SET
+        finished_at = ${finishedAt.toISOString()},
+        status = ${status},
+        records_prepared = ${recordsPrepared},
+        records_inserted = ${inserted},
+        records_updated = ${updated},
+        errors = ${status === "error" ? 1 : 0},
+        error_message = ${errorMessage},
+        duration_ms = ${finishedAt.getTime() - startedAt.getTime()}
+      WHERE id = ${runId}
+    `;
+  } catch {
+    console.warn(`Could not update scraper_runs row ${runId}`);
+  }
+}
+
+async function scrapeSourceWithRunTracking(
+  sql: postgres.Sql,
+  source: UKEnforcementSourceLoader,
+): Promise<SuccessfulSourceRun> {
+  const startedAt = new Date();
+  const runId = await insertScraperRun(sql, source.regulator, startedAt);
+
+  try {
+    const records = await source.load();
+    if (records.length === 0) {
+      throw new Error(`${source.regulator} returned zero records`);
+    }
+
+    return {
+      regulator: source.regulator,
+      records,
+      runId,
+      startedAt,
+    };
+  } catch (error) {
+    const normalizedError =
+      error instanceof Error ? error : new Error(String(error));
+
+    await updateScraperRun(sql, runId, {
+      status: "error",
+      recordsPrepared: 0,
+      inserted: 0,
+      updated: 0,
+      errorMessage: normalizedError.message,
+      startedAt,
+    });
+
+    throw normalizedError;
+  }
+}
+
+async function scrapeUKEnforcementSourcesWithTracking(sql: postgres.Sql) {
+  const settled = await Promise.allSettled(
+    UK_ENFORCEMENT_SOURCE_LOADERS.map(async (source) => ({
+      source,
+      result: await scrapeSourceWithRunTracking(sql, source),
+    })),
+  );
+  const successful: SuccessfulSourceRun[] = [];
+  const failures: FailedSourceRun[] = [];
+
+  settled.forEach((outcome, index) => {
+    const source = UK_ENFORCEMENT_SOURCE_LOADERS[index];
+    if (outcome.status === "fulfilled") {
+      successful.push(outcome.value.result);
+      return;
+    }
+
+    failures.push({
+      regulator: source.regulator,
+      error:
+        outcome.reason instanceof Error
+          ? outcome.reason
+          : new Error(String(outcome.reason)),
+    });
+  });
+
+  return { successful, failures };
 }
 
 export async function main() {
   const flags = getCliFlags();
-  const sourceRecords = flags.seedOnly
-    ? UK_ENFORCEMENT_SEED_RECORDS
-    : await scrapeAllUKEnforcementSources();
-  const records = limitRecords(buildUKEnforcementRecords(sourceRecords), flags.limit);
+  let sql: postgres.Sql | null = null;
+  let successfulRuns: SuccessfulSourceRun[] = [];
+  let failures: FailedSourceRun[] = [];
+  let sourceRecords: UKEnforcementSeedRecord[];
 
   console.log(
     flags.seedOnly
       ? `UK Enforcement official-source seed loader`
       : `UK Enforcement official-source scraper`,
   );
+
+  if (flags.seedOnly) {
+    sourceRecords = UK_ENFORCEMENT_SEED_RECORDS;
+  } else if (flags.dryRun) {
+    sourceRecords = await scrapeAllUKEnforcementSources();
+  } else {
+    const databaseUrl = process.env.DATABASE_URL?.trim();
+    if (!databaseUrl) {
+      throw new Error("DATABASE_URL is required unless running with --dry-run");
+    }
+
+    sql = postgres(databaseUrl, {
+      ssl: databaseUrl.includes("sslmode=")
+        ? { rejectUnauthorized: false }
+        : undefined,
+    });
+
+    const scrapeResult = await scrapeUKEnforcementSourcesWithTracking(sql);
+    successfulRuns = scrapeResult.successful;
+    failures = scrapeResult.failures;
+    sourceRecords = successfulRuns.flatMap((run) => run.records);
+  }
+
+  const records = limitRecords(buildUKEnforcementRecords(sourceRecords), flags.limit);
   console.log(`Prepared ${records.length} records`);
 
   if (flags.dryRun) {
@@ -208,18 +431,20 @@ export async function main() {
     return;
   }
 
-  const databaseUrl = process.env.DATABASE_URL?.trim();
-  if (!databaseUrl) {
-    throw new Error("DATABASE_URL is required unless running with --dry-run");
-  }
-
-  const sql = postgres(databaseUrl, {
-    ssl: databaseUrl.includes("sslmode=")
-      ? { rejectUnauthorized: false }
-      : undefined,
-  });
-
   try {
+    if (!sql) {
+      const databaseUrl = process.env.DATABASE_URL?.trim();
+      if (!databaseUrl) {
+        throw new Error("DATABASE_URL is required unless running with --dry-run");
+      }
+
+      sql = postgres(databaseUrl, {
+        ssl: databaseUrl.includes("sslmode=")
+          ? { rejectUnauthorized: false }
+          : undefined,
+      });
+    }
+
     const result = await upsertUKEnforcementRecords(
       sql,
       records,
@@ -227,8 +452,36 @@ export async function main() {
     );
     console.log(`Inserted: ${result.inserted}`);
     console.log(`Updated: ${result.updated}`);
+
+    await Promise.all(
+      successfulRuns.map((run) => {
+        const outcome = result.byRegulator.get(run.regulator) ?? {
+          inserted: 0,
+          updated: 0,
+        };
+
+        return updateScraperRun(sql!, run.runId, {
+          status: "success",
+          recordsPrepared: run.records.length,
+          inserted: outcome.inserted,
+          updated: outcome.updated,
+          errorMessage: null,
+          startedAt: run.startedAt,
+        });
+      }),
+    );
+
+    if (failures.length > 0) {
+      throw new Error(
+        `UK enforcement source failures: ${failures
+          .map((failure) => `${failure.regulator}: ${failure.error.message}`)
+          .join("; ")}`,
+      );
+    }
   } finally {
-    await sql.end();
+    if (sql) {
+      await sql.end();
+    }
   }
 }
 

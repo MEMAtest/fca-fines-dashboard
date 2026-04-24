@@ -25,6 +25,7 @@ import {
   getUKEnforcementStats,
   listUKEnforcementActions,
 } from "./server/services/ukEnforcement.js";
+import { getUKEnforcementHealth } from "./server/services/ukEnforcementHealth.js";
 import searchHandler from "./api/search.js";
 
 const app = express();
@@ -222,6 +223,18 @@ app.get("/api/uk-enforcement/stats", async (req, res) => {
     res
       .status(500)
       .json({ success: false, error: "Failed to fetch UK enforcement stats" });
+  }
+});
+
+app.get("/api/uk-enforcement/health", async (_req, res) => {
+  try {
+    const data = await getUKEnforcementHealth();
+    res.json(data);
+  } catch (error) {
+    console.error("UK enforcement health endpoint error:", error);
+    res
+      .status(500)
+      .json({ success: false, error: "Failed to fetch UK enforcement health" });
   }
 });
 
