@@ -1,23 +1,30 @@
 {
-  "name": "FCA Fines Dashboard",
-  "short_name": "FCA Fines",
-  "description": "Track and analyze FCA enforcement actions, fines, and regulatory trends with comprehensive data visualization and insights.",
+  "name": "RegActions",
+  "short_name": "RegActions",
+  "description": "Track and analyze regulatory fines and enforcement actions from 45+ global financial regulators with comprehensive data visualization and insights.",
   "start_url": "/",
   "display": "standalone",
-  "background_color": "#0f172a",
-  "theme_color": "#3b82f6",
+  "background_color": "#0B1F2A",
+  "theme_color": "#0B1F2A",
   "orientation": "portrait-primary",
   "icons": [
     {
       "src": "/favicon.svg",
       "sizes": "any",
       "type": "image/svg+xml",
+      "purpose": "any"
+    },
+    {
+      "src": "/regactions-favicon.png",
+      "sizes": "192x192",
+      "type": "image/png",
       "purpose": "any maskable"
     },
     {
-      "src": "/mema-logo.png",
-      "sizes": "192x192",
-      "type": "image/png"
+      "src": "/regactions-icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
     }
   ],
   "categories": ["finance", "business", "productivity"],
