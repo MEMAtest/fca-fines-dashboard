@@ -119,6 +119,30 @@ const LOW_CONFIDENCE_LIVE_REGULATOR_SET = new Set([
 const CURATED_ARCHIVE_REGULATOR_SET = new Set(["DFSA", "CBUAE"]);
 const SPARSE_SOURCE_REGULATOR_SET = new Set(["JFSC"]);
 
+const DEFAULT_AUTOMATED_STALE_AFTER_DAYS = 180;
+const DEFAULT_FRAGILE_STALE_AFTER_DAYS = 365;
+const DEFAULT_SPARSE_STALE_AFTER_DAYS = 540;
+const DEFAULT_CURATED_ARCHIVE_STALE_AFTER_DAYS = 365;
+
+const REGULATOR_STALE_AFTER_DAYS: Partial<Record<string, number>> = {
+  FCA: 180,
+  SEC: 120,
+  FINRA: 180,
+  FINCEN: 180,
+  OCC: 180,
+  ASIC: 180,
+  MAS: 180,
+  BaFin: 180,
+  AMF: 365,
+  CBI: 365,
+  HKMA: 365,
+  OSC: 365,
+  IVASS: 760,
+  DFSA: 365,
+  CBUAE: 365,
+  JFSC: 540,
+};
+
 const EUROPE_EEA_PHASE_CODE_MAP = {
   1: ["CONSOB", "BDI", "FINMA", "ACPR", "CSSF", "FSMA", "FMAAT"],
   2: ["CNBCZ", "CMVM", "BDP", "CYSEC", "FISE", "FTDK", "FINFSA", "FTNO"],
@@ -1554,22 +1578,22 @@ const REGULATOR_COVERAGE_SEED: Record<string, RegulatorCoverageSeed> = {
     sourceType: "regulator",
     scrapeMode: "detail_pages",
     priorityTier: 2,
-    stage: "live",
-    blogEnabled: true,
+    stage: "pipeline",
+    blogEnabled: false,
     flag: "🇸🇦",
     navOrder: 34,
     overviewPath: "/regulators/cmasa",
     years: "2023-2024",
     count: 3,
-    dataQuality: "100%",
-    note: "Saudi Arabia regulator - test data",
+    dataQuality: "Pipeline",
+    note: "Official source identified, but live scraping is not implemented yet. Keep out of public live coverage until the real loader is stable end to end.",
     earliestYear: 2023,
     latestYear: 2024,
     nativeCurrency: "SAR",
     defaultCurrency: "GBP",
     coverageStatus: "emerging",
     maturity: "limited",
-    dashboardEnabled: true,
+    dashboardEnabled: false,
     officialSources: [
       {
         label: "Saudi CMA enforcement",
@@ -2143,13 +2167,13 @@ const REGULATOR_COVERAGE_SEED: Record<string, RegulatorCoverageSeed> = {
     flag: "🇲🇹",
     navOrder: 50,
     overviewPath: "/regulators/mfsa",
-    years: "2007-2024",
+    years: "2007-2026",
     count: 52,
     dataQuality: "Tested browser archive loader",
     note:
       "Live MFSA browser-cleared enforcement loader tested against the official archive table and current publications. Feed runs in the fragile lane because the public pages sit behind a JavaScript challenge and rely on browser clearance before extraction.",
     earliestYear: 2007,
-    latestYear: 2024,
+    latestYear: 2026,
     nativeCurrency: "EUR",
     defaultCurrency: "EUR",
     coverageStatus: "emerging",
@@ -2606,7 +2630,15 @@ function buildFeedContract(
   const cadence = LOW_CONFIDENCE_LIVE_REGULATOR_SET.has(code)
     ? "fragile"
     : "daily";
-  const staleAfterDays = cadence === "fragile" ? 10 : 3;
+  const staleAfterDays =
+    REGULATOR_STALE_AFTER_DAYS[code] ??
+    (SPARSE_SOURCE_REGULATOR_SET.has(code)
+      ? DEFAULT_SPARSE_STALE_AFTER_DAYS
+      : CURATED_ARCHIVE_REGULATOR_SET.has(code)
+        ? DEFAULT_CURATED_ARCHIVE_STALE_AFTER_DAYS
+        : cadence === "fragile"
+          ? DEFAULT_FRAGILE_STALE_AFTER_DAYS
+          : DEFAULT_AUTOMATED_STALE_AFTER_DAYS);
 
   if (SPARSE_SOURCE_REGULATOR_SET.has(code)) {
     return {

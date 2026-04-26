@@ -53,7 +53,7 @@ jobs:
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
         run: |
-          npm run check:uk-enforcement-health -- --json > /tmp/uk-enforcement-health.json
+          npm run --silent check:uk-enforcement-health -- --json > /tmp/uk-enforcement-health.json
           cat /tmp/uk-enforcement-health.json
 
       - name: Upload UK enforcement health summary

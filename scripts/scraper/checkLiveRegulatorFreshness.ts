@@ -25,7 +25,9 @@ export async function loadLiveRegulatorStats() {
         regulator,
         COUNT(*)::int AS "recordCount",
         MIN(date_issued)::text AS "earliestRecordDate",
-        MAX(date_issued)::text AS "latestRecordDate"
+        MAX(date_issued)::text AS "latestRecordDate",
+        COUNT(*) FILTER (WHERE date_issued > CURRENT_DATE + INTERVAL '30 days')::int AS "futureRecordCount",
+        MAX(date_issued) FILTER (WHERE date_issued > CURRENT_DATE + INTERVAL '30 days')::text AS "latestFutureRecordDate"
       FROM all_regulatory_fines
       GROUP BY regulator
     `;
@@ -38,6 +40,10 @@ export async function loadLiveRegulatorStats() {
         : null,
       latestRecordDate: row.latestRecordDate
         ? String(row.latestRecordDate)
+        : null,
+      futureRecordCount: Number(row.futureRecordCount ?? 0),
+      latestFutureRecordDate: row.latestFutureRecordDate
+        ? String(row.latestFutureRecordDate)
         : null,
     }));
   } finally {
@@ -78,7 +84,7 @@ function printHumanReport(
           : "MISSING";
 
     console.log(
-      `${statusIcon} ${result.regulator} | cadence=${result.cadence} | confidence=${result.confidence} | records=${result.recordCount} | latest=${result.latestRecordDate ?? "none"} | ageDays=${result.ageDays ?? "n/a"}`,
+      `${statusIcon} ${result.regulator} | severity=${result.severity} | cadence=${result.cadence} | confidence=${result.confidence} | records=${result.recordCount} | latest=${result.latestRecordDate ?? "none"} | ageDays=${result.ageDays ?? "n/a"}`,
     );
     console.log(`   ${result.message}`);
     console.log(`   Source contract: ${result.sourceContractSummary}`);
@@ -99,13 +105,13 @@ function writeGitHubSummary(
   const lines = [
     "## Live regulator freshness",
     "",
-    `Checked ${checked} live regulators; ${failing} require attention.`,
+    `Checked ${checked} live regulators; ${failing} require action.`,
     "",
-    "| Regulator | Status | Cadence | Records | Latest | Guidance |",
-    "| --- | --- | --- | ---: | --- | --- |",
+    "| Regulator | Status | Severity | Cadence | Records | Latest | Guidance |",
+    "| --- | --- | --- | --- | ---: | --- | --- |",
     ...results.map(
       (result) =>
-        `| ${result.regulator} | ${result.status.toUpperCase()} | ${result.cadence} | ${result.recordCount} | ${result.latestRecordDate ?? "none"} | ${result.operatorAction} |`,
+        `| ${result.regulator} | ${result.status.toUpperCase()} | ${result.severity} | ${result.cadence} | ${result.recordCount} | ${result.latestRecordDate ?? "none"} | ${result.operatorAction} |`,
     ),
     "",
   ];
@@ -125,7 +131,12 @@ export async function main() {
   const targetCodes = options.regulator
     ? [options.regulator]
     : getTargetLiveRegulatorCodes(options.cadence);
-  const failing = results.filter((result) => result.status !== "ok");
+  const watch = results.filter((result) => result.severity === "watch");
+  const actionRequired = results.filter(
+    (result) => result.severity === "action_required",
+  );
+  const critical = results.filter((result) => result.severity === "critical");
+  const failing = [...actionRequired, ...critical];
   const payload = {
     generatedAt: new Date().toISOString(),
     cadence: options.regulator ? "single" : options.cadence,
@@ -133,6 +144,9 @@ export async function main() {
     totals: {
       checked: results.length,
       failing: failing.length,
+      watch: watch.length,
+      actionRequired: actionRequired.length,
+      critical: critical.length,
     },
     results,
   };
@@ -143,7 +157,7 @@ export async function main() {
     printHumanReport(results);
     console.log("");
     console.log(
-      `Checked ${payload.totals.checked} live regulators; ${payload.totals.failing} require attention.`,
+      `Checked ${payload.totals.checked} live regulators; ${payload.totals.failing} require action; ${payload.totals.watch} are watch-only.`,
     );
   }
 

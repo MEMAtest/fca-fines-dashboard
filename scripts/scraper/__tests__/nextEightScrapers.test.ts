@@ -11,8 +11,10 @@ import { buildEcbRecords, parseEcbHtml } from "../scrapeEcb.js";
 import { parseFsraHtml } from "../scrapeFsra.js";
 import { buildGfscRecords, parseGfscHtml } from "../scrapeGfsc.js";
 import {
+  extractJfscDate,
   extractJfscRecordFromBody,
   buildJfscSourceEntries,
+  parseJfscPenaltyAmount,
   parseJfscFeed,
   parseJfscSitemap,
 } from "../scrapeJfsc.js";
@@ -187,6 +189,20 @@ describe("next-eight regulator coverage", () => {
     expect(items).toHaveLength(1);
     expect(record?.amount).toBe(86803.19);
     expect(record?.dateIssued).toBe("2025-07-31");
+  });
+
+  it("rejects JFSC placeholder future dates and scales penalty amounts", () => {
+    expect(
+      extractJfscDate(
+        "The JFSC imposed a civil financial penalty of £1.7 million.",
+        "9999-12-31",
+      ),
+    ).toBeNull();
+    expect(
+      parseJfscPenaltyAmount(
+        "The JFSC imposed a civil financial penalty of £1.7 million on the firm.",
+      ),
+    ).toBe(1_700_000);
   });
 
   it("parses JFSC sitemap entries", async () => {

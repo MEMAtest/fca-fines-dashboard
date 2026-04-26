@@ -109,7 +109,7 @@ jobs:
       - name: Verify environment configuration
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
-          SEC_USER_AGENT: ${{ secrets.SEC_USER_AGENT }}
+          SEC_USER_AGENT: ${{ secrets.SEC_USER_AGENT || vars.SEC_USER_AGENT || 'MEMA Consultants research@memaconsultants.com' }}
         run: |
           if [ -z "$DATABASE_URL" ]; then
             echo "DATABASE_URL is not set."
@@ -117,7 +117,7 @@ jobs:
           fi
 
           if [ "${{ matrix.code }}" = "SEC" ] && [ -z "$SEC_USER_AGENT" ]; then
-            echo "SEC_USER_AGENT is required for SEC scraping."
+            echo "SEC_USER_AGENT fallback is not available."
             exit 1
           fi
 
@@ -131,7 +131,7 @@ jobs:
           FCA_START_YEAR: ${{ vars.FCA_START_YEAR }}
           FCA_END_YEAR: ${{ vars.FCA_END_YEAR }}
           FCA_SINCE_DATE: ${{ vars.FCA_SINCE_DATE }}
-          SEC_USER_AGENT: ${{ secrets.SEC_USER_AGENT }}
+          SEC_USER_AGENT: ${{ secrets.SEC_USER_AGENT || vars.SEC_USER_AGENT || 'MEMA Consultants research@memaconsultants.com' }}
           SEC_SINCE_YEAR: ${{ vars.SEC_SINCE_YEAR }}
           SEBI_SINCE_YEAR: ${{ vars.SEBI_SINCE_YEAR }}
           SEBI_ENRICH_LIMIT: ${{ vars.SEBI_ENRICH_LIMIT }}
@@ -180,7 +180,7 @@ jobs:
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
         run: |
-          npm run check:live-freshness -- --cadence=daily --json > /tmp/daily-live-regulator-health.json
+          npm run --silent check:live-freshness -- --cadence=daily --json > /tmp/daily-live-regulator-health.json
           cat /tmp/daily-live-regulator-health.json
 
       - name: Upload daily live-regulator health summary
@@ -230,16 +230,31 @@ jobs:
           if [ -n "$FAILING_REGULATORS" ]; then
             echo "⚠️ Consecutive failures detected for: $FAILING_REGULATORS"
 
-            cat > /tmp/ses-alert.json <<SESEOF
-          {
-            "Source": "alerts@memaconsultants.com",
-            "Destination": { "ToAddresses": ["${ALERT_EMAIL}"] },
-            "Message": {
-              "Subject": { "Data": "SCRAPER ALERT: Consecutive failures for ${FAILING_REGULATORS}" },
-              "Body": { "Text": { "Data": "The following regulators have failed 2 consecutive scraper runs:\n\n${FAILING_REGULATORS}\n\nPlease investigate.\n\nWorkflow: ${WORKFLOW_URL}" } }
-            }
-          }
-          SESEOF
+            export FAILING_REGULATORS
+            node -e '
+              const fs = require("fs");
+              const failing = process.env.FAILING_REGULATORS || "unknown";
+              fs.writeFileSync("/tmp/ses-alert.json", JSON.stringify({
+                Source: "alerts@memaconsultants.com",
+                Destination: { ToAddresses: [process.env.ALERT_EMAIL || "ademola@memaconsultants.com"] },
+                Message: {
+                  Subject: { Data: `SCRAPER ALERT: Consecutive failures for ${failing}` },
+                  Body: {
+                    Text: {
+                      Data: [
+                        "The following regulators have failed 2 consecutive scraper runs:",
+                        "",
+                        failing,
+                        "",
+                        "Please investigate.",
+                        "",
+                        `Workflow: ${process.env.WORKFLOW_URL || "unknown"}`,
+                      ].join("\n"),
+                    },
+                  },
+                },
+              }, null, 2));
+            '
 
             aws ses send-email --cli-input-json file:///tmp/ses-alert.json --region eu-west-2 || echo "Failed to send alert email"
           else

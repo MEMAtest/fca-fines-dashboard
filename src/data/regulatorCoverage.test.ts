@@ -261,7 +261,7 @@ describe("regulatorCoverage", () => {
   });
 
   it("keeps global targets in pipeline until their datasets are genuinely live", () => {
-    ["FSCA", "CSRC", "FDIC", "FRB"].forEach(
+    ["CMASA", "FSCA", "CSRC", "FDIC", "FRB"].forEach(
       (code) => {
         expect(PUBLIC_REGULATOR_CODES).not.toContain(code);
         expect(getRegulatorCoverage(code)?.stage).toBe("pipeline");

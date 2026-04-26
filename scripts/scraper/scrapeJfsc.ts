@@ -6,8 +6,8 @@ import {
   buildEuFineRecord,
   fetchText,
   normalizeWhitespace,
-  parseLargestAmountFromText,
   parseMonthNameDate,
+  parseScaledAmount,
 } from './lib/euFineHelpers.js';
 import { runScraper } from './lib/runScraper.js';
 
@@ -64,25 +64,13 @@ export function extractJfscRecordFromBody(
     return null;
   }
 
-  const amount = parseLargestAmountFromText(bodyText, {
-    currency: 'GBP',
-    symbols: ['£'],
-    keywords: ['civil financial penalty', 'financial penalty', 'penalty'],
-  });
+  const amount = parseJfscPenaltyAmount(bodyText);
 
   if (amount === null) {
     return null;
   }
 
-  const dateMatch = bodyText.match(/On (\d{1,2} [A-Za-z]+ \d{4}),/i);
-  const fallbackDate = publishedAt ? new Date(publishedAt) : null;
-  const fallbackIsoDate =
-    fallbackDate && !Number.isNaN(fallbackDate.getTime())
-      ? fallbackDate.toISOString().split('T')[0]
-      : null;
-  const dateIssued =
-    (dateMatch ? parseMonthNameDate(dateMatch[1]) : null)
-    || fallbackIsoDate;
+  const dateIssued = extractJfscDate(bodyText, publishedAt);
 
   if (!dateIssued) {
     return null;
@@ -95,6 +83,66 @@ export function extractJfscRecordFromBody(
     summary: bodyText.slice(0, 400),
     detailUrl,
   };
+}
+
+export function parseJfscPenaltyAmount(bodyText: string) {
+  const sentences = normalizeWhitespace(bodyText)
+    .split(/(?<=[.!?])\s+/)
+    .filter((sentence) => /civil financial penalty|financial penalty/i.test(sentence));
+  const amounts = sentences.flatMap((sentence) =>
+    [...sentence.matchAll(/£\s*([\d,]+(?:\.\d+)?)(?:\s*(million|m))?/gi)]
+      .map((match) => parseScaledAmount(match[1], match[2]))
+      .filter((amount): amount is number => amount !== null),
+  );
+
+  return amounts.length > 0 ? Math.max(...amounts) : null;
+}
+
+export function extractJfscDate(bodyText: string, publishedAt?: string) {
+  const datePatterns = [
+    /\bOn\s+(\d{1,2}\s+[A-Za-z]+\s+\d{4}),/i,
+    /\b(\d{1,2}\s+[A-Za-z]+\s+\d{4})\b/i,
+  ];
+
+  for (const pattern of datePatterns) {
+    const match = bodyText.match(pattern);
+    const parsed = match?.[1] ? parseMonthNameDate(match[1]) : null;
+    if (isPlausibleJfscDate(parsed)) {
+      return parsed;
+    }
+  }
+
+  const fallback = normalizeJfscPublishedDate(publishedAt);
+  return isPlausibleJfscDate(fallback) ? fallback : null;
+}
+
+function normalizeJfscPublishedDate(value: string | null | undefined) {
+  if (!value) {
+    return null;
+  }
+
+  const parsed = new Date(value);
+  if (Number.isNaN(parsed.getTime())) {
+    return null;
+  }
+
+  return parsed.toISOString().split('T')[0];
+}
+
+function isPlausibleJfscDate(value: string | null | undefined) {
+  if (!value) {
+    return false;
+  }
+
+  const parsed = new Date(`${value}T00:00:00Z`);
+  if (Number.isNaN(parsed.getTime())) {
+    return false;
+  }
+
+  const earliest = new Date('2000-01-01T00:00:00Z');
+  const latest = new Date();
+  latest.setUTCDate(latest.getUTCDate() + 30);
+  return parsed >= earliest && parsed <= latest;
 }
 
 function isJfscNewsUrl(detailUrl: string) {
@@ -155,7 +203,13 @@ async function fetchJfscRecord(entry: JfscSourceEntry): Promise<JfscRecord | nul
   const $ = cheerio.load(html);
   const title = normalizeWhitespace($('h1').first().text()) || buildJfscFallbackTitle(detailUrl);
   const bodyText = normalizeWhitespace(($('main').text() || $('body').text() || '').trim());
-  return extractJfscRecordFromBody(title, detailUrl, bodyText, entry.publishedAt || undefined);
+  const pagePublishedAt =
+    normalizeWhitespace($('time[datetime]').first().attr('datetime') || '')
+    || normalizeWhitespace($('meta[property="article:published_time"]').attr('content') || '')
+    || normalizeWhitespace($('meta[name="date"]').attr('content') || '')
+    || entry.publishedAt
+    || undefined;
+  return extractJfscRecordFromBody(title, detailUrl, bodyText, pagePublishedAt);
 }
 
 export async function loadJfscLiveRecords() {

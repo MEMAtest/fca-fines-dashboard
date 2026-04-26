@@ -168,7 +168,7 @@ jobs:
         run: |
           echo "Checking live regulator freshness..."
           set +e
-          npm run check:live-freshness -- --json > /tmp/live-regulator-health.json
+          npm run --silent check:live-freshness -- --json > /tmp/live-regulator-health.json
           EXIT_CODE=$?
           set -e
 
@@ -251,24 +251,40 @@ jobs:
           if [ -n "$FAILURES" ]; then
             echo "❌ FAILURES DETECTED — sending alert email"
 
-            cat > /tmp/ses-email.json <<SESEOF
-          {
-            "Source": "alerts@memaconsultants.com",
-            "Destination": {
-              "ToAddresses": ["${ALERT_EMAIL}"]
-            },
-            "Message": {
-              "Subject": {
-                "Data": "ALERT: Infrastructure monitoring failures detected"
-              },
-              "Body": {
-                "Text": {
-                  "Data": "Daily Infrastructure Monitoring Report (External Reachability)\n\nThe following checks FAILED:\n${FAILURES}\n\nFull Results:\n1. ${PG_DETAIL}\n2. ${FCA_DETAIL}\n3. ${MEMA_DETAIL}\n4. ${HOR_DETAIL}\n5. ${FOS_DETAIL}\n6. ${PLAN_DETAIL}\n7. ${WRT_DETAIL}\n8. ${NAS_DETAIL}\n9. ${SCRAPE_DETAIL}\n\nNote: Deep checks (DB health, disk, backups, data quality) run on Hetzner at 07:15 UTC.\n\nTimestamp: $(date -u '+%Y-%m-%d %H:%M:%S UTC')\nWorkflow: ${WORKFLOW_URL}"
-                }
-              }
-            }
-          }
-          SESEOF
+            export FAILURES
+            node -e '
+              const fs = require("fs");
+              const body = [
+                "Daily Infrastructure Monitoring Report (External Reachability)",
+                "",
+                "The following checks FAILED:",
+                process.env.FAILURES || "- Unknown failure",
+                "",
+                "Full Results:",
+                `1. ${process.env.PG_DETAIL || "PostgreSQL status unavailable"}`,
+                `2. ${process.env.FCA_DETAIL || "FCA Fines API status unavailable"}`,
+                `3. ${process.env.MEMA_DETAIL || "MEMA Platform status unavailable"}`,
+                `4. ${process.env.HOR_DETAIL || "Horizon Scanner status unavailable"}`,
+                `5. ${process.env.FOS_DETAIL || "FOS Complaints status unavailable"}`,
+                `6. ${process.env.PLAN_DETAIL || "Plannetic status unavailable"}`,
+                `7. ${process.env.WRT_DETAIL || "Writing Assistant status unavailable"}`,
+                `8. ${process.env.NAS_DETAIL || "Nasara Connect status unavailable"}`,
+                `9. ${process.env.SCRAPE_DETAIL || "Scraper freshness status unavailable"}`,
+                "",
+                "Note: Deep checks (DB health, disk, backups, data quality) run on Hetzner at 07:15 UTC.",
+                "",
+                `Timestamp: ${new Date().toISOString()}`,
+                `Workflow: ${process.env.WORKFLOW_URL || "unknown"}`,
+              ].join("\n");
+              fs.writeFileSync("/tmp/ses-email.json", JSON.stringify({
+                Source: "alerts@memaconsultants.com",
+                Destination: { ToAddresses: [process.env.ALERT_EMAIL || "ademola@memaconsultants.com"] },
+                Message: {
+                  Subject: { Data: "ALERT: Infrastructure monitoring failures detected" },
+                  Body: { Text: { Data: body } },
+                },
+              }, null, 2));
+            '
 
             aws ses send-email --cli-input-json file:///tmp/ses-email.json --region eu-west-2
 

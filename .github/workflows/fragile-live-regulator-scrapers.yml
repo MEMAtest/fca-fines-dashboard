@@ -106,7 +106,7 @@ jobs:
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
         run: |
-          npm run check:live-freshness -- --cadence=fragile --json > /tmp/fragile-live-regulator-health.json
+          npm run --silent check:live-freshness -- --cadence=fragile --json > /tmp/fragile-live-regulator-health.json
           cat /tmp/fragile-live-regulator-health.json
 
       - name: Upload fragile live-regulator health summary
@@ -156,16 +156,31 @@ jobs:
           if [ -n "$FAILING_REGULATORS" ]; then
             echo "⚠️ Consecutive failures detected for: $FAILING_REGULATORS"
 
-            cat > /tmp/ses-alert.json <<SESEOF
-          {
-            "Source": "alerts@memaconsultants.com",
-            "Destination": { "ToAddresses": ["${ALERT_EMAIL}"] },
-            "Message": {
-              "Subject": { "Data": "SCRAPER ALERT: Consecutive failures for ${FAILING_REGULATORS}" },
-              "Body": { "Text": { "Data": "The following fragile regulators have failed 2 consecutive scraper runs:\n\n${FAILING_REGULATORS}\n\nPlease investigate.\n\nWorkflow: ${WORKFLOW_URL}" } }
-            }
-          }
-          SESEOF
+            export FAILING_REGULATORS
+            node -e '
+              const fs = require("fs");
+              const failing = process.env.FAILING_REGULATORS || "unknown";
+              fs.writeFileSync("/tmp/ses-alert.json", JSON.stringify({
+                Source: "alerts@memaconsultants.com",
+                Destination: { ToAddresses: [process.env.ALERT_EMAIL || "ademola@memaconsultants.com"] },
+                Message: {
+                  Subject: { Data: `SCRAPER ALERT: Consecutive failures for ${failing}` },
+                  Body: {
+                    Text: {
+                      Data: [
+                        "The following fragile regulators have failed 2 consecutive scraper runs:",
+                        "",
+                        failing,
+                        "",
+                        "Please investigate.",
+                        "",
+                        `Workflow: ${process.env.WORKFLOW_URL || "unknown"}`,
+                      ].join("\n"),
+                    },
+                  },
+                },
+              }, null, 2));
+            '
 
             aws ses send-email --cli-input-json file:///tmp/ses-alert.json --region eu-west-2 || echo "Failed to send alert email"
           else

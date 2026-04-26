@@ -12,6 +12,7 @@ import {
 
 interface RunnerOptions {
   name: string;
+  regulatorCode?: string;
   region?: string;
   liveLoader: () => Promise<DbReadyRecord[]>;
   testLoader?: () => Promise<DbReadyRecord[]>;
@@ -184,7 +185,7 @@ async function insertScraperRun(
   startedAt: Date,
 ): Promise<number | null> {
   try {
-    const regulatorCode = extractRegulatorCode(options.name);
+    const regulatorCode = options.regulatorCode ?? extractRegulatorCode(options.name);
     const region = options.region ?? "Unknown";
     const runUrl = process.env.GITHUB_SERVER_URL && process.env.GITHUB_REPOSITORY && process.env.GITHUB_RUN_ID
       ? `${process.env.GITHUB_SERVER_URL}/${process.env.GITHUB_REPOSITORY}/actions/runs/${process.env.GITHUB_RUN_ID}`
@@ -231,8 +232,75 @@ async function updateScraperRun(
   }
 }
 
-function extractRegulatorCode(scraperName: string): string {
-  // Extract regulator code from scraper name like "🇩🇪 BaFin Enforcement Actions Scraper"
+const REGULATOR_CODE_ALIASES: Array<[string, string]> = [
+  ["Banca d'Italia", "BDI"],
+  ["Czech National Bank", "CNBCZ"],
+  ["Finanstilsynet Denmark", "FTDK"],
+  ["Finanstilsynet Norway", "FTNO"],
+  ["Finansinspektionen", "FISE"],
+  ["FMA New Zealand", "FMANZ"],
+  ["FMA Austria", "FMAAT"],
+  ["ADGM FSRA", "FSRA"],
+  ["SC Malaysia", "SC"],
+  ["FSC Korea", "FSCKR"],
+];
+
+const KNOWN_REGULATOR_CODES = [
+  "AUSTRAC",
+  "BaFin",
+  "ACPR",
+  "ASIC",
+  "BMA",
+  "CBI",
+  "CBN",
+  "CBUAE",
+  "CIRO",
+  "CIMA",
+  "CMVM",
+  "CNBCZ",
+  "CNMV",
+  "CSSF",
+  "CVM",
+  "CYSEC",
+  "DFSA",
+  "ECB",
+  "FIN-FSA",
+  "FINCEN",
+  "FINMA",
+  "FINRA",
+  "FMAAT",
+  "FMANZ",
+  "FSCA",
+  "FSMA",
+  "FSRA",
+  "GFSC",
+  "HKMA",
+  "IVASS",
+  "JFSC",
+  "MAS",
+  "MFSA",
+  "OCC",
+  "OSC",
+  "SEC",
+  "SEBI",
+  "SESC",
+];
+
+export function extractRegulatorCode(scraperName: string): string {
+  for (const [alias, code] of REGULATOR_CODE_ALIASES) {
+    if (scraperName.toLowerCase().includes(alias.toLowerCase())) {
+      return code;
+    }
+  }
+
+  for (const code of KNOWN_REGULATOR_CODES) {
+    const escapedCode = code.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+    const pattern = new RegExp(`(^|[^A-Za-z0-9-])${escapedCode}([^A-Za-z0-9-]|$)`, "i");
+    if (pattern.test(scraperName)) {
+      return code === "FIN-FSA" ? "FINFSA" : code;
+    }
+  }
+
   const match = scraperName.match(/(?:[\p{Emoji}\s]+)?(\S+)/u);
   return match?.[1]?.replace(/[^A-Za-z-]/g, "") || "UNKNOWN";
 }

@@ -55,17 +55,19 @@ Cron recommendations:
 
 ## GitHub Actions automation
 
-The repository ships with two live-regulator workflows:
+The repository ships with three live-regulator monitoring workflows:
 
 - `.github/workflows/daily-fca-scraper.yml` for the stable daily live set at `05:45 UTC`
 - `.github/workflows/fragile-live-regulator-scrapers.yml` for lower-confidence live feeds on `Monday` and `Thursday` at `06:15 UTC`
+- `.github/workflows/scraper-assurance-agent.yml` every 3 hours for deterministic health checks plus failure-triggered DeepSeek triage
 
-Each batch is followed by `npm run check:live-freshness` so stale or missing live feeds fail visibly in Actions. To enable the workflows:
+Each batch is followed by `npm run check:live-freshness` so missing or action-required live feeds fail visibly in Actions. The assurance agent only calls DeepSeek when deterministic checks find an action-required or critical issue. To enable the workflows:
 
 1. In GitHub ➜ **Settings ➜ Secrets and variables ➜ Actions**, add the following secrets:
    - `DATABASE_URL` – database connection string (required).
    - `FCA_USER_AGENT` – optional override if FCA blocks the default UA.
-   - `SEC_USER_AGENT` – required identifying user agent for the SEC scraper.
+   - `SEC_USER_AGENT` – optional identifying user agent for the SEC scraper; the workflow has a default fallback.
+   - `DEEPSEEK_API_KEY` – optional; without it, the assurance agent still runs deterministic checks but skips AI triage.
 2. (Optional) add repository-level **variables** for `FCA_YEARS`, `FCA_START_YEAR`, `FCA_END_YEAR`, `FCA_SINCE_DATE`, `SEC_SINCE_YEAR`, `SEBI_SINCE_YEAR`, `SEBI_ENRICH_LIMIT`, `CNBCZ_SINCE_YEAR`, `CNBCZ_PDF_ENRICH_LIMIT`, or `CYSEC_PDF_ENRICH_LIMIT` to control crawl windows.
    - `SEBI_ENRICH_LIMIT` now defaults to the full current listing. Set it only if you want to cap local or CI enrichment work for faster diagnostics.
    - `CNBCZ_SINCE_YEAR` lets daily Czech runs stay recent-year only after an initial backfill.
@@ -78,10 +80,12 @@ Each batch is followed by `npm run check:live-freshness` so stale or missing liv
 
 ### Freshness statuses
 
-- `OK` – feed is inside its cadence window and above the minimum healthy record floor
-- `WARN` – feed is fresh, but live archive volume has dropped below the expected floor for that source contract
-- `STALE` – latest record is outside the allowed cadence window
+- `OK` – feed is inside its source-contract window and above the minimum healthy record floor
+- `WARN` – live archive volume has dropped below the expected floor for that source contract
+- `STALE` – latest record is outside the allowed source-contract window
 - `MISSING` – no live records were found for that regulator in `all_regulatory_fines`
+
+Freshness output also carries a `severity`: `ok`, `watch`, `action_required`, or `critical`. CI and alerting fail only on `action_required` and `critical`; sparse or curated sources can remain watch-only when old data is plausible.
 
 Lower-confidence live feeds have explicit source contracts:
 

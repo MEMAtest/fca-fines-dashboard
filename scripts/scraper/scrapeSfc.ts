@@ -1,362 +1,261 @@
-/**
- * SFC (Securities and Futures Commission - Hong Kong) Enforcement Scraper
- * Source: RSS feed of press releases
- * Focuses on enforcement signals: fines, bans, sanctions
- */
+import "dotenv/config";
+import * as cheerio from "cheerio";
+import { fileURLToPath } from "node:url";
+import {
+  buildEuFineRecord,
+  fetchText,
+  getCliFlags,
+  mapWithConcurrency,
+  normalizeWhitespace,
+  parseLargestAmountFromText,
+  parseMonthNameDate,
+  type DbReadyRecord,
+} from "./lib/euFineHelpers.js";
+import { runScraper } from "./lib/runScraper.js";
 
-import 'dotenv/config';
-import postgres from 'postgres';
-import { parseStringPromise } from 'xml2js';
-import crypto from 'crypto';
+const SFC_CONTENT_URL = "https://apps.sfc.hk/edistributionWeb/api/news/list-content";
+const SFC_DOC_URL = "https://apps.sfc.hk/edistributionWeb/gateway/EN/news-and-announcements/news/doc";
+const SFC_DEFAULT_START_YEAR = Number.parseInt(
+  process.env.SFC_START_YEAR || "2020",
+  10,
+);
+const SFC_DEFAULT_END_YEAR = Number.parseInt(
+  process.env.SFC_END_YEAR || String(new Date().getUTCFullYear()),
+  10,
+);
+const SFC_MAX_REF_PER_YEAR = Number.parseInt(
+  process.env.SFC_MAX_REF_PER_YEAR || "220",
+  10,
+);
+const SFC_CONCURRENCY = Number.parseInt(process.env.SFC_CONCURRENCY || "8", 10);
 
-const sql = postgres(process.env.DATABASE_URL?.trim() || '', {
-  ssl: process.env.DATABASE_URL?.includes('sslmode=')
-    ? { rejectUnauthorized: false }
-    : false
-});
-
-interface RssItem {
-  guid: string[];
-  link: string[];
-  title: string[];
-  pubDate: string[];
+export interface SfcPressRelease {
+  refNo: string;
+  title: string;
+  dateIssued: string;
+  body: string;
+  sourceUrl: string;
 }
 
-interface RssFeed {
-  rss: {
-    channel: [{
-      item: RssItem[];
-    }];
+const SFC_ENFORCEMENT_TITLE_REGEX =
+  /\b(fines?|fined|reprimands?|bans?|banned|suspends?|suspended|sanctions?|disciplinary|prohibits?|prohibited|penalt(?:y|ies)|prosecut(?:es|ed|ion))\b/i;
+
+const SFC_EXCLUDED_TITLE_REGEX =
+  /\b(appoints?|welcomes?|consults?|publishes?|launches?|seminar|conference|speech|survey|circular|statement on|annual report|hearing fixed)\b/i;
+
+function buildSfcContentUrl(refNo: string) {
+  return `${SFC_CONTENT_URL}?lang=EN&refNo=${encodeURIComponent(refNo)}`;
+}
+
+function buildSfcDocUrl(refNo: string) {
+  return `${SFC_DOC_URL}?refNo=${encodeURIComponent(refNo)}`;
+}
+
+function isLikelySfcEnforcementTitle(title: string) {
+  return SFC_ENFORCEMENT_TITLE_REGEX.test(title) && !SFC_EXCLUDED_TITLE_REGEX.test(title);
+}
+
+export function parseSfcPressReleaseHtml(
+  html: string,
+  refNo: string,
+): SfcPressRelease | null {
+  const $ = cheerio.load(html);
+  const title = normalizeWhitespace(
+    $("h1").first().text() || $("title").first().text(),
+  );
+  const metaDate = normalizeWhitespace($("meta[name='date']").attr("content") || "");
+  const visibleDate = normalizeWhitespace($("small").first().text());
+  const dateIssued =
+    parseSfcDate(metaDate) || parseSfcDate(visibleDate) || null;
+  const body = normalizeWhitespace(
+    $(".newsc").text() || $("#content").text() || $("body").text(),
+  );
+
+  if (!title || !dateIssued || !body || !isLikelySfcEnforcementTitle(title)) {
+    return null;
+  }
+
+  return {
+    refNo,
+    title,
+    dateIssued,
+    body,
+    sourceUrl: buildSfcContentUrl(refNo),
   };
 }
 
-function generateContentHash(regulator: string, firmIndividual: string, dateIssued: Date): string {
-  const data = `${regulator}|${firmIndividual}|${dateIssued.toISOString().split('T')[0]}`;
-  return crypto.createHash('sha256').update(data).digest('hex');
+function parseSfcDate(value: string) {
+  const normalized = normalizeWhitespace(value);
+  if (!normalized) {
+    return null;
+  }
+
+  const isoMatch = normalized.match(/^(\d{4})-(\d{2})-(\d{2})/);
+  if (isoMatch) {
+    return `${isoMatch[1]}-${isoMatch[2]}-${isoMatch[3]}`;
+  }
+
+  return parseMonthNameDate(normalized);
 }
 
-async function scrapeSfc() {
-  console.log('🇭🇰 SFC (Hong Kong) Enforcement Actions Scraper\n');
-  console.log('Target: Securities and Futures Commission - Hong Kong');
-  console.log('Source: Press releases API (historical + recent)\n');
+export function parseSfcAmount(title: string, body: string) {
+  return (
+    parseLargestAmountFromText(title, {
+      currency: "HKD",
+      symbols: ["HK$", "$"],
+      keywords: ["fine", "fines", "fined", "penalty", "penalties"],
+    }) ??
+    parseLargestAmountFromText(body.slice(0, 800), {
+      currency: "HKD",
+      symbols: ["HK$", "$"],
+      keywords: ["fine", "fines", "fined", "penalty", "penalties"],
+    })
+  );
+}
 
-  const actions: any[] = [];
-  const allItems: RssItem[] = [];
+export function extractSfcFirm(title: string) {
+  const cleaned = normalizeWhitespace(
+    title
+      .replace(/^SFC\s+/i, "")
+      .replace(/\s+(?:HK|US)?\$[\d,.]+\s*(?:million|billion|thousand|m|bn|k)?/gi, "")
+      .replace(/\s+for\s+.*$/i, "")
+      .replace(/\s+over\s+.*$/i, "")
+      .replace(/\s+after\s+.*$/i, "")
+      .replace(/\s+and\s+suspends?.*$/i, "")
+      .replace(/\s+and\s+bans?.*$/i, ""),
+  );
 
-  // Strategy 1: Fetch recent RSS feed
-  console.log('📄 Step 1: Fetching recent press releases from RSS feed...');
-  try {
-    const rssResponse = await fetch('https://www.sfc.hk/en/RSS-Feeds/Press-releases');
-    const rssText = await rssResponse.text();
-    const parsed: RssFeed = await parseStringPromise(rssText);
-    const rssItems = parsed.rss.channel[0].item;
-    allItems.push(...rssItems);
-    console.log(`   ✅ Found ${rssItems.length} recent press releases\n`);
-  } catch (error) {
-    console.error('   ⚠️  Failed to fetch RSS feed:', error);
-  }
-
-  // Strategy 2: Fetch historical data by year (2020-2026)
-  console.log('📄 Step 2: Fetching historical press releases (2020-2026)...');
-  const startYear = 2020;
-  const endYear = 2026;
-
-  for (let year = startYear; year <= endYear; year++) {
-    const yearShort = year.toString().slice(-2); // e.g., "20" for 2020
-    console.log(`   📅 Scanning year ${year}...`);
-
-    let found = 0;
-    let consecutive404 = 0;
-    const maxConsecutive404 = 10; // Stop after 10 consecutive 404s
-
-    // Try press releases 1-200 for each year
-    for (let num = 1; num <= 200; num++) {
-      const refNo = `${yearShort}PR${num}`;
-      const url = `https://apps.sfc.hk/edistributionWeb/gateway/EN/news-and-announcements/news/doc?refNo=${refNo}`;
-
-      try {
-        const response = await fetch(url, {
-          method: 'HEAD',
-          redirect: 'follow'
-        });
-
-        if (response.ok) {
-          // Found a valid press release
-          consecutive404 = 0;
-          found++;
-
-          // Create a minimal item structure for processing
-          const item: RssItem = {
-            guid: [refNo],
-            link: [url],
-            title: [`Press release ${refNo}`], // Will be fetched later if needed
-            pubDate: [new Date(year, 0, 1).toISOString()] // Placeholder date
-          };
-
-          // Check if already in allItems
-          const exists = allItems.some(existing => existing.guid[0] === refNo);
-          if (!exists) {
-            allItems.push(item);
-          }
-        } else if (response.status === 404) {
-          consecutive404++;
-          if (consecutive404 >= maxConsecutive404) {
-            break; // Stop scanning this year
-          }
-        }
-      } catch (error) {
-        // Network error or other issue, continue
-      }
-
-      // Small delay to avoid rate limiting
-      if (num % 10 === 0) {
-        await new Promise(resolve => setTimeout(resolve, 100));
-      }
-    }
-
-    console.log(`   ✅ Year ${year}: Found ${found} press releases`);
-  }
-
-  console.log(`\n📊 Total press releases found: ${allItems.length}\n`);
-
-  // Filter for enforcement-related items (fines, bans, sanctions, reprimands)
-  console.log('📄 Step 3: Filtering for enforcement-related press releases...');
-  const enforcementKeywords = [
-    'fine', 'fines', 'fined',
-    'ban', 'bans', 'banned',
-    'sanction', 'sanctions',
-    'reprimand', 'reprimands',
-    'penalty', 'penalties',
-    'disciplinary', 'discipline',
-    'prohibited', 'prohibition',
-    'suspend', 'suspended', 'suspension',
-    'prosecution', 'prosecuted'
+  const patterns = [
+    /^(?:reprimands?\s+and\s+fines?|fines?|reprimands?|bans?|suspends?|prohibits?|sanctions?)\s+(.+)$/i,
+    /^SFAT\s+(?:affirms?|upholds?|dismisses?)\s+.+?\s+(?:against|of|on)\s+(.+)$/i,
+    /^(.+?)\s+(?:fined|banned|reprimanded|suspended|prohibited)$/i,
   ];
 
-  const enforcementItems = allItems.filter(item => {
-    const title = item.title?.[0]?.toLowerCase() || '';
-    const refNo = String(item.guid?.[0] || '');
-
-    // Include if title contains enforcement keywords OR if it's a PR reference
-    // (we'll fetch full title later for historical items)
-    return enforcementKeywords.some(keyword => title.includes(keyword)) || /^\d{2}PR\d+$/.test(refNo);
-  });
-
-  console.log(`🎯 Filtered to ${enforcementItems.length} potential enforcement press releases\n`);
-
-  // Process each enforcement item
-  for (const item of enforcementItems) {
-    const title = String(item.title?.[0] || '').trim();
-    const link = String(item.link?.[0] || '');
-    const pubDate = new Date(String(item.pubDate?.[0] || new Date().toISOString()));
-    const refNo = String(item.guid?.[0] || '');
-
-    console.log(`📰 Processing: ${title}`);
-    console.log(`   Date: ${pubDate.toISOString().split('T')[0]}`);
-    console.log(`   Link: ${link}`);
-
-    // Extract fine amount from title if present
-    const fineMatch = title.match(/\$?([\d,]+(?:\.\d+)?)\s*million/i);
-    let fineAmount = null;
-
-    if (fineMatch) {
-      // Convert to numeric (in HKD millions)
-      const millions = parseFloat(fineMatch[1].replace(/,/g, ''));
-      fineAmount = millions * 1_000_000; // Convert to HKD
-      console.log(`   💰 Fine: HK$${millions}M`);
+  for (const pattern of patterns) {
+    const match = cleaned.match(pattern);
+    if (!match?.[1]) {
+      continue;
     }
 
-    // Extract firm/individual name from title
-    // CRITICAL FIX: Clean title BEFORE pattern matching to prevent "and fines" prefix artifacts
-    let firmIndividual = 'Unknown';
-
-    // Step 1: Pre-clean the title to remove common artifacts
-    const cleanedTitle = title
-      .replace(/\s*(and|&)\s+fines?/gi, '')
-      .replace(/\s*(and|&)\s+bans?/gi, '')
-      .replace(/\s*(and|&)\s+(?:reprimands?|suspends?|prohibits?)/gi, '')
-      .replace(/\s+US?\$[\d.,]+\s*(?:million|billion|thousand)?/gi, '')
-      .replace(/\s+HK\$[\d.,]+\s*(?:million|billion|thousand)?/gi, '')
-      .trim();
-
-    // Step 2: Apply extraction patterns to cleaned title
-    const patterns = [
-      // "SFC [action] [name] for..."
-      /SFC (?:bans?|fines?|reprimands?|suspends?|prohibits?) (.+?) (?:for|and)/i,
-      // "SFAT affirms [decision] against [name]"
-      /SFAT affirms .+? against (.+?)(?:\s*(?:for|and|$))/i,
-      // "SFAT [action] [name]"
-      /SFAT (?:affirms?|upholds?|dismisses?) .+? (?:of|against|on) (.+?)(?:\s*(?:for|and|\(|$))/i,
-      // "[Name] fined/banned..."
-      /^([A-Z][^-]+?)\s+(?:fined|banned|reprimanded|suspended)/i,
-      // "SFC and [name]"
-      /SFC and (.+?) (?:enter|reach|agree)/i,
-    ];
-
-    for (const pattern of patterns) {
-      const match = cleanedTitle.match(pattern);
-      if (match?.[1]) {
-        const candidate = match[1].trim();
-
-        // Validate: reject if still contains artifacts
-        if (
-          candidate.toLowerCase().includes(' and fines') ||
-          candidate.toLowerCase().includes(' and bans') ||
-          candidate.toLowerCase().includes(' and reprimand')
-        ) {
-          continue; // Try next pattern
-        }
-
-        firmIndividual = candidate;
-        break;
-      }
-    }
-
-    // Step 3: Final cleanup pass (belt-and-suspenders)
-    firmIndividual = firmIndividual
-      .replace(/^and fines?\s+/i, '')
-      .replace(/^and bans?\s+/i, '')
-      .replace(/^and (?:reprimands?|suspends?|prohibits?)\s+/i, '')
-      .replace(/\s+US?\$[\d.,]+\s*(?:million|billion|thousand)?/gi, '')
-      .replace(/\s+HK\$[\d.,]+\s*(?:million|billion|thousand)?/gi, '')
-      .trim();
-
-    // If still Unknown, try to extract first substantial phrase before common keywords
-    if (firmIndividual === 'Unknown') {
-      const fallbackMatch = cleanedTitle.match(/^([A-Z][^:;]+?)(?:\s*(?:-|:|;|fined|banned|reprimanded))/);
-      if (fallbackMatch?.[1] && fallbackMatch[1].length > 3 && fallbackMatch[1].length < 150) {
-        firmIndividual = fallbackMatch[1].trim();
-      }
-    }
-
-    // Determine breach type from title
-    let breachType = 'Other';
-    const titleLower = title.toLowerCase();
-    if (titleLower.includes('market misconduct') || titleLower.includes('market manipulation')) {
-      breachType = 'Market Misconduct';
-    } else if (titleLower.includes('insider') || titleLower.includes('inside information')) {
-      breachType = 'Insider Dealing';
-    } else if (titleLower.includes('aml') || titleLower.includes('anti-money laundering')) {
-      breachType = 'AML/CTF';
-    } else if (titleLower.includes('disclosure') || titleLower.includes('reporting')) {
-      breachType = 'Disclosure Failures';
-    } else if (titleLower.includes('misconduct')) {
-      breachType = 'Misconduct';
-    } else if (titleLower.includes('fraud')) {
-      breachType = 'Fraud';
-    }
-
-    // Prepare action for database
-    const contentHash = generateContentHash('SFC', firmIndividual, pubDate);
-
-    const action = {
-      content_hash: contentHash,
-      regulator: 'SFC',
-      regulator_full_name: 'Securities and Futures Commission',
-      country_code: 'HK',
-      country_name: 'Hong Kong',
-      firm_individual: firmIndividual,
-      firm_category: null, // Would need detail page scraping
-      amount: fineAmount,
-      currency: 'HKD',
-      amount_gbp: fineAmount ? fineAmount * 0.10 : null, // Approximate HKD to GBP
-      amount_eur: fineAmount ? fineAmount * 0.12 : null, // Approximate HKD to EUR
-      date_issued: pubDate,
-      year_issued: pubDate.getFullYear(),
-      month_issued: pubDate.getMonth() + 1,
-      breach_type: breachType,
-      breach_categories: [breachType],
-      summary: title,
-      final_notice_url: link,
-      source_url: link,
-      raw_payload: {
-        refNo,
-        originalTitle: title,
-        scrapedAt: new Date().toISOString()
-      }
-    };
-
-    actions.push(action);
-    console.log(`   ✅ Processed\n`);
-  }
-
-  // Insert into database
-  console.log(`\n💾 Inserting ${actions.length} records into database...`);
-
-  let inserted = 0;
-  let skipped = 0;
-
-  for (const action of actions) {
-    try {
-      await sql`
-        INSERT INTO eu_fines (
-          content_hash,
-          regulator,
-          regulator_full_name,
-          country_code,
-          country_name,
-          firm_individual,
-          firm_category,
-          amount,
-          currency,
-          amount_eur,
-          amount_gbp,
-          date_issued,
-          year_issued,
-          month_issued,
-          breach_type,
-          breach_categories,
-          summary,
-          final_notice_url,
-          source_url,
-          raw_payload
-        ) VALUES (
-          ${action.content_hash},
-          ${action.regulator},
-          ${action.regulator_full_name},
-          ${action.country_code},
-          ${action.country_name},
-          ${action.firm_individual},
-          ${action.firm_category},
-          ${action.amount},
-          ${action.currency},
-          ${action.amount_eur},
-          ${action.amount_gbp},
-          ${action.date_issued},
-          ${action.year_issued},
-          ${action.month_issued},
-          ${action.breach_type},
-          ${action.breach_categories},
-          ${action.summary},
-          ${action.final_notice_url},
-          ${action.source_url},
-          ${sql.json(action.raw_payload)}
-        )
-        ON CONFLICT (content_hash) DO NOTHING
-      `;
-      inserted++;
-      console.log(`   ✅ Inserted: ${action.firm_individual} (${action.date_issued.toISOString().split('T')[0]})`);
-    } catch (error: any) {
-      if (error.message?.includes('duplicate key') || error.message?.includes('content_hash')) {
-        skipped++;
-        console.log(`   ⏭️  Skipped (duplicate): ${action.firm_individual}`);
-      } else {
-        console.error(`   ❌ Error inserting ${action.firm_individual}:`, error);
-        console.error(`   Full error:`, JSON.stringify(error, null, 2));
-      }
+    const candidate = normalizeWhitespace(match[1])
+      .replace(/\s+\([^)]*\)\s*$/g, "")
+      .replace(/[.;,:]+$/g, "");
+    if (candidate && candidate.length <= 180) {
+      return candidate;
     }
   }
 
-  console.log(`\n✅ SFC scraper completed!`);
-  console.log(`   Inserted: ${inserted}`);
-  console.log(`   Skipped: ${skipped}`);
-  console.log(`   Total: ${actions.length}`);
-
-  // Close connection
-  await sql.end();
+  return cleaned.length <= 180 ? cleaned : "Unknown";
 }
 
-scrapeSfc().catch(error => {
-  console.error('❌ Scraper failed:', error);
-  process.exit(1);
-});
+function categorizeSfcRecord(text: string) {
+  const normalized = text.toLowerCase();
+  const categories: string[] = [];
+
+  if (/anti-money laundering|money laundering|aml|terrorist financing/.test(normalized)) {
+    categories.push("AML");
+  }
+  if (/market misconduct|market manipulation|insider|inside information/.test(normalized)) {
+    categories.push("MARKET_ABUSE");
+  }
+  if (/disclosure|research report|reporting/.test(normalized)) {
+    categories.push("DISCLOSURE");
+  }
+  if (/client asset|suitability|selling practice|fund management|asset management|margin lending/.test(normalized)) {
+    categories.push("CONDUCT");
+  }
+  if (/licen[cs]e|registration|suspend|ban|prohibit/.test(normalized)) {
+    categories.push("LICENSING");
+  }
+
+  return categories.length > 0 ? [...new Set(categories)] : ["SUPERVISORY_SANCTION"];
+}
+
+function buildSfcRecord(release: SfcPressRelease) {
+  const textCorpus = `${release.title} ${release.body}`;
+
+  return buildEuFineRecord({
+    regulator: "SFC",
+    regulatorFullName: "Securities and Futures Commission",
+    countryCode: "HK",
+    countryName: "Hong Kong",
+    firmIndividual: extractSfcFirm(release.title),
+    firmCategory: "Financial Entity",
+    amount: parseSfcAmount(release.title, release.body),
+    currency: "HKD",
+    dateIssued: release.dateIssued,
+    breachType: release.title,
+    breachCategories: categorizeSfcRecord(textCorpus),
+    summary: release.body.slice(0, 500) || release.title,
+    finalNoticeUrl: buildSfcDocUrl(release.refNo),
+    sourceUrl: release.sourceUrl,
+    dedupeKey: release.refNo,
+    rawPayload: release,
+  });
+}
+
+async function fetchSfcRelease(refNo: string) {
+  try {
+    const html = await fetchText(buildSfcContentUrl(refNo), {
+      timeout: 45000,
+      validateStatus: (status) => status >= 200 && status < 500,
+    });
+    return parseSfcPressReleaseHtml(html, refNo);
+  } catch {
+    return null;
+  }
+}
+
+function buildSfcRefNos(startYear: number, endYear: number, maxRefPerYear: number) {
+  const refNos: string[] = [];
+
+  for (let year = startYear; year <= endYear; year += 1) {
+    const yearShort = String(year).slice(-2);
+    for (let refIndex = 1; refIndex <= maxRefPerYear; refIndex += 1) {
+      refNos.push(`${yearShort}PR${refIndex}`);
+    }
+  }
+
+  return refNos;
+}
+
+export async function loadSfcLiveRecords(): Promise<DbReadyRecord[]> {
+  const flags = getCliFlags();
+  const refNos = buildSfcRefNos(
+    SFC_DEFAULT_START_YEAR,
+    SFC_DEFAULT_END_YEAR,
+    SFC_MAX_REF_PER_YEAR,
+  );
+  const releases = await mapWithConcurrency(
+    refNos,
+    Math.max(1, SFC_CONCURRENCY),
+    fetchSfcRelease,
+  );
+  const records = releases
+    .filter((release): release is SfcPressRelease => release !== null)
+    .map(buildSfcRecord)
+    .sort(
+      (left, right) =>
+        right.dateIssued.localeCompare(left.dateIssued) ||
+        left.firmIndividual.localeCompare(right.firmIndividual),
+    );
+
+  return flags.limit && flags.limit > 0 ? records.slice(0, flags.limit) : records;
+}
+
+export async function main() {
+  await runScraper({
+    name: "🇭🇰 SFC Enforcement Actions Scraper",
+    region: "APAC",
+    regulatorCode: "SFC",
+    liveLoader: loadSfcLiveRecords,
+    testLoader: loadSfcLiveRecords,
+  });
+}
+
+if (process.argv[1] && fileURLToPath(import.meta.url) === process.argv[1]) {
+  main().catch((error) => {
+    console.error("❌ SFC scraper failed:", error);
+    process.exit(1);
+  });
+}
