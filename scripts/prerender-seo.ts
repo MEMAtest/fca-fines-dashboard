@@ -627,7 +627,7 @@ async function buildPageMetas(): Promise<PageMeta[]> {
       publisher: {
         "@type": "Organization",
         name: SITE_NAME,
-        logo: { "@type": "ImageObject", url: `${BASE_URL}/mema-logo.png` },
+        logo: { "@type": "ImageObject", url: `${BASE_URL}/regactions-mark.png` },
       },
       mainEntityOfPage: {
         "@type": "WebPage",
@@ -701,7 +701,7 @@ async function buildPageMetas(): Promise<PageMeta[]> {
         publisher: {
           "@type": "Organization",
           name: SITE_NAME,
-          logo: { "@type": "ImageObject", url: `${BASE_URL}/mema-logo.png` },
+          logo: { "@type": "ImageObject", url: `${BASE_URL}/regactions-mark.png` },
         },
         mainEntityOfPage: {
           "@type": "WebPage",
@@ -781,7 +781,7 @@ async function buildPageMetas(): Promise<PageMeta[]> {
         publisher: {
           "@type": "Organization",
           name: SITE_NAME,
-          logo: { "@type": "ImageObject", url: `${BASE_URL}/mema-logo.png` },
+          logo: { "@type": "ImageObject", url: `${BASE_URL}/regactions-mark.png` },
         },
         mainEntityOfPage: {
           "@type": "WebPage",

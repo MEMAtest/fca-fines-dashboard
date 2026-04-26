@@ -23,10 +23,10 @@ function generatePillarSchema() {
     },
     publisher: {
       "@type": "Organization",
-      name: "FCA Fines Dashboard",
+      name: "RegActions",
       logo: {
         "@type": "ImageObject",
-        url: "https://fcafines.memaconsultants.com/mema-logo.png",
+        url: "https://fcafines.memaconsultants.com/regactions-mark.png",
       },
     },
     mainEntityOfPage: {
