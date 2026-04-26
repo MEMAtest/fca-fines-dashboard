@@ -139,7 +139,7 @@ function getAuthorityColor(authority: string): string {
     'FCA': '#0FA294',
     'SEC': '#3b82f6',
     'ESMA': '#8b5cf6',
-    'BaFin': '#f59e0b',
+    'BAFIN': '#f59e0b',
     'AMF': '#ec4899',
     'ECB': '#0369a1',
     'PRA': '#6366f1',
