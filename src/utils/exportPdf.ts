@@ -44,7 +44,7 @@ function buildPrintableDocument(
       }
       body {
         margin: 32px;
-        color: #0f172a;
+        color: #0B1F2A;
         background: #ffffff;
       }
       h1 {

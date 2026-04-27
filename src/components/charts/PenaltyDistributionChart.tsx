@@ -41,7 +41,7 @@ export function PenaltyDistributionChart() {
               y1={y}
               x2={width - padding.right}
               y2={y}
-              stroke="rgba(15, 162, 148, 0.1)"
+              stroke="rgba(15, 167, 125, 0.1)"
               strokeWidth="1"
             />
           );

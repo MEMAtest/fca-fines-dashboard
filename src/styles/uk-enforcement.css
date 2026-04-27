@@ -29,7 +29,7 @@
 .uk-enforcement h1 {
   margin: 0;
   max-width: 780px;
-  color: #0f172a;
+  color: #0B1F2A;
   font-size: clamp(2rem, 4vw, 3.75rem);
   line-height: 1.05;
 }
@@ -73,7 +73,7 @@
 .uk-enforcement__summary strong {
   display: block;
   margin-top: 0.45rem;
-  color: #0f172a;
+  color: #0B1F2A;
   font-size: 1.25rem;
 }
 
@@ -108,7 +108,7 @@
   border: 1px solid #cbd5e1;
   border-radius: 8px;
   background: #ffffff;
-  color: #0f172a;
+  color: #0B1F2A;
   font: inherit;
 }
 
@@ -162,7 +162,7 @@
 .uk-enforcement__domain strong {
   display: block;
   margin-top: 0.35rem;
-  color: #0f172a;
+  color: #0B1F2A;
   font-size: 1.3rem;
 }
 
@@ -182,7 +182,7 @@
 
 .uk-enforcement__results-head h2 {
   margin: 0;
-  color: #0f172a;
+  color: #0B1F2A;
   font-size: 1.25rem;
 }
 
@@ -227,7 +227,7 @@
 
 .uk-enforcement__action h3 {
   margin: 0.7rem 0 0.4rem;
-  color: #0f172a;
+  color: #0B1F2A;
   font-size: 1.05rem;
 }
 

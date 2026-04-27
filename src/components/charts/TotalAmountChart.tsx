@@ -46,7 +46,7 @@ export function TotalAmountChart() {
           </linearGradient>
 
           <linearGradient id="areaGradient" x1="0%" y1="0%" x2="0%" y2="100%">
-            <stop offset="0%" stopColor="rgba(15, 162, 148, 0.3)" />
+            <stop offset="0%" stopColor="rgba(15, 167, 125, 0.3)" />
             <stop offset="100%" stopColor="rgba(99, 102, 241, 0.05)" />
           </linearGradient>
         </defs>
@@ -60,7 +60,7 @@ export function TotalAmountChart() {
               y1={y}
               x2={width - padding.right}
               y2={y}
-              stroke="rgba(15, 162, 148, 0.1)"
+              stroke="rgba(15, 167, 125, 0.1)"
               strokeWidth="1"
             />
           );

@@ -13,7 +13,7 @@ export function Hero3DVisualization() {
             <path
               d="M 50 0 L 0 0 0 50"
               fill="none"
-              stroke="rgba(15, 162, 148, 0.15)"
+              stroke="rgba(15, 167, 125, 0.15)"
               strokeWidth="0.5"
             />
           </pattern>

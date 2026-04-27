@@ -62,7 +62,7 @@
 
 .regulator-dashboard__title {
   margin: 0;
-  color: #0f172a;
+  color: #0B1F2A;
   font-size: clamp(2rem, 4vw, 3.5rem);
   line-height: 1.05;
 }

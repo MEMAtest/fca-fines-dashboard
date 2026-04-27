@@ -32,13 +32,13 @@
 }
 
 .lessons-tabs__tab:hover {
-  color: #0f172a;
+  color: #0B1F2A;
   background: rgba(255, 255, 255, 0.6);
 }
 
 .lessons-tabs__tab--active {
   background: white;
-  color: #0f172a;
+  color: #0B1F2A;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
 }
 

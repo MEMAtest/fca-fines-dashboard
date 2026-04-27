@@ -15,7 +15,7 @@
   font-size: 2.25rem;
   font-weight: 700;
   margin: 0 0 0.75rem;
-  color: #0f172a;
+  color: #0B1F2A;
   line-height: 1.15;
 }
 
@@ -59,13 +59,13 @@
 }
 
 .reg-grid__filter-tab:hover {
-  border-color: rgba(15, 162, 148, 0.3);
-  color: #0f172a;
+  border-color: rgba(15, 167, 125, 0.3);
+  color: #0B1F2A;
 }
 
 .reg-grid__filter-tab--active {
-  background: #0f172a;
-  border-color: #0f172a;
+  background: #0B1F2A;
+  border-color: #0B1F2A;
   color: #ffffff;
 }
 
@@ -99,13 +99,13 @@
 }
 
 .reg-grid__toggle:hover {
-  border-color: rgba(15, 162, 148, 0.3);
-  color: #0f172a;
+  border-color: rgba(15, 167, 125, 0.3);
+  color: #0B1F2A;
 }
 
 .reg-grid__toggle--active {
-  background: rgba(15, 162, 148, 0.1);
-  border-color: rgba(15, 162, 148, 0.3);
+  background: rgba(15, 167, 125, 0.1);
+  border-color: rgba(15, 167, 125, 0.3);
   color: #0b7c72;
 }
 
@@ -120,7 +120,7 @@
 }
 
 .reg-grid__stats strong {
-  color: #0f172a;
+  color: #0B1F2A;
   font-weight: 700;
 }
 
@@ -142,7 +142,7 @@
   border-radius: 0.85rem;
   border: 1px solid rgba(148, 163, 184, 0.18);
   background: rgba(255, 255, 255, 0.88);
-  color: #0f172a;
+  color: #0B1F2A;
   text-decoration: none;
   transition:
     transform 0.15s ease,
@@ -153,7 +153,7 @@
 
 .reg-grid__card:hover {
   transform: translateY(-2px);
-  border-color: rgba(15, 162, 148, 0.28);
+  border-color: rgba(15, 167, 125, 0.28);
   box-shadow: 0 8px 20px rgba(15, 23, 42, 0.07);
 }
 
@@ -175,7 +175,7 @@
 .reg-grid__card-code {
   font-size: 0.95rem;
   font-weight: 700;
-  color: #0f172a;
+  color: #0B1F2A;
   line-height: 1.2;
 }
 
@@ -204,7 +204,7 @@
 .reg-grid__card-count {
   font-size: 1.35rem;
   font-weight: 700;
-  color: #0f172a;
+  color: #0B1F2A;
   line-height: 1;
 }
 
@@ -227,7 +227,7 @@
   margin-top: 2rem;
   padding: 1.25rem 1.5rem;
   border-radius: 1rem;
-  background: #0f172a;
+  background: #0B1F2A;
   color: #e2e8f0;
 }
 

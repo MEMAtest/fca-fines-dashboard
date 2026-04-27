@@ -71,7 +71,7 @@
   height: 280px;
   background: radial-gradient(
     circle,
-    rgba(15, 162, 148, 0.12) 0%,
+    rgba(15, 167, 125, 0.12) 0%,
     rgba(99, 102, 241, 0.08) 40%,
     transparent 70%
   );
@@ -144,7 +144,7 @@
   background: linear-gradient(135deg, #0FA294, #17C3B2);
   transform: translateZ(8px) translateX(5px) rotateY(0deg);
   box-shadow:
-    0 4px 20px rgba(15, 162, 148, 0.3),
+    0 4px 20px rgba(15, 167, 125, 0.3),
     inset 0 1px 0 rgba(255, 255, 255, 0.3);
 }
 
@@ -187,7 +187,7 @@
   height: 150px;
   background: radial-gradient(
     circle,
-    rgba(15, 162, 148, 0.4),
+    rgba(15, 167, 125, 0.4),
     rgba(99, 102, 241, 0.2),
     transparent
   );
@@ -216,11 +216,11 @@
   background: linear-gradient(135deg,
     rgba(255, 255, 255, 0.98),
     rgba(240, 252, 250, 0.98));
-  border: 1.5px solid rgba(15, 162, 148, 0.2);
+  border: 1.5px solid rgba(15, 167, 125, 0.2);
   border-radius: 0.75rem;
   padding: 0.875rem 1.25rem;
   box-shadow:
-    0 8px 25px rgba(15, 162, 148, 0.15),
+    0 8px 25px rgba(15, 167, 125, 0.15),
     0 0 0 1px rgba(255, 255, 255, 0.9) inset;
   backdrop-filter: blur(10px);
   display: flex;
@@ -250,7 +250,7 @@
   transform: translate(-50%, -50%);
   z-index: 2;
   animation: floatElement 5s ease-in-out infinite;
-  filter: drop-shadow(0 10px 25px rgba(15, 162, 148, 0.25));
+  filter: drop-shadow(0 10px 25px rgba(15, 167, 125, 0.25));
 }
 
 .blog-float-element:nth-child(odd) {
@@ -292,14 +292,14 @@
   width: 5px;
   height: 5px;
   background: radial-gradient(circle,
-    rgba(15, 162, 148, 0.9),
+    rgba(15, 167, 125, 0.9),
     rgba(99, 102, 241, 0.5),
     transparent);
   border-radius: 50%;
   pointer-events: none;
   z-index: 2;
   box-shadow:
-    0 0 8px rgba(15, 162, 148, 0.6),
+    0 0 8px rgba(15, 167, 125, 0.6),
     0 0 15px rgba(99, 102, 241, 0.3);
 }
 

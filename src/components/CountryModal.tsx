@@ -164,7 +164,7 @@ export function CountryModal({ countryCode, onClose }: CountryModalProps) {
                         key={reg.code}
                         className="regulator-card"
                         style={{
-                          '--regulator-ink': palette?.ink || '#0d9488',
+                          '--regulator-ink': palette?.ink || '#0FA77D',
                           '--regulator-surface': palette?.surface || '#f0fdfa',
                           '--regulator-ring': palette?.ring || '#5eead4',
                         } as React.CSSProperties}

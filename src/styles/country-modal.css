@@ -61,7 +61,7 @@
 }
 
 .country-modal__country-icon {
-  color: #0d9488;
+  color: #0FA77D;
   flex-shrink: 0;
   margin-top: 0.125rem;
 }
@@ -149,7 +149,7 @@
 .stat-card__value {
   font-size: 1.375rem;
   font-weight: 700;
-  color: #0d9488;
+  color: #0FA77D;
   font-variant-numeric: tabular-nums;
 }
 
@@ -177,7 +177,7 @@
 .regulator-card {
   background: white;
   border: 1px solid #e5e7eb;
-  border-left: 3px solid var(--regulator-ink, #0d9488);
+  border-left: 3px solid var(--regulator-ink, #0FA77D);
   border-radius: 10px;
   padding: 1rem 1.125rem;
   transition: border-color 0.15s ease, box-shadow 0.15s ease;
@@ -186,7 +186,7 @@
 
 .regulator-card:hover {
   border-color: #d1d5db;
-  border-left-color: var(--regulator-ink, #0d9488);
+  border-left-color: var(--regulator-ink, #0FA77D);
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
 }
 
@@ -204,7 +204,7 @@
 .regulator-card__count {
   font-size: 0.75rem;
   font-weight: 600;
-  color: #0d9488;
+  color: #0FA77D;
   background: rgba(13, 148, 136, 0.08);
   padding: 0.2rem 0.6rem;
   border-radius: 6px;
@@ -240,7 +240,7 @@
 }
 
 .fine-stat-icon {
-  color: #0d9488;
+  color: #0FA77D;
   opacity: 0.6;
   margin-top: 0.125rem;
   flex-shrink: 0;
@@ -267,7 +267,7 @@
   gap: 0.375rem;
   font-size: 0.8125rem;
   font-weight: 600;
-  color: #0d9488;
+  color: #0FA77D;
   background: none;
   border: none;
   padding: 0;
@@ -299,7 +299,7 @@
   font-size: 0.9375rem;
   font-weight: 600;
   color: white;
-  background: #0d9488;
+  background: #0FA77D;
   border: none;
   border-radius: 8px;
   cursor: pointer;

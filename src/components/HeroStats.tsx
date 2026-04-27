@@ -341,7 +341,7 @@ function FineVelocityGauge({
           textAnchor="middle"
           fontFamily="var(--font-mono)"
           fontSize="14"
-          fill="#0f172a"
+          fill="#0B1F2A"
         >
           {change ? change.label : "—"}
         </text>

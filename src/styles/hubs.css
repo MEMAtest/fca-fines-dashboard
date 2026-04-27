@@ -3,7 +3,7 @@
 .hub-page {
   min-height: 100vh;
   padding: 2.5rem 1.25rem 4rem;
-  background: radial-gradient(1200px 700px at 20% -10%, rgba(15, 162, 148, 0.18), transparent 60%),
+  background: radial-gradient(1200px 700px at 20% -10%, rgba(15, 167, 125, 0.18), transparent 60%),
     radial-gradient(900px 700px at 90% 10%, rgba(59, 130, 246, 0.14), transparent 55%),
     linear-gradient(180deg, rgba(2, 6, 23, 0.02), transparent 40%);
 }
@@ -59,7 +59,7 @@
 }
 
 .hub-card:hover {
-  border-color: rgba(15, 162, 148, 0.45);
+  border-color: rgba(15, 167, 125, 0.45);
 }
 
 .hub-card h3 {
@@ -87,9 +87,9 @@
   border-radius: 999px;
   font-size: var(--text-xs);
   font-weight: 600;
-  background: rgba(15, 162, 148, 0.1);
-  color: rgba(15, 162, 148, 0.95);
-  border: 1px solid rgba(15, 162, 148, 0.22);
+  background: rgba(15, 167, 125, 0.1);
+  color: rgba(15, 167, 125, 0.95);
+  border: 1px solid rgba(15, 167, 125, 0.22);
 }
 
 .hub-chip--neutral {

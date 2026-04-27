@@ -173,7 +173,7 @@ export function TimelineChart({
             )}
             <Tooltip
               contentStyle={{
-                background: "#0f172a",
+                background: "#0B1F2A",
                 border: "1px solid rgba(148,163,184,0.3)",
                 borderRadius: "16px",
                 color: "#fff",

@@ -351,7 +351,7 @@ export function FineDistributionChart({
             )}
             <Tooltip
               contentStyle={{
-                backgroundColor: "#0f172a",
+                backgroundColor: "#0B1F2A",
                 border: "1px solid #374151",
                 borderRadius: 12,
                 color: "#fff",

@@ -16,7 +16,7 @@
 
 /* Hero Section */
 .features-hero {
-  background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+  background: linear-gradient(135deg, #0B1F2A 0%, #1e293b 100%);
   padding: 6rem 2rem;
   color: white;
 }
@@ -87,7 +87,7 @@
 .feature-card__title {
   font-size: 1.5rem;
   font-weight: 700;
-  color: #0f172a;
+  color: #0B1F2A;
   margin: 0 0 1rem 0;
 }
 
@@ -139,7 +139,7 @@
 .board-pack-section__header h2 {
   font-size: 2.5rem;
   font-weight: 800;
-  color: #0f172a;
+  color: #0B1F2A;
   margin-bottom: 1rem;
 }
 
@@ -173,7 +173,7 @@
 .board-pack-feature h3 {
   font-size: 1.25rem;
   font-weight: 700;
-  color: #0f172a;
+  color: #0B1F2A;
   margin: 0 0 0.75rem 0;
 }
 
@@ -206,7 +206,7 @@
 .widgets-section__header h2 {
   font-size: 2.5rem;
   font-weight: 800;
-  color: #0f172a;
+  color: #0B1F2A;
   margin-bottom: 1rem;
 }
 
@@ -266,7 +266,7 @@
 }
 
 .widget-demo__firm {
-  color: #0f172a;
+  color: #0B1F2A;
   font-weight: 500;
   font-size: 0.875rem;
 }
@@ -287,7 +287,7 @@
 }
 
 .widget-demo__code {
-  background: #0f172a;
+  background: #0B1F2A;
   border-radius: 12px;
   overflow: hidden;
 }
@@ -347,7 +347,7 @@
 .widgets-feature h4 {
   font-size: 1.125rem;
   font-weight: 700;
-  color: #0f172a;
+  color: #0B1F2A;
   margin: 0 0 0.5rem 0;
 }
 
@@ -360,7 +360,7 @@
 /* CTA Section */
 .features-cta {
   padding: 6rem 2rem;
-  background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+  background: linear-gradient(135deg, #0B1F2A 0%, #1e293b 100%);
   color: white;
 }
 
@@ -427,7 +427,7 @@
 
 .btn--secondary:hover {
   background: white;
-  color: #0f172a;
+  color: #0B1F2A;
 }
 
 /* Responsive */

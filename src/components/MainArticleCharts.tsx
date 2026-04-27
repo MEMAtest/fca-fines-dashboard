@@ -535,7 +535,7 @@ export function AllYearsEnforcementChart() {
             yAxisId="left"
             type="monotone"
             dataKey="amount"
-            fill="rgba(15, 162, 148, 0.2)"
+            fill="rgba(15, 167, 125, 0.2)"
             stroke="#0FA294"
             strokeWidth={2}
             name="Total Fines"
@@ -861,7 +861,7 @@ export function CumulativeFinesChart() {
           <Area
             type="monotone"
             dataKey="cumulative"
-            fill="rgba(15, 162, 148, 0.3)"
+            fill="rgba(15, 167, 125, 0.3)"
             stroke="#0FA294"
             strokeWidth={2}
             name="Cumulative Total"
@@ -1080,7 +1080,7 @@ export function EnforcementTrendOutlookChart() {
             yAxisId="left"
             type="monotone"
             dataKey="amount"
-            fill="rgba(15, 162, 148, 0.15)"
+            fill="rgba(15, 167, 125, 0.15)"
             stroke="#0FA294"
             strokeWidth={2}
             name="Total Fines"
@@ -1367,7 +1367,7 @@ export function IndividualVsFirmChart() {
           <Area
             type="monotone"
             dataKey="individuals"
-            fill="rgba(15, 162, 148, 0.2)"
+            fill="rgba(15, 167, 125, 0.2)"
             stroke="#0FA294"
             strokeWidth={2}
             name="Individuals"

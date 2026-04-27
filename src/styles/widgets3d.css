@@ -23,7 +23,7 @@
   background: linear-gradient(145deg,
     rgba(255, 255, 255, 0.98),
     rgba(240, 249, 255, 0.98));
-  border: 2px solid rgba(15, 162, 148, 0.25);
+  border: 2px solid rgba(15, 167, 125, 0.25);
   border-radius: 1.5rem;
   padding: 2.25rem;
   min-height: 300px;
@@ -39,11 +39,11 @@
   transform-style: preserve-3d;
 
   box-shadow:
-    0 20px 60px rgba(15, 162, 148, 0.18),
+    0 20px 60px rgba(15, 167, 125, 0.18),
     0 10px 30px rgba(99, 102, 241, 0.12),
     0 0 0 1px rgba(255, 255, 255, 0.6) inset,
     /* Bottom edge depth */
-    0 30px 0 -15px rgba(15, 162, 148, 0.08);
+    0 30px 0 -15px rgba(15, 167, 125, 0.08);
 
   backdrop-filter: blur(12px);
   will-change: transform;
@@ -58,11 +58,11 @@
     translateZ(40px);
 
   box-shadow:
-    0 40px 90px rgba(15, 162, 148, 0.3),
+    0 40px 90px rgba(15, 167, 125, 0.3),
     0 20px 50px rgba(99, 102, 241, 0.2),
     0 0 0 1px rgba(255, 255, 255, 0.9) inset,
     /* Enhanced bottom depth on hover */
-    0 50px 0 -20px rgba(15, 162, 148, 0.15);
+    0 50px 0 -20px rgba(15, 167, 125, 0.15);
 }
 
 /* Widget Inner Content */
@@ -126,7 +126,7 @@
 .widget-chart {
   margin-top: 1rem;
   padding-top: 1rem;
-  border-top: 1px solid rgba(15, 162, 148, 0.1);
+  border-top: 1px solid rgba(15, 167, 125, 0.1);
 }
 
 /* 3D Glow Effect */
@@ -135,7 +135,7 @@
   inset: -4px;
   border-radius: 1.5rem;
   background: linear-gradient(135deg,
-    rgba(15, 162, 148, 0.5),
+    rgba(15, 167, 125, 0.5),
     rgba(99, 102, 241, 0.5));
   opacity: 0;
   filter: blur(30px);
@@ -157,7 +157,7 @@
   width: 8px;
   height: 100%;
   background: linear-gradient(to right,
-    rgba(15, 162, 148, 0.15),
+    rgba(15, 167, 125, 0.15),
     transparent);
   border-radius: 0 1.5rem 1.5rem 0;
   transform: skewY(calc(-2deg * var(--card-index, 0)));
@@ -183,7 +183,7 @@
 .mini-sparkline {
   width: 100%;
   height: 60px;
-  filter: drop-shadow(0 2px 8px rgba(15, 162, 148, 0.2));
+  filter: drop-shadow(0 2px 8px rgba(15, 167, 125, 0.2));
 }
 
 .mini-bar-chart {
@@ -215,10 +215,10 @@
       translateZ(15px);
 
     box-shadow:
-      0 15px 45px rgba(15, 162, 148, 0.15),
+      0 15px 45px rgba(15, 167, 125, 0.15),
       0 8px 25px rgba(99, 102, 241, 0.1),
       0 0 0 1px rgba(255, 255, 255, 0.6) inset,
-      0 25px 0 -12px rgba(15, 162, 148, 0.06);
+      0 25px 0 -12px rgba(15, 167, 125, 0.06);
   }
 
   .widget-card-3d:hover {
@@ -230,10 +230,10 @@
       translateZ(30px);
 
     box-shadow:
-      0 30px 70px rgba(15, 162, 148, 0.25),
+      0 30px 70px rgba(15, 167, 125, 0.25),
       0 15px 40px rgba(99, 102, 241, 0.15),
       0 0 0 1px rgba(255, 255, 255, 0.8) inset,
-      0 40px 0 -15px rgba(15, 162, 148, 0.12);
+      0 40px 0 -15px rgba(15, 167, 125, 0.12);
   }
 
   .widget-value {
@@ -257,14 +257,14 @@
     transform: none;
     min-height: 240px;
     box-shadow:
-      0 10px 30px rgba(15, 162, 148, 0.12),
+      0 10px 30px rgba(15, 167, 125, 0.12),
       0 0 0 1px rgba(255, 255, 255, 0.6) inset;
   }
 
   .widget-card-3d:hover {
     transform: translateY(-6px);
     box-shadow:
-      0 15px 40px rgba(15, 162, 148, 0.2),
+      0 15px 40px rgba(15, 167, 125, 0.2),
       0 0 0 1px rgba(255, 255, 255, 0.8) inset;
   }
 

@@ -96,7 +96,7 @@
   max-width: 70vw;
   padding: 10px 12px;
   border-radius: var(--radius-md);
-  background: #0f172a;
+  background: #0B1F2A;
   color: #f8fafc;
   font-size: var(--text-xs);
   line-height: 1.4;
@@ -569,7 +569,7 @@
 .category-tile__name {
   font-size: 13px;
   font-weight: 700;
-  color: #0f172a;
+  color: #0B1F2A;
   line-height: 1.3;
   word-break: break-word;
 }
@@ -583,13 +583,13 @@
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
-  color: #0f172a;
+  color: #0B1F2A;
 }
 
 .category-tile__value {
   font-size: 14px;
   font-weight: 600;
-  color: #0f172a;
+  color: #0B1F2A;
   margin-top: auto;
 }
 

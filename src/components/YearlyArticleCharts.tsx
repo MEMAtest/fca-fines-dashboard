@@ -922,7 +922,7 @@ export function YearOverYearChart({ years }: YoYComparisonProps) {
             yAxisId="left"
             type="monotone"
             dataKey="amount"
-            fill="rgba(15, 162, 148, 0.2)"
+            fill="rgba(15, 167, 125, 0.2)"
             stroke="#0FA294"
             strokeWidth={2}
             name="Total Fines"
