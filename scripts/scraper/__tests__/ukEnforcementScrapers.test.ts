@@ -4,6 +4,7 @@ import {
   parseGovUkSearchResults,
   parseIcoSearchResponse,
   parseOfsiCollection,
+  parsePraEnforcementActionsPage,
   parsePsrEnforcementCases,
   parseTprPenaltyNoticePage,
 } from "../ukEnforcementScrapers.js";
@@ -24,6 +25,50 @@ describe("UK enforcement scrapers", () => {
         dateIssued: "2026-03-24",
       },
     ]);
+  });
+
+  it("parses Bank of England PRA enforcement action tables", () => {
+    const records = parsePraEnforcementActionsPage(`
+      <main>
+        <h2>How has the Bank used its enforcement powers?</h2>
+        <table>
+          <tbody>
+            <tr>
+              <td>10 March 2026</td>
+              <td><a href="/-/media/boe/files/prudential-regulation/regulatory-action/2026/final-notice-u-k-insurance-limited.pdf">U K Insurance Limited - Final Notice</a></td>
+              <td>Financial penalty: £10,625,000</td>
+            </tr>
+            <tr>
+              <td>9 February 2017</td>
+              <td><a href="/-/media/boe/files/prudential-regulation/enforcement-notice/en090217.pdf">The Bank of Tokyo-Mitsubishi UFJ Limited and MUFG Securities EMEA plc - Final Notice</a></td>
+              <td>Financial Penalties: £17,850,000 and £8,925,000 respectively</td>
+            </tr>
+            <tr>
+              <td>4 April 2023</td>
+              <td><a href="/-/media/boe/files/prudential-regulation/regulatory-action/final-notice-from-pra-to-wyelands-bank-plc.pdf">Wyelands Bank Plc - Final Notice</a></td>
+              <td>Public Censure</td>
+            </tr>
+          </tbody>
+        </table>
+        <h2>Open investigations</h2>
+      </main>
+    `);
+
+    expect(records).toHaveLength(3);
+    expect(records[0]).toMatchObject({
+      regulator: "PRA",
+      firmIndividual: "U K Insurance Limited",
+      amount: 10625000,
+      dateIssued: "2026-03-10",
+      breachType: "PRA financial penalty",
+    });
+    expect(records[1]).toMatchObject({
+      amount: 26775000,
+    });
+    expect(records[2]).toMatchObject({
+      amount: null,
+      breachType: "PRA public censure",
+    });
   });
 
   it("parses PSR fine links from the enforcement cases page", () => {

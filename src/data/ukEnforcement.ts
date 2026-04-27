@@ -60,12 +60,12 @@ export const UK_ENFORCEMENT_REGULATORS: UKEnforcementRegulator[] = [
     domain: "prudential",
     stage: "live",
     sourceWindowNote:
-      "Scraped from official Bank of England news API and PRA announcement pages.",
+      "Scraped from the official Bank of England enforcement actions table and linked notices.",
     officialSources: [
       {
-        label: "Bank of England PRA news",
-        url: "https://www.bankofengland.co.uk/news/prudential-regulation",
-        description: "Official PRA enforcement announcements and final notices.",
+        label: "Bank of England enforcement actions",
+        url: "https://www.bankofengland.co.uk/prudential-regulation/the-bank-of-england-enforcement",
+        description: "Official PRA enforcement actions, financial penalties, public censures, and notices.",
       },
     ],
   },

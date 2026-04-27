@@ -117,8 +117,8 @@ export function UKEnforcement() {
           </p>
           <h1>UK Financial And Adjacent Enforcement</h1>
           <p className="uk-enforcement__intro">
-            Search FCA financial-conduct actions alongside PRA, PSR, OFSI, ICO,
-            CMA, FRC and TPR enforcement in a dedicated UK view.
+            Search FCA financial-conduct actions with PRA, PSR, OFSI, ICO,
+            CMA, FRC and TPR in a dedicated UK enforcement view.
           </p>
         </div>
         <div className="uk-enforcement__summary">

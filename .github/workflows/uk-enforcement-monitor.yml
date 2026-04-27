@@ -5,6 +5,10 @@ on:
   schedule:
     - cron: "20 6 * * 1,4" # 06:20 UTC on Monday and Thursday
 
+permissions:
+  contents: read
+  issues: write
+
 jobs:
   scrape-and-check:
     name: Scrape and check UK enforcement
@@ -78,3 +82,40 @@ jobs:
           fi
 
           echo "UK enforcement monitor completed successfully."
+
+      - name: Open or update failure issue
+        if: failure()
+        uses: actions/github-script@v8
+        with:
+          script: |
+            const title = "UK enforcement monitor failed";
+            const runUrl = `${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`;
+            const body = [
+              "The scheduled UK enforcement scraper or health check failed.",
+              "",
+              `Run: ${runUrl}`,
+              `Ref: ${context.ref}`,
+              `SHA: ${context.sha}`,
+              "",
+              "Check the uploaded `uk-enforcement-health` artifact and the failed workflow logs.",
+            ].join("\n");
+
+            const query = `repo:${context.repo.owner}/${context.repo.repo} is:issue is:open in:title "${title}"`;
+            const existing = await github.rest.search.issuesAndPullRequests({ q: query, per_page: 1 });
+            const issue = existing.data.items.find((item) => item.title === title);
+
+            if (issue) {
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: issue.number,
+                body,
+              });
+            } else {
+              await github.rest.issues.create({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                title,
+                body,
+              });
+            }

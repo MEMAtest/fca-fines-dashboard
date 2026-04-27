@@ -196,6 +196,9 @@ describe('enforcementSearch helpers', () => {
     expect(wisePrepared.firmIntentQuery).toBe('wise');
     expect(wisePrepared.firmIntentQueryWithoutLegalSuffix).toBe('wise');
     expect(wisePrepared.isShortFirmLikeQuery).toBe(true);
+    expect(wisePrepared.searchTerms).toContain('Kristo Kaarmann');
+    expect(wisePrepared.searchPatterns).toContain('%kristo kaarmann%');
+    expect(wisePrepared.searchPatterns).toContain('%wise payments limited%');
 
     expect(legalPrepared.firmIntentTerms).toEqual(['wise', 'limited']);
     expect(legalPrepared.firmIntentQuery).toBe('wise limited');

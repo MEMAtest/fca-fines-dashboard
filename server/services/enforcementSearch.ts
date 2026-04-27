@@ -1,5 +1,6 @@
 import { PUBLIC_REGULATOR_NAV_ITEMS } from '../../src/data/regulatorCoverage.js';
 import { UK_ENFORCEMENT_REGULATORS } from '../../src/data/ukEnforcement.js';
+import { expandFirmAliasTerms } from './firmAliases.js';
 
 const ACRONYM_EXPANSIONS: Record<string, string[]> = {
   aml: ['anti money laundering'],
@@ -969,8 +970,14 @@ export function prepareEnforcementSearch(query: string): PreparedEnforcementSear
     ...buildPhraseWindows(baseTokens, 2),
     ...buildPhraseWindows(baseTokens, 3),
   ]);
+  const aliasTerms = unique(
+    expandFirmAliasTerms(normalizedQuery)
+      .map((term) => normalizeSearchQuery(term))
+      .filter((term) => term && term !== normalizedQuery),
+  );
   const searchPatterns = unique([
     ...(searchQuery ? toLikePatterns(searchQuery) : []),
+    ...aliasTerms.flatMap((term) => toLikePatterns(term)),
     ...tokenPhrases.flatMap((term) => toLikePatterns(term)),
     ...baseTokens.flatMap((term) => toLikePatterns(term)),
   ]);
@@ -1016,7 +1023,7 @@ export function prepareEnforcementSearch(query: string): PreparedEnforcementSear
     searchQuery,
     phrasePattern: searchQuery ? `%${searchQuery}%` : '',
     searchPatterns,
-    searchTerms: unique([...rawTokens, ...expandedTerms, ...themePhrases]),
+    searchTerms: unique([...rawTokens, ...expandedTerms, ...themePhrases, ...aliasTerms]),
     meaningfulTerms: meaningfulTokens,
     firmIntentTerms,
     firmIntentQuery,

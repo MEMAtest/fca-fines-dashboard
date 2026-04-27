@@ -22,6 +22,8 @@ export const FIRM_ALIAS_GROUPS: FirmAliasGroup[] = [
       "Wise Assets UK Ltd",
       "Wise Assets UK Limited",
       "TransferWise",
+      "Kaarmann",
+      "Käärmann",
       "Kristo Kaarmann",
       "Kristo Käärmann",
     ],
@@ -69,4 +71,3 @@ export function expandFirmAliasTerms(input: string) {
 
   return Array.from(terms);
 }
-

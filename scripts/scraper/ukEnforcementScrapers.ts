@@ -13,6 +13,8 @@ import type { UKEnforcementSeedRecord } from "./data/ukEnforcementSeed.js";
 const GBP = "GBP";
 
 const SOURCE_URLS = {
+  praEnforcement:
+    "https://www.bankofengland.co.uk/prudential-regulation/the-bank-of-england-enforcement",
   praNewsApi: "https://www.bankofengland.co.uk/_api/News/RefreshPagedNewsList",
   praNews: "https://www.bankofengland.co.uk/news/news",
   psrCases:
@@ -129,7 +131,8 @@ function cleanFirmName(value: string) {
   return normalizeWhitespace(value)
     .replace(/\s+PDF\s+\d+KB.*$/i, "")
     .replace(/\s+Â\s+PDF.*$/i, "")
-    .replace(/\s*[-–:]\s*(Regulatory intervention report|Determination notice|Final notice)$/i, "")
+    .replace(/\s*[-–:]\s*(Regulatory intervention report|Determination notice|Final notice|Decision notice)(?:\s+Opens in a new window)?$/i, "")
+    .replace(/\s+Opens in a new window$/i, "")
     .replace(/[,\s]+$/g, "")
     .replace(/\s+/g, " ")
     .trim();
@@ -236,6 +239,17 @@ function parsePraAmount(title: string, summary: string) {
   }
 
   return amounts[0] ?? parseGbpAmount(summary);
+}
+
+function parsePraEnforcementAmount(value: string) {
+  const amounts = parseGbpAmounts(value);
+  if (amounts.length === 0) return null;
+
+  if (amounts.length > 1 && /\b(?:penalties|respectively|and)\b/i.test(value)) {
+    return amounts.reduce((total, amount) => total + amount, 0);
+  }
+
+  return amounts[0];
 }
 
 function parsePenaltyCell(value: string) {
@@ -409,6 +423,53 @@ export function parseBoeNewsResults(resultsHtml: string) {
   return items;
 }
 
+export function parsePraEnforcementActionsPage(html: string) {
+  const mainHtml = cheerio.load(html)("main").html() || html;
+  const start = mainHtml.indexOf("How has the Bank used its enforcement powers");
+  const end = start >= 0 ? mainHtml.indexOf("Open investigations", start) : -1;
+  const scopedHtml =
+    start >= 0 && end > start ? mainHtml.slice(start, end) : mainHtml;
+  const $ = cheerio.load(scopedHtml);
+  const records: UKEnforcementSeedRecord[] = [];
+
+  $("tr").each((_, row) => {
+    const cells = $(row).find("td");
+    if (cells.length < 3) return;
+
+    const dateIssued = parseIsoFromDateText($(cells[0]).text());
+    const link = $(cells[1]).find("a[href]").first();
+    const href = link.attr("href");
+    const firmIndividual = cleanFirmName(link.text() || $(cells[1]).text());
+    const penaltyText = normalizeWhitespace($(cells[2]).text());
+    const amount = parsePraEnforcementAmount(penaltyText);
+
+    if (!dateIssued || !href || !firmIndividual || !penaltyText) {
+      return;
+    }
+
+    const breachType = amount === null ? "PRA public censure" : "PRA financial penalty";
+    const summary = normalizeWhitespace(`${firmIndividual}: ${penaltyText}`);
+
+    records.push(
+      toRecord({
+        ...REGULATORS.PRA,
+        firmIndividual,
+        firmCategory: null,
+        amount,
+        dateIssued,
+        breachType,
+        summary,
+        noticeUrl: makeAbsoluteUrl("https://www.bankofengland.co.uk", href),
+        sourceUrl: SOURCE_URLS.praEnforcement,
+        sourceWindowNote:
+          "Scraped from the official Bank of England enforcement actions table.",
+      }),
+    );
+  });
+
+  return dedupeRecords(records);
+}
+
 async function fetchPraSearchPage(term: string, page: number) {
   const body = new URLSearchParams();
   body.set("SearchTerm", term);
@@ -439,7 +500,7 @@ async function fetchPraSearchPage(term: string, page: number) {
   return (await response.json()) as { Results?: string };
 }
 
-export async function scrapePraEnforcement() {
+async function scrapePraNewsSearchEnforcement() {
   const searchTerms = ["PRA fines", "PRA takes action", "PRA imposes fine"];
   const found = new Map<string, { title: string; href: string; dateIssued: string }>();
 
@@ -491,6 +552,17 @@ export async function scrapePraEnforcement() {
   });
 
   return records;
+}
+
+export async function scrapePraEnforcement() {
+  const html = await fetchText(SOURCE_URLS.praEnforcement);
+  const records = parsePraEnforcementActionsPage(html);
+
+  if (records.length > 0) {
+    return records;
+  }
+
+  return scrapePraNewsSearchEnforcement();
 }
 
 export function parsePsrEnforcementCases(html: string) {

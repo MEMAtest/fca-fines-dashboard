@@ -23,10 +23,33 @@ import {
   buildSearchAnalyticsRecord,
   type SearchAnalyticsRecord,
 } from '../server/services/searchAnalytics.js';
+import { FIRM_ALIAS_GROUPS } from '../server/services/firmAliases.js';
 
 const SEARCHABLE_REGULATOR_CODES = [
   ...new Set([...PUBLIC_REGULATOR_CODES, ...UK_ENFORCEMENT_REGULATOR_CODES]),
 ];
+
+function sqlLiteral(value: string) {
+  return `'${value.replace(/'/g, "''")}'`;
+}
+
+const KNOWN_FIRM_ALIAS_VALUES = FIRM_ALIAS_GROUPS.flatMap((group) => {
+  const aliasText = [group.canonical, ...group.aliases].join(' ');
+  return [...new Set([group.canonical, ...group.aliases])].map(
+    (alias) => `(${sqlLiteral(alias)}, ${sqlLiteral(aliasText)})`,
+  );
+}).join(',\n      ');
+
+const KNOWN_FIRM_ALIAS_CTE = KNOWN_FIRM_ALIAS_VALUES
+  ? `
+  known_firm_aliases(alias_name, alias_text) AS (
+    VALUES
+      ${KNOWN_FIRM_ALIAS_VALUES}
+  ),`
+  : `
+  known_firm_aliases(alias_name, alias_text) AS (
+    SELECT NULL::text, NULL::text WHERE false
+  ),`;
 
 interface SearchRow {
   id: string;
@@ -85,6 +108,7 @@ const FIRM_NORMALIZATION_JOIN = `
 `;
 
 const SEARCHABLE_ENFORCEMENT_CTE = `
+  ${KNOWN_FIRM_ALIAS_CTE}
   searchable_enforcement AS (
     SELECT
       id,
@@ -107,8 +131,11 @@ const SEARCHABLE_ENFORCEMENT_CTE = `
       notice_url,
       source_url,
       created_at,
-      search_vector
+      COALESCE(known_firm_aliases.alias_text, '') AS search_aliases,
+      search_vector || to_tsvector('english', COALESCE(known_firm_aliases.alias_text, '')) AS search_vector
     FROM public.all_regulatory_fines
+    LEFT JOIN known_firm_aliases
+      ON LOWER(known_firm_aliases.alias_name) = LOWER(firm_individual)
 
     UNION ALL
 
@@ -133,6 +160,7 @@ const SEARCHABLE_ENFORCEMENT_CTE = `
       notice_url,
       source_url,
       created_at,
+      COALESCE(aliases::text, '') AS search_aliases,
       to_tsvector(
         'english',
         concat_ws(
@@ -414,6 +442,7 @@ async function fetchStrongFirmCandidateSignal({
     firmQuery,
     firmQueryWithoutLegalSuffix,
     prepared.firmIntentTerms,
+    prepared.searchPatterns,
   ];
   const conditions: string[] = [];
 
@@ -462,7 +491,13 @@ async function fetchStrongFirmCandidateSignal({
             WHEN $1 <> '' AND firm_norm.normalized_name = $1 THEN 5
             WHEN $2 <> '' AND firm_legal.legal_stripped_name = $2 THEN 5
             WHEN $2 <> '' AND firm_norm.normalized_name = $2 THEN 4
+            WHEN $2 <> '' AND COALESCE(search_aliases, '') ILIKE '%' || $2 || '%' THEN 3
             WHEN $2 <> '' AND firm_norm.normalized_name LIKE $2 || ' %' THEN 3
+            WHEN EXISTS (
+              SELECT 1
+              FROM unnest($4::text[]) AS pattern
+              WHERE COALESCE(search_aliases, '') ILIKE pattern
+            ) THEN 2
             WHEN ${wholeFirmQueryCondition} THEN 2
             WHEN ${tokenBoundaryMatchCount} > 0 THEN 1
             ELSE 0
@@ -768,7 +803,13 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
             WHEN $16 <> '' AND firm_norm.normalized_name = $16 THEN 430
             WHEN $17 <> '' AND firm_legal.legal_stripped_name = $17 THEN 410
             WHEN $17 <> '' AND firm_norm.normalized_name = $17 THEN 390
+            WHEN $2 <> '' AND COALESCE(search_aliases, '') ILIKE $2 THEN 320
             WHEN $17 <> '' AND firm_norm.normalized_name LIKE $17 || ' %' THEN 300
+            WHEN EXISTS (
+              SELECT 1
+              FROM unnest($3::text[]) AS pattern
+              WHERE COALESCE(search_aliases, '') ILIKE pattern
+            ) THEN 260
             WHEN ${firmBoundaryCondition('firm_norm.normalized_name', '$17')} THEN 250
             WHEN LOWER(COALESCE(firm_individual, '')) = LOWER($1) THEN 230
             WHEN ($18 = FALSE) AND COALESCE(firm_individual, '') ILIKE $2 THEN 180
@@ -838,6 +879,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
                 OR COALESCE(country_name, '') ILIKE $2
                 OR COALESCE(regulator, '') ILIKE $2
                 OR COALESCE(regulator_full_name, '') ILIKE $2
+                OR COALESCE(search_aliases, '') ILIKE $2
               )
               THEN 50
             ELSE 0
@@ -858,6 +900,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
                 OR COALESCE(country_name, '') ILIKE $9
                 OR COALESCE(regulator, '') ILIKE $9
                 OR COALESCE(regulator_full_name, '') ILIKE $9
+                OR COALESCE(search_aliases, '') ILIKE $9
               )
               THEN 25
             ELSE 0
@@ -880,6 +923,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
                 OR COALESCE(country_name, '') ILIKE '%' || token || '%'
                 OR COALESCE(regulator, '') ILIKE '%' || token || '%'
                 OR COALESCE(regulator_full_name, '') ILIKE '%' || token || '%'
+                OR COALESCE(search_aliases, '') ILIKE '%' || token || '%'
               )
           ) AS raw_token_match_score,
           (
@@ -898,6 +942,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
               OR COALESCE(country_name, '') ILIKE pattern
               OR COALESCE(regulator, '') ILIKE pattern
               OR COALESCE(regulator_full_name, '') ILIKE pattern
+              OR COALESCE(search_aliases, '') ILIKE pattern
           ) AS token_match_score,
           (
             SELECT COUNT(*)::int
@@ -917,6 +962,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
                 OR COALESCE(country_name, '') ILIKE '%' || token || '%'
                 OR COALESCE(regulator, '') ILIKE '%' || token || '%'
                 OR COALESCE(regulator_full_name, '') ILIKE '%' || token || '%'
+                OR COALESCE(search_aliases, '') ILIKE '%' || token || '%'
               )
           ) AS fuzzy_raw_token_match_score,
           (
@@ -935,6 +981,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
               OR COALESCE(country_name, '') ILIKE pattern
               OR COALESCE(regulator, '') ILIKE pattern
               OR COALESCE(regulator_full_name, '') ILIKE pattern
+              OR COALESCE(search_aliases, '') ILIKE pattern
           ) AS fuzzy_token_match_score,
           CASE
             WHEN $1 <> ''
@@ -1126,7 +1173,13 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
             WHEN $16 <> '' AND firm_norm.normalized_name = $16 THEN 430
             WHEN $17 <> '' AND firm_legal.legal_stripped_name = $17 THEN 410
             WHEN $17 <> '' AND firm_norm.normalized_name = $17 THEN 390
+            WHEN $2 <> '' AND COALESCE(search_aliases, '') ILIKE $2 THEN 320
             WHEN $17 <> '' AND firm_norm.normalized_name LIKE $17 || ' %' THEN 300
+            WHEN EXISTS (
+              SELECT 1
+              FROM unnest($3::text[]) AS pattern
+              WHERE COALESCE(search_aliases, '') ILIKE pattern
+            ) THEN 260
             WHEN ${firmBoundaryCondition('firm_norm.normalized_name', '$17')} THEN 250
             WHEN LOWER(COALESCE(firm_individual, '')) = LOWER($1) THEN 230
             WHEN ($18 = FALSE) AND COALESCE(firm_individual, '') ILIKE $2 THEN 180
@@ -1196,6 +1249,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
                 OR COALESCE(country_name, '') ILIKE $2
                 OR COALESCE(regulator, '') ILIKE $2
                 OR COALESCE(regulator_full_name, '') ILIKE $2
+                OR COALESCE(search_aliases, '') ILIKE $2
               )
               THEN 50
             ELSE 0
@@ -1216,6 +1270,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
                 OR COALESCE(country_name, '') ILIKE $9
                 OR COALESCE(regulator, '') ILIKE $9
                 OR COALESCE(regulator_full_name, '') ILIKE $9
+                OR COALESCE(search_aliases, '') ILIKE $9
               )
               THEN 25
             ELSE 0
@@ -1238,6 +1293,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
                 OR COALESCE(country_name, '') ILIKE '%' || token || '%'
                 OR COALESCE(regulator, '') ILIKE '%' || token || '%'
                 OR COALESCE(regulator_full_name, '') ILIKE '%' || token || '%'
+                OR COALESCE(search_aliases, '') ILIKE '%' || token || '%'
               )
           ) AS raw_token_match_score,
           (
@@ -1256,6 +1312,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
               OR COALESCE(country_name, '') ILIKE pattern
               OR COALESCE(regulator, '') ILIKE pattern
               OR COALESCE(regulator_full_name, '') ILIKE pattern
+              OR COALESCE(search_aliases, '') ILIKE pattern
           ) AS token_match_score,
           (
             SELECT COUNT(*)::int
@@ -1275,6 +1332,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
                 OR COALESCE(country_name, '') ILIKE '%' || token || '%'
                 OR COALESCE(regulator, '') ILIKE '%' || token || '%'
                 OR COALESCE(regulator_full_name, '') ILIKE '%' || token || '%'
+                OR COALESCE(search_aliases, '') ILIKE '%' || token || '%'
               )
           ) AS fuzzy_raw_token_match_score,
           (
@@ -1293,6 +1351,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
               OR COALESCE(country_name, '') ILIKE pattern
               OR COALESCE(regulator, '') ILIKE pattern
               OR COALESCE(regulator_full_name, '') ILIKE pattern
+              OR COALESCE(search_aliases, '') ILIKE pattern
           ) AS fuzzy_token_match_score
         FROM searchable_enforcement
         ${FIRM_NORMALIZATION_JOIN}
