@@ -1,9 +1,9 @@
 import pg from 'pg';
 
 const CONNECTION_ENV_KEYS = [
-  'NEON_FCA_FINES_URL',
   'DATABASE_URL',
   'POSTGRES_URL',
+  'NEON_FCA_FINES_URL',
   'HORIZON_DB_URL',
 ] as const;
 

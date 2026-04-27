@@ -111,7 +111,7 @@ describe('Sync Break Detection and Recovery (REGRESSION TEST)', () => {
       .map((date) => new Date(`${toDateOnly(date)}T00:00:00Z`).getTime());
     const latest = latestDates.length > 0 ? Math.max(...latestDates) : Date.now();
 
-    return new Date(latest + DAY_MS).toISOString().slice(0, 10);
+    return new Date(latest + 365 * DAY_MS).toISOString().slice(0, 10);
   }
 
   async function insertFcafinesOnlyFine(reference: string, dateIssued: string, firm = 'E2E Sync Break') {
