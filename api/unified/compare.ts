@@ -77,7 +77,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
           COALESCE(MIN(${amountColumn}), 0)::numeric(18,2) as min_fine,
           MIN(date_issued) as earliest,
           MAX(date_issued) as latest
-        FROM all_regulatory_fines
+        FROM public.all_regulatory_fines
         WHERE regulator = $1 ${yearFilter}
         GROUP BY regulator, regulator_full_name, country_code, country_name
       `, [regulator]);
@@ -98,7 +98,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
           breach_type,
           COUNT(*) as count,
           COALESCE(SUM(${amountColumn}), 0)::numeric(18,2) as total
-        FROM all_regulatory_fines
+        FROM public.all_regulatory_fines
         WHERE regulator = $1 ${yearFilter}
         GROUP BY breach_type
         ORDER BY count DESC
@@ -113,7 +113,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
           date_issued,
           breach_type,
           summary
-        FROM all_regulatory_fines
+        FROM public.all_regulatory_fines
         WHERE regulator = $1 ${yearFilter}
         ORDER BY ${amountColumn} DESC NULLS LAST
         LIMIT 3
@@ -162,7 +162,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         COUNT(DISTINCT regulator) as regulator_count,
         COUNT(*) as total_fines,
         COALESCE(SUM(${amountColumn}), 0)::numeric(18,2) as total_amount
-      FROM all_regulatory_fines
+      FROM public.all_regulatory_fines
       WHERE regulator = ANY($1) ${yearFilter}
       GROUP BY firm_individual
       HAVING COUNT(DISTINCT regulator) > 1
@@ -185,7 +185,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         COUNT(DISTINCT regulator) as regulator_count,
         COUNT(*) as total_cases,
         COALESCE(SUM(${amountColumn}), 0)::numeric(18,2) as total_amount
-      FROM all_regulatory_fines
+      FROM public.all_regulatory_fines
       WHERE regulator = ANY($1) ${yearFilter}
       GROUP BY breach_type
       HAVING COUNT(DISTINCT regulator) > 1

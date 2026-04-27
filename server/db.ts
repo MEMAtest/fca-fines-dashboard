@@ -29,11 +29,22 @@ function createSqlClient(connectionString: string): SqlClient {
       : undefined,
   });
 
+  async function runQuery(query: string, params: unknown[] = []) {
+    const client = await pool.connect();
+    try {
+      await client.query('SET search_path TO public');
+      const result = await client.query(query, params as unknown[]);
+      return result.rows;
+    } finally {
+      client.release();
+    }
+  }
+
   const handler = function (stringsOrQuery: TemplateStringsArray | string, ...values: unknown[]) {
     if (typeof stringsOrQuery === 'string') {
       // Function call: sql('SELECT ... WHERE $1', [param])
       const params = Array.isArray(values[0]) ? values[0] : values;
-      return pool.query(stringsOrQuery, params as unknown[]).then((r) => r.rows);
+      return runQuery(stringsOrQuery, params as unknown[]);
     }
     // Tagged template: sql`SELECT ... WHERE id = ${id}`
     const strings = stringsOrQuery;
@@ -44,7 +55,7 @@ function createSqlClient(connectionString: string): SqlClient {
         query += `$${i + 1}`;
       }
     });
-    return pool.query(query, values as unknown[]).then((r) => r.rows);
+    return runQuery(query, values as unknown[]);
   } as SqlClient;
 
   handler.end = () => pool.end();

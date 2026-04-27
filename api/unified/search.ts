@@ -137,7 +137,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         notice_url,
         source_url,
         created_at
-      FROM all_regulatory_fines
+      FROM public.all_regulatory_fines
       ${whereClause}
       ORDER BY ${sortColumn} ${sortOrder}
       LIMIT $${paramIndex++}
@@ -151,7 +151,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     // Query for total count
     const countQuery = `
       SELECT COUNT(*) as count
-      FROM all_regulatory_fines
+      FROM public.all_regulatory_fines
       ${whereClause}
     `;
 

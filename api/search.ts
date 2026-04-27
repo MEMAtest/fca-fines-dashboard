@@ -108,7 +108,7 @@ const SEARCHABLE_ENFORCEMENT_CTE = `
       source_url,
       created_at,
       search_vector
-    FROM all_regulatory_fines
+    FROM public.all_regulatory_fines
 
     UNION ALL
 
@@ -147,7 +147,7 @@ const SEARCHABLE_ENFORCEMENT_CTE = `
           aliases::text
         )
       ) AS search_vector
-    FROM uk_enforcement_actions
+    FROM public.uk_enforcement_actions
   )
 `;
 
@@ -216,7 +216,7 @@ async function recordSearchAnalytics(record: SearchAnalyticsRecord) {
   try {
     await queryRows(
       `
-      INSERT INTO search_query_analytics (
+      INSERT INTO public.search_query_analytics (
         query_hash,
         query_text,
         query_normalized,
