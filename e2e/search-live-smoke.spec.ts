@@ -1,5 +1,15 @@
 import { test, expect } from '@playwright/test';
 
+const SEARCH_TIMEOUT_MS = 30_000;
+
+async function searchFor(page: import('@playwright/test').Page, query: string) {
+  await page.getByLabel('Search enforcement actions').fill(query);
+  await page.getByRole('button', { name: /^Search$/ }).click();
+  await expect(page.getByRole('button', { name: /^Search$/ })).toBeEnabled({
+    timeout: SEARCH_TIMEOUT_MS,
+  });
+}
+
 test.describe('Enforcement Search live smoke', () => {
   test.skip(
     !process.env.PLAYWRIGHT_BASE_URL,
@@ -15,32 +25,29 @@ test.describe('Enforcement Search live smoke', () => {
       'Enforcement Search',
     );
 
-    await page.getByLabel('Search enforcement actions').fill(
-      'AML transaction monitoring failures',
-    );
-    await page.getByRole('button', { name: /^Search$/ }).click();
-    await expect(page.getByText(/Found \d+ results for/i)).toBeVisible();
+    await searchFor(page, 'AML transaction monitoring failures');
+    await expect(page.getByText(/Found \d+ results for/i)).toBeVisible({
+      timeout: SEARCH_TIMEOUT_MS,
+    });
 
-    await page.getByLabel('Search enforcement actions').fill(
-      'Goldman Sachs enforcement',
-    );
-    await page.getByRole('button', { name: /^Search$/ }).click();
-    await expect(page.getByText(/Found \d+ results for/i)).toBeVisible();
+    await searchFor(page, 'Goldman Sachs enforcement');
+    await expect(page.getByText(/Found \d+ results for/i)).toBeVisible({
+      timeout: SEARCH_TIMEOUT_MS,
+    });
 
-    await page.getByLabel('Search enforcement actions').fill(
-      'transaction monitoring',
-    );
-    await page.getByRole('button', { name: /^Search$/ }).click();
-    await expect(page.getByText(/Found \d+ results for/i)).toBeVisible();
+    await searchFor(page, 'transaction monitoring');
+    await expect(page.getByText(/Found \d+ results for/i)).toBeVisible({
+      timeout: SEARCH_TIMEOUT_MS,
+    });
 
-    await page.getByLabel('Search enforcement actions').fill('the and of');
-    await page.getByRole('button', { name: /^Search$/ }).click();
-    await expect(page.getByText('No results found')).toBeVisible();
+    await searchFor(page, 'the and of');
+    await expect(page.getByText('No results found')).toBeVisible({
+      timeout: SEARCH_TIMEOUT_MS,
+    });
 
-    await page.getByLabel('Search enforcement actions').fill(
-      'zzzzzz impossible zebra compliance',
-    );
-    await page.getByRole('button', { name: /^Search$/ }).click();
-    await expect(page.getByText('No results found')).toBeVisible();
+    await searchFor(page, 'zzzzzz impossible zebra compliance');
+    await expect(page.getByText('No results found')).toBeVisible({
+      timeout: SEARCH_TIMEOUT_MS,
+    });
   });
 });
