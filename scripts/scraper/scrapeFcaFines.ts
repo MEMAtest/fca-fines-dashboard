@@ -176,9 +176,27 @@ function parseDate(text: string): Date | null {
     monthNum = monthMap[month.toLowerCase()] || 0;
   }
   const dayNum = Number(day);
-  if (!monthNum || Number.isNaN(dayNum)) return null;
+  if (
+    !Number.isInteger(dayNum) ||
+    !Number.isInteger(monthNum) ||
+    !Number.isInteger(yearNum) ||
+    monthNum < 1 ||
+    monthNum > 12 ||
+    dayNum < 1 ||
+    dayNum > 31
+  ) {
+    return null;
+  }
   const date = new Date(Date.UTC(yearNum, monthNum - 1, dayNum));
-  return Number.isNaN(date.getTime()) ? null : date;
+  if (Number.isNaN(date.getTime())) return null;
+  if (
+    date.getUTCFullYear() !== yearNum ||
+    date.getUTCMonth() !== monthNum - 1 ||
+    date.getUTCDate() !== dayNum
+  ) {
+    return null;
+  }
+  return date;
 }
 
 function parseCurrency(text: string): number {
