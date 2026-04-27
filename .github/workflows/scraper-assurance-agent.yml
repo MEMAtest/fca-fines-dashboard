@@ -2,6 +2,12 @@ name: Scraper Assurance Agent
 
 on:
   workflow_dispatch:
+    inputs:
+      force_ai:
+        description: "Run AI triage even when deterministic checks are green"
+        required: false
+        type: boolean
+        default: false
   schedule:
     - cron: "17 */3 * * *" # every 3 hours, offset from scraper batches
 
@@ -41,10 +47,17 @@ jobs:
           AI_TRIAGE_MAX_OUTPUT_TOKENS: 1200
           ALERT_EMAIL: ${{ vars.ALERT_EMAIL || 'ademola@memaconsultants.com' }}
           WORKFLOW_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+          FORCE_AI: ${{ github.event_name == 'workflow_dispatch' && inputs.force_ai || false }}
         run: |
+          EXTRA_ARGS=""
+          if [ "$FORCE_AI" = "true" ]; then
+            EXTRA_ARGS="--force-ai"
+          fi
+
           npm run --silent check:scraper-assurance -- \
             --json \
             --exit-code \
+            $EXTRA_ARGS \
             --output=/tmp/scraper-assurance-report.json \
             --ses-output=/tmp/scraper-assurance-ses.json
 
