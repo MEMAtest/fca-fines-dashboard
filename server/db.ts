@@ -1,11 +1,13 @@
 import pg from 'pg';
 
 const CONNECTION_ENV_KEYS = [
-  'DATABASE_URL',
+  'NEON_FCA_FINES_URL',
   'POSTGRES_URL',
+  'DATABASE_URL',
+  'HORIZON_DB_URL',
 ] as const;
 
-function resolveConnectionString() {
+export function resolveConnectionString() {
   for (const key of CONNECTION_ENV_KEYS) {
     const value = process.env[key]?.trim();
     if (value) return value;

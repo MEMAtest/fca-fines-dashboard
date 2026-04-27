@@ -7,9 +7,11 @@
 
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 import postgres from 'postgres';
+import { resolveConnectionString } from '../../server/db.js';
 
-const sql = postgres(process.env.DATABASE_URL?.trim() || '', {
-  ssl: process.env.DATABASE_URL?.includes('sslmode=')
+const databaseUrl = resolveConnectionString() || '';
+const sql = postgres(databaseUrl, {
+  ssl: databaseUrl.includes('sslmode=')
     ? { rejectUnauthorized: false }
     : false
 });
