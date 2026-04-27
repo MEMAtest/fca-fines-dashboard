@@ -669,7 +669,7 @@ function generateArticleSchema(article: BlogArticleMeta | YearlyArticleMeta) {
     : article.dateISO;
   return {
     "@context": "https://schema.org",
-    "@type": isYearly ? "AnalysisNewsArticle" : "Article",
+    "@type": isYearly ? "AnalysisNewsArticle" : "BlogPosting",
     headline: article.seoTitle,
     description: article.excerpt,
     datePublished: isYearly ? `${article.year}-01-01` : article.dateISO,
