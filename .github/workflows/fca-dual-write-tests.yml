@@ -131,23 +131,17 @@ jobs:
     if: github.ref == 'refs/heads/main'
 
     steps:
-      - name: Check RegCanary latest fine
+      - name: Check FCA Fines stats API
         run: |
-          RESPONSE=$(curl -sf https://regcanary.com/api/updates/recent?limit=1)
-          if [ -z "$RESPONSE" ]; then
-            echo "❌ RegCanary API returned empty response"
-            exit 1
-          fi
-          echo "✅ RegCanary API responding"
+          curl -sf https://fcafines.memaconsultants.com/api/fca-fines/stats > stats.json
+          node -e "const fs=require('fs'); const data=JSON.parse(fs.readFileSync('stats.json','utf8')); if (!data.success) { console.error('FCA Fines stats API did not return success'); process.exit(1); }"
+          echo "✅ FCA Fines stats API responding"
 
-      - name: Check FCA Fines API
+      - name: Check UK enforcement health API
         run: |
-          RESPONSE=$(curl -sf https://fcafines.memaconsultants.com/api/fca-fines/stats)
-          if [ -z "$RESPONSE" ]; then
-            echo "❌ FCA Fines API returned empty response"
-            exit 1
-          fi
-          echo "✅ FCA Fines API responding"
+          curl -sf https://fcafines.memaconsultants.com/api/uk-enforcement/health > uk-health.json
+          node -e "const fs=require('fs'); const data=JSON.parse(fs.readFileSync('uk-health.json','utf8')); if (!data.success || data.totals?.failing !== 0) { console.error('UK enforcement health API is not healthy'); process.exit(1); }"
+          echo "✅ UK enforcement health API responding"
 
   test-summary:
     name: Test Summary
