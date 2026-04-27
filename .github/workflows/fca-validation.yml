@@ -1,18 +1,21 @@
 name: Global Messaging Update - Complete Test Suite
 
 on:
+  workflow_dispatch:
   push:
     branches: [main, develop]
     paths:
       - 'src/**'
       - 'index.html'
       - 'feature-validation/**'
+      - '.github/workflows/fca-validation.yml'
   pull_request:
     branches: [main, develop]
     paths:
       - 'src/**'
       - 'index.html'
       - 'feature-validation/**'
+      - '.github/workflows/fca-validation.yml'
 
 jobs:
   pre-flight:
@@ -55,7 +58,7 @@ jobs:
 
       - name: Validate constants
         run: |
-          grep -q "REGULATOR_COUNT.*34+" src/constants/site.ts || exit 1
+          grep -q "REGULATOR_COUNT.*45+" src/constants/site.ts || exit 1
 
   unit-tests:
     name: Unit Tests
