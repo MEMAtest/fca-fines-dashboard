@@ -316,7 +316,7 @@ Search for fines within specific ranges to understand the distribution of penalt
 
 The distribution of FCA fines by breach category reveals clear regulatory priorities. AML failures account for approximately 25% of total fine value, reflecting the FCA's strong focus on financial crime prevention. Market abuse cases represent around 20% of fines by value, while systems and controls failures contribute 18%. Client money breaches account for 12% of total penalties, with conduct issues making up the remaining 25%.
 
-## Using the FCA Fines Dashboard
+## Using the RegActions Dashboard
 
 Our interactive dashboard provides visual analytics through charts showing fine trends over time and by category. Users can export data in CSV, Excel, and PDF formats for integration with internal reporting. Comparison tools enable year-on-year analysis to identify emerging patterns, while real-time updates ensure access to the latest enforcement actions as they are announced.
 
@@ -1228,7 +1228,7 @@ Based on enforcement trends, insurance companies should prioritise:
 
 The FCA's enforcement approach to the insurance sector reflects its broader strategic priority of driving market-wide improvements in conduct standards. Firms that treat compliance as a genuine commitment to customer outcomes, rather than a regulatory burden, are best positioned to avoid enforcement action.
 
-For a complete interactive view of all FCA enforcement actions, including insurance sector penalties, explore our FCA Fines Dashboard.
+For a complete interactive view of all FCA enforcement actions, including insurance sector penalties, explore the RegActions dashboard.
     `,
     category: "Sector Analysis",
     readTime: "14 min read",

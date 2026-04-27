@@ -70,7 +70,7 @@ test.describe('Accessibility & Semantic HTML', () => {
       await expect(ctaButton).toHaveRole('button');
 
       // Button should have visible text
-      await expect(ctaButton).toContainText('Explore FCA Fines Dashboard');
+      await expect(ctaButton).toContainText('Explore the RegActions Dashboard');
     });
   });
 

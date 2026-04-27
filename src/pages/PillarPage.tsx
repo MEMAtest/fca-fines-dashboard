@@ -39,7 +39,7 @@ function generatePillarSchema() {
       width: 1200,
       height: 630,
       caption:
-        "FCA Fines Dashboard - Financial Conduct Authority Enforcement Data",
+        "RegActions - Global Regulatory Fines & Enforcement Intelligence",
     },
     keywords:
       "FCA enforcement guide, FCA fines guide, FCA fines explained, how FCA fines work, FCA enforcement process",
@@ -337,7 +337,7 @@ export function PillarPage() {
               className="blog-cta-button"
               style={{ display: "inline-flex" }}
             >
-              Explore the FCA Fines Dashboard
+              Explore the RegActions Dashboard
             </Link>
           </div>
         </article>
@@ -347,7 +347,7 @@ export function PillarPage() {
       <footer className="blog-footer">
         <div className="blog-footer-content">
           <div className="blog-footer-brand">
-            <p className="blog-footer-logo">FCA Fines Dashboard</p>
+            <p className="blog-footer-logo">RegActions</p>
             <p className="blog-footer-tagline">
               The definitive FCA fines database | Powered by MEMA Consultants
             </p>

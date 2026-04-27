@@ -587,9 +587,9 @@ async function buildPageMetas(): Promise<PageMeta[]> {
   // 5b. Sitemap page
   pages.push({
     path: "/sitemap",
-    title: "Sitemap | FCA Fines Dashboard",
+    title: "Sitemap | RegActions",
     description:
-      "Complete sitemap of the FCA Fines Dashboard. Browse all pages including the interactive dashboard, blog articles, annual reviews, and hub pages.",
+      "Complete sitemap of RegActions. Browse all pages including the interactive dashboard, blog articles, annual reviews, and hub pages.",
     keywords: "FCA fines sitemap, FCA fines pages, FCA fines navigation",
     ogType: "website",
   });
@@ -642,7 +642,7 @@ async function buildPageMetas(): Promise<PageMeta[]> {
         width: 1200,
         height: 630,
         caption:
-          "FCA Fines Dashboard - Financial Conduct Authority Enforcement Data",
+          "RegActions - Global Regulatory Fines & Enforcement Intelligence",
       },
     },
   });
@@ -715,7 +715,7 @@ async function buildPageMetas(): Promise<PageMeta[]> {
           width: 1200,
           height: 630,
           caption:
-            "FCA Fines Dashboard - Financial Conduct Authority Enforcement Data",
+            "RegActions - Global Regulatory Fines & Enforcement Intelligence",
         },
       },
       extraJsonLd: extraLd,
@@ -795,7 +795,7 @@ async function buildPageMetas(): Promise<PageMeta[]> {
           width: 1200,
           height: 630,
           caption:
-            "FCA Fines Dashboard - Financial Conduct Authority Enforcement Data",
+            "RegActions - Global Regulatory Fines & Enforcement Intelligence",
         },
       },
       extraJsonLd: yearlyFaqs.length > 0 ? [generateFaqSchema(yearlyFaqs)] : [],

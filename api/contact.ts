@@ -124,7 +124,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       Destination: { ToAddresses: [TO_EMAIL] },
       ReplyToAddresses: [email.trim()],
       Message: {
-        Subject: { Data: `FCA Fines Contact: ${reasonLabel} from ${name}`, Charset: 'UTF-8' },
+        Subject: { Data: `RegActions Contact: ${reasonLabel} from ${name}`, Charset: 'UTF-8' },
         Body: {
           Html: { Data: htmlContent, Charset: 'UTF-8' },
           Text: { Data: textContent, Charset: 'UTF-8' },

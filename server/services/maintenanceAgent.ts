@@ -549,7 +549,7 @@ export async function buildMaintenanceEmailReport(result: MaintenanceResult): Pr
       </table>` : '<p style="color: #059669;">No new issues to analyze.</p>'}
     </div>
     <div class="footer">
-      <p>Scraper Maintenance Agent &middot; FCA Fines Dashboard</p>
+      <p>Scraper Maintenance Agent &middot; RegActions</p>
       <p>${new Date().toISOString().slice(0, 19)} UTC</p>
     </div>
   </div>

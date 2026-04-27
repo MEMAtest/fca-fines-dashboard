@@ -78,7 +78,7 @@ export function verificationEmail(type: 'alert' | 'watchlist' | 'digest', token:
 <body>
   <div class="container">
     <div class="card">
-      <div class="logo">FCA Fines Dashboard</div>
+      <div class="logo">RegActions</div>
       <h1>Verify your subscription</h1>
       <p>You've requested to subscribe to ${typeLabels[type]}. Click the button below to confirm your email address and activate your subscription.</p>
       ${details ? `<div class="details">${details}</div>` : ''}
@@ -106,7 +106,7 @@ Verify here: ${verifyUrl}
 This link will expire in 24 hours. If you didn't request this subscription, you can safely ignore this email.
 
 ---
-FCA Fines Dashboard
+RegActions
 Powered by MEMA Consultants
 ${BASE_URL}
   `.trim();
@@ -157,7 +157,7 @@ export function alertEmail(
 <body>
   <div class="container">
     <div class="card">
-      <div class="logo">FCA Fines Dashboard</div>
+      <div class="logo">RegActions</div>
       <span class="alert-badge">New Enforcement Action</span>
       <h1>${firmName}</h1>
       <div class="amount">${formattedAmount}</div>
@@ -199,7 +199,7 @@ View on Dashboard: ${BASE_URL}/dashboard
 ---
 You're receiving this because you subscribed to FCA Fine Alerts.
 Unsubscribe: ${unsubscribeUrl}
-FCA Fines Dashboard - ${BASE_URL}
+RegActions - ${BASE_URL}
   `.trim();
 
   return { subject, html, text };
@@ -248,7 +248,7 @@ export function watchlistAlertEmail(
 <body>
   <div class="container">
     <div class="card">
-      <div class="logo">FCA Fines Dashboard</div>
+      <div class="logo">RegActions</div>
       <span class="watchlist-badge">Firm You're Watching</span>
       <h1>${firmName}</h1>
       <div class="amount">${formattedAmount}</div>
@@ -290,7 +290,7 @@ View on Dashboard: ${BASE_URL}/dashboard
 ---
 You're watching "${firmName}" on your watchlist.
 Stop watching this firm: ${unsubscribeUrl}
-FCA Fines Dashboard - ${BASE_URL}
+RegActions - ${BASE_URL}
   `.trim();
 
   return { subject, html, text };
@@ -357,7 +357,7 @@ export function weeklyDigestEmail(
 <body>
   <div class="container">
     <div class="card">
-      <div class="logo">FCA Fines Dashboard</div>
+      <div class="logo">RegActions</div>
       <h1>Weekly Digest</h1>
       <p style="color: #6b7280;">${new Date(periodStart).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })} - ${new Date(periodEnd).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}</p>
 
@@ -421,7 +421,7 @@ View Full Dashboard: ${BASE_URL}/dashboard
 ---
 You're subscribed to the FCA Fines Weekly Digest.
 Unsubscribe: ${unsubscribeUrl}
-FCA Fines Dashboard - ${BASE_URL}
+RegActions - ${BASE_URL}
   `.trim();
 
   return { subject, html, text };

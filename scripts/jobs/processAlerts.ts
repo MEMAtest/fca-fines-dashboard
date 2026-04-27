@@ -299,7 +299,7 @@ async function sendAlertEmail(subscription: AlertSubscription, fines: Fine[]) {
 <body>
   <div class="container">
     <div class="card">
-      <div class="logo">FCA Fines Dashboard</div>
+      <div class="logo">RegActions</div>
       <h1>New FCA Fines Alert</h1>
       <p class="subtitle">${fines.length} new fine${fines.length !== 1 ? 's' : ''} matching your criteria</p>
       ${finesList}
@@ -307,7 +307,7 @@ async function sendAlertEmail(subscription: AlertSubscription, fines: Fine[]) {
     </div>
     <div class="footer">
       <p>You're receiving this because you subscribed to FCA fine alerts.</p>
-      <p><a href="${unsubscribeUrl}">Unsubscribe</a> · FCA Fines Dashboard by MEMA Consultants</p>
+      <p><a href="${unsubscribeUrl}">Unsubscribe</a> · RegActions by MEMA Consultants</p>
     </div>
   </div>
 </body>
@@ -378,7 +378,7 @@ async function sendWatchlistEmail(entry: WatchlistEntry, fines: Fine[]) {
 <body>
   <div class="container">
     <div class="card">
-      <div class="logo">FCA Fines Dashboard</div>
+      <div class="logo">RegActions</div>
       <h1>Watchlist Alert</h1>
       <p>A firm you're watching has received a new FCA fine.</p>
       <div class="firm-badge">${entry.firm_name}</div>
@@ -387,7 +387,7 @@ async function sendWatchlistEmail(entry: WatchlistEntry, fines: Fine[]) {
     </div>
     <div class="footer">
       <p>You're receiving this because you're watching "${entry.firm_name}".</p>
-      <p><a href="${unsubscribeUrl}">Stop watching this firm</a> · FCA Fines Dashboard by MEMA Consultants</p>
+      <p><a href="${unsubscribeUrl}">Stop watching this firm</a> · RegActions by MEMA Consultants</p>
     </div>
   </div>
 </body>

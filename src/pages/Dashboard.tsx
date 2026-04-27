@@ -283,7 +283,7 @@ function buildNotifications(
 
 export function Dashboard() {
   useSEO({
-    title: "FCA Fines Dashboard | Interactive Analytics & Search",
+    title: "RegActions Dashboard | Interactive Analytics & Search",
     description:
       "Interactive FCA fines dashboard. Search all Financial Conduct Authority penalties by firm, year, amount and breach category. Export data and analyse enforcement trends.",
     keywords:
@@ -927,7 +927,7 @@ export function Dashboard() {
       if (navigator?.share) {
         try {
           await navigator.share({
-            title: "FCA Fines Dashboard",
+            title: "RegActions",
             url: shareUrl,
           });
           setToast({ message: "Share sheet opened", type: "success" });

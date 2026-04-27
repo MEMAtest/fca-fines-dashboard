@@ -171,7 +171,7 @@ async function sendContactEmail(data: ContactFormData): Promise<void> {
       <body>
         <div class="header">
           <h1>🔔 New Contact Form Submission</h1>
-          <p style="margin: 5px 0 0; font-size: 14px; opacity: 0.9;">FCA Fines Dashboard</p>
+          <p style="margin: 5px 0 0; font-size: 14px; opacity: 0.9;">RegActions</p>
         </div>
         <div class="content">
           <div class="field">
@@ -211,7 +211,7 @@ async function sendContactEmail(data: ContactFormData): Promise<void> {
         </div>
 
         <div class="footer">
-          <p>This email was sent from the FCA Fines Dashboard contact form.<br/>
+          <p>This email was sent from the RegActions contact form.<br/>
           Received on ${new Date().toLocaleString("en-GB", {
             dateStyle: "long",
             timeStyle: "short",
@@ -223,7 +223,7 @@ async function sendContactEmail(data: ContactFormData): Promise<void> {
   `;
 
   const emailText = `
-New Contact Form Submission - FCA Fines Dashboard
+New Contact Form Submission - RegActions
 
 Contact Person: ${data.name}
 Email: ${data.email}
@@ -241,7 +241,7 @@ Received on ${new Date().toLocaleString("en-GB", {
   `;
 
   await resend.emails.send({
-    from: "FCA Fines Dashboard <noreply@memaconsultants.com>",
+    from: "RegActions <noreply@memaconsultants.com>",
     to: [contactEmail],
     replyTo: data.email,
     subject: `New Contact: ${reasonText} - ${data.name}`,

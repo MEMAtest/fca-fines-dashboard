@@ -317,7 +317,7 @@ function generateTopicalEntry(opts: {
 
 Draft article content here. Use ## for sections and ### for subsections.
 
-For a complete interactive view of all FCA enforcement actions, explore our FCA Fines Dashboard.
+For a complete interactive view of all FCA enforcement actions, explore our RegActions.
     \`,
     category: '${opts.category}',
     readTime: '10 min read',
@@ -567,7 +567,7 @@ function pickIcon(category: string): string {
 
 function printUsage() {
   console.log(`
-Blog Post Generator — FCA Fines Dashboard
+Blog Post Generator — RegActions
 
 Usage:
   npx tsx scripts/generate-blog.ts monthly <month> <year> [--dry-run] [--with-data]

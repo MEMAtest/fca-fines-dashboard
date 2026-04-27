@@ -51,7 +51,7 @@ export default async function handler(_req: VercelRequest, res: VercelResponse) 
         : '- None detected',
     ];
 
-    await sendEmail('FCA Fines – daily summary', lines.join('\n'));
+    await sendEmail('RegActions – daily summary', lines.join('\n'));
     res.status(200).json({ success: true });
   } catch (error: any) {
     console.error('Daily digest failed', error);

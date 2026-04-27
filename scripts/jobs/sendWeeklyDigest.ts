@@ -159,7 +159,7 @@ async function sendDigestEmail(
     .period { color: #6b7280; font-size: 14px; margin-bottom: 24px; }
     h1 { color: #111827; font-size: 24px; margin: 0 0 24px 0; }
     .stats-grid { display: flex; gap: 16px; margin-bottom: 24px; }
-    .stat-box { flex: 1; background: linear-gradient(135deg, rgba(15, 162, 148, 0.1), rgba(99, 102, 241, 0.1)); border-radius: 12px; padding: 16px; text-align: center; }
+    .stat-box { flex: 1; background: linear-gradient(135deg, rgba(15, 167, 125, 0.1), rgba(99, 102, 241, 0.1)); border-radius: 12px; padding: 16px; text-align: center; }
     .stat-value { font-size: 1.5rem; font-weight: 700; color: #0FA294; }
     .stat-label { font-size: 0.75rem; color: #6b7280; text-transform: uppercase; letter-spacing: 0.05em; }
     .table { width: 100%; border-collapse: collapse; }
@@ -172,20 +172,20 @@ async function sendDigestEmail(
 <body>
   <div class="container">
     <div class="card">
-      <div class="logo">FCA Fines Dashboard</div>
+      <div class="logo">RegActions</div>
       <div class="period">${periodLabel}'s Summary</div>
       <h1>${frequency.charAt(0).toUpperCase() + frequency.slice(1)} Digest</h1>
 
       <div style="display: flex; gap: 16px; margin-bottom: 24px;">
-        <div style="flex: 1; background: linear-gradient(135deg, rgba(15, 162, 148, 0.1), rgba(99, 102, 241, 0.1)); border-radius: 12px; padding: 16px; text-align: center;">
+        <div style="flex: 1; background: linear-gradient(135deg, rgba(15, 167, 125, 0.1), rgba(99, 102, 241, 0.1)); border-radius: 12px; padding: 16px; text-align: center;">
           <div style="font-size: 1.5rem; font-weight: 700; color: #0FA294;">${allFines.length}</div>
           <div style="font-size: 0.75rem; color: #6b7280; text-transform: uppercase; letter-spacing: 0.05em;">Fines</div>
         </div>
-        <div style="flex: 1; background: linear-gradient(135deg, rgba(15, 162, 148, 0.1), rgba(99, 102, 241, 0.1)); border-radius: 12px; padding: 16px; text-align: center;">
+        <div style="flex: 1; background: linear-gradient(135deg, rgba(15, 167, 125, 0.1), rgba(99, 102, 241, 0.1)); border-radius: 12px; padding: 16px; text-align: center;">
           <div style="font-size: 1.5rem; font-weight: 700; color: #0FA294;">£${(totalAmount / 1_000_000).toFixed(1)}m</div>
           <div style="font-size: 0.75rem; color: #6b7280; text-transform: uppercase; letter-spacing: 0.05em;">Total</div>
         </div>
-        <div style="flex: 1; background: linear-gradient(135deg, rgba(15, 162, 148, 0.1), rgba(99, 102, 241, 0.1)); border-radius: 12px; padding: 16px; text-align: center;">
+        <div style="flex: 1; background: linear-gradient(135deg, rgba(15, 167, 125, 0.1), rgba(99, 102, 241, 0.1)); border-radius: 12px; padding: 16px; text-align: center;">
           <div style="font-size: 1.5rem; font-weight: 700; color: #0FA294;">£${(avgAmount / 1_000_000).toFixed(1)}m</div>
           <div style="font-size: 0.75rem; color: #6b7280; text-transform: uppercase; letter-spacing: 0.05em;">Average</div>
         </div>
@@ -211,7 +211,7 @@ async function sendDigestEmail(
 
     <div class="footer">
       <p>You're subscribed to the ${frequency} FCA Fines Digest.</p>
-      <p><a href="${unsubscribeUrl}">Unsubscribe</a> · FCA Fines Dashboard by MEMA Consultants</p>
+      <p><a href="${unsubscribeUrl}">Unsubscribe</a> · RegActions by MEMA Consultants</p>
     </div>
   </div>
 </body>
