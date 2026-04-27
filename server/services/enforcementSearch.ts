@@ -1,4 +1,5 @@
 import { PUBLIC_REGULATOR_NAV_ITEMS } from '../../src/data/regulatorCoverage.js';
+import { UK_ENFORCEMENT_REGULATORS } from '../../src/data/ukEnforcement.js';
 
 const ACRONYM_EXPANSIONS: Record<string, string[]> = {
   aml: ['anti money laundering'],
@@ -53,18 +54,20 @@ const COUNTRY_ALIASES: Record<string, string> = {
 };
 
 const COUNTRY_NAME_TO_CODE = new Map(
-  PUBLIC_REGULATOR_NAV_ITEMS.map((coverage) => [
+  getRegulatorHintItems().map((coverage) => [
     coverage.country.toLowerCase(),
     coverage.countryCode,
   ]),
 );
 
 const REGULATOR_CODE_TO_MATCH = new Map(
-  PUBLIC_REGULATOR_NAV_ITEMS.map((coverage) => [
+  getRegulatorHintItems().map((coverage) => [
     coverage.code.toLowerCase(),
     coverage.code,
   ]),
 );
+
+const REGULATOR_PHRASE_HINTS = buildRegulatorPhraseHints();
 
 const COMMON_STOPWORDS = new Set([
   'a',
@@ -178,8 +181,105 @@ const BROAD_SINGLE_TOKEN_FIRM_TERMS = new Set([
   'trust',
 ]);
 
+interface RegulatorHintItem {
+  code: string;
+  name: string;
+  fullName: string;
+  country: string;
+  countryCode: string;
+}
+
+function getRegulatorHintItems(): RegulatorHintItem[] {
+  const merged = new Map<string, RegulatorHintItem>();
+
+  for (const coverage of PUBLIC_REGULATOR_NAV_ITEMS) {
+    merged.set(coverage.code, {
+      code: coverage.code,
+      name: coverage.name,
+      fullName: coverage.fullName,
+      country: coverage.country,
+      countryCode: coverage.countryCode,
+    });
+  }
+
+  for (const regulator of UK_ENFORCEMENT_REGULATORS) {
+    merged.set(regulator.code, {
+      code: regulator.code,
+      name: regulator.name,
+      fullName: regulator.fullName,
+      country: 'United Kingdom',
+      countryCode: 'GB',
+    });
+  }
+
+  return Array.from(merged.values());
+}
+
+function normalizeHintPhrase(value: string) {
+  return normalizeSearchQuery(value)
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, ' ')
+    .trim();
+}
+
+function buildRegulatorPhraseHints() {
+  const hints = new Map<string, string[]>();
+  const add = (phrase: string, ...codes: string[]) => {
+    const normalized = normalizeHintPhrase(phrase);
+    if (!normalized) {
+      return;
+    }
+
+    hints.set(normalized, unique([...(hints.get(normalized) ?? []), ...codes]));
+  };
+
+  for (const item of getRegulatorHintItems()) {
+    add(item.code, item.code);
+    add(item.name, item.code);
+    add(item.fullName, item.code);
+  }
+
+  add('information commissioner', 'ICO');
+  add('information commissioners office', 'ICO');
+  add('data protection', 'ICO');
+  add('privacy enforcement', 'ICO');
+  add('pension regulator', 'TPR');
+  add('pensions regulator', 'TPR');
+  add('pension', 'TPR');
+  add('pensions', 'TPR');
+  add('payment systems regulator', 'PSR');
+  add('payment systems', 'PSR');
+  add('payments regulator', 'PSR');
+  add('prudential regulation authority', 'PRA');
+  add('prudential regulation', 'PRA');
+  add('bank of england prudential', 'PRA');
+  add('office of financial sanctions implementation', 'OFSI');
+  add('financial sanctions implementation', 'OFSI');
+  add('uk sanctions', 'OFSI');
+  add('russia sanctions', 'OFSI');
+  add('competition and markets', 'CMA');
+  add('competition', 'CMA');
+  add('competition enforcement', 'CMA');
+  add('consumer enforcement', 'CMA');
+  add('consumer refund', 'CMA');
+  add('consumer refunds', 'CMA');
+  add('financial reporting council', 'FRC');
+  add('audit enforcement', 'FRC');
+  add('accountancy enforcement', 'FRC');
+  add('ontario', 'OSC');
+  add('ontario securities', 'OSC');
+  add('jersey', 'JFSC');
+  add('malta', 'MFSA');
+  add('dubai', 'DFSA');
+
+  return Array.from(hints.entries()).map(([phrase, codes]) => ({
+    phrase,
+    codes,
+  }));
+}
+
 const BASE_FUZZY_SEARCH_PHRASES = unique([
-  ...PUBLIC_REGULATOR_NAV_ITEMS.flatMap((coverage) => [
+  ...getRegulatorHintItems().flatMap((coverage) => [
     coverage.code,
     coverage.fullName,
     coverage.country,
@@ -372,7 +472,7 @@ function deriveCountryPhraseHints(normalizedQuery: string) {
   const hints: string[] = [];
   const phraseTokens = new Set<string>();
 
-  for (const coverage of PUBLIC_REGULATOR_NAV_ITEMS) {
+  for (const coverage of getRegulatorHintItems()) {
     const countryName = coverage.country.toLowerCase();
     if (!countryName.includes(' ')) {
       continue;
@@ -394,6 +494,21 @@ function deriveCountryPhraseHints(normalizedQuery: string) {
     hints: unique(hints),
     phraseTokens,
   };
+}
+
+function deriveRegulatorPhraseHints(normalizedQuery: string) {
+  const normalizedForPhrase = ` ${normalizeHintPhrase(normalizedQuery)} `;
+  const hints: string[] = [];
+
+  for (const entry of REGULATOR_PHRASE_HINTS) {
+    if (!normalizedForPhrase.includes(` ${entry.phrase} `)) {
+      continue;
+    }
+
+    hints.push(...entry.codes);
+  }
+
+  return unique(hints);
 }
 
 function stripTrailingLegalSuffixTerms(tokens: string[]) {
@@ -871,9 +986,12 @@ export function prepareEnforcementSearch(query: string): PreparedEnforcementSear
     stripTrailingLegalSuffixTerms(firmIntentTerms).join(' ').trim() ||
     firmIntentQuery;
   const regulatorHints = unique(
-    rawTokens
-      .map((token) => REGULATOR_CODE_TO_MATCH.get(token))
-      .filter((token): token is string => Boolean(token)),
+    [
+      ...rawTokens
+        .map((token) => REGULATOR_CODE_TO_MATCH.get(token))
+        .filter((token): token is string => Boolean(token)),
+      ...deriveRegulatorPhraseHints(normalizedQuery),
+    ],
   );
   const countryHints = unique(
     [

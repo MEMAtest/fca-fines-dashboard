@@ -1,0 +1,166 @@
+[
+  {
+    "id": "nl-fca-barclays-what-for",
+    "category": "natural_language",
+    "query": "what did the FCA fine Barclays for",
+    "expectedAnyTop": ["Barclays Bank plc", "Barclays Bank UK plc", "Barclays plc"],
+    "maxRank": 3,
+    "expectedRegulatorTop": ["FCA"],
+    "maxRegulatorRank": 3,
+    "notes": "Conversational firm plus regulator query should answer with Barclays/FCA actions."
+  },
+  {
+    "id": "nl-who-fined-coinbase",
+    "category": "natural_language",
+    "query": "who fined Coinbase Europe",
+    "expectedAnyTop": ["Coinbase Europe Limited"],
+    "maxRank": 2,
+    "expectedRegulatorTop": ["CBI"],
+    "maxRegulatorRank": 3,
+    "notes": "Question-style Coinbase query should identify the Irish Central Bank action."
+  },
+  {
+    "id": "nl-uk-sanctions-wise-russia",
+    "category": "natural_language",
+    "query": "UK sanctions Wise Russia",
+    "expectedAnyTop": ["Wise Payments Limited"],
+    "maxRank": 1,
+    "expectedRegulatorTop": ["OFSI"],
+    "maxRegulatorRank": 1,
+    "notes": "UK sanctions phrase should anchor Wise to OFSI rather than generic sanctions noise."
+  },
+  {
+    "id": "nl-transaction-monitoring-banks",
+    "category": "natural_language",
+    "query": "banks fined for transaction monitoring failures",
+    "minResults": 1,
+    "notes": "Broad natural-language AML controls query should return substantive bank enforcement results."
+  },
+  {
+    "id": "nl-largest-aml-hong-kong",
+    "category": "natural_language",
+    "query": "largest AML fines in Hong Kong",
+    "expectedCountryTop": ["HK", "Hong Kong"],
+    "maxCountryRank": 3,
+    "minResults": 1,
+    "notes": "Hong Kong AML query should stay in the Hong Kong regulator cluster."
+  },
+  {
+    "id": "nl-market-abuse-fca-individuals",
+    "category": "natural_language",
+    "query": "market abuse fines FCA individuals",
+    "expectedRegulatorTop": ["FCA"],
+    "maxRegulatorRank": 3,
+    "minResults": 1,
+    "notes": "Market abuse query naming FCA should keep FCA individual actions at the top."
+  },
+  {
+    "id": "nl-recent-malta-2026",
+    "category": "natural_language",
+    "query": "recent 2026 enforcement actions Malta",
+    "expectedRegulatorTop": ["MFSA"],
+    "maxRegulatorRank": 3,
+    "expectedCountryTop": ["MT", "Malta"],
+    "maxCountryRank": 3,
+    "minResults": 1,
+    "notes": "Malta natural-language query should surface MFSA 2026 actions."
+  },
+  {
+    "id": "nl-jersey-trust-penalty",
+    "category": "natural_language",
+    "query": "Jersey trust company civil financial penalty",
+    "expectedRegulatorTop": ["JFSC"],
+    "maxRegulatorRank": 3,
+    "expectedCountryTop": ["JE", "Jersey"],
+    "maxCountryRank": 3,
+    "minResults": 1,
+    "notes": "Jersey trust-company penalty query should rank JFSC records."
+  },
+  {
+    "id": "nl-sec-beneficial-ownership",
+    "category": "natural_language",
+    "query": "SEC beneficial ownership late filings",
+    "expectedRegulatorTop": ["SEC"],
+    "maxRegulatorRank": 3,
+    "minResults": 1,
+    "notes": "SEC phrase should keep the beneficial ownership sweep near the top."
+  },
+  {
+    "id": "reg-ico-data-protection",
+    "category": "regulator_intent",
+    "query": "ICO data protection fines financial services",
+    "expectedRegulatorTop": ["ICO"],
+    "maxRegulatorRank": 3,
+    "minResults": 1,
+    "notes": "ICO code and data-protection phrase should anchor to UK data-protection enforcement."
+  },
+  {
+    "id": "reg-data-protection-without-code",
+    "category": "regulator_intent",
+    "query": "data protection fines financial services",
+    "expectedRegulatorTop": ["ICO"],
+    "maxRegulatorRank": 3,
+    "minResults": 1,
+    "notes": "Data-protection phrase alone should be enough to surface ICO before generic financial-services matches."
+  },
+  {
+    "id": "reg-ontario-securities",
+    "category": "regulator_intent",
+    "query": "Ontario securities fraud penalties",
+    "expectedRegulatorTop": ["OSC"],
+    "maxRegulatorRank": 3,
+    "expectedCountryTop": ["CA", "Canada"],
+    "maxCountryRank": 5,
+    "minResults": 1,
+    "notes": "Ontario securities phrase should map to the Ontario Securities Commission."
+  },
+  {
+    "id": "reg-pension-regulator",
+    "category": "regulator_intent",
+    "query": "pension regulator fines",
+    "expectedRegulatorTop": ["TPR"],
+    "maxRegulatorRank": 3,
+    "minResults": 1,
+    "notes": "Pension regulator phrase should anchor to TPR penalty notices."
+  },
+  {
+    "id": "reg-prudential-regulation",
+    "category": "regulator_intent",
+    "query": "prudential regulation bank fines",
+    "expectedRegulatorTop": ["PRA"],
+    "maxRegulatorRank": 3,
+    "minResults": 1,
+    "notes": "Prudential regulation phrase should anchor to PRA where there are matching UK records."
+  },
+  {
+    "id": "reg-competition-consumer",
+    "category": "regulator_intent",
+    "query": "competition penalties consumer refunds",
+    "expectedRegulatorTop": ["CMA"],
+    "maxRegulatorRank": 3,
+    "minResults": 1,
+    "notes": "Competition and consumer wording should anchor to CMA enforcement."
+  },
+  {
+    "id": "nl-dubai-aml-controls",
+    "category": "natural_language",
+    "query": "Dubai AML controls failures",
+    "expectedRegulatorTop": ["DFSA"],
+    "maxRegulatorRank": 3,
+    "expectedCountryTop": ["AE", "United Arab Emirates"],
+    "maxCountryRank": 3,
+    "minResults": 1,
+    "notes": "Dubai query should stay with DFSA/UAE enforcement."
+  },
+  {
+    "id": "nl-singapore-bank-aml",
+    "category": "natural_language",
+    "query": "Singapore bank AML penalties",
+    "expectedRegulatorTop": ["MAS"],
+    "maxRegulatorRank": 3,
+    "expectedCountryTop": ["SG", "Singapore"],
+    "maxCountryRank": 3,
+    "minResults": 1,
+    "notes": "Singapore bank AML query should stay anchored to MAS."
+  }
+]

@@ -9,13 +9,21 @@ interface EvalCase {
   maxRank?: number;
   expectedRegulatorTop?: string[];
   maxRegulatorRank?: number;
+  expectedCountryTop?: string[];
+  maxCountryRank?: number;
+  expectedQueryMode?: string;
+  minResults?: number;
+  maxResults?: number;
   expectZeroResults?: boolean;
+  mustPass?: boolean;
   notes?: string;
 }
 
 interface SearchResultRow {
   firm?: string;
   regulator?: string;
+  countryCode?: string;
+  countryName?: string;
   breachType?: string;
 }
 
@@ -29,7 +37,7 @@ interface SearchResponse {
 
 function usage() {
   console.error(
-    'Usage: npx tsx scripts/evaluateSearchRelevance.ts [baseUrl] [evalSetPath]',
+    'Usage: npx tsx scripts/evaluateSearchRelevance.ts [baseUrl] [evalSetPath...]',
   );
 }
 
@@ -46,21 +54,27 @@ function findRank(values: string[], expected: string[]) {
 
 async function main() {
   const baseUrl = process.argv[2] || 'https://fcafines.memaconsultants.com';
-  const evalSetPath =
-    process.argv[3]
-    || path.resolve(
-      process.cwd(),
-      'research/search-relevance-eval-set.json',
-    );
+  const evalSetPaths =
+    process.argv.length > 3
+      ? process.argv.slice(3)
+      : [
+          path.resolve(
+            process.cwd(),
+            'research/search-relevance-eval-set.json',
+          ),
+        ];
 
   if (!baseUrl) {
     usage();
     process.exit(1);
   }
 
-  const raw = fs.readFileSync(evalSetPath, 'utf8');
-  const evalSet = JSON.parse(raw) as EvalCase[];
+  const evalSet = evalSetPaths.flatMap((evalSetPath) => {
+    const raw = fs.readFileSync(evalSetPath, 'utf8');
+    return JSON.parse(raw) as EvalCase[];
+  });
   const failures: string[] = [];
+  const warnings: string[] = [];
   const categoryStats = new Map<
     string,
     { total: number; passed: number; failedIds: string[] }
@@ -73,10 +87,21 @@ async function main() {
     const results = json.results ?? [];
     const topFirms = results.slice(0, 5).map((result) => result.firm ?? '');
     const topRegulators = results.slice(0, 5).map((result) => result.regulator ?? '');
+    const topCountries = results
+      .slice(0, 5)
+      .map((result) => result.countryCode ?? result.countryName ?? '');
     const total = json.pagination?.total ?? 0;
+    const queryMode = typeof json.metadata?.queryMode === 'string'
+      ? json.metadata.queryMode
+      : null;
+    const mustPass = testCase.mustPass !== false;
 
-    let passed = true;
+    let passed = response.ok;
     const checks: string[] = [];
+
+    if (!response.ok) {
+      checks.push(`HTTP ${response.status}`);
+    }
 
     if (testCase.expectZeroResults) {
       const zeroPassed = total === 0;
@@ -106,6 +131,47 @@ async function main() {
       );
     }
 
+    if (testCase.expectedCountryTop?.length && testCase.maxCountryRank) {
+      const rank = findRank(topCountries, testCase.expectedCountryTop);
+      const rankPassed = rank != null && rank <= testCase.maxCountryRank;
+      passed &&= rankPassed;
+      checks.push(
+        rankPassed
+          ? `country hit at rank ${rank}`
+          : `expected country within top ${testCase.maxCountryRank}, got ${rank ?? 'none'}`,
+      );
+    }
+
+    if (testCase.expectedQueryMode) {
+      const modePassed = queryMode === testCase.expectedQueryMode;
+      passed &&= modePassed;
+      checks.push(
+        modePassed
+          ? `query mode ${queryMode}`
+          : `expected query mode ${testCase.expectedQueryMode}, got ${queryMode ?? 'none'}`,
+      );
+    }
+
+    if (testCase.minResults !== undefined) {
+      const minPassed = total >= testCase.minResults;
+      passed &&= minPassed;
+      checks.push(
+        minPassed
+          ? `min results ok (${total})`
+          : `expected at least ${testCase.minResults} results, got ${total}`,
+      );
+    }
+
+    if (testCase.maxResults !== undefined) {
+      const maxPassed = total <= testCase.maxResults;
+      passed &&= maxPassed;
+      checks.push(
+        maxPassed
+          ? `max results ok (${total})`
+          : `expected at most ${testCase.maxResults} results, got ${total}`,
+      );
+    }
+
     const line = `${passed ? 'PASS' : 'FAIL'} ${testCase.id}: ${checks.join(' | ')}`;
     console.log(line);
     console.log(
@@ -113,10 +179,13 @@ async function main() {
         {
           query: testCase.query,
           total,
+          queryMode,
           topFirms,
           topRegulators,
+          topCountries,
           notes: testCase.notes ?? null,
           correction: json.metadata?.correction ?? null,
+          mustPass,
         },
         null,
         2,
@@ -124,7 +193,11 @@ async function main() {
     );
 
     if (!passed) {
-      failures.push(testCase.id);
+      if (mustPass) {
+        failures.push(testCase.id);
+      } else {
+        warnings.push(testCase.id);
+      }
     }
 
     const category = testCase.category ?? 'uncategorized';
@@ -157,10 +230,12 @@ async function main() {
     JSON.stringify(
       {
         baseUrl,
-        evalSetPath,
+        evalSetPaths,
         totalCases: evalSet.length,
         failedCases: failures.length,
+        warningCases: warnings.length,
         failures,
+        warnings,
         categorySummary,
       },
       null,

@@ -115,11 +115,30 @@ describe('enforcementSearch helpers', () => {
     const hongKongPrepared = prepareEnforcementSearch(
       'hong kong counter terrorist financing',
     );
+    const icoPrepared = prepareEnforcementSearch(
+      'ICO data protection fines financial services',
+    );
 
     expect(prepared.regulatorHints).toContain('SEBI');
     expect(prepared.countryHints).toContain('AE');
     expect(hongKongPrepared.countryHints).toContain('HK');
     expect(hongKongPrepared.firmIntentTerms).toEqual([]);
+    expect(icoPrepared.regulatorHints).toContain('ICO');
+  });
+
+  it('derives UK-adjacent and jurisdiction regulator intent from natural phrases', () => {
+    expect(
+      prepareEnforcementSearch('data protection fines financial services')
+        .regulatorHints,
+    ).toContain('ICO');
+    expect(
+      prepareEnforcementSearch('Ontario securities fraud penalties')
+        .regulatorHints,
+    ).toContain('OSC');
+    expect(prepareEnforcementSearch('pension regulator fines').regulatorHints)
+      .toContain('TPR');
+    expect(prepareEnforcementSearch('UK sanctions Wise Russia').regulatorHints)
+      .toContain('OFSI');
   });
 
   it('maps country adjectives and crypto intent into richer search terms', () => {

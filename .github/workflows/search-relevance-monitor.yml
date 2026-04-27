@@ -1,0 +1,42 @@
+name: Search Relevance Monitor
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "43 5 * * *"
+
+jobs:
+  live-search-relevance:
+    name: Run live search relevance suite
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    concurrency:
+      group: search-relevance-monitor
+      cancel-in-progress: false
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 1
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run production search relevance checks
+        run: |
+          set -o pipefail
+          npm run --silent search:eval:prod:full | tee /tmp/search-relevance-report.log
+
+      - name: Upload search relevance report
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: search-relevance-report
+          path: /tmp/search-relevance-report.log
+          if-no-files-found: ignore
