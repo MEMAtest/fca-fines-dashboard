@@ -117,7 +117,7 @@ describe("BlogPost", () => {
       }),
     ).toBeInTheDocument();
     expect(
-      screen.getByRole("button", { name: /Explore FCA Fines Dashboard/i }),
+      screen.getByRole("button", { name: /Explore RegActions Dashboard/i }),
     ).toBeInTheDocument();
     expect(
       screen.queryByRole("button", { name: /Open Regulator Hub/i }),

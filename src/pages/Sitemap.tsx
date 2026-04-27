@@ -8,9 +8,9 @@ import "../styles/blog.css";
 
 export function Sitemap() {
   useSEO({
-    title: "Sitemap | FCA Fines Dashboard",
+    title: "Sitemap | RegActions",
     description:
-      "Complete sitemap of the FCA Fines Dashboard. Browse all pages including the interactive dashboard, blog articles, annual reviews, and hub pages.",
+      "Complete sitemap of RegActions. Browse all pages including the interactive dashboard, blog articles, annual reviews, and hub pages.",
     keywords: "FCA fines sitemap, FCA fines pages, FCA fines navigation",
     canonicalPath: "/sitemap",
     ogType: "website",
@@ -23,7 +23,7 @@ export function Sitemap() {
           <h1 className="blog-post-title">Sitemap</h1>
           <div className="blog-article-content">
             <p>
-              Browse all pages on the FCA Fines Dashboard. Use the links below
+              Browse all pages on RegActions. Use the links below
               to navigate to any section of the site.
             </p>
 
@@ -124,7 +124,7 @@ export function Sitemap() {
       <footer className="blog-footer">
         <div className="blog-footer-content">
           <div className="blog-footer-brand">
-            <p className="blog-footer-logo">FCA Fines Dashboard</p>
+            <p className="blog-footer-logo">RegActions</p>
             <p className="blog-footer-tagline">
               The definitive FCA fines database | Powered by MEMA Consultants
             </p>

@@ -99,7 +99,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 <body>
   <div class="container">
     <div class="card">
-      <div class="logo">FCA Fines Dashboard</div>
+      <div class="logo">RegActions</div>
       <h1>New Contact Form Submission</h1>
       <table>
         <tr><td style="padding:8px 12px;font-weight:600;color:#4b5563;">Name</td><td style="padding:8px 12px;">${escapeHtml(name)}</td></tr>
@@ -110,7 +110,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       <div class="message-box">${escapeHtml(message)}</div>
     </div>
     <div class="footer">
-      <p>Submitted via FCA Fines Dashboard contact form</p>
+      <p>Submitted via RegActions contact form</p>
     </div>
   </div>
 </body>

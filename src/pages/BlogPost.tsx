@@ -88,7 +88,7 @@ const HOWTO_SCHEMA = {
       "@type": "HowToStep",
       position: 1,
       name: "Navigate to Dashboard",
-      text: "Open the FCA Fines Dashboard at fcafines.memaconsultants.com/dashboard to access the complete database of Financial Conduct Authority penalties.",
+      text: "Open RegActions at fcafines.memaconsultants.com/dashboard to access the complete database of regulatory enforcement penalties.",
       url: "https://fcafines.memaconsultants.com/dashboard",
     },
     {
@@ -700,7 +700,7 @@ function generateArticleSchema(article: BlogArticleMeta | YearlyArticleMeta) {
       width: 1200,
       height: 630,
       caption:
-        "FCA Fines Dashboard - Financial Conduct Authority Enforcement Data",
+        "RegActions - Global Regulatory Fines & Enforcement Intelligence",
     },
   };
 }
@@ -919,7 +919,7 @@ function BlogArticlePage({ article }: { article: BlogArticleMeta }) {
               className="blog-cta-button"
               onClick={() => navigate("/dashboard")}
             >
-              Explore FCA Fines Dashboard
+              Explore RegActions Dashboard
               <ExternalLink size={18} />
             </button>
           </div>
@@ -1129,7 +1129,7 @@ function YearlyArticlePage({ article }: { article: YearlyArticleMeta }) {
               className="blog-cta-button"
               onClick={() => navigate("/dashboard")}
             >
-              Explore FCA Fines Dashboard
+              Explore RegActions Dashboard
               <ExternalLink size={18} />
             </button>
           </div>

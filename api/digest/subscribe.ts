@@ -127,7 +127,7 @@ async function sendVerificationEmail(email: string, frequency: string, token: st
 <body>
   <div class="container">
     <div class="card">
-      <div class="logo">FCA Fines Dashboard</div>
+      <div class="logo">RegActions</div>
       <h1>Verify your digest subscription</h1>
       <p>You've requested to receive our FCA fines digest. Click the button below to confirm.</p>
       <div class="frequency">${frequency} Digest</div>
@@ -136,7 +136,7 @@ async function sendVerificationEmail(email: string, frequency: string, token: st
       <p style="font-size: 14px; color: #6b7280;">This link expires in 7 days.</p>
     </div>
     <div class="footer">
-      <p>FCA Fines Dashboard · Powered by MEMA Consultants</p>
+      <p>RegActions · Powered by MEMA Consultants</p>
     </div>
   </div>
 </body>

@@ -12,7 +12,7 @@ const currency = new Intl.NumberFormat("en-GB", {
 
 export function Sectors() {
   useSEO({
-    title: "FCA Fines by Sector | Banks, Insurance, Individuals and More",
+    title: "Regulatory Fines by Sector | Banks, Insurance, Individuals and More",
     description:
       "Browse FCA fines by firm category (sector). View which sectors receive the most penalties and jump into filtered dashboard views.",
     keywords:
@@ -51,7 +51,7 @@ export function Sectors() {
     <div className="hub-page">
       <div className="hub-container">
         <header className="hub-hero">
-          <h1>FCA Fines by Sector</h1>
+          <h1>Regulatory Fines by Sector</h1>
           <p>
             Explore enforcement actions grouped by firm category and see which
             sectors attract the largest penalties.

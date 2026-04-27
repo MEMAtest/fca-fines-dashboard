@@ -107,7 +107,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 <body>
   <div class="container">
     <div class="card">
-      <div class="logo">FCA Fines Dashboard</div>
+      <div class="logo">RegActions</div>
       <h1>Verify your firm watchlist</h1>
       <p>You've requested to watch a firm for new FCA fines. Click the button below to confirm.</p>
       <div class="firm-name">${firmName.trim()}</div>
@@ -116,7 +116,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       <p style="font-size: 14px; color: #6b7280;">This link expires in 7 days.</p>
     </div>
     <div class="footer">
-      <p>FCA Fines Dashboard · Powered by MEMA Consultants</p>
+      <p>RegActions · Powered by MEMA Consultants</p>
     </div>
   </div>
 </body>

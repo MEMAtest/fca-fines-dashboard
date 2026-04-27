@@ -37,7 +37,7 @@ export default async function handler(_req: VercelRequest, res: VercelResponse) 
     const summary = await getDailySummary(since);
 
     const lines = [
-      `FCA Fines Dashboard – Daily Summary (last 24h)`,
+      `RegActions – Daily Summary (last 24h)`,
       ``,
       `Pageviews: ${summary.totalPageviews}`,
       `Top paths:`,
