@@ -15,6 +15,29 @@ export function resolveConnectionString() {
   return null;
 }
 
+export function buildPgPoolConfig(connectionString: string) {
+  let sanitizedConnectionString = connectionString;
+  let useSsl = connectionString.includes('sslmode=');
+
+  try {
+    const url = new URL(connectionString);
+    useSsl = useSsl || url.protocol === 'postgresqls:';
+
+    for (const key of ['sslmode', 'sslcert', 'sslkey', 'sslrootcert']) {
+      url.searchParams.delete(key);
+    }
+
+    sanitizedConnectionString = url.toString();
+  } catch {
+    // Keep the original string; pg will surface malformed URL errors.
+  }
+
+  return {
+    connectionString: sanitizedConnectionString,
+    ssl: useSsl ? { rejectUnauthorized: false } : undefined,
+  };
+}
+
 export interface SqlClient {
   (strings: TemplateStringsArray, ...values: unknown[]): Promise<Record<string, unknown>[]>;
   (query: string, params?: unknown[]): Promise<Record<string, unknown>[]>;
@@ -22,12 +45,7 @@ export interface SqlClient {
 }
 
 function createSqlClient(connectionString: string): SqlClient {
-  const pool = new pg.Pool({
-    connectionString,
-    ssl: connectionString.includes('sslmode=')
-      ? { rejectUnauthorized: false }
-      : undefined,
-  });
+  const pool = new pg.Pool(buildPgPoolConfig(connectionString));
 
   async function runQuery(query: string, params: unknown[] = []) {
     const client = await pool.connect();

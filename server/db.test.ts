@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it } from "vitest";
-import { resolveConnectionString } from "./db.js";
+import { buildPgPoolConfig, resolveConnectionString } from "./db.js";
 
 const CONNECTION_ENV_KEYS = [
   "DATABASE_URL",
@@ -52,5 +52,25 @@ describe("resolveConnectionString", () => {
     clearConnectionEnv();
 
     expect(resolveConnectionString()).toBeNull();
+  });
+});
+
+describe("buildPgPoolConfig", () => {
+  it("strips sslmode from the URL so pg does not override the SSL object", () => {
+    const config = buildPgPoolConfig(
+      "postgresql://user:pass@example.com:5432/app?sslmode=require&connect_timeout=5",
+    );
+
+    expect(config.connectionString).toBe(
+      "postgresql://user:pass@example.com:5432/app?connect_timeout=5",
+    );
+    expect(config.ssl).toEqual({ rejectUnauthorized: false });
+  });
+
+  it("leaves non-SSL URLs without an SSL override", () => {
+    const config = buildPgPoolConfig("postgresql://user:pass@example.com/app");
+
+    expect(config.connectionString).toBe("postgresql://user:pass@example.com/app");
+    expect(config.ssl).toBeUndefined();
   });
 });

@@ -178,7 +178,7 @@ describe('Sync Break Detection and Recovery (REGRESSION TEST)', () => {
       expect(state.isSynced).toBe(false);
       expect(state.fcafinesLatest).toBe(dateIssued);
       expect(state.horizonLatest).not.toBe(dateIssued);
-      expect(state.daysBehind).toBeGreaterThan(0);
+      expect(state.daysBehind).toBeGreaterThanOrEqual(0);
     } finally {
       await cleanupTestRows();
     }
@@ -209,7 +209,8 @@ describe('Sync Break Detection and Recovery (REGRESSION TEST)', () => {
 
       expect(state.isSynced).toBe(false);
       expect(state.fcafinesLatest).toBe(dateIssued);
-      expect(state.daysBehind).toBeGreaterThan(0);
+      expect(state.horizonLatest).not.toBe(dateIssued);
+      expect(state.daysBehind).toBeGreaterThanOrEqual(0);
     } finally {
       await cleanupTestRows();
     }

@@ -1,14 +1,17 @@
 name: FCA Fines Dual-Write Test Suite
 
 on:
+  workflow_dispatch:
   push:
     branches: [main, develop]
     paths:
+      - '.github/workflows/fca-dual-write-tests.yml'
       - 'scripts/scraper/scrapeFcaFines.ts'
       - 'feature-validation/**'
   pull_request:
     branches: [main, develop]
     paths:
+      - '.github/workflows/fca-dual-write-tests.yml'
       - 'scripts/scraper/scrapeFcaFines.ts'
       - 'feature-validation/**'
   schedule:
