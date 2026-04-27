@@ -21,7 +21,7 @@ import type { FirmPersona } from './firmPersonas.js';
 import type { DigestItem } from './personaDigestEmail.js';
 
 const REGCANARY_URL = 'https://regcanary.com';
-const BRAND_GREEN = '#0FA294';
+const BRAND_GREEN = '#0FA77D';
 
 interface PdfSection {
   title: string;

@@ -1,7 +1,7 @@
 import { motion } from 'framer-motion';
 
 const distributionData = [
-  { sector: 'Market Abuse', amount: 1872, color: '#0FA294' },
+  { sector: 'Market Abuse', amount: 1872, color: '#0FA77D' },
   { sector: 'Conduct', amount: 1234, color: '#17C3B2' },
   { sector: 'Governance', amount: 876, color: '#6366F1' },
   { sector: 'Financial Crime', amount: 654, color: '#818CF8' },

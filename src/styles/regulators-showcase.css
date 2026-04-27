@@ -49,7 +49,7 @@
   border: 1px solid rgba(148, 163, 184, 0.22);
   color: #1f2937;
   text-decoration: none;
-  box-shadow: 0 10px 24px rgba(15, 23, 42, 0.06);
+  box-shadow: 0 10px 24px rgba(11, 31, 42, 0.06);
 }
 
 .hero-regulator-strip__pill:hover {
@@ -77,7 +77,7 @@
   padding: 0.4rem 0.8rem;
   border-radius: 999px;
   background: rgba(15, 167, 125, 0.12);
-  color: #0fa294;
+  color: #0FA77D;
   font-size: 0.8rem;
   font-weight: 700;
   letter-spacing: 0.08em;
@@ -107,7 +107,7 @@
   padding: 2rem;
   border-radius: 1.75rem;
   border: 1px solid rgba(148, 163, 184, 0.18);
-  box-shadow: 0 18px 50px rgba(15, 23, 42, 0.06);
+  box-shadow: 0 18px 50px rgba(11, 31, 42, 0.06);
 }
 
 .regulators-showcase__region--anchor {
@@ -155,7 +155,7 @@
   font-weight: 700;
   letter-spacing: 0.08em;
   text-transform: uppercase;
-  color: #0fa294;
+  color: #0FA77D;
 }
 
 .regulators-showcase__grid {
@@ -187,7 +187,7 @@
 .regulator-card:hover {
   transform: translateY(-3px);
   border-color: rgba(15, 167, 125, 0.28);
-  box-shadow: 0 18px 36px rgba(15, 23, 42, 0.08);
+  box-shadow: 0 18px 36px rgba(11, 31, 42, 0.08);
 }
 
 .regulator-card__header,

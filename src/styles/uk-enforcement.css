@@ -19,7 +19,7 @@
   align-items: center;
   gap: 0.5rem;
   margin: 0 0 0.75rem;
-  color: #0f766e;
+  color: #0B8463;
   font-size: 0.82rem;
   font-weight: 800;
   letter-spacing: 0.08em;
@@ -144,7 +144,7 @@
 }
 
 .uk-enforcement__currency button.is-active {
-  background: #0f766e;
+  background: #0B8463;
   color: #ffffff;
 }
 
@@ -261,7 +261,7 @@
   display: inline-flex;
   align-items: center;
   gap: 0.35rem;
-  color: #0f766e;
+  color: #0B8463;
   font-weight: 800;
   text-decoration: none;
 }

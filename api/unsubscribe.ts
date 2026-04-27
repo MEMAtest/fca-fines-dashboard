@@ -91,10 +91,10 @@ function renderPage(title: string, body: string): string {
     body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; line-height: 1.6; color: #1f2937; margin: 0; padding: 0; background-color: #f3f4f6; }
     .container { max-width: 500px; margin: 80px auto; padding: 0 20px; }
     .card { background: white; border-radius: 12px; padding: 40px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); text-align: center; }
-    .logo { font-size: 24px; font-weight: bold; color: #0FA294; margin-bottom: 24px; }
+    .logo { font-size: 24px; font-weight: bold; color: #0FA77D; margin-bottom: 24px; }
     h1 { color: #111827; font-size: 24px; margin: 0 0 16px 0; }
     p { color: #4b5563; }
-    a { color: #0FA294; text-decoration: none; }
+    a { color: #0FA77D; text-decoration: none; }
   </style>
 </head>
 <body>

@@ -115,7 +115,7 @@ async function sendContactEmail(data: ContactFormData): Promise<void> {
             padding: 20px;
           }
           .header {
-            background: linear-gradient(135deg, #0FA294 0%, #7C3AED 100%);
+            background: linear-gradient(135deg, #0FA77D 0%, #7C3AED 100%);
             color: white;
             padding: 30px 20px;
             border-radius: 12px 12px 0 0;
@@ -143,7 +143,7 @@ async function sendContactEmail(data: ContactFormData): Promise<void> {
           }
           .field-label {
             font-weight: 600;
-            color: #0FA294;
+            color: #0FA77D;
             margin-bottom: 5px;
             font-size: 12px;
             text-transform: uppercase;
@@ -157,7 +157,7 @@ async function sendContactEmail(data: ContactFormData): Promise<void> {
             background: #F9FAFB;
             padding: 15px;
             border-radius: 8px;
-            border-left: 4px solid #0FA294;
+            border-left: 4px solid #0FA77D;
             margin-top: 10px;
           }
           .footer {
@@ -182,7 +182,7 @@ async function sendContactEmail(data: ContactFormData): Promise<void> {
           <div class="field">
             <div class="field-label">Email Address</div>
             <div class="field-value">
-              <a href="mailto:${data.email}" style="color: #0FA294; text-decoration: none;">
+              <a href="mailto:${data.email}" style="color: #0FA77D; text-decoration: none;">
                 ${data.email}
               </a>
             </div>

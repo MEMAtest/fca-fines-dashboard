@@ -70,7 +70,7 @@
 .form-group select:focus,
 .form-group textarea:focus {
   outline: none;
-  border-color: #0FA294;
+  border-color: #0FA77D;
   box-shadow: 0 0 0 3px rgba(15, 167, 125, 0.1);
 }
 
@@ -102,7 +102,7 @@
   font-size: 1rem;
   font-weight: 600;
   color: #FFFFFF;
-  background: #0FA294;
+  background: #0FA77D;
   border: none;
   border-radius: 0.75rem;
   cursor: pointer;

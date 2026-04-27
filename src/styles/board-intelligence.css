@@ -4,7 +4,7 @@
   background:
     radial-gradient(
       circle at top left,
-      rgba(15, 23, 42, 0.08),
+      rgba(11, 31, 42, 0.08),
       transparent 30%
     ),
     linear-gradient(180deg, #f3f4f6 0%, #f8fafc 28%, #ffffff 100%);
@@ -33,9 +33,9 @@
 .board-intelligence__deck-cover,
 .board-intelligence__empty {
   background: rgba(255, 255, 255, 0.96);
-  border: 1px solid rgba(15, 23, 42, 0.08);
+  border: 1px solid rgba(11, 31, 42, 0.08);
   border-radius: 28px;
-  box-shadow: 0 18px 42px rgba(15, 23, 42, 0.06);
+  box-shadow: 0 18px 42px rgba(11, 31, 42, 0.06);
 }
 
 .board-intelligence__hero-copy,
@@ -206,12 +206,12 @@
   border: none;
   color: #fff;
   background: linear-gradient(135deg, #111827 0%, #1d4ed8 100%);
-  box-shadow: 0 16px 34px rgba(15, 23, 42, 0.18);
+  box-shadow: 0 16px 34px rgba(11, 31, 42, 0.18);
 }
 
 .board-intelligence__secondary,
 .board-intelligence__link-action {
-  border: 1px solid rgba(15, 23, 42, 0.12);
+  border: 1px solid rgba(11, 31, 42, 0.12);
   background: #fff;
   color: #0B1F2A;
 }
@@ -327,7 +327,7 @@
   background: linear-gradient(135deg, #111827 0%, #1d4ed8 100%);
   border-color: transparent;
   color: #fff;
-  box-shadow: 0 12px 26px rgba(15, 23, 42, 0.16);
+  box-shadow: 0 12px 26px rgba(11, 31, 42, 0.16);
 }
 
 .board-intelligence__theme-grid {
@@ -367,14 +367,14 @@
     rgba(29, 78, 216, 0.08)
   );
   border-color: rgba(29, 78, 216, 0.34);
-  box-shadow: 0 14px 28px rgba(15, 23, 42, 0.08);
+  box-shadow: 0 14px 28px rgba(11, 31, 42, 0.08);
 }
 
 .board-intelligence__saved-profiles {
   background: rgba(255, 255, 255, 0.96);
-  border: 1px solid rgba(15, 23, 42, 0.08);
+  border: 1px solid rgba(11, 31, 42, 0.08);
   border-radius: 28px;
-  box-shadow: 0 18px 42px rgba(15, 23, 42, 0.06);
+  box-shadow: 0 18px 42px rgba(11, 31, 42, 0.06);
   padding: 1.55rem;
 }
 
@@ -425,7 +425,7 @@
     rgba(29, 78, 216, 0.08)
   );
   border-color: rgba(29, 78, 216, 0.34);
-  box-shadow: 0 14px 28px rgba(15, 23, 42, 0.08);
+  box-shadow: 0 14px 28px rgba(11, 31, 42, 0.08);
 }
 
 .board-intelligence__draft-note {
@@ -505,7 +505,7 @@
 .board-intelligence__overview-highlight {
   background: #fff;
   border: 1px solid rgba(148, 163, 184, 0.2);
-  box-shadow: 0 12px 28px rgba(15, 23, 42, 0.04);
+  box-shadow: 0 12px 28px rgba(11, 31, 42, 0.04);
   border-radius: 24px;
 }
 
@@ -599,7 +599,7 @@
 .board-intelligence__scenario-header span {
   padding: 0.25rem 0.6rem;
   border-radius: 999px;
-  background: rgba(15, 23, 42, 0.06);
+  background: rgba(11, 31, 42, 0.06);
   font-size: 0.78rem;
   font-weight: 700;
   white-space: nowrap;
@@ -829,7 +829,7 @@
   .board-intelligence__overview-highlight {
     box-shadow: none;
     background: #fff;
-    border-color: rgba(15, 23, 42, 0.12);
+    border-color: rgba(11, 31, 42, 0.12);
   }
 
   .board-intelligence__hero {

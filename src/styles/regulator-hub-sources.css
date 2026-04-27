@@ -14,7 +14,7 @@
 
 .regulator-hub-sources__eyebrow {
   margin: 0 0 0.4rem;
-  color: #0f766e;
+  color: #0B8463;
   font-size: 0.75rem;
   font-weight: 700;
   letter-spacing: 0.08em;
@@ -59,7 +59,7 @@
 .regulator-hub-sources__card:hover {
   transform: translateY(-2px);
   border-color: rgba(15, 167, 125, 0.35);
-  box-shadow: 0 12px 24px rgba(15, 23, 42, 0.08);
+  box-shadow: 0 12px 24px rgba(11, 31, 42, 0.08);
 }
 
 .regulator-hub-sources__card-copy {
@@ -82,7 +82,7 @@
 }
 
 .regulator-hub-sources__card-icon {
-  color: #0f766e;
+  color: #0B8463;
   flex-shrink: 0;
   margin-top: 0.1rem;
 }

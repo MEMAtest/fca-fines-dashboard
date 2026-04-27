@@ -265,14 +265,14 @@ async function sendAlertEmail(subscription: AlertSubscription, fines: Fine[]) {
   const finesList = fines.map(fine => `
     <div style="background: #f9fafb; border-radius: 8px; padding: 16px; margin: 12px 0;">
       <div style="font-weight: 600; color: #1f2937;">${fine.firm_individual}</div>
-      <div style="color: #0FA294; font-size: 1.25rem; font-weight: 700; margin: 8px 0;">
+      <div style="color: #0FA77D; font-size: 1.25rem; font-weight: 700; margin: 8px 0;">
         £${fine.amount.toLocaleString('en-GB')}
       </div>
       <div style="color: #6b7280; font-size: 0.875rem;">
         ${fine.breach_type || 'Regulatory breach'} · ${new Date(fine.date_issued).toLocaleDateString('en-GB')}
       </div>
       ${fine.final_notice_url ? `
-        <a href="${fine.final_notice_url}" style="display: inline-block; margin-top: 8px; color: #0FA294; text-decoration: none; font-size: 0.875rem;">
+        <a href="${fine.final_notice_url}" style="display: inline-block; margin-top: 8px; color: #0FA77D; text-decoration: none; font-size: 0.875rem;">
           View Final Notice →
         </a>
       ` : ''}
@@ -288,12 +288,12 @@ async function sendAlertEmail(subscription: AlertSubscription, fines: Fine[]) {
     body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; line-height: 1.6; color: #1f2937; margin: 0; padding: 0; background-color: #f3f4f6; }
     .container { max-width: 600px; margin: 0 auto; padding: 40px 20px; }
     .card { background: white; border-radius: 12px; padding: 32px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
-    .logo { font-size: 20px; font-weight: bold; color: #0FA294; margin-bottom: 24px; }
+    .logo { font-size: 20px; font-weight: bold; color: #0FA77D; margin-bottom: 24px; }
     h1 { color: #111827; font-size: 24px; margin: 0 0 8px 0; }
     .subtitle { color: #6b7280; margin: 0 0 24px 0; }
     .footer { text-align: center; margin-top: 32px; color: #9ca3af; font-size: 12px; }
     .footer a { color: #9ca3af; }
-    .button { display: inline-block; background: #0FA294; color: white !important; text-decoration: none; padding: 12px 24px; border-radius: 8px; font-weight: 600; margin-top: 16px; }
+    .button { display: inline-block; background: #0FA77D; color: white !important; text-decoration: none; padding: 12px 24px; border-radius: 8px; font-weight: 600; margin-top: 16px; }
   </style>
 </head>
 <body>
@@ -344,14 +344,14 @@ async function sendWatchlistEmail(entry: WatchlistEntry, fines: Fine[]) {
 
   const finesList = fines.map(fine => `
     <div style="background: #fef3c7; border-radius: 8px; padding: 16px; margin: 12px 0; border-left: 4px solid #f59e0b;">
-      <div style="color: #0FA294; font-size: 1.5rem; font-weight: 700; margin-bottom: 8px;">
+      <div style="color: #0FA77D; font-size: 1.5rem; font-weight: 700; margin-bottom: 8px;">
         £${fine.amount.toLocaleString('en-GB')}
       </div>
       <div style="color: #6b7280; font-size: 0.875rem;">
         ${fine.breach_type || 'Regulatory breach'} · ${new Date(fine.date_issued).toLocaleDateString('en-GB')}
       </div>
       ${fine.final_notice_url ? `
-        <a href="${fine.final_notice_url}" style="display: inline-block; margin-top: 8px; color: #0FA294; text-decoration: none; font-size: 0.875rem;">
+        <a href="${fine.final_notice_url}" style="display: inline-block; margin-top: 8px; color: #0FA77D; text-decoration: none; font-size: 0.875rem;">
           View Final Notice →
         </a>
       ` : ''}
@@ -367,12 +367,12 @@ async function sendWatchlistEmail(entry: WatchlistEntry, fines: Fine[]) {
     body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; line-height: 1.6; color: #1f2937; margin: 0; padding: 0; background-color: #f3f4f6; }
     .container { max-width: 600px; margin: 0 auto; padding: 40px 20px; }
     .card { background: white; border-radius: 12px; padding: 32px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
-    .logo { font-size: 20px; font-weight: bold; color: #0FA294; margin-bottom: 24px; }
+    .logo { font-size: 20px; font-weight: bold; color: #0FA77D; margin-bottom: 24px; }
     h1 { color: #111827; font-size: 24px; margin: 0 0 8px 0; }
     .firm-badge { background: #dbeafe; color: #1e40af; padding: 8px 16px; border-radius: 8px; display: inline-block; font-weight: 600; margin: 16px 0; }
     .footer { text-align: center; margin-top: 32px; color: #9ca3af; font-size: 12px; }
     .footer a { color: #9ca3af; }
-    .button { display: inline-block; background: #0FA294; color: white !important; text-decoration: none; padding: 12px 24px; border-radius: 8px; font-weight: 600; margin-top: 16px; }
+    .button { display: inline-block; background: #0FA77D; color: white !important; text-decoration: none; padding: 12px 24px; border-radius: 8px; font-weight: 600; margin-top: 16px; }
   </style>
 </head>
 <body>

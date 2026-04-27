@@ -12,7 +12,7 @@ export const TrendChart3D = () => (
     {/* Bars (isometric rectangles) - Left bar (shortest) */}
     <g className="bar-group">
       {/* Front face */}
-      <path d="M35 70 L35 55 L45 50 L45 65 Z" fill="#0FA294" />
+      <path d="M35 70 L35 55 L45 50 L45 65 Z" fill="#0FA77D" />
       {/* Top face */}
       <path d="M35 55 L45 50 L55 55 L45 60 Z" fill="#17C3B2" opacity="0.8" />
       {/* Right face */}
@@ -32,7 +32,7 @@ export const TrendChart3D = () => (
     {/* Right bar (tallest) */}
     <g className="bar-group">
       {/* Front face */}
-      <path d="M65 60 L65 25 L75 20 L75 55 Z" fill="#0FA294" />
+      <path d="M65 60 L65 25 L75 20 L75 55 Z" fill="#0FA77D" />
       {/* Top face */}
       <path d="M65 25 L75 20 L85 25 L75 30 Z" fill="#17C3B2" opacity="0.8" />
       {/* Right face */}
@@ -94,7 +94,7 @@ export const Clock3D = () => (
       <ellipse cx="60" cy="68" rx="32" ry="10" fill="#0d7d70" opacity="0.6" />
 
       {/* Main clock face */}
-      <circle cx="60" cy="60" r="32" fill="#0FA294" />
+      <circle cx="60" cy="60" r="32" fill="#0FA77D" />
 
       {/* Inner circle */}
       <circle cx="60" cy="60" r="28" fill="url(#clockGradient)" />

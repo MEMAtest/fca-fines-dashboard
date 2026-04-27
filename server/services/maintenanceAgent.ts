@@ -504,7 +504,7 @@ export async function buildMaintenanceEmailReport(result: MaintenanceResult): Pr
     body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; line-height: 1.6; color: #1f2937; margin: 0; padding: 0; background-color: #f3f4f6; }
     .container { max-width: 700px; margin: 0 auto; padding: 40px 20px; }
     .card { background: white; border-radius: 12px; padding: 32px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); margin-bottom: 16px; }
-    .logo { font-size: 20px; font-weight: bold; color: #0FA294; margin-bottom: 24px; }
+    .logo { font-size: 20px; font-weight: bold; color: #0FA77D; margin-bottom: 24px; }
     h2 { color: #111827; font-size: 20px; margin: 24px 0 12px 0; }
     table { width: 100%; border-collapse: collapse; }
     th { text-align: left; padding: 8px 12px; background: #f9fafb; font-size: 12px; text-transform: uppercase; color: #6b7280; }

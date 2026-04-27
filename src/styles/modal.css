@@ -61,7 +61,7 @@
   font-weight: 700;
   color: #1F2937;
   margin: 0;
-  background: linear-gradient(135deg, #0FA294, #6366F1);
+  background: linear-gradient(135deg, #0FA77D, #6366F1);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
@@ -89,7 +89,7 @@
 
 .modal-close:hover {
   background: rgba(15, 167, 125, 0.1);
-  color: #0FA294;
+  color: #0FA77D;
 }
 
 .modal-content {
@@ -165,7 +165,7 @@
 }
 
 .chart-summary strong {
-  color: #0FA294;
+  color: #0FA77D;
 }
 
 /* Recent Actions List Styles */
@@ -255,7 +255,7 @@
 .amount-value {
   font-size: 1.5rem;
   font-weight: 700;
-  background: linear-gradient(135deg, #0FA294, #6366F1);
+  background: linear-gradient(135deg, #0FA77D, #6366F1);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
@@ -280,6 +280,6 @@
   top: 0;
   left: 0;
   height: 100%;
-  background: linear-gradient(90deg, #0FA294, #6366F1);
+  background: linear-gradient(90deg, #0FA77D, #6366F1);
   border-radius: 3px;
 }

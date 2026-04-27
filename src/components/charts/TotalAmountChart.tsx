@@ -41,7 +41,7 @@ export function TotalAmountChart() {
       <svg width="100%" height={height} viewBox={'0 0 ' + width + ' ' + height}>
         <defs>
           <linearGradient id="lineGradient" x1="0%" y1="0%" x2="100%" y2="0%">
-            <stop offset="0%" stopColor="#0FA294" />
+            <stop offset="0%" stopColor="#0FA77D" />
             <stop offset="100%" stopColor="#6366F1" />
           </linearGradient>
 
@@ -92,7 +92,7 @@ export function TotalAmountChart() {
               cx={point.x}
               cy={point.y}
               r="5"
-              fill="#0FA294"
+              fill="#0FA77D"
               stroke="#FFFFFF"
               strokeWidth="2"
               initial={{ scale: 0 }}

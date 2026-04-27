@@ -5,7 +5,7 @@
   --homepage-card-bg: #FFFFFF;
   --homepage-text-primary: #1F2937;
   --homepage-text-secondary: #6B7280;
-  --homepage-accent: #0FA294;
+  --homepage-accent: #0FA77D;
   --homepage-accent-alt: #6366F1;
   --homepage-accent-light: #E0F7F5;
   --homepage-border: #E5E7EB;
@@ -63,15 +63,15 @@
   background: #ffffff;
   border: 1px solid #e5e7eb;
   border-radius: 16px;
-  box-shadow: 0 4px 20px rgba(15, 23, 42, 0.06);
+  box-shadow: 0 4px 20px rgba(11, 31, 42, 0.06);
   transition: box-shadow 0.25s ease, border-color 0.25s ease;
   transform-style: preserve-3d;
   /* Framer Motion controls transform for 3D hover */
 }
 
 .quicklink-card:hover {
-  box-shadow: 0 12px 36px rgba(15, 23, 42, 0.1);
-  border-color: #0fa294;
+  box-shadow: 0 12px 36px rgba(11, 31, 42, 0.1);
+  border-color: #0FA77D;
   /* No transform here - Framer handles 3D tilt */
 }
 
@@ -85,7 +85,7 @@
 }
 
 .quicklink-card__icon {
-  color: #0fa294;
+  color: #0FA77D;
   margin-bottom: 1.25rem;
   animation: iconPulse 3s ease-in-out infinite;
 }
@@ -122,7 +122,7 @@
 .quicklink-card__arrow {
   margin-top: 1.25rem;
   font-size: 1.25rem;
-  color: #0fa294;
+  color: #0FA77D;
   font-weight: 600;
 }
 
@@ -162,7 +162,7 @@
 
 .faq-item:hover,
 .faq-item--open {
-  border-color: #0fa294;
+  border-color: #0FA77D;
 }
 
 .faq-item__question {

@@ -18,7 +18,7 @@ import {
 
 // Color palette for charts
 const COLORS = [
-  "#0FA294",
+  "#0FA77D",
   "#6366F1",
   "#F59E0B",
   "#EC4899",
@@ -736,7 +736,7 @@ export function MonthlyFinesChart({ data, year }: MonthlyChartProps) {
           <Bar
             yAxisId="left"
             dataKey="amount"
-            fill="#0FA294"
+            fill="#0FA77D"
             radius={[4, 4, 0, 0]}
           />
           <Line
@@ -923,7 +923,7 @@ export function YearOverYearChart({ years }: YoYComparisonProps) {
             type="monotone"
             dataKey="amount"
             fill="rgba(15, 167, 125, 0.2)"
-            stroke="#0FA294"
+            stroke="#0FA77D"
             strokeWidth={2}
             name="Total Fines"
           />

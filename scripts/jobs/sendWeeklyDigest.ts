@@ -137,10 +137,10 @@ async function sendDigestEmail(
   const topFinesList = topFines.map((fine, index) => `
     <tr>
       <td style="padding: 12px 16px; border-bottom: 1px solid #e5e7eb;">
-        <span style="display: inline-block; width: 24px; height: 24px; background: ${index === 0 ? '#0FA294' : '#e5e7eb'}; color: ${index === 0 ? 'white' : '#6b7280'}; border-radius: 50%; text-align: center; line-height: 24px; font-size: 12px; font-weight: 600; margin-right: 12px;">${index + 1}</span>
+        <span style="display: inline-block; width: 24px; height: 24px; background: ${index === 0 ? '#0FA77D' : '#e5e7eb'}; color: ${index === 0 ? 'white' : '#6b7280'}; border-radius: 50%; text-align: center; line-height: 24px; font-size: 12px; font-weight: 600; margin-right: 12px;">${index + 1}</span>
         ${fine.firm_individual}
       </td>
-      <td style="padding: 12px 16px; border-bottom: 1px solid #e5e7eb; text-align: right; font-weight: 600; color: #0FA294;">
+      <td style="padding: 12px 16px; border-bottom: 1px solid #e5e7eb; text-align: right; font-weight: 600; color: #0FA77D;">
         £${fine.amount.toLocaleString('en-GB')}
       </td>
     </tr>
@@ -155,18 +155,18 @@ async function sendDigestEmail(
     body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; line-height: 1.6; color: #1f2937; margin: 0; padding: 0; background-color: #f3f4f6; }
     .container { max-width: 600px; margin: 0 auto; padding: 40px 20px; }
     .card { background: white; border-radius: 12px; padding: 32px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); margin-bottom: 16px; }
-    .logo { font-size: 20px; font-weight: bold; color: #0FA294; margin-bottom: 8px; }
+    .logo { font-size: 20px; font-weight: bold; color: #0FA77D; margin-bottom: 8px; }
     .period { color: #6b7280; font-size: 14px; margin-bottom: 24px; }
     h1 { color: #111827; font-size: 24px; margin: 0 0 24px 0; }
     .stats-grid { display: flex; gap: 16px; margin-bottom: 24px; }
     .stat-box { flex: 1; background: linear-gradient(135deg, rgba(15, 167, 125, 0.1), rgba(99, 102, 241, 0.1)); border-radius: 12px; padding: 16px; text-align: center; }
-    .stat-value { font-size: 1.5rem; font-weight: 700; color: #0FA294; }
+    .stat-value { font-size: 1.5rem; font-weight: 700; color: #0FA77D; }
     .stat-label { font-size: 0.75rem; color: #6b7280; text-transform: uppercase; letter-spacing: 0.05em; }
     .table { width: 100%; border-collapse: collapse; }
     .table th { text-align: left; padding: 12px 16px; background: #f9fafb; font-size: 12px; text-transform: uppercase; color: #6b7280; letter-spacing: 0.05em; }
     .footer { text-align: center; margin-top: 32px; color: #9ca3af; font-size: 12px; }
     .footer a { color: #9ca3af; }
-    .button { display: inline-block; background: #0FA294; color: white !important; text-decoration: none; padding: 14px 28px; border-radius: 8px; font-weight: 600; margin-top: 16px; }
+    .button { display: inline-block; background: #0FA77D; color: white !important; text-decoration: none; padding: 14px 28px; border-radius: 8px; font-weight: 600; margin-top: 16px; }
   </style>
 </head>
 <body>
@@ -178,15 +178,15 @@ async function sendDigestEmail(
 
       <div style="display: flex; gap: 16px; margin-bottom: 24px;">
         <div style="flex: 1; background: linear-gradient(135deg, rgba(15, 167, 125, 0.1), rgba(99, 102, 241, 0.1)); border-radius: 12px; padding: 16px; text-align: center;">
-          <div style="font-size: 1.5rem; font-weight: 700; color: #0FA294;">${allFines.length}</div>
+          <div style="font-size: 1.5rem; font-weight: 700; color: #0FA77D;">${allFines.length}</div>
           <div style="font-size: 0.75rem; color: #6b7280; text-transform: uppercase; letter-spacing: 0.05em;">Fines</div>
         </div>
         <div style="flex: 1; background: linear-gradient(135deg, rgba(15, 167, 125, 0.1), rgba(99, 102, 241, 0.1)); border-radius: 12px; padding: 16px; text-align: center;">
-          <div style="font-size: 1.5rem; font-weight: 700; color: #0FA294;">£${(totalAmount / 1_000_000).toFixed(1)}m</div>
+          <div style="font-size: 1.5rem; font-weight: 700; color: #0FA77D;">£${(totalAmount / 1_000_000).toFixed(1)}m</div>
           <div style="font-size: 0.75rem; color: #6b7280; text-transform: uppercase; letter-spacing: 0.05em;">Total</div>
         </div>
         <div style="flex: 1; background: linear-gradient(135deg, rgba(15, 167, 125, 0.1), rgba(99, 102, 241, 0.1)); border-radius: 12px; padding: 16px; text-align: center;">
-          <div style="font-size: 1.5rem; font-weight: 700; color: #0FA294;">£${(avgAmount / 1_000_000).toFixed(1)}m</div>
+          <div style="font-size: 1.5rem; font-weight: 700; color: #0FA77D;">£${(avgAmount / 1_000_000).toFixed(1)}m</div>
           <div style="font-size: 0.75rem; color: #6b7280; text-transform: uppercase; letter-spacing: 0.05em;">Average</div>
         </div>
       </div>

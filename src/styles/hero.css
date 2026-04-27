@@ -52,7 +52,7 @@
 .notification-bell__overlay {
   position: fixed;
   inset: 0;
-  background: rgba(15, 23, 42, 0.25);
+  background: rgba(11, 31, 42, 0.25);
   /* Sit above the mobile bottom nav (z-index: 600) but below modals (1000+). */
   z-index: 900;
 }
@@ -90,7 +90,7 @@
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
   border-radius: var(--radius-lg);
-  box-shadow: 0 16px 48px rgba(15, 23, 42, 0.12), 0 0 0 1px rgba(148, 163, 184, 0.1);
+  box-shadow: 0 16px 48px rgba(11, 31, 42, 0.12), 0 0 0 1px rgba(148, 163, 184, 0.1);
   width: 300px;
   max-height: 380px;
   overflow-y: auto;
@@ -210,12 +210,12 @@
   text-transform: uppercase;
   letter-spacing: 0.3em;
   font-size: var(--text-xs);
-  color: rgba(15, 23, 42, 0.7);
+  color: rgba(11, 31, 42, 0.7);
   margin-bottom: 12px;
 }
 
 .hero__description {
-  color: rgba(15, 23, 42, 0.74);
+  color: rgba(11, 31, 42, 0.74);
   max-width: 520px;
   font-size: var(--text-lg);
   line-height: 1.5;
@@ -275,7 +275,7 @@
   background: rgba(255, 255, 255, 0.96);
   border-radius: var(--radius-lg);
   border: 1px solid rgba(148, 163, 184, 0.25);
-  box-shadow: 0 20px 40px rgba(15, 23, 42, 0.08);
+  box-shadow: 0 20px 40px rgba(11, 31, 42, 0.08);
   padding: 20px;
   display: flex;
   flex-direction: column;
@@ -397,7 +397,7 @@
   font-size: var(--text-xs);
   font-weight: 600;
   background: rgba(16, 185, 129, 0.15);
-  color: #0f766e;
+  color: #0B8463;
 }
 
 .hero__velocity-chip--down {

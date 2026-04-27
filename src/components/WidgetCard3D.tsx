@@ -67,7 +67,7 @@ export function MiniSparkline() {
       />
       <defs>
         <linearGradient id="sparklineGradient" x1="0%" y1="0%" x2="100%" y2="0%">
-          <stop offset="0%" stopColor="#0FA294" />
+          <stop offset="0%" stopColor="#0FA77D" />
           <stop offset="100%" stopColor="#6366F1" />
         </linearGradient>
       </defs>
@@ -77,10 +77,10 @@ export function MiniSparkline() {
 
 export function MiniBarChart() {
   const bars = [
-    { height: 30, color: '#0FA294' },
+    { height: 30, color: '#0FA77D' },
     { height: 45, color: '#17C3B2' },
     { height: 25, color: '#6366F1' },
-    { height: 50, color: '#0FA294' },
+    { height: 50, color: '#0FA77D' },
     { height: 35, color: '#4F46E5' },
   ];
 

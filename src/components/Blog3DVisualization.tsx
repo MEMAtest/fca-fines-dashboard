@@ -86,7 +86,7 @@ export function Blog3DVisualization() {
               cx={line.x2}
               cy={line.y2}
               r="3"
-              fill="#0FA294"
+              fill="#0FA77D"
               initial={{ scale: 0 }}
               animate={{ scale: 1 }}
               transition={{ duration: 0.4, delay: 1 + i * 0.1 }}
@@ -96,7 +96,7 @@ export function Blog3DVisualization() {
 
         <defs>
           <linearGradient id="blogLineGradient" x1="0%" y1="0%" x2="100%" y2="100%">
-            <stop offset="0%" stopColor="#0FA294" stopOpacity="0.6" />
+            <stop offset="0%" stopColor="#0FA77D" stopOpacity="0.6" />
             <stop offset="100%" stopColor="#6366F1" stopOpacity="0.3" />
           </linearGradient>
         </defs>
@@ -134,9 +134,9 @@ function FloatingIcon({ type }: { type: string }) {
     case 'chart':
       return (
         <svg width="40" height="40" viewBox="0 0 40 40" fill="none" className="float-icon">
-          <rect x="5" y="20" width="8" height="15" rx="2" fill="#0FA294" />
+          <rect x="5" y="20" width="8" height="15" rx="2" fill="#0FA77D" />
           <rect x="16" y="12" width="8" height="23" rx="2" fill="#6366F1" />
-          <rect x="27" y="5" width="8" height="30" rx="2" fill="#0FA294" />
+          <rect x="27" y="5" width="8" height="30" rx="2" fill="#0FA77D" />
         </svg>
       );
     case 'scale':
@@ -144,8 +144,8 @@ function FloatingIcon({ type }: { type: string }) {
         <svg width="40" height="40" viewBox="0 0 40 40" fill="none" className="float-icon">
           <path d="M20 5V35" stroke="#6366F1" strokeWidth="2.5" strokeLinecap="round" />
           <path d="M8 12L20 8L32 12" stroke="#6366F1" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
-          <circle cx="8" cy="18" r="5" fill="#0FA294" />
-          <circle cx="32" cy="18" r="5" fill="#0FA294" />
+          <circle cx="8" cy="18" r="5" fill="#0FA77D" />
+          <circle cx="32" cy="18" r="5" fill="#0FA77D" />
         </svg>
       );
     case 'doc':
@@ -161,8 +161,8 @@ function FloatingIcon({ type }: { type: string }) {
     case 'trend':
       return (
         <svg width="40" height="40" viewBox="0 0 40 40" fill="none" className="float-icon">
-          <path d="M5 30L15 20L22 25L35 10" stroke="#0FA294" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" />
-          <path d="M28 10H35V17" stroke="#0FA294" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" />
+          <path d="M5 30L15 20L22 25L35 10" stroke="#0FA77D" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" />
+          <path d="M28 10H35V17" stroke="#0FA77D" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" />
         </svg>
       );
     case 'shield':
@@ -175,7 +175,7 @@ function FloatingIcon({ type }: { type: string }) {
     case 'book':
       return (
         <svg width="40" height="40" viewBox="0 0 40 40" fill="none" className="float-icon">
-          <path d="M6 6H16C18.2 6 20 7.8 20 10V34C20 32.3 18.2 31 16 31H6V6Z" fill="#0FA294" />
+          <path d="M6 6H16C18.2 6 20 7.8 20 10V34C20 32.3 18.2 31 16 31H6V6Z" fill="#0FA77D" />
           <path d="M34 6H24C21.8 6 20 7.8 20 10V34C20 32.3 21.8 31 24 31H34V6Z" fill="#6366F1" />
         </svg>
       );

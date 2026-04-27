@@ -154,7 +154,7 @@
 .reg-grid__card:hover {
   transform: translateY(-2px);
   border-color: rgba(15, 167, 125, 0.28);
-  box-shadow: 0 8px 20px rgba(15, 23, 42, 0.07);
+  box-shadow: 0 8px 20px rgba(11, 31, 42, 0.07);
 }
 
 .reg-grid__card--pipeline {

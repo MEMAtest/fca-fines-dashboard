@@ -5,7 +5,7 @@
   --blog-card-bg: #ffffff;
   --blog-text-primary: #1f2937;
   --blog-text-secondary: #6b7280;
-  --blog-accent: #0fa294;
+  --blog-accent: #0FA77D;
   --blog-accent-dark: #0d7d70;
   --blog-accent-light: #e0f7f5;
   --blog-accent-alt: #6366f1;
@@ -149,7 +149,7 @@
   background: var(--blog-card-bg);
   border-radius: 16px;
   padding: 1.75rem;
-  box-shadow: 0 4px 20px rgba(15, 23, 42, 0.06);
+  box-shadow: 0 4px 20px rgba(11, 31, 42, 0.06);
   border: 1px solid var(--blog-border);
   cursor: pointer;
   transition: all 0.3s ease;
@@ -159,7 +159,7 @@
 
 .blog-card:hover {
   transform: translateY(-4px);
-  box-shadow: 0 12px 40px rgba(15, 23, 42, 0.12);
+  box-shadow: 0 12px 40px rgba(11, 31, 42, 0.12);
   border-color: var(--blog-accent);
 }
 
@@ -382,7 +382,7 @@
   display: inline-flex;
   align-items: center;
   gap: 0.25rem;
-  color: var(--accent, #0fa294);
+  color: var(--accent, #0FA77D);
   text-decoration: none;
   font-size: 0.95rem;
   font-weight: 500;
@@ -820,7 +820,7 @@
   display: flex;
   flex-direction: column;
   gap: 0.35rem;
-  box-shadow: 0 4px 18px rgba(15, 23, 42, 0.05);
+  box-shadow: 0 4px 18px rgba(11, 31, 42, 0.05);
 }
 
 .regulator-metric-card__label {
@@ -854,12 +854,12 @@
   border: 1px solid var(--blog-border);
   border-radius: 16px;
   padding: 1.5rem;
-  box-shadow: 0 4px 18px rgba(15, 23, 42, 0.05);
+  box-shadow: 0 4px 18px rgba(11, 31, 42, 0.05);
 }
 
 .regulator-article-intro--analysis {
   background: linear-gradient(135deg, #f0fdfa 0%, #ecfeff 100%);
-  border-color: rgba(13, 148, 136, 0.18);
+  border-color: rgba(15, 167, 125, 0.18);
 }
 
 .regulator-article-intro__eyebrow {
@@ -867,7 +867,7 @@
   margin-bottom: 0.9rem;
   padding: 0.35rem 0.7rem;
   border-radius: 999px;
-  background: rgba(13, 148, 136, 0.12);
+  background: rgba(15, 167, 125, 0.12);
   color: var(--blog-accent-dark);
   font-size: 0.75rem;
   font-weight: 700;
@@ -993,7 +993,7 @@
 .regulator-related-links__card:hover {
   transform: translateY(-2px);
   border-color: var(--blog-accent);
-  box-shadow: 0 8px 24px rgba(15, 23, 42, 0.08);
+  box-shadow: 0 8px 24px rgba(11, 31, 42, 0.08);
 }
 
 .regulator-signal-card h3 {
@@ -1074,7 +1074,7 @@
 
 .yearly-card:hover {
   transform: translateY(-2px);
-  box-shadow: 0 8px 24px rgba(15, 23, 42, 0.1);
+  box-shadow: 0 8px 24px rgba(11, 31, 42, 0.1);
   border-color: var(--blog-accent);
 }
 
@@ -1386,7 +1386,7 @@
 .related-articles__card:hover {
   border-color: var(--blog-accent);
   transform: translateY(-2px);
-  box-shadow: 0 6px 20px rgba(15, 23, 42, 0.08);
+  box-shadow: 0 6px 20px rgba(11, 31, 42, 0.08);
 }
 
 .related-articles__category {

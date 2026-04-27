@@ -321,7 +321,7 @@
 
 .tl-card:hover {
   transform: translateY(-1px);
-  box-shadow: 0 8px 24px rgba(15, 23, 42, 0.06);
+  box-shadow: 0 8px 24px rgba(11, 31, 42, 0.06);
   border-color: rgba(59, 130, 246, 0.3);
 }
 
@@ -335,7 +335,7 @@
   border-color: rgba(59, 130, 246, 0.4);
   border-bottom-left-radius: 0;
   border-bottom-right-radius: 0;
-  box-shadow: 0 4px 12px rgba(15, 23, 42, 0.05);
+  box-shadow: 0 4px 12px rgba(11, 31, 42, 0.05);
 }
 
 .tl-card__row {

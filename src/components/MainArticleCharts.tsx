@@ -18,7 +18,7 @@ import { yearlyFCAData } from "./YearlyArticleCharts.js";
 
 // Color palette matching the main site theme
 const COLORS = [
-  "#0FA294",
+  "#0FA77D",
   "#6366F1",
   "#F59E0B",
   "#EC4899",
@@ -536,7 +536,7 @@ export function AllYearsEnforcementChart() {
             type="monotone"
             dataKey="amount"
             fill="rgba(15, 167, 125, 0.2)"
-            stroke="#0FA294"
+            stroke="#0FA77D"
             strokeWidth={2}
             name="Total Fines"
           />
@@ -669,7 +669,7 @@ export function SMCREnforcementChart() {
           <Bar
             yAxisId="left"
             dataKey="individuals"
-            fill="#0FA294"
+            fill="#0FA77D"
             radius={[4, 4, 0, 0]}
             name="Individuals"
           />
@@ -737,7 +737,7 @@ export function Fines2025MonthlyChart() {
           <Bar
             yAxisId="left"
             dataKey="amount"
-            fill="#0FA294"
+            fill="#0FA77D"
             radius={[4, 4, 0, 0]}
           />
           <Line
@@ -862,7 +862,7 @@ export function CumulativeFinesChart() {
             type="monotone"
             dataKey="cumulative"
             fill="rgba(15, 167, 125, 0.3)"
-            stroke="#0FA294"
+            stroke="#0FA77D"
             strokeWidth={2}
             name="Cumulative Total"
           />
@@ -1004,7 +1004,7 @@ export function HistoricalJanuaryChart() {
           <Bar
             yAxisId="left"
             dataKey="amount"
-            fill="#0FA294"
+            fill="#0FA77D"
             radius={[4, 4, 0, 0]}
             name="Total Fines"
           />
@@ -1081,7 +1081,7 @@ export function EnforcementTrendOutlookChart() {
             type="monotone"
             dataKey="amount"
             fill="rgba(15, 167, 125, 0.15)"
-            stroke="#0FA294"
+            stroke="#0FA77D"
             strokeWidth={2}
             name="Total Fines"
           />
@@ -1368,7 +1368,7 @@ export function IndividualVsFirmChart() {
             type="monotone"
             dataKey="individuals"
             fill="rgba(15, 167, 125, 0.2)"
-            stroke="#0FA294"
+            stroke="#0FA77D"
             strokeWidth={2}
             name="Individuals"
           />
@@ -1605,7 +1605,7 @@ export function Q1_2026_EnforcementChart() {
           <Bar
             yAxisId="left"
             dataKey="fines"
-            fill="#0FA294"
+            fill="#0FA77D"
             radius={[4, 4, 0, 0]}
             name="Total Fines"
           />
@@ -1955,7 +1955,7 @@ export function InsuranceTrendChart() {
           <Bar
             yAxisId="right"
             dataKey="count"
-            fill="#0FA294"
+            fill="#0FA77D"
             radius={[4, 4, 0, 0]}
             name="Actions"
             opacity={0.8}
