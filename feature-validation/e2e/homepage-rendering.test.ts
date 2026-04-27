@@ -26,7 +26,7 @@ test.describe('Homepage Hero - Global Messaging Rendering', () => {
     expect(titleText?.toLowerCase()).not.toContain('flagship');
   });
 
-  test('MUST render hero description with "Global enforcement intelligence across 34+"', async ({ page }) => {
+  test('MUST render hero description with "Global enforcement intelligence across 45+"', async ({ page }) => {
     // Wait for description paragraph
     const heroDesc = page.locator('p.globe-hero__description, p:has-text("Global enforcement")');
     await heroDesc.waitFor({ timeout: 5000 });
@@ -36,7 +36,7 @@ test.describe('Homepage Hero - Global Messaging Rendering', () => {
 
     // Must contain exact phrase
     expect(descText).toContain('Global enforcement intelligence');
-    expect(descText).toContain('34+');
+    expect(descText).toContain('45+');
     expect(descText).toContain('financial regulators');
 
     // MUST NOT contain FCA-centric language
@@ -53,13 +53,13 @@ test.describe('Homepage Hero - Global Messaging Rendering', () => {
     expect(pageText?.toLowerCase()).not.toContain('historical fca depth');
   });
 
-  test('MUST render REGULATOR_COUNT constant (34+) on hero stats', async ({ page }) => {
+  test('MUST render REGULATOR_COUNT constant (45+) on hero stats', async ({ page }) => {
     // Wait for hero stats cards
     const statsSection = page.locator('.globe-hero__stats-row, [class*="stat-card"]');
     await statsSection.first().waitFor({ timeout: 5000 });
 
     const pageText = await page.textContent('body');
-    expect(pageText).toContain('34+');
+    expect(pageText).toContain('45+');
   });
 
   test('Hero CTA button MUST link to /dashboard', async ({ page }) => {
@@ -218,8 +218,8 @@ test.describe('Homepage Hero - Global Messaging Rendering', () => {
     const heroDesc = page.locator('p.globe-hero__description, p:has-text("Global")');
     const text = await heroDesc.textContent();
 
-    // Should contain "34+" which comes from REGULATOR_COUNT constant
-    expect(text).toContain('34+');
+    // Should contain "45+" which comes from REGULATOR_COUNT constant
+    expect(text).toContain('45+');
 
     // MUST NOT have hardcoded alternative counts like "30+" or "5 more"
     expect(text?.toLowerCase()).not.toContain('30+');

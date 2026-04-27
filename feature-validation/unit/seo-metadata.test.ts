@@ -17,12 +17,12 @@ describe('SEO Metadata - index.html Validation', () => {
   });
 
   describe('Meta Tags - Primary SEO', () => {
-    it('MUST have global description mentioning 34+ regulators', () => {
+    it('MUST have global description mentioning 45+ regulators', () => {
       const descMeta = htmlContent.match(/<meta\s+name="description"\s+content="([^"]+)"/);
       expect(descMeta, 'description meta tag must exist').toBeTruthy();
 
       const description = descMeta![1];
-      expect(description).toContain('34+');
+      expect(description).toContain('45+');
       expect(description).toContain('global financial regulators');
       expect(description.toLowerCase()).not.toContain('fca-centric');
       expect(description.toLowerCase()).not.toContain('flagship fca');
@@ -61,7 +61,7 @@ describe('SEO Metadata - index.html Validation', () => {
       expect(ogDesc, 'og:description must exist').toBeTruthy();
 
       const description = ogDesc![1];
-      expect(description).toContain('34+');
+      expect(description).toContain('45+');
       expect(description).toContain('global financial regulators');
       expect(description).toContain('BaFin');
       expect(description).toContain('SEC');
@@ -93,7 +93,7 @@ describe('SEO Metadata - index.html Validation', () => {
       expect(twitterDesc, 'twitter:description must exist').toBeTruthy();
 
       const description = twitterDesc![1];
-      expect(description).toContain('34+');
+      expect(description).toContain('45+');
       expect(description).toContain('global financial regulators');
     });
 
@@ -161,9 +161,9 @@ describe('SEO Metadata - index.html Validation', () => {
       }
     });
 
-    it('Dataset description MUST mention 34+ regulators', () => {
+    it('Dataset description MUST mention 45+ regulators', () => {
       const dataset = jsonLdData['@graph'].find((item: any) => item['@type'] === 'Dataset');
-      expect(dataset.description).toContain('34+');
+      expect(dataset.description).toContain('45+');
       expect(dataset.description).toContain('global financial regulators');
     });
 
@@ -200,7 +200,7 @@ describe('SEO Metadata - index.html Validation', () => {
 
     it('WebSite description MUST mention global coverage', () => {
       const website = jsonLdData['@graph'].find((item: any) => item['@type'] === 'WebSite');
-      expect(website.description).toContain('34+');
+      expect(website.description).toContain('45+');
       expect(website.description).toContain('global financial regulators');
     });
 

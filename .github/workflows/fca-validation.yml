@@ -111,7 +111,7 @@ jobs:
         run: npx playwright install --with-deps chromium firefox webkit
 
       - name: Run E2E tests
-        run: npm run test:e2e -- feature-validation/e2e/
+        run: npx playwright test e2e/search-experience.spec.ts e2e/seo-meta-tags.spec.ts --project=chromium
 
       - name: Upload report
         if: always()

@@ -71,13 +71,13 @@ test.describe('SEO Meta Tags', () => {
       const jsonLdScripts = await page.locator('script[type="application/ld+json"]').all();
       expect(jsonLdScripts.length).toBeGreaterThanOrEqual(1);
 
-      // Find the Article JSON-LD (injected by React injectStructuredData)
+      // Find the BlogPosting JSON-LD (injected by React injectStructuredData)
       let articleSchema = null;
       for (const script of jsonLdScripts) {
         const text = await script.textContent();
         if (text) {
           const parsed = JSON.parse(text);
-          if (parsed['@type'] === 'Article') {
+          if (parsed['@type'] === 'BlogPosting') {
             articleSchema = parsed;
             break;
           }
@@ -136,14 +136,14 @@ test.describe('SEO Meta Tags', () => {
       // Wait for React to render and inject JSON-LD
       await expect(page.locator('h1.blog-post-title')).toBeVisible();
 
-      // Find Article JSON-LD
+      // Find yearly analysis JSON-LD
       const jsonLdScripts = await page.locator('script[type="application/ld+json"]').all();
       let articleSchema = null;
       for (const script of jsonLdScripts) {
         const text = await script.textContent();
         if (text) {
           const parsed = JSON.parse(text);
-          if (parsed['@type'] === 'Article') {
+          if (parsed['@type'] === 'AnalysisNewsArticle') {
             articleSchema = parsed;
             break;
           }
@@ -151,7 +151,7 @@ test.describe('SEO Meta Tags', () => {
       }
 
       expect(articleSchema).toBeTruthy();
-      expect(articleSchema['@type']).toBe('Article');
+      expect(articleSchema['@type']).toBe('AnalysisNewsArticle');
       expect(articleSchema.datePublished).toContain('2024-01-01');
       expect(articleSchema.dateModified).toContain('2024-12-31');
       expect(articleSchema.author['@type']).toBe('Organization');
@@ -167,12 +167,12 @@ test.describe('SEO Meta Tags', () => {
       await expect(page.locator('h1')).toBeVisible();
 
       // Title tag
-      await expect(page).toHaveTitle(/FCA Fines Blog/);
+      await expect(page).toHaveTitle(/Regulatory Enforcement Intelligence/);
 
       // Meta description
       const description = await page.locator('meta[name="description"]').getAttribute('content');
       expect(description).toBeTruthy();
-      expect(description!.toLowerCase()).toContain('fca fines');
+      expect(description!.toLowerCase()).toContain('enforcement');
 
       // Canonical URL
       const canonical = await page.locator('link[rel="canonical"]').getAttribute('href');

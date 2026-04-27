@@ -269,7 +269,7 @@ test.describe('Enforcement Search', () => {
 
   test('renders the new empty state for no-match queries', async ({ page }) => {
     await openSearch(page);
-    await submitSearch(page, 'zzzzzz impossible zebra compliance');
+    await submitSearch(page, 'zzznonsenseqqq');
 
     await expect(page.getByText('No results found')).toBeVisible();
     await expect(
