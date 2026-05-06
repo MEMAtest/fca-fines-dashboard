@@ -1,11 +1,27 @@
 {
   "redirects": [
     {
+      "source": "/",
+      "has": [
+        { "type": "host", "value": "fcafines.memaconsultants.com" }
+      ],
+      "destination": "https://regactions.com/",
+      "permanent": true
+    },
+    {
       "source": "/:path*",
       "has": [
         { "type": "host", "value": "fcafines.memaconsultants.com" }
       ],
       "destination": "https://regactions.com/:path*",
+      "permanent": true
+    },
+    {
+      "source": "/",
+      "has": [
+        { "type": "host", "value": "www.regactions.com" }
+      ],
+      "destination": "https://regactions.com/",
       "permanent": true
     },
     {
