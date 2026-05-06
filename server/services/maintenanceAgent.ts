@@ -79,7 +79,7 @@ async function callAI(prompt: string): Promise<string | null> {
       headers: {
         'Authorization': `Bearer ${apiKey}`,
         'Content-Type': 'application/json',
-        'HTTP-Referer': 'https://fcafines.memaconsultants.com',
+        'HTTP-Referer': 'https://regactions.com',
       },
       body: JSON.stringify({
         model: DEEPSEEK_MODEL,

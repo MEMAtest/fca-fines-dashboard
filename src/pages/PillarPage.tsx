@@ -17,7 +17,7 @@ function generatePillarSchema() {
     author: {
       "@type": "Organization",
       name: "MEMA Consultants",
-      url: "https://memaconsultants.com",
+      url: "https://regactions.com",
       description:
         "Compliance consultancy specialising in FCA regulatory data and analysis",
     },
@@ -26,16 +26,16 @@ function generatePillarSchema() {
       name: "RegActions",
       logo: {
         "@type": "ImageObject",
-        url: "https://fcafines.memaconsultants.com/regactions-mark.png",
+        url: "https://regactions.com/regactions-mark.png",
       },
     },
     mainEntityOfPage: {
       "@type": "WebPage",
-      "@id": "https://fcafines.memaconsultants.com/guide/fca-enforcement",
+      "@id": "https://regactions.com/guide/fca-enforcement",
     },
     image: {
       "@type": "ImageObject",
-      url: "https://fcafines.memaconsultants.com/og-image.png",
+      url: "https://regactions.com/og-image.png",
       width: 1200,
       height: 630,
       caption:

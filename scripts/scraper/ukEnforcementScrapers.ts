@@ -488,7 +488,7 @@ async function fetchPraSearchPage(term: string, page: number) {
       "content-type": "application/x-www-form-urlencoded; charset=UTF-8",
       "x-requested-with": "XMLHttpRequest",
       "user-agent":
-        "Mozilla/5.0 (compatible; MEMA-Regulatory-Scraper/1.0; +https://fcafines.memaconsultants.com)",
+        "Mozilla/5.0 (compatible; MEMA-Regulatory-Scraper/1.0; +https://regactions.com)",
     },
     body,
   });
@@ -695,7 +695,7 @@ async function fetchIcoSearchPage(pageNumber: number) {
       "content-type": "application/json",
       accept: "application/json",
       "user-agent":
-        "Mozilla/5.0 (compatible; MEMA-Regulatory-Scraper/1.0; +https://fcafines.memaconsultants.com)",
+        "Mozilla/5.0 (compatible; MEMA-Regulatory-Scraper/1.0; +https://regactions.com)",
     },
     body: JSON.stringify({
       filters: [{ key: "entype", values: ["monetary-penalties"] }],
@@ -778,7 +778,7 @@ async function fetchCmaSearch(query: string, start: number) {
     headers: {
       accept: "application/json",
       "user-agent":
-        "Mozilla/5.0 (compatible; MEMA-Regulatory-Scraper/1.0; +https://fcafines.memaconsultants.com)",
+        "Mozilla/5.0 (compatible; MEMA-Regulatory-Scraper/1.0; +https://regactions.com)",
     },
   });
 

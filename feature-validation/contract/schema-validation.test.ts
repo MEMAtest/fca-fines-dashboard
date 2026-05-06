@@ -243,7 +243,7 @@ describe('JSON-LD Schema Validation - schema.org Compliance', () => {
 
     it('First item MUST be Home', () => {
       expect(breadcrumb.itemListElement[0].name).toBe('Home');
-      expect(breadcrumb.itemListElement[0].item).toContain('fcafines.memaconsultants.com/');
+      expect(breadcrumb.itemListElement[0].item).toContain('regactions.com/');
     });
 
     it('Breadcrumb items MUST NOT be FCA-specific', () => {

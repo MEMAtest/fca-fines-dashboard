@@ -88,8 +88,8 @@ const HOWTO_SCHEMA = {
       "@type": "HowToStep",
       position: 1,
       name: "Navigate to Dashboard",
-      text: "Open RegActions at fcafines.memaconsultants.com/dashboard to access the complete database of regulatory enforcement penalties.",
-      url: "https://fcafines.memaconsultants.com/dashboard",
+      text: "Open RegActions at regactions.com/dashboard to access the complete database of regulatory enforcement penalties.",
+      url: "https://regactions.com/dashboard",
     },
     {
       "@type": "HowToStep",
@@ -429,7 +429,7 @@ function StructuredRegulatorArticlePage({
     keywords: article.keywords.join(", "),
     canonicalPath: `/blog/${article.slug}`,
     ogType: "article",
-    ogImage: `https://fcafines.memaconsultants.com/og/${article.slug}.png`,
+    ogImage: `https://regactions.com/og/${article.slug}.png`,
     articlePublishedTime: article.dateISO,
     articleModifiedTime: article.dateISO,
     articleSection: article.category,
@@ -677,7 +677,7 @@ function generateArticleSchema(article: BlogArticleMeta | YearlyArticleMeta) {
     author: {
       "@type": "Organization",
       name: "MEMA Consultants",
-      url: "https://memaconsultants.com",
+      url: "https://regactions.com",
       description:
         "Compliance consultancy specialising in FCA regulatory data and analysis",
     },
@@ -686,17 +686,17 @@ function generateArticleSchema(article: BlogArticleMeta | YearlyArticleMeta) {
       name: "RegActions",
       logo: {
         "@type": "ImageObject",
-        url: "https://fcafines.memaconsultants.com/regactions-mark.png",
+        url: "https://regactions.com/regactions-mark.png",
       },
     },
     mainEntityOfPage: {
       "@type": "WebPage",
-      "@id": `https://fcafines.memaconsultants.com/blog/${slug}`,
+      "@id": `https://regactions.com/blog/${slug}`,
     },
     keywords: article.keywords.join(", "),
     image: {
       "@type": "ImageObject",
-      url: "https://fcafines.memaconsultants.com/og-image.png",
+      url: "https://regactions.com/og-image.png",
       width: 1200,
       height: 630,
       caption:
@@ -715,7 +715,7 @@ function BlogArticlePage({ article }: { article: BlogArticleMeta }) {
     keywords: article.keywords.join(", "),
     canonicalPath: `/blog/${article.slug}`,
     ogType: "article",
-    ogImage: `https://fcafines.memaconsultants.com/og/${article.slug}.png`,
+    ogImage: `https://regactions.com/og/${article.slug}.png`,
     articlePublishedTime: article.dateISO,
     articleModifiedTime: article.dateISO,
     articleSection: article.category,
@@ -939,7 +939,7 @@ function YearlyArticlePage({ article }: { article: YearlyArticleMeta }) {
     keywords: article.keywords.join(", "),
     canonicalPath: `/blog/${article.slug}`,
     ogType: "article",
-    ogImage: `https://fcafines.memaconsultants.com/og/${article.slug}.png`,
+    ogImage: `https://regactions.com/og/${article.slug}.png`,
     articlePublishedTime: `${article.year}-01-01`,
     articleModifiedTime: clampToToday(`${article.year}-12-31`),
     articleSection: "Annual Analysis",

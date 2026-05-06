@@ -133,13 +133,13 @@ jobs:
     steps:
       - name: Check FCA Fines stats API
         run: |
-          curl -sf https://fcafines.memaconsultants.com/api/fca-fines/stats > stats.json
+          curl -sf https://regactions.com/api/fca-fines/stats > stats.json
           node -e "const fs=require('fs'); const data=JSON.parse(fs.readFileSync('stats.json','utf8')); if (!data.success) { console.error('FCA Fines stats API did not return success'); process.exit(1); }"
           echo "✅ FCA Fines stats API responding"
 
       - name: Check UK enforcement health API
         run: |
-          curl -sf https://fcafines.memaconsultants.com/api/uk-enforcement/health > uk-health.json
+          curl -sf https://regactions.com/api/uk-enforcement/health > uk-health.json
           node -e "const fs=require('fs'); const data=JSON.parse(fs.readFileSync('uk-health.json','utf8')); if (!data.success || data.totals?.failing !== 0) { console.error('UK enforcement health API is not healthy'); process.exit(1); }"
           echo "✅ UK enforcement health API responding"
 

@@ -300,7 +300,7 @@ export function Dashboard() {
       name: "FCA Fines Live Data Feed",
       description:
         "Real-time feed of Financial Conduct Authority fines and enforcement actions, updated as new penalties are published.",
-      url: "https://fcafines.memaconsultants.com/dashboard",
+      url: "https://regactions.com/dashboard",
       dateModified: new Date().toISOString().slice(0, 10),
       potentialAction: [
         {
@@ -309,7 +309,7 @@ export function Dashboard() {
           target: {
             "@type": "EntryPoint",
             urlTemplate:
-              "https://fcafines.memaconsultants.com/dashboard?search={query}",
+              "https://regactions.com/dashboard?search={query}",
           },
           "query-input": "required name=query",
         },
@@ -319,7 +319,7 @@ export function Dashboard() {
           target: {
             "@type": "EntryPoint",
             urlTemplate:
-              "https://fcafines.memaconsultants.com/dashboard?year={year}",
+              "https://regactions.com/dashboard?year={year}",
           },
         },
         {
@@ -327,7 +327,7 @@ export function Dashboard() {
           name: "Export FCA Fines CSV",
           target: {
             "@type": "EntryPoint",
-            urlTemplate: "https://fcafines.memaconsultants.com/dashboard",
+            urlTemplate: "https://regactions.com/dashboard",
           },
         },
       ],

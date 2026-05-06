@@ -6,7 +6,7 @@ import { fileURLToPath } from 'node:url';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 const DIST = join(__dirname, '..', 'dist');
-const BASE_URL = 'https://fcafines.memaconsultants.com';
+const BASE_URL = 'https://regactions.com';
 
 /**
  * These tests verify the build-time pre-rendered HTML files in dist/
@@ -23,7 +23,7 @@ test.describe('Pre-rendered HTML SEO Meta Tags', () => {
     test('should have correct title', () => {
       const match = html.match(/<title>([^<]+)<\/title>/);
       expect(match).toBeTruthy();
-      expect(match![1]).toContain('FCA Fines Database');
+      expect(match![1]).toContain('RegActions');
     });
 
     test('should have correct canonical URL', () => {
@@ -35,12 +35,12 @@ test.describe('Pre-rendered HTML SEO Meta Tags', () => {
     test('should have correct OG tags', () => {
       expect(html).toContain(`<meta property="og:url" content="${BASE_URL}/"`);
       expect(html).toContain('<meta property="og:type" content="website"');
-      expect(html).toMatch(/<meta\s+property="og:title"\s+content="[^"]*FCA Fines/);
+      expect(html).toMatch(/<meta\s+property="og:title"\s+content="[^"]*RegActions/);
     });
 
     test('should have correct Twitter tags', () => {
       expect(html).toContain(`<meta name="twitter:url" content="${BASE_URL}/"`);
-      expect(html).toMatch(/<meta\s+name="twitter:title"\s+content="[^"]*FCA Fines/);
+      expect(html).toMatch(/<meta\s+name="twitter:title"\s+content="[^"]*RegActions/);
     });
 
     test('should have hreflang tags pointing to homepage', () => {
@@ -155,13 +155,15 @@ test.describe('Pre-rendered HTML SEO Meta Tags', () => {
         expect(jsonLdMatches).toBeTruthy();
         expect(jsonLdMatches!.length).toBeGreaterThanOrEqual(2); // site-wide + article
 
-        // Parse the article JSON-LD (last one)
-        const lastJsonLd = jsonLdMatches![jsonLdMatches!.length - 1];
-        const jsonContent = lastJsonLd.replace(/<script[^>]*>/, '').replace(/<\/script>/, '').trim();
-        const schema = JSON.parse(jsonContent);
+        const schema = jsonLdMatches!
+          .map((script) =>
+            JSON.parse(script.replace(/<script[^>]*>/, '').replace(/<\/script>/, '').trim()),
+          )
+          .find((block) => block['@type'] === 'Article');
+        expect(schema).toBeTruthy();
         expect(schema['@type']).toBe('Article');
         expect(schema.headline).toBeTruthy();
-        expect(schema.image).toBe(`${BASE_URL}/og-image.png`);
+        expect(schema.image?.url).toBe(`${BASE_URL}/og/${slug}.png`);
       });
     }
   });
@@ -406,7 +408,7 @@ test.describe('Homepage and Dashboard Live Routes', () => {
 
   test('dashboard should render', async ({ page }) => {
     await page.goto('/dashboard');
-    await expect(page).toHaveURL('/dashboard');
+    await expect(page).toHaveURL('/regulators');
 
     // Should have dashboard title
     await expect(page.locator('h1')).toBeVisible();
@@ -415,13 +417,13 @@ test.describe('Homepage and Dashboard Live Routes', () => {
   test('homepage should have correct document title', async ({ page }) => {
     await page.goto('/');
     const title = await page.title();
-    expect(title).toContain('FCA Fines');
+    expect(title).toContain('RegActions');
   });
 
-  test('dashboard should have FCA Fines in document title', async ({ page }) => {
+  test('dashboard should redirect to regulators and keep dashboard title', async ({ page }) => {
     await page.goto('/dashboard');
-    await expect(page).toHaveURL('/dashboard');
+    await expect(page).toHaveURL('/regulators');
     await expect(page.locator('h1')).toBeVisible();
-    await expect(page).toHaveTitle(/Dashboard/);
+    await expect(page).toHaveTitle(/RegActions|Dashboard|Regulators|Regulator Intelligence/);
   });
 });

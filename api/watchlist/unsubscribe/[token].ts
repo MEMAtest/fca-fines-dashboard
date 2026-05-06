@@ -2,7 +2,7 @@ import type { VercelRequest, VercelResponse } from '@vercel/node';
 import { getSqlClient } from '../../../server/db.js';
 
 const sql = getSqlClient();
-const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || 'https://fcafines.memaconsultants.com';
+const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || 'https://regactions.com';
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   const { token } = req.query;

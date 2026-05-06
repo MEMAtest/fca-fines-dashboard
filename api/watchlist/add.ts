@@ -14,7 +14,7 @@ const ses = new SESClient({
 });
 
 const FROM_EMAIL = process.env.SES_FROM_EMAIL?.trim() || 'alerts@memaconsultants.com';
-const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL?.trim() || 'https://fcafines.memaconsultants.com';
+const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL?.trim() || 'https://regactions.com';
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   if (req.method !== 'POST') {

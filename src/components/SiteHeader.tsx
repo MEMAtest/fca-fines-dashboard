@@ -83,7 +83,7 @@ function getBreadcrumbs(pathname: string) {
   return crumbs;
 }
 
-const BASE_URL = "https://fcafines.memaconsultants.com";
+const BASE_URL = "https://regactions.com";
 
 // Phase 5: Group regulators by region for mega menu
 const REGION_ORDER = [

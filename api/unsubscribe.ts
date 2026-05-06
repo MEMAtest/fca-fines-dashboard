@@ -8,7 +8,7 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 import { disableByToken, getSubscriberByToken } from '../server/services/digestSubscribers.js';
 
-const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL?.trim() || 'https://fcafines.memaconsultants.com';
+const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL?.trim() || 'https://regactions.com';
 
 function escapeHtml(str: string): string {
   return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');

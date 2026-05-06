@@ -25,7 +25,7 @@ const OSC_PROCEEDING_DELAY_MS = Number.parseInt(
   10,
 );
 const OSC_USER_AGENT =
-  "Mozilla/5.0 (compatible; MEMA-Regulatory-Scraper/1.0; +https://fcafines.memaconsultants.com)";
+  "Mozilla/5.0 (compatible; MEMA-Regulatory-Scraper/1.0; +https://regactions.com)";
 
 const execFileAsync = promisify(execFile);
 

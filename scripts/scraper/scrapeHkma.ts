@@ -340,7 +340,7 @@ async function loadHkmaEntries(limit: number | null) {
       },
       timeout: 180000, // Increased from 120s to 180s (3 minutes)
       headers: {
-        'User-Agent': 'Mozilla/5.0 (compatible; MEMA-Regulatory-Scraper/1.0; +https://fcafines.memaconsultants.com)',
+        'User-Agent': 'Mozilla/5.0 (compatible; MEMA-Regulatory-Scraper/1.0; +https://regactions.com)',
         'Accept': 'application/json, text/plain, */*',
         'Accept-Language': 'en-US,en;q=0.9',
       },
@@ -369,7 +369,7 @@ async function enrichHkmaEntry(entry: HkmaEntry): Promise<DbReadyRecord[]> {
         responseType: "text",
         timeout: 180000, // Increased from 120s to 180s (3 minutes)
         headers: {
-          'User-Agent': 'Mozilla/5.0 (compatible; MEMA-Regulatory-Scraper/1.0; +https://fcafines.memaconsultants.com)',
+          'User-Agent': 'Mozilla/5.0 (compatible; MEMA-Regulatory-Scraper/1.0; +https://regactions.com)',
           'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
           'Accept-Language': 'en-US,en;q=0.9',
         },

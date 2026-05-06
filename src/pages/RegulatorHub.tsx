@@ -89,7 +89,7 @@ export function RegulatorHub() {
     ogTitle: metaTitle,
     ogDescription: metaDescription,
     ogType: "website",
-    ogImage: `https://fcafines.memaconsultants.com/og/${coverage.code.toLowerCase()}-hub.png`,
+    ogImage: `https://regactions.com/og/${coverage.code.toLowerCase()}-hub.png`,
   });
 
   // Inject JSON-LD structured data
@@ -99,7 +99,7 @@ export function RegulatorHub() {
       "@type": "Dataset",
       name: `${coverage.code} Fines Database`,
       description: `${coverage.fullName} enforcement actions and financial penalties from ${coverage.years}`,
-      url: `https://fcafines.memaconsultants.com${canonicalPath}`,
+      url: `https://regactions.com${canonicalPath}`,
       keywords: [
         `${coverage.code} fines`,
         coverage.fullName,
@@ -116,7 +116,7 @@ export function RegulatorHub() {
       creator: {
         "@type": "Organization",
         name: "MEMA Consultants",
-        url: "https://memaconsultants.com",
+        url: "https://regactions.com",
       },
       variableMeasured: [
         {
@@ -131,7 +131,7 @@ export function RegulatorHub() {
       distribution: {
         "@type": "DataDownload",
         encodingFormat: "application/json",
-        contentUrl: `https://fcafines.memaconsultants.com/api/unified/search?regulator=${coverage.code}`,
+        contentUrl: `https://regactions.com/api/unified/search?regulator=${coverage.code}`,
       },
     });
 

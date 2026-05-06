@@ -53,7 +53,7 @@ function findRank(values: string[], expected: string[]) {
 }
 
 async function main() {
-  const baseUrl = process.argv[2] || 'https://fcafines.memaconsultants.com';
+  const baseUrl = process.argv[2] || 'https://regactions.com';
   const evalSetPaths =
     process.argv.length > 3
       ? process.argv.slice(3)

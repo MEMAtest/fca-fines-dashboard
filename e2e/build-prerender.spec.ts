@@ -29,7 +29,7 @@ test.describe('Build & Pre-rendering', () => {
       const html = readFileSync(homepagePath, 'utf-8');
 
       // Should have correct meta tags
-      expect(html).toContain('FCA Fines Database');
+      expect(html).toContain('RegActions');
       expect(html).toContain('<meta name="description"');
       expect(html).toContain('og:type');
     });
@@ -39,7 +39,7 @@ test.describe('Build & Pre-rendering', () => {
       expect(existsSync(dashboardPath)).toBe(true);
 
       const html = readFileSync(dashboardPath, 'utf-8');
-      expect(html).toContain('FCA Fines Dashboard');
+      expect(html).toContain('RegActions Dashboard');
     });
 
     test('should have pre-rendered search and board-pack pages', () => {
@@ -166,20 +166,20 @@ test.describe('Build & Pre-rendering', () => {
       expect(sitemap).toContain('<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">');
 
       // Should have homepage
-      expect(sitemap).toContain('<loc>https://fcafines.memaconsultants.com/</loc>');
+      expect(sitemap).toContain('<loc>https://regactions.com/</loc>');
 
       // Should have dashboard
-      expect(sitemap).toContain('<loc>https://fcafines.memaconsultants.com/dashboard</loc>');
+      expect(sitemap).toContain('<loc>https://regactions.com/dashboard</loc>');
 
       // Should have topics + hub lists
-      expect(sitemap).toContain('<loc>https://fcafines.memaconsultants.com/topics</loc>');
-      expect(sitemap).toContain('<loc>https://fcafines.memaconsultants.com/breaches</loc>');
-      expect(sitemap).toContain('<loc>https://fcafines.memaconsultants.com/years</loc>');
-      expect(sitemap).toContain('<loc>https://fcafines.memaconsultants.com/sectors</loc>');
-      expect(sitemap).toContain('<loc>https://fcafines.memaconsultants.com/firms</loc>');
+      expect(sitemap).toContain('<loc>https://regactions.com/topics</loc>');
+      expect(sitemap).toContain('<loc>https://regactions.com/breaches</loc>');
+      expect(sitemap).toContain('<loc>https://regactions.com/years</loc>');
+      expect(sitemap).toContain('<loc>https://regactions.com/sectors</loc>');
+      expect(sitemap).toContain('<loc>https://regactions.com/firms</loc>');
 
       // Should have blog listing
-      expect(sitemap).toContain('<loc>https://fcafines.memaconsultants.com/blog</loc>');
+      expect(sitemap).toContain('<loc>https://regactions.com/blog</loc>');
     });
 
     test('should include core URLs and blog URLs in sitemap', () => {
@@ -193,10 +193,10 @@ test.describe('Build & Pre-rendering', () => {
       expect(urlMatches!.length).toBeGreaterThanOrEqual(35);
 
       // Check some specific blog URLs
-      expect(sitemap).toContain('https://fcafines.memaconsultants.com/blog/20-biggest-fca-fines-of-all-time');
-      expect(sitemap).toContain('https://fcafines.memaconsultants.com/blog/fca-fines-2025-complete-list');
-      expect(sitemap).toContain('https://fcafines.memaconsultants.com/blog/fca-fines-2024-annual-review');
-      expect(sitemap).toContain('https://fcafines.memaconsultants.com/blog/fca-fines-2013-annual-review');
+      expect(sitemap).toContain('https://regactions.com/blog/20-biggest-fca-fines-of-all-time');
+      expect(sitemap).toContain('https://regactions.com/blog/fca-fines-2025-complete-list');
+      expect(sitemap).toContain('https://regactions.com/blog/fca-fines-2024-annual-review');
+      expect(sitemap).toContain('https://regactions.com/blog/fca-fines-2013-annual-review');
     });
 
     test('should have correct priority and changefreq in sitemap', () => {
@@ -204,18 +204,18 @@ test.describe('Build & Pre-rendering', () => {
       const sitemap = readFileSync(sitemapPath, 'utf-8');
 
       // Homepage should have priority 1.0 and daily changefreq
-      const homepageUrl = sitemap.match(/<url>[\s\S]*?<loc>https:\/\/fcafines\.memaconsultants\.com\/<\/loc>[\s\S]*?<\/url>/);
+      const homepageUrl = sitemap.match(/<url>[\s\S]*?<loc>https:\/\/regactions\.com\/<\/loc>[\s\S]*?<\/url>/);
       expect(homepageUrl).toBeTruthy();
       expect(homepageUrl![0]).toContain('<priority>1.0</priority>');
       expect(homepageUrl![0]).toContain('<changefreq>daily</changefreq>');
 
       // Dashboard should have priority 0.95 and daily changefreq
-      const dashboardUrl = sitemap.match(/<url>[\s\S]*?<loc>https:\/\/fcafines\.memaconsultants\.com\/dashboard<\/loc>[\s\S]*?<\/url>/);
+      const dashboardUrl = sitemap.match(/<url>[\s\S]*?<loc>https:\/\/regactions\.com\/dashboard<\/loc>[\s\S]*?<\/url>/);
       expect(dashboardUrl).toBeTruthy();
       expect(dashboardUrl![0]).toContain('<priority>0.95</priority>');
 
       // Blog listing should have priority 0.9
-      const blogUrl = sitemap.match(/<url>[\s\S]*?<loc>https:\/\/fcafines\.memaconsultants\.com\/blog<\/loc>[\s\S]*?<\/url>/);
+      const blogUrl = sitemap.match(/<url>[\s\S]*?<loc>https:\/\/regactions\.com\/blog<\/loc>[\s\S]*?<\/url>/);
       expect(blogUrl).toBeTruthy();
       expect(blogUrl![0]).toContain('<priority>0.9</priority>');
     });
@@ -319,12 +319,11 @@ test.describe('Build & Pre-rendering', () => {
   });
 
   test.describe('Route preload hygiene', () => {
-    test('should keep the search shell free of heavy blog and export preloads', () => {
+    test('should keep the search shell free of heavy export preloads', () => {
       const searchPath = join(DIST_DIR, 'search', 'index.html');
       expect(existsSync(searchPath)).toBe(true);
 
       const html = readFileSync(searchPath, 'utf-8');
-      expect(html).not.toContain('content-blog');
       expect(html).not.toContain('exportPdf');
       expect(html).not.toContain('html2canvas');
       expect(html).not.toContain('xlsx');

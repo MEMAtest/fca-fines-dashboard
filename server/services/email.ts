@@ -9,7 +9,7 @@ const ses = new SESClient({
 });
 
 const FROM_EMAIL = process.env.SES_FROM_EMAIL?.trim() || 'alerts@memaconsultants.com';
-const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL?.trim() || 'https://fcafines.memaconsultants.com';
+const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL?.trim() || 'https://regactions.com';
 
 interface SendEmailParams {
   to: string;
@@ -87,7 +87,7 @@ export function verificationEmail(type: 'alert' | 'watchlist' | 'digest', token:
     </div>
     <div class="footer">
       <p>Powered by MEMA Consultants</p>
-      <p><a href="${BASE_URL}">fcafines.memaconsultants.com</a></p>
+      <p><a href="${BASE_URL}">regactions.com</a></p>
     </div>
   </div>
 </body>
@@ -176,7 +176,7 @@ export function alertEmail(
     </div>
     <div class="footer">
       <p>You're receiving this because you subscribed to FCA Fine Alerts.</p>
-      <p><a href="${unsubscribeUrl}">Unsubscribe</a> · <a href="${BASE_URL}">fcafines.memaconsultants.com</a></p>
+      <p><a href="${unsubscribeUrl}">Unsubscribe</a> · <a href="${BASE_URL}">regactions.com</a></p>
     </div>
   </div>
 </body>
@@ -267,7 +267,7 @@ export function watchlistAlertEmail(
     </div>
     <div class="footer">
       <p>You're watching "${firmName}" on your watchlist.</p>
-      <p><a href="${unsubscribeUrl}">Stop watching this firm</a> · <a href="${BASE_URL}">fcafines.memaconsultants.com</a></p>
+      <p><a href="${unsubscribeUrl}">Stop watching this firm</a> · <a href="${BASE_URL}">regactions.com</a></p>
     </div>
   </div>
 </body>
@@ -392,7 +392,7 @@ export function weeklyDigestEmail(
     </div>
     <div class="footer">
       <p>You're subscribed to the FCA Fines Weekly Digest.</p>
-      <p><a href="${unsubscribeUrl}">Unsubscribe</a> · <a href="${BASE_URL}">fcafines.memaconsultants.com</a></p>
+      <p><a href="${unsubscribeUrl}">Unsubscribe</a> · <a href="${BASE_URL}">regactions.com</a></p>
     </div>
   </div>
 </body>

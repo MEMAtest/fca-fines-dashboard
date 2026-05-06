@@ -13,7 +13,7 @@ dotenv.config();
 const execFileAsync = promisify(execFile);
 
 const DEFAULT_HEADERS = {
-  'User-Agent': 'Mozilla/5.0 (compatible; MEMA-Regulatory-Scraper/1.0; +https://fcafines.memaconsultants.com)',
+  'User-Agent': 'Mozilla/5.0 (compatible; MEMA-Regulatory-Scraper/1.0; +https://regactions.com)',
   'Accept-Language': 'en-GB,en;q=0.9',
   'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
 };

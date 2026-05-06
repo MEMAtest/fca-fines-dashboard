@@ -115,7 +115,7 @@ function generateItemListSchema() {
     itemListElement: allArticles.map((article, index) => ({
       "@type": "ListItem",
       position: index + 1,
-      url: `https://fcafines.memaconsultants.com/blog/${article.slug}`,
+      url: `https://regactions.com/blog/${article.slug}`,
     })),
   };
 }
@@ -127,7 +127,7 @@ function generateBlogListSchema() {
     name: "Regulatory Enforcement Insights & Analysis",
     description:
       "Expert analysis of global regulator enforcement trends, fines intelligence, and compliance guidance",
-    url: "https://fcafines.memaconsultants.com/blog",
+    url: "https://regactions.com/blog",
     publisher: {
       "@type": "Organization",
       name: "MEMA Consultants",
@@ -137,7 +137,7 @@ function generateBlogListSchema() {
       headline: article.title,
       description: article.excerpt,
       datePublished: article.dateISO,
-      url: `https://fcafines.memaconsultants.com/blog/${article.slug}`,
+      url: `https://regactions.com/blog/${article.slug}`,
       author: {
         "@type": "Organization",
         name: "MEMA Consultants",
@@ -166,7 +166,7 @@ export function Blog() {
     safePage * ITEMS_PER_PAGE,
   );
 
-  const baseUrl = "https://fcafines.memaconsultants.com";
+  const baseUrl = "https://regactions.com";
   const relNext =
     safePage < totalPages ? `${baseUrl}/blog?page=${safePage + 1}` : undefined;
   const relPrev =

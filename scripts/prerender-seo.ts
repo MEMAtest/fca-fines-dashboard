@@ -20,7 +20,7 @@ const __dirname = dirname(__filename);
 const ROOT = join(__dirname, "..");
 const DIST = join(ROOT, "dist");
 
-const BASE_URL = "https://fcafines.memaconsultants.com";
+const BASE_URL = "https://regactions.com";
 const SITE_NAME = "RegActions";
 const OG_IMAGE = `${BASE_URL}/og-image.png`;
 const RSS_URL = `${BASE_URL}/rss.xml`;
@@ -166,7 +166,7 @@ const HOWTO_SCHEMA = {
       "@type": "HowToStep",
       position: 1,
       name: "Navigate to Dashboard",
-      text: "Open the RegActions Dashboard at fcafines.memaconsultants.com/dashboard to access the complete database of regulatory fines and enforcement actions from global financial regulators.",
+      text: "Open the RegActions Dashboard at regactions.com/dashboard to access the complete database of regulatory fines and enforcement actions from global financial regulators.",
       url: `${BASE_URL}/dashboard`,
     },
     {
@@ -534,7 +534,7 @@ async function buildPageMetas(): Promise<PageMeta[]> {
           creator: {
             "@type": "Organization",
             name: "MEMA Consultants",
-            url: "https://memaconsultants.com",
+            url: "https://regactions.com",
           },
           variableMeasured: [
             {
@@ -620,7 +620,7 @@ async function buildPageMetas(): Promise<PageMeta[]> {
       author: {
         "@type": "Organization",
         name: "MEMA Consultants",
-        url: "https://memaconsultants.com",
+        url: "https://regactions.com",
         description:
           "Compliance consultancy specialising in FCA regulatory data and analysis",
       },
@@ -694,7 +694,7 @@ async function buildPageMetas(): Promise<PageMeta[]> {
         author: {
           "@type": "Organization",
           name: "MEMA Consultants",
-          url: "https://memaconsultants.com",
+          url: "https://regactions.com",
           description:
             "Compliance consultancy specialising in FCA regulatory data and analysis",
         },
@@ -774,7 +774,7 @@ async function buildPageMetas(): Promise<PageMeta[]> {
         author: {
           "@type": "Organization",
           name: "MEMA Consultants",
-          url: "https://memaconsultants.com",
+          url: "https://regactions.com",
           description:
             "Compliance consultancy specialising in FCA regulatory data and analysis",
         },

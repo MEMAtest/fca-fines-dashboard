@@ -17,8 +17,8 @@ interface SEOConfig {
   relPrev?: string;
 }
 
-const BASE_URL = 'https://fcafines.memaconsultants.com';
-const SITE_NAME = 'Regulatory Fines';
+const BASE_URL = 'https://regactions.com';
+const SITE_NAME = 'RegActions';
 
 export function useSEO(config: SEOConfig) {
   useEffect(() => {

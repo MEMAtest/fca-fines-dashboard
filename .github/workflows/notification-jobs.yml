@@ -51,7 +51,7 @@ jobs:
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           AWS_SES_REGION: ${{ vars.AWS_SES_REGION || 'eu-west-2' }}
           SES_FROM_EMAIL: ${{ vars.SES_FROM_EMAIL || 'alerts@memaconsultants.com' }}
-          NEXT_PUBLIC_BASE_URL: ${{ vars.NEXT_PUBLIC_BASE_URL || 'https://fcafines.memaconsultants.com' }}
+          NEXT_PUBLIC_BASE_URL: ${{ vars.NEXT_PUBLIC_BASE_URL || 'https://regactions.com' }}
         run: |
           echo "Processing alert notifications..."
           npx tsx scripts/jobs/processAlerts.ts
@@ -83,7 +83,7 @@ jobs:
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           AWS_SES_REGION: ${{ vars.AWS_SES_REGION || 'eu-west-2' }}
           SES_FROM_EMAIL: ${{ vars.SES_FROM_EMAIL || 'alerts@memaconsultants.com' }}
-          NEXT_PUBLIC_BASE_URL: ${{ vars.NEXT_PUBLIC_BASE_URL || 'https://fcafines.memaconsultants.com' }}
+          NEXT_PUBLIC_BASE_URL: ${{ vars.NEXT_PUBLIC_BASE_URL || 'https://regactions.com' }}
         run: |
           echo "Sending weekly digest..."
           npx tsx scripts/jobs/sendWeeklyDigest.ts weekly
@@ -115,7 +115,7 @@ jobs:
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           AWS_SES_REGION: ${{ vars.AWS_SES_REGION || 'eu-west-2' }}
           SES_FROM_EMAIL: ${{ vars.SES_FROM_EMAIL || 'alerts@memaconsultants.com' }}
-          NEXT_PUBLIC_BASE_URL: ${{ vars.NEXT_PUBLIC_BASE_URL || 'https://fcafines.memaconsultants.com' }}
+          NEXT_PUBLIC_BASE_URL: ${{ vars.NEXT_PUBLIC_BASE_URL || 'https://regactions.com' }}
         run: |
           echo "Sending monthly digest..."
           npx tsx scripts/jobs/sendWeeklyDigest.ts monthly
