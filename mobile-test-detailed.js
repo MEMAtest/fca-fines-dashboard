@@ -10,13 +10,13 @@ const MOBILE_VIEWPORT = {
   hasTouch: true
 };
 
-const URL = 'https://fcafines.memaconsultants.com/dashboard';
+const URL = 'https://regactions.com/dashboard';
 const SCREENSHOT_DIR = '/tmp';
 
 const delay = (ms) => new Promise(resolve => setTimeout(resolve, ms));
 
 async function runDetailedMobileTest() {
-  console.log('🚀 Starting Detailed FCA Fines Dashboard Mobile Test...\n');
+  console.log('🚀 Starting Detailed RegActions Mobile Test...\n');
   console.log('Mobile Viewport: 375x667 (iPhone SE)');
   console.log('Target URL:', URL);
   console.log('Screenshot Directory:', SCREENSHOT_DIR);

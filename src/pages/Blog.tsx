@@ -130,7 +130,7 @@ function generateBlogListSchema() {
     url: "https://regactions.com/blog",
     publisher: {
       "@type": "Organization",
-      name: "MEMA Consultants",
+      name: "RegActions",
     },
     blogPost: blogArticles.map((article) => ({
       "@type": "BlogPosting",
@@ -140,7 +140,7 @@ function generateBlogListSchema() {
       url: `https://regactions.com/blog/${article.slug}`,
       author: {
         "@type": "Organization",
-        name: "MEMA Consultants",
+        name: "RegActions",
       },
     })),
   };
@@ -517,7 +517,7 @@ export function Blog() {
           <div className="blog-footer-brand">
             <p className="blog-footer-logo">RegActions</p>
             <p className="blog-footer-tagline">
-              Global enforcement intelligence platform | Powered by MEMA Consultants
+              Global enforcement intelligence platform
             </p>
           </div>
           <nav className="blog-footer-nav" aria-label="Footer navigation">
@@ -527,7 +527,7 @@ export function Blog() {
             <Link to="/sitemap">Sitemap</Link>
           </nav>
           <p className="blog-footer-copyright">
-            © {new Date().getFullYear()} MEMA Consultants · All rights reserved
+            © {new Date().getFullYear()} RegActions · All rights reserved
           </p>
         </div>
       </footer>

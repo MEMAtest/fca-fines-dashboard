@@ -1,9 +1,9 @@
-# FCA Fines Dashboard - Project Knowledge
+# RegActions - Project Knowledge
 
 ## Project Overview
 
 Multi-regulator enforcement fines dashboard with 30+ global regulator scrapers. React 19 + Vite + Express, PostgreSQL (Hetzner), TypeScript.
-**Prod:** https://fcafines.memaconsultants.com | **Repo:** github.com/MEMAtest/fca-fines-dashboard | **Deploy:** Vercel (auto on push to `main`)
+**Prod:** https://regactions.com | **Repo:** github.com/MEMAtest/fca-fines-dashboard | **Deploy:** Vercel (auto on push to `main`)
 
 ## Key Commands
 
@@ -109,7 +109,7 @@ SES_FROM_EMAIL=
 
 **Optional:**
 ```
-NEXT_PUBLIC_BASE_URL=https://fcafines.memaconsultants.com
+NEXT_PUBLIC_BASE_URL=https://regactions.com
 FCA_YEARS=2026,2025         # Years to scrape
 ```
 

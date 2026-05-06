@@ -233,7 +233,7 @@ export function Homepage() {
               <Link to="/regulators">Dashboard</Link>
             </div>
             <p className="homepage-footer__copyright">
-              © {new Date().getFullYear()} MEMA Consultants. All rights reserved.
+              © {new Date().getFullYear()} RegActions. All rights reserved.
             </p>
           </div>
         </div>

@@ -80,7 +80,7 @@ async function getAiClient(purpose: 'pdf-summary' | 'analysis'): Promise<{
           headers: {
             'Authorization': `Bearer ${openRouterKey}`,
             'Content-Type': 'application/json',
-            'HTTP-Referer': 'https://fcafines.memaconsultants.com',
+            'HTTP-Referer': 'https://regactions.com',
           },
           body: JSON.stringify({
             model: 'deepseek/deepseek-chat',
@@ -270,8 +270,7 @@ export async function generatePersonaDigestPdf(
       'Track enforcement actions across 30+ global regulators.',
       'Sector-specific intelligence. AI-powered analysis.',
       '',
-      'Contact: ademola@memaconsultants.com',
-      'Website: memaconsultants.com',
+      'Website: regcanary.com',
     ].join('\n'),
   });
 

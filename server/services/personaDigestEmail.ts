@@ -5,7 +5,7 @@
  * Includes RegCanary branding, CTA, and unsubscribe link.
  */
 
-const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL?.trim() || 'https://fcafines.memaconsultants.com';
+const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL?.trim() || 'https://regactions.com';
 const REGCANARY_URL = 'https://regcanary.com';
 
 export interface DigestItem {
@@ -104,8 +104,7 @@ export function personaDigestEmail(params: {
       </p>
       <p>
         <a href="${unsubscribeUrl}">Unsubscribe</a> &middot;
-        <a href="${REGCANARY_URL}">regcanary.com</a> &middot;
-        Powered by <a href="https://memaconsultants.com">MEMA Consultants</a>
+        <a href="${REGCANARY_URL}">regcanary.com</a>
       </p>
     </div>
   </div>
@@ -128,8 +127,7 @@ ${hasPdfAttachment ? 'Monthly Landscape PDF attached.\n' : ''}
 Get real-time regulatory alerts at ${REGCANARY_URL}
 
 You're receiving this because ${firmName || 'you are'} subscribed to RegCanary ${personaName} alerts.
-Unsubscribe: ${unsubscribeUrl}
-Powered by MEMA Consultants`;
+Unsubscribe: ${unsubscribeUrl}`;
 
   return { subject, html, text };
 }

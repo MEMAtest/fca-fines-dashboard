@@ -104,7 +104,7 @@ async function main() {
             ${subscription.email},
             'digest',
             ${fines.slice(0, 10).map(f => f.id)},
-            ${`${frequency.charAt(0).toUpperCase() + frequency.slice(1)} FCA Fines Digest`}
+            ${`${frequency.charAt(0).toUpperCase() + frequency.slice(1)} RegActions Digest`}
           )
         `;
 
@@ -210,15 +210,15 @@ async function sendDigestEmail(
     </div>
 
     <div class="footer">
-      <p>You're subscribed to the ${frequency} FCA Fines Digest.</p>
-      <p><a href="${unsubscribeUrl}">Unsubscribe</a> · RegActions by MEMA Consultants</p>
+      <p>You're subscribed to the ${frequency} RegActions Digest.</p>
+      <p><a href="${unsubscribeUrl}">Unsubscribe</a> · regactions.com</p>
     </div>
   </div>
 </body>
 </html>
   `.trim();
 
-  const textContent = `${frequency.charAt(0).toUpperCase() + frequency.slice(1)} FCA Fines Digest
+  const textContent = `${frequency.charAt(0).toUpperCase() + frequency.slice(1)} RegActions Digest
 
 ${periodLabel}'s Summary:
 - ${allFines.length} fines issued
@@ -236,7 +236,7 @@ Unsubscribe: ${unsubscribeUrl}`;
     Source: FROM_EMAIL,
     Destination: { ToAddresses: [subscription.email] },
     Message: {
-      Subject: { Data: `${periodLabel}: ${allFines.length} FCA Fines, £${(totalAmount / 1_000_000).toFixed(1)}m Total`, Charset: 'UTF-8' },
+      Subject: { Data: `${periodLabel}: ${allFines.length} enforcement actions, £${(totalAmount / 1_000_000).toFixed(1)}m Total`, Charset: 'UTF-8' },
       Body: {
         Html: { Data: htmlContent, Charset: 'UTF-8' },
         Text: { Data: textContent, Charset: 'UTF-8' },

@@ -23,7 +23,7 @@ e498718 - Rebrand to Regulatory Fines Dashboard and add multi-regulator support
 
 | Status | Details |
 |--------|---------|
-| **Production URL** | https://fcafines.memaconsultants.com |
+| **Production URL** | https://regactions.com |
 | **Deployment** | ✅ LIVE |
 | **Build Status** | ✅ Succeeded |
 | **CDN Cache** | Warming up (may show old homepage for ~5-10 mins) |
@@ -76,7 +76,7 @@ Test these features in production:
 - [ ] Click any regulator link → should navigate to hub page
 
 ### Regulator Hub Pages
-Visit any regulator hub (e.g., https://fcafines.memaconsultants.com/regulators/fca):
+Visit any regulator hub (e.g., https://regactions.com/regulators/fca):
 
 - [ ] See data coverage notice at top
 - [ ] See 4 stats cards (total, count, largest, average)
@@ -117,21 +117,21 @@ Test these all work (BaFin with different casing):
 
 ### Check deployment status:
 ```bash
-curl -sI https://fcafines.memaconsultants.com/ | grep -E "HTTP|x-vercel"
+curl -sI https://regactions.com/ | grep -E "HTTP|x-vercel"
 ```
 
 ### Check new routes:
 ```bash
-curl -sI https://fcafines.memaconsultants.com/regulators/fca | grep HTTP
+curl -sI https://regactions.com/regulators/fca | grep HTTP
 ```
 
 ### Check title (for rebrand):
 ```bash
-curl -s https://fcafines.memaconsultants.com/ | grep -o '<title>[^<]*</title>'
+curl -s https://regactions.com/ | grep -o '<title>[^<]*</title>'
 ```
 
 ### Force cache refresh:
-- Visit URL with `?v=timestamp`: https://fcafines.memaconsultants.com/?v=1742404800
+- Visit URL with `?v=timestamp`: https://regactions.com/?v=1742404800
 - Or use hard refresh in browser: Ctrl+Shift+R (Windows/Linux) or Cmd+Shift+R (Mac)
 
 ---
@@ -159,7 +159,7 @@ curl -s https://fcafines.memaconsultants.com/ | grep -o '<title>[^<]*</title>'
 
 ## Support
 
-- **Production URL**: https://fcafines.memaconsultants.com
+- **Production URL**: https://regactions.com
 - **GitHub Repo**: https://github.com/MEMAtest/fca-fines-dashboard
 - **Documentation**: See `IMPLEMENTATION_SUMMARY.md`
 

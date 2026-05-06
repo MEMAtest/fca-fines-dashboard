@@ -6,7 +6,7 @@
 **Commit:** `8cbbd57`
 **Status:** ✅ **DEPLOYED SUCCESSFULLY**
 **Duration:** 55 seconds
-**Production URL:** https://fcafines.memaconsultants.com
+**Production URL:** https://regactions.com
 
 ---
 
@@ -36,7 +36,7 @@
 
 | Component | Status | HTTP Code | Notes |
 |-----------|--------|-----------|-------|
-| Main Site | ✅ PASS | 200 | fcafines.memaconsultants.com |
+| Main Site | ✅ PASS | 200 | regactions.com |
 | /regulators | ✅ PASS | 200 | Regulators overview page |
 | /regulators/fca | ✅ PASS | 200 | FCA regulator page |
 | /regulators/amf | ✅ PASS | 200 | AMF regulator page (Phase 2 changes) |
@@ -138,12 +138,12 @@ echo "🔍 Production Health Check - $(date)"
 echo "================================"
 
 # 1. Main site
-STATUS=$(curl -s -o /dev/null -w "%{http_code}" https://fcafines.memaconsultants.com)
+STATUS=$(curl -s -o /dev/null -w "%{http_code}" https://regactions.com)
 echo "Main Site: HTTP $STATUS $([ "$STATUS" = "200" ] && echo "✅" || echo "❌")"
 
 # 2. Key pages
 for PAGE in regulators regulators/fca regulators/amf regulators/sfc regulators/afm regulators/dnb; do
-  STATUS=$(curl -s -o /dev/null -w "%{http_code}" https://fcafines.memaconsultants.com/$PAGE)
+  STATUS=$(curl -s -o /dev/null -w "%{http_code}" https://regactions.com/$PAGE)
   echo "/$PAGE: HTTP $STATUS $([ "$STATUS" = "200" ] && echo "✅" || echo "❌")"
 done
 

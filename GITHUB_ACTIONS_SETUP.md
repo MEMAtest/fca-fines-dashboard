@@ -89,7 +89,7 @@ Run FCA scraper
 Check the API endpoint to see if new fines are showing:
 
 ```bash
-curl https://fcafines.memaconsultants.com/api/fca-fines/list?limit=5
+curl https://regactions.com/api/fca-fines/list?limit=5
 ```
 
 You should see the most recent fines including Nationwide Building Society (Dec 11, 2025).

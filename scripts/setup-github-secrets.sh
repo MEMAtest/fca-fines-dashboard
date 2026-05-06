@@ -1,11 +1,11 @@
 #!/bin/bash
 
-# FCA Fines Dashboard - GitHub Secrets & Variables Setup Script
+# RegActions - GitHub Secrets & Variables Setup Script
 # This script automates the configuration of GitHub Actions secrets and variables
 
 set -e
 
-echo "🔧 FCA Fines Dashboard - GitHub Setup Automation"
+echo "🔧 RegActions - GitHub Setup Automation"
 echo "================================================="
 echo ""
 

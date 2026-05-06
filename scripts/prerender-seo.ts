@@ -430,7 +430,7 @@ async function buildPageMetas(): Promise<PageMeta[]> {
     path: "/board-pack",
     title: "Board Pack | Board and Risk Committee Enforcement Advisory",
     description:
-      "Generate a MEMA board pack with exposure scoring, peer-case evidence, board challenge points, and appendix-ready controls detail.",
+      "Generate a RegActions board pack with exposure scoring, peer-case evidence, board challenge points, and appendix-ready controls detail.",
     keywords:
       "board pack, board advisory pack, enforcement exposure, board intelligence, compliance committee pack, peer enforcement analysis",
     ogType: "website",
@@ -449,50 +449,50 @@ async function buildPageMetas(): Promise<PageMeta[]> {
   // 3. Topics (hub landing)
   pages.push({
     path: "/topics",
-    title: "FCA Fines Topics | Breaches, Years, Sectors & Firm Pages",
+    title: "RegActions Topics | Breaches, Years, Sectors & Firm Pages",
     description:
-      "Browse FCA fines by breach type, year, sector, or firm. Explore hub pages and jump into the interactive dashboard for deeper analysis.",
+      "Browse enforcement actions by breach type, year, sector, or firm. Explore hub pages and jump into the interactive dashboard for deeper analysis.",
     keywords:
-      "FCA fines topics, FCA fines by breach, FCA fines by year, FCA fines by firm, FCA fines by sector",
+      "RegActions topics, regulatory fines by breach, regulatory fines by year, enforcement actions by firm, regulatory fines by sector",
     ogType: "website",
   });
 
   // 4. Hub list pages
   pages.push({
     path: "/breaches",
-    title: "FCA Fines by Breach Type | Market Abuse, AML, Principles and More",
+    title: "Enforcement Actions by Breach Type | Market Abuse, AML, Principles and More",
     description:
-      "Browse FCA fines by breach category. See which breach types drive the most penalties and jump into the dashboard with filters applied.",
+      "Browse regulatory enforcement actions by breach category. See which breach types drive the most penalties and jump into the dashboard with filters applied.",
     keywords:
-      "FCA fines by breach, market abuse FCA fines, AML FCA fines, FCA principles fines, breach category fines",
+      "regulatory fines by breach, market abuse enforcement, AML fines, regulatory principles fines, breach category fines",
     ogType: "website",
   });
   pages.push({
     path: "/years",
-    title: "FCA Fines by Year | 2013-2026 Annual Summaries",
+    title: "Enforcement Actions by Year | 2013-2026 Annual Summaries",
     description:
-      "Browse FCA fines by year. Compare enforcement totals and jump into the dashboard for each year’s full list of actions.",
+      "Browse regulatory enforcement actions by year. Compare enforcement totals and jump into the dashboard for each year’s full list of actions.",
     keywords:
-      "FCA fines by year, FCA fines 2026, FCA fines 2025, FCA enforcement by year",
+      "regulatory fines by year, enforcement actions 2026, enforcement actions 2025, financial enforcement by year",
     ogType: "website",
   });
   pages.push({
     path: "/sectors",
-    title: "FCA Fines by Sector | Banks, Insurance, Individuals and More",
+    title: "Regulatory Fines by Sector | Banks, Insurance, Individuals and More",
     description:
-      "Browse FCA fines by firm category (sector). View which sectors receive the most penalties and jump into filtered dashboard views.",
+      "Browse regulatory fines by firm category (sector). View which sectors receive the most penalties and jump into filtered dashboard views.",
     keywords:
-      "FCA fines by sector, FCA fines banks, FCA fines insurance, FCA fines individuals",
+      "regulatory fines by sector, bank enforcement penalties, insurance enforcement penalties, individual enforcement penalties",
     ogType: "website",
   });
   pages.push({
     path: "/firms",
     title:
-      "Top FCA Fine Recipients | Firms and Individuals With the Largest Penalties (2013-2026)",
+      "Top Penalty Recipients | Firms and Individuals With the Largest Penalties (2013-2026)",
     description:
-      "Browse the biggest FCA fine recipients across 2013-2026. Open an entity page to see totals, largest penalties, and full enforcement history.",
+      "Browse the biggest regulatory penalty recipients across 2013-2026. Open an entity page to see totals, largest penalties, and full enforcement history.",
     keywords:
-      "top FCA fines firms, biggest FCA fines recipients, FCA fines by firm, FCA fines by individual, largest FCA penalties",
+      "top regulatory fines firms, biggest enforcement penalty recipients, fines by firm, fines by individual, largest regulatory penalties",
     ogType: "website",
   });
 
@@ -533,7 +533,7 @@ async function buildPageMetas(): Promise<PageMeta[]> {
           },
           creator: {
             "@type": "Organization",
-            name: "MEMA Consultants",
+            name: SITE_NAME,
             url: "https://regactions.com",
           },
           variableMeasured: [
@@ -565,11 +565,11 @@ async function buildPageMetas(): Promise<PageMeta[]> {
   pages.push({
     path: "/blog",
     title:
-      "FCA Fines Blog | Expert Analysis & Insights on Financial Conduct Authority Penalties",
+      "RegActions Blog | Regulatory Enforcement Analysis & Insights",
     description:
-      "Expert analysis of FCA fines, biggest penalties, enforcement trends, and compliance guidance. Covering the 20 largest FCA fines, AML enforcement, banking sector penalties, and 2025 fines.",
+      "Expert analysis of regulator fines, biggest penalties, enforcement trends, and compliance guidance across global financial regulators.",
     keywords:
-      "FCA fines blog, FCA fines analysis, FCA enforcement insights, biggest FCA fines, FCA fines 2025, FCA AML fines, FCA compliance guide",
+      "RegActions blog, regulatory fines analysis, enforcement insights, biggest regulatory fines, AML fines, compliance guide",
     ogType: "website",
     extraJsonLd: [
       {
@@ -590,7 +590,7 @@ async function buildPageMetas(): Promise<PageMeta[]> {
     title: "Sitemap | RegActions",
     description:
       "Complete sitemap of RegActions. Browse all pages including the interactive dashboard, blog articles, annual reviews, and hub pages.",
-    keywords: "FCA fines sitemap, FCA fines pages, FCA fines navigation",
+    keywords: "RegActions sitemap, regulatory enforcement pages, regulatory fines navigation",
     ogType: "website",
   });
 
@@ -619,10 +619,10 @@ async function buildPageMetas(): Promise<PageMeta[]> {
       dateModified: todayISO(),
       author: {
         "@type": "Organization",
-        name: "MEMA Consultants",
+        name: SITE_NAME,
         url: "https://regactions.com",
         description:
-          "Compliance consultancy specialising in FCA regulatory data and analysis",
+          "Regulatory enforcement intelligence platform",
       },
       publisher: {
         "@type": "Organization",
@@ -693,10 +693,10 @@ async function buildPageMetas(): Promise<PageMeta[]> {
         dateModified: article.dateISO,
         author: {
           "@type": "Organization",
-          name: "MEMA Consultants",
+          name: SITE_NAME,
           url: "https://regactions.com",
           description:
-            "Compliance consultancy specialising in FCA regulatory data and analysis",
+            "Regulatory enforcement intelligence platform",
         },
         publisher: {
           "@type": "Organization",
@@ -773,10 +773,10 @@ async function buildPageMetas(): Promise<PageMeta[]> {
         dateModified: clampedDateModified,
         author: {
           "@type": "Organization",
-          name: "MEMA Consultants",
+          name: SITE_NAME,
           url: "https://regactions.com",
           description:
-            "Compliance consultancy specialising in FCA regulatory data and analysis",
+            "Regulatory enforcement intelligence platform",
         },
         publisher: {
           "@type": "Organization",
@@ -816,9 +816,9 @@ async function buildPageMetas(): Promise<PageMeta[]> {
     categories.slice(0, 30).forEach((cat: any) => {
       pages.push({
         path: `/breaches/${cat.slug}`,
-        title: `${humanize(cat.name)} FCA Fines | ${cat.fineCount} actions totalling ${gbp.format(cat.totalAmount)}`,
-        description: `Explore FCA enforcement actions tagged ${humanize(cat.name)}. ${cat.fineCount} actions totalling ${gbp.format(cat.totalAmount)} across 2013-2026.`,
-        keywords: `FCA ${humanize(cat.name)} fines, ${humanize(cat.name)} enforcement, FCA fines by breach`,
+        title: `${humanize(cat.name)} Enforcement Actions | ${cat.fineCount} actions totalling ${gbp.format(cat.totalAmount)}`,
+        description: `Explore regulatory enforcement actions tagged ${humanize(cat.name)}. ${cat.fineCount} actions totalling ${gbp.format(cat.totalAmount)} across 2013-2026.`,
+        keywords: `${humanize(cat.name)} regulatory fines, ${humanize(cat.name)} enforcement, fines by breach`,
         ogType: "website",
       });
     });
@@ -826,9 +826,9 @@ async function buildPageMetas(): Promise<PageMeta[]> {
     years.slice(0, 25).forEach((y: any) => {
       pages.push({
         path: `/years/${y.year}`,
-        title: `FCA Fines ${y.year} | ${y.fineCount} actions totalling ${gbp.format(y.totalAmount)}`,
-        description: `Explore FCA fines issued in ${y.year}. ${y.fineCount} actions totalling ${gbp.format(y.totalAmount)}.`,
-        keywords: `FCA fines ${y.year}, FCA penalties ${y.year}, FCA enforcement ${y.year}`,
+        title: `Enforcement Actions ${y.year} | ${y.fineCount} actions totalling ${gbp.format(y.totalAmount)}`,
+        description: `Explore regulatory fines issued in ${y.year}. ${y.fineCount} actions totalling ${gbp.format(y.totalAmount)}.`,
+        keywords: `regulatory fines ${y.year}, regulatory penalties ${y.year}, enforcement ${y.year}`,
         ogType: "website",
       });
     });
@@ -836,9 +836,9 @@ async function buildPageMetas(): Promise<PageMeta[]> {
     sectors.slice(0, 30).forEach((s: any) => {
       pages.push({
         path: `/sectors/${s.slug}`,
-        title: `FCA Fines for ${s.name} | ${s.fineCount} actions totalling ${gbp.format(s.totalAmount)}`,
-        description: `Explore FCA enforcement actions for ${s.name}. ${s.fineCount} actions totalling ${gbp.format(s.totalAmount)} across 2013-2026.`,
-        keywords: `FCA fines ${s.name}, FCA penalties ${s.name}, FCA fines by sector`,
+        title: `Regulatory Fines for ${s.name} | ${s.fineCount} actions totalling ${gbp.format(s.totalAmount)}`,
+        description: `Explore regulatory enforcement actions for ${s.name}. ${s.fineCount} actions totalling ${gbp.format(s.totalAmount)} across 2013-2026.`,
+        keywords: `regulatory fines ${s.name}, regulatory penalties ${s.name}, fines by sector`,
         ogType: "website",
       });
     });
@@ -846,9 +846,9 @@ async function buildPageMetas(): Promise<PageMeta[]> {
     firms.slice(0, 120).forEach((f: any) => {
       pages.push({
         path: `/firms/${f.slug}`,
-        title: `${f.name} FCA Fines | ${f.fineCount} actions totalling ${gbp.format(f.totalAmount)}`,
-        description: `Explore FCA enforcement actions for ${f.name}. ${f.fineCount} actions totalling ${gbp.format(f.totalAmount)} across 2013-2026.`,
-        keywords: `FCA fines ${f.name}, FCA penalties ${f.name}, FCA enforcement ${f.name}`,
+        title: `${f.name} Enforcement History | ${f.fineCount} actions totalling ${gbp.format(f.totalAmount)}`,
+        description: `Explore regulatory enforcement actions for ${f.name}. ${f.fineCount} actions totalling ${gbp.format(f.totalAmount)} across 2013-2026.`,
+        keywords: `regulatory fines ${f.name}, penalties ${f.name}, regulatory enforcement ${f.name}`,
         ogType: "website",
       });
     });

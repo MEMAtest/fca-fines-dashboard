@@ -135,7 +135,7 @@ export function useSEO(config: SEOConfig) {
 
     // Cleanup function to reset to defaults when component unmounts
     return () => {
-      document.title = 'FCA Fines Database & Tracker | Complete UK Financial Conduct Authority Penalties 2013-2026';
+      document.title = 'RegActions | Global Regulatory Fines & Enforcement Intelligence';
       document.querySelector('link[rel="next"]')?.remove();
       document.querySelector('link[rel="prev"]')?.remove();
     };

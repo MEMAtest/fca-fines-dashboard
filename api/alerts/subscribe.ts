@@ -142,7 +142,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     <div class="card">
       <div class="logo">RegActions</div>
       <h1>Verify your alert subscription</h1>
-      <p>You've requested to receive FCA fine alerts. Click the button below to confirm your email address.</p>
+      <p>You've requested to receive regulatory fine alerts. Click the button below to confirm your email address.</p>
       <div class="details">
         <strong>Your alert criteria:</strong><br>
         ${minAmountText}<br>
@@ -153,7 +153,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       <p style="font-size: 14px; color: #6b7280;">This link expires in 7 days.</p>
     </div>
     <div class="footer">
-      <p>RegActions · Powered by MEMA Consultants</p>
+      <p>RegActions · regactions.com</p>
     </div>
   </div>
 </body>
@@ -166,13 +166,13 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         Destination: { ToAddresses: [email] },
         Message: {
           Subject: {
-            Data: "Verify your FCA Fine Alert subscription",
+            Data: "Verify your RegActions alert subscription",
             Charset: "UTF-8",
           },
           Body: {
             Html: { Data: htmlContent, Charset: "UTF-8" },
             Text: {
-              Data: `Verify your FCA Fine Alert subscription\n\nClick here to verify: ${verifyUrl}\n\nYour criteria:\n${minAmountText}\n${breachText}\nFrequency: ${frequency}`,
+              Data: `Verify your RegActions alert subscription\n\nClick here to verify: ${verifyUrl}\n\nYour criteria:\n${minAmountText}\n${breachText}\nFrequency: ${frequency}`,
               Charset: "UTF-8",
             },
           },

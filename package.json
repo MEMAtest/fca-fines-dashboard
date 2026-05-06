@@ -1,9 +1,9 @@
 {
-  "name": "regulatory-fines-dashboard",
+  "name": "regactions",
   "version": "0.2.0",
   "private": true,
   "type": "module",
-  "description": "Comprehensive UK & EU regulatory fines tracker - FCA, BaFin, AMF, and 5 more financial regulators",
+  "description": "RegActions global regulatory enforcement intelligence platform",
   "scripts": {
     "dev": "vite",
     "dev:api": "tsx server.ts",

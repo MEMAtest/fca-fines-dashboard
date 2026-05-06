@@ -116,7 +116,7 @@ export function AlertSubscribeModal({ isOpen, onClose }: AlertSubscribeModalProp
                 </div>
                 <div>
                   <h2>Get Fine Alerts</h2>
-                  <p className="modal-subtitle">Receive notifications when new FCA fines are published</p>
+                  <p className="modal-subtitle">Receive notifications when new enforcement actions are published</p>
                 </div>
                 <button className="modal-close" onClick={handleClose}>
                   <X size={24} />

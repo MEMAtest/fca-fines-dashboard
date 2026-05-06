@@ -24,14 +24,14 @@ export function BreachHub() {
 
   useSEO({
     title: category
-      ? `${humanize(category.name)} FCA Fines | Cases, Totals and Largest Penalties (2013-2026)`
-      : "FCA Fines by Breach Category",
+      ? `${humanize(category.name)} Enforcement Actions | Cases, Totals and Largest Penalties (2013-2026)`
+      : "Enforcement Actions by Breach Category",
     description: category
-      ? `Explore FCA enforcement actions tagged ${humanize(category.name)}. See totals, top firms and the largest penalties, and jump into the dashboard filters.`
-      : "Explore FCA fines by breach category. Jump into the dashboard with filters applied.",
+      ? `Explore regulatory enforcement actions tagged ${humanize(category.name)}. See totals, top firms and the largest penalties, and jump into the dashboard filters.`
+      : "Explore regulatory fines by breach category. Jump into the dashboard with filters applied.",
     keywords: category
-      ? `FCA ${humanize(category.name)} fines, ${humanize(category.name)} enforcement, FCA breach category fines`
-      : "FCA fines breach category, market abuse FCA fines, AML FCA fines",
+      ? `${humanize(category.name)} regulatory fines, ${humanize(category.name)} enforcement, breach category fines`
+      : "regulatory fines breach category, market abuse fines, AML fines",
     canonicalPath: slug ? `/breaches/${slug}` : "/breaches",
     ogType: "website",
   });
@@ -89,7 +89,7 @@ export function BreachHub() {
           <h1>{category ? humanize(category.name) : "Breach Category"}</h1>
           <p>
             {category
-              ? `A breakdown of FCA enforcement actions tagged ${humanize(category.name)} across 2013-2026.`
+              ? `A breakdown of regulatory enforcement actions tagged ${humanize(category.name)} across 2013-2026.`
               : "Loading breach category..."}
           </p>
           <div className="hub-hero__actions">

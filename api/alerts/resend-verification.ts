@@ -135,7 +135,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       <p style="font-size: 14px; color: #6b7280;">This link expires in 7 days.</p>
     </div>
     <div class="footer">
-      <p>RegActions · Powered by MEMA Consultants</p>
+      <p>RegActions · regactions.com</p>
     </div>
   </div>
 </body>
@@ -148,13 +148,13 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         Destination: { ToAddresses: [email] },
         Message: {
           Subject: {
-            Data: "Verify your FCA Fine Alert subscription",
+            Data: "Verify your RegActions alert subscription",
             Charset: "UTF-8",
           },
           Body: {
             Html: { Data: htmlContent, Charset: "UTF-8" },
             Text: {
-              Data: `Verify your FCA Fine Alert subscription\n\nClick here to verify: ${verifyUrl}\n\nYour criteria:\n${minAmountText}\n${breachText}\nFrequency: ${subscription.frequency}\n\nThis link expires in 7 days.`,
+              Data: `Verify your RegActions alert subscription\n\nClick here to verify: ${verifyUrl}\n\nYour criteria:\n${minAmountText}\n${breachText}\nFrequency: ${subscription.frequency}\n\nThis link expires in 7 days.`,
               Charset: "UTF-8",
             },
           },

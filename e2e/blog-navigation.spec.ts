@@ -9,7 +9,7 @@ test.describe('Blog Navigation', () => {
       await expect(page.locator('h1')).toBeVisible();
 
       // Should have main heading
-      await expect(page.locator('h1')).toContainText('FCA Fines');
+      await expect(page.locator('h1')).toContainText('Global Regulatory Enforcement Intelligence');
 
       // Should have description
       await expect(page.getByText(/Expert analysis/i)).toBeVisible();
@@ -18,7 +18,7 @@ test.describe('Blog Navigation', () => {
       await expect(page.locator('h2').filter({ hasText: 'Featured' })).toBeVisible();
 
       // Should have all articles section
-      await expect(page.locator('h2').filter({ hasText: 'All FCA Fines Articles' })).toBeVisible();
+      await expect(page.locator('h2').filter({ hasText: 'All Enforcement Intelligence' })).toBeVisible();
     });
 
     test('should display blog article cards with metadata', async ({ page }) => {
@@ -116,7 +116,7 @@ test.describe('Blog Navigation', () => {
       // Wait for article to render
       await expect(page.locator('h1.blog-post-title')).toBeVisible();
 
-      // Click "Explore FCA Fines Dashboard" button
+      // Click "Explore RegActions Dashboard" button
       await page.locator('.blog-cta-button').click();
 
       // Should navigate to dashboard

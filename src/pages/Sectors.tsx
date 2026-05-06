@@ -14,9 +14,9 @@ export function Sectors() {
   useSEO({
     title: "Regulatory Fines by Sector | Banks, Insurance, Individuals and More",
     description:
-      "Browse FCA fines by firm category (sector). View which sectors receive the most penalties and jump into filtered dashboard views.",
+      "Browse regulatory fines by firm category (sector). View which sectors receive the most penalties and jump into filtered dashboard views.",
     keywords:
-      "FCA fines by sector, FCA fines banks, FCA fines insurance, FCA fines individuals",
+      "regulatory fines by sector, bank enforcement penalties, insurance enforcement penalties, individual enforcement penalties",
     canonicalPath: "/sectors",
     ogType: "website",
   });

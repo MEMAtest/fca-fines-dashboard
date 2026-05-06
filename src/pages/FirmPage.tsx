@@ -34,14 +34,14 @@ export function FirmPage() {
 
   useSEO({
     title: firm
-      ? `${firm.name} FCA Fines | Total Penalties, Largest Fine and Enforcement History`
-      : "Firm FCA Fines | Enforcement History",
+      ? `${firm.name} Enforcement History | Total Penalties and Largest Fine`
+      : "Firm Enforcement History | Regulatory Penalties",
     description: firm
-      ? `Explore FCA enforcement actions for ${firm.name}. View total penalties, number of actions, largest fine, and recent Final Notices.`
-      : "Explore FCA enforcement actions by firm or individual. View totals, largest penalties, and history.",
+      ? `Explore regulatory enforcement actions for ${firm.name}. View total penalties, number of actions, largest fine, and recent notices.`
+      : "Explore regulatory enforcement actions by firm or individual. View totals, largest penalties, and history.",
     keywords: firm
-      ? `${firm.name} FCA fines, FCA fines ${firm.name}, FCA penalties ${firm.name}, FCA enforcement ${firm.name}`
-      : "FCA fines by firm, FCA fines by individual",
+      ? `${firm.name} regulatory fines, enforcement actions ${firm.name}, penalties ${firm.name}, regulatory enforcement ${firm.name}`
+      : "regulatory fines by firm, regulatory fines by individual",
     canonicalPath: slug ? `/firms/${slug}` : "/firms",
     ogType: "website",
   });

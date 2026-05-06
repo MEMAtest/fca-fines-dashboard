@@ -1,6 +1,6 @@
-# Robots.txt for FCA Fines Dashboard
-# https://fcafines.memaconsultants.com
-# The definitive FCA fines database
+# Robots.txt for RegActions
+# https://regactions.com
+# Global regulatory enforcement intelligence
 
 User-agent: *
 Allow: /
@@ -25,7 +25,7 @@ User-agent: DuckDuckBot
 Allow: /
 
 # Sitemap location
-Sitemap: https://fcafines.memaconsultants.com/sitemap.xml
+Sitemap: https://regactions.com/sitemap.xml
 
 # Crawl-delay for polite crawling (optional)
 # Crawl-delay: 1

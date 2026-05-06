@@ -25,14 +25,14 @@ export function YearHub() {
 
   useSEO({
     title: Number.isFinite(year)
-      ? `FCA Fines ${year} | Complete List, Largest Penalties and Trends`
-      : "FCA Fines by Year",
+      ? `Enforcement Actions ${year} | Complete List, Largest Penalties and Trends`
+      : "Enforcement Actions by Year",
     description: Number.isFinite(year)
-      ? `Explore FCA fines issued in ${year}. View totals, the largest penalties, and jump into the dashboard with ${year} selected.`
-      : "Explore FCA fines by year.",
+      ? `Explore regulatory fines issued in ${year}. View totals, the largest penalties, and jump into the dashboard with ${year} selected.`
+      : "Explore regulatory fines by year.",
     keywords: Number.isFinite(year)
-      ? `FCA fines ${year}, FCA enforcement ${year}, FCA penalties ${year}`
-      : "FCA fines by year",
+      ? `regulatory fines ${year}, regulatory enforcement ${year}, regulatory penalties ${year}`
+      : "regulatory fines by year",
     canonicalPath: Number.isFinite(year) ? `/years/${year}` : "/years",
     ogType: "website",
   });
@@ -113,7 +113,7 @@ export function YearHub() {
     <div className="hub-page">
       <div className="hub-container">
         <header className="hub-hero">
-          <h1>FCA Fines {year}</h1>
+          <h1>Enforcement Actions {year}</h1>
           <p>
             Totals and highlights for enforcement actions issued in {year}. Use
             the dashboard for deep filtering and exports.

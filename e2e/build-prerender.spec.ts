@@ -61,7 +61,7 @@ test.describe('Build & Pre-rendering', () => {
       expect(existsSync(topicsPath)).toBe(true);
 
       const html = readFileSync(topicsPath, 'utf-8');
-      expect(html).toContain('FCA Fines Topics');
+      expect(html).toContain('RegActions Topics');
     });
 
     test('should have pre-rendered blog listing page', () => {
@@ -69,7 +69,7 @@ test.describe('Build & Pre-rendering', () => {
       expect(existsSync(blogPath)).toBe(true);
 
       const html = readFileSync(blogPath, 'utf-8');
-      expect(html).toContain('FCA Fines Blog');
+      expect(html).toContain('RegActions Blog');
     });
 
     test('should have pre-rendered blog article: 20-biggest-fca-fines-of-all-time', () => {

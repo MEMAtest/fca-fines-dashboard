@@ -12,11 +12,11 @@ const currency = new Intl.NumberFormat("en-GB", {
 
 export function Breaches() {
   useSEO({
-    title: "FCA Fines by Breach Type | Market Abuse, AML, Principles and More",
+    title: "Enforcement Actions by Breach Type | Market Abuse, AML, Principles and More",
     description:
-      "Browse FCA fines by breach category. See which breach types drive the most penalties and jump into the dashboard with filters applied.",
+      "Browse regulatory enforcement actions by breach category. See which breach types drive the most penalties and jump into the dashboard with filters applied.",
     keywords:
-      "FCA fines by breach, market abuse FCA fines, AML FCA fines, FCA principles fines, breach category fines",
+      "regulatory fines by breach, market abuse enforcement, AML fines, regulatory principles fines, breach category fines",
     canonicalPath: "/breaches",
     ogType: "website",
   });
@@ -52,14 +52,14 @@ export function Breaches() {
     <div className="hub-page">
       <div className="hub-container">
         <header className="hub-hero">
-          <h1>FCA Fines by Breach Category</h1>
+          <h1>Enforcement Actions by Breach Category</h1>
           <p>
             Explore enforcement actions grouped by breach category. Each topic
             page links straight into the dashboard filters.
           </p>
           <div className="hub-hero__actions">
             <Link to="/dashboard?year=0" className="btn btn-primary">
-              Explore All Fines
+              Explore All Actions
             </Link>
             <Link to="/topics" className="btn btn-ghost">
               Back to Topics

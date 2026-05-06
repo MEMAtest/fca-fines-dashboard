@@ -226,7 +226,7 @@ export function ContactForm() {
       {status === 'error' && (
         <div className="form-message error">
           <AlertCircle size={20} />
-          <span>Failed to send message. Please try again or email us directly at contact@memaconsultants.com</span>
+          <span>Failed to send message. Please try again later.</span>
         </div>
       )}
     </form>

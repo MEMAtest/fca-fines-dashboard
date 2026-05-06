@@ -24,11 +24,11 @@ function formatDate(value: string | null) {
 export function Firms() {
   useSEO({
     title:
-      "Top FCA Fine Recipients | Firms and Individuals With the Largest Penalties (2013-2026)",
+      "Top Penalty Recipients | Firms and Individuals With the Largest Penalties (2013-2026)",
     description:
-      "Browse the biggest FCA fine recipients across 2013-2026. Open an entity page to see totals, largest penalties, and full enforcement history.",
+      "Browse the biggest regulatory penalty recipients across 2013-2026. Open an entity page to see totals, largest penalties, and full enforcement history.",
     keywords:
-      "top FCA fines firms, biggest FCA fines recipients, FCA fines by firm, FCA fines by individual, largest FCA penalties",
+      "top regulatory fines firms, biggest enforcement penalty recipients, fines by firm, fines by individual, largest regulatory penalties",
     canonicalPath: "/firms",
     ogType: "website",
   });
@@ -73,7 +73,7 @@ export function Firms() {
         <header className="hub-hero">
           <h1>Top Firms and Individuals</h1>
           <p>
-            A ranked list of the biggest FCA fine recipients across the dataset.
+            A ranked list of the biggest penalty recipients across the dataset.
             Open an entity page for totals, largest penalties, and history.
           </p>
           <div className="hub-hero__actions">

@@ -11,7 +11,7 @@ export function Sitemap() {
     title: "Sitemap | RegActions",
     description:
       "Complete sitemap of RegActions. Browse all pages including the interactive dashboard, blog articles, annual reviews, and hub pages.",
-    keywords: "FCA fines sitemap, FCA fines pages, FCA fines navigation",
+    keywords: "RegActions sitemap, regulatory enforcement pages, regulatory fines navigation",
     canonicalPath: "/sitemap",
     ogType: "website",
   });
@@ -45,10 +45,10 @@ export function Sitemap() {
                 <Link to="/breaches">Breach Categories</Link>
               </li>
               <li>
-                <Link to="/years">FCA Fines by Year</Link>
+                <Link to="/years">Enforcement Actions by Year</Link>
               </li>
               <li>
-                <Link to="/sectors">FCA Fines by Sector</Link>
+                <Link to="/sectors">Enforcement Actions by Sector</Link>
               </li>
               <li>
                 <Link to="/firms">Top Firms & Individuals</Link>
@@ -100,19 +100,19 @@ export function Sitemap() {
             </p>
             <ul>
               <li>
-                <Link to="/breaches">Breach Categories</Link> — Browse FCA fines
+                <Link to="/breaches">Breach Categories</Link> — Browse enforcement actions
                 by breach type (e.g. AML, market abuse, systems and controls)
               </li>
               <li>
-                <Link to="/years">Years</Link> — Browse FCA fines by year from
+                <Link to="/years">Years</Link> — Browse enforcement actions by year from
                 2013 to present
               </li>
               <li>
-                <Link to="/sectors">Sectors</Link> — Browse FCA fines by firm
+                <Link to="/sectors">Sectors</Link> — Browse enforcement actions by firm
                 category (banks, insurance, individuals, etc.)
               </li>
               <li>
-                <Link to="/firms">Firms</Link> — Browse the top FCA fine
+                <Link to="/firms">Firms</Link> — Browse the top penalty
                 recipients with individual enforcement histories
               </li>
             </ul>
@@ -126,7 +126,7 @@ export function Sitemap() {
           <div className="blog-footer-brand">
             <p className="blog-footer-logo">RegActions</p>
             <p className="blog-footer-tagline">
-              The definitive FCA fines database | Powered by MEMA Consultants
+              Global regulatory enforcement intelligence
             </p>
           </div>
           <nav className="blog-footer-nav" aria-label="Footer navigation">
@@ -137,7 +137,7 @@ export function Sitemap() {
             <Link to="/sitemap">Sitemap</Link>
           </nav>
           <p className="blog-footer-copyright">
-            © {new Date().getFullYear()} MEMA Consultants · All rights reserved
+            © {new Date().getFullYear()} RegActions · All rights reserved
           </p>
         </div>
       </footer>

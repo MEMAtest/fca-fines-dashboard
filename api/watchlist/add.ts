@@ -109,14 +109,14 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     <div class="card">
       <div class="logo">RegActions</div>
       <h1>Verify your firm watchlist</h1>
-      <p>You've requested to watch a firm for new FCA fines. Click the button below to confirm.</p>
+      <p>You've requested to watch a firm for new regulatory enforcement actions. Click the button below to confirm.</p>
       <div class="firm-name">${firmName.trim()}</div>
-      <p>You'll be notified whenever this firm receives a new fine from the FCA.</p>
+      <p>You'll be notified whenever this firm receives a new tracked enforcement action.</p>
       <a href="${verifyUrl}" class="button">Verify & Start Watching</a>
       <p style="font-size: 14px; color: #6b7280;">This link expires in 7 days.</p>
     </div>
     <div class="footer">
-      <p>RegActions · Powered by MEMA Consultants</p>
+      <p>RegActions · regactions.com</p>
     </div>
   </div>
 </body>
@@ -130,7 +130,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         Subject: { Data: `Verify your watchlist: ${firmName.trim()}`, Charset: 'UTF-8' },
         Body: {
           Html: { Data: htmlContent, Charset: 'UTF-8' },
-          Text: { Data: `Verify your firm watchlist\n\nYou've requested to watch "${firmName.trim()}" for new FCA fines.\n\nClick here to verify: ${verifyUrl}\n\nThis link expires in 7 days.`, Charset: 'UTF-8' },
+          Text: { Data: `Verify your firm watchlist\n\nYou've requested to watch "${firmName.trim()}" for new regulatory enforcement actions.\n\nClick here to verify: ${verifyUrl}\n\nThis link expires in 7 days.`, Charset: 'UTF-8' },
         },
       },
     }));

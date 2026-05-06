@@ -16,10 +16,10 @@ function generatePillarSchema() {
     dateModified: new Date().toISOString().slice(0, 10),
     author: {
       "@type": "Organization",
-      name: "MEMA Consultants",
+      name: "RegActions",
       url: "https://regactions.com",
       description:
-        "Compliance consultancy specialising in FCA regulatory data and analysis",
+        "Regulatory enforcement intelligence platform",
     },
     publisher: {
       "@type": "Organization",
@@ -349,7 +349,7 @@ export function PillarPage() {
           <div className="blog-footer-brand">
             <p className="blog-footer-logo">RegActions</p>
             <p className="blog-footer-tagline">
-              The definitive FCA fines database | Powered by MEMA Consultants
+              FCA enforcement intelligence from RegActions
             </p>
           </div>
           <nav className="blog-footer-nav" aria-label="Footer navigation">
@@ -359,7 +359,7 @@ export function PillarPage() {
             <Link to="/sitemap">Sitemap</Link>
           </nav>
           <p className="blog-footer-copyright">
-            © {new Date().getFullYear()} MEMA Consultants · All rights reserved
+            © {new Date().getFullYear()} RegActions · All rights reserved
           </p>
         </div>
       </footer>

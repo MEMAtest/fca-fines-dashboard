@@ -19,14 +19,14 @@ export function SectorHub() {
 
   useSEO({
     title: sector
-      ? `FCA Fines for ${sector.name} | Largest Penalties and Trends (2013-2026)`
-      : "FCA Fines by Sector",
+      ? `Regulatory Fines for ${sector.name} | Largest Penalties and Trends (2013-2026)`
+      : "Regulatory Fines by Sector",
     description: sector
-      ? `Explore FCA enforcement actions for ${sector.name}. See totals, top breach categories, and the largest penalties.`
-      : "Explore FCA fines by sector.",
+      ? `Explore regulatory enforcement actions for ${sector.name}. See totals, top breach categories, and the largest penalties.`
+      : "Explore regulatory fines by sector.",
     keywords: sector
-      ? `FCA fines ${sector.name}, FCA penalties ${sector.name}`
-      : "FCA fines by sector",
+      ? `regulatory fines ${sector.name}, regulatory penalties ${sector.name}`
+      : "regulatory fines by sector",
     canonicalPath: slug ? `/sectors/${slug}` : "/sectors",
     ogType: "website",
   });
@@ -84,7 +84,7 @@ export function SectorHub() {
           <h1>{sector ? sector.name : "Sector"}</h1>
           <p>
             {sector
-              ? `FCA enforcement actions for ${sector.name} across 2013-2026.`
+              ? `Regulatory enforcement actions for ${sector.name} across 2013-2026.`
               : "Loading sector..."}
           </p>
           <div className="hub-hero__actions">

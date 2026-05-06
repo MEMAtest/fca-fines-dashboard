@@ -48,7 +48,7 @@ export function verificationEmail(type: 'alert' | 'watchlist' | 'digest', token:
   const verifyUrl = `${BASE_URL}/api/${type === 'alert' ? 'alerts' : type === 'watchlist' ? 'watchlist' : 'digest'}/verify/${token}`;
 
   const typeLabels = {
-    alert: 'FCA Fine Alerts',
+    alert: 'RegActions Alerts',
     watchlist: 'Firm Watchlist',
     digest: 'Weekly Digest',
   };
@@ -86,7 +86,6 @@ export function verificationEmail(type: 'alert' | 'watchlist' | 'digest', token:
       <p style="font-size: 14px; color: #6b7280;">This link will expire in 24 hours. If you didn't request this subscription, you can safely ignore this email.</p>
     </div>
     <div class="footer">
-      <p>Powered by MEMA Consultants</p>
       <p><a href="${BASE_URL}">regactions.com</a></p>
     </div>
   </div>
@@ -107,7 +106,6 @@ This link will expire in 24 hours. If you didn't request this subscription, you 
 
 ---
 RegActions
-Powered by MEMA Consultants
 ${BASE_URL}
   `.trim();
 
@@ -175,7 +173,7 @@ export function alertEmail(
       <p><a href="${BASE_URL}/dashboard">View on Dashboard →</a></p>
     </div>
     <div class="footer">
-      <p>You're receiving this because you subscribed to FCA Fine Alerts.</p>
+      <p>You're receiving this because you subscribed to RegActions Alerts.</p>
       <p><a href="${unsubscribeUrl}">Unsubscribe</a> · <a href="${BASE_URL}">regactions.com</a></p>
     </div>
   </div>
@@ -184,7 +182,7 @@ export function alertEmail(
   `.trim();
 
   const text = `
-FCA Alert: ${firmName} fined ${formattedAmount}
+RegActions Alert: ${firmName} fined ${formattedAmount}
 
 New Enforcement Action
 
@@ -197,7 +195,7 @@ View Final Notice: ${noticeUrl}
 View on Dashboard: ${BASE_URL}/dashboard
 
 ---
-You're receiving this because you subscribed to FCA Fine Alerts.
+You're receiving this because you subscribed to RegActions Alerts.
 Unsubscribe: ${unsubscribeUrl}
 RegActions - ${BASE_URL}
   `.trim();
@@ -391,7 +389,7 @@ export function weeklyDigestEmail(
       <a href="${BASE_URL}/dashboard" class="button">View Full Dashboard</a>
     </div>
     <div class="footer">
-      <p>You're subscribed to the FCA Fines Weekly Digest.</p>
+      <p>You're subscribed to the RegActions Weekly Digest.</p>
       <p><a href="${unsubscribeUrl}">Unsubscribe</a> · <a href="${BASE_URL}">regactions.com</a></p>
     </div>
   </div>
@@ -407,7 +405,7 @@ export function weeklyDigestEmail(
   }).join('\n');
 
   const text = `
-FCA Weekly Digest
+RegActions Weekly Digest
 ${new Date(periodStart).toLocaleDateString('en-GB')} - ${new Date(periodEnd).toLocaleDateString('en-GB')}
 
 Summary:
@@ -419,7 +417,7 @@ ${fines.length > 0 ? `Recent Fines:\n${finesText}${fines.length > 10 ? `\n...and
 View Full Dashboard: ${BASE_URL}/dashboard
 
 ---
-You're subscribed to the FCA Fines Weekly Digest.
+You're subscribed to the RegActions Weekly Digest.
 Unsubscribe: ${unsubscribeUrl}
 RegActions - ${BASE_URL}
   `.trim();

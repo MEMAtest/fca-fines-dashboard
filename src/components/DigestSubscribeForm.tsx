@@ -112,8 +112,8 @@ export function DigestSubscribeForm({
       <div className="digest-header">
         <Mail size={24} />
         <div>
-          <h3>FCA Fines Digest</h3>
-          <p>Get a summary of all new fines delivered to your inbox</p>
+          <h3>RegActions Digest</h3>
+          <p>Get a summary of new enforcement actions delivered to your inbox</p>
         </div>
       </div>
 

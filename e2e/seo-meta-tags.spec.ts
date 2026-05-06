@@ -155,7 +155,7 @@ test.describe('SEO Meta Tags', () => {
       expect(articleSchema.datePublished).toContain('2024-01-01');
       expect(articleSchema.dateModified).toContain('2024-12-31');
       expect(articleSchema.author['@type']).toBe('Organization');
-      expect(articleSchema.author.name).toBe('MEMA Consultants');
+      expect(articleSchema.author.name).toBe('RegActions');
     });
   });
 

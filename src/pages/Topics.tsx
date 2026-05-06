@@ -3,11 +3,11 @@ import { useSEO } from "../hooks/useSEO.js";
 
 export function Topics() {
   useSEO({
-    title: "FCA Fines Topics | Breaches, Years, Sectors & Firm Pages",
+    title: "RegActions Topics | Breaches, Years, Sectors & Firm Pages",
     description:
-      "Browse FCA fines by breach type, year, sector, or firm. Explore hub pages and jump into the interactive dashboard for deeper analysis.",
+      "Browse enforcement actions by breach type, year, sector, or firm. Explore hub pages and jump into the interactive dashboard for deeper analysis.",
     keywords:
-      "FCA fines topics, FCA fines by breach, FCA fines by year, FCA fines by firm, FCA fines by sector",
+      "RegActions topics, regulatory fines by breach, regulatory fines by year, enforcement actions by firm, regulatory fines by sector",
     canonicalPath: "/topics",
     ogType: "website",
   });
@@ -16,7 +16,7 @@ export function Topics() {
     <div className="hub-page">
       <div className="hub-container">
         <header className="hub-hero">
-          <h1>Explore FCA Fines Topics</h1>
+          <h1>Explore Enforcement Topics</h1>
           <p>
             Fast entry points into the data: breach categories, yearly
             enforcement, firm sectors, and the biggest firms and individuals.

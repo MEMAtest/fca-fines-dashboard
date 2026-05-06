@@ -115,7 +115,7 @@ export function RegulatorHub() {
       },
       creator: {
         "@type": "Organization",
-        name: "MEMA Consultants",
+        name: "RegActions",
         url: "https://regactions.com",
       },
       variableMeasured: [

@@ -11,7 +11,7 @@ const MOBILE_VIEWPORT = {
   hasTouch: true
 };
 
-const BASE_URL = process.env.MOBILE_TEST_BASE_URL || 'https://fcafines.memaconsultants.com';
+const BASE_URL = process.env.MOBILE_TEST_BASE_URL || 'https://regactions.com';
 const SCREENSHOT_DIR = '/tmp';
 
 const delay = (ms) => new Promise(resolve => setTimeout(resolve, ms));
@@ -23,7 +23,7 @@ const EXECUTABLE_PATH =
 const DASHBOARD_URL = process.env.MOBILE_TEST_DASHBOARD_URL || new URL('/dashboard', BASE_URL).toString();
 
 async function runMobileDashboardTest() {
-  console.log('🚀 FCA Fines Dashboard - Mobile View Test');
+  console.log('🚀 RegActions - Mobile View Test');
   console.log('=' .repeat(60));
   console.log(`Viewport: ${MOBILE_VIEWPORT.width}x${MOBILE_VIEWPORT.height} (iPhone SE)`);
   console.log(`Base URL: ${BASE_URL}`);

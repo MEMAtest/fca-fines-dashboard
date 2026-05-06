@@ -285,9 +285,9 @@ export function Dashboard() {
   useSEO({
     title: "RegActions Dashboard | Interactive Analytics & Search",
     description:
-      "Interactive FCA fines dashboard. Search all Financial Conduct Authority penalties by firm, year, amount and breach category. Export data and analyse enforcement trends.",
+      "Interactive regulatory enforcement dashboard. Search financial regulator penalties by firm, year, amount, breach category, and regulator. Export data and analyse enforcement trends.",
     keywords:
-      "FCA fines dashboard, FCA fines search, FCA fines tracker, FCA penalty analytics, FCA fines data",
+      "RegActions dashboard, regulatory fines search, enforcement tracker, penalty analytics, financial regulator fines data",
     canonicalPath: "/dashboard",
     ogType: "website",
   });
@@ -297,15 +297,15 @@ export function Dashboard() {
     const cleanup = injectStructuredData({
       "@context": "https://schema.org",
       "@type": "DataFeed",
-      name: "FCA Fines Live Data Feed",
+      name: "RegActions Live Enforcement Data Feed",
       description:
-        "Real-time feed of Financial Conduct Authority fines and enforcement actions, updated as new penalties are published.",
+        "Feed of financial regulator fines and enforcement actions, updated as new penalties are published.",
       url: "https://regactions.com/dashboard",
       dateModified: new Date().toISOString().slice(0, 10),
       potentialAction: [
         {
           "@type": "SearchAction",
-          name: "Search FCA Fines",
+          name: "Search Enforcement Actions",
           target: {
             "@type": "EntryPoint",
             urlTemplate:
@@ -324,7 +324,7 @@ export function Dashboard() {
         },
         {
           "@type": "DownloadAction",
-          name: "Export FCA Fines CSV",
+          name: "Export Enforcement Actions CSV",
           target: {
             "@type": "EntryPoint",
             urlTemplate: "https://regactions.com/dashboard",

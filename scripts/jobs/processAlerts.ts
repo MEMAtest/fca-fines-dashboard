@@ -161,7 +161,7 @@ async function processImmediateAlerts(fines: Fine[]) {
           ${subscription.email},
           'alert',
           ${newFines.map(f => f.id)},
-          ${'FCA Fine Alert: ' + newFines.length + ' new fines'}
+          ${'RegActions Alert: ' + newFines.length + ' new fines'}
         )
       `;
 
@@ -300,21 +300,21 @@ async function sendAlertEmail(subscription: AlertSubscription, fines: Fine[]) {
   <div class="container">
     <div class="card">
       <div class="logo">RegActions</div>
-      <h1>New FCA Fines Alert</h1>
+      <h1>New RegActions Alert</h1>
       <p class="subtitle">${fines.length} new fine${fines.length !== 1 ? 's' : ''} matching your criteria</p>
       ${finesList}
       <a href="${BASE_URL}/dashboard" class="button">View Dashboard</a>
     </div>
     <div class="footer">
-      <p>You're receiving this because you subscribed to FCA fine alerts.</p>
-      <p><a href="${unsubscribeUrl}">Unsubscribe</a> · RegActions by MEMA Consultants</p>
+      <p>You're receiving this because you subscribed to RegActions alerts.</p>
+      <p><a href="${unsubscribeUrl}">Unsubscribe</a> · regactions.com</p>
     </div>
   </div>
 </body>
 </html>
   `.trim();
 
-  const textContent = `New FCA Fines Alert
+  const textContent = `New RegActions Alert
 
 ${fines.length} new fine${fines.length !== 1 ? 's' : ''} matching your criteria:
 
@@ -380,14 +380,14 @@ async function sendWatchlistEmail(entry: WatchlistEntry, fines: Fine[]) {
     <div class="card">
       <div class="logo">RegActions</div>
       <h1>Watchlist Alert</h1>
-      <p>A firm you're watching has received a new FCA fine.</p>
+      <p>A firm you're watching has received a new tracked enforcement action.</p>
       <div class="firm-badge">${entry.firm_name}</div>
       ${finesList}
       <a href="${BASE_URL}/dashboard" class="button">View Full Details</a>
     </div>
     <div class="footer">
       <p>You're receiving this because you're watching "${entry.firm_name}".</p>
-      <p><a href="${unsubscribeUrl}">Stop watching this firm</a> · RegActions by MEMA Consultants</p>
+      <p><a href="${unsubscribeUrl}">Stop watching this firm</a> · regactions.com</p>
     </div>
   </div>
 </body>
@@ -403,7 +403,7 @@ async function sendWatchlistEmail(entry: WatchlistEntry, fines: Fine[]) {
       Subject: { Data: `Watchlist Alert: ${entry.firm_name} fined £${totalAmount.toLocaleString('en-GB')}`, Charset: 'UTF-8' },
       Body: {
         Html: { Data: htmlContent, Charset: 'UTF-8' },
-        Text: { Data: `Watchlist Alert: ${entry.firm_name}\n\nA firm you're watching has received a new FCA fine.\n\nFines:\n${fines.map(f => `£${f.amount.toLocaleString('en-GB')} - ${f.breach_type}`).join('\n')}\n\nView details: ${BASE_URL}/dashboard\n\nStop watching: ${unsubscribeUrl}`, Charset: 'UTF-8' },
+        Text: { Data: `Watchlist Alert: ${entry.firm_name}\n\nA firm you're watching has received a new tracked enforcement action.\n\nFines:\n${fines.map(f => `£${f.amount.toLocaleString('en-GB')} - ${f.breach_type}`).join('\n')}\n\nView details: ${BASE_URL}/dashboard\n\nStop watching: ${unsubscribeUrl}`, Charset: 'UTF-8' },
       },
     },
   }));

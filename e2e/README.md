@@ -1,6 +1,6 @@
-# E2E Tests - FCA Fines Dashboard
+# E2E Tests - RegActions
 
-Comprehensive end-to-end test suite for the FCA Fines Dashboard SEO implementation.
+Comprehensive end-to-end test suite for the RegActions SEO implementation.
 
 ## Test Coverage
 

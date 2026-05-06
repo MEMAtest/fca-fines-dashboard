@@ -86,7 +86,7 @@ test.describe('Accessibility & Semantic HTML', () => {
       await expect(featuredSection).toBeVisible();
 
       // All articles should be in a section with heading
-      const allArticlesSection = page.locator('section').filter({ has: page.locator('h2:has-text("All FCA Fines Articles")') });
+      const allArticlesSection = page.locator('section').filter({ has: page.locator('h2:has-text("All Enforcement Intelligence")') });
       await expect(allArticlesSection).toBeVisible();
     });
 
@@ -216,7 +216,7 @@ test.describe('Accessibility & Semantic HTML', () => {
 
       // Should be on blog listing
       await expect(page).toHaveURL('/blog');
-      await expect(page.locator('h1')).toContainText('FCA Fines');
+      await expect(page.locator('h1')).toContainText('Global Regulatory Enforcement Intelligence');
     });
 
     test('should have visible focus indicators', async ({ page }) => {

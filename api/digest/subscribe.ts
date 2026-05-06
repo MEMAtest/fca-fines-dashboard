@@ -129,14 +129,14 @@ async function sendVerificationEmail(email: string, frequency: string, token: st
     <div class="card">
       <div class="logo">RegActions</div>
       <h1>Verify your digest subscription</h1>
-      <p>You've requested to receive our FCA fines digest. Click the button below to confirm.</p>
+      <p>You've requested to receive the RegActions digest. Click the button below to confirm.</p>
       <div class="frequency">${frequency} Digest</div>
-      <p>You'll receive a summary of all new FCA fines ${frequency === 'weekly' ? 'every Monday' : 'on the 1st of each month'}.</p>
+      <p>You'll receive a summary of new tracked enforcement actions ${frequency === 'weekly' ? 'every Monday' : 'on the 1st of each month'}.</p>
       <a href="${verifyUrl}" class="button">Verify & Subscribe</a>
       <p style="font-size: 14px; color: #6b7280;">This link expires in 7 days.</p>
     </div>
     <div class="footer">
-      <p>RegActions · Powered by MEMA Consultants</p>
+      <p>RegActions · regactions.com</p>
     </div>
   </div>
 </body>

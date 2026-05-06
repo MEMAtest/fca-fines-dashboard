@@ -327,13 +327,13 @@ git commit -m "feat: expand to 35+ regulators
 
 ```bash
 # Check homepage
-open https://fcafines.memaconsultants.com/
+open https://regactions.com/
 
 # Inspect meta tags
-curl -s https://fcafines.memaconsultants.com/ | grep -A 3 'name="description"'
+curl -s https://regactions.com/ | grep -A 3 'name="description"'
 
 # Verify hero text
-curl -s https://fcafines.memaconsultants.com/ | grep "Global enforcement"
+curl -s https://regactions.com/ | grep "Global enforcement"
 ```
 
 ---

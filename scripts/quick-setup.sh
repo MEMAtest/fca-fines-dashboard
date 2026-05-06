@@ -3,7 +3,7 @@
 # Quick setup script using GitHub token
 set -e
 
-echo "🚀 FCA Fines Dashboard - Quick Setup"
+echo "🚀 RegActions - Quick Setup"
 echo "====================================="
 echo ""
 

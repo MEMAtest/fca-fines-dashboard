@@ -11,11 +11,11 @@ const MOBILE_VIEWPORT = {
   hasTouch: true
 };
 
-const URL = 'https://fcafines.memaconsultants.com/dashboard';
+const URL = 'https://regactions.com/dashboard';
 const SCREENSHOT_DIR = '/tmp';
 
 async function runMobileTest() {
-  console.log('🚀 Starting FCA Fines Dashboard Mobile Test...\n');
+  console.log('🚀 Starting RegActions Mobile Test...\n');
 
   const browser = await puppeteer.launch({
     headless: true,

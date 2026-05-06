@@ -12,11 +12,11 @@ const currency = new Intl.NumberFormat("en-GB", {
 
 export function Years() {
   useSEO({
-    title: "FCA Fines by Year | 2013-2026 Annual Summaries",
+    title: "Enforcement Actions by Year | 2013-2026 Annual Summaries",
     description:
-      "Browse FCA fines by year. Compare enforcement totals and jump into the dashboard for each year’s full list of actions.",
+      "Browse regulatory enforcement actions by year. Compare enforcement totals and jump into the dashboard for each year’s full list of actions.",
     keywords:
-      "FCA fines by year, FCA fines 2026, FCA fines 2025, FCA enforcement by year",
+      "regulatory fines by year, enforcement actions 2026, enforcement actions 2025, financial enforcement by year",
     canonicalPath: "/years",
     ogType: "website",
   });
@@ -52,7 +52,7 @@ export function Years() {
     <div className="hub-page">
       <div className="hub-container">
         <header className="hub-hero">
-          <h1>FCA Fines by Year</h1>
+          <h1>Enforcement Actions by Year</h1>
           <p>
             Annual summaries across the full enforcement dataset. Use the
             dashboard for the complete record and exports.

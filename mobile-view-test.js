@@ -1,7 +1,7 @@
 import puppeteer from 'puppeteer';
 import { writeFileSync } from 'fs';
 
-const TEST_URL = 'https://fcafines.memaconsultants.com/dashboard';
+const TEST_URL = 'https://regactions.com/dashboard';
 const MOBILE_VIEWPORT = {
   width: 375,
   height: 667,
@@ -38,7 +38,7 @@ async function sleep(ms) {
 }
 
 async function runMobileTests() {
-  console.log('🚀 Starting Mobile View Tests for FCA Fines Dashboard\n');
+  console.log('🚀 Starting Mobile View Tests for RegActions\n');
   console.log(`URL: ${TEST_URL}`);
   console.log(`Viewport: ${MOBILE_VIEWPORT.width}x${MOBILE_VIEWPORT.height}\n`);
 

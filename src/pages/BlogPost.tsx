@@ -676,10 +676,10 @@ function generateArticleSchema(article: BlogArticleMeta | YearlyArticleMeta) {
     dateModified: dateModified,
     author: {
       "@type": "Organization",
-      name: "MEMA Consultants",
+      name: "RegActions",
       url: "https://regactions.com",
       description:
-        "Compliance consultancy specialising in FCA regulatory data and analysis",
+        "Regulatory enforcement intelligence platform",
     },
     publisher: {
       "@type": "Organization",
