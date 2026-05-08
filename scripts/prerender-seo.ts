@@ -33,8 +33,8 @@ const RSS_URL = `${BASE_URL}/rss.xml`;
 // However since the project uses "type": "module" and ts-node/esm, the import
 // resolves the .ts source directly.
 import {
-  allBlogArticles as blogArticles,
-  yearlyArticles,
+  getPublishedBlogArticles,
+  getPublishedYearlyArticles,
 } from "../src/data/blogArticles.js";
 import {
   faqItems,
@@ -43,6 +43,9 @@ import {
   getHomepageFaqs,
   generateFaqSchema,
 } from "../src/data/faqData.js";
+
+const blogArticles = getPublishedBlogArticles();
+const yearlyArticles = getPublishedYearlyArticles();
 import {
   REGULATOR_COVERAGE,
   PUBLIC_REGULATOR_CODES,

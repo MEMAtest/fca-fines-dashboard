@@ -1,8 +1,10 @@
 import { Link } from "react-router-dom";
 import { useEffect } from "react";
 import { useSEO, injectStructuredData } from "../hooks/useSEO.js";
-import { yearlyArticles } from "../data/blogArticles.js";
+import { getPublishedYearlyArticles } from "../data/blogArticles.js";
 import "../styles/blog.css";
+
+const yearlyArticles = getPublishedYearlyArticles();
 
 function generatePillarSchema() {
   return {

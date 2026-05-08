@@ -281,6 +281,7 @@ function generateMonthlyEntry(month: string, year: number): string {
     readTime: '5 min read',
     date: '${monthName} ${year}',
     dateISO: '${dateISO}',
+    status: 'published',
     featured: true,
     keywords: ['FCA fines ${monthName} ${year}', 'FCA fines this month', 'FCA fines today', 'FCA enforcement ${monthName} ${year}', 'latest FCA fines', 'FCA penalties ${monthName} ${year}']
   }`;
@@ -323,6 +324,7 @@ For a complete interactive view of all FCA enforcement actions, explore our RegA
     readTime: '10 min read',
     date: '${monthName} ${year}',
     dateISO: '${opts.dateISO}',
+    status: 'published',
     keywords: [${kw}]
   }`;
 }

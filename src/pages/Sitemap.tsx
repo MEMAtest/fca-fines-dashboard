@@ -1,10 +1,13 @@
 import { Link } from "react-router-dom";
 import {
-  allBlogArticles as blogArticles,
-  yearlyArticles,
+  getPublishedBlogArticles,
+  getPublishedYearlyArticles,
 } from "../data/blogArticles.js";
 import { useSEO } from "../hooks/useSEO.js";
 import "../styles/blog.css";
+
+const blogArticles = getPublishedBlogArticles();
+const yearlyArticles = getPublishedYearlyArticles();
 
 export function Sitemap() {
   useSEO({

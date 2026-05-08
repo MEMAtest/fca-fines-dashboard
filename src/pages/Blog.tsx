@@ -20,8 +20,8 @@ import { Blog3DVisualization } from "../components/Blog3DVisualization.js";
 import { LazyVisible } from "../components/LazyVisible.js";
 import { yearlyFCAData } from "../components/YearlyArticleCharts.js";
 import {
-  allBlogArticles as blogArticlesMeta,
-  yearlyArticles as yearlyArticlesMeta,
+  getPublishedBlogArticles,
+  getPublishedYearlyArticles,
 } from "../data/blogArticles.js";
 import type { BlogArticleMeta } from "../data/blogArticles.js";
 import { LIVE_REGULATOR_NAV_ITEMS } from "../data/regulatorCoverage.js";
@@ -36,6 +36,8 @@ interface BlogArticle extends BlogArticleMeta {
 
 const MotionLink = motion.create(Link);
 const LIVE_REGULATOR_COUNT = LIVE_REGULATOR_NAV_ITEMS.length;
+const blogArticlesMeta = getPublishedBlogArticles();
+const yearlyArticlesMeta = getPublishedYearlyArticles();
 
 // Map article IDs to their icons (JSX stays in this file)
 const iconMap: Record<string, React.ReactNode> = {

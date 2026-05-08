@@ -3,6 +3,9 @@
 
 import { regulatorBlogs } from "./regulatorBlogs.js";
 
+export type ArticleStatus = "published" | "scheduled" | "draft";
+export type ArticleType = "standard" | "yearly" | "regulator";
+
 export interface BlogArticleMeta {
   id: string;
   slug: string;
@@ -17,6 +20,16 @@ export interface BlogArticleMeta {
   featured?: boolean;
   structuredArticle?: StructuredRegulatorArticle;
   keywords: string[];
+  articleType?: ArticleType;
+  status?: ArticleStatus;
+  year?: number;
+  executiveSummary?: string;
+  regulatoryContext?: string;
+  keyEnforcementThemes?: string[];
+  professionalInsight?: string;
+  lookingAhead?: string;
+  generatedBy?: "ai" | "manual";
+  generatedAt?: string;
 }
 
 export interface StructuredRegulatorMetric {
@@ -62,18 +75,28 @@ export interface StructuredRegulatorArticle {
   faqs: StructuredRegulatorFaq[];
 }
 
-export interface YearlyArticleMeta {
+export interface YearlyArticleMeta extends BlogArticleMeta {
+  articleType: "yearly";
   year: number;
-  slug: string;
-  title: string;
-  seoTitle: string;
-  excerpt: string;
   executiveSummary: string;
   regulatoryContext: string;
   keyEnforcementThemes: string[];
   professionalInsight: string;
   lookingAhead: string;
-  keywords: string[];
+}
+
+type YearlyArticleSource = Omit<
+  YearlyArticleMeta,
+  "id" | "content" | "category" | "readTime" | "date" | "dateISO" | "articleType"
+>;
+
+export function isPublished(
+  article: { status?: ArticleStatus | string; dateISO: string },
+  todayISO = new Date().toISOString().slice(0, 10),
+): boolean {
+  if (!article.status || article.status === "published") return true;
+  if (article.status === "draft") return false;
+  return article.dateISO <= todayISO;
 }
 
 export const blogArticles: BlogArticleMeta[] = [
@@ -1298,8 +1321,9 @@ For compliance professionals at firms operating in both the US and UK, understan
     `,
     category: "Regulatory Guide",
     readTime: "10 min read",
-    date: "April 2026",
-    dateISO: "2026-04-21",
+    date: "8 May 2026",
+    dateISO: "2026-05-08",
+    status: "scheduled",
     keywords: [
       "SEC enforcement actions",
       "SEC fines",
@@ -1362,8 +1386,9 @@ For UK-headquartered banking groups with US operations, OCC enforcement creates 
     `,
     category: "Regulatory Guide",
     readTime: "9 min read",
-    date: "April 2026",
-    dateISO: "2026-04-21",
+    date: "11 May 2026",
+    dateISO: "2026-05-11",
+    status: "scheduled",
     keywords: [
       "OCC enforcement actions",
       "OCC fines",
@@ -1424,8 +1449,9 @@ For firms operating across multiple jurisdictions, the cumulative AML enforcemen
     `,
     category: "Thematic Analysis",
     readTime: "11 min read",
-    date: "April 2026",
-    dateISO: "2026-04-21",
+    date: "13 May 2026",
+    dateISO: "2026-05-13",
+    status: "scheduled",
     keywords: [
       "AML enforcement global",
       "anti-money laundering fines",
@@ -1487,8 +1513,9 @@ For UK firms operating in the EU post-Brexit, understanding the enforcement land
     `,
     category: "Regional Benchmark",
     readTime: "12 min read",
-    date: "April 2026",
-    dateISO: "2026-04-21",
+    date: "15 May 2026",
+    dateISO: "2026-05-15",
+    status: "scheduled",
     keywords: [
       "EU financial regulators",
       "BaFin enforcement",
@@ -1544,8 +1571,9 @@ For firms expanding into APAC markets, understanding the diverse enforcement lan
     `,
     category: "Regional Benchmark",
     readTime: "10 min read",
-    date: "April 2026",
-    dateISO: "2026-04-21",
+    date: "18 May 2026",
+    dateISO: "2026-05-18",
+    status: "scheduled",
     keywords: [
       "APAC financial enforcement",
       "ASIC enforcement",
@@ -1611,8 +1639,9 @@ Use enforcement data to calibrate expectations. If peer institutions with simila
     `,
     category: "Board Guide",
     readTime: "8 min read",
-    date: "April 2026",
-    dateISO: "2026-04-21",
+    date: "20 May 2026",
+    dateISO: "2026-05-20",
+    status: "scheduled",
     keywords: [
       "board guide AML",
       "AML controls board",
@@ -1655,8 +1684,9 @@ Post-Brexit substance requirements mean CBI-authorised entities must maintain ge
     `,
     category: "Regulatory Guide",
     readTime: "7 min read",
-    date: "April 2026",
-    dateISO: "2026-04-21",
+    date: "22 May 2026",
+    dateISO: "2026-05-22",
+    status: "scheduled",
     keywords: [
       "Central Bank of Ireland enforcement",
       "CBI fines",
@@ -1697,8 +1727,9 @@ For firms operating in both markets, understanding SRO enforcement alongside sta
     `,
     category: "Thematic Analysis",
     readTime: "7 min read",
-    date: "April 2026",
-    dateISO: "2026-04-21",
+    date: "25 May 2026",
+    dateISO: "2026-05-25",
+    status: "scheduled",
     keywords: [
       "FINRA enforcement",
       "CIRO enforcement",
@@ -1745,8 +1776,9 @@ Firms operating across jurisdictions face compound market abuse risk — the sam
     `,
     category: "Thematic Analysis",
     readTime: "8 min read",
-    date: "April 2026",
-    dateISO: "2026-04-21",
+    date: "27 May 2026",
+    dateISO: "2026-05-27",
+    status: "scheduled",
     keywords: [
       "market abuse enforcement",
       "insider trading enforcement",
@@ -1791,8 +1823,9 @@ For firms using Swiss, Channel Islands, or DIFC structures, understanding local 
     `,
     category: "Regional Benchmark",
     readTime: "7 min read",
-    date: "April 2026",
-    dateISO: "2026-04-21",
+    date: "29 May 2026",
+    dateISO: "2026-05-29",
+    status: "scheduled",
     keywords: [
       "FINMA enforcement",
       "JFSC enforcement",
@@ -1850,8 +1883,9 @@ For boards of international groups, managing multiple accountability regimes req
     `,
     category: "Board Guide",
     readTime: "8 min read",
-    date: "April 2026",
-    dateISO: "2026-04-21",
+    date: "1 June 2026",
+    dateISO: "2026-06-01",
+    status: "scheduled",
     keywords: [
       "senior manager accountability",
       "SM&CR global",
@@ -1902,8 +1936,9 @@ For non-US firms with US correspondent banking relationships or US-dollar transa
     `,
     category: "Regulatory Guide",
     readTime: "7 min read",
-    date: "April 2026",
-    dateISO: "2026-04-21",
+    date: "3 June 2026",
+    dateISO: "2026-06-03",
+    status: "scheduled",
     keywords: [
       "FinCEN enforcement",
       "FinCEN fines",
@@ -1946,8 +1981,9 @@ Systems and controls enforcement creates compliance obligations that span techno
     `,
     category: "Thematic Analysis",
     readTime: "7 min read",
-    date: "April 2026",
-    dateISO: "2026-04-21",
+    date: "5 June 2026",
+    dateISO: "2026-06-05",
+    status: "scheduled",
     keywords: [
       "systems controls enforcement",
       "operational resilience fines",
@@ -1996,8 +2032,9 @@ For firms with Middle East operations, understanding the distinct enforcement ap
     `,
     category: "Regional Benchmark",
     readTime: "7 min read",
-    date: "April 2026",
-    dateISO: "2026-04-21",
+    date: "8 June 2026",
+    dateISO: "2026-06-08",
+    status: "scheduled",
     keywords: [
       "DFSA enforcement",
       "FSRA enforcement",
@@ -2042,8 +2079,9 @@ For firms with Latin American operations or investment exposure, understanding e
     `,
     category: "Regional Benchmark",
     readTime: "6 min read",
-    date: "April 2026",
-    dateISO: "2026-04-21",
+    date: "10 June 2026",
+    dateISO: "2026-06-10",
+    status: "scheduled",
     keywords: [
       "CVM enforcement Brazil",
       "CNBV enforcement Mexico",
@@ -2056,7 +2094,7 @@ For firms with Latin American operations or investment exposure, understanding e
   },
 ];
 
-export const yearlyArticles: YearlyArticleMeta[] = [
+const yearlyArticleData: YearlyArticleSource[] = [
   {
     year: 2025,
     slug: "fca-fines-2025-annual-review",
@@ -2589,6 +2627,34 @@ The regulatory emphasis on cultural change would evolve from rhetoric to operati
   },
 ];
 
+function formatYearlyArticleDate(year: number): string {
+  return `31 December ${year}`;
+}
+
+function estimateReadTime(article: YearlyArticleSource): string {
+  const words = [
+    article.executiveSummary,
+    article.regulatoryContext,
+    ...article.keyEnforcementThemes,
+    article.professionalInsight,
+    article.lookingAhead,
+  ].join(" ").trim().split(/\s+/).filter(Boolean).length;
+  return `${Math.max(4, Math.ceil(words / 200))} min read`;
+}
+
+export const yearlyArticles: YearlyArticleMeta[] = yearlyArticleData.map(
+  (article) => ({
+    ...article,
+    id: `fca-fines-${article.year}-annual-review`,
+    articleType: "yearly",
+    content: "",
+    category: "Annual Analysis",
+    readTime: estimateReadTime(article),
+    date: formatYearlyArticleDate(article.year),
+    dateISO: `${article.year}-12-31`,
+  }),
+);
+
 // Merge regulator blogs with main blog articles
 // Export combined array for consumption by Blog.tsx and other components
 export const allBlogArticles: BlogArticleMeta[] = [
@@ -2596,20 +2662,39 @@ export const allBlogArticles: BlogArticleMeta[] = [
   ...regulatorBlogs,
 ];
 
+export function getPublishedBlogArticles(todayISO?: string): BlogArticleMeta[] {
+  return allBlogArticles.filter((article) => isPublished(article, todayISO));
+}
+
+export function getPublishedYearlyArticles(
+  todayISO?: string,
+): YearlyArticleMeta[] {
+  return yearlyArticles.filter((article) => isPublished(article, todayISO));
+}
+
+export function getPublishedAllArticles(
+  todayISO?: string,
+): BlogArticleMeta[] {
+  return [
+    ...getPublishedBlogArticles(todayISO),
+    ...getPublishedYearlyArticles(todayISO),
+  ];
+}
+
 // Helper: get all articles (blog + yearly) for sitemap/prerender
 export function getAllArticleSlugs(): {
   slug: string;
   dateISO: string;
   type: "blog" | "yearly";
 }[] {
-  const blog = allBlogArticles.map((a) => ({
+  const blog = getPublishedBlogArticles().map((a) => ({
     slug: a.slug,
     dateISO: a.dateISO,
     type: "blog" as const,
   }));
-  const yearly = yearlyArticles.map((a) => ({
+  const yearly = getPublishedYearlyArticles().map((a) => ({
     slug: a.slug,
-    dateISO: `${a.year}-12-31`,
+    dateISO: a.dateISO,
     type: "yearly" as const,
   }));
   return [...blog, ...yearly];

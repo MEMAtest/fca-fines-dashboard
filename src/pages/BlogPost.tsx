@@ -11,8 +11,8 @@ import {
 import { useSEO, injectStructuredData } from "../hooks/useSEO.js";
 import { REGULATOR_COUNT } from "../constants/site.js";
 import {
-  allBlogArticles as blogArticles,
-  yearlyArticles,
+  getPublishedBlogArticles,
+  getPublishedYearlyArticles,
 } from "../data/blogArticles.js";
 import type {
   BlogArticleMeta,
@@ -64,6 +64,9 @@ import {
   IndividualActionTypesChart,
 } from "../components/MainArticleCharts.js";
 import "../styles/blog.css";
+
+const blogArticles = getPublishedBlogArticles();
+const yearlyArticles = getPublishedYearlyArticles();
 
 // Helper function to format currency (same as Blog.tsx)
 const formatYearlyCurrency = (amount: number): string => {
