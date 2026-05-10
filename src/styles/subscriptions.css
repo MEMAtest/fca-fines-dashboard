@@ -417,7 +417,7 @@
   border-top: 1px solid rgba(15, 162, 148, 0.1);
 }
 
-.subscribe-summary-row:first-of-type {
+.subscribe-summary-row:nth-child(2) {
   border-top: none;
 }
 

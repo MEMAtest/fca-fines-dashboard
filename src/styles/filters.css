@@ -217,7 +217,14 @@
 }
 
 @keyframes search-spin {
-  to { transform: translateY(-50%) rotate(360deg); }
+  from { transform: translateY(-50%) rotate(0deg); }
+  to   { transform: translateY(-50%) rotate(360deg); }
+}
+
+/* Suppress native browser clear button on search inputs */
+.search-autocomplete__input input[type="search"]::-webkit-search-cancel-button {
+  -webkit-appearance: none;
+  appearance: none;
 }
 
 .search-autocomplete__dropdown {
