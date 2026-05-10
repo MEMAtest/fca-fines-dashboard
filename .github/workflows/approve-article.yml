@@ -1,0 +1,44 @@
+name: Approve AI Article
+
+on:
+  workflow_dispatch:
+    inputs:
+      draft_slug:
+        description: 'Slug of the draft article to approve and publish'
+        required: true
+        type: string
+
+jobs:
+  approve:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'npm'
+
+      - run: npm ci
+
+      - name: Approve and publish article
+        run: npx tsx scripts/approve-article.ts "${{ github.event.inputs.draft_slug }}"
+
+      - name: Commit published article
+        run: |
+          git config user.name "RegActions Bot"
+          git config user.email "bot@regactions.com"
+          git add src/data/blogArticles.ts scripts/data/
+          git diff --staged --quiet || git commit -m "feat(blog): publish ${{ github.event.inputs.draft_slug }}"
+          git push
+
+      - name: Trigger deploy
+        if: success()
+        run: |
+          if [ -n "${{ secrets.VERCEL_DEPLOY_HOOK_URL }}" ]; then
+            curl -s -X POST "${{ secrets.VERCEL_DEPLOY_HOOK_URL }}"
+            echo "Deploy hook triggered"
+          else
+            echo "No VERCEL_DEPLOY_HOOK_URL set — relying on push-triggered deploy"
+          fi

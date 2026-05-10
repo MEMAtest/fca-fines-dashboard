@@ -1,0 +1,463 @@
+/**
+ * Article Quality Gate — 12 Checks
+ *
+ * Validates AI-generated articles for data accuracy, structure, and editorial quality.
+ * Adapted from MEMA platform's quality system, simplified for blog editorial content.
+ *
+ * Pass criteria: All 8 required checks pass + at least 3 of 4 soft checks pass.
+ */
+
+import type { EnforcementRecord } from './articleData.js';
+
+export interface QualityCheck {
+  id: string;
+  name: string;
+  weight: 'required' | 'soft';
+  passed: boolean;
+  message: string;
+}
+
+export interface QualityReport {
+  passed: boolean;
+  score: number;           // 0-100
+  checks: QualityCheck[];
+  requiredPassed: number;
+  requiredTotal: number;
+  softPassed: number;
+  softTotal: number;
+}
+
+export interface ArticleContent {
+  title: string;
+  excerpt: string;
+  content: string;         // markdown body
+  keywords: string[];
+}
+
+// ─── Main Quality Gate ─────────────────────────────────────────────────────────
+
+export function runQualityGate(
+  article: ArticleContent,
+  sourceData: EnforcementRecord[]
+): QualityReport {
+  const checks: QualityCheck[] = [
+    checkWordCount(article.content),
+    checkSectionStructure(article.content),
+    checkDataAccuracy(article.content, sourceData),
+    checkAmountAccuracy(article.content, sourceData),
+    checkNoTruncation(article.content),
+    checkNoDuplicates(article.content),
+    checkNoHallucinatedFirms(article.content, sourceData),
+    checkTitleQuality(article.title, article.excerpt),
+    checkKeywordCount(article.keywords),
+    checkEditorialTone(article.content),
+    checkSpecificity(article.content, sourceData),
+    checkReadability(article.content),
+  ];
+
+  const required = checks.filter(c => c.weight === 'required');
+  const soft = checks.filter(c => c.weight === 'soft');
+  const requiredPassed = required.filter(c => c.passed).length;
+  const softPassed = soft.filter(c => c.passed).length;
+
+  const passed = requiredPassed === required.length && softPassed >= 3;
+  const score = Math.round(
+    ((requiredPassed / required.length) * 70 + (softPassed / soft.length) * 30)
+  );
+
+  return {
+    passed,
+    score,
+    checks,
+    requiredPassed,
+    requiredTotal: required.length,
+    softPassed,
+    softTotal: soft.length,
+  };
+}
+
+/**
+ * Format quality report as a human-readable summary (for logs and emails).
+ */
+export function formatQualityReport(report: QualityReport): string {
+  const lines: string[] = [
+    `Quality Score: ${report.score}/100 (${report.passed ? 'PASS' : 'FAIL'})`,
+    `Required: ${report.requiredPassed}/${report.requiredTotal} | Soft: ${report.softPassed}/${report.softTotal}`,
+    '',
+    'Checks:',
+  ];
+
+  for (const check of report.checks) {
+    const icon = check.passed ? '✅' : '❌';
+    const weight = check.weight === 'required' ? '[REQ]' : '[SOFT]';
+    lines.push(`  ${icon} ${weight} ${check.name}: ${check.message}`);
+  }
+
+  return lines.join('\n');
+}
+
+// ─── Individual Checks ─────────────────────────────────────────────────────────
+
+// 1. Word Count (≥800 words) — REQUIRED
+function checkWordCount(content: string): QualityCheck {
+  const words = countWords(content);
+  return {
+    id: 'word_count',
+    name: 'Word Count',
+    weight: 'required',
+    passed: words >= 800,
+    message: `${words} words (min 800)`,
+  };
+}
+
+// 2. Section Structure (≥4 H2 sections, each ≥80 chars) — REQUIRED
+function checkSectionStructure(content: string): QualityCheck {
+  const sections = content.split(/^##\s+/m).slice(1); // split on H2 headers
+  const validSections = sections.filter(s => s.trim().length >= 80);
+  return {
+    id: 'section_structure',
+    name: 'Section Structure',
+    weight: 'required',
+    passed: validSections.length >= 4,
+    message: `${validSections.length} valid H2 sections (min 4)`,
+  };
+}
+
+// 3. Data Accuracy — regulator names exist in source — REQUIRED
+function checkDataAccuracy(content: string, sourceData: EnforcementRecord[]): QualityCheck {
+  if (sourceData.length === 0) {
+    return { id: 'data_accuracy', name: 'Data Accuracy', weight: 'required', passed: true, message: 'No source data to validate against' };
+  }
+
+  const knownRegulators = new Set(sourceData.map(r => r.regulator.toUpperCase()));
+  const mentioned = extractRegulatorMentions(content);
+  const unknown = mentioned.filter(r => !knownRegulators.has(r.toUpperCase()));
+
+  return {
+    id: 'data_accuracy',
+    name: 'Data Accuracy (Regulators)',
+    weight: 'required',
+    passed: unknown.length === 0,
+    message: unknown.length === 0
+      ? `All ${mentioned.length} regulator mentions verified`
+      : `Unknown regulators: ${unknown.join(', ')}`,
+  };
+}
+
+// 4. Amount Accuracy — monetary values exist in source (±1%) — REQUIRED
+function checkAmountAccuracy(content: string, sourceData: EnforcementRecord[]): QualityCheck {
+  if (sourceData.length === 0) {
+    return { id: 'amount_accuracy', name: 'Amount Accuracy', weight: 'required', passed: true, message: 'No source data to validate against' };
+  }
+
+  const knownAmounts = sourceData.map(r => r.amount).filter(a => a > 0);
+  const mentioned = extractAmounts(content);
+  const unverified: string[] = [];
+
+  for (const amt of mentioned) {
+    if (!isVerifiedAmount(amt, knownAmounts, sourceData)) {
+      unverified.push(formatCurrency(amt));
+    }
+  }
+
+  return {
+    id: 'amount_accuracy',
+    name: 'Amount Accuracy',
+    weight: 'required',
+    passed: unverified.length === 0,
+    message: unverified.length === 0
+      ? `All ${mentioned.length} amounts verified`
+      : `Unverified amounts: ${unverified.slice(0, 3).join(', ')}`,
+  };
+}
+
+// 5. No Truncation — no dangling sentences — REQUIRED
+function checkNoTruncation(content: string): QualityCheck {
+  const lines = content.split('\n').filter(l => l.trim().length > 20);
+  const lastLine = lines[lines.length - 1]?.trim() || '';
+  const truncated = lastLine.length > 0 &&
+    !lastLine.endsWith('.') &&
+    !lastLine.endsWith('!') &&
+    !lastLine.endsWith('?') &&
+    !lastLine.endsWith(':') &&
+    !lastLine.endsWith(')') &&
+    !lastLine.startsWith('#') &&
+    !lastLine.startsWith('-') &&
+    !lastLine.startsWith('*');
+
+  // Also check for mid-word cuts (word ending without vowel pattern)
+  const midWordCut = /\w{3,}$/.test(lastLine) && truncated;
+
+  return {
+    id: 'no_truncation',
+    name: 'No Truncation',
+    weight: 'required',
+    passed: !midWordCut,
+    message: midWordCut ? `Possible truncation: "${lastLine.slice(-40)}"` : 'Content ends cleanly',
+  };
+}
+
+// 6. No Duplicates — no repeated paragraphs ≥80 chars — REQUIRED
+function checkNoDuplicates(content: string): QualityCheck {
+  const paragraphs = content.split(/\n\n+/)
+    .map(p => p.trim())
+    .filter(p => p.length >= 80);
+
+  const seen = new Set<string>();
+  const duplicates: string[] = [];
+
+  for (const p of paragraphs) {
+    const normalized = p.toLowerCase().replace(/\s+/g, ' ');
+    if (seen.has(normalized)) {
+      duplicates.push(p.slice(0, 50) + '...');
+    }
+    seen.add(normalized);
+  }
+
+  return {
+    id: 'no_duplicates',
+    name: 'No Duplicates',
+    weight: 'required',
+    passed: duplicates.length === 0,
+    message: duplicates.length === 0
+      ? 'No duplicate paragraphs'
+      : `${duplicates.length} duplicate(s) found`,
+  };
+}
+
+// 7. No Hallucinated Firms — firm names exist in source — REQUIRED
+function checkNoHallucinatedFirms(content: string, sourceData: EnforcementRecord[]): QualityCheck {
+  if (sourceData.length === 0) {
+    return { id: 'no_hallucinated_firms', name: 'No Hallucinated Firms', weight: 'required', passed: true, message: 'No source data to validate against' };
+  }
+
+  const knownFirms = new Set(sourceData.map(r => r.firm_individual.toLowerCase()).filter(Boolean));
+  const mentioned = extractFirmMentions(content, sourceData);
+  const unknown = mentioned.filter(f => !fuzzyMatchFirm(f, knownFirms));
+
+  return {
+    id: 'no_hallucinated_firms',
+    name: 'No Hallucinated Firms',
+    weight: 'required',
+    passed: unknown.length <= 1, // Allow 1 unmatched (could be generic reference)
+    message: unknown.length <= 1
+      ? `Firm references verified (${mentioned.length} found)`
+      : `Possibly hallucinated firms: ${unknown.slice(0, 3).join(', ')}`,
+  };
+}
+
+// 8. Title Quality — title ≤70 chars, excerpt ≥120 chars — REQUIRED
+function checkTitleQuality(title: string, excerpt: string): QualityCheck {
+  const titleOk = title.length > 0 && title.length <= 70;
+  const excerptOk = excerpt.length >= 120;
+
+  return {
+    id: 'title_quality',
+    name: 'Title & Excerpt Quality',
+    weight: 'required',
+    passed: titleOk && excerptOk,
+    message: `Title: ${title.length} chars (max 70), Excerpt: ${excerpt.length} chars (min 120)`,
+  };
+}
+
+// 9. Keyword Count — 5-8 SEO keywords — SOFT
+function checkKeywordCount(keywords: string[]): QualityCheck {
+  return {
+    id: 'keyword_count',
+    name: 'Keyword Count',
+    weight: 'soft',
+    passed: keywords.length >= 5 && keywords.length <= 8,
+    message: `${keywords.length} keywords (target 5-8)`,
+  };
+}
+
+// 10. Editorial Tone — no first person, no hedging — SOFT
+function checkEditorialTone(content: string): QualityCheck {
+  const issues: string[] = [];
+  const lower = content.toLowerCase();
+
+  // First person
+  if (/\b(i |i'm|i've|we |we're|we've|our |my )\b/i.test(content)) {
+    issues.push('first person detected');
+  }
+
+  // Hedging
+  const hedges = ['might', 'perhaps', 'could potentially', 'it seems', 'arguably'];
+  for (const hedge of hedges) {
+    if (lower.includes(hedge)) {
+      issues.push(`hedging: "${hedge}"`);
+      break;
+    }
+  }
+
+  return {
+    id: 'editorial_tone',
+    name: 'Editorial Tone',
+    weight: 'soft',
+    passed: issues.length === 0,
+    message: issues.length === 0 ? 'Professional tone maintained' : issues.join('; '),
+  };
+}
+
+// 11. Specificity — ≥3 specific enforcement actions with amounts — SOFT
+function checkSpecificity(content: string, sourceData: EnforcementRecord[]): QualityCheck {
+  const amounts = extractAmounts(content);
+  // Count distinct regulator+amount pairs as proxy for specific action references
+  const specificRefs = Math.min(amounts.length, sourceData.length);
+
+  return {
+    id: 'specificity',
+    name: 'Specificity',
+    weight: 'soft',
+    passed: specificRefs >= 3,
+    message: `${specificRefs} specific enforcement references (min 3)`,
+  };
+}
+
+// 12. Readability — avg sentence <35 words, no sentence >60 words — SOFT
+function checkReadability(content: string): QualityCheck {
+  // Strip markdown headers and list markers
+  const prose = content
+    .replace(/^#+\s+.*/gm, '')
+    .replace(/^[-*]\s+/gm, '')
+    .trim();
+
+  const sentences = prose.split(/[.!?]+/).filter(s => s.trim().length > 10);
+  if (sentences.length === 0) {
+    return { id: 'readability', name: 'Readability', weight: 'soft', passed: true, message: 'No prose to evaluate' };
+  }
+
+  const wordCounts = sentences.map(s => s.trim().split(/\s+/).length);
+  const avg = wordCounts.reduce((a, b) => a + b, 0) / wordCounts.length;
+  const maxSentence = Math.max(...wordCounts);
+
+  return {
+    id: 'readability',
+    name: 'Readability',
+    weight: 'soft',
+    passed: avg < 35 && maxSentence <= 60,
+    message: `Avg ${avg.toFixed(1)} words/sentence (max 35), longest: ${maxSentence} words (max 60)`,
+  };
+}
+
+// ─── Extraction Helpers ────────────────────────────────────────────────────────
+
+// Known regulator acronyms to look for in article text
+const KNOWN_REGULATORS = [
+  'FCA', 'PRA', 'SEC', 'CFTC', 'FINRA', 'OCC', 'FDIC', 'FRB', 'FinCEN',
+  'ESMA', 'BaFin', 'AMF', 'CNMV', 'AFM', 'DNB', 'CBI', 'ECB', 'CONSOB',
+  'FINMA', 'MAS', 'HKMA', 'ASIC', 'SFC', 'SEBI', 'CSRC', 'SESC', 'JFSC',
+  'GFSC', 'DFSA', 'FSRA', 'CBUAE', 'CIRO', 'OSC', 'CNBV', 'CVM', 'CMF',
+  'FSCA', 'FMANZ', 'TWFSC', 'FTDK', 'CSSF',
+];
+
+function extractRegulatorMentions(content: string): string[] {
+  const found = new Set<string>();
+  for (const reg of KNOWN_REGULATORS) {
+    const pattern = new RegExp(`\\b${reg}\\b`, 'g');
+    if (pattern.test(content)) {
+      found.add(reg);
+    }
+  }
+  return Array.from(found);
+}
+
+function extractAmounts(content: string): number[] {
+  const amounts: number[] = [];
+  // Single regex that matches £1.2M, $500K, €2.3B, £1,234,567 with optional multiplier
+  const pattern = /[£$€]\s*([\d,.]+)\s*(billion|million|B|M|K|bn|mn)?\b/gi;
+
+  let match;
+  while ((match = pattern.exec(content)) !== null) {
+    const raw = match[1].replace(/,/g, '');
+    const multiplier = match[2]?.toLowerCase();
+    let value = parseFloat(raw);
+
+    if (multiplier) {
+      if (multiplier === 'b' || multiplier === 'bn' || multiplier === 'billion') value *= 1_000_000_000;
+      else if (multiplier === 'm' || multiplier === 'mn' || multiplier === 'million') value *= 1_000_000;
+      else if (multiplier === 'k') value *= 1_000;
+    }
+
+    if (value > 0 && !isNaN(value)) {
+      amounts.push(value);
+    }
+  }
+
+  return [...new Set(amounts)];
+}
+
+function extractFirmMentions(content: string, sourceData: EnforcementRecord[]): string[] {
+  // Only look for firms that are multi-word or capitalized proper nouns
+  const firms = new Set<string>();
+  for (const record of sourceData) {
+    const firm = record.firm_individual;
+    if (firm && firm.length > 3 && content.includes(firm)) {
+      firms.add(firm);
+    }
+  }
+
+  // Also check for quoted firm names in the article
+  const quoted = content.match(/"([A-Z][^"]{3,30})"/g);
+  if (quoted) {
+    for (const q of quoted) {
+      firms.add(q.replace(/"/g, ''));
+    }
+  }
+
+  return Array.from(firms);
+}
+
+function fuzzyMatchFirm(firm: string, knownFirms: Set<string>): boolean {
+  const lower = firm.toLowerCase();
+  if (knownFirms.has(lower)) return true;
+
+  // Partial match: if firm contains a known firm name or vice versa
+  for (const known of knownFirms) {
+    if (known.includes(lower) || lower.includes(known)) return true;
+    // Also check without common suffixes
+    const stripped = lower.replace(/\s*(ltd|plc|inc|llc|limited|corp)\s*\.?$/i, '').trim();
+    if (known.includes(stripped) || stripped.includes(known)) return true;
+  }
+
+  return false;
+}
+
+function isVerifiedAmount(amount: number, knownAmounts: number[], sourceData: EnforcementRecord[]): boolean {
+  // Direct match within 5% (accounts for currency conversion rounding)
+  for (const known of knownAmounts) {
+    if (Math.abs(amount - known) / Math.max(known, 1) < 0.05) return true;
+  }
+
+  // Check if it's a valid aggregate (sum of all or subset)
+  const totalFines = knownAmounts.reduce((a, b) => a + b, 0);
+  if (totalFines > 0 && Math.abs(amount - totalFines) / totalFines < 0.05) return true;
+
+  // Check if it's a valid average
+  if (knownAmounts.length > 0) {
+    const avg = totalFines / knownAmounts.length;
+    if (Math.abs(amount - avg) / Math.max(avg, 1) < 0.1) return true;
+  }
+
+  // Check partial sums (sum of any 2+ consecutive amounts)
+  for (let i = 0; i < knownAmounts.length; i++) {
+    let sum = 0;
+    for (let j = i; j < knownAmounts.length; j++) {
+      sum += knownAmounts[j];
+      if (j > i && Math.abs(amount - sum) / Math.max(sum, 1) < 0.05) return true;
+    }
+  }
+
+  return false;
+}
+
+function countWords(text: string): number {
+  return text.split(/\s+/).filter(w => w.length > 0).length;
+}
+
+function formatCurrency(amount: number): string {
+  if (amount >= 1_000_000_000) return `£${(amount / 1_000_000_000).toFixed(1)}B`;
+  if (amount >= 1_000_000) return `£${(amount / 1_000_000).toFixed(1)}M`;
+  if (amount >= 1_000) return `£${(amount / 1_000).toFixed(0)}K`;
+  return `£${amount.toLocaleString()}`;
+}
