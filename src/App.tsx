@@ -24,6 +24,7 @@ import { useNotificationFeed } from './hooks/useNotificationFeed';
 import { Toast } from './components/Toast';
 import { useDashboardState, INITIAL_ADVANCED_FILTERS, CURRENT_YEAR } from './hooks/useDashboardState';
 import { useFinesData, type TrendPoint } from './hooks/useFinesData';
+import { useDebounce } from './hooks/useDebounce';
 
 
 function getYearsRange() {
@@ -204,6 +205,7 @@ export default function App() {
     setAdvancedFilters,
     shareUrl,
   } = useDashboardState();
+  const debouncedSearch = useDebounce(search, 300);
   const [comparisonOpen, setComparisonOpen] = useState(false);
   const [modalContext, setModalContext] = useState<{ title?: string; subtitle?: string; records: FineRecord[] } | null>(null);
   const [advancedOpen, setAdvancedOpen] = useState(false);
@@ -288,8 +290,8 @@ export default function App() {
     if (category !== 'All') {
       scoped = scoped.filter((fine) => fine.breach_categories?.includes(category));
     }
-    if (search.trim()) {
-      const term = search.toLowerCase();
+    if (debouncedSearch.trim()) {
+      const term = debouncedSearch.toLowerCase();
       scoped = scoped.filter((fine) => {
         if (searchScope === 'firm') {
           return fine.firm_individual.toLowerCase().includes(term);
@@ -306,12 +308,13 @@ export default function App() {
         return (
           fine.firm_individual.toLowerCase().includes(term) ||
           fine.summary.toLowerCase().includes(term) ||
-          (fine.breach_type || '').toLowerCase().includes(term)
+          (fine.breach_type || '').toLowerCase().includes(term) ||
+          fine.breach_categories?.some((cat) => (cat || '').toLowerCase().includes(term))
         );
       });
     }
     return scoped;
-  }, [fines, year, advancedFilters, category, search, searchScope]);
+  }, [fines, year, advancedFilters, category, debouncedSearch, searchScope]);
 
   const timelineSeries = useMemo(() => buildTimelineSeries(filteredFines), [filteredFines]);
   const primaryYear = year === 0 ? CURRENT_YEAR : year;
@@ -614,6 +617,7 @@ export default function App() {
         searchScope={searchScope}
         searchData={searchData}
         chips={activeChips}
+        isSearchPending={search !== debouncedSearch}
         onYearChange={setYear}
         onCategoryChange={setCategory}
         onSearchChange={setSearch}

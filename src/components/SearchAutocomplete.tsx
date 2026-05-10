@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import Fuse from 'fuse.js';
+import { X } from 'lucide-react';
 import { useDebounce } from '../hooks/useDebounce';
 import { useLocalStorage } from '../hooks/useLocalStorage';
 
@@ -7,6 +8,7 @@ interface SearchAutocompleteProps {
   value: string;
   scope: string;
   data: Array<{ firm: string; summary: string; category: string }>;
+  isPending?: boolean;
   onScopeChange: (scope: string) => void;
   onChange: (value: string) => void;
 }
@@ -18,7 +20,7 @@ const OPTIONS = [
   { value: 'category', label: 'Breach category' },
 ];
 
-export function SearchAutocomplete({ value, scope, data, onScopeChange, onChange }: SearchAutocompleteProps) {
+export function SearchAutocomplete({ value, scope, data, isPending = false, onScopeChange, onChange }: SearchAutocompleteProps) {
   const [open, setOpen] = useState(false);
   const debouncedValue = useDebounce(value, 200);
   const [recentSearches, setRecentSearches] = useLocalStorage<string[]>('fca-search-history', []);
@@ -101,7 +103,7 @@ export function SearchAutocomplete({ value, scope, data, onScopeChange, onChange
           ))}
         </select>
       </div>
-      <div className="search-autocomplete__input">
+      <div className={`search-autocomplete__input${value ? ' search-autocomplete__input--active' : ''}`}>
         <input
           type="search"
           placeholder="Search firm, summary, keyword…"
@@ -113,6 +115,19 @@ export function SearchAutocomplete({ value, scope, data, onScopeChange, onChange
           onKeyDown={handleKeyDown}
           aria-label="Search fines (press ⌘K)"
         />
+        {isPending && value && (
+          <span className="search-autocomplete__spinner" aria-hidden="true" />
+        )}
+        {value && !isPending && (
+          <button
+            className="search-autocomplete__clear"
+            type="button"
+            aria-label="Clear search"
+            onMouseDown={(e) => { e.preventDefault(); onChange(''); inputRef.current?.focus(); }}
+          >
+            <X size={14} />
+          </button>
+        )}
         {open && (suggestions.length > 0 || recentSearches.length > 0) && (
           <div className="search-autocomplete__dropdown">
             {suggestions.length > 0 && (
