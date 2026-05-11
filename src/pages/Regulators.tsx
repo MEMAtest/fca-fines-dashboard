@@ -110,6 +110,16 @@ export function Regulators() {
         </p>
       </div>
 
+      <Link to="/uk-enforcement" className="reg-grid__uk-workspace">
+        <span>
+          <strong>UK enforcement workspace</strong>
+          <small>
+            FCA, PRA, PSR, OFSI, ICO, CMA, FRC and TPR in one focused UK view.
+          </small>
+        </span>
+        <span className="reg-grid__uk-workspace-cta">Open UK view →</span>
+      </Link>
+
       {/* Controls */}
       <div className="reg-grid__controls">
         <div className="reg-grid__filters">

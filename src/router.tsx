@@ -281,6 +281,10 @@ const router = createBrowserRouter([
         ),
       },
       {
+        path: "/board-intelligence",
+        element: <Navigate to="/board-pack" replace />,
+      },
+      {
         path: "/roadmap",
         element: (
           <Suspense

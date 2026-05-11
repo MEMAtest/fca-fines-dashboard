@@ -1,11 +1,12 @@
 import { useState, useEffect, useCallback, useMemo } from "react";
 import { createPortal } from "react-dom";
 import { Link, useLocation } from "react-router-dom";
-import { Menu, X, ChevronDown, ChevronRight } from "lucide-react";
+import { Menu, X, ChevronDown, ChevronRight, Search } from "lucide-react";
 import {
   PUBLIC_REGULATOR_SHELL_ITEMS,
   type RegulatorShellNavItem,
 } from "../data/regulatorShellNav.js";
+import { UK_ENFORCEMENT_REGULATORS } from "../data/ukEnforcement.js";
 import RegulatorMark from "./RegulatorMark.js";
 import { LogoLockup, BRAND } from "./RegActionsLogo.js";
 import "../styles/siteheader.css";
@@ -59,7 +60,7 @@ function getBreadcrumbs(pathname: string) {
 
     let label = seg;
     if (seg === "dashboard") label = "Dashboard";
-    else if (seg === "board-pack") label = "Board Pack";
+    else if (seg === "board-pack") label = "Board Intelligence";
     else if (seg === "search") label = "Search";
     else if (seg === "uk-enforcement") label = "UK Enforcement";
     else if (seg === "blog") label = "Insights";
@@ -100,15 +101,22 @@ export function SiteHeader() {
   const location = useLocation();
   const [mobileOpen, setMobileOpen] = useState(false);
   const [regulatorDropdownOpen, setRegulatorDropdownOpen] = useState(false);
+  const [regulatorQuery, setRegulatorQuery] = useState("");
   const [mobileRegulatorsOpen, setMobileRegulatorsOpen] = useState(
     location.pathname.startsWith("/regulators"),
   );
   const breadcrumbs = getBreadcrumbs(location.pathname);
   const showBreadcrumbs = location.pathname !== "/";
 
-  const closeMobile = useCallback(() => setMobileOpen(false), []);
+  const closeMobile = useCallback(() => {
+    setMobileOpen(false);
+    setRegulatorQuery("");
+  }, []);
   const closeRegulatorDropdown = useCallback(
-    () => setRegulatorDropdownOpen(false),
+    () => {
+      setRegulatorDropdownOpen(false);
+      setRegulatorQuery("");
+    },
     [],
   );
 
@@ -131,6 +139,60 @@ export function SiteHeader() {
 
     return groups;
   }, []);
+
+  const filteredRegulatorsByRegion = useMemo(() => {
+    const query = regulatorQuery.trim().toLowerCase();
+    if (!query) return regulatorsByRegion;
+
+    const groups: Record<string, RegulatorShellNavItem[]> = {};
+    for (const region of Object.keys(regulatorsByRegion)) {
+      const matches = regulatorsByRegion[region].filter((regulator) => {
+        const haystack = [
+          regulator.code,
+          regulator.fullName,
+          regulator.country,
+          regulator.region,
+        ]
+          .join(" ")
+          .toLowerCase();
+        return haystack.includes(query);
+      });
+      if (matches.length > 0) groups[region] = matches;
+    }
+    return groups;
+  }, [regulatorQuery, regulatorsByRegion]);
+
+  const mobileRegulators = useMemo(() => {
+    const query = regulatorQuery.trim().toLowerCase();
+    if (!query) return PUBLIC_REGULATOR_SHELL_ITEMS;
+    return PUBLIC_REGULATOR_SHELL_ITEMS.filter((regulator) => {
+      const haystack = [
+        regulator.code,
+        regulator.fullName,
+        regulator.country,
+        regulator.region,
+      ]
+        .join(" ")
+        .toLowerCase();
+      return haystack.includes(query);
+    });
+  }, [regulatorQuery]);
+
+  const ukEnforcementSourceMatches = useMemo(() => {
+    const query = regulatorQuery.trim().toLowerCase();
+    if (!query) return [];
+    return UK_ENFORCEMENT_REGULATORS.filter((source) => {
+      const haystack = [
+        source.code,
+        source.fullName,
+        source.domain,
+        "uk enforcement",
+      ]
+        .join(" ")
+        .toLowerCase();
+      return haystack.includes(query);
+    });
+  }, [regulatorQuery]);
 
   // Inject BreadcrumbList JSON-LD for search engines
   useEffect(() => {
@@ -223,7 +285,11 @@ export function SiteHeader() {
           ))}
 
           {/* Regulator Dropdown */}
-          <div className="site-header__dropdown">
+          <div
+            className="site-header__dropdown"
+            onMouseEnter={() => setRegulatorDropdownOpen(true)}
+            onMouseLeave={closeRegulatorDropdown}
+          >
             <button
               type="button"
               className={`site-header__dropdown-trigger${
@@ -249,7 +315,6 @@ export function SiteHeader() {
             {regulatorDropdownOpen && (
               <div
                 className="site-header__dropdown-menu site-header__dropdown-menu--mega"
-                onMouseLeave={closeRegulatorDropdown}
               >
                 <div className="site-header__mega-top">
                   <Link
@@ -271,14 +336,54 @@ export function SiteHeader() {
                     UK enforcement view →
                   </Link>
                 </div>
+                <label className="site-header__regulator-search">
+                  <Search size={15} aria-hidden="true" />
+                  <input
+                    type="search"
+                    value={regulatorQuery}
+                    onChange={(event) => setRegulatorQuery(event.target.value)}
+                    placeholder="Search FCA, PRA, SEC, country..."
+                    aria-label="Search regulators"
+                    autoComplete="off"
+                  />
+                </label>
+                {ukEnforcementSourceMatches.length > 0 ? (
+                  <div className="site-header__quick-results">
+                    <span className="site-header__quick-results-label">
+                      UK enforcement sources
+                    </span>
+                    <div className="site-header__quick-results-list">
+                      {ukEnforcementSourceMatches.map((source) => (
+                        <Link
+                          key={source.code}
+                          to={`/uk-enforcement?regulator=${source.code}&q=`}
+                          className="site-header__quick-result"
+                          onClick={closeRegulatorDropdown}
+                        >
+                          <RegulatorMark
+                            regulator={source.code}
+                            label={source.fullName}
+                            country="United Kingdom"
+                            size="small"
+                            decorative
+                          />
+                          <span>
+                            <strong>{source.code}</strong>
+                            <small>{source.fullName}</small>
+                          </span>
+                        </Link>
+                      ))}
+                    </div>
+                  </div>
+                ) : null}
                 <div className="site-header__mega-grid">
                   {REGION_ORDER.filter(
-                    (region) => regulatorsByRegion[region],
+                    (region) => filteredRegulatorsByRegion[region],
                   ).map((region) => (
                     <div key={region} className="site-header__mega-column">
                       <h3 className="site-header__mega-heading">{region}</h3>
                       <div className="site-header__mega-items">
-                        {regulatorsByRegion[region].map((regulator) => (
+                        {filteredRegulatorsByRegion[region].map((regulator) => (
                           <Link
                             key={regulator.code}
                             to={regulator.overviewPath}
@@ -320,6 +425,12 @@ export function SiteHeader() {
                     </div>
                   ))}
                 </div>
+                {REGION_ORDER.every((region) => !filteredRegulatorsByRegion[region]) &&
+                ukEnforcementSourceMatches.length === 0 ? (
+                  <div className="site-header__mega-empty">
+                    No regulators match that search.
+                  </div>
+                ) : null}
               </div>
             )}
           </div>
@@ -416,6 +527,17 @@ export function SiteHeader() {
                       id="mobile-regulators-panel"
                       className="site-header__mobile-accordion-panel"
                     >
+                      <label className="site-header__mobile-regulator-search">
+                        <Search size={16} aria-hidden="true" />
+                        <input
+                          type="search"
+                          value={regulatorQuery}
+                          onChange={(event) => setRegulatorQuery(event.target.value)}
+                          placeholder="Search regulators"
+                          aria-label="Search regulators"
+                          autoComplete="off"
+                        />
+                      </label>
                       <Link
                         to="/regulators"
                         className="site-header__mobile-regulator-link site-header__mobile-view-all"
@@ -434,7 +556,32 @@ export function SiteHeader() {
                       >
                         UK enforcement view →
                       </Link>
-                      {PUBLIC_REGULATOR_SHELL_ITEMS.map((regulator) => (
+                      {ukEnforcementSourceMatches.map((source) => (
+                        <Link
+                          key={source.code}
+                          to={`/uk-enforcement?regulator=${source.code}&q=`}
+                          className="site-header__mobile-regulator-link"
+                          onClick={closeMobile}
+                        >
+                          <RegulatorMark
+                            regulator={source.code}
+                            label={source.fullName}
+                            country="United Kingdom"
+                            size="small"
+                            decorative
+                            className="site-header__mobile-regulator-flag"
+                          />
+                          <span className="site-header__mobile-regulator-copy">
+                            <span className="site-header__mobile-regulator-code">
+                              {source.code}
+                            </span>
+                            <span className="site-header__mobile-regulator-country">
+                              UK enforcement source
+                            </span>
+                          </span>
+                        </Link>
+                      ))}
+                      {mobileRegulators.map((regulator) => (
                         <Link
                           key={regulator.code}
                           to={regulator.overviewPath}

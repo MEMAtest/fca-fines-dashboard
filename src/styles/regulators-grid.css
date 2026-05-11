@@ -26,6 +26,49 @@
   margin: 0;
 }
 
+.reg-grid__uk-workspace {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  margin: 0 0 1.5rem;
+  border: 1px solid rgba(15, 167, 125, 0.22);
+  border-radius: 0.9rem;
+  padding: 1rem 1.15rem;
+  background:
+    linear-gradient(90deg, rgba(242, 251, 249, 0.98), rgba(255, 255, 255, 0.94)),
+    linear-gradient(135deg, rgba(15, 167, 125, 0.16), rgba(180, 143, 74, 0.12));
+  color: #0B1F2A;
+  text-decoration: none;
+  box-shadow: 0 10px 30px rgba(11, 31, 42, 0.05);
+}
+
+.reg-grid__uk-workspace:hover {
+  border-color: rgba(15, 167, 125, 0.4);
+}
+
+.reg-grid__uk-workspace strong,
+.reg-grid__uk-workspace small {
+  display: block;
+}
+
+.reg-grid__uk-workspace strong {
+  font-size: 0.98rem;
+}
+
+.reg-grid__uk-workspace small {
+  margin-top: 0.25rem;
+  color: #526071;
+  line-height: 1.45;
+}
+
+.reg-grid__uk-workspace-cta {
+  flex-shrink: 0;
+  color: #0B8463;
+  font-size: 0.88rem;
+  font-weight: 800;
+}
+
 /* ── Controls bar ── */
 
 .reg-grid__controls {
@@ -292,6 +335,11 @@
   .reg-grid__stats {
     flex-wrap: wrap;
     gap: 0.75rem;
+  }
+
+  .reg-grid__uk-workspace {
+    align-items: flex-start;
+    flex-direction: column;
   }
 }
 

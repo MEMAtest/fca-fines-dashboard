@@ -71,6 +71,21 @@ function domainClass(value: string | null | undefined) {
   return `uk-enforcement__action--${String(value || "other").replace(/[^a-z0-9]+/gi, "-")}`;
 }
 
+function getInitialRegulator() {
+  if (typeof window === "undefined") return "All";
+  const value = new URLSearchParams(window.location.search).get("regulator");
+  if (!value) return "All";
+  const normalized = value.trim().toUpperCase();
+  return UK_ENFORCEMENT_REGULATORS.some((item) => item.code === normalized)
+    ? normalized
+    : "All";
+}
+
+function getInitialQuery() {
+  if (typeof window === "undefined") return "wise";
+  return new URLSearchParams(window.location.search).get("q") ?? "wise";
+}
+
 export function UKEnforcement() {
   useSEO({
     title: "UK Enforcement | Financial and Adjacent Regulatory Penalties",
@@ -80,8 +95,8 @@ export function UKEnforcement() {
       "UK enforcement, PRA fines, PSR fines, OFSI penalties, ICO monetary penalties, CMA fines, FRC sanctions, pensions regulator penalties",
   });
 
-  const [query, setQuery] = useState("wise");
-  const [regulator, setRegulator] = useState("All");
+  const [query, setQuery] = useState(getInitialQuery);
+  const [regulator, setRegulator] = useState(getInitialRegulator);
   const [domain, setDomain] = useState("all");
   const [year, setYear] = useState(0);
   const [currency, setCurrency] = useState("GBP");
@@ -174,23 +189,33 @@ export function UKEnforcement() {
             })}
           </div>
         </div>
-        <div className="uk-enforcement__summary">
-          <div className="uk-enforcement__metric">
-            <Landmark size={18} aria-hidden="true" />
-            <span>Total actions</span>
-            <strong>{stats?.summary.count.toLocaleString("en-GB") ?? "0"}</strong>
+        <div className="uk-enforcement__hero-visual">
+          <div className="uk-enforcement__skyline" aria-hidden="true">
+            <span className="uk-enforcement__skyline-building uk-enforcement__skyline-building--bank" />
+            <span className="uk-enforcement__skyline-building uk-enforcement__skyline-building--gherkin" />
+            <span className="uk-enforcement__skyline-building uk-enforcement__skyline-building--tower" />
+            <span className="uk-enforcement__skyline-building uk-enforcement__skyline-building--shard" />
+            <span className="uk-enforcement__skyline-building uk-enforcement__skyline-building--bridge" />
+            <span className="uk-enforcement__skyline-ground" />
           </div>
-          <div className="uk-enforcement__metric">
-            <BarChart3 size={18} aria-hidden="true" />
-            <span>Total penalties</span>
-            <strong>
-              {formatMetricAmount(stats?.summary.total ?? 0, stats?.summary.currency ?? currency)}
-            </strong>
-          </div>
-          <div className="uk-enforcement__metric">
-            <Database size={18} aria-hidden="true" />
-            <span>Sources</span>
-            <strong>{regulatorCount || UK_ENFORCEMENT_REGULATORS.length}</strong>
+          <div className="uk-enforcement__summary">
+            <div className="uk-enforcement__metric">
+              <Landmark size={18} aria-hidden="true" />
+              <span>Total actions</span>
+              <strong>{stats?.summary.count.toLocaleString("en-GB") ?? "0"}</strong>
+            </div>
+            <div className="uk-enforcement__metric">
+              <BarChart3 size={18} aria-hidden="true" />
+              <span>Total penalties</span>
+              <strong>
+                {formatMetricAmount(stats?.summary.total ?? 0, stats?.summary.currency ?? currency)}
+              </strong>
+            </div>
+            <div className="uk-enforcement__metric">
+              <Database size={18} aria-hidden="true" />
+              <span>Sources</span>
+              <strong>{regulatorCount || UK_ENFORCEMENT_REGULATORS.length}</strong>
+            </div>
           </div>
         </div>
       </section>
