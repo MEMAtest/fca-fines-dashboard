@@ -45,6 +45,10 @@ function getMaxPages() {
   return Number.isFinite(parsed) && parsed > 0 ? parsed : DEFAULT_MAX_PAGES;
 }
 
+function shouldLogProgress() {
+  return process.env.FCA_ENFORCEMENT_LOG_PROGRESS === "1";
+}
+
 function cutoffDateIso(daysBack = getDaysBack()) {
   const cutoff = new Date();
   cutoff.setUTCHours(0, 0, 0, 0);
@@ -368,7 +372,7 @@ export function parseFcaFinalNoticeResult(result: FcaSearchResult): FcaAction | 
   };
 }
 
-async function fetchSearchResults(baseUrl: string, cutoffIso: string) {
+async function fetchSearchResults(baseUrl: string, cutoffIso: string, sourceLabel: string) {
   const results: FcaSearchResult[] = [];
   const maxPages = getMaxPages();
 
@@ -379,6 +383,13 @@ async function fetchSearchResults(baseUrl: string, cutoffIso: string) {
     if (pageResults.length === 0) break;
 
     results.push(...pageResults.filter((result) => result.dateIssued >= cutoffIso));
+    if (shouldLogProgress() && (page === 0 || (page + 1) % 10 === 0)) {
+      const newest = pageResults[0]?.dateIssued ?? "unknown";
+      const oldest = pageResults[pageResults.length - 1]?.dateIssued ?? "unknown";
+      console.log(
+        `[FCA enforcement] ${sourceLabel}: fetched page ${page + 1}/${maxPages}; page date range ${newest} to ${oldest}; kept ${results.length}`,
+      );
+    }
     if (pageResults.some((result) => result.dateIssued < cutoffIso)) break;
   }
 
@@ -413,17 +424,24 @@ function dedupeActions(records: FcaAction[]) {
 export async function scrapeFcaEnforcement(): Promise<UKEnforcementSeedRecord[]> {
   const cutoffIso = cutoffDateIso();
   const [pressResults, finalNoticeResults] = await Promise.all([
-    fetchSearchResults(PRESS_RELEASES_URL, cutoffIso),
-    fetchSearchResults(FINAL_NOTICES_URL, cutoffIso),
+    fetchSearchResults(PRESS_RELEASES_URL, cutoffIso, "press releases"),
+    fetchSearchResults(FINAL_NOTICES_URL, cutoffIso, "final notices"),
   ]);
 
   const enforcementPressResults = pressResults.filter(isLikelyEnforcementResult);
+  let fetchedPressDetails = 0;
   const pressActions = await mapWithConcurrency(
     enforcementPressResults,
     3,
     async (result) => {
       try {
         const html = await fetchText(result.url);
+        fetchedPressDetails += 1;
+        if (shouldLogProgress() && fetchedPressDetails % 25 === 0) {
+          console.log(
+            `[FCA enforcement] fetched ${fetchedPressDetails}/${enforcementPressResults.length} press release detail pages`,
+          );
+        }
         return parseFcaPressReleaseDetail(html, result);
       } catch (error) {
         console.warn(
@@ -553,11 +571,35 @@ async function upsertStandalone(records: UKEnforcementSeedRecord[]) {
 
 export async function main() {
   const dryRun = process.argv.includes("--dry-run");
+  const summaryOnly = process.argv.includes("--summary");
   const limitArg = process.argv.find((arg) => arg.startsWith("--limit="));
   const limit = limitArg ? Number.parseInt(limitArg.split("=")[1] || "", 10) : null;
   const records = limitRecords(await scrapeFcaEnforcement(), Number.isFinite(limit) ? limit : null);
 
   console.log(`FCA enforcement actions prepared: ${records.length}`);
+  if (summaryOnly) {
+    const dates = records.map((record) => record.dateIssued).sort();
+    console.log(
+      JSON.stringify(
+        {
+          count: records.length,
+          earliest: dates[0] ?? null,
+          latest: dates[dates.length - 1] ?? null,
+          monetary: records.filter((record) => record.amount !== null).length,
+          nonMonetary: records.filter((record) => record.amount === null).length,
+          sample: records.slice(0, 10).map((record) => ({
+            firm: record.firmIndividual,
+            amount: record.amount,
+            date: record.dateIssued,
+            url: record.noticeUrl,
+          })),
+        },
+        null,
+        2,
+      ),
+    );
+    if (dryRun) return;
+  }
   if (dryRun) {
     records.forEach((record, index) => {
       const amount = record.amount === null ? "non-monetary" : `GBP ${record.amount.toLocaleString("en-GB")}`;
