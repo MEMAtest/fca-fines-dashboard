@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useMemo } from "react";
+import { useState, useEffect, useCallback, useMemo, useRef } from "react";
 import { createPortal } from "react-dom";
 import { Link, useLocation } from "react-router-dom";
 import { Menu, X, ChevronDown, ChevronRight, Search } from "lucide-react";
@@ -105,6 +105,7 @@ export function SiteHeader() {
   const [mobileRegulatorsOpen, setMobileRegulatorsOpen] = useState(
     location.pathname.startsWith("/regulators"),
   );
+  const regulatorCloseTimerRef = useRef<number | null>(null);
   const breadcrumbs = getBreadcrumbs(location.pathname);
   const showBreadcrumbs = location.pathname !== "/";
 
@@ -114,11 +115,32 @@ export function SiteHeader() {
   }, []);
   const closeRegulatorDropdown = useCallback(
     () => {
+      if (regulatorCloseTimerRef.current) {
+        window.clearTimeout(regulatorCloseTimerRef.current);
+        regulatorCloseTimerRef.current = null;
+      }
       setRegulatorDropdownOpen(false);
       setRegulatorQuery("");
     },
     [],
   );
+  const openRegulatorDropdown = useCallback(() => {
+    if (regulatorCloseTimerRef.current) {
+      window.clearTimeout(regulatorCloseTimerRef.current);
+      regulatorCloseTimerRef.current = null;
+    }
+    setRegulatorDropdownOpen(true);
+  }, []);
+  const scheduleRegulatorDropdownClose = useCallback(() => {
+    if (regulatorCloseTimerRef.current) {
+      window.clearTimeout(regulatorCloseTimerRef.current);
+    }
+    regulatorCloseTimerRef.current = window.setTimeout(() => {
+      setRegulatorDropdownOpen(false);
+      setRegulatorQuery("");
+      regulatorCloseTimerRef.current = null;
+    }, 220);
+  }, []);
 
   // Phase 5: Group regulators by region
   const regulatorsByRegion = useMemo(() => {
@@ -258,6 +280,15 @@ export function SiteHeader() {
     );
   }, [location.pathname]);
 
+  useEffect(
+    () => () => {
+      if (regulatorCloseTimerRef.current) {
+        window.clearTimeout(regulatorCloseTimerRef.current);
+      }
+    },
+    [],
+  );
+
   return (
     <header className="site-header">
       <div className="site-header__inner">
@@ -287,8 +318,8 @@ export function SiteHeader() {
           {/* Regulator Dropdown */}
           <div
             className="site-header__dropdown"
-            onMouseEnter={() => setRegulatorDropdownOpen(true)}
-            onMouseLeave={closeRegulatorDropdown}
+            onMouseEnter={openRegulatorDropdown}
+            onMouseLeave={scheduleRegulatorDropdownClose}
           >
             <button
               type="button"

@@ -354,7 +354,7 @@
 
 .site-header__dropdown-menu {
   position: absolute;
-  top: calc(100% + 0.5rem);
+  top: calc(100% + 0.25rem);
   right: 0;
   min-width: 240px;
   background: white;
@@ -364,6 +364,15 @@
   padding: 0.5rem;
   z-index: 100;
   animation: dropdownFadeIn 0.2s ease;
+}
+
+.site-header__dropdown-menu::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: -0.4rem;
+  height: 0.4rem;
 }
 
 .site-header__dropdown-item {
