@@ -26,8 +26,10 @@ const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL?.trim() || 'https://regactions
 
 interface Fine {
   id: string;
+  regulator: string;
+  regulator_full_name: string;
   firm_individual: string;
-  amount: number;
+  amount: number | null;
   date_issued: string;
   breach_type: string;
   final_notice_url: string;
@@ -55,18 +57,26 @@ async function main() {
     // Get the date range based on frequency
     const days = frequency === 'weekly' ? 7 : 30;
 
-    // Get fines from the period
+    // Get enforcement actions from the period
     const fines = await sql`
-      SELECT id, firm_individual, amount, date_issued, breach_type, final_notice_url
-      FROM fca_fines
+      SELECT
+        id,
+        regulator,
+        regulator_full_name,
+        firm_individual,
+        amount_gbp AS amount,
+        date_issued,
+        breach_type,
+        notice_url AS final_notice_url
+      FROM all_regulatory_fines
       WHERE date_issued >= NOW() - make_interval(days => ${days})
-      ORDER BY amount DESC
+      ORDER BY amount_gbp DESC NULLS LAST, date_issued DESC
     ` as Fine[];
 
-    console.log(`Found ${fines.length} fines in the last ${days} days`);
+    console.log(`Found ${fines.length} enforcement actions in the last ${days} days`);
 
     if (fines.length === 0) {
-      console.log('No fines to report in digest');
+      console.log('No enforcement actions to report in digest');
       return;
     }
 
@@ -82,8 +92,9 @@ async function main() {
     console.log(`Processing ${subscriptions.length} ${frequency} digest subscriptions`);
 
     // Calculate summary stats
-    const totalAmount = fines.reduce((sum, f) => sum + f.amount, 0);
-    const avgAmount = fines.length ? totalAmount / fines.length : 0;
+    const monetaryFines = fines.filter((fine) => fine.amount !== null);
+    const totalAmount = monetaryFines.reduce((sum, f) => sum + (f.amount ?? 0), 0);
+    const avgAmount = monetaryFines.length ? totalAmount / monetaryFines.length : 0;
     const topFines = fines.slice(0, 5);
 
     for (const subscription of subscriptions) {
@@ -134,14 +145,18 @@ async function sendDigestEmail(
   const unsubscribeUrl = `${BASE_URL}/api/digest/unsubscribe/${subscription.unsubscribe_token}`;
   const periodLabel = frequency === 'weekly' ? 'This Week' : 'This Month';
 
+  const formatAmount = (amount: number | null) =>
+    amount === null ? 'Non-monetary' : `£${amount.toLocaleString('en-GB')}`;
+
   const topFinesList = topFines.map((fine, index) => `
     <tr>
       <td style="padding: 12px 16px; border-bottom: 1px solid #e5e7eb;">
         <span style="display: inline-block; width: 24px; height: 24px; background: ${index === 0 ? '#0FA77D' : '#e5e7eb'}; color: ${index === 0 ? 'white' : '#6b7280'}; border-radius: 50%; text-align: center; line-height: 24px; font-size: 12px; font-weight: 600; margin-right: 12px;">${index + 1}</span>
-        ${fine.firm_individual}
+        ${fine.firm_individual}<br>
+        <span style="color: #6b7280; font-size: 12px;">${fine.regulator} · ${fine.breach_type || 'Regulatory breach'}</span>
       </td>
       <td style="padding: 12px 16px; border-bottom: 1px solid #e5e7eb; text-align: right; font-weight: 600; color: #0FA77D;">
-        £${fine.amount.toLocaleString('en-GB')}
+        ${formatAmount(fine.amount)}
       </td>
     </tr>
   `).join('');
@@ -179,7 +194,7 @@ async function sendDigestEmail(
       <div style="display: flex; gap: 16px; margin-bottom: 24px;">
         <div style="flex: 1; background: linear-gradient(135deg, rgba(15, 167, 125, 0.1), rgba(99, 102, 241, 0.1)); border-radius: 12px; padding: 16px; text-align: center;">
           <div style="font-size: 1.5rem; font-weight: 700; color: #0FA77D;">${allFines.length}</div>
-          <div style="font-size: 0.75rem; color: #6b7280; text-transform: uppercase; letter-spacing: 0.05em;">Fines</div>
+          <div style="font-size: 0.75rem; color: #6b7280; text-transform: uppercase; letter-spacing: 0.05em;">Actions</div>
         </div>
         <div style="flex: 1; background: linear-gradient(135deg, rgba(15, 167, 125, 0.1), rgba(99, 102, 241, 0.1)); border-radius: 12px; padding: 16px; text-align: center;">
           <div style="font-size: 1.5rem; font-weight: 700; color: #0FA77D;">£${(totalAmount / 1_000_000).toFixed(1)}m</div>
@@ -191,11 +206,11 @@ async function sendDigestEmail(
         </div>
       </div>
 
-      <h3 style="margin: 0 0 16px 0; color: #374151;">Top 5 Fines</h3>
+      <h3 style="margin: 0 0 16px 0; color: #374151;">Top 5 Actions</h3>
       <table class="table">
         <thead>
           <tr>
-            <th>Firm</th>
+            <th>Firm / regulator</th>
             <th style="text-align: right;">Amount</th>
           </tr>
         </thead>
@@ -221,12 +236,12 @@ async function sendDigestEmail(
   const textContent = `${frequency.charAt(0).toUpperCase() + frequency.slice(1)} RegActions Digest
 
 ${periodLabel}'s Summary:
-- ${allFines.length} fines issued
-- £${(totalAmount / 1_000_000).toFixed(1)}m total
-- £${(avgAmount / 1_000_000).toFixed(1)}m average
+- ${allFines.length} enforcement actions
+- £${(totalAmount / 1_000_000).toFixed(1)}m monetary total
+- £${(avgAmount / 1_000_000).toFixed(1)}m average monetary action
 
-Top 5 Fines:
-${topFines.map((f, i) => `${i + 1}. ${f.firm_individual} - £${f.amount.toLocaleString('en-GB')}`).join('\n')}
+Top 5 Actions:
+${topFines.map((f, i) => `${i + 1}. ${f.firm_individual} (${f.regulator}) - ${formatAmount(f.amount)}`).join('\n')}
 
 View full dashboard: ${BASE_URL}/dashboard
 
@@ -236,7 +251,7 @@ Unsubscribe: ${unsubscribeUrl}`;
     Source: FROM_EMAIL,
     Destination: { ToAddresses: [subscription.email] },
     Message: {
-      Subject: { Data: `${periodLabel}: ${allFines.length} enforcement actions, £${(totalAmount / 1_000_000).toFixed(1)}m Total`, Charset: 'UTF-8' },
+      Subject: { Data: `${periodLabel}: ${allFines.length} enforcement actions, £${(totalAmount / 1_000_000).toFixed(1)}m monetary total`, Charset: 'UTF-8' },
       Body: {
         Html: { Data: htmlContent, Charset: 'UTF-8' },
         Text: { Data: textContent, Charset: 'UTF-8' },

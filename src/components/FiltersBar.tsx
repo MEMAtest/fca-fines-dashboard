@@ -15,7 +15,7 @@ interface FiltersBarProps {
   searchScope: string;
   searchData: Array<{ firm: string; summary: string; category: string }>;
   chips: Array<{ label: string; onRemove?: () => void }>;
-  isSearchPending: boolean;
+  isSearchPending?: boolean;
   onYearChange: (year: number) => void;
   onCategoryChange: (category: string) => void;
   onRegulatorChange: (regulator: string) => void;
@@ -41,7 +41,7 @@ export function FiltersBar({
   searchScope,
   searchData,
   chips,
-  isSearchPending,
+  isSearchPending = false,
   onYearChange,
   onCategoryChange,
   onRegulatorChange,

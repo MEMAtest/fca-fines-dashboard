@@ -8,8 +8,8 @@ import {
   limitRecords,
 } from "./lib/euFineHelpers.js";
 import { UK_ENFORCEMENT_SEED_RECORDS, type UKEnforcementSeedRecord } from "./data/ukEnforcementSeed.js";
+import { scrapeFcaEnforcement } from "./scrapeFcaEnforcement.js";
 import {
-  scrapeAllUKEnforcementSources,
   scrapeCmaEnforcement,
   scrapeFrcEnforcement,
   scrapeIcoEnforcement,
@@ -46,6 +46,7 @@ interface FailedSourceRun {
 }
 
 const UK_ENFORCEMENT_SOURCE_LOADERS: UKEnforcementSourceLoader[] = [
+  { regulator: "FCA", load: scrapeFcaEnforcement },
   { regulator: "PRA", load: scrapePraEnforcement },
   { regulator: "PSR", load: scrapePsrEnforcement },
   { regulator: "OFSI", load: scrapeOfsiEnforcement },
@@ -134,11 +135,15 @@ async function upsertUKEnforcementRecords(
   };
 
   if (replaceRegulators && records.length > 0) {
-    const regulators = [...new Set(records.map((record) => record.regulator))];
-    await sql`
-      DELETE FROM uk_enforcement_actions
-      WHERE regulator = ANY(${regulators})
-    `;
+    const regulators = [
+      ...new Set(records.map((record) => record.regulator)),
+    ].filter((regulator) => regulator !== "FCA");
+    if (regulators.length > 0) {
+      await sql`
+        DELETE FROM uk_enforcement_actions
+        WHERE regulator = ANY(${regulators})
+      `;
+    }
   }
 
   for (const record of records) {
@@ -380,6 +385,32 @@ async function scrapeUKEnforcementSourcesWithTracking(sql: postgres.Sql) {
   return { successful, failures };
 }
 
+async function removeExistingFcaFineDuplicates(
+  sql: postgres.Sql,
+  records: UKEnforcementSeedRecord[],
+) {
+  const fcaRecords = records.filter((record) => record.regulator === "FCA");
+  if (fcaRecords.length === 0) return records;
+
+  const noticeUrls = fcaRecords.map((record) => record.noticeUrl).filter(Boolean);
+  const existingByNoticeUrl =
+    noticeUrls.length > 0
+      ? await sql`
+          SELECT final_notice_url
+          FROM fca_fines
+          WHERE final_notice_url = ANY(${noticeUrls})
+        `
+      : [];
+  const existingNoticeUrls = new Set(
+    existingByNoticeUrl.map((row) => String(row.final_notice_url)),
+  );
+
+  return records.filter((record) => {
+    if (record.regulator !== "FCA") return true;
+    return !existingNoticeUrls.has(record.noticeUrl);
+  });
+}
+
 export async function main() {
   const flags = getCliFlags();
   let sql: postgres.Sql | null = null;
@@ -396,7 +427,10 @@ export async function main() {
   if (flags.seedOnly) {
     sourceRecords = UK_ENFORCEMENT_SEED_RECORDS;
   } else if (flags.dryRun) {
-    sourceRecords = await scrapeAllUKEnforcementSources();
+    const loaderRecords = await Promise.all(
+      UK_ENFORCEMENT_SOURCE_LOADERS.map((source) => source.load()),
+    );
+    sourceRecords = loaderRecords.flat();
   } else {
     const databaseUrl = process.env.DATABASE_URL?.trim();
     if (!databaseUrl) {
@@ -412,7 +446,10 @@ export async function main() {
     const scrapeResult = await scrapeUKEnforcementSourcesWithTracking(sql);
     successfulRuns = scrapeResult.successful;
     failures = scrapeResult.failures;
-    sourceRecords = successfulRuns.flatMap((run) => run.records);
+    sourceRecords = await removeExistingFcaFineDuplicates(
+      sql,
+      successfulRuns.flatMap((run) => run.records),
+    );
   }
 
   const records = limitRecords(buildUKEnforcementRecords(sourceRecords), flags.limit);
@@ -470,6 +507,10 @@ export async function main() {
         });
       }),
     );
+
+    console.log("Refreshing unified regulatory fines view...");
+    await sql`SELECT refresh_all_fines()`;
+    console.log("Unified regulatory fines view refreshed");
 
     if (failures.length > 0) {
       throw new Error(

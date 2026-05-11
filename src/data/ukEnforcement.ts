@@ -44,12 +44,12 @@ export const UK_ENFORCEMENT_REGULATORS: UKEnforcementRegulator[] = [
     domain: "financial_conduct",
     stage: "live",
     sourceWindowNote:
-      "Existing FCA fines and final notices provide the live financial-conduct feed.",
+      "FCA fines remain in the dedicated fines table; broader final notices, censures, prohibitions, and restrictions are ingested through the UK enforcement feed.",
     officialSources: [
       {
-        label: "FCA enforcement and fines",
-        url: "https://www.fca.org.uk/news/news-stories",
-        description: "FCA news, final notices, and published fines.",
+        label: "FCA final notices and enforcement press releases",
+        url: "https://www.fca.org.uk/publications/search-results?category=final%20notices",
+        description: "FCA final notices, decision notices, supervisory notices, public censures, prohibitions, and linked enforcement announcements.",
       },
     ],
   },

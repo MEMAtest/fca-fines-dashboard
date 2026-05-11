@@ -17,14 +17,16 @@ const sql = postgres(databaseUrl, {
 });
 
 async function main() {
-  const migrationPath = path.resolve(
-    process.cwd(),
+  const migrationPaths = [
     "migrations/20260423_uk_enforcement_actions.sql",
-  );
-  const migrationSql = fs.readFileSync(migrationPath, "utf8");
+    "migrations/20260511_unify_uk_enforcement_view.sql",
+  ].map((migration) => path.resolve(process.cwd(), migration));
 
   console.log("Running UK enforcement migration...");
-  await sql.unsafe(migrationSql);
+  for (const migrationPath of migrationPaths) {
+    console.log(`Applying ${path.basename(migrationPath)}...`);
+    await sql.unsafe(fs.readFileSync(migrationPath, "utf8"));
+  }
 
   const verification = await sql`
     SELECT table_name

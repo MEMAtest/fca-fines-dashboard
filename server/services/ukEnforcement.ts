@@ -96,8 +96,31 @@ const UK_ACTIONS_CTE = `
       created_at,
       updated_at,
       'fca_unified'::text AS source_layer
-    FROM all_regulatory_fines
-    WHERE regulator = 'FCA'
+    FROM (
+      SELECT
+        id::text AS id,
+        'FCA'::text AS regulator,
+        'Financial Conduct Authority'::text AS regulator_full_name,
+        'GB'::text AS country_code,
+        'United Kingdom'::text AS country_name,
+        firm_individual,
+        firm_category,
+        amount AS amount_original,
+        currency,
+        amount AS amount_gbp,
+        ROUND(amount * 1.18, 2) AS amount_eur,
+        date_issued,
+        year_issued,
+        month_issued,
+        breach_type,
+        breach_categories,
+        summary,
+        final_notice_url AS notice_url,
+        final_notice_url AS source_url,
+        created_at,
+        updated_at
+      FROM fca_fines
+    ) AS fca_fines_feed
 
     UNION ALL
 

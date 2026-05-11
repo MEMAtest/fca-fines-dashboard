@@ -136,46 +136,6 @@ const SEARCHABLE_ENFORCEMENT_CTE = `
     FROM public.all_regulatory_fines
     LEFT JOIN known_firm_aliases
       ON LOWER(known_firm_aliases.alias_name) = LOWER(firm_individual)
-
-    UNION ALL
-
-    SELECT
-      id,
-      regulator,
-      regulator_full_name,
-      country_code,
-      country_name,
-      firm_individual,
-      firm_category,
-      amount_original,
-      currency,
-      amount_gbp,
-      amount_eur,
-      date_issued,
-      year_issued,
-      month_issued,
-      breach_type,
-      breach_categories,
-      summary,
-      notice_url,
-      source_url,
-      created_at,
-      COALESCE(aliases::text, '') AS search_aliases,
-      to_tsvector(
-        'english',
-        concat_ws(
-          ' ',
-          firm_individual,
-          regulator,
-          regulator_full_name,
-          country_name,
-          breach_type,
-          breach_categories::text,
-          summary,
-          aliases::text
-        )
-      ) AS search_vector
-    FROM public.uk_enforcement_actions
   )
 `;
 

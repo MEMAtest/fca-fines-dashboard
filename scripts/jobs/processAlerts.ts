@@ -2,7 +2,7 @@
  * Process Alert Notifications
  *
  * This script runs daily (after the FCA scraper) to:
- * 1. Find new fines since last notification
+ * 1. Find new enforcement actions since last notification
  * 2. Match them against active alert subscriptions
  * 3. Send notification emails via AWS SES
  */
@@ -29,8 +29,10 @@ const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL?.trim() || 'https://regactions
 
 interface Fine {
   id: string;
+  regulator: string;
+  regulator_full_name: string;
   firm_individual: string;
-  amount: number;
+  amount: number | null;
   date_issued: string;
   breach_type: string;
   breach_categories: string[];
@@ -56,25 +58,41 @@ interface WatchlistEntry {
   unsubscribe_token: string;
 }
 
+function formatAmount(amount: number | null) {
+  return amount === null ? 'Non-monetary action' : `£${amount.toLocaleString('en-GB')}`;
+}
+
+function formatFineLine(fine: Fine) {
+  return `${fine.regulator} · ${fine.breach_type || 'Regulatory breach'} · ${new Date(fine.date_issued).toLocaleDateString('en-GB')}`;
+}
+
 async function main() {
   console.log('Starting alert processing...');
 
   try {
-    // Get fines from the last 24 hours (created recently AND issued recently)
+    // Get actions from the last 24 hours (created recently AND issued recently)
     // This prevents alerts for historical data being backfilled
     const recentFines = await sql`
-      SELECT id, firm_individual, amount, date_issued, breach_type,
-             breach_categories, final_notice_url
-      FROM fca_fines
+      SELECT
+        id,
+        regulator,
+        regulator_full_name,
+        firm_individual,
+        amount_gbp AS amount,
+        date_issued,
+        breach_type,
+        breach_categories,
+        notice_url AS final_notice_url
+      FROM all_regulatory_fines
       WHERE created_at >= NOW() - INTERVAL '24 hours'
         AND date_issued >= NOW() - INTERVAL '90 days'
       ORDER BY date_issued DESC
     ` as Fine[];
 
-    console.log(`Found ${recentFines.length} recent fines`);
+    console.log(`Found ${recentFines.length} recent enforcement actions`);
 
     if (recentFines.length === 0) {
-      console.log('No new fines to process');
+      console.log('No new enforcement actions to process');
       return;
     }
 
@@ -108,10 +126,10 @@ async function processImmediateAlerts(fines: Fine[]) {
 
   for (const subscription of subscriptions) {
     try {
-      // Filter fines matching this subscription's criteria
+      // Filter actions matching this subscription's criteria
       const matchingFines = fines.filter(fine => {
         // Check minimum amount
-        if (subscription.min_amount && fine.amount < subscription.min_amount) {
+        if (subscription.min_amount && (fine.amount === null || fine.amount < subscription.min_amount)) {
           return false;
         }
 
@@ -161,7 +179,7 @@ async function processImmediateAlerts(fines: Fine[]) {
           ${subscription.email},
           'alert',
           ${newFines.map(f => f.id)},
-          ${'RegActions Alert: ' + newFines.length + ' new fines'}
+          ${'RegActions Alert: ' + newFines.length + ' new enforcement actions'}
         )
       `;
 
@@ -172,7 +190,7 @@ async function processImmediateAlerts(fines: Fine[]) {
         WHERE id = ${subscription.id}
       `;
 
-      console.log(`Sent alert to ${subscription.email} for ${newFines.length} fines`);
+      console.log(`Sent alert to ${subscription.email} for ${newFines.length} enforcement actions`);
     } catch (error) {
       console.error(`Failed to process subscription ${subscription.id}:`, error);
     }
@@ -266,10 +284,10 @@ async function sendAlertEmail(subscription: AlertSubscription, fines: Fine[]) {
     <div style="background: #f9fafb; border-radius: 8px; padding: 16px; margin: 12px 0;">
       <div style="font-weight: 600; color: #1f2937;">${fine.firm_individual}</div>
       <div style="color: #0FA77D; font-size: 1.25rem; font-weight: 700; margin: 8px 0;">
-        £${fine.amount.toLocaleString('en-GB')}
+        ${formatAmount(fine.amount)}
       </div>
       <div style="color: #6b7280; font-size: 0.875rem;">
-        ${fine.breach_type || 'Regulatory breach'} · ${new Date(fine.date_issued).toLocaleDateString('en-GB')}
+        ${formatFineLine(fine)}
       </div>
       ${fine.final_notice_url ? `
         <a href="${fine.final_notice_url}" style="display: inline-block; margin-top: 8px; color: #0FA77D; text-decoration: none; font-size: 0.875rem;">
@@ -301,7 +319,7 @@ async function sendAlertEmail(subscription: AlertSubscription, fines: Fine[]) {
     <div class="card">
       <div class="logo">RegActions</div>
       <h1>New RegActions Alert</h1>
-      <p class="subtitle">${fines.length} new fine${fines.length !== 1 ? 's' : ''} matching your criteria</p>
+      <p class="subtitle">${fines.length} new enforcement action${fines.length !== 1 ? 's' : ''} matching your criteria</p>
       ${finesList}
       <a href="${BASE_URL}/dashboard" class="button">View Dashboard</a>
     </div>
@@ -316,10 +334,10 @@ async function sendAlertEmail(subscription: AlertSubscription, fines: Fine[]) {
 
   const textContent = `New RegActions Alert
 
-${fines.length} new fine${fines.length !== 1 ? 's' : ''} matching your criteria:
+${fines.length} new enforcement action${fines.length !== 1 ? 's' : ''} matching your criteria:
 
-${fines.map(fine => `${fine.firm_individual} - £${fine.amount.toLocaleString('en-GB')}
-${fine.breach_type || 'Regulatory breach'} · ${new Date(fine.date_issued).toLocaleDateString('en-GB')}
+${fines.map(fine => `${fine.firm_individual} - ${formatAmount(fine.amount)}
+${formatFineLine(fine)}
 ${fine.final_notice_url || ''}`).join('\n\n')}
 
 View Dashboard: ${BASE_URL}/dashboard
@@ -330,7 +348,7 @@ Unsubscribe: ${unsubscribeUrl}`;
     Source: FROM_EMAIL,
     Destination: { ToAddresses: [subscription.email] },
     Message: {
-      Subject: { Data: `FCA Alert: ${fines.length} new fine${fines.length !== 1 ? 's' : ''} detected`, Charset: 'UTF-8' },
+      Subject: { Data: `RegActions Alert: ${fines.length} new enforcement action${fines.length !== 1 ? 's' : ''}`, Charset: 'UTF-8' },
       Body: {
         Html: { Data: htmlContent, Charset: 'UTF-8' },
         Text: { Data: textContent, Charset: 'UTF-8' },
@@ -345,10 +363,10 @@ async function sendWatchlistEmail(entry: WatchlistEntry, fines: Fine[]) {
   const finesList = fines.map(fine => `
     <div style="background: #fef3c7; border-radius: 8px; padding: 16px; margin: 12px 0; border-left: 4px solid #f59e0b;">
       <div style="color: #0FA77D; font-size: 1.5rem; font-weight: 700; margin-bottom: 8px;">
-        £${fine.amount.toLocaleString('en-GB')}
+        ${formatAmount(fine.amount)}
       </div>
       <div style="color: #6b7280; font-size: 0.875rem;">
-        ${fine.breach_type || 'Regulatory breach'} · ${new Date(fine.date_issued).toLocaleDateString('en-GB')}
+        ${formatFineLine(fine)}
       </div>
       ${fine.final_notice_url ? `
         <a href="${fine.final_notice_url}" style="display: inline-block; margin-top: 8px; color: #0FA77D; text-decoration: none; font-size: 0.875rem;">
@@ -394,16 +412,19 @@ async function sendWatchlistEmail(entry: WatchlistEntry, fines: Fine[]) {
 </html>
   `.trim();
 
-  const totalAmount = fines.reduce((sum, f) => sum + f.amount, 0);
+  const totalAmount = fines.reduce((sum, f) => sum + (f.amount ?? 0), 0);
+  const hasMonetaryAction = fines.some((fine) => fine.amount !== null);
 
   await ses.send(new SendEmailCommand({
     Source: FROM_EMAIL,
     Destination: { ToAddresses: [entry.email] },
     Message: {
-      Subject: { Data: `Watchlist Alert: ${entry.firm_name} fined £${totalAmount.toLocaleString('en-GB')}`, Charset: 'UTF-8' },
+      Subject: { Data: hasMonetaryAction
+        ? `Watchlist Alert: ${entry.firm_name} enforcement action, £${totalAmount.toLocaleString('en-GB')}`
+        : `Watchlist Alert: ${entry.firm_name} enforcement action`, Charset: 'UTF-8' },
       Body: {
         Html: { Data: htmlContent, Charset: 'UTF-8' },
-        Text: { Data: `Watchlist Alert: ${entry.firm_name}\n\nA firm you're watching has received a new tracked enforcement action.\n\nFines:\n${fines.map(f => `£${f.amount.toLocaleString('en-GB')} - ${f.breach_type}`).join('\n')}\n\nView details: ${BASE_URL}/dashboard\n\nStop watching: ${unsubscribeUrl}`, Charset: 'UTF-8' },
+        Text: { Data: `Watchlist Alert: ${entry.firm_name}\n\nA firm you're watching has received a new tracked enforcement action.\n\nActions:\n${fines.map(f => `${formatAmount(f.amount)} - ${f.regulator} - ${f.breach_type}`).join('\n')}\n\nView details: ${BASE_URL}/dashboard\n\nStop watching: ${unsubscribeUrl}`, Charset: 'UTF-8' },
       },
     },
   }));
