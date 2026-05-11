@@ -13,7 +13,6 @@ import "../styles/siteheader.css";
 const NAV_LINKS = [
   { to: "/", label: "Home" },
   { to: "/regulators", label: "Dashboard" },
-  { to: "/uk-enforcement", label: "UK Enforcement" },
   { to: "/roadmap", label: "Roadmap" },
   { to: "/features", label: "Features" },
   { to: "/blog", label: "Insights" },
@@ -191,7 +190,10 @@ export function SiteHeader() {
   useEffect(() => {
     setMobileOpen(false);
     setRegulatorDropdownOpen(false);
-    setMobileRegulatorsOpen(location.pathname.startsWith("/regulators"));
+    setMobileRegulatorsOpen(
+      location.pathname.startsWith("/regulators") ||
+        location.pathname.startsWith("/uk-enforcement"),
+    );
   }, [location.pathname]);
 
   return (
@@ -224,7 +226,12 @@ export function SiteHeader() {
           <div className="site-header__dropdown">
             <button
               type="button"
-              className={`site-header__dropdown-trigger${location.pathname.startsWith("/regulators") ? " site-header__link--active" : ""}`}
+              className={`site-header__dropdown-trigger${
+                location.pathname.startsWith("/regulators") ||
+                location.pathname.startsWith("/uk-enforcement")
+                  ? " site-header__link--active"
+                  : ""
+              }`}
               onClick={() => setRegulatorDropdownOpen(!regulatorDropdownOpen)}
               aria-expanded={regulatorDropdownOpen}
               aria-haspopup="true"
@@ -251,6 +258,17 @@ export function SiteHeader() {
                     onClick={closeRegulatorDropdown}
                   >
                     View all regulators →
+                  </Link>
+                  <Link
+                    to="/uk-enforcement"
+                    className={`site-header__mega-view-all${
+                      location.pathname.startsWith("/uk-enforcement")
+                        ? " site-header__mega-view-all--active"
+                        : ""
+                    }`}
+                    onClick={closeRegulatorDropdown}
+                  >
+                    UK enforcement view →
                   </Link>
                 </div>
                 <div className="site-header__mega-grid">
@@ -376,7 +394,12 @@ export function SiteHeader() {
                 <div className="site-header__mobile-group">
                   <button
                     type="button"
-                    className={`site-header__mobile-accordion-trigger${location.pathname.startsWith("/regulators") ? " site-header__mobile-accordion-trigger--active" : ""}`}
+                    className={`site-header__mobile-accordion-trigger${
+                      location.pathname.startsWith("/regulators") ||
+                      location.pathname.startsWith("/uk-enforcement")
+                        ? " site-header__mobile-accordion-trigger--active"
+                        : ""
+                    }`}
                     onClick={() => setMobileRegulatorsOpen((open) => !open)}
                     aria-expanded={mobileRegulatorsOpen}
                     aria-controls="mobile-regulators-panel"
@@ -399,6 +422,17 @@ export function SiteHeader() {
                         onClick={closeMobile}
                       >
                         View all regulators →
+                      </Link>
+                      <Link
+                        to="/uk-enforcement"
+                        className={`site-header__mobile-regulator-link site-header__mobile-view-all${
+                          location.pathname.startsWith("/uk-enforcement")
+                            ? " site-header__mobile-regulator-link--active"
+                            : ""
+                        }`}
+                        onClick={closeMobile}
+                      >
+                        UK enforcement view →
                       </Link>
                       {PUBLIC_REGULATOR_SHELL_ITEMS.map((regulator) => (
                         <Link

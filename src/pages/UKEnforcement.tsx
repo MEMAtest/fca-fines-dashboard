@@ -1,5 +1,15 @@
 import { useEffect, useMemo, useState } from "react";
-import { ExternalLink, Filter, Search, ShieldCheck } from "lucide-react";
+import {
+  BarChart3,
+  Database,
+  ExternalLink,
+  Filter,
+  Landmark,
+  Scale,
+  Search,
+  ShieldCheck,
+} from "lucide-react";
+import RegulatorMark from "../components/RegulatorMark.js";
 import {
   fetchUKEnforcementSearch,
   fetchUKEnforcementStats,
@@ -8,7 +18,9 @@ import {
 } from "../api.js";
 import {
   UK_ENFORCEMENT_DOMAIN_OPTIONS,
+  UK_ENFORCEMENT_DOMAIN_LABELS,
   UK_ENFORCEMENT_REGULATORS,
+  getUKEnforcementRegulator,
 } from "../data/ukEnforcement.js";
 import { useSEO } from "../hooks/useSEO.js";
 import "../styles/uk-enforcement.css";
@@ -24,6 +36,17 @@ function formatAmount(value: number | null | undefined, currency: string) {
   }).format(value);
 }
 
+function formatMetricAmount(value: number | null | undefined, currency: string) {
+  const amount = Number(value ?? 0);
+  if (!Number.isFinite(amount) || amount <= 0) return "Non-monetary";
+  return new Intl.NumberFormat("en-GB", {
+    style: "currency",
+    currency,
+    notation: "compact",
+    maximumFractionDigits: 1,
+  }).format(amount);
+}
+
 function formatDate(value: string | null | undefined) {
   if (!value) return "Date n/a";
   return new Intl.DateTimeFormat("en-GB", {
@@ -36,6 +59,16 @@ function formatDate(value: string | null | undefined) {
 function toNumber(value: unknown) {
   const parsed = Number(value ?? 0);
   return Number.isFinite(parsed) ? parsed : 0;
+}
+
+function sourceLabel(action: UKEnforcementAction) {
+  const regulator = getUKEnforcementRegulator(action.regulator);
+  if (regulator?.sourceWindowNote) return regulator.sourceWindowNote;
+  return action.notice_url ? "Official regulator notice." : "Official regulator record.";
+}
+
+function domainClass(value: string | null | undefined) {
+  return `uk-enforcement__action--${String(value || "other").replace(/[^a-z0-9]+/gi, "-")}`;
 }
 
 export function UKEnforcement() {
@@ -106,33 +139,56 @@ export function UKEnforcement() {
 
   const regulatorCount = stats?.byRegulator.length ?? 0;
   const resultCount = actions.length;
+  const sourceCodes = UK_ENFORCEMENT_REGULATORS.map((item) => item.code);
 
   return (
     <div className="uk-enforcement">
       <section className="uk-enforcement__header">
-        <div>
+        <div className="uk-enforcement__hero-copy">
           <p className="uk-enforcement__eyebrow">
             <ShieldCheck size={16} aria-hidden="true" />
-            UK Enforcement
+            UK official enforcement view
           </p>
-          <h1>UK Financial And Adjacent Enforcement</h1>
+          <h1>UK Regulatory Actions</h1>
           <p className="uk-enforcement__intro">
-            Search FCA financial-conduct actions with PRA, PSR, OFSI, ICO,
-            CMA, FRC and TPR in a dedicated UK enforcement view.
+            Search financial conduct, prudential, payments, sanctions, data,
+            competition, audit, and pensions enforcement in one dedicated UK
+            workspace.
           </p>
+          <div className="uk-enforcement__source-rail" aria-label="UK enforcement sources">
+            {sourceCodes.map((code) => {
+              const source = getUKEnforcementRegulator(code);
+              return (
+                <span key={code} className="uk-enforcement__source-mark">
+                  <RegulatorMark
+                    regulator={code}
+                    label={source?.fullName}
+                    country="United Kingdom"
+                    size="small"
+                    surface="light"
+                    showCode
+                    decorative={false}
+                  />
+                </span>
+              );
+            })}
+          </div>
         </div>
         <div className="uk-enforcement__summary">
-          <div>
+          <div className="uk-enforcement__metric">
+            <Landmark size={18} aria-hidden="true" />
             <span>Total actions</span>
             <strong>{stats?.summary.count.toLocaleString("en-GB") ?? "0"}</strong>
           </div>
-          <div>
+          <div className="uk-enforcement__metric">
+            <BarChart3 size={18} aria-hidden="true" />
             <span>Total penalties</span>
             <strong>
-              {formatAmount(stats?.summary.total ?? 0, stats?.summary.currency ?? currency)}
+              {formatMetricAmount(stats?.summary.total ?? 0, stats?.summary.currency ?? currency)}
             </strong>
           </div>
-          <div>
+          <div className="uk-enforcement__metric">
+            <Database size={18} aria-hidden="true" />
             <span>Sources</span>
             <strong>{regulatorCount || UK_ENFORCEMENT_REGULATORS.length}</strong>
           </div>
@@ -210,11 +266,19 @@ export function UKEnforcement() {
 
       <section className="uk-enforcement__domains" aria-label="Domain summary">
         {(stats?.byDomain ?? []).map((item) => (
-          <div key={item.domain} className="uk-enforcement__domain">
+          <button
+            key={item.domain}
+            type="button"
+            className={`uk-enforcement__domain ${
+              domain === item.domain ? "is-active" : ""
+            }`}
+            onClick={() => setDomain(domain === item.domain ? "all" : item.domain)}
+          >
+            <Scale size={16} aria-hidden="true" />
             <span>{item.label}</span>
             <strong>{item.count.toLocaleString("en-GB")}</strong>
-            <small>{formatAmount(toNumber(item.total), stats?.summary.currency ?? currency)}</small>
-          </div>
+            <small>{formatMetricAmount(toNumber(item.total), stats?.summary.currency ?? currency)}</small>
+          </button>
         ))}
       </section>
 
@@ -235,21 +299,32 @@ export function UKEnforcement() {
 
         <div className="uk-enforcement__list">
           {actions.map((action) => (
-            <article key={action.id} className="uk-enforcement__action">
+            <article
+              key={action.id}
+              className={`uk-enforcement__action ${domainClass(action.source_domain)}`}
+            >
               <div className="uk-enforcement__action-main">
+                <div className="uk-enforcement__action-logo">
+                  <RegulatorMark
+                    regulator={action.regulator}
+                    label={action.regulator_full_name}
+                    country="United Kingdom"
+                    size="medium"
+                    surface="light"
+                    showCode
+                    decorative={false}
+                  />
+                </div>
                 <div className="uk-enforcement__badges">
-                  <span>{action.regulator}</span>
-                  <span>{action.source_domain.replace(/_/g, " ")}</span>
+                  <span>{UK_ENFORCEMENT_DOMAIN_LABELS[action.source_domain as keyof typeof UK_ENFORCEMENT_DOMAIN_LABELS] ?? action.source_domain.replace(/_/g, " ")}</span>
                   <span>{formatDate(action.date_issued)}</span>
                 </div>
                 <h3>{action.firm_individual}</h3>
                 <p>{action.summary || action.breach_type}</p>
-                {action.source_window_note ? (
-                  <small>{action.source_window_note}</small>
-                ) : null}
+                <small>{sourceLabel(action)}</small>
               </div>
               <div className="uk-enforcement__action-side">
-                <strong>
+                <strong className={toNumber(action.display_amount) > 0 ? "" : "is-muted"}>
                   {formatAmount(
                     toNumber(action.display_amount),
                     currency,

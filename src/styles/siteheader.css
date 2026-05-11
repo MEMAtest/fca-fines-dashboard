@@ -429,6 +429,10 @@
 
 /* View all regulators link at top of mega menu */
 .site-header__mega-top {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.35rem;
   padding: 0 0.5rem 0.65rem;
   border-bottom: 1px solid #e5e7eb;
   margin-bottom: 0.75rem;
@@ -449,6 +453,11 @@
 
 .site-header__mega-view-all:hover {
   background: rgba(15, 167, 125, 0.08);
+}
+
+.site-header__mega-view-all--active {
+  background: #F2FBF9;
+  color: #0B8463;
 }
 
 /* Mobile "View all" link */

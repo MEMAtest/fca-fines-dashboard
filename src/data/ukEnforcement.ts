@@ -44,7 +44,7 @@ export const UK_ENFORCEMENT_REGULATORS: UKEnforcementRegulator[] = [
     domain: "financial_conduct",
     stage: "live",
     sourceWindowNote:
-      "FCA fines remain in the dedicated fines table; broader final notices, censures, prohibitions, and restrictions are ingested through the UK enforcement feed.",
+      "Official FCA fines, final notices, public censures, prohibitions, and restrictions.",
     officialSources: [
       {
         label: "FCA final notices and enforcement press releases",
@@ -60,7 +60,7 @@ export const UK_ENFORCEMENT_REGULATORS: UKEnforcementRegulator[] = [
     domain: "prudential",
     stage: "live",
     sourceWindowNote:
-      "Scraped from the official Bank of England enforcement actions table and linked notices.",
+      "Official Bank of England PRA enforcement actions and linked notices.",
     officialSources: [
       {
         label: "Bank of England enforcement actions",
@@ -76,7 +76,7 @@ export const UK_ENFORCEMENT_REGULATORS: UKEnforcementRegulator[] = [
     domain: "payments",
     stage: "live",
     sourceWindowNote:
-      "Scraped from the official PSR enforcement cases page.",
+      "Official PSR enforcement cases and decision notices.",
     officialSources: [
       {
         label: "PSR enforcement cases",
@@ -92,7 +92,7 @@ export const UK_ENFORCEMENT_REGULATORS: UKEnforcementRegulator[] = [
     domain: "sanctions",
     stage: "live",
     sourceWindowNote:
-      "Scraped from the official GOV.UK OFSI enforcement collection.",
+      "Official GOV.UK OFSI financial sanctions enforcement notices.",
     officialSources: [
       {
         label: "OFSI enforcement decisions",
@@ -108,7 +108,7 @@ export const UK_ENFORCEMENT_REGULATORS: UKEnforcementRegulator[] = [
     domain: "data_protection",
     stage: "live",
     sourceWindowNote:
-      "Scraped from the official ICO enforcement search API for monetary penalties.",
+      "Official ICO monetary penalties, enforcement notices, and reprimands.",
     officialSources: [
       {
         label: "ICO enforcement action",
@@ -124,7 +124,7 @@ export const UK_ENFORCEMENT_REGULATORS: UKEnforcementRegulator[] = [
     domain: "competition_consumer",
     stage: "live",
     sourceWindowNote:
-      "Scraped from the official GOV.UK search API for CMA fine and penalty publications; older GOV.UK headlines can use case labels rather than exact respondent names.",
+      "Official CMA cases, decisions, penalties, and enforcement announcements.",
     officialSources: [
       {
         label: "CMA cases and decisions",
@@ -140,7 +140,7 @@ export const UK_ENFORCEMENT_REGULATORS: UKEnforcementRegulator[] = [
     domain: "audit_reporting",
     stage: "live",
     sourceWindowNote:
-      "Scraped from the official FRC enforcement cases table and linked sanctions/outcome pages.",
+      "Official FRC enforcement cases, sanctions, and outcome notices.",
     officialSources: [
       {
         label: "FRC enforcement cases",
@@ -156,7 +156,7 @@ export const UK_ENFORCEMENT_REGULATORS: UKEnforcementRegulator[] = [
     domain: "pensions",
     stage: "live",
     sourceWindowNote:
-      "Scraped from the official TPR penalty notice tables; broader intervention and determination reports stay excluded until fine-only amount classification is reliable.",
+      "Official TPR penalty notices and enforcement publications.",
     officialSources: [
       {
         label: "TPR enforcement activity",
