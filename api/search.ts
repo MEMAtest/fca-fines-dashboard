@@ -144,6 +144,12 @@ function toFiniteNumber(value: string | number | null | undefined) {
   return Number.isFinite(parsed) ? parsed : 0;
 }
 
+function toNullableFiniteNumber(value: string | number | null | undefined) {
+  if (value === null || value === undefined || value === '') return null;
+  const parsed = Number(value);
+  return Number.isFinite(parsed) ? parsed : null;
+}
+
 async function queryRows<T>(
   query: string,
   params: unknown[] = [],
@@ -1376,10 +1382,10 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         countryName: row.country_name,
         firm: row.firm_individual,
         firmCategory: row.firm_category,
-        amountOriginal: toFiniteNumber(row.amount_original),
+        amountOriginal: toNullableFiniteNumber(row.amount_original),
         currency: row.currency,
-        amountGbp: toFiniteNumber(row.amount_gbp),
-        amountEur: toFiniteNumber(row.amount_eur),
+        amountGbp: toNullableFiniteNumber(row.amount_gbp),
+        amountEur: toNullableFiniteNumber(row.amount_eur),
         dateIssued: row.date_issued,
         year: row.year_issued,
         month: row.month_issued,

@@ -20,10 +20,10 @@ interface SearchResult {
   countryName: string;
   firm: string;
   firmCategory: string;
-  amountOriginal: number;
+  amountOriginal: number | null;
   currency: string;
-  amountGbp: number;
-  amountEur: number;
+  amountGbp: number | null;
+  amountEur: number | null;
   dateIssued: string;
   year: number;
   month: number;
@@ -706,7 +706,11 @@ export function EnforcementSearch() {
           <div
             style={{ display: "flex", flexDirection: "column", gap: "1.5rem" }}
           >
-            {results.map((result) => (
+            {results.map((result) => {
+              const displayAmount =
+                currency === "EUR" ? result.amountEur : result.amountGbp;
+
+              return (
               <div
                 key={result.id}
                 style={{
@@ -806,8 +810,7 @@ export function EnforcementSearch() {
                       {result.breachType}
                     </span>
                   )}
-                  {(currency === "EUR" ? result.amountEur : result.amountGbp) >
-                    0 && (
+                  {displayAmount !== null && displayAmount > 0 && (
                     <span
                       style={{
                         fontSize: "1.25rem",
@@ -815,12 +818,7 @@ export function EnforcementSearch() {
                         color: "#111827",
                       }}
                     >
-                      {formatAmount(
-                        currency === "EUR"
-                          ? result.amountEur
-                          : result.amountGbp,
-                        currency,
-                      )}
+                      {formatAmount(displayAmount, currency)}
                     </span>
                   )}
                 </div>
@@ -898,7 +896,8 @@ export function EnforcementSearch() {
                     )}
                 </div>
               </div>
-            ))}
+              );
+            })}
           </div>
         )}
 
