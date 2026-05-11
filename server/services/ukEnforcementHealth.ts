@@ -60,8 +60,8 @@ const UK_HEALTH_CONTRACTS: Record<
   }
 > = {
   FCA: {
-    sourceLayer: "all_regulatory_fines",
-    minimumHealthyRecords: 250,
+    sourceLayer: "uk_enforcement_actions",
+    minimumHealthyRecords: 20,
     freshnessWindowDays: 120,
     requireRunRecency: false,
   },
