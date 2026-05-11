@@ -1,6 +1,10 @@
 import type { VercelRequest, VercelResponse } from "@vercel/node";
 import { listUKEnforcementActions } from "../../server/services/ukEnforcement.js";
 
+export const config = {
+  maxDuration: 30,
+};
+
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   res.setHeader("Access-Control-Allow-Origin", "*");
   res.setHeader("Access-Control-Allow-Methods", "GET, OPTIONS");
@@ -27,4 +31,3 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     });
   }
 }
-

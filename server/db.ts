@@ -47,15 +47,37 @@ export interface SqlClient {
 function createSqlClient(connectionString: string): SqlClient {
   const pool = new pg.Pool(buildPgPoolConfig(connectionString));
 
+  function isRetryableConnectionError(error: unknown) {
+    const code = (error as { code?: string })?.code;
+    return code === 'ETIMEDOUT' || code === 'ECONNRESET' || code === 'ECONNREFUSED';
+  }
+
+  function wait(ms: number) {
+    return new Promise((resolve) => setTimeout(resolve, ms));
+  }
+
   async function runQuery(query: string, params: unknown[] = []) {
-    const client = await pool.connect();
-    try {
-      await client.query('SET search_path TO public');
-      const result = await client.query(query, params as unknown[]);
-      return result.rows;
-    } finally {
-      client.release();
+    let lastError: unknown;
+
+    for (let attempt = 1; attempt <= 3; attempt += 1) {
+      let client: pg.PoolClient | null = null;
+      try {
+        client = await pool.connect();
+        await client.query('SET search_path TO public');
+        const result = await client.query(query, params as unknown[]);
+        return result.rows;
+      } catch (error) {
+        lastError = error;
+        if (!isRetryableConnectionError(error) || attempt === 3) {
+          throw error;
+        }
+        await wait(attempt * 500);
+      } finally {
+        client?.release();
+      }
     }
+
+    throw lastError;
   }
 
   const handler = function (stringsOrQuery: TemplateStringsArray | string, ...values: unknown[]) {
