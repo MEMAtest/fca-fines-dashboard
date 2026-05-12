@@ -231,8 +231,9 @@ export function EnforcementSearch() {
     maxAmount,
   );
 
-  // Get years (2010-2026)
-  const years = Array.from({ length: 17 }, (_, i) => 2026 - i);
+  // Get years (2010-current)
+  const currentYear = new Date().getFullYear();
+  const years = Array.from({ length: currentYear - 2009 }, (_, i) => currentYear - i);
 
   const activeSearchState = parseSearchParams(searchParams);
   const activeQuery = activeSearchState.query;
@@ -1088,7 +1089,7 @@ export function EnforcementSearch() {
             <button
               onClick={() => commitSearch({ page: currentPage - 1 })}
               disabled={currentPage === 1 || loading}
-              aria-label={`Go to page ${currentPage - 1}`}
+              aria-label={currentPage > 1 ? `Go to page ${currentPage - 1}` : "Previous page"}
               style={{
                 padding: "0.75rem 1.5rem",
                 border: "1px solid #d1d5db",

@@ -567,10 +567,23 @@ function buildEmptySearchResponse({
 // ── Rate limiting (in-memory sliding window, per Vercel instance) ────────────
 const RATE_LIMIT_WINDOW_MS = 60_000;
 const RATE_LIMIT_MAX = 30;
+const RATE_LIMIT_PRUNE_INTERVAL_MS = 5 * 60_000;
 const rateLimitMap = new Map<string, number[]>();
+let lastPrunedAt = Date.now();
 
 function isRateLimited(ip: string): boolean {
   const now = Date.now();
+
+  // Lazy prune: sweep all IPs every 5 minutes, only when a request arrives
+  if (now - lastPrunedAt > RATE_LIMIT_PRUNE_INTERVAL_MS) {
+    lastPrunedAt = now;
+    for (const [key, timestamps] of rateLimitMap) {
+      const recent = timestamps.filter((t) => now - t < RATE_LIMIT_WINDOW_MS);
+      if (recent.length === 0) rateLimitMap.delete(key);
+      else rateLimitMap.set(key, recent);
+    }
+  }
+
   const timestamps = rateLimitMap.get(ip) ?? [];
   const recent = timestamps.filter((t) => now - t < RATE_LIMIT_WINDOW_MS);
   if (recent.length >= RATE_LIMIT_MAX) {
@@ -582,15 +595,10 @@ function isRateLimited(ip: string): boolean {
   return false;
 }
 
-// Periodically prune stale IPs to prevent memory growth
-setInterval(() => {
-  const now = Date.now();
-  for (const [ip, timestamps] of rateLimitMap) {
-    const recent = timestamps.filter((t) => now - t < RATE_LIMIT_WINDOW_MS);
-    if (recent.length === 0) rateLimitMap.delete(ip);
-    else rateLimitMap.set(ip, recent);
-  }
-}, 5 * 60_000);
+function resolveFirstString(value: string | string[] | undefined): string | undefined {
+  if (Array.isArray(value)) return value[0];
+  return value;
+}
 
 const MAX_QUERY_LENGTH = 500;
 
@@ -608,8 +616,11 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     return res.status(405).json({ error: 'Method not allowed' });
   }
 
-  // Rate limiting
+  // Rate limiting — prefer x-real-ip (set by Vercel edge, not spoofable by client)
   const clientIp =
+    (typeof req.headers['x-real-ip'] === 'string'
+      ? req.headers['x-real-ip']
+      : undefined) ??
     (Array.isArray(req.headers['x-forwarded-for'])
       ? req.headers['x-forwarded-for'][0]
       : req.headers['x-forwarded-for']?.split(',')[0]?.trim()) ??
@@ -623,17 +634,16 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   }
 
   try {
-    const {
-      q,
-      regulator,
-      country,
-      year,
-      minAmount,
-      maxAmount,
-      currency = 'GBP',
-      limit = '20',
-      offset = '0',
-    } = req.query as Record<string, string>;
+    // Safely extract query params — req.query values may be string | string[]
+    const q = resolveFirstString(req.query.q) ?? '';
+    const regulator = resolveFirstString(req.query.regulator);
+    const country = resolveFirstString(req.query.country);
+    const year = resolveFirstString(req.query.year);
+    const minAmount = resolveFirstString(req.query.minAmount);
+    const maxAmount = resolveFirstString(req.query.maxAmount);
+    const currency = resolveFirstString(req.query.currency) ?? 'GBP';
+    const limit = resolveFirstString(req.query.limit) ?? '20';
+    const offset = resolveFirstString(req.query.offset) ?? '0';
 
     if (!q || q.trim().length === 0) {
       return res.status(400).json({
@@ -1347,7 +1357,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     console.error('Enforcement search error:', error);
     return res.status(500).json({
       error: 'Search failed',
-      message: error instanceof Error ? error.message : 'Unknown error',
+      message: 'An internal error occurred while processing your search.',
       hint: 'Try broadening the search terms or removing filters.',
     });
   }
