@@ -74,6 +74,7 @@ interface SearchRow {
   created_at: string;
   relevance_score: string | number;
   snippet: string | null;
+  total_count: number;
 }
 
 type SearchQueryMode = 'firm_lookup' | 'mixed' | 'theme';
@@ -645,28 +646,53 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       return res.status(200).json(payload);
     }
 
-    const firmCandidateSignal = await fetchStrongFirmCandidateSignal({
+    const hasFuzzyEligibleTerms = prepared.meaningfulTerms.some((term) => term.length >= 4);
+    const fuzzyFetchArgs = {
       regulator,
       countryCode: normalizedCountryCode,
       year,
-      prepared,
-    });
-    const queryMode = determineSearchQueryMode(prepared, firmCandidateSignal);
-    const fuzzySuppressedByFirmCandidate =
-      prepared.isShortFirmLikeQuery &&
-      firmCandidateSignal.strong &&
-      prepared.meaningfulTerms.some((term) => term.length >= 4);
-    const shouldAttemptFuzzyCorrection =
-      !fuzzySuppressedByFirmCandidate &&
-      prepared.meaningfulTerms.some((term) => term.length >= 4);
-    const fuzzyCandidatePhrases = shouldAttemptFuzzyCorrection
-      ? await fetchFuzzyCandidatePhrases({
+      meaningfulTerms: prepared.meaningfulTerms,
+    };
+
+    // When the query is NOT a short firm-like query, the firm signal can never
+    // suppress fuzzy correction, so we can run both DB queries in parallel.
+    let firmCandidateSignal: FirmCandidateSignal;
+    let fuzzyCandidatePhrases: string[];
+    let fuzzySuppressedByFirmCandidate: boolean;
+
+    if (!prepared.isShortFirmLikeQuery && hasFuzzyEligibleTerms) {
+      const [firmSignal, fuzzyPhrases] = await Promise.all([
+        fetchStrongFirmCandidateSignal({
           regulator,
           countryCode: normalizedCountryCode,
           year,
-          meaningfulTerms: prepared.meaningfulTerms,
-        })
-      : [];
+          prepared,
+        }),
+        fetchFuzzyCandidatePhrases(fuzzyFetchArgs),
+      ]);
+      firmCandidateSignal = firmSignal;
+      fuzzyCandidatePhrases = fuzzyPhrases;
+      fuzzySuppressedByFirmCandidate = false;
+    } else {
+      firmCandidateSignal = await fetchStrongFirmCandidateSignal({
+        regulator,
+        countryCode: normalizedCountryCode,
+        year,
+        prepared,
+      });
+      fuzzySuppressedByFirmCandidate =
+        prepared.isShortFirmLikeQuery &&
+        firmCandidateSignal.strong &&
+        hasFuzzyEligibleTerms;
+      fuzzyCandidatePhrases =
+        !fuzzySuppressedByFirmCandidate && hasFuzzyEligibleTerms
+          ? await fetchFuzzyCandidatePhrases(fuzzyFetchArgs)
+          : [];
+    }
+
+    const queryMode = determineSearchQueryMode(prepared, firmCandidateSignal);
+    const shouldAttemptFuzzyCorrection =
+      !fuzzySuppressedByFirmCandidate && hasFuzzyEligibleTerms;
     const fuzzyResolution = shouldAttemptFuzzyCorrection
       ? resolveFuzzySearchTerms(prepared.meaningfulTerms, fuzzyCandidatePhrases)
       : {
@@ -1100,7 +1126,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         source_url,
         created_at,
         combined_score AS relevance_score,
-        highlighted_snippet AS snippet
+        highlighted_snippet AS snippet,
+        COUNT(*) OVER() AS total_count
       FROM scored_results
       ORDER BY
         regulator_hint_score DESC,
@@ -1131,246 +1158,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       offsetNum,
     ]);
 
-    const countQuery = `
-      WITH ${SEARCHABLE_ENFORCEMENT_CTE},
-      filtered_results AS (
-        SELECT
-          CASE
-            WHEN $16 <> '' AND firm_norm.normalized_name = $16 THEN 430
-            WHEN $17 <> '' AND firm_legal.legal_stripped_name = $17 THEN 410
-            WHEN $17 <> '' AND firm_norm.normalized_name = $17 THEN 390
-            WHEN $2 <> '' AND COALESCE(search_aliases, '') ILIKE $2 THEN 320
-            WHEN $17 <> '' AND firm_norm.normalized_name LIKE $17 || ' %' THEN 300
-            WHEN EXISTS (
-              SELECT 1
-              FROM unnest($3::text[]) AS pattern
-              WHERE COALESCE(search_aliases, '') ILIKE pattern
-            ) THEN 260
-            WHEN ${firmBoundaryCondition('firm_norm.normalized_name', '$17')} THEN 250
-            WHEN LOWER(COALESCE(firm_individual, '')) = LOWER($1) THEN 230
-            WHEN ($18 = FALSE) AND COALESCE(firm_individual, '') ILIKE $2 THEN 180
-            ELSE 0
-          END AS firm_match_score,
-          ${firmTokenBoundaryCondition('firm_norm.normalized_name', '$12')} AS firm_token_match_score,
-          CASE
-            WHEN $8 <> '' AND firm_norm.normalized_name = $8 THEN 180
-            WHEN $8 <> '' AND firm_legal.legal_stripped_name = $8 THEN 170
-            WHEN $9 <> '' AND ($18 = FALSE) AND COALESCE(firm_individual, '') ILIKE $9 THEN 120
-            ELSE 0
-          END AS fuzzy_firm_match_score,
-          ${firmTokenBoundaryCondition('firm_norm.normalized_name', '$13')} AS fuzzy_firm_token_match_score,
-          CASE
-            WHEN COALESCE(array_length($5::text[], 1), 0) > 0
-              AND regulator = ANY($5::text[])
-              THEN 35
-            ELSE 0
-          END AS regulator_hint_score,
-          CASE
-            WHEN COALESCE(array_length($6::text[], 1), 0) > 0
-              AND country_code = ANY($6::text[])
-              THEN 55
-            ELSE 0
-          END AS country_hint_score,
-          CASE
-            WHEN COALESCE(array_length($7::text[], 1), 0) > 0
-              AND EXISTS (
-                SELECT 1
-                FROM unnest($7::text[]) AS category
-                WHERE COALESCE(
-                  CASE WHEN jsonb_typeof(breach_categories) = 'string'
-                    THEN (breach_categories #>> '{}')
-                    ELSE breach_categories::text
-                  END,
-                  ''
-                ) ILIKE '%' || category || '%'
-              )
-              THEN 30
-            ELSE 0
-          END AS category_match_score,
-          CASE
-            WHEN $1 <> ''
-              AND search_vector @@ websearch_to_tsquery('english', $1)
-              THEN ts_rank_cd(search_vector, websearch_to_tsquery('english', $1))
-            ELSE 0
-          END AS full_text_rank,
-          CASE
-            WHEN $8 <> ''
-              AND search_vector @@ websearch_to_tsquery('english', $8)
-              THEN ts_rank_cd(search_vector, websearch_to_tsquery('english', $8))
-            ELSE 0
-          END AS fuzzy_full_text_rank,
-          CASE
-            WHEN $2 <> ''
-              AND (
-                COALESCE(summary, '') ILIKE $2
-                OR COALESCE(breach_type, '') ILIKE $2
-                OR COALESCE(
-                  CASE WHEN jsonb_typeof(breach_categories) = 'string'
-                    THEN (breach_categories #>> '{}')
-                    ELSE breach_categories::text
-                  END,
-                  ''
-                ) ILIKE $2
-                OR COALESCE(firm_individual, '') ILIKE $2
-                OR COALESCE(country_name, '') ILIKE $2
-                OR COALESCE(regulator, '') ILIKE $2
-                OR COALESCE(regulator_full_name, '') ILIKE $2
-                OR COALESCE(search_aliases, '') ILIKE $2
-              )
-              THEN 50
-            ELSE 0
-          END AS phrase_match_score,
-          CASE
-            WHEN $9 <> ''
-              AND (
-                COALESCE(summary, '') ILIKE $9
-                OR COALESCE(breach_type, '') ILIKE $9
-                OR COALESCE(
-                  CASE WHEN jsonb_typeof(breach_categories) = 'string'
-                    THEN (breach_categories #>> '{}')
-                    ELSE breach_categories::text
-                  END,
-                  ''
-                ) ILIKE $9
-                OR COALESCE(firm_individual, '') ILIKE $9
-                OR COALESCE(country_name, '') ILIKE $9
-                OR COALESCE(regulator, '') ILIKE $9
-                OR COALESCE(regulator_full_name, '') ILIKE $9
-                OR COALESCE(search_aliases, '') ILIKE $9
-              )
-              THEN 25
-            ELSE 0
-          END AS fuzzy_phrase_match_score,
-          (
-            SELECT COUNT(*)::int
-            FROM unnest($14::text[]) AS token
-            WHERE token <> ''
-              AND (
-                COALESCE(firm_individual, '') ILIKE '%' || token || '%'
-                OR COALESCE(breach_type, '') ILIKE '%' || token || '%'
-                OR COALESCE(
-                  CASE WHEN jsonb_typeof(breach_categories) = 'string'
-                    THEN (breach_categories #>> '{}')
-                    ELSE breach_categories::text
-                  END,
-                  ''
-                ) ILIKE '%' || token || '%'
-                OR COALESCE(summary, '') ILIKE '%' || token || '%'
-                OR COALESCE(country_name, '') ILIKE '%' || token || '%'
-                OR COALESCE(regulator, '') ILIKE '%' || token || '%'
-                OR COALESCE(regulator_full_name, '') ILIKE '%' || token || '%'
-                OR COALESCE(search_aliases, '') ILIKE '%' || token || '%'
-              )
-          ) AS raw_token_match_score,
-          (
-            SELECT COUNT(*)::int
-            FROM unnest($3::text[]) AS pattern
-            WHERE COALESCE(firm_individual, '') ILIKE pattern
-              OR COALESCE(breach_type, '') ILIKE pattern
-              OR COALESCE(
-                CASE WHEN jsonb_typeof(breach_categories) = 'string'
-                  THEN (breach_categories #>> '{}')
-                  ELSE breach_categories::text
-                END,
-                ''
-              ) ILIKE pattern
-              OR COALESCE(summary, '') ILIKE pattern
-              OR COALESCE(country_name, '') ILIKE pattern
-              OR COALESCE(regulator, '') ILIKE pattern
-              OR COALESCE(regulator_full_name, '') ILIKE pattern
-              OR COALESCE(search_aliases, '') ILIKE pattern
-          ) AS token_match_score,
-          (
-            SELECT COUNT(*)::int
-            FROM unnest($15::text[]) AS token
-            WHERE token <> ''
-              AND (
-                COALESCE(firm_individual, '') ILIKE '%' || token || '%'
-                OR COALESCE(breach_type, '') ILIKE '%' || token || '%'
-                OR COALESCE(
-                  CASE WHEN jsonb_typeof(breach_categories) = 'string'
-                    THEN (breach_categories #>> '{}')
-                    ELSE breach_categories::text
-                  END,
-                  ''
-                ) ILIKE '%' || token || '%'
-                OR COALESCE(summary, '') ILIKE '%' || token || '%'
-                OR COALESCE(country_name, '') ILIKE '%' || token || '%'
-                OR COALESCE(regulator, '') ILIKE '%' || token || '%'
-                OR COALESCE(regulator_full_name, '') ILIKE '%' || token || '%'
-                OR COALESCE(search_aliases, '') ILIKE '%' || token || '%'
-              )
-          ) AS fuzzy_raw_token_match_score,
-          (
-            SELECT COUNT(*)::int
-            FROM unnest($10::text[]) AS pattern
-            WHERE COALESCE(firm_individual, '') ILIKE pattern
-              OR COALESCE(breach_type, '') ILIKE pattern
-              OR COALESCE(
-                CASE WHEN jsonb_typeof(breach_categories) = 'string'
-                  THEN (breach_categories #>> '{}')
-                  ELSE breach_categories::text
-                END,
-                ''
-              ) ILIKE pattern
-              OR COALESCE(summary, '') ILIKE pattern
-              OR COALESCE(country_name, '') ILIKE pattern
-              OR COALESCE(regulator, '') ILIKE pattern
-              OR COALESCE(regulator_full_name, '') ILIKE pattern
-              OR COALESCE(search_aliases, '') ILIKE pattern
-          ) AS fuzzy_token_match_score
-        FROM searchable_enforcement
-        ${FIRM_NORMALIZATION_JOIN}
-        ${filterWhereClause}
-      )
-      SELECT COUNT(*)::int AS count
-      FROM filtered_results
-      WHERE
-        firm_match_score > 0
-        OR firm_token_match_score > 0
-        OR fuzzy_firm_match_score > 0
-        OR fuzzy_firm_token_match_score > 0
-        OR raw_token_match_score >= GREATEST($4, 1)
-        OR ($8 <> '' AND fuzzy_raw_token_match_score >= GREATEST($11, 1))
-        OR (
-          regulator_hint_score > 0
-          AND (
-            raw_token_match_score >= GREATEST($4 - 1, 1)
-            OR token_match_score >= GREATEST($4, 1)
-            OR category_match_score > 0
-            OR full_text_rank > 0
-            OR ($8 <> '' AND fuzzy_raw_token_match_score >= GREATEST($11 - 1, 1))
-            OR ($8 <> '' AND fuzzy_token_match_score >= GREATEST($11, 1))
-            OR fuzzy_full_text_rank > 0
-          )
-        )
-        OR (
-          country_hint_score > 0
-          AND (
-            raw_token_match_score >= GREATEST($4 - 1, 1)
-            OR token_match_score >= GREATEST($4, 1)
-            OR category_match_score > 0
-            OR full_text_rank > 0
-            OR ($8 <> '' AND fuzzy_raw_token_match_score >= GREATEST($11 - 1, 1))
-            OR ($8 <> '' AND fuzzy_token_match_score >= GREATEST($11, 1))
-            OR fuzzy_full_text_rank > 0
-          )
-        )
-        OR (
-          category_match_score > 0
-          AND (
-            raw_token_match_score >= GREATEST($4, 1)
-            OR token_match_score >= GREATEST($4, 1)
-            OR full_text_rank > 0
-            OR ($8 <> '' AND fuzzy_raw_token_match_score >= GREATEST($11 - 1, 1))
-            OR ($8 <> '' AND fuzzy_token_match_score >= GREATEST($11, 1))
-            OR fuzzy_full_text_rank > 0
-          )
-        )
-    `;
-
-    const countResult = await queryRows<{ count: number }>(countQuery, params);
-    const totalCount = countResult[0]?.count ?? 0;
+    const totalCount = results.length > 0 ? Number(results[0].total_count) || 0 : 0;
 
     const payload = {
       query: q,

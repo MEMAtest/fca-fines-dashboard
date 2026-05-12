@@ -7,10 +7,52 @@
  * - fallback snippets when highlights are unavailable
  */
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Search, Filter, X, Calendar, DollarSign, Globe } from "lucide-react";
 import { useSearchParams } from "react-router-dom";
 import { PUBLIC_REGULATOR_SHELL_ITEMS } from "../data/regulatorShellNav.js";
+
+const SEARCH_CACHE_MAX = 20;
+
+function SkeletonCard() {
+  return (
+    <div
+      style={{
+        background: "white",
+        border: "1px solid #e5e7eb",
+        borderRadius: "12px",
+        padding: "1.75rem",
+        boxShadow: "0 1px 3px rgba(0,0,0,0.1)",
+      }}
+    >
+      {/* Title bar */}
+      <div style={{ marginBottom: "1rem" }}>
+        <div className="skeleton-shimmer" style={{ height: "1.25rem", width: "55%", borderRadius: "6px", marginBottom: "0.5rem" }} />
+        <div style={{ display: "flex", gap: "0.75rem", alignItems: "center" }}>
+          <div className="skeleton-shimmer" style={{ height: "1.5rem", width: "3.5rem", borderRadius: "6px" }} />
+          <div className="skeleton-shimmer" style={{ height: "0.875rem", width: "5rem", borderRadius: "4px" }} />
+          <div className="skeleton-shimmer" style={{ height: "0.875rem", width: "5.5rem", borderRadius: "4px" }} />
+        </div>
+      </div>
+      {/* Breach badge + amount */}
+      <div style={{ display: "flex", gap: "1rem", marginBottom: "1rem" }}>
+        <div className="skeleton-shimmer" style={{ height: "1.75rem", width: "7rem", borderRadius: "6px" }} />
+        <div className="skeleton-shimmer" style={{ height: "1.75rem", width: "4.5rem", borderRadius: "6px" }} />
+      </div>
+      {/* Snippet lines */}
+      <div style={{ padding: "1rem", background: "#f9fafb", borderLeft: "3px solid #e5e7eb", borderRadius: "6px", marginBottom: "1.25rem" }}>
+        <div className="skeleton-shimmer" style={{ height: "0.875rem", width: "100%", borderRadius: "4px", marginBottom: "0.5rem" }} />
+        <div className="skeleton-shimmer" style={{ height: "0.875rem", width: "92%", borderRadius: "4px", marginBottom: "0.5rem" }} />
+        <div className="skeleton-shimmer" style={{ height: "0.875rem", width: "60%", borderRadius: "4px" }} />
+      </div>
+      {/* Action links */}
+      <div style={{ display: "flex", gap: "1rem", paddingTop: "0.75rem", borderTop: "1px solid #f3f4f6" }}>
+        <div className="skeleton-shimmer" style={{ height: "0.875rem", width: "5.5rem", borderRadius: "4px" }} />
+        <div className="skeleton-shimmer" style={{ height: "0.875rem", width: "3.5rem", borderRadius: "4px" }} />
+      </div>
+    </div>
+  );
+}
 
 interface SearchResult {
   id: string;
@@ -120,6 +162,7 @@ export function EnforcementSearch() {
   const [pagination, setPagination] = useState<
     SearchResponse["pagination"] | null
   >(null);
+  const searchCacheRef = useRef<Map<string, SearchResponse>>(new Map());
 
   // Filter states
   const [showFilters, setShowFilters] = useState(
@@ -231,23 +274,37 @@ export function EnforcementSearch() {
     }
 
     const trimmedQuery = state.query.trim();
+    const params = new URLSearchParams({
+      q: trimmedQuery,
+      currency: state.currency,
+      limit: "20",
+      offset: String((state.page - 1) * 20),
+    });
+
+    if (state.regulator) params.append("regulator", state.regulator);
+    if (state.country) params.append("country", state.country);
+    if (state.year) params.append("year", state.year);
+    if (state.minAmount) params.append("minAmount", state.minAmount);
+    if (state.maxAmount) params.append("maxAmount", state.maxAmount);
+
+    const cacheKey = params.toString();
+    const cache = searchCacheRef.current;
+    const cached = cache.get(cacheKey);
+    if (cached) {
+      // Move to end for LRU freshness
+      cache.delete(cacheKey);
+      cache.set(cacheKey, cached);
+      setResults(cached.results);
+      setPagination(cached.pagination);
+      setCurrentPage(cached.pagination.currentPage);
+      setError(null);
+      return;
+    }
+
     setLoading(true);
     setError(null);
 
     try {
-      const params = new URLSearchParams({
-        q: trimmedQuery,
-        currency: state.currency,
-        limit: "20",
-        offset: String((state.page - 1) * 20),
-      });
-
-      if (state.regulator) params.append("regulator", state.regulator);
-      if (state.country) params.append("country", state.country);
-      if (state.year) params.append("year", state.year);
-      if (state.minAmount) params.append("minAmount", state.minAmount);
-      if (state.maxAmount) params.append("maxAmount", state.maxAmount);
-
       const response = await fetch(`/api/search?${params.toString()}`);
 
       if (!response.ok) {
@@ -259,6 +316,13 @@ export function EnforcementSearch() {
       setResults(data.results);
       setPagination(data.pagination);
       setCurrentPage(data.pagination.currentPage);
+
+      // Store in cache with LRU eviction
+      cache.set(cacheKey, data);
+      if (cache.size > SEARCH_CACHE_MAX) {
+        const oldest = cache.keys().next().value;
+        if (oldest !== undefined) cache.delete(oldest);
+      }
     } catch (err) {
       setError(err instanceof Error ? err.message : "Unknown error");
       setResults([]);
@@ -678,6 +742,15 @@ export function EnforcementSearch() {
             }}
           >
             <strong style={{ fontWeight: "600" }}>Error:</strong> {error}
+          </div>
+        )}
+
+        {/* Skeleton Loading State */}
+        {loading && (
+          <div style={{ display: "flex", flexDirection: "column", gap: "1.5rem" }}>
+            <SkeletonCard />
+            <SkeletonCard />
+            <SkeletonCard />
           </div>
         )}
 
