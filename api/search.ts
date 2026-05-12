@@ -564,6 +564,36 @@ function buildEmptySearchResponse({
   };
 }
 
+// ── Rate limiting (in-memory sliding window, per Vercel instance) ────────────
+const RATE_LIMIT_WINDOW_MS = 60_000;
+const RATE_LIMIT_MAX = 30;
+const rateLimitMap = new Map<string, number[]>();
+
+function isRateLimited(ip: string): boolean {
+  const now = Date.now();
+  const timestamps = rateLimitMap.get(ip) ?? [];
+  const recent = timestamps.filter((t) => now - t < RATE_LIMIT_WINDOW_MS);
+  if (recent.length >= RATE_LIMIT_MAX) {
+    rateLimitMap.set(ip, recent);
+    return true;
+  }
+  recent.push(now);
+  rateLimitMap.set(ip, recent);
+  return false;
+}
+
+// Periodically prune stale IPs to prevent memory growth
+setInterval(() => {
+  const now = Date.now();
+  for (const [ip, timestamps] of rateLimitMap) {
+    const recent = timestamps.filter((t) => now - t < RATE_LIMIT_WINDOW_MS);
+    if (recent.length === 0) rateLimitMap.delete(ip);
+    else rateLimitMap.set(ip, recent);
+  }
+}, 5 * 60_000);
+
+const MAX_QUERY_LENGTH = 500;
+
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   const startedAt = Date.now();
   res.setHeader('Access-Control-Allow-Origin', '*');
@@ -576,6 +606,20 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
   if (req.method !== 'GET') {
     return res.status(405).json({ error: 'Method not allowed' });
+  }
+
+  // Rate limiting
+  const clientIp =
+    (Array.isArray(req.headers['x-forwarded-for'])
+      ? req.headers['x-forwarded-for'][0]
+      : req.headers['x-forwarded-for']?.split(',')[0]?.trim()) ??
+    req.socket?.remoteAddress ??
+    'unknown';
+  if (isRateLimited(clientIp)) {
+    return res.status(429).json({
+      error: 'Too many requests',
+      message: 'Please slow down. Maximum 30 searches per minute.',
+    });
   }
 
   try {
@@ -597,6 +641,43 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         message: 'Query parameter "q" is required for enforcement search',
         example: '/api/search?q=AML+transaction+monitoring+failures',
       });
+    }
+
+    if (q.length > MAX_QUERY_LENGTH) {
+      return res.status(400).json({
+        error: 'Query too long',
+        message: `Query must be ${MAX_QUERY_LENGTH} characters or fewer (received ${q.length}).`,
+      });
+    }
+
+    // Validate amount filters
+    if (minAmount) {
+      const min = Number.parseFloat(minAmount);
+      if (Number.isNaN(min) || min < 0) {
+        return res.status(400).json({
+          error: 'Invalid filter',
+          message: 'minAmount must be a non-negative number.',
+        });
+      }
+    }
+    if (maxAmount) {
+      const max = Number.parseFloat(maxAmount);
+      if (Number.isNaN(max) || max < 0) {
+        return res.status(400).json({
+          error: 'Invalid filter',
+          message: 'maxAmount must be a non-negative number.',
+        });
+      }
+    }
+    if (minAmount && maxAmount) {
+      const min = Number.parseFloat(minAmount);
+      const max = Number.parseFloat(maxAmount);
+      if (!Number.isNaN(min) && !Number.isNaN(max) && min > max) {
+        return res.status(400).json({
+          error: 'Invalid filter',
+          message: 'minAmount cannot be greater than maxAmount.',
+        });
+      }
     }
 
     const limitNum = Math.min(Number.parseInt(limit, 10) || 20, 100);

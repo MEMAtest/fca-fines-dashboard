@@ -7,12 +7,14 @@
  * - fallback snippets when highlights are unavailable
  */
 
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { Search, Filter, X, Calendar, DollarSign, Globe } from "lucide-react";
 import { useSearchParams } from "react-router-dom";
 import { PUBLIC_REGULATOR_SHELL_ITEMS } from "../data/regulatorShellNav.js";
 
 const SEARCH_CACHE_MAX = 20;
+const SEARCH_TIMEOUT_MS = 30_000;
+const MAX_QUERY_LENGTH = 500;
 
 function SkeletonCard() {
   return (
@@ -106,6 +108,10 @@ interface SearchResponse {
     indexType: string;
     language: string;
     weights: Record<string, string>;
+    correction?: {
+      correctedQuery: string;
+      corrections: Array<{ original: string; corrected: string }>;
+    } | null;
   };
 }
 
@@ -162,7 +168,10 @@ export function EnforcementSearch() {
   const [pagination, setPagination] = useState<
     SearchResponse["pagination"] | null
   >(null);
+  const [correctedQuery, setCorrectedQuery] = useState<string | null>(null);
   const searchCacheRef = useRef<Map<string, SearchResponse>>(new Map());
+  const abortControllerRef = useRef<AbortController | null>(null);
+  const resultsRef = useRef<HTMLDivElement>(null);
 
   // Filter states
   const [showFilters, setShowFilters] = useState(
@@ -264,16 +273,32 @@ export function EnforcementSearch() {
     setSearchParams(buildSearchParams(nextState));
   };
 
-  const executeSearch = async (state: SearchUrlState) => {
+  const executeSearch = useCallback(async (state: SearchUrlState) => {
     if (!state.query.trim()) {
       setResults([]);
       setPagination(null);
+      setCorrectedQuery(null);
       setError(null);
       setLoading(false);
       return;
     }
 
     const trimmedQuery = state.query.trim();
+    if (trimmedQuery.length > MAX_QUERY_LENGTH) {
+      setError(`Query must be ${MAX_QUERY_LENGTH} characters or fewer.`);
+      return;
+    }
+
+    // Validate amount filters
+    if (state.minAmount && state.maxAmount) {
+      const min = Number.parseFloat(state.minAmount);
+      const max = Number.parseFloat(state.maxAmount);
+      if (!Number.isNaN(min) && !Number.isNaN(max) && min > max) {
+        setError("Min amount cannot be greater than max amount.");
+        return;
+      }
+    }
+
     const params = new URLSearchParams({
       q: trimmedQuery,
       currency: state.currency,
@@ -297,44 +322,74 @@ export function EnforcementSearch() {
       setResults(cached.results);
       setPagination(cached.pagination);
       setCurrentPage(cached.pagination.currentPage);
+      setCorrectedQuery(cached.metadata?.correction?.correctedQuery ?? null);
       setError(null);
       return;
     }
 
+    // Cancel any in-flight request
+    abortControllerRef.current?.abort();
+    const controller = new AbortController();
+    abortControllerRef.current = controller;
+
     setLoading(true);
     setError(null);
+    setCorrectedQuery(null);
+
+    // Timeout guard
+    const timeoutId = setTimeout(() => controller.abort(), SEARCH_TIMEOUT_MS);
 
     try {
-      const response = await fetch(`/api/search?${params.toString()}`);
+      const response = await fetch(`/api/search?${params.toString()}`, {
+        signal: controller.signal,
+      });
 
       if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.message || "Search failed");
+        let message = "Search failed";
+        try {
+          const errorData = await response.json();
+          message = errorData.message || message;
+        } catch {
+          message = `Search failed (HTTP ${response.status})`;
+        }
+        throw new Error(message);
       }
 
       const data: SearchResponse = await response.json();
+
+      // Guard against stale response from a superseded request
+      if (controller.signal.aborted) return;
+
       setResults(data.results);
       setPagination(data.pagination);
       setCurrentPage(data.pagination.currentPage);
+      setCorrectedQuery(data.metadata?.correction?.correctedQuery ?? null);
 
       // Store in cache with LRU eviction
       cache.set(cacheKey, data);
-      if (cache.size > SEARCH_CACHE_MAX) {
+      while (cache.size > SEARCH_CACHE_MAX) {
         const oldest = cache.keys().next().value;
         if (oldest !== undefined) cache.delete(oldest);
+        else break;
       }
+
+      // Focus results for keyboard/screen-reader users
+      resultsRef.current?.focus({ preventScroll: true });
     } catch (err) {
+      if (err instanceof DOMException && err.name === "AbortError") return;
       setError(err instanceof Error ? err.message : "Unknown error");
       setResults([]);
       setPagination(null);
     } finally {
-      setLoading(false);
+      clearTimeout(timeoutId);
+      if (!controller.signal.aborted) setLoading(false);
     }
-  };
+  }, []);
 
   useEffect(() => {
     void executeSearch(activeSearchState);
-  }, [serializedSearchParams]);
+    return () => abortControllerRef.current?.abort();
+  }, [serializedSearchParams, executeSearch]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -442,11 +497,12 @@ export function EnforcementSearch() {
                 type="text"
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
+                maxLength={MAX_QUERY_LENGTH}
                 aria-label="Search enforcement actions"
-                placeholder='Try: "AML failures" or "Goldman Sachs enforcement"'
+                placeholder='Try: "AML failures" or "Goldman Sachs"'
                 style={{
                   width: "100%",
-                  padding: "1.25rem 9rem 1.25rem 3.5rem",
+                  padding: "1.25rem 7.5rem 1.25rem 3.5rem",
                   fontSize: "1.05rem",
                   border: "none",
                   borderRadius: "12px",
@@ -472,7 +528,7 @@ export function EnforcementSearch() {
                   transform: "translateY(-50%)",
                   background: loading || !query.trim() ? "#9ca3af" : "#4f46e5",
                   color: "white",
-                  padding: "0.875rem 1.75rem",
+                  padding: "0.75rem 1.25rem",
                   borderRadius: "8px",
                   border: "none",
                   fontSize: "0.95rem",
@@ -513,6 +569,7 @@ export function EnforcementSearch() {
                 <button
                   key={idx}
                   onClick={() => handleSuggestedQuery(suggested)}
+                  disabled={loading}
                   style={{
                     fontSize: "0.875rem",
                     padding: "0.5rem 1rem",
@@ -520,7 +577,8 @@ export function EnforcementSearch() {
                     color: "white",
                     border: "1px solid rgba(255,255,255,0.3)",
                     borderRadius: "20px",
-                    cursor: "pointer",
+                    cursor: loading ? "not-allowed" : "pointer",
+                    opacity: loading ? 0.6 : 1,
                     transition: "all 0.2s",
                   }}
                   onMouseEnter={(e) => {
@@ -732,6 +790,7 @@ export function EnforcementSearch() {
         {/* Error State */}
         {error && (
           <div
+            role="alert"
             style={{
               background: "#fef2f2",
               border: "1px solid #fecaca",
@@ -754,9 +813,41 @@ export function EnforcementSearch() {
           </div>
         )}
 
+        {/* Did you mean? (fuzzy correction) */}
+        {correctedQuery && !loading && (
+          <div
+            style={{
+              background: "#fffbeb",
+              border: "1px solid #fde68a",
+              color: "#92400e",
+              padding: "0.875rem 1.25rem",
+              borderRadius: "10px",
+              marginBottom: "1.5rem",
+              fontSize: "0.9375rem",
+            }}
+          >
+            Showing results for{" "}
+            <button
+              onClick={() => handleSuggestedQuery(correctedQuery)}
+              style={{
+                fontWeight: "700",
+                color: "#4f46e5",
+                background: "none",
+                border: "none",
+                cursor: "pointer",
+                textDecoration: "underline",
+                fontSize: "inherit",
+                padding: 0,
+              }}
+            >
+              {correctedQuery}
+            </button>
+          </div>
+        )}
+
         {/* Results Header */}
         {pagination && !loading && (
-          <div style={{ marginBottom: "2rem" }}>
+          <div style={{ marginBottom: "2rem" }} aria-live="polite">
             <h2
               style={{
                 fontSize: "1.5rem",
@@ -777,7 +868,16 @@ export function EnforcementSearch() {
         {/* Results List */}
         {results.length > 0 && (
           <div
-            style={{ display: "flex", flexDirection: "column", gap: "1.5rem" }}
+            ref={resultsRef}
+            tabIndex={-1}
+            aria-busy={loading}
+            style={{
+              display: "flex",
+              flexDirection: "column",
+              gap: "1.5rem",
+              outline: "none",
+              position: "relative",
+            }}
           >
             {results.map((result) => {
               const displayAmount =
@@ -988,6 +1088,7 @@ export function EnforcementSearch() {
             <button
               onClick={() => commitSearch({ page: currentPage - 1 })}
               disabled={currentPage === 1 || loading}
+              aria-label={`Go to page ${currentPage - 1}`}
               style={{
                 padding: "0.75rem 1.5rem",
                 border: "1px solid #d1d5db",
@@ -1026,6 +1127,7 @@ export function EnforcementSearch() {
             <button
               onClick={() => commitSearch({ page: currentPage + 1 })}
               disabled={!pagination.hasMore || loading}
+              aria-label={`Go to page ${currentPage + 1}`}
               style={{
                 padding: "0.75rem 1.5rem",
                 border: "1px solid #d1d5db",
@@ -1153,6 +1255,7 @@ export function EnforcementSearch() {
                 <button
                   key={idx}
                   onClick={() => handleSuggestedQuery(suggested)}
+                  disabled={loading}
                   style={{
                     padding: "1.25rem",
                     background: "white",
@@ -1161,7 +1264,7 @@ export function EnforcementSearch() {
                     textAlign: "left",
                     fontSize: "0.9375rem",
                     color: "#374151",
-                    cursor: "pointer",
+                    cursor: loading ? "not-allowed" : "pointer",
                     transition: "all 0.2s",
                     display: "flex",
                     alignItems: "center",

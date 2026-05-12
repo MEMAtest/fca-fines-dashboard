@@ -1050,5 +1050,13 @@ export function stripSnippetHtml(snippet: string | null | undefined) {
     return '';
   }
 
-  return snippet.replace(/<[^>]+>/g, '').replace(/\s+/g, ' ').trim();
+  return snippet
+    .replace(/<[^>]*>/g, '')
+    .replace(/&lt;/g, '<')
+    .replace(/&gt;/g, '>')
+    .replace(/&amp;/g, '&')
+    .replace(/&quot;/g, '"')
+    .replace(/&#x27;/g, "'")
+    .replace(/\s+/g, ' ')
+    .trim();
 }
