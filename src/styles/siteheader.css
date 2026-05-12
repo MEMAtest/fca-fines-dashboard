@@ -616,6 +616,44 @@
   gap: 0.25rem;
 }
 
+.site-header__mega-subheading {
+  margin: 0.55rem 0 0.15rem;
+  padding: 0.25rem 0.25rem 0;
+  border-top: 1px solid #edf2f7;
+  color: #0B8463;
+  font-size: 0.68rem;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.site-header__uk-source-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+  padding: 0.2rem 0.2rem 0;
+}
+
+.site-header__uk-source-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  border: 1px solid #e5edf2;
+  border-radius: 999px;
+  background: #ffffff;
+  color: #0B1F2A;
+  padding: 0.28rem 0.45rem;
+  text-decoration: none;
+  font-size: 0.78rem;
+  font-weight: 800;
+  line-height: 1;
+}
+
+.site-header__uk-source-pill:hover {
+  border-color: rgba(15, 167, 125, 0.32);
+  background: #F2FBF9;
+}
+
 .site-header__mobile-regulator-search {
   padding: 0.7rem 0.85rem;
 }

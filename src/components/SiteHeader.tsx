@@ -452,6 +452,35 @@ export function SiteHeader() {
                             </div>
                           </Link>
                         ))}
+                        {region === "UK" && !regulatorQuery.trim() ? (
+                          <>
+                            <span className="site-header__mega-subheading">
+                              UK enforcement
+                            </span>
+                            <div className="site-header__uk-source-list">
+                              {UK_ENFORCEMENT_REGULATORS.filter(
+                                (source) => source.code !== "FCA",
+                              ).map((source) => (
+                                <Link
+                                  key={`uk-enforcement-${source.code}`}
+                                  to={`/uk-enforcement?regulator=${source.code}&q=`}
+                                  className="site-header__uk-source-pill"
+                                  title={source.fullName}
+                                  onClick={closeRegulatorDropdown}
+                                >
+                                  <RegulatorMark
+                                    regulator={source.code}
+                                    label={source.fullName}
+                                    country="United Kingdom"
+                                    size="small"
+                                    decorative
+                                  />
+                                  <span>{source.code}</span>
+                                </Link>
+                              ))}
+                            </div>
+                          </>
+                        ) : null}
                       </div>
                     </div>
                   ))}
