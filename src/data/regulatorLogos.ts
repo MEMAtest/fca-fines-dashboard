@@ -14,7 +14,8 @@ export interface OfficialRegulatorLogoAsset {
     | "official-site"
     | "media-kit"
     | "press-page"
-    | "community-mirror";
+    | "community-mirror"
+    | "local-source-mark";
   backgroundMode: "transparent" | "light-box-required";
   approvedForDarkUi: boolean;
   approvedForPrint: boolean;
@@ -38,6 +39,13 @@ const DEFAULT_PALETTE: RegulatorPalette = {
 
 const REGULATOR_PALETTES: Record<string, RegulatorPalette> = {
   FCA: { ink: "#1e40af", surface: "#dbeafe", ring: "#93c5fd" },
+  PRA: { ink: "#7c4a03", surface: "#fff7ed", ring: "#fbbf24" },
+  PSR: { ink: "#0f766e", surface: "#ccfbf1", ring: "#5eead4" },
+  OFSI: { ink: "#1e3a8a", surface: "#dbeafe", ring: "#93c5fd" },
+  ICO: { ink: "#1d4ed8", surface: "#dbeafe", ring: "#60a5fa" },
+  CMA: { ink: "#7e22ce", surface: "#f3e8ff", ring: "#d8b4fe" },
+  FRC: { ink: "#334155", surface: "#e2e8f0", ring: "#cbd5e1" },
+  TPR: { ink: "#047857", surface: "#d1fae5", ring: "#6ee7b7" },
   BAFIN: { ink: "#991b1b", surface: "#fee2e2", ring: "#fca5a5" },
   AMF: { ink: "#6b21a8", surface: "#f3e8ff", ring: "#d8b4fe" },
   CNMV: { ink: "#a16207", surface: "#fef3c7", ring: "#fcd34d" },
@@ -109,6 +117,69 @@ export const OFFICIAL_REGULATOR_LOGOS: Partial<
     approvedForDarkUi: true,
     approvedForPrint: true,
     lastReviewedAt: "2026-04-03",
+  },
+  PRA: {
+    assetPath: "/regulator-logos/pra.svg",
+    sourceUrl: "https://regactions.com/uk-enforcement",
+    sourceType: "local-source-mark",
+    backgroundMode: "transparent",
+    approvedForDarkUi: true,
+    approvedForPrint: true,
+    lastReviewedAt: "2026-05-12",
+  },
+  PSR: {
+    assetPath: "/regulator-logos/psr.svg",
+    sourceUrl: "https://regactions.com/uk-enforcement",
+    sourceType: "local-source-mark",
+    backgroundMode: "transparent",
+    approvedForDarkUi: true,
+    approvedForPrint: true,
+    lastReviewedAt: "2026-05-12",
+  },
+  OFSI: {
+    assetPath: "/regulator-logos/ofsi.svg",
+    sourceUrl: "https://regactions.com/uk-enforcement",
+    sourceType: "local-source-mark",
+    backgroundMode: "transparent",
+    approvedForDarkUi: true,
+    approvedForPrint: true,
+    lastReviewedAt: "2026-05-12",
+  },
+  ICO: {
+    assetPath: "/regulator-logos/ico.svg",
+    sourceUrl: "https://regactions.com/uk-enforcement",
+    sourceType: "local-source-mark",
+    backgroundMode: "transparent",
+    approvedForDarkUi: true,
+    approvedForPrint: true,
+    lastReviewedAt: "2026-05-12",
+  },
+  CMA: {
+    assetPath: "/regulator-logos/cma.svg",
+    sourceUrl: "https://regactions.com/uk-enforcement",
+    sourceType: "local-source-mark",
+    backgroundMode: "transparent",
+    approvedForDarkUi: true,
+    approvedForPrint: true,
+    lastReviewedAt: "2026-05-12",
+  },
+  FRC: {
+    assetPath: "/regulator-logos/frc.svg",
+    sourceUrl: "https://regactions.com/uk-enforcement",
+    sourceType: "local-source-mark",
+    backgroundMode: "transparent",
+    approvedForDarkUi: true,
+    approvedForPrint: true,
+    lastReviewedAt: "2026-05-12",
+  },
+  TPR: {
+    assetPath: "/regulator-logos/tpr.svg",
+    sourceUrl: "https://regactions.com/uk-enforcement",
+    sourceType: "local-source-mark",
+    backgroundMode: "transparent",
+    approvedForDarkUi: true,
+    approvedForPrint: true,
+    lastReviewedAt: "2026-05-12",
   },
   BAFIN: {
     assetPath: "/regulator-logos/bafin.ico",

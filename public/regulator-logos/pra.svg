@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" role="img" aria-label="PRA">
+  <circle cx="24" cy="24" r="23" fill="#fff7ed" stroke="#d6a23a" stroke-width="2"/>
+  <path d="M12 26h24v3H12zM15 22h18v3H15zM18 18h12v3H18z" fill="#7c4a03"/>
+  <path d="M24 8l14 8H10z" fill="#b7791f"/>
+  <text x="24" y="39" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="9" font-weight="800" fill="#4a2d05">PRA</text>
+</svg>
