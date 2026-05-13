@@ -225,16 +225,16 @@ test.describe('Enforcement Search', () => {
     await submitSearch(page, 'AML');
 
     await expect(page.getByText(/Page 1 of/i)).toBeVisible();
-    await page.getByRole('button', { name: /Next/i }).click();
+    await page.getByRole('button', { name: /Go to page 2/i }).click();
     await expect(page.getByText(/Page 2 of/i)).toBeVisible();
-    await page.getByRole('button', { name: /Previous/i }).click();
+    await page.getByRole('button', { name: /Go to page 1/i }).click();
     await expect(page.getByText(/Page 1 of/i)).toBeVisible();
   });
 
   test('retains the search query across pagination requests', async ({ page }) => {
     await openSearch(page);
     await submitSearch(page, 'AML');
-    await page.getByRole('button', { name: /Next/i }).click();
+    await page.getByRole('button', { name: /Go to page 2/i }).click();
 
     await expect(page).toHaveURL(/q=AML/);
     await expect(page).toHaveURL(/page=2/);
