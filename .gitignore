@@ -5,6 +5,8 @@ test-results/
 .env*
 backups/
 playwright-report/
+.playwright-cli/
 .vercel
 E2E_TEST_COVERAGE_REPORT*.md
 feature-validation/logs/
+fcafines.db

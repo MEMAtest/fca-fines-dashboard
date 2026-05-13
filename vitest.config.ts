@@ -18,7 +18,8 @@ export default defineConfig({
     exclude: [
       'node_modules/**',
       'dist/**',
-      'feature-validation/e2e/**',
+      'feature-validation/e2e/blog-page-consistency.test.ts',
+      'feature-validation/e2e/homepage-rendering.test.ts',
     ],
     coverage: {
       provider: 'v8',

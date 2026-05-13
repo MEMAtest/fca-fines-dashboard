@@ -3,7 +3,7 @@ name: UK Enforcement Monitor
 on:
   workflow_dispatch:
   schedule:
-    - cron: "20 6 * * 1,4" # 06:20 UTC on Monday and Thursday
+    - cron: "20 6 * * *" # 06:20 UTC daily for UK enforcement sources
 
 permissions:
   contents: read

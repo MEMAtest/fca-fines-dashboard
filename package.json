@@ -14,6 +14,7 @@
     "test:coverage": "vitest run --coverage",
     "test:e2e": "npm run build && playwright test --project=chromium",
     "test:e2e:all": "npm run build && playwright test",
+    "test:e2e:feature": "npm run build && PLAYWRIGHT_TEST_DIR=feature-validation/e2e playwright test blog-page-consistency.test.ts homepage-rendering.test.ts --project=chromium --workers=2",
     "test:e2e:search": "npm run build && playwright test e2e/search-experience.spec.ts --project=chromium",
     "test:e2e:search:live": "PLAYWRIGHT_BASE_URL=https://regactions.com playwright test e2e/search-live-smoke.spec.ts --project=chromium",
     "search:eval": "npx tsx scripts/evaluateSearchRelevance.ts",

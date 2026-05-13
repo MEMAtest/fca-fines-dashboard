@@ -113,6 +113,9 @@ jobs:
       - name: Run E2E tests
         run: npx playwright test e2e/search-experience.spec.ts e2e/seo-meta-tags.spec.ts --project=chromium
 
+      - name: Run feature-validation Playwright tests
+        run: PLAYWRIGHT_TEST_DIR=feature-validation/e2e npx playwright test blog-page-consistency.test.ts homepage-rendering.test.ts --project=chromium --workers=2
+
       - name: Upload report
         if: always()
         uses: actions/upload-artifact@v4

@@ -134,6 +134,16 @@ const REGULATORS_BY_REGION = (() => {
 // Auto-rotate resume delay after user interaction (ms)
 const AUTO_ROTATE_RESUME_MS = 5000;
 
+function hasWebGLSupport(): boolean {
+  if (typeof document === 'undefined') return true;
+  try {
+    const canvas = document.createElement('canvas');
+    return Boolean(canvas.getContext('webgl') || canvas.getContext('experimental-webgl'));
+  } catch {
+    return false;
+  }
+}
+
 /** Match globe pixel size to CSS container breakpoints */
 function useGlobeSize(): number {
   const [size, setSize] = useState(650);
@@ -161,9 +171,10 @@ export function GlobeHero({ onCountryClick }: GlobeHeroProps) {
   const resumeTimer = useRef<ReturnType<typeof setTimeout> | null>(null) as MutableRefObject<ReturnType<typeof setTimeout> | null>;
   const userInteracting = useRef(false);
   const globeSize = useGlobeSize();
+  const webglAvailable = useMemo(() => hasWebGLSupport(), []);
   const [hoveredCountry, setHoveredCountry] = useState<string | null>(null);
   const [countries, setCountries] = useState<{ features: any[] }>({ features: [] });
-  const [isLoading, setIsLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(false);
 
   // Dynamic stats from API
   const [stats, setStats] = useState({
@@ -249,16 +260,17 @@ export function GlobeHero({ onCountryClick }: GlobeHeroProps) {
   useEffect(() => {
     const loadCountries = async () => {
       try {
+        const controller = new AbortController();
+        const timeoutId = window.setTimeout(() => controller.abort(), 4000);
         const [topoData, topojsonClient] = await Promise.all([
-          fetch('//unpkg.com/world-atlas/countries-110m.json').then(res => res.json()),
+          fetch('//unpkg.com/world-atlas/countries-110m.json', { signal: controller.signal }).then(res => res.json()),
           import('topojson-client')
         ]);
+        window.clearTimeout(timeoutId);
         const countriesFeature = topojsonClient.feature(topoData, topoData.objects.countries);
         setCountries(countriesFeature as any);
-        setIsLoading(false);
       } catch (error) {
-        console.error('Failed to load globe data:', error);
-        setIsLoading(false);
+        console.warn('Failed to load globe data, rendering without country polygons:', error);
       }
     };
     loadCountries();
@@ -433,36 +445,40 @@ export function GlobeHero({ onCountryClick }: GlobeHeroProps) {
       {/* ===== RIGHT COLUMN: Globe on light bg ===== */}
       <div className="globe-hero-wrapper__right">
         <div className="globe-container">
-          <Suspense fallback={<div className="globe-loading">Loading globe...</div>}>
-            <Globe
-              ref={globeEl}
-              globeImageUrl="//unpkg.com/three-globe/example/img/earth-night.jpg"
-              backgroundColor="rgba(0,0,0,0)"
-              polygonsData={countries.features}
-              polygonCapColor={getPolygonColor}
-              polygonSideColor={() => 'rgba(0, 0, 0, 0)'}
-              polygonStrokeColor={() => 'rgba(6, 182, 212, 0.15)'}
-              polygonAltitude={0.01}
-              onPolygonHover={handlePolygonHover}
-              onPolygonClick={handlePolygonClick}
-              arcsData={arcsData}
-              arcColor={'color'}
-              arcStroke={0.5}
-              arcDashLength={0.4}
-              arcDashGap={0.2}
-              arcDashAnimateTime={3000}
-              arcsTransitionDuration={0}
-              pointsData={pointsData}
-              pointColor={'color'}
-              pointAltitude={0.02}
-              pointRadius={'size'}
-              pointsMerge={false}
-              atmosphereColor="rgba(6, 182, 212, 0.3)"
-              atmosphereAltitude={0.2}
-              width={globeSize}
-              height={globeSize}
-            />
-          </Suspense>
+          {webglAvailable ? (
+            <Suspense fallback={<div className="globe-loading">Loading globe...</div>}>
+              <Globe
+                ref={globeEl}
+                globeImageUrl="//unpkg.com/three-globe/example/img/earth-night.jpg"
+                backgroundColor="rgba(0,0,0,0)"
+                polygonsData={countries.features}
+                polygonCapColor={getPolygonColor}
+                polygonSideColor={() => 'rgba(0, 0, 0, 0)'}
+                polygonStrokeColor={() => 'rgba(6, 182, 212, 0.15)'}
+                polygonAltitude={0.01}
+                onPolygonHover={handlePolygonHover}
+                onPolygonClick={handlePolygonClick}
+                arcsData={arcsData}
+                arcColor={'color'}
+                arcStroke={0.5}
+                arcDashLength={0.4}
+                arcDashGap={0.2}
+                arcDashAnimateTime={3000}
+                arcsTransitionDuration={0}
+                pointsData={pointsData}
+                pointColor={'color'}
+                pointAltitude={0.02}
+                pointRadius={'size'}
+                pointsMerge={false}
+                atmosphereColor="rgba(6, 182, 212, 0.3)"
+                atmosphereAltitude={0.2}
+                width={globeSize}
+                height={globeSize}
+              />
+            </Suspense>
+          ) : (
+            <div className="globe-loading">Interactive globe unavailable in this browser.</div>
+          )}
 
           {/* Hover tooltip */}
           {hoveredCountry && <HoverTooltip countryCode={hoveredCountry} />}
