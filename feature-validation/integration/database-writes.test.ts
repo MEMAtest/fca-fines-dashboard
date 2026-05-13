@@ -4,28 +4,25 @@ import postgres from 'postgres';
 const FCAFINES_URL = process.env.TEST_DATABASE_URL?.trim();
 const HORIZON_URL = process.env.TEST_HORIZON_DB_URL?.trim();
 const TIMEOUT_MS = 10000;
+const describeWithDatabase = FCAFINES_URL && HORIZON_URL ? describe : describe.skip;
 
-if (!FCAFINES_URL || !HORIZON_URL) {
-  throw new Error('TEST_DATABASE_URL and TEST_HORIZON_DB_URL must be set');
-}
-
-describe('Database Write Operations', () => {
+describeWithDatabase('Database Write Operations', () => {
   let fcafinesSql: ReturnType<typeof postgres>;
   let horizonSql: ReturnType<typeof postgres>;
 
   beforeAll(async () => {
-    fcafinesSql = postgres(FCAFINES_URL, {
+    fcafinesSql = postgres(FCAFINES_URL!, {
       connect_timeout: TIMEOUT_MS / 1000,
       idle_timeout: 5,
       max: 1,
-      ssl: FCAFINES_URL.includes('sslmode=') ? { rejectUnauthorized: false } : false,
+      ssl: FCAFINES_URL!.includes('sslmode=') ? { rejectUnauthorized: false } : false,
     });
 
-    horizonSql = postgres(HORIZON_URL, {
+    horizonSql = postgres(HORIZON_URL!, {
       connect_timeout: TIMEOUT_MS / 1000,
       idle_timeout: 5,
       max: 1,
-      ssl: HORIZON_URL.includes('sslmode=') ? { rejectUnauthorized: false } : false,
+      ssl: HORIZON_URL!.includes('sslmode=') ? { rejectUnauthorized: false } : false,
     });
   }, TIMEOUT_MS);
 

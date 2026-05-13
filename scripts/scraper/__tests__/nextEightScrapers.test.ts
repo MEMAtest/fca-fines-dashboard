@@ -362,10 +362,24 @@ describe("next-eight regulator coverage", () => {
   it("builds descending FINRA month windows with archive filters", () => {
     const windows = buildFinraMonthWindows(2026, 2026);
     const lastWindow = windows[windows.length - 1];
+    const now = new Date();
+    const expectedLatestMonth =
+      now.getUTCFullYear() === 2026
+        ? String(now.getUTCMonth() + 1).padStart(2, "0")
+        : "12";
+    const expectedLatestDay = new Date(Date.UTC(2026, Number(expectedLatestMonth), 0))
+      .getUTCDate()
+      .toString()
+      .padStart(2, "0");
 
-    expect(windows[0]?.label).toBe("2026-04");
+    expect(windows[0]?.label).toBe(`2026-${expectedLatestMonth}`);
     expect(lastWindow?.label).toBe("2026-01");
-    expect(windows[0]?.url).toContain("field_core_official_dt%5Bmin%5D=04%2F01%2F2026");
+    expect(windows[0]?.url).toContain(
+      `field_core_official_dt%5Bmin%5D=${expectedLatestMonth}%2F01%2F2026`,
+    );
+    expect(windows[0]?.url).toContain(
+      `field_core_official_dt%5Bmax%5D=${expectedLatestMonth}%2F${expectedLatestDay}%2F2026`,
+    );
     expect(lastWindow?.url).toContain("field_core_official_dt%5Bmax%5D=01%2F31%2F2026");
   });
 

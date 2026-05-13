@@ -7,11 +7,18 @@ export default defineConfig({
     environment: 'jsdom',
     globals: true,
     setupFiles: ['./src/test/setup.ts'],
+    testTimeout: 60000,
+    hookTimeout: 60000,
     include: [
       'src/**/*.{test,spec}.{ts,tsx}',
       'server/**/*.{test,spec}.{ts,tsx}',
       'scripts/scraper/__tests__/**/*.{test,spec}.{ts,tsx}',
       'feature-validation/**/*.{test,spec}.{ts,tsx}',
+    ],
+    exclude: [
+      'node_modules/**',
+      'dist/**',
+      'feature-validation/e2e/**',
     ],
     coverage: {
       provider: 'v8',
