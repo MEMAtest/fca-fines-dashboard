@@ -108,7 +108,7 @@ jobs:
         run: npm run build
 
       - name: Install Playwright
-        run: npx playwright install --with-deps chromium firefox webkit
+        run: npx playwright install --with-deps chromium
 
       - name: Run E2E tests
         run: npx playwright test e2e/search-experience.spec.ts e2e/seo-meta-tags.spec.ts --project=chromium
