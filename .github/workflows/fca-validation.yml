@@ -7,6 +7,7 @@ on:
     paths:
       - 'src/**'
       - 'index.html'
+      - 'e2e/**'
       - 'feature-validation/**'
       - '.github/workflows/fca-validation.yml'
   pull_request:
@@ -14,6 +15,7 @@ on:
     paths:
       - 'src/**'
       - 'index.html'
+      - 'e2e/**'
       - 'feature-validation/**'
       - '.github/workflows/fca-validation.yml'
 
