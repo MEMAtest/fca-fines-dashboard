@@ -83,6 +83,34 @@ describe("scraperAssuranceAgent", () => {
     expect(issues[0].message).toContain("two most recent");
   });
 
+  it("downgrades consecutive scraper failures when live data is healthy", () => {
+    const issues = buildScraperRunIssues(
+      [
+        {
+          regulator: "FCA",
+          status: "error",
+          startedAt: "2026-05-14T12:00:00Z",
+          errorMessage: "Request failed with status code 403",
+          runUrl: "https://example.com/run/2",
+          recordsPrepared: 0,
+        },
+        {
+          regulator: "FCA",
+          status: "error",
+          startedAt: "2026-05-14T06:00:00Z",
+          errorMessage: "Request failed with status code 403",
+          runUrl: "https://example.com/run/1",
+          recordsPrepared: 0,
+        },
+      ],
+      [healthResult("FCA", "ok")],
+    );
+
+    expect(issues).toHaveLength(1);
+    expect(issues[0].severity).toBe("watch");
+    expect(issues[0].message).toContain("live data remains");
+  });
+
   it("redacts sensitive-looking values before AI payload construction", () => {
     const text = redactText(
       "Failed for user@example.com with token=abcdefghijklmnopqrstuvwxyz123456 and postgres://user:pass@host/db",

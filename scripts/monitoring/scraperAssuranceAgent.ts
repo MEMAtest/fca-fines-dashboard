@@ -165,8 +165,12 @@ export async function loadRecentScraperRuns(
 
 export function buildScraperRunIssues(
   runs: RecentScraperRun[],
+  health: LiveRegulatorHealthResult[] = [],
 ): ScraperRunIssue[] {
   const byRegulator = new Map<string, RecentScraperRun[]>();
+  const healthByRegulator = new Map(
+    health.map((result) => [result.regulator.toUpperCase(), result]),
+  );
   for (const run of runs) {
     const key = run.regulator.toUpperCase();
     byRegulator.set(key, [...(byRegulator.get(key) ?? []), run]);
@@ -193,17 +197,23 @@ export function buildScraperRunIssues(
     const isConsecutiveFailure =
       recentTwo.length >= 2 &&
       recentTwo.every((run) => run.status === "error");
+    const liveHealth = healthByRegulator.get(regulator);
+    const liveDataIsHealthy = liveHealth?.severity === "ok";
+    const severity =
+      isConsecutiveFailure && !liveDataIsHealthy ? "action_required" : "watch";
 
     issues.push({
       regulator,
-      severity: isConsecutiveFailure ? "action_required" : "watch",
+      severity,
       latestStatus: latest.status,
       latestStartedAt: latest.startedAt,
       latestErrorMessage: latest.errorMessage,
       consecutiveErrors,
       runUrl: latest.runUrl,
-      message: isConsecutiveFailure
+      message: isConsecutiveFailure && !liveDataIsHealthy
         ? `${regulator} has failed its two most recent scraper runs.`
+        : isConsecutiveFailure
+          ? `${regulator} has failed its two most recent scraper runs, but live data remains inside the source health contract.`
         : `${regulator} failed its latest scraper run but has not yet crossed the consecutive-failure threshold.`,
     });
   }
@@ -567,7 +577,7 @@ export async function main() {
   const recentRuns = await loadRecentScraperRuns(
     options.cadence === "fragile" ? 30 : 14,
   );
-  const scraperRunIssues = buildScraperRunIssues(recentRuns);
+  const scraperRunIssues = buildScraperRunIssues(recentRuns, health);
   const decision = buildAssuranceDecision(health, scraperRunIssues, options);
   const workflowUrl = process.env.WORKFLOW_URL?.trim() || null;
   const aiTriage = decision.shouldCallAi
