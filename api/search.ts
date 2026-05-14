@@ -885,6 +885,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
           CASE
             WHEN $16 <> '' AND firm_norm.normalized_name = $16 THEN 430
             WHEN $17 <> '' AND firm_legal.legal_stripped_name = $17 THEN 410
+            WHEN $8 <> '' AND firm_norm.normalized_name = $8 THEN 405
+            WHEN $8 <> '' AND firm_legal.legal_stripped_name = $8 THEN 395
             WHEN $17 <> '' AND firm_norm.normalized_name = $17 THEN 390
             WHEN $2 <> '' AND COALESCE(search_aliases, '') ILIKE $2 THEN 320
             WHEN $17 <> '' AND firm_norm.normalized_name LIKE $17 || ' %' THEN 300
