@@ -82,7 +82,7 @@ describe("ukEnforcementHealth", () => {
         regulator: "PRA",
         recordCount: 20,
         earliestRecordDate: "2013-01-01",
-        latestRecordDate: "2026-04-20",
+        latestRecordDate: "2025-01-01",
       },
       run: {
         regulator: "PRA",
@@ -97,6 +97,30 @@ describe("ukEnforcementHealth", () => {
     expect(result.status).toBe("error");
     expect(result.message).toContain("503");
     expect(isFailingUKEnforcementHealth(result)).toBe(true);
+  });
+
+  it("warns when a scraper run errored but stored records remain fresh", () => {
+    const result = evaluateUKEnforcementSourceHealth({
+      regulator: regulator("FCA"),
+      stats: {
+        regulator: "FCA",
+        recordCount: 393,
+        earliestRecordDate: "2021-05-25",
+        latestRecordDate: "2026-05-12",
+      },
+      run: {
+        regulator: "FCA",
+        lastRunAt: "2026-05-14T00:00:00.000Z",
+        lastStatus: "error",
+        lastErrorMessage: "Request failed with status code 403",
+        lastSuccessfulRunAt: "2026-05-14T00:00:00.000Z",
+      },
+      referenceDate: new Date("2026-05-14T00:00:00Z"),
+    });
+
+    expect(result.status).toBe("warning");
+    expect(result.message).toContain("403");
+    expect(isFailingUKEnforcementHealth(result)).toBe(false);
   });
 
   it("builds a warn-first report across all UK enforcement sources", () => {

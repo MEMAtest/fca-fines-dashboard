@@ -168,6 +168,37 @@ export function evaluateUKEnforcementSourceHealth({
     throw new Error(`Missing UK enforcement health contract for ${regulator.code}`);
   }
 
+  if (
+    run?.lastStatus === "error" &&
+    stats?.recordCount &&
+    stats.latestRecordDate
+  ) {
+    const ageDays = differenceInUtcDays(stats.latestRecordDate, referenceDate);
+    if (
+      stats.recordCount >= contract.minimumHealthyRecords &&
+      ageDays !== null &&
+      ageDays <= contract.freshnessWindowDays
+    ) {
+      return {
+        regulator: regulator.code,
+        fullName: regulator.fullName,
+        sourceLayer: contract.sourceLayer,
+        recordCount: stats.recordCount,
+        earliestDate: stats.earliestRecordDate,
+        latestDate: stats.latestRecordDate,
+        ageDays,
+        freshnessWindowDays: contract.freshnessWindowDays,
+        minimumHealthyRecords: contract.minimumHealthyRecords,
+        lastRunAt: run.lastRunAt,
+        lastStatus: run.lastStatus,
+        lastErrorMessage: run.lastErrorMessage,
+        lastSuccessfulRunAt: run.lastSuccessfulRunAt,
+        status: "warning",
+        message: `Latest scraper run failed, but stored records remain fresh: ${run.lastErrorMessage ?? "unknown error"}.`,
+      };
+    }
+  }
+
   if (run?.lastStatus === "error") {
     return {
       ...buildMissingResult(regulator, run),
