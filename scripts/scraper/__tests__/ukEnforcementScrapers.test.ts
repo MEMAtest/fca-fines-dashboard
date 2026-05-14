@@ -6,6 +6,7 @@ import {
   parseOfsiCollection,
   parsePraEnforcementActionsPage,
   parsePsrEnforcementCases,
+  parseTprPressReleasePage,
   parseTprPenaltyNoticePage,
 } from "../ukEnforcementScrapers.js";
 
@@ -189,6 +190,48 @@ describe("UK enforcement scrapers", () => {
       amount: 52630,
       dateIssued: "2024-12-31",
       breachCategories: ["PENSIONS"],
+    });
+  });
+
+  it("parses TPR enforcement press releases for master trust penalties", () => {
+    const record = parseTprPressReleasePage(
+      `
+        <main>
+          <h1>Master trust and its trustee handed penalties totalling £100,000 after TPR enforcement action</h1>
+          <p>Friday 18 July 2025</p>
+          <p>NOW: Pensions Ltd (NPL) and NOW: Pension Trustee Ltd (NPTL) have each been given penalties of £50,000 for failing to correctly report significant events and breaches of law to The Pensions Regulator (TPR).</p>
+        </main>
+      `,
+      "https://www.thepensionsregulator.gov.uk/en/media-hub/press-releases/2025-press-releases/master-trust-and-its-trustee-handed-100k-penalty",
+    );
+
+    expect(record).toMatchObject({
+      regulator: "TPR",
+      firmIndividual: "NOW: Pensions Ltd and NOW: Pension Trustee Ltd",
+      amount: 100000,
+      dateIssued: "2025-07-18",
+      breachCategories: ["PENSIONS", "REPORTING", "SYSTEMS_CONTROLS"],
+    });
+  });
+
+  it("parses TPR aggregate small-scheme governance penalty releases", () => {
+    const record = parseTprPressReleasePage(
+      `
+        <main>
+          <h1>Poorly performing small schemes hit with more fines as poor governance tackled by TPR</h1>
+          <p>Thursday 3 April 2025</p>
+          <p>After issuing almost £100,000 in penalties to small DC schemes for governance failures related to the more detailed value for members assessment, The Pensions Regulator said trustees should consider winding up.</p>
+        </main>
+      `,
+      "https://www.thepensionsregulator.gov.uk/en/media-hub/press-releases/2025-press-releases/poorly-performing-small-schemes-hit-with-more-fines-as-poor-governance-tackled-by-tpr",
+    );
+
+    expect(record).toMatchObject({
+      regulator: "TPR",
+      firmIndividual: "Small defined contribution schemes",
+      amount: 100000,
+      dateIssued: "2025-04-03",
+      breachType: "Pensions governance penalty",
     });
   });
 });

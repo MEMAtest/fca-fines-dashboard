@@ -26,6 +26,12 @@ const SOURCE_URLS = {
   frcCases: "https://www.frc.org.uk/library/enforcement/enforcement-cases/",
   tprPenaltyNotices:
     "https://www.thepensionsregulator.gov.uk/en/document-library/enforcement-activity/penalty-notices",
+  tprPressReleaseArchive:
+    "https://www.thepensionsregulator.gov.uk/en/media-hub/press-releases",
+  tprKnownEnforcementPressReleases: [
+    "https://www.thepensionsregulator.gov.uk/en/media-hub/press-releases/2025-press-releases/master-trust-and-its-trustee-handed-100k-penalty",
+    "https://www.thepensionsregulator.gov.uk/en/media-hub/press-releases/2025-press-releases/poorly-performing-small-schemes-hit-with-more-fines-as-poor-governance-tackled-by-tpr",
+  ],
 };
 
 const REGULATORS = {
@@ -926,8 +932,176 @@ export function parseTprPenaltyNoticePage(html: string) {
   return dedupeRecords(records);
 }
 
+function isTprEnforcementPressRelease(title: string, body = "") {
+  const text = `${title} ${body}`.toLowerCase();
+  return /\b(penalt|fine|fines|fined|enforcement action|regulatory intervention|determination panel|breach of law|breaches of law)\b/.test(
+    text,
+  );
+}
+
+function extractTprPressReleaseFirm(title: string, body: string) {
+  const normalizedTitle = normalizeWhitespace(title);
+  const normalizedBody = normalizeWhitespace(body);
+  const normalizedBodyOnly = normalizeWhitespace(normalizedBody.replace(normalizedTitle, ""));
+  const text = normalizeWhitespace(`${normalizedTitle}. ${normalizedBodyOnly}`);
+  if (/small defined contribution|small dc schemes/i.test(text)) {
+    return "Small defined contribution schemes";
+  }
+
+  const bodyPatterns = [
+    /([A-Z][A-Za-z0-9:&'().,\-\s]+?)\s+\([^)]*\)\s+and\s+([A-Z][A-Za-z0-9:&'().,\-\s]+?)\s+\([^)]*\)\s+have each been given penalties/i,
+    /([A-Z][A-Za-z0-9:&'().,\-\s]+?)\s+and\s+([A-Z][A-Za-z0-9:&'().,\-\s]+?)\s+have each been given penalties/i,
+    /penalties?\s+(?:totalling|of)\s+£[\d,\s.]+\s+(?:to|against)\s+([A-Z][A-Za-z0-9:&'().,\-\s]+?)(?:\.|\s+for\b)/i,
+  ];
+  const titlePatterns = [
+    /^(.+?)\s+handed\s+penalties\b/i,
+    /^(.+?)\s+given\s+penalties\b/i,
+    /^(.+?)\s+hit\s+with\s+more\s+fines\b/i,
+  ];
+
+  for (const pattern of bodyPatterns) {
+    const match = normalizedBodyOnly.match(pattern);
+    if (!match) continue;
+
+    const captures = match
+      .slice(1)
+      .filter(Boolean)
+      .map(cleanTprPressReleaseFirmCandidate);
+    if (captures.length > 0) {
+      return captures.join(" and ");
+    }
+  }
+
+  for (const pattern of titlePatterns) {
+    const match = normalizedTitle.match(pattern);
+    if (match?.[1]) {
+      return cleanFirmName(match[1]);
+    }
+  }
+
+  return null;
+}
+
+function cleanTprPressReleaseFirmCandidate(value: string) {
+  return cleanFirmName(value)
+    .replace(/^.*?\bRef:\s*PN\d+-\d+\s*/i, "")
+    .replace(
+      /^.*?\b(?:Monday|Tuesday|Wednesday|Thursday|Friday|Saturday|Sunday)\s+\d{1,2}\s+[A-Za-z]+\s+\d{4}\s+/i,
+      "",
+    )
+    .replace(/^.*?\bafter TPR enforcement action\s+/i, "")
+    .trim();
+}
+
+function isGenericTprPressReleaseFirm(value: string | null) {
+  if (!value) return true;
+  return /^(?:stick to the rules|trustees?|schemes?|small schemes?|the pensions regulator|tpr)\b/i.test(
+    value,
+  );
+}
+
+export function parseTprPressReleasePage(html: string, sourceUrl: string) {
+  const $ = cheerio.load(html);
+  const title = normalizeWhitespace($("h1").first().text());
+  const body = detailBody(html);
+  const dateIssued = parseIsoFromDateText(body);
+
+  if (!title || !dateIssued || !isTprEnforcementPressRelease(title, body)) {
+    return null;
+  }
+
+  const amount =
+    parseContextualGbpAmount(body, ["penalties", "penalty", "fines", "fine"]) ??
+    parseGbpAmount(body);
+  if (amount === null) {
+    return null;
+  }
+
+  const firmIndividual = extractTprPressReleaseFirm(title, body);
+  if (!firmIndividual || isGenericTprPressReleaseFirm(firmIndividual)) {
+    return null;
+  }
+  const summary = normalizeWhitespace(
+    detailSummary(html) ||
+      $("main p")
+        .slice(0, 2)
+        .map((_, paragraph) => normalizeWhitespace($(paragraph).text()))
+        .get()
+        .join(" ") ||
+      title,
+  );
+
+  return toRecord({
+    ...REGULATORS.TPR,
+    firmIndividual,
+    firmCategory: /small defined contribution|small dc schemes/i.test(body)
+      ? "Pension schemes"
+      : "Pension trustee or scheme",
+    amount,
+    dateIssued,
+    breachType: /value for members|governance/i.test(body)
+      ? "Pensions governance penalty"
+      : "Pensions regulatory enforcement action",
+    breachCategories: ["PENSIONS", "REPORTING", "SYSTEMS_CONTROLS"],
+    summary: `${title}. ${summary}`,
+    noticeUrl: sourceUrl,
+    sourceUrl,
+    sourceWindowNote: "Official TPR enforcement press release.",
+  });
+}
+
+export function parseTprPressReleaseIndex(html: string, baseUrl: string) {
+  const $ = cheerio.load(html);
+  const urls = new Set<string>();
+
+  $("a[href]").each((_, link) => {
+    const href = normalizeWhitespace($(link).attr("href") || "");
+    const title = normalizeWhitespace($(link).text());
+    if (!href || !isTprEnforcementPressRelease(title)) return;
+
+    urls.add(makeAbsoluteUrl(baseUrl, href));
+  });
+
+  return [...urls];
+}
+
+async function scrapeTprPressReleaseEnforcement() {
+  const currentYear = new Date().getUTCFullYear();
+  const archiveUrls = [currentYear, currentYear - 1].map(
+    (year) => `${SOURCE_URLS.tprPressReleaseArchive}/${year}-press-releases`,
+  );
+  const detailUrls = new Set<string>(SOURCE_URLS.tprKnownEnforcementPressReleases);
+
+  for (const archiveUrl of archiveUrls) {
+    try {
+      const html = await fetchText(archiveUrl);
+      parseTprPressReleaseIndex(html, SOURCE_URLS.tprPressReleaseArchive).forEach((url) =>
+        detailUrls.add(url),
+      );
+    } catch {
+      // TPR occasionally blocks or omits archive-year pages. Known official
+      // enforcement URLs above keep the scraper useful until the next run.
+    }
+  }
+
+  const records = await mapWithConcurrency([...detailUrls], 3, async (url) => {
+    try {
+      return parseTprPressReleasePage(await fetchText(url), url);
+    } catch {
+      return null;
+    }
+  });
+
+  return records.filter((record): record is UKEnforcementSeedRecord => record !== null);
+}
+
 export async function scrapeTprEnforcement() {
-  return parseTprPenaltyNoticePage(await fetchText(SOURCE_URLS.tprPenaltyNotices));
+  const [penaltyNotices, pressReleases] = await Promise.all([
+    fetchText(SOURCE_URLS.tprPenaltyNotices).then(parseTprPenaltyNoticePage),
+    scrapeTprPressReleaseEnforcement(),
+  ]);
+
+  return dedupeRecords([...penaltyNotices, ...pressReleases]);
 }
 
 export async function scrapeAllUKEnforcementSources() {

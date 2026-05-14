@@ -52,6 +52,9 @@ function isTransientError(error: unknown): boolean {
     message.includes("socket hang up") ||
     message.includes("network") ||
     message.includes("timeout") ||
+    message.includes("status code 500") ||
+    message.includes("status code 504") ||
+    message.includes("status code 403") ||
     message.includes("503") ||
     message.includes("502") ||
     message.includes("429")

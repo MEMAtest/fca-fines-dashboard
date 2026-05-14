@@ -104,7 +104,7 @@ const UK_HEALTH_CONTRACTS: Record<
   TPR: {
     sourceLayer: "uk_enforcement_actions",
     minimumHealthyRecords: 30,
-    freshnessWindowDays: 180,
+    freshnessWindowDays: 365,
     requireRunRecency: true,
   },
 };

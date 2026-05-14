@@ -51,6 +51,30 @@ describe("ukEnforcementHealth", () => {
     expect(isFailingUKEnforcementHealth(result)).toBe(false);
   });
 
+  it("allows sparse TPR enforcement publications a longer freshness window", () => {
+    const result = evaluateUKEnforcementSourceHealth({
+      regulator: regulator("TPR"),
+      stats: {
+        regulator: "TPR",
+        recordCount: 50,
+        earliestRecordDate: "2024-12-31",
+        latestRecordDate: "2025-07-18",
+      },
+      run: {
+        regulator: "TPR",
+        lastRunAt: "2026-05-14T00:00:00.000Z",
+        lastStatus: "success",
+        lastErrorMessage: null,
+        lastSuccessfulRunAt: "2026-05-14T00:00:00.000Z",
+      },
+      referenceDate: new Date("2026-05-14T00:00:00Z"),
+    });
+
+    expect(result.status).toBe("ok");
+    expect(result.freshnessWindowDays).toBe(365);
+    expect(result.ageDays).toBe(300);
+  });
+
   it("fails when the latest scraper run errored", () => {
     const result = evaluateUKEnforcementSourceHealth({
       regulator: regulator("PRA"),

@@ -14,7 +14,10 @@ import {
 import { runScraper } from "./lib/runScraper.js";
 
 const HKMA_API_URL = "https://api.hkma.gov.hk/public/press-releases";
-const HKMA_LIST_PAGE_SIZE = 500;
+const HKMA_LIST_PAGE_SIZE =
+  Number.parseInt(process.env.HKMA_LIST_PAGE_SIZE || "", 10) || 100;
+const HKMA_API_RETRY_ATTEMPTS =
+  Number.parseInt(process.env.HKMA_API_RETRY_ATTEMPTS || "", 10) || 4;
 
 interface HkmaApiRecord {
   title?: string;
@@ -330,24 +333,10 @@ async function loadHkmaEntries(limit: number | null) {
 
   for (let offset = 0; ; offset += HKMA_LIST_PAGE_SIZE) {
     console.log(`📡 Fetching HKMA API page (offset: ${offset})...`);
-    const response = await axios.get<HkmaApiResponse>(HKMA_API_URL, {
-      params: {
-        lang: "en",
-        offset,
-        pagesize: HKMA_LIST_PAGE_SIZE,
-        sortby: "date",
-        sortorder: "desc",
-      },
-      timeout: 180000, // Increased from 120s to 180s (3 minutes)
-      headers: {
-        'User-Agent': 'Mozilla/5.0 (compatible; MEMA-Regulatory-Scraper/1.0; +https://regactions.com)',
-        'Accept': 'application/json, text/plain, */*',
-        'Accept-Language': 'en-US,en;q=0.9',
-      },
-    });
+    const response = await fetchHkmaApiPage(offset);
 
-    const records = response.data.result?.records || [];
-    for (const entry of parseHkmaApiPayload(response.data)) {
+    const records = response.result?.records || [];
+    for (const entry of parseHkmaApiPayload(response)) {
       entries.set(entry.detailUrl, entry);
       if (limit && entries.size >= limit) {
         return [...entries.values()];
@@ -360,6 +349,55 @@ async function loadHkmaEntries(limit: number | null) {
   }
 
   return [...entries.values()];
+}
+
+async function fetchHkmaApiPage(offset: number) {
+  let lastError: unknown;
+
+  for (let attempt = 1; attempt <= HKMA_API_RETRY_ATTEMPTS; attempt += 1) {
+    try {
+      const response = await axios.get<HkmaApiResponse>(HKMA_API_URL, {
+        params: {
+          lang: "en",
+          offset,
+          pagesize: HKMA_LIST_PAGE_SIZE,
+          sortby: "date",
+          sortorder: "desc",
+        },
+        timeout: 180000,
+        headers: {
+          "User-Agent":
+            "Mozilla/5.0 (compatible; MEMA-Regulatory-Scraper/1.0; +https://regactions.com)",
+          Accept: "application/json, text/plain, */*",
+          "Accept-Language": "en-US,en;q=0.9",
+        },
+      });
+
+      return response.data;
+    } catch (error) {
+      lastError = error;
+      const status = axios.isAxiosError(error) ? error.response?.status : null;
+      const retryable =
+        status === 429 ||
+        (typeof status === "number" && status >= 500) ||
+        (axios.isAxiosError(error) &&
+          ["ECONNRESET", "ETIMEDOUT", "EAI_AGAIN", "ENOTFOUND"].includes(
+            error.code || "",
+          ));
+
+      if (!retryable || attempt === HKMA_API_RETRY_ATTEMPTS) {
+        throw error;
+      }
+
+      const delayMs = status === 429 ? 3_000 * attempt : 1_500 * attempt;
+      console.warn(
+        `⚠️ HKMA API page offset ${offset} failed on attempt ${attempt}/${HKMA_API_RETRY_ATTEMPTS}; retrying in ${delayMs}ms`,
+      );
+      await new Promise((resolve) => setTimeout(resolve, delayMs));
+    }
+  }
+
+  throw lastError;
 }
 
 async function enrichHkmaEntry(entry: HkmaEntry): Promise<DbReadyRecord[]> {

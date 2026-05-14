@@ -45,6 +45,11 @@ interface FailedSourceRun {
   error: Error;
 }
 
+const SOURCE_RETRY_ATTEMPTS =
+  Number.parseInt(process.env.UK_ENFORCEMENT_SOURCE_RETRY_ATTEMPTS || "", 10) || 2;
+const SOURCE_RETRY_DELAY_MS =
+  Number.parseInt(process.env.UK_ENFORCEMENT_SOURCE_RETRY_DELAY_MS || "", 10) || 15_000;
+
 const UK_ENFORCEMENT_SOURCE_LOADERS: UKEnforcementSourceLoader[] = [
   { regulator: "FCA", load: scrapeFcaEnforcement },
   { regulator: "PRA", load: scrapePraEnforcement },
@@ -326,34 +331,45 @@ async function scrapeSourceWithRunTracking(
 ): Promise<SuccessfulSourceRun> {
   const startedAt = new Date();
   const runId = await insertScraperRun(sql, source.regulator, startedAt);
+  let lastError: Error | null = null;
 
-  try {
-    const records = await source.load();
-    if (records.length === 0) {
-      throw new Error(`${source.regulator} returned zero records`);
+  for (let attempt = 1; attempt <= SOURCE_RETRY_ATTEMPTS; attempt += 1) {
+    try {
+      const records = await source.load();
+      if (records.length === 0) {
+        throw new Error(`${source.regulator} returned zero records`);
+      }
+
+      return {
+        regulator: source.regulator,
+        records,
+        runId,
+        startedAt,
+      };
+    } catch (error) {
+      lastError = error instanceof Error ? error : new Error(String(error));
+
+      if (attempt < SOURCE_RETRY_ATTEMPTS) {
+        console.warn(
+          `${source.regulator} UK enforcement loader failed on attempt ${attempt}/${SOURCE_RETRY_ATTEMPTS}: ${lastError.message}`,
+        );
+        await new Promise((resolve) => setTimeout(resolve, SOURCE_RETRY_DELAY_MS));
+      }
     }
-
-    return {
-      regulator: source.regulator,
-      records,
-      runId,
-      startedAt,
-    };
-  } catch (error) {
-    const normalizedError =
-      error instanceof Error ? error : new Error(String(error));
-
-    await updateScraperRun(sql, runId, {
-      status: "error",
-      recordsPrepared: 0,
-      inserted: 0,
-      updated: 0,
-      errorMessage: normalizedError.message,
-      startedAt,
-    });
-
-    throw normalizedError;
   }
+
+  const normalizedError = lastError ?? new Error(`${source.regulator} source failed`);
+
+  await updateScraperRun(sql, runId, {
+    status: "error",
+    recordsPrepared: 0,
+    inserted: 0,
+    updated: 0,
+    errorMessage: normalizedError.message,
+    startedAt,
+  });
+
+  throw normalizedError;
 }
 
 async function scrapeUKEnforcementSourcesWithTracking(sql: postgres.Sql) {
