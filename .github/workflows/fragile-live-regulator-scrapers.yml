@@ -62,6 +62,7 @@ jobs:
           echo "Environment validation passed for ${{ matrix.code }}."
 
       - name: Run ${{ matrix.code }} scraper
+        continue-on-error: true
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
           TS_NODE_PROJECT: tsconfig.json
