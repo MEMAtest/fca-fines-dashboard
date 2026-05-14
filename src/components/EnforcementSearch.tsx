@@ -128,7 +128,7 @@ interface SearchUrlState {
   page: number;
 }
 
-function parseSearchParams(params: URLSearchParams): SearchUrlState {
+export function parseSearchParams(params: URLSearchParams): SearchUrlState {
   const currency = params.get("currency") === "EUR" ? "EUR" : "GBP";
   const page = Number.parseInt(params.get("page") ?? "1", 10);
 
@@ -144,7 +144,7 @@ function parseSearchParams(params: URLSearchParams): SearchUrlState {
   };
 }
 
-function buildSearchParams(state: SearchUrlState) {
+export function buildSearchParams(state: SearchUrlState) {
   const params = new URLSearchParams();
   if (state.query.trim()) params.set("q", state.query.trim());
   if (state.regulator) params.set("regulator", state.regulator);
@@ -298,6 +298,13 @@ export function EnforcementSearch() {
         setError("Min amount cannot be greater than max amount.");
         return;
       }
+    }
+
+    const parsedMin = state.minAmount ? Number.parseFloat(state.minAmount) : null;
+    const parsedMax = state.maxAmount ? Number.parseFloat(state.maxAmount) : null;
+    if ((parsedMin !== null && parsedMin < 0) || (parsedMax !== null && parsedMax < 0)) {
+      setError("Amount cannot be negative.");
+      return;
     }
 
     const params = new URLSearchParams({
@@ -712,6 +719,7 @@ export function EnforcementSearch() {
                   onChange={(e) => setMinAmount(e.target.value)}
                   aria-label={`Min Amount (${currency})`}
                   placeholder="0"
+                  min="0"
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                 />
               </div>
@@ -728,6 +736,7 @@ export function EnforcementSearch() {
                   onChange={(e) => setMaxAmount(e.target.value)}
                   aria-label={`Max Amount (${currency})`}
                   placeholder="No limit"
+                  min="0"
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                 />
               </div>
@@ -782,6 +791,7 @@ export function EnforcementSearch() {
 
       {/* Results Section */}
       <div
+        aria-busy={loading}
         style={{
           maxWidth: "900px",
           margin: "0 auto",
@@ -871,7 +881,6 @@ export function EnforcementSearch() {
           <div
             ref={resultsRef}
             tabIndex={-1}
-            aria-busy={loading}
             style={{
               display: "flex",
               flexDirection: "column",

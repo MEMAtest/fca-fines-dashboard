@@ -324,4 +324,53 @@ test.describe('Enforcement Search', () => {
     await expect(page.getByRole('button', { name: /^Search$/ })).toBeVisible();
     await expect(page.getByRole('heading', { name: /Omda Exchange/i })).toBeVisible();
   });
+
+  test('shows error for non-JSON API failure', async ({ page }) => {
+    await page.route('**/api/search**', async (route) => {
+      await route.fulfill({ status: 502, contentType: 'text/html', body: '<html>Bad Gateway</html>' });
+    });
+    await page.goto('/search');
+    await submitSearch(page, 'AML');
+    await expect(page.getByText(/Search failed/i)).toBeVisible();
+  });
+
+  test('rejects queries exceeding 500 characters', async ({ page }) => {
+    await openSearch(page);
+    await page.getByLabel('Search enforcement actions').fill('a'.repeat(501));
+    await page.getByRole('button', { name: /^Search$/ }).click();
+    await expect(page.getByText(/500 characters or fewer/i)).toBeVisible();
+  });
+
+  test('rejects negative amount filters', async ({ page }) => {
+    await openSearch(page);
+    await page.getByRole('button', { name: /Show Filters/i }).click();
+    await page.getByLabel(/Min Amount/i).fill('-1000');
+    await submitSearch(page, 'AML');
+    await expect(page.getByText(/cannot be negative/i)).toBeVisible();
+  });
+
+  test('rejects min amount greater than max amount', async ({ page }) => {
+    await openSearch(page);
+    await page.getByRole('button', { name: /Show Filters/i }).click();
+    await page.getByLabel(/Min Amount/i).fill('5000000');
+    await page.getByLabel(/Max Amount/i).fill('1000');
+    await submitSearch(page, 'AML');
+    await expect(page.getByText(/Min amount cannot be greater than max/i)).toBeVisible();
+  });
+
+  test('shows fuzzy correction banner when API returns a correction', async ({ page }) => {
+    await page.route('**/api/search**', async (route) => {
+      const url = new URL(route.request().url());
+      const base = buildMockSearchResponse(url.searchParams);
+      base.metadata.correction = {
+        correctedQuery: 'Goldman Sachs',
+        corrections: [{ original: 'Goldmn', corrected: 'Goldman' }],
+      };
+      await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify(base) });
+    });
+    await page.goto('/search');
+    await submitSearch(page, 'Goldmn Sachs');
+    await expect(page.getByText(/Showing results for/i)).toBeVisible();
+    await expect(page.getByRole('button', { name: /Goldman Sachs/i })).toBeVisible();
+  });
 });

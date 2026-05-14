@@ -14,6 +14,7 @@ export function Search() {
     ogTitle: 'Enforcement Search — RegActions',
     ogDescription: 'Search across 30+ global regulators and thousands of enforcement actions. Filter by firm, regulator, country, year, and fine amount.',
     ogType: 'website',
+    ogImage: 'https://regactions.com/og-image.png',
   });
 
   return <EnforcementSearch />;
