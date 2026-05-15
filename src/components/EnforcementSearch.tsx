@@ -505,7 +505,6 @@ export function EnforcementSearch() {
                 type="text"
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
-                maxLength={MAX_QUERY_LENGTH}
                 aria-label="Search enforcement actions"
                 placeholder='Try: "AML failures" or "Goldman Sachs"'
                 style={{

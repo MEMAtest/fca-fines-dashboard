@@ -371,6 +371,6 @@ test.describe('Enforcement Search', () => {
     await page.goto('/search');
     await submitSearch(page, 'Goldmn Sachs');
     await expect(page.getByText(/Showing results for/i)).toBeVisible();
-    await expect(page.getByRole('button', { name: /Goldman Sachs/i })).toBeVisible();
+    await expect(page.getByRole('button', { name: 'Goldman Sachs', exact: true })).toBeVisible();
   });
 });
