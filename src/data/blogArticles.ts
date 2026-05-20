@@ -1138,6 +1138,114 @@ This page will be updated throughout March 2026 as new enforcement actions are p
     ],
   },
   {
+    id: "fca-fines-april-2026",
+    slug: "fca-fines-april-2026",
+    title: "FCA Enforcement April 2026: No Fines, 11 Supervisory Actions",
+    seoTitle:
+      "FCA Enforcement April 2026 | 11 Supervisory Actions, Zero Financial Penalties This Month",
+    excerpt:
+      "For the first time in five years the FCA closed an April with zero financial penalties — but issued its busiest run of supervisory actions in that span, with motor finance suitability and pension transfers dominating the docket.",
+    content: `
+## FCA Enforcement April 2026: A Month of Action Without Fines
+
+**The FCA closed April 2026 with zero financial penalties — but eleven enforcement actions, making it the regulator's busiest April for supervisory action in five years.** The headline is the absence of fines; the substance is a clear shift toward permission cancellations, public censures, and pre-enforcement steps. Motor finance suitability dominated the docket alongside the £19m client-money settlement secured from Sapia Partners on behalf of WealthTek clients.
+
+## April 2026 at a Glance
+
+| Metric | Value |
+| ------ | ----- |
+| Total enforcement actions | 11 |
+| Financial penalties issued | 0 |
+| Total fines (£) | £0 |
+| Major settlements / restitution | £19m+ (Sapia / WealthTek) |
+| Sector concentration | Motor finance & consumer credit (7 of 11) |
+
+Across the past five Aprils — 2022 through 2026 — only April 2023 produced a monetary penalty (Guaranty Trust Bank, £7.6m as part of a broader £50m action). April has consistently been a low-volume month for confirmed fines as the regulator works through Q2 case pipelines. April 2026 is the first month in that span to exceed ten supervisory actions.
+
+## Confirmed Enforcement Actions — April 2026
+
+### Week 1 (1–7 April)
+
+The month opened with a Final Notice against **Thomas Plenderleith Adamson** (trading as Elgin Honda and a cluster of motorcycle and scooter dealerships) on 7 April. The action concerned a failure to satisfy the suitability threshold for continued FCA permissions — a pattern that would repeat throughout the month.
+
+### Week 2 (8–14 April)
+
+**Westside Cars Limited** (13 April) and **Conclusive Financial Limited** (14 April) followed. The Conclusive Financial action stood out: the FCA banned the claims management company over **misleading adverts** that used edited and unauthorised content. The use of public censure with a permissions ban — rather than a fine — illustrates the FCA's increasing reliance on supervisory tools when consumer harm is reputational rather than quantifiable.
+
+### Week 3 (15–21 April)
+
+The week's most consequential action came on 15 April, when the FCA published the next steps in its **enforcement action against Hartley Pensions Limited and an individual**. The Hartley case has been a long-running concern in the SIPP market, and April's update signals the regulator is preparing for a formal sanction phase. Compliance teams in pensions administration should track the case closely for read-across to their own due diligence and operational resilience expectations.
+
+**The Mortgage Place Ltd** (21 April) joined the suitability-cancellation cohort the same week.
+
+### Week 4 (22–30 April)
+
+The final week was the busiest, with seven actions — five of them motor-finance-adjacent firms losing permissions for failure to demonstrate suitability or to carry on regulated activity (Sid Car Sales, Owenico Finance, Yes You Can Ltd, ICR Solutions (EPOS), DHILLON MOTOR HOLDINGS).
+
+The standout action of the month landed on **23 April: Sapia Partners LLP agreed to pay more than £19m to former WealthTek clients** after failing to protect client money. While not strictly a fine, the restitution arrangement is one of the largest investor-protection outcomes the FCA has secured outside a Final Notice this year. The case underlines that the absence of a monetary penalty does not mean an absence of financial consequence — firms can face restitution, costs, and reputational harm that exceed what a fine would have imposed.
+
+## Monthly Running Total
+
+| Metric | April 2026 | Q1 2026 (Jan–Mar) |
+| ------ | ---------- | ----------------- |
+| Total enforcement actions | 11 | 8 |
+| Financial penalties | 0 | 8 |
+| Total fines (£) | £0 | £15.59m |
+| Individual actions | 0 | 5 |
+| Firm actions | 11 | 3 |
+
+Q1 2026 produced eight monetary penalties totalling £15.59m, heavily skewed toward personal accountability (Carillion finance directors, market abuse individuals, and Dinosaur Merchant Bank's £338,000 fine in late March). April reverses that pattern entirely — every action targeted a firm rather than an individual, and none carried a financial penalty.
+
+## Context: How April Compares
+
+Looking at the five most recent Aprils:
+
+- **April 2022:** 10 actions, all supervisory, £0 fines
+- **April 2023:** 5 actions, 1 fine (£50m total)
+- **April 2024:** 4 actions, £0 fines
+- **April 2025:** 4 actions, £0 fines
+- **April 2026:** 11 actions, £0 fines
+
+Two observations stand out. First, April is structurally a low-fine month — only 2023 produced a monetary penalty in the past five years. Second, April 2026's eleven actions represent a meaningful uptick in supervisory activity even against that low-volume backdrop, and the concentration in motor finance and consumer credit is unusual.
+
+## Key Themes to Watch
+
+**Motor finance suitability sweep.** Seven of the eleven April actions involved motor dealers, consumer credit firms, or related intermediaries losing permissions. This is consistent with the FCA's broader supervisory programme around motor finance commission models that began intensifying in late 2025. Firms in the motor finance value chain — including secondary brokers — should expect continued scrutiny of suitability, governance, and customer outcomes.
+
+**The supervisory turn over fines.** Three of the most consequential April actions (Conclusive Financial ban, Hartley Pensions enforcement steps, Sapia restitution) used tools other than financial penalties to achieve outcomes. The FCA is signalling that permission cancellations, public censures, and restitution arrangements can deliver consumer protection more quickly than the long path of a Final Notice — particularly when the firm cannot pay a fine or when the harm is reputational.
+
+**Pension transfer enforcement pipeline.** The Hartley Pensions update follows Frank Breuer's £755,000 fine and ban on 12 May (May 2026 coverage forthcoming). Pension transfer advice remains an enforcement priority five years after the SIPP/British Steel scandals reshaped the supervisory landscape, and the FCA is working through residual cases from earlier years.
+
+**Investor protection beyond fines.** Sapia's £19m settlement is a reminder that compliance teams should not focus exclusively on Final Notice headlines. Restitution agreements, voluntary requirements (VREQs), Section 166 commissioning, and operational resilience interventions all sit in the FCA's toolkit and frequently carry larger financial consequences than the fines themselves.
+
+## What This Means for Compliance Teams
+
+For MLROs and Heads of Compliance: April reinforces the message that being absent from the "fines table" is not the same as being absent from enforcement. If your firm sits in motor finance, consumer credit, pensions administration, or claims management, treat the April docket as a leading indicator of where supervisory attention is being directed.
+
+For boards and NEDs: three questions worth raising at the next risk committee. (1) Could our firm satisfy the FCA's suitability threshold for continued permissions if asked tomorrow? (2) If a client-money or restitution issue arose, would we be able to fund the remediation without facing existential risk — as Sapia is now demonstrating? (3) How quickly would our governance respond if the FCA wrote to us with a pre-enforcement notice, as they have to Hartley Pensions?
+
+For consultants and law firms: April 2026 should reframe outreach narratives away from "the FCA isn't fining in your sector" toward "the FCA is using supervisory tools that don't show up in the fines table." Many firms underestimate this enforcement surface, and the April actions provide concrete case material to illustrate it.
+
+This page will be updated if additional April 2026 enforcement actions are subsequently published. For a complete historical view of all FCA enforcement, explore our interactive dashboard.
+    `,
+    category: "FCA Fines 2026",
+    readTime: "6 min read",
+    date: "April 2026",
+    dateISO: "2026-06-01",
+    featured: true,
+    status: "scheduled",
+    keywords: [
+      "FCA fines April 2026",
+      "FCA enforcement April 2026",
+      "FCA supervisory action",
+      "Sapia Partners WealthTek",
+      "Hartley Pensions enforcement",
+      "Conclusive Financial ban",
+      "motor finance suitability",
+      "FCA permissions cancellation",
+    ],
+  },
+  {
     id: "fca-fines-insurance",
     slug: "fca-fines-insurance-sector",
     title: "FCA Fines for Insurance Companies: Complete Sector Analysis",
