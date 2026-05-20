@@ -23,6 +23,24 @@ const DEFAULT_DAYS_BACK = 90;
 const DEFAULT_MAX_PAGES = 8;
 const GBP = "GBP";
 
+const FCA_BROWSER_HEADERS: Record<string, string> = {
+  "User-Agent":
+    process.env.FCA_USER_AGENT ||
+    "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36",
+  Accept:
+    "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8",
+  "Accept-Language": "en-GB,en;q=0.9",
+  "Accept-Encoding": "gzip, deflate, br",
+  Connection: "keep-alive",
+  "Upgrade-Insecure-Requests": "1",
+  "Sec-Fetch-Dest": "document",
+  "Sec-Fetch-Mode": "navigate",
+  "Sec-Fetch-Site": "none",
+  "Sec-Fetch-User": "?1",
+  "Cache-Control": "max-age=0",
+  Referer: `${FCA_BASE_URL}/news`,
+};
+
 interface FcaSearchResult {
   title: string;
   type: string;
@@ -378,7 +396,7 @@ async function fetchSearchResults(baseUrl: string, cutoffIso: string, sourceLabe
 
   for (let page = 0; page < maxPages; page += 1) {
     const start = page * 10 + 1;
-    const html = await fetchText(`${baseUrl}&start=${start}`);
+    const html = await fetchText(`${baseUrl}&start=${start}`, { headers: FCA_BROWSER_HEADERS });
     const pageResults = parseFcaSearchResults(html);
     if (pageResults.length === 0) break;
 
@@ -435,7 +453,7 @@ export async function scrapeFcaEnforcement(): Promise<UKEnforcementSeedRecord[]>
     3,
     async (result) => {
       try {
-        const html = await fetchText(result.url);
+        const html = await fetchText(result.url, { headers: FCA_BROWSER_HEADERS });
         fetchedPressDetails += 1;
         if (shouldLogProgress() && fetchedPressDetails % 25 === 0) {
           console.log(
