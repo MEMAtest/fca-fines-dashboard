@@ -192,6 +192,68 @@ jobs:
           path: /tmp/daily-live-regulator-health.json
           if-no-files-found: ignore
 
+      - name: Audit data freshness across live regulators
+        if: always()
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          DATA_FRESHNESS_ALERT_FILE: /tmp/data-freshness-alert.json
+        run: |
+          npm run --silent check:data-freshness || true
+          if [ -f /tmp/data-freshness-alert.json ]; then
+            cat /tmp/data-freshness-alert.json
+          fi
+
+      - name: Upload data freshness audit
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: data-freshness-audit
+          path: /tmp/data-freshness-alert.json
+          if-no-files-found: ignore
+
+      - name: Email data freshness alert if regulators are stale
+        if: always()
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          AWS_DEFAULT_REGION: eu-west-2
+          ALERT_EMAIL: ${{ vars.ALERT_EMAIL || 'ademola@memaconsultants.com' }}
+          WORKFLOW_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        run: |
+          if [ ! -f /tmp/data-freshness-alert.json ]; then
+            echo "No freshness alert file; skipping email."
+            exit 0
+          fi
+          FLAGGED_COUNT=$(node -e "console.log(JSON.parse(require('fs').readFileSync('/tmp/data-freshness-alert.json','utf8')).flaggedCount || 0)")
+          if [ "$FLAGGED_COUNT" -eq 0 ]; then
+            echo "✅ Data freshness OK; no email needed."
+            exit 0
+          fi
+          echo "⚠️ $FLAGGED_COUNT regulator(s) flagged stale. Preparing email."
+          node -e '
+            const fs = require("fs");
+            const report = JSON.parse(fs.readFileSync("/tmp/data-freshness-alert.json","utf8"));
+            const lines = (report.flagged || []).map((r) => "  • " + r.reason);
+            const body = [
+              `${report.flaggedCount} live regulator(s) are past data-freshness thresholds.`,
+              "",
+              "Details:",
+              ...lines,
+              "",
+              `Workflow: ${process.env.WORKFLOW_URL || "unknown"}`,
+              `Generated: ${report.generatedAt}`,
+            ].join("\n");
+            fs.writeFileSync("/tmp/ses-freshness-alert.json", JSON.stringify({
+              Source: "alerts@memaconsultants.com",
+              Destination: { ToAddresses: [process.env.ALERT_EMAIL || "ademola@memaconsultants.com"] },
+              Message: {
+                Subject: { Data: `DATA FRESHNESS: ${report.flaggedCount} live regulator(s) stale` },
+                Body: { Text: { Data: body } },
+              },
+            }, null, 2));
+          '
+          aws ses send-email --cli-input-json file:///tmp/ses-freshness-alert.json --region eu-west-2 || echo "Failed to send freshness alert email"
+
       - name: Check for consecutive failures and alert
         if: always()
         env:

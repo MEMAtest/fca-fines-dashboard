@@ -88,6 +88,7 @@
     "scrape:next-eight": "node --import tsx/esm scripts/scraper/scrapeNextEight.ts --",
     "check:live-freshness": "node --import tsx/esm scripts/scraper/checkLiveRegulatorFreshness.ts --",
     "check:scraper-assurance": "node --import tsx/esm scripts/monitoring/scraperAssuranceAgent.ts --",
+    "check:data-freshness": "node --import tsx/esm scripts/monitoring/auditDataFreshness.ts",
     "verify:setup": "bash scripts/verify-setup.sh",
     "blog:monthly": "node --import tsx/esm scripts/generate-blog.ts monthly",
     "blog:topical": "node --import tsx/esm scripts/generate-blog.ts topical",
