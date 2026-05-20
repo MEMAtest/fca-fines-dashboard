@@ -12,7 +12,44 @@ const dryRun = process.argv.includes('--dry-run') && !process.argv.includes('--u
 const sinceCutoff = process.env.FCA_SINCE_DATE ? new Date(process.env.FCA_SINCE_DATE) : null;
 const userAgent =
   process.env.FCA_USER_AGENT ||
-  'Mozilla/5.0 (Macintosh; Intel Mac OS X 14_0) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/125 Safari/537.36';
+  'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36';
+
+const FCA_HEADERS: Record<string, string> = {
+  'User-Agent': userAgent,
+  Accept:
+    'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8',
+  'Accept-Language': 'en-GB,en;q=0.9',
+  'Accept-Encoding': 'gzip, deflate, br',
+  Connection: 'keep-alive',
+  'Upgrade-Insecure-Requests': '1',
+  'Sec-Fetch-Dest': 'document',
+  'Sec-Fetch-Mode': 'navigate',
+  'Sec-Fetch-Site': 'none',
+  'Sec-Fetch-User': '?1',
+  'Cache-Control': 'max-age=0',
+  Referer: `${BASE_URL}/news`,
+};
+
+async function fetchWithRetry(url: string, attempts = 3): Promise<string> {
+  let lastErr: unknown;
+  for (let i = 0; i < attempts; i++) {
+    try {
+      const response = await axios.get(url, { headers: FCA_HEADERS, timeout: 30000 });
+      return response.data as string;
+    } catch (err: any) {
+      lastErr = err;
+      const status = err?.response?.status;
+      const transient = status === 403 || status === 429 || status === 502 || status === 503;
+      if (!transient || i === attempts - 1) break;
+      const backoffMs = 1500 * Math.pow(2, i) + Math.floor(Math.random() * 750);
+      console.warn(
+        `   ⚠️ ${url} returned ${status}; retrying in ${backoffMs}ms (attempt ${i + 2}/${attempts})`,
+      );
+      await new Promise((r) => setTimeout(r, backoffMs));
+    }
+  }
+  throw lastErr;
+}
 
 const currentYear = new Date().getFullYear();
 const yearEnv = process.env.FCA_YEARS;
@@ -63,11 +100,8 @@ async function scrapeYear(year: number): Promise<FcaFineRecord[]> {
   const url = `${BASE_URL}/${FINES_PATH}/${year}-fines`;
   console.log(`   ➤ Fetching ${url}`);
   try {
-    const response = await axios.get(url, {
-      headers: { 'User-Agent': userAgent },
-      timeout: 30000,
-    });
-    const $ = load(response.data);
+    const body = await fetchWithRetry(url);
+    const $ = load(body);
     const rows = $('table tbody tr').length ? $('table tbody tr') : $('table tr').slice(1);
     if (!rows.length) {
       console.warn(`   ⚠️ No table rows found for ${year}`);
