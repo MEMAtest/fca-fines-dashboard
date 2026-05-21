@@ -17,8 +17,11 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - code: FCA
-            script: scrape:fines
+          # FCA migrated to Hetzner cron 2026-05-21 (Cloudflare GHA IP block).
+          # Cron entry: /etc/crontab on 89.167.95.173, runs /opt/regactions-scrapers
+          # at 03:00 UTC. Re-enable here only if Hetzner cron is taken down.
+          # - code: FCA
+          #   script: scrape:fines
           - code: BaFin
             script: scrape:bafin
           - code: AMF
