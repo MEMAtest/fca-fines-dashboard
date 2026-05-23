@@ -30,24 +30,29 @@ jobs:
             script: scrape:cnmv
           - code: CBI
             script: scrape:cbi
-          - code: SFC
-            script: scrape:sfc
+          # SFC migrated to Hetzner cron 2026-05-23 (Cloudflare GHA IP block).
+          # - code: SFC
+          #   script: scrape:sfc
           - code: AFM
             script: scrape:afm
           - code: DNB
             script: scrape:dnb
-          - code: ECB
-            script: scrape:ecb
-          - code: BDI
-            script: scrape:bdi
+          # ECB migrated to Hetzner cron 2026-05-23.
+          # - code: ECB
+          #   script: scrape:ecb
+          # BDI migrated to Hetzner cron 2026-05-23.
+          # - code: BDI
+          #   script: scrape:bdi
           - code: ACPR
             script: scrape:acpr
-          - code: CSSF
-            script: scrape:cssf
+          # CSSF migrated to Hetzner cron 2026-05-23.
+          # - code: CSSF
+          #   script: scrape:cssf
           - code: FSMA
             script: scrape:fsma
-          - code: FISE
-            script: scrape:fise
+          # FISE migrated to Hetzner cron 2026-05-23.
+          # - code: FISE
+          #   script: scrape:fise
           - code: FTDK
             script: scrape:ftdk
           - code: FTNO
@@ -60,14 +65,16 @@ jobs:
             script: scrape:finfsa
           - code: IVASS
             script: scrape:ivass
-          - code: FSRA
-            script: scrape:fsra
+          # FSRA migrated to Hetzner cron 2026-05-23.
+          # - code: FSRA
+          #   script: scrape:fsra
           - code: GFSC
             script: scrape:gfsc
           - code: SEC
             script: scrape:sec
-          - code: OCC
-            script: scrape:occ
+          # OCC migrated to Hetzner cron 2026-05-23.
+          # - code: OCC
+          #   script: scrape:occ
           - code: FINCEN
             script: scrape:fincen
           - code: FINRA
