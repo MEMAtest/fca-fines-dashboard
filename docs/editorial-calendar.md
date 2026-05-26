@@ -28,7 +28,7 @@
 |---|---------|--------|-------|------|----------|--------|
 | 1 | 2026-06-01 | Recurring | FCA Enforcement April 2026: No Fines, 11 Supervisory Actions | `fca-fines-april-2026` | FCA Fines 2026 | scheduled |
 | 2 | 2026-06-09 | Thematic | DORA at 18 Months: Why Enforcement Hasn't Started — and What's Coming | `dora-enforcement-18-months` | Thematic Analysis | scheduled |
-| 3 | 2026-06-16 | Persona | Payments Firms & FCA AML Enforcement: What the Data Says | `payments-firms-fca-aml-enforcement` | Sector Analysis | planned |
+| 3 | 2026-06-16 | Persona | FCA Payments Enforcement: Why It's Permissions, Not Fines | `payments-firms-fca-aml-enforcement` | Sector Analysis | scheduled |
 | 4 | 2026-06-23 | Comparison | FCA vs SEC Enforcement: 5 Differences That Actually Matter | `fca-vs-sec-enforcement-differences` | Thematic Analysis | planned |
 | 5 | 2026-07-01 | Recurring | FCA Fines May 2026: Complete Monthly List | `fca-fines-may-2026` | FCA Fines 2026 | planned |
 | 6 | 2026-07-14 | Thematic | Consumer Duty Three Years In: Enforcement Reality Check | `consumer-duty-three-years-enforcement` | Thematic Analysis | planned |

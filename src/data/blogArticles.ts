@@ -1357,6 +1357,103 @@ For an interactive view of regulatory enforcement across the EU and beyond, incl
     ],
   },
   {
+    id: "payments-firms-fca-aml-enforcement",
+    slug: "payments-firms-fca-aml-enforcement",
+    title: "FCA Payments Enforcement: Why It's Permissions, Not Fines",
+    seoTitle:
+      "FCA Payments Firm Enforcement 2026 | Why Permissions Cancellations Replaced AML Fines for Payments Firms",
+    excerpt:
+      "Payments firms read AML-fine headlines and prepare for a Final Notice that never comes. The FCA's enforcement tool against this sector is overwhelmingly permissions cancellation — and the volume has grown nearly 10x in five years. Here's what the data shows, why the regulator favours this route, and what payments-firm compliance teams should be doing about it.",
+    content: `
+## FCA Payments Enforcement: Why It's Permissions, Not Fines
+
+**Across 2024, 2025 and the first five months of 2026 the FCA issued thirty-seven public enforcement actions against firms it classifies as "Payments firms". The number of those actions that carried a financial penalty: zero.** In the same period the regulator imposed five monetary fines on banks. The FCA has not stopped enforcing against payments firms — quite the opposite, the volume has grown nearly tenfold since 2021 — but the tool is permissions cancellation under the Payment Services Regulations 2017, not a Final Notice with a number on it. Payments-firm compliance teams that read AML-fine headlines and prepare for a fine that never comes are getting the risk wrong.
+
+## The Five-Year Trend in Numbers
+
+| Year | Payments-firm actions | Monetary penalties | Bank actions | Bank monetary penalties |
+| ---- | --------------------- | ------------------ | ------------ | ----------------------- |
+| 2021 | 2 | 1 | 2 | 0 |
+| 2022 | 1 | 0 | 2 | 1 |
+| 2023 | 8 | 3 | 0 | 0 |
+| 2024 | 12 | 0 | 4 | 2 |
+| 2025 | 17 | 0 | 4 | 3 |
+| 2026 (YTD) | 8 | 0 | 1 | 0 |
+
+Two patterns matter. First, the payments-firm enforcement curve is steep: from two actions in 2021 to seventeen in 2025, and 2026 is annualising to a comparable rate. Second, the form of action has bifurcated by sector. Against banks the FCA still uses the Final Notice and the headline fine — Nationwide's £44m financial-crime-controls penalty in December 2025 is the most recent significant example. Against payments firms, the same regulator almost exclusively cancels permissions.
+
+## Why Permissions Cancellation, Not a Fine
+
+Three reasons explain the divergence, and all three matter for compliance planning.
+
+### 1. Speed and certainty
+
+A Final Notice under the FCA's penalty regime is the end of a process that typically takes two to four years: investigation, settlement discussions, decision-maker referral, possible Tribunal challenge. Against a small or medium payments firm with thin margins, that timeline is too slow to protect consumers from ongoing harm. Permissions cancellation under regulation 10 of the PSR 2017 is fast — the FCA can find that the firm has ceased to satisfy the conditions for authorisation and act within weeks. The Final Notices for Owenico Finance Ltd, AFG SARAFI Ltd, VS1 Business Services (Europe) Ltd, Dania Money Transfer Ltd, Stallion Money Limited, Omdoom General Trading Limited and iCorp Global Limited — all between January and April 2026 — follow this pattern.
+
+### 2. The PSR 2017 threshold conditions are broad
+
+A payments firm's authorisation requires it to satisfy ongoing conditions covering safeguarding, governance, financial soundness, and the fitness and propriety of those who run the business. Financial-crime control deficiencies that would be hard to package into a discrete AML fine often map cleanly onto a finding that the firm has stopped satisfying one of those conditions. This means the FCA can address the underlying concern — usually a mix of weak transaction monitoring, inadequate customer due diligence, opaque ownership, or thin governance — without having to litigate it as a specific AML breach.
+
+### 3. Most payments firms cannot pay a meaningful fine
+
+The economic profile of a small money remitter or e-money institution does not support a deterrent-sized financial penalty. A £50,000 fine against a firm whose annual revenue is below £1m delivers neither restitution nor a market signal. Cancellation, by contrast, removes the harm at source and frees up the regulator's enforcement capacity for cases where a fine actually changes behaviour.
+
+## What the 2025–2026 Cases Show
+
+The recent docket has a clear concentration. Of the twenty-five payments-firm actions in 2025 and the first months of 2026, the largest single cluster involves money-transfer and remittance firms — often small, often serving specific community corridors, and often with cross-border transaction volumes that are large relative to their governance capacity. Easyremit Limited and Divine Payments Limited (December 2025), First Money Services Ltd and Victorian Money Limited (December 2025), PAYMENTSMB Limited and Motmaen Limited (August 2025), and the January–April 2026 cohort all sit in this segment.
+
+The recurring breach language in the FCA's notices points to two themes. "Failure to meet the conditions" appears in virtually every case — meaning the FCA found a substantive deficiency in safeguarding, governance, or financial crime controls. "Failure to carry on payment service activities" appears in a smaller subset — meaning the firm had become dormant or non-compliant in its core licensed activity.
+
+## Where Monetary AML Fines Do Appear
+
+When the FCA wants the headline fine, it directs it at banks. The pattern is consistent across recent years:
+
+- **Nationwide Building Society — £44.08m (December 2025)** for financial-crime control failings.
+- **Three bank monetary penalties in 2025** plus two in 2024 — the largest came against major UK banks with capacity to pay and balance sheets where the fine registers as a market signal.
+- **Historical Tier-1 AML penalties** — including the £163m against Deutsche Bank in 2017 and the £284m against the same firm in 2017, plus £72m against Barclays in 2015 — were all against large banks, not payments institutions.
+
+Payments-firm compliance teams sometimes benchmark themselves against the wrong cases. The Nationwide fine of December 2025 is the wrong reference point. The right reference points are the ten to fifteen permissions cancellations that landed in the same calendar quarter.
+
+## What This Means for Payments-Firm Compliance Teams
+
+For MLROs at payments firms: the immediate risk to your firm is not the AML fine you read about in the trade press. It is a Final Notice under regulation 10 of the PSR 2017 that cancels your authorisation. Three operational implications follow.
+
+1. **Treat threshold conditions as the live document.** Your governance papers, your safeguarding controls, your financial-crime framework and your senior-manager fitness assessments are the body of evidence the FCA will examine if it suspects you no longer satisfy the conditions. The condition-by-condition self-assessment that some firms perform annually as a tickbox should be running quarterly, with documented Board challenge.
+
+2. **Resolve dormancy and corridor concentration risks proactively.** A material decline in active payment volumes, or an unhealthy concentration in a single high-risk corridor, can itself form the basis of a "failure to carry on regulated activity" finding. The December 2025 actions against Easyremit and Divine Payments both involved this pattern.
+
+3. **Voluntary requirements (VREQs) are a tool, not a defeat.** Where the FCA has supervisory concerns, an early voluntary requirement on inflows or activities preserves authorisation and demonstrates engagement. Firms that resist VREQs and instead force the regulator to use Section 55J of FSMA 2000 to impose requirements have substantially worse outcomes.
+
+For boards and NEDs at payments firms: three questions to put on the next risk committee agenda. (1) Can we evidence — with current documentation, not last year's papers — that we continue to satisfy each of our PSR 2017 threshold conditions? (2) Have we exercised our incident-management and financial-crime escalation procedures in the last six months, or only documented them? (3) If the FCA wrote to us tomorrow asking why we should remain authorised, what would the answer look like, and who would write it?
+
+For consultants and law firms: the demand profile here is different from the AML-fine work that historically dominated the financial-crime advisory market. Payments-firm engagements turn on threshold-condition reviews, fitness-and-propriety assessments of senior managers, and the design of pre-emptive VREQs. Firms that move from "AML health check" framing to "permissions defensibility" framing will find a more receptive audience.
+
+## What's Coming Next
+
+The FCA's late-2025 publications signal that the volume of payments-firm enforcement is likely to grow further. The Firm Checker tool launched in December 2025 makes it materially easier for consumers to verify a payments firm's authorisation status — which in turn raises the reputational stakes of being on the cancellation register. The Payments Vision Delivery Committee's work through 2026 and the FCA's stated 2026 priority on stablecoin payments will extend the regulator's enforcement surface into payments services that did not previously sit comfortably within the PSR 2017 framework.
+
+For payments firms, the next eighteen months are likely to bring a continued shift in the centre of regulatory gravity toward threshold-condition supervision and away from after-the-fact penalty. The firms that adjust their compliance posture accordingly will protect their authorisation. Those that continue to monitor AML-fine headlines as the leading indicator of risk will be solving the wrong problem.
+
+For an interactive view of FCA enforcement activity by firm category, year and breach type — including the full 48-action payments-firm dataset referenced above — explore our dashboard.
+    `,
+    category: "Sector Analysis",
+    readTime: "7 min read",
+    date: "June 2026",
+    dateISO: "2026-06-16",
+    featured: false,
+    status: "scheduled",
+    keywords: [
+      "FCA payments firm enforcement",
+      "PSR 2017 permissions cancellation",
+      "payments firm AML",
+      "money remittance enforcement",
+      "FCA payments compliance",
+      "e-money institution FCA",
+      "payments firm Final Notice",
+      "FCA threshold conditions payments",
+    ],
+  },
+  {
     id: "fca-fines-insurance",
     slug: "fca-fines-insurance-sector",
     title: "FCA Fines for Insurance Companies: Complete Sector Analysis",
