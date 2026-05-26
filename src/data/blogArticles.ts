@@ -1246,6 +1246,117 @@ This page will be updated if additional April 2026 enforcement actions are subse
     ],
   },
   {
+    id: "dora-enforcement-18-months",
+    slug: "dora-enforcement-18-months",
+    title: "DORA at 18 Months: Why Enforcement Hasn't Started — and What's Coming",
+    seoTitle:
+      "DORA Enforcement 2026 | 18 Months In, Why There Are No Public Fines Yet & What to Expect Next",
+    excerpt:
+      "Eighteen months after the Digital Operational Resilience Act went into application, public enforcement actions remain effectively zero. The reason isn't regulatory inertia — it's that the supervisory architecture is still being built. Here's what's happened, why fines have not yet appeared, and what compliance teams should be doing before they do.",
+    content: `
+## DORA at 18 Months: Supervisory Build-Out, No Enforcement Yet
+
+**The Digital Operational Resilience Act went into application on 17 January 2025. Eighteen months on, the volume of public DORA-related fines across EU regulators is, for practical purposes, zero.** This is not because firms have been compliant. It is because the supervisory architecture DORA created — particularly the oversight regime for Critical ICT Third-Party Providers — has only just finished being built. The first wave of enforcement is expected in late 2026 and early 2027. This article covers what has actually happened since application, why the silence is structural rather than incidental, and what firms should be doing now to position themselves before the enforcement window opens.
+
+## DORA at a Glance
+
+| Milestone | Date | What it means |
+| --------- | ---- | ------------- |
+| DORA enters application | 17 January 2025 | Direct obligations on financial entities begin |
+| ESA Oversight Guide published | 20 July 2025 | First operational framework for ESAs' oversight of CTPPs |
+| First CTPP designations | 18 November 2025 | Initial cohort of Critical ICT Third-Party Providers named |
+| Updated CTPP designations | 2 January 2026 | Designation list refreshed |
+| ESAs / UK regulators MoU on CTPP oversight | 14 January 2026 | Cross-border supervisory cooperation framework |
+| PRA PS7/26 published | 18 March 2026 | UK equivalent on operational incident & third-party reporting |
+| Public DORA-derived enforcement actions | None confirmed | Supervisory rather than enforcement phase |
+
+## Why There Are No Fines Yet
+
+Three reasons, in order of importance.
+
+### 1. The oversight regime only just finished standing up
+
+DORA introduced a genuinely novel supervisory architecture. National Competent Authorities (NCAs) supervise financial entities directly, while the European Supervisory Authorities (ESAs) — EBA, ESMA, and EIOPA — have direct oversight of Critical ICT Third-Party Providers. That CTPP oversight regime is unprecedented in EU financial law. It required:
+
+- The ESAs to publish a coordinated Oversight Guide (delivered 20 July 2025, six months after DORA application)
+- A formal designation process for which third-party providers count as critical (first list 18 November 2025)
+- Cooperation arrangements with non-EU regulators where CTPPs operate cross-border (MoU with UK regulators signed 14 January 2026)
+
+For the first eight to twelve months of DORA application, the ESAs were not in a position to take enforcement action against CTPPs because the designation list had not yet been finalised. Now that it has, the oversight work itself begins.
+
+### 2. Supervisory engagement comes before public action
+
+DORA's penalty regime is significant — periodic penalty payments of up to 1% of average daily worldwide turnover, plus administrative pecuniary sanctions at the NCA level — but it is structured for use after a supervisory dialogue has been exhausted. Across NCAs, the visible activity in 2025 and the first half of 2026 has been thematic reviews, Register of Information submissions, and incident-reporting test runs rather than headline penalties.
+
+This is consistent with the FCA and PRA's experience implementing operational resilience in the UK: the public enforcement phase began roughly three to four years after the rule entered force. DORA is on a comparable arc, with the difference that the EU regime has more aggressive deadlines for compliance and a parallel CTPP oversight track that has no UK analogue.
+
+### 3. NCA capacity is being built in real time
+
+Most EU NCAs did not have dedicated DORA enforcement teams when the regulation went live. Recruitment, training, and the establishment of ICT-specific supervisory functions has been ongoing throughout 2025 and into 2026. The Bank of Italy's April 2026 operational resilience webinar and the Bank of England's 14 May 2026 speech by Liz Oakes are both indicators of regulators publicly socialising their expectations — a step that typically precedes, rather than coincides with, formal action.
+
+## What Has Happened Instead of Fines
+
+Several activities matter for compliance teams even though none are penalty-bearing.
+
+**Register of Information returns.** EU financial entities were required to submit their first DORA Register of Information to NCAs in 2025. These returns are the supervisory baseline: gaps, inconsistencies, and weak third-party governance flagged at this stage are likely to surface in early enforcement cases.
+
+**Incident reporting practice runs.** DORA's major-incident reporting regime (45-day classification deadline, sequential reporting to NCAs) has been actively used since application. Several EU regulators have provided informal feedback on submissions, with common themes around classification thresholds and root-cause specificity.
+
+**Threat-led penetration testing (TLPT) coordination.** DORA's advanced testing regime, modelled on TIBER-EU, requires NCAs to coordinate threat-led penetration tests for systemically significant entities. The first wave of DORA TLPTs is in progress in several jurisdictions.
+
+**Third-party arrangement repapering.** Across the EU, firms have spent 2025 and the first half of 2026 renegotiating ICT outsourcing arrangements to meet DORA's contractual minimums. The deadline pressure here has driven significant boardroom and legal-spend, even in the absence of supervisory action.
+
+## How DORA Compares to Adjacent Regimes
+
+The UK's PRA and FCA operational resilience framework, which entered into force in March 2022 with a three-year transition, only began producing public enforcement actions in the latter part of that transition window. The PRA's PS7/26 (18 March 2026) extends the UK regime to incident and third-party reporting in a way that runs parallel to DORA — and was deliberately calibrated to support the UK's MoU with the ESAs on CTPP oversight.
+
+The Hong Kong Monetary Authority's "good practices for addressing vulnerabilities related to operational resilience" (31 March 2026) and the Bank of Italy's April 2026 webinar illustrate the same pattern in different jurisdictions: supervisors are publicly signalling expectations before they act on them.
+
+The implication for firms operating across these regimes is that DORA-aligned controls, evidence, and reporting will increasingly satisfy adjacent UK and APAC requirements — but the converse is also true. A weakness identified by the FCA or HKMA in 2026 will inform what the ESAs and NCAs prioritise in their first DORA cases.
+
+## What's Coming Next
+
+Realistic forward calendar for DORA enforcement:
+
+- **H2 2026:** First public NCA supervisory actions, likely focused on Register of Information completeness and on incident classification errors. These may be censure-style rather than monetary.
+- **Late 2026 / Q1 2027:** First ESA oversight findings on designated CTPPs, focused on initial assessments of their ICT risk management.
+- **H1 2027:** First DORA-derived monetary penalties from NCAs, likely against mid-sized entities for incident reporting failures or third-party arrangement deficiencies. Expect penalties in the low-to-mid seven figures (EUR) for the early cases.
+- **2027–2028:** TLPT-related findings begin to surface, and the first significant cases against major institutions emerge.
+
+This calendar is necessarily indicative — DORA cases will accelerate or slow based on incident volume and on whether any high-profile ICT failure forces the regime into the headlines. A material outage at a designated CTPP would compress the timeline significantly.
+
+## What Compliance Teams Should Do Now
+
+For MLROs and Heads of Compliance: treat the next six to nine months as the final opportunity to remediate quietly. Once the first NCA enforcement action lands, supervisory peer-effects will accelerate scrutiny across the sector. Two questions matter most. (1) Is your Register of Information complete, accurate, and able to be reproduced quickly from your systems of record? (2) Could you produce a defensible classification rationale for the last three major incidents under DORA's thresholds, even if those incidents were not ultimately reported?
+
+For boards and NEDs: DORA is not an IT-team regulation. The Board has direct responsibility under Article 5 for the ICT risk management framework, including allocation of resources and approval of the digital operational resilience strategy. Three questions to put on the agenda. (1) Has the Board approved the ICT risk strategy in the last twelve months, with documented challenge to management? (2) Do we have visibility into our most concentrated ICT third-party dependencies — and would the loss of any one of them be survivable? (3) Is our incident-reporting machinery actually exercised, or has it only been documented?
+
+For consultants and law firms: the next twelve to eighteen months are the practical window in which firms can be helped to upgrade their DORA posture before remediation is forced under supervisory pressure. The most valuable engagements will combine technical ICT risk assessment with the contractual and governance review work that DORA's third-party regime requires.
+
+## A Note on the Coverage Gap
+
+A complete picture of DORA enforcement requires data from ESMA's own supervisory and enforcement activities, which we currently track on a limited basis. We will update this analysis as the first NCA actions and ESA oversight findings are published.
+
+For an interactive view of regulatory enforcement across the EU and beyond, including the ECB, BaFin, AMF, and CSSF data referenced above, explore our dashboard.
+    `,
+    category: "Thematic Analysis",
+    readTime: "8 min read",
+    date: "June 2026",
+    dateISO: "2026-06-09",
+    featured: false,
+    status: "scheduled",
+    keywords: [
+      "DORA enforcement",
+      "Digital Operational Resilience Act",
+      "DORA fines",
+      "CTPP oversight",
+      "Critical ICT Third-Party Provider",
+      "ICT risk management",
+      "DORA incident reporting",
+      "operational resilience EU",
+    ],
+  },
+  {
     id: "fca-fines-insurance",
     slug: "fca-fines-insurance-sector",
     title: "FCA Fines for Insurance Companies: Complete Sector Analysis",
