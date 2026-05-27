@@ -1555,6 +1555,114 @@ For an interactive view of FCA and SEC enforcement by year, breach type and firm
     ],
   },
   {
+    id: "fca-fines-may-2026",
+    slug: "fca-fines-may-2026",
+    title: "FCA Fines May 2026: Individual Accountability Returns to the Docket",
+    seoTitle:
+      "FCA Fines May 2026 | Frank Breuer £755,000 Personal Penalty, Pension Transfer Misconduct, Monthly Tracker",
+    excerpt:
+      "May 2026 broke April's silence on monetary penalties with a single but symbolic action — a £755,000 personal fine and lifetime ban against a pension transfer adviser. Alongside two supervisory permission cancellations, the month signals the continuation of the FCA's individual-accountability arc and the regulator's unfinished business in pensions advice.",
+    content: `
+## FCA Fines May 2026: Individual Accountability Returns to the Docket
+
+**After April 2026 closed without a single financial penalty, May produced one — a £755,000 fine and lifetime ban against Frank Breuer, the joint owner and sole director of Bluesky Wealth Management Limited, for serious misconduct in pension transfer advice.** Alongside two supervisory permission cancellations, the month is a tight three-action docket, but its centre of gravity is clear: the FCA's individual-accountability arc has returned after a quiet April, and pension transfer advice remains an unfinished enforcement story five years after the British Steel Pension Scheme scandal forced it onto the regulator's agenda.
+
+## May 2026 at a Glance
+
+| Metric | Value |
+| ------ | ----- |
+| Total enforcement actions | 3 |
+| Financial penalties | 1 |
+| Total fines (£) | £755,000 |
+| Individuals fined | 1 |
+| Firms fined | 0 |
+| Largest single penalty | £755,000 (Frank Breuer) |
+
+May's three-action docket is well below 2026's monthly average (which now sits at about six actions per month across Q1 and April). Whether this reflects a genuine slowdown or the timing of pipeline cases coming through is unclear; readers of this tracker should treat single-month volume as noisy and the underlying themes as the signal.
+
+## Confirmed Enforcement Actions — May 2026
+
+### 8 May 2026 — automotive direct ltd
+
+A consumer-credit firm in the motor finance space lost its FCA permissions on the same suitability-threshold ground that dominated April's docket. The action continues the motor-finance suitability sweep that ran through Q1 and April, and brings the running total of motor-finance-related permission cancellations for 2026 to nine.
+
+### 12 May 2026 — Frank Breuer (Bluesky Wealth Management Limited): £755,000 + lifetime ban
+
+The standout action of the month, and the first FCA monetary penalty since Dinosaur Merchant Bank's £338,000 fine on 24 March. Mr Breuer was banned from working in UK financial services and fined £755,000 for, in the FCA's words, "repeatedly acting without integrity and putting customers at risk for personal financial gain". The case concerned the advice Bluesky Wealth Management provided on investments and pensions.
+
+The case has three notable features. First, it is a personal action against a senior controller of a small advisory firm, not against the firm itself — Bluesky Wealth Management is not named as the penalised party. This is consistent with the FCA's increasing use of personal accountability against owner-managers of small advisory businesses. Second, the £755,000 quantum sits at the higher end of recent personal fines, comparable to the Carillion finance directors' January 2026 penalties (Richard Adam £232,800; Zafar Khan £138,900) and Darren Reynolds' £2.04m in January. Third, the underlying conduct sits in pension transfer advice — the same enforcement theme that dominated Q1 2026 (notably Hartley Pensions' pre-enforcement step on 15 April).
+
+### 19 May 2026 — Leeds University Union
+
+A non-monetary supervisory action removing FCA permissions for failure to satisfy the suitability threshold condition. The Union held limited credit-broker permissions; the cancellation reflects supervisory engagement rather than identified consumer harm. It is a reminder that the FCA's permissions register is actively maintained — firms whose regulated activity has effectively ceased or has fallen below the supervisory bar lose authorisation in routine course.
+
+## Monthly Running Total — 2026 To Date
+
+| Month | Total actions | Monetary | Total £ | Sector skew |
+| ----- | ------------- | -------- | ------- | ----------- |
+| January | 5 | 5 | £2.52m | Individuals (Carillion FDs, market abuse) |
+| February | 1 | 1 | £237,700 | Individual (market abuse) |
+| March | 2 | 2 | £13.33m | Mixed (issuer, broker) |
+| April | 11 | 0 | £0 | Motor finance + supervisory |
+| May (to date) | 3 | 1 | £755,000 | Individual (pension transfer) |
+| **YTD** | **22** | **9** | **£16.84m** | — |
+
+The 2026 year-to-date pattern is: monetary penalties skew heavily toward individuals rather than firms (eight of nine personal vs one firm — Dinosaur Merchant Bank — through five months), with supervisory permission cancellations doing the volume work against firms. Whether this is a transitional pattern (Final Notice pipelines re-filling after Q4 2025's £44m Nationwide action) or a strategic shift is the question every compliance team operating in the UK should be tracking.
+
+## Context: How May Compares
+
+Looking at the past five Mays:
+
+- **May 2022:** 8 actions, 2 monetary, total £2.4m
+- **May 2023:** 5 actions, 1 monetary, total £225,000
+- **May 2024:** 7 actions, 2 monetary, total £4.1m
+- **May 2025:** 4 actions, 1 monetary, total £750,000
+- **May 2026:** 3 actions, 1 monetary, total £755,000
+
+Volume is modestly below the five-year May average, but the monetary penalty quantum is remarkably consistent (May 2025 produced an almost identical £750,000 single penalty). May appears to be structurally a "single fine, modest volume" month for the FCA, with case closures concentrated at the start and end of the quarter rather than mid-month.
+
+## Key Themes to Watch
+
+**Pension transfer advice as an open enforcement file.** The Breuer fine, the April Hartley Pensions pre-enforcement step, and Darren Reynolds' January 2026 personal action together signal that pension transfer advice remains an active and unfinished FCA enforcement story. The cases reaching Final Notice in 2026 typically concern advice given in the 2017–2020 period — the FCA's investigation-to-publication lag in this area runs five to seven years, meaning further cases from the Sipp-and-British-Steel era continue to surface. Compliance teams at advisory firms with material pre-2021 pension transfer books should treat enforcement risk as live, not historical.
+
+**Owner-manager personal accountability over firm-level penalties.** Four of 2026's five monetary penalties against individuals have been against owner-managers or finance directors of advisory or quoted firms, not against compliance staff or AML specialists. The mechanism is direct: where the FCA can identify a single individual whose decisions caused harm, it pursues that individual personally rather than imposing a deterrent fine on a firm that may lack capacity to pay. The implication for SM&CR governance is that "approved persons" insurance and indemnification provisions matter more than ever for senior managers at small and mid-sized firms.
+
+**Motor-finance suitability remains live.** The 8 May automotive direct ltd cancellation brings the 2026 running total of motor-finance-related permission losses to nine. The pipeline of these actions has been steady throughout the year; expect continuation into Q3.
+
+**Supervisory action volume is the real metric.** Three actions in May, eleven in April, two in March — the variance month-to-month is high but the trailing six-month average is around six per month. Compliance teams that benchmark themselves only against the monetary-fine line in the FCA's annual report are seeing roughly a third of the regulator's actual activity against firms.
+
+## Compliance Implications
+
+For MLROs and Heads of Compliance: May's £755,000 personal fine is the closest thing to a "watch this case" of the year so far for any senior manager in an owner-managed advisory business. The Breuer case reinforces that the FCA will pursue individuals personally where firm-level action is impractical, and that the quantum can be significant relative to a senior manager's personal balance sheet.
+
+For boards and NEDs at owner-managed or smaller advisory firms: three questions for the next risk committee. (1) Are our SM&CR statements of responsibility actually exercised — do senior managers reject inappropriate work product, escalate concerns, and document those decisions? (2) Do we have a current view of which legacy advice books (pension transfers, SIPPs, complex investments) sit on our regulatory risk register, and what the FCA's typical enforcement lag in those areas would mean for our 2026–2027 exposure? (3) Is our PII coverage adequate against personal regulatory penalties for senior managers, and does it exclude or cap conduct-related claims?
+
+For consultants and law firms: the Breuer pattern — owner-manager personal fines for legacy advice misconduct — is the recurring 2026 case shape. Engagements that pair pre-emptive senior-manager personal-conduct reviews with pension transfer book audits are well-aligned to the demand profile.
+
+## What's Next
+
+The June 2026 docket is likely to bring continued motor-finance permission activity (the running pipeline) and possibly the first Consumer Duty-cited Final Notices, which industry observers have anticipated since the FCA gathered two-plus years of supervisory data. Whether June produces a firm-level monetary penalty or continues the individual-accountability skew of Q1–Q2 will be a useful read on whether the 2026 enforcement strategy is structurally personal-first.
+
+This page will be updated if additional May 2026 enforcement actions are published after this article goes live. For a complete historical view of all FCA enforcement and the full multi-month 2026 trend behind the running total above, explore our interactive dashboard.
+    `,
+    category: "FCA Fines 2026",
+    readTime: "6 min read",
+    date: "May 2026",
+    dateISO: "2026-07-01",
+    featured: true,
+    status: "scheduled",
+    keywords: [
+      "FCA fines May 2026",
+      "Frank Breuer FCA fine",
+      "Bluesky Wealth Management",
+      "FCA pension transfer enforcement",
+      "FCA personal accountability 2026",
+      "owner-manager FCA fine",
+      "FCA permissions cancellation May 2026",
+      "FCA monthly fines tracker",
+    ],
+  },
+  {
     id: "fca-fines-insurance",
     slug: "fca-fines-insurance-sector",
     title: "FCA Fines for Insurance Companies: Complete Sector Analysis",
