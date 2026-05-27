@@ -1454,6 +1454,107 @@ For an interactive view of FCA enforcement activity by firm category, year and b
     ],
   },
   {
+    id: "fca-vs-sec-enforcement-differences",
+    slug: "fca-vs-sec-enforcement-differences",
+    title: "FCA vs SEC Enforcement: 5 Differences That Actually Matter",
+    seoTitle:
+      "FCA vs SEC Enforcement Comparison 2026 | 5 Real Differences in How the Two Regulators Penalise Firms",
+    excerpt:
+      "Compliance teams that operate on both sides of the Atlantic often benchmark FCA actions against SEC actions and reach the wrong conclusions. The two regulators differ on five structural points — scale, what counts as a 'fine', whistleblower incentives, individual accountability, and how political cycles bend the curve. Here's what each looks like, with the data.",
+    content: `
+## FCA vs SEC Enforcement: 5 Differences That Actually Matter
+
+**The SEC has historically imposed four to five times as many monetary penalties per year as the FCA, with aggregate dollar values five to thirty times higher. In 2025, for the first time in a decade, that gap closed completely — both regulators settled at roughly thirty monetary penalties for the year.** The convergence is not because the FCA accelerated. It is because the SEC slowed dramatically under a new administration. Understanding why and how the two regulators differ matters for any compliance team comparing UK and US enforcement records, and especially for groups whose policies are calibrated against the wrong reference point.
+
+## The Headline Numbers
+
+| Year | FCA monetary | FCA total | SEC monetary | SEC total (GBP equiv) |
+| ---- | ------------ | --------- | ------------ | --------------------- |
+| 2020 | 13 | £193m | 120 | £7.8bn |
+| 2021 | 15 | £620m | 96 | £3.1bn |
+| 2022 | 31 | £262m | 108 | £14.1bn |
+| 2023 | 21 | £859m | 140 | £2.4bn |
+| 2024 | 37 | £260m | 152 | £11.3bn |
+| 2025 | 30 | £506m | 30 | £620m |
+
+What looks like the same number in 2025 hides five structural differences that compliance teams should understand before they treat the two regulators as comparable.
+
+## 1. Scale — SEC Operates at a Different Order of Magnitude
+
+The SEC's enforcement division has historically prosecuted more cases in a single year than the FCA's has in any rolling three-year window. Its budget supports hundreds of investigative staff across regional offices; the FCA's enforcement team is materially smaller and operates from a single jurisdiction. In dollar terms, the gap is larger still — the SEC's 2022 enforcement haul (over £14bn equivalent) was larger than the FCA's cumulative monetary penalties for the entire 2020–2025 period.
+
+This scale difference matters for compliance teams because risk modelling that treats the two regulators symmetrically — e.g. "the SEC fined X% of broker-dealers last year, so the FCA might do the same to UK brokers" — gets the base rate wrong by a factor of five or more. A UK firm with a US subsidiary should expect its US business to face roughly five times the enforcement frequency and an order of magnitude more variance in penalty size.
+
+## 2. What Counts as a 'Fine' — Disgorgement Is the Hidden Multiplier
+
+The SEC's monetary outcomes are typically the sum of two elements: a civil penalty (the punitive component) plus disgorgement (forced surrender of ill-gotten gains, often with prejudgement interest). The FCA's Final Notices contain a single penalty figure. In headline aggregations the two are treated alike, but they are doing different work.
+
+Disgorgement is the larger of the two SEC components in most major cases. It is also the source of much of the SEC's dollar-value variance — a single insider-trading or accounting-fraud case can produce hundreds of millions in disgorgement against an individual or a fund, with no UK analogue. When 2022's SEC enforcement total exceeded £14bn equivalent, it was disgorgement, not civil penalty, doing the heavy lifting.
+
+The FCA has restitution powers under Section 384 of FSMA 2000, but uses them sparingly and typically channels them through firm-level redress schemes rather than as part of an enforcement penalty. Sapia Partners' £19m settlement on behalf of former WealthTek clients in April 2026 illustrates the UK approach — it is restitution, sits outside the fines table, and is rarely counted in cross-regulator comparisons.
+
+## 3. The 2025 Inflection — Political Cycles Bend the SEC Curve
+
+The SEC's 2025 enforcement drop to roughly thirty monetary penalties — from 152 the prior year — was not a data artefact. It tracked the change of administration and the appointment of a new SEC chair with a stated preference for clear-rule enforcement and a critical view of "regulation by enforcement." The 2026 numbers in the first five months of the year (just two monetary penalties recorded in our data) extend the same pattern.
+
+The FCA is not similarly cyclical. Its enforcement output through political transitions has been comparatively stable, in part because the regulator's strategic priorities are set in three-year cycles that overrun electoral cycles, and in part because the UK's enforcement governance structure (independent Decision Committee, Tribunal oversight) is harder to redirect by political signal.
+
+What this means for compliance teams is that SEC enforcement volume should be modelled as a function of administration era, not as a steady baseline. The current administration's enforcement posture will likely persist for the remainder of its term. The FCA's volume, by contrast, is reasonable to model as a moving average of the recent past.
+
+## 4. Whistleblower Incentives — The SEC Has a Programme; the FCA Mostly Has Intent
+
+The SEC's whistleblower programme under Dodd-Frank pays informants 10–30% of monetary sanctions over $1m, and has resulted in cumulative awards exceeding $2bn since 2012. Several individual awards have exceeded $100m. The programme has materially shaped SEC case generation — a large proportion of significant enforcement actions over the past decade had whistleblower inputs.
+
+The FCA announced its intent to consult on financial incentives for whistleblowers in 2024 and confirmed in late 2025 that it would proceed with a framework, but the operational programme remains comparatively modest. The 2025–2026 publications around financial-crime cooperation and the December 2025 "Working Together Against Financial Crime" initiative signal direction without yet matching the SEC's case-generating economics.
+
+For dual-listed firms or US-headquartered groups with UK subsidiaries, this asymmetry means an internal employee with concerns about US-related conduct has materially stronger financial incentives to report externally to the SEC than to the FCA. Internal reporting frameworks and whistleblower-channel design should be calibrated to that reality, not to a generic "regulators care about whistleblowers" assumption.
+
+## 5. Individual Accountability — Same Rhetoric, Different Mechanics
+
+Both regulators publicly emphasise individual accountability, but they reach it differently.
+
+The FCA uses the Senior Managers and Certification Regime to make named individuals at UK firms personally responsible for specific business functions. Personal fines against senior managers — the Carillion finance directors received over £370,000 in combined penalties in January 2026 — are a recurring feature of FCA enforcement. The mechanism is administrative: the FCA finds a breach of an individual's prescribed responsibilities and imposes a penalty directly.
+
+The SEC reaches individual accountability through civil litigation, often via a complaint filed in federal court alongside a firm-level settlement. Individual SEC defendants face a wider range of outcomes — from cease-and-desist orders through monetary penalties to disgorgement, officer-and-director bars, and securities-industry bars — but the path is more frequently adversarial. Personal financial penalties as a proportion of total SEC enforcement are smaller than under the FCA's SM&CR regime, but the consequential career impact (industry bars, criminal referrals) is often larger.
+
+The implication for compliance teams running senior-manager fitness frameworks: UK SM&CR controls travel imperfectly to US affiliates. A US-side counterpart programme typically needs to focus on documented supervisory responsibility (Rule 5121, FINRA Rules 3110/3120) and personal Section 17(a)/Section 10(b) exposure, not on a direct translation of SM&CR statements of responsibilities.
+
+## What This Means for Compliance Teams
+
+For Heads of Compliance and MLROs at UK firms with US operations: the asymmetry in this article is the most important framing decision your enforcement-risk model needs to make. Treating SEC enforcement as a higher-volume version of FCA enforcement undersells both the disgorgement-driven variance and the political-cycle elasticity of SEC output. Build two separate models, calibrated to the structural mechanics described above.
+
+For boards and NEDs at dual-listed firms: three questions worth raising at the next risk committee. (1) Does our enforcement-risk register distinguish SEC civil penalty exposure from disgorgement exposure as separate quantum lines? (2) Have we benchmarked our whistleblower channels against the SEC programme's economic incentives, and would an employee with US-related concerns find our internal channel competitive? (3) Are our SM&CR and US supervisory-responsibility frameworks integrated, or do they sit in separate silos with potential overlap and gap risk?
+
+For consultants and law firms advising on cross-border enforcement: the 2025 SEC slowdown creates a temporary planning window for US-side compliance posture rebuilds that would have been politically harder to recommend two years ago. UK firms accustomed to a high-SEC-enforcement environment may now have eighteen to twenty-four months in which to upgrade their US controls without a deal-breaker enforcement action in flight. That window should be used.
+
+## What's Coming Next
+
+For the SEC: the current administration's enforcement posture is likely to persist into 2027. Expect continued lower volume, with cases concentrated in clear-rule areas (insider trading, accounting fraud) and away from areas the new chair has signalled as outside the SEC's core remit (some crypto enforcement, certain ESG-related areas).
+
+For the FCA: 2026 enforcement output is on track to match or modestly exceed 2025 in monetary terms. The Consumer Duty enforcement window opens during this period, and the first formal Final Notices citing Consumer Duty breaches are expected. UK firms should plan for continued steady-state FCA activity through 2026.
+
+For the convergence itself: 2025's parity is unlikely to persist. As the SEC adjusts to its new strategic posture and the FCA's Consumer Duty enforcement wave begins, the gap will widen again — though probably not back to the four-to-five-times historical ratio in the near term.
+
+For an interactive view of FCA and SEC enforcement by year, breach type and firm category — including the full multi-year datasets behind the table above — explore our dashboard.
+    `,
+    category: "Thematic Analysis",
+    readTime: "8 min read",
+    date: "June 2026",
+    dateISO: "2026-06-23",
+    featured: false,
+    status: "scheduled",
+    keywords: [
+      "FCA vs SEC enforcement",
+      "FCA SEC comparison",
+      "SEC fines 2025",
+      "SEC enforcement slowdown",
+      "SM&CR vs SEC accountability",
+      "SEC disgorgement",
+      "SEC whistleblower programme",
+      "FCA penalties versus SEC",
+    ],
+  },
+  {
     id: "fca-fines-insurance",
     slug: "fca-fines-insurance-sector",
     title: "FCA Fines for Insurance Companies: Complete Sector Analysis",
