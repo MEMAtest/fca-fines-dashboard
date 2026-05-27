@@ -1663,6 +1663,105 @@ This page will be updated if additional May 2026 enforcement actions are publish
     ],
   },
   {
+    id: "consumer-duty-three-years-enforcement",
+    slug: "consumer-duty-three-years-enforcement",
+    title: "Consumer Duty Three Years In: Why the FCA Hasn't Fined Anyone",
+    seoTitle:
+      "Consumer Duty Three Years In | Why There Are No Final Notices Yet & What the FCA's Supervisory Activity Signals",
+    excerpt:
+      "Three years after the Consumer Duty came into force, no FCA Final Notice has cited it as the basis for a financial penalty. That is not the FCA going easy on firms — it is the regulator deliberately running a multi-year supervisory build-up. Here's what has actually happened, why fines have not come yet, and what the first wave will look like.",
+    content: `
+## Consumer Duty Three Years In: A Supervisory Phase, Not an Enforcement Pause
+
+**The Consumer Duty came into force on 31 July 2023 for new and existing products, and on 31 July 2024 for closed products. Three years on from the first deadline, no FCA Final Notice has explicitly cited the Consumer Duty as the basis for a financial penalty.** The interpretation that has circulated in trade press — that the FCA is "going slow" or that the Duty lacks enforcement teeth — misreads what the regulator is doing. The Consumer Duty's first three years have been a deliberate supervisory build-up: Board Report scrutiny, sector-specific thematic reviews, Dear CEO letters, and the methodical accumulation of evidence. The first formal Consumer Duty-citing Final Notice is widely anticipated within the next twelve months, and the supervisory record that the FCA has built since 2023 will shape it.
+
+## Consumer Duty Timeline at a Glance
+
+| Date | Milestone | Status |
+| ---- | --------- | ------ |
+| 31 July 2023 | Consumer Duty enters force (new + existing products) | Live for ~3 years |
+| 31 July 2024 | Closed products extension | Live for ~2 years |
+| July 2024 | First Consumer Duty Board Reports due | Completed |
+| 16 May 2024 | FCA Dear CEO letters on closed-products implementation (six sector tracks) | Supervisory expectation set |
+| July 2025 | Second Consumer Duty Board Reports due | Completed |
+| 2 July 2025 | FCA publishes final rules on Consumer Duty implementation | Implementation phase closes |
+| 17 April 2026 | FCA "Year 2 Consumer Duty Board Reports: progress and what comes next" | Supervisory review published |
+| Expected H2 2026 / 2027 | First Consumer Duty-citing Final Notice | Enforcement phase opens |
+
+## Why There Are No Final Notices Yet
+
+The absence of Consumer Duty fines is not surprising once the regulatory mechanics are understood. Three reasons.
+
+### 1. The FCA's enforcement-to-publication cycle runs three to five years
+
+A Final Notice typically reflects conduct that took place several years before publication. The 2026 Final Notices the FCA is issuing now (Carillion FDs in January, John Wood Group in March, Frank Breuer in May) concern conduct dating to the 2017–2021 window. The earliest in-scope Consumer Duty conduct dates to July 2023, meaning the first Final Notices citing the Duty would naturally land in 2026–2028 on the regulator's standard investigation-to-publication arc. Three years in is exactly when this pipeline should be filling.
+
+### 2. The Duty is a principles-based regime that requires accumulated evidence
+
+Final Notices under principles-based regulation are evidentially demanding. To cite a breach of PRIN 12 (the Consumer Duty), the FCA must demonstrate that a firm failed to deliver good outcomes across one or more of the four Duty outcomes — products and services, price and value, consumer understanding, or consumer support — and that the failure produced foreseeable consumer harm. Building that evidence requires the kind of multi-year supervisory engagement that Year 1 and Year 2 Board Reports have provided. The Year 2 report (April 2026) is significant precisely because it gives the regulator the second longitudinal data point — the basis on which sustained non-compliance can be identified.
+
+### 3. The FCA has signalled the supervisory phase
+
+The 17 April 2026 publication ("Year 2 Consumer Duty Board Reports: progress and what comes next") is not the language of enforcement. It is the language of expectation-setting before enforcement. The same supervisory pattern preceded the FCA's eventual enforcement waves for operational resilience, financial crime controls, and consumer credit affordability assessments — all areas where the regulator spent multiple years on thematic reviews and Dear CEO letters before issuing the first significant Final Notice in each area.
+
+## What the FCA Has Done Instead
+
+Compliance teams that look only for Final Notices miss the substantial body of Consumer Duty enforcement-adjacent activity the regulator has already produced.
+
+**Six sector-specific Dear CEO letters (16 May 2024)** addressed closed-products implementation across life insurance, asset management, retail banking, consumer finance, consumer investments, and "all other firms". These letters set granular expectations that the FCA has subsequently used as benchmarks for supervisory engagement.
+
+**Year 1 (2024) and Year 2 (2025–2026) Consumer Duty Board Report reviews** have given the FCA detailed visibility into individual firms' governance, fair-value frameworks, vulnerable-customer identification, and outcomes monitoring. The April 2026 review identified specific areas where firms must do more — meaning the regulator has documented and dated views of where individual firms are falling short.
+
+**Sector thematic reviews** have continued throughout 2024 and 2025, including focused work on fair-value assessments in motor finance, vulnerable customer treatment in retail banking, and consumer understanding in investment products. These reviews are public, individually firm-specific in their underlying data, and form the evidentiary base for subsequent enforcement.
+
+**Section 166 commissioning** has accelerated in 2025 and 2026 across sectors where Year 2 Board Reports flagged concerns. Each s166 is a formal exercise that produces a Skilled Persons report — and a Skilled Persons report identifying material outcomes-based failings is the most common direct precursor to a Final Notice.
+
+## What the First Wave Will Look Like
+
+Several features of the Consumer Duty's enforcement architecture can be predicted with reasonable confidence.
+
+**The first Final Notice will likely be a fair-value case.** Fair value is the most measurable of the four Duty outcomes — the FCA can point to specific quantum (price relative to benefit delivered) and demonstrate consumer harm in pounds. The motor finance commission and add-on cases that have run as supervisory matters through 2024 and 2025 are obvious candidates. Other strong candidates: high-priced gadget insurance, certain GAP-insurance products, and high-charge investment funds where the FCA's value-for-money analysis identified poor outcomes during Year 1 and Year 2 reviews.
+
+**The first Final Notice will probably be against a mid-sized firm, not a Tier 1 bank.** The FCA's enforcement pattern across other principles-based regimes has been to land the first major case against a firm large enough to send a sectoral signal but small enough not to consume a multi-year contested settlement. Expect a firm in the £100m–£1bn revenue range, with a clearly identifiable outcome failure and limited capacity to litigate.
+
+**Penalties will be sized to signal, not to recoup.** PRIN 12-based penalties will be set at a quantum that demonstrates the seriousness of the regime, likely in the £5m–£20m range for the first case. The penalty calculation will be structured to demonstrate the FCA's enforcement framework can produce material outcomes under the Duty — important precedent for the cases that follow.
+
+**Personal accountability under SM&CR will feature heavily.** The Consumer Duty's design places explicit responsibility on senior managers for delivering good outcomes. Expect the first Final Notice to be paired with action against named senior managers — almost certainly a Consumer Duty-aligned SMF (the senior manager with responsibility for the relevant business area) and possibly a CCO or CEO.
+
+## What This Means for Compliance Teams
+
+For Heads of Compliance and MLROs: the supervisory record the FCA has been building since 2023 is the input to the enforcement wave that is about to start. Compliance teams that have treated Board Reports as a documentation exercise rather than a strategic signal are at the highest risk. The 2026 priority is to ensure that the Year 3 Board Report (due July 2026) reflects genuine progress against the gaps the FCA identified in its Year 2 review, with documented evidence of management challenge and remediation actions.
+
+For boards and NEDs: three questions for the next risk committee. (1) Has the Board read, challenged, and signed off our most recent Consumer Duty Board Report, with documented push-back where management's analysis was thin? (2) Where the FCA's Year 2 thematic review identified sector-wide weaknesses, can we evidence that we are not in the cohort that gives rise to those concerns — or are we relying on hope? (3) Do we have a current, named view of which senior manager carries personal regulatory responsibility for Consumer Duty outcomes, and are they actually using that responsibility?
+
+For consultants and law firms: the next twelve to eighteen months are the most valuable window for Consumer Duty advisory work. Once the first Final Notice lands, firms will respond reactively and the available planning time will collapse. Practical engagements that combine outcomes-data analytics, fair-value model review, vulnerable-customer identification audits, and senior-manager personal-conduct preparation are the highest-leverage offerings.
+
+## What's Next
+
+The remainder of 2026 is likely to bring continued public-facing supervisory work — additional thematic reviews, possibly a third round of Dear CEO letters covering specific sub-sectors, and Year 3 Board Report scrutiny in Q3. The first Consumer Duty-citing Final Notice is realistically a late-2026 or early-2027 event, with the highest-probability sectors being motor finance, retail investments, and general insurance add-ons.
+
+When that first Final Notice lands, it will reshape Consumer Duty risk-management practice across UK financial services. The supervisory evidence base the FCA has built since 2023 — Board Reports, thematic reviews, Dear CEO letters, s166s — will be the underpinning of that case and the cases that follow. The firms that are still treating the Consumer Duty as an implementation project rather than a live enforcement regime are running out of time to adjust.
+
+For an interactive view of FCA enforcement by sector, firm category and year — including all the historical principles-based cases that inform the predictions in this article — explore our dashboard.
+    `,
+    category: "Thematic Analysis",
+    readTime: "9 min read",
+    date: "July 2026",
+    dateISO: "2026-07-14",
+    featured: false,
+    status: "scheduled",
+    keywords: [
+      "Consumer Duty enforcement",
+      "Consumer Duty Final Notice",
+      "FCA Consumer Duty 2026",
+      "PRIN 12 enforcement",
+      "Consumer Duty Board Report",
+      "fair value enforcement FCA",
+      "Consumer Duty three year anniversary",
+      "Consumer Duty fines",
+    ],
+  },
+  {
     id: "fca-fines-insurance",
     slug: "fca-fines-insurance-sector",
     title: "FCA Fines for Insurance Companies: Complete Sector Analysis",

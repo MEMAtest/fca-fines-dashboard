@@ -31,7 +31,7 @@
 | 3 | 2026-06-16 | Persona | FCA Payments Enforcement: Why It's Permissions, Not Fines | `payments-firms-fca-aml-enforcement` | Sector Analysis | scheduled |
 | 4 | 2026-06-23 | Comparison | FCA vs SEC Enforcement: 5 Differences That Actually Matter | `fca-vs-sec-enforcement-differences` | Thematic Analysis | scheduled |
 | 5 | 2026-07-01 | Recurring | FCA Fines May 2026: Individual Accountability Returns to the Docket | `fca-fines-may-2026` | FCA Fines 2026 | scheduled |
-| 6 | 2026-07-14 | Thematic | Consumer Duty Three Years In: Enforcement Reality Check | `consumer-duty-three-years-enforcement` | Thematic Analysis | planned |
+| 6 | 2026-07-14 | Thematic | Consumer Duty Three Years In: Why the FCA Hasn't Fined Anyone | `consumer-duty-three-years-enforcement` | Thematic Analysis | scheduled |
 | 7 | 2026-07-21 | Persona | Wealth Managers: How Consumer Duty Is Shaping Enforcement | `wealth-managers-consumer-duty-enforcement` | Sector Analysis | planned |
 | 8 | 2026-07-28 | Forensic | Anatomy of H1 2026's Biggest Fine *(picked at publish)* | `biggest-fine-h1-2026-forensic` | Case Study | planned |
 | 9 | 2026-08-04 | H1 special | H1 2026 Global Enforcement Halftime: 10 Things We Learned | `h1-2026-enforcement-halftime` | Trends Analysis | planned |

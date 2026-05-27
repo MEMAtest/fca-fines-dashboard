@@ -61,6 +61,7 @@ const iconMap: Record<string, React.ReactNode> = {
   "payments-firms-fca-aml-enforcement": <Building2 className="blog-card-icon" />,
   "fca-vs-sec-enforcement-differences": <Scale className="blog-card-icon" />,
   "fca-fines-may-2026": <PoundSterling className="blog-card-icon" />,
+  "consumer-duty-three-years-enforcement": <Users className="blog-card-icon" />,
   "fca-fines-insurance": <Shield className="blog-card-icon" />,
   // Regulator enforcement guides
   "fca-enforcement-guide": <Landmark className="blog-card-icon" />,
