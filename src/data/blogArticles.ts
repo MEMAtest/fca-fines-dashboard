@@ -1955,6 +1955,94 @@ For an interactive view of UK sanctions and broader regulatory enforcement, incl
     ],
   },
   {
+    id: "crypto-firms-global-enforcement-mica-fca-mas",
+    slug: "crypto-firms-global-enforcement-mica-fca-mas",
+    title: "Crypto Firms Under MiCA, FCA and MAS: What Enforcement Looks Like Now",
+    seoTitle:
+      "Crypto Enforcement 2026: MiCA vs FCA vs MAS | What Regulators Actually Do to Crypto Firms",
+    excerpt:
+      "If you read the headlines, crypto enforcement looks like nine-figure fines. Look at the three frameworks built specifically for crypto — the EU's MiCA, the FCA's registration regime, and MAS's licensing regime — and the picture is completely different. None of them is primarily a fining machine. All three are gatekeeping machines. For a crypto firm, the enforcement risk that should keep you up at night is not a penalty — it's losing, or never getting, permission to operate.",
+    content: `
+## Crypto Enforcement Isn't What the Headlines Suggest
+
+**The largest crypto enforcement numbers of the past five years come overwhelmingly from one place: the US Securities and Exchange Commission, a securities regulator applying decades-old securities law to digital assets. The three regimes built specifically for crypto — the European Union's Markets in Crypto-Assets Regulation (MiCA), the FCA's UK cryptoasset registration regime, and the Monetary Authority of Singapore's digital-token licensing framework — have produced almost no headline monetary penalties at all.** That is not because they are toothless. It is because all three are designed to do their regulating at the gate, not at the courtroom. For a crypto firm, the enforcement event that matters is not a fine — it is a refused registration, a withdrawn licence, or a forced exit from the market.
+
+## The Three Regimes at a Glance
+
+| Feature | FCA (UK) | MiCA (EU) | MAS (Singapore) |
+| ------- | -------- | --------- | --------------- |
+| Primary control | AML registration under the Money Laundering Regulations | CASP authorisation under MiCA (fully applied 30 Dec 2024) | Licensing under the Payment Services Act + FSM Act digital-token regime |
+| Enforcement style | Gatekeeping: refuse, restrict, warn | Authorisation-first; enforcement regime still young | Licensing + AML penalties; perimeter actions |
+| Typical action | Registration refusal; financial-promotion takedown; public warning list | National-authority authorisation decisions; market-abuse provisions | Licence refusal; unlicensed-activity prosecution; AML fines |
+| Monetary fines for crypto-conduct | Effectively none to date | Effectively none yet (regime <18 months old) | Limited; AML-driven where they occur |
+| Where the real fines come from | AML failings, not crypto-specific rules | SEC-style securities action sits outside MiCA | AML/CFT controls, not token rules |
+
+The common thread is that none of the three regulators treats a monetary penalty as its primary crypto tool. Each treats the authorisation decision — yes, no, or yes-with-conditions — as the main event.
+
+## The FCA: A Gatekeeper, Not a Fining Machine
+
+The single most important fact about FCA crypto enforcement is how little of it takes the form of fines. The FCA has not built its crypto regime around penalties at all. Its primary lever is the cryptoasset anti-money-laundering registration regime, in force since January 2020, under which any UK crypto firm must register before operating.
+
+The FCA's published position is that it has refused or rejected the overwhelming majority of crypto registration applicants — more than 80% of applications have failed to clear the bar. That refusal rate is the enforcement story. A firm that cannot register cannot lawfully operate in the UK, which is a far more consequential outcome than most monetary penalties.
+
+Three further FCA levers reinforce the gatekeeping model. First, the cryptoasset financial-promotions regime, in force since October 2023, requires that any promotion to UK consumers be approved by an authorised person — and the FCA has issued large volumes of takedown demands and consumer alerts against non-compliant promotions. Second, the FCA maintains a public warning list of unauthorised firms, which functions as reputational enforcement without a notice or a fine. Third, where the FCA does pursue monetary penalties against firms with crypto exposure, the charge is almost always an anti-money-laundering or systems-and-controls failing — the same breach categories it uses across the whole market — rather than a bespoke crypto-conduct rule.
+
+The practical implication: a UK crypto firm's enforcement risk is concentrated at registration and at the AML perimeter, not in a conduct-fine pipeline.
+
+## MiCA: Comprehensive on Paper, Young in Practice
+
+MiCA is the most ambitious crypto framework in the world — a single, harmonised regime covering crypto-asset service providers (CASPs), stablecoin issuers, market abuse, custody, and white-paper disclosure across the entire European Union. It applied to stablecoin issuers from mid-2024 and to CASPs in full from 30 December 2024, with ESMA publishing dozens of technical standards to operationalise it.
+
+But MiCA's enforcement record is, as of mid-2026, almost empty — and that is exactly what you would expect from a regime less than eighteen months into full application. The crypto enforcement actions that do appear in the European data are pre-MiCA, authorisation-era matters: CySEC's actions touching firms such as Binance's Cyprus entity and IQ Option, and the Dutch central bank's historic registration-based penalties. These were brought under the patchwork of national registration rules that MiCA was designed to replace, not under MiCA itself.
+
+Two features will shape MiCA enforcement as it matures. First, enforcement is delegated to national competent authorities — BaFin in Germany, the AMF in France, the CSSF in Luxembourg, CySEC in Cyprus — which means intensity will vary by member state in the same fragmented way EU sanctions enforcement does. Second, MiCA carries the most demanding authorisation bar of the three regimes, and member states ran transitional grandfathering windows of up to eighteen months that close around mid-2026. The first true test of MiCA enforcement will be what happens to firms that operated under transitional relief but fail to secure full CASP authorisation as those windows expire.
+
+## MAS: Licensing First, AML Penalties Where They Bite
+
+Singapore regulates crypto primarily through licensing, not conduct fines. Digital Payment Token (DPT) services fall under the Payment Services Act, whose October 2024 enhancements tightened custody and segregation requirements — customer digital holdings must be held in trust and segregated. MAS has pursued unlicensed-activity cases (19 such matters in 2023–2024) and treats operating without the right licence as the core enforcement risk.
+
+MAS sharpened the gatekeeping model further with the digital-token service provider regime under the Financial Services and Markets Act, in force from 30 June 2025. The regime requires even Singapore-incorporated firms serving only overseas customers to be licensed — and MAS signalled it would grant very few such licences. The result was an enforcement event without a single fine: a number of crypto firms relocated out of Singapore rather than operate unlicensed. That is gatekeeping at its most decisive.
+
+Where MAS does impose monetary penalties on firms with crypto exposure, the driver is the same as the FCA's: anti-money-laundering and controls failings, exemplified by AML penalties such as the Swiss-Asia (S$2.5m) and JPMorgan (S$2.4m) actions of 2024. MAS has also restricted DPT marketing to retail consumers, banning incentives and the offering of credit — a conduct-shaping intervention that operates through rules and supervision rather than penalties.
+
+## Where the Real Crypto Fines Actually Come From
+
+If the three purpose-built regimes are not the source of large crypto penalties, what is? The enforcement data points unambiguously to US securities enforcement. The SEC has produced dozens of crypto-related actions per year — far more than the FCA, MiCA national authorities, and MAS combined — by treating many tokens and platforms as unregistered securities offerings. Add FINRA's broker-dealer actions and AUSTRAC's Australian AML penalties, and the pattern is clear: the heaviest crypto enforcement is being delivered by general-purpose securities and AML regimes, not by the frameworks marketed as crypto-specific.
+
+This matters for any crypto firm operating across borders. Your MiCA, FCA, or MAS authorisation tells you whether you can operate. It does not insulate you from a US securities-law action, a US or Australian AML penalty, or a fraud prosecution — and those are where the nine-figure numbers live.
+
+## What This Means for Crypto Firms
+
+For Heads of Compliance and MLROs at crypto firms: treat authorisation as your primary enforcement exposure, not fines. (1) Your registration or licensing file is your most important compliance asset — refused or withdrawn permission is existential in a way a penalty rarely is, so resource the application and renewal process accordingly. (2) Your AML/CFT framework is where the actual monetary penalties land across all three regimes; build it to the standard a bank would, because that is the standard you are being held to. (3) If you operate across the UK, EU, and Singapore, maintain a single matrix of which entity holds which permission, on what conditions, and when transitional relief expires — the MiCA grandfathering cliff and the MAS digital-token regime have both turned diary dates into exit events.
+
+For boards and NEDs at crypto firms: three questions for the next risk committee. (1) What is our defensible answer to "could we lose, or fail to renew, a permission we depend on" — and which jurisdiction is most exposed? (2) Is our AML framework genuinely bank-grade, given that AML is where every one of our regulators actually imposes penalties? (3) Where is our largest enforcement exposure really sitting — and have we honestly accounted for US securities and AML risk that none of our crypto-specific authorisations protects us from?
+
+For consultants and law firms: the advisory gap here is the mismatch between client perception and actual risk. Crypto firms over-index on conduct-fine anxiety and under-invest in the authorisation and AML work where the real exposure sits. Practical engagements: cross-jurisdiction permission-mapping audits tied to transitional-deadline calendars, bank-grade AML framework reviews calibrated to MAS and FCA expectations, and MiCA authorisation-readiness reviews for firms approaching the end of national grandfathering windows.
+
+## What's Coming Next
+
+For the FCA: continued gatekeeping through the registration regime, financial-promotion enforcement, and the broader UK cryptoasset regime being built out under the Financial Services and Markets Act 2023 — expect the perimeter to widen before any meaningful conduct-fine pipeline emerges. For MiCA: the first genuine enforcement test as transitional windows close around mid-2026 and national authorities decide what to do with firms that did not secure full CASP authorisation; watch BaFin, the AMF, and CySEC for the earliest signals. For MAS: continued licensing-led supervision, AML-driven penalties, and the ongoing reshaping of Singapore's crypto sector following the digital-token regime. Across all three, the safe prediction is that the decisive enforcement actions will continue to be authorisation decisions, not fines — while the largest monetary penalties continue to originate outside the three frameworks entirely.
+
+For an interactive view of global crypto and digital-asset enforcement across more than thirty regulators — including the securities and AML actions that sit outside the MiCA, FCA, and MAS frameworks — explore our dashboard.
+    `,
+    category: "Sector Analysis",
+    readTime: "9 min read",
+    date: "August 2026",
+    dateISO: "2026-08-18",
+    featured: false,
+    status: "scheduled",
+    keywords: [
+      "crypto enforcement 2026",
+      "MiCA enforcement",
+      "FCA crypto registration",
+      "MAS digital token licensing",
+      "crypto firm compliance",
+      "CASP authorisation MiCA",
+      "crypto AML enforcement",
+      "SEC crypto enforcement",
+    ],
+  },
+  {
     id: "fca-fines-insurance",
     slug: "fca-fines-insurance-sector",
     title: "FCA Fines for Insurance Companies: Complete Sector Analysis",

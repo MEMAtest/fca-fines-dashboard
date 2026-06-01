@@ -64,6 +64,7 @@ const iconMap: Record<string, React.ReactNode> = {
   "consumer-duty-three-years-enforcement": <Users className="blog-card-icon" />,
   "wealth-managers-consumer-duty-enforcement": <Landmark className="blog-card-icon" />,
   "sanctions-enforcement-ofsi-ofac-eu": <AlertTriangle className="blog-card-icon" />,
+  "crypto-firms-global-enforcement-mica-fca-mas": <Scale className="blog-card-icon" />,
   "fca-fines-insurance": <Shield className="blog-card-icon" />,
   // Regulator enforcement guides
   "fca-enforcement-guide": <Landmark className="blog-card-icon" />,
