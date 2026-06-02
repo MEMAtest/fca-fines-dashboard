@@ -196,6 +196,11 @@ function stripTrailingContext(value: string) {
     .replace(/\s+(?:for|after|over|following|due to|because of)\b.*$/i, "")
     .replace(/\s+(?:has|have|is|are|was|were)\b.*$/i, "")
     .replace(/\s+and\s+(?:fines|bans|censures|charges)\b.*$/i, "")
+    // FCA final-/decision-notice listings suffix the firm/person with the
+    // notice year (e.g. "Frank Breuer 2026"). Strip a trailing standalone year
+    // so it doesn't pollute the name or fork the content_hash from the
+    // press-release-sourced row for the same action.
+    .replace(/[,\s]+(?:19|20)\d{2}$/i, "")
     .replace(/[,:;\s]+$/g, "")
     .trim();
 }

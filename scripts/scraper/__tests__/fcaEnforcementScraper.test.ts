@@ -118,4 +118,14 @@ describe("FCA enforcement scraper", () => {
       "Example Services Ltd",
     );
   });
+
+  it("strips the trailing listing year from final-notice titles", () => {
+    // FCA final-notice listings render as "<firm/person> <year>"; the year must
+    // not leak into the name or it forks the content_hash from the
+    // press-release-sourced row for the same action.
+    expect(extractFcaFirmName("Frank Breuer 2026")).toBe("Frank Breuer");
+    expect(extractFcaFirmName("Brunel Assurance Society 2026")).toBe(
+      "Brunel Assurance Society",
+    );
+  });
 });
