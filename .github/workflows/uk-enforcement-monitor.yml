@@ -2,8 +2,16 @@ name: UK Enforcement Monitor
 
 on:
   workflow_dispatch:
-  schedule:
-    - cron: "20 6 * * *" # 06:20 UTC daily for UK enforcement sources
+  # Scheduled run disabled 2026-06-02: scrape:uk-enforcement (scrapeFcaEnforcement.ts)
+  # targets fca.org.uk, which sits behind Cloudflare. GitHub Actions runner IPs get a
+  # 403 / JS challenge, so the daily cron could never succeed — it only produced daily
+  # `error` rows in scraper_runs and recurring "UK enforcement monitor failed" issues.
+  # Data is maintained via manual workflow_dispatch runs meanwhile. Re-enable the cron
+  # once scrapeFcaEnforcement.ts is migrated to FlareSolverr / Puppeteer to clear the
+  # Cloudflare challenge (note: Hetzner IPs are also challenged, so a headless-browser
+  # solver is required, not just a different egress IP).
+  # schedule:
+  #   - cron: "20 6 * * *" # 06:20 UTC daily for UK enforcement sources
 
 permissions:
   contents: read
