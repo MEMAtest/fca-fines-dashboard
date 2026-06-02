@@ -13,6 +13,11 @@ import {
   normalizeWhitespace,
   parseMonthNameDate,
 } from "./lib/euFineHelpers.js";
+import {
+  createFlareSolverrClient,
+  flareSolverrEnabled,
+  type FlareSolverrClient,
+} from "./lib/flaresolverr.js";
 
 const FCA_BASE_URL = "https://www.fca.org.uk";
 const PRESS_RELEASES_URL =
@@ -40,6 +45,20 @@ const FCA_BROWSER_HEADERS: Record<string, string> = {
   "Cache-Control": "max-age=0",
   Referer: `${FCA_BASE_URL}/news`,
 };
+
+// When FLARESOLVERR_URL is set, all FCA fetches route through a shared
+// FlareSolverr browser session that clears Cloudflare's "Just a moment"
+// challenge (required on datacenter IPs such as Hetzner/CI). When unset,
+// fetches go direct via fetchText, which works from residential IPs and local
+// runs. The session is created in scrapeFcaEnforcement() and torn down there.
+let flareClient: FlareSolverrClient | null = null;
+
+async function fetchFcaHtml(url: string): Promise<string> {
+  if (flareClient) {
+    return flareClient.get(url);
+  }
+  return fetchText(url, { headers: FCA_BROWSER_HEADERS });
+}
 
 interface FcaSearchResult {
   title: string;
@@ -396,7 +415,7 @@ async function fetchSearchResults(baseUrl: string, cutoffIso: string, sourceLabe
 
   for (let page = 0; page < maxPages; page += 1) {
     const start = page * 10 + 1;
-    const html = await fetchText(`${baseUrl}&start=${start}`, { headers: FCA_BROWSER_HEADERS });
+    const html = await fetchFcaHtml(`${baseUrl}&start=${start}`);
     const pageResults = parseFcaSearchResults(html);
     if (pageResults.length === 0) break;
 
@@ -440,6 +459,23 @@ function dedupeActions(records: FcaAction[]) {
 }
 
 export async function scrapeFcaEnforcement(): Promise<UKEnforcementSeedRecord[]> {
+  if (flareSolverrEnabled()) {
+    flareClient = await createFlareSolverrClient();
+    console.log(
+      "[FCA enforcement] Routing fetches through FlareSolverr to clear the Cloudflare challenge",
+    );
+  }
+  try {
+    return await scrapeFcaEnforcementInner();
+  } finally {
+    if (flareClient) {
+      await flareClient.destroy();
+      flareClient = null;
+    }
+  }
+}
+
+async function scrapeFcaEnforcementInner(): Promise<UKEnforcementSeedRecord[]> {
   const cutoffIso = cutoffDateIso();
   const [pressResults, finalNoticeResults] = await Promise.all([
     fetchSearchResults(PRESS_RELEASES_URL, cutoffIso, "press releases"),
@@ -453,7 +489,7 @@ export async function scrapeFcaEnforcement(): Promise<UKEnforcementSeedRecord[]>
     3,
     async (result) => {
       try {
-        const html = await fetchText(result.url, { headers: FCA_BROWSER_HEADERS });
+        const html = await fetchFcaHtml(result.url);
         fetchedPressDetails += 1;
         if (shouldLogProgress() && fetchedPressDetails % 25 === 0) {
           console.log(
