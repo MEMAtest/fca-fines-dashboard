@@ -3,6 +3,11 @@ import axios from 'axios';
 import { load } from 'cheerio';
 import crypto from 'node:crypto';
 import postgres from 'postgres';
+import {
+  createFlareSolverrClient,
+  flareSolverrEnabled,
+  type FlareSolverrClient,
+} from './lib/flaresolverr.js';
 
 const BASE_URL = 'https://www.fca.org.uk';
 const FINES_PATH = 'news/news-stories';
@@ -30,10 +35,20 @@ const FCA_HEADERS: Record<string, string> = {
   Referer: `${BASE_URL}/news`,
 };
 
+// When FLARESOLVERR_URL is set, all FCA fetches route through a shared
+// FlareSolverr browser session that clears Cloudflare's "Just a moment"
+// challenge. fca.org.uk now serves that challenge to datacenter IPs (the
+// Hetzner cron), so direct axios fetches 403 — same fix as scrapeFcaEnforcement.
+// Falls back to direct fetch when unset (local/residential IPs still pass).
+let flareClient: FlareSolverrClient | null = null;
+
 async function fetchWithRetry(url: string, attempts = 3): Promise<string> {
   let lastErr: unknown;
   for (let i = 0; i < attempts; i++) {
     try {
+      if (flareClient) {
+        return await flareClient.get(url);
+      }
       const response = await axios.get(url, { headers: FCA_HEADERS, timeout: 30000 });
       return response.data as string;
     } catch (err: any) {
@@ -451,30 +466,41 @@ async function upsertRecords(records: FcaFineRecord[]) {
 }
 
 async function main() {
-  console.log(`Starting FCA fines scrape for years: ${yearsToScrape.join(', ')} (dryRun=${dryRun})`);
-  const allRecords: FcaFineRecord[] = [];
-  for (const year of yearsToScrape) {
-    const yearRecords = await scrapeYear(year);
-    console.log(`   ✓ ${year}: ${yearRecords.length} fines extracted`);
-    allRecords.push(...yearRecords);
-    await new Promise((resolve) => setTimeout(resolve, 500));
+  if (flareSolverrEnabled()) {
+    flareClient = await createFlareSolverrClient();
+    console.log('[FCA fines] Routing fetches through FlareSolverr to clear the Cloudflare challenge');
   }
+  try {
+    console.log(`Starting FCA fines scrape for years: ${yearsToScrape.join(', ')} (dryRun=${dryRun})`);
+    const allRecords: FcaFineRecord[] = [];
+    for (const year of yearsToScrape) {
+      const yearRecords = await scrapeYear(year);
+      console.log(`   ✓ ${year}: ${yearRecords.length} fines extracted`);
+      allRecords.push(...yearRecords);
+      await new Promise((resolve) => setTimeout(resolve, 500));
+    }
 
-  console.log(`Collected ${allRecords.length} records.`);
-  if (dryRun) {
-    console.table(
-      allRecords.slice(0, 10).map((record) => ({
-        firm: record.firm,
-        amount: record.amount,
-        issued: record.dateIssued.toISOString().slice(0, 10),
-        url: record.finalNoticeUrl,
-      })),
-    );
-    return;
+    console.log(`Collected ${allRecords.length} records.`);
+    if (dryRun) {
+      console.table(
+        allRecords.slice(0, 10).map((record) => ({
+          firm: record.firm,
+          amount: record.amount,
+          issued: record.dateIssued.toISOString().slice(0, 10),
+          url: record.finalNoticeUrl,
+        })),
+      );
+      return;
+    }
+
+    await upsertRecords(allRecords);
+    console.log('Upsert complete.');
+  } finally {
+    if (flareClient) {
+      await flareClient.destroy();
+      flareClient = null;
+    }
   }
-
-  await upsertRecords(allRecords);
-  console.log('Upsert complete.');
 }
 
 main()
