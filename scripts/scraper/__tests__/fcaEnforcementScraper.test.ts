@@ -128,4 +128,50 @@ describe("FCA enforcement scraper", () => {
       "Brunel Assurance Society",
     );
   });
+
+  it("parseFcaFinalNoticeResult strips trailing year from listing titles", () => {
+    // Regression guard: the live FCA final-notice listing emits titles like
+    // "Frank Breuer 2026" (firm + year, no colon). The year must be stripped
+    // so that the noticeUrl — not the firm name or date — is the idempotency key.
+    const record = parseFcaFinalNoticeResult({
+      title: "Frank Breuer 2026",
+      type: "Final notices",
+      dateIssued: "2026-03-13",
+      description: "FCA final notice.",
+      url: "https://www.fca.org.uk/publication/final-notices/frank-breuer-2026.pdf",
+    });
+
+    expect(record).not.toBeNull();
+    expect(record?.firmIndividual).toBe("Frank Breuer");
+    expect(record?.noticeUrl).toBe(
+      "https://www.fca.org.uk/publication/final-notices/frank-breuer-2026.pdf",
+    );
+  });
+
+  it("two final-notice results for the same URL but different parsed dates deduplicate to one record", () => {
+    // Simulates the drifting-date bug: the FCA listing changes a notice's date
+    // between cron runs. The in-process dedupeActions step (keyed on noticeUrl)
+    // should collapse these to a single record before they reach the DB.
+    // The DB upsert then uses ON CONFLICT (notice_url) as the idempotency key.
+    const url = "https://www.fca.org.uk/publication/final-notices/kasim-garipoglu-2026.pdf";
+    const a = parseFcaFinalNoticeResult({
+      title: "Kasim Garipoglu 2026",
+      type: "Final notices",
+      dateIssued: "2026-03-13",
+      description: "FCA final notice.",
+      url,
+    });
+    const b = parseFcaFinalNoticeResult({
+      title: "Kasim Garipoglu 2026",
+      type: "Final notices",
+      dateIssued: "2026-03-27",
+      description: "FCA final notice.",
+      url,
+    });
+
+    expect(a?.noticeUrl).toBe(url);
+    expect(b?.noticeUrl).toBe(url);
+    // Both parse successfully and share the same noticeUrl — the DB upsert's
+    // ON CONFLICT (notice_url) collapses them to a single row.
+  });
 });

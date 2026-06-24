@@ -204,7 +204,9 @@ async function upsertUKEnforcementRecords(
         ${record.aliases ?? []},
         ${sql.json(JSON.parse(JSON.stringify(record)))}
       )
-      ON CONFLICT (id) DO UPDATE SET
+      ON CONFLICT (notice_url) WHERE notice_url IS NOT NULL AND notice_url <> ''
+      DO UPDATE SET
+        id = EXCLUDED.id,
         content_hash = EXCLUDED.content_hash,
         regulator_full_name = EXCLUDED.regulator_full_name,
         source_domain = EXCLUDED.source_domain,
@@ -220,7 +222,6 @@ async function upsertUKEnforcementRecords(
         breach_type = EXCLUDED.breach_type,
         breach_categories = EXCLUDED.breach_categories,
         summary = EXCLUDED.summary,
-        notice_url = EXCLUDED.notice_url,
         source_url = EXCLUDED.source_url,
         source_window_note = EXCLUDED.source_window_note,
         aliases = EXCLUDED.aliases,
