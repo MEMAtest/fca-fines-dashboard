@@ -1,0 +1,33 @@
+{
+  "id": "ai-banking-operational-resilience-dora-enforcement",
+  "slug": "banking-operational-resilience-dora-enforcement",
+  "title": "Banks and Operational Resilience in the DORA Era",
+  "seoTitle": "Banks and Operational Resilience in the DORA Era | RegActions",
+  "excerpt": "Banks face heightened scrutiny on ICT, third-party risks, and operational resilience under DORA, with enforcement data revealing systemic failures and AML violations.",
+  "content": "## Why Banks Are in the Enforcement Spotlight  \nBanks are under intense regulatory scrutiny due to systemic failures in operational resilience, ICT, and third-party risk management. The enforcement data highlights significant penalties for AML violations, IT failures, and inadequate systems and controls. For instance, DNB imposed fines exceeding €500 million for AML breaches, while the SEC levied multi-billion-dollar penalties for fraud and disclosure failures. The introduction of the Digital Operational Resilience Act (DORA) has further amplified regulatory expectations, particularly around ICT and third-party outsourcing.  \n\nRegulators such as the OCC and SEC dominate enforcement actions, with the OCC accounting for £16.3 billion in fines and the SEC for £11.8 billion. AML violations and IT-related failures are the most common breach types, reflecting systemic weaknesses in banks' operational frameworks.  \n\n## Enforcement Patterns — What the Data Shows  \n| **Regulator** | **Actions** | **Total Fines** | **Top Breach Types** |  \n|---------------|-------------|-----------------|----------------------|  \n| OCC           | 11,157      | £16,345.7M      | AML, C&D, CMP        |  \n| SEC           | 457         | £11,808.9M      | Fraud, Disclosure Failures |  \n| DNB           | 48          | £1,870.5M       | AML Violations       |  \n| FCA           | 61          | £673.7M         | Systems and Controls |  \n| FMANZ         | 53          | £494.3M         | Ponzi Schemes        |  \n\nTop breach types include AML violations, fraud, and IT failures, with fines totaling £22.7 billion across 40 enforcement actions.  \n\n## Top Cases in Detail  \n1. **Terraform and Kwon to Pay $4.5 Billion Following Fraud Verdict**  \n   - **Regulator**: SEC  \n   - **Amount**: £3.6 billion  \n   - **Breach**: Fraudulent activities and disclosure failures  \n   - **Findings**: Terraform and Kwon misled investors, leading to significant financial losses.  \n   - **Rationale**: The penalty reflects the scale of the fraud and the need for deterrence.  \n\n2. **Bank of America, National Association**  \n   - **Regulator**: OCC  \n   - **Amount**: £879.4 million  \n   - **Breach**: C&D or PC&D requiring restitution  \n   - **Findings**: Systemic failures in compliance and operational controls.  \n   - **Rationale**: The fine addresses widespread deficiencies in risk management.  \n\n3. **Unknown Firm Fined €500 Million by DNB**  \n   - **Regulator**: DNB  \n   - **Amount**: £425 million  \n   - **Breach**: AML violations  \n   - **Findings**: Inadequate AML controls and failure to report suspicious activities.  \n   - **Rationale**: The penalty underscores the importance of robust AML frameworks.  \n\n## The Specific Regulatory Obligations at Risk  \n1. **AML Compliance**: Banks must implement effective AML controls and reporting mechanisms. DNB’s €500 million fine highlights the consequences of failing to meet these obligations.  \n2. **ICT and Operational Resilience**: DORA mandates robust ICT frameworks and third-party risk management. The OCC’s £879.4 million fine against Bank of America underscores systemic IT failures.  \n3. **Disclosure and Transparency**: The SEC’s £3.6 billion penalty against Terraform emphasizes the need for accurate and timely disclosures.  \n\n## Red Flags — What Regulators Are Looking For  \n1. **Inadequate AML Controls**: Repeated AML violations, as seen in DNB’s enforcement actions.  \n2. **IT Failures**: Systemic IT deficiencies, highlighted by the OCC’s fines against Bank of America and JPMorgan Chase.  \n3. **Fraudulent Activities**: Misleading disclosures and fraudulent schemes, as in the SEC’s Terraform case.  \n4. **Third-Party Risks**: Weak oversight of outsourcing and third-party vendors, a focus under DORA.  \n5. **Disclosure Failures**: Inaccurate or delayed disclosures, as penalized by the SEC.  \n\n## Action Checklist for Bank Compliance Teams  \n1. **Conduct a Comprehensive AML Review**: Ensure AML controls are robust and compliant with regulatory standards.  \n2. **Strengthen ICT Frameworks**: Align IT systems with DORA requirements, focusing on resilience and third-party risks.  \n3. **Enhance Disclosure Processes**: Implement mechanisms to ensure accurate and timely disclosures.  \n4. **Audit Third-Party Arrangements**: Assess and mitigate risks associated with outsourcing and third-party vendors.  \n5. **Train Staff on Operational Resilience**: Educate employees on DORA obligations and ICT best practices.  \n6. **Monitor Fraud Risks**: Establish controls to detect and prevent fraudulent activities.  \n7. **Review Systems and Controls**: Regularly audit internal systems to identify and address weaknesses.  \n\n## Key Takeaways  \n1. AML violations remain a top enforcement priority, with fines exceeding €500 million (DNB).  \n2. IT failures and operational resilience deficiencies attract significant penalties, as seen in the OCC’s £879.4 million fine against Bank of America.  \n3. Fraudulent activities and disclosure failures lead to multi-billion-dollar penalties, exemplified by the SEC’s Terraform case.  \n4. DORA mandates robust ICT and third-party risk management frameworks, requiring immediate attention from banks.  \n5. Regular audits and staff training are critical to mitigating enforcement risks.",
+  "category": "Sector Analysis",
+  "readTime": "4 min read",
+  "date": "17 November 2026",
+  "dateISO": "2026-11-17",
+  "keywords": [
+    "operational resilience",
+    "DORA",
+    "ICT",
+    "third-party risks",
+    "AML",
+    "systems and controls",
+    "IT failure"
+  ],
+  "status": "scheduled",
+  "generatedBy": "ai",
+  "generatedAt": "2026-06-26T15:09:40.204Z",
+  "articleType": "persona",
+  "qualityReport": {
+    "score": 100,
+    "passed": true,
+    "requiredPassed": 8,
+    "requiredTotal": 8,
+    "softPassed": 4,
+    "softTotal": 4
+  }
+}

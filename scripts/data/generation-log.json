@@ -1,1 +1,432 @@
-[]
+[
+  {
+    "timestamp": "2026-06-24T14:45:31.255Z",
+    "slug": "biggest-fine-h1-2026-forensic",
+    "type": "forensic",
+    "dateISO": "2026-07-28",
+    "outcome": "dry_run",
+    "qualityScore": null,
+    "qualityPassed": null,
+    "wordCount": null
+  },
+  {
+    "timestamp": "2026-06-24T14:45:31.257Z",
+    "slug": "h1-2026-enforcement-halftime",
+    "type": "thematic",
+    "dateISO": "2026-08-04",
+    "outcome": "dry_run",
+    "qualityScore": null,
+    "qualityPassed": null,
+    "wordCount": null
+  },
+  {
+    "timestamp": "2026-06-24T14:45:31.257Z",
+    "slug": "fca-fines-july-2026",
+    "type": "monthly",
+    "dateISO": "2026-09-01",
+    "outcome": "dry_run",
+    "qualityScore": null,
+    "qualityPassed": null,
+    "wordCount": null
+  },
+  {
+    "timestamp": "2026-06-24T14:45:31.258Z",
+    "slug": "greenwashing-enforcement-2026",
+    "type": "thematic",
+    "dateISO": "2026-09-09",
+    "outcome": "dry_run",
+    "qualityScore": null,
+    "qualityPassed": null,
+    "wordCount": null
+  },
+  {
+    "timestamp": "2026-06-24T14:45:31.258Z",
+    "slug": "insurance-conduct-failures-2026",
+    "type": "persona",
+    "dateISO": "2026-09-16",
+    "outcome": "dry_run",
+    "qualityScore": null,
+    "qualityPassed": null,
+    "wordCount": null
+  },
+  {
+    "timestamp": "2026-06-24T14:45:31.258Z",
+    "slug": "biggest-greenwashing-fine-2026-forensic",
+    "type": "forensic",
+    "dateISO": "2026-09-23",
+    "outcome": "dry_run",
+    "qualityScore": null,
+    "qualityPassed": null,
+    "wordCount": null
+  },
+  {
+    "timestamp": "2026-06-24T14:45:31.258Z",
+    "slug": "fca-fines-august-2026",
+    "type": "monthly",
+    "dateISO": "2026-10-01",
+    "outcome": "dry_run",
+    "qualityScore": null,
+    "qualityPassed": null,
+    "wordCount": null
+  },
+  {
+    "timestamp": "2026-06-24T14:45:31.258Z",
+    "slug": "whistleblower-driven-enforcement-global",
+    "type": "thematic",
+    "dateISO": "2026-10-07",
+    "outcome": "dry_run",
+    "qualityScore": null,
+    "qualityPassed": null,
+    "wordCount": null
+  },
+  {
+    "timestamp": "2026-06-24T14:45:31.258Z",
+    "slug": "investment-firms-market-abuse-global",
+    "type": "persona",
+    "dateISO": "2026-10-14",
+    "outcome": "dry_run",
+    "qualityScore": null,
+    "qualityPassed": null,
+    "wordCount": null
+  },
+  {
+    "timestamp": "2026-06-24T14:45:31.258Z",
+    "slug": "finma-vs-mas-wealth-enforcement",
+    "type": "comparison",
+    "dateISO": "2026-10-21",
+    "outcome": "dry_run",
+    "qualityScore": null,
+    "qualityPassed": null,
+    "wordCount": null
+  },
+  {
+    "timestamp": "2026-06-24T14:45:31.258Z",
+    "slug": "fca-fines-september-2026",
+    "type": "monthly",
+    "dateISO": "2026-11-03",
+    "outcome": "dry_run",
+    "qualityScore": null,
+    "qualityPassed": null,
+    "wordCount": null
+  },
+  {
+    "timestamp": "2026-06-24T14:45:31.259Z",
+    "slug": "ai-automated-decisioning-enforcement",
+    "type": "thematic",
+    "dateISO": "2026-11-10",
+    "outcome": "dry_run",
+    "qualityScore": null,
+    "qualityPassed": null,
+    "wordCount": null
+  },
+  {
+    "timestamp": "2026-06-24T14:45:31.260Z",
+    "slug": "banking-operational-resilience-dora-enforcement",
+    "type": "persona",
+    "dateISO": "2026-11-17",
+    "outcome": "dry_run",
+    "qualityScore": null,
+    "qualityPassed": null,
+    "wordCount": null
+  },
+  {
+    "timestamp": "2026-06-24T14:45:31.260Z",
+    "slug": "biggest-aml-fine-2026-forensic",
+    "type": "forensic",
+    "dateISO": "2026-11-24",
+    "outcome": "dry_run",
+    "qualityScore": null,
+    "qualityPassed": null,
+    "wordCount": null
+  },
+  {
+    "timestamp": "2026-06-24T21:51:12.615Z",
+    "slug": "fca-vs-sec-enforcement-differences",
+    "type": "comparison",
+    "dateISO": "2026-06-23",
+    "outcome": "generator_error",
+    "qualityScore": null,
+    "qualityPassed": null,
+    "wordCount": null
+  },
+  {
+    "timestamp": "2026-06-24T21:53:39.150Z",
+    "slug": "fca-vs-sec-enforcement-differences",
+    "type": "comparison",
+    "dateISO": "2026-06-23",
+    "outcome": "all_attempts_failed",
+    "qualityScore": null,
+    "qualityPassed": null,
+    "wordCount": null
+  },
+  {
+    "timestamp": "2026-06-24T21:56:14.204Z",
+    "slug": "fca-vs-sec-enforcement-differences",
+    "type": "comparison",
+    "dateISO": "2026-06-23",
+    "outcome": "all_attempts_failed",
+    "qualityScore": 83,
+    "qualityPassed": false,
+    "wordCount": null
+  },
+  {
+    "timestamp": "2026-06-24T21:59:56.145Z",
+    "slug": "fca-vs-sec-enforcement-differences",
+    "type": "comparison",
+    "dateISO": "2026-06-23",
+    "outcome": "all_attempts_failed",
+    "qualityScore": 83,
+    "qualityPassed": false,
+    "wordCount": null
+  },
+  {
+    "timestamp": "2026-06-24T22:03:54.846Z",
+    "slug": "greenwashing-enforcement-2026",
+    "type": "thematic",
+    "dateISO": "2026-09-09",
+    "outcome": "all_attempts_failed",
+    "qualityScore": 65,
+    "qualityPassed": false,
+    "wordCount": null
+  },
+  {
+    "timestamp": "2026-06-24T22:06:17.544Z",
+    "slug": "greenwashing-enforcement-2026",
+    "type": "thematic",
+    "dateISO": "2026-09-09",
+    "outcome": "draft_saved",
+    "qualityScore": 74,
+    "qualityPassed": false,
+    "wordCount": 571
+  },
+  {
+    "timestamp": "2026-06-26T10:51:18.154Z",
+    "slug": "greenwashing-enforcement-2026",
+    "type": "thematic",
+    "dateISO": "2026-09-09",
+    "outcome": "draft_saved",
+    "qualityScore": 83,
+    "qualityPassed": false,
+    "wordCount": 659
+  },
+  {
+    "timestamp": "2026-06-26T14:54:10.787Z",
+    "slug": "biggest-fine-h1-2026-forensic",
+    "type": "forensic",
+    "dateISO": "2026-07-28",
+    "outcome": "dry_run",
+    "qualityScore": null,
+    "qualityPassed": null,
+    "wordCount": null
+  },
+  {
+    "timestamp": "2026-06-26T14:54:10.789Z",
+    "slug": "h1-2026-enforcement-halftime",
+    "type": "thematic",
+    "dateISO": "2026-08-04",
+    "outcome": "dry_run",
+    "qualityScore": null,
+    "qualityPassed": null,
+    "wordCount": null
+  },
+  {
+    "timestamp": "2026-06-26T14:54:10.790Z",
+    "slug": "fca-fines-july-2026",
+    "type": "monthly",
+    "dateISO": "2026-09-01",
+    "outcome": "dry_run",
+    "qualityScore": null,
+    "qualityPassed": null,
+    "wordCount": null
+  },
+  {
+    "timestamp": "2026-06-26T14:54:10.792Z",
+    "slug": "insurance-conduct-failures-2026",
+    "type": "persona",
+    "dateISO": "2026-09-16",
+    "outcome": "dry_run",
+    "qualityScore": null,
+    "qualityPassed": null,
+    "wordCount": null
+  },
+  {
+    "timestamp": "2026-06-26T14:54:10.792Z",
+    "slug": "biggest-greenwashing-fine-2026-forensic",
+    "type": "forensic",
+    "dateISO": "2026-09-23",
+    "outcome": "dry_run",
+    "qualityScore": null,
+    "qualityPassed": null,
+    "wordCount": null
+  },
+  {
+    "timestamp": "2026-06-26T14:54:10.792Z",
+    "slug": "fca-fines-august-2026",
+    "type": "monthly",
+    "dateISO": "2026-10-01",
+    "outcome": "dry_run",
+    "qualityScore": null,
+    "qualityPassed": null,
+    "wordCount": null
+  },
+  {
+    "timestamp": "2026-06-26T14:54:10.793Z",
+    "slug": "whistleblower-driven-enforcement-global",
+    "type": "thematic",
+    "dateISO": "2026-10-07",
+    "outcome": "dry_run",
+    "qualityScore": null,
+    "qualityPassed": null,
+    "wordCount": null
+  },
+  {
+    "timestamp": "2026-06-26T14:54:10.793Z",
+    "slug": "investment-firms-market-abuse-global",
+    "type": "persona",
+    "dateISO": "2026-10-14",
+    "outcome": "dry_run",
+    "qualityScore": null,
+    "qualityPassed": null,
+    "wordCount": null
+  },
+  {
+    "timestamp": "2026-06-26T14:54:10.793Z",
+    "slug": "finma-vs-mas-wealth-enforcement",
+    "type": "comparison",
+    "dateISO": "2026-10-21",
+    "outcome": "dry_run",
+    "qualityScore": null,
+    "qualityPassed": null,
+    "wordCount": null
+  },
+  {
+    "timestamp": "2026-06-26T14:54:10.793Z",
+    "slug": "fca-fines-september-2026",
+    "type": "monthly",
+    "dateISO": "2026-11-03",
+    "outcome": "dry_run",
+    "qualityScore": null,
+    "qualityPassed": null,
+    "wordCount": null
+  },
+  {
+    "timestamp": "2026-06-26T14:54:10.793Z",
+    "slug": "ai-automated-decisioning-enforcement",
+    "type": "thematic",
+    "dateISO": "2026-11-10",
+    "outcome": "dry_run",
+    "qualityScore": null,
+    "qualityPassed": null,
+    "wordCount": null
+  },
+  {
+    "timestamp": "2026-06-26T14:54:10.794Z",
+    "slug": "banking-operational-resilience-dora-enforcement",
+    "type": "persona",
+    "dateISO": "2026-11-17",
+    "outcome": "dry_run",
+    "qualityScore": null,
+    "qualityPassed": null,
+    "wordCount": null
+  },
+  {
+    "timestamp": "2026-06-26T14:54:10.794Z",
+    "slug": "biggest-aml-fine-2026-forensic",
+    "type": "forensic",
+    "dateISO": "2026-11-24",
+    "outcome": "dry_run",
+    "qualityScore": null,
+    "qualityPassed": null,
+    "wordCount": null
+  },
+  {
+    "timestamp": "2026-06-26T14:55:26.627Z",
+    "slug": "biggest-fine-h1-2026-forensic",
+    "type": "forensic",
+    "dateISO": "2026-07-28",
+    "outcome": "draft_saved",
+    "qualityScore": 93,
+    "qualityPassed": true,
+    "wordCount": 603
+  },
+  {
+    "timestamp": "2026-06-26T14:57:06.789Z",
+    "slug": "insurance-conduct-failures-2026",
+    "type": "persona",
+    "dateISO": "2026-09-16",
+    "outcome": "draft_saved",
+    "qualityScore": 100,
+    "qualityPassed": true,
+    "wordCount": 710
+  },
+  {
+    "timestamp": "2026-06-26T14:58:35.711Z",
+    "slug": "biggest-greenwashing-fine-2026-forensic",
+    "type": "forensic",
+    "dateISO": "2026-09-23",
+    "outcome": "draft_saved",
+    "qualityScore": 91,
+    "qualityPassed": false,
+    "wordCount": 508
+  },
+  {
+    "timestamp": "2026-06-26T15:01:51.619Z",
+    "slug": "whistleblower-driven-enforcement-global",
+    "type": "thematic",
+    "dateISO": "2026-10-07",
+    "outcome": "draft_saved",
+    "qualityScore": 91,
+    "qualityPassed": false,
+    "wordCount": 835
+  },
+  {
+    "timestamp": "2026-06-26T15:04:13.577Z",
+    "slug": "investment-firms-market-abuse-global",
+    "type": "persona",
+    "dateISO": "2026-10-14",
+    "outcome": "draft_saved",
+    "qualityScore": 91,
+    "qualityPassed": false,
+    "wordCount": 652
+  },
+  {
+    "timestamp": "2026-06-26T15:05:56.712Z",
+    "slug": "finma-vs-mas-wealth-enforcement",
+    "type": "comparison",
+    "dateISO": "2026-10-21",
+    "outcome": "draft_saved",
+    "qualityScore": 84,
+    "qualityPassed": false,
+    "wordCount": 626
+  },
+  {
+    "timestamp": "2026-06-26T15:07:54.702Z",
+    "slug": "ai-automated-decisioning-enforcement",
+    "type": "thematic",
+    "dateISO": "2026-11-10",
+    "outcome": "draft_saved",
+    "qualityScore": 100,
+    "qualityPassed": true,
+    "wordCount": 721
+  },
+  {
+    "timestamp": "2026-06-26T15:09:40.205Z",
+    "slug": "banking-operational-resilience-dora-enforcement",
+    "type": "persona",
+    "dateISO": "2026-11-17",
+    "outcome": "draft_saved",
+    "qualityScore": 100,
+    "qualityPassed": true,
+    "wordCount": 703
+  },
+  {
+    "timestamp": "2026-06-26T15:10:44.551Z",
+    "slug": "biggest-aml-fine-2026-forensic",
+    "type": "forensic",
+    "dateISO": "2026-11-24",
+    "outcome": "draft_saved",
+    "qualityScore": 93,
+    "qualityPassed": true,
+    "wordCount": 700
+  }
+]
