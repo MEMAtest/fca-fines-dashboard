@@ -303,10 +303,10 @@ export const CALENDAR_ENTRIES: CalendarEntry[] = [
     dataConfig: {
       type: "forensic",
       scope: "biggest-aml",
-      dateRange: ["2026-01-01", "2026-11-01"],
+      dateRange: ["2025-01-01", "2026-11-01"],
       breachKeywords: ["AML", "money laundering", "anti-money", "KYC", "financial crime"],
     },
-    prerequisite: "An AML enforcement action for 2026 must exist in the database",
+    prerequisite: "An AML enforcement action for 2025-2026 must exist in the database",
   },
 ];
 

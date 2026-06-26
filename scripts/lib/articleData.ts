@@ -426,13 +426,15 @@ export async function queryForensicData(
     params.push(...breachKeywords.map(k => `%${k}%`));
   }
 
+  const namedFirmClause = `AND firm_individual NOT IN ('Mr', 'Unknown', '', 'N/A') AND firm_individual IS NOT NULL AND length(trim(firm_individual)) > 3`;
+  const validAmountClause = `AND amount_gbp IS NOT NULL AND amount_gbp > 0 AND amount_gbp != 'NaN'::float`;
   const [topRows, allRows] = await Promise.all([
     query(`
-      SELECT regulator, firm_individual, COALESCE(amount_gbp, amount_original, 0)::float as amount,
+      SELECT regulator, firm_individual, amount_gbp::float as amount,
              date_issued::text, breach_type, COALESCE(summary, '') as summary
       FROM all_regulatory_fines
-      WHERE ${whereClause}
-      ORDER BY amount DESC NULLS LAST LIMIT 1
+      WHERE ${whereClause} ${namedFirmClause} ${validAmountClause}
+      ORDER BY amount_gbp DESC NULLS LAST LIMIT 1
     `, params),
     query(`
       SELECT regulator, firm_individual, COALESCE(amount_gbp, amount_original, 0)::float as amount,
