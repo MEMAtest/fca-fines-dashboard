@@ -17,7 +17,10 @@ const slug = process.argv[2];
 if (!slug) { console.error('Usage: npx tsx scripts/previewDraftPdf.ts <slug>'); process.exit(1); }
 
 const draft = JSON.parse(readFileSync(join(__dirname, 'data', 'drafts', `${slug}.json`), 'utf-8'));
-const outPath = join(ROOT, `${slug}.pdf`);
+import { mkdirSync } from 'fs';
+const previewsDir = join(__dirname, 'data', 'previews');
+mkdirSync(previewsDir, { recursive: true });
+const outPath = join(previewsDir, `${slug}.pdf`);
 
 // ─── Brand ────────────────────────────────────────────────────────────────────
 

@@ -10,3 +10,6 @@ playwright-report/
 E2E_TEST_COVERAGE_REPORT*.md
 feature-validation/logs/
 fcafines.db
+.env*.local
+scripts/data/previews/
+*.pdf
