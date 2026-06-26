@@ -48,8 +48,9 @@ console.log(`Approving draft: ${slug}`);
 // 1. Read draft
 const draft = JSON.parse(readFileSync(draftPath, 'utf-8'));
 
-// 2. Update status to published
-draft.status = 'published';
+// 2. Set status — calendar articles with future dateISO stay "scheduled"; past-dated publish immediately
+const today = new Date().toISOString().slice(0, 10);
+draft.status = (draft.dateISO && draft.dateISO > today) ? 'scheduled' : 'published';
 draft.generatedAt = draft.generatedAt || new Date().toISOString();
 delete draft.qualityReport; // Don't include in published article
 
@@ -84,7 +85,7 @@ function buildArticleEntry(article: Record<string, unknown>): string {
     date: ${JSON.stringify(article.date)},
     dateISO: ${JSON.stringify(article.dateISO)},
     keywords: ${JSON.stringify(article.keywords)},
-    status: "published",
+    status: ${JSON.stringify(article.status)},
     generatedBy: "ai",
     generatedAt: ${JSON.stringify(article.generatedAt)},
   }`;

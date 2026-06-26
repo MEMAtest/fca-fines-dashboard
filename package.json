@@ -92,7 +92,10 @@
     "verify:setup": "bash scripts/verify-setup.sh",
     "blog:monthly": "node --import tsx/esm scripts/generate-blog.ts monthly",
     "blog:topical": "node --import tsx/esm scripts/generate-blog.ts topical",
-    "blog:help": "node --import tsx/esm scripts/generate-blog.ts --help"
+    "blog:help": "node --import tsx/esm scripts/generate-blog.ts --help",
+    "generate:all": "node --import tsx/esm scripts/generateAllArticles.ts",
+    "generate:dry": "node --import tsx/esm scripts/generateAllArticles.ts --dry-run",
+    "generate:due": "node --import tsx/esm scripts/generateAllArticles.ts --due-within=14"
   },
   "dependencies": {
     "@aws-sdk/client-ses": "^3.969.0",

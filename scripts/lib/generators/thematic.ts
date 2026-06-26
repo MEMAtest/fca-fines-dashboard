@@ -1,0 +1,117 @@
+/**
+ * Thematic Deep-Dive Generator
+ *
+ * Generates regulatory theme analysis articles (DORA, Consumer Duty, greenwashing,
+ * whistleblowers, AI enforcement, H1 halftime, sanctions maps, etc.)
+ * Data: keyword-filtered actions across multiple regulators and years.
+ */
+
+import type { CalendarEntry, ThematicConfig } from '../calendarConfig.js';
+import { queryThematicData, formatDataTable, type ThematicData, type EnforcementRecord } from '../articleData.js';
+
+export interface GeneratorResult {
+  systemPrompt: string;
+  userPrompt: string;
+  sourceRecords: EnforcementRecord[];
+  minWordCount: number;
+}
+
+export async function buildThematicGenerator(entry: CalendarEntry): Promise<GeneratorResult> {
+  const config = entry.dataConfig as ThematicConfig;
+  const data = await queryThematicData(config.keywords, config.regulators, config.yearsSince);
+
+  return {
+    systemPrompt: buildSystemPrompt(),
+    userPrompt: buildUserPrompt(entry, data, config),
+    sourceRecords: data.records,
+    minWordCount: 800,
+  };
+}
+
+function buildSystemPrompt(): string {
+  return `You are a senior regulatory affairs analyst at RegActions, a platform covering enforcement from 45+ global financial regulators. Write authoritative thematic analysis articles for heads of compliance, MLROs, regulatory advisers and board-level NEDs.
+
+Tone: Authoritative, analytical, evidence-based. No first person. No hedging ("might", "perhaps", "could potentially"). State conclusions directly from the evidence.
+
+Every claim — fine amounts, regulator names, dates, regulatory rule references — must come directly from the provided data. If a section lacks sufficient data, state what the data shows, not what you speculate might be true.
+
+Output format (CRITICAL — follow exactly, no markdown headers before TITLE):
+
+TITLE: [max 70 chars]
+EXCERPT: [120-200 chars, the article's core finding in one sentence]
+KEYWORDS: [comma-separated, 5-8 keywords]
+CONTENT:
+[1500-2500 words of markdown with these MANDATORY sections:]
+
+## [Theme] Overview
+Context: why this theme matters now, regulatory backdrop (2-3 paragraphs).
+
+## Regulatory Framework
+Cite specific rules, articles, or guidance documents relevant to the theme. If the data references specific regulatory frameworks, name them (e.g., "MLD5, Article 18" or "COBS 9A" or "MAR Article 12"). Do not invent rule citations not supported by the data.
+
+## Enforcement Trajectory
+Use the year-by-year data to show whether enforcement is rising, falling, or shifting regulator. Include a markdown table if 3+ years of data are available.
+
+## Key Cases — In Detail
+Cite at least 5 specific enforcement actions from the data: firm name, regulator, amount, breach, key finding. Use sub-bullets.
+
+## Practitioner Implications
+What compliance teams, risk functions, and boards must do in response. Sector-specific where the data shows a pattern.
+
+## What to Watch
+3-5 forward-looking observations grounded in the enforcement trajectory. No speculation beyond what the data implies.
+
+## Key Takeaways
+5 bullet points. Each must reference a specific case, amount, or trend from the data.
+
+Requirements:
+- Compare at least 3 regulators where the data supports it
+- Include at least 3 years of enforcement trajectory if year data is available
+- Every named case must be from the provided data`;
+}
+
+function buildUserPrompt(entry: CalendarEntry, data: ThematicData, config: ThematicConfig): string {
+  const dataTable = formatDataTable(data.records);
+
+  const regTable = data.regulatorAggregates.length > 0
+    ? data.regulatorAggregates.map(r =>
+        `${r.regulator}: ${r.count} actions, total £${(r.total / 1_000_000).toFixed(1)}M`
+      ).join('\n')
+    : 'Insufficient aggregated data';
+
+  const yearTable = data.yearAggregates.length > 0
+    ? data.yearAggregates.map(y =>
+        `${y.year}: ${y.count} actions, £${(y.total / 1_000_000).toFixed(1)}M total`
+      ).join('\n')
+    : 'Insufficient year-by-year data';
+
+  return `Write a thematic regulatory enforcement analysis article.
+
+Topic guidance: ${entry.titleGuidance}
+Category: ${entry.category}
+Keywords to focus on: ${config.keywords.join(', ')}
+${config.regulators ? `Primary regulators: ${config.regulators.join(', ')}` : ''}
+
+=== ENFORCEMENT DATA (keyword-filtered, ordered by amount) ===
+${dataTable}
+
+=== BY REGULATOR ===
+${regTable}
+
+=== YEAR-BY-YEAR TRAJECTORY ===
+${yearTable}
+
+CRITICAL WORD COUNT REQUIREMENT: This article must be at least 900 words of body text (after CONTENT:). Write each section in full — do not summarise or bullet-point what should be paragraphs. Each of the 7 mandatory sections must contain at minimum:
+- Overview: 3 full paragraphs
+- Regulatory Framework: 2 paragraphs plus any rule citations
+- Enforcement Trajectory: table PLUS 2 analysis paragraphs
+- Key Cases: at least 5 cases, each with 3-4 sentences of detail
+- Practitioner Implications: 3 paragraphs
+- What to Watch: 4-5 bullets with 2 sentences each
+- Key Takeaways: 5 bullets, each 1-2 sentences
+
+Other requirements:
+- Compare across at least 3 regulators where data supports it
+- Cite at least 5 specific enforcement actions from the data
+- Every monetary amount must come from the data`;
+}
