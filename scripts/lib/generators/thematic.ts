@@ -7,7 +7,9 @@
  */
 
 import type { CalendarEntry, ThematicConfig } from '../calendarConfig.js';
-import { queryThematicData, formatDataTable, type ThematicData, type EnforcementRecord } from '../articleData.js';
+import { queryThematicData, formatDataTable, buildStatisticalSummary, buildKeyCaseSummaries, type ThematicData, type EnforcementRecord } from '../articleData.js';
+import { getRelevantProfiles } from '../regulatorProfiles.js';
+import { getBrandVoiceSystemPrefix } from '../brandVoice.js';
 
 export interface GeneratorResult {
   systemPrompt: string;
@@ -21,15 +23,16 @@ export async function buildThematicGenerator(entry: CalendarEntry): Promise<Gene
   const data = await queryThematicData(config.keywords, config.regulators, config.yearsSince);
 
   return {
-    systemPrompt: buildSystemPrompt(),
+    systemPrompt: buildSystemPrompt(data.records),
     userPrompt: buildUserPrompt(entry, data, config),
     sourceRecords: data.records,
-    minWordCount: 800,
+    minWordCount: 1500,
   };
 }
 
-function buildSystemPrompt(): string {
-  return `You are a senior regulatory affairs analyst at RegActions, a platform covering enforcement from 45+ global financial regulators. Write authoritative thematic analysis articles for heads of compliance, MLROs, regulatory advisers and board-level NEDs.
+function buildSystemPrompt(records: EnforcementRecord[]): string {
+  const profileContext = getRelevantProfiles(records);
+  return `${getBrandVoiceSystemPrefix()}You are a senior regulatory affairs analyst at RegActions, a platform covering enforcement from 45+ global financial regulators. Write authoritative thematic analysis articles for heads of compliance, MLROs, regulatory advisers and board-level NEDs.${profileContext}
 
 Tone: Authoritative, analytical, evidence-based. No first person. No hedging ("might", "perhaps", "could potentially"). State conclusions directly from the evidence.
 
@@ -71,7 +74,7 @@ Requirements:
 }
 
 function buildUserPrompt(entry: CalendarEntry, data: ThematicData, config: ThematicConfig): string {
-  const dataTable = formatDataTable(data.records);
+  const dataTable = formatDataTable(data.records.slice(0, 20));
 
   const regTable = data.regulatorAggregates.length > 0
     ? data.regulatorAggregates.map(r =>
@@ -101,17 +104,23 @@ ${regTable}
 === YEAR-BY-YEAR TRAJECTORY ===
 ${yearTable}
 
-CRITICAL WORD COUNT REQUIREMENT: This article must be at least 900 words of body text (after CONTENT:). Write each section in full — do not summarise or bullet-point what should be paragraphs. Each of the 7 mandatory sections must contain at minimum:
+=== KEY CASE SUMMARIES (full detail — cite all of these in the article) ===
+${buildKeyCaseSummaries(data.records)}
+
+=== STATISTICAL CONTEXT ===
+${buildStatisticalSummary(data.records, data.yearAggregates)}
+
+CRITICAL WORD COUNT REQUIREMENT: This article must be at least 1500 words of body text (after CONTENT:). Write each section in full — do not summarise or bullet-point what should be paragraphs. Each of the 7 mandatory sections must contain at minimum:
 - Overview: 3 full paragraphs
 - Regulatory Framework: 2 paragraphs plus any rule citations
 - Enforcement Trajectory: table PLUS 2 analysis paragraphs
-- Key Cases: at least 5 cases, each with 3-4 sentences of detail
+- Key Cases: at least 8 cases, each with 3-4 sentences of detail
 - Practitioner Implications: 3 paragraphs
 - What to Watch: 4-5 bullets with 2 sentences each
 - Key Takeaways: 5 bullets, each 1-2 sentences
 
 Other requirements:
 - Compare across at least 3 regulators where data supports it
-- Cite at least 5 specific enforcement actions from the data
+- Cite every firm from the Key Case Summaries section above
 - Every monetary amount must come from the data`;
 }

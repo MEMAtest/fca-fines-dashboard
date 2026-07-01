@@ -102,6 +102,8 @@
     "@types/xml2js": "^0.4.14",
     "@vercel/analytics": "^1.6.1",
     "axios": "^1.13.2",
+    "chart.js": "^4.5.1",
+    "chartjs-node-canvas": "^5.0.0",
     "cheerio": "^1.1.2",
     "classnames": "^2.5.1",
     "cors": "^2.8.5",

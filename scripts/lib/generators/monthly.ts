@@ -6,7 +6,9 @@
  */
 
 import type { CalendarEntry, MonthlyConfig } from '../calendarConfig.js';
-import { queryMonthlyData, formatMonthlyTable, formatDataTable, type MonthlyData, type EnforcementRecord } from '../articleData.js';
+import { queryMonthlyData, formatMonthlyTable, formatDataTable, buildStatisticalSummary, buildKeyCaseSummaries, type MonthlyData, type EnforcementRecord } from '../articleData.js';
+import { getRelevantProfiles } from '../regulatorProfiles.js';
+import { getBrandVoiceSystemPrefix } from '../brandVoice.js';
 
 export interface GeneratorResult {
   systemPrompt: string;
@@ -23,12 +25,13 @@ export async function buildMonthlyGenerator(entry: CalendarEntry): Promise<Gener
     systemPrompt: buildSystemPrompt(data),
     userPrompt: buildUserPrompt(entry, data),
     sourceRecords: data.currentMonth,
-    minWordCount: 700,
+    minWordCount: 1200,
   };
 }
 
 function buildSystemPrompt(data: MonthlyData): string {
-  return `You are a senior regulatory analyst at RegActions. Write a definitive monthly enforcement tracker for the FCA. This is a factual reference document, not commentary — compliance officers and MLROs use it as their primary source for what happened in the month.
+  const profileContext = getRelevantProfiles(data.currentMonth);
+  return `${getBrandVoiceSystemPrefix()}You are a senior regulatory analyst at RegActions. Write a definitive monthly enforcement tracker for the FCA. This is a factual reference document, not commentary — compliance officers and MLROs use it as their primary source for what happened in the month.${profileContext}
 
 Tone: Professional, factual, precise. No hedging. No first person. No speculation beyond what the data explicitly shows.
 
@@ -100,10 +103,17 @@ Actions: ${data.priorYearMonth.length}
 Total fines: £${(priorTotal / 1_000_000).toFixed(2)}M
 ${data.priorYearMonth.length > 0 ? data.priorYearMonth.slice(0, 5).map(r => `  ${r.firm_individual}: ${r.amount ? `£${(r.amount/1_000_000).toFixed(1)}M` : 'non-monetary'} — ${r.breach_type}`).join('\n') : '  No actions recorded'}
 
+=== KEY CASE SUMMARIES (full detail — use all of these) ===
+${buildKeyCaseSummaries(data.currentMonth)}
+
+=== STATISTICAL CONTEXT ===
+${buildStatisticalSummary(data.currentMonth)}
+
 Requirements:
 - All ${data.currentMonth.length} current-month actions must appear in the article
 - Use the exact fine amounts from the data above
 - Include a markdown table for "Month at a Glance"
 - The YoY comparison must use the prior-year numbers provided
+- Cite every named firm from the source data at least once
 - Minimum 1200 words`;
 }

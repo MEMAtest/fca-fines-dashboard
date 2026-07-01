@@ -12,10 +12,14 @@ import {
   queryForensicData,
   formatComparisonTable,
   formatDataTable,
+  buildStatisticalSummary,
+  buildKeyCaseSummaries,
   type ComparisonData,
   type ForensicData,
   type EnforcementRecord,
 } from '../articleData.js';
+import { getRelevantProfiles } from '../regulatorProfiles.js';
+import { getBrandVoiceSystemPrefix } from '../brandVoice.js';
 
 export interface GeneratorResult {
   systemPrompt: string;
@@ -28,11 +32,12 @@ export async function buildComparisonGenerator(entry: CalendarEntry): Promise<Ge
   const config = entry.dataConfig as ComparisonConfig;
   const data = await queryComparisonData(config.regulators, config.since);
 
+  const allCases = [...data.regulatorA.topCases, ...data.regulatorB.topCases];
   return {
-    systemPrompt: buildComparisonSystemPrompt(config.regulators),
+    systemPrompt: buildComparisonSystemPrompt(config.regulators, allCases),
     userPrompt: buildComparisonUserPrompt(entry, data, config),
-    sourceRecords: [...data.regulatorA.topCases, ...data.regulatorB.topCases],
-    minWordCount: 750,
+    sourceRecords: allCases,
+    minWordCount: 1350,
   };
 }
 
@@ -41,17 +46,18 @@ export async function buildForensicGenerator(entry: CalendarEntry): Promise<Gene
   const data = await queryForensicData(config.scope, config.dateRange, config.breachKeywords);
 
   return {
-    systemPrompt: buildForensicSystemPrompt(),
+    systemPrompt: buildForensicSystemPrompt(data.allCasesInRange),
     userPrompt: buildForensicUserPrompt(entry, data, config),
     sourceRecords: data.allCasesInRange,
-    minWordCount: 750,
+    minWordCount: 1350,
   };
 }
 
 // ─── Comparison prompts ────────────────────────────────────────────────────────
 
-function buildComparisonSystemPrompt([regA, regB]: [string, string]): string {
-  return `You are a senior regulatory analyst at RegActions writing a comparative analysis for compliance professionals, legal teams, and dual-regulated firms. This article compares ${regA} and ${regB} enforcement — helping readers understand structural differences in approach, penalty size, breach focus, and what firms need to do differently under each.
+function buildComparisonSystemPrompt([regA, regB]: [string, string], records: EnforcementRecord[]): string {
+  const profileContext = getRelevantProfiles(records);
+  return `${getBrandVoiceSystemPrefix()}You are a senior regulatory analyst at RegActions writing a comparative analysis for compliance professionals, legal teams, and dual-regulated firms. This article compares ${regA} and ${regB} enforcement — helping readers understand structural differences in approach, penalty size, breach focus, and what firms need to do differently under each.${profileContext}
 
 Tone: Analytical, impartial, evidence-based. No first person. No hedging. Quote figures directly from the data.
 
@@ -114,17 +120,27 @@ ${aCases}
 === TOP CASES — ${b.name} ===
 ${bCases}
 
+=== KEY CASE SUMMARIES — ${a.name} ===
+${buildKeyCaseSummaries(a.topCases, 5)}
+
+=== KEY CASE SUMMARIES — ${b.name} ===
+${buildKeyCaseSummaries(b.topCases, 5)}
+
+=== STATISTICAL CONTEXT ===
+${buildStatisticalSummary([...a.topCases, ...b.topCases])}
+
 Requirements:
-- Minimum 1400 words
+- Minimum 1350 words
 - Include the comparison summary table in the article
-- Cite at least 2 named cases per regulator
+- Cite every named case from the Key Case Summaries sections above
 - All figures must match the data provided`;
 }
 
 // ─── Forensic prompts ──────────────────────────────────────────────────────────
 
-function buildForensicSystemPrompt(): string {
-  return `You are a senior regulatory analyst at RegActions writing a forensic case study of a landmark enforcement action. This is an anatomy article — it dissects a single major case in depth for compliance professionals, legal teams, and boards who need to learn from it.
+function buildForensicSystemPrompt(records: EnforcementRecord[]): string {
+  const profileContext = getRelevantProfiles(records);
+  return `${getBrandVoiceSystemPrefix()}You are a senior regulatory analyst at RegActions writing a forensic case study of a landmark enforcement action. This is an anatomy article — it dissects a single major case in depth for compliance professionals, legal teams, and boards who need to learn from it.${profileContext}
 
 Tone: Precise, investigative, factual. No first person. No hedging. State findings as they are, citing from the data.
 
@@ -191,9 +207,16 @@ Summary: ${c.summary}
 === BROADER CONTEXT (top cases in same period for comparison) ===
 ${contextTable}
 
+=== BROADER CONTEXT — KEY CASE SUMMARIES ===
+${buildKeyCaseSummaries(data.allCasesInRange.slice(0, 10))}
+
+=== STATISTICAL CONTEXT ===
+${buildStatisticalSummary(data.allCasesInRange)}
+
 Requirements:
-- Minimum 1400 words
+- Minimum 1350 words
 - The mandatory "Case at a Glance" table must appear as the first section
 - The firm name (${c.firm_individual}) and fine amount (£${(c.amount / 1_000_000).toFixed(2)}M) must be in the title
+- Reference at least 5 other cases from the broader context for comparison
 - All case facts must match the data provided above`;
 }

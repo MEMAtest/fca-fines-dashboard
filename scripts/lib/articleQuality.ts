@@ -4,7 +4,7 @@
  * Validates AI-generated articles for data accuracy, structure, and editorial quality.
  * Adapted from MEMA platform's quality system, simplified for blog editorial content.
  *
- * Pass criteria: All 8 required checks pass + at least 3 of 4 soft checks pass.
+ * Pass criteria: All 10 required checks pass + all soft checks pass.
  */
 
 import type { EnforcementRecord } from './articleData.js';
@@ -49,9 +49,10 @@ export function runQualityGate(
     checkNoDuplicates(article.content),
     checkNoHallucinatedFirms(article.content, sourceData),
     checkTitleQuality(article.title, article.excerpt),
+    checkDataUsage(article.content, sourceData),
+    checkSpecificity(article.content, sourceData),
     checkKeywordCount(article.keywords),
     checkEditorialTone(article.content),
-    checkSpecificity(article.content, sourceData),
     checkReadability(article.content),
   ];
 
@@ -60,7 +61,7 @@ export function runQualityGate(
   const requiredPassed = required.filter(c => c.passed).length;
   const softPassed = soft.filter(c => c.passed).length;
 
-  const passed = requiredPassed === required.length && softPassed >= 3;
+  const passed = requiredPassed === required.length && softPassed >= soft.length;
   const score = Math.round(
     ((requiredPassed / required.length) * 70 + (softPassed / soft.length) * 30)
   );
@@ -98,15 +99,15 @@ export function formatQualityReport(report: QualityReport): string {
 
 // ─── Individual Checks ─────────────────────────────────────────────────────────
 
-// 1. Word Count (≥800 words) — REQUIRED
+// 1. Word Count (≥1100 words) — REQUIRED
 function checkWordCount(content: string): QualityCheck {
   const words = countWords(content);
   return {
     id: 'word_count',
     name: 'Word Count',
     weight: 'required',
-    passed: words >= 600,
-    message: `${words} words (min 600)`,
+    passed: words >= 1100,
+    message: `${words} words (min 1100)`,
   };
 }
 
@@ -279,7 +280,35 @@ function checkTitleQuality(title: string, excerpt: string): QualityCheck {
   };
 }
 
-// 9. Keyword Count — 5-8 SEO keywords — SOFT
+// 9. Data Usage — named firm/individual citations from source — REQUIRED
+function checkDataUsage(content: string, sourceData: EnforcementRecord[]): QualityCheck {
+  if (sourceData.length === 0) {
+    return { id: 'data_usage', name: 'Data Usage (Firm Citations)', weight: 'required', passed: true, message: 'No source data to validate against' };
+  }
+
+  const namedFirms = sourceData
+    .map(r => r.firm_individual)
+    .filter(f => f && f.length > 3 && !['Mr', 'Unknown', 'N/A', ''].includes(f));
+
+  const cited = namedFirms.filter(firm =>
+    content.toLowerCase().includes(firm.toLowerCase())
+  );
+
+  const minRequired = Math.min(8, namedFirms.length);
+  const passed = cited.length >= minRequired;
+
+  return {
+    id: 'data_usage',
+    name: 'Data Usage (Firm Citations)',
+    weight: 'required',
+    passed,
+    message: passed
+      ? `${cited.length}/${namedFirms.length} named firms cited`
+      : `Only ${cited.length} of ${namedFirms.length} source firms cited (need ≥${minRequired}). Add: ${namedFirms.filter(f => !content.toLowerCase().includes(f.toLowerCase())).slice(0, 4).join(', ')}`,
+  };
+}
+
+// 10. Keyword Count — 5-8 SEO keywords — SOFT
 function checkKeywordCount(keywords: string[]): QualityCheck {
   return {
     id: 'keyword_count',
@@ -318,18 +347,18 @@ function checkEditorialTone(content: string): QualityCheck {
   };
 }
 
-// 11. Specificity — ≥3 specific enforcement actions with amounts — SOFT
+// 10b. Specificity — ≥8 specific enforcement actions with amounts — REQUIRED
 function checkSpecificity(content: string, sourceData: EnforcementRecord[]): QualityCheck {
   const amounts = extractAmounts(content);
-  // Count distinct regulator+amount pairs as proxy for specific action references
   const specificRefs = Math.min(amounts.length, sourceData.length);
+  const minRequired = Math.min(8, sourceData.length);
 
   return {
     id: 'specificity',
     name: 'Specificity',
-    weight: 'soft',
-    passed: specificRefs >= 3,
-    message: `${specificRefs} specific enforcement references (min 3)`,
+    weight: 'required',
+    passed: specificRefs >= minRequired,
+    message: `${specificRefs} specific enforcement references (need ≥${minRequired})`,
   };
 }
 

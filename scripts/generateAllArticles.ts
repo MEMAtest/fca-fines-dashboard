@@ -35,6 +35,7 @@ import {
   closePool,
   type EnforcementRecord,
 } from './lib/articleData.js';
+
 import { buildMonthlyGenerator } from './lib/generators/monthly.js';
 import { buildThematicGenerator } from './lib/generators/thematic.js';
 import { buildPersonaGenerator } from './lib/generators/persona.js';
@@ -191,10 +192,15 @@ async function generateArticle(entry: CalendarEntry): Promise<boolean> {
   let bestArticle: GeneratedArticle | null = null;
   let bestReport: QualityReport | null = null;
   let lastFeedback = '';
+  let prevWordCount = 0;
 
   for (let attempt = 1; attempt <= MAX_RETRIES; attempt++) {
     console.log(`  Attempt ${attempt}/${MAX_RETRIES}...`);
-    const temperature = attempt === MAX_RETRIES ? 0.2 : 0.4;
+
+    // Temperature inversion: word-count failures need more creativity (higher temp);
+    // factual failures need more precision (lower temp); first attempt is balanced.
+    const wordCountFailed = attempt > 1 && prevWordCount < genResult.minWordCount;
+    const temperature = wordCountFailed ? 0.7 : attempt === MAX_RETRIES ? 0.15 : 0.35;
 
     const userPrompt = lastFeedback
       ? `${genResult.userPrompt}\n\nIMPORTANT FEEDBACK FROM PREVIOUS ATTEMPT:\n${lastFeedback}`
@@ -218,6 +224,7 @@ async function generateArticle(entry: CalendarEntry): Promise<boolean> {
     );
 
     const wordCount = article.content.split(/\s+/).length;
+    prevWordCount = wordCount;
     const minWords = genResult.minWordCount;
     const wordOk = wordCount >= minWords;
     const fullPass = qualityReport.passed && wordOk;
@@ -236,16 +243,34 @@ async function generateArticle(entry: CalendarEntry): Promise<boolean> {
       break;
     }
 
+    // Build structured per-section feedback
     const failedChecks = qualityReport.checks.filter(c => !c.passed);
-    const wordFeedback = wordOk ? '' : `\n- Word count: ${wordCount} words — minimum is ${minWords}. Expand all sections substantially.`;
-    lastFeedback = `Previous attempt failed:\n${failedChecks.map(c => `- ${c.name}: ${c.message}`).join('\n')}${wordFeedback}\nFix all issues.`;
+    let wordFeedback = '';
+    if (!wordOk) {
+      const sectionWordCounts = buildSectionWordCounts(article.content);
+      const shortSections = sectionWordCounts
+        .filter(s => s.words < 150)
+        .map(s => `  - ${s.heading}: ${s.words} words → expand with 2-3 more paragraphs of specific case detail`);
+      const unusedFirms = buildUnusedFirmsList(article.content, genResult.sourceRecords);
+      wordFeedback = `\n- WORD COUNT: ${wordCount} of ${minWords} required. Short sections:\n${shortSections.join('\n') || '  All sections present — expand each with more case citations and analysis'}`;
+      if (unusedFirms.length > 0) {
+        wordFeedback += `\n  UNUSED SOURCE CASES — add at least 4 of these to the article:\n${unusedFirms.slice(0, 6).map(f => `  - ${f}`).join('\n')}`;
+      }
+    }
+    lastFeedback = `Previous attempt failed:\n${failedChecks.map(c => `- ${c.name}: ${c.message}`).join('\n')}${wordFeedback}\nFix all issues in your next response.`;
     article = null;
   }
 
-  // Use best attempt even if quality gate didn't fully pass — human reviews all drafts anyway
+  // Reject if best score is below floor — don't save unusable drafts
   if (!bestArticle || !bestReport) {
     console.error('  All attempts failed to produce parseable content.');
     logResult(entry, null, null, 'all_attempts_failed');
+    return false;
+  }
+
+  if (bestReport.score < 70) {
+    console.warn(`  Rejecting draft — score ${bestReport.score}/100 is below minimum threshold of 70. Investigate prompts.`);
+    logResult(entry, bestArticle, bestReport, 'below_threshold');
     return false;
   }
 
@@ -348,7 +373,7 @@ async function callAI(systemPrompt: string, userPrompt: string, temperature: num
           { role: 'user', content: userPrompt },
         ],
         temperature,
-        max_tokens: 5000,
+        max_tokens: 8000,
       }),
       signal: AbortSignal.timeout(150_000),
     });
@@ -479,6 +504,31 @@ function logResult(
 }
 
 // ─── Helpers ───────────────────────────────────────────────────────────────────
+
+function buildSectionWordCounts(content: string): Array<{ heading: string; words: number }> {
+  const parts = content.split(/^(##\s+.+)$/m).filter(Boolean);
+  const result: Array<{ heading: string; words: number }> = [];
+  for (let i = 0; i < parts.length - 1; i += 2) {
+    const heading = parts[i]?.trim() ?? '';
+    const body = parts[i + 1] ?? '';
+    if (heading.startsWith('##')) {
+      result.push({ heading, words: body.split(/\s+/).filter(w => w.length > 0).length });
+    }
+  }
+  return result;
+}
+
+function buildUnusedFirmsList(content: string, records: EnforcementRecord[]): string[] {
+  return records
+    .filter(r =>
+      r.firm_individual &&
+      r.firm_individual.length > 3 &&
+      !['Mr', 'Unknown', 'N/A', ''].includes(r.firm_individual) &&
+      !content.toLowerCase().includes(r.firm_individual.toLowerCase())
+    )
+    .slice(0, 10)
+    .map(r => `${r.firm_individual} | ${r.regulator} | ${r.amount > 0 ? `£${(r.amount / 1_000_000).toFixed(1)}M` : 'non-monetary'} | ${r.date_issued} | ${r.breach_type}`);
+}
 
 function readExistingSlugs(): Set<string> {
   if (!existsSync(BLOG_DATA)) return new Set();

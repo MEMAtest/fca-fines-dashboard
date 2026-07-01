@@ -7,7 +7,9 @@
  */
 
 import type { CalendarEntry, PersonaConfig } from '../calendarConfig.js';
-import { queryPersonaData, formatDataTable, type PersonaData, type EnforcementRecord } from '../articleData.js';
+import { queryPersonaData, formatDataTable, buildStatisticalSummary, buildKeyCaseSummaries, type PersonaData, type EnforcementRecord } from '../articleData.js';
+import { getRelevantProfiles } from '../regulatorProfiles.js';
+import { getBrandVoiceSystemPrefix } from '../brandVoice.js';
 
 export interface GeneratorResult {
   systemPrompt: string;
@@ -21,15 +23,16 @@ export async function buildPersonaGenerator(entry: CalendarEntry): Promise<Gener
   const data = await queryPersonaData(config.firmCategory, config.sectorKeywords);
 
   return {
-    systemPrompt: buildSystemPrompt(config.firmCategory),
+    systemPrompt: buildSystemPrompt(config.firmCategory, data.records),
     userPrompt: buildUserPrompt(entry, data, config),
     sourceRecords: data.records,
-    minWordCount: 750,
+    minWordCount: 1350,
   };
 }
 
-function buildSystemPrompt(firmCategory: string): string {
-  return `You are a senior regulatory compliance specialist at RegActions writing for ${firmCategory} compliance teams, risk officers, and NEDs. This is a sector-specific enforcement guide — practical, specific to this sector, grounded in enforcement data.
+function buildSystemPrompt(firmCategory: string, records: EnforcementRecord[]): string {
+  const profileContext = getRelevantProfiles(records);
+  return `${getBrandVoiceSystemPrefix()}You are a senior regulatory compliance specialist at RegActions writing for ${firmCategory} compliance teams, risk officers, and NEDs. This is a sector-specific enforcement guide — practical, specific to this sector, grounded in enforcement data.${profileContext}
 
 Tone: Professional, direct, useful. No generic compliance advice. No first person. No hedging. Every observation must be grounded in the enforcement data provided.
 
@@ -99,9 +102,15 @@ ${topBreachTypes.length > 0 ? topBreachTypes.join(', ') : 'Varies — see data t
 Total records: ${data.records.length} enforcement actions
 Total fines: £${(data.records.reduce((s, r) => s + (r.amount || 0), 0) / 1_000_000).toFixed(1)}M
 
+=== KEY CASE SUMMARIES (full detail — cite all named firms) ===
+${buildKeyCaseSummaries(data.records)}
+
+=== STATISTICAL CONTEXT ===
+${buildStatisticalSummary(data.records)}
+
 Requirements:
-- Minimum 1400 words
-- Cite at least 3 specific enforcement actions in the "Top Cases" section
+- Minimum 1350 words
+- Cite every named firm from the Key Case Summaries section above
 - The compliance checklist must map directly to breach types in the data
 - Every named case must appear in the provided data`;
 }

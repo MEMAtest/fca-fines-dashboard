@@ -158,7 +158,7 @@ export function formatDataTable(records: EnforcementRecord[]): string {
   const header = 'Regulator | Firm/Individual | Amount | Date | Breach Type | Summary';
   const separator = '---|---|---|---|---|---';
   const rows = records.map(r =>
-    `${r.regulator} | ${r.firm_individual} | ${formatAmount(r.amount)} | ${r.date_issued} | ${r.breach_type} | ${truncate(r.summary, 100)}`
+    `${r.regulator} | ${r.firm_individual} | ${formatAmount(r.amount)} | ${r.date_issued} | ${r.breach_type} | ${truncate(r.summary, 400)}`
   );
 
   return [header, separator, ...rows].join('\n');
@@ -527,4 +527,95 @@ function formatAmount(amount: number): string {
 function truncate(str: string, maxLen: number): string {
   if (str.length <= maxLen) return str;
   return str.slice(0, maxLen - 3) + '...';
+}
+
+// ─── Statistical summary ───────────────────────────────────────────────────────
+
+export interface StatisticalSummary {
+  totalRecords: number;
+  totalFines: string;
+  mean: string;
+  median: string;
+  p75: string;
+  outliers: EnforcementRecord[];
+  yoyDelta: string | null;
+  topFirms: string;
+  yearBreakdown: string;
+}
+
+/**
+ * Compute statistical summary for a set of enforcement records.
+ * Injected into generator prompts as structured context for the AI.
+ */
+export function buildStatisticalSummary(
+  records: EnforcementRecord[],
+  yearAggs?: Array<{ year: number; count: number; total: number }>,
+): string {
+  if (records.length === 0) return '(No statistical summary available — no records)';
+
+  const amounts = records
+    .map(r => r.amount)
+    .filter(a => a > 0 && !isNaN(a))
+    .sort((a, b) => a - b);
+
+  if (amounts.length === 0) return `(${records.length} records — no monetary amounts)`;
+
+  const total = amounts.reduce((s, a) => s + a, 0);
+  const mean = total / amounts.length;
+  const median = amounts.length % 2 === 0
+    ? (amounts[amounts.length / 2 - 1]! + amounts[amounts.length / 2]!) / 2
+    : amounts[Math.floor(amounts.length / 2)]!;
+  const p75idx = Math.floor(amounts.length * 0.75);
+  const p75 = amounts[p75idx] ?? amounts[amounts.length - 1]!;
+
+  const outliers = records.filter(r => r.amount > p75 * 3);
+
+  const topFirms = records
+    .filter(r => r.firm_individual && r.firm_individual.length > 3 && !['Mr', 'Unknown', 'N/A'].includes(r.firm_individual))
+    .slice(0, 10)
+    .map(r => `${r.firm_individual} (${r.regulator}, ${formatAmount(r.amount)}, ${r.date_issued.slice(0, 7)})`)
+    .join('\n  ');
+
+  let yoyDelta: string | null = null;
+  if (yearAggs && yearAggs.length >= 2) {
+    const sorted = [...yearAggs].sort((a, b) => a.year - b.year);
+    const last = sorted[sorted.length - 1]!;
+    const prev = sorted[sorted.length - 2]!;
+    if (prev.total > 0) {
+      const pct = ((last.total - prev.total) / prev.total * 100).toFixed(0);
+      yoyDelta = `${last.year} vs ${prev.year}: ${last.total > prev.total ? '+' : ''}${pct}% (${formatAmount(prev.total)} → ${formatAmount(last.total)})`;
+    }
+  }
+
+  const lines = [
+    `STATISTICAL SUMMARY (${records.length} enforcement records):`,
+    `  Total fines: ${formatAmount(total)}`,
+    `  Mean fine: ${formatAmount(mean)} | Median: ${formatAmount(median)} | 75th percentile: ${formatAmount(p75)}`,
+    outliers.length > 0 ? `  Outlier cases (>3× p75, ${formatAmount(p75 * 3)}+): ${outliers.map(r => `${r.firm_individual} ${formatAmount(r.amount)}`).join(', ')}` : '',
+    yoyDelta ? `  Year-on-year: ${yoyDelta}` : '',
+    topFirms ? `\nKEY CASES — TOP ${Math.min(10, records.length)} BY FINE AMOUNT (use these in the article):\n  ${topFirms}` : '',
+  ].filter(Boolean);
+
+  return lines.join('\n');
+}
+
+/**
+ * Format records as full-text "Key Case Summaries" for injection into generator prompts.
+ * Unlike formatDataTable (which truncates summaries to 100 chars), this provides full context.
+ */
+export function buildKeyCaseSummaries(records: EnforcementRecord[], limit = 10): string {
+  const top = records
+    .filter(r => r.firm_individual && r.firm_individual.length > 3 && !['Mr', 'Unknown', 'N/A'].includes(r.firm_individual))
+    .slice(0, limit);
+
+  if (top.length === 0) return '(No named cases available)';
+
+  return top.map((r, i) => [
+    `Case ${i + 1}: ${r.firm_individual}`,
+    `  Regulator: ${r.regulator}`,
+    `  Amount: ${formatAmount(r.amount)}`,
+    `  Date: ${r.date_issued}`,
+    `  Breach: ${r.breach_type || 'Not specified'}`,
+    `  Detail: ${r.summary || 'No summary available'}`,
+  ].join('\n')).join('\n\n');
 }
