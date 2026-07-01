@@ -108,6 +108,7 @@ function insertArticle(entry: string): void {
   const before = src.slice(0, insertPos);
   const after = src.slice(insertPos);
 
-  const newSrc = before + ',\n' + entry + after;
+  const trimmedBefore = before.trimEnd().replace(/,\s*$/, '');
+  const newSrc = trimmedBefore + ',\n' + entry + after;
   writeFileSync(BLOG_DATA_PATH, newSrc, 'utf-8');
 }

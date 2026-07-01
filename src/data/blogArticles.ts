@@ -3087,7 +3087,7 @@ For firms with Latin American operations or investment exposure, understanding e
       "Mexico financial regulation",
       "Latin America compliance",
     ],
-  },,
+  },
   {
     id: "ai-insurance-conduct-failures-2026",
     slug: "insurance-conduct-failures-2026",
