@@ -62,6 +62,7 @@ jobs:
           echo "Environment validation passed for ${{ matrix.code }}."
 
       - name: Run ${{ matrix.code }} scraper
+        id: run_scraper
         continue-on-error: true
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
@@ -80,6 +81,29 @@ jobs:
             cat "$SUMMARY_FILE"
           else
             echo "No structured summary emitted for ${{ matrix.code }}."
+          fi
+
+      - name: Fail on scraper errors
+        if: always()
+        run: |
+          SUMMARY_FILE="/tmp/${{ matrix.code }}-scrape-summary.json"
+
+          if [ "${{ steps.run_scraper.outcome }}" = "failure" ]; then
+            echo "${{ matrix.code }} scraper command failed."
+            exit 1
+          fi
+
+          if [ -f "$SUMMARY_FILE" ]; then
+            node -e '
+              const fs = require("fs");
+              const file = process.argv[1];
+              const summary = JSON.parse(fs.readFileSync(file, "utf8"));
+              if (summary.status && summary.status !== "success") {
+                console.error(`${summary.name || "${{ matrix.code }}"} reported status=${summary.status}`);
+                if (summary.errorMessage) console.error(summary.errorMessage);
+                process.exit(1);
+              }
+            ' "$SUMMARY_FILE"
           fi
 
   freshness:
