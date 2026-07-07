@@ -99,6 +99,199 @@ export const blogArticleEditorialUpgrades: Record<
   string,
   BlogArticleEditorialUpgrade
 > = {
+  "board-guide-aml-controls-global-enforcement": {
+    title: "Board Guide: Global AML Controls and Enforcement Data",
+    seoTitle: "Board Guide: AML Controls and Global Enforcement Data",
+    excerpt:
+      "Board-level AML controls guide using global enforcement data to test transaction monitoring, customer due diligence, SAR governance, remediation and senior manager evidence.",
+    readTime: "9 min read",
+    content: buildGuide({
+      heading: "Board Guide: Global AML Controls and Enforcement Data",
+      opening:
+        "AML enforcement data gives boards a practical way to test whether financial crime controls are working in the business rather than only described in policy.",
+      matter: [
+        "The FATF states that it leads global action on money laundering, terrorist financing and proliferation financing, promotes global standards, researches methods and trends, and assesses whether countries take effective action. That matters for boards because national regulators often translate FATF standards into local supervision and enforcement.",
+        "The FCA financial crime page frames firms as a line of defence against criminals and links obligations across money laundering, market abuse, fraud, bribery, corruption and sanctions. FinCEN's enforcement material similarly shows how SAR, CTR, BSA, MSB registration and beneficial ownership failures become public penalties. These official sources show why AML should be treated as a governance system, not a compliance silo.",
+      ],
+      regulatorRead: [
+        "The board should read AML enforcement across jurisdictions because the same weakness appears in different language. The FCA may describe ineffective systems and controls, FinCEN may frame the issue as BSA/AML programme failure, MAS may focus on AML/CFT governance, and AUSTRAC may emphasise reporting, monitoring and risk assessment.",
+        "A good AML comparison starts with the regulator hubs for FCA, FinCEN, OCC, MAS, AUSTRAC, CBI and BaFin. The point is not to copy another jurisdiction's rulebook. The point is to identify repeated failure modes: stale risk assessments, weak transaction monitoring, poor customer due diligence, delayed suspicious activity reporting and board packs that fail to show deteriorating control performance.",
+      ],
+      enforcementSignals: [
+        "Transaction monitoring is the first signal. Boards should see alert volumes, ageing, closure quality, model tuning, typology coverage, threshold changes and independent validation results. A low alert backlog is not useful if the model is poorly calibrated.",
+        "Customer due diligence is the second signal. Enforcement actions frequently expose weak onboarding, incomplete beneficial ownership evidence, poor source-of-wealth files, politically exposed person gaps and high-risk customer refresh delays.",
+        "SAR and escalation governance is the third signal. Regulators look at investigation quality, narrative quality, timeliness, escalation records and whether repeated suspicious patterns led to control change.",
+      ],
+      boardUse: [
+        "The board pack should translate enforcement themes into control evidence. It should show the top five relevant external cases, the matching internal control, the accountable owner, the latest assurance result, the remediation status and the residual risk decision required.",
+        "Senior managers should insist on aged issue reporting. AML failures become more serious when audit findings, model weaknesses or onboarding gaps remain open across several committee cycles without resource decisions.",
+      ],
+      searchQuery: "AML%20financial%20crime%20SAR%20CDD",
+      hubLinks: [
+        "[FCA](/regulators/fca)",
+        "[FinCEN](/regulators/fincen)",
+        "[OCC](/regulators/occ)",
+        "[MAS](/regulators/mas)",
+        "[AUSTRAC](/regulators/austrac)",
+        "[CBI](/regulators/cbi)",
+      ],
+      sources: [
+        {
+          label: "FATF what we do",
+          url: "https://www.fatf-gafi.org/en/the-fatf/what-we-do.html",
+        },
+        {
+          label: "FCA financial crime",
+          url: "https://www.fca.org.uk/firms/financial-crime",
+        },
+        {
+          label: "FinCEN enforcement actions",
+          url: "https://www.fincen.gov/news/enforcement-actions",
+        },
+      ],
+      memaLink:
+        "For board-level AML remediation, control ownership and evidence-pack design, [MEMA Consultants](https://www.memaconsultants.com/) is a relevant advisory link from this guide.",
+    }),
+  },
+  "eu-financial-regulators-enforcement-guide": {
+    title: "EU Financial Enforcement: BaFin, AMF, CNMV and CBI",
+    seoTitle: "EU Financial Enforcement Guide | BaFin, AMF, CNMV, CBI",
+    excerpt:
+      "EU financial enforcement guide comparing BaFin, AMF, CNMV, CBI and the EU supervisory architecture for banks, markets, AML, governance and cross-border compliance.",
+    readTime: "9 min read",
+    content: buildGuide({
+      heading: "EU Financial Enforcement: BaFin, AMF, CNMV and CBI",
+      opening:
+        "EU financial enforcement is fragmented by national competent authority, but firms should treat it as a connected supervisory system shaped by EU rules, ESMA, EBA, AMLA and local enforcement cultures.",
+      matter: [
+        "The EU model matters because a group can be supervised locally while operating under harmonised rules. MiFID, MAR, CRD, AML legislation, DORA, EMIR and disclosure regimes create common obligations, but BaFin, AMF, CNMV, CBI, DNB, CONSOB and other national authorities enforce through their own procedures and supervisory cultures.",
+        "The creation of AMLA adds a new layer to EU financial crime supervision. AMLA's official site and Regulation (EU) 2024/1620 provide the institutional frame for stronger EU coordination on money laundering and terrorist financing. For firms, that means AML findings in one member state should be read as possible signals for other EU operations.",
+      ],
+      regulatorRead: [
+        "BaFin is an important benchmark for Germany's banking, securities and insurance markets, with recurring relevance for AML, market disclosure, governance and administrative orders. AMF is central for France's securities and asset management enforcement. CNMV is the key Spanish securities regulator, and CBI matters for Irish fund, banking, payments and post-Brexit substance issues.",
+        "The practical EU question is not whether rules are harmonised. It is whether local entity governance can prove that those rules are understood, implemented, monitored and remediated in the authorised firm. A group policy is useful only if the local board can show how it works for its own customers, products and outsourced functions.",
+      ],
+      enforcementSignals: [
+        "The first EU signal is cross-border repeatability. If BaFin, AMF or CBI has taken action on a control theme, other EU entities should check whether the same weakness exists locally.",
+        "The second signal is substance. Post-Brexit structures, management company models, payment firms and branch networks need local decision-making evidence, not only group oversight.",
+        "The third signal is EU rule convergence. Market abuse, operational resilience, AML, ESG disclosure and crypto-asset regulation increasingly create common examination questions across member states.",
+      ],
+      boardUse: [
+        "An EU board pack should show each regulated entity, its local regulator, permission scope, branch or subsidiary status, key outsourced services, senior accountable owner and top enforcement themes in that jurisdiction.",
+        "The pack should also include a read-across table. For each external enforcement case, the table should identify the local entity exposed, current control evidence, assurance result, owner and due date for any gap closure.",
+      ],
+      searchQuery: "EU%20BaFin%20AMF%20CNMV%20CBI",
+      hubLinks: [
+        "[BaFin](/regulators/bafin)",
+        "[AMF](/regulators/amf)",
+        "[CNMV](/regulators/cnmv)",
+        "[CBI](/regulators/cbi)",
+        "[DNB](/regulators/dnb)",
+        "[AFM](/regulators/afm)",
+      ],
+      sources: [
+        {
+          label: "AMLA official site",
+          url: "https://www.amla.europa.eu/index_en",
+        },
+        {
+          label: "Regulation (EU) 2024/1620 establishing AMLA",
+          url: "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX:32024R1620",
+        },
+        {
+          label: "Central Bank of Ireland Administrative Sanctions Procedure",
+          url: "https://www.centralbank.ie/regulation/how-we-regulate/enforcement/administrative-sanctions-procedure",
+        },
+      ],
+    }),
+  },
+  "occ-enforcement-actions-complete-guide": {
+    title: "OCC Enforcement Actions: Banking Penalties Guide",
+    seoTitle: "OCC Enforcement Actions | US Banking Penalties Guide",
+    excerpt:
+      "OCC enforcement guide for national banks, federal savings associations, federal branches, unsafe practices, BSA/AML, fiduciary breaches and board reporting.",
+    readTime: "9 min read",
+    content: buildGuide({
+      heading: "OCC Enforcement Actions: Banking Penalties Guide",
+      opening:
+        "OCC enforcement actions are a core benchmark for US banking control failures because they cover national banks, federal savings associations, federal branches and institution-affiliated parties.",
+      matter: [
+        "The OCC states that it may take enforcement actions for violations of laws, rules, regulations, final orders or written conditions; unsafe or unsound practices; and breaches of fiduciary duty by institution-affiliated parties. It identifies national banks, federally chartered savings associations and subsidiaries, federal branches and agencies of foreign banks, and IAPs such as officers, directors and employees as within scope.",
+        "That scope makes OCC enforcement essential for boards of banking groups, US branches of foreign banks and control functions responsible for BSA/AML, consumer compliance, operational risk, third-party risk, credit risk, governance and remediation.",
+      ],
+      regulatorRead: [
+        "OCC actions should be read beside FinCEN, Federal Reserve, FDIC, CFPB and SEC activity where a banking group has overlapping obligations. A single weakness in AML, sales practices, risk management or technology can trigger several agencies at once.",
+        "The OCC is also important because it supervises bank management and safety-and-soundness issues directly. Enforcement may therefore focus on governance, risk management and board oversight even where the public narrative begins with a customer or financial-crime issue.",
+      ],
+      enforcementSignals: [
+        "The first signal is unsafe or unsound practice language. That wording often points to control design, management oversight, issue escalation or risk appetite failure rather than a narrow rule breach.",
+        "The second signal is IAP exposure. Directors, officers, employees and controlling shareholders can become part of the enforcement perimeter when fiduciary duty, governance or misconduct issues are serious.",
+        "The third signal is remediation order language. Consent orders, cease-and-desist orders and civil money penalties should be reviewed for specific programme commitments, independent review requirements and board accountability.",
+      ],
+      boardUse: [
+        "An OCC board pack should map public cases to the bank's own risk programmes: BSA/AML, third-party risk, model risk, complaints, sales practices, operational resilience, cyber and credit administration.",
+        "The pack should include a remediation evidence table. For every significant regulatory issue, it should show owner, milestone, validation method, independent assurance, aged slippage and board decision required.",
+      ],
+      searchQuery: "OCC%20banking%20enforcement%20BSA",
+      hubLinks: [
+        "[OCC](/regulators/occ)",
+        "[FinCEN](/regulators/fincen)",
+        "[SEC](/regulators/sec)",
+        "[FCA](/regulators/fca)",
+      ],
+      sources: [
+        {
+          label: "OCC enforcement actions",
+          url: "https://www.occ.gov/topics/laws-and-regulations/enforcement-actions/index-enforcement-actions.html",
+        },
+      ],
+      memaLink:
+        "Where OCC themes point to governance remediation, board packs or control assurance, [MEMA Consultants](https://www.memaconsultants.com/) is a relevant advisory link.",
+    }),
+  },
+  "sec-enforcement-guide-fines-data": {
+    title: "SEC Enforcement Actions: Data and Compliance Guide",
+    seoTitle: "SEC Enforcement Actions | Fines, Litigation and Data Guide",
+    excerpt:
+      "SEC enforcement guide covering civil enforcement, litigation releases, administrative proceedings, trading suspensions, harmed investor distributions and compliance monitoring.",
+    readTime: "9 min read",
+    content: buildGuide({
+      heading: "SEC Enforcement Actions: Data and Compliance Guide",
+      opening:
+        "SEC enforcement actions are a primary global benchmark for securities law risk, disclosure controls, market integrity, investment management conduct and public company governance.",
+      matter: [
+        "The SEC states that its civil law enforcement authority enables the Commission to hold federal securities law violators accountable and recover money for harmed investors. The official enforcement page explains that investigations are conducted privately, while public action follows when evidence of wrongdoing is found, through settlements, federal court litigation or administrative proceedings.",
+        "The SEC also publishes litigation releases, administrative proceedings, administrative law judge orders, trading suspensions, distributions to harmed investors and other enforcement resources. For compliance teams, that public architecture is useful because it separates court actions, Commission orders, market protection tools and investor compensation mechanisms.",
+        "This makes SEC monitoring valuable even for firms outside the United States. Issuers, advisers, broker-dealers, funds, trading venues, research teams and global control functions can all use SEC cases to test whether disclosure, supervision, recordkeeping and conflicts controls would withstand detailed evidential review.",
+      ],
+      regulatorRead: [
+        "SEC enforcement should be read beside FINRA, CFTC, DOJ, state securities regulators and non-US securities authorities. A broker-dealer, investment adviser, issuer or trading firm can face parallel concerns across several enforcement channels.",
+        "The strongest SEC read-across often comes from the facts, not the penalty amount. Compliance teams should track disclosure failures, books-and-records weaknesses, cybersecurity controls, off-channel communications, market abuse, conflicts, custody, valuation and adviser fiduciary issues.",
+      ],
+      enforcementSignals: [
+        "The first signal is documentation. SEC cases frequently test whether emails, records, disclosures, policies, certifications, valuations and committee materials match the real conduct.",
+        "The second signal is investor harm. Restitution, disgorgement, harmed investor distributions and undertakings show how the SEC connects misconduct to investor outcomes.",
+        "The third signal is repeatable control weakness. Where multiple cases involve the same recordkeeping, disclosure, conflict or supervision issue, firms should treat the theme as an examination priority.",
+      ],
+      boardUse: [
+        "An SEC board pack should distinguish issuer, adviser, broker-dealer and trading controls. It should not collapse all securities enforcement into a single generic risk label.",
+        "The pack should include the five SEC cases most relevant to the firm's business model, the matching control, the responsible owner, recent assurance, open issues and whether the same theme appears in FINRA, FCA, SFC or ESMA-linked enforcement.",
+      ],
+      searchQuery: "SEC%20enforcement%20securities%20litigation",
+      hubLinks: [
+        "[SEC](/regulators/sec)",
+        "[FINRA](/regulators/finra)",
+        "[FCA](/regulators/fca)",
+        "[SFC](/regulators/sfc)",
+      ],
+      sources: [
+        {
+          label: "SEC enforcement and litigation",
+          url: "https://www.sec.gov/enforcement-litigation",
+        },
+      ],
+    }),
+  },
   "cbi-ireland-enforcement-guide": {
     title: "Central Bank of Ireland Enforcement Guide for UK Firms",
     seoTitle: "Central Bank of Ireland Enforcement Guide | CBI Fines",

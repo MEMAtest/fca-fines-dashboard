@@ -8,6 +8,10 @@ import {
 } from "../../src/data/blogArticles.js";
 
 const upgradedBlogSlugs = [
+  "board-guide-aml-controls-global-enforcement",
+  "eu-financial-regulators-enforcement-guide",
+  "occ-enforcement-actions-complete-guide",
+  "sec-enforcement-guide-fines-data",
   "cbi-ireland-enforcement-guide",
   "finra-ciro-sro-enforcement-comparison",
   "latin-america-enforcement-cvm-cnbv-cmf",
