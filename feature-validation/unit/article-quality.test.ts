@@ -159,9 +159,85 @@ describe("Article Quality Gate", () => {
     const report = runQualityGate(article, sampleRecords);
     expect(report.requiredTotal).toBe(10);
     expect(report.softTotal).toBe(3);
-    if (report.passed) {
-      expect(report.requiredPassed).toBe(10);
-      expect(report.softPassed).toBe(3);
-    }
+    expect(report.requiredPassed).toBe(10);
+    expect(report.softPassed).toBe(3);
+    expect(report.passed).toBe(true);
+  });
+
+  // ─── data_usage check ────────────────────────────────────────────────────────
+
+  test("data_usage passes when all unique firms cited (dedup: same firm 3× = 1 slot)", () => {
+    // Article cites all 5 firms; source has 3 duplicate entries for Acme Bank Ltd
+    const duplicatedRecords = [
+      ...sampleRecords,
+      { ...sampleRecords[0]! }, // duplicate Acme Bank Ltd
+      { ...sampleRecords[0]! }, // duplicate again
+    ];
+    const article = buildValidArticle();
+    const report = runQualityGate(article, duplicatedRecords);
+    const check = report.checks.find((c) => c.id === "data_usage");
+    // Unique firms: 5 (Acme Bank Ltd deduplicated); minRequired = min(8,5) = 5; cited = 5 → pass
+    expect(check?.passed).toBe(true);
+    expect(check?.message).toContain("5/5 named firms cited");
+  });
+
+  test("data_usage fails when article cites too few firms", () => {
+    const article = buildValidArticle();
+    // Remove all firm mentions by stripping names — replace with generic "the firm"
+    article.content = article.content
+      .replace(/Acme Bank Ltd/g, "the firm")
+      .replace(/GlobalTrade Inc/g, "the firm")
+      .replace(/Deutsche Finanz AG/g, "the entity")
+      .replace(/Oceanic Capital Pty/g, "the entity")
+      .replace(/Singapore Wealth Mgmt/g, "the entity");
+    const report = runQualityGate(article, sampleRecords);
+    const check = report.checks.find((c) => c.id === "data_usage");
+    expect(check?.passed).toBe(false);
+    expect(check?.message).toMatch(/Only 0 of 5 source firms cited/);
+  });
+
+  test("data_usage uses fuzzy matching (short name matches full DB string)", () => {
+    // "Oceanic Capital" without "Pty" suffix should still match "Oceanic Capital Pty"
+    const article = buildValidArticle();
+    article.content = article.content.replace(/Oceanic Capital Pty/g, "Oceanic Capital");
+    const report = runQualityGate(article, sampleRecords);
+    const check = report.checks.find((c) => c.id === "data_usage");
+    expect(check?.passed).toBe(true);
+  });
+
+  // ─── specificity check ────────────────────────────────────────────────────────
+
+  test("specificity passes when source-backed amounts are cited", () => {
+    // buildValidArticle already cites £1.5M, $5M, €800K, £2M, £3.5M — all within 5% of source
+    const report = runQualityGate(buildValidArticle(), sampleRecords);
+    const check = report.checks.find((c) => c.id === "specificity");
+    expect(check?.passed).toBe(true);
+    expect(check?.message).toContain("5 source-backed amounts cited");
+  });
+
+  test("specificity fails when article cites only aggregates (gaming case)", () => {
+    // Article with only the total (£12.8M) and average — no individual source amounts
+    const article = buildValidArticle();
+    article.content = article.content
+      .replace(/£1\.5M/g, "a sum")
+      .replace(/\$5M/g, "a sum")
+      .replace(/€800K/g, "a sum")
+      .replace(/£2M/g, "a sum")
+      .replace(/£3\.5M/g, "a sum")
+      // Add only an aggregate that isn't close to any single source amount
+      + "\n\nThe total across all actions was £12.8M.";
+    const report = runQualityGate(article, sampleRecords);
+    const check = report.checks.find((c) => c.id === "specificity");
+    // minRequired = min(8,5) = 5; citedCount = 0 (£12.8M is above editorialCap or doesn't match source) → fail
+    expect(check?.passed).toBe(false);
+  });
+
+  test("specificity boundary: passes when exactly minRequired source amounts cited", () => {
+    // Source has fewer than 8 unique amounts (5); minRequired = 5; all 5 cited → pass
+    const article = buildValidArticle();
+    const report = runQualityGate(article, sampleRecords);
+    const check = report.checks.find((c) => c.id === "specificity");
+    expect(check?.passed).toBe(true);
+    expect(check?.message).toContain("(need ≥5)");
   });
 });

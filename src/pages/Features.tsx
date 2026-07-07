@@ -29,6 +29,7 @@ import {
   REGULATOR_NAV_ITEMS,
 } from '../data/regulatorCoverage.js';
 import { REGULATOR_COUNT } from '../constants/site.js';
+import { useSEO } from '../hooks/useSEO.js';
 import '../styles/features.css';
 
 const LIVE_REGULATOR_COUNT = LIVE_REGULATOR_NAV_ITEMS.length;
@@ -104,6 +105,16 @@ const FEATURES = [
 ];
 
 export function Features() {
+  useSEO({
+    title: 'RegActions Features | Search, Alerts, Exports and Board Packs',
+    description:
+      'Explore RegActions features for enforcement search, regulator monitoring, smart alerts, data export, and board-pack intelligence.',
+    keywords:
+      'RegActions features, enforcement alerts, regulatory fines export, board pack intelligence, compliance monitoring tools',
+    canonicalPath: '/features',
+    ogType: 'website',
+  });
+
   return (
     <div className="features-page">
       {/* Hero Section */}

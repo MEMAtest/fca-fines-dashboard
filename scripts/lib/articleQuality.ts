@@ -286,13 +286,14 @@ function checkDataUsage(content: string, sourceData: EnforcementRecord[]): Quali
     return { id: 'data_usage', name: 'Data Usage (Firm Citations)', weight: 'required', passed: true, message: 'No source data to validate against' };
   }
 
-  const namedFirms = sourceData
-    .map(r => r.firm_individual)
-    .filter(f => f && f.length > 3 && !['Mr', 'Unknown', 'N/A', ''].includes(f));
+  // Deduplicate: a firm appearing 8× in source still only counts as one distinct name
+  const namedFirms = [...new Set(
+    sourceData
+      .map(r => r.firm_individual)
+      .filter(f => f && f.length > 3 && !['Mr', 'Unknown', 'N/A', ''].includes(f))
+  )];
 
-  const cited = namedFirms.filter(firm =>
-    content.toLowerCase().includes(firm.toLowerCase())
-  );
+  const cited = namedFirms.filter(firm => contentMentionsFirm(firm, content));
 
   const minRequired = Math.min(8, namedFirms.length);
   const passed = cited.length >= minRequired;
@@ -304,7 +305,7 @@ function checkDataUsage(content: string, sourceData: EnforcementRecord[]): Quali
     passed,
     message: passed
       ? `${cited.length}/${namedFirms.length} named firms cited`
-      : `Only ${cited.length} of ${namedFirms.length} source firms cited (need ≥${minRequired}). Add: ${namedFirms.filter(f => !content.toLowerCase().includes(f.toLowerCase())).slice(0, 4).join(', ')}`,
+      : `Only ${cited.length} of ${namedFirms.length} source firms cited (need ≥${minRequired}). Add: ${namedFirms.filter(f => !contentMentionsFirm(f, content)).slice(0, 4).join(', ')}`,
   };
 }
 
@@ -347,18 +348,28 @@ function checkEditorialTone(content: string): QualityCheck {
   };
 }
 
-// 10b. Specificity — ≥8 specific enforcement actions with amounts — REQUIRED
+// 10b. Specificity — ≥8 source-backed enforcement amounts cited — REQUIRED
 function checkSpecificity(content: string, sourceData: EnforcementRecord[]): QualityCheck {
-  const amounts = extractAmounts(content);
-  const specificRefs = Math.min(amounts.length, sourceData.length);
-  const minRequired = Math.min(8, sourceData.length);
+  const mentioned = extractAmounts(content);
+
+  // Deduplicate source amounts (repeat offenders inflate the target threshold otherwise)
+  const sourceAmounts = [...new Set(
+    sourceData.map(r => r.amount).filter(a => a > 0 && !isNaN(a))
+  )];
+
+  // Count distinct source amounts cited within 5% — injected aggregates (mean, median) don't count
+  const citedCount = sourceAmounts.filter(srcAmt =>
+    mentioned.some(a => Math.abs(a - srcAmt) / Math.max(srcAmt, 1) < 0.05)
+  ).length;
+
+  const minRequired = Math.min(8, sourceAmounts.length);
 
   return {
     id: 'specificity',
     name: 'Specificity',
     weight: 'required',
-    passed: specificRefs >= minRequired,
-    message: `${specificRefs} specific enforcement references (need ≥${minRequired})`,
+    passed: citedCount >= minRequired,
+    message: `${citedCount} source-backed amounts cited (need ≥${minRequired})`,
   };
 }
 
@@ -456,6 +467,16 @@ function extractFirmMentions(content: string, sourceData: EnforcementRecord[]): 
   return Array.from(firms);
 }
 
+function contentMentionsFirm(firm: string, content: string): boolean {
+  const lower = content.toLowerCase();
+  const firmLower = firm.toLowerCase();
+  if (lower.includes(firmLower)) return true;
+  // Also try without common corporate suffixes (mirrors fuzzyMatchFirm for citation checks)
+  const stripped = firmLower.replace(/\s*(ltd|plc|inc|llc|limited|corp|pty|ag|gmbh|bv|sa|mgmt|management)\s*\.?$/i, '').trim();
+  if (stripped.length > 3 && lower.includes(stripped)) return true;
+  return false;
+}
+
 function fuzzyMatchFirm(firm: string, knownFirms: Set<string>): boolean {
   const lower = firm.toLowerCase();
   if (knownFirms.has(lower)) return true;
@@ -481,10 +502,24 @@ function isVerifiedAmount(amount: number, knownAmounts: number[], sourceData: En
   const totalFines = knownAmounts.reduce((a, b) => a + b, 0);
   if (totalFines > 0 && Math.abs(amount - totalFines) / totalFines < 0.05) return true;
 
-  // Check if it's a valid average
   if (knownAmounts.length > 0) {
+    // Check if it's a valid average
     const avg = totalFines / knownAmounts.length;
     if (Math.abs(amount - avg) / Math.max(avg, 1) < 0.1) return true;
+
+    // Whitelist median, p75, and p75×3 — buildStatisticalSummary injects these into prompts,
+    // so the AI legitimately cites them; the gate must not reject them as unverified.
+    const sorted = [...knownAmounts].sort((a, b) => a - b);
+    const mid = Math.floor(sorted.length / 2);
+    const median = sorted.length % 2 === 0
+      ? (sorted[mid - 1]! + sorted[mid]!) / 2
+      : sorted[mid]!;
+    if (Math.abs(amount - median) / Math.max(median, 1) < 0.05) return true;
+    const p75idx = Math.floor(sorted.length * 0.75);
+    const p75 = sorted[p75idx] ?? sorted[sorted.length - 1]!;
+    if (Math.abs(amount - p75) / Math.max(p75, 1) < 0.05) return true;
+    const outlierThreshold = p75 * 3;
+    if (outlierThreshold > 0 && Math.abs(amount - outlierThreshold) / outlierThreshold < 0.05) return true;
   }
 
   // Check partial sums (sum of any 2+ consecutive amounts)

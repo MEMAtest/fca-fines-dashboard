@@ -11,6 +11,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { Search, Filter, X, Calendar, DollarSign, Globe } from "lucide-react";
 import { useSearchParams } from "react-router-dom";
 import { PUBLIC_REGULATOR_SHELL_ITEMS } from "../data/regulatorShellNav.js";
+import { WatchFirmButton } from "./WatchFirmButton.js";
 
 const SEARCH_CACHE_MAX = 20;
 const SEARCH_TIMEOUT_MS = 30_000;
@@ -1028,10 +1029,19 @@ export function EnforcementSearch() {
                   style={{
                     display: "flex",
                     gap: "1rem",
+                    flexWrap: "wrap",
+                    alignItems: "center",
                     paddingTop: "0.75rem",
                     borderTop: "1px solid #f3f4f6",
                   }}
                 >
+                  {result.firm && (
+                    <WatchFirmButton
+                      firmName={result.firm}
+                      variant="text"
+                      source="search_result"
+                    />
+                  )}
                   {result.noticeUrl && (
                     <a
                       href={result.noticeUrl}

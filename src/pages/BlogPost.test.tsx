@@ -113,11 +113,11 @@ describe("BlogPost", () => {
     ).toBeInTheDocument();
     expect(
       screen.getByRole("heading", {
-        name: "Why the FCA Article Stays in Markdown",
+        name: "How To Read FCA Enforcement",
       }),
     ).toBeInTheDocument();
     expect(
-      screen.getByRole("button", { name: /Explore RegActions Dashboard/i }),
+      screen.getByRole("button", { name: /Explore RegActions Data Hub/i }),
     ).toBeInTheDocument();
     expect(
       screen.queryByRole("button", { name: /Open Regulator Hub/i }),

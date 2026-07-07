@@ -2,6 +2,7 @@ import { ExternalLink, HelpCircle } from "lucide-react";
 import { FineRecord } from "../types.js";
 import { ExportMenu } from "./ExportMenu.js";
 import { PanelHelp } from "./PanelHelp.js";
+import { WatchFirmButton } from "./WatchFirmButton.js";
 import RegulatorBadge from "./RegulatorBadge.js";
 import {
   getBestRecordSourceUrl,
@@ -99,16 +100,25 @@ export function LatestNotices({
                         </span>
                       ))}
                     </div>
-                    {sourceUrl ? (
-                      <a
-                        href={sourceUrl}
-                        target="_blank"
-                        rel="noreferrer noopener"
-                        className="notice__link"
-                      >
-                        {sourceLabel} <ExternalLink size={14} />
-                      </a>
-                    ) : null}
+                    <div className="notice__actions">
+                      {record.firm_individual ? (
+                        <WatchFirmButton
+                          firmName={record.firm_individual}
+                          variant="text"
+                          source="latest_notice"
+                        />
+                      ) : null}
+                      {sourceUrl ? (
+                        <a
+                          href={sourceUrl}
+                          target="_blank"
+                          rel="noreferrer noopener"
+                          className="notice__link"
+                        >
+                          {sourceLabel} <ExternalLink size={14} />
+                        </a>
+                      ) : null}
+                    </div>
                   </div>
                 </article>
               );

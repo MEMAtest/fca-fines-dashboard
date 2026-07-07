@@ -203,6 +203,11 @@ const Regulators = lazyPage(() =>
 const Search = lazyPage(() =>
   import("./pages/Search.js").then((module) => ({ default: module.Search })),
 );
+const Intelligence = lazyPage(() =>
+  import("./pages/Intelligence.js").then((module) => ({
+    default: module.Intelligence,
+  })),
+);
 const UKEnforcement = lazyPage(() =>
   import("./pages/UKEnforcement.js").then((module) => ({
     default: module.UKEnforcement,
@@ -221,6 +226,11 @@ const Roadmap = lazyPage(() =>
 const Features = lazyPage(() =>
   import("./pages/Features.js").then((module) => ({
     default: module.Features,
+  })),
+);
+const About = lazyPage(() =>
+  import("./pages/About.js").then((module) => ({
+    default: module.About,
   })),
 );
 const NotFound = lazyPage(() =>
@@ -327,6 +337,27 @@ const router = createBrowserRouter([
         ),
       },
       {
+        path: "/about",
+        element: (
+          <Suspense
+            fallback={
+              <div
+                style={{
+                  minHeight: "100vh",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                }}
+              >
+                Loading about...
+              </div>
+            }
+          >
+            <About />
+          </Suspense>
+        ),
+      },
+      {
         path: "/search",
         element: (
           <Suspense
@@ -344,6 +375,27 @@ const router = createBrowserRouter([
             }
           >
             <Search />
+          </Suspense>
+        ),
+      },
+      {
+        path: "/intelligence",
+        element: (
+          <Suspense
+            fallback={
+              <div
+                style={{
+                  minHeight: "100vh",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                }}
+              >
+                Loading intelligence...
+              </div>
+            }
+          >
+            <Intelligence />
           </Suspense>
         ),
       },

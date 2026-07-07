@@ -13,11 +13,11 @@ import "../styles/siteheader.css";
 
 const NAV_LINKS = [
   { to: "/", label: "Home" },
-  { to: "/regulators", label: "Dashboard" },
-  { to: "/roadmap", label: "Roadmap" },
-  { to: "/features", label: "Features" },
-  { to: "/blog", label: "Insights" },
+  { to: "/regulators", label: "Data" },
   { to: "/search", label: "Search" },
+  { to: "/board-pack", label: "Board Pack" },
+  { to: "/blog", label: "Insights" },
+  { to: "/intelligence", label: "Intelligence" },
 ];
 
 function isNavActive(to: string, pathname: string) {
@@ -59,9 +59,10 @@ function getBreadcrumbs(pathname: string) {
     current += `/${seg}`;
 
     let label = seg;
-    if (seg === "dashboard") label = "Dashboard";
+    if (seg === "dashboard") label = "Data";
     else if (seg === "board-pack") label = "Board Intelligence";
     else if (seg === "search") label = "Search";
+    else if (seg === "intelligence") label = "Intelligence";
     else if (seg === "uk-enforcement") label = "UK Enforcement";
     else if (seg === "blog") label = "Insights";
     else if (seg === "topics") label = "Topics";

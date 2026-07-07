@@ -1,16 +1,18 @@
 import { useState, FormEvent, ChangeEvent } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, Eye, CheckCircle, AlertCircle } from 'lucide-react';
+import { trackEvent } from '../utils/analytics.js';
 
 interface WatchFirmButtonProps {
   firmName: string;
   variant?: 'icon' | 'button' | 'text';
   className?: string;
+  source?: string;
 }
 
 type FormStatus = 'idle' | 'submitting' | 'success' | 'error';
 
-export function WatchFirmButton({ firmName, variant = 'button', className = '' }: WatchFirmButtonProps) {
+export function WatchFirmButton({ firmName, variant = 'button', className = '', source = 'watch_firm_button' }: WatchFirmButtonProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [email, setEmail] = useState('');
   const [status, setStatus] = useState<FormStatus>('idle');
@@ -26,6 +28,7 @@ export function WatchFirmButton({ firmName, variant = 'button', className = '' }
     }
 
     setStatus('submitting');
+    trackEvent('watchlist_start', { firmName, source });
 
     try {
       const response = await fetch('/api/watchlist/add', {
@@ -41,10 +44,12 @@ export function WatchFirmButton({ firmName, variant = 'button', className = '' }
       }
 
       setStatus('success');
+      trackEvent('watchlist_success', { firmName, source });
     } catch (error) {
       console.error('Watchlist error:', error);
       setErrorMessage(error instanceof Error ? error.message : 'Failed to add to watchlist');
       setStatus('error');
+      trackEvent('watchlist_error', { firmName, source });
     }
   };
 
@@ -57,7 +62,10 @@ export function WatchFirmButton({ firmName, variant = 'button', className = '' }
 
   const renderTrigger = () => {
     const baseProps = {
-      onClick: () => setIsOpen(true),
+      onClick: () => {
+        trackEvent('watchlist_modal_open', { firmName, source });
+        setIsOpen(true);
+      },
       className: `watch-firm-trigger ${variant} ${className}`.trim(),
       'aria-label': `Watch ${firmName} for new fines`,
     };

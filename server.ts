@@ -27,6 +27,8 @@ import {
 } from "./server/services/ukEnforcement.js";
 import { getUKEnforcementHealth } from "./server/services/ukEnforcementHealth.js";
 import searchHandler from "./api/search.js";
+import enforcementBriefingHandler from "./api/agentic/enforcement-briefing.js";
+import agenticWorkbenchHandler from "./api/agentic/workbench.js";
 
 const app = express();
 app.use(cors());
@@ -242,6 +244,14 @@ app.get("/api/search", async (req, res) => {
   await searchHandler(req as any, res as any);
 });
 
+app.post("/api/agentic/enforcement-briefing", async (req, res) => {
+  await enforcementBriefingHandler(req as any, res as any);
+});
+
+app.post("/api/agentic/workbench", async (req, res) => {
+  await agenticWorkbenchHandler(req as any, res as any);
+});
+
 // Homepage stats endpoint
 app.get("/api/homepage/stats", async (_req, res) => {
   try {
@@ -305,6 +315,12 @@ app.post("/api/contact", async (req, res) => {
       .status(500)
       .json({ success: false, error: "Failed to submit contact form" });
   }
+});
+
+app.get("/_vercel/insights/script.js", (_req, res) => {
+  res
+    .type("application/javascript")
+    .send("window.va=window.va||function(){(window.vaq=window.vaq||[]).push(arguments)};");
 });
 
 app.get(/.*/, (req, res) => {

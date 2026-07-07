@@ -199,7 +199,7 @@ async function generateArticle(entry: CalendarEntry): Promise<boolean> {
 
     // Temperature inversion: word-count failures need more creativity (higher temp);
     // factual failures need more precision (lower temp); first attempt is balanced.
-    const wordCountFailed = attempt > 1 && prevWordCount < genResult.minWordCount;
+    const wordCountFailed = attempt > 1 && prevWordCount > 0 && prevWordCount < genResult.minWordCount;
     const temperature = wordCountFailed ? 0.7 : attempt === MAX_RETRIES ? 0.15 : 0.35;
 
     const userPrompt = lastFeedback

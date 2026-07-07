@@ -34,12 +34,12 @@ test.describe('Build & Pre-rendering', () => {
       expect(html).toContain('og:type');
     });
 
-    test('should have pre-rendered dashboard page', () => {
-      const dashboardPath = join(DIST_DIR, 'dashboard', 'index.html');
-      expect(existsSync(dashboardPath)).toBe(true);
+    test('should have pre-rendered data hub page', () => {
+      const regulatorsPath = join(DIST_DIR, 'regulators', 'index.html');
+      expect(existsSync(regulatorsPath)).toBe(true);
 
-      const html = readFileSync(dashboardPath, 'utf-8');
-      expect(html).toContain('RegActions Dashboard');
+      const html = readFileSync(regulatorsPath, 'utf-8');
+      expect(html).toContain('RegActions Data Hub');
     });
 
     test('should have pre-rendered search and board-pack pages', () => {
@@ -168,8 +168,9 @@ test.describe('Build & Pre-rendering', () => {
       // Should have homepage
       expect(sitemap).toContain('<loc>https://regactions.com/</loc>');
 
-      // Should have dashboard
-      expect(sitemap).toContain('<loc>https://regactions.com/dashboard</loc>');
+      // Should have the canonical public data hub
+      expect(sitemap).toContain('<loc>https://regactions.com/regulators</loc>');
+      expect(sitemap).not.toContain('<loc>https://regactions.com/dashboard</loc>');
 
       // Should have topics + hub lists
       expect(sitemap).toContain('<loc>https://regactions.com/topics</loc>');
@@ -189,7 +190,7 @@ test.describe('Build & Pre-rendering', () => {
       // Count <url> tags
       const urlMatches = sitemap.match(/<url>/g);
       expect(urlMatches).toBeTruthy();
-      // Base set: homepage + dashboard + topics + 4 hub lists + blog listing + 14 blog articles + 13 yearly articles
+      // Base set: homepage + data hub + topics + 4 hub lists + blog listing + 14 blog articles + 13 yearly articles
       expect(urlMatches!.length).toBeGreaterThanOrEqual(35);
 
       // Check some specific blog URLs
@@ -209,10 +210,11 @@ test.describe('Build & Pre-rendering', () => {
       expect(homepageUrl![0]).toContain('<priority>1.0</priority>');
       expect(homepageUrl![0]).toContain('<changefreq>daily</changefreq>');
 
-      // Dashboard should have priority 0.95 and daily changefreq
-      const dashboardUrl = sitemap.match(/<url>[\s\S]*?<loc>https:\/\/regactions\.com\/dashboard<\/loc>[\s\S]*?<\/url>/);
-      expect(dashboardUrl).toBeTruthy();
-      expect(dashboardUrl![0]).toContain('<priority>0.95</priority>');
+      // Data hub should have priority 0.95 and daily changefreq
+      const regulatorsUrl = sitemap.match(/<url>[\s\S]*?<loc>https:\/\/regactions\.com\/regulators<\/loc>[\s\S]*?<\/url>/);
+      expect(regulatorsUrl).toBeTruthy();
+      expect(regulatorsUrl![0]).toContain('<priority>0.95</priority>');
+      expect(regulatorsUrl![0]).toContain('<changefreq>daily</changefreq>');
 
       // Blog listing should have priority 0.9
       const blogUrl = sitemap.match(/<url>[\s\S]*?<loc>https:\/\/regactions\.com\/blog<\/loc>[\s\S]*?<\/url>/);

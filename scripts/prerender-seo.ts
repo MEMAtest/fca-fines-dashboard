@@ -119,17 +119,13 @@ interface PageMeta {
 // ---------------------------------------------------------------------------
 
 function renderMarkdownToHtml(content: string): string {
-  return content
+  const html = content
     .replace(/(\|.+\|\n)+/g, (tableBlock) => {
       const rows = tableBlock.trim().split("\n");
       let html = "<table><thead>";
       let inBody = false;
       rows.forEach((row) => {
-        if (
-          /^\|[\s\-:]+\|$/.test(
-            row.replace(/\|/g, "|").replace(/[^|\-:\s]/g, ""),
-          )
-        ) {
+        if (/^\|?\s*:?-{3,}:?\s*(\|\s*:?-{3,}:?\s*)+\|?$/.test(row)) {
           html += "</thead><tbody>";
           inBody = true;
           return;
@@ -149,12 +145,50 @@ function renderMarkdownToHtml(content: string): string {
     .replace(/^### (.+)$/gm, "<h3>$1</h3>")
     .replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>")
     .replace(/^\- (.+)$/gm, "<li>$1</li>")
-    .replace(/(<li>.*<\/li>\n?)+/g, "<ul>$&</ul>")
-    .replace(/\n\n/g, "</p><p>");
+    .replace(/(<li>.*<\/li>\n?)+/g, "<ul>$&</ul>");
+
+  return html
+    .split(/\n{2,}/)
+    .map((block) => block.trim())
+    .filter(Boolean)
+    .map((block) => {
+      if (/^<(h2|h3|table|ul|ol|div|section)\b/i.test(block)) return block;
+      return `<p>${block.replace(/\n/g, "<br />")}</p>`;
+    })
+    .join("");
 }
 
 function wrapArticleShell(title: string, renderedContent: string): string {
   return `<div class="blog-page"><div class="blog-post-container"><article class="blog-article-modal"><h1 class="blog-post-title">${escapeHtml(title)}</h1><div class="blog-article-content">${renderedContent}</div></article></div></div>`;
+}
+
+function renderStaticPageBody(
+  title: string,
+  intro: string,
+  sections: Array<{ heading: string; body: string }>,
+): string {
+  const sectionHtml = sections
+    .map(
+      (section) =>
+        `<section><h2>${escapeHtml(section.heading)}</h2><p>${escapeHtml(section.body)}</p></section>`,
+    )
+    .join("");
+  return `<div class="blog-page"><div class="blog-post-container"><article class="blog-article-modal"><h1 class="blog-post-title">${escapeHtml(title)}</h1><div class="blog-article-content"><p>${escapeHtml(intro)}</p>${sectionHtml}</div></article></div></div>`;
+}
+
+function renderHubBody(
+  title: string,
+  description: string,
+  metrics: Array<{ label: string; value: string }>,
+  ctaPath = "/regulators",
+): string {
+  const metricsHtml = metrics
+    .map(
+      (metric) =>
+        `<li><strong>${escapeHtml(metric.label)}:</strong> ${escapeHtml(metric.value)}</li>`,
+    )
+    .join("");
+  return `<div class="blog-page"><div class="blog-post-container"><article class="blog-article-modal"><h1 class="blog-post-title">${escapeHtml(title)}</h1><div class="blog-article-content"><p>${escapeHtml(description)}</p><h2>Coverage Snapshot</h2><ul>${metricsHtml}</ul><h2>Use This Data</h2><p>Open the live RegActions workspace to filter the source records, inspect related firms, compare breach themes, and export the evidence for compliance or board reporting.</p><p><a href="${ctaPath}">Open live enforcement data</a></p></div></article></div></div>`;
 }
 
 // HowTo schema for database guide
@@ -163,14 +197,14 @@ const HOWTO_SCHEMA = {
   "@type": "HowTo",
   name: "How to Search the Global Regulatory Fines Database",
   description:
-    "Step-by-step guide to searching and filtering enforcement actions from 45+ global financial regulators using the interactive dashboard.",
+    "Step-by-step guide to searching and filtering enforcement actions from 45+ global financial regulators using RegActions.",
   step: [
     {
       "@type": "HowToStep",
       position: 1,
-      name: "Navigate to Dashboard",
-      text: "Open the RegActions Dashboard at regactions.com/dashboard to access the complete database of regulatory fines and enforcement actions from global financial regulators.",
-      url: `${BASE_URL}/dashboard`,
+      name: "Navigate to Data Hub",
+      text: "Open the RegActions regulator intelligence hub at regactions.com/regulators to access the complete database of regulatory fines and enforcement actions from global financial regulators.",
+      url: `${BASE_URL}/regulators`,
     },
     {
       "@type": "HowToStep",
@@ -220,7 +254,7 @@ function generateBreadcrumbItems(
   for (const seg of segments) {
     current += `/${seg}`;
     let name = seg;
-    if (seg === "dashboard") name = "Dashboard";
+    if (seg === "dashboard") name = "Data";
     else if (seg === "board-pack") name = "Board Pack";
     else if (seg === "blog") name = "Insights";
     else if (seg === "topics") name = "Topics";
@@ -240,7 +274,8 @@ function generateBreadcrumbItems(
 // Pages that describe or provide access to the dataset get Dataset schema
 const DATASET_PAGES = new Set([
   "/",
-  "/dashboard",
+  "/regulators",
+  "/search",
   "/topics",
   "/breaches",
   "/years",
@@ -281,7 +316,7 @@ function generatePageGraph(meta: PageMeta): object {
         "@type": "SearchAction",
         target: {
           "@type": "EntryPoint",
-          urlTemplate: `${BASE_URL}/dashboard?search={search_term_string}`,
+          urlTemplate: `${BASE_URL}/search?q={search_term_string}`,
         },
         "query-input": "required name=search_term_string",
       },
@@ -319,7 +354,7 @@ function generatePageGraph(meta: PageMeta): object {
       name: "RegActions Regulatory Fines Database",
       description:
         "Comprehensive database of regulatory fines and enforcement actions from 45+ global financial regulators. Includes penalty amounts, breach categories, and firm details.",
-      url: `${BASE_URL}/dashboard`,
+      url: `${BASE_URL}/regulators`,
       keywords: [
         "regulatory fines",
         "BaFin fines",
@@ -380,15 +415,33 @@ async function buildPageMetas(): Promise<PageMeta[]> {
       homepageFaqs.length > 0 ? [generateFaqSchema(homepageFaqs)] : [],
   });
 
-  // 2. Dashboard (with DataFeed schema)
+  // 2. Regulator data hub (with DataFeed schema)
   pages.push({
-    path: "/dashboard",
-    title: "RegActions Dashboard | Global Regulatory Fines Analytics & Search",
+    path: "/regulators",
+    title: "RegActions Data Hub | Global Regulatory Fines Analytics",
     description:
-      "Interactive multi-regulator dashboard. Search enforcement actions from 45+ global financial regulators by firm, year, amount and breach category. Export data and analyze enforcement trends.",
+      "Interactive multi-regulator data hub. Search enforcement actions from 45+ global financial regulators by firm, year, amount, breach category, and regulator.",
     keywords:
-      "regulatory fines dashboard, global enforcement tracker, multi-regulator search, BaFin fines, SEC fines, FCA fines, regulatory analytics",
+      "regulatory fines data hub, global enforcement tracker, multi-regulator search, BaFin fines, SEC fines, FCA fines, regulatory analytics",
     ogType: "website",
+    bodyContent: renderStaticPageBody(
+      "RegActions Data Hub",
+      "Browse live and pipeline regulator coverage, open dedicated regulator hubs, and move from high-level enforcement intelligence into searchable records.",
+      [
+        {
+          heading: "What You Can Search",
+          body: "RegActions brings together enforcement actions, penalties, breach categories, dates, sectors, and firm names across global financial regulators.",
+        },
+        {
+          heading: "How Compliance Teams Use It",
+          body: "Use the hub to benchmark enforcement intensity, identify recurring control failures, prepare board challenge points, and find official source material.",
+        },
+        {
+          heading: "Next Actions",
+          body: "Open a regulator hub, search the enforcement database, subscribe to the digest, or create a board pack from the evidence.",
+        },
+      ],
+    ),
     extraJsonLd: [
       {
         "@context": "https://schema.org",
@@ -396,7 +449,7 @@ async function buildPageMetas(): Promise<PageMeta[]> {
         name: "RegActions Live Enforcement Feed",
         description:
           "Real-time feed of regulatory fines and enforcement actions from 45+ global financial regulators, updated as new penalties are published.",
-        url: `${BASE_URL}/dashboard`,
+        url: `${BASE_URL}/regulators`,
         dateModified: todayISO(),
         potentialAction: [
           {
@@ -404,7 +457,7 @@ async function buildPageMetas(): Promise<PageMeta[]> {
             name: "Search Global Regulatory Fines",
             target: {
               "@type": "EntryPoint",
-              urlTemplate: `${BASE_URL}/dashboard?search={query}`,
+              urlTemplate: `${BASE_URL}/search?q={query}`,
             },
             "query-input": "required name=query",
           },
@@ -413,7 +466,7 @@ async function buildPageMetas(): Promise<PageMeta[]> {
             name: "Filter by Year",
             target: {
               "@type": "EntryPoint",
-              urlTemplate: `${BASE_URL}/dashboard?year={year}`,
+              urlTemplate: `${BASE_URL}/search?year={year}`,
             },
           },
           {
@@ -421,7 +474,7 @@ async function buildPageMetas(): Promise<PageMeta[]> {
             name: "Export Regulatory Fines CSV",
             target: {
               "@type": "EntryPoint",
-              urlTemplate: `${BASE_URL}/dashboard`,
+              urlTemplate: `${BASE_URL}/search`,
             },
           },
         ],
@@ -437,6 +490,20 @@ async function buildPageMetas(): Promise<PageMeta[]> {
     keywords:
       "board pack, board advisory pack, enforcement exposure, board intelligence, compliance committee pack, peer enforcement analysis",
     ogType: "website",
+    bodyContent: renderStaticPageBody(
+      "Board Pack",
+      "Create committee-ready enforcement intelligence from regulator evidence, peer cases, and control questions.",
+      [
+        {
+          heading: "Board-Level Enforcement Context",
+          body: "The board pack workflow converts regulator actions into exposure themes, peer examples, board challenge questions, and appendix-ready control prompts.",
+        },
+        {
+          heading: "Advisory Escalation",
+          body: "Where the evidence points to a live governance or remediation issue, users can escalate the pack into a tailored MEMA Consultants advisory conversation.",
+        },
+      ],
+    ),
   });
 
   pages.push({
@@ -447,6 +514,140 @@ async function buildPageMetas(): Promise<PageMeta[]> {
     keywords:
       "enforcement search, regulator fines search, enforcement actions search, compliance enforcement database",
     ogType: "website",
+    bodyContent: renderStaticPageBody(
+      "Enforcement Search",
+      "Search regulatory enforcement actions by firm, individual, regulator, jurisdiction, breach type, theme, amount, and date.",
+      [
+        {
+          heading: "Search By Firm Or Theme",
+          body: "Use search to move from a specific firm, case, or issue into the underlying enforcement record and the connected regulator context.",
+        },
+        {
+          heading: "Turn Search Into Monitoring",
+          body: "High-intent searches can become digest subscriptions, firm watchlist entries, or board-pack evidence sets.",
+        },
+      ],
+    ),
+  });
+
+  pages.push({
+    path: "/features",
+    title: "RegActions Features | Search, Alerts, Exports and Board Packs",
+    description:
+      "Explore RegActions features for enforcement search, regulator monitoring, smart alerts, data export, and board-pack intelligence.",
+    keywords:
+      "RegActions features, enforcement alerts, regulatory fines export, board pack intelligence, compliance monitoring tools",
+    ogType: "website",
+    bodyContent: renderStaticPageBody(
+      "RegActions Features",
+      "RegActions combines searchable enforcement data, regulator coverage, smart alerts, exports, and board-pack workflows for compliance users.",
+      [
+        {
+          heading: "Search And Monitor",
+          body: "Search across global regulator records and use alerts or digest subscriptions to keep watch on new enforcement signals.",
+        },
+        {
+          heading: "Report And Escalate",
+          body: "Export data, create board packs, and use enforcement evidence to support governance and remediation conversations.",
+        },
+      ],
+    ),
+  });
+
+  pages.push({
+    path: "/roadmap",
+    title: "RegActions Roadmap | Regulator Coverage and Product Direction",
+    description:
+      "See the RegActions roadmap for regulator coverage expansion, alert precision, board-pack persistence, exports, API surfaces, and embedded intelligence.",
+    keywords:
+      "RegActions roadmap, regulator coverage roadmap, enforcement intelligence roadmap, compliance data product roadmap",
+    ogType: "website",
+    bodyContent: renderStaticPageBody(
+      "RegActions Roadmap",
+      "The roadmap shows how RegActions is expanding regulator coverage and product workflows for enforcement monitoring, exports, and advisory use cases.",
+      [
+        {
+          heading: "Coverage Expansion",
+          body: "The coverage roadmap separates live regulators from validated pipeline sources so users can understand current depth and planned expansion.",
+        },
+        {
+          heading: "Product Direction",
+          body: "Near-term work prioritises alert precision, board-pack persistence, branded export quality, and reusable API or embedded surfaces.",
+        },
+      ],
+    ),
+  });
+
+  pages.push({
+    path: "/intelligence",
+    title: "RegActions Intelligence | Enforcement Briefing Workbench",
+    description:
+      "Build enforcement briefings and compliance intelligence from regulator actions, precedent cases, watchlist themes, and board-level risk questions.",
+    keywords:
+      "enforcement intelligence, regulatory briefing, compliance intelligence workbench, regulator precedent analysis",
+    ogType: "website",
+    bodyContent: renderStaticPageBody(
+      "RegActions Intelligence",
+      "Use RegActions intelligence workflows to turn enforcement data into briefings, precedent analysis, and practical compliance questions.",
+      [
+        {
+          heading: "Briefings From Evidence",
+          body: "The intelligence workspace supports regulator, theme, and firm-led analysis grounded in the enforcement data layer.",
+        },
+        {
+          heading: "Compliance Use Cases",
+          body: "Use it to prepare internal briefings, identify relevant precedents, and frame board or committee questions from official enforcement evidence.",
+        },
+      ],
+    ),
+  });
+
+  pages.push({
+    path: "/uk-enforcement",
+    title: "UK Enforcement | Financial and Adjacent Regulatory Penalties",
+    description:
+      "Search UK financial, sanctions, data, competition, audit, and pensions enforcement actions from official regulator sources.",
+    keywords:
+      "UK enforcement, PRA fines, PSR fines, OFSI penalties, ICO monetary penalties, CMA fines, FRC sanctions, pensions regulator penalties",
+    ogType: "website",
+    bodyContent: renderStaticPageBody(
+      "UK Enforcement",
+      "Search UK financial and adjacent regulator enforcement across FCA, PRA, PSR, OFSI, ICO, CMA, FRC, and pensions sources.",
+      [
+        {
+          heading: "Focused UK View",
+          body: "The UK workspace keeps financial, sanctions, competition, data protection, audit, and pensions enforcement in one focused search surface.",
+        },
+        {
+          heading: "Official-Source Monitoring",
+          body: "Records link back to source notices where available and can be filtered by regulator, domain, year, and firm or issue.",
+        },
+      ],
+    ),
+  });
+
+  pages.push({
+    path: "/about",
+    title: "About RegActions | Regulatory Enforcement Intelligence",
+    description:
+      "RegActions is a regulatory enforcement intelligence platform built by MEMA Consultants to help compliance teams monitor fines, enforcement themes, and board-level regulatory risk.",
+    keywords:
+      "RegActions, MEMA Consultants, regulatory enforcement intelligence, FCA fines database, compliance monitoring",
+    ogType: "website",
+    bodyContent: renderStaticPageBody(
+      "About RegActions",
+      "RegActions is a regulatory enforcement intelligence platform built by MEMA Consultants for compliance, risk, governance, and advisory users.",
+      [
+        {
+          heading: "Built For Compliance Work",
+          body: "The platform helps users search official enforcement evidence, monitor recurring themes, compare regulator activity, and prepare board-ready analysis.",
+        },
+        {
+          heading: "MEMA Consultants",
+          body: "MEMA Consultants builds and uses RegActions as an advisory evidence layer for interpreting enforcement signals and prioritising remediation.",
+        },
+      ],
+    ),
   });
 
   // 3. Topics (hub landing)
@@ -514,6 +715,18 @@ async function buildPageMetas(): Promise<PageMeta[]> {
       keywords,
       ogType: "website",
       ogImage: `${BASE_URL}/og/${code.toLowerCase()}-hub.png`,
+      bodyContent: renderHubBody(
+        title,
+        description,
+        [
+          { label: "Regulator", value: coverage.fullName },
+          { label: "Jurisdiction", value: coverage.country },
+          { label: "Tracked period", value: coverage.years },
+          { label: "Tracked actions", value: String(coverage.count) },
+          { label: "Default currency", value: coverage.defaultCurrency },
+        ],
+        path,
+      ),
       extraJsonLd: [
         {
           "@context": "https://schema.org",
@@ -549,11 +762,6 @@ async function buildPageMetas(): Promise<PageMeta[]> {
             { "@type": "PropertyValue", name: "Breach Category" },
             { "@type": "PropertyValue", name: "Firm/Individual Name" },
           ],
-          distribution: {
-            "@type": "DataDownload",
-            encodingFormat: "application/json",
-            contentUrl: `${BASE_URL}/api/unified/search?regulator=${code}`,
-          },
         },
       ],
     });
@@ -817,42 +1025,90 @@ async function buildPageMetas(): Promise<PageMeta[]> {
     ]);
 
     categories.slice(0, 30).forEach((cat: any) => {
+      const title = `${humanize(cat.name)} Enforcement Actions | ${cat.fineCount} actions totalling ${gbp.format(cat.totalAmount)}`;
+      const description = `Explore regulatory enforcement actions tagged ${humanize(cat.name)}. ${cat.fineCount} actions totalling ${gbp.format(cat.totalAmount)} across 2013-2026.`;
       pages.push({
         path: `/breaches/${cat.slug}`,
-        title: `${humanize(cat.name)} Enforcement Actions | ${cat.fineCount} actions totalling ${gbp.format(cat.totalAmount)}`,
-        description: `Explore regulatory enforcement actions tagged ${humanize(cat.name)}. ${cat.fineCount} actions totalling ${gbp.format(cat.totalAmount)} across 2013-2026.`,
+        title,
+        description,
         keywords: `${humanize(cat.name)} regulatory fines, ${humanize(cat.name)} enforcement, fines by breach`,
         ogType: "website",
+        bodyContent: renderHubBody(
+          title,
+          description,
+          [
+            { label: "Breach category", value: humanize(cat.name) },
+            { label: "Tracked actions", value: String(cat.fineCount) },
+            { label: "Total amount", value: gbp.format(cat.totalAmount) },
+          ],
+          `/breaches/${cat.slug}`,
+        ),
       });
     });
 
     years.slice(0, 25).forEach((y: any) => {
+      const title = `Enforcement Actions ${y.year} | ${y.fineCount} actions totalling ${gbp.format(y.totalAmount)}`;
+      const description = `Explore regulatory fines issued in ${y.year}. ${y.fineCount} actions totalling ${gbp.format(y.totalAmount)}.`;
       pages.push({
         path: `/years/${y.year}`,
-        title: `Enforcement Actions ${y.year} | ${y.fineCount} actions totalling ${gbp.format(y.totalAmount)}`,
-        description: `Explore regulatory fines issued in ${y.year}. ${y.fineCount} actions totalling ${gbp.format(y.totalAmount)}.`,
+        title,
+        description,
         keywords: `regulatory fines ${y.year}, regulatory penalties ${y.year}, enforcement ${y.year}`,
         ogType: "website",
+        bodyContent: renderHubBody(
+          title,
+          description,
+          [
+            { label: "Year", value: String(y.year) },
+            { label: "Tracked actions", value: String(y.fineCount) },
+            { label: "Total amount", value: gbp.format(y.totalAmount) },
+          ],
+          `/years/${y.year}`,
+        ),
       });
     });
 
     sectors.slice(0, 30).forEach((s: any) => {
+      const title = `Regulatory Fines for ${s.name} | ${s.fineCount} actions totalling ${gbp.format(s.totalAmount)}`;
+      const description = `Explore regulatory enforcement actions for ${s.name}. ${s.fineCount} actions totalling ${gbp.format(s.totalAmount)} across 2013-2026.`;
       pages.push({
         path: `/sectors/${s.slug}`,
-        title: `Regulatory Fines for ${s.name} | ${s.fineCount} actions totalling ${gbp.format(s.totalAmount)}`,
-        description: `Explore regulatory enforcement actions for ${s.name}. ${s.fineCount} actions totalling ${gbp.format(s.totalAmount)} across 2013-2026.`,
+        title,
+        description,
         keywords: `regulatory fines ${s.name}, regulatory penalties ${s.name}, fines by sector`,
         ogType: "website",
+        bodyContent: renderHubBody(
+          title,
+          description,
+          [
+            { label: "Sector", value: s.name },
+            { label: "Tracked actions", value: String(s.fineCount) },
+            { label: "Total amount", value: gbp.format(s.totalAmount) },
+          ],
+          `/sectors/${s.slug}`,
+        ),
       });
     });
 
     firms.slice(0, 120).forEach((f: any) => {
+      const title = `${f.name} Enforcement History | ${f.fineCount} actions totalling ${gbp.format(f.totalAmount)}`;
+      const description = `Explore regulatory enforcement actions for ${f.name}. ${f.fineCount} actions totalling ${gbp.format(f.totalAmount)} across 2013-2026.`;
       pages.push({
         path: `/firms/${f.slug}`,
-        title: `${f.name} Enforcement History | ${f.fineCount} actions totalling ${gbp.format(f.totalAmount)}`,
-        description: `Explore regulatory enforcement actions for ${f.name}. ${f.fineCount} actions totalling ${gbp.format(f.totalAmount)} across 2013-2026.`,
+        title,
+        description,
         keywords: `regulatory fines ${f.name}, penalties ${f.name}, regulatory enforcement ${f.name}`,
         ogType: "website",
+        bodyContent: renderHubBody(
+          title,
+          description,
+          [
+            { label: "Entity", value: f.name },
+            { label: "Tracked actions", value: String(f.fineCount) },
+            { label: "Total amount", value: gbp.format(f.totalAmount) },
+          ],
+          `/firms/${f.slug}`,
+        ),
       });
     });
   } catch (error) {
@@ -1049,11 +1305,17 @@ function generateSitemap(pages: PageMeta[]): string {
     if (page.path === "/") {
       priority = "1.0";
       changefreq = "daily";
-    } else if (page.path === "/dashboard") {
+    } else if (page.path === "/regulators") {
       priority = "0.95";
+      changefreq = "daily";
+    } else if (page.path === "/search") {
+      priority = "0.9";
       changefreq = "daily";
     } else if (page.path === "/topics") {
       priority = "0.9";
+      changefreq = "weekly";
+    } else if (["/board-pack", "/features", "/uk-enforcement", "/intelligence"].includes(page.path)) {
+      priority = "0.85";
       changefreq = "weekly";
     } else if (
       page.path === "/breaches" ||

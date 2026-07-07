@@ -133,6 +133,6 @@ export function generateClaimReviewSchema(
  */
 export function schemasToScriptTags(schemas: object[]): string {
   return schemas
-    .map(s => `<script type="application/ld+json">${JSON.stringify(s, null, 2)}</script>`)
+    .map(s => `<script type="application/ld+json">${JSON.stringify(s, null, 2).replace(/<\/script>/gi, '<\\/script>')}</script>`)
     .join('\n');
 }

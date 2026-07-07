@@ -76,6 +76,8 @@ export function Regulators() {
       "Consolidated Global Regulator Intelligence | Live Hubs & Expansion Pipeline",
     description:
       "Interactive grid of live and pipeline financial regulators. Filter by region, sort by enforcement actions, and explore regulator hubs.",
+    canonicalPath: "/regulators",
+    ogType: "website",
   });
 
   const [regionFilter, setRegionFilter] = useState<RegionFilter>("all");

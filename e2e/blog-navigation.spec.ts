@@ -12,7 +12,7 @@ test.describe('Blog Navigation', () => {
       await expect(page.locator('h1')).toContainText('Global Regulatory Enforcement Intelligence');
 
       // Should have description
-      await expect(page.getByText(/Expert analysis/i)).toBeVisible();
+      await expect(page.locator('.blog-hero-subtitle')).toContainText('In-depth analysis');
 
       // Should have featured articles section
       await expect(page.locator('h2').filter({ hasText: 'Featured' })).toBeVisible();
@@ -110,17 +110,17 @@ test.describe('Blog Navigation', () => {
       await expect(page.locator('.blog-card-category')).toContainText('Annual Analysis');
     });
 
-    test('should navigate from article to dashboard via CTA button', async ({ page }) => {
+    test('should navigate from article to data hub via CTA button', async ({ page }) => {
       await page.goto('/blog/20-biggest-fca-fines-of-all-time');
 
       // Wait for article to render
       await expect(page.locator('h1.blog-post-title')).toBeVisible();
 
-      // Click "Explore RegActions Dashboard" button
+      // Click "Explore RegActions Data Hub" button
       await page.locator('.blog-cta-button').click();
 
-      // Should navigate to dashboard
-      await expect(page).toHaveURL('/dashboard');
+      // Should navigate to the canonical public data hub
+      await expect(page).toHaveURL('/regulators');
     });
   });
 

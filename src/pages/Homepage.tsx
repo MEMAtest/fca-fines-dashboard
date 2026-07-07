@@ -230,7 +230,7 @@ export function Homepage() {
               <Link to="/roadmap">Roadmap</Link>
               <Link to="/features">Features</Link>
               <Link to="/blog">Blog</Link>
-              <Link to="/regulators">Dashboard</Link>
+              <Link to="/regulators">Data Hub</Link>
             </div>
             <p className="homepage-footer__copyright">
               © {new Date().getFullYear()} RegActions. All rights reserved.

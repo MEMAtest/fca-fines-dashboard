@@ -18,6 +18,13 @@ export interface DigestItem {
   identifier?: string;
 }
 
+export interface DigestBriefingSummary {
+  executiveSummary: string;
+  keyThemes: Array<{ title: string; narrative: string; implication?: string }>;
+  confidence: 'high' | 'medium' | 'low';
+  fallbackUsed: boolean;
+}
+
 export function personaDigestEmail(params: {
   personaName: string;
   personaId: string;
@@ -25,8 +32,9 @@ export function personaDigestEmail(params: {
   unsubscribeToken: string;
   firmName?: string;
   hasPdfAttachment?: boolean;
+  briefing?: DigestBriefingSummary | null;
 }): { subject: string; html: string; text: string } {
-  const { personaName, items, unsubscribeToken, firmName, hasPdfAttachment } = params;
+  const { personaName, items, unsubscribeToken, firmName, hasPdfAttachment, briefing } = params;
   const unsubscribeUrl = `${BASE_URL}/api/unsubscribe?token=${unsubscribeToken}`;
   const itemCount = items.length;
 
@@ -46,6 +54,22 @@ export function personaDigestEmail(params: {
         <div style="font-size: 14px; color: #4b5563; line-height: 1.5;">${escapeHtml(item.summary)}</div>
       </div>`;
   }).join('');
+
+  const briefingHtml = briefing ? `
+      <div style="background: #f8fafc; border: 1px solid #e5e7eb; border-radius: 10px; padding: 18px; margin: 22px 0;">
+        <div style="font-size: 11px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: #0B8463; margin-bottom: 8px;">
+          This week's enforcement themes ${briefing.fallbackUsed ? '(deterministic fallback)' : ''}
+        </div>
+        <p style="font-size: 14px; color: #374151; line-height: 1.6; margin: 0 0 14px 0;">${escapeHtml(briefing.executiveSummary)}</p>
+        ${briefing.keyThemes.slice(0, 3).map((theme) => `
+          <div style="padding: 10px 0; border-top: 1px solid #e5e7eb;">
+            <strong style="display: block; color: #111827; font-size: 14px; margin-bottom: 4px;">${escapeHtml(theme.title)}</strong>
+            <span style="display: block; color: #4b5563; font-size: 13px; line-height: 1.5;">${escapeHtml(theme.narrative)}</span>
+          </div>
+        `).join('')}
+        <a href="${BASE_URL}/intelligence" style="display: inline-block; margin-top: 12px; color: #0FA77D; font-weight: 600; font-size: 13px;">Generate a fresh briefing</a>
+      </div>
+    ` : '';
 
   const html = `
 <!DOCTYPE html>
@@ -85,6 +109,8 @@ export function personaDigestEmail(params: {
 
       ${itemsHtml}
 
+      ${briefingHtml}
+
       ${items.length > 8 ? `<p style="color: #6b7280; font-size: 14px; margin-top: 16px;">...and ${items.length - 8} more developments. <a href="${REGCANARY_URL}" style="color: #0FA77D;">See all on RegCanary</a></p>` : ''}
 
       ${hasPdfAttachment ? `
@@ -121,6 +147,14 @@ ${itemCount} key development${itemCount !== 1 ? 's' : ''} relevant to your secto
 
 ${itemsText}
 
+${briefing ? `This week's enforcement themes:
+${briefing.executiveSummary}
+
+${briefing.keyThemes.slice(0, 3).map((theme, index) => `${index + 1}. ${theme.title}: ${theme.narrative}`).join('\n')}
+
+Generate a fresh briefing: ${BASE_URL}/intelligence
+
+` : ''}
 ${items.length > 8 ? `...and ${items.length - 8} more developments on RegCanary.\n` : ''}
 ${hasPdfAttachment ? 'Monthly Landscape PDF attached.\n' : ''}
 ---

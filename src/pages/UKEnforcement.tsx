@@ -93,6 +93,8 @@ export function UKEnforcement() {
       "Search UK financial, sanctions, data, competition, audit, and pensions enforcement actions from official regulator sources.",
     keywords:
       "UK enforcement, PRA fines, PSR fines, OFSI penalties, ICO monetary penalties, CMA fines, FRC sanctions, pensions regulator penalties",
+    canonicalPath: "/uk-enforcement",
+    ogType: "website",
   });
 
   const [query, setQuery] = useState(getInitialQuery);

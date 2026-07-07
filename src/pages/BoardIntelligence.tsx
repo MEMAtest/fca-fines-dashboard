@@ -5,6 +5,7 @@ import {
   ArrowRight,
   BriefcaseBusiness,
   CalendarDays,
+  ExternalLink,
   FileBadge2,
   Gauge,
   LibraryBig,
@@ -51,6 +52,7 @@ import {
   type ExposureBand,
   type ThemeSeverity,
 } from "../utils/boardIntelligence.js";
+import { trackEvent } from "../utils/analytics.js";
 import "../styles/board-intelligence.css";
 
 function formatCurrency(value: number) {
@@ -403,6 +405,11 @@ export function BoardIntelligence() {
   }
 
   function generateBoardPack() {
+    trackEvent("board_pack_start", {
+      template: draftProfile.templateId,
+      archetype: draftProfile.archetypeId,
+      focus: draftProfile.boardFocusId,
+    });
     setActiveProfile(draftProfile);
     setActiveSettings(normalizedDraftSettings);
     setGeneratedAt(new Date());
@@ -410,6 +417,10 @@ export function BoardIntelligence() {
   }
 
   function handlePrint() {
+    trackEvent("board_pack_export", {
+      mode: "print",
+      branding: activeSettings.brandingMode,
+    });
     if (typeof window !== "undefined") {
       window.print();
     }
@@ -443,6 +454,26 @@ export function BoardIntelligence() {
               <ShieldCheck size={16} />
               Evidence linked back to tracked enforcement actions
             </span>
+          </div>
+          <div className="board-intelligence__advisory-bridge board-intelligence__no-print">
+            <span>
+              Need help interpreting a pack or turning it into remediation
+              actions?
+            </span>
+            <a
+              href="https://memaconsultants.com"
+              target="_blank"
+              rel="noreferrer"
+              onClick={() =>
+                trackEvent("mema_advisory_click", {
+                  source: "board_pack_hero",
+                  firmType: activeProfile.archetypeId,
+                })
+              }
+            >
+              Speak to MEMA Consultants
+              <ExternalLink size={15} />
+            </a>
           </div>
         </div>
 

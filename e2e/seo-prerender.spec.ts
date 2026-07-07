@@ -50,27 +50,27 @@ test.describe('Pre-rendered HTML SEO Meta Tags', () => {
     });
   });
 
-  test.describe('Dashboard (dist/dashboard/index.html)', () => {
+  test.describe('Data hub (dist/regulators/index.html)', () => {
     let html: string;
 
     test.beforeAll(() => {
-      html = readFileSync(join(DIST, 'dashboard', 'index.html'), 'utf-8');
+      html = readFileSync(join(DIST, 'regulators', 'index.html'), 'utf-8');
     });
 
-    test('should have dashboard-specific title', () => {
+    test('should have data-hub-specific title', () => {
       const match = html.match(/<title>([^<]+)<\/title>/);
       expect(match).toBeTruthy();
-      expect(match![1]).toContain('Dashboard');
+      expect(match![1]).toContain('Data Hub');
     });
 
-    test('should have canonical URL pointing to /dashboard', () => {
+    test('should have canonical URL pointing to /regulators', () => {
       const match = html.match(/<link\s+rel="canonical"\s+href="([^"]+)"/);
       expect(match).toBeTruthy();
-      expect(match![1]).toBe(`${BASE_URL}/dashboard`);
+      expect(match![1]).toBe(`${BASE_URL}/regulators`);
     });
 
-    test('should have OG URL pointing to /dashboard', () => {
-      expect(html).toContain(`<meta property="og:url" content="${BASE_URL}/dashboard"`);
+    test('should have OG URL pointing to /regulators', () => {
+      expect(html).toContain(`<meta property="og:url" content="${BASE_URL}/regulators"`);
     });
   });
 
@@ -270,7 +270,7 @@ test.describe('Pre-rendered HTML SEO Meta Tags', () => {
     test('no two pages share the same title', () => {
       const paths = [
         'index.html',
-        'dashboard/index.html',
+        'regulators/index.html',
         'blog/index.html',
         'faq/index.html',
         'blog/20-biggest-fca-fines-of-all-time/index.html',
@@ -309,7 +309,7 @@ test.describe('Sitemap Validation', () => {
 
   test('should contain all 30 URLs', () => {
     const urlCount = (sitemap.match(/<loc>/g) || []).length;
-    // Base set is: homepage, dashboard, topics + 4 hub list pages, blog listing,
+    // Base set is: homepage, data hub, topics + 4 hub list pages, blog listing,
     // all blog articles, and all yearly review articles.
     expect(urlCount).toBeGreaterThanOrEqual(35);
   });
@@ -322,8 +322,9 @@ test.describe('Sitemap Validation', () => {
     expect(homepageBlock![0]).toContain('<priority>1.0</priority>');
   });
 
-  test('should contain dashboard URL', () => {
-    expect(sitemap).toContain(`<loc>${BASE_URL}/dashboard</loc>`);
+  test('should contain data hub URL and exclude legacy dashboard canonical', () => {
+    expect(sitemap).toContain(`<loc>${BASE_URL}/regulators</loc>`);
+    expect(sitemap).not.toContain(`<loc>${BASE_URL}/dashboard</loc>`);
   });
 
   test('should contain topics URL', () => {
@@ -394,7 +395,7 @@ test.describe('Sitemap Validation', () => {
   });
 });
 
-test.describe('Homepage and Dashboard Live Routes', () => {
+test.describe('Homepage and Data Hub Live Routes', () => {
   test('homepage should render with correct content', async ({ page }) => {
     await page.goto('/');
     await expect(page).toHaveURL('/');
@@ -406,11 +407,11 @@ test.describe('Homepage and Dashboard Live Routes', () => {
     await expect(page.locator('nav').first()).toBeVisible();
   });
 
-  test('dashboard should render', async ({ page }) => {
+  test('legacy dashboard route should redirect to data hub', async ({ page }) => {
     await page.goto('/dashboard');
     await expect(page).toHaveURL('/regulators');
 
-    // Should have dashboard title
+    // Should have data hub title
     await expect(page.locator('h1')).toBeVisible();
   });
 
@@ -420,7 +421,7 @@ test.describe('Homepage and Dashboard Live Routes', () => {
     expect(title).toContain('RegActions');
   });
 
-  test('dashboard should redirect to regulators and keep dashboard title', async ({ page }) => {
+  test('dashboard should redirect to regulators and keep data hub title', async ({ page }) => {
     await page.goto('/dashboard');
     await expect(page).toHaveURL('/regulators');
     await expect(page.locator('h1')).toBeVisible();

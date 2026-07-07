@@ -89,6 +89,9 @@ Minimum 2 specific enforcement actions from ${regB} data.
 ## What Dual-Regulated Firms Must Know
 If the article's context involves firms subject to both regulators, give specific guidance. Otherwise, what does operating under each regulator mean for risk and compliance posture?
 
+## About the Data
+One paragraph: state this analysis draws on the RegActions database, the date range covered (from the config period to present), and that fine amounts in non-GBP currencies are converted at the enforcement action date. Name both regulators covered.
+
 ## Key Takeaways
 5 bullet points. Each references a specific statistic or case from the data.
 
@@ -171,6 +174,9 @@ What is novel or significant about this case compared to prior enforcement on th
 
 ## Compliance Lessons — What Every Firm Must Do Differently
 5-7 specific lessons directly derived from the breach findings. Not generic — tied to what the regulator actually cited.
+
+## About the Data
+One paragraph: state this analysis draws on the RegActions database, the enforcement period covered, and that all case facts are sourced from official regulatory Final Notices and enforcement orders.
 
 ## Key Takeaways
 5 bullet points, each grounded in the case facts.

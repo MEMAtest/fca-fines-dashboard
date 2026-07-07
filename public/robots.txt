@@ -4,7 +4,8 @@
 
 User-agent: *
 Allow: /
-Allow: /dashboard
+Allow: /regulators
+Allow: /search
 Allow: /blog
 Allow: /blog/
 

@@ -49,7 +49,7 @@ CONTENT:
 ## Why ${firmCategory}s Are in the Enforcement Spotlight
 2-3 paragraphs on why this sector attracts regulatory attention. Ground in the enforcement data — cite action counts, amounts, which regulators are most active against this sector.
 
-## Enforcement Patterns — What the Data Shows
+## Enforcement Patterns: What the Data Shows
 A table or structured breakdown: actions by regulator, top breach types, total fines, time period. Use the regulator breakdown data.
 
 ## Top Cases in Detail
@@ -58,11 +58,14 @@ Minimum 3 specific enforcement actions against firms in this sector: firm name, 
 ## The Specific Regulatory Obligations at Risk
 What rules, obligations, and frameworks are most commonly breached by ${firmCategory}s? Reference actual cases from the data to support each obligation cited.
 
-## Red Flags — What Regulators Are Looking For
+## Red Flags: What Regulators Are Looking For
 5-7 specific red flags or supervisory triggers that appear in the enforcement data. Not generic — reference real cases where possible.
 
 ## Action Checklist for ${firmCategory} Compliance Teams
 5-8 specific, actionable items based on what firms in this sector have been fined for. Frame as imperatives.
+
+## About the Data
+One paragraph: state this analysis draws on the RegActions database, the date range of data used, and that fine amounts in non-GBP currencies are converted at the enforcement action date. Cite the regulators whose enforcement data is covered.
 
 ## Key Takeaways
 5 bullet points, each referencing a specific case or finding from the data.

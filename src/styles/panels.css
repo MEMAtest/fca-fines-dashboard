@@ -707,6 +707,14 @@
   flex-wrap: wrap;
 }
 
+.notice__actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+
 .notice__link {
   display: flex;
   align-items: center;

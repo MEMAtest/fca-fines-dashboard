@@ -1,10 +1,12 @@
 import { useState, FormEvent, ChangeEvent } from 'react';
 import { Mail, CheckCircle, AlertCircle } from 'lucide-react';
+import { trackEvent } from '../utils/analytics.js';
 
 interface DigestSubscribeFormProps {
   defaultFrequency?: 'weekly' | 'monthly';
   compact?: boolean;
   className?: string;
+  source?: string;
 }
 
 type FormStatus = 'idle' | 'submitting' | 'success' | 'error';
@@ -12,7 +14,8 @@ type FormStatus = 'idle' | 'submitting' | 'success' | 'error';
 export function DigestSubscribeForm({
   defaultFrequency = 'weekly',
   compact = false,
-  className = ''
+  className = '',
+  source = 'digest_form',
 }: DigestSubscribeFormProps) {
   const [email, setEmail] = useState('');
   const [frequency, setFrequency] = useState<'weekly' | 'monthly'>(defaultFrequency);
@@ -29,6 +32,7 @@ export function DigestSubscribeForm({
     }
 
     setStatus('submitting');
+    trackEvent('digest_subscribe_start', { source, frequency });
 
     try {
       const response = await fetch('/api/digest/subscribe', {
@@ -44,10 +48,12 @@ export function DigestSubscribeForm({
       }
 
       setStatus('success');
+      trackEvent('digest_subscribe_success', { source, frequency });
     } catch (error) {
       console.error('Digest subscribe error:', error);
       setErrorMessage(error instanceof Error ? error.message : 'Failed to subscribe');
       setStatus('error');
+      trackEvent('digest_subscribe_error', { source, frequency });
     }
   };
 

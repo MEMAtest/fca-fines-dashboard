@@ -36,7 +36,7 @@ export function Sitemap() {
                 <Link to="/">Home</Link>
               </li>
               <li>
-                <Link to="/regulators">Dashboard</Link>
+                <Link to="/regulators">Data Hub</Link>
               </li>
               <li>
                 <Link to="/board-pack">Board Pack</Link>
@@ -134,7 +134,7 @@ export function Sitemap() {
           </div>
           <nav className="blog-footer-nav" aria-label="Footer navigation">
             <Link to="/">Home</Link>
-            <Link to="/regulators">Dashboard</Link>
+            <Link to="/regulators">Data Hub</Link>
             <Link to="/board-pack">Board Pack</Link>
             <Link to="/blog">Blog</Link>
             <Link to="/sitemap">Sitemap</Link>

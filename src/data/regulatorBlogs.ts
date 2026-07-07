@@ -2957,7 +2957,7 @@ function buildFcaMarkdown(coverage = REGULATOR_COVERAGE.FCA): string {
   return `
 ## ${coverage.fullName} Fines & Enforcement Guide
 
-The FCA remains the core benchmark for this dashboard. This guide summarises the public enforcement record, the main breach families, and the practical implications for UK-regulated firms.
+The FCA remains the core benchmark for RegActions. Its public enforcement record is deep enough to support trend analysis, peer benchmarking, board challenge, and sector-specific compliance work. This guide summarises the public enforcement record, the main breach families, and the practical implications for UK-regulated firms.
 
 ### Coverage Summary
 
@@ -2975,9 +2975,57 @@ The FCA remains the core benchmark for this dashboard. This guide summarises the
 4. Consumer protection and fair treatment
 5. Senior manager accountability
 
-### Why the FCA Article Stays in Markdown
+### How To Read FCA Enforcement
 
-The FCA article is intentionally left on the classic markdown path so the existing FCA-focused content, search indexing, and page rendering continue to behave exactly as before.
+FCA enforcement is not only a list of fines. It is a public record of what the regulator considered serious enough to document, penalise, restrict, prosecute, or use as a supervisory signal. Monetary penalties show one part of the risk picture, but firms should also track permissions cancellations, requirements, restrictions, individual action, and final notices with no disclosed fine.
+
+For UK-regulated firms, the most useful reading is practical: what control failed, who owned it, how long it persisted, what management information missed it, and what evidence the firm could have shown earlier. The answer to those questions is more useful than the headline penalty amount alone.
+
+### FCA Enforcement Themes By Use Case
+
+| Use case | What to search | Why it matters |
+|------|------|------|
+| AML and financial crime | transaction monitoring, CDD, EDD, sanctions, SARs | These cases often produce large penalties and board-level remediation requirements |
+| Consumer Duty and fair treatment | fair value, vulnerable customers, product governance, complaints | Enforcement pressure can appear through supervision before a major fine lands |
+| Market abuse and trading conduct | insider dealing, benchmark manipulation, transaction reporting | Cases often involve surveillance, escalation, and control-room evidence |
+| SM&CR and accountability | senior manager, individual, governance, oversight | Individual action changes how boards should read control ownership |
+| Payments and e-money | permissions, safeguarding, AML, threshold conditions | Public pressure may arrive through restrictions or cancellations rather than fines |
+
+### What Boards Should Ask
+
+- Which FCA enforcement themes are most relevant to the firm's permissions, products, and customer base?
+- Where does the firm rely on manual controls that the FCA would expect to be automated, tested, or independently challenged?
+- Can management show recent evidence that transaction monitoring, product governance, complaint handling, and vulnerable-customer controls operate as designed?
+- Are senior managers receiving MI that would reveal control deterioration before a final notice?
+- Which peer cases should be included in the next board or risk committee pack?
+
+### How To Use RegActions For FCA Monitoring
+
+Use [FCA regulator intelligence](/regulators/fca) to open the live FCA hub, [enforcement search](/search?q=FCA) to find firm or theme-specific actions, and the [FCA fines database guide](/blog/fca-fines-database-how-to-search) to understand search workflows. For committee reporting, use [Board Pack](/board-pack) to convert FCA cases into challenge points, exposure themes, and appendix-ready evidence.
+
+The strongest monitoring setup combines all four surfaces: a regulator hub for the overall picture, search for specific questions, digest or watchlist flows for retention, and board packs for decision-ready reporting.
+
+### Sector Lens
+
+The same FCA action can mean different things by sector. Banks should read AML, transaction monitoring, sanctions, CASS, and wholesale conduct cases as control-effectiveness warnings. Wealth managers and advisers should watch suitability, Consumer Duty, vulnerable customer, complaints, and senior-manager accountability themes. Payments and e-money firms should pay close attention to safeguarding, AML, threshold conditions, permissions cancellations, and operational resilience. Insurers and brokers should monitor claims handling, product governance, fair value, delegated authority, and distribution-chain oversight.
+
+This sector lens is important because broad FCA enforcement totals can hide the operational signal. A relatively small penalty against a firm with similar permissions may be more relevant than a much larger case in a different business model.
+
+### Monitoring Cadence
+
+Compliance teams should review FCA enforcement at three speeds. Weekly monitoring catches new official actions and press releases. Monthly review turns new cases into MI for compliance leadership. Quarterly board review converts the most relevant cases into challenge questions, control attestations, and remediation tracking. Annual review should compare the year's enforcement themes with the firm's risk assessment, compliance plan, internal audit findings, and Consumer Duty board report.
+
+This cadence prevents the FCA database from becoming a static archive. The value is not only in knowing what the FCA fined; it is in using the public record to test whether the firm's control evidence is current, complete, and board-ready.
+
+### When To Escalate FCA Intelligence
+
+Escalate FCA enforcement intelligence when a new case touches the firm's permissions, customer base, products, distribution model, or known control weaknesses. Escalation is also warranted when several smaller actions point to the same underlying theme, such as weak financial crime governance, inadequate MI, poor complaints learning, or ineffective senior-manager oversight.
+
+For advisory or remediation work, the most useful output is a short evidence pack: relevant FCA cases, the control issue, why it matters to the firm, current evidence available, gaps, owners, and target dates.
+
+### Good FCA Monitoring Outputs
+
+A useful FCA monitoring output should be concise enough for senior readers and detailed enough for control owners. It should include the official source link, penalty or action type, business model affected, control theme, senior-management relevance, and a clear "so what" for the firm. Where the case is highly relevant, the output should also include an owner, a due date, and the evidence that will be refreshed before the next committee cycle.
 
 ### Official Sources
 
@@ -2989,7 +3037,22 @@ The FCA article is intentionally left on the classic markdown path so the existi
 
 - Use the FCA guide as the primary UK benchmark.
 - Compare non-FCA regulators against FCA patterns where possible.
-- Keep monitoring live FCA articles and year pages as the flagship content on the site.
+- Treat fines, restrictions, permissions cancellations, and individual action as one enforcement picture.
+- Convert relevant FCA cases into board questions and control evidence, not only compliance reading.
+
+### Frequently Asked Questions
+
+#### Is the FCA fines database only about monetary penalties?
+
+No. Monetary fines are central, but FCA enforcement intelligence should also include final notices, restrictions, permissions actions, senior-manager accountability, and supervisory signals where they affect compliance risk.
+
+#### Which FCA themes matter most for UK firms?
+
+AML and financial crime remain the most material by penalty value, but Consumer Duty, payments, individual accountability, market abuse, operational resilience, and systems and controls failures are all important monitoring areas.
+
+#### How should compliance teams use FCA enforcement data?
+
+Teams should use it to benchmark peer cases, test whether current controls would withstand regulatory scrutiny, brief senior managers, prepare board challenge questions, and monitor recurring themes over time.
 `.trim();
 }
 

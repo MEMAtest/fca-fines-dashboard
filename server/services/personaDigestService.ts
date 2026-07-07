@@ -15,8 +15,9 @@ import {
   getPersonaSendHistory,
   markPersonaItemsSent,
 } from './digestSubscribers.js';
-import { personaDigestEmail, type DigestItem } from './personaDigestEmail.js';
+import { personaDigestEmail, type DigestBriefingSummary, type DigestItem } from './personaDigestEmail.js';
 import { generatePersonaDigestPdf } from './personaDigestPdf.js';
+import { generateEnforcementBriefing } from './enforcementBriefingAgent.js';
 import { SESClient, SendRawEmailCommand } from '@aws-sdk/client-ses';
 
 const sql = getSqlClient();
@@ -149,6 +150,40 @@ async function buildPersonaDigest(persona: FirmPersona): Promise<DigestItem[]> {
   }
 
   return balanced;
+}
+
+function daysAgoIso(days: number) {
+  const date = new Date();
+  date.setUTCDate(date.getUTCDate() - days);
+  return date.toISOString().slice(0, 10);
+}
+
+async function buildWeeklyEnforcementBriefing(personaId: string): Promise<DigestBriefingSummary | null> {
+  try {
+    const result = await generateEnforcementBriefing({
+      personaId,
+      dateFrom: daysAgoIso(7),
+      dateTo: new Date().toISOString().slice(0, 10),
+      currency: 'GBP',
+      limit: 30,
+    });
+
+    if (result.stats.totalActions === 0) return null;
+
+    return {
+      executiveSummary: result.briefing.executiveSummary,
+      keyThemes: result.briefing.keyThemes.slice(0, 3).map((theme) => ({
+        title: theme.title,
+        narrative: theme.narrative,
+        implication: theme.implication,
+      })),
+      confidence: result.briefing.confidence,
+      fallbackUsed: result.fallbackUsed,
+    };
+  } catch (error) {
+    console.warn(`Weekly enforcement briefing failed for ${personaId}:`, error instanceof Error ? error.message : String(error));
+    return null;
+  }
 }
 
 /**
@@ -300,6 +335,7 @@ export async function sendAllPersonaDigests(): Promise<SendAllResult> {
 
       // 4. Get subscribers and send
       const subscribers = await getSubscribersByPersona(persona_id);
+      const briefing = await buildWeeklyEnforcementBriefing(persona_id);
 
       for (const subscriber of subscribers) {
         try {
@@ -310,6 +346,7 @@ export async function sendAllPersonaDigests(): Promise<SendAllResult> {
             unsubscribeToken: subscriber.unsubscribe_token,
             firmName: subscriber.firm_name || undefined,
             hasPdfAttachment: !!pdfBuffer,
+            briefing,
           });
 
           await sendDigestToRecipient(
@@ -388,6 +425,7 @@ export async function sendTestDigest(personaId: string, testEmail: string): Prom
       unsubscribeToken: 'test-token-preview',
       firmName: 'Test Firm',
       hasPdfAttachment: !!pdfBuffer,
+      briefing: await buildWeeklyEnforcementBriefing(personaId),
     });
 
     await sendDigestToRecipient(testEmail, emailContent, pdfBuffer, pdfFilename);

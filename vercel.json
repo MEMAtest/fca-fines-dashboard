@@ -90,6 +90,12 @@
     },
     "api/digest-subscribers.ts": {
       "maxDuration": 60
+    },
+    "api/agentic/enforcement-briefing.ts": {
+      "maxDuration": 60
+    },
+    "api/agentic/workbench.ts": {
+      "maxDuration": 60
     }
   }
 }

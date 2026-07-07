@@ -55,7 +55,7 @@ Cite specific rules, articles, or guidance documents relevant to the theme. If t
 ## Enforcement Trajectory
 Use the year-by-year data to show whether enforcement is rising, falling, or shifting regulator. Include a markdown table if 3+ years of data are available.
 
-## Key Cases — In Detail
+## Key Cases in Detail
 Cite at least 5 specific enforcement actions from the data: firm name, regulator, amount, breach, key finding. Use sub-bullets.
 
 ## Practitioner Implications
@@ -63,6 +63,9 @@ What compliance teams, risk functions, and boards must do in response. Sector-sp
 
 ## What to Watch
 3-5 forward-looking observations grounded in the enforcement trajectory. No speculation beyond what the data implies.
+
+## About the Data
+One paragraph: state this analysis draws on the RegActions database, the date range of data used, and that fine amounts in non-GBP currencies are converted at the enforcement action date. Cite the regulators whose data is covered.
 
 ## Key Takeaways
 5 bullet points. Each must reference a specific case, amount, or trend from the data.

@@ -410,3 +410,305 @@ export function fetchUKEnforcementStats(
     `/api/uk-enforcement/stats?${params.toString()}`,
   );
 }
+
+export interface EnforcementBriefingFilters {
+  dateFrom?: string;
+  dateTo?: string;
+  regulator?: string;
+  country?: string;
+  breachCategory?: string;
+  firmCategory?: string;
+  personaId?: string;
+  query?: string;
+  currency?: "GBP" | "EUR";
+  limit?: number;
+}
+
+export interface EnforcementBriefingTheme {
+  title: string;
+  narrative: string;
+  evidenceIds: string[];
+  implication: string;
+  count?: number;
+}
+
+export interface EnforcementBriefingResponse {
+  success: boolean;
+  briefing: {
+    executiveSummary: string;
+    keyThemes: EnforcementBriefingTheme[];
+    notablePrecedents: Array<{
+      firm: string;
+      regulator: string;
+      dateIssued: string;
+      reason: string;
+      citationId: string | null;
+    }>;
+    mlroWatchPoints: string[];
+    confidence: "high" | "medium" | "low";
+    limitations: string[];
+    disclaimer: string;
+  };
+  stats: {
+    totalActions: number;
+    sampledActions: number;
+    monetaryActions: number;
+    sampledTotalAmount: number;
+    sampledAverageAmount: number;
+    sampledMaxAmount: number;
+    totalAmount: number;
+    averageAmount: number;
+    maxAmount: number;
+    earliestDate: string | null;
+    latestDate: string | null;
+    topRegulators: Array<{ regulator: string; name: string; count: number; totalAmount: number }>;
+    topFirms: Array<{ firm: string; count: number; totalAmount: number }>;
+    topCategories: Array<{ category: string; count: number; totalAmount: number }>;
+  };
+  datasetSummary: {
+    source: "RegActions qualified enforcement dataset";
+    taxonomy: {
+      name: "RegActions enforcement taxonomy";
+      version: string;
+      basis: string;
+    };
+    scopeLabel: string;
+    filtersApplied: string[];
+    matchedActions: number;
+    sampledActions: number;
+    evidenceActions: number;
+    evidenceLimit: number;
+    requestedDateRange: {
+      from: string;
+      to: string;
+    };
+    evidenceDateRange: {
+      from: string;
+      to: string;
+    } | null;
+    sampledMonetaryValue: number;
+    topRegulators: Array<{ label: string; count: number }>;
+    topThemes: Array<{ label: string; count: number; sampledAmount: number }>;
+    topFirms: Array<{ label: string; count: number; sampledAmount: number }>;
+    modelInput: {
+      sentToModel: boolean;
+      evidenceRowsSent: number;
+      note: string;
+    };
+  };
+  themes: EnforcementBriefingTheme[];
+  citations: Array<{
+    id: string;
+    actionId: string;
+    firm: string;
+    regulator: string;
+    dateIssued: string;
+    title: string;
+    url: string | null;
+  }>;
+  filters: Required<Pick<EnforcementBriefingFilters, "dateFrom" | "dateTo" | "currency" | "limit">> & {
+    regulator: string | null;
+    country: string | null;
+    breachCategory: string | null;
+    firmCategory: string | null;
+    personaId: string | null;
+    query: string | null;
+  };
+  generatedAt: string;
+  model: string;
+  fallbackUsed: boolean;
+  cached: boolean;
+  evidenceHash: string;
+}
+
+export async function fetchEnforcementBriefing(
+  filters: EnforcementBriefingFilters,
+) {
+  const response = await fetch(`${API_BASE}/api/agentic/enforcement-briefing`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(filters),
+  });
+
+  const data = await response.json() as EnforcementBriefingResponse | { success: false; error?: string };
+  if (!response.ok || !data.success) {
+    throw new Error("error" in data && data.error ? data.error : "Briefing request failed");
+  }
+  return data;
+}
+
+export interface AgenticFirmProfileInput {
+  profileName?: string;
+  personaId?: string;
+  firmType?: string;
+  sizeBand?: string;
+  jurisdictions?: string[];
+  regulators?: string[];
+  products?: string[];
+  customerTypes?: string[];
+  permissions?: string[];
+  riskFlags?: string[];
+  recentIncidents?: string[];
+  keywords?: string[];
+}
+
+export interface AgenticWorkbenchInput {
+  profile?: AgenticFirmProfileInput;
+  controlFramework?: string;
+  controls?: string[];
+  researchQuestion?: string;
+  lookbackDays?: number;
+  dateFrom?: string;
+  dateTo?: string;
+  regulator?: string;
+  country?: string;
+  actionId?: string;
+}
+
+export interface AgenticWorkbenchResponse {
+  success: true;
+  generatedAt: string;
+  version: string;
+  profile: Required<Pick<AgenticFirmProfileInput, "profileName">> & {
+    personaId: string | null;
+    firmType: string | null;
+    sizeBand: string | null;
+    jurisdictions: string[];
+    regulators: string[];
+    products: string[];
+    customerTypes: string[];
+    permissions: string[];
+    riskFlags: string[];
+    recentIncidents: string[];
+    keywords: string[];
+  };
+  comparator: {
+    capability: "Comparator agent";
+    summary: string;
+    riskThemes: Array<{
+      label: string;
+      domain: string;
+      count: number;
+      averageScore: number;
+      totalAmountGbp: number;
+      evidenceIds: string[];
+      watchPoint: string;
+    }>;
+    closestPrecedents: Array<{
+      citationId: string;
+      score: number;
+      matchedSignals: string[];
+      explanation: string;
+      action: {
+        id: string;
+        regulator: string;
+        firm: string;
+        dateIssued: string;
+        breachType: string | null;
+        summary: string | null;
+        amountGbp: number | null;
+        regActionsCategory: {
+          label: string;
+          domain: string;
+          confidence: "high" | "medium" | "low";
+        };
+      };
+    }>;
+    citations: AgenticCitation[];
+    methodology: string[];
+  };
+  horizonScan: {
+    capability: "Horizon scanning agent";
+    lookbackDays: number;
+    summary: string;
+    newRelevantActions: AgenticWorkbenchResponse["comparator"]["closestPrecedents"];
+    trendDeltas: Array<{
+      label: string;
+      recentCount: number;
+      previousCount: number;
+      change: number;
+    }>;
+    watchlistMatches: string[];
+    citations: AgenticCitation[];
+  };
+  controlGapAnalysis: {
+    capability: "Control gap analyser";
+    summary: string;
+    assessedControls: Array<{
+      theme: string;
+      status: "covered" | "partial" | "not evidenced";
+      matchedTerms: string[];
+      expectedEvidence: string[];
+      precedentEvidenceIds: string[];
+    }>;
+    priorityGaps: Array<{
+      theme: string;
+      severity: "high" | "medium" | "low";
+      reason: string;
+      suggestedEvidence: string[];
+    }>;
+  };
+  research: {
+    capability: "Multi-step research agent";
+    question: string;
+    answer: string;
+    plan: Array<{ step: string; status: "completed" }>;
+    parsedFilters: {
+      dateFrom: string;
+      dateTo: string;
+      regulators: string[];
+      countries: string[];
+      categories: string[];
+      keywords: string[];
+    };
+    topFindings: AgenticWorkbenchResponse["comparator"]["riskThemes"];
+    citations: AgenticCitation[];
+  };
+  impact: {
+    capability: "Regulatory change impact agent";
+    sourceAction: AgenticWorkbenchResponse["comparator"]["closestPrecedents"][number]["action"] | null;
+    summary: string;
+    impactFlags: Array<{
+      label: string;
+      severity: "high" | "medium" | "low";
+      reason: string;
+    }>;
+    affectedProfiles: Array<{
+      personaId: string;
+      name: string;
+      score: number;
+      matchedSignals: string[];
+    }>;
+    draftMemo: {
+      subject: string;
+      audience: string;
+      body: string[];
+    };
+    citations: AgenticCitation[];
+  };
+}
+
+export interface AgenticCitation {
+  id: string;
+  actionId: string;
+  firm: string;
+  regulator: string;
+  dateIssued: string;
+  category: string;
+  summary: string;
+  url: string | null;
+}
+
+export async function fetchAgenticWorkbench(input: AgenticWorkbenchInput) {
+  const response = await fetch(`${API_BASE}/api/agentic/workbench`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(input),
+  });
+
+  const data = await response.json() as AgenticWorkbenchResponse | { success: false; error?: string };
+  if (!response.ok || !data.success) {
+    throw new Error("error" in data && data.error ? data.error : "Agentic workbench request failed");
+  }
+  return data;
+}

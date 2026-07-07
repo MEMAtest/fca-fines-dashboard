@@ -75,7 +75,8 @@ export function getRelevantProfiles(records: Array<{ regulator: string }>): stri
   for (const r of records) {
     const key = r.regulator.toUpperCase().trim();
     for (const profileKey of Object.keys(PROFILES)) {
-      if (key === profileKey || key.includes(profileKey) || profileKey.includes(key)) {
+      const pkUpper = profileKey.toUpperCase();
+      if (key === pkUpper || key.includes(pkUpper) || pkUpper.includes(key)) {
         seen.add(profileKey);
       }
     }

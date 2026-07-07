@@ -61,6 +61,9 @@ Compare to same month prior year: action count, total fines. Identify whether th
 ## What This Means for Compliance Teams
 3-5 bullet points of specific, actionable observations. No generic advice — reference the actual cases.
 
+## About the Data
+One paragraph: state this analysis draws on the RegActions database, give the month/year covered, and note that non-monetary actions (restrictions, bans, public censures) are included where they appear in FCA enforcement records.
+
 ## Key Takeaways
 3-5 bullet points. Every takeaway must reference a specific case or number from the month's data.
 

@@ -7,9 +7,15 @@ import {
   ExternalLink,
   Briefcase,
   BarChart3,
+  Bell,
+  FileText,
+  Mail,
+  Search,
 } from "lucide-react";
 import { useSEO, injectStructuredData } from "../hooks/useSEO.js";
 import { REGULATOR_COUNT } from "../constants/site.js";
+import { DigestSubscribeForm } from "../components/DigestSubscribeForm.js";
+import { trackEvent } from "../utils/analytics.js";
 import {
   getPublishedBlogArticles,
   getPublishedYearlyArticles,
@@ -85,14 +91,14 @@ const HOWTO_SCHEMA = {
   "@type": "HowTo",
   name: "How to Search the Global Regulatory Fines Database",
   description:
-    `Step-by-step guide to searching and filtering regulatory fines across ${REGULATOR_COUNT} global regulators using the interactive dashboard.`,
+    `Step-by-step guide to searching and filtering regulatory fines across ${REGULATOR_COUNT} global regulators using RegActions.`,
   step: [
     {
       "@type": "HowToStep",
       position: 1,
-      name: "Navigate to Dashboard",
-      text: "Open RegActions at regactions.com/dashboard to access the complete database of regulatory enforcement penalties.",
-      url: "https://regactions.com/dashboard",
+      name: "Navigate to Data Hub",
+      text: "Open RegActions at regactions.com/regulators to access the complete database of regulatory enforcement penalties.",
+      url: "https://regactions.com/regulators",
     },
     {
       "@type": "HowToStep",
@@ -140,9 +146,9 @@ const RELATED_ARTICLES: Record<string, string[]> = {
     "fca-aml-fines-anti-money-laundering",
   ],
   "fca-fines-database-how-to-search": [
+    "fca-fines-enforcement-guide",
     "fca-final-notices-explained",
     "20-biggest-fca-fines-of-all-time",
-    "fca-enforcement-trends-2013-2025",
   ],
   "fca-aml-fines-anti-money-laundering": [
     "fca-fines-banks-complete-list",
@@ -198,6 +204,21 @@ const RELATED_ARTICLES: Record<string, string[]> = {
     "fca-fines-banks-complete-list",
     "fca-aml-fines-anti-money-laundering",
     "20-biggest-fca-fines-of-all-time",
+  ],
+  "global-aml-enforcement-comparison-2026": [
+    "fca-aml-fines-anti-money-laundering",
+    "payments-firms-fca-aml-enforcement",
+    "fincen-fines-enforcement-guide",
+  ],
+  "payments-firms-fca-aml-enforcement": [
+    "global-aml-enforcement-comparison-2026",
+    "fca-aml-fines-anti-money-laundering",
+    "fca-fines-database-how-to-search",
+  ],
+  "fca-fines-enforcement-guide": [
+    "fca-fines-database-how-to-search",
+    "fca-fines-2025-complete-list",
+    "fca-aml-fines-anti-money-laundering",
   ],
 };
 
@@ -287,18 +308,132 @@ function RelatedYearlyArticles({ currentYear }: { currentYear: number }) {
   );
 }
 
+function shouldShowMemaAdvisory(article: BlogArticleMeta) {
+  const haystack = `${article.title} ${article.category} ${article.keywords.join(" ")}`.toLowerCase();
+  return [
+    "aml",
+    "sm&cr",
+    "senior manager",
+    "consumer duty",
+    "payments",
+    "insurance",
+    "board",
+    "governance",
+    "controls",
+    "accountability",
+  ].some((term) => haystack.includes(term));
+}
+
+function ArticleActionPanel({
+  article,
+  variant = "standard",
+  regulatorSlug,
+}: {
+  article: BlogArticleMeta;
+  variant?: "standard" | "regulator";
+  regulatorSlug?: string;
+}) {
+  const searchQuery = encodeURIComponent(
+    article.keywords[0] || article.title.replace(/[^\w\s]/g, " "),
+  );
+  const source = `blog:${article.slug}`;
+  const showMema = shouldShowMemaAdvisory(article);
+
+  function trackCta(label: string) {
+    trackEvent("blog_cta_click", {
+      slug: article.slug,
+      category: article.category,
+      cta: label,
+      location: variant,
+    });
+  }
+
+  return (
+    <aside className="article-action-panel" aria-label="Use this article">
+      <div className="article-action-panel__header">
+        <span>Use this intelligence</span>
+        <strong>{variant === "regulator" ? "Open the live data behind this guide" : "Turn the article into a workflow"}</strong>
+      </div>
+      <div className="article-action-panel__actions">
+        <Link
+          to={`/search?q=${searchQuery}`}
+          className="article-action-card"
+          onClick={() => trackCta("search_data")}
+        >
+          <Search size={18} />
+          <span>
+            <strong>Search this data</strong>
+            <small>Find firms, themes, and related actions.</small>
+          </span>
+        </Link>
+        <Link
+          to={regulatorSlug ? `/regulators/${regulatorSlug}` : "/regulators"}
+          className="article-action-card"
+          onClick={() => trackCta("open_regulator_hub")}
+        >
+          <BarChart3 size={18} />
+          <span>
+            <strong>Open regulator hub</strong>
+            <small>Compare activity and drill into records.</small>
+          </span>
+        </Link>
+        <Link
+          to="/board-pack"
+          className="article-action-card"
+          onClick={() => trackCta("create_board_pack")}
+        >
+          <FileText size={18} />
+          <span>
+            <strong>Create board pack</strong>
+            <small>Convert evidence into board questions.</small>
+          </span>
+        </Link>
+      </div>
+      <div className="article-digest-card">
+        <div className="article-digest-card__copy">
+          <Mail size={18} />
+          <span>
+            <strong>Get the weekly enforcement digest</strong>
+            <small>New regulator actions and high-signal themes.</small>
+          </span>
+        </div>
+        <DigestSubscribeForm compact source={source} />
+      </div>
+      {showMema && (
+        <div className="article-mema-card">
+          <div>
+            <Bell size={18} />
+            <span>
+              <strong>When this becomes an advisory issue</strong>
+              <small>
+                MEMA Consultants can help interpret enforcement signals and
+                convert them into remediation or committee materials.
+              </small>
+            </span>
+          </div>
+          <a
+            href="https://memaconsultants.com"
+            target="_blank"
+            rel="noreferrer"
+            onClick={() => trackCta("mema_advisory_click")}
+          >
+            Speak to MEMA
+            <ExternalLink size={14} />
+          </a>
+        </div>
+      )}
+    </aside>
+  );
+}
+
 function renderMarkdownContent(content: string) {
-  return content
+  const html = content
     .replace(/(\|.+\|\n)+/g, (tableBlock) => {
       const rows = tableBlock.trim().split("\n");
       let html = "<table><thead>";
       let inBody = false;
       rows.forEach((row) => {
-        if (
-          /^\|[\s\-:]+\|$/.test(
-            row.replace(/\|/g, "|").replace(/[^|\-:\s]/g, ""),
-          )
-        ) {
+        if (/^\|?\s*:?-{3,}:?\s*(\|\s*:?-{3,}:?\s*)+\|?$/.test(row)) {
           html += "</thead><tbody>";
           inBody = true;
           return;
@@ -318,8 +453,17 @@ function renderMarkdownContent(content: string) {
     .replace(/^### (.+)$/gm, "<h3>$1</h3>")
     .replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>")
     .replace(/^\- (.+)$/gm, "<li>$1</li>")
-    .replace(/(<li>.*<\/li>\n?)+/g, "<ul>$&</ul>")
-    .replace(/\n\n/g, "</p><p>");
+    .replace(/(<li>.*<\/li>\n?)+/g, "<ul>$&</ul>");
+
+  return html
+    .split(/\n{2,}/)
+    .map((block) => block.trim())
+    .filter(Boolean)
+    .map((block) => {
+      if (/^<(h2|h3|table|ul|ol|div|section)\b/i.test(block)) return block;
+      return `<p>${block.replace(/\n/g, "<br />")}</p>`;
+    })
+    .join("");
 }
 
 function isStructuredRegulatorArticle(
@@ -499,6 +643,12 @@ function StructuredRegulatorArticlePage({
             className="blog-article-content blog-article-content--structured"
             itemProp="articleBody"
           >
+            <ArticleActionPanel
+              article={article}
+              variant="regulator"
+              regulatorSlug={regulatorSlug}
+            />
+
             <section className="regulator-article-intro regulator-article-intro--analysis">
               <span className="regulator-article-intro__eyebrow">
                 {structured.eyebrow}
@@ -626,7 +776,7 @@ function StructuredRegulatorArticlePage({
             {structured.faqs.length > 0 && (
               <div className="article-faq-section">
                 <div className="article-faq-badge">FAQ</div>
-                <div className="blog-article-content">
+                <div className="article-faq-content">
                   {structured.faqs.map((faq, index) => (
                     <div
                       key={`${article.slug}-faq-${index}`}
@@ -646,7 +796,15 @@ function StructuredRegulatorArticlePage({
               </p>
               <button
                 className="blog-cta-button"
-                onClick={() => navigate(`/regulators/${regulatorSlug}`)}
+                onClick={() => {
+                  trackEvent("blog_cta_click", {
+                    slug: article.slug,
+                    category: article.category,
+                    cta: "footer_open_regulator_hub",
+                    location: "structured_footer",
+                  });
+                  navigate(`/regulators/${regulatorSlug}`);
+                }}
               >
                 Open Regulator Hub
                 <ExternalLink size={18} />
@@ -793,6 +951,8 @@ function BlogArticlePage({ article }: { article: BlogArticleMeta }) {
             </div>
           </div>
 
+          <ArticleActionPanel article={article} />
+
           <div
             className="blog-article-content"
             itemProp="articleBody"
@@ -901,7 +1061,7 @@ function BlogArticlePage({ article }: { article: BlogArticleMeta }) {
           {articleFaqs.length > 0 && (
             <div className="article-faq-section">
               <div className="article-faq-badge">FAQ</div>
-              <div className="blog-article-content">
+              <div className="article-faq-content">
                 {articleFaqs.map((faq) => (
                   <div key={faq.slug} id={faq.slug} className="faq-item">
                     <h2 className="faq-question">{faq.question}</h2>
@@ -920,9 +1080,17 @@ function BlogArticlePage({ article }: { article: BlogArticleMeta }) {
             </p>
             <button
               className="blog-cta-button"
-              onClick={() => navigate("/dashboard")}
+              onClick={() => {
+                trackEvent("blog_cta_click", {
+                  slug: article.slug,
+                  category: article.category,
+                  cta: "footer_open_data_hub",
+                  location: "footer",
+                });
+                navigate("/regulators");
+              }}
             >
-              Explore RegActions Dashboard
+              Explore RegActions Data Hub
               <ExternalLink size={18} />
             </button>
           </div>
@@ -1002,6 +1170,8 @@ function YearlyArticlePage({ article }: { article: YearlyArticleMeta }) {
               </span>
             </div>
           </div>
+
+          <ArticleActionPanel article={article} />
 
           <div className="blog-article-content" itemProp="articleBody">
             {/* Stats Summary */}
@@ -1111,7 +1281,7 @@ function YearlyArticlePage({ article }: { article: YearlyArticleMeta }) {
           {yearlyFaqs.length > 0 && (
             <div className="article-faq-section">
               <div className="article-faq-badge">FAQ</div>
-              <div className="blog-article-content">
+              <div className="article-faq-content">
                 {yearlyFaqs.map((faq) => (
                   <div key={faq.slug} id={faq.slug} className="faq-item">
                     <h2 className="faq-question">{faq.question}</h2>
@@ -1130,9 +1300,17 @@ function YearlyArticlePage({ article }: { article: YearlyArticleMeta }) {
             </p>
             <button
               className="blog-cta-button"
-              onClick={() => navigate("/dashboard")}
+              onClick={() => {
+                trackEvent("blog_cta_click", {
+                  slug: article.slug,
+                  category: "Annual Analysis",
+                  cta: "footer_open_data_hub",
+                  location: "yearly_footer",
+                });
+                navigate("/regulators");
+              }}
             >
-              Explore RegActions Dashboard
+              Explore RegActions Data Hub
               <ExternalLink size={18} />
             </button>
           </div>
