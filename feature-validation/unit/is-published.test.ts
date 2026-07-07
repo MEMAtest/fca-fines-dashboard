@@ -8,6 +8,11 @@ import {
 } from "../../src/data/blogArticles.js";
 
 const upgradedBlogSlugs = [
+  "fca-fines-january-2026",
+  "fca-fines-february-2026",
+  "fca-final-notices-explained",
+  "fca-fines-banks-complete-list",
+  "senior-managers-regime-fca-fines",
   "board-guide-aml-controls-global-enforcement",
   "eu-financial-regulators-enforcement-guide",
   "occ-enforcement-actions-complete-guide",

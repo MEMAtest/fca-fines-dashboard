@@ -99,6 +99,259 @@ export const blogArticleEditorialUpgrades: Record<
   string,
   BlogArticleEditorialUpgrade
 > = {
+  "fca-fines-january-2026": {
+    title: "FCA Fines January 2026: Individual Accountability Guide",
+    seoTitle: "FCA Fines January 2026 | Individual Accountability",
+    excerpt:
+      "January 2026 FCA fines guide covering individual accountability, market abuse, insider dealing, Carillion-related findings, board evidence and senior manager read-across.",
+    readTime: "9 min read",
+    content: buildGuide({
+      heading: "FCA Fines January 2026: Individual Accountability Guide",
+      opening:
+        "January 2026 FCA fines created a concentrated individual-accountability signal, with the public fines table showing named individual penalties for market abuse, insider dealing, unlawful disclosure and integrity-related findings.",
+      matter: [
+        "The FCA 2026 fines page lists January actions against Richard Adam, Zafar Khan, Darren Anthony Reynolds, Dipesh Kerai and Bhavesh Hirani. The combined January penalties are just over GBP2.5 million, but the board-level signal is not the aggregate amount. The signal is that individual conduct, knowing concern, market disclosure and integrity findings can sit at the centre of an enforcement month.",
+        "The FCA enforcement page explains that the regulator uses criminal, civil and regulatory powers, including financial penalties, prohibitions, public censure and prosecution. It also states that warning notices, decision notices and final notices perform different roles, with final notices issued when the FCA takes action. That process context matters when boards read monthly fine tables.",
+      ],
+      regulatorRead: [
+        "January should be read beside the FCA market abuse, SMCR and financial-crime frameworks. A public fine against an individual can indicate weaknesses in issuer disclosure, information barriers, personal account dealing, suspicious transaction reporting, management oversight or fitness and propriety evidence.",
+        "The FCA hub is the starting point for UK read-across, but firms should also compare the same themes with SEC, FINRA, SFC and AMF enforcement. Market abuse and individual accountability are cross-border themes, and similar fact patterns can generate action in several markets.",
+      ],
+      enforcementSignals: [
+        "The first signal is named individual conduct. Boards should ask whether similar roles in the firm have clear responsibilities, training, escalation routes and evidence of challenge.",
+        "The second signal is market disclosure. Carillion-related findings show why issuer controls, audit committee escalation, announcement drafting, financial reporting controls and board challenge matter before a market update is released.",
+        "The third signal is insider dealing and unlawful disclosure. Watch lists, restricted lists, wall-crossing logs, deal-team access and personal dealing controls should be reviewed after each individual market abuse action.",
+      ],
+      boardUse: [
+        "A January 2026 board pack should not simply list five names and amounts. It should separate the actions by conduct theme, control owner, affected business model and relevance to the firm's current risk profile.",
+        "Senior managers should use the month as a reasonable-steps prompt. The pack should show whether the firm's individual-accountability map, market abuse surveillance, issuer disclosure controls and personal-dealing attestations would produce evidence quickly if challenged by the FCA.",
+      ],
+      searchQuery: "FCA%20January%202026%20individual%20market%20abuse",
+      hubLinks: [
+        "[FCA](/regulators/fca)",
+        "[SEC](/regulators/sec)",
+        "[FINRA](/regulators/finra)",
+        "[SFC](/regulators/sfc)",
+      ],
+      sources: [
+        {
+          label: "FCA 2026 fines",
+          url: "https://www.fca.org.uk/news/news-stories/2026-fines",
+        },
+        {
+          label: "FCA enforcement powers and notices",
+          url: "https://www.fca.org.uk/about/how-we-regulate/enforcement",
+        },
+        {
+          label: "FCA Senior Managers and Certification Regime",
+          url: "https://www.fca.org.uk/firms/senior-managers-certification-regime",
+        },
+      ],
+      memaLink:
+        "Where January individual-accountability themes expose governance mapping or reasonable-steps evidence gaps, [MEMA Consultants](https://www.memaconsultants.com/) is a relevant advisory destination.",
+    }),
+  },
+  "fca-fines-february-2026": {
+    title: "FCA Fines February 2026: Market Disclosure and Governance",
+    seoTitle: "FCA Fines February 2026 | Market Disclosure and Governance",
+    excerpt:
+      "February 2026 FCA fines guide covering market disclosure, Carillion-related findings, governance evidence, final notice interpretation and board reporting.",
+    readTime: "9 min read",
+    content: buildGuide({
+      heading: "FCA Fines February 2026: Market Disclosure and Governance",
+      opening:
+        "February 2026 FCA fines kept the focus on market disclosure and senior accountability, with the official 2026 fines table listing a Carillion-related individual penalty for knowing concern in listed-company disclosure breaches.",
+      matter: [
+        "The official FCA 2026 fines page lists Richard John Howson on 16 February 2026, with a GBP237,700 penalty and references to Article 15 of the Market Abuse Regulations, Listing Rule 1.3.3R, Listing Principle 1 and Premium Listing Principle 2. This is a compact but important month because it shows how listed-company disclosure failures can remain enforcement-relevant long after the original market event.",
+        "The FCA enforcement page explains that enforcement is intended to hold firms and individuals to account, deter wider misconduct and support strategic priorities including assertive action on market abuse. February therefore belongs in the same governance file as January, not as an isolated monthly update.",
+      ],
+      regulatorRead: [
+        "The core regulator read-across is market integrity. Listed issuers, sponsors, advisers, auditors, brokers, investor relations teams and senior executives should all read market-disclosure findings as evidence about governance and escalation.",
+        "The FCA's final-notice architecture is also relevant. Warning notices, decision notices, final notices, supervisory notices, requirement notices and cancellation notices are different public artefacts. A monthly fines page gives the headline, but the final notice provides the control narrative.",
+      ],
+      enforcementSignals: [
+        "The first signal is board information quality. Market announcements become risky when senior management, the board or committees receive information that is incomplete, overly optimistic or inconsistent with operational evidence.",
+        "The second signal is audit and finance escalation. Project accounting, impairments, provisioning, liquidity issues and forecast changes need a documented challenge route before public disclosure decisions are made.",
+        "The third signal is knowing concern. Individuals can become exposed when they are involved in, or aware of, conduct connected to a firm's breach. That makes evidence of advice, challenge and escalation central.",
+      ],
+      boardUse: [
+        "A February 2026 board pack should take the single public penalty and turn it into a disclosure-control test. Which committees approve market announcements? Which functions challenge underlying data? Which executives certify the accuracy and completeness of information?",
+        "The pack should also include a final-notice workflow. For each FCA notice, compliance should extract the rule breach, fact pattern, control failure, individual-accountability point, remediation lesson and relevance score for the firm.",
+      ],
+      searchQuery: "FCA%20February%202026%20market%20disclosure",
+      hubLinks: [
+        "[FCA](/regulators/fca)",
+        "[SEC](/regulators/sec)",
+        "[SFC](/regulators/sfc)",
+        "[AMF](/regulators/amf)",
+      ],
+      sources: [
+        {
+          label: "FCA 2026 fines",
+          url: "https://www.fca.org.uk/news/news-stories/2026-fines",
+        },
+        {
+          label: "FCA enforcement powers and notices",
+          url: "https://www.fca.org.uk/about/how-we-regulate/enforcement",
+        },
+        {
+          label: "FCA Market Abuse Regulation",
+          url: "https://www.fca.org.uk/markets/market-abuse/regulation",
+        },
+      ],
+      memaLink:
+        "For disclosure governance, committee evidence and remediation design, [MEMA Consultants](https://www.memaconsultants.com/) is a relevant advisory link.",
+    }),
+  },
+  "fca-final-notices-explained": {
+    title: "FCA Final Notices Explained: Enforcement Decision Guide",
+    seoTitle: "FCA Final Notices Explained | Enforcement Decision Guide",
+    excerpt:
+      "Guide to FCA final notices, decision notices, warning notices, supervisory notices and how compliance teams should turn enforcement decisions into board evidence.",
+    readTime: "9 min read",
+    content: buildGuide({
+      heading: "FCA Final Notices Explained: Enforcement Decision Guide",
+      opening:
+        "FCA final notices are the most useful public enforcement documents for compliance teams because they set out the action taken, the failings identified and the evidence that turned a supervisory concern into a public outcome.",
+      matter: [
+        "The FCA enforcement page explains that warning notices are issued when the FCA proposes taking action, decision notices are issued and published when the FCA decides to take action, and final notices are issued when the FCA takes action. The same page also states that supervisory notices, requirement notices, cancellation notices and other publications sit within the wider notices architecture.",
+        "For compliance teams, this distinction matters. A final notice is not only a legal document. It is a control case study: it shows the rule, the fact pattern, the conduct period, the firm's response, penalty logic, mitigating and aggravating factors, and sometimes the remediation evidence that was accepted or rejected.",
+      ],
+      regulatorRead: [
+        "FCA final notices should be read with DEPP, the Enforcement Guide and the annual fines tables. The fines page gives the amount and reason. The final notice gives the evidence. The enforcement page gives the process and powers.",
+        "The read-across should also include adjacent regulators. SEC orders, FINRA AWCs, SFC disciplinary actions and CBI ASP outcomes are different formats, but each helps teams understand how another authority writes control failure into public evidence.",
+      ],
+      enforcementSignals: [
+        "The first signal is the exact rule breach. Extracting the rule reference prevents compliance teams from reducing the case to a vague theme such as AML or governance.",
+        "The second signal is chronology. The period of misconduct, discovery date, escalation date, remediation date and settlement date show whether the firm acted promptly or allowed the issue to persist.",
+        "The third signal is penalty logic. Discounts, aggravating factors, cooperation, redress and remediation language show what the FCA rewarded or criticised.",
+      ],
+      boardUse: [
+        "A final-notice board pack should include a one-page case digest: firm, date, amount, rules, conduct period, control weakness, senior accountability point, remediation lesson and relevance to the firm's own permissions.",
+        "The pack should also include a decision log. If the board decides that a notice is not relevant, the reason should be recorded. That turns enforcement monitoring into evidence of considered challenge rather than passive reading.",
+      ],
+      searchQuery: "FCA%20final%20notice%20decision%20notice",
+      hubLinks: [
+        "[FCA](/regulators/fca)",
+        "[CBI](/regulators/cbi)",
+        "[SEC](/regulators/sec)",
+        "[FINRA](/regulators/finra)",
+      ],
+      sources: [
+        {
+          label: "FCA enforcement powers and notices",
+          url: "https://www.fca.org.uk/about/how-we-regulate/enforcement",
+        },
+        {
+          label: "FCA 2026 fines",
+          url: "https://www.fca.org.uk/news/news-stories/2026-fines",
+        },
+      ],
+      memaLink:
+        "Where firms need help turning final notices into board-ready remediation evidence, [MEMA Consultants](https://www.memaconsultants.com/) is a relevant advisory destination.",
+    }),
+  },
+  "fca-fines-banks-complete-list": {
+    title: "FCA Fines to Banks: Banking Enforcement and AML Guide",
+    seoTitle: "FCA Fines to Banks | Banking Enforcement and AML Guide",
+    excerpt:
+      "Guide to FCA banking fines covering AML, financial crime, market conduct, operational controls, governance, senior manager evidence and board reporting.",
+    readTime: "9 min read",
+    content: buildGuide({
+      heading: "FCA Fines to Banks: Banking Enforcement and AML Guide",
+      opening:
+        "FCA fines to banks remain the clearest UK benchmark for high-value enforcement because banking cases often combine financial crime, market conduct, operational controls, governance and senior accountability.",
+      matter: [
+        "The FCA financial crime page says financial crime damages people, businesses and market attractiveness, and that the FCA works to disrupt criminals while supporting firms as an effective line of defence. It also links firm obligations across money laundering, terrorist financing, market abuse, fraud, bribery, corruption and sanctions.",
+        "Banks sit at the centre of those risks. They handle payments, deposits, lending, capital markets activity, correspondent relationships, sanctions exposure, vulnerable customers, complaints, outsourcing and major technology platforms. A banking fine therefore tends to reveal more than one control weakness.",
+      ],
+      regulatorRead: [
+        "FCA banking fines should be read beside PRA expectations, FinCEN and OCC banking enforcement, SEC market conduct cases and CBI or BaFin actions where groups operate across jurisdictions.",
+        "The strongest read-across is financial crime governance. Transaction monitoring, customer due diligence, sanctions screening, correspondent banking, suspicious activity reporting and remediation ownership appear repeatedly across banking enforcement globally.",
+      ],
+      enforcementSignals: [
+        "The first signal is aged remediation. Banking groups often know about control weaknesses through audit, compliance monitoring, regulator feedback or incident reports before a public enforcement action appears.",
+        "The second signal is data quality. AML models, transaction monitoring, sanctions screening, customer risk scoring and conduct surveillance all depend on complete, reconciled and well-owned data.",
+        "The third signal is board visibility. A board pack that hides overdue issues, recurring exceptions or control dependency risk will not protect senior managers if the same weakness later appears in a final notice.",
+      ],
+      boardUse: [
+        "A banking enforcement board pack should separate themes by control domain: AML, sanctions, market conduct, operational resilience, consumer harm, product governance, complaints and senior manager accountability.",
+        "For each theme, the pack should show relevant FCA banking cases, current control evidence, assurance results, issue ageing, technology dependencies, owner and the decision required from the board.",
+      ],
+      searchQuery: "FCA%20bank%20fines%20AML%20financial%20crime",
+      hubLinks: [
+        "[FCA](/regulators/fca)",
+        "[FinCEN](/regulators/fincen)",
+        "[OCC](/regulators/occ)",
+        "[CBI](/regulators/cbi)",
+        "[BaFin](/regulators/bafin)",
+      ],
+      sources: [
+        {
+          label: "FCA financial crime",
+          url: "https://www.fca.org.uk/firms/financial-crime",
+        },
+        {
+          label: "FCA enforcement powers and notices",
+          url: "https://www.fca.org.uk/about/how-we-regulate/enforcement",
+        },
+        {
+          label: "FCA 2026 fines",
+          url: "https://www.fca.org.uk/news/news-stories/2026-fines",
+        },
+      ],
+      memaLink:
+        "For banking remediation, AML governance and board-pack evidence, [MEMA Consultants](https://www.memaconsultants.com/) is a relevant advisory link.",
+    }),
+  },
+  "senior-managers-regime-fca-fines": {
+    title: "Senior Managers Regime: FCA Fines and Accountability",
+    seoTitle: "Senior Managers Regime FCA Fines | Accountability Guide",
+    excerpt:
+      "Guide to SMCR, FCA fines and senior manager accountability covering reasonable steps, conduct rules, certification, board evidence and enforcement read-across.",
+    readTime: "9 min read",
+    content: buildGuide({
+      heading: "Senior Managers Regime: FCA Fines and Accountability",
+      opening:
+        "The Senior Managers and Certification Regime changes how FCA fines should be read because enforcement is not only about the firm; it is also about who owned the risk and what evidence shows reasonable control.",
+      matter: [
+        "The FCA states that SMCR aims to reduce harm to consumers and strengthen market integrity by making individuals more accountable for their conduct and competence. The FCA page also explains that SMCR aims to encourage personal responsibility, improve conduct at all levels and make sure firms and staff clearly understand and can show who does what.",
+        "The regime consists of the Senior Managers Regime, Certification Regime and Conduct Rules. That three-part structure matters because a firm can fail at more than one level: unclear senior responsibilities, weak certification, poor fitness and propriety assessment, inadequate conduct training or missing evidence of challenge.",
+      ],
+      regulatorRead: [
+        "SMCR should be read beside every material FCA fine. AML, market abuse, consumer harm, operational resilience and banking cases all ask the same accountability question: which senior manager had the responsibility, what information did they receive and what action did they take?",
+        "The international read-across is also strong. Ireland's SEAR, Hong Kong's Manager-in-Charge regime, MAS individual accountability guidance and Australian accountability obligations all point toward clearer ownership and better evidence.",
+      ],
+      enforcementSignals: [
+        "The first signal is responsibility mismatch. If statements of responsibility do not match how the business actually operates, senior managers cannot rely on the map when issues emerge.",
+        "The second signal is weak reasonable-steps evidence. Meeting packs, challenge records, resourcing decisions, remediation tracking and escalation notes are the materials that show whether a manager acted with proper care.",
+        "The third signal is conduct at all levels. Certification and Conduct Rules evidence matter because poor behaviour below senior management can still reveal weak culture, supervision and training.",
+      ],
+      boardUse: [
+        "An SMCR board pack should map each major enforcement theme to a senior management function, a control owner, relevant committees, latest assurance results and open remediation actions.",
+        "The pack should also maintain a reasonable-steps file for high-risk responsibilities. That file should include decisions, challenge, risk acceptance, resources, issue closure evidence and independent assurance.",
+      ],
+      searchQuery: "SMCR%20senior%20manager%20accountability%20FCA",
+      hubLinks: [
+        "[FCA](/regulators/fca)",
+        "[CBI](/regulators/cbi)",
+        "[ASIC](/regulators/asic)",
+        "[HKMA](/regulators/hkma)",
+      ],
+      sources: [
+        {
+          label: "FCA Senior Managers and Certification Regime",
+          url: "https://www.fca.org.uk/firms/senior-managers-certification-regime",
+        },
+        {
+          label: "FCA enforcement powers and notices",
+          url: "https://www.fca.org.uk/about/how-we-regulate/enforcement",
+        },
+      ],
+      memaLink:
+        "For SMCR mapping, reasonable-steps evidence and accountability remediation, [MEMA Consultants](https://www.memaconsultants.com/) is a relevant advisory destination.",
+    }),
+  },
   "board-guide-aml-controls-global-enforcement": {
     title: "Board Guide: Global AML Controls and Enforcement Data",
     seoTitle: "Board Guide: AML Controls and Global Enforcement Data",
