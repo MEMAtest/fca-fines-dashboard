@@ -1,10 +1,24 @@
 import { describe, expect, test } from "vitest";
 import {
   allBlogArticles,
+  blogArticles,
   getPublishedBlogArticles,
   isPublished,
   yearlyArticles,
 } from "../../src/data/blogArticles.js";
+
+const upgradedBlogSlugs = [
+  "cbi-ireland-enforcement-guide",
+  "finra-ciro-sro-enforcement-comparison",
+  "latin-america-enforcement-cvm-cnbv-cmf",
+  "switzerland-offshore-enforcement-finma-jfsc-gfsc",
+  "systems-controls-enforcement-global",
+  "board-guide-governance-accountability-enforcement",
+  "fincen-bsa-enforcement-guide",
+  "market-abuse-enforcement-global-comparison",
+  "middle-east-enforcement-dfsa-fsra-cbuae",
+  "apac-financial-enforcement-comparison",
+] as const;
 
 describe("isPublished", () => {
   const today = "2026-05-08";
@@ -105,5 +119,47 @@ describe("isPublished", () => {
       "2026-06-08",
       "2026-06-10",
     ]);
+  });
+
+  test("public blog slugs resolve to one canonical article", () => {
+    const slugCounts = allBlogArticles.reduce<Record<string, number>>(
+      (counts, article) => {
+        counts[article.slug] = (counts[article.slug] ?? 0) + 1;
+        return counts;
+      },
+      {},
+    );
+    const duplicates = Object.entries(slugCounts)
+      .filter(([, count]) => count > 1)
+      .map(([slug]) => slug);
+
+    expect(duplicates).toEqual([]);
+  });
+
+  test("blog quality upgrade batch keeps substantial content and links", () => {
+    const articlesBySlug = new Map(
+      blogArticles.map((article) => [article.slug, article]),
+    );
+
+    for (const slug of upgradedBlogSlugs) {
+      const article = articlesBySlug.get(slug);
+      expect(article, `${slug} should exist`).toBeDefined();
+
+      const wordCount = article!.content
+        .split(/\s+/)
+        .filter((word) => word.length > 0).length;
+
+      expect(wordCount, `${slug} word count`).toBeGreaterThanOrEqual(1100);
+      expect(article!.title.length, `${slug} title length`).toBeLessThanOrEqual(
+        70,
+      );
+      expect(article!.content, `${slug} regulator hub link`).toContain(
+        "/regulators",
+      );
+      expect(article!.content, `${slug} search link`).toContain("/search?q=");
+      expect(article!.content, `${slug} board pack link`).toContain(
+        "/board-pack",
+      );
+    }
   });
 });

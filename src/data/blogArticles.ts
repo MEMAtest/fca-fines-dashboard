@@ -2,6 +2,7 @@
 // NO React/JSX imports here. The `icon` field lives in Blog.tsx only.
 
 import { regulatorBlogs } from "./regulatorBlogs.js";
+import { blogArticleEditorialUpgrades } from "./blogArticleEditorialUpgrades.js";
 
 export type ArticleStatus = "published" | "scheduled" | "draft";
 export type ArticleType = "standard" | "yearly" | "regulator";
@@ -99,7 +100,7 @@ export function isPublished(
   return article.dateISO <= todayISO;
 }
 
-export const blogArticles: BlogArticleMeta[] = [
+const baseBlogArticles: BlogArticleMeta[] = [
   {
     id: "largest-fca-fines-history",
     slug: "20-biggest-fca-fines-of-all-time",
@@ -3908,6 +3909,13 @@ This case underscores that **no firm—crypto or traditional—can afford weak A
   }
 ];
 
+export const blogArticles: BlogArticleMeta[] = baseBlogArticles.map(
+  (article) => ({
+    ...article,
+    ...blogArticleEditorialUpgrades[article.slug],
+  }),
+);
+
 const yearlyArticleData: YearlyArticleSource[] = [
   {
     year: 2025,
@@ -4469,11 +4477,24 @@ export const yearlyArticles: YearlyArticleMeta[] = yearlyArticleData.map(
   }),
 );
 
-// Merge regulator blogs with main blog articles
-// Export combined array for consumption by Blog.tsx and other components
+const regulatorBlogSlugs = new Set(regulatorBlogs.map((article) => article.slug));
+const CANONICAL_STANDARD_REGULATOR_GUIDE_SLUGS = new Set(
+  ["fca-fines-enforcement-guide"].filter((slug) =>
+    blogArticles.some((article) => article.slug === slug),
+  ),
+);
+
+// Merge regulator blogs with main blog articles, keeping one canonical source for
+// regulator guide slugs that exist in both datasets.
 export const allBlogArticles: BlogArticleMeta[] = [
-  ...blogArticles,
-  ...regulatorBlogs,
+  ...blogArticles.filter(
+    (article) =>
+      !regulatorBlogSlugs.has(article.slug) ||
+      CANONICAL_STANDARD_REGULATOR_GUIDE_SLUGS.has(article.slug),
+  ),
+  ...regulatorBlogs.filter(
+    (article) => !CANONICAL_STANDARD_REGULATOR_GUIDE_SLUGS.has(article.slug),
+  ),
 ];
 
 export function getPublishedBlogArticles(todayISO?: string): BlogArticleMeta[] {
