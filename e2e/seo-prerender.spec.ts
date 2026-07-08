@@ -151,6 +151,11 @@ test.describe('Pre-rendered HTML SEO Meta Tags', () => {
       expect(body).toContain('/regulators');
       expect(body).toContain('/search');
       expect(body).toContain('/board-pack');
+      expect(body).toContain('/regulators/fca');
+      expect(body).toContain('/blog/global-aml-enforcement-comparison-2026');
+      expect(body).toContain('/blog/consumer-duty-three-years-enforcement');
+      expect(body).toContain('/blog/market-abuse-enforcement-global-comparison');
+      expect(body).toContain('https://memaconsultants.com');
 
       const articleLinks = crawlableInternalLinks(body).filter((href) =>
         href.startsWith('/blog/'),

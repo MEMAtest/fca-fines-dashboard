@@ -222,18 +222,19 @@ function renderBlogListingBody(): string {
     )
     .join("");
   const categoryLinks = [
-    ["FCA enforcement", "/blog?regulator=FCA"],
-    ["BaFin enforcement", "/blog?regulator=BaFin"],
-    ["SEC enforcement", "/blog?regulator=SEC"],
-    ["AML controls", "/blog?topic=aml"],
-    ["Consumer Duty", "/blog?topic=consumer-duty"],
-    ["Market abuse", "/blog?topic=market-abuse"],
+    ["FCA enforcement", "/regulators/fca"],
+    ["BaFin enforcement", "/blog/bafin-vs-fca-uk-german-firms"],
+    ["SEC enforcement", "/blog/sec-enforcement-guide-fines-data"],
+    ["AML controls", "/blog/global-aml-enforcement-comparison-2026"],
+    ["Consumer Duty", "/blog/consumer-duty-three-years-enforcement"],
+    ["Market abuse", "/blog/market-abuse-enforcement-global-comparison"],
     ["Board reporting", "/board-pack"],
+    ["MEMA compliance support", "https://memaconsultants.com"],
   ]
     .map(([label, href]) => `<li><a href="${href}">${label}</a></li>`)
     .join("");
 
-  return `<div class="blog-page insights-page"><div class="blog-post-container"><article class="blog-article-modal"><h1 class="blog-post-title">Regulatory Insights</h1><div class="blog-article-content"><p>Expert analysis of significant regulatory penalties, enforcement trends, and compliance intelligence across global financial regulators.</p><h2>Latest Regulatory Enforcement Insight</h2><p><a href="/blog/${lead.slug}">${escapeHtml(lead.title)}</a> — ${escapeHtml(lead.excerpt)}</p><h2>Browse Recent Analysis</h2>${articlesHtml}<h2>Explore Enforcement Themes</h2><ul>${categoryLinks}</ul><h2>Use The Intelligence</h2><p>Move from analysis to evidence: <a href="/regulators">open regulator hubs</a>, <a href="/search">search enforcement records</a>, or <a href="/board-pack">build a board pack</a>.</p></div></article></div></div>`;
+  return `<div class="blog-page insights-page"><div class="blog-post-container"><article class="blog-article-modal"><h1 class="blog-post-title">Regulatory Insights</h1><div class="blog-article-content"><p>Expert analysis of significant regulatory penalties, enforcement trends, and compliance intelligence across global financial regulators.</p><h2>Latest Regulatory Enforcement Insight</h2><p><a href="/blog/${lead.slug}">${escapeHtml(lead.title)}</a> — ${escapeHtml(lead.excerpt)}</p><h2>Browse Recent Analysis</h2>${articlesHtml}<h2>Explore Enforcement Themes</h2><p>Use these crawlable topic pathways to move from insight into regulator hubs, board workflows, and advisory support.</p><ul>${categoryLinks}</ul><h2>Use The Intelligence</h2><p>Move from analysis to evidence: <a href="/regulators">open regulator hubs</a>, <a href="/search">search enforcement records</a>, or <a href="/board-pack">build a board pack</a>.</p></div></article></div></div>`;
 }
 
 // HowTo schema for database guide

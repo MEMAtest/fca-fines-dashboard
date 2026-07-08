@@ -43,6 +43,20 @@ interface BlogArticle extends BlogArticleMeta {
 type SortMode = "latest" | "oldest";
 type ViewMode = "grid" | "list";
 
+interface TopicPathwayLink {
+  label: string;
+  description: string;
+  to?: string;
+  href?: string;
+}
+
+interface TopicPathway {
+  title: string;
+  description: string;
+  icon: React.ReactNode;
+  links: TopicPathwayLink[];
+}
+
 interface FilterOption {
   label: string;
   value: string;
@@ -153,6 +167,101 @@ const TRENDING_TOPICS = [
   { label: "Payments & AML", terms: ["payments", "aml", "anti-money"] },
   { label: "Market Abuse", terms: ["market abuse", "insider", "manipulation"] },
   { label: "Governance & Culture", terms: ["governance", "culture", "board"] },
+];
+
+const TOPIC_PATHWAYS: TopicPathway[] = [
+  {
+    title: "FCA fines and enforcement",
+    description:
+      "Move from monthly FCA commentary into the live regulator hub and source-backed enforcement records.",
+    icon: <Scale className="insights-pathway-icon" />,
+    links: [
+      {
+        label: "FCA regulator hub",
+        description: "Open the live FCA data workspace.",
+        to: "/regulators/fca",
+      },
+      {
+        label: "FCA fines May 2026",
+        description: "Read the latest monthly FCA fines analysis.",
+        to: "/blog/fca-fines-may-2026",
+      },
+      {
+        label: "Search FCA actions",
+        description: "Find firms, topics, and notices in the database.",
+        to: "/search?q=FCA",
+      },
+    ],
+  },
+  {
+    title: "AML and financial crime controls",
+    description:
+      "Connect payments, sanctions, and money-laundering analysis into practical control review material.",
+    icon: <AlertTriangle className="insights-pathway-icon" />,
+    links: [
+      {
+        label: "Global AML comparison",
+        description: "Compare AML enforcement themes across regulators.",
+        to: "/blog/global-aml-enforcement-comparison-2026",
+      },
+      {
+        label: "FCA AML fines",
+        description: "Review the FCA-specific AML enforcement record.",
+        to: "/blog/fca-aml-fines-anti-money-laundering",
+      },
+      {
+        label: "Board AML controls",
+        description: "Translate AML findings into board-level prompts.",
+        to: "/blog/board-guide-aml-controls-global-enforcement",
+      },
+    ],
+  },
+  {
+    title: "Consumer Duty and accountability",
+    description:
+      "Use individual-accountability and Consumer Duty insight to spot governance and conduct-risk signals.",
+    icon: <Users className="insights-pathway-icon" />,
+    links: [
+      {
+        label: "Consumer Duty three years in",
+        description: "Track how the regime is becoming enforceable.",
+        to: "/blog/consumer-duty-three-years-enforcement",
+      },
+      {
+        label: "Wealth managers and Consumer Duty",
+        description: "See where advice and suitability risk is emerging.",
+        to: "/blog/wealth-managers-consumer-duty-enforcement",
+      },
+      {
+        label: "Individual accountability",
+        description: "Review personal fines, bans, and SM&CR themes.",
+        to: "/blog/fca-fines-individuals-personal-accountability",
+      },
+    ],
+  },
+  {
+    title: "Board and advisory workflows",
+    description:
+      "Turn enforcement themes into board packs, governance reviews, and advisory support for regulated firms.",
+    icon: <BookOpen className="insights-pathway-icon" />,
+    links: [
+      {
+        label: "Create board pack",
+        description: "Generate a board-ready enforcement pack.",
+        to: "/board-pack",
+      },
+      {
+        label: "Governance enforcement guide",
+        description: "Read board accountability patterns across actions.",
+        to: "/blog/board-guide-governance-accountability-enforcement",
+      },
+      {
+        label: "MEMA compliance support",
+        description: "Get implementation support for regulated firms.",
+        href: "https://memaconsultants.com",
+      },
+    ],
+  },
 ];
 
 const ITEMS_PER_PAGE = 9;
@@ -896,6 +1005,59 @@ export function Blog() {
             enforcement actions across regulators, filter by year, firm, breach
             category, and export data for compliance reporting.
           </p>
+        </div>
+      </section>
+
+      <section className="insights-pathways" aria-labelledby="topic-pathways-heading">
+        <div className="insights-pathways__header">
+          <p className="insights-eyebrow">Topic pathways</p>
+          <h2 id="topic-pathways-heading">Explore enforcement themes by use case</h2>
+          <p>
+            Start with the latest insight, then move into the underlying data,
+            regulator hubs, board reporting, or advisory support.
+          </p>
+        </div>
+        <div className="insights-pathways__grid">
+          {TOPIC_PATHWAYS.map((pathway) => (
+            <article className="insights-pathway-card" key={pathway.title}>
+              <div className="insights-pathway-card__head">
+                <span className="insights-pathway-card__icon" aria-hidden="true">
+                  {pathway.icon}
+                </span>
+                <div>
+                  <h3>{pathway.title}</h3>
+                  <p>{pathway.description}</p>
+                </div>
+              </div>
+              <ul className="insights-pathway-links">
+                {pathway.links.map((link) => (
+                  <li key={link.label}>
+                    {link.to ? (
+                      <Link to={link.to}>
+                        <span>
+                          <strong>{link.label}</strong>
+                          <small>{link.description}</small>
+                        </span>
+                        <ChevronRight size={16} aria-hidden="true" />
+                      </Link>
+                    ) : (
+                      <a
+                        href={link.href}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                      >
+                        <span>
+                          <strong>{link.label}</strong>
+                          <small>{link.description}</small>
+                        </span>
+                        <ExternalLink size={16} aria-hidden="true" />
+                      </a>
+                    )}
+                  </li>
+                ))}
+              </ul>
+            </article>
+          ))}
         </div>
       </section>
 

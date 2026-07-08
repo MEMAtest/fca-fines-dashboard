@@ -209,5 +209,29 @@ test.describe('Blog Navigation', () => {
       await expect(page.locator('.insights-right-rail')).toBeVisible();
       await expect(page.locator('.insights-view-toggle')).toBeVisible();
     });
+
+    test('should expose topic pathways for retention and SEO journeys', async ({ page }) => {
+      await page.goto('/blog');
+
+      const pathways = page.locator('.insights-pathways');
+      await expect(pathways).toBeVisible();
+      await expect(pathways.locator('h2')).toContainText(
+        'Explore enforcement themes by use case',
+      );
+      await expect(pathways.locator('.insights-pathway-card')).toHaveCount(4);
+
+      await expect(
+        pathways.getByRole('link', { name: /FCA regulator hub/i }),
+      ).toHaveAttribute('href', '/regulators/fca');
+      await expect(
+        pathways.getByRole('link', { name: /Global AML comparison/i }),
+      ).toHaveAttribute('href', '/blog/global-aml-enforcement-comparison-2026');
+      await expect(
+        pathways.getByRole('link', { name: /Create board pack/i }),
+      ).toHaveAttribute('href', '/board-pack');
+      await expect(
+        pathways.getByRole('link', { name: /MEMA compliance support/i }),
+      ).toHaveAttribute('href', 'https://memaconsultants.com');
+    });
   });
 });
