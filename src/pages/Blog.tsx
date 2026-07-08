@@ -1,23 +1,30 @@
 import { motion } from "framer-motion";
-import { useEffect, useRef } from "react";
-import { Link, useNavigate, useSearchParams } from "react-router-dom";
+import { useEffect, useMemo } from "react";
+import { Link, useSearchParams } from "react-router-dom";
 import {
+  Activity,
   AlertTriangle,
   BookOpen,
+  Bookmark,
   Building2,
   Calendar,
   ChevronRight,
   Clock,
   ExternalLink,
+  Filter,
+  Grid2X2,
   Landmark,
+  List,
+  Mail,
   PoundSterling,
   Scale,
+  Search,
   Shield,
   TrendingUp,
   Users,
+  X,
 } from "lucide-react";
-import { Blog3DVisualization } from "../components/Blog3DVisualization.js";
-import { LazyVisible } from "../components/LazyVisible.js";
+import { DigestSubscribeForm } from "../components/DigestSubscribeForm.js";
 import { yearlyFCAData } from "../components/YearlyArticleCharts.js";
 import {
   getPublishedBlogArticles,
@@ -28,10 +35,18 @@ import { LIVE_REGULATOR_NAV_ITEMS } from "../data/regulatorCoverage.js";
 import { injectStructuredData, useSEO } from "../hooks/useSEO.js";
 import { REGULATOR_COUNT } from "../constants/site.js";
 import "../styles/blog.css";
-import "../styles/blog3d.css";
 
 interface BlogArticle extends BlogArticleMeta {
   icon: React.ReactNode;
+}
+
+type SortMode = "latest" | "oldest";
+type ViewMode = "grid" | "list";
+
+interface FilterOption {
+  label: string;
+  value: string;
+  count: number;
 }
 
 const MotionLink = motion.create(Link);
@@ -39,7 +54,6 @@ const LIVE_REGULATOR_COUNT = LIVE_REGULATOR_NAV_ITEMS.length;
 const blogArticlesMeta = getPublishedBlogArticles();
 const yearlyArticlesMeta = getPublishedYearlyArticles();
 
-// Map article IDs to their icons (JSX stays in this file)
 const iconMap: Record<string, React.ReactNode> = {
   "largest-fca-fines-history": <Scale className="blog-card-icon" />,
   "fca-fines-2025": <PoundSterling className="blog-card-icon" />,
@@ -62,12 +76,17 @@ const iconMap: Record<string, React.ReactNode> = {
   "fca-vs-sec-enforcement-differences": <Scale className="blog-card-icon" />,
   "fca-fines-may-2026": <PoundSterling className="blog-card-icon" />,
   "consumer-duty-three-years-enforcement": <Users className="blog-card-icon" />,
-  "wealth-managers-consumer-duty-enforcement": <Landmark className="blog-card-icon" />,
-  "sanctions-enforcement-ofsi-ofac-eu": <AlertTriangle className="blog-card-icon" />,
-  "crypto-firms-global-enforcement-mica-fca-mas": <Scale className="blog-card-icon" />,
+  "wealth-managers-consumer-duty-enforcement": (
+    <Landmark className="blog-card-icon" />
+  ),
+  "sanctions-enforcement-ofsi-ofac-eu": (
+    <AlertTriangle className="blog-card-icon" />
+  ),
+  "crypto-firms-global-enforcement-mica-fca-mas": (
+    <Scale className="blog-card-icon" />
+  ),
   "bafin-vs-fca-uk-german-firms": <Scale className="blog-card-icon" />,
   "fca-fines-insurance": <Shield className="blog-card-icon" />,
-  // Regulator enforcement guides
   "fca-enforcement-guide": <Landmark className="blog-card-icon" />,
   "bafin-enforcement-guide": <Landmark className="blog-card-icon" />,
   "amf-enforcement-guide": <Landmark className="blog-card-icon" />,
@@ -77,16 +96,13 @@ const iconMap: Record<string, React.ReactNode> = {
   "afm-enforcement-guide": <Landmark className="blog-card-icon" />,
   "dnb-enforcement-guide": <Landmark className="blog-card-icon" />,
   "esma-enforcement-guide": <Landmark className="blog-card-icon" />,
-  // Phase 1 regulators (deployed 2026-03-29) - using ID pattern, not slug
   "cvm-enforcement-guide": <Landmark className="blog-card-icon" />,
   "fdic-enforcement-guide": <Landmark className="blog-card-icon" />,
   "frb-enforcement-guide": <Landmark className="blog-card-icon" />,
-  // Phase 2 regulators
   "cnbv-enforcement-guide": <Landmark className="blog-card-icon" />,
   "cmf-enforcement-guide": <Landmark className="blog-card-icon" />,
   "finma-enforcement-guide": <Landmark className="blog-card-icon" />,
   "sesc-enforcement-guide": <Landmark className="blog-card-icon" />,
-  // Phase 3 regulators
   "twfsc-enforcement-guide": <Landmark className="blog-card-icon" />,
   "hkma-enforcement-guide": <Landmark className="blog-card-icon" />,
   "asic-enforcement-guide": <Landmark className="blog-card-icon" />,
@@ -98,28 +114,159 @@ const iconMap: Record<string, React.ReactNode> = {
   "cmasa-enforcement-guide": <Landmark className="blog-card-icon" />,
 };
 
-// Merge icon into each article
-const blogArticles: BlogArticle[] = blogArticlesMeta.map((a) => ({
-  ...a,
-  icon: iconMap[a.id] || <Scale className="blog-card-icon" />,
+const blogArticles: BlogArticle[] = blogArticlesMeta.map((article) => ({
+  ...article,
+  icon: iconMap[article.id] || <Scale className="blog-card-icon" />,
 }));
 
-// Helper function to format currency
-const formatYearlyCurrency = (amount: number): string => {
-  if (amount >= 1_000_000_000) {
-    return `£${(amount / 1_000_000_000).toFixed(2)}bn`;
+const REGULATOR_FILTERS = [
+  "FCA",
+  "SEC",
+  "BaFin",
+  "AMF",
+  "SFC",
+  "FinCEN",
+  "OFSI",
+  "OFAC",
+  "ESMA",
+  "MAS",
+  "PRA",
+  "Bank of England",
+];
+
+const QUICK_FILTERS = [
+  { label: "All", updates: { q: null, month: null, category: null } },
+  { label: "June 2026", updates: { month: "2026-06", q: null } },
+  { label: "July 2026", updates: { month: "2026-07", q: null } },
+  {
+    label: "FCA Fines 2026",
+    updates: { category: "FCA Fines 2026", q: null },
+  },
+  { label: "Consumer Duty", updates: { q: "consumer duty", month: null } },
+  { label: "Payments/AML", updates: { q: "payments aml", month: null } },
+  { label: "Cross-regulator", updates: { q: "vs enforcement", month: null } },
+];
+
+const TRENDING_TOPICS = [
+  { label: "Individual Accountability", terms: ["individual", "smcr", "senior manager"] },
+  { label: "Consumer Duty", terms: ["consumer duty", "fair value"] },
+  { label: "Payments & AML", terms: ["payments", "aml", "anti-money"] },
+  { label: "Market Abuse", terms: ["market abuse", "insider", "manipulation"] },
+  { label: "Governance & Culture", terms: ["governance", "culture", "board"] },
+];
+
+const ITEMS_PER_PAGE = 9;
+const ALL_VALUE = "all";
+
+const byNewestArticle = (left: BlogArticle, right: BlogArticle): number =>
+  right.dateISO.localeCompare(left.dateISO) || left.title.localeCompare(right.title);
+
+const byOldestArticle = (left: BlogArticle, right: BlogArticle): number =>
+  left.dateISO.localeCompare(right.dateISO) || left.title.localeCompare(right.title);
+
+const byNewestMeta = (left: BlogArticleMeta, right: BlogArticleMeta): number =>
+  right.dateISO.localeCompare(left.dateISO) || left.title.localeCompare(right.title);
+
+const normalize = (value: string): string => value.toLowerCase().trim();
+
+const articleCorpus = (article: BlogArticleMeta): string =>
+  normalize(
+    [
+      article.title,
+      article.excerpt,
+      article.category,
+      article.slug,
+      article.keywords.join(" "),
+    ].join(" "),
+  );
+
+function inferContentType(article: BlogArticleMeta): string {
+  const corpus = articleCorpus(article);
+  if (article.articleType === "regulator" || corpus.includes("guide")) return "Guides";
+  if (article.category === "Case Study" || corpus.includes("case")) return "Briefings";
+  if (article.category.includes("Analysis") || article.category.includes("Benchmark")) {
+    return "Articles";
   }
-  if (amount >= 1_000_000) {
-    return `£${(amount / 1_000_000).toFixed(0)}m`;
-  }
+  return "Articles";
+}
+
+function detectRegulators(article: BlogArticleMeta): string[] {
+  const corpus = articleCorpus(article);
+  return REGULATOR_FILTERS.filter((regulator) =>
+    corpus.includes(normalize(regulator)),
+  );
+}
+
+function countMatches(
+  articles: BlogArticle[],
+  predicate: (article: BlogArticle) => boolean,
+): number {
+  return articles.filter(predicate).length;
+}
+
+function getCategoryOptions(articles: BlogArticle[]): FilterOption[] {
+  return Array.from(new Set(articles.map((article) => article.category)))
+    .map((category) => ({
+      label: category,
+      value: category,
+      count: countMatches(articles, (article) => article.category === category),
+    }))
+    .sort((left, right) => right.count - left.count || left.label.localeCompare(right.label))
+    .slice(0, 8);
+}
+
+function getYearOptions(articles: BlogArticle[]): FilterOption[] {
+  return Array.from(new Set(articles.map((article) => article.dateISO.slice(0, 4))))
+    .map((year) => ({
+      label: year,
+      value: year,
+      count: countMatches(articles, (article) => article.dateISO.startsWith(year)),
+    }))
+    .sort((left, right) => right.value.localeCompare(left.value));
+}
+
+function getRegulatorOptions(articles: BlogArticle[]): FilterOption[] {
+  return REGULATOR_FILTERS.map((regulator) => ({
+    label: regulator,
+    value: regulator,
+    count: countMatches(articles, (article) =>
+      detectRegulators(article).includes(regulator),
+    ),
+  }))
+    .filter((option) => option.count > 0)
+    .sort((left, right) => right.count - left.count || left.label.localeCompare(right.label));
+}
+
+function getTypeOptions(articles: BlogArticle[]): FilterOption[] {
+  const types = Array.from(new Set(articles.map(inferContentType)));
+  return types
+    .map((type) => ({
+      label: type,
+      value: type,
+      count: countMatches(articles, (article) => inferContentType(article) === type),
+    }))
+    .sort((left, right) => right.count - left.count || left.label.localeCompare(right.label));
+}
+
+function getTopicCounts(articles: BlogArticle[]) {
+  return TRENDING_TOPICS.map((topic) => ({
+    ...topic,
+    count: countMatches(articles, (article) =>
+      topic.terms.some((term) => articleCorpus(article).includes(normalize(term))),
+    ),
+  }));
+}
+
+function formatYearlyCurrency(amount: number): string {
+  if (amount >= 1_000_000_000) return `£${(amount / 1_000_000_000).toFixed(2)}bn`;
+  if (amount >= 1_000_000) return `£${(amount / 1_000_000).toFixed(0)}m`;
   return `£${(amount / 1_000).toFixed(0)}k`;
-};
+}
 
 function generateItemListSchema() {
   const allArticles = [
-    ...blogArticlesMeta.filter((a) => a.featured),
-    ...blogArticlesMeta.filter((a) => !a.featured),
-    ...yearlyArticlesMeta,
+    ...[...blogArticlesMeta].sort(byNewestMeta),
+    ...[...yearlyArticlesMeta].sort(byNewestMeta),
   ];
   return {
     "@context": "https://schema.org",
@@ -136,7 +283,7 @@ function generateBlogListSchema() {
   return {
     "@context": "https://schema.org",
     "@type": "Blog",
-    name: "Regulatory Enforcement Insights & Analysis",
+    name: "Regulatory Insights",
     description:
       "Expert analysis of global regulator enforcement trends, fines intelligence, and compliance guidance",
     url: "https://regactions.com/blog",
@@ -144,7 +291,7 @@ function generateBlogListSchema() {
       "@type": "Organization",
       name: "RegActions",
     },
-    blogPost: blogArticles.map((article) => ({
+    blogPost: [...blogArticles].sort(byNewestArticle).map((article) => ({
       "@type": "BlogPosting",
       headline: article.title,
       description: article.excerpt,
@@ -158,31 +305,136 @@ function generateBlogListSchema() {
   };
 }
 
-const ITEMS_PER_PAGE = 6;
-const byNewestArticle = (left: BlogArticle, right: BlogArticle): number =>
-  right.dateISO.localeCompare(left.dateISO);
+function FilterButton({
+  option,
+  active,
+  onClick,
+}: {
+  option: FilterOption;
+  active: boolean;
+  onClick: () => void;
+}) {
+  return (
+    <button
+      type="button"
+      className={`insights-filter-option${active ? " insights-filter-option--active" : ""}`}
+      onClick={onClick}
+    >
+      <span>{option.label}</span>
+      <span>{option.count}</span>
+    </button>
+  );
+}
+
+function ArticleCard({
+  article,
+  index,
+  viewMode,
+}: {
+  article: BlogArticle;
+  index: number;
+  viewMode: ViewMode;
+}) {
+  return (
+    <MotionLink
+      key={article.id}
+      to={`/blog/${article.slug}`}
+      className={`blog-card insights-article-card${viewMode === "list" ? " insights-article-card--list" : ""}`}
+      initial={{ opacity: 0, y: 14 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.3, delay: Math.min(index * 0.04, 0.2) }}
+      itemScope
+      itemType="https://schema.org/Article"
+    >
+      <div className="blog-card-header">
+        <span className="blog-card-category" itemProp="articleSection">
+          {article.category}
+        </span>
+        {article.featured && <span className="blog-card-featured-badge">Featured</span>}
+      </div>
+      <div className="blog-card-icon-wrapper">{article.icon}</div>
+      <h3 className="blog-card-title" itemProp="headline">
+        {article.title}
+      </h3>
+      <p className="blog-card-excerpt" itemProp="description">
+        {article.excerpt}
+      </p>
+      <div className="blog-card-meta">
+        <span className="blog-card-meta-item">
+          <Calendar size={14} />
+          <time dateTime={article.dateISO} itemProp="datePublished">
+            {article.date}
+          </time>
+        </span>
+        <span className="blog-card-meta-item">
+          <Clock size={14} />
+          {article.readTime}
+        </span>
+      </div>
+      <span className="blog-card-cta" aria-label={`Read article: ${article.title}`}>
+        Read article
+        <ChevronRight size={16} />
+      </span>
+    </MotionLink>
+  );
+}
 
 export function Blog() {
-  const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
-  const currentPage = Math.max(
-    1,
-    parseInt(searchParams.get("page") || "1", 10),
-  );
-  const regularSectionRef = useRef<HTMLElement>(null);
+  const query = searchParams.get("q") || "";
+  const selectedMonth = searchParams.get("month") || ALL_VALUE;
+  const selectedCategory = searchParams.get("category") || ALL_VALUE;
+  const selectedRegulator = searchParams.get("regulator") || ALL_VALUE;
+  const selectedType = searchParams.get("type") || ALL_VALUE;
+  const selectedYear = searchParams.get("year") || ALL_VALUE;
+  const sortMode: SortMode = searchParams.get("sort") === "oldest" ? "oldest" : "latest";
+  const viewMode: ViewMode = searchParams.get("view") === "list" ? "list" : "grid";
+  const currentPage = Math.max(1, parseInt(searchParams.get("page") || "1", 10));
 
-  const featuredArticles = blogArticles
-    .filter((article) => article.featured)
-    .sort(byNewestArticle);
-  const regularArticles = blogArticles
-    .filter((article) => !article.featured)
-    .sort(byNewestArticle);
-  const totalPages = Math.ceil(regularArticles.length / ITEMS_PER_PAGE);
+  const categoryOptions = useMemo(() => getCategoryOptions(blogArticles), []);
+  const regulatorOptions = useMemo(() => getRegulatorOptions(blogArticles), []);
+  const yearOptions = useMemo(() => getYearOptions(blogArticles), []);
+  const typeOptions = useMemo(() => getTypeOptions(blogArticles), []);
+  const topicCounts = useMemo(() => getTopicCounts(blogArticles), []);
+  const julyCount = countMatches(blogArticles, (article) => article.dateISO.startsWith("2026-07"));
+  const juneCount = countMatches(blogArticles, (article) => article.dateISO.startsWith("2026-06"));
+  const featuredCount = countMatches(blogArticles, (article) => Boolean(article.featured));
+
+  const filteredArticles = useMemo(() => {
+    const terms = normalize(query)
+      .split(/\s+/)
+      .filter(Boolean);
+    const filtered = blogArticles.filter((article) => {
+      const corpus = articleCorpus(article);
+      if (terms.length && !terms.every((term) => corpus.includes(term))) return false;
+      if (selectedMonth !== ALL_VALUE && !article.dateISO.startsWith(selectedMonth)) return false;
+      if (selectedYear !== ALL_VALUE && !article.dateISO.startsWith(selectedYear)) return false;
+      if (selectedCategory !== ALL_VALUE && article.category !== selectedCategory) return false;
+      if (selectedRegulator !== ALL_VALUE && !detectRegulators(article).includes(selectedRegulator)) {
+        return false;
+      }
+      if (selectedType !== ALL_VALUE && inferContentType(article) !== selectedType) return false;
+      return true;
+    });
+    return filtered.sort(sortMode === "oldest" ? byOldestArticle : byNewestArticle);
+  }, [query, selectedMonth, selectedYear, selectedCategory, selectedRegulator, selectedType, sortMode]);
+
+  const leadArticle = filteredArticles[0];
+  const gridArticles = filteredArticles.slice(1);
+  const totalPages = Math.max(1, Math.ceil(gridArticles.length / ITEMS_PER_PAGE));
   const safePage = Math.min(currentPage, totalPages);
-  const paginatedArticles = regularArticles.slice(
+  const paginatedArticles = gridArticles.slice(
     (safePage - 1) * ITEMS_PER_PAGE,
     safePage * ITEMS_PER_PAGE,
   );
+  const hasActiveFilters = [
+    query,
+    selectedMonth !== ALL_VALUE ? selectedMonth : "",
+    selectedCategory !== ALL_VALUE ? selectedCategory : "",
+    selectedRegulator !== ALL_VALUE ? selectedRegulator : "",
+    selectedType !== ALL_VALUE ? selectedType : "",
+    selectedYear !== ALL_VALUE ? selectedYear : "",
+  ].some(Boolean);
 
   const baseUrl = "https://regactions.com";
   const relNext =
@@ -191,12 +443,11 @@ export function Blog() {
     safePage > 1 ? `${baseUrl}/blog?page=${safePage - 1}` : undefined;
 
   useSEO({
-    title:
-      "Regulatory Enforcement Intelligence | Global Insights & Analysis",
+    title: "Regulatory Insights | Global Enforcement Intelligence",
     description:
-      "Expert analysis of global regulator enforcement trends, fines intelligence, and compliance guidance. Covers major regulators including BaFin, SEC, FCA, AMF, CNMV, CBI, SFC, AFM, and DNB.",
+      "Search and filter RegActions insights on global regulator enforcement trends, FCA fines, Consumer Duty, AML, sanctions, market abuse, and cross-regulator compliance themes.",
     keywords:
-      "regulatory enforcement blog, FCA fines analysis, regulator enforcement insights, BaFin guide, AMF guide, SFC guide, FCA compliance guide",
+      "regulatory insights, enforcement intelligence, FCA fines 2026, Consumer Duty enforcement, AML fines, sanctions enforcement, regulator analysis",
     canonicalPath: "/blog",
     ogType: "website",
     relNext,
@@ -213,212 +464,377 @@ export function Blog() {
     return cleanup;
   }, []);
 
-  function goToPage(page: number) {
-    if (page === 1) {
-      setSearchParams({});
-    } else {
-      setSearchParams({ page: String(page) });
-    }
-    regularSectionRef.current?.scrollIntoView({
-      behavior: "smooth",
-      block: "start",
+  function updateParams(updates: Record<string, string | null>) {
+    const next = new URLSearchParams(searchParams);
+    Object.entries(updates).forEach(([key, value]) => {
+      if (!value || value === ALL_VALUE) next.delete(key);
+      else next.set(key, value);
     });
+    next.delete("page");
+    setSearchParams(next);
+  }
+
+  function goToPage(page: number) {
+    const next = new URLSearchParams(searchParams);
+    if (page <= 1) next.delete("page");
+    else next.set("page", String(page));
+    setSearchParams(next);
+  }
+
+  function clearFilters() {
+    const next = new URLSearchParams();
+    if (sortMode !== "latest") next.set("sort", sortMode);
+    if (viewMode !== "grid") next.set("view", viewMode);
+    setSearchParams(next);
   }
 
   return (
-    <div className="blog-page">
-      {/* Hero Section - SEO optimized with 3D visualization */}
-      <section className="blog-hero-3d">
-        <div className="blog-hero-container">
-          <motion.div
-            className="blog-hero-text"
-            initial={{ opacity: 0, y: 30 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6 }}
-          >
-            <h1>Global Regulatory Enforcement Intelligence</h1>
-            <p className="blog-hero-subtitle">
-              In-depth analysis of enforcement trends, regulatory fines, and
-              compliance intelligence across <strong>{REGULATOR_COUNT}</strong> global financial regulators.
-            </p>
-            <p className="blog-hero-stats">
-              Tracking <strong>{LIVE_REGULATOR_COUNT} live regulators</strong> with
-              comprehensive multi-regulator enforcement analysis
-            </p>
-          </motion.div>
+    <div className="blog-page insights-page">
+      <section className="insights-header" aria-labelledby="insights-heading">
+        <div>
+          <p className="insights-eyebrow">Insights</p>
+          <h1 id="insights-heading">Regulatory Insights</h1>
+          <p className="blog-hero-subtitle">
+            Expert analysis and intelligence on regulatory enforcement, fines,
+            supervisory action, and compliance trends across{" "}
+            <strong>{REGULATOR_COUNT}</strong> global regulators.
+          </p>
+        </div>
+        <div className="insights-header__metrics" aria-label="Insights coverage">
+          <span>{blogArticles.length} insights</span>
+          <span>{LIVE_REGULATOR_COUNT} live regulators</span>
+          <span>{juneCount + julyCount} June/July reads</span>
+        </div>
+      </section>
 
-          <div className="blog-hero-visualization">
-            <LazyVisible
-              rootMargin="0px"
-              fallback={<div style={{ minHeight: 300 }} />}
+      <section className="insights-toolbar" aria-label="Insights search and shortcuts">
+        <label className="insights-search">
+          <Search size={18} aria-hidden="true" />
+          <span className="sr-only">Search insights</span>
+          <input
+            value={query}
+            onChange={(event) => updateParams({ q: event.target.value })}
+            placeholder="Search insights, topics or regulators..."
+            type="search"
+          />
+          {query && (
+            <button
+              type="button"
+              className="insights-search__clear"
+              onClick={() => updateParams({ q: null })}
+              aria-label="Clear search"
             >
-              <Blog3DVisualization />
-            </LazyVisible>
+              <X size={16} />
+            </button>
+          )}
+        </label>
+        <div className="insights-quick-filters" aria-label="Quick filters">
+          {QUICK_FILTERS.map((filter) => (
+            <button
+              key={filter.label}
+              type="button"
+              className="insights-chip"
+              onClick={() => updateParams(filter.updates)}
+            >
+              {filter.label}
+            </button>
+          ))}
+        </div>
+      </section>
+
+      <main className="insights-shell">
+        <aside className="insights-sidebar" aria-label="Insights filters">
+          <div className="insights-panel insights-panel--filters">
+            <div className="insights-panel__header">
+              <h2>
+                <Filter size={16} />
+                Filters
+              </h2>
+              {hasActiveFilters && (
+                <button type="button" onClick={clearFilters}>
+                  Clear all
+                </button>
+              )}
+            </div>
+
+            <div className="insights-filter-group">
+              <h3>Category</h3>
+              <FilterButton
+                option={{ label: "All categories", value: ALL_VALUE, count: blogArticles.length }}
+                active={selectedCategory === ALL_VALUE}
+                onClick={() => updateParams({ category: null })}
+              />
+              {categoryOptions.map((option) => (
+                <FilterButton
+                  key={option.value}
+                  option={option}
+                  active={selectedCategory === option.value}
+                  onClick={() => updateParams({ category: option.value })}
+                />
+              ))}
+            </div>
+
+            <div className="insights-filter-group">
+              <h3>Regulator</h3>
+              <FilterButton
+                option={{ label: "All regulators", value: ALL_VALUE, count: blogArticles.length }}
+                active={selectedRegulator === ALL_VALUE}
+                onClick={() => updateParams({ regulator: null })}
+              />
+              {regulatorOptions.slice(0, 8).map((option) => (
+                <FilterButton
+                  key={option.value}
+                  option={option}
+                  active={selectedRegulator === option.value}
+                  onClick={() => updateParams({ regulator: option.value })}
+                />
+              ))}
+            </div>
+
+            <div className="insights-filter-group">
+              <h3>Year</h3>
+              <FilterButton
+                option={{ label: "All years", value: ALL_VALUE, count: blogArticles.length }}
+                active={selectedYear === ALL_VALUE}
+                onClick={() => updateParams({ year: null })}
+              />
+              {yearOptions.map((option) => (
+                <FilterButton
+                  key={option.value}
+                  option={option}
+                  active={selectedYear === option.value}
+                  onClick={() => updateParams({ year: option.value, month: null })}
+                />
+              ))}
+            </div>
+
+            <div className="insights-filter-group">
+              <h3>Content type</h3>
+              <FilterButton
+                option={{ label: "All content", value: ALL_VALUE, count: blogArticles.length }}
+                active={selectedType === ALL_VALUE}
+                onClick={() => updateParams({ type: null })}
+              />
+              {typeOptions.map((option) => (
+                <FilterButton
+                  key={option.value}
+                  option={option}
+                  active={selectedType === option.value}
+                  onClick={() => updateParams({ type: option.value })}
+                />
+              ))}
+            </div>
           </div>
-        </div>
-      </section>
+        </aside>
 
-      {/* Featured Articles */}
-      <section className="blog-section" aria-labelledby="featured-heading">
-        <div className="blog-section-header">
-          <h2 id="featured-heading">
-            Featured: Major Enforcement Actions & 2026 Updates
-          </h2>
-          <p>
-            Essential reading on significant regulatory penalties and
-            enforcement trends
-          </p>
-        </div>
-
-        <div className="blog-featured-grid">
-          {featuredArticles.map((article, index) => (
+        <section className="insights-main" aria-labelledby="latest-heading">
+          {leadArticle ? (
             <MotionLink
-              key={article.id}
-              to={`/blog/${article.slug}`}
-              className="blog-card blog-card--featured"
-              initial={{ opacity: 0, y: 20 }}
+              to={`/blog/${leadArticle.slug}`}
+              className="blog-card blog-card--featured insights-lead-card"
+              initial={{ opacity: 0, y: 14 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5, delay: index * 0.1 }}
+              transition={{ duration: 0.35 }}
               itemScope
               itemType="https://schema.org/Article"
             >
-              <div className="blog-card-header">
+              <div className="insights-lead-card__content">
+                <span className="blog-card-featured-badge">
+                  <Bookmark size={14} />
+                  Featured
+                </span>
                 <span className="blog-card-category" itemProp="articleSection">
-                  {article.category}
+                  {leadArticle.category}
                 </span>
-                <span className="blog-card-featured-badge">Featured</span>
+                <h2 id="latest-heading" itemProp="headline">
+                  {leadArticle.title}
+                </h2>
+                <p itemProp="description">{leadArticle.excerpt}</p>
+                <div className="blog-card-meta">
+                  <span className="blog-card-meta-item">
+                    <Calendar size={14} />
+                    <time dateTime={leadArticle.dateISO} itemProp="datePublished">
+                      {leadArticle.date}
+                    </time>
+                  </span>
+                  <span className="blog-card-meta-item">
+                    <Clock size={14} />
+                    {leadArticle.readTime}
+                  </span>
+                  <span className="blog-card-meta-item">{inferContentType(leadArticle)}</span>
+                </div>
+                <span className="blog-card-cta">
+                  Read article
+                  <ChevronRight size={16} />
+                </span>
               </div>
-              <div className="blog-card-icon-wrapper">{article.icon}</div>
-              <h3 className="blog-card-title" itemProp="headline">
-                {article.title}
-              </h3>
-              <p className="blog-card-excerpt" itemProp="description">
-                {article.excerpt}
-              </p>
-              <div className="blog-card-meta">
-                <span className="blog-card-meta-item">
-                  <Calendar size={14} />
-                  <time dateTime={article.dateISO} itemProp="datePublished">
-                    {article.date}
-                  </time>
-                </span>
-                <span className="blog-card-meta-item">
-                  <Clock size={14} />
-                  {article.readTime}
-                </span>
+              <div className="insights-lead-card__visual" aria-hidden="true">
+                {leadArticle.icon}
+                <span>{leadArticle.dateISO.slice(0, 7)}</span>
               </div>
-              <span
-                className="blog-card-cta"
-                aria-label={`Read article: ${article.title}`}
-              >
-                Read Article
-                <ChevronRight size={16} />
-              </span>
             </MotionLink>
-          ))}
-        </div>
-      </section>
-
-      {/* All Articles */}
-      <section
-        className="blog-section blog-section--alt"
-        aria-labelledby="all-articles-heading"
-        ref={regularSectionRef}
-      >
-        <div className="blog-section-header">
-          <h2 id="all-articles-heading">All Enforcement Intelligence</h2>
-          <p>
-            In-depth analysis of global enforcement trends, AML fines, regulatory
-            penalties, and compliance insights
-          </p>
-        </div>
-
-        <div className="blog-grid">
-          {paginatedArticles.map((article, index) => (
-            <MotionLink
-              key={article.id}
-              to={`/blog/${article.slug}`}
-              className="blog-card"
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5, delay: index * 0.1 }}
-              itemScope
-              itemType="https://schema.org/Article"
-            >
-              <div className="blog-card-header">
-                <span className="blog-card-category" itemProp="articleSection">
-                  {article.category}
-                </span>
-              </div>
-              <div className="blog-card-icon-wrapper">{article.icon}</div>
-              <h3 className="blog-card-title" itemProp="headline">
-                {article.title}
-              </h3>
-              <p className="blog-card-excerpt" itemProp="description">
-                {article.excerpt}
-              </p>
-              <div className="blog-card-meta">
-                <span className="blog-card-meta-item">
-                  <Calendar size={14} />
-                  <time dateTime={article.dateISO} itemProp="datePublished">
-                    {article.date}
-                  </time>
-                </span>
-                <span className="blog-card-meta-item">
-                  <Clock size={14} />
-                  {article.readTime}
-                </span>
-              </div>
-              <span
-                className="blog-card-cta"
-                aria-label={`Read article: ${article.title}`}
-              >
-                Read Article
-                <ChevronRight size={16} />
-              </span>
-            </MotionLink>
-          ))}
-        </div>
-
-        {/* Pagination */}
-        {totalPages > 1 && (
-          <nav
-            className="blog-pagination"
-            aria-label="Blog articles pagination"
-          >
-            <button
-              className="blog-pagination__btn"
-              disabled={safePage <= 1}
-              onClick={() => goToPage(safePage - 1)}
-            >
-              Previous
-            </button>
-            {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
-              <button
-                key={page}
-                className={`blog-pagination__btn${page === safePage ? " blog-pagination__btn--active" : ""}`}
-                onClick={() => goToPage(page)}
-                aria-current={page === safePage ? "page" : undefined}
-              >
-                {page}
+          ) : (
+            <div className="insights-empty-state">
+              <h2>No insights match these filters</h2>
+              <p>Clear filters or search for a broader enforcement topic.</p>
+              <button type="button" onClick={clearFilters}>
+                Clear all filters
               </button>
-            ))}
-            <button
-              className="blog-pagination__btn"
-              disabled={safePage >= totalPages}
-              onClick={() => goToPage(safePage + 1)}
-            >
-              Next
-            </button>
-          </nav>
-        )}
-      </section>
+            </div>
+          )}
 
-      {/* Yearly Analysis Section */}
-      <section
-        className="yearly-analysis-section"
-        aria-labelledby="yearly-heading"
-      >
+          <div className="insights-results-bar">
+            <p>
+              <strong>{filteredArticles.length}</strong> insights found
+            </p>
+            <div className="insights-results-controls">
+              <label>
+                Sort by
+                <select
+                  value={sortMode}
+                  onChange={(event) => updateParams({ sort: event.target.value })}
+                >
+                  <option value="latest">Latest</option>
+                  <option value="oldest">Oldest</option>
+                </select>
+              </label>
+              <div className="insights-view-toggle" aria-label="View mode">
+                <button
+                  type="button"
+                  className={viewMode === "grid" ? "active" : ""}
+                  onClick={() => updateParams({ view: "grid" })}
+                  aria-label="Grid view"
+                >
+                  <Grid2X2 size={16} />
+                </button>
+                <button
+                  type="button"
+                  className={viewMode === "list" ? "active" : ""}
+                  onClick={() => updateParams({ view: "list" })}
+                  aria-label="List view"
+                >
+                  <List size={16} />
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <div className={`blog-grid insights-grid insights-grid--${viewMode}`}>
+            {paginatedArticles.map((article, index) => (
+              <ArticleCard
+                key={article.id}
+                article={article}
+                index={index}
+                viewMode={viewMode}
+              />
+            ))}
+          </div>
+
+          {totalPages > 1 && (
+            <nav className="blog-pagination" aria-label="Blog articles pagination">
+              <button
+                className="blog-pagination__btn"
+                disabled={safePage <= 1}
+                onClick={() => goToPage(safePage - 1)}
+              >
+                Previous
+              </button>
+              {Array.from({ length: totalPages }, (_, index) => index + 1).map((page) => (
+                <button
+                  key={page}
+                  className={`blog-pagination__btn${page === safePage ? " blog-pagination__btn--active" : ""}`}
+                  onClick={() => goToPage(page)}
+                  aria-current={page === safePage ? "page" : undefined}
+                >
+                  {page}
+                </button>
+              ))}
+              <button
+                className="blog-pagination__btn"
+                disabled={safePage >= totalPages}
+                onClick={() => goToPage(safePage + 1)}
+              >
+                Next
+              </button>
+            </nav>
+          )}
+        </section>
+
+        <aside className="insights-right-rail" aria-label="Insights intelligence modules">
+          <div className="insights-panel">
+            <h2>
+              <TrendingUp size={18} />
+              Trending topics
+            </h2>
+            <div className="insights-topic-list">
+              {topicCounts.map((topic) => (
+                <button
+                  key={topic.label}
+                  type="button"
+                  onClick={() => updateParams({ q: topic.terms[0], month: null })}
+                >
+                  <span>{topic.label}</span>
+                  <strong>{topic.count}</strong>
+                </button>
+              ))}
+            </div>
+          </div>
+
+          <div className="insights-panel">
+            <h2>
+              <Activity size={18} />
+              Regulatory pulse
+            </h2>
+            <div className="insights-pulse-list">
+              <div>
+                <strong>{julyCount}</strong>
+                <span>July insights live</span>
+              </div>
+              <div>
+                <strong>{juneCount}</strong>
+                <span>June insights live</span>
+              </div>
+              <div>
+                <strong>{featuredCount}</strong>
+                <span>Featured analyses</span>
+              </div>
+            </div>
+            <Link className="insights-panel-link" to="/regulators">
+              View intelligence dashboard
+              <ExternalLink size={14} />
+            </Link>
+          </div>
+
+          <div className="insights-panel">
+            <h2>
+              <BookOpen size={18} />
+              Board pack
+            </h2>
+            <p>
+              Convert enforcement themes into board-ready context, risk prompts,
+              and source-backed review packs.
+            </p>
+            <Link className="insights-panel-link" to="/board-pack">
+              Build a board pack
+              <ChevronRight size={14} />
+            </Link>
+          </div>
+
+          <div className="insights-panel insights-panel--newsletter">
+            <h2>
+              <Mail size={18} />
+              Stay ahead
+            </h2>
+            <DigestSubscribeForm
+              compact
+              defaultFrequency="weekly"
+              source="insights_page_right_rail"
+            />
+          </div>
+        </aside>
+      </main>
+
+      <section className="yearly-analysis-section" aria-labelledby="yearly-heading">
         <div className="blog-section-header">
           <h2 id="yearly-heading">
             FCA Fines by Year: Professional Analysis 2013-2025
@@ -467,69 +883,36 @@ export function Blog() {
         </div>
       </section>
 
-      {/* SEO Content Section */}
       <section className="blog-seo-section">
         <div className="blog-seo-content">
           <h2>About RegActions Enforcement Intelligence</h2>
           <p>
-            <strong>RegActions</strong> is the most comprehensive multi-regulator
-            enforcement intelligence platform, tracking <strong>{REGULATOR_COUNT}</strong> global financial
-            regulators including FCA, BaFin, SEC, AMF, and more. Our database
-            covers over <strong>£5 billion in enforcement actions</strong> across
-            multiple jurisdictions.
+            <strong>RegActions</strong> tracks enforcement intelligence across{" "}
+            <strong>{REGULATOR_COUNT}</strong> global financial regulators,
+            including FCA, BaFin, SEC, AMF, SFC, MAS, and more.
           </p>
           <p>
-            Use our <Link to="/regulators">interactive dashboard</Link> to search
-            enforcement actions across all regulators, filter by year, firm, breach
+            Use the <Link to="/regulators">interactive dashboard</Link> to search
+            enforcement actions across regulators, filter by year, firm, breach
             category, and export data for compliance reporting.
           </p>
-
-          <h3>Most Searched Enforcement Topics</h3>
-          <ul className="blog-seo-links">
-            <li>
-              <strong>Largest regulatory fines</strong> - The biggest penalties
-              across global regulators
-            </li>
-            <li>
-              <strong>Enforcement actions 2026</strong> - This year's regulatory
-              penalties and trends
-            </li>
-            <li>
-              <strong>AML fines</strong> - Anti-money laundering penalties across
-              regulators
-            </li>
-            <li>
-              <strong>Banking sector enforcement</strong> - Regulatory actions
-              against financial institutions
-            </li>
-            <li>
-              <strong>Enforcement notices</strong> - Official regulatory decisions
-              and final notices
-            </li>
-          </ul>
         </div>
       </section>
 
-      {/* CTA Section */}
       <section className="blog-cta-section">
         <div className="blog-cta-content">
           <h2>Search the Complete Enforcement Database</h2>
           <p>
-            Access our interactive dashboard to search enforcement actions across
-            <strong> {REGULATOR_COUNT}</strong> global regulators from 2013-2026. Filter by regulator, firm, year,
-            amount, and breach category.
+            Access regulator hubs and enforcement data across{" "}
+            <strong>{REGULATOR_COUNT}</strong> global regulators from 2013-2026.
           </p>
-          <button
-            className="blog-cta-button"
-            onClick={() => navigate("/regulators")}
-          >
+          <Link className="blog-cta-button" to="/regulators">
             Explore All Regulators
             <ExternalLink size={18} />
-          </button>
+          </Link>
         </div>
       </section>
 
-      {/* Footer */}
       <footer className="blog-footer">
         <div className="blog-footer-content">
           <div className="blog-footer-brand">
@@ -540,8 +923,8 @@ export function Blog() {
           </div>
           <nav className="blog-footer-nav" aria-label="Footer navigation">
             <Link to="/">Home</Link>
-            <Link to="/regulators">Dashboard</Link>
-            <Link to="/blog">Blog</Link>
+            <Link to="/regulators">Data</Link>
+            <Link to="/blog">Insights</Link>
             <Link to="/sitemap">Sitemap</Link>
           </nav>
           <p className="blog-footer-copyright">

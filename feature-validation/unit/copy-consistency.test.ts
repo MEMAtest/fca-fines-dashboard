@@ -110,14 +110,14 @@ describe('Regulator Count Consistency', () => {
 });
 
 describe('Global Positioning Language', () => {
-  it('Blog.tsx H1 must say "Global Regulatory Enforcement Intelligence"', async () => {
+  it('Blog.tsx H1 must say "Regulatory Insights"', async () => {
     const fs = await import('fs/promises');
     const path = await import('path');
 
     const filePath = path.resolve(__dirname, '../../src/pages/Blog.tsx');
     const content = await fs.readFile(filePath, 'utf-8');
 
-    expect(content).toContain('Global Regulatory Enforcement Intelligence');
+    expect(content).toContain('Regulatory Insights');
   });
 
   it('Blog.tsx must NOT have "FCA Benchmarks" in H1', async () => {
@@ -130,14 +130,15 @@ describe('Global Positioning Language', () => {
     expect(content).not.toContain('FCA Benchmarks</h1>');
   });
 
-  it('Blog.tsx featured section must be "Major Enforcement Actions"', async () => {
+  it('Blog.tsx must use the Insights hub language', async () => {
     const fs = await import('fs/promises');
     const path = await import('path');
 
     const filePath = path.resolve(__dirname, '../../src/pages/Blog.tsx');
     const content = await fs.readFile(filePath, 'utf-8');
 
-    expect(content).toContain('Major Enforcement Actions');
+    expect(content).toContain('Regulatory Insights');
+    expect(content).toContain('Trending topics');
     expect(content).not.toContain('Biggest FCA Fines');
   });
 

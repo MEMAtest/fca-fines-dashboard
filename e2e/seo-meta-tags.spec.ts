@@ -167,7 +167,7 @@ test.describe('SEO Meta Tags', () => {
       await expect(page.locator('h1')).toBeVisible();
 
       // Title tag
-      await expect(page).toHaveTitle(/Regulatory Enforcement Intelligence/);
+      await expect(page).toHaveTitle(/Regulatory Insights/);
 
       // Meta description
       const description = await page.locator('meta[name="description"]').getAttribute('content');

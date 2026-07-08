@@ -9,43 +9,57 @@ test.describe('Blog Navigation', () => {
       await expect(page.locator('h1')).toBeVisible();
 
       // Should have main heading
-      await expect(page.locator('h1')).toContainText('Global Regulatory Enforcement Intelligence');
+      await expect(page.locator('h1')).toContainText('Regulatory Insights');
 
       // Should have description
-      await expect(page.locator('.blog-hero-subtitle')).toContainText('In-depth analysis');
+      await expect(page.locator('.blog-hero-subtitle')).toContainText('Expert analysis');
 
-      // Should have featured articles section
-      await expect(page.locator('h2').filter({ hasText: 'Featured' })).toBeVisible();
+      // Should have intelligence hub structure
+      await expect(page.locator('.insights-sidebar')).toBeVisible();
+      await expect(page.locator('.insights-search')).toBeVisible();
 
-      // Should have all articles section
-      await expect(page.locator('h2').filter({ hasText: 'All Enforcement Intelligence' })).toBeVisible();
+      // Should have right rail modules
+      await expect(page.locator('h2').filter({ hasText: 'Trending topics' })).toBeVisible();
     });
 
     test('should display blog article cards with metadata', async ({ page }) => {
       await page.goto('/blog');
 
       // Should have multiple blog cards
-      const blogCards = page.locator('.blog-card');
+      const blogCards = page.locator('.insights-article-card');
       await expect(blogCards.first()).toBeVisible();
       // With 40+ total articles (14 hardcoded + 26 regulator blogs), page 1 shows featured + paginated
       const cardCount = await blogCards.count();
-      expect(cardCount).toBeGreaterThanOrEqual(10); // At least 10 cards should be visible
+      expect(cardCount).toBeGreaterThanOrEqual(9); // Grid shows 9 cards plus the lead story
 
       // First card should have required elements
-      const firstCard = blogCards.first();
+      const firstCard = page.locator('.insights-article-card').first();
       await expect(firstCard.locator('.blog-card-category')).toBeVisible();
       await expect(firstCard.locator('h3')).toBeVisible();
       await expect(firstCard.locator('.blog-card-excerpt')).toBeVisible();
       await expect(firstCard.locator('.blog-card-meta')).toBeVisible();
     });
 
-    test('should show the latest featured article first', async ({ page }) => {
+    test('should show the latest published article as the lead story', async ({ page }) => {
       await page.goto('/blog');
 
-      const featuredCards = page.locator('.blog-card--featured');
-      await expect(featuredCards.first()).toBeVisible();
-      await expect(featuredCards.first().locator('h3')).toContainText(
-        'FCA Fines May 2026',
+      const leadCard = page.locator('.insights-lead-card');
+      await expect(leadCard).toBeVisible();
+      await expect(leadCard.locator('h2')).toContainText(
+        'DekaBank Deutsche Girozentrale',
+      );
+    });
+
+    test('should filter insights by July 2026', async ({ page }) => {
+      await page.goto('/blog');
+
+      await page.getByRole('button', { name: 'July 2026' }).click();
+      await expect(page).toHaveURL(/month=2026-07/);
+      await expect(page.locator('.insights-lead-card h2')).toContainText(
+        'DekaBank Deutsche Girozentrale',
+      );
+      await expect(page.locator('.insights-results-bar')).toContainText(
+        '4',
       );
     });
 
@@ -72,7 +86,7 @@ test.describe('Blog Navigation', () => {
       await expect(page.locator('.blog-card').first()).toBeVisible();
 
       // Click first blog card
-      const firstCard = page.locator('.blog-card').first();
+      const firstCard = page.locator('.insights-lead-card').first();
       await Promise.all([
         page.waitForURL(/\/blog\/[^/]+$/),
         firstCard.click(),
@@ -152,9 +166,9 @@ test.describe('Blog Navigation', () => {
 
       // Should have multiple blog article cards (40+ total: 14 hardcoded + 26 regulator blogs)
       // Page 1 shows featured + first page of regular articles
-      const blogCards = page.locator('.blog-card');
+      const blogCards = page.locator('.insights-article-card');
       const cardCount = await blogCards.count();
-      expect(cardCount).toBeGreaterThanOrEqual(10); // At least 10 cards on page 1
+      expect(cardCount).toBeGreaterThanOrEqual(9); // Grid shows 9 cards plus the lead story
 
       // First few cards should have valid content (no undefined/null)
       const cardsToCheck = Math.min(cardCount, 5);
@@ -184,16 +198,16 @@ test.describe('Blog Navigation', () => {
     });
   });
 
-  test.describe('Blog 3D Visualization', () => {
-    test('should render 3D visualization on blog page', async ({ page }) => {
+  test.describe('Blog Intelligence Hub', () => {
+    test('should render the filtering rails on blog page', async ({ page }) => {
       await page.goto('/blog');
 
       // Wait for blog page to load
       await expect(page.locator('h1')).toBeVisible();
 
-      // Should have hero visualization container
-      const vizContainer = page.locator('.blog-hero-visualization');
-      await expect(vizContainer).toBeVisible();
+      await expect(page.locator('.insights-sidebar')).toBeVisible();
+      await expect(page.locator('.insights-right-rail')).toBeVisible();
+      await expect(page.locator('.insights-view-toggle')).toBeVisible();
     });
   });
 });

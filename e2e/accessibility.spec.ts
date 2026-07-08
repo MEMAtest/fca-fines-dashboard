@@ -81,20 +81,18 @@ test.describe('Accessibility & Semantic HTML', () => {
       // Wait for blog listing to render
       await expect(page.locator('h1')).toBeVisible();
 
-      // Featured articles should be in a section with heading
-      const featuredSection = page.locator('section').filter({ has: page.locator('h2:has-text("Featured")') });
-      await expect(featuredSection).toBeVisible();
+      // Filters should be available as a labelled complementary rail
+      await expect(page.locator('.insights-sidebar')).toBeVisible();
 
-      // All articles should be in a section with heading
-      const allArticlesSection = page.locator('section').filter({ has: page.locator('h2:has-text("All Enforcement Intelligence")') });
-      await expect(allArticlesSection).toBeVisible();
+      // Article results should be in the main insights area
+      await expect(page.locator('.insights-main')).toBeVisible();
     });
 
     test('should have accessible article cards', async ({ page }) => {
       await page.goto('/blog');
 
       // Each card should be clickable and have proper role
-      const firstCard = page.locator('.blog-card').first();
+      const firstCard = page.locator('.insights-article-card').first();
       await expect(firstCard).toBeVisible();
 
       // Card should have heading
@@ -216,7 +214,7 @@ test.describe('Accessibility & Semantic HTML', () => {
 
       // Should be on blog listing
       await expect(page).toHaveURL('/blog');
-      await expect(page.locator('h1')).toContainText('Global Regulatory Enforcement Intelligence');
+      await expect(page.locator('h1')).toContainText('Regulatory Insights');
     });
 
     test('should have visible focus indicators', async ({ page }) => {

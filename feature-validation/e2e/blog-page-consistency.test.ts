@@ -20,7 +20,7 @@ test.describe('Blog Page - Global Messaging Consistency', () => {
     expect(pageTitle?.toLowerCase()).not.toContain('flagship fca');
   });
 
-  test('MUST have H1 heading: "Regulatory Enforcement Insights & Analysis"', async ({ page }) => {
+  test('MUST have H1 heading: "Regulatory Insights"', async ({ page }) => {
     // Wait for H1 with explicit timeout
     const h1 = page.locator('h1');
     await h1.first().waitFor({ timeout: 5000 });
@@ -30,14 +30,14 @@ test.describe('Blog Page - Global Messaging Consistency', () => {
 
     // Check for global positioning, not FCA-specific
     const lowerText = h1Text?.toLowerCase() || '';
-    expect(lowerText).toContain('enforcement');
-    expect(lowerText).toContain('intelligence');
+    expect(lowerText).toContain('regulatory');
+    expect(lowerText).toContain('insights');
     expect(lowerText).not.toContain('fca');
     expect(lowerText).not.toContain('flagship');
   });
 
   test('MUST NOT frame the blog page as the old FCA Fines Database product', async ({ page }) => {
-    const framingText = (await page.locator('.blog-hero-3d, .blog-section-header, footer').allTextContents()).join(' ');
+    const framingText = (await page.locator('.insights-header, .blog-section-header, footer').allTextContents()).join(' ');
     expect(framingText.toLowerCase()).not.toContain('fca fines database');
   });
 

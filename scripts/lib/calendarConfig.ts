@@ -90,7 +90,7 @@ export const CALENDAR_ENTRIES: CalendarEntry[] = [
   {
     slug: "consumer-duty-three-years-enforcement",
     type: "thematic",
-    dateISO: "2026-07-14",
+    dateISO: "2026-07-03",
     titleGuidance: "Consumer Duty three years in: why the FCA hasn't fined anyone yet — and what changes in the next 12 months",
     category: "Thematic Analysis",
     dataConfig: {
@@ -103,7 +103,7 @@ export const CALENDAR_ENTRIES: CalendarEntry[] = [
   {
     slug: "wealth-managers-consumer-duty-enforcement",
     type: "persona",
-    dateISO: "2026-07-21",
+    dateISO: "2026-07-05",
     titleGuidance: "Wealth managers and Consumer Duty: why this sector is at the front of the FCA enforcement queue",
     category: "Sector Analysis",
     dataConfig: {
@@ -115,7 +115,7 @@ export const CALENDAR_ENTRIES: CalendarEntry[] = [
   {
     slug: "biggest-fine-h1-2026-forensic",
     type: "forensic",
-    dateISO: "2026-07-28",
+    dateISO: "2026-07-08",
     titleGuidance: "Anatomy of H1 2026's biggest fine — timeline, regulator findings, penalty methodology and sector implications",
     category: "Case Study",
     dataConfig: { type: "forensic", scope: "biggest-fine", dateRange: ["2026-01-01", "2026-06-30"] },

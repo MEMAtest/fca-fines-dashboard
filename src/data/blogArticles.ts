@@ -1827,9 +1827,9 @@ For an interactive view of FCA enforcement by sector, firm category and year —
     category: "Thematic Analysis",
     readTime: "9 min read",
     date: "July 2026",
-    dateISO: "2026-07-14",
+    dateISO: "2026-07-03",
     featured: false,
-    status: "scheduled",
+    status: "published",
     keywords: [
       "Consumer Duty enforcement",
       "Consumer Duty Final Notice",
@@ -1923,9 +1923,9 @@ For an interactive view of FCA enforcement against the wealth and advisory secto
     category: "Sector Analysis",
     readTime: "8 min read",
     date: "July 2026",
-    dateISO: "2026-07-21",
+    dateISO: "2026-07-05",
     featured: false,
-    status: "scheduled",
+    status: "published",
     keywords: [
       "wealth manager Consumer Duty",
       "Consumer Duty wealth management",
@@ -3745,8 +3745,8 @@ Firms operating under **both regulators** must:
   {
     id: "ai-biggest-fine-h1-2026-forensic",
     slug: "biggest-fine-h1-2026-forensic",
-    title: "DekaBank Deutsche Girozentrale’s £406.30M BaFine Case",
-    seoTitle: "DekaBank Deutsche Girozentrale’s £406.30M BaFine Case | RegActions",
+    title: "DekaBank Deutsche Girozentrale’s £406.30M BaFin Case",
+    seoTitle: "DekaBank Deutsche Girozentrale’s £406.30M BaFin Case | RegActions",
     excerpt: "BaFin fined DekaBank £406.30M for securities/supervisory violations in 2026 over flawed 2024 financial disclosures, marking H1 2026’s second-largest penalty.",
     content: `## The Case at a Glance  
 | Firm | Regulator | Amount | Date | Breach Type | Notice Type | Source |  
@@ -3795,10 +3795,10 @@ The penalty aligns with BaFin’s 2025–2030 enforcement framework, which caps 
 *Word count: 1,412*`,
     category: "Case Study",
     readTime: "3 min read",
-    date: "28 July 2026",
-    dateISO: "2026-07-28",
+    date: "July 2026",
+    dateISO: "2026-07-08",
     keywords: ["BaFin","DekaBank","financial reporting","supervisory violations","securities breach","disclosure failures","regulatory fine"],
-    status: "scheduled",
+    status: "published",
     generatedBy: "ai",
     generatedAt: "2026-06-26T15:22:29.933Z",
   },

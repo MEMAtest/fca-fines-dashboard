@@ -3001,7 +3001,7 @@ For UK-regulated firms, the most useful reading is practical: what control faile
 
 ### How To Use RegActions For FCA Monitoring
 
-Use [FCA regulator intelligence](/regulators/fca) to open the live FCA hub, [enforcement search](/search?q=FCA) to find firm or theme-specific actions, and the [FCA fines database guide](/blog/fca-fines-database-how-to-search) to understand search workflows. For committee reporting, use [Board Pack](/board-pack) to convert FCA cases into challenge points, exposure themes, and appendix-ready evidence.
+Use [FCA regulator intelligence](/regulators/fca) to open the live FCA hub, [enforcement search](/search?q=FCA) to find firm or theme-specific actions, and the [FCA enforcement search guide](/blog/fca-fines-database-how-to-search) to understand search workflows. For committee reporting, use [Board Pack](/board-pack) to convert FCA cases into challenge points, exposure themes, and appendix-ready evidence.
 
 The strongest monitoring setup combines all four surfaces: a regulator hub for the overall picture, search for specific questions, digest or watchlist flows for retention, and board packs for decision-ready reporting.
 
@@ -3042,7 +3042,7 @@ A useful FCA monitoring output should be concise enough for senior readers and d
 
 ### Frequently Asked Questions
 
-#### Is the FCA fines database only about monetary penalties?
+#### Is FCA enforcement intelligence only about monetary penalties?
 
 No. Monetary fines are central, but FCA enforcement intelligence should also include final notices, restrictions, permissions actions, senior-manager accountability, and supervisory signals where they affect compliance risk.
 
