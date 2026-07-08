@@ -99,6 +99,272 @@ export const blogArticleEditorialUpgrades: Record<
   string,
   BlogArticleEditorialUpgrade
 > = {
+  "fca-enforcement-trends-2013-2025": {
+    title: "FCA Enforcement Trends 2013-2025: Fines and Controls",
+    seoTitle: "FCA Enforcement Trends 2013-2025 | Fines and Controls",
+    excerpt:
+      "Long-run FCA enforcement trend guide covering fines, AML, market abuse, Consumer Duty, operational resilience, senior accountability and board monitoring.",
+    readTime: "9 min read",
+    content: buildGuide({
+      heading: "FCA Enforcement Trends 2013-2025: Fines and Controls",
+      opening:
+        "FCA enforcement trends from 2013 to 2025 show a clear movement from benchmark and FX misconduct toward financial crime, systems and controls, consumer outcomes and individual accountability.",
+      matter: [
+        "The FCA enforcement page explains that the regulator uses criminal, civil and regulatory powers and publishes warning notices, decision notices and final notices through a defined process. That framework is stable across the 2013-2025 period, even though the dominant themes changed materially.",
+        "The early FCA years were shaped by inherited benchmark, LIBOR and foreign-exchange investigations. Later years brought more financial crime, AML, sanctions, retail conduct, operational resilience and senior manager accountability. The trend matters because boards cannot rely on last cycle's enforcement map to assess current exposure.",
+        "The official fines archive is only one part of the picture. Permissions restrictions, cancellations, public censures, prosecutions, supervisory notices and requirements can all be enforcement-relevant even when the headline fine amount is low or absent.",
+      ],
+      regulatorRead: [
+        "The long-run FCA trend should be read beside FinCEN, OCC, SEC, CBI, BaFin and MAS enforcement. UK financial crime and systems-and-controls cases often have direct read-across to US banking, Irish substance, German AML and Singapore technology risk expectations.",
+        "The FCA's 2026 fines table also shows that individual action and listed-company disclosure remain live themes. That current page should be used as a live update to the 2013-2025 historical trend, not as a separate monitoring stream.",
+      ],
+      enforcementSignals: [
+        "The first signal is theme rotation. Enforcement focus moves, but the underlying control expectations repeat: governance, escalation, evidence, resourcing, remediation and management information.",
+        "The second signal is penalty concentration. A year with a few large cases can distort aggregate fines, so compliance teams should review count, amount, breach type and conduct period separately.",
+        "The third signal is evidence maturity. More recent cases increasingly expect firms to show data lineage, model validation, issue closure testing, customer outcome evidence and senior manager challenge.",
+      ],
+      boardUse: [
+        "A trends board pack should show a five-year and ten-year FCA view, then connect it to the firm's top risks. It should not present a chart without naming the control owners and current evidence.",
+        "Senior managers should ask which historical enforcement theme is most likely to recur in the firm's business model. The answer should drive assurance planning, not just compliance reading.",
+      ],
+      searchQuery: "FCA%20enforcement%20trends%202013%202025",
+      hubLinks: [
+        "[FCA](/regulators/fca)",
+        "[FinCEN](/regulators/fincen)",
+        "[OCC](/regulators/occ)",
+        "[SEC](/regulators/sec)",
+        "[CBI](/regulators/cbi)",
+      ],
+      sources: [
+        {
+          label: "FCA enforcement powers and notices",
+          url: "https://www.fca.org.uk/about/how-we-regulate/enforcement",
+        },
+        {
+          label: "FCA 2026 fines",
+          url: "https://www.fca.org.uk/news/news-stories/2026-fines",
+        },
+        {
+          label: "FCA financial crime",
+          url: "https://www.fca.org.uk/firms/financial-crime",
+        },
+      ],
+    }),
+  },
+  "fca-enforcement-outlook-february-2026": {
+    title: "FCA Enforcement Outlook 2026: What Boards Should Watch",
+    seoTitle: "FCA Enforcement Outlook 2026 | Board and Compliance Guide",
+    excerpt:
+      "FCA enforcement outlook for 2026 covering individual accountability, market disclosure, financial crime, operational resilience and board evidence.",
+    readTime: "9 min read",
+    content: buildGuide({
+      heading: "FCA Enforcement Outlook 2026: What Boards Should Watch",
+      opening:
+        "The early 2026 FCA enforcement outlook is already visible in the public fines table: individual accountability, market disclosure, market abuse controls and integrity findings are prominent.",
+      matter: [
+        "The FCA 2026 fines page lists individual actions in January, a Carillion-related individual market disclosure case in February, John Wood Group PLC in March, Dinosaur Merchant Bank Limited in March, and Frank Breuer in May. The total fines line on that page changes as new actions are added, so the stable lesson is theme mix rather than a single static number.",
+        "The FCA enforcement page explains that the regulator can impose financial penalties, publish censures, vary or cancel permissions, prohibit individuals, prosecute criminal offences and seek restitution. This range means a 2026 outlook should include non-fine outcomes as well as penalty totals.",
+        "The financial crime page states that the FCA aims to protect customers and firms from criminals while supporting firms as an effective line of defence. That keeps AML and sanctions high on the outlook even during months where market abuse dominates the fines table.",
+      ],
+      regulatorRead: [
+        "The 2026 read-across starts with the FCA, but the same outlook should include SEC, FINRA, SFC, CBI, OCC and FinCEN because market abuse, financial crime and individual accountability are not UK-only themes.",
+        "Firms should also read 2026 beside Consumer Duty, operational resilience and SMCR evidence. Even if the public fines table is market-led early in the year, supervisory work can be building in retail conduct, resilience and governance.",
+      ],
+      enforcementSignals: [
+        "The first signal is individual exposure. Named individuals in the fines table should trigger a review of reasonable-steps files, conduct-rule training and escalation evidence.",
+        "The second signal is market integrity. Listed company disclosure, insider dealing, unlawful disclosure and surveillance controls need renewed testing in 2026.",
+        "The third signal is systems and controls. Dinosaur Merchant Bank's March entry links market abuse prevention and detection to PRIN 3 and SYSC, showing that surveillance failures are also governance failures.",
+      ],
+      boardUse: [
+        "A 2026 outlook board pack should be updated monthly. It should show new fines, new notices, live themes, comparable internal controls, assurance status and decisions needed from the board.",
+        "The pack should deliberately separate confirmed public actions from forward-looking risk. That avoids overclaiming while still helping senior managers prepare for supervisory attention.",
+      ],
+      searchQuery: "FCA%202026%20enforcement%20outlook",
+      hubLinks: [
+        "[FCA](/regulators/fca)",
+        "[SEC](/regulators/sec)",
+        "[FINRA](/regulators/finra)",
+        "[SFC](/regulators/sfc)",
+        "[FinCEN](/regulators/fincen)",
+      ],
+      sources: [
+        {
+          label: "FCA 2026 fines",
+          url: "https://www.fca.org.uk/news/news-stories/2026-fines",
+        },
+        {
+          label: "FCA enforcement powers and notices",
+          url: "https://www.fca.org.uk/about/how-we-regulate/enforcement",
+        },
+        {
+          label: "FCA financial crime",
+          url: "https://www.fca.org.uk/firms/financial-crime",
+        },
+      ],
+      memaLink:
+        "For 2026 board evidence planning, enforcement monitoring and remediation governance, [MEMA Consultants](https://www.memaconsultants.com/) is a relevant advisory link.",
+    }),
+  },
+  "fca-fines-march-2026": {
+    title: "FCA Fines March 2026: Market Disclosure and Controls",
+    seoTitle: "FCA Fines March 2026 | Market Disclosure and Controls",
+    excerpt:
+      "March 2026 FCA fines guide covering John Wood Group, Dinosaur Merchant Bank, misleading information, market abuse systems and board control evidence.",
+    readTime: "9 min read",
+    content: buildGuide({
+      heading: "FCA Fines March 2026: Market Disclosure and Controls",
+      opening:
+        "March 2026 FCA fines moved from individual-only penalties into firm-level market disclosure and market abuse systems-and-controls findings.",
+      matter: [
+        "The FCA 2026 fines page lists John Wood Group PLC on 3 March 2026 with a GBP12,993,700 penalty for breaches of the Listing Rules and Listing Principle 1 relating to misleading information. It also lists Dinosaur Merchant Bank Limited on 24 March 2026 with a GBP338,000 penalty for breaches of the Market Abuse Regulation, PRIN 3 and associated SYSC rules relating to systems and controls to prevent and detect market abuse.",
+        "Those two March entries are useful together. One is about misleading information in the listed-company context. The other links market abuse prevention and detection to systems and controls. Both point to the same board-level question: did management information and challenge operate before the public failure?",
+        "The FCA market abuse page explains that the UK Market Abuse Regulation covers insider dealing, unlawful disclosure of inside information and market manipulation, and that the regime aims to prevent, detect and sanction market abuse.",
+      ],
+      regulatorRead: [
+        "March should be read beside January and February 2026 because the three months together create a market integrity sequence: individual conduct, listed-company disclosure and surveillance controls.",
+        "The read-across should include SEC issuer disclosure cases, SFC intermediary and market misconduct cases, AMF sanctions and FINRA supervision actions. The same control questions appear in different legal language.",
+      ],
+      enforcementSignals: [
+        "The first March signal is disclosure governance. Boards should test how financial, operational and project information becomes public market disclosure.",
+        "The second signal is market abuse surveillance. Trade alerts, suspicious transaction and order reports, escalation routes, scenario coverage and model tuning need evidence of effectiveness.",
+        "The third signal is control ownership. A market abuse failure can sit between front office, compliance, technology and operations unless ownership is explicit.",
+      ],
+      boardUse: [
+        "A March 2026 board pack should compare John Wood Group and Dinosaur Merchant Bank against the firm's own issuer, trading, advisory or broking activity.",
+        "The pack should identify the relevant committee, the responsible senior manager, the latest surveillance assurance, disclosure control evidence, open issues and any decision required on resourcing or remediation.",
+      ],
+      searchQuery: "FCA%20March%202026%20market%20abuse%20disclosure",
+      hubLinks: [
+        "[FCA](/regulators/fca)",
+        "[SEC](/regulators/sec)",
+        "[SFC](/regulators/sfc)",
+        "[AMF](/regulators/amf)",
+      ],
+      sources: [
+        {
+          label: "FCA 2026 fines",
+          url: "https://www.fca.org.uk/news/news-stories/2026-fines",
+        },
+        {
+          label: "FCA Market Abuse Regulation",
+          url: "https://www.fca.org.uk/markets/market-abuse/regulation",
+        },
+        {
+          label: "FCA enforcement powers and notices",
+          url: "https://www.fca.org.uk/about/how-we-regulate/enforcement",
+        },
+      ],
+    }),
+  },
+  "fca-aml-fines-anti-money-laundering": {
+    title: "FCA AML Fines: Anti-Money Laundering Enforcement Guide",
+    seoTitle: "FCA AML Fines | Anti-Money Laundering Enforcement Guide",
+    excerpt:
+      "FCA AML fines guide covering financial crime controls, CDD, transaction monitoring, sanctions, SAR escalation, governance and board remediation evidence.",
+    readTime: "9 min read",
+    content: buildGuide({
+      heading: "FCA AML Fines: Anti-Money Laundering Enforcement Guide",
+      opening:
+        "FCA AML fines remain one of the most important UK enforcement benchmarks because anti-money laundering failures connect customer risk, transaction monitoring, sanctions, governance and senior accountability.",
+      matter: [
+        "The FCA financial crime page says financial crime damages people and businesses and undermines the attractiveness of UK markets. It also frames firms as an effective line of defence against criminals, which is the core supervisory expectation behind AML enforcement.",
+        "AML fines are rarely about one missing procedure. They usually show failure across customer due diligence, enhanced due diligence, transaction monitoring, sanctions screening, suspicious activity escalation, management information and remediation ownership.",
+        "The FCA enforcement page confirms that the regulator has criminal, civil and regulatory tools. Serious AML failures can therefore create financial penalties, public censure, permission consequences, individual action or prosecution risk depending on facts and evidence.",
+      ],
+      regulatorRead: [
+        "FCA AML enforcement should be read beside FinCEN, OCC, CBI, BaFin, MAS and AUSTRAC actions. Financial crime is one of the most internationally portable enforcement themes because weak controls can move illicit funds across jurisdictions quickly.",
+        "The best read-across compares control facts, not only fine amounts. A smaller action against a similar business model can be more relevant than a very large penalty against a different type of bank.",
+      ],
+      enforcementSignals: [
+        "The first AML signal is customer-risk evidence. Boards should ask whether high-risk customers, beneficial owners, politically exposed persons and source-of-wealth files are complete and recently refreshed.",
+        "The second signal is monitoring effectiveness. Alert quality, rule tuning, typology coverage, investigation standards, closure reasons and backlog ageing should be visible to senior committees.",
+        "The third signal is remediation credibility. Repeated audit findings, delayed technology fixes and optimistic closure reporting are common aggravating features in financial crime cases.",
+      ],
+      boardUse: [
+        "An AML board pack should show the top relevant FCA cases, the matching internal controls, current assurance, open issues, aged remediation, owner and target date.",
+        "The pack should also include financial-crime capacity metrics: alert volumes, investigator caseload, SAR timeliness, high-risk customer refresh, sanctions screening exceptions and model validation status.",
+      ],
+      searchQuery: "FCA%20AML%20anti%20money%20laundering%20fines",
+      hubLinks: [
+        "[FCA](/regulators/fca)",
+        "[FinCEN](/regulators/fincen)",
+        "[OCC](/regulators/occ)",
+        "[CBI](/regulators/cbi)",
+        "[BaFin](/regulators/bafin)",
+        "[MAS](/regulators/mas)",
+      ],
+      sources: [
+        {
+          label: "FCA financial crime",
+          url: "https://www.fca.org.uk/firms/financial-crime",
+        },
+        {
+          label: "FCA enforcement powers and notices",
+          url: "https://www.fca.org.uk/about/how-we-regulate/enforcement",
+        },
+        {
+          label: "FinCEN enforcement actions",
+          url: "https://www.fincen.gov/news/enforcement-actions",
+        },
+      ],
+      memaLink:
+        "For AML governance, remediation planning and board evidence, [MEMA Consultants](https://www.memaconsultants.com/) is a relevant advisory link.",
+    }),
+  },
+  "20-biggest-fca-fines-of-all-time": {
+    title: "20 Biggest FCA Fines: Enforcement Lessons for Boards",
+    seoTitle: "20 Biggest FCA Fines | Enforcement Lessons for Boards",
+    excerpt:
+      "Guide to the 20 biggest FCA fines, with board-level lessons on AML, market abuse, FX, banking controls, remediation evidence and senior accountability.",
+    readTime: "9 min read",
+    content: buildGuide({
+      heading: "20 Biggest FCA Fines: Enforcement Lessons for Boards",
+      opening:
+        "The 20 biggest FCA fines are useful because they show which control failures become strategically important enough to define a sector's enforcement expectations.",
+      matter: [
+        "Large FCA fines have historically clustered around foreign exchange misconduct, benchmark manipulation, AML failures, banking controls, market abuse, consumer protection and systems-and-controls weaknesses. The exact ranking changes as new penalties are added, but the underlying governance lessons remain stable.",
+        "The FCA enforcement page explains that the regulator uses financial penalties, public censures, prohibitions, permission changes, prosecution and restitution powers. That matters because a largest-fines list should not be treated as the complete enforcement universe.",
+        "The FCA financial crime page keeps AML and sanctions central to the risk picture, while the market abuse page explains the UK MAR framework for insider dealing, unlawful disclosure and market manipulation. These official themes explain why many large penalties involve market integrity or financial crime.",
+      ],
+      regulatorRead: [
+        "A largest-fines list should be read across FCA, SEC, FinCEN, OCC, CBI, BaFin, MAS and SFC enforcement. Large penalties often emerge where firms have global products, cross-border customers, complex trading activity or shared technology platforms.",
+        "The most useful comparison is not simply largest to smallest. Boards should group the cases by root cause: weak controls, poor culture, inadequate surveillance, financial crime exposure, defective disclosure, delayed remediation or senior management failure.",
+      ],
+      enforcementSignals: [
+        "The first signal is repeated known weakness. Very large fines often follow years of audit findings, warnings, incidents or supervisory feedback.",
+        "The second signal is business-line complexity. FX, benchmarks, AML, wholesale banking and large retail operations all create risk where ownership can be diffused across teams.",
+        "The third signal is remediation failure. A firm that identifies a weakness but cannot close it credibly creates a stronger enforcement narrative for the regulator.",
+      ],
+      boardUse: [
+        "A board pack using the biggest FCA fines should not spend most of its time on historical rankings. It should use the cases as control tests for the firm's own permissions, customers, products and operating model.",
+        "For each major case, the pack should ask: could this fact pattern occur here, which senior manager owns it, what evidence proves the control works, and what remediation is overdue?",
+      ],
+      searchQuery: "biggest%20FCA%20fines%20AML%20market%20abuse",
+      hubLinks: [
+        "[FCA](/regulators/fca)",
+        "[SEC](/regulators/sec)",
+        "[FinCEN](/regulators/fincen)",
+        "[OCC](/regulators/occ)",
+        "[SFC](/regulators/sfc)",
+      ],
+      sources: [
+        {
+          label: "FCA enforcement powers and notices",
+          url: "https://www.fca.org.uk/about/how-we-regulate/enforcement",
+        },
+        {
+          label: "FCA financial crime",
+          url: "https://www.fca.org.uk/firms/financial-crime",
+        },
+        {
+          label: "FCA Market Abuse Regulation",
+          url: "https://www.fca.org.uk/markets/market-abuse/regulation",
+        },
+      ],
+      memaLink:
+        "For board packs that turn large enforcement cases into control evidence and remediation decisions, [MEMA Consultants](https://www.memaconsultants.com/) is a relevant advisory link.",
+    }),
+  },
   "fca-fines-january-2026": {
     title: "FCA Fines January 2026: Individual Accountability Guide",
     seoTitle: "FCA Fines January 2026 | Individual Accountability",

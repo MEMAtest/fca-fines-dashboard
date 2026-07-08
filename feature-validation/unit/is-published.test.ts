@@ -8,6 +8,11 @@ import {
 } from "../../src/data/blogArticles.js";
 
 const upgradedBlogSlugs = [
+  "fca-enforcement-trends-2013-2025",
+  "fca-enforcement-outlook-february-2026",
+  "fca-fines-march-2026",
+  "fca-aml-fines-anti-money-laundering",
+  "20-biggest-fca-fines-of-all-time",
   "fca-fines-january-2026",
   "fca-fines-february-2026",
   "fca-final-notices-explained",
