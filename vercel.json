@@ -33,6 +33,11 @@
       "permanent": true
     },
     {
+      "source": "/blog/payments-firm-fca-aml-enforcement",
+      "destination": "/blog/payments-firms-fca-aml-enforcement",
+      "permanent": true
+    },
+    {
       "source": "/dashboard",
       "destination": "/regulators",
       "permanent": true
