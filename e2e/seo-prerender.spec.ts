@@ -8,6 +8,21 @@ const __dirname = dirname(__filename);
 const DIST = join(__dirname, '..', 'dist');
 const BASE_URL = 'https://regactions.com';
 
+function rootHtml(html: string) {
+  const match = html.match(/<div id="root">([\s\S]*?)<\/div>\s*<\/body>/);
+  return match?.[1] || '';
+}
+
+function h1Count(html: string) {
+  return (html.match(/<h1\b/gi) || []).length;
+}
+
+function crawlableInternalLinks(html: string) {
+  return Array.from(html.matchAll(/<a\s+[^>]*href="([^"]+)"/g))
+    .map((match) => match[1])
+    .filter((href) => href.startsWith('/') || href.startsWith(BASE_URL));
+}
+
 /**
  * These tests verify the build-time pre-rendered HTML files in dist/
  * have correct SEO meta tags. They read static files directly (no server needed).
@@ -47,6 +62,17 @@ test.describe('Pre-rendered HTML SEO Meta Tags', () => {
       expect(html).toContain(`hreflang="en-gb" href="${BASE_URL}/"`);
       expect(html).toContain(`hreflang="en" href="${BASE_URL}/"`);
       expect(html).toContain(`hreflang="x-default" href="${BASE_URL}/"`);
+    });
+
+    test('should expose crawlable body content before hydration', () => {
+      expect(rootHtml(html).trim().length).toBeGreaterThan(500);
+      expect(rootHtml(html)).not.toBe('');
+      expect(h1Count(rootHtml(html))).toBe(1);
+      expect(rootHtml(html)).toContain('Global Regulatory Fines & Enforcement Intelligence');
+      expect(rootHtml(html)).toContain('/regulators');
+      expect(rootHtml(html)).toContain('/search');
+      expect(rootHtml(html)).toContain('/board-pack');
+      expect(crawlableInternalLinks(rootHtml(html)).length).toBeGreaterThanOrEqual(8);
     });
   });
 
@@ -113,6 +139,23 @@ test.describe('Pre-rendered HTML SEO Meta Tags', () => {
 
     test('should have og:type website', () => {
       expect(html).toContain('<meta property="og:type" content="website"');
+    });
+
+    test('should expose crawlable insight links before hydration', () => {
+      const body = rootHtml(html);
+      expect(body.trim().length).toBeGreaterThan(1000);
+      expect(h1Count(body)).toBe(1);
+      expect(body).toContain('Regulatory Insights');
+      expect(body).toContain('/blog/biggest-fine-h1-2026-forensic');
+      expect(body).toContain('DekaBank Deutsche Girozentrale');
+      expect(body).toContain('/regulators');
+      expect(body).toContain('/search');
+      expect(body).toContain('/board-pack');
+
+      const articleLinks = crawlableInternalLinks(body).filter((href) =>
+        href.startsWith('/blog/'),
+      );
+      expect(new Set(articleLinks).size).toBeGreaterThanOrEqual(12);
     });
   });
 

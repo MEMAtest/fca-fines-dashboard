@@ -24,6 +24,10 @@ const BASE_URL = "https://regactions.com";
 const SITE_NAME = "RegActions";
 const OG_IMAGE = `${BASE_URL}/og-image.png`;
 const RSS_URL = `${BASE_URL}/rss.xml`;
+const GOOGLE_SITE_VERIFICATION =
+  process.env.VITE_GOOGLE_SITE_VERIFICATION?.trim() || "";
+const BING_SITE_VERIFICATION =
+  process.env.VITE_BING_SITE_VERIFICATION?.trim() || "";
 
 // ---------------------------------------------------------------------------
 // Import article data (pure TS, no JSX)
@@ -189,6 +193,47 @@ function renderHubBody(
     )
     .join("");
   return `<div class="blog-page"><div class="blog-post-container"><article class="blog-article-modal"><h1 class="blog-post-title">${escapeHtml(title)}</h1><div class="blog-article-content"><p>${escapeHtml(description)}</p><h2>Coverage Snapshot</h2><ul>${metricsHtml}</ul><h2>Use This Data</h2><p>Open the live RegActions workspace to filter the source records, inspect related firms, compare breach themes, and export the evidence for compliance or board reporting.</p><p><a href="${ctaPath}">Open live enforcement data</a></p></div></article></div></div>`;
+}
+
+function renderHomepageBody(): string {
+  const latestArticles = [...blogArticles]
+    .sort((a, b) => b.dateISO.localeCompare(a.dateISO))
+    .slice(0, 5);
+  const articleLinks = latestArticles
+    .map(
+      (article) =>
+        `<li><a href="/blog/${article.slug}">${escapeHtml(article.title)}</a></li>`,
+    )
+    .join("");
+
+  return `<div class="blog-page"><div class="blog-post-container"><article class="blog-article-modal"><h1 class="blog-post-title">Global Regulatory Fines & Enforcement Intelligence</h1><div class="blog-article-content"><p>RegActions tracks enforcement actions, penalties, breach categories, firms, and regulator activity across 45+ global financial regulators.</p><h2>What RegActions Covers</h2><ul><li><strong>Regulators:</strong> 45+ global financial regulators across the UK, Europe, North America, APAC, the Middle East, Africa, and offshore markets.</li><li><strong>Dataset:</strong> searchable enforcement actions, monetary penalties, breach themes, dates, sectors, and source links.</li><li><strong>Use cases:</strong> compliance monitoring, board packs, regulator benchmarking, control reviews, and trend analysis.</li></ul><h2>Start With The Data</h2><p><a href="/regulators">Open the regulator data hub</a>, <a href="/search">search enforcement actions</a>, or <a href="/board-pack">create a board pack</a> from the evidence.</p><h2>Latest Insights</h2><ul>${articleLinks}</ul><h2>Frequently Asked Questions</h2><p>RegActions combines official-source enforcement monitoring with practical analysis so compliance teams can understand what changed, why it matters, and what action to take next.</p></div></article></div></div>`;
+}
+
+function renderBlogListingBody(): string {
+  const sortedArticles = [...blogArticles].sort((a, b) =>
+    b.dateISO.localeCompare(a.dateISO),
+  );
+  const lead = sortedArticles[0];
+  const articlesHtml = sortedArticles
+    .slice(0, 16)
+    .map(
+      (article) =>
+        `<article><h2><a href="/blog/${article.slug}">${escapeHtml(article.title)}</a></h2><p>${escapeHtml(article.excerpt)}</p><p><time datetime="${article.dateISO}">${escapeHtml(article.date)}</time> · ${escapeHtml(article.category)} · ${escapeHtml(article.readTime)}</p></article>`,
+    )
+    .join("");
+  const categoryLinks = [
+    ["FCA enforcement", "/blog?regulator=FCA"],
+    ["BaFin enforcement", "/blog?regulator=BaFin"],
+    ["SEC enforcement", "/blog?regulator=SEC"],
+    ["AML controls", "/blog?topic=aml"],
+    ["Consumer Duty", "/blog?topic=consumer-duty"],
+    ["Market abuse", "/blog?topic=market-abuse"],
+    ["Board reporting", "/board-pack"],
+  ]
+    .map(([label, href]) => `<li><a href="${href}">${label}</a></li>`)
+    .join("");
+
+  return `<div class="blog-page insights-page"><div class="blog-post-container"><article class="blog-article-modal"><h1 class="blog-post-title">Regulatory Insights</h1><div class="blog-article-content"><p>Expert analysis of significant regulatory penalties, enforcement trends, and compliance intelligence across global financial regulators.</p><h2>Latest Regulatory Enforcement Insight</h2><p><a href="/blog/${lead.slug}">${escapeHtml(lead.title)}</a> — ${escapeHtml(lead.excerpt)}</p><h2>Browse Recent Analysis</h2>${articlesHtml}<h2>Explore Enforcement Themes</h2><ul>${categoryLinks}</ul><h2>Use The Intelligence</h2><p>Move from analysis to evidence: <a href="/regulators">open regulator hubs</a>, <a href="/search">search enforcement records</a>, or <a href="/board-pack">build a board pack</a>.</p></div></article></div></div>`;
 }
 
 // HowTo schema for database guide
@@ -411,6 +456,7 @@ async function buildPageMetas(): Promise<PageMeta[]> {
     keywords:
       "regulatory fines, financial regulator fines, enforcement actions, BaFin fines, SEC fines, FCA fines, AMF fines, CNMV fines, global fines database, multi-regulator tracker, financial compliance",
     ogType: "website",
+    bodyContent: renderHomepageBody(),
     extraJsonLd:
       homepageFaqs.length > 0 ? [generateFaqSchema(homepageFaqs)] : [],
   });
@@ -782,6 +828,7 @@ async function buildPageMetas(): Promise<PageMeta[]> {
     keywords:
       "RegActions blog, regulatory fines analysis, enforcement insights, biggest regulatory fines, AML fines, compliance guide",
     ogType: "website",
+    bodyContent: renderBlogListingBody(),
     extraJsonLd: [
       {
         "@context": "https://schema.org",
@@ -1256,6 +1303,18 @@ function renderPage(template: string, meta: PageMeta): string {
       headInjections.push(
         `<meta property="article:section" content="${escapeHtml(meta.articleSection)}" />`,
       );
+  }
+
+  if (GOOGLE_SITE_VERIFICATION) {
+    headInjections.push(
+      `<meta name="google-site-verification" content="${escapeHtml(GOOGLE_SITE_VERIFICATION)}" />`,
+    );
+  }
+
+  if (BING_SITE_VERIFICATION) {
+    headInjections.push(
+      `<meta name="msvalidate.01" content="${escapeHtml(BING_SITE_VERIFICATION)}" />`,
+    );
   }
 
   // Primary JSON-LD (Article schema or FAQPage for /faq)

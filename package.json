@@ -22,6 +22,7 @@
     "search:eval:natural": "npx tsx scripts/evaluateSearchRelevance.ts https://regactions.com research/search-natural-language-eval-set.json",
     "search:eval:prod": "npx tsx scripts/evaluateSearchRelevance.ts https://regactions.com research/search-relevance-eval-set.json",
     "search:eval:prod:full": "npx tsx scripts/evaluateSearchRelevance.ts https://regactions.com research/search-relevance-eval-set.json research/search-natural-language-eval-set.json",
+    "seo:audit:live": "npx tsx scripts/auditLiveSeo.ts https://regactions.com",
     "search:analytics:migrate": "npx tsx scripts/run-search-analytics-migration.ts",
     "search:analytics:report": "npx tsx scripts/reportSearchAnalytics.ts",
     "search:analytics:prune": "npx tsx scripts/pruneSearchAnalytics.ts",
