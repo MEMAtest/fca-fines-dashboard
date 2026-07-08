@@ -9,7 +9,7 @@ test.describe('SEO Meta Tags', () => {
       await expect(page.locator('h1.blog-post-title')).toBeVisible();
 
       // Title tag (updated by useSEO client-side)
-      await expect(page).toHaveTitle(/20 Biggest FCA Fines of All Time/);
+      await expect(page).toHaveTitle(/20 Biggest FCA Fines/);
 
       // Meta description
       const description = await page.locator('meta[name="description"]').getAttribute('content');

@@ -39,6 +39,16 @@ test.describe('Blog Navigation', () => {
       await expect(firstCard.locator('.blog-card-meta')).toBeVisible();
     });
 
+    test('should show the latest featured article first', async ({ page }) => {
+      await page.goto('/blog');
+
+      const featuredCards = page.locator('.blog-card--featured');
+      await expect(featuredCards.first()).toBeVisible();
+      await expect(featuredCards.first().locator('h3')).toContainText(
+        'FCA Fines May 2026',
+      );
+    });
+
     test('should display yearly review cards', async ({ page }) => {
       await page.goto('/blog');
 
@@ -121,6 +131,15 @@ test.describe('Blog Navigation', () => {
 
       // Should navigate to the canonical public data hub
       await expect(page).toHaveURL('/regulators');
+    });
+
+    test('should redirect singular payments article slug to canonical plural slug', async ({ page }) => {
+      await page.goto('/blog/payments-firm-fca-aml-enforcement');
+
+      await expect(page).toHaveURL('/blog/payments-firms-fca-aml-enforcement');
+      await expect(page.locator('h1.blog-post-title')).toContainText(
+        "FCA Payments Enforcement: Why It's Permissions, Not Fines",
+      );
     });
   });
 

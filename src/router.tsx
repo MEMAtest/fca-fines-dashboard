@@ -610,6 +610,12 @@ const router = createBrowserRouter([
         ),
       },
       {
+        path: "/blog/payments-firm-fca-aml-enforcement",
+        element: (
+          <Navigate to="/blog/payments-firms-fca-aml-enforcement" replace />
+        ),
+      },
+      {
         path: "/blog/:slug",
         element: (
           <Suspense

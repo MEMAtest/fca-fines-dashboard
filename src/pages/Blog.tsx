@@ -159,6 +159,8 @@ function generateBlogListSchema() {
 }
 
 const ITEMS_PER_PAGE = 6;
+const byNewestArticle = (left: BlogArticle, right: BlogArticle): number =>
+  right.dateISO.localeCompare(left.dateISO);
 
 export function Blog() {
   const navigate = useNavigate();
@@ -169,8 +171,12 @@ export function Blog() {
   );
   const regularSectionRef = useRef<HTMLElement>(null);
 
-  const featuredArticles = blogArticles.filter((article) => article.featured);
-  const regularArticles = blogArticles.filter((article) => !article.featured);
+  const featuredArticles = blogArticles
+    .filter((article) => article.featured)
+    .sort(byNewestArticle);
+  const regularArticles = blogArticles
+    .filter((article) => !article.featured)
+    .sort(byNewestArticle);
   const totalPages = Math.ceil(regularArticles.length / ITEMS_PER_PAGE);
   const safePage = Math.min(currentPage, totalPages);
   const paginatedArticles = regularArticles.slice(

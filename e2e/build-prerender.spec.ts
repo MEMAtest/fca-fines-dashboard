@@ -79,7 +79,9 @@ test.describe('Build & Pre-rendering', () => {
       const html = readFileSync(articlePath, 'utf-8');
 
       // Should have article-specific meta tags
-      expect(html).toContain('20 Biggest FCA Fines of All Time');
+      expect(html).toContain(
+        '20 Biggest FCA Fines: Enforcement Lessons for Boards',
+      );
       expect(html).toContain('og:type" content="article"');
       expect(html).toContain('article:published_time');
       expect(html).toContain('application/ld+json');
