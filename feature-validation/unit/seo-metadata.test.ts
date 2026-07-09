@@ -208,7 +208,7 @@ describe('SEO Metadata - index.html Validation', () => {
       const website = jsonLdData['@graph'].find((item: any) => item['@type'] === 'WebSite');
       expect(website.potentialAction).toBeDefined();
       expect(website.potentialAction['@type']).toBe('SearchAction');
-      expect(website.potentialAction.target.urlTemplate).toContain('/dashboard?search=');
+      expect(website.potentialAction.target.urlTemplate).toContain('/search?q=');
     });
   });
 
@@ -263,9 +263,9 @@ describe('SEO Metadata - index.html Validation', () => {
       expect(breadcrumb).toBeDefined();
       expect(breadcrumb.itemListElement.length).toBeGreaterThanOrEqual(3);
 
-      // Should be: Home > Dashboard > Blog (not specific to FCA)
+      // Should be: Home > Data Hub > Insights (neutral, not FCA-specific)
       expect(breadcrumb.itemListElement[0].name).toBe('Home');
-      expect(breadcrumb.itemListElement[1].name).toContain('Dashboard');
+      expect(breadcrumb.itemListElement[1].name).toContain('Data Hub');
       expect(breadcrumb.itemListElement[2].name).toContain('Insights');
     });
   });

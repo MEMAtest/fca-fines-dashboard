@@ -173,7 +173,7 @@ describe('JSON-LD Schema Validation - schema.org Compliance', () => {
       expect(action.target).toBeDefined();
       expect(action.target['@type']).toBe('EntryPoint');
       expect(action.target.urlTemplate).toBeTruthy();
-      expect(action.target.urlTemplate).toContain('search=');
+      expect(action.target.urlTemplate).toContain('search?q=');
     });
 
     it('SearchAction MUST require search_term_string', () => {
