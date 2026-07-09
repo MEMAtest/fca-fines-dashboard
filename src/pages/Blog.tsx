@@ -177,6 +177,11 @@ const TOPIC_PATHWAYS: TopicPathway[] = [
     icon: <Scale className="insights-pathway-icon" />,
     links: [
       {
+        label: "FCA fines 2026 cluster",
+        description: "Follow the monthly FCA enforcement pathway.",
+        to: "/topics/fca-fines-2026",
+      },
+      {
         label: "FCA regulator hub",
         description: "Open the live FCA data workspace.",
         to: "/regulators/fca",
@@ -186,11 +191,6 @@ const TOPIC_PATHWAYS: TopicPathway[] = [
         description: "Read the latest monthly FCA fines analysis.",
         to: "/blog/fca-fines-may-2026",
       },
-      {
-        label: "Search FCA actions",
-        description: "Find firms, topics, and notices in the database.",
-        to: "/search?q=FCA",
-      },
     ],
   },
   {
@@ -199,6 +199,11 @@ const TOPIC_PATHWAYS: TopicPathway[] = [
       "Connect payments, sanctions, and money-laundering analysis into practical control review material.",
     icon: <AlertTriangle className="insights-pathway-icon" />,
     links: [
+      {
+        label: "AML enforcement cluster",
+        description: "Start with the complete AML pathway.",
+        to: "/topics/aml-enforcement",
+      },
       {
         label: "Global AML comparison",
         description: "Compare AML enforcement themes across regulators.",
@@ -223,6 +228,11 @@ const TOPIC_PATHWAYS: TopicPathway[] = [
     icon: <Users className="insights-pathway-icon" />,
     links: [
       {
+        label: "Consumer Duty cluster",
+        description: "Open the customer-outcomes pathway.",
+        to: "/topics/consumer-duty-enforcement",
+      },
+      {
         label: "Consumer Duty three years in",
         description: "Track how the regime is becoming enforceable.",
         to: "/blog/consumer-duty-three-years-enforcement",
@@ -240,11 +250,39 @@ const TOPIC_PATHWAYS: TopicPathway[] = [
     ],
   },
   {
+    title: "Market abuse and disclosure",
+    description:
+      "Connect insider dealing, disclosure, surveillance, and market integrity analysis across regulators.",
+    icon: <TrendingUp className="insights-pathway-icon" />,
+    links: [
+      {
+        label: "Market abuse cluster",
+        description: "Open the market integrity pathway.",
+        to: "/topics/market-abuse-enforcement",
+      },
+      {
+        label: "Global market abuse comparison",
+        description: "Compare FCA, SEC, AMF, SEBI, and SFC approaches.",
+        to: "/blog/market-abuse-enforcement-global-comparison",
+      },
+      {
+        label: "Search market abuse",
+        description: "Find insider trading and manipulation records.",
+        to: "/search?q=market%20abuse",
+      },
+    ],
+  },
+  {
     title: "Board and advisory workflows",
     description:
       "Turn enforcement themes into board packs, governance reviews, and advisory support for regulated firms.",
     icon: <BookOpen className="insights-pathway-icon" />,
     links: [
+      {
+        label: "Governance topic cluster",
+        description: "Open the board reporting pathway.",
+        to: "/topics/board-reporting-governance",
+      },
       {
         label: "Create board pack",
         description: "Generate a board-ready enforcement pack.",

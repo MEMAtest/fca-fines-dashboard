@@ -116,6 +116,15 @@ test.describe('Pre-rendered HTML SEO Meta Tags', () => {
     test('should have OG URL pointing to /topics', () => {
       expect(html).toContain(`<meta property="og:url" content="${BASE_URL}/topics"`);
     });
+
+    test('should expose editorial topic cluster links before hydration', () => {
+      const body = rootHtml(html);
+      expect(body).toContain('/topics/fca-fines-2026');
+      expect(body).toContain('/topics/aml-enforcement');
+      expect(body).toContain('/topics/consumer-duty-enforcement');
+      expect(body).toContain('/topics/market-abuse-enforcement');
+      expect(body).toContain('/topics/board-reporting-governance');
+    });
   });
 
   test.describe('Blog listing (dist/blog/index.html)', () => {
@@ -151,16 +160,39 @@ test.describe('Pre-rendered HTML SEO Meta Tags', () => {
       expect(body).toContain('/regulators');
       expect(body).toContain('/search');
       expect(body).toContain('/board-pack');
-      expect(body).toContain('/regulators/fca');
-      expect(body).toContain('/blog/global-aml-enforcement-comparison-2026');
-      expect(body).toContain('/blog/consumer-duty-three-years-enforcement');
-      expect(body).toContain('/blog/market-abuse-enforcement-global-comparison');
+      expect(body).toContain('/topics/fca-fines-2026');
+      expect(body).toContain('/topics/aml-enforcement');
+      expect(body).toContain('/topics/consumer-duty-enforcement');
+      expect(body).toContain('/topics/market-abuse-enforcement');
       expect(body).toContain('https://memaconsultants.com');
 
       const articleLinks = crawlableInternalLinks(body).filter((href) =>
         href.startsWith('/blog/'),
       );
       expect(new Set(articleLinks).size).toBeGreaterThanOrEqual(12);
+    });
+  });
+
+  test.describe('Topic clusters (dist/topics/*/index.html)', () => {
+    let html: string;
+
+    test.beforeAll(() => {
+      html = readFileSync(join(DIST, 'topics', 'aml-enforcement', 'index.html'), 'utf-8');
+    });
+
+    test('should have cluster-specific canonical URL', () => {
+      const match = html.match(/<link\s+rel="canonical"\s+href="([^"]+)"/);
+      expect(match).toBeTruthy();
+      expect(match![1]).toBe(`${BASE_URL}/topics/aml-enforcement`);
+    });
+
+    test('should expose crawlable cluster articles and actions', () => {
+      const body = rootHtml(html);
+      expect(body).toContain('AML Enforcement');
+      expect(body).toContain('/blog/global-aml-enforcement-comparison-2026');
+      expect(body).toContain('/blog/fca-aml-fines-anti-money-laundering');
+      expect(body).toContain('/board-pack');
+      expect(body).toContain('https://memaconsultants.com');
     });
   });
 
@@ -377,6 +409,14 @@ test.describe('Sitemap Validation', () => {
 
   test('should contain topics URL', () => {
     expect(sitemap).toContain(`<loc>${BASE_URL}/topics</loc>`);
+  });
+
+  test('should contain editorial topic cluster URLs', () => {
+    expect(sitemap).toContain(`<loc>${BASE_URL}/topics/fca-fines-2026</loc>`);
+    expect(sitemap).toContain(`<loc>${BASE_URL}/topics/aml-enforcement</loc>`);
+    expect(sitemap).toContain(`<loc>${BASE_URL}/topics/consumer-duty-enforcement</loc>`);
+    expect(sitemap).toContain(`<loc>${BASE_URL}/topics/market-abuse-enforcement</loc>`);
+    expect(sitemap).toContain(`<loc>${BASE_URL}/topics/board-reporting-governance</loc>`);
   });
 
   test('should contain hub list URLs', () => {

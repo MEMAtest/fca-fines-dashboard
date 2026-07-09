@@ -134,6 +134,11 @@ const Dashboard = lazyPage(() =>
 const Topics = lazyPage(() =>
   import("./pages/Topics.js").then((module) => ({ default: module.Topics })),
 );
+const TopicCluster = lazyPage(() =>
+  import("./pages/TopicCluster.js").then((module) => ({
+    default: module.TopicCluster,
+  })),
+);
 const Breaches = lazyPage(() =>
   import("./pages/Breaches.js").then((module) => ({
     default: module.Breaches,
@@ -438,6 +443,27 @@ const router = createBrowserRouter([
             }
           >
             <Topics />
+          </Suspense>
+        ),
+      },
+      {
+        path: "/topics/:slug",
+        element: (
+          <Suspense
+            fallback={
+              <div
+                style={{
+                  minHeight: "100vh",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                }}
+              >
+                Loading...
+              </div>
+            }
+          >
+            <TopicCluster />
           </Suspense>
         ),
       },

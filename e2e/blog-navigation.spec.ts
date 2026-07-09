@@ -218,14 +218,17 @@ test.describe('Blog Navigation', () => {
       await expect(pathways.locator('h2')).toContainText(
         'Explore enforcement themes by use case',
       );
-      await expect(pathways.locator('.insights-pathway-card')).toHaveCount(4);
+      await expect(pathways.locator('.insights-pathway-card')).toHaveCount(5);
 
       await expect(
-        pathways.getByRole('link', { name: /FCA regulator hub/i }),
-      ).toHaveAttribute('href', '/regulators/fca');
+        pathways.getByRole('link', { name: /FCA fines 2026 cluster/i }),
+      ).toHaveAttribute('href', '/topics/fca-fines-2026');
       await expect(
-        pathways.getByRole('link', { name: /Global AML comparison/i }),
-      ).toHaveAttribute('href', '/blog/global-aml-enforcement-comparison-2026');
+        pathways.getByRole('link', { name: /AML enforcement cluster/i }),
+      ).toHaveAttribute('href', '/topics/aml-enforcement');
+      await expect(
+        pathways.getByRole('link', { name: /Market abuse cluster/i }),
+      ).toHaveAttribute('href', '/topics/market-abuse-enforcement');
       await expect(
         pathways.getByRole('link', { name: /Create board pack/i }),
       ).toHaveAttribute('href', '/board-pack');

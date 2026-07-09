@@ -517,6 +517,167 @@ export const blogArticleEditorialUpgrades: Record<
         "Where firms need help turning final notices into board-ready remediation evidence, [MEMA Consultants](https://www.memaconsultants.com/) is a relevant advisory destination.",
     }),
   },
+  "fca-fines-may-2026": {
+    title: "FCA Fines May 2026: Individual Accountability and Pensions Advice",
+    seoTitle: "FCA Fines May 2026 | Individual Accountability and Pensions Advice",
+    excerpt:
+      "May 2026 FCA fines guide covering Frank Breuer, pension transfer advice, individual accountability, permission cancellations, owner-manager risk and board evidence.",
+    readTime: "10 min read",
+    content: buildGuide({
+      heading: "FCA Fines May 2026: Individual Accountability and Pensions Advice",
+      opening:
+        "FCA fines in May 2026 produced a compact but important enforcement signal: a personal penalty and lifetime ban linked to pension transfer advice, alongside non-monetary permission action.",
+      matter: [
+        "The official FCA 2026 fines table lists Frank Breuer on 12 May 2026 with a GBP755,000 penalty, and describes breaches involving integrity, skill, care and diligence, the customer interests principle and FIT. The monetary total is modest compared with large bank cases, but the personal accountability signal is strong.",
+        "May also matters because the surrounding public actions were not all fines. Permission cancellations and suitability-threshold outcomes show that enforcement monitoring should include supervisory and authorisation consequences, not only financial penalties.",
+        "For advisory firms, pension transfer advice remains a live read-across theme. The conduct period in many advice cases is historical, but the governance lesson is current: suitability, file quality, conflict evidence, customer vulnerability and owner-manager challenge need to be demonstrable now.",
+      ],
+      regulatorRead: [
+        "The FCA hub is the core data path for this article, but the read-across should include CBI, ASIC and SEC advice and conduct cases where individual accountability, unsuitable recommendations or weak supervision are central.",
+        "The owner-manager dimension is especially important. Smaller firms can create concentrated decision-making risk where the same individual controls strategy, sales, file quality, compliance resource and remediation response.",
+      ],
+      enforcementSignals: [
+        "The first signal is personal financial exposure. A senior individual cannot assume that firm-level weakness will only produce a firm-level penalty.",
+        "The second signal is advice-file evidence. Suitability rationale, customer objectives, risk capacity, transfer analysis, alternatives considered and customer communications all need to survive later review.",
+        "The third signal is supervisory action without a fine. Permissions, cancellations, restrictions and suitability threshold findings can indicate regulator focus before a monetary penalty appears.",
+      ],
+      boardUse: [
+        "A May 2026 board pack should separate monetary action, permission action and advice-risk evidence. It should identify whether the firm has pension transfer, defined benefit, SIPP, high-risk investment or vulnerable customer exposure.",
+        "Senior managers should ask whether file reviews and complaints analysis are being used to find systemic issues, not simply to close individual cases. If the same advice weakness repeats, the board should see root cause, remediation owner and independent closure testing.",
+      ],
+      searchQuery: "FCA%20May%202026%20pension%20advice",
+      hubLinks: [
+        "[FCA](/regulators/fca)",
+        "[CBI](/regulators/cbi)",
+        "[ASIC](/regulators/asic)",
+        "[SEC](/regulators/sec)",
+      ],
+      sources: [
+        {
+          label: "FCA 2026 fines",
+          url: "https://www.fca.org.uk/news/news-stories/2026-fines",
+        },
+        {
+          label: "FCA enforcement powers and notices",
+          url: "https://www.fca.org.uk/about/how-we-regulate/enforcement",
+        },
+        {
+          label: "FCA Senior Managers and Certification Regime",
+          url: "https://www.fca.org.uk/firms/senior-managers-certification-regime",
+        },
+      ],
+      memaLink:
+        "For advice governance, file-review remediation and senior manager evidence, [MEMA Consultants](https://www.memaconsultants.com/) is a relevant advisory destination.",
+    }),
+  },
+  "consumer-duty-three-years-enforcement": {
+    title: "Consumer Duty Enforcement: Three Years In, Where the FCA May Act Next",
+    seoTitle: "Consumer Duty Enforcement | Three Years In and FCA Risk Signals",
+    excerpt:
+      "Consumer Duty enforcement guide covering customer outcomes, fair value, advice, wealth management, board MI, vulnerability, remediation and FCA evidence expectations.",
+    readTime: "10 min read",
+    content: buildGuide({
+      heading: "Consumer Duty Enforcement: Three Years In, Where the FCA May Act Next",
+      opening:
+        "Consumer Duty enforcement risk is moving from implementation planning into evidence quality: firms now need to show that customer outcomes are measured, challenged and improved.",
+      matter: [
+        "The FCA describes the Consumer Duty as setting a higher standard of consumer protection in retail financial markets. That makes the Duty more than a policy exercise. It asks firms to evidence good outcomes across products and services, price and value, consumer understanding, and consumer support.",
+        "Three years in, the likely enforcement question is not whether a firm produced a board paper in 2023. It is whether the firm can show current outcome monitoring, challenge, remediation and customer impact.",
+        "Consumer Duty also joins older enforcement themes. Suitability, vulnerable customers, complaints handling, product governance, disclosure and fair value were already enforceable through other rules. The Duty gives the FCA a clearer outcomes lens for joining those issues together.",
+      ],
+      regulatorRead: [
+        "The primary read-across is FCA retail conduct, but compliance teams should also compare ASIC, CBI, MAS and SFC conduct cases where advice, disclosure, product governance or customer treatment appears.",
+        "Wealth managers, financial advisers, insurers, lenders, payment firms and platforms should avoid treating the Duty as a generic retail policy. Each business model needs a specific outcome-evidence file.",
+      ],
+      enforcementSignals: [
+        "The first signal is weak outcome data. Activity metrics such as calls answered or reviews completed do not prove good customer outcomes unless they connect to harm, value, understanding or support quality.",
+        "The second signal is fair-value evidence. Product owners should show the customer segment, fees, benefits, claims or service usage, complaints, foreseeable harm and remediation decisions.",
+        "The third signal is board challenge. If board minutes accept positive MI without asking why customers leave, complain, fail to understand, or receive poor value, the evidence will be thin.",
+      ],
+      boardUse: [
+        "A Consumer Duty board pack should show outcome indicators, customer cohort analysis, vulnerable customer evidence, complaint root cause, product-value decisions, open remediation and residual risk acceptance.",
+        "Senior managers should insist that each business line identifies one foreseeable harm, one current control, one outcome metric and one action that changed because of the data.",
+      ],
+      searchQuery: "Consumer%20Duty%20customer%20outcomes",
+      hubLinks: [
+        "[FCA](/regulators/fca)",
+        "[ASIC](/regulators/asic)",
+        "[CBI](/regulators/cbi)",
+        "[MAS](/regulators/mas)",
+      ],
+      sources: [
+        {
+          label: "FCA Consumer Duty",
+          url: "https://www.fca.org.uk/firms/consumer-duty",
+        },
+        {
+          label: "FCA enforcement powers and notices",
+          url: "https://www.fca.org.uk/about/how-we-regulate/enforcement",
+        },
+        {
+          label: "FCA Senior Managers and Certification Regime",
+          url: "https://www.fca.org.uk/firms/senior-managers-certification-regime",
+        },
+      ],
+      memaLink:
+        "For Consumer Duty outcome testing, board MI and remediation governance, [MEMA Consultants](https://www.memaconsultants.com/) is a relevant advisory destination.",
+    }),
+  },
+  "global-aml-enforcement-comparison-2026": {
+    title: "Global AML Enforcement Comparison 2026: FCA, FinCEN, AUSTRAC and MAS",
+    seoTitle: "Global AML Enforcement Comparison 2026 | FCA, FinCEN, AUSTRAC, MAS",
+    excerpt:
+      "Global AML enforcement comparison for 2026 covering CDD, transaction monitoring, SAR governance, sanctions screening, board evidence and remediation across major regulators.",
+    readTime: "10 min read",
+    content: buildGuide({
+      heading: "Global AML Enforcement Comparison 2026: FCA, FinCEN, AUSTRAC and MAS",
+      opening:
+        "Global AML enforcement in 2026 is converging around evidence quality: regulators expect firms to show that customer risk, monitoring, escalation and remediation work in practice.",
+      matter: [
+        "AML rules differ by jurisdiction, but enforcement cases repeatedly identify the same practical failures: incomplete customer risk assessment, weak enhanced due diligence, transaction monitoring that misses known typologies, poor SAR escalation, sanctions screening gaps and remediation programmes that close on paper before controls work.",
+        "This article should be used as a comparison tool. A UK firm should not copy a US BSA order, and a Singapore firm should not copy an Australian enforceable undertaking. But the fact patterns help boards test whether their own controls would withstand similar scrutiny.",
+        "The strongest SEO and user-retention value comes from connecting the comparison to evidence. Readers should move from this article into regulator hubs, AML search results and board-pack workflows rather than stopping at the narrative.",
+      ],
+      regulatorRead: [
+        "The FCA frames financial-crime controls through firms acting as a line of defence against criminals. FinCEN enforcement focuses heavily on BSA programme requirements, SAR and reporting failures. AUSTRAC has demonstrated large-scale reporting and monitoring expectations. MAS links AML/CFT to licensing, governance and financial-sector integrity.",
+        "OCC, CBI, BaFin and SFC actions add further context for banks, payment institutions, wealth managers and securities firms. The relevant comparison is the control failure, not the regulator name alone.",
+      ],
+      enforcementSignals: [
+        "The first signal is control calibration. Transaction monitoring rules, sanctions filters and customer-risk models should be tuned to current typologies and tested independently.",
+        "The second signal is operational capacity. Regulators notice when alert volume, staffing, backlogs and investigation quality do not match the risk profile.",
+        "The third signal is remediation evidence. A programme plan is not enough; firms need closure testing, owner accountability, issue ageing and committee challenge.",
+      ],
+      boardUse: [
+        "A global AML board pack should show the top external cases by business-model relevance, not simply by fine amount. The pack should map each case to an internal control, owner, assurance result and open remediation item.",
+        "Boards should ask for jurisdiction-specific evidence where a group uses shared AML technology. A global tool still needs local data quality, local typology coverage and local escalation routes.",
+      ],
+      searchQuery: "AML%20FinCEN%20FCA%20AUSTRAC%20MAS",
+      hubLinks: [
+        "[FCA](/regulators/fca)",
+        "[FinCEN](/regulators/fincen)",
+        "[OCC](/regulators/occ)",
+        "[MAS](/regulators/mas)",
+        "[AUSTRAC](/regulators/austrac)",
+        "[CBI](/regulators/cbi)",
+      ],
+      sources: [
+        {
+          label: "FCA financial crime",
+          url: "https://www.fca.org.uk/firms/financial-crime",
+        },
+        {
+          label: "FinCEN enforcement actions",
+          url: "https://www.fincen.gov/news/enforcement-actions",
+        },
+        {
+          label: "FATF what we do",
+          url: "https://www.fatf-gafi.org/en/the-fatf/what-we-do.html",
+        },
+      ],
+      memaLink:
+        "For global AML control reviews, remediation evidence and board-level financial-crime reporting, [MEMA Consultants](https://www.memaconsultants.com/) is a relevant advisory destination.",
+    }),
+  },
   "fca-fines-banks-complete-list": {
     title: "FCA Fines to Banks: Banking Enforcement and AML Guide",
     seoTitle: "FCA Fines to Banks | Banking Enforcement and AML Guide",

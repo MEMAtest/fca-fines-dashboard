@@ -1,4 +1,5 @@
 import { Link } from "react-router-dom";
+import { topicClusters } from "../data/topicClusters.js";
 import { useSEO } from "../hooks/useSEO.js";
 
 export function Topics() {
@@ -31,61 +32,86 @@ export function Topics() {
           </div>
         </header>
 
-        <div className="hub-grid">
-          <Link to="/breaches" className="hub-card hover-lift">
-            <div className="hub-card__meta">
-              <span className="hub-chip">Breach types</span>
-              <span className="hub-chip hub-chip--neutral">
-                Market abuse, AML, principles
-              </span>
-            </div>
-            <h3>Breach Categories</h3>
-            <p>
-              See which breach types drive the most enforcement activity and
-              penalty totals.
-            </p>
-          </Link>
+        <section className="hub-section" aria-labelledby="topic-clusters-heading">
+          <h2 id="topic-clusters-heading">Editorial Topic Clusters</h2>
+          <div className="hub-grid">
+            {topicClusters.map((cluster) => (
+              <Link
+                key={cluster.slug}
+                to={`/topics/${cluster.slug}`}
+                className="hub-card hover-lift"
+              >
+                <div className="hub-card__meta">
+                  <span className="hub-chip">{cluster.eyebrow}</span>
+                  <span className="hub-chip hub-chip--neutral">
+                    {cluster.primaryArticles.length} core reads
+                  </span>
+                </div>
+                <h3>{cluster.title}</h3>
+                <p>{cluster.description}</p>
+              </Link>
+            ))}
+          </div>
+        </section>
 
-          <Link to="/years" className="hub-card hover-lift">
-            <div className="hub-card__meta">
-              <span className="hub-chip">Yearly view</span>
-              <span className="hub-chip hub-chip--neutral">2013–2026</span>
-            </div>
-            <h3>Fines By Year</h3>
-            <p>
-              Compare enforcement volumes and totals across years with one click
-              to the dashboard.
-            </p>
-          </Link>
+        <section className="hub-section" aria-labelledby="data-hubs-heading">
+          <h2 id="data-hubs-heading">Data Hubs</h2>
+          <div className="hub-grid">
+            <Link to="/breaches" className="hub-card hover-lift">
+              <div className="hub-card__meta">
+                <span className="hub-chip">Breach types</span>
+                <span className="hub-chip hub-chip--neutral">
+                  Market abuse, AML, principles
+                </span>
+              </div>
+              <h3>Breach Categories</h3>
+              <p>
+                See which breach types drive the most enforcement activity and
+                penalty totals.
+              </p>
+            </Link>
 
-          <Link to="/sectors" className="hub-card hover-lift">
-            <div className="hub-card__meta">
-              <span className="hub-chip">Sectors</span>
-              <span className="hub-chip hub-chip--neutral">
-                Banks, insurance, individuals
-              </span>
-            </div>
-            <h3>Fines By Sector</h3>
-            <p>
-              Explore penalty patterns by firm category and identify the most
-              exposed areas of the market.
-            </p>
-          </Link>
+            <Link to="/years" className="hub-card hover-lift">
+              <div className="hub-card__meta">
+                <span className="hub-chip">Yearly view</span>
+                <span className="hub-chip hub-chip--neutral">2013–2026</span>
+              </div>
+              <h3>Fines By Year</h3>
+              <p>
+                Compare enforcement volumes and totals across years with one
+                click to the dashboard.
+              </p>
+            </Link>
 
-          <Link to="/firms" className="hub-card hover-lift">
-            <div className="hub-card__meta">
-              <span className="hub-chip">Firm pages</span>
-              <span className="hub-chip hub-chip--neutral">
-                Totals + history
-              </span>
-            </div>
-            <h3>Top Firms & Individuals</h3>
-            <p>
-              Browse the biggest penalty recipients and drill into each entity’s
-              enforcement history.
-            </p>
-          </Link>
-        </div>
+            <Link to="/sectors" className="hub-card hover-lift">
+              <div className="hub-card__meta">
+                <span className="hub-chip">Sectors</span>
+                <span className="hub-chip hub-chip--neutral">
+                  Banks, insurance, individuals
+                </span>
+              </div>
+              <h3>Fines By Sector</h3>
+              <p>
+                Explore penalty patterns by firm category and identify the most
+                exposed areas of the market.
+              </p>
+            </Link>
+
+            <Link to="/firms" className="hub-card hover-lift">
+              <div className="hub-card__meta">
+                <span className="hub-chip">Firm pages</span>
+                <span className="hub-chip hub-chip--neutral">
+                  Totals + history
+                </span>
+              </div>
+              <h3>Top Firms & Individuals</h3>
+              <p>
+                Browse the biggest penalty recipients and drill into each
+                entity’s enforcement history.
+              </p>
+            </Link>
+          </div>
+        </section>
       </div>
     </div>
   );

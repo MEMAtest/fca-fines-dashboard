@@ -54,6 +54,7 @@ import {
   REGULATOR_COVERAGE,
   PUBLIC_REGULATOR_CODES,
 } from "../src/data/regulatorCoverage.js";
+import { topicClusters } from "../src/data/topicClusters.js";
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -195,6 +196,41 @@ function renderHubBody(
   return `<div class="blog-page"><div class="blog-post-container"><article class="blog-article-modal"><h1 class="blog-post-title">${escapeHtml(title)}</h1><div class="blog-article-content"><p>${escapeHtml(description)}</p><h2>Coverage Snapshot</h2><ul>${metricsHtml}</ul><h2>Use This Data</h2><p>Open the live RegActions workspace to filter the source records, inspect related firms, compare breach themes, and export the evidence for compliance or board reporting.</p><p><a href="${ctaPath}">Open live enforcement data</a></p></div></article></div></div>`;
 }
 
+function renderTopicClusterBody(slug: string): string {
+  const cluster = topicClusters.find((item) => item.slug === slug);
+  if (!cluster) return "";
+  const articles = cluster.primaryArticles
+    .map(
+      (article) =>
+        `<li><a href="/blog/${article.slug}">${escapeHtml(article.title)}</a> — ${escapeHtml(article.role)}</li>`,
+    )
+    .join("");
+  const evidence = cluster.evidenceFocus
+    .map((item) => `<li>${escapeHtml(item)}</li>`)
+    .join("");
+  const questions = cluster.boardQuestions
+    .map((item) => `<li>${escapeHtml(item)}</li>`)
+    .join("");
+  const links = [...cluster.supportingLinks, ...cluster.nextActions]
+    .map(
+      (link) =>
+        `<li><a href="${link.href}">${escapeHtml(link.label)}</a> — ${escapeHtml(link.description)}</li>`,
+    )
+    .join("");
+
+  return `<div class="blog-page"><div class="blog-post-container"><article class="blog-article-modal"><h1 class="blog-post-title">${escapeHtml(cluster.title)}</h1><div class="blog-article-content"><p>${escapeHtml(cluster.summary)}</p><h2>Core Articles</h2><ul>${articles}</ul><h2>Evidence Focus</h2><ul>${evidence}</ul><h2>Board Questions</h2><ul>${questions}</ul><h2>Search, Data and Advisory Paths</h2><ul>${links}</ul></div></article></div></div>`;
+}
+
+function renderTopicsLandingBody(): string {
+  const clusterLinks = topicClusters
+    .map(
+      (cluster) =>
+        `<li><a href="/topics/${cluster.slug}">${escapeHtml(cluster.title)}</a> — ${escapeHtml(cluster.description)}</li>`,
+    )
+    .join("");
+  return `<div class="blog-page"><div class="blog-post-container"><article class="blog-article-modal"><h1 class="blog-post-title">Explore Enforcement Topics</h1><div class="blog-article-content"><p>Browse RegActions editorial clusters for FCA fines, AML, Consumer Duty, market abuse, and board reporting, then move into breach, year, sector, and firm data hubs.</p><h2>Editorial Topic Clusters</h2><ul>${clusterLinks}</ul><h2>Data Hubs</h2><ul><li><a href="/breaches">Breach categories</a></li><li><a href="/years">Fines by year</a></li><li><a href="/sectors">Fines by sector</a></li><li><a href="/firms">Top firms and individuals</a></li></ul></div></article></div></div>`;
+}
+
 function renderHomepageBody(): string {
   const latestArticles = [...blogArticles]
     .sort((a, b) => b.dateISO.localeCompare(a.dateISO))
@@ -222,12 +258,10 @@ function renderBlogListingBody(): string {
     )
     .join("");
   const categoryLinks = [
-    ["FCA enforcement", "/regulators/fca"],
-    ["BaFin enforcement", "/blog/bafin-vs-fca-uk-german-firms"],
-    ["SEC enforcement", "/blog/sec-enforcement-guide-fines-data"],
-    ["AML controls", "/blog/global-aml-enforcement-comparison-2026"],
-    ["Consumer Duty", "/blog/consumer-duty-three-years-enforcement"],
-    ["Market abuse", "/blog/market-abuse-enforcement-global-comparison"],
+    ["FCA fines 2026", "/topics/fca-fines-2026"],
+    ["AML enforcement", "/topics/aml-enforcement"],
+    ["Consumer Duty", "/topics/consumer-duty-enforcement"],
+    ["Market abuse", "/topics/market-abuse-enforcement"],
     ["Board reporting", "/board-pack"],
     ["MEMA compliance support", "https://memaconsultants.com"],
   ]
@@ -702,10 +736,40 @@ async function buildPageMetas(): Promise<PageMeta[]> {
     path: "/topics",
     title: "RegActions Topics | Breaches, Years, Sectors & Firm Pages",
     description:
-      "Browse enforcement actions by breach type, year, sector, or firm. Explore hub pages and jump into the interactive dashboard for deeper analysis.",
+      "Browse enforcement topic clusters, breach types, years, sectors, and firm pages. Explore hub pages and jump into the interactive dashboard for deeper analysis.",
     keywords:
-      "RegActions topics, regulatory fines by breach, regulatory fines by year, enforcement actions by firm, regulatory fines by sector",
+      "RegActions topics, enforcement topic clusters, regulatory fines by breach, regulatory fines by year, enforcement actions by firm, regulatory fines by sector",
     ogType: "website",
+    bodyContent: renderTopicsLandingBody(),
+  });
+
+  topicClusters.forEach((cluster) => {
+    pages.push({
+      path: `/topics/${cluster.slug}`,
+      title: cluster.seoTitle,
+      description: cluster.description,
+      keywords: cluster.keywords,
+      ogType: "website",
+      bodyContent: renderTopicClusterBody(cluster.slug),
+      extraJsonLd: [
+        {
+          "@context": "https://schema.org",
+          "@type": "CollectionPage",
+          name: cluster.title,
+          description: cluster.description,
+          url: `${BASE_URL}/topics/${cluster.slug}`,
+          mainEntity: {
+            "@type": "ItemList",
+            itemListElement: cluster.primaryArticles.map((article, index) => ({
+              "@type": "ListItem",
+              position: index + 1,
+              url: `${BASE_URL}/blog/${article.slug}`,
+              name: article.title,
+            })),
+          },
+        },
+      ],
+    });
   });
 
   // 4. Hub list pages
@@ -1373,6 +1437,9 @@ function generateSitemap(pages: PageMeta[]): string {
       changefreq = "daily";
     } else if (page.path === "/topics") {
       priority = "0.9";
+      changefreq = "weekly";
+    } else if (page.path.startsWith("/topics/")) {
+      priority = "0.88";
       changefreq = "weekly";
     } else if (["/board-pack", "/features", "/uk-enforcement", "/intelligence"].includes(page.path)) {
       priority = "0.85";
