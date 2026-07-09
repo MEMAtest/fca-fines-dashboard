@@ -88,8 +88,8 @@ export interface YearlyArticleMeta extends BlogArticleMeta {
 
 type YearlyArticleSource = Omit<
   YearlyArticleMeta,
-  "id" | "content" | "category" | "readTime" | "date" | "dateISO" | "articleType"
->;
+  "id" | "content" | "category" | "readTime" | "date" | "articleType"
+> & { dateISO?: string };
 
 export function isPublished(
   article: { status?: ArticleStatus | string; dateISO: string },
@@ -3955,6 +3955,7 @@ Cryptoasset enforcement will accelerate as the FCA's registration regime matures
       "Consumer Duty enforcement",
       "FCA annual review 2025",
     ],
+    dateISO: "2025-12-31",
   },
   {
     year: 2024,
@@ -3994,6 +3995,7 @@ Operational resilience will remain a priority, particularly as firms increasingl
       "IT migration failures",
       "FCA annual review 2024",
     ],
+    dateISO: "2024-12-31",
   },
   {
     year: 2023,
@@ -4033,6 +4035,7 @@ The Credit Suisse collapse, while driven by multiple factors, served as a remind
       "individual accountability FCA",
       "FCA annual review 2023",
     ],
+    dateISO: "2023-12-31",
   },
   {
     year: 2022,
@@ -4072,6 +4075,7 @@ The Consumer Duty implementation deadline created significant work for 2023, wit
       "FCA enforcement 2022",
       "FCA annual review 2022",
     ],
+    dateISO: "2022-12-31",
   },
   {
     year: 2021,
@@ -4113,6 +4117,7 @@ The Consumer Duty consultation published in December 2021 signalled the next maj
       "FCA enforcement 2021",
       "money laundering prosecution UK",
     ],
+    dateISO: "2021-12-31",
   },
   {
     year: 2020,
@@ -4154,6 +4159,7 @@ The FCA's 'Dear CEO' letters during 2020 signalled post-pandemic priorities, inc
       "COVID-19 FCA",
       "FCA enforcement 2020",
     ],
+    dateISO: "2020-12-31",
   },
   {
     year: 2019,
@@ -4195,6 +4201,7 @@ The cryptoasset registration deadline of January 2020 set up inevitable enforcem
       "SM&CR extension",
       "correspondent banking AML",
     ],
+    dateISO: "2019-12-31",
   },
   {
     year: 2018,
@@ -4236,6 +4243,7 @@ The cyber security precedent set by Tesco Bank would prove increasingly relevant
       "cyber security FCA",
       "FCA annual review 2018",
     ],
+    dateISO: "2018-12-31",
   },
   {
     year: 2017,
@@ -4277,6 +4285,7 @@ The transaction reporting theme would evolve as MiFID II approached, with new re
       "FCA enforcement 2017",
       "money laundering fine",
     ],
+    dateISO: "2017-12-31",
   },
   {
     year: 2016,
@@ -4318,6 +4327,7 @@ The SM&CR bedding-in period would eventually produce individual accountability c
       "FCA annual review 2016",
       "consumer protection FCA",
     ],
+    dateISO: "2016-12-31",
   },
   {
     year: 2015,
@@ -4359,6 +4369,7 @@ The PPI enforcement signalled that retail conduct would remain a priority even a
       "Lloyds PPI fine",
       "FCA enforcement 2015",
     ],
+    dateISO: "2015-12-31",
   },
   {
     year: 2014,
@@ -4403,6 +4414,7 @@ The Barclays FX case remained outstanding, eventually settling in 2015 for the r
       "RBS FCA fine",
       "record FCA fines",
     ],
+    dateISO: "2014-12-31",
   },
   {
     year: 2013,
@@ -4446,6 +4458,7 @@ The regulatory emphasis on cultural change would evolve from rhetoric to operati
       "FCA enforcement 2013",
       "FCA first year",
     ],
+    dateISO: "2013-12-31",
   },
 ];
 

@@ -1081,7 +1081,7 @@ async function buildPageMetas(): Promise<PageMeta[]> {
       description: article.excerpt,
       keywords: article.keywords.join(", "),
       ogType: "article",
-      datePublished: `${article.year}-01-01`,
+      datePublished: article.dateISO,
       dateModified: clampedDateModified,
       articleSection: "Annual Analysis",
       breadcrumbLabel: article.title,
@@ -1092,7 +1092,7 @@ async function buildPageMetas(): Promise<PageMeta[]> {
         "@type": "AnalysisNewsArticle",
         headline: article.seoTitle,
         description: article.excerpt,
-        datePublished: `${article.year}-01-01`,
+        datePublished: article.dateISO,
         dateModified: clampedDateModified,
         author: {
           "@type": "Organization",
@@ -1537,7 +1537,7 @@ function generateRss(): string {
       link: `${BASE_URL}/blog/${a.slug}`,
       guid: `${BASE_URL}/blog/${a.slug}`,
       description: a.excerpt,
-      pubDate: toRfc2822(`${a.year}-01-01`, buildDate),
+      pubDate: toRfc2822(a.dateISO, buildDate),
       category: "Annual Analysis",
     })),
   ].sort(
