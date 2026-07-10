@@ -955,6 +955,19 @@
   margin: 0;
 }
 
+.insights-results-heading {
+  margin: 2rem 0 1rem;
+  text-align: left;
+}
+
+.insights-results-heading h2 {
+  font-size: 1.5rem;
+}
+
+.insights-results-heading p {
+  font-size: 0.95rem;
+}
+
 /* Blog Card Grid */
 .blog-featured-grid {
   display: grid;

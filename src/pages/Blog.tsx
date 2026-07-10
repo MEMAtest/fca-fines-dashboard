@@ -833,6 +833,14 @@ export function Blog() {
             </div>
           )}
 
+          <div className="blog-section-header insights-results-heading">
+            <h2>All Enforcement Intelligence</h2>
+            <p>
+              Browse source-led analysis across regulators, sectors, themes,
+              jurisdictions and enforcement outcomes.
+            </p>
+          </div>
+
           <div className="insights-results-bar">
             <p>
               <strong>{filteredArticles.length}</strong> insights found
