@@ -1,4 +1,7 @@
-name: Approve AI Article
+name: Review and Publish AI Article
+
+permissions:
+  contents: write
 
 on:
   workflow_dispatch:
@@ -11,7 +14,7 @@ on:
 jobs:
   approve:
     runs-on: ubuntu-latest
-    timeout-minutes: 5
+    timeout-minutes: 20
     steps:
       - uses: actions/checkout@v4
 
@@ -22,14 +25,21 @@ jobs:
 
       - run: npm ci
 
-      - name: Approve and publish article
+      - name: Head Editorial Agent review chain
+        env:
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+        run: npx tsx scripts/review-article.ts "${{ github.event.inputs.draft_slug }}"
+
+      - name: Publisher Agent
+        env:
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
         run: npx tsx scripts/approve-article.ts "${{ github.event.inputs.draft_slug }}"
 
       - name: Commit published article
         run: |
           git config user.name "RegActions Bot"
           git config user.email "bot@regactions.com"
-          git add src/data/blogArticles.ts scripts/data/
+          git add -A src/data/blogArticles.ts scripts/data public
           git diff --staged --quiet || git commit -m "feat(blog): publish ${{ github.event.inputs.draft_slug }}"
           git push
 

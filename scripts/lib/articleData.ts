@@ -7,14 +7,28 @@
 
 import pg from 'pg';
 import { resolveConnectionString, buildPgPoolConfig } from '../../server/db.js';
+import { isVerifiedPenaltyAmount } from './editorialWorkflow.js';
+
+const VERIFIED_PENALTY_SQL = `
+  COALESCE(amount_gbp, amount_original, 0) > 0
+  AND (COALESCE(breach_type, '') || ' ' || COALESCE(summary, ''))
+      ~* '(fine|financial penalty|monetary penalty|civil penalty|penalised|penalized|geldbuße|geldbusse|bußgeld|bussgeld|ordnungsgeld)'
+  AND (COALESCE(breach_type, '') || ' ' || COALESCE(summary, ''))
+      !~* '(review|examination|investigation opened|consultation|tax receivable|assets under management|turnover|redress estimate)'
+`;
 
 export interface EnforcementRecord {
+  id: string;
   regulator: string;
   firm_individual: string;
   amount: number;
+  currency: string;
   date_issued: string;
   breach_type: string;
   summary: string;
+  notice_url: string;
+  source_url: string;
+  amount_verified: boolean;
 }
 
 export interface RegulatorStats {
@@ -62,11 +76,14 @@ async function query(sql: string, params: unknown[] = []): Promise<Record<string
  */
 export async function getTimelyData(days: number = 14): Promise<EnforcementRecord[]> {
   const rows = await query(`
-    SELECT regulator, firm_individual, amount, date_issued::text, breach_type,
-           COALESCE(summary, '') as summary
+    SELECT id::text, regulator, firm_individual,
+           COALESCE(amount_gbp, amount_original, 0)::float as amount,
+           'GBP'::text as currency, date_issued::text, breach_type,
+           COALESCE(summary, '') as summary, COALESCE(notice_url, '') as notice_url,
+           COALESCE(source_url, '') as source_url
     FROM all_regulatory_fines
     WHERE date_issued >= CURRENT_DATE - $1 * INTERVAL '1 day'
-    ORDER BY date_issued DESC, amount DESC
+    ORDER BY date_issued DESC, amount_gbp DESC NULLS LAST
     LIMIT 25
   `, [days]);
 
@@ -84,11 +101,14 @@ export async function getThematicData(keywords: string[]): Promise<EnforcementRe
   const params = keywords.map(k => `%${k}%`);
 
   const rows = await query(`
-    SELECT regulator, firm_individual, amount, date_issued::text, breach_type,
-           COALESCE(summary, '') as summary
+    SELECT id::text, regulator, firm_individual,
+           COALESCE(amount_gbp, amount_original, 0)::float as amount,
+           'GBP'::text as currency, date_issued::text, breach_type,
+           COALESCE(summary, '') as summary, COALESCE(notice_url, '') as notice_url,
+           COALESCE(source_url, '') as source_url
     FROM all_regulatory_fines
     WHERE ${conditions}
-    ORDER BY amount DESC
+    ORDER BY amount_gbp DESC NULLS LAST
     LIMIT 30
   `, params);
 
@@ -101,7 +121,7 @@ export async function getThematicData(keywords: string[]): Promise<EnforcementRe
 export async function getRegulatorStats(): Promise<RegulatorStats[]> {
   const rows = await query(`
     SELECT regulator, COUNT(*)::int as action_count,
-           COALESCE(SUM(amount), 0)::numeric as total_fines,
+           COALESCE(SUM(CASE WHEN ${VERIFIED_PENALTY_SQL} THEN COALESCE(amount_gbp, amount_original) ELSE 0 END), 0)::numeric as total_fines,
            MAX(date_issued)::text as latest_action
     FROM all_regulatory_fines
     GROUP BY regulator
@@ -123,13 +143,23 @@ export async function buildDataContext(
   type: 'timely' | 'thematic',
   keywords?: string[]
 ): Promise<DataContext> {
-  const [records, stats] = await Promise.all([
-    type === 'timely' ? getTimelyData(14) : getThematicData(keywords || []),
-    getRegulatorStats(),
-  ]);
-
-  const totalActions = stats.reduce((sum, s) => sum + s.action_count, 0);
-  const totalFines = stats.reduce((sum, s) => sum + s.total_fines, 0);
+  const records = type === 'timely' ? await getTimelyData(14) : await getThematicData(keywords || []);
+  const regulatorStats = new Map<string, RegulatorStats>();
+  for (const record of records) {
+    const current = regulatorStats.get(record.regulator) || {
+      regulator: record.regulator,
+      action_count: 0,
+      total_fines: 0,
+      latest_action: record.date_issued,
+    };
+    current.action_count += 1;
+    if (record.amount_verified) current.total_fines += record.amount;
+    if (record.date_issued > current.latest_action) current.latest_action = record.date_issued;
+    regulatorStats.set(record.regulator, current);
+  }
+  const stats = [...regulatorStats.values()].sort((a, b) => b.action_count - a.action_count);
+  const totalActions = records.length;
+  const totalFines = records.filter((record) => record.amount_verified).reduce((sum, record) => sum + record.amount, 0);
 
   const dates = records
     .map(r => r.date_issued)
@@ -158,7 +188,7 @@ export function formatDataTable(records: EnforcementRecord[]): string {
   const header = 'Regulator | Firm/Individual | Amount | Date | Breach Type | Summary';
   const separator = '---|---|---|---|---|---';
   const rows = records.map(r =>
-    `${r.regulator} | ${r.firm_individual} | ${formatAmount(r.amount)} | ${r.date_issued} | ${r.breach_type} | ${truncate(r.summary, 400)}`
+    `${r.regulator} | ${r.firm_individual} | ${r.amount_verified ? formatAmount(r.amount) : 'Non-monetary or amount unverified'} | ${r.date_issued} | ${r.breach_type} | ${truncate(r.summary, 400)}`
   );
 
   return [header, separator, ...rows].join('\n');
@@ -213,17 +243,21 @@ export async function queryMonthlyData(year: number, month: number): Promise<Mon
 
   const [current, prior, sectors] = await Promise.all([
     query(`
-      SELECT firm_individual, COALESCE(amount, 0)::float as amount,
+      SELECT id::text, firm_individual, COALESCE(amount, 0)::float as amount,
+             'GBP'::text as currency,
              date_issued::text, breach_type, COALESCE(summary, '') as summary,
-             'FCA' as regulator
+             'FCA' as regulator, COALESCE(final_notice_url, '') as notice_url,
+             COALESCE(final_notice_url, '') as source_url
       FROM fca_fines
       WHERE year_issued = $1 AND month_issued = $2
       ORDER BY amount DESC NULLS LAST
     `, [year, month]),
     query(`
-      SELECT firm_individual, COALESCE(amount, 0)::float as amount,
+      SELECT id::text, firm_individual, COALESCE(amount, 0)::float as amount,
+             'GBP'::text as currency,
              date_issued::text, breach_type, COALESCE(summary, '') as summary,
-             'FCA' as regulator
+             'FCA' as regulator, COALESCE(final_notice_url, '') as notice_url,
+             COALESCE(final_notice_url, '') as source_url
       FROM fca_fines
       WHERE year_issued = $1 AND month_issued = $2
       ORDER BY amount DESC NULLS LAST
@@ -277,15 +311,19 @@ export async function queryThematicData(
   const keywordParams = keywords.map(k => `%${k}%`);
 
   let baseQuery = `
-    SELECT regulator, firm_individual, COALESCE(amount_gbp, amount_original, 0)::float as amount,
-           date_issued::text, breach_type, COALESCE(summary, '') as summary
+    SELECT id::text, regulator, firm_individual, COALESCE(amount_gbp, amount_original, 0)::float as amount,
+           'GBP'::text as currency, date_issued::text, breach_type,
+           COALESCE(summary, '') as summary, COALESCE(notice_url, '') as notice_url,
+           COALESCE(source_url, '') as source_url
     FROM all_regulatory_fines
     WHERE (${keywordConditions}) AND year_issued >= $${keywords.length + 1}
   `;
   const baseParams: unknown[] = [...keywordParams, sinceYear];
+  let regulatorFilterSql = '';
 
   if (regulators && regulators.length > 0) {
-    baseQuery += ` AND regulator = ANY($${baseParams.length + 1}::text[])`;
+    regulatorFilterSql = ` AND regulator = ANY($${baseParams.length + 1}::text[])`;
+    baseQuery += regulatorFilterSql;
     baseParams.push(regulators);
   }
   baseQuery += ' ORDER BY amount DESC NULLS LAST LIMIT 50';
@@ -294,18 +332,18 @@ export async function queryThematicData(
     query(baseQuery, baseParams),
     query(`
       SELECT regulator, COUNT(*)::int as count,
-             COALESCE(SUM(amount_gbp), SUM(amount_original), 0)::float as total
+             COALESCE(SUM(CASE WHEN ${VERIFIED_PENALTY_SQL} THEN COALESCE(amount_gbp, amount_original) ELSE 0 END), 0)::float as total
       FROM all_regulatory_fines
-      WHERE (${keywordConditions}) AND year_issued >= $${keywords.length + 1}
+      WHERE (${keywordConditions}) AND year_issued >= $${keywords.length + 1}${regulatorFilterSql}
       GROUP BY regulator ORDER BY total DESC LIMIT 15
-    `, baseParams.slice(0, keywords.length + 1)),
+    `, baseParams),
     query(`
       SELECT year_issued as year, COUNT(*)::int as count,
-             COALESCE(SUM(amount_gbp), SUM(amount_original), 0)::float as total
+             COALESCE(SUM(CASE WHEN ${VERIFIED_PENALTY_SQL} THEN COALESCE(amount_gbp, amount_original) ELSE 0 END), 0)::float as total
       FROM all_regulatory_fines
-      WHERE (${keywordConditions}) AND year_issued >= $${keywords.length + 1}
+      WHERE (${keywordConditions}) AND year_issued >= $${keywords.length + 1}${regulatorFilterSql}
       GROUP BY year_issued ORDER BY year_issued ASC
-    `, baseParams.slice(0, keywords.length + 1)),
+    `, baseParams),
   ]);
 
   return {
@@ -336,15 +374,17 @@ export async function queryPersonaData(
 
   const [records, breakdown] = await Promise.all([
     query(`
-      SELECT regulator, firm_individual, COALESCE(amount_gbp, amount_original, 0)::float as amount,
-             date_issued::text, breach_type, COALESCE(summary, '') as summary
+      SELECT id::text, regulator, firm_individual, COALESCE(amount_gbp, amount_original, 0)::float as amount,
+             'GBP'::text as currency, date_issued::text, breach_type,
+             COALESCE(summary, '') as summary, COALESCE(notice_url, '') as notice_url,
+             COALESCE(source_url, '') as source_url
       FROM all_regulatory_fines
       WHERE (firm_category ILIKE $1 OR ${kwConditions})
       ORDER BY amount DESC NULLS LAST LIMIT 40
     `, [firmCategory, ...kwParams]),
     query(`
       SELECT regulator, COUNT(*)::int as count,
-             COALESCE(SUM(amount_gbp), SUM(amount_original), 0)::float as total
+             COALESCE(SUM(CASE WHEN ${VERIFIED_PENALTY_SQL} THEN COALESCE(amount_gbp, amount_original) ELSE 0 END), 0)::float as total
       FROM all_regulatory_fines
       WHERE (firm_category ILIKE $1 OR ${kwConditions})
       GROUP BY regulator ORDER BY total DESC LIMIT 12
@@ -372,14 +412,16 @@ export async function queryComparisonData(
     const [stats, topCases, topBreach] = await Promise.all([
       query(`
         SELECT COUNT(*)::int as count,
-               COALESCE(SUM(amount_gbp), SUM(amount_original), 0)::float as total,
-               COALESCE(AVG(NULLIF(amount_gbp, 0)), AVG(NULLIF(amount_original, 0)), 0)::float as avg_fine
+               COALESCE(SUM(CASE WHEN ${VERIFIED_PENALTY_SQL} THEN COALESCE(amount_gbp, amount_original) ELSE 0 END), 0)::float as total,
+               COALESCE(AVG(CASE WHEN ${VERIFIED_PENALTY_SQL} THEN COALESCE(amount_gbp, amount_original) END), 0)::float as avg_fine
         FROM all_regulatory_fines
         WHERE regulator = $1 AND year_issued >= $2
       `, [reg, since]),
       query(`
-        SELECT regulator, firm_individual, COALESCE(amount_gbp, amount_original, 0)::float as amount,
-               date_issued::text, breach_type, COALESCE(summary, '') as summary
+        SELECT id::text, regulator, firm_individual, COALESCE(amount_gbp, amount_original, 0)::float as amount,
+               'GBP'::text as currency, date_issued::text, breach_type,
+               COALESCE(summary, '') as summary, COALESCE(notice_url, '') as notice_url,
+               COALESCE(source_url, '') as source_url
         FROM all_regulatory_fines
         WHERE regulator = $1 AND year_issued >= $2
         ORDER BY amount DESC NULLS LAST LIMIT 5
@@ -428,19 +470,27 @@ export async function queryForensicData(
 
   const namedFirmClause = `AND firm_individual NOT IN ('Mr', 'Unknown', '', 'N/A') AND firm_individual IS NOT NULL AND length(trim(firm_individual)) > 3`;
   const validAmountClause = `AND amount_gbp IS NOT NULL AND amount_gbp > 0 AND amount_gbp != 'NaN'::float`;
+  const verifiedPenaltyClause = `AND (
+    breach_type ~* '(fine|financial penalty|monetary penalty|geldbuße|geldbusse|bußgeld|bussgeld|ordnungsgeld)'
+    OR summary ~* '(fined|financial penalty|monetary penalty|geldbuße|geldbusse|bußgeld|bussgeld|ordnungsgeld)'
+  ) AND summary !~* '(review|examination|investigation opened|tax receivable|assets under management|turnover|prüfung eingeleitet|leitet eine prüfung)'`;
   const [topRows, allRows] = await Promise.all([
     query(`
-      SELECT regulator, firm_individual, amount_gbp::float as amount,
-             date_issued::text, breach_type, COALESCE(summary, '') as summary
+      SELECT id::text, regulator, firm_individual, amount_gbp::float as amount,
+             'GBP'::text as currency, date_issued::text, breach_type,
+             COALESCE(summary, '') as summary, COALESCE(notice_url, '') as notice_url,
+             COALESCE(source_url, '') as source_url
       FROM all_regulatory_fines
-      WHERE ${whereClause} ${namedFirmClause} ${validAmountClause}
+      WHERE ${whereClause} ${namedFirmClause} ${validAmountClause} ${verifiedPenaltyClause}
       ORDER BY amount_gbp DESC NULLS LAST LIMIT 1
     `, params),
     query(`
-      SELECT regulator, firm_individual, COALESCE(amount_gbp, amount_original, 0)::float as amount,
-             date_issued::text, breach_type, COALESCE(summary, '') as summary
+      SELECT id::text, regulator, firm_individual, COALESCE(amount_gbp, amount_original, 0)::float as amount,
+             'GBP'::text as currency, date_issued::text, breach_type,
+             COALESCE(summary, '') as summary, COALESCE(notice_url, '') as notice_url,
+             COALESCE(source_url, '') as source_url
       FROM all_regulatory_fines
-      WHERE ${whereClause}
+      WHERE ${whereClause} ${verifiedPenaltyClause}
       ORDER BY amount DESC NULLS LAST LIMIT 20
     `, params),
   ]);
@@ -486,7 +536,7 @@ export function formatMonthlyTable(data: MonthlyData): string {
   const header = '| Firm/Individual | Amount | Date | Breach Type |';
   const sep    = '|---|---|---|---|';
   const rows = data.currentMonth.map(r =>
-    `| ${r.firm_individual} | ${formatAmount(r.amount)} | ${r.date_issued} | ${r.breach_type || '—'} |`,
+    `| ${r.firm_individual} | ${r.amount_verified ? formatAmount(r.amount) : 'Non-monetary'} | ${r.date_issued} | ${r.breach_type || '-'} |`,
   );
   return [header, sep, ...rows].join('\n');
 }
@@ -506,14 +556,19 @@ export function formatComparisonTable(data: ComparisonData): string {
 // ─── Helpers ───────────────────────────────────────────────────────────────────
 
 function normalizeRecord(r: Record<string, unknown>): EnforcementRecord {
-  return {
+  const base = {
+    id: String(r.id || `${r.regulator || 'unknown'}:${r.firm_individual || 'unknown'}:${r.date_issued || 'unknown'}`),
     regulator: String(r.regulator || ''),
     firm_individual: String(r.firm_individual || ''),
     amount: Number(r.amount) || 0,
+    currency: String(r.currency || 'GBP'),
     date_issued: String(r.date_issued || ''),
     breach_type: String(r.breach_type || ''),
     summary: String(r.summary || ''),
+    notice_url: String(r.notice_url || ''),
+    source_url: String(r.source_url || ''),
   };
+  return { ...base, amount_verified: isVerifiedPenaltyAmount(base) };
 }
 
 function formatAmount(amount: number): string {
@@ -554,6 +609,7 @@ export function buildStatisticalSummary(
   if (records.length === 0) return '(No statistical summary available — no records)';
 
   const amounts = records
+    .filter(r => r.amount_verified)
     .map(r => r.amount)
     .filter(a => a > 0 && !isNaN(a))
     .sort((a, b) => a - b);
@@ -568,12 +624,12 @@ export function buildStatisticalSummary(
   const p75idx = Math.floor(amounts.length * 0.75);
   const p75 = amounts[p75idx] ?? amounts[amounts.length - 1]!;
 
-  const outliers = records.filter(r => r.amount > p75 * 3);
+  const outliers = records.filter(r => r.amount_verified && r.amount > p75 * 3);
 
   const topFirms = records
     .filter(r => r.firm_individual && r.firm_individual.length > 3 && !['Mr', 'Unknown', 'N/A'].includes(r.firm_individual))
     .slice(0, 10)
-    .map(r => `${r.firm_individual} (${r.regulator}, ${formatAmount(r.amount)}, ${r.date_issued.slice(0, 7)})`)
+    .map(r => `${r.firm_individual} (${r.regulator}, ${r.amount_verified ? formatAmount(r.amount) : 'non-monetary'}, ${r.date_issued.slice(0, 7)})`)
     .join('\n  ');
 
   let yoyDelta: string | null = null;
@@ -593,7 +649,7 @@ export function buildStatisticalSummary(
     `  Mean fine: ${formatAmount(mean)} | Median: ${formatAmount(median)} | 75th percentile: ${formatAmount(p75)}`,
     outliers.length > 0 ? `  Outlier cases (>3× p75, ${formatAmount(p75 * 3)}+): ${outliers.map(r => `${r.firm_individual} ${formatAmount(r.amount)}`).join(', ')}` : '',
     yoyDelta ? `  Year-on-year: ${yoyDelta}` : '',
-    topFirms ? `\nKEY CASES — TOP ${Math.min(10, records.length)} BY FINE AMOUNT (use these in the article):\n  ${topFirms}` : '',
+    topFirms ? `\nKEY SOURCE CASES (${Math.min(10, records.length)} shown, monetary values only where verified):\n  ${topFirms}` : '',
   ].filter(Boolean);
 
   return lines.join('\n');
@@ -613,7 +669,7 @@ export function buildKeyCaseSummaries(records: EnforcementRecord[], limit = 10):
   return top.map((r, i) => [
     `Case ${i + 1}: ${r.firm_individual}`,
     `  Regulator: ${r.regulator}`,
-    `  Amount: ${formatAmount(r.amount)}`,
+    `  Amount: ${r.amount_verified ? formatAmount(r.amount) : 'Non-monetary or not verified as a penalty'}`,
     `  Date: ${r.date_issued}`,
     `  Breach: ${r.breach_type || 'Not specified'}`,
     `  Detail: ${r.summary || 'No summary available'}`,

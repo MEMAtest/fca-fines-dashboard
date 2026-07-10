@@ -30,7 +30,7 @@ export const BRAND_VOICE = {
   noHedging: true, // "might", "perhaps", "could potentially", "it seems", "arguably" — state directly
   requiredElements: [
     'At least one enforcement data table or structured breakdown',
-    'Named enforcement cases with specific fine amounts from the source data',
+    'Named enforcement cases with amounts only where the source verifies a monetary penalty',
     '"About the Data" section as the final section before Key Takeaways',
     'Source attribution: "[Regulator] enforcement register / Final Notice / Press Release"',
   ],
@@ -75,7 +75,7 @@ Style rules (strictly enforced):
 
 Required structural elements every article must include:
 1. At least one enforcement data table or structured breakdown early in the article
-2. Named enforcement cases with specific fine amounts (source data only — never invented)
+2. Named enforcement cases, with amounts only where the source verifies a monetary penalty
 3. "## About the Data" as the penultimate section
 4. Forward-looking "what to watch" content in at least one section
 

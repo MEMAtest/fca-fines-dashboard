@@ -61,13 +61,18 @@ async function main() {
   record("sitemap includes blog", sitemap.text.includes(`${baseUrl}/blog`));
   record(
     "sitemap includes latest July article",
-    sitemap.text.includes(`${baseUrl}/blog/biggest-fine-h1-2026-forensic`),
+    sitemap.text.includes(`${baseUrl}/blog/wealth-managers-consumer-duty-enforcement`),
+  );
+  record(
+    "sitemap excludes unapproved DekaBank article",
+    !sitemap.text.includes(`${baseUrl}/blog/biggest-fine-h1-2026-forensic`),
   );
   record("sitemap excludes legacy dashboard", !sitemap.text.includes(`${baseUrl}/dashboard`));
 
   const rss = await fetchText("/rss.xml");
   record("rss returns 200", rss.response.status === 200, `status=${rss.response.status}`);
-  record("rss has latest July article", rss.text.includes("biggest-fine-h1-2026-forensic"));
+  record("rss has latest July article", rss.text.includes("wealth-managers-consumer-duty-enforcement"));
+  record("rss excludes unapproved DekaBank article", !rss.text.includes("biggest-fine-h1-2026-forensic"));
   record("rss has at least 30 items", countMatches(rss.text, /<item>/g) >= 30);
 
   await auditHtmlPage(
@@ -77,9 +82,9 @@ async function main() {
   );
   await auditHtmlPage("/blog", `${baseUrl}/blog`, "Regulatory Insights");
   await auditHtmlPage(
-    "/blog/biggest-fine-h1-2026-forensic",
-    `${baseUrl}/blog/biggest-fine-h1-2026-forensic`,
-    "DekaBank Deutsche Girozentrale",
+    "/blog/wealth-managers-consumer-duty-enforcement",
+    `${baseUrl}/blog/wealth-managers-consumer-duty-enforcement`,
+    "Wealth Managers",
   );
   await auditHtmlPage("/regulators/fca", `${baseUrl}/regulators/fca`, "FCA Fines Database");
 

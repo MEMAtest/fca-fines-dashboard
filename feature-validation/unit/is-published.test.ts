@@ -53,6 +53,53 @@ describe("isPublished", () => {
     );
   });
 
+  test("fails closed for AI articles without Head Editorial Agent approval", () => {
+    expect(isPublished({
+      status: "published",
+      dateISO: "2026-05-01",
+      generatedBy: "ai",
+    }, today)).toBe(false);
+  });
+
+  test("allows an AI article only after Head Editorial Agent approval", () => {
+    expect(isPublished({
+      status: "published",
+      dateISO: "2026-05-01",
+      generatedBy: "ai",
+      editorialManifest: {
+        version: 1,
+        status: "published",
+        contentHash: "current-hash",
+        generatedAt: "2026-05-01T00:00:00.000Z",
+        generationModel: "test-model",
+        promptVersion: "test-prompt",
+        sources: [],
+        claims: [],
+        charts: [],
+        images: [],
+        reviews: [],
+        headApproval: {
+          status: "approved",
+          reviewer: "head-editorial-agent",
+          approvedAt: "2026-05-01T00:00:00.000Z",
+          contentHash: "current-hash",
+          model: "test-model",
+          promptVersion: "test-prompt",
+          rationale: "All gates passed",
+        },
+      },
+      publicationManifest: {
+        version: 1,
+        slug: "approved-article",
+        contentHash: "current-hash",
+        approvedBy: "head-editorial-agent",
+        approvedAt: "2026-05-01T00:00:00.000Z",
+        publishedBy: "publisher-agent",
+        publishedAt: "2026-05-01T00:00:01.000Z",
+      },
+    }, today)).toBe(true);
+  });
+
   test("publishes scheduled articles on their date", () => {
     expect(
       isPublished({ status: "scheduled", dateISO: "2026-05-08" }, today),
@@ -79,6 +126,11 @@ describe("isPublished", () => {
     expect(
       articles.some((a) => a.slug === "occ-enforcement-actions-complete-guide"),
     ).toBe(false);
+  });
+
+  test("published selectors quarantine the unapproved DekaBank article", () => {
+    const articles = getPublishedBlogArticles("2026-07-10");
+    expect(articles.some((article) => article.slug === "biggest-fine-h1-2026-forensic")).toBe(false);
   });
 
   test("yearly articles are normalized to the shared article shape", () => {

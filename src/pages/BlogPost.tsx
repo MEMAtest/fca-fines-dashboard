@@ -15,6 +15,7 @@ import {
 import { useSEO, injectStructuredData } from "../hooks/useSEO.js";
 import { REGULATOR_COUNT } from "../constants/site.js";
 import { DigestSubscribeForm } from "../components/DigestSubscribeForm.js";
+import { GeneratedArticleCharts } from "../components/GeneratedArticleCharts.js";
 import { trackEvent } from "../utils/analytics.js";
 import {
   getPublishedBlogArticles,
@@ -73,6 +74,44 @@ import "../styles/blog.css";
 
 const blogArticles = getPublishedBlogArticles();
 const yearlyArticles = getPublishedYearlyArticles();
+
+function ArticleHero({ article }: { article: BlogArticleMeta }) {
+  return (
+    <figure className="blog-article-hero">
+      <img
+        src={`/blog/images/${article.slug}-hero.png`}
+        alt={`Editorial cover for ${article.title}`}
+        width="1600"
+        height="900"
+        loading="eager"
+        fetchPriority="high"
+      />
+    </figure>
+  );
+}
+
+function EditorialInlineImages({ article }: { article: BlogArticleMeta }) {
+  const images = article.editorialManifest?.images.filter(
+    (image) => image.purpose === "inline_illustration" && image.approved,
+  ) || [];
+  if (images.length === 0) return null;
+  return (
+    <section className="editorial-inline-images" aria-label="Editorial illustrations">
+      {images.map((image) => (
+        <figure key={image.id}>
+          <img
+            src={image.outputPath}
+            alt={image.altText}
+            width={image.width}
+            height={image.height}
+            loading="lazy"
+          />
+          {image.caption && <figcaption>{image.caption}</figcaption>}
+        </figure>
+      ))}
+    </section>
+  );
+}
 
 // Helper function to format currency (same as Blog.tsx)
 const formatYearlyCurrency = (amount: number): string => {
@@ -639,6 +678,8 @@ function StructuredRegulatorArticlePage({
             </div>
           </div>
 
+          <ArticleHero article={article} />
+
           <div
             className="blog-article-content blog-article-content--structured"
             itemProp="articleBody"
@@ -857,11 +898,10 @@ function generateArticleSchema(article: BlogArticleMeta | YearlyArticleMeta) {
     keywords: article.keywords.join(", "),
     image: {
       "@type": "ImageObject",
-      url: "https://regactions.com/og-image.png",
+      url: `https://regactions.com/og/${slug}.png`,
       width: 1200,
       height: 630,
-      caption:
-        "RegActions - Global Regulatory Fines & Enforcement Intelligence",
+      caption: article.title,
     },
   };
 }
@@ -951,6 +991,8 @@ function BlogArticlePage({ article }: { article: BlogArticleMeta }) {
             </div>
           </div>
 
+          <ArticleHero article={article} />
+
           <ArticleActionPanel article={article} />
 
           <div
@@ -960,6 +1002,9 @@ function BlogArticlePage({ article }: { article: BlogArticleMeta }) {
               __html: renderMarkdownContent(article.content),
             }}
           />
+
+          <GeneratedArticleCharts charts={article.editorialManifest?.charts || []} />
+          <EditorialInlineImages article={article} />
 
           {/* Article-specific charts */}
           {article.id === "largest-fca-fines-history" && (
@@ -1170,6 +1215,8 @@ function YearlyArticlePage({ article }: { article: YearlyArticleMeta }) {
               </span>
             </div>
           </div>
+
+          <ArticleHero article={article} />
 
           <ArticleActionPanel article={article} />
 

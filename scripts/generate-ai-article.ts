@@ -2,8 +2,9 @@
 /**
  * AI Article Generation Script
  *
- * Generates enforcement analysis articles using DeepSeek via OpenRouter.
- * Articles are saved as drafts for human review before publishing.
+ * Generates evidence-led enforcement analysis drafts. OpenAI Structured
+ * Outputs is preferred, with OpenRouter retained as a drafting-only fallback.
+ * Every draft must pass the independent agent review chain before publishing.
  *
  * Usage:
  *   npx tsx scripts/generate-ai-article.ts              # Auto-select topic
@@ -16,13 +17,19 @@ import { writeFileSync, readFileSync, existsSync, mkdirSync } from 'fs';
 import { join, dirname } from 'path';
 import { fileURLToPath } from 'url';
 import { buildDataContext, formatDataTable, closePool, type DataContext } from './lib/articleData.js';
-import { selectTopic, recordPublishedTopic, type TopicSelection } from './lib/editorialCalendar.js';
+import { selectTopic, type TopicSelection } from './lib/editorialCalendar.js';
 import { runQualityGate, formatQualityReport, type QualityReport } from './lib/articleQuality.js';
 import { sendArticleReviewEmail } from './lib/articleReview.js';
+import { EDITORIAL_MODELS, EDITORIAL_PROMPT_VERSION, runDraftingAgent } from './lib/editorialAgents.js';
+import { buildInitialEditorialManifest, normaliseToHouseStyle } from './lib/editorialWorkflow.js';
+import { getBrandVoiceSystemPrefix } from './lib/brandVoice.js';
+import { config } from 'dotenv';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 const ROOT = join(__dirname, '..');
+config({ path: join(ROOT, '.env') });
+config({ path: join(ROOT, '.env.local'), override: false });
 const DRAFTS_DIR = join(__dirname, 'data', 'drafts');
 const LOG_FILE = join(__dirname, 'data', 'generation-log.json');
 
@@ -35,6 +42,7 @@ const args = process.argv.slice(2);
 const dryRun = args.includes('--dry-run');
 const topicOverride = args.find(a => a.startsWith('--topic='))?.split('=').slice(1).join('=')
   || process.env.TOPIC_OVERRIDE || '';
+const resultFile = args.find(a => a.startsWith('--result-file='))?.split('=').slice(1).join('=');
 
 // ─── Main ──────────────────────────────────────────────────────────────────────
 
@@ -134,8 +142,7 @@ async function main(): Promise<void> {
   }
 
   // 6. Save draft
-  saveDraft(article, topic, qualityReport);
-  recordPublishedTopic(topic);
+  saveDraft(article, topic, qualityReport, dataContext);
   logResult(topic, article, qualityReport, 'draft_saved');
 
   // 7. Send review email
@@ -152,7 +159,10 @@ async function main(): Promise<void> {
 
   console.log('');
   console.log(`Draft saved: ${DRAFTS_DIR}/${topic.slug}.json`);
-  console.log('Awaiting admin approval via GitHub Actions.');
+  console.log('Awaiting independent agent review.');
+  if (resultFile) {
+    writeFileSync(resultFile, `${JSON.stringify({ slug: topic.slug, draftPath: join(DRAFTS_DIR, `${topic.slug}.json`) })}\n`, 'utf-8');
+  }
 
   await closePool();
 }
@@ -165,14 +175,30 @@ async function callAI(
   feedback: string,
   temperature: number
 ): Promise<string | null> {
-  const apiKey = process.env.OPENROUTER_API_KEY?.trim();
-  if (!apiKey) {
-    console.error('OPENROUTER_API_KEY not set');
-    return null;
-  }
-
   const systemPrompt = buildSystemPrompt();
   const userPrompt = buildUserPrompt(topic, data, feedback);
+
+  if (process.env.OPENAI_API_KEY?.trim()) {
+    try {
+      const article = await runDraftingAgent(systemPrompt, userPrompt);
+      return [
+        `TITLE: ${normaliseToHouseStyle(article.title)}`,
+        `EXCERPT: ${normaliseToHouseStyle(article.excerpt)}`,
+        `KEYWORDS: ${article.keywords.join(', ')}`,
+        'CONTENT:',
+        normaliseToHouseStyle(article.content),
+      ].join('\n');
+    } catch (error) {
+      console.warn('  OpenAI structured drafting error:', error instanceof Error ? error.message : String(error));
+      return null;
+    }
+  }
+
+  const apiKey = process.env.OPENROUTER_API_KEY?.trim();
+  if (!apiKey) {
+    console.error('Neither OPENAI_API_KEY nor OPENROUTER_API_KEY is set');
+    return null;
+  }
 
   try {
     const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
@@ -208,9 +234,9 @@ async function callAI(
 }
 
 function buildSystemPrompt(): string {
-  return `You are a senior regulatory affairs analyst writing for RegActions, a platform that tracks enforcement actions from 45+ global financial regulators. Write in a professional, analytical tone — authoritative but accessible. No first person. No hedging ("might", "could potentially"). State facts and draw conclusions.
+  return `${getBrandVoiceSystemPrefix()}You are a senior regulatory affairs analyst writing for RegActions. Use a voice that is 60% senior-regulator restraint and 40% strategy-consulting clarity: sober, exact, answer-first and useful to a board. Use UK spelling throughout.
 
-Every claim about fines, amounts, regulators, or dates must come directly from the data provided. Never invent enforcement actions, fine amounts, firm names, or regulatory references. If the data is insufficient for a section, state what the data shows rather than speculating.
+Every claim about actions, amounts, regulators, dates or findings must come directly from the data provided. Never invent enforcement actions, fine amounts, firm names or regulatory references. An amount marked unverified or non-monetary must never be described as a fine. Distinguish penalties from investigations, examinations, restrictions, censures, redress, turnover, assets and accounting balances. If the data is insufficient, say exactly what it establishes and no more.
 
 Output format (strictly follow this structure):
 
@@ -218,7 +244,7 @@ TITLE: [title, max 70 chars]
 EXCERPT: [excerpt, 120-200 chars]
 KEYWORDS: [comma-separated, 5-8 keywords]
 CONTENT:
-[800-1500 words of markdown content with 4-6 H2 sections]
+[1100-1600 words of markdown content with 5-7 H2 sections]
 
 Section structure:
 - ## Overview (context and significance)
@@ -229,9 +255,9 @@ Section structure:
 - ## [Optional thematic section based on topic]
 
 Requirements:
-- Include specific numbers: fine amounts, action counts, date ranges
+- Include specific numbers only when the source data verifies them
 - Reference at least 3 specific enforcement actions from the provided data
-- Include at least 2 specific fine amounts from the data
+- Include verified fine amounts when available; do not force a monetary angle onto non-monetary actions
 - End with a forward-looking paragraph for compliance professionals
 - No markdown in title or excerpt
 - No trailing whitespace or incomplete sentences`;
@@ -240,7 +266,7 @@ Requirements:
 function buildUserPrompt(topic: TopicSelection, data: DataContext, feedback: string): string {
   const dataTable = formatDataTable(data.records);
   const statsContext = data.stats.slice(0, 10).map(s =>
-    `${s.regulator}: ${s.action_count} actions, total fines ${formatAmount(s.total_fines)}`
+    `${s.regulator}: ${s.action_count} selected actions, verified penalties ${formatAmount(s.total_fines)}`
   ).join('\n');
 
   let prompt = `Write an article about: ${topic.title}
@@ -251,17 +277,17 @@ Here is the enforcement data to base the article on:
 ${dataTable}
 
 Additional context:
-- Total enforcement actions across all regulators: ${data.totalActions}
-- Total fines in dataset: ${formatAmount(data.totalFines)}
+- Enforcement actions in this source set: ${data.totalActions}
+- Verified monetary penalties in this source set: ${formatAmount(data.totalFines)}
 - Date range covered: ${data.dateRange.start} to ${data.dateRange.end}
 - Top regulators by activity:
 ${statsContext}
 
 Requirements:
 - Reference at least 3 specific enforcement actions from the data above
-- Include at least 2 specific fine amounts from the data
+- Include monetary amounts only where the row says the amount is verified
 - Compare across at least 2 regulators
-- Minimum 800 words, maximum 1500 words
+- Minimum 1100 words, maximum 1600 words
 - Every fact must come from the provided data table`;
 
   if (feedback) {
@@ -311,13 +337,29 @@ function parseArticleResponse(raw: string, topic: TopicSelection): GeneratedArti
 
 // ─── Draft Storage ─────────────────────────────────────────────────────────────
 
-function saveDraft(article: GeneratedArticle, topic: TopicSelection, qualityReport: QualityReport): void {
+function saveDraft(
+  article: GeneratedArticle,
+  topic: TopicSelection,
+  qualityReport: QualityReport,
+  dataContext: DataContext,
+): void {
   if (!existsSync(DRAFTS_DIR)) {
     mkdirSync(DRAFTS_DIR, { recursive: true });
   }
 
   const now = new Date();
   const dateISO = now.toISOString().slice(0, 10);
+  const articleType = topic.track === 'timely' ? 'monthly' : 'thematic';
+  const generationModel = process.env.OPENAI_API_KEY?.trim() ? EDITORIAL_MODELS.drafting : DEEPSEEK_MODEL;
+  const editorialManifest = buildInitialEditorialManifest({
+    slug: topic.slug,
+    article,
+    articleType,
+    records: dataContext.records,
+    generationModel,
+    promptVersion: EDITORIAL_PROMPT_VERSION,
+    generatedAt: now.toISOString(),
+  });
 
   const draft = {
     id: `ai-${topic.slug}`,
@@ -334,6 +376,10 @@ function saveDraft(article: GeneratedArticle, topic: TopicSelection, qualityRepo
     status: 'draft' as const,
     generatedBy: 'ai' as const,
     generatedAt: now.toISOString(),
+    articleType,
+    topicTrack: topic.track,
+    sourceRecords: dataContext.records,
+    editorialManifest,
     qualityReport: {
       score: qualityReport.score,
       passed: qualityReport.passed,

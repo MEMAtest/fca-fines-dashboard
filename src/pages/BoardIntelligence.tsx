@@ -406,9 +406,9 @@ export function BoardIntelligence() {
 
   function generateBoardPack() {
     trackEvent("board_pack_start", {
-      template: draftProfile.templateId,
+      template: normalizedDraftSettings.templateId,
       archetype: draftProfile.archetypeId,
-      focus: draftProfile.boardFocusId,
+      focus: draftProfile.boardFocus,
     });
     setActiveProfile(draftProfile);
     setActiveSettings(normalizedDraftSettings);

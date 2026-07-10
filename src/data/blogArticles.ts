@@ -3,9 +3,19 @@
 
 import { regulatorBlogs } from "./regulatorBlogs.js";
 import { blogArticleEditorialUpgrades } from "./blogArticleEditorialUpgrades.js";
+import type { EditorialManifest, PublicationManifest } from "../types/editorial.js";
 
 export type ArticleStatus = "published" | "scheduled" | "draft";
-export type ArticleType = "standard" | "yearly" | "regulator";
+export type ArticleType =
+  | "standard"
+  | "yearly"
+  | "regulator"
+  | "monthly"
+  | "comparison"
+  | "forensic"
+  | "trends"
+  | "thematic"
+  | "persona";
 
 export interface BlogArticleMeta {
   id: string;
@@ -31,6 +41,8 @@ export interface BlogArticleMeta {
   lookingAhead?: string;
   generatedBy?: "ai" | "manual";
   generatedAt?: string;
+  editorialManifest?: EditorialManifest;
+  publicationManifest?: PublicationManifest;
 }
 
 export interface StructuredRegulatorMetric {
@@ -92,9 +104,31 @@ type YearlyArticleSource = Omit<
 > & { dateISO?: string };
 
 export function isPublished(
-  article: { status?: ArticleStatus | string; dateISO: string },
+  article: {
+    status?: ArticleStatus | string;
+    dateISO: string;
+    generatedBy?: "ai" | "manual";
+    editorialManifest?: EditorialManifest;
+    publicationManifest?: PublicationManifest;
+  },
   todayISO = new Date().toISOString().slice(0, 10),
 ): boolean {
+  if (article.generatedBy === "ai") {
+    const manifest = article.editorialManifest;
+    const publication = article.publicationManifest;
+    if (
+      !manifest ||
+      !publication ||
+      manifest.headApproval?.status !== "approved" ||
+      manifest.headApproval.contentHash !== manifest.contentHash ||
+      publication.contentHash !== manifest.contentHash ||
+      publication.approvedBy !== "head-editorial-agent" ||
+      publication.publishedBy !== "publisher-agent" ||
+      !new Set(["scheduled", "published"]).has(manifest.status)
+    ) {
+      return false;
+    }
+  }
   if (!article.status || article.status === "published") return true;
   if (article.status === "draft") return false;
   return article.dateISO <= todayISO;

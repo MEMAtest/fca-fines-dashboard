@@ -105,6 +105,9 @@ export interface ParsedEnforcementRecord {
   firmIndividual: string;
   firmCategory: string | null;
   amount: number | null;
+  /** Amount used only to preserve a stable legacy content hash when source text
+   * contains a monetary reference that is not itself a penalty. */
+  identityAmount?: number | null;
   currency: string;
   dateIssued: string;
   breachType: string;
@@ -558,7 +561,7 @@ export function buildEuFineRecord(record: ParsedEnforcementRecord): DbReadyRecor
     .update(JSON.stringify({
       regulator: record.regulator,
       firmIndividual: record.firmIndividual,
-      amount: record.amount,
+      amount: record.identityAmount ?? record.amount,
       currency: record.currency,
       dateIssued: record.dateIssued,
       finalNoticeUrl: record.finalNoticeUrl,

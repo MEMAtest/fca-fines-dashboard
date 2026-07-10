@@ -148,7 +148,10 @@ const REGULATOR_FILTERS = [
   "Bank of England",
 ];
 
-const QUICK_FILTERS = [
+const QUICK_FILTERS: Array<{
+  label: string;
+  updates: Record<string, string | null>;
+}> = [
   { label: "All", updates: { q: null, month: null, category: null } },
   { label: "June 2026", updates: { month: "2026-06", q: null } },
   { label: "July 2026", updates: { month: "2026-07", q: null } },

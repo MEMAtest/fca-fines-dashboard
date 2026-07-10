@@ -46,7 +46,7 @@ test.describe('Blog Navigation', () => {
       const leadCard = page.locator('.insights-lead-card');
       await expect(leadCard).toBeVisible();
       await expect(leadCard.locator('h2')).toContainText(
-        'DekaBank Deutsche Girozentrale',
+        "Wealth Managers: Why You're at the Front of the Consumer Duty Queue",
       );
     });
 
@@ -56,10 +56,10 @@ test.describe('Blog Navigation', () => {
       await page.getByRole('button', { name: 'July 2026' }).click();
       await expect(page).toHaveURL(/month=2026-07/);
       await expect(page.locator('.insights-lead-card h2')).toContainText(
-        'DekaBank Deutsche Girozentrale',
+        "Wealth Managers: Why You're at the Front of the Consumer Duty Queue",
       );
       await expect(page.locator('.insights-results-bar')).toContainText(
-        '4',
+        '3',
       );
     });
 

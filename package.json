@@ -8,7 +8,7 @@
     "dev": "vite",
     "dev:api": "tsx server.ts",
     "start": "tsx server.ts",
-    "build": "vite build && node --import tsx/esm scripts/generate-og-images.ts && node --import tsx/esm scripts/prerender-seo.ts",
+    "build": "vite build && node --import tsx/esm scripts/generate-og-images.ts && node --import tsx/esm scripts/generate-editorial-images.ts && node --import tsx/esm scripts/prerender-seo.ts",
     "test": "vitest",
     "test:run": "vitest run",
     "test:coverage": "vitest run --coverage",
@@ -96,7 +96,10 @@
     "blog:help": "node --import tsx/esm scripts/generate-blog.ts --help",
     "generate:all": "node --import tsx/esm scripts/generateAllArticles.ts",
     "generate:dry": "node --import tsx/esm scripts/generateAllArticles.ts --dry-run",
-    "generate:due": "node --import tsx/esm scripts/generateAllArticles.ts --due-within=14"
+    "generate:due": "node --import tsx/esm scripts/generateAllArticles.ts --due-within=14",
+    "editorial:review": "node --import tsx/esm scripts/review-article.ts",
+    "editorial:publish": "node --import tsx/esm scripts/approve-article.ts",
+    "editorial:correct:dekabank": "node --import tsx/esm scripts/corrections/fixDekaBank2026.ts"
   },
   "dependencies": {
     "@aws-sdk/client-ses": "^3.969.0",
@@ -117,6 +120,7 @@
     "fuse.js": "^7.0.0",
     "html2canvas": "^1.4.1",
     "lucide-react": "^0.555.0",
+    "openai": "^6.46.0",
     "papaparse": "^5.4.1",
     "pg": "^8.19.0",
     "postgres": "^3.4.8",
@@ -130,7 +134,8 @@
     "three": "^0.183.2",
     "topojson-client": "^3.1.0",
     "xlsx": "^0.18.5",
-    "xml2js": "^0.6.2"
+    "xml2js": "^0.6.2",
+    "zod": "^4.4.3"
   },
   "devDependencies": {
     "@playwright/test": "^1.58.2",

@@ -1,8 +1,8 @@
 /**
- * Article Review Email — Human-in-the-Loop Gate
+ * Article Review Email — Editorial Engine notification
  *
  * Sends a review email to the admin when an AI article is generated.
- * Admin must approve via GitHub Actions workflow_dispatch before publishing.
+ * The independent agent review chain and Head Editorial Agent control approval.
  *
  * Uses AWS SES (same pattern as server/services/email.ts).
  */
@@ -132,9 +132,9 @@ export async function sendArticleReviewEmail(params: ReviewEmailParams): Promise
       </table>
 
       <h2>Actions</h2>
-      <p>To approve and publish this article, trigger the approval workflow on GitHub:</p>
-      <a href="${approveUrl}" class="button">Approve & Publish on GitHub</a>
-      <p style="font-size:12px;color:#9ca3af;">Use slug: <code>${slug}</code> when triggering the workflow.</p>
+      <p>The Editorial Engine will run regulatory, copy, visual and Head Editorial Agent review before the Publisher Agent can publish. Use the workflow only to inspect or retry the automated chain.</p>
+      <a href="${approveUrl}" class="button">Open Editorial Workflow</a>
+      <p style="font-size:12px;color:#9ca3af;">Workflow slug: <code>${slug}</code>.</p>
 
       <div class="footer">
         <p>This is an automated review notification from RegActions AI Blog Pipeline.<br>
@@ -158,7 +158,7 @@ Generated: ${generatedAt}
 Quality Checks:
 ${qualityReport.checks.map(c => `  ${c.passed ? 'PASS' : 'FAIL'} [${c.weight}] ${c.name}: ${c.message}`).join('\n')}
 
-To approve: Go to ${approveUrl} and trigger with slug "${slug}"
+Editorial workflow: ${approveUrl} (slug "${slug}")
 `;
 
   try {

@@ -1,5 +1,5 @@
 import { test, expect } from '@playwright/test';
-import { readFileSync } from 'node:fs';
+import { existsSync, readFileSync } from 'node:fs';
 import { join, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -155,8 +155,10 @@ test.describe('Pre-rendered HTML SEO Meta Tags', () => {
       expect(body.trim().length).toBeGreaterThan(1000);
       expect(h1Count(body)).toBe(1);
       expect(body).toContain('Regulatory Insights');
-      expect(body).toContain('/blog/biggest-fine-h1-2026-forensic');
-      expect(body).toContain('DekaBank Deutsche Girozentrale');
+      expect(body).toContain('/blog/wealth-managers-consumer-duty-enforcement');
+      expect(body).toContain("Wealth Managers: Why You&#39;re at the Front");
+      expect(body).not.toContain('/blog/biggest-fine-h1-2026-forensic');
+      expect(body).not.toContain('DekaBank Deutsche Girozentrale');
       expect(body).toContain('/regulators');
       expect(body).toContain('/search');
       expect(body).toContain('/board-pack');
@@ -170,6 +172,14 @@ test.describe('Pre-rendered HTML SEO Meta Tags', () => {
         href.startsWith('/blog/'),
       );
       expect(new Set(articleLinks).size).toBeGreaterThanOrEqual(12);
+    });
+
+    test('should generate branded hero and social artwork for the lead article', () => {
+      const slug = 'wealth-managers-consumer-duty-enforcement';
+      for (const suffix of ['hero', 'square', 'portrait']) {
+        expect(existsSync(join(DIST, 'blog', 'images', `${slug}-${suffix}.png`))).toBe(true);
+      }
+      expect(existsSync(join(DIST, 'og', `${slug}.png`))).toBe(true);
     });
   });
 

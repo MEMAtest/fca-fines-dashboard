@@ -1,13 +1,14 @@
 /**
- * Article Quality Gate — 12 Checks
+ * Article Quality Gate — 14 Checks
  *
  * Validates AI-generated articles for data accuracy, structure, and editorial quality.
  * Adapted from MEMA platform's quality system, simplified for blog editorial content.
  *
- * Pass criteria: All 10 required checks pass + all soft checks pass.
+ * Pass criteria: all required checks and all soft checks pass.
  */
 
 import type { EnforcementRecord } from './articleData.js';
+import { getHouseStyleIssues } from './editorialWorkflow.js';
 
 export interface QualityCheck {
   id: string;
@@ -49,6 +50,7 @@ export function runQualityGate(
     checkNoDuplicates(article.content),
     checkNoHallucinatedFirms(article.content, sourceData),
     checkTitleQuality(article.title, article.excerpt),
+    checkHouseStyle(article),
     checkDataUsage(article.content, sourceData),
     checkSpecificity(article.content, sourceData),
     checkKeywordCount(article.keywords),
@@ -74,6 +76,17 @@ export function runQualityGate(
     requiredTotal: required.length,
     softPassed,
     softTotal: soft.length,
+  };
+}
+
+function checkHouseStyle(article: ArticleContent): QualityCheck {
+  const issues = getHouseStyleIssues(article);
+  return {
+    id: 'house_style',
+    name: 'RegActions House Style',
+    weight: 'required',
+    passed: issues.length === 0,
+    message: issues.length === 0 ? 'UK English and punctuation rules passed' : issues.slice(0, 4).join('; '),
   };
 }
 
@@ -164,9 +177,20 @@ function checkAmountAccuracy(content: string, sourceData: EnforcementRecord[]): 
     return { id: 'amount_accuracy', name: 'Amount Accuracy', weight: 'required', passed: true, message: 'No source data to validate against' };
   }
 
-  const knownAmounts = sourceData.map(r => r.amount).filter(a => a > 0);
+  const verifiedSources = sourceData.filter((record) => record.amount_verified !== false);
+  const knownAmounts = verifiedSources.map(r => r.amount).filter(a => a > 0);
   const mentioned = extractAmounts(content);
   const unverified: string[] = [];
+
+  if (knownAmounts.length === 0) {
+    return {
+      id: 'amount_accuracy',
+      name: 'Amount Accuracy',
+      weight: 'required',
+      passed: mentioned.length === 0,
+      message: mentioned.length === 0 ? 'No monetary claims in a non-monetary source set' : 'Article cites amounts but no source amount is verified as a penalty',
+    };
+  }
 
   // Upper bound: amounts larger than 2× the sum of all source records are editorial
   // aggregates (cross-regulator totals, multi-year sums) and should not be flagged.
@@ -175,7 +199,7 @@ function checkAmountAccuracy(content: string, sourceData: EnforcementRecord[]): 
 
   for (const amt of mentioned) {
     if (amt > editorialCap) continue; // editorial aggregate — skip
-    if (!isVerifiedAmount(amt, knownAmounts, sourceData)) {
+    if (!isVerifiedAmount(amt, knownAmounts, verifiedSources)) {
       unverified.push(formatCurrency(amt));
     }
   }
@@ -354,7 +378,7 @@ function checkSpecificity(content: string, sourceData: EnforcementRecord[]): Qua
 
   // Deduplicate source amounts (repeat offenders inflate the target threshold otherwise)
   const sourceAmounts = [...new Set(
-    sourceData.map(r => r.amount).filter(a => a > 0 && !isNaN(a))
+    sourceData.filter(r => r.amount_verified !== false).map(r => r.amount).filter(a => a > 0 && !isNaN(a))
   )];
 
   // Count distinct source amounts cited within 5% — injected aggregates (mean, median) don't count

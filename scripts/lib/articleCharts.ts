@@ -13,6 +13,7 @@ import { writeFileSync, mkdirSync, existsSync } from 'fs';
 import { join, dirname } from 'path';
 import { fileURLToPath } from 'url';
 import type { EnforcementRecord } from './articleData.js';
+import type { ChartSpec } from '../../src/types/editorial.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -34,6 +35,74 @@ export interface ChartPaths {
   bar?: string;   // /blog/charts/{slug}-bar.png
   trend?: string; // /blog/charts/{slug}-trend.png
   sector?: string; // /blog/charts/{slug}-sector.png
+}
+
+function chartOutputPath(staticPath: string): string {
+  const relative = staticPath.replace(/^\//, '');
+  if (!relative.startsWith('blog/charts/') || !relative.endsWith('.png')) {
+    throw new Error(`Unsafe editorial chart path: ${staticPath}`);
+  }
+  return join(ROOT, 'public', relative);
+}
+
+/** Render the immutable fallback for an approved editorial chart contract. */
+export async function renderChartSpecStatic(spec: ChartSpec): Promise<string> {
+  if (spec.data.length < 2) throw new Error(`Chart ${spec.id} has insufficient data`);
+  if (spec.sourceRecordIds.length === 0) throw new Error(`Chart ${spec.id} has no source records`);
+  if (!spec.staticPath) throw new Error(`Chart ${spec.id} has no static output path`);
+
+  const series = spec.series[0];
+  if (!series) throw new Error(`Chart ${spec.id} has no series`);
+  const labels = spec.data.map((row) => String(row[spec.xKey] ?? 'Unknown'));
+  const values = spec.data.map((row) => {
+    const value = row[series.key];
+    return typeof value === 'number' ? value : Number(value || 0);
+  });
+  const horizontal = spec.type === 'bar';
+  const chartType = spec.type === 'line' || spec.type === 'timeline' ? 'line' : 'bar';
+  const canvas = new ChartJSNodeCanvas({ width: 1000, height: 560, backgroundColour: BRAND.white });
+  const configuration = {
+    type: chartType,
+    data: {
+      labels,
+      datasets: [{
+        label: series.label,
+        data: values,
+        borderColor: series.colour,
+        backgroundColor: chartType === 'line' ? `${series.colour}33` : series.colour,
+        fill: chartType === 'line',
+        borderRadius: chartType === 'bar' ? 4 : undefined,
+      }],
+    },
+    options: {
+      indexAxis: horizontal ? 'y' : 'x',
+      responsive: false,
+      plugins: {
+        legend: { display: spec.series.length > 1 },
+        title: {
+          display: true,
+          text: spec.title,
+          color: BRAND.navy,
+          font: { size: 18, weight: 'bold' },
+          padding: { bottom: 20 },
+        },
+      },
+      scales: {
+        x: { grid: { color: BRAND.gridLine }, ticks: { color: BRAND.slate } },
+        y: { grid: { color: BRAND.gridLine }, ticks: { color: BRAND.navy } },
+      },
+    },
+  };
+
+  const buffer = await canvas.renderToBuffer(configuration as Parameters<typeof canvas.renderToBuffer>[0]);
+  const outputPath = chartOutputPath(spec.staticPath);
+  mkdirSync(dirname(outputPath), { recursive: true });
+  writeFileSync(outputPath, buffer);
+  return spec.staticPath;
+}
+
+export async function renderEditorialChartSpecs(specs: ChartSpec[]): Promise<string[]> {
+  return Promise.all(specs.map(renderChartSpecStatic));
 }
 
 function ensureChartsDir(): void {

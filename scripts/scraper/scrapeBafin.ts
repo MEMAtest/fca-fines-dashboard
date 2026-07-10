@@ -191,8 +191,11 @@ const GERMAN_SCALES: Record<string, string> = {
   tausend: 'thousand',
 };
 
-/** Pull the headline fine amount (EUR) out of German announcement text. */
-function extractAmount(texts: string[]): number | null {
+const MONETARY_SANCTION_CONTEXT = /\b(Geldbuße|Geldbusse|Bußgeld|Bussgeld|Ordnungsgeld|Zwangsgeld|Geldstrafe|finanzielle Sanktion|festgesetzt|verhängt|auferlegt)\b/i;
+
+/** Pull any monetary reference from the page. This value is retained only for
+ * stable record identity when the page is not a monetary sanction. */
+export function extractReferencedAmount(texts: string[]): number | null {
   // Number followed by an optional scale word and a euro token.
   const trailing = /(\d[\d.,]*)\s*(Mio\.?|Mrd\.?|Millionen|Milliarden|Milliarde|Tausend)?\s*(?:Euro|EUR|€)/gi;
   // Euro symbol leading the number.
@@ -223,6 +226,33 @@ function extractAmount(texts: string[]): number | null {
     }
   }
   return null;
+}
+
+/** Extract an amount only when the surrounding source language explicitly
+ * describes a monetary sanction. This prevents accounting balances, tax
+ * receivables, turnover and assets from being recorded as BaFin fines. */
+export function extractSanctionAmount(texts: string[]): number | null {
+  const trailing = /(\d[\d.,]*)\s*(Mio\.?|Mrd\.?|Millionen|Milliarden|Milliarde|Tausend)?\s*(?:Euro|EUR|€)/gi;
+  const leading = /€\s*(\d[\d.,]*)\s*(Mio\.?|Mrd\.?|Millionen|Milliarden|Milliarde|Tausend)?/gi;
+  const verified: number[] = [];
+
+  for (const text of texts) {
+    if (!text) continue;
+    for (const regex of [trailing, leading]) {
+      regex.lastIndex = 0;
+      let match: RegExpExecArray | null;
+      while ((match = regex.exec(text)) !== null) {
+        const start = Math.max(0, match.index - 140);
+        const end = Math.min(text.length, match.index + match[0].length + 140);
+        if (!MONETARY_SANCTION_CONTEXT.test(text.slice(start, end))) continue;
+        const scaleWord = (match[2] || '').toLowerCase().replace(/\.$/, '');
+        const value = parseScaledAmount(match[1], GERMAN_SCALES[scaleWord] ?? null);
+        if (value !== null && value > 0) verified.push(value);
+      }
+    }
+  }
+
+  return verified.length > 0 ? Math.max(...verified) : null;
 }
 
 function germanBreachType(text: string): string {
@@ -348,7 +378,9 @@ async function enrichRow(row: BaFinRow): Promise<ParsedEnforcementRecord | null>
 
   const canonical = absoluteUrl($('link[rel="canonical"]').attr('href')) || row.link;
   const corpus = `${ogTitle} ${summary}`;
-  const amount = extractAmount([metaDescription, bodyText, ogTitle, row.title]);
+  const amountTexts = [metaDescription, bodyText, ogTitle, row.title];
+  const identityAmount = extractReferencedAmount(amountTexts);
+  const amount = extractSanctionAmount(amountTexts);
 
   return {
     regulator: 'BaFin',
@@ -358,6 +390,7 @@ async function enrichRow(row: BaFinRow): Promise<ParsedEnforcementRecord | null>
     firmIndividual: firm,
     firmCategory: classifyFirm(`${firm} ${corpus}`),
     amount,
+    identityAmount,
     currency: 'EUR',
     dateIssued: row.date,
     breachType: germanBreachType(corpus),
@@ -367,11 +400,13 @@ async function enrichRow(row: BaFinRow): Promise<ParsedEnforcementRecord | null>
     sourceUrl: row.listingUrl,
     // Dedupe on the action's identity, not the URL: BaFin republishes some
     // cases (e.g. BfJ reporting penalties) under multiple listing entries.
-    dedupeKey: `${firm}|${row.date}|${amount ?? ''}`,
+    dedupeKey: `${firm}|${row.date}|${identityAmount ?? ''}`,
     rawPayload: {
       ...row,
       ogTitle,
       metaDescription: metaDescription.slice(0, 500),
+      monetaryReference: identityAmount,
+      monetarySanctionVerified: amount !== null,
     },
   };
 }

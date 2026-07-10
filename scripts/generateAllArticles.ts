@@ -4,8 +4,9 @@
  *
  * Generates all missing articles from the 24-entry editorial calendar.
  * Routes each entry to the correct type-specific generator (monthly/thematic/persona/comparison/forensic),
- * fetches the right enforcement data, calls DeepSeek via OpenRouter with a type-tuned prompt,
- * runs the quality gate, and saves drafts for human review.
+ * fetches the right enforcement data, creates a structured draft with a
+ * drafting-only fallback, runs deterministic gates, and saves the evidence
+ * artifact for the independent review agents.
  *
  * Usage:
  *   npx tsx scripts/generateAllArticles.ts                     # All missing articles
@@ -42,6 +43,9 @@ import { buildPersonaGenerator } from './lib/generators/persona.js';
 import { buildComparisonGenerator, buildForensicGenerator } from './lib/generators/comparison.js';
 import { runQualityGate, formatQualityReport, type QualityReport } from './lib/articleQuality.js';
 import { sendArticleReviewEmail } from './lib/articleReview.js';
+import { EDITORIAL_MODELS, EDITORIAL_PROMPT_VERSION, runDraftingAgent } from './lib/editorialAgents.js';
+import { buildInitialEditorialManifest, normaliseToHouseStyle } from './lib/editorialWorkflow.js';
+import { blogArticles as sourceBlogArticles } from '../src/data/blogArticles.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -50,7 +54,6 @@ config({ path: join(ROOT, '.env') });
 config({ path: join(ROOT, '.env.local'), override: false });
 const DRAFTS_DIR  = join(__dirname, 'data', 'drafts');
 const LOG_FILE    = join(__dirname, 'data', 'generation-log.json');
-const BLOG_DATA   = join(ROOT, 'src', 'data', 'blogArticles.ts');
 
 const DEEPSEEK_MODEL = 'deepseek/deepseek-chat';
 const MAX_RETRIES    = 3;
@@ -281,7 +284,7 @@ async function generateArticle(entry: CalendarEntry): Promise<boolean> {
   }
 
   // Save draft
-  saveDraft(article, entry, qualityReport);
+  saveDraft(article, entry, qualityReport, genResult.sourceRecords);
   logResult(entry, article, qualityReport, 'draft_saved');
   console.log(`  ✓ Draft saved: ${entry.slug}.json`);
   console.log(formatQualityReport(qualityReport));
@@ -352,6 +355,22 @@ async function checkPrerequisite(entry: CalendarEntry): Promise<{ met: boolean; 
 // ─── AI call ───────────────────────────────────────────────────────────────────
 
 async function callAI(systemPrompt: string, userPrompt: string, temperature: number): Promise<string | null> {
+  if (process.env.OPENAI_API_KEY?.trim()) {
+    try {
+      const article = await runDraftingAgent(systemPrompt, userPrompt);
+      return [
+        `TITLE: ${normaliseToHouseStyle(article.title)}`,
+        `EXCERPT: ${normaliseToHouseStyle(article.excerpt)}`,
+        `KEYWORDS: ${article.keywords.join(', ')}`,
+        'CONTENT:',
+        normaliseToHouseStyle(article.content),
+      ].join('\n');
+    } catch (err) {
+      console.warn(`  OpenAI structured drafting error: ${err instanceof Error ? err.message : String(err)}`);
+      return null;
+    }
+  }
+
   const apiKey = process.env.OPENROUTER_API_KEY?.trim();
   if (!apiKey) {
     console.error('  OPENROUTER_API_KEY not set');
@@ -445,8 +464,23 @@ function parseArticleResponse(raw: string, slug: string): GeneratedArticle | nul
 
 // ─── Draft storage ─────────────────────────────────────────────────────────────
 
-function saveDraft(article: GeneratedArticle, entry: CalendarEntry, qualityReport: QualityReport): void {
+function saveDraft(
+  article: GeneratedArticle,
+  entry: CalendarEntry,
+  qualityReport: QualityReport,
+  sourceRecords: EnforcementRecord[],
+): void {
   const now = new Date();
+  const generationModel = process.env.OPENAI_API_KEY?.trim() ? EDITORIAL_MODELS.drafting : DEEPSEEK_MODEL;
+  const editorialManifest = buildInitialEditorialManifest({
+    slug: entry.slug,
+    article,
+    articleType: entry.type,
+    records: sourceRecords,
+    generationModel,
+    promptVersion: EDITORIAL_PROMPT_VERSION,
+    generatedAt: now.toISOString(),
+  });
 
   const draft = {
     id: `ai-${entry.slug}`,
@@ -460,10 +494,12 @@ function saveDraft(article: GeneratedArticle, entry: CalendarEntry, qualityRepor
     date: new Date(entry.dateISO).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' }),
     dateISO: entry.dateISO,       // Calendar publish date, not today
     keywords: article.keywords,
-    status: 'scheduled' as const, // Calendar articles are scheduled, not immediate
+    status: 'draft' as const,
     generatedBy: 'ai' as const,
     generatedAt: now.toISOString(),
     articleType: entry.type,
+    sourceRecords,
+    editorialManifest,
     qualityReport: {
       score: qualityReport.score,
       passed: qualityReport.passed,
@@ -527,17 +563,21 @@ function buildUnusedFirmsList(content: string, records: EnforcementRecord[]): st
       !content.toLowerCase().includes(r.firm_individual.toLowerCase())
     )
     .slice(0, 10)
-    .map(r => `${r.firm_individual} | ${r.regulator} | ${r.amount > 0 ? `£${(r.amount / 1_000_000).toFixed(1)}M` : 'non-monetary'} | ${r.date_issued} | ${r.breach_type}`);
+    .map(r => `${r.firm_individual} | ${r.regulator} | ${r.amount_verified ? `£${(r.amount / 1_000_000).toFixed(1)}M` : 'non-monetary or amount unverified'} | ${r.date_issued} | ${r.breach_type}`);
 }
 
 function readExistingSlugs(): Set<string> {
-  if (!existsSync(BLOG_DATA)) return new Set();
-  const src = readFileSync(BLOG_DATA, 'utf-8');
-  const found = new Set<string>();
-  for (const m of src.matchAll(/slug:\s*['"`]([^'"`]+)['"`]/g)) {
-    found.add(m[1]);
-  }
-  return found;
+  return new Set(
+    sourceBlogArticles
+      .filter((article) =>
+        article.generatedBy !== 'ai' ||
+        (
+          article.editorialManifest?.headApproval?.status === 'approved' &&
+          article.publicationManifest?.publishedBy === 'publisher-agent'
+        ),
+      )
+      .map((article) => article.slug),
+  );
 }
 
 function ensureDirs(): void {

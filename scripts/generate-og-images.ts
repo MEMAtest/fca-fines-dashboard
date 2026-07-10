@@ -20,8 +20,7 @@ const ROOT = join(__dirname, "..");
 const DIST = join(ROOT, "dist");
 const OG_DIR = join(DIST, "og");
 
-import { blogArticles, yearlyArticles } from "../src/data/blogArticles.js";
-import { regulatorBlogs } from "../src/data/regulatorBlogs.js";
+import { getPublishedAllArticles } from "../src/data/blogArticles.js";
 
 const WIDTH = 1200;
 const HEIGHT = 630;
@@ -44,23 +43,11 @@ async function main() {
     mkdirSync(OG_DIR, { recursive: true });
   }
 
-  const allArticles = [
-    ...blogArticles.map((a) => ({
-      slug: a.slug,
-      title: a.title,
-      category: a.category,
-    })),
-    ...yearlyArticles.map((a) => ({
-      slug: a.slug,
-      title: a.title,
-      category: "Annual Analysis",
-    })),
-    ...regulatorBlogs.map((a) => ({
-      slug: a.slug,
-      title: a.title,
-      category: "Regulator Analysis",
-    })),
-  ];
+  const allArticles = getPublishedAllArticles().map((article) => ({
+    slug: article.slug,
+    title: article.title,
+    category: article.category,
+  }));
 
   console.log(`Generating ${allArticles.length} OG images...`);
 

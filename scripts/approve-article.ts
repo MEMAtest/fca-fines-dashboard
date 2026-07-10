@@ -1,6 +1,6 @@
 #!/usr/bin/env npx tsx
 /**
- * Article Approval Script
+ * Publisher Agent
  *
  * Reads a draft article from scripts/data/drafts/{slug}.json and inserts it
  * into src/data/blogArticles.ts as a published article.
@@ -10,14 +10,24 @@
  *   npx tsx scripts/approve-article.ts aml-kyc-enforcement-trends
  */
 
-import { readFileSync, writeFileSync, unlinkSync, existsSync } from 'fs';
+import { readFileSync, writeFileSync, renameSync, existsSync, mkdirSync } from 'fs';
 import { join, dirname } from 'path';
 import { fileURLToPath } from 'url';
+import { config } from 'dotenv';
+import { assertPublishableDraft, type EditorialDraftArtifact } from './lib/editorialWorkflow.js';
+import { renderEditorialChartSpecs } from './lib/articleCharts.js';
+import { publishApprovedAiImages } from './lib/editorialImages.js';
+import type { PublicationManifest } from '../src/types/editorial.js';
+import { recordPublishedTopic } from './lib/editorialCalendar.js';
+import { upsertApprovedArticleSource } from './lib/articlePublisher.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 const ROOT = join(__dirname, '..');
+config({ path: join(ROOT, '.env') });
+config({ path: join(ROOT, '.env.local'), override: false });
 const DRAFTS_DIR = join(__dirname, 'data', 'drafts');
+const PUBLISHED_DIR = join(__dirname, 'data', 'published');
 const BLOG_DATA_PATH = join(ROOT, 'src', 'data', 'blogArticles.ts');
 
 // ─── Main ──────────────────────────────────────────────────────────────────────
@@ -43,16 +53,38 @@ if (!existsSync(draftPath)) {
   process.exit(1);
 }
 
-console.log(`Approving draft: ${slug}`);
+console.log(`Publisher Agent received approved draft: ${slug}`);
 
 // 1. Read draft
-const draft = JSON.parse(readFileSync(draftPath, 'utf-8'));
+const draft = JSON.parse(readFileSync(draftPath, 'utf-8')) as EditorialDraftArtifact & {
+  qualityReport?: { passed?: boolean };
+};
+
+const { hash } = assertPublishableDraft(draft);
+if (draft.qualityReport?.passed !== true) {
+  throw new Error('Draft quality report must pass before the Publisher Agent can publish');
+}
+
+// The Publisher Agent materialises only visuals approved against this content hash.
+await renderEditorialChartSpecs(draft.editorialManifest.charts);
+publishApprovedAiImages(ROOT, draft.editorialManifest.images);
 
 // 2. Set status — calendar articles with future dateISO stay "scheduled"; past-dated publish immediately
 const today = new Date().toISOString().slice(0, 10);
 draft.status = (draft.dateISO && draft.dateISO > today) ? 'scheduled' : 'published';
 draft.generatedAt = draft.generatedAt || new Date().toISOString();
-delete draft.qualityReport; // Don't include in published article
+draft.editorialManifest.status = draft.status === 'scheduled' ? 'scheduled' : 'published';
+const publicationManifest: PublicationManifest = {
+  version: 1,
+  slug: draft.slug,
+  contentHash: hash,
+  approvedBy: 'head-editorial-agent',
+  approvedAt: draft.editorialManifest.headApproval!.approvedAt!,
+  publishedBy: 'publisher-agent',
+  publishedAt: new Date().toISOString(),
+  liveUrl: `https://regactions.com/blog/${draft.slug}`,
+};
+(draft as EditorialDraftArtifact & { publicationManifest: PublicationManifest }).publicationManifest = publicationManifest;
 
 // 3. Build article entry for blogArticles.ts
 const entry = buildArticleEntry(draft);
@@ -60,17 +92,30 @@ const entry = buildArticleEntry(draft);
 // 4. Insert into blogArticles.ts
 insertArticle(entry);
 console.log(`  ✓ Inserted article into blogArticles.ts`);
+if (draft.topicTrack) {
+  recordPublishedTopic({
+    track: draft.topicTrack,
+    title: draft.title,
+    slug: draft.slug,
+    category: draft.category,
+    keywords: draft.keywords,
+    dataType: draft.topicTrack === 'timely' ? 'timely' : 'thematic',
+  });
+}
 
-// 5. Remove draft file
-unlinkSync(draftPath);
-console.log(`  ✓ Removed draft: ${draftPath}`);
+// 5. Preserve the approved source artifact as an immutable audit record
+mkdirSync(PUBLISHED_DIR, { recursive: true });
+const publishedPath = join(PUBLISHED_DIR, `${slug}.json`);
+writeFileSync(draftPath, `${JSON.stringify(draft, null, 2)}\n`, 'utf-8');
+renameSync(draftPath, publishedPath);
+console.log(`  ✓ Archived approved artifact: ${publishedPath}`);
 
 console.log('');
 console.log(`Article published: /blog/${slug}`);
 
 // ─── Helpers ───────────────────────────────────────────────────────────────────
 
-function buildArticleEntry(article: Record<string, unknown>): string {
+function buildArticleEntry(article: EditorialDraftArtifact & { publicationManifest?: PublicationManifest }): string {
   const escaped = (s: string) => s.replace(/\\/g, '\\\\').replace(/`/g, '\\`').replace(/\$/g, '\\$');
 
   return `  {
@@ -88,27 +133,13 @@ function buildArticleEntry(article: Record<string, unknown>): string {
     status: ${JSON.stringify(article.status)},
     generatedBy: "ai",
     generatedAt: ${JSON.stringify(article.generatedAt)},
+    articleType: ${JSON.stringify(article.articleType || "standard")},
+    editorialManifest: ${JSON.stringify(article.editorialManifest)},
+    publicationManifest: ${JSON.stringify(article.publicationManifest)},
   }`;
 }
 
 function insertArticle(entry: string): void {
   const src = readFileSync(BLOG_DATA_PATH, 'utf-8');
-
-  // Find the closing of the blogArticles array
-  const markerIdx = src.indexOf('export const blogArticles');
-  if (markerIdx === -1) throw new Error('Could not find blogArticles in blogArticles.ts');
-
-  const afterMarker = src.slice(markerIdx);
-  const closeMatch = afterMarker.match(/\n\];\n/);
-  if (!closeMatch || closeMatch.index === undefined) {
-    throw new Error('Could not find end of blogArticles array');
-  }
-
-  const insertPos = markerIdx + closeMatch.index;
-  const before = src.slice(0, insertPos);
-  const after = src.slice(insertPos);
-
-  const trimmedBefore = before.trimEnd().replace(/,\s*$/, '');
-  const newSrc = trimmedBefore + ',\n' + entry + after;
-  writeFileSync(BLOG_DATA_PATH, newSrc, 'utf-8');
+  writeFileSync(BLOG_DATA_PATH, upsertApprovedArticleSource(src, slug, entry), 'utf-8');
 }

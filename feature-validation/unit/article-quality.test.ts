@@ -109,6 +109,16 @@ describe("Article Quality Gate", () => {
     expect(titleCheck?.passed).toBe(false);
   });
 
+  test("rejects monetary claims when source amounts are not verified penalties", () => {
+    const report = runQualityGate(
+      buildValidArticle(),
+      sampleRecords.map((record) => ({ ...record, amount_verified: false })),
+    );
+    const amountCheck = report.checks.find((check) => check.id === "amount_accuracy");
+    expect(amountCheck?.passed).toBe(false);
+    expect(amountCheck?.message).toContain("no source amount is verified as a penalty");
+  });
+
   test("fails editorial_tone with first person", () => {
     const article = buildValidArticle();
     article.content += "\n\nWe believe this trend will continue into 2027.";
@@ -153,13 +163,13 @@ describe("Article Quality Gate", () => {
 
   test("overall pass requires all required checks + all soft checks", () => {
     const article = buildValidArticle();
-    // 10 required (word_count, section_structure, data_accuracy, amount_accuracy, no_truncation,
-    //   no_duplicates, no_hallucinated_firms, title_quality, data_usage, specificity)
+    // 11 required (word_count, section_structure, data_accuracy, amount_accuracy, no_truncation,
+    //   no_duplicates, no_hallucinated_firms, title_quality, data_usage, specificity, house_style)
     // 3 soft (keyword_count, editorial_tone, readability)
     const report = runQualityGate(article, sampleRecords);
-    expect(report.requiredTotal).toBe(10);
+    expect(report.requiredTotal).toBe(11);
     expect(report.softTotal).toBe(3);
-    expect(report.requiredPassed).toBe(10);
+    expect(report.requiredPassed).toBe(11);
     expect(report.softPassed).toBe(3);
     expect(report.passed).toBe(true);
   });

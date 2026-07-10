@@ -12,4 +12,5 @@ feature-validation/logs/
 fcafines.db
 .env*.local
 scripts/data/previews/
+scripts/data/review-assets/
 *.pdf
