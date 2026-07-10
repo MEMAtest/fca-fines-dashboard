@@ -280,6 +280,15 @@ test.describe('Blog Page - Global Messaging Consistency', () => {
   });
 
   test('Blog page MUST include global enforcement sections beyond FCA archive topics', async ({ page }) => {
+    // beforeEach navigates with `domcontentloaded`, which fires on the prerendered
+    // HTML before React hydrates. The neutral "All Enforcement Intelligence" section
+    // header is client-rendered, so wait for that section to mount before scraping
+    // (otherwise we capture a partially-hydrated DOM with only static sections).
+    await page
+      .locator('.insights-results-heading')
+      .first()
+      .waitFor({ state: 'attached', timeout: 15000 });
+
     const sectionHeadings = await page.locator('.blog-section-header h2').allTextContents();
     const combinedHeadings = sectionHeadings.join(' ').toLowerCase();
 
