@@ -17,6 +17,7 @@ import { Map, Zap, FileText, Globe2 } from 'lucide-react';
 import { useHomepageVisit } from '../hooks/useHomepageVisit.js';
 import { Toast } from '../components/Toast.js';
 import { ContactForm } from '../components/ContactForm.js';
+import { trackOwnedEvent } from '../utils/ownedAnalytics.js';
 import { getHomepageFaqs, generateFaqSchema } from '../data/faqData.js';
 import '../styles/homepage.css';
 import '../styles/contact.css';
@@ -47,6 +48,12 @@ export function Homepage() {
     const error = searchParams.get('error');
 
     if (verified) {
+      const dedupeKey = `owned-analytics:signup-completed:${verified}`;
+      if (!window.sessionStorage.getItem(dedupeKey)) {
+        if (trackOwnedEvent('signup_completed', { flow: `${verified}_verified` })) {
+          window.sessionStorage.setItem(dedupeKey, '1');
+        }
+      }
       const messages: Record<string, string> = {
         alert: `Email verified! You'll now receive alerts.`,
         watchlist: `Email verified! You'll be notified when watched firms receive fines.`,

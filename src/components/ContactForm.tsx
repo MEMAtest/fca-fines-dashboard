@@ -1,4 +1,5 @@
 import { useState, FormEvent, ChangeEvent } from 'react';
+import { trackOwnedEvent } from '../utils/ownedAnalytics.js';
 import { Send, CheckCircle, AlertCircle } from 'lucide-react';
 
 const CONTACT_REASONS = [
@@ -79,6 +80,7 @@ export function ContactForm() {
       }
 
       setStatus('success');
+      trackOwnedEvent('lead_submitted', { form_id: 'contact' });
       setFormData({
         name: '',
         email: '',
