@@ -60,6 +60,7 @@ export async function renderChartSpecStatic(spec: ChartSpec): Promise<string> {
   });
   const horizontal = spec.type === 'bar';
   const chartType = spec.type === 'line' || spec.type === 'timeline' ? 'line' : 'bar';
+  const monetary = series.format === 'currency_gbp';
   const canvas = new ChartJSNodeCanvas({ width: 1000, height: 560, backgroundColour: BRAND.white });
   const configuration = {
     type: chartType,
@@ -88,8 +89,36 @@ export async function renderChartSpecStatic(spec: ChartSpec): Promise<string> {
         },
       },
       scales: {
-        x: { grid: { color: BRAND.gridLine }, ticks: { color: BRAND.slate } },
-        y: { grid: { color: BRAND.gridLine }, ticks: { color: BRAND.navy } },
+        x: {
+          grid: { color: BRAND.gridLine },
+          title: {
+            display: monetary && horizontal,
+            text: 'GBP equivalent',
+            color: BRAND.navy,
+            font: { weight: 'bold' },
+          },
+          ticks: {
+            color: BRAND.slate,
+            ...(monetary && horizontal
+              ? { callback: (value: string | number) => formatMillions(Number(value)) }
+              : {}),
+          },
+        },
+        y: {
+          grid: { color: BRAND.gridLine },
+          title: {
+            display: monetary && !horizontal,
+            text: 'GBP equivalent',
+            color: BRAND.navy,
+            font: { weight: 'bold' },
+          },
+          ticks: {
+            color: BRAND.navy,
+            ...(monetary && !horizontal
+              ? { callback: (value: string | number) => formatMillions(Number(value)) }
+              : {}),
+          },
+        },
       },
     },
   };
@@ -127,8 +156,8 @@ export async function generateFineBarChart(
   ensureChartsDir();
 
   const top8 = records
-    .filter(r => r.amount > 0 && r.firm_individual && r.firm_individual.length > 3)
-    .sort((a, b) => b.amount - a.amount)
+    .filter(r => r.amount_verified && r.amount_gbp > 0 && r.firm_individual && r.firm_individual.length > 3)
+    .sort((a, b) => b.amount_gbp - a.amount_gbp)
     .slice(0, 8);
 
   if (top8.length < 2) return null;
@@ -139,7 +168,7 @@ export async function generateFineBarChart(
     const name = r.firm_individual;
     return name.length > 22 ? name.slice(0, 20) + '…' : name;
   });
-  const amounts = top8.map(r => r.amount / 1_000_000);
+  const amounts = top8.map(r => r.amount_gbp / 1_000_000);
 
   const backgroundColors = top8.map((_, i) => i === 0 ? BRAND.teal : BRAND.tealLight);
 
@@ -148,7 +177,7 @@ export async function generateFineBarChart(
     data: {
       labels,
       datasets: [{
-        label: 'Fine (£M)',
+        label: 'Verified penalty (GBP-normalised, £M)',
         data: amounts,
         backgroundColor: backgroundColors,
         borderRadius: 3,
@@ -162,7 +191,7 @@ export async function generateFineBarChart(
         legend: { display: false },
         title: {
           display: true,
-          text: 'Top Fines by Firm (£M)',
+          text: 'Largest Verified Penalties (GBP-normalised, £M)',
           color: BRAND.navy,
           font: { size: 14, weight: 'bold' as const },
           padding: { bottom: 16 },
@@ -210,7 +239,7 @@ export async function generateTrendLineChart(
       datasets: [
         {
           type: 'line' as const,
-          label: 'Total Fines (£M)',
+          label: 'Verified penalties (GBP-normalised, £M)',
           data: sorted.map(y => y.total / 1_000_000),
           borderColor: BRAND.teal,
           backgroundColor: 'transparent',
@@ -251,7 +280,7 @@ export async function generateTrendLineChart(
           position: 'right' as const,
           grid: { drawOnChartArea: false },
           ticks: { color: BRAND.teal, callback: (v: number) => `£${v}M` },
-          title: { display: true, text: 'Fines (£M)', color: BRAND.teal },
+          title: { display: true, text: 'Verified penalties (GBP-normalised, £M)', color: BRAND.teal },
         },
         x: {
           grid: { display: false },
@@ -285,7 +314,7 @@ export async function generateSectorChart(
     data: {
       labels: top10.map(s => s.name.length > 20 ? s.name.slice(0, 18) + '…' : s.name),
       datasets: [{
-        label: 'Total Fines (£M)',
+        label: 'Verified penalties (GBP-normalised, £M)',
         data: top10.map(s => s.total / 1_000_000),
         backgroundColor: BRAND.teal,
         borderRadius: 3,
@@ -298,7 +327,7 @@ export async function generateSectorChart(
         legend: { display: false },
         title: {
           display: true,
-          text: 'Fines by Regulator/Sector (£M)',
+          text: 'Verified Penalties by Regulator/Sector (GBP-normalised, £M)',
           color: BRAND.navy,
           font: { size: 14, weight: 'bold' as const },
           padding: { bottom: 16 },

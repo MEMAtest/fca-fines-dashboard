@@ -3,7 +3,7 @@ import { existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync
 import { tmpdir } from "node:os";
 import { dirname, join } from "node:path";
 import { afterEach, describe, expect, test } from "vitest";
-import { publishApprovedAiImages } from "../../scripts/lib/editorialImages.js";
+import { generateAiImageCandidates, publishApprovedAiImages } from "../../scripts/lib/editorialImages.js";
 import type { ImageSpec } from "../../src/types/editorial.js";
 
 const roots: string[] = [];
@@ -27,7 +27,7 @@ function fixture(hashOverride?: string) {
     height: 1024,
     altText: "Abstract governance illustration",
     outputPath: "/blog/images/test-inline-1.png",
-    generatedBy: "gpt-image-2",
+    generatedBy: "openrouter-image",
     factual: false,
     sourceIds: [],
     approved: true,
@@ -38,6 +38,18 @@ function fixture(hashOverride?: string) {
 }
 
 describe("reviewed editorial image publishing", () => {
+  test("reuses a hash-matched review candidate without another image API call", async () => {
+    const { root, image } = fixture();
+    const previousKey = process.env.OPENROUTER_API_KEY;
+    delete process.env.OPENROUTER_API_KEY;
+    try {
+      await expect(generateAiImageCandidates(root, [image])).resolves.toEqual([image]);
+    } finally {
+      if (previousKey === undefined) delete process.env.OPENROUTER_API_KEY;
+      else process.env.OPENROUTER_API_KEY = previousKey;
+    }
+  });
+
   test("publishes the exact approved bytes and removes the review candidate", () => {
     const { root, reviewPath, data, image } = fixture();
     expect(publishApprovedAiImages(root, [image])).toEqual([image.outputPath]);

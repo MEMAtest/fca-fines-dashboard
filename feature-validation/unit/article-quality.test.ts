@@ -1,5 +1,6 @@
 import { describe, expect, test } from "vitest";
 import {
+  getArticleQualityWordRange,
   runQualityGate,
   type ArticleContent,
 } from "../../scripts/lib/articleQuality.js";
@@ -8,11 +9,11 @@ import type { EnforcementRecord } from "../../scripts/lib/articleData.js";
 // ─── Test Data ──────────────────────────────────��──────────────────────────────
 
 const sampleRecords: EnforcementRecord[] = [
-  { regulator: "FCA", firm_individual: "Acme Bank Ltd", amount: 1500000, date_issued: "2026-04-15", breach_type: "AML", summary: "Failure to maintain adequate AML controls" },
-  { regulator: "SEC", firm_individual: "GlobalTrade Inc", amount: 5000000, date_issued: "2026-04-10", breach_type: "Market Abuse", summary: "Insider dealing violations" },
-  { regulator: "BaFin", firm_individual: "Deutsche Finanz AG", amount: 800000, date_issued: "2026-04-08", breach_type: "AML", summary: "KYC failures" },
-  { regulator: "ASIC", firm_individual: "Oceanic Capital Pty", amount: 2000000, date_issued: "2026-04-05", breach_type: "Consumer Protection", summary: "Mis-selling of financial products" },
-  { regulator: "MAS", firm_individual: "Singapore Wealth Mgmt", amount: 3500000, date_issued: "2026-04-01", breach_type: "AML", summary: "Sanctions screening failures" },
+  { id: "fca-1", regulator: "FCA", firm_individual: "Acme Bank Ltd", amount: 1500000, currency: "GBP", amount_gbp: 1500000, date_issued: "2026-04-15", breach_type: "AML financial penalty", summary: "Financial penalty for failure to maintain adequate AML controls", notice_url: "https://www.fca.org.uk/news/press-releases/acme", source_url: "https://www.fca.org.uk/news/press-releases/acme", amount_verified: true },
+  { id: "sec-1", regulator: "SEC", firm_individual: "GlobalTrade Inc", amount: 5000000, currency: "USD", amount_gbp: 5000000, date_issued: "2026-04-10", breach_type: "Market abuse civil penalty", summary: "Civil penalty for insider dealing violations", notice_url: "https://www.sec.gov/newsroom/press-releases/globaltrade", source_url: "https://www.sec.gov/newsroom/press-releases/globaltrade", amount_verified: true },
+  { id: "bafin-1", regulator: "BaFin", firm_individual: "Deutsche Finanz AG", amount: 800000, currency: "EUR", amount_gbp: 800000, date_issued: "2026-04-08", breach_type: "AML financial penalty", summary: "Financial penalty for KYC failures", notice_url: "https://www.bafin.de/example", source_url: "https://www.bafin.de/example", amount_verified: true },
+  { id: "asic-1", regulator: "ASIC", firm_individual: "Oceanic Capital Pty", amount: 2000000, currency: "GBP", amount_gbp: 2000000, date_issued: "2026-04-05", breach_type: "Consumer protection financial penalty", summary: "Financial penalty for mis-selling of financial products", notice_url: "https://asic.gov.au/example", source_url: "https://asic.gov.au/example", amount_verified: true },
+  { id: "mas-1", regulator: "MAS", firm_individual: "Singapore Wealth Mgmt", amount: 3500000, currency: "GBP", amount_gbp: 3500000, date_issued: "2026-04-01", breach_type: "AML financial penalty", summary: "Financial penalty for sanctions screening failures", notice_url: "https://www.mas.gov.sg/example", source_url: "https://www.mas.gov.sg/example", amount_verified: true },
 ];
 
 function buildValidArticle(): ArticleContent {
@@ -58,6 +59,24 @@ describe("Article Quality Gate", () => {
     expect(report.passed).toBe(false);
   });
 
+  test("enforces article-type-specific word ranges", () => {
+    const comparisonRange = getArticleQualityWordRange("comparison");
+    expect(comparisonRange).toEqual({ minimumWords: 1350, maximumWords: 1800 });
+    const report = runQualityGate(buildValidArticle(), sampleRecords, comparisonRange);
+    const wordCheck = report.checks.find((check) => check.id === "word_count");
+    expect(wordCheck?.passed).toBe(false);
+    expect(wordCheck?.message).toContain("1350-1800");
+  });
+
+  test("fails word_count when content exceeds the editorial maximum", () => {
+    const article = buildValidArticle();
+    article.content += `\n\n## Excess Material\n\n${"Additional analysis. ".repeat(700)}`;
+    const report = runQualityGate(article, sampleRecords);
+    const wordCheck = report.checks.find((c) => c.id === "word_count");
+    expect(wordCheck?.passed).toBe(false);
+    expect(wordCheck?.message).toContain("1100-1600");
+  });
+
   test("fails section_structure when fewer than 4 H2 sections", () => {
     const article = buildValidArticle();
     article.content = "## Only One Section\n\n" + "Lorem ipsum ".repeat(200);
@@ -65,6 +84,17 @@ describe("Article Quality Gate", () => {
     const structureCheck = report.checks.find(
       (c) => c.id === "section_structure",
     );
+    expect(structureCheck?.passed).toBe(false);
+  });
+
+  test("fails takeaway_structure when Key Takeaways is prose rather than bullets", () => {
+    const article = buildValidArticle();
+    article.content = article.content.replace(
+      /## Key Takeaways\n\n[\s\S]*$/,
+      "## Key Takeaways\n\nThe cases provide several practical conclusions for regulated firms.",
+    );
+    const report = runQualityGate(article, sampleRecords);
+    const structureCheck = report.checks.find((c) => c.id === "takeaway_structure");
     expect(structureCheck?.passed).toBe(false);
   });
 
@@ -92,6 +122,14 @@ describe("Article Quality Gate", () => {
     expect(firmsCheck?.passed).toBe(false);
   });
 
+  test("fails when internal evidence record IDs leak into published prose", () => {
+    const article = buildValidArticle();
+    article.content += `\n\nThe internal source reference is ${sampleRecords[0]!.id}.`;
+    const report = runQualityGate(article, sampleRecords);
+    const idCheck = report.checks.find((check) => check.id === "no_internal_record_ids");
+    expect(idCheck?.passed).toBe(false);
+  });
+
   test("fails title_quality when title exceeds 70 chars", () => {
     const article = buildValidArticle();
     article.title =
@@ -109,6 +147,13 @@ describe("Article Quality Gate", () => {
     expect(titleCheck?.passed).toBe(false);
   });
 
+  test("fails title_quality when excerpt ends mid-sentence", () => {
+    const article = buildValidArticle();
+    article.excerpt = "This evidence-led regulatory analysis contains enough characters to satisfy the length requirement but deliberately ends on an incomplete clause,";
+    const report = runQualityGate(article, sampleRecords);
+    expect(report.checks.find((check) => check.id === "title_quality")?.passed).toBe(false);
+  });
+
   test("rejects monetary claims when source amounts are not verified penalties", () => {
     const report = runQualityGate(
       buildValidArticle(),
@@ -117,6 +162,22 @@ describe("Article Quality Gate", () => {
     const amountCheck = report.checks.find((check) => check.id === "amount_accuracy");
     expect(amountCheck?.passed).toBe(false);
     expect(amountCheck?.message).toContain("no source amount is verified as a penalty");
+  });
+
+  test("rejects a valid source amount attributed to the wrong firm", () => {
+    const article = buildValidArticle();
+    article.content += "\n\nAcme Bank Ltd received a $5M penalty.";
+    const report = runQualityGate(article, sampleRecords);
+    const amountCheck = report.checks.find((check) => check.id === "amount_accuracy");
+    expect(amountCheck?.passed).toBe(false);
+    expect(amountCheck?.message).toContain("Entity-amount mismatch");
+  });
+
+  test("allows a source-backed penalty range beside one named endpoint", () => {
+    const article = buildValidArticle();
+    article.content += "\n\nVerified penalties range from £1.5M to £2M, with the penalty against Acme Bank Ltd at the lower endpoint.";
+    const report = runQualityGate(article, sampleRecords);
+    expect(report.checks.find((check) => check.id === "amount_accuracy")?.passed).toBe(true);
   });
 
   test("fails editorial_tone with first person", () => {
@@ -163,13 +224,13 @@ describe("Article Quality Gate", () => {
 
   test("overall pass requires all required checks + all soft checks", () => {
     const article = buildValidArticle();
-    // 11 required (word_count, section_structure, data_accuracy, amount_accuracy, no_truncation,
+    // 13 required (word_count, section_structure, takeaway_structure, data_accuracy, amount_accuracy, no_truncation,
     //   no_duplicates, no_hallucinated_firms, title_quality, data_usage, specificity, house_style)
     // 3 soft (keyword_count, editorial_tone, readability)
     const report = runQualityGate(article, sampleRecords);
-    expect(report.requiredTotal).toBe(11);
+    expect(report.requiredTotal).toBe(13);
     expect(report.softTotal).toBe(3);
-    expect(report.requiredPassed).toBe(11);
+    expect(report.requiredPassed).toBe(13);
     expect(report.softPassed).toBe(3);
     expect(report.passed).toBe(true);
   });
@@ -238,16 +299,16 @@ describe("Article Quality Gate", () => {
       + "\n\nThe total across all actions was £12.8M.";
     const report = runQualityGate(article, sampleRecords);
     const check = report.checks.find((c) => c.id === "specificity");
-    // minRequired = min(8,5) = 5; citedCount = 0 (£12.8M is above editorialCap or doesn't match source) → fail
+    // The aggregate does not count as a case-level amount, so the specificity gate fails.
     expect(check?.passed).toBe(false);
   });
 
   test("specificity boundary: passes when exactly minRequired source amounts cited", () => {
-    // Source has fewer than 8 unique amounts (5); minRequired = 5; all 5 cited → pass
+    // The shared evidence contract requires at most three case-level amounts; all five are cited.
     const article = buildValidArticle();
     const report = runQualityGate(article, sampleRecords);
     const check = report.checks.find((c) => c.id === "specificity");
     expect(check?.passed).toBe(true);
-    expect(check?.message).toContain("(need ≥5)");
+    expect(check?.message).toContain("(need ≥3)");
   });
 });

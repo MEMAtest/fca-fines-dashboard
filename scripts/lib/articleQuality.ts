@@ -1,5 +1,5 @@
 /**
- * Article Quality Gate — 14 Checks
+ * Article Quality Gate — 16 Checks
  *
  * Validates AI-generated articles for data accuracy, structure, and editorial quality.
  * Adapted from MEMA platform's quality system, simplified for blog editorial content.
@@ -7,7 +7,12 @@
  * Pass criteria: all required checks and all soft checks pass.
  */
 
-import type { EnforcementRecord } from './articleData.js';
+import {
+  getCitationEligibleEntities,
+  getRequiredCaseCitationCount,
+  getRequiredVerifiedAmountCount,
+  type EnforcementRecord,
+} from './articleData.js';
 import { getHouseStyleIssues } from './editorialWorkflow.js';
 
 export interface QualityCheck {
@@ -35,20 +40,38 @@ export interface ArticleContent {
   keywords: string[];
 }
 
+export interface ArticleQualityOptions {
+  minimumWords?: number;
+  maximumWords?: number;
+}
+
+export function getArticleQualityWordRange(articleType?: string): Required<ArticleQualityOptions> {
+  if (articleType === 'monthly') return { minimumWords: 1200, maximumWords: 1600 };
+  if (articleType === 'comparison' || articleType === 'persona') {
+    return { minimumWords: 1350, maximumWords: 1800 };
+  }
+  if (articleType === 'forensic') return { minimumWords: 1350, maximumWords: 2200 };
+  return { minimumWords: 1100, maximumWords: 1600 };
+}
+
 // ─── Main Quality Gate ─────────────────────────────────────────────────────────
 
 export function runQualityGate(
   article: ArticleContent,
-  sourceData: EnforcementRecord[]
+  sourceData: EnforcementRecord[],
+  options: ArticleQualityOptions = {},
 ): QualityReport {
+  const { minimumWords = 1100, maximumWords = 1600 } = options;
   const checks: QualityCheck[] = [
-    checkWordCount(article.content),
+    checkWordCount(article.content, minimumWords, maximumWords),
     checkSectionStructure(article.content),
+    checkTakeawayStructure(article.content),
     checkDataAccuracy(article.content, sourceData),
     checkAmountAccuracy(article.content, sourceData),
     checkNoTruncation(article.content),
     checkNoDuplicates(article.content),
     checkNoHallucinatedFirms(article.content, sourceData),
+    checkNoInternalRecordIds(article.content, sourceData),
     checkTitleQuality(article.title, article.excerpt),
     checkHouseStyle(article),
     checkDataUsage(article.content, sourceData),
@@ -76,6 +99,36 @@ export function runQualityGate(
     requiredTotal: required.length,
     softPassed,
     softTotal: soft.length,
+  };
+}
+
+function checkTakeawayStructure(content: string): QualityCheck {
+  const match = content.match(/(?:^|\n)## Key Takeaways\s*\n([\s\S]*?)(?=\n## |\s*$)/);
+  const bulletCount = (match?.[1].match(/^[-*] /gm) || []).length;
+  const passed = Boolean(match) && bulletCount >= 5 && bulletCount <= 6;
+  return {
+    id: 'takeaway_structure',
+    name: 'Key Takeaway Structure',
+    weight: 'required',
+    passed,
+    message: passed
+      ? `${bulletCount} substantive Markdown bullets`
+      : `Key Takeaways must contain 5-6 Markdown bullets (found ${bulletCount})`,
+  };
+}
+
+function checkNoInternalRecordIds(content: string, sourceData: EnforcementRecord[]): QualityCheck {
+  const leaked = sourceData
+    .filter((record) => record.id && content.includes(record.id))
+    .map((record) => record.id);
+  return {
+    id: 'no_internal_record_ids',
+    name: 'No Internal Record IDs',
+    weight: 'required',
+    passed: leaked.length === 0,
+    message: leaked.length === 0
+      ? 'No internal evidence identifiers exposed'
+      : `Internal evidence identifiers exposed: ${leaked.slice(0, 3).join(', ')}`,
   };
 }
 
@@ -112,15 +165,15 @@ export function formatQualityReport(report: QualityReport): string {
 
 // ─── Individual Checks ─────────────────────────────────────────────────────────
 
-// 1. Word Count (≥1100 words) — REQUIRED
-function checkWordCount(content: string): QualityCheck {
+// 1. Word Count — REQUIRED, with article-type-specific bounds supplied by callers.
+function checkWordCount(content: string, minimumWords: number, maximumWords: number): QualityCheck {
   const words = countWords(content);
   return {
     id: 'word_count',
     name: 'Word Count',
     weight: 'required',
-    passed: words >= 1100,
-    message: `${words} words (min 1100)`,
+    passed: words >= minimumWords && words <= maximumWords,
+    message: `${words} words (required ${minimumWords}-${maximumWords})`,
   };
 }
 
@@ -178,11 +231,10 @@ function checkAmountAccuracy(content: string, sourceData: EnforcementRecord[]): 
   }
 
   const verifiedSources = sourceData.filter((record) => record.amount_verified !== false);
-  const knownAmounts = verifiedSources.map(r => r.amount).filter(a => a > 0);
   const mentioned = extractAmounts(content);
   const unverified: string[] = [];
 
-  if (knownAmounts.length === 0) {
+  if (verifiedSources.length === 0) {
     return {
       id: 'amount_accuracy',
       name: 'Amount Accuracy',
@@ -192,15 +244,22 @@ function checkAmountAccuracy(content: string, sourceData: EnforcementRecord[]): 
     };
   }
 
-  // Upper bound: amounts larger than 2× the sum of all source records are editorial
-  // aggregates (cross-regulator totals, multi-year sums) and should not be flagged.
-  const sourceTotal = knownAmounts.reduce((a, b) => a + b, 0);
-  const editorialCap = sourceTotal * 2;
+  for (const claim of mentioned) {
+    if (!isVerifiedAmount(claim, verifiedSources)) {
+      unverified.push(formatCurrency(claim));
+    }
+  }
 
-  for (const amt of mentioned) {
-    if (amt > editorialCap) continue; // editorial aggregate — skip
-    if (!isVerifiedAmount(amt, knownAmounts, verifiedSources)) {
-      unverified.push(formatCurrency(amt));
+  const pairingIssues: string[] = [];
+  const segments = content.split(/\n+|[!?]\s+|\.(?!\d)\s+/).filter(Boolean);
+  for (const segment of segments) {
+    if (/\brange(?:s|d)?\s+from\b/i.test(segment)) continue;
+    const entityRecords = verifiedSources.filter((record) => contentMentionsFirm(record.firm_individual, segment));
+    if (entityRecords.length !== 1) continue;
+    for (const claim of extractAmounts(segment)) {
+      if (!isVerifiedAmount(claim, entityRecords)) {
+        pairingIssues.push(`${entityRecords.map((record) => record.firm_individual).join(" / ")} -> ${formatCurrency(claim)}`);
+      }
     }
   }
 
@@ -208,10 +267,13 @@ function checkAmountAccuracy(content: string, sourceData: EnforcementRecord[]): 
     id: 'amount_accuracy',
     name: 'Amount Accuracy',
     weight: 'required',
-    passed: unverified.length === 0,
-    message: unverified.length === 0
+    passed: unverified.length === 0 && pairingIssues.length === 0,
+    message: unverified.length === 0 && pairingIssues.length === 0
       ? `All ${mentioned.length} amounts verified`
-      : `Unverified amounts: ${unverified.slice(0, 3).join(', ')}`,
+      : [
+        unverified.length > 0 ? `Unverified amounts: ${unverified.slice(0, 3).join(', ')}` : "",
+        pairingIssues.length > 0 ? `Entity-amount mismatch: ${pairingIssues.slice(0, 2).join('; ')}` : "",
+      ].filter(Boolean).join(". "),
   };
 }
 
@@ -293,14 +355,18 @@ function checkNoHallucinatedFirms(content: string, sourceData: EnforcementRecord
 // 8. Title Quality — title ≤70 chars, excerpt ≥120 chars — REQUIRED
 function checkTitleQuality(title: string, excerpt: string): QualityCheck {
   const titleOk = title.length > 0 && title.length <= 70;
-  const excerptOk = excerpt.length >= 120;
+  const excerptOk = excerpt.length >= 120
+    && excerpt.length <= 220
+    && /[.!?]$/.test(excerpt.trim())
+    && !/\.\.\.$/.test(excerpt.trim())
+    && !/\b(?:GBP|USD|EUR|AUD|NZD|CAD|CHF|SGD|HKD)\s+\d+\.$/.test(excerpt.trim());
 
   return {
     id: 'title_quality',
     name: 'Title & Excerpt Quality',
     weight: 'required',
     passed: titleOk && excerptOk,
-    message: `Title: ${title.length} chars (max 70), Excerpt: ${excerpt.length} chars (min 120)`,
+    message: `Title: ${title.length} chars (max 70), Excerpt: ${excerpt.length} chars (120-220, complete sentence required)`,
   };
 }
 
@@ -311,15 +377,11 @@ function checkDataUsage(content: string, sourceData: EnforcementRecord[]): Quali
   }
 
   // Deduplicate: a firm appearing 8× in source still only counts as one distinct name
-  const namedFirms = [...new Set(
-    sourceData
-      .map(r => r.firm_individual)
-      .filter(f => f && f.length > 3 && !['Mr', 'Unknown', 'N/A', ''].includes(f))
-  )];
+  const namedFirms = getCitationEligibleEntities(sourceData);
 
   const cited = namedFirms.filter(firm => contentMentionsFirm(firm, content));
 
-  const minRequired = Math.min(8, namedFirms.length);
+  const minRequired = getRequiredCaseCitationCount(sourceData);
   const passed = cited.length >= minRequired;
 
   return {
@@ -376,17 +438,23 @@ function checkEditorialTone(content: string): QualityCheck {
 function checkSpecificity(content: string, sourceData: EnforcementRecord[]): QualityCheck {
   const mentioned = extractAmounts(content);
 
-  // Deduplicate source amounts (repeat offenders inflate the target threshold otherwise)
-  const sourceAmounts = [...new Set(
-    sourceData.filter(r => r.amount_verified !== false).map(r => r.amount).filter(a => a > 0 && !isNaN(a))
-  )];
+  const sourceAmounts = [...new Map(
+    sourceData
+      .filter((record) => record.amount_verified && record.amount > 0 && CURRENCY_CODES.has(record.currency))
+      .map((record) => {
+        const claim = { amount: record.amount, currency: record.currency as MonetaryClaim['currency'] };
+        return [`${claim.currency}:${claim.amount}`, claim] as const;
+      }),
+  ).values()];
 
-  // Count distinct source amounts cited within 5% — injected aggregates (mean, median) don't count
-  const citedCount = sourceAmounts.filter(srcAmt =>
-    mentioned.some(a => Math.abs(a - srcAmt) / Math.max(srcAmt, 1) < 0.05)
+  // Count distinct source amounts cited in the correct currency within 5%.
+  const citedCount = sourceAmounts.filter((source) =>
+    mentioned.some((claim) =>
+      claim.currency === source.currency
+      && Math.abs(claim.amount - source.amount) / Math.max(source.amount, 1) < 0.05)
   ).length;
 
-  const minRequired = Math.min(8, sourceAmounts.length);
+  const minRequired = getRequiredVerifiedAmountCount(sourceData);
 
   return {
     id: 'specificity',
@@ -402,6 +470,7 @@ function checkReadability(content: string): QualityCheck {
   // Strip markdown headers and list markers
   const prose = content
     .replace(/^#+\s+.*/gm, '')
+    .replace(/^\s*\|.*$/gm, '')
     .replace(/^[-*]\s+/gm, '')
     .trim();
 
@@ -445,15 +514,25 @@ function extractRegulatorMentions(content: string): string[] {
   return Array.from(found);
 }
 
-function extractAmounts(content: string): number[] {
-  const amounts: number[] = [];
+interface MonetaryClaim {
+  amount: number;
+  currency: string;
+}
+
+const CURRENCY_CODES = new Set([
+  'AED', 'AUD', 'BRL', 'CAD', 'CHF', 'CLP', 'CNY', 'DKK', 'EUR', 'GBP', 'HKD',
+  'INR', 'JPY', 'KRW', 'MXN', 'NOK', 'NZD', 'SAR', 'SEK', 'SGD', 'TWD', 'USD', 'ZAR',
+]);
+
+function extractAmounts(content: string): MonetaryClaim[] {
+  const amounts: MonetaryClaim[] = [];
   // Single regex that matches £1.2M, $500K, €2.3B, £1,234,567 with optional multiplier
-  const pattern = /[£$€]\s*([\d,.]+)\s*(billion|million|B|M|K|bn|mn)?\b/gi;
+  const pattern = /([£$€])\s*([\d,.]+)\s*(billion|million|B|M|K|bn|mn)?\b/gi;
 
   let match;
   while ((match = pattern.exec(content)) !== null) {
-    const raw = match[1].replace(/,/g, '');
-    const multiplier = match[2]?.toLowerCase();
+    const raw = match[2].replace(/,/g, '');
+    const multiplier = match[3]?.toLowerCase();
     let value = parseFloat(raw);
 
     if (multiplier) {
@@ -463,11 +542,27 @@ function extractAmounts(content: string): number[] {
     }
 
     if (value > 0 && !isNaN(value)) {
-      amounts.push(value);
+      amounts.push({
+        amount: value,
+        currency: match[1] === '£' ? 'GBP' : match[1] === '$' ? 'USD' : 'EUR',
+      });
     }
   }
 
-  return [...new Set(amounts)];
+  const isoPattern = /\b([A-Z]{3})\s+([\d,.]+)\s*(billion|million|B|M|K|bn|mn)?\b/g;
+  while ((match = isoPattern.exec(content)) !== null) {
+    const raw = match[2].replace(/,/g, '');
+    const multiplier = match[3]?.toLowerCase();
+    let value = parseFloat(raw);
+    if (multiplier === 'b' || multiplier === 'bn' || multiplier === 'billion') value *= 1_000_000_000;
+    else if (multiplier === 'm' || multiplier === 'mn' || multiplier === 'million') value *= 1_000_000;
+    else if (multiplier === 'k') value *= 1_000;
+    if (value > 0 && !isNaN(value) && CURRENCY_CODES.has(match[1])) {
+      amounts.push({ amount: value, currency: match[1] });
+    }
+  }
+
+  return [...new Map(amounts.map((claim) => [`${claim.currency}:${claim.amount}`, claim])).values()];
 }
 
 function extractFirmMentions(content: string, sourceData: EnforcementRecord[]): string[] {
@@ -516,7 +611,26 @@ function fuzzyMatchFirm(firm: string, knownFirms: Set<string>): boolean {
   return false;
 }
 
-function isVerifiedAmount(amount: number, knownAmounts: number[], sourceData: EnforcementRecord[]): boolean {
+function verifiedAmountClaims(sourceData: EnforcementRecord[]) {
+  const claims: MonetaryClaim[] = [];
+  for (const record of sourceData.filter((candidate) => candidate.amount_verified)) {
+    if (record.amount > 0 && CURRENCY_CODES.has(record.currency)) {
+      claims.push({ amount: record.amount, currency: record.currency });
+    }
+    if (record.amount_gbp > 0 && record.currency !== 'GBP') {
+      claims.push({ amount: record.amount_gbp, currency: 'GBP' });
+    }
+  }
+  return [...new Map(claims.map((claim) => [`${claim.currency}:${claim.amount}`, claim])).values()];
+}
+
+function isVerifiedAmount(claim: MonetaryClaim, sourceData: EnforcementRecord[]): boolean {
+  const amount = claim.amount;
+  const knownAmounts = verifiedAmountClaims(sourceData)
+    .filter((candidate) => candidate.currency === claim.currency)
+    .map((candidate) => candidate.amount);
+  if (knownAmounts.length === 0) return false;
+
   // Direct match within 5% (accounts for currency conversion rounding)
   for (const known of knownAmounts) {
     if (Math.abs(amount - known) / Math.max(known, 1) < 0.05) return true;
@@ -546,6 +660,17 @@ function isVerifiedAmount(amount: number, knownAmounts: number[], sourceData: En
     if (outlierThreshold > 0 && Math.abs(amount - outlierThreshold) / outlierThreshold < 0.05) return true;
   }
 
+  if (claim.currency === 'GBP') {
+    const groupTotals = new Map<string, number>();
+    for (const record of sourceData.filter((candidate) => candidate.amount_verified && candidate.amount_gbp > 0)) {
+      const keys = [`regulator:${record.regulator}`, `year:${record.date_issued.slice(0, 4)}`];
+      for (const key of keys) groupTotals.set(key, (groupTotals.get(key) || 0) + record.amount_gbp);
+    }
+    if ([...groupTotals.values()].some((total) => Math.abs(amount - total) / Math.max(total, 1) < 0.05)) {
+      return true;
+    }
+  }
+
   // Check partial sums (sum of any 2+ consecutive amounts)
   for (let i = 0; i < knownAmounts.length; i++) {
     let sum = 0;
@@ -562,9 +687,10 @@ function countWords(text: string): number {
   return text.split(/\s+/).filter(w => w.length > 0).length;
 }
 
-function formatCurrency(amount: number): string {
-  if (amount >= 1_000_000_000) return `£${(amount / 1_000_000_000).toFixed(1)}B`;
-  if (amount >= 1_000_000) return `£${(amount / 1_000_000).toFixed(1)}M`;
-  if (amount >= 1_000) return `£${(amount / 1_000).toFixed(0)}K`;
-  return `£${amount.toLocaleString()}`;
+function formatCurrency(claim: MonetaryClaim): string {
+  const prefix = claim.currency === 'GBP' ? '£' : claim.currency === 'USD' ? '$' : claim.currency === 'EUR' ? '€' : `${claim.currency} `;
+  if (claim.amount >= 1_000_000_000) return `${prefix}${(claim.amount / 1_000_000_000).toFixed(1)}B`;
+  if (claim.amount >= 1_000_000) return `${prefix}${(claim.amount / 1_000_000).toFixed(1)}M`;
+  if (claim.amount >= 1_000) return `${prefix}${(claim.amount / 1_000).toFixed(0)}K`;
+  return `${prefix}${claim.amount.toLocaleString()}`;
 }

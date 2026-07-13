@@ -14,11 +14,13 @@ import {
   formatDataTable,
   buildStatisticalSummary,
   buildKeyCaseSummaries,
+  formatEvidenceAmount,
+  getRequiredCaseCitationCount,
+  getRequiredVerifiedAmountCount,
   type ComparisonData,
   type ForensicData,
   type EnforcementRecord,
 } from '../articleData.js';
-import { getRelevantProfiles } from '../regulatorProfiles.js';
 import { getBrandVoiceSystemPrefix } from '../brandVoice.js';
 
 export interface GeneratorResult {
@@ -34,7 +36,7 @@ export async function buildComparisonGenerator(entry: CalendarEntry): Promise<Ge
 
   const allCases = [...data.regulatorA.topCases, ...data.regulatorB.topCases];
   return {
-    systemPrompt: buildComparisonSystemPrompt(config.regulators, allCases),
+    systemPrompt: buildComparisonSystemPrompt(config.regulators),
     userPrompt: buildComparisonUserPrompt(entry, data, config),
     sourceRecords: allCases,
     minWordCount: 1350,
@@ -46,7 +48,7 @@ export async function buildForensicGenerator(entry: CalendarEntry): Promise<Gene
   const data = await queryForensicData(config.scope, config.dateRange, config.breachKeywords);
 
   return {
-    systemPrompt: buildForensicSystemPrompt(data.allCasesInRange),
+    systemPrompt: buildForensicSystemPrompt(),
     userPrompt: buildForensicUserPrompt(entry, data, config),
     sourceRecords: data.allCasesInRange,
     minWordCount: 1350,
@@ -55,9 +57,8 @@ export async function buildForensicGenerator(entry: CalendarEntry): Promise<Gene
 
 // ─── Comparison prompts ────────────────────────────────────────────────────────
 
-function buildComparisonSystemPrompt([regA, regB]: [string, string], records: EnforcementRecord[]): string {
-  const profileContext = getRelevantProfiles(records);
-  return `${getBrandVoiceSystemPrefix()}You are a senior regulatory analyst at RegActions writing a comparative analysis for compliance professionals, legal teams, and dual-regulated firms. This article compares ${regA} and ${regB} enforcement — helping readers understand structural differences in approach, penalty size, breach focus, and what firms need to do differently under each.${profileContext}
+function buildComparisonSystemPrompt([regA, regB]: [string, string]): string {
+  return `${getBrandVoiceSystemPrefix()}You are a senior regulatory analyst at RegActions writing a comparative analysis for compliance professionals, legal teams, and dual-regulated firms. This article compares ${regA} and ${regB} enforcement — helping readers understand structural differences in approach, penalty size, breach focus, and what firms need to do differently under each.
 
 Tone: Analytical, impartial, evidence-based. No first person. No hedging. Quote figures directly from the data.
 
@@ -90,7 +91,7 @@ Minimum 2 specific enforcement actions from ${regB} data.
 If the article's context involves firms subject to both regulators, give specific guidance. Otherwise, what does operating under each regulator mean for risk and compliance posture?
 
 ## About the Data
-One paragraph: state this analysis draws on the RegActions database, the date range covered (from the config period to present), and that fine amounts in non-GBP currencies are converted at the enforcement action date. Name both regulators covered.
+One paragraph: state this analysis draws on the RegActions database and linked official notices. Preserve original currencies for case-level amounts and label comparison totals as GBP-normalised. Name both regulators covered.
 
 ## Key Takeaways
 5 bullet points. Each references a specific statistic or case from the data.
@@ -107,6 +108,9 @@ function buildComparisonUserPrompt(entry: CalendarEntry, data: ComparisonData, c
 
   const aCases = formatDataTable(a.topCases);
   const bCases = formatDataTable(b.topCases);
+  const allCases = [...a.topCases, ...b.topCases];
+  const requiredCases = getRequiredCaseCitationCount(allCases);
+  const requiredAmounts = getRequiredVerifiedAmountCount(allCases);
 
   return `Write a definitive comparative enforcement analysis.
 
@@ -135,15 +139,16 @@ ${buildStatisticalSummary([...a.topCases, ...b.topCases])}
 Requirements:
 - Minimum 1350 words
 - Include the comparison summary table in the article
-- Cite every named case from the Key Case Summaries sections above
+- Cite at least ${requiredCases} distinct named cases from the Key Case Summaries sections above
+- Cite ${requiredAmounts} distinct verified penalties${requiredAmounts === 0 ? '; therefore state no monetary figure' : ''}
+- Preserve original currencies for case-level amounts; comparison aggregates are GBP-normalised
 - All figures must match the data provided`;
 }
 
 // ─── Forensic prompts ──────────────────────────────────────────────────────────
 
-function buildForensicSystemPrompt(records: EnforcementRecord[]): string {
-  const profileContext = getRelevantProfiles(records);
-  return `${getBrandVoiceSystemPrefix()}You are a senior regulatory analyst at RegActions writing a forensic case study of a landmark enforcement action. This is an anatomy article — it dissects a single major case in depth for compliance professionals, legal teams, and boards who need to learn from it.${profileContext}
+function buildForensicSystemPrompt(): string {
+  return `${getBrandVoiceSystemPrefix()}You are a senior regulatory analyst at RegActions writing a forensic case study of a landmark enforcement action. This is an anatomy article — it dissects a single major case in depth for compliance professionals, legal teams, and boards who need to learn from it.
 
 Tone: Precise, investigative, factual. No first person. No hedging. State findings as they are, citing from the data.
 
@@ -176,7 +181,7 @@ What is novel or significant about this case compared to prior enforcement on th
 5-7 specific lessons directly derived from the breach findings. Not generic — tied to what the regulator actually cited.
 
 ## About the Data
-One paragraph: state this analysis draws on the RegActions database, the enforcement period covered, and that all case facts are sourced from official regulatory Final Notices and enforcement orders.
+One paragraph: state this analysis draws on the RegActions database, the enforcement period covered, and that all case facts are sourced from linked official regulatory notices and orders.
 
 ## Key Takeaways
 5 bullet points, each grounded in the case facts.
@@ -205,7 +210,7 @@ Scope: ${config.scope} in period ${config.dateRange.join(' to ')}
 === THE CASE (primary subject) ===
 Firm: ${c.firm_individual}
 Regulator: ${c.regulator}
-Amount: £${(c.amount / 1_000_000).toFixed(2)}M
+Amount: ${formatEvidenceAmount(c.amount, c.currency)}
 Date: ${c.date_issued}
 Breach type: ${c.breach_type}
 Summary: ${c.summary}
@@ -222,7 +227,7 @@ ${buildStatisticalSummary(data.allCasesInRange)}
 Requirements:
 - Minimum 1350 words
 - The mandatory "Case at a Glance" table must appear as the first section
-- The firm name (${c.firm_individual}) and fine amount (£${(c.amount / 1_000_000).toFixed(2)}M) must be in the title
+- The firm name (${c.firm_individual}) and regulator must be in the title
 - Reference at least 5 other cases from the broader context for comparison
 - All case facts must match the data provided above`;
 }

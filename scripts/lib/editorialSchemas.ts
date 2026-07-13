@@ -1,5 +1,36 @@
 import { z } from "zod";
 
+export const EditorialSectionKeySchema = z.enum([
+  "overview",
+  "actions",
+  "analysis",
+  "implications",
+  "takeaways",
+  "data",
+]);
+
+export const ArticleOutlineSchema = z.object({
+  title: z.string().min(10).max(70),
+  excerpt: z.string().min(120).max(220),
+  keywords: z.array(z.string().min(2)).min(5).max(8),
+  sections: z.array(z.object({
+    key: EditorialSectionKeySchema,
+    angle: z.string().min(20).max(320),
+    sourceRecordIds: z.array(z.string().min(1)).min(1).max(30),
+  })).length(6),
+});
+
+export const DraftedSectionSchema = z.object({
+  key: EditorialSectionKeySchema,
+  markdown: z.string().min(300),
+});
+
+export const ArticleMetadataSchema = z.object({
+  title: z.string().min(10).max(70),
+  excerpt: z.string().min(120).max(220),
+  keywords: z.array(z.string().min(2)).min(5).max(8),
+});
+
 export const GeneratedArticleSchema = z.object({
   title: z.string().min(10).max(70),
   excerpt: z.string().min(120).max(220),
@@ -32,7 +63,7 @@ export const EvidenceClaimSchema = z.object({
   recordIds: z.array(z.string()),
   verdict: z.enum(["verified", "ambiguous", "unsupported"]),
   verifier: z.enum(["regulatory-verifier-agent", "deterministic-source-gate"]),
-  notes: z.string().optional(),
+  notes: z.string(),
 });
 
 const RegulatoryEvidenceClaimSchema = EvidenceClaimSchema.extend({
@@ -67,6 +98,9 @@ export const HeadEditorialDecisionSchema = z.object({
 });
 
 export type GeneratedArticle = z.infer<typeof GeneratedArticleSchema>;
+export type ArticleOutline = z.infer<typeof ArticleOutlineSchema>;
+export type DraftedSection = z.infer<typeof DraftedSectionSchema>;
+export type ArticleMetadata = z.infer<typeof ArticleMetadataSchema>;
 export type RegulatoryReview = z.infer<typeof RegulatoryReviewSchema>;
 export type CopyReview = z.infer<typeof CopyReviewSchema>;
 export type VisualReview = z.infer<typeof VisualReviewSchema>;

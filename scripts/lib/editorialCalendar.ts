@@ -180,14 +180,37 @@ function buildTimelyTopic(): TopicSelection {
 
 function buildOverrideTopic(topic: string): TopicSelection {
   const slug = topic.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
+  const guide = /\b(board guide|checklist|what (?:boards|firms) should do)\b/i.test(topic);
   return {
-    track: 'evergreen-thematic',
+    track: guide ? 'evergreen-guide' : 'evergreen-thematic',
     title: topic,
     slug,
-    category: 'Enforcement Analysis',
-    keywords: topic.split(/\s+/).filter(w => w.length > 3),
+    category: guide ? 'Board Governance' : 'Enforcement Analysis',
+    keywords: getOverrideTopicKeywords(topic),
     dataType: 'thematic',
   };
+}
+
+const OVERRIDE_TOPIC_FAMILIES: Array<{ pattern: RegExp; keywords: string[] }> = [
+  { pattern: /\b(?:aml|kyc|money laundering|financial crime)\b/i, keywords: ['AML', 'KYC', 'money laundering', 'anti-money', 'transaction monitoring', 'suspicious activity', 'customer due diligence', 'terrorist financing', 'beneficial ownership', 'Geldwäsche', 'GwG'] },
+  { pattern: /\b(?:market abuse|insider dealing|insider trading|manipulation)\b/i, keywords: ['market abuse', 'insider dealing', 'insider trading', 'market manipulation'] },
+  { pattern: /\b(?:consumer duty|consumer protection|conduct risk|mis-selling)\b/i, keywords: ['Consumer Duty', 'consumer protection', 'conduct risk', 'consumer credit', 'mis-selling', 'suitability', 'threshold condition', 'Principle 11'] },
+  { pattern: /\b(?:cyber|operational resilience|technology failure|it failure)\b/i, keywords: ['cyber', 'operational resilience', 'technology failure', 'IT failure'] },
+  { pattern: /\b(?:sanctions|embargo)\b/i, keywords: ['sanctions', 'embargo', 'designated person'] },
+];
+
+const OVERRIDE_STOP_WORDS = new Set([
+  'across', 'analysis', 'board', 'building', 'effective', 'enforcement', 'focus',
+  'global', 'guide', 'rising', 'the', 'trends', 'with',
+]);
+
+export function getOverrideTopicKeywords(topic: string) {
+  const family = OVERRIDE_TOPIC_FAMILIES.find(({ pattern }) => pattern.test(topic));
+  if (family) return family.keywords;
+  return topic
+    .split(/[^a-z0-9]+/i)
+    .map((word) => word.trim())
+    .filter((word) => word.length >= 3 && !OVERRIDE_STOP_WORDS.has(word.toLowerCase()));
 }
 
 function rankByActivity(themes: EvergreenTheme[], stats: RegulatorStats[]): EvergreenTheme {

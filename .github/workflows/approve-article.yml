@@ -27,12 +27,12 @@ jobs:
 
       - name: Head Editorial Agent review chain
         env:
-          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
+          EDITORIAL_PROVIDER: openrouter
+          EDITORIAL_OPENROUTER_APPROVED: 'true'
         run: npx tsx scripts/review-article.ts "${{ github.event.inputs.draft_slug }}"
 
       - name: Publisher Agent
-        env:
-          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
         run: npx tsx scripts/approve-article.ts "${{ github.event.inputs.draft_slug }}"
 
       - name: Commit published article

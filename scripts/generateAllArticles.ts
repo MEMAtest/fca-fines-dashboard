@@ -17,10 +17,11 @@
  *   npx tsx scripts/generateAllArticles.ts --force             # Re-generate even if draft exists
  *   npx tsx scripts/generateAllArticles.ts --no-email          # Skip review email (useful in batch)
  *   npx tsx scripts/generateAllArticles.ts --batch-delay=8000  # ms between articles (default 5000)
+ *   npx tsx scripts/generateAllArticles.ts --trial --trial-dir=/tmp/editorial-trial --slug=<slug>
  */
 
 import { readFileSync, writeFileSync, existsSync, mkdirSync } from 'fs';
-import { join, dirname } from 'path';
+import { join, dirname, resolve } from 'path';
 import { fileURLToPath } from 'url';
 import { config } from 'dotenv';
 
@@ -34,6 +35,8 @@ import {
   checkMonthlyPrerequisite,
   checkForensicPrerequisite,
   closePool,
+  formatEvidenceAmount,
+  redactUnverifiedMonetaryFigures,
   type EnforcementRecord,
 } from './lib/articleData.js';
 
@@ -41,9 +44,10 @@ import { buildMonthlyGenerator } from './lib/generators/monthly.js';
 import { buildThematicGenerator } from './lib/generators/thematic.js';
 import { buildPersonaGenerator } from './lib/generators/persona.js';
 import { buildComparisonGenerator, buildForensicGenerator } from './lib/generators/comparison.js';
-import { runQualityGate, formatQualityReport, type QualityReport } from './lib/articleQuality.js';
+import { getArticleQualityWordRange, runQualityGate, formatQualityReport, type QualityReport } from './lib/articleQuality.js';
 import { sendArticleReviewEmail } from './lib/articleReview.js';
 import { EDITORIAL_MODELS, EDITORIAL_PROMPT_VERSION, runDraftingAgent } from './lib/editorialAgents.js';
+import type { EditorialOutline } from '../src/types/editorial.js';
 import { buildInitialEditorialManifest, normaliseToHouseStyle } from './lib/editorialWorkflow.js';
 import { blogArticles as sourceBlogArticles } from '../src/data/blogArticles.js';
 
@@ -55,7 +59,6 @@ config({ path: join(ROOT, '.env.local'), override: false });
 const DRAFTS_DIR  = join(__dirname, 'data', 'drafts');
 const LOG_FILE    = join(__dirname, 'data', 'generation-log.json');
 
-const DEEPSEEK_MODEL = 'deepseek/deepseek-chat';
 const MAX_RETRIES    = 3;
 
 // ─── CLI args ──────────────────────────────────────────────────────────────────
@@ -64,16 +67,23 @@ const argv = process.argv.slice(2);
 const dryRun      = argv.includes('--dry-run');
 const forceRegen  = argv.includes('--force');
 const noEmail     = argv.includes('--no-email');
+const trial       = argv.includes('--trial');
+const trialDirArg = argv.find(a => a.startsWith('--trial-dir='))?.split('=').slice(1).join('=');
 const slugFilter  = argv.find(a => a.startsWith('--slug='))?.split('=')[1];
 const typeFilter  = argv.find(a => a.startsWith('--type='))?.split('=')[1];
 const dueWithin   = Number(argv.find(a => a.startsWith('--due-within='))?.split('=')[1] ?? 0);
 const batchDelay  = Number(argv.find(a => a.startsWith('--batch-delay='))?.split('=')[1] ?? 5000);
+if (trial && !trialDirArg) throw new Error('--trial requires --trial-dir=<temporary output directory>');
+if (!trial && trialDirArg) throw new Error('--trial-dir requires --trial');
+if (trial) process.env.EDITORIAL_TRIAL_MODE = 'true';
+const OUTPUT_DRAFTS_DIR = trial ? resolve(trialDirArg!) : DRAFTS_DIR;
+const OUTPUT_LOG_FILE = trial ? join(OUTPUT_DRAFTS_DIR, 'generation-log.json') : LOG_FILE;
 
 // ─── Main ──────────────────────────────────────────────────────────────────────
 
 async function main(): Promise<void> {
   console.log('━━━ RegActions Blog Generation Engine ━━━');
-  console.log(`Mode: ${dryRun ? 'DRY RUN (no AI calls, no saves)' : 'LIVE'}`);
+  console.log(`Mode: ${dryRun ? 'DRY RUN (no AI calls, no saves)' : trial ? 'TRIAL' : 'LIVE'}`);
   console.log('');
 
   ensureDirs();
@@ -116,7 +126,7 @@ async function main(): Promise<void> {
     const label = `[${i + 1}/${candidates.length}] ${entry.slug}`;
 
     // Skip if draft already exists (unless --force)
-    if (!forceRegen && existsSync(join(DRAFTS_DIR, `${entry.slug}.json`))) {
+    if (!forceRegen && existsSync(join(OUTPUT_DRAFTS_DIR, `${entry.slug}.json`))) {
       console.log(`${label}: SKIP (draft exists, use --force to regenerate)`);
       skippedDraft++;
       continue;
@@ -181,13 +191,14 @@ async function generateArticle(entry: CalendarEntry): Promise<boolean> {
     return false;
   }
 
-  if (genResult.sourceRecords.length < 3) {
-    console.warn(`  Insufficient source data (${genResult.sourceRecords.length} records, need ≥3). Skipping.`);
+  if (genResult.sourceRecords.length < 5) {
+    console.warn(`  Insufficient credible evidence (${genResult.sourceRecords.length} official-source records, need ≥5). Skipping.`);
     logResult(entry, null, null, 'insufficient_data');
     return false;
   }
 
   console.log(`  Source records: ${genResult.sourceRecords.length}`);
+  const wordRange = getArticleQualityWordRange(entry.type);
 
   // AI generation loop — track best attempt across retries
   let article: GeneratedArticle | null = null;
@@ -202,33 +213,35 @@ async function generateArticle(entry: CalendarEntry): Promise<boolean> {
 
     // Temperature inversion: word-count failures need more creativity (higher temp);
     // factual failures need more precision (lower temp); first attempt is balanced.
-    const wordCountFailed = attempt > 1 && prevWordCount > 0 && prevWordCount < genResult.minWordCount;
+    const wordCountFailed = attempt > 1 && prevWordCount > 0 && prevWordCount < wordRange.minimumWords;
     const temperature = wordCountFailed ? 0.7 : attempt === MAX_RETRIES ? 0.15 : 0.35;
 
     const userPrompt = lastFeedback
       ? `${genResult.userPrompt}\n\nIMPORTANT FEEDBACK FROM PREVIOUS ATTEMPT:\n${lastFeedback}`
       : genResult.userPrompt;
 
-    const raw = await callAI(genResult.systemPrompt, userPrompt, temperature);
-    if (!raw) {
-      lastFeedback = 'Previous attempt failed to return content.';
-      continue;
-    }
-
-    article = parseArticleResponse(raw, entry.slug);
+    article = await callAI(
+      genResult.systemPrompt,
+      userPrompt,
+      temperature,
+      genResult.sourceRecords,
+      wordRange.minimumWords,
+      wordRange.maximumWords,
+    );
     if (!article) {
-      lastFeedback = 'Previous response could not be parsed. Return plain text starting with TITLE: then EXCERPT: then KEYWORDS: then CONTENT: — no markdown before TITLE.';
+      lastFeedback = 'Previous attempt failed to return content.';
       continue;
     }
 
     qualityReport = runQualityGate(
       { title: article.title, excerpt: article.excerpt, content: article.content, keywords: article.keywords },
       genResult.sourceRecords,
+      wordRange,
     );
 
     const wordCount = article.content.split(/\s+/).length;
     prevWordCount = wordCount;
-    const minWords = genResult.minWordCount;
+    const minWords = wordRange.minimumWords;
     const wordOk = wordCount >= minWords;
     const fullPass = qualityReport.passed && wordOk;
 
@@ -277,6 +290,13 @@ async function generateArticle(entry: CalendarEntry): Promise<boolean> {
     return false;
   }
 
+  const bestWordCount = bestArticle.content.split(/\s+/).filter(Boolean).length;
+  if (bestWordCount < wordRange.minimumWords || bestWordCount > wordRange.maximumWords) {
+    console.warn(`  Rejecting draft — ${bestWordCount} words is outside the required ${wordRange.minimumWords}-${wordRange.maximumWords} range for ${entry.type} articles.`);
+    logResult(entry, bestArticle, bestReport, 'outside_word_range');
+    return false;
+  }
+
   article = bestArticle;
   qualityReport = bestReport;
   if (!qualityReport.passed) {
@@ -285,12 +305,12 @@ async function generateArticle(entry: CalendarEntry): Promise<boolean> {
 
   // Save draft
   saveDraft(article, entry, qualityReport, genResult.sourceRecords);
-  logResult(entry, article, qualityReport, 'draft_saved');
-  console.log(`  ✓ Draft saved: ${entry.slug}.json`);
+  logResult(entry, article, qualityReport, trial ? 'trial_saved' : 'draft_saved');
+  console.log(`  ✓ ${trial ? 'Trial artifact' : 'Draft'} saved: ${join(OUTPUT_DRAFTS_DIR, `${entry.slug}.json`)}`);
   console.log(formatQualityReport(qualityReport));
 
   // Review email
-  if (!noEmail) {
+  if (!noEmail && !trial) {
     try {
       await sendArticleReviewEmail({
         title: article.title,
@@ -354,58 +374,35 @@ async function checkPrerequisite(entry: CalendarEntry): Promise<{ met: boolean; 
 
 // ─── AI call ───────────────────────────────────────────────────────────────────
 
-async function callAI(systemPrompt: string, userPrompt: string, temperature: number): Promise<string | null> {
-  if (process.env.OPENAI_API_KEY?.trim()) {
-    try {
-      const article = await runDraftingAgent(systemPrompt, userPrompt);
-      return [
-        `TITLE: ${normaliseToHouseStyle(article.title)}`,
-        `EXCERPT: ${normaliseToHouseStyle(article.excerpt)}`,
-        `KEYWORDS: ${article.keywords.join(', ')}`,
-        'CONTENT:',
-        normaliseToHouseStyle(article.content),
-      ].join('\n');
-    } catch (err) {
-      console.warn(`  OpenAI structured drafting error: ${err instanceof Error ? err.message : String(err)}`);
-      return null;
-    }
-  }
-
-  const apiKey = process.env.OPENROUTER_API_KEY?.trim();
-  if (!apiKey) {
-    console.error('  OPENROUTER_API_KEY not set');
-    return null;
-  }
-
+async function callAI(
+  systemPrompt: string,
+  userPrompt: string,
+  temperature: number,
+  records: EnforcementRecord[],
+  minimumWords: number,
+  maximumWords: number,
+): Promise<GeneratedArticle | null> {
   try {
-    const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
-      method: 'POST',
-      headers: {
-        Authorization: `Bearer ${apiKey}`,
-        'Content-Type': 'application/json',
-        'HTTP-Referer': 'https://regactions.com',
-      },
-      body: JSON.stringify({
-        model: DEEPSEEK_MODEL,
-        messages: [
-          { role: 'system', content: systemPrompt },
-          { role: 'user', content: userPrompt },
-        ],
-        temperature,
-        max_tokens: 8000,
-      }),
-      signal: AbortSignal.timeout(150_000),
-    });
-
-    if (!response.ok) {
-      console.warn(`  AI API error: ${response.status} ${response.statusText}`);
-      return null;
-    }
-
-    const data = await response.json() as { choices?: Array<{ message?: { content?: string } }> };
-    return data.choices?.[0]?.message?.content ?? null;
+    const article = await runDraftingAgent(systemPrompt, userPrompt, { records, minimumWords, maximumWords });
+    return {
+      ...article,
+      title: normaliseToHouseStyle(article.title),
+      excerpt: normaliseToHouseStyle(article.excerpt),
+      content: normaliseToHouseStyle(article.content),
+      keywords: article.keywords.map(normaliseToHouseStyle),
+      outline: article.outline ? {
+        ...article.outline,
+        title: normaliseToHouseStyle(article.outline.title),
+        excerpt: normaliseToHouseStyle(article.outline.excerpt),
+        keywords: article.outline.keywords.map(normaliseToHouseStyle),
+        sections: article.outline.sections.map((section) => ({
+          ...section,
+          angle: normaliseToHouseStyle(section.angle),
+        })),
+      } : undefined,
+    };
   } catch (err) {
-    console.warn(`  AI call error: ${err instanceof Error ? err.message : String(err)}`);
+    console.warn(`  Structured drafting error: ${err instanceof Error ? err.message : String(err)}`);
     return null;
   }
 }
@@ -417,6 +414,7 @@ interface GeneratedArticle {
   excerpt: string;
   content: string;
   keywords: string[];
+  outline?: EditorialOutline;
 }
 
 function parseArticleResponse(raw: string, slug: string): GeneratedArticle | null {
@@ -471,7 +469,7 @@ function saveDraft(
   sourceRecords: EnforcementRecord[],
 ): void {
   const now = new Date();
-  const generationModel = process.env.OPENAI_API_KEY?.trim() ? EDITORIAL_MODELS.drafting : DEEPSEEK_MODEL;
+  const generationModel = EDITORIAL_MODELS.drafting;
   const editorialManifest = buildInitialEditorialManifest({
     slug: entry.slug,
     article,
@@ -480,6 +478,7 @@ function saveDraft(
     generationModel,
     promptVersion: EDITORIAL_PROMPT_VERSION,
     generatedAt: now.toISOString(),
+    outline: article.outline,
   });
 
   const draft = {
@@ -510,7 +509,7 @@ function saveDraft(
     },
   };
 
-  writeFileSync(join(DRAFTS_DIR, `${entry.slug}.json`), JSON.stringify(draft, null, 2), 'utf-8');
+  writeFileSync(join(OUTPUT_DRAFTS_DIR, `${entry.slug}.json`), JSON.stringify(draft, null, 2), 'utf-8');
 }
 
 // ─── Logging ───────────────────────────────────────────────────────────────────
@@ -521,8 +520,8 @@ function logResult(
   qualityReport: QualityReport | null,
   outcome: string,
 ): void {
-  const log: unknown[] = existsSync(LOG_FILE)
-    ? JSON.parse(readFileSync(LOG_FILE, 'utf-8'))
+  const log: unknown[] = existsSync(OUTPUT_LOG_FILE)
+    ? JSON.parse(readFileSync(OUTPUT_LOG_FILE, 'utf-8'))
     : [];
 
   (log as object[]).push({
@@ -536,7 +535,7 @@ function logResult(
     wordCount: article?.content.split(/\s+/).length ?? null,
   });
 
-  writeFileSync(LOG_FILE, JSON.stringify((log as object[]).slice(-200), null, 2), 'utf-8');
+  writeFileSync(OUTPUT_LOG_FILE, JSON.stringify((log as object[]).slice(-200), null, 2), 'utf-8');
 }
 
 // ─── Helpers ───────────────────────────────────────────────────────────────────
@@ -563,7 +562,7 @@ function buildUnusedFirmsList(content: string, records: EnforcementRecord[]): st
       !content.toLowerCase().includes(r.firm_individual.toLowerCase())
     )
     .slice(0, 10)
-    .map(r => `${r.firm_individual} | ${r.regulator} | ${r.amount_verified ? `£${(r.amount / 1_000_000).toFixed(1)}M` : 'non-monetary or amount unverified'} | ${r.date_issued} | ${r.breach_type}`);
+    .map(r => `${r.firm_individual} | ${r.regulator} | ${r.amount_verified ? formatEvidenceAmount(r.amount, r.currency) : 'non-monetary or amount unverified'} | ${r.date_issued} | ${redactUnverifiedMonetaryFigures(r.breach_type)}`);
 }
 
 function readExistingSlugs(): Set<string> {
@@ -581,7 +580,7 @@ function readExistingSlugs(): Set<string> {
 }
 
 function ensureDirs(): void {
-  if (!existsSync(DRAFTS_DIR)) mkdirSync(DRAFTS_DIR, { recursive: true });
+  if (!existsSync(OUTPUT_DRAFTS_DIR)) mkdirSync(OUTPUT_DRAFTS_DIR, { recursive: true });
 }
 
 function sleep(ms: number): Promise<void> {

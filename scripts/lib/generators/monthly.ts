@@ -6,8 +6,7 @@
  */
 
 import type { CalendarEntry, MonthlyConfig } from '../calendarConfig.js';
-import { queryMonthlyData, formatMonthlyTable, formatDataTable, buildStatisticalSummary, buildKeyCaseSummaries, type MonthlyData, type EnforcementRecord } from '../articleData.js';
-import { getRelevantProfiles } from '../regulatorProfiles.js';
+import { queryMonthlyData, formatMonthlyTable, formatDataTable, buildStatisticalSummary, buildKeyCaseSummaries, redactUnverifiedMonetaryFigures, type MonthlyData, type EnforcementRecord } from '../articleData.js';
 import { getBrandVoiceSystemPrefix } from '../brandVoice.js';
 
 export interface GeneratorResult {
@@ -30,8 +29,7 @@ export async function buildMonthlyGenerator(entry: CalendarEntry): Promise<Gener
 }
 
 function buildSystemPrompt(data: MonthlyData): string {
-  const profileContext = getRelevantProfiles(data.currentMonth);
-  return `${getBrandVoiceSystemPrefix()}You are a senior regulatory analyst at RegActions. Write a definitive monthly enforcement tracker for the FCA. This is a factual reference document, not commentary — compliance officers and MLROs use it as their primary source for what happened in the month.${profileContext}
+  return `${getBrandVoiceSystemPrefix()}You are a senior regulatory analyst at RegActions. Write a definitive monthly enforcement tracker for the FCA. This is a factual reference document, not commentary — compliance officers and MLROs use it as their primary source for what happened in the month.
 
 Tone: Professional, factual, precise. No hedging. No first person. No speculation beyond what the data explicitly shows.
 
@@ -69,7 +67,7 @@ One paragraph: state this analysis draws on the RegActions database, give the mo
 
 Requirements:
 - Every enforcement action in the current-month data must appear in the article
-- Include the exact fine amounts from the data
+- Include exact fine amounts only for rows explicitly verified as monetary penalties
 - The YoY comparison must use the prior-year data provided
 - End with a forward-looking sentence referencing upcoming FCA priorities`;
 }
@@ -77,9 +75,9 @@ Requirements:
 function buildUserPrompt(entry: CalendarEntry, data: MonthlyData): string {
   const actionTable = formatMonthlyTable(data);
 
-  const priorTotal = data.priorYearMonth.reduce((s, r) => s + (r.amount || 0), 0);
-  const currentTotal = data.currentMonth.reduce((s, r) => s + (r.amount || 0), 0);
-  const monetary = data.currentMonth.filter(r => r.amount > 0).length;
+  const priorTotal = data.priorYearMonth.reduce((sum, record) => sum + (record.amount_verified ? record.amount_gbp : 0), 0);
+  const currentTotal = data.currentMonth.reduce((sum, record) => sum + (record.amount_verified ? record.amount_gbp : 0), 0);
+  const monetary = data.currentMonth.filter(r => r.amount_verified).length;
   const nonMonetary = data.currentMonth.length - monetary;
 
   const sectorTable = data.sectorBreakdown.length > 0
@@ -96,7 +94,7 @@ ${entry.titleGuidance}
 ${actionTable}
 
 Summary: ${data.currentMonth.length} total actions (${monetary} monetary, ${nonMonetary} non-monetary)
-Total monetary penalties: £${(currentTotal / 1_000_000).toFixed(2)}M
+Total verified monetary penalties: £${(currentTotal / 1_000_000).toFixed(2)}M
 
 === SECTOR BREAKDOWN ===
 ${sectorTable}
@@ -104,7 +102,7 @@ ${sectorTable}
 === PRIOR YEAR COMPARISON: ${data.monthName} ${data.year - 1} ===
 Actions: ${data.priorYearMonth.length}
 Total fines: £${(priorTotal / 1_000_000).toFixed(2)}M
-${data.priorYearMonth.length > 0 ? data.priorYearMonth.slice(0, 5).map(r => `  ${r.firm_individual}: ${r.amount ? `£${(r.amount/1_000_000).toFixed(1)}M` : 'non-monetary'} — ${r.breach_type}`).join('\n') : '  No actions recorded'}
+${data.priorYearMonth.length > 0 ? data.priorYearMonth.slice(0, 5).map(r => `  ${r.firm_individual}: ${r.amount_verified ? `£${(r.amount_gbp/1_000_000).toFixed(1)}M` : 'non-monetary or amount unverified'} — ${redactUnverifiedMonetaryFigures(r.breach_type)}`).join('\n') : '  No actions recorded'}
 
 === KEY CASE SUMMARIES (full detail — use all of these) ===
 ${buildKeyCaseSummaries(data.currentMonth)}
@@ -114,7 +112,7 @@ ${buildStatisticalSummary(data.currentMonth)}
 
 Requirements:
 - All ${data.currentMonth.length} current-month actions must appear in the article
-- Use the exact fine amounts from the data above
+- Use exact monetary amounts only where the evidence row marks the amount verified
 - Include a markdown table for "Month at a Glance"
 - The YoY comparison must use the prior-year numbers provided
 - Cite every named firm from the source data at least once
