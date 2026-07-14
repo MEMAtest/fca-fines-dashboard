@@ -45,8 +45,11 @@ describe("country enforcement coverage", () => {
     expect(hasEnforcementCoverage("IR")).toBe(false);
   });
 
-  it("enforcementCoveredCountries() resolves every code", () => {
-    const countries = enforcementCoveredCountries();
-    expect(countries.length).toBe(ENFORCEMENT_COVERED_ISO2.length);
+  it("enforcementCoveredCountries() includes major hubs and excludes the EU pseudo", () => {
+    const iso2s = enforcementCoveredCountries().map((c) => c.iso2);
+    expect(iso2s).toContain("GB");
+    expect(iso2s).toContain("US");
+    expect(iso2s).not.toContain("EU");
+    expect(iso2s.length).toBe(ENFORCEMENT_COVERED_ISO2.length);
   });
 });

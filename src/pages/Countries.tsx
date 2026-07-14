@@ -14,16 +14,8 @@ import {
   FATF_RECENT_CHANGES,
   type FatfStatus,
 } from "../data/fatfStatus.js";
+import { formatDate } from "../data/countryView.js";
 import "../styles/country-hub.css";
-
-function formatDate(iso: string): string {
-  const [y, m, d] = iso.split("-");
-  const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
-  const mon = m ? months[Number(m) - 1] : undefined;
-  if (d) return `${Number(d)} ${mon} ${y}`;
-  if (mon) return `${mon} ${y}`;
-  return y;
-}
 
 interface ListedCountry {
   country: Country;
@@ -69,7 +61,7 @@ export function Countries() {
     <div className="country-index">
       <header className="country-index__header">
         <h1 className="country-index__title">
-          FATF Grey List &amp; Black List {new Date(FATF_LAST_PLENARY).getFullYear()}
+          FATF Grey List &amp; Black List {FATF_LAST_PLENARY.slice(0, 4)}
         </h1>
         <p className="country-index__lead">
           The Financial Action Task Force (FATF) jurisdictions under increased

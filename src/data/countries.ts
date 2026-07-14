@@ -285,9 +285,6 @@ for (const country of COUNTRIES) {
   for (const a of country.aliases ?? []) BY_ALIAS.set(norm(a), country);
 }
 
-/** Alias kept for callers; ISO2 is unique so this equals COUNTRIES. */
-export const CANONICAL_COUNTRIES: Country[] = COUNTRIES;
-
 export function getCountryByIso2(iso2: string): Country | undefined {
   return BY_ISO2.get(iso2.toUpperCase());
 }
