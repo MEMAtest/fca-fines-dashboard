@@ -68,6 +68,7 @@ import {
   fatfChangeText,
   type CountryView,
 } from "../src/data/countryView.js";
+import { SANCTIONS_STATUS, sanctionsTierLabel } from "../src/data/sanctionsStatus.js";
 import {
   FATF_STATUS,
   fatfLabel,
@@ -224,8 +225,19 @@ function renderHubBody(
  * prerendered HTML and the SPA can't drift apart in copy/logic.
  */
 function renderCountryFatfBody(view: CountryView): string {
-  const { country, statusHeading, statusDetail, history, enforcement } = view;
+  const { country, statusHeading, statusDetail, history, enforcement, sanctions, sanctionsTier } = view;
   const title = `${country.name} — Country Risk Report`;
+  const sanctionsHtml =
+    sanctions && sanctionsTier
+      ? `<h2>Sanctions: ${escapeHtml(sanctionsTierLabel(sanctionsTier))}</h2><ul>${sanctions.programs
+          .map(
+            (prog) =>
+              `<li>${escapeHtml(prog.imposer)} — ${escapeHtml(sanctionsTierLabel(prog.tier).toLowerCase())}: ${escapeHtml(
+                prog.program,
+              )} (<a href="${escapeHtml(prog.sourceUrl)}" rel="noopener">source</a>)</li>`,
+          )
+          .join("")}</ul>`
+      : "";
   const historyHtml =
     history.length > 0
       ? `<h2>FATF status history</h2><ul>${history
@@ -255,7 +267,7 @@ function renderCountryFatfBody(view: CountryView): string {
     `${country.name} (${country.region} • ${country.subregion}). FATF listing status as of the ${formatDate(FATF_LAST_PLENARY)} plenary.`,
   )}</p><h2>FATF status: ${escapeHtml(statusHeading)}</h2><p>${escapeHtml(
     statusDetail,
-  )}</p>${historyHtml}${enforcementHtml}<p>Sanctions exposure and the composite RegActions Country Risk Score are being added.</p><p><a href="${escapeHtml(
+  )}</p>${sanctionsHtml}${historyHtml}${enforcementHtml}<p>The composite RegActions Country Risk Score is being added.</p><p><a href="${escapeHtml(
     FATF_SOURCE_URL,
   )}" rel="noopener">Source: FATF black &amp; grey lists</a></p></div></article></div></div>`;
 }
@@ -1007,7 +1019,13 @@ async function buildPageMetas(): Promise<PageMeta[]> {
     jsonLd: countriesIndexLd,
   });
   const fatfIso2Set = new Set(FATF_STATUS.map((s) => s.iso2));
-  const countryPageIso2 = [...new Set([...fatfIso2Set, ...ENFORCEMENT_COVERED_ISO2])];
+  const countryPageIso2 = [
+    ...new Set([
+      ...fatfIso2Set,
+      ...ENFORCEMENT_COVERED_ISO2,
+      ...SANCTIONS_STATUS.map((s) => s.iso2),
+    ]),
+  ];
   for (const iso2 of countryPageIso2) {
     const country = getCountryByIso2(iso2);
     if (!country) continue;
@@ -1016,28 +1034,38 @@ async function buildPageMetas(): Promise<PageMeta[]> {
     const slug = countrySlug(country);
     const path = `/countries/${slug}`;
     const listLabel = status ? fatfLabel(status.listing) : "";
+    const sanctionsLabel = view.sanctionsTier
+      ? sanctionsTierLabel(view.sanctionsTier).toLowerCase()
+      : "";
     const title = status
       ? `${country.name} FATF Status ${fatfYear} | Country Risk Report`
-      : `${country.name} Financial Enforcement & Regulators | Country Risk`;
+      : view.sanctions
+        ? `${country.name} Sanctions & Country Risk | Is ${country.name} Sanctioned?`
+        : `${country.name} Financial Enforcement & Regulators | Country Risk`;
     const description = status
-      ? `Is ${country.name} on the FATF grey list? ${country.name} is on the FATF ${listLabel.toLowerCase()} as of the ${FATF_LAST_PLENARY} plenary. AML/CFT country risk profile with enforcement activity and cited sources.`
-      : `${country.name} financial regulators, enforcement activity and AML/CFT risk.${
-          enforcement
-            ? ` RegActions tracks ${formatCount(enforcement.trackedActions)} actions from ${enforcement.regulatorCount} regulators.`
-            : ""
-        } Country risk profile with cited sources.`;
+      ? `Is ${country.name} on the FATF grey list? ${country.name} is on the FATF ${listLabel.toLowerCase()} as of the ${FATF_LAST_PLENARY} plenary. AML/CFT country risk profile with sanctions, enforcement activity and cited sources.`
+      : view.sanctions
+        ? `Is ${country.name} sanctioned? ${country.name} is subject to ${sanctionsLabel} sanctions programmes. Country risk profile: sanctions posture, FATF status, enforcement activity and cited sources.`
+        : `${country.name} financial regulators, enforcement activity and AML/CFT risk.${
+            enforcement
+              ? ` RegActions tracks ${formatCount(enforcement.trackedActions)} actions from ${enforcement.regulatorCount} regulators.`
+              : ""
+          } Country risk profile with cited sources.`;
     const keywords = status
       ? `${country.name} FATF, ${country.name} grey list, ${country.name} AML risk, is ${country.name} high risk, ${country.name} country risk`
-      : `${country.name} enforcement, ${country.name} financial regulators, ${country.name} fines, ${country.name} AML risk, ${country.name} country risk`;
+      : view.sanctions
+        ? `${country.name} sanctions, is ${country.name} sanctioned, ${country.name} OFAC, ${country.name} embargo, ${country.name} country risk`
+        : `${country.name} enforcement, ${country.name} financial regulators, ${country.name} fines, ${country.name} AML risk, ${country.name} country risk`;
     const datasetDesc =
       [
         status ? `FATF ${listLabel} status` : "FATF listing status",
+        view.sanctions ? `${sanctionsLabel} sanctions programmes` : "",
         enforcement
           ? `${formatCount(enforcement.trackedActions)} tracked enforcement actions`
           : "",
       ]
         .filter(Boolean)
-        .join(" and ") + ` for ${country.name}.`;
+        .join(", ") + ` for ${country.name}.`;
     pages.push({
       path,
       title,

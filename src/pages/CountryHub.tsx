@@ -1,8 +1,9 @@
 import { useMemo } from "react";
 import { Link, useParams } from "react-router-dom";
-import { ArrowLeft, ExternalLink, Scale, ShieldAlert, ShieldCheck } from "lucide-react";
+import { ArrowLeft, Ban, ExternalLink, Scale, ShieldAlert, ShieldCheck } from "lucide-react";
 import { getCountryBySlug } from "../data/countries.js";
 import { FATF_SOURCE_URL } from "../data/fatfStatus.js";
+import { sanctionsTierLabel } from "../data/sanctionsStatus.js";
 import { CountryEnforcementLive } from "../components/CountryEnforcementLive.js";
 import {
   buildCountryView,
@@ -34,7 +35,7 @@ export function CountryHub() {
     );
   }
 
-  const { band, statusHeading, statusDetail, history, enforcement } = view;
+  const { band, statusHeading, statusDetail, history, enforcement, sanctions, sanctionsTier, sanctionsBand } = view;
 
   return (
     <div className="country-hub">
@@ -83,6 +84,44 @@ export function CountryHub() {
           <p className="country-hub__fatf-detail">{statusDetail}</p>
         </div>
       </section>
+
+      {/* Sanctions card + detail — shown only where a curated programme exists */}
+      {sanctions && sanctionsTier && (
+        <section
+          className={`country-hub__fatf country-hub__fatf--${sanctionsBand}`}
+          aria-labelledby="sanctions-heading"
+        >
+          <div className="country-hub__fatf-icon" aria-hidden="true">
+            <Ban size={22} />
+          </div>
+          <div className="country-hub__fatf-body">
+            <h2 id="sanctions-heading" className="country-hub__fatf-eyebrow">
+              Sanctions
+            </h2>
+            <p className="country-hub__fatf-status">
+              {sanctionsTierLabel(sanctionsTier)}
+            </p>
+            <ul className="country-hub__sanctions-list">
+              {sanctions.programs.map((prog, i) => (
+                <li key={`${prog.imposer}-${i}`}>
+                  <span className="country-hub__sanctions-imposer">{prog.imposer}</span>{" "}
+                  <span className="country-hub__sanctions-tier">
+                    {sanctionsTierLabel(prog.tier).toLowerCase()}
+                  </span>{" "}
+                  — {prog.program}{" "}
+                  <a href={prog.sourceUrl} target="_blank" rel="noopener noreferrer">
+                    source <ExternalLink size={11} />
+                  </a>
+                </li>
+              ))}
+            </ul>
+            <p className="country-hub__fatf-meta">
+              Country-level sanctions programmes (not individual designations),
+              reviewed {view.sanctions ? sanctions.programs[0].reviewed : ""}.
+            </p>
+          </div>
+        </section>
+      )}
 
       {/* Status history / change-log */}
       {history.length > 0 && (
