@@ -29,6 +29,11 @@ import { getUKEnforcementHealth } from "./server/services/ukEnforcementHealth.js
 import searchHandler from "./api/search.js";
 import enforcementBriefingHandler from "./api/agentic/enforcement-briefing.js";
 import agenticWorkbenchHandler from "./api/agentic/workbench.js";
+import unifiedSearchHandler from "./api/unified/search.js";
+import unifiedStatsHandler from "./api/unified/stats.js";
+import unifiedCompareHandler from "./api/unified/compare.js";
+import unifiedOverviewHandler from "./api/unified/overview.js";
+import boardPackLeadHandler from "./api/board-pack/leads.js";
 
 const app = express();
 app.use(cors());
@@ -250,6 +255,26 @@ app.post("/api/agentic/enforcement-briefing", async (req, res) => {
 
 app.post("/api/agentic/workbench", async (req, res) => {
   await agenticWorkbenchHandler(req as any, res as any);
+});
+
+app.get("/api/unified/search", async (req, res) => {
+  await unifiedSearchHandler(req as any, res as any);
+});
+
+app.get("/api/unified/stats", async (req, res) => {
+  await unifiedStatsHandler(req as any, res as any);
+});
+
+app.get("/api/unified/compare", async (req, res) => {
+  await unifiedCompareHandler(req as any, res as any);
+});
+
+app.get("/api/unified/overview", async (req, res) => {
+  await unifiedOverviewHandler(req as any, res as any);
+});
+
+app.post("/api/board-pack/leads", async (req, res) => {
+  await boardPackLeadHandler(req as any, res as any);
 });
 
 // Homepage stats endpoint

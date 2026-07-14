@@ -60,7 +60,7 @@ function parseBreachCategories(value: unknown): string[] {
 }
 
 // Transform unified API response to match FineRecord interface
-function transformUnifiedRecord(
+export function transformUnifiedRecord(
   record: UnifiedSearchResponse["results"][0],
   currency: string,
 ): FineRecord {
@@ -176,7 +176,7 @@ export function useUnifiedData({
       country: country !== "All" ? country : undefined,
       year: year !== 0 ? year : undefined,
       currency,
-      limit: 5000, // Fetch all records (same as FCA endpoint)
+      limit: 500,
       sortBy: "date_issued",
       order: "desc" as const,
     }),
@@ -191,11 +191,29 @@ export function useUnifiedData({
       setError(null);
 
       try {
-        const searchRes = await fetchUnifiedSearch(searchParams);
+        const pageLimit = 500;
+        const maximumRecords = 5000;
+        let offset = 0;
+        const unifiedRecords: UnifiedSearchResponse["results"] = [];
+        let hasMore = true;
+
+        // The production search API caps a response at 500 records. Page through
+        // the public working set so charts do not accidentally describe only the
+        // newest page as an all-time total.
+        while (hasMore && offset < maximumRecords) {
+          const searchRes = await fetchUnifiedSearch({
+            ...searchParams,
+            limit: pageLimit,
+            offset,
+          });
+          unifiedRecords.push(...searchRes.results);
+          offset += searchRes.results.length;
+          hasMore = searchRes.pagination.hasMore && searchRes.results.length > 0;
+        }
 
         if (!mounted) return;
 
-        const transformedFines = searchRes.results.map(
+        const transformedFines = unifiedRecords.map(
           (record: UnifiedSearchResponse["results"][number]) =>
             transformUnifiedRecord(record, currency),
         );

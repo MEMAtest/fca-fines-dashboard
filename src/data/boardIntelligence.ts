@@ -466,7 +466,7 @@ export const BOARD_FOCUS_OPTIONS: BoardFocusOption[] = [
 ];
 
 export const DEFAULT_BOARD_PROFILE: BoardFirmProfile = {
-  firmName: "NorthStar Compliance Profile",
+  firmName: "Your organisation",
   archetypeId: "payments-fintech",
   boardFocus: "assurance",
   priorityRegulators: ["FCA", "SEC", "DFSA", "SEBI"],

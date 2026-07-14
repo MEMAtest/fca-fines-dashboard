@@ -38,9 +38,11 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       regulator,          // 'FCA', 'BaFin', 'AMF', etc.
       country,            // 'UK', 'DE', 'FR', etc.
       year,               // 2024, 2025, etc.
+      month,              // 1-12, used by monthly chart drill-downs
       minAmount,          // Minimum fine amount
       maxAmount,          // Maximum fine amount
       breachCategory,     // 'AML', 'MARKET_ABUSE', etc.
+      sector,             // Normalized firm category
       currency = 'GBP',   // 'GBP' or 'EUR' for display
       firmName,           // Fuzzy search on firm name
       sortBy = 'date_issued', // Sort column
@@ -53,11 +55,22 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     const validSortColumns = ['date_issued', 'amount_gbp', 'amount_eur', 'firm_individual', 'regulator', 'country_code'];
     const sortColumn = validSortColumns.includes(sortBy) ? sortBy : 'date_issued';
     const sortOrder = order.toLowerCase() === 'asc' ? 'ASC' : 'DESC';
-    const limitNum = Math.min(parseInt(limit) || 100, 500); // Max 500 results
+    const limitNum = Math.min(parseInt(limit) || 100, 5000); // Command Centre can request the public working set
     const offsetNum = parseInt(offset) || 0;
 
     // Choose amount column based on currency preference
     const amountColumn = currency === 'EUR' ? 'amount_eur' : 'amount_gbp';
+
+    // Treat the normalised category array and the legacy breach type as one
+    // public theme field. The overview endpoint uses the same expression, so a
+    // theme tile always opens the records that produced its aggregate.
+    const categoryExpression = `COALESCE(
+      CASE WHEN jsonb_typeof(breach_categories) = 'string'
+        THEN (breach_categories #>> '{}')::jsonb
+        ELSE breach_categories
+      END,
+      jsonb_build_array(COALESCE(breach_type, 'Other / not classified'))
+    )`;
 
     // Build WHERE conditions
     const conditions = [];
@@ -83,6 +96,11 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       params.push(parseInt(year));
     }
 
+    if (month && Number(month) >= 1 && Number(month) <= 12) {
+      conditions.push(`month_issued = $${paramIndex++}`);
+      params.push(parseInt(month));
+    }
+
     if (minAmount) {
       conditions.push(`${amountColumn} >= $${paramIndex++}`);
       params.push(parseFloat(minAmount));
@@ -94,17 +112,14 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     }
 
     if (breachCategory) {
-      // Handle double-encoded JSONB (312/316 rows store JSON string instead of array)
-      conditions.push(`
-        COALESCE(
-          CASE WHEN jsonb_typeof(breach_categories) = 'string'
-            THEN (breach_categories #>> '{}')::jsonb
-            ELSE breach_categories
-          END,
-          '[]'::jsonb
-        ) @> $${paramIndex++}::jsonb
-      `);
-      params.push(JSON.stringify([breachCategory]));
+      // Handle double-encoded JSONB and records that only carry breach_type.
+      conditions.push(`${categoryExpression} @> $${paramIndex++}::jsonb`);
+      params.push([breachCategory]);
+    }
+
+    if (sector) {
+      conditions.push(`COALESCE(firm_category, 'Sector not recorded') = $${paramIndex++}`);
+      params.push(sector);
     }
 
     if (firmName) {
@@ -173,9 +188,11 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         regulator: regulator || null,
         country: country || null,
         year: year ? parseInt(year) : null,
+        month: month ? parseInt(month) : null,
         minAmount: minAmount ? parseFloat(minAmount) : null,
         maxAmount: maxAmount ? parseFloat(maxAmount) : null,
         breachCategory: breachCategory || null,
+        sector: sector || null,
         currency,
         firmName: firmName || null
       }

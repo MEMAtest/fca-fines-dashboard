@@ -5,17 +5,24 @@ import {
   Link,
   Navigate,
   useLocation,
+  useParams,
 } from "react-router-dom";
 import { lazy, Suspense, type ComponentType } from "react";
 import { DashboardSkeleton } from "./components/LoadingSkeletons.js";
 import { SiteLayout } from "./components/SiteLayout.js";
 
 /**
- * Redirect /dashboard to /regulators (regulator listing page)
+ * Redirect the legacy dashboard entry point to the Fines Command Centre.
  */
 function DashboardRedirect() {
   const location = useLocation();
-  return <Navigate to={`/regulators${location.search}`} replace />;
+  return <Navigate to={`/fines${location.search}`} replace />;
+}
+
+function RegulatorDashboardRedirect() {
+  const location = useLocation();
+  const { regulatorCode = "fca" } = useParams();
+  return <Navigate to={`/regulators/${regulatorCode}/analytics${location.search}`} replace />;
 }
 
 function RouteErrorBoundary() {
@@ -200,14 +207,14 @@ const PillarPage = lazyPage(() =>
     default: module.PillarPage,
   })),
 );
-const RegulatorHub = lazyPage(() =>
-  import("./pages/RegulatorHub.js").then((module) => ({
-    default: module.RegulatorHub,
+const FinesWorkspace = lazyPage(() =>
+  import("./pages/FinesWorkspace.js").then((module) => ({
+    default: module.FinesWorkspace,
   })),
 );
-const RegulatorDashboard = lazyPage(() =>
-  import("./pages/RegulatorDashboard.js").then((module) => ({
-    default: module.RegulatorDashboard,
+const RegulatorWorkspace = lazyPage(() =>
+  import("./pages/RegulatorWorkspace.js").then((module) => ({
+    default: module.RegulatorWorkspace,
   })),
 );
 const Regulators = lazyPage(() =>
@@ -248,6 +255,11 @@ const About = lazyPage(() =>
     default: module.About,
   })),
 );
+const Privacy = lazyPage(() =>
+  import("./pages/Privacy.js").then((module) => ({
+    default: module.Privacy,
+  })),
+);
 const NotFound = lazyPage(() =>
   import("./pages/NotFound.js").then((module) => ({
     default: module.NotFound,
@@ -283,6 +295,22 @@ const router = createBrowserRouter([
       {
         path: "/dashboard",
         element: <DashboardRedirect />,
+      },
+      {
+        path: "/fines",
+        element: <Suspense fallback={<DashboardSkeleton />}><FinesWorkspace view="overview" /></Suspense>,
+      },
+      {
+        path: "/fines/actions",
+        element: <Suspense fallback={<DashboardSkeleton />}><FinesWorkspace view="actions" /></Suspense>,
+      },
+      {
+        path: "/fines/analytics",
+        element: <Suspense fallback={<DashboardSkeleton />}><FinesWorkspace view="analytics" /></Suspense>,
+      },
+      {
+        path: "/fines/compare",
+        element: <Suspense fallback={<DashboardSkeleton />}><FinesWorkspace view="compare" /></Suspense>,
       },
       {
         path: "/board-pack",
@@ -371,6 +399,10 @@ const router = createBrowserRouter([
             <About />
           </Suspense>
         ),
+      },
+      {
+        path: "/privacy",
+        element: <Suspense fallback={<div style={{ minHeight: "60vh" }} />}><Privacy /></Suspense>,
       },
       {
         path: "/search",
@@ -842,24 +874,7 @@ const router = createBrowserRouter([
       },
       {
         path: "/regulators/:regulatorCode/dashboard",
-        element: (
-          <Suspense
-            fallback={
-              <div
-                style={{
-                  minHeight: "100vh",
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                }}
-              >
-                Loading...
-              </div>
-            }
-          >
-            <RegulatorDashboard />
-          </Suspense>
-        ),
+        element: <RegulatorDashboardRedirect />,
       },
       {
         path: "/regulators",
@@ -884,24 +899,19 @@ const router = createBrowserRouter([
       },
       {
         path: "/regulators/:regulatorCode",
-        element: (
-          <Suspense
-            fallback={
-              <div
-                style={{
-                  minHeight: "100vh",
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                }}
-              >
-                Loading...
-              </div>
-            }
-          >
-            <RegulatorHub />
-          </Suspense>
-        ),
+        element: <Suspense fallback={<DashboardSkeleton />}><RegulatorWorkspace view="overview" /></Suspense>,
+      },
+      {
+        path: "/regulators/:regulatorCode/actions",
+        element: <Suspense fallback={<DashboardSkeleton />}><RegulatorWorkspace view="actions" /></Suspense>,
+      },
+      {
+        path: "/regulators/:regulatorCode/analytics",
+        element: <Suspense fallback={<DashboardSkeleton />}><RegulatorWorkspace view="analytics" /></Suspense>,
+      },
+      {
+        path: "/regulators/:regulatorCode/compare",
+        element: <Suspense fallback={<DashboardSkeleton />}><RegulatorWorkspace view="compare" /></Suspense>,
       },
       {
         path: "*",

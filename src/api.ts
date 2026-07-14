@@ -97,9 +97,11 @@ export interface UnifiedSearchParams {
   regulator?: string;
   country?: string;
   year?: number;
+  month?: number;
   minAmount?: number;
   maxAmount?: number;
   breachCategory?: string;
+  sector?: string;
   currency?: string;
   firmName?: string;
   sortBy?: string;
@@ -153,6 +155,7 @@ export interface UnifiedSearchResponse {
     regulator: string | null;
     country: string | null;
     year: number | null;
+    month: number | null;
     minAmount: number | null;
     maxAmount: number | null;
     breachCategory: string | null;
@@ -211,12 +214,15 @@ export function fetchUnifiedSearch(params: UnifiedSearchParams = {}) {
     queryParams.set("country", params.country);
   if (params.year && params.year !== 0)
     queryParams.set("year", String(params.year));
+  if (params.month && params.month >= 1 && params.month <= 12)
+    queryParams.set("month", String(params.month));
   if (params.minAmount !== undefined)
     queryParams.set("minAmount", String(params.minAmount));
   if (params.maxAmount !== undefined)
     queryParams.set("maxAmount", String(params.maxAmount));
   if (params.breachCategory)
     queryParams.set("breachCategory", params.breachCategory);
+  if (params.sector) queryParams.set("sector", params.sector);
   if (params.currency) queryParams.set("currency", params.currency);
   if (params.firmName) queryParams.set("firmName", params.firmName);
   if (params.sortBy) queryParams.set("sortBy", params.sortBy);
@@ -251,6 +257,47 @@ export function fetchUnifiedCompare(
   params.set("currency", currency);
 
   return fetchJSON<any>(`/api/unified/compare?${params.toString()}`);
+}
+
+export interface UnifiedOverviewParams {
+  regulator?: string;
+  country?: string;
+  year?: number;
+  breachCategory?: string;
+  sector?: string;
+  q?: string;
+  currency?: string;
+}
+
+export interface UnifiedOverviewResponse {
+  metrics: {
+    count: number;
+    total: number;
+    average: number;
+    median: number;
+    largest: number;
+    largestFirm: string;
+    affectedFirms: number;
+    latestDate: string | null;
+  };
+  yearly: Array<{ key: string; label: string; year: number; count: number; amount: number }>;
+  monthly: Array<{ key: string; label: string; year: number; month: number; count: number; amount: number }>;
+  themes: Array<{ label: string; count: number; amount: number; share: number }>;
+  regulators: Array<{ label: string; count: number; amount: number; share: number }>;
+  sectors: Array<{ label: string; count: number; amount: number; share: number }>;
+  firms: Array<{ label: string; count: number; amount: number; share: number }>;
+}
+
+export function fetchUnifiedOverview(params: UnifiedOverviewParams = {}) {
+  const query = new URLSearchParams();
+  if (params.regulator && params.regulator !== "All") query.set("regulator", params.regulator);
+  if (params.country && params.country !== "All") query.set("country", params.country);
+  if (params.year) query.set("year", String(params.year));
+  if (params.breachCategory && params.breachCategory !== "All") query.set("breachCategory", params.breachCategory);
+  if (params.sector && params.sector !== "All") query.set("sector", params.sector);
+  if (params.q) query.set("q", params.q);
+  query.set("currency", params.currency || "GBP");
+  return fetchJSON<UnifiedOverviewResponse>(`/api/unified/overview?${query.toString()}`);
 }
 
 export interface UKEnforcementSearchParams {

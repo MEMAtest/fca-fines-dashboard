@@ -681,6 +681,42 @@ async function buildPageMetas(): Promise<PageMeta[]> {
     ),
   });
 
+  for (const workspace of [
+    { path: "/fines", title: "Fines Command Centre", description: "Explore regulatory fines, recent actions, enforcement trends and source-linked evidence across the RegActions public dataset." },
+    { path: "/fines/actions", title: "Enforcement Actions", description: "Review public enforcement actions by firm, regulator, theme, sector and date with links to official evidence." },
+    { path: "/fines/analytics", title: "Fines Analytics", description: "Analyse regulatory fines over time, compare breach themes and inspect the actions behind each chart mark." },
+    { path: "/fines/compare", title: "Regulatory Fines Comparison", description: "Compare up to three years and five regulators or enforcement themes in a guided public workspace." },
+  ]) {
+    pages.push({
+      path: workspace.path,
+      title: `${workspace.title} | RegActions`,
+      description: workspace.description,
+      keywords: "regulatory fines, enforcement actions, fines analytics, regulator comparison, official enforcement evidence",
+      ogType: "website",
+      bodyContent: renderStaticPageBody(
+        workspace.title,
+        workspace.description,
+        [
+          { heading: "Evidence-first analysis", body: "Open the actions behind every chart, table and comparison, then follow the available links to official regulator evidence." },
+          { heading: "Public working views", body: "Filters and guided comparisons are available without an account. Saved views remain on the user's device." },
+        ],
+      ),
+    });
+  }
+
+  pages.push({
+    path: "/privacy",
+    title: "Privacy Notice | RegActions",
+    description: "How RegActions and MEMA Consultants use personal information, including Board Pack download details.",
+    keywords: "RegActions privacy, Board Pack privacy, MEMA Consultants",
+    ogType: "website",
+    bodyContent: renderStaticPageBody(
+      "Privacy Notice",
+      "How RegActions and MEMA Consultants use and protect personal information.",
+      [{ heading: "Board Pack downloads", body: "Board Pack request details are used to provide the requested service, protect it from abuse and record consent choices." }],
+    ),
+  });
+
   pages.push({
     path: "/search",
     title: "Enforcement Search | Search Enforcement Actions by Firm, Regulator, and Theme",
@@ -1606,6 +1642,9 @@ function generateSitemap(pages: PageMeta[]): string {
     } else if (page.path.startsWith("/topics/")) {
       priority = "0.88";
       changefreq = "weekly";
+    } else if (page.path === "/fines" || page.path.startsWith("/fines/")) {
+      priority = "0.9";
+      changefreq = "daily";
     } else if (["/board-pack", "/features", "/uk-enforcement", "/intelligence"].includes(page.path)) {
       priority = "0.85";
       changefreq = "weekly";
