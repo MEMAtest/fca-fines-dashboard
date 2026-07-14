@@ -55,6 +55,20 @@ import {
   PUBLIC_REGULATOR_CODES,
 } from "../src/data/regulatorCoverage.js";
 import { topicClusters } from "../src/data/topicClusters.js";
+import {
+  getCountryByIso2,
+  countrySlug,
+  type Country,
+} from "../src/data/countries.js";
+import {
+  FATF_STATUS,
+  fatfLabel,
+  FATF_LAST_PLENARY,
+  FATF_NEXT_PLENARY,
+  FATF_SOURCE_URL,
+  FATF_RECENT_CHANGES,
+  type FatfStatus,
+} from "../src/data/fatfStatus.js";
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -194,6 +208,86 @@ function renderHubBody(
     )
     .join("");
   return `<div class="blog-page"><div class="blog-post-container"><article class="blog-article-modal"><h1 class="blog-post-title">${escapeHtml(title)}</h1><div class="blog-article-content"><p>${escapeHtml(description)}</p><h2>Coverage Snapshot</h2><ul>${metricsHtml}</ul><h2>Use This Data</h2><p>Open the live RegActions workspace to filter the source records, inspect related firms, compare breach themes, and export the evidence for compliance or board reporting.</p><p><a href="${ctaPath}">Open live enforcement data</a></p></div></article></div></div>`;
+}
+
+function formatPlenary(iso: string): string {
+  const [y, m, d] = iso.split("-");
+  const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+  const mon = m ? months[Number(m) - 1] : undefined;
+  if (d && mon) return `${Number(d)} ${mon} ${y}`;
+  if (mon) return `${mon} ${y}`;
+  return y;
+}
+
+/** Crawlable body for a single country's FATF report (Stage 1). */
+function renderCountryFatfBody(
+  country: Country,
+  fatf: FatfStatus | undefined,
+  history: typeof FATF_RECENT_CHANGES,
+): string {
+  const title = `${country.name} — Country Risk Report`;
+  const statusHeading = fatf ? fatfLabel(fatf.listing) : "Not currently listed";
+  const statusDetail = fatf
+    ? `${
+        fatf.listing === "call-for-action"
+          ? "High-Risk Jurisdiction Subject to a Call for Action"
+          : "Jurisdiction Under Increased Monitoring"
+      }.${fatf.since ? ` Listed ${formatPlenary(fatf.since)}.` : ""}${fatf.note ? ` ${fatf.note}` : ""} Last reviewed ${formatPlenary(
+        fatf.lastReviewed,
+      )}; next FATF plenary ${formatPlenary(FATF_NEXT_PLENARY)}.`
+    : `${country.name} is not on the FATF grey or black list as of the ${formatPlenary(FATF_LAST_PLENARY)} plenary.`;
+  const historyHtml =
+    history.length > 0
+      ? `<h2>FATF status history</h2><ul>${history
+          .map(
+            (h) =>
+              `<li>${escapeHtml(formatPlenary(h.date))}: ${
+                h.change === "added" ? "Added to" : "Removed from"
+              } the FATF ${escapeHtml(fatfLabel(h.listing).toLowerCase())}</li>`,
+          )
+          .join("")}</ul>`
+      : "";
+  return `<div class="blog-page"><div class="blog-post-container"><article class="blog-article-modal"><h1 class="blog-post-title">${escapeHtml(
+    title,
+  )}</h1><div class="blog-article-content"><p>${escapeHtml(
+    `${country.name} (${country.region} • ${country.subregion}). FATF listing status as of the ${formatPlenary(FATF_LAST_PLENARY)} plenary.`,
+  )}</p><h2>FATF status: ${escapeHtml(statusHeading)}</h2><p>${escapeHtml(
+    statusDetail,
+  )}</p>${historyHtml}<p>Enforcement activity, sanctions exposure and the composite RegActions Country Risk Score are being added.</p><p><a href="${escapeHtml(
+    FATF_SOURCE_URL,
+  )}" rel="noopener">Source: FATF black &amp; grey lists</a></p></div></article></div></div>`;
+}
+
+/** Crawlable body for the /countries index (FATF grey + black lists). */
+function renderCountriesIndexBody(): string {
+  const rows = (listing: FatfStatus["listing"]) =>
+    FATF_STATUS.filter((s) => s.listing === listing)
+      .map((s) => ({ s, c: getCountryByIso2(s.iso2) }))
+      .filter((x): x is { s: FatfStatus; c: Country } => Boolean(x.c))
+      .sort((a, b) => a.c.name.localeCompare(b.c.name))
+      .map(
+        ({ c }) =>
+          `<li><a href="/countries/${countrySlug(c)}">${escapeHtml(c.name)}</a> — ${escapeHtml(c.region)}</li>`,
+      )
+      .join("");
+  const added = FATF_RECENT_CHANGES.filter((c) => c.change === "added")
+    .map((c) => getCountryByIso2(c.iso2)?.name)
+    .filter(Boolean)
+    .join(", ");
+  const removed = FATF_RECENT_CHANGES.filter((c) => c.change === "removed")
+    .map((c) => getCountryByIso2(c.iso2)?.name)
+    .filter(Boolean)
+    .join(", ");
+  return `<div class="blog-page"><div class="blog-post-container"><article class="blog-article-modal"><h1 class="blog-post-title">FATF Grey List &amp; Black List ${FATF_LAST_PLENARY.slice(
+    0,
+    4,
+  )}</h1><div class="blog-article-content"><p>${escapeHtml(
+    `FATF jurisdictions under increased monitoring (grey list) and subject to a call for action (black list), current as of the ${formatPlenary(FATF_LAST_PLENARY)} plenary.`,
+  )}</p>${added ? `<p><strong>Added:</strong> ${escapeHtml(added)}</p>` : ""}${
+    removed ? `<p><strong>Removed:</strong> ${escapeHtml(removed)}</p>` : ""
+  }<h2>Black list — Call for Action</h2><ul>${rows("call-for-action")}</ul><h2>Grey list — Increased Monitoring</h2><ul>${rows(
+    "increased-monitoring",
+  )}</ul><p><a href="${escapeHtml(FATF_SOURCE_URL)}" rel="noopener">Source: FATF black &amp; grey lists</a></p></div></article></div></div>`;
 }
 
 function renderTopicClusterBody(slug: string): string {
@@ -877,6 +971,77 @@ async function buildPageMetas(): Promise<PageMeta[]> {
       ],
     });
   });
+
+  // 4c. Country Risk Reports — Stage 1: FATF tracker (index + per-listed-country).
+  // Only FATF-listed jurisdictions are prerendered for now (data-rich, thin-content-safe).
+  const countriesIndexBody = renderCountriesIndexBody();
+  const fatfYear = FATF_LAST_PLENARY.slice(0, 4);
+  const countriesIndexLd = {
+    "@context": "https://schema.org",
+    "@type": "CollectionPage",
+    name: `FATF Grey List & Black List ${fatfYear}`,
+    description: `FATF jurisdictions under increased monitoring (grey list) and subject to a call for action (black list), current as of the ${FATF_LAST_PLENARY} plenary.`,
+    url: `${BASE_URL}/countries`,
+    isPartOf: { "@type": "WebSite", name: SITE_NAME, url: "https://regactions.com" },
+  };
+  pages.push({
+    path: "/countries",
+    title: `FATF Grey List & Black List ${fatfYear} | Country Risk | RegActions`,
+    description: `The full FATF grey list and black list as of the ${FATF_LAST_PLENARY} plenary. Which countries are under increased monitoring or subject to a call for action, with dated status changes.`,
+    keywords: `FATF grey list ${fatfYear}, FATF black list, jurisdictions under increased monitoring, high-risk jurisdictions, country AML risk, FATF countries`,
+    ogType: "website",
+    bodyContent: countriesIndexBody,
+    breadcrumbLabel: "Countries",
+    jsonLd: countriesIndexLd,
+  });
+  pages.push({
+    path: "/countries/fatf-grey-list",
+    title: `FATF Grey List ${fatfYear} | Countries Under Increased Monitoring`,
+    description: `The FATF grey list ${fatfYear}: all jurisdictions under increased monitoring, plus the black list, current as of the ${FATF_LAST_PLENARY} plenary with recent additions and removals.`,
+    keywords: `FATF grey list ${fatfYear}, FATF grey list countries, increased monitoring, FATF black list, AML high-risk countries`,
+    ogType: "website",
+    bodyContent: countriesIndexBody,
+    breadcrumbLabel: "FATF Grey List",
+    jsonLd: countriesIndexLd,
+  });
+  for (const status of FATF_STATUS) {
+    const country = getCountryByIso2(status.iso2);
+    if (!country) continue;
+    const slug = countrySlug(country);
+    const history = FATF_RECENT_CHANGES.filter((h) => h.iso2 === country.iso2);
+    const listLabel = fatfLabel(status.listing);
+    const path = `/countries/${slug}`;
+    pages.push({
+      path,
+      title: `${country.name} FATF Status ${fatfYear} | Country Risk Report`,
+      description: `Is ${country.name} on the FATF grey list? ${country.name} is on the FATF ${listLabel.toLowerCase()} as of the ${FATF_LAST_PLENARY} plenary. AML/CFT country risk profile with dated status history and cited sources.`,
+      keywords: `${country.name} FATF, ${country.name} grey list, ${country.name} AML risk, is ${country.name} high risk, ${country.name} country risk, FATF ${listLabel.toLowerCase()}`,
+      ogType: "website",
+      bodyContent: renderCountryFatfBody(country, status, history),
+      breadcrumbLabel: country.name,
+      jsonLd: {
+        "@context": "https://schema.org",
+        "@type": "Country",
+        name: country.name,
+        url: `${BASE_URL}${path}`,
+        identifier: country.iso2,
+      },
+      extraJsonLd: [
+        {
+          "@context": "https://schema.org",
+          "@type": "Dataset",
+          name: `${country.name} FATF listing status`,
+          description: `FATF ${listLabel} status for ${country.name}, current as of the ${FATF_LAST_PLENARY} plenary.`,
+          url: `${BASE_URL}${path}`,
+          keywords: [`${country.name} FATF`, "FATF grey list", "AML country risk", listLabel],
+          dateModified: FATF_LAST_PLENARY,
+          spatialCoverage: { "@type": "Place", name: country.name },
+          creator: { "@type": "Organization", name: SITE_NAME, url: "https://regactions.com" },
+          isBasedOn: FATF_SOURCE_URL,
+        },
+      ],
+    });
+  }
 
   // 5. Blog listing (with ItemList schema for carousel/list rich results)
   const allBlogItems = [
