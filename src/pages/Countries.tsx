@@ -13,6 +13,7 @@ import {
 import { sanctionsTierLabel } from "../data/sanctionsStatus.js";
 import { bandLabel, type RiskBand } from "../data/countryRiskScore.js";
 import { buildCountryIndex, formatDate } from "../data/countryView.js";
+import { CountryRiskGlobe } from "../components/CountryRiskGlobe.js";
 import "../styles/country-hub.css";
 
 // ─── Global Country Risk index (default /countries) ─────────────────────────
@@ -55,6 +56,8 @@ function GlobalIndex() {
           on each country page but not scored.
         </p>
       </header>
+
+      <CountryRiskGlobe />
 
       <div className="country-kpis">
         {BAND_ORDER.map((b) => (

@@ -466,6 +466,40 @@
   padding: 4rem 1rem;
 }
 
+/* Risk globe (client-only, above the ratings table) */
+.risk-globe {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-height: 120px;
+  margin: 0 0 1.25rem;
+}
+.risk-globe--loading,
+.risk-globe__ph {
+  min-height: 320px;
+  width: 100%;
+}
+.risk-globe__legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  justify-content: center;
+  margin-top: 0.5rem;
+  font-size: 0.8rem;
+  color: #475569;
+}
+.risk-globe__legend-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+.risk-globe__swatch {
+  width: 12px;
+  height: 12px;
+  border-radius: 3px;
+  display: inline-block;
+}
+
 /* Global index — KPI band buttons + ratings table */
 .country-kpis {
   display: grid;
