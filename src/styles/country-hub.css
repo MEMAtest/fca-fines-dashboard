@@ -158,6 +158,75 @@
   color: #111827;
 }
 
+/* Enforcement evidence section */
+.country-hub__enforcement {
+  margin-top: 2rem;
+  padding: 1.25rem 1.5rem;
+  border: 1px solid #e5e7eb;
+  border-radius: 14px;
+  background: #fff;
+}
+.country-hub__enf-head {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: #0fa77d;
+}
+.country-hub__enf-head .country-hub__section-title {
+  margin: 0;
+  color: #0b1f2a;
+}
+.country-hub__enf-pill {
+  margin-left: auto;
+  font-size: 0.7rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: #0d7d70;
+  background: #e0f7f5;
+  padding: 0.25rem 0.6rem;
+  border-radius: 999px;
+}
+.country-hub__enf-lead {
+  font-size: 1rem;
+  color: #374151;
+  margin: 0.75rem 0 1rem;
+}
+.country-hub__enf-regulators {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: grid;
+  gap: 0.4rem;
+}
+.country-hub__enf-regulators li {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.5rem 0.75rem;
+  border: 1px solid #f1f5f9;
+  border-radius: 8px;
+  background: #f9fafb;
+}
+.country-hub__enf-regulators a {
+  color: #111827;
+  text-decoration: none;
+}
+.country-hub__enf-regulators a:hover {
+  color: #0fa77d;
+}
+.country-hub__enf-count {
+  font-size: 0.78rem;
+  color: #6b7280;
+  white-space: nowrap;
+}
+.country-hub__enf-note {
+  font-size: 0.8rem;
+  color: #6b7280;
+  margin: 0.9rem 0 0;
+}
+
 .country-hub__pending {
   margin-top: 2rem;
   padding: 1rem 1.25rem;
