@@ -74,6 +74,25 @@ const GREY: FatfStatus[] = [
 
 export const FATF_STATUS: FatfStatus[] = [...BLACK, ...GREY];
 
+/**
+ * Grey-list jurisdictions whose action-plan progress was reviewed/updated at the
+ * last plenary (not added or removed — a substantive status note). Curated from
+ * the June 2026 plenary outcome.
+ */
+export const FATF_UPDATED_THIS_CYCLE: string[] = [
+  "BO", // Bolivia
+  "BG", // Bulgaria
+  "CD", // Democratic Republic of the Congo
+  "KE", // Kenya
+  "MC", // Monaco
+  "SY", // Syria
+  "VN", // Vietnam
+];
+
+export function isFatfUpdatedThisCycle(iso2: string): boolean {
+  return FATF_UPDATED_THIS_CYCLE.includes(iso2.toUpperCase());
+}
+
 /** Most recent plenary changes — powers the "recent changes" / status-history content. */
 export const FATF_RECENT_CHANGES: FatfChange[] = [
   { date: "2026-06-19", iso2: "IQ", change: "added", listing: "increased-monitoring" },
