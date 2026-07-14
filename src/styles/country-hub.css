@@ -56,6 +56,120 @@
   gap: 0.2rem;
 }
 
+/* Country Risk Score gauge */
+.country-score {
+  display: grid;
+  grid-template-columns: 1.2fr 1fr;
+  gap: 1.25rem;
+  align-items: stretch;
+  border: 1px solid #e5e7eb;
+  border-radius: 16px;
+  padding: 1.25rem 1.5rem;
+  margin-bottom: 1.25rem;
+  background: #fff;
+  box-shadow: 0 14px 30px rgba(11, 31, 42, 0.08);
+}
+.country-score__eyebrow {
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  color: #6b7280;
+  font-weight: 600;
+}
+.country-score__value-row {
+  display: flex;
+  align-items: baseline;
+  gap: 0.5rem;
+  margin: 0.35rem 0;
+}
+.country-score__value {
+  font-size: 3rem;
+  font-weight: 800;
+  line-height: 1;
+  color: #0b1f2a;
+}
+.country-score__of {
+  font-size: 1.1rem;
+  color: #6b7280;
+}
+.country-score__band-pill {
+  margin-left: auto;
+  align-self: center;
+  font-size: 0.8rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  padding: 0.3rem 0.7rem;
+  border-radius: 999px;
+  color: #fff;
+}
+.country-score__bar {
+  display: flex;
+  gap: 3px;
+  margin: 0.5rem 0;
+}
+.country-score__seg {
+  flex: 1;
+  height: 10px;
+  border-radius: 3px;
+  background: #e5e7eb;
+}
+.country-score__hint {
+  font-size: 0.78rem;
+  color: #6b7280;
+  margin: 0.4rem 0 0;
+}
+.country-score__how {
+  border-left: 1px solid #eef2f7;
+  padding-left: 1.25rem;
+}
+.country-score__how-title {
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: #0b1f2a;
+}
+.country-score__weights {
+  list-style: none;
+  padding: 0;
+  margin: 0.5rem 0;
+  display: grid;
+  gap: 0.3rem;
+  font-size: 0.85rem;
+  color: #374151;
+}
+.country-score__weights li {
+  display: flex;
+  justify-content: space-between;
+  border-bottom: 1px dashed #eef2f7;
+  padding-bottom: 0.2rem;
+}
+.country-score__disclaimer {
+  font-size: 0.7rem;
+  color: #9ca3af;
+  margin: 0.5rem 0 0;
+  line-height: 1.4;
+}
+/* 4-band colour scale (drives pill + on-segments) */
+.country-score--low .country-score__band-pill { background: #10b981; }
+.country-score--moderate .country-score__band-pill { background: #f59e0b; }
+.country-score--high .country-score__band-pill { background: #ea580c; }
+.country-score--very-high .country-score__band-pill { background: #dc2626; }
+.country-score--low .country-score__seg--on { background: #10b981; }
+.country-score--moderate .country-score__seg--on { background: #f59e0b; }
+.country-score--high .country-score__seg--on { background: #ea580c; }
+.country-score--very-high .country-score__seg--on { background: #dc2626; }
+@media (max-width: 640px) {
+  .country-score {
+    grid-template-columns: 1fr;
+  }
+  .country-score__how {
+    border-left: none;
+    border-top: 1px solid #eef2f7;
+    padding-left: 0;
+    padding-top: 1rem;
+  }
+}
+
 /* FATF status card — colour = risk band */
 .country-hub__fatf {
   display: flex;

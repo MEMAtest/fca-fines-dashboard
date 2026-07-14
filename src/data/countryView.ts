@@ -27,6 +27,12 @@ import {
   type CountrySanctions,
   type SanctionsTier,
 } from "./sanctionsStatus.js";
+import {
+  computeCountryRiskScore,
+  globalAverageRiskScore,
+  PILLAR_WEIGHTS,
+  type CountryRiskScore,
+} from "./countryRiskScore.js";
 
 const MONTHS = [
   "Jan", "Feb", "Mar", "Apr", "May", "Jun",
@@ -66,6 +72,12 @@ export interface CountryView {
   sanctionsTier?: SanctionsTier;
   /** Risk band for the sanctions card (mirrors the FATF band scale). */
   sanctionsBand: RiskBand;
+  /** Composite RegActions Country Risk Score (FATF + Sanctions + WGI). */
+  riskScore: CountryRiskScore;
+  /** Mean score across profiled countries, for "vs global average". */
+  globalAverage: number;
+  /** Scoring weights (for the "How is this scored?" card). */
+  weights: typeof PILLAR_WEIGHTS;
   lastPlenary: string;
   nextPlenary: string;
 }
@@ -116,6 +128,9 @@ export function buildCountryView(country: Country): CountryView {
     sanctions,
     sanctionsTier,
     sanctionsBand: sanctionsToBand(sanctionsTier),
+    riskScore: computeCountryRiskScore(country.iso2),
+    globalAverage: globalAverageRiskScore(),
+    weights: PILLAR_WEIGHTS,
     lastPlenary: FATF_LAST_PLENARY,
     nextPlenary: FATF_NEXT_PLENARY,
   };

@@ -15,7 +15,10 @@
 
 import { getFatfStatus } from "./fatfStatus.js";
 import { highestSanctionsTier } from "./sanctionsStatus.js";
-import { getGovernancePercentile } from "./governanceData.js";
+import {
+  getGovernancePercentile,
+  GOVERNANCE_PERCENTILE,
+} from "./governanceData.js";
 
 export type RiskBand = "low" | "moderate" | "high" | "very-high";
 
@@ -103,4 +106,19 @@ export function computeCountryRiskScore(iso2: string): CountryRiskScore {
     hasGovernance,
     appliedWeights: applied,
   };
+}
+
+let _globalAvg: number | undefined;
+/**
+ * Mean risk score across the profiled (governance-covered) countries — the
+ * "vs global average" comparator. Computed once and cached.
+ */
+export function globalAverageRiskScore(): number {
+  if (_globalAvg !== undefined) return _globalAvg;
+  const codes = Object.keys(GOVERNANCE_PERCENTILE);
+  const total = codes.reduce((s, c) => s + computeCountryRiskScore(c).score, 0);
+  _globalAvg = codes.length
+    ? Math.round((total / codes.length) * 10) / 10
+    : 0;
+  return _globalAvg;
 }

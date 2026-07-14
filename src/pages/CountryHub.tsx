@@ -4,6 +4,7 @@ import { ArrowLeft, Ban, ExternalLink, Scale, ShieldAlert, ShieldCheck } from "l
 import { getCountryBySlug } from "../data/countries.js";
 import { FATF_SOURCE_URL } from "../data/fatfStatus.js";
 import { sanctionsTierLabel } from "../data/sanctionsStatus.js";
+import { bandLabel } from "../data/countryRiskScore.js";
 import { CountryEnforcementLive } from "../components/CountryEnforcementLive.js";
 import {
   buildCountryView,
@@ -35,7 +36,7 @@ export function CountryHub() {
     );
   }
 
-  const { band, statusHeading, statusDetail, history, enforcement, sanctions, sanctionsTier, sanctionsBand } = view;
+  const { band, statusHeading, statusDetail, history, enforcement, sanctions, sanctionsTier, sanctionsBand, riskScore, globalAverage, weights } = view;
 
   return (
     <div className="country-hub">
@@ -67,6 +68,60 @@ export function CountryHub() {
           </a>
         </p>
       </header>
+
+      {/* Country Risk Score — the signature composite (FATF + Sanctions + WGI) */}
+      <section
+        className={`country-score country-score--${riskScore.band}`}
+        aria-labelledby="score-heading"
+      >
+        <div className="country-score__gauge">
+          <span id="score-heading" className="country-score__eyebrow">
+            Country Risk Score
+          </span>
+          <div className="country-score__value-row">
+            <span className="country-score__value">
+              {riskScore.score.toFixed(1)}
+            </span>
+            <span className="country-score__of">/ 10</span>
+            <span className="country-score__band-pill">
+              {bandLabel(riskScore.band)}
+            </span>
+          </div>
+          <div className="country-score__bar" aria-hidden="true">
+            {Array.from({ length: 10 }).map((_, i) => (
+              <span
+                key={i}
+                className={`country-score__seg${
+                  i < Math.round(riskScore.score) ? " country-score__seg--on" : ""
+                }`}
+              />
+            ))}
+          </div>
+          <p className="country-score__hint">
+            Higher score = higher risk · vs global average{" "}
+            {globalAverage.toFixed(1)}
+          </p>
+        </div>
+        <div className="country-score__how">
+          <span className="country-score__how-title">How is this scored?</span>
+          <ul className="country-score__weights">
+            <li>
+              FATF status <b>{Math.round(weights.fatf * 100)}%</b>
+            </li>
+            <li>
+              Sanctions exposure <b>{Math.round(weights.sanctions * 100)}%</b>
+            </li>
+            <li>
+              Governance (WGI) <b>{Math.round(weights.governance * 100)}%</b>
+            </li>
+          </ul>
+          <p className="country-score__disclaimer">
+            RegActions Country Risk Rating (AML/CFT, sanctions &amp; governance).
+            Informational, not a substitute for your own risk assessment.
+            Enforcement volume and CPI are shown but not scored.
+          </p>
+        </div>
+      </section>
 
       {/* FATF status card — the Stage-1 signal */}
       <section

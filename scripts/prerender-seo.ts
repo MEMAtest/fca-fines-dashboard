@@ -69,6 +69,7 @@ import {
   type CountryView,
 } from "../src/data/countryView.js";
 import { SANCTIONS_STATUS, sanctionsTierLabel } from "../src/data/sanctionsStatus.js";
+import { bandLabel } from "../src/data/countryRiskScore.js";
 import {
   FATF_STATUS,
   fatfLabel,
@@ -225,8 +226,17 @@ function renderHubBody(
  * prerendered HTML and the SPA can't drift apart in copy/logic.
  */
 function renderCountryFatfBody(view: CountryView): string {
-  const { country, statusHeading, statusDetail, history, enforcement, sanctions, sanctionsTier } = view;
+  const { country, statusHeading, statusDetail, history, enforcement, sanctions, sanctionsTier, riskScore, globalAverage, weights } = view;
   const title = `${country.name} — Country Risk Report`;
+  const scoreHtml = `<h2>RegActions Country Risk Score: ${escapeHtml(
+    `${riskScore.score.toFixed(1)}/10 (${bandLabel(riskScore.band)})`,
+  )}</h2><p>${escapeHtml(
+    `Higher score = higher risk (vs global average ${globalAverage.toFixed(1)}). Composite of FATF status (${Math.round(
+      weights.fatf * 100,
+    )}%), sanctions exposure (${Math.round(weights.sanctions * 100)}%) and World Bank governance indicators (${Math.round(
+      weights.governance * 100,
+    )}%). Enforcement volume and CPI are shown but not scored. Informational, not a substitute for your own risk assessment.`,
+  )}</p>`;
   const sanctionsHtml =
     sanctions && sanctionsTier
       ? `<h2>Sanctions: ${escapeHtml(sanctionsTierLabel(sanctionsTier))}</h2><ul>${sanctions.programs
@@ -265,9 +275,9 @@ function renderCountryFatfBody(view: CountryView): string {
     title,
   )}</h1><div class="blog-article-content"><p>${escapeHtml(
     `${country.name} (${country.region} • ${country.subregion}). FATF listing status as of the ${formatDate(FATF_LAST_PLENARY)} plenary.`,
-  )}</p><h2>FATF status: ${escapeHtml(statusHeading)}</h2><p>${escapeHtml(
+  )}</p>${scoreHtml}<h2>FATF status: ${escapeHtml(statusHeading)}</h2><p>${escapeHtml(
     statusDetail,
-  )}</p>${sanctionsHtml}${historyHtml}${enforcementHtml}<p>The composite RegActions Country Risk Score is being added.</p><p><a href="${escapeHtml(
+  )}</p>${sanctionsHtml}${historyHtml}${enforcementHtml}<p><a href="${escapeHtml(
     FATF_SOURCE_URL,
   )}" rel="noopener">Source: FATF black &amp; grey lists</a></p></div></article></div></div>`;
 }
