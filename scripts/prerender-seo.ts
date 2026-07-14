@@ -71,7 +71,12 @@ import {
   type CountryView,
 } from "../src/data/countryView.js";
 import { SANCTIONS_STATUS, sanctionsTierLabel } from "../src/data/sanctionsStatus.js";
-import { bandLabel } from "../src/data/countryRiskScore.js";
+import { bandLabel, PILLAR_WEIGHTS } from "../src/data/countryRiskScore.js";
+import {
+  GOVERNANCE_SOURCE,
+  GOVERNANCE_VINTAGE,
+  GOVERNANCE_LICENCE,
+} from "../src/data/governanceData.js";
 import {
   FATF_STATUS,
   fatfLabel,
@@ -339,6 +344,28 @@ function renderGlobalIndexBody(): string {
   )}</p><p>${escapeHtml(
     `Very high: ${counts["very-high"]} · High: ${counts.high} · Moderate: ${counts.moderate} · Low: ${counts.low}.`,
   )} <a href="/countries/fatf-grey-list">See the FATF grey list &amp; black list</a>.</p><table><thead><tr><th>#</th><th>Country</th><th>Score</th><th>Risk</th><th>Region</th><th>FATF</th><th>Sanctions</th></tr></thead><tbody>${rowsHtml}</tbody></table></div></article></div></div>`;
+}
+
+/** Crawlable methodology page — mirrors CountryMethodology.tsx. */
+function renderMethodologyBody(): string {
+  const pc = (n: number) => `${Math.round(n * 100)}%`;
+  return `<div class="blog-page"><div class="blog-post-container"><article class="blog-article-modal"><h1 class="blog-post-title">How the RegActions Country Risk Score is calculated</h1><div class="blog-article-content"><p>${escapeHtml(
+    "The RegActions Country Risk Score is a transparent composite on a 0-10 scale, where a higher score means higher risk. It is built only from factual, sourced signals: a country's FATF listing status, its sanctions exposure, and World Bank governance indicators. Informational, and not a substitute for a firm's own risk assessment.",
+  )}</p><h2>The three scored pillars</h2><ul><li>${escapeHtml(
+    `FATF status (${pc(PILLAR_WEIGHTS.fatf)}): black list = 10, grey list = 6, not listed = 0.`,
+  )}</li><li>${escapeHtml(
+    `Sanctions exposure (${pc(PILLAR_WEIGHTS.sanctions)}): comprehensive = 10, sectoral = 6, targeted = 3, none = 0 (highest tier across OFAC / UK / EU / UN).`,
+  )}</li><li>${escapeHtml(
+    `Governance, World Bank WGI (${pc(PILLAR_WEIGHTS.governance)}): inverted mean percentile, risk = (100 - percentile) / 10.`,
+  )}</li></ul><p>${escapeHtml(
+    "The composite is the weighted mean of the pillars; when governance data is missing, its weight is dropped and the remaining pillars are renormalised.",
+  )}</p><h2>Risk bands</h2><ul><li>Low 1.0-2.9</li><li>Moderate 3.0-4.9</li><li>High 5.0-6.9</li><li>Very high 7.0-10.0</li></ul><h2>Not scored</h2><p>${escapeHtml(
+    "Enforcement volume (it measures regulator activity, not country risk) and Transparency International CPI (no-derivatives licence) are shown as evidence/reference but never fed into the score.",
+  )}</p><h2>Data sources</h2><ul><li>FATF plenary public statements (black &amp; grey lists). <a href="${escapeHtml(
+    FATF_SOURCE_URL,
+  )}" rel="noopener">Source</a></li><li>OFAC / UK FCDO / EU / UN sanctions programmes (curated, sourced per row).</li><li>${escapeHtml(
+    `World Bank WGI, mean percentile across six dimensions (${GOVERNANCE_VINTAGE}, ${GOVERNANCE_LICENCE}).`,
+  )} <a href="${escapeHtml(GOVERNANCE_SOURCE)}" rel="noopener">Source</a></li></ul></div></article></div></div>`;
 }
 
 function renderTopicClusterBody(slug: string): string {
@@ -1094,6 +1121,27 @@ async function buildPageMetas(): Promise<PageMeta[]> {
       description: `FATF jurisdictions under increased monitoring (grey list) and subject to a call for action (black list), current as of the ${FATF_LAST_PLENARY} plenary.`,
       url: `${BASE_URL}/countries/fatf-grey-list`,
       isPartOf: { "@type": "WebSite", name: SITE_NAME, url: "https://regactions.com" },
+    },
+  });
+  pages.push({
+    path: "/countries/methodology",
+    title: "Country Risk Score Methodology | RegActions",
+    description:
+      "How the RegActions Country Risk Score is calculated: FATF status, sanctions exposure and World Bank governance indicators, with transparent weights. Enforcement volume and CPI are shown but not scored.",
+    keywords:
+      "country risk score methodology, AML country risk methodology, FATF sanctions WGI composite, how country risk is calculated",
+    ogType: "article",
+    bodyContent: renderMethodologyBody(),
+    breadcrumbLabel: "Methodology",
+    jsonLd: {
+      "@context": "https://schema.org",
+      "@type": "Article",
+      headline: "How the RegActions Country Risk Score is calculated",
+      description:
+        "Transparent methodology for the RegActions Country Risk Score (FATF + sanctions + World Bank governance).",
+      url: `${BASE_URL}/countries/methodology`,
+      author: { "@type": "Organization", name: SITE_NAME, url: "https://regactions.com" },
+      publisher: { "@type": "Organization", name: SITE_NAME },
     },
   });
   // Every country with a risk signal (governance / FATF / sanctions / enforcement)
