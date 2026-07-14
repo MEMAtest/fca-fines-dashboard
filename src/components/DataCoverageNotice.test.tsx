@@ -12,14 +12,14 @@ describe("DataCoverageNotice", () => {
     render(<DataCoverageNotice coverage={coverage!} />);
 
     expect(
-      screen.getByText(/curated archive discovery from official documents/i),
+      screen.getByText(/separate official documents/i),
     ).toBeInTheDocument();
     expect(
-      screen.getByText(/Collection method: Curated official-document archive ingestion/i),
+      screen.getByText(/Based on official regulator publications/i),
     ).toBeInTheDocument();
     expect(
-      screen.getByText(/Healthy feed floor: at least 9 records/i),
-    ).toBeInTheDocument();
+      screen.queryByText(/scrap|manifest|feed floor/i),
+    ).not.toBeInTheDocument();
     expect(screen.getByText(/19 enforcement actions/i)).toBeInTheDocument();
   });
 
@@ -34,10 +34,10 @@ describe("DataCoverageNotice", () => {
       screen.getAllByText(
         /official source publishes very few explicit monetary penalties/i,
       ),
-    ).toHaveLength(2);
+    ).toHaveLength(1);
     expect(
-      screen.getByText(/Healthy feed floor: at least 1 record/i),
-    ).toBeInTheDocument();
+      screen.queryByText(/scrap|manifest|feed floor/i),
+    ).not.toBeInTheDocument();
   });
 
   it("does not show the lower-confidence warning for standard live regulators", () => {
@@ -45,9 +45,9 @@ describe("DataCoverageNotice", () => {
 
     expect(coverage).not.toBeNull();
 
-    render(<DataCoverageNotice coverage={coverage!} />);
+    render(<DataCoverageNotice coverage={coverage!} recordCount={500} />);
 
     expect(screen.queryByText(/collection path/i)).not.toBeInTheDocument();
-    expect(screen.getByText(/308 enforcement actions/i)).toBeInTheDocument();
+    expect(screen.getByText(/500 enforcement actions/i)).toBeInTheDocument();
   });
 });

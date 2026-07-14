@@ -73,9 +73,25 @@ function describeMaturity(coverage: RegulatorCoverage): string {
 
 function describeOperationalConfidence(coverage: RegulatorCoverage): string {
   if (coverage.operationalConfidence === "lower") {
-    return "Lower-confidence live feed with more manual curation or brittle source discovery behind it.";
+    return "Official publication coverage is still developing, so trend analysis should be treated as directional.";
   }
-  return "Standard live feed with routine monitoring and stronger operational reliability.";
+  return "Official publication coverage is reviewed regularly and is suitable for routine monitoring.";
+}
+
+function describePublicationSurface(coverage: RegulatorCoverage): string {
+  switch (coverage.scrapeMode) {
+    case "open_data":
+    case "table":
+      return "Structured official data";
+    case "search_register":
+      return "Official register";
+    case "archive":
+      return "Official publication archive";
+    case "detail_pages":
+      return "Individual official notices";
+    case "mixed":
+      return "Multiple official publication channels";
+  }
 }
 
 function buildCrossLinks(
@@ -170,7 +186,7 @@ function buildCoverageMetrics(
   return [
     { label: "Coverage window", value: coverage.years },
     { label: "Actions tracked", value: String(coverage.count) },
-    { label: "Publication model", value: toTitleLabel(coverage.scrapeMode) },
+    { label: "Publication model", value: describePublicationSurface(coverage) },
     { label: "Native currency", value: coverage.nativeCurrency },
     {
       label: "Dashboard currency",
@@ -179,7 +195,7 @@ function buildCoverageMetrics(
     {
       label: "Coverage stance",
       value: `${toTitleLabel(coverage.coverageStatus)} coverage`,
-      note: coverage.note ?? describeOperationalConfidence(coverage),
+      note: describeOperationalConfidence(coverage),
     },
   ];
 }
@@ -198,11 +214,9 @@ function buildCoverageAssessment(
     ],
     bullets: [
       `Operational confidence: ${describeOperationalConfidence(coverage)}`,
-      `Primary source model: ${toTitleLabel(coverage.scrapeMode)}.`,
+      `Primary source model: ${describePublicationSurface(coverage)}.`,
       `Jurisdiction: ${coverage.country} (${coverage.region}).`,
-      coverage.note
-        ? `Coverage note: ${coverage.note}`
-        : "No special caveat is attached to this regulator feed at the moment.",
+      describeOperationalConfidence(coverage),
     ],
   };
 }
@@ -237,7 +251,7 @@ function getRegulatorProfile(code: string): RegulatorProfile {
             intro:
               "BaFin publishes across measures, sanctions, databases, and reports rather than through one compact penalties register.",
             paragraphs: [
-              "That distribution is not a weakness in itself, but it means the compliance team gets more value when the feed is treated as a monitored publication map rather than a single-page scraper target.",
+              "That distribution is not a weakness in itself, but it means the compliance team gets more value when the feed is treated as a monitored publication map rather than a single page.",
             ],
             bullets: [
               "Measures and sanctions pages are the main decision trail.",
@@ -270,7 +284,7 @@ function getRegulatorProfile(code: string): RegulatorProfile {
           {
             title: "Distributed Publication Trail",
             detail:
-              "If the source trail starts fragmenting across pages or formats, monitoring discipline matters more than raw scrape volume.",
+              "If the source trail starts fragmenting across pages or formats, monitoring discipline matters more than raw record volume.",
           },
         ],
         boardQuestions: [
@@ -2772,7 +2786,7 @@ function getRegulatorProfile(code: string): RegulatorProfile {
         eyebrow: `${regionContext} regulatory intelligence`,
         introduction: `${coverage.fullName} operates as a ${supervisorType} in ${coverage.country}, providing ${regionContext} enforcement intelligence relevant when your firm has ${coverage.region} exposure or needs external benchmarks for ${coverage.strategicBucket.replace(/_/g, " ")} control themes. This regulator's public enforcement trail offers directional insights, particularly for cross-border monitoring and supervisory trend analysis. With ${coverage.count} actions tracked across ${coverage.years}, this represents emerging coverage launching in 2026—treat as structured regulatory intelligence rather than comprehensive enforcement history.`,
         executiveSummary: [
-          `**${toTitleLabel(coverage.sourceType)} Supervision:** ${coverage.fullName} operates as a ${supervisorType} with enforcement published via ${toTitleLabel(coverage.scrapeMode).toLowerCase()} format. Current coverage spans ${coverage.years} with ${coverage.count} tracked actions.`,
+          `**${toTitleLabel(coverage.sourceType)} Supervision:** ${coverage.fullName} operates as a ${supervisorType} with enforcement published through ${describePublicationSurface(coverage).toLowerCase()}. Current coverage spans ${coverage.years} with ${coverage.count} tracked actions.`,
           `**Regional Significance:** As a ${coverage.region} regulator with ${coverage.coverageStatus} coverage status, use this feed for ${regionalUseCase} monitoring and benchmarking against UK/EU supervisory standards.`,
           `**Practical Application:** Best deployed in compliance watchlists where ${coverage.country} jurisdiction matters strategically, providing external enforcement comparators and regulatory tone signals beyond domestic supervision.`,
         ],
@@ -2791,7 +2805,7 @@ function getRegulatorProfile(code: string): RegulatorProfile {
             heading: "How Public Enforcement Appears",
             intro: `Understanding how ${coverage.fullName} publishes enforcement outcomes helps interpret coverage completeness and source reliability.`,
             bullets: [
-              `**Publication Format:** Enforcement appears via ${toTitleLabel(coverage.scrapeMode).toLowerCase()}, requiring source-specific monitoring approaches and change detection protocols.`,
+              `**Publication Format:** Enforcement appears through ${describePublicationSurface(coverage).toLowerCase()}, requiring source-specific monitoring and regular source checks.`,
               `**Coverage Window:** Current tracking covers ${coverage.years}, representing ${coverage.coverageStatus} coverage that will expand to full database depth during 2026.`,
               `**Data Quality:** ${coverage.dataQuality} data quality for tracked actions, with ${coverage.count} enforcement outcomes currently captured and validated.`,
               `**Source Evolution:** Regulator websites evolve—maintain regular source URL checks and monitor publication structure changes that may affect data completeness.`,

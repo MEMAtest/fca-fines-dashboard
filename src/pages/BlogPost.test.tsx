@@ -82,10 +82,10 @@ describe("BlogPost", () => {
       screen.getByRole("heading", { name: "Official Sources" }),
     ).toBeInTheDocument();
     expect(
-      screen.getByRole("link", { name: /BaFin measures and sanctions/i }),
+      screen.getByRole("link", { name: /BaFin Annual Report 2024/i }),
     ).toHaveAttribute(
       "href",
-      "https://www.bafin.de/EN/Aufsicht/BoersenMaerkte/Massnahmen/massnahmen_sanktionen_node.html",
+      "https://www.bafin.de/SharedDocs/Downloads/EN/Jahresbericht/dl_jb_2024_en.pdf?__blob=publicationFile&v=2",
     );
     expect(
       screen.getByText(/Governance Under Supervisory Pressure/i),

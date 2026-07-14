@@ -228,61 +228,26 @@ export function RegulatorHub() {
       </div>
 
       {/* Data Coverage Notice */}
-      <DataCoverageNotice coverage={coverage} />
+      <DataCoverageNotice
+        coverage={coverage}
+        recordCount={!loading && !error ? totalFines : undefined}
+      />
 
-      {/* Official sources */}
-      {coverage.officialSources.length > 0 && (
-        <section
-          className="regulator-hub-sources"
-          aria-labelledby="official-sources-title"
-        >
-          <div className="regulator-hub-sources__header">
-            <p className="regulator-hub-sources__eyebrow">Official sources</p>
-            <h2
-              id="official-sources-title"
-              className="regulator-hub-sources__title"
-            >
-              Go to {coverage.code}&apos;s own enforcement pages
-            </h2>
-            <p className="regulator-hub-sources__intro">
-              Use these curated regulator-level sources when you want to verify
-              published sanctions, decisions, or official register entries
-              directly at the source.
-            </p>
-          </div>
-
-          <div className="regulator-hub-sources__grid">
-            {coverage.officialSources.map((source) => (
-              <a
-                key={source.url}
-                href={source.url}
-                target="_blank"
-                rel="noreferrer"
-                className="regulator-hub-sources__card"
-              >
-                <div className="regulator-hub-sources__card-copy">
-                  <span className="regulator-hub-sources__card-label">
-                    {source.label}
-                  </span>
-                  <span className="regulator-hub-sources__card-description">
-                    {source.description}
-                  </span>
-                </div>
-                <ExternalLink
-                  size={18}
-                  className="regulator-hub-sources__card-icon"
-                />
-              </a>
-            ))}
-          </div>
-
-          <p className="regulator-hub-sources__footnote">
-            These are curated regulator-level entry points. Case-level source
-            links may vary while non-FCA source coverage continues to be
-            deepened.
+      <div className="regulator-hub__cta">
+        <div>
+          <strong>Explore the full {coverage.code} dataset</strong>
+          <p>
+            Filter actions, compare themes and inspect the source evidence in a
+            dedicated analytics workspace.
           </p>
-        </section>
-      )}
+        </div>
+        <Link
+          to={`/regulators/${coverage.code.toLowerCase()}/dashboard`}
+          className="regulator-hub__cta-button"
+        >
+          Open {coverage.code} Dashboard
+        </Link>
+      </div>
 
       {/* Loading/Error States */}
       {loading && (
@@ -439,18 +404,58 @@ export function RegulatorHub() {
               </div>
             </div>
           )}
-
-          {/* CTA to Dashboard */}
-          <div className="regulator-hub__cta">
-            <p>Open a dedicated analytics workspace for {coverage.fullName}</p>
-            <Link
-              to={`/regulators/${coverage.code.toLowerCase()}/dashboard`}
-              className="regulator-hub__cta-button"
-            >
-              Open {coverage.code} Dashboard
-            </Link>
-          </div>
         </>
+      )}
+
+      {coverage.officialSources.length > 0 && (
+        <section
+          className="regulator-hub-sources"
+          aria-labelledby="official-sources-title"
+        >
+          <div className="regulator-hub-sources__header">
+            <p className="regulator-hub-sources__eyebrow">Official sources</p>
+            <h2
+              id="official-sources-title"
+              className="regulator-hub-sources__title"
+            >
+              Verify against {coverage.code}&apos;s own publications
+            </h2>
+            <p className="regulator-hub-sources__intro">
+              Open the regulator&apos;s own publication pages to check
+              sanctions, decisions and official records at source.
+            </p>
+          </div>
+
+          <div className="regulator-hub-sources__grid">
+            {coverage.officialSources.map((source) => (
+              <a
+                key={source.url}
+                href={source.url}
+                target="_blank"
+                rel="noreferrer"
+                className="regulator-hub-sources__card"
+              >
+                <div className="regulator-hub-sources__card-copy">
+                  <span className="regulator-hub-sources__card-label">
+                    {source.label}
+                  </span>
+                  <span className="regulator-hub-sources__card-description">
+                    {source.description}
+                  </span>
+                </div>
+                <ExternalLink
+                  size={18}
+                  className="regulator-hub-sources__card-icon"
+                />
+              </a>
+            ))}
+          </div>
+
+          <p className="regulator-hub-sources__footnote">
+            These links lead to regulator-level entry points. Individual action
+            records provide case-specific source links where available.
+          </p>
+        </section>
       )}
     </div>
   );

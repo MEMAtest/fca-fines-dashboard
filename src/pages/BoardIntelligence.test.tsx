@@ -102,21 +102,29 @@ describe("BoardIntelligence", () => {
         level: 2,
         name: /^NorthStar Compliance Profile$/,
       }),
-    ).toHaveLength(2);
+    ).toHaveLength(1);
     expect(
       screen.queryByRole("heading", { name: /Exposure outlook/i }),
     ).not.toBeInTheDocument();
     expect(
-      screen.getByRole("heading", { name: /Executive summary/i }),
+      screen.getByRole("heading", { name: /Executive takeaways/i }),
     ).toBeInTheDocument();
     expect(
-      screen.getByRole("heading", { name: /Why now/i }),
+      screen.getByRole("heading", { name: /Why this matters now/i }),
     ).toBeInTheDocument();
     expect(
-      screen.getByRole("heading", { name: /Exposure overview/i }),
+      screen.getByRole("heading", { name: /Exposure drivers/i }),
     ).toBeInTheDocument();
     expect(
-      screen.getByRole("heading", { name: /Key exposure themes/i }),
+      screen.getByRole("heading", { name: /Peer comparison/i }),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole("heading", {
+        name: /Top regulators shaping this profile/i,
+      }),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole("heading", { name: /Board challenge agenda/i }),
     ).toBeInTheDocument();
     expect(
       screen.getByRole("heading", { name: /Appendix/i }),
@@ -138,7 +146,7 @@ describe("BoardIntelligence", () => {
         level: 2,
         name: /^NorthStar Payments$/,
       }),
-    ).toHaveLength(2);
+    ).toHaveLength(1);
   });
 
   it("shows a consultant advisory note and working-copy detail when selected", () => {
@@ -161,7 +169,9 @@ describe("BoardIntelligence", () => {
     expect(
       screen.getByText(/Escalate remediation evidence on AML controls/i),
     ).toBeInTheDocument();
-    expect(screen.getAllByLabelText(/Control status for/i).length).toBeGreaterThan(0);
+    expect(
+      screen.getAllByLabelText(/Control status for/i).length,
+    ).toBeGreaterThan(0);
   });
 
   it("loads saved profile snapshots from local storage", () => {
@@ -204,7 +214,7 @@ describe("BoardIntelligence", () => {
         level: 2,
         name: /^NorthStar Board Pack$/,
       }),
-    ).toHaveLength(2);
-    expect(screen.getAllByText(/Prepared for NorthStar plc/i)).toHaveLength(2);
+    ).toHaveLength(1);
+    expect(screen.getAllByText(/Prepared for NorthStar plc/i)).toHaveLength(1);
   });
 });

@@ -42,4 +42,20 @@ describe("RegulatorHub", () => {
 
     expect(screen.getByText(/page not found/i)).toBeInTheDocument();
   });
+
+  it("places the dashboard action before official source links", () => {
+    renderRegulatorHub("/regulators/fca");
+
+    const dashboardLink = screen.getByRole("link", {
+      name: /Open FCA Dashboard/i,
+    });
+    const officialSourcesHeading = screen.getByRole("heading", {
+      name: /Verify against FCA's own publications/i,
+    });
+
+    expect(
+      dashboardLink.compareDocumentPosition(officialSourcesHeading) &
+        Node.DOCUMENT_POSITION_FOLLOWING,
+    ).toBeTruthy();
+  });
 });

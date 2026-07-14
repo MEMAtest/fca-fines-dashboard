@@ -801,7 +801,7 @@ export function RegulatorDashboard() {
             </h1>
             <p className="regulator-dashboard__description">
               Dedicated single-regulator analytics for {coverage.fullName}. This
-              view stays isolated to {coverage.code}
+              view stays isolated to {coverage.code}{" "}
               so the timeline, breach mix, and top firms reflect this regulator
               only.
             </p>
@@ -824,7 +824,10 @@ export function RegulatorDashboard() {
               </span>
               <span className="regulator-dashboard__pill">
                 <Globe2 size={16} />
-                {coverage.count} tracked actions
+                {(loading || error
+                  ? coverage.count
+                  : fines.length
+                ).toLocaleString()} tracked actions
               </span>
             </div>
           </div>
@@ -869,7 +872,7 @@ export function RegulatorDashboard() {
             <p className="regulator-dashboard__stat-value">
               {largestFineRecord
                 ? formatCurrency(safeNum(largestFineRecord.amount), currency)
-                : "—"}
+                : "Not available"}
             </p>
             <p className="regulator-dashboard__stat-meta">
               {largestFineRecord?.firm_individual || "No firm available"}
@@ -880,7 +883,7 @@ export function RegulatorDashboard() {
             <p className="regulator-dashboard__stat-value">
               {filteredFines.length
                 ? formatCurrency(averageFine, currency)
-                : "—"}
+                : "Not available"}
             </p>
             <p className="regulator-dashboard__stat-meta">
               Filtered dashboard average
@@ -891,7 +894,7 @@ export function RegulatorDashboard() {
             <p className="regulator-dashboard__stat-value">
               {latestRecord
                 ? format(new Date(latestRecord.date_issued), "dd MMM yyyy")
-                : "—"}
+                : "Not available"}
             </p>
             <p className="regulator-dashboard__stat-meta">
               {latestRecord?.firm_individual || "No notice available"}
@@ -914,7 +917,10 @@ export function RegulatorDashboard() {
       </section>
 
       <div className="regulator-dashboard__grid">
-        <DataCoverageNotice coverage={coverage} />
+        <DataCoverageNotice
+          coverage={coverage}
+          recordCount={!loading && !error ? fines.length : undefined}
+        />
       </div>
 
       <FiltersBar
@@ -996,7 +1002,7 @@ export function RegulatorDashboard() {
                 onSelect={handleCategorySelect}
                 exportId={`${coverage.code.toLowerCase()}-breaches`}
               />
-              <div className="panel">
+              <div className="panel regulator-dashboard__coverage-context">
                 <div className="panel__header">
                   <div>
                     <p className="panel__eyebrow">Coverage context</p>
@@ -1015,7 +1021,12 @@ export function RegulatorDashboard() {
                       coverage window
                     </div>
                     <div className="filters__metric">
-                      <strong>{coverage.count}</strong>
+                      <strong>
+                        {(loading || error
+                          ? coverage.count
+                          : fines.length
+                        ).toLocaleString()}
+                      </strong>
                       tracked actions
                     </div>
                     <div className="filters__metric">

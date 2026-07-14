@@ -131,27 +131,31 @@ test.describe("Board Pack", () => {
         .first(),
     ).toBeVisible();
     await expect(
-      page.getByRole("heading", { name: "Executive summary" }),
+      page.getByRole("heading", { name: "Executive takeaways" }),
     ).toBeVisible();
     await expect(
-      page.getByRole("heading", { name: "Exposure overview" }),
+      page.getByRole("heading", { name: "Exposure drivers" }),
     ).toBeVisible();
     await expect(
       page.getByRole("heading", { name: "Board challenge agenda" }),
     ).toBeVisible();
     await expect(page.getByRole("heading", { name: "Appendix" })).toBeVisible();
 
-    const slideHeadings = await page.locator("section h2").allTextContents();
-    expect(slideHeadings).toEqual(
+    const dashboardHeadings = await page
+      .locator("section h2")
+      .allTextContents();
+    expect(dashboardHeadings).toEqual(
       expect.arrayContaining([
-        "Executive summary",
-        "Why now",
-        "Exposure overview",
-        "Key exposure themes",
-        "Peer cases worth taking to the board",
-        "Implications for the firm",
+        "Executive takeaways",
+        "Exposure drivers",
+        "Peer comparison",
+        "Top regulators shaping this profile",
+        "Why this matters now",
+        "Key scenarios",
         "Board challenge agenda",
-        "Immediate next steps",
+        "Recommended management responses",
+        "Recent enforcement signals",
+        "Key evidence",
         "Appendix",
       ]),
     );
@@ -187,18 +191,16 @@ test.describe("Board Pack", () => {
 
     await page.getByRole("button", { name: "Refine profile" }).click();
     await page.getByLabel("Audience mode").selectOption("working");
-    await page.getByLabel("MEMA advisory note").fill(
-      "Escalate control evidence before the next committee cycle.",
-    );
+    await page
+      .getByLabel("MEMA advisory note")
+      .fill("Escalate control evidence before the next committee cycle.");
     await page.getByRole("button", { name: "Generate board pack" }).click();
 
     await page.getByRole("button", { name: "Print / Save PDF" }).click();
     await expect(
       page.getByRole("heading", { name: "MEMA advisory note" }),
     ).toBeVisible();
-    await expect(
-      page.getByLabel(/Control status for/i).first(),
-    ).toBeVisible();
+    await expect(page.getByLabel(/Control status for/i).first()).toBeVisible();
 
     const printCount = await page.evaluate(
       () => (window as unknown as { __printCount: number }).__printCount,
@@ -247,11 +249,15 @@ test.describe("Board Pack", () => {
     await page.getByRole("button", { name: /^Load$/ }).click();
 
     await expect(
-      page.getByRole("heading", {
-        level: 2,
-        name: "NorthStar Board Pack",
-      }).first(),
+      page
+        .getByRole("heading", {
+          level: 2,
+          name: "NorthStar Board Pack",
+        })
+        .first(),
     ).toBeVisible();
-    await expect(page.getByText(/Prepared for NorthStar plc/i).first()).toBeVisible();
+    await expect(
+      page.getByText(/Prepared for NorthStar plc/i).first(),
+    ).toBeVisible();
   });
 });

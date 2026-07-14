@@ -224,9 +224,19 @@ function getStatusLabel(status: TimelineStatus): string {
 }
 
 function formatCollectionMode(coverage: RegulatorCoverage) {
-  if (coverage.automationLevel === "curated_archive") return "Manifest-driven";
-  if (coverage.automationLevel === "sparse_source") return "Sparse-source";
-  return "Automated-ready";
+  if (coverage.automationLevel === "curated_archive") return "Official archive";
+  if (coverage.automationLevel === "sparse_source") return "Limited publications";
+  return "Regular review";
+}
+
+function formatSourceSurface(coverage: RegulatorCoverage) {
+  if (coverage.scrapeMode === "search_register") return "Official register";
+  if (coverage.scrapeMode === "open_data" || coverage.scrapeMode === "table") {
+    return "Structured official data";
+  }
+  if (coverage.scrapeMode === "archive") return "Publication archive";
+  if (coverage.scrapeMode === "mixed") return "Multiple official channels";
+  return "Individual official notices";
 }
 
 function getPhaseStatusLabel(phase: CoverageRoadmapPhase["phase"]) {
@@ -620,10 +630,10 @@ function RegulatorDetail({ coverage }: { coverage: RegulatorCoverage }) {
           <div className="tl-reg-detail__stats">
             <DetailStat
               label="Source surface"
-              value={coverage.scrapeMode.replace(/_/g, " ")}
+              value={formatSourceSurface(coverage)}
             />
             <DetailStat
-              label="Collection mode"
+              label="Coverage review"
               value={formatCollectionMode(coverage)}
             />
             <DetailStat
@@ -638,9 +648,9 @@ function RegulatorDetail({ coverage }: { coverage: RegulatorCoverage }) {
         <div className="tl-reg-detail__panel">
           <h5>Why it belongs in the rollout</h5>
           <p>
-            {coverage.stage === "pipeline"
-              ? coverage.feedContract.sourceContractSummary
-              : (coverage.note ?? coverage.feedContract.sourceContractSummary)}
+            {coverage.fullName} provides official enforcement publications for{" "}
+            {coverage.country}. Coverage is added only when the source trail and
+            regulator identity can be checked reliably.
           </p>
         </div>
         <div className="tl-reg-detail__panel">

@@ -308,21 +308,32 @@
 
 /* CTA */
 .regulator-hub__cta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1.5rem;
   background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
   border-radius: 12px;
-  padding: 2rem;
-  text-align: center;
+  padding: 1.5rem 1.75rem;
   color: white;
+  margin-bottom: 2rem;
+}
+
+.regulator-hub__cta strong {
+  display: block;
+  font-size: 1.1rem;
+  margin-bottom: 0.35rem;
 }
 
 .regulator-hub__cta p {
-  font-size: 1.125rem;
-  margin: 0 0 1.5rem 0;
+  font-size: 0.95rem;
+  margin: 0;
   opacity: 0.95;
 }
 
 .regulator-hub__cta-button {
-  display: inline-block;
+  display: inline-flex;
+  flex: 0 0 auto;
   padding: 0.875rem 2rem;
   background: white;
   color: #2563eb;
@@ -356,6 +367,15 @@
 
   .regulator-hub__stats-grid {
     grid-template-columns: 1fr;
+  }
+
+  .regulator-hub__cta {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .regulator-hub__cta-button {
+    justify-content: center;
   }
 
   .regulator-hub__timeline {

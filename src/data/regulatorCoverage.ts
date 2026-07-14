@@ -205,20 +205,20 @@ const REGULATOR_COVERAGE_SEED: Record<string, RegulatorCoverageSeed> = {
     dashboardEnabled: true,
     officialSources: [
       {
-        label: "FCA news and enforcement stories",
-        url: "https://www.fca.org.uk/news/news-stories",
+        label: "FCA news search",
+        url: "https://www.fca.org.uk/news/search-results",
         description:
-          "Official FCA news, final notices, and enforcement announcements.",
+          "Search official FCA news, final notices and enforcement announcements.",
       },
       {
-        label: "FCA annual reports",
-        url: "https://www.fca.org.uk/publications/annual-reports",
+        label: "FCA enforcement data",
+        url: "https://www.fca.org.uk/data/fca-operating-service-metrics-2025-26/enforcement-data",
         description:
-          "Regulator reporting, statistics, and supervisory priorities.",
+          "Official FCA enforcement metrics, cases and outcomes for 2025/26.",
       },
       {
         label: "FCA Handbook",
-        url: "https://www.handbook.fca.org.uk/",
+        url: "https://handbook.fca.org.uk/",
         description:
           "Primary rulebook and guidance behind published enforcement outcomes.",
       },
@@ -253,20 +253,10 @@ const REGULATOR_COVERAGE_SEED: Record<string, RegulatorCoverageSeed> = {
     dashboardEnabled: true,
     officialSources: [
       {
-        label: "BaFin measures and sanctions",
-        url: "https://www.bafin.de/EN/Aufsicht/BoersenMaerkte/Massnahmen/massnahmen_sanktionen_node.html",
-        description: "Primary BaFin page for published measures and sanctions.",
-      },
-      {
-        label: "BaFin databases and registers",
-        url: "https://www.bafin.de/EN/PublikationenDaten/Datenbanken/datenbanken_node_en.html",
-        description: "BaFin data portals and searchable official registers.",
-      },
-      {
-        label: "BaFin annual reports",
-        url: "https://www.bafin.de/EN/DieBaFin/AufgabenGeschichte/Jahresbericht/jahresbericht_node_en.html",
+        label: "BaFin Annual Report 2024",
+        url: "https://www.bafin.de/SharedDocs/Downloads/EN/Jahresbericht/dl_jb_2024_en.pdf?__blob=publicationFile&v=2",
         description:
-          "Official reports for enforcement context and supervisory themes.",
+          "Official report covering supervisory measures, sanctions and priorities.",
       },
     ],
   },
@@ -304,18 +294,6 @@ const REGULATOR_COVERAGE_SEED: Record<string, RegulatorCoverageSeed> = {
         description:
           "Primary AMF page for enforcement committee announcements and sanctions.",
       },
-      {
-        label: "AMF sanctions and enforcement",
-        url: "https://www.amf-france.org/en/sanctions-and-enforcement",
-        description:
-          "Official enforcement section with sanctions publications and procedures.",
-      },
-      {
-        label: "AMF reports and research",
-        url: "https://www.amf-france.org/en/news-publications/publications/reports-and-research",
-        description:
-          "Annual reports and supporting publications for broader market context.",
-      },
     ],
   },
   CNMV: {
@@ -348,21 +326,14 @@ const REGULATOR_COVERAGE_SEED: Record<string, RegulatorCoverageSeed> = {
     officialSources: [
       {
         label: "CNMV disciplinary penalties register",
-        url: "https://www.cnmv.es/portal/Consultas/RegistroSanciones/verRegSanciones.aspx?lang=en",
+        url: "https://www.cnmv.es/Portal/consultas/RegistroSanciones/IniRegSanciones",
         description:
           "Official CNMV register for published disciplinary penalties.",
       },
       {
-        label: "CNMV sanctions register home",
-        url: "https://www.cnmv.es/portal/Consultas/RegistroSanciones/iniregsanciones.aspx?lang=en",
-        description:
-          "CNMV sanctions register entry page and search start point.",
-      },
-      {
-        label: "CNMV annual publications",
-        url: "https://www.cnmv.es/portal/Publicaciones/PublicacionesGN.aspx?id=19",
-        description:
-          "Official CNMV reports and publications for regulatory context.",
+        label: "CNMV published sanctions",
+        url: "https://www.cnmv.es/Portal/Consultas/RegistroSanciones/verRegSanciones?lang=es",
+        description: "Current CNMV list of sanctions and publication dates.",
       },
     ],
   },
@@ -405,12 +376,6 @@ const REGULATOR_COVERAGE_SEED: Record<string, RegulatorCoverageSeed> = {
         url: "https://www.centralbank.ie/regulation/enforcement",
         description:
           "Enforcement framework, sanctions context, and supervisory references.",
-      },
-      {
-        label: "CBI annual reports",
-        url: "https://www.centralbank.ie/news/publications/annual-reports",
-        description:
-          "Annual reporting and supervisory trend context from the Central Bank of Ireland.",
       },
     ],
   },
@@ -537,22 +502,16 @@ const REGULATOR_COVERAGE_SEED: Record<string, RegulatorCoverageSeed> = {
     dashboardEnabled: true,
     officialSources: [
       {
-        label: "DNB enforcement overview",
-        url: "https://www.dnb.nl/en/sector-information/enforcement/",
+        label: "DNB general news",
+        url: "https://www.dnb.nl/en/general-news/",
         description:
-          "Official enforcement landing page used for published DNB actions.",
+          "Official DNB news, including current enforcement measures and fines.",
       },
       {
-        label: "DNB supervision and enforcement",
-        url: "https://www.dnb.nl/en/supervision/enforcement/",
+        label: "DNB publications",
+        url: "https://www.dnb.nl/en/publications/",
         description:
-          "Supervisory enforcement page with sanctions and policy context.",
-      },
-      {
-        label: "DNB annual reports",
-        url: "https://www.dnb.nl/en/publications/annual-reports/",
-        description:
-          "Official reports covering supervisory focus and market context.",
+          "Official reports, policy documents and supervisory publications.",
       },
     ],
   },
@@ -887,11 +846,6 @@ const REGULATOR_COVERAGE_SEED: Record<string, RegulatorCoverageSeed> = {
         label: "SEC enforcement and litigation",
         url: "https://www.sec.gov/enforcement-litigation",
         description: "Official SEC enforcement and litigation hub.",
-      },
-      {
-        label: "SEC enforcement results",
-        url: "https://www.sec.gov/newsroom/enforcement-results-fy23",
-        description: "Official SEC enforcement-results reporting and context.",
       },
     ],
   },
@@ -1233,12 +1187,6 @@ const REGULATOR_COVERAGE_SEED: Record<string, RegulatorCoverageSeed> = {
         url: "https://www.mas.gov.sg/regulation/enforcement/enforcement-actions",
         description:
           "Official MAS enforcement actions and regulatory outcomes archive.",
-      },
-      {
-        label: "Singapore Government Press Centre MAS releases",
-        url: "https://www.sgpc.gov.sg/agency/monetary-authority-of-singapore",
-        description:
-          "Official Singapore Government press-release distribution surface used to access MAS enforcement releases and attached PDFs.",
       },
     ],
   },
@@ -1892,7 +1840,7 @@ const REGULATOR_COVERAGE_SEED: Record<string, RegulatorCoverageSeed> = {
     officialSources: [
       {
         label: "Czech National Bank final decisions and sanctions",
-        url: "https://www.cnb.cz/en/supervision-financial-market/cnb-final-decisions/",
+        url: "https://www.cnb.cz/en/supervision-financial-market/conduct-of-supervision/final-administrative-decisions-of-the-czech-national-bank/",
         description:
           "Official Czech National Bank supervision and final decisions archive.",
       },

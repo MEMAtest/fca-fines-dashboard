@@ -18,6 +18,43 @@
   margin: 0 auto;
 }
 
+.board-intelligence__topbar {
+  display: flex;
+  width: min(1240px, 100%);
+  margin: 0 auto 0.75rem;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.board-intelligence__topbar h1 {
+  margin: 0.2rem 0 0.25rem;
+  font-size: clamp(2.2rem, 4vw, 3.6rem);
+  line-height: 1;
+  letter-spacing: -0.045em;
+}
+
+.board-intelligence__topbar p {
+  margin: 0;
+  color: #5d6b7f;
+  font-size: 0.9rem;
+}
+
+.board-intelligence__advisory-link {
+  display: inline-flex;
+  flex: 0 0 auto;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.62rem 0.8rem;
+  border: 1px solid rgba(11, 31, 42, 0.12);
+  border-radius: 8px;
+  background: #fff;
+  color: #0b1f2a;
+  font-size: 0.78rem;
+  font-weight: 800;
+  text-decoration: none;
+}
+
 .board-intelligence__hero {
   display: grid;
   grid-template-columns: minmax(0, 1.45fr) minmax(320px, 0.82fr);
@@ -191,7 +228,48 @@
   display: flex;
   justify-content: space-between;
   gap: 1rem;
-  align-items: flex-start;
+  align-items: center;
+  padding: 0.8rem 0.9rem;
+  border-radius: 14px;
+}
+
+.board-intelligence__setup-toolbar-label {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  gap: 0.65rem;
+}
+
+.board-intelligence__setup-toolbar-label strong {
+  overflow: hidden;
+  font-size: 0.88rem;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.board-intelligence__setup-toolbar-label
+  > span:not(.board-intelligence__panel-kicker) {
+  padding: 0.25rem 0.45rem;
+  border-radius: 999px;
+  background: #f2f4f7;
+  color: #667085;
+  font-size: 0.68rem;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.board-intelligence__setup-summary .board-intelligence__builder-actions {
+  flex-wrap: nowrap;
+  gap: 0.45rem;
+}
+
+.board-intelligence__setup-summary .board-intelligence__secondary,
+.board-intelligence__setup-summary .board-intelligence__link-action {
+  min-height: 36px;
+  padding: 0.52rem 0.7rem;
+  border-radius: 8px;
+  font-size: 0.74rem;
+  white-space: nowrap;
 }
 
 .board-intelligence__builder-actions,

@@ -64,6 +64,32 @@ describe("regulatorCoverage", () => {
     expect(coverage?.stage).toBe("live");
   });
 
+  it("keeps official source entry points on current secure URLs", () => {
+    const prohibitedUrls = new Set([
+      "https://www.fca.org.uk/news/news-stories",
+      "https://www.fca.org.uk/publications/annual-reports",
+      "https://www.cnmv.es/portal/Consultas/RegistroSanciones/verRegSanciones.aspx?lang=en",
+      "https://www.cnb.cz/en/supervision-financial-market/cnb-final-decisions/",
+      "https://www.sgpc.gov.sg/agency/monetary-authority-of-singapore",
+      "https://www.sec.gov/newsroom/enforcement-results-fy23",
+    ]);
+
+    for (const coverage of LIVE_REGULATOR_NAV_ITEMS) {
+      for (const source of coverage.officialSources) {
+        expect(source.url).toMatch(/^https:\/\//);
+        expect(prohibitedUrls).not.toContain(source.url);
+      }
+    }
+
+    expect(
+      getRegulatorCoverage("FCA")?.officialSources.map((source) => source.url),
+    ).toEqual([
+      "https://www.fca.org.uk/news/search-results",
+      "https://www.fca.org.uk/data/fca-operating-service-metrics-2025-26/enforcement-data",
+      "https://handbook.fca.org.uk/",
+    ]);
+  });
+
   it("treats all live regulators as valid public hubs", () => {
     expect(hasPublicRegulatorHub("FCA")).toBe(true);
     expect(hasPublicRegulatorHub("BDI")).toBe(true);
@@ -134,9 +160,15 @@ describe("regulatorCoverage", () => {
 
   it("keeps the current live roster aligned with the shared exports", () => {
     expect(LIVE_REGULATOR_NAV_ITEMS).toHaveLength(REGULATOR_STAGE_COUNTS.live);
-    expect(INTERNAL_REGULATOR_NAV_ITEMS).toHaveLength(REGULATOR_STAGE_COUNTS.internal);
-    expect(PIPELINE_REGULATOR_NAV_ITEMS).toHaveLength(REGULATOR_STAGE_COUNTS.pipeline);
-    expect(PUBLIC_REGULATOR_CODES).toHaveLength(LIVE_REGULATOR_NAV_ITEMS.length);
+    expect(INTERNAL_REGULATOR_NAV_ITEMS).toHaveLength(
+      REGULATOR_STAGE_COUNTS.internal,
+    );
+    expect(PIPELINE_REGULATOR_NAV_ITEMS).toHaveLength(
+      REGULATOR_STAGE_COUNTS.pipeline,
+    );
+    expect(PUBLIC_REGULATOR_CODES).toHaveLength(
+      LIVE_REGULATOR_NAV_ITEMS.length,
+    );
     expect(getRegulatorCoverage("ESMA")?.stage).toBe("internal");
     expect(getRegulatorCoverage("CVM")?.stage).toBe("live");
     expect(getRegulatorCoverage("CNBV")?.stage).toBe("pipeline");
@@ -232,23 +264,19 @@ describe("regulatorCoverage", () => {
     expect(getRegulatorCoverage("FINMA")?.operationalConfidence).toBe("lower");
     expect(getRegulatorCoverage("CMVM")?.operationalConfidence).toBe("lower");
     expect(getRegulatorCoverage("MFSA")?.operationalConfidence).toBe("lower");
-    expect(getRegulatorCoverage("AUSTRAC")?.operationalConfidence).toBe("lower");
+    expect(getRegulatorCoverage("AUSTRAC")?.operationalConfidence).toBe(
+      "lower",
+    );
     expect(getRegulatorCoverage("AUSTRAC")?.feedContract.cadence).toBe(
       "fragile",
     );
-    expect(getRegulatorCoverage("FMAAT")?.feedContract.cadence).toBe(
-      "fragile",
+    expect(getRegulatorCoverage("FMAAT")?.feedContract.cadence).toBe("fragile");
+    expect(getRegulatorCoverage("FINMA")?.feedContract.cadence).toBe("fragile");
+    expect(getRegulatorCoverage("CMVM")?.feedContract.cadence).toBe("fragile");
+    expect(getRegulatorCoverage("MFSA")?.feedContract.cadence).toBe("fragile");
+    expect(getRegulatorCoverage("DFSA")?.automationLevel).toBe(
+      "curated_archive",
     );
-    expect(getRegulatorCoverage("FINMA")?.feedContract.cadence).toBe(
-      "fragile",
-    );
-    expect(getRegulatorCoverage("CMVM")?.feedContract.cadence).toBe(
-      "fragile",
-    );
-    expect(getRegulatorCoverage("MFSA")?.feedContract.cadence).toBe(
-      "fragile",
-    );
-    expect(getRegulatorCoverage("DFSA")?.automationLevel).toBe("curated_archive");
     expect(getRegulatorCoverage("DFSA")?.feedContract.collectionMethod).toBe(
       "Curated official-document archive ingestion",
     );
@@ -261,12 +289,10 @@ describe("regulatorCoverage", () => {
   });
 
   it("keeps global targets in pipeline until their datasets are genuinely live", () => {
-    ["CMASA", "FSCA", "CSRC", "FDIC", "FRB"].forEach(
-      (code) => {
-        expect(PUBLIC_REGULATOR_CODES).not.toContain(code);
-        expect(getRegulatorCoverage(code)?.stage).toBe("pipeline");
-      },
-    );
+    ["CMASA", "FSCA", "CSRC", "FDIC", "FRB"].forEach((code) => {
+      expect(PUBLIC_REGULATOR_CODES).not.toContain(code);
+      expect(getRegulatorCoverage(code)?.stage).toBe("pipeline");
+    });
     expect(PUBLIC_REGULATOR_CODES).toContain("OCC");
     expect(PUBLIC_REGULATOR_CODES).toContain("FINCEN");
     expect(PUBLIC_REGULATOR_CODES).toContain("FINRA");

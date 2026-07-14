@@ -58,13 +58,13 @@ export const faqItems: FAQItem[] = [
   },
   {
     question: 'How does RegActions collect enforcement data?',
-    answer: 'RegActions uses automated scrapers that monitor official regulator websites for new enforcement actions, final notices, and penalty decisions. Data is collected daily, normalised into a common format with breach categories and fine amounts, and validated before publication. Each entry links back to the original regulator source for verification.',
+    answer: 'RegActions monitors official regulator publications for new enforcement actions, final notices, and penalty decisions. Records are normalised into a common format, checked before publication, and linked back to the original regulator source wherever available.',
     category: 'Platform & Data',
     slug: 'how-data-collected',
   },
   {
     question: 'How often is RegActions enforcement data updated?',
-    answer: 'Enforcement data is updated daily. Automated scrapers run every 24 hours across all 45+ regulators, checking for new enforcement actions and penalty decisions. New fines typically appear on RegActions within 24-48 hours of publication by the regulator. Historical data is also periodically refreshed to capture corrections or amendments.',
+    answer: 'RegActions reviews official regulator publications regularly and refreshes historical records when regulators publish corrections or amendments. Update timing can vary by regulator and source format, so each action should be checked against its linked official evidence when timing is critical.',
     category: 'Platform & Data',
     slug: 'data-update-frequency',
   },
