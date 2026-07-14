@@ -1,52 +1,28 @@
 import { useMemo } from "react";
 import { Link, useParams } from "react-router-dom";
-import { ArrowLeft, ExternalLink, ShieldAlert, ShieldCheck } from "lucide-react";
+import { ArrowLeft, Ban, ExternalLink, Scale, ShieldAlert, ShieldCheck } from "lucide-react";
+import { getCountryBySlug } from "../data/countries.js";
+import { FATF_SOURCE_URL } from "../data/fatfStatus.js";
+import { sanctionsTierLabel } from "../data/sanctionsStatus.js";
+import { bandLabel } from "../data/countryRiskScore.js";
+import { CountryEnforcementLive } from "../components/CountryEnforcementLive.js";
 import {
-  getCountryBySlug,
-  flagEmoji,
-  type Country,
-} from "../data/countries.js";
-import {
-  getFatfStatus,
-  fatfLabel,
-  FATF_LAST_PLENARY,
-  FATF_NEXT_PLENARY,
-  FATF_SOURCE_URL,
-  FATF_RECENT_CHANGES,
-  type FatfStatus,
-} from "../data/fatfStatus.js";
+  buildCountryView,
+  formatDate,
+  formatCount,
+  fatfChangeText,
+} from "../data/countryView.js";
 import "../styles/country-hub.css";
-
-function formatDate(iso: string): string {
-  // Accept YYYY-MM-DD or YYYY-MM
-  const [y, m, d] = iso.split("-");
-  const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
-  const mon = m ? months[Number(m) - 1] : undefined;
-  if (d) return `${Number(d)} ${mon} ${y}`;
-  if (mon) return `${mon} ${y}`;
-  return y;
-}
-
-/** FATF listing → risk band (drives the card colour). */
-function fatfBand(fatf: FatfStatus | undefined): "very-high" | "high" | "none" {
-  if (!fatf) return "none";
-  return fatf.listing === "call-for-action" ? "very-high" : "high";
-}
 
 export function CountryHub() {
   const { slug } = useParams<{ slug: string }>();
-  const country: Country | undefined = slug ? getCountryBySlug(slug) : undefined;
-
-  const fatf = useMemo(
-    () => (country ? getFatfStatus(country.iso2) : undefined),
-    [country],
-  );
-  const history = useMemo(
-    () => (country ? FATF_RECENT_CHANGES.filter((c) => c.iso2 === country.iso2) : []),
+  const country = slug ? getCountryBySlug(slug) : undefined;
+  const view = useMemo(
+    () => (country ? buildCountryView(country) : undefined),
     [country],
   );
 
-  if (!country) {
+  if (!country || !view) {
     return (
       <div className="country-hub">
         <div className="country-hub__notfound">
@@ -60,7 +36,7 @@ export function CountryHub() {
     );
   }
 
-  const band = fatfBand(fatf);
+  const { band, statusHeading, statusDetail, history, enforcement, sanctions, sanctionsTier, sanctionsBand, riskScore, globalAverage, weights } = view;
 
   return (
     <div className="country-hub">
@@ -71,7 +47,7 @@ export function CountryHub() {
       <header className="country-hub__header">
         <div className="country-hub__title-row">
           <span className="country-hub__flag" aria-hidden="true">
-            {flagEmoji(country.iso2)}
+            {view.flag}
           </span>
           <div>
             <h1 className="country-hub__title">
@@ -86,12 +62,66 @@ export function CountryHub() {
           </div>
         </div>
         <p className="country-hub__freshness">
-          FATF status as of the {formatDate(FATF_LAST_PLENARY)} plenary ·{" "}
+          FATF status as of the {formatDate(view.lastPlenary)} plenary ·{" "}
           <a href={FATF_SOURCE_URL} target="_blank" rel="noopener noreferrer">
             source cited <ExternalLink size={12} />
           </a>
         </p>
       </header>
+
+      {/* Country Risk Score — the signature composite (FATF + Sanctions + WGI) */}
+      <section
+        className={`country-score country-score--${riskScore.band}`}
+        aria-labelledby="score-heading"
+      >
+        <div className="country-score__gauge">
+          <span id="score-heading" className="country-score__eyebrow">
+            Country Risk Score
+          </span>
+          <div className="country-score__value-row">
+            <span className="country-score__value">
+              {riskScore.score.toFixed(1)}
+            </span>
+            <span className="country-score__of">/ 10</span>
+            <span className="country-score__band-pill">
+              {bandLabel(riskScore.band)}
+            </span>
+          </div>
+          <div className="country-score__bar" aria-hidden="true">
+            {Array.from({ length: 10 }).map((_, i) => (
+              <span
+                key={i}
+                className={`country-score__seg${
+                  i < Math.round(riskScore.score) ? " country-score__seg--on" : ""
+                }`}
+              />
+            ))}
+          </div>
+          <p className="country-score__hint">
+            Higher score = higher risk · vs global average{" "}
+            {globalAverage.toFixed(1)}
+          </p>
+        </div>
+        <div className="country-score__how">
+          <span className="country-score__how-title">How is this scored?</span>
+          <ul className="country-score__weights">
+            <li>
+              FATF status <b>{Math.round(weights.fatf * 100)}%</b>
+            </li>
+            <li>
+              Sanctions exposure <b>{Math.round(weights.sanctions * 100)}%</b>
+            </li>
+            <li>
+              Governance (WGI) <b>{Math.round(weights.governance * 100)}%</b>
+            </li>
+          </ul>
+          <p className="country-score__disclaimer">
+            RegActions Country Risk Rating (AML/CFT, sanctions &amp; governance).
+            Informational, not a substitute for your own risk assessment.
+            Enforcement volume and CPI are shown but not scored.
+          </p>
+        </div>
+      </section>
 
       {/* FATF status card — the Stage-1 signal */}
       <section
@@ -105,32 +135,48 @@ export function CountryHub() {
           <h2 id="fatf-heading" className="country-hub__fatf-eyebrow">
             FATF status
           </h2>
-          {fatf ? (
-            <>
-              <p className="country-hub__fatf-status">{fatfLabel(fatf.listing)}</p>
-              <p className="country-hub__fatf-detail">
-                {fatf.listing === "call-for-action"
-                  ? "High-Risk Jurisdiction Subject to a Call for Action."
-                  : "Jurisdiction Under Increased Monitoring."}
-                {fatf.since ? ` Listed ${formatDate(fatf.since)}.` : ""}
-                {fatf.note ? ` ${fatf.note}` : ""}
-              </p>
-              <p className="country-hub__fatf-meta">
-                Last reviewed {formatDate(fatf.lastReviewed)} · next plenary{" "}
-                {formatDate(FATF_NEXT_PLENARY)}
-              </p>
-            </>
-          ) : (
-            <>
-              <p className="country-hub__fatf-status">Not currently listed</p>
-              <p className="country-hub__fatf-detail">
-                {country.name} is not on the FATF grey or black list as of the{" "}
-                {formatDate(FATF_LAST_PLENARY)} plenary.
-              </p>
-            </>
-          )}
+          <p className="country-hub__fatf-status">{statusHeading}</p>
+          <p className="country-hub__fatf-detail">{statusDetail}</p>
         </div>
       </section>
+
+      {/* Sanctions card + detail — shown only where a curated programme exists */}
+      {sanctions && sanctionsTier && (
+        <section
+          className={`country-hub__fatf country-hub__fatf--${sanctionsBand}`}
+          aria-labelledby="sanctions-heading"
+        >
+          <div className="country-hub__fatf-icon" aria-hidden="true">
+            <Ban size={22} />
+          </div>
+          <div className="country-hub__fatf-body">
+            <h2 id="sanctions-heading" className="country-hub__fatf-eyebrow">
+              Sanctions
+            </h2>
+            <p className="country-hub__fatf-status">
+              {sanctionsTierLabel(sanctionsTier)}
+            </p>
+            <ul className="country-hub__sanctions-list">
+              {sanctions.programs.map((prog, i) => (
+                <li key={`${prog.imposer}-${i}`}>
+                  <span className="country-hub__sanctions-imposer">{prog.imposer}</span>{" "}
+                  <span className="country-hub__sanctions-tier">
+                    {sanctionsTierLabel(prog.tier).toLowerCase()}
+                  </span>{" "}
+                  — {prog.program}{" "}
+                  <a href={prog.sourceUrl} target="_blank" rel="noopener noreferrer">
+                    source <ExternalLink size={11} />
+                  </a>
+                </li>
+              ))}
+            </ul>
+            <p className="country-hub__fatf-meta">
+              Country-level sanctions programmes (not individual designations),
+              reviewed {view.sanctions ? sanctions.programs[0].reviewed : ""}.
+            </p>
+          </div>
+        </section>
+      )}
 
       {/* Status history / change-log */}
       {history.length > 0 && (
@@ -139,15 +185,16 @@ export function CountryHub() {
             FATF status history
           </h2>
           <ul className="country-hub__timeline">
-            {history.map((h, i) => (
-              <li key={i} className="country-hub__timeline-item">
+            {history.map((h) => (
+              <li
+                key={`${h.date}-${h.change}-${h.listing}`}
+                className="country-hub__timeline-item"
+              >
                 <span className="country-hub__timeline-date">
                   {formatDate(h.date)}
                 </span>
                 <span className="country-hub__timeline-event">
-                  {h.change === "added"
-                    ? `Added to the FATF ${fatfLabel(h.listing).toLowerCase()}`
-                    : `Removed from the FATF ${fatfLabel(h.listing).toLowerCase()}`}
+                  {fatfChangeText(h)}
                 </span>
               </li>
             ))}
@@ -155,12 +202,49 @@ export function CountryHub() {
         </section>
       )}
 
-      {/* What's coming (evidence + composite layers land in later stages) */}
+      {/* Enforcement evidence — RegActions' unique layer (displayed, not scored) */}
+      {enforcement && (
+        <section className="country-hub__enforcement" aria-labelledby="enf-heading">
+          <div className="country-hub__enf-head">
+            <Scale size={18} aria-hidden="true" />
+            <h2 id="enf-heading" className="country-hub__section-title">
+              Enforcement activity
+            </h2>
+            <span className="country-hub__enf-pill">RegActions data</span>
+          </div>
+          <p className="country-hub__enf-lead">
+            RegActions tracks{" "}
+            <strong>{formatCount(enforcement.trackedActions)}</strong>{" "}
+            enforcement actions from{" "}
+            <strong>{enforcement.regulatorCount}</strong>{" "}
+            {enforcement.regulatorCount === 1 ? "regulator" : "regulators"} in{" "}
+            {country.name}.
+          </p>
+          <ul className="country-hub__enf-regulators">
+            {enforcement.regulators.map((r) => (
+              <li key={r.code}>
+                <Link to={r.overviewPath}>
+                  <strong>{r.code}</strong> — {r.fullName}
+                </Link>
+                <span className="country-hub__enf-count">
+                  {formatCount(r.count)} actions · {r.years}
+                </span>
+              </li>
+            ))}
+          </ul>
+          <CountryEnforcementLive iso2={country.iso2} countryName={country.name} />
+          <p className="country-hub__enf-note">
+            The composite RegActions Country Risk Score does not use enforcement
+            volume.
+          </p>
+        </section>
+      )}
+
+      {/* What's coming (sanctions + composite land in later stages) */}
       <section className="country-hub__pending">
         <p>
-          Enforcement activity, sanctions exposure and the composite RegActions
-          Country Risk Score for {country.name} are being added. This page
-          currently reflects FATF listing status.
+          Sanctions exposure and the composite RegActions Country Risk Score for{" "}
+          {country.name} are being added.
         </p>
       </section>
 

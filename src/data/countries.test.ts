@@ -22,6 +22,12 @@ describe("countries reference", () => {
     expect(iso3.size).toBe(COUNTRIES.length);
   });
 
+  it("produces unique, non-empty slugs (a collision would overwrite a page)", () => {
+    const slugs = COUNTRIES.map((c) => countrySlug(c));
+    expect(new Set(slugs).size).toBe(COUNTRIES.length);
+    for (const s of slugs) expect(s.length).toBeGreaterThan(0);
+  });
+
   it("uses valid ISO2 (2 letters) and ISO3 (3 letters)", () => {
     for (const c of COUNTRIES) {
       expect(c.iso2).toMatch(/^[A-Z]{2}$/);

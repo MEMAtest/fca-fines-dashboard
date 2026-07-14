@@ -7,6 +7,7 @@ import {
   type RegulatorShellNavItem,
 } from "../data/regulatorShellNav.js";
 import { UK_ENFORCEMENT_REGULATORS } from "../data/ukEnforcement.js";
+import { getCountryBySlug } from "../data/countries.js";
 import RegulatorMark from "./RegulatorMark.js";
 import { LogoLockup, BRAND } from "./RegActionsLogo.js";
 import "../styles/siteheader.css";
@@ -77,7 +78,14 @@ function getBreadcrumbs(pathname: string) {
     else if (seg === "years") label = "Years";
     else if (seg === "sectors") label = "Sectors";
     else if (seg === "firms") label = "Firms";
-    else {
+    else if (seg === "countries") label = "Countries";
+    else if (i > 0 && segments[i - 1] === "countries") {
+      // /countries/<slug> — resolve to the real country name (not a humanized slug)
+      label =
+        seg === "fatf-grey-list"
+          ? "FATF Grey List"
+          : (getCountryBySlug(seg)?.name ?? humanizeSegment(seg));
+    } else {
       const regulatorMatch = PUBLIC_REGULATOR_SHELL_ITEMS.find(
         (item) => item.overviewPath === current,
       );

@@ -166,6 +166,20 @@ const CountryHub = lazyPage(() =>
     default: module.CountryHub,
   })),
 );
+
+// Shared Suspense fallback for the country routes.
+const ROUTE_FALLBACK = (
+  <div
+    style={{
+      minHeight: "100vh",
+      display: "flex",
+      alignItems: "center",
+      justifyContent: "center",
+    }}
+  >
+    Loading...
+  </div>
+);
 const Years = lazyPage(() =>
   import("./pages/Years.js").then((module) => ({ default: module.Years })),
 );
@@ -554,20 +568,7 @@ const router = createBrowserRouter([
       {
         path: "/countries",
         element: (
-          <Suspense
-            fallback={
-              <div
-                style={{
-                  minHeight: "100vh",
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                }}
-              >
-                Loading...
-              </div>
-            }
-          >
+          <Suspense fallback={ROUTE_FALLBACK}>
             <Countries />
           </Suspense>
         ),
@@ -575,20 +576,7 @@ const router = createBrowserRouter([
       {
         path: "/countries/fatf-grey-list",
         element: (
-          <Suspense
-            fallback={
-              <div
-                style={{
-                  minHeight: "100vh",
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                }}
-              >
-                Loading...
-              </div>
-            }
-          >
+          <Suspense fallback={ROUTE_FALLBACK}>
             <Countries />
           </Suspense>
         ),
@@ -596,20 +584,7 @@ const router = createBrowserRouter([
       {
         path: "/countries/:slug",
         element: (
-          <Suspense
-            fallback={
-              <div
-                style={{
-                  minHeight: "100vh",
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                }}
-              >
-                Loading...
-              </div>
-            }
-          >
+          <Suspense fallback={ROUTE_FALLBACK}>
             <CountryHub />
           </Suspense>
         ),
