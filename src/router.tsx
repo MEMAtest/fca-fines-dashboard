@@ -149,6 +149,16 @@ const BreachHub = lazyPage(() =>
     default: module.BreachHub,
   })),
 );
+const Countries = lazyPage(() =>
+  import("./pages/Countries.js").then((module) => ({
+    default: module.Countries,
+  })),
+);
+const CountryHub = lazyPage(() =>
+  import("./pages/CountryHub.js").then((module) => ({
+    default: module.CountryHub,
+  })),
+);
 const Years = lazyPage(() =>
   import("./pages/Years.js").then((module) => ({ default: module.Years })),
 );
@@ -506,6 +516,69 @@ const router = createBrowserRouter([
             }
           >
             <BreachHub />
+          </Suspense>
+        ),
+      },
+      {
+        path: "/countries",
+        element: (
+          <Suspense
+            fallback={
+              <div
+                style={{
+                  minHeight: "100vh",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                }}
+              >
+                Loading...
+              </div>
+            }
+          >
+            <Countries />
+          </Suspense>
+        ),
+      },
+      {
+        path: "/countries/fatf-grey-list",
+        element: (
+          <Suspense
+            fallback={
+              <div
+                style={{
+                  minHeight: "100vh",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                }}
+              >
+                Loading...
+              </div>
+            }
+          >
+            <Countries />
+          </Suspense>
+        ),
+      },
+      {
+        path: "/countries/:slug",
+        element: (
+          <Suspense
+            fallback={
+              <div
+                style={{
+                  minHeight: "100vh",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                }}
+              >
+                Loading...
+              </div>
+            }
+          >
+            <CountryHub />
           </Suspense>
         ),
       },

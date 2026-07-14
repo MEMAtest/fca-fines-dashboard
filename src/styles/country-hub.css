@@ -1,0 +1,288 @@
+/* Country Risk Reports — Stage 1 (FATF tracker). Reuses brand tokens from base.css. */
+
+.country-hub,
+.country-index {
+  max-width: 960px;
+  margin: 0 auto;
+  padding: 1.5rem 1.25rem 4rem;
+}
+
+.country-hub__back {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.875rem;
+  color: #6b7280;
+  text-decoration: none;
+  margin-bottom: 1.25rem;
+}
+.country-hub__back:hover {
+  color: #111827;
+}
+
+.country-hub__header {
+  margin-bottom: 1.75rem;
+}
+.country-hub__title-row {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+.country-hub__flag {
+  font-size: 2.75rem;
+  line-height: 1;
+}
+.country-hub__title {
+  font-size: 2rem;
+  font-weight: 700;
+  color: #0b1f2a;
+  margin: 0;
+}
+.country-hub__subtitle {
+  font-size: 1rem;
+  color: #6b7280;
+  margin: 0.25rem 0 0;
+}
+.country-hub__freshness {
+  font-size: 0.85rem;
+  color: #6b7280;
+  margin-top: 0.75rem;
+}
+.country-hub__freshness a {
+  color: #0fa77d;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.2rem;
+}
+
+/* FATF status card — colour = risk band */
+.country-hub__fatf {
+  display: flex;
+  gap: 1rem;
+  align-items: flex-start;
+  border: 1px solid #e5e7eb;
+  border-left-width: 5px;
+  border-radius: 14px;
+  padding: 1.25rem 1.5rem;
+  background: #fff;
+  box-shadow: 0 10px 24px rgba(11, 31, 42, 0.06);
+}
+.country-hub__fatf--high {
+  border-left-color: #ea580c;
+  background: rgba(249, 115, 22, 0.05);
+}
+.country-hub__fatf--very-high {
+  border-left-color: #dc2626;
+  background: rgba(220, 38, 38, 0.06);
+}
+.country-hub__fatf--none {
+  border-left-color: #10b981;
+  background: rgba(16, 185, 129, 0.05);
+}
+.country-hub__fatf-icon {
+  color: #475569;
+  flex-shrink: 0;
+  margin-top: 0.15rem;
+}
+.country-hub__fatf--high .country-hub__fatf-icon {
+  color: #ea580c;
+}
+.country-hub__fatf--very-high .country-hub__fatf-icon {
+  color: #dc2626;
+}
+.country-hub__fatf--none .country-hub__fatf-icon {
+  color: #10b981;
+}
+.country-hub__fatf-eyebrow {
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: #6b7280;
+  margin: 0 0 0.25rem;
+  font-weight: 600;
+}
+.country-hub__fatf-status {
+  font-size: 1.4rem;
+  font-weight: 700;
+  color: #0b1f2a;
+  margin: 0;
+}
+.country-hub__fatf-detail {
+  font-size: 0.95rem;
+  color: #374151;
+  margin: 0.35rem 0 0;
+}
+.country-hub__fatf-meta {
+  font-size: 0.8rem;
+  color: #6b7280;
+  margin: 0.5rem 0 0;
+}
+
+.country-hub__section-title {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: #0b1f2a;
+  margin: 2rem 0 1rem;
+}
+
+/* Timeline */
+.country-hub__timeline {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  border-left: 2px solid #e5e7eb;
+}
+.country-hub__timeline-item {
+  position: relative;
+  padding: 0 0 1rem 1.25rem;
+}
+.country-hub__timeline-item::before {
+  content: "";
+  position: absolute;
+  left: -7px;
+  top: 4px;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: #0fa77d;
+  border: 2px solid #fff;
+}
+.country-hub__timeline-date {
+  display: block;
+  font-size: 0.8rem;
+  color: #6b7280;
+}
+.country-hub__timeline-event {
+  font-size: 0.95rem;
+  color: #111827;
+}
+
+.country-hub__pending {
+  margin-top: 2rem;
+  padding: 1rem 1.25rem;
+  border: 1px dashed #d1d5db;
+  border-radius: 12px;
+  background: #f9fafb;
+  color: #6b7280;
+  font-size: 0.9rem;
+}
+
+.country-hub__sources {
+  margin-top: 2.5rem;
+  padding-top: 1rem;
+  border-top: 1px solid #e5e7eb;
+  font-size: 0.85rem;
+  color: #6b7280;
+}
+.country-hub__sources a {
+  color: #0fa77d;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.2rem;
+}
+
+.country-hub__notfound {
+  text-align: center;
+  padding: 4rem 1rem;
+}
+
+/* Index page */
+.country-index__title {
+  font-size: 2rem;
+  font-weight: 700;
+  color: #0b1f2a;
+  margin: 0;
+}
+.country-index__lead {
+  font-size: 1.05rem;
+  color: #475569;
+  margin: 0.5rem 0 1.5rem;
+  max-width: 720px;
+}
+.country-index__changes {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1.5rem;
+  padding: 0.9rem 1.1rem;
+  background: #f5f7fb;
+  border-radius: 12px;
+  margin-bottom: 1.75rem;
+  font-size: 0.9rem;
+  color: #374151;
+}
+.country-index__changes p {
+  margin: 0;
+}
+.country-index__section-title {
+  font-size: 1.2rem;
+  font-weight: 700;
+  margin: 1.75rem 0 0.9rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+.country-index__section-title::before {
+  content: "";
+  width: 12px;
+  height: 12px;
+  border-radius: 3px;
+}
+.country-index__section-title--black::before {
+  background: #dc2626;
+}
+.country-index__section-title--grey::before {
+  background: #ea580c;
+}
+.country-index__list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 0.5rem;
+}
+.country-index__link {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.65rem 0.9rem;
+  border: 1px solid #e5e7eb;
+  border-radius: 10px;
+  text-decoration: none;
+  color: #111827;
+  background: #fff;
+  transition: border-color 0.15s, transform 0.15s;
+}
+.country-index__link:hover {
+  border-color: #0fa77d;
+  transform: translateY(-1px);
+}
+.country-index__flag {
+  font-size: 1.3rem;
+}
+.country-index__name {
+  font-weight: 600;
+  flex: 1;
+}
+.country-index__region {
+  font-size: 0.75rem;
+  color: #6b7280;
+}
+.country-index__since {
+  font-size: 0.72rem;
+  color: #9ca3af;
+  min-width: 5.5rem;
+  text-align: right;
+}
+
+@media (max-width: 640px) {
+  .country-hub__title,
+  .country-index__title {
+    font-size: 1.5rem;
+  }
+  .country-hub__flag {
+    font-size: 2rem;
+  }
+}

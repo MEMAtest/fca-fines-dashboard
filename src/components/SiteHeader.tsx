@@ -14,6 +14,7 @@ import "../styles/siteheader.css";
 const NAV_LINKS = [
   { to: "/", label: "Home" },
   { to: "/regulators", label: "Data" },
+  { to: "/countries", label: "Countries" },
   { to: "/search", label: "Search" },
   { to: "/board-pack", label: "Board Pack" },
   { to: "/blog", label: "Insights" },
@@ -24,6 +25,8 @@ function isNavActive(to: string, pathname: string) {
   if (to === "/") return pathname === "/";
   if (to === "/blog")
     return pathname === "/blog" || pathname.startsWith("/blog/");
+  if (to === "/countries")
+    return pathname === "/countries" || pathname.startsWith("/countries/");
   if (to === "/topics") {
     return (
       pathname === "/topics" ||
