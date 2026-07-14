@@ -7,10 +7,11 @@
  * drift apart as later stages add fields.
  */
 
-import { flagEmoji, type Country } from "./countries.js";
+import { flagEmoji, COUNTRIES, type Country } from "./countries.js";
 import {
   getFatfStatus,
   fatfLabel,
+  isFatfListed,
   FATF_LAST_PLENARY,
   FATF_NEXT_PLENARY,
   FATF_RECENT_CHANGES,
@@ -19,19 +20,23 @@ import {
 } from "./fatfStatus.js";
 import {
   getCountryEnforcementSummary,
+  hasEnforcementCoverage,
   type CountryEnforcementSummary,
 } from "./countryEnforcement.js";
 import {
   getSanctions,
   highestSanctionsTier,
+  isSanctioned,
   type CountrySanctions,
   type SanctionsTier,
 } from "./sanctionsStatus.js";
+import { hasGovernanceData } from "./governanceData.js";
 import {
   computeCountryRiskScore,
   globalAverageRiskScore,
   PILLAR_WEIGHTS,
   type CountryRiskScore,
+  type RiskBand as ScoreBand,
 } from "./countryRiskScore.js";
 
 const MONTHS = [
@@ -140,4 +145,50 @@ export function buildCountryView(country: Country): CountryView {
 export function fatfChangeText(change: FatfChange): string {
   const verb = change.change === "added" ? "Added to" : "Removed from";
   return `${verb} the FATF ${fatfLabel(change.listing).toLowerCase()}`;
+}
+
+/**
+ * Countries that get a page / appear in the global index: any with a risk signal
+ * (WGI governance, FATF listing, sanctions, or enforcement coverage). This is the
+ * near-complete world (governance covers ~184); micro-states with no data at all
+ * are excluded rather than shown as an empty 0.
+ */
+export function pageCountries(): Country[] {
+  return COUNTRIES.filter(
+    (c) =>
+      hasGovernanceData(c.iso2) ||
+      isFatfListed(c.iso2) ||
+      isSanctioned(c.iso2) ||
+      hasEnforcementCoverage(c.iso2),
+  );
+}
+
+export interface CountryIndexEntry {
+  country: Country;
+  flag: string;
+  score: number;
+  band: ScoreBand;
+  fatf?: FatfStatus;
+  sanctionsTier?: SanctionsTier;
+  hasEnforcement: boolean;
+}
+
+/** Every page country with its composite score, sorted highest-risk first. */
+export function buildCountryIndex(): CountryIndexEntry[] {
+  return pageCountries()
+    .map((country) => {
+      const rs = computeCountryRiskScore(country.iso2);
+      return {
+        country,
+        flag: flagEmoji(country.iso2),
+        score: rs.score,
+        band: rs.band,
+        fatf: getFatfStatus(country.iso2),
+        sanctionsTier: highestSanctionsTier(country.iso2),
+        hasEnforcement: hasEnforcementCoverage(country.iso2),
+      };
+    })
+    .sort(
+      (a, b) => b.score - a.score || a.country.name.localeCompare(b.country.name),
+    );
 }
