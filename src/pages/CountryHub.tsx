@@ -1,11 +1,12 @@
 import { useMemo } from "react";
 import { Link, useParams } from "react-router-dom";
-import { ArrowLeft, ExternalLink, ShieldAlert, ShieldCheck } from "lucide-react";
+import { ArrowLeft, ExternalLink, Scale, ShieldAlert, ShieldCheck } from "lucide-react";
 import {
   getCountryBySlug,
   flagEmoji,
   type Country,
 } from "../data/countries.js";
+import { getCountryEnforcementSummary } from "../data/countryEnforcement.js";
 import {
   getFatfStatus,
   fatfLabel,
@@ -43,6 +44,10 @@ export function CountryHub() {
   );
   const history = useMemo(
     () => (country ? FATF_RECENT_CHANGES.filter((c) => c.iso2 === country.iso2) : []),
+    [country],
+  );
+  const enforcement = useMemo(
+    () => (country ? getCountryEnforcementSummary(country.iso2) : undefined),
     [country],
   );
 
@@ -155,12 +160,49 @@ export function CountryHub() {
         </section>
       )}
 
-      {/* What's coming (evidence + composite layers land in later stages) */}
+      {/* Enforcement evidence — RegActions' unique layer (displayed, not scored) */}
+      {enforcement && (
+        <section className="country-hub__enforcement" aria-labelledby="enf-heading">
+          <div className="country-hub__enf-head">
+            <Scale size={18} aria-hidden="true" />
+            <h2 id="enf-heading" className="country-hub__section-title">
+              Enforcement activity
+            </h2>
+            <span className="country-hub__enf-pill">RegActions data</span>
+          </div>
+          <p className="country-hub__enf-lead">
+            RegActions tracks{" "}
+            <strong>{enforcement.trackedActions.toLocaleString()}</strong>{" "}
+            enforcement actions from{" "}
+            <strong>{enforcement.regulatorCount}</strong>{" "}
+            {enforcement.regulatorCount === 1 ? "regulator" : "regulators"} in{" "}
+            {country.name}.
+          </p>
+          <ul className="country-hub__enf-regulators">
+            {enforcement.regulators.map((r) => (
+              <li key={r.code}>
+                <Link to={r.overviewPath}>
+                  <strong>{r.code}</strong> — {r.fullName}
+                </Link>
+                <span className="country-hub__enf-count">
+                  {r.count.toLocaleString()} actions · {r.years}
+                </span>
+              </li>
+            ))}
+          </ul>
+          <p className="country-hub__enf-note">
+            Penalty totals, breach mix and the top cases are available in the live
+            enforcement workspace. The composite RegActions Country Risk Score does
+            not use enforcement volume.
+          </p>
+        </section>
+      )}
+
+      {/* What's coming (sanctions + composite land in later stages) */}
       <section className="country-hub__pending">
         <p>
-          Enforcement activity, sanctions exposure and the composite RegActions
-          Country Risk Score for {country.name} are being added. This page
-          currently reflects FATF listing status.
+          Sanctions exposure and the composite RegActions Country Risk Score for{" "}
+          {country.name} are being added.
         </p>
       </section>
 
