@@ -39,7 +39,7 @@
     },
     {
       "source": "/dashboard",
-      "destination": "/regulators",
+      "destination": "/fines",
       "permanent": true
     }
   ],
@@ -84,6 +84,10 @@
     {
       "path": "/api/cron/persona-digests",
       "schedule": "30 10 * * 1"
+    },
+    {
+      "path": "/api/board-pack/retry-leads",
+      "schedule": "15 13 * * *"
     }
   ],
   "functions": {
@@ -100,6 +104,9 @@
       "maxDuration": 60
     },
     "api/agentic/workbench.ts": {
+      "maxDuration": 60
+    },
+    "api/board-pack/retry-leads.ts": {
       "maxDuration": 60
     }
   }
