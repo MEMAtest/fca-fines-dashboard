@@ -62,10 +62,21 @@ async function main(): Promise<void> {
     process.exit(2);
   }
 
-  // Split into the "Call for Action" (black) section and the "Increased Monitoring" (grey) section.
+  // Split into the "Call for Action" (black) section and the "Increased Monitoring"
+  // (grey) section. If the grey heading isn't found we CANNOT reliably separate the
+  // two lists, so bail (exit 2) rather than silently treat everything as grey — which
+  // would falsely report every black-listed jurisdiction as removed.
   const greyMatch = text.search(GREY_HEADING);
-  const blackText = greyMatch > 0 ? text.slice(0, greyMatch) : "";
-  const greyText = greyMatch > 0 ? text.slice(greyMatch) : text;
+  if (greyMatch < 0) {
+    console.error(
+      "Could not locate the 'Jurisdictions under Increased Monitoring' heading in the source text;\n" +
+        "cannot reliably separate the black and grey lists. Verify manually at:\n  " +
+        FATF_SOURCE_URL,
+    );
+    process.exit(2);
+  }
+  const blackText = text.slice(0, greyMatch);
+  const greyText = text.slice(greyMatch);
 
   const liveBlack = extractMentionedIso2(blackText);
   const liveGrey = extractMentionedIso2(greyText);
@@ -74,11 +85,7 @@ async function main(): Promise<void> {
 
   const diff = diffFatfStatus(liveBlack, liveGrey);
   console.log(formatFatfDiff(diff));
-  console.log(
-    `\n(live: ${liveBlack.size} black, ${liveGrey.size} grey — parsed from ${
-      greyMatch > 0 ? "sectioned" : "unsectioned"
-    } text)`,
-  );
+  console.log(`\n(live: ${liveBlack.size} black, ${liveGrey.size} grey)`);
   process.exit(diff.inSync ? 0 : 1);
 }
 

@@ -1,57 +1,25 @@
 import { useMemo } from "react";
 import { Link, useParams } from "react-router-dom";
 import { ArrowLeft, ExternalLink, Scale, ShieldAlert, ShieldCheck } from "lucide-react";
+import { getCountryBySlug } from "../data/countries.js";
+import { FATF_SOURCE_URL } from "../data/fatfStatus.js";
 import {
-  getCountryBySlug,
-  flagEmoji,
-  type Country,
-} from "../data/countries.js";
-import { getCountryEnforcementSummary } from "../data/countryEnforcement.js";
-import {
-  getFatfStatus,
-  fatfLabel,
-  FATF_LAST_PLENARY,
-  FATF_NEXT_PLENARY,
-  FATF_SOURCE_URL,
-  FATF_RECENT_CHANGES,
-  type FatfStatus,
-} from "../data/fatfStatus.js";
+  buildCountryView,
+  formatDate,
+  formatCount,
+  fatfChangeText,
+} from "../data/countryView.js";
 import "../styles/country-hub.css";
-
-function formatDate(iso: string): string {
-  // Accept YYYY-MM-DD or YYYY-MM
-  const [y, m, d] = iso.split("-");
-  const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
-  const mon = m ? months[Number(m) - 1] : undefined;
-  if (d) return `${Number(d)} ${mon} ${y}`;
-  if (mon) return `${mon} ${y}`;
-  return y;
-}
-
-/** FATF listing → risk band (drives the card colour). */
-function fatfBand(fatf: FatfStatus | undefined): "very-high" | "high" | "none" {
-  if (!fatf) return "none";
-  return fatf.listing === "call-for-action" ? "very-high" : "high";
-}
 
 export function CountryHub() {
   const { slug } = useParams<{ slug: string }>();
-  const country: Country | undefined = slug ? getCountryBySlug(slug) : undefined;
-
-  const fatf = useMemo(
-    () => (country ? getFatfStatus(country.iso2) : undefined),
-    [country],
-  );
-  const history = useMemo(
-    () => (country ? FATF_RECENT_CHANGES.filter((c) => c.iso2 === country.iso2) : []),
-    [country],
-  );
-  const enforcement = useMemo(
-    () => (country ? getCountryEnforcementSummary(country.iso2) : undefined),
+  const country = slug ? getCountryBySlug(slug) : undefined;
+  const view = useMemo(
+    () => (country ? buildCountryView(country) : undefined),
     [country],
   );
 
-  if (!country) {
+  if (!country || !view) {
     return (
       <div className="country-hub">
         <div className="country-hub__notfound">
@@ -65,7 +33,7 @@ export function CountryHub() {
     );
   }
 
-  const band = fatfBand(fatf);
+  const { band, statusHeading, statusDetail, history, enforcement } = view;
 
   return (
     <div className="country-hub">
@@ -76,7 +44,7 @@ export function CountryHub() {
       <header className="country-hub__header">
         <div className="country-hub__title-row">
           <span className="country-hub__flag" aria-hidden="true">
-            {flagEmoji(country.iso2)}
+            {view.flag}
           </span>
           <div>
             <h1 className="country-hub__title">
@@ -91,7 +59,7 @@ export function CountryHub() {
           </div>
         </div>
         <p className="country-hub__freshness">
-          FATF status as of the {formatDate(FATF_LAST_PLENARY)} plenary ·{" "}
+          FATF status as of the {formatDate(view.lastPlenary)} plenary ·{" "}
           <a href={FATF_SOURCE_URL} target="_blank" rel="noopener noreferrer">
             source cited <ExternalLink size={12} />
           </a>
@@ -110,30 +78,8 @@ export function CountryHub() {
           <h2 id="fatf-heading" className="country-hub__fatf-eyebrow">
             FATF status
           </h2>
-          {fatf ? (
-            <>
-              <p className="country-hub__fatf-status">{fatfLabel(fatf.listing)}</p>
-              <p className="country-hub__fatf-detail">
-                {fatf.listing === "call-for-action"
-                  ? "High-Risk Jurisdiction Subject to a Call for Action."
-                  : "Jurisdiction Under Increased Monitoring."}
-                {fatf.since ? ` Listed ${formatDate(fatf.since)}.` : ""}
-                {fatf.note ? ` ${fatf.note}` : ""}
-              </p>
-              <p className="country-hub__fatf-meta">
-                Last reviewed {formatDate(fatf.lastReviewed)} · next plenary{" "}
-                {formatDate(FATF_NEXT_PLENARY)}
-              </p>
-            </>
-          ) : (
-            <>
-              <p className="country-hub__fatf-status">Not currently listed</p>
-              <p className="country-hub__fatf-detail">
-                {country.name} is not on the FATF grey or black list as of the{" "}
-                {formatDate(FATF_LAST_PLENARY)} plenary.
-              </p>
-            </>
-          )}
+          <p className="country-hub__fatf-status">{statusHeading}</p>
+          <p className="country-hub__fatf-detail">{statusDetail}</p>
         </div>
       </section>
 
@@ -144,15 +90,16 @@ export function CountryHub() {
             FATF status history
           </h2>
           <ul className="country-hub__timeline">
-            {history.map((h, i) => (
-              <li key={i} className="country-hub__timeline-item">
+            {history.map((h) => (
+              <li
+                key={`${h.date}-${h.change}-${h.listing}`}
+                className="country-hub__timeline-item"
+              >
                 <span className="country-hub__timeline-date">
                   {formatDate(h.date)}
                 </span>
                 <span className="country-hub__timeline-event">
-                  {h.change === "added"
-                    ? `Added to the FATF ${fatfLabel(h.listing).toLowerCase()}`
-                    : `Removed from the FATF ${fatfLabel(h.listing).toLowerCase()}`}
+                  {fatfChangeText(h)}
                 </span>
               </li>
             ))}
@@ -172,7 +119,7 @@ export function CountryHub() {
           </div>
           <p className="country-hub__enf-lead">
             RegActions tracks{" "}
-            <strong>{enforcement.trackedActions.toLocaleString()}</strong>{" "}
+            <strong>{formatCount(enforcement.trackedActions)}</strong>{" "}
             enforcement actions from{" "}
             <strong>{enforcement.regulatorCount}</strong>{" "}
             {enforcement.regulatorCount === 1 ? "regulator" : "regulators"} in{" "}
@@ -185,7 +132,7 @@ export function CountryHub() {
                   <strong>{r.code}</strong> — {r.fullName}
                 </Link>
                 <span className="country-hub__enf-count">
-                  {r.count.toLocaleString()} actions · {r.years}
+                  {formatCount(r.count)} actions · {r.years}
                 </span>
               </li>
             ))}

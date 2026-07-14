@@ -60,11 +60,14 @@ import {
   countrySlug,
   type Country,
 } from "../src/data/countries.js";
+import { ENFORCEMENT_COVERED_ISO2 } from "../src/data/countryEnforcement.js";
 import {
-  ENFORCEMENT_COVERED_ISO2,
-  getCountryEnforcementSummary,
-  type CountryEnforcementSummary,
-} from "../src/data/countryEnforcement.js";
+  buildCountryView,
+  formatDate,
+  formatCount,
+  fatfChangeText,
+  type CountryView,
+} from "../src/data/countryView.js";
 import {
   FATF_STATUS,
   fatfLabel,
@@ -215,47 +218,26 @@ function renderHubBody(
   return `<div class="blog-page"><div class="blog-post-container"><article class="blog-article-modal"><h1 class="blog-post-title">${escapeHtml(title)}</h1><div class="blog-article-content"><p>${escapeHtml(description)}</p><h2>Coverage Snapshot</h2><ul>${metricsHtml}</ul><h2>Use This Data</h2><p>Open the live RegActions workspace to filter the source records, inspect related firms, compare breach themes, and export the evidence for compliance or board reporting.</p><p><a href="${ctaPath}">Open live enforcement data</a></p></div></article></div></div>`;
 }
 
-function formatPlenary(iso: string): string {
-  const [y, m, d] = iso.split("-");
-  const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
-  const mon = m ? months[Number(m) - 1] : undefined;
-  if (d && mon) return `${Number(d)} ${mon} ${y}`;
-  if (mon) return `${mon} ${y}`;
-  return y;
-}
-
-/** Crawlable body for a single country's risk report (FATF status + enforcement). */
-function renderCountryFatfBody(
-  country: Country,
-  fatf: FatfStatus | undefined,
-  history: typeof FATF_RECENT_CHANGES,
-  enforcement?: CountryEnforcementSummary,
-): string {
+/**
+ * Crawlable body for a single country's risk report. Driven by the SAME
+ * `CountryView` the React page uses (`src/data/countryView.ts`), so the
+ * prerendered HTML and the SPA can't drift apart in copy/logic.
+ */
+function renderCountryFatfBody(view: CountryView): string {
+  const { country, statusHeading, statusDetail, history, enforcement } = view;
   const title = `${country.name} — Country Risk Report`;
-  const statusHeading = fatf ? fatfLabel(fatf.listing) : "Not currently listed";
-  const statusDetail = fatf
-    ? `${
-        fatf.listing === "call-for-action"
-          ? "High-Risk Jurisdiction Subject to a Call for Action"
-          : "Jurisdiction Under Increased Monitoring"
-      }.${fatf.since ? ` Listed ${formatPlenary(fatf.since)}.` : ""}${fatf.note ? ` ${fatf.note}` : ""} Last reviewed ${formatPlenary(
-        fatf.lastReviewed,
-      )}; next FATF plenary ${formatPlenary(FATF_NEXT_PLENARY)}.`
-    : `${country.name} is not on the FATF grey or black list as of the ${formatPlenary(FATF_LAST_PLENARY)} plenary.`;
   const historyHtml =
     history.length > 0
       ? `<h2>FATF status history</h2><ul>${history
           .map(
             (h) =>
-              `<li>${escapeHtml(formatPlenary(h.date))}: ${
-                h.change === "added" ? "Added to" : "Removed from"
-              } the FATF ${escapeHtml(fatfLabel(h.listing).toLowerCase())}</li>`,
+              `<li>${escapeHtml(formatDate(h.date))}: ${escapeHtml(fatfChangeText(h))}</li>`,
           )
           .join("")}</ul>`
       : "";
   const enforcementHtml = enforcement
     ? `<h2>Enforcement activity</h2><p>${escapeHtml(
-        `RegActions tracks ${enforcement.trackedActions.toLocaleString()} enforcement actions from ${enforcement.regulatorCount} ${
+        `RegActions tracks ${formatCount(enforcement.trackedActions)} enforcement actions from ${enforcement.regulatorCount} ${
           enforcement.regulatorCount === 1 ? "regulator" : "regulators"
         } in ${country.name}.`,
       )}</p><ul>${enforcement.regulators
@@ -263,16 +245,14 @@ function renderCountryFatfBody(
           (r) =>
             `<li><a href="${escapeHtml(r.overviewPath)}"><strong>${escapeHtml(r.code)}</strong> — ${escapeHtml(
               r.fullName,
-            )}</a> (${escapeHtml(String(r.count.toLocaleString()))} actions, ${escapeHtml(r.years)})</li>`,
+            )}</a> (${escapeHtml(formatCount(r.count))} actions, ${escapeHtml(r.years)})</li>`,
         )
-        .join(
-          "",
-        )}</ul><p>The composite RegActions Country Risk Score does not use enforcement volume.</p>`
+        .join("")}</ul><p>The composite RegActions Country Risk Score does not use enforcement volume.</p>`
     : "";
   return `<div class="blog-page"><div class="blog-post-container"><article class="blog-article-modal"><h1 class="blog-post-title">${escapeHtml(
     title,
   )}</h1><div class="blog-article-content"><p>${escapeHtml(
-    `${country.name} (${country.region} • ${country.subregion}). FATF listing status as of the ${formatPlenary(FATF_LAST_PLENARY)} plenary.`,
+    `${country.name} (${country.region} • ${country.subregion}). FATF listing status as of the ${formatDate(FATF_LAST_PLENARY)} plenary.`,
   )}</p><h2>FATF status: ${escapeHtml(statusHeading)}</h2><p>${escapeHtml(
     statusDetail,
   )}</p>${historyHtml}${enforcementHtml}<p>Sanctions exposure and the composite RegActions Country Risk Score are being added.</p><p><a href="${escapeHtml(
@@ -304,7 +284,7 @@ function renderCountriesIndexBody(): string {
     0,
     4,
   )}</h1><div class="blog-article-content"><p>${escapeHtml(
-    `FATF jurisdictions under increased monitoring (grey list) and subject to a call for action (black list), current as of the ${formatPlenary(FATF_LAST_PLENARY)} plenary.`,
+    `FATF jurisdictions under increased monitoring (grey list) and subject to a call for action (black list), current as of the ${formatDate(FATF_LAST_PLENARY)} plenary.`,
   )}</p>${added ? `<p><strong>Added:</strong> ${escapeHtml(added)}</p>` : ""}${
     removed ? `<p><strong>Removed:</strong> ${escapeHtml(removed)}</p>` : ""
   }<h2>Black list — Call for Action</h2><ul>${rows("call-for-action")}</ul><h2>Grey list — Increased Monitoring</h2><ul>${rows(
@@ -1031,10 +1011,9 @@ async function buildPageMetas(): Promise<PageMeta[]> {
   for (const iso2 of countryPageIso2) {
     const country = getCountryByIso2(iso2);
     if (!country) continue;
-    const status = FATF_STATUS.find((s) => s.iso2 === iso2);
-    const enforcement = getCountryEnforcementSummary(iso2);
+    const view = buildCountryView(country);
+    const { fatf: status, enforcement } = view;
     const slug = countrySlug(country);
-    const history = FATF_RECENT_CHANGES.filter((h) => h.iso2 === iso2);
     const path = `/countries/${slug}`;
     const listLabel = status ? fatfLabel(status.listing) : "";
     const title = status
@@ -1044,7 +1023,7 @@ async function buildPageMetas(): Promise<PageMeta[]> {
       ? `Is ${country.name} on the FATF grey list? ${country.name} is on the FATF ${listLabel.toLowerCase()} as of the ${FATF_LAST_PLENARY} plenary. AML/CFT country risk profile with enforcement activity and cited sources.`
       : `${country.name} financial regulators, enforcement activity and AML/CFT risk.${
           enforcement
-            ? ` RegActions tracks ${enforcement.trackedActions.toLocaleString()} actions from ${enforcement.regulatorCount} regulators.`
+            ? ` RegActions tracks ${formatCount(enforcement.trackedActions)} actions from ${enforcement.regulatorCount} regulators.`
             : ""
         } Country risk profile with cited sources.`;
     const keywords = status
@@ -1054,7 +1033,7 @@ async function buildPageMetas(): Promise<PageMeta[]> {
       [
         status ? `FATF ${listLabel} status` : "FATF listing status",
         enforcement
-          ? `${enforcement.trackedActions.toLocaleString()} tracked enforcement actions`
+          ? `${formatCount(enforcement.trackedActions)} tracked enforcement actions`
           : "",
       ]
         .filter(Boolean)
@@ -1065,7 +1044,7 @@ async function buildPageMetas(): Promise<PageMeta[]> {
       description,
       keywords,
       ogType: "website",
-      bodyContent: renderCountryFatfBody(country, status, history, enforcement),
+      bodyContent: renderCountryFatfBody(view),
       breadcrumbLabel: country.name,
       jsonLd: {
         "@context": "https://schema.org",
