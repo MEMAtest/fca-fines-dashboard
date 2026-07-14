@@ -119,6 +119,29 @@
   margin: 0.5rem 0 0;
 }
 
+.country-hub__sanctions-list {
+  list-style: none;
+  padding: 0;
+  margin: 0.5rem 0 0;
+  display: grid;
+  gap: 0.35rem;
+  font-size: 0.9rem;
+  color: #374151;
+}
+.country-hub__sanctions-list a {
+  color: #0fa77d;
+  text-decoration: none;
+  white-space: nowrap;
+}
+.country-hub__sanctions-imposer {
+  font-weight: 700;
+  color: #0b1f2a;
+}
+.country-hub__sanctions-tier {
+  font-variant: small-caps;
+  color: #6b7280;
+}
+
 .country-hub__section-title {
   font-size: 1.25rem;
   font-weight: 700;

@@ -21,6 +21,12 @@ import {
   getCountryEnforcementSummary,
   type CountryEnforcementSummary,
 } from "./countryEnforcement.js";
+import {
+  getSanctions,
+  highestSanctionsTier,
+  type CountrySanctions,
+  type SanctionsTier,
+} from "./sanctionsStatus.js";
 
 const MONTHS = [
   "Jan", "Feb", "Mar", "Apr", "May", "Jun",
@@ -55,8 +61,19 @@ export interface CountryView {
   statusDetail: string;
   history: FatfChange[];
   enforcement?: CountryEnforcementSummary;
+  sanctions?: CountrySanctions;
+  /** Highest sanctions tier across imposers, or undefined if none. */
+  sanctionsTier?: SanctionsTier;
+  /** Risk band for the sanctions card (mirrors the FATF band scale). */
+  sanctionsBand: RiskBand;
   lastPlenary: string;
   nextPlenary: string;
+}
+
+/** Sanctions tier → risk band (comprehensive = very-high, sectoral = high, targeted = high). */
+function sanctionsToBand(tier: SanctionsTier | undefined): RiskBand {
+  if (!tier) return "none";
+  return tier === "comprehensive" ? "very-high" : "high";
 }
 
 /** FATF listing → risk band (drives the card colour). */
@@ -69,6 +86,8 @@ export function buildCountryView(country: Country): CountryView {
   const fatf = getFatfStatus(country.iso2);
   const history = FATF_RECENT_CHANGES.filter((c) => c.iso2 === country.iso2);
   const enforcement = getCountryEnforcementSummary(country.iso2);
+  const sanctions = getSanctions(country.iso2);
+  const sanctionsTier = highestSanctionsTier(country.iso2);
 
   const statusHeading = fatf ? fatfLabel(fatf.listing) : "Not currently listed";
   const statusDetail = fatf
@@ -94,6 +113,9 @@ export function buildCountryView(country: Country): CountryView {
     statusDetail,
     history,
     enforcement,
+    sanctions,
+    sanctionsTier,
+    sanctionsBand: sanctionsToBand(sanctionsTier),
     lastPlenary: FATF_LAST_PLENARY,
     nextPlenary: FATF_NEXT_PLENARY,
   };
