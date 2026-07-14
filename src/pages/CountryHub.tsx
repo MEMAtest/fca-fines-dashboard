@@ -3,6 +3,7 @@ import { Link, useParams } from "react-router-dom";
 import { ArrowLeft, ExternalLink, Scale, ShieldAlert, ShieldCheck } from "lucide-react";
 import { getCountryBySlug } from "../data/countries.js";
 import { FATF_SOURCE_URL } from "../data/fatfStatus.js";
+import { CountryEnforcementLive } from "../components/CountryEnforcementLive.js";
 import {
   buildCountryView,
   formatDate,
@@ -137,10 +138,10 @@ export function CountryHub() {
               </li>
             ))}
           </ul>
+          <CountryEnforcementLive iso2={country.iso2} countryName={country.name} />
           <p className="country-hub__enf-note">
-            Penalty totals, breach mix and the top cases are available in the live
-            enforcement workspace. The composite RegActions Country Risk Score does
-            not use enforcement volume.
+            The composite RegActions Country Risk Score does not use enforcement
+            volume.
           </p>
         </section>
       )}

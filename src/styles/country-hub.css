@@ -227,6 +227,78 @@
   margin: 0.9rem 0 0;
 }
 
+/* Live enforcement rollup (client-side) */
+.country-live {
+  margin-top: 1rem;
+}
+.country-live__status {
+  font-size: 0.85rem;
+  color: #6b7280;
+  margin: 0.75rem 0 0;
+}
+.country-live__cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 0.6rem;
+  margin: 0.75rem 0;
+}
+.country-live__card {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+  padding: 0.75rem 0.9rem;
+  border: 1px solid #e5e7eb;
+  border-radius: 10px;
+  background: linear-gradient(180deg, #ffffff, #f9fafb);
+}
+.country-live__value {
+  font-size: 1.35rem;
+  font-weight: 700;
+  color: #0b1f2a;
+}
+.country-live__value--sm {
+  font-size: 1rem;
+  line-height: 1.2;
+}
+.country-live__label {
+  font-size: 0.72rem;
+  color: #6b7280;
+}
+.country-live__table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.85rem;
+  margin: 0.75rem 0;
+}
+.country-live__table th {
+  text-align: left;
+  font-weight: 600;
+  color: #374151;
+  padding: 0.5rem 0.6rem;
+  border-bottom: 2px solid #0fa77d;
+  background: #e0f7f5;
+}
+.country-live__table td {
+  padding: 0.5rem 0.6rem;
+  border-bottom: 1px solid #f1f5f9;
+  color: #1f2937;
+}
+.country-live__num {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+  color: #059669;
+  font-weight: 600;
+}
+.country-live__note {
+  font-size: 0.8rem;
+  color: #6b7280;
+  margin: 0.5rem 0 0;
+}
+.country-live__note a {
+  color: #0fa77d;
+  text-decoration: none;
+}
+
 .country-hub__pending {
   margin-top: 2rem;
   padding: 1rem 1.25rem;
