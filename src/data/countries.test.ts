@@ -5,14 +5,14 @@ import {
   resolveCountry,
   countrySlug,
   flagEmoji,
-} from "./countries";
+} from "./countries.js";
 import {
   FATF_STATUS,
   FATF_RECENT_CHANGES,
   getFatfStatus,
   isFatfListed,
   fatfListedIso2,
-} from "./fatfStatus";
+} from "./fatfStatus.js";
 
 describe("countries reference", () => {
   it("has unique ISO2 and ISO3 codes", () => {

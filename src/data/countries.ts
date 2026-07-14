@@ -315,6 +315,15 @@ export function resolveCountry(token: string | null | undefined): Country | unde
   return BY_ALIAS.get(norm(t));
 }
 
+const BY_SLUG = new Map<string, Country>();
+
+export function getCountryBySlug(slug: string): Country | undefined {
+  if (BY_SLUG.size === 0) {
+    for (const country of COUNTRIES) BY_SLUG.set(countrySlug(country), country);
+  }
+  return BY_SLUG.get(slug.toLowerCase());
+}
+
 export function countrySlug(country: Country): string {
   return country.name
     .toLowerCase()
