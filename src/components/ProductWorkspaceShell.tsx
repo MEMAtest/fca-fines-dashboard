@@ -39,11 +39,11 @@ const FINES_NAV = [
 ];
 
 const SECONDARY_NAV = [
-  { label: "Watchlists", icon: Star },
-  { label: "Alerts", icon: Bell },
-  { label: "Reports", icon: BookOpenCheck },
-  { label: "Data Hub", icon: Database },
-  { label: "Methodology", icon: CircleHelp },
+  { label: "Watchlists", icon: Star, to: "/features" },
+  { label: "Alerts", icon: Bell, to: "/features" },
+  { label: "Reports", icon: BookOpenCheck, to: "/board-pack" },
+  { label: "Data Hub", icon: Database, to: "/search" },
+  { label: "Methodology", icon: CircleHelp, to: "/about" },
 ];
 
 function buildBase(scope: "fines" | "regulator", regulatorCode?: string) {
@@ -145,10 +145,10 @@ export function ProductWorkspaceShell({
             );
           })}
           <div className="product-workspace__nav-divider" />
-          {SECONDARY_NAV.map(({ label, icon: Icon }) => (
+          {SECONDARY_NAV.map(({ label, icon: Icon, to }) => (
             <Link
               key={label}
-              to={label === "Methodology" ? `${base}?panel=methodology` : `${base}?panel=${label.toLowerCase().replaceAll(" ", "-")}`}
+              to={to}
               className="product-workspace__nav-link"
               title={collapsed ? label : undefined}
               onClick={() => setMobileOpen(false)}
