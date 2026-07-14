@@ -118,7 +118,8 @@ export function CountryHub() {
           <p className="country-score__disclaimer">
             RegActions Country Risk Rating (AML/CFT, sanctions &amp; governance).
             Informational, not a substitute for your own risk assessment.
-            Enforcement volume and CPI are shown but not scored.
+            Enforcement volume and CPI are shown but not scored.{" "}
+            <Link to="/countries/methodology">Full methodology →</Link>
           </p>
         </div>
       </section>
