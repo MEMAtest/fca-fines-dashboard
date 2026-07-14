@@ -34,8 +34,9 @@ jobs:
       - name: Generate structured article draft
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
-          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
           OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
+          EDITORIAL_PROVIDER: openrouter
+          EDITORIAL_OPENROUTER_APPROVED: 'true'
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           AWS_SES_REGION: ${{ secrets.AWS_SES_REGION }}
@@ -52,14 +53,14 @@ jobs:
         id: review
         continue-on-error: true
         env:
-          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
+          EDITORIAL_PROVIDER: openrouter
+          EDITORIAL_OPENROUTER_APPROVED: 'true'
         run: npx tsx scripts/review-article.ts "${{ steps.article.outputs.slug }}"
 
       - name: Publisher Agent
         id: publish
         if: steps.review.outcome == 'success'
-        env:
-          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
         run: npx tsx scripts/approve-article.ts "${{ steps.article.outputs.slug }}"
 
       - name: Commit editorial artifact

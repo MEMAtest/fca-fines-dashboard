@@ -82,7 +82,7 @@ export interface ImageSpec {
   caption?: string;
   prompt?: string;
   outputPath: string;
-  generatedBy: "satori" | "gpt-image-2" | "approved-asset";
+  generatedBy: "satori" | "openrouter-image" | "approved-asset";
   factual: boolean;
   sourceIds: string[];
   approved: boolean;
@@ -114,6 +114,38 @@ export interface HeadEditorialApproval {
   rationale: string;
 }
 
+export type EditorialSectionKey =
+  | "overview"
+  | "actions"
+  | "analysis"
+  | "implications"
+  | "takeaways"
+  | "data";
+
+export interface EditorialOutlineSection {
+  key: EditorialSectionKey;
+  heading: string;
+  angle: string;
+  targetWords: number;
+  sourceRecordIds: string[];
+}
+
+export interface EditorialOutline {
+  title: string;
+  excerpt: string;
+  keywords: string[];
+  sections: EditorialOutlineSection[];
+}
+
+export interface EditorialRepairAttempt {
+  completedAt: string;
+  model: string;
+  issues: string[];
+  affectedSections: EditorialSectionKey[];
+  beforeHash: string;
+  afterHash: string;
+}
+
 export interface EditorialManifest {
   version: 1;
   status: EditorialWorkflowStatus;
@@ -126,6 +158,8 @@ export interface EditorialManifest {
   charts: ChartSpec[];
   images: ImageSpec[];
   reviews: AgentReview[];
+  outline?: EditorialOutline;
+  repairHistory?: EditorialRepairAttempt[];
   headApproval?: HeadEditorialApproval;
 }
 

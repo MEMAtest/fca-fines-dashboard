@@ -7,8 +7,17 @@
  */
 
 import type { CalendarEntry, PersonaConfig } from '../calendarConfig.js';
-import { queryPersonaData, formatDataTable, buildStatisticalSummary, buildKeyCaseSummaries, type PersonaData, type EnforcementRecord } from '../articleData.js';
-import { getRelevantProfiles } from '../regulatorProfiles.js';
+import {
+  buildKeyCaseSummaries,
+  buildStatisticalSummary,
+  formatDataTable,
+  formatEvidenceAmount,
+  getRequiredCaseCitationCount,
+  getRequiredVerifiedAmountCount,
+  queryPersonaData,
+  type EnforcementRecord,
+  type PersonaData,
+} from '../articleData.js';
 import { getBrandVoiceSystemPrefix } from '../brandVoice.js';
 
 export interface GeneratorResult {
@@ -23,16 +32,15 @@ export async function buildPersonaGenerator(entry: CalendarEntry): Promise<Gener
   const data = await queryPersonaData(config.firmCategory, config.sectorKeywords);
 
   return {
-    systemPrompt: buildSystemPrompt(config.firmCategory, data.records),
+    systemPrompt: buildSystemPrompt(config.firmCategory),
     userPrompt: buildUserPrompt(entry, data, config),
     sourceRecords: data.records,
     minWordCount: 1350,
   };
 }
 
-function buildSystemPrompt(firmCategory: string, records: EnforcementRecord[]): string {
-  const profileContext = getRelevantProfiles(records);
-  return `${getBrandVoiceSystemPrefix()}You are a senior regulatory compliance specialist at RegActions writing for ${firmCategory} compliance teams, risk officers, and NEDs. This is a sector-specific enforcement guide — practical, specific to this sector, grounded in enforcement data.${profileContext}
+function buildSystemPrompt(firmCategory: string): string {
+  return `${getBrandVoiceSystemPrefix()}You are a senior regulatory compliance specialist at RegActions writing for ${firmCategory} compliance teams, risk officers, and NEDs. This is a sector-specific enforcement guide — practical, specific to this sector, grounded in enforcement data.
 
 Tone: Professional, direct, useful. No generic compliance advice. No first person. No hedging. Every observation must be grounded in the enforcement data provided.
 
@@ -65,7 +73,7 @@ What rules, obligations, and frameworks are most commonly breached by ${firmCate
 5-8 specific, actionable items based on what firms in this sector have been fined for. Frame as imperatives.
 
 ## About the Data
-One paragraph: state this analysis draws on the RegActions database, the date range of data used, and that fine amounts in non-GBP currencies are converted at the enforcement action date. Cite the regulators whose enforcement data is covered.
+One paragraph: state this analysis draws on the RegActions database and linked official notices. Preserve original currencies for case-level amounts and label aggregates as GBP-normalised. Cite the regulators whose enforcement data is covered.
 
 ## Key Takeaways
 5 bullet points, each referencing a specific case or finding from the data.
@@ -77,10 +85,12 @@ Requirements:
 
 function buildUserPrompt(entry: CalendarEntry, data: PersonaData, config: PersonaConfig): string {
   const dataTable = formatDataTable(data.records);
+  const requiredCases = getRequiredCaseCitationCount(data.records);
+  const requiredAmounts = getRequiredVerifiedAmountCount(data.records);
 
   const breakdownTable = data.regulatorBreakdown.length > 0
     ? data.regulatorBreakdown.map(r =>
-        `${r.regulator}: ${r.count} action(s), £${(r.total / 1_000_000).toFixed(1)}M total`
+        `${r.regulator}: ${r.count} action(s), ${formatEvidenceAmount(r.total)} verified penalties (GBP-normalised)`
       ).join('\n')
     : 'No regulator breakdown available';
 
@@ -93,7 +103,7 @@ Category: ${entry.category}
 Sector focus: ${config.firmCategory}
 Sector keywords used to filter data: ${config.sectorKeywords.join(', ')}
 
-=== ENFORCEMENT DATA (sector-filtered, ordered by amount) ===
+=== ENFORCEMENT DATA (official-source, deduplicated and ordered by relevance) ===
 ${dataTable}
 
 === BY REGULATOR ===
@@ -103,17 +113,19 @@ ${breakdownTable}
 ${topBreachTypes.length > 0 ? topBreachTypes.join(', ') : 'Varies — see data table'}
 
 Total records: ${data.records.length} enforcement actions
-Total fines: £${(data.records.reduce((s, r) => s + (r.amount || 0), 0) / 1_000_000).toFixed(1)}M
+Total verified penalties (GBP-normalised): ${formatEvidenceAmount(data.records.reduce((sum, record) => sum + (record.amount_verified ? record.amount_gbp : 0), 0))}
 
-=== KEY CASE SUMMARIES (full detail — cite all named firms) ===
-${buildKeyCaseSummaries(data.records)}
+=== KEY CASE SUMMARIES (full detail) ===
+${buildKeyCaseSummaries(data.records, Math.max(requiredCases, 8))}
 
 === STATISTICAL CONTEXT ===
 ${buildStatisticalSummary(data.records)}
 
 Requirements:
 - Minimum 1350 words
-- Cite every named firm from the Key Case Summaries section above
+- Cite at least ${requiredCases} distinct named firms from the Key Case Summaries section above
+- Cite ${requiredAmounts} distinct verified penalties${requiredAmounts === 0 ? '; therefore state no monetary figure' : ''}
+- Preserve original currencies for case-level amounts and label aggregates as GBP-normalised
 - The compliance checklist must map directly to breach types in the data
 - Every named case must appear in the provided data`;
 }

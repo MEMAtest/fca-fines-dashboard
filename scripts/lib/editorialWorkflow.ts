@@ -3,6 +3,7 @@ import type {
   AgentReview,
   ChartSpec,
   EditorialManifest,
+  EditorialOutline,
   EvidenceClaim,
   HeadEditorialApproval,
   ImageSpec,
@@ -16,12 +17,31 @@ export interface EditorialEvidenceRecord {
   firm_individual: string;
   amount: number;
   currency: string;
+  amount_gbp: number;
   date_issued: string;
   breach_type: string;
   summary: string;
   notice_url: string;
   source_url: string;
   amount_verified: boolean;
+}
+
+const UNVERIFIED_MONETARY_FIGURES = [
+  /(?:£|\$|€)\s*\d[\d,.]*(?:\s*(?:billion|million|thousand|bn|mn|m|k))?/gi,
+  /\b(?:AED|AUD|BRL|CAD|CHF|CLP|CNY|DKK|EUR|GBP|HKD|INR|JPY|KRW|MXN|NOK|NZD|SAR|SEK|SGD|TWD|USD|ZAR)\s*\d[\d,.]*(?:\s*(?:billion|million|thousand|bn|mn|m|k))?/gi,
+];
+
+function redactUnverifiedAmounts(value: string) {
+  let output = value;
+  for (const pattern of UNVERIFIED_MONETARY_FIGURES) {
+    pattern.lastIndex = 0;
+    output = output.replace(pattern, "[unverified monetary figure removed]");
+  }
+  return output;
+}
+
+function officialEvidenceUrl(record: EditorialEvidenceRecord) {
+  return [record.notice_url, record.source_url].find((url) => isOfficialRegulatorySource(url)) || "";
 }
 
 export interface EditorialDraftArtifact extends GeneratedArticle {
@@ -56,6 +76,16 @@ const UK_REPLACEMENTS: Array<[RegExp, string]> = [
   [/\bauthoriz(e|ed|es|ing)\b/gi, "authoris$1"],
   [/\bauthorization(s)?\b/gi, "authorisation$1"],
   [/\brecogniz(e|ed|es|ing)\b/gi, "recognis$1"],
+  [/\bpenaliz(e|ed|es|ing)\b/gi, "penalis$1"],
+  [/\bscrutiniz(e|ed|es|ing)\b/gi, "scrutinis$1"],
+  [/\bharmoniz(e|ed|es|ing)\b/gi, "harmonis$1"],
+  [/\bemphasiz(e|ed|es|ing)\b/gi, "emphasis$1"],
+  [/\bsummariz(e|ed|es|ing)\b/gi, "summaris$1"],
+  [/\bcollateralization\b/gi, "collateralisation"],
+  [/\bcollateralized\b/gi, "collateralised"],
+  [/\bunauthorized\b/gi, "unauthorised"],
+  [/\bprograms\b/gi, "programmes"],
+  [/\bprogram\b/gi, "programme"],
   [/\bcanceled\b/gi, "cancelled"],
   [/\bcanceling\b/gi, "cancelling"],
   [/\blabeled\b/gi, "labelled"],
@@ -79,6 +109,8 @@ const PROHIBITED_PHRASES = [
   "at the end of the day",
   "going forward",
   "moving forward",
+  "crackdown",
+  "unverified settlement",
 ];
 
 const PENALTY_LANGUAGE = /\b(fine[ds]?|financial penalty|monetary penalty|civil penalty|geldbu(?:ß|ss)e|bu(?:ß|ss)geld|ordnungsgeld|penalty of|penalised|penalized)\b/i;
@@ -116,9 +148,28 @@ export function contentHash(article: Pick<GeneratedArticle, "title" | "excerpt" 
 }
 
 export function normaliseToHouseStyle(value: string) {
-  let output = value.replace(/—/g, ",");
+  let output = value.replace(/\s*—\s*/g, ", ");
+  output = output.replace(/\ban unverified settlement\b/gi, (match) =>
+    /^[A-Z]/.test(match)
+      ? "A settlement whose monetary amount was not verified against the source record"
+      : "a settlement whose monetary amount was not verified against the source record"
+  );
+  output = output.replace(
+    /\b(AED|AUD|BRL|CAD|CHF|CLP|CNY|DKK|EUR|GBP|HKD|INR|JPY|KRW|MXN|NOK|NZD|SAR|SEK|SGD|TWD|USD|ZAR)\s+(\d{1,3}),(\d)\s+(billion|million)\b/gi,
+    "$1 $2.$3 $4",
+  );
+  output = output.replace(/\bglobal crackdown\b/gi, "global enforcement focus");
+  output = output.replace(/\bregulatory crackdown\b/gi, "regulatory enforcement focus");
   for (const [pattern, replacement] of UK_REPLACEMENTS) {
-    output = output.replace(pattern, replacement);
+    output = output.replace(pattern, (match, ...args: unknown[]) => {
+      const captures = args.slice(0, -2) as Array<string | undefined>;
+      const converted = replacement.replace(/\$(\d+)/g, (_placeholder, index: string) =>
+        captures[Number(index) - 1] || ""
+      );
+      return /^[A-Z]/.test(match)
+        ? converted.charAt(0).toUpperCase() + converted.slice(1)
+        : converted;
+    });
   }
   return output;
 }
@@ -152,7 +203,7 @@ export function isVerifiedPenaltyAmount(record: Omit<EditorialEvidenceRecord, "a
 export function buildSourceEvidence(records: EditorialEvidenceRecord[], retrievedAt = new Date().toISOString()) {
   const sources = new Map<string, SourceEvidence>();
   for (const record of records) {
-    const url = record.notice_url || record.source_url;
+    const url = officialEvidenceUrl(record);
     if (!url) continue;
     const id = `source:${record.id}`;
     const official = isOfficialRegulatorySource(url);
@@ -164,7 +215,11 @@ export function buildSourceEvidence(records: EditorialEvidenceRecord[], retrieve
       sourceType: official ? "official_notice" : "secondary_context",
       retrievedAt,
       official,
-      excerpt: record.summary || record.breach_type,
+      excerpt: `Official evidence record date: ${record.date_issued}. ${record.amount_verified
+        ? `Verified penalty amount: ${record.currency} ${record.amount}.`
+        : "No verified penalty amount."} Evidence summary: ${record.amount_verified
+        ? record.summary || record.breach_type
+        : redactUnverifiedAmounts(record.summary || record.breach_type)}`,
     });
   }
   return [...sources.values()];
@@ -173,13 +228,13 @@ export function buildSourceEvidence(records: EditorialEvidenceRecord[], retrieve
 export function buildDeterministicClaims(records: EditorialEvidenceRecord[]): EvidenceClaim[] {
   const claims: EvidenceClaim[] = [];
   for (const record of records) {
-    const sourceIds = record.notice_url || record.source_url ? [`source:${record.id}`] : [];
+    const sourceIds = officialEvidenceUrl(record) ? [`source:${record.id}`] : [];
     const common = {
       sourceIds,
       recordIds: [record.id],
       verifier: "deterministic-source-gate" as const,
     };
-    const official = isOfficialRegulatorySource(record.notice_url || record.source_url);
+    const official = Boolean(officialEvidenceUrl(record));
     claims.push({
       id: `claim:${record.id}:action`,
       text: `${record.regulator} recorded an action concerning ${record.firm_individual} on ${record.date_issued}.`,
@@ -187,15 +242,13 @@ export function buildDeterministicClaims(records: EditorialEvidenceRecord[]): Ev
       verdict: official ? "verified" : "unsupported",
       ...common,
     });
-    if (record.amount > 0) {
+    if (record.amount_verified && record.amount > 0) {
       claims.push({
         id: `claim:${record.id}:amount`,
         text: `${record.firm_individual} received a financial penalty of ${record.currency} ${record.amount}.`,
         kind: "amount",
-        verdict: record.amount_verified ? "verified" : "ambiguous",
-        notes: record.amount_verified
-          ? "Penalty language is present in the official-source summary."
-          : "A monetary value is present but is not verified as a penalty.",
+        verdict: "verified",
+        notes: "Penalty language is present in the official-source summary.",
         ...common,
       });
     }
@@ -232,13 +285,21 @@ export function buildDefaultImageSpecs(slug: string, articleType?: string, artic
       caption: "Conceptual illustration. It does not depict an enforcement notice or factual event.",
       prompt: `An abstract conceptual interpretation of the editorial theme "${articleTitle || slug.replace(/-/g, " ")}", expressed through governance systems, oversight, decision pathways and emerging risk signals.`,
       outputPath: `/blog/images/${slug}-inline-1.png`,
-      generatedBy: "gpt-image-2",
+      generatedBy: "openrouter-image",
       factual: false,
       sourceIds: [],
       approved: false,
     });
   }
   return images;
+}
+
+export function applyVisualReviewApprovals(images: ImageSpec[], approvedImageIds: string[]) {
+  const approved = new Set(approvedImageIds);
+  return images.map((image) => ({
+    ...image,
+    approved: image.generatedBy === "satori" ? true : approved.has(image.id),
+  }));
 }
 
 export function buildChartSpecs(
@@ -250,8 +311,8 @@ export function buildChartSpecs(
     return [];
   }
   const verified = records
-    .filter((record) => record.amount_verified && record.amount > 0)
-    .sort((a, b) => b.amount - a.amount)
+    .filter((record) => record.amount_verified && record.amount_gbp > 0)
+    .sort((a, b) => b.amount_gbp - a.amount_gbp)
     .slice(0, 8);
   const dates = records.map((record) => record.date_issued).filter(Boolean).sort();
   if (verified.length >= 2) {
@@ -262,7 +323,7 @@ export function buildChartSpecs(
       purpose: "Compare the largest source-verified monetary penalties cited in the article.",
       xKey: "firm",
       series: [{ key: "amount", label: "Penalty", format: "currency_gbp", colour: "#0d9488" }],
-      data: verified.map((record) => ({ firm: record.firm_individual, amount: record.amount })),
+      data: verified.map((record) => ({ firm: record.firm_individual, amount: record.amount_gbp })),
       sourceRecordIds: verified.map((record) => record.id),
       reportingPeriod: { start: dates[0] || "unknown", end: dates[dates.length - 1] || "unknown" },
       currencyBasis: "GBP values supplied by the verified RegActions record set.",
@@ -323,6 +384,7 @@ export function getDeterministicEditorialIssues({
   images,
   articleType,
   records,
+  requireImageApproval = true,
 }: {
   article: GeneratedArticle;
   sources: SourceEvidence[];
@@ -331,13 +393,14 @@ export function getDeterministicEditorialIssues({
   images: ImageSpec[];
   articleType?: string;
   records: EditorialEvidenceRecord[];
+  requireImageApproval?: boolean;
 }) {
   const issues = getHouseStyleIssues(article);
   const sourceIds = new Set(sources.map((source) => source.id));
   const officialSourceIds = new Set(sources.filter((source) => source.official).map((source) => source.id));
   const recordIds = new Set(records.map((record) => record.id));
   const verifiedAmountRecordIds = new Set(
-    records.filter((record) => record.amount_verified && record.amount > 0).map((record) => record.id),
+    records.filter((record) => record.amount_verified && record.amount_gbp > 0).map((record) => record.id),
   );
   const officialRecordIds = new Set(
     records
@@ -372,13 +435,13 @@ export function getDeterministicEditorialIssues({
   if (charts.some((chart) => chart.series.some((series) => series.format === "currency_gbp") && chart.sourceRecordIds.some((id) => !verifiedAmountRecordIds.has(id)))) {
     issues.push("One or more monetary charts contain unverified penalty records");
   }
-  if (!images.some((image) => image.purpose === "open_graph" && image.approved)) {
+  if (requireImageApproval && !images.some((image) => image.purpose === "open_graph" && image.approved)) {
     issues.push("Approved Open Graph image is missing");
   }
   if (images.some((image) => !image.altText.trim())) {
     issues.push("One or more images lack alt text");
   }
-  if (images.some((image) => !image.approved)) {
+  if (requireImageApproval && images.some((image) => !image.approved)) {
     issues.push("One or more images lack Visual Editor approval");
   }
   if (sources.some((source) => !source.excerpt.trim())) {
@@ -395,6 +458,7 @@ export function buildInitialEditorialManifest({
   generationModel,
   promptVersion,
   generatedAt = new Date().toISOString(),
+  outline,
 }: {
   slug: string;
   article: GeneratedArticle;
@@ -403,6 +467,7 @@ export function buildInitialEditorialManifest({
   generationModel: string;
   promptVersion: string;
   generatedAt?: string;
+  outline?: EditorialOutline;
 }): EditorialManifest {
   const sources = buildSourceEvidence(records, generatedAt);
   const claims = buildDeterministicClaims(records);
@@ -418,6 +483,8 @@ export function buildInitialEditorialManifest({
     charts: buildChartSpecs(slug, articleType, records),
     images: buildDefaultImageSpecs(slug, articleType, article.title),
     reviews: [],
+    outline,
+    repairHistory: [],
   };
 }
 

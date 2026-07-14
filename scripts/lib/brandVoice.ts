@@ -36,7 +36,7 @@ export const BRAND_VOICE = {
   ],
   aboutTheDataTemplate: `## About the Data
 
-This analysis draws on enforcement records from the RegActions database, current as of {GENERATION_DATE}. Fine amounts denominated in currencies other than GBP are converted at the exchange rate prevailing at the date of the enforcement action. Enforcement data is sourced from official regulatory registers and Final Notices published by {REGULATORS}. Where amounts are marked "N/A" or "non-monetary", the regulator issued a restriction, ban, or public censure rather than a financial penalty.`,
+This analysis draws on deduplicated enforcement records from the RegActions database, current as of {GENERATION_DATE}, and the linked official notices published by {REGULATORS}. Case-level penalties retain the currency stated by the source. Cross-case aggregates are shown only where verified and are labelled GBP-normalised. A record marked "amount unverified" must not be described as a monetary penalty.`,
   sentenceLengthTarget: {
     min: 10,     // words
     max: 28,     // words
@@ -69,8 +69,8 @@ Style rules (strictly enforced):
 - No prohibited phrases: ${BRAND_VOICE.prohibitedPhrases.slice(0, 8).join(', ')}, and similar filler
 - Sentence length target: 10-28 words, ideal mean 17 words. Vary sentence length for rhythm.
 - Paragraphs: maximum 4 sentences. Use white space.
-- State amounts in £ (converting where needed), with one decimal place for millions (e.g., £47.3m not £47,300,000)
-- Use "Final Notice" (not "penalty notice", "enforcement notice", or "sanction notice")
+- Preserve the official source currency for every case-level amount. Use GBP only for explicitly labelled GBP-normalised aggregates or charts
+- Describe the source document accurately. Use "Final Notice" only for an FCA Final Notice identified by the evidence; otherwise use the regulator's actual notice, order or press-release terminology
 - Use "Anti-Money Laundering" in full on first mention, then "AML"
 
 Required structural elements every article must include:

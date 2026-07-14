@@ -35,14 +35,31 @@ npm run editorial:publish -- <slug>
 
 The scheduled GitHub workflow runs the complete chain and publishes automatically only after Head Editorial Agent approval. A rejected draft is retained as a blocked audit artifact and the workflow reports a failure.
 
+The accepted OpenRouter model split is:
+
+- Drafting: `deepseek/deepseek-v3.2`
+- Initial regulatory verification: `mistralai/mistral-small-3.2-24b-instruct`
+- Copy, visual and head editorial review: `google/gemini-2.5-flash`
+- Final post-copy regulatory verification: `openai/gpt-4.1-mini` through OpenRouter
+- Selective inline illustration: `bytedance-seed/seedream-4.5`
+
+The `openai/` prefix in the final verifier model identifies the model provider routed by OpenRouter. It does not require an OpenAI API key.
+
 ## Required secrets
 
 - `DATABASE_URL`
-- `OPENAI_API_KEY`
+- `OPENROUTER_API_KEY`
 - `VERCEL_DEPLOY_HOOK_URL` if deploy hooks are used
 - Email and AWS SES values if review notifications remain enabled
 
-`OPENROUTER_API_KEY` is a drafting fallback only. Independent review and final approval require the OpenAI key.
+The workflows set `EDITORIAL_PROVIDER=openrouter` and `EDITORIAL_OPENROUTER_APPROVED=true`. No OpenAI API key is required for generation, review, images or approval.
+
+For isolated acceptance work, both generators support temporary trial output. Trial artifacts do not enter the draft or publishing directories:
+
+```bash
+node --import tsx/esm scripts/generate-ai-article.ts --trial --trial-dir=/tmp/regactions-trial
+node --import tsx/esm scripts/generateAllArticles.ts --trial --trial-dir=/tmp/regactions-trial --slug=<calendar-slug> --force --no-email
+```
 
 ## Audit artifacts
 

@@ -7,10 +7,26 @@
 
 import pg from 'pg';
 import { resolveConnectionString, buildPgPoolConfig } from '../../server/db.js';
-import { isVerifiedPenaltyAmount } from './editorialWorkflow.js';
+import { isOfficialRegulatorySource, isVerifiedPenaltyAmount } from './editorialWorkflow.js';
+
+const GBP_AMOUNT_SQL = `CASE
+  WHEN NULLIF(amount_gbp, 'NaN'::numeric) IS NOT NULL AND NULLIF(amount_gbp, 'NaN'::numeric) > 0 THEN NULLIF(amount_gbp, 'NaN'::numeric)
+  WHEN UPPER(COALESCE(currency, '')) = 'GBP' THEN NULLIF(amount_original, 'NaN'::numeric)
+  ELSE NULL
+END`;
+
+const EVIDENCE_AMOUNT_COLUMNS = `
+  COALESCE(NULLIF(amount_original, 'NaN'::numeric), NULLIF(amount_gbp, 'NaN'::numeric), 0)::float as amount,
+  CASE
+    WHEN NULLIF(amount_original, 'NaN'::numeric) IS NOT NULL THEN COALESCE(NULLIF(UPPER(currency), ''), 'UNKNOWN')
+    WHEN NULLIF(amount_gbp, 'NaN'::numeric) IS NOT NULL THEN 'GBP'
+    ELSE COALESCE(NULLIF(UPPER(currency), ''), 'UNKNOWN')
+  END::text as currency,
+  COALESCE(${GBP_AMOUNT_SQL}, 0)::float as amount_gbp,
+`;
 
 const VERIFIED_PENALTY_SQL = `
-  COALESCE(amount_gbp, amount_original, 0) > 0
+  COALESCE(NULLIF(amount_original, 'NaN'::numeric), NULLIF(amount_gbp, 'NaN'::numeric), 0) > 0
   AND (COALESCE(breach_type, '') || ' ' || COALESCE(summary, ''))
       ~* '(fine|financial penalty|monetary penalty|civil penalty|penalised|penalized|geldbuße|geldbusse|bußgeld|bussgeld|ordnungsgeld)'
   AND (COALESCE(breach_type, '') || ' ' || COALESCE(summary, ''))
@@ -23,12 +39,14 @@ export interface EnforcementRecord {
   firm_individual: string;
   amount: number;
   currency: string;
+  amount_gbp: number;
   date_issued: string;
   breach_type: string;
   summary: string;
   notice_url: string;
   source_url: string;
   amount_verified: boolean;
+  raw_firm_individual?: string;
 }
 
 export interface RegulatorStats {
@@ -77,8 +95,8 @@ async function query(sql: string, params: unknown[] = []): Promise<Record<string
 export async function getTimelyData(days: number = 14): Promise<EnforcementRecord[]> {
   const rows = await query(`
     SELECT id::text, regulator, firm_individual,
-           COALESCE(amount_gbp, amount_original, 0)::float as amount,
-           'GBP'::text as currency, date_issued::text, breach_type,
+           ${EVIDENCE_AMOUNT_COLUMNS}
+           date_issued::text, breach_type,
            COALESCE(summary, '') as summary, COALESCE(notice_url, '') as notice_url,
            COALESCE(source_url, '') as source_url
     FROM all_regulatory_fines
@@ -87,13 +105,14 @@ export async function getTimelyData(days: number = 14): Promise<EnforcementRecor
     LIMIT 25
   `, [days]);
 
-  return rows.map(normalizeRecord);
+  return prepareEvidenceRecords(rows.map(normalizeRecord));
 }
 
 /**
  * Fetch enforcement actions filtered by theme (breach type keywords).
  */
 export async function getThematicData(keywords: string[]): Promise<EnforcementRecord[]> {
+  if (keywords.length === 0) return [];
   const conditions = keywords
     .map((_, i) => `(breach_type ILIKE $${i + 1} OR summary ILIKE $${i + 1})`)
     .join(' OR ');
@@ -102,17 +121,17 @@ export async function getThematicData(keywords: string[]): Promise<EnforcementRe
 
   const rows = await query(`
     SELECT id::text, regulator, firm_individual,
-           COALESCE(amount_gbp, amount_original, 0)::float as amount,
-           'GBP'::text as currency, date_issued::text, breach_type,
+           ${EVIDENCE_AMOUNT_COLUMNS}
+           date_issued::text, breach_type,
            COALESCE(summary, '') as summary, COALESCE(notice_url, '') as notice_url,
            COALESCE(source_url, '') as source_url
     FROM all_regulatory_fines
     WHERE ${conditions}
-    ORDER BY amount_gbp DESC NULLS LAST
-    LIMIT 30
+    ORDER BY date_issued DESC
+    LIMIT 120
   `, params);
 
-  return rows.map(normalizeRecord);
+  return selectEvidenceSample(prepareEvidenceRecords(rows.map(normalizeRecord), keywords), 30);
 }
 
 /**
@@ -121,7 +140,7 @@ export async function getThematicData(keywords: string[]): Promise<EnforcementRe
 export async function getRegulatorStats(): Promise<RegulatorStats[]> {
   const rows = await query(`
     SELECT regulator, COUNT(*)::int as action_count,
-           COALESCE(SUM(CASE WHEN ${VERIFIED_PENALTY_SQL} THEN COALESCE(amount_gbp, amount_original) ELSE 0 END), 0)::numeric as total_fines,
+           COALESCE(SUM(CASE WHEN ${VERIFIED_PENALTY_SQL} THEN ${GBP_AMOUNT_SQL} ELSE 0 END), 0)::numeric as total_fines,
            MAX(date_issued)::text as latest_action
     FROM all_regulatory_fines
     GROUP BY regulator
@@ -153,13 +172,13 @@ export async function buildDataContext(
       latest_action: record.date_issued,
     };
     current.action_count += 1;
-    if (record.amount_verified) current.total_fines += record.amount;
+    if (record.amount_verified) current.total_fines += record.amount_gbp;
     if (record.date_issued > current.latest_action) current.latest_action = record.date_issued;
     regulatorStats.set(record.regulator, current);
   }
   const stats = [...regulatorStats.values()].sort((a, b) => b.action_count - a.action_count);
   const totalActions = records.length;
-  const totalFines = records.filter((record) => record.amount_verified).reduce((sum, record) => sum + record.amount, 0);
+  const totalFines = records.filter((record) => record.amount_verified).reduce((sum, record) => sum + record.amount_gbp, 0);
 
   const dates = records
     .map(r => r.date_issued)
@@ -185,11 +204,25 @@ export async function buildDataContext(
 export function formatDataTable(records: EnforcementRecord[]): string {
   if (records.length === 0) return '(No enforcement records in this period)';
 
-  const header = 'Regulator | Firm/Individual | Amount | Date | Breach Type | Summary';
-  const separator = '---|---|---|---|---|---';
-  const rows = records.map(r =>
-    `${r.regulator} | ${r.firm_individual} | ${r.amount_verified ? formatAmount(r.amount) : 'Non-monetary or amount unverified'} | ${r.date_issued} | ${r.breach_type} | ${truncate(r.summary, 400)}`
-  );
+  const header = 'Record ID | Regulator | Firm/Individual | Amount | Date | Breach Type | Summary | Official Source';
+  const separator = '---|---|---|---|---|---|---|---';
+  const rows = records.map((r) => {
+    const breach = redactUnverifiedMonetaryFigures(r.breach_type);
+    const summary = redactUnverifiedMonetaryFigures(r.summary);
+    const amount = r.amount_verified
+      ? `${formatEvidenceAmount(r.amount, r.currency)} (exact source amount: ${r.currency} ${r.amount.toLocaleString('en-GB')})`
+      : 'NOT VERIFIED — do not state a monetary figure for this record';
+    return [
+      r.id,
+      r.regulator,
+      redactUnverifiedMonetaryFigures(r.firm_individual),
+      amount,
+      r.date_issued,
+      breach,
+      truncate(summary, 400),
+      evidenceSourceUrl(r),
+    ].map(sanitiseTableCell).join(' | ');
+  });
 
   return [header, separator, ...rows].join('\n');
 }
@@ -244,7 +277,7 @@ export async function queryMonthlyData(year: number, month: number): Promise<Mon
   const [current, prior, sectors] = await Promise.all([
     query(`
       SELECT id::text, firm_individual, COALESCE(amount, 0)::float as amount,
-             'GBP'::text as currency,
+             'GBP'::text as currency, COALESCE(amount, 0)::float as amount_gbp,
              date_issued::text, breach_type, COALESCE(summary, '') as summary,
              'FCA' as regulator, COALESCE(final_notice_url, '') as notice_url,
              COALESCE(final_notice_url, '') as source_url
@@ -254,7 +287,7 @@ export async function queryMonthlyData(year: number, month: number): Promise<Mon
     `, [year, month]),
     query(`
       SELECT id::text, firm_individual, COALESCE(amount, 0)::float as amount,
-             'GBP'::text as currency,
+             'GBP'::text as currency, COALESCE(amount, 0)::float as amount_gbp,
              date_issued::text, breach_type, COALESCE(summary, '') as summary,
              'FCA' as regulator, COALESCE(final_notice_url, '') as notice_url,
              COALESCE(final_notice_url, '') as source_url
@@ -274,8 +307,8 @@ export async function queryMonthlyData(year: number, month: number): Promise<Mon
   ]);
 
   return {
-    currentMonth: current.map(normalizeRecord),
-    priorYearMonth: prior.map(normalizeRecord),
+    currentMonth: prepareEvidenceRecords(current.map(normalizeRecord)),
+    priorYearMonth: prepareEvidenceRecords(prior.map(normalizeRecord)),
     sectorBreakdown: sectors.map(r => ({
       sector: String(r.sector),
       count: Number(r.count),
@@ -304,6 +337,9 @@ export async function queryThematicData(
   regulators?: string[],
   yearsSince = 3,
 ): Promise<ThematicData> {
+  if (keywords.length === 0) {
+    return { records: [], regulatorAggregates: [], yearAggregates: [] };
+  }
   const sinceYear = new Date().getFullYear() - yearsSince;
   const keywordConditions = keywords
     .map((_, i) => `(breach_type ILIKE $${i + 1} OR summary ILIKE $${i + 1})`)
@@ -311,8 +347,8 @@ export async function queryThematicData(
   const keywordParams = keywords.map(k => `%${k}%`);
 
   let baseQuery = `
-    SELECT id::text, regulator, firm_individual, COALESCE(amount_gbp, amount_original, 0)::float as amount,
-           'GBP'::text as currency, date_issued::text, breach_type,
+    SELECT id::text, regulator, firm_individual, ${EVIDENCE_AMOUNT_COLUMNS}
+           date_issued::text, breach_type,
            COALESCE(summary, '') as summary, COALESCE(notice_url, '') as notice_url,
            COALESCE(source_url, '') as source_url
     FROM all_regulatory_fines
@@ -326,38 +362,15 @@ export async function queryThematicData(
     baseQuery += regulatorFilterSql;
     baseParams.push(regulators);
   }
-  baseQuery += ' ORDER BY amount DESC NULLS LAST LIMIT 50';
+  baseQuery += ' ORDER BY date_issued DESC LIMIT 120';
 
-  const [records, regAggs, yearAggs] = await Promise.all([
-    query(baseQuery, baseParams),
-    query(`
-      SELECT regulator, COUNT(*)::int as count,
-             COALESCE(SUM(CASE WHEN ${VERIFIED_PENALTY_SQL} THEN COALESCE(amount_gbp, amount_original) ELSE 0 END), 0)::float as total
-      FROM all_regulatory_fines
-      WHERE (${keywordConditions}) AND year_issued >= $${keywords.length + 1}${regulatorFilterSql}
-      GROUP BY regulator ORDER BY total DESC LIMIT 15
-    `, baseParams),
-    query(`
-      SELECT year_issued as year, COUNT(*)::int as count,
-             COALESCE(SUM(CASE WHEN ${VERIFIED_PENALTY_SQL} THEN COALESCE(amount_gbp, amount_original) ELSE 0 END), 0)::float as total
-      FROM all_regulatory_fines
-      WHERE (${keywordConditions}) AND year_issued >= $${keywords.length + 1}${regulatorFilterSql}
-      GROUP BY year_issued ORDER BY year_issued ASC
-    `, baseParams),
-  ]);
+  const rows = await query(baseQuery, baseParams);
+  const records = selectEvidenceSample(prepareEvidenceRecords(rows.map(normalizeRecord), keywords), 50);
 
   return {
-    records: records.map(normalizeRecord),
-    regulatorAggregates: regAggs.map(r => ({
-      regulator: String(r.regulator),
-      count: Number(r.count),
-      total: Number(r.total),
-    })),
-    yearAggregates: yearAggs.map(r => ({
-      year: Number(r.year),
-      count: Number(r.count),
-      total: Number(r.total),
-    })),
+    records,
+    regulatorAggregates: aggregateEvidenceByRegulator(records),
+    yearAggregates: aggregateEvidenceByYear(records),
   };
 }
 
@@ -372,32 +385,20 @@ export async function queryPersonaData(
     .join(' OR ');
   const kwParams = sectorKeywords.map(k => `%${k}%`);
 
-  const [records, breakdown] = await Promise.all([
-    query(`
-      SELECT id::text, regulator, firm_individual, COALESCE(amount_gbp, amount_original, 0)::float as amount,
-             'GBP'::text as currency, date_issued::text, breach_type,
+  const rows = await query(`
+      SELECT id::text, regulator, firm_individual, ${EVIDENCE_AMOUNT_COLUMNS}
+             date_issued::text, breach_type,
              COALESCE(summary, '') as summary, COALESCE(notice_url, '') as notice_url,
              COALESCE(source_url, '') as source_url
       FROM all_regulatory_fines
       WHERE (firm_category ILIKE $1 OR ${kwConditions})
-      ORDER BY amount DESC NULLS LAST LIMIT 40
-    `, [firmCategory, ...kwParams]),
-    query(`
-      SELECT regulator, COUNT(*)::int as count,
-             COALESCE(SUM(CASE WHEN ${VERIFIED_PENALTY_SQL} THEN COALESCE(amount_gbp, amount_original) ELSE 0 END), 0)::float as total
-      FROM all_regulatory_fines
-      WHERE (firm_category ILIKE $1 OR ${kwConditions})
-      GROUP BY regulator ORDER BY total DESC LIMIT 12
-    `, [firmCategory, ...kwParams]),
-  ]);
+      ORDER BY date_issued DESC LIMIT 120
+    `, [firmCategory, ...kwParams]);
+  const records = selectEvidenceSample(prepareEvidenceRecords(rows.map(normalizeRecord), sectorKeywords), 40);
 
   return {
-    records: records.map(normalizeRecord),
-    regulatorBreakdown: breakdown.map(r => ({
-      regulator: String(r.regulator),
-      count: Number(r.count),
-      total: Number(r.total),
-    })),
+    records,
+    regulatorBreakdown: aggregateEvidenceByRegulator(records),
     firmCategory,
   };
 }
@@ -409,37 +410,29 @@ export async function queryComparisonData(
   since = 2022,
 ): Promise<ComparisonData> {
   async function fetchRegStats(reg: string) {
-    const [stats, topCases, topBreach] = await Promise.all([
-      query(`
-        SELECT COUNT(*)::int as count,
-               COALESCE(SUM(CASE WHEN ${VERIFIED_PENALTY_SQL} THEN COALESCE(amount_gbp, amount_original) ELSE 0 END), 0)::float as total,
-               COALESCE(AVG(CASE WHEN ${VERIFIED_PENALTY_SQL} THEN COALESCE(amount_gbp, amount_original) END), 0)::float as avg_fine
-        FROM all_regulatory_fines
-        WHERE regulator = $1 AND year_issued >= $2
-      `, [reg, since]),
-      query(`
-        SELECT id::text, regulator, firm_individual, COALESCE(amount_gbp, amount_original, 0)::float as amount,
-               'GBP'::text as currency, date_issued::text, breach_type,
+    const rows = await query(`
+        SELECT id::text, regulator, firm_individual, ${EVIDENCE_AMOUNT_COLUMNS}
+               date_issued::text, breach_type,
                COALESCE(summary, '') as summary, COALESCE(notice_url, '') as notice_url,
                COALESCE(source_url, '') as source_url
         FROM all_regulatory_fines
         WHERE regulator = $1 AND year_issued >= $2
-        ORDER BY amount DESC NULLS LAST LIMIT 5
-      `, [reg, since]),
-      query(`
-        SELECT breach_type, COUNT(*)::int as n
-        FROM all_regulatory_fines
-        WHERE regulator = $1 AND year_issued >= $2 AND breach_type IS NOT NULL
-        GROUP BY breach_type ORDER BY n DESC LIMIT 1
-      `, [reg, since]),
-    ]);
+        ORDER BY date_issued DESC LIMIT 200
+      `, [reg, since]);
+    const records = prepareEvidenceRecords(rows.map(normalizeRecord));
+    const verifiedAmounts = records
+      .filter((record) => record.amount_verified && record.amount_gbp > 0)
+      .map((record) => record.amount_gbp);
+    const total = verifiedAmounts.reduce((sum, amount) => sum + amount, 0);
     return {
       name: reg,
-      count: Number(stats[0]?.count ?? 0),
-      total: Number(stats[0]?.total ?? 0),
-      avgFine: Number(stats[0]?.avg_fine ?? 0),
-      topBreachType: String(topBreach[0]?.breach_type ?? 'Unknown'),
-      topCases: topCases.map(normalizeRecord),
+      count: records.length,
+      total,
+      avgFine: verifiedAmounts.length > 0 ? total / verifiedAmounts.length : 0,
+      topBreachType: mostCommonBreachType(records),
+      topCases: [...records]
+        .sort((a, b) => b.amount_gbp - a.amount_gbp || b.date_issued.localeCompare(a.date_issued))
+        .slice(0, 5),
     };
   }
 
@@ -477,7 +470,7 @@ export async function queryForensicData(
   const [topRows, allRows] = await Promise.all([
     query(`
       SELECT id::text, regulator, firm_individual, amount_gbp::float as amount,
-             'GBP'::text as currency, date_issued::text, breach_type,
+             'GBP'::text as currency, amount_gbp::float as amount_gbp, date_issued::text, breach_type,
              COALESCE(summary, '') as summary, COALESCE(notice_url, '') as notice_url,
              COALESCE(source_url, '') as source_url
       FROM all_regulatory_fines
@@ -485,8 +478,8 @@ export async function queryForensicData(
       ORDER BY amount_gbp DESC NULLS LAST LIMIT 1
     `, params),
     query(`
-      SELECT id::text, regulator, firm_individual, COALESCE(amount_gbp, amount_original, 0)::float as amount,
-             'GBP'::text as currency, date_issued::text, breach_type,
+      SELECT id::text, regulator, firm_individual, ${EVIDENCE_AMOUNT_COLUMNS}
+             date_issued::text, breach_type,
              COALESCE(summary, '') as summary, COALESCE(notice_url, '') as notice_url,
              COALESCE(source_url, '') as source_url
       FROM all_regulatory_fines
@@ -496,8 +489,8 @@ export async function queryForensicData(
   ]);
 
   return {
-    topCase: topRows[0] ? normalizeRecord(topRows[0]) : null,
-    allCasesInRange: allRows.map(normalizeRecord),
+    topCase: topRows[0] ? prepareEvidenceRecords([normalizeRecord(topRows[0])])[0] ?? null : null,
+    allCasesInRange: prepareEvidenceRecords(allRows.map(normalizeRecord)),
     scope,
   };
 }
@@ -536,7 +529,7 @@ export function formatMonthlyTable(data: MonthlyData): string {
   const header = '| Firm/Individual | Amount | Date | Breach Type |';
   const sep    = '|---|---|---|---|';
   const rows = data.currentMonth.map(r =>
-    `| ${r.firm_individual} | ${r.amount_verified ? formatAmount(r.amount) : 'Non-monetary'} | ${r.date_issued} | ${r.breach_type || '-'} |`,
+    `| ${r.firm_individual} | ${r.amount_verified ? formatEvidenceAmount(r.amount, r.currency) : 'Non-monetary or amount unverified'} | ${r.date_issued} | ${redactUnverifiedMonetaryFigures(r.breach_type || '-')} |`,
   );
   return [header, sep, ...rows].join('\n');
 }
@@ -547,36 +540,403 @@ export function formatComparisonTable(data: ComparisonData): string {
     `| Metric | ${a.name} | ${b.name} |`,
     `|--------|${'-'.repeat(a.name.length + 2)}|${'-'.repeat(b.name.length + 2)}|`,
     `| Total actions (since ${new Date().getFullYear() - 3}) | ${a.count} | ${b.count} |`,
-    `| Total fines | ${formatAmount(a.total)} | ${formatAmount(b.total)} |`,
-    `| Average fine | ${formatAmount(a.avgFine)} | ${formatAmount(b.avgFine)} |`,
+    `| Total verified penalties (GBP-normalised) | ${formatEvidenceAmount(a.total)} | ${formatEvidenceAmount(b.total)} |`,
+    `| Average verified penalty (GBP-normalised) | ${formatEvidenceAmount(a.avgFine)} | ${formatEvidenceAmount(b.avgFine)} |`,
     `| Top breach type | ${a.topBreachType} | ${b.topBreachType} |`,
   ].join('\n');
 }
 
 // ─── Helpers ───────────────────────────────────────────────────────────────────
 
+const TOPIC_STOP_WORDS = new Set([
+  'action', 'actions', 'across', 'analysis', 'and', 'anti', 'board', 'building',
+  'compliance', 'conduct', 'control', 'controls', 'effective', 'enforcement',
+  'failure', 'focus', 'global', 'guide', 'into', 'market', 'money', 'operational',
+  'risk', 'rising', 'the', 'trends', 'with',
+]);
+
+const INVALID_ENTITY_PATTERNS = [
+  /^(?:in particular|mr|unknown|n\/?a|not specified|unnamed subject)$/i,
+  /^(?:firm|issuer|investment adviser|company|bank|broker-dealer)$/i,
+  /^(?:a|an|the)\s+(?:branch|foreign bank|retail investor|public company officer)\b/i,
+  /^(?:former public company officer|redress system reforms|insider trading(?: case)?|market manipulation case|pushpay shares)\b/i,
+  /^\d+\s+(?:individuals?|firms?|companies|employees)\b/i,
+  /^(?:fca|sec|finra|regulator)\s+(?:appoints|announces|publishes|proposes|seeks|launches|updates)\b/i,
+  /^(?:alleged|investigation|enforcement|case involving)\b/i,
+  /^(?:imposes sanctions|charges|orders)\b/i,
+  /^(?:mmt)\s+sanctions\b/i,
+  /^(?:cma|regulator)\s+(?:finds|charges|fines|orders)\b/i,
+  /^(?:drug companies|medical device company|brazilian meat producers|financial institution|investment firm|asset management company)(?:…|\.\.\.)?$/i,
+  /^(?:[a-z-]+)\s+(?:firms?|companies|media companies)$/i,
+  /^(?:two|three|four|five|six|seven|eight|nine|ten|twenty-six)\b.*\b(?:firms?|companies|employees)\b/i,
+  /^(?:£|\$|€|GBP|USD|EUR)\s*\d/i,
+];
+
+const HEADLINE_ACTION = /(?:,\s*|\s+)(?:and\s+)?(?:admits? to|agrees? to (?:pay|a )|paying|to pay|charged with|faces? charges|fines?\s+of(?:euros?)?|fined|ordered to pay|sentenced|settles?|sanctioned)\b/i;
+const LEADING_ENTITY_DESCRIPTOR = /^(?:petrochemical manufacturer|global software company|movie producer|transfer agent)\s+/i;
+const MONETARY_FIGURE_PATTERNS = [
+  /(?:£|\$|€)\s*\d[\d,.]*(?:\s*(?:billion|million|thousand|bn|mn|m|k))?/gi,
+  /\b(?:AED|AUD|BRL|CAD|CHF|CLP|CNY|DKK|EUR|GBP|HKD|INR|JPY|KRW|MXN|NOK|NZD|SAR|SEK|SGD|TWD|USD|ZAR)\s*\d[\d,.]*(?:\s*(?:billion|million|thousand|bn|mn|m|k))?/gi,
+  /\b\d[\d,.]*\s*(?:billion|million|thousand|bn|mn)\s*(?:pounds?|dollars?|euros?)\b/gi,
+];
+
+export function canonicaliseEntityName(value: string, summary = ''): string | null {
+  let entity = value.replace(/\s+/g, ' ').replace(/\s*\(PDF\)\.?$/i, '').trim();
+  if (!entity || INVALID_ENTITY_PATTERNS.some((pattern) => pattern.test(entity))) return null;
+
+  const actionIndex = entity.search(HEADLINE_ACTION);
+  if (actionIndex > 0) entity = entity.slice(0, actionIndex).trim();
+  if (/\s+fest$/i.test(entity) && /bu(?:ß|ss)geld/i.test(summary)) {
+    entity = entity.replace(/\s+fest$/i, '').trim();
+  }
+  if (entity.length <= 8 && entity.includes('.') && summary) {
+    const escapedEntity = entity.replace(/[.*+?^${}()|[\]\\]/g, '\\$&').replace(/\\\.$/, '\\.?');
+    const completion = summary.match(new RegExp(`\\b${escapedEntity}\\.?\\s+([A-Z][\\p{L}.-]+(?:\\s+(?:SE|AG|GmbH|plc|Ltd\\.?|Inc\\.?|Bank))?)`, 'u'));
+    if (completion?.[0]) entity = completion[0].trim();
+  }
+  entity = entity.replace(LEADING_ENTITY_DESCRIPTOR, '').replace(/[,:;\-\s]+$/, '').trim();
+
+  const jointRespondents = summary.match(
+    /\bfined\s+(?:Mr|Ms|Mrs|Dr)\.?\s+([A-Z][\p{L}'-]+(?:\s+[A-Z][\p{L}'-]+)+)\s+and\s+(?:(?:his|her|their)\s+[^,]+,\s*)?(?:Mr|Ms|Mrs|Dr)\.?\s+([A-Z][\p{L}'-]+(?:\s+[A-Z][\p{L}'-]+)+),?\s+(?:a\s+)?(?:combined\s+)?total\s+of\b/iu,
+  );
+  if (jointRespondents?.[1] && jointRespondents[2]
+    && entity.toLowerCase().includes(jointRespondents[1].toLowerCase())) {
+    entity = `${jointRespondents[1]} and ${jointRespondents[2]}`;
+  }
+
+  if (!entity || entity.length < 2 || entity.length > 120) return null;
+  if (INVALID_ENTITY_PATTERNS.some((pattern) => pattern.test(entity))) return null;
+  return entity;
+}
+
+export function redactUnverifiedMonetaryFigures(value: string): string {
+  let redacted = value;
+  for (const pattern of MONETARY_FIGURE_PATTERNS) {
+    pattern.lastIndex = 0;
+    redacted = redacted.replace(pattern, '[unverified monetary figure removed]');
+  }
+  return redacted;
+}
+
+function normaliseUrlForEvidence(value: string) {
+  try {
+    const url = new URL(value);
+    url.hash = '';
+    url.search = '';
+    return url.toString().replace(/\/$/, '').toLowerCase();
+  } catch {
+    return '';
+  }
+}
+
+function evidenceSourceUrl(record: EnforcementRecord) {
+  const candidates = [record.notice_url, record.source_url];
+  return candidates.find((url) => isOfficialRegulatorySource(url)) || '';
+}
+
+function evidenceRecordKey(record: EnforcementRecord) {
+  const url = normaliseUrlForEvidence(evidenceSourceUrl(record));
+  if (url) return `url:${url}`;
+  const breach = record.breach_type.toLowerCase().replace(/[^a-z0-9]+/g, ' ').trim();
+  return [record.regulator, record.firm_individual, record.date_issued, breach]
+    .map((value) => value.toLowerCase().trim())
+    .join('|');
+}
+
+function evidenceRichness(record: EnforcementRecord) {
+  return (record.amount_verified ? 1_000 : 0)
+    + (evidenceSourceUrl(record) ? 500 : 0)
+    + Math.min(record.summary.length, 400)
+    + Math.min(record.breach_type.length, 120);
+}
+
+export function dedupeEvidenceRecords(records: EnforcementRecord[]) {
+  const deduped = new Map<string, EnforcementRecord>();
+  for (const record of records) {
+    const key = evidenceRecordKey(record);
+    const existing = deduped.get(key);
+    if (!existing || evidenceRichness(record) > evidenceRichness(existing)) {
+      deduped.set(key, record);
+    }
+  }
+  return [...deduped.values()];
+}
+
+function meaningfulTopicTerms(keywords: string[]) {
+  const terms = new Set<string>();
+  for (const keyword of keywords) {
+    const phrase = keyword.toLowerCase().replace(/[^a-z0-9]+/g, ' ').trim();
+    if (phrase && !TOPIC_STOP_WORDS.has(phrase)) terms.add(phrase);
+    for (const token of phrase.split(/\s+/)) {
+      if (token.length >= 3 && !TOPIC_STOP_WORDS.has(token)) terms.add(token);
+    }
+  }
+  return [...terms];
+}
+
+function evidenceRelevance(record: EnforcementRecord, terms: string[]) {
+  if (terms.length === 0) return 1;
+  const breach = record.breach_type.toLowerCase();
+  const summary = record.summary.toLowerCase();
+  const entity = record.firm_individual.toLowerCase();
+  const containsTerm = (value: string, term: string) => {
+    const escaped = term.replace(/[.*+?^${}()|[\]\\]/g, '\\$&').replace(/\s+/g, '\\s+');
+    return new RegExp(`(?:^|[^a-z0-9])${escaped}(?:$|[^a-z0-9])`, 'i').test(value);
+  };
+  let corroboratedOutsideClassification = false;
+  const score = terms.reduce((total, term) => {
+    const summaryMatch = containsTerm(summary, term);
+    const entityMatch = containsTerm(entity, term);
+    if (summaryMatch || entityMatch) corroboratedOutsideClassification = true;
+    return total
+      + (containsTerm(breach, term) ? 3 : 0)
+      + (summaryMatch ? 4 : 0)
+      + (entityMatch ? 1 : 0);
+  }, 0);
+  return corroboratedOutsideClassification ? score : 0;
+}
+
+function parseSourceAmount(raw: string, magnitude?: string) {
+  const trimmed = raw.trim();
+  const europeanThousands = /^\d{1,3}(?:\.\d{3})+(?:,\d+)?$/.test(trimmed);
+  const normalised = europeanThousands
+    ? trimmed.replace(/\./g, '').replace(',', '.')
+    : trimmed.replace(/,/g, '');
+  let value = Number(normalised);
+  if (!Number.isFinite(value)) return 0;
+  const scale = (magnitude || '').toLowerCase();
+  if (['billion', 'bn', 'b'].includes(scale)) value *= 1_000_000_000;
+  else if (['million', 'mn', 'm'].includes(scale)) value *= 1_000_000;
+  else if (['thousand', 'k'].includes(scale)) value *= 1_000;
+  return value;
+}
+
+export function hasMaterialSourceAmountConflict(record: Pick<EnforcementRecord, 'amount' | 'currency' | 'summary' | 'breach_type'>) {
+  if (!(record.amount > 0)) return false;
+  const aliases: Record<string, string> = {
+    GBP: '(?:£|GBP)',
+    USD: '(?:\\$|USD)',
+    EUR: '(?:€|EUR|&#x20AC;|&euro;)',
+    AUD: '(?:A\\$|AUD)',
+    CAD: '(?:C\\$|CAD)',
+    SGD: '(?:S\\$|SGD)',
+    NZD: '(?:NZ\\$|NZD|\\$)',
+    HKD: '(?:HK\\$|HKD)',
+  };
+  const alias = aliases[record.currency.toUpperCase()];
+  if (!alias) return false;
+  const suffixAliases: Record<string, string> = {
+    GBP: '(?:GBP|pounds?)',
+    USD: '(?:USD|US dollars?|dollars?)',
+    EUR: '(?:EUR|euros?)',
+    AUD: '(?:AUD|Australian dollars?)',
+    CAD: '(?:CAD|Canadian dollars?)',
+    SGD: '(?:SGD|Singapore dollars?)',
+    NZD: '(?:NZD|New Zealand dollars?)',
+    HKD: '(?:HKD|Hong Kong dollars?)',
+  };
+  const corpus = `${record.breach_type} ${record.summary}`;
+  const pattern = new RegExp(`${alias}\\s*([0-9]+(?:,[0-9]{3})*(?:\\.[0-9]+)?)(?:\\s*(billion|million|thousand|bn|mn|m|k|b))?`, 'gi');
+  const suffixPattern = new RegExp(`([0-9][0-9.,]*)(?:\\s*(billion|million|thousand|bn|mn|m|k|b))?\\s*${suffixAliases[record.currency.toUpperCase()]}`, 'gi');
+  const matches = [...corpus.matchAll(pattern), ...corpus.matchAll(suffixPattern)]
+    .map((match) => ({
+      amount: parseSourceAmount(match[1] || '', match[2]),
+      index: match.index || 0,
+      text: match[0],
+    }))
+    .filter((match) => match.amount > 0);
+  const figures = matches.map((match) => match.amount);
+  if (figures.length === 0) return true;
+  const penaltyFigures = matches
+    .filter((match) => {
+      const priorFullStop = corpus.lastIndexOf('.', match.index - 1);
+      const priorNewline = corpus.lastIndexOf('\n', match.index - 1);
+      const start = Math.max(priorFullStop, priorNewline) + 1;
+      const nextFullStop = corpus.indexOf('.', match.index + match.text.length);
+      const nextNewline = corpus.indexOf('\n', match.index + match.text.length);
+      const endings = [nextFullStop, nextNewline].filter((position) => position >= 0);
+      const end = endings.length > 0 ? Math.min(...endings) : corpus.length;
+      const context = corpus.slice(start, end);
+      return /\b(fine[ds]?|penalt(?:y|ies)|penalised|penalized)\b/i.test(context);
+    })
+    .map((match) => match.amount);
+  const uniquePenaltyFigures = [...new Set(penaltyFigures)];
+  if (uniquePenaltyFigures.length > 0) {
+    const matchesStored = uniquePenaltyFigures.some((amount) =>
+      Math.max(amount, record.amount) / Math.min(amount, record.amount) <= 1.02
+    );
+    const penaltyTotal = uniquePenaltyFigures.reduce((sum, amount) => sum + amount, 0);
+    const matchesPenaltyTotal = penaltyTotal > 0
+      && Math.max(penaltyTotal, record.amount) / Math.min(penaltyTotal, record.amount) <= 1.02;
+    if (!matchesStored && !matchesPenaltyTotal) return true;
+  }
+  const uniqueFigures = [...new Set(figures)];
+  if (uniqueFigures.length === 1) {
+    const onlyFigure = uniqueFigures[0]!;
+    if (Math.max(onlyFigure, record.amount) / Math.min(onlyFigure, record.amount) > 1.02) return true;
+  }
+  return figures.some((amount) => {
+    const ratio = Math.max(amount, record.amount) / Math.min(amount, record.amount);
+    return ratio >= 100;
+  });
+}
+
+export function hasUnresolvedJointPenaltyAttribution(
+  record: Pick<EnforcementRecord, 'firm_individual' | 'summary' | 'breach_type'>,
+) {
+  const corpus = `${record.breach_type} ${record.summary}`;
+  const jointTotal = /\b(?:fined|penalised|penalized)\b[^.]{0,240}\b(?:and|alongside|together with)\b[^.]{0,180}\b(?:a\s+)?(?:combined\s+)?total\s+of\b/i.test(corpus);
+  if (!jointTotal) return false;
+
+  const namedParties = [...corpus.matchAll(/\b(?:Mr|Ms|Mrs|Dr)\.?\s+([A-Z][\p{L}'-]+(?:\s+[A-Z][\p{L}'-]+)+)/gu)]
+    .map((match) => match[1]!.toLowerCase());
+  const uniqueParties = [...new Set(namedParties)];
+  if (uniqueParties.length < 2) return true;
+  const entity = record.firm_individual.toLowerCase();
+  return !uniqueParties.slice(0, 2).every((name) => entity.includes(name));
+}
+
+export function prepareEvidenceRecords(records: EnforcementRecord[], keywords: string[] = []) {
+  const terms = meaningfulTopicTerms(keywords);
+  const canonical = records.map((record) => ({
+    ...record,
+    raw_firm_individual: record.raw_firm_individual || record.firm_individual,
+    firm_individual: canonicaliseEntityName(record.raw_firm_individual || record.firm_individual, record.summary) || '',
+  }));
+  return dedupeEvidenceRecords(canonical)
+    .map((record) => ({ record, relevance: evidenceRelevance(record, terms) }))
+    .filter(({ record, relevance }) =>
+      Boolean(record.firm_individual)
+      && Boolean(record.regulator)
+      && Boolean(record.date_issued)
+      && Boolean(evidenceSourceUrl(record))
+      && (terms.length === 0 || relevance >= 4))
+    .sort((a, b) =>
+      Number(b.record.amount_verified) - Number(a.record.amount_verified)
+      || b.relevance - a.relevance
+      || b.record.date_issued.localeCompare(a.record.date_issued))
+    .map(({ record }) => record);
+}
+
+export function selectEvidenceSample(records: EnforcementRecord[], limit: number) {
+  if (records.length <= limit) return records;
+  const selected: EnforcementRecord[] = [];
+  const selectedIds = new Set<string>();
+  const regulators = new Set<string>();
+  for (const record of records) {
+    if (regulators.has(record.regulator)) continue;
+    selected.push(record);
+    selectedIds.add(record.id);
+    regulators.add(record.regulator);
+    if (selected.length >= limit) return selected;
+  }
+  for (const record of records) {
+    if (selectedIds.has(record.id)) continue;
+    selected.push(record);
+    if (selected.length >= limit) break;
+  }
+  return selected;
+}
+
+function aggregateEvidenceByRegulator(records: EnforcementRecord[]) {
+  const aggregates = new Map<string, { regulator: string; count: number; total: number }>();
+  for (const record of records) {
+    const current = aggregates.get(record.regulator) || { regulator: record.regulator, count: 0, total: 0 };
+    current.count += 1;
+    if (record.amount_verified) current.total += record.amount_gbp;
+    aggregates.set(record.regulator, current);
+  }
+  return [...aggregates.values()].sort((a, b) => b.count - a.count || b.total - a.total);
+}
+
+function aggregateEvidenceByYear(records: EnforcementRecord[]) {
+  const aggregates = new Map<number, { year: number; count: number; total: number }>();
+  for (const record of records) {
+    const year = Number(record.date_issued.slice(0, 4));
+    if (!Number.isInteger(year)) continue;
+    const current = aggregates.get(year) || { year, count: 0, total: 0 };
+    current.count += 1;
+    if (record.amount_verified) current.total += record.amount_gbp;
+    aggregates.set(year, current);
+  }
+  return [...aggregates.values()].sort((a, b) => a.year - b.year);
+}
+
+function mostCommonBreachType(records: EnforcementRecord[]) {
+  const counts = new Map<string, number>();
+  for (const record of records) {
+    const breach = record.breach_type.trim();
+    if (!breach) continue;
+    counts.set(breach, (counts.get(breach) || 0) + 1);
+  }
+  return [...counts.entries()].sort((a, b) => b[1] - a[1])[0]?.[0] || 'Unknown';
+}
+
+export function getCitationEligibleEntities(records: EnforcementRecord[]) {
+  return [...new Set(records.map((record) => record.firm_individual).filter(Boolean))];
+}
+
+export function getRequiredCaseCitationCount(records: EnforcementRecord[]) {
+  return Math.min(5, getCitationEligibleEntities(records).length);
+}
+
+export function getRequiredVerifiedAmountCount(records: EnforcementRecord[]) {
+  const amounts = new Set(
+    records
+      .filter((record) => record.amount_verified && record.amount > 0)
+      .map((record) => `${record.currency}:${record.amount}`),
+  );
+  return Math.min(3, amounts.size);
+}
+
 function normalizeRecord(r: Record<string, unknown>): EnforcementRecord {
+  const rawFirm = String(r.firm_individual || '');
+  const summary = String(r.summary || '');
+  const entity = canonicaliseEntityName(rawFirm, summary) || '';
+  const currency = String(r.currency || 'UNKNOWN').trim().toUpperCase() || 'UNKNOWN';
+  const amount = Number(r.amount) || 0;
   const base = {
     id: String(r.id || `${r.regulator || 'unknown'}:${r.firm_individual || 'unknown'}:${r.date_issued || 'unknown'}`),
     regulator: String(r.regulator || ''),
-    firm_individual: String(r.firm_individual || ''),
-    amount: Number(r.amount) || 0,
-    currency: String(r.currency || 'GBP'),
+    firm_individual: entity,
+    amount,
+    currency,
+    amount_gbp: Number(r.amount_gbp) || (currency === 'GBP' ? amount : 0),
     date_issued: String(r.date_issued || ''),
     breach_type: String(r.breach_type || ''),
-    summary: String(r.summary || ''),
+    summary,
     notice_url: String(r.notice_url || ''),
     source_url: String(r.source_url || ''),
+    raw_firm_individual: rawFirm,
   };
-  return { ...base, amount_verified: isVerifiedPenaltyAmount(base) };
+  return {
+    ...base,
+    amount_verified: currency !== 'UNKNOWN'
+      && isVerifiedPenaltyAmount(base)
+      && !hasMaterialSourceAmountConflict(base)
+      && !hasUnresolvedJointPenaltyAttribution(base),
+  };
 }
 
-function formatAmount(amount: number): string {
+function currencyPrefix(currency: string) {
+  const normalised = currency.toUpperCase();
+  if (normalised === 'GBP') return '£';
+  if (normalised === 'USD') return '$';
+  if (normalised === 'EUR') return '€';
+  return `${normalised} `;
+}
+
+export function formatEvidenceAmount(amount: number, currency = 'GBP'): string {
   if (!amount) return 'N/A';
-  if (amount >= 1_000_000_000) return `£${(amount / 1_000_000_000).toFixed(1)}B`;
-  if (amount >= 1_000_000) return `£${(amount / 1_000_000).toFixed(1)}M`;
-  if (amount >= 1_000) return `£${(amount / 1_000).toFixed(0)}K`;
-  return `£${amount.toLocaleString()}`;
+  const prefix = currencyPrefix(currency);
+  if (amount >= 1_000_000_000) return `${prefix}${(amount / 1_000_000_000).toFixed(1)}B`;
+  if (amount >= 1_000_000) return `${prefix}${(amount / 1_000_000).toFixed(1)}M`;
+  if (amount >= 1_000) return `${prefix}${(amount / 1_000).toFixed(0)}K`;
+  return `${prefix}${amount.toLocaleString('en-GB')}`;
+}
+
+function sanitiseTableCell(value: unknown) {
+  return String(value ?? '').replace(/\|/g, '/').replace(/\s+/g, ' ').trim();
 }
 
 function truncate(str: string, maxLen: number): string {
@@ -610,7 +970,7 @@ export function buildStatisticalSummary(
 
   const amounts = records
     .filter(r => r.amount_verified)
-    .map(r => r.amount)
+    .map(r => r.amount_gbp)
     .filter(a => a > 0 && !isNaN(a))
     .sort((a, b) => a - b);
 
@@ -624,12 +984,12 @@ export function buildStatisticalSummary(
   const p75idx = Math.floor(amounts.length * 0.75);
   const p75 = amounts[p75idx] ?? amounts[amounts.length - 1]!;
 
-  const outliers = records.filter(r => r.amount_verified && r.amount > p75 * 3);
+  const outliers = records.filter(r => r.amount_verified && r.amount_gbp > p75 * 3);
 
   const topFirms = records
     .filter(r => r.firm_individual && r.firm_individual.length > 3 && !['Mr', 'Unknown', 'N/A'].includes(r.firm_individual))
     .slice(0, 10)
-    .map(r => `${r.firm_individual} (${r.regulator}, ${r.amount_verified ? formatAmount(r.amount) : 'non-monetary'}, ${r.date_issued.slice(0, 7)})`)
+    .map(r => `${r.firm_individual} (${r.regulator}, ${r.amount_verified ? formatEvidenceAmount(r.amount, r.currency) : 'non-monetary or amount unverified'}, ${r.date_issued.slice(0, 7)})`)
     .join('\n  ');
 
   let yoyDelta: string | null = null;
@@ -639,15 +999,15 @@ export function buildStatisticalSummary(
     const prev = sorted[sorted.length - 2]!;
     if (prev.total > 0) {
       const pct = ((last.total - prev.total) / prev.total * 100).toFixed(0);
-      yoyDelta = `${last.year} vs ${prev.year}: ${last.total > prev.total ? '+' : ''}${pct}% (${formatAmount(prev.total)} → ${formatAmount(last.total)})`;
+      yoyDelta = `${last.year} vs ${prev.year}: ${last.total > prev.total ? '+' : ''}${pct}% (${formatEvidenceAmount(prev.total)} → ${formatEvidenceAmount(last.total)})`;
     }
   }
 
   const lines = [
     `STATISTICAL SUMMARY (${records.length} enforcement records):`,
-    `  Total fines: ${formatAmount(total)}`,
-    `  Mean fine: ${formatAmount(mean)} | Median: ${formatAmount(median)} | 75th percentile: ${formatAmount(p75)}`,
-    outliers.length > 0 ? `  Outlier cases (>3× p75, ${formatAmount(p75 * 3)}+): ${outliers.map(r => `${r.firm_individual} ${formatAmount(r.amount)}`).join(', ')}` : '',
+    `  Total verified penalties (GBP-normalised): ${formatEvidenceAmount(total)}`,
+    `  Mean verified penalty (GBP-normalised): ${formatEvidenceAmount(mean)} | Median: ${formatEvidenceAmount(median)} | 75th percentile: ${formatEvidenceAmount(p75)}`,
+    outliers.length > 0 ? `  Outlier cases (>3× p75, ${formatEvidenceAmount(p75 * 3)}+): ${outliers.map(r => `${r.firm_individual} ${formatEvidenceAmount(r.amount, r.currency)} (${formatEvidenceAmount(r.amount_gbp)} GBP-normalised)`).join(', ')}` : '',
     yoyDelta ? `  Year-on-year: ${yoyDelta}` : '',
     topFirms ? `\nKEY SOURCE CASES (${Math.min(10, records.length)} shown, monetary values only where verified):\n  ${topFirms}` : '',
   ].filter(Boolean);
@@ -669,9 +1029,10 @@ export function buildKeyCaseSummaries(records: EnforcementRecord[], limit = 10):
   return top.map((r, i) => [
     `Case ${i + 1}: ${r.firm_individual}`,
     `  Regulator: ${r.regulator}`,
-    `  Amount: ${r.amount_verified ? formatAmount(r.amount) : 'Non-monetary or not verified as a penalty'}`,
+    `  Amount: ${r.amount_verified ? formatEvidenceAmount(r.amount, r.currency) : 'NOT VERIFIED — do not state a monetary figure for this record'}`,
     `  Date: ${r.date_issued}`,
-    `  Breach: ${r.breach_type || 'Not specified'}`,
-    `  Detail: ${r.summary || 'No summary available'}`,
+    `  Breach: ${redactUnverifiedMonetaryFigures(r.breach_type || 'Not specified')}`,
+    `  Detail: ${redactUnverifiedMonetaryFigures(r.summary || 'No summary available')}`,
+    `  Official source: ${evidenceSourceUrl(r)}`,
   ].join('\n')).join('\n\n');
 }

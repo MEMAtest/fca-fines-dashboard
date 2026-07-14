@@ -222,7 +222,15 @@
   </head>
   <body>
     <div id="root"></div>
-    <script defer src="https://owned-portfolio-analytics.mema-consultants.workers.dev/tracker.js" data-project="fca-fines-dashboard"></script>
+    <script>
+      if (["regactions.com", "www.regactions.com"].includes(window.location.hostname)) {
+        const ownedAnalytics = document.createElement("script");
+        ownedAnalytics.defer = true;
+        ownedAnalytics.src = "https://owned-portfolio-analytics.mema-consultants.workers.dev/tracker.js";
+        ownedAnalytics.dataset.project = "fca-fines-dashboard";
+        document.body.appendChild(ownedAnalytics);
+      }
+    </script>
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>
