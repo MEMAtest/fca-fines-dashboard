@@ -76,7 +76,19 @@ export function bandLabel(band: RiskBand): string {
         : "Very high";
 }
 
+// Score inputs are static at runtime, so memoise by ISO code — the index, map,
+// and per-pillar/regional aggregates otherwise recompute ~186 scores each.
+const _scoreCache = new Map<string, CountryRiskScore>();
+
 export function computeCountryRiskScore(iso2: string): CountryRiskScore {
+  const cached = _scoreCache.get(iso2);
+  if (cached) return cached;
+  const result = computeCountryRiskScoreUncached(iso2);
+  _scoreCache.set(iso2, result);
+  return result;
+}
+
+function computeCountryRiskScoreUncached(iso2: string): CountryRiskScore {
   const fatf = fatfRisk(iso2);
   const sanctions = sanctionsRisk(iso2);
   const pct = getGovernancePercentile(iso2);

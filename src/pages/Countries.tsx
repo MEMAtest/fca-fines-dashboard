@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { lazy, Suspense, useMemo, useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 import {
   AlertCircle,
@@ -24,14 +24,32 @@ import {
   type FatfStatus,
 } from "../data/fatfStatus.js";
 import { sanctionsTierLabel } from "../data/sanctionsStatus.js";
-import { bandLabel, type RiskBand } from "../data/countryRiskScore.js";
-import { buildCountryIndex, formatDate } from "../data/countryView.js";
-import { CountryRiskGlobe } from "../components/CountryRiskGlobe.js";
+import { bandLabel, bandFor, type RiskBand } from "../data/countryRiskScore.js";
+import {
+  buildCountryIndex,
+  regionalAverages,
+  pillarAverages,
+  formatDate,
+} from "../data/countryView.js";
 import "../styles/country-hub.css";
+
+// Flat SVG choropleth — lazy so /countries never pulls it into first paint.
+const CountryRiskMap = lazy(() =>
+  import("../components/CountryRiskMap.js").then((m) => ({
+    default: m.CountryRiskMap,
+  })),
+);
 
 // ─── Global Country Risk index (default /countries) ─────────────────────────
 
 const BAND_ORDER: RiskBand[] = ["very-high", "high", "moderate", "low"];
+
+const BAND_COLOUR: Record<RiskBand, string> = {
+  "very-high": "#dc2626",
+  high: "#ea580c",
+  moderate: "#f59e0b",
+  low: "#10b981",
+};
 
 function GlobalIndex() {
   const index = useMemo(() => buildCountryIndex(), []);
@@ -58,85 +76,268 @@ function GlobalIndex() {
     [index, region, band],
   );
 
+  const overall = useMemo(
+    () =>
+      index.length
+        ? Math.round((index.reduce((s, e) => s + e.score, 0) / index.length) * 10) / 10
+        : 0,
+    [index],
+  );
+  const top = useMemo(() => index.slice(0, 10), [index]);
+  const regional = useMemo(() => regionalAverages(), []);
+  const pillars = useMemo(() => pillarAverages(), []);
+  const [showAll, setShowAll] = useState(false);
+
+  const added = FATF_RECENT_CHANGES.filter((c) => c.change === "added");
+  const removed = FATF_RECENT_CHANGES.filter((c) => c.change === "removed");
+  const nameOf = (iso2: string) => getCountryByIso2(iso2)?.name ?? iso2;
+
+  const PILLAR_FILL: Record<string, string> = {
+    fatf: "#dc2626",
+    sanctions: "#ea580c",
+    governance: "#f59e0b",
+  };
+  const pillarData = [
+    { key: "fatf", name: "FATF", value: pillars.fatf },
+    { key: "sanctions", name: "Sanctions", value: pillars.sanctions },
+    { key: "governance", name: "Governance", value: pillars.governance },
+  ];
+
+  const PREVIEW = 20;
+  const visibleRows = showAll ? rows : rows.slice(0, PREVIEW);
+
   return (
-    <div className="country-index">
+    <div className="cx-index">
       <header className="country-index__header">
         <h1 className="country-index__title">Global Country Risk Ratings</h1>
         <p className="country-index__lead">
           The RegActions Country Risk Score for {index.length} jurisdictions — a
           transparent composite of FATF status, sanctions exposure and World Bank
           governance indicators (higher = higher risk). Enforcement and CPI are shown
-          on each country page but not scored.
+          on each country page but not scored.{" "}
+          <Link to="/countries/methodology">How it&rsquo;s scored →</Link>
         </p>
       </header>
 
-      <CountryRiskGlobe />
-
-      <div className="country-kpis">
+      {/* KPI cards — band counts (click to filter) + total tracked */}
+      <div className="cx-kpis">
         {BAND_ORDER.map((b) => (
           <button
             key={b}
             type="button"
-            className={`country-kpi country-kpi--${b}${band === b ? " country-kpi--active" : ""}`}
+            className={`cx-kpi cx-kpi--${b}${band === b ? " cx-kpi--active" : ""}`}
             onClick={() => setBand(band === b ? "All" : b)}
+            aria-pressed={band === b}
           >
-            <span className="country-kpi__value">{counts[b]}</span>
-            <span className="country-kpi__label">{bandLabel(b)}</span>
+            <span className="cx-kpi__value">{counts[b]}</span>
+            <span className="cx-kpi__label">{bandLabel(b)} risk</span>
           </button>
         ))}
+        <div className="cx-kpi cx-kpi--total">
+          <span className="cx-kpi__value">{index.length}</span>
+          <span className="cx-kpi__label">Countries tracked</span>
+        </div>
       </div>
 
-      <div className="country-index__controls">
-        <label>
-          Region{" "}
-          <select value={region} onChange={(e) => setRegion(e.target.value)}>
-            {regions.map((r) => (
-              <option key={r} value={r}>
-                {r}
-              </option>
-            ))}
-          </select>
-        </label>
-        <span className="country-index__count">{rows.length} shown</span>
-        <Link to="/countries/fatf-grey-list" className="country-index__fatf-link">
-          FATF grey list &amp; black list →
-        </Link>
+      {/* Flat map + right rail */}
+      <div className="cx-index__main">
+        <div className="cx-index__map-wrap">
+          <Suspense fallback={<div className="cx-map__ph" style={{ height: 320 }} />}>
+            <CountryRiskMap />
+          </Suspense>
+        </div>
+
+        <aside className="cx-index__rail">
+          <div className="mon-panel">
+            <div className="cx-panel-head">
+              <h3>Highest-risk countries</h3>
+              <a href="#full-ranking" className="cx-panel-link">
+                View full ranking →
+              </a>
+            </div>
+            <ol className="cx-rank">
+              {top.map((e) => (
+                <li key={e.country.iso2}>
+                  <Link
+                    to={`/countries/${countrySlug(e.country)}`}
+                    className="cx-rank__row"
+                  >
+                    <span className="cx-rank__flag" aria-hidden="true">
+                      {e.flag}
+                    </span>
+                    <span className="cx-rank__name">{e.country.name}</span>
+                    <span
+                      className={`country-ratings__score country-ratings__score--${e.band}`}
+                    >
+                      {e.score.toFixed(1)}
+                    </span>
+                  </Link>
+                </li>
+              ))}
+            </ol>
+          </div>
+
+          <div className="mon-panel">
+            <h3>Recent FATF changes</h3>
+            <p className="mon-change mon-change--add">
+              <Plus size={14} /> <strong>Added ({added.length})</strong>
+              <span>{added.map((c) => nameOf(c.iso2)).join(", ") || "None"}</span>
+            </p>
+            <p className="mon-change mon-change--rem">
+              <Minus size={14} /> <strong>Removed ({removed.length})</strong>
+              <span>{removed.map((c) => nameOf(c.iso2)).join(", ") || "None"}</span>
+            </p>
+            <Link to="/countries/fatf-grey-list" className="cx-panel-link">
+              FATF grey &amp; black list →
+            </Link>
+          </div>
+        </aside>
       </div>
 
-      <table className="country-ratings">
-        <thead>
-          <tr>
-            <th>#</th>
-            <th>Country</th>
-            <th className="country-ratings__num">Score</th>
-            <th>Risk</th>
-            <th>Region</th>
-            <th>FATF</th>
-            <th>Sanctions</th>
-          </tr>
-        </thead>
-        <tbody>
-          {rows.map((e, i) => (
-            <tr key={e.country.iso2}>
-              <td className="country-ratings__rank">{i + 1}</td>
-              <td>
-                <Link to={`/countries/${countrySlug(e.country)}`} className="country-ratings__name">
-                  <span aria-hidden="true">{e.flag}</span> {e.country.name}
-                </Link>
-              </td>
-              <td className="country-ratings__num">
-                <span className={`country-ratings__score country-ratings__score--${e.band}`}>
-                  {e.score.toFixed(1)}
+      {/* Bottom analytics — regional overview + risk-by-pillar donut */}
+      <div className="cx-index__panels">
+        <div className="mon-panel">
+          <h3>Regional risk overview</h3>
+          <ul className="cx-region-bars">
+            {regional.map((r) => (
+              <li key={r.region}>
+                <span className="cx-region-bars__label">{r.region}</span>
+                <span className="cx-region-bars__track">
+                  <span
+                    className="cx-region-bars__fill"
+                    style={{
+                      width: `${(r.avg / 10) * 100}%`,
+                      background: BAND_COLOUR[bandFor(r.avg)],
+                    }}
+                  />
                 </span>
-              </td>
-              <td>{bandLabel(e.band)}</td>
-              <td className="country-ratings__region">{e.country.region}</td>
-              <td>{e.fatf ? fatfLabel(e.fatf.listing) : "—"}</td>
-              <td>{e.sanctionsTier ? sanctionsTierLabel(e.sanctionsTier) : "—"}</td>
+                <span className="cx-region-bars__val">{r.avg.toFixed(1)}</span>
+              </li>
+            ))}
+          </ul>
+        </div>
+
+        <div className="mon-panel">
+          <h3>
+            Risk by pillar{" "}
+            <span className="cx-panel-sub">global average, 0–10</span>
+          </h3>
+          <div className="mon-donut cx-pillar-donut">
+            <div className="cx-pillar-donut__chart">
+              <ResponsiveContainer width="100%" height={180}>
+                <PieChart>
+                  <Pie
+                    data={pillarData}
+                    dataKey="value"
+                    nameKey="name"
+                    innerRadius={52}
+                    outerRadius={78}
+                    paddingAngle={2}
+                  >
+                    {pillarData.map((d) => (
+                      <Cell key={d.key} fill={PILLAR_FILL[d.key]} />
+                    ))}
+                  </Pie>
+                </PieChart>
+              </ResponsiveContainer>
+              <div className="cx-pillar-donut__center">
+                <span className="cx-pillar-donut__num">{overall.toFixed(1)}</span>
+                <span className="cx-pillar-donut__cap">overall</span>
+              </div>
+            </div>
+            <ul className="mon-donut__legend">
+              {pillarData.map((d) => (
+                <li key={d.key}>
+                  <span
+                    className="mon-donut__swatch"
+                    style={{ background: PILLAR_FILL[d.key] }}
+                  />
+                  {d.name}
+                  <span className="mon-donut__count">{d.value.toFixed(1)}</span>
+                </li>
+              ))}
+            </ul>
+          </div>
+        </div>
+      </div>
+
+      {/* Full ranked table — filterable, collapsed to top 20 */}
+      <section id="full-ranking" className="cx-index__table">
+        <div className="cx-table-head">
+          <h2 className="cx-table-title">Full ranking</h2>
+          <div className="country-index__controls">
+            <label>
+              Region{" "}
+              <select
+                value={region}
+                onChange={(e) => {
+                  setRegion(e.target.value);
+                  setShowAll(false);
+                }}
+              >
+                {regions.map((r) => (
+                  <option key={r} value={r}>
+                    {r}
+                  </option>
+                ))}
+              </select>
+            </label>
+            <span className="country-index__count">
+              {rows.length} shown{band !== "All" ? ` · ${bandLabel(band)}` : ""}
+            </span>
+          </div>
+        </div>
+
+        <table className="country-ratings">
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>Country</th>
+              <th className="country-ratings__num">Score</th>
+              <th>Risk</th>
+              <th>Region</th>
+              <th>FATF</th>
+              <th>Sanctions</th>
             </tr>
-          ))}
-        </tbody>
-      </table>
+          </thead>
+          <tbody>
+            {visibleRows.map((e, i) => (
+              <tr key={e.country.iso2}>
+                <td className="country-ratings__rank">{i + 1}</td>
+                <td>
+                  <Link
+                    to={`/countries/${countrySlug(e.country)}`}
+                    className="country-ratings__name"
+                  >
+                    <span aria-hidden="true">{e.flag}</span> {e.country.name}
+                  </Link>
+                </td>
+                <td className="country-ratings__num">
+                  <span
+                    className={`country-ratings__score country-ratings__score--${e.band}`}
+                  >
+                    {e.score.toFixed(1)}
+                  </span>
+                </td>
+                <td>{bandLabel(e.band)}</td>
+                <td className="country-ratings__region">{e.country.region}</td>
+                <td>{e.fatf ? fatfLabel(e.fatf.listing) : "—"}</td>
+                <td>{e.sanctionsTier ? sanctionsTierLabel(e.sanctionsTier) : "—"}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+
+        {rows.length > PREVIEW && (
+          <button
+            type="button"
+            className="cx-showall"
+            onClick={() => setShowAll((v) => !v)}
+          >
+            {showAll ? "Show fewer" : `Show all ${rows.length}`}
+          </button>
+        )}
+      </section>
 
       <footer className="country-hub__sources">
         <span>Sources:</span>{" "}
