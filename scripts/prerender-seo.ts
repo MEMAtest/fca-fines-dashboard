@@ -71,12 +71,19 @@ import {
   type CountryView,
 } from "../src/data/countryView.js";
 import { SANCTIONS_STATUS, sanctionsTierLabel } from "../src/data/sanctionsStatus.js";
-import { bandLabel, PILLAR_WEIGHTS } from "../src/data/countryRiskScore.js";
+import {
+  bandLabel,
+  DOMAIN_WEIGHTS,
+  FATF_ESCALATION,
+  SANCTIONS_ESCALATION,
+} from "../src/data/countryRiskScore.js";
 import {
   GOVERNANCE_SOURCE,
   GOVERNANCE_VINTAGE,
   GOVERNANCE_LICENCE,
 } from "../src/data/governanceData.js";
+import { CPI_SOURCE, CPI_LICENCE, CPI_YEAR, CPI_TOTAL } from "../src/data/cpiData.js";
+import { getNarrative } from "../src/data/countryNarratives.js";
 import {
   FATF_STATUS,
   fatfLabel,
@@ -233,17 +240,54 @@ function renderHubBody(
  * prerendered HTML and the SPA can't drift apart in copy/logic.
  */
 function renderCountryFatfBody(view: CountryView): string {
-  const { country, statusHeading, statusDetail, history, enforcement, sanctions, sanctionsTier, riskScore, globalAverage, weights } = view;
+  const { country, statusHeading, statusDetail, history, enforcement, sanctions, sanctionsTier, riskScore, breakdown, globalAverage, cpi } = view;
+  const narrative = getNarrative(country.iso2) ?? null;
   const title = `${country.name} — Country Risk Report`;
+  const domainLis = breakdown.domains
+    .map(
+      (d) =>
+        `<li>${escapeHtml(`${d.label} (${d.weightPct}%): ${d.risk === null ? "no data" : `${d.risk.toFixed(1)}/10`}`)}</li>`,
+    )
+    .join("");
+  const escLis = [
+    riskScore.fatf.points > 0
+      ? `<li>${escapeHtml(`FATF ${riskScore.fatf.label}: +${riskScore.fatf.points}`)}</li>`
+      : "",
+    riskScore.sanctions.points > 0
+      ? `<li>${escapeHtml(`Sanctions ${riskScore.sanctions.label}: +${riskScore.sanctions.points}`)}</li>`
+      : "",
+  ].join("");
   const scoreHtml = `<h2>RegActions Country Risk Score: ${escapeHtml(
     `${riskScore.score.toFixed(1)}/10 (${bandLabel(riskScore.band)})`,
   )}</h2><p>${escapeHtml(
-    `Higher score = higher risk (vs global average ${globalAverage.toFixed(1)}). Composite of FATF status (${Math.round(
-      weights.fatf * 100,
-    )}%), sanctions exposure (${Math.round(weights.sanctions * 100)}%) and World Bank governance indicators (${Math.round(
-      weights.governance * 100,
-    )}%). Enforcement volume and CPI are shown but not scored. Informational, not a substitute for your own risk assessment.`,
-  )}</p>`;
+    `Higher score = higher risk (global average ${globalAverage.toFixed(1)}). A Basel-structured, Wolfsberg-aligned composite: a World Bank WGI governance base, with FATF listing and sanctions as escalators (capped at 10). Enforcement volume and CPI are shown but not scored.`,
+  )}</p><h3>How it is scored</h3><ul>${domainLis}<li>${escapeHtml(
+    `Governance base: ${breakdown.base.toFixed(1)}`,
+  )}</li>${escLis}<li>${escapeHtml(`Composite: ${riskScore.score.toFixed(1)}`)}</li></ul>`;
+  const glanceHtml = `<h2>At a glance</h2><ul><li>${escapeHtml(
+    `FATF status: ${statusHeading}`,
+  )}</li><li>${escapeHtml(
+    `Sanctions: ${sanctionsTier ? sanctionsTierLabel(sanctionsTier) : "None"}${
+      sanctions ? ` (${sanctions.programs.length} programme${sanctions.programs.length === 1 ? "" : "s"})` : ""
+    }`,
+  )}</li><li>${escapeHtml(`Governance (WGI) base: ${breakdown.base.toFixed(1)}/10`)}</li><li>${escapeHtml(
+    cpi
+      ? `Corruption (CPI ${CPI_YEAR}): ${cpi.score}/100, rank #${cpi.rank} of ${CPI_TOTAL}`
+      : "Corruption (CPI): no score",
+  )}</li><li>${escapeHtml(
+    enforcement
+      ? `Enforcement: ${formatCount(enforcement.trackedActions)} actions from ${enforcement.regulatorCount} regulator${enforcement.regulatorCount === 1 ? "" : "s"}`
+      : "Enforcement: no RegActions coverage",
+  )}</li></ul>`;
+  const narrativeHtml = narrative
+    ? `<h2>${escapeHtml(`Why ${country.name} matters`)}</h2><ul>${narrative.whyItMatters
+        .map((b) => `<li>${escapeHtml(b)}</li>`)
+        .join("")}</ul><h2>RegActions analysis</h2><p>${escapeHtml(
+        narrative.analysis,
+      )}</p><h2>Outlook</h2><p>${escapeHtml(narrative.outlook)}</p><h2>Key watchpoints</h2><ul>${narrative.keyWatchpoints
+        .map((w) => `<li>${escapeHtml(w)}</li>`)
+        .join("")}</ul>`
+    : "";
   const sanctionsHtml =
     sanctions && sanctionsTier
       ? `<h2>Sanctions: ${escapeHtml(sanctionsTierLabel(sanctionsTier))}</h2><ul>${sanctions.programs
@@ -278,15 +322,23 @@ function renderCountryFatfBody(view: CountryView): string {
         )
         .join("")}</ul><p>The composite RegActions Country Risk Score does not use enforcement volume.</p>`
     : "";
+  const introHtml = `<p>${escapeHtml(
+    `${country.name} (${country.region} • ${country.subregion}). Risk report as of the ${formatDate(FATF_LAST_PLENARY)} FATF plenary.`,
+  )}</p>${narrative?.summary ? `<p>${escapeHtml(narrative.summary)}</p>` : ""}`;
+  const sourcesHtml = `<p><a href="${escapeHtml(
+    FATF_SOURCE_URL,
+  )}" rel="noopener">Source: FATF black &amp; grey lists</a> · ${escapeHtml(
+    `World Bank WGI (${GOVERNANCE_LICENCE})`,
+  )} · <a href="${escapeHtml(CPI_SOURCE)}" rel="noopener">${escapeHtml(
+    `TI CPI (${CPI_LICENCE}, display only)`,
+  )}</a></p>`;
   return `<div class="blog-page"><div class="blog-post-container"><article class="blog-article-modal"><h1 class="blog-post-title">${escapeHtml(
     title,
-  )}</h1><div class="blog-article-content"><p>${escapeHtml(
-    `${country.name} (${country.region} • ${country.subregion}). FATF listing status as of the ${formatDate(FATF_LAST_PLENARY)} plenary.`,
-  )}</p>${scoreHtml}<h2>FATF status: ${escapeHtml(statusHeading)}</h2><p>${escapeHtml(
+  )}</h1><div class="blog-article-content">${introHtml}${glanceHtml}${scoreHtml}<h2>FATF status: ${escapeHtml(
+    statusHeading,
+  )}</h2><p>${escapeHtml(
     statusDetail,
-  )}</p>${sanctionsHtml}${historyHtml}${enforcementHtml}<p><a href="${escapeHtml(
-    FATF_SOURCE_URL,
-  )}" rel="noopener">Source: FATF black &amp; grey lists</a></p></div></article></div></div>`;
+  )}</p>${sanctionsHtml}${historyHtml}${enforcementHtml}${narrativeHtml}${sourcesHtml}</div></article></div></div>`;
 }
 
 /** Crawlable body for the /countries index (FATF grey + black lists). */
@@ -350,22 +402,30 @@ function renderGlobalIndexBody(): string {
 function renderMethodologyBody(): string {
   const pc = (n: number) => `${Math.round(n * 100)}%`;
   return `<div class="blog-page"><div class="blog-post-container"><article class="blog-article-modal"><h1 class="blog-post-title">How the RegActions Country Risk Score is calculated</h1><div class="blog-article-content"><p>${escapeHtml(
-    "The RegActions Country Risk Score is a transparent composite on a 0-10 scale, where a higher score means higher risk. It is built only from factual, sourced signals: a country's FATF listing status, its sanctions exposure, and World Bank governance indicators. Informational, and not a substitute for a firm's own risk assessment.",
-  )}</p><h2>The three scored pillars</h2><ul><li>${escapeHtml(
-    `FATF status (${pc(PILLAR_WEIGHTS.fatf)}): black list = 10, grey list = 6, not listed = 0.`,
+    "The RegActions Country Risk Score is a transparent 0-10 composite (higher = higher risk), structured on the Basel AML Index domain model and aligned to the Wolfsberg Group country-risk factors, but built only from licence-clean public sources. A country's governance sets a base risk; FATF listing and sanctions escalate it. Informational, and not a substitute for a firm's own risk assessment.",
+  )}</p><h2>1. Governance base (World Bank WGI)</h2><p>${escapeHtml(
+    "A weighted mean of four WGI domains, each percentile (0-100, higher = better) inverted to a 0-10 risk of (100 - percentile) / 10:",
+  )}</p><ul><li>${escapeHtml(
+    `Corruption, WGI Control of Corruption (${pc(DOMAIN_WEIGHTS.corruption)}).`,
   )}</li><li>${escapeHtml(
-    `Sanctions exposure (${pc(PILLAR_WEIGHTS.sanctions)}): comprehensive = 10, sectoral = 6, targeted = 3, none = 0 (highest tier across OFAC / UK / EU / UN).`,
+    `Rule of law and institutions, WGI Rule of Law / Regulatory Quality / Government Effectiveness (${pc(DOMAIN_WEIGHTS.ruleOfLaw)}).`,
   )}</li><li>${escapeHtml(
-    `Governance, World Bank WGI (${pc(PILLAR_WEIGHTS.governance)}): inverted mean percentile, risk = (100 - percentile) / 10.`,
-  )}</li></ul><p>${escapeHtml(
-    "The composite is the weighted mean of the pillars; when governance data is missing, its weight is dropped and the remaining pillars are renormalised.",
-  )}</p><h2>Risk bands</h2><ul><li>Low 1.0-2.9</li><li>Moderate 3.0-4.9</li><li>High 5.0-6.9</li><li>Very high 7.0-10.0</li></ul><h2>Not scored</h2><p>${escapeHtml(
+    `Political stability, WGI Political Stability (${pc(DOMAIN_WEIGHTS.politicalStability)}).`,
+  )}</li><li>${escapeHtml(
+    `Voice and accountability, WGI Voice & Accountability (${pc(DOMAIN_WEIGHTS.accountability)}).`,
+  )}</li></ul><h2>2. Escalators (FATF and sanctions)</h2><p>${escapeHtml(
+    `Added on top of the governance base, capped at 10: FATF grey +${FATF_ESCALATION.grey}, black +${FATF_ESCALATION.black}; sanctions targeted +${SANCTIONS_ESCALATION.targeted}, sectoral +${SANCTIONS_ESCALATION.sectoral}, comprehensive +${SANCTIONS_ESCALATION.comprehensive} (highest tier across OFAC / UK / EU / UN). When a WGI domain is missing, the remaining domain weights are renormalised.`,
+  )}</p><h2>Risk bands</h2><ul><li>Low 0-2.9</li><li>Moderate 3.0-4.9</li><li>High 5.0-6.9</li><li>Very high 7.0-10</li></ul><h2>Aligned to Basel and Wolfsberg</h2><p>${escapeHtml(
+    "The domain structure follows the Basel AML Index and the factor set follows the Wolfsberg Group country-risk guidance. RegActions does not reproduce the Basel AML Index scores, which are licensed for non-commercial use only; this is an independent composite from licence-clean public data. FATF Mutual-Evaluation effectiveness ratings are a planned enhancement.",
+  )}</p><h2>Not scored</h2><p>${escapeHtml(
     "Enforcement volume (it measures regulator activity, not country risk) and Transparency International CPI (no-derivatives licence) are shown as evidence/reference but never fed into the score.",
-  )}</p><h2>Data sources</h2><ul><li>FATF plenary public statements (black &amp; grey lists). <a href="${escapeHtml(
+  )}</p><h2>Data sources</h2><ul><li>${escapeHtml(
+    `World Bank WGI, six dimensions (${GOVERNANCE_VINTAGE}, ${GOVERNANCE_LICENCE}).`,
+  )} <a href="${escapeHtml(GOVERNANCE_SOURCE)}" rel="noopener">Source</a></li><li>FATF plenary public statements (black &amp; grey lists). <a href="${escapeHtml(
     FATF_SOURCE_URL,
   )}" rel="noopener">Source</a></li><li>OFAC / UK FCDO / EU / UN sanctions programmes (curated, sourced per row).</li><li>${escapeHtml(
-    `World Bank WGI, mean percentile across six dimensions (${GOVERNANCE_VINTAGE}, ${GOVERNANCE_LICENCE}).`,
-  )} <a href="${escapeHtml(GOVERNANCE_SOURCE)}" rel="noopener">Source</a></li></ul></div></article></div></div>`;
+    `Transparency International CPI ${CPI_YEAR} (${CPI_LICENCE}), display only.`,
+  )} <a href="${escapeHtml(CPI_SOURCE)}" rel="noopener">Source</a></li></ul></div></article></div></div>`;
 }
 
 function renderTopicClusterBody(slug: string): string {
