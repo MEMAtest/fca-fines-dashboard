@@ -774,7 +774,7 @@ async function fetchActionRows(options: FetchActionOptions = {}) {
       summary,
       notice_url,
       source_url
-    FROM public.all_regulatory_fines
+    FROM public.all_regulatory_fines_canonical
     WHERE ${conditions.join(' AND ')}
     ORDER BY date_issued DESC, amount_gbp DESC NULLS LAST
     LIMIT $${params.length}

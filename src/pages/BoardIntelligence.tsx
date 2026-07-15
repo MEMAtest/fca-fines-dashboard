@@ -72,6 +72,7 @@ export function BoardIntelligence() {
   const [submitting, setSubmitting] = useState(false);
   const [status, setStatus] = useState<string | null>(null);
   const idempotencyKey = useRef(crypto.randomUUID());
+  const builderStarted = useRef(false);
   const { fines, loading, error } = useUnifiedData({ regulator: "All", country: "All", year: 0, currency: "GBP" });
 
   const safeProfile = useMemo(() => ({
@@ -86,7 +87,14 @@ export function BoardIntelligence() {
   const boardFocus = BOARD_FOCUS_OPTIONS.find((item) => item.id === profile.boardFocus)!;
   const lowerConfidenceCodes = profile.priorityRegulators.filter((code) => LIVE_REGULATOR_NAV_ITEMS.find((item) => item.code === code)?.operationalConfidence === "lower");
 
+  const markBuilderStarted = () => {
+    if (builderStarted.current) return;
+    builderStarted.current = true;
+    trackEvent("board_pack_builder_started", { source: "public_builder" });
+  };
+
   const updateArchetype = (archetypeId: BoardArchetypeId) => {
+    markBuilderStarted();
     const next = BOARD_ARCHETYPES_BY_ID[archetypeId];
     setProfile({
       ...profile,
@@ -104,6 +112,7 @@ export function BoardIntelligence() {
       document.getElementById("board-firm-name")?.focus();
       return;
     }
+    trackEvent("board_pack_lead_gate_opened", { archetype: profile.archetypeId });
     setLeadOpen(true);
   };
 
@@ -115,6 +124,10 @@ export function BoardIntelligence() {
       return;
     }
     setSubmitting(true);
+    trackEvent("board_pack_lead_submitted", {
+      archetype: profile.archetypeId,
+      marketingConsent: lead.marketingConsent,
+    });
     try {
       const response = await fetch("/api/board-pack/leads", {
         method: "POST",
@@ -130,6 +143,10 @@ export function BoardIntelligence() {
       if (!response.ok || !result.persisted) {
         throw new Error(result.error || "We could not record the download request. Please try again.");
       }
+      trackEvent("board_pack_lead_saved", {
+        archetype: profile.archetypeId,
+        notificationStatus: result.notificationStatus ?? "unknown",
+      });
 
       const [{ pdf }, documentModule] = await Promise.all([
         import("@react-pdf/renderer"),
@@ -157,6 +174,7 @@ export function BoardIntelligence() {
       idempotencyKey.current = crypto.randomUUID();
       setStatus(result.notificationStatus === "sent" ? "Your board pack has downloaded." : "Your board pack has downloaded. The advisory notification is queued.");
     } catch (caught) {
+      trackEvent("board_pack_lead_error", { archetype: profile.archetypeId });
       setStatus(caught instanceof Error ? caught.message : "Unable to create the PDF. Please try again.");
     } finally {
       setSubmitting(false);
@@ -178,7 +196,7 @@ export function BoardIntelligence() {
       <section className="board-quick__builder">
         <aside className="board-quick__form">
           <div className="board-quick__form-heading"><Settings2 size={17}/><div><h2>Build your pack</h2><p>About two minutes. Your settings stay on this device.</p></div></div>
-          <label>Organisation name<input id="board-firm-name" value={profile.firmName === "Your organisation" ? "" : profile.firmName} onChange={(event) => setProfile({...profile,firmName:event.target.value})} placeholder="e.g. Acme Payments Ltd"/></label>
+          <label>Organisation name<input id="board-firm-name" value={profile.firmName === "Your organisation" ? "" : profile.firmName} onChange={(event) => { markBuilderStarted(); setProfile({...profile,firmName:event.target.value}); }} placeholder="e.g. Acme Payments Ltd"/></label>
           <label>Firm type<select value={profile.archetypeId} onChange={(event)=>updateArchetype(event.target.value as BoardArchetypeId)}>{BOARD_ARCHETYPES.map((item)=><option value={item.id} key={item.id}>{item.label}</option>)}</select><small>{archetype.description}</small></label>
           <fieldset><legend>Committee lens</legend><div className="board-quick__choice-grid">{BOARD_FOCUS_OPTIONS.map((item)=><button type="button" key={item.id} className={profile.boardFocus===item.id?"is-selected":""} onClick={()=>setProfile({...profile,boardFocus:item.id as BoardFocusId})}><strong>{item.label}</strong><span>{item.description}</span></button>)}</div></fieldset>
           <fieldset><legend>Priority themes</legend><div className="board-quick__chips">{BOARD_THEME_OPTIONS.map((item)=><button type="button" key={item.id} className={profile.priorityThemeIds.includes(item.id)?"is-selected":""} onClick={()=>setProfile({...profile,priorityThemeIds:toggle(profile.priorityThemeIds,item.id as BoardThemeId).slice(-5)})}>{item.shortLabel}</button>)}</div><small>Select up to five.</small></fieldset>
@@ -188,7 +206,7 @@ export function BoardIntelligence() {
         </aside>
 
         <div className="board-quick__preview">
-          <div className="board-quick__preview-heading"><div><span>Live preview</span><h2>{safeProfile.firmName}</h2></div><span>{fines.length.toLocaleString("en-GB")} source records considered</span></div>
+          <div className="board-quick__preview-heading"><div><span>Live preview</span><h2>{safeProfile.firmName}</h2></div><span>{fines.length.toLocaleString("en-GB")} canonical actions considered</span></div>
           {error ? <div className="board-quick__empty">The live data could not be loaded. Please refresh before creating a pack.</div> : loading ? <div className="board-quick__empty"><LoaderCircle className="spin"/> Building the evidence view...</div> : <BoardPackDashboard pack={pack} profileSummary={`${archetype.label} under a ${boardFocus.label.toLowerCase()} lens.`} archetypeLabel={archetype.label} boardFocusLabel={boardFocus.label} generatedLabel={generatedLabel} confidentialityLabel="Board / Risk Committee Use" clientLabel="" analystNote="" workingMode={false} lowerConfidenceCodes={lowerConfidenceCodes} controlSummary={controlSummary} controlChecklist={controls} controlStatuses={{}} onControlStatusChange={()=>{}}/>}
         </div>
       </section>

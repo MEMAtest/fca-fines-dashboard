@@ -14,6 +14,7 @@ import * as cheerio from 'cheerio';
 import postgres from 'postgres';
 import crypto from 'crypto';
 import * as dotenv from 'dotenv';
+import { fileURLToPath } from 'node:url';
 import { isGenericDescription, validateExtractedName, normalizeFirmName as sharedNormalizeFirmName } from './lib/nameValidation.js';
 import { extractNameFromBodyText } from './lib/bodyTextExtractor.js';
 
@@ -509,7 +510,7 @@ function normalizeFirmName(value: string): string | null {
   return sharedNormalizeFirmName(cleaned);
 }
 
-function extractAmfAmount(texts: string[]) {
+export function extractAmfAmount(texts: string[]) {
   for (const text of texts) {
     if (!text) {
       continue;
@@ -526,39 +527,32 @@ function extractAmfAmount(texts: string[]) {
     }
   }
 
-  const amounts: number[] = [];
-
+  // Restrict extraction to the operative fine or penalty clause. Regulatory
+  // releases routinely mention assets under management and customer losses,
+  // neither of which is the sanction amount.
   for (const text of texts) {
     if (!text) {
       continue;
     }
 
-    const euroMatches = text.matchAll(/€\s*([\d.,\s]+)(?:\s*(million|thousand|billion))?/gi);
-    for (const match of euroMatches) {
-      const parsed = parseScaledAmount(match[1], match[2]);
-      if (parsed !== null) {
-        amounts.push(parsed);
+    const clauses = text.match(/(?:imposed|imposes?|fined?|fines?|sanctioned?|penalt(?:y|ies)\s+of)[^.!?]{0,300}/gi) ?? [];
+    for (const clause of clauses) {
+      const amounts: number[] = [];
+      for (const match of clause.matchAll(/€\s*([\d.,\s]+)(?:\s*(million|thousand|billion))?/gi)) {
+        const parsed = parseScaledAmount(match[1], match[2]);
+        if (parsed !== null) amounts.push(parsed);
       }
-    }
-
-    const wordMatches = text.matchAll(/([\d.,\s]+)\s*(million|thousand|billion)?\s*euros?/gi);
-    for (const match of wordMatches) {
-      const parsed = parseScaledAmount(match[1], match[2]);
-      if (parsed !== null) {
-        amounts.push(parsed);
+      for (const match of clause.matchAll(/([\d.,\s]+)\s*(million|thousand|billion)?\s*euros?/gi)) {
+        const parsed = parseScaledAmount(match[1], match[2]);
+        if (parsed !== null) amounts.push(parsed);
       }
+
+      const unique = [...new Set(amounts)];
+      if (unique.length > 0) return unique.reduce((sum, amount) => sum + amount, 0);
     }
   }
 
-  const unique = [...new Set(amounts)];
-  if (unique.length === 0) {
-    return null;
-  }
-  if (unique.length === 1) {
-    return unique[0];
-  }
-
-  return unique.reduce((sum, amount) => sum + amount, 0);
+  return null;
 }
 
 function parseScaledAmount(rawAmount: string, scale: string | undefined) {
@@ -854,4 +848,6 @@ async function upsertRecords(records: any[]) {
   console.log(`   - Errors: ${errors}`);
 }
 
-main();
+if (process.argv[1] && fileURLToPath(import.meta.url) === process.argv[1]) {
+  void main();
+}

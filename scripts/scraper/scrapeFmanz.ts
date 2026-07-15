@@ -9,8 +9,8 @@ import {
   makeAbsoluteUrl,
   mapWithConcurrency,
   normalizeWhitespace,
-  parseLargestAmountFromText,
   parseMonthNameDate,
+  parseScaledAmount,
 } from "./lib/euFineHelpers.js";
 import { runScraper } from "./lib/runScraper.js";
 
@@ -46,20 +46,23 @@ function parseFmanzDate(input: string) {
 }
 
 export function parseFmanzAmount(text: string) {
-  return parseLargestAmountFromText(text, {
-    currency: "NZD",
-    symbols: ["$"],
-    keywords: [
-      "pecuniary penalty",
-      "civil penalty",
-      "penalty",
-      "settlement",
-      "agreed to pay",
-      "ordered to pay",
-      "pay a total of",
-      "payment",
-    ],
-  });
+  const normalized = normalizeWhitespace(text);
+  const explicitPenaltyPatterns = [
+    /\bordered\s+[^.]{0,80}?\bto\s+pay\s+(?:a\s+)?(?:pecuniary\s+|civil\s+)?penalty\s+of\s+(?:NZD\s*)?\$\s*([\d,]+(?:\.\d+)?)\s*(billion|million|thousand|bn|mn|m|k)?/i,
+    /\bagreed\s+to\s+pay\s+(?:a\s+total\s+of\s+)?(?:NZD\s*)?\$\s*([\d,]+(?:\.\d+)?)\s*(billion|million|thousand|bn|mn|m|k)?(?:\s+to\s+the\s+Crown)?\s+(?:in\s+lieu\s+of\s+)?(?:a\s+)?(?:pecuniary\s+|civil\s+)?penalty/i,
+    /\bpay\s+(?:a\s+)?(?:NZD\s*)?\$\s*([\d,]+(?:\.\d+)?)\s*(billion|million|thousand|bn|mn|m|k)?\s+(?:pecuniary\s+|civil\s+)?penalty/i,
+    /\b(?:pecuniary\s+|civil\s+)?penalty\s+of\s+(?:NZD\s*)?\$\s*([\d,]+(?:\.\d+)?)\s*(billion|million|thousand|bn|mn|m|k)?/i,
+  ];
+
+  for (const pattern of explicitPenaltyPatterns) {
+    const match = normalized.match(pattern);
+    if (match?.[1]) {
+      const amount = parseScaledAmount(match[1], match[2]);
+      if (amount !== null) return amount;
+    }
+  }
+
+  return null;
 }
 
 export function parseFmanzListingHtml(html: string, pageUrl: string): FmanzListPage {

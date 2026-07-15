@@ -7,7 +7,7 @@ import {
   buildEuFineRecord,
   makeAbsoluteUrl,
   normalizeWhitespace,
-  parseLargestAmountFromText,
+  parseScaledAmount,
 } from "./lib/euFineHelpers.js";
 import { runScraper } from "./lib/runScraper.js";
 
@@ -119,20 +119,22 @@ export function buildFinraMonthWindows(startYear = FINRA_START_YEAR, endYear = F
 }
 
 export function parseFinraAmount(text: string) {
-  return parseLargestAmountFromText(text, {
-    currency: "USD",
-    symbols: ["$"],
-    keywords: [
-      "fine",
-      "fined",
-      "penalty",
-      "penalties",
-      "restitution",
-      "disgorgement",
-      "ordered to pay",
-      "pay",
-    ],
-  });
+  const normalized = normalizeWhitespace(text);
+  const explicitFinePatterns = [
+    /\b(?:(?:is|are|was|were)\s+)?(?:censured\s+and\s+)?fined\s+(?:a\s+total\s+of\s+)?(?:USD\s*)?\$\s*([\d,]+(?:\.\d+)?)\s*(billion|million|thousand|bn|mn|m|k)?/i,
+    /\b(?:fine|penalty)\s+of\s+(?:USD\s*)?\$\s*([\d,]+(?:\.\d+)?)\s*(billion|million|thousand|bn|mn|m|k)?/i,
+    /\bordered\s+to\s+pay\s+(?:a\s+)?(?:USD\s*)?\$\s*([\d,]+(?:\.\d+)?)\s*(billion|million|thousand|bn|mn|m|k)?\s+(?:fine|penalty)/i,
+  ];
+
+  for (const pattern of explicitFinePatterns) {
+    const match = normalized.match(pattern);
+    if (match?.[1]) {
+      const amount = parseScaledAmount(match[1], match[2]);
+      if (amount !== null) return amount;
+    }
+  }
+
+  return null;
 }
 
 function extractFinraRespondents($cell: cheerio.Cheerio<any>) {

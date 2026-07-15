@@ -84,9 +84,12 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       return res.status(409).json({ error: "This download request is already being processed." });
     }
 
-    let notificationStatus = "sent";
+    let notificationStatus = "pending";
     try {
-      await notifyBoardPackLead(leadId);
+      const notification = await notifyBoardPackLead(leadId);
+      notificationStatus = notification.status === "sent" || notification.status === "already_sent"
+        ? "sent"
+        : "pending";
     } catch (error) {
       notificationStatus = "pending";
       await markBoardPackNotificationFailed(leadId, error);

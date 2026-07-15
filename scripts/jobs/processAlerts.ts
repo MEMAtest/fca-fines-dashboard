@@ -83,7 +83,7 @@ async function main() {
         breach_type,
         breach_categories,
         notice_url AS final_notice_url
-      FROM all_regulatory_fines
+      FROM all_regulatory_fines_canonical
       WHERE created_at >= NOW() - INTERVAL '24 hours'
         AND date_issued >= NOW() - INTERVAL '90 days'
       ORDER BY date_issued DESC

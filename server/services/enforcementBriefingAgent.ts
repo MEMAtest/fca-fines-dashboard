@@ -513,7 +513,7 @@ async function fetchEvidenceRows(filters: NormalizedBriefingFilters, limit: numb
       summary,
       notice_url,
       source_url
-    FROM public.all_regulatory_fines
+    FROM public.all_regulatory_fines_canonical
     ${where.clause}
     ORDER BY date_issued DESC, amount_gbp DESC NULLS LAST
     LIMIT $${where.params.length + 1}
@@ -527,7 +527,7 @@ async function fetchTotalCount(filters: NormalizedBriefingFilters) {
   const sql = getSqlClient();
   const where = buildWhereClause(filters);
   const rows = await sql(
-    `SELECT COUNT(*)::int AS total FROM public.all_regulatory_fines ${where.clause}`,
+    `SELECT COUNT(*)::int AS total FROM public.all_regulatory_fines_canonical ${where.clause}`,
     where.params,
   );
   return Math.trunc(toNumber(rows[0]?.total));

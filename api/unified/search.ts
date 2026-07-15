@@ -1,7 +1,7 @@
 /**
  * Unified Search API - Search across ALL regulators (FCA + EU)
  *
- * Queries the all_regulatory_fines materialized view
+ * Queries the canonical enforcement evidence materialized view
  * Supports filtering by regulator, country, year, amount, breach, firm name
  * Returns normalized data with both EUR and GBP amounts
  */
@@ -151,10 +151,16 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         summary,
         notice_url,
         source_url,
-        created_at
-      FROM public.all_regulatory_fines
+        created_at,
+        canonical_case_id,
+        duplicate_count,
+        amount_quality,
+        requires_amount_review,
+        amount_verification_url,
+        amount_override_reason
+      FROM public.all_regulatory_fines_canonical
       ${whereClause}
-      ORDER BY ${sortColumn} ${sortOrder}
+      ORDER BY ${sortColumn} ${sortOrder}, canonical_case_id ASC, id ASC
       LIMIT $${paramIndex++}
       OFFSET $${paramIndex++}
     `;
@@ -166,7 +172,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     // Query for total count
     const countQuery = `
       SELECT COUNT(*) as count
-      FROM public.all_regulatory_fines
+      FROM public.all_regulatory_fines_canonical
       ${whereClause}
     `;
 

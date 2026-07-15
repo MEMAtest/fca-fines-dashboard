@@ -56,7 +56,7 @@ interface SendAllResult {
 async function buildPersonaDigest(persona: FirmPersona): Promise<DigestItem[]> {
   const profile = buildFirmProfileFromPersona(persona);
 
-  // Get recent enforcement data from all_regulatory_fines (materialized view)
+  // Get recent enforcement data from the canonical evidence view.
   const rows = await sql(`
     SELECT
       firm_name,
@@ -67,7 +67,7 @@ async function buildPersonaDigest(persona: FirmPersona): Promise<DigestItem[]> {
       summary,
       source_url,
       content_hash
-    FROM all_regulatory_fines
+    FROM all_regulatory_fines_canonical
     WHERE date_issued > NOW() - INTERVAL '30 days'
     ORDER BY date_issued DESC
     LIMIT 200

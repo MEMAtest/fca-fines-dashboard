@@ -27,6 +27,8 @@
     "search:analytics:report": "npx tsx scripts/reportSearchAnalytics.ts",
     "search:analytics:prune": "npx tsx scripts/pruneSearchAnalytics.ts",
     "uk-enforcement:migrate": "npx tsx scripts/run-uk-enforcement-migration.ts",
+    "data-trust:migrate": "npx tsx scripts/run-data-trust-migration.ts",
+    "data-trust:assess-amounts": "node --import tsx/esm scripts/backfill-regulatory-amount-assessments.ts",
     "scrape:uk-enforcement": "node --import tsx/esm scripts/scraper/scrapeUkEnforcement.ts --",
     "scrape:fca-enforcement": "node --import tsx/esm scripts/scraper/scrapeFcaEnforcement.ts --",
     "check:uk-enforcement-health": "node --import tsx/esm scripts/scraper/checkUkEnforcementHealth.ts --",

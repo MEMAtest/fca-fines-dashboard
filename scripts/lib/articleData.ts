@@ -99,7 +99,7 @@ export async function getTimelyData(days: number = 14): Promise<EnforcementRecor
            date_issued::text, breach_type,
            COALESCE(summary, '') as summary, COALESCE(notice_url, '') as notice_url,
            COALESCE(source_url, '') as source_url
-    FROM all_regulatory_fines
+    FROM all_regulatory_fines_canonical
     WHERE date_issued >= CURRENT_DATE - $1 * INTERVAL '1 day'
     ORDER BY date_issued DESC, amount_gbp DESC NULLS LAST
     LIMIT 25
@@ -125,7 +125,7 @@ export async function getThematicData(keywords: string[]): Promise<EnforcementRe
            date_issued::text, breach_type,
            COALESCE(summary, '') as summary, COALESCE(notice_url, '') as notice_url,
            COALESCE(source_url, '') as source_url
-    FROM all_regulatory_fines
+    FROM all_regulatory_fines_canonical
     WHERE ${conditions}
     ORDER BY date_issued DESC
     LIMIT 120
@@ -142,7 +142,7 @@ export async function getRegulatorStats(): Promise<RegulatorStats[]> {
     SELECT regulator, COUNT(*)::int as action_count,
            COALESCE(SUM(CASE WHEN ${VERIFIED_PENALTY_SQL} THEN ${GBP_AMOUNT_SQL} ELSE 0 END), 0)::numeric as total_fines,
            MAX(date_issued)::text as latest_action
-    FROM all_regulatory_fines
+    FROM all_regulatory_fines_canonical
     GROUP BY regulator
     ORDER BY total_fines DESC
   `);
@@ -351,7 +351,7 @@ export async function queryThematicData(
            date_issued::text, breach_type,
            COALESCE(summary, '') as summary, COALESCE(notice_url, '') as notice_url,
            COALESCE(source_url, '') as source_url
-    FROM all_regulatory_fines
+    FROM all_regulatory_fines_canonical
     WHERE (${keywordConditions}) AND year_issued >= $${keywords.length + 1}
   `;
   const baseParams: unknown[] = [...keywordParams, sinceYear];
@@ -390,7 +390,7 @@ export async function queryPersonaData(
              date_issued::text, breach_type,
              COALESCE(summary, '') as summary, COALESCE(notice_url, '') as notice_url,
              COALESCE(source_url, '') as source_url
-      FROM all_regulatory_fines
+      FROM all_regulatory_fines_canonical
       WHERE (firm_category ILIKE $1 OR ${kwConditions})
       ORDER BY date_issued DESC LIMIT 120
     `, [firmCategory, ...kwParams]);
@@ -415,7 +415,7 @@ export async function queryComparisonData(
                date_issued::text, breach_type,
                COALESCE(summary, '') as summary, COALESCE(notice_url, '') as notice_url,
                COALESCE(source_url, '') as source_url
-        FROM all_regulatory_fines
+        FROM all_regulatory_fines_canonical
         WHERE regulator = $1 AND year_issued >= $2
         ORDER BY date_issued DESC LIMIT 200
       `, [reg, since]);
@@ -473,7 +473,7 @@ export async function queryForensicData(
              'GBP'::text as currency, amount_gbp::float as amount_gbp, date_issued::text, breach_type,
              COALESCE(summary, '') as summary, COALESCE(notice_url, '') as notice_url,
              COALESCE(source_url, '') as source_url
-      FROM all_regulatory_fines
+      FROM all_regulatory_fines_canonical
       WHERE ${whereClause} ${namedFirmClause} ${validAmountClause} ${verifiedPenaltyClause}
       ORDER BY amount_gbp DESC NULLS LAST LIMIT 1
     `, params),
@@ -482,7 +482,7 @@ export async function queryForensicData(
              date_issued::text, breach_type,
              COALESCE(summary, '') as summary, COALESCE(notice_url, '') as notice_url,
              COALESCE(source_url, '') as source_url
-      FROM all_regulatory_fines
+      FROM all_regulatory_fines_canonical
       WHERE ${whereClause} ${verifiedPenaltyClause}
       ORDER BY amount DESC NULLS LAST LIMIT 20
     `, params),
@@ -513,7 +513,7 @@ export async function checkForensicPrerequisite(
   }
 
   const rows = await query(
-    `SELECT COUNT(*)::int as n FROM all_regulatory_fines WHERE ${whereClause}`,
+    `SELECT COUNT(*)::int as n FROM all_regulatory_fines_canonical WHERE ${whereClause}`,
     params,
   );
   const count = Number(rows[0]?.n ?? 0);

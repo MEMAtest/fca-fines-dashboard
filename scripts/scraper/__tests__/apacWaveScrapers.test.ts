@@ -314,7 +314,23 @@ describe("apac wave scrapers", () => {
         "https://www.fma.govt.nz/assets/Enforcement/Judgements/Financial-Markets-Authority-v-ANZ-Bank-NZ-Limited.pdf",
     });
     expect(detail.summary).toContain("series of enforcement actions");
-    expect(parseFmanzAmount(detail.body)).toBe(19_000_000);
+    expect(parseFmanzAmount(detail.body)).toBe(3_250_000);
+  });
+
+  it("keeps decimal millions and selects the FMA penalty rather than overcharges", () => {
+    expect(
+      parseFmanzAmount(
+        "The High Court ordered AAI to pay a $6.175 million penalty. Customers were overcharged $11.12 million in total.",
+      ),
+    ).toBe(6_175_000);
+  });
+
+  it("does not treat remediation totals as an FMA penalty", () => {
+    expect(
+      parseFmanzAmount(
+        "The insurer remediated $12 million to customers and entered an enforceable undertaking with no pecuniary penalty.",
+      ),
+    ).toBeNull();
   });
 
   it("parses HKMA enforcement candidates and detail pages", () => {

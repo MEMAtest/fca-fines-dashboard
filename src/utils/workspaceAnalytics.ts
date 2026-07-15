@@ -153,12 +153,13 @@ export function buildMonthlyTrend(records: FineRecord[]): WorkspaceTrendPoint[] 
 
 export function recordsForSelection(
   records: FineRecord[],
-  selection: { year?: number; month?: number; regulator?: string; theme?: string; firm?: string },
+  selection: { year?: number; month?: number; regulator?: string; theme?: string; sector?: string; firm?: string },
 ) {
   return records.filter((record) => {
     if (selection.year && record.year_issued !== selection.year) return false;
     if (selection.month && record.month_issued !== selection.month) return false;
     if (selection.regulator && record.regulator !== selection.regulator) return false;
+    if (selection.sector && (record.firm_category || "Sector not recorded") !== selection.sector) return false;
     if (selection.firm && record.firm_individual !== selection.firm) return false;
     if (selection.theme && !getRecordThemes(record).includes(selection.theme)) {
       return false;

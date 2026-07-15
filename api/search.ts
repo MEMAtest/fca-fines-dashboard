@@ -132,9 +132,15 @@ const SEARCHABLE_ENFORCEMENT_CTE = `
       notice_url,
       source_url,
       created_at,
+      canonical_case_id,
+      duplicate_count,
+      amount_quality,
+      requires_amount_review,
+      amount_verification_url,
+      amount_override_reason,
       COALESCE(known_firm_aliases.alias_text, '') AS search_aliases,
       search_vector || to_tsvector('english', COALESCE(known_firm_aliases.alias_text, '')) AS search_vector
-    FROM public.all_regulatory_fines
+    FROM public.all_regulatory_fines_canonical
     LEFT JOIN known_firm_aliases
       ON LOWER(known_firm_aliases.alias_name) = LOWER(firm_individual)
   )

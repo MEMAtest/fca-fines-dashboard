@@ -452,12 +452,20 @@ export function parsePlainAmount(value: string) {
 }
 
 export function parseScaledAmount(rawAmount: string, scale?: string | null) {
-  const base = parsePlainAmount(rawAmount);
+  const compactAmount = rawAmount.replace(/\s+/g, '').trim();
+  const normalizedScale = (scale || '').toLowerCase();
+  // A three-decimal value followed by an explicit scale is a decimal amount,
+  // not a thousands-separated integer: "6.175 million" is 6,175,000.
+  const scaledDecimal = normalizedScale && /^[+-]?\d+\.\d{3}$/.test(compactAmount)
+    ? Number.parseFloat(compactAmount)
+    : null;
+  const base = scaledDecimal !== null && Number.isFinite(scaledDecimal)
+    ? scaledDecimal
+    : parsePlainAmount(rawAmount);
   if (base === null) {
     return null;
   }
 
-  const normalizedScale = (scale || '').toLowerCase();
   if (normalizedScale.includes('billion') || normalizedScale.includes('bn')) {
     return base * 1_000_000_000;
   }

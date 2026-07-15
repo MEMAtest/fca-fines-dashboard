@@ -172,7 +172,7 @@ export function FinesWorkspace({ view }: FinesWorkspaceProps) {
     setSearchParams(next, { replace: true });
   }, [country, query, regulator, sector, selectedRegulators, selectedThemes, selectedYears, setSearchParams, theme, year]);
 
-  const openSelection = async (selection: { year?: number; month?: number; regulator?: string; theme?: string; firm?: string }, title: string) => {
+  const openSelection = async (selection: { year?: number; month?: number; regulator?: string; theme?: string; sector?: string; firm?: string }, title: string) => {
     const records = recordsForSelection(filtered, selection);
     const apply = selection.month ? undefined : () => {
       if (selection.year) setYear(selection.year);
@@ -193,7 +193,7 @@ export function FinesWorkspace({ view }: FinesWorkspaceProps) {
         year: selection.year ?? (year || undefined),
         month: selection.month,
         breachCategory: selection.theme ?? (theme !== "All" ? theme : undefined),
-        sector: sector !== "All" ? sector : undefined,
+        sector: selection.sector ?? (sector !== "All" ? sector : undefined),
         firmName: selection.firm,
         sortBy: "date_issued",
         order: "desc",
@@ -338,7 +338,7 @@ export function FinesWorkspace({ view }: FinesWorkspaceProps) {
 
             {view === "analytics" && <>
               <section className="workspace-card workspace-card--half"><div className="workspace-card__heading"><h2>Regulators by fine value</h2><span>Click to drill down</span></div><div className="workspace-bars">{regulators.map((item) => <button className="workspace-bar" type="button" key={item.label} onClick={() => handleRegulatorClick(item.label)}><span>{item.label}</span><div className="workspace-bar__track"><div className="workspace-bar__fill" style={{width:`${Math.max(4,item.share)}%`}}/></div><strong>{formatWorkspaceAmount(item.amount)}</strong></button>)}</div></section>
-              <section className="workspace-card workspace-card--half"><div className="workspace-card__heading"><h2>Top sectors</h2><span>By disclosed value</span></div><div className="workspace-treemap">{sectors.slice(0,6).map((item) => <button className="workspace-tile" type="button" key={item.label} onClick={() => setDrawer({ title: item.label, records: filtered.filter((record) => (record.firm_category || "Sector not recorded") === item.label) })}><span>{item.label}</span><strong>{formatWorkspaceAmount(item.amount)}</strong><small>{item.count} actions</small></button>)}</div></section>
+              <section className="workspace-card workspace-card--half"><div className="workspace-card__heading"><h2>Top sectors</h2><span>By disclosed value</span></div><div className="workspace-treemap">{sectors.slice(0,6).map((item) => <button className="workspace-tile" type="button" key={item.label} onClick={() => openSelection({ sector: item.label }, item.label)}><span>{item.label}</span><strong>{formatWorkspaceAmount(item.amount)}</strong><small>{item.count} actions</small></button>)}</div></section>
               <section className="workspace-card workspace-card--half"><div className="workspace-card__heading"><h2>Firms under pressure</h2><span>Top 10</span></div><div className="workspace-bars">{firms.map((item) => <button className="workspace-bar" type="button" key={item.label} onClick={() => openSelection({firm:item.label},item.label)}><span>{item.label}</span><div className="workspace-bar__track"><div className="workspace-bar__fill" style={{width:`${Math.max(4,item.share)}%`}}/></div><strong>{formatWorkspaceAmount(item.amount)}</strong></button>)}</div></section>
               <section className="workspace-card workspace-card--half"><div className="workspace-card__heading"><h2>Methodology snapshot</h2><span>Current view</span></div><ul className="workspace-insights"><li><CheckCircle2 size={14}/><span>Amounts normalised to GBP for comparison.</span></li><li><CheckCircle2 size={14}/><span>Published actions are deduplicated before display.</span></li><li><CheckCircle2 size={14}/><span>Records link to official notices or regulator-level source pages.</span></li><li><CheckCircle2 size={14}/><span>Filters and comparisons are visible in the URL and contain no personal data.</span></li></ul></section>
             </>}

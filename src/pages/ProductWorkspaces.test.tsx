@@ -3,6 +3,7 @@ import { MemoryRouter, Route, Routes } from "react-router-dom";
 import { describe, expect, it, vi } from "vitest";
 import { FinesWorkspace } from "./FinesWorkspace.js";
 import { RegulatorWorkspace } from "./RegulatorWorkspace.js";
+import { fetchWorkspaceRecords } from "../utils/fetchWorkspaceRecords.js";
 
 vi.mock("../hooks/useSEO.js", () => ({ useSEO: vi.fn() }));
 vi.mock("../hooks/useWorkspaceOverview.js", () => ({
@@ -51,6 +52,12 @@ describe("product workspaces", () => {
     fireEvent.click(screen.getByRole("button", { name: /2024/i }));
     expect(screen.getByText("2025", { selector: ".workspace-selection-tray span" })).toBeInTheDocument();
     expect(screen.getByText("2024", { selector: ".workspace-selection-tray span" })).toBeInTheDocument();
+  });
+
+  it("loads the complete canonical evidence set when a sector tile is selected", async () => {
+    render(<MemoryRouter initialEntries={["/fines/analytics"]}><FinesWorkspace view="analytics" /></MemoryRouter>);
+    fireEvent.click(screen.getByRole("button", { name: /Banking.*1 actions/i }));
+    expect(fetchWorkspaceRecords).toHaveBeenCalledWith(expect.objectContaining({ sector: "Banking" }));
   });
 
   it("uses the canonical regulator executive-summary layout", () => {

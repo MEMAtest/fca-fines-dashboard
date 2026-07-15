@@ -359,6 +359,22 @@ describe("next-eight regulator coverage", () => {
     expect(parseFinraAmount(page.entries[0]?.summary || "")).toBe(35000);
   });
 
+  it("uses the FINRA sanction amount rather than an AML reporting threshold", () => {
+    expect(
+      parseFinraAmount(
+        "The firm incorrectly used a $25,000 threshold instead of $5,000. The firm is censured and fined $500,000.",
+      ),
+    ).toBe(500_000);
+  });
+
+  it("does not treat investment or customer-loss values as FINRA fines", () => {
+    expect(
+      parseFinraAmount(
+        "Customers invested nearly $11 million in private placements. The representative was barred from associating with any FINRA member.",
+      ),
+    ).toBeNull();
+  });
+
   it("builds descending FINRA month windows with archive filters", () => {
     const windows = buildFinraMonthWindows(2026, 2026);
     const lastWindow = windows[windows.length - 1];

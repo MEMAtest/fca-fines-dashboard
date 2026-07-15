@@ -5,7 +5,7 @@ import type { FineRecord } from "../types.js";
 export async function fetchWorkspaceRecords(
   params: UnifiedSearchParams,
   currency = "GBP",
-  maximumRecords = 5000,
+  maximumRecords = 10000,
 ): Promise<{ records: FineRecord[]; total: number; truncated: boolean }> {
   const pageSize = 500;
   let offset = 0;

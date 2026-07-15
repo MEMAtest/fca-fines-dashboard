@@ -68,7 +68,7 @@ async function main() {
         date_issued,
         breach_type,
         notice_url AS final_notice_url
-      FROM all_regulatory_fines
+      FROM all_regulatory_fines_canonical
       WHERE date_issued >= NOW() - make_interval(days => ${days})
       ORDER BY amount_gbp DESC NULLS LAST, date_issued DESC
     ` as Fine[];
