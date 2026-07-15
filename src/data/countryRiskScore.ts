@@ -2,8 +2,8 @@
  * RegActions Country Risk Score — the transparent composite.
  *
  * A 0–10 country ML/TF, sanctions & governance risk score (HIGHER = HIGHER RISK),
- * structured on the Basel AML Index domain model and aligned to the Wolfsberg
- * Group country-risk factors, built ONLY from licence-clean public sources:
+ * structured with reference to Basel and Wolfsberg country-risk factors and
+ * built ONLY from licence-clean public sources:
  *
  *   BASE (governance) — weighted mean of World Bank WGI domains (CC BY 4.0):
  *     • Corruption               (WGI Control of Corruption)          35%

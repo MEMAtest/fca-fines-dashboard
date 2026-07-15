@@ -5,82 +5,73 @@
  * CPI (Corruption Perceptions Index) is a 0–100 score, HIGHER = cleaner. It is
  * DISPLAY-ONLY here (CC BY-ND — we show it unmodified, never derive/score from
  * it; the scored corruption signal comes from World Bank WGI). We take the
- * latest year present and rank within it (standard competition ranking, ties
- * share a rank) to reproduce TI's published "#N / total".
+ * published 2025 score and rank without transforming either value.
  *
- * Data via Our World in Data's redistribution of the TI CPI (ISO3-coded, stable):
+ * Data from Transparency International's official CPI workbook:
  *   npx tsx scripts/ingest-cpi.ts            # write the snapshot
  *   npx tsx scripts/ingest-cpi.ts --dry-run  # print summary, don't write
+ *   npx tsx scripts/ingest-cpi.ts --file /path/to/CPI2025_Results.xlsx
  */
 import { writeFileSync } from "fs";
 import { join, dirname } from "path";
 import { fileURLToPath } from "url";
+import XLSX from "xlsx";
 import { getCountryByIso3 } from "../src/data/countries.js";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const OUT = join(__dirname, "..", "src", "data", "cpiData.ts");
 const dryRun = process.argv.includes("--dry-run");
 
-const CSV_URL =
-  "https://ourworldindata.org/grapher/TI-corruption-perception-index.csv?csvType=full";
+const CPI_YEAR = "2025";
+const XLSX_URL = "https://files.transparencycdn.org/images/CPI2025_Results.xlsx";
 
-/** Split one CSV line, respecting double-quoted fields (which may contain commas). */
-function parseCsvLine(line: string): string[] {
-  const out: string[] = [];
-  let cur = "";
-  let inQuotes = false;
-  for (let i = 0; i < line.length; i++) {
-    const ch = line[i];
-    if (ch === '"') {
-      if (inQuotes && line[i + 1] === '"') {
-        cur += '"';
-        i++;
-      } else inQuotes = !inQuotes;
-    } else if (ch === "," && !inQuotes) {
-      out.push(cur);
-      cur = "";
-    } else cur += ch;
+function fileArg(): string | undefined {
+  const inline = process.argv.find((arg) => arg.startsWith("--file="));
+  if (inline) return inline.slice("--file=".length);
+  const index = process.argv.indexOf("--file");
+  return index >= 0 ? process.argv[index + 1] : undefined;
+}
+
+async function loadWorkbook(): Promise<XLSX.WorkBook> {
+  const local = fileArg();
+  if (local) return XLSX.readFile(local);
+
+  const response = await fetch(XLSX_URL, { signal: AbortSignal.timeout(60_000) });
+  if (!response.ok) throw new Error(`CPI fetch HTTP ${response.status}`);
+  const contentType = response.headers.get("content-type") ?? "";
+  if (contentType.includes("text/html")) {
+    throw new Error("CPI endpoint returned HTML instead of the official workbook");
   }
-  out.push(cur);
-  return out;
+  return XLSX.read(Buffer.from(await response.arrayBuffer()), { type: "buffer" });
 }
 
 async function main() {
-  const res = await fetch(CSV_URL, { signal: AbortSignal.timeout(60_000) });
-  if (!res.ok) throw new Error(`CPI fetch HTTP ${res.status}`);
-  const text = await res.text();
-  const lines = text.trim().split("\n");
-  const header = parseCsvLine(lines[0]);
-  const codeIdx = header.indexOf("Code");
-  const yearIdx = header.indexOf("Year");
-  const scoreIdx = header.findIndex((h) => h.toLowerCase().includes("corruption"));
-  if (codeIdx < 0 || yearIdx < 0 || scoreIdx < 0) {
+  const workbook = await loadWorkbook();
+  const sheet = workbook.Sheets[`CPI${CPI_YEAR}`];
+  if (!sheet) throw new Error(`Official CPI workbook is missing CPI${CPI_YEAR}`);
+  const rows = XLSX.utils.sheet_to_json<unknown[]>(sheet, { header: 1, defval: null });
+  const headerIndex = rows.findIndex((row) => row.includes(`CPI ${CPI_YEAR} score`));
+  if (headerIndex < 0) throw new Error("Could not locate the CPI score header row");
+  const header = rows[headerIndex].map((value) => String(value ?? ""));
+  const codeIdx = header.indexOf("ISO3");
+  const scoreIdx = header.indexOf(`CPI ${CPI_YEAR} score`);
+  const rankIdx = header.indexOf("Rank");
+  if (codeIdx < 0 || scoreIdx < 0 || rankIdx < 0) {
     throw new Error(`Unexpected CPI columns: ${header.join(" | ")}`);
   }
 
-  // Parse rows → keyed by ISO3, keep the latest year per code.
-  interface Rec {
-    iso3: string;
-    year: number;
-    score: number;
+  const current = rows.slice(headerIndex + 1).flatMap((row) => {
+    const iso3 = String(row[codeIdx] ?? "").trim();
+    const score = Number(row[scoreIdx]);
+    const rank = Number(row[rankIdx]);
+    return iso3.length === 3 && Number.isFinite(score) && Number.isFinite(rank)
+      ? [{ iso3, score, rank }]
+      : [];
+  });
+  if (current.length < 170) {
+    throw new Error(`CPI workbook coverage too small: ${current.length}`);
   }
-  const rows: Rec[] = [];
-  let latestYear = 0;
-  for (let i = 1; i < lines.length; i++) {
-    const cols = parseCsvLine(lines[i]);
-    const iso3 = cols[codeIdx]?.trim();
-    const year = Number(cols[yearIdx]);
-    const score = Number(cols[scoreIdx]);
-    if (!iso3 || iso3.length !== 3 || Number.isNaN(year) || Number.isNaN(score)) continue;
-    rows.push({ iso3, year, score });
-    if (year > latestYear) latestYear = year;
-  }
-
-  // Rank within the single latest year (matches TI's annual table).
-  const current = rows.filter((r) => r.year === latestYear);
-  // Sort by score desc for ranking.
-  const sorted = [...current].sort((a, b) => b.score - a.score);
-  const total = sorted.length;
+  const total = current.length;
 
   // Map ISO3 → our iso2, compute standard-competition rank (ties share a rank).
   interface Entry {
@@ -90,17 +81,16 @@ async function main() {
     rank: number;
   }
   const entries: Entry[] = [];
-  for (const r of sorted) {
+  for (const r of current) {
     const country = getCountryByIso3(r.iso3);
-    if (!country) continue; // Kosovo pseudo-codes / regions OWID includes but we don't map
-    const rank = 1 + current.filter((o) => o.score > r.score).length;
-    entries.push({ iso2: country.iso2, name: country.name, score: r.score, rank });
+    if (!country) continue;
+    entries.push({ iso2: country.iso2, name: country.name, score: r.score, rank: r.rank });
   }
   // Stable order for the generated file: by rank asc, then name.
   entries.sort((a, b) => a.rank - b.rank || a.name.localeCompare(b.name));
 
   console.log(
-    `CPI ${latestYear}: ${current.length} scored countries, ${entries.length} mapped to our ISO set (total ranked = ${total}).`,
+    `CPI ${CPI_YEAR}: ${current.length} scored countries, ${entries.length} mapped to our ISO set (total ranked = ${total}).`,
   );
   console.log(
     "  sample:",
@@ -120,7 +110,7 @@ async function main() {
  * Transparency International — Corruption Perceptions Index (CPI) snapshot.
  *
  * Score 0–100 (HIGHER = cleaner / less corrupt) + rank (1 = cleanest) within the
- * ${latestYear} table (${total} countries ranked; standard-competition ranking).
+ * ${CPI_YEAR} table (${total} countries ranked; official published rank).
  *
  * DISPLAY-ONLY. CPI is licensed CC BY-ND: we show it unmodified and NEVER feed it
  * into the RegActions Country Risk Score (the scored corruption signal comes from
@@ -129,9 +119,9 @@ async function main() {
  * GENERATED by scripts/ingest-cpi.ts. Do not edit by hand — re-run to refresh.
  */
 
-export const CPI_YEAR = "${latestYear}";
+export const CPI_YEAR = "${CPI_YEAR}";
 export const CPI_TOTAL = ${total};
-export const CPI_SOURCE = "https://www.transparency.org/en/cpi/${latestYear}";
+export const CPI_SOURCE = "https://www.transparency.org/en/cpi/${CPI_YEAR}";
 export const CPI_LICENCE = "CC BY-ND 4.0 — Transparency International";
 
 export interface CpiEntry {
@@ -141,7 +131,7 @@ export interface CpiEntry {
   rank: number;
 }
 
-/** iso2 -> CPI score + rank (${latestYear}). Display only, never scored. */
+/** iso2 -> CPI score + rank (${CPI_YEAR}). Display only, never scored. */
 export const CPI_RANK: Record<string, CpiEntry> = {
 ${body}
 };
@@ -156,7 +146,7 @@ export function hasCpi(iso2: string): boolean {
 `;
 
   writeFileSync(OUT, file);
-  console.log(`Wrote ${OUT} (${entries.length} countries, CPI ${latestYear}).`);
+  console.log(`Wrote ${OUT} (${entries.length} countries, CPI ${CPI_YEAR}).`);
 }
 
 main().catch((err) => {

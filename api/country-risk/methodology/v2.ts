@@ -1,0 +1,33 @@
+import type { VercelRequest, VercelResponse } from "@vercel/node";
+import {
+  COUNTRY_RISK_FLOORS,
+  COUNTRY_RISK_METHODOLOGY_VERSION,
+  COUNTRY_RISK_PILLAR_WEIGHTS,
+} from "../../../src/data/countryRiskV2.js";
+import { COUNTRY_RISK_SOURCES } from "../../../src/data/countryRiskSources.js";
+
+export default function handler(req: VercelRequest, res: VercelResponse) {
+  res.setHeader("Access-Control-Allow-Origin", "*");
+  if (req.method !== "GET") return res.status(405).json({ error: "Method not allowed" });
+  res.setHeader("Cache-Control", "public, max-age=300, s-maxage=86400");
+  return res.status(200).json({
+    version: COUNTRY_RISK_METHODOLOGY_VERSION,
+    status: "parallel-validation",
+    scale: { minimum: 0, maximum: 10, higherMeans: "higher inherent jurisdiction risk" },
+    weights: COUNTRY_RISK_PILLAR_WEIGHTS,
+    mappings: {
+      fatfEffectiveness: { HE: 0, SE: 3.33, ME: 6.67, LE: 10 },
+      fatfTechnicalCompliance: { C: 0, LC: 3.33, PC: 6.67, NC: 10 },
+      sanctions: { targeted: 3.33, sectoral: 6.67, comprehensive: 10 },
+    },
+    floors: COUNTRY_RISK_FLOORS,
+    missingData: "No missing input is scored as zero; fewer than two pillars produces no headline score.",
+    confidence: {
+      high: "All pillars and sources current, with FATF assessment no more than five years old.",
+      medium: "Complete inputs with a FATF assessment more than five but no more than eight years old, or another stale source.",
+      low: "Missing pillar, assessment date unavailable or more than eight years old, or a source warning/review gate.",
+    },
+    contextOnly: ["Transparency International CPI", "RegActions enforcement volume"],
+    sources: COUNTRY_RISK_SOURCES,
+  });
+}

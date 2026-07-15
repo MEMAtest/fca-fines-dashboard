@@ -648,7 +648,7 @@ function GlobalIndex() {
         <h1 className="country-index__title">Global Country Risk Ratings</h1>
         <p className="cx-dash__lead">
           Assessing AML/CFT control strength, governance exposure and enforcement across{" "}
-          {index.length} jurisdictions. Basel-structured, Wolfsberg-aligned.{" "}
+          {index.length} jurisdictions. Structured with reference to Basel and Wolfsberg factors.{" "}
           <Link to="/countries/methodology">How it&rsquo;s scored →</Link>
         </p>
       </header>

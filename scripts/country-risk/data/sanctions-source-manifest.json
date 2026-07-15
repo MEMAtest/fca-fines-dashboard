@@ -1,0 +1,35 @@
+{
+  "version": 1,
+  "approvedAt": null,
+  "sources": [
+    {
+      "id": "ofac-programmes",
+      "url": "https://ofac.treasury.gov/sanctions-programs-and-country-information",
+      "minimumBytes": 5000,
+      "requiredText": "Sanctions Programs",
+      "approvedFingerprint": null
+    },
+    {
+      "id": "uk-regimes",
+      "url": "https://www.gov.uk/government/collections/uk-sanctions-regimes-under-the-sanctions-act",
+      "minimumBytes": 5000,
+      "requiredText": "sanctions regimes",
+      "approvedFingerprint": null
+    },
+    {
+      "id": "eu-resources",
+      "url": "https://finance.ec.europa.eu/eu-and-world/sanctions-restrictive-measures/overview-sanctions-and-related-resources_en",
+      "minimumBytes": 5000,
+      "requiredText": "sanctions",
+      "approvedFingerprint": null
+    },
+    {
+      "id": "un-consolidated-list",
+      "url": "https://scsanctions.un.org/resources/xml/en/name/consolidated.xml",
+      "format": "xml",
+      "minimumBytes": 500000,
+      "requiredText": "CONSOLIDATED_LIST",
+      "approvedFingerprint": null
+    }
+  ]
+}

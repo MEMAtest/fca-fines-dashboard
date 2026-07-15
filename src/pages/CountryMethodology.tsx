@@ -82,14 +82,18 @@ export function CountryMethodology() {
           How the RegActions Country Risk Score is calculated
         </h1>
         <p className="cx-method__lead">
-          A transparent 0–10 country risk score (higher = higher risk), structured on
-          the <strong>Basel AML Index</strong> domain model and aligned to the{" "}
+          A transparent 0–10 country risk score (higher = higher risk), structured
+          with reference to the <strong>Basel AML Index</strong> domain model and{" "}
           <strong>Wolfsberg Group</strong> country-risk factors, but built only from
           licence-clean public sources. A country&rsquo;s governance sets a base risk;
           FATF listing and sanctions escalate it. Informational, and not a substitute
           for a firm&rsquo;s own risk assessment.
         </p>
         <BandScale />
+        <p className="cx-method__note">
+          This is the current v1 methodology. The decision-grade v2 model is running in
+          parallel validation. <Link to="/countries/methodology/v2">Review v2 sources and safeguards →</Link>
+        </p>
       </header>
 
       <section className="cx-method__section">
@@ -187,11 +191,11 @@ export function CountryMethodology() {
       </section>
 
       <section className="cx-method__section">
-        <h2 className="cx-method__h2">Aligned to Basel &amp; Wolfsberg</h2>
+        <h2 className="cx-method__h2">Structured with reference to Basel &amp; Wolfsberg</h2>
         <p className="cx-method__p">
-          The domain structure follows the Basel AML Index (governance, corruption,
+          The domain structure was selected with reference to the Basel AML Index (governance, corruption,
           rule of law and political risk as the core of country ML/TF risk), and the
-          factor set follows the Wolfsberg Group country-risk guidance (FATF status,
+          factor set was selected with reference to Wolfsberg Group country-risk guidance (FATF status,
           sanctions, corruption and governance). RegActions does not reproduce the
           Basel AML Index scores, which are licensed for non-commercial use only; this
           score is an independent composite built from licence-clean public data. FATF

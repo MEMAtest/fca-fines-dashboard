@@ -17,6 +17,7 @@ import { FATF_SOURCE_URL } from "../data/fatfStatus.js";
 import { bandLabel, bandFor, type RiskBand } from "../data/countryRiskScore.js";
 import { GOVERNANCE_VINTAGE } from "../data/governanceData.js";
 import { CPI_YEAR, CPI_TOTAL } from "../data/cpiData.js";
+import { computeCountryRiskV2 } from "../data/countryRiskV2.js";
 import {
   buildCountryView,
   formatDate,
@@ -161,6 +162,7 @@ export function CountryHub() {
   } = view;
 
   const rank = globalRank(country.iso2);
+  const v2 = computeCountryRiskV2(country.iso2);
   const markerPct = Math.min(100, (globalAverage / 10) * 100);
   const baseline = scoreHistory[0];
   const tiles = controlTiles(riskScore.band);
@@ -583,6 +585,53 @@ export function CountryHub() {
               </div>
             </div>
           </div>
+
+          <section className="cx-v2" aria-labelledby="v2-heading">
+            <div className="cx-v2__head">
+              <div>
+                <span className="cx-v2__eyebrow">Methodology v2 · parallel validation</span>
+                <h2 id="v2-heading">Trusted score assurance</h2>
+              </div>
+              <div className="cx-v2__badges">
+                <span className={`cx-v2__badge cx-v2__badge--${v2.status}`}>{v2.status}</span>
+                <span className={`cx-v2__badge cx-v2__badge--confidence-${v2.confidence}`}>
+                  {v2.confidence} confidence
+                </span>
+              </div>
+            </div>
+            <div className="cx-v2__summary">
+              <div className="cx-v2__result">
+                <strong>{v2.score === null ? "Headline withheld" : `${v2.score.toFixed(1)} / 10`}</strong>
+                <span>{v2.band ? bandLabel(v2.band) : "Insufficient scored evidence"}</span>
+              </div>
+              <div className="cx-v2__pillars">
+                {Object.entries(v2.pillars).map(([key, pillar]) => (
+                  <div key={key} className="cx-v2__pillar">
+                    <span>{key === "aml" ? "AML/CFT" : key[0].toUpperCase() + key.slice(1)}</span>
+                    <strong>{pillar.score === null ? "n/a" : pillar.score.toFixed(1)}</strong>
+                    <small>{Math.round(pillar.appliedWeight * 100)}% applied · {pillar.sourceState}</small>
+                  </div>
+                ))}
+              </div>
+            </div>
+            {v2.floors.length > 0 && (
+              <p className="cx-v2__floors">
+                Regulatory floors: {v2.floors.map((floor) => `${floor.reason} ≥ ${floor.minimum.toFixed(1)}`).join(" · ")}
+              </p>
+            )}
+            <p className="cx-v2__arithmetic">{v2.arithmetic}</p>
+            {v2.limitingReasons.length > 0 && (
+              <ul className="cx-v2__limits">
+                {v2.limitingReasons.map((reason) => <li key={reason}>{reason}</li>)}
+              </ul>
+            )}
+            <p className="cx-v2__change">
+              {v2.score === null
+                ? `The current v1 score remains ${riskScore.score.toFixed(1)} while v2 withholds a replacement until at least two source pillars are available.`
+                : `Parallel comparison: v1 ${riskScore.score.toFixed(1)} → v2 ${v2.score.toFixed(1)} (${v2.score - riskScore.score >= 0 ? "+" : ""}${(v2.score - riskScore.score).toFixed(1)}).`}
+              {" "}<Link to="/countries/methodology/v2">Methodology, sources and safeguards →</Link>
+            </p>
+          </section>
         </div>
 
         {/* ── Right rail: methodology | peers | sources ── */}
@@ -604,7 +653,7 @@ export function CountryHub() {
               Governance base score <b>{breakdown.base.toFixed(1)} / 10</b>
             </div>
             <p className="cx-card__note">
-              Basel-structured, Wolfsberg-aligned · WGI {GOVERNANCE_VINTAGE} · FATF{" "}
+              Structured with reference to Basel and Wolfsberg factors · WGI {GOVERNANCE_VINTAGE} · FATF{" "}
               {formatDate(view.lastPlenary)}. Enforcement and CPI are shown but not scored.
             </p>
             <Link to="/countries/methodology" className="cx-card__link">

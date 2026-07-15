@@ -33,7 +33,7 @@ const INDICATORS: Array<{ code: string; key: string }> = [
   { code: "GOV_WGI_VA", key: "va" }, // Voice & Accountability
 ];
 const DIM_KEYS = INDICATORS.map((i) => i.key);
-const YEAR = process.argv.find((a) => a.startsWith("--year="))?.split("=")[1] ?? "2023";
+const YEAR = process.argv.find((a) => a.startsWith("--year="))?.split("=")[1] ?? "2024";
 
 interface Row {
   REF_AREA: string;
@@ -99,6 +99,7 @@ function renderFile(dims: Record<string, Dims>, mean: Record<string, number>): s
 export const GOVERNANCE_SOURCE =
   "https://www.worldbank.org/en/publication/worldwide-governance-indicators";
 export const GOVERNANCE_VINTAGE = "${YEAR}";
+export const GOVERNANCE_RETRIEVED_AT = "${new Date().toISOString()}";
 export const GOVERNANCE_LICENCE = "CC BY 4.0 — World Bank WGI";
 
 /** The six WGI dimensions (percentile rank 0–100, higher = better). */
@@ -178,6 +179,9 @@ async function main(): Promise<void> {
   console.log(
     `Resolved WGI for ${Object.keys(mean).length}/${COUNTRIES.length} reference countries (per-dimension + mean).`,
   );
+  if (Object.keys(mean).length < 175) {
+    throw new Error(`WGI coverage too small: ${Object.keys(mean).length}; refusing to publish`);
+  }
   if (dryRun) {
     console.log(JSON.stringify({ sample: Object.entries(dims).slice(0, 3), mean: Object.entries(mean).slice(0, 3) }, null, 2));
     return;

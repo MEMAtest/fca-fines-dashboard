@@ -260,7 +260,7 @@ function renderCountryFatfBody(view: CountryView): string {
   const scoreHtml = `<h2>RegActions Country Risk Score: ${escapeHtml(
     `${riskScore.score.toFixed(1)}/10 (${bandLabel(riskScore.band)})`,
   )}</h2><p>${escapeHtml(
-    `Higher score = higher risk (global average ${globalAverage.toFixed(1)}). A Basel-structured, Wolfsberg-aligned composite: a World Bank WGI governance base, with FATF listing and sanctions as escalators (capped at 10). Enforcement volume and CPI are shown but not scored.`,
+    `Higher score = higher risk (global average ${globalAverage.toFixed(1)}). Structured with reference to Basel and Wolfsberg factors: a World Bank WGI governance base, with FATF listing and sanctions as escalators (capped at 10). Enforcement volume and CPI are shown but not scored.`,
   )}</p><h3>How it is scored</h3><ul>${domainLis}<li>${escapeHtml(
     `Governance base: ${breakdown.base.toFixed(1)}`,
   )}</li>${escLis}<li>${escapeHtml(`Composite: ${riskScore.score.toFixed(1)}`)}</li></ul>`;
@@ -484,7 +484,7 @@ function renderGlobalIndexBody(): string {
 function renderMethodologyBody(): string {
   const pc = (n: number) => `${Math.round(n * 100)}%`;
   return `<div class="blog-page"><div class="blog-post-container"><article class="blog-article-modal"><h1 class="blog-post-title">How the RegActions Country Risk Score is calculated</h1><div class="blog-article-content"><p>${escapeHtml(
-    "The RegActions Country Risk Score is a transparent 0-10 composite (higher = higher risk), structured on the Basel AML Index domain model and aligned to the Wolfsberg Group country-risk factors, but built only from licence-clean public sources. A country's governance sets a base risk; FATF listing and sanctions escalate it. Informational, and not a substitute for a firm's own risk assessment.",
+    "The RegActions Country Risk Score is a transparent 0-10 composite (higher = higher risk), structured with reference to Basel and Wolfsberg country-risk factors and built only from licence-clean public sources. A country's governance sets a base risk; FATF listing and sanctions escalate it. Informational, and not a substitute for a firm's own risk assessment.",
   )}</p><h2>1. Governance base (World Bank WGI)</h2><p>${escapeHtml(
     "A weighted mean of four WGI domains, each percentile (0-100, higher = better) inverted to a 0-10 risk of (100 - percentile) / 10:",
   )}</p><ul><li>${escapeHtml(
@@ -497,7 +497,7 @@ function renderMethodologyBody(): string {
     `Voice and accountability, WGI Voice & Accountability (${pc(DOMAIN_WEIGHTS.accountability)}).`,
   )}</li></ul><h2>2. Escalators (FATF and sanctions)</h2><p>${escapeHtml(
     `Added on top of the governance base, capped at 10: FATF grey +${FATF_ESCALATION.grey}, black +${FATF_ESCALATION.black}; sanctions targeted +${SANCTIONS_ESCALATION.targeted}, sectoral +${SANCTIONS_ESCALATION.sectoral}, comprehensive +${SANCTIONS_ESCALATION.comprehensive} (highest tier across OFAC / UK / EU / UN). When a WGI domain is missing, the remaining domain weights are renormalised.`,
-  )}</p><h2>Risk bands</h2><ul><li>Low 0-2.9</li><li>Moderate 3.0-4.9</li><li>High 5.0-6.9</li><li>Very high 7.0-10</li></ul><h2>Aligned to Basel and Wolfsberg</h2><p>${escapeHtml(
+  )}</p><h2>Risk bands</h2><ul><li>Low 0-2.9</li><li>Moderate 3.0-4.9</li><li>High 5.0-6.9</li><li>Very high 7.0-10</li></ul><h2>Structured with reference to Basel and Wolfsberg</h2><p>${escapeHtml(
     "The domain structure follows the Basel AML Index and the factor set follows the Wolfsberg Group country-risk guidance. RegActions does not reproduce the Basel AML Index scores, which are licensed for non-commercial use only; this is an independent composite from licence-clean public data. FATF Mutual-Evaluation effectiveness ratings are a planned enhancement.",
   )}</p><h2>Not scored</h2><p>${escapeHtml(
     "Enforcement volume (it measures regulator activity, not country risk) and Transparency International CPI (no-derivatives licence) are shown as evidence/reference but never fed into the score.",
@@ -508,6 +508,10 @@ function renderMethodologyBody(): string {
   )}" rel="noopener">Source</a></li><li>OFAC / UK FCDO / EU / UN sanctions programmes (curated, sourced per row).</li><li>${escapeHtml(
     `Transparency International CPI ${CPI_YEAR} (${CPI_LICENCE}), display only.`,
   )} <a href="${escapeHtml(CPI_SOURCE)}" rel="noopener">Source</a></li></ul></div></article></div></div>`;
+}
+
+function renderMethodologyV2Body(): string {
+  return `<div class="blog-page"><div class="blog-post-container"><article class="blog-article-modal"><h1 class="blog-post-title">Trusted Country Risk Score v2</h1><div class="blog-article-content"><p>A deterministic 0-10 benchmark of inherent jurisdictional risk, currently in parallel validation. It is structured with reference to Basel and Wolfsberg factors and is not a customer accept/reject decision.</p><h2>Three pillars</h2><ul><li>AML/CFT framework (50%): FATF effectiveness ratings at 70% and technical compliance at 30%.</li><li>Governance (30%): equal-weight mean of six inverted World Bank WGI percentiles.</li><li>Sanctions exposure (20%): 70% highest geographic regime scope and 30% mean across UN, UK, EU and US.</li></ul><h2>Missing evidence</h2><p>Missing inputs are never scored as zero. One missing pillar is provisional and cannot be Low; fewer than two pillars produces no headline score.</p><h2>Regulatory floors</h2><p>FATF grey list 6.0; FATF call for action 9.0; sectoral sanctions 6.0; comprehensive sanctions 8.0. Targeted sanctions remain a visible flag.</p><p><a href="/countries/methodology">View the current v1 methodology</a>.</p></div></article></div></div>`;
 }
 
 function renderTopicClusterBody(slug: string): string {
@@ -1282,6 +1286,24 @@ async function buildPageMetas(): Promise<PageMeta[]> {
       description:
         "Transparent methodology for the RegActions Country Risk Score (FATF + sanctions + World Bank governance).",
       url: `${BASE_URL}/countries/methodology`,
+      author: { "@type": "Organization", name: SITE_NAME, url: "https://regactions.com" },
+      publisher: { "@type": "Organization", name: SITE_NAME },
+    },
+  });
+  pages.push({
+    path: "/countries/methodology/v2",
+    title: "Trusted Country Risk Score v2 Methodology | RegActions",
+    description: "The deterministic RegActions country-risk v2 methodology, evidence rules, source assurance, confidence and regulatory floors.",
+    keywords: "country risk methodology v2, FATF assessment ratings, WGI governance, sanctions risk",
+    ogType: "article",
+    bodyContent: renderMethodologyV2Body(),
+    breadcrumbLabel: "Methodology v2",
+    jsonLd: {
+      "@context": "https://schema.org",
+      "@type": "Article",
+      headline: "Trusted Country Risk Score v2 methodology",
+      description: "Deterministic and explainable country-risk methodology in parallel validation.",
+      url: `${BASE_URL}/countries/methodology/v2`,
       author: { "@type": "Organization", name: SITE_NAME, url: "https://regactions.com" },
       publisher: { "@type": "Organization", name: SITE_NAME },
     },

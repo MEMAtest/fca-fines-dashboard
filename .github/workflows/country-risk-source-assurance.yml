@@ -1,0 +1,69 @@
+name: Country risk source assurance
+
+on:
+  schedule:
+    - cron: "17 5 * * *"
+    - cron: "23 6 * * 0"
+    - cron: "31 7 1 * *"
+  workflow_dispatch:
+    inputs:
+      lane:
+        description: "daily, weekly, monthly, or all"
+        required: false
+        default: "all"
+
+permissions:
+  contents: read
+
+jobs:
+  sanctions-daily:
+    if: github.event_name == 'schedule' || inputs.lane == 'daily' || inputs.lane == 'all'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npm run country-risk:check-sanctions
+      - if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: sanctions-source-review
+          path: /tmp/country-risk-sanctions-review.json
+
+  fatf-weekly-fragile:
+    if: (github.event_name == 'schedule' && github.event.schedule == '23 6 * * 0') || inputs.lane == 'weekly' || inputs.lane == 'all'
+    runs-on: ubuntu-latest
+    continue-on-error: true
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: Verify FATF official workbook lane
+        run: npm run country-risk:ingest-fatf -- --dry-run
+
+  monthly-release-detection:
+    if: (github.event_name == 'schedule' && github.event.schedule == '31 7 1 * *') || inputs.lane == 'monthly' || inputs.lane == 'all'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npx tsx scripts/ingest-wgi.ts --year=2024 --dry-run
+      - run: npm run country-risk:ingest-cpi -- --dry-run
+      - run: npm run country-risk:score-run
+      - run: npm run country-risk:validate
+      - uses: actions/upload-artifact@v4
+        with:
+          name: country-risk-monthly-evidence
+          path: |
+            /tmp/country-risk-v2-score-run.json
+            /tmp/country-risk-v2-validation.json

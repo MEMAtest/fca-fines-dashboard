@@ -158,6 +158,38 @@
 .country-score--moderate .country-score__seg--on { background: #f59e0b; }
 .country-score--high .country-score__seg--on { background: #ea580c; }
 .country-score--very-high .country-score__seg--on { background: #dc2626; }
+
+.cx-v2 {
+  margin: 1.25rem 0 1.5rem;
+  padding: 1.25rem;
+  border: 1px solid #dbe4e1;
+  border-radius: 16px;
+  background: linear-gradient(135deg, #f4fbf8, #ffffff);
+}
+.cx-v2__head, .cx-v2__summary { display: flex; justify-content: space-between; gap: 1rem; align-items: flex-start; }
+.cx-v2__head h2 { margin: .2rem 0 0; font-size: 1.2rem; }
+.cx-v2__eyebrow { color: #08785f; font-size: .75rem; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; }
+.cx-v2__badges { display: flex; gap: .45rem; flex-wrap: wrap; justify-content: flex-end; }
+.cx-v2__badge { padding: .3rem .55rem; border-radius: 999px; background: #e2e8f0; font-size: .72rem; font-weight: 750; }
+.cx-v2__badge--complete, .cx-v2__badge--confidence-high { background: #d1fae5; color: #065f46; }
+.cx-v2__badge--provisional, .cx-v2__badge--confidence-medium { background: #fef3c7; color: #92400e; }
+.cx-v2__badge--insufficient-data, .cx-v2__badge--confidence-low { background: #fee2e2; color: #991b1b; }
+.cx-v2__summary { margin-top: 1rem; align-items: stretch; }
+.cx-v2__result { min-width: 150px; display: flex; flex-direction: column; justify-content: center; }
+.cx-v2__result strong { font-size: 1.35rem; color: #0f172a; }
+.cx-v2__result span { color: #64748b; font-size: .8rem; }
+.cx-v2__pillars { flex: 1; display: grid; grid-template-columns: repeat(3, 1fr); gap: .65rem; }
+.cx-v2__pillar { padding: .7rem; border-radius: 10px; background: #fff; border: 1px solid #e2e8f0; display: grid; gap: .15rem; }
+.cx-v2__pillar span { font-size: .75rem; color: #475569; font-weight: 700; }
+.cx-v2__pillar strong { font-size: 1rem; color: #0f172a; }
+.cx-v2__pillar small { color: #64748b; }
+.cx-v2__floors, .cx-v2__arithmetic, .cx-v2__change { margin: .8rem 0 0; font-size: .82rem; color: #475569; }
+.cx-v2__limits { margin: .65rem 0 0; padding-left: 1.2rem; color: #9a3412; font-size: .8rem; }
+@media (max-width: 760px) {
+  .cx-v2__head, .cx-v2__summary { flex-direction: column; }
+  .cx-v2__badges { justify-content: flex-start; }
+  .cx-v2__pillars { width: 100%; grid-template-columns: 1fr; }
+}
 @media (max-width: 640px) {
   .country-score {
     grid-template-columns: 1fr;
