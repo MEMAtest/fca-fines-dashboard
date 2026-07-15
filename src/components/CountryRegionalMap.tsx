@@ -23,7 +23,6 @@ const DARK_NO_DATA = "#334155";
 interface Props {
   iso2: string;
   region: string;
-  subregion?: string;
 }
 
 interface HoverState {
@@ -32,7 +31,7 @@ interface HoverState {
   meta: FeatureMeta;
 }
 
-export function CountryRegionalMap({ iso2, region, subregion }: Props) {
+export function CountryRegionalMap({ iso2, region }: Props) {
   const navigate = useNavigate();
   const wrapRef = useRef<HTMLDivElement>(null);
   const world = useRiskTopology();
@@ -51,16 +50,15 @@ export function CountryRegionalMap({ iso2, region, subregion }: Props) {
 
   const meta = useMemo(() => buildFeatureMeta(world), [world]);
 
-  // Scope to the sub-region; fall back to region when that is too thin to read.
-  const regionFeatures = useMemo(() => {
-    const inArea = (matchSub: boolean) =>
+  // Scope to the full region for a wider neighbourhood view.
+  const regionFeatures = useMemo(
+    () =>
       world.filter((f) => {
         const c = meta.get(f)?.iso2 ? getCountryByIso2(meta.get(f)!.iso2!) : undefined;
-        return matchSub ? c?.subregion === subregion : c?.region === region;
-      });
-    const sub = subregion ? inArea(true) : [];
-    return sub.length >= 5 ? sub : inArea(false);
-  }, [world, meta, region, subregion]);
+        return c?.region === region;
+      }),
+    [world, meta, region],
+  );
 
   const height = Math.round(width * 0.72);
 

@@ -142,11 +142,7 @@ export function CountryHub() {
 
         <div className="cx-report__map">
           <Suspense fallback={<div className="cx-rmap__ph" style={{ height: 240 }} />}>
-            <CountryRegionalMap
-              iso2={country.iso2}
-              region={country.region}
-              subregion={country.subregion}
-            />
+            <CountryRegionalMap iso2={country.iso2} region={country.region} />
           </Suspense>
         </div>
 
@@ -202,9 +198,14 @@ export function CountryHub() {
                   + Sanctions {riskScore.sanctions.label} <b>+{riskScore.sanctions.points}</b>
                 </span>
               )}
-              <span className="cx-derivation__total">
-                = <b>{riskScore.score.toFixed(1)}</b>
-              </span>
+              {(riskScore.fatf.points > 0 || riskScore.sanctions.points > 0) && (
+                <span className="cx-derivation__total">
+                  = <b>{riskScore.score.toFixed(1)}</b>
+                </span>
+              )}
+              {riskScore.fatf.points === 0 && riskScore.sanctions.points === 0 && (
+                <span className="cx-derivation__note">no escalators applied</span>
+              )}
             </div>
             <p className="country-score__disclaimer">
               Basel-structured, Wolfsberg-aligned. Enforcement volume and CPI are shown
