@@ -215,11 +215,22 @@ describe("next-eight regulator coverage", () => {
 
   it("uses a verified JFSC archive without duplicate live URLs", () => {
     const archive = loadJfscArchiveRecords();
-    const merged = mergeJfscRecords([{ ...archive[0], amount: 1_000_000 }]);
+    const merged = mergeJfscRecords([
+      { ...archive[0], amount: 1_000_000 },
+      {
+        ...archive[0],
+        firmIndividual: "JFSC proposes fee changes for registry services",
+        amount: 30,
+        finalNoticeUrl: "https://www.jerseyfsc.org/news-and-events/registry-fees/",
+        sourceUrl: "https://www.jerseyfsc.org/sitemapxml",
+      },
+    ]);
 
     expect(archive).toHaveLength(6);
     expect(merged).toHaveLength(6);
     expect(merged[0].amount).toBe(86_803.19);
+    expect(merged.some((record) => record.firmIndividual.includes("fee changes")))
+      .toBe(false);
   });
 
   it("detects managed challenge responses", () => {

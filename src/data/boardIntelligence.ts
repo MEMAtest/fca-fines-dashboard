@@ -342,7 +342,7 @@ export const BOARD_ARCHETYPES: BoardArchetypeDefinition[] = [
     description:
       "Banks with broad customer populations, payment flows, complaints exposure, and governance complexity.",
     boardLens:
-      "Emphasize customer harm, AML effectiveness, remediation governance, and recurring first-line control breaks.",
+      "Emphasise customer harm, AML effectiveness, remediation governance, and recurring first-line control breaks.",
     baselineScore: 68,
     defaultThemes: [
       "aml-controls",
@@ -359,7 +359,7 @@ export const BOARD_ARCHETYPES: BoardArchetypeDefinition[] = [
     description:
       "Trading, brokerage, and capital-markets businesses exposed to market conduct and reporting failures.",
     boardLens:
-      "Emphasize market abuse surveillance, supervisory accountability, reporting accuracy, and desk-level conduct oversight.",
+      "Emphasise market abuse surveillance, supervisory accountability, reporting accuracy, and desk-level conduct oversight.",
     baselineScore: 63,
     defaultThemes: [
       "market-abuse-surveillance",
@@ -376,7 +376,7 @@ export const BOARD_ARCHETYPES: BoardArchetypeDefinition[] = [
     description:
       "Buy-side firms where governance, disclosures, market conduct, and investor outcomes dominate enforcement risk.",
     boardLens:
-      "Emphasize disclosure quality, market conduct, delegated oversight, and governance evidence for senior management.",
+      "Emphasise disclosure quality, market conduct, delegated oversight, and governance evidence for senior management.",
     baselineScore: 58,
     defaultThemes: [
       "governance-accountability",
@@ -393,7 +393,7 @@ export const BOARD_ARCHETYPES: BoardArchetypeDefinition[] = [
     description:
       "Payments, e-money, and platform businesses with financial crime, onboarding, and operational-control intensity.",
     boardLens:
-      "Emphasize AML, sanctions, onboarding quality, safeguarding or operational-control evidence, and fast remediation.",
+      "Emphasise AML, sanctions, onboarding quality, safeguarding or operational-control evidence, and fast remediation.",
     baselineScore: 66,
     defaultThemes: [
       "aml-controls",
@@ -410,7 +410,7 @@ export const BOARD_ARCHETYPES: BoardArchetypeDefinition[] = [
     description:
       "Trading venues, exchanges, and market-infrastructure businesses with surveillance, integrity, and resilience exposure.",
     boardLens:
-      "Emphasize surveillance coverage, escalation quality, market integrity controls, and infrastructure resilience.",
+      "Emphasise surveillance coverage, escalation quality, market integrity controls, and infrastructure resilience.",
     baselineScore: 62,
     defaultThemes: [
       "market-abuse-surveillance",
@@ -427,7 +427,7 @@ export const BOARD_ARCHETYPES: BoardArchetypeDefinition[] = [
     description:
       "Insurance businesses where conduct, disclosures, governance, and operational resilience dominate the board agenda.",
     boardLens:
-      "Emphasize product governance, customer outcomes, governance accountability, and resilience of core servicing processes.",
+      "Emphasise product governance, customer outcomes, governance accountability, and resilience of core servicing processes.",
     baselineScore: 55,
     defaultThemes: [
       "conduct-customer-outcomes",
@@ -528,7 +528,7 @@ export const BOARD_PACK_TEMPLATES: BoardPackTemplate[] = [
     id: "expansion-entry",
     label: "Expansion / market entry",
     description:
-      "Cross-border expansion template that emphasizes regulator spread, onboarding, and financial-crime watchpoints.",
+      "Cross-border expansion template that emphasises regulator spread, onboarding, and financial-crime watchpoints.",
     profile: {
       ...DEFAULT_BOARD_PROFILE,
       boardFocus: "expansion",
