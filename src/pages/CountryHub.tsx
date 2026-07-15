@@ -190,18 +190,21 @@ export function CountryHub() {
               </span>
               {riskScore.fatf.points > 0 && (
                 <span>
-                  + FATF {riskScore.fatf.label} <b>+{riskScore.fatf.points}</b>
+                  + FATF {riskScore.fatf.label} <b>+{riskScore.fatf.points.toFixed(1)}</b>
                 </span>
               )}
               {riskScore.sanctions.points > 0 && (
                 <span>
-                  + Sanctions {riskScore.sanctions.label} <b>+{riskScore.sanctions.points}</b>
+                  + Sanctions {riskScore.sanctions.label} <b>+{riskScore.sanctions.points.toFixed(1)}</b>
                 </span>
               )}
               {(riskScore.fatf.points > 0 || riskScore.sanctions.points > 0) && (
                 <span className="cx-derivation__total">
                   = <b>{riskScore.score.toFixed(1)}</b>
                 </span>
+              )}
+              {breakdown.base + riskScore.fatf.points + riskScore.sanctions.points > 10.05 && (
+                <span className="cx-derivation__note">(capped at 10)</span>
               )}
               {riskScore.fatf.points === 0 && riskScore.sanctions.points === 0 && (
                 <span className="cx-derivation__note">no escalators applied</span>
@@ -339,8 +342,11 @@ export function CountryHub() {
               ))}
             </ul>
             <p className="country-hub__fatf-meta">
-              Country-level sanctions programmes (not individual designations), reviewed{" "}
-              {sanctions.programs[0].reviewed}.
+              Country-level sanctions programmes (not individual designations)
+              {sanctions.programs[0]?.reviewed
+                ? `, reviewed ${formatDate(sanctions.programs[0].reviewed)}`
+                : ""}
+              .
             </p>
           </div>
         </section>

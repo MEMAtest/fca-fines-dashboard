@@ -192,29 +192,34 @@ export function controlStrength(iso2: string): number | null {
   return Math.round((vals.reduce((s, v) => s + v, 0) / vals.length / 10) * 10) / 10;
 }
 
-let _maxActions: number | undefined;
-function maxTrackedActions(): number {
-  if (_maxActions !== undefined) return _maxActions;
-  let m = 0;
+let _coveredCounts: number[] | undefined;
+/** Tracked-action counts for regulator-covered countries only, sorted ascending. */
+function coveredCounts(): number[] {
+  if (_coveredCounts) return _coveredCounts;
+  const arr: number[] = [];
   for (const c of pageCountries()) {
-    const e = getCountryEnforcementSummary(c.iso2);
-    if (e && e.trackedActions > m) m = e.trackedActions;
+    const n = getCountryEnforcementSummary(c.iso2)?.trackedActions ?? 0;
+    if (n > 0) arr.push(n);
   }
-  _maxActions = m;
-  return m;
+  arr.sort((a, b) => a - b);
+  _coveredCounts = arr;
+  return arr;
 }
 
 /**
- * Enforcement exposure (0–10) — tracked enforcement actions log-normalised
- * against the busiest country. Sparse: only regulator-covered countries score
- * above zero. Derived VIEW metric, never part of the scored composite.
+ * Enforcement exposure (0–10) — the PERCENTILE rank of a country's tracked
+ * enforcement actions AMONG the regulator-covered countries (busiest → 10,
+ * median-covered → ~5). Countries with no coverage are 0. Percentile (not
+ * log-vs-max) gives the covered set a real 0–10 spread so the risk-matrix
+ * axis isn't degenerate. Derived VIEW metric, never part of the scored composite.
  */
 export function enforcementExposure(iso2: string): number {
   const n = getCountryEnforcementSummary(iso2)?.trackedActions ?? 0;
   if (n <= 0) return 0;
-  const max = maxTrackedActions();
-  if (max <= 1) return 0;
-  return Math.round((Math.log10(n + 1) / Math.log10(max + 1)) * 10 * 10) / 10;
+  const arr = coveredCounts();
+  if (arr.length === 0) return 0;
+  const atOrBelow = arr.filter((v) => v <= n).length;
+  return Math.round((atOrBelow / arr.length) * 10 * 10) / 10;
 }
 
 export interface CountryIndexEntry {
