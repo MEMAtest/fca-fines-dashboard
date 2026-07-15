@@ -8,6 +8,10 @@ import {
   makeAbsoluteUrl,
   normalizeWhitespace,
 } from "./lib/euFineHelpers.js";
+import {
+  createBrowserHtmlClient,
+  type BrowserHtmlClient,
+} from "./lib/browserChallengeFetch.js";
 import { runScraper } from "./lib/runScraper.js";
 
 const CIRO_PUBLICATIONS_URL =
@@ -210,21 +214,51 @@ function buildCiroListingRecord(row: CiroListingRow) {
 }
 
 export async function loadCiroLiveRecords() {
-  const firstPageHtml = await fetchText(CIRO_PUBLICATIONS_URL);
-  const pageCount = extractCiroPageCount(firstPageHtml);
-  const rows = [...parseCiroListingHtml(firstPageHtml)];
+  let browserClient: BrowserHtmlClient | null = null;
 
-  for (let pageIndex = 1; pageIndex < pageCount; pageIndex += 1) {
-    const pageHtml = await fetchText(
-      `${CIRO_PUBLICATIONS_URL}&page=${pageIndex}`,
+  const loadPage = async (url: string) => {
+    if (browserClient) {
+      return browserClient.get(url, {
+        readySelector: ".views-row",
+        timeoutMs: 60_000,
+      });
+    }
+
+    try {
+      return await fetchText(url);
+    } catch (error) {
+      console.warn(
+        `CIRO direct request failed; switching to browser challenge handling: ${
+          error instanceof Error ? error.message : String(error)
+        }`,
+      );
+      browserClient = await createBrowserHtmlClient();
+      return browserClient.get(url, {
+        readySelector: ".views-row",
+        timeoutMs: 60_000,
+      });
+    }
+  };
+
+  try {
+    const firstPageHtml = await loadPage(CIRO_PUBLICATIONS_URL);
+    const pageCount = extractCiroPageCount(firstPageHtml);
+    const rows = [...parseCiroListingHtml(firstPageHtml)];
+
+    for (let pageIndex = 1; pageIndex < pageCount; pageIndex += 1) {
+      const pageHtml = await loadPage(
+        `${CIRO_PUBLICATIONS_URL}&page=${pageIndex}`,
+      );
+      rows.push(...parseCiroListingHtml(pageHtml));
+    }
+
+    const uniqueRows = Array.from(
+      new Map(rows.map((row) => [row.detailUrl, row])).values(),
     );
-    rows.push(...parseCiroListingHtml(pageHtml));
+    return mergeCiroRecords(uniqueRows.map((row) => buildCiroListingRecord(row)));
+  } finally {
+    await browserClient?.close();
   }
-
-  const uniqueRows = Array.from(
-    new Map(rows.map((row) => [row.detailUrl, row])).values(),
-  );
-  return mergeCiroRecords(uniqueRows.map((row) => buildCiroListingRecord(row)));
 }
 
 export async function main() {

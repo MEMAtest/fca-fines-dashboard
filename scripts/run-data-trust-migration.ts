@@ -17,6 +17,7 @@ async function main() {
   const migrationPaths = [
     "migrations/20260715_canonical_regulatory_evidence.sql",
     "migrations/20260715_board_pack_delivery.sql",
+    "migrations/20260715_sec_amount_evidence_remediation.sql",
   ].map((file) => path.resolve(process.cwd(), file));
 
   for (const migrationPath of migrationPaths) {
@@ -45,6 +46,11 @@ async function main() {
   }
   if (verified.length < 4) {
     throw new Error("Verified amount corrections were not applied");
+  }
+  if (Number(counts.amount_review_rows) !== 0) {
+    throw new Error(
+      `Canonical evidence still contains ${counts.amount_review_rows} amount-review rows`,
+    );
   }
 
   const [leadLifecycle] = await sql`
