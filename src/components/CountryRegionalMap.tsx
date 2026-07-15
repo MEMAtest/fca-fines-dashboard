@@ -1,14 +1,15 @@
 /**
  * Dark regional risk map for a country report.
  *
- * Zooms a d3-geo map to the focus country's sub-region (falling back to the
- * broader region when the sub-region is thin), highlighting the focus country and
- * colouring its neighbours by risk band. Hover for a quick score; click a
- * neighbour to open its report. Reuses the shared vendored topology + risk meta.
+ * Zooms a d3-geo map to the focus country's nearest neighbours (a distance-based
+ * neighbourhood, so it stays readable regardless of how large the taxonomy region
+ * is), highlighting the focus country and colouring its neighbours by risk band.
+ * Hover for a quick score; click a neighbour to open its report. Reuses the shared
+ * vendored topology + risk meta.
  */
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { geoMercator, geoPath } from "d3-geo";
+import { geoMercator, geoPath, geoCentroid, geoDistance } from "d3-geo";
 import { getCountryByIso2, resolveCountry, countrySlug } from "../data/countries.js";
 import { bandLabel } from "../data/countryRiskScore.js";
 import {
@@ -19,6 +20,10 @@ import {
 } from "./mapShared.js";
 
 const DARK_NO_DATA = "#334155";
+/** focus + ~13 nearest → a readable 8-14 country neighbourhood. */
+const NEIGHBOURHOOD = 14;
+/** Skip labels on polygons smaller than this projected area (px²) to avoid clutter. */
+const LABEL_MIN_AREA = 45;
 
 interface Props {
   iso2: string;
@@ -50,29 +55,51 @@ export function CountryRegionalMap({ iso2, region }: Props) {
 
   const meta = useMemo(() => buildFeatureMeta(world), [world]);
 
-  // Scope to the full region for a wider neighbourhood view.
-  const regionFeatures = useMemo(
-    () =>
-      world.filter((f) => {
-        const c = meta.get(f)?.iso2 ? getCountryByIso2(meta.get(f)!.iso2!) : undefined;
-        return c?.region === region;
-      }),
-    [world, meta, region],
+  const focusFeature = useMemo(
+    () => world.find((f) => meta.get(f)?.iso2 === iso2),
+    [world, meta, iso2],
   );
+
+  // Neighbourhood = the focus country's nearest neighbours by great-circle
+  // distance between centroids. Consistent regardless of taxonomy region size.
+  const areaFeatures = useMemo(() => {
+    if (world.length === 0) return [];
+    if (!focusFeature) {
+      // Fallback (unresolved focus polygon): the taxonomy region so we still render.
+      return world.filter((f) => {
+        const i2 = meta.get(f)?.iso2;
+        return i2 && getCountryByIso2(i2)?.region === region;
+      });
+    }
+    const fc = geoCentroid(focusFeature);
+    const ranked = world
+      .map((f) => {
+        const c = geoCentroid(f);
+        const dist = Number.isNaN(c[0]) ? Infinity : geoDistance(fc, c);
+        return { f, dist };
+      })
+      .sort((a, b) => a.dist - b.dist)
+      .slice(0, NEIGHBOURHOOD)
+      .map((r) => r.f);
+    // Guarantee the focus polygon survives even if a NaN centroid dropped it.
+    return ranked.includes(focusFeature)
+      ? ranked
+      : [focusFeature, ...ranked.slice(0, NEIGHBOURHOOD - 1)];
+  }, [world, meta, focusFeature, region]);
 
   const height = Math.round(width * 0.72);
 
   const pathGen = useMemo(() => {
-    if (!width || regionFeatures.length === 0) return null;
+    if (!width || areaFeatures.length === 0) return null;
     const projection = geoMercator().fitExtent(
       [
         [16, 16],
         [width - 16, height - 16],
       ],
-      { type: "FeatureCollection", features: regionFeatures } as any,
+      { type: "FeatureCollection", features: areaFeatures } as any,
     );
     return geoPath(projection);
-  }, [width, height, regionFeatures]);
+  }, [width, height, areaFeatures]);
 
   const go = (target: string) => {
     const c = resolveCountry(target);
@@ -86,8 +113,8 @@ export function CountryRegionalMap({ iso2, region }: Props) {
     setHover({ x: e.clientX - rect.left, y: e.clientY - rect.top, meta: fm });
   };
 
-  const loading = !width || regionFeatures.length === 0 || !pathGen;
-  const showLabels = regionFeatures.length <= 16;
+  const loading = !width || areaFeatures.length === 0 || !pathGen;
+  const focusName = getCountryByIso2(iso2)?.name ?? "the focus country";
 
   return (
     <div ref={wrapRef} className="cx-rmap">
@@ -100,9 +127,9 @@ export function CountryRegionalMap({ iso2, region }: Props) {
           height={height}
           viewBox={`0 0 ${width} ${height}`}
           role="img"
-          aria-label={`Regional risk map centred on the focus country`}
+          aria-label={`Regional risk map centred on ${focusName}, in ${region}`}
         >
-          {regionFeatures.map((f, i) => {
+          {areaFeatures.map((f, i) => {
             const fm = meta.get(f)!;
             const d = pathGen(f) ?? undefined;
             const isFocus = fm.iso2 === iso2;
@@ -127,24 +154,26 @@ export function CountryRegionalMap({ iso2, region }: Props) {
               </path>
             );
           })}
-          {showLabels &&
-            regionFeatures.map((f, i) => {
-              const fm = meta.get(f)!;
-              const c = pathGen.centroid(f);
-              if (!c || Number.isNaN(c[0])) return null;
-              const isFocus = fm.iso2 === iso2;
-              return (
-                <text
-                  key={`t-${fm.iso2 ?? i}`}
-                  x={c[0]}
-                  y={c[1]}
-                  className={`cx-rmap__label${isFocus ? " cx-rmap__label--focus" : ""}`}
-                  textAnchor="middle"
-                >
-                  {fm.name}
-                </text>
-              );
-            })}
+          {areaFeatures.map((f, i) => {
+            const fm = meta.get(f)!;
+            if (!fm.name) return null;
+            const isFocus = fm.iso2 === iso2;
+            // Gate labels on projected polygon size so micro-states don't clutter.
+            if (!isFocus && pathGen.area(f) < LABEL_MIN_AREA) return null;
+            const c = pathGen.centroid(f);
+            if (!c || Number.isNaN(c[0])) return null;
+            return (
+              <text
+                key={`t-${fm.iso2 ?? i}`}
+                x={c[0]}
+                y={c[1]}
+                className={`cx-rmap__label${isFocus ? " cx-rmap__label--focus" : ""}`}
+                textAnchor="middle"
+              >
+                {fm.name}
+              </text>
+            );
+          })}
         </svg>
       )}
 

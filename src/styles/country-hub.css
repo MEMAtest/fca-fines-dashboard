@@ -2433,3 +2433,25 @@ button.cx-kpi:hover {
     grid-template-columns: 1fr;
   }
 }
+
+/* ═══ Review-fix styles ══════════════════════════════════════════════════════ */
+.cx-kpi2--on {
+  box-shadow: 0 0 0 2px #0b1f2a inset;
+}
+.cx-detail--empty {
+  align-items: flex-start;
+  justify-content: center;
+  color: #64748b;
+  font-size: 0.88rem;
+  line-height: 1.5;
+  min-height: 200px;
+}
+.cx-detail--empty p {
+  margin: 0;
+}
+.cx-ratings-empty {
+  text-align: center;
+  color: #64748b;
+  padding: 1.5rem 0;
+  font-size: 0.9rem;
+}

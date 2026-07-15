@@ -28,25 +28,54 @@ export interface FeatureMeta {
   name: string;
 }
 
-/** Load the vendored same-origin world topology once; land features, no Antarctica. */
-export function useRiskTopology(): any[] {
-  const [features, setFeatures] = useState<any[]>([]);
-  useEffect(() => {
-    const controller = new AbortController();
-    (async () => {
-      try {
-        const topo = await fetch("/world-countries-110m.json", {
-          signal: controller.signal,
-        }).then((r) => r.json());
+// Module-level cache: the topology is fetched + parsed once per session and
+// shared across every map mount (the dashboard uses two maps and remounts them
+// on tab switches), so we never re-fetch or re-parse /world-countries-110m.json.
+let _topoFeatures: any[] | null = null;
+let _topoPromise: Promise<any[]> | null = null;
+
+function loadTopology(): Promise<any[]> {
+  if (_topoFeatures) return Promise.resolve(_topoFeatures);
+  if (!_topoPromise) {
+    _topoPromise = fetch("/world-countries-110m.json")
+      .then((r) => {
+        if (!r.ok) throw new Error(`topology HTTP ${r.status}`);
+        return r.json();
+      })
+      .then((topo) => {
         const geo = topoFeature(topo, topo.objects.countries) as unknown as {
           features: any[];
         };
-        setFeatures(geo.features.filter((f) => f?.properties?.name !== "Antarctica"));
-      } catch {
+        _topoFeatures = geo.features.filter((f) => f?.properties?.name !== "Antarctica");
+        return _topoFeatures;
+      })
+      .catch((err) => {
+        _topoPromise = null; // allow a retry on the next mount
+        throw err;
+      });
+  }
+  return _topoPromise;
+}
+
+/** Load the vendored same-origin world topology once (cached); land features. */
+export function useRiskTopology(): any[] {
+  const [features, setFeatures] = useState<any[]>(_topoFeatures ?? []);
+  useEffect(() => {
+    if (_topoFeatures) {
+      setFeatures(_topoFeatures);
+      return;
+    }
+    let alive = true;
+    loadTopology()
+      .then((f) => {
+        if (alive) setFeatures(f);
+      })
+      .catch(() => {
         /* offline / blocked — pages degrade gracefully without the map */
-      }
-    })();
-    return () => controller.abort();
+      });
+    return () => {
+      alive = false;
+    };
   }, []);
   return features;
 }

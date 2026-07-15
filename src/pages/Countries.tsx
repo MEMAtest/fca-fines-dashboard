@@ -213,6 +213,7 @@ function RiskMatrix({
   const quad = (q: Quadrant, label: string) => (
     <button
       type="button"
+      aria-pressed={quadrant === q}
       className={`cx-matrix__quad${quadrant === q ? " cx-matrix__quad--on" : ""}`}
       onClick={() => onQuadrant(quadrant === q ? null : q)}
     >
@@ -530,9 +531,11 @@ function GlobalIndex() {
     return { black, grey };
   }, [index]);
 
-  const rows = useMemo(() => {
+  // Everything EXCEPT the quadrant filter — the risk matrix reads this so its
+  // scatter + quadrant counts respect region/band/FATF/sanctions/search too.
+  const baseFiltered = useMemo(() => {
     const q = query.trim().toLowerCase();
-    const filtered = index.filter((e) => {
+    return index.filter((e) => {
       if (region !== "All" && e.country.region !== region) return false;
       if (band !== "All" && e.band !== band) return false;
       if (q && !e.country.name.toLowerCase().includes(q)) return false;
@@ -542,9 +545,12 @@ function GlobalIndex() {
         if (key !== fatfFilter) return false;
       }
       if (sanctionsFilter !== "All" && (e.sanctionsTier ?? "none") !== sanctionsFilter) return false;
-      if (quadrant && !inQuadrant(e, quadrant)) return false;
       return true;
     });
+  }, [index, region, band, query, fatfFilter, sanctionsFilter]);
+
+  const rows = useMemo(() => {
+    const filtered = quadrant ? baseFiltered.filter((e) => inQuadrant(e, quadrant)) : baseFiltered;
     const dir = sortDir === "asc" ? 1 : -1;
     return [...filtered].sort((a, b) =>
       sortKey === "name"
@@ -555,7 +561,7 @@ function GlobalIndex() {
               a.country.name.localeCompare(b.country.name))
           : dir * (a.score - b.score || a.country.name.localeCompare(b.country.name)),
     );
-  }, [index, region, band, query, fatfFilter, sanctionsFilter, quadrant, sortKey, sortDir]);
+  }, [baseFiltered, quadrant, sortKey, sortDir]);
 
   const hasFilters =
     region !== "All" ||
@@ -564,12 +570,24 @@ function GlobalIndex() {
     fatfFilter !== "All" ||
     sanctionsFilter !== "All" ||
     quadrant !== null;
+  const indexIso = useMemo(() => new Set(index.map((e) => e.country.iso2)), [index]);
   const rowIso = useMemo(() => new Set(rows.map((e) => e.country.iso2)), [rows]);
-  const dimUnmatched = hasFilters ? (iso2: string) => !rowIso.has(iso2) : undefined;
+  // Only dim SCORED countries that fail the filter — never the grey no-data ones.
+  const dimUnmatched = hasFilters
+    ? (iso2: string) => indexIso.has(iso2) && !rowIso.has(iso2)
+    : undefined;
 
+  // Stable global risk rank (index is sorted score-desc) for the ratings "#".
+  const rankOf = useMemo(() => {
+    const m = new Map<string, number>();
+    index.forEach((e, i) => m.set(e.country.iso2, i + 1));
+    return m;
+  }, [index]);
+
+  // No auto-selection: the detail panel appears only after the user clicks.
   const selectedEntry = useMemo(
-    () => index.find((e) => e.country.iso2 === selectedIso) ?? rows[0] ?? index[0],
-    [index, rows, selectedIso],
+    () => (selectedIso ? (index.find((e) => e.country.iso2 === selectedIso) ?? null) : null),
+    [index, selectedIso],
   );
 
   const top = useMemo(() => index.slice(0, 12), [index]);
@@ -612,13 +630,13 @@ function GlobalIndex() {
     setShowAll(false);
   };
 
-  const kpis: Array<{ label: string; value: number; cls: string; onClick: () => void }> = [
-    { label: "Countries rated", value: index.length, cls: "rated", onClick: clearFilters },
-    { label: "Black list", value: fatfCounts.black, cls: "black", onClick: () => setFatfFilter(fatfFilter === "black" ? "All" : "black") },
-    { label: "Grey list", value: fatfCounts.grey, cls: "grey", onClick: () => setFatfFilter(fatfFilter === "grey" ? "All" : "grey") },
-    { label: "High risk", value: counts.high + counts["very-high"], cls: "high", onClick: () => setBand(band === "high" ? "All" : "high") },
-    { label: "Moderate", value: counts.moderate, cls: "moderate", onClick: () => setBand(band === "moderate" ? "All" : "moderate") },
-    { label: "Low risk", value: counts.low, cls: "low", onClick: () => setBand(band === "low" ? "All" : "low") },
+  const kpis: Array<{ label: string; value: number; cls: string; pressed: boolean; onClick: () => void }> = [
+    { label: "Countries rated", value: index.length, cls: "rated", pressed: !hasFilters, onClick: clearFilters },
+    { label: "Black list", value: fatfCounts.black, cls: "black", pressed: fatfFilter === "black", onClick: () => setFatfFilter(fatfFilter === "black" ? "All" : "black") },
+    { label: "Grey list", value: fatfCounts.grey, cls: "grey", pressed: fatfFilter === "grey", onClick: () => setFatfFilter(fatfFilter === "grey" ? "All" : "grey") },
+    { label: "High risk", value: counts.high + counts["very-high"], cls: "high", pressed: band === "high", onClick: () => setBand(band === "high" ? "All" : "high") },
+    { label: "Moderate", value: counts.moderate, cls: "moderate", pressed: band === "moderate", onClick: () => setBand(band === "moderate" ? "All" : "moderate") },
+    { label: "Low risk", value: counts.low, cls: "low", pressed: band === "low", onClick: () => setBand(band === "low" ? "All" : "low") },
   ];
 
   const PREVIEW = 25;
@@ -637,20 +655,25 @@ function GlobalIndex() {
 
       <div className="cx-dash__kpis">
         {kpis.map((k) => (
-          <button key={k.label} type="button" className={`cx-kpi2 cx-kpi2--${k.cls}`} onClick={k.onClick}>
+          <button
+            key={k.label}
+            type="button"
+            aria-pressed={k.pressed}
+            className={`cx-kpi2 cx-kpi2--${k.cls}${k.pressed ? " cx-kpi2--on" : ""}`}
+            onClick={k.onClick}
+          >
             <span className="cx-kpi2__value">{k.value}</span>
             <span className="cx-kpi2__label">{k.label}</span>
           </button>
         ))}
       </div>
 
-      <div className="cx-tabs" role="tablist">
+      <div className="cx-tabs">
         {(["overview", "map", "matrix", "ratings"] as Tab[]).map((t) => (
           <button
             key={t}
             type="button"
-            role="tab"
-            aria-selected={tab === t}
+            aria-pressed={tab === t}
             className={`cx-tab${tab === t ? " cx-tab--on" : ""}`}
             onClick={() => setTab(t)}
           >
@@ -678,9 +701,9 @@ function GlobalIndex() {
               <div className="cx-rail__group">
                 <span className="cx-rail__title">Risk band</span>
                 <div className="cx-rail__bands">
-                  <button type="button" className={`cx-chip${band === "All" ? " cx-chip--on" : ""}`} onClick={() => setBand("All")}>All</button>
+                  <button type="button" aria-pressed={band === "All"} className={`cx-chip${band === "All" ? " cx-chip--on" : ""}`} onClick={() => setBand("All")}>All</button>
                   {(["low", "moderate", "high", "very-high"] as RiskBand[]).map((b) => (
-                    <button key={b} type="button" className={`cx-chip cx-chip--${b}${band === b ? " cx-chip--on" : ""}`} onClick={() => setBand(band === b ? "All" : b)}>
+                    <button key={b} type="button" aria-pressed={band === b} className={`cx-chip cx-chip--${b}${band === b ? " cx-chip--on" : ""}`} onClick={() => setBand(band === b ? "All" : b)}>
                       {bandLabel(b)}
                     </button>
                   ))}
@@ -736,14 +759,18 @@ function GlobalIndex() {
                   dimUnmatched={dimUnmatched}
                 />
               </Suspense>
-              <p className="cx-dash__count">{rows.length} of {index.length} shown</p>
+              <p className="cx-dash__count">
+                {rows.length} of {index.length} shown
+                {hasFilters && rows.length === 0 ? " · no countries match these filters" : ""}
+              </p>
             </div>
 
-            {selectedEntry && (
-              <DetailPanel
-                entry={selectedEntry}
-                onClose={selectedIso ? () => setSelectedIso(null) : undefined}
-              />
+            {selectedEntry ? (
+              <DetailPanel entry={selectedEntry} onClose={() => setSelectedIso(null)} />
+            ) : (
+              <aside className="cx-detail cx-detail--empty">
+                <p>Click any country on the map to see its score, rank and key risk drivers.</p>
+              </aside>
             )}
           </div>
 
@@ -783,7 +810,7 @@ function GlobalIndex() {
               Control strength vs enforcement exposure{" "}
               <span className="cx-panel-sub">derived view metrics, not part of the score</span>
             </h3>
-            <RiskMatrix entries={index} quadrant={quadrant} onQuadrant={setQuadrant} />
+            <RiskMatrix entries={baseFiltered} quadrant={quadrant} onQuadrant={setQuadrant} />
           </div>
           <div className="cx-index__panels">
             <div className="mon-panel">
@@ -864,9 +891,9 @@ function GlobalIndex() {
               </tr>
             </thead>
             <tbody>
-              {visibleRows.map((e, i) => (
+              {visibleRows.map((e) => (
                 <tr key={e.country.iso2}>
-                  <td className="country-ratings__rank">{i + 1}</td>
+                  <td className="country-ratings__rank">{rankOf.get(e.country.iso2)}</td>
                   <td>
                     <Link to={`/countries/${countrySlug(e.country)}`} className="country-ratings__name">
                       <span aria-hidden="true">{e.flag}</span> {e.country.name}
@@ -881,6 +908,13 @@ function GlobalIndex() {
                   <td>{e.sanctionsTier ? sanctionsTierLabel(e.sanctionsTier) : "—"}</td>
                 </tr>
               ))}
+              {rows.length === 0 && (
+                <tr>
+                  <td colSpan={7} className="cx-ratings-empty">
+                    No jurisdictions match these filters.
+                  </td>
+                </tr>
+              )}
             </tbody>
           </table>
           {rows.length > PREVIEW && (
