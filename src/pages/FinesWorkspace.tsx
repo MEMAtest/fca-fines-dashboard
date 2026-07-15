@@ -32,6 +32,7 @@ import {
   buildBreakdown,
   buildMonthlyTrend,
   buildYearlyTrend,
+  formatWorkspaceActionCount,
   formatWorkspaceAmount,
   getRecordThemes,
   getWorkspaceMetrics,
@@ -203,7 +204,7 @@ export function FinesWorkspace({ view }: FinesWorkspaceProps) {
         records: result.records,
         description: result.truncated
           ? `Showing the first ${result.records.length.toLocaleString("en-GB")} of ${result.total.toLocaleString("en-GB")} matching actions.`
-          : `${result.total.toLocaleString("en-GB")} matching actions with source evidence where available.`,
+          : `${result.total.toLocaleString("en-GB")} matching ${result.total === 1 ? "action" : "actions"} with source evidence where available.`,
       } : current);
     } catch {
       setDrawer((current) => current?.title === title ? {
@@ -237,6 +238,51 @@ export function FinesWorkspace({ view }: FinesWorkspaceProps) {
     if (selectedThemes.length && !getRecordThemes(record).some((item) => selectedThemes.includes(item))) return false;
     return true;
   }), [filtered, selectedRegulators, selectedThemes, selectedYears]);
+  const annualMovement = useMemo(() => {
+    const populated = yearly.filter((point) => point.count > 0).slice().sort((left, right) => left.year - right.year);
+    const latest = populated.at(-1);
+    const previous = latest
+      ? populated.find((point) => point.year === latest.year - 1) ?? populated.at(-2)
+      : undefined;
+    const change = latest && previous && previous.amount > 0
+      ? ((latest.amount - previous.amount) / previous.amount) * 100
+      : null;
+    return { latest, previous, change };
+  }, [yearly]);
+  const comparisonSummaries = useMemo(() => {
+    const summaries: Array<{ key: string; dimension: string; label: string; records: FineRecord[] }> = [];
+    selectedYears.forEach((selectedYear) => summaries.push({
+      key: `year-${selectedYear}`,
+      dimension: "Year",
+      label: String(selectedYear),
+      records: filtered.filter((record) =>
+        record.year_issued === selectedYear
+        && (!selectedRegulators.length || selectedRegulators.includes(record.regulator))
+        && (!selectedThemes.length || getRecordThemes(record).some((item) => selectedThemes.includes(item))),
+      ),
+    }));
+    selectedRegulators.forEach((selectedRegulator) => summaries.push({
+      key: `regulator-${selectedRegulator}`,
+      dimension: "Regulator",
+      label: selectedRegulator,
+      records: filtered.filter((record) =>
+        record.regulator === selectedRegulator
+        && (!selectedYears.length || selectedYears.includes(record.year_issued))
+        && (!selectedThemes.length || getRecordThemes(record).some((item) => selectedThemes.includes(item))),
+      ),
+    }));
+    selectedThemes.forEach((selectedTheme) => summaries.push({
+      key: `theme-${selectedTheme}`,
+      dimension: "Theme",
+      label: selectedTheme,
+      records: filtered.filter((record) =>
+        getRecordThemes(record).includes(selectedTheme)
+        && (!selectedYears.length || selectedYears.includes(record.year_issued))
+        && (!selectedRegulators.length || selectedRegulators.includes(record.regulator)),
+      ),
+    }));
+    return summaries.map((summary) => ({ ...summary, metrics: getWorkspaceMetrics(summary.records) }));
+  }, [filtered, selectedRegulators, selectedThemes, selectedYears]);
 
   const exact = overview.data?.metrics;
   const metricCount = exact?.count ?? sampleMetrics.count;
@@ -283,13 +329,22 @@ export function FinesWorkspace({ view }: FinesWorkspaceProps) {
           <article className="workspace-kpi"><span>Median fine</span><strong>{formatWorkspaceAmount(metricMedian)}</strong><small>Less distorted by outliers</small></article>
           <article className="workspace-kpi"><span>Largest fine</span><strong>{formatWorkspaceAmount(metricLargest)}</strong><small>{metricLargestFirm}</small></article>
           <article className="workspace-kpi"><span>Firms affected</span><strong>{metricAffectedFirms.toLocaleString("en-GB")}</strong><small>Distinct firms and individuals</small></article>
-          <article className="workspace-kpi"><span>Evidence access</span><strong><em>Source-linked</em></strong><small>Official evidence where available</small></article>
+          <article className="workspace-kpi"><span>Year-over-year change</span><strong><em>{annualMovement.change === null ? "Not available" : `${annualMovement.change >= 0 ? "+" : ""}${annualMovement.change.toFixed(1)}%`}</em></strong><small>{annualMovement.latest && annualMovement.previous ? `${annualMovement.latest.year} vs ${annualMovement.previous.year}` : "Insufficient annual history"}</small></article>
         </section>
 
         {compareMode && (
           <div className="workspace-selection-tray">
-            <div>{selectedYears.map((item) => <span key={item}>{item}</span>)}{selectedRegulators.map((item) => <span key={item}>{item}</span>)}{selectedThemes.map((item) => <span key={item}>{item}</span>)}{!selectedYears.length && !selectedRegulators.length && !selectedThemes.length && <span>Select chart marks or tiles</span>}</div>
-            <button type="button" className="workspace-button workspace-button--primary" onClick={() => navigator.clipboard.writeText(window.location.href)}><Clipboard size={14} /> Copy comparison link</button>
+            <div className="workspace-selection-tray__chips">
+              {selectedYears.map((item) => <button type="button" key={item} onClick={() => toggleLimited(selectedYears, item, 3, setSelectedYears)} aria-label={`Remove year ${item}`}>{item} ×</button>)}
+              {selectedRegulators.map((item) => <button type="button" key={item} onClick={() => toggleLimited(selectedRegulators, item, 5, setSelectedRegulators)} aria-label={`Remove regulator ${item}`}>{item} ×</button>)}
+              {selectedThemes.map((item) => <button type="button" key={item} onClick={() => toggleLimited(selectedThemes, item, 5, setSelectedThemes)} aria-label={`Remove theme ${item}`}>{item} ×</button>)}
+              {!selectedYears.length && !selectedRegulators.length && !selectedThemes.length && <span>Select years, regulators or themes below</span>}
+            </div>
+            <div className="workspace-selection-tray__actions">
+              {(selectedYears.length > 0 || selectedRegulators.length > 0 || selectedThemes.length > 0) && <button type="button" className="workspace-button" onClick={() => { setSelectedYears([]); setSelectedRegulators([]); setSelectedThemes([]); }}>Clear</button>}
+              <button type="button" className="workspace-button" disabled={!compareRecords.length} onClick={() => setDrawer({ title: "Selected comparison data", records: compareRecords, description: `${formatWorkspaceActionCount(compareRecords.length)} in the selected comparison, with source evidence where available.` })}>Open selected data</button>
+              <button type="button" className="workspace-button workspace-button--primary" onClick={() => navigator.clipboard.writeText(window.location.href)}><Clipboard size={14} /> Copy comparison link</button>
+            </div>
           </div>
         )}
 
@@ -300,10 +355,11 @@ export function FinesWorkspace({ view }: FinesWorkspaceProps) {
           </section>
         ) : view === "compare" ? (
           <div className="workspace-grid">
-            <section className="workspace-card workspace-card--half"><div className="workspace-card__heading"><h2>Select years</h2><span>Maximum 3</span></div><div className="workspace-treemap">{yearly.slice(-12).map((point) => <button type="button" className={`workspace-tile${selectedYears.includes(point.year) ? " workspace-tile--selected" : ""}`} key={point.year} onClick={() => handleYearClick(point.year)}><span>{point.year}</span><strong>{formatWorkspaceAmount(point.amount)}</strong><small>{point.count} actions</small></button>)}</div></section>
-            <section className="workspace-card workspace-card--half"><div className="workspace-card__heading"><h2>Select regulators</h2><span>Maximum 5</span></div><div className="workspace-treemap">{regulators.map((item) => <button type="button" className={`workspace-tile${selectedRegulators.includes(item.label) ? " workspace-tile--selected" : ""}`} key={item.label} onClick={() => handleRegulatorClick(item.label)}><span>{item.label}</span><strong>{formatWorkspaceAmount(item.amount)}</strong><small>{item.count} actions</small></button>)}</div></section>
-            <section className="workspace-card workspace-card--half"><div className="workspace-card__heading"><h2>Select themes</h2><span>Maximum 5</span></div><div className="workspace-treemap">{themes.map((item) => <button type="button" className={`workspace-tile${selectedThemes.includes(item.label) ? " workspace-tile--selected" : ""}`} key={item.label} onClick={() => handleThemeClick(item.label)}><span>{item.label}</span><strong>{formatWorkspaceAmount(item.amount)}</strong><small>{item.count} actions</small></button>)}</div></section>
-            <section className="workspace-card workspace-card--half"><div className="workspace-card__heading"><h2>Comparison result</h2><span>{compareRecords.length} matching actions</span></div><RecordTable records={compareRecords.slice().sort((a,b) => b.amount-a.amount)} limit={10} onOpen={(record) => setDrawer({ title: record.firm_individual, records: [record], description: record.summary })} /></section>
+            <section className="workspace-card workspace-card--half"><div className="workspace-card__heading"><h2>Select years</h2><span>Maximum 3</span></div><div className="workspace-treemap">{yearly.slice(-12).map((point) => <button type="button" aria-pressed={selectedYears.includes(point.year)} className={`workspace-tile${selectedYears.includes(point.year) ? " workspace-tile--selected" : ""}`} key={point.year} onClick={() => handleYearClick(point.year)}><span>{point.year}</span><strong>{formatWorkspaceAmount(point.amount)}</strong><small>{formatWorkspaceActionCount(point.count)}</small></button>)}</div></section>
+            <section className="workspace-card workspace-card--half"><div className="workspace-card__heading"><h2>Select regulators</h2><span>Maximum 5</span></div><div className="workspace-treemap">{regulators.map((item) => <button type="button" aria-pressed={selectedRegulators.includes(item.label)} className={`workspace-tile${selectedRegulators.includes(item.label) ? " workspace-tile--selected" : ""}`} key={item.label} onClick={() => handleRegulatorClick(item.label)}><span>{item.label}</span><strong>{formatWorkspaceAmount(item.amount)}</strong><small>{formatWorkspaceActionCount(item.count)}</small></button>)}</div></section>
+            <section className="workspace-card workspace-card--half"><div className="workspace-card__heading"><h2>Select themes</h2><span>Maximum 5</span></div><div className="workspace-treemap">{themes.map((item) => <button type="button" aria-pressed={selectedThemes.includes(item.label)} className={`workspace-tile${selectedThemes.includes(item.label) ? " workspace-tile--selected" : ""}`} key={item.label} onClick={() => handleThemeClick(item.label)}><span>{item.label}</span><strong>{formatWorkspaceAmount(item.amount)}</strong><small>{formatWorkspaceActionCount(item.count)}</small></button>)}</div></section>
+            <section className="workspace-card workspace-card--half"><div className="workspace-card__heading"><h2>Comparison summary</h2><span>{comparisonSummaries.length ? `${comparisonSummaries.length} selected views` : "Choose at least one view"}</span></div>{comparisonSummaries.length ? <div className="workspace-comparison-cards">{comparisonSummaries.map((item) => <button type="button" aria-label={`${item.dimension} ${item.label}: ${formatWorkspaceAmount(item.metrics.total)}, ${formatWorkspaceActionCount(item.metrics.count)}`} key={item.key} onClick={() => setDrawer({ title: `${item.dimension}: ${item.label}`, records: item.records, description: `${formatWorkspaceActionCount(item.records.length)} in this comparison view.` })}><small>{item.dimension}</small><strong>{item.label}</strong><span>{formatWorkspaceAmount(item.metrics.total)}</span><em>{formatWorkspaceActionCount(item.metrics.count)}</em></button>)}</div> : <p className="workspace-empty-guidance">Select two or more years to compare annual fine value, or combine years with regulators and themes.</p>}</section>
+            <section className="workspace-card workspace-card--full"><div className="workspace-card__heading"><h2>Comparison result</h2><button type="button" className="workspace-card__action" disabled={!compareRecords.length} onClick={() => setDrawer({ title: "Selected comparison data", records: compareRecords, description: `${formatWorkspaceActionCount(compareRecords.length)} in the selected comparison.` })}>Open all selected data <ArrowRight size={11}/></button></div><RecordTable records={compareRecords.slice().sort((a,b) => b.amount-a.amount)} limit={12} onOpen={(record) => setDrawer({ title: record.firm_individual, records: [record], description: record.summary })} /></section>
           </div>
         ) : (
           <div className="workspace-grid">
@@ -316,12 +372,12 @@ export function FinesWorkspace({ view }: FinesWorkspaceProps) {
                     <AreaChart data={yearly} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
                       <defs><linearGradient id="workspaceArea" x1="0" y1="0" x2="0" y2="1"><stop offset="5%" stopColor="#236fe8" stopOpacity={0.25}/><stop offset="95%" stopColor="#236fe8" stopOpacity={0}/></linearGradient></defs>
                       <CartesianGrid strokeDasharray="3 3" /><XAxis dataKey="label" /><YAxis tickFormatter={(value) => formatWorkspaceAmount(Number(value))} width={62}/><Tooltip formatter={(value) => formatWorkspaceAmount(Number(value))}/>
-                      <Area className="workspace-chart__click-target" type="monotone" dataKey="amount" stroke="#176ee7" strokeWidth={2.2} fill="url(#workspaceArea)" activeDot={{ r: 6, onClick: (_event: unknown, payload: any) => handleYearClick(Number(payload?.payload?.year)) }} />
+                      <Area isAnimationActive={false} className="workspace-chart__click-target" type="monotone" dataKey="amount" stroke="#176ee7" strokeWidth={2.2} fill="url(#workspaceArea)" activeDot={{ r: 6, onClick: (_event: unknown, payload: any) => handleYearClick(Number(payload?.payload?.year)) }} />
                     </AreaChart>
                   ) : (
                     <BarChart data={monthly} margin={{ top: 10, right: 6, left: 0, bottom: 0 }}>
                       <CartesianGrid strokeDasharray="3 3" /><XAxis dataKey="label" interval="preserveStartEnd" /><YAxis tickFormatter={(value) => formatWorkspaceAmount(Number(value))} width={62}/><Tooltip formatter={(value) => formatWorkspaceAmount(Number(value))}/>
-                      <Bar className="workspace-chart__click-target" dataKey="amount" fill="#276de5" radius={[3,3,0,0]} onClick={(payload: any) => openSelection({ year: Number(payload?.year), month: Number(payload?.month) }, `${payload?.label ?? "Selected period"} actions`)} />
+                      <Bar isAnimationActive={false} className="workspace-chart__click-target" dataKey="amount" fill="#276de5" radius={[3,3,0,0]} onClick={(payload: any) => openSelection({ year: Number(payload?.year), month: Number(payload?.month) }, `${payload?.label ?? "Selected period"} actions`)} />
                     </BarChart>
                   )}
                 </ResponsiveContainer>
@@ -338,7 +394,7 @@ export function FinesWorkspace({ view }: FinesWorkspaceProps) {
 
             {view === "analytics" && <>
               <section className="workspace-card workspace-card--half"><div className="workspace-card__heading"><h2>Regulators by fine value</h2><span>Click to drill down</span></div><div className="workspace-bars">{regulators.map((item) => <button className="workspace-bar" type="button" key={item.label} onClick={() => handleRegulatorClick(item.label)}><span>{item.label}</span><div className="workspace-bar__track"><div className="workspace-bar__fill" style={{width:`${Math.max(4,item.share)}%`}}/></div><strong>{formatWorkspaceAmount(item.amount)}</strong></button>)}</div></section>
-              <section className="workspace-card workspace-card--half"><div className="workspace-card__heading"><h2>Top sectors</h2><span>By disclosed value</span></div><div className="workspace-treemap">{sectors.slice(0,6).map((item) => <button className="workspace-tile" type="button" key={item.label} onClick={() => openSelection({ sector: item.label }, item.label)}><span>{item.label}</span><strong>{formatWorkspaceAmount(item.amount)}</strong><small>{item.count} actions</small></button>)}</div></section>
+              <section className="workspace-card workspace-card--half"><div className="workspace-card__heading"><h2>Top sectors</h2><span>By disclosed value</span></div><div className="workspace-treemap">{sectors.slice(0,6).map((item) => <button className="workspace-tile" type="button" key={item.label} onClick={() => openSelection({ sector: item.label }, item.label)}><span>{item.label}</span><strong>{formatWorkspaceAmount(item.amount)}</strong><small>{formatWorkspaceActionCount(item.count)}</small></button>)}</div></section>
               <section className="workspace-card workspace-card--half"><div className="workspace-card__heading"><h2>Firms under pressure</h2><span>Top 10</span></div><div className="workspace-bars">{firms.map((item) => <button className="workspace-bar" type="button" key={item.label} onClick={() => openSelection({firm:item.label},item.label)}><span>{item.label}</span><div className="workspace-bar__track"><div className="workspace-bar__fill" style={{width:`${Math.max(4,item.share)}%`}}/></div><strong>{formatWorkspaceAmount(item.amount)}</strong></button>)}</div></section>
               <section className="workspace-card workspace-card--half"><div className="workspace-card__heading"><h2>Methodology snapshot</h2><span>Current view</span></div><ul className="workspace-insights"><li><CheckCircle2 size={14}/><span>Amounts normalised to GBP for comparison.</span></li><li><CheckCircle2 size={14}/><span>Published actions are deduplicated before display.</span></li><li><CheckCircle2 size={14}/><span>Records link to official notices or regulator-level source pages.</span></li><li><CheckCircle2 size={14}/><span>Filters and comparisons are visible in the URL and contain no personal data.</span></li></ul></section>
             </>}

@@ -44,6 +44,10 @@ export function formatWorkspaceAmount(value: number, currency = "GBP") {
   return `${symbol}${Math.round(amount).toLocaleString("en-GB")}`;
 }
 
+export function formatWorkspaceActionCount(count: number) {
+  return `${count.toLocaleString("en-GB")} ${count === 1 ? "action" : "actions"}`;
+}
+
 export function getWorkspaceMetrics(records: FineRecord[]): WorkspaceMetrics {
   const amounts = records
     .map((record) => finite(record.amount))

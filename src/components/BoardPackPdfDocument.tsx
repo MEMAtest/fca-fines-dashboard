@@ -1,5 +1,6 @@
 import {
   Document,
+  Font,
   Link,
   Page,
   StyleSheet,
@@ -12,6 +13,8 @@ import type {
   ControlChallengeSummary,
   ControlChecklistItem,
 } from "../utils/boardIntelligence.js";
+
+Font.registerHyphenationCallback((word) => [word]);
 
 interface BoardPackPdfDocumentProps {
   pack: BoardPackResult;
