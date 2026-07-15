@@ -67,7 +67,7 @@ const BAND_COLOUR: Record<RiskBand, string> = {
 
 // ─── Global Country Risk dashboard (default /countries) ─────────────────────
 
-type Tab = "map" | "matrix" | "ratings";
+type Tab = "overview" | "map" | "matrix" | "ratings";
 type Quadrant = "weak-high" | "strong-high" | "weak-low" | "strong-low";
 
 const PILLAR_FILL: Record<string, string> = {
@@ -293,13 +293,217 @@ function FilterBar({
   );
 }
 
+// ─── Overview tab (default) — the #21 report-style landing ───────────────────
+function OverviewTab() {
+  const index = useMemo(() => buildCountryIndex(), []);
+  const total = index.length;
+  const counts = useMemo(() => {
+    const c: Record<RiskBand, number> = { low: 0, moderate: 0, high: 0, "very-high": 0 };
+    for (const e of index) c[e.band] += 1;
+    return c;
+  }, [index]);
+  const fatfCounts = useMemo(() => {
+    let black = 0;
+    let grey = 0;
+    for (const e of index) {
+      if (e.fatf?.listing === "call-for-action") black += 1;
+      else if (e.fatf?.listing === "increased-monitoring") grey += 1;
+    }
+    return { black, grey };
+  }, [index]);
+  const regionStats = useMemo(() => regionalAverages(), []);
+  const added = FATF_RECENT_CHANGES.filter((c) => c.change === "added");
+  const removed = FATF_RECENT_CHANGES.filter((c) => c.change === "removed");
+  const nameOf = (iso2: string) => getCountryByIso2(iso2)?.name ?? iso2;
+  const top = useMemo(() => index.slice(0, 8), [index]);
+  const pct = (n: number) => (total ? Math.round((n / total) * 100) : 0);
+  const regionDonut = useMemo(
+    () => [...regionStats].map((r) => ({ name: r.region, value: r.count })).sort((a, b) => b.value - a.value),
+    [regionStats],
+  );
+  const topRegions = useMemo(
+    () => [...regionStats].sort((a, b) => b.avg - a.avg).slice(0, 2).map((r) => r.region),
+    [regionStats],
+  );
+  const dist: Array<{ band: RiskBand; n: number }> = [
+    { band: "low", n: counts.low },
+    { band: "moderate", n: counts.moderate },
+    { band: "high", n: counts.high },
+    { band: "very-high", n: counts["very-high"] },
+  ];
+
+  return (
+    <div className="cx-ov">
+      <div className="cx-ov__top">
+        <div className="mon-panel cx-ov__heat">
+          <h3>Global risk heat map</h3>
+          <Suspense fallback={<div className="cx-map__ph" style={{ height: 320 }} />}>
+            <CountryRiskMap />
+          </Suspense>
+        </div>
+        <div className="cx-ov__side">
+          <div className="cx-ov__kpis">
+            <div className="cx-ovkpi">
+              <span className="cx-ovkpi__v">{total}</span>
+              <span className="cx-ovkpi__l">Countries rated</span>
+            </div>
+            <div className="cx-ovkpi cx-ovkpi--black">
+              <span className="cx-ovkpi__v">{fatfCounts.black}</span>
+              <span className="cx-ovkpi__l">Black list · {pct(fatfCounts.black)}%</span>
+            </div>
+            <div className="cx-ovkpi cx-ovkpi--grey">
+              <span className="cx-ovkpi__v">{fatfCounts.grey}</span>
+              <span className="cx-ovkpi__l">Grey list · {pct(fatfCounts.grey)}%</span>
+            </div>
+          </div>
+          <div className="mon-panel">
+            <h3>Risk distribution</h3>
+            <div className="cx-dist__bar">
+              {dist.map((d) =>
+                d.n > 0 ? (
+                  <span key={d.band} className={`cx-dist__seg cx-dist__seg--${d.band}`} style={{ flexGrow: d.n }} />
+                ) : null,
+              )}
+            </div>
+            <ul className="cx-dist__legend">
+              {dist.map((d) => (
+                <li key={d.band}>
+                  <span className={`cx-dist__dot cx-dist__dot--${d.band}`} />
+                  {bandLabel(d.band)}
+                  <span className="cx-dist__n">{d.n} ({pct(d.n)}%)</span>
+                </li>
+              ))}
+            </ul>
+          </div>
+        </div>
+      </div>
+
+      <div className="cx-ov__mid">
+        <div className="mon-panel">
+          <div className="cx-panel-head">
+            <h3>Top attention countries</h3>
+            <Link to="/countries/fatf-grey-list" className="cx-panel-link">View all →</Link>
+          </div>
+          <div className="cx-attn">
+            {top.slice(0, 6).map((e) => (
+              <Link key={e.country.iso2} to={`/countries/${countrySlug(e.country)}`} className="cx-attn__card">
+                <span className="cx-attn__flag" aria-hidden="true">{e.flag}</span>
+                <span className="cx-attn__name">{e.country.name}</span>
+                <span className={`country-ratings__score country-ratings__score--${e.band}`}>{e.score.toFixed(1)}</span>
+                <span className="cx-attn__sub">{e.country.region}</span>
+              </Link>
+            ))}
+          </div>
+        </div>
+        <div className="mon-panel">
+          <h3>FATF changes this cycle</h3>
+          <p className="mon-change mon-change--add">
+            <Plus size={14} /> <strong>Added ({added.length})</strong>
+            <span>{added.map((c) => nameOf(c.iso2)).join(", ") || "None"}</span>
+          </p>
+          <p className="mon-change mon-change--rem">
+            <Minus size={14} /> <strong>Removed ({removed.length})</strong>
+            <span>{removed.map((c) => nameOf(c.iso2)).join(", ") || "None"}</span>
+          </p>
+          <Link to="/countries/fatf-grey-list" className="cx-panel-link">FATF monitoring centre →</Link>
+        </div>
+        <div className="mon-panel">
+          <h3>Regional breakdown</h3>
+          <div className="mon-donut">
+            <ResponsiveContainer width="100%" height={170}>
+              <PieChart>
+                <Pie data={regionDonut} dataKey="value" nameKey="name" innerRadius={44} outerRadius={68} paddingAngle={2}>
+                  {regionDonut.map((d) => (
+                    <Cell key={d.name} fill={REGION_COLOUR[d.name] ?? "#cbd5e1"} />
+                  ))}
+                </Pie>
+              </PieChart>
+            </ResponsiveContainer>
+            <ul className="mon-donut__legend">
+              {regionDonut.map((d) => (
+                <li key={d.name}>
+                  <span className="mon-donut__swatch" style={{ background: REGION_COLOUR[d.name] ?? "#cbd5e1" }} />
+                  {d.name}
+                  <span className="mon-donut__count">{d.value}</span>
+                </li>
+              ))}
+            </ul>
+          </div>
+        </div>
+        <div className="mon-panel">
+          <h3>What firms should do</h3>
+          <ul className="mon-actions">
+            <li><strong>Review client exposure</strong> in high-risk and FATF-listed jurisdictions.</li>
+            <li><strong>Apply enhanced due diligence</strong> and source-of-funds checks.</li>
+            <li><strong>Monitor changes</strong> each FATF cycle and in the methodology.</li>
+          </ul>
+        </div>
+      </div>
+
+      <div className="cx-ov__bot">
+        <div className="mon-panel cx-ov__table">
+          <div className="cx-panel-head">
+            <h3>Highest-risk countries</h3>
+            <span className="cx-panel-sub">Top 8</span>
+          </div>
+          <table className="country-ratings">
+            <thead>
+              <tr>
+                <th>#</th>
+                <th>Country</th>
+                <th className="country-ratings__num">Score</th>
+                <th>Risk</th>
+                <th>Region</th>
+                <th>FATF</th>
+              </tr>
+            </thead>
+            <tbody>
+              {top.map((e, i) => (
+                <tr key={e.country.iso2}>
+                  <td className="country-ratings__rank">{i + 1}</td>
+                  <td>
+                    <Link to={`/countries/${countrySlug(e.country)}`} className="country-ratings__name">
+                      <span aria-hidden="true">{e.flag}</span> {e.country.name}
+                    </Link>
+                  </td>
+                  <td className="country-ratings__num">
+                    <span className={`country-ratings__score country-ratings__score--${e.band}`}>{e.score.toFixed(1)}</span>
+                  </td>
+                  <td>{bandLabel(e.band)}</td>
+                  <td className="country-ratings__region">{e.country.region}</td>
+                  <td>{e.fatf ? fatfLabel(e.fatf.listing) : "—"}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+        <div className="mon-panel cx-ov__exec">
+          <h3>Executive summary</h3>
+          <p className="cx-ov__exec-p">
+            Of {total} rated jurisdictions, {fatfCounts.black} are on the FATF black list ({pct(fatfCounts.black)}%)
+            and {fatfCounts.grey} on the grey list ({pct(fatfCounts.grey)}%). {counts.high + counts["very-high"]}{" "}
+            score High or above ({pct(counts.high + counts["very-high"])}%).
+          </p>
+          <h4 className="cx-ov__watch-title">Key watch areas</h4>
+          <ul className="cx-prose__bullets">
+            <li>Highest-risk regions: {topRegions.join(" and ")}.</li>
+            <li>{fatfCounts.black + fatfCounts.grey} jurisdictions under FATF monitoring.</li>
+            <li>Governance quality is the primary risk driver across the index.</li>
+          </ul>
+          <Link to="/countries/methodology" className="cx-panel-link">View methodology →</Link>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 function GlobalIndex() {
   const index = useMemo(() => buildCountryIndex(), []);
   const regions = useMemo(
     () => ["All", ...[...new Set(index.map((e) => e.country.region))].sort()],
     [index],
   );
-  const [tab, setTab] = useState<Tab>("map");
+  const [tab, setTab] = useState<Tab>("overview");
   const [region, setRegion] = useState("All");
   const [band, setBand] = useState<"All" | RiskBand>("All");
   const [query, setQuery] = useState("");
@@ -441,7 +645,7 @@ function GlobalIndex() {
       </div>
 
       <div className="cx-tabs" role="tablist">
-        {(["map", "matrix", "ratings"] as Tab[]).map((t) => (
+        {(["overview", "map", "matrix", "ratings"] as Tab[]).map((t) => (
           <button
             key={t}
             type="button"
@@ -450,10 +654,18 @@ function GlobalIndex() {
             className={`cx-tab${tab === t ? " cx-tab--on" : ""}`}
             onClick={() => setTab(t)}
           >
-            {t === "map" ? "Map view" : t === "matrix" ? "Risk matrix" : "Ratings"}
+            {t === "overview"
+              ? "Overview"
+              : t === "map"
+                ? "Map view"
+                : t === "matrix"
+                  ? "Risk matrix"
+                  : "Ratings"}
           </button>
         ))}
       </div>
+
+      {tab === "overview" && <OverviewTab />}
 
       {tab === "map" && (
         <>
