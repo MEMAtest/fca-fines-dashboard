@@ -2,6 +2,7 @@ import 'dotenv/config';
 import * as cheerio from 'cheerio';
 import { fileURLToPath } from 'node:url';
 import { parseStringPromise } from 'xml2js';
+import { JFSC_ARCHIVE_RECORDS } from './data/jfscArchive.js';
 import {
   buildEuFineRecord,
   fetchText,
@@ -88,14 +89,57 @@ export function extractJfscRecordFromBody(
 export function parseJfscPenaltyAmount(bodyText: string) {
   const sentences = normalizeWhitespace(bodyText)
     .split(/(?<=[.!?])\s+/)
-    .filter((sentence) => /civil financial penalty|financial penalty/i.test(sentence));
+    .filter((sentence) => /civil financial penalty|financial penalty|civil penalty/i.test(sentence))
+    .filter((sentence) => !/were it not|may have been liable|up to|max(?:imum)? penalty/i.test(sentence));
   const amounts = sentences.flatMap((sentence) =>
-    [...sentence.matchAll(/£\s*([\d,]+(?:\.\d+)?)(?:\s*(million|m))?/gi)]
+    [...sentence.matchAll(
+      /(?:imposed|impose|issued|levied)\s+(?:a\s+)?(?:civil\s+)?(?:financial\s+)?penalty(?:\s+of)?\s*£\s*([\d,]+(?:\.\d+)?)(?:\s*(million|m))?/gi,
+    )]
       .map((match) => parseScaledAmount(match[1], match[2]))
       .filter((amount): amount is number => amount !== null),
   );
 
-  return amounts.length > 0 ? Math.max(...amounts) : null;
+  return amounts.length > 0 ? amounts[0] : null;
+}
+
+export function loadJfscArchiveRecords() {
+  return JFSC_ARCHIVE_RECORDS.map((record) =>
+    buildEuFineRecord({
+      regulator: 'JFSC',
+      regulatorFullName: 'Jersey Financial Services Commission',
+      countryCode: 'JE',
+      countryName: 'Jersey',
+      firmIndividual: record.firmIndividual,
+      firmCategory: 'Firm or Individual',
+      amount: record.amount,
+      currency: record.currency,
+      dateIssued: record.dateIssued,
+      breachType: record.breachType,
+      breachCategories: record.breachCategories,
+      summary: record.summary,
+      finalNoticeUrl: record.sourceUrl,
+      sourceUrl: record.sourceUrl,
+      rawPayload: record,
+    }),
+  );
+}
+
+export function mergeJfscRecords(
+  liveRecords: ReturnType<typeof loadJfscArchiveRecords>,
+  archiveRecords = loadJfscArchiveRecords(),
+) {
+  const merged = new Map<string, ReturnType<typeof loadJfscArchiveRecords>[number]>();
+
+  for (const record of [...liveRecords, ...archiveRecords]) {
+    const key = (record.finalNoticeUrl || record.sourceUrl)
+      .toLowerCase()
+      .replace(/^http:/, 'https:');
+    merged.set(key, record);
+  }
+
+  return [...merged.values()].sort((left, right) =>
+    right.dateIssued.localeCompare(left.dateIssued),
+  );
 }
 
 export function extractJfscDate(bodyText: string, publishedAt?: string) {
@@ -213,14 +257,26 @@ async function fetchJfscRecord(entry: JfscSourceEntry): Promise<JfscRecord | nul
 }
 
 export async function loadJfscLiveRecords() {
-  const [rssXml, sitemapXml] = await Promise.all([
-    fetchText(JFSC_RSS_URL),
-    fetchText(JFSC_SITEMAP_URL),
-  ]);
-  const items = buildJfscSourceEntries(
-    await parseJfscFeed(rssXml),
-    await parseJfscSitemap(sitemapXml),
-  );
+  let items: JfscSourceEntry[] = [];
+
+  try {
+    const [rssXml, sitemapXml] = await Promise.all([
+      fetchText(JFSC_RSS_URL),
+      fetchText(JFSC_SITEMAP_URL),
+    ]);
+    items = buildJfscSourceEntries(
+      await parseJfscFeed(rssXml),
+      await parseJfscSitemap(sitemapXml),
+    );
+  } catch (error) {
+    console.warn(
+      `JFSC live discovery is challenge-protected; using the verified official archive manifest: ${
+        error instanceof Error ? error.message : String(error)
+      }`,
+    );
+    return loadJfscArchiveRecords();
+  }
+
   const records: JfscRecord[] = [];
 
   for (let index = 0; index < items.length; index += 6) {
@@ -236,7 +292,7 @@ export async function loadJfscLiveRecords() {
     }
   }
 
-  return records.map((record) =>
+  const liveRecords = records.map((record) =>
     buildEuFineRecord({
       regulator: 'JFSC',
       regulatorFullName: 'Jersey Financial Services Commission',
@@ -255,13 +311,15 @@ export async function loadJfscLiveRecords() {
       rawPayload: record,
     }),
   );
+
+  return mergeJfscRecords(liveRecords);
 }
 
 export async function main() {
   await runScraper({
     name: '🇯🇪 JFSC Public Statements Scraper',
     liveLoader: loadJfscLiveRecords,
-    testLoader: loadJfscLiveRecords,
+    testLoader: async () => loadJfscArchiveRecords(),
   });
 }
 

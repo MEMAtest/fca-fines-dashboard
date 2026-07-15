@@ -14,10 +14,13 @@ import {
   extractJfscDate,
   extractJfscRecordFromBody,
   buildJfscSourceEntries,
+  loadJfscArchiveRecords,
+  mergeJfscRecords,
   parseJfscPenaltyAmount,
   parseJfscFeed,
   parseJfscSitemap,
 } from "../scrapeJfsc.js";
+import { isManagedChallengeHtml } from "../lib/browserChallengeFetch.js";
 import {
   extractSebiFirm,
   extractSebiPenaltyAmount,
@@ -203,6 +206,27 @@ describe("next-eight regulator coverage", () => {
         "The JFSC imposed a civil financial penalty of £1.7 million on the firm.",
       ),
     ).toBe(1_700_000);
+    expect(
+      parseJfscPenaltyAmount(
+        "The JFSC imposed a civil financial penalty of £803,661.17. Were it not for the discount, the firm may have been liable to a financial penalty of £1,607,322.34.",
+      ),
+    ).toBe(803_661.17);
+  });
+
+  it("uses a verified JFSC archive without duplicate live URLs", () => {
+    const archive = loadJfscArchiveRecords();
+    const merged = mergeJfscRecords([{ ...archive[0], amount: 1_000_000 }]);
+
+    expect(archive).toHaveLength(6);
+    expect(merged).toHaveLength(6);
+    expect(merged[0].amount).toBe(86_803.19);
+  });
+
+  it("detects managed challenge responses", () => {
+    expect(isManagedChallengeHtml("<title>Just a moment...</title><div>cf-chl</div>"))
+      .toBe(true);
+    expect(isManagedChallengeHtml("<main><div class=\"views-row\">Notice</div></main>"))
+      .toBe(false);
   });
 
   it("parses JFSC sitemap entries", async () => {

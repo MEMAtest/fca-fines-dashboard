@@ -13,6 +13,7 @@ describe("liveRegulatorHealth", () => {
     expect(getLiveRegulatorCadence("DFSA")).toBe("fragile");
     expect(getFreshnessThresholdDays("SEC")).toBe(120);
     expect(getFreshnessThresholdDays("CIRO")).toBe(365);
+    expect(getFreshnessThresholdDays("FSRA")).toBe(365);
   });
 
   it("marks missing live regulators when no records are present", () => {
