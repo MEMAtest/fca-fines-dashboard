@@ -30,7 +30,7 @@ import {
   type CountrySanctions,
   type SanctionsTier,
 } from "./sanctionsStatus.js";
-import { hasGovernanceData } from "./governanceData.js";
+import { hasGovernanceData, getGovernanceDimensions } from "./governanceData.js";
 import {
   computeCountryRiskScore,
   scoreBreakdown,
@@ -178,6 +178,45 @@ export function pageCountries(): Country[] {
   );
 }
 
+/**
+ * AML/CFT control strength (0–10, higher = stronger) — the mean WGI percentile
+ * of the institutional dimensions (Rule of Law, Regulatory Quality, Government
+ * Effectiveness) ÷ 10. A derived VIEW metric (not part of the scored composite),
+ * used as the x-axis of the risk matrix and in the country detail panel.
+ */
+export function controlStrength(iso2: string): number | null {
+  const d = getGovernanceDimensions(iso2);
+  if (!d) return null;
+  const vals = [d.rl, d.rq, d.ge].filter((v): v is number => v !== undefined);
+  if (!vals.length) return null;
+  return Math.round((vals.reduce((s, v) => s + v, 0) / vals.length / 10) * 10) / 10;
+}
+
+let _maxActions: number | undefined;
+function maxTrackedActions(): number {
+  if (_maxActions !== undefined) return _maxActions;
+  let m = 0;
+  for (const c of pageCountries()) {
+    const e = getCountryEnforcementSummary(c.iso2);
+    if (e && e.trackedActions > m) m = e.trackedActions;
+  }
+  _maxActions = m;
+  return m;
+}
+
+/**
+ * Enforcement exposure (0–10) — tracked enforcement actions log-normalised
+ * against the busiest country. Sparse: only regulator-covered countries score
+ * above zero. Derived VIEW metric, never part of the scored composite.
+ */
+export function enforcementExposure(iso2: string): number {
+  const n = getCountryEnforcementSummary(iso2)?.trackedActions ?? 0;
+  if (n <= 0) return 0;
+  const max = maxTrackedActions();
+  if (max <= 1) return 0;
+  return Math.round((Math.log10(n + 1) / Math.log10(max + 1)) * 10 * 10) / 10;
+}
+
 export interface CountryIndexEntry {
   country: Country;
   flag: string;
@@ -186,6 +225,10 @@ export interface CountryIndexEntry {
   fatf?: FatfStatus;
   sanctionsTier?: SanctionsTier;
   hasEnforcement: boolean;
+  /** AML/CFT control strength 0–10 (higher = stronger), or null if no WGI. */
+  controlStrength: number | null;
+  /** Enforcement exposure 0–10 (log-normalised tracked actions). */
+  enforcementExposure: number;
 }
 
 let _index: CountryIndexEntry[] | undefined;
@@ -204,12 +247,31 @@ export function buildCountryIndex(): CountryIndexEntry[] {
         fatf: getFatfStatus(country.iso2),
         sanctionsTier: highestSanctionsTier(country.iso2),
         hasEnforcement: hasEnforcementCoverage(country.iso2),
+        controlStrength: controlStrength(country.iso2),
+        enforcementExposure: enforcementExposure(country.iso2),
       };
     })
     .sort(
       (a, b) => b.score - a.score || a.country.name.localeCompare(b.country.name),
     );
   return _index;
+}
+
+/** Global rank (1 = highest risk) and total, from the sorted index. */
+export function globalRank(iso2: string): { rank: number; total: number } {
+  const idx = buildCountryIndex();
+  const pos = idx.findIndex((e) => e.country.iso2 === iso2);
+  return { rank: pos < 0 ? idx.length : pos + 1, total: idx.length };
+}
+
+/** Rank within the country's region (1 = highest risk in-region) and region size. */
+export function regionRank(
+  iso2: string,
+  region: string,
+): { rank: number; total: number } {
+  const inRegion = buildCountryIndex().filter((e) => e.country.region === region);
+  const pos = inRegion.findIndex((e) => e.country.iso2 === iso2);
+  return { rank: pos < 0 ? inRegion.length : pos + 1, total: inRegion.length };
 }
 
 export interface RegionalAverage {

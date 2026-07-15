@@ -1,4 +1,4 @@
-import { useMemo } from "react";
+import { lazy, Suspense, useMemo } from "react";
 import { Link, useParams } from "react-router-dom";
 import {
   ArrowLeft,
@@ -25,6 +25,13 @@ import {
   fatfChangeText,
 } from "../data/countryView.js";
 import "../styles/country-hub.css";
+
+// Dark regional map — lazy so the report's first paint isn't blocked on d3-geo.
+const CountryRegionalMap = lazy(() =>
+  import("../components/CountryRegionalMap.js").then((m) => ({
+    default: m.CountryRegionalMap,
+  })),
+);
 
 const BAND_COLOUR: Record<RiskBand, string> = {
   "very-high": "#dc2626",
@@ -131,6 +138,16 @@ export function CountryHub() {
               sources cited <ExternalLink size={12} />
             </a>
           </p>
+        </div>
+
+        <div className="cx-report__map">
+          <Suspense fallback={<div className="cx-rmap__ph" style={{ height: 240 }} />}>
+            <CountryRegionalMap
+              iso2={country.iso2}
+              region={country.region}
+              subregion={country.subregion}
+            />
+          </Suspense>
         </div>
 
         {/* Score card with global-average marker + derivation */}
