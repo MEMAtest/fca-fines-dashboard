@@ -173,9 +173,12 @@ export interface CountryIndexEntry {
   hasEnforcement: boolean;
 }
 
+let _index: CountryIndexEntry[] | undefined;
+
 /** Every page country with its composite score, sorted highest-risk first. */
 export function buildCountryIndex(): CountryIndexEntry[] {
-  return pageCountries()
+  if (_index) return _index;
+  _index = pageCountries()
     .map((country) => {
       const rs = computeCountryRiskScore(country.iso2);
       return {
@@ -191,4 +194,71 @@ export function buildCountryIndex(): CountryIndexEntry[] {
     .sort(
       (a, b) => b.score - a.score || a.country.name.localeCompare(b.country.name),
     );
+  return _index;
+}
+
+export interface RegionalAverage {
+  region: string;
+  avg: number;
+  count: number;
+}
+
+let _regionalAverages: RegionalAverage[] | undefined;
+
+/** Mean composite score per region, highest-risk region first. */
+export function regionalAverages(): RegionalAverage[] {
+  if (_regionalAverages) return _regionalAverages;
+  const groups = new Map<string, number[]>();
+  for (const e of buildCountryIndex()) {
+    const arr = groups.get(e.country.region) ?? [];
+    arr.push(e.score);
+    groups.set(e.country.region, arr);
+  }
+  _regionalAverages = [...groups.entries()]
+    .map(([region, scores]) => ({
+      region,
+      avg: Math.round((scores.reduce((s, n) => s + n, 0) / scores.length) * 10) / 10,
+      count: scores.length,
+    }))
+    .sort((a, b) => b.avg - a.avg);
+  return _regionalAverages;
+}
+
+export interface PillarAverages {
+  fatf: number;
+  sanctions: number;
+  governance: number;
+}
+
+let _pillarAverages: PillarAverages | undefined;
+
+/**
+ * Global mean of each pillar's 0–10 sub-score across page countries. FATF and
+ * sanctions average over all countries ("none" = 0); governance averages only
+ * over the countries that have WGI data. Drives the "risk by pillar" donut.
+ */
+export function pillarAverages(): PillarAverages {
+  if (_pillarAverages) return _pillarAverages;
+  let f = 0;
+  let s = 0;
+  let g = 0;
+  let n = 0;
+  let gCount = 0;
+  for (const c of pageCountries()) {
+    const rs = computeCountryRiskScore(c.iso2);
+    f += rs.components.fatf;
+    s += rs.components.sanctions;
+    n += 1;
+    if (rs.components.governance !== null) {
+      g += rs.components.governance;
+      gCount += 1;
+    }
+  }
+  const round = (x: number) => Math.round(x * 10) / 10;
+  _pillarAverages = {
+    fatf: n ? round(f / n) : 0,
+    sanctions: n ? round(s / n) : 0,
+    governance: gCount ? round(g / gCount) : 0,
+  };
+  return _pillarAverages;
 }
