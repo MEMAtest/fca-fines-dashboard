@@ -23,7 +23,7 @@ import {
   fatfLabel,
   type FatfStatus,
 } from "../data/fatfStatus.js";
-import { sanctionsTierLabel } from "../data/sanctionsStatus.js";
+import { sanctionsTierLabel, type SanctionsTier } from "../data/sanctionsStatus.js";
 import { bandLabel, bandFor, type RiskBand } from "../data/countryRiskScore.js";
 import {
   buildCountryIndex,
@@ -59,6 +59,11 @@ function GlobalIndex() {
   );
   const [region, setRegion] = useState("All");
   const [band, setBand] = useState<"All" | RiskBand>("All");
+  const [query, setQuery] = useState("");
+  const [fatfFilter, setFatfFilter] = useState<"All" | "black" | "grey" | "none">("All");
+  const [sanctionsFilter, setSanctionsFilter] = useState<"All" | SanctionsTier | "none">("All");
+  const [sortKey, setSortKey] = useState<"score" | "name" | "region">("score");
+  const [sortDir, setSortDir] = useState<"asc" | "desc">("desc");
 
   const counts = useMemo(() => {
     const c: Record<RiskBand, number> = { "very-high": 0, high: 0, moderate: 0, low: 0 };
@@ -66,15 +71,32 @@ function GlobalIndex() {
     return c;
   }, [index]);
 
-  const rows = useMemo(
-    () =>
-      index.filter(
-        (e) =>
-          (region === "All" || e.country.region === region) &&
-          (band === "All" || e.band === band),
-      ),
-    [index, region, band],
-  );
+  const rows = useMemo(() => {
+    const q = query.trim().toLowerCase();
+    const filtered = index.filter((e) => {
+      if (region !== "All" && e.country.region !== region) return false;
+      if (band !== "All" && e.band !== band) return false;
+      if (q && !e.country.name.toLowerCase().includes(q)) return false;
+      if (fatfFilter !== "All") {
+        const l = e.fatf?.listing;
+        const key = l === "call-for-action" ? "black" : l === "increased-monitoring" ? "grey" : "none";
+        if (key !== fatfFilter) return false;
+      }
+      if (sanctionsFilter !== "All" && (e.sanctionsTier ?? "none") !== sanctionsFilter) return false;
+      return true;
+    });
+    const dir = sortDir === "asc" ? 1 : -1;
+    return [...filtered].sort((a, b) => {
+      if (sortKey === "name") return dir * a.country.name.localeCompare(b.country.name);
+      if (sortKey === "region")
+        return (
+          dir *
+          (a.country.region.localeCompare(b.country.region) ||
+            a.country.name.localeCompare(b.country.name))
+        );
+      return dir * (a.score - b.score || a.country.name.localeCompare(b.country.name));
+    });
+  }, [index, region, band, query, fatfFilter, sanctionsFilter, sortKey, sortDir]);
 
   const overall = useMemo(
     () =>
@@ -93,15 +115,40 @@ function GlobalIndex() {
   const nameOf = (iso2: string) => getCountryByIso2(iso2)?.name ?? iso2;
 
   const PILLAR_FILL: Record<string, string> = {
+    governance: "#0fa77d",
     fatf: "#dc2626",
     sanctions: "#ea580c",
-    governance: "#f59e0b",
   };
   const pillarData = [
-    { key: "fatf", name: "FATF", value: pillars.fatf },
-    { key: "sanctions", name: "Sanctions", value: pillars.sanctions },
-    { key: "governance", name: "Governance", value: pillars.governance },
+    { key: "governance", name: "Governance base", value: pillars.governance },
+    { key: "fatf", name: "FATF escalator", value: pillars.fatf },
+    { key: "sanctions", name: "Sanctions escalator", value: pillars.sanctions },
   ];
+
+  const toggleSort = (key: "score" | "name" | "region") => {
+    if (sortKey === key) setSortDir((d) => (d === "asc" ? "desc" : "asc"));
+    else {
+      setSortKey(key);
+      setSortDir(key === "score" ? "desc" : "asc");
+    }
+    setShowAll(false);
+  };
+  const sortArrow = (key: "score" | "name" | "region") =>
+    sortKey === key ? (sortDir === "desc" ? " ↓" : " ↑") : "";
+  const hasFilters =
+    region !== "All" ||
+    band !== "All" ||
+    query !== "" ||
+    fatfFilter !== "All" ||
+    sanctionsFilter !== "All";
+  const clearFilters = () => {
+    setRegion("All");
+    setBand("All");
+    setQuery("");
+    setFatfFilter("All");
+    setSanctionsFilter("All");
+    setShowAll(false);
+  };
 
   const PREVIEW = 20;
   const visibleRows = showAll ? rows : rows.slice(0, PREVIEW);
@@ -265,37 +312,92 @@ function GlobalIndex() {
       <section id="full-ranking" className="cx-index__table">
         <div className="cx-table-head">
           <h2 className="cx-table-title">Full ranking</h2>
-          <div className="country-index__controls">
-            <label>
-              Region{" "}
-              <select
-                value={region}
-                onChange={(e) => {
-                  setRegion(e.target.value);
-                  setShowAll(false);
-                }}
-              >
-                {regions.map((r) => (
-                  <option key={r} value={r}>
-                    {r}
-                  </option>
-                ))}
-              </select>
-            </label>
-            <span className="country-index__count">
-              {rows.length} shown{band !== "All" ? ` · ${bandLabel(band)}` : ""}
-            </span>
-          </div>
+          <span className="country-index__count">
+            {rows.length} shown{band !== "All" ? ` · ${bandLabel(band)}` : ""}
+          </span>
+        </div>
+
+        <div className="cx-filters">
+          <label className="cx-filters__search">
+            <Search size={15} />
+            <input
+              type="search"
+              placeholder="Search country"
+              value={query}
+              onChange={(e) => {
+                setQuery(e.target.value);
+                setShowAll(false);
+              }}
+            />
+          </label>
+          <select
+            value={region}
+            onChange={(e) => {
+              setRegion(e.target.value);
+              setShowAll(false);
+            }}
+            aria-label="Region"
+          >
+            {regions.map((r) => (
+              <option key={r} value={r}>
+                {r === "All" ? "All regions" : r}
+              </option>
+            ))}
+          </select>
+          <select
+            value={fatfFilter}
+            onChange={(e) => {
+              setFatfFilter(e.target.value as typeof fatfFilter);
+              setShowAll(false);
+            }}
+            aria-label="FATF listing"
+          >
+            <option value="All">All FATF</option>
+            <option value="black">Black list</option>
+            <option value="grey">Grey list</option>
+            <option value="none">Not listed</option>
+          </select>
+          <select
+            value={sanctionsFilter}
+            onChange={(e) => {
+              setSanctionsFilter(e.target.value as typeof sanctionsFilter);
+              setShowAll(false);
+            }}
+            aria-label="Sanctions"
+          >
+            <option value="All">All sanctions</option>
+            <option value="comprehensive">Comprehensive</option>
+            <option value="sectoral">Sectoral</option>
+            <option value="targeted">Targeted</option>
+            <option value="none">None</option>
+          </select>
+          {hasFilters && (
+            <button type="button" className="cx-filters__clear" onClick={clearFilters}>
+              Clear filters
+            </button>
+          )}
         </div>
 
         <table className="country-ratings">
           <thead>
             <tr>
               <th>#</th>
-              <th>Country</th>
-              <th className="country-ratings__num">Score</th>
+              <th>
+                <button type="button" className="cx-sort" onClick={() => toggleSort("name")}>
+                  Country{sortArrow("name")}
+                </button>
+              </th>
+              <th className="country-ratings__num">
+                <button type="button" className="cx-sort" onClick={() => toggleSort("score")}>
+                  Score{sortArrow("score")}
+                </button>
+              </th>
               <th>Risk</th>
-              <th>Region</th>
+              <th>
+                <button type="button" className="cx-sort" onClick={() => toggleSort("region")}>
+                  Region{sortArrow("region")}
+                </button>
+              </th>
               <th>FATF</th>
               <th>Sanctions</th>
             </tr>

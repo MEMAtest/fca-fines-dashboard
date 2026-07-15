@@ -33,11 +33,13 @@ import {
 import { hasGovernanceData } from "./governanceData.js";
 import {
   computeCountryRiskScore,
+  scoreBreakdown,
   globalAverageRiskScore,
-  PILLAR_WEIGHTS,
   type CountryRiskScore,
+  type ScoreBreakdown,
   type RiskBand as ScoreBand,
 } from "./countryRiskScore.js";
+import { getCpi, type CpiEntry } from "./cpiData.js";
 
 const MONTHS = [
   "Jan", "Feb", "Mar", "Apr", "May", "Jun",
@@ -77,12 +79,16 @@ export interface CountryView {
   sanctionsTier?: SanctionsTier;
   /** Risk band for the sanctions card (mirrors the FATF band scale). */
   sanctionsBand: RiskBand;
-  /** Composite RegActions Country Risk Score (FATF + Sanctions + WGI). */
+  /** Composite RegActions Country Risk Score (governance base + escalators). */
   riskScore: CountryRiskScore;
+  /** Score derivation for the "how is this scored?" card. */
+  breakdown: ScoreBreakdown;
   /** Mean score across profiled countries, for "vs global average". */
   globalAverage: number;
-  /** Scoring weights (for the "How is this scored?" card). */
-  weights: typeof PILLAR_WEIGHTS;
+  /** Transparency International CPI (display only), if available. */
+  cpi?: CpiEntry;
+  /** Same-region peers (highest-risk first), for the regional-context panel. */
+  regionalPeers: CountryIndexEntry[];
   lastPlenary: string;
   nextPlenary: string;
 }
@@ -134,11 +140,20 @@ export function buildCountryView(country: Country): CountryView {
     sanctionsTier,
     sanctionsBand: sanctionsToBand(sanctionsTier),
     riskScore: computeCountryRiskScore(country.iso2),
+    breakdown: scoreBreakdown(country.iso2),
     globalAverage: globalAverageRiskScore(),
-    weights: PILLAR_WEIGHTS,
+    cpi: getCpi(country.iso2),
+    regionalPeers: regionalPeers(country.iso2, country.region),
     lastPlenary: FATF_LAST_PLENARY,
     nextPlenary: FATF_NEXT_PLENARY,
   };
+}
+
+/** Highest-risk same-region peers (excluding the country itself). */
+export function regionalPeers(iso2: string, region: string, limit = 6): CountryIndexEntry[] {
+  return buildCountryIndex()
+    .filter((e) => e.country.region === region && e.country.iso2 !== iso2)
+    .slice(0, limit);
 }
 
 /** Human phrasing for a FATF change-log entry. */
@@ -225,40 +240,39 @@ export function regionalAverages(): RegionalAverage[] {
 }
 
 export interface PillarAverages {
-  fatf: number;
-  sanctions: number;
+  /** Mean governance base (0–10). */
   governance: number;
+  /** Mean FATF escalator points added. */
+  fatf: number;
+  /** Mean sanctions escalator points added. */
+  sanctions: number;
 }
 
 let _pillarAverages: PillarAverages | undefined;
 
 /**
- * Global mean of each pillar's 0–10 sub-score across page countries. FATF and
- * sanctions average over all countries ("none" = 0); governance averages only
- * over the countries that have WGI data. Drives the "risk by pillar" donut.
+ * Global mean contribution of each part of the composite across page countries:
+ * the governance base and the FATF / sanctions escalator points. Drives the
+ * "what drives global risk" donut on the index.
  */
 export function pillarAverages(): PillarAverages {
   if (_pillarAverages) return _pillarAverages;
+  let base = 0;
   let f = 0;
   let s = 0;
-  let g = 0;
   let n = 0;
-  let gCount = 0;
   for (const c of pageCountries()) {
     const rs = computeCountryRiskScore(c.iso2);
-    f += rs.components.fatf;
-    s += rs.components.sanctions;
+    base += rs.base;
+    f += rs.fatf.points;
+    s += rs.sanctions.points;
     n += 1;
-    if (rs.components.governance !== null) {
-      g += rs.components.governance;
-      gCount += 1;
-    }
   }
   const round = (x: number) => Math.round(x * 10) / 10;
   _pillarAverages = {
+    governance: n ? round(base / n) : 0,
     fatf: n ? round(f / n) : 0,
     sanctions: n ? round(s / n) : 0,
-    governance: gCount ? round(g / gCount) : 0,
   };
   return _pillarAverages;
 }

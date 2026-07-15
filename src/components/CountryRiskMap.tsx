@@ -17,7 +17,7 @@ import {
   computeCountryRiskScore,
   bandLabel,
   type RiskBand,
-  type RiskComponents,
+  type RiskDomains,
 } from "../data/countryRiskScore.js";
 import { iso2ForFeature } from "../data/atlasResolve.js";
 
@@ -33,7 +33,7 @@ interface FeatureMeta {
   iso2?: string;
   band: RiskBand | null;
   score: number | null;
-  components?: RiskComponents;
+  domains?: RiskDomains;
   name: string;
 }
 
@@ -43,10 +43,10 @@ interface HoverState {
   meta: FeatureMeta;
 }
 
-const PILLAR_ROWS: Array<{ key: keyof RiskComponents; label: string }> = [
-  { key: "fatf", label: "FATF" },
-  { key: "sanctions", label: "Sanctions" },
-  { key: "governance", label: "Governance" },
+const PILLAR_ROWS: Array<{ key: keyof RiskDomains; label: string }> = [
+  { key: "corruption", label: "Corruption" },
+  { key: "ruleOfLaw", label: "Rule of law" },
+  { key: "politicalStability", label: "Political" },
 ];
 
 export function CountryRiskMap() {
@@ -114,7 +114,7 @@ export function CountryRiskMap() {
         iso2,
         band: rs.band,
         score: rs.score,
-        components: rs.components,
+        domains: rs.domains,
         name,
       });
     }
@@ -200,7 +200,7 @@ export function CountryRiskMap() {
           <span className="cx-map__pop-band">{bandLabel(hover.meta.band)} risk</span>
           <ul className="cx-map__pop-bars">
             {PILLAR_ROWS.map(({ key, label }) => {
-              const v = hover.meta.components?.[key];
+              const v = hover.meta.domains?.[key];
               return (
                 <li key={key}>
                   <span className="cx-map__pop-bar-label">{label}</span>
