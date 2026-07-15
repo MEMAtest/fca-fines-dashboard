@@ -14,19 +14,17 @@ import "../styles/siteheader.css";
 
 const NAV_LINKS = [
   { to: "/", label: "Home" },
-  { to: "/fines", label: "Fines" },
+  { to: "/fines", label: "Compare Firms" },
   { to: "/search", label: "Enforcement" },
   { to: "/blog", label: "Research" },
-  { to: "/fines/compare", label: "Benchmarks" },
   { to: "/topics", label: "Insights" },
   { to: "/intelligence", label: "Intelligence" },
+  { to: "/countries", label: "Countries" },
 ];
 
 function isNavActive(to: string, pathname: string) {
   if (to === "/") return pathname === "/";
-  if (to === "/fines")
-    return pathname.startsWith("/fines") && pathname !== "/fines/compare";
-  if (to === "/fines/compare") return pathname === "/fines/compare";
+  if (to === "/fines") return pathname.startsWith("/fines");
   if (to === "/blog")
     return pathname === "/blog" || pathname.startsWith("/blog/");
   if (to === "/countries")
