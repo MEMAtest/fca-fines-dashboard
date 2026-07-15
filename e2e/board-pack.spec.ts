@@ -112,152 +112,71 @@ async function fulfillBoardPackSearch(route: Route) {
   });
 }
 
-test.describe("Board Pack", () => {
-  test("renders the board pack route and generated sections", async ({
-    page,
-  }) => {
+test.describe("Quick Board Pack", () => {
+  test.beforeEach(async ({ page }) => {
     await page.route("**/api/unified/search**", fulfillBoardPackSearch);
     await page.goto("/board-pack");
-
-    await expect(
-      page.getByRole("heading", { level: 1, name: "Board Pack" }),
-    ).toBeVisible();
-    await expect(
-      page
-        .getByRole("heading", {
-          level: 2,
-          name: "NorthStar Compliance Profile",
-        })
-        .first(),
-    ).toBeVisible();
-    await expect(
-      page.getByRole("heading", { name: "Executive takeaways" }),
-    ).toBeVisible();
-    await expect(
-      page.getByRole("heading", { name: "Exposure drivers" }),
-    ).toBeVisible();
-    await expect(
-      page.getByRole("heading", { name: "Board challenge agenda" }),
-    ).toBeVisible();
-    await expect(page.getByRole("heading", { name: "Appendix" })).toBeVisible();
-
-    const dashboardHeadings = await page
-      .locator("section h2")
-      .allTextContents();
-    expect(dashboardHeadings).toEqual(
-      expect.arrayContaining([
-        "Executive takeaways",
-        "Exposure drivers",
-        "Peer comparison",
-        "Top regulators shaping this profile",
-        "Why this matters now",
-        "Key scenarios",
-        "Board challenge agenda",
-        "Recommended management responses",
-        "Recent enforcement signals",
-        "Key evidence",
-        "Appendix",
-      ]),
-    );
   });
 
-  test("regenerates the pack for a renamed firm profile", async ({ page }) => {
-    await page.route("**/api/unified/search**", fulfillBoardPackSearch);
-    await page.goto("/board-pack");
-
-    await page.getByRole("button", { name: "Refine profile" }).click();
-    await page.getByLabel("Firm or profile name").fill("NorthStar Payments");
-    await page.getByRole("button", { name: "Generate board pack" }).click();
-
-    await expect(
-      page
-        .getByRole("heading", {
-          level: 2,
-          name: "NorthStar Payments",
-        })
-        .first(),
-    ).toBeVisible();
+  test("renders a no-account builder with a live committee preview", async ({ page }) => {
+    await expect(page.getByRole("heading", { level: 1, name: /Create a committee-ready regulatory board pack/i })).toBeVisible();
+    await expect(page.getByRole("heading", { name: "Build your pack" })).toBeVisible();
+    await expect(page.getByText(/No account is required/i)).toBeVisible();
+    await expect(page.getByRole("heading", { name: "Executive takeaways" })).toBeVisible();
+    await expect(page.getByRole("heading", { name: "Exposure drivers" })).toBeVisible();
+    await expect(page.getByRole("button", { name: "APAC" })).toBeVisible();
+    await expect(page.getByRole("button", { name: /^Download PDF$/ })).toBeVisible();
   });
 
-  test("supports print and working-copy mode", async ({ page }) => {
-    await page.route("**/api/unified/search**", fulfillBoardPackSearch);
-    await page.addInitScript(() => {
-      (window as unknown as { __printCount?: number }).__printCount = 0;
-      window.print = () => {
-        (window as unknown as { __printCount: number }).__printCount += 1;
-      };
+  test("updates the profile, region and regulator scope immediately", async ({ page }) => {
+    await page.getByLabel("Organisation name").fill("NorthStar Payments");
+    await page.getByRole("button", { name: "APAC" }).click();
+    await page.getByRole("button", { name: "FCA", exact: true }).click();
+
+    await expect(page.getByRole("heading", { name: "NorthStar Payments" }).first()).toBeVisible();
+    await expect(page.getByRole("button", { name: "APAC" })).toHaveClass(/is-selected/);
+  });
+
+  test("downloads the PDF directly without posting a lead", async ({ page }) => {
+    let leadRequests = 0;
+    await page.route("**/api/board-pack/leads", async (route) => {
+      leadRequests += 1;
+      await route.fulfill({ status: 500, body: "not expected" });
     });
-    await page.goto("/board-pack");
+    await page.getByLabel("Organisation name").fill("NorthStar Payments");
 
-    await page.getByRole("button", { name: "Refine profile" }).click();
-    await page.getByLabel("Audience mode").selectOption("working");
-    await page
-      .getByLabel("MEMA advisory note")
-      .fill("Escalate control evidence before the next committee cycle.");
-    await page.getByRole("button", { name: "Generate board pack" }).click();
+    const downloadPromise = page.waitForEvent("download");
+    await page.getByRole("button", { name: /^Download PDF$/ }).click();
+    const download = await downloadPromise;
 
-    await page.getByRole("button", { name: "Print / Save PDF" }).click();
-    await expect(
-      page.getByRole("heading", { name: "MEMA advisory note" }),
-    ).toBeVisible();
-    await expect(page.getByLabel(/Control status for/i).first()).toBeVisible();
-
-    const printCount = await page.evaluate(
-      () => (window as unknown as { __printCount: number }).__printCount,
-    );
-    expect(printCount).toBe(1);
+    expect(download.suggestedFilename()).toBe("northstar-payments-regactions-board-pack.pdf");
+    if (process.env.BOARD_PACK_PDF_QA_PATH) {
+      await download.saveAs(process.env.BOARD_PACK_PDF_QA_PATH);
+    }
+    expect(leadRequests).toBe(0);
+    await expect(page.getByRole("status")).toContainText(/No account or contact details were required/i);
   });
 
-  test("loads a saved board-pack snapshot from local storage", async ({
-    page,
-  }) => {
-    await page.route("**/api/unified/search**", fulfillBoardPackSearch);
-    await page.addInitScript(() => {
-      window.localStorage.setItem(
-        "board-pack-saved-profiles-v1",
-        JSON.stringify([
-          {
-            id: "saved-1",
-            label: "NorthStar Board Pack",
-            updatedAt: "2026-04-01T10:00:00.000Z",
-            profile: {
-              firmName: "NorthStar Board Pack",
-              archetypeId: "retail-bank",
-              boardFocus: "assurance",
-              priorityRegulators: ["FCA", "ECB"],
-              focusRegions: ["UK", "Europe"],
-              priorityThemeIds: [
-                "aml-controls",
-                "governance-accountability",
-                "systems-and-controls",
-              ],
-            },
-            settings: {
-              viewMode: "board",
-              brandingMode: "client-ready",
-              clientLabel: "NorthStar plc",
-              confidentialityLabel: "Board Use Only",
-              analystNote: "Use this pack for the April committee pack.",
-              templateId: "committee-core",
-            },
-          },
-        ]),
-      );
+  test("keeps the advisory request separate and privacy-aware", async ({ page }) => {
+    await page.route("**/api/board-pack/leads", async (route) => {
+      await route.fulfill({
+        status: 200,
+        contentType: "application/json",
+        body: JSON.stringify({ persisted: true, notificationStatus: "queued" }),
+      });
     });
+    await page.getByLabel("Organisation name").fill("NorthStar Payments");
+    await page.getByRole("button", { name: /Request tailored support/i }).click();
+    await expect(page.getByRole("heading", { name: /Request tailored board advisory/i })).toBeVisible();
+    await expect(page.getByText(/PDF remains available without this form/i)).toBeVisible();
 
-    await page.goto("/board-pack");
-    await page.getByRole("button", { name: /^Load$/ }).click();
+    await page.getByLabel("Your name").fill("Alex Morgan");
+    await page.getByLabel("Work email").fill("alex@example.com");
+    await page.getByLabel("Organisation", { exact: true }).fill("NorthStar Payments");
+    await page.getByLabel(/I have read the privacy notice/i).check();
+    await page.getByRole("button", { name: /Send advisory request/i }).click();
 
-    await expect(
-      page
-        .getByRole("heading", {
-          level: 2,
-          name: "NorthStar Board Pack",
-        })
-        .first(),
-    ).toBeVisible();
-    await expect(
-      page.getByText(/Prepared for NorthStar plc/i).first(),
-    ).toBeVisible();
+    await expect(page.getByRole("dialog")).toBeHidden();
+    await expect(page.getByRole("status")).toContainText(/recorded.*queued/i);
   });
 });

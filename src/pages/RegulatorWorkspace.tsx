@@ -16,6 +16,7 @@ import {
   Info,
   ShieldCheck,
   Sparkles,
+  TrendingUp,
 } from "lucide-react";
 import { ActionDrawer } from "../components/ActionDrawer.js";
 import { ProductWorkspaceShell } from "../components/ProductWorkspaceShell.js";
@@ -31,6 +32,7 @@ import type { FineRecord } from "../types.js";
 import {
   buildBreakdown,
   buildYearlyTrend,
+  formatWorkspaceActionCount,
   formatWorkspaceAmount,
   getRecordThemes,
   getWorkspaceMetrics,
@@ -84,6 +86,17 @@ export function RegulatorWorkspace({ view }: RegulatorWorkspaceProps) {
   const years = useMemo(() => Array.from(new Set(primary.fines.map((record) => record.year_issued))).sort((a,b) => b-a), [primary.fines]);
   const themeOptions = useMemo(() => buildBreakdown(primary.fines, getRecordThemes, 50).map((entry) => entry.label), [primary.fines]);
   const sectorOptions = useMemo(() => Array.from(new Set(primary.fines.map((record) => record.firm_category || "Sector not recorded"))).sort(), [primary.fines]);
+  const yearComparison = useMemo(() => {
+    const populated = yearly.filter((point) => point.count > 0).slice().sort((left, right) => left.year - right.year);
+    const latest = populated.at(-1);
+    const previous = latest
+      ? populated.find((point) => point.year === latest.year - 1) ?? populated.at(-2)
+      : undefined;
+    const change = latest && previous && previous.amount > 0
+      ? ((latest.amount - previous.amount) / previous.amount) * 100
+      : null;
+    return { latest, previous, change };
+  }, [yearly]);
 
   useSEO({ title: `${coverage?.fullName ?? code} ${view === "overview" ? "Executive Summary" : view} | RegActions`, description: `Public enforcement intelligence, penalties and official evidence for ${coverage?.fullName ?? code}.` });
 
@@ -107,7 +120,7 @@ export function RegulatorWorkspace({ view }: RegulatorWorkspaceProps) {
         records: result.records,
         description: result.truncated
           ? `Showing the first ${result.records.length.toLocaleString("en-GB")} of ${result.total.toLocaleString("en-GB")} matching actions.`
-          : `${result.total.toLocaleString("en-GB")} matching actions with source evidence where available.`,
+          : `${result.total.toLocaleString("en-GB")} matching ${result.total === 1 ? "action" : "actions"} with source evidence where available.`,
       } : current);
     } catch {
       setDrawer((current) => current?.title === title ? { ...current, description: "The live record query could not be refreshed. The loaded working set is shown." } : current);
@@ -146,7 +159,10 @@ export function RegulatorWorkspace({ view }: RegulatorWorkspaceProps) {
             <div className="regulator-workspace__mark"><RegulatorMark regulator={code} label={coverage.fullName} size="large" /></div>
             <div><h1>{coverage.fullName} ({code})</h1><p><ShieldCheck size={13} /> All data on this page reflects {code} enforcement activity in {coverage.country}.</p></div>
           </div>
-          <div className="regulator-workspace__country"><span>{coverage.flag}</span><div><strong>{coverage.country}</strong><small>Jurisdiction</small></div></div>
+          <div className="regulator-workspace__context">
+            <div className="regulator-workspace__country"><span>{coverage.flag}</span><div><strong>{coverage.country}</strong><small>Jurisdiction</small></div></div>
+            <div className="regulator-workspace__scope"><ShieldCheck size={18}/><div><small>You are viewing data for</small><strong>{code} · {coverage.country}</strong><span>Charts and tables are restricted to this regulator.</span></div></div>
+          </div>
         </section>
 
         <section className="workspace-filterbar" aria-label={`${code} filters`}>
@@ -164,7 +180,7 @@ export function RegulatorWorkspace({ view }: RegulatorWorkspaceProps) {
           <article className="workspace-kpi"><span>Median fine</span><strong>{formatWorkspaceAmount(metrics.median)}</strong><small>Current view median</small></article>
           <article className="workspace-kpi"><span>Largest fine</span><strong>{formatWorkspaceAmount(metrics.largest?.amount ?? 0)}</strong><small>{metrics.largest?.firm_individual ?? "No matching record"}</small></article>
           <article className="workspace-kpi"><span>Most affected sector</span><strong>{sectors[0]?.label ?? "Not recorded"}</strong><small>{sectors[0] ? formatWorkspaceAmount(sectors[0].amount) : "No matching value"}</small></article>
-          <article className="workspace-kpi"><span>Leading theme</span><strong><em>{dominantTheme}</em></strong><small>By disclosed fine value</small></article>
+          <article className="workspace-kpi"><span>Year-over-year change</span><strong><em>{yearComparison.change === null ? "Not available" : `${yearComparison.change >= 0 ? "+" : ""}${yearComparison.change.toFixed(1)}%`}</em></strong><small>{yearComparison.latest && yearComparison.previous ? `${yearComparison.latest.year} vs ${yearComparison.previous.year}` : "Insufficient annual history"}</small></article>
         </section>
 
         {view === "actions" ? (
@@ -178,9 +194,9 @@ export function RegulatorWorkspace({ view }: RegulatorWorkspaceProps) {
           </div>
         ) : (
           <div className="workspace-grid">
-            {view === "overview" && <section className="workspace-card"><div className="workspace-card__heading"><h2>What matters now</h2><Sparkles size={15}/></div><p style={{fontSize:12,lineHeight:1.55,color:"#53667a"}}>{code} enforcement activity in this view is concentrated in {dominantTheme.toLowerCase()}, with {metrics.count} published actions and {formatWorkspaceAmount(metrics.total)} in disclosed fines.</p><ul className="workspace-insights"><li><CheckCircle2 size={14}/><span>{themes[0] ? `${themes[0].label} accounts for ${themes[0].share.toFixed(1)}% of classified fine value.` : "No leading theme is recorded."}</span></li><li><CheckCircle2 size={14}/><span>{sectors[0] ? `${sectors[0].label} is the leading affected sector.` : "Sector information is limited."}</span></li><li><Info size={14}/><span>Open any chart mark or table row to review the underlying evidence.</span></li></ul></section>}
+            {view === "overview" && <section className="workspace-card"><div className="workspace-card__heading"><h2>What matters now</h2><Sparkles size={15}/></div><p style={{fontSize:12,lineHeight:1.55,color:"#53667a"}}>{code} enforcement activity in this view is concentrated in {dominantTheme.toLowerCase()}, with {formatWorkspaceActionCount(metrics.count)} and {formatWorkspaceAmount(metrics.total)} in disclosed fines.</p><ul className="workspace-insights"><li><CheckCircle2 size={14}/><span>{themes[0] ? `${themes[0].label} accounts for ${themes[0].share.toFixed(1)}% of classified fine value.` : "No leading theme is recorded."}</span></li><li><CheckCircle2 size={14}/><span>{sectors[0] ? `${sectors[0].label} is the leading affected sector.` : "Sector information is limited."}</span></li><li><TrendingUp size={14}/><span>{yearComparison.change === null ? "Annual movement cannot yet be calculated for this scope." : `Disclosed fine value moved ${Math.abs(yearComparison.change).toFixed(1)}% ${yearComparison.change >= 0 ? "up" : "down"} against the preceding annual period.`}</span></li><li><Info size={14}/><span>Open any chart mark or table row to review the underlying evidence.</span></li></ul></section>}
 
-            <section className={`workspace-card ${view === "overview" ? "workspace-card--half" : "workspace-card--wide"}`}><div className="workspace-card__heading"><h2>{code} fines over time (GBP)</h2><span>Click a point to open its actions</span></div><div className="workspace-chart"><ResponsiveContainer width="100%" height="100%" minWidth={0} initialDimension={{ width: 520, height: 250 }}><AreaChart data={yearly} margin={{top:10,right:8,left:0,bottom:0}}><defs><linearGradient id="regulatorArea" x1="0" y1="0" x2="0" y2="1"><stop offset="5%" stopColor="#176ee7" stopOpacity={.28}/><stop offset="95%" stopColor="#176ee7" stopOpacity={0}/></linearGradient></defs><CartesianGrid strokeDasharray="3 3"/><XAxis dataKey="label"/><YAxis width={62} tickFormatter={(value)=>formatWorkspaceAmount(Number(value))}/><Tooltip formatter={(value)=>formatWorkspaceAmount(Number(value))}/><Area dataKey="amount" type="monotone" stroke="#176ee7" strokeWidth={2.2} fill="url(#regulatorArea)" activeDot={{r:6,onClick:(_event:unknown,payload:any)=>openSelection({year:Number(payload?.payload?.year)},`${payload?.payload?.year} ${code} actions`)}}/></AreaChart></ResponsiveContainer></div></section>
+            <section className={`workspace-card ${view === "overview" ? "workspace-card--half" : "workspace-card--wide"}`}><div className="workspace-card__heading"><h2>{code} fines over time (GBP)</h2><span>Click a point to open its actions</span></div><div className="workspace-chart"><ResponsiveContainer width="100%" height="100%" minWidth={0} initialDimension={{ width: 520, height: 250 }}><AreaChart data={yearly} margin={{top:10,right:8,left:0,bottom:0}}><defs><linearGradient id="regulatorArea" x1="0" y1="0" x2="0" y2="1"><stop offset="5%" stopColor="#176ee7" stopOpacity={.28}/><stop offset="95%" stopColor="#176ee7" stopOpacity={0}/></linearGradient></defs><CartesianGrid strokeDasharray="3 3"/><XAxis dataKey="label"/><YAxis width={62} tickFormatter={(value)=>formatWorkspaceAmount(Number(value))}/><Tooltip formatter={(value)=>formatWorkspaceAmount(Number(value))}/><Area isAnimationActive={false} dataKey="amount" type="monotone" stroke="#176ee7" strokeWidth={2.2} fill="url(#regulatorArea)" activeDot={{r:6,onClick:(_event:unknown,payload:any)=>openSelection({year:Number(payload?.payload?.year)},`${payload?.payload?.year} ${code} actions`)}}/></AreaChart></ResponsiveContainer></div></section>
 
             <section className="workspace-card"><div className="workspace-card__heading"><h2>Top breach themes</h2><button type="button" className="workspace-card__action" onClick={()=>setDrawer({title:`All ${code} themes`,records})}>View all <ArrowRight size={11}/></button></div><div className="workspace-bars">{themes.map((item)=><button type="button" className="workspace-bar" key={item.label} onClick={()=>openSelection({theme:item.label},item.label)}><span>{item.label}</span><div className="workspace-bar__track"><div className="workspace-bar__fill" style={{width:`${Math.max(4,item.share)}%`}}/></div><strong>{formatWorkspaceAmount(item.amount)}</strong></button>)}</div></section>
 
@@ -188,10 +204,10 @@ export function RegulatorWorkspace({ view }: RegulatorWorkspaceProps) {
             <section className="workspace-card workspace-card--half"><div className="workspace-card__heading"><h2>Top penalties ({code})</h2><span>By disclosed value</span></div><RegulatorTable records={top} onOpen={(record)=>setDrawer({title:record.firm_individual,records:[record],description:record.summary})}/></section>
 
             <section className="workspace-card"><div className="workspace-card__heading"><h2>Fines by sector</h2><span>Click to drill down</span></div><div className="workspace-bars">{sectors.map((item)=><button className="workspace-bar" type="button" key={item.label} onClick={()=>setDrawer({title:item.label,records:records.filter((record)=>(record.firm_category||"Sector not recorded")===item.label)})}><span>{item.label}</span><div className="workspace-bar__track"><div className="workspace-bar__fill" style={{width:`${Math.max(4,item.share)}%`}}/></div><strong>{formatWorkspaceAmount(item.amount)}</strong></button>)}</div></section>
-            <section className="workspace-card"><div className="workspace-card__heading"><h2>Fines by action type</h2><span>Click to drill down</span></div><div className="workspace-treemap">{actionTypes.slice(0,6).map((item)=><button className="workspace-tile" type="button" key={item.label} onClick={()=>setDrawer({title:item.label,records:records.filter((record)=>(record.breach_type||"Not classified")===item.label)})}><span>{item.label}</span><strong>{formatWorkspaceAmount(item.amount)}</strong><small>{item.count} actions</small></button>)}</div></section>
-            <section className="workspace-card"><div className="workspace-card__heading"><h2>Key themes / emerging issues</h2></div><ul className="workspace-insights">{themes.slice(0,4).map((item)=><li key={item.label}><CheckCircle2 size={14}/><span>{item.label}: {item.count} actions and {formatWorkspaceAmount(item.amount)} in disclosed fines.</span></li>)}</ul></section>
+            <section className="workspace-card"><div className="workspace-card__heading"><h2>Fines by action type</h2><span>Click to drill down</span></div><div className="workspace-treemap">{actionTypes.slice(0,6).map((item)=><button className="workspace-tile" type="button" key={item.label} onClick={()=>setDrawer({title:item.label,records:records.filter((record)=>(record.breach_type||"Not classified")===item.label)})}><span>{item.label}</span><strong>{formatWorkspaceAmount(item.amount)}</strong><small>{formatWorkspaceActionCount(item.count)}</small></button>)}</div></section>
+            <section className="workspace-card"><div className="workspace-card__heading"><h2>Key themes / emerging issues</h2></div><ul className="workspace-insights">{themes.slice(0,4).map((item)=><li key={item.label}><CheckCircle2 size={14}/><span>{item.label}: {formatWorkspaceActionCount(item.count)} and {formatWorkspaceAmount(item.amount)} in disclosed fines.</span></li>)}</ul></section>
 
-            <section className="workspace-card workspace-card--half"><div className="workspace-card__heading"><h2>Regulator scope, methodology and data</h2></div><table className="workspace-table"><tbody><tr><th>Scope</th><td>{coverage.fullName} activity in {coverage.country}</td></tr><tr><th>Time period</th><td>{coverage.years}</td></tr><tr><th>Coverage</th><td>{metrics.count} actions in the current view</td></tr><tr><th>Currency</th><td>Normalised to GBP for comparison</td></tr></tbody></table></section>
+            <section className="workspace-card workspace-card--half"><div className="workspace-card__heading"><h2>Regulator scope, methodology and data</h2></div><table className="workspace-table"><tbody><tr><th>Scope</th><td>{coverage.fullName} activity in {coverage.country}</td></tr><tr><th>Time period</th><td>{coverage.years}</td></tr><tr><th>Coverage</th><td>{formatWorkspaceActionCount(metrics.count)} in the current view</td></tr><tr><th>Currency</th><td>Normalised to GBP for comparison</td></tr></tbody></table></section>
             <section className="workspace-card workspace-card--half"><div className="workspace-card__heading"><h2>About {coverage.fullName}</h2></div><p style={{fontSize:11,lineHeight:1.55,color:"#53667a"}}>{coverage.note ?? `${coverage.fullName} is the primary regulatory authority represented in this public enforcement workspace.`}</p><ul className="workspace-insights">{coverage.officialSources.map((source)=><li key={source.url}><ExternalLink size={13}/><a href={source.url} target="_blank" rel="noreferrer">{source.label}</a><span>{source.description}</span></li>)}</ul></section>
           </div>
         )}

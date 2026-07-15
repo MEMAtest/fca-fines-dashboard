@@ -66,13 +66,29 @@ describe("BoardIntelligence quick pack", () => {
     expect(screen.getAllByRole("heading", { name: "Acme Payments Ltd" }).length).toBeGreaterThan(0);
   });
 
-  it("opens a privacy-aware lead gate with optional marketing consent", () => {
+  it("keeps contact details optional while exposing direct PDF download", () => {
     renderPage();
     fireEvent.change(screen.getByLabelText(/Organisation name/i), { target: { value: "Acme Payments Ltd" } });
-    fireEvent.click(screen.getAllByRole("button", { name: /Create and download PDF|Create board pack/i })[0]);
-    expect(screen.getByRole("heading", { name: /Download your board pack/i })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /^Download PDF$/i })).toBeInTheDocument();
+    expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
+    expect(screen.getByText(/No account is required/i)).toBeInTheDocument();
+  });
+
+  it("supports explicit region selection", () => {
+    renderPage();
+    const apac = screen.getByRole("button", { name: "APAC" });
+    fireEvent.click(apac);
+    expect(apac).toHaveClass("is-selected");
+  });
+
+  it("opens a privacy-aware optional advisory form", () => {
+    renderPage();
+    fireEvent.change(screen.getByLabelText(/Organisation name/i), { target: { value: "Acme Payments Ltd" } });
+    fireEvent.click(screen.getByRole("button", { name: /Request tailored support/i }));
+    expect(screen.getByRole("heading", { name: /Request tailored board advisory/i })).toBeInTheDocument();
     expect(screen.getByLabelText(/Your name/i)).toBeRequired();
     expect(screen.getByLabelText(/Work email/i)).toBeRequired();
+    expect(screen.getByLabelText("Organisation", { exact: true })).toHaveValue("Acme Payments Ltd");
     expect(screen.getByText(/This is optional/i)).toBeInTheDocument();
     expect(screen.getByRole("link", { name: /privacy notice/i })).toHaveAttribute("href", "/privacy");
   });

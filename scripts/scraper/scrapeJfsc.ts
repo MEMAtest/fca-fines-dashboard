@@ -128,16 +128,24 @@ export function mergeJfscRecords(
   liveRecords: ReturnType<typeof loadJfscArchiveRecords>,
   archiveRecords = loadJfscArchiveRecords(),
 ) {
-  const merged = new Map<string, ReturnType<typeof loadJfscArchiveRecords>[number]>();
+  const verified = new Map<string, ReturnType<typeof loadJfscArchiveRecords>[number]>();
 
-  for (const record of [...liveRecords, ...archiveRecords]) {
+  for (const record of archiveRecords) {
     const key = (record.finalNoticeUrl || record.sourceUrl)
       .toLowerCase()
       .replace(/^http:/, 'https:');
-    merged.set(key, record);
+    verified.set(key, record);
   }
 
-  return [...merged.values()].sort((left, right) =>
+  // JFSC is intentionally operated as a sparse, reviewed source. Live
+  // discovery is useful for spotting new publications, but a newly discovered
+  // page must not reach the product until its entity, action date and imposed
+  // amount have been checked and added to the verified archive. This prevents
+  // fee notices, contextual amounts and publication dates from re-entering the
+  // canonical dataset.
+  void liveRecords;
+
+  return [...verified.values()].sort((left, right) =>
     right.dateIssued.localeCompare(left.dateIssued),
   );
 }

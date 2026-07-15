@@ -50,13 +50,16 @@ describe("product workspaces", () => {
     expect(screen.getByRole("heading", { name: /Guided comparison/i })).toBeInTheDocument();
     fireEvent.click(screen.getByRole("button", { name: /2025/i }));
     fireEvent.click(screen.getByRole("button", { name: /2024/i }));
-    expect(screen.getByText("2025", { selector: ".workspace-selection-tray span" })).toBeInTheDocument();
-    expect(screen.getByText("2024", { selector: ".workspace-selection-tray span" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Remove year 2025" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Remove year 2024" })).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "Comparison summary" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /Year 2025.*£14\.5m.*2 actions/i })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /Year 2024.*£4m.*1 action/i })).toBeInTheDocument();
   });
 
   it("loads the complete canonical evidence set when a sector tile is selected", async () => {
     render(<MemoryRouter initialEntries={["/fines/analytics"]}><FinesWorkspace view="analytics" /></MemoryRouter>);
-    fireEvent.click(screen.getByRole("button", { name: /Banking.*1 actions/i }));
+    fireEvent.click(screen.getByRole("button", { name: /Banking.*1 action/i }));
     expect(fetchWorkspaceRecords).toHaveBeenCalledWith(expect.objectContaining({ sector: "Banking" }));
   });
 
@@ -64,6 +67,10 @@ describe("product workspaces", () => {
     render(<MemoryRouter initialEntries={["/regulators/fca"]}><Routes><Route path="/regulators/:regulatorCode" element={<RegulatorWorkspace view="overview" />} /></Routes></MemoryRouter>);
     expect(screen.getByRole("heading", { name: /Financial Conduct Authority \(FCA\)/i })).toBeInTheDocument();
     expect(screen.getByText(/All data on this page reflects FCA enforcement activity/i)).toBeInTheDocument();
+    expect(screen.getByText(/You are viewing data for/i)).toBeInTheDocument();
+    expect(screen.getByText("FCA · United Kingdom")).toBeInTheDocument();
+    expect(screen.getByText("+200.0%")).toBeInTheDocument();
+    expect(screen.getByText("2025 vs 2024")).toBeInTheDocument();
     expect(screen.getByRole("heading", { name: /What matters now/i })).toBeInTheDocument();
     expect(screen.getByRole("heading", { name: /Top breach themes/i })).toBeInTheDocument();
   });

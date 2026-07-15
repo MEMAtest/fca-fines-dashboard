@@ -18,6 +18,7 @@ async function main() {
     "migrations/20260715_canonical_regulatory_evidence.sql",
     "migrations/20260715_board_pack_delivery.sql",
     "migrations/20260715_sec_amount_evidence_remediation.sql",
+    "migrations/20260715_jfsc_verified_archive_cleanup.sql",
   ].map((file) => path.resolve(process.cwd(), file));
 
   for (const migrationPath of migrationPaths) {
@@ -40,6 +41,13 @@ async function main() {
     WHERE amount_quality = 'verified_override'
     ORDER BY regulator
   `;
+  const [jfsc] = await sql`
+    SELECT
+      COUNT(*)::int AS canonical_rows,
+      COUNT(*) FILTER (WHERE source_url = notice_url)::int AS reviewed_source_rows
+    FROM public.all_regulatory_fines_canonical
+    WHERE upper(regulator) = 'JFSC'
+  `;
 
   if (!counts || Number(counts.canonical_rows) >= Number(counts.source_rows)) {
     throw new Error("Canonical evidence verification did not collapse any source rows");
@@ -51,6 +59,9 @@ async function main() {
     throw new Error(
       `Canonical evidence still contains ${counts.amount_review_rows} amount-review rows`,
     );
+  }
+  if (Number(jfsc?.canonical_rows) !== 6 || Number(jfsc?.reviewed_source_rows) !== 6) {
+    throw new Error("JFSC canonical evidence is not restricted to the six reviewed actions");
   }
 
   const [leadLifecycle] = await sql`
@@ -68,7 +79,7 @@ async function main() {
     throw new Error("Board Pack notification lifecycle columns are missing");
   }
 
-  console.log(JSON.stringify({ counts, verified, amountAssessment, leadLifecycle }, null, 2));
+  console.log(JSON.stringify({ counts, verified, jfsc, amountAssessment, leadLifecycle }, null, 2));
   await sql.end();
 }
 
