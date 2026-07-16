@@ -2458,13 +2458,22 @@ button.cx-kpi:hover {
 
 /* ═══ Decision-support report (Stage 9) ══════════════════════════════════════ */
 /* Verdict in the hero */
-.cx-report__verdict {
-  font-size: 0.98rem;
-  line-height: 1.6;
-  color: #334155;
-  margin: 0.6rem 0;
+.cx-verdict {
+  margin: 1rem 0 0;
+  padding: 1rem 1.15rem;
+  background: #f8fafc;
+  border: 1px solid #e5e7eb;
+  border-left: 4px solid #0b1f2a;
+  border-radius: 12px;
 }
-.cx-report__verdict strong {
+.cx-verdict__text {
+  margin: 0;
+  font-size: 1rem;
+  line-height: 1.65;
+  color: #334155;
+  max-width: 80ch;
+}
+.cx-verdict__text strong {
   color: #0b1f2a;
 }
 .cx-report__chip--band {
@@ -2650,6 +2659,8 @@ button.cx-kpi:hover {
   border: 1px solid #fed7aa;
   border-radius: 999px;
   padding: 0.25rem 0.65rem;
+  max-width: 100%;
+  overflow-wrap: anywhere;
 }
 .cx-dsx__disclaimer {
   font-size: 0.78rem;
@@ -2667,5 +2678,9 @@ button.cx-kpi:hover {
   }
   .cx-whatchanged__list li {
     grid-template-columns: 1fr auto;
+  }
+  /* Let the activity column wrap so a 3-col table never overflows a phone */
+  .cx-impact-table td:first-child {
+    white-space: normal;
   }
 }

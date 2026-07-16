@@ -140,9 +140,6 @@ export function CountryHub() {
             <span className="cx-report__chip">Sanctions</span>
             <span className="cx-report__chip">Governance</span>
           </div>
-          <p className="cx-report__verdict">
-            <strong>{decision.verdictHeadline}.</strong> {decision.verdictParagraph}
-          </p>
           <p className="country-hub__freshness">
             FATF status as of the {formatDate(view.lastPlenary)} plenary ·{" "}
             <a href={FATF_SOURCE_URL} target="_blank" rel="noopener noreferrer">
@@ -230,6 +227,13 @@ export function CountryHub() {
           </div>
         </section>
       </header>
+
+      {/* Operational verdict — full width so the paragraph has room */}
+      <section className="cx-verdict">
+        <p className="cx-verdict__text">
+          <strong>{decision.verdictHeadline}.</strong> {decision.verdictParagraph}
+        </p>
+      </section>
 
       {/* Recommended treatment + what changed */}
       <section className="cx-decide">

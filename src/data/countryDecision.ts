@@ -180,13 +180,13 @@ function businessImpact(input: DecisionInput): BusinessImpactRow[] {
 }
 
 const EDD_TRIGGERS = [
-  "State ownership or material government control",
-  "Politically exposed person (PEP) involvement",
-  "Sensitive or restricted sector",
-  "Complex or opaque ownership structure",
-  "Adverse media involving corruption, sanctions or national security",
-  "Dual-use goods or sensitive technology",
-  "Payments involving higher-risk intermediary jurisdictions",
+  "State ownership / control",
+  "PEP involvement",
+  "Sensitive / restricted sectors",
+  "Opaque ownership",
+  "Adverse media",
+  "Dual-use goods & technology",
+  "High-risk intermediary routing",
 ];
 
 const RECOMMENDED_CONTROLS = [
