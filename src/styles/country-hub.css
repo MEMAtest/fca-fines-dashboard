@@ -2803,7 +2803,7 @@ button.cx-kpi:hover {
 .cx-ident__name { font-size: 1.9rem; font-weight: 800; margin: 0; line-height: 1.05; }
 .cx-ident__sub { font-size: 0.82rem; color: #64748b; margin: 0.2rem 0 0.45rem; }
 .cx-ident__chips { display: flex; flex-wrap: wrap; gap: 0.35rem; }
-.cx-chip {
+.cx-wchip {
   font-size: 0.7rem;
   font-weight: 600;
   color: #475569;
@@ -2847,7 +2847,7 @@ button.cx-kpi:hover {
 /* Row 2: 4 cards */
 .cx-ws__row2 {
   display: grid;
-  grid-template-columns: 1.15fr 1fr 1fr 1.05fr;
+  grid-template-columns: 1.1fr 0.85fr 1.3fr 1fr;
   gap: 1rem;
   align-items: stretch;
 }
@@ -2886,9 +2886,12 @@ button.cx-kpi:hover {
 .cx-trend__stats b { font-size: 1.05rem; font-weight: 800; }
 .cx-trend__stats span { font-size: 0.66rem; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.04em; }
 
-/* Map card */
-.cx-mapw .cx-rmap,
-.cx-mapw .cx-rmap__ph { border-radius: 10px; }
+/* Country map card — map bleeds to the card edges */
+.cx-mapw { padding: 0; overflow: hidden; }
+.cx-mapw .cx-card__eyebrow { padding: 0.9rem 1rem 0.5rem; margin: 0; }
+.cx-mapw .cx-rmap { flex: 1; border-radius: 0; }
+.cx-mapw .cx-rmap__ph { border-radius: 0; height: 100% !important; min-height: 170px; }
+.cx-mapw__link { padding: 0.5rem 1rem 0.75rem; margin: 0; }
 
 /* Assessment currency */
 .cx-changed__list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 0.4rem; }
@@ -2902,8 +2905,9 @@ button.cx-kpi:hover {
   display: grid;
   grid-template-columns: 1.2fr 1fr 0.85fr;
   gap: 1rem;
-  align-items: start;
+  align-items: stretch;
 }
+.cx-ws__row3 > .cx-card { display: flex; flex-direction: column; }
 
 /* Risk drivers */
 .cx-drivers__list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 0.6rem; }
@@ -2939,15 +2943,17 @@ button.cx-kpi:hover {
 .cx-impact__list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 0.35rem; }
 .cx-impact__list li { display: flex; align-items: center; justify-content: space-between; gap: 0.5rem; font-size: 0.8rem; }
 .cx-impact__act { color: #334155; }
-.cx-impact__overall { border-top: 1px solid #eef2f7; margin-top: 0.25rem; padding-top: 0.45rem; font-weight: 700; }
+.cx-impact__list { flex: 1; }
+.cx-impact__overall { border-top: 1px solid #eef2f7; margin-top: auto; padding-top: 0.45rem; font-weight: 700; }
 
 /* Row 4 */
 .cx-ws__row4 {
   display: grid;
   grid-template-columns: 2fr 1fr;
   gap: 1rem;
-  align-items: start;
+  align-items: stretch;
 }
+.cx-ws__row4 > .cx-card { display: flex; flex-direction: column; }
 .cx-controls__tiles {
   display: grid;
   grid-template-columns: repeat(5, 1fr);
@@ -2975,7 +2981,7 @@ button.cx-kpi:hover {
 .cx-meth__base { font-size: 0.8rem; color: #334155; margin: 0.5rem 0 0; }
 
 /* Peer bars (rail) */
-.cx-peers__list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 0.25rem; }
+.cx-peerc__list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 0.25rem; }
 .cx-peer__row {
   display: grid;
   grid-template-columns: 1.1rem 1fr 3.2rem auto auto;
@@ -3001,8 +3007,8 @@ button.cx-kpi:hover {
 .cx-peer--current .cx-peer__row { background: #eff6ff; font-weight: 700; }
 
 /* Sources */
-.cx-sources__list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 0.35rem; }
-.cx-sources__list li { font-size: 0.74rem; color: #475569; line-height: 1.35; }
+.cx-srcs__list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 0.35rem; }
+.cx-srcs__list li { font-size: 0.74rem; color: #475569; line-height: 1.35; }
 
 /* Footer bar */
 .cx-ws__footer {
