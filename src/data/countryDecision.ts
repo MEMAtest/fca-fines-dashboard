@@ -65,6 +65,8 @@ export interface DecisionInput {
   sanctionsTier?: SanctionsTier;
   sanctionsCoverageComplete: boolean;
   enforcementAssessed: boolean;
+  /** Codes of the regulators RegActions tracks here (names the enforcement checklist item). */
+  regulatorCodes?: string[];
   cpi?: CpiEntry;
   fatf?: FatfStatus;
   lastPlenary: string;
@@ -264,7 +266,12 @@ export function treatmentChecklist(input: DecisionInput): string[] {
 
   // 4. Enforcement coverage → monitor named-regulator actions.
   if (input.enforcementAssessed) {
-    out.push("Monitor tracked regulator enforcement actions for this jurisdiction");
+    const codes = (input.regulatorCodes ?? []).slice(0, 3);
+    out.push(
+      codes.length > 0
+        ? `Monitor ${codes.join(" / ")} enforcement actions for this jurisdiction`
+        : "Monitor tracked regulator enforcement actions for this jurisdiction",
+    );
   }
 
   // 5. Proportionate standard-DD items for lower-risk / thin profiles.

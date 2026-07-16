@@ -24,6 +24,7 @@ import {
   X,
 } from "lucide-react";
 import { getCountryBySlug, countrySlug } from "../data/countries.js";
+import { getNarrative } from "../data/countryNarratives.js";
 import { FATF_SOURCE_URL } from "../data/fatfStatus.js";
 import { bandLabel, bandFor, type RiskBand } from "../data/countryRiskScore.js";
 import { GOVERNANCE_VINTAGE } from "../data/governanceData.js";
@@ -173,6 +174,8 @@ export function CountryHub() {
   const markerPct = Math.min(100, (globalAverage / 10) * 100);
   const baseline = scoreHistory[0];
   const tiles = controlTiles(riskScore.band);
+  // Country-specific monitoring items from the grounded narrative (unique per country).
+  const watchpointItems = (getNarrative(country.iso2)?.keyWatchpoints ?? []).slice(0, 2);
 
   const overallImpact = decision.businessImpact.reduce(
     (max, r) =>
@@ -249,6 +252,105 @@ export function CountryHub() {
           : "No data",
     },
   ];
+
+  // Attributed indicators card — rendered in the right rail.
+  const attrCard = (
+          <div className="cx-card cx-attr">
+            <span className="cx-card__eyebrow">
+              <BadgeCheck size={12} /> Attributed indicators
+            </span>
+
+            {/* Sanctions — per-imposer Yes/No */}
+            <div className="cx-attr__block">
+              <div className="cx-attr__head">
+                <Scale size={12} className="cx-attr__ico" />
+                <span className="cx-attr__label">Sanctions programme</span>
+                <span className="cx-attr__src">rev {attribution.sanctions.reviewed}</span>
+              </div>
+              <ul className="cx-attr__imposers">
+                {attribution.sanctions.imposers.map((r) => (
+                  <li key={r.imposer} className={r.active ? "is-yes" : "is-no"}>
+                    <span className="cx-attr__imp">{r.imposer}</span>
+                    {r.active ? (
+                      <span className="cx-attr__yn cx-attr__yn--yes">
+                        <CheckCircle2 size={11} /> {r.tierLabel}
+                      </span>
+                    ) : (
+                      <span className="cx-attr__yn cx-attr__yn--no">
+                        <X size={11} /> No
+                      </span>
+                    )}
+                  </li>
+                ))}
+              </ul>
+              <p className="cx-attr__note">
+                &ldquo;No&rdquo; means no country-level programme identified; listed persons may still exist.
+              </p>
+            </div>
+
+            {/* Governance — 3 institutional sub-scores */}
+            <div className="cx-attr__block">
+              <div className="cx-attr__head">
+                <Landmark size={12} className="cx-attr__ico" />
+                <span className="cx-attr__label">Governance (WGI {attribution.governance.vintage})</span>
+                <span className="cx-attr__src">percentile, higher = stronger</span>
+              </div>
+              <ul className="cx-attr__gov">
+                {attribution.governance.subScores.map((s) => (
+                  <li key={s.key}>
+                    <span className="cx-attr__gov-k">{s.label}</span>
+                    <span className="cx-attr__gov-v">
+                      {s.percentile === null ? "n/a" : s.percentile}
+                      {s.percentile !== null && <small>/100</small>}
+                    </span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+
+            {/* Corruption + FATF + Enforcement — compact tri-stat */}
+            <div className="cx-attr__stats">
+              <div className="cx-attr__stat">
+                <span className="cx-attr__stat-k">
+                  <Gavel size={11} /> Corruption
+                </span>
+                {attribution.corruption ? (
+                  <>
+                    <b className="cx-attr__stat-v">{attribution.corruption.score}<small>/100</small></b>
+                    <span className="cx-attr__stat-d">
+                      rank {attribution.corruption.rank}/{attribution.corruption.total} · CPI {attribution.corruption.year}
+                    </span>
+                  </>
+                ) : (
+                  <b className="cx-attr__stat-v cx-attr__muted">Not scored</b>
+                )}
+              </div>
+              <div className="cx-attr__stat">
+                <span className="cx-attr__stat-k">
+                  <Flag size={11} /> FATF
+                </span>
+                <b className="cx-attr__stat-v">{attribution.fatf.status}</b>
+                <span className="cx-attr__stat-d">plenary {formatDate(attribution.fatf.plenary)}</span>
+              </div>
+              <div className="cx-attr__stat">
+                <span className="cx-attr__stat-k">
+                  <AlertCircle size={11} /> Enforcement
+                </span>
+                {attribution.enforcement.assessed ? (
+                  <>
+                    <b className="cx-attr__stat-v">{attribution.enforcement.trackedActions}</b>
+                    <span className="cx-attr__stat-d">
+                      actions · {attribution.enforcement.regulatorCount} regulator
+                      {attribution.enforcement.regulatorCount === 1 ? "" : "s"}
+                    </span>
+                  </>
+                ) : (
+                  <b className="cx-attr__stat-v cx-attr__muted">Not yet assessed</b>
+                )}
+              </div>
+            </div>
+          </div>
+  );
 
   return (
     <div className="cx-ws-wrap">
@@ -344,7 +446,7 @@ export function CountryHub() {
             </div>
           </div>
 
-          {/* ── Row 2: treatment | trend | map | assessment currency ── */}
+          {/* ── Row 2: treatment | trend | map (attribution lives in the rail) ── */}
           <div className="cx-ws__row2">
             <div className="cx-card cx-treatw">
               <span className="cx-card__eyebrow cx-treatw__eyebrow">
@@ -353,9 +455,14 @@ export function CountryHub() {
               <p className="cx-treatw__title">{treatmentLabel(riskScore.band)}</p>
               <p className="cx-treatw__desc">{decision.treatment}</p>
               <ul className="cx-checklist">
-                {decision.treatmentChecklist.map((c) => (
+                {decision.treatmentChecklist.slice(0, 4).map((c) => (
                   <li key={c}>
                     <CheckCircle2 size={13} /> {c}
+                  </li>
+                ))}
+                {watchpointItems.map((w) => (
+                  <li key={w} className="cx-checklist__wp">
+                    <Flag size={13} /> {w}
                   </li>
                 ))}
               </ul>
@@ -417,102 +524,6 @@ export function CountryHub() {
               <Link to="/countries" className="cx-card__link cx-mapw__link">
                 View full map →
               </Link>
-            </div>
-
-            <div className="cx-card cx-attr">
-              <span className="cx-card__eyebrow">
-                <BadgeCheck size={12} /> Attributed indicators
-              </span>
-
-              {/* Sanctions — per-imposer Yes/No */}
-              <div className="cx-attr__block">
-                <div className="cx-attr__head">
-                  <Scale size={12} className="cx-attr__ico" />
-                  <span className="cx-attr__label">Sanctions programme</span>
-                  <span className="cx-attr__src">OFAC · UK · EU · UN, rev {attribution.sanctions.reviewed}</span>
-                </div>
-                <ul className="cx-attr__imposers">
-                  {attribution.sanctions.imposers.map((r) => (
-                    <li key={r.imposer} className={r.active ? "is-yes" : "is-no"}>
-                      <span className="cx-attr__imp">{r.imposer}</span>
-                      {r.active ? (
-                        <span className="cx-attr__yn cx-attr__yn--yes">
-                          <CheckCircle2 size={11} /> {r.tierLabel}
-                        </span>
-                      ) : (
-                        <span className="cx-attr__yn cx-attr__yn--no">
-                          <X size={11} /> No
-                        </span>
-                      )}
-                    </li>
-                  ))}
-                </ul>
-                <p className="cx-attr__note">
-                  &ldquo;No&rdquo; means no country-level programme identified; listed persons may still exist.
-                </p>
-              </div>
-
-              {/* Governance — 3 institutional sub-scores */}
-              <div className="cx-attr__block">
-                <div className="cx-attr__head">
-                  <Landmark size={12} className="cx-attr__ico" />
-                  <span className="cx-attr__label">Governance (WGI {attribution.governance.vintage})</span>
-                  <span className="cx-attr__src">percentile, higher = stronger</span>
-                </div>
-                <ul className="cx-attr__gov">
-                  {attribution.governance.subScores.map((s) => (
-                    <li key={s.key}>
-                      <span className="cx-attr__gov-k">{s.label}</span>
-                      <span className="cx-attr__gov-v">
-                        {s.percentile === null ? "n/a" : s.percentile}
-                        {s.percentile !== null && <small>/100</small>}
-                      </span>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-
-              {/* Corruption + FATF + Enforcement — compact tri-stat */}
-              <div className="cx-attr__stats">
-                <div className="cx-attr__stat">
-                  <span className="cx-attr__stat-k">
-                    <Gavel size={11} /> Corruption
-                  </span>
-                  {attribution.corruption ? (
-                    <>
-                      <b className="cx-attr__stat-v">{attribution.corruption.score}<small>/100</small></b>
-                      <span className="cx-attr__stat-d">
-                        rank {attribution.corruption.rank}/{attribution.corruption.total} · CPI {attribution.corruption.year}
-                      </span>
-                    </>
-                  ) : (
-                    <b className="cx-attr__stat-v cx-attr__muted">Not scored</b>
-                  )}
-                </div>
-                <div className="cx-attr__stat">
-                  <span className="cx-attr__stat-k">
-                    <Flag size={11} /> FATF
-                  </span>
-                  <b className="cx-attr__stat-v">{attribution.fatf.status}</b>
-                  <span className="cx-attr__stat-d">plenary {formatDate(attribution.fatf.plenary)}</span>
-                </div>
-                <div className="cx-attr__stat">
-                  <span className="cx-attr__stat-k">
-                    <AlertCircle size={11} /> Enforcement
-                  </span>
-                  {attribution.enforcement.assessed ? (
-                    <>
-                      <b className="cx-attr__stat-v">{attribution.enforcement.trackedActions}</b>
-                      <span className="cx-attr__stat-d">
-                        actions · {attribution.enforcement.regulatorCount} regulator
-                        {attribution.enforcement.regulatorCount === 1 ? "" : "s"}
-                      </span>
-                    </>
-                  ) : (
-                    <b className="cx-attr__stat-v cx-attr__muted">Not yet assessed</b>
-                  )}
-                </div>
-              </div>
             </div>
           </div>
 
@@ -798,6 +809,8 @@ export function CountryHub() {
               View methodology →
             </Link>
           </div>
+
+          {attrCard}
 
           <div className="cx-card cx-peerc">
             <span className="cx-card__eyebrow">

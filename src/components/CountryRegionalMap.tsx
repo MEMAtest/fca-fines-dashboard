@@ -9,7 +9,7 @@
  */
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { geoMercator, geoPath, geoCentroid, geoDistance } from "d3-geo";
+import { geoMercator, geoPath, geoCentroid, geoDistance, geoArea } from "d3-geo";
 import { getCountryByIso2, resolveCountry, countrySlug } from "../data/countries.js";
 import { bandLabel } from "../data/countryRiskScore.js";
 import {
@@ -24,6 +24,8 @@ const DARK_NO_DATA = "#334155";
 const NEIGHBOURHOOD = 14;
 /** Skip labels on polygons smaller than this projected area (px²) to avoid clutter. */
 const LABEL_MIN_AREA = 45;
+/** Hard cap on rendered labels — the focus country plus a handful of anchors. */
+const LABEL_MAX = 7;
 
 interface Props {
   iso2: string;
@@ -87,19 +89,45 @@ export function CountryRegionalMap({ iso2, region }: Props) {
       : [focusFeature, ...ranked.slice(0, NEIGHBOURHOOD - 1)];
   }, [world, meta, focusFeature, region]);
 
-  const height = Math.round(width * 0.72);
+  const height = Math.round(width * 0.9);
 
   const pathGen = useMemo(() => {
     if (!width || areaFeatures.length === 0) return null;
+    // Fit the projection to the neighbourhood with far-flung small island
+    // fragments trimmed out (e.g. the Azores/Canaries), which otherwise drag
+    // the extent and shrink the mainland into a corner. Rendering still draws
+    // the full geometry; trimmed parts simply fall outside the viewport.
+    const fc = focusFeature ? geoCentroid(focusFeature) : geoCentroid(areaFeatures[0]);
+    const trimForFit = (f: (typeof areaFeatures)[number]) => {
+      const g: any = (f as any).geometry;
+      if (!g || g.type !== "MultiPolygon") return f;
+      const metas = g.coordinates.map((coords: any) => {
+        const part: any = { type: "Polygon", coordinates: coords };
+        return { coords, area: geoArea(part), dist: geoDistance(fc, geoCentroid(part)) };
+      });
+      const maxArea = Math.max(...metas.map((m: any) => m.area));
+      const kept = metas
+        .filter((m: any) => m.area === maxArea || m.dist <= 0.15 || m.area >= maxArea * 0.25)
+        .map((m: any) => m.coords);
+      if (kept.length === 0) return f;
+      return { ...(f as any), geometry: { type: "MultiPolygon", coordinates: kept } };
+    };
+    // Fit only the NEAR neighbours so a giant like Russia doesn't drag the
+    // extent and shrink the focus country to the edge. Distant features still
+    // render — they simply bleed in from the border.
+    let fitFeatures = areaFeatures.filter(
+      (f) => f === focusFeature || geoDistance(fc, geoCentroid(f)) <= 0.35,
+    );
+    if (fitFeatures.length < 4) fitFeatures = areaFeatures;
     const projection = geoMercator().fitExtent(
       [
         [16, 16],
         [width - 16, height - 16],
       ],
-      { type: "FeatureCollection", features: areaFeatures } as any,
+      { type: "FeatureCollection", features: fitFeatures.map(trimForFit) } as any,
     );
     return geoPath(projection);
-  }, [width, height, areaFeatures]);
+  }, [width, height, areaFeatures, focusFeature]);
 
   const go = (target: string) => {
     const c = resolveCountry(target);
@@ -154,15 +182,39 @@ export function CountryRegionalMap({ iso2, region }: Props) {
               </path>
             );
           })}
-          {areaFeatures.map((f, i) => {
-            const fm = meta.get(f)!;
-            if (!fm.name) return null;
-            const isFocus = fm.iso2 === iso2;
-            // Gate labels on projected polygon size so micro-states don't clutter.
-            if (!isFocus && pathGen.area(f) < LABEL_MIN_AREA) return null;
-            const c = pathGen.centroid(f);
-            if (!c || Number.isNaN(c[0])) return null;
-            return (
+          {(() => {
+            // Declutter: focus label always wins; neighbours by projected size,
+            // greedily placed only when clear of already-placed labels, capped.
+            const candidates = areaFeatures
+              .map((f, i) => {
+                const fm = meta.get(f)!;
+                if (!fm.name) return null;
+                const isFocus = fm.iso2 === iso2;
+                const area = pathGen.area(f);
+                if (!isFocus && area < LABEL_MIN_AREA) return null;
+                const c = pathGen.centroid(f);
+                if (!c || Number.isNaN(c[0])) return null;
+                return { fm, i, isFocus, area, c };
+              })
+              .filter((x): x is NonNullable<typeof x> => x !== null)
+              .sort((a, b) =>
+                a.isFocus ? -1 : b.isFocus ? 1 : b.area - a.area,
+              );
+            const placed: { c: [number, number]; w: number }[] = [];
+            const labels: typeof candidates = [];
+            for (const cand of candidates) {
+              if (labels.length >= LABEL_MAX) break;
+              const w = cand.fm.name.length * 4.6; // approx label px width
+              const clear = placed.every(
+                (p) =>
+                  Math.abs(cand.c[1] - p.c[1]) > 12 ||
+                  Math.abs(cand.c[0] - p.c[0]) > (w + p.w) / 2 + 8,
+              );
+              if (!clear && !cand.isFocus) continue;
+              placed.push({ c: cand.c, w });
+              labels.push(cand);
+            }
+            return labels.map(({ fm, i, isFocus, c }) => (
               <text
                 key={`t-${fm.iso2 ?? i}`}
                 x={c[0]}
@@ -172,8 +224,8 @@ export function CountryRegionalMap({ iso2, region }: Props) {
               >
                 {fm.name}
               </text>
-            );
-          })}
+            ));
+          })()}
         </svg>
       )}
 

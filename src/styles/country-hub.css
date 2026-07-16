@@ -2879,7 +2879,7 @@ button.cx-kpi:hover {
 /* Row 2: 4 cards */
 .cx-ws__row2 {
   display: grid;
-  grid-template-columns: 1.1fr 0.85fr 1.3fr 1fr;
+  grid-template-columns: 1.05fr 0.8fr 1.35fr;
   gap: 1rem;
   align-items: stretch;
 }
@@ -3158,3 +3158,27 @@ button.cx-kpi:hover {
   .cx-regf__grid { grid-template-columns: 1fr; }
   .cx-regf__col { border-left: none; padding-left: 0; }
 }
+
+/* attr tri-stat stacked for the rail */
+.cx-attr__stats {
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+  border-top: 1px solid #eef2f7;
+  padding-top: 0.55rem;
+}
+.cx-attr__stat {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: baseline;
+  gap: 0.5rem;
+}
+.cx-attr__stat .cx-attr__stat-d { text-align: right; }
+
+/* Country-specific watchpoint items appended to the treatment checklist */
+.cx-checklist__wp svg { color: #b45309 !important; }
+.cx-checklist__wp { color: #475569; }
+
+/* Attribution card head: keep the source caption from crushing the label */
+.cx-attr__head { flex-wrap: wrap; }
+.cx-attr__src { white-space: nowrap; }
