@@ -109,6 +109,25 @@ describe("FSRB / FATF network membership", () => {
   it("individually evaluates the UK Crown Dependencies under MONEYVAL", () => {
     expect(getFatfNetwork("JE").fsrbs.some((f) => f.code === "MONEYVAL")).toBe(true);
     expect(getFatfNetwork("GG").fsrbs.some((f) => f.code === "MONEYVAL")).toBe(true);
+    expect(getFatfNetwork("IM").fsrbs.some((f) => f.code === "MONEYVAL")).toBe(true);
+  });
+
+  it("covers the official Pacific, Caribbean and additional MONEYVAL members", () => {
+    const expectMembers = (codes: string[], fsrb: FsrbCode) => {
+      for (const iso2 of codes) {
+        expect(
+          getFatfNetwork(iso2).fsrbs.some((body) => body.code === fsrb),
+          `${iso2} -> ${fsrb}`,
+        ).toBe(true);
+      }
+    };
+
+    expectMembers(["CK", "MH", "NR", "NU", "PW", "SB", "TO"], "APG");
+    expectMembers(
+      ["AI", "AW", "BZ", "CW", "DM", "GD", "MS", "KN", "LC", "SX", "VC", "TC"],
+      "CFATF",
+    );
+    expectMembers(["AM", "AZ", "GE", "GI", "IM", "VA"], "MONEYVAL");
   });
 
   it("places DR Congo in GABAC (its FSRB, associate member)", () => {

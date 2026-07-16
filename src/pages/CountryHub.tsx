@@ -1,16 +1,27 @@
 import { lazy, Suspense, useMemo, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import {
+  AlertCircle,
+  AlertTriangle,
   ArrowLeft,
   BadgeCheck,
+  BarChart3,
   Bookmark,
+  BookOpen,
+  Briefcase,
   CheckCircle2,
   ClipboardCheck,
   Download,
   ExternalLink,
+  Flag,
+  Gavel,
+  Globe2,
   Info,
   Landmark,
+  Scale,
   ShieldCheck,
+  TrendingUp,
+  X,
 } from "lucide-react";
 import { getCountryBySlug, countrySlug } from "../data/countries.js";
 import { FATF_SOURCE_URL } from "../data/fatfStatus.js";
@@ -99,13 +110,6 @@ function controlTiles(band: RiskBand): { name: string; blurb: string; priority: 
   ];
 }
 
-const CHECKLIST = [
-  "Strengthen beneficial ownership checks",
-  "Screen against sanctions and sectoral lists",
-  "Monitor policy and enforcement shifts",
-  "Document ownership and control risks",
-];
-
 function DomainBar({ label, risk }: { label: string; risk: number | null }) {
   const band = risk === null ? null : bandFor(risk);
   return (
@@ -160,6 +164,7 @@ export function CountryHub() {
     cpi,
     sanctionsTier,
     hasComprehensiveSanctions,
+    attribution,
   } = view;
 
   const rank = globalRank(country.iso2);
@@ -348,7 +353,7 @@ export function CountryHub() {
               <p className="cx-treatw__title">{treatmentLabel(riskScore.band)}</p>
               <p className="cx-treatw__desc">{decision.treatment}</p>
               <ul className="cx-checklist">
-                {CHECKLIST.map((c) => (
+                {decision.treatmentChecklist.map((c) => (
                   <li key={c}>
                     <CheckCircle2 size={13} /> {c}
                   </li>
@@ -360,7 +365,9 @@ export function CountryHub() {
             </div>
 
             <div className="cx-card cx-trend">
-              <span className="cx-card__eyebrow">Risk trend</span>
+              <span className="cx-card__eyebrow">
+                <TrendingUp size={12} /> Risk trend
+              </span>
               {scoreHistory.length >= 2 ? (
                 <>
                   <p className="cx-trend__state">Tracking</p>
@@ -401,7 +408,9 @@ export function CountryHub() {
             </div>
 
             <div className="cx-card cx-mapw">
-              <span className="cx-card__eyebrow">Country map</span>
+              <span className="cx-card__eyebrow">
+                <Globe2 size={12} /> Country map
+              </span>
               <Suspense fallback={<div className="cx-rmap__ph" style={{ height: 170 }} />}>
                 <CountryRegionalMap iso2={country.iso2} region={country.region} />
               </Suspense>
@@ -410,24 +419,109 @@ export function CountryHub() {
               </Link>
             </div>
 
-            <div className="cx-card cx-changed">
-              <span className="cx-card__eyebrow">Assessment currency</span>
-              <ul className="cx-changed__list">
-                {decision.whatChanged.map((w) => (
-                  <li key={w.label}>
-                    <span className="cx-changed__k">{w.label}</span>
-                    <b className="cx-changed__v">{w.value}</b>
-                    <span className="cx-changed__d">{w.asOf}</span>
-                  </li>
-                ))}
-              </ul>
+            <div className="cx-card cx-attr">
+              <span className="cx-card__eyebrow">
+                <BadgeCheck size={12} /> Attributed indicators
+              </span>
+
+              {/* Sanctions — per-imposer Yes/No */}
+              <div className="cx-attr__block">
+                <div className="cx-attr__head">
+                  <Scale size={12} className="cx-attr__ico" />
+                  <span className="cx-attr__label">Sanctions programme</span>
+                  <span className="cx-attr__src">OFAC · UK · EU · UN, rev {attribution.sanctions.reviewed}</span>
+                </div>
+                <ul className="cx-attr__imposers">
+                  {attribution.sanctions.imposers.map((r) => (
+                    <li key={r.imposer} className={r.active ? "is-yes" : "is-no"}>
+                      <span className="cx-attr__imp">{r.imposer}</span>
+                      {r.active ? (
+                        <span className="cx-attr__yn cx-attr__yn--yes">
+                          <CheckCircle2 size={11} /> {r.tierLabel}
+                        </span>
+                      ) : (
+                        <span className="cx-attr__yn cx-attr__yn--no">
+                          <X size={11} /> No
+                        </span>
+                      )}
+                    </li>
+                  ))}
+                </ul>
+                <p className="cx-attr__note">
+                  &ldquo;No&rdquo; means no country-level programme identified; listed persons may still exist.
+                </p>
+              </div>
+
+              {/* Governance — 3 institutional sub-scores */}
+              <div className="cx-attr__block">
+                <div className="cx-attr__head">
+                  <Landmark size={12} className="cx-attr__ico" />
+                  <span className="cx-attr__label">Governance (WGI {attribution.governance.vintage})</span>
+                  <span className="cx-attr__src">percentile, higher = stronger</span>
+                </div>
+                <ul className="cx-attr__gov">
+                  {attribution.governance.subScores.map((s) => (
+                    <li key={s.key}>
+                      <span className="cx-attr__gov-k">{s.label}</span>
+                      <span className="cx-attr__gov-v">
+                        {s.percentile === null ? "n/a" : s.percentile}
+                        {s.percentile !== null && <small>/100</small>}
+                      </span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+
+              {/* Corruption + FATF + Enforcement — compact tri-stat */}
+              <div className="cx-attr__stats">
+                <div className="cx-attr__stat">
+                  <span className="cx-attr__stat-k">
+                    <Gavel size={11} /> Corruption
+                  </span>
+                  {attribution.corruption ? (
+                    <>
+                      <b className="cx-attr__stat-v">{attribution.corruption.score}<small>/100</small></b>
+                      <span className="cx-attr__stat-d">
+                        rank {attribution.corruption.rank}/{attribution.corruption.total} · CPI {attribution.corruption.year}
+                      </span>
+                    </>
+                  ) : (
+                    <b className="cx-attr__stat-v cx-attr__muted">Not scored</b>
+                  )}
+                </div>
+                <div className="cx-attr__stat">
+                  <span className="cx-attr__stat-k">
+                    <Flag size={11} /> FATF
+                  </span>
+                  <b className="cx-attr__stat-v">{attribution.fatf.status}</b>
+                  <span className="cx-attr__stat-d">plenary {formatDate(attribution.fatf.plenary)}</span>
+                </div>
+                <div className="cx-attr__stat">
+                  <span className="cx-attr__stat-k">
+                    <AlertCircle size={11} /> Enforcement
+                  </span>
+                  {attribution.enforcement.assessed ? (
+                    <>
+                      <b className="cx-attr__stat-v">{attribution.enforcement.trackedActions}</b>
+                      <span className="cx-attr__stat-d">
+                        actions · {attribution.enforcement.regulatorCount} regulator
+                        {attribution.enforcement.regulatorCount === 1 ? "" : "s"}
+                      </span>
+                    </>
+                  ) : (
+                    <b className="cx-attr__stat-v cx-attr__muted">Not yet assessed</b>
+                  )}
+                </div>
+              </div>
             </div>
           </div>
 
           {/* ── Row 3: risk drivers | mitigating factors | business impact ── */}
           <div className="cx-ws__row3">
             <div className="cx-card cx-drivers">
-              <span className="cx-card__eyebrow">Risk drivers</span>
+              <span className="cx-card__eyebrow">
+                <AlertTriangle size={12} /> Risk drivers
+              </span>
               <ul className="cx-drivers__list">
                 {breakdown.domains.map((d) => {
                   const dband = d.risk === null ? null : bandFor(d.risk);
@@ -452,7 +546,9 @@ export function CountryHub() {
             </div>
 
             <div className="cx-card cx-mitig">
-              <span className="cx-card__eyebrow">Mitigating factors</span>
+              <span className="cx-card__eyebrow">
+                <ShieldCheck size={12} /> Mitigating factors
+              </span>
               <ul className="cx-mitig__list">
                 {decision.mitigatingFactors.map((m, i) => (
                   <li key={i}>
@@ -464,19 +560,28 @@ export function CountryHub() {
             </div>
 
             <div className="cx-card cx-impact">
-              <span className="cx-card__eyebrow">Business impact</span>
+              <span className="cx-card__eyebrow">
+                <Briefcase size={12} /> Business impact
+              </span>
               <ul className="cx-impact__list">
                 {decision.businessImpact.map((r) => (
                   <li key={r.activity}>
-                    <span className="cx-impact__act">{r.activity}</span>
-                    <span className={`cx-tag cx-tag--lvl-${r.level.toLowerCase()}`}>{r.level}</span>
+                    <div className="cx-impact__row">
+                      <span className="cx-impact__act">{r.activity}</span>
+                      <span className={`cx-tag cx-tag--lvl-${r.level.toLowerCase()}`}>{r.level}</span>
+                    </div>
+                    <span className="cx-impact__impl" title={r.implication}>
+                      {r.implication}
+                    </span>
                   </li>
                 ))}
                 <li className="cx-impact__overall">
-                  <span className="cx-impact__act">Overall business impact</span>
-                  <span className={`cx-tag cx-tag--lvl-${overallImpact.toLowerCase()}`}>
-                    {overallImpact}
-                  </span>
+                  <div className="cx-impact__row">
+                    <span className="cx-impact__act">Overall business impact</span>
+                    <span className={`cx-tag cx-tag--lvl-${overallImpact.toLowerCase()}`}>
+                      {overallImpact}
+                    </span>
+                  </div>
                 </li>
               </ul>
             </div>
@@ -508,7 +613,9 @@ export function CountryHub() {
             </div>
 
             <div className="cx-card cx-eddw">
-              <span className="cx-card__eyebrow">EDD triggers</span>
+              <span className="cx-card__eyebrow">
+                <Flag size={12} /> EDD triggers
+              </span>
               <ul className="cx-checklist cx-checklist--edd">
                 {decision.eddTriggers.map((t) => (
                   <li key={t}>
@@ -693,7 +800,9 @@ export function CountryHub() {
           </div>
 
           <div className="cx-card cx-peerc">
-            <span className="cx-card__eyebrow">Peer comparison · {country.region}</span>
+            <span className="cx-card__eyebrow">
+              <BarChart3 size={12} /> Peer comparison · {country.region}
+            </span>
             <ul className="cx-peerc__list">
               {peerBars.map((p) => (
                 <li key={p.iso2} className={`cx-peer${p.current ? " cx-peer--current" : ""}`}>
@@ -718,7 +827,9 @@ export function CountryHub() {
           </div>
 
           <div className="cx-card cx-srcs">
-            <span className="cx-card__eyebrow">Sources</span>
+            <span className="cx-card__eyebrow">
+              <BookOpen size={12} /> Sources
+            </span>
             <ul className="cx-srcs__list">
               {sources.map((s) => (
                 <li key={s}>{s}</li>

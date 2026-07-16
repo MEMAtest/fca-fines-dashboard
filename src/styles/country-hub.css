@@ -2925,12 +2925,44 @@ button.cx-kpi:hover {
 .cx-mapw .cx-rmap__ph { border-radius: 0; height: 100% !important; min-height: 170px; }
 .cx-mapw__link { padding: 0.5rem 1rem 0.75rem; margin: 0; }
 
-/* Assessment currency */
-.cx-changed__list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 0.4rem; }
-.cx-changed__list li { display: grid; grid-template-columns: 1fr auto; gap: 0.1rem 0.5rem; align-items: baseline; }
-.cx-changed__k { font-size: 0.72rem; color: #64748b; }
-.cx-changed__v { font-size: 0.76rem; font-weight: 600; color: #0b1f2a; text-align: right; }
-.cx-changed__d { grid-column: 1 / -1; font-size: 0.66rem; color: #b6c0cc; }
+/* Attributed indicators card (replaces the old assessment-currency list) */
+.cx-attr { gap: 0.55rem; }
+.cx-attr__block { border-top: 1px solid #eef2f7; padding-top: 0.5rem; margin-top: 0.05rem; }
+.cx-attr__block:first-of-type { border-top: none; padding-top: 0; }
+.cx-attr__head { display: flex; align-items: center; gap: 0.3rem; margin-bottom: 0.35rem; flex-wrap: wrap; }
+.cx-attr__ico { color: #64748b; flex: 0 0 auto; }
+.cx-attr__label { font-size: 0.74rem; font-weight: 700; color: #0b1f2a; }
+.cx-attr__src { font-size: 0.6rem; color: #94a3b8; margin-left: auto; letter-spacing: 0.01em; }
+.cx-attr__note { font-size: 0.62rem; color: #b6c0cc; margin: 0.3rem 0 0; line-height: 1.35; }
+
+/* Sanctions imposer Yes/No rows */
+.cx-attr__imposers {
+  list-style: none; margin: 0; padding: 0;
+  display: grid; grid-template-columns: 1fr 1fr; gap: 0.25rem 0.6rem;
+}
+.cx-attr__imposers li { display: flex; align-items: center; justify-content: space-between; gap: 0.4rem; }
+.cx-attr__imp { font-size: 0.72rem; font-weight: 700; color: #475569; }
+.cx-attr__yn { display: inline-flex; align-items: center; gap: 0.2rem; font-size: 0.64rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.02em; }
+.cx-attr__yn--yes { color: #b91c1c; }
+.cx-attr__yn--no { color: #94a3b8; }
+.cx-attr__yn svg { flex: 0 0 auto; }
+
+/* Governance sub-scores */
+.cx-attr__gov { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 0.22rem; }
+.cx-attr__gov li { display: flex; align-items: baseline; justify-content: space-between; gap: 0.5rem; }
+.cx-attr__gov-k { font-size: 0.72rem; color: #475569; }
+.cx-attr__gov-v { font-size: 0.82rem; font-weight: 800; color: #0b1f2a; font-variant-numeric: tabular-nums; }
+.cx-attr__gov-v small { font-size: 0.62rem; font-weight: 600; color: #94a3b8; margin-left: 0.05rem; }
+
+/* Corruption / FATF / Enforcement tri-stat */
+.cx-attr__stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.5rem; border-top: 1px solid #eef2f7; padding-top: 0.5rem; }
+.cx-attr__stat { display: flex; flex-direction: column; gap: 0.1rem; min-width: 0; }
+.cx-attr__stat-k { display: inline-flex; align-items: center; gap: 0.2rem; font-size: 0.58rem; text-transform: uppercase; letter-spacing: 0.04em; color: #94a3b8; font-weight: 800; }
+.cx-attr__stat-k svg { flex: 0 0 auto; color: #94a3b8; }
+.cx-attr__stat-v { font-size: 0.82rem; font-weight: 800; color: #0b1f2a; line-height: 1.15; overflow-wrap: anywhere; }
+.cx-attr__stat-v small { font-size: 0.6rem; font-weight: 600; color: #94a3b8; }
+.cx-attr__stat-d { font-size: 0.6rem; color: #94a3b8; line-height: 1.25; }
+.cx-attr__muted { font-size: 0.72rem; font-weight: 700; color: #94a3b8; }
 
 /* Row 3 */
 .cx-ws__row3 {
@@ -2939,7 +2971,7 @@ button.cx-kpi:hover {
   gap: 1rem;
   align-items: stretch;
 }
-.cx-ws__row3 > .cx-card { display: flex; flex-direction: column; }
+.cx-ws__row3 > .cx-card { display: flex; flex-direction: column; min-width: 0; }
 
 /* Risk drivers */
 .cx-drivers__list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 0.6rem; }
@@ -2972,10 +3004,15 @@ button.cx-kpi:hover {
 .cx-mitig__ico { color: #0fa77d; flex: 0 0 auto; margin-top: 0.1rem; }
 
 /* Business impact */
-.cx-impact__list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 0.35rem; }
-.cx-impact__list li { display: flex; align-items: center; justify-content: space-between; gap: 0.5rem; font-size: 0.8rem; }
+.cx-impact__list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 0.4rem; flex: 1; }
+.cx-impact__list li { font-size: 0.8rem; min-width: 0; }
+.cx-impact__row { display: flex; align-items: center; justify-content: space-between; gap: 0.5rem; }
 .cx-impact__act { color: #334155; }
-.cx-impact__list { flex: 1; }
+.cx-impact__impl {
+  display: block; margin-top: 0.08rem; max-width: 100%;
+  font-size: 0.68rem; color: #94a3b8; line-height: 1.3;
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
 .cx-impact__overall { border-top: 1px solid #eef2f7; margin-top: auto; padding-top: 0.45rem; font-weight: 700; }
 
 /* Row 4 */

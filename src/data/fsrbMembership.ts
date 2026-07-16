@@ -37,6 +37,13 @@
  *   - Comoros (KM) and Sao Tome (ST) are GIABA members despite the wider region.
  *   - UK Crown Dependencies Jersey (JE) and Guernsey (GG) are individually
  *     MONEYVAL-evaluated (not covered only via the UK).
+ *   - APG includes the seven Pacific island members represented in countries.ts:
+ *     Cook Islands, Marshall Islands, Nauru, Niue, Palau, Solomon Islands and Tonga.
+ *   - CFATF membership includes its Caribbean territories as separate assessed
+ *     jurisdictions, including Anguilla, Aruba, Curaçao, Montserrat, Sint Maarten
+ *     and the Turks and Caicos Islands.
+ *   - MONEYVAL separately evaluates Armenia, Azerbaijan, Georgia, Gibraltar,
+ *     the Holy See/Vatican City and the Isle of Man.
  */
 
 export type FsrbCode =
@@ -157,6 +164,7 @@ export const FSRB_MEMBERSHIP: Record<string, FsrbCode[]> = {
   BT: ["APG"],
   BN: ["APG"],
   KH: ["APG"],
+  CK: ["APG"],
   CN: ["APG", "EAG"],
   FJ: ["APG"],
   HK: ["APG"],
@@ -166,40 +174,58 @@ export const FSRB_MEMBERSHIP: Record<string, FsrbCode[]> = {
   KR: ["APG"],
   LA: ["APG"],
   MO: ["APG"],
+  MH: ["APG"],
   MY: ["APG"],
   MV: ["APG"],
   MN: ["APG"],
   MM: ["APG"],
   NP: ["APG"],
+  NR: ["APG"],
+  NU: ["APG"],
   NZ: ["APG"],
   PK: ["APG"],
+  PW: ["APG"],
   PG: ["APG"],
   PH: ["APG"],
   WS: ["APG"],
   SG: ["APG"],
+  SB: ["APG"],
   LK: ["APG"],
   TW: ["APG"],
   TH: ["APG"],
   TL: ["APG"],
-  US: ["APG"],
+  TO: ["APG"],
+  US: ["APG", "CFATF"],
   VU: ["APG"],
   VN: ["APG"],
 
   // ── CFATF (Caribbean Financial Action Task Force) ─────────────────────────
   AG: ["CFATF"],
+  AI: ["CFATF"],
+  AW: ["CFATF"],
   BS: ["CFATF"],
   BB: ["CFATF"],
+  BZ: ["CFATF"],
   BM: ["CFATF"],
   VG: ["CFATF"],
   KY: ["CFATF"],
+  CW: ["CFATF"],
+  DM: ["CFATF"],
+  GD: ["CFATF"],
   DO: ["CFATF", "GAFILAT"],
   SV: ["CFATF", "GAFILAT"],
   GT: ["CFATF", "GAFILAT"],
   GY: ["CFATF"],
   HT: ["CFATF"],
   JM: ["CFATF"],
+  MS: ["CFATF"],
+  KN: ["CFATF"],
+  LC: ["CFATF"],
+  SX: ["CFATF"],
+  VC: ["CFATF"],
   SR: ["CFATF"],
   TT: ["CFATF"],
+  TC: ["CFATF"],
   VE: ["CFATF"],
 
   // ── EAG (Eurasian Group) ──────────────────────────────────────────────────
@@ -290,12 +316,16 @@ export const FSRB_MEMBERSHIP: Record<string, FsrbCode[]> = {
   // Europe in 2022. It appears under EAG only.
   AL: ["MONEYVAL"],
   AD: ["MONEYVAL"],
+  AM: ["MONEYVAL"],
+  AZ: ["MONEYVAL"],
   BA: ["MONEYVAL"],
   BG: ["MONEYVAL"],
   HR: ["MONEYVAL"],
   CY: ["MONEYVAL"],
   CZ: ["MONEYVAL"],
   EE: ["MONEYVAL"],
+  GE: ["MONEYVAL"],
+  GI: ["MONEYVAL"],
   HU: ["MONEYVAL"],
   LV: ["MONEYVAL"],
   LI: ["MONEYVAL"],
@@ -313,8 +343,10 @@ export const FSRB_MEMBERSHIP: Record<string, FsrbCode[]> = {
   SI: ["MONEYVAL"],
   UA: ["MONEYVAL"],
   IL: ["MONEYVAL"], // jointly evaluated by FATF and MONEYVAL
+  IM: ["MONEYVAL"], // UK Crown Dependency, individually evaluated
   JE: ["MONEYVAL"], // UK Crown Dependency, individually evaluated
   GG: ["MONEYVAL"], // UK Crown Dependency, individually evaluated
+  VA: ["MONEYVAL"], // Holy See, including Vatican City State
 
   // ── GAFILAT (Latin America) ───────────────────────────────────────────────
   AR: ["GAFILAT"],

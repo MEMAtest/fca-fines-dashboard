@@ -27,10 +27,17 @@ import {
   getSanctions,
   highestSanctionsTier,
   isSanctioned,
+  sanctionsTierLabel,
+  SANCTIONS_REVIEWED,
   type CountrySanctions,
   type SanctionsTier,
+  type SanctionsImposer,
 } from "./sanctionsStatus.js";
-import { hasGovernanceData, getGovernanceDimensions } from "./governanceData.js";
+import {
+  hasGovernanceData,
+  getGovernanceDimensions,
+  GOVERNANCE_VINTAGE,
+} from "./governanceData.js";
 import {
   computeCountryRiskScore,
   scoreBreakdown,
@@ -39,7 +46,7 @@ import {
   type ScoreBreakdown,
   type RiskBand as ScoreBand,
 } from "./countryRiskScore.js";
-import { getCpi, type CpiEntry } from "./cpiData.js";
+import { getCpi, CPI_TOTAL, CPI_YEAR, type CpiEntry } from "./cpiData.js";
 import {
   getFatfNetwork,
   type Fsrb,
@@ -93,6 +100,60 @@ export interface RegulatoryView {
   regulators: CountryRegulator[];
 }
 
+/** One imposer's country-level sanctions posture (for the attributed sanctions block). */
+export interface SanctionsImposerRow {
+  imposer: SanctionsImposer;
+  /** True if a country-level programme by this imposer is identified. */
+  active: boolean;
+  /** Tier label where active (e.g. "Comprehensive"), else undefined. */
+  tierLabel?: string;
+  /** Programme name where active. */
+  program?: string;
+  sourceUrl?: string;
+}
+
+/** One WGI institutional sub-score (percentile, higher = better). */
+export interface GovernanceSubScore {
+  key: "ge" | "rq" | "rl";
+  label: string;
+  /** WGI percentile 0-100, or null if missing. */
+  percentile: number | null;
+}
+
+/**
+ * Attributed indicator blocks for the country page — every value sourced and
+ * dated. Shared by the React page and the prerendered HTML so both cite the same
+ * numbers. All fields derive from the sourced data modules; nothing invented.
+ */
+export interface CountryAttribution {
+  sanctions: {
+    /** UN, EU, UK, US order — Yes/No per imposer. */
+    imposers: SanctionsImposerRow[];
+    /** Review month (YYYY-MM). */
+    reviewed: string;
+    /** Highest tier label across imposers, if any. */
+    headlineTier?: string;
+  };
+  governance: {
+    subScores: GovernanceSubScore[];
+    vintage: string;
+  };
+  corruption?: {
+    score: number;
+    rank: number;
+    total: number;
+    year: string;
+  };
+  enforcement:
+    | { assessed: true; trackedActions: number; regulatorCount: number }
+    | { assessed: false };
+  fatf: {
+    /** "Black list" | "Grey list" | "Not listed" */
+    status: string;
+    plenary: string;
+  };
+}
+
 export interface CountryView {
   country: Country;
   flag: string;
@@ -131,10 +192,87 @@ export interface CountryView {
   sanctionsCoverageComplete: boolean;
   /** Dated composite-score snapshots (baseline first). A real trend accrues as more are recorded. */
   scoreHistory: { date: string; score: number }[];
+  /** Attributed indicator blocks (sanctions per imposer, governance sub-scores, CPI, enforcement, FATF). */
+  attribution: CountryAttribution;
   lastPlenary: string;
   nextPlenary: string;
   /** FATF-network membership + tracked national regulators. */
   regulatory: RegulatoryView;
+}
+
+/** Imposers shown in the attributed sanctions block, display order + data key. */
+const ATTR_IMPOSERS: { imposer: SanctionsImposer; label: string }[] = [
+  { imposer: "UN", label: "UN" },
+  { imposer: "EU", label: "EU" },
+  { imposer: "UK", label: "UK" },
+  { imposer: "OFAC", label: "US" }, // OFAC is the US Treasury programme
+];
+
+const GOVERNANCE_SUBSCORE_META: { key: "ge" | "rq" | "rl"; label: string }[] = [
+  { key: "ge", label: "Government Effectiveness" },
+  { key: "rq", label: "Regulatory Quality" },
+  { key: "rl", label: "Rule of Law" },
+];
+
+const TIER_RANK: Record<SanctionsTier, number> = {
+  comprehensive: 3,
+  sectoral: 2,
+  targeted: 1,
+};
+
+/** Build the attributed indicator blocks from the sourced data modules. */
+export function buildAttribution(
+  country: Country,
+  view: {
+    sanctions?: CountrySanctions;
+    cpi?: CpiEntry;
+    enforcement?: CountryEnforcementSummary;
+    statusHeading: string;
+    lastPlenary: string;
+  },
+): CountryAttribution {
+  const tier = highestSanctionsTier(country.iso2);
+  const imposers: SanctionsImposerRow[] = ATTR_IMPOSERS.map(({ imposer, label }) => {
+    // pick the highest-tier programme for this imposer, if any
+    const progs = view.sanctions?.programs.filter((p) => p.imposer === imposer) ?? [];
+    const top = progs.length
+      ? progs.reduce((a, b) => (TIER_RANK[b.tier] > TIER_RANK[a.tier] ? b : a))
+      : undefined;
+    return {
+      imposer: label as SanctionsImposer, // display label (US for OFAC)
+      active: !!top,
+      tierLabel: top ? sanctionsTierLabel(top.tier) : undefined,
+      program: top?.program,
+      sourceUrl: top?.sourceUrl,
+    };
+  });
+
+  const dims = getGovernanceDimensions(country.iso2);
+  const subScores: GovernanceSubScore[] = GOVERNANCE_SUBSCORE_META.map((m) => ({
+    key: m.key,
+    label: m.label,
+    percentile: dims && dims[m.key] !== undefined ? (dims[m.key] as number) : null,
+  }));
+
+  return {
+    sanctions: {
+      imposers,
+      reviewed: SANCTIONS_REVIEWED,
+      headlineTier: tier ? sanctionsTierLabel(tier) : undefined,
+    },
+    governance: { subScores, vintage: GOVERNANCE_VINTAGE },
+    corruption: view.cpi
+      ? { score: view.cpi.score, rank: view.cpi.rank, total: CPI_TOTAL, year: CPI_YEAR }
+      : undefined,
+    enforcement: view.enforcement
+      ? {
+          assessed: true,
+          trackedActions: view.enforcement.trackedActions,
+          regulatorCount: view.enforcement.regulatorCount,
+        }
+      : { assessed: false },
+    fatf: { status: view.statusHeading, plenary: view.lastPlenary },
+  };
 }
 
 /** Sanctions tier → risk band (comprehensive = very-high, sectoral = high, targeted = high). */
@@ -225,6 +363,13 @@ export function buildCountryView(country: Country): CountryView {
       date: s.date,
       score: s.scores[country.iso2],
     })),
+    attribution: buildAttribution(country, {
+      sanctions,
+      cpi,
+      enforcement,
+      statusHeading,
+      lastPlenary: FATF_LAST_PLENARY,
+    }),
     lastPlenary: FATF_LAST_PLENARY,
     nextPlenary: FATF_NEXT_PLENARY,
     regulatory,
