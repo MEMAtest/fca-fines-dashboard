@@ -240,7 +240,7 @@ function renderHubBody(
  * prerendered HTML and the SPA can't drift apart in copy/logic.
  */
 function renderCountryFatfBody(view: CountryView): string {
-  const { country, statusHeading, statusDetail, history, enforcement, sanctions, sanctionsTier, riskScore, breakdown, globalAverage, cpi } = view;
+  const { country, statusHeading, statusDetail, history, enforcement, sanctions, sanctionsTier, riskScore, breakdown, globalAverage, cpi, decision, enforcementAssessed, hasComprehensiveSanctions, hasTargetedSanctions } = view;
   const narrative = getNarrative(country.iso2) ?? null;
   const title = `${country.name} — Country Risk Report`;
   const domainLis = breakdown.domains
@@ -265,24 +265,39 @@ function renderCountryFatfBody(view: CountryView): string {
     `Governance base: ${breakdown.base.toFixed(1)}`,
   )}</li>${escLis}<li>${escapeHtml(`Composite: ${riskScore.score.toFixed(1)}`)}</li></ul>`;
   const glanceHtml = `<h2>At a glance</h2><ul><li>${escapeHtml(
-    `FATF status: ${statusHeading}`,
+    `FATF status: ${statusHeading} (one indicator only; does not by itself set the overall AML risk rating)`,
   )}</li><li>${escapeHtml(
-    `Sanctions: ${sanctionsTier ? sanctionsTierLabel(sanctionsTier) : "None"}${
-      sanctions ? ` (${sanctions.programs.length} programme${sanctions.programs.length === 1 ? "" : "s"})` : ""
+    `Comprehensive country sanctions: ${hasComprehensiveSanctions ? "in place" : "none identified"}. Targeted sanctions exposure: ${
+      hasComprehensiveSanctions || hasTargetedSanctions
+        ? "programmes in place, screen applicable lists"
+        : "possible, screen applicable persons, entities and sectors"
     }`,
   )}</li><li>${escapeHtml(`Governance (WGI) base: ${breakdown.base.toFixed(1)}/10`)}</li><li>${escapeHtml(
     cpi
       ? `Corruption (CPI ${CPI_YEAR}): ${cpi.score}/100, rank #${cpi.rank} of ${CPI_TOTAL}`
       : "Corruption (CPI): no score",
   )}</li><li>${escapeHtml(
-    enforcement
-      ? `Enforcement: ${formatCount(enforcement.trackedActions)} actions from ${enforcement.regulatorCount} regulator${enforcement.regulatorCount === 1 ? "" : "s"}`
-      : "Enforcement: no RegActions coverage",
+    enforcementAssessed
+      ? `Enforcement: ${formatCount(enforcement!.trackedActions)} actions from ${enforcement!.regulatorCount} regulator${enforcement!.regulatorCount === 1 ? "" : "s"}`
+      : "Enforcement data: not yet assessed (no RegActions coverage)",
   )}</li></ul>`;
-  const narrativeHtml = narrative
-    ? `<h2>${escapeHtml(`Why ${country.name} matters`)}</h2><ul>${narrative.whyItMatters
-        .map((b) => `<li>${escapeHtml(b)}</li>`)
-        .join("")}</ul><h2>RegActions analysis</h2><p>${escapeHtml(
+  const treatmentHtml = `<h2>Recommended treatment</h2><p>${escapeHtml(decision.treatment)}</p>`;
+  const decisionHtml = `<h2>Principal risk drivers</h2><ul>${decision.riskDrivers
+    .map((d) => `<li>${escapeHtml(d)}</li>`)
+    .join("")}</ul><h2>Mitigating factors</h2><ul>${decision.mitigatingFactors
+    .map((d) => `<li>${escapeHtml(d)}</li>`)
+    .join("")}</ul><h2>Business impact</h2><ul>${decision.businessImpact
+    .map((r) => `<li>${escapeHtml(`${r.activity} (${r.level}): ${r.implication}`)}</li>`)
+    .join("")}</ul><h2>Recommended controls</h2><ul>${decision.recommendedControls
+    .map((c) => `<li>${escapeHtml(c)}</li>`)
+    .join("")}</ul><h2>Enhanced due diligence triggers</h2><ul>${decision.eddTriggers
+    .map((t) => `<li>${escapeHtml(t)}</li>`)
+    .join("")}</ul>`;
+  const whatChangedHtml = `<h2>Assessment currency</h2><ul>${decision.whatChanged
+    .map((w) => `<li>${escapeHtml(`${w.label}: ${w.value} (as of ${w.asOf})`)}</li>`)
+    .join("")}</ul>`;
+  const analysisHtml = narrative
+    ? `<h2>RegActions analysis</h2><p>${escapeHtml(
         narrative.analysis,
       )}</p><h2>Outlook</h2><p>${escapeHtml(narrative.outlook)}</p><h2>Key watchpoints</h2><ul>${narrative.keyWatchpoints
         .map((w) => `<li>${escapeHtml(w)}</li>`)
@@ -324,7 +339,7 @@ function renderCountryFatfBody(view: CountryView): string {
     : "";
   const introHtml = `<p>${escapeHtml(
     `${country.name} (${country.region} • ${country.subregion}). Risk report as of the ${formatDate(FATF_LAST_PLENARY)} FATF plenary.`,
-  )}</p>${narrative?.summary ? `<p>${escapeHtml(narrative.summary)}</p>` : ""}`;
+  )}</p><p><strong>${escapeHtml(`${decision.verdictHeadline}.`)}</strong> ${escapeHtml(decision.verdictParagraph)}</p>`;
   const sourcesHtml = `<p><a href="${escapeHtml(
     FATF_SOURCE_URL,
   )}" rel="noopener">Source: FATF black &amp; grey lists</a> · ${escapeHtml(
@@ -334,11 +349,11 @@ function renderCountryFatfBody(view: CountryView): string {
   )}</a></p>`;
   return `<div class="blog-page"><div class="blog-post-container"><article class="blog-article-modal"><h1 class="blog-post-title">${escapeHtml(
     title,
-  )}</h1><div class="blog-article-content">${introHtml}${glanceHtml}${scoreHtml}<h2>FATF status: ${escapeHtml(
+  )}</h1><div class="blog-article-content">${introHtml}${treatmentHtml}${glanceHtml}${scoreHtml}${decisionHtml}<h2>FATF status: ${escapeHtml(
     statusHeading,
   )}</h2><p>${escapeHtml(
     statusDetail,
-  )}</p>${sanctionsHtml}${historyHtml}${enforcementHtml}${narrativeHtml}${sourcesHtml}</div></article></div></div>`;
+  )}</p>${sanctionsHtml}${historyHtml}${enforcementHtml}${analysisHtml}${whatChangedHtml}${sourcesHtml}</div></article></div></div>`;
 }
 
 /** Crawlable body for the /countries index (FATF grey + black lists). */
