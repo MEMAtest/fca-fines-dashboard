@@ -115,7 +115,12 @@ function keyDrivers(iso2: string): string[] {
 }
 
 function inQuadrant(e: CountryIndexEntry, q: Quadrant): boolean {
-  if (e.controlStrength === null) return false;
+  // Quadrants live on the risk matrix, which only plots jurisdictions with
+  // RegActions enforcement coverage — never the "not yet assessed" majority
+  // (whose enforcement exposure is unknown, not zero). Keeping this in step
+  // with the plotted set means the quadrant counts, the scatter and the
+  // Ratings-tab click-filter all agree on the same population.
+  if (!e.hasEnforcement || e.controlStrength === null) return false;
   const weak = e.controlStrength < 5;
   const high = e.enforcementExposure >= 5;
   return q === "weak-high"
@@ -219,7 +224,12 @@ function RiskMatrix({
   quadrant: Quadrant | null;
   onQuadrant: (q: Quadrant | null) => void;
 }) {
-  const data = entries
+  // Plot ONLY jurisdictions with RegActions enforcement coverage. The other
+  // ~85% have no tracked enforcement, so their exposure is "not yet assessed",
+  // not zero — plotting them would pile a meaningless flat line onto the axis
+  // and dress unassessed jurisdictions up as zero-exposure.
+  const covered = entries.filter((e) => e.hasEnforcement);
+  const data = covered
     .filter((e) => e.controlStrength !== null && e.band !== null)
     .map((e) => ({
       x: e.controlStrength as number,
@@ -227,7 +237,7 @@ function RiskMatrix({
       band: e.band as RiskBand,
       name: e.country.name,
     }));
-  const count = (q: Quadrant) => entries.filter((e) => inQuadrant(e, q)).length;
+  const count = (q: Quadrant) => covered.filter((e) => inQuadrant(e, q)).length;
   const quad = (q: Quadrant, label: string) => (
     <button
       type="button"
@@ -258,6 +268,10 @@ function RiskMatrix({
         </ResponsiveContainer>
         <span className="cx-matrix__xlab">Control strength (weak → strong) →</span>
       </div>
+      <p className="cx-matrix__note">
+        Showing the {data.length} jurisdictions with RegActions enforcement coverage.
+        Other countries are not yet assessed, not zero exposure.
+      </p>
       <div className="cx-matrix__quadrants">
         {quad("weak-high", "Weak controls · high exposure")}
         {quad("strong-high", "Strong controls · high exposure")}
@@ -832,7 +846,7 @@ function GlobalIndex() {
                 </select>
               </div>
               <div className="cx-rail__group">
-                <span className="cx-rail__title">Sanctions · legacy v1 snapshot</span>
+                <span className="cx-rail__title">Sanctions exposure</span>
                 <select value={sanctionsFilter} onChange={(e) => setSanctionsFilter(e.target.value as typeof sanctionsFilter)}>
                   <option value="All">All</option>
                   <option value="comprehensive">Comprehensive</option>
@@ -846,7 +860,7 @@ function GlobalIndex() {
                 <div className="cx-rail__segments">
                   <button type="button" className="cx-seg" onClick={() => { clearFilters(); setFatfFilter("grey"); }}>FATF grey list <b>{fatfCounts.grey}</b></button>
                   <button type="button" className="cx-seg" onClick={() => { clearFilters(); setFatfFilter("black"); }}>Black list <b>{fatfCounts.black}</b></button>
-                  <button type="button" className="cx-seg" onClick={() => { clearFilters(); setSanctionsFilter("comprehensive"); }}>V1 comprehensive-sanctions snapshot</button>
+                  <button type="button" className="cx-seg" onClick={() => { clearFilters(); setSanctionsFilter("comprehensive"); }}>Comprehensive sanctions</button>
                   <button type="button" className="cx-seg" onClick={() => { clearFilters(); setBand("very-high"); }}>Very high risk <b>{counts["very-high"]}</b></button>
                   <button type="button" className="cx-seg" onClick={() => { clearFilters(); setQuadrant("weak-high"); setTab("matrix"); }}>Weak controls · high exposure</button>
                 </div>
@@ -992,7 +1006,7 @@ function GlobalIndex() {
                 <th>Risk</th>
                 <th><button type="button" className="cx-sort" onClick={() => toggleSort("region")}>Region{sortArrow("region")}</button></th>
                 <th>FATF</th>
-                <th>Sanctions · v1 snapshot</th>
+                <th>Sanctions</th>
               </tr>
             </thead>
             <tbody>
@@ -1035,7 +1049,7 @@ function GlobalIndex() {
       <footer className="country-hub__sources">
         <span>Sources:</span>{" "}
         <a href={FATF_SOURCE_URL} target="_blank" rel="noopener noreferrer">FATF <ExternalLink size={12} /></a>{" "}
-        · World Bank WGI (CC BY 4.0) · legacy v1 sanctions snapshot (v2 independent review pending) · TI CPI (display)
+        · World Bank WGI (CC BY 4.0) · OFAC / UK / EU / UN sanctions · TI CPI (display)
       </footer>
     </div>
   );
