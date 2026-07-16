@@ -129,6 +129,9 @@ export function CountryRiskMap({
 
   const { k, x: tx, y: ty } = transform;
   const zoomed = k > 1.001;
+  // Current scale for native (non-React) handlers without re-binding on every zoom.
+  const kRef = useRef(k);
+  kRef.current = k;
 
   // The <svg> only mounts once we have a width + topology + projection, so effects
   // that touch svgRef must re-run when this flips (width can settle a render before
@@ -171,6 +174,10 @@ export function CountryRiskMap({
     const svg = svgRef.current;
     if (!svg) return;
     const onWheel = (e: WheelEvent) => {
+      // At world scale a wheel-down cannot zoom out further — let the page
+      // scroll normally instead of trapping it (zoom stays opt-in until the
+      // reader actually zooms in or wheels up over the map).
+      if (kRef.current <= MIN_SCALE + 0.001 && e.deltaY > 0) return;
       e.preventDefault();
       const rect = svg.getBoundingClientRect();
       if (!rect.width) return;
@@ -217,6 +224,7 @@ export function CountryRiskMap({
       setDragging(false);
       window.removeEventListener("pointermove", onMove);
       window.removeEventListener("pointerup", onUp);
+      window.removeEventListener("pointercancel", onUp);
       panCleanupRef.current = null;
       // Clear the pan flag on the next tick so the click handler (which fires just
       // after pointerup) can still see it and suppress a select on a real drag.
@@ -226,9 +234,11 @@ export function CountryRiskMap({
     };
     window.addEventListener("pointermove", onMove);
     window.addEventListener("pointerup", onUp);
+    window.addEventListener("pointercancel", onUp);
     panCleanupRef.current = () => {
       window.removeEventListener("pointermove", onMove);
       window.removeEventListener("pointerup", onUp);
+      window.removeEventListener("pointercancel", onUp);
     };
   };
 

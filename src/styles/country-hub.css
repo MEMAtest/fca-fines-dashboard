@@ -1110,7 +1110,7 @@ button.cx-kpi:hover {
 .cx-mapzoom-overlay {
   position: fixed;
   inset: 0;
-  z-index: 60;
+  z-index: 1000;
   background: rgba(11, 31, 42, 0.55);
   display: flex;
   align-items: center;
@@ -3409,7 +3409,7 @@ button.cx-kpi:hover {
 .cx-zoom {
   position: fixed;
   inset: 0;
-  z-index: 60;
+  z-index: 1000;
   background: rgba(11, 31, 42, 0.55);
   display: flex;
   align-items: center;

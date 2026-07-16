@@ -308,9 +308,18 @@ function OverviewTab({
   const [mapExpanded, setMapExpanded] = useState(false);
   useEffect(() => {
     if (!mapExpanded) return;
+    const opener = document.activeElement as HTMLElement | null;
+    const prevOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden"; // lock the page behind the modal
+    const closeBtn = document.querySelector<HTMLElement>(".cx-mapzoom-overlay__close");
+    closeBtn?.focus();
     const onKey = (e: KeyboardEvent) => e.key === "Escape" && setMapExpanded(false);
     window.addEventListener("keydown", onKey);
-    return () => window.removeEventListener("keydown", onKey);
+    return () => {
+      window.removeEventListener("keydown", onKey);
+      document.body.style.overflow = prevOverflow;
+      opener?.focus?.();
+    };
   }, [mapExpanded]);
   const total = index.length;
   const counts = useMemo(() => {
