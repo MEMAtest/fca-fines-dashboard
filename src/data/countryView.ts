@@ -324,6 +324,7 @@ export function buildCountryView(country: Country): CountryView {
     sanctionsTier,
     sanctionsCoverageComplete: SANCTIONS_APPROVED_SNAPSHOT.coverageComplete,
     enforcementAssessed,
+    regulatorCodes: enforcement?.regulators.map((r) => r.code),
     cpi,
     fatf,
     lastPlenary: FATF_LAST_PLENARY,

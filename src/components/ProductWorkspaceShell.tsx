@@ -1,7 +1,6 @@
 import { useMemo, useState, type ReactNode } from "react";
 import { Link, NavLink, useLocation } from "react-router-dom";
 import {
-  Bell,
   BookOpenCheck,
   ChevronLeft,
   ChevronRight,
@@ -13,7 +12,6 @@ import {
   ListChecks,
   Menu,
   Plus,
-  Star,
   X,
 } from "lucide-react";
 import { useLocalStorage } from "../hooks/useLocalStorage.js";
@@ -38,12 +36,12 @@ const FINES_NAV = [
   { segment: "compare", label: "Compare", icon: GitCompareArrows },
 ];
 
+// Watchlists/Alerts removed until the features exist — they pointed at a
+// marketing page and read as dead buttons. Re-add when there's a real tool.
 const SECONDARY_NAV = [
-  { label: "Watchlists", icon: Star, to: "/features" },
-  { label: "Alerts", icon: Bell, to: "/features" },
   { label: "Reports", icon: BookOpenCheck, to: "/board-pack" },
   { label: "Data Hub", icon: Database, to: "/search" },
-  { label: "Methodology", icon: CircleHelp, to: "/about" },
+  { label: "Methodology", icon: CircleHelp, to: "/countries/methodology" },
 ];
 
 function buildBase(scope: "fines" | "regulator", regulatorCode?: string) {
