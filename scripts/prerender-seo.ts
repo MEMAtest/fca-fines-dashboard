@@ -240,7 +240,7 @@ function renderHubBody(
  * prerendered HTML and the SPA can't drift apart in copy/logic.
  */
 function renderCountryFatfBody(view: CountryView): string {
-  const { country, statusHeading, statusDetail, history, enforcement, sanctions, sanctionsTier, riskScore, breakdown, globalAverage, cpi, decision, enforcementAssessed, hasComprehensiveSanctions, hasTargetedSanctions } = view;
+  const { country, statusHeading, statusDetail, history, enforcement, sanctions, sanctionsTier, riskScore, breakdown, globalAverage, cpi, decision, enforcementAssessed, hasComprehensiveSanctions, hasTargetedSanctions, regulatory, regionalPeers } = view;
   const narrative = getNarrative(country.iso2) ?? null;
   const title = `${country.name} — Country Risk Report`;
   const domainLis = breakdown.domains
@@ -337,6 +337,73 @@ function renderCountryFatfBody(view: CountryView): string {
         )
         .join("")}</ul><p>The composite RegActions Country Risk Score does not use enforcement volume.</p>`
     : "";
+  // Regulators & legal framework: FATF-network membership + national regulators
+  // + deterministic framework signals (mirrors the React module).
+  const fatfNetworkLine = regulatory.fatfMember
+    ? regulatory.suspended
+      ? "FATF member (membership suspended)"
+      : "FATF member"
+    : regulatory.fsrbs.length > 0
+      ? `FATF network via ${regulatory.fsrbs.map((f) => f.code).join(" · ")}`
+      : "Outside the FATF regional network";
+  const fsrbListHtml =
+    regulatory.fsrbs.length > 0
+      ? `<ul>${regulatory.fsrbs
+          .map(
+            (f) =>
+              `<li><a href="${escapeHtml(f.url)}" rel="noopener">${escapeHtml(
+                f.fullName,
+              )}</a></li>`,
+          )
+          .join("")}</ul>`
+      : "";
+  const regulatorsHtml =
+    regulatory.regulators.length > 0
+      ? `<ul>${regulatory.regulators
+          .map(
+            (r) =>
+              `<li><a href="${escapeHtml(r.overviewPath)}"><strong>${escapeHtml(
+                r.code,
+              )}</strong> — ${escapeHtml(r.fullName)}</a> (${escapeHtml(
+                formatCount(r.count),
+              )} actions, ${escapeHtml(r.years)})</li>`,
+          )
+          .join("")}</ul>`
+      : `<p>Regulator profiles not yet available on RegActions.</p>`;
+  const ruleOfLawDomain = breakdown.domains.find((d) => d.key === "ruleOfLaw");
+  const frameworkSignalsHtml = `<ul><li>${escapeHtml(
+    `FATF listing: ${statusHeading}`,
+  )}</li><li>${escapeHtml(
+    `Sanctions exposure: ${
+      hasComprehensiveSanctions
+        ? "comprehensive country programme"
+        : sanctionsTier
+          ? `${sanctionsTierLabel(sanctionsTier).toLowerCase()} exposure`
+          : "no listed programme identified"
+    }`,
+  )}</li><li>${escapeHtml(
+    cpi
+      ? `Corruption (CPI ${CPI_YEAR}): ${cpi.score}/100, rank #${cpi.rank} of ${CPI_TOTAL}`
+      : "Corruption (CPI): no score",
+  )}</li><li>${escapeHtml(
+    ruleOfLawDomain && ruleOfLawDomain.risk !== null
+      ? `Rule of law (WGI): ${ruleOfLawDomain.risk.toFixed(1)}/10 risk`
+      : "Rule of law (WGI): no data",
+  )}</li></ul>`;
+  const regulatoryHtml = `<h2>Regulators and legal framework</h2><h3>FATF network</h3><p>${escapeHtml(
+    fatfNetworkLine,
+  )}.</p>${fsrbListHtml}<h3>National regulators</h3>${regulatorsHtml}<h3>Framework signals</h3>${frameworkSignalsHtml}`;
+  const peersHtml =
+    regionalPeers.length > 0
+      ? `<h2>Regional peer scores</h2><ul>${regionalPeers
+          .map(
+            (p) =>
+              `<li><a href="/countries/${countrySlug(p.country)}">${escapeHtml(
+                p.country.name,
+              )}</a>: ${escapeHtml(`${p.score.toFixed(1)}/10 (${bandLabel(p.band)})`)}</li>`,
+          )
+          .join("")}</ul>`
+      : "";
   const introHtml = `<p>${escapeHtml(
     `${country.name} (${country.region} • ${country.subregion}). Risk report as of the ${formatDate(FATF_LAST_PLENARY)} FATF plenary.`,
   )}</p><p><strong>${escapeHtml(`${decision.verdictHeadline}.`)}</strong> ${escapeHtml(decision.verdictParagraph)}</p>`;
@@ -353,7 +420,7 @@ function renderCountryFatfBody(view: CountryView): string {
     statusHeading,
   )}</h2><p>${escapeHtml(
     statusDetail,
-  )}</p>${sanctionsHtml}${historyHtml}${enforcementHtml}${analysisHtml}${whatChangedHtml}${sourcesHtml}</div></article></div></div>`;
+  )}</p>${sanctionsHtml}${historyHtml}${enforcementHtml}${regulatoryHtml}${analysisHtml}${whatChangedHtml}${peersHtml}${sourcesHtml}</div></article></div></div>`;
 }
 
 /** Crawlable body for the /countries index (FATF grey + black lists). */

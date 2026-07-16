@@ -7,14 +7,16 @@ import {
   CheckCircle2,
   ClipboardCheck,
   Download,
+  ExternalLink,
   Info,
+  Landmark,
   ShieldCheck,
 } from "lucide-react";
 import { getCountryBySlug, countrySlug } from "../data/countries.js";
 import { FATF_SOURCE_URL } from "../data/fatfStatus.js";
 import { bandLabel, bandFor, type RiskBand } from "../data/countryRiskScore.js";
 import { GOVERNANCE_VINTAGE } from "../data/governanceData.js";
-import { CPI_YEAR } from "../data/cpiData.js";
+import { CPI_YEAR, CPI_TOTAL } from "../data/cpiData.js";
 import {
   buildCountryView,
   formatDate,
@@ -152,6 +154,10 @@ export function CountryHub() {
     regionalPeers,
     decision,
     scoreHistory,
+    regulatory,
+    cpi,
+    sanctionsTier,
+    hasComprehensiveSanctions,
   } = view;
 
   const rank = globalRank(country.iso2);
@@ -195,6 +201,41 @@ export function CountryHub() {
     `FATF — consolidated ratings (plenary ${formatDate(view.lastPlenary)})`,
     "OFAC / UK HMT / EU / UN — consolidated sanctions lists",
     "OECD — country risk classifications",
+  ];
+
+  // ── Regulators & legal framework module ──────────────────────────────────
+  // FATF-network membership phrasing (direct FATF, or "via <FSRB>").
+  const fatfNetworkLabel = regulatory.fatfMember
+    ? regulatory.suspended
+      ? "FATF member (membership suspended)"
+      : "FATF member"
+    : regulatory.fsrbs.length > 0
+      ? `FATF network via ${regulatory.fsrbs.map((f) => f.code).join(" · ")}`
+      : "Outside the FATF regional network";
+
+  // Framework signals: deterministic, data-derived only (no invented statutes).
+  const ruleOfLaw = breakdown.domains.find((d) => d.key === "ruleOfLaw");
+  const sanctionsSignal = hasComprehensiveSanctions
+    ? "Comprehensive country programme"
+    : sanctionsTier
+      ? `${sanctionsTier.charAt(0).toUpperCase()}${sanctionsTier.slice(1)} exposure`
+      : "No listed programme identified";
+  const frameworkSignals: { label: string; value: string }[] = [
+    { label: "FATF listing", value: statusHeading },
+    { label: "Sanctions exposure", value: sanctionsSignal },
+    {
+      label: "Corruption (CPI)",
+      value: cpi
+        ? `${cpi.score}/100 · rank ${cpi.rank} of ${CPI_TOTAL}`
+        : "No score",
+    },
+    {
+      label: "Rule of law (WGI)",
+      value:
+        ruleOfLaw && ruleOfLaw.risk !== null
+          ? `${ruleOfLaw.risk.toFixed(1)}/10 risk`
+          : "No data",
+    },
   ];
 
   return (
@@ -468,6 +509,78 @@ export function CountryHub() {
                   </li>
                 ))}
               </ul>
+            </div>
+          </div>
+
+          {/* ── Regulators & legal framework ── */}
+          <div className="cx-card cx-regf">
+            <span className="cx-card__eyebrow">
+              <Landmark size={12} /> Regulators &amp; legal framework
+            </span>
+            <div className="cx-regf__grid">
+              {/* Col 1: FATF network */}
+              <div className="cx-regf__col">
+                <span className="cx-regf__h">FATF network</span>
+                <p className="cx-regf__lead">{fatfNetworkLabel}</p>
+                {regulatory.fsrbs.length > 0 && (
+                  <ul className="cx-regf__list">
+                    {regulatory.fsrbs.map((f) => (
+                      <li key={f.code}>
+                        <a
+                          href={f.url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="cx-regf__link"
+                        >
+                          {f.fullName} <ExternalLink size={10} />
+                        </a>
+                      </li>
+                    ))}
+                  </ul>
+                )}
+                {view.fatf && (
+                  <p className="cx-regf__note">
+                    Listed on the FATF {statusHeading.toLowerCase()} as of the{" "}
+                    {formatDate(view.lastPlenary)} plenary.
+                  </p>
+                )}
+              </div>
+
+              {/* Col 2: National regulators */}
+              <div className="cx-regf__col">
+                <span className="cx-regf__h">National regulators</span>
+                {regulatory.regulators.length > 0 ? (
+                  <ul className="cx-regf__list">
+                    {regulatory.regulators.map((r) => (
+                      <li key={r.code}>
+                        <Link to={r.overviewPath} className="cx-regf__link">
+                          <b>{r.code}</b> {r.fullName}
+                        </Link>
+                        <span className="cx-regf__meta">
+                          {r.count.toLocaleString("en-GB")} actions · {r.years}
+                        </span>
+                      </li>
+                    ))}
+                  </ul>
+                ) : (
+                  <p className="cx-regf__muted">
+                    Regulator profiles not yet available on RegActions.
+                  </p>
+                )}
+              </div>
+
+              {/* Col 3: Framework signals */}
+              <div className="cx-regf__col">
+                <span className="cx-regf__h">Framework signals</span>
+                <ul className="cx-regf__sig">
+                  {frameworkSignals.map((s) => (
+                    <li key={s.label}>
+                      <span className="cx-regf__sig-k">{s.label}</span>
+                      <span className="cx-regf__sig-v">{s.value}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
             </div>
           </div>
         </div>
