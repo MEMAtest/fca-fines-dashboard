@@ -118,7 +118,7 @@ function treatmentFor(input: DecisionInput): string {
 }
 
 function verdict(input: DecisionInput): { headline: string; paragraph: string } {
-  if (!input.scoreAvailable) {
+  if (!input.riskScore.hasGovernance) {
     const fatfPhrase = input.fatf
       ? `It remains subject to the FATF ${input.fatf.listing === "call-for-action" ? "call-for-action" : "increased-monitoring"} flag, which must be handled independently.`
       : "It is not currently FATF grey- or black-listed, but that absence does not establish low risk.";

@@ -58,6 +58,8 @@ describe("scoring primitives", () => {
 describe("Basel-structured composite (governance base + escalators)", () => {
   it("black-listed + comprehensive-sanctioned + weak governance is very high (near cap)", () => {
     const s = computeCountryRiskScore("IR");
+    expect(s.hasGovernance).toBe(true);
+    if (!s.hasGovernance) throw new Error("IR governance fixture missing");
     expect(s.band).toBe("very-high");
     expect(s.score).toBeGreaterThan(9);
     expect(s.fatf.points).toBe(FATF_ESCALATION.black);
@@ -66,6 +68,8 @@ describe("Basel-structured composite (governance base + escalators)", () => {
 
   it("strong-governance, unlisted, unsanctioned country is low with no escalators", () => {
     const s = computeCountryRiskScore("GB");
+    expect(s.hasGovernance).toBe(true);
+    if (!s.hasGovernance) throw new Error("GB governance fixture missing");
     expect(s.band).toBe("low");
     expect(s.score).toBeLessThan(3);
     expect(s.fatf.points).toBe(0);
@@ -76,6 +80,8 @@ describe("Basel-structured composite (governance base + escalators)", () => {
   it("weak-governance, unlisted country reaches the upper bands on the base alone", () => {
     // Somalia: extremely weak WGI, NOT FATF-listed, NOT sanctioned — must not read "Low".
     const s = computeCountryRiskScore("SO");
+    expect(s.hasGovernance).toBe(true);
+    if (!s.hasGovernance) throw new Error("SO governance fixture missing");
     expect(s.fatf.points).toBe(0);
     expect(s.sanctions.points).toBe(0);
     expect(s.band).toBe("very-high");
@@ -85,6 +91,8 @@ describe("Basel-structured composite (governance base + escalators)", () => {
   it("composite is exactly base + FATF + sanctions escalators, capped at 10 (CPI/enforcement never added)", () => {
     for (const iso2 of ["IR", "GB", "SO", "RU", "NG", "VE", "KP"]) {
       const s = computeCountryRiskScore(iso2);
+      expect(s.hasGovernance, iso2).toBe(true);
+      if (!s.hasGovernance) throw new Error(`${iso2} governance fixture missing`);
       const expected = Math.min(
         10,
         Math.round((s.base + s.fatf.points + s.sanctions.points) * 10) / 10,
@@ -104,13 +112,14 @@ describe("Basel-structured composite (governance base + escalators)", () => {
     expect(s.fatf.label).toBe("Grey list");
   });
 
-  it("missing governance data → base 0, score from escalators only", () => {
+  it("missing governance data cannot become a numeric score or Low band", () => {
     // British Virgin Islands: FATF grey, no sanctions, no WGI snapshot.
     const s = computeCountryRiskScore("VG");
     expect(s.hasGovernance).toBe(false);
-    expect(s.base).toBe(0);
-    expect(s.score).toBeCloseTo(FATF_ESCALATION.grey, 5); // 1.5
-    expect(s.band).toBe("low");
+    expect(s.base).toBeNull();
+    expect(s.score).toBeNull();
+    expect(s.band).toBeNull();
+    expect(s.fatf.points).toBe(FATF_ESCALATION.grey);
   });
 
   it("scoreBreakdown exposes 4 domains that weight-average to the base", () => {
@@ -121,6 +130,7 @@ describe("Basel-structured composite (governance base + escalators)", () => {
     const wSum = avail.reduce((s, d) => s + d.weightPct, 0);
     const wMean =
       avail.reduce((s, d) => s + (d.risk as number) * d.weightPct, 0) / wSum;
-    expect(wMean).toBeCloseTo(b.base, 1);
+    expect(b.base).not.toBeNull();
+    expect(wMean).toBeCloseTo(b.base!, 1);
   });
 });

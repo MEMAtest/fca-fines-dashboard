@@ -550,8 +550,8 @@ export function buildCountryIndex(): CountryIndexEntry[] {
       return {
         country,
         flag: flagEmoji(country.iso2),
-        score: status === "rated" ? rs.score : null,
-        band: status === "rated" ? rs.band : null,
+        score: rs.hasGovernance ? rs.score : null,
+        band: rs.hasGovernance ? rs.band : null,
         status,
         fatf: getFatfStatus(country.iso2),
         sanctionsTier: highestSanctionsTier(country.iso2),

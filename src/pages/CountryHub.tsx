@@ -184,9 +184,9 @@ export function CountryHub() {
   } = view;
 
   const rank = globalRank(country.iso2);
-  const scoreAvailable = view.scoreStatus === "rated";
-  const publishedScore = scoreAvailable ? riskScore.score : null;
-  const publishedBand = scoreAvailable ? riskScore.band : null;
+  const scoreAvailable = riskScore.hasGovernance;
+  const publishedScore = riskScore.hasGovernance ? riskScore.score : null;
+  const publishedBand = riskScore.hasGovernance ? riskScore.band : null;
   const markerPct = Math.min(100, (globalAverage / 10) * 100);
   const baseline = scoreHistory[0];
   const tiles = controlTiles(publishedBand);
@@ -847,7 +847,7 @@ export function CountryHub() {
               ))}
             </ul>
             <div className="cx-meth__base">
-              Governance base score <b>{scoreAvailable ? `${breakdown.base.toFixed(1)} / 10` : "Unavailable"}</b>
+              Governance base score <b>{breakdown.base === null ? "Unavailable" : `${breakdown.base.toFixed(1)} / 10`}</b>
             </div>
             <p className="cx-card__note">
               Structured with reference to Basel and Wolfsberg factors · WGI {GOVERNANCE_VINTAGE} · FATF{" "}

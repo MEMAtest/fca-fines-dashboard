@@ -63,17 +63,33 @@ export interface RiskEscalator {
   label: string;
 }
 
-export interface CountryRiskScore {
-  /** 0–10 composite, one decimal. */
-  score: number;
-  band: RiskBand;
-  /** Governance base (weighted mean of the WGI domains), 0–10. */
-  base: number;
+interface CountryRiskScoreCommon {
   domains: RiskDomains;
   fatf: RiskEscalator;
   sanctions: RiskEscalator;
-  hasGovernance: boolean;
 }
+
+/**
+ * The legacy v1 result is deliberately discriminated: missing governance can
+ * never be represented as a numeric score or a Low band inside the engine.
+ */
+export type CountryRiskScore = CountryRiskScoreCommon &
+  (
+    | {
+        hasGovernance: true;
+        /** 0–10 composite, one decimal. */
+        score: number;
+        band: RiskBand;
+        /** Governance base (weighted mean of the WGI domains), 0–10. */
+        base: number;
+      }
+    | {
+        hasGovernance: false;
+        score: null;
+        band: null;
+        base: null;
+      }
+  );
 
 const round1 = (x: number) => Math.round(x * 10) / 10;
 const round2 = (x: number) => Math.round(x * 100) / 100;
@@ -160,6 +176,17 @@ function computeCountryRiskScoreUncached(iso2: string): CountryRiskScore {
 
   const fatf = fatfEscalator(iso2);
   const sanctions = sanctionsEscalator(iso2);
+  if (!wSum) {
+    return {
+      score: null,
+      band: null,
+      base: null,
+      domains: { corruption, ruleOfLaw, politicalStability, accountability },
+      fatf,
+      sanctions,
+      hasGovernance: false,
+    };
+  }
   // Round the base first so the report arithmetic (base + escalators = score) is exact.
   const base = round1(baseRaw);
   const score = Math.min(10, round1(base + fatf.points + sanctions.points));
@@ -171,7 +198,7 @@ function computeCountryRiskScoreUncached(iso2: string): CountryRiskScore {
     domains: { corruption, ruleOfLaw, politicalStability, accountability },
     fatf,
     sanctions,
-    hasGovernance: weighted.length > 0,
+    hasGovernance: true,
   };
 }
 
@@ -187,13 +214,13 @@ export interface DomainBreakdown {
 }
 
 export interface ScoreBreakdown {
-  /** Governance base 0–10. */
-  base: number;
+  /** Governance base 0–10, or null when the WGI base is unavailable. */
+  base: number | null;
   domains: DomainBreakdown[];
   fatf: RiskEscalator;
   sanctions: RiskEscalator;
-  /** Final composite (min(10, base + escalators)). */
-  score: number;
+  /** Final composite, or null when the WGI base is unavailable. */
+  score: number | null;
 }
 
 const DOMAIN_LABELS: Record<keyof RiskDomains, string> = {
@@ -226,8 +253,11 @@ let _globalAvg: number | undefined;
  */
 export function globalAverageRiskScore(): number {
   if (_globalAvg !== undefined) return _globalAvg;
-  const codes = Object.keys(GOVERNANCE_PERCENTILE);
-  const total = codes.reduce((s, c) => s + computeCountryRiskScore(c).score, 0);
-  _globalAvg = codes.length ? round1(total / codes.length) : 0;
+  const scores = Object.keys(GOVERNANCE_PERCENTILE)
+    .map((code) => computeCountryRiskScore(code))
+    .filter((result) => result.hasGovernance)
+    .map((result) => result.score);
+  const total = scores.reduce((sum, score) => sum + score, 0);
+  _globalAvg = scores.length ? round1(total / scores.length) : 0;
   return _globalAvg;
 }
