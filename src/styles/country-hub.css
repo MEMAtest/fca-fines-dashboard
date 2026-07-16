@@ -3011,7 +3011,7 @@ button.cx-kpi:hover {
 .cx-impact__impl {
   display: block; margin-top: 0.08rem; max-width: 100%;
   font-size: 0.68rem; color: #94a3b8; line-height: 1.3;
-  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+  line-height: 1.35;
 }
 .cx-impact__overall { border-top: 1px solid #eef2f7; margin-top: auto; padding-top: 0.45rem; font-weight: 700; }
 
@@ -3264,3 +3264,93 @@ button.cx-kpi:hover {
 .cx-regf { margin-top: 0; }
 .cx-ws__row5 { margin-top: 0; }
 .cx-ws__footer { margin-top: 0.8rem; padding-top: 0.6rem; }
+
+/* ═══ Card zoom overlays + donut tooltip ═════════════════════════════════════ */
+.cx-card { position: relative; }
+.cx-zoombtn {
+  position: absolute;
+  top: 0.5rem;
+  right: 0.55rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  border: 1px solid #e7ebf0;
+  border-radius: 6px;
+  background: #fff;
+  color: #94a3b8;
+  cursor: pointer;
+  padding: 0;
+}
+.cx-zoombtn:hover { color: #0b7f66; border-color: #0b7f66; }
+
+.cx-zoom {
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+  background: rgba(11, 31, 42, 0.55);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem 1rem;
+}
+.cx-zoom__panel {
+  position: relative;
+  width: min(760px, 94vw);
+  max-height: 86vh;
+  overflow: auto;
+  border-radius: 16px;
+  box-shadow: 0 24px 64px rgba(0, 0, 0, 0.35);
+}
+/* The zoomed card fills the panel and reads larger */
+.cx-zoom__panel > .cx-card {
+  padding: 1.4rem 1.6rem;
+  font-size: 1.05em;
+}
+.cx-zoom__panel .cx-card__eyebrow { font-size: 0.78rem; }
+.cx-zoom__panel .cx-attr__gov-k,
+.cx-zoom__panel .cx-attr__gov-v,
+.cx-zoom__panel .cx-attr__imp,
+.cx-zoom__panel .cx-attr__yn,
+.cx-zoom__panel .cx-impact__act,
+.cx-zoom__panel .cx-impact__impl,
+.cx-zoom__panel .cx-sect__row,
+.cx-zoom__panel .cx-peer__row { font-size: 0.92rem; }
+.cx-zoom__panel .cx-attr__note,
+.cx-zoom__panel .cx-attr__src,
+.cx-zoom__panel .cx-attr__stat-d { font-size: 0.8rem; }
+/* no nested expand affordance inside the overlay */
+.cx-zoom__panel .cx-zoombtn { display: none; }
+.cx-zoom__close {
+  position: absolute;
+  top: 0.7rem;
+  right: 0.7rem;
+  z-index: 2;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border: 1px solid #e7ebf0;
+  border-radius: 8px;
+  background: #fff;
+  color: #334155;
+  cursor: pointer;
+  padding: 0;
+}
+.cx-zoom__close:hover { background: #f1f5f9; }
+
+/* Regional-donut hover tooltip on /countries */
+.cx-donut-tip {
+  background: #0b1f2a;
+  color: #fff;
+  border-radius: 8px;
+  padding: 0.5rem 0.7rem;
+  font-size: 0.76rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.25);
+}
+.cx-donut-tip strong { font-size: 0.82rem; }
