@@ -41,6 +41,12 @@ export interface CountryDecision {
   verdictHeadline: string;
   verdictParagraph: string;
   treatment: string;
+  /**
+   * 4-5 deterministic, profile-derived checklist items for the recommended
+   * treatment card. Same country always yields the same list; different risk
+   * profiles yield visibly different lists.
+   */
+  treatmentChecklist: string[];
   riskDrivers: string[];
   mitigatingFactors: string[];
   businessImpact: BusinessImpactRow[];
@@ -198,6 +204,82 @@ const RECOMMENDED_CONTROLS = [
   "Escalate unresolved ownership opacity or adverse information to Compliance.",
 ];
 
+/** Weakest governance domain → the diligence emphasis it calls for. */
+const DOMAIN_DILIGENCE: Record<string, string> = {
+  corruption:
+    "Deepen UBO and PEP verification given elevated corruption risk",
+  ruleOfLaw:
+    "Corroborate ownership and contractual claims where rule-of-law is weak",
+  politicalStability:
+    "Monitor political-instability exposure for state-linked counterparties",
+  accountability:
+    "Apply adverse-media and governance-transparency checks",
+};
+
+/**
+ * Derive a 4-5 item treatment checklist from the country's actual profile.
+ * Deterministic (same country, same list) and profile-sensitive (comprehensive
+ * sanctions, FATF listing, weakest WGI domain and enforcement coverage each add a
+ * distinct item). Low-risk countries get proportionate standard-DD items instead.
+ */
+export function treatmentChecklist(input: DecisionInput): string[] {
+  const out: string[] = [];
+  const comprehensive = hasComprehensiveSanctions(input.sanctions);
+  const black = input.fatf?.listing === "call-for-action";
+
+  // 1. Sanctions posture.
+  if (comprehensive) {
+    out.push(
+      "Confirm prohibition or licensing position before any dealing (comprehensive programme)",
+    );
+  } else if (input.sanctionsTier) {
+    out.push(
+      "Screen parties, owners and cargo against applicable OFAC, UK, EU and UN lists",
+    );
+  }
+
+  // 2. FATF listing → remediation-progress monitoring.
+  if (input.fatf) {
+    out.push(
+      black
+        ? "Track FATF countermeasures and action-plan status each plenary"
+        : "Monitor FATF grey-list remediation progress each plenary",
+    );
+  }
+
+  // 3. Weakest governance domain → matching diligence emphasis.
+  const weakest = topDomains(input.breakdown)[0];
+  if (weakest && (weakest.risk as number) >= 4) {
+    const item = DOMAIN_DILIGENCE[weakest.key];
+    if (item) out.push(item);
+  }
+
+  // 4. Enforcement coverage → monitor named-regulator actions.
+  if (input.enforcementAssessed) {
+    out.push("Monitor tracked regulator enforcement actions for this jurisdiction");
+  }
+
+  // 5. Proportionate standard-DD items for lower-risk / thin profiles.
+  const isLow = input.riskScore.band === "low";
+  const standardItems = isLow
+    ? [
+        "Apply proportionate standard due diligence to new counterparties",
+        "Verify beneficial ownership from a reliable independent source",
+        "Refresh screening at onboarding and on periodic review",
+      ]
+    : [
+        "Verify beneficial ownership and control structure",
+        "Document transaction purpose and source of funds",
+        "Refresh screening on ownership or profile changes",
+      ];
+  for (const item of standardItems) {
+    if (out.length >= 5) break;
+    out.push(item);
+  }
+
+  return out.slice(0, 5);
+}
+
 function whatChanged(input: DecisionInput): WhatChangedItem[] {
   const sancValue = hasComprehensiveSanctions(input.sanctions)
     ? "Comprehensive programme in place"
@@ -219,6 +301,7 @@ export function buildDecision(input: DecisionInput): CountryDecision {
     verdictHeadline: v.headline,
     verdictParagraph: v.paragraph,
     treatment: treatmentFor(input),
+    treatmentChecklist: treatmentChecklist(input),
     riskDrivers: riskDrivers(input),
     mitigatingFactors: mitigatingFactors(input),
     businessImpact: businessImpact(input),
