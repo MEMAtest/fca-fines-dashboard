@@ -3182,3 +3182,48 @@ button.cx-kpi:hover {
 /* Attribution card head: keep the source caption from crushing the label */
 .cx-attr__head { flex-wrap: wrap; }
 .cx-attr__src { white-space: nowrap; }
+
+/* ═══ Scroll-compact pass ════════════════════════════════════════════════════ */
+/* v2 assurance panel collapses to a slim summary bar (disclosure stays one
+   click away; badges + parallel-comparison line always visible). */
+.cx-v2--compact { padding: 0; overflow: hidden; }
+.cx-v2__details > summary::-webkit-details-marker { display: none; }
+.cx-v2__bar {
+  list-style: none;
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.6rem;
+  padding: 0.65rem 1rem;
+  cursor: pointer;
+  user-select: none;
+}
+.cx-v2__bar:hover { background: #f8fafc; }
+.cx-v2__bar .cx-v2__eyebrow { margin: 0; white-space: nowrap; }
+.cx-v2__bar .cx-v2__badges { display: inline-flex; gap: 0.35rem; }
+.cx-v2__oneline {
+  flex: 1;
+  min-width: 240px;
+  font-size: 0.78rem;
+  color: #475569;
+}
+.cx-v2__toggle {
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: #0b7f66;
+}
+.cx-v2__details[open] .cx-v2__toggle::after { content: " ▲"; }
+.cx-v2__details:not([open]) .cx-v2__toggle::after { content: " ▼"; }
+.cx-v2__details > *:not(summary) { padding-left: 1rem; padding-right: 1rem; }
+.cx-v2__details > p:last-of-type { padding-bottom: 0.9rem; }
+.cx-v2--compact .cx-v2__head { margin-top: 0.2rem; }
+.cx-v2--compact .cx-v2__head h2 { font-size: 0.95rem; margin: 0 0 0.4rem; }
+
+/* Tighter vertical rhythm across the workspace */
+.cx-ws { gap: 0.8rem; }
+.cx-ws__main { gap: 0.8rem; }
+.cx-ws__rail { gap: 0.8rem; }
+.cx-ws__row2, .cx-ws__row3, .cx-ws__row4 { gap: 0.8rem; }
+.cx-card { padding: 0.75rem 0.85rem; }
+.cx-regf { margin-top: 0; }
+.cx-ws__footer { margin-top: 0.8rem; padding-top: 0.6rem; }

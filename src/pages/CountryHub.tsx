@@ -709,18 +709,28 @@ export function CountryHub() {
             </div>
           </div>
 
-          <section className="cx-v2" aria-labelledby="v2-heading">
-            <div className="cx-v2__head">
-              <div>
-                <span className="cx-v2__eyebrow">Methodology v2 · parallel validation</span>
-                <h2 id="v2-heading">Trusted score assurance</h2>
-              </div>
-              <div className="cx-v2__badges">
-                <span className={`cx-v2__badge cx-v2__badge--${v2.status}`}>{v2.status}</span>
-                <span className={`cx-v2__badge cx-v2__badge--confidence-${v2.confidence}`}>
-                  {v2.confidence} confidence
+          <section className="cx-v2 cx-v2--compact" aria-labelledby="v2-heading">
+            <details className="cx-v2__details">
+              <summary className="cx-v2__bar">
+                <span className="cx-v2__eyebrow">Trusted score assurance · v2 parallel validation</span>
+                <span className="cx-v2__badges">
+                  <span className={`cx-v2__badge cx-v2__badge--${v2.status}`}>{v2.status}</span>
+                  <span className={`cx-v2__badge cx-v2__badge--confidence-${v2.confidence}`}>
+                    {v2.confidence} confidence
+                  </span>
                 </span>
-              </div>
+                <span className="cx-v2__oneline">
+                  {v2.score === null
+                    ? `v2 headline withheld (insufficient scored evidence) · v1 remains ${riskScore.score.toFixed(1)}`
+                    : `v1 ${riskScore.score.toFixed(1)} → v2 ${v2.score.toFixed(1)} (${v2.score - riskScore.score >= 0 ? "+" : ""}${(v2.score - riskScore.score).toFixed(1)})`}
+                  {v2.pillars.sanctions.coverageStatus === "unavailable"
+                    ? " · sanctions pillar pending independent approval"
+                    : ""}
+                </span>
+                <span className="cx-v2__toggle">Details</span>
+              </summary>
+            <div className="cx-v2__head">
+              <h2 id="v2-heading">Trusted score assurance</h2>
             </div>
             <div className="cx-v2__summary">
               <div className="cx-v2__result">
@@ -780,6 +790,7 @@ export function CountryHub() {
                 : `Parallel comparison: v1 ${riskScore.score.toFixed(1)} → v2 ${v2.score.toFixed(1)} (${v2.score - riskScore.score >= 0 ? "+" : ""}${(v2.score - riskScore.score).toFixed(1)}).`}
               {" "}<Link to="/countries/methodology/v2">Methodology, sources and safeguards →</Link>
             </p>
+            </details>
           </section>
         </div>
 
