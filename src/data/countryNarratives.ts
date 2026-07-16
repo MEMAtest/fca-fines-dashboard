@@ -22,7 +22,7 @@ export interface CountryNarrative {
   keyWatchpoints: string[];
 }
 
-/** iso2 -> narrative (186 countries). */
+/** iso2 -> narrative (189 countries). */
 export const NARRATIVES: Record<string, CountryNarrative> = {
   "AD": {
     "summary": "Andorra presents a Low composite risk score of 2.4, reflecting strong rule-of-law institutions, very low political instability, and manageable corruption levels, with no FATF listing or sanctions exposure.",
@@ -109,6 +109,23 @@ export const NARRATIVES: Record<string, CountryNarrative> = {
       "Review exposure to sectors with higher informal economy activity, including real estate and construction."
     ]
   },
+  "AM": {
+    "summary": "Armenia presents a Moderate composite risk score of 4.7, sitting just below the global average, with corruption and rule of law the weakest governance domains and no FATF listing or sanctions in place.",
+    "whyItMatters": [
+      "Composite score of 4.7 is marginally below the global average of 5.0 and places Armenia in the Moderate risk band.",
+      "Corruption (4.9/10) and rule of law and institutions (4.8/10) are the two most acute governance concerns.",
+      "CPI score of 46/100 (rank 65 of 182, 2025) places Armenia in the middle tier globally and ahead of most regional peers.",
+      "No FATF grey or black listing; no sanctions programmes currently apply. Armenia is evaluated by MONEYVAL, the Council of Europe FATF-style regional body."
+    ],
+    "analysis": "Armenia's composite score of 4.7 is governance-derived, with no FATF or sanctions escalator applied. Corruption (4.9/10) and rule of law and institutions (4.8/10) are the weakest domains, while political stability (4.6/10) and voice and accountability (4.1/10) are relative strengths, the latter reflecting the more open political environment that followed the 2018 change of government. The CPI of 46/100 (rank 65 of 182) corroborates a middling but improving corruption picture. Armenia sits at the 53rd governance percentile, near the global midpoint. MONEYVAL's sixth-round mutual evaluation, following an on-site visit in October 2025, acknowledged a robust framework for targeted financial sanctions and improved risk understanding, but found that money-laundering prosecutions remain predominantly predicate-offence driven with few convictions, and that supervision of dealers in precious metals and stones is inadequate. Armenia was placed in enhanced follow-up.",
+    "outlook": "Armenia's outlook is shaped by an economy that has absorbed large post-2022 inflows of people and capital from Russia, raising the materiality of correspondent-banking, real-estate and re-export channels. The Central Bank of Armenia, which houses the Financial Monitoring Center, became the primary regulator for crypto-asset service providers under the 2025 cryptoassets law, a step that widens the perimeter but is not yet tested. The next FATF plenary in October 2026 is not expected to alter Armenia's clean listing, but the enhanced follow-up process will be the key indicator of remediation progress. Firms should apply risk-based due diligence to Russia-linked flows and to high-value dealer sectors.",
+    "keyWatchpoints": [
+      "Track MONEYVAL enhanced follow-up reporting against the sixth-round key recommended actions, particularly on money-laundering prosecutions and asset recovery.",
+      "Monitor Russia-linked correspondent banking, re-export trade and real-estate flows following large post-2022 inflows.",
+      "Assess supervision of dealers in precious metals and stones, identified as an inadequately supervised DNFBP sector.",
+      "Watch implementation of the 2025 cryptoassets regime and Central Bank of Armenia licensing of virtual-asset service providers."
+    ]
+  },
   "AO": {
     "summary": "Angola sits in the Very High risk band with a composite score of 7.5, reflecting weak governance across all domains and current FATF grey list status.",
     "whyItMatters": [
@@ -175,6 +192,23 @@ export const NARRATIVES: Record<string, CountryNarrative> = {
       "ASIC enforcement priorities in financial services and securities markets.",
       "Maintenance of CPI and WGI scores, which anchor the low-risk assessment.",
       "Any FATF engagement, though Australia is currently not listed and risk of listing is low."
+    ]
+  },
+  "AZ": {
+    "summary": "Azerbaijan presents a High composite risk score of 5.5, driven by severe corruption and very weak accountability, with no FATF listing or sanctions in place but a well-documented history of large-scale money-laundering typologies.",
+    "whyItMatters": [
+      "Composite score of 5.5 is above the global average of 5.0 and places Azerbaijan in the High risk band.",
+      "Voice and accountability (6.9/10) and corruption (6.8/10) are the two most acute governance concerns and the dominant drivers of the score.",
+      "CPI score of 30/100 (rank 130 of 182, 2025) places Azerbaijan in the lower tier globally and well behind regional peers Georgia and Armenia.",
+      "No FATF grey or black listing and no sanctions programmes apply. Azerbaijan is evaluated by MONEYVAL, the Council of Europe FATF-style regional body."
+    ],
+    "analysis": "Azerbaijan's composite score of 5.5 is governance-derived, with no FATF or sanctions escalator applied. Corruption (6.8/10) and voice and accountability (6.9/10) are by far the weakest domains, reflecting a centralised, resource-dependent political economy in which state-linked elites hold significant banking, energy and construction interests. Rule of law and institutions (4.6/10) and political stability (3.7/10) are relative strengths. The CPI of 30/100 (rank 130 of 182) is consistent with entrenched, high-level corruption. Azerbaijan sits at the 48th governance percentile. MONEYVAL's fifth-round mutual evaluation, published in February 2024, found a fair understanding of risk but concluded that fundamental improvements are needed in the supervision of financial institutions and DNFBPs, and that money-laundering investigations and prosecutions must be pursued more effectively. Azerbaijan was placed in enhanced follow-up. The historical Azerbaijani Laundromat, a roughly 2.9 billion US dollar scheme run through the International Bank of Azerbaijan and European shell companies between 2012 and 2014, illustrates the trade-based and correspondent-banking typologies that firms should treat as live.",
+    "outlook": "Azerbaijan's risk environment is anchored by oil and gas revenues that concentrate wealth and constrain accountability, making politically exposed persons and state-linked entities the central due-diligence concern. Beneficial-ownership opacity and weak DNFBP supervision, both highlighted by MONEYVAL, sustain elevated laundering risk despite the absence of any FATF listing. The next FATF plenary in October 2026 is not expected to change the clean listing, but the MONEYVAL enhanced follow-up cycle will be the key indicator of whether supervisory and enforcement deficiencies are being addressed. Firms should apply enhanced due diligence to Azerbaijani PEPs, extractive-sector counterparties and correspondent relationships.",
+    "keyWatchpoints": [
+      "Apply enhanced due diligence to politically exposed persons and state-linked entities across banking, energy and construction.",
+      "Track MONEYVAL enhanced follow-up reporting on supervision of financial institutions and DNFBPs and on money-laundering prosecutions.",
+      "Assess beneficial-ownership transparency and correspondent-banking exposure, given the Azerbaijani Laundromat typologies.",
+      "Monitor oil-and-gas trade-finance and re-export flows for trade-based money-laundering indicators."
     ]
   },
   "BA": {
@@ -991,6 +1025,23 @@ export const NARRATIVES: Record<string, CountryNarrative> = {
       "PEP and high-risk country exposure channelled through UK-registered entities or financial intermediaries.",
       "Beneficial ownership transparency developments through Companies House reform and related legislation.",
       "Political stability and any constitutional or governance changes that could affect regulatory frameworks."
+    ]
+  },
+  "GE": {
+    "summary": "Georgia presents a Moderate composite risk score of 4.2, the strongest profile of the South Caucasus, supported by comparatively solid rule of law and no FATF listing or sanctions in place.",
+    "whyItMatters": [
+      "Composite score of 4.2 is below the global average of 5.0 and places Georgia in the Moderate risk band, ahead of regional peers Armenia and Azerbaijan.",
+      "Rule of law and institutions (3.8/10) is the strongest governance domain; voice and accountability (4.8/10) and political stability (4.5/10) are the relative weaknesses.",
+      "CPI score of 50/100 (rank 56 of 182, 2025) places Georgia in the upper-middle tier globally and is the best score in the South Caucasus.",
+      "No FATF grey or black listing; no sanctions programmes apply. Georgia is evaluated by MONEYVAL, the Council of Europe FATF-style regional body."
+    ],
+    "analysis": "Georgia's composite score of 4.2 is governance-derived, with no FATF or sanctions escalator applied. Rule of law and institutions (3.8/10) is the strongest domain, reflecting reforms that have made Georgia a regional outperformer on institutional quality, while corruption (4.4/10), political stability (4.5/10) and voice and accountability (4.8/10) are moderate. The CPI of 50/100 (rank 56 of 182) is the highest in the South Caucasus. Georgia sits at the 58th governance percentile. MONEYVAL's fifth-round process has recorded steady progress: through successive enhanced follow-up reports, Georgia has re-rated Recommendations 1 and 15 to Largely Compliant after 2024 amendments that strengthened risk assessment and the regulation of virtual-asset service providers, which now register with the National Bank of Georgia. MONEYVAL nonetheless continues to flag the casino and wider gaming sector as the highest domestic money-laundering risk, alongside cash-intensive real estate and inadequate supervision of higher-risk non-financial businesses. The Financial Monitoring Service is the national financial intelligence unit.",
+    "outlook": "Georgia's outlook is cautiously positive on the AML/CFT framework, but the risk picture is complicated by domestic political tension and by the country's role as a regional trade, transit and re-export hub, which raises exposure to Russia-linked circumvention flows following 2022. Firms should weight sector risk heavily: the gaming sector and high-value real estate are the principal domestic vulnerabilities, and virtual-asset activity remains a growing area despite the new registration regime. The next FATF plenary in October 2026 is not expected to alter Georgia's clean listing, and the MONEYVAL enhanced follow-up cycle remains the key checkpoint for continued technical-compliance progress.",
+    "keyWatchpoints": [
+      "Assess exposure to the casino and gaming sector, identified by MONEYVAL as the highest domestic money-laundering risk with limited AML supervision.",
+      "Monitor Russia-linked trade, transit and re-export flows given Georgia's position as a regional hub after 2022.",
+      "Track National Bank of Georgia registration and supervision of virtual-asset service providers under the post-2023 regime.",
+      "Watch MONEYVAL enhanced follow-up reporting and domestic political developments that could affect institutional trajectory."
     ]
   },
   "GG": {
