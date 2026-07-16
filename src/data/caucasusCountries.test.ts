@@ -59,8 +59,16 @@ describe("South Caucasus country coverage (AM / AZ / GE)", () => {
   });
 
   it("produces a plausible mid-range composite score for each", () => {
+    const scored = (iso: string): number => {
+      const result = computeCountryRiskScore(iso);
+      expect(result.hasGovernance, iso).toBe(true);
+      if (!result.hasGovernance) throw new Error(`${iso} governance fixture missing`);
+      return result.score;
+    };
     for (const iso of TRIO) {
       const rs = computeCountryRiskScore(iso);
+      expect(rs.hasGovernance, iso).toBe(true);
+      if (!rs.hasGovernance) throw new Error(`${iso} governance fixture missing`);
       expect(rs.score, iso).toBeGreaterThan(3);
       expect(rs.score, iso).toBeLessThan(7);
       // No escalators apply — score equals the governance base.
@@ -68,12 +76,8 @@ describe("South Caucasus country coverage (AM / AZ / GE)", () => {
       expect(rs.sanctions.points, iso).toBe(0);
     }
     // Ordering matches the sourced picture: Georgia cleanest, Azerbaijan riskiest.
-    expect(computeCountryRiskScore("GE").score).toBeLessThan(
-      computeCountryRiskScore("AM").score,
-    );
-    expect(computeCountryRiskScore("AM").score).toBeLessThan(
-      computeCountryRiskScore("AZ").score,
-    );
+    expect(scored("GE")).toBeLessThan(scored("AM"));
+    expect(scored("AM")).toBeLessThan(scored("AZ"));
   });
 
   it("appears in pageCountries() so report pages are generated", () => {

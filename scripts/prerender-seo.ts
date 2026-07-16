@@ -242,7 +242,7 @@ function renderHubBody(
  */
 function renderCountryFatfBody(view: CountryView): string {
   const { country, statusHeading, statusDetail, history, enforcement, sanctions, sanctionsTier, riskScore, breakdown, globalAverage, cpi, decision, enforcementAssessed, hasComprehensiveSanctions, hasTargetedSanctions, sanctionsCoverageComplete, regulatory, regionalPeers, attribution } = view;
-  const scoreAvailable = view.scoreStatus === "rated";
+  const scoreAvailable = riskScore.hasGovernance;
   const narrative = getNarrative(country.iso2) ?? null;
   const title = `${country.name} — Country Risk Report`;
   const domainLis = breakdown.domains
@@ -259,13 +259,13 @@ function renderCountryFatfBody(view: CountryView): string {
       ? `<li>${escapeHtml(`Legacy v1 sanctions snapshot ${riskScore.sanctions.label}: +${riskScore.sanctions.points} (v2 classification review pending)`)}</li>`
       : "",
   ].join("");
-  const scoreHtml = scoreAvailable
+  const scoreHtml = riskScore.hasGovernance
     ? `<h2>Historical v1 Country Risk Score: ${escapeHtml(
         `${riskScore.score.toFixed(1)}/10 (${bandLabel(riskScore.band)})`,
       )}</h2><p>${escapeHtml(
         `Higher score = higher risk (global average ${globalAverage.toFixed(1)}). The historical comparison uses a World Bank WGI governance base with FATF and the legacy sanctions snapshot as escalators (capped at 10). V2 remains in parallel validation. Enforcement volume and CPI are shown but not scored.`,
       )}</p><h3>How it is scored</h3><ul>${domainLis}<li>${escapeHtml(
-        `Governance base: ${breakdown.base.toFixed(1)}`,
+        `Governance base: ${riskScore.base.toFixed(1)}`,
       )}</li>${escLis}<li>${escapeHtml(`Composite: ${riskScore.score.toFixed(1)}`)}</li></ul>`
     : `<h2>Country Risk Score: withheld</h2><p>${escapeHtml(
         "The required World Bank WGI governance base is unavailable. RegActions does not convert this missing evidence into a 0.0 score or a Low-risk label.",
@@ -276,7 +276,7 @@ function renderCountryFatfBody(view: CountryView): string {
     sanctionsCoverageComplete
       ? `Comprehensive country sanctions: ${hasComprehensiveSanctions ? "in place" : "none identified"}. Targeted sanctions exposure: ${hasComprehensiveSanctions || hasTargetedSanctions ? "programmes in place, screen applicable lists" : "possible, screen applicable persons, entities and sectors"}`
       : "Geographic sanctions classification: independent review pending; absence is not inferred and applicable lists must still be screened.",
-  )}</li><li>${escapeHtml(scoreAvailable ? `Governance (WGI) base: ${breakdown.base.toFixed(1)}/10` : "Governance (WGI) base: unavailable; headline score withheld")}</li><li>${escapeHtml(
+  )}</li><li>${escapeHtml(riskScore.hasGovernance ? `Governance (WGI) base: ${riskScore.base.toFixed(1)}/10` : "Governance (WGI) base: unavailable; headline score withheld")}</li><li>${escapeHtml(
     cpi
       ? `Corruption (CPI ${CPI_YEAR}): ${cpi.score}/100, rank #${cpi.rank} of ${CPI_TOTAL}`
       : "Corruption (CPI): no score",

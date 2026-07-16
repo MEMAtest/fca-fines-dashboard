@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { getCountryByIso2 } from "./countries.js";
+import { computeCountryRiskScore } from "./countryRiskScore.js";
 import {
   buildCountryIndex,
   buildCountryView,
@@ -19,6 +20,13 @@ describe("country score publication safeguards", () => {
   });
 
   it.each(INSUFFICIENT)("withholds %s instead of assigning a Low band", (iso2) => {
+    const engineResult = computeCountryRiskScore(iso2);
+    expect(engineResult).toMatchObject({
+      hasGovernance: false,
+      score: null,
+      band: null,
+      base: null,
+    });
     const entry = buildCountryIndex().find((candidate) => candidate.country.iso2 === iso2);
     expect(entry).toMatchObject({ score: null, band: null, status: "insufficient-data" });
     expect(globalRank(iso2).rank).toBeNull();
