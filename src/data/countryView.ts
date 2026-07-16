@@ -41,6 +41,11 @@ import {
 } from "./countryRiskScore.js";
 import { getCpi, type CpiEntry } from "./cpiData.js";
 import {
+  getFatfNetwork,
+  type Fsrb,
+} from "./fsrbMembership.js";
+import { type CountryRegulator } from "./countryEnforcement.js";
+import {
   buildDecision,
   hasComprehensiveSanctions as computeHasComprehensiveSanctions,
   type CountryDecision,
@@ -70,6 +75,21 @@ export function formatCount(n: number): string {
 }
 
 export type RiskBand = "very-high" | "high" | "none";
+
+/**
+ * "Regulators & legal framework" module data: FATF-network membership (direct
+ * FATF or via an FSRB) plus the national regulators RegActions already tracks.
+ */
+export interface RegulatoryView {
+  /** True if the country is a direct FATF member. */
+  fatfMember: boolean;
+  /** True if that direct membership is currently suspended (Russia). */
+  suspended?: boolean;
+  /** FSRB bodies the country belongs to (empty for isolated jurisdictions). */
+  fsrbs: Fsrb[];
+  /** National regulators with RegActions coverage (empty if none). */
+  regulators: CountryRegulator[];
+}
 
 export interface CountryView {
   country: Country;
@@ -109,6 +129,8 @@ export interface CountryView {
   scoreHistory: { date: string; score: number }[];
   lastPlenary: string;
   nextPlenary: string;
+  /** FATF-network membership + tracked national regulators. */
+  regulatory: RegulatoryView;
 }
 
 /** Sanctions tier → risk band (comprehensive = very-high, sectoral = high, targeted = high). */
@@ -164,6 +186,14 @@ export function buildCountryView(country: Country): CountryView {
     lastPlenary: FATF_LAST_PLENARY,
   });
 
+  const network = getFatfNetwork(country.iso2);
+  const regulatory: RegulatoryView = {
+    fatfMember: network.fatfMember,
+    suspended: network.suspended,
+    fsrbs: network.fsrbs,
+    regulators: enforcement?.regulators ?? [],
+  };
+
   return {
     country,
     flag: flagEmoji(country.iso2),
@@ -191,6 +221,7 @@ export function buildCountryView(country: Country): CountryView {
     })),
     lastPlenary: FATF_LAST_PLENARY,
     nextPlenary: FATF_NEXT_PLENARY,
+    regulatory,
   };
 }
 
