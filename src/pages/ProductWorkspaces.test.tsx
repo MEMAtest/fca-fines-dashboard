@@ -1,9 +1,10 @@
-import { fireEvent, render, screen } from "@testing-library/react";
+import { fireEvent, render, screen, within } from "@testing-library/react";
 import { MemoryRouter, Route, Routes } from "react-router-dom";
 import { describe, expect, it, vi } from "vitest";
 import { FinesWorkspace } from "./FinesWorkspace.js";
 import { RegulatorWorkspace } from "./RegulatorWorkspace.js";
 import { fetchWorkspaceRecords } from "../utils/fetchWorkspaceRecords.js";
+import { EvidenceModalProvider } from "../components/EvidenceModalProvider.js";
 
 vi.mock("../hooks/useSEO.js", () => ({ useSEO: vi.fn() }));
 vi.mock("../hooks/useWorkspaceOverview.js", () => ({
@@ -36,17 +37,26 @@ vi.mock("../hooks/useUnifiedData.js", () => ({
 
 describe("product workspaces", () => {
   it("opens the underlying data when a Command Centre table row is selected", () => {
-    render(<MemoryRouter initialEntries={["/fines"]}><FinesWorkspace view="overview" /></MemoryRouter>);
+    render(<MemoryRouter initialEntries={["/fines"]}><EvidenceModalProvider><FinesWorkspace view="overview" /></EvidenceModalProvider></MemoryRouter>);
     expect(screen.getByRole("heading", { name: /Fines Command Centre/i })).toBeInTheDocument();
     const rowLabel = screen.getAllByText("Alpha Bank").find((element) => element.tagName === "STRONG");
     expect(rowLabel).toBeDefined();
     fireEvent.click(rowLabel!);
-    expect(screen.getByRole("dialog", { name: /Alpha Bank/i })).toBeInTheDocument();
+    const drawer = screen.getByRole("dialog", { name: /Alpha Bank/i });
+    expect(drawer).toBeInTheDocument();
     expect(screen.getByText(/Underlying enforcement actions/i)).toBeInTheDocument();
+    fireEvent.click(within(drawer).getByRole("button", { name: /View evidence/i }));
+    expect(screen.getByText("RegActions evidence summary")).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: /Open official source/i })).toHaveAttribute(
+      "href",
+      "https://example.com/alpha",
+    );
+    fireEvent.click(screen.getByRole("button", { name: "Return to results" }));
+    expect(drawer).toBeInTheDocument();
   });
 
   it("supports guided multi-selection with a three-year limit", () => {
-    render(<MemoryRouter initialEntries={["/fines/compare"]}><FinesWorkspace view="compare" /></MemoryRouter>);
+    render(<MemoryRouter initialEntries={["/fines/compare"]}><EvidenceModalProvider><FinesWorkspace view="compare" /></EvidenceModalProvider></MemoryRouter>);
     expect(screen.getByRole("heading", { name: /Guided comparison/i })).toBeInTheDocument();
     fireEvent.click(screen.getByRole("button", { name: /2025/i }));
     fireEvent.click(screen.getByRole("button", { name: /2024/i }));
@@ -58,13 +68,13 @@ describe("product workspaces", () => {
   });
 
   it("loads the complete canonical evidence set when a sector tile is selected", async () => {
-    render(<MemoryRouter initialEntries={["/fines/analytics"]}><FinesWorkspace view="analytics" /></MemoryRouter>);
+    render(<MemoryRouter initialEntries={["/fines/analytics"]}><EvidenceModalProvider><FinesWorkspace view="analytics" /></EvidenceModalProvider></MemoryRouter>);
     fireEvent.click(screen.getByRole("button", { name: /Banking.*1 action/i }));
     expect(fetchWorkspaceRecords).toHaveBeenCalledWith(expect.objectContaining({ sector: "Banking" }));
   });
 
   it("uses the canonical regulator executive-summary layout", () => {
-    render(<MemoryRouter initialEntries={["/regulators/fca"]}><Routes><Route path="/regulators/:regulatorCode" element={<RegulatorWorkspace view="overview" />} /></Routes></MemoryRouter>);
+    render(<MemoryRouter initialEntries={["/regulators/fca"]}><EvidenceModalProvider><Routes><Route path="/regulators/:regulatorCode" element={<RegulatorWorkspace view="overview" />} /></Routes></EvidenceModalProvider></MemoryRouter>);
     expect(screen.getByRole("heading", { name: /Financial Conduct Authority \(FCA\)/i })).toBeInTheDocument();
     expect(screen.getByText(/All data on this page reflects FCA enforcement activity/i)).toBeInTheDocument();
     expect(screen.getByText(/You are viewing data for/i)).toBeInTheDocument();
@@ -76,7 +86,7 @@ describe("product workspaces", () => {
   });
 
   it("labels secondary destinations accurately and preserves a return path", () => {
-    render(<MemoryRouter initialEntries={["/fines/analytics?year=2025"]}><FinesWorkspace view="analytics" /></MemoryRouter>);
+    render(<MemoryRouter initialEntries={["/fines/analytics?year=2025"]}><EvidenceModalProvider><FinesWorkspace view="analytics" /></EvidenceModalProvider></MemoryRouter>);
 
     expect(screen.queryByRole("link", { name: "Reports" })).not.toBeInTheDocument();
     expect(screen.queryByRole("link", { name: "Data Hub" })).not.toBeInTheDocument();

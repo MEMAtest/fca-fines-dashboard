@@ -219,6 +219,11 @@
 .action-drawer td { padding: 11px 8px; border-bottom: 1px solid #edf1f5; vertical-align: top; }
 .action-drawer td small { display: block; margin-top: 2px; color: #7b8999; }
 .action-drawer td a { display: inline-flex; align-items: center; gap: 3px; color: #1768dc; font-weight: 650; text-decoration: none; }
+.action-drawer__entity,.action-drawer__evidence { border: 0; background: transparent; font: inherit; cursor: pointer; text-align: left; }
+.action-drawer__entity { padding: 0; color: #152d42; }
+.action-drawer__entity:hover,.action-drawer__entity:focus-visible { color: #087f58; outline: 0; text-decoration: underline; }
+.action-drawer__evidence { display: inline-flex; align-items: center; gap: 4px; padding: 0; color: #1768dc; font-weight: 650; }
+.action-drawer__evidence:hover,.action-drawer__evidence:focus-visible { color: #0c56bb; outline: 0; text-decoration: underline; }
 .action-drawer__regulator { padding: 3px 5px; border-radius: 4px; background: #eaf0ff; color: #315dbd; font-weight: 700; }
 .action-drawer__missing { color: #8a6b2c; }
 .action-drawer__empty { padding: 60px 20px; color: #718096; text-align: center; }

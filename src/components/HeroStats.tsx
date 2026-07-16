@@ -14,6 +14,8 @@ import { ExportMenu } from "./ExportMenu.js";
 import { NotificationBell } from "./NotificationBell.js";
 import type { NotificationItem } from "../types.js";
 import { formatBreachCategory } from "../utils/labelConversion.js";
+import { buildFineRecordEvidence } from "../utils/evidenceCase.js";
+import { EvidenceTrigger } from "./EvidenceTrigger.js";
 
 interface HeroStatsProps {
   stats?: StatsResponse["data"] | null;
@@ -22,7 +24,7 @@ interface HeroStatsProps {
     firm: string;
     amount: number;
     date: string;
-    url: string | null;
+    record: FineRecord;
   };
   year: number;
   timeline: Array<{
@@ -154,14 +156,13 @@ export function HeroStats({
                     ago)
                   </span>
                 </span>
-                {latest.url ? (
-                  <a
-                    href={latest.url}
-                    target="_blank"
-                    rel="noreferrer noopener"
+                {latest.record ? (
+                  <EvidenceTrigger
+                    className="hero__badge-evidence"
+                    evidence={buildFineRecordEvidence(latest.record, "dashboard_hero")}
                   >
                     {latest.firm} — {formatter.format(latest.amount)}
-                  </a>
+                  </EvidenceTrigger>
                 ) : (
                   <span>
                     {latest.firm} — {formatter.format(latest.amount)}

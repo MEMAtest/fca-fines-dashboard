@@ -1,14 +1,12 @@
-import { ExternalLink, HelpCircle } from "lucide-react";
+import { FileSearch, HelpCircle } from "lucide-react";
 import { FineRecord } from "../types.js";
 import { ExportMenu } from "./ExportMenu.js";
 import { PanelHelp } from "./PanelHelp.js";
 import { WatchFirmButton } from "./WatchFirmButton.js";
 import RegulatorBadge from "./RegulatorBadge.js";
-import {
-  getBestRecordSourceUrl,
-  getRecordSourceLabel,
-} from "../utils/sourceLinks.js";
 import { formatBreachCategory } from "../utils/labelConversion.js";
+import { buildFineRecordEvidence } from "../utils/evidenceCase.js";
+import { EvidenceTrigger } from "./EvidenceTrigger.js";
 
 const formatter = new Intl.NumberFormat("en-GB", {
   style: "currency",
@@ -61,8 +59,7 @@ export function LatestNotices({
         <div className="notices">
           {records.slice(0, 8).map((record) =>
             (() => {
-              const sourceUrl = getBestRecordSourceUrl(record);
-              const sourceLabel = getRecordSourceLabel(record);
+              const evidence = buildFineRecordEvidence(record, "latest_notices");
 
               return (
                 <article
@@ -70,7 +67,7 @@ export function LatestNotices({
                   className="notice"
                 >
                   <div className="notice__primary">
-                    <h4 className="notice__entity">{record.firm_individual}</h4>
+                    <h4 className="notice__entity"><EvidenceTrigger className="notice__entity-trigger" evidence={evidence}>{record.firm_individual}</EvidenceTrigger></h4>
                     <p className="notice__amount">
                       {formatter.format(record.amount)}
                     </p>
@@ -108,16 +105,9 @@ export function LatestNotices({
                           source="latest_notice"
                         />
                       ) : null}
-                      {sourceUrl ? (
-                        <a
-                          href={sourceUrl}
-                          target="_blank"
-                          rel="noreferrer noopener"
-                          className="notice__link"
-                        >
-                          {sourceLabel} <ExternalLink size={14} />
-                        </a>
-                      ) : null}
+                      <EvidenceTrigger className="notice__link" evidence={evidence}>
+                        <FileSearch size={14} /> View evidence
+                      </EvidenceTrigger>
                     </div>
                   </div>
                 </article>

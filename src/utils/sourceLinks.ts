@@ -86,11 +86,6 @@ export function deriveSourceLinkStatus(
     return "missing";
   }
 
-  // Apply PDF detection to all regulators, not just FCA
-  if (detail) {
-    return isPdfUrl(detail) ? "verified_publication" : "verified_detail";
-  }
-
   if (!detail) {
     return listing ? "listing_only" : "missing";
   }
@@ -107,6 +102,7 @@ export function deriveSourceLinkStatus(
     return listing ? "listing_only" : "missing";
   }
 
+  // Apply PDF detection to all regulators, not just FCA.
   return isPdfUrl(detail) ? "verified_publication" : "verified_detail";
 }
 

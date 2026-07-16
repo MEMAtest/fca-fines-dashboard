@@ -271,11 +271,16 @@ test.describe("FCA regulator workspace", () => {
 
   test("opens the source-linked actions behind a breach-theme bar", async ({ page }) => {
     await page.getByRole("button", { name: "AML £12m", exact: true }).click();
-    const drawer = page.getByRole("dialog");
+    const drawer = page.getByRole("dialog", { name: "AML" });
     await expect(drawer.getByRole("heading", { name: "AML" })).toBeVisible();
     await expect(drawer.getByText("Alpha Bank plc")).toBeVisible();
-    await expect(drawer.getByRole("link", { name: /View FCA notice/i })).toHaveAttribute("href", /fca\.org\.uk/);
     await expect(drawer).toContainText("1 matching action with source evidence where available.");
+    await drawer.getByRole("button", { name: "View evidence" }).click();
+    const evidence = page.getByRole("dialog", { name: "Alpha Bank plc" });
+    await expect(evidence.getByText("Verified regulator notice")).toBeVisible();
+    await expect(evidence.getByRole("link", { name: /Open official source/i })).toHaveAttribute("href", /fca\.org\.uk/);
+    await evidence.getByRole("button", { name: "Return to results" }).click();
+    await expect(drawer).toBeVisible();
   });
 });
 
@@ -291,11 +296,15 @@ test.describe("Fines Command Centre", () => {
     await expect(page.getByText("2025 vs 2024")).toBeVisible();
     await saveQaScreenshot(page, "fines-command-centre-desktop");
     await page.getByRole("button", { name: "AML £13.9m", exact: true }).click();
-    const drawer = page.getByRole("dialog");
+    const drawer = page.getByRole("dialog", { name: "AML" });
     await expect(drawer.getByRole("heading", { name: "AML" })).toBeVisible();
     await expect(drawer.getByText("Alpha Bank plc")).toBeVisible();
     await expect(drawer.getByText("Gamma Securities Inc")).toBeVisible();
-    await expect(drawer.getByRole("link", { name: /View FCA notice/i }).first()).toHaveAttribute("href", /fca\.org\.uk/);
+    await drawer.getByRole("button", { name: "View evidence" }).first().click();
+    const evidence = page.getByRole("dialog", { name: "Alpha Bank plc" });
+    await expect(evidence.getByRole("link", { name: /Open official source/i })).toHaveAttribute("href", /fca\.org\.uk/);
+    await expect(page).toHaveURL(/\/fines$/);
+    await saveQaScreenshot(page, "evidence-modal-desktop");
   });
 
   test("supports multi-year comparison and opens the selected evidence", async ({ page }) => {
@@ -327,6 +336,14 @@ test.describe("Fines Command Centre", () => {
     const hasHorizontalOverflow = await page.evaluate(() => document.documentElement.scrollWidth > document.documentElement.clientWidth + 1);
     expect(hasHorizontalOverflow).toBe(false);
     await saveQaScreenshot(page, "fines-command-centre-mobile");
+    await page.getByRole("button", { name: "AML £13.9m", exact: true }).click();
+    const drawer = page.getByRole("dialog", { name: "AML" });
+    await drawer.getByRole("button", { name: "View evidence" }).first().click();
+    const evidence = page.getByRole("dialog", { name: "Alpha Bank plc" });
+    await expect(evidence.getByRole("link", { name: /Open official source/i })).toBeVisible();
+    const modalHasHorizontalOverflow = await page.evaluate(() => document.documentElement.scrollWidth > document.documentElement.clientWidth + 1);
+    expect(modalHasHorizontalOverflow).toBe(false);
+    await saveQaScreenshot(page, "evidence-modal-mobile");
   });
 });
 
@@ -352,8 +369,10 @@ test.describe("Shared regulator workspace pattern", () => {
     await expect(page.getByText("£1.9m", { exact: true }).first()).toBeVisible();
     await expect(page.getByRole("heading", { name: "JFSC fines over time (GBP)" })).toBeVisible();
     await page.getByRole("button", { name: "Governance and controls £1.9m", exact: true }).click();
-    const drawer = page.getByRole("dialog");
+    const drawer = page.getByRole("dialog", { name: "Governance and controls" });
     await expect(drawer.getByText("Garfield Bennett Trust Company Limited")).toBeVisible();
-    await expect(drawer.getByRole("link", { name: /View JFSC notice/i }).first()).toHaveAttribute("href", /jerseyfsc\.org/);
+    await drawer.getByRole("button", { name: "View evidence" }).first().click();
+    const evidence = page.getByRole("dialog", { name: "Garfield Bennett Trust Company Limited" });
+    await expect(evidence.getByRole("link", { name: /Open official source/i })).toHaveAttribute("href", /jerseyfsc\.org/);
   });
 });

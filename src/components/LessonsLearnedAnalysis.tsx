@@ -7,16 +7,14 @@ import {
   TrendingUp,
   Shield,
   Users,
-  ArrowRight,
+  FileSearch,
   HelpCircle,
 } from "lucide-react";
 import { format } from "date-fns";
 import type { FineRecord } from "../types.js";
 import { PanelHelp } from "./PanelHelp.js";
-import {
-  getBestRecordSourceUrl,
-  getRecordSourceLabel,
-} from "../utils/sourceLinks.js";
+import { buildFineRecordEvidence } from "../utils/evidenceCase.js";
+import { useEvidenceModal } from "./EvidenceModalProvider.js";
 
 // Helper to safely get numeric value
 function safeNum(value: number | string | undefined | null): number {
@@ -233,6 +231,7 @@ function SummariesTab({
   categories,
 }: SummariesTabProps) {
   const [expandedId, setExpandedId] = useState<string | null>(null);
+  const { openEvidence } = useEvidenceModal();
 
   return (
     <div className="summaries-tab">
@@ -268,8 +267,7 @@ function SummariesTab({
         {records.slice(0, 20).map((record) => {
           const recordId = `${record.firm_individual}-${record.date_issued}`;
           const isExpanded = expandedId === recordId;
-          const sourceUrl = getBestRecordSourceUrl(record);
-          const sourceLabel = getRecordSourceLabel(record);
+          const evidence = buildFineRecordEvidence(record, "lessons_analysis");
 
           return (
             <article
@@ -278,7 +276,17 @@ function SummariesTab({
               onClick={() => setExpandedId(isExpanded ? null : recordId)}
             >
               <div className="summary-card__header">
-                <h4>{record.firm_individual}</h4>
+                <h4>
+                  <button
+                    type="button"
+                    onClick={(event) => {
+                      event.stopPropagation();
+                      openEvidence(evidence);
+                    }}
+                  >
+                    {record.firm_individual}
+                  </button>
+                </h4>
                 <span className="summary-card__amount">
                   {formatter.format(record.amount)}
                 </span>
@@ -305,17 +313,16 @@ function SummariesTab({
                     ))}
                   </div>
                 )}
-              {sourceUrl && (
-                <a
-                  href={sourceUrl}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="summary-card__link"
-                  onClick={(e) => e.stopPropagation()}
-                >
-                  {sourceLabel} <ArrowRight size={14} />
-                </a>
-              )}
+              <button
+                type="button"
+                className="summary-card__link"
+                onClick={(event) => {
+                  event.stopPropagation();
+                  openEvidence(evidence);
+                }}
+              >
+                View evidence <FileSearch size={14} />
+              </button>
             </article>
           );
         })}

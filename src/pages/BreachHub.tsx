@@ -3,6 +3,8 @@ import { Link, useParams } from "react-router-dom";
 import { fetchBreach } from "../api.js";
 import { useSEO } from "../hooks/useSEO.js";
 import type { BreachDetails } from "../types.js";
+import { buildFineRecordEvidence } from "../utils/evidenceCase.js";
+import { EvidenceTrigger } from "../components/EvidenceTrigger.js";
 
 const currency = new Intl.NumberFormat("en-GB", {
   style: "currency",
@@ -174,7 +176,7 @@ export function BreachHub() {
                     <tr
                       key={`${r.firm_individual}-${r.date_issued}-${r.amount}`}
                     >
-                      <td>{r.firm_individual}</td>
+                      <td><EvidenceTrigger className="hub-link hub-link--button" evidence={buildFineRecordEvidence(r, "breach_hub")}>{r.firm_individual}</EvidenceTrigger></td>
                       <td>
                         {new Date(r.date_issued).toLocaleDateString("en-GB", {
                           day: "2-digit",
@@ -184,14 +186,7 @@ export function BreachHub() {
                       </td>
                       <td>{currency.format(r.amount)}</td>
                       <td>
-                        <a
-                          className="hub-link"
-                          href={r.final_notice_url ?? undefined}
-                          target="_blank"
-                          rel="noreferrer noopener"
-                        >
-                          View
-                        </a>
+                        <EvidenceTrigger className="hub-link hub-link--button" evidence={buildFineRecordEvidence(r, "breach_hub")}>View evidence</EvidenceTrigger>
                       </td>
                     </tr>
                   ))}

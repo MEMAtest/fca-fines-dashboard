@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { Filter, ExternalLink, Copy } from "lucide-react";
+import { Filter, FileSearch, Copy } from "lucide-react";
 import type { FineRecord } from "../types.js";
 import { Modal } from "./Modal.js";
 import { ExportMenu } from "./ExportMenu.js";
@@ -7,9 +7,11 @@ import { useLocalStorage } from "../hooks/useLocalStorage.js";
 import { exportData } from "../utils/export.js";
 import {
   getBestRecordSourceUrl,
-  getRecordSourceLabel,
-  hasVerifiedRecordSource,
+  getRecordListingUrl,
+  getRecordSourceStatus,
 } from "../utils/sourceLinks.js";
+import { buildFineRecordEvidence } from "../utils/evidenceCase.js";
+import { useEvidenceModal } from "./EvidenceModalProvider.js";
 
 const currency = new Intl.NumberFormat("en-GB", {
   style: "currency",
@@ -87,6 +89,7 @@ export function FineTotalsModal({
   const [columnsOpen, setColumnsOpen] = useState(false);
   const [activeRowMenu, setActiveRowMenu] = useState<string | null>(null);
   const [virtualRange, setVirtualRange] = useState({ start: 0, end: 60 });
+  const { openEvidence } = useEvidenceModal();
   const tableRef = useRef<HTMLDivElement>(null);
   const columnManagerRef = useRef<HTMLDivElement>(null);
 
@@ -476,7 +479,7 @@ export function FineTotalsModal({
                         )
                       }
                       onCloseMenu={() => setActiveRowMenu(null)}
-                      onView={() => handleViewNotice(record, onNotify)}
+                      onView={() => openEvidence(buildFineRecordEvidence(record, "fines_drilldown"))}
                       onCopy={() => handleCopyLink(record, onNotify)}
                       onFilter={() =>
                         handleFilter(record, onFirmFilter, onNotify)
@@ -622,8 +625,10 @@ function RowActions({
   onFilter: () => void;
 }) {
   const menuRef = useRef<HTMLDivElement>(null);
-  const hasSourceLink = hasVerifiedRecordSource(record);
-  const sourceLabel = getRecordSourceLabel(record);
+  const sourceStatus = getRecordSourceStatus(record);
+  const hasSourceLink = sourceStatus !== "missing" && Boolean(
+    getBestRecordSourceUrl(record) || getRecordListingUrl(record),
+  );
 
   useEffect(() => {
     function handleClick(event: MouseEvent) {
@@ -649,17 +654,15 @@ function RowActions({
       </button>
       {isOpen && (
         <div className="modal__row-menu">
-          {hasSourceLink ? (
-            <button
-              type="button"
-              onClick={() => {
-                onView();
-                onCloseMenu();
-              }}
-            >
-              <ExternalLink size={14} /> {sourceLabel}
-            </button>
-          ) : null}
+          <button
+            type="button"
+            onClick={() => {
+              onView();
+              onCloseMenu();
+            }}
+          >
+            <FileSearch size={14} /> View evidence
+          </button>
           {hasSourceLink ? (
             <button
               type="button"
@@ -686,24 +689,15 @@ function RowActions({
   );
 }
 
-function handleViewNotice(
-  record: FineRecord,
-  onNotify?: FineTotalsModalProps["onNotify"],
-) {
-  const sourceUrl = getBestRecordSourceUrl(record);
-  if (!sourceUrl) {
-    onNotify?.("No notice link available for this record", "error");
-    return;
-  }
-  window.open(sourceUrl, "_blank", "noopener");
-  onNotify?.(`${getRecordSourceLabel(record)} opened in new tab`, "success");
-}
-
 async function handleCopyLink(
   record: FineRecord,
   onNotify?: FineTotalsModalProps["onNotify"],
 ) {
-  const sourceUrl = getBestRecordSourceUrl(record);
+  const sourceUrl = getBestRecordSourceUrl(record) || (
+    getRecordSourceStatus(record) === "listing_only"
+      ? getRecordListingUrl(record)
+      : null
+  );
   if (!sourceUrl || !navigator?.clipboard) {
     onNotify?.("Unable to copy link for this notice", "error");
     return;

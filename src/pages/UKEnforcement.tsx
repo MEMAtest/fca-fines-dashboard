@@ -3,7 +3,7 @@ import { useSearchParams } from "react-router-dom";
 import {
   BarChart3,
   Database,
-  ExternalLink,
+  FileSearch,
   Filter,
   Landmark,
   Scale,
@@ -24,6 +24,8 @@ import {
   getUKEnforcementRegulator,
 } from "../data/ukEnforcement.js";
 import { useSEO } from "../hooks/useSEO.js";
+import { buildEvidenceCase } from "../utils/evidenceCase.js";
+import { useEvidenceModal } from "../components/EvidenceModalProvider.js";
 import "../styles/uk-enforcement.css";
 
 const YEAR_OPTIONS = [0, 2026, 2025, 2024, 2023, 2022];
@@ -81,6 +83,25 @@ function getRegulatorFromSearch(searchParams: URLSearchParams) {
     : "All";
 }
 
+function buildUKActionEvidence(action: UKEnforcementAction, currency: string) {
+  return buildEvidenceCase({
+    id: action.id,
+    entity: action.firm_individual,
+    regulator: action.regulator,
+    regulatorFullName: action.regulator_full_name,
+    country: action.country_name,
+    dateIssued: action.date_issued,
+    amount: action.display_amount,
+    currency,
+    breachType: action.breach_type,
+    categories: action.breach_categories,
+    summary: action.summary,
+    final_notice_url: action.notice_url,
+    source_url: action.source_url,
+    sourceWindowNote: action.source_window_note,
+  }, "uk_enforcement");
+}
+
 export function UKEnforcement() {
   useSEO({
     title: "UK Enforcement | Financial and Adjacent Regulatory Penalties",
@@ -104,6 +125,7 @@ export function UKEnforcement() {
   const [stats, setStats] = useState<UKEnforcementStatsResponse | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const { openEvidence } = useEvidenceModal();
 
   const searchParams = useMemo(
     () => ({
@@ -368,7 +390,7 @@ export function UKEnforcement() {
                   <span>{UK_ENFORCEMENT_DOMAIN_LABELS[action.source_domain as keyof typeof UK_ENFORCEMENT_DOMAIN_LABELS] ?? action.source_domain.replace(/_/g, " ")}</span>
                   <span>{formatDate(action.date_issued)}</span>
                 </div>
-                <h3>{action.firm_individual}</h3>
+                <h3><button type="button" onClick={() => openEvidence(buildUKActionEvidence(action, currency))}>{action.firm_individual}</button></h3>
                 <p>{action.summary || action.breach_type}</p>
                 <small>{sourceLabel(action)}</small>
               </div>
@@ -379,12 +401,10 @@ export function UKEnforcement() {
                     currency,
                   )}
                 </strong>
-                {action.notice_url ? (
-                  <a href={action.notice_url} target="_blank" rel="noreferrer">
-                    Official source
-                    <ExternalLink size={14} aria-hidden="true" />
-                  </a>
-                ) : null}
+                <button type="button" className="uk-enforcement__view-evidence" onClick={() => openEvidence(buildUKActionEvidence(action, currency))}>
+                  View evidence
+                  <FileSearch size={14} aria-hidden="true" />
+                </button>
               </div>
             </article>
           ))}

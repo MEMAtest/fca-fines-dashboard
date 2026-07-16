@@ -3,6 +3,8 @@ import { Link, useParams } from "react-router-dom";
 import { fetchFirm } from "../api.js";
 import { useSEO } from "../hooks/useSEO.js";
 import type { FirmDetails } from "../types.js";
+import { buildFineRecordEvidence } from "../utils/evidenceCase.js";
+import { EvidenceTrigger } from "../components/EvidenceTrigger.js";
 
 const currency = new Intl.NumberFormat("en-GB", {
   style: "currency",
@@ -207,7 +209,7 @@ export function FirmPage() {
                     <tr
                       key={`${r.fine_reference || ""}-${r.date_issued}-${r.amount}`}
                     >
-                      <td>{formatDate(r.date_issued)}</td>
+                      <td><EvidenceTrigger className="hub-link hub-link--button" evidence={buildFineRecordEvidence(r, "firm_hub")}>{formatDate(r.date_issued)}</EvidenceTrigger></td>
                       <td>{currency.format(r.amount)}</td>
                       <td>{r.regulator}</td>
                       <td>
@@ -217,14 +219,7 @@ export function FirmPage() {
                         ).join(", ")}
                       </td>
                       <td>
-                        <a
-                          className="hub-link"
-                          href={r.final_notice_url ?? undefined}
-                          target="_blank"
-                          rel="noreferrer noopener"
-                        >
-                          View
-                        </a>
+                        <EvidenceTrigger className="hub-link hub-link--button" evidence={buildFineRecordEvidence(r, "firm_hub")}>View evidence</EvidenceTrigger>
                       </td>
                     </tr>
                   ))}

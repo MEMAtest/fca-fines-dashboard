@@ -19,7 +19,6 @@ import { LessonsLearnedAnalysis } from "../components/LessonsLearnedAnalysis.js"
 import type { AdvancedFilterValues } from "../components/AdvancedFilters.js";
 import { exportData } from "../utils/export.js";
 import { formatBreachCategory } from "../utils/labelConversion.js";
-import { getBestRecordSourceUrl } from "../utils/sourceLinks.js";
 import { useLocalStorage } from "../hooks/useLocalStorage.js";
 import { useNotificationFeed } from "../hooks/useNotificationFeed.js";
 import { Toast } from "../components/Toast.js";
@@ -664,15 +663,11 @@ export function Dashboard() {
         new Date(b.date_issued).getTime() - new Date(a.date_issued).getTime(),
     );
     const record = sorted[0];
-    const sourceUrl = getBestRecordSourceUrl(record);
-    if (!sourceUrl) {
-      return undefined;
-    }
     return {
       firm: record.firm_individual,
       amount: record.amount,
       date: record.date_issued,
-      url: sourceUrl,
+      record,
     };
   }, [fines]);
 

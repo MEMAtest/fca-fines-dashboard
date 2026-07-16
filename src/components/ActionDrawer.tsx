@@ -4,7 +4,7 @@ import {
   ArrowUp,
   Check,
   Download,
-  ExternalLink,
+  FileSearch,
   Filter,
   Search,
   X,
@@ -13,9 +13,10 @@ import type { FineRecord } from "../types.js";
 import {
   getBestRecordSourceUrl,
   getRecordListingUrl,
-  getRecordSourceLabel,
 } from "../utils/sourceLinks.js";
 import { formatWorkspaceAmount } from "../utils/workspaceAnalytics.js";
+import { buildFineRecordEvidence } from "../utils/evidenceCase.js";
+import { useEvidenceModal } from "./EvidenceModalProvider.js";
 
 interface ActionDrawerProps {
   open: boolean;
@@ -71,6 +72,7 @@ export function ActionDrawer({
   const [sortKey, setSortKey] = useState<SortKey>("date");
   const [descending, setDescending] = useState(true);
   const [page, setPage] = useState(1);
+  const { openEvidence } = useEvidenceModal();
   const pageSize = 12;
 
   useEffect(() => {
@@ -178,15 +180,14 @@ export function ActionDrawer({
             </thead>
             <tbody>
               {paged.map((record) => {
-                const source = getBestRecordSourceUrl(record) ?? getRecordListingUrl(record);
                 return (
                   <tr key={`${record.id ?? record.fine_reference}-${record.date_issued}`}>
-                    <td><strong>{record.firm_individual}</strong><small>{record.firm_category || "Sector not recorded"}</small></td>
+                    <td><button type="button" className="action-drawer__entity" onClick={() => openEvidence(buildFineRecordEvidence(record, "workspace_drawer", currency))}><strong>{record.firm_individual}</strong></button><small>{record.firm_category || "Sector not recorded"}</small></td>
                     <td><span className="action-drawer__regulator">{record.regulator}</span></td>
                     <td>{new Intl.DateTimeFormat("en-GB", { day: "2-digit", month: "short", year: "numeric" }).format(new Date(record.date_issued))}</td>
                     <td>{record.breach_type || "Not classified"}</td>
                     <td><strong>{formatWorkspaceAmount(record.amount, currency)}</strong></td>
-                    <td>{source ? <a href={source} target="_blank" rel="noreferrer">{getRecordSourceLabel(record)} <ExternalLink size={13} /></a> : <span className="action-drawer__missing">Source pending</span>}</td>
+                    <td><button type="button" className="action-drawer__evidence" onClick={() => openEvidence(buildFineRecordEvidence(record, "workspace_drawer", currency))}><FileSearch size={13} /> View evidence</button></td>
                   </tr>
                 );
               })}

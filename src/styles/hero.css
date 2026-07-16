@@ -251,6 +251,24 @@
   font-weight: 600;
 }
 
+.hero__badge-evidence {
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--text-primary);
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+  text-align: left;
+}
+
+.hero__badge-evidence:hover,
+.hero__badge-evidence:focus-visible {
+  color: var(--primary-700);
+  outline: 0;
+  text-decoration: underline;
+}
+
 .hero__countdown {
   display: inline-block;
   margin-left: 8px;

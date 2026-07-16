@@ -8,10 +8,12 @@
  */
 
 import { useCallback, useEffect, useRef, useState } from "react";
-import { Search, Filter, X, Calendar, DollarSign, Globe } from "lucide-react";
+import { Search, Filter, X, Calendar, DollarSign, Globe, FileSearch } from "lucide-react";
 import { useSearchParams } from "react-router-dom";
 import { PUBLIC_REGULATOR_SHELL_ITEMS } from "../data/regulatorShellNav.js";
 import { WatchFirmButton } from "./WatchFirmButton.js";
+import { buildEvidenceCase } from "../utils/evidenceCase.js";
+import { useEvidenceModal } from "./EvidenceModalProvider.js";
 
 const SEARCH_CACHE_MAX = 20;
 const SEARCH_TIMEOUT_MS = 30_000;
@@ -195,6 +197,7 @@ export function EnforcementSearch() {
   const [maxAmount, setMaxAmount] = useState<string>(initialUrlState.maxAmount);
   const [currency, setCurrency] = useState<SearchCurrency>(initialUrlState.currency);
   const [currentPage, setCurrentPage] = useState(initialUrlState.page);
+  const { openEvidence } = useEvidenceModal();
 
   // Suggested queries
   const suggestedQueries = [
@@ -892,6 +895,21 @@ export function EnforcementSearch() {
             {results.map((result) => {
               const displayAmount =
                 currency === "EUR" ? result.amountEur : result.amountGbp;
+              const evidence = buildEvidenceCase({
+                id: result.id,
+                entity: result.firm,
+                regulator: result.regulator,
+                regulatorFullName: result.regulatorFullName,
+                country: result.countryName,
+                dateIssued: result.dateIssued,
+                amount: displayAmount,
+                currency,
+                breachType: result.breachType,
+                categories: result.breachCategories,
+                summary: result.summary,
+                final_notice_url: result.noticeUrl,
+                source_url: result.sourceUrl,
+              }, "enforcement_search");
 
               return (
               <div
@@ -933,7 +951,22 @@ export function EnforcementSearch() {
                         lineHeight: "1.4",
                       }}
                     >
-                      {result.firm}
+                      <button
+                        type="button"
+                        onClick={() => openEvidence(evidence)}
+                        style={{
+                          padding: 0,
+                          border: 0,
+                          background: "transparent",
+                          color: "inherit",
+                          font: "inherit",
+                          fontWeight: "inherit",
+                          textAlign: "left",
+                          cursor: "pointer",
+                        }}
+                      >
+                        {result.firm}
+                      </button>
                     </h3>
                     <div
                       style={{
@@ -1042,17 +1075,22 @@ export function EnforcementSearch() {
                       source="search_result"
                     />
                   )}
-                  {result.noticeUrl && (
-                    <a
-                      href={result.noticeUrl}
-                      target="_blank"
-                      rel="noopener noreferrer"
+                  <button
+                      type="button"
+                      onClick={() => openEvidence(evidence)}
                       style={{
+                        display: "inline-flex",
+                        alignItems: "center",
+                        gap: "0.35rem",
+                        padding: 0,
+                        border: 0,
+                        background: "transparent",
                         fontSize: "0.875rem",
                         color: "#4f46e5",
                         fontWeight: "600",
-                        textDecoration: "none",
+                        fontFamily: "inherit",
                         transition: "color 0.2s",
+                        cursor: "pointer",
                       }}
                       onMouseEnter={(e) =>
                         (e.currentTarget.style.color = "#4338ca")
@@ -1061,31 +1099,8 @@ export function EnforcementSearch() {
                         (e.currentTarget.style.color = "#4f46e5")
                       }
                     >
-                      View Notice →
-                    </a>
-                  )}
-                  {result.sourceUrl &&
-                    result.sourceUrl !== result.noticeUrl && (
-                      <a
-                        href={result.sourceUrl}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        style={{
-                          fontSize: "0.875rem",
-                          color: "#6b7280",
-                          textDecoration: "none",
-                          transition: "color 0.2s",
-                        }}
-                        onMouseEnter={(e) =>
-                          (e.currentTarget.style.color = "#111827")
-                        }
-                        onMouseLeave={(e) =>
-                          (e.currentTarget.style.color = "#6b7280")
-                        }
-                      >
-                        Source →
-                      </a>
-                    )}
+                      <FileSearch size={15} /> View evidence
+                    </button>
                 </div>
               </div>
               );

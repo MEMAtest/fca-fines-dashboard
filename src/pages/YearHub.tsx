@@ -3,6 +3,8 @@ import { Link, useParams } from "react-router-dom";
 import { fetchFines, fetchYears } from "../api.js";
 import { useSEO } from "../hooks/useSEO.js";
 import type { FineRecord, YearSummary } from "../types.js";
+import { buildFineRecordEvidence } from "../utils/evidenceCase.js";
+import { EvidenceTrigger } from "../components/EvidenceTrigger.js";
 
 const currency = new Intl.NumberFormat("en-GB", {
   style: "currency",
@@ -203,7 +205,7 @@ export function YearHub() {
                     <tr
                       key={`${r.firm_individual}-${r.date_issued}-${r.amount}`}
                     >
-                      <td>{r.firm_individual}</td>
+                      <td><EvidenceTrigger className="hub-link hub-link--button" evidence={buildFineRecordEvidence(r, "year_hub")}>{r.firm_individual}</EvidenceTrigger></td>
                       <td>
                         {new Date(r.date_issued).toLocaleDateString("en-GB", {
                           day: "2-digit",
@@ -213,14 +215,7 @@ export function YearHub() {
                       </td>
                       <td>{currency.format(r.amount)}</td>
                       <td>
-                        <a
-                          className="hub-link"
-                          href={r.final_notice_url ?? undefined}
-                          target="_blank"
-                          rel="noreferrer noopener"
-                        >
-                          View
-                        </a>
+                        <EvidenceTrigger className="hub-link hub-link--button" evidence={buildFineRecordEvidence(r, "year_hub")}>View evidence</EvidenceTrigger>
                       </td>
                     </tr>
                   ))}

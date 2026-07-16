@@ -662,6 +662,24 @@
   flex: 1;
 }
 
+.notice__entity-trigger {
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  font-weight: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.notice__entity-trigger:hover,
+.notice__entity-trigger:focus-visible {
+  color: var(--primary-700);
+  outline: 0;
+  text-decoration: underline;
+}
+
 .notice__amount {
   font-size: var(--text-xl);
   font-weight: 700;
@@ -723,6 +741,11 @@
   color: var(--primary-600);
   text-decoration: none;
   font-weight: 500;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  font-family: inherit;
+  cursor: pointer;
 }
 
 .notice__link:hover {

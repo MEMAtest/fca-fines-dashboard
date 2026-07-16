@@ -1,6 +1,7 @@
 import { Outlet, useLocation } from "react-router-dom";
 import { SiteHeader } from "./SiteHeader.js";
 import { useEffect } from "react";
+import { EvidenceModalProvider } from "./EvidenceModalProvider.js";
 
 function PageviewTracker() {
   const location = useLocation();
@@ -20,12 +21,12 @@ function PageviewTracker() {
 
 export function SiteLayout() {
   return (
-    <>
+    <EvidenceModalProvider>
       <PageviewTracker />
       <SiteHeader />
       <main id="main-content">
         <Outlet />
       </main>
-    </>
+    </EvidenceModalProvider>
   );
 }

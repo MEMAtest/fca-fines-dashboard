@@ -149,6 +149,21 @@
   text-decoration: underline;
 }
 
+.hub-link--button {
+  padding: 0;
+  border: 0;
+  background: transparent;
+  font: inherit;
+  cursor: pointer;
+  text-align: left;
+}
+
+.hub-link--button:focus-visible {
+  border-radius: 3px;
+  outline: 2px solid var(--primary-400);
+  outline-offset: 3px;
+}
+
 .topic-cluster-hero .hub-chip {
   width: fit-content;
 }

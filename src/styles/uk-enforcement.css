@@ -367,6 +367,24 @@
   line-height: 1.25;
 }
 
+.uk-enforcement__action h3 button {
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  font-weight: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.uk-enforcement__action h3 button:hover,
+.uk-enforcement__action h3 button:focus-visible {
+  color: #087f58;
+  outline: 0;
+  text-decoration: underline;
+}
+
 .uk-enforcement__action p {
   display: -webkit-box;
   overflow: hidden;
@@ -412,13 +430,26 @@
   color: #7a5c1e;
 }
 
-.uk-enforcement__action-side a {
+.uk-enforcement__action-side a,
+.uk-enforcement__view-evidence {
   display: inline-flex;
   align-items: center;
   gap: 0.35rem;
+  padding: 0;
+  border: 0;
+  background: transparent;
   color: #0b8463;
+  font: inherit;
   font-weight: 800;
   text-decoration: none;
+  cursor: pointer;
+}
+
+.uk-enforcement__view-evidence:hover,
+.uk-enforcement__view-evidence:focus-visible {
+  color: #066e52;
+  outline: 0;
+  text-decoration: underline;
 }
 
 .uk-enforcement__empty {
