@@ -12,7 +12,8 @@
  *       corruption · ruleOfLaw · politicalStability · accountability
  *   - CPI score             (cpiData.ts): 0-100, higher = cleaner (display only)
  *
- * Levels: Low < Elevated < High. Rules are DETERMINISTIC and MONOTONE — a worse
+ * Levels: Low < Elevated < High, plus Review when the evidence needed to make a
+ * low-exposure conclusion is unavailable. Rules are DETERMINISTIC and MONOTONE — a worse
  * input can only raise a sector, never lower it (see sectorExposure.test.ts).
  * Every rationale NAMES the driving datum and stays <= ~90 chars, no em-dashes.
  *
@@ -45,7 +46,7 @@
  *       else                                           -> Low
  */
 
-export type SectorLevel = "Low" | "Elevated" | "High";
+export type SectorLevel = "Review" | "Low" | "Elevated" | "High";
 
 export interface SectorRow {
   /** Sector name (stable label, e.g. "Banking & payments"). */
@@ -64,6 +65,8 @@ export interface SectorExposureInput {
   sanctionsTier?: SectorSanctionsTier;
   /** Names of sectoral sanctions programmes (used to name the driver on Trade). */
   sectoralPrograms: string[];
+  /** Whether the absence of a sanctions tier is supported by complete reviewed coverage. */
+  sanctionsEvidenceComplete?: boolean;
   /** FATF listing: "black" (call for action), "grey" (increased monitoring), or undefined. */
   fatf?: "black" | "grey";
   /** WGI governance domain risks (0-10, higher = worse), null when no data. */
@@ -77,7 +80,7 @@ export interface SectorExposureInput {
   cpi?: number;
 }
 
-const LEVEL_RANK: Record<SectorLevel, number> = { Low: 0, Elevated: 1, High: 2 };
+const LEVEL_RANK: Record<SectorLevel, number> = { Review: -1, Low: 0, Elevated: 1, High: 2 };
 
 /** Higher of two levels (keeps the rules monotone when several fire). */
 function maxLevel(a: SectorLevel, b: SectorLevel): SectorLevel {
@@ -115,6 +118,13 @@ function bankingRow(input: SectorExposureInput): SectorRow {
       sector: "Banking & payments",
       level: "Elevated",
       rationale: `Weak rule-of-law governance (WGI ${rol!.toFixed(1)}/10 risk)`,
+    };
+  }
+  if (rol === null) {
+    return {
+      sector: "Banking & payments",
+      level: "Review",
+      rationale: "Rule-of-law evidence unavailable; no low-exposure conclusion",
     };
   }
   return {
@@ -157,6 +167,13 @@ function tradeRow(input: SectorExposureInput): SectorRow {
       rationale: "Targeted sanctions require screening of listed counterparties",
     };
   }
+  if (input.sanctionsEvidenceComplete === false) {
+    return {
+      sector,
+      level: "Review",
+      rationale: "Sanctions classification incomplete; no low-exposure conclusion",
+    };
+  }
   return {
     sector,
     level: "Low",
@@ -186,6 +203,13 @@ function cryptoRow(input: SectorExposureInput): SectorRow {
       sector,
       level: "Elevated",
       rationale: `Weak accountability governance (WGI ${acct!.toFixed(1)}/10 risk)`,
+    };
+  }
+  if (acct === null) {
+    return {
+      sector,
+      level: "Review",
+      rationale: "Accountability evidence unavailable; no low-exposure conclusion",
     };
   }
   return {
@@ -218,6 +242,13 @@ function realEstateRow(input: SectorExposureInput): SectorRow {
       sector,
       level: "Elevated",
       rationale: `Weak corruption-control governance (WGI ${corr!.toFixed(1)}/10 risk)`,
+    };
+  }
+  if (corr === null) {
+    return {
+      sector,
+      level: "Review",
+      rationale: "Corruption-control evidence unavailable; no low-exposure conclusion",
     };
   }
   return {
@@ -258,6 +289,13 @@ function stateLinkedRow(input: SectorExposureInput): SectorRow {
       rationale: `State-capture exposure (${driver})`,
     };
   }
+  if (pol === null || corr === null) {
+    return {
+      sector,
+      level: "Review",
+      rationale: "Governance evidence incomplete; no low-exposure conclusion",
+    };
+  }
   return {
     sector,
     level: "Low",
@@ -281,5 +319,5 @@ export function deriveSectorExposure(input: SectorExposureInput): SectorRow[] {
 
 /** Highest exposure level across the sectors (for a compact headline, if wanted). */
 export function highestSectorLevel(rows: SectorRow[]): SectorLevel {
-  return rows.reduce<SectorLevel>((top, r) => maxLevel(top, r.level), "Low");
+  return rows.reduce<SectorLevel>((top, r) => maxLevel(top, r.level), "Review");
 }

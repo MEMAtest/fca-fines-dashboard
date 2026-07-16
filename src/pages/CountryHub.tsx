@@ -67,7 +67,8 @@ function ordinal(n: number): string {
   return `${n}${s[(v - 20) % 10] || s[v] || s[0]}`;
 }
 
-function treatmentLabel(band: RiskBand): string {
+function treatmentLabel(band: RiskBand | null): string {
+  if (band === null) return "Evidence review required";
   switch (band) {
     case "very-high":
       return "Enhanced DD + Restrictions";
@@ -80,12 +81,18 @@ function treatmentLabel(band: RiskBand): string {
   }
 }
 
-function controlTiles(band: RiskBand): { name: string; blurb: string; priority: string }[] {
-  const elevated = band === "very-high" || band === "high";
+function controlTiles(band: RiskBand | null): { name: string; blurb: string; priority: string }[] {
+  const elevated = band === null || band === "very-high" || band === "high";
   return [
     {
-      name: band === "low" ? "Standard Due Diligence" : "Enhanced Due Diligence",
-      blurb: "Apply risk-based due diligence to new counterparties and higher-risk transactions.",
+      name: band === null
+        ? "Complete Country Risk Assessment"
+        : band === "low"
+          ? "Standard Due Diligence"
+          : "Enhanced Due Diligence",
+      blurb: band === null
+        ? "Obtain an approved alternative assessment before assigning a low-risk treatment."
+        : "Apply risk-based due diligence to new counterparties and higher-risk transactions.",
       priority: elevated ? "High" : "Medium",
     },
     {
@@ -177,9 +184,12 @@ export function CountryHub() {
   } = view;
 
   const rank = globalRank(country.iso2);
+  const scoreAvailable = view.scoreStatus === "rated";
+  const publishedScore = scoreAvailable ? riskScore.score : null;
+  const publishedBand = scoreAvailable ? riskScore.band : null;
   const markerPct = Math.min(100, (globalAverage / 10) * 100);
   const baseline = scoreHistory[0];
-  const tiles = controlTiles(riskScore.band);
+  const tiles = controlTiles(publishedBand);
   // Country-specific monitoring items from the grounded narrative (unique per country).
   const watchpointItems = (getNarrative(country.iso2)?.keyWatchpoints ?? []).slice(0, 2);
 
@@ -197,8 +207,8 @@ export function CountryHub() {
       iso2: country.iso2,
       name: country.name,
       flag: view.flag,
-      score: riskScore.score,
-      band: riskScore.band,
+      score: publishedScore,
+      band: publishedBand,
       current: true,
       slug: slug ?? countrySlug(country),
     },
@@ -211,7 +221,11 @@ export function CountryHub() {
       current: false,
       slug: countrySlug(p.country),
     })),
-  ].sort((a, b) => a.score - b.score);
+  ].sort((a, b) => {
+    if (a.score === null) return b.score === null ? a.name.localeCompare(b.name) : 1;
+    if (b.score === null) return -1;
+    return a.score - b.score;
+  });
 
   const sources = [
     `World Bank — Worldwide Governance Indicators (${GOVERNANCE_VINTAGE})`,
@@ -337,11 +351,16 @@ export function CountryHub() {
               <span className="cx-peer__track">
                 <span
                   className="cx-peer__fill"
-                  style={{ width: `${(p.score / 10) * 100}%`, background: BAND_COLOUR[p.band] }}
+                  style={{
+                    width: p.score === null ? "0%" : `${(p.score / 10) * 100}%`,
+                    background: p.band ? BAND_COLOUR[p.band] : "#cbd5e1",
+                  }}
                 />
               </span>
-              <span className="cx-peer__score">{p.score.toFixed(1)}</span>
-              <span className={`cx-peer__band cx-peer__band--${p.band}`}>{bandLabel(p.band)}</span>
+              <span className="cx-peer__score">{p.score === null ? "—" : p.score.toFixed(1)}</span>
+              <span className={`cx-peer__band cx-peer__band--${p.band ?? "insufficient"}`}>
+                {p.band ? bandLabel(p.band) : "Insufficient data"}
+              </span>
             </Link>
           </li>
         ))}
@@ -371,9 +390,16 @@ export function CountryHub() {
               </div>
               <ul className="cx-attr__imposers">
                 {attribution.sanctions.imposers.map((r) => (
-                  <li key={r.imposer} className={r.active ? "is-yes" : "is-no"}>
+                  <li
+                    key={r.imposer}
+                    className={view.sanctionsCoverageComplete ? (r.active ? "is-yes" : "is-no") : "is-pending"}
+                  >
                     <span className="cx-attr__imp">{r.imposer}</span>
-                    {r.active ? (
+                    {!view.sanctionsCoverageComplete ? (
+                      <span className="cx-attr__yn cx-attr__yn--pending">
+                        <AlertCircle size={11} /> Review pending
+                      </span>
+                    ) : r.active ? (
                       <span className="cx-attr__yn cx-attr__yn--yes">
                         <CheckCircle2 size={11} /> {r.tierLabel}
                       </span>
@@ -386,7 +412,9 @@ export function CountryHub() {
                 ))}
               </ul>
               <p className="cx-attr__note">
-                &ldquo;No&rdquo; means no country-level programme identified; listed persons may still exist.
+                {view.sanctionsCoverageComplete
+                  ? "No means no country-level programme was identified in the approved snapshot; listed persons may still exist."
+                  : "Independent classification is incomplete. Absence of a programme is not inferred."}
               </p>
             </div>
 
@@ -485,7 +513,7 @@ export function CountryHub() {
           {/* ── Header: identity | overall risk score ── */}
           <div className="cx-ws__head">
             <div className="cx-ident">
-              <span className={`cx-ident__flag cx-ident__flag--${riskScore.band}`} aria-hidden="true">
+              <span className={`cx-ident__flag cx-ident__flag--${publishedBand ?? "insufficient"}`} aria-hidden="true">
                 {view.flag}
               </span>
               <div>
@@ -508,8 +536,10 @@ export function CountryHub() {
               <div className="cx-osc__grid">
                 <div className="cx-osc__main">
                   <div className="cx-score__row">
-                    <span className="cx-score__value">{riskScore.score.toFixed(1)}</span>
-                    <span className="cx-score__of">/ 10</span>
+                    <span className={`cx-score__value${publishedScore === null ? " cx-score__value--withheld" : ""}`}>
+                      {publishedScore === null ? "Withheld" : publishedScore.toFixed(1)}
+                    </span>
+                    {publishedScore !== null && <span className="cx-score__of">/ 10</span>}
                   </div>
                   <div className="cx-gauge" aria-hidden="true">
                     <div className="country-score__bar">
@@ -517,25 +547,29 @@ export function CountryHub() {
                         <span
                           key={i}
                           className={`country-score__seg${
-                            i < Math.round(riskScore.score) ? " country-score__seg--on" : ""
+                            publishedScore !== null && i < Math.round(publishedScore)
+                              ? " country-score__seg--on"
+                              : ""
                           }`}
                         />
                       ))}
                     </div>
                     <span className="cx-gauge__marker" style={{ left: `${markerPct}%` }} />
                   </div>
-                  <p className="cx-osc__band-txt">{bandLabel(riskScore.band)} risk</p>
+                  <p className="cx-osc__band-txt">
+                    {publishedBand ? `${bandLabel(publishedBand)} risk` : "Insufficient data"}
+                  </p>
                   <p className="cx-osc__avg">Global average: {globalAverage.toFixed(1)}</p>
                 </div>
                 <div className="cx-osc__cell">
                   <span className="cx-osc__k">Risk band</span>
-                  <span className={`cx-band-pill cx-band-pill--${riskScore.band}`}>
-                    {bandLabel(riskScore.band)}
+                  <span className={`cx-band-pill cx-band-pill--${publishedBand ?? "insufficient"}`}>
+                    {publishedBand ? bandLabel(publishedBand) : "Insufficient data"}
                   </span>
                 </div>
                 <div className="cx-osc__cell">
                   <span className="cx-osc__k">Risk rank</span>
-                  <span className="cx-osc__big">{ordinal(rank.rank)}</span>
+                  <span className="cx-osc__big">{rank.rank === null ? "—" : ordinal(rank.rank)}</span>
                   <span className="cx-osc__sub">of {rank.total} by risk</span>
                 </div>
                 <div className="cx-osc__cell cx-osc__cell--verdict">
@@ -554,7 +588,7 @@ export function CountryHub() {
               <span className="cx-card__eyebrow cx-treatw__eyebrow">
                 <ClipboardCheck size={12} /> Recommended treatment
               </span>
-              <p className="cx-treatw__title">{treatmentLabel(riskScore.band)}</p>
+              <p className="cx-treatw__title">{treatmentLabel(publishedBand)}</p>
               <p className="cx-treatw__desc">{decision.treatment}</p>
               <ul className="cx-checklist">
                 {decision.treatmentChecklist.slice(0, 4).map((c) => (
@@ -577,7 +611,7 @@ export function CountryHub() {
               <span className="cx-card__eyebrow">
                 <TrendingUp size={12} /> Risk trend
               </span>
-              {scoreHistory.length >= 2 ? (
+              {scoreAvailable && scoreHistory.length >= 2 ? (
                 <>
                   <p className="cx-trend__state">Tracking</p>
                   <svg className="cx-trend__svg" viewBox="0 0 200 60" preserveAspectRatio="none">
@@ -593,10 +627,10 @@ export function CountryHub() {
                 </>
               ) : (
                 <>
-                  <p className="cx-trend__state">Baseline</p>
+                  <p className="cx-trend__state">{scoreAvailable ? "Baseline" : "Score withheld"}</p>
                   <div className="cx-trend__stats">
                     <div>
-                      <b>{riskScore.score.toFixed(1)}</b>
+                      <b>{publishedScore === null ? "—" : publishedScore.toFixed(1)}</b>
                       <span>Current</span>
                     </div>
                     <div>
@@ -611,8 +645,10 @@ export function CountryHub() {
                 </>
               )}
               <p className="cx-card__note">
-                {baseline ? `Baseline recorded ${formatDate(baseline.date)}. ` : ""}
-                Trend accrues from future snapshots; no back-dated data shown.
+                {scoreAvailable && baseline ? `Baseline recorded ${formatDate(baseline.date)}. ` : ""}
+                {scoreAvailable
+                  ? "Trend accrues from future snapshots; no back-dated data shown."
+                  : "Trend unavailable until the governance evidence gap is resolved."}
               </p>
             </div>
 
@@ -801,8 +837,9 @@ export function CountryHub() {
               <Info size={12} /> Methodology
             </span>
             <p className="cx-meth__intro">
-              This historical v1 comparison score combines four World Bank WGI governance drivers
-              with FATF and the legacy sanctions snapshot. The parallel v2 result and its evidence gates are shown in the assurance panel.
+              The historical v1 comparison requires a World Bank WGI governance base. Where that
+              evidence is unavailable, the headline score and risk band are withheld rather than
+              converted into zero risk. V2 remains in parallel validation.
             </p>
             <ul className="cx-domains">
               {breakdown.domains.map((d) => (
@@ -810,7 +847,7 @@ export function CountryHub() {
               ))}
             </ul>
             <div className="cx-meth__base">
-              Governance base score <b>{breakdown.base.toFixed(1)} / 10</b>
+              Governance base score <b>{scoreAvailable ? `${breakdown.base.toFixed(1)} / 10` : "Unavailable"}</b>
             </div>
             <p className="cx-card__note">
               Structured with reference to Basel and Wolfsberg factors · WGI {GOVERNANCE_VINTAGE} · FATF{" "}

@@ -177,6 +177,8 @@ export interface CountryView {
   sanctionsBand: RiskBand;
   /** Composite RegActions Country Risk Score (governance base + escalators). */
   riskScore: CountryRiskScore;
+  /** Whether the historical v1 formula has enough evidence to publish a score. */
+  scoreStatus: CountryScorePublicationStatus;
   /** Score derivation for the "how is this scored?" card. */
   breakdown: ScoreBreakdown;
   /** Mean score across profiled countries, for "vs global average". */
@@ -292,6 +294,7 @@ export function buildAttribution(
 export function buildSectorExposure(input: {
   sanctions?: CountrySanctions;
   sanctionsTier?: SanctionsTier;
+  sanctionsEvidenceComplete?: boolean;
   fatf?: FatfStatus;
   breakdown: ScoreBreakdown;
   cpi?: CpiEntry;
@@ -309,6 +312,7 @@ export function buildSectorExposure(input: {
   return deriveSectorExposure({
     sanctionsTier: input.sanctionsTier,
     sectoralPrograms,
+    sanctionsEvidenceComplete: input.sanctionsEvidenceComplete,
     fatf,
     domains: {
       corruption: domainRisk("corruption"),
@@ -355,6 +359,9 @@ export function buildCountryView(country: Country): CountryView {
       )} plenary.`;
 
   const riskScore = computeCountryRiskScore(country.iso2);
+  const scoreStatus: CountryScorePublicationStatus = riskScore.hasGovernance
+    ? "rated"
+    : "insufficient-data";
   const breakdown = scoreBreakdown(country.iso2);
   const cpi = getCpi(country.iso2);
   const enforcementAssessed = !!enforcement;
@@ -364,6 +371,7 @@ export function buildCountryView(country: Country): CountryView {
   const decision = buildDecision({
     name: country.name,
     riskScore,
+    scoreAvailable: scoreStatus === "rated",
     breakdown,
     sanctions,
     sanctionsTier,
@@ -396,6 +404,7 @@ export function buildCountryView(country: Country): CountryView {
     sanctionsTier,
     sanctionsBand: sanctionsToBand(sanctionsTier),
     riskScore,
+    scoreStatus,
     breakdown,
     globalAverage: globalAverageRiskScore(),
     cpi,
@@ -420,8 +429,9 @@ export function buildCountryView(country: Country): CountryView {
     nextPlenary: FATF_NEXT_PLENARY,
     regulatory,
     sectorExposure: buildSectorExposure({
-      sanctions,
-      sanctionsTier,
+      sanctions: SANCTIONS_APPROVED_SNAPSHOT.coverageComplete ? sanctions : undefined,
+      sanctionsTier: SANCTIONS_APPROVED_SNAPSHOT.coverageComplete ? sanctionsTier : undefined,
+      sanctionsEvidenceComplete: SANCTIONS_APPROVED_SNAPSHOT.coverageComplete,
       fatf,
       breakdown,
       cpi,
@@ -432,7 +442,12 @@ export function buildCountryView(country: Country): CountryView {
 /** Highest-risk same-region peers (excluding the country itself). */
 export function regionalPeers(iso2: string, region: string, limit = 6): CountryIndexEntry[] {
   return buildCountryIndex()
-    .filter((e) => e.country.region === region && e.country.iso2 !== iso2)
+    .filter(
+      (e) =>
+        e.country.region === region &&
+        e.country.iso2 !== iso2 &&
+        e.score !== null,
+    )
     .slice(0, limit);
 }
 
@@ -506,8 +521,10 @@ export function enforcementExposure(iso2: string): number {
 export interface CountryIndexEntry {
   country: Country;
   flag: string;
-  score: number;
-  band: ScoreBand;
+  /** Null means the required v1 governance base is unavailable. */
+  score: number | null;
+  band: ScoreBand | null;
+  status: CountryScorePublicationStatus;
   fatf?: FatfStatus;
   sanctionsTier?: SanctionsTier;
   hasEnforcement: boolean;
@@ -517,6 +534,8 @@ export interface CountryIndexEntry {
   enforcementExposure: number;
 }
 
+export type CountryScorePublicationStatus = "rated" | "insufficient-data";
+
 let _index: CountryIndexEntry[] | undefined;
 
 /** Every page country with its composite score, sorted highest-risk first. */
@@ -525,11 +544,15 @@ export function buildCountryIndex(): CountryIndexEntry[] {
   _index = pageCountries()
     .map((country) => {
       const rs = computeCountryRiskScore(country.iso2);
+      const status: CountryScorePublicationStatus = rs.hasGovernance
+        ? "rated"
+        : "insufficient-data";
       return {
         country,
         flag: flagEmoji(country.iso2),
-        score: rs.score,
-        band: rs.band,
+        score: status === "rated" ? rs.score : null,
+        band: status === "rated" ? rs.band : null,
+        status,
         fatf: getFatfStatus(country.iso2),
         sanctionsTier: highestSanctionsTier(country.iso2),
         hasEnforcement: hasEnforcementCoverage(country.iso2),
@@ -537,27 +560,31 @@ export function buildCountryIndex(): CountryIndexEntry[] {
         enforcementExposure: enforcementExposure(country.iso2),
       };
     })
-    .sort(
-      (a, b) => b.score - a.score || a.country.name.localeCompare(b.country.name),
-    );
+    .sort((a, b) => {
+      if (a.score === null) return b.score === null ? a.country.name.localeCompare(b.country.name) : 1;
+      if (b.score === null) return -1;
+      return b.score - a.score || a.country.name.localeCompare(b.country.name);
+    });
   return _index;
 }
 
 /** Global rank (1 = highest risk) and total, from the sorted index. */
-export function globalRank(iso2: string): { rank: number; total: number } {
-  const idx = buildCountryIndex();
+export function globalRank(iso2: string): { rank: number | null; total: number } {
+  const idx = buildCountryIndex().filter((entry) => entry.score !== null);
   const pos = idx.findIndex((e) => e.country.iso2 === iso2);
-  return { rank: pos < 0 ? idx.length : pos + 1, total: idx.length };
+  return { rank: pos < 0 ? null : pos + 1, total: idx.length };
 }
 
 /** Rank within the country's region (1 = highest risk in-region) and region size. */
 export function regionRank(
   iso2: string,
   region: string,
-): { rank: number; total: number } {
-  const inRegion = buildCountryIndex().filter((e) => e.country.region === region);
+): { rank: number | null; total: number } {
+  const inRegion = buildCountryIndex().filter(
+    (e) => e.country.region === region && e.score !== null,
+  );
   const pos = inRegion.findIndex((e) => e.country.iso2 === iso2);
-  return { rank: pos < 0 ? inRegion.length : pos + 1, total: inRegion.length };
+  return { rank: pos < 0 ? null : pos + 1, total: inRegion.length };
 }
 
 export interface RegionalAverage {
@@ -573,6 +600,7 @@ export function regionalAverages(): RegionalAverage[] {
   if (_regionalAverages) return _regionalAverages;
   const groups = new Map<string, number[]>();
   for (const e of buildCountryIndex()) {
+    if (e.score === null) continue;
     const arr = groups.get(e.country.region) ?? [];
     arr.push(e.score);
     groups.set(e.country.region, arr);
@@ -611,6 +639,7 @@ export function pillarAverages(): PillarAverages {
   let n = 0;
   for (const c of pageCountries()) {
     const rs = computeCountryRiskScore(c.iso2);
+    if (!rs.hasGovernance) continue;
     base += rs.base;
     f += rs.fatf.points;
     s += rs.sanctions.points;

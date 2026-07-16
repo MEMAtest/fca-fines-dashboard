@@ -27,6 +27,22 @@ describe("country decision sanctions uncertainty", () => {
   }
 });
 
+describe("country decision missing-evidence handling", () => {
+  for (const iso2 of ["VG", "CW", "GI", "GG", "IM", "MS", "SX", "TC", "VA"]) {
+    it(`${iso2} never presents missing governance as low risk`, () => {
+      const country = getCountryByIso2(iso2);
+      expect(country).toBeDefined();
+      const view = buildCountryView(country!);
+      expect(view.scoreStatus).toBe("insufficient-data");
+      expect(view.decision.verdictHeadline).toContain("Insufficient evidence");
+      expect(view.decision.verdictHeadline).not.toContain("Low country risk");
+      expect(view.decision.mitigatingFactors).toContain(
+        "No low-risk conclusion is drawn until the evidence gap is resolved.",
+      );
+    });
+  }
+});
+
 describe("treatmentChecklist derivation", () => {
   it("produces 4-5 non-empty items for every profiled band", () => {
     for (const iso2 of ["CU", "JP", "CN", "NG", "IR", "RU"]) {
@@ -54,15 +70,15 @@ describe("treatmentChecklist derivation", () => {
     expect(a).toEqual(b);
   });
 
-  it("a comprehensive-sanctions country and a low-risk country produce different lists", () => {
-    const cuba = decisionFor("CU").treatmentChecklist; // comprehensive US sanctions
+  it("a candidate-sanctions country and a low-risk country produce different lists", () => {
+    const cuba = decisionFor("CU").treatmentChecklist;
     const japan = decisionFor("JP").treatmentChecklist; // low-risk, no listing/sanctions
     expect(cuba).not.toEqual(japan);
   });
 
-  it("comprehensive-sanctions country flags the prohibition/licensing check", () => {
+  it("does not promote a candidate comprehensive tier before sanctions approval", () => {
     const cuba = decisionFor("CU").treatmentChecklist;
-    expect(cuba.some((i) => /prohibition or licensing/i.test(i))).toBe(true);
+    expect(cuba.some((i) => /prohibition or licensing/i.test(i))).toBe(false);
   });
 
   it("FATF-listed country flags remediation/action-plan monitoring", () => {

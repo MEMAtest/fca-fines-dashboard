@@ -26,7 +26,10 @@ interface Snapshot {
 }
 
 const scores: Record<string, number> = {};
-for (const c of pageCountries()) scores[c.iso2] = computeCountryRiskScore(c.iso2).score;
+for (const c of pageCountries()) {
+  const result = computeCountryRiskScore(c.iso2);
+  if (result.hasGovernance) scores[c.iso2] = result.score;
+}
 
 let snapshots: Snapshot[] = [];
 if (existsSync(OUT)) {

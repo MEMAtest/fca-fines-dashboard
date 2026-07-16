@@ -179,7 +179,9 @@ export function CountryMethodology() {
             <div className="cx-source-card__name">Composite</div>
             <div className="cx-source-card__desc">
               Score = min(10, governance base + FATF + sanctions). If a WGI domain is
-              missing, the remaining domain weights are renormalised.
+              missing, the remaining domain weights are renormalised. If every WGI
+              domain is unavailable, v1 has no valid base and publishes no score or
+              risk band; missing evidence is never represented as 0.0.
             </div>
           </div>
         </div>
@@ -199,8 +201,8 @@ export function CountryMethodology() {
           sanctions, corruption and governance). RegActions does not reproduce the
           Basel AML Index scores, which are licensed for non-commercial use only; this
           score is an independent composite built from licence-clean public data. FATF
-          Mutual-Evaluation effectiveness ratings are a planned enhancement to the
-          AML-framework domain.
+          Mutual-Evaluation effectiveness ratings are incorporated in v2, which remains
+          in parallel validation.
         </p>
       </section>
 

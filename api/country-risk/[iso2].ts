@@ -23,6 +23,7 @@ export default function handler(req: VercelRequest, res: VercelResponse) {
   const asOf = new Date();
   const result = computeCountryRiskV2(iso2, { asOf });
   const previous = computeCountryRiskScore(iso2);
+  const previousScore = previous.hasGovernance ? previous.score : null;
   const assessment = getFatfAssessment(iso2);
   const fatf = getFatfStatus(iso2);
   const governance = getGovernanceDimensions(iso2);
@@ -34,9 +35,14 @@ export default function handler(req: VercelRequest, res: VercelResponse) {
   return res.status(200).json({
     country,
     result,
-    previous: { methodologyVersion: "1.0.0", score: previous.score, band: previous.band },
-    change: result.score === null ? null : {
-      points: Math.round((result.score - previous.score) * 10) / 10,
+    previous: {
+      methodologyVersion: "1.0.0",
+      score: previousScore,
+      band: previous.hasGovernance ? previous.band : null,
+      status: previous.hasGovernance ? "rated" : "insufficient-data",
+    },
+    change: result.score === null || previousScore === null ? null : {
+      points: Math.round((result.score - previousScore) * 10) / 10,
       explanation: appliedFloors.length
         ? `The weighted v2 score was raised by ${appliedFloors.map((floor) => `${floor.reason} (${floor.minimum})`).join(", ")}.`
         : "No regulatory floor raised the weighted v2 score; any unavailable pillar is explicitly excluded and the available weights are renormalised.",

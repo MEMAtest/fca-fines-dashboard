@@ -13,7 +13,17 @@ const sources = countryRiskSourcesAsOf(asOf);
 const results = pageCountries().map((country) => {
   const current = computeCountryRiskV2(country.iso2, { asOf });
   const previous = computeCountryRiskScore(country.iso2);
-  return { iso2: country.iso2, country: country.name, current, previous: { version: "1.0.0", score: previous.score, band: previous.band } };
+  return {
+    iso2: country.iso2,
+    country: country.name,
+    current,
+    previous: {
+      version: "1.0.0",
+      score: previous.hasGovernance ? previous.score : null,
+      band: previous.hasGovernance ? previous.band : null,
+      status: previous.hasGovernance ? "rated" : "insufficient-data",
+    },
+  };
 });
 const canonical = JSON.stringify({ methodologyVersion: COUNTRY_RISK_METHODOLOGY_VERSION, asOf: asOf.toISOString(), sources, results });
 const report = {

@@ -60,6 +60,8 @@ export interface CountryDecision {
 export interface DecisionInput {
   name: string;
   riskScore: CountryRiskScore;
+  /** False when the historical v1 formula has no WGI governance base. */
+  scoreAvailable: boolean;
   breakdown: ScoreBreakdown;
   sanctions?: CountrySanctions;
   sanctionsTier?: SanctionsTier;
@@ -98,11 +100,15 @@ export function hasComprehensiveSanctions(sanctions?: CountrySanctions): boolean
 
 function treatmentFor(input: DecisionInput): string {
   const black = input.fatf?.listing === "call-for-action";
-  const comprehensive = hasComprehensiveSanctions(input.sanctions);
+  const comprehensive = input.sanctionsCoverageComplete && hasComprehensiveSanctions(input.sanctions);
   const band = input.riskScore.band;
   if (black || comprehensive)
     return "Enhanced due diligence, with restriction or prohibition of higher-risk activity.";
-  if (band === "very-high" || input.sanctionsTier || input.fatf)
+  if (!input.scoreAvailable)
+    return input.fatf
+      ? "Enhanced due diligence while the missing country-risk evidence is resolved."
+      : "Do not assign a low-risk treatment until an approved alternative country-risk assessment closes the evidence gap.";
+  if (band === "very-high" || (input.sanctionsCoverageComplete && input.sanctionsTier) || input.fatf)
     return "Enhanced due diligence.";
   if (band === "high")
     return "Enhanced due diligence for defined risk triggers.";
@@ -112,6 +118,15 @@ function treatmentFor(input: DecisionInput): string {
 }
 
 function verdict(input: DecisionInput): { headline: string; paragraph: string } {
+  if (!input.scoreAvailable) {
+    const fatfPhrase = input.fatf
+      ? `It remains subject to the FATF ${input.fatf.listing === "call-for-action" ? "call-for-action" : "increased-monitoring"} flag, which must be handled independently.`
+      : "It is not currently FATF grey- or black-listed, but that absence does not establish low risk.";
+    return {
+      headline: "Insufficient evidence for a headline country-risk score",
+      paragraph: `${input.name} has no World Bank WGI governance base for the historical v1 formula, so RegActions withholds the numerical score and risk band. ${fatfPhrase} Geographic sanctions classification remains under independent review. No zero or Low-risk conclusion is inferred from the missing evidence.`,
+    };
+  }
   const doms = topDomains(input.breakdown);
   const top = doms[0];
   const qualifier = top && (top.risk as number) >= 4 ? DOMAIN_QUALIFIER[top.key] : "";
@@ -144,9 +159,10 @@ function verdict(input: DecisionInput): { headline: string; paragraph: string } 
 
 function riskDrivers(input: DecisionInput): string[] {
   const out: string[] = [];
+  if (!input.scoreAvailable) out.push("World Bank WGI governance evidence unavailable; headline score withheld");
   if (input.fatf)
     out.push(`FATF ${input.fatf.listing === "call-for-action" ? "black" : "grey"}-list status`);
-  if (input.sanctionsTier)
+  if (input.sanctionsCoverageComplete && input.sanctionsTier)
     out.push(
       `${input.sanctionsTier.charAt(0).toUpperCase() + input.sanctionsTier.slice(1)} sanctions exposure`,
     );
@@ -170,7 +186,9 @@ function mitigatingFactors(input: DecisionInput): string[] {
   if (strongest && (strongest.risk as number) < 5)
     out.push(`Comparatively stronger ${DOMAIN_NOUN[strongest.key]} (${(strongest.risk as number).toFixed(1)}/10).`);
   out.push(
-    input.riskScore.band === "low"
+    !input.scoreAvailable
+      ? "No low-risk conclusion is drawn until the evidence gap is resolved."
+      : input.riskScore.band === "low"
       ? "Overall governance and institutional quality are relatively strong."
       : "Risk is concentrated in specific counterparties, sectors and transactions rather than applying uniformly.",
   );
@@ -179,7 +197,9 @@ function mitigatingFactors(input: DecisionInput): string[] {
 
 function businessImpact(input: DecisionInput): BusinessImpactRow[] {
   const level =
-    input.riskScore.band === "low"
+    !input.scoreAvailable
+      ? "Review"
+      : input.riskScore.band === "low"
       ? "Low"
       : input.riskScore.band === "moderate"
         ? "Medium"
@@ -234,15 +254,20 @@ const DOMAIN_DILIGENCE: Record<string, string> = {
  */
 export function treatmentChecklist(input: DecisionInput): string[] {
   const out: string[] = [];
-  const comprehensive = hasComprehensiveSanctions(input.sanctions);
+  const comprehensive = input.sanctionsCoverageComplete && hasComprehensiveSanctions(input.sanctions);
   const black = input.fatf?.listing === "call-for-action";
+
+  if (!input.scoreAvailable) {
+    out.push("Obtain or document an approved alternative country-risk assessment");
+    out.push("Do not classify the jurisdiction as low risk from missing evidence");
+  }
 
   // 1. Sanctions posture.
   if (comprehensive) {
     out.push(
       "Confirm prohibition or licensing position before any dealing (comprehensive programme)",
     );
-  } else if (input.sanctionsTier) {
+  } else if (input.sanctionsCoverageComplete && input.sanctionsTier) {
     out.push(
       "Screen parties, owners and cargo against applicable OFAC, UK, EU and UN lists",
     );
@@ -275,7 +300,7 @@ export function treatmentChecklist(input: DecisionInput): string[] {
   }
 
   // 5. Proportionate standard-DD items for lower-risk / thin profiles.
-  const isLow = input.riskScore.band === "low";
+  const isLow = input.scoreAvailable && input.riskScore.band === "low";
   const standardItems = isLow
     ? [
         "Apply proportionate standard due diligence to new counterparties",
@@ -306,7 +331,13 @@ function whatChanged(input: DecisionInput): WhatChangedItem[] {
   return [
     { label: "FATF status", value: input.fatf ? (input.fatf.listing === "call-for-action" ? "Black list" : "Grey list") : "Not listed", asOf: fmt(input.lastPlenary) },
     { label: "Sanctions exposure", value: sancValue, asOf: fmt(input.sanctionsCoverageComplete ? SANCTIONS_REVIEWED : SANCTIONS_CATALOGUE_REVIEWED_AS_OF) },
-    { label: "Governance (WGI)", value: "Latest dataset incorporated", asOf: GOVERNANCE_VINTAGE },
+    {
+      label: "Governance (WGI)",
+      value: input.scoreAvailable
+        ? "Latest dataset incorporated"
+        : "Unavailable for this jurisdiction; headline score withheld",
+      asOf: GOVERNANCE_VINTAGE,
+    },
     { label: "Corruption (CPI)", value: input.cpi ? `${input.cpi.score}/100` : "Not available", asOf: CPI_YEAR },
     { label: "RegActions assessment", value: "Reviewed", asOf: fmt(input.lastPlenary) },
   ];
