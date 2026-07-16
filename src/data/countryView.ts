@@ -60,6 +60,11 @@ import {
 import SCORE_SNAPSHOTS from "./scoreSnapshots.json" with { type: "json" };
 import { getFatfAssessment } from "./fatfAssessmentData.js";
 import { SANCTIONS_APPROVED_SNAPSHOT } from "./sanctionsApprovedData.js";
+import {
+  deriveSectorExposure,
+  type SectorRow,
+  type SectorExposureInput,
+} from "./sectorExposure.js";
 
 const SNAPSHOTS = SCORE_SNAPSHOTS as { date: string; scores: Record<string, number> }[];
 
@@ -198,6 +203,8 @@ export interface CountryView {
   nextPlenary: string;
   /** FATF-network membership + tracked national regulators. */
   regulatory: RegulatoryView;
+  /** Sector-level financial-crime exposure, derived from the sourced modules. */
+  sectorExposure: SectorRow[];
 }
 
 /** Imposers shown in the attributed sanctions block, display order + data key. */
@@ -273,6 +280,44 @@ export function buildAttribution(
       : { assessed: false },
     fatf: { status: view.statusHeading, plenary: view.lastPlenary },
   };
+}
+
+/**
+ * Assemble the sector-exposure input from the sourced modules and derive the rows.
+ * Nothing here is invented: sanctions tier + programme names, FATF listing, WGI
+ * governance domains and the CPI score all come from the modules already loaded
+ * for this country. The FATF listing is normalised to the sector module's
+ * "black" | "grey" vocabulary.
+ */
+export function buildSectorExposure(input: {
+  sanctions?: CountrySanctions;
+  sanctionsTier?: SanctionsTier;
+  fatf?: FatfStatus;
+  breakdown: ScoreBreakdown;
+  cpi?: CpiEntry;
+}): SectorRow[] {
+  const domainRisk = (key: string): number | null =>
+    input.breakdown.domains.find((d) => d.key === key)?.risk ?? null;
+  const sectoralPrograms = (input.sanctions?.programs ?? [])
+    .filter((p) => p.tier === "sectoral")
+    .map((p) => p.program);
+  const fatf: SectorExposureInput["fatf"] = input.fatf
+    ? input.fatf.listing === "call-for-action"
+      ? "black"
+      : "grey"
+    : undefined;
+  return deriveSectorExposure({
+    sanctionsTier: input.sanctionsTier,
+    sectoralPrograms,
+    fatf,
+    domains: {
+      corruption: domainRisk("corruption"),
+      ruleOfLaw: domainRisk("ruleOfLaw"),
+      politicalStability: domainRisk("politicalStability"),
+      accountability: domainRisk("accountability"),
+    },
+    cpi: input.cpi?.score,
+  });
 }
 
 /** Sanctions tier → risk band (comprehensive = very-high, sectoral = high, targeted = high). */
@@ -374,6 +419,13 @@ export function buildCountryView(country: Country): CountryView {
     lastPlenary: FATF_LAST_PLENARY,
     nextPlenary: FATF_NEXT_PLENARY,
     regulatory,
+    sectorExposure: buildSectorExposure({
+      sanctions,
+      sanctionsTier,
+      fatf,
+      breakdown,
+      cpi,
+    }),
   };
 }
 

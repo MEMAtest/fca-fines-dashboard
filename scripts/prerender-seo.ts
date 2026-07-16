@@ -416,6 +416,18 @@ function renderCountryFatfBody(view: CountryView): string {
   const regulatoryHtml = `<h2>Regulators and legal framework</h2><h3>FATF network</h3><p>${escapeHtml(
     fatfNetworkLine,
   )}.</p>${fsrbListHtml}<h3>National regulators</h3>${regulatorsHtml}<h3>Framework signals</h3>${frameworkSignalsHtml}`;
+  // Sector exposure: which sectors carry elevated financial-crime risk, derived
+  // from the same sourced modules as the React card (mirrors CountryHub.tsx).
+  const sectorHtml = `<h2>Sector exposure</h2><ul>${view.sectorExposure
+    .map(
+      (s) =>
+        `<li><strong>${escapeHtml(s.sector)}</strong> (${escapeHtml(
+          s.level,
+        )}): ${escapeHtml(s.rationale)}</li>`,
+    )
+    .join(
+      "",
+    )}</ul><p>Derived from sanctions tier, FATF listing, World Bank WGI governance and CPI; no per-sector dataset is asserted.</p>`;
   const peersHtml =
     regionalPeers.length > 0
       ? `<h2>Regional peer scores</h2><ul>${regionalPeers
@@ -443,7 +455,7 @@ function renderCountryFatfBody(view: CountryView): string {
     statusHeading,
   )}</h2><p>${escapeHtml(
     statusDetail,
-  )}</p>${sanctionsHtml}${attrHtml}${historyHtml}${enforcementHtml}${regulatoryHtml}${analysisHtml}${whatChangedHtml}${peersHtml}${sourcesHtml}</div></article></div></div>`;
+  )}</p>${sanctionsHtml}${attrHtml}${historyHtml}${enforcementHtml}${regulatoryHtml}${sectorHtml}${analysisHtml}${whatChangedHtml}${peersHtml}${sourcesHtml}</div></article></div></div>`;
 }
 
 /** Crawlable body for the /countries index (FATF grey + black lists). */
