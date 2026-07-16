@@ -2241,6 +2241,12 @@ button.cx-kpi:hover {
   color: #64748b;
   white-space: nowrap;
 }
+.cx-matrix__note {
+  font-size: 0.72rem;
+  color: #64748b;
+  margin: 0.4rem 0 0;
+  line-height: 1.4;
+}
 .cx-matrix__quadrants {
   display: grid;
   grid-template-columns: repeat(2, 1fr);

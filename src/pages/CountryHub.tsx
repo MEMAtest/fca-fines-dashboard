@@ -231,9 +231,11 @@ export function CountryHub() {
     `World Bank — Worldwide Governance Indicators (${GOVERNANCE_VINTAGE})`,
     `Transparency International — CPI ${CPI_YEAR}`,
     `FATF — consolidated ratings (plenary ${formatDate(view.lastPlenary)})`,
+    // Keep the caveat in step with the framework-signal wording: while the
+    // independent sanctions-classification review is open, say so here too.
     view.sanctionsCoverageComplete
-      ? "OFAC / UK / EU / UN — approved geographic-regime snapshot"
-      : "OFAC / UK / EU / UN — candidate regime catalogues; classification review pending",
+      ? "OFAC / UK / EU / UN — sanctions programmes"
+      : "OFAC / UK / EU / UN — sanctions programmes (classification review in progress)",
   ];
 
   // ── Regulators & legal framework module ──────────────────────────────────
@@ -531,7 +533,7 @@ export function CountryHub() {
 
             <div className="cx-card cx-osc">
               <span className="cx-card__eyebrow">
-                <Info size={12} /> Overall risk score · v1 snapshot
+                <Info size={12} /> Overall risk score
               </span>
               <div className="cx-osc__grid">
                 <div className="cx-osc__main">
@@ -837,9 +839,9 @@ export function CountryHub() {
               <Info size={12} /> Methodology
             </span>
             <p className="cx-meth__intro">
-              The historical v1 comparison requires a World Bank WGI governance base. Where that
-              evidence is unavailable, the headline score and risk band are withheld rather than
-              converted into zero risk. V2 remains in parallel validation.
+              This score combines four World Bank WGI governance drivers with FATF listing status
+              and sanctions exposure. Where the WGI evidence is unavailable, the headline score and
+              risk band are withheld rather than shown as zero risk.
             </p>
             <ul className="cx-domains">
               {breakdown.domains.map((d) => (
