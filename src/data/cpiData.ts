@@ -57,17 +57,21 @@ export const CPI_RANK: Record<string, CpiEntry> = {
   US: { score: 64, rank: 29 }, // United States
   BN: { score: 63, rank: 31 }, // Brunei
   CL: { score: 63, rank: 31 }, // Chile
+  VC: { score: 63, rank: 31 }, // Saint Vincent and the Grenadines
   KR: { score: 63, rank: 31 }, // South Korea
   CV: { score: 62, rank: 35 }, // Cabo Verde
   IL: { score: 62, rank: 35 }, // Israel
+  DM: { score: 60, rank: 37 }, // Dominica
   LV: { score: 60, rank: 37 }, // Latvia
   CZ: { score: 59, rank: 39 }, // Czechia
+  LC: { score: 59, rank: 39 }, // Saint Lucia
   BW: { score: 58, rank: 41 }, // Botswana
   QA: { score: 58, rank: 41 }, // Qatar
   RW: { score: 58, rank: 41 }, // Rwanda
   SI: { score: 58, rank: 41 }, // Slovenia
   SA: { score: 57, rank: 45 }, // Saudi Arabia
   CR: { score: 56, rank: 46 }, // Costa Rica
+  GD: { score: 56, rank: 46 }, // Grenada
   PT: { score: 56, rank: 46 }, // Portugal
   CY: { score: 55, rank: 49 }, // Cyprus
   FJ: { score: 55, rank: 49 }, // Fiji
@@ -77,6 +81,7 @@ export const CPI_RANK: Record<string, CpiEntry> = {
   MY: { score: 52, rank: 54 }, // Malaysia
   OM: { score: 52, rank: 54 }, // Oman
   BH: { score: 50, rank: 56 }, // Bahrain
+  GE: { score: 50, rank: 56 }, // Georgia
   GR: { score: 50, rank: 56 }, // Greece
   JO: { score: 50, rank: 56 }, // Jordan
   MT: { score: 49, rank: 60 }, // Malta
@@ -84,6 +89,7 @@ export const CPI_RANK: Record<string, CpiEntry> = {
   SK: { score: 48, rank: 61 }, // Slovakia
   HR: { score: 47, rank: 63 }, // Croatia
   VU: { score: 47, rank: 63 }, // Vanuatu
+  AM: { score: 46, rank: 65 }, // Armenia
   KW: { score: 46, rank: 65 }, // Kuwait
   ME: { score: 46, rank: 65 }, // Montenegro
   NA: { score: 46, rank: 65 }, // Namibia
@@ -92,6 +98,7 @@ export const CPI_RANK: Record<string, CpiEntry> = {
   RO: { score: 45, rank: 70 }, // Romania
   ST: { score: 45, rank: 70 }, // São Tomé and Príncipe
   JM: { score: 44, rank: 73 }, // Jamaica
+  SB: { score: 44, rank: 73 }, // Solomon Islands
   TL: { score: 44, rank: 73 }, // Timor-Leste
   CN: { score: 43, rank: 76 }, // China
   CI: { score: 43, rank: 76 }, // Côte d'Ivoire
@@ -121,6 +128,7 @@ export const CPI_RANK: Record<string, CpiEntry> = {
   GM: { score: 37, rank: 99 }, // The Gambia
   ZM: { score: 37, rank: 99 }, // Zambia
   AR: { score: 36, rank: 104 }, // Argentina
+  BZ: { score: 36, rank: 104 }, // Belize
   UA: { score: 36, rank: 104 }, // Ukraine
   BR: { score: 35, rank: 107 }, // Brazil
   LK: { score: 35, rank: 107 }, // Sri Lanka
@@ -145,6 +153,7 @@ export const CPI_RANK: Record<string, CpiEntry> = {
   NE: { score: 31, rank: 124 }, // Niger
   TR: { score: 31, rank: 124 }, // Türkiye
   UZ: { score: 31, rank: 124 }, // Uzbekistan
+  AZ: { score: 30, rank: 130 }, // Azerbaijan
   EG: { score: 30, rank: 130 }, // Egypt
   KE: { score: 30, rank: 130 }, // Kenya
   MR: { score: 30, rank: 130 }, // Mauritania

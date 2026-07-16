@@ -1,13 +1,15 @@
 /**
- * Sanctions posture by country — curated, sourced, conservative.
+ * Legacy v1 sanctions posture by country.
  *
  * This is a *country-level programme* view (is a jurisdiction subject to a
  * comprehensive embargo / sectoral / targeted regime by a major imposer), NOT a
  * count of individual SDN designations. Almost every country has *some* listed
  * persons; that does not make the country "sanctioned". So we only record a
- * programme where a major imposer maintains a jurisdiction-level regime, and we
- * cite the source and a review date per row. Mislabelling a country is a
- * reputational risk, so this table is hand-curated, not scraped.
+ * programme where a major imposer maintains a jurisdiction-level regime.
+ * This eight-country table is retained only to reproduce the v1 snapshot. It is
+ * incomplete and is not eligible for v2 scoring. The complete, reviewable v2
+ * catalogue lives in sanctionsRegimeCandidates.ts and remains fail-closed until
+ * an independent compliance practitioner approves its country nexus and tiers.
  *
  * Tiers:
  *   comprehensive — broad embargo (virtually all trade/finance prohibited)
@@ -15,8 +17,8 @@
  *   targeted      — asset freezes / travel bans on listed persons + some measures
  *
  * Sources: OFAC (ofac.treasury.gov), UK (gov.uk sanctions), EU (sanctionsmap.eu),
- * UN Security Council. Reviewed 2026-07. Sanctions change often — verify before
- * relying operationally.
+ * UN Security Council. Snapshot dated 2026-07; do not treat that date as current
+ * legal approval or rely on these rows operationally.
  */
 
 export type SanctionsImposer = "OFAC" | "UK" | "EU" | "UN";

@@ -25,6 +25,13 @@ describe("extractMentionedIso2", () => {
   it("returns empty for text with no country names", () => {
     expect(extractMentionedIso2("no jurisdictions listed here").size).toBe(0);
   });
+
+  it("resolves the current official FATF jurisdiction labels", () => {
+    const found = extractMentionedIso2(
+      "Democratic Republic of Congo; Lao People's Democratic Republic; Virgin Islands (UK)",
+    );
+    expect([...found].sort()).toEqual(["CD", "LA", "VG"]);
+  });
 });
 
 describe("diffFatfStatus", () => {

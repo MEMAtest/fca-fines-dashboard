@@ -1,12 +1,18 @@
 import { CPI_SOURCE, CPI_YEAR } from "./cpiData.js";
-import { FATF_LAST_PLENARY, FATF_SOURCE_URL } from "./fatfStatus.js";
+import { FATF_LAST_PLENARY, FATF_LIST_SHA256, FATF_SOURCE_URL, FATF_VERIFIED_AT } from "./fatfStatus.js";
 import {
+  FATF_ASSESSMENT_EFFECTIVE_AT,
   FATF_ASSESSMENT_RETRIEVED_AT,
   FATF_ASSESSMENT_SOURCE,
   FATF_ASSESSMENT_SHA256,
 } from "./fatfAssessmentData.js";
 import { GOVERNANCE_RETRIEVED_AT, GOVERNANCE_SOURCE, GOVERNANCE_VINTAGE } from "./governanceData.js";
-import { SANCTIONS_REVIEWED } from "./sanctionsStatus.js";
+import {
+  SANCTIONS_CANDIDATE_COUNTRY_COUNT,
+  SANCTIONS_CANDIDATE_SCORING_READY,
+  SANCTIONS_CATALOGUE_REVIEWED_AS_OF,
+  SANCTIONS_REGIME_CANDIDATES,
+} from "./sanctionsRegimeCandidates.js";
 
 export type CountryRiskSourceState = "current" | "stale" | "review-required" | "unavailable";
 
@@ -30,11 +36,11 @@ export const COUNTRY_RISK_SOURCES: CountryRiskSourceStatus[] = [
     sourceUrl: FATF_SOURCE_URL,
     scored: true,
     cadence: "weekly",
-    state: "review-required",
+    state: "current",
     effectiveAt: FATF_LAST_PLENARY,
-    retrievedAt: FATF_LAST_PLENARY,
-    sha256: null,
-    note: "The curated plenary snapshot is current, but weekly verification evidence is not yet persisted; changes require approval before publication.",
+    retrievedAt: FATF_VERIFIED_AT,
+    sha256: FATF_LIST_SHA256,
+    note: `The official black and grey list statements were reverified on ${FATF_VERIFIED_AT}; future status changes still require approval before publication.`,
   },
   {
     id: "fatf-assessments",
@@ -43,7 +49,7 @@ export const COUNTRY_RISK_SOURCES: CountryRiskSourceStatus[] = [
     scored: true,
     cadence: "monthly",
     state: FATF_ASSESSMENT_RETRIEVED_AT ? "current" : "unavailable",
-    effectiveAt: FATF_ASSESSMENT_RETRIEVED_AT,
+    effectiveAt: FATF_ASSESSMENT_EFFECTIVE_AT,
     retrievedAt: FATF_ASSESSMENT_RETRIEVED_AT,
     sha256: FATF_ASSESSMENT_SHA256,
     note: FATF_ASSESSMENT_RETRIEVED_AT
@@ -70,11 +76,13 @@ export const COUNTRY_RISK_SOURCES: CountryRiskSourceStatus[] = [
     sourceUrl: "https://scsanctions.un.org/resources/xml/en/name/consolidated.xml",
     scored: true,
     cadence: "daily",
-    state: "review-required",
-    effectiveAt: SANCTIONS_REVIEWED,
-    retrievedAt: null,
+    state: SANCTIONS_CANDIDATE_SCORING_READY ? "current" : "review-required",
+    effectiveAt: SANCTIONS_CATALOGUE_REVIEWED_AS_OF,
+    retrievedAt: SANCTIONS_CATALOGUE_REVIEWED_AS_OF,
     sha256: null,
-    note: "Existing classifications are conservative and incomplete; absence is treated as unknown in v2.",
+    note: SANCTIONS_CANDIDATE_SCORING_READY
+      ? `Approved geographic-regime coverage contains ${SANCTIONS_REGIME_CANDIDATES.length} imposer-country records across ${SANCTIONS_CANDIDATE_COUNTRY_COUNT} countries.`
+      : `Official catalogues now cover ${SANCTIONS_REGIME_CANDIDATES.length} candidate imposer-country records across ${SANCTIONS_CANDIDATE_COUNTRY_COUNT} countries. Tier and country-nexus decisions await independent compliance approval; absence remains unknown in v2.`,
   },
   {
     id: "transparency-cpi",

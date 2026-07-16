@@ -1,27 +1,27 @@
 {
   "version": 1,
-  "approvedAt": null,
+  "approvedAt": "2026-07-16T05:41:25.456Z",
   "sources": [
     {
       "id": "ofac-programmes",
       "url": "https://ofac.treasury.gov/sanctions-programs-and-country-information",
       "minimumBytes": 5000,
       "requiredText": "Sanctions Programs",
-      "approvedFingerprint": null
+      "approvedFingerprint": "69620fbe766e2114eda53f2f4ace520f9b63576b31fb07c2eafcf6cd2072764c"
     },
     {
       "id": "uk-regimes",
       "url": "https://www.gov.uk/government/collections/uk-sanctions-regimes-under-the-sanctions-act",
       "minimumBytes": 5000,
       "requiredText": "sanctions regimes",
-      "approvedFingerprint": null
+      "approvedFingerprint": "d03bedee11bc6f840ef215deeaad5a6888f7f3623fc98c773bcb0d88e56e3b1a"
     },
     {
       "id": "eu-resources",
       "url": "https://finance.ec.europa.eu/eu-and-world/sanctions-restrictive-measures/overview-sanctions-and-related-resources_en",
       "minimumBytes": 5000,
       "requiredText": "sanctions",
-      "approvedFingerprint": null
+      "approvedFingerprint": "c1b9e34e9054e25837027df1ba8cf67570d9525254f9552a8ba307001c5b684b"
     },
     {
       "id": "un-consolidated-list",
@@ -29,7 +29,7 @@
       "format": "xml",
       "minimumBytes": 500000,
       "requiredText": "CONSOLIDATED_LIST",
-      "approvedFingerprint": null
+      "approvedFingerprint": "293d47ec8abcf223a380298c33afa4bd0dc55b68d323edae28a3f492ee6ca41a"
     }
   ]
 }

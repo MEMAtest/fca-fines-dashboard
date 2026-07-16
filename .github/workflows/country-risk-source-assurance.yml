@@ -44,8 +44,16 @@ jobs:
           node-version: 22
           cache: npm
       - run: npm ci
+      - run: npx playwright install --with-deps chromium
+      - name: Verify FATF official black and grey lists
+        run: xvfb-run -a npm run country-risk:verify-fatf
       - name: Verify FATF official workbook lane
-        run: npm run country-risk:ingest-fatf -- --dry-run
+        run: xvfb-run -a npm run country-risk:ingest-fatf -- --dry-run
+      - if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: fatf-list-review
+          path: /tmp/country-risk-fatf-list-review.json
 
   monthly-release-detection:
     if: (github.event_name == 'schedule' && github.event.schedule == '31 7 1 * *') || inputs.lane == 'monthly' || inputs.lane == 'all'

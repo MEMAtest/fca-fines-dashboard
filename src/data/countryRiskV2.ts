@@ -97,7 +97,7 @@ export function fatfAssessmentRisk(record: FatfAssessmentRecord | undefined): {
     score: round1(weighted.reduce((sum, [value, weight]) => sum + value * weight, 0) / totalWeight),
     effectiveness: effectiveness === null ? null : round1(effectiveness),
     technicalCompliance: technicalCompliance === null ? null : round1(technicalCompliance),
-    evidenceCount: effectivenessValues.length + technicalValues.length,
+    evidenceCount: effectivenessValues.length + technicalValues.length + (record.technicalNotApplicable?.length ?? 0),
   };
 }
 
@@ -120,7 +120,10 @@ export function sanctionsPillarRisk(
   sanctions: CountrySanctions | undefined,
   coverageComplete: boolean,
 ): { score: number | null; evidenceCount: number; highestTier?: SanctionsTier } {
-  if (!coverageComplete && !sanctions) return { score: null, evidenceCount: 0 };
+  // A partial catalogue cannot prove a zero for absent countries or a complete
+  // breadth calculation for present ones. Keep the whole pillar fail-closed
+  // until all four imposer catalogues and classifications are approved.
+  if (!coverageComplete) return { score: null, evidenceCount: 0 };
   const perImposer = IMPOSERS.map((imposer) => {
     const tiers = sanctions?.programs.filter((program) => program.imposer === imposer).map((program) => program.tier) ?? [];
     return tiers.length ? Math.max(...tiers.map((tier) => SANCTIONS_RISK[tier])) : 0;

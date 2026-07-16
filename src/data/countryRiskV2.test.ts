@@ -77,8 +77,27 @@ describe("country risk v2 publication rules", () => {
     expect(result.confidence).toBe("low");
   });
 
+  it("does not score a legacy sanctions row while catalogue coverage is incomplete", () => {
+    const result = computeCountryRiskV2("IR", {
+      assessment,
+      governance,
+      sanctionsCoverageComplete: false,
+      sourceStates: { ...currentStates, sanctions: "review-required" },
+    });
+    expect(result.pillars.sanctions.score).toBeNull();
+    expect(result.pillars.sanctions.evidenceCount).toBe(0);
+    expect(result.status).toBe("provisional");
+  });
+
   it("withholds the headline when fewer than two pillars exist", () => {
     const result = computeCountryRiskV2("GG", {
+      assessment: {
+        iso2: "GG",
+        country: "Guernsey",
+        methodology: "2013",
+        effectiveness: {},
+        technicalCompliance: {},
+      },
       governance,
       sanctionsCoverageComplete: false,
       sourceStates: { aml: "unavailable", governance: "current", sanctions: "review-required" },

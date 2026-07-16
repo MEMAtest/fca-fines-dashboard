@@ -9,14 +9,18 @@ import { buildPgPoolConfig, resolveConnectionString } from "../server/db.js";
 async function main() {
   const connectionString = resolveConnectionString();
   if (!connectionString) throw new Error("DATABASE_URL is required");
-  const migration = await readFile(
-    join(dirname(fileURLToPath(import.meta.url)), "..", "migrations", "20260715_country_risk_v2.sql"),
-    "utf8",
-  );
+  const migrationDirectory = join(dirname(fileURLToPath(import.meta.url)), "..", "migrations");
+  const migrationNames = [
+    "20260715_country_risk_v2.sql",
+    "20260716_country_risk_sanctions_review.sql",
+  ];
   const pool = new pg.Pool(buildPgPoolConfig(connectionString));
   try {
-    await pool.query(migration);
-    console.log("Applied country-risk v2 migration");
+    for (const migrationName of migrationNames) {
+      const migration = await readFile(join(migrationDirectory, migrationName), "utf8");
+      await pool.query(migration);
+      console.log(`Applied ${migrationName}`);
+    }
   } finally {
     await pool.end();
   }

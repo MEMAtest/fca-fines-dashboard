@@ -48,6 +48,7 @@ function findHeader(rows: unknown[][]): number {
 
 export interface ParsedFatfWorkbook {
   methodology: FatfAssessmentMethodology;
+  sourceUpdatedAt?: string;
   records: FatfAssessmentRecord[];
   unresolvedCountries: string[];
 }
@@ -61,21 +62,32 @@ export function parseFatfWorkbook(
   }
 
   const workbook = XLSX.read(buffer, { type: "buffer" });
-  const byIso2 = new Map<string, FatfAssessmentRecord>();
+  const candidates = new Map<string, { record: FatfAssessmentRecord; summary: boolean }>();
+  const assessmentDates = new Map<string, string>();
   const unresolved = new Set<string>();
+  let sourceUpdatedAt: string | undefined;
 
   for (const sheetName of workbook.SheetNames) {
     const sheet = workbook.Sheets[sheetName];
     const rows = XLSX.utils.sheet_to_json<unknown[]>(sheet, { header: 1, defval: null });
+    if (!sourceUpdatedAt) {
+      const updatedLabel = rows.flat().find((cell) => /^updated\s+\d{1,2}\s+\p{L}+\s+\d{4}$/iu.test(String(cell ?? "").trim()));
+      if (updatedLabel) {
+        const parsed = new Date(`${String(updatedLabel).trim().replace(/^updated\s+/i, "")} UTC`);
+        if (!Number.isNaN(parsed.getTime())) sourceUpdatedAt = parsed.toISOString().slice(0, 10);
+      }
+    }
     const headerIndex = findHeader(rows);
     if (headerIndex < 0) continue;
 
     const header = rows[headerIndex];
-    const assessmentDateIndex = header.findIndex((cell) =>
+    const headerLabel = (cell: unknown) => String(cell ?? "").replace(/\s+/g, " ").trim();
+    const reportDateIndex = header.findIndex((cell) =>
       /(?:ASSESSMENT|REPORT|PUBLICATION).*(?:DATE|YEAR)|(?:DATE|YEAR).*(?:ASSESSMENT|REPORT|PUBLICATION)/i.test(
-        String(cell ?? ""),
+        headerLabel(cell),
       ),
     );
+    const reportTypeIndex = header.findIndex((cell) => /REPORT.*TYPE/i.test(headerLabel(cell)));
     const ioColumns = header.flatMap((cell, index) => {
       const key = effectivenessKey(cell);
       return key ? [{ index, key }] : [];
@@ -103,32 +115,49 @@ export function parseFatfWorkbook(
         if (EFFECTIVENESS.has(value)) effectiveness[key] = value;
       }
       const technicalCompliance: FatfAssessmentRecord["technicalCompliance"] = {};
+      const technicalNotApplicable: Array<`R${number}`> = [];
       for (const { index, key } of recommendationColumns) {
         const value = rating(row[index]) as FatfTechnicalRating;
         if (TECHNICAL.has(value)) technicalCompliance[key] = value;
+        else if (rating(row[index]) === "NA") technicalNotApplicable.push(key);
       }
       if (!Object.keys(effectiveness).length && !Object.keys(technicalCompliance).length) continue;
-
-      byIso2.set(country.iso2, {
+      const reportType = reportTypeIndex >= 0 ? String(row[reportTypeIndex] ?? "").trim().toUpperCase() : "";
+      const reportDate = reportDateIndex >= 0 && row[reportDateIndex]
+        ? String(row[reportDateIndex]).trim()
+        : undefined;
+      if (reportType === "MER" && reportDate) {
+        const existing = assessmentDates.get(country.iso2);
+        if (!existing || reportDate > existing) assessmentDates.set(country.iso2, reportDate);
+      }
+      const record: FatfAssessmentRecord = {
         iso2: country.iso2,
         country: country.name,
         methodology,
-        assessmentDate:
-          assessmentDateIndex >= 0 && row[assessmentDateIndex]
-            ? String(row[assessmentDateIndex]).trim()
-            : undefined,
+        ratingsDate: reportDate,
         effectiveness,
         technicalCompliance,
-      });
+        technicalNotApplicable: technicalNotApplicable.length ? technicalNotApplicable : undefined,
+      };
+      const summary = reportType.includes("MER+FUR");
+      const existing = candidates.get(country.iso2);
+      if (!existing || (summary && !existing.summary) || (summary === existing.summary && (reportDate ?? "") > (existing.record.ratingsDate ?? ""))) {
+        candidates.set(country.iso2, { record, summary });
+      }
     }
   }
 
-  if (!byIso2.size) {
+  if (!candidates.size) {
     throw new Error("No FATF assessment records found; workbook schema may have changed");
   }
+  const records = [...candidates.values()].map(({ record }) => ({
+    ...record,
+    assessmentDate: assessmentDates.get(record.iso2) ?? record.ratingsDate,
+  }));
   return {
     methodology,
-    records: [...byIso2.values()].sort((a, b) => a.country.localeCompare(b.country)),
+    sourceUpdatedAt,
+    records: records.sort((a, b) => a.country.localeCompare(b.country)),
     unresolvedCountries: [...unresolved].sort(),
   };
 }

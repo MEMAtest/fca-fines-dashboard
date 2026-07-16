@@ -51,6 +51,7 @@ import {
   type CountryDecision,
 } from "./countryDecision.js";
 import SCORE_SNAPSHOTS from "./scoreSnapshots.json" with { type: "json" };
+import { getFatfAssessment } from "./fatfAssessmentData.js";
 
 const SNAPSHOTS = SCORE_SNAPSHOTS as { date: string; scores: Record<string, number> }[];
 
@@ -240,14 +241,15 @@ export function fatfChangeText(change: FatfChange): string {
 
 /**
  * Countries that get a page / appear in the global index: any with a risk signal
- * (WGI governance, FATF listing, sanctions, or enforcement coverage). This is the
- * near-complete world (governance covers ~184); micro-states with no data at all
+ * (WGI governance, FATF assessment/listing, sanctions, or enforcement coverage). This is the
+ * near-complete world; micro-states with no data at all
  * are excluded rather than shown as an empty 0.
  */
 export function pageCountries(): Country[] {
   return COUNTRIES.filter(
     (c) =>
       hasGovernanceData(c.iso2) ||
+      Boolean(getFatfAssessment(c.iso2)) ||
       isFatfListed(c.iso2) ||
       isSanctioned(c.iso2) ||
       hasEnforcementCoverage(c.iso2),

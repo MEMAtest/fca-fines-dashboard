@@ -4,6 +4,7 @@ import { computeCountryRiskV2, COUNTRY_RISK_METHODOLOGY_VERSION } from "../../sr
 import { getCpi, CPI_LICENCE, CPI_SOURCE, CPI_YEAR } from "../../src/data/cpiData.js";
 import { computeCountryRiskScore } from "../../src/data/countryRiskScore.js";
 import { COUNTRY_RISK_SOURCES } from "../../src/data/countryRiskSources.js";
+import { getSanctionsRegimeCandidates } from "../../src/data/sanctionsRegimeCandidates.js";
 
 export default function handler(req: VercelRequest, res: VercelResponse) {
   res.setHeader("Access-Control-Allow-Origin", "*");
@@ -37,5 +38,6 @@ export default function handler(req: VercelRequest, res: VercelResponse) {
     },
     methodologyVersion: COUNTRY_RISK_METHODOLOGY_VERSION,
     sources: COUNTRY_RISK_SOURCES,
+    sanctionsEvidenceCandidates: getSanctionsRegimeCandidates(iso2),
   });
 }
