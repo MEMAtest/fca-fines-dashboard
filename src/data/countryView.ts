@@ -40,6 +40,11 @@ import {
   type RiskBand as ScoreBand,
 } from "./countryRiskScore.js";
 import { getCpi, type CpiEntry } from "./cpiData.js";
+import {
+  buildDecision,
+  hasComprehensiveSanctions as computeHasComprehensiveSanctions,
+  type CountryDecision,
+} from "./countryDecision.js";
 
 const MONTHS = [
   "Jan", "Feb", "Mar", "Apr", "May", "Jun",
@@ -89,6 +94,14 @@ export interface CountryView {
   cpi?: CpiEntry;
   /** Same-region peers (highest-risk first), for the regional-context panel. */
   regionalPeers: CountryIndexEntry[];
+  /** Templated compliance decision-support (verdict, treatment, drivers, etc.). */
+  decision: CountryDecision;
+  /** True if RegActions has enforcement coverage (distinguishes "not assessed" from a genuine 0). */
+  enforcementAssessed: boolean;
+  /** Any comprehensive country-wide sanctions programme. */
+  hasComprehensiveSanctions: boolean;
+  /** Sanctioned but not comprehensively (targeted/sectoral exposure). */
+  hasTargetedSanctions: boolean;
   lastPlenary: string;
   nextPlenary: string;
 }
@@ -127,6 +140,25 @@ export function buildCountryView(country: Country): CountryView {
         FATF_LAST_PLENARY,
       )} plenary.`;
 
+  const riskScore = computeCountryRiskScore(country.iso2);
+  const breakdown = scoreBreakdown(country.iso2);
+  const cpi = getCpi(country.iso2);
+  const enforcementAssessed = !!enforcement;
+  const hasComprehensiveSanctions = computeHasComprehensiveSanctions(sanctions);
+  const hasTargetedSanctions = !!sanctionsTier && !hasComprehensiveSanctions;
+
+  const decision = buildDecision({
+    name: country.name,
+    riskScore,
+    breakdown,
+    sanctions,
+    sanctionsTier,
+    enforcementAssessed,
+    cpi,
+    fatf,
+    lastPlenary: FATF_LAST_PLENARY,
+  });
+
   return {
     country,
     flag: flagEmoji(country.iso2),
@@ -139,11 +171,15 @@ export function buildCountryView(country: Country): CountryView {
     sanctions,
     sanctionsTier,
     sanctionsBand: sanctionsToBand(sanctionsTier),
-    riskScore: computeCountryRiskScore(country.iso2),
-    breakdown: scoreBreakdown(country.iso2),
+    riskScore,
+    breakdown,
     globalAverage: globalAverageRiskScore(),
-    cpi: getCpi(country.iso2),
+    cpi,
     regionalPeers: regionalPeers(country.iso2, country.region),
+    decision,
+    enforcementAssessed,
+    hasComprehensiveSanctions,
+    hasTargetedSanctions,
     lastPlenary: FATF_LAST_PLENARY,
     nextPlenary: FATF_NEXT_PLENARY,
   };

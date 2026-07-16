@@ -2455,3 +2455,217 @@ button.cx-kpi:hover {
   padding: 1.5rem 0;
   font-size: 0.9rem;
 }
+
+/* ═══ Decision-support report (Stage 9) ══════════════════════════════════════ */
+/* Verdict in the hero */
+.cx-report__verdict {
+  font-size: 0.98rem;
+  line-height: 1.6;
+  color: #334155;
+  margin: 0.6rem 0;
+}
+.cx-report__verdict strong {
+  color: #0b1f2a;
+}
+.cx-report__chip--band {
+  color: #fff;
+  font-weight: 700;
+}
+.cx-report__chip--low { background: #10b981; }
+.cx-report__chip--moderate { background: #f59e0b; }
+.cx-report__chip--high { background: #ea580c; }
+.cx-report__chip--very-high { background: #dc2626; }
+
+/* Recommended treatment + assessment currency */
+.cx-decide {
+  display: grid;
+  grid-template-columns: 1fr 1.1fr;
+  gap: 1rem;
+  margin: 0 0 1.25rem;
+}
+.cx-treat,
+.cx-whatchanged {
+  border: 1px solid #e5e7eb;
+  border-radius: 14px;
+  background: #fff;
+  padding: 1rem 1.1rem;
+}
+.cx-treat {
+  border-left: 4px solid #0fa77d;
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+.cx-treat__label,
+.cx-whatchanged__label {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: #94a3b8;
+  font-weight: 700;
+}
+.cx-treat__value {
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: #0b1f2a;
+  margin: 0;
+  line-height: 1.4;
+}
+.cx-whatchanged__list {
+  list-style: none;
+  margin: 0.5rem 0 0;
+  padding: 0;
+  display: grid;
+  gap: 0.3rem;
+}
+.cx-whatchanged__list li {
+  display: grid;
+  grid-template-columns: 9rem 1fr auto;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.82rem;
+  color: #475569;
+  border-bottom: 1px dashed #eef2f7;
+  padding-bottom: 0.25rem;
+}
+.cx-whatchanged__list li:last-child {
+  border-bottom: none;
+}
+.cx-whatchanged__k {
+  color: #64748b;
+}
+.cx-whatchanged__list b {
+  color: #0b1f2a;
+  font-weight: 600;
+}
+.cx-whatchanged__date {
+  color: #94a3b8;
+  font-size: 0.74rem;
+  white-space: nowrap;
+}
+
+/* Corrected indicators */
+.cx-glance__card--muted {
+  background: #f8fafc;
+}
+.cx-glance__card--muted .cx-glance__value {
+  color: #64748b;
+  font-size: 0.95rem;
+}
+.cx-glance__note {
+  font-size: 0.78rem;
+  color: #94a3b8;
+  line-height: 1.5;
+  margin: 0.4rem 0 1.5rem;
+  max-width: 72ch;
+}
+
+/* Decision-support analysis block */
+.cx-dsx {
+  margin: 1.75rem 0;
+}
+.cx-dsx__cols {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.25rem;
+  margin: 0.75rem 0 1.25rem;
+}
+.cx-dsx__col {
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  padding: 0.9rem 1.1rem;
+  background: #fff;
+}
+.cx-dsx__col--mitigants {
+  border-color: #d1fae5;
+  background: #f6fefb;
+}
+.cx-analysis__sub {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 1rem;
+  font-weight: 700;
+  color: #0b1f2a;
+  margin: 0 0 0.5rem;
+}
+.cx-dsx__impact {
+  margin: 1.25rem 0;
+}
+.cx-impact-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 0.5rem;
+  font-size: 0.88rem;
+}
+.cx-impact-table th {
+  text-align: left;
+  background: #e0f7f0;
+  padding: 0.5rem 0.7rem;
+  color: #0b1f2a;
+  font-size: 0.8rem;
+}
+.cx-impact-table td {
+  padding: 0.5rem 0.7rem;
+  border-bottom: 1px solid #eef2f7;
+  color: #475569;
+  vertical-align: top;
+}
+.cx-impact-table td:first-child {
+  font-weight: 600;
+  color: #0b1f2a;
+  white-space: nowrap;
+}
+.cx-impact-level {
+  font-size: 0.72rem;
+  font-weight: 700;
+  padding: 0.1rem 0.5rem;
+  border-radius: 999px;
+}
+.cx-impact-level--low { background: #d1fae5; color: #047857; }
+.cx-impact-level--medium { background: #fef3c7; color: #b45309; }
+.cx-impact-level--high { background: #ffedd5; color: #c2410c; }
+.cx-impact-level--enhanced { background: #fee2e2; color: #b91c1c; }
+.cx-dsx__controls {
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  padding: 1rem 1.1rem;
+  background: #fff;
+  margin: 1.25rem 0;
+  scroll-margin-top: 90px;
+}
+.cx-edd {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  margin-top: 0.4rem;
+}
+.cx-edd__chip {
+  font-size: 0.78rem;
+  color: #7c2d12;
+  background: #fff7ed;
+  border: 1px solid #fed7aa;
+  border-radius: 999px;
+  padding: 0.25rem 0.65rem;
+}
+.cx-dsx__disclaimer {
+  font-size: 0.78rem;
+  font-style: italic;
+  color: #94a3b8;
+  border-top: 1px solid #eef2f7;
+  padding-top: 0.8rem;
+  margin-top: 1.25rem;
+}
+
+@media (max-width: 720px) {
+  .cx-decide,
+  .cx-dsx__cols {
+    grid-template-columns: 1fr;
+  }
+  .cx-whatchanged__list li {
+    grid-template-columns: 1fr auto;
+  }
+}

@@ -1,8 +1,12 @@
 import { lazy, Suspense, useMemo } from "react";
 import { Link, useParams } from "react-router-dom";
 import {
+  AlertTriangle,
   ArrowLeft,
   Ban,
+  CalendarClock,
+  CheckCircle2,
+  ClipboardCheck,
   ExternalLink,
   Gavel,
   Landmark,
@@ -15,6 +19,7 @@ import { getCountryBySlug, countrySlug } from "../data/countries.js";
 import { FATF_SOURCE_URL } from "../data/fatfStatus.js";
 import { sanctionsTierLabel } from "../data/sanctionsStatus.js";
 import { bandLabel, bandFor, type RiskBand } from "../data/countryRiskScore.js";
+import { GOVERNANCE_VINTAGE } from "../data/governanceData.js";
 import { CPI_YEAR, CPI_TOTAL } from "../data/cpiData.js";
 import { getNarrative } from "../data/countryNarratives.js";
 import { CountryEnforcementLive } from "../components/CountryEnforcementLive.js";
@@ -95,6 +100,10 @@ export function CountryHub() {
     globalAverage,
     cpi,
     regionalPeers,
+    decision,
+    enforcementAssessed,
+    hasComprehensiveSanctions,
+    hasTargetedSanctions,
   } = view;
 
   const narrative = getNarrative(country.iso2) ?? null;
@@ -124,14 +133,16 @@ export function CountryHub() {
             </div>
           </div>
           <div className="cx-report__chips">
+            <span className={`cx-report__chip cx-report__chip--band cx-report__chip--${riskScore.band}`}>
+              {bandLabel(riskScore.band)} risk
+            </span>
             <span className="cx-report__chip">AML/CFT</span>
             <span className="cx-report__chip">Sanctions</span>
             <span className="cx-report__chip">Governance</span>
-            <span className="cx-report__chip">Enforcement</span>
           </div>
-          {narrative?.summary && (
-            <p className="cx-report__lead">{narrative.summary}</p>
-          )}
+          <p className="cx-report__verdict">
+            <strong>{decision.verdictHeadline}.</strong> {decision.verdictParagraph}
+          </p>
           <p className="country-hub__freshness">
             FATF status as of the {formatDate(view.lastPlenary)} plenary ·{" "}
             <a href={FATF_SOURCE_URL} target="_blank" rel="noopener noreferrer">
@@ -211,12 +222,41 @@ export function CountryHub() {
               )}
             </div>
             <p className="country-score__disclaimer">
-              Basel-structured, Wolfsberg-aligned. Enforcement volume and CPI are shown
-              but not scored. <Link to="/countries/methodology">Full methodology →</Link>
+              Basel-structured, Wolfsberg-aligned · WGI {GOVERNANCE_VINTAGE} · FATF{" "}
+              {formatDate(view.lastPlenary)} · OFAC/UK/EU/UN. Enforcement volume and CPI
+              are shown but not scored.{" "}
+              <Link to="/countries/methodology">Full methodology →</Link>
             </p>
           </div>
         </section>
       </header>
+
+      {/* Recommended treatment + what changed */}
+      <section className="cx-decide">
+        <div className="cx-treat">
+          <span className="cx-treat__label">
+            <ClipboardCheck size={15} /> Recommended treatment
+          </span>
+          <p className="cx-treat__value">{decision.treatment}</p>
+          <a href="#controls" className="cx-panel-link">
+            View recommended controls ↓
+          </a>
+        </div>
+        <div className="cx-whatchanged">
+          <span className="cx-whatchanged__label">
+            <CalendarClock size={15} /> Assessment currency
+          </span>
+          <ul className="cx-whatchanged__list">
+            {decision.whatChanged.map((w) => (
+              <li key={w.label}>
+                <span className="cx-whatchanged__k">{w.label}</span>
+                <b>{w.value}</b>
+                <span className="cx-whatchanged__date">{w.asOf}</span>
+              </li>
+            ))}
+          </ul>
+        </div>
+      </section>
 
       {/* At a glance */}
       <section className="cx-glance" aria-label="At a glance">
@@ -230,12 +270,16 @@ export function CountryHub() {
         </div>
         <div className="cx-glance__card">
           <span className="cx-glance__icon"><Ban size={16} /></span>
-          <span className="cx-glance__label">Sanctions</span>
+          <span className="cx-glance__label">Comprehensive sanctions</span>
           <span className="cx-glance__value">
-            {sanctionsTier ? sanctionsTierLabel(sanctionsTier) : "None"}
+            {hasComprehensiveSanctions ? "In place" : "None identified"}
           </span>
           <span className="cx-glance__sub">
-            {sanctions ? `${sanctions.programs.length} programme${sanctions.programs.length === 1 ? "" : "s"}` : "No country programmes"}
+            {hasComprehensiveSanctions
+              ? `${sanctions!.programs.length} country programme${sanctions!.programs.length === 1 ? "" : "s"} (OFAC / UK / EU / UN)`
+              : hasTargetedSanctions
+                ? "Targeted programmes in place — screen applicable lists"
+                : "Targeted exposure possible — screen persons, entities & sectors"}
           </span>
         </div>
         <div className="cx-glance__card">
@@ -252,33 +296,116 @@ export function CountryHub() {
             {cpi ? `Rank #${cpi.rank} of ${CPI_TOTAL} · ${CPI_YEAR}` : "No CPI score"}
           </span>
         </div>
-        <div className="cx-glance__card">
+        <div className={`cx-glance__card${enforcementAssessed ? "" : " cx-glance__card--muted"}`}>
           <span className="cx-glance__icon"><Gavel size={16} /></span>
-          <span className="cx-glance__label">Enforcement</span>
+          <span className="cx-glance__label">Enforcement data</span>
           <span className="cx-glance__value">
-            {enforcement ? formatCount(enforcement.trackedActions) : "0"}
+            {enforcementAssessed ? formatCount(enforcement!.trackedActions) : "Not yet assessed"}
           </span>
           <span className="cx-glance__sub">
-            {enforcement
-              ? `From ${enforcement.regulatorCount} regulator${enforcement.regulatorCount === 1 ? "" : "s"}`
-              : "No RegActions coverage"}
+            {enforcementAssessed
+              ? `From ${enforcement!.regulatorCount} regulator${enforcement!.regulatorCount === 1 ? "" : "s"}`
+              : "RegActions coverage not currently available"}
           </span>
         </div>
       </section>
+      <p className="cx-glance__note">
+        FATF listing is one indicator only and does not by itself determine the overall
+        AML / financial-crime risk rating. A country may not be comprehensively sanctioned
+        while individuals, entities, vessels or sectors connected with it remain restricted.
+      </p>
 
-      {/* Why it matters */}
-      {narrative && narrative.whyItMatters.length > 0 && (
-        <section className="cx-prose" aria-labelledby="why-heading">
-          <h2 id="why-heading" className="country-hub__section-title">
-            Why {country.name} matters
-          </h2>
+      {/* RegActions analysis — decision-support */}
+      <section className="cx-dsx" aria-labelledby="analysis-heading">
+        <h2 id="analysis-heading" className="country-hub__section-title">
+          RegActions analysis
+        </h2>
+        {narrative?.analysis && <p className="cx-analysis__para">{narrative.analysis}</p>}
+
+        <div className="cx-dsx__cols">
+          <div className="cx-dsx__col">
+            <h3 className="cx-analysis__sub">
+              <AlertTriangle size={15} /> Principal risk drivers
+            </h3>
+            <ul className="cx-prose__bullets">
+              {decision.riskDrivers.map((d, i) => (
+                <li key={i}>{d}</li>
+              ))}
+            </ul>
+          </div>
+          <div className="cx-dsx__col cx-dsx__col--mitigants">
+            <h3 className="cx-analysis__sub">
+              <CheckCircle2 size={15} /> Mitigating factors
+            </h3>
+            <ul className="cx-prose__bullets">
+              {decision.mitigatingFactors.map((d, i) => (
+                <li key={i}>{d}</li>
+              ))}
+            </ul>
+          </div>
+        </div>
+
+        <div className="cx-dsx__impact">
+          <h3 className="cx-analysis__sub">Business impact — what this means</h3>
+          <table className="cx-impact-table">
+            <thead>
+              <tr>
+                <th>Activity</th>
+                <th>Level</th>
+                <th>Implication</th>
+              </tr>
+            </thead>
+            <tbody>
+              {decision.businessImpact.map((r) => (
+                <tr key={r.activity}>
+                  <td>{r.activity}</td>
+                  <td>
+                    <span className={`cx-impact-level cx-impact-level--${r.level.toLowerCase()}`}>
+                      {r.level}
+                    </span>
+                  </td>
+                  <td>{r.implication}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+
+        <div id="controls" className="cx-dsx__controls">
+          <h3 className="cx-analysis__sub">
+            <ClipboardCheck size={15} /> Recommended controls
+          </h3>
           <ul className="cx-prose__bullets">
-            {narrative.whyItMatters.map((b, i) => (
-              <li key={i}>{b}</li>
+            {decision.recommendedControls.map((d, i) => (
+              <li key={i}>{d}</li>
             ))}
           </ul>
-        </section>
-      )}
+          <h3 className="cx-analysis__sub">Enhanced due diligence triggers</h3>
+          <div className="cx-edd">
+            {decision.eddTriggers.map((t, i) => (
+              <span key={i} className="cx-edd__chip">{t}</span>
+            ))}
+          </div>
+        </div>
+
+        {narrative?.outlook && (
+          <>
+            <h3 className="cx-analysis__sub">Outlook</h3>
+            <p className="cx-analysis__para">{narrative.outlook}</p>
+          </>
+        )}
+        {narrative && narrative.keyWatchpoints.length > 0 && (
+          <>
+            <h3 className="cx-analysis__sub">Key watchpoints</h3>
+            <ul className="cx-prose__bullets">
+              {narrative.keyWatchpoints.map((w, i) => (
+                <li key={i}>{w}</li>
+              ))}
+            </ul>
+          </>
+        )}
+        <p className="cx-dsx__disclaimer">{decision.disclaimer}</p>
+      </section>
 
       {/* FATF status + history */}
       <section
@@ -383,30 +510,6 @@ export function CountryHub() {
           <p className="country-hub__enf-note">
             The composite RegActions Country Risk Score does not use enforcement volume.
           </p>
-        </section>
-      )}
-
-      {/* Analysis + outlook */}
-      {narrative && (
-        <section className="cx-analysis" aria-labelledby="analysis-heading">
-          <div className="cx-analysis__main">
-            <h2 id="analysis-heading" className="country-hub__section-title">
-              RegActions analysis
-            </h2>
-            <p className="cx-analysis__para">{narrative.analysis}</p>
-            <h3 className="cx-analysis__sub">Outlook</h3>
-            <p className="cx-analysis__para">{narrative.outlook}</p>
-          </div>
-          {narrative.keyWatchpoints.length > 0 && (
-            <aside className="cx-analysis__watch">
-              <h3 className="cx-analysis__sub">Key watchpoints</h3>
-              <ul className="cx-prose__bullets">
-                {narrative.keyWatchpoints.map((w, i) => (
-                  <li key={i}>{w}</li>
-                ))}
-              </ul>
-            </aside>
-          )}
         </section>
       )}
 
