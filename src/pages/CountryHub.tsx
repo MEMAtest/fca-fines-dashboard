@@ -231,7 +231,11 @@ export function CountryHub() {
     `World Bank — Worldwide Governance Indicators (${GOVERNANCE_VINTAGE})`,
     `Transparency International — CPI ${CPI_YEAR}`,
     `FATF — consolidated ratings (plenary ${formatDate(view.lastPlenary)})`,
-    "OFAC / UK / EU / UN — sanctions programmes",
+    // Keep the caveat in step with the framework-signal wording: while the
+    // independent sanctions-classification review is open, say so here too.
+    view.sanctionsCoverageComplete
+      ? "OFAC / UK / EU / UN — sanctions programmes"
+      : "OFAC / UK / EU / UN — sanctions programmes (classification review in progress)",
   ];
 
   // ── Regulators & legal framework module ──────────────────────────────────
