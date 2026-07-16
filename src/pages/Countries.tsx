@@ -319,7 +319,7 @@ function OverviewTab() {
   const top = useMemo(() => index.slice(0, 8), [index]);
   const pct = (n: number) => (total ? Math.round((n / total) * 100) : 0);
   const regionDonut = useMemo(
-    () => [...regionStats].map((r) => ({ name: r.region, value: r.count })).sort((a, b) => b.value - a.value),
+    () => [...regionStats].map((r) => ({ name: r.region, value: r.count, avg: r.avg })).sort((a, b) => b.value - a.value),
     [regionStats],
   );
   const topRegions = useMemo(
@@ -343,20 +343,6 @@ function OverviewTab() {
           </Suspense>
         </div>
         <div className="cx-ov__side">
-          <div className="cx-ov__kpis">
-            <div className="cx-ovkpi">
-              <span className="cx-ovkpi__v">{total}</span>
-              <span className="cx-ovkpi__l">Countries rated</span>
-            </div>
-            <div className="cx-ovkpi cx-ovkpi--black">
-              <span className="cx-ovkpi__v">{fatfCounts.black}</span>
-              <span className="cx-ovkpi__l">Black list · {pct(fatfCounts.black)}%</span>
-            </div>
-            <div className="cx-ovkpi cx-ovkpi--grey">
-              <span className="cx-ovkpi__v">{fatfCounts.grey}</span>
-              <span className="cx-ovkpi__l">Grey list · {pct(fatfCounts.grey)}%</span>
-            </div>
-          </div>
           <div className="mon-panel">
             <h3>Risk distribution</h3>
             <div className="cx-dist__bar">
@@ -418,6 +404,20 @@ function OverviewTab() {
                     <Cell key={d.name} fill={REGION_COLOUR[d.name] ?? "#cbd5e1"} />
                   ))}
                 </Pie>
+                <Tooltip
+                  content={({ active, payload }) => {
+                    if (!active || !payload?.length) return null;
+                    const d = payload[0].payload as { name: string; value: number; avg: number };
+                    const share = total > 0 ? Math.round((d.value / total) * 100) : 0;
+                    return (
+                      <div className="cx-donut-tip">
+                        <strong>{d.name}</strong>
+                        <span>{d.value} countries · {share}% of rated</span>
+                        <span>Average score {d.avg.toFixed(1)}/10</span>
+                      </div>
+                    );
+                  }}
+                />
               </PieChart>
             </ResponsiveContainer>
             <ul className="mon-donut__legend">
@@ -647,9 +647,11 @@ function GlobalIndex() {
       <header className="cx-dash__head">
         <h1 className="country-index__title">Global Country Risk Ratings</h1>
         <p className="cx-dash__lead">
-          Historical v1 comparison ratings across {index.length} jurisdictions. The decision-grade
-          v2 model is in parallel validation and explicitly withholds missing sanctions evidence.{" "}
-          <Link to="/countries/methodology/v2">Review v2 evidence and safeguards →</Link>
+          Country-by-country AML and financial-crime risk ratings for {index.length} jurisdictions,
+          scored 0-10 (higher = higher risk) from World Bank governance indicators with FATF and
+          sanctions escalators. Enforcement volume and corruption perception are shown for context
+          but never scored.{" "}
+          <Link to="/countries/methodology">How the score works →</Link>
         </p>
       </header>
 

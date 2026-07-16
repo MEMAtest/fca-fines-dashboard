@@ -1,4 +1,4 @@
-import { lazy, Suspense, useMemo, useState } from "react";
+import { lazy, Suspense, useEffect, useMemo, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import {
   AlertCircle,
@@ -18,6 +18,7 @@ import {
   Globe2,
   Info,
   Landmark,
+  Maximize2,
   Layers,
   Scale,
   ShieldCheck,
@@ -30,8 +31,6 @@ import { FATF_SOURCE_URL } from "../data/fatfStatus.js";
 import { bandLabel, bandFor, type RiskBand } from "../data/countryRiskScore.js";
 import { GOVERNANCE_VINTAGE } from "../data/governanceData.js";
 import { CPI_YEAR, CPI_TOTAL } from "../data/cpiData.js";
-import { computeCountryRiskV2 } from "../data/countryRiskV2.js";
-import { getSanctionsRegimeCandidates } from "../data/sanctionsRegimeCandidates.js";
 import {
   buildCountryView,
   formatDate,
@@ -139,6 +138,13 @@ export function CountryHub() {
     [country],
   );
   const [watched, setWatched] = useState(false);
+  const [zoomed, setZoomed] = useState<null | "attr" | "impact" | "sect" | "peers">(null);
+  useEffect(() => {
+    if (!zoomed) return;
+    const onKey = (e: KeyboardEvent) => e.key === "Escape" && setZoomed(null);
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [zoomed]);
 
   if (!country || !view) {
     return (
@@ -171,8 +177,6 @@ export function CountryHub() {
   } = view;
 
   const rank = globalRank(country.iso2);
-  const v2 = computeCountryRiskV2(country.iso2);
-  const sanctionsCandidates = getSanctionsRegimeCandidates(country.iso2);
   const markerPct = Math.min(100, (globalAverage / 10) * 100);
   const baseline = scoreHistory[0];
   const tiles = controlTiles(riskScore.band);
@@ -255,9 +259,105 @@ export function CountryHub() {
     },
   ];
 
+  const impactCard = (
+    <div className="cx-card cx-impact">
+            <button type="button" className="cx-zoombtn" aria-label="Expand" onClick={() => setZoomed("impact")}>
+              <Maximize2 size={12} />
+            </button>
+      <span className="cx-card__eyebrow">
+        <Briefcase size={12} /> Business impact
+      </span>
+      <ul className="cx-impact__list">
+        {decision.businessImpact.map((r) => (
+          <li key={r.activity}>
+            <div className="cx-impact__row">
+              <span className="cx-impact__act">{r.activity}</span>
+              <span className={`cx-tag cx-tag--lvl-${r.level.toLowerCase()}`}>{r.level}</span>
+            </div>
+            <span className="cx-impact__impl" title={r.implication}>
+              {r.implication}
+            </span>
+          </li>
+        ))}
+        <li className="cx-impact__overall">
+          <div className="cx-impact__row">
+            <span className="cx-impact__act">Overall business impact</span>
+            <span className={`cx-tag cx-tag--lvl-${overallImpact.toLowerCase()}`}>
+              {overallImpact}
+            </span>
+          </div>
+        </li>
+      </ul>
+    </div>
+  );
+
+  const sectCard = (
+    <div className="cx-card cx-sect">
+            <button type="button" className="cx-zoombtn" aria-label="Expand" onClick={() => setZoomed("sect")}>
+              <Maximize2 size={12} />
+            </button>
+      <span className="cx-card__eyebrow">
+        <Layers size={12} /> Sector exposure
+      </span>
+      <ul className="cx-sect__list">
+        {sectorExposure.map((s) => (
+          <li key={s.sector} className="cx-sect__row">
+            <span className="cx-sect__name">{s.sector}</span>
+            <span
+              className={`cx-tag cx-sect__tag cx-sect__tag--${s.level.toLowerCase()}`}
+            >
+              {s.level}
+            </span>
+            <span className="cx-sect__why" title={s.rationale}>
+              {s.rationale}
+            </span>
+          </li>
+        ))}
+      </ul>
+      <p className="cx-sect__note">
+        Derived from sanctions tier, FATF listing, WGI governance and CPI.
+      </p>
+    </div>
+  );
+
+  const peersCard = (
+    <div className="cx-card cx-peerc">
+            <button type="button" className="cx-zoombtn" aria-label="Expand" onClick={() => setZoomed("peers")}>
+              <Maximize2 size={12} />
+            </button>
+      <span className="cx-card__eyebrow">
+        <BarChart3 size={12} /> Peer comparison · {country.region}
+      </span>
+      <ul className="cx-peerc__list">
+        {peerBars.map((p) => (
+          <li key={p.iso2} className={`cx-peer${p.current ? " cx-peer--current" : ""}`}>
+            <Link to={`/countries/${p.slug}`} className="cx-peer__row">
+              <span className="cx-peer__flag" aria-hidden="true">{p.flag}</span>
+              <span className="cx-peer__name">{p.name}</span>
+              <span className="cx-peer__track">
+                <span
+                  className="cx-peer__fill"
+                  style={{ width: `${(p.score / 10) * 100}%`, background: BAND_COLOUR[p.band] }}
+                />
+              </span>
+              <span className="cx-peer__score">{p.score.toFixed(1)}</span>
+              <span className={`cx-peer__band cx-peer__band--${p.band}`}>{bandLabel(p.band)}</span>
+            </Link>
+          </li>
+        ))}
+      </ul>
+      <Link to="/countries" className="cx-card__link">
+        Compare countries →
+      </Link>
+    </div>
+  );
+
   // Attributed indicators card — rendered in the right rail.
   const attrCard = (
           <div className="cx-card cx-attr">
+            <button type="button" className="cx-zoombtn" aria-label="Expand" onClick={() => setZoomed("attr")}>
+              <Maximize2 size={12} />
+            </button>
             <span className="cx-card__eyebrow">
               <BadgeCheck size={12} /> Attributed indicators
             </span>
@@ -572,32 +672,7 @@ export function CountryHub() {
               </ul>
             </div>
 
-            <div className="cx-card cx-impact">
-              <span className="cx-card__eyebrow">
-                <Briefcase size={12} /> Business impact
-              </span>
-              <ul className="cx-impact__list">
-                {decision.businessImpact.map((r) => (
-                  <li key={r.activity}>
-                    <div className="cx-impact__row">
-                      <span className="cx-impact__act">{r.activity}</span>
-                      <span className={`cx-tag cx-tag--lvl-${r.level.toLowerCase()}`}>{r.level}</span>
-                    </div>
-                    <span className="cx-impact__impl" title={r.implication}>
-                      {r.implication}
-                    </span>
-                  </li>
-                ))}
-                <li className="cx-impact__overall">
-                  <div className="cx-impact__row">
-                    <span className="cx-impact__act">Overall business impact</span>
-                    <span className={`cx-tag cx-tag--lvl-${overallImpact.toLowerCase()}`}>
-                      {overallImpact}
-                    </span>
-                  </div>
-                </li>
-              </ul>
-            </div>
+            {impactCard}
           </div>
 
           {/* ── Row 4: recommended controls | EDD triggers ── */}
@@ -642,29 +717,7 @@ export function CountryHub() {
           {/* ── Row 5: sector exposure | regulators & legal framework ── */}
           <div className="cx-ws__row5">
           {/* Sector exposure (derived from sourced modules, nothing asserted) */}
-          <div className="cx-card cx-sect">
-            <span className="cx-card__eyebrow">
-              <Layers size={12} /> Sector exposure
-            </span>
-            <ul className="cx-sect__list">
-              {sectorExposure.map((s) => (
-                <li key={s.sector} className="cx-sect__row">
-                  <span className="cx-sect__name">{s.sector}</span>
-                  <span
-                    className={`cx-tag cx-sect__tag cx-sect__tag--${s.level.toLowerCase()}`}
-                  >
-                    {s.level}
-                  </span>
-                  <span className="cx-sect__why" title={s.rationale}>
-                    {s.rationale}
-                  </span>
-                </li>
-              ))}
-            </ul>
-            <p className="cx-sect__note">
-              Derived from sanctions tier, FATF listing, WGI governance and CPI.
-            </p>
-          </div>
+          {sectCard}
 
           {/* Regulators & legal framework */}
           <div className="cx-card cx-regf">
@@ -739,89 +792,6 @@ export function CountryHub() {
           </div>
           </div>
 
-          <section className="cx-v2 cx-v2--compact" aria-labelledby="v2-heading">
-            <details className="cx-v2__details">
-              <summary className="cx-v2__bar">
-                <span className="cx-v2__eyebrow">Trusted score assurance · v2 parallel validation</span>
-                <span className="cx-v2__badges">
-                  <span className={`cx-v2__badge cx-v2__badge--${v2.status}`}>{v2.status}</span>
-                  <span className={`cx-v2__badge cx-v2__badge--confidence-${v2.confidence}`}>
-                    {v2.confidence} confidence
-                  </span>
-                </span>
-                <span className="cx-v2__oneline">
-                  {v2.score === null
-                    ? `v2 headline withheld (insufficient scored evidence) · v1 remains ${riskScore.score.toFixed(1)}`
-                    : `v1 ${riskScore.score.toFixed(1)} → v2 ${v2.score.toFixed(1)} (${v2.score - riskScore.score >= 0 ? "+" : ""}${(v2.score - riskScore.score).toFixed(1)})`}
-                  {v2.pillars.sanctions.coverageStatus === "unavailable"
-                    ? " · sanctions pillar pending independent approval"
-                    : ""}
-                </span>
-                <span className="cx-v2__toggle">Details</span>
-              </summary>
-            <div className="cx-v2__head">
-              <h2 id="v2-heading">Trusted score assurance</h2>
-            </div>
-            <div className="cx-v2__summary">
-              <div className="cx-v2__result">
-                <strong>{v2.score === null ? "Headline withheld" : `${v2.score.toFixed(1)} / 10`}</strong>
-                <span>{v2.band ? bandLabel(v2.band) : "Insufficient scored evidence"}</span>
-              </div>
-              <div className="cx-v2__pillars">
-                {Object.entries(v2.pillars).map(([key, pillar]) => (
-                  <div key={key} className="cx-v2__pillar">
-                    <span>{key === "aml" ? "AML/CFT" : key[0].toUpperCase() + key.slice(1)}</span>
-                    <strong>{pillar.score === null ? "n/a" : pillar.score.toFixed(1)}</strong>
-                    <small>{Math.round(pillar.appliedWeight * 100)}% applied · {pillar.coverageStatus} · feed {pillar.sourceState}</small>
-                  </div>
-                ))}
-              </div>
-            </div>
-            {v2.floors.length > 0 && (
-              <p className="cx-v2__floors">
-                Regulatory floors: {v2.floors.map((floor) => `${floor.reason} ≥ ${floor.minimum.toFixed(1)} (${floor.status})`).join(" · ")}
-              </p>
-            )}
-            {v2.regulatoryFlags.length > 0 && (
-              <p className="cx-v2__floors">
-                Regulatory flags: {v2.regulatoryFlags.map((flag) => flag.label).join(" · ")}
-              </p>
-            )}
-            <p className="cx-v2__arithmetic">{v2.arithmetic}</p>
-            {v2.bandAdjustment && <p className="cx-v2__floors">{v2.bandAdjustment.explanation}</p>}
-            {v2.pillars.sanctions.coverageStatus === "unavailable" && (
-              <div className="cx-v2__limits">
-                <strong>Sanctions pillar withheld.</strong>{" "}
-                {sanctionsCandidates.length
-                  ? `${sanctionsCandidates.length} official-catalogue candidate${sanctionsCandidates.length === 1 ? "" : "s"} for ${country.name} still require independent legal-scope and tier approval:`
-                  : "The four-catalogue classification has not completed independent approval, so an absent country row is not treated as zero risk."}
-                {sanctionsCandidates.length > 0 && (
-                  <ul>
-                    {sanctionsCandidates.map((candidate) => (
-                      <li key={`${candidate.imposer}-${candidate.regime}`}>
-                        <a href={candidate.measureEvidenceUrl} target="_blank" rel="noopener noreferrer">
-                          {candidate.imposer}: {candidate.regime}
-                        </a>{" "}
-                        — proposed {candidate.proposedTier}; {candidate.relationship}
-                      </li>
-                    ))}
-                  </ul>
-                )}
-              </div>
-            )}
-            {v2.limitingReasons.length > 0 && (
-              <ul className="cx-v2__limits">
-                {v2.limitingReasons.map((reason) => <li key={reason}>{reason}</li>)}
-              </ul>
-            )}
-            <p className="cx-v2__change">
-              {v2.score === null
-                ? `The current v1 score remains ${riskScore.score.toFixed(1)} while v2 withholds a replacement until at least two source pillars are available.`
-                : `Parallel comparison: v1 ${riskScore.score.toFixed(1)} → v2 ${v2.score.toFixed(1)} (${v2.score - riskScore.score >= 0 ? "+" : ""}${(v2.score - riskScore.score).toFixed(1)}).`}
-              {" "}<Link to="/countries/methodology/v2">Methodology, sources and safeguards →</Link>
-            </p>
-            </details>
-          </section>
         </div>
 
         {/* ── Right rail: methodology | peers | sources ── */}
@@ -853,32 +823,7 @@ export function CountryHub() {
 
           {attrCard}
 
-          <div className="cx-card cx-peerc">
-            <span className="cx-card__eyebrow">
-              <BarChart3 size={12} /> Peer comparison · {country.region}
-            </span>
-            <ul className="cx-peerc__list">
-              {peerBars.map((p) => (
-                <li key={p.iso2} className={`cx-peer${p.current ? " cx-peer--current" : ""}`}>
-                  <Link to={`/countries/${p.slug}`} className="cx-peer__row">
-                    <span className="cx-peer__flag" aria-hidden="true">{p.flag}</span>
-                    <span className="cx-peer__name">{p.name}</span>
-                    <span className="cx-peer__track">
-                      <span
-                        className="cx-peer__fill"
-                        style={{ width: `${(p.score / 10) * 100}%`, background: BAND_COLOUR[p.band] }}
-                      />
-                    </span>
-                    <span className="cx-peer__score">{p.score.toFixed(1)}</span>
-                    <span className={`cx-peer__band cx-peer__band--${p.band}`}>{bandLabel(p.band)}</span>
-                  </Link>
-                </li>
-              ))}
-            </ul>
-            <Link to="/countries" className="cx-card__link">
-              Compare countries →
-            </Link>
-          </div>
+          {peersCard}
 
           <div className="cx-card cx-srcs">
             <span className="cx-card__eyebrow">
@@ -908,6 +853,25 @@ export function CountryHub() {
           </a>
         </span>
       </footer>
+
+      {zoomed && (
+        <div className="cx-zoom" role="dialog" aria-modal="true" onClick={() => setZoomed(null)}>
+          <div className="cx-zoom__panel" onClick={(e) => e.stopPropagation()}>
+            <button
+              type="button"
+              className="cx-zoom__close"
+              aria-label="Close expanded view"
+              onClick={() => setZoomed(null)}
+            >
+              <X size={16} />
+            </button>
+            {zoomed === "attr" && attrCard}
+            {zoomed === "impact" && impactCard}
+            {zoomed === "sect" && sectCard}
+            {zoomed === "peers" && peersCard}
+          </div>
+        </div>
+      )}
     </div>
   );
 }
