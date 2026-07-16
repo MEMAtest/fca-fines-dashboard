@@ -42,6 +42,13 @@ describe("country-risk v2 public API contract", () => {
     expect(response.code).toBe(200);
     expect(response.payload.result).toMatchObject({ score: null, band: null, status: "insufficient-data" });
     expect(response.payload.result.floors[0].status).toBe("not-evaluated");
+    expect(response.payload.previous).toEqual({
+      methodologyVersion: "1.0.0",
+      score: null,
+      band: null,
+      status: "insufficient-data",
+    });
+    expect(response.payload.change).toBeNull();
   });
 
   it("exposes the FATF required-action distinction", () => {

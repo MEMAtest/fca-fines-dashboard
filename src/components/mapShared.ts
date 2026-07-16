@@ -91,7 +91,13 @@ export function buildFeatureMeta(features: any[]): Map<any, FeatureMeta> {
       continue;
     }
     const rs = computeCountryRiskScore(iso2);
-    m.set(f, { iso2, band: rs.band, score: rs.score, domains: rs.domains, name });
+    m.set(f, {
+      iso2,
+      band: rs.hasGovernance ? rs.band : null,
+      score: rs.hasGovernance ? rs.score : null,
+      domains: rs.hasGovernance ? rs.domains : undefined,
+      name,
+    });
   }
   return m;
 }

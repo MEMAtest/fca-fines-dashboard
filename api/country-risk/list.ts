@@ -17,11 +17,19 @@ export default function handler(req: VercelRequest, res: VercelResponse) {
     .map((country) => {
       const result = computeCountryRiskV2(country.iso2, { asOf });
       const previous = computeCountryRiskScore(country.iso2);
+      const previousScore = previous.hasGovernance ? previous.score : null;
       return {
         country,
         result,
-        previous: { methodologyVersion: "1.0.0", score: previous.score, band: previous.band },
-        change: result.score === null ? null : Math.round((result.score - previous.score) * 10) / 10,
+        previous: {
+          methodologyVersion: "1.0.0",
+          score: previousScore,
+          band: previous.hasGovernance ? previous.band : null,
+          status: previous.hasGovernance ? "rated" : "insufficient-data",
+        },
+        change: result.score === null || previousScore === null
+          ? null
+          : Math.round((result.score - previousScore) * 10) / 10,
       };
     })
     .sort((a, b) => (b.result.score ?? -1) - (a.result.score ?? -1) || a.country.name.localeCompare(b.country.name));

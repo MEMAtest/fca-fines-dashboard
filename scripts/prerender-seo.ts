@@ -242,6 +242,7 @@ function renderHubBody(
  */
 function renderCountryFatfBody(view: CountryView): string {
   const { country, statusHeading, statusDetail, history, enforcement, sanctions, sanctionsTier, riskScore, breakdown, globalAverage, cpi, decision, enforcementAssessed, hasComprehensiveSanctions, hasTargetedSanctions, sanctionsCoverageComplete, regulatory, regionalPeers, attribution } = view;
+  const scoreAvailable = view.scoreStatus === "rated";
   const narrative = getNarrative(country.iso2) ?? null;
   const title = `${country.name} — Country Risk Report`;
   const domainLis = breakdown.domains
@@ -258,20 +259,24 @@ function renderCountryFatfBody(view: CountryView): string {
       ? `<li>${escapeHtml(`Legacy v1 sanctions snapshot ${riskScore.sanctions.label}: +${riskScore.sanctions.points} (v2 classification review pending)`)}</li>`
       : "",
   ].join("");
-  const scoreHtml = `<h2>RegActions Country Risk Score: ${escapeHtml(
-    `${riskScore.score.toFixed(1)}/10 (${bandLabel(riskScore.band)})`,
-  )}</h2><p>${escapeHtml(
-    `This is the historical v1 comparison score. Higher score = higher risk (global average ${globalAverage.toFixed(1)}). It uses a World Bank WGI governance base with FATF and the legacy sanctions snapshot as escalators (capped at 10). V2 is shown separately and withholds sanctions scoring while classifications are under review. Enforcement volume and CPI are shown but not scored.`,
-  )}</p><h3>How it is scored</h3><ul>${domainLis}<li>${escapeHtml(
-    `Governance base: ${breakdown.base.toFixed(1)}`,
-  )}</li>${escLis}<li>${escapeHtml(`Composite: ${riskScore.score.toFixed(1)}`)}</li></ul>`;
+  const scoreHtml = scoreAvailable
+    ? `<h2>Historical v1 Country Risk Score: ${escapeHtml(
+        `${riskScore.score.toFixed(1)}/10 (${bandLabel(riskScore.band)})`,
+      )}</h2><p>${escapeHtml(
+        `Higher score = higher risk (global average ${globalAverage.toFixed(1)}). The historical comparison uses a World Bank WGI governance base with FATF and the legacy sanctions snapshot as escalators (capped at 10). V2 remains in parallel validation. Enforcement volume and CPI are shown but not scored.`,
+      )}</p><h3>How it is scored</h3><ul>${domainLis}<li>${escapeHtml(
+        `Governance base: ${breakdown.base.toFixed(1)}`,
+      )}</li>${escLis}<li>${escapeHtml(`Composite: ${riskScore.score.toFixed(1)}`)}</li></ul>`
+    : `<h2>Country Risk Score: withheld</h2><p>${escapeHtml(
+        "The required World Bank WGI governance base is unavailable. RegActions does not convert this missing evidence into a 0.0 score or a Low-risk label.",
+      )}</p><h3>Evidence status</h3><ul>${domainLis}<li>Governance base: unavailable</li><li>Headline score: withheld</li></ul>`;
   const glanceHtml = `<h2>At a glance</h2><ul><li>${escapeHtml(
     `FATF status: ${statusHeading} (one indicator only; does not by itself set the overall AML risk rating)`,
   )}</li><li>${escapeHtml(
     sanctionsCoverageComplete
       ? `Comprehensive country sanctions: ${hasComprehensiveSanctions ? "in place" : "none identified"}. Targeted sanctions exposure: ${hasComprehensiveSanctions || hasTargetedSanctions ? "programmes in place, screen applicable lists" : "possible, screen applicable persons, entities and sectors"}`
       : "Geographic sanctions classification: independent review pending; absence is not inferred and applicable lists must still be screened.",
-  )}</li><li>${escapeHtml(`Governance (WGI) base: ${breakdown.base.toFixed(1)}/10`)}</li><li>${escapeHtml(
+  )}</li><li>${escapeHtml(scoreAvailable ? `Governance (WGI) base: ${breakdown.base.toFixed(1)}/10` : "Governance (WGI) base: unavailable; headline score withheld")}</li><li>${escapeHtml(
     cpi
       ? `Corruption (CPI ${CPI_YEAR}): ${cpi.score}/100, rank #${cpi.rank} of ${CPI_TOTAL}`
       : "Corruption (CPI): no score",
@@ -296,18 +301,12 @@ function renderCountryFatfBody(view: CountryView): string {
     .map((w) => `<li>${escapeHtml(`${w.label}: ${w.value} (as of ${w.asOf})`)}</li>`)
     .join("")}</ul>`;
   // Attributed indicators: per-imposer sanctions Yes/No + WGI institutional sub-scores.
-  const attrHtml = `<h2>Attributed indicators</h2><h3>Sanctions programme by imposer (reviewed ${escapeHtml(
-    attribution.sanctions.reviewed,
-  )})</h3><ul>${attribution.sanctions.imposers
-    .map(
-      (r) =>
-        `<li>${escapeHtml(
-          `${r.imposer}: ${r.active ? `Yes (${r.tierLabel})` : "No"}`,
-        )}</li>`,
-    )
-    .join(
-      "",
-    )}</ul><p>&ldquo;No&rdquo; means no country-level programme by that imposer is identified; individual listed persons may still exist.</p><h3>Governance sub-scores (World Bank WGI ${escapeHtml(
+  const sanctionsAttributionHtml = sanctionsCoverageComplete
+    ? `<ul>${attribution.sanctions.imposers
+        .map((r) => `<li>${escapeHtml(`${r.imposer}: ${r.active ? `Yes (${r.tierLabel})` : "No"}`)}</li>`)
+        .join("")}</ul><p>No means no country-level programme was identified in the approved snapshot; individual listed persons may still exist.</p>`
+    : `<p>Independent classification review pending for OFAC, UK, EU and UN geographic regimes. Absence of a programme is not inferred.</p>`;
+  const attrHtml = `<h2>Attributed indicators</h2><h3>Sanctions programme by imposer</h3>${sanctionsAttributionHtml}<h3>Governance sub-scores (World Bank WGI ${escapeHtml(
     attribution.governance.vintage,
   )}, percentile)</h3><ul>${attribution.governance.subScores
     .map(
@@ -435,7 +434,11 @@ function renderCountryFatfBody(view: CountryView): string {
             (p) =>
               `<li><a href="/countries/${countrySlug(p.country)}">${escapeHtml(
                 p.country.name,
-              )}</a>: ${escapeHtml(`${p.score.toFixed(1)}/10 (${bandLabel(p.band)})`)}</li>`,
+              )}</a>: ${escapeHtml(
+                p.score === null || p.band === null
+                  ? "score withheld (insufficient data)"
+                  : `${p.score.toFixed(1)}/10 (${bandLabel(p.band)})`,
+              )}</li>`,
           )
           .join("")}</ul>`
       : "";
@@ -494,14 +497,16 @@ function renderCountriesIndexBody(): string {
 function renderGlobalIndexBody(): string {
   const index = buildCountryIndex();
   const counts = { "very-high": 0, high: 0, moderate: 0, low: 0 };
-  for (const e of index) counts[e.band] += 1;
+  for (const e of index) if (e.band) counts[e.band] += 1;
+  const rated = index.filter((entry) => entry.score !== null).length;
+  const insufficient = index.length - rated;
   const bandName = { "very-high": "Very high", high: "High", moderate: "Moderate", low: "Low" };
   const rowsHtml = index
     .map(
       (e, i) =>
-        `<tr><td>${i + 1}</td><td><a href="/countries/${countrySlug(e.country)}">${escapeHtml(
+        `<tr><td>${e.score === null ? "—" : i + 1}</td><td><a href="/countries/${countrySlug(e.country)}">${escapeHtml(
           e.country.name,
-        )}</a></td><td>${e.score.toFixed(1)}</td><td>${escapeHtml(bandName[e.band])}</td><td>${escapeHtml(
+        )}</a></td><td>${e.score === null ? "Withheld" : e.score.toFixed(1)}</td><td>${e.band ? escapeHtml(bandName[e.band]) : "Insufficient data"}</td><td>${escapeHtml(
           e.country.region,
         )}</td><td>${e.fatf ? escapeHtml(fatfLabel(e.fatf.listing)) : "—"}</td><td>${
           SANCTIONS_APPROVED_SNAPSHOT.coverageComplete
@@ -511,9 +516,9 @@ function renderGlobalIndexBody(): string {
     )
     .join("");
   return `<div class="blog-page"><div class="blog-post-container"><article class="blog-article-modal"><h1 class="blog-post-title">Global Country Risk Ratings</h1><div class="blog-article-content"><p>${escapeHtml(
-    `Historical v1 RegActions Country Risk Scores for ${index.length} jurisdictions, shown alongside the parallel v2 methodology. V2 explicitly withholds the sanctions pillar while independent classification review is pending. Enforcement volume and CPI are shown on each country page but not scored.`,
+    `RegActions country-risk coverage spans ${index.length} jurisdictions. ${rated} historical v1 comparison scores are published and ${insufficient} are withheld because the required World Bank governance base is unavailable. V2 explicitly withholds the sanctions pillar while independent classification review is pending. Enforcement volume and CPI are shown on each country page but not scored.`,
   )}</p><p>${escapeHtml(
-    `Very high: ${counts["very-high"]} · High: ${counts.high} · Moderate: ${counts.moderate} · Low: ${counts.low}.`,
+    `Very high: ${counts["very-high"]} · High: ${counts.high} · Moderate: ${counts.moderate} · Low: ${counts.low} · Insufficient data: ${insufficient}.`,
   )} <a href="/countries/fatf-grey-list">See the FATF grey list &amp; black list</a>.</p><table><thead><tr><th>#</th><th>Country</th><th>Score</th><th>Risk</th><th>Region</th><th>FATF</th><th>Sanctions review</th></tr></thead><tbody>${rowsHtml}</tbody></table></div></article></div></div>`;
 }
 
@@ -533,7 +538,7 @@ function renderMethodologyBody(): string {
   )}</li><li>${escapeHtml(
     `Voice and accountability, WGI Voice & Accountability (${pc(DOMAIN_WEIGHTS.accountability)}).`,
   )}</li></ul><h2>2. Escalators (FATF and sanctions)</h2><p>${escapeHtml(
-    `Added on top of the governance base, capped at 10: FATF grey +${FATF_ESCALATION.grey}, black +${FATF_ESCALATION.black}; sanctions targeted +${SANCTIONS_ESCALATION.targeted}, sectoral +${SANCTIONS_ESCALATION.sectoral}, comprehensive +${SANCTIONS_ESCALATION.comprehensive} (highest tier across OFAC / UK / EU / UN). When a WGI domain is missing, the remaining domain weights are renormalised.`,
+    `Added on top of the governance base, capped at 10: FATF grey +${FATF_ESCALATION.grey}, black +${FATF_ESCALATION.black}; sanctions targeted +${SANCTIONS_ESCALATION.targeted}, sectoral +${SANCTIONS_ESCALATION.sectoral}, comprehensive +${SANCTIONS_ESCALATION.comprehensive} (highest tier across OFAC / UK / EU / UN). When a WGI domain is missing, the remaining domain weights are renormalised. When every WGI domain is unavailable, v1 publishes no score or risk band; missing evidence is never represented as 0.0.`,
   )}</p><h2>Risk bands</h2><ul><li>Low 0-2.9</li><li>Moderate 3.0-4.9</li><li>High 5.0-6.9</li><li>Very high 7.0-10</li></ul><h2>Structured with reference to Basel and Wolfsberg</h2><p>${escapeHtml(
     "The domain structure follows the Basel AML Index and the factor set follows the Wolfsberg Group country-risk guidance. RegActions does not reproduce the Basel AML Index scores, which are licensed for non-commercial use only; this is an independent composite from licence-clean public data. FATF Mutual-Evaluation effectiveness ratings are a planned enhancement.",
   )}</p><h2>Not scored</h2><p>${escapeHtml(
@@ -1272,10 +1277,12 @@ async function buildPageMetas(): Promise<PageMeta[]> {
   // 4c. Country Risk Reports — global index + per-country pages.
   const fatfYear = FATF_LAST_PLENARY.slice(0, 4);
   const globalIndexCount = pageCountries().length;
+  const globalIndexRated = buildCountryIndex().filter((entry) => entry.score !== null).length;
+  const globalIndexInsufficient = globalIndexCount - globalIndexRated;
   pages.push({
     path: "/countries",
     title: `Global Country Risk Ratings ${fatfYear} | RegActions`,
-    description: `Historical v1 RegActions Country Risk Scores for ${globalIndexCount} jurisdictions, alongside the parallel v2 model with explicit missing-evidence and sanctions-review safeguards.`,
+    description: `Country-risk coverage for ${globalIndexCount} jurisdictions: ${globalIndexRated} historical v1 comparison scores and ${globalIndexInsufficient} explicitly withheld for insufficient governance evidence.`,
     keywords: `country risk ratings, country risk score, AML country risk, FATF status by country, sanctions by country, high-risk countries`,
     ogType: "website",
     bodyContent: renderGlobalIndexBody(),
@@ -1284,7 +1291,7 @@ async function buildPageMetas(): Promise<PageMeta[]> {
       "@context": "https://schema.org",
       "@type": "CollectionPage",
       name: `Global Country Risk Ratings ${fatfYear}`,
-      description: `Historical v1 comparison scores across ${globalIndexCount} jurisdictions, alongside the parallel trusted v2 methodology.`,
+      description: `${globalIndexRated} historical v1 comparison scores across ${globalIndexCount} covered jurisdictions; ${globalIndexInsufficient} are withheld rather than treated as zero risk.`,
       url: `${BASE_URL}/countries`,
       isPartOf: { "@type": "WebSite", name: SITE_NAME, url: "https://regactions.com" },
     },

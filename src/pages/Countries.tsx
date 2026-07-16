@@ -37,7 +37,13 @@ import {
   type FatfStatus,
 } from "../data/fatfStatus.js";
 import { sanctionsTierLabel, type SanctionsTier } from "../data/sanctionsStatus.js";
-import { bandLabel, bandFor, scoreBreakdown, type RiskBand } from "../data/countryRiskScore.js";
+import {
+  bandLabel,
+  bandFor,
+  computeCountryRiskScore,
+  scoreBreakdown,
+  type RiskBand,
+} from "../data/countryRiskScore.js";
 import {
   buildCountryIndex,
   regionalAverages,
@@ -71,6 +77,11 @@ const BAND_COLOUR: Record<RiskBand, string> = {
 
 type Tab = "overview" | "map" | "matrix" | "ratings";
 type Quadrant = "weak-high" | "strong-high" | "weak-low" | "strong-low";
+type RatedCountryIndexEntry = CountryIndexEntry & { score: number; band: RiskBand };
+
+function isRatedEntry(entry: CountryIndexEntry): entry is RatedCountryIndexEntry {
+  return entry.score !== null && entry.band !== null;
+}
 
 const PILLAR_FILL: Record<string, string> = {
   governance: "#0fa77d",
@@ -87,6 +98,10 @@ const DRIVER_LABEL: Record<string, string> = {
 
 function keyDrivers(iso2: string): string[] {
   const bd = scoreBreakdown(iso2);
+  const score = computeCountryRiskScore(iso2);
+  if (!score.hasGovernance) {
+    return ["Headline score withheld: World Bank WGI governance evidence unavailable"];
+  }
   const out: string[] = [];
   if (bd.fatf.points > 0) out.push(`FATF ${bd.fatf.label.toLowerCase()}`);
   if (bd.sanctions.points > 0) out.push(`${bd.sanctions.label} sanctions`);
@@ -123,14 +138,15 @@ function DetailPanel({
   const gr = globalRank(iso2);
   const rr = regionRank(iso2, entry.country.region);
   const drivers = keyDrivers(iso2);
+  const hasScore = entry.score !== null && entry.band !== null;
   return (
     <aside className="cx-detail">
       <div className="cx-detail__head">
         <span className="cx-detail__flag" aria-hidden="true">{entry.flag}</span>
         <div className="cx-detail__id">
           <h3 className="cx-detail__name">{entry.country.name}</h3>
-          <span className={`cx-detail__band cx-detail__band--${entry.band}`}>
-            {bandLabel(entry.band)} risk
+          <span className={`cx-detail__band cx-detail__band--${entry.band ?? "insufficient"}`}>
+            {hasScore ? `${bandLabel(entry.band!)} risk` : "Insufficient data"}
           </span>
         </div>
         {onClose && (
@@ -141,17 +157,17 @@ function DetailPanel({
       </div>
       <div className="cx-detail__scores">
         <div className="cx-detail__score-main">
-          <span className={`country-ratings__score country-ratings__score--${entry.band}`}>
-            {entry.score.toFixed(1)}
+          <span className={`country-ratings__score country-ratings__score--${entry.band ?? "insufficient"}`}>
+            {hasScore ? entry.score!.toFixed(1) : "—"}
           </span>
-          <span className="cx-detail__cap">Overall / 10</span>
+          <span className="cx-detail__cap">{hasScore ? "Overall / 10" : "Score withheld"}</span>
         </div>
         <div>
-          <b>#{gr.rank}</b>
+          <b>{gr.rank === null ? "—" : `#${gr.rank}`}</b>
           <span className="cx-detail__cap">Global / {gr.total}</span>
         </div>
         <div>
-          <b>#{rr.rank}</b>
+          <b>{rr.rank === null ? "—" : `#${rr.rank}`}</b>
           <span className="cx-detail__cap">{entry.country.region} / {rr.total}</span>
         </div>
       </div>
@@ -204,11 +220,11 @@ function RiskMatrix({
   onQuadrant: (q: Quadrant | null) => void;
 }) {
   const data = entries
-    .filter((e) => e.controlStrength !== null)
+    .filter((e) => e.controlStrength !== null && e.band !== null)
     .map((e) => ({
       x: e.controlStrength as number,
       y: e.enforcementExposure,
-      band: e.band,
+      band: e.band as RiskBand,
       name: e.country.name,
     }));
   const count = (q: Quadrant) => entries.filter((e) => inQuadrant(e, q)).length;
@@ -321,10 +337,11 @@ function OverviewTab({
       opener?.focus?.();
     };
   }, [mapExpanded]);
-  const total = index.length;
+  const total = index.filter(isRatedEntry).length;
+  const insufficient = index.length - total;
   const counts = useMemo(() => {
     const c: Record<RiskBand, number> = { low: 0, moderate: 0, high: 0, "very-high": 0 };
-    for (const e of index) c[e.band] += 1;
+    for (const e of index) if (e.band) c[e.band] += 1;
     return c;
   }, [index]);
   const fatfCounts = useMemo(() => {
@@ -340,7 +357,7 @@ function OverviewTab({
   const added = FATF_RECENT_CHANGES.filter((c) => c.change === "added");
   const removed = FATF_RECENT_CHANGES.filter((c) => c.change === "removed");
   const nameOf = (iso2: string) => getCountryByIso2(iso2)?.name ?? iso2;
-  const top = useMemo(() => index.slice(0, 8), [index]);
+  const top = useMemo(() => index.filter(isRatedEntry).slice(0, 8), [index]);
   const pct = (n: number) => (total ? Math.round((n / total) * 100) : 0);
   const regionDonut = useMemo(
     () => [...regionStats].map((r) => ({ name: r.region, value: r.count, avg: r.avg })).sort((a, b) => b.value - a.value),
@@ -526,6 +543,7 @@ function OverviewTab({
           <ul className="cx-prose__bullets">
             <li>Highest-risk regions: {topRegions.join(" and ")}.</li>
             <li>{fatfCounts.black + fatfCounts.grey} jurisdictions under FATF monitoring.</li>
+            <li>{insufficient} jurisdictions have no headline score because the required governance evidence is unavailable.</li>
             <li>Governance quality is the primary risk driver across the index.</li>
           </ul>
           <Link to="/countries/methodology" className="cx-panel-link">View methodology →</Link>
@@ -572,6 +590,7 @@ function GlobalIndex() {
   const [query, setQuery] = useState("");
   const [fatfFilter, setFatfFilter] = useState<"All" | "black" | "grey" | "none">("All");
   const [sanctionsFilter, setSanctionsFilter] = useState<"All" | SanctionsTier | "none">("All");
+  const [statusFilter, setStatusFilter] = useState<"All" | "rated" | "insufficient-data">("All");
   const [quadrant, setQuadrant] = useState<Quadrant | null>(null);
   const [sortKey, setSortKey] = useState<"score" | "name" | "region">("score");
   const [sortDir, setSortDir] = useState<"asc" | "desc">("desc");
@@ -580,9 +599,11 @@ function GlobalIndex() {
 
   const counts = useMemo(() => {
     const c: Record<RiskBand, number> = { "very-high": 0, high: 0, moderate: 0, low: 0 };
-    for (const e of index) c[e.band] += 1;
+    for (const e of index) if (e.band) c[e.band] += 1;
     return c;
   }, [index]);
+  const ratedCount = useMemo(() => index.filter(isRatedEntry).length, [index]);
+  const insufficientCount = index.length - ratedCount;
   const fatfCounts = useMemo(() => {
     let black = 0;
     let grey = 0;
@@ -600,6 +621,7 @@ function GlobalIndex() {
     return index.filter((e) => {
       if (region !== "All" && e.country.region !== region) return false;
       if (band !== "All" && e.band !== band) return false;
+      if (statusFilter !== "All" && e.status !== statusFilter) return false;
       if (q && !e.country.name.toLowerCase().includes(q)) return false;
       if (fatfFilter !== "All") {
         const l = e.fatf?.listing;
@@ -609,7 +631,7 @@ function GlobalIndex() {
       if (sanctionsFilter !== "All" && (e.sanctionsTier ?? "none") !== sanctionsFilter) return false;
       return true;
     });
-  }, [index, region, band, query, fatfFilter, sanctionsFilter]);
+  }, [index, region, band, statusFilter, query, fatfFilter, sanctionsFilter]);
 
   const rows = useMemo(() => {
     const filtered = quadrant ? baseFiltered.filter((e) => inQuadrant(e, quadrant)) : baseFiltered;
@@ -621,7 +643,15 @@ function GlobalIndex() {
           ? dir *
             (a.country.region.localeCompare(b.country.region) ||
               a.country.name.localeCompare(b.country.name))
-          : dir * (a.score - b.score || a.country.name.localeCompare(b.country.name)),
+          : a.score === null
+            ? b.score === null
+              ? a.country.name.localeCompare(b.country.name)
+              : 1
+            : b.score === null
+              ? -1
+              : a.score === b.score
+                ? a.country.name.localeCompare(b.country.name)
+                : dir * (a.score - b.score),
     );
   }, [baseFiltered, quadrant, sortKey, sortDir]);
 
@@ -631,8 +661,12 @@ function GlobalIndex() {
     query !== "" ||
     fatfFilter !== "All" ||
     sanctionsFilter !== "All" ||
+    statusFilter !== "All" ||
     quadrant !== null;
-  const indexIso = useMemo(() => new Set(index.map((e) => e.country.iso2)), [index]);
+  const indexIso = useMemo(
+    () => new Set(index.filter(isRatedEntry).map((e) => e.country.iso2)),
+    [index],
+  );
   const rowIso = useMemo(() => new Set(rows.map((e) => e.country.iso2)), [rows]);
   // Only dim SCORED countries that fail the filter — never the grey no-data ones.
   const dimUnmatched = hasFilters
@@ -642,7 +676,7 @@ function GlobalIndex() {
   // Stable global risk rank (index is sorted score-desc) for the ratings "#".
   const rankOf = useMemo(() => {
     const m = new Map<string, number>();
-    index.forEach((e, i) => m.set(e.country.iso2, i + 1));
+    index.filter(isRatedEntry).forEach((e, i) => m.set(e.country.iso2, i + 1));
     return m;
   }, [index]);
 
@@ -652,15 +686,15 @@ function GlobalIndex() {
     [index, selectedIso],
   );
 
-  const top = useMemo(() => index.slice(0, 12), [index]);
+  const top = useMemo(() => index.filter(isRatedEntry).slice(0, 12), [index]);
   const regional = useMemo(() => regionalAverages(), []);
   const pillars = useMemo(() => pillarAverages(), []);
   const overall = useMemo(
     () =>
-      index.length
-        ? Math.round((index.reduce((s, e) => s + e.score, 0) / index.length) * 10) / 10
+      ratedCount
+        ? Math.round((index.reduce((s, e) => s + (e.score ?? 0), 0) / ratedCount) * 10) / 10
         : 0,
-    [index],
+    [index, ratedCount],
   );
   const added = FATF_RECENT_CHANGES.filter((c) => c.change === "added");
   const removed = FATF_RECENT_CHANGES.filter((c) => c.change === "removed");
@@ -688,17 +722,18 @@ function GlobalIndex() {
     setQuery("");
     setFatfFilter("All");
     setSanctionsFilter("All");
+    setStatusFilter("All");
     setQuadrant(null);
     setShowAll(false);
   };
 
   const kpis: Array<{ label: string; value: number; cls: string; pressed: boolean; onClick: () => void }> = [
-    { label: "Countries rated", value: index.length, cls: "rated", pressed: !hasFilters, onClick: clearFilters },
+    { label: "Countries rated", value: ratedCount, cls: "rated", pressed: statusFilter === "rated", onClick: () => setStatusFilter(statusFilter === "rated" ? "All" : "rated") },
+    { label: "Insufficient data", value: insufficientCount, cls: "insufficient", pressed: statusFilter === "insufficient-data", onClick: () => setStatusFilter(statusFilter === "insufficient-data" ? "All" : "insufficient-data") },
     { label: "Black list", value: fatfCounts.black, cls: "black", pressed: fatfFilter === "black", onClick: () => setFatfFilter(fatfFilter === "black" ? "All" : "black") },
     { label: "Grey list", value: fatfCounts.grey, cls: "grey", pressed: fatfFilter === "grey", onClick: () => setFatfFilter(fatfFilter === "grey" ? "All" : "grey") },
     { label: "High risk", value: counts.high + counts["very-high"], cls: "high", pressed: band === "high", onClick: () => setBand(band === "high" ? "All" : "high") },
     { label: "Moderate", value: counts.moderate, cls: "moderate", pressed: band === "moderate", onClick: () => setBand(band === "moderate" ? "All" : "moderate") },
-    { label: "Low risk", value: counts.low, cls: "low", pressed: band === "low", onClick: () => setBand(band === "low" ? "All" : "low") },
   ];
 
   const PREVIEW = 25;
@@ -709,10 +744,11 @@ function GlobalIndex() {
       <header className="cx-dash__head">
         <h1 className="country-index__title">Global Country Risk Ratings</h1>
         <p className="cx-dash__lead">
-          Country-by-country AML and financial-crime risk ratings for {index.length} jurisdictions,
-          scored 0-10 (higher = higher risk) from World Bank governance indicators with FATF and
-          sanctions escalators. Enforcement volume and corruption perception are shown for context
-          but never scored.{" "}
+          Country-by-country AML and financial-crime risk coverage for {index.length} jurisdictions.
+          {" "}{ratedCount} historical v1 comparison scores are published; {insufficientCount} are
+          explicitly withheld because the required World Bank governance base is unavailable.
+          FATF flags remain visible and sanctions classification remains under independent review.
+          Enforcement volume and corruption perception are shown for context but never scored.{" "}
           <Link to="/countries/methodology">How the score works →</Link>
         </p>
       </header>
@@ -829,7 +865,7 @@ function GlobalIndex() {
                 />
               </Suspense>
               <p className="cx-dash__count">
-                {rows.length} of {index.length} shown
+                {rows.length} of {index.length} covered jurisdictions shown
                 {hasFilters && rows.length === 0 ? " · no countries match these filters" : ""}
               </p>
             </div>
@@ -962,19 +998,21 @@ function GlobalIndex() {
             <tbody>
               {visibleRows.map((e) => (
                 <tr key={e.country.iso2}>
-                  <td className="country-ratings__rank">{rankOf.get(e.country.iso2)}</td>
+                  <td className="country-ratings__rank">{rankOf.get(e.country.iso2) ?? "—"}</td>
                   <td>
                     <Link to={`/countries/${countrySlug(e.country)}`} className="country-ratings__name">
                       <span aria-hidden="true">{e.flag}</span> {e.country.name}
                     </Link>
                   </td>
                   <td className="country-ratings__num">
-                    <span className={`country-ratings__score country-ratings__score--${e.band}`}>{e.score.toFixed(1)}</span>
+                    <span className={`country-ratings__score country-ratings__score--${e.band ?? "insufficient"}`}>
+                      {e.score === null ? "—" : e.score.toFixed(1)}
+                    </span>
                   </td>
-                  <td>{bandLabel(e.band)}</td>
+                  <td>{e.band ? bandLabel(e.band) : "Insufficient data"}</td>
                   <td className="country-ratings__region">{e.country.region}</td>
                   <td>{e.fatf ? fatfLabel(e.fatf.listing) : "—"}</td>
-                  <td>{e.sanctionsTier ? sanctionsTierLabel(e.sanctionsTier) : "—"}</td>
+                  <td>{e.sanctionsTier ? sanctionsTierLabel(e.sanctionsTier) : "Review pending"}</td>
                 </tr>
               ))}
               {rows.length === 0 && (

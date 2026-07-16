@@ -36,7 +36,7 @@ const CLEAN: SectorExposureInput = {
   cpi: 80,
 };
 
-const LEVEL_RANK: Record<SectorLevel, number> = { Low: 0, Elevated: 1, High: 2 };
+const LEVEL_RANK: Record<SectorLevel, number> = { Review: -1, Low: 0, Elevated: 1, High: 2 };
 
 describe("deriveSectorExposure shape", () => {
   it("returns five sectors in a stable order", () => {
@@ -71,31 +71,27 @@ describe("deriveSectorExposure shape", () => {
   });
 });
 
-describe("comprehensive sanctions -> Trade High (Cuba, Iran)", () => {
-  for (const iso2 of ["CU", "IR"]) {
-    it(`${iso2} trade & export controls is High`, () => {
-      const rows = sectorsFor(iso2);
-      expect(row(rows, "Trade & export controls").level).toBe("High");
-    });
-  }
-
-  it("Cuba trade rationale cites the comprehensive embargo", () => {
+describe("unapproved sanctions candidates remain fail-closed", () => {
+  it("does not use Cuba's candidate comprehensive tier in live sector exposure", () => {
     const trade = row(sectorsFor("CU"), "Trade & export controls");
-    expect(trade.rationale.toLowerCase()).toContain("comprehensive");
+    expect(trade.level).toBe("Review");
+    expect(trade.rationale.toLowerCase()).not.toContain("comprehensive");
   });
 
-  it("comprehensive sanctions also drive State-linked High", () => {
-    expect(row(sectorsFor("CU"), "State-linked & procurement").level).toBe("High");
+  it("does not use Cuba's candidate tier in State-linked exposure", () => {
+    expect(row(sectorsFor("CU"), "State-linked & procurement").level).toBe("Low");
   });
-});
 
-describe("Russia sectoral programmes are named in the Trade rationale", () => {
-  it("Trade is High and names the sanctions programme", () => {
+  it("does not use Russia's candidate sectoral tier before approval", () => {
     const trade = row(sectorsFor("RU"), "Trade & export controls");
+    expect(trade.level).toBe("Review");
+    expect(trade.rationale.toLowerCase()).not.toContain("sectoral sanctions");
+  });
+
+  it("still derives Iran High trade exposure from its FATF call-for-action flag", () => {
+    const trade = row(sectorsFor("IR"), "Trade & export controls");
     expect(trade.level).toBe("High");
-    // Russia's sectoral programme names finance/energy/defence in sanctionsStatus.ts
-    expect(trade.rationale.toLowerCase()).toContain("sectoral sanctions");
-    expect(trade.rationale.toLowerCase()).toMatch(/finance|energy|defence/);
+    expect(trade.rationale.toLowerCase()).toContain("fatf black-list");
   });
 });
 
@@ -108,15 +104,30 @@ describe("Nigeria real estate is Elevated via CPI", () => {
   });
 });
 
-describe("low-risk countries read mostly Low", () => {
-  it("Japan is Low across every sector", () => {
+describe("low-risk countries preserve the sanctions evidence caveat", () => {
+  it("Japan is Low except for trade while sanctions review is incomplete", () => {
     const rows = sectorsFor("JP");
-    expect(rows.every((r) => r.level === "Low"), JSON.stringify(rows)).toBe(true);
+    expect(row(rows, "Trade & export controls").level).toBe("Review");
+    expect(rows.filter((r) => r.sector !== "Trade & export controls").every((r) => r.level === "Low")).toBe(true);
   });
 
-  it("Denmark is Low across every sector", () => {
+  it("Denmark is Low except for trade while sanctions review is incomplete", () => {
     const rows = sectorsFor("DK");
-    expect(rows.every((r) => r.level === "Low")).toBe(true);
+    expect(row(rows, "Trade & export controls").level).toBe("Review");
+    expect(rows.filter((r) => r.sector !== "Trade & export controls").every((r) => r.level === "Low")).toBe(true);
+  });
+});
+
+describe("missing evidence never becomes Low sector exposure", () => {
+  it("marks unavailable governance and sanctions conclusions for Curaçao as Review", () => {
+    expect(sectorsFor("CW").every((r) => r.level === "Review")).toBe(true);
+  });
+
+  it("retains FATF-derived exposure for the British Virgin Islands and reviews the gaps", () => {
+    const rows = sectorsFor("VG");
+    expect(row(rows, "Banking & payments").level).toBe("Elevated");
+    expect(row(rows, "Crypto & virtual assets").level).toBe("Elevated");
+    expect(row(rows, "Trade & export controls").level).toBe("Review");
   });
 });
 
