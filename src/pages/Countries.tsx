@@ -1,4 +1,4 @@
-import { lazy, Suspense, useMemo, useState } from "react";
+import { lazy, Suspense, useEffect, useMemo, useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 import {
   AlertCircle,
@@ -6,9 +6,11 @@ import {
   Download,
   Eye,
   ExternalLink,
+  Maximize2,
   Minus,
   Plus,
   Search,
+  X,
 } from "lucide-react";
 import {
   PieChart,
@@ -303,6 +305,13 @@ function OverviewTab({
   onBand: (band: RiskBand) => void;
 }) {
   const index = useMemo(() => buildCountryIndex(), []);
+  const [mapExpanded, setMapExpanded] = useState(false);
+  useEffect(() => {
+    if (!mapExpanded) return;
+    const onKey = (e: KeyboardEvent) => e.key === "Escape" && setMapExpanded(false);
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [mapExpanded]);
   const total = index.length;
   const counts = useMemo(() => {
     const c: Record<RiskBand, number> = { low: 0, moderate: 0, high: 0, "very-high": 0 };
@@ -343,6 +352,14 @@ function OverviewTab({
     <div className="cx-ov">
       <div className="cx-ov__top">
         <div className="mon-panel cx-ov__heat">
+          <button
+            type="button"
+            className="cx-mapzoom-expand"
+            aria-label="Expand the risk heat map"
+            onClick={() => setMapExpanded(true)}
+          >
+            <Maximize2 size={13} aria-hidden="true" />
+          </button>
           <h3>Global risk heat map</h3>
           <Suspense fallback={<div className="cx-map__ph" style={{ height: 320 }} />}>
             <CountryRiskMap />
@@ -505,6 +522,31 @@ function OverviewTab({
           <Link to="/countries/methodology" className="cx-panel-link">View methodology →</Link>
         </div>
       </div>
+
+      {mapExpanded && (
+        <div
+          className="cx-mapzoom-overlay"
+          role="dialog"
+          aria-modal="true"
+          aria-label="Expanded global risk heat map"
+          onClick={() => setMapExpanded(false)}
+        >
+          <div className="cx-mapzoom-overlay__panel" onClick={(e) => e.stopPropagation()}>
+            <button
+              type="button"
+              className="cx-mapzoom-overlay__close"
+              aria-label="Close expanded map"
+              onClick={() => setMapExpanded(false)}
+            >
+              <X size={16} aria-hidden="true" />
+            </button>
+            <h3>Global risk heat map</h3>
+            <Suspense fallback={<div className="cx-map__ph" style={{ height: 480 }} />}>
+              <CountryRiskMap variant="overlay" />
+            </Suspense>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

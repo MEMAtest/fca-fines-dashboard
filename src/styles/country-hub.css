@@ -1056,6 +1056,124 @@ button.cx-kpi:hover {
   height: 12px;
   border-radius: 3px;
 }
+/* Keep the hover outline hairline at every zoom level (the <g> is scaled). */
+.cx-map__svg g[transform] .cx-map__country--live:hover {
+  stroke-width: 0.8px;
+  vector-effect: non-scaling-stroke;
+}
+
+/* --- Map zoom controls (unique prefix .cx-mapzoom, grep-verified) --------- */
+.cx-mapzoom {
+  position: absolute;
+  top: 0.55rem;
+  left: 0.55rem;
+  z-index: 15;
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+}
+.cx-mapzoom__btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.94);
+  color: #334155;
+  cursor: pointer;
+  padding: 0;
+  box-shadow: 0 2px 8px rgba(11, 31, 42, 0.12);
+  transition: color 0.12s ease, border-color 0.12s ease, background 0.12s ease;
+}
+.cx-mapzoom__btn:hover:not(:disabled) {
+  color: #0b7f66;
+  border-color: #0b7f66;
+  background: #fff;
+}
+.cx-mapzoom__btn:focus-visible {
+  outline: 2px solid #0b7f66;
+  outline-offset: 2px;
+}
+.cx-mapzoom__btn:disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+/* Larger controls + a taller frame when the map is expanded into the overlay. */
+.cx-map--overlay .cx-mapzoom__btn {
+  width: 36px;
+  height: 36px;
+}
+
+/* Expand-to-overlay dialog reusing the report page's .cx-zoom look for the map. */
+.cx-mapzoom-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+  background: rgba(11, 31, 42, 0.55);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem 1rem;
+}
+.cx-mapzoom-overlay__panel {
+  position: relative;
+  width: min(1100px, 95vw);
+  max-height: 90vh;
+  overflow: hidden;
+  border-radius: 16px;
+  background: #fff;
+  box-shadow: 0 24px 64px rgba(0, 0, 0, 0.35);
+  padding: 1.2rem 1.3rem 0.9rem;
+}
+.cx-mapzoom-overlay__panel h3 {
+  margin: 0 0 0.6rem;
+  font-size: 1.05rem;
+  color: #0b1f2a;
+}
+.cx-mapzoom-overlay__close {
+  position: absolute;
+  top: 0.7rem;
+  right: 0.7rem;
+  z-index: 2;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border: 1px solid #e7ebf0;
+  border-radius: 8px;
+  background: #fff;
+  color: #334155;
+  cursor: pointer;
+  padding: 0;
+}
+.cx-mapzoom-overlay__close:hover { background: #f1f5f9; }
+
+/* Expand affordance on the Overview heat-map panel (mirrors .cx-zoombtn). */
+.cx-mapzoom-expand {
+  position: absolute;
+  top: 0.5rem;
+  right: 0.55rem;
+  z-index: 15;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  border: 1px solid #e7ebf0;
+  border-radius: 6px;
+  background: #fff;
+  color: #94a3b8;
+  cursor: pointer;
+  padding: 0;
+}
+.cx-mapzoom-expand:hover { color: #0b7f66; border-color: #0b7f66; }
+.cx-mapzoom-expand:focus-visible {
+  outline: 2px solid #0b7f66;
+  outline-offset: 2px;
+}
 
 /* Rail panels */
 .cx-panel-head {
@@ -2303,6 +2421,9 @@ button.cx-kpi:hover {
   grid-template-columns: 1.7fr 1fr;
   gap: 1rem;
   align-items: stretch;
+}
+.cx-ov__heat {
+  position: relative;
 }
 .cx-ov__heat h3 {
   margin-top: 0;
