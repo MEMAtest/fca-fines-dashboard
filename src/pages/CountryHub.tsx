@@ -18,6 +18,7 @@ import { bandLabel, bandFor, type RiskBand } from "../data/countryRiskScore.js";
 import { GOVERNANCE_VINTAGE } from "../data/governanceData.js";
 import { CPI_YEAR, CPI_TOTAL } from "../data/cpiData.js";
 import { computeCountryRiskV2 } from "../data/countryRiskV2.js";
+import { getSanctionsRegimeCandidates } from "../data/sanctionsRegimeCandidates.js";
 import {
   buildCountryView,
   formatDate,
@@ -163,6 +164,7 @@ export function CountryHub() {
 
   const rank = globalRank(country.iso2);
   const v2 = computeCountryRiskV2(country.iso2);
+  const sanctionsCandidates = getSanctionsRegimeCandidates(country.iso2);
   const markerPct = Math.min(100, (globalAverage / 10) * 100);
   const baseline = scoreHistory[0];
   const tiles = controlTiles(riskScore.band);
@@ -201,8 +203,9 @@ export function CountryHub() {
     `World Bank — Worldwide Governance Indicators (${GOVERNANCE_VINTAGE})`,
     `Transparency International — CPI ${CPI_YEAR}`,
     `FATF — consolidated ratings (plenary ${formatDate(view.lastPlenary)})`,
-    "OFAC / UK HMT / EU / UN — consolidated sanctions lists",
-    "OECD — country risk classifications",
+    view.sanctionsCoverageComplete
+      ? "OFAC / UK / EU / UN — approved geographic-regime snapshot"
+      : "OFAC / UK / EU / UN — candidate regime catalogues; classification review pending",
   ];
 
   // ── Regulators & legal framework module ──────────────────────────────────
@@ -217,11 +220,13 @@ export function CountryHub() {
 
   // Framework signals: deterministic, data-derived only (no invented statutes).
   const ruleOfLaw = breakdown.domains.find((d) => d.key === "ruleOfLaw");
-  const sanctionsSignal = hasComprehensiveSanctions
-    ? "Comprehensive country programme"
-    : sanctionsTier
-      ? `${sanctionsTier.charAt(0).toUpperCase()}${sanctionsTier.slice(1)} exposure`
-      : "No listed programme identified";
+  const sanctionsSignal = !view.sanctionsCoverageComplete
+    ? "Independent classification review pending"
+    : hasComprehensiveSanctions
+      ? "Comprehensive country programme"
+      : sanctionsTier
+        ? `${sanctionsTier.charAt(0).toUpperCase()}${sanctionsTier.slice(1)} exposure`
+        : "No listed programme identified";
   const frameworkSignals: { label: string; value: string }[] = [
     { label: "FATF listing", value: statusHeading },
     { label: "Sanctions exposure", value: sanctionsSignal },
@@ -289,7 +294,7 @@ export function CountryHub() {
 
             <div className="cx-card cx-osc">
               <span className="cx-card__eyebrow">
-                <Info size={12} /> Overall risk score
+                <Info size={12} /> Overall risk score · v1 snapshot
               </span>
               <div className="cx-osc__grid">
                 <div className="cx-osc__main">
@@ -609,17 +614,43 @@ export function CountryHub() {
                   <div key={key} className="cx-v2__pillar">
                     <span>{key === "aml" ? "AML/CFT" : key[0].toUpperCase() + key.slice(1)}</span>
                     <strong>{pillar.score === null ? "n/a" : pillar.score.toFixed(1)}</strong>
-                    <small>{Math.round(pillar.appliedWeight * 100)}% applied · {pillar.sourceState}</small>
+                    <small>{Math.round(pillar.appliedWeight * 100)}% applied · {pillar.coverageStatus} · feed {pillar.sourceState}</small>
                   </div>
                 ))}
               </div>
             </div>
             {v2.floors.length > 0 && (
               <p className="cx-v2__floors">
-                Regulatory floors: {v2.floors.map((floor) => `${floor.reason} ≥ ${floor.minimum.toFixed(1)}`).join(" · ")}
+                Regulatory floors: {v2.floors.map((floor) => `${floor.reason} ≥ ${floor.minimum.toFixed(1)} (${floor.status})`).join(" · ")}
+              </p>
+            )}
+            {v2.regulatoryFlags.length > 0 && (
+              <p className="cx-v2__floors">
+                Regulatory flags: {v2.regulatoryFlags.map((flag) => flag.label).join(" · ")}
               </p>
             )}
             <p className="cx-v2__arithmetic">{v2.arithmetic}</p>
+            {v2.bandAdjustment && <p className="cx-v2__floors">{v2.bandAdjustment.explanation}</p>}
+            {v2.pillars.sanctions.coverageStatus === "unavailable" && (
+              <div className="cx-v2__limits">
+                <strong>Sanctions pillar withheld.</strong>{" "}
+                {sanctionsCandidates.length
+                  ? `${sanctionsCandidates.length} official-catalogue candidate${sanctionsCandidates.length === 1 ? "" : "s"} for ${country.name} still require independent legal-scope and tier approval:`
+                  : "The four-catalogue classification has not completed independent approval, so an absent country row is not treated as zero risk."}
+                {sanctionsCandidates.length > 0 && (
+                  <ul>
+                    {sanctionsCandidates.map((candidate) => (
+                      <li key={`${candidate.imposer}-${candidate.regime}`}>
+                        <a href={candidate.measureEvidenceUrl} target="_blank" rel="noopener noreferrer">
+                          {candidate.imposer}: {candidate.regime}
+                        </a>{" "}
+                        — proposed {candidate.proposedTier}; {candidate.relationship}
+                      </li>
+                    ))}
+                  </ul>
+                )}
+              </div>
+            )}
             {v2.limitingReasons.length > 0 && (
               <ul className="cx-v2__limits">
                 {v2.limitingReasons.map((reason) => <li key={reason}>{reason}</li>)}
@@ -641,8 +672,8 @@ export function CountryHub() {
               <Info size={12} /> Methodology
             </span>
             <p className="cx-meth__intro">
-              The RegActions Country Risk Score is a composite of four governance risk drivers
-              from the World Bank WGI dataset, with FATF and sanctions escalators.
+              This historical v1 comparison score combines four World Bank WGI governance drivers
+              with FATF and the legacy sanctions snapshot. The parallel v2 result and its evidence gates are shown in the assurance panel.
             </p>
             <ul className="cx-domains">
               {breakdown.domains.map((d) => (

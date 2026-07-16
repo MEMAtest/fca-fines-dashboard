@@ -13,6 +13,7 @@ async function main() {
   const migrationNames = [
     "20260715_country_risk_v2.sql",
     "20260716_country_risk_sanctions_review.sql",
+    "20260716_country_risk_sanctions_promotion.sql",
   ];
   const pool = new pg.Pool(buildPgPoolConfig(connectionString));
   try {

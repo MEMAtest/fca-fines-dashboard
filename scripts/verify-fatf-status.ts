@@ -58,28 +58,57 @@ async function getLiveSource(): Promise<LiveSource | null> {
     console.warn(`FATF direct fetch unavailable (${err instanceof Error ? err.message : err}); using Playwright browser lane.`);
   }
 
-  try {
-    const { chromium } = await import("playwright");
-    const browser = await chromium.launch({ headless: false });
+  const { chromium } = await import("playwright");
+  const configuredHeadless = process.env.FATF_BROWSER_HEADLESS;
+  const browserModes = configuredHeadless === undefined
+    ? [true, false]
+    : [configuredHeadless !== "false"];
+  for (const headless of browserModes) {
+    const browser = await chromium.launch({ headless });
     try {
-      const page = await browser.newPage();
-      await page.goto(FATF_SOURCE_URL, { waitUntil: "domcontentloaded", timeout: 60_000 });
-      await page.getByRole("heading", { name: /Jurisdictions under Increased Monitoring/i }).first().waitFor({ timeout: 30_000 });
-      const main = page.locator("main");
-      const text = await ((await main.count()) ? main.innerText() : page.locator("body").innerText());
-      return { text, raw: await page.content(), lane: "playwright" };
+      for (let attempt = 1; attempt <= 3; attempt++) {
+        const page = await browser.newPage({
+          viewport: { width: 1440, height: 1000 },
+          userAgent: "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36",
+        });
+        try {
+          try {
+            await page.goto(FATF_SOURCE_URL, { waitUntil: "domcontentloaded", timeout: 60_000 });
+          } catch (error) {
+            if (page.url() === "about:blank") throw error;
+          }
+          await page.waitForFunction(() => {
+            const body = document.body?.innerText ?? "";
+            const hasTarget = /jurisdictions?\s+under\s+increased\s+monitoring/i.test(body);
+            const hasChallenge = /just a moment|checking your browser|captcha|challenge-platform/i.test(body);
+            return hasTarget && !hasChallenge;
+          }, undefined, { timeout: 45_000 });
+          const main = page.locator("main");
+          const text = await ((await main.count()) ? main.innerText() : page.locator("body").innerText());
+          return { text, raw: await page.content(), lane: "playwright" };
+        } catch (error) {
+          console.warn(`FATF Playwright ${headless ? "headless" : "headed"} attempt ${attempt} failed: ${error instanceof Error ? error.message : error}`);
+        } finally {
+          await page.close().catch(() => undefined);
+        }
+      }
     } finally {
       await browser.close();
     }
-  } catch (err) {
-    console.error(`FATF Playwright lane failed: ${err instanceof Error ? err.message : err}`);
-    return null;
   }
+  return null;
 }
 
 async function main(): Promise<void> {
   const source = await getLiveSource();
   if (!source) {
+    writeFileSync("/tmp/country-risk-fatf-list-review.json", `${JSON.stringify({
+      checkedAt: new Date().toISOString(),
+      sourceUrl: FATF_SOURCE_URL,
+      status: "failed",
+      requiresHumanReview: true,
+      error: "Direct and Playwright lanes could not obtain a verifiable FATF list.",
+    }, null, 2)}\n`);
     console.error(
       "\nCould not obtain the live FATF list automatically (FATF is Cloudflare-protected).\n" +
         "Save the black-and-grey-lists page text and re-run with --file <path>, or verify manually at:\n  " +

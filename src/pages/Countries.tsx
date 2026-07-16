@@ -647,9 +647,9 @@ function GlobalIndex() {
       <header className="cx-dash__head">
         <h1 className="country-index__title">Global Country Risk Ratings</h1>
         <p className="cx-dash__lead">
-          Assessing AML/CFT control strength, governance exposure and enforcement across{" "}
-          {index.length} jurisdictions. Structured with reference to Basel and Wolfsberg factors.{" "}
-          <Link to="/countries/methodology">How it&rsquo;s scored →</Link>
+          Historical v1 comparison ratings across {index.length} jurisdictions. The decision-grade
+          v2 model is in parallel validation and explicitly withholds missing sanctions evidence.{" "}
+          <Link to="/countries/methodology/v2">Review v2 evidence and safeguards →</Link>
         </p>
       </header>
 
@@ -727,7 +727,7 @@ function GlobalIndex() {
                 </select>
               </div>
               <div className="cx-rail__group">
-                <span className="cx-rail__title">Sanctions</span>
+                <span className="cx-rail__title">Sanctions · legacy v1 snapshot</span>
                 <select value={sanctionsFilter} onChange={(e) => setSanctionsFilter(e.target.value as typeof sanctionsFilter)}>
                   <option value="All">All</option>
                   <option value="comprehensive">Comprehensive</option>
@@ -741,7 +741,7 @@ function GlobalIndex() {
                 <div className="cx-rail__segments">
                   <button type="button" className="cx-seg" onClick={() => { clearFilters(); setFatfFilter("grey"); }}>FATF grey list <b>{fatfCounts.grey}</b></button>
                   <button type="button" className="cx-seg" onClick={() => { clearFilters(); setFatfFilter("black"); }}>Black list <b>{fatfCounts.black}</b></button>
-                  <button type="button" className="cx-seg" onClick={() => { clearFilters(); setSanctionsFilter("comprehensive"); }}>Comprehensive sanctions</button>
+                  <button type="button" className="cx-seg" onClick={() => { clearFilters(); setSanctionsFilter("comprehensive"); }}>V1 comprehensive-sanctions snapshot</button>
                   <button type="button" className="cx-seg" onClick={() => { clearFilters(); setBand("very-high"); }}>Very high risk <b>{counts["very-high"]}</b></button>
                   <button type="button" className="cx-seg" onClick={() => { clearFilters(); setQuadrant("weak-high"); setTab("matrix"); }}>Weak controls · high exposure</button>
                 </div>
@@ -887,7 +887,7 @@ function GlobalIndex() {
                 <th>Risk</th>
                 <th><button type="button" className="cx-sort" onClick={() => toggleSort("region")}>Region{sortArrow("region")}</button></th>
                 <th>FATF</th>
-                <th>Sanctions</th>
+                <th>Sanctions · v1 snapshot</th>
               </tr>
             </thead>
             <tbody>
@@ -928,7 +928,7 @@ function GlobalIndex() {
       <footer className="country-hub__sources">
         <span>Sources:</span>{" "}
         <a href={FATF_SOURCE_URL} target="_blank" rel="noopener noreferrer">FATF <ExternalLink size={12} /></a>{" "}
-        · World Bank WGI (CC BY 4.0) · OFAC / UK / EU / UN sanctions · TI CPI (display)
+        · World Bank WGI (CC BY 4.0) · legacy v1 sanctions snapshot (v2 independent review pending) · TI CPI (display)
       </footer>
     </div>
   );

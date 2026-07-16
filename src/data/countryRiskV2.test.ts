@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import type { FatfAssessmentRecord } from "./fatfAssessmentData.js";
+import { getFatfStatus } from "./fatfStatus.js";
 import type { CountrySanctions } from "./sanctionsStatus.js";
 import {
   computeCountryRiskV2,
@@ -51,6 +52,44 @@ describe("country risk v2 primitives", () => {
 });
 
 describe("country risk v2 publication rules", () => {
+  it.each([
+    ["GB", 2.4, "provisional", "moderate", 2.5, 2.3],
+    ["SG", 2.9, "provisional", "moderate", 3.6, 1.7],
+    ["VG", null, "insufficient-data", null, 6.9, null],
+    ["BA", 6, "provisional", "high", 6.4, 5.3],
+    ["MM", 9, "provisional", "very-high", 8, 7.5],
+    ["IR", null, "insufficient-data", null, null, 6.7],
+    ["IQ", 6.1, "provisional", "high", 5.7, 6.7],
+    ["RU", 4.7, "provisional", "moderate", 3.9, 6.1],
+    ["SY", null, "insufficient-data", null, null, 7.8],
+    ["KP", null, "insufficient-data", null, null, 6.8],
+  ] as const)("keeps the reviewed ten-country golden result for %s", (iso2, score, status, band, aml, governanceScore) => {
+    const result = computeCountryRiskV2(iso2, { asOf: new Date("2026-07-16T12:00:00.000Z") });
+    expect(result).toMatchObject({ score, status, band, confidence: "low" });
+    expect(result.pillars.aml.score).toBe(aml);
+    expect(result.pillars.governance.score).toBe(governanceScore);
+    expect(result.pillars.sanctions.score).toBeNull();
+  });
+
+  it("distinguishes FATF countermeasures from enhanced due diligence", () => {
+    expect(getFatfStatus("IR")?.requiredAction).toBe("countermeasures");
+    expect(getFatfStatus("KP")?.requiredAction).toBe("countermeasures");
+    expect(getFatfStatus("MM")?.requiredAction).toBe("enhanced-due-diligence");
+    expect(computeCountryRiskV2("MM", { asOf: new Date("2026-07-16T12:00:00.000Z") }).regulatoryFlags)
+      .toContainEqual({ type: "fatf-black", label: "FATF call for action — enhanced due diligence" });
+  });
+
+  it("does not describe a floor as non-binding when no headline can be calculated", () => {
+    const result = computeCountryRiskV2("VG", { asOf: new Date("2026-07-16T12:00:00.000Z") });
+    expect(result.status).toBe("insufficient-data");
+    expect(result.floors).toContainEqual({
+      reason: "fatf-grey",
+      minimum: 6,
+      applied: false,
+      status: "not-evaluated",
+    });
+  });
+
   it("publishes a complete, deterministic score when all pillars are current", () => {
     const result = computeCountryRiskV2("GB", {
       assessment,
@@ -62,6 +101,9 @@ describe("country risk v2 publication rules", () => {
     expect(result.confidence).toBe("high");
     expect(result.score).toBe(3.6);
     expect(result.band).toBe("moderate");
+    expect(result.preFloorScore).toBe(3.6);
+    expect(result.asOf).toMatch(/^\d{4}-/);
+    expect(result.pillars.sanctions.coverageStatus).toBe("available");
     expect(result.arithmetic).toContain("aml 6 × 50%");
   });
 
@@ -74,6 +116,8 @@ describe("country risk v2 publication rules", () => {
     });
     expect(result.status).toBe("provisional");
     expect(result.pillars.sanctions.score).toBeNull();
+    expect(result.pillars.sanctions.coverageStatus).toBe("unavailable");
+    expect(result.pillars.sanctions.sourceState).toBe("review-required");
     expect(result.confidence).toBe("low");
   });
 
@@ -122,7 +166,9 @@ describe("country risk v2 publication rules", () => {
       sourceStates: currentStates,
     });
     expect(result.score).toBe(6);
-    expect(result.floors).toContainEqual({ reason: "fatf-grey", minimum: 6 });
+    expect(result.preFloorScore).toBeLessThan(6);
+    expect(result.floors).toContainEqual({ reason: "fatf-grey", minimum: 6, applied: true, status: "applied" });
+    expect(result.arithmetic).toContain("fatf-grey floor 6 applied");
   });
 
   it("never labels a provisional low numeric result as Low", () => {
@@ -139,6 +185,31 @@ describe("country risk v2 publication rules", () => {
     expect(result.score).toBeLessThan(3);
     expect(result.status).toBe("provisional");
     expect(result.band).toBe("moderate");
+    expect(result.bandAdjustment?.reason).toBe("provisional-low-suppression");
+    expect(result.bandAdjustment?.explanation).toContain("cannot be labelled Low");
+  });
+
+  it("marks a relevant floor as non-binding when the weighted score is already higher", () => {
+    const result = computeCountryRiskV2("IQ", {
+      assessment,
+      governance: { cc: 0, rl: 0, rq: 0, ge: 0, pv: 0, va: 0 },
+      sanctions: {
+        iso2: "IQ",
+        programs: [{
+          imposer: "OFAC",
+          tier: "comprehensive",
+          program: "Reviewed test programme",
+          sourceUrl: "https://example.test/legal-measure",
+          reviewed: "2026-07",
+        }],
+      },
+      sanctionsCoverageComplete: true,
+      sourceStates: currentStates,
+      asOf: new Date("2026-07-16T12:00:00.000Z"),
+    });
+    expect(result.preFloorScore).toBeGreaterThan(6);
+    expect(result.floors).toContainEqual({ reason: "fatf-grey", minimum: 6, applied: false, status: "non-binding" });
+    expect(result.arithmetic).toContain("fatf-grey floor 6 non-binding");
   });
 
   it("sets medium and low confidence for old FATF assessments", () => {

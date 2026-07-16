@@ -3083,6 +3083,7 @@ button.cx-kpi:hover {
 .cx-peer--current .cx-peer__row { background: #eff6ff; font-weight: 700; }
 
 /* Sources */
+.cx-card.cx-srcs { display: flex; flex-direction: column; gap: 0.65rem; }
 .cx-srcs__list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 0.35rem; }
 .cx-srcs__list li { font-size: 0.74rem; color: #475569; line-height: 1.35; }
 

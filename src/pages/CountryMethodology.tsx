@@ -91,7 +91,7 @@ export function CountryMethodology() {
         </p>
         <BandScale />
         <p className="cx-method__note">
-          This is the current v1 methodology. The decision-grade v2 model is running in
+          This is the historical v1 comparison methodology. The decision-grade v2 model is running in
           parallel validation. <Link to="/countries/methodology/v2">Review v2 sources and safeguards →</Link>
         </p>
       </header>
@@ -242,10 +242,10 @@ export function CountryMethodology() {
             </a>
           </div>
           <div className="cx-source-card">
-            <div className="cx-source-card__name">FATF &amp; sanctions (scored)</div>
+            <div className="cx-source-card__name">FATF &amp; legacy sanctions snapshot (v1 scored)</div>
             <div className="cx-source-card__desc">
-              FATF plenary statements (grey &amp; black lists); OFAC, UK, EU and UN
-              country-level sanctions programmes.
+              FATF plenary statements (grey &amp; black lists). The eight-country sanctions table is
+              retained only to reproduce historical v1 scores; it is incomplete and is never used by v2.
             </div>
             <a href={FATF_SOURCE_URL} target="_blank" rel="noopener noreferrer">
               FATF source →

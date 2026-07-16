@@ -14,6 +14,7 @@
  *   npx tsx scripts/ingest-wgi.ts --dry-run  # print, don't write
  */
 
+import { createHash } from "node:crypto";
 import { writeFileSync } from "fs";
 import { join, dirname } from "path";
 import { fileURLToPath } from "url";
@@ -41,7 +42,7 @@ interface Row {
   COMP_BREAKDOWN_1: string;
 }
 
-async function fetchPercentiles(indicator: string): Promise<Map<string, number>> {
+async function fetchPercentiles(indicator: string): Promise<{ values: Map<string, number>; rawSha256: string | null }> {
   const url =
     `${BASE}?DATABASE_ID=WB_WGI&INDICATOR=${indicator}` +
     `&COMP_BREAKDOWN_1=WGI_SC&timePeriodFrom=${YEAR}&timePeriodTo=${YEAR}&per_page=1000`;
@@ -50,27 +51,29 @@ async function fetchPercentiles(indicator: string): Promise<Map<string, number>>
     try {
       const res = await fetch(url, { signal: AbortSignal.timeout(45_000) });
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
-      const json = (await res.json()) as { value?: Row[] };
+      const body = await res.text();
+      const json = JSON.parse(body) as { value?: Row[] };
+      if (!Array.isArray(json.value)) throw new Error("World Bank response has no value array");
       for (const r of json.value ?? []) {
         if (r.COMP_BREAKDOWN_1 !== "WGI_SC") continue; // percentile rank only
         const v = Number(r.OBS_VALUE);
         if (!Number.isNaN(v)) map.set(r.REF_AREA, v);
       }
-      return map;
+      return { values: map, rawSha256: createHash("sha256").update(body).digest("hex") };
     } catch (err) {
       if (attempt === 3) {
         console.error(`  ${indicator} failed: ${err instanceof Error ? err.message : err}`);
-        return map;
+        return { values: map, rawSha256: null };
       }
       await new Promise((r) => setTimeout(r, 3000));
     }
   }
-  return map;
+  return { values: map, rawSha256: null };
 }
 
 type Dims = Record<string, number>;
 
-function renderFile(dims: Record<string, Dims>, mean: Record<string, number>): string {
+function renderFile(dims: Record<string, Dims>, mean: Record<string, number>, rawSha256: string): string {
   const dimEntries = Object.entries(dims)
     .sort((a, b) => (mean[b[0]] ?? 0) - (mean[a[0]] ?? 0))
     .map(([iso2, d]) => {
@@ -100,6 +103,7 @@ export const GOVERNANCE_SOURCE =
   "https://www.worldbank.org/en/publication/worldwide-governance-indicators";
 export const GOVERNANCE_VINTAGE = "${YEAR}";
 export const GOVERNANCE_RETRIEVED_AT = "${new Date().toISOString()}";
+export const GOVERNANCE_SHA256 = "${rawSha256}";
 export const GOVERNANCE_LICENCE = "CC BY 4.0 — World Bank WGI";
 
 /** The six WGI dimensions (percentile rank 0–100, higher = better). */
@@ -147,10 +151,15 @@ export function hasGovernanceData(iso2: string): boolean {
 async function main(): Promise<void> {
   console.log(`Fetching WGI ${YEAR} (6 dimensions) from data360…`);
   const perIndicator = new Map<string, Map<string, number>>();
+  const rawHashes: Array<[string, string]> = [];
   for (const ind of INDICATORS) {
-    const m = await fetchPercentiles(ind.code);
-    perIndicator.set(ind.key, m);
-    console.log(`  ${ind.code} (${ind.key}): ${m.size} countries`);
+    const result = await fetchPercentiles(ind.code);
+    if (result.values.size < 175 || !result.rawSha256) {
+      throw new Error(`${ind.code}: coverage too small or raw response unavailable (${result.values.size}); refusing to publish`);
+    }
+    perIndicator.set(ind.key, result.values);
+    rawHashes.push([ind.code, result.rawSha256]);
+    console.log(`  ${ind.code} (${ind.key}): ${result.values.size} countries`);
   }
 
   // Collect every ISO3 seen, map to ISO2, store per-dimension + mean.
@@ -183,10 +192,11 @@ async function main(): Promise<void> {
     throw new Error(`WGI coverage too small: ${Object.keys(mean).length}; refusing to publish`);
   }
   if (dryRun) {
-    console.log(JSON.stringify({ sample: Object.entries(dims).slice(0, 3), mean: Object.entries(mean).slice(0, 3) }, null, 2));
+    console.log(JSON.stringify({ sample: Object.entries(dims).slice(0, 3), mean: Object.entries(mean).slice(0, 3), rawHashes }, null, 2));
     return;
   }
-  writeFileSync(OUT, renderFile(dims, mean));
+  const compositeRawSha256 = createHash("sha256").update(JSON.stringify(rawHashes)).digest("hex");
+  writeFileSync(OUT, renderFile(dims, mean, compositeRawSha256));
   console.log(`Wrote ${OUT}`);
 }
 

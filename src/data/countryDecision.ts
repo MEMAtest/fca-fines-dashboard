@@ -14,6 +14,7 @@ import {
   type CountrySanctions,
   type SanctionsTier,
 } from "./sanctionsStatus.js";
+import { SANCTIONS_CATALOGUE_REVIEWED_AS_OF } from "./sanctionsRegimeCandidates.js";
 import { GOVERNANCE_VINTAGE } from "./governanceData.js";
 import { CPI_YEAR, type CpiEntry } from "./cpiData.js";
 import type { FatfStatus } from "./fatfStatus.js";
@@ -56,6 +57,7 @@ export interface DecisionInput {
   breakdown: ScoreBreakdown;
   sanctions?: CountrySanctions;
   sanctionsTier?: SanctionsTier;
+  sanctionsCoverageComplete: boolean;
   enforcementAssessed: boolean;
   cpi?: CpiEntry;
   fatf?: FatfStatus;
@@ -119,14 +121,16 @@ function verdict(input: DecisionInput): { headline: string; paragraph: string } 
       ? "on the FATF black list"
       : "on the FATF grey list"
     : "not currently FATF grey- or black-listed";
-  const sancPhrase = hasComprehensiveSanctions(input.sanctions)
-    ? "subject to comprehensive country-wide sanctions"
-    : "not subject to comprehensive country-wide sanctions";
+  const sancClause = !input.sanctionsCoverageComplete
+    ? "The v2 geographic-sanctions classification is under independent review, so the absence of a programme is not inferred"
+    : `${input.name} is ${hasComprehensiveSanctions(input.sanctions)
+        ? "subject to comprehensive country-wide sanctions"
+        : "not subject to comprehensive country-wide sanctions"}`;
   const scrutiny =
     input.riskScore.band === "low"
       ? ""
       : " Firms should apply additional scrutiny where exposure involves state-linked entities, restricted sectors, sensitive technology, dual-use goods or politically exposed counterparties.";
-  const paragraph = `${input.name}'s overall country risk score is ${input.riskScore.score.toFixed(1)}/10, placing it in the ${bandLower}-risk band. The principal driver is ${driverPhrase}. ${input.name} is ${fatfPhrase} and is ${sancPhrase}.${scrutiny}`;
+  const paragraph = `${input.name}'s overall country risk score is ${input.riskScore.score.toFixed(1)}/10, placing it in the ${bandLower}-risk band. The principal driver is ${driverPhrase}. ${input.name} is ${fatfPhrase}. ${sancClause}.${scrutiny}`;
   return { headline, paragraph };
 }
 
@@ -142,13 +146,17 @@ function riskDrivers(input: DecisionInput): string[] {
     if ((d.risk as number) < 5 || out.length >= 5) break;
     out.push(`${d.label} — ${(d.risk as number).toFixed(1)}/10`);
   }
-  return out.length ? out : ["Governance-driven baseline risk; no listing or sanctions escalators"];
+  return out.length
+    ? out
+    : [input.sanctionsCoverageComplete
+        ? "Governance-driven baseline risk; no listing or sanctions escalators"
+        : "Governance-driven baseline risk; sanctions classification pending independent review"];
 }
 
 function mitigatingFactors(input: DecisionInput): string[] {
   const out: string[] = [];
   if (!input.fatf) out.push("Not currently on the FATF grey or black list.");
-  if (!hasComprehensiveSanctions(input.sanctions))
+  if (input.sanctionsCoverageComplete && !hasComprehensiveSanctions(input.sanctions))
     out.push("No comprehensive country-wide sanctions programme.");
   const strongest = [...topDomains(input.breakdown)].reverse()[0];
   if (strongest && (strongest.risk as number) < 5)
@@ -199,14 +207,16 @@ const RECOMMENDED_CONTROLS = [
 ];
 
 function whatChanged(input: DecisionInput): WhatChangedItem[] {
-  const sancValue = hasComprehensiveSanctions(input.sanctions)
-    ? "Comprehensive programme in place"
-    : input.sanctionsTier
-      ? "Targeted programmes in place"
-      : "None identified";
+  const sancValue = !input.sanctionsCoverageComplete
+    ? "Classification review pending — absence not inferred"
+    : hasComprehensiveSanctions(input.sanctions)
+      ? "Comprehensive programme in place"
+      : input.sanctionsTier
+        ? "Targeted programmes in place"
+        : "None identified";
   return [
     { label: "FATF status", value: input.fatf ? (input.fatf.listing === "call-for-action" ? "Black list" : "Grey list") : "Not listed", asOf: fmt(input.lastPlenary) },
-    { label: "Sanctions exposure", value: sancValue, asOf: fmt(SANCTIONS_REVIEWED) },
+    { label: "Sanctions exposure", value: sancValue, asOf: fmt(input.sanctionsCoverageComplete ? SANCTIONS_REVIEWED : SANCTIONS_CATALOGUE_REVIEWED_AS_OF) },
     { label: "Governance (WGI)", value: "Latest dataset incorporated", asOf: GOVERNANCE_VINTAGE },
     { label: "Corruption (CPI)", value: input.cpi ? `${input.cpi.score}/100` : "Not available", asOf: CPI_YEAR },
     { label: "RegActions assessment", value: "Reviewed", asOf: fmt(input.lastPlenary) },

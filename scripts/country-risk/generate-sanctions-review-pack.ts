@@ -2,27 +2,29 @@
 import { writeFile } from "node:fs/promises";
 import {
   SANCTIONS_CANDIDATE_COUNTRY_COUNT,
-  SANCTIONS_CANDIDATE_SCORING_READY,
   SANCTIONS_CATALOGUE_COVERAGE,
   SANCTIONS_CATALOGUE_REVIEWED_AS_OF,
   SANCTIONS_REGIME_CANDIDATES,
   SANCTIONS_TIER_RULES,
 } from "../../src/data/sanctionsRegimeCandidates.js";
 import { getCountryByIso2 } from "../../src/data/countries.js";
+import { SANCTIONS_APPROVED_SNAPSHOT } from "../../src/data/sanctionsApprovedData.js";
 
 const JSON_PATH = process.env.COUNTRY_RISK_SANCTIONS_REVIEW_JSON
   ?? "/tmp/country-risk-sanctions-taxonomy-review.json";
 const MARKDOWN_PATH = process.env.COUNTRY_RISK_SANCTIONS_REVIEW_MARKDOWN
   ?? "/tmp/country-risk-sanctions-taxonomy-review.md";
 
-const pending = SANCTIONS_REGIME_CANDIDATES.filter((candidate) => candidate.reviewStatus === "pending-independent-review");
+const pending = SANCTIONS_APPROVED_SNAPSHOT.coverageComplete
+  ? []
+  : SANCTIONS_REGIME_CANDIDATES.filter((candidate) => candidate.reviewStatus === "pending-independent-review");
 const situationRelated = pending.filter((candidate) => candidate.relationship === "situation-related");
 
 const report = {
   generatedAt: new Date().toISOString(),
   catalogueReviewedAsOf: SANCTIONS_CATALOGUE_REVIEWED_AS_OF,
   productionScoresChanged: false,
-  scoringReady: SANCTIONS_CANDIDATE_SCORING_READY,
+  scoringReady: SANCTIONS_APPROVED_SNAPSHOT.coverageComplete,
   coverage: {
     countries: SANCTIONS_CANDIDATE_COUNTRY_COUNT,
     imposerCountryRecords: SANCTIONS_REGIME_CANDIDATES.length,
@@ -61,7 +63,11 @@ const report = {
     ...candidate,
     country: getCountryByIso2(candidate.iso2)?.name ?? candidate.iso2,
     reviewDecision: null,
+    finalTier: null,
+    decisionEvidenceUrl: null,
     reviewer: null,
+    reviewerOrganisation: null,
+    reviewedAt: null,
     reviewNote: null,
   })),
 };

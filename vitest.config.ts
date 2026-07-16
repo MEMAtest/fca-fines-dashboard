@@ -12,6 +12,7 @@ export default defineConfig({
     include: [
       'src/**/*.{test,spec}.{ts,tsx}',
       'server/**/*.{test,spec}.{ts,tsx}',
+      'scripts/country-risk/lib/**/*.{test,spec}.{ts,tsx}',
       'scripts/scraper/__tests__/**/*.{test,spec}.{ts,tsx}',
       'feature-validation/**/*.{test,spec}.{ts,tsx}',
     ],

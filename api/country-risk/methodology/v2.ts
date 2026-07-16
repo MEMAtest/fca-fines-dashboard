@@ -5,6 +5,7 @@ import {
   COUNTRY_RISK_PILLAR_WEIGHTS,
 } from "../../../src/data/countryRiskV2.js";
 import { COUNTRY_RISK_SOURCES } from "../../../src/data/countryRiskSources.js";
+import { SANCTIONS_APPROVED_SNAPSHOT } from "../../../src/data/sanctionsApprovedData.js";
 
 export default function handler(req: VercelRequest, res: VercelResponse) {
   res.setHeader("Access-Control-Allow-Origin", "*");
@@ -22,12 +23,17 @@ export default function handler(req: VercelRequest, res: VercelResponse) {
     },
     floors: COUNTRY_RISK_FLOORS,
     missingData: "No missing input is scored as zero; fewer than two pillars produces no headline score.",
+    provisionalBandRule: "A provisional numeric result that falls in the Low band is published as Moderate because one pillar remains unknown.",
     confidence: {
       high: "All pillars and sources current, with FATF assessment no more than five years old.",
       medium: "Complete inputs with a FATF assessment more than five but no more than eight years old, or another stale source.",
       low: "Missing pillar, assessment date unavailable or more than eight years old, or a source warning/review gate.",
     },
     contextOnly: ["Transparency International CPI", "RegActions enforcement volume"],
+    sanctionsPromotion: {
+      approvedSnapshot: SANCTIONS_APPROVED_SNAPSHOT,
+      rule: "Only a complete independently reviewed snapshot with current stable OFAC, UK, EU and UN source fingerprints may enter scoring; catalogue candidates never enter scoring directly.",
+    },
     sources: COUNTRY_RISK_SOURCES,
   });
 }

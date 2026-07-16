@@ -2,7 +2,7 @@ import type { VercelRequest, VercelResponse } from "@vercel/node";
 import { pageCountries } from "../../src/data/countryView.js";
 import { computeCountryRiskV2, COUNTRY_RISK_METHODOLOGY_VERSION } from "../../src/data/countryRiskV2.js";
 import { computeCountryRiskScore } from "../../src/data/countryRiskScore.js";
-import { COUNTRY_RISK_SOURCES } from "../../src/data/countryRiskSources.js";
+import { countryRiskSourcesAsOf } from "../../src/data/countryRiskSources.js";
 
 export default function handler(req: VercelRequest, res: VercelResponse) {
   res.setHeader("Access-Control-Allow-Origin", "*");
@@ -11,9 +11,11 @@ export default function handler(req: VercelRequest, res: VercelResponse) {
   if (requested !== "v2" && requested !== COUNTRY_RISK_METHODOLOGY_VERSION) {
     return res.status(400).json({ error: `Unsupported methodology: ${requested}` });
   }
+  const asOf = new Date();
+  const sources = countryRiskSourcesAsOf(asOf);
   const results = pageCountries()
     .map((country) => {
-      const result = computeCountryRiskV2(country.iso2);
+      const result = computeCountryRiskV2(country.iso2, { asOf });
       const previous = computeCountryRiskScore(country.iso2);
       return {
         country,
@@ -26,8 +28,9 @@ export default function handler(req: VercelRequest, res: VercelResponse) {
   res.setHeader("Cache-Control", "public, max-age=300, s-maxage=3600");
   return res.status(200).json({
     methodologyVersion: COUNTRY_RISK_METHODOLOGY_VERSION,
+    calculatedAt: asOf.toISOString(),
     count: results.length,
-    sources: COUNTRY_RISK_SOURCES,
+    sources,
     results,
   });
 }

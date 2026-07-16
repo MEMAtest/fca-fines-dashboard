@@ -52,6 +52,7 @@ import {
 } from "./countryDecision.js";
 import SCORE_SNAPSHOTS from "./scoreSnapshots.json" with { type: "json" };
 import { getFatfAssessment } from "./fatfAssessmentData.js";
+import { SANCTIONS_APPROVED_SNAPSHOT } from "./sanctionsApprovedData.js";
 
 const SNAPSHOTS = SCORE_SNAPSHOTS as { date: string; scores: Record<string, number> }[];
 
@@ -126,6 +127,8 @@ export interface CountryView {
   hasComprehensiveSanctions: boolean;
   /** Sanctioned but not comprehensively (targeted/sectoral exposure). */
   hasTargetedSanctions: boolean;
+  /** False until every v2 candidate has an approved/rejected decision. */
+  sanctionsCoverageComplete: boolean;
   /** Dated composite-score snapshots (baseline first). A real trend accrues as more are recorded. */
   scoreHistory: { date: string; score: number }[];
   lastPlenary: string;
@@ -181,6 +184,7 @@ export function buildCountryView(country: Country): CountryView {
     breakdown,
     sanctions,
     sanctionsTier,
+    sanctionsCoverageComplete: SANCTIONS_APPROVED_SNAPSHOT.coverageComplete,
     enforcementAssessed,
     cpi,
     fatf,
@@ -216,6 +220,7 @@ export function buildCountryView(country: Country): CountryView {
     enforcementAssessed,
     hasComprehensiveSanctions,
     hasTargetedSanctions,
+    sanctionsCoverageComplete: SANCTIONS_APPROVED_SNAPSHOT.coverageComplete,
     scoreHistory: SNAPSHOTS.filter((s) => s.scores[country.iso2] != null).map((s) => ({
       date: s.date,
       score: s.scores[country.iso2],

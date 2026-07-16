@@ -6,6 +6,7 @@ import {
   COUNTRY_RISK_PILLAR_WEIGHTS,
 } from "../data/countryRiskV2.js";
 import { COUNTRY_RISK_SOURCES } from "../data/countryRiskSources.js";
+import { SANCTIONS_APPROVED_SNAPSHOT } from "../data/sanctionsApprovedData.js";
 import { CPI_LICENCE, CPI_SOURCE, CPI_YEAR } from "../data/cpiData.js";
 import "../styles/country-hub.css";
 
@@ -46,6 +47,18 @@ export function CountryMethodologyV2() {
           <div className="cx-callout__item"><strong>Provisional</strong><span>One pillar is missing; available weights are renormalised and the result cannot be labelled Low.</span></div>
           <div className="cx-callout__item"><strong>Insufficient data</strong><span>Fewer than two pillars are available, so no headline score is published.</span></div>
         </div>
+      </section>
+
+      <section className="cx-method__section">
+        <h2 className="cx-method__h2">Sanctions promotion gate</h2>
+        <p className="cx-method__p">
+          Official catalogue candidates never enter scoring directly. Every imposer-country row must
+          be approved or rejected by an independent compliance practitioner using country-specific
+          legal-measure evidence, and the latest OFAC, UK, EU and UN source fingerprints must be
+          current and stable. The generated approved snapshot is currently{" "}
+          <strong>{SANCTIONS_APPROVED_SNAPSHOT.coverageComplete ? SANCTIONS_APPROVED_SNAPSHOT.version : "not promoted"}</strong>;
+          until promotion, the sanctions pillar is unavailable for every country and absence is never scored as zero.
+        </p>
       </section>
 
       <section className="cx-method__section">

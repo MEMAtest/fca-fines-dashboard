@@ -6,14 +6,15 @@ import { getCpi } from "../../src/data/cpiData.js";
 
 const output = process.argv.find((arg) => arg.startsWith("--output="))?.split("=")[1]
   ?? "/tmp/country-risk-v2-validation.json";
-const base = pageCountries().map((country) => ({ country, result: computeCountryRiskV2(country.iso2) }));
+const asOf = new Date();
+const base = pageCountries().map((country) => ({ country, result: computeCountryRiskV2(country.iso2, { asOf }) }));
 const scenarios = Object.entries(COUNTRY_RISK_PILLAR_WEIGHTS).flatMap(([pillar, weight]) => [-0.2, 0.2].map((delta) => ({
   name: `${pillar}${delta > 0 ? "+20%" : "-20%"}`,
   weights: { ...COUNTRY_RISK_PILLAR_WEIGHTS, [pillar]: weight * (1 + delta) },
 })));
 const sensitivity = scenarios.map((scenario) => {
   const changed = base.flatMap(({ country, result }) => {
-    const alternative = computeCountryRiskV2(country.iso2, { pillarWeights: scenario.weights });
+    const alternative = computeCountryRiskV2(country.iso2, { pillarWeights: scenario.weights, asOf });
     return result.band !== alternative.band ? [{ iso2: country.iso2, from: result.band, to: alternative.band }] : [];
   });
   return { scenario: scenario.name, bandChanges: changed.length, countries: changed };
@@ -33,7 +34,7 @@ const correlation = (() => {
   return denominator ? Math.round((numerator / denominator) * 1000) / 1000 : null;
 })();
 const report = {
-  generatedAt: new Date().toISOString(),
+  generatedAt: asOf.toISOString(),
   summary: {
     countries: base.length,
     complete: base.filter(({ result }) => result.status === "complete").length,

@@ -20,6 +20,8 @@ export type FatfListing = "call-for-action" | "increased-monitoring";
 export interface FatfStatus {
   iso2: string;
   listing: FatfListing;
+  /** FATF's required treatment for call-for-action jurisdictions. */
+  requiredAction?: "countermeasures" | "enhanced-due-diligence";
   /** ISO date first listed in the CURRENT spell, where reliably known. */
   since?: string;
   /** Plenary that last reviewed/confirmed the status. */
@@ -46,9 +48,9 @@ export const FATF_SOURCE_URL =
 
 // Black list — High-Risk Jurisdictions Subject to a Call for Action (unchanged Jun 2026).
 const BLACK: FatfStatus[] = [
-  { iso2: "IR", listing: "call-for-action", lastReviewed: FATF_LAST_PLENARY, note: "Subject to call for action and countermeasures." },
-  { iso2: "KP", listing: "call-for-action", lastReviewed: FATF_LAST_PLENARY, note: "Subject to call for action and countermeasures." },
-  { iso2: "MM", listing: "call-for-action", lastReviewed: FATF_LAST_PLENARY, note: "Subject to call for action (enhanced due diligence)." },
+  { iso2: "IR", listing: "call-for-action", requiredAction: "countermeasures", lastReviewed: FATF_LAST_PLENARY, note: "Subject to call for action and countermeasures." },
+  { iso2: "KP", listing: "call-for-action", requiredAction: "countermeasures", lastReviewed: FATF_LAST_PLENARY, note: "Subject to call for action and countermeasures." },
+  { iso2: "MM", listing: "call-for-action", requiredAction: "enhanced-due-diligence", lastReviewed: FATF_LAST_PLENARY, note: "Subject to call for action (enhanced due diligence)." },
 ];
 
 // Grey list — Jurisdictions Under Increased Monitoring (22 as of Jun 2026 plenary).

@@ -104,7 +104,10 @@ export const FATF_ASSESSMENT_SOURCE = ${JSON.stringify(SOURCE_PAGE)};
 export const FATF_ASSESSMENT_2013_EFFECTIVE_AT = ${JSON.stringify(sourceDates["2013"])};
 export const FATF_ASSESSMENT_2022_EFFECTIVE_AT = ${JSON.stringify(sourceDates["2022"])};
 export const FATF_ASSESSMENT_EFFECTIVE_AT = ${JSON.stringify(
-    [sourceDates["2013"], sourceDates["2022"]].filter((value): value is string => Boolean(value)).sort().at(-1) ?? null,
+    (() => {
+      const dates = [sourceDates["2013"], sourceDates["2022"]].filter((value): value is string => Boolean(value)).sort();
+      return dates[dates.length - 1] ?? null;
+    })(),
   )};
 export const FATF_ASSESSMENT_RETRIEVED_AT = ${JSON.stringify(retrievedAt)};
 export const FATF_ASSESSMENT_SHA256 = ${JSON.stringify(hash)};
