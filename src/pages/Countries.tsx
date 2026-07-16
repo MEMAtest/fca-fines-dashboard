@@ -295,7 +295,13 @@ function FilterBar({
 }
 
 // ─── Overview tab (default) — the #21 report-style landing ───────────────────
-function OverviewTab() {
+function OverviewTab({
+  onRegion,
+  onBand,
+}: {
+  onRegion: (region: string) => void;
+  onBand: (band: RiskBand) => void;
+}) {
   const index = useMemo(() => buildCountryIndex(), []);
   const total = index.length;
   const counts = useMemo(() => {
@@ -348,16 +354,18 @@ function OverviewTab() {
             <div className="cx-dist__bar">
               {dist.map((d) =>
                 d.n > 0 ? (
-                  <span key={d.band} className={`cx-dist__seg cx-dist__seg--${d.band}`} style={{ flexGrow: d.n }} />
+                  <button type="button" key={d.band} className={`cx-dist__seg cx-dist__seg--${d.band}`} style={{ flexGrow: d.n }} onClick={() => onBand(d.band)} aria-label={`Show ${bandLabel(d.band)} risk countries`} title={`${bandLabel(d.band)}: ${d.n}`} />
                 ) : null,
               )}
             </div>
             <ul className="cx-dist__legend">
               {dist.map((d) => (
                 <li key={d.band}>
-                  <span className={`cx-dist__dot cx-dist__dot--${d.band}`} />
-                  {bandLabel(d.band)}
-                  <span className="cx-dist__n">{d.n} ({pct(d.n)}%)</span>
+                  <button type="button" className="cx-drill" onClick={() => onBand(d.band)}>
+                    <span className={`cx-dist__dot cx-dist__dot--${d.band}`} />
+                    {bandLabel(d.band)}
+                    <span className="cx-dist__n">{d.n} ({pct(d.n)}%)</span>
+                  </button>
                 </li>
               ))}
             </ul>
@@ -392,6 +400,7 @@ function OverviewTab() {
             <Minus size={14} /> <strong>Removed ({removed.length})</strong>
             <span>{removed.map((c) => nameOf(c.iso2)).join(", ") || "None"}</span>
           </p>
+          <p className="cx-plenary-chip">Next FATF plenary · <b>{formatDate(FATF_NEXT_PLENARY)}</b></p>
           <Link to="/countries/fatf-grey-list" className="cx-panel-link">FATF monitoring centre →</Link>
         </div>
         <div className="mon-panel">
@@ -399,7 +408,7 @@ function OverviewTab() {
           <div className="mon-donut">
             <ResponsiveContainer width="100%" height={170}>
               <PieChart>
-                <Pie data={regionDonut} dataKey="value" nameKey="name" innerRadius={44} outerRadius={68} paddingAngle={2}>
+                <Pie data={regionDonut} dataKey="value" nameKey="name" innerRadius={44} outerRadius={68} paddingAngle={2} onClick={(d: { name?: string }) => d?.name && onRegion(d.name)} cursor="pointer">
                   {regionDonut.map((d) => (
                     <Cell key={d.name} fill={REGION_COLOUR[d.name] ?? "#cbd5e1"} />
                   ))}
@@ -423,9 +432,11 @@ function OverviewTab() {
             <ul className="mon-donut__legend">
               {regionDonut.map((d) => (
                 <li key={d.name}>
-                  <span className="mon-donut__swatch" style={{ background: REGION_COLOUR[d.name] ?? "#cbd5e1" }} />
-                  {d.name}
-                  <span className="mon-donut__count">{d.value}</span>
+                  <button type="button" className="cx-drill" onClick={() => onRegion(d.name)}>
+                    <span className="mon-donut__swatch" style={{ background: REGION_COLOUR[d.name] ?? "#cbd5e1" }} />
+                    {d.name}
+                    <span className="mon-donut__count">{d.value}</span>
+                  </button>
                 </li>
               ))}
             </ul>
@@ -690,7 +701,12 @@ function GlobalIndex() {
         ))}
       </div>
 
-      {tab === "overview" && <OverviewTab />}
+      {tab === "overview" && (
+        <OverviewTab
+          onRegion={(r) => { clearFilters(); setRegion(r); setTab("ratings"); }}
+          onBand={(b) => { clearFilters(); setBand(b); setTab("ratings"); }}
+        />
+      )}
 
       {tab === "map" && (
         <>

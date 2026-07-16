@@ -3354,3 +3354,33 @@ button.cx-kpi:hover {
   box-shadow: 0 8px 20px rgba(0, 0, 0, 0.25);
 }
 .cx-donut-tip strong { font-size: 0.82rem; }
+
+/* ═══ Overview drill-downs + plenary chip ════════════════════════════════════ */
+.cx-drill {
+  display: inline-flex;
+  align-items: center;
+  gap: inherit;
+  background: none;
+  border: none;
+  padding: 0;
+  font: inherit;
+  color: inherit;
+  cursor: pointer;
+  width: 100%;
+}
+.cx-drill:hover { color: #0b7f66; }
+.cx-drill:hover .cx-dist__n,
+.cx-drill:hover .mon-donut__count { color: #0b7f66; }
+button.cx-dist__seg { border: none; padding: 0; cursor: pointer; }
+button.cx-dist__seg:hover { opacity: 0.85; }
+.cx-plenary-chip {
+  display: inline-block;
+  font-size: 0.74rem;
+  color: #475569;
+  background: #f1f5f9;
+  border: 1px solid #e2e8f0;
+  border-radius: 999px;
+  padding: 0.2rem 0.65rem;
+  margin: 0.5rem 0 0.35rem;
+}
+.cx-plenary-chip b { color: #0b1f2a; }
