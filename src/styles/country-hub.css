@@ -2458,8 +2458,26 @@ button.cx-kpi:hover {
 
 /* ═══ Decision-support report (Stage 9) ══════════════════════════════════════ */
 /* Verdict in the hero */
+/* Bold conclusion + treatment card sit in the hero's left column so it
+   fills to the height of the map/score cards instead of leaving a gap. */
+.cx-hero__verdict-lead {
+  margin: 0.9rem 0 0;
+  font-size: 1.05rem;
+  line-height: 1.4;
+  color: #0b1f2a;
+}
+.cx-treat--hero {
+  margin-top: 0.85rem;
+}
+
+.cx-verdict-row {
+  display: grid;
+  grid-template-columns: minmax(0, 2fr) minmax(0, 1fr);
+  gap: 1rem;
+  align-items: start;
+  margin: 0 0 1.25rem;
+}
 .cx-verdict {
-  margin: 1rem 0 0;
   padding: 1rem 1.15rem;
   background: #f8fafc;
   border: 1px solid #e5e7eb;
@@ -2471,7 +2489,6 @@ button.cx-kpi:hover {
   font-size: 1rem;
   line-height: 1.65;
   color: #334155;
-  max-width: 80ch;
 }
 .cx-verdict__text strong {
   color: #0b1f2a;
@@ -2485,13 +2502,7 @@ button.cx-kpi:hover {
 .cx-report__chip--high { background: #ea580c; }
 .cx-report__chip--very-high { background: #dc2626; }
 
-/* Recommended treatment + assessment currency */
-.cx-decide {
-  display: grid;
-  grid-template-columns: 1fr 1.1fr;
-  gap: 1rem;
-  margin: 0 0 1.25rem;
-}
+/* Recommended treatment + assessment currency cards */
 .cx-treat,
 .cx-whatchanged {
   border: 1px solid #e5e7eb;
@@ -2672,7 +2683,7 @@ button.cx-kpi:hover {
 }
 
 @media (max-width: 720px) {
-  .cx-decide,
+  .cx-verdict-row,
   .cx-dsx__cols {
     grid-template-columns: 1fr;
   }

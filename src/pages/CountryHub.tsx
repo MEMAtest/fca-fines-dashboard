@@ -146,6 +146,18 @@ export function CountryHub() {
               sources cited <ExternalLink size={12} />
             </a>
           </p>
+          <p className="cx-hero__verdict-lead">
+            <strong>{decision.verdictHeadline}.</strong>
+          </p>
+          <div className="cx-treat cx-treat--hero">
+            <span className="cx-treat__label">
+              <ClipboardCheck size={15} /> Recommended treatment
+            </span>
+            <p className="cx-treat__value">{decision.treatment}</p>
+            <a href="#controls" className="cx-panel-link">
+              View recommended controls ↓
+            </a>
+          </div>
         </div>
 
         <div className="cx-report__map">
@@ -228,23 +240,10 @@ export function CountryHub() {
         </section>
       </header>
 
-      {/* Operational verdict — full width so the paragraph has room */}
-      <section className="cx-verdict">
-        <p className="cx-verdict__text">
-          <strong>{decision.verdictHeadline}.</strong> {decision.verdictParagraph}
-        </p>
-      </section>
-
-      {/* Recommended treatment + what changed */}
-      <section className="cx-decide">
-        <div className="cx-treat">
-          <span className="cx-treat__label">
-            <ClipboardCheck size={15} /> Recommended treatment
-          </span>
-          <p className="cx-treat__value">{decision.treatment}</p>
-          <a href="#controls" className="cx-panel-link">
-            View recommended controls ↓
-          </a>
+      {/* Operational verdict paragraph + assessment currency */}
+      <section className="cx-verdict-row">
+        <div className="cx-verdict">
+          <p className="cx-verdict__text">{decision.verdictParagraph}</p>
         </div>
         <div className="cx-whatchanged">
           <span className="cx-whatchanged__label">
