@@ -238,8 +238,8 @@ export function CountryHub() {
                   {!country.unMember && country.parent ? " · dependent territory" : ""}
                 </p>
                 <div className="cx-ident__chips">
-                  <span className="cx-chip">{country.region}</span>
-                  <span className="cx-chip">{country.subregion}</span>
+                  <span className="cx-wchip">{country.region}</span>
+                  <span className="cx-wchip">{country.subregion}</span>
                 </div>
               </div>
             </div>
@@ -353,10 +353,13 @@ export function CountryHub() {
             </div>
 
             <div className="cx-card cx-mapw">
-              <span className="cx-card__eyebrow">Risk map</span>
-              <Suspense fallback={<div className="cx-rmap__ph" style={{ height: 150 }} />}>
+              <span className="cx-card__eyebrow">Country map</span>
+              <Suspense fallback={<div className="cx-rmap__ph" style={{ height: 170 }} />}>
                 <CountryRegionalMap iso2={country.iso2} region={country.region} />
               </Suspense>
+              <Link to="/countries" className="cx-card__link cx-mapw__link">
+                View full map →
+              </Link>
             </div>
 
             <div className="cx-card cx-changed">
@@ -496,9 +499,9 @@ export function CountryHub() {
             </Link>
           </div>
 
-          <div className="cx-card cx-peers">
+          <div className="cx-card cx-peerc">
             <span className="cx-card__eyebrow">Peer comparison · {country.region}</span>
-            <ul className="cx-peers__list">
+            <ul className="cx-peerc__list">
               {peerBars.map((p) => (
                 <li key={p.iso2} className={`cx-peer${p.current ? " cx-peer--current" : ""}`}>
                   <Link to={`/countries/${p.slug}`} className="cx-peer__row">
@@ -521,9 +524,9 @@ export function CountryHub() {
             </Link>
           </div>
 
-          <div className="cx-card cx-sources">
+          <div className="cx-card cx-srcs">
             <span className="cx-card__eyebrow">Sources</span>
-            <ul className="cx-sources__list">
+            <ul className="cx-srcs__list">
               {sources.map((s) => (
                 <li key={s}>{s}</li>
               ))}
