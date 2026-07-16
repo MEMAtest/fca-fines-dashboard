@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
+import { useSearchParams } from "react-router-dom";
 import {
   BarChart3,
   Database,
@@ -71,19 +72,13 @@ function domainClass(value: string | null | undefined) {
   return `uk-enforcement__action--${String(value || "other").replace(/[^a-z0-9]+/gi, "-")}`;
 }
 
-function getInitialRegulator() {
-  if (typeof window === "undefined") return "All";
-  const value = new URLSearchParams(window.location.search).get("regulator");
+function getRegulatorFromSearch(searchParams: URLSearchParams) {
+  const value = searchParams.get("regulator");
   if (!value) return "All";
   const normalized = value.trim().toUpperCase();
   return UK_ENFORCEMENT_REGULATORS.some((item) => item.code === normalized)
     ? normalized
     : "All";
-}
-
-function getInitialQuery() {
-  if (typeof window === "undefined") return "wise";
-  return new URLSearchParams(window.location.search).get("q") ?? "wise";
 }
 
 export function UKEnforcement() {
@@ -97,8 +92,11 @@ export function UKEnforcement() {
     ogType: "website",
   });
 
-  const [query, setQuery] = useState(getInitialQuery);
-  const [regulator, setRegulator] = useState(getInitialRegulator);
+  const [routeSearchParams, setRouteSearchParams] = useSearchParams();
+  const routeRegulator = getRegulatorFromSearch(routeSearchParams);
+  const routeQuery = routeSearchParams.get("q");
+  const [query, setQuery] = useState(routeQuery ?? "");
+  const [regulator, setRegulator] = useState(routeRegulator);
   const [domain, setDomain] = useState("all");
   const [year, setYear] = useState(0);
   const [currency, setCurrency] = useState("GBP");
@@ -120,6 +118,21 @@ export function UKEnforcement() {
     }),
     [query, regulator, domain, year, currency],
   );
+
+  useEffect(() => {
+    setRegulator(routeRegulator);
+    if (routeQuery !== null) setQuery(routeQuery);
+  }, [routeQuery, routeRegulator]);
+
+  const selectRegulator = (nextRegulator: string) => {
+    setRegulator(nextRegulator);
+    const nextSearchParams = new URLSearchParams(routeSearchParams);
+    if (nextRegulator === "All") nextSearchParams.delete("regulator");
+    else nextSearchParams.set("regulator", nextRegulator);
+    if (query.trim()) nextSearchParams.set("q", query.trim());
+    else nextSearchParams.delete("q");
+    setRouteSearchParams(nextSearchParams, { replace: true });
+  };
 
   useEffect(() => {
     let mounted = true;
@@ -176,7 +189,14 @@ export function UKEnforcement() {
             {sourceCodes.map((code) => {
               const source = getUKEnforcementRegulator(code);
               return (
-                <span key={code} className="uk-enforcement__source-mark">
+                <button
+                  key={code}
+                  type="button"
+                  className={`uk-enforcement__source-mark${regulator === code ? " is-active" : ""}`}
+                  onClick={() => selectRegulator(code)}
+                  aria-pressed={regulator === code}
+                  title={`Filter by ${source?.fullName ?? code}`}
+                >
                   <RegulatorMark
                     regulator={code}
                     label={source?.fullName}
@@ -186,19 +206,19 @@ export function UKEnforcement() {
                     showCode
                     decorative={false}
                   />
-                </span>
+                </button>
               );
             })}
           </div>
         </div>
         <div className="uk-enforcement__hero-visual">
           <div className="uk-enforcement__skyline" aria-hidden="true">
-            <span className="uk-enforcement__skyline-building uk-enforcement__skyline-building--bank" />
-            <span className="uk-enforcement__skyline-building uk-enforcement__skyline-building--gherkin" />
-            <span className="uk-enforcement__skyline-building uk-enforcement__skyline-building--tower" />
-            <span className="uk-enforcement__skyline-building uk-enforcement__skyline-building--shard" />
-            <span className="uk-enforcement__skyline-building uk-enforcement__skyline-building--bridge" />
-            <span className="uk-enforcement__skyline-ground" />
+            <img
+              src="/images/london-skyline-uk-enforcement.jpg"
+              alt=""
+              decoding="async"
+              fetchPriority="high"
+            />
           </div>
           <div className="uk-enforcement__summary">
             <div className="uk-enforcement__metric">
@@ -210,7 +230,9 @@ export function UKEnforcement() {
               <BarChart3 size={18} aria-hidden="true" />
               <span>Total penalties</span>
               <strong>
-                {formatMetricAmount(stats?.summary.total ?? 0, stats?.summary.currency ?? currency)}
+                {stats
+                  ? formatMetricAmount(stats.summary.total, stats.summary.currency ?? currency)
+                  : "—"}
               </strong>
             </div>
             <div className="uk-enforcement__metric">
@@ -236,7 +258,7 @@ export function UKEnforcement() {
           <span>Regulator</span>
           <select
             value={regulator}
-            onChange={(event) => setRegulator(event.target.value)}
+            onChange={(event) => selectRegulator(event.target.value)}
           >
             <option value="All">All</option>
             {UK_ENFORCEMENT_REGULATORS.map((item) => (

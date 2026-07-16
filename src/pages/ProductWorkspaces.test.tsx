@@ -74,4 +74,17 @@ describe("product workspaces", () => {
     expect(screen.getByRole("heading", { name: /What matters now/i })).toBeInTheDocument();
     expect(screen.getByRole("heading", { name: /Top breach themes/i })).toBeInTheDocument();
   });
+
+  it("labels secondary destinations accurately and preserves a return path", () => {
+    render(<MemoryRouter initialEntries={["/fines/analytics?year=2025"]}><FinesWorkspace view="analytics" /></MemoryRouter>);
+
+    expect(screen.queryByRole("link", { name: "Reports" })).not.toBeInTheDocument();
+    expect(screen.queryByRole("link", { name: "Data Hub" })).not.toBeInTheDocument();
+    expect(screen.getByRole("link", { name: "Regulator directory" })).toHaveAttribute("href", "/regulators");
+    expect(screen.getByRole("link", { name: "Methodology" })).toHaveAttribute("href", "/countries/methodology");
+    expect(screen.getByRole("link", { name: "Board Pack" })).toHaveAttribute(
+      "href",
+      "/board-pack?from=%2Ffines%2Fanalytics%3Fyear%3D2025&fromLabel=Fines+workspace",
+    );
+  });
 });

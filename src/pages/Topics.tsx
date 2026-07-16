@@ -27,7 +27,7 @@ export function Topics() {
               Open Dashboard
             </Link>
             <Link to="/blog" className="btn btn-ghost">
-              Read Insights
+              Read Research
             </Link>
           </div>
         </header>

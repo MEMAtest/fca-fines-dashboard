@@ -42,8 +42,8 @@ function createLocalStorageMock() {
   };
 }
 
-function renderPage() {
-  return render(<MemoryRouter><BoardIntelligence /></MemoryRouter>);
+function renderPage(initialEntry = "/board-pack") {
+  return render(<MemoryRouter initialEntries={[initialEntry]}><BoardIntelligence /></MemoryRouter>);
 }
 
 describe("BoardIntelligence quick pack", () => {
@@ -91,5 +91,13 @@ describe("BoardIntelligence quick pack", () => {
     expect(screen.getByLabelText("Organisation", { exact: true })).toHaveValue("Acme Payments Ltd");
     expect(screen.getByText(/This is optional/i)).toBeInTheDocument();
     expect(screen.getByRole("link", { name: /privacy notice/i })).toHaveAttribute("href", "/privacy");
+  });
+
+  it("returns users to the workspace that opened the builder", () => {
+    renderPage("/board-pack?from=%2Fregulators%2Ffca%2Fanalytics&fromLabel=FCA+workspace");
+    expect(screen.getByRole("link", { name: /Back to FCA workspace/i })).toHaveAttribute(
+      "href",
+      "/regulators/fca/analytics",
+    );
   });
 });

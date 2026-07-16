@@ -1,6 +1,7 @@
 import { useMemo, useRef, useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useSearchParams } from "react-router-dom";
 import {
+  ArrowLeft,
   ArrowRight,
   CheckCircle2,
   Download,
@@ -75,6 +76,7 @@ export function BoardIntelligence() {
   const [submitting, setSubmitting] = useState(false);
   const [downloading, setDownloading] = useState(false);
   const [status, setStatus] = useState<string | null>(null);
+  const [searchParams] = useSearchParams();
   const idempotencyKey = useRef(crypto.randomUUID());
   const builderStarted = useRef(false);
   const { fines, loading, error } = useUnifiedData({ regulator: "All", country: "All", year: 0, currency: "GBP" });
@@ -90,6 +92,12 @@ export function BoardIntelligence() {
   const archetype = BOARD_ARCHETYPES_BY_ID[profile.archetypeId];
   const boardFocus = BOARD_FOCUS_OPTIONS.find((item) => item.id === profile.boardFocus)!;
   const lowerConfidenceCodes = profile.priorityRegulators.filter((code) => LIVE_REGULATOR_NAV_ITEMS.find((item) => item.code === code)?.operationalConfidence === "lower");
+  const returnDestination = useMemo(() => {
+    const candidate = searchParams.get("from");
+    if (!candidate || !candidate.startsWith("/") || candidate.startsWith("//")) return null;
+    return candidate;
+  }, [searchParams]);
+  const returnLabel = searchParams.get("fromLabel")?.trim() || "previous workspace";
 
   const markBuilderStarted = () => {
     if (builderStarted.current) return;
@@ -211,6 +219,12 @@ export function BoardIntelligence() {
 
   return (
     <div className="board-quick">
+      {returnDestination ? (
+        <Link className="board-quick__back" to={returnDestination}>
+          <ArrowLeft size={15} aria-hidden="true" />
+          Back to {returnLabel}
+        </Link>
+      ) : null}
       <section className="board-quick__hero">
         <div>
           <span className="board-quick__eyebrow"><Sparkles size={15}/> Quick Board Pack</span>

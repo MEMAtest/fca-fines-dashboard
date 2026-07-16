@@ -17,7 +17,6 @@ const NAV_LINKS = [
   { to: "/fines", label: "Compare Firms" },
   { to: "/search", label: "Enforcement" },
   { to: "/blog", label: "Research" },
-  { to: "/topics", label: "Insights" },
   { to: "/intelligence", label: "Intelligence" },
   { to: "/countries", label: "Countries" },
 ];
@@ -25,19 +24,20 @@ const NAV_LINKS = [
 function isNavActive(to: string, pathname: string) {
   if (to === "/") return pathname === "/";
   if (to === "/fines") return pathname.startsWith("/fines");
-  if (to === "/blog")
-    return pathname === "/blog" || pathname.startsWith("/blog/");
-  if (to === "/countries")
-    return pathname === "/countries" || pathname.startsWith("/countries/");
-  if (to === "/topics") {
+  if (to === "/blog") {
     return (
+      pathname === "/blog" ||
+      pathname.startsWith("/blog/") ||
       pathname === "/topics" ||
+      pathname.startsWith("/topics/") ||
       pathname.startsWith("/breaches") ||
       pathname.startsWith("/years") ||
       pathname.startsWith("/sectors") ||
       pathname.startsWith("/firms")
     );
   }
+  if (to === "/countries")
+    return pathname === "/countries" || pathname.startsWith("/countries/");
   return pathname === to;
 }
 
@@ -58,6 +58,10 @@ function getBreadcrumbs(pathname: string) {
   if (!pathname || pathname === "/") return crumbs;
 
   const segments = pathname.split("/").filter(Boolean);
+  const researchRoutes = new Set(["topics", "breaches", "years", "sectors", "firms"]);
+  if (researchRoutes.has(segments[0])) {
+    crumbs.push({ to: "/blog", label: "Research" });
+  }
   let current = "";
   for (let i = 0; i < segments.length; i += 1) {
     const seg = segments[i];
@@ -69,7 +73,7 @@ function getBreadcrumbs(pathname: string) {
     else if (seg === "search") label = "Search";
     else if (seg === "intelligence") label = "Intelligence";
     else if (seg === "uk-enforcement") label = "UK Enforcement";
-    else if (seg === "blog") label = "Insights";
+    else if (seg === "blog") label = "Research";
     else if (seg === "topics") label = "Topics";
     else if (seg === "regulators") label = "Regulators";
     else if (seg === "breaches") label = "Breach Categories";

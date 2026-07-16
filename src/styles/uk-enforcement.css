@@ -16,21 +16,15 @@
   border-radius: 8px;
   padding: clamp(1.4rem, 4vw, 2.6rem);
   background:
-    linear-gradient(100deg, rgba(255, 255, 255, 0.99) 0%, rgba(255, 255, 255, 0.95) 46%, rgba(224, 244, 239, 0.88) 100%),
-    radial-gradient(circle at 78% 20%, rgba(15, 167, 125, 0.16), transparent 26%),
-    linear-gradient(135deg, #f8fafc 0%, #e9f4f5 56%, #f5efe1 100%);
+    linear-gradient(100deg, #ffffff 0%, #f8fbfc 52%, #edf6f4 100%);
   box-shadow: 0 20px 45px rgba(15, 23, 42, 0.08);
 }
 
 .uk-enforcement__header::after {
   content: "";
   position: absolute;
-  inset: auto -8% -32% 43%;
-  height: 70%;
-  background:
-    linear-gradient(90deg, rgba(15, 167, 125, 0.16), rgba(180, 143, 74, 0.18)),
-    repeating-linear-gradient(90deg, rgba(15, 23, 42, 0.08) 0 1px, transparent 1px 52px);
-  transform: skewY(-8deg);
+  inset: 0;
+  background: linear-gradient(90deg, rgba(255, 255, 255, 0) 46%, rgba(230, 244, 241, 0.14) 100%);
   pointer-events: none;
 }
 
@@ -86,10 +80,22 @@
   background: rgba(255, 255, 255, 0.74);
   padding: 0.25rem 0.5rem;
   backdrop-filter: blur(10px);
+  color: inherit;
+  font: inherit;
+  cursor: pointer;
+  transition: border-color 160ms ease, background 160ms ease, box-shadow 160ms ease;
+}
+
+.uk-enforcement__source-mark:hover,
+.uk-enforcement__source-mark.is-active {
+  border-color: rgba(11, 132, 99, 0.6);
+  background: #ffffff;
+  box-shadow: 0 5px 14px rgba(15, 23, 42, 0.08);
 }
 
 .uk-enforcement__hero-visual {
-  min-height: 250px;
+  min-height: 330px;
+  align-self: stretch;
   display: flex;
   align-items: flex-end;
   justify-content: flex-end;
@@ -97,90 +103,20 @@
 
 .uk-enforcement__skyline {
   position: absolute;
-  inset: 0 0 52px;
+  inset: -1.4rem -1.4rem 48px -5rem;
   overflow: hidden;
+  border-radius: 8px;
+  background: #edf3f5;
+  -webkit-mask-image: linear-gradient(90deg, transparent 0%, rgba(0, 0, 0, 0.9) 20%, #000 42%);
+  mask-image: linear-gradient(90deg, transparent 0%, rgba(0, 0, 0, 0.9) 20%, #000 42%);
 }
 
-.uk-enforcement__skyline::before {
-  content: "";
-  position: absolute;
-  right: 4%;
-  top: 2%;
-  width: 54%;
-  aspect-ratio: 1;
-  border: 14px solid rgba(11, 31, 42, 0.055);
-  border-radius: 999px;
-  box-shadow:
-    inset 34px 0 0 -18px rgba(11, 31, 42, 0.045),
-    inset -34px 0 0 -18px rgba(11, 31, 42, 0.045);
-}
-
-.uk-enforcement__skyline::after {
-  content: "";
-  position: absolute;
-  right: 8%;
-  bottom: 18px;
-  width: 74%;
-  height: 2px;
-  background: linear-gradient(90deg, transparent, rgba(11, 31, 42, 0.18), transparent);
-}
-
-.uk-enforcement__skyline-building {
-  position: absolute;
-  bottom: 18px;
-  display: block;
-  background: linear-gradient(180deg, rgba(11, 31, 42, 0.2), rgba(11, 31, 42, 0.08));
-  border: 1px solid rgba(11, 31, 42, 0.08);
-}
-
-.uk-enforcement__skyline-building--bank {
-  right: 58%;
-  width: 88px;
-  height: 78px;
-  clip-path: polygon(50% 0, 100% 25%, 92% 25%, 92% 100%, 8% 100%, 8% 25%, 0 25%);
-}
-
-.uk-enforcement__skyline-building--gherkin {
-  right: 40%;
-  width: 72px;
-  height: 142px;
-  border-radius: 50% 50% 18% 18% / 34% 34% 8% 8%;
-  background:
-    repeating-linear-gradient(65deg, rgba(255, 255, 255, 0.28) 0 2px, transparent 2px 16px),
-    linear-gradient(180deg, rgba(15, 167, 125, 0.18), rgba(11, 31, 42, 0.09));
-}
-
-.uk-enforcement__skyline-building--tower {
-  right: 27%;
-  width: 66px;
-  height: 108px;
-  border-radius: 10px 10px 0 0;
-}
-
-.uk-enforcement__skyline-building--shard {
-  right: 12%;
-  width: 92px;
-  height: 210px;
-  clip-path: polygon(58% 0, 100% 100%, 0 100%);
-  background: linear-gradient(160deg, rgba(11, 31, 42, 0.19), rgba(15, 167, 125, 0.07));
-}
-
-.uk-enforcement__skyline-building--bridge {
-  right: 0;
-  width: 135px;
-  height: 58px;
-  clip-path: polygon(0 70%, 12% 32%, 22% 70%, 32% 30%, 42% 70%, 100% 70%, 100% 100%, 0 100%);
-  background: rgba(180, 143, 74, 0.18);
-}
-
-.uk-enforcement__skyline-ground {
-  position: absolute;
-  right: -3%;
-  bottom: 0;
-  width: 82%;
-  height: 34px;
-  border-radius: 999px 0 0 0;
-  background: linear-gradient(90deg, rgba(15, 167, 125, 0.16), rgba(180, 143, 74, 0.16));
+.uk-enforcement__skyline img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
+  filter: saturate(0.78) contrast(0.94) brightness(1.04);
 }
 
 .uk-enforcement__summary {

@@ -38,12 +38,6 @@ const FINES_NAV = [
 
 // Watchlists/Alerts removed until the features exist — they pointed at a
 // marketing page and read as dead buttons. Re-add when there's a real tool.
-const SECONDARY_NAV = [
-  { label: "Reports", icon: BookOpenCheck, to: "/board-pack" },
-  { label: "Data Hub", icon: Database, to: "/search" },
-  { label: "Methodology", icon: CircleHelp, to: "/countries/methodology" },
-];
-
 function buildBase(scope: "fines" | "regulator", regulatorCode?: string) {
   return scope === "fines" ? "/fines" : `/regulators/${regulatorCode ?? "fca"}`;
 }
@@ -63,6 +57,22 @@ export function ProductWorkspaceShell({
   );
   const base = buildBase(scope, regulatorCode);
   const nav = FINES_NAV;
+  const returnLabel = scope === "fines"
+    ? "Fines workspace"
+    : `${regulatorCode?.toUpperCase() ?? "Regulator"} workspace`;
+  const boardPackParams = new URLSearchParams({
+    from: `${location.pathname}${location.search}`,
+    fromLabel: returnLabel,
+  });
+  const secondaryNav = [
+    {
+      label: "Board Pack",
+      icon: BookOpenCheck,
+      to: `/board-pack?${boardPackParams.toString()}`,
+    },
+    { label: "Regulator directory", icon: Database, to: "/regulators" },
+    { label: "Methodology", icon: CircleHelp, to: "/countries/methodology" },
+  ];
   const currentLabel = useMemo(
     () =>
       nav.find(({ segment }) => {
@@ -143,7 +153,7 @@ export function ProductWorkspaceShell({
             );
           })}
           <div className="product-workspace__nav-divider" />
-          {SECONDARY_NAV.map(({ label, icon: Icon, to }) => (
+          {secondaryNav.map(({ label, icon: Icon, to }) => (
             <Link
               key={label}
               to={to}

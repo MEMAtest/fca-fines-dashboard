@@ -642,7 +642,7 @@ export function Blog() {
     <div className="blog-page insights-page">
       <section className="insights-header" aria-labelledby="insights-heading">
         <div>
-          <p className="insights-eyebrow">Insights</p>
+          <p className="insights-eyebrow">Research</p>
           <h1 id="insights-heading">Regulatory Insights</h1>
           <p className="blog-hero-subtitle">
             Expert analysis and intelligence on regulatory enforcement, fines,
