@@ -18,6 +18,7 @@ import {
   Globe2,
   Info,
   Landmark,
+  Layers,
   Scale,
   ShieldCheck,
   TrendingUp,
@@ -166,6 +167,7 @@ export function CountryHub() {
     sanctionsTier,
     hasComprehensiveSanctions,
     attribution,
+    sectorExposure,
   } = view;
 
   const rank = globalRank(country.iso2);
@@ -637,7 +639,34 @@ export function CountryHub() {
             </div>
           </div>
 
-          {/* ── Regulators & legal framework ── */}
+          {/* ── Row 5: sector exposure | regulators & legal framework ── */}
+          <div className="cx-ws__row5">
+          {/* Sector exposure (derived from sourced modules, nothing asserted) */}
+          <div className="cx-card cx-sect">
+            <span className="cx-card__eyebrow">
+              <Layers size={12} /> Sector exposure
+            </span>
+            <ul className="cx-sect__list">
+              {sectorExposure.map((s) => (
+                <li key={s.sector} className="cx-sect__row">
+                  <span className="cx-sect__name">{s.sector}</span>
+                  <span
+                    className={`cx-tag cx-sect__tag cx-sect__tag--${s.level.toLowerCase()}`}
+                  >
+                    {s.level}
+                  </span>
+                  <span className="cx-sect__why" title={s.rationale}>
+                    {s.rationale}
+                  </span>
+                </li>
+              ))}
+            </ul>
+            <p className="cx-sect__note">
+              Derived from sanctions tier, FATF listing, WGI governance and CPI.
+            </p>
+          </div>
+
+          {/* Regulators & legal framework */}
           <div className="cx-card cx-regf">
             <span className="cx-card__eyebrow">
               <Landmark size={12} /> Regulators &amp; legal framework
@@ -707,6 +736,7 @@ export function CountryHub() {
                 </ul>
               </div>
             </div>
+          </div>
           </div>
 
           <section className="cx-v2 cx-v2--compact" aria-labelledby="v2-heading">
