@@ -45,6 +45,9 @@ import {
   hasComprehensiveSanctions as computeHasComprehensiveSanctions,
   type CountryDecision,
 } from "./countryDecision.js";
+import SCORE_SNAPSHOTS from "./scoreSnapshots.json" with { type: "json" };
+
+const SNAPSHOTS = SCORE_SNAPSHOTS as { date: string; scores: Record<string, number> }[];
 
 const MONTHS = [
   "Jan", "Feb", "Mar", "Apr", "May", "Jun",
@@ -102,6 +105,8 @@ export interface CountryView {
   hasComprehensiveSanctions: boolean;
   /** Sanctioned but not comprehensively (targeted/sectoral exposure). */
   hasTargetedSanctions: boolean;
+  /** Dated composite-score snapshots (baseline first). A real trend accrues as more are recorded. */
+  scoreHistory: { date: string; score: number }[];
   lastPlenary: string;
   nextPlenary: string;
 }
@@ -180,6 +185,10 @@ export function buildCountryView(country: Country): CountryView {
     enforcementAssessed,
     hasComprehensiveSanctions,
     hasTargetedSanctions,
+    scoreHistory: SNAPSHOTS.filter((s) => s.scores[country.iso2] != null).map((s) => ({
+      date: s.date,
+      score: s.scores[country.iso2],
+    })),
     lastPlenary: FATF_LAST_PLENARY,
     nextPlenary: FATF_NEXT_PLENARY,
   };
