@@ -240,7 +240,7 @@ function renderHubBody(
  * prerendered HTML and the SPA can't drift apart in copy/logic.
  */
 function renderCountryFatfBody(view: CountryView): string {
-  const { country, statusHeading, statusDetail, history, enforcement, sanctions, sanctionsTier, riskScore, breakdown, globalAverage, cpi, decision, enforcementAssessed, hasComprehensiveSanctions, hasTargetedSanctions, regulatory, regionalPeers } = view;
+  const { country, statusHeading, statusDetail, history, enforcement, sanctions, sanctionsTier, riskScore, breakdown, globalAverage, cpi, decision, enforcementAssessed, hasComprehensiveSanctions, hasTargetedSanctions, regulatory, regionalPeers, attribution } = view;
   const narrative = getNarrative(country.iso2) ?? null;
   const title = `${country.name} — Country Risk Report`;
   const domainLis = breakdown.domains
@@ -295,6 +295,28 @@ function renderCountryFatfBody(view: CountryView): string {
     .join("")}</ul>`;
   const whatChangedHtml = `<h2>Assessment currency</h2><ul>${decision.whatChanged
     .map((w) => `<li>${escapeHtml(`${w.label}: ${w.value} (as of ${w.asOf})`)}</li>`)
+    .join("")}</ul>`;
+  // Attributed indicators: per-imposer sanctions Yes/No + WGI institutional sub-scores.
+  const attrHtml = `<h2>Attributed indicators</h2><h3>Sanctions programme by imposer (reviewed ${escapeHtml(
+    attribution.sanctions.reviewed,
+  )})</h3><ul>${attribution.sanctions.imposers
+    .map(
+      (r) =>
+        `<li>${escapeHtml(
+          `${r.imposer}: ${r.active ? `Yes (${r.tierLabel})` : "No"}`,
+        )}</li>`,
+    )
+    .join(
+      "",
+    )}</ul><p>&ldquo;No&rdquo; means no country-level programme by that imposer is identified; individual listed persons may still exist.</p><h3>Governance sub-scores (World Bank WGI ${escapeHtml(
+    attribution.governance.vintage,
+  )}, percentile)</h3><ul>${attribution.governance.subScores
+    .map(
+      (s) =>
+        `<li>${escapeHtml(
+          `${s.label}: ${s.percentile === null ? "no data" : `${s.percentile}/100`}`,
+        )}</li>`,
+    )
     .join("")}</ul>`;
   const analysisHtml = narrative
     ? `<h2>RegActions analysis</h2><p>${escapeHtml(
@@ -420,7 +442,7 @@ function renderCountryFatfBody(view: CountryView): string {
     statusHeading,
   )}</h2><p>${escapeHtml(
     statusDetail,
-  )}</p>${sanctionsHtml}${historyHtml}${enforcementHtml}${regulatoryHtml}${analysisHtml}${whatChangedHtml}${peersHtml}${sourcesHtml}</div></article></div></div>`;
+  )}</p>${sanctionsHtml}${attrHtml}${historyHtml}${enforcementHtml}${regulatoryHtml}${analysisHtml}${whatChangedHtml}${peersHtml}${sourcesHtml}</div></article></div></div>`;
 }
 
 /** Crawlable body for the /countries index (FATF grey + black lists). */
