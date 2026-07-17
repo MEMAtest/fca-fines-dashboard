@@ -245,7 +245,7 @@ export async function getRegulatorTopFines(
              breach_type,
              amount_gbp AS amount, date_issued::text AS date_issued
       FROM all_regulatory_fines_canonical
-      WHERE regulator = $1 AND amount_gbp IS NOT NULL
+      WHERE regulator = $1 AND amount_gbp IS NOT NULL AND requires_amount_review IS NOT TRUE
       ORDER BY amount_gbp DESC, date_issued DESC
       LIMIT $2
     `,
