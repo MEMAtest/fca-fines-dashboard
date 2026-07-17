@@ -166,6 +166,11 @@ const CountryHub = lazyPage(() =>
     default: module.CountryHub,
   })),
 );
+const CountryCompare = lazyPage(() =>
+  import("./pages/CountryCompare.js").then((module) => ({
+    default: module.CountryCompare,
+  })),
+);
 const CountryMethodology = lazyPage(() =>
   import("./pages/CountryMethodology.js").then((module) => ({
     default: module.CountryMethodology,
@@ -630,6 +635,14 @@ const router = createBrowserRouter([
         element: (
           <Suspense fallback={ROUTE_FALLBACK}>
             <CountryMethodologyV2 />
+          </Suspense>
+        ),
+      },
+      {
+        path: "/countries/compare/:pair",
+        element: (
+          <Suspense fallback={ROUTE_FALLBACK}>
+            <CountryCompare />
           </Suspense>
         ),
       },
