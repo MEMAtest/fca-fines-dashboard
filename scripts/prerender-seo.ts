@@ -181,11 +181,12 @@ function latestDate(...values: string[]): string {
  * signals a country page actually shows — FATF plenary, sanctions review month,
  * WGI governance vintage and CPI vintage. Never fabricated, never the build date.
  */
-const COUNTRY_PAGE_DATE = latestDate(
-  FATF_LAST_PLENARY,
-  SANCTIONS_REVIEWED,
-  GOVERNANCE_VINTAGE,
-  CPI_YEAR,
+// Clamped to today: month-precision vintages normalise to month-END (so a
+// "2026-07" review doesn't lose to an earlier full date), which can land in
+// the future mid-month — and Google ignores future lastmod/dateModified.
+const COUNTRY_PAGE_DATE = clampISODate(
+  latestDate(FATF_LAST_PLENARY, SANCTIONS_REVIEWED, GOVERNANCE_VINTAGE, CPI_YEAR),
+  todayISO(),
 );
 
 interface PageMeta {
@@ -2030,7 +2031,7 @@ function renderPage(template: string, meta: PageMeta): string {
   );
 
   // Single self-referencing hreflang alternate (en/en-gb/en-us trio removed as
-  // redundant; the site is single-locale). Only x-default remains and self-refs.
+  // redundant; the site is single-locale). Only the x-default alternate remains.
   html = html.replace(
     /<link\s+rel="alternate"\s+hreflang="x-default"\s+href="[^"]*"\s*\/?>/,
     `<link rel="alternate" hreflang="x-default" href="${canonicalUrl}" />`,
