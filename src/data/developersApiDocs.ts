@@ -33,6 +33,13 @@ export const DEVELOPERS_LICENCE_NAME = "CC BY-NC 4.0";
 export const DEVELOPERS_LICENCE_URL =
   "https://creativecommons.org/licenses/by-nc/4.0/";
 
+// Embeddable country risk badge. The badge endpoint returns an SVG that can be
+// dropped into any page with a plain <img> tag; the attribution link next to it
+// satisfies the CC BY-NC credit requirement.
+export const BADGE_EMBED_HTML = `<a href="https://regactions.com/countries" title="AML country risk rating by RegActions">
+  <img src="https://regactions.com/api/badge/GB.svg" alt="United Kingdom AML risk rating by RegActions" height="20" />
+</a>`;
+
 export const DEVELOPER_ENDPOINTS: ApiEndpoint[] = [
   {
     method: "GET",
@@ -68,6 +75,20 @@ export const DEVELOPER_ENDPOINTS: ApiEndpoint[] = [
       { name: "previous", type: "object", description: "Prior methodology (v1) score and band for comparison." },
       { name: "change", type: "object", description: "Points delta and the drivers behind it." },
       { name: "evidence", type: "object", description: "Per-pillar evidence (FATF assessment, WGI dimensions, sanctions coverage)." },
+    ],
+  },
+  {
+    method: "GET",
+    path: "/api/badge/{iso2}",
+    title: "Country risk badge (SVG)",
+    summary:
+      "An embeddable SVG badge showing a jurisdiction's AML risk band and 0-10 score, coloured by band. Withheld jurisdictions render a \"Not rated\" variant and unknown codes return a 404 badge. Returns image/svg+xml and is edge-cached for a day. Embed it with a plain <img> tag; a `.svg` suffix on the code is accepted and ignored.",
+    example: "curl https://regactions.com/api/badge/GB.svg",
+    fields: [
+      { name: "(response body)", type: "image/svg+xml", description: "A self-contained SVG badge, e.g. \"United Kingdom AML risk: Low (1.9/10)\", sized to its text." },
+      { name: "iso2 (path)", type: "string", description: "ISO 3166-1 alpha-2 code, case-insensitive; an optional \".svg\" suffix is stripped." },
+      { name: "Content-Type", type: "header", description: "image/svg+xml; charset=utf-8." },
+      { name: "Cache-Control", type: "header", description: "public, s-maxage=86400 for rated/withheld badges; shorter for 404 badges." },
     ],
   },
   {

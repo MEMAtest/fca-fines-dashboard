@@ -2,6 +2,7 @@ import { Link } from "react-router-dom";
 import { useSEO } from "../hooks/useSEO.js";
 import "../styles/about.css";
 import {
+  BADGE_EMBED_HTML,
   DEVELOPER_ENDPOINTS,
   DEVELOPERS_ATTRIBUTION_HTML,
   DEVELOPERS_ATTRIBUTION_TEXT,
@@ -26,10 +27,10 @@ export function Developers() {
         <span className="about-eyebrow">Developers</span>
         <h1>Free RegActions data APIs</h1>
         <p>
-          RegActions exposes three read-only JSON endpoints for country AML risk
-          ratings and global enforcement data. They are free to use, need no API
-          key, and are CORS-open, so you can call them directly from the browser
-          or a server.
+          RegActions exposes read-only endpoints for country AML risk ratings
+          and global enforcement data, plus an embeddable SVG risk badge. They
+          are free to use, need no API key, and are CORS-open, so you can call
+          them directly from the browser or a server.
         </p>
         <div className="about-hero__actions">
           <Link to="/countries" className="about-button about-button--primary">
@@ -117,6 +118,50 @@ export function Developers() {
           </table>
         </section>
       ))}
+
+      <section className="about-section" id="badge-embed">
+        <h2>Embed a country risk badge</h2>
+        <p>
+          The badge endpoint returns a small SVG you can drop into any page with
+          a plain <code>&lt;img&gt;</code> tag. It shows the jurisdiction's AML
+          risk band and 0-10 score, coloured by band, and reads its number from
+          the same scoring path as the country report, so the two can never
+          disagree. Withheld jurisdictions render an honest <em>Not rated</em>{" "}
+          badge, and unknown codes return a 404 badge. Swap <code>GB</code> for
+          any ISO 3166-1 alpha-2 code; the <code>.svg</code> suffix is optional.
+        </p>
+        <h3>Live preview</h3>
+        <p className="developers-badge-previews">
+          <a
+            href="https://regactions.com/countries"
+            title="AML country risk rating by RegActions"
+          >
+            <img
+              src="/api/badge/GB.svg"
+              alt="United Kingdom AML risk rating by RegActions"
+              height={20}
+            />
+          </a>{" "}
+          <a
+            href="https://regactions.com/countries"
+            title="AML country risk rating by RegActions"
+          >
+            <img
+              src="/api/badge/IR.svg"
+              alt="Iran AML risk rating by RegActions"
+              height={20}
+            />
+          </a>
+        </p>
+        <h3>Copy-paste embed</h3>
+        <p>
+          Keep the surrounding link: it is the visible, clickable credit the
+          licence requires.
+        </p>
+        <pre>
+          <code>{BADGE_EMBED_HTML}</code>
+        </pre>
+      </section>
 
       <section className="about-section">
         <h2>Questions</h2>
