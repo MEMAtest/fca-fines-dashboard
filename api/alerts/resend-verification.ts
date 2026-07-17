@@ -34,7 +34,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
     // Find pending subscription
     const subscriptions = (await sql`
-      SELECT id, email, min_amount, breach_types, frequency, verification_expires_at
+      SELECT id, email, min_amount, breach_types, frequency, verification_expires_at, topic
       FROM alert_subscriptions
       WHERE email = ${email}
       AND status = 'pending'
@@ -45,6 +45,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       id: string | number;
       email: string;
       min_amount: number | string | null;
+      topic?: string | null;
       breach_types: string[] | null;
       frequency: string;
       verification_expires_at: string | Date | null;
@@ -92,13 +93,17 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     // Send verification email
     const verifyUrl = `${BASE_URL}/api/alerts/verify/${verificationToken}`;
 
+    const isCountryChanges = subscription.topic === "country-changes";
     const minAmount = subscription.min_amount;
-    const minAmountText = minAmount
-      ? `Fines of £${(Number(minAmount) / 1000000).toFixed(1)}m or more`
-      : "All fines";
+    const minAmountText = isCountryChanges
+      ? "Country risk changes (FATF, sanctions, EU tax list)"
+      : minAmount
+        ? `Fines of £${(Number(minAmount) / 1000000).toFixed(1)}m or more`
+        : "All fines";
     const breachTypes = subscription.breach_types || [];
-    const breachText =
-      breachTypes.length > 0
+    const breachText = isCountryChanges
+      ? "Weekly digest"
+      : breachTypes.length > 0
         ? `Breach types: ${breachTypes.join(", ")}`
         : "All breach types";
 

@@ -13,6 +13,10 @@
  * fines alert path is untouched.
  *
  * Cron schedule: 0 9 * * 1
+  *
+ * Delivery is AT-LEAST-ONCE: the SES send and the last_changes_date advance
+ * are separate statements, so a crash between them re-sends the same digest
+ * on the next weekly run. Accepted for a weekly cadence.
  */
 
 import type { VercelRequest, VercelResponse } from "@vercel/node";

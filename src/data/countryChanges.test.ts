@@ -10,7 +10,7 @@ import {
   type ScoreSnapshot,
 } from "./countryChanges.js";
 import { FATF_CHANGE_LOG } from "./fatfStatus.js";
-import { EU_TAX_LIST } from "./euTaxList.js";
+import { EU_TAX_LIST, EU_TAX_LIST_CHANGES } from "./euTaxList.js";
 
 describe("country changes surface", () => {
   const events = buildCountryChanges();
@@ -44,21 +44,23 @@ describe("country changes surface", () => {
     expect(isos.has("KP")).toBe(true); // North Korea
   });
 
-  it("emits a global EU-tax event plus one per listed jurisdiction", () => {
+  it("emits a global EU-tax event plus per-country events ONLY for genuine deltas", () => {
     const euTax = events.filter((e) => e.kind === "eu-tax-list");
     expect(euTax.filter((e) => e.scope === "global").length).toBe(1);
-    expect(euTax.filter((e) => e.scope === "country").length).toBe(
-      EU_TAX_LIST.length,
+    const country = euTax.filter((e) => e.scope === "country");
+    expect(country.length).toBe(
+      EU_TAX_LIST_CHANGES.added.length + EU_TAX_LIST_CHANGES.removed.length,
     );
+    // Long-listed jurisdictions re-confirmed by the Council are NOT changes:
+    // e.g. Russia (listed 2023) must not appear as a dated per-country event.
+    expect(country.some((e) => e.iso2 === "RU")).toBe(false);
+    expect(country.some((e) => e.iso2 === "VN" && /added/.test(e.title))).toBe(true);
+    expect(country.some((e) => e.iso2 === "TT" && /removed/.test(e.title))).toBe(true);
   });
 
-  it("records coarse FIU and BO-register review events (global scope)", () => {
-    const fiu = events.filter((e) => e.kind === "fiu");
-    const bo = events.filter((e) => e.kind === "bo-register");
-    expect(fiu.length).toBe(1);
-    expect(bo.length).toBe(1);
-    expect(fiu[0].scope).toBe("global");
-    expect(bo[0].scope).toBe("global");
+  it("excludes coarse dataset-review events from the feed (they are not changes)", () => {
+    expect(events.filter((e) => e.kind === "fiu").length).toBe(0);
+    expect(events.filter((e) => e.kind === "bo-register").length).toBe(0);
   });
 
   it("gives every event a resolvable, non-empty href and ISO date", () => {

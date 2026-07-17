@@ -27,6 +27,7 @@ import {
 } from "./sanctionsApprovedData.js";
 import {
   EU_TAX_LIST,
+  EU_TAX_LIST_CHANGES,
   EU_TAX_LIST_REVIEWED,
   EU_TAX_LIST_SOURCE_URL,
 } from "./euTaxList.js";
@@ -181,14 +182,28 @@ function euTaxListEvents(): ChangeEvent[] {
       href: EU_TAX_LIST_SOURCE_URL,
     },
   ];
-  for (const entry of listed) {
+  // Per-country events ONLY for genuine deltas: a long-listed jurisdiction
+  // re-confirmed by the Council did not change and must not appear as a dated
+  // change (review finding: 8 of 10 listed countries were listed years ago).
+  for (const entry of EU_TAX_LIST_CHANGES.added) {
     events.push({
-      date: EU_TAX_LIST_REVIEWED,
+      date: EU_TAX_LIST_CHANGES.date,
       iso2: entry.iso2,
       scope: "country",
       kind: "eu-tax-list",
-      title: `${entry.name} on the EU tax blacklist`,
-      detail: `${entry.name} is on the EU list of non-cooperative jurisdictions for tax purposes (Annex I), as of the ${EU_TAX_LIST_REVIEWED} Council update.`,
+      title: `${entry.name} added to the EU tax blacklist`,
+      detail: `The Council of the EU added ${entry.name} to its list of non-cooperative jurisdictions for tax purposes (Annex I).`,
+      href: countryHref(entry.iso2),
+    });
+  }
+  for (const entry of EU_TAX_LIST_CHANGES.removed) {
+    events.push({
+      date: EU_TAX_LIST_CHANGES.date,
+      iso2: entry.iso2,
+      scope: "country",
+      kind: "eu-tax-list",
+      title: `${entry.name} removed from the EU tax blacklist`,
+      detail: `The Council of the EU removed ${entry.name} from its list of non-cooperative jurisdictions for tax purposes (Annex I).`,
       href: countryHref(entry.iso2),
     });
   }
@@ -284,7 +299,9 @@ export function buildCountryChanges(): ChangeEvent[] {
     ...sanctionsEvents(),
     ...euTaxListEvents(),
     ...scoreDeltaEvents(),
-    ...reviewedEvents(),
+    // Coarse dataset-"reviewed" events are deliberately excluded: they assert
+    // no per-country movement, yet would headline the feed, the sitemap
+    // lastmod and the weekly digest every time a review date is bumped.
   ];
   return all.sort((a, b) => {
     if (a.date !== b.date) return a.date < b.date ? 1 : -1;

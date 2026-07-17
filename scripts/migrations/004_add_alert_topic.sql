@@ -1,3 +1,8 @@
+-- ⚠️ DEPLOY ORDERING: this migration MUST be applied to production BEFORE the
+-- code referencing the topic column deploys (npm run alerts:migrate), because
+-- subscribe.ts filters on topic and would 500 the existing fines path against
+-- a column-less table. The SQL is additive and idempotent; applying it early
+-- is invisible to the currently-deployed code.
 -- Migration: Add a subscription topic to alert_subscriptions
 -- Description: Lets a single subscriber table carry both the existing fines
 --   alerts and the new country-risk changes digest. Additive and non-breaking:
