@@ -30,16 +30,29 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       minAmount?: unknown;
       breachTypes?: unknown;
       frequency?: unknown;
+      topic?: unknown;
     };
     const email = typeof body.email === "string" ? body.email : "";
-    const minAmount = body.minAmount as string | number | undefined;
-    const breachTypes = Array.isArray(body.breachTypes)
-      ? body.breachTypes.filter(
-          (value): value is string => typeof value === "string",
-        )
-      : [];
-    const frequency =
-      typeof body.frequency === "string" ? body.frequency : "immediate";
+    // Topic selects which alert stream to join. Defaults to the existing fines
+    // alerts so every current caller is unchanged.
+    const topic =
+      body.topic === "country-changes" ? "country-changes" : "fines";
+    const isCountryChanges = topic === "country-changes";
+    // Country-changes has no fines criteria; its digest is weekly.
+    const minAmount = isCountryChanges
+      ? undefined
+      : (body.minAmount as string | number | undefined);
+    const breachTypes =
+      !isCountryChanges && Array.isArray(body.breachTypes)
+        ? body.breachTypes.filter(
+            (value): value is string => typeof value === "string",
+          )
+        : [];
+    const frequency = isCountryChanges
+      ? "weekly"
+      : typeof body.frequency === "string"
+        ? body.frequency
+        : "immediate";
 
     if (!email || !email.includes("@")) {
       return res.status(400).json({ error: "Valid email is required" });
@@ -66,17 +79,23 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       });
     }
 
-    // Check for existing subscription
+    // Check for existing subscription (scoped to the topic so a fines sub and a
+    // country-changes sub for the same email do not collide).
     const minAmountValue = minAmount ? Number(minAmount) : null;
-    const existing = minAmountValue
+    const existing = isCountryChanges
       ? await sql`
           SELECT id, status FROM alert_subscriptions
-          WHERE email = ${email} AND min_amount = ${minAmountValue}
+          WHERE email = ${email} AND topic = 'country-changes'
         `
-      : await sql`
-          SELECT id, status FROM alert_subscriptions
-          WHERE email = ${email} AND min_amount IS NULL
-        `;
+      : minAmountValue
+        ? await sql`
+            SELECT id, status FROM alert_subscriptions
+            WHERE email = ${email} AND topic = 'fines' AND min_amount = ${minAmountValue}
+          `
+        : await sql`
+            SELECT id, status FROM alert_subscriptions
+            WHERE email = ${email} AND topic = 'fines' AND min_amount IS NULL
+          `;
 
     if (existing.length > 0 && existing[0].status === "active") {
       return res
@@ -97,10 +116,11 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
     const [subscription] = await sql`
       INSERT INTO alert_subscriptions (
-        email, min_amount, breach_types, frequency,
+        email, topic, min_amount, breach_types, frequency,
         verification_token, verification_expires_at
       ) VALUES (
         ${email},
+        ${topic},
         ${minAmountValue},
         ${breachTypesArray}::text[],
         ${frequency},
@@ -119,6 +139,16 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     const breachText = breachTypes.length
       ? `Breach types: ${breachTypes.join(", ")}`
       : "All breach types";
+    // Topic-specific verification copy.
+    const heading = isCountryChanges
+      ? "Verify your country-risk changes subscription"
+      : "Verify your alert subscription";
+    const intro = isCountryChanges
+      ? "You've requested a weekly digest of country-risk changes (FATF listings, sanctions, EU tax list and score moves). Click the button below to confirm your email address."
+      : "You've requested to receive regulatory fine alerts. Click the button below to confirm your email address.";
+    const criteriaHtml = isCountryChanges
+      ? `<strong>Your digest:</strong><br>Country-risk changes<br>Frequency: weekly`
+      : `<strong>Your alert criteria:</strong><br>${minAmountText}<br>${breachText}<br>Frequency: ${frequency}`;
 
     const htmlContent = `
 <!DOCTYPE html>
@@ -141,13 +171,10 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   <div class="container">
     <div class="card">
       <div class="logo">RegActions</div>
-      <h1>Verify your alert subscription</h1>
-      <p>You've requested to receive regulatory fine alerts. Click the button below to confirm your email address.</p>
+      <h1>${heading}</h1>
+      <p>${intro}</p>
       <div class="details">
-        <strong>Your alert criteria:</strong><br>
-        ${minAmountText}<br>
-        ${breachText}<br>
-        Frequency: ${frequency}
+        ${criteriaHtml}
       </div>
       <a href="${verifyUrl}" class="button">Verify Email Address</a>
       <p style="font-size: 14px; color: #6b7280;">This link expires in 7 days.</p>
@@ -166,13 +193,17 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         Destination: { ToAddresses: [email] },
         Message: {
           Subject: {
-            Data: "Verify your RegActions alert subscription",
+            Data: isCountryChanges
+              ? "Verify your RegActions country-risk changes subscription"
+              : "Verify your RegActions alert subscription",
             Charset: "UTF-8",
           },
           Body: {
             Html: { Data: htmlContent, Charset: "UTF-8" },
             Text: {
-              Data: `Verify your RegActions alert subscription\n\nClick here to verify: ${verifyUrl}\n\nYour criteria:\n${minAmountText}\n${breachText}\nFrequency: ${frequency}`,
+              Data: isCountryChanges
+                ? `${heading}\n\nClick here to verify: ${verifyUrl}\n\nA weekly digest of country-risk changes.`
+                : `${heading}\n\nClick here to verify: ${verifyUrl}\n\nYour criteria:\n${minAmountText}\n${breachText}\nFrequency: ${frequency}`,
               Charset: "UTF-8",
             },
           },

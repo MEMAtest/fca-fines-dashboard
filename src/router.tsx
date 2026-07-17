@@ -181,6 +181,11 @@ const CountryMethodologyV2 = lazyPage(() =>
     default: module.CountryMethodologyV2,
   })),
 );
+const CountryChanges = lazyPage(() =>
+  import("./pages/CountryChanges.js").then((module) => ({
+    default: module.CountryChanges,
+  })),
+);
 
 // Shared Suspense fallback for the country routes.
 const ROUTE_FALLBACK = (
@@ -651,6 +656,14 @@ const router = createBrowserRouter([
         element: (
           <Suspense fallback={ROUTE_FALLBACK}>
             <CountryMethodologyV2 />
+          </Suspense>
+        ),
+      },
+      {
+        path: "/countries/changes",
+        element: (
+          <Suspense fallback={ROUTE_FALLBACK}>
+            <CountryChanges />
           </Suspense>
         ),
       },

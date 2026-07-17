@@ -847,6 +847,8 @@ function GlobalIndex() {
           The sanctions pillar is based on a complete deterministic official-evidence snapshot.
           Enforcement volume and corruption perception are shown for context but never scored.{" "}
           <Link to="/countries/methodology">How the score works →</Link>
+          {" · "}
+          <Link to="/countries/changes">What changed →</Link>
         </p>
       </header>
 
@@ -1327,6 +1329,9 @@ function FatfList() {
           <span className="mon__countdown">
             <Clock size={13} /> {nextPlenaryChip()}
           </span>
+          <Link to="/countries/changes" className="mon__changes-link">
+            What changed →
+          </Link>
           <button type="button" className="mon__download" onClick={downloadCsv}>
             <Download size={16} /> Download report
           </button>

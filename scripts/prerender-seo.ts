@@ -24,6 +24,7 @@ const BASE_URL = "https://regactions.com";
 const SITE_NAME = "RegActions";
 const OG_IMAGE = `${BASE_URL}/og-image.png`;
 const RSS_URL = `${BASE_URL}/rss.xml`;
+const CHANGES_RSS_URL = `${BASE_URL}/changes.xml`;
 const GOOGLE_SITE_VERIFICATION =
   process.env.VITE_GOOGLE_SITE_VERIFICATION?.trim() || "";
 const BING_SITE_VERIFICATION =
@@ -76,6 +77,12 @@ import { isEuTaxListed } from "../src/data/euTaxList.js";
 import { getEgmontMember } from "../src/data/egmontMembership.js";
 import { getFatfAssessmentLink } from "../src/data/fatfAssessmentLinks.js";
 import { getBoRegister, boRegisterSignal } from "../src/data/boRegisters.js";
+import {
+  buildCountryChanges,
+  changesByDate,
+  CHANGE_KIND_LABELS,
+  type ChangeEvent,
+} from "../src/data/countryChanges.js";
 import {
   buildCompareView,
   curatedComparePairs,
@@ -216,6 +223,7 @@ interface PageMeta {
   bodyContent?: string; // Pre-rendered HTML body for SSG (injected into #root)
   ogImage?: string; // Custom OG image URL
   noindex?: boolean; // Emit robots noindex (used by the 404 shell)
+  rssAlternates?: Array<{ title: string; href: string }>; // Extra RSS feed alternates
 }
 
 // ---------------------------------------------------------------------------
@@ -329,6 +337,7 @@ function renderSiteFooter(): string {
     ["Regulator data hub", "/regulators"],
     ["Enforcement topics", "/topics"],
     ["FATF grey list", "/countries/fatf-grey-list"],
+    ["Country risk changes", "/countries/changes"],
     ["Scoring methodology", "/countries/methodology"],
     ["Free data API", "/developers"],
   ];
@@ -926,6 +935,35 @@ function renderMethodologyV2Body(): string {
   return `<div class="blog-page"><div class="blog-post-container"><article class="blog-article-modal"><h1 class="blog-post-title">Trusted Country Risk Score v2</h1><div class="blog-article-content"><p>A deterministic 0-10 benchmark of inherent jurisdictional risk in production. It is structured with reference to Basel and Wolfsberg factors, is not described as Basel-validated, and is not a customer accept/reject decision.</p><h2>Three pillars</h2><ul><li>AML/CFT framework (50%): FATF effectiveness ratings at 70% and technical compliance at 30%.</li><li>Governance (30%): equal-weight mean of six inverted World Bank WGI percentiles.</li><li>Sanctions exposure (20%): 70% highest geographic regime scope and 30% mean across UN, UK, EU and US.</li></ul><h2>Missing evidence</h2><p>Missing inputs are never scored as zero. One missing pillar is provisional and cannot be Low; fewer than two pillars produces no headline score.</p><h2>Sanctions evidence gate</h2><p>Official catalogue candidates never enter scoring directly. The versioned classifier requires a current official catalogue, measure-specific evidence, a reproducible scope rule, an explicit country nexus and complete country-by-imposer coverage. Unknown or contradictory evidence fails closed. The published snapshot records that it is deterministic evidence, not independent practitioner validation.</p><h2>Regulatory floors</h2><p>FATF grey list 6.0; FATF call for action 9.0; sectoral sanctions 6.0; comprehensive sanctions 8.0. Targeted sanctions remain a visible flag.</p><h2>Context only</h2><p>Transparency International CPI and RegActions enforcement volume are displayed but not scored.</p></div></article></div></div>`;
 }
 
+/**
+ * Crawlable body for /countries/changes — mirrors CountryChanges.tsx. Renders
+ * the SAME derived events (from buildCountryChanges) grouped by date, so the
+ * prerendered HTML and the React page cannot drift.
+ */
+function renderChangesBody(events: ChangeEvent[]): string {
+  const groups = changesByDate(events);
+  const groupsHtml = groups
+    .map((group) => {
+      const itemsHtml = group.events
+        .map((event) => {
+          const label = escapeHtml(CHANGE_KIND_LABELS[event.kind]);
+          const isExternal = /^https?:\/\//i.test(event.href);
+          const link = isExternal
+            ? `<a href="${escapeHtml(event.href)}" rel="noopener">${escapeHtml(event.title)}</a>`
+            : `<a href="${escapeHtml(event.href)}">${escapeHtml(event.title)}</a>`;
+          return `<li><strong>${label}:</strong> ${link}. ${escapeHtml(event.detail)}</li>`;
+        })
+        .join("");
+      return `<h3>${escapeHtml(formatDate(group.date))}</h3><ul>${itemsHtml}</ul>`;
+    })
+    .join("");
+  const intro = `<p>${escapeHtml(
+    "A dated record of every change RegActions already tracks across country risk: FATF plenary additions and removals, sanctions-evidence snapshot promotions, EU tax list updates, framework-data reviews, and composite score moves once a trend accrues. Every entry is derived from a cited source.",
+  )}</p><p><a href="/changes.xml" rel="noopener">Subscribe to the country-risk changes RSS feed</a>.</p>`;
+  const outro = `<p><a href="/countries/fatf-grey-list">FATF grey &amp; black list</a> · <a href="/countries">All country risk reports</a> · <a href="/countries/methodology">Scoring methodology</a></p>`;
+  return `<div class="blog-page"><div class="blog-post-container"><article class="blog-article-modal"><h1 class="blog-post-title">What changed in country risk</h1><div class="blog-article-content">${intro}${groupsHtml}${outro}</div></article></div></div>`;
+}
+
 function renderTopicClusterBody(slug: string): string {
   const cluster = topicClusters.find((item) => item.slug === slug);
   if (!cluster) return "";
@@ -994,7 +1032,8 @@ function renderDevelopersBody(): string {
   const badgeHtml = `<section><h2>Embed a country risk badge</h2><p>The badge endpoint returns a small SVG you can drop into any page with a plain &lt;img&gt; tag. It shows the jurisdiction's AML risk band and 0-10 score, coloured by band, and reads its number from the same scoring path as the country report. Withheld jurisdictions render an honest "Not rated" badge, and unknown codes return a 404 badge. Swap GB for any ISO 3166-1 alpha-2 code; the .svg suffix is optional.</p><h3>Live preview</h3><p><a href="https://regactions.com/countries" title="AML country risk rating by RegActions"><img src="/api/badge/GB.svg" alt="United Kingdom AML risk rating by RegActions" height="20" /></a> <a href="https://regactions.com/countries" title="AML country risk rating by RegActions"><img src="/api/badge/IR.svg" alt="Iran AML risk rating by RegActions" height="20" /></a></p><h3>Copy-paste embed</h3><p>Keep the surrounding link: it is the visible, clickable credit the licence requires.</p><pre><code>${escapeHtml(
     BADGE_EMBED_HTML,
   )}</code></pre></section>`;
-  const outro = `<h2>Questions</h2><p>For volume, commercial licensing, or a data question, contact <a href="mailto:contact@memaconsultants.com">contact@memaconsultants.com</a>. See also the <a href="/countries">country risk hub</a> and the <a href="/regulators">regulator data hub</a>.</p>`;
+  const feedsHtml = `<h2>Feeds</h2><ul><li><a href="/rss.xml" rel="noopener">Regulatory insights RSS</a> — new analysis and enforcement articles.</li><li><a href="/changes.xml" rel="noopener">Country-risk changes RSS</a> — dated FATF, sanctions, EU tax list and score changes. See the <a href="/countries/changes">changes page</a>.</li></ul>`;
+  const outro = `${feedsHtml}<h2>Questions</h2><p>For volume, commercial licensing, or a data question, contact <a href="mailto:contact@memaconsultants.com">contact@memaconsultants.com</a>. See also the <a href="/countries">country risk hub</a> and the <a href="/regulators">regulator data hub</a>.</p>`;
   return `<div class="blog-page"><div class="blog-post-container"><article class="blog-article-modal"><h1 class="blog-post-title">Free RegActions data APIs</h1><div class="blog-article-content">${intro}${termsHtml}${attributionHtml}${endpointsHtml}${badgeHtml}${outro}</div></article></div></div>`;
 }
 
@@ -1793,6 +1832,7 @@ async function buildPageMetas(): Promise<PageMeta[]> {
     keywords: `country risk ratings, country risk score, AML country risk, FATF status by country, sanctions by country, high-risk countries`,
     ogType: "website",
     dateModified: COUNTRY_PAGE_DATE,
+    rssAlternates: [{ title: "RegActions country-risk changes", href: CHANGES_RSS_URL }],
     bodyContent: renderGlobalIndexBody(),
     breadcrumbLabel: "Countries",
     jsonLd: {
@@ -1849,12 +1889,40 @@ async function buildPageMetas(): Promise<PageMeta[]> {
     ogType: "website",
     bodyContent: renderCountriesIndexBody(),
     breadcrumbLabel: "FATF Grey List",
+    rssAlternates: [{ title: "RegActions country-risk changes", href: CHANGES_RSS_URL }],
     jsonLd: {
       "@context": "https://schema.org",
       "@type": "CollectionPage",
       name: `FATF Grey List & Black List ${fatfYear}`,
       description: `FATF jurisdictions under increased monitoring (grey list) and subject to a call for action (black list), current as of the ${FATF_LAST_PLENARY} plenary.`,
       url: `${BASE_URL}/countries/fatf-grey-list`,
+      isPartOf: { "@type": "WebSite", name: SITE_NAME, url: "https://regactions.com" },
+    },
+  });
+  const countryChangeEvents = buildCountryChanges();
+  const changesLastmod = clampISODate(
+    countryChangeEvents[0]?.date ?? COUNTRY_PAGE_DATE,
+    todayISO(),
+  );
+  pages.push({
+    path: "/countries/changes",
+    title: "Country Risk Changes | What Changed in AML Country Risk",
+    description:
+      "A dated record of every change RegActions tracks in country risk: FATF plenary additions and removals, sanctions snapshot promotions, EU tax list updates and score moves. RSS available.",
+    keywords:
+      "country risk changes, FATF changes, sanctions updates, EU tax list changes, AML country risk updates, what changed",
+    ogType: "website",
+    dateModified: changesLastmod,
+    bodyContent: renderChangesBody(countryChangeEvents),
+    breadcrumbLabel: "Changes",
+    rssAlternates: [{ title: "RegActions country-risk changes", href: CHANGES_RSS_URL }],
+    jsonLd: {
+      "@context": "https://schema.org",
+      "@type": "CollectionPage",
+      name: "What changed in country risk",
+      description:
+        "Dated country-risk changes derived from FATF plenaries, sanctions snapshots, the EU tax list and framework-data reviews.",
+      url: `${BASE_URL}/countries/changes`,
       isPartOf: { "@type": "WebSite", name: SITE_NAME, url: "https://regactions.com" },
     },
   });
@@ -2447,6 +2515,21 @@ function renderPage(template: string, meta: PageMeta): string {
     `<link rel="alternate" hreflang="x-default" href="${canonicalUrl}" />`,
   );
 
+  // Extra RSS feed alternates (e.g. the country-risk changes feed on the
+  // countries pages). Injected before </head>; the base template already
+  // carries the site-wide /rss.xml alternate for every page.
+  if (meta.rssAlternates?.length) {
+    const alternateTags = meta.rssAlternates
+      .map(
+        (feed) =>
+          `<link rel="alternate" type="application/rss+xml" title="${escapeHtml(
+            feed.title,
+          )}" href="${escapeHtml(feed.href)}" />`,
+      )
+      .join("");
+    html = html.replace(/<\/head>/, `${alternateTags}</head>`);
+  }
+
   // Replace OG tags
   html = html.replace(
     /<meta\s+property="og:type"\s+content="[^"]*"\s*\/?>/,
@@ -2767,6 +2850,51 @@ function generateRss(): string {
   ].join("\n");
 }
 
+/**
+ * Generate changes.xml — the country-risk changes feed. Same generator pattern
+ * as generateRss: the latest ~50 derived change events, newest-first. Each
+ * event links to the country page or the cited source; the GUID is stable
+ * (date + kind + iso) so a re-emitted event is not re-notified.
+ */
+function generateChangesRss(): string {
+  const buildDate = todayISO();
+  const events = buildCountryChanges().slice(0, 50);
+  const items = events
+    .map((event) => {
+      const link = /^https?:\/\//i.test(event.href)
+        ? event.href
+        : `${BASE_URL}${event.href}`;
+      const guid = `${BASE_URL}/countries/changes#${event.date}-${event.kind}-${event.iso2 ?? "global"}`;
+      return [
+        "    <item>",
+        `      <title>${escapeHtml(event.title)}</title>`,
+        `      <link>${escapeHtml(link)}</link>`,
+        `      <guid isPermaLink="false">${escapeHtml(guid)}</guid>`,
+        `      <pubDate>${toRfc2822(event.date, buildDate)}</pubDate>`,
+        `      <category>${escapeHtml(CHANGE_KIND_LABELS[event.kind])}</category>`,
+        `      <description>${escapeHtml(event.detail)}</description>`,
+        "    </item>",
+      ].join("\n");
+    })
+    .join("\n");
+
+  return [
+    '<?xml version="1.0" encoding="UTF-8"?>',
+    '<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">',
+    "  <channel>",
+    `    <title>${escapeHtml(SITE_NAME)} Country Risk Changes</title>`,
+    `    <link>${BASE_URL}/countries/changes</link>`,
+    `    <description>${escapeHtml("Dated changes in country risk: FATF plenary additions and removals, sanctions snapshot promotions, EU tax list updates and score moves.")}</description>`,
+    `    <language>en-gb</language>`,
+    `    <lastBuildDate>${toRfc2822(buildDate, buildDate)}</lastBuildDate>`,
+    `    <atom:link href="${CHANGES_RSS_URL}" rel="self" type="application/rss+xml" />`,
+    items,
+    "  </channel>",
+    "</rss>",
+    "",
+  ].join("\n");
+}
+
 // ---------------------------------------------------------------------------
 // Main
 // ---------------------------------------------------------------------------
@@ -2842,6 +2970,11 @@ async function main() {
   const rssPath = join(DIST, "rss.xml");
   writeFileSync(rssPath, rss, "utf-8");
   console.log(`  Generated rss.xml.`);
+
+  // Generate the country-risk changes feed
+  const changesRss = generateChangesRss();
+  writeFileSync(join(DIST, "changes.xml"), changesRss, "utf-8");
+  console.log(`  Generated changes.xml.`);
 
   console.log("Done!");
 }

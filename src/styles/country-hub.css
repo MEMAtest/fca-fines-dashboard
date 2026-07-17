@@ -534,6 +534,11 @@
   background: #fff; color: #0d7d70; font-weight: 600; cursor: pointer;
 }
 .mon__download:hover { background: #e0f7f5; }
+.mon__changes-link {
+  display: inline-flex; align-items: center;
+  font-size: 0.8rem; font-weight: 600; color: #1d4ed8; text-decoration: none;
+}
+.mon__changes-link:hover { text-decoration: underline; }
 
 /* Plenary change-log (multi-cycle) */
 .mon-changelog__list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 0.85rem; }
@@ -3602,3 +3607,117 @@ button.cx-dist__seg:hover { opacity: 0.85; }
 .cx-ov__side .cx-region-bars li { grid-template-columns: 1fr; }
 .cx-ov__side .cx-region-bars li .cx-drill { display: grid; grid-template-columns: minmax(0, 6.5rem) 1fr auto; align-items: center; gap: 0.5rem; }
 .cx-ov__side .cx-region-bars__label { text-align: left; }
+
+/* ── Country-risk changes surface (Wave E3) ──────────────────────────────────
+   Unique `.cx-chg` prefix to avoid legacy country-hub class collisions. Covers
+   the /countries/changes page + the per-country "Recent developments" card. */
+.cx-chg { max-width: 900px; margin: 0 auto; padding: 1.5rem 1.25rem 3rem; }
+.cx-chg__header { margin-bottom: 1.25rem; }
+.cx-chg__crumbs { margin-bottom: 0.6rem; }
+.cx-chg__back {
+  display: inline-flex; align-items: center; gap: 0.3rem;
+  font-size: 0.8rem; color: #475569; text-decoration: none;
+}
+.cx-chg__back:hover { color: #1d4ed8; text-decoration: underline; }
+.cx-chg__title { font-size: 1.7rem; line-height: 1.2; margin: 0 0 0.5rem; color: #0f172a; }
+.cx-chg__lead { font-size: 0.92rem; line-height: 1.6; color: #475569; margin: 0 0 0.9rem; max-width: 62ch; }
+.cx-chg__meta { display: flex; flex-wrap: wrap; align-items: center; gap: 0.75rem; }
+.cx-chg__asof { font-size: 0.78rem; color: #64748b; font-weight: 600; }
+.cx-chg__rss {
+  display: inline-flex; align-items: center; gap: 0.3rem;
+  font-size: 0.78rem; font-weight: 600; color: #ea580c;
+  text-decoration: none; padding: 0.2rem 0.55rem;
+  border: 1px solid #fed7aa; border-radius: 999px; background: #fff7ed;
+}
+.cx-chg__rss:hover { background: #ffedd5; }
+
+.cx-chg__filters { display: flex; flex-wrap: wrap; gap: 0.4rem; margin: 0 0 1.4rem; }
+.cx-chg-chip {
+  display: inline-flex; align-items: center; gap: 0.35rem;
+  font-size: 0.78rem; color: #334155; background: #f1f5f9;
+  border: 1px solid #e2e8f0; border-radius: 999px;
+  padding: 0.28rem 0.7rem; cursor: pointer; transition: background 0.15s, border-color 0.15s;
+}
+.cx-chg-chip b { font-weight: 700; color: #0f172a; }
+.cx-chg-chip:hover { background: #e2e8f0; }
+.cx-chg-chip--on { background: #1d4ed8; border-color: #1d4ed8; color: #fff; }
+.cx-chg-chip--on b { color: #fff; }
+
+.cx-chg__timeline { list-style: none; margin: 0; padding: 0; }
+.cx-chg__group { margin-bottom: 1.6rem; }
+.cx-chg__date {
+  display: flex; align-items: baseline; gap: 0.6rem;
+  margin-bottom: 0.6rem; padding-bottom: 0.35rem; border-bottom: 2px solid #e2e8f0;
+}
+.cx-chg__date time { font-size: 1rem; font-weight: 700; color: #0f172a; }
+.cx-chg__date-count { font-size: 0.72rem; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.02em; }
+.cx-chg__list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 0.55rem; }
+.cx-chg-row {
+  border: 1px solid #e5e7eb; border-radius: 10px; padding: 0.7rem 0.85rem;
+  background: #fff;
+}
+.cx-chg-row__head { display: flex; flex-wrap: wrap; align-items: center; gap: 0.5rem; margin-bottom: 0.3rem; }
+.cx-chg-row__title {
+  font-size: 0.9rem; font-weight: 600; color: #1e293b; text-decoration: none;
+  display: inline-flex; align-items: center; gap: 0.25rem;
+}
+.cx-chg-row__title:hover { color: #1d4ed8; text-decoration: underline; }
+.cx-chg-row__detail { font-size: 0.82rem; line-height: 1.5; color: #64748b; margin: 0; }
+
+.cx-chg-tag {
+  font-size: 0.66rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.03em;
+  padding: 0.15rem 0.45rem; border-radius: 5px; white-space: nowrap;
+}
+.cx-chg-tag--fatf { background: #fee2e2; color: #b91c1c; }
+.cx-chg-tag--sanctions { background: #ffedd5; color: #c2410c; }
+.cx-chg-tag--eutax { background: #ede9fe; color: #6d28d9; }
+.cx-chg-tag--score { background: #dbeafe; color: #1d4ed8; }
+.cx-chg-tag--fiu { background: #dcfce7; color: #15803d; }
+.cx-chg-tag--bo { background: #e0f2fe; color: #0369a1; }
+
+.cx-chg-sub {
+  background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px;
+  padding: 0.9rem 1rem; margin: 0 0 1.6rem;
+}
+.cx-chg-sub__intro { display: flex; align-items: center; gap: 0.4rem; font-size: 0.84rem; color: #334155; margin-bottom: 0.55rem; }
+.cx-chg-sub__intro svg { color: #1d4ed8; flex-shrink: 0; }
+.cx-chg-sub__row { display: flex; gap: 0.5rem; flex-wrap: wrap; }
+.cx-chg-sub__row input {
+  flex: 1 1 12rem; min-width: 0; padding: 0.5rem 0.7rem;
+  border: 1px solid #cbd5e1; border-radius: 8px; font-size: 0.86rem;
+}
+.cx-chg-sub__row button {
+  padding: 0.5rem 1.1rem; border: none; border-radius: 8px;
+  background: #1d4ed8; color: #fff; font-weight: 600; font-size: 0.86rem; cursor: pointer;
+}
+.cx-chg-sub__row button:hover { background: #1e40af; }
+.cx-chg-sub__row button:disabled { opacity: 0.6; cursor: default; }
+.cx-chg-sub__err { display: flex; align-items: center; gap: 0.3rem; font-size: 0.76rem; color: #b91c1c; margin: 0.5rem 0 0; }
+.cx-chg-sub__note { font-size: 0.7rem; color: #94a3b8; margin: 0.5rem 0 0; }
+.cx-chg-sub--done { display: flex; align-items: center; gap: 0.5rem; }
+.cx-chg-sub--done svg { color: #15803d; flex-shrink: 0; }
+.cx-chg-sub--done p { font-size: 0.84rem; color: #334155; margin: 0; }
+
+.cx-chg__empty { font-size: 0.9rem; color: #94a3b8; padding: 1.5rem 0; text-align: center; }
+.cx-chg__footer {
+  display: flex; flex-direction: column; gap: 0.4rem;
+  margin-top: 1.5rem; padding-top: 1rem; border-top: 1px solid #e2e8f0;
+  font-size: 0.74rem; color: #94a3b8;
+}
+.cx-chg__footer a { color: #64748b; display: inline-flex; align-items: center; gap: 0.25rem; }
+.cx-chg__footer a:hover { color: #1d4ed8; }
+
+/* Per-country "Recent developments" card in the CountryHub rail. */
+.cx-chg-card__list { list-style: none; margin: 0.35rem 0 0; padding: 0; display: flex; flex-direction: column; gap: 0.5rem; }
+.cx-chg-card__item { display: flex; flex-direction: column; gap: 0.15rem; }
+.cx-chg-card__top { display: flex; align-items: center; gap: 0.4rem; }
+.cx-chg-card__date { font-size: 0.68rem; color: #94a3b8; font-weight: 600; white-space: nowrap; }
+.cx-chg-card__tag {
+  font-size: 0.6rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.02em;
+  padding: 0.1rem 0.35rem; border-radius: 4px;
+}
+.cx-chg-card__title { font-size: 0.78rem; line-height: 1.35; color: #334155; margin: 0; }
+
+@media (max-width: 640px) {
+  .cx-chg__title { font-size: 1.4rem; }
+}
