@@ -10,6 +10,7 @@ import {
   type RiskBand,
   type RiskDomains,
 } from "../data/countryRiskScore.js";
+import { computeCountryRiskV2 } from "../data/countryRiskV2.js";
 import { iso2ForFeature } from "../data/atlasResolve.js";
 
 export const BAND_COLOUR: Record<RiskBand, string> = {
@@ -90,12 +91,15 @@ export function buildFeatureMeta(features: any[]): Map<any, FeatureMeta> {
       m.set(f, { band: null, score: null, name });
       continue;
     }
-    const rs = computeCountryRiskScore(iso2);
+    const legacyDomains = computeCountryRiskScore(iso2);
+    const result = computeCountryRiskV2(iso2);
     m.set(f, {
       iso2,
-      band: rs.hasGovernance ? rs.band : null,
-      score: rs.hasGovernance ? rs.score : null,
-      domains: rs.hasGovernance ? rs.domains : undefined,
+      band: result.band,
+      score: result.score,
+      // The tooltip's three mini-bars are WGI context; the colour and headline
+      // score are always the published v2 result.
+      domains: legacyDomains.hasGovernance ? legacyDomains.domains : undefined,
       name,
     });
   }

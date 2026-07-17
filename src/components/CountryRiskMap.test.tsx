@@ -61,6 +61,15 @@ afterEach(() => {
 });
 
 describe("CountryRiskMap zoom controls", () => {
+  it("uses the published v2 score and band for map titles", async () => {
+    const { container } = renderMap();
+    await screen.findByRole("button", { name: /zoom in/i });
+    await waitFor(() => {
+      const titles = [...container.querySelectorAll("title")].map((title) => title.textContent);
+      expect(titles).toContain("Iraq — 6.0/10 (High)");
+    });
+  });
+
   it("renders the +/-/reset controls with accessible labels", async () => {
     renderMap();
     const zoomIn = await screen.findByRole("button", { name: /zoom in/i });
