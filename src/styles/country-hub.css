@@ -3317,6 +3317,26 @@ button.cx-kpi:hover {
 .cx-peer__band--high { color: #c2410c; }
 .cx-peer__band--very-high { color: #b91c1c; }
 .cx-peer--current .cx-peer__row { background: #eff6ff; font-weight: 700; }
+.cx-peerc__list > li { position: relative; }
+.cx-peer__compare {
+  display: none;
+  position: absolute;
+  right: 0.25rem;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 0.66rem;
+  font-weight: 700;
+  color: #0b7f66;
+  text-decoration: none;
+  background: #e9f8f2;
+  border: 1px solid #bce6d6;
+  border-radius: 6px;
+  padding: 0.1rem 0.4rem;
+  white-space: nowrap;
+}
+.cx-peerc__list > li:hover .cx-peer__compare,
+.cx-peer__compare:focus-visible { display: inline-block; }
+.cx-peer__compare:hover { background: #d7f2e7; }
 
 /* Sources */
 .cx-card.cx-srcs { display: flex; flex-direction: column; gap: 0.65rem; }

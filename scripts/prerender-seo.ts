@@ -74,6 +74,15 @@ import { sanctionsTierLabel, SANCTIONS_REVIEWED } from "../src/data/sanctionsSta
 import { SANCTIONS_APPROVED_SNAPSHOT } from "../src/data/sanctionsApprovedData.js";
 import { isEuTaxListed } from "../src/data/euTaxList.js";
 import { getEgmontMember } from "../src/data/egmontMembership.js";
+import { getFatfAssessmentLink } from "../src/data/fatfAssessmentLinks.js";
+import { getBoRegister, boRegisterSignal } from "../src/data/boRegisters.js";
+import {
+  buildCompareView,
+  curatedComparePairs,
+  relatedComparePairs,
+  type CompareView,
+} from "../src/data/countryCompare.js";
+import { getNarrative } from "../src/data/countryNarratives.js";
 import {
   bandLabel,
 } from "../src/data/countryRiskScore.js";
@@ -439,6 +448,11 @@ function renderCountryFatfBody(view: CountryView): string {
   const euTaxLi = isEuTaxListed(country.iso2)
     ? `<li>${escapeHtml("EU tax list: Listed (Annex I)")}</li>`
     : "";
+  // Beneficial-ownership register availability (Open Ownership, CC BY 4.0) —
+  // one line where the source confirms a live register. Mirrors CountryHub.tsx.
+  const boLi = getBoRegister(country.iso2)
+    ? `<li>${escapeHtml(`BO register: ${boRegisterSignal(country.iso2)}`)}</li>`
+    : "";
   const frameworkSignalsHtml = `<ul><li>${escapeHtml(
     `FATF listing: ${statusHeading}`,
   )}</li><li>${escapeHtml(
@@ -451,7 +465,7 @@ function renderCountryFatfBody(view: CountryView): string {
           ? `${sanctionsTierLabel(sanctionsTier).toLowerCase()} exposure`
           : "no listed programme identified"
     }`,
-  )}</li>${euTaxLi}<li>${escapeHtml(
+  )}</li>${euTaxLi}${boLi}<li>${escapeHtml(
     cpi
       ? `Corruption (CPI ${CPI_YEAR}): ${cpi.score}/100, rank #${cpi.rank} of ${CPI_TOTAL}`
       : "Corruption (CPI): no score",
@@ -466,9 +480,17 @@ function renderCountryFatfBody(view: CountryView): string {
       ? `FIU: Egmont Group member${egmont.fiu ? ` (${egmont.fiu})` : ""}${egmont.suspended ? " · suspended since Oct 2023" : ""}`
       : "FIU: Not an Egmont Group member",
   )}</p>`;
+  // FATF mutual-evaluation date + public report link (dates from fatfAssessmentData.ts,
+  // link to the FATF country page; no licensed ratings). Mirrors CountryHub.tsx.
+  const meLink = getFatfAssessmentLink(country.iso2);
+  const meHtml = meLink
+    ? `<p>${escapeHtml(`Last mutual evaluation: ${meLink.year}`)} · <a href="${escapeHtml(
+        meLink.reportUrl,
+      )}" rel="noopener">${escapeHtml("report")}</a></p>`
+    : "";
   const regulatoryHtml = `<h2>Regulators and legal framework</h2><h3>FATF network</h3><p>${escapeHtml(
     fatfNetworkLine,
-  )}.</p>${fsrbListHtml}<h3>National regulators</h3>${regulatorsHtml}${fiuHtml}<h3>Framework signals</h3>${frameworkSignalsHtml}`;
+  )}.</p>${fsrbListHtml}${meHtml}<h3>National regulators</h3>${regulatorsHtml}${fiuHtml}<h3>Framework signals</h3>${frameworkSignalsHtml}`;
   // Sector exposure: which sectors carry elevated financial-crime risk, derived
   // from the same sourced modules as the React card (mirrors CountryHub.tsx).
   const sectorHtml = `<h2>Sector exposure</h2><ul>${view.sectorExposure
@@ -516,6 +538,80 @@ function renderCountryFatfBody(view: CountryView): string {
   )}</h2><p>${escapeHtml(
     statusDetail,
   )}</p>${sanctionsHtml}${attrHtml}${historyHtml}${enforcementHtml}${regulatoryHtml}${sectorHtml}${analysisHtml}${whatChangedHtml}${peersHtml}${faqHtml}${sourcesHtml}</div></article></div></div>`;
+}
+
+/**
+ * Crawlable body for a country-vs-country compare page. Renders the SAME data +
+ * copy the React compare page shows (from the shared `buildCompareView`), so the
+ * prerendered HTML and the hydrated page cannot drift. Zero new data.
+ */
+function renderCompareBody(view: CompareView): string {
+  const { a, b } = view;
+  const title = `${a.country.name} vs ${b.country.name}: country risk compared`;
+  const headA = `${a.flag} ${escapeHtml(a.country.name)} (${
+    a.score === null ? "score withheld" : `${a.score.toFixed(1)}/10, ${escapeHtml(a.bandLabel)}`
+  })`;
+  const headB = `${b.flag} ${escapeHtml(b.country.name)} (${
+    b.score === null ? "score withheld" : `${b.score.toFixed(1)}/10, ${escapeHtml(b.bandLabel)}`
+  })`;
+  const rowsHtml = view.rows
+    .map(
+      (r) =>
+        `<tr><th scope="row">${escapeHtml(r.label)}</th><td>${escapeHtml(
+          r.a,
+        )}</td><td>${escapeHtml(r.b)}</td></tr>`,
+    )
+    .join("");
+  const tableHtml = `<table><thead><tr><th>Indicator</th><th>${escapeHtml(
+    a.country.name,
+  )}</th><th>${escapeHtml(b.country.name)}</th></tr></thead><tbody>${rowsHtml}</tbody></table>`;
+  const caveatHtml =
+    !a.view.sanctionsCoverageComplete || !b.view.sanctionsCoverageComplete
+      ? `<p>${escapeHtml(
+          "Sanctions classification is under independent review for at least one of these jurisdictions. Absence of a programme is not inferred; firms must still screen the applicable UN, UK, EU and US lists.",
+        )}</p>`
+      : "";
+  const meA = getFatfAssessmentLink(a.country.iso2);
+  const meB = getFatfAssessmentLink(b.country.iso2);
+  const meHtml =
+    meA || meB
+      ? `<h2>FATF mutual evaluations</h2><ul>${
+          meA
+            ? `<li>${escapeHtml(`${a.country.name}: last mutual evaluation ${meA.year}`)} · <a href="${escapeHtml(
+                meA.reportUrl,
+              )}" rel="noopener">report</a></li>`
+            : ""
+        }${
+          meB
+            ? `<li>${escapeHtml(`${b.country.name}: last mutual evaluation ${meB.year}`)} · <a href="${escapeHtml(
+                meB.reportUrl,
+              )}" rel="noopener">report</a></li>`
+            : ""
+        }</ul>`
+      : "";
+  const reportsHtml = `<h2>Full country reports</h2><ul><li><a href="/countries/${a.slug}">Full ${escapeHtml(
+    a.country.name,
+  )} risk report</a></li><li><a href="/countries/${b.slug}">Full ${escapeHtml(
+    b.country.name,
+  )} risk report</a></li></ul>`;
+  const related = relatedComparePairs(a.country, b.country, 6);
+  const relatedHtml =
+    related.length > 0
+      ? `<h2>Related comparisons</h2><ul>${related
+          .map(
+            (r) =>
+              `<li><a href="/countries/compare/${r.slug}">${escapeHtml(r.label)}</a></li>`,
+          )
+          .join("")}</ul>`
+      : "";
+  const sourcesHtml = `<p>${escapeHtml(
+    "Scores combine World Bank WGI governance, FATF listing status and sanctions exposure; CPI and enforcement volume are shown but not scored.",
+  )} <a href="/countries/methodology">${escapeHtml("Scoring methodology")}</a>.</p>`;
+  return `<div class="blog-page"><div class="blog-post-container"><article class="blog-article-modal"><h1 class="blog-post-title">${escapeHtml(
+    title,
+  )}</h1><div class="blog-article-content"><p><strong>${escapeHtml(
+    view.verdict,
+  )}</strong></p><p>${headA} vs ${headB}.</p><h2>Side by side</h2>${tableHtml}${caveatHtml}${meHtml}${reportsHtml}${relatedHtml}${sourcesHtml}</div></article></div></div>`;
 }
 
 /** Crawlable body for the /countries index (FATF grey + black lists). */
@@ -1648,6 +1744,46 @@ async function buildPageMetas(): Promise<PageMeta[]> {
           isBasedOn: FATF_SOURCE_URL,
         },
         generateCountryFaqSchema(buildCountryFaqs(view)),
+      ],
+    });
+  }
+
+  // 4b. Curated country-vs-country compare pages. The React route handles ANY
+  // valid pair client-side; only this curated high-intent set (~20 anchors x
+  // top comparators, de-duplicated by canonical slug) is prerendered/sitemapped.
+  for (const pair of curatedComparePairs()) {
+    const compareView = buildCompareView(pair.a, pair.b);
+    const path = compareView.canonicalPath;
+    const keywords = `${pair.a.name} vs ${pair.b.name}, ${pair.a.name} ${pair.b.name} country risk, ${pair.a.name} vs ${pair.b.name} AML, compare country risk, ${pair.a.name} ${pair.b.name} FATF`;
+    pages.push({
+      path,
+      title: compareView.title,
+      description: compareView.metaDescription,
+      keywords,
+      ogType: "website",
+      dateModified: COUNTRY_PAGE_DATE,
+      bodyContent: renderCompareBody(compareView),
+      breadcrumbLabel: `${pair.a.name} vs ${pair.b.name}`,
+      jsonLd: {
+        "@context": "https://schema.org",
+        "@type": "WebPage",
+        name: compareView.title,
+        description: compareView.metaDescription,
+        url: `${BASE_URL}${path}`,
+        dateModified: COUNTRY_PAGE_DATE,
+        about: [
+          { "@type": "Country", name: pair.a.name, identifier: pair.a.iso2 },
+          { "@type": "Country", name: pair.b.name, identifier: pair.b.iso2 },
+        ],
+        isPartOf: { "@id": `${BASE_URL}/#website` },
+      },
+      extraJsonLd: [
+        generateCountryFaqSchema([
+          {
+            question: `Is ${pair.a.name} higher risk than ${pair.b.name}?`,
+            answer: compareView.verdict,
+          },
+        ]),
       ],
     });
   }

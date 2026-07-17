@@ -1,0 +1,256 @@
+/* Country-vs-country compare page. Reuses the .cx-card / .cx-band-pill visual
+   language from country-hub.css but is self-contained (the compare route does not
+   load the full hub stylesheet). */
+
+.cxc-wrap {
+  max-width: 1080px;
+  margin: 0 auto;
+  padding: 0 1.25rem 2.5rem;
+  color: #0b1f2a;
+}
+
+.cxc-crumbs {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.8rem;
+  color: #94a3b8;
+  padding: 0.9rem 0 0.6rem;
+}
+.cxc-crumbs a { color: #64748b; text-decoration: none; }
+.cxc-crumbs a:hover { color: #0b7f66; }
+.cxc-crumb-current { color: #0b1f2a; font-weight: 600; }
+
+.cxc-header { margin: 0.5rem 0 1.25rem; }
+.cxc-title {
+  font-size: 1.7rem;
+  line-height: 1.2;
+  font-weight: 800;
+  margin: 0 0 0.6rem;
+  color: #0b1f2a;
+}
+.cxc-verdict {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.5rem;
+  font-size: 1rem;
+  line-height: 1.45;
+  color: #1e293b;
+  background: #f1f5f9;
+  border: 1px solid #e2e8f0;
+  border-left: 3px solid #0b7f66;
+  border-radius: 10px;
+  padding: 0.75rem 0.9rem;
+  margin: 0;
+}
+.cxc-verdict svg { flex: 0 0 auto; margin-top: 2px; color: #0b7f66; }
+
+/* Two side headers with a "vs" divider */
+.cxc-heads {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  gap: 1rem;
+  margin: 0 0 1.25rem;
+}
+.cxc-heads__vs {
+  font-size: 0.9rem;
+  font-weight: 800;
+  color: #94a3b8;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+.cxc-side {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  background: #fff;
+  border: 1px solid #e7ebf0;
+  border-radius: 14px;
+  padding: 0.85rem 1rem;
+}
+.cxc-side__flag {
+  font-size: 1.9rem;
+  line-height: 1;
+  width: 2.6rem;
+  height: 2.6rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 10px;
+  background: #f1f5f9;
+  box-shadow: inset 0 0 0 2px #e2e8f0;
+}
+.cxc-side__flag--very-high { box-shadow: inset 0 0 0 2px #dc2626; }
+.cxc-side__flag--high { box-shadow: inset 0 0 0 2px #ea580c; }
+.cxc-side__flag--moderate { box-shadow: inset 0 0 0 2px #f59e0b; }
+.cxc-side__flag--low { box-shadow: inset 0 0 0 2px #10b981; }
+.cxc-side__meta { display: flex; flex-direction: column; gap: 0.25rem; min-width: 0; }
+.cxc-side__name {
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: #0b1f2a;
+  text-decoration: none;
+}
+.cxc-side__name:hover { color: #0b7f66; text-decoration: underline; }
+.cxc-side__region { font-size: 0.75rem; color: #94a3b8; }
+
+/* Shared band pill (mirrors country-hub.css) */
+.cx-band-pill {
+  display: inline-block;
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: #fff;
+  border-radius: 999px;
+  padding: 0.12rem 0.55rem;
+  width: fit-content;
+  background: #64748b;
+}
+.cx-band-pill--low { background: #10b981; }
+.cx-band-pill--moderate { background: #f59e0b; }
+.cx-band-pill--high { background: #ea580c; }
+.cx-band-pill--very-high { background: #dc2626; }
+.cx-band-pill--insufficient { background: #64748b; }
+
+/* Shared card + eyebrow (mirrors country-hub.css) */
+.cx-card {
+  background: #fff;
+  border: 1px solid #e7ebf0;
+  border-radius: 14px;
+  padding: 0.9rem 1rem;
+}
+.cx-card__eyebrow {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-size: 0.66rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: #94a3b8;
+  font-weight: 800;
+  margin: 0 0 0.6rem;
+}
+
+/* Comparison table */
+.cxc-table { margin-bottom: 1.25rem; }
+.cxc-grid {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.9rem;
+}
+.cxc-grid thead th {
+  text-align: left;
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: #64748b;
+  padding: 0.5rem 0.6rem;
+  border-bottom: 2px solid #e2e8f0;
+}
+.cxc-grid thead th:first-child { color: #94a3b8; }
+.cxc-rowlabel {
+  text-align: left;
+  font-weight: 600;
+  color: #475569;
+  padding: 0.55rem 0.6rem;
+  border-bottom: 1px solid #eef2f6;
+  white-space: nowrap;
+}
+.cxc-cell {
+  padding: 0.55rem 0.6rem;
+  border-bottom: 1px solid #eef2f6;
+  color: #0b1f2a;
+}
+.cxc-cell--higher {
+  background: #fef2f2;
+  color: #b91c1c;
+  font-weight: 600;
+}
+.cxc-note {
+  margin: 0.75rem 0 0;
+  font-size: 0.78rem;
+  line-height: 1.4;
+  color: #64748b;
+}
+
+/* FATF mutual-evaluation card */
+.cxc-me { margin-bottom: 1.25rem; }
+.cxc-me__list { margin: 0; padding-left: 1.1rem; font-size: 0.88rem; line-height: 1.6; }
+.cxc-me__list a { color: #0b7f66; text-decoration: none; }
+.cxc-me__list a:hover { text-decoration: underline; }
+
+/* Full-report links */
+.cxc-reports {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.75rem;
+  margin-bottom: 1.5rem;
+}
+.cxc-reportlink {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+  font-size: 0.88rem;
+  font-weight: 600;
+  color: #0b7f66;
+  background: #e9f8f2;
+  border: 1px solid #bce6d6;
+  border-radius: 10px;
+  padding: 0.7rem 0.9rem;
+  text-decoration: none;
+}
+.cxc-reportlink:hover { background: #d7f2e7; }
+
+/* Related comparisons */
+.cxc-related { margin-bottom: 1.5rem; }
+.cxc-related__h {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: #0b1f2a;
+  margin: 0 0 0.6rem;
+}
+.cxc-related__list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+.cxc-related__list a {
+  display: inline-block;
+  font-size: 0.82rem;
+  color: #334155;
+  background: #f1f5f9;
+  border: 1px solid #e2e8f0;
+  border-radius: 999px;
+  padding: 0.3rem 0.7rem;
+  text-decoration: none;
+}
+.cxc-related__list a:hover { color: #0b7f66; border-color: #0b7f66; }
+
+.cxc-sources {
+  font-size: 0.8rem;
+  line-height: 1.5;
+  color: #64748b;
+}
+.cxc-sources a { color: #0b7f66; text-decoration: none; }
+.cxc-sources a:hover { text-decoration: underline; }
+
+/* Not-found fallback */
+.cxc-notfound { text-align: center; padding: 4rem 1rem; }
+.cxc-back {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  color: #0b7f66;
+  text-decoration: none;
+  margin-top: 1rem;
+}
+
+@media (max-width: 640px) {
+  .cxc-heads { grid-template-columns: 1fr; }
+  .cxc-heads__vs { display: none; }
+  .cxc-reports { grid-template-columns: 1fr; }
+  .cxc-title { font-size: 1.35rem; }
+}

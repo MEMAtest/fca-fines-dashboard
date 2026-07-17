@@ -30,6 +30,9 @@ import { getNarrative } from "../data/countryNarratives.js";
 import { FATF_SOURCE_URL } from "../data/fatfStatus.js";
 import { isEuTaxListed } from "../data/euTaxList.js";
 import { getEgmontMember } from "../data/egmontMembership.js";
+import { getFatfAssessmentLink } from "../data/fatfAssessmentLinks.js";
+import { getBoRegister, boRegisterSignal } from "../data/boRegisters.js";
+import { comparePairSlug } from "../data/countryCompare.js";
 import { bandLabel, bandFor, type RiskBand } from "../data/countryRiskScore.js";
 import { GOVERNANCE_VINTAGE } from "../data/governanceData.js";
 import { CPI_YEAR, CPI_TOTAL } from "../data/cpiData.js";
@@ -262,6 +265,8 @@ export function CountryHub() {
       band: p.band,
       current: false,
       slug: countrySlug(p.country),
+      // Canonical compare slug for this country vs the peer (a "Compare ->" link).
+      compareSlug: comparePairSlug(country, p.country),
     })),
   ].sort((a, b) => {
     if (a.score === null) return b.score === null ? a.name.localeCompare(b.name) : 1;
@@ -301,11 +306,20 @@ export function CountryHub() {
   const euTaxListed = isEuTaxListed(country.iso2);
   // Egmont Group FIU membership — shown in the National-regulators column.
   const egmont = getEgmontMember(country.iso2);
+  // FATF mutual-evaluation date + report link (surfaces dates already in
+  // fatfAssessmentData.ts, no licensed ratings) — rendered in the FATF-network column.
+  const meLink = getFatfAssessmentLink(country.iso2);
+  // Beneficial-ownership register availability (Open Ownership, CC BY 4.0) —
+  // a Framework-signals line, only where the source confirms a live register.
+  const boReg = getBoRegister(country.iso2);
   const frameworkSignals: { label: string; value: string }[] = [
     { label: "FATF listing", value: statusHeading },
     { label: "Sanctions exposure", value: sanctionsSignal },
     ...(euTaxListed
       ? [{ label: "EU tax list", value: "Listed (Annex I)" }]
+      : []),
+    ...(boReg
+      ? [{ label: "BO register", value: boRegisterSignal(country.iso2) }]
       : []),
     {
       label: "Corruption (CPI)",
@@ -411,6 +425,15 @@ export function CountryHub() {
                 {p.band ? bandLabel(p.band) : "Insufficient data"}
               </span>
             </Link>
+            {!p.current && "compareSlug" in p && p.compareSlug && (
+              <Link
+                to={`/countries/compare/${p.compareSlug}`}
+                className="cx-peer__compare"
+                aria-label={`Compare ${country.name} with ${p.name}`}
+              >
+                Compare →
+              </Link>
+            )}
           </li>
         ))}
       </ul>
@@ -845,6 +868,19 @@ export function CountryHub() {
                   <p className="cx-regf__note">
                     Listed on the FATF {statusHeading.toLowerCase()} as of the{" "}
                     {formatDate(view.lastPlenary)} plenary.
+                  </p>
+                )}
+                {meLink && (
+                  <p className="cx-regf__note">
+                    Last mutual evaluation: {meLink.year} ·{" "}
+                    <a
+                      href={meLink.reportUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="cx-regf__link"
+                    >
+                      report <ExternalLink size={10} />
+                    </a>
                   </p>
                 )}
               </div>
