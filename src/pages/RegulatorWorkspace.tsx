@@ -25,6 +25,7 @@ import {
   LIVE_REGULATOR_NAV_ITEMS,
   getRegulatorCoverage,
 } from "../data/regulatorCoverage.js";
+import { getCountryByIso2, countrySlug } from "../data/countries.js";
 import { useSEO } from "../hooks/useSEO.js";
 import { useUnifiedData } from "../hooks/useUnifiedData.js";
 import { useWorkspaceOverview } from "../hooks/useWorkspaceOverview.js";
@@ -101,6 +102,10 @@ export function RegulatorWorkspace({ view }: RegulatorWorkspaceProps) {
   useSEO({ title: `${coverage?.fullName ?? code} ${view === "overview" ? "Executive Summary" : view} | RegActions`, description: `Public enforcement intelligence, penalties and official evidence for ${coverage?.fullName ?? code}.` });
 
   if (!coverage || !coverage.dashboardEnabled) return <Navigate to="/regulators" replace />;
+  // Cross-link to this regulator's country risk report (fixes the orphaned
+  // regulator↔country cluster). Resolved from coverage.countryCode; null if the
+  // country has no report so we render no dead link.
+  const reportCountry = coverage.countryCode ? getCountryByIso2(coverage.countryCode) : undefined;
   if (primary.loading) return <ProductWorkspaceShell scope="regulator" regulatorCode={regulatorCode}><div className="workspace-loading">Loading {code} enforcement intelligence...</div></ProductWorkspaceShell>;
   if (primary.error) return <ProductWorkspaceShell scope="regulator" regulatorCode={regulatorCode}><div className="workspace-error">{primary.error}</div></ProductWorkspaceShell>;
 
@@ -207,7 +212,7 @@ export function RegulatorWorkspace({ view }: RegulatorWorkspaceProps) {
             <section className="workspace-card"><div className="workspace-card__heading"><h2>Fines by action type</h2><span>Click to drill down</span></div><div className="workspace-treemap">{actionTypes.slice(0,6).map((item)=><button className="workspace-tile" type="button" key={item.label} onClick={()=>setDrawer({title:item.label,records:records.filter((record)=>(record.breach_type||"Not classified")===item.label)})}><span>{item.label}</span><strong>{formatWorkspaceAmount(item.amount)}</strong><small>{formatWorkspaceActionCount(item.count)}</small></button>)}</div></section>
             <section className="workspace-card"><div className="workspace-card__heading"><h2>Key themes / emerging issues</h2></div><ul className="workspace-insights">{themes.slice(0,4).map((item)=><li key={item.label}><CheckCircle2 size={14}/><span>{item.label}: {formatWorkspaceActionCount(item.count)} and {formatWorkspaceAmount(item.amount)} in disclosed fines.</span></li>)}</ul></section>
 
-            <section className="workspace-card workspace-card--half"><div className="workspace-card__heading"><h2>Regulator scope, methodology and data</h2></div><table className="workspace-table"><tbody><tr><th>Scope</th><td>{coverage.fullName} activity in {coverage.country}</td></tr><tr><th>Time period</th><td>{coverage.years}</td></tr><tr><th>Coverage</th><td>{formatWorkspaceActionCount(metrics.count)} in the current view</td></tr><tr><th>Currency</th><td>Normalised to GBP for comparison</td></tr></tbody></table></section>
+            <section className="workspace-card workspace-card--half"><div className="workspace-card__heading"><h2>Regulator scope, methodology and data</h2></div><table className="workspace-table"><tbody><tr><th>Scope</th><td>{coverage.fullName} activity in {coverage.country}</td></tr><tr><th>Time period</th><td>{coverage.years}</td></tr><tr><th>Coverage</th><td>{formatWorkspaceActionCount(metrics.count)} in the current view</td></tr><tr><th>Currency</th><td>Normalised to GBP for comparison</td></tr>{reportCountry && <tr><th>Country risk</th><td><Link to={`/countries/${countrySlug(reportCountry)}`}>Country risk report: {reportCountry.name} →</Link></td></tr>}</tbody></table></section>
             <section className="workspace-card workspace-card--half"><div className="workspace-card__heading"><h2>About {coverage.fullName}</h2></div><p style={{fontSize:11,lineHeight:1.55,color:"#53667a"}}>{coverage.note ?? `${coverage.fullName} is the primary regulatory authority represented in this public enforcement workspace.`}</p><ul className="workspace-insights">{coverage.officialSources.map((source)=><li key={source.url}><ExternalLink size={13}/><a href={source.url} target="_blank" rel="noreferrer">{source.label}</a><span>{source.description}</span></li>)}</ul></section>
           </div>
         )}

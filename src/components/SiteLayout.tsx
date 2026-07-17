@@ -1,5 +1,6 @@
 import { Outlet, useLocation } from "react-router-dom";
 import { SiteHeader } from "./SiteHeader.js";
+import { SiteFooter } from "./SiteFooter.js";
 import { useEffect } from "react";
 import { EvidenceModalProvider } from "./EvidenceModalProvider.js";
 
@@ -27,6 +28,7 @@ export function SiteLayout() {
       <main id="main-content">
         <Outlet />
       </main>
+      <SiteFooter />
     </EvidenceModalProvider>
   );
 }

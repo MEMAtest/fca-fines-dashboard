@@ -1,0 +1,60 @@
+/* Shared crawlable site footer (internal-linking overhaul). Plain links only. */
+.site-footer {
+  border-top: 1px solid #e5e7eb;
+  background: #f7f9fa;
+  margin-top: 3rem;
+}
+
+.site-footer__inner {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 2.5rem 1.5rem;
+  display: grid;
+  grid-template-columns: minmax(180px, 1fr) minmax(0, 2fr);
+  gap: 2rem;
+}
+
+.site-footer__heading {
+  font-size: 0.8125rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: #6b7c85;
+  margin: 0 0 0.9rem;
+}
+
+.site-footer__col ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.site-footer__col li {
+  margin-bottom: 0.5rem;
+}
+
+.site-footer__col a {
+  color: #0e2a38;
+  text-decoration: none;
+  font-size: 0.9375rem;
+  transition: color 0.15s ease;
+}
+
+.site-footer__col a:hover {
+  color: #0fa77d;
+  text-decoration: underline;
+}
+
+.site-footer__countries {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  gap: 0.4rem 1rem;
+}
+
+@media (max-width: 720px) {
+  .site-footer__inner {
+    grid-template-columns: 1fr;
+    gap: 1.75rem;
+    padding: 2rem 1.25rem;
+  }
+}

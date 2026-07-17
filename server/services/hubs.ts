@@ -211,6 +211,51 @@ export async function listTopFirms(limit = 100): Promise<FirmSummary[]> {
   }));
 }
 
+export interface RegulatorTopFine {
+  firm: string;
+  dateIssued: string | null;
+  amount: number;
+  currency: string;
+  breach: string | null;
+  sourceUrl: string | null;
+}
+
+/**
+ * Top enforcement actions for a single regulator, largest-first. Used by the
+ * pre-render step to bake a static, crawlable fines table into each regulator
+ * hub page (the live fines list is otherwise client-only). Filters on the
+ * `regulator` column, whose stored value is the canonical regulator code
+ * (e.g. "FCA", "BaFin"). Returns [] on any error so callers can fall back to
+ * the DB-less hub body.
+ */
+export async function getRegulatorTopFines(
+  regulatorCode: string,
+  limit = 20,
+): Promise<RegulatorTopFine[]> {
+  const sql = getSqlClient();
+  const clamped = Math.max(1, Math.min(limit, 100));
+  const rows = (await sql(
+    `
+      SELECT firm_individual, regulator, final_notice_url, breach_type,
+             amount, date_issued
+      FROM fca_fines
+      WHERE regulator = $1 AND amount IS NOT NULL
+      ORDER BY amount DESC, date_issued DESC
+      LIMIT $2
+    `,
+    [regulatorCode, clamped],
+  )) as any[];
+
+  return rows.map((row: any) => ({
+    firm: String(row.firm_individual ?? ""),
+    dateIssued: row.date_issued ? String(row.date_issued) : null,
+    amount: Number(row.amount) || 0,
+    currency: "",
+    breach: row.breach_type ? String(row.breach_type) : null,
+    sourceUrl: row.final_notice_url ? String(row.final_notice_url) : null,
+  }));
+}
+
 export async function getFirmDetailsBySlug(
   slug: string,
   limit = 200,
