@@ -114,6 +114,9 @@ import {
   DEVELOPERS_LICENCE_NAME,
   DEVELOPERS_LICENCE_URL,
 } from "../src/data/developersApiDocs.js";
+// Type-only import (erased at build) — the value-level `getRegulatorTopFines` is
+// imported lazily/best-effort at runtime so a DB-less build still succeeds.
+import type { RegulatorTopFine } from "../server/services/hubs.js";
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -211,6 +214,7 @@ interface PageMeta {
   breadcrumbLabel?: string; // Short name for last breadcrumb item (defaults to humanized slug)
   bodyContent?: string; // Pre-rendered HTML body for SSG (injected into #root)
   ogImage?: string; // Custom OG image URL
+  noindex?: boolean; // Emit robots noindex (used by the 404 shell)
 }
 
 // ---------------------------------------------------------------------------
@@ -288,6 +292,193 @@ function renderHubBody(
     )
     .join("");
   return `<div class="blog-page"><div class="blog-post-container"><article class="blog-article-modal"><h1 class="blog-post-title">${escapeHtml(title)}</h1><div class="blog-article-content"><p>${escapeHtml(description)}</p><h2>Coverage Snapshot</h2><ul>${metricsHtml}</ul><h2>Use This Data</h2><p>Open the live RegActions workspace to filter the source records, inspect related firms, compare breach themes, and export the evidence for compliance or board reporting.</p><p><a href="${ctaPath}">Open live enforcement data</a></p></div></article></div></div>`;
+}
+
+// ---------------------------------------------------------------------------
+// Shared site footer (internal-linking overhaul — fixes the orphan problem).
+// Emitted into the SSG shell of EVERY page so crawlers reach the country and
+// regulator clusters that the homepage otherwise never links to. Mirrors the
+// React <SiteFooter> in src/components/SiteFooter.tsx (same links, same order).
+// ---------------------------------------------------------------------------
+
+/**
+ * Top-traffic-likely country risk reports linked from every page footer.
+ * ISO2 codes are resolved to real slugs at build time; any code that fails to
+ * resolve is silently dropped (keeps the footer honest — no dead links).
+ */
+const FOOTER_COUNTRY_ISO2 = [
+  "US", "GB", "CN", "RU", "IN", "BR", "DE", "FR", "JP", "SG",
+  "AE", "CH", "NG", "ZA", "MX", "TR", "SA", "HK", "IE", "KY",
+] as const;
+
+function footerCountryLinks(): Array<{ name: string; slug: string }> {
+  return FOOTER_COUNTRY_ISO2.map((iso2) => {
+    const country = getCountryByIso2(iso2);
+    return country ? { name: country.name, slug: countrySlug(country) } : null;
+  }).filter((entry): entry is { name: string; slug: string } => Boolean(entry));
+}
+
+/**
+ * Shared crawlable footer. Plain <a> links only (no scripts/images) so page
+ * weight barely moves. Rendered once and reused across all pages.
+ */
+function renderSiteFooter(): string {
+  const exploreLinks: Array<[string, string]> = [
+    ["Country risk reports", "/countries"],
+    ["Regulator data hub", "/regulators"],
+    ["Enforcement topics", "/topics"],
+    ["FATF grey list", "/countries/fatf-grey-list"],
+    ["Scoring methodology", "/countries/methodology"],
+    ["Free data API", "/developers"],
+  ];
+  const exploreHtml = exploreLinks
+    .map(([label, href]) => `<li><a href="${href}">${escapeHtml(label)}</a></li>`)
+    .join("");
+  const countryHtml = footerCountryLinks()
+    .map(
+      (c) =>
+        `<li><a href="/countries/${c.slug}">${escapeHtml(c.name)}</a></li>`,
+    )
+    .join("");
+  return `<footer class="site-footer" aria-label="Site links"><div class="site-footer__inner"><nav class="site-footer__col" aria-label="Explore RegActions"><h2 class="site-footer__heading">Explore RegActions</h2><ul>${exploreHtml}</ul></nav><nav class="site-footer__col site-footer__col--wide" aria-label="Popular country risk reports"><h2 class="site-footer__heading">Popular country risk reports</h2><ul class="site-footer__countries">${countryHtml}</ul></nav></div></footer>`;
+}
+
+const SITE_FOOTER_HTML = renderSiteFooter();
+
+/** Per-currency formatter cache for the regulator fines table. */
+const currencyFormatters = new Map<string, Intl.NumberFormat>();
+function formatMoney(amount: number, currency: string): string {
+  const code = (currency || "GBP").toUpperCase();
+  let fmt = currencyFormatters.get(code);
+  if (!fmt) {
+    try {
+      fmt = new Intl.NumberFormat("en-GB", {
+        style: "currency",
+        currency: code,
+        maximumFractionDigits: 0,
+      });
+    } catch {
+      // Unknown/blank ISO currency code — fall back to a plain number.
+      fmt = new Intl.NumberFormat("en-GB", { maximumFractionDigits: 0 });
+    }
+    currencyFormatters.set(code, fmt);
+  }
+  return fmt.format(amount);
+}
+
+/**
+ * Static, crawlable top-N enforcement-actions table for a regulator hub. This
+ * is the item-12 fix: the live fines list is client-only, so the served hub HTML
+ * is otherwise ~660 chars. `fines` is fetched best-effort at build time; when the
+ * DB is unreachable the caller passes [] and this returns "" (graceful fallback
+ * to the existing DB-less hub body).
+ */
+function renderRegulatorFinesTable(
+  fines: RegulatorTopFine[],
+  currency: string,
+): string {
+  if (fines.length === 0) return "";
+  const rows = fines
+    .map((f) => {
+      const firm = escapeHtml(f.firm || "Undisclosed");
+      const date = escapeHtml(f.dateIssued ? formatDate(f.dateIssued) : "—");
+      const amount = escapeHtml(
+        f.amount > 0 ? formatMoney(f.amount, f.currency || currency) : "—",
+      );
+      const breach = escapeHtml(f.breach || "Not categorised");
+      const source =
+        f.sourceUrl && /^https?:\/\//i.test(f.sourceUrl)
+          ? `<a href="${escapeHtml(f.sourceUrl)}" rel="noopener">Notice</a>`
+          : "—";
+      return `<tr><td>${firm}</td><td>${date}</td><td>${amount}</td><td>${breach}</td><td>${source}</td></tr>`;
+    })
+    .join("");
+  return `<h2>Largest enforcement actions</h2><table class="hub-fines-table"><thead><tr><th>Firm or individual</th><th>Date</th><th>Amount</th><th>Breach category</th><th>Source</th></tr></thead><tbody>${rows}</tbody></table><p>Amounts are normalised to GBP for comparison.</p>`;
+}
+
+/**
+ * Regulator hub SSG body = base hub body + a country cross-link + a static
+ * top-N fines table (when data is available at build time). Keeps the shared
+ * renderHubBody untouched for the breach/year/sector/firm hubs.
+ */
+function renderRegulatorHubBody(
+  title: string,
+  description: string,
+  metrics: Array<{ label: string; value: string }>,
+  path: string,
+  code: string,
+  fines: RegulatorTopFine[],
+  currency: string,
+): string {
+  const base = renderHubBody(title, description, metrics, path);
+  const countryLink = regulatorCountryLinkHtml(code);
+  const finesTable = renderRegulatorFinesTable(fines, currency);
+  // Splice the extra crawlable content in just before the closing wrappers so it
+  // sits inside .blog-article-content alongside the coverage snapshot.
+  const closing = "</div></article></div></div>";
+  const injected = `${countryLink}${finesTable}`;
+  if (!injected) return base;
+  return base.endsWith(closing)
+    ? `${base.slice(0, -closing.length)}${injected}${closing}`
+    : `${base}${injected}`;
+}
+
+/**
+ * Cross-link a regulator hub to its own country's risk report. Cheap and
+ * accurate: the regulator's country comes from REGULATOR_COVERAGE, resolved to
+ * a real country slug. Returns "" if we can't map it (no dead links).
+ */
+function regulatorCountryLinkHtml(code: string): string {
+  const coverage = REGULATOR_COVERAGE[code];
+  if (!coverage?.countryCode) return "";
+  const country = getCountryByIso2(coverage.countryCode);
+  if (!country) return "";
+  return `<p class="hub-country-link"><a href="/countries/${countrySlug(
+    country,
+  )}">Country risk report: ${escapeHtml(country.name)} →</a></p>`;
+}
+
+/**
+ * Related-links block for a prerendered blog article. We do NOT retro-edit the
+ * article body; we only append a small block where a cheap article↔regulator
+ * mapping exists (the per-regulator guides, slug `<code>-fines-enforcement-guide`,
+ * generated in regulatorBlogs.ts). Links to the regulator hub + its country page.
+ * Returns "" when no mapping is available, so most articles are unchanged.
+ */
+function regulatorCodeForBlogSlug(slug: string): string | null {
+  const match = /^([a-z0-9]+)-fines-enforcement-guide$/.exec(slug);
+  if (!match) return null;
+  const upper = match[1].toUpperCase();
+  // Match case-insensitively against real coverage codes (e.g. "BaFin").
+  const code = Object.keys(REGULATOR_COVERAGE).find(
+    (c) => c.toUpperCase() === upper,
+  );
+  return code ?? null;
+}
+
+function renderBlogRelatedLinks(slug: string): string {
+  const code = regulatorCodeForBlogSlug(slug);
+  if (!code) return "";
+  const coverage = REGULATOR_COVERAGE[code];
+  if (!coverage) return "";
+  const items: string[] = [
+    `<li><a href="/regulators/${code.toLowerCase()}">${escapeHtml(
+      `${coverage.fullName} (${code}) enforcement data`,
+    )}</a></li>`,
+  ];
+  const country = coverage.countryCode
+    ? getCountryByIso2(coverage.countryCode)
+    : undefined;
+  if (country) {
+    items.push(
+      `<li><a href="/countries/${countrySlug(country)}">${escapeHtml(
+        `${country.name} country risk report`,
+      )}</a></li>`,
+    );
+  }
+  return `<section class="blog-related"><h2>Related on RegActions</h2><ul>${items.join(
+    "",
+  )}</ul></section>`;
 }
 
 /**
@@ -801,6 +992,20 @@ function renderDevelopersBody(): string {
   const intro = `<p>RegActions exposes three read-only JSON endpoints for country AML risk ratings and global enforcement data. They are free to use, need no API key, and are CORS-open, so you can call them directly from the browser or a server.</p>`;
   const outro = `<h2>Questions</h2><p>For volume, commercial licensing, or a data question, contact <a href="mailto:contact@memaconsultants.com">contact@memaconsultants.com</a>. See also the <a href="/countries">country risk hub</a> and the <a href="/regulators">regulator data hub</a>.</p>`;
   return `<div class="blog-page"><div class="blog-post-container"><article class="blog-article-modal"><h1 class="blog-post-title">Free RegActions data APIs</h1><div class="blog-article-content">${intro}${termsHtml}${attributionHtml}${endpointsHtml}${outro}</div></article></div></div>`;
+}
+
+/**
+ * Crawlable "Not Found" body for the prerendered 404 shell. Mirrors the React
+ * <NotFound> page. Emitted with a noindex robots meta (see main()) so Google
+ * treats unknown URLs as soft-404s at minimum, and — where Vercel routing lets a
+ * request fall through to dist/404.html — as a true HTTP 404.
+ */
+function renderNotFoundBody(): string {
+  const countryHtml = footerCountryLinks()
+    .slice(0, 8)
+    .map((c) => `<li><a href="/countries/${c.slug}">${escapeHtml(c.name)}</a></li>`)
+    .join("");
+  return `<div class="blog-page"><div class="blog-post-container"><article class="blog-article-modal"><h1 class="blog-post-title">Page not found</h1><div class="blog-article-content"><p>The page you requested does not exist, or the country or regulator code in the URL is invalid.</p><h2>Popular destinations</h2><ul><li><a href="/">RegActions home</a></li><li><a href="/countries">Country risk reports</a></li><li><a href="/regulators">Regulator data hub</a></li><li><a href="/topics">Enforcement topics</a></li></ul><h2>Popular country risk reports</h2><ul>${countryHtml}</ul></div></article></div></div>`;
 }
 
 function renderHomepageBody(): string {
@@ -1466,6 +1671,36 @@ async function buildPageMetas(): Promise<PageMeta[]> {
   });
 
   // 4b. Regulator Hub Pages
+  //
+  // Best-effort: fetch each regulator's top-20 enforcement actions at build time
+  // so the served hub HTML carries a static, crawlable fines table (item 12 —
+  // the live list is client-only, leaving the hub at ~660 chars otherwise).
+  // On a DB-less build (no DATABASE_URL etc.) this whole block is skipped and the
+  // map stays empty, so hubs fall back to the existing coverage-snapshot body.
+  const regulatorTopFines = new Map<string, RegulatorTopFine[]>();
+  try {
+    const { getRegulatorTopFines } = await import("../server/services/hubs.js");
+    const results = await Promise.all(
+      PUBLIC_REGULATOR_CODES.map(async (code) => {
+        try {
+          return [code, await getRegulatorTopFines(code, 20)] as const;
+        } catch {
+          return [code, [] as RegulatorTopFine[]] as const;
+        }
+      }),
+    );
+    for (const [code, fines] of results) regulatorTopFines.set(code, fines);
+    const withData = results.filter(([, f]) => f.length > 0).length;
+    console.log(
+      `  Regulator hubs: fetched top fines for ${withData}/${PUBLIC_REGULATOR_CODES.length} regulators.`,
+    );
+  } catch (error) {
+    console.warn(
+      "WARN: DB unreachable for regulator hub fines tables; hubs fall back to coverage-snapshot bodies:",
+      error instanceof Error ? error.message : String(error),
+    );
+  }
+
   PUBLIC_REGULATOR_CODES.forEach((code) => {
     const coverage = REGULATOR_COVERAGE[code];
     const path = `/regulators/${code.toLowerCase()}`;
@@ -1482,7 +1717,7 @@ async function buildPageMetas(): Promise<PageMeta[]> {
       // Breadcrumb: use the regulator code ("FCA"), not humanize("fca") -> "Fca".
       breadcrumbLabel: code,
       ogImage: `${BASE_URL}/og/${code.toLowerCase()}-hub.png`,
-      bodyContent: renderHubBody(
+      bodyContent: renderRegulatorHubBody(
         title,
         description,
         [
@@ -1493,6 +1728,12 @@ async function buildPageMetas(): Promise<PageMeta[]> {
           { label: "Default currency", value: coverage.defaultCurrency },
         ],
         path,
+        code,
+        regulatorTopFines.get(code) ?? [],
+        // fca_fines.amount is normalised to GBP house-wide (the interactive view
+        // says "Normalised to GBP for comparison") — never label it with the
+        // regulator's native currency.
+        "GBP",
       ),
       extraJsonLd: [
         {
@@ -1897,9 +2138,12 @@ async function buildPageMetas(): Promise<PageMeta[]> {
   for (const article of blogArticles) {
     const articleFaqs = getFaqsForArticle(article.slug);
     const articleOgImage = `${BASE_URL}/og/${article.slug}.png`;
+    // Append a small related-links block (regulator hub + its country page) where
+    // a cheap article↔regulator mapping exists. Body copy itself is untouched.
+    const relatedLinks = renderBlogRelatedLinks(article.slug);
     const renderedBody = wrapArticleShell(
       article.title,
-      renderMarkdownToHtml(article.content),
+      `${renderMarkdownToHtml(article.content)}${relatedLinks}`,
     );
     const extraLd: object[] = [];
     if (articleFaqs.length > 0) extraLd.push(generateFaqSchema(articleFaqs));
@@ -2184,6 +2428,14 @@ function renderPage(template: string, meta: PageMeta): string {
     `<link rel="canonical" href="${canonicalUrl}" />`,
   );
 
+  // Robots noindex for the 404 shell — an unknown URL must never be indexable.
+  if (meta.noindex) {
+    html = html.replace(
+      /<meta\s+name="robots"\s+content="[^"]*"\s*\/?>/,
+      `<meta name="robots" content="noindex, follow" />`,
+    );
+  }
+
   // Single self-referencing hreflang alternate (en/en-gb/en-us trio removed as
   // redundant; the site is single-locale). Only the x-default alternate remains.
   html = html.replace(
@@ -2235,13 +2487,12 @@ function renderPage(template: string, meta: PageMeta): string {
     );
   }
 
-  // Inject SSG body content into <div id="root"> (React hydrates over it)
-  if (meta.bodyContent) {
-    html = html.replace(
-      '<div id="root"></div>',
-      `<div id="root">${meta.bodyContent}</div>`,
-    );
-  }
+  // Inject SSG body content into <div id="root"> (React hydrates over it).
+  // The shared site footer is appended to EVERY page (even pages without a
+  // bodyContent) so crawlers always reach the country/regulator clusters — this
+  // is the core internal-linking fix for the orphan problem.
+  const rootInner = `${meta.bodyContent ?? ""}${SITE_FOOTER_HTML}`;
+  html = html.replace('<div id="root"></div>', `<div id="root">${rootInner}</div>`);
 
   // Replace the static @graph with per-page version (correct BreadcrumbList, WebPage, Dataset)
   const pageGraph = generatePageGraph(meta);
@@ -2552,6 +2803,29 @@ async function main() {
   }
 
   console.log(`  Created ${created} HTML files.`);
+
+  // 404 shell — a real, noindex "Not Found" page. Written to BOTH dist/404.html
+  // (Vercel's convention for the not-found response) and dist/404/index.html (so
+  // a direct visit to /404 renders the same content the React catch-all shows).
+  // vercel.json routes unmatched non-API paths here with a 404 status; see the
+  // PR notes for the routing rationale.
+  const notFoundMeta: PageMeta = {
+    path: "/404",
+    title: "Page Not Found | RegActions",
+    description:
+      "The page you were looking for could not be found on RegActions. Browse country risk reports, regulator data, and enforcement topics instead.",
+    keywords: "page not found, RegActions",
+    ogType: "website",
+    breadcrumbLabel: "Not found",
+    bodyContent: renderNotFoundBody(),
+    noindex: true,
+  };
+  const notFoundHtml = renderPage(template, notFoundMeta);
+  writeFileSync(join(DIST, "404.html"), notFoundHtml, "utf-8");
+  const notFoundDir = join(DIST, "404");
+  if (!existsSync(notFoundDir)) mkdirSync(notFoundDir, { recursive: true });
+  writeFileSync(join(notFoundDir, "index.html"), notFoundHtml, "utf-8");
+  console.log("  Created 404.html (noindex not-found shell).");
 
   // Generate sitemap
   const sitemap = generateSitemap(pages);

@@ -51,6 +51,10 @@ export function useSEO(config: SEOConfig) {
     // Primary meta tags
     setMetaTag('title', config.title);
     setMetaTag('description', config.description);
+    // Real routes recovered client-side from the 404 shell must not keep its
+    // noindex — reset robots for every SEO'd page (the NotFound page sets its
+    // own noindex).
+    setMetaTag('robots', 'index, follow');
     if (config.keywords) {
       setMetaTag('keywords', config.keywords);
     }

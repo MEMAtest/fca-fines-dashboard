@@ -1,3 +1,4 @@
+import { useEffect } from "react";
 import { Link } from "react-router-dom";
 import { useSEO } from "../hooks/useSEO.js";
 
@@ -23,6 +24,16 @@ const linkStyle = {
 };
 
 export function NotFound() {
+  useEffect(() => {
+    let el = document.querySelector('meta[name="robots"]');
+    if (!el) {
+      el = document.createElement("meta");
+      el.setAttribute("name", "robots");
+      document.head.appendChild(el);
+    }
+    el.setAttribute("content", "noindex, follow");
+  }, []);
+
   useSEO({
     title: "Page Not Found | Regulatory Fines",
     description:
