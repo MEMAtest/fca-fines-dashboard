@@ -149,6 +149,7 @@
     "openai": "^6.46.0",
     "papaparse": "^5.4.1",
     "pg": "^8.19.0",
+    "playwright": "^1.58.2",
     "postgres": "^3.4.8",
     "react": "^19.2.1",
     "react-dom": "^19.2.1",

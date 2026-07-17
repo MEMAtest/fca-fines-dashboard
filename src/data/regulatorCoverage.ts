@@ -911,7 +911,7 @@ const REGULATOR_COVERAGE_SEED: Record<string, RegulatorCoverageSeed> = {
     defaultCurrency: "GBP",
     coverageStatus: "emerging",
     maturity: "limited",
-    dashboardEnabled: true,
+    dashboardEnabled: false,
     officialSources: [
       {
         label: "FSC Securities and Futures Bureau sanctions",
@@ -1512,7 +1512,7 @@ const REGULATOR_COVERAGE_SEED: Record<string, RegulatorCoverageSeed> = {
     defaultCurrency: "GBP",
     coverageStatus: "emerging",
     maturity: "limited",
-    dashboardEnabled: true,
+    dashboardEnabled: false,
     officialSources: [
       {
         label: "Federal Reserve enforcement actions",
@@ -1548,7 +1548,7 @@ const REGULATOR_COVERAGE_SEED: Record<string, RegulatorCoverageSeed> = {
     defaultCurrency: "EUR",
     coverageStatus: "emerging",
     maturity: "limited",
-    dashboardEnabled: true,
+    dashboardEnabled: false,
     officialSources: [
       {
         label: "SPK administrative monetary penalties (open data)",
@@ -1584,7 +1584,7 @@ const REGULATOR_COVERAGE_SEED: Record<string, RegulatorCoverageSeed> = {
     defaultCurrency: "GBP",
     coverageStatus: "emerging",
     maturity: "limited",
-    dashboardEnabled: true,
+    dashboardEnabled: false,
     officialSources: [
       {
         label: "Ghana SEC licence actions",
@@ -1620,7 +1620,7 @@ const REGULATOR_COVERAGE_SEED: Record<string, RegulatorCoverageSeed> = {
     defaultCurrency: "GBP",
     coverageStatus: "emerging",
     maturity: "limited",
-    dashboardEnabled: true,
+    dashboardEnabled: false,
     officialSources: [
       {
         label: "IoM FSA enforcement action",

@@ -149,10 +149,14 @@ export function buildSpkRecord(record: SpkFineRecord): DbReadyRecord | null {
 }
 
 export function buildSpkRecords(records: SpkFineRecord[]): DbReadyRecord[] {
-  return records
-    .map(buildSpkRecord)
-    .filter((record): record is DbReadyRecord => record !== null)
-    .sort((left, right) => right.dateIssued.localeCompare(left.dateIssued));
+  const built = records.map(buildSpkRecord);
+  const kept = built.filter((record): record is DbReadyRecord => record !== null);
+  const dropped = built.length - kept.length;
+  if (dropped > 0) {
+    // Rows with no entity name or unparseable date cannot be published; log for auditability.
+    console.warn(`SPK: dropped ${dropped}/${built.length} records (missing entity name or date)`);
+  }
+  return kept.sort((left, right) => right.dateIssued.localeCompare(left.dateIssued));
 }
 
 export async function loadSpkLiveRecords(): Promise<DbReadyRecord[]> {

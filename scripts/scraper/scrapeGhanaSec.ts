@@ -92,7 +92,8 @@ export function buildGhanaSecRecord(row: GhanaSecRow): DbReadyRecord {
     regulatorFullName: "Securities and Exchange Commission, Ghana",
     countryCode: "GH",
     countryName: "Ghana",
-    firmIndividual: row.company,
+    // Some table rows carry a leading footnote marker (e.g. "*Gold Rock…").
+    firmIndividual: row.company.replace(/^[*†‡\s]+/, ""),
     firmCategory: "Licensed Entity",
     amount: null,
     currency: "GHS",

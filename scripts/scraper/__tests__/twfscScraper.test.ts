@@ -70,4 +70,17 @@ describe("TWFSC scraper", () => {
     const again = buildTwfscRecord(rows[0], 240000);
     expect(again.contentHash).toBe(record.contentHash);
   });
+
+  it("rejects disqualifying context BETWEEN the fine keyword and the figure", () => {
+    // Reviewer-confirmed false-positive cases: the disqualifier sits inside the
+    // matched span, after the keyword. All three must fail toward null.
+    const cases = [
+      "The fine relates to the mediation amount of NT$9,000,000 recorded earlier.",
+      "Regarding the fine, the compensation of NT$8,000,000 was ordered separately.",
+      "The penalty was set considering turnover of NT$12,000,000 in that period.",
+    ];
+    for (const body of cases) {
+      expect(parseTwfscAmountFromDetail(`<html><body><p>${body}</p></body></html>`), body).toBeNull();
+    }
+  });
 });

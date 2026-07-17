@@ -118,10 +118,14 @@ export function parseTwfscAmountFromDetail(html: string): number | null {
 
   const amounts: number[] = [];
   for (const match of text.matchAll(pattern)) {
-    // Guard against a fine keyword that sits in the same clause as a
-    // disqualifying figure (e.g. a "mediation" amount described just before).
-    const window = text.slice(Math.max(0, match.index - 60), match.index);
-    if (TWFSC_DISQUALIFYING_CONTEXT.test(window)) {
+    // Guard against disqualifying context BOTH just before the keyword and
+    // inside the matched span itself ("the fine relates to the mediation
+    // amount of NT$X" puts the disqualifier between keyword and figure).
+    const before = text.slice(Math.max(0, match.index - 60), match.index);
+    if (
+      TWFSC_DISQUALIFYING_CONTEXT.test(before) ||
+      TWFSC_DISQUALIFYING_CONTEXT.test(match[0])
+    ) {
       continue;
     }
 

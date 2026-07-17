@@ -19,6 +19,7 @@ import "dotenv/config";
 import { parse } from "csv-parse/sync";
 import { fileURLToPath } from "node:url";
 import {
+  makeAbsoluteUrl,
   buildEuFineRecord,
   fetchText,
   getCliFlags,
@@ -146,7 +147,11 @@ export function buildFrbRecord(row: FrbCsvRow): DbReadyRecord | null {
 
   const action = normalizeWhitespace(row.action) || "Enforcement action";
   const amount = parseFrbAmount(row.action);
-  const url = normalizeWhitespace(row.url) || null;
+  // The FRB CSV mixes absolute and relative notice URLs; a relative one stored
+  // raw resolves against regactions.com and 404s. Absolutize before storing
+  // AND before hashing so a later absolute re-serve doesn't duplicate the row.
+  const rawUrl = normalizeWhitespace(row.url);
+  const url = rawUrl ? makeAbsoluteUrl(FRB_SOURCE_URL, rawUrl) : null;
 
   return buildEuFineRecord({
     regulator: "FRB",
