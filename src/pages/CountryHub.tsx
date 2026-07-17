@@ -824,7 +824,7 @@ export function CountryHub() {
                 <p className="cx-regf__fiu">
                   <span className="cx-regf__fiu-k">FIU</span>{" "}
                   {egmont
-                    ? `Egmont Group member${egmont.fiu ? ` (${egmont.fiu})` : ""}`
+                    ? `Egmont Group member${egmont.fiu ? ` (${egmont.fiu})` : ""}${egmont.suspended ? " · suspended since Oct 2023" : ""}`
                     : "Not an Egmont Group member"}
                 </p>
               </div>

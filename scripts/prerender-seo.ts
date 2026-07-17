@@ -421,7 +421,7 @@ function renderCountryFatfBody(view: CountryView): string {
   const egmont = getEgmontMember(country.iso2);
   const fiuHtml = `<p>${escapeHtml(
     egmont
-      ? `FIU: Egmont Group member${egmont.fiu ? ` (${egmont.fiu})` : ""}`
+      ? `FIU: Egmont Group member${egmont.fiu ? ` (${egmont.fiu})` : ""}${egmont.suspended ? " · suspended since Oct 2023" : ""}`
       : "FIU: Not an Egmont Group member",
   )}</p>`;
   const regulatoryHtml = `<h2>Regulators and legal framework</h2><h3>FATF network</h3><p>${escapeHtml(

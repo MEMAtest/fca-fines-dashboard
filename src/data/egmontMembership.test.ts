@@ -53,4 +53,15 @@ describe("Egmont Group FIU membership", () => {
     expect(EGMONT_REVIEWED).toMatch(/^\d{4}-\d{2}-\d{2}$/);
     expect(EGMONT_SOURCE_URL).toMatch(/^https:\/\/egmontgroup\.org\//);
   });
+
+  it("flags Russia's Rosfinmonitoring as suspended (Egmont, 18 Oct 2023)", () => {
+    const ru = getEgmontMember("RU");
+    expect(ru).toBeDefined();
+    expect(ru?.suspended).toBe(true);
+    // No other member is currently suspended.
+    const others = egmontMemberIso2().filter((c) => c !== "RU");
+    for (const c of others) {
+      expect(getEgmontMember(c)?.suspended, c).not.toBe(true);
+    }
+  });
 });

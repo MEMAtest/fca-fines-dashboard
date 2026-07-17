@@ -30,6 +30,8 @@ export interface EgmontMember {
   iso2: string;
   /** FIU name or acronym, where cheaply extractable from the directory. */
   fiu?: string;
+  /** Membership currently suspended (e.g. Russia's Rosfinmonitoring, Oct 2023). */
+  suspended?: boolean;
 }
 
 /**
@@ -97,7 +99,7 @@ export const EGMONT_MEMBERS: EgmontMember[] = [
   { iso2: "BY", fiu: "DFM" },
   { iso2: "KZ", fiu: "CFM" },
   { iso2: "KG", fiu: "FIS" },
-  { iso2: "RU", fiu: "Rosfinmonitoring" },
+  { iso2: "RU", fiu: "Rosfinmonitoring", suspended: true }, // suspended by Egmont 18 Oct 2023
   { iso2: "TJ", fiu: "FMD" },
   { iso2: "TM", fiu: "FMS" },
   { iso2: "UZ" },
