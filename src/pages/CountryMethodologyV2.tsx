@@ -17,7 +17,7 @@ export function CountryMethodologyV2() {
     <div className="cx-method">
       <Link to="/countries" className="country-hub__back"><ArrowLeft size={16} /> Countries</Link>
       <header className="cx-method__header">
-        <span className="cx-v2__eyebrow">Methodology {COUNTRY_RISK_METHODOLOGY_VERSION} · parallel validation</span>
+        <span className="cx-v2__eyebrow">Methodology {COUNTRY_RISK_METHODOLOGY_VERSION}{SANCTIONS_APPROVED_SNAPSHOT.coverageComplete ? "" : " · parallel validation"}</span>
         <h1 className="cx-method__title">Trusted Country Risk Score v2</h1>
         <p className="cx-method__lead">
           A deterministic benchmark of inherent jurisdictional AML/CFT, governance and sanctions

@@ -42,7 +42,9 @@ export default function handler(req: VercelRequest, res: VercelResponse) {
       taxonomy: SANCTIONS_TIER_RULES,
       catalogueCoverage: SANCTIONS_CATALOGUE_COVERAGE,
       candidates: SANCTIONS_REGIME_CANDIDATES,
-      remainingGate: "Independent compliance approval of each country nexus and proposed tier against the linked official measure evidence.",
+      remainingGate: SANCTIONS_APPROVED_SNAPSHOT.coverageComplete
+        ? "None. The approved snapshot drives scoring; catalogue drift detected by the four-source assurance run re-opens review."
+        : "Independent compliance approval of each country nexus and proposed tier against the linked official measure evidence.",
     },
   });
 }
