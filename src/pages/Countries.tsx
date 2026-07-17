@@ -368,6 +368,19 @@ function OverviewTab({
     return { black, grey };
   }, [index]);
   const regionStats = useMemo(() => regionalAverages(), []);
+  const [findQ, setFindQ] = useState("");
+  const findMatches = useMemo(() => {
+    const q = findQ.trim().toLowerCase();
+    if (!q) return [];
+    return index
+      .filter(
+        (e) =>
+          e.country.name.toLowerCase().includes(q) ||
+          e.country.iso2.toLowerCase() === q ||
+          e.country.iso3.toLowerCase() === q,
+      )
+      .slice(0, 6);
+  }, [index, findQ]);
   const added = FATF_RECENT_CHANGES.filter((c) => c.change === "added");
   const removed = FATF_RECENT_CHANGES.filter((c) => c.change === "removed");
   const nameOf = (iso2: string) => getCountryByIso2(iso2)?.name ?? iso2;
@@ -422,6 +435,59 @@ function OverviewTab({
                     <span className={`cx-dist__dot cx-dist__dot--${d.band}`} />
                     {bandLabel(d.band)}
                     <span className="cx-dist__n">{d.n} ({pct(d.n)}%)</span>
+                  </button>
+                </li>
+              ))}
+            </ul>
+          </div>
+
+          {/* Quick jump to a country report */}
+          <div className="mon-panel cx-ovfind">
+            <h3>Find a country</h3>
+            <input
+              type="search"
+              className="cx-ovfind__input"
+              placeholder="Search 211 jurisdictions…"
+              value={findQ}
+              onChange={(e) => setFindQ(e.target.value)}
+              aria-label="Search for a country report"
+            />
+            {findQ.trim() && (
+              <ul className="cx-ovfind__list">
+                {findMatches.length === 0 && (
+                  <li className="cx-ovfind__none">No match for &ldquo;{findQ.trim()}&rdquo;</li>
+                )}
+                {findMatches.map((e) => (
+                  <li key={e.country.iso2}>
+                    <Link to={`/countries/${countrySlug(e.country)}`} className="cx-ovfind__row">
+                      <span aria-hidden="true">{e.flag}</span>
+                      <span className="cx-ovfind__name">{e.country.name}</span>
+                      {e.score !== null ? (
+                        <span className={`country-ratings__score country-ratings__score--${e.band}`}>
+                          {e.score.toFixed(1)}
+                        </span>
+                      ) : (
+                        <span className="cx-ovfind__nr">Not rated</span>
+                      )}
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </div>
+
+          {/* Regional averages — click a region to drill into its list */}
+          <div className="mon-panel">
+            <h3>Average score by region</h3>
+            <ul className="cx-region-bars">
+              {[...regionStats].sort((a, b) => b.avg - a.avg).map((r) => (
+                <li key={r.region}>
+                  <button type="button" className="cx-drill" onClick={() => onRegion(r.region)}>
+                    <span className="cx-region-bars__label">{r.region}</span>
+                    <span className="cx-region-bars__track">
+                      <span className="cx-region-bars__fill" style={{ width: `${(r.avg / 10) * 100}%`, background: BAND_COLOUR[bandFor(r.avg)] }} />
+                    </span>
+                    <span className="cx-region-bars__val">{r.avg.toFixed(1)}</span>
                   </button>
                 </li>
               ))}
