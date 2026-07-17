@@ -223,10 +223,14 @@ export interface RegulatorTopFine {
 /**
  * Top enforcement actions for a single regulator, largest-first. Used by the
  * pre-render step to bake a static, crawlable fines table into each regulator
- * hub page (the live fines list is otherwise client-only). Filters on the
- * `regulator` column, whose stored value is the canonical regulator code
- * (e.g. "FCA", "BaFin"). Returns [] on any error so callers can fall back to
- * the DB-less hub body.
+ * hub page (the live fines list is otherwise client-only). Reads the canonical
+ * evidence view (`all_regulatory_fines_canonical`), which spans every live
+ * regulator — FCA, the EU/global scrapers, and the pipeline regulators once
+ * promoted — filtering on the `regulator` column whose stored value is the
+ * canonical regulator code (e.g. "FCA", "BaFin", "SPK"). `amount_gbp` is the
+ * house-normalised GBP amount, matching the hub table's "normalised to GBP"
+ * label. Returns [] on any error so callers can fall back to the DB-less hub
+ * body.
  */
 export async function getRegulatorTopFines(
   regulatorCode: string,
@@ -236,11 +240,13 @@ export async function getRegulatorTopFines(
   const clamped = Math.max(1, Math.min(limit, 100));
   const rows = (await sql(
     `
-      SELECT firm_individual, regulator, final_notice_url, breach_type,
-             amount, date_issued::text AS date_issued
-      FROM fca_fines
-      WHERE regulator = $1 AND amount IS NOT NULL
-      ORDER BY amount DESC, date_issued DESC
+      SELECT firm_individual, regulator,
+             COALESCE(NULLIF(notice_url, ''), NULLIF(source_url, '')) AS notice_url,
+             breach_type,
+             amount_gbp AS amount, date_issued::text AS date_issued
+      FROM all_regulatory_fines_canonical
+      WHERE regulator = $1 AND amount_gbp IS NOT NULL
+      ORDER BY amount_gbp DESC, date_issued DESC
       LIMIT $2
     `,
     [regulatorCode, clamped],
@@ -252,7 +258,7 @@ export async function getRegulatorTopFines(
     amount: Number(row.amount) || 0,
     currency: "",
     breach: row.breach_type ? String(row.breach_type) : null,
-    sourceUrl: row.final_notice_url ? String(row.final_notice_url) : null,
+    sourceUrl: row.notice_url ? String(row.notice_url) : null,
   }));
 }
 

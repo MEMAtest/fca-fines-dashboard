@@ -46,8 +46,16 @@ describe("regulatorCoverage", () => {
     expect(PUBLIC_REGULATOR_CODES).toContain("CMVM");
     expect(PUBLIC_REGULATOR_CODES).not.toContain("ESMA");
     expect(PUBLIC_REGULATOR_CODES).toContain("CVM");
-    expect(PUBLIC_REGULATOR_CODES).not.toContain("FDIC");
-    expect(PUBLIC_REGULATOR_CODES).not.toContain("FRB");
+    // Wave F3 go-live: nine scraper-ready regulators promoted to live.
+    expect(PUBLIC_REGULATOR_CODES).toContain("FRB");
+    expect(PUBLIC_REGULATOR_CODES).toContain("FDIC");
+    expect(PUBLIC_REGULATOR_CODES).toContain("SPK");
+    expect(PUBLIC_REGULATOR_CODES).toContain("TWFSC");
+    expect(PUBLIC_REGULATOR_CODES).toContain("GHSEC");
+    expect(PUBLIC_REGULATOR_CODES).toContain("IOMFSA");
+    expect(PUBLIC_REGULATOR_CODES).toContain("AMMC");
+    expect(PUBLIC_REGULATOR_CODES).toContain("CNV");
+    expect(PUBLIC_REGULATOR_CODES).toContain("FSS");
   });
 
   it("keeps blog generation limited to live enabled regulators", () => {
@@ -109,7 +117,11 @@ describe("regulatorCoverage", () => {
     expect(hasPublicRegulatorHub("SC")).toBe(true);
     expect(hasPublicRegulatorHub("CMVM")).toBe(true);
     expect(hasPublicRegulatorHub("CVM")).toBe(true);
-    expect(hasPublicRegulatorHub("FDIC")).toBe(false);
+    expect(hasPublicRegulatorHub("FDIC")).toBe(true);
+    expect(hasPublicRegulatorHub("FRB")).toBe(true);
+    expect(hasPublicRegulatorHub("SPK")).toBe(true);
+    expect(hasPublicRegulatorHub("TWFSC")).toBe(true);
+    expect(hasPublicRegulatorHub("IOMFSA")).toBe(true);
     expect(hasPublicRegulatorHub("ESMA")).toBe(false);
   });
 
@@ -130,7 +142,10 @@ describe("regulatorCoverage", () => {
     expect(isValidRegulatorCode("FINCEN")).toBe(true);
     expect(isValidRegulatorCode("FINRA")).toBe(true);
     expect(isValidRegulatorCode("SC")).toBe(true);
-    expect(isValidRegulatorCode("FDIC")).toBe(false);
+    expect(isValidRegulatorCode("FDIC")).toBe(true);
+    expect(isValidRegulatorCode("FRB")).toBe(true);
+    expect(isValidRegulatorCode("SPK")).toBe(true);
+    expect(isValidRegulatorCode("TWFSC")).toBe(true);
     expect(isValidRegulatorCode("ESMA")).toBe(false);
   });
 
@@ -177,8 +192,15 @@ describe("regulatorCoverage", () => {
     expect(getRegulatorCoverage("SESC")?.stage).toBe("live");
     expect(getRegulatorCoverage("FINRA")?.stage).toBe("live");
     expect(getRegulatorCoverage("OCC")?.stage).toBe("live");
-    expect(getRegulatorCoverage("FDIC")?.stage).toBe("pipeline");
-    expect(getRegulatorCoverage("FRB")?.stage).toBe("pipeline");
+    expect(getRegulatorCoverage("FDIC")?.stage).toBe("live");
+    expect(getRegulatorCoverage("FRB")?.stage).toBe("live");
+    expect(getRegulatorCoverage("SPK")?.stage).toBe("live");
+    expect(getRegulatorCoverage("TWFSC")?.stage).toBe("live");
+    expect(getRegulatorCoverage("GHSEC")?.stage).toBe("live");
+    expect(getRegulatorCoverage("IOMFSA")?.stage).toBe("live");
+    expect(getRegulatorCoverage("AMMC")?.stage).toBe("live");
+    expect(getRegulatorCoverage("CNV")?.stage).toBe("live");
+    expect(getRegulatorCoverage("FSS")?.stage).toBe("live");
     expect(getRegulatorCoverage("OSC")?.stage).toBe("live");
     expect(getRegulatorCoverage("CVM")?.stage).toBe("live");
     expect(getRegulatorCoverage("CONSOB")?.stage).toBe("pipeline");
@@ -237,10 +259,12 @@ describe("regulatorCoverage", () => {
       "JFSC",
       "CIRO",
       "FINMA",
+      "FDIC",
       "FMAAT",
       "CMVM",
       "MFSA",
       "AUSTRAC",
+      "IOMFSA",
     ]);
     expect(FRAGILE_LIVE_REGULATOR_CODES).toEqual(
       LOWER_CONFIDENCE_LIVE_REGULATOR_CODES,
@@ -253,6 +277,17 @@ describe("regulatorCoverage", () => {
     expect(DAILY_LIVE_REGULATOR_CODES).toContain("OSC");
     expect(DAILY_LIVE_REGULATOR_CODES).toContain("SFC");
     expect(DAILY_LIVE_REGULATOR_CODES).toContain("SC");
+    // Wave F3: stable HTTP/JSON/CSV feeds join the daily lane.
+    expect(DAILY_LIVE_REGULATOR_CODES).toContain("SPK");
+    expect(DAILY_LIVE_REGULATOR_CODES).toContain("FRB");
+    expect(DAILY_LIVE_REGULATOR_CODES).toContain("TWFSC");
+    expect(DAILY_LIVE_REGULATOR_CODES).toContain("GHSEC");
+    expect(DAILY_LIVE_REGULATOR_CODES).toContain("AMMC");
+    expect(DAILY_LIVE_REGULATOR_CODES).toContain("CNV");
+    expect(DAILY_LIVE_REGULATOR_CODES).toContain("FSS");
+    // Browser-rendered F3 feeds run in the fragile lane, not daily.
+    expect(DAILY_LIVE_REGULATOR_CODES).not.toContain("IOMFSA");
+    expect(DAILY_LIVE_REGULATOR_CODES).not.toContain("FDIC");
     expect(DAILY_LIVE_REGULATOR_CODES).not.toContain("DFSA");
     expect(DAILY_LIVE_REGULATOR_CODES).not.toContain("FMAAT");
     expect(DAILY_LIVE_REGULATOR_CODES).not.toContain("FINMA");
@@ -289,7 +324,7 @@ describe("regulatorCoverage", () => {
   });
 
   it("keeps global targets in pipeline until their datasets are genuinely live", () => {
-    ["CMASA", "FSCA", "CSRC", "FDIC", "FRB"].forEach((code) => {
+    ["CMASA", "FSCA", "CSRC"].forEach((code) => {
       expect(PUBLIC_REGULATOR_CODES).not.toContain(code);
       expect(getRegulatorCoverage(code)?.stage).toBe("pipeline");
     });
@@ -309,13 +344,16 @@ describe("regulatorCoverage", () => {
     expect(getRegulatorCoverage("fincen")?.latestYear).toBe(2026);
     expect(getRegulatorCoverage("sc")?.country).toBe("Malaysia");
     expect(getRegulatorCoverage("sc")?.count).toBe(88);
-    expect(getRegulatorCoverage("fdic")?.dashboardEnabled).toBe(false);
-    expect(getRegulatorCoverage("frb")?.dashboardEnabled).toBe(false);
+    // Wave F3: FDIC and FRB ingested and promoted live with dashboards enabled.
+    expect(getRegulatorCoverage("fdic")?.dashboardEnabled).toBe(true);
+    expect(getRegulatorCoverage("fdic")?.stage).toBe("live");
+    expect(getRegulatorCoverage("frb")?.dashboardEnabled).toBe(true);
+    expect(getRegulatorCoverage("frb")?.stage).toBe("live");
     expect(getRegulatorCoverage("fsca")?.region).toBe("Africa");
   });
 
   it("keeps the wider global set queued alongside the new Canada regulator", () => {
-    ["TWFSC", "CNBV", "CMF"].forEach((code) => {
+    ["CNBV", "CMF"].forEach((code) => {
       expect(PUBLIC_REGULATOR_CODES).not.toContain(code);
       expect(getRegulatorCoverage(code)?.stage).toBe("pipeline");
     });
@@ -323,6 +361,9 @@ describe("regulatorCoverage", () => {
     expect(PUBLIC_REGULATOR_CODES).toContain("CVM");
     expect(getRegulatorCoverage("CVM")?.stage).toBe("live");
     expect(getRegulatorCoverage("CVM")?.count).toBe(557);
+    // Wave F3: TWFSC ingested and promoted live.
+    expect(PUBLIC_REGULATOR_CODES).toContain("TWFSC");
+    expect(getRegulatorCoverage("twfsc")?.stage).toBe("live");
     expect(getRegulatorCoverage("twfsc")?.country).toBe("Taiwan");
     expect(getRegulatorCoverage("cvm")?.country).toBe("Brazil");
     expect(getRegulatorCoverage("cvm")?.count).toBe(557);
