@@ -42,7 +42,14 @@ export const FATF_LAST_PLENARY = "2026-06-19";
 export const FATF_VERIFIED_AT = "2026-07-16";
 /** SHA-256 of the official page HTML retained by the latest verification run. */
 export const FATF_LIST_SHA256 = "844e7892b6c6589aca8648f9f24ea907473357e43e20181fc8478adae61de531";
-export const FATF_NEXT_PLENARY = "2026-10"; // October 2026 plenary (approx.)
+export const FATF_NEXT_PLENARY = "2026-10"; // October 2026 plenary (month precision)
+/**
+ * Scheduled start of the next FATF plenary, for the live countdown. The October
+ * 2026 plenary is scheduled for 26-30 October 2026 (Paris, first under the UK
+ * Presidency), confirmed on the FATF events calendar:
+ *   https://www.fatf-gafi.org/en/calendars/events.html
+ */
+export const FATF_NEXT_PLENARY_START = "2026-10-26";
 export const FATF_SOURCE_URL =
   "https://www.fatf-gafi.org/en/countries/black-and-grey-lists.html";
 
@@ -100,13 +107,83 @@ export function isFatfUpdatedThisCycle(iso2: string): boolean {
   return FATF_UPDATED_THIS_CYCLE.includes(iso2.toUpperCase());
 }
 
-/** Most recent plenary changes — powers the "recent changes" / status-history content. */
+/**
+ * Most recent (current-cycle) plenary changes — powers the "this cycle" added /
+ * removed content and the "New" badge. Kept scoped to the LATEST plenary so the
+ * "newly added / removed this cycle" semantics stay honest; the full multi-cycle
+ * history lives in FATF_CHANGE_LOG below.
+ */
 export const FATF_RECENT_CHANGES: FatfChange[] = [
   { date: "2026-06-19", iso2: "IQ", change: "added", listing: "increased-monitoring" },
   { date: "2026-06-19", iso2: "BA", change: "added", listing: "increased-monitoring" },
   { date: "2026-06-19", iso2: "DZ", change: "removed", listing: "increased-monitoring" }, // Algeria
   { date: "2026-06-19", iso2: "NA", change: "removed", listing: "increased-monitoring" }, // Namibia
 ];
+
+/**
+ * Multi-cycle plenary change-log — drives the tracker's change-log section.
+ * Newest-first. Every prior cycle below was verified against the official FATF
+ * plenary-outcome and increased-monitoring pages (URLs cited); changes are not
+ * inferred from secondary summaries alone.
+ *
+ * Paris plenary, 17-19 June 2026 (added Iraq + Bosnia & Herzegovina; removed
+ * Algeria + Namibia; grey list = 22):
+ *   https://www.fatf-gafi.org/en/publications/Fatfgeneral/outcomes-fatf-plenary-june-2026.html
+ *
+ * Plenary, 9-13 February 2026 (added Kuwait + Papua New Guinea; no removals) —
+ * increased-monitoring statement dated 13 Feb 2026:
+ *   https://www.fatf-gafi.org/en/publications/High-risk-and-other-monitored-jurisdictions/increased-monitoring-february-2026.html
+ *
+ * Plenary, 22-24 October 2025 (removed Burkina Faso, Mozambique, Nigeria and
+ * South Africa; no additions) — statement dated 24 Oct 2025:
+ *   https://www.fatf-gafi.org/en/publications/High-risk-and-other-monitored-jurisdictions/increased-monitoring-october-2025.html
+ *   https://www.fatf-gafi.org/en/publications/Fatfgeneral/outcomes-FATF-plenary-october-2025.html
+ */
+export const FATF_CHANGE_LOG: FatfChange[] = [
+  ...FATF_RECENT_CHANGES,
+  // Plenary, 9-13 February 2026.
+  { date: "2026-02-13", iso2: "KW", change: "added", listing: "increased-monitoring" }, // Kuwait
+  { date: "2026-02-13", iso2: "PG", change: "added", listing: "increased-monitoring" }, // Papua New Guinea
+  // Plenary, 22-24 October 2025.
+  { date: "2025-10-24", iso2: "BF", change: "removed", listing: "increased-monitoring" }, // Burkina Faso
+  { date: "2025-10-24", iso2: "MZ", change: "removed", listing: "increased-monitoring" }, // Mozambique
+  { date: "2025-10-24", iso2: "NG", change: "removed", listing: "increased-monitoring" }, // Nigeria
+  { date: "2025-10-24", iso2: "ZA", change: "removed", listing: "increased-monitoring" }, // South Africa
+];
+
+/** A grouped plenary cycle for the change-log UI (newest-first). */
+export interface FatfPlenaryCycle {
+  /** Plenary end date (ISO). */
+  date: string;
+  /** Human label, e.g. "June 2026 plenary". */
+  label: string;
+  added: FatfChange[];
+  removed: FatfChange[];
+}
+
+/** Group FATF_CHANGE_LOG by plenary date, newest-first, for the change-log. */
+export function fatfChangesByCycle(): FatfPlenaryCycle[] {
+  const byDate = new Map<string, FatfChange[]>();
+  for (const c of FATF_CHANGE_LOG) {
+    const arr = byDate.get(c.date) ?? [];
+    arr.push(c);
+    byDate.set(c.date, arr);
+  }
+  const monthName = (iso: string) =>
+    new Date(`${iso}T00:00:00Z`).toLocaleDateString("en-GB", {
+      month: "long",
+      year: "numeric",
+      timeZone: "UTC",
+    });
+  return [...byDate.entries()]
+    .sort((a, b) => (a[0] < b[0] ? 1 : -1))
+    .map(([date, changes]) => ({
+      date,
+      label: `${monthName(date)} plenary`,
+      added: changes.filter((c) => c.change === "added"),
+      removed: changes.filter((c) => c.change === "removed"),
+    }));
+}
 
 // ── Accessors ────────────────────────────────────────────────────────────────
 

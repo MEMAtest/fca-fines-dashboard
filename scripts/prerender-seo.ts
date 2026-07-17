@@ -72,6 +72,8 @@ import {
 } from "../src/data/countryView.js";
 import { sanctionsTierLabel } from "../src/data/sanctionsStatus.js";
 import { SANCTIONS_APPROVED_SNAPSHOT } from "../src/data/sanctionsApprovedData.js";
+import { isEuTaxListed } from "../src/data/euTaxList.js";
+import { getEgmontMember } from "../src/data/egmontMembership.js";
 import { getNarrative } from "../src/data/countryNarratives.js";
 import {
   bandLabel,
@@ -92,6 +94,7 @@ import {
   FATF_NEXT_PLENARY,
   FATF_SOURCE_URL,
   FATF_RECENT_CHANGES,
+  fatfChangesByCycle,
   type FatfStatus,
 } from "../src/data/fatfStatus.js";
 
@@ -391,6 +394,9 @@ function renderCountryFatfBody(view: CountryView): string {
           .join("")}</ul>`
       : `<p>Regulator profiles not yet available on RegActions.</p>`;
   const ruleOfLawDomain = breakdown.domains.find((d) => d.key === "ruleOfLaw");
+  const euTaxLi = isEuTaxListed(country.iso2)
+    ? `<li>${escapeHtml("EU tax list: Listed (Annex I)")}</li>`
+    : "";
   const frameworkSignalsHtml = `<ul><li>${escapeHtml(
     `FATF listing: ${statusHeading}`,
   )}</li><li>${escapeHtml(
@@ -403,7 +409,7 @@ function renderCountryFatfBody(view: CountryView): string {
           ? `${sanctionsTierLabel(sanctionsTier).toLowerCase()} exposure`
           : "no listed programme identified"
     }`,
-  )}</li><li>${escapeHtml(
+  )}</li>${euTaxLi}<li>${escapeHtml(
     cpi
       ? `Corruption (CPI ${CPI_YEAR}): ${cpi.score}/100, rank #${cpi.rank} of ${CPI_TOTAL}`
       : "Corruption (CPI): no score",
@@ -412,9 +418,15 @@ function renderCountryFatfBody(view: CountryView): string {
       ? `Rule of law (WGI): ${ruleOfLawDomain.risk.toFixed(1)}/10 risk`
       : "Rule of law (WGI): no data",
   )}</li></ul>`;
+  const egmont = getEgmontMember(country.iso2);
+  const fiuHtml = `<p>${escapeHtml(
+    egmont
+      ? `FIU: Egmont Group member${egmont.fiu ? ` (${egmont.fiu})` : ""}`
+      : "FIU: Not an Egmont Group member",
+  )}</p>`;
   const regulatoryHtml = `<h2>Regulators and legal framework</h2><h3>FATF network</h3><p>${escapeHtml(
     fatfNetworkLine,
-  )}.</p>${fsrbListHtml}<h3>National regulators</h3>${regulatorsHtml}<h3>Framework signals</h3>${frameworkSignalsHtml}`;
+  )}.</p>${fsrbListHtml}<h3>National regulators</h3>${regulatorsHtml}${fiuHtml}<h3>Framework signals</h3>${frameworkSignalsHtml}`;
   // Sector exposure: which sectors carry elevated financial-crime risk, derived
   // from the same sourced modules as the React card (mirrors CountryHub.tsx).
   const sectorHtml = `<h2>Sector exposure</h2><ul>${view.sectorExposure
@@ -473,6 +485,8 @@ function renderCountriesIndexBody(): string {
           `<li><a href="/countries/${countrySlug(c)}">${escapeHtml(c.name)}</a> — ${escapeHtml(c.region)}</li>`,
       )
       .join("");
+  const greyCount = FATF_STATUS.filter((s) => s.listing === "increased-monitoring").length;
+  const nameOf = (iso2: string) => getCountryByIso2(iso2)?.name ?? iso2;
   const added = FATF_RECENT_CHANGES.filter((c) => c.change === "added")
     .map((c) => getCountryByIso2(c.iso2)?.name)
     .filter(Boolean)
@@ -481,16 +495,63 @@ function renderCountriesIndexBody(): string {
     .map((c) => getCountryByIso2(c.iso2)?.name)
     .filter(Boolean)
     .join(", ");
+  // "As of" trust line — mirrors the React tracker header.
+  const asOfHtml = `<p><strong>${greyCount}</strong> ${escapeHtml(
+    `jurisdictions under increased monitoring · as of ${formatDate(FATF_LAST_PLENARY)} · next FATF plenary ${formatDate(FATF_NEXT_PLENARY)}`,
+  )}</p>`;
+  // Multi-cycle plenary change-log — mirrors the React tracker change-log.
+  const changeLogHtml = `<h2>Plenary change-log</h2><ul>${fatfChangesByCycle()
+    .map((cy) => {
+      const addedNames = cy.added.map((c) => nameOf(c.iso2)).join(", ");
+      const removedNames = cy.removed.map((c) => nameOf(c.iso2)).join(", ");
+      const parts = [
+        addedNames ? `added ${addedNames}` : "",
+        removedNames ? `removed ${removedNames}` : "",
+      ]
+        .filter(Boolean)
+        .join("; ");
+      return `<li>${escapeHtml(`${cy.label} (${formatDate(cy.date)}): ${parts}.`)}</li>`;
+    })
+    .join("")}</ul>`;
+  // Dataset JSON-LD for the grey/black list (Google Dataset Search).
+  // Emitted here in the grey-list body only; the sibling owns the @graph/other
+  // schema functions. dateModified = plenary date; distribution → public API.
+  const datasetLd = {
+    "@context": "https://schema.org",
+    "@type": "Dataset",
+    name: `FATF Grey List & Black List ${FATF_LAST_PLENARY.slice(0, 4)}`,
+    description:
+      "FATF jurisdictions under increased monitoring (grey list) and subject to a call for action (black list), with recent plenary additions and removals.",
+    url: `${BASE_URL}/countries/fatf-grey-list`,
+    keywords: [
+      "FATF grey list",
+      "FATF black list",
+      "jurisdictions under increased monitoring",
+      "AML high-risk countries",
+      "FATF call for action",
+    ],
+    creator: { "@type": "Organization", name: SITE_NAME, url: BASE_URL },
+    dateModified: FATF_LAST_PLENARY,
+    isBasedOn: FATF_SOURCE_URL,
+    distribution: [
+      {
+        "@type": "DataDownload",
+        encodingFormat: "application/json",
+        contentUrl: `${BASE_URL}/api/country-risk/list`,
+      },
+    ],
+  };
+  const datasetScript = `<script type="application/ld+json">${JSON.stringify(datasetLd)}</script>`;
   return `<div class="blog-page"><div class="blog-post-container"><article class="blog-article-modal"><h1 class="blog-post-title">FATF Grey List &amp; Black List ${FATF_LAST_PLENARY.slice(
     0,
     4,
   )}</h1><div class="blog-article-content"><p>${escapeHtml(
     `FATF jurisdictions under increased monitoring (grey list) and subject to a call for action (black list), current as of the ${formatDate(FATF_LAST_PLENARY)} plenary.`,
-  )}</p>${added ? `<p><strong>Added:</strong> ${escapeHtml(added)}</p>` : ""}${
+  )}</p>${asOfHtml}${added ? `<p><strong>Added:</strong> ${escapeHtml(added)}</p>` : ""}${
     removed ? `<p><strong>Removed:</strong> ${escapeHtml(removed)}</p>` : ""
   }<h2>Black list — Call for Action</h2><ul>${rows("call-for-action")}</ul><h2>Grey list — Increased Monitoring</h2><ul>${rows(
     "increased-monitoring",
-  )}</ul><p><a href="${escapeHtml(FATF_SOURCE_URL)}" rel="noopener">Source: FATF black &amp; grey lists</a></p></div></article></div></div>`;
+  )}</ul>${changeLogHtml}<p><a href="${escapeHtml(FATF_SOURCE_URL)}" rel="noopener">Source: FATF black &amp; grey lists</a></p></div></article>${datasetScript}</div></div>`;
 }
 
 /** Crawlable body for the GLOBAL /countries index — every scored country, ranked. */
