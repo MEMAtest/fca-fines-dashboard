@@ -237,7 +237,7 @@ export async function getRegulatorTopFines(
   const rows = (await sql(
     `
       SELECT firm_individual, regulator, final_notice_url, breach_type,
-             amount, date_issued
+             amount, date_issued::text AS date_issued
       FROM fca_fines
       WHERE regulator = $1 AND amount IS NOT NULL
       ORDER BY amount DESC, date_issued DESC
@@ -285,7 +285,7 @@ export async function getFirmDetailsBySlug(
     `
       SELECT fine_reference, firm_individual, firm_category, regulator,
              final_notice_url, summary, breach_type, breach_categories,
-             amount, date_issued, year_issued, month_issued
+             amount, date_issued::text AS date_issued, year_issued, month_issued
       FROM fca_fines
       WHERE firm_individual = $1
       ORDER BY date_issued DESC, amount DESC
@@ -353,7 +353,7 @@ export async function getBreachDetailsBySlug(
   const penalties = (await sql(
     `SELECT fine_reference, firm_individual, firm_category, regulator,
              final_notice_url, summary, breach_type, breach_categories,
-             amount, date_issued, year_issued, month_issued
+             amount, date_issued::text AS date_issued, year_issued, month_issued
       FROM fca_fines
       WHERE breach_categories IS NOT NULL AND ${catFilter} ? $1
       ORDER BY amount DESC, date_issued DESC
@@ -433,7 +433,7 @@ export async function getSectorDetailsBySlug(
     `
       SELECT fine_reference, firm_individual, firm_category, regulator,
              final_notice_url, summary, breach_type, breach_categories,
-             amount, date_issued, year_issued, month_issued
+             amount, date_issued::text AS date_issued, year_issued, month_issued
       FROM fca_fines
       WHERE firm_category = $1
       ORDER BY amount DESC, date_issued DESC

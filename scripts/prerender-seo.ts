@@ -393,7 +393,7 @@ function renderRegulatorFinesTable(
       return `<tr><td>${firm}</td><td>${date}</td><td>${amount}</td><td>${breach}</td><td>${source}</td></tr>`;
     })
     .join("");
-  return `<h2>Largest enforcement actions</h2><table class="hub-fines-table"><thead><tr><th>Firm or individual</th><th>Date</th><th>Amount</th><th>Breach category</th><th>Source</th></tr></thead><tbody>${rows}</tbody></table>`;
+  return `<h2>Largest enforcement actions</h2><table class="hub-fines-table"><thead><tr><th>Firm or individual</th><th>Date</th><th>Amount</th><th>Breach category</th><th>Source</th></tr></thead><tbody>${rows}</tbody></table><p>Amounts are normalised to GBP for comparison.</p>`;
 }
 
 /**
@@ -1730,7 +1730,10 @@ async function buildPageMetas(): Promise<PageMeta[]> {
         path,
         code,
         regulatorTopFines.get(code) ?? [],
-        coverage.defaultCurrency,
+        // fca_fines.amount is normalised to GBP house-wide (the interactive view
+        // says "Normalised to GBP for comparison") — never label it with the
+        // regulator's native currency.
+        "GBP",
       ),
       extraJsonLd: [
         {
