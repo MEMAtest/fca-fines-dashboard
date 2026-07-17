@@ -32,7 +32,7 @@ const NOT_RATED_COLOUR = "#64748b";
 const LABEL_BG = "#0f172a";
 const BRAND = "RegActions";
 
-function escapeXml(value: string): string {
+export function escapeXml(value: string): string {
   return value
     .replace(/&/g, "&amp;")
     .replace(/</g, "&lt;")
@@ -92,6 +92,17 @@ function notFoundSvg(iso2: string): string {
   });
 }
 
+
+/**
+ * Normalise the requested code: strip an optional .svg suffix, uppercase, and
+ * return null unless the result is a plausible ISO 3166-1 alpha-2 code — so
+ * hostile input never reaches the country lookup or the SVG output.
+ */
+export function parseBadgeIso2(raw: string): string | null {
+  const iso2 = raw.replace(/\.svg$/i, "").toUpperCase();
+  return /^[A-Z]{2}$/.test(iso2) ? iso2 : null;
+}
+
 export default function handler(req: VercelRequest, res: VercelResponse) {
   res.setHeader("Access-Control-Allow-Origin", "*");
   res.setHeader("Access-Control-Allow-Methods", "GET, OPTIONS");
@@ -102,16 +113,13 @@ export default function handler(req: VercelRequest, res: VercelResponse) {
     return res.status(405).json({ error: "Method not allowed" });
   }
 
-  const rawIso2 = String(req.query.iso2 ?? "").replace(/\.svg$/i, "");
-  const iso2 = rawIso2.toUpperCase();
+  const iso2 = parseBadgeIso2(String(req.query.iso2 ?? ""));
 
   res.setHeader("Content-Type", "image/svg+xml; charset=utf-8");
 
-  // Reject anything that is not a plausible ISO 3166-1 alpha-2 code before we
-  // touch the country lookup, so garbage never reaches the scoring path.
-  if (!/^[A-Z]{2}$/.test(iso2)) {
+  if (iso2 === null) {
     res.setHeader("Cache-Control", "public, max-age=300, s-maxage=3600");
-    return res.status(404).send(notFoundSvg(iso2 || "??"));
+    return res.status(404).send(notFoundSvg("??"));
   }
 
   const country = getCountryByIso2(iso2);

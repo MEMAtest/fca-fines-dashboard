@@ -138,7 +138,7 @@ export function Developers() {
           >
             <img
               src="/api/badge/GB.svg"
-              alt="United Kingdom AML risk rating — RegActions"
+              alt="United Kingdom AML risk rating by RegActions"
               height={20}
             />
           </a>{" "}
@@ -148,7 +148,7 @@ export function Developers() {
           >
             <img
               src="/api/badge/IR.svg"
-              alt="Iran AML risk rating — RegActions"
+              alt="Iran AML risk rating by RegActions"
               height={20}
             />
           </a>

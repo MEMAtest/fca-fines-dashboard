@@ -37,7 +37,7 @@ export const DEVELOPERS_LICENCE_URL =
 // dropped into any page with a plain <img> tag; the attribution link next to it
 // satisfies the CC BY-NC credit requirement.
 export const BADGE_EMBED_HTML = `<a href="https://regactions.com/countries" title="AML country risk rating by RegActions">
-  <img src="https://regactions.com/api/badge/GB.svg" alt="United Kingdom AML risk rating — RegActions" height="20" />
+  <img src="https://regactions.com/api/badge/GB.svg" alt="United Kingdom AML risk rating by RegActions" height="20" />
 </a>`;
 
 export const DEVELOPER_ENDPOINTS: ApiEndpoint[] = [
