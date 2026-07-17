@@ -26,6 +26,28 @@ export const EU_TAX_LIST_SOURCE_URL =
 /** Date of the Council update reflected in this data. */
 export const EU_TAX_LIST_REVIEWED = "2026-02-17";
 
+/**
+ * Genuine deltas of the 17 Feb 2026 Council update (per the press release):
+ * additions and removals only. Long-listed jurisdictions were re-confirmed,
+ * which is NOT a change and must not be presented as one.
+ */
+export const EU_TAX_LIST_CHANGES: {
+  date: string;
+  added: { iso2: string; name: string }[];
+  removed: { iso2: string; name: string }[];
+} = {
+  date: EU_TAX_LIST_REVIEWED,
+  added: [
+    { iso2: "VN", name: "Vietnam" },
+    { iso2: "TC", name: "Turks and Caicos Islands" },
+  ],
+  removed: [
+    { iso2: "FJ", name: "Fiji" },
+    { iso2: "WS", name: "Samoa" },
+    { iso2: "TT", name: "Trinidad and Tobago" },
+  ],
+};
+
 /** Next scheduled Council revision of the list. */
 export const EU_TAX_LIST_NEXT_REVIEW = "2026-10";
 

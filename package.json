@@ -123,7 +123,8 @@
     "generate:due": "node --import tsx/esm scripts/generateAllArticles.ts --due-within=14",
     "editorial:review": "node --import tsx/esm scripts/review-article.ts",
     "editorial:publish": "node --import tsx/esm scripts/approve-article.ts",
-    "editorial:correct:dekabank": "node --import tsx/esm scripts/corrections/fixDekaBank2026.ts"
+    "editorial:correct:dekabank": "node --import tsx/esm scripts/corrections/fixDekaBank2026.ts",
+    "alerts:migrate": "tsx scripts/run-migration.ts scripts/migrations/004_add_alert_topic.sql"
   },
   "dependencies": {
     "@aws-sdk/client-ses": "^3.969.0",

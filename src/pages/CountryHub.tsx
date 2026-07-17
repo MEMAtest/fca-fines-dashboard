@@ -11,6 +11,7 @@ import {
   Briefcase,
   CheckCircle2,
   ClipboardCheck,
+  Clock,
   Download,
   ExternalLink,
   Flag,
@@ -32,6 +33,11 @@ import { isEuTaxListed } from "../data/euTaxList.js";
 import { getEgmontMember } from "../data/egmontMembership.js";
 import { getFatfAssessmentLink } from "../data/fatfAssessmentLinks.js";
 import { getBoRegister, boRegisterSignal } from "../data/boRegisters.js";
+import {
+  recentChangesForCountry,
+  CHANGE_KIND_LABELS,
+  type ChangeKind,
+} from "../data/countryChanges.js";
 import { comparePairSlug } from "../data/countryCompare.js";
 import { bandLabel, bandFor, type RiskBand } from "../data/countryRiskScore.js";
 import { GOVERNANCE_VINTAGE } from "../data/governanceData.js";
@@ -442,6 +448,41 @@ export function CountryHub() {
       </Link>
     </div>
   );
+
+  // Recent developments — this country's last few tracked changes (FATF,
+  // sanctions, EU tax list, score moves). Honest empty: no card when none.
+  const recentDevelopments = recentChangesForCountry(country.iso2, 3);
+  const CHANGE_TAG_CLASS: Record<ChangeKind, string> = {
+    fatf: "cx-chg-tag--fatf",
+    sanctions: "cx-chg-tag--sanctions",
+    "eu-tax-list": "cx-chg-tag--eutax",
+    score: "cx-chg-tag--score",
+    fiu: "cx-chg-tag--fiu",
+    "bo-register": "cx-chg-tag--bo",
+  };
+  const recentDevCard = recentDevelopments.length > 0 ? (
+    <div className="cx-card cx-chg-card">
+      <span className="cx-card__eyebrow">
+        <Clock size={12} /> Recent developments
+      </span>
+      <ul className="cx-chg-card__list">
+        {recentDevelopments.map((event, i) => (
+          <li key={`${event.kind}-${i}`} className="cx-chg-card__item">
+            <div className="cx-chg-card__top">
+              <span className="cx-chg-card__date">{formatDate(event.date)}</span>
+              <span className={`cx-chg-card__tag cx-chg-tag ${CHANGE_TAG_CLASS[event.kind]}`}>
+                {CHANGE_KIND_LABELS[event.kind]}
+              </span>
+            </div>
+            <p className="cx-chg-card__title">{event.title}</p>
+          </li>
+        ))}
+      </ul>
+      <Link to="/countries/changes" className="cx-card__link">
+        All country-risk changes →
+      </Link>
+    </div>
+  ) : null;
 
   // Attributed indicators card — rendered in the right rail.
   const attrCard = (
@@ -959,6 +1000,8 @@ export function CountryHub() {
               View methodology →
             </Link>
           </div>
+
+          {recentDevCard}
 
           {attrCard}
 

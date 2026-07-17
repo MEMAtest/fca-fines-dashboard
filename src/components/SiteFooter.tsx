@@ -15,6 +15,7 @@ const EXPLORE_LINKS: Array<[string, string]> = [
   ["Regulator data hub", "/regulators"],
   ["Enforcement topics", "/topics"],
   ["FATF grey list", "/countries/fatf-grey-list"],
+  ["Country risk changes", "/countries/changes"],
   ["Scoring methodology", "/countries/methodology"],
   ["Free data API", "/developers"],
 ];

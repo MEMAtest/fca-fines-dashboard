@@ -2,10 +2,13 @@ import { readFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { dirname, join } from "node:path";
 import { describe, expect, it } from "vitest";
-import {buildFssRecords,
+import {
+  buildFssRecords,
   categorizeFssRow,
   parseFssDate,
-  parseFssListHtml,, canonicalizeFssDetailUrl } from "../scrapeFss.js";
+  parseFssListHtml,
+  canonicalizeFssDetailUrl,
+} from "../scrapeFss.js";
 
 const FIXTURE_DIR = join(dirname(fileURLToPath(import.meta.url)), "fixtures");
 const html = readFileSync(join(FIXTURE_DIR, "fss-sample.html"), "utf8");
