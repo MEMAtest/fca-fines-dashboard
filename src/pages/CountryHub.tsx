@@ -28,6 +28,8 @@ import {
 import { getCountryBySlug, countrySlug } from "../data/countries.js";
 import { getNarrative } from "../data/countryNarratives.js";
 import { FATF_SOURCE_URL } from "../data/fatfStatus.js";
+import { isEuTaxListed } from "../data/euTaxList.js";
+import { getEgmontMember } from "../data/egmontMembership.js";
 import { bandLabel, bandFor, type RiskBand } from "../data/countryRiskScore.js";
 import { GOVERNANCE_VINTAGE } from "../data/governanceData.js";
 import { CPI_YEAR, CPI_TOTAL } from "../data/cpiData.js";
@@ -257,9 +259,16 @@ export function CountryHub() {
       : sanctionsTier
         ? `${sanctionsTier.charAt(0).toUpperCase()}${sanctionsTier.slice(1)} exposure`
         : "No listed programme identified";
+  // EU tax blacklist (Annex I) — a licence-clean signal, shown only when listed.
+  const euTaxListed = isEuTaxListed(country.iso2);
+  // Egmont Group FIU membership — shown in the National-regulators column.
+  const egmont = getEgmontMember(country.iso2);
   const frameworkSignals: { label: string; value: string }[] = [
     { label: "FATF listing", value: statusHeading },
     { label: "Sanctions exposure", value: sanctionsSignal },
+    ...(euTaxListed
+      ? [{ label: "EU tax list", value: "Listed (Annex I)" }]
+      : []),
     {
       label: "Corruption (CPI)",
       value: cpi
@@ -812,6 +821,12 @@ export function CountryHub() {
                     Regulator profiles not yet available on RegActions.
                   </p>
                 )}
+                <p className="cx-regf__fiu">
+                  <span className="cx-regf__fiu-k">FIU</span>{" "}
+                  {egmont
+                    ? `Egmont Group member${egmont.fiu ? ` (${egmont.fiu})` : ""}${egmont.suspended ? " · suspended since Oct 2023" : ""}`
+                    : "Not an Egmont Group member"}
+                </p>
               </div>
 
               {/* Col 3: Framework signals */}

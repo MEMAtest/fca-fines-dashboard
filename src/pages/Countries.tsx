@@ -29,9 +29,11 @@ import {
   FATF_STATUS,
   FATF_LAST_PLENARY,
   FATF_NEXT_PLENARY,
+  FATF_NEXT_PLENARY_START,
   FATF_SOURCE_URL,
   FATF_RECENT_CHANGES,
   FATF_UPDATED_THIS_CYCLE,
+  fatfChangesByCycle,
   isFatfUpdatedThisCycle,
   fatfLabel,
   type FatfStatus,
@@ -1184,6 +1186,24 @@ const REGION_COLOUR: Record<string, string> = {
   "Offshore / IFC": "#94a3b8",
 };
 
+// Whole days from today (UTC) until an ISO date; negative once past.
+function daysUntil(iso: string): number {
+  const target = new Date(`${iso}T00:00:00Z`).getTime();
+  const now = Date.now();
+  return Math.ceil((target - now) / 86_400_000);
+}
+
+// Honest countdown phrasing. The plenary runs over several days and the exact
+// start can shift, so we say "expected" and never render a stale/negative count.
+function nextPlenaryChip(): string {
+  const label = formatDate(FATF_NEXT_PLENARY); // month precision, e.g. "Oct 2026"
+  const n = daysUntil(FATF_NEXT_PLENARY_START);
+  if (n > 1) return `Next plenary: expected ${label} · in ${n} days`;
+  if (n === 1) return `Next plenary: expected ${label} · tomorrow`;
+  if (n === 0) return `Next plenary: expected ${label} · today`;
+  return `Next plenary: expected ${label}`;
+}
+
 function MonitoringCard({ item }: { item: ListedCountry }) {
   const { country, fatf, isNew, isUpdated } = item;
   const black = fatf.listing === "call-for-action";
@@ -1223,6 +1243,7 @@ function FatfList() {
   const grey = listed.filter((l) => l.fatf.listing === "increased-monitoring");
   const added = FATF_RECENT_CHANGES.filter((c) => c.change === "added");
   const removed = FATF_RECENT_CHANGES.filter((c) => c.change === "removed");
+  const cycles = useMemo(fatfChangesByCycle, []);
   const nameOf = (iso2: string) => getCountryByIso2(iso2)?.name ?? iso2;
 
   const regions = useMemo(
@@ -1292,10 +1313,20 @@ function FatfList() {
         <div>
           <h1 className="mon__title">Country Monitoring Command Centre</h1>
           <p className="mon__subtitle">FATF-style AML/CFT monitoring lists and country risk status</p>
+          <p className="mon__asof">
+            <strong>{grey.length}</strong> jurisdictions under increased monitoring
+            {" · "}as of {formatDate(FATF_LAST_PLENARY)}
+            {" · "}next FATF plenary {formatDate(FATF_NEXT_PLENARY)}
+          </p>
         </div>
-        <button type="button" className="mon__download" onClick={downloadCsv}>
-          <Download size={16} /> Download report
-        </button>
+        <div className="mon__header-actions">
+          <span className="mon__countdown">
+            <Clock size={13} /> {nextPlenaryChip()}
+          </span>
+          <button type="button" className="mon__download" onClick={downloadCsv}>
+            <Download size={16} /> Download report
+          </button>
+        </div>
       </header>
 
       <div className="mon__kpis">
@@ -1402,6 +1433,38 @@ function FatfList() {
             <p className="mon-change mon-change--upd">
               <Clock size={14} /> <strong>Updated ({FATF_UPDATED_THIS_CYCLE.length})</strong>
               <span>{FATF_UPDATED_THIS_CYCLE.map(nameOf).join(", ")}</span>
+            </p>
+          </div>
+
+          <div className="mon-panel mon-changelog">
+            <h3>Plenary change-log</h3>
+            <ol className="mon-changelog__list">
+              {cycles.map((cy) => (
+                <li key={cy.date} className="mon-changelog__cycle">
+                  <div className="mon-changelog__head">
+                    <span className="mon-changelog__label">{cy.label}</span>
+                    <span className="mon-changelog__date">{formatDate(cy.date)}</span>
+                  </div>
+                  {cy.added.length > 0 && (
+                    <p className="mon-change mon-change--add">
+                      <Plus size={13} /> <strong>Added</strong>
+                      <span>{cy.added.map((c) => nameOf(c.iso2)).join(", ")}</span>
+                    </p>
+                  )}
+                  {cy.removed.length > 0 && (
+                    <p className="mon-change mon-change--rem">
+                      <Minus size={13} /> <strong>Removed</strong>
+                      <span>{cy.removed.map((c) => nameOf(c.iso2)).join(", ")}</span>
+                    </p>
+                  )}
+                </li>
+              ))}
+            </ol>
+            <p className="mon-changelog__src">
+              Verified against FATF plenary outcomes.{" "}
+              <a href={FATF_SOURCE_URL} target="_blank" rel="noopener noreferrer">
+                FATF black &amp; grey lists <ExternalLink size={11} />
+              </a>
             </p>
           </div>
 

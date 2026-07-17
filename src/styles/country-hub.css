@@ -514,12 +514,37 @@
 }
 .mon__title { font-size: 2rem; font-weight: 800; color: #0b1f2a; margin: 0; }
 .mon__subtitle { color: #6b7280; margin: 0.25rem 0 0; }
+.mon__asof {
+  margin: 0.55rem 0 0; font-size: 0.85rem; color: #334155;
+  display: inline-flex; align-items: center; flex-wrap: wrap; gap: 0.1rem;
+  padding: 0.35rem 0.7rem; background: #f1f5f9; border: 1px solid #e2e8f0; border-radius: 999px;
+}
+.mon__asof strong { color: #0b1f2a; }
+.mon__header-actions { display: flex; flex-direction: column; align-items: flex-end; gap: 0.5rem; }
+.mon__countdown {
+  display: inline-flex; align-items: center; gap: 0.4rem;
+  padding: 0.4rem 0.8rem; border-radius: 999px;
+  background: #eef6ff; border: 1px solid #cfe2fb; color: #1e5aa8;
+  font-size: 0.8rem; font-weight: 600; white-space: nowrap;
+}
+.mon__countdown svg { color: #2563eb; }
 .mon__download {
   display: inline-flex; align-items: center; gap: 0.4rem;
   padding: 0.55rem 1rem; border: 1px solid #0fa77d; border-radius: 10px;
   background: #fff; color: #0d7d70; font-weight: 600; cursor: pointer;
 }
 .mon__download:hover { background: #e0f7f5; }
+
+/* Plenary change-log (multi-cycle) */
+.mon-changelog__list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 0.85rem; }
+.mon-changelog__cycle { padding-bottom: 0.75rem; border-bottom: 1px solid #f1f5f9; }
+.mon-changelog__cycle:last-child { border-bottom: none; padding-bottom: 0; }
+.mon-changelog__head { display: flex; align-items: baseline; justify-content: space-between; gap: 0.5rem; margin-bottom: 0.4rem; }
+.mon-changelog__label { font-size: 0.82rem; font-weight: 700; color: #0b1f2a; }
+.mon-changelog__date { font-size: 0.72rem; color: #94a3b8; }
+.mon-changelog__cycle .mon-change { margin-bottom: 0.4rem; font-size: 0.8rem; }
+.mon-changelog__src { margin: 0.6rem 0 0; font-size: 0.72rem; color: #94a3b8; }
+.mon-changelog__src a { color: #1e5aa8; display: inline-flex; align-items: center; gap: 0.2rem; }
 
 .mon__kpis {
   display: grid; grid-template-columns: repeat(5, 1fr); gap: 0.75rem; margin-bottom: 1rem;
@@ -3260,6 +3285,8 @@ button.cx-kpi:hover {
 .cx-regf__sig li { display: flex; justify-content: space-between; gap: 0.6rem; align-items: baseline; }
 .cx-regf__sig-k { font-size: 0.72rem; color: #64748b; }
 .cx-regf__sig-v { font-size: 0.72rem; font-weight: 700; color: #334155; text-align: right; }
+.cx-regf__fiu { font-size: 0.72rem; color: #475569; margin: 0.45rem 0 0; line-height: 1.4; border-top: 1px solid #eef2f7; padding-top: 0.4rem; }
+.cx-regf__fiu-k { font-weight: 700; color: #0b1f2a; }
 
 /* Right rail */
 .cx-meth__intro { font-size: 0.76rem; color: #475569; margin: 0 0 0.6rem; line-height: 1.45; }
