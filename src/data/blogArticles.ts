@@ -136,6 +136,126 @@ export function isPublished(
 
 const baseBlogArticles: BlogArticleMeta[] = [
   {
+    id: "state-of-global-aml-enforcement-h1-2026",
+    slug: "state-of-global-aml-enforcement-h1-2026",
+    title: "State of Global AML Enforcement: H1 2026",
+    seoTitle:
+      "State of Global AML Enforcement H1 2026 | Data Study | RegActions",
+    excerpt:
+      "A data study built from RegActions' live enforcement and country-risk APIs: the H1 2026 regulator league table, breach trends, FCA fines up 41% year on year, and the June FATF plenary. Free to reuse under CC BY-NC 4.0.",
+    content: `
+## State of Global AML Enforcement: H1 2026
+
+**Every figure in this study is drawn from RegActions' own live data APIs, retrieved on 17 July 2026, and cross-checked for internal consistency before publication.** It is a snapshot, not a forecast: where a number cannot be computed from the data we hold, we say so rather than estimate it. The study is free to reuse under CC BY-NC 4.0 with a link back to RegActions (see the licence note at the end).
+
+A note on windows before the numbers. Our enforcement dataset can be filtered by calendar year, and the curated UK series can be split by month, but the cross-regulator dataset cannot currently be sliced to an exact half-year through the public API. So we report two clean, honest windows: a **UK (FCA) H1-on-H1 comparison** from the month-level series, and a **2026 year-to-date** cross-regulator picture (1 January to 17 July 2026) set against **full-year 2025**. Each table states its own window.
+
+## Headline findings
+
+- **UK enforcement is accelerating.** In the curated FCA fines series, the FCA issued **9 monetary penalties totalling £16,842,723 in H1 2026**, against **4 penalties totalling £11,941,599 in H1 2025**. That is a **+125% rise in the number of fines** and a **+41% rise in their value** year on year.
+- **The largest single UK penalty of 2026 so far** is **£12,993,700 against John Wood Group PLC**, which alone accounts for more than three-quarters of the FCA's 2026 monetary-penalty total to date.
+- **Globally, enforcement value is running below 2025.** Across 39 public regulators, RegActions recorded **771 enforcement actions worth £303.6m in 2026 to date**, compared with **1,519 actions worth £2.50bn across the whole of 2025**. Because 2026 is a partial year, this is a run-rate observation, not a like-for-like fall.
+- **The country-risk landscape is concentrated at the top.** Of **211 scored jurisdictions**, **14 sit in the Very high band** and **25 in the Low band**; the middle two bands hold the rest. Three jurisdictions remain on the FATF blacklist and 22 on the grey list after the June plenary.
+
+## UK enforcement: H1 2026 vs H1 2025
+
+This is the one true like-for-like comparison the data supports, taken from the FCA monetary-penalty series split by month.
+
+| Window | FCA fines | Total value |
+| --- | --- | --- |
+| H1 2025 (Jan-Jun) | 4 | £11,941,599 |
+| H1 2026 (Jan-Jun) | 9 | £16,842,723 |
+| Change | +125% | +41% |
+
+All nine of the FCA's 2026 penalties to date fell in the first half of the year, so H1 2026 and 2026-to-date are the same figure for this series. The value increase is more modest than the count increase because H1 2025 was skewed by a single £9.2m March penalty, whereas H1 2026's total is spread across more, generally smaller, actions plus the £12.99m John Wood Group penalty.
+
+## Regulator league table: 2026 to date
+
+The table below ranks public regulators by the value of enforcement RegActions recorded between 1 January and 17 July 2026. Amounts are normalised to GBP. This cross-regulator dataset is broader than the curated FCA series above and counts enforcement actions rather than monetary penalties alone, which is why the FCA line here (73 actions, £19.9m) differs from the 9-penalty curated figure; the two series answer different questions.
+
+| Regulator | Jurisdiction | Actions | Value (GBP) |
+| --- | --- | --- | --- |
+| SFC | Hong Kong | 19 | £79,245,972 |
+| DNB | Netherlands | 3 | £51,106,250 |
+| OSC | Canada | 6 | £50,296,098 |
+| SEC | United States | 2 | £32,120,363 |
+| FCA | United Kingdom | 73 | £19,868,415 |
+| ECB | European Union | 9 | £19,269,500 |
+| FISE | Sweden | 4 | £18,400,000 |
+| BaFin | Germany | 56 | £10,263,750 |
+| FINRA | United States | 137 | £8,884,574 |
+| ASIC | Australia | 12 | £4,456,380 |
+
+Across all 39 regulators with 2026 activity, the totals sum to **771 actions worth £303.6m**. Two patterns stand out. First, value and volume decouple: FINRA leads on volume (137 actions) but not on value, while a handful of large single penalties lift Hong Kong, the Netherlands and Canada up the value ranking. Second, the UK's FCA is unusually active by count within Europe, reflecting its broad definition of enforcement action beyond headline monetary penalties.
+
+## Breach-category signals
+
+RegActions tags each action with the regulator's own breach description. Across 2026-to-date the most frequent tags are dominated by high-volume, lower-value process categories, in particular FINRA's Acceptance, Waiver and Consent letters (114 actions) and national administrative-penalty categories. The concentration of value, by contrast, sits in a small number of market-abuse, AML-control and disclosure cases. The read-across for compliance teams is familiar: most enforcement is high-frequency and procedural, but the tail risk that moves board-level numbers is a single control-failure or market-abuse finding.
+
+Because breach labels are regulator-specific and not yet fully harmonised across all 45+ sources, we report the pattern qualitatively here rather than publishing a cross-regulator category ranking that the underlying tags cannot yet support cleanly.
+
+## Country-risk landscape
+
+RegActions scores every jurisdiction 0-10 for AML, sanctions and governance risk (higher = higher risk) under a transparent v2 methodology. As of 17 July 2026, **211 jurisdictions carry a published score**; a small number of dependent territories are withheld as insufficient-data rather than guessed.
+
+| Risk band | Jurisdictions |
+| --- | --- |
+| Very high | 14 |
+| High | 70 |
+| Moderate | 102 |
+| Low | 25 |
+
+The **Very high** band (score 7.0 and above) is led by Iran, Myanmar and North Korea, each floored at 9 by their FATF blacklisting, followed by Cuba, the Central African Republic, Venezuela and other jurisdictions combining conflict, weak governance and comprehensive sanctions exposure. The **Low** band (below 3.0) is anchored by Latvia and the United Kingdom, both scoring 1.9, alongside France, Jersey and Luxembourg.
+
+### FATF movements at the June 2026 plenary
+
+The FATF plenary in Paris on 17-19 June 2026 produced four changes to the monitored-jurisdiction lists:
+
+- **Added to the grey list:** Iraq and Bosnia and Herzegovina.
+- **Removed from the grey list:** Algeria and Namibia.
+
+That leaves **22 jurisdictions on the grey list** (Jurisdictions Under Increased Monitoring) and **3 on the blacklist** (Iran, Myanmar and North Korea) going into the next plenary, scheduled for October 2026. RegActions applies a floor of 9 to blacklisted jurisdictions and 6 to grey-listed ones, so these list changes feed directly into the scores above.
+
+## Methodology and licence
+
+**Sources.** Every number above traces to a RegActions public API response fetched on 17 July 2026. The country-risk scores combine FATF list status and mutual-evaluation ratings, World Bank Worldwide Governance Indicators (2024 vintage), sanctions-regime coverage, and Transparency International's CPI, each cited with its retrieval date inside the API responses.
+
+**What we did not compute.** The public enforcement API does not expose an exact H1-vs-H1 split for the full cross-regulator dataset, so the global figures are reported as 2026-to-date against full-year 2025 and should be read as run-rate context, not a half-year comparison. Only the UK FCA series supports a true H1-on-H1 comparison, and that is the only place we make one.
+
+**Licence.** This study and its underlying data are published under [Creative Commons Attribution-NonCommercial 4.0 (CC BY-NC 4.0)](https://creativecommons.org/licenses/by-nc/4.0/). You may reuse the figures and charts for non-commercial purposes with a visible, clickable credit to [RegActions](https://regactions.com). For commercial licensing, contact contact@memaconsultants.com.
+
+## Sources appendix
+
+Each figure in this study was retrieved from the following endpoints on 17 July 2026:
+
+| Endpoint | What it provided |
+| --- | --- |
+| [/api/unified/stats](https://regactions.com/api/unified/stats) | All-time and per-regulator totals; the cross-regulator league table. |
+| [/api/unified/stats?year=2026](https://regactions.com/api/unified/stats?year=2026) | 2026 year-to-date league table and per-regulator counts and values. |
+| [/api/unified/stats?year=2025](https://regactions.com/api/unified/stats?year=2025) | Full-year 2025 baseline totals. |
+| [/api/fca-fines/stats](https://regactions.com/api/fca-fines/stats) | Curated FCA 2026 penalty count, total, and largest penalty. |
+| [/api/fca-fines/trends](https://regactions.com/api/fca-fines/trends) | Month-level FCA series used for the H1 2026 vs H1 2025 comparison. |
+| [/api/country-risk/list](https://regactions.com/api/country-risk/list) | Band distribution, scored-jurisdiction count, FATF list status. |
+
+Explore the data yourself through the [free RegActions APIs](https://regactions.com/developers), the [country risk hub](https://regactions.com/countries), or the [regulator data hub](https://regactions.com/regulators).
+    `,
+    category: "Data Studies",
+    readTime: "8 min read",
+    date: "July 2026",
+    dateISO: "2026-07-17",
+    featured: true,
+    articleType: "thematic",
+    keywords: [
+      "global AML enforcement 2026",
+      "state of AML enforcement",
+      "regulator league table 2026",
+      "FCA fines H1 2026",
+      "FATF grey list 2026",
+      "country risk data study",
+      "AML enforcement statistics",
+    ],
+  },
+  {
     id: "largest-fca-fines-history",
     slug: "20-biggest-fca-fines-of-all-time",
     title: "20 Biggest FCA Fines of All Time: Complete List & Analysis",
