@@ -9,10 +9,10 @@ export default defineConfig({
     rollupOptions: {
       output: {
         manualChunks(id) {
-          if (id.includes("/src/data/blogArticles.")) {
-            return "content-blog";
-          }
-
+          // NOTE: a forced "content-blog" manual chunk used to live here, but
+          // Rollup's chunk-graph hoisting made the ENTRY statically import it,
+          // shipping the 768KB blog corpus on every route. Without the rule the
+          // corpus splits naturally into the lazy blog-page chunks only.
           if (id.includes("/src/data/faqData.")) {
             return "content-faq";
           }
