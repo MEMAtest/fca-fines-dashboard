@@ -85,11 +85,17 @@ describe("boardIntelligence", () => {
     expect(pack.scenarios[0]?.band).toMatch(/material|severe|moderate/);
   });
 
-  it("turns top themes into a control checklist and residual challenge summary", () => {
+  it("keeps control readiness unassessed until evidence responses are supplied", () => {
     const pack = buildBoardPack(MOCK_RECORDS, DEFAULT_BOARD_PROFILE);
     const checklist = buildControlChecklist(pack);
 
     expect(checklist.length).toBeGreaterThan(0);
+    expect(checklist.every((item) => item.defaultStatus === "unassessed")).toBe(true);
+
+    const unassessed = summarizeControlChallenge(checklist, {});
+    expect(unassessed.readinessBand).toBeNull();
+    expect(unassessed.assessedControlCount).toBe(0);
+    expect(unassessed.weakControlCount).toBe(0);
 
     const summary = summarizeControlChallenge(checklist, {
       [checklist[0].id]: "needs-work",
@@ -97,6 +103,7 @@ describe("boardIntelligence", () => {
     });
 
     expect(summary.weakControlCount).toBeGreaterThan(0);
+    expect(summary.assessedControlCount).toBe(2);
     expect(summary.evidenceGapCount).toBeGreaterThan(0);
     expect(summary.actionItems.length).toBeGreaterThan(0);
   });

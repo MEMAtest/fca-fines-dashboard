@@ -257,7 +257,9 @@ export async function loadCiroLiveRecords() {
     );
     return mergeCiroRecords(uniqueRows.map((row) => buildCiroListingRecord(row)));
   } finally {
-    await browserClient?.close();
+    if (browserClient !== null) {
+      await (browserClient as BrowserHtmlClient).close();
+    }
   }
 }
 

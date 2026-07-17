@@ -4,6 +4,7 @@ import type { FineRecord } from "../types.js";
 export type SourceLinkStatus =
   | "verified_detail"
   | "verified_publication"
+  | "official_unverified"
   | "listing_only"
   | "missing";
 
@@ -26,10 +27,6 @@ function normalizeUrl(url: string | null | undefined) {
     return null;
   }
   return trimmed;
-}
-
-function isPdfUrl(url: string) {
-  return /\.pdf(?:$|[?#])/i.test(url);
 }
 
 function isLikelyListingPage(url: string) {
@@ -102,8 +99,9 @@ export function deriveSourceLinkStatus(
     return listing ? "listing_only" : "missing";
   }
 
-  // Apply PDF detection to all regulators, not just FCA.
-  return isPdfUrl(detail) ? "verified_publication" : "verified_detail";
+  // URL shape alone cannot prove that a case source is reachable or current.
+  // Verified states are reserved for persisted source assessments.
+  return "official_unverified";
 }
 
 export function getRecordSourceStatus(
@@ -137,7 +135,11 @@ export function getBestRecordSourceUrl(record: SourceLinkRecord) {
 }
 
 export function hasVerifiedRecordSource(record: SourceLinkRecord) {
-  return Boolean(getBestRecordSourceUrl(record));
+  const status = getRecordSourceStatus(record);
+  return (
+    (status === "verified_detail" || status === "verified_publication") &&
+    Boolean(getBestRecordSourceUrl(record))
+  );
 }
 
 export function getRecordListingUrl(
@@ -160,5 +162,7 @@ export function getRecordSourceLabel(record: SourceLinkRecord) {
 
   return getRecordSourceStatus(record) === "verified_publication"
     ? "View publication"
-    : "View notice";
+    : getRecordSourceStatus(record) === "official_unverified"
+      ? "Open official source"
+      : "View notice";
 }

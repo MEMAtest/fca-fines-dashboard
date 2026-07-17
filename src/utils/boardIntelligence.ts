@@ -11,6 +11,7 @@ import type { FineRecord } from "../types.js";
 export type ExposureBand = "low" | "moderate" | "material" | "severe";
 export type ThemeSeverity = "watch" | "elevated" | "material" | "critical";
 export type ControlStatus =
+  | "unassessed"
   | "not-tested"
   | "needs-work"
   | "evidence-partial"
@@ -76,6 +77,9 @@ export interface BoardPackCaseStudy {
   matchedThemes: BoardThemeId[];
   reason: string;
   sourceUrl: string | null;
+  sourceStatus: FineRecord["source_link_status"];
+  amountQuality: FineRecord["amount_quality"];
+  requiresAmountReview: boolean;
 }
 
 export interface ScenarioCard {
@@ -97,7 +101,8 @@ export interface ControlChecklistItem {
 }
 
 export interface ControlChallengeSummary {
-  readinessBand: ExposureBand;
+  readinessBand: ExposureBand | null;
+  assessedControlCount: number;
   challengeHeadline: string;
   weakControlCount: number;
   evidenceGapCount: number;
@@ -132,6 +137,7 @@ export interface BoardPackResult {
   regulatorSignals: RegulatorSignalSummary[];
   topThemes: ExposureThemeSummary[];
   notableCases: BoardPackCaseStudy[];
+  selectedCases: BoardPackCaseStudy[];
   implications: string[];
   boardQuestions: string[];
   nextSteps: string[];
@@ -639,6 +645,9 @@ function buildRegulatorRationale(
 }
 
 function toCaseStudy(entry: ScoredRecord): BoardPackCaseStudy {
+  const sourceIsVerified =
+    entry.record.source_link_status === "verified_detail" ||
+    entry.record.source_link_status === "verified_publication";
   return {
     id:
       entry.record.id ??
@@ -652,22 +661,35 @@ function toCaseStudy(entry: ScoredRecord): BoardPackCaseStudy {
     breachType: entry.record.breach_type,
     matchedThemes: entry.matchedThemes,
     reason: unique(entry.reasons).join(" · "),
-    sourceUrl:
-      entry.record.detail_url ??
-      entry.record.official_publication_url ??
-      entry.record.final_notice_url ??
-      entry.record.source_url ??
-      null,
+    sourceUrl: sourceIsVerified
+      ? entry.record.detail_url ??
+        entry.record.official_publication_url ??
+        entry.record.final_notice_url ??
+        null
+      : null,
+    sourceStatus: entry.record.source_link_status,
+    amountQuality: entry.record.amount_quality,
+    requiresAmountReview: Boolean(entry.record.requires_amount_review),
   };
 }
 
 export function buildBoardPack(
   records: FineRecord[],
   profile: BoardFirmProfile,
+  selectedCaseIds: string[] = [],
 ): BoardPackResult {
-  const scored = records
+  const trustedRecords = records.map((record) =>
+    record.requires_amount_review
+      ? { ...record, amount: 0, amount_gbp: 0, amount_eur: 0 }
+      : record,
+  );
+  const scored = trustedRecords
     .map((record) => scoreRecord(record, profile))
     .filter((entry) => entry.score > 0);
+  const selectedIdSet = new Set(selectedCaseIds);
+  const selectedCases = trustedRecords
+    .filter((record) => selectedIdSet.has(record.canonical_case_id ?? record.id ?? record.fine_reference ?? ""))
+    .map((record) => toCaseStudy(scoreRecord(record, profile)));
 
   const ranked = scored.sort((left, right) => {
     if (right.score !== left.score) return right.score - left.score;
@@ -677,7 +699,7 @@ export function buildBoardPack(
     return right.record.date_issued.localeCompare(left.record.date_issued);
   });
 
-  const fallbackRecords = records
+  const fallbackRecords = trustedRecords
     .slice()
     .sort((left, right) => right.date_issued.localeCompare(left.date_issued))
     .slice(0, 12)
@@ -967,6 +989,7 @@ export function buildBoardPack(
     regulatorSignals,
     topThemes,
     notableCases,
+    selectedCases,
     implications,
     boardQuestions,
     nextSteps,
@@ -1007,10 +1030,7 @@ export function buildControlChecklist(
       themeLabel: theme.label,
       control,
       guidance: `Ask management to show evidence that "${control.toLowerCase()}" is operating consistently across the highest-risk business lines.`,
-      defaultStatus:
-        theme.severity === "critical" || theme.severity === "material"
-          ? "needs-work"
-          : "not-tested",
+      defaultStatus: "unassessed",
     })),
   );
 }
@@ -1020,7 +1040,10 @@ export function summarizeControlChallenge(
   statuses: Record<string, ControlStatus>,
 ): ControlChallengeSummary {
   const resolvedStatuses = checklist.map(
-    (item) => statuses[item.id] ?? item.defaultStatus,
+    (item) => statuses[item.id] ?? "unassessed",
+  );
+  const assessedStatuses = resolvedStatuses.filter(
+    (status) => status !== "unassessed",
   );
   const weakControlCount = resolvedStatuses.filter(
     (status) => status === "needs-work",
@@ -1029,8 +1052,10 @@ export function summarizeControlChallenge(
     (status) => status === "not-tested" || status === "evidence-partial",
   ).length;
   const challengeScore = weakControlCount * 3 + evidenceGapCount * 2;
-  const readinessBand =
-    challengeScore >= 14
+  const readinessBand: ExposureBand | null =
+    checklist.length === 0 || assessedStatuses.length < checklist.length
+      ? null
+      : challengeScore >= 14
       ? "severe"
       : challengeScore >= 8
         ? "material"
@@ -1039,7 +1064,9 @@ export function summarizeControlChallenge(
           : "low";
 
   const challengeHeadline =
-    readinessBand === "severe"
+    readinessBand === null
+      ? `${assessedStatuses.length} of ${checklist.length} controls assessed. Complete every control response before drawing a readiness conclusion.`
+      : readinessBand === "severe"
       ? "Control evidence is too weak for a board to take comfort from management assurances."
       : readinessBand === "material"
         ? "Several controls need sharper challenge before the board can rely on current remediation narratives."
@@ -1051,20 +1078,24 @@ export function summarizeControlChallenge(
     checklist
       .map((item) => ({
         item,
-        status: statuses[item.id] ?? item.defaultStatus,
+        status: statuses[item.id] ?? "unassessed",
       }))
       .filter(
-        ({ status }) => status === "needs-work" || status === "not-tested",
+        ({ status }) =>
+          status === "needs-work" ||
+          status === "not-tested" ||
+          status === "unassessed",
       )
       .slice(0, 4)
       .map(
         ({ item, status }) =>
-          `${status === "needs-work" ? "Escalate" : "Evidence"} ${item.control.toLowerCase()} under ${item.themeLabel.toLowerCase()}.`,
+          `${status === "needs-work" ? "Escalate" : "Request evidence for"} ${item.control.toLowerCase()} under ${item.themeLabel.toLowerCase()}.`,
       ),
   );
 
   return {
     readinessBand,
+    assessedControlCount: assessedStatuses.length,
     challengeHeadline,
     weakControlCount,
     evidenceGapCount,

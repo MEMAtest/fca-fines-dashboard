@@ -14,10 +14,10 @@ import "../styles/siteheader.css";
 
 const NAV_LINKS = [
   { to: "/", label: "Home" },
-  { to: "/fines", label: "Compare Firms" },
-  { to: "/search", label: "Enforcement" },
+  { to: "/fines", label: "Fines" },
+  { to: "/search", label: "Enforcement Explorer" },
   { to: "/blog", label: "Research" },
-  { to: "/intelligence", label: "Intelligence" },
+  { to: "/intelligence", label: "Enforcement Briefing" },
   { to: "/countries", label: "Countries" },
 ];
 
@@ -69,9 +69,10 @@ function getBreadcrumbs(pathname: string) {
 
     let label = seg;
     if (seg === "dashboard") label = "Data";
-    else if (seg === "board-pack") label = "Board Intelligence";
-    else if (seg === "search") label = "Search";
-    else if (seg === "intelligence") label = "Intelligence";
+    else if (seg === "board-pack") label = "Board Pack";
+    else if (seg === "search") label = "Enforcement Explorer";
+    else if (seg === "intelligence") label = "Enforcement Briefing";
+    else if (seg === "fines") label = "Fines";
     else if (seg === "uk-enforcement") label = "UK Enforcement";
     else if (seg === "blog") label = "Research";
     else if (seg === "topics") label = "Topics";

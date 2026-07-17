@@ -91,10 +91,18 @@ describe("product workspaces", () => {
     expect(screen.queryByRole("link", { name: "Reports" })).not.toBeInTheDocument();
     expect(screen.queryByRole("link", { name: "Data Hub" })).not.toBeInTheDocument();
     expect(screen.getByRole("link", { name: "Regulator directory" })).toHaveAttribute("href", "/regulators");
-    expect(screen.getByRole("link", { name: "Methodology" })).toHaveAttribute("href", "/countries/methodology");
+    expect(screen.getByRole("link", { name: "Methodology" })).toHaveAttribute("href", "/methodology/enforcement");
     expect(screen.getByRole("link", { name: "Board Pack" })).toHaveAttribute(
       "href",
       "/board-pack?from=%2Ffines%2Fanalytics%3Fyear%3D2025&fromLabel=Fines+workspace",
     );
+  });
+
+  it("adds decision-useful concentration, distribution and heatmap analytics", () => {
+    render(<MemoryRouter initialEntries={["/fines/analytics"]}><EvidenceModalProvider><FinesWorkspace view="analytics" /></EvidenceModalProvider></MemoryRouter>);
+    expect(screen.getByRole("heading", { name: "Fine concentration" })).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "Penalty-size distribution" })).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "Monthly enforcement heatmap" })).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "Outlier cases" })).toBeInTheDocument();
   });
 });

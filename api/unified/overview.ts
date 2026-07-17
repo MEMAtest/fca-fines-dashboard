@@ -23,6 +23,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   try {
     const { regulator, country, year, breachCategory, sector, q, currency = "GBP" } = req.query as Record<string, string>;
     const amountColumn = currency === "EUR" ? "amount_eur" : "amount_gbp";
+    const trustedAmount = `CASE WHEN requires_amount_review THEN NULL ELSE ${amountColumn} END`;
+    const trustedFineAmount = `CASE WHEN fines.requires_amount_review THEN NULL ELSE fines.${amountColumn} END`;
     const categoryExpression = `COALESCE(CASE WHEN jsonb_typeof(breach_categories) = 'string' THEN (breach_categories #>> '{}')::jsonb ELSE breach_categories END, jsonb_build_array(COALESCE(breach_type, 'Other / not classified')))`;
     const conditions: string[] = [];
     const params: any[] = [];
@@ -46,13 +48,13 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     const where = `WHERE ${conditions.join(" AND ")}`;
 
     const [summary, byYear, byMonth, byRegulator, byTheme, bySector, byFirm] = await Promise.all([
-      sql.unsafe(`SELECT COUNT(*)::int AS count, COUNT(${amountColumn})::int AS disclosed_amount_count, COALESCE(SUM(duplicate_count - 1),0)::int AS collapsed_source_rows, COUNT(*) FILTER (WHERE amount_quality IN ('verified_override','derived_explicit'))::int AS assessed_amount_count, COALESCE(SUM(${amountColumn}),0)::numeric AS total, COALESCE(AVG(${amountColumn}),0)::numeric AS average, COALESCE(PERCENTILE_CONT(0.5) WITHIN GROUP (ORDER BY ${amountColumn}),0)::numeric AS median, COALESCE(MAX(${amountColumn}),0)::numeric AS largest, (ARRAY_AGG(firm_individual ORDER BY ${amountColumn} DESC NULLS LAST))[1] AS largest_firm, COUNT(DISTINCT firm_individual)::int AS affected_firms, MAX(date_issued) AS latest_date FROM public.all_regulatory_fines_canonical ${where}`, params),
-      sql.unsafe(`SELECT year_issued AS year, COUNT(*)::int AS count, COALESCE(SUM(${amountColumn}),0)::numeric AS amount FROM public.all_regulatory_fines_canonical ${where} GROUP BY year_issued ORDER BY year_issued`, params),
-      sql.unsafe(`SELECT year_issued AS year, month_issued AS month, COUNT(*)::int AS count, COALESCE(SUM(${amountColumn}),0)::numeric AS amount FROM public.all_regulatory_fines_canonical ${where} GROUP BY year_issued, month_issued ORDER BY year_issued, month_issued`, params),
-      sql.unsafe(`SELECT regulator AS label, COUNT(*)::int AS count, COALESCE(SUM(${amountColumn}),0)::numeric AS amount FROM public.all_regulatory_fines_canonical ${where} GROUP BY regulator ORDER BY amount DESC LIMIT 20`, params),
-      sql.unsafe(`SELECT category.value AS label, COUNT(DISTINCT fines.id)::int AS count, COALESCE(SUM(fines.${amountColumn}),0)::numeric AS amount FROM public.all_regulatory_fines_canonical fines CROSS JOIN LATERAL jsonb_array_elements_text(${categoryExpression}) category(value) ${where.replaceAll("regulator", "fines.regulator").replaceAll("country_code", "fines.country_code").replaceAll("year_issued", "fines.year_issued").replaceAll("firm_category", "fines.firm_category").replaceAll("firm_individual", "fines.firm_individual").replaceAll("summary", "fines.summary").replaceAll("breach_type", "fines.breach_type").replaceAll("breach_categories", "fines.breach_categories")} GROUP BY category.value ORDER BY amount DESC LIMIT 30`, params),
-      sql.unsafe(`SELECT COALESCE(firm_category,'Sector not recorded') AS label, COUNT(*)::int AS count, COALESCE(SUM(${amountColumn}),0)::numeric AS amount FROM public.all_regulatory_fines_canonical ${where} GROUP BY COALESCE(firm_category,'Sector not recorded') ORDER BY amount DESC LIMIT 20`, params),
-      sql.unsafe(`SELECT firm_individual AS label, COUNT(*)::int AS count, COALESCE(SUM(${amountColumn}),0)::numeric AS amount FROM public.all_regulatory_fines_canonical ${where} GROUP BY firm_individual ORDER BY amount DESC LIMIT 20`, params),
+      sql.unsafe(`SELECT COUNT(*)::int AS count, COUNT(${trustedAmount})::int AS disclosed_amount_count, COUNT(*) FILTER (WHERE requires_amount_review)::int AS amount_review_count, COALESCE(SUM(duplicate_count - 1),0)::int AS collapsed_source_rows, COUNT(*) FILTER (WHERE amount_quality IN ('verified_override','derived_explicit'))::int AS assessed_amount_count, COALESCE(SUM(${trustedAmount}),0)::numeric AS total, COALESCE(AVG(${trustedAmount}),0)::numeric AS average, COALESCE(PERCENTILE_CONT(0.5) WITHIN GROUP (ORDER BY ${trustedAmount}),0)::numeric AS median, COALESCE(MAX(${trustedAmount}),0)::numeric AS largest, (ARRAY_AGG(firm_individual ORDER BY ${trustedAmount} DESC NULLS LAST))[1] AS largest_firm, COUNT(DISTINCT firm_individual)::int AS affected_firms, MAX(date_issued) AS latest_date, MAX(created_at) AS latest_ingestion_at, MAX(source_checked_at) AS latest_source_check_at FROM public.all_regulatory_fines_trusted ${where}`, params),
+      sql.unsafe(`SELECT year_issued AS year, COUNT(*)::int AS count, COALESCE(SUM(${trustedAmount}),0)::numeric AS amount FROM public.all_regulatory_fines_trusted ${where} GROUP BY year_issued ORDER BY year_issued`, params),
+      sql.unsafe(`SELECT year_issued AS year, month_issued AS month, COUNT(*)::int AS count, COALESCE(SUM(${trustedAmount}),0)::numeric AS amount FROM public.all_regulatory_fines_trusted ${where} GROUP BY year_issued, month_issued ORDER BY year_issued, month_issued`, params),
+      sql.unsafe(`SELECT regulator AS label, COUNT(*)::int AS count, COALESCE(SUM(${trustedAmount}),0)::numeric AS amount FROM public.all_regulatory_fines_trusted ${where} GROUP BY regulator ORDER BY amount DESC LIMIT 20`, params),
+      sql.unsafe(`SELECT category.value AS label, COUNT(DISTINCT fines.id)::int AS count, COALESCE(SUM(${trustedFineAmount}),0)::numeric AS amount FROM public.all_regulatory_fines_trusted fines CROSS JOIN LATERAL jsonb_array_elements_text(${categoryExpression}) category(value) ${where.replaceAll("regulator", "fines.regulator").replaceAll("country_code", "fines.country_code").replaceAll("year_issued", "fines.year_issued").replaceAll("firm_category", "fines.firm_category").replaceAll("firm_individual", "fines.firm_individual").replaceAll("summary", "fines.summary").replaceAll("breach_type", "fines.breach_type").replaceAll("breach_categories", "fines.breach_categories")} GROUP BY category.value ORDER BY amount DESC LIMIT 30`, params),
+      sql.unsafe(`SELECT COALESCE(firm_category,'Sector not recorded') AS label, COUNT(*)::int AS count, COALESCE(SUM(${trustedAmount}),0)::numeric AS amount FROM public.all_regulatory_fines_trusted ${where} GROUP BY COALESCE(firm_category,'Sector not recorded') ORDER BY amount DESC LIMIT 20`, params),
+      sql.unsafe(`SELECT firm_individual AS label, COUNT(*)::int AS count, COALESCE(SUM(${trustedAmount}),0)::numeric AS amount FROM public.all_regulatory_fines_trusted ${where} GROUP BY firm_individual ORDER BY amount DESC LIMIT 20`, params),
     ]);
 
     const total = number(summary[0]?.total);
@@ -70,6 +72,9 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         disclosedAmountCount: number(summary[0]?.disclosed_amount_count),
         collapsedSourceRows: number(summary[0]?.collapsed_source_rows),
         assessedAmountCount: number(summary[0]?.assessed_amount_count),
+        amountReviewCount: number(summary[0]?.amount_review_count),
+        latestIngestionAt: summary[0]?.latest_ingestion_at ?? null,
+        latestSourceCheckAt: summary[0]?.latest_source_check_at ?? null,
       },
       yearly: byYear.map((row) => ({ key: String(row.year), label: String(row.year), year: number(row.year), count: number(row.count), amount: number(row.amount) })),
       monthly: byMonth.map((row) => ({ key: `${row.year}-${String(row.month).padStart(2,"0")}`, label: new Intl.DateTimeFormat("en-GB",{month:"short",year:"2-digit"}).format(new Date(number(row.year), number(row.month)-1, 1)), year: number(row.year), month: number(row.month), count: number(row.count), amount: number(row.amount) })),

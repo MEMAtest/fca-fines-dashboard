@@ -35,6 +35,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   try {
     // Parse query parameters
     const {
+      q,                  // Browse or filter by firm, summary, breach or regulator
       regulator,          // 'FCA', 'BaFin', 'AMF', etc.
       country,            // 'UK', 'DE', 'FR', etc.
       year,               // 2024, 2025, etc.
@@ -59,7 +60,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     const offsetNum = parseInt(offset) || 0;
 
     // Choose amount column based on currency preference
-    const amountColumn = currency === 'EUR' ? 'amount_eur' : 'amount_gbp';
+    const trustedAmountColumn = currency === 'EUR' ? 'trusted_amount_eur' : 'trusted_amount_gbp';
 
     // Treat the normalised category array and the legacy breach type as one
     // public theme field. The overview endpoint uses the same expression, so a
@@ -78,8 +79,14 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     let paramIndex = 1;
 
     if (regulator) {
-      conditions.push(`regulator = $${paramIndex++}`);
-      params.push(regulator);
+      const regulatorList = regulator.split(',').map((value) => value.trim()).filter(Boolean);
+      if (regulatorList.length > 1) {
+        conditions.push(`regulator = ANY($${paramIndex++})`);
+        params.push(regulatorList);
+      } else {
+        conditions.push(`regulator = $${paramIndex++}`);
+        params.push(regulatorList[0]);
+      }
     } else {
       // Default: only show live/public regulators from the shared registry
       conditions.push(`regulator = ANY($${paramIndex++})`);
@@ -102,12 +109,12 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     }
 
     if (minAmount) {
-      conditions.push(`${amountColumn} >= $${paramIndex++}`);
+      conditions.push(`${trustedAmountColumn} >= $${paramIndex++}`);
       params.push(parseFloat(minAmount));
     }
 
     if (maxAmount) {
-      conditions.push(`${amountColumn} <= $${paramIndex++}`);
+      conditions.push(`${trustedAmountColumn} <= $${paramIndex++}`);
       params.push(parseFloat(maxAmount));
     }
 
@@ -127,6 +134,17 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       params.push(`%${firmName}%`);
     }
 
+    if (q?.trim()) {
+      conditions.push(`(
+        firm_individual ILIKE $${paramIndex}
+        OR summary ILIKE $${paramIndex}
+        OR breach_type ILIKE $${paramIndex}
+        OR regulator ILIKE $${paramIndex}
+      )`);
+      params.push(`%${q.trim()}%`);
+      paramIndex++;
+    }
+
     const whereClause = conditions.length > 0 ? `WHERE ${conditions.join(' AND ')}` : '';
 
     // Query for results
@@ -141,8 +159,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         firm_category,
         amount_original,
         currency,
-        amount_gbp,
-        amount_eur,
+        trusted_amount_gbp AS amount_gbp,
+        trusted_amount_eur AS amount_eur,
         date_issued,
         year_issued,
         month_issued,
@@ -152,13 +170,18 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         notice_url,
         source_url,
         created_at,
-        canonical_case_id,
+        public_case_id AS canonical_case_id,
         duplicate_count,
         amount_quality,
         requires_amount_review,
         amount_verification_url,
-        amount_override_reason
-      FROM public.all_regulatory_fines_canonical
+        amount_override_reason,
+        source_link_status,
+        source_checked_at,
+        source_http_status,
+        source_official_domain_match,
+        source_content_hash
+      FROM public.all_regulatory_fines_trusted
       ${whereClause}
       ORDER BY ${sortColumn} ${sortOrder}, canonical_case_id ASC, id ASC
       LIMIT $${paramIndex++}
@@ -172,7 +195,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     // Query for total count
     const countQuery = `
       SELECT COUNT(*) as count
-      FROM public.all_regulatory_fines_canonical
+      FROM public.all_regulatory_fines_trusted
       ${whereClause}
     `;
 
@@ -191,6 +214,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         currentPage: Math.floor(offsetNum / limitNum) + 1
       },
       filters: {
+        q: q || null,
         regulator: regulator || null,
         country: country || null,
         year: year ? parseInt(year) : null,

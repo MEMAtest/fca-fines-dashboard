@@ -1,5 +1,5 @@
 import { useMemo, useState } from "react";
-import { Link, Navigate, useParams } from "react-router-dom";
+import { Link, Navigate, useNavigate, useParams, useSearchParams } from "react-router-dom";
 import {
   Area,
   AreaChart,
@@ -55,19 +55,27 @@ function RegulatorTable({ records, onOpen, limit = 8 }: { records: FineRecord[];
 
 export function RegulatorWorkspace({ view }: RegulatorWorkspaceProps) {
   const { regulatorCode = "fca" } = useParams();
+  const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
   const coverage = getRegulatorCoverage(regulatorCode);
   const code = coverage?.code ?? regulatorCode.toUpperCase();
   const [drawer, setDrawer] = useState<DrawerState | null>(null);
-  const [year, setYear] = useState(0);
-  const [theme, setTheme] = useState("All");
-  const [sector, setSector] = useState("All");
-  const [query, setQuery] = useState("");
-  const [comparisonRegulator, setComparisonRegulator] = useState("SEC");
+  const year = Number(searchParams.get("year") || 0);
+  const theme = searchParams.get("theme") || "All";
+  const sector = searchParams.get("sector") || "All";
+  const query = searchParams.get("q") || "";
+  const comparisonRegulator = searchParams.get("compare") || (code === "SEC" ? "FCA" : "SEC");
+  const updateScope = (key: string, value: string | number, emptyValue: string | number) => {
+    const next = new URLSearchParams(searchParams);
+    if (value === emptyValue || value === "") next.delete(key);
+    else next.set(key, String(value));
+    setSearchParams(next, { replace: true });
+  };
 
   const primary = useUnifiedData({ regulator: code, country: "All", year, currency: "GBP" });
   const comparison = useUnifiedData({ regulator: comparisonRegulator, country: "All", year, currency: "GBP" });
   const primaryOverview = useWorkspaceOverview({ regulator: code, year: year || undefined, breachCategory: theme, sector, q: query, currency: "GBP" });
-  const comparisonOverview = useWorkspaceOverview({ regulator: comparisonRegulator, year: year || undefined, currency: "GBP" });
+  const comparisonOverview = useWorkspaceOverview({ regulator: comparisonRegulator, year: year || undefined, breachCategory: theme, sector, q: query, currency: "GBP" });
 
   const records = useMemo(() => primary.fines.filter((record) => {
     if (theme !== "All" && !getRecordThemes(record).includes(theme)) return false;
@@ -75,6 +83,12 @@ export function RegulatorWorkspace({ view }: RegulatorWorkspaceProps) {
     if (query.trim() && ![record.firm_individual, record.summary, record.breach_type].filter(Boolean).join(" ").toLowerCase().includes(query.trim().toLowerCase())) return false;
     return true;
   }), [primary.fines, query, sector, theme]);
+  const comparisonRecords = useMemo(() => comparison.fines.filter((record) => {
+    if (theme !== "All" && !getRecordThemes(record).includes(theme)) return false;
+    if (sector !== "All" && (record.firm_category || "Sector not recorded") !== sector) return false;
+    if (query.trim() && ![record.firm_individual, record.summary, record.breach_type].filter(Boolean).join(" ").toLowerCase().includes(query.trim().toLowerCase())) return false;
+    return true;
+  }), [comparison.fines, query, sector, theme]);
 
   const sampleMetrics = useMemo(() => getWorkspaceMetrics(records), [records]);
   const yearly = useMemo(() => primaryOverview.data?.yearly ?? buildYearlyTrend(records), [primaryOverview.data?.yearly, records]);
@@ -88,9 +102,9 @@ export function RegulatorWorkspace({ view }: RegulatorWorkspaceProps) {
   const sectorOptions = useMemo(() => Array.from(new Set(primary.fines.map((record) => record.firm_category || "Sector not recorded"))).sort(), [primary.fines]);
   const yearComparison = useMemo(() => {
     const populated = yearly.filter((point) => point.count > 0).slice().sort((left, right) => left.year - right.year);
-    const latest = populated.at(-1);
+    const latest = populated[populated.length - 1];
     const previous = latest
-      ? populated.find((point) => point.year === latest.year - 1) ?? populated.at(-2)
+      ? populated.find((point) => point.year === latest.year - 1) ?? populated[populated.length - 2]
       : undefined;
     const change = latest && previous && previous.amount > 0
       ? ((latest.amount - previous.amount) / previous.amount) * 100
@@ -136,7 +150,7 @@ export function RegulatorWorkspace({ view }: RegulatorWorkspaceProps) {
     affectedFirms: exact?.affectedFirms ?? sampleMetrics.affectedFirms,
     largest: exact ? ({ amount: exact.largest, firm_individual: exact.largestFirm } as FineRecord) : sampleMetrics.largest,
   };
-  const comparisonSampleMetrics = getWorkspaceMetrics(comparison.fines);
+  const comparisonSampleMetrics = getWorkspaceMetrics(comparisonRecords);
   const comparisonExact = comparisonOverview.data?.metrics;
   const comparisonMetrics = {
     ...comparisonSampleMetrics,
@@ -165,13 +179,21 @@ export function RegulatorWorkspace({ view }: RegulatorWorkspaceProps) {
           </div>
         </section>
 
+        <section className="workspace-assurance-strip" aria-label={`${code} coverage assurance`}>
+          <div><span>Coverage confidence</span><strong>{coverage.operationalConfidence === "standard" ? "Standard" : "Directional"}</strong><small>{coverage.automationLevel.replaceAll("_", " ")}</small></div>
+          <div><span>Latest official action</span><strong>{exact?.latestDate ? formatDate(exact.latestDate) : "Not recorded"}</strong><small>Action date, not collection time</small></div>
+          <div><span>Last source check</span><strong>{exact?.latestSourceCheckAt ? formatDate(exact.latestSourceCheckAt) : "Pending verification run"}</strong><small>{coverage.feedContract.cadence} source cadence</small></div>
+          <div><span>Last ingestion</span><strong>{exact?.latestIngestionAt ? formatDate(exact.latestIngestionAt) : "Not recorded"}</strong><small>{coverage.coverageStatus} archive</small></div>
+          <div><span>Amount review</span><strong>{exact?.amountReviewCount ?? 0}</strong><small>Excluded from monetary totals</small></div>
+        </section>
+
         <section className="workspace-filterbar" aria-label={`${code} filters`}>
-          <label>Year<select value={year} onChange={(event) => setYear(Number(event.target.value))}><option value={0}>All years</option>{years.map((value) => <option key={value} value={value}>{value}</option>)}</select></label>
-          <label>Regulator<select value={code} onChange={(event) => { window.location.href = `/regulators/${event.target.value.toLowerCase()}`; }}><option value={code}>{code}</option>{LIVE_REGULATOR_NAV_ITEMS.filter((item) => item.dashboardEnabled && item.code !== code).map((item) => <option key={item.code} value={item.code}>{item.code}</option>)}</select></label>
+          <label>Year<select value={year} onChange={(event) => updateScope("year", Number(event.target.value), 0)}><option value={0}>All years</option>{years.map((value) => <option key={value} value={value}>{value}</option>)}</select></label>
+          <label>Regulator<select value={code} onChange={(event) => navigate(`/regulators/${event.target.value.toLowerCase()}/${view === "overview" ? "" : view}?${searchParams.toString()}`)}><option value={code}>{code}</option>{LIVE_REGULATOR_NAV_ITEMS.filter((item) => item.dashboardEnabled && item.code !== code).map((item) => <option key={item.code} value={item.code}>{item.code}</option>)}</select></label>
           <label>Country<select value={coverage.countryCode} disabled><option>{coverage.countryCode}</option></select></label>
-          <label>Breach theme<select value={theme} onChange={(event) => setTheme(event.target.value)}><option>All</option>{themeOptions.map((value) => <option key={value}>{value}</option>)}</select></label>
-          <label>Sector<select value={sector} onChange={(event) => setSector(event.target.value)}><option>All</option>{sectorOptions.map((value) => <option key={value}>{value}</option>)}</select></label>
-          <label>Search<input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Firm, person, keyword..." /></label>
+          <label>Breach theme<select value={theme} onChange={(event) => updateScope("theme", event.target.value, "All")}><option>All</option>{themeOptions.map((value) => <option key={value}>{value}</option>)}</select></label>
+          <label>Sector<select value={sector} onChange={(event) => updateScope("sector", event.target.value, "All")}><option>All</option>{sectorOptions.map((value) => <option key={value}>{value}</option>)}</select></label>
+          <label>Search<input value={query} onChange={(event) => updateScope("q", event.target.value, "")} placeholder="Firm, person, keyword..." /></label>
         </section>
 
         <section className="workspace-kpis">
@@ -187,10 +209,10 @@ export function RegulatorWorkspace({ view }: RegulatorWorkspaceProps) {
           <section className="workspace-card workspace-card--full"><div className="workspace-card__heading"><h2>All {code} enforcement actions</h2><span>{records.length} records</span></div><RegulatorTable records={recent} limit={150} onOpen={(record) => setDrawer({ title: record.firm_individual, records:[record], description: record.summary })}/></section>
         ) : view === "compare" ? (
           <div className="workspace-grid">
-            <section className="workspace-card workspace-card--full"><div className="workspace-card__heading"><h2>Compare {code} with another regulator</h2><span>Guided public comparison</span></div><div className="workspace-filterbar"><label>Primary regulator<select value={code} disabled><option>{code}</option></select></label><label>Comparator<select value={comparisonRegulator} onChange={(event) => setComparisonRegulator(event.target.value)}>{LIVE_REGULATOR_NAV_ITEMS.filter((item) => item.dashboardEnabled && item.code !== code).map((item) => <option key={item.code} value={item.code}>{item.code}</option>)}</select></label><label>Year<select value={year} onChange={(event) => setYear(Number(event.target.value))}><option value={0}>All years</option>{years.map((value)=><option key={value} value={value}>{value}</option>)}</select></label></div></section>
+            <section className="workspace-card workspace-card--full"><div className="workspace-card__heading"><h2>Compare {code} with another regulator</h2><span>Identical filters apply to both regulators</span></div><div className="workspace-filterbar"><label>Primary regulator<select value={code} disabled><option>{code}</option></select></label><label>Comparator<select value={comparisonRegulator} onChange={(event) => updateScope("compare", event.target.value, "")} >{LIVE_REGULATOR_NAV_ITEMS.filter((item) => item.dashboardEnabled && item.code !== code).map((item) => <option key={item.code} value={item.code}>{item.code}</option>)}</select></label><label>Year<select value={year} onChange={(event) => updateScope("year", Number(event.target.value), 0)}><option value={0}>All years</option>{years.map((value)=><option key={value} value={value}>{value}</option>)}</select></label></div><div className="workspace-scope-summary" role="status"><strong>Comparison scope</strong><span>{year || "All years"}</span><span>{theme}</span><span>{sector}</span>{query ? <span>Search: {query}</span> : null}</div></section>
             {[{label:code,data:metrics},{label:comparisonRegulator,data:comparisonMetrics}].map((item) => <section className="workspace-card workspace-card--half" key={item.label}><div className="workspace-card__heading"><h2>{item.label}</h2><span>Current comparison scope</span></div><section className="workspace-kpis" style={{gridTemplateColumns:"repeat(2,1fr)",margin:0}}><article className="workspace-kpi"><span>Total value</span><strong>{formatWorkspaceAmount(item.data.total)}</strong></article><article className="workspace-kpi"><span>Actions</span><strong>{item.data.count}</strong></article><article className="workspace-kpi"><span>Median</span><strong>{formatWorkspaceAmount(item.data.median)}</strong></article><article className="workspace-kpi"><span>Largest</span><strong>{formatWorkspaceAmount(item.data.largest?.amount ?? 0)}</strong></article></section></section>)}
             <section className="workspace-card workspace-card--half"><div className="workspace-card__heading"><h2>{code} top penalties</h2></div><RegulatorTable records={top} limit={8} onOpen={(record)=>setDrawer({title:record.firm_individual,records:[record],description:record.summary})}/></section>
-            <section className="workspace-card workspace-card--half"><div className="workspace-card__heading"><h2>{comparisonRegulator} top penalties</h2></div><RegulatorTable records={comparison.fines.slice().sort((a,b)=>b.amount-a.amount)} limit={8} onOpen={(record)=>setDrawer({title:record.firm_individual,records:[record],description:record.summary})}/></section>
+            <section className="workspace-card workspace-card--half"><div className="workspace-card__heading"><h2>{comparisonRegulator} top penalties</h2></div><RegulatorTable records={comparisonRecords.slice().sort((a,b)=>b.amount-a.amount)} limit={8} onOpen={(record)=>setDrawer({title:record.firm_individual,records:[record],description:record.summary})}/></section>
           </div>
         ) : (
           <div className="workspace-grid">

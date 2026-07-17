@@ -11,6 +11,7 @@ export default defineConfig({
     hookTimeout: 60000,
     include: [
       'src/**/*.{test,spec}.{ts,tsx}',
+      'api/**/*.{test,spec}.{ts,tsx}',
       'server/**/*.{test,spec}.{ts,tsx}',
       'scripts/country-risk/lib/**/*.{test,spec}.{ts,tsx}',
       'scripts/scraper/__tests__/**/*.{test,spec}.{ts,tsx}',

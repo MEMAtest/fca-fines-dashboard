@@ -16,7 +16,10 @@ function formatRecords(
   if (transform) {
     return records.map((record) => transform(record));
   }
+  const generatedAt = new Date().toISOString();
+  const scope = typeof window === "undefined" ? "RegActions workspace" : `${window.location.pathname}${window.location.search}`;
   return records.map((record) => ({
+    "Canonical Case ID": record.canonical_case_id || record.fine_reference || record.id || "—",
     Reference: record.fine_reference || "—",
     "Date Issued": new Date(record.date_issued).toLocaleDateString("en-GB"),
     Year: record.year_issued,
@@ -25,10 +28,17 @@ function formatRecords(
     "Firm Category": record.firm_category || "—",
     "Breach Type": record.breach_type || "—",
     "Breach Categories": record.breach_categories?.join("; ") || "—",
-    "Amount (£)": record.amount,
+    "Amount (£)": record.requires_amount_review ? "Under review" : record.amount,
+    "Amount Quality": record.amount_quality || "reported",
+    "Amount Review Required": record.requires_amount_review ? "Yes" : "No",
     Summary: record.summary,
     Regulator: record.regulator,
     "Official Source URL": getBestRecordSourceUrl(record) || "—",
+    "Source Status": record.source_link_status || "official_unverified",
+    "Source Last Checked": record.source_checked_at || "Not yet checked",
+    "Exported At": generatedAt,
+    "Workspace Scope": scope,
+    "Methodology Version": "enforcement-evidence-v1",
   }));
 }
 
@@ -90,6 +100,10 @@ export async function exportData({
           Value: `${Math.min(...records.map((r) => r.year_issued))} - ${Math.max(...records.map((r) => r.year_issued))}`,
         },
         { Metric: "Export Date", Value: new Date().toLocaleString("en-GB") },
+        { Metric: "Data as of", Value: records.map((record) => record.date_issued).sort().slice(-1)[0] || "Not recorded" },
+        { Metric: "Counting unit", Value: "Canonical public enforcement case" },
+        { Metric: "Methodology", Value: "enforcement-evidence-v1" },
+        { Metric: "Scope", Value: typeof window === "undefined" ? "RegActions workspace" : `${window.location.pathname}${window.location.search}` },
       ];
       const summarySheet = XLSX.utils.json_to_sheet(summary);
       XLSX.utils.book_append_sheet(workbook, summarySheet, "Summary");

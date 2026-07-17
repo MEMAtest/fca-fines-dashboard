@@ -18,6 +18,7 @@ export type EvidenceSurface =
   | "firm_hub"
   | "latest_notices"
   | "lessons_analysis"
+  | "intelligence_briefing"
   | "dashboard_hero";
 
 export interface EvidenceCase {
@@ -37,6 +38,10 @@ export interface EvidenceCase {
   directSourceUrl: string | null;
   listingSourceUrl: string | null;
   sourceWindowNote?: string | null;
+  sourceCheckedAt?: string | null;
+  sourceHttpStatus?: number | null;
+  amountQuality?: string | null;
+  requiresAmountReview?: boolean;
   surface: EvidenceSurface;
 }
 
@@ -52,6 +57,10 @@ export interface EvidenceCaseInput extends SourceLinkRecord {
   categories?: string[] | null;
   summary?: string | null;
   sourceWindowNote?: string | null;
+  sourceCheckedAt?: string | null;
+  sourceHttpStatus?: number | null;
+  amountQuality?: string | null;
+  requiresAmountReview?: boolean;
 }
 
 export function buildEvidenceCase(
@@ -91,6 +100,10 @@ export function buildEvidenceCase(
     directSourceUrl,
     listingSourceUrl,
     sourceWindowNote: input.sourceWindowNote,
+    sourceCheckedAt: input.sourceCheckedAt,
+    sourceHttpStatus: input.sourceHttpStatus,
+    amountQuality: input.amountQuality,
+    requiresAmountReview: input.requiresAmountReview,
     surface,
   };
 }
@@ -101,7 +114,7 @@ export function buildFineRecordEvidence(
   currency = "GBP",
 ) {
   return buildEvidenceCase({
-    id: record.id ?? record.fine_reference,
+    id: record.canonical_case_id ?? record.id ?? record.fine_reference,
     entity: record.firm_individual,
     regulator: record.regulator,
     regulatorFullName: record.regulator_full_name,
@@ -119,5 +132,9 @@ export function buildFineRecordEvidence(
     official_publication_url: record.official_publication_url,
     source_link_status: record.source_link_status,
     source_link_label: record.source_link_label,
+    sourceCheckedAt: record.source_checked_at,
+    sourceHttpStatus: record.source_http_status,
+    amountQuality: record.amount_quality,
+    requiresAmountReview: record.requires_amount_review,
   }, surface);
 }

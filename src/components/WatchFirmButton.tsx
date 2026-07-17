@@ -179,7 +179,7 @@ export function WatchFirmButton({ firmName, variant = 'button', className = '', 
                       </button>
 
                       <p className="form-footer">
-                        You'll receive an email whenever {firmName} is fined by the FCA.
+                        You'll receive an email when RegActions records a new public enforcement action for {firmName}.
                         Unsubscribe anytime.
                       </p>
                     </form>

@@ -1,0 +1,40 @@
+.enforcement-explorer__search { display: grid; grid-template-columns: auto 1fr auto auto; align-items: center; gap: 9px; margin-bottom: 10px; padding: 8px 9px 8px 13px; border: 1px solid #d7e1ea; border-radius: 10px; background: #fff; box-shadow: 0 5px 18px rgba(15,35,55,.05); }
+.enforcement-explorer__search svg { color: #718195; }
+.enforcement-explorer__search input { min-width: 0; min-height: 38px; border: 0; outline: 0; color: #163048; font: inherit; font-size: 13px; }
+.enforcement-explorer__search button { min-height: 35px; padding: 7px 13px; border: 0; border-radius: 7px; background: #1268db; color: #fff; font: inherit; font-size: 11px; font-weight: 700; cursor: pointer; }
+.enforcement-explorer__search button.is-clear { display: grid; place-items: center; padding: 7px; background: #eef2f6; color: #607184; }
+.enforcement-explorer__regulators { display: flex; flex-wrap: wrap; gap: 5px; margin-bottom: 10px; }
+.enforcement-explorer__regulators button { padding: 6px 9px; border: 1px solid #d8e1e9; border-radius: 999px; background: #fff; color: #536579; font: inherit; font-size: 10px; font-weight: 700; cursor: pointer; }
+.enforcement-explorer__regulators button.is-selected { border-color: #078e61; background: #eaf8f3; color: #087c57; }
+.enforcement-explorer__summary { display: flex; flex-wrap: wrap; align-items: center; gap: 15px; margin-bottom: 9px; padding: 8px 11px; border-radius: 8px; background: #eef5ff; color: #56718f; font-size: 10px; }
+.enforcement-explorer__summary strong { color: #1e456f; font-size: 12px; }
+.enforcement-explorer__results { display: grid; gap: 7px; }
+.enforcement-explorer__results article { display: grid; grid-template-columns: auto minmax(120px,160px) minmax(250px,1fr) minmax(180px,auto) auto; align-items: center; gap: 12px; padding: 11px 12px; border: 1px solid #dde5ed; border-radius: 9px; background: #fff; transition: border-color .15s,box-shadow .15s; }
+.enforcement-explorer__results article:hover { border-color: #b9c9d8; box-shadow: 0 5px 16px rgba(19,45,69,.06); }
+.enforcement-explorer__results article.is-selected { border-color: #25a77b; box-shadow: inset 3px 0 #25a77b; }
+.enforcement-explorer__select input { width: 16px; height: 16px; accent-color: #079566; }
+.enforcement-explorer__entity { display: grid; gap: 3px; min-width: 0; padding: 0; border: 0; background: transparent; color: #153047; font: inherit; text-align: left; cursor: pointer; }
+.enforcement-explorer__entity strong { font-size: 12px; }
+.enforcement-explorer__entity span { overflow: hidden; color: #718195; font-size: 10px; text-overflow: ellipsis; white-space: nowrap; }
+.enforcement-explorer__meta { display: grid; grid-template-columns: auto auto; gap: 3px 8px; color: #718195; font-size: 9px; }
+.enforcement-explorer__meta strong { grid-column: 1 / -1; color: #087c57; font-size: 11px; }
+.enforcement-explorer__actions { display: grid; justify-items: start; gap: 4px; }
+.enforcement-explorer__actions > button { display: inline-flex; align-items: center; gap: 4px; padding: 0; border: 0; background: transparent; color: #1768dc; font: inherit; font-size: 10px; font-weight: 700; cursor: pointer; }
+.enforcement-explorer__pagination { display: flex; align-items: center; justify-content: center; gap: 12px; padding: 18px; color: #64758a; font-size: 11px; }
+.enforcement-explorer__pagination button { padding: 7px 11px; border: 1px solid #d8e1e9; border-radius: 7px; background: #fff; color: #29435c; font: inherit; cursor: pointer; }
+.enforcement-explorer__pagination button:disabled { opacity: .45; cursor: not-allowed; }
+
+@media (max-width: 1050px) {
+  .enforcement-explorer__results article { grid-template-columns: auto minmax(110px,150px) 1fr auto; }
+  .enforcement-explorer__meta { grid-column: 3; }
+  .enforcement-explorer__actions { grid-column: 4; grid-row: 1 / span 2; }
+}
+
+@media (max-width: 700px) {
+  .enforcement-explorer__filters { grid-template-columns: 1fr 1fr; }
+  .enforcement-explorer__results article { grid-template-columns: auto 1fr; align-items: start; }
+  .enforcement-explorer__results article > :not(.enforcement-explorer__select) { grid-column: 2; }
+  .enforcement-explorer__meta { display: flex; flex-wrap: wrap; }
+  .enforcement-explorer__meta strong { grid-column: auto; }
+  .enforcement-explorer__actions { display: flex; grid-row: auto; }
+}

@@ -17,4 +17,12 @@ describe("SiteHeader research navigation", () => {
     expect(breadcrumbResearch).toHaveAttribute("href", "/blog");
     expect(screen.getByText("Topics", { selector: ".site-header__crumb-current" })).toBeInTheDocument();
   });
+
+  it("uses product labels that describe each destination", () => {
+    render(<MemoryRouter initialEntries={["/fines"]}><SiteHeader /></MemoryRouter>);
+    const mainNavigation = screen.getByRole("navigation", { name: "Main navigation" });
+    expect(within(mainNavigation).getByRole("link", { name: "Fines" })).toHaveAttribute("href", "/fines");
+    expect(within(mainNavigation).getByRole("link", { name: "Enforcement Explorer" })).toHaveAttribute("href", "/search");
+    expect(within(mainNavigation).getByRole("link", { name: "Enforcement Briefing" })).toHaveAttribute("href", "/intelligence");
+  });
 });

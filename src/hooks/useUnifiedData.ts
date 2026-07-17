@@ -66,13 +66,17 @@ export function transformUnifiedRecord(
 ): FineRecord {
   const amountGbp = toNumber(record.amount_gbp);
   const amountEur = toNumber(record.amount_eur);
+  const amountRequiresReview = Boolean(record.requires_amount_review);
+  const safeAmountGbp = amountRequiresReview ? 0 : amountGbp;
+  const safeAmountEur = amountRequiresReview ? 0 : amountEur;
 
   return {
     id: record.id,
-    fine_reference: record.id, // Use id as reference since unified doesn't have fine_reference
+    canonical_case_id: record.canonical_case_id || record.id,
+    fine_reference: record.canonical_case_id || record.id,
     firm_individual: record.firm_individual,
     firm_category: record.firm_category || "",
-    amount: currency === "EUR" ? amountEur : amountGbp,
+    amount: currency === "EUR" ? safeAmountEur : safeAmountGbp,
     date_issued: record.date_issued,
     year_issued: toInteger(record.year_issued),
     month_issued: toInteger(record.month_issued),
@@ -97,6 +101,16 @@ export function transformUnifiedRecord(
         source_link_label: record.source_link_label || null,
       }),
     source_link_label: record.source_link_label || null,
+    duplicate_count: toInteger(record.duplicate_count),
+    amount_quality: record.amount_quality || "reported",
+    requires_amount_review: amountRequiresReview,
+    amount_verification_url: record.amount_verification_url || null,
+    amount_override_reason: record.amount_override_reason || null,
+    source_checked_at: record.source_checked_at || null,
+    source_http_status:
+      record.source_http_status == null ? null : toInteger(record.source_http_status),
+    source_official_domain_match: record.source_official_domain_match ?? null,
+    source_content_hash: record.source_content_hash || null,
     created_at: record.created_at,
     updated_at: record.created_at,
     // Add unified-specific fields
@@ -104,8 +118,8 @@ export function transformUnifiedRecord(
     regulator_full_name: record.regulator_full_name,
     country_code: record.country_code,
     country_name: record.country_name,
-    amount_eur: amountEur,
-    amount_gbp: amountGbp,
+    amount_eur: safeAmountEur,
+    amount_gbp: safeAmountGbp,
   };
 }
 

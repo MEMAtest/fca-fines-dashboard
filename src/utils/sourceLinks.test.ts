@@ -2,17 +2,17 @@ import { describe, expect, it } from "vitest";
 import { deriveSourceLinkStatus } from "./sourceLinks.js";
 
 describe("deriveSourceLinkStatus", () => {
-  it("recognises verified case notices and publications", () => {
+  it("does not infer verification from URL shape alone", () => {
     expect(deriveSourceLinkStatus(
       "FCA",
       "https://www.fca.org.uk/news/news-stories/example-case",
       "https://www.fca.org.uk/news/search-results",
-    )).toBe("verified_detail");
+    )).toBe("official_unverified");
     expect(deriveSourceLinkStatus(
       "FCA",
       "https://www.fca.org.uk/publication/final-notices/example.pdf",
       null,
-    )).toBe("verified_publication");
+    )).toBe("official_unverified");
   });
 
   it("does not present regulator listing pages as verified case evidence", () => {

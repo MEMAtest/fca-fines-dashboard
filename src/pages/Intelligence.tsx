@@ -28,6 +28,8 @@ import {
 } from "../api.js";
 import { PUBLIC_REGULATOR_SHELL_ITEMS } from "../data/regulatorShellNav.js";
 import { useSEO } from "../hooks/useSEO.js";
+import { useEvidenceModal } from "../components/EvidenceModalProvider.js";
+import { buildEvidenceCase } from "../utils/evidenceCase.js";
 import "../styles/intelligence.css";
 
 const PERSONA_OPTIONS = [
@@ -116,14 +118,14 @@ function buildCopyText(result: EnforcementBriefingResponse) {
   return lines.join("\n");
 }
 
-function describeModelBoundary(result: EnforcementBriefingResponse) {
+function describeGenerationBoundary(result: EnforcementBriefingResponse) {
   if (!result.datasetSummary.modelInput.sentToModel || result.fallbackUsed) {
     if (result.datasetSummary.evidenceActions > 0) {
-      return `DeepSeek was not used for this response. RegActions selected ${result.datasetSummary.evidenceActions} cited evidence records and generated a deterministic briefing from the qualified dataset.`;
+      return `RegActions selected ${result.datasetSummary.evidenceActions} cited evidence records and generated this briefing deterministically from the qualified dataset.`;
     }
-    return "DeepSeek was not called because no qualified enforcement actions matched these filters.";
+    return "No model was called because no qualified enforcement actions matched these filters.";
   }
-  return `DeepSeek received the qualified dataset summary and ${result.datasetSummary.modelInput.evidenceRowsSent} cited evidence records selected by RegActions.`;
+  return `The language model received the qualified dataset summary and ${result.datasetSummary.modelInput.evidenceRowsSent} cited evidence records selected by RegActions. It did not retrieve or select evidence independently.`;
 }
 
 function chartLabel(value: string) {
@@ -138,14 +140,15 @@ function splitTerms(value: string) {
 }
 
 export function Intelligence() {
+  const { openEvidence } = useEvidenceModal();
   useSEO({
-    title: "Agentic Enforcement Intelligence | RegActions",
+    title: "Enforcement Briefing | RegActions",
     description:
       "Generate cited enforcement briefings and recurring themes from RegActions regulatory action data.",
     keywords:
       "agentic compliance intelligence, enforcement briefing, MLRO enforcement themes, regulatory fines AI",
     canonicalPath: "/intelligence",
-    ogTitle: "Agentic Enforcement Intelligence - RegActions",
+    ogTitle: "Enforcement Briefing - RegActions",
     ogDescription:
       "Generate cited enforcement pattern briefings for compliance teams.",
     ogType: "website",
@@ -360,18 +363,30 @@ export function Intelligence() {
     }
   }
 
+  function openCitation(citation: EnforcementBriefingResponse["citations"][number]) {
+    openEvidence(buildEvidenceCase({
+      id: citation.actionId,
+      entity: citation.firm,
+      regulator: citation.regulator,
+      dateIssued: citation.dateIssued,
+      currency: result?.filters.currency || "GBP",
+      summary: citation.title,
+      source_url: citation.url,
+    }, "intelligence_briefing"));
+  }
+
   return (
     <main className="intelligence-page">
       <section className="intelligence-page__header">
         <div>
           <p className="intelligence-page__eyebrow">
             <Bot size={16} aria-hidden="true" />
-            Agentic enforcement intelligence
+            Evidence-led enforcement intelligence
           </p>
-          <h1>Enforcement Trend Summariser</h1>
+          <h1>Enforcement Briefing</h1>
           <p>
-            Turn a selected enforcement dataset into themes, watch-points,
-            visual patterns, and cited source evidence.
+            Turn a selected enforcement dataset into an executive summary,
+            comparable precedents, management questions and cited source evidence.
           </p>
         </div>
         <div className="intelligence-page__status">
@@ -486,16 +501,16 @@ export function Intelligence() {
         <section className="agentic-workbench">
           <div className="agentic-workbench__header">
             <div>
-              <p className="intelligence-section-kicker">Agentic data layer</p>
-              <h2>Test the remaining agent capabilities locally</h2>
+              <p className="intelligence-section-kicker">Firm impact workbench</p>
+              <h2>Apply the enforcement evidence to a firm profile</h2>
               <p>
-                Runs comparator, horizon scan, control gap, research, and impact
-                analysis over qualified RegActions data before any model wording.
+                Compare the qualified evidence with a selected firm profile, recent
+                change and the control information you provide.
               </p>
             </div>
             <button type="button" onClick={runWorkbench} disabled={workbenchLoading}>
               {workbenchLoading ? <Loader2 size={18} aria-hidden="true" className="spin" /> : <Bot size={18} aria-hidden="true" />}
-              <span>{workbenchLoading ? "Running" : "Run workbench"}</span>
+              <span>{workbenchLoading ? "Analysing" : "Analyse firm impact"}</span>
             </button>
           </div>
 
@@ -633,7 +648,7 @@ export function Intelligence() {
             <div className="intelligence-output__toolbar">
               <div>
                 <p className="intelligence-output__eyebrow">
-                  {result.fallbackUsed ? "Deterministic fallback" : "DeepSeek generated"}
+                  {result.fallbackUsed ? "Deterministic evidence briefing" : "Evidence-generated briefing"}
                   {result.cached ? " - cached" : ""}
                 </p>
                 <h2>Briefing generated {formatDate(result.generatedAt)}</h2>
@@ -672,7 +687,10 @@ export function Intelligence() {
               <div>
                 <p className="intelligence-section-kicker">Qualified dataset</p>
                 <h3>{result.datasetSummary.scopeLabel}</h3>
-                <p>{describeModelBoundary(result)}</p>
+                <p>
+                  Evidence selection, statistics and citations are derived from the
+                  qualified RegActions dataset. Generation details are retained in the audit trail below.
+                </p>
                 <p className="intelligence-dataset-summary__taxonomy">
                   Categorised with the {result.datasetSummary.taxonomy.name} before model use.
                 </p>
@@ -807,9 +825,17 @@ export function Intelligence() {
                         <div className="intelligence-citation-pills">
                           <span className="intelligence-citation-pills__label">Evidence</span>
                           {theme.evidenceIds.map((id) => (
-                            <a key={id} href={`#citation-${id}`} title={`Jump to evidence ${id}`}>
+                            <button
+                              type="button"
+                              key={id}
+                              title={`Open evidence ${id}`}
+                              onClick={() => {
+                                const citation = result.citations.find((item) => item.id === id);
+                                if (citation) openCitation(citation);
+                              }}
+                            >
                               {id}
-                            </a>
+                            </button>
                           ))}
                         </div>
                       ) : null}
@@ -828,28 +854,67 @@ export function Intelligence() {
               </section>
             </div>
 
+            <section className="intelligence-precedents">
+              <div>
+                <p className="intelligence-section-kicker">Comparable precedents</p>
+                <h3>Cases supporting this briefing</h3>
+              </div>
+              <div className="intelligence-precedents__grid">
+                {result.briefing.notablePrecedents.map((precedent) => {
+                  const citation = result.citations.find((item) => item.id === precedent.citationId);
+                  return (
+                    <button
+                      type="button"
+                      key={`${precedent.firm}-${precedent.dateIssued}`}
+                      disabled={!citation}
+                      onClick={() => citation && openCitation(citation)}
+                    >
+                      <strong>{precedent.firm}</strong>
+                      <span>{precedent.regulator} · {formatDate(precedent.dateIssued)}</span>
+                      <p>{precedent.reason}</p>
+                      {citation ? <em>Open evidence {citation.id}</em> : null}
+                    </button>
+                  );
+                })}
+              </div>
+            </section>
+
             <section className="intelligence-citations">
               <h3>Evidence citations</h3>
               <div>
                 {displayedCitations.map((citation) => (
-                  <a
+                  <button
+                    type="button"
                     key={citation.id}
                     id={`citation-${citation.id}`}
-                    href={citation.url || undefined}
-                    target="_blank"
-                    rel="noreferrer"
-                    className={!citation.url ? "is-disabled" : ""}
+                    onClick={() => openCitation(citation)}
                   >
                     <span>{citation.id}</span>
                     <strong>{citation.firm}</strong>
                     <em>
                       {citation.regulator} - {formatDate(citation.dateIssued)}
                     </em>
-                    {citation.url ? <ExternalLink size={14} aria-hidden="true" /> : null}
-                  </a>
+                    <ExternalLink size={14} aria-hidden="true" />
+                  </button>
                 ))}
               </div>
             </section>
+
+            <details className="intelligence-audit">
+              <summary>Generation and evidence audit</summary>
+              <div>
+                <p>{describeGenerationBoundary(result)}</p>
+                <dl>
+                  <div><dt>Evidence hash</dt><dd>{result.evidenceHash}</dd></div>
+                  <div><dt>Model route</dt><dd>{result.model}</dd></div>
+                  <div><dt>Review state</dt><dd>{result.fallbackUsed ? "Deterministic output" : "Language reviewed against citations"}</dd></div>
+                  <div><dt>As at</dt><dd>{formatDate(result.generatedAt)}</dd></div>
+                </dl>
+                {result.briefing.limitations.length ? (
+                  <ul>{result.briefing.limitations.map((limitation) => <li key={limitation}>{limitation}</li>)}</ul>
+                ) : null}
+              </div>
+            </details>
 
             <footer className="intelligence-disclaimer">
               {result.briefing.disclaimer}

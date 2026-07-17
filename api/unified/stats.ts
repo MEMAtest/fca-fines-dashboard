@@ -38,15 +38,15 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   try {
     const { year, currency = 'GBP' } = req.query as Record<string, string>;
     const amountColumn = currency === 'EUR' ? 'amount_eur' : 'amount_gbp';
-    const yearFilter = year ? `WHERE year_issued = ${parseInt(year)}` : '';
+    const trustedAmount = `CASE WHEN requires_amount_review THEN NULL ELSE ${amountColumn} END`;
 
     // UK (FCA) stats
     const ukStats = await sql.unsafe(`
       SELECT
         COUNT(*) as count,
-        COALESCE(SUM(${amountColumn}), 0)::numeric(18,2) as total,
-        COALESCE(AVG(${amountColumn}), 0)::numeric(18,2) as average,
-        COALESCE(MAX(${amountColumn}), 0)::numeric(18,2) as max_fine,
+        COALESCE(SUM(${trustedAmount}), 0)::numeric(18,2) as total,
+        COALESCE(AVG(${trustedAmount}), 0)::numeric(18,2) as average,
+        COALESCE(MAX(${trustedAmount}), 0)::numeric(18,2) as max_fine,
         MIN(date_issued) as earliest_date,
         MAX(date_issued) as latest_date
       FROM public.all_regulatory_fines_canonical
@@ -57,9 +57,9 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     const euStats = await sql.unsafe(`
       SELECT
         COUNT(*) as count,
-        COALESCE(SUM(${amountColumn}), 0)::numeric(18,2) as total,
-        COALESCE(AVG(${amountColumn}), 0)::numeric(18,2) as average,
-        COALESCE(MAX(${amountColumn}), 0)::numeric(18,2) as max_fine,
+        COALESCE(SUM(${trustedAmount}), 0)::numeric(18,2) as total,
+        COALESCE(AVG(${trustedAmount}), 0)::numeric(18,2) as average,
+        COALESCE(MAX(${trustedAmount}), 0)::numeric(18,2) as max_fine,
         MIN(date_issued) as earliest_date,
         MAX(date_issued) as latest_date
       FROM public.all_regulatory_fines_canonical
@@ -74,9 +74,9 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         country_code,
         country_name,
         COUNT(*) as count,
-        COALESCE(SUM(${amountColumn}), 0)::numeric(18,2) as total,
-        COALESCE(AVG(${amountColumn}), 0)::numeric(18,2) as average,
-        COALESCE(MAX(${amountColumn}), 0)::numeric(18,2) as max_fine
+        COALESCE(SUM(${trustedAmount}), 0)::numeric(18,2) as total,
+        COALESCE(AVG(${trustedAmount}), 0)::numeric(18,2) as average,
+        COALESCE(MAX(${trustedAmount}), 0)::numeric(18,2) as max_fine
       FROM public.all_regulatory_fines_canonical
       WHERE regulator IN (${PUBLIC_REGULATOR_CODES.map(r => `'${r}'`).join(', ')})
       ${year ? `AND year_issued = ${parseInt(year)}` : ''}
@@ -91,7 +91,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         regulator,
         country_code,
         firm_individual,
-        ${amountColumn} as amount,
+        ${trustedAmount} as amount,
         date_issued,
         breach_type,
         summary,
@@ -99,7 +99,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       FROM public.all_regulatory_fines_canonical
       WHERE regulator IN (${PUBLIC_REGULATOR_CODES.map(r => `'${r}'`).join(', ')})
       ${year ? `AND year_issued = ${parseInt(year)}` : ''}
-      ORDER BY ${amountColumn} DESC NULLS LAST
+      ORDER BY ${trustedAmount} DESC NULLS LAST
       LIMIT 10
     `);
 
@@ -108,7 +108,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       SELECT
         breach_type,
         COUNT(*) as count,
-        COALESCE(SUM(${amountColumn}), 0)::numeric(18,2) as total
+        COALESCE(SUM(${trustedAmount}), 0)::numeric(18,2) as total
       FROM public.all_regulatory_fines_canonical
       WHERE regulator IN (${PUBLIC_REGULATOR_CODES.map(r => `'${r}'`).join(', ')})
       ${year ? `AND year_issued = ${parseInt(year)}` : ''}
@@ -124,7 +124,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         ARRAY_AGG(DISTINCT regulator) as regulators,
         COUNT(DISTINCT regulator) as regulator_count,
         COUNT(*) as total_fines,
-        COALESCE(SUM(${amountColumn}), 0)::numeric(18,2) as total_amount
+        COALESCE(SUM(${trustedAmount}), 0)::numeric(18,2) as total_amount
       FROM public.all_regulatory_fines_canonical
       WHERE regulator IN (${PUBLIC_REGULATOR_CODES.map(r => `'${r}'`).join(', ')})
       ${year ? `AND year_issued = ${parseInt(year)}` : ''}
@@ -141,7 +141,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         month_issued,
         regulator,
         COUNT(*) as count,
-        COALESCE(SUM(${amountColumn}), 0)::numeric(18,2) as total
+        COALESCE(SUM(${trustedAmount}), 0)::numeric(18,2) as total
       FROM public.all_regulatory_fines_canonical
       WHERE regulator IN (${PUBLIC_REGULATOR_CODES.map(r => `'${r}'`).join(', ')})
       ${year ? `AND year_issued = ${parseInt(year)}` : ''}

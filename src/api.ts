@@ -94,6 +94,7 @@ export function fetchSector(
 
 // Unified API endpoints for multi-regulator data
 export interface UnifiedSearchParams {
+  q?: string;
   regulator?: string;
   country?: string;
   year?: number;
@@ -137,10 +138,21 @@ export interface UnifiedSearchResponse {
     source_link_status?:
       | "verified_detail"
       | "verified_publication"
+      | "official_unverified"
       | "listing_only"
       | "missing"
       | null;
     source_link_label?: string | null;
+    canonical_case_id?: string | null;
+    duplicate_count?: number | string | null;
+    amount_quality?: string | null;
+    requires_amount_review?: boolean | null;
+    amount_verification_url?: string | null;
+    amount_override_reason?: string | null;
+    source_checked_at?: string | null;
+    source_http_status?: number | string | null;
+    source_official_domain_match?: boolean | null;
+    source_content_hash?: string | null;
     created_at: string;
   }>;
   pagination: {
@@ -207,6 +219,8 @@ export interface UnifiedStatsResponse {
 
 export function fetchUnifiedSearch(params: UnifiedSearchParams = {}) {
   const queryParams = new URLSearchParams();
+
+  if (params.q?.trim()) queryParams.set("q", params.q.trim());
 
   if (params.regulator && params.regulator !== "All")
     queryParams.set("regulator", params.regulator);
@@ -279,6 +293,12 @@ export interface UnifiedOverviewResponse {
     largestFirm: string;
     affectedFirms: number;
     latestDate: string | null;
+    disclosedAmountCount?: number;
+    collapsedSourceRows?: number;
+    assessedAmountCount?: number;
+    amountReviewCount?: number;
+    latestIngestionAt?: string | null;
+    latestSourceCheckAt?: string | null;
   };
   yearly: Array<{ key: string; label: string; year: number; count: number; amount: number }>;
   monthly: Array<{ key: string; label: string; year: number; month: number; count: number; amount: number }>;

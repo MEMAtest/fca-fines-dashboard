@@ -22,6 +22,7 @@ interface BoardPackPdfDocumentProps {
   generatedLabel: string;
   controlSummary: ControlChallengeSummary;
   controlChecklist: ControlChecklistItem[];
+  controlStatuses: Record<string, import("../utils/boardIntelligence.js").ControlStatus>;
 }
 
 const colours = {
@@ -99,7 +100,7 @@ function Bullets({ items, limit = 8 }: { items: string[]; limit?: number }) {
 }
 
 function titleCase(value: string) {
-  return value.replaceAll("_", " ").replace(/\b\w/g, (letter) => letter.toUpperCase());
+  return value.replaceAll("_", " ").replaceAll("-", " ").replace(/\b\w/g, (letter) => letter.toUpperCase());
 }
 
 function boardFocusLabel(value: BoardFirmProfile["boardFocus"]) {
@@ -108,7 +109,7 @@ function boardFocusLabel(value: BoardFirmProfile["boardFocus"]) {
   return "Growth or market entry";
 }
 
-export function BoardPackPdfDocument({ pack, profile, generatedLabel, controlSummary, controlChecklist }: BoardPackPdfDocumentProps) {
+export function BoardPackPdfDocument({ pack, profile, generatedLabel, controlSummary, controlChecklist, controlStatuses }: BoardPackPdfDocumentProps) {
   const primaryThemes = pack.topThemes.slice(0, 5);
   return (
     <Document title={`${profile.firmName} Board Pack`} author="RegActions" subject="Regulatory enforcement intelligence board pack">
@@ -116,7 +117,7 @@ export function BoardPackPdfDocument({ pack, profile, generatedLabel, controlSum
         <Text style={styles.brand}>RegActions</Text>
         <Text style={styles.eyebrow}>Board and risk committee intelligence</Text>
         <Text style={styles.coverTitle}>{profile.firmName}</Text>
-        <Text style={styles.coverSub}>A concise enforcement intelligence and control challenge pack for board and risk committee decision-making.</Text>
+        <Text style={styles.coverSub}>A concise external enforcement-pressure brief and control evidence agenda for board and risk committee decision-making.</Text>
         <View style={styles.scopeBox}>
           <View style={styles.scopeRow}><Text style={styles.scopeLabel}>Generated</Text><Text style={styles.scopeValue}>{generatedLabel}</Text></View>
           <View style={styles.scopeRow}><Text style={styles.scopeLabel}>Committee lens</Text><Text style={styles.scopeValue}>{boardFocusLabel(profile.boardFocus)}</Text></View>
@@ -131,10 +132,10 @@ export function BoardPackPdfDocument({ pack, profile, generatedLabel, controlSum
         <PageHeader profile={profile} generatedLabel={generatedLabel} section="Executive summary" />
         <Text style={styles.eyebrow}>Executive summary</Text><Text style={styles.title}>{pack.summaryHeadline.replaceAll("—", "-")}</Text><Text style={styles.lead}>{pack.summaryNarrative.replaceAll("—", "-")}</Text>
         <View style={styles.kpis}>
-          <View style={styles.kpi}><Text style={styles.kpiLabel}>Exposure score</Text><Text style={styles.kpiValue}>{pack.exposureScore}/100</Text><Text style={styles.kpiMeta}>{pack.exposureBand} exposure</Text></View>
-          <View style={styles.kpi}><Text style={styles.kpiLabel}>Peer baseline</Text><Text style={styles.kpiValue}>{pack.peerBaselineScore}/100</Text><Text style={styles.kpiMeta}>{pack.peerBaselineDelta >= 0 ? "+" : ""}{pack.peerBaselineDelta} points</Text></View>
+          <View style={styles.kpi}><Text style={styles.kpiLabel}>Enforcement pressure</Text><Text style={styles.kpiValue}>{pack.exposureScore}/100</Text><Text style={styles.kpiMeta}>{pack.exposureBand} external pressure</Text></View>
+          <View style={styles.kpi}><Text style={styles.kpiLabel}>Reference benchmark</Text><Text style={styles.kpiValue}>{pack.peerBaselineScore}/100</Text><Text style={styles.kpiMeta}>{pack.peerBaselineDelta >= 0 ? "+" : ""}{pack.peerBaselineDelta} points</Text></View>
           <View style={styles.kpi}><Text style={styles.kpiLabel}>Relevant actions</Text><Text style={styles.kpiValue}>{pack.relevantActionCount}</Text><Text style={styles.kpiMeta}>{pack.activeRegulatorCount} regulators</Text></View>
-          <View style={styles.kpi}><Text style={styles.kpiLabel}>Control readiness</Text><Text style={styles.kpiValue}>{titleCase(controlSummary.readinessBand)}</Text><Text style={styles.kpiMeta}>{controlSummary.weakControlCount} weak controls</Text></View>
+          <View style={styles.kpi}><Text style={styles.kpiLabel}>Control readiness</Text><Text style={styles.kpiValue}>{controlSummary.readinessBand ? titleCase(controlSummary.readinessBand) : "Unassessed"}</Text><Text style={styles.kpiMeta}>{controlSummary.assessedControlCount} controls assessed</Text></View>
         </View>
         <View style={styles.grid}><View style={styles.cardGreen}><Text style={styles.cardTitle}>Executive takeaways</Text><Bullets items={pack.executiveSummaryBullets} limit={5}/></View><View style={styles.cardBlue}><Text style={styles.cardTitle}>Why this matters now</Text><Bullets items={pack.whyNowBullets} limit={5}/></View></View>
         <View style={styles.panel}><Text style={styles.cardTitle}>Board conclusion</Text><Text>{pack.summaryHeadline.replaceAll("—", "-")}</Text></View>
@@ -143,7 +144,7 @@ export function BoardPackPdfDocument({ pack, profile, generatedLabel, controlSum
 
       <Page size="A4" style={styles.page}>
         <PageHeader profile={profile} generatedLabel={generatedLabel} section="Exposure and peers" />
-        <Text style={styles.eyebrow}>Exposure and peer comparison</Text><Text style={styles.title}>The themes driving regulatory exposure</Text><Text style={styles.lead}>{pack.peerBaselineNarrative.replaceAll("—", "-")}</Text>
+        <Text style={styles.eyebrow}>External pressure and reference comparison</Text><Text style={styles.title}>The themes driving enforcement pressure</Text><Text style={styles.lead}>{pack.peerBaselineNarrative.replaceAll("—", "-")}</Text>
         <View style={styles.grid}>
           <View style={styles.card}><Text style={styles.cardTitle}>Exposure drivers</Text>{primaryThemes.map((theme) => <View style={styles.barRow} key={theme.id}><View style={styles.barHead}><Text style={styles.barLabel}>{theme.shortLabel}</Text><Text>{theme.score}/100</Text></View><View style={styles.barTrack}><View style={[styles.barFill,{width:`${Math.max(theme.score,3)}%`}]} /></View><Text style={styles.kpiMeta}>{theme.matchedActions} matched actions | {theme.activeRegulators.join(", ") || "Regulator mix limited"}</Text></View>)}</View>
           <View style={styles.card}><Text style={styles.cardTitle}>Regulator signals</Text>{pack.regulatorSignals.slice(0,6).map((signal) => <View style={styles.scopeRow} key={signal.code}><Text style={styles.colSmall}>{signal.code}</Text><Text style={styles.col}>{signal.actionCount} actions</Text><Text style={signal.band === "severe" || signal.band === "material" ? styles.statusHigh : styles.statusMedium}>{titleCase(signal.band)}</Text></View>)}</View>
@@ -156,15 +157,18 @@ export function BoardPackPdfDocument({ pack, profile, generatedLabel, controlSum
         <PageHeader profile={profile} generatedLabel={generatedLabel} section="Actions and challenge" />
         <Text style={styles.eyebrow}>Actions and challenge</Text><Text style={styles.title}>What the board should request next</Text><Text style={styles.lead}>{controlSummary.challengeHeadline.replaceAll("—", "-")}</Text>
         <View style={styles.grid}><View style={styles.cardGreen}><Text style={styles.cardTitle}>Questions for management</Text><Bullets items={pack.boardQuestions} limit={7}/></View><View style={styles.cardBlue}><Text style={styles.cardTitle}>Recommended responses</Text><Bullets items={pack.recommendedActions} limit={7}/></View></View>
-        <Text style={styles.cardTitle}>Control evidence challenge</Text>
-        <View style={styles.table}><View style={styles.tableHeader}><Text style={[styles.col,styles.th]}>Theme</Text><Text style={[styles.colWide,styles.th]}>Control</Text><Text style={[styles.col,styles.th]}>Starting position</Text></View>{controlChecklist.slice(0,7).map((item)=><View style={styles.tableRow} key={item.id}><Text style={[styles.col,styles.td]}>{item.themeLabel}</Text><Text style={[styles.colWide,styles.td]}>{item.control}</Text><Text style={[styles.col,styles.td]}>{item.defaultStatus.replaceAll("-"," ")}</Text></View>)}</View>
+        <Text style={styles.cardTitle}>Control evidence prompts</Text>
+        <View style={styles.table}><View style={styles.tableHeader}><Text style={[styles.col,styles.th]}>Theme</Text><Text style={[styles.colWide,styles.th]}>Control</Text><Text style={[styles.col,styles.th]}>Assessment</Text></View>{controlChecklist.slice(0,7).map((item)=><View style={styles.tableRow} key={item.id}><Text style={[styles.col,styles.td]}>{item.themeLabel}</Text><Text style={[styles.colWide,styles.td]}>{item.control}</Text><Text style={[styles.col,styles.td]}>{titleCase(controlStatuses[item.id] ?? "unassessed")}</Text></View>)}</View>
         <PageFooter />
       </Page>
 
       <Page size="A4" style={styles.page}>
         <PageHeader profile={profile} generatedLabel={generatedLabel} section="Evidence and methodology" />
-        <Text style={styles.eyebrow}>Evidence and methodology</Text><Text style={styles.title}>Source-linked cases supporting this pack</Text><Text style={styles.lead}>The cases below are the strongest public evidence matches for the selected firm profile. Open the linked official evidence before relying on a case for a material decision.</Text>
-        <View style={styles.table}><View style={styles.tableHeader}><Text style={[styles.colWide,styles.th]}>Firm / individual</Text><Text style={[styles.col,styles.th]}>Regulator</Text><Text style={[styles.col,styles.th]}>Date</Text><Text style={[styles.colWide,styles.th]}>Reason</Text></View>{pack.notableCases.slice(0,8).map((item)=><View style={styles.tableRow} key={item.id}><View style={styles.colWide}><Text style={styles.td}>{item.firm}</Text>{item.sourceUrl && <Link src={item.sourceUrl} style={styles.sourceLink}>Open official evidence</Link>}</View><Text style={[styles.col,styles.td]}>{item.regulator}</Text><Text style={[styles.col,styles.td]}>{new Intl.DateTimeFormat("en-GB",{day:"2-digit",month:"short",year:"numeric"}).format(new Date(item.dateIssued))}</Text><Text style={[styles.colWide,styles.td]}>{item.reason.replaceAll("·","|").replaceAll("—","-")}</Text></View>)}</View>
+        <Text style={styles.eyebrow}>Evidence and methodology</Text><Text style={styles.title}>Cases supporting this pack</Text><Text style={styles.lead}>The cases below are the strongest public evidence matches for the selected profile. Links are shown only where RegActions has a verified case-level source.</Text>
+        {pack.selectedCases.length > 0 ? <Text style={styles.cardTitle}>User-selected cases</Text> : null}
+        {pack.selectedCases.length > 0 ? <View style={styles.table}><View style={styles.tableHeader}><Text style={[styles.colWide,styles.th]}>Firm / individual</Text><Text style={[styles.col,styles.th]}>Regulator</Text><Text style={[styles.col,styles.th]}>Date</Text><Text style={[styles.colWide,styles.th]}>Source state</Text></View>{pack.selectedCases.slice(0,8).map((item)=><View style={styles.tableRow} key={item.id}><View style={styles.colWide}><Text style={styles.td}>{item.firm}</Text>{item.sourceUrl && <Link src={item.sourceUrl} style={styles.sourceLink}>Open verified evidence</Link>}</View><Text style={[styles.col,styles.td]}>{item.regulator}</Text><Text style={[styles.col,styles.td]}>{new Intl.DateTimeFormat("en-GB",{day:"2-digit",month:"short",year:"numeric"}).format(new Date(item.dateIssued))}</Text><Text style={[styles.colWide,styles.td]}>{titleCase(item.sourceStatus ?? "official_unverified")}</Text></View>)}</View> : null}
+        <Text style={styles.cardTitle}>Automatically matched cases</Text>
+        <View style={styles.table}><View style={styles.tableHeader}><Text style={[styles.colWide,styles.th]}>Firm / individual</Text><Text style={[styles.col,styles.th]}>Regulator</Text><Text style={[styles.col,styles.th]}>Date</Text><Text style={[styles.colWide,styles.th]}>Reason</Text></View>{pack.notableCases.slice(0,8).map((item)=><View style={styles.tableRow} key={item.id}><View style={styles.colWide}><Text style={styles.td}>{item.firm}</Text>{item.sourceUrl && <Link src={item.sourceUrl} style={styles.sourceLink}>Open verified evidence</Link>}</View><Text style={[styles.col,styles.td]}>{item.regulator}</Text><Text style={[styles.col,styles.td]}>{new Intl.DateTimeFormat("en-GB",{day:"2-digit",month:"short",year:"numeric"}).format(new Date(item.dateIssued))}</Text><Text style={[styles.colWide,styles.td]}>{item.reason.replaceAll("·","|").replaceAll("—","-")}</Text></View>)}</View>
         <View style={styles.grid}><View style={styles.card}><Text style={styles.cardTitle}>Methodology</Text><Bullets items={pack.appendix.methodology} limit={5}/></View><View style={styles.card}><Text style={styles.cardTitle}>Important limitations</Text><Bullets items={["Public records may omit non-monetary outcomes or confidential supervisory activity.","Currency normalisation supports comparison but does not restate the original legal outcome.","Theme classification is a decision-support aid and should be checked against the source notice.","RegActions does not infer firm-specific control effectiveness from enforcement history alone."]}/></View></View>
         <PageFooter />
       </Page>

@@ -92,7 +92,7 @@ describe("UKEnforcement routing", () => {
     fireEvent.click(await screen.findByRole("button", { name: "Alpha Bank plc" }));
 
     expect(screen.getByRole("dialog", { name: "Alpha Bank plc" })).toBeInTheDocument();
-    expect(screen.getByText("Verified regulator notice")).toBeInTheDocument();
+    expect(screen.getByText("Official source link")).toBeInTheDocument();
     expect(screen.getByRole("link", { name: /Open official source/i })).toHaveAttribute(
       "href",
       "https://www.fca.org.uk/news/news-stories/alpha-bank",

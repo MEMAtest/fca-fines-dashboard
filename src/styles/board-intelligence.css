@@ -1000,6 +1000,10 @@
 .board-quick__form label small,.board-quick__form fieldset > small { color: #77879a; font-size: 9px; font-weight: 400; line-height: 1.4; }
 .board-quick__form fieldset { min-width: 0; margin: 0; padding: 0; border: 0; }
 .board-quick__form legend { margin-bottom: 7px; color: #34495e; font-size: 11px; font-weight: 700; }
+.board-quick__field-note { margin: 0 0 8px !important; line-height: 1.45; }
+.board-quick__basket-summary { display: flex; align-items: baseline; gap: 7px; margin: 7px 0; padding: 9px 10px; border-radius: 7px; background: #f1f6ff; color: #31577e; }
+.board-quick__basket-summary strong { font-size: 18px; }
+.board-quick__basket-summary span { font-size: 10px; }
 .board-quick__choice-grid { display: grid; gap: 6px; }
 .board-quick__choice-grid button { display: grid; gap: 2px; padding: 9px; border: 1px solid #dce4ec; border-radius: 7px; background: #fff; color: #283e53; font: inherit; text-align: left; cursor: pointer; }
 .board-quick__choice-grid button span { color: #718196; font-size: 9px; line-height: 1.35; }

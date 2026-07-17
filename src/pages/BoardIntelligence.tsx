@@ -27,6 +27,8 @@ import {
 } from "../data/boardIntelligence.js";
 import { LIVE_REGULATOR_NAV_ITEMS } from "../data/regulatorCoverage.js";
 import { useLocalStorage } from "../hooks/useLocalStorage.js";
+import { useEvidenceBasket } from "../hooks/useEvidenceBasket.js";
+import type { FineRecord } from "../types.js";
 import { useSEO } from "../hooks/useSEO.js";
 import { useUnifiedData } from "../hooks/useUnifiedData.js";
 import { trackEvent } from "../utils/analytics.js";
@@ -34,6 +36,7 @@ import {
   buildBoardPack,
   buildControlChecklist,
   summarizeControlChallenge,
+  type ControlStatus,
 } from "../utils/boardIntelligence.js";
 import "../styles/board-intelligence.css";
 
@@ -64,7 +67,7 @@ function toggle<T>(items: T[], item: T) {
 export function BoardIntelligence() {
   useSEO({
     title: "Quick Board Pack | RegActions",
-    description: "Create and download a concise, source-linked regulatory enforcement board pack without an account.",
+    description: "Create and download a concise external enforcement-pressure board brief without an account.",
   });
 
   const [profile, setProfile] = useLocalStorage<BoardFirmProfile>(
@@ -76,7 +79,13 @@ export function BoardIntelligence() {
   const [submitting, setSubmitting] = useState(false);
   const [downloading, setDownloading] = useState(false);
   const [status, setStatus] = useState<string | null>(null);
+  const [assuranceMode, setAssuranceMode] = useState(false);
+  const [controlStatuses, setControlStatuses] = useLocalStorage<Record<string, ControlStatus>>(
+    "regactions-board-pack-control-statuses-v1",
+    {},
+  );
   const [searchParams] = useSearchParams();
+  const evidenceBasket = useEvidenceBasket();
   const idempotencyKey = useRef(crypto.randomUUID());
   const builderStarted = useRef(false);
   const { fines, loading, error } = useUnifiedData({ regulator: "All", country: "All", year: 0, currency: "GBP" });
@@ -85,9 +94,47 @@ export function BoardIntelligence() {
     ...profile,
     firmName: profile.firmName.trim() || "Your organisation",
   }), [profile]);
-  const pack = useMemo(() => buildBoardPack(fines, safeProfile), [fines, safeProfile]);
+  const basketRecords = useMemo<FineRecord[]>(() => evidenceBasket.items.map((item) => {
+    const date = new Date(item.dateIssued);
+    return {
+      id: item.id,
+      canonical_case_id: item.id,
+      fine_reference: item.id,
+      firm_individual: item.entity,
+      firm_category: null,
+      regulator: item.regulator,
+      regulator_full_name: item.regulatorFullName ?? undefined,
+      country_name: item.country ?? undefined,
+      final_notice_url: item.directSourceUrl,
+      detail_url: item.directSourceUrl,
+      source_url: item.listingSourceUrl,
+      listing_url: item.listingSourceUrl,
+      source_link_status: item.sourceStatus,
+      summary: item.summary ?? "",
+      breach_type: item.breachType ?? null,
+      breach_categories: item.categories,
+      amount: item.requiresAmountReview ? 0 : Number(item.amount ?? 0),
+      amount_quality: item.amountQuality ?? undefined,
+      requires_amount_review: item.requiresAmountReview,
+      date_issued: item.dateIssued,
+      year_issued: Number.isNaN(date.getTime()) ? 0 : date.getUTCFullYear(),
+      month_issued: Number.isNaN(date.getTime()) ? 0 : date.getUTCMonth() + 1,
+    };
+  }), [evidenceBasket.items]);
+  const recordsForPack = useMemo(() => {
+    const selectedIds = new Set(basketRecords.map((record) => record.canonical_case_id));
+    return [...basketRecords, ...fines.filter((record) => !selectedIds.has(record.canonical_case_id))];
+  }, [basketRecords, fines]);
+  const pack = useMemo(
+    () => buildBoardPack(recordsForPack, safeProfile, basketRecords.map((record) => record.canonical_case_id!)),
+    [basketRecords, recordsForPack, safeProfile],
+  );
   const controls = useMemo(() => buildControlChecklist(pack), [pack]);
-  const controlSummary = useMemo(() => summarizeControlChallenge(controls, {}), [controls]);
+  const effectiveControlStatuses = assuranceMode ? controlStatuses : {};
+  const controlSummary = useMemo(
+    () => summarizeControlChallenge(controls, effectiveControlStatuses),
+    [controls, effectiveControlStatuses],
+  );
   const generatedLabel = useMemo(() => new Intl.DateTimeFormat("en-GB", { day: "2-digit", month: "short", year: "numeric" }).format(new Date()), []);
   const archetype = BOARD_ARCHETYPES_BY_ID[profile.archetypeId];
   const boardFocus = BOARD_FOCUS_OPTIONS.find((item) => item.id === profile.boardFocus)!;
@@ -144,6 +191,7 @@ export function BoardIntelligence() {
           generatedLabel={generatedLabel}
           controlSummary={controlSummary}
           controlChecklist={controls}
+          controlStatuses={effectiveControlStatuses}
         />,
       ).toBlob();
       const url = URL.createObjectURL(blob);
@@ -228,9 +276,9 @@ export function BoardIntelligence() {
       <section className="board-quick__hero">
         <div>
           <span className="board-quick__eyebrow"><Sparkles size={15}/> Quick Board Pack</span>
-          <h1>Create a committee-ready regulatory board pack</h1>
-          <p>Choose the firm profile and risk lens, preview the analysis, then download a structured PDF. No account is required.</p>
-          <div className="board-quick__assurance"><span><CheckCircle2 size={14}/> Public enforcement evidence</span><span><CheckCircle2 size={14}/> UK professional wording</span><span><CheckCircle2 size={14}/> Direct PDF download</span></div>
+          <h1>Create a committee-ready enforcement brief</h1>
+          <p>Choose the organisation profile and risk lens, review external enforcement pressure, then download a structured PDF. No account is required. Firm control readiness remains unassessed unless evidence is supplied.</p>
+          <div className="board-quick__assurance"><span><CheckCircle2 size={14}/> Public enforcement evidence</span><span><CheckCircle2 size={14}/> Controls fail closed as unassessed</span><span><CheckCircle2 size={14}/> Direct PDF download</span></div>
         </div>
         <div className="board-quick__hero-actions">
           <button type="button" className="board-quick__download" onClick={downloadPack} disabled={loading || downloading}>{downloading?<LoaderCircle className="spin" size={18}/>:<Download size={18}/>} {downloading?"Creating PDF...":"Download PDF"}</button>
@@ -247,6 +295,8 @@ export function BoardIntelligence() {
           <fieldset><legend>Priority themes</legend><div className="board-quick__chips">{BOARD_THEME_OPTIONS.map((item)=><button type="button" key={item.id} className={profile.priorityThemeIds.includes(item.id)?"is-selected":""} onClick={()=>setProfile({...profile,priorityThemeIds:toggle(profile.priorityThemeIds,item.id as BoardThemeId).slice(-5)})}>{item.shortLabel}</button>)}</div><small>Select up to five.</small></fieldset>
           <fieldset><legend>Regions in scope</legend><div className="board-quick__chips">{BOARD_REGION_OPTIONS.map((region)=><button type="button" key={region} className={profile.focusRegions.includes(region)?"is-selected":""} onClick={()=>setProfile({...profile,focusRegions:toggle(profile.focusRegions,region).slice(-5)})}>{region}</button>)}</div><small>Select the regions the committee is responsible for.</small></fieldset>
           <fieldset><legend>Priority regulators</legend><div className="board-quick__chips">{LIVE_REGULATOR_NAV_ITEMS.filter((item)=>item.dashboardEnabled).slice(0,20).map((item)=><button type="button" key={item.code} className={profile.priorityRegulators.includes(item.code)?"is-selected":""} onClick={()=>setProfile({...profile,priorityRegulators:toggle(profile.priorityRegulators,item.code).slice(-5)})}>{item.code}</button>)}</div><small>Select up to five. The PDF links supporting cases to official evidence.</small></fieldset>
+          <fieldset><legend>Selected evidence</legend><p className="board-quick__field-note">Cases added from evidence summaries stay in this browser and are shown separately from automatic matches.</p><div className="board-quick__basket-summary"><strong>{evidenceBasket.items.length}</strong><span>{evidenceBasket.items.length === 1 ? "case selected" : "cases selected"}</span></div>{evidenceBasket.items.length ? <button type="button" className="board-quick__secondary board-quick__secondary--full" onClick={evidenceBasket.clear}>Clear selected evidence</button> : <small>Open a case anywhere in RegActions and choose Add to board pack.</small>}</fieldset>
+          <fieldset><legend>Optional assurance inputs</legend><p className="board-quick__field-note">The quick brief does not assess your controls. Add explicit responses only if you want a control-readiness conclusion in the preview and PDF.</p><button type="button" className="board-quick__secondary board-quick__secondary--full" onClick={()=>setAssuranceMode((current)=>!current)}>{assuranceMode?"Return to external-pressure brief":"Add control evidence"}</button>{assuranceMode?<small>{controlSummary.assessedControlCount} of {controls.length} controls assessed. Readiness remains unassessed until all are completed.</small>:null}</fieldset>
           {status && <div className="board-quick__status" role="status">{status}</div>}
           <button type="button" className="board-quick__download board-quick__download--full" onClick={downloadPack} disabled={loading || downloading}>{loading||downloading?<LoaderCircle className="spin" size={18}/>:<FileText size={18}/>} {downloading?"Creating PDF...":"Create and download pack"} <ArrowRight size={17}/></button>
           <button type="button" className="board-quick__secondary board-quick__secondary--full" onClick={openAdvisoryRequest}><Mail size={16}/> Optional advisory request</button>
@@ -254,7 +304,7 @@ export function BoardIntelligence() {
 
         <div className="board-quick__preview">
           <div className="board-quick__preview-heading"><div><span>Live preview</span><h2>{safeProfile.firmName}</h2></div><span>{fines.length.toLocaleString("en-GB")} canonical actions considered</span></div>
-          {error ? <div className="board-quick__empty">The live data could not be loaded. Please refresh before creating a pack.</div> : loading ? <div className="board-quick__empty"><LoaderCircle className="spin"/> Building the evidence view...</div> : <BoardPackDashboard pack={pack} profileSummary={`${archetype.label} under a ${boardFocus.label.toLowerCase()} lens.`} archetypeLabel={archetype.label} boardFocusLabel={boardFocus.label} generatedLabel={generatedLabel} confidentialityLabel="Board / Risk Committee Use" clientLabel="" analystNote="" workingMode={false} lowerConfidenceCodes={lowerConfidenceCodes} controlSummary={controlSummary} controlChecklist={controls} controlStatuses={{}} onControlStatusChange={()=>{}}/>}
+          {error ? <div className="board-quick__empty">The live data could not be loaded. Please refresh before creating a pack.</div> : loading ? <div className="board-quick__empty"><LoaderCircle className="spin"/> Building the evidence view...</div> : <BoardPackDashboard pack={pack} profileSummary={`${archetype.label} under a ${boardFocus.label.toLowerCase()} lens.`} archetypeLabel={archetype.label} boardFocusLabel={boardFocus.label} generatedLabel={generatedLabel} confidentialityLabel="Board / Risk Committee Use" clientLabel="" analystNote="" workingMode={assuranceMode} lowerConfidenceCodes={lowerConfidenceCodes} controlSummary={controlSummary} controlChecklist={controls} controlStatuses={effectiveControlStatuses} onControlStatusChange={(controlId,nextStatus)=>setControlStatuses({...controlStatuses,[controlId]:nextStatus})}/>}
         </div>
       </section>
 

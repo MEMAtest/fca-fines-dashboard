@@ -53,7 +53,7 @@ describe("BoardIntelligence quick pack", () => {
 
   it("renders a no-account builder without the old NorthStar profile toolbar", () => {
     renderPage();
-    expect(screen.getByRole("heading", { name: /Create a committee-ready regulatory board pack/i })).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: /Create a committee-ready enforcement brief/i })).toBeInTheDocument();
     expect(screen.getByRole("heading", { name: /Build your pack/i })).toBeInTheDocument();
     expect(screen.queryByText(/Active profile/i)).not.toBeInTheDocument();
     expect(screen.queryByText(/NorthStar Compliance Profile/i)).not.toBeInTheDocument();
@@ -79,6 +79,40 @@ describe("BoardIntelligence quick pack", () => {
     const apac = screen.getByRole("button", { name: "APAC" });
     fireEvent.click(apac);
     expect(apac).toHaveClass("is-selected");
+  });
+
+  it("keeps readiness unassessed until every optional control response is supplied", () => {
+    renderPage();
+    expect(screen.getAllByText("Unassessed").length).toBeGreaterThan(0);
+    fireEvent.click(screen.getByRole("button", { name: "Add control evidence" }));
+    const controlSelectors = screen.getAllByRole("combobox", { name: /Control status for/i });
+    expect(controlSelectors.length).toBeGreaterThan(0);
+    expect(screen.getAllByText(new RegExp(`0 of ${controlSelectors.length} controls assessed`, "i")).length).toBeGreaterThan(0);
+    controlSelectors.forEach((select) => fireEvent.change(select, { target: { value: "evidenced" } }));
+    expect(screen.getAllByText(new RegExp(`${controlSelectors.length} of ${controlSelectors.length} controls assessed`, "i")).length).toBeGreaterThan(0);
+  });
+
+  it("shows evidence selected elsewhere as a distinct Board Pack section", () => {
+    window.localStorage.setItem("regactions-evidence-basket-v1", JSON.stringify([{
+      id: "case-selected-1",
+      entity: "Selected Payments Ltd",
+      regulator: "FCA",
+      dateIssued: "2025-03-04",
+      amount: 1_000_000,
+      currency: "GBP",
+      breachType: "AML controls",
+      categories: ["AML"],
+      summary: "Selected public case",
+      sourceStatus: "official_unverified",
+      sourceLabel: "Official source requires verification",
+      directSourceUrl: "https://www.fca.org.uk/news/example",
+      listingSourceUrl: null,
+      surface: "enforcement_search",
+    }]));
+    renderPage();
+    expect(screen.getByText("1", { selector: ".board-quick__basket-summary strong" })).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "Cases selected for this pack" })).toBeInTheDocument();
+    expect(screen.getAllByText(/FCA: Selected Payments Ltd/i).length).toBeGreaterThan(0);
   });
 
   it("opens a privacy-aware optional advisory form", () => {

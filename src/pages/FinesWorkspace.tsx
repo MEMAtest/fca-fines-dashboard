@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState, type CSSProperties } from "react";
 import { Link, useSearchParams } from "react-router-dom";
 import {
   Area,
@@ -39,6 +39,7 @@ import {
   recordsForSelection,
 } from "../utils/workspaceAnalytics.js";
 import { fetchWorkspaceRecords } from "../utils/fetchWorkspaceRecords.js";
+import { exportData } from "../utils/export.js";
 
 export type FinesWorkspaceView = "overview" | "actions" | "analytics" | "compare";
 
@@ -62,25 +63,6 @@ function formatDate(value: string) {
     month: "short",
     year: "numeric",
   }).format(new Date(value));
-}
-
-function exportWorkspaceCsv(records: FineRecord[]) {
-  const lines = [
-    ["Date", "Firm or individual", "Regulator", "Breach type", "Amount GBP"],
-    ...records.map((record) => [
-      record.date_issued,
-      record.firm_individual,
-      record.regulator,
-      record.breach_type ?? "",
-      String(record.amount),
-    ]),
-  ].map((row) => row.map((value) => `"${String(value).replaceAll('"', '""')}"`).join(","));
-  const url = URL.createObjectURL(new Blob([lines.join("\n")], { type: "text/csv" }));
-  const link = document.createElement("a");
-  link.href = url;
-  link.download = `regactions-fines-${new Date().toISOString().slice(0, 10)}.csv`;
-  link.click();
-  URL.revokeObjectURL(url);
 }
 
 function RecordTable({ records, onOpen, limit = 8 }: { records: FineRecord[]; onOpen: (record: FineRecord) => void; limit?: number }) {
@@ -240,9 +222,9 @@ export function FinesWorkspace({ view }: FinesWorkspaceProps) {
   }), [filtered, selectedRegulators, selectedThemes, selectedYears]);
   const annualMovement = useMemo(() => {
     const populated = yearly.filter((point) => point.count > 0).slice().sort((left, right) => left.year - right.year);
-    const latest = populated.at(-1);
+    const latest = populated[populated.length - 1];
     const previous = latest
-      ? populated.find((point) => point.year === latest.year - 1) ?? populated.at(-2)
+      ? populated.find((point) => point.year === latest.year - 1) ?? populated[populated.length - 2]
       : undefined;
     const change = latest && previous && previous.amount > 0
       ? ((latest.amount - previous.amount) / previous.amount) * 100
@@ -283,6 +265,26 @@ export function FinesWorkspace({ view }: FinesWorkspaceProps) {
     }));
     return summaries.map((summary) => ({ ...summary, metrics: getWorkspaceMetrics(summary.records) }));
   }, [filtered, selectedRegulators, selectedThemes, selectedYears]);
+  const decisionAnalytics = useMemo(() => {
+    const monetary = filtered.filter((record) => !record.requires_amount_review && record.amount > 0).slice().sort((left, right) => left.amount - right.amount);
+    const monetaryTotal = monetary.reduce((sum, record) => sum + record.amount, 0);
+    const topTenTotal = monetary.slice(-10).reduce((sum, record) => sum + record.amount, 0);
+    const p75 = monetary.length ? monetary[Math.floor((monetary.length - 1) * .75)]?.amount ?? 0 : 0;
+    const buckets = [
+      { label: "Non-monetary / undisclosed", min: -1, max: 0 },
+      { label: "Under £100k", min: 0, max: 100_000 },
+      { label: "£100k to £1m", min: 100_000, max: 1_000_000 },
+      { label: "£1m to £10m", min: 1_000_000, max: 10_000_000 },
+      { label: "£10m to £100m", min: 10_000_000, max: 100_000_000 },
+      { label: "£100m+", min: 100_000_000, max: Number.POSITIVE_INFINITY },
+    ].map((bucket) => ({ ...bucket, records: filtered.filter((record) => bucket.min < 0 ? record.amount <= 0 : record.amount > bucket.min && record.amount <= bucket.max) }));
+    return {
+      concentration: monetaryTotal > 0 ? (topTenTotal / monetaryTotal) * 100 : 0,
+      p75,
+      outliers: monetary.filter((record) => p75 > 0 && record.amount > p75 * 3).sort((left, right) => right.amount - left.amount),
+      buckets,
+    };
+  }, [filtered]);
 
   const exact = overview.data?.metrics;
   const metricCount = exact?.count ?? sampleMetrics.count;
@@ -308,9 +310,9 @@ export function FinesWorkspace({ view }: FinesWorkspaceProps) {
             <p>{view === "compare" ? "Select up to three years and five regulators or themes. Normal views open the underlying evidence on click." : "Global enforcement intelligence, financial penalties and source-linked actions in one working view."}</p>
           </div>
           <div className="workspace-page__heading-actions">
-            <Link className="workspace-button workspace-button--primary" to="/board-pack"><Sparkles size={15} /> Create board pack</Link>
+            <Link className="workspace-button workspace-button--primary" to={`/board-pack?from=${encodeURIComponent(`/fines${searchParams.toString() ? `?${searchParams.toString()}` : ""}`)}&fromLabel=Fines%20workspace`}><Sparkles size={15} /> Create board pack</Link>
             <button type="button" className={`workspace-button${compareMode ? " workspace-button--active" : ""}`} onClick={() => setCompareMode((value) => !value)}><SlidersHorizontal size={15} /> {compareMode ? "Exit compare mode" : "Compare selections"}</button>
-            <button type="button" className="workspace-button" onClick={() => exportWorkspaceCsv(filtered)}><Download size={15} /> Export</button>
+            <button type="button" className="workspace-button" onClick={() => exportData({ filename: "regactions-fines-evidence", format: "csv", records: filtered })}><Download size={15} /> Export evidence</button>
           </div>
         </header>
 
@@ -393,6 +395,10 @@ export function FinesWorkspace({ view }: FinesWorkspaceProps) {
             <section className="workspace-card"><div className="workspace-card__heading"><h2>What matters now</h2><Sparkles size={15}/></div><ul className="workspace-insights"><li><CheckCircle2 size={14}/><span>{themes[0] ? `${themes[0].label} represents the largest disclosed fine value in this view.` : "No dominant theme in the current view."}</span></li><li><CheckCircle2 size={14}/><span>{regulators[0] ? `${regulators[0].label} is the most active regulator by disclosed value.` : "No regulator activity matches the current filters."}</span></li><li><CheckCircle2 size={14}/><span>{metricLargest ? `${metricLargestFirm} is the largest penalty in scope at ${formatWorkspaceAmount(metricLargest)}.` : "No penalty is in scope."}</span></li><li><Info size={14}/><span>Open records to test each conclusion against the linked official evidence.</span></li></ul></section>
 
             {view === "analytics" && <>
+              <section className="workspace-card"><div className="workspace-card__heading"><h2>Fine concentration</h2><span>Loaded evidence set</span></div><button type="button" className="workspace-decision-metric" onClick={() => setDrawer({ title: "Ten largest penalties", records: top.slice(0,10), description: "The ten largest disclosed penalties in the current evidence set." })}><strong>{decisionAnalytics.concentration.toFixed(1)}%</strong><span>of disclosed value sits in the ten largest penalties</span></button></section>
+              <section className="workspace-card workspace-card--wide"><div className="workspace-card__heading"><h2>Penalty-size distribution</h2><span>Click a band to inspect cases</span></div><div className="workspace-distribution">{decisionAnalytics.buckets.map((bucket) => <button type="button" key={bucket.label} onClick={() => setDrawer({ title: bucket.label, records: bucket.records, description: `${formatWorkspaceActionCount(bucket.records.length)} in this penalty band.` })}><span>{bucket.label}</span><strong>{bucket.records.length}</strong><i style={{height:`${Math.max(5,(bucket.records.length / Math.max(...decisionAnalytics.buckets.map((item) => item.records.length),1))*100)}%`}}/></button>)}</div></section>
+              <section className="workspace-card workspace-card--wide"><div className="workspace-card__heading"><h2>Monthly enforcement heatmap</h2><span>Amount and action cadence</span></div><div className="workspace-heatmap">{monthly.slice(-24).map((item) => <button type="button" key={item.key} style={{"--heat":Math.max(.08,item.amount / Math.max(...monthly.map((point) => point.amount),1))} as CSSProperties} onClick={() => openSelection({year:item.year,month:item.month},`${item.label} actions`)}><span>{item.label}</span><strong>{formatWorkspaceAmount(item.amount)}</strong><small>{item.count} actions</small></button>)}</div></section>
+              <section className="workspace-card"><div className="workspace-card__heading"><h2>Outlier cases</h2><span>Above three times the 75th percentile</span></div>{decisionAnalytics.outliers.length ? <div className="workspace-bars">{decisionAnalytics.outliers.slice(0,7).map((record) => <button className="workspace-bar" type="button" key={record.canonical_case_id ?? record.id} onClick={() => setDrawer({ title: record.firm_individual, records: [record], description: record.summary })}><span>{record.firm_individual}</span><strong>{formatWorkspaceAmount(record.amount)}</strong></button>)}</div> : <p className="workspace-empty-guidance">No disclosed penalty exceeds the current outlier threshold.</p>}</section>
               <section className="workspace-card workspace-card--half"><div className="workspace-card__heading"><h2>Regulators by fine value</h2><span>Click to drill down</span></div><div className="workspace-bars">{regulators.map((item) => <button className="workspace-bar" type="button" key={item.label} onClick={() => handleRegulatorClick(item.label)}><span>{item.label}</span><div className="workspace-bar__track"><div className="workspace-bar__fill" style={{width:`${Math.max(4,item.share)}%`}}/></div><strong>{formatWorkspaceAmount(item.amount)}</strong></button>)}</div></section>
               <section className="workspace-card workspace-card--half"><div className="workspace-card__heading"><h2>Top sectors</h2><span>By disclosed value</span></div><div className="workspace-treemap">{sectors.slice(0,6).map((item) => <button className="workspace-tile" type="button" key={item.label} onClick={() => openSelection({ sector: item.label }, item.label)}><span>{item.label}</span><strong>{formatWorkspaceAmount(item.amount)}</strong><small>{formatWorkspaceActionCount(item.count)}</small></button>)}</div></section>
               <section className="workspace-card workspace-card--half"><div className="workspace-card__heading"><h2>Firms under pressure</h2><span>Top 10</span></div><div className="workspace-bars">{firms.map((item) => <button className="workspace-bar" type="button" key={item.label} onClick={() => openSelection({firm:item.label},item.label)}><span>{item.label}</span><div className="workspace-bar__track"><div className="workspace-bar__fill" style={{width:`${Math.max(4,item.share)}%`}}/></div><strong>{formatWorkspaceAmount(item.amount)}</strong></button>)}</div></section>

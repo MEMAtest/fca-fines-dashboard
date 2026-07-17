@@ -18,9 +18,11 @@ import {
   FileWarning,
   Landmark,
   Scale,
+  ShoppingBasket,
   X,
 } from "lucide-react";
 import type { EvidenceCase } from "../utils/evidenceCase.js";
+import { useEvidenceBasket } from "../hooks/useEvidenceBasket.js";
 import { trackEvent } from "../utils/analytics.js";
 import RegulatorMark from "./RegulatorMark.js";
 import "../styles/evidence-modal.css";
@@ -90,6 +92,13 @@ function sourceStatusCopy(evidence: EvidenceCase) {
       tone: "verified",
     } as const;
   }
+  if (evidence.sourceStatus === "official_unverified") {
+    return {
+      label: "Official source link",
+      detail: "This link points to an apparent regulator source but has not yet passed a persisted RegActions source check.",
+      tone: "listing",
+    } as const;
+  }
   if (evidence.sourceStatus === "listing_only") {
     return {
       label: "Regulator source list",
@@ -121,6 +130,7 @@ async function copyText(value: string) {
 }
 
 export function EvidenceModalProvider({ children }: { children: ReactNode }) {
+  const evidenceBasket = useEvidenceBasket();
   const [evidence, setEvidence] = useState<EvidenceCase | null>(null);
   const [copyStatus, setCopyStatus] = useState<string | null>(null);
   const dialogRef = useRef<HTMLElement>(null);
@@ -259,13 +269,13 @@ export function EvidenceModalProvider({ children }: { children: ReactNode }) {
 
           <div className="evidence-modal__facts" aria-label="Case facts">
             <div><CalendarDays size={16} /><span>Date</span><strong>{formatDate(evidence.dateIssued)}</strong></div>
-            <div><Scale size={16} /><span>Amount</span><strong>{formatAmount(evidence.amount, evidence.currency)}</strong></div>
+            <div><Scale size={16} /><span>Amount</span><strong>{evidence.requiresAmountReview ? "Under review" : formatAmount(evidence.amount, evidence.currency)}</strong></div>
             <div><Landmark size={16} /><span>Regulator</span><strong>{evidence.regulatorFullName || evidence.regulator}</strong></div>
           </div>
 
           <section className="evidence-modal__section">
             <h3>RegActions summary</h3>
-            <p>{evidence.summary?.trim() || "A case summary is not currently available. Use the verified source status below before opening external evidence."}</p>
+            <p>{evidence.summary?.trim() || "A case summary is not currently available. Review the source status below before opening external evidence."}</p>
           </section>
 
           {(evidence.breachType || evidence.categories.length > 0) ? (
@@ -286,6 +296,8 @@ export function EvidenceModalProvider({ children }: { children: ReactNode }) {
               <strong>{sourceCopy.label}</strong>
               <p>{evidence.sourceWindowNote || sourceCopy.detail}</p>
               {host ? <small>{host}</small> : null}
+              {evidence.sourceCheckedAt ? <small>Checked {formatDate(evidence.sourceCheckedAt)}{evidence.sourceHttpStatus ? ` | HTTP ${evidence.sourceHttpStatus}` : ""}</small> : null}
+              <small>Case ID {evidence.id}</small>
             </div>
           </section>
 
@@ -301,6 +313,22 @@ export function EvidenceModalProvider({ children }: { children: ReactNode }) {
               <Clipboard size={16} /> Copy source link
             </button>
           ) : null}
+          <button
+            type="button"
+            className="evidence-modal__secondary"
+            onClick={() => {
+              if (evidenceBasket.contains(evidence.id)) {
+                evidenceBasket.remove(evidence.id);
+                trackEvent("evidence_basket_removed", { regulator: evidence.regulator, surface: evidence.surface });
+              } else {
+                evidenceBasket.add(evidence);
+                trackEvent("evidence_basket_added", { regulator: evidence.regulator, surface: evidence.surface });
+              }
+            }}
+          >
+            <ShoppingBasket size={16} />
+            {evidenceBasket.contains(evidence.id) ? "Remove from board pack" : "Add to board pack"}
+          </button>
           {source ? (
             <a
               className="evidence-modal__primary"

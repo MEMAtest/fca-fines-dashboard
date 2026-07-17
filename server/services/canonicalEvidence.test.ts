@@ -36,8 +36,8 @@ describe("canonical regulatory evidence layer", () => {
 
     for (const file of applicationFiles) {
       const source = fs.readFileSync(path.join(root, file), "utf8");
-      expect(source, file).toContain("all_regulatory_fines_canonical");
-      expect(source, file).not.toMatch(/all_regulatory_fines(?!_canonical)/);
+      expect(source, file).toMatch(/all_regulatory_fines_(?:canonical|trusted)/);
+      expect(source, file).not.toMatch(/all_regulatory_fines(?!_(?:canonical|trusted))/);
     }
   });
 

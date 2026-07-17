@@ -259,6 +259,14 @@ const Intelligence = lazyPage(() =>
     default: module.Intelligence,
   })),
 );
+const EnforcementMethodology = lazyPage(() =>
+  import("./pages/EnforcementMethodology.js").then((module) => ({
+    default: module.EnforcementMethodology,
+  })),
+);
+const Monitor = lazyPage(() =>
+  import("./pages/Monitor.js").then((module) => ({ default: module.Monitor })),
+);
 const UKEnforcement = lazyPage(() =>
   import("./pages/UKEnforcement.js").then((module) => ({
     default: module.UKEnforcement,
@@ -479,6 +487,14 @@ const router = createBrowserRouter([
             <Search />
           </Suspense>
         ),
+      },
+      {
+        path: "/methodology/enforcement",
+        element: <Suspense fallback={ROUTE_FALLBACK}><EnforcementMethodology /></Suspense>,
+      },
+      {
+        path: "/monitor",
+        element: <Suspense fallback={ROUTE_FALLBACK}><Monitor /></Suspense>,
       },
       {
         path: "/intelligence",

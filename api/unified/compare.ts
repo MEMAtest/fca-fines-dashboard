@@ -58,6 +58,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     }
 
     const amountColumn = currency === 'EUR' ? 'amount_eur' : 'amount_gbp';
+    const trustedAmount = `CASE WHEN requires_amount_review THEN NULL ELSE ${amountColumn} END`;
     const yearFilter = year ? `AND year_issued = ${parseInt(year)}` : '';
 
     // Get stats for each regulator
@@ -71,10 +72,10 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
           country_code,
           country_name,
           COUNT(*) as count,
-          COALESCE(SUM(${amountColumn}), 0)::numeric(18,2) as total,
-          COALESCE(AVG(${amountColumn}), 0)::numeric(18,2) as average,
-          COALESCE(MAX(${amountColumn}), 0)::numeric(18,2) as max_fine,
-          COALESCE(MIN(${amountColumn}), 0)::numeric(18,2) as min_fine,
+          COALESCE(SUM(${trustedAmount}), 0)::numeric(18,2) as total,
+          COALESCE(AVG(${trustedAmount}), 0)::numeric(18,2) as average,
+          COALESCE(MAX(${trustedAmount}), 0)::numeric(18,2) as max_fine,
+          COALESCE(MIN(${trustedAmount}), 0)::numeric(18,2) as min_fine,
           MIN(date_issued) as earliest,
           MAX(date_issued) as latest
         FROM public.all_regulatory_fines_canonical
@@ -97,7 +98,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         SELECT
           breach_type,
           COUNT(*) as count,
-          COALESCE(SUM(${amountColumn}), 0)::numeric(18,2) as total
+          COALESCE(SUM(${trustedAmount}), 0)::numeric(18,2) as total
         FROM public.all_regulatory_fines_canonical
         WHERE regulator = $1 ${yearFilter}
         GROUP BY breach_type
@@ -109,13 +110,13 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       const topFines = await sql.unsafe(`
         SELECT
           firm_individual,
-          ${amountColumn} as amount,
+          ${trustedAmount} as amount,
           date_issued,
           breach_type,
           summary
         FROM public.all_regulatory_fines_canonical
         WHERE regulator = $1 ${yearFilter}
-        ORDER BY ${amountColumn} DESC NULLS LAST
+        ORDER BY ${trustedAmount} DESC NULLS LAST
         LIMIT 3
       `, [regulator]);
 
@@ -161,7 +162,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         ARRAY_AGG(DISTINCT regulator ORDER BY regulator) as regulators,
         COUNT(DISTINCT regulator) as regulator_count,
         COUNT(*) as total_fines,
-        COALESCE(SUM(${amountColumn}), 0)::numeric(18,2) as total_amount
+        COALESCE(SUM(${trustedAmount}), 0)::numeric(18,2) as total_amount
       FROM public.all_regulatory_fines_canonical
       WHERE regulator = ANY($1) ${yearFilter}
       GROUP BY firm_individual
@@ -184,7 +185,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         breach_type,
         COUNT(DISTINCT regulator) as regulator_count,
         COUNT(*) as total_cases,
-        COALESCE(SUM(${amountColumn}), 0)::numeric(18,2) as total_amount
+        COALESCE(SUM(${trustedAmount}), 0)::numeric(18,2) as total_amount
       FROM public.all_regulatory_fines_canonical
       WHERE regulator = ANY($1) ${yearFilter}
       GROUP BY breach_type

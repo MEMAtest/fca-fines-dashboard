@@ -43,6 +43,7 @@ interface BoardPackDashboardProps {
 const DRIVER_COLOURS = ["#ef4444", "#f97316", "#eab308", "#22c55e", "#3b82f6"];
 
 const CONTROL_STATUS_OPTIONS: ControlStatus[] = [
+  "unassessed",
   "not-tested",
   "needs-work",
   "evidence-partial",
@@ -57,6 +58,7 @@ function getBandLabel(band: ExposureBand) {
 }
 
 function getStatusLabel(status: ControlStatus) {
+  if (status === "unassessed") return "Unassessed";
   if (status === "needs-work") return "Needs work";
   if (status === "evidence-partial") return "Partially evidenced";
   if (status === "evidenced") return "Evidenced";
@@ -149,7 +151,7 @@ export function BoardPackDashboard({
           </div>
         </div>
         <div className="board-pack-dashboard__headline-score">
-          <span>Exposure score</span>
+          <span>Enforcement pressure</span>
           <strong>
             {pack.exposureScore}
             <small>/100</small>
@@ -157,13 +159,13 @@ export function BoardPackDashboard({
           <em
             className={`board-pack-dashboard__band board-pack-dashboard__band--${pack.exposureBand}`}
           >
-            {getBandLabel(pack.exposureBand)} exposure
+            {getBandLabel(pack.exposureBand)} external pressure
           </em>
           <ScoreMeter
             value={pack.exposureScore}
             benchmark={pack.peerBaselineScore}
           />
-          <small>Peer baseline {pack.peerBaselineScore}</small>
+          <small>Reference benchmark {pack.peerBaselineScore}</small>
         </div>
       </header>
 
@@ -173,17 +175,19 @@ export function BoardPackDashboard({
       >
         <article>
           <Gauge size={18} />
-          <span>Exposure score</span>
+          <span>Enforcement pressure</span>
           <strong>{pack.exposureScore}/100</strong>
-          <small>{getBandLabel(pack.exposureBand)} relative exposure</small>
+          <small>{getBandLabel(pack.exposureBand)} external pressure</small>
         </article>
         <article>
           <ShieldCheck size={18} />
-          <span>Residual readiness</span>
+          <span>Control readiness</span>
           <strong>
             {controlSummary
-              ? getBandLabel(controlSummary.readinessBand)
-              : "Review"}
+              ? controlSummary.readinessBand
+                ? getBandLabel(controlSummary.readinessBand)
+                : "Unassessed"
+              : "Unassessed"}
           </strong>
           <small>
             {controlSummary?.challengeHeadline ??
@@ -192,15 +196,15 @@ export function BoardPackDashboard({
         </article>
         <article>
           <ClipboardCheck size={18} />
-          <span>Weak controls</span>
-          <strong>{controlSummary?.weakControlCount ?? 0}</strong>
-          <small>Marked as needing work</small>
+          <span>Assessed controls</span>
+          <strong>{controlSummary?.assessedControlCount ?? 0}</strong>
+          <small>Based only on supplied responses</small>
         </article>
         <article>
           <FileSearch size={18} />
-          <span>Evidence gaps</span>
-          <strong>{controlSummary?.evidenceGapCount ?? 0}</strong>
-          <small>Not tested or partly evidenced</small>
+          <span>Control prompts</span>
+          <strong>{controlChecklist.length}</strong>
+          <small>Evidence requests for management</small>
         </article>
       </section>
 
@@ -216,6 +220,23 @@ export function BoardPackDashboard({
       )}
 
       <div className="board-pack-dashboard__grid">
+        {pack.selectedCases.length > 0 && (
+          <section className="board-pack-dashboard__card board-pack-dashboard__card--wide">
+            <div className="board-pack-dashboard__card-heading">
+              <FileSearch size={19} />
+              <h2>Cases selected for this pack</h2>
+            </div>
+            <div className="board-pack-dashboard__signals">
+              {pack.selectedCases.map((caseStudy) => (
+                <div key={caseStudy.id}>
+                  <i />
+                  <span><strong>{caseStudy.regulator}: {caseStudy.firm}</strong><small>{caseStudy.breachType ?? caseStudy.reason}</small></span>
+                  <time dateTime={caseStudy.dateIssued}>{formatDate(caseStudy.dateIssued)}</time>
+                </div>
+              ))}
+            </div>
+          </section>
+        )}
         <section className="board-pack-dashboard__card board-pack-dashboard__card--takeaways">
           <div className="board-pack-dashboard__card-heading">
             <Target size={19} />
@@ -362,7 +383,7 @@ export function BoardPackDashboard({
         <section className="board-pack-dashboard__card">
           <div className="board-pack-dashboard__card-heading">
             <ClipboardCheck size={19} />
-            <h2>Control weaknesses</h2>
+            <h2>Control evidence prompts</h2>
           </div>
           <div className="board-pack-dashboard__control-list">
             {controlChecklist.slice(0, workingMode ? 8 : 5).map((item) => {

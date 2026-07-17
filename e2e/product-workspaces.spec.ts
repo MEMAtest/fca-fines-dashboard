@@ -376,3 +376,36 @@ test.describe("Shared regulator workspace pattern", () => {
     await expect(evidence.getByRole("link", { name: /Open official source/i })).toHaveAttribute("href", /jerseyfsc\.org/);
   });
 });
+
+test.describe("Evidence selection and quick Board Pack", () => {
+  test.beforeEach(async ({ page }) => {
+    await installWorkspaceApi(page);
+    await page.goto("/search");
+  });
+
+  test("supports blank browsing and carries a selected case into the Board Pack", async ({ page }) => {
+    await expect(page.getByRole("heading", { level: 1, name: "Enforcement Explorer" })).toBeVisible();
+    await expect(page.getByText("Alpha Bank plc").first()).toBeVisible();
+    await page.getByRole("checkbox", { name: "Select Alpha Bank plc" }).check();
+    await expect(page.getByText("1 selected for Board Pack")).toBeVisible();
+    await page.locator(".enforcement-explorer__entity").filter({ hasText: "Alpha Bank plc" }).click();
+    const evidence = page.getByRole("dialog", { name: "Alpha Bank plc" });
+    await expect(evidence.getByRole("button", { name: /Remove from board pack/i })).toBeVisible();
+    await evidence.getByRole("button", { name: "Close evidence summary" }).click();
+
+    await page.goto("/board-pack?from=%2Fsearch&fromLabel=Enforcement+Explorer");
+    await expect(page.getByRole("heading", { name: "Cases selected for this pack" })).toBeVisible();
+    await expect(page.getByText("FCA: Alpha Bank plc").first()).toBeVisible();
+    await expect(page.getByText("No account is required.", { exact: false })).toBeVisible();
+  });
+
+  test("keeps Explorer and Board Pack usable at a 390px mobile width", async ({ page }) => {
+    await page.setViewportSize({ width: 390, height: 844 });
+    await expect(page.getByRole("heading", { level: 1, name: "Enforcement Explorer" })).toBeVisible();
+    expect(await page.evaluate(() => document.documentElement.scrollWidth > document.documentElement.clientWidth + 1)).toBe(false);
+    await page.getByRole("checkbox", { name: "Select Alpha Bank plc" }).check();
+    await page.goto("/board-pack");
+    await expect(page.getByRole("heading", { level: 1, name: "Create a committee-ready enforcement brief" })).toBeVisible();
+    expect(await page.evaluate(() => document.documentElement.scrollWidth > document.documentElement.clientWidth + 1)).toBe(false);
+  });
+});

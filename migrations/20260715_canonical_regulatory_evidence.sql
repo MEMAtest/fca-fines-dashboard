@@ -254,10 +254,18 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
-GRANT SELECT ON public.all_regulatory_fines_canonical TO fca_app;
-GRANT SELECT ON public.all_regulatory_fines_canonical TO monitor_readonly;
-GRANT SELECT ON public.regulatory_amount_overrides TO fca_app;
-GRANT SELECT ON public.regulatory_amount_overrides TO monitor_readonly;
+DO $$
+BEGIN
+  IF EXISTS (SELECT 1 FROM pg_roles WHERE rolname = 'fca_app') THEN
+    GRANT SELECT ON public.all_regulatory_fines_canonical TO fca_app;
+    GRANT SELECT ON public.regulatory_amount_overrides TO fca_app;
+  END IF;
+  IF EXISTS (SELECT 1 FROM pg_roles WHERE rolname = 'monitor_readonly') THEN
+    GRANT SELECT ON public.all_regulatory_fines_canonical TO monitor_readonly;
+    GRANT SELECT ON public.regulatory_amount_overrides TO monitor_readonly;
+  END IF;
+END
+$$;
 
 COMMENT ON MATERIALIZED VIEW public.all_regulatory_fines_canonical IS
   'Application-facing enforcement evidence with verified amount corrections and canonical case deduplication';

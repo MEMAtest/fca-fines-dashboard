@@ -1,6 +1,7 @@
 import { mkdir, writeFile } from "node:fs/promises";
 import { dirname } from "node:path";
 import type { DbReadyRecord } from "./euFineHelpers.js";
+import { getRegulatorCoverage } from "../../../src/data/regulatorCoverage.js";
 import {
   createSqlClient,
   getCliFlags,
@@ -22,6 +23,11 @@ interface RunnerOptions {
   ) => Promise<void>;
   retryOnTransientFailure?: boolean;
   maxRetries?: number;
+  qualityContract?: {
+    allowZeroRecords?: boolean;
+    minimumPreparedRecords?: number;
+    maximumPreparedCountDropFraction?: number;
+  };
 }
 
 interface ScraperRunSummary {
@@ -125,6 +131,8 @@ async function runScraperAttempt(
     records = limitRecords(records, flags.limit);
     summary.recordsPrepared = records.length;
 
+    assertPreparedBatch(options, records, flags);
+
     console.log(`📊 Prepared ${records.length} records`);
 
     if (flags.dryRun) {
@@ -137,6 +145,8 @@ async function runScraperAttempt(
 
     scraperRunId = await insertScraperRun(sql, options, startedAt);
 
+    await assertPreparedCountContinuity(sql, options, records.length, flags);
+
     const result = await upsertEuFines(sql, records);
     summary.inserted = result.inserted;
     summary.updated = result.updated;
@@ -145,6 +155,12 @@ async function runScraperAttempt(
     console.log(`   Inserted: ${result.inserted}`);
     console.log(`   Updated: ${result.updated}`);
     console.log(`   Errors: ${result.errors}`);
+
+    if (result.errors > 0) {
+      throw new Error(
+        `${options.name} quarantined: ${result.errors} database upsert error${result.errors === 1 ? "" : "s"}. The public view was not refreshed.`,
+      );
+    }
 
     if (options.afterUpsert) {
       await options.afterUpsert(sql, records);
@@ -179,6 +195,80 @@ async function runScraperAttempt(
     summary.finishedAt = new Date().toISOString();
     summary.durationMs = Date.now() - startedAt.getTime();
     await writeScraperRunSummary(summary);
+  }
+}
+
+export function assertPreparedBatch(
+  options: RunnerOptions,
+  records: DbReadyRecord[],
+  flags: ReturnType<typeof getCliFlags>,
+) {
+  const regulatorCode = options.regulatorCode ?? extractRegulatorCode(options.name);
+  const coverage = getRegulatorCoverage(regulatorCode);
+  const sourceAllowsSparseZero = coverage?.feedContract.zeroResultPolicy === "sparse_source";
+  const allowZero = options.qualityContract?.allowZeroRecords ?? sourceAllowsSparseZero;
+
+  if (!flags.useTestData && records.length === 0 && !allowZero) {
+    throw new Error(
+      `${options.name} quarantined: the official source returned zero records, contrary to its source contract.`,
+    );
+  }
+
+  const minimum = options.qualityContract?.minimumPreparedRecords ?? 0;
+  if (!flags.useTestData && !flags.limit && records.length < minimum) {
+    throw new Error(
+      `${options.name} quarantined: ${records.length} records were prepared, below the configured minimum of ${minimum}.`,
+    );
+  }
+
+  const invalid = records.filter((record) => {
+    if (!record.contentHash || !record.regulator || !record.firmIndividual || !record.dateIssued) return true;
+    if (!record.sourceUrl) return true;
+    try {
+      const source = new URL(record.sourceUrl);
+      return source.protocol !== "https:" && source.protocol !== "http:";
+    } catch {
+      return true;
+    }
+  });
+
+  if (invalid.length > 0) {
+    throw new Error(
+      `${options.name} quarantined: ${invalid.length} record${invalid.length === 1 ? "" : "s"} failed required-field or official-source URL validation.`,
+    );
+  }
+}
+
+async function assertPreparedCountContinuity(
+  sql: ReturnType<typeof createSqlClient>,
+  options: RunnerOptions,
+  currentCount: number,
+  flags: ReturnType<typeof getCliFlags>,
+) {
+  const maximumDrop = options.qualityContract?.maximumPreparedCountDropFraction;
+  if (maximumDrop === undefined || flags.limit || flags.useTestData) return;
+  if (maximumDrop < 0 || maximumDrop >= 1) {
+    throw new Error("maximumPreparedCountDropFraction must be at least 0 and below 1.");
+  }
+
+  const regulatorCode = options.regulatorCode ?? extractRegulatorCode(options.name);
+  const previous = await sql`
+    SELECT records_prepared::int AS count
+    FROM scraper_runs
+    WHERE regulator = ${regulatorCode}
+      AND status = 'success'
+      AND records_prepared IS NOT NULL
+    ORDER BY started_at DESC
+    LIMIT 1
+  `.catch(() => []);
+  const previousCount = Number(previous[0]?.count ?? 0);
+  if (previousCount <= 0) return;
+
+  const floor = Math.ceil(previousCount * (1 - maximumDrop));
+  if (currentCount < floor) {
+    throw new Error(
+      `${options.name} quarantined: prepared record count fell from ${previousCount} to ${currentCount}, below the configured continuity floor of ${floor}.`,
+    );
   }
 }
 

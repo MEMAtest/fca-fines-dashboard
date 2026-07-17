@@ -2,6 +2,7 @@ import { useMemo, useState, type ReactNode } from "react";
 import { Link, NavLink, useLocation } from "react-router-dom";
 import {
   BookOpenCheck,
+  Bell,
   ChevronLeft,
   ChevronRight,
   CircleHelp,
@@ -12,12 +13,14 @@ import {
   ListChecks,
   Menu,
   Plus,
+  Search as SearchIcon,
   X,
 } from "lucide-react";
 import { useLocalStorage } from "../hooks/useLocalStorage.js";
+import { MonitorSubscribeModal } from "./MonitorSubscribeModal.js";
 
 interface ProductWorkspaceShellProps {
-  scope: "fines" | "regulator";
+  scope: "fines" | "regulator" | "search";
   regulatorCode?: string;
   title?: string;
   children: ReactNode;
@@ -38,8 +41,10 @@ const FINES_NAV = [
 
 // Watchlists/Alerts removed until the features exist — they pointed at a
 // marketing page and read as dead buttons. Re-add when there's a real tool.
-function buildBase(scope: "fines" | "regulator", regulatorCode?: string) {
-  return scope === "fines" ? "/fines" : `/regulators/${regulatorCode ?? "fca"}`;
+function buildBase(scope: "fines" | "regulator" | "search", regulatorCode?: string) {
+  if (scope === "fines") return "/fines";
+  if (scope === "search") return "/search";
+  return `/regulators/${regulatorCode ?? "fca"}`;
 }
 
 export function ProductWorkspaceShell({
@@ -51,15 +56,20 @@ export function ProductWorkspaceShell({
   const location = useLocation();
   const [mobileOpen, setMobileOpen] = useState(false);
   const [collapsed, setCollapsed] = useState(false);
+  const [monitorOpen, setMonitorOpen] = useState(false);
   const [savedViews, setSavedViews] = useLocalStorage<SavedView[]>(
     "regactions-product-saved-views-v1",
     [],
   );
   const base = buildBase(scope, regulatorCode);
-  const nav = FINES_NAV;
+  const nav = scope === "search"
+    ? [{ segment: "", label: "Enforcement Explorer", icon: SearchIcon }]
+    : FINES_NAV;
   const returnLabel = scope === "fines"
     ? "Fines workspace"
-    : `${regulatorCode?.toUpperCase() ?? "Regulator"} workspace`;
+    : scope === "search"
+      ? "Enforcement Explorer"
+      : `${regulatorCode?.toUpperCase() ?? "Regulator"} workspace`;
   const boardPackParams = new URLSearchParams({
     from: `${location.pathname}${location.search}`,
     fromLabel: returnLabel,
@@ -71,7 +81,7 @@ export function ProductWorkspaceShell({
       to: `/board-pack?${boardPackParams.toString()}`,
     },
     { label: "Regulator directory", icon: Database, to: "/regulators" },
-    { label: "Methodology", icon: CircleHelp, to: "/countries/methodology" },
+    { label: "Methodology", icon: CircleHelp, to: "/methodology/enforcement" },
   ];
   const currentLabel = useMemo(
     () =>
@@ -85,7 +95,7 @@ export function ProductWorkspaceShell({
   const saveCurrentView = () => {
     const path = `${location.pathname}${location.search}`;
     if (savedViews.some((view) => view.path === path)) return;
-    const label = `${title ?? (scope === "fines" ? "Fines" : regulatorCode?.toUpperCase())} - ${currentLabel}`;
+    const label = `${title ?? (scope === "fines" ? "Fines" : scope === "search" ? "Enforcement" : regulatorCode?.toUpperCase())} - ${currentLabel}`;
     setSavedViews([
       ...savedViews,
       { id: crypto.randomUUID(), label, path },
@@ -120,7 +130,7 @@ export function ProductWorkspaceShell({
         aria-label="Workspace navigation"
       >
         <div className="product-workspace__sidebar-heading">
-          {!collapsed && <span>{scope === "fines" ? "Fines workspace" : regulatorCode?.toUpperCase()}</span>}
+          {!collapsed && <span>{scope === "fines" ? "Fines workspace" : scope === "search" ? "Enforcement Explorer" : regulatorCode?.toUpperCase()}</span>}
           <button
             type="button"
             onClick={() => {
@@ -187,12 +197,16 @@ export function ProductWorkspaceShell({
             <button type="button" onClick={saveCurrentView}>
               <Plus size={14} /> Save current view
             </button>
-            <small>Saved on this device only</small>
+            <button type="button" onClick={() => setMonitorOpen(true)}>
+              <Bell size={14} /> Monitor this view
+            </button>
+            <small>Local views stay on this device. Email monitors use a verification link.</small>
           </div>
         )}
       </aside>
 
       <section className="product-workspace__content">{children}</section>
+      {monitorOpen ? <MonitorSubscribeModal label={`${title ?? returnLabel} - ${currentLabel}`} path={`${location.pathname}${location.search}`} onClose={() => setMonitorOpen(false)} /> : null}
     </div>
   );
 }

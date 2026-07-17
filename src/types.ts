@@ -1,5 +1,6 @@
 export interface FineRecord {
   id?: string;
+  canonical_case_id?: string;
   fine_reference: string | null;
   firm_individual: string;
   firm_category: string | null;
@@ -20,12 +21,26 @@ export interface FineRecord {
   country_name?: string;
   amount_eur?: number;
   amount_gbp?: number;
+  duplicate_count?: number;
+  amount_quality?: string;
+  requires_amount_review?: boolean;
+  amount_verification_url?: string | null;
+  amount_override_reason?: string | null;
   source_url?: string | null;
   listing_url?: string | null;
   detail_url?: string | null;
   official_publication_url?: string | null;
-  source_link_status?: 'verified_detail' | 'verified_publication' | 'listing_only' | 'missing';
+  source_link_status?:
+    | 'verified_detail'
+    | 'verified_publication'
+    | 'official_unverified'
+    | 'listing_only'
+    | 'missing';
   source_link_label?: string | null;
+  source_checked_at?: string | null;
+  source_http_status?: number | null;
+  source_official_domain_match?: boolean | null;
+  source_content_hash?: string | null;
 }
 
 export interface StatsResponse {

@@ -404,7 +404,9 @@
 .intelligence-briefing,
 .intelligence-list article,
 .intelligence-watchpoints,
+.intelligence-precedents,
 .intelligence-citations,
+.intelligence-audit,
 .intelligence-disclaimer {
   border: 1px solid #dbe3ec;
   border-radius: 8px;
@@ -672,22 +674,24 @@
   font-weight: 700;
 }
 
-.intelligence-citation-pills a {
+.intelligence-citation-pills button {
   display: inline-flex;
   align-items: center;
   justify-content: center;
   min-width: 34px;
   min-height: 24px;
   padding: 0 8px;
+  border: 0;
   border-radius: 999px;
   background: #eff6ff;
   color: #1d4ed8;
   font-size: var(--text-xs);
   font-weight: 700;
   text-decoration: none;
+  cursor: pointer;
 }
 
-.intelligence-citation-pills a:hover {
+.intelligence-citation-pills button:hover {
   background: #dbeafe;
 }
 
@@ -704,13 +708,69 @@
   padding: 16px;
 }
 
+.intelligence-precedents {
+  display: grid;
+  gap: 14px;
+  padding: 16px;
+}
+
+.intelligence-precedents h3 {
+  margin: 0;
+  font-size: var(--text-lg);
+}
+
+.intelligence-precedents__grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(240px, 100%), 1fr));
+  gap: 10px;
+}
+
+.intelligence-precedents__grid button {
+  display: grid;
+  gap: 6px;
+  min-height: 130px;
+  padding: 14px;
+  border: 1px solid #e2e8f0;
+  border-radius: 7px;
+  background: #fff;
+  color: #0f172a;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.intelligence-precedents__grid button:hover {
+  border-color: rgba(15, 167, 125, .45);
+  background: #f8fdfa;
+}
+
+.intelligence-precedents__grid button:disabled {
+  cursor: default;
+}
+
+.intelligence-precedents__grid span,
+.intelligence-precedents__grid p,
+.intelligence-precedents__grid em {
+  margin: 0;
+  color: #526579;
+  font-size: var(--text-sm);
+  font-style: normal;
+  line-height: 1.45;
+}
+
+.intelligence-precedents__grid em {
+  align-self: end;
+  color: #087f58;
+  font-weight: 750;
+}
+
 .intelligence-citations > div {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(min(320px, 100%), 1fr));
   gap: 10px;
 }
 
-.intelligence-citations a {
+.intelligence-citations button {
   display: grid;
   grid-template-columns: auto minmax(0, 1fr) auto;
   gap: 6px 10px;
@@ -719,26 +779,25 @@
   padding: 10px;
   border: 1px solid #e2e8f0;
   border-radius: 6px;
+  background: #fff;
   color: var(--text-primary);
+  font: inherit;
+  text-align: left;
   text-decoration: none;
+  cursor: pointer;
 }
 
-.intelligence-citations a:hover {
+.intelligence-citations button:hover {
   border-color: rgba(15, 167, 125, 0.4);
   background: #f8fdfa;
 }
 
-.intelligence-citations a:target {
+.intelligence-citations button:target {
   border-color: #2563eb;
   box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.14);
 }
 
-.intelligence-citations a.is-disabled {
-  pointer-events: none;
-  color: var(--text-muted);
-}
-
-.intelligence-citations a span {
+.intelligence-citations button span {
   grid-row: span 2;
   display: inline-flex;
   align-items: center;
@@ -752,16 +811,70 @@
   font-weight: 800;
 }
 
-.intelligence-citations a strong {
+.intelligence-citations button strong {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
-.intelligence-citations a em {
+.intelligence-citations button em {
   color: var(--text-muted);
   font-size: var(--text-xs);
   font-style: normal;
+}
+
+.intelligence-audit {
+  padding: 14px 16px;
+  color: #334155;
+}
+
+.intelligence-audit summary {
+  color: #0f172a;
+  font-weight: 750;
+  cursor: pointer;
+}
+
+.intelligence-audit > div {
+  display: grid;
+  gap: 12px;
+  padding-top: 12px;
+  border-top: 1px solid #e2e8f0;
+  margin-top: 12px;
+}
+
+.intelligence-audit p,
+.intelligence-audit ul {
+  margin: 0;
+  font-size: var(--text-sm);
+  line-height: 1.55;
+}
+
+.intelligence-audit dl {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+  margin: 0;
+}
+
+.intelligence-audit dl div {
+  display: grid;
+  gap: 3px;
+  padding: 9px;
+  border-radius: 6px;
+  background: #f8fafc;
+}
+
+.intelligence-audit dt {
+  color: #64748b;
+  font-size: var(--text-xs);
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+.intelligence-audit dd {
+  margin: 0;
+  overflow-wrap: anywhere;
+  font-size: var(--text-sm);
 }
 
 .intelligence-disclaimer {
@@ -819,5 +932,9 @@
 
   .intelligence-filters__query {
     grid-column: auto;
+  }
+
+  .intelligence-audit dl {
+    grid-template-columns: 1fr;
   }
 }
