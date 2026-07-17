@@ -238,6 +238,7 @@ export function Homepage() {
               <Link to="/features">Features</Link>
               <Link to="/blog">Blog</Link>
               <Link to="/regulators">Data Hub</Link>
+              <Link to="/developers">Developers</Link>
             </div>
             <p className="homepage-footer__copyright">
               © {new Date().getFullYear()} RegActions. All rights reserved.
