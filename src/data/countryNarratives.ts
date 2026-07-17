@@ -92,6 +92,23 @@ export const NARRATIVES: Record<string, CountryNarrative> = {
       "Absence of CPI data limits independent benchmarking of corruption levels; supplement with other credible country risk indicators."
     ]
   },
+  "AI": {
+    "summary": "Anguilla rests on a strong but partial governance base, though it sits on the EU list of non-cooperative tax jurisdictions, which is the defining feature of its counterparty risk profile.",
+    "whyItMatters": [
+      "A strong governance base, with political stability at 1.1 and corruption at 2.8, is tempered by an incomplete WGI picture.",
+      "Anguilla is on the EU list of non-cooperative jurisdictions for tax purposes (Annex I, as adopted 17 February 2026), reflecting unresolved tax good-governance and transparency concerns.",
+      "The voice and accountability domain has no WGI value for Anguilla, so the governance base rests on the three available domains and should be read as evidence-limited.",
+      "No FATF grey or black listing applies and no sanctions are in place, so the headline risk reflects the governance base alone with no escalator."
+    ],
+    "analysis": "Anguilla is a British Overseas Territory and an offshore company and insurance domicile assessed by the Caribbean Financial Action Task Force (CFATF). Its governance base is strong but incomplete: political stability scores 1.1, rule of law 3.0 and corruption 2.8, while the voice and accountability domain is unavailable, so the picture is derived from three of the four WGI domains rather than the full set. The governance percentile of 74 places Anguilla in the upper quartile globally. No CPI data are published for Anguilla, limiting independent corruption benchmarking. The most material external signal is its presence on the EU Annex I tax list, which the Council last confirmed on 17 February 2026; that listing reflects concerns about tax transparency and cooperation rather than an AML/CFT deficiency, but it shapes how EU counterparties treat Anguillan structures.",
+    "outlook": "Anguilla's practical risk profile turns less on its governance base than on its offshore-centre exposure and its EU tax-list status. The Council of the EU reviews Annex I twice a year, with the next scheduled revision in October 2026, so any de-listing or continued inclusion is the single most important forward indicator. CFATF follow-up reporting on Anguilla's AML/CFT framework, and the strength of beneficial ownership verification for Anguillan companies, remain the areas requiring ongoing attention for firms with counterparties routed through the territory.",
+    "keyWatchpoints": [
+      "EU Council review of the Annex I tax list (next scheduled October 2026): monitor whether Anguilla is retained or removed.",
+      "CFATF follow-up reporting and any mutual evaluation developments on Anguilla's AML/CFT framework.",
+      "Beneficial ownership transparency for Anguillan companies and insurance vehicles; apply enhanced due diligence to offshore structures.",
+      "Absence of CPI data and of a voice and accountability domain value limits independent benchmarking; supplement with credible third-party country risk assessments."
+    ]
+  },
   "AL": {
     "summary": "Albania scores 4.9 in the Moderate band, with elevated corruption as the principal risk driver and moderate rule-of-law and accountability challenges, but no FATF listing or sanctions exposure.",
     "whyItMatters": [
@@ -192,6 +209,23 @@ export const NARRATIVES: Record<string, CountryNarrative> = {
       "ASIC enforcement priorities in financial services and securities markets.",
       "Maintenance of CPI and WGI scores, which anchor the low-risk assessment.",
       "Any FATF engagement, though Australia is currently not listed and risk of listing is low."
+    ]
+  },
+  "AW": {
+    "summary": "Aruba, a constituent country of the Kingdom of the Netherlands, rests on a strong governance base, with no FATF listing or sanctions and a completed CFATF fourth-round mutual evaluation.",
+    "whyItMatters": [
+      "A strong governance base, with political stability at 1.1 the strongest domain and rule of law at 2.93, anchors the profile.",
+      "Corruption at 3.5 is the weakest of the four governance domains but remains within a low-risk range.",
+      "Aruba sits at the 73rd governance percentile, in the upper third globally, though no CPI data are published for it.",
+      "No FATF grey or black listing applies and no sanctions are in place, so the headline risk reflects the governance base alone."
+    ],
+    "analysis": "Aruba is a self-governing constituent country within the Kingdom of the Netherlands and is assessed for AML/CFT purposes by the Caribbean Financial Action Task Force (CFATF), separately from the Netherlands itself. Its risk picture is governance-derived, with no escalators applied. Political stability is very strong at 1.1, rule of law scores 2.93, voice and accountability 2.6, and corruption is the weakest domain at 3.5. The governance percentile of 73 confirms an upper-tier position, although the absence of CPI data limits independent corroboration of the corruption picture. Aruba completed its CFATF fourth-round mutual evaluation following an on-site visit in 2021, which recognised a substantially revised AML/CFT legal framework while noting the usual effectiveness challenges for a small tourism-and-financial-services economy.",
+    "outlook": "Aruba's profile is consistent with its Kingdom-of-the-Netherlands institutional anchoring and its completed CFATF evaluation. The forward risk picture depends on the pace of CFATF follow-up remediation, the effectiveness of supervision across its financial and trust-company sectors, and the corruption domain as the weakest governance reading. Firms should apply proportionate due diligence and monitor CFATF follow-up reporting for any change in Aruba's technical compliance or effectiveness ratings.",
+    "keyWatchpoints": [
+      "CFATF follow-up reporting on Aruba's fourth-round mutual evaluation and any re-ratings.",
+      "Corruption domain (3.5), the weakest governance reading; watch for anti-corruption and transparency developments.",
+      "Effectiveness of AML/CFT supervision across the financial, trust and gaming sectors.",
+      "Absence of CPI data limits independent corruption benchmarking; supplement with other credible indicators."
     ]
   },
   "AZ": {
@@ -500,6 +534,23 @@ export const NARRATIVES: Record<string, CountryNarrative> = {
       "Watch for changes to CPI and WGI scores that could signal further governance deterioration."
     ]
   },
+  "BZ": {
+    "summary": "Belize, a Central American and Caribbean offshore company domicile, has corruption and rule of law as its weakest governance domains, with no FATF listing or sanctions in place.",
+    "whyItMatters": [
+      "Corruption (5.5) and rule of law and institutions (5.1) are the two weakest governance domains, together carrying the majority of the governance weighting.",
+      "The CPI score of 36 out of 100 (rank 104 of 180) corroborates a meaningful corruption picture, while political stability at 2.1 is a relative strength.",
+      "Its significant offshore international business company sector raises beneficial ownership and transparency considerations for counterparties.",
+      "No FATF grey or black listing applies and no sanctions are in place, so the headline risk reflects the governance base alone."
+    ],
+    "analysis": "Belize is a Central American state with a Caribbean legal tradition and a significant offshore international business company (IBC) sector, assessed for AML/CFT purposes by the Caribbean Financial Action Task Force (CFATF). Its risk picture is governance-derived, with no escalators applied. Corruption (5.5) and rule of law and institutions (5.1) are the weakest domains, while accountability (4.1) is moderate and political stability (2.1) is a relative strength. The 2024 CPI score of 36 at rank 104 corroborates the corruption reading. Belize completed its CFATF fourth-round mutual evaluation in 2024; the assessment found a broadly sound technical framework but identified effectiveness gaps in money-laundering prosecutions and in risk-based supervision of designated non-financial businesses and professions. Belize was removed from the EU tax blacklist in February 2024 following reform commitments.",
+    "outlook": "Belize's profile reflects both its transitional governance base and its offshore-centre exposure. The pace of CFATF follow-up remediation, particularly on ML prosecution effectiveness and DNFBP supervision, is the key forward indicator, alongside the corruption domain as the dominant governance driver. Firms should apply enhanced due diligence to Belizean IBCs and monitor the October 2026 FATF plenary and CFATF follow-up cycle for any change in status.",
+    "keyWatchpoints": [
+      "CFATF follow-up reporting on Belize's fourth-round mutual evaluation, especially ML prosecution and DNFBP supervision effectiveness.",
+      "October 2026 FATF plenary for any change in listing status.",
+      "Beneficial ownership verification for Belizean international business companies; apply enhanced due diligence to offshore structures.",
+      "Corruption domain (5.5) and CPI trend as the dominant governance drivers."
+    ]
+  },
   "CA": {
     "summary": "Canada scores 1.9 in the Low risk band, reflecting strong governance across all four domains, a high CPI rank, active securities regulation, and no FATF listing or sanctions exposure.",
     "whyItMatters": [
@@ -600,6 +651,23 @@ export const NARRATIVES: Record<string, CountryNarrative> = {
       "Measurable improvements in AML/CFT legal frameworks and financial intelligence capacity.",
       "Developments in judicial independence and rule-of-law indicators.",
       "Corruption risk in the cocoa, commodities and public procurement sectors."
+    ]
+  },
+  "CK": {
+    "summary": "The Cook Islands, a self-governing state in free association with New Zealand and a long-established asset-protection trust centre, rests on a strong governance base with no FATF listing or sanctions.",
+    "whyItMatters": [
+      "A strong governance base, with political stability at 1.4 the strongest domain and rule of law at 3.63, anchors the profile.",
+      "Corruption at 4.3 is the weakest governance domain but remains within a moderate range.",
+      "The Cook Islands is internationally known for its asset-protection trust regime, a structural feature relevant to source-of-wealth and beneficial ownership diligence.",
+      "No FATF grey or black listing applies and no sanctions are in place; no CPI data are published, so corruption context rests on WGI alone."
+    ],
+    "analysis": "The Cook Islands is a self-governing state in free association with New Zealand and a member of the Asia/Pacific Group on Money Laundering (APG). Its risk picture is governance-derived, with no escalators applied. The governance base is strong: political stability scores 1.4, accountability 3.3, rule of law 3.63, and corruption is the weakest domain at 4.3. The governance percentile of 67 places the Cook Islands in the upper third globally, though no CPI data are published to corroborate the corruption reading independently. The jurisdiction is best known internationally for its asset-protection trust legislation, which has drawn scrutiny over transparency; the Cook Islands strengthened trustee-company supervision through the Trustee Companies Act and completed its most recent APG mutual evaluation in the 2017 to 2018 cycle.",
+    "outlook": "The Cook Islands' profile reflects a solid governance base tempered by its trust-centre exposure. The forward picture depends on the effectiveness of trustee-company and DNFBP supervision, beneficial ownership transparency for trust structures, and the corruption domain as the weakest governance reading. Firms should apply source-of-wealth and beneficial ownership scrutiny to Cook Islands trust relationships and monitor APG follow-up reporting for any change in status.",
+    "keyWatchpoints": [
+      "APG follow-up reporting and any next-round mutual evaluation developments for the Cook Islands.",
+      "Beneficial ownership and source-of-wealth transparency for Cook Islands asset-protection trusts; apply enhanced due diligence.",
+      "Effectiveness of trustee-company and DNFBP supervision under the Cook Islands framework.",
+      "Absence of CPI data limits independent corruption benchmarking; supplement with credible third-party indicators."
     ]
   },
   "CL": {
@@ -721,6 +789,23 @@ export const NARRATIVES: Record<string, CountryNarrative> = {
       "Regional risk spillovers from higher-risk West African jurisdictions."
     ]
   },
+  "CW": {
+    "summary": "World Bank governance indicators do not cover Curacao, so its headline scoring rests on a limited evidence base, and its profile is shaped by framework signals rather than a governance base.",
+    "whyItMatters": [
+      "World Bank WGI governance domain values are not available for Curacao, so no governance base or percentile can be constructed and the picture is evidence-limited.",
+      "Curacao is a constituent country of the Kingdom of the Netherlands and an established Caribbean financial and corporate-services centre, making it a common counterparty jurisdiction.",
+      "No FATF grey or black listing applies and no sanctions are in place, so no regulatory escalators bear on its risk profile.",
+      "Curacao is assessed for AML/CFT purposes by the Caribbean Financial Action Task Force (CFATF), separately from the Netherlands."
+    ],
+    "analysis": "Curacao is a self-governing constituent country within the Kingdom of the Netherlands and a long-standing Caribbean financial and corporate-services centre. World Bank WGI governance domain data are not published for Curacao, so its headline scoring rests on a limited evidence base rather than a full governance profile; the data gap is not itself a positive or negative assessment. No CPI data are available either, and no governance percentile can be derived. The jurisdiction is assessed for AML/CFT purposes by the Caribbean Financial Action Task Force (CFATF); its most recent fourth-round mutual evaluation report was published in the 2025 cycle. No FATF listing or sanctions escalators apply. In the absence of quantified governance data, firms should treat Curacao's risk as evidence-limited and rely on regulatory guidance and third-party country risk assessments.",
+    "outlook": "Curacao's forward risk picture rests on its completed CFATF fourth-round mutual evaluation and the associated follow-up process, given the limited governance evidence base. The effectiveness of AML/CFT supervision across its banking, trust and corporate-services sectors, and beneficial ownership transparency for Curacao entities, are the primary monitoring considerations. Any future WGI data availability would allow a modelled risk picture to be constructed.",
+    "keyWatchpoints": [
+      "CFATF fourth-round mutual evaluation follow-up reporting and any technical compliance re-ratings for Curacao.",
+      "Beneficial ownership transparency and source-of-wealth diligence for Curacao corporate and trust structures.",
+      "Effectiveness of AML/CFT supervision across the banking, trust and international-financial-services sectors.",
+      "Absence of WGI, CPI and percentile data makes independent risk calibration difficult; supplement with regulatory guidance and third-party assessments."
+    ]
+  },
   "CY": {
     "summary": "Cyprus presents a moderate financial-crime risk profile with intermediate governance scores, a highly active supervisory record, and no FATF listing or sanctions exposure.",
     "whyItMatters": [
@@ -804,6 +889,23 @@ export const NARRATIVES: Record<string, CountryNarrative> = {
       "Track EU AML framework developments that apply across Denmark as an EU member state.",
       "Note that Denmark's very low risk score means any deterioration in CPI or governance indicators, even modest, would be notable.",
       "Watch for any future FATF mutual evaluation outcomes specific to Denmark."
+    ]
+  },
+  "DM": {
+    "summary": "Dominica, a Caribbean state with a citizenship-by-investment programme, rests on a strong governance base, with no FATF listing or sanctions in place.",
+    "whyItMatters": [
+      "A solid governance base, with political stability at 1.3 the strongest domain, anchors the profile.",
+      "Corruption (4.1) and rule of law (4.2) are the weakest domains but remain within a moderate range.",
+      "The 2024 CPI score of 60 out of 100 (rank 37) is comparatively strong and places Dominica among the cleaner jurisdictions in the region.",
+      "Dominica operates a citizenship-by-investment programme, a structural feature relevant to identity and due diligence vulnerabilities for counterparties."
+    ],
+    "analysis": "Dominica is an Eastern Caribbean state assessed for AML/CFT purposes by the Caribbean Financial Action Task Force (CFATF). Its risk picture is governance-derived, with no escalators applied. The governance base is solid: political stability scores 1.3, accountability 3.7, corruption 4.1 and rule of law 4.2. The 2024 CPI score of 60 at rank 37 is comparatively strong and corroborates a relatively clean public-sector picture, while the governance percentile of 64 places Dominica in the upper third globally. The most material structural feature is Dominica's citizenship-by-investment programme, which has attracted international scrutiny over due diligence standards and which raises identity-verification risk for financial institutions with Dominican passport-holder or corporate counterparties. Dominica has been the subject of CFATF follow-up reporting on its mutual evaluation.",
+    "outlook": "Dominica's profile reflects a sound governance base offset by its citizenship-by-investment exposure. The forward picture depends on the strength of CBI due diligence and screening reforms, CFATF follow-up remediation, and the corruption and rule-of-law domains. Firms should apply enhanced due diligence where counterparties hold Dominican passports or corporate registrations and monitor CFATF follow-up reporting and the October 2026 FATF plenary for any change in status.",
+    "keyWatchpoints": [
+      "Citizenship-by-investment programme due diligence and screening standards; apply enhanced due diligence to Dominican passport-holders and corporate registrations.",
+      "CFATF follow-up reporting on Dominica's mutual evaluation and any re-ratings.",
+      "October 2026 FATF plenary for any change in listing status.",
+      "Corruption (4.1) and rule of law (4.2) domains as the weakest governance readings."
     ]
   },
   "DO": {
@@ -1027,6 +1129,23 @@ export const NARRATIVES: Record<string, CountryNarrative> = {
       "Political stability and any constitutional or governance changes that could affect regulatory frameworks."
     ]
   },
+  "GD": {
+    "summary": "Grenada, an Eastern Caribbean state with a citizenship-by-investment programme, rests on a strong governance base, with no FATF listing or sanctions in place.",
+    "whyItMatters": [
+      "A solid governance base, with political stability at 1.4 the strongest domain, anchors the profile.",
+      "Corruption (4.2) and rule of law (4.2) are the weakest domains but remain within a moderate range.",
+      "The 2024 CPI score of 56 out of 100 (rank 46) is comparatively strong for the region and corroborates a relatively clean public-sector picture.",
+      "Grenada operates a citizenship-by-investment programme, a structural feature relevant to identity and due diligence vulnerabilities for counterparties."
+    ],
+    "analysis": "Grenada is an Eastern Caribbean state assessed for AML/CFT purposes by the Caribbean Financial Action Task Force (CFATF). Its risk picture is governance-derived, with no escalators applied. The governance base is solid: political stability scores 1.4, accountability 3.7, and corruption and rule of law both 4.2. The 2024 CPI score of 56 at rank 46 corroborates a relatively clean public-sector picture, while the governance percentile of 64 places Grenada in the upper third globally. The most material structural feature is Grenada's citizenship-by-investment programme, which has drawn international scrutiny over due diligence standards, including its historic status as the only Caribbean CBI programme granting access to a United States investor-visa treaty route, and which raises identity-verification risk for financial institutions with Grenadian counterparties. Grenada has been the subject of CFATF follow-up reporting on its mutual evaluation.",
+    "outlook": "Grenada's profile reflects a sound governance base offset by its citizenship-by-investment exposure. The forward picture depends on the strength of CBI due diligence and screening reforms, CFATF follow-up remediation, and the corruption and rule-of-law domains. Firms should apply enhanced due diligence where counterparties hold Grenadian passports or corporate registrations and monitor CFATF follow-up reporting and the October 2026 FATF plenary for any change in status.",
+    "keyWatchpoints": [
+      "Citizenship-by-investment programme due diligence and screening standards; apply enhanced due diligence to Grenadian passport-holders and corporate registrations.",
+      "CFATF follow-up reporting on Grenada's mutual evaluation and any re-ratings.",
+      "October 2026 FATF plenary for any change in listing status.",
+      "Corruption (4.2) and rule of law (4.2) domains as the weakest governance readings."
+    ]
+  },
   "GE": {
     "summary": "Georgia presents a Moderate composite risk score of 4.2, the strongest profile of the South Caucasus, supported by comparatively solid rule of law and no FATF listing or sanctions in place.",
     "whyItMatters": [
@@ -1076,6 +1195,23 @@ export const NARRATIVES: Record<string, CountryNarrative> = {
       "Any future FATF mutual evaluation outcomes, which could alter the risk picture if deficiencies are identified.",
       "Rule-of-law trajectory, including the effectiveness of anti-corruption institutions.",
       "Financial sector developments, including banking sector resilience and AML/CFT supervisory capacity."
+    ]
+  },
+  "GI": {
+    "summary": "World Bank governance indicators do not cover Gibraltar, so its headline scoring rests on a limited evidence base, though it was removed from the FATF grey list in February 2024 after completing its action plan.",
+    "whyItMatters": [
+      "World Bank WGI governance domain values are not available for Gibraltar, so no governance base or percentile can be constructed and the picture is evidence-limited.",
+      "Gibraltar was removed from the FATF grey list in February 2024 after completing an action plan that had consisted of only two recommended actions, the fewest of any grey-listed jurisdiction.",
+      "As a British Overseas Territory and financial-services and online-gaming centre, Gibraltar is a common counterparty jurisdiction for correspondent and corporate finance.",
+      "No FATF grey or black listing currently applies and no sanctions are in place, so no regulatory escalators bear on its risk profile."
+    ],
+    "analysis": "Gibraltar is a British Overseas Territory and a financial-services, insurance and online-gaming centre assessed for AML/CFT purposes by MONEYVAL, the Council of Europe FATF-style regional body. World Bank WGI governance domain data are not published for Gibraltar, so its headline scoring rests on a limited evidence base; the data gap is not itself a positive or negative assessment. No CPI data or governance percentile are available. The most significant recent development is Gibraltar's removal from the FATF grey list in February 2024: it had been grey-listed in June 2022 with an action plan of only two items, and MONEYVAL's second enhanced follow-up report in May 2024 confirmed all 40 FATF Recommendations were rated largely compliant or compliant, terminating fifth-round follow-up. No FATF or sanctions escalators currently apply.",
+    "outlook": "Gibraltar's forward risk picture is favourable given its clean exit from the FATF grey list and its completed MONEYVAL follow-up, notwithstanding the limited governance evidence base. The primary monitoring considerations are the durability of the AML/CFT reforms that secured de-listing, the effectiveness of supervision across the gaming and insurance sectors, and beneficial ownership transparency. Any future WGI data availability would allow a modelled risk picture to be constructed.",
+    "keyWatchpoints": [
+      "Durability of the AML/CFT reforms that secured Gibraltar's February 2024 FATF grey-list exit; monitor MONEYVAL for any renewed follow-up.",
+      "Effectiveness of supervision across the online-gaming, insurance and financial-services sectors.",
+      "Beneficial ownership transparency for Gibraltar companies and structures.",
+      "Absence of WGI, CPI and percentile data makes independent risk calibration difficult; supplement with regulatory guidance and third-party assessments."
     ]
   },
   "GM": {
@@ -1333,6 +1469,23 @@ export const NARRATIVES: Record<string, CountryNarrative> = {
       "Counterparty and correspondent banking exposure to parties with connections to the regional conflict environment."
     ]
   },
+  "IM": {
+    "summary": "World Bank governance indicators do not cover the Isle of Man, so its headline scoring rests on a limited evidence base, though it is a well-regulated Crown Dependency with no FATF listing or sanctions.",
+    "whyItMatters": [
+      "World Bank WGI governance domain values are not available for the Isle of Man, so no governance base or percentile can be constructed and the picture is evidence-limited.",
+      "The Isle of Man is a Crown Dependency and internationally recognised financial and corporate-services centre operating an AML/CFT framework aligned with UK and FATF standards.",
+      "No FATF grey or black listing applies and no sanctions are in place, so no regulatory escalators bear on its risk profile.",
+      "The Isle of Man is assessed by MONEYVAL, the Council of Europe FATF-style regional body, and has a sixth-round on-site evaluation visit scheduled for October 2026."
+    ],
+    "analysis": "The Isle of Man is a self-governing Crown Dependency and a long-established financial, insurance and corporate-services centre. World Bank WGI governance domain data are not published for it, so its headline scoring rests on a limited evidence base; the data gap is not itself a positive or negative assessment. No CPI data or governance percentile are available. The jurisdiction is assessed by MONEYVAL: its fifth-round mutual evaluation report was adopted in December 2016, placing the Isle of Man in enhanced follow-up, and successive follow-up reports through 2020 re-rated it upward on several Recommendations. MONEYVAL has confirmed that the Isle of Man's sixth-round on-site evaluation visit will take place in October 2026. No FATF or sanctions escalators apply.",
+    "outlook": "The Isle of Man's forward risk picture is dominated by the sixth-round MONEYVAL evaluation, with the on-site visit scheduled for October 2026 and a report expected thereafter; the outcome will be the single most important indicator of its AML/CFT standing. Given the limited governance evidence base, its low-risk characterisation rests on its Crown Dependency status and prior follow-up record. Beneficial ownership controls and the supervision of complex structures remain the key ongoing considerations.",
+    "keyWatchpoints": [
+      "MONEYVAL sixth-round mutual evaluation (on-site October 2026) and the subsequent report and ratings.",
+      "Beneficial ownership transparency and the supervision of trust and corporate-services providers.",
+      "Effectiveness of AML/CFT supervision across the insurance, banking and e-gaming sectors.",
+      "Absence of WGI, CPI and percentile data makes independent risk calibration difficult; supplement with regulatory guidance and third-party assessments."
+    ]
+  },
   "IN": {
     "summary": "India is rated high risk at a composite score of 5.0, with corruption as the principal governance driver, supported by active enforcement through SEBI, and no FATF or sanctions exposure.",
     "whyItMatters": [
@@ -1554,6 +1707,23 @@ export const NARRATIVES: Record<string, CountryNarrative> = {
       "Any FATF engagement with Comoros, which has not been listed but exhibits high inherent risk characteristics."
     ]
   },
+  "KN": {
+    "summary": "Saint Kitts and Nevis, an Eastern Caribbean state with a long-running citizenship-by-investment programme, rests on a strong governance base, with no FATF listing or sanctions in place.",
+    "whyItMatters": [
+      "A solid governance base, with political stability at 1.9 the strongest domain, anchors the profile.",
+      "Corruption at 4.5 is the weakest governance domain; rule of law scores 3.53 and accountability 3.5.",
+      "Saint Kitts and Nevis operates the world's longest-running citizenship-by-investment programme, a structural feature relevant to identity and due diligence vulnerabilities.",
+      "No FATF grey or black listing applies and no sanctions are in place; no CPI data are published, so corruption context rests on WGI alone."
+    ],
+    "analysis": "Saint Kitts and Nevis is a twin-island Eastern Caribbean federation assessed for AML/CFT purposes by the Caribbean Financial Action Task Force (CFATF). Its risk picture is governance-derived, with no escalators applied. The governance base is solid: political stability scores 1.9, accountability 3.5, rule of law 3.53, and corruption is the weakest domain at 4.5. The governance percentile of 66 places it in the upper third globally, though no CPI data are published to corroborate the corruption reading. The defining structural feature is its citizenship-by-investment programme, the oldest such scheme in the world, which has drawn sustained international scrutiny over due diligence standards. The federation completed its CFATF mutual evaluation following an on-site visit in March 2021 and has since undertaken follow-up reporting; it reconstituted its Citizenship by Investment Unit as a statutory body in October 2024 with enhanced AML and screening protocols.",
+    "outlook": "The federation's profile reflects a sound governance base offset by its citizenship-by-investment exposure. The forward picture depends on the durability of the 2024 CBI screening reforms, CFATF follow-up remediation, and the corruption domain as the weakest governance reading. Firms should apply enhanced due diligence where counterparties hold Kittitian passports or corporate registrations and monitor CFATF follow-up reporting and the October 2026 FATF plenary for any change in status.",
+    "keyWatchpoints": [
+      "Citizenship-by-investment programme due diligence and the durability of the 2024 screening reforms; apply enhanced due diligence to Kittitian passport-holders and corporate registrations.",
+      "CFATF follow-up reporting on the federation's mutual evaluation and any re-ratings.",
+      "October 2026 FATF plenary for any change in listing status.",
+      "Absence of CPI data limits independent corruption benchmarking; supplement with credible third-party indicators."
+    ]
+  },
   "KP": {
     "summary": "North Korea is the highest-risk jurisdiction in this batch with a composite score of 10.0, combining severe governance deficiencies, FATF black-list status with a call for countermeasures, and comprehensive multilateral sanctions.",
     "whyItMatters": [
@@ -1671,6 +1841,23 @@ export const NARRATIVES: Record<string, CountryNarrative> = {
       "Banking sector solvency, capital controls, and financial system stabilisation.",
       "Corruption perception trends and any anti-corruption enforcement developments.",
       "Broader political and security developments affecting institutional capacity."
+    ]
+  },
+  "LC": {
+    "summary": "Saint Lucia, an Eastern Caribbean state with a citizenship-by-investment programme, rests on a strong governance base, with no FATF listing or sanctions in place.",
+    "whyItMatters": [
+      "A solid governance base, with political stability at 1.6 the strongest domain, anchors the profile.",
+      "Corruption at 4.3 is the weakest governance domain; rule of law scores 3.97 and accountability 3.2.",
+      "The 2024 CPI score of 59 out of 100 (rank 39) is comparatively strong and corroborates a relatively clean public-sector picture.",
+      "Saint Lucia operates a citizenship-by-investment programme, a structural feature relevant to identity and due diligence vulnerabilities."
+    ],
+    "analysis": "Saint Lucia is an Eastern Caribbean state assessed for AML/CFT purposes by the Caribbean Financial Action Task Force (CFATF). Its risk picture is governance-derived, with no escalators applied. The governance base is solid: political stability scores 1.6, accountability 3.2, rule of law 3.97, and corruption is the weakest domain at 4.3. The 2024 CPI score of 59 at rank 39 corroborates a relatively clean public-sector picture, and the governance percentile of 65 places Saint Lucia in the upper third globally. The most material structural feature is its citizenship-by-investment programme, which raises identity-verification risk for financial institutions with Saint Lucian counterparties. Saint Lucia completed its CFATF fourth-round mutual evaluation and has since progressed through enhanced follow-up, with technical compliance re-ratings recorded in successive follow-up reports.",
+    "outlook": "Saint Lucia's profile reflects a sound governance base offset by its citizenship-by-investment exposure. The forward picture depends on the strength of CBI due diligence and screening reforms, continued CFATF follow-up remediation, and the corruption domain as the weakest governance reading. Firms should apply enhanced due diligence where counterparties hold Saint Lucian passports or corporate registrations and monitor CFATF follow-up reporting and the October 2026 FATF plenary for any change in status.",
+    "keyWatchpoints": [
+      "Citizenship-by-investment programme due diligence and screening standards; apply enhanced due diligence to Saint Lucian passport-holders and corporate registrations.",
+      "CFATF enhanced follow-up reporting on Saint Lucia's fourth-round mutual evaluation and any re-ratings.",
+      "October 2026 FATF plenary for any change in listing status.",
+      "Corruption domain (4.3) and CPI trend as the key governance indicators."
     ]
   },
   "LI": {
@@ -1894,6 +2081,23 @@ export const NARRATIVES: Record<string, CountryNarrative> = {
       "Assess the AML supervisory framework and financial intelligence unit capacity before establishing business relationships."
     ]
   },
+  "MH": {
+    "summary": "The Marshall Islands, a Pacific state with a large non-resident offshore corporate registry, rests on a mixed governance base, with no FATF listing or sanctions in place.",
+    "whyItMatters": [
+      "A mixed governance base has political stability at 1.2 the strongest domain and accountability at 2.6 a relative strength.",
+      "Rule of law at 4.63 and corruption at 4.4 are the weakest domains.",
+      "The Marshall Islands hosts a large non-resident corporate and ship registry, a structural feature that raises beneficial ownership and transparency risk.",
+      "No FATF grey or black listing applies and no sanctions are in place; no CPI data are published, so corruption context rests on WGI alone."
+    ],
+    "analysis": "The Republic of the Marshall Islands is a Pacific state in free association with the United States and a member of the Asia/Pacific Group on Money Laundering (APG). Its risk picture is governance-derived, with no escalators applied. The governance base is mixed: political stability is very strong at 1.2 and accountability scores 2.6, but rule of law (4.63) and corruption (4.4) are weaker. The governance percentile of 63 places it in the upper-middle tier globally, though no CPI data are published. The defining structural feature is its large non-resident corporate registry: the APG's third-round mutual evaluation, adopted in September 2024, found that non-resident domestic corporations are not required to disclose officers, directors, shareholders or beneficial owners to the Registrar, that corporate entities may act as directors and shareholders, and that the ML/TF risks of the offshore corporate and ship-registry sectors were insufficiently assessed and understood.",
+    "outlook": "The Marshall Islands' governance-based profile understates the practical exposure created by its opaque non-resident corporate registry, which the September 2024 APG evaluation identified as a significant vulnerability. The forward picture depends on the pace of APG follow-up remediation, particularly on beneficial ownership disclosure for non-resident corporations and on the risk understanding of the offshore and ship-registry sectors. Firms should apply enhanced due diligence to Marshall Islands non-resident entities and verify beneficial ownership independently of the Registrar.",
+    "keyWatchpoints": [
+      "APG follow-up reporting on the September 2024 third-round mutual evaluation, especially beneficial ownership disclosure for non-resident corporations.",
+      "Beneficial ownership verification for Marshall Islands non-resident domestic corporations; do not rely on the Registrar, which does not require officer or owner disclosure.",
+      "Risk-understanding and supervision of the offshore corporate and ship-registry sectors.",
+      "Absence of CPI data limits independent corruption benchmarking; supplement with credible third-party indicators."
+    ]
+  },
   "MK": {
     "summary": "North Macedonia carries a moderate composite risk of 4.8, reflecting the highest corruption score among its governance domains and persistent rule-of-law weaknesses, with no FATF listing or sanctions in place.",
     "whyItMatters": [
@@ -1994,6 +2198,23 @@ export const NARRATIVES: Record<string, CountryNarrative> = {
       "Track CPI movements and any reforms to anti-corruption institutions.",
       "Apply enhanced due diligence to politically exposed persons and government-connected business relationships.",
       "Assess the effectiveness of the financial intelligence unit and AML supervisory framework when onboarding Mauritania-connected counterparties."
+    ]
+  },
+  "MS": {
+    "summary": "World Bank governance indicators do not cover Montserrat, so its headline scoring rests on a limited evidence base, though it completed a well-received CFATF fourth-round mutual evaluation in 2024.",
+    "whyItMatters": [
+      "World Bank WGI governance domain values are not available for Montserrat, so no governance base or percentile can be constructed and the picture is evidence-limited.",
+      "Montserrat is a British Overseas Territory assessed for AML/CFT purposes by the Caribbean Financial Action Task Force (CFATF).",
+      "Montserrat completed its CFATF fourth-round mutual evaluation following an on-site visit in April 2024, adopted at the CFATF December 2024 plenary.",
+      "No FATF grey or black listing applies and no sanctions are in place, so no regulatory escalators bear on its risk profile."
+    ],
+    "analysis": "Montserrat is a small British Overseas Territory in the Eastern Caribbean and a member of the Caribbean Financial Action Task Force (CFATF). World Bank WGI governance domain data are not published for Montserrat, so its headline scoring rests on a limited evidence base; the data gap is not itself a positive or negative assessment. No CPI data or governance percentile are available. The most significant recent development is its CFATF fourth-round mutual evaluation: the on-site visit took place in April 2024, the report was adopted at the CFATF plenary in December 2024, and the territory's government reported a favourable outcome across the technical compliance and effectiveness assessments. No FATF or sanctions escalators apply. In the absence of quantified governance data, firms should treat Montserrat's risk as evidence-limited and rely on the CFATF evaluation and third-party assessments.",
+    "outlook": "Montserrat's forward risk picture rests on its completed CFATF fourth-round mutual evaluation and the associated follow-up process, given the limited governance evidence base. The effectiveness of AML/CFT supervision for its small financial and corporate-services sector, and beneficial ownership transparency, are the primary monitoring considerations. Any future WGI data availability would allow a modelled risk picture to be constructed.",
+    "keyWatchpoints": [
+      "Publication of Montserrat's full CFATF fourth-round mutual evaluation report and any subsequent follow-up reporting.",
+      "Beneficial ownership transparency for Montserrat companies and structures.",
+      "Effectiveness of AML/CFT supervision across the financial and corporate-services sectors.",
+      "Absence of WGI, CPI and percentile data makes independent risk calibration difficult; supplement with the CFATF evaluation and third-party assessments."
     ]
   },
   "MT": {
@@ -2217,6 +2438,23 @@ export const NARRATIVES: Record<string, CountryNarrative> = {
       "Any change to FATF listing status, though the risk is negligible given current governance metrics."
     ]
   },
+  "NR": {
+    "summary": "Nauru, a small Pacific state, rests on a mixed governance base, with no FATF listing or sanctions, though its ship registry was flagged in its 2024 APG mutual evaluation.",
+    "whyItMatters": [
+      "A mixed governance base has political stability at 1.5 the strongest domain.",
+      "Rule of law at 4.67 and corruption at 4.2 are the weakest domains; accountability scores 3.3.",
+      "Nauru's ship registry was specifically flagged for money-laundering, terrorist-financing and proliferation-financing review in its 2024 APG mutual evaluation.",
+      "No FATF grey or black listing applies and no sanctions are in place; no CPI data are published, so corruption context rests on WGI alone."
+    ],
+    "analysis": "Nauru is a small Pacific island state and a member of the Asia/Pacific Group on Money Laundering (APG). Its risk picture is governance-derived, with no escalators applied. The governance base is mixed: political stability is strong at 1.5, accountability scores 3.3, corruption 4.2 and rule of law 4.67. The governance percentile of 62 places it in the upper-middle tier globally, though no CPI data are published. The APG's third-round mutual evaluation, adopted in September 2024, recommended that Nauru urgently review the ML, TF and proliferation-financing implications of its ship registry and establish effective reporting, cooperation and coordination mechanisms among stakeholders. Nauru had historically been a jurisdiction of AML concern in the early 2000s, and the 2024 evaluation frames its residual vulnerabilities around the registry and supervisory capacity rather than the banking sector.",
+    "outlook": "Nauru's governance base is stronger on political stability than on rule of law, tempered by the ship-registry concern raised in the September 2024 APG evaluation. The forward picture depends on the pace of APG follow-up remediation, particularly the review of the ship registry, and on supervisory capacity in a very small administration. Firms should apply enhanced due diligence to any Nauru-linked shipping or corporate exposure and monitor APG follow-up reporting.",
+    "keyWatchpoints": [
+      "APG follow-up reporting on the September 2024 third-round mutual evaluation, especially the ship-registry review.",
+      "ML, TF and proliferation-financing controls around Nauru's ship registry; apply enhanced due diligence to registry-linked exposure.",
+      "Supervisory and institutional capacity constraints in a very small administration.",
+      "Absence of CPI data limits independent corruption benchmarking; supplement with credible third-party indicators."
+    ]
+  },
   "NP": {
     "summary": "Nepal sits in the Very High band with a composite score of 7.1, combining a moderate governance base with a FATF grey-list escalator and elevated corruption and rule-of-law domain scores.",
     "whyItMatters": [
@@ -2232,6 +2470,23 @@ export const NARRATIVES: Record<string, CountryNarrative> = {
       "Corruption risk developments and anti-corruption enforcement effectiveness.",
       "Rule of law reform, including judicial independence and anti-money-laundering legislation.",
       "Any change in sanctions status, which would add further escalator points."
+    ]
+  },
+  "NU": {
+    "summary": "Niue, a small self-governing Pacific state in free association with New Zealand, has corruption as the weakest governance domain and a fresh APG mutual evaluation pending, with no FATF listing or sanctions.",
+    "whyItMatters": [
+      "Political stability at 1.0 is the strongest governance domain against a weaker corruption and rule-of-law picture.",
+      "Corruption at 6.2 is by far the weakest governance domain and the principal governance driver; rule of law scores 5.3.",
+      "Niue underwent an APG on-site mutual evaluation in late 2024, with the report scheduled for consideration at the 2025 APG annual meeting.",
+      "No FATF grey or black listing applies and no sanctions are in place; no CPI data are published, so corruption context rests on WGI alone."
+    ],
+    "analysis": "Niue is a very small self-governing Pacific state in free association with New Zealand and a member of the Asia/Pacific Group on Money Laundering (APG). Its risk picture is governance-derived, with no escalators applied. The governance base is uneven: political stability is very strong at 1.0 and accountability scores 2.4, but corruption at 6.2 is the weakest domain and, with the heaviest domain weighting, is the principal governance driver, while rule of law at 5.3 is also elevated. The governance percentile of 57 places Niue near the global midpoint, and no CPI data are published. Niue was the subject of AML concern in the early 2000s over its former offshore sector, which has since been wound down. The APG conducted an on-site evaluation visit between 25 November and 5 December 2024, with the resulting mutual evaluation report scheduled for consideration at the 2025 APG annual meeting.",
+    "outlook": "Niue's profile is shaped by its weak corruption and rule-of-law domains against very strong political stability. The single most important forward indicator is the outcome of its pending APG mutual evaluation, following the late-2024 on-site visit, which will provide the first current effectiveness read on its AML/CFT framework. Firms should treat corruption as the dominant governance concern and monitor the 2025 APG annual meeting for the report's adoption.",
+    "keyWatchpoints": [
+      "Outcome of Niue's APG mutual evaluation, following the November to December 2024 on-site visit, expected at the 2025 APG annual meeting.",
+      "Corruption domain (6.2) as the dominant governance driver; monitor for reform and transparency developments.",
+      "Rule of law (5.3) and supervisory capacity constraints in a very small administration.",
+      "Absence of CPI data limits independent corruption benchmarking; supplement with credible third-party indicators."
     ]
   },
   "NZ": {
@@ -2404,6 +2659,23 @@ export const NARRATIVES: Record<string, CountryNarrative> = {
       "Any change to FATF listing status, though the risk of listing is low given current governance indicators."
     ]
   },
+  "PW": {
+    "summary": "Palau, a Pacific state in free association with the United States, rests on a strong governance base, but sits on the EU list of non-cooperative tax jurisdictions, which shapes its counterparty risk.",
+    "whyItMatters": [
+      "A strong governance base, with political stability at 1.3 the strongest domain, anchors the profile.",
+      "Palau is on the EU list of non-cooperative jurisdictions for tax purposes (Annex I, as adopted 17 February 2026), reflecting unresolved tax good-governance concerns.",
+      "Corruption at 4.2 is the weakest governance domain; rule of law scores 3.63 and accountability 2.5.",
+      "No FATF grey or black listing applies and no sanctions are in place; no CPI data are published, so corruption context rests on WGI alone."
+    ],
+    "analysis": "Palau is a Pacific island state in free association with the United States and a member of the Asia/Pacific Group on Money Laundering (APG). Its risk picture is governance-derived, with no escalators applied. The governance base is strong: political stability scores 1.3, accountability 2.5, rule of law 3.63, and corruption is the weakest domain at 4.2. The governance percentile of 69 places Palau in the upper third globally, though no CPI data are published. The most material external signal is its presence on the EU Annex I tax list, which the Council last confirmed on 17 February 2026; that listing reflects tax transparency and cooperation concerns rather than an AML/CFT deficiency. Palau completed its APG mutual evaluation, with the report adopted at the 2018 APG annual meeting following an on-site visit in late 2017, and its trustee sector was noted as falling outside comprehensive AML/CFT obligations at that time.",
+    "outlook": "Palau's practical risk profile turns on its EU tax-list status and its offshore exposure more than on its governance base. The Council of the EU reviews Annex I twice a year, with the next scheduled revision in October 2026, so any de-listing or continued inclusion is the single most important forward indicator. APG follow-up reporting on the adequacy of AML/CFT coverage of the trustee and corporate sectors is the other key consideration. Firms should monitor the EU tax list and apply enhanced due diligence to Palauan structures.",
+    "keyWatchpoints": [
+      "EU Council review of the Annex I tax list (next scheduled October 2026): monitor whether Palau is retained or removed.",
+      "APG follow-up reporting on the adequacy of AML/CFT coverage of Palau's trustee and corporate sectors.",
+      "Corruption domain (4.2) as the weakest governance reading.",
+      "Absence of CPI data limits independent corruption benchmarking; supplement with credible third-party indicators."
+    ]
+  },
   "PY": {
     "summary": "Paraguay presents high risk at 5.6, with corruption the dominant driver and transparency metrics among the weakest in the South American subregion.",
     "whyItMatters": [
@@ -2521,6 +2793,23 @@ export const NARRATIVES: Record<string, CountryNarrative> = {
       "Voice and accountability trends and their implications for beneficial ownership transparency.",
       "High-value real estate, energy, and sovereign-wealth flows with elevated exposure.",
       "Any shift in FATF assessment engagement or regional MENAFATF findings."
+    ]
+  },
+  "SB": {
+    "summary": "Solomon Islands, a Pacific state, has corruption and rule of law as its weakest governance domains, with no FATF listing or sanctions, and a World Bank-supported APG mutual evaluation.",
+    "whyItMatters": [
+      "Political stability at 2.1 is the strongest governance domain against weaker corruption and rule-of-law readings.",
+      "Corruption and rule of law both score 5.5, the joint-weakest domains, and together carry the majority of the governance weighting.",
+      "The 2024 CPI score of 44 out of 100 (rank 73) corroborates a meaningful corruption picture.",
+      "No FATF grey or black listing applies and no sanctions are in place, so the headline risk reflects the governance base alone."
+    ],
+    "analysis": "Solomon Islands is a Pacific archipelagic state and a member of the Asia/Pacific Group on Money Laundering (APG). Its risk picture is governance-derived, with no escalators applied. Corruption and rule of law are the joint-weakest domains at 5.5, together carrying the majority of the governance weighting, while accountability scores 3.7 and political stability 2.1 is a relative strength. The 2024 CPI score of 44 at rank 73 corroborates the corruption reading, and the governance percentile of 54 places Solomon Islands near the global midpoint. Its APG mutual evaluation, supported by the World Bank and adopted in October 2019, identified capacity and effectiveness challenges typical of a developing Pacific economy, alongside a legal framework broadly aligned with FATF standards.",
+    "outlook": "Solomon Islands' profile reflects a governance base weighed down by corruption and rule-of-law weaknesses against relatively strong political stability. The forward picture depends on the pace of APG follow-up remediation, anti-corruption reform, and supervisory capacity in a resource-constrained administration. Firms should apply proportionate enhanced due diligence to Solomon Islands exposure and monitor APG follow-up reporting and the October 2026 FATF plenary for any change in status.",
+    "keyWatchpoints": [
+      "APG follow-up reporting on the October 2019 mutual evaluation and any technical compliance re-ratings.",
+      "Corruption and rule of law (both 5.5) as the dominant governance drivers; monitor anti-corruption reform and the CPI trend.",
+      "October 2026 FATF plenary for any change in listing status.",
+      "Supervisory and institutional capacity constraints in a developing Pacific economy."
     ]
   },
   "SC": {
@@ -2761,6 +3050,23 @@ export const NARRATIVES: Record<string, CountryNarrative> = {
       "FATF plenary in October 2026 for any regional monitoring developments relevant to El Salvador."
     ]
   },
+  "SX": {
+    "summary": "World Bank governance indicators do not cover Sint Maarten, so its headline scoring rests on a limited evidence base, and its profile is shaped by framework signals rather than a governance base.",
+    "whyItMatters": [
+      "World Bank WGI governance domain values are not available for Sint Maarten, so no governance base or percentile can be constructed and the picture is evidence-limited.",
+      "Sint Maarten is a constituent country of the Kingdom of the Netherlands and a Caribbean tourism and financial-services centre, making it a common counterparty jurisdiction.",
+      "No FATF grey or black listing applies and no sanctions are in place, so no regulatory escalators bear on its risk profile.",
+      "Sint Maarten is assessed for AML/CFT purposes by the Caribbean Financial Action Task Force (CFATF), separately from the Netherlands."
+    ],
+    "analysis": "Sint Maarten is a self-governing constituent country within the Kingdom of the Netherlands, occupying the southern part of the island of Saint Martin, and a Caribbean tourism and financial-services centre. World Bank WGI governance domain data are not published for Sint Maarten, so its headline scoring rests on a limited evidence base; the data gap is not itself a positive or negative assessment. No CPI data or governance percentile are available. The jurisdiction is assessed for AML/CFT purposes by the Caribbean Financial Action Task Force (CFATF); its fourth-round mutual evaluation report was published in the 2025 cycle. No FATF listing or sanctions escalators apply. In the absence of quantified governance data, firms should treat Sint Maarten's risk as evidence-limited and rely on regulatory guidance and third-party country risk assessments.",
+    "outlook": "Sint Maarten's forward risk picture rests on its completed CFATF fourth-round mutual evaluation and the associated follow-up process, given the limited governance evidence base. The effectiveness of AML/CFT supervision across its financial and corporate-services sectors, beneficial ownership transparency, and post-disaster institutional reconstruction are the primary monitoring considerations. Any future WGI data availability would allow a modelled risk picture to be constructed.",
+    "keyWatchpoints": [
+      "CFATF fourth-round mutual evaluation follow-up reporting and any technical compliance re-ratings for Sint Maarten.",
+      "Beneficial ownership transparency and source-of-wealth diligence for Sint Maarten corporate structures.",
+      "Effectiveness of AML/CFT supervision across the financial and corporate-services sectors.",
+      "Absence of WGI, CPI and percentile data makes independent risk calibration difficult; supplement with regulatory guidance and third-party assessments."
+    ]
+  },
   "SY": {
     "summary": "Syria is rated at the maximum composite score of 10, reflecting near-total governance breakdown, FATF grey-list status, and comprehensive OFAC sanctions supplemented by targeted EU and UK measures.",
     "whyItMatters": [
@@ -2793,6 +3099,23 @@ export const NARRATIVES: Record<string, CountryNarrative> = {
       "Corruption risk in public procurement and state-linked commercial activity.",
       "Political stability indicators and their potential effect on rule-of-law conditions.",
       "Regulatory capacity and supervisory effectiveness within the financial sector."
+    ]
+  },
+  "TC": {
+    "summary": "World Bank governance indicators do not cover the Turks and Caicos Islands, so its headline scoring rests on a limited evidence base, and it was added to the EU list of non-cooperative tax jurisdictions in February 2026.",
+    "whyItMatters": [
+      "World Bank WGI governance domain values are not available for the Turks and Caicos Islands, so no governance base or percentile can be constructed and the picture is evidence-limited.",
+      "The Turks and Caicos Islands was added to the EU list of non-cooperative jurisdictions for tax purposes (Annex I) in the update adopted on 17 February 2026.",
+      "As a British Overseas Territory and offshore financial centre, the Turks and Caicos Islands is a common counterparty jurisdiction for corporate and trust structures.",
+      "No FATF grey or black listing applies and no sanctions are in place, so no regulatory escalators bear on its risk profile."
+    ],
+    "analysis": "The Turks and Caicos Islands is a British Overseas Territory in the Atlantic and a member of the Caribbean Financial Action Task Force (CFATF). World Bank WGI governance domain data are not published for it, so its headline scoring rests on a limited evidence base; the data gap is not itself a positive or negative assessment. No CPI data or governance percentile are available. The most material external signal is its recent addition to the EU Annex I tax list in the Council update adopted on 17 February 2026, having earlier been removed from the list in February 2024; the re-listing reflects tax good-governance and transparency concerns rather than an AML/CFT deficiency. The territory is assessed by CFATF, with its most recent mutual evaluation following an on-site visit in September 2018. No FATF or sanctions escalators apply.",
+    "outlook": "The Turks and Caicos Islands' forward risk picture is dominated by its February 2026 return to the EU Annex I tax list. The Council reviews the list twice a year, with the next scheduled revision in October 2026, so whether the territory secures a further de-listing is the single most important forward indicator. CFATF follow-up on its AML/CFT framework and beneficial ownership transparency for its offshore corporate and trust sectors are the other key considerations. Firms should monitor the EU tax list and apply enhanced due diligence to structures routed through the territory.",
+    "keyWatchpoints": [
+      "EU Council review of the Annex I tax list (next scheduled October 2026): monitor whether the Turks and Caicos Islands secures a de-listing.",
+      "CFATF follow-up reporting on the territory's AML/CFT framework and any next-round mutual evaluation.",
+      "Beneficial ownership transparency for Turks and Caicos corporate and trust structures; apply enhanced due diligence.",
+      "Absence of WGI, CPI and percentile data makes independent risk calibration difficult; supplement with regulatory guidance and third-party assessments."
     ]
   },
   "TD": {
@@ -2912,6 +3235,23 @@ export const NARRATIVES: Record<string, CountryNarrative> = {
       "October 2026 FATF plenary for any change in listing status.",
       "Anti-corruption enforcement trends and the operational independence of national oversight bodies.",
       "Changes in the trade and capital flows environment that may affect exposure to financial crime typologies."
+    ]
+  },
+  "TO": {
+    "summary": "Tonga, a Pacific kingdom, has corruption as by far its weakest governance domain, with no FATF listing or sanctions in place.",
+    "whyItMatters": [
+      "Political stability at 1.3 is the strongest governance domain against a weaker corruption picture.",
+      "Corruption at 6.0 is by far the weakest governance domain and the principal governance driver; rule of law scores 4.27.",
+      "Tonga underwent its APG mutual evaluation with an on-site visit in 2019, placing it within the current assessment cycle.",
+      "No FATF grey or black listing applies and no sanctions are in place; no CPI data are published, so corruption context rests on WGI alone."
+    ],
+    "analysis": "Tonga is a Pacific archipelagic kingdom and a member of the Asia/Pacific Group on Money Laundering (APG). Its risk picture is governance-derived, with no escalators applied. The governance base is uneven: political stability is very strong at 1.3 and accountability scores 2.9, but corruption at 6.0 is the weakest domain and, with the heaviest domain weighting, is the principal governance driver, while rule of law at 4.27 is moderate. The governance percentile of 62 places Tonga in the upper-middle tier globally, and no CPI data are published to corroborate the corruption reading independently. Tonga completed its APG mutual evaluation following an on-site visit in 2019, which assessed a legal framework broadly consistent with FATF standards alongside the effectiveness and capacity constraints typical of a small Pacific economy.",
+    "outlook": "Tonga's profile is shaped by its weak corruption domain against very strong political stability. The forward picture depends on the pace of APG follow-up remediation, anti-corruption reform, and supervisory capacity in a small administration. Firms should treat corruption as the dominant governance concern, apply proportionate enhanced due diligence to Tongan exposure, and monitor APG follow-up reporting for any change in status.",
+    "keyWatchpoints": [
+      "APG follow-up reporting on Tonga's 2019 mutual evaluation and any technical compliance re-ratings.",
+      "Corruption domain (6.0) as the dominant governance driver; monitor anti-corruption reform and transparency developments.",
+      "Supervisory and institutional capacity constraints in a small Pacific economy.",
+      "Absence of CPI data limits independent corruption benchmarking; supplement with credible third-party indicators."
     ]
   },
   "TR": {
@@ -3065,6 +3405,40 @@ export const NARRATIVES: Record<string, CountryNarrative> = {
       "Track the pace and depth of anti-corruption and judicial reform programmes.",
       "Monitor the CPI trajectory as an indicator of whether reform rhetoric is translating into measurable change.",
       "Assess exposure through state-owned enterprises and politically connected counterparties."
+    ]
+  },
+  "VA": {
+    "summary": "World Bank governance indicators do not cover Vatican City, so its headline scoring rests on a limited evidence base, though its AML/CFT framework received a broadly positive MONEYVAL assessment.",
+    "whyItMatters": [
+      "World Bank WGI governance domain values are not available for Vatican City, so no governance base or percentile can be constructed and the picture is evidence-limited.",
+      "The Holy See, including Vatican City State, is assessed by MONEYVAL, the Council of Europe FATF-style regional body, and its supervisory authority is the ASIF (Supervisory and Financial Information Authority).",
+      "MONEYVAL's 2021 mutual evaluation gave five ratings of substantial effectiveness and six of moderate, with no low-effectiveness rating.",
+      "No FATF grey or black listing applies and no sanctions are in place, so no regulatory escalators bear on its risk profile."
+    ],
+    "analysis": "Vatican City State, and the Holy See under whose sovereignty it falls, form a unique jurisdiction whose financial system centres on the Institute for the Works of Religion and is supervised by the ASIF (Supervisory and Financial Information Authority). World Bank WGI governance domain data are not published for Vatican City, so its headline scoring rests on a limited evidence base; the data gap is not itself a positive or negative assessment. No CPI data or governance percentile are available. The jurisdiction is assessed by MONEYVAL: its 2021 mutual evaluation, following an on-site visit in late 2020, rated the AML/CFT framework at five substantial and six moderate effectiveness outcomes with no low rating, and a follow-up report in 2024 noted further progress on banking and legal-persons measures. No FATF or sanctions escalators apply.",
+    "outlook": "Vatican City's forward risk picture rests on the MONEYVAL follow-up process and on the continued implementation of the reforms recognised in the 2021 evaluation, given the limited governance evidence base. The effectiveness of ASIF supervision, the outcome of high-profile domestic financial prosecutions, and transparency around the Institute for the Works of Religion are the primary monitoring considerations. Any future WGI data availability would allow a modelled risk picture to be constructed.",
+    "keyWatchpoints": [
+      "MONEYVAL follow-up reporting on the Holy See and Vatican City State, building on the 2021 mutual evaluation.",
+      "Effectiveness of ASIF supervision and the outcome of domestic financial-crime prosecutions.",
+      "Transparency and governance around the Institute for the Works of Religion and Vatican asset management.",
+      "Absence of WGI, CPI and percentile data makes independent risk calibration difficult; supplement with the MONEYVAL evaluation and third-party assessments."
+    ]
+  },
+  "VC": {
+    "summary": "Saint Vincent and the Grenadines, an Eastern Caribbean state, rests on a strong governance base, with no FATF listing or sanctions in place.",
+    "whyItMatters": [
+      "A solid governance base, with political stability at 1.6 the strongest domain, anchors the profile.",
+      "Corruption at 3.8 and rule of law at 4.0 are the weakest domains but remain within a moderate range.",
+      "The 2024 CPI score of 63 out of 100 (rank 31) is comparatively strong and places the country among the cleaner jurisdictions in the region.",
+      "No FATF grey or black listing applies and no sanctions are in place, so the headline risk reflects the governance base alone."
+    ],
+    "analysis": "Saint Vincent and the Grenadines is an Eastern Caribbean state assessed for AML/CFT purposes by the Caribbean Financial Action Task Force (CFATF). Its risk picture is governance-derived, with no escalators applied. The governance base is solid: political stability scores 1.6, accountability 3.4, corruption 3.8 and rule of law 4.0. The 2024 CPI score of 63 at rank 31 is comparatively strong and corroborates a relatively clean public-sector picture, while the governance percentile of 65 places the country in the upper third globally. Unlike several of its Eastern Caribbean neighbours, Saint Vincent and the Grenadines does not operate a citizenship-by-investment programme, which removes one common source of identity-verification risk. It has an international financial-services sector and is subject to CFATF mutual evaluation and follow-up reporting.",
+    "outlook": "Saint Vincent and the Grenadines' profile reflects a sound governance base and a comparatively clean CPI reading. The forward picture depends on continued CFATF follow-up remediation, the effectiveness of supervision for its international financial-services sector, and the corruption and rule-of-law domains as the weakest governance readings. Firms should apply proportionate due diligence and monitor CFATF follow-up reporting and the October 2026 FATF plenary for any change in status.",
+    "keyWatchpoints": [
+      "CFATF follow-up reporting on the country's mutual evaluation and any technical compliance re-ratings.",
+      "October 2026 FATF plenary for any change in listing status.",
+      "Beneficial ownership transparency and supervision of the international financial-services sector.",
+      "Corruption (3.8) and rule of law (4.0) domains as the weakest governance readings."
     ]
   },
   "VE": {
