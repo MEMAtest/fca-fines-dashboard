@@ -153,7 +153,9 @@ export function sanctionsPillarRisk(
   const highest = Math.max(...perImposer);
   return {
     score: round1(0.7 * highest + 0.3 * (mean(perImposer) as number)),
-    evidenceCount: sanctions?.programs.length ?? 0,
+    // Four approved catalogue/coverage cells are evidence even when there is
+    // no direct programme. This distinguishes a reviewed zero from missing data.
+    evidenceCount: IMPOSERS.length + (sanctions?.programs.length ?? 0),
     highestTier,
   };
 }

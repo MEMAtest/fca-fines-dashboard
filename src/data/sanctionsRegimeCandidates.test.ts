@@ -13,24 +13,25 @@ import { SANCTIONS_APPROVED_SNAPSHOT } from "./sanctionsApprovedData.js";
 describe("sanctions v2 candidate catalogue", () => {
   it("covers every country-specific programme in the four reviewed official catalogues", () => {
     expect(SANCTIONS_CATALOGUE_COVERAGE.map((item) => [item.imposer, item.countryRegimeCount])).toEqual([
-      ["OFAC", 23],
-      ["UK", 26],
-      ["EU", 31],
+      ["OFAC", 25],
+      ["UK", 29],
+      ["EU", 49],
       ["UN", 14],
     ]);
-    expect(SANCTIONS_REGIME_CANDIDATES).toHaveLength(94);
-    expect(SANCTIONS_CANDIDATE_COUNTRY_COUNT).toBe(35);
+    expect(SANCTIONS_REGIME_CANDIDATES).toHaveLength(117);
+    expect(SANCTIONS_CANDIDATE_COUNTRY_COUNT).toBe(38);
   });
 
-  it("maps each imposer-country pair once to a canonical country and official evidence", () => {
+  it("maps each official regime once to a canonical country and specific starting evidence", () => {
     const keys = new Set<string>();
     for (const candidate of SANCTIONS_REGIME_CANDIDATES) {
       expect(getCountryByIso2(candidate.iso2), `${candidate.imposer}:${candidate.iso2}`).toBeDefined();
-      const key = `${candidate.imposer}:${candidate.iso2}`;
+      const key = `${candidate.imposer}:${candidate.iso2}:${candidate.regime}`;
       expect(keys.has(key), key).toBe(false);
       keys.add(key);
       expect(candidate.catalogueUrl).toMatch(/^https:\/\//);
       expect(candidate.measureEvidenceUrl).toMatch(/^https:\/\//);
+      expect(candidate.measureEvidenceUrl).not.toBe(candidate.catalogueUrl);
       expect(candidate.rationale.length).toBeGreaterThan(15);
     }
   });
@@ -46,6 +47,8 @@ describe("sanctions v2 candidate catalogue", () => {
     expect(getSanctionsRegimeCandidates("SY").find((item) => item.imposer === "OFAC")?.proposedTier).toBe("targeted");
     expect(getSanctionsRegimeCandidates("IR").find((item) => item.imposer === "UN")?.proposedTier).toBe("sectoral");
     expect(getSanctionsRegimeCandidates("UA").find((item) => item.imposer === "EU")?.relationship).toBe("situation-related");
+    expect(getSanctionsRegimeCandidates("US").find((item) => item.imposer === "EU")?.relationship).toBe("situation-related");
+    expect(getSanctionsRegimeCandidates("CN").some((item) => item.imposer === "EU" && item.proposedTier === "sectoral")).toBe(true);
   });
 
   it("publishes mutually exclusive deterministic tier definitions", () => {

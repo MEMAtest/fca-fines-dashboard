@@ -1,4 +1,4 @@
-import { getCountryByIso2 } from "./countries.js";
+import { EU_SANCTIONS_REGIMES, EU_SANCTIONS_REGIME_SNAPSHOT } from "./euSanctionsRegimeData.js";
 import type { SanctionsImposer, SanctionsTier } from "./sanctionsStatus.js";
 
 /**
@@ -54,7 +54,7 @@ export const SANCTIONS_TIER_RULES: Record<SanctionsTier, string> = {
 const CATALOGUE = {
   OFAC: "https://ofac.treasury.gov/sanctions-programs-and-country-information",
   UK: "https://www.gov.uk/government/collections/uk-sanctions-regimes-under-the-sanctions-act",
-  EU: "https://www.consilium.europa.eu/en/topics/sanctions/",
+  EU: "https://sanctionsmap.eu/api/v1/regime?lang=en",
   UN: "https://main.un.org/securitycouncil/en/sanctions/information",
 } as const;
 
@@ -84,7 +84,6 @@ function candidates(imposer: SanctionsImposer, specs: readonly CandidateSpec[]):
 
 const OFAC = "https://ofac.treasury.gov/sanctions-programs-and-country-information";
 const UK = "https://www.gov.uk";
-const EU = CATALOGUE.EU;
 const UN = "https://main.un.org/securitycouncil/en/sanctions";
 
 const OFAC_CANDIDATES = candidates("OFAC", [
@@ -105,7 +104,9 @@ const OFAC_CANDIDATES = candidates("OFAC", [
   ["NI", "targeted", "Nicaragua-Related Sanctions", `${OFAC}/nicaragua-related-sanctions`, "Designation-led programme."],
   ["KP", "comprehensive", "North Korea Sanctions", `${OFAC}/north-korea-sanctions`, "Broad country-wide trade and financial prohibitions operate alongside designations."],
   ["SY", "targeted", "Promoting Accountability for Assad and Regional Stabilization Sanctions", `${OFAC}/paarss`, "OFAC removed broad Syria sanctions effective 1 July 2025; remaining measures target Assad and other specified actors."],
-  ["RU", "sectoral", "Russian Harmful Foreign Activities and Ukraine-/Russia-related Sanctions", `${OFAC}/russian-harmful-foreign-activities-sanctions`, "Finance, energy, services and other sector-level restrictions apply."],
+  ["RU", "sectoral", "Russia-related Sanctions", `${OFAC}/russia-related-sanctions`, "Country-related authorities include material transaction restrictions; operative scope requires independent legal review."],
+  ["RU", "sectoral", "Russian Harmful Foreign Activities Sanctions", `${OFAC}/russian-harmful-foreign-activities-sanctions`, "Finance, energy, services and other sector-level restrictions apply."],
+  ["RU", "sectoral", "Ukraine-/Russia-related Sanctions", `${OFAC}/ukraine-russia-related-sanctions`, "Measures target Russia and occupied regions; Ukraine is not treated as the sanctioned country."],
   ["SO", "targeted", "Somalia Sanctions", `${OFAC}/somalia-sanctions`, "OFAC programme is primarily designation-led; UN measures are assessed separately."],
   ["SS", "targeted", "South Sudan-Related Sanctions", `${OFAC}/south-sudan-related-sanctions`, "Designation-led conflict programme."],
   ["SD", "targeted", "Sudan and Darfur Sanctions", `${OFAC}/sudan-and-darfur-sanctions`, "Current programme is designation-led; the former country-wide Sudan embargo is inactive."],
@@ -125,9 +126,11 @@ const UK_GUIDANCE: readonly CandidateSpec[] = [
   ["GN", "targeted", "Guinea sanctions", `${UK}/government/publications/guinea-sanctions-guidance`, "Designation-led regime."],
   ["GW", "targeted", "Republic of Guinea-Bissau sanctions", `${UK}/government/publications/guinea-bissau-sanctions-guidance`, "Designation-led regime."],
   ["HT", "targeted", "Haiti sanctions", `${UK}/government/publications/haiti-sanctions-guidance`, "Designation-led regime."],
-  ["IR", "sectoral", "Iran and Iran nuclear sanctions", `${UK}/government/publications/iran-sanctions-guidance`, "Trade, transport and financial restrictions apply beyond designated persons."],
+  ["IR", "sectoral", "Iran sanctions", `${UK}/government/publications/iran-sanctions-guidance`, "Trade, transport and financial restrictions apply beyond designated persons."],
+  ["IR", "sectoral", "Iran nuclear sanctions", `${UK}/government/publications/iran-nuclear-sanctions-guidance`, "Nuclear-related trade and financial restrictions require a separate operative-scope decision."],
   ["IQ", "targeted", "Iraq sanctions", `${UK}/government/publications/iraq-sanctions-guidance`, "Restrictions principally concern designated former-regime persons and assets."],
   ["LB", "targeted", "Lebanon sanctions", `${UK}/government/publications/lebanon-sanctions-guidance`, "Designation-led regime."],
+  ["LB", "targeted", "Lebanon (Assassination of Rafiq Hariri and others) sanctions", `${UK}/government/publications/lebanon-assassination-of-rafiq-hariri-and-others-sanctions-guidance`, "Measures concern specified persons connected to an assassination and require an explicit country-nexus decision.", "situation-related"],
   ["LY", "sectoral", "Libya sanctions", `${UK}/government/publications/libya-sanctions-guidance`, "Arms and petroleum-related restrictions apply beyond designations."],
   ["ML", "targeted", "Mali sanctions", `${UK}/government/publications/mali-sanctions-guidance`, "Designation-led regime."],
   ["MM", "sectoral", "Myanmar sanctions", `${UK}/government/publications/myanmar-sanctions-guidance`, "Arms and specified goods restrictions apply beyond designations."],
@@ -137,6 +140,7 @@ const UK_GUIDANCE: readonly CandidateSpec[] = [
   ["SS", "sectoral", "South Sudan sanctions", `${UK}/government/publications/south-sudan-sanctions-guidance`, "Arms restrictions apply in addition to designations."],
   ["SD", "sectoral", "Sudan sanctions", `${UK}/government/publications/sudan-sanctions-guidance`, "Arms restrictions apply in addition to designations."],
   ["SY", "sectoral", "Syria sanctions", `${UK}/government/publications/syria-sanctions-guidance`, "Trade, finance and sector restrictions apply beyond designations."],
+  ["SY", "sectoral", "Syria cultural property sanctions", `${UK}/government/publications/syria-cultural-property-sanctions-guidance`, "Country-specific cultural-property trade restrictions apply beyond named designations."],
   ["VE", "targeted", "Venezuela sanctions", `${UK}/government/publications/venezuela-sanctions-guidance`, "Designation-led regime."],
   ["YE", "targeted", "Yemen sanctions", `${UK}/government/publications/yemen-sanctions-guidance`, "Designation-led regime."],
   ["ZW", "sectoral", "Zimbabwe sanctions", `${UK}/government/publications/zimbabwe-sanctions-guidance`, "Arms restrictions apply in addition to designations."],
@@ -144,28 +148,20 @@ const UK_GUIDANCE: readonly CandidateSpec[] = [
 
 const UK_CANDIDATES = candidates("UK", UK_GUIDANCE);
 
-const EU_COUNTRIES: ReadonlyArray<readonly [string, SanctionsTier, SanctionsRegimeRelationship?]> = [
-  ["AF", "targeted"], ["BY", "sectoral"], ["BA", "targeted"], ["BI", "targeted"],
-  ["CF", "sectoral"], ["CD", "sectoral"], ["GT", "targeted", "situation-related"],
-  ["GN", "targeted"], ["GW", "targeted"], ["HT", "targeted"], ["IR", "sectoral"],
-  ["IQ", "targeted"], ["LB", "targeted"], ["LY", "sectoral"], ["ML", "targeted"],
-  ["MD", "targeted", "situation-related"], ["MM", "sectoral"], ["NI", "targeted"],
-  ["NE", "targeted"], ["KP", "sectoral"], ["RU", "sectoral"], ["SO", "sectoral"],
-  ["SS", "sectoral"], ["SD", "sectoral"], ["SY", "sectoral"], ["TN", "targeted"],
-  ["TR", "targeted", "situation-related"], ["UA", "targeted", "situation-related"],
-  ["VE", "targeted"], ["YE", "targeted"], ["ZW", "sectoral"],
-];
-
-const EU_CANDIDATES = candidates("EU", EU_COUNTRIES.map(([iso2, tier, relationship]) => [
-  iso2,
-  tier,
-  `${getCountryByIso2(iso2)?.name ?? iso2} restrictive measures`,
-  EU,
-  tier === "targeted"
-    ? "Official EU country-regime catalogue; direct legal act and designation nexus must be confirmed before approval."
-    : "Official EU country-regime catalogue; proposed broad-measure tier must be confirmed against the applicable Council legal acts.",
-  relationship,
-] as const));
+const EU_CANDIDATES: SanctionsRegimeCandidate[] = EU_SANCTIONS_REGIMES.map((regime) => ({
+  iso2: regime.iso2,
+  imposer: "EU",
+  regime: regime.specification,
+  proposedTier: regime.proposedTier,
+  relationship: regime.relationship,
+  catalogueUrl: EU_SANCTIONS_REGIME_SNAPSHOT.sourceUrl,
+  measureEvidenceUrl: regime.apiUrl,
+  rationale: regime.materialNonDesignationRestriction
+    ? "Official EU measure data contains an active restriction beyond named-person asset freezes and travel restrictions."
+    : "Official EU measure data is designation-led; country nexus and legal scope still require independent approval.",
+  reviewedAsOf: EU_SANCTIONS_REGIME_SNAPSHOT.retrievedAt.slice(0, 10),
+  reviewStatus: "pending-independent-review",
+}));
 
 const UN_CANDIDATES = candidates("UN", [
   ["SO", "sectoral", "Al-Shabaab / Somalia sanctions", `${UN}/2713`, "Arms, charcoal and specified-component restrictions apply alongside designations."],
@@ -200,7 +196,7 @@ export const SANCTIONS_CATALOGUE_COVERAGE: SanctionsCatalogueCoverage[] = [
     excludedProgrammes: [
       "Balkans-Related Sanctions (regional designation programme; no country-wide nexus inferred)",
       "Thematic programmes such as counter-terrorism, cyber and Global Magnitsky",
-      "Ukraine-/Russia-related measures are represented against Russia; Ukraine is not treated as the sanctioned country",
+      "Statutory umbrella programmes that do not create a distinct country regime",
     ],
     note: "OFAC expressly warns that it has no simple sanctioned-country list and that programme scope varies.",
   },
@@ -209,7 +205,7 @@ export const SANCTIONS_CATALOGUE_COVERAGE: SanctionsCatalogueCoverage[] = [
     catalogueUrl: CATALOGUE.UK,
     reviewedAsOf: SANCTIONS_CATALOGUE_REVIEWED_AS_OF,
     countryRegimeCount: UK_CANDIDATES.length,
-    excludedProgrammes: ["Thematic regimes", "Duplicate Iran, Lebanon and Syria sub-regimes are consolidated per country"],
+    excludedProgrammes: ["Thematic regimes, including ISIL (Da'esh) and Al-Qaida"],
     note: "Includes the separately published mainland China and Hong Kong arms embargo.",
   },
   {
@@ -217,8 +213,8 @@ export const SANCTIONS_CATALOGUE_COVERAGE: SanctionsCatalogueCoverage[] = [
     catalogueUrl: CATALOGUE.EU,
     reviewedAsOf: SANCTIONS_CATALOGUE_REVIEWED_AS_OF,
     countryRegimeCount: EU_CANDIDATES.length,
-    excludedProgrammes: ["Thematic human-rights, terrorism, chemical-weapons and cyber regimes"],
-    note: "Coverage follows the Council's current text list of countries where a sanctions regime applies.",
+    excludedProgrammes: ["Thematic records are separated by the official API type and are not attributed to a country"],
+    note: `Coverage is generated from ${EU_SANCTIONS_REGIME_SNAPSHOT.recordCount} official country-regime records with legal acts and measure data.`,
   },
   {
     imposer: "UN",

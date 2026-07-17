@@ -6,6 +6,12 @@ import {
 } from "../../../src/data/countryRiskV2.js";
 import { COUNTRY_RISK_SOURCES } from "../../../src/data/countryRiskSources.js";
 import { SANCTIONS_APPROVED_SNAPSHOT } from "../../../src/data/sanctionsApprovedData.js";
+import { COUNTRIES } from "../../../src/data/countries.js";
+import { SANCTIONS_IMPOSERS } from "../../../src/data/sanctionsEvidence.js";
+import {
+  SANCTIONS_REGIME_CANDIDATES,
+  SANCTIONS_TIER_RULES,
+} from "../../../src/data/sanctionsRegimeCandidates.js";
 
 export default function handler(req: VercelRequest, res: VercelResponse) {
   res.setHeader("Access-Control-Allow-Origin", "*");
@@ -33,6 +39,16 @@ export default function handler(req: VercelRequest, res: VercelResponse) {
     sanctionsPromotion: {
       approvedSnapshot: SANCTIONS_APPROVED_SNAPSHOT,
       rule: "Only a complete independently reviewed snapshot with current stable OFAC, UK, EU and UN source fingerprints may enter scoring; catalogue candidates never enter scoring directly.",
+      deterministicTierRules: SANCTIONS_TIER_RULES,
+      candidateRegimeCountryRecords: SANCTIONS_REGIME_CANDIDATES.length,
+      coverageModel: {
+        type: "explicit-country-by-imposer",
+        countries: COUNTRIES.length,
+        imposers: SANCTIONS_IMPOSERS,
+        expectedCells: COUNTRIES.length * SANCTIONS_IMPOSERS.length,
+        zeroRule: "A zero is available only when all four country-imposer cells are present in an approved catalogue and item-disposition snapshot.",
+      },
+      approvalGate: "Maker-checker legal review of every candidate plus final disposition of every official catalogue item; source drift or an unknown cell blocks promotion.",
     },
     sources: COUNTRY_RISK_SOURCES,
   });

@@ -47,7 +47,12 @@ describe("country risk v2 primitives", () => {
         { imposer: "EU", tier: "targeted", program: "B", sourceUrl: "https://example.test/b", reviewed: "2026-07" },
       ],
     };
-    expect(sanctionsPillarRisk(sanctions, true).score).toBe(5.4);
+    expect(sanctionsPillarRisk(sanctions, true)).toMatchObject({ score: 5.4, evidenceCount: 6 });
+  });
+
+  it("distinguishes a reviewed sanctions zero from absent sanctions evidence", () => {
+    expect(sanctionsPillarRisk(undefined, true)).toEqual({ score: 0, evidenceCount: 4, highestTier: undefined });
+    expect(sanctionsPillarRisk(undefined, false)).toEqual({ score: null, evidenceCount: 0 });
   });
 });
 

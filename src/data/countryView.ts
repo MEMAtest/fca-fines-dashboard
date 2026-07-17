@@ -527,6 +527,7 @@ export interface CountryIndexEntry {
   status: CountryScorePublicationStatus;
   fatf?: FatfStatus;
   sanctionsTier?: SanctionsTier;
+  sanctionsCoverageComplete: boolean;
   hasEnforcement: boolean;
   /** AML/CFT control strength 0–10 (higher = stronger), or null if no WGI. */
   controlStrength: number | null;
@@ -554,7 +555,10 @@ export function buildCountryIndex(): CountryIndexEntry[] {
         band: rs.hasGovernance ? rs.band : null,
         status,
         fatf: getFatfStatus(country.iso2),
-        sanctionsTier: highestSanctionsTier(country.iso2),
+        sanctionsTier: SANCTIONS_APPROVED_SNAPSHOT.coverageComplete
+          ? highestSanctionsTier(country.iso2)
+          : undefined,
+        sanctionsCoverageComplete: SANCTIONS_APPROVED_SNAPSHOT.coverageComplete,
         hasEnforcement: hasEnforcementCoverage(country.iso2),
         controlStrength: controlStrength(country.iso2),
         enforcementExposure: enforcementExposure(country.iso2),

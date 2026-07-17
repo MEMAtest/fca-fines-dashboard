@@ -39,6 +39,12 @@ describe("country score publication safeguards", () => {
     expect(regionalAverages().reduce((sum, region) => sum + region.count, 0)).toBe(202);
   });
 
+  it("does not expose legacy sanctions tiers as v2 while legal review is incomplete", () => {
+    const index = buildCountryIndex();
+    expect(index.every((entry) => entry.sanctionsCoverageComplete === false)).toBe(true);
+    expect(index.every((entry) => entry.sanctionsTier === undefined)).toBe(true);
+  });
+
   it.each(["CW", "VG"])("uses safe decision copy for %s", (iso2) => {
     const country = getCountryByIso2(iso2);
     expect(country).toBeDefined();

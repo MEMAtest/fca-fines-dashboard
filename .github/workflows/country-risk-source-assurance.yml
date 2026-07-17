@@ -28,10 +28,51 @@ jobs:
       - run: npm ci
       - run: npm run country-risk:check-sanctions
       - if: always()
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+        run: npm run country-risk:persist-sanctions-source-run
+      - run: npm run country-risk:ingest-eu-sanctions
+      - if: always()
         uses: actions/upload-artifact@v4
         with:
           name: sanctions-source-review
-          path: /tmp/country-risk-sanctions-review.json
+          path: |
+            /tmp/country-risk-sanctions-review.json
+            src/data/euSanctionsRegimeData.ts
+
+  sanctions-weekly-fragile-evidence:
+    if: (github.event_name == 'schedule' && github.event.schedule == '23 6 * * 0') || inputs.lane == 'weekly' || inputs.lane == 'all'
+    runs-on: ubuntu-latest
+    continue-on-error: true
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npx playwright install --with-deps chromium
+      - run: npm run country-risk:check-sanctions
+      - if: always()
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+        run: npm run country-risk:persist-sanctions-source-run
+      - run: npm run country-risk:ingest-eu-sanctions
+      - name: Prepare legal-measure evidence with browser fallback for protected UN pages
+        run: xvfb-run -a npm run country-risk:prepare-sanctions-evidence
+      - run: npm run country-risk:sanctions-census
+      - run: npm run country-risk:sanctions-review-pack
+      - if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: sanctions-legal-evidence-review
+          path: |
+            /tmp/country-risk-sanctions-review.json
+            /tmp/country-risk-sanctions-census.json
+            /tmp/country-risk-sanctions-census.md
+            /tmp/country-risk-sanctions-legal-evidence.json
+            /tmp/country-risk-sanctions-taxonomy-review.json
+            /tmp/country-risk-sanctions-taxonomy-review.md
 
   fatf-weekly-fragile:
     if: (github.event_name == 'schedule' && github.event.schedule == '23 6 * * 0') || inputs.lane == 'weekly' || inputs.lane == 'all'

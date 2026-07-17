@@ -1,33 +1,42 @@
 {
-  "version": 1,
-  "approvedAt": "2026-07-16T05:41:25.456Z",
+  "version": 2,
+  "approvedAt": "2026-07-17T07:49:38.331Z",
   "sources": [
     {
       "id": "ofac-programmes",
       "url": "https://ofac.treasury.gov/sanctions-programs-and-country-information",
+      "discoveryMode": "ofac-programmes",
       "minimumBytes": 5000,
+      "minimumRecords": 30,
       "requiredText": "Sanctions Programs",
-      "approvedFingerprint": "69620fbe766e2114eda53f2f4ace520f9b63576b31fb07c2eafcf6cd2072764c"
+      "approvedFingerprint": "d3df79aa9536697ce70eb3b597823e034cbe465ab3d6264cf55a420e69cfaeef"
     },
     {
       "id": "uk-regimes",
       "url": "https://www.gov.uk/government/collections/uk-sanctions-regimes-under-the-sanctions-act",
+      "discoveryMode": "uk-country-regimes",
       "minimumBytes": 5000,
+      "minimumRecords": 25,
       "requiredText": "sanctions regimes",
-      "approvedFingerprint": "d03bedee11bc6f840ef215deeaad5a6888f7f3623fc98c773bcb0d88e56e3b1a"
+      "approvedFingerprint": "99c593f83bad903a3f31beaab0783ba46ff49a4a8998ec43f7a046e2010717d3"
     },
     {
       "id": "eu-resources",
-      "url": "https://finance.ec.europa.eu/eu-and-world/sanctions-restrictive-measures/overview-sanctions-and-related-resources_en",
-      "minimumBytes": 5000,
-      "requiredText": "sanctions",
-      "approvedFingerprint": "c1b9e34e9054e25837027df1ba8cf67570d9525254f9552a8ba307001c5b684b"
+      "url": "https://sanctionsmap.eu/api/v1/regime?lang=en",
+      "format": "json",
+      "discoveryMode": "eu-regime-api",
+      "minimumBytes": 100000,
+      "minimumRecords": 50,
+      "requiredText": "legal_acts",
+      "approvedFingerprint": "a7af2add9759fdf7714ad93e4583d9ccfa0c4559fc040e723256fe00af4dfb08"
     },
     {
       "id": "un-consolidated-list",
       "url": "https://scsanctions.un.org/resources/xml/en/name/consolidated.xml",
       "format": "xml",
+      "discoveryMode": "un-list-types",
       "minimumBytes": 500000,
+      "minimumRecords": 14,
       "requiredText": "CONSOLIDATED_LIST",
       "approvedFingerprint": "293d47ec8abcf223a380298c33afa4bd0dc55b68d323edae28a3f492ee6ca41a"
     }
