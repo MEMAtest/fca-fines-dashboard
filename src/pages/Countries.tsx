@@ -840,7 +840,7 @@ function GlobalIndex() {
         <h1 className="country-index__title">Global Country Risk Ratings</h1>
         <p className="cx-dash__lead">
           Country-by-country AML and financial-crime risk coverage for {index.length} jurisdictions.
-          {" "}{ratedCount} historical v1 comparison scores are published; {insufficientCount} are
+          {" "}{ratedCount} country risk scores are published; {insufficientCount} are
           explicitly withheld because the required World Bank governance base is unavailable.
           FATF flags remain visible and sanctions classification remains under independent review.
           Enforcement volume and corruption perception are shown for context but never scored.{" "}

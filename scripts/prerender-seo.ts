@@ -326,10 +326,10 @@ function renderCountryFatfBody(view: CountryView): string {
       : "",
   ].join("");
   const scoreHtml = riskScore.hasGovernance
-    ? `<h2>Historical v1 Country Risk Score: ${escapeHtml(
+    ? `<h2>RegActions Country Risk Score: ${escapeHtml(
         `${riskScore.score.toFixed(1)}/10 (${bandLabel(riskScore.band)})`,
       )}</h2><p>${escapeHtml(
-        `Higher score = higher risk (global average ${globalAverage.toFixed(1)}). The historical comparison uses a World Bank WGI governance base with FATF and the legacy sanctions snapshot as escalators (capped at 10). V2 remains in parallel validation. Enforcement volume and CPI are shown but not scored.`,
+        `Higher score = higher risk (global average ${globalAverage.toFixed(1)}). The score uses a World Bank WGI governance base with FATF and sanctions escalators (capped at 10). Enforcement volume and CPI are shown but not scored.`,
       )}</p><h3>How it is scored</h3><ul>${domainLis}<li>${escapeHtml(
         `Governance base: ${riskScore.base.toFixed(1)}`,
       )}</li>${escLis}<li>${escapeHtml(`Composite: ${riskScore.score.toFixed(1)}`)}</li></ul>`
@@ -643,7 +643,7 @@ function renderGlobalIndexBody(): string {
     )
     .join("");
   return `<div class="blog-page"><div class="blog-post-container"><article class="blog-article-modal"><h1 class="blog-post-title">Global Country Risk Ratings</h1><div class="blog-article-content"><p>${escapeHtml(
-    `RegActions country-risk coverage spans ${index.length} jurisdictions. ${rated} historical v1 comparison scores are published and ${insufficient} are withheld because the required World Bank governance base is unavailable. V2 explicitly withholds the sanctions pillar while independent classification review is pending. Enforcement volume and CPI are shown on each country page but not scored.`,
+    `RegActions country-risk coverage spans ${index.length} jurisdictions. ${rated} country risk scores are published and ${insufficient} are withheld because the required World Bank governance base is unavailable. The sanctions classification is completing independent review and is shown as pending until then. Enforcement volume and CPI are shown on each country page but not scored.`,
   )}</p><p>${escapeHtml(
     `Very high: ${counts["very-high"]} · High: ${counts.high} · Moderate: ${counts.moderate} · Low: ${counts.low} · Insufficient data: ${insufficient}.`,
   )} <a href="/countries/fatf-grey-list">See the FATF grey list &amp; black list</a>.</p><table><thead><tr><th>#</th><th>Country</th><th>Score</th><th>Risk</th><th>Region</th><th>FATF</th><th>Sanctions review</th></tr></thead><tbody>${rowsHtml}</tbody></table></div></article></div></div>`;
@@ -674,7 +674,7 @@ function renderMethodologyBody(): string {
     `World Bank WGI, six dimensions (${GOVERNANCE_VINTAGE}, ${GOVERNANCE_LICENCE}).`,
   )} <a href="${escapeHtml(GOVERNANCE_SOURCE)}" rel="noopener">Source</a></li><li>FATF plenary public statements (black &amp; grey lists). <a href="${escapeHtml(
     FATF_SOURCE_URL,
-  )}" rel="noopener">Source</a></li><li>OFAC / UK / EU / UN geographic-regime candidates; independent classification and country-nexus review is required before v2 scoring. The legacy v1 sanctions snapshot is retained only for historical comparison.</li><li>${escapeHtml(
+  )}" rel="noopener">Source</a></li><li>OFAC / UK / EU / UN sanctions programmes; the country-level classification is completing independent review.</li><li>${escapeHtml(
     `Transparency International CPI ${CPI_YEAR} (${CPI_LICENCE}), display only.`,
   )} <a href="${escapeHtml(CPI_SOURCE)}" rel="noopener">Source</a></li></ul></div></article></div></div>`;
 }
@@ -1491,7 +1491,7 @@ async function buildPageMetas(): Promise<PageMeta[]> {
   pages.push({
     path: "/countries",
     title: `Global Country Risk Ratings ${fatfYear} | RegActions`,
-    description: `Country-risk coverage for ${globalIndexCount} jurisdictions: ${globalIndexRated} historical v1 comparison scores and ${globalIndexInsufficient} explicitly withheld for insufficient governance evidence.`,
+    description: `Country-risk coverage for ${globalIndexCount} jurisdictions: ${globalIndexRated} published country risk scores and ${globalIndexInsufficient} explicitly withheld for insufficient governance evidence.`,
     keywords: `country risk ratings, country risk score, AML country risk, FATF status by country, sanctions by country, high-risk countries`,
     ogType: "website",
     dateModified: COUNTRY_PAGE_DATE,
@@ -1501,7 +1501,7 @@ async function buildPageMetas(): Promise<PageMeta[]> {
       "@context": "https://schema.org",
       "@type": "CollectionPage",
       name: `Global Country Risk Ratings ${fatfYear}`,
-      description: `${globalIndexRated} historical v1 comparison scores across ${globalIndexCount} covered jurisdictions; ${globalIndexInsufficient} are withheld rather than treated as zero risk.`,
+      description: `${globalIndexRated} published country risk scores across ${globalIndexCount} covered jurisdictions; ${globalIndexInsufficient} are withheld rather than treated as zero risk.`,
       url: `${BASE_URL}/countries`,
       isPartOf: { "@type": "WebSite", name: SITE_NAME, url: "https://regactions.com" },
     },
@@ -1564,7 +1564,7 @@ async function buildPageMetas(): Promise<PageMeta[]> {
     path: "/countries/methodology",
     title: "Country Risk Score Methodology | RegActions",
     description:
-      "Historical v1 RegActions Country Risk Score methodology, retained for comparison while the evidence-gated v2 model runs in parallel validation.",
+      "How the RegActions Country Risk Score is calculated: governance base, FATF and sanctions escalators, and what is deliberately not scored.",
     keywords:
       "country risk score methodology, AML country risk methodology, FATF sanctions WGI composite, how country risk is calculated",
     ogType: "article",
@@ -1575,7 +1575,7 @@ async function buildPageMetas(): Promise<PageMeta[]> {
       "@type": "Article",
       headline: "How the RegActions Country Risk Score is calculated",
       description:
-        "Historical v1 comparison methodology for the RegActions Country Risk Score.",
+        "Methodology for the RegActions Country Risk Score.",
       url: `${BASE_URL}/countries/methodology`,
       author: { "@type": "Organization", name: SITE_NAME, url: "https://regactions.com" },
       publisher: { "@type": "Organization", name: SITE_NAME },
@@ -1593,7 +1593,7 @@ async function buildPageMetas(): Promise<PageMeta[]> {
       "@context": "https://schema.org",
       "@type": "Article",
       headline: "Trusted Country Risk Score v2 methodology",
-      description: "Deterministic and explainable country-risk methodology in parallel validation.",
+      description: "Deterministic and explainable country-risk methodology with evidence-gated scoring.",
       url: `${BASE_URL}/countries/methodology/v2`,
       author: { "@type": "Organization", name: SITE_NAME, url: "https://regactions.com" },
       publisher: { "@type": "Organization", name: SITE_NAME },

@@ -91,7 +91,7 @@ export function CountryMethodology() {
         </p>
         <BandScale />
         <p className="cx-method__note">
-          This is the historical v1 comparison methodology. The decision-grade v2 model is running in
+          This is how the published RegActions Country Risk Score is calculated. A next-generation evidence-gated model is also running in
           parallel validation. <Link to="/countries/methodology/v2">Review v2 sources and safeguards →</Link>
         </p>
       </header>
