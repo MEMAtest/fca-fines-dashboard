@@ -1,6 +1,8 @@
 import { describe, expect, it } from "vitest";
 import { computeCountryRiskV2 } from "../../../src/data/countryRiskV2.js";
 import { SANCTIONS_REGIME_CANDIDATES } from "../../../src/data/sanctionsRegimeCandidates.js";
+import { COUNTRIES } from "../../../src/data/countries.js";
+import { SANCTIONS_IMPOSERS } from "../../../src/data/sanctionsEvidence.js";
 import type { SanctionsMeasureType } from "../../../src/data/sanctionsEvidence.js";
 import {
   buildPromotedSanctionsSnapshot,
@@ -198,15 +200,18 @@ describe("sanctions snapshot promotion gate", () => {
     })).toThrow(/catalogue item review mismatch/);
   });
 
-  it("creates a complete, hashed snapshot with 844 cells and drives reviewed country scores", () => {
+  it("creates a complete, hashed snapshot with full coverage cells and drives reviewed country scores", () => {
+    // Derived, not hardcoded: the coverage grid is every country x every imposer,
+    // so adding a jurisdiction to countries.ts must not break this test.
+    const expectedCells = COUNTRIES.length * SANCTIONS_IMPOSERS.length;
     const snapshot = build(rows(["RU", "SY", "KP"]));
     expect(snapshot.metadata).toMatchObject({
       coverageComplete: true,
       candidateCount: SANCTIONS_REGIME_CANDIDATES.length,
       countryCount: 3,
-      coverageCellCount: 844,
+      coverageCellCount: expectedCells,
     });
-    expect(snapshot.coverage).toHaveLength(844);
+    expect(snapshot.coverage).toHaveLength(expectedCells);
     expect(snapshot.metadata.sha256).toMatch(/^[a-f0-9]{64}$/);
     expect(snapshot.metadata.sources).toHaveLength(4);
     expect(snapshot.metadata.sources[0].rawSha256).toMatch(/^[a-f0-9]{64}$/);

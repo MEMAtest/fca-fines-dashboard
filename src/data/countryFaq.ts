@@ -52,7 +52,7 @@ export function buildCountryFaqs(view: CountryView): CountryFaq[] {
   faqs.push({
     question: `What is ${name}'s AML risk rating?`,
     answer: riskScore.hasGovernance
-      ? `RegActions rates ${name} at ${riskScore.score.toFixed(1)}/10 (${bandLabel(riskScore.band)} risk) on its historical v1 country-risk scale, where a higher score means higher risk. The score uses a World Bank WGI governance base with FATF and legacy sanctions escalators.${cpi ? ` Transparency International's ${CPI_YEAR} Corruption Perceptions Index scores ${name} ${cpi.score}/100 (rank #${cpi.rank} of ${CPI_TOTAL}).` : ""}`
+      ? `RegActions rates ${name} at ${riskScore.score.toFixed(1)}/10 (${bandLabel(riskScore.band)} risk) where a higher score means higher risk. The score uses a World Bank WGI governance base with FATF and sanctions escalators.${cpi ? ` Transparency International's ${CPI_YEAR} Corruption Perceptions Index scores ${name} ${cpi.score}/100 (rank #${cpi.rank} of ${CPI_TOTAL}).` : ""}`
       : `RegActions does not publish a headline AML risk score for ${name}. The required World Bank WGI governance base is unavailable, and RegActions withholds the score rather than converting missing evidence into a 0.0 or a Low-risk label.${cpi ? ` Transparency International's ${CPI_YEAR} Corruption Perceptions Index scores ${name} ${cpi.score}/100 (rank #${cpi.rank} of ${CPI_TOTAL}).` : ""}`,
   });
 
