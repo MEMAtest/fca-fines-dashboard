@@ -15,11 +15,18 @@
  *      products of the scoring engine and drift as the engine evolves, so tying
  *      the static prose to a specific composite value would silently rot. This
  *      guard makes that class of drift impossible to re-introduce.
+ *   4. Data-vintage agnosticism (added in the crawler-prose reconciliation): the
+ *      prose also quotes NO raw CPI numeral (score / rank) and NO WGI domain-risk
+ *      decimal. Those are live, re-versioned data modules whose numbers are printed
+ *      by the engine blocks on the same page, so a frozen numeral in the prose
+ *      silently contradicts the on-page module the moment CPI or WGI is refreshed.
+ *      The prose carries the qualitative MEANING; the modules carry the numbers.
  *
  * These are a CONTENT FOUNDATION consumed client-side only (two watchpoints per
- * page) until the deferred "narrative-v2 reconciliation" de-scores the full
- * legacy corpus and re-enables the crawler-visible prose. Engine-independent
- * facts (WGI domain figures, CPI numbers) may appear; composite scores may not.
+ * page) until the "narrative-v2 reconciliation" de-scores the full legacy corpus
+ * and re-enables the crawler-visible prose. Concrete non-drifting facts (dates, MER
+ * years, monetary amounts, enforcement counts) may appear; composite scores, CPI
+ * numerals and WGI decimals may not.
  */
 import { describe, it, expect } from "vitest";
 
@@ -63,14 +70,19 @@ const FILLED = [
 const LIMITED_EVIDENCE = ["CW", "GI", "IM", "MS", "SX", "TC", "VA"] as const;
 
 /**
- * Patterns that quote a composite risk score, a risk band label, or a
- * "score withheld / no composite" claim. None of these may appear in the prose:
- * they are engine-derived and would contradict the published number as the
- * engine evolves. WGI domain figures ("corruption at 4.3") and CPI scores
- * ("CPI score of 60 out of 100") are engine-independent facts and are allowed.
+ * Patterns that quote a composite risk score, a risk band label, a
+ * "score withheld / no composite" claim, or the two composite phrasings that the
+ * first pass missed ("scored 6.6 out of 10", "risk score: 6.6"). None of these may
+ * appear in the prose: they are engine-derived and would contradict the published
+ * number as the engine evolves. The raw CPI numerals and WGI domain decimals that
+ * this comment previously called "allowed" are now ALSO banned, but via the
+ * separate DRIFTING_NUMERAL_PATTERNS below (they drift with the live data modules,
+ * not the scoring engine), so keep the two lists distinct.
  */
 const COMPOSITE_SCORE_PATTERNS: RegExp[] = [
   /\b\d(?:\.\d)?\s*\/\s*10\b/, // "4.7/10"
+  /scor(?:ed|es|ing)?\s+\d(?:\.\d)?\s+out of 10/i, // "scored 6.6 out of 10" composite form
+  /\brisk score:?\s+\d/i, // "risk score: 6.6" / "risk score 6.6" (the bare phrase "risk score" with no number stays allowed)
   /composite (?:risk )?score of \d/i, // "composite score of 4.7"
   /composite score,?\s+band/i, // "composite score, band or..."
   /\brated (?:Low|Moderate|High|Very High)\b/i, // "rated Moderate risk"
@@ -82,6 +94,35 @@ const COMPOSITE_SCORE_PATTERNS: RegExp[] = [
   /score of \d(?:\.\d)? (?:places|sits|is|reflects|rests)/i, // composite-score sentence stems
   /no composite (?:risk )?score/i, // "no composite risk score is modelled"
   /score is withheld|score-withheld|withholds a (?:composite )?score/i,
+];
+
+/**
+ * Numeric facts that drift as the LIVE data modules (CPI vintage, WGI governance
+ * snapshot) are refreshed. The narrative-v2 reconciliation carried the qualitative
+ * MEANING of these figures into the prose while the engine blocks on the page print
+ * the live numbers; the prose therefore must quote none of them, or it silently
+ * contradicts the on-page module (e.g. prose "CPI score of 75, rank 15 of 179" vs a
+ * live 2025 block printing "77/100, rank 10 of 182"). WGI domain risk decimals drift
+ * the same way. Dates, MER years, monetary amounts and concrete counts (e.g.
+ * "40 FATF Recommendations", "246 enforcement actions") are NOT drifting facts and
+ * stay allowed, so these patterns are scoped to the specific CPI / WGI numeral shapes.
+ */
+const DRIFTING_NUMERAL_PATTERNS: RegExp[] = [
+  // ---- CPI numerals (Transparency International CPI is a live, re-versioned module) ----
+  /CPI score of \d/i, // "CPI score of 75"
+  /CPI of \d/i, // "CPI of 30"
+  /\d{1,3}\s*\/\s*100\b/, // "75/100"
+  /\d{1,3}\s+out of 100\b/i, // "75 out of 100"
+  /rank(?:ed|ing|s)?\s+\d+(?:st|nd|rd|th)?\s+of\s+\d+/i, // "rank 15 of 179" / "ranked 23rd of 179"
+  /\bat rank \d+/i, // "at rank 98 of 179"
+  /ranking of \d+(?:st|nd|rd|th)?/i, // "a ranking of 120th of 179"
+  // ---- WGI governance-domain decimals (World Bank WGI is a live, re-versioned module) ----
+  /\bat \d\.\d\b/, // "corruption at 4.2"
+  /\brisk (?:rating )?(?:of )?\d\.\d\b/i, // "risk 1.87" / "risk rating of 6.5"
+  /\bscor(?:e|es|ed|ing)\s+\d\.\d\b/i, // "scores 1.1"
+  /\d\.\d\s*(?:out of 10|\/10)\b/i, // "7.6 out of 10" / "5.2/10"
+  /\breaches \d\.\d\b/i, // "reaches 6.3"
+  /\(\s*\d\.\d+\s*(?:,|\))/, // "(1.87, weighted 40%)" / "(2.87)" WGI parenthetical
 ];
 
 describe("thin-page narratives (SEO audit L3 fill)", () => {
@@ -217,6 +258,26 @@ describe("narrative-v2 reconciliation: whole-corpus engine-agnosticism", () => {
         expect(
           hit,
           `${iso} prose must not quote a composite score/band: matched ${
+            hit ? JSON.stringify(hit[0]) : ""
+          } via ${pattern}`,
+        ).toBeNull();
+      }
+    }
+  });
+
+  it("quotes no drifting CPI numeral or WGI domain decimal in ANY entry", () => {
+    // Prose must carry the qualitative MEANING of the CPI / WGI figures, not the
+    // numbers themselves: the engine blocks on the same page print the live values,
+    // and a frozen numeral in the prose silently contradicts them once the CPI /
+    // WGI modules are re-versioned. Concrete non-drifting facts (dates, MER years,
+    // monetary amounts, enforcement counts) are unaffected.
+    for (const iso of ALL) {
+      const text = prose(iso);
+      for (const pattern of DRIFTING_NUMERAL_PATTERNS) {
+        const hit = text.match(pattern);
+        expect(
+          hit,
+          `${iso} prose must not quote a drifting CPI numeral or WGI decimal: matched ${
             hit ? JSON.stringify(hit[0]) : ""
           } via ${pattern}`,
         ).toBeNull();

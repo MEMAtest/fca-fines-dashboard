@@ -34,17 +34,17 @@ export interface CountryNarrative {
   keyWatchpoints: string[];
 }
 
-/** iso2 -> narrative (189 countries). */
+/** iso2 -> narrative (211 countries). */
 export const NARRATIVES: Record<string, CountryNarrative> = {
   "AD": {
     "summary": "Andorra rests on strong rule-of-law institutions, very low political instability, and manageable corruption levels, with no FATF listing or sanctions exposure.",
     "whyItMatters": [
       "Governance is consistently strong across the World Bank indicators, with no FATF or sanctions overlay.",
-      "Political stability is the strongest governance domain at a risk rating of 0.8, the lowest possible risk level.",
-      "Rule of law and institutions at 2.43 and corruption at 2.8 both reflect solid governance for a small financial centre.",
+      "Political stability is the strongest governance domain at a low-risk level, the lowest possible risk level.",
+      "Rule of law and institutions and corruption both reflect solid governance for a small financial centre.",
       "No FATF grey or black listing applies and Andorra carries no sanctions exposure."
     ],
-    "analysis": "Andorra's governance profile is underpinned by exceptionally strong political stability at 0.8 and robust rule of law at 2.43. Corruption at 2.8 and voice and accountability at 3.0 are somewhat higher but remain firmly in the low-risk range. No FATF listing or sanctions apply, so the profile rests on governance alone. Andorra sits in the upper quartile of the global peer group on the World Bank indicators. No CPI data is included for Andorra in the 2024 dataset, but the governance profile is consistent with other small, well-governed European jurisdictions.",
+    "analysis": "Andorra's governance profile is underpinned by exceptionally strong political stability and robust rule of law. Corruption and voice and accountability are somewhat higher but remain firmly in the low-risk range. No FATF listing or sanctions apply, so the profile rests on governance alone. Andorra sits in the upper quartile of the global peer group on the World Bank indicators. No CPI data is included for Andorra in the 2024 dataset, but the governance profile is consistent with other small, well-governed European jurisdictions.",
     "outlook": "Andorra's risk profile is expected to remain stable. As a small international financial centre, the primary watch areas are the adequacy of AML supervision and any developments in FATF engagement or mutual evaluation outcomes. The October 2026 plenary should be monitored for any regional developments that may affect Andorra's peer context.",
     "keyWatchpoints": [
       "Monitor FATF plenary outcomes and any mutual evaluation developments for Andorra.",
@@ -57,11 +57,11 @@ export const NARRATIVES: Record<string, CountryNarrative> = {
     "summary": "The United Arab Emirates is supported by strong institutions and low corruption, with active enforcement tracked across three regulators and no FATF listing or sanctions in place.",
     "whyItMatters": [
       "The UAE is not on the FATF grey or black list and no sanctions apply, so the profile reflects governance factors alone.",
-      "Rule of law and institutions is the strongest governance domain (risk 2.87), reflecting a well-developed legal and regulatory infrastructure.",
+      "Rule of law and institutions is the strongest governance domain (strong), reflecting a well-developed legal and regulatory infrastructure.",
       "65 enforcement actions have been tracked across three regulators: the Central Bank of the UAE (CBUAE, 36 actions), the Dubai Financial Services Authority (DFSA, 19 actions), and the Financial Services Regulatory Authority (FSRA, 10 actions).",
-      "Voice and accountability (risk 5.9) remains the weakest domain, reflecting limited political participation and civil freedoms in the national governance structure."
+      "Voice and accountability (elevated) remains the weakest domain, reflecting limited political participation and civil freedoms in the national governance structure."
     ],
-    "analysis": "The UAE's profile is determined by its governance indicators, with no FATF or sanctions overlay. Rule of law (2.87), corruption (3.2), and political stability (2.1) are the stronger dimensions. Voice and accountability (5.9) is the weakest domain and the primary governance concern. The CPI score of 68 (rank 23 of 179) positions the UAE among the cleaner jurisdictions globally. Active enforcement by the CBUAE, DFSA, and FSRA demonstrates regulatory engagement across the financial system, which is a positive indicator for the AML/CFT framework.",
+    "analysis": "The UAE's profile is determined by its governance indicators, with no FATF or sanctions overlay. Rule of law (strong), corruption (moderate), and political stability (strong) are the stronger dimensions. Voice and accountability (elevated) is the weakest domain and the primary governance concern. The CPI reading positions the UAE among the cleaner jurisdictions globally. Active enforcement by the CBUAE, DFSA, and FSRA demonstrates regulatory engagement across the financial system, which is a positive indicator for the AML/CFT framework.",
     "outlook": "The UAE's institutional development and active financial regulation underpin a relatively contained risk position. Risks to the outlook include the voice-and-accountability constraint, exposure to high-value real estate and trade-finance flows, and the complexity of the multi-jurisdictional regulatory structure. Continued FATF engagement and supervisory capacity development across all three regulatory bodies will be important determinants of the forward risk profile.",
     "keyWatchpoints": [
       "CBUAE, DFSA, and FSRA enforcement activity and supervisory capacity developments.",
@@ -73,12 +73,12 @@ export const NARRATIVES: Record<string, CountryNarrative> = {
   "AF": {
     "summary": "Afghanistan presents severe financial-crime risk, reflecting near-total governance failure across all four WGI domains in the context of ongoing political disruption.",
     "whyItMatters": [
-      "Voice and accountability is the weakest domain at a risk rating of 7.9, reflecting the near-complete absence of democratic accountability.",
-      "Corruption (WGI) at 7.6 and Rule of law at 7.77 indicate systemic institutional breakdown.",
-      "CPI score of 17/100 (rank 164 of 179 in 2024) confirms pervasive corruption.",
+      "Voice and accountability is the weakest domain at a severe level, reflecting the near-complete absence of democratic accountability.",
+      "Corruption (WGI) and Rule of law indicate systemic institutional breakdown.",
+      "The CPI reading confirms pervasive corruption.",
       "Afghanistan is not currently on the FATF grey or black list and carries no sanctions, though governance risk is severe."
     ],
-    "analysis": "Afghanistan's risk profile is driven by extreme weakness across all governance domains. Voice and accountability (7.9) is the weakest, followed by Rule of law (7.77) and Corruption (WGI) (7.6). Political stability (7.5) is also severely impaired. The CPI score of 17 at rank 164 of 179 reinforces the corruption assessment. Afghanistan is not on the FATF grey or black list and no sanctions apply, so the profile rests on the governance domains alone. The country ranks in the lowest quartile of the World Bank indicators.",
+    "analysis": "Afghanistan's risk profile is driven by extreme weakness across all governance domains. Voice and accountability (severe) is the weakest, followed by Rule of law (severe) and Corruption (WGI). Political stability (severe) is also severely impaired. The CPI reading reinforces the corruption assessment. Afghanistan is not on the FATF grey or black list and no sanctions apply, so the profile rests on the governance domains alone. The country ranks in the lowest quartile of the World Bank indicators.",
     "outlook": "Afghanistan's severe risk profile is unlikely to improve materially in the near term given the structural severity of governance failure. The absence of FATF listing means any future listing would represent a step-change upward in scrutiny. Firms should apply enhanced due diligence to any Afghanistan-linked transactions and monitor FATF engagement closely.",
     "keyWatchpoints": [
       "FATF engagement: any move to enhanced monitoring or listing would compound already severe risk.",
@@ -90,15 +90,15 @@ export const NARRATIVES: Record<string, CountryNarrative> = {
   "AG": {
     "summary": "Antigua and Barbuda is a Caribbean offshore and citizenship-by-investment jurisdiction, with corruption identified as the weakest governance domain.",
     "whyItMatters": [
-      "The corruption domain, at a risk rating of 4.7, is the most heavily weighted governance factor and the primary risk driver, reflecting meaningful integrity concerns.",
-      "Rule of law and institutions scores 3.57 and voice and accountability 3.4, both moderate; political stability scores a low 1.6, indicating a stable environment.",
+      "The corruption domain, at a moderate level, is the most heavily weighted governance factor and the primary risk driver, reflecting meaningful integrity concerns.",
+      "Rule of law and institutions is moderate and voice and accountability is moderate; political stability is strong, indicating a stable environment.",
       "Citizenship-by-investment programmes increase the risk of identity and due diligence vulnerabilities, a factor relevant to financial institutions with Antiguan corporate or individual counterparties.",
       "Not on the FATF grey or black list and subject to no sanctions; no tracked regulatory enforcement actions are recorded. No CPI data are available."
     ],
-    "analysis": "Antigua and Barbuda's governance profile is dominated by the corruption domain risk of 4.7, which, given its 35% weighting, significantly shapes the overall picture. Rule of law and institutions (3.57) and voice and accountability (3.4) are comparably moderate, while political stability (1.6) is a relative strength. No CPI data are available to provide independent corruption context. The jurisdiction carries no FATF listing or sanctions. It sits in the upper third of the World Bank governance indicators despite the elevated corruption reading.",
+    "analysis": "Antigua and Barbuda's governance profile is dominated by the corruption domain risk, which, given its 35% weighting, significantly shapes the overall picture. Rule of law and institutions (moderate) and voice and accountability (moderate) are comparably moderate, while political stability (strong) is a relative strength. No CPI data are available to provide independent corruption context. The jurisdiction carries no FATF listing or sanctions. It sits in the upper third of the World Bank governance indicators despite the elevated corruption reading.",
     "outlook": "The outlook for Antigua and Barbuda is broadly stable but warrants ongoing monitoring given the elevated corruption domain and the nature of its offshore financial and citizenship-by-investment sectors. The October 2026 FATF plenary is a routine checkpoint. Any reforms to beneficial ownership transparency or citizenship-by-investment screening standards could materially affect the practical risk environment for financial institution counterparties.",
     "keyWatchpoints": [
-      "Corruption domain risk (4.7) is the most significant governance concern; monitor anti-corruption reform progress and any regulatory announcements.",
+      "Corruption domain risk (moderate) is the most significant governance concern; monitor anti-corruption reform progress and any regulatory announcements.",
       "Citizenship-by-investment programme exposure: apply enhanced due diligence where counterparties hold Antiguan passports or corporate registrations.",
       "FATF October 2026 plenary should be reviewed to confirm continued non-listed status.",
       "Absence of CPI data limits independent benchmarking of corruption levels; supplement with other credible country risk indicators."
@@ -107,12 +107,12 @@ export const NARRATIVES: Record<string, CountryNarrative> = {
   "AI": {
     "summary": "Anguilla rests on a strong but partial governance base, though it sits on the EU list of non-cooperative tax jurisdictions, which is the defining feature of its counterparty risk profile.",
     "whyItMatters": [
-      "A strong governance base, with political stability at 1.1 and corruption at 2.8, is tempered by an incomplete WGI picture.",
+      "A strong governance base, with political stability and corruption, is tempered by an incomplete WGI picture.",
       "Anguilla is on the EU list of non-cooperative jurisdictions for tax purposes (Annex I, as adopted 17 February 2026), reflecting unresolved tax good-governance and transparency concerns.",
       "The voice and accountability domain has no WGI value for Anguilla, so the governance base rests on the three available domains and should be read as evidence-limited.",
       "No FATF grey or black listing applies and no sanctions are in place, so the headline risk reflects the governance profile alone."
     ],
-    "analysis": "Anguilla is a British Overseas Territory and an offshore company and insurance domicile assessed by the Caribbean Financial Action Task Force (CFATF). Its governance base is strong but incomplete: political stability scores 1.1, rule of law 3.0 and corruption 2.8, while the voice and accountability domain is unavailable, so the picture is derived from three of the four WGI domains rather than the full set. Anguilla sits in the upper quartile of the World Bank governance indicators. No CPI data are published for Anguilla, limiting independent corruption benchmarking. The most material external signal is its presence on the EU Annex I tax list, which the Council last confirmed on 17 February 2026; that listing reflects concerns about tax transparency and cooperation rather than an AML/CFT deficiency, but it shapes how EU counterparties treat Anguillan structures.",
+    "analysis": "Anguilla is a British Overseas Territory and an offshore company and insurance domicile assessed by the Caribbean Financial Action Task Force (CFATF). Its governance base is strong but incomplete: political stability is strong, rule of law is moderate and corruption is strong, while the voice and accountability domain is unavailable, so the picture is derived from three of the four WGI domains rather than the full set. Anguilla sits in the upper quartile of the World Bank governance indicators. No CPI data are published for Anguilla, limiting independent corruption benchmarking. The most material external signal is its presence on the EU Annex I tax list, which the Council last confirmed on 17 February 2026; that listing reflects concerns about tax transparency and cooperation rather than an AML/CFT deficiency, but it shapes how EU counterparties treat Anguillan structures.",
     "outlook": "Anguilla's practical risk profile turns less on its governance base than on its offshore-centre exposure and its EU tax-list status. The Council of the EU reviews Annex I twice a year, with the next scheduled revision in October 2026, so any de-listing or continued inclusion is the single most important forward indicator. CFATF follow-up reporting on Anguilla's AML/CFT framework, and the strength of beneficial ownership verification for Anguillan companies, remain the areas requiring ongoing attention for firms with counterparties routed through the territory.",
     "keyWatchpoints": [
       "EU Council review of the Annex I tax list (next scheduled October 2026): monitor whether Anguilla is retained or removed.",
@@ -124,12 +124,12 @@ export const NARRATIVES: Record<string, CountryNarrative> = {
   "AL": {
     "summary": "Albania carries elevated corruption as its principal risk driver, with moderate rule-of-law and accountability challenges, but no FATF listing or sanctions exposure.",
     "whyItMatters": [
-      "Corruption is the most significant governance weakness at a risk rating of 6.2, consistent with a CPI score of 42 (ranked 79th of 179 in 2024).",
-      "Rule of law and institutions at 4.43 and voice and accountability at 4.4 represent moderate but non-acute risks.",
-      "Political stability at 3.4 is a relative strength that partly offsets the corruption exposure.",
+      "Corruption is the most significant governance weakness at an elevated level, consistent with a weak CPI reading.",
+      "Rule of law and institutions and voice and accountability represent moderate but non-acute risks.",
+      "Political stability is a relative strength that partly offsets the corruption exposure.",
       "No FATF grey or black listing applies and Albania carries no sanctions exposure, so the profile rests on governance alone."
     ],
-    "analysis": "Albania's profile is driven primarily by corruption risk at 6.2, the weakest governance domain in this profile. Rule of law and institutions and voice and accountability, both around 4.4, add to the moderate risk picture. Political stability at 3.4 is a relative strength and provides some mitigation. The country is not on the FATF grey or black list and no sanctions apply. Its CPI rank of 79th places Albania in the mid-tier globally, consistent with a transitional economy making incremental institutional progress.",
+    "analysis": "Albania's profile is driven primarily by corruption risk, the weakest governance domain in this profile. Rule of law and institutions and voice and accountability, both broadly moderate, add to the moderate risk picture. Political stability is a relative strength and provides some mitigation. The country is not on the FATF grey or black list and no sanctions apply. Its CPI ranking places Albania in the mid-tier globally, consistent with a transitional economy making incremental institutional progress.",
     "outlook": "Albania's EU accession process provides a structural incentive for continued governance and anti-corruption reform, which could support a gradual improvement in the risk profile over the medium term. The corruption domain remains the key variable to watch. Firms should monitor FATF engagement and any updates to Albania's mutual evaluation status at the October 2026 plenary.",
     "keyWatchpoints": [
       "Track progress on EU accession-related anti-corruption and rule-of-law reforms.",
@@ -141,12 +141,12 @@ export const NARRATIVES: Record<string, CountryNarrative> = {
   "AM": {
     "summary": "Armenia has corruption and rule of law as its weakest governance domains, with no FATF listing or sanctions in place.",
     "whyItMatters": [
-      "Corruption and rule of law and institutions are the two most acute governance concerns, at risk ratings of 4.9 and 4.8 respectively.",
-      "The CPI score of 46 out of 100 (rank 65 of 182, 2025) places Armenia in the middle tier globally and ahead of most regional peers.",
+      "Corruption and rule of law and institutions are the two most acute governance concerns, at moderate and moderate risk ratings respectively.",
+      "The CPI reading places Armenia in the middle tier globally and ahead of most regional peers.",
       "Political stability and voice and accountability are relative strengths, the latter reflecting the more open political environment since 2018.",
       "No FATF grey or black listing; no sanctions programmes currently apply. Armenia is evaluated by MONEYVAL, the Council of Europe FATF-style regional body."
     ],
-    "analysis": "Armenia's profile is governance-derived, with no FATF or sanctions overlay. Corruption (risk 4.9) and rule of law and institutions (risk 4.8) are the weakest domains, while political stability (4.6) and voice and accountability (4.1) are relative strengths, the latter reflecting the more open political environment that followed the 2018 change of government. The CPI of 46 out of 100 (rank 65 of 182) corroborates a middling but improving corruption picture. Armenia sits near the global midpoint on the World Bank governance indicators. MONEYVAL's sixth-round mutual evaluation, following an on-site visit in October 2025, acknowledged a robust framework for targeted financial sanctions and improved risk understanding, but found that money-laundering prosecutions remain predominantly predicate-offence driven with few convictions, and that supervision of dealers in precious metals and stones is inadequate. Armenia was placed in enhanced follow-up.",
+    "analysis": "Armenia's profile is governance-derived, with no FATF or sanctions overlay. Corruption (moderate) and rule of law and institutions (moderate) are the weakest domains, while political stability (moderate) and voice and accountability (moderate) are relative strengths, the latter reflecting the more open political environment that followed the 2018 change of government. The CPI reading corroborates a middling but improving corruption picture. Armenia sits near the global midpoint on the World Bank governance indicators. MONEYVAL's sixth-round mutual evaluation, following an on-site visit in October 2025, acknowledged a robust framework for targeted financial sanctions and improved risk understanding, but found that money-laundering prosecutions remain predominantly predicate-offence driven with few convictions, and that supervision of dealers in precious metals and stones is inadequate. Armenia was placed in enhanced follow-up.",
     "outlook": "Armenia's outlook is shaped by an economy that has absorbed large post-2022 inflows of people and capital from Russia, raising the materiality of correspondent-banking, real-estate and re-export channels. The Central Bank of Armenia, which houses the Financial Monitoring Center, became the primary regulator for crypto-asset service providers under the 2025 cryptoassets law, a step that widens the perimeter but is not yet tested. The next FATF plenary in October 2026 is not expected to alter Armenia's clean listing, but the enhanced follow-up process will be the key indicator of remediation progress. Firms should apply risk-based due diligence to Russia-linked flows and to high-value dealer sectors.",
     "keyWatchpoints": [
       "Track MONEYVAL enhanced follow-up reporting against the sixth-round key recommended actions, particularly on money-laundering prosecutions and asset recovery.",
@@ -160,27 +160,27 @@ export const NARRATIVES: Record<string, CountryNarrative> = {
     "whyItMatters": [
       "Angola is currently on the FATF grey list, as last reviewed in June 2026, indicating identified strategic AML/CFT deficiencies.",
       "Governance is weak across the board, so the FATF listing compounds an already elevated base of concern.",
-      "Corruption (WGI) and voice and accountability, at risk ratings of 6.5 and 6.1 respectively, are the weakest domains, with corruption carrying the highest domain weight.",
-      "CPI score of 32/100, ranked 120th of 179 in 2024, confirms Angola's position in the lower quartile of global transparency."
+      "Corruption (WGI) and voice and accountability, at elevated and elevated risk ratings respectively, are the weakest domains, with corruption carrying the highest domain weight.",
+      "The CPI reading confirms Angola's position in the lower quartile of global transparency."
     ],
-    "analysis": "Angola's profile combines weak governance with current FATF grey listing; no sanctions apply. The weakest governance domains are corruption at a risk rating of 6.5 (35% weight) and voice and accountability at 6.1. Rule of law and institutions at 6.27 represents the most heavily weighted domain and is a significant contributor. Political stability is the relative governance strength at 3.9. The CPI score of 32/100, ranked 120th of 179 countries, reflects entrenched transparency challenges.",
+    "analysis": "Angola's profile combines weak governance with current FATF grey listing; no sanctions apply. The weakest governance domains are corruption at an elevated level (35% weight) and voice and accountability. Rule of law and institutions represents the most heavily weighted domain and is a significant contributor. Political stability is the relative governance strength. The CPI reading reflects entrenched transparency challenges.",
     "outlook": "Angola's FATF grey listing, most recently reviewed in June 2026, will remain the primary driver of elevated risk until a formal exit is achieved. Firms should monitor FATF plenary outcomes, particularly from October 2026 onwards, for evidence of sufficient technical compliance progress. Underlying governance and transparency improvements are necessary to ease the risk picture over the longer term.",
     "keyWatchpoints": [
       "FATF grey list review outcomes, with the next plenary scheduled for October 2026.",
       "Progress on AML/CFT technical compliance and effectiveness measures that could support grey list exit.",
-      "Corruption control developments as the weakest governance domain (risk rating 6.5).",
+      "Corruption control developments as the weakest governance domain (elevated risk rating).",
       "CPI ranking trajectory as an independent indicator of institutional integrity."
     ]
   },
   "AR": {
     "summary": "Argentina benefits from relatively strong voice and accountability and political stability, though elevated corruption remains a material concern.",
     "whyItMatters": [
-      "Corruption (WGI risk 5.9, weighted 35%) is the weakest domain, reflecting long-standing integrity challenges in public administration.",
-      "Voice and accountability (3.4) and political stability (3.4) are the strongest domains, providing structural governance support.",
+      "Corruption (WGI elevated risk, weighted 35%) is the weakest domain, reflecting long-standing integrity challenges in public administration.",
+      "Voice and accountability (moderate) and political stability (moderate) are the strongest domains, providing structural governance support.",
       "Argentina sits modestly above the global median on the World Bank governance indicators.",
-      "The 2024 CPI score of 37 (rank 98 of 179) confirms meaningful corruption risk, though the overall profile is tempered by stronger accountability metrics."
+      "The CPI reading confirms meaningful corruption risk, though the overall profile is tempered by stronger accountability metrics."
     ],
-    "analysis": "Argentina's profile is driven entirely by its governance indicators; it is not FATF-listed and no sanctions apply. The primary risk driver is corruption (risk 5.9, weighted 35%), whilst rule of law and institutions (risk 4.9, weighted 40%) is also a material contributor. These are partially offset by voice and accountability (3.4, weighted 10%) and political stability (3.4, weighted 15%), both of which are among the stronger readings in the model. The 2024 CPI score of 37 out of 100 at rank 98 of 179 captures a country with genuine corruption exposure but a functioning democratic accountability structure.",
+    "analysis": "Argentina's profile is driven entirely by its governance indicators; it is not FATF-listed and no sanctions apply. The primary risk driver is corruption (weighted 35%), whilst rule of law and institutions (weighted 40%) is also a material contributor. These are partially offset by voice and accountability (weighted 10%) and political stability (weighted 15%), both of which are among the stronger readings in the model. The CPI reading captures a country with genuine corruption exposure but a functioning democratic accountability structure.",
     "outlook": "Argentina's profile reflects a mixed governance picture. Continued reform of public institutions and anti-corruption enforcement would support improvement in the corruption domain. Political volatility, however, could weigh on institutional continuity and the pace of reform. Firms should monitor governance trends closely, particularly in the corruption and rule of law domains.",
     "keyWatchpoints": [
       "Annual WGI revisions to the corruption and rule of law domains, which together carry approximately 75% of the governance weighting.",
@@ -195,9 +195,9 @@ export const NARRATIVES: Record<string, CountryNarrative> = {
       "Governance is consistently robust across all four World Bank indicators, reflecting strong institutional quality.",
       "The Financial Market Authority Austria (FMA) has recorded 118 tracked enforcement actions between 2018 and 2026, demonstrating an active supervisory posture.",
       "No FATF grey or black listing applies, and Austria carries no sanctions exposure of any kind.",
-      "CPI score of 67 out of 100 (ranked 25th of 179) confirms a relatively low corruption environment."
+      "The CPI reading confirms a relatively low corruption environment."
     ],
-    "analysis": "Austria's profile is driven entirely by its governance indicators, with no FATF or sanctions overlay. The strongest domain is voice and accountability (risk 1.8), closely followed by rule of law and institutions (risk 1.87). Corruption and political stability are marginally weaker at 2.5 and 2.2 respectively but remain firmly in the low-risk range. Austria is not on the FATF grey or black list and is subject to no sanctions programmes. The 2024 CPI score of 67, placing Austria 25th globally, is consistent with the governance picture.",
+    "analysis": "Austria's profile is driven entirely by its governance indicators, with no FATF or sanctions overlay. The strongest domain is voice and accountability (strong), closely followed by rule of law and institutions (strong). Corruption and political stability are marginally weaker but remain firmly in the low-risk range. Austria is not on the FATF grey or black list and is subject to no sanctions programmes. The CPI reading is consistent with the governance picture.",
     "outlook": "Austria's governance trajectory is stable and the institutional framework is well-established within the EU and FATF frameworks. The FMA's active enforcement record suggests continued supervisory vigilance. No material escalation triggers are in prospect, and Austria is expected to remain a low-risk jurisdiction for financial-crime compliance purposes.",
     "keyWatchpoints": [
       "Monitor FMA supervisory priorities and any shifts in enforcement volume or focus areas.",
@@ -209,12 +209,12 @@ export const NARRATIVES: Record<string, CountryNarrative> = {
   "AU": {
     "summary": "Australia combines consistently strong governance across all WGI domains with active and well-resourced financial-crime enforcement.",
     "whyItMatters": [
-      "All four governance domains carry risk ratings between 1.6 and 1.8, reflecting broadly uniform institutional strength.",
-      "CPI score of 77/100 (rank 10 of 179 in 2024) places Australia among the world's least corrupt economies.",
+      "All four governance domains carry uniformly low risk ratings, reflecting broadly uniform institutional strength.",
+      "The CPI reading places Australia among the world's least corrupt economies.",
       "178 tracked enforcement actions across ASIC and AUSTRAC from 2009 to 2026 demonstrate consistent supervisory activity.",
       "Australia is not on the FATF grey or black list and carries no sanctions."
     ],
-    "analysis": "Australia's governance is among the strongest in the dataset. Corruption (WGI) and rule of law both carry a risk rating of 1.6, while political stability (1.8) and voice and accountability (1.7) are equally strong. The CPI rank of 10 of 179 confirms an exceptionally low-corruption environment. No FATF listing or sanctions apply. Australia ranks in the upper decile of the World Bank governance indicators. Enforcement is active, with ASIC (112 actions, 2012 to 2026) and AUSTRAC (66 actions, 2009 to 2025) both maintaining consistent oversight.",
+    "analysis": "Australia's governance is among the strongest in the dataset. Corruption (WGI) and rule of law both show a low risk rating, while political stability (strong) and voice and accountability (strong) are equally strong. The CPI ranking confirms an exceptionally low-corruption environment. No FATF listing or sanctions apply. Australia ranks in the upper decile of the World Bank governance indicators. Enforcement is active, with ASIC (112 actions, 2012 to 2026) and AUSTRAC (66 actions, 2009 to 2025) both maintaining consistent oversight.",
     "outlook": "Australia is well-placed to maintain its low-risk standing. AUSTRAC's active enforcement posture, including against large financial institutions, signals that supervisory standards are being actively applied. Firms should remain attentive to evolving AML legislative requirements and AUSTRAC enforcement priorities as the regulatory framework continues to develop.",
     "keyWatchpoints": [
       "AUSTRAC enforcement activity and any changes to AML legislative requirements.",
@@ -226,16 +226,16 @@ export const NARRATIVES: Record<string, CountryNarrative> = {
   "AW": {
     "summary": "Aruba, a constituent country of the Kingdom of the Netherlands, rests on a strong governance base, with no FATF listing or sanctions and a completed CFATF fourth-round mutual evaluation.",
     "whyItMatters": [
-      "A strong governance base, with political stability at 1.1 the strongest domain and rule of law at 2.93, anchors the profile.",
-      "Corruption at 3.5 is the weakest of the four governance domains but remains within a low-risk range.",
+      "A strong governance base, with political stability the strongest domain and rule of law, anchors the profile.",
+      "Corruption is the weakest of the four governance domains but remains within a low-risk range.",
       "Aruba sits in the upper third of the World Bank governance indicators, though no CPI data are published for it.",
       "No FATF grey or black listing applies and no sanctions are in place, so the headline risk reflects the governance profile alone."
     ],
-    "analysis": "Aruba is a self-governing constituent country within the Kingdom of the Netherlands and is assessed for AML/CFT purposes by the Caribbean Financial Action Task Force (CFATF), separately from the Netherlands itself. Its risk picture is governance-derived, with no FATF or sanctions overlay. Political stability is very strong at 1.1, rule of law scores 2.93, voice and accountability 2.6, and corruption is the weakest domain at 3.5. Aruba sits in the upper tier of the World Bank governance indicators, although the absence of CPI data limits independent corroboration of the corruption picture. Aruba completed its CFATF fourth-round mutual evaluation following an on-site visit in 2021, which recognised a substantially revised AML/CFT legal framework while noting the usual effectiveness challenges for a small tourism-and-financial-services economy.",
+    "analysis": "Aruba is a self-governing constituent country within the Kingdom of the Netherlands and is assessed for AML/CFT purposes by the Caribbean Financial Action Task Force (CFATF), separately from the Netherlands itself. Its risk picture is governance-derived, with no FATF or sanctions overlay. Political stability is very strong, rule of law is strong, voice and accountability is strong, and corruption is the weakest domain. Aruba sits in the upper tier of the World Bank governance indicators, although the absence of CPI data limits independent corroboration of the corruption picture. Aruba completed its CFATF fourth-round mutual evaluation following an on-site visit in 2021, which recognised a substantially revised AML/CFT legal framework while noting the usual effectiveness challenges for a small tourism-and-financial-services economy.",
     "outlook": "Aruba's profile is consistent with its Kingdom-of-the-Netherlands institutional anchoring and its completed CFATF evaluation. The forward risk picture depends on the pace of CFATF follow-up remediation, the effectiveness of supervision across its financial and trust-company sectors, and the corruption domain as the weakest governance reading. Firms should apply proportionate due diligence and monitor CFATF follow-up reporting for any change in Aruba's technical compliance or effectiveness ratings.",
     "keyWatchpoints": [
       "CFATF follow-up reporting on Aruba's fourth-round mutual evaluation and any re-ratings.",
-      "Corruption domain (3.5), the weakest governance reading; watch for anti-corruption and transparency developments.",
+      "Corruption domain (moderate), the weakest governance reading; watch for anti-corruption and transparency developments.",
       "Effectiveness of AML/CFT supervision across the financial, trust and gaming sectors.",
       "Absence of CPI data limits independent corruption benchmarking; supplement with other credible indicators."
     ]
@@ -243,12 +243,12 @@ export const NARRATIVES: Record<string, CountryNarrative> = {
   "AZ": {
     "summary": "Azerbaijan is driven by severe corruption and very weak accountability, with no FATF listing or sanctions in place but a well-documented history of large-scale money-laundering typologies.",
     "whyItMatters": [
-      "Voice and accountability (risk 6.9) and corruption (risk 6.8) are the two most acute governance concerns and the dominant risk drivers.",
-      "The CPI score of 30 out of 100 (rank 130 of 182, 2025) places Azerbaijan in the lower tier globally and well behind regional peers Georgia and Armenia.",
-      "Rule of law and institutions (4.6) and political stability (3.7) are relative strengths that partly offset the accountability and corruption weaknesses.",
+      "Voice and accountability (elevated) and corruption (elevated) are the two most acute governance concerns and the dominant risk drivers.",
+      "The CPI reading places Azerbaijan in the lower tier globally and well behind regional peers Georgia and Armenia.",
+      "Rule of law and institutions (moderate) and political stability (moderate) are relative strengths that partly offset the accountability and corruption weaknesses.",
       "No FATF grey or black listing and no sanctions programmes apply. Azerbaijan is evaluated by MONEYVAL, the Council of Europe FATF-style regional body."
     ],
-    "analysis": "Azerbaijan's profile is governance-derived, with no FATF or sanctions overlay. Corruption (risk 6.8) and voice and accountability (risk 6.9) are by far the weakest domains, reflecting a centralised, resource-dependent political economy in which state-linked elites hold significant banking, energy and construction interests. Rule of law and institutions (4.6) and political stability (3.7) are relative strengths. The CPI of 30 out of 100 (rank 130 of 182) is consistent with entrenched, high-level corruption. MONEYVAL's fifth-round mutual evaluation, published in February 2024, found a fair understanding of risk but concluded that fundamental improvements are needed in the supervision of financial institutions and DNFBPs, and that money-laundering investigations and prosecutions must be pursued more effectively. Azerbaijan was placed in enhanced follow-up. The historical Azerbaijani Laundromat, a roughly 2.9 billion US dollar scheme run through the International Bank of Azerbaijan and European shell companies between 2012 and 2014, illustrates the trade-based and correspondent-banking typologies that firms should treat as live.",
+    "analysis": "Azerbaijan's profile is governance-derived, with no FATF or sanctions overlay. Corruption (elevated) and voice and accountability (elevated) are by far the weakest domains, reflecting a centralised, resource-dependent political economy in which state-linked elites hold significant banking, energy and construction interests. Rule of law and institutions (moderate) and political stability (moderate) are relative strengths. The CPI reading is consistent with entrenched, high-level corruption. MONEYVAL's fifth-round mutual evaluation, published in February 2024, found a fair understanding of risk but concluded that fundamental improvements are needed in the supervision of financial institutions and DNFBPs, and that money-laundering investigations and prosecutions must be pursued more effectively. Azerbaijan was placed in enhanced follow-up. The historical Azerbaijani Laundromat, a roughly 2.9 billion US dollar scheme run through the International Bank of Azerbaijan and European shell companies between 2012 and 2014, illustrates the trade-based and correspondent-banking typologies that firms should treat as live.",
     "outlook": "Azerbaijan's risk environment is anchored by oil and gas revenues that concentrate wealth and constrain accountability, making politically exposed persons and state-linked entities the central due-diligence concern. Beneficial-ownership opacity and weak DNFBP supervision, both highlighted by MONEYVAL, sustain elevated laundering risk despite the absence of any FATF listing. The next FATF plenary in October 2026 is not expected to change the clean listing, but the MONEYVAL enhanced follow-up cycle will be the key indicator of whether supervisory and enforcement deficiencies are being addressed. Firms should apply enhanced due diligence to Azerbaijani PEPs, extractive-sector counterparties and correspondent relationships.",
     "keyWatchpoints": [
       "Apply enhanced due diligence to politically exposed persons and state-linked entities across banking, energy and construction.",
@@ -261,11 +261,11 @@ export const NARRATIVES: Record<string, CountryNarrative> = {
     "summary": "Bosnia and Herzegovina is a very high-risk jurisdiction, newly placed on the FATF grey list in June 2026, with elevated corruption and weak rule of law across all governance domains.",
     "whyItMatters": [
       "Bosnia and Herzegovina was placed on the FATF grey list at the June 2026 plenary, adding formal increased-monitoring obligations to an already weak governance picture.",
-      "Corruption is the weakest governance domain at a risk rating of 6.4, reflecting systemic integrity concerns; rule of law and institutions scores 5.37.",
+      "Corruption is the weakest governance domain at an elevated level, reflecting systemic integrity concerns; rule of law and institutions is elevated.",
       "No sanctions programmes apply, but the FATF grey-listing alone creates significant compliance obligations for firms with exposure to Bosnia and Herzegovina.",
-      "CPI score of 33 out of 100 (ranked 113th of 179) is consistent with the weak governance picture."
+      "The CPI reading is consistent with the weak governance picture."
     ],
-    "analysis": "Bosnia and Herzegovina combines a weak governance profile with FATF grey listing; the country was added to the FATF increased monitoring list at the June 2026 plenary. Corruption is the weakest domain at a risk rating of 6.4, followed by voice and accountability at 5.1 and rule of law and institutions at 5.37. Political stability is relatively better at 3.8. No sanctions apply. The 2024 CPI of 33 is aligned with the elevated risk assessment.",
+    "analysis": "Bosnia and Herzegovina combines a weak governance profile with FATF grey listing; the country was added to the FATF increased monitoring list at the June 2026 plenary. Corruption is the weakest domain at an elevated level, followed by voice and accountability and rule of law and institutions. Political stability is relatively better. No sanctions apply. The CPI reading is aligned with the elevated risk assessment.",
     "outlook": "Bosnia and Herzegovina will remain under FATF increased monitoring until it addresses the identified strategic deficiencies. Progress is typically assessed at subsequent plenaries. Firms should apply enhanced due diligence for the duration of the grey-listing and monitor FATF progress reports closely. The next plenary is scheduled for October 2026, which represents the earliest opportunity for a formal status update.",
     "keyWatchpoints": [
       "Monitor FATF progress reports and plenary outcomes for updates on the grey-list status and any action plan milestones.",
@@ -277,29 +277,29 @@ export const NARRATIVES: Record<string, CountryNarrative> = {
   "BB": {
     "summary": "Barbados is one of the lower-risk profiles in the Caribbean offshore sector, supported by a relatively clean corruption record and a stable political environment.",
     "whyItMatters": [
-      "A 2024 CPI score of 68 out of 100 (ranked 23rd of 179 countries) places Barbados among the least corrupt countries globally, providing strong independent corroboration of the low corruption reading.",
-      "Corruption domain scores 2.8 and voice and accountability 2.6, both modest; political stability is very low at 1.2, indicating an exceptionally stable environment.",
-      "Rule of law and institutions scores 3.5, the weakest dimension and the primary driver of residual risk.",
+      "A CPI reading places Barbados among the least corrupt countries globally, providing strong independent corroboration of the low corruption reading.",
+      "Corruption domain is strong and voice and accountability is strong, both modest; political stability is very low, indicating an exceptionally stable environment.",
+      "Rule of law and institutions is moderate, the weakest dimension and the primary driver of residual risk.",
       "Not on the FATF grey or black list, subject to no sanctions, and no tracked regulatory enforcement actions are recorded."
     ],
-    "analysis": "Barbados' governance is anchored by strong performance in corruption (2.8), political stability (1.2), and voice and accountability (2.6). Rule of law and institutions at 3.5 is the highest-risk dimension, though still firmly in the low-to-moderate range. The CPI score of 68 ranked 23rd of 179 countries in 2024 is among the strongest in the Caribbean region and independently supports the low corruption reading. No FATF listing or sanctions apply.",
+    "analysis": "Barbados' governance is anchored by strong performance in corruption (strong), political stability (strong), and voice and accountability (strong). Rule of law and institutions is the highest-risk dimension, though still firmly in the low-to-moderate range. The CPI reading is among the strongest in the Caribbean region and independently supports the low corruption reading. No FATF listing or sanctions apply.",
     "outlook": "Barbados' outlook is stable and positive. It sits in the upper third of the World Bank governance indicators. Its CPI trajectory and institutional quality indicators suggest it is likely to maintain its strong standing. The principal monitoring item is the rule of law domain, where further reform could reduce residual risk. Firms should note the October 2026 FATF plenary as a routine checkpoint, though no escalation is indicated by current data.",
     "keyWatchpoints": [
-      "Rule of law and institutions domain (3.5) is the most elevated governance risk; monitor developments in judicial and regulatory capacity.",
+      "Rule of law and institutions domain (moderate) is the most elevated governance risk; monitor developments in judicial and regulatory capacity.",
       "FATF October 2026 plenary outcomes should be confirmed; no change in listing status is anticipated given current indicators.",
       "Offshore financial services activity warrants standard counterparty due diligence even where governance is strong.",
-      "Strong CPI ranking (23rd of 179) should be treated as a positive signal but not as a substitute for transaction monitoring controls."
+      "Strong CPI ranking should be treated as a positive signal but not as a substitute for transaction monitoring controls."
     ]
   },
   "BD": {
     "summary": "Bangladesh presents high risk driven by severe corruption and weak rule of law, compounded by significant accountability deficits.",
     "whyItMatters": [
-      "Corruption (WGI) is the dominant risk factor at a risk rating of 7.6, reflecting deep-rooted governance challenges.",
-      "Voice and accountability reaches 6.3, indicating significant constraints on democratic and civil-society oversight.",
-      "CPI score of 23/100 (rank 150 of 179 in 2024) places Bangladesh among the least transparent economies in South Asia.",
+      "Corruption (WGI) is the dominant risk factor at a severe level, reflecting deep-rooted governance challenges.",
+      "Voice and accountability is elevated, indicating significant constraints on democratic and civil-society oversight.",
+      "The CPI reading places Bangladesh among the least transparent economies in South Asia.",
       "Bangladesh is not on the FATF grey or black list and carries no sanctions."
     ],
-    "analysis": "Bangladesh's profile is driven by corruption (WGI) at a risk rating of 7.6, the highest-scoring domain. Rule of law (5.9) and voice and accountability (6.3) both contribute material risk, while political stability (5.2) is the comparatively least-weak domain. The CPI score of 23 at rank 150 of 179 confirms persistent transparency deficits. No FATF listing or sanctions apply. Bangladesh sits well below the global median on the World Bank governance indicators.",
+    "analysis": "Bangladesh's profile is driven by corruption (WGI) at a severe level, the highest-scoring domain. Rule of law (elevated) and voice and accountability (elevated) both contribute material risk, while political stability (elevated) is the comparatively least-weak domain. The CPI reading confirms persistent transparency deficits. No FATF listing or sanctions apply. Bangladesh sits well below the global median on the World Bank governance indicators.",
     "outlook": "Bangladesh's high-risk profile reflects structural governance challenges that are unlikely to resolve quickly. The absence of FATF listing means any future engagement would increase scored risk further. Improvements in corruption indicators and accountable oversight institutions would be the primary signals of risk reduction. Firms should apply enhanced due diligence commensurate with the high-risk band.",
     "keyWatchpoints": [
       "Corruption (WGI) and CPI trends, as the primary score drivers.",
@@ -314,9 +314,9 @@ export const NARRATIVES: Record<string, CountryNarrative> = {
       "Governance is solid across all four World Bank indicators, reflecting consistently strong institutional quality.",
       "The Financial Services and Markets Authority (FSMA) has recorded 182 tracked enforcement actions from 2008 to 2026, indicating a sustained and active regulatory posture.",
       "Belgium carries no FATF grey or black listing and is subject to no sanctions programmes.",
-      "CPI score of 69 out of 100 (ranked 22nd of 179) places Belgium among the cleaner jurisdictions globally."
+      "The CPI reading places Belgium among the cleaner jurisdictions globally."
     ],
-    "analysis": "Belgium's profile reflects its governance indicators alone, with no FATF or sanctions overlay. Voice and accountability is the strongest domain at 1.7, followed by corruption at 2.2 and rule of law and institutions at 2.4. Political stability is marginally the weakest at 3.1 but remains firmly in the low-risk range. Belgium is not on the FATF grey or black list and faces no sanctions exposure. The 2024 CPI of 69, ranking Belgium 22nd of 179 countries, is consistent with the broader governance profile.",
+    "analysis": "Belgium's profile reflects its governance indicators alone, with no FATF or sanctions overlay. Voice and accountability is the strongest domain, followed by corruption and rule of law and institutions. Political stability is marginally the weakest but remains firmly in the low-risk range. Belgium is not on the FATF grey or black list and faces no sanctions exposure. The CPI reading is consistent with the broader governance profile.",
     "outlook": "Belgium's risk profile is stable. The FSMA's active enforcement record over more than a decade suggests ongoing supervisory capacity. As an EU member state, Belgium is subject to the full suite of European AML directives and is well-positioned within FATF's global monitoring framework. No near-term escalation is anticipated.",
     "keyWatchpoints": [
       "Monitor FSMA enforcement trends and any changes in supervisory priorities.",
@@ -329,14 +329,14 @@ export const NARRATIVES: Record<string, CountryNarrative> = {
     "summary": "Burkina Faso carries elevated governance deficits and a particularly high political stability risk, though it is not FATF-listed or sanctioned.",
     "whyItMatters": [
       "Governance is weak across the board, and no FATF or sanctions overlay applies to the profile.",
-      "Political stability is the most acute domain risk at a rating of 6.9, reflecting significant insecurity in the Sahel region.",
-      "Corruption (WGI) at 5.7 and rule of law and institutions at 5.77 are both elevated and together account for 75% of the governance weighting.",
-      "CPI score of 41/100, ranked 81st of 179 in 2024, points to material corruption concerns."
+      "Political stability is the most acute domain risk at a rating, reflecting significant insecurity in the Sahel region.",
+      "Corruption (WGI) and rule of law and institutions are both elevated and together account for 75% of the governance weighting.",
+      "The CPI reading points to material corruption concerns."
     ],
-    "analysis": "Burkina Faso's profile rests entirely on its governance indicators; it is not on the FATF grey or black list, and no sanctions apply. Political stability is the highest-risk domain at a rating of 6.9, reflecting the country's serious security situation. Rule of law and institutions at 5.77 (40% weight) is the largest contributor to the governance picture, closely followed by corruption at 5.7 (35% weight). Voice and accountability at 5.5 indicates constrained oversight. The CPI score of 41/100, ranked 81st of 179, corroborates the moderate-to-high corruption picture.",
+    "analysis": "Burkina Faso's profile rests entirely on its governance indicators; it is not on the FATF grey or black list, and no sanctions apply. Political stability is the highest-risk domain at a rating, reflecting the country's serious security situation. Rule of law and institutions (40% weight) is the largest contributor to the governance picture, closely followed by corruption (35% weight). Voice and accountability indicates constrained oversight. The CPI reading corroborates the moderate-to-high corruption picture.",
     "outlook": "The security environment in Burkina Faso remains the principal source of near-term risk escalation. Continued or deepening instability could weaken institutional capacity further and increase exposure to financial crime. Firms should monitor any FATF assessments of West African jurisdictions and track whether governance metrics deteriorate in line with security conditions.",
     "keyWatchpoints": [
-      "Political stability developments, which at a risk rating of 6.9 are the highest-risk governance domain.",
+      "Political stability developments, which at an elevated level are the highest-risk governance domain.",
       "Any FATF review or listing decision given regional AML/CFT pressures in West Africa.",
       "Rule-of-law metrics given their 40% weighting and current elevated score.",
       "Corruption trajectory as reflected in future CPI releases."
@@ -346,11 +346,11 @@ export const NARRATIVES: Record<string, CountryNarrative> = {
     "summary": "Bulgaria is currently on the FATF grey list, with elevated corruption and rule-of-law weaknesses that sit well above the level of comparable EU member states.",
     "whyItMatters": [
       "Bulgaria is currently on the FATF grey list, which adds mandatory increased-monitoring obligations to a governance profile already marked by broad institutional weaknesses.",
-      "Corruption is the weakest domain at a risk rating of 5.5, followed by rule of law and institutions at 4.33 and voice and accountability at 3.9.",
+      "Corruption is the weakest domain at an elevated level, followed by rule of law and institutions and voice and accountability.",
       "No sanctions programmes apply, but the FATF grey-listing creates mandatory enhanced due-diligence obligations for firms with Bulgarian exposure.",
-      "CPI score of 43 out of 100 (ranked 75th of 179) reflects a materially elevated corruption environment relative to EU peers."
+      "The CPI reading reflects a materially elevated corruption environment relative to EU peers."
     ],
-    "analysis": "Bulgaria combines a weak governance profile with current FATF grey listing; the country is subject to FATF increased monitoring, last reviewed at the June 2026 plenary. Corruption at a risk rating of 5.5 is the weakest governance domain, materially above the level for comparable EU member states. Rule of law and institutions at 4.33 and voice and accountability at 3.9 also present elevated readings. Political stability at 2.9 is comparatively stronger. Bulgaria carries no sanctions exposure. The 2024 CPI of 43 is the weakest among the EU-member countries in this batch.",
+    "analysis": "Bulgaria combines a weak governance profile with current FATF grey listing; the country is subject to FATF increased monitoring, last reviewed at the June 2026 plenary. Corruption at an elevated level is the weakest governance domain, materially above the level for comparable EU member states. Rule of law and institutions and voice and accountability also present elevated readings. Political stability is comparatively stronger. Bulgaria carries no sanctions exposure. The CPI reading is the weakest among the EU-member countries in this batch.",
     "outlook": "Bulgaria's grey-list status means FATF will continue to assess its progress against an agreed action plan. The next scheduled plenary is October 2026. Improvement in rule-of-law and anti-corruption infrastructure will be prerequisites for removal from increased monitoring. Firms should maintain heightened scrutiny of Bulgarian counterparties and monitor FATF communications for progress updates.",
     "keyWatchpoints": [
       "Monitor FATF plenary outcomes and progress reports for updates on Bulgaria's grey-list status and action plan delivery.",
@@ -362,12 +362,12 @@ export const NARRATIVES: Record<string, CountryNarrative> = {
   "BH": {
     "summary": "Bahrain presents a moderate financial-crime risk, with voice and accountability as the dominant governance weakness and no FATF or sanctions listing.",
     "whyItMatters": [
-      "Voice and accountability (risk 6.7) is the highest-risk governance domain, reflecting significant constraints on political freedoms and civic participation.",
-      "Corruption (risk 4.7) is the second-highest risk domain; the CPI score of 53 out of 100 (rank 53 of 179, 2024) indicates moderate public-sector integrity concerns.",
-      "Political stability (risk 4.3) is elevated relative to the Gulf subregion, reflecting residual instability from historical civil unrest.",
+      "Voice and accountability (elevated) is the highest-risk governance domain, reflecting significant constraints on political freedoms and civic participation.",
+      "Corruption (moderate) is the second-highest risk domain; the CPI reading indicates moderate public-sector integrity concerns.",
+      "Political stability (moderate) is elevated relative to the Gulf subregion, reflecting residual instability from historical civil unrest.",
       "No FATF listing and no sanctions apply, and no tracked enforcement actions are recorded."
     ],
-    "analysis": "Bahrain's profile is driven primarily by governance weaknesses in voice and accountability (6.7) and corruption (4.7). The voice and accountability reading is notably high, reflecting restrictions on political participation and civil society. Rule of law and institutions (3.53) sits at a moderate level, suggesting adequate but imperfect legal infrastructure. Political stability (4.3) reflects lingering tensions from past political unrest. The CPI of 53 places Bahrain in the middle tier globally. Bahrain is not on the FATF grey or black list and faces no sanctions exposure.",
+    "analysis": "Bahrain's profile is driven primarily by governance weaknesses in voice and accountability (elevated) and corruption (moderate). The voice and accountability reading is notably high, reflecting restrictions on political participation and civil society. Rule of law and institutions (moderate) sits at a moderate level, suggesting adequate but imperfect legal infrastructure. Political stability (moderate) reflects lingering tensions from past political unrest. The CPI reading places Bahrain in the middle tier globally. Bahrain is not on the FATF grey or black list and faces no sanctions exposure.",
     "outlook": "Bahrain's risk profile is likely to remain at the moderate level absent significant structural governance reform. As a regional financial centre, Bahrain's risk management quality depends heavily on the effectiveness of its domestic AML supervisory framework. Firms should pay particular attention to the voice and accountability gap and associated risks around politically exposed persons and state-linked entities.",
     "keyWatchpoints": [
       "PEP due diligence given the elevated voice and accountability score and concentration of political and economic power.",
@@ -380,17 +380,17 @@ export const NARRATIVES: Record<string, CountryNarrative> = {
     "summary": "Burundi is underpinned by the highest corruption risk in this set and severe accountability deficits, with no FATF listing or sanctions applied.",
     "whyItMatters": [
       "Governance is severely weak across all four domains, and no FATF or sanctions overlay applies to the profile.",
-      "Corruption (WGI) is the most severe domain at a risk rating of 7.8, carrying a 35% weighting and representing a critical financial crime vulnerability.",
-      "Voice and accountability at 6.6 and rule of law at 6.5 compound the governance weakness picture.",
-      "CPI score of 17/100, ranked 164th of 179 in 2024, places Burundi among the least transparent jurisdictions globally."
+      "Corruption (WGI) is the most severe domain at a severe level, carrying a 35% weighting and representing a critical financial crime vulnerability.",
+      "Voice and accountability and rule of law compound the governance weakness picture.",
+      "The CPI reading places Burundi among the least transparent jurisdictions globally."
     ],
-    "analysis": "Burundi's profile reflects a severely weak governance environment across all four domains, with no FATF or sanctions overlay. The most critical domain is corruption at a risk rating of 7.8 (35% weight), which is among the highest readings in this batch. Rule of law and institutions at 6.5 (40% weight) represents the primary structural driver. Voice and accountability at 6.6 and political stability at 5.6 add further risk. The CPI score of 17/100, ranked 164th of 179 countries, is exceptionally low and signals very high corruption risk in the real economy.",
+    "analysis": "Burundi's profile reflects a severely weak governance environment across all four domains, with no FATF or sanctions overlay. The most critical domain is corruption at a severe level (35% weight), which is among the highest readings in this batch. Rule of law and institutions (40% weight) represents the primary structural driver. Voice and accountability and political stability add further risk. The CPI reading is exceptionally low and signals very high corruption risk in the real economy.",
     "outlook": "Burundi's risk trajectory is concerning. The combination of very low CPI performance and high governance risk scores across all domains suggests limited institutional capacity to address financial crime vulnerabilities. The absence of a FATF listing does not diminish the inherent AML/CFT risk indicated by the governance and transparency data. Medium-term improvement would require fundamental institutional reform.",
     "keyWatchpoints": [
-      "Corruption control, given the CPI score of 17/100 ranked 164th globally and a WGI corruption risk rating of 7.8.",
+      "Corruption control, given the CPI reading and a WGI corruption severe risk rating.",
       "Any FATF engagement or listing decision, given the severity of underlying governance weaknesses.",
-      "Rule-of-law developments, which at a risk rating of 6.5 and 40% weighting are the primary governance driver.",
-      "Political stability trends at a risk rating of 5.6, which could deteriorate further and impair institutional function."
+      "Rule-of-law developments, which at an elevated level and 40% weighting are the primary governance driver.",
+      "Political stability trends at an elevated level, which could deteriorate further and impair institutional function."
     ]
   },
   "BJ": {
@@ -398,10 +398,10 @@ export const NARRATIVES: Record<string, CountryNarrative> = {
     "whyItMatters": [
       "Governance weaknesses are balanced but still material across the four World Bank domains.",
       "Benin is not on the FATF grey or black list, and no sanctions apply, so the profile reflects governance factors alone.",
-      "Corruption (WGI) is the weakest domain at a risk rating of 5.4, with the highest weighting of 35%.",
-      "CPI score of 45/100, ranked 69th of 179 in 2024, places Benin in the upper half of African peers on transparency."
+      "Corruption (WGI) is the weakest domain at an elevated level, with the highest weighting of 35%.",
+      "The CPI reading places Benin in the upper half of African peers on transparency."
     ],
-    "analysis": "Benin's profile derives entirely from its governance indicators, with no FATF or sanctions overlay. The weakest domain is corruption at a risk rating of 5.4, followed by voice and accountability at 4.9. Rule of law and institutions at 5.07 carries the largest weighting (40%) and moderately weighs on the picture. Political stability is the strongest domain at 3.9. The CPI score of 45/100, ranked 69th of 179 countries, is relatively favourable compared with many regional peers and provides some contextual reassurance on transparency.",
+    "analysis": "Benin's profile derives entirely from its governance indicators, with no FATF or sanctions overlay. The weakest domain is corruption at an elevated level, followed by voice and accountability. Rule of law and institutions carries the largest weighting (40%) and moderately weighs on the picture. Political stability is the strongest domain. The CPI reading is relatively favourable compared with many regional peers and provides some contextual reassurance on transparency.",
     "outlook": "Benin's governance profile is broadly stable, with no FATF or sanctions concerns on the horizon. The primary risk dynamic is whether incremental improvements in corruption control and rule of law translate into a score reduction over the medium term. Continued stability would support its comparatively positive CPI standing within West Africa.",
     "keyWatchpoints": [
       "Any change in FATF assessment of West African jurisdictions that could affect Benin indirectly.",
@@ -414,11 +414,11 @@ export const NARRATIVES: Record<string, CountryNarrative> = {
     "summary": "Bermuda is a well-governed British Overseas Territory and established international insurance and reinsurance hub with consistently sound institutional indicators.",
     "whyItMatters": [
       "Bermuda is a leading domicile for (re)insurance and captive insurance, meaning counterparty exposure is common for financial institutions and corporate risk managers.",
-      "Corruption and rule of law domains both carry a risk rating of 2.8, indicating broadly comparable, moderate governance performance across these two weighted dimensions.",
-      "Political stability scores 1.7, reflecting a very stable environment; voice and accountability data are not available in the dataset.",
+      "Corruption and rule of law domains both show a low risk rating, indicating broadly comparable, moderate governance performance across these two weighted dimensions.",
+      "Political stability is strong, reflecting a very stable environment; voice and accountability data are not available in the dataset.",
       "No FATF listing, no sanctions, and no tracked regulatory enforcement actions recorded."
     ],
-    "analysis": "Bermuda's governance is anchored by corruption and rule of law domain risks of 2.8 each, both relatively contained for an offshore financial centre. Political stability at 1.7 is a strength. Voice and accountability data are absent, preventing a full four-domain assessment. No FATF listing or sanctions apply. No CPI data are provided for this jurisdiction.",
+    "analysis": "Bermuda's governance is anchored by corruption and rule of law domain risks, both relatively contained for an offshore financial centre. Political stability is a strength. Voice and accountability data are absent, preventing a full four-domain assessment. No FATF listing or sanctions apply. No CPI data are provided for this jurisdiction.",
     "outlook": "Bermuda's outlook is stable. Its British Overseas Territory status and long-standing regulatory infrastructure support continued low-risk classification. Firms should remain attentive to developments at the October 2026 FATF plenary and to any legislative changes affecting Bermuda's insurance regulatory framework, but no immediate escalation factors are present in the current data.",
     "keyWatchpoints": [
       "Absence of voice and accountability data introduces a minor gap in the governance picture; monitor any emerging accountability concerns.",
@@ -431,14 +431,14 @@ export const NARRATIVES: Record<string, CountryNarrative> = {
     "summary": "Brunei is driven primarily by limited voice and accountability rather than corruption or rule-of-law weaknesses, with no FATF listing or sanctions exposure.",
     "whyItMatters": [
       "Governance is broadly sound, with the profile shaped by the accountability domain rather than by corruption or rule of law.",
-      "Voice and accountability is the weakest governance domain at a risk rating of 5.7, while political stability is notably strong at 1.1.",
-      "Corruption and rule-of-law risks are low (2.8 and 3.1 respectively), supporting a broadly clean institutional environment.",
+      "Voice and accountability is the weakest governance domain at an elevated level, while political stability is notably strong.",
+      "Corruption and rule-of-law risks are low (strong and moderate respectively), supporting a broadly clean institutional environment.",
       "No FATF grey or black listing; no sanctions programmes apply."
     ],
-    "analysis": "Brunei's profile reflects broadly sound governance underpinned by low corruption risk (2.8) and a strong rule-of-law profile (3.1). Political stability is the strongest domain at 1.1. The primary governance weakness is voice and accountability (5.7), consistent with Brunei's political system. No CPI data is available for independent corroboration. No FATF listing or sanctions apply. Brunei sits in the upper third of the World Bank governance indicators and compares favourably with regional peers.",
+    "analysis": "Brunei's profile reflects broadly sound governance underpinned by low corruption risk (strong) and a strong rule-of-law profile (moderate). Political stability is the strongest domain. The primary governance weakness is voice and accountability (elevated), consistent with Brunei's political system. No CPI data is available for independent corroboration. No FATF listing or sanctions apply. Brunei sits in the upper third of the World Bank governance indicators and compares favourably with regional peers.",
     "outlook": "Brunei's risk profile is stable. The absence of FATF or sanctions pressures removes key escalation drivers. Firms should nonetheless maintain proportionate monitoring given the voice and accountability gap, which can limit transparency and civil-society oversight of financial flows. No material deterioration is anticipated in the near term.",
     "keyWatchpoints": [
-      "Voice and accountability constraints (risk rating 5.7) may limit transparency of state-linked entities and beneficial ownership disclosure.",
+      "Voice and accountability constraints (elevated risk rating) may limit transparency of state-linked entities and beneficial ownership disclosure.",
       "Monitor any FATF plenary outcomes, with the next plenary scheduled for October 2026.",
       "Track changes to domestic AML/CFT legislative frameworks given the limited civil-society oversight environment.",
       "Assess correspondent banking and cross-border exposure given Brunei's reliance on energy revenues and sovereign wealth flows."
@@ -448,11 +448,11 @@ export const NARRATIVES: Record<string, CountryNarrative> = {
     "summary": "Bolivia combines severely weak governance across all four domains with active FATF grey-list status.",
     "whyItMatters": [
       "Bolivia is on the FATF grey list (last reviewed 19 June 2026), adding formal increased-monitoring obligations to an already weak governance profile.",
-      "Corruption (WGI risk 7.1, weighted 35%) is the weakest governance domain and the largest single driver, reflecting severely impaired public-sector integrity.",
-      "Rule of law and institutions (6.13, weighted 40%) is the most heavily weighted domain and indicates deep weaknesses in judicial reliability and institutional effectiveness.",
-      "The 2024 CPI score of 28 (rank 132 of 179) confirms that corruption perceptions are among the most adverse in the Americas."
+      "Corruption (WGI severe risk, weighted 35%) is the weakest governance domain and the largest single driver, reflecting severely impaired public-sector integrity.",
+      "Rule of law and institutions (weighted 40%) is the most heavily weighted domain and indicates deep weaknesses in judicial reliability and institutional effectiveness.",
+      "The CPI reading confirms that corruption perceptions are among the most adverse in the Americas."
     ],
-    "analysis": "Bolivia's profile combines a severely weak governance picture with current FATF grey listing (status last reviewed 19 June 2026); no sanctions apply. Governance is driven by corruption (risk 7.1, weighted 35%) and rule of law and institutions (risk 6.13, weighted 40%), both severely elevated. Voice and accountability (5.1, weighted 10%) is also elevated, whilst political stability (3.9, weighted 15%) is the strongest domain. The 2024 CPI score of 28 out of 100 at rank 132 of 179 independently corroborates the adverse governance assessment.",
+    "analysis": "Bolivia's profile combines a severely weak governance picture with current FATF grey listing (status last reviewed 19 June 2026); no sanctions apply. Governance is driven by corruption (weighted 35%) and rule of law and institutions (weighted 40%), both severely elevated. Voice and accountability (weighted 10%) is also elevated, whilst political stability (weighted 15%) is the strongest domain. The CPI reading independently corroborates the adverse governance assessment.",
     "outlook": "Bolivia's elevated risk is likely to persist until the FATF determines it has addressed the strategic AML/CFT deficiencies underlying the grey listing. Firms should apply enhanced due diligence to Bolivian counterparties and monitor FATF plenary outcomes closely. Removal from the grey list would ease the FATF overlay, though the underlying governance weaknesses would remain absent structural reform.",
     "keyWatchpoints": [
       "FATF plenary outcomes, particularly whether Bolivia demonstrates sufficient progress on its action plan to exit the grey list.",
@@ -464,12 +464,12 @@ export const NARRATIVES: Record<string, CountryNarrative> = {
   "BR": {
     "summary": "Brazil has corruption as its primary governance weakness, partially offset by moderate voice and accountability, with 557 tracked enforcement actions from the CVM.",
     "whyItMatters": [
-      "Corruption (WGI risk 6.1, weighted 35%) is the weakest governance domain and the single largest risk driver.",
+      "Corruption (WGI elevated risk, weighted 35%) is the weakest governance domain and the single largest risk driver.",
       "The Comissao de Valores Mobiliarios (CVM) has taken 557 tracked enforcement actions over 2021 to 2026, signalling an active securities regulator but also a high volume of underlying market misconduct.",
-      "Voice and accountability (3.9) and political stability (4.3) are among the stronger governance readings, moderating the overall picture.",
-      "The 2024 CPI score of 34 (rank 106 of 179) confirms meaningful corruption risk, consistent with the WGI-based model."
+      "Voice and accountability (moderate) and political stability (moderate) are among the stronger governance readings, moderating the overall picture.",
+      "The CPI reading confirms meaningful corruption risk, consistent with the WGI-based model."
     ],
-    "analysis": "Brazil's profile is driven entirely by its governance indicators; it is not FATF-listed and no sanctions apply. The weakest domain is corruption (6.1, weighted 35%), followed by rule of law and institutions (5.13, weighted 40%). These are partially tempered by voice and accountability (3.9, weighted 10%) and political stability (4.3, weighted 15%), both of which are relatively strong and reflect functioning democratic and governmental institutions. The CVM's 557 enforcement actions between 2021 and 2026 from a single regulator indicate active supervisory engagement. The 2024 CPI of 34 at rank 106 of 179 is consistent with a persistently elevated corruption environment.",
+    "analysis": "Brazil's profile is driven entirely by its governance indicators; it is not FATF-listed and no sanctions apply. The weakest domain is corruption (weighted 35%), followed by rule of law and institutions (weighted 40%). These are partially tempered by voice and accountability (weighted 10%) and political stability (weighted 15%), both of which are relatively strong and reflect functioning democratic and governmental institutions. The CVM's 557 enforcement actions between 2021 and 2026 from a single regulator indicate active supervisory engagement. The CPI reading is consistent with a persistently elevated corruption environment.",
     "outlook": "Brazil's risk profile is sensitive to the effectiveness of its anti-corruption institutions and the trajectory of political accountability. The CVM's active enforcement posture is a positive indicator of supervisory capacity. Further erosion of institutional independence or backsliding on anti-corruption commitments would be likely to weaken the governance picture. No FATF listing or sanctions currently apply, and maintaining this position depends on continued AML/CFT framework compliance.",
     "keyWatchpoints": [
       "CVM enforcement activity trends as an indicator of both supervisory capacity and the level of underlying financial market misconduct.",
@@ -481,29 +481,29 @@ export const NARRATIVES: Record<string, CountryNarrative> = {
   "BS": {
     "summary": "The Bahamas, a Caribbean offshore financial centre, is driven principally by a weaker rule of law domain relative to its otherwise reasonable governance indicators.",
     "whyItMatters": [
-      "Rule of law and institutions scores 4.0, the dominant weighted dimension (40%), and the primary upward risk driver.",
-      "Corruption domain scores 2.7 and political stability 1.6, both relatively contained, providing some governance balance.",
-      "A 2024 CPI score of 65 out of 100 (ranked 28th of 179 countries) independently corroborates a comparatively clean corruption environment.",
+      "Rule of law and institutions is moderate, the dominant weighted dimension (40%), and the primary upward risk driver.",
+      "Corruption domain is strong and political stability is strong, both relatively contained, providing some governance balance.",
+      "A CPI reading independently corroborates a comparatively clean corruption environment.",
       "Not on the FATF grey or black list and subject to no sanctions; no tracked regulatory enforcement actions recorded."
     ],
-    "analysis": "The Bahamas' governance is shaped primarily by the rule of law and institutions domain at 4.0, which signals that institutional frameworks, while functional, carry material weaknesses. Corruption (2.7) and political stability (1.6) are strengths by comparison, and voice and accountability (3.3) is moderate. The 2024 CPI score of 65 ranks the Bahamas 28th of 179 countries, lending further credibility to the relatively low corruption reading. No FATF listing or sanctions apply.",
+    "analysis": "The Bahamas' governance is shaped primarily by the rule of law and institutions domain, which signals that institutional frameworks, while functional, carry material weaknesses. Corruption (strong) and political stability (strong) are strengths by comparison, and voice and accountability (moderate) is moderate. The CPI reading lending further credibility to the relatively low corruption reading. No FATF listing or sanctions apply.",
     "outlook": "The Bahamas' risk profile is broadly stable. The jurisdiction's comparatively strong CPI ranking and low political instability score are positive anchors. The elevated rule of law domain remains the area most warranting attention, particularly given the Bahamas' position as a significant financial centre. Firms should monitor any legislative or institutional reforms targeting judicial and regulatory capacity, and note the October 2026 FATF plenary as a routine review checkpoint.",
     "keyWatchpoints": [
-      "Rule of law and institutions domain (4.0) is the principal risk driver; monitor regulatory reform progress and judicial independence indicators.",
+      "Rule of law and institutions domain (moderate) is the principal risk driver; monitor regulatory reform progress and judicial independence indicators.",
       "FATF October 2026 plenary should be reviewed to confirm continued non-listed status.",
       "Financial centre status and private banking activity warrant enhanced due diligence on higher-risk customer segments and structures.",
-      "CPI of 65 (rank 28 of 179) provides positive context but does not substitute for transaction-level controls."
+      "The CPI reading provides positive context but does not substitute for transaction-level controls."
     ]
   },
   "BT": {
     "summary": "Bhutan is distinguished by low corruption and outstanding political stability, offset by comparatively weaker rule-of-law capacity.",
     "whyItMatters": [
-      "Corruption (WGI) carries a risk rating of 2.5 and CPI reaches 72/100 (rank 18 of 179 in 2024), placing Bhutan among the least corrupt countries in Asia.",
-      "Political stability scores 1.1, one of the strongest readings in the dataset, reflecting an exceptionally stable political environment.",
-      "Rule of law and institutions (3.87) and voice and accountability (3.8) are the comparatively weaker domains, introducing moderate institutional risk.",
+      "Corruption (WGI) shows a low risk rating and the CPI reading is strong, placing Bhutan among the least corrupt countries in Asia.",
+      "Political stability is strong, one of the strongest readings in the dataset, reflecting an exceptionally stable political environment.",
+      "Rule of law and institutions (moderate) and voice and accountability (moderate) are the comparatively weaker domains, introducing moderate institutional risk.",
       "Bhutan is not on the FATF grey or black list and carries no sanctions."
     ],
-    "analysis": "Bhutan's low corruption (WGI) reading (2.5) and outstanding political stability (1.1) are the strongest elements, corroborated by a CPI rank of 18 of 179. Rule of law (3.87) and voice and accountability (3.8) represent the primary sources of residual risk, reflecting institutional capacity constraints in a small developing economy. No FATF listing or sanctions apply. Bhutan sits in the upper third of the World Bank governance indicators.",
+    "analysis": "Bhutan's low corruption (WGI) reading (strong) and outstanding political stability (strong) are the strongest elements, corroborated by a CPI ranking. Rule of law (moderate) and voice and accountability (moderate) represent the primary sources of residual risk, reflecting institutional capacity constraints in a small developing economy. No FATF listing or sanctions apply. Bhutan sits in the upper third of the World Bank governance indicators.",
     "outlook": "Bhutan's risk outlook is broadly stable and positive, anchored by strong anti-corruption performance and political continuity. Rule-of-law and accountability capacity building will determine whether the risk picture eases further over time. Firms should note that the small size of the financial sector limits enforcement visibility, and should monitor FATF engagement as the AML framework matures.",
     "keyWatchpoints": [
       "Rule-of-law and institutional capacity developments, as the comparatively weaker governance domains.",
@@ -517,15 +517,15 @@ export const NARRATIVES: Record<string, CountryNarrative> = {
     "whyItMatters": [
       "Governance is sound across the four World Bank domains, relatively strong for the region.",
       "Botswana is not on the FATF grey or black list, and no sanctions apply.",
-      "Political stability is the strongest domain at a risk rating of 1.7, reflecting a well-established stable political environment.",
-      "CPI score of 57/100, ranked 43rd of 179 in 2024, places Botswana among the cleanest jurisdictions in Africa."
+      "Political stability is the strongest domain at a low-risk level, reflecting a well-established stable political environment.",
+      "The CPI reading places Botswana among the cleanest jurisdictions in Africa."
     ],
-    "analysis": "Botswana's profile is driven entirely by its governance indicators, with no FATF or sanctions overlay. The strongest domain is political stability at a risk rating of 1.7, reflecting the country's well-regarded democratic track record. Rule of law and institutions at 3.77 (40% weight) and corruption at 4.0 (35% weight) are the primary contributors to residual risk, though both remain moderate in global terms. Voice and accountability at 4.0 indicates reasonable civic and institutional oversight. The CPI score of 57/100, ranked 43rd of 179 countries, confirms Botswana's position as a regional transparency leader.",
+    "analysis": "Botswana's profile is driven entirely by its governance indicators, with no FATF or sanctions overlay. The strongest domain is political stability at a low-risk level, reflecting the country's well-regarded democratic track record. Rule of law and institutions (40% weight) and corruption (35% weight) are the primary contributors to residual risk, though both remain moderate in global terms. Voice and accountability indicates reasonable civic and institutional oversight. The CPI reading confirms Botswana's position as a regional transparency leader.",
     "outlook": "Botswana's risk profile is stable and constructive. Its upper-tier standing on the World Bank governance indicators and strong CPI performance suggest a well-functioning institutional environment. The principal medium-term consideration is whether modest improvements in corruption control and rule of law can sustain or improve the country's standing, particularly as broader Southern African regional risks evolve.",
     "keyWatchpoints": [
       "Any shift in FATF assessment, though no current listing risk is indicated by the facts.",
-      "Corruption (WGI) trends at a risk rating of 4.0, the governance domain with the most room for improvement.",
-      "Rule-of-law developments given its 40% weighting and current risk rating of 3.77.",
+      "Corruption (WGI) trends at a moderate level, the governance domain with the most room for improvement.",
+      "Rule-of-law developments given its 40% weighting and current moderate risk rating.",
       "Regional contagion risk from higher-risk neighbouring jurisdictions in Southern Africa."
     ]
   },
@@ -534,10 +534,10 @@ export const NARRATIVES: Record<string, CountryNarrative> = {
     "whyItMatters": [
       "Sectoral sanctions exposure is the defining feature of the risk profile, sitting on top of an already weak governance picture.",
       "Sectoral sanctions are imposed by both the EU and the UK under dedicated Belarus restrictive measures programmes; OFAC maintains targeted sanctions under the Belarus Sanctions Regulations.",
-      "Governance is elevated across all four WGI domains, with voice and accountability at 7.3 and corruption at 6.3 being the weakest.",
-      "CPI score of 33 out of 100 (ranked 113th of 179) signals a high-corruption operating environment."
+      "Governance is elevated across all four WGI domains, with voice and accountability and corruption being the weakest.",
+      "The CPI reading signals a high-corruption operating environment."
     ],
-    "analysis": "Belarus combines a weak governance profile with a broad sanctions regime. All four governance domains are elevated: voice and accountability scores 7.3, corruption 6.3, rule of law and institutions 6.27, and political stability 4.1. Belarus is not on the FATF grey or black list. However, the breadth of the sanctions regime, covering OFAC targeted measures alongside EU and UK sectoral programmes, materially raises counterparty and transaction risk. The 2024 CPI of 33 reinforces the weak integrity environment.",
+    "analysis": "Belarus combines a weak governance profile with a broad sanctions regime. All four governance domains are elevated: voice and accountability is severe, corruption is elevated, rule of law and institutions is elevated, and political stability is moderate. Belarus is not on the FATF grey or black list. However, the breadth of the sanctions regime, covering OFAC targeted measures alongside EU and UK sectoral programmes, materially raises counterparty and transaction risk. The CPI reading reinforces the weak integrity environment.",
     "outlook": "The sanctions environment affecting Belarus is unlikely to ease in the near term given the political situation. Firms should expect continued restrictions on financial flows and elevated due-diligence requirements for any Belarusian nexus. FATF listing is not currently in place but governance weaknesses mean monitoring for potential future listing remains prudent. The next FATF plenary is scheduled for October 2026.",
     "keyWatchpoints": [
       "Track changes to EU, UK, and OFAC sanctions programmes relating to Belarus, including any new designations or sectoral extensions.",
@@ -549,29 +549,29 @@ export const NARRATIVES: Record<string, CountryNarrative> = {
   "BZ": {
     "summary": "Belize, a Central American and Caribbean offshore company domicile, has corruption and rule of law as its weakest governance domains, with no FATF listing or sanctions in place.",
     "whyItMatters": [
-      "Corruption (5.5) and rule of law and institutions (5.1) are the two weakest governance domains, together carrying the majority of the governance weighting.",
-      "The CPI score of 36 out of 100 (rank 104 of 180) corroborates a meaningful corruption picture, while political stability at 2.1 is a relative strength.",
+      "Corruption (elevated) and rule of law and institutions (elevated) are the two weakest governance domains, together carrying the majority of the governance weighting.",
+      "The CPI reading corroborates a meaningful corruption picture, while political stability is a relative strength.",
       "Its significant offshore international business company sector raises beneficial ownership and transparency considerations for counterparties.",
       "No FATF grey or black listing applies and no sanctions are in place, so the headline risk reflects the governance profile alone."
     ],
-    "analysis": "Belize is a Central American state with a Caribbean legal tradition and a significant offshore international business company (IBC) sector, assessed for AML/CFT purposes by the Caribbean Financial Action Task Force (CFATF). Its risk picture is governance-derived, with no FATF or sanctions overlay. Corruption (5.5) and rule of law and institutions (5.1) are the weakest domains, while accountability (4.1) is moderate and political stability (2.1) is a relative strength. The 2024 CPI score of 36 at rank 104 corroborates the corruption reading. Belize completed its CFATF fourth-round mutual evaluation in 2024; the assessment found a broadly sound technical framework but identified effectiveness gaps in money-laundering prosecutions and in risk-based supervision of designated non-financial businesses and professions. Belize was removed from the EU tax blacklist in February 2024 following reform commitments.",
+    "analysis": "Belize is a Central American state with a Caribbean legal tradition and a significant offshore international business company (IBC) sector, assessed for AML/CFT purposes by the Caribbean Financial Action Task Force (CFATF). Its risk picture is governance-derived, with no FATF or sanctions overlay. Corruption (elevated) and rule of law and institutions (elevated) are the weakest domains, while accountability (moderate) is moderate and political stability (strong) is a relative strength. The CPI reading corroborates the corruption reading. Belize completed its CFATF fourth-round mutual evaluation in 2024; the assessment found a broadly sound technical framework but identified effectiveness gaps in money-laundering prosecutions and in risk-based supervision of designated non-financial businesses and professions. Belize was removed from the EU tax blacklist in February 2024 following reform commitments.",
     "outlook": "Belize's profile reflects both its transitional governance base and its offshore-centre exposure. The pace of CFATF follow-up remediation, particularly on ML prosecution effectiveness and DNFBP supervision, is the key forward indicator, alongside the corruption domain as the dominant governance driver. Firms should apply enhanced due diligence to Belizean IBCs and monitor the October 2026 FATF plenary and CFATF follow-up cycle for any change in status.",
     "keyWatchpoints": [
       "CFATF follow-up reporting on Belize's fourth-round mutual evaluation, especially ML prosecution and DNFBP supervision effectiveness.",
       "October 2026 FATF plenary for any change in listing status.",
       "Beneficial ownership verification for Belizean international business companies; apply enhanced due diligence to offshore structures.",
-      "Corruption domain (5.5) and CPI trend as the dominant governance drivers."
+      "Corruption domain (elevated) and CPI trend as the dominant governance drivers."
     ]
   },
   "CA": {
     "summary": "Canada reflects strong governance across all four domains, a high CPI rank, active securities regulation, and no FATF listing or sanctions exposure.",
     "whyItMatters": [
-      "All four governance domains are strong: corruption (1.9), rule of law and institutions (1.77), political stability (2.3), and voice and accountability (1.7).",
+      "All four governance domains are strong: corruption (strong), rule of law and institutions (strong), political stability (strong), and voice and accountability (strong).",
       "Canada sits well above the global median for AML-relevant governance quality on the World Bank indicators.",
       "The Ontario Securities Commission (OSC) and the Canadian Investment Regulatory Organization (CIRO) together account for 762 tracked enforcement actions from 2003 to 2026, evidencing robust and sustained regulatory activity.",
-      "The 2024 CPI score of 75 (rank 15 of 179) places Canada among the least corruption-affected countries globally."
+      "The CPI reading places Canada among the least corruption-affected countries globally."
     ],
-    "analysis": "Canada's governance is among the strongest in the model, grounded in uniformly low risk across all four domains, with rule of law and institutions (1.77, weighted 40%) and corruption (1.9, weighted 35%) the strongest readings. No FATF listing or sanctions apply. The OSC's 483 actions (2003 to 2025) and CIRO's 279 actions (2019 to 2026) together confirm a sophisticated and proactive enforcement environment. The 2024 CPI score of 75 at rank 15 of 179 independently corroborates Canada's status as a well-governed, low-corruption jurisdiction.",
+    "analysis": "Canada's governance is among the strongest in the model, grounded in uniformly low risk across all four domains, with rule of law and institutions (weighted 40%) and corruption (weighted 35%) the strongest readings. No FATF listing or sanctions apply. The OSC's 483 actions (2003 to 2025) and CIRO's 279 actions (2019 to 2026) together confirm a sophisticated and proactive enforcement environment. The CPI reading independently corroborates Canada's status as a well-governed, low-corruption jurisdiction.",
     "outlook": "Canada's low-risk standing is well-founded and unlikely to change materially in the near term given the strength of its institutions, legal framework and enforcement capacity. Firms can apply standard due-diligence procedures to Canadian counterparties. Areas to watch include evolving AML requirements around real estate and virtual assets, where Canadian authorities have been active in developing regulation.",
     "keyWatchpoints": [
       "Regulatory developments in AML obligations covering real estate, virtual assets and correspondent banking, where Canada has pursued active reform.",
@@ -585,10 +585,10 @@ export const NARRATIVES: Record<string, CountryNarrative> = {
     "whyItMatters": [
       "Governance deficits are extreme across all four World Bank domains, with the FATF listing compounding an already severe base of concern.",
       "FATF grey-list designation (last reviewed June 2026) signals strategic AML/CFT deficiencies under active international monitoring.",
-      "Corruption risk of 8.2 (the highest-weighted domain at 35%) indicates a deeply embedded corruption environment.",
-      "CPI score of 20 out of 100, ranked 162nd of 179 countries in 2024, confirms systemic integrity failure across public institutions."
+      "Corruption risk (the highest-weighted domain at 35%) indicates a deeply embedded corruption environment.",
+      "The CPI reading confirms systemic integrity failure across public institutions."
     ],
-    "analysis": "The DRC combines a severely weak governance profile with current FATF grey listing. Corruption (risk 8.2, weight 35%) is the principal driver, followed by a very weak rule of law and institutions reading of 7.23 (weight 40%). Political stability is also elevated at 6.8, and voice and accountability at 6.3 compounds democratic deficits. No sanctions apply. The 2024 CPI score of 20, ranking 162 of 179, reinforces the picture of entrenched institutional weakness. The DRC sits among the most poorly governed states assessed on the World Bank indicators.",
+    "analysis": "The DRC combines a severely weak governance profile with current FATF grey listing. Corruption (severe risk, weight 35%) is the principal driver, followed by a very weak rule of law and institutions reading (weight 40%). Political stability is also elevated, and voice and accountability compounds democratic deficits. No sanctions apply. The CPI reading reinforces the picture of entrenched institutional weakness. The DRC sits among the most poorly governed states assessed on the World Bank indicators.",
     "outlook": "The DRC remains subject to active FATF monitoring, with the next plenary scheduled for October 2026. Progress on AML/CFT action plans will be determinative for any future de-listing. Without sustained reform in anti-corruption frameworks and judicial independence, the risk trajectory is unlikely to improve materially in the near term.",
     "keyWatchpoints": [
       "FATF plenary outcomes in October 2026 and any change in grey-list status.",
@@ -601,16 +601,16 @@ export const NARRATIVES: Record<string, CountryNarrative> = {
     "summary": "The Central African Republic presents some of the weakest governance metrics in the dataset, though it is not FATF-listed or sanctioned.",
     "whyItMatters": [
       "Governance is very weak across all four World Bank domains, with no FATF or sanctions overlay applied to the profile.",
-      "Corruption (WGI) is the most severe domain at a risk rating of 8.0, carrying a 35% weighting, indicating acute financial crime exposure.",
-      "Rule of law and institutions at 7.27 (40% weight) is the dominant governance contributor.",
-      "CPI score of 24/100, ranked 148th of 179 in 2024, reflects extreme transparency deficits."
+      "Corruption (WGI) is the most severe domain at a severe level, carrying a 35% weighting, indicating acute financial crime exposure.",
+      "Rule of law and institutions (40% weight) is the dominant governance contributor.",
+      "The CPI reading reflects extreme transparency deficits."
     ],
-    "analysis": "The Central African Republic has one of the weakest governance environments in this batch; no FATF listing or sanctions apply. Corruption at a risk rating of 8.0 (35% weight) is the most critical domain. Rule of law and institutions at 7.27 (40% weight) represents the largest structural risk contributor. Political stability at 6.6 and voice and accountability at 6.6 complete a picture of severe and pervasive institutional weakness. The CPI score of 24/100, ranked 148th of 179, corroborates the deep corruption challenge facing the country.",
+    "analysis": "The Central African Republic has one of the weakest governance environments in this batch; no FATF listing or sanctions apply. Corruption at a severe level (35% weight) is the most critical domain. Rule of law and institutions (40% weight) represents the largest structural risk contributor. Political stability and voice and accountability complete a picture of severe and pervasive institutional weakness. The CPI reading corroborates the deep corruption challenge facing the country.",
     "outlook": "The Central African Republic faces severe structural governance challenges that will be difficult to address in the near to medium term. The absence of a FATF listing does not reduce the inherent AML/CFT risk, which is driven by institutional fragility rather than assessed technical compliance failures. Risk is unlikely to improve materially without sustained political stabilisation and institutional capacity-building.",
     "keyWatchpoints": [
-      "Corruption (WGI) at a risk rating of 8.0, the highest-risk domain and a core driver of financial crime exposure.",
-      "Rule of law and institutions at a risk rating of 7.27, the most heavily weighted domain and principal governance driver.",
-      "Political stability at a risk rating of 6.6, which if it deteriorates could further erode institutional capacity.",
+      "Corruption (WGI) at a severe level, the highest-risk domain and a core driver of financial crime exposure.",
+      "Rule of law and institutions at a severe level, the most heavily weighted domain and principal governance driver.",
+      "Political stability at an elevated level, which if it deteriorates could further erode institutional capacity.",
       "Any FATF engagement or listing decision, given the severity of underlying governance weaknesses."
     ]
   },
@@ -618,15 +618,15 @@ export const NARRATIVES: Record<string, CountryNarrative> = {
     "summary": "The Republic of the Congo carries very high corruption and weak institutional metrics, though it is not FATF-listed or subject to sanctions.",
     "whyItMatters": [
       "Governance is weak across the board, with no FATF or sanctions overlay, so the risk is entirely governance-driven.",
-      "Corruption (WGI) at a risk rating of 8.1 (35% weight) is the most severe domain and the single largest risk contributor.",
-      "Rule of law and institutions at a risk rating of 6.6 (40% weight) is the dominant structural driver.",
-      "CPI score of 23/100, ranked 150th of 179 in 2024, reflects very low transparency and entrenched corruption."
+      "Corruption (WGI) at a severe level (35% weight) is the most severe domain and the single largest risk contributor.",
+      "Rule of law and institutions at an elevated level (40% weight) is the dominant structural driver.",
+      "The CPI reading reflects very low transparency and entrenched corruption."
     ],
-    "analysis": "The Republic of the Congo's profile is driven entirely by its governance indicators; no FATF listing or sanctions apply. Corruption at a risk rating of 8.1 (35% weight) is one of the highest corruption readings in this batch and represents the most acute financial crime risk. Rule of law and institutions at 6.6 (40% weight) is the primary structural contributor. Voice and accountability also scores 6.6, and political stability at 3.8 is the relative governance strength. The CPI score of 23/100, ranked 150th of 179, confirms severe embedded corruption risk in the economy.",
+    "analysis": "The Republic of the Congo's profile is driven entirely by its governance indicators; no FATF listing or sanctions apply. Corruption at a severe level (35% weight) is one of the highest corruption readings in this batch and represents the most acute financial crime risk. Rule of law and institutions (40% weight) is the primary structural contributor. Voice and accountability also is elevated, and political stability is the relative governance strength. The CPI reading confirms severe embedded corruption risk in the economy.",
     "outlook": "The Republic of the Congo's risk profile is driven by structural governance weaknesses that are unlikely to improve substantially in the near term. The very high corruption score and low CPI indicate persistent financial crime exposure. Absent any FATF listing, the risk level is determined by the governance base, and firms should calibrate due diligence accordingly for any business involving Congo-connected entities.",
     "keyWatchpoints": [
-      "Corruption (WGI) at a risk rating of 8.1, the most severe governance domain and a core driver of financial crime exposure.",
-      "Rule of law and institutions at a risk rating of 6.6, carrying the largest weighting and driving the structural picture.",
+      "Corruption (WGI) at a severe level, the most severe governance domain and a core driver of financial crime exposure.",
+      "Rule of law and institutions at an elevated level, carrying the largest weighting and driving the structural picture.",
       "CPI ranking trajectory as an indicator of whether transparency conditions improve or deteriorate.",
       "Any FATF engagement or review of the Republic of the Congo given the severity of underlying governance indicators."
     ]
@@ -634,12 +634,12 @@ export const NARRATIVES: Record<string, CountryNarrative> = {
   "CH": {
     "summary": "Switzerland combines world-class governance indicators with an active FINMA enforcement record and no FATF or sanctions listing.",
     "whyItMatters": [
-      "The CPI score of 81/100 (rank 5 of 179, 2024) places Switzerland among the five least corrupt jurisdictions globally.",
-      "Corruption is the lowest-scoring governance domain at a risk rating of 1.0, reflecting exceptionally clean public administration.",
+      "The CPI reading places Switzerland among the five least corrupt jurisdictions globally.",
+      "Corruption is the lowest-scoring governance domain at a low-risk level, reflecting exceptionally clean public administration.",
       "FINMA has recorded 23 tracked enforcement actions across 2018 to 2025, reflecting a consistent and targeted supervisory approach.",
       "No FATF listing and no sanctions apply, so the profile rests on Switzerland's exceptionally strong governance alone."
     ],
-    "analysis": "Switzerland's profile is anchored by exemplary governance across all four domains. Corruption (1.0) and rule of law and institutions (1.27) are the strongest, consistent with a CPI of 81 and an upper-decile standing on the World Bank governance indicators. Voice and accountability (1.5) and political stability (1.7) are marginally higher but remain very low in absolute terms. Switzerland is not on the FATF grey or black list and faces no sanctions exposure. FINMA's enforcement record across 2018 to 2025 demonstrates ongoing regulatory vigilance.",
+    "analysis": "Switzerland's profile is anchored by exemplary governance across all four domains. Corruption (strong) and rule of law and institutions (strong) are the strongest, consistent with a strong CPI reading and an upper-decile standing on the World Bank governance indicators. Voice and accountability (strong) and political stability (strong) are marginally higher but remain very low in absolute terms. Switzerland is not on the FATF grey or black list and faces no sanctions exposure. FINMA's enforcement record across 2018 to 2025 demonstrates ongoing regulatory vigilance.",
     "outlook": "Switzerland's risk outlook is stable and positive. Its legal and supervisory framework is internationally respected. Residual risk relates to Switzerland's role as a major global private banking centre, which inherently carries exposure to complex cross-border structures and high-net-worth clients. Firms should maintain standard enhanced due diligence for such flows while recognising the strong underlying governance environment.",
     "keyWatchpoints": [
       "FINMA enforcement actions, particularly those relating to AML, beneficial ownership, and cross-border private banking.",
@@ -649,15 +649,15 @@ export const NARRATIVES: Record<string, CountryNarrative> = {
     ]
   },
   "CI": {
-    "summary": "Cote d'Ivoire reflects moderate governance weaknesses across all domains and current FATF grey-list status.",
+    "summary": "Côte d'Ivoire reflects moderate governance weaknesses across all domains and current FATF grey-list status.",
     "whyItMatters": [
-      "Cote d'Ivoire is currently on the FATF grey list, which compounds the moderate governance weaknesses across its four World Bank domains.",
+      "Côte d'Ivoire is currently on the FATF grey list, which compounds the moderate governance weaknesses across its four World Bank domains.",
       "FATF grey-list status (last reviewed June 2026) indicates identified strategic AML/CFT deficiencies under increased monitoring.",
-      "Rule of law and institutions risk of 5.2 (the highest-weighted domain at 40%) reflects meaningful gaps in legal and institutional effectiveness.",
-      "CPI score of 45 out of 100, ranked 69th of 179 in 2024, positions the country in the middle range globally but still well short of low-risk benchmarks."
+      "Rule of law and institutions risk (the highest-weighted domain at 40%) reflects meaningful gaps in legal and institutional effectiveness.",
+      "The CPI reading positions the country in the middle range globally but still well short of low-risk benchmarks."
     ],
-    "analysis": "Cote d'Ivoire combines moderate governance weaknesses with current FATF grey listing. The dominant driver is rule of law and institutions (risk 5.2, weight 40%), supplemented by corruption risk of 5.9 (weight 35%) and voice and accountability at 5.4. Political stability is the relatively stronger domain at 4.8. No sanctions are in place. The 2024 CPI score of 45, ranking 69 of 179, is above the African median but indicates residual integrity risks. The governance profile reflects a country with capacity but persistent structural challenges.",
-    "outlook": "Cote d'Ivoire's inclusion on the FATF grey list makes the October 2026 plenary a critical juncture. If the country demonstrates sufficient progress on its action plan, a de-listing assessment could follow. The relatively stronger political stability score suggests a more conducive environment for reform compared with regional peers, though corruption and rule-of-law gaps will require sustained effort.",
+    "analysis": "Côte d'Ivoire combines moderate governance weaknesses with current FATF grey listing. The dominant driver is rule of law and institutions (elevated risk, weight 40%), supplemented by corruption risk (weight 35%) and voice and accountability. Political stability is the relatively stronger domain. No sanctions are in place. The CPI reading is above the African median but indicates residual integrity risks. The governance profile reflects a country with capacity but persistent structural challenges.",
+    "outlook": "Côte d'Ivoire's inclusion on the FATF grey list makes the October 2026 plenary a critical juncture. If the country demonstrates sufficient progress on its action plan, a de-listing assessment could follow. The relatively stronger political stability score suggests a more conducive environment for reform compared with regional peers, though corruption and rule-of-law gaps will require sustained effort.",
     "keyWatchpoints": [
       "FATF plenary outcome in October 2026 and any revision to grey-list status.",
       "Measurable improvements in AML/CFT legal frameworks and financial intelligence capacity.",
@@ -668,12 +668,12 @@ export const NARRATIVES: Record<string, CountryNarrative> = {
   "CK": {
     "summary": "The Cook Islands, a self-governing state in free association with New Zealand and a long-established asset-protection trust centre, rests on a strong governance base with no FATF listing or sanctions.",
     "whyItMatters": [
-      "A strong governance base, with political stability at 1.4 the strongest domain and rule of law at 3.63, anchors the profile.",
-      "Corruption at 4.3 is the weakest governance domain but remains within a moderate range.",
+      "A strong governance base, with political stability the strongest domain and rule of law, anchors the profile.",
+      "Corruption is the weakest governance domain but remains within a moderate range.",
       "The Cook Islands is internationally known for its asset-protection trust regime, a structural feature relevant to source-of-wealth and beneficial ownership diligence.",
       "No FATF grey or black listing applies and no sanctions are in place; no CPI data are published, so corruption context rests on WGI alone."
     ],
-    "analysis": "The Cook Islands is a self-governing state in free association with New Zealand and a member of the Asia/Pacific Group on Money Laundering (APG). Its risk picture is governance-derived, with no FATF or sanctions overlay. The governance base is strong: political stability scores 1.4, accountability 3.3, rule of law 3.63, and corruption is the weakest domain at 4.3. The Cook Islands sits in the upper third of the World Bank governance indicators, though no CPI data are published to corroborate the corruption reading independently. The jurisdiction is best known internationally for its asset-protection trust legislation, which has drawn scrutiny over transparency; the Cook Islands strengthened trustee-company supervision through the Trustee Companies Act and completed its most recent APG mutual evaluation in the 2017 to 2018 cycle.",
+    "analysis": "The Cook Islands is a self-governing state in free association with New Zealand and a member of the Asia/Pacific Group on Money Laundering (APG). Its risk picture is governance-derived, with no FATF or sanctions overlay. The governance base is strong: political stability is strong, accountability is moderate, rule of law is moderate, and corruption is the weakest domain. The Cook Islands sits in the upper third of the World Bank governance indicators, though no CPI data are published to corroborate the corruption reading independently. The jurisdiction is best known internationally for its asset-protection trust legislation, which has drawn scrutiny over transparency; the Cook Islands strengthened trustee-company supervision through the Trustee Companies Act and completed its most recent APG mutual evaluation in the 2017 to 2018 cycle.",
     "outlook": "The Cook Islands' profile reflects a solid governance base tempered by its trust-centre exposure. The forward picture depends on the effectiveness of trustee-company and DNFBP supervision, beneficial ownership transparency for trust structures, and the corruption domain as the weakest governance reading. Firms should apply source-of-wealth and beneficial ownership scrutiny to Cook Islands trust relationships and monitor APG follow-up reporting for any change in status.",
     "keyWatchpoints": [
       "APG follow-up reporting and any next-round mutual evaluation developments for the Cook Islands.",
@@ -685,12 +685,12 @@ export const NARRATIVES: Record<string, CountryNarrative> = {
   "CL": {
     "summary": "Chile has consistently low-to-moderate governance risk across all four domains and a strong CPI ranking, making it one of the lower-risk jurisdictions in Latin America.",
     "whyItMatters": [
-      "All four governance domains are in the low-to-moderate range, with voice and accountability (2.5) being the strongest and political stability (3.3) the weakest.",
+      "All four governance domains are in the low-to-moderate range, with voice and accountability (strong) being the strongest and political stability (moderate) the weakest.",
       "Chile sits well above the global median on the World Bank governance indicators and among the strongest positions in the region.",
-      "The 2024 CPI score of 63 (rank 32 of 179) places Chile in the upper quartile globally for perceived integrity.",
+      "The CPI reading places Chile in the upper quartile globally for perceived integrity.",
       "No FATF listing or sanctions apply, and no enforcement activity is recorded in the model, reflecting a stable and well-regarded regulatory environment."
     ],
-    "analysis": "Chile's profile is driven entirely by its governance indicators; it is not FATF-listed and no sanctions apply. All four domains cluster in a narrow and relatively benign range: rule of law and institutions (3.1, weighted 40%), corruption (3.1, weighted 35%), political stability (3.3, weighted 15%) and voice and accountability (2.5, weighted 10%). The 2024 CPI score of 63 at rank 32 of 179 places Chile in the top quartile globally. Chile's governance is significantly stronger than most of its Latin American peers.",
+    "analysis": "Chile's profile is driven entirely by its governance indicators; it is not FATF-listed and no sanctions apply. All four domains cluster in a narrow and relatively benign range: rule of law and institutions (weighted 40%), corruption (weighted 35%), political stability (weighted 15%) and voice and accountability (weighted 10%). The CPI reading places Chile in the top quartile globally. Chile's governance is significantly stronger than most of its Latin American peers.",
     "outlook": "Chile's risk profile is stable and well below the regional average. The principal risks are political polarisation affecting institutional reliability and any weakening of the rule-of-law environment. Conversely, continued institutional reform could strengthen the picture further over time. Firms can apply reduced-intensity due diligence to Chilean counterparties relative to regional norms.",
     "keyWatchpoints": [
       "Political developments affecting constitutional stability and the independence of regulatory and judicial institutions.",
@@ -704,27 +704,27 @@ export const NARRATIVES: Record<string, CountryNarrative> = {
     "whyItMatters": [
       "Cameroon is currently on the FATF grey list, as last reviewed in June 2026, reflecting identified strategic deficiencies in its AML/CFT framework.",
       "Governance is weak across all four World Bank domains, so the FATF listing sits on top of an already elevated base of concern.",
-      "Corruption (WGI) is at a risk rating of 7.5 (35% weight), making it the weakest governance domain and the largest single contributor.",
-      "CPI score of 26/100, ranked 139th of 179 in 2024, places Cameroon in the lower quartile globally on transparency."
+      "Corruption (WGI) is at a severe level (35% weight), making it the weakest governance domain and the largest single contributor.",
+      "The CPI reading places Cameroon in the lower quartile globally on transparency."
     ],
-    "analysis": "Cameroon combines a weak governance profile with current FATF grey-list status, last reviewed June 2026. No sanctions apply. Corruption at a risk rating of 7.5 (35% weight) is the most acute governance domain. Rule of law and institutions at 6.17 (40% weight) is the primary structural contributor. Political stability at 6.2 and voice and accountability at 6.5 reflect additional systemic weaknesses. The CPI score of 26/100, ranked 139th of 179, confirms deep-seated corruption challenges in the real economy.",
+    "analysis": "Cameroon combines a weak governance profile with current FATF grey-list status, last reviewed June 2026. No sanctions apply. Corruption at a severe level (35% weight) is the most acute governance domain. Rule of law and institutions (40% weight) is the primary structural contributor. Political stability and voice and accountability reflect additional systemic weaknesses. The CPI reading confirms deep-seated corruption challenges in the real economy.",
     "outlook": "Cameroon's FATF grey listing, reviewed as recently as June 2026, means that elevated risk will persist until the country demonstrates sufficient progress on identified deficiencies. Firms should treat Cameroon as a high-scrutiny jurisdiction and monitor FATF plenary outcomes from October 2026 onwards. Structural governance improvements, particularly in corruption control, are necessary to achieve a meaningful score reduction.",
     "keyWatchpoints": [
       "FATF grey list review outcomes at the October 2026 plenary and beyond.",
       "Progress on AML/CFT technical compliance that could support future grey list removal.",
-      "Corruption (WGI) at a risk rating of 7.5, the most severe governance domain and highest-weighted input.",
-      "Political stability at a risk rating of 6.2, which could deteriorate further and compound institutional capacity constraints."
+      "Corruption (WGI) at a severe level, the most severe governance domain and highest-weighted input.",
+      "Political stability at an elevated level, which could deteriorate further and compound institutional capacity constraints."
     ]
   },
   "CN": {
     "summary": "China has voice and accountability as the clear governance outlier, while corruption and rule-of-law risks remain at mid-range levels and no FATF or sanctions exposure applies.",
     "whyItMatters": [
       "Governance is mixed, with the profile shaped chiefly by the accountability domain rather than by corruption or rule of law.",
-      "Voice and accountability is the weakest domain at a risk rating of 7.2, reflecting systemic constraints on political pluralism and civil-society oversight.",
-      "Corruption risk is moderate at 5.0; the CPI score of 43/100 (rank 75 of 179, 2024) places China in the lower-middle tier globally.",
+      "Voice and accountability is the weakest domain at a severe level, reflecting systemic constraints on political pluralism and civil-society oversight.",
+      "Corruption risk is moderate; the CPI reading places China in the lower-middle tier globally.",
       "No FATF grey or black listing; no sanctions programmes currently apply."
     ],
-    "analysis": "China's profile is driven by a broadly mixed governance picture. Voice and accountability (7.2) is the most significant weakness, while political stability (3.7) and rule of law (4.43) sit at moderate levels. Corruption (5.0) is a meaningful risk factor, supported by a CPI of 43/100 (rank 75 of 179). No FATF listing or sanctions apply, so the profile reflects governance foundations only. China sits near the global midpoint on the World Bank governance indicators.",
+    "analysis": "China's profile is driven by a broadly mixed governance picture. Voice and accountability (severe) is the most significant weakness, while political stability (moderate) and rule of law (moderate) sit at moderate levels. Corruption (elevated) is a meaningful risk factor, supported by a CPI reading. No FATF listing or sanctions apply, so the profile reflects governance foundations only. China sits near the global midpoint on the World Bank governance indicators.",
     "outlook": "The governance trajectory is unlikely to improve materially in the near term given structural constraints on accountability. Geopolitical developments and evolving trade and financial regulations may affect the risk environment. Firms should monitor for any sanctions-related policy changes by major imposing jurisdictions, as geopolitical dynamics create non-trivial tail risk, and should maintain proportionate due diligence given the corruption and transparency profile.",
     "keyWatchpoints": [
       "Monitor geopolitical developments that could trigger sanctions designations by OFAC, the EU, or UK authorities.",
@@ -736,12 +736,12 @@ export const NARRATIVES: Record<string, CountryNarrative> = {
   "CO": {
     "summary": "Colombia has corruption as its primary governance weakness and broadly elevated risk across all four domains, though political stability is a partial moderating factor.",
     "whyItMatters": [
-      "Corruption (WGI risk 5.8, weighted 35%) is the weakest domain and the largest single risk contributor, reflecting persistent integrity challenges.",
-      "Rule of law and institutions (4.83, weighted 40%) is the most heavily weighted domain and indicates meaningful but not extreme institutional weakness.",
+      "Corruption (WGI elevated risk, weighted 35%) is the weakest domain and the largest single risk contributor, reflecting persistent integrity challenges.",
+      "Rule of law and institutions (weighted 40%) is the most heavily weighted domain and indicates meaningful but not extreme institutional weakness.",
       "Colombia sits just above the global median on the World Bank governance indicators.",
-      "The 2024 CPI score of 39 (rank 91 of 179) confirms a moderately elevated corruption environment, broadly aligned with the WGI-based model."
+      "The CPI reading confirms a moderately elevated corruption environment, broadly aligned with the WGI-based model."
     ],
-    "analysis": "Colombia's profile is derived entirely from its governance indicators; it is not FATF-listed and no sanctions apply. The primary risk driver is corruption (5.8, weighted 35%), followed by political stability (4.8, weighted 15%) and rule of law and institutions (4.83, weighted 40%). Voice and accountability (4.3, weighted 10%) is the least adverse domain, suggesting functioning democratic accountability structures. The 2024 CPI score of 39 at rank 91 of 179 captures a country with genuine but not severe corruption risk, where institutions function but are under persistent pressure.",
+    "analysis": "Colombia's profile is derived entirely from its governance indicators; it is not FATF-listed and no sanctions apply. The primary risk driver is corruption (weighted 35%), followed by political stability (weighted 15%) and rule of law and institutions (weighted 40%). Voice and accountability (weighted 10%) is the least adverse domain, suggesting functioning democratic accountability structures. The CPI reading captures a country with genuine but not severe corruption risk, where institutions function but are under persistent pressure.",
     "outlook": "Colombia's risk sits at the milder end of the elevated range, and sustained anti-corruption progress alongside improvements in the rule-of-law environment could ease it over time. Conversely, deterioration in political stability or institutional effectiveness would worsen the picture. Firms should monitor domestic governance developments and the October 2026 FATF plenary for any listing consideration.",
     "keyWatchpoints": [
       "October 2026 FATF plenary for any change in listing status.",
@@ -754,11 +754,11 @@ export const NARRATIVES: Record<string, CountryNarrative> = {
     "summary": "Costa Rica is a well-governed Central American state benefiting from strong political stability and accountability, with no FATF or sanctions exposure.",
     "whyItMatters": [
       "Governance is relatively strong for the region, reflecting materially lower financial-crime risk than most Central American peers.",
-      "Political stability risk is exceptionally low at 1.4, the strongest governance domain and a significant risk mitigant.",
-      "CPI score of 58/100 (ranked 42nd of 179) places Costa Rica among the cleaner jurisdictions in the Americas.",
+      "Political stability risk is exceptionally low, the strongest governance domain and a significant risk mitigant.",
+      "The CPI reading places Costa Rica among the cleaner jurisdictions in the Americas.",
       "No FATF grey or black listing and no sanctions programmes apply, so the profile rests on governance alone."
     ],
-    "analysis": "Costa Rica's profile is driven entirely by its governance indicators, with no FATF or sanctions overlay. Political stability (risk 1.4) and voice and accountability (risk 2.4) are the strongest domains, indicating a robust democratic environment with meaningful checks on power. Rule of law and institutions (risk 3.67) and corruption (risk 3.8) represent the comparatively weaker areas, though both remain moderate. A CPI score of 58 confirms Costa Rica's standing as one of the lower-risk jurisdictions in Central America.",
+    "analysis": "Costa Rica's profile is driven entirely by its governance indicators, with no FATF or sanctions overlay. Political stability (strong) and voice and accountability (strong) are the strongest domains, indicating a robust democratic environment with meaningful checks on power. Rule of law and institutions (moderate) and corruption (moderate) represent the comparatively weaker areas, though both remain moderate. A comparatively clean CPI reading confirms Costa Rica's standing as one of the lower-risk jurisdictions in Central America.",
     "outlook": "Costa Rica's governance trajectory is stable. The absence of FATF or sanctions concerns means the principal watch area is incremental improvement in anti-corruption frameworks and rule-of-law institutions. Regional narcotics transit pressures are a structural feature of Central America, and any deterioration in law-enforcement capacity would be the most plausible upward risk driver. The next FATF plenary in October 2026 is not expected to alter the country's clean listing.",
     "keyWatchpoints": [
       "Any weakening in anti-corruption enforcement or judiciary independence that could raise the rule-of-law risk score.",
@@ -771,11 +771,11 @@ export const NARRATIVES: Record<string, CountryNarrative> = {
     "summary": "Cuba is driven by a comprehensive OFAC sanctions programme layered on an already elevated governance profile, making it one of the highest-risk jurisdictions in the Americas.",
     "whyItMatters": [
       "Comprehensive US sanctions under the Cuban Assets Control Regulations are the defining feature of Cuba's counterparty risk profile.",
-      "Voice and accountability risk of 6.5 reflects severe constraints on political freedoms and civil society, limiting independent oversight.",
-      "Corruption risk of 5.5 and rule-of-law risk of 5.57 indicate weak institutional controls across the governance domains.",
-      "CPI score of 41/100 (ranked 81st of 179) confirms persistent corruption concerns despite the absence of a FATF listing."
+      "Voice and accountability risk reflects severe constraints on political freedoms and civil society, limiting independent oversight.",
+      "Corruption risk and rule-of-law risk indicate weak institutional controls across the governance domains.",
+      "The CPI reading confirms persistent corruption concerns despite the absence of a FATF listing."
     ],
-    "analysis": "Cuba's profile is dominated by the comprehensive sanctions regime applied under OFAC's Cuban Assets Control Regulations. The governance picture reflects moderately elevated risk across all four domains, with voice and accountability (risk 6.5) and rule of law and institutions (risk 5.57) as the weakest areas. Corruption risk stands at 5.5. Cuba is not on the FATF grey or black list. The CPI score of 41 is consistent with the assessed risk picture.",
+    "analysis": "Cuba's profile is dominated by the comprehensive sanctions regime applied under OFAC's Cuban Assets Control Regulations. The governance picture reflects moderately elevated risk across all four domains, with voice and accountability (elevated) and rule of law and institutions (elevated) as the weakest areas. Corruption risk stands. Cuba is not on the FATF grey or black list. The CPI reading is consistent with the assessed risk picture.",
     "outlook": "Cuba's risk profile is unlikely to change materially in the near term. The comprehensive sanctions framework is the dominant risk driver and is subject to US foreign policy decisions that are outside the scope of standard AML monitoring cycles. Governance reform remains constrained by the existing political structure. Firms should maintain heightened scrutiny on any transactions or relationships with a Cuban nexus and ensure compliance with applicable sanctions licensing requirements.",
     "keyWatchpoints": [
       "Any changes to OFAC's Cuban Assets Control Regulations, including licensing modifications or sanctions relief measures.",
@@ -788,14 +788,14 @@ export const NARRATIVES: Record<string, CountryNarrative> = {
     "summary": "Cabo Verde has one of the strongest governance profiles in West Africa, with no FATF listing or sanctions.",
     "whyItMatters": [
       "Governance is relatively strong across the four World Bank domains, with no FATF or sanctions overlay.",
-      "Voice and accountability at a risk rating of 3.0 is the lowest-risk domain, reflecting a comparatively open democratic environment.",
-      "CPI score of 62/100, ranked 35th of 179 in 2024, positions Cabo Verde among the more transparent jurisdictions globally.",
+      "Voice and accountability at a moderate level is the lowest-risk domain, reflecting a comparatively open democratic environment.",
+      "The CPI reading positions Cabo Verde among the more transparent jurisdictions globally.",
       "Cabo Verde is not on the FATF grey or black list, and no sanctions apply."
     ],
-    "analysis": "Cabo Verde's profile reflects a relatively strong governance picture with no FATF or sanctions overlay. The strongest domains are voice and accountability at 3.0 and political stability at 1.9, reflecting a stable and accountable institutional environment. Rule of law and institutions at 4.07 (40% weight) is the most significant driver of residual risk and the domain with the greatest scope for improvement. Corruption at 3.5 is relatively controlled. The CPI score of 62/100, ranked 35th of 179, confirms Cabo Verde's standing as a regional transparency leader and among the stronger performers globally.",
-    "outlook": "Cabo Verde's risk profile is constructive and stable. Its upper-tier standing on the World Bank governance indicators and strong CPI performance indicate a well-functioning institutional framework relative to the region. The main medium-term consideration is continued strengthening of rule-of-law institutions, which at a risk rating of 4.07 is the principal residual risk domain.",
+    "analysis": "Cabo Verde's profile reflects a relatively strong governance picture with no FATF or sanctions overlay. The strongest domains are voice and accountability and political stability, reflecting a stable and accountable institutional environment. Rule of law and institutions (40% weight) is the most significant driver of residual risk and the domain with the greatest scope for improvement. Corruption is relatively controlled. The CPI reading confirms Cabo Verde's standing as a regional transparency leader and among the stronger performers globally.",
+    "outlook": "Cabo Verde's risk profile is constructive and stable. Its upper-tier standing on the World Bank governance indicators and strong CPI performance indicate a well-functioning institutional framework relative to the region. The main medium-term consideration is continued strengthening of rule-of-law institutions, which at a moderate level is the principal residual risk domain.",
     "keyWatchpoints": [
-      "Rule of law and institutions, the weakest domain at a risk rating of 4.07 and 40% of governance weighting.",
+      "Rule of law and institutions, the weakest domain at a moderate level and 40% of governance weighting.",
       "Any change in FATF assessment, though no current listing risk is indicated.",
       "CPI trajectory as an indicator of ongoing anti-corruption performance.",
       "Regional risk spillovers from higher-risk West African jurisdictions."
@@ -821,12 +821,12 @@ export const NARRATIVES: Record<string, CountryNarrative> = {
   "CY": {
     "summary": "Cyprus presents a moderate financial-crime risk profile with intermediate governance scores, a highly active supervisory record, and no FATF listing or sanctions exposure.",
     "whyItMatters": [
-      "Corruption at a risk rating of 4.2 is the weakest governance domain and reflects residual integrity concerns.",
+      "Corruption at a moderate level is the weakest governance domain and reflects residual integrity concerns.",
       "The Cyprus Securities and Exchange Commission (CySEC) has recorded 1,116 tracked enforcement actions from 2013 to 2026, one of the highest enforcement volumes in this batch, indicating intensive supervisory activity.",
       "No FATF grey or black listing applies, and Cyprus carries no sanctions exposure.",
-      "CPI score of 56 out of 100 (ranked 46th of 179) reflects an intermediate corruption environment within the EU."
+      "The CPI reading reflects an intermediate corruption environment within the EU."
     ],
-    "analysis": "Cyprus's profile reflects its governance indicators alone, with no FATF or sanctions overlay. Corruption is the weakest domain at 4.2; rule of law and institutions scores 3.13, while both political stability and voice and accountability are at 2.7. Cyprus is not on the FATF grey or black list and carries no sanctions exposure. The volume of CySEC enforcement actions, 1,116 across 2013 to 2026, is notably high and reflects both Cyprus's role as a significant financial-services hub and the authority's enforcement intensity. The 2024 CPI of 56 places Cyprus at 46th globally.",
+    "analysis": "Cyprus's profile reflects its governance indicators alone, with no FATF or sanctions overlay. Corruption is the weakest domain; rule of law and institutions is moderate, while both political stability and voice and accountability are strong. Cyprus is not on the FATF grey or black list and carries no sanctions exposure. The volume of CySEC enforcement actions, 1,116 across 2013 to 2026, is notably high and reflects both Cyprus's role as a significant financial-services hub and the authority's enforcement intensity. The CPI reading is consistent with the governance picture.",
     "outlook": "Cyprus's risk trajectory is broadly stable. The very high CySEC enforcement volume suggests a proactive regulatory approach, which may support risk mitigation over time. Firms should remain alert to the Corruption domain score, which, whilst moderate in isolation, is higher than many EU peers. Ongoing EU AML developments will continue to shape the supervisory environment.",
     "keyWatchpoints": [
       "Monitor CySEC enforcement trends and any changes to supervisory focus areas, given the high volume of historical actions.",
@@ -841,13 +841,13 @@ export const NARRATIVES: Record<string, CountryNarrative> = {
       "Governance is strong, led by robust rule-of-law and political-stability readings across the World Bank domains.",
       "The Czech National Bank has recorded 1,742 tracked enforcement actions from 2009 to 2026, the highest enforcement count among the low-risk jurisdictions in this batch, reflecting a well-resourced supervisory regime.",
       "No FATF grey or black listing applies, and Czechia carries no sanctions exposure.",
-      "CPI score of 56 out of 100 (ranked 46th of 179) is consistent with a low-to-moderate corruption environment."
+      "The CPI reading is consistent with a low-to-moderate corruption environment."
     ],
-    "analysis": "Czechia's profile is driven by its governance indicators alone, with no FATF or sanctions overlay. Political stability is the strongest domain at 1.6, followed by voice and accountability at 2.3 and rule of law and institutions at 2.47. Corruption at 3.5 is the weakest domain but remains firmly in the low-risk range. Czechia is not on the FATF grey or black list and faces no sanctions exposure. The Czech National Bank's enforcement record of 1,742 actions over 2009 to 2026 underscores a consistent and active supervisory presence. The 2024 CPI of 56 aligns with the broader risk picture.",
+    "analysis": "Czechia's profile is driven by its governance indicators alone, with no FATF or sanctions overlay. Political stability is the strongest domain, followed by voice and accountability and rule of law and institutions. Corruption is the weakest domain but remains firmly in the low-risk range. Czechia is not on the FATF grey or black list and faces no sanctions exposure. The Czech National Bank's enforcement record of 1,742 actions over 2009 to 2026 underscores a consistent and active supervisory presence. The CPI reading aligns with the broader risk picture.",
     "outlook": "Czechia's risk profile is stable and well-anchored within the EU regulatory framework. The Czech National Bank's sustained enforcement activity indicates a capable and active supervisor. Corruption remains the most elevated individual domain but at a level that does not represent a material concern for most counterparty relationships. No near-term escalation is anticipated.",
     "keyWatchpoints": [
       "Monitor Czech National Bank enforcement trends for any shifts in supervisory focus or enforcement intensity.",
-      "Track annual CPI updates, given that Corruption at 3.5 is the weakest governance domain.",
+      "Track annual CPI updates, given that Corruption is the weakest governance domain.",
       "Review EU AML developments that affect Czech financial-sector obliged entities.",
       "Watch for any FATF mutual evaluation findings specific to Czechia."
     ]
@@ -856,11 +856,11 @@ export const NARRATIVES: Record<string, CountryNarrative> = {
     "summary": "Germany combines strong governance, robust rule-of-law institutions and no FATF listing or active sanctions.",
     "whyItMatters": [
       "Governance is consistently strong across all four World Bank domains, reflecting mature institutional quality.",
-      "CPI score of 75 out of 100 (rank 15 of 179) confirms low perceived corruption, supporting counterpart due-diligence confidence.",
+      "The CPI reading confirms low perceived corruption, supporting counterpart due-diligence confidence.",
       "BaFin recorded 246 tracked enforcement actions between 2023 and 2026, indicating active regulatory supervision rather than elevated underlying risk.",
       "Germany is not on the FATF grey or black list and carries no sanctions exposure, so the profile rests on governance alone."
     ],
-    "analysis": "Germany's profile is driven by uniformly strong governance. Rule of law and institutions (risk 1.87, weighted 40%) and corruption (risk 1.8, weighted 35%) are the two heaviest contributors and both register very low risk. Political stability (risk 2.5, weighted 15%) is the comparatively weakest domain but remains well within low-risk territory. Voice and accountability (risk 1.5, weighted 10%) is the strongest performer. No FATF listing or sanctions apply. The CPI score of 75 (rank 15 of 179) corroborates the governance picture. Germany sits in the upper tier of the World Bank governance indicators.",
+    "analysis": "Germany's profile is driven by uniformly strong governance. Rule of law and institutions (weighted 40%) and corruption (weighted 35%) are the two heaviest contributors and both register very low risk. Political stability (weighted 15%) is the comparatively weakest domain but remains well within low-risk territory. Voice and accountability (weighted 10%) is the strongest performer. No FATF listing or sanctions apply. The CPI reading corroborates the governance picture. Germany sits in the upper tier of the World Bank governance indicators.",
     "outlook": "Germany's institutional foundations are mature and stable. The high volume of BaFin enforcement actions reflects the depth of regulatory oversight applied to a large and complex financial sector rather than any deterioration in the risk environment. Firms should expect continued active supervision and periodic regulatory evolution in line with EU AML directives, but no material shift in the underlying risk profile is anticipated.",
     "keyWatchpoints": [
       "Monitor BaFin enforcement trends for any sectoral patterns emerging from ongoing supervisory activity.",
@@ -873,11 +873,11 @@ export const NARRATIVES: Record<string, CountryNarrative> = {
     "summary": "Djibouti is driven by elevated corruption and accountability deficits, though it is not on the FATF grey or black list and carries no sanctions.",
     "whyItMatters": [
       "Governance is weak across the four World Bank domains, with corruption the leading concern.",
-      "Corruption risk of 7.0 (highest-weighted domain at 35%) is the primary governance concern and the single largest contributor.",
-      "Voice and accountability risk of 6.5 (weight 10%) and rule of law risk of 5.93 (weight 40%) indicate constrained civic and institutional oversight.",
-      "CPI score of 31 out of 100, ranked 126th of 179 in 2024, signals meaningful integrity deficits in public administration."
+      "Corruption risk (highest-weighted domain at 35%) is the primary governance concern and the single largest contributor.",
+      "Voice and accountability risk (weight 10%) and rule of law risk (weight 40%) indicate constrained civic and institutional oversight.",
+      "The CPI reading signals meaningful integrity deficits in public administration."
     ],
-    "analysis": "Djibouti's profile rests on its governance indicators, as neither FATF listing nor sanctions apply. Corruption (risk 7.0, weight 35%) is the dominant driver. Rule of law and institutions (risk 5.93, weight 40%) and voice and accountability (risk 6.5, weight 10%) collectively sustain the elevated picture. Political stability is the strongest domain at 4.2, reflecting Djibouti's relative internal security. The 2024 CPI score of 31, ranked 126 of 179, confirms persistent integrity weaknesses. Djibouti sits below the median of assessed jurisdictions on the World Bank governance indicators.",
+    "analysis": "Djibouti's profile rests on its governance indicators, as neither FATF listing nor sanctions apply. Corruption (severe risk, weight 35%) is the dominant driver. Rule of law and institutions (elevated risk, weight 40%) and voice and accountability (elevated risk, weight 10%) collectively sustain the elevated picture. Political stability is the strongest domain, reflecting Djibouti's relative internal security. The CPI reading confirms persistent integrity weaknesses. Djibouti sits below the median of assessed jurisdictions on the World Bank governance indicators.",
     "outlook": "Djibouti is not subject to FATF monitoring at present, which limits one key escalation pathway. However, the consistently elevated corruption and accountability readings indicate that underlying governance conditions remain a structural risk. Firms should monitor whether the country's strategic location and financial sector growth attract enhanced scrutiny from international standard-setters.",
     "keyWatchpoints": [
       "Any future FATF mutual evaluation findings or grey-list designation.",
@@ -890,11 +890,11 @@ export const NARRATIVES: Record<string, CountryNarrative> = {
     "summary": "Denmark is one of the lowest-risk jurisdictions globally, ranking first on the 2024 CPI, with no FATF listing and no sanctions exposure.",
     "whyItMatters": [
       "All four governance domains score at or near the bottom of the risk scale, reflecting exceptional institutional quality.",
-      "Corruption at 0.5 is the strongest governance domain, consistent with Denmark's first-place ranking out of 179 countries in the 2024 Transparency International CPI.",
+      "Corruption is the strongest governance domain, consistent with Denmark's first-place ranking out of 179 countries in the 2024 Transparency International CPI.",
       "The Danish Financial Supervisory Authority has recorded 51 tracked enforcement actions from 2013 to 2026, reflecting a measured but active supervisory posture.",
       "No FATF grey or black listing applies, and Denmark carries no sanctions exposure."
     ],
-    "analysis": "Denmark's profile is entirely governance-driven with no FATF or sanctions overlay. Corruption at 0.5 is the globally exceptional standout, reflecting a public-sector integrity environment that ranks first worldwide in the 2024 CPI. Rule of law and institutions at 1.1 and voice and accountability at 1.0 are equally strong. Political stability at 1.9 is the marginally weakest domain but remains firmly low-risk. Denmark is not on the FATF grey or black list and carries no sanctions exposure. Denmark sits in the upper decile of the World Bank governance indicators.",
+    "analysis": "Denmark's profile is entirely governance-driven with no FATF or sanctions overlay. Corruption is the globally exceptional standout, reflecting a public-sector integrity environment that ranks first worldwide in the 2024 CPI. Rule of law and institutions and voice and accountability are equally strong. Political stability is the marginally weakest domain but remains firmly low-risk. Denmark is not on the FATF grey or black list and carries no sanctions exposure. Denmark sits in the upper decile of the World Bank governance indicators.",
     "outlook": "Denmark is expected to remain a benchmark low-risk jurisdiction. Its governance indicators are among the most stable in the world and there are no foreseeable escalation triggers. Firms can apply standard due-diligence proportionate to a low-risk profile, adjusting upward only where specific transaction or counterparty factors warrant.",
     "keyWatchpoints": [
       "Monitor the Danish Financial Supervisory Authority for any thematic enforcement activity or guidance changes.",
@@ -906,29 +906,29 @@ export const NARRATIVES: Record<string, CountryNarrative> = {
   "DM": {
     "summary": "Dominica, a Caribbean state with a citizenship-by-investment programme, rests on a strong governance base, with no FATF listing or sanctions in place.",
     "whyItMatters": [
-      "A solid governance base, with political stability at 1.3 the strongest domain, anchors the profile.",
-      "Corruption (4.1) and rule of law (4.2) are the weakest domains but remain within a moderate range.",
-      "The 2024 CPI score of 60 out of 100 (rank 37) is comparatively strong and places Dominica among the cleaner jurisdictions in the region.",
+      "A solid governance base, with political stability the strongest domain, anchors the profile.",
+      "Corruption (moderate) and rule of law (moderate) are the weakest domains but remain within a moderate range.",
+      "The CPI reading (rank 37) is comparatively strong and places Dominica among the cleaner jurisdictions in the region.",
       "Dominica operates a citizenship-by-investment programme, a structural feature relevant to identity and due diligence vulnerabilities for counterparties."
     ],
-    "analysis": "Dominica is an Eastern Caribbean state assessed for AML/CFT purposes by the Caribbean Financial Action Task Force (CFATF). Its risk picture is governance-derived, with no FATF or sanctions overlay. The governance base is solid: political stability scores 1.3, accountability 3.7, corruption 4.1 and rule of law 4.2. The 2024 CPI score of 60 at rank 37 is comparatively strong and corroborates a relatively clean public-sector picture, while Dominica sits in the upper third of the World Bank governance indicators. The most material structural feature is Dominica's citizenship-by-investment programme, which has attracted international scrutiny over due diligence standards and which raises identity-verification risk for financial institutions with Dominican passport-holder or corporate counterparties. Dominica has been the subject of CFATF follow-up reporting on its mutual evaluation.",
+    "analysis": "Dominica is an Eastern Caribbean state assessed for AML/CFT purposes by the Caribbean Financial Action Task Force (CFATF). Its risk picture is governance-derived, with no FATF or sanctions overlay. The governance base is solid: political stability is strong, accountability is moderate, corruption is moderate and rule of law is moderate. The CPI reading is comparatively strong and corroborates a relatively clean public-sector picture, while Dominica sits in the upper third of the World Bank governance indicators. The most material structural feature is Dominica's citizenship-by-investment programme, which has attracted international scrutiny over due diligence standards and which raises identity-verification risk for financial institutions with Dominican passport-holder or corporate counterparties. Dominica has been the subject of CFATF follow-up reporting on its mutual evaluation.",
     "outlook": "Dominica's profile reflects a sound governance base offset by its citizenship-by-investment exposure. The forward picture depends on the strength of CBI due diligence and screening reforms, CFATF follow-up remediation, and the corruption and rule-of-law domains. Firms should apply enhanced due diligence where counterparties hold Dominican passports or corporate registrations and monitor CFATF follow-up reporting and the October 2026 FATF plenary for any change in status.",
     "keyWatchpoints": [
       "Citizenship-by-investment programme due diligence and screening standards; apply enhanced due diligence to Dominican passport-holders and corporate registrations.",
       "CFATF follow-up reporting on Dominica's mutual evaluation and any re-ratings.",
       "October 2026 FATF plenary for any change in listing status.",
-      "Corruption (4.1) and rule of law (4.2) domains as the weakest governance readings."
+      "Corruption (moderate) and rule of law (moderate) domains as the weakest governance readings."
     ]
   },
   "DO": {
     "summary": "The Dominican Republic has corruption and voice and accountability as its principal governance weaknesses, with no FATF listing or sanctions in effect.",
     "whyItMatters": [
-      "Corruption risk of 6.1 is the weakest governance domain and the primary risk driver.",
-      "CPI score of 36/100 (ranked 103rd of 179) indicates meaningful corruption concerns relative to peers.",
+      "Corruption risk is the weakest governance domain and the primary risk driver.",
+      "The CPI reading indicates meaningful corruption concerns relative to peers.",
       "No FATF grey or black listing and no sanctions apply, so the profile rests on governance alone.",
-      "Political stability risk of 2.6 is a relative strength, suggesting a stable operating environment despite governance gaps."
+      "Political stability risk is a relative strength, suggesting a stable operating environment despite governance gaps."
     ],
-    "analysis": "The Dominican Republic's profile reflects a governance picture with marked variation across domains. Corruption (risk 6.1) is the weakest area, consistent with a CPI score of 36 that places the country below the global median. Rule of law and institutions (risk 4.63) and voice and accountability (risk 4.1) present moderate weaknesses. Political stability (risk 2.6) is comparatively strong. No FATF or sanctions overlay applies. The country sits near the middle of the World Bank governance indicators and warrants standard enhanced due diligence on higher-risk business categories rather than blanket elevated scrutiny.",
+    "analysis": "The Dominican Republic's profile reflects a governance picture with marked variation across domains. Corruption (elevated) is the weakest area, consistent with a weak CPI reading that places the country below the global median. Rule of law and institutions (moderate) and voice and accountability (moderate) present moderate weaknesses. Political stability (strong) is comparatively strong. No FATF or sanctions overlay applies. The country sits near the middle of the World Bank governance indicators and warrants standard enhanced due diligence on higher-risk business categories rather than blanket elevated scrutiny.",
     "outlook": "The Dominican Republic's risk trajectory is broadly stable, though corruption in public procurement and the financial sector remains a structural concern. Continued progress on anti-money-laundering frameworks will be important as the country's financial sector grows. The absence of FATF listing preserves access to international financial markets, but sustained improvement in the CPI would be required to strengthen the governance picture materially. The October 2026 FATF plenary should be monitored for any regional assessments that could affect correspondent banking relationships.",
     "keyWatchpoints": [
       "Corruption risk in sectors with high cash intensity, including tourism and real estate.",
@@ -941,28 +941,28 @@ export const NARRATIVES: Record<string, CountryNarrative> = {
     "summary": "Algeria is driven by elevated corruption and accountability deficits, though it is not currently FATF-listed or subject to sanctions.",
     "whyItMatters": [
       "Governance is weak across the four World Bank domains, with corruption the leading concern.",
-      "Corruption (WGI) is the weakest governance domain at a risk rating of 6.5, carrying the highest weighting of 35%.",
-      "Voice and accountability scores 6.2, indicating constrained civic oversight of public and financial institutions.",
+      "Corruption (WGI) is the weakest governance domain at an elevated level, carrying the highest weighting of 35%.",
+      "Voice and accountability is elevated, indicating constrained civic oversight of public and financial institutions.",
       "Algeria was removed from the FATF grey list in June 2026, a material positive development for its counterparty risk profile."
     ],
-    "analysis": "Algeria's profile is governed entirely by its governance indicators; no FATF listing or sanctions apply following its removal from the FATF grey list in June 2026. The weakest domain is corruption at a risk rating of 6.5 (35% weight), closely followed by voice and accountability at 6.2. Rule of law and institutions scores 5.67 (40% weight), which is the principal drag on the overall picture. Political stability is the relative strength at 4.7. The CPI score of 34/100, ranked 106th of 179 countries in 2024, corroborates the governance picture and places Algeria in the lower half of the global transparency ranking.",
+    "analysis": "Algeria's profile is governed entirely by its governance indicators; no FATF listing or sanctions apply following its removal from the FATF grey list in June 2026. The weakest domain is corruption at an elevated level (35% weight), closely followed by voice and accountability. Rule of law and institutions is elevated (40% weight), which is the principal drag on the overall picture. Political stability is the relative strength. The CPI reading corroborates the governance picture and places Algeria in the lower half of the global transparency ranking.",
     "outlook": "Algeria's grey list removal in June 2026 signals a meaningful improvement in its AML/CFT framework and, if reform momentum is maintained ahead of the next FATF plenary in October 2026, the overall risk trajectory is cautiously positive. Sustained progress will depend on translating institutional reform into measurable reductions in corruption and improved rule-of-law metrics over the medium term.",
     "keyWatchpoints": [
       "Monitor FATF plenary outcomes (next: October 2026) for any reassessment of Algeria's status following its recent grey list removal.",
       "Track CPI trajectory as a leading indicator of corruption-control progress.",
       "Assess whether rule-of-law improvements accompany structural AML/CFT reforms.",
-      "Watch for any changes to political stability indicators given its risk rating of 4.7, which remains an area of moderate concern."
+      "Watch for any changes to political stability indicators given its moderate risk rating, which remains an area of moderate concern."
     ]
   },
   "EC": {
     "summary": "Ecuador has corruption and rule-of-law weaknesses as its principal risk drivers, with no FATF listing and no sanctions in effect.",
     "whyItMatters": [
-      "Corruption risk of 6.7 is the highest-scoring governance domain and the primary upward pressure on the profile.",
-      "CPI score of 32/100 (ranked 120th of 179) places Ecuador in the lower half of the global transparency ranking.",
-      "Rule of law and institutions risk of 5.5 reflects meaningful weaknesses in institutional integrity and legal enforcement.",
+      "Corruption risk is the highest-scoring governance domain and the primary upward pressure on the profile.",
+      "The CPI reading places Ecuador in the lower half of the global transparency ranking.",
+      "Rule of law and institutions risk reflects meaningful weaknesses in institutional integrity and legal enforcement.",
       "No FATF grey or black listing and no sanctions apply, so the profile is driven solely by governance."
     ],
-    "analysis": "Ecuador's profile is determined entirely by its governance indicators, as no FATF or sanctions overlay applies. Corruption (risk 6.7) is the dominant weakness, corroborated by a CPI score of 32 and a ranking of 120th of 179 jurisdictions. Rule of law and institutions (risk 5.5) and voice and accountability (risk 4.5) present further governance concerns, while political stability (risk 4.0) sits at a moderate level. Ecuador sits below the global midpoint on the World Bank governance indicators. Firms operating in or transacting with Ecuador should apply enhanced due diligence commensurate with the elevated risk.",
+    "analysis": "Ecuador's profile is determined entirely by its governance indicators, as no FATF or sanctions overlay applies. Corruption (elevated) is the dominant weakness, corroborated by a weak CPI reading. Rule of law and institutions (elevated) and voice and accountability (moderate) present further governance concerns, while political stability (moderate) sits at a moderate level. Ecuador sits below the global midpoint on the World Bank governance indicators. Firms operating in or transacting with Ecuador should apply enhanced due diligence commensurate with the elevated risk.",
     "outlook": "Ecuador's risk outlook is subject to pressures from organised crime, which has intensified in recent years, placing additional strain on already-stretched law-enforcement and judicial institutions. Without sustained institutional strengthening, the governance picture is at risk of further deterioration. Any upward movement in FATF scrutiny or introduction of targeted sanctions would materially raise the risk profile. The October 2026 FATF plenary should be monitored closely given regional dynamics.",
     "keyWatchpoints": [
       "Organised crime penetration into the financial system, particularly in sectors exposed to narcotics proceeds.",
@@ -975,11 +975,11 @@ export const NARRATIVES: Record<string, CountryNarrative> = {
     "summary": "Estonia is a low-risk jurisdiction with strong governance indicators, a high CPI score, and no FATF listing or sanctions exposure.",
     "whyItMatters": [
       "Governance is consistently sound across all four WGI domains, among the strongest in the EU.",
-      "CPI score of 76 out of 100 (ranked 13th of 179) reflects one of the lowest corruption levels in the EU and globally.",
+      "The CPI reading reflects one of the lowest corruption levels in the EU and globally.",
       "No FATF grey or black listing applies, and Estonia carries no sanctions exposure.",
-      "All four governance domains carry risk ratings between 1.8 and 2.13, indicating a uniformly strong institutional environment."
+      "All four governance domains carry uniformly low risk ratings, indicating a uniformly strong institutional environment."
     ],
-    "analysis": "Estonia's profile reflects its governance indicators alone, with no FATF or sanctions overlay. Corruption is the strongest domain at 1.8, consistent with the country's high CPI ranking of 13th globally. Rule of law and institutions sits at 2.13, voice and accountability at 1.9, and political stability at 2.0. All domains are tightly clustered in the low-risk range. Estonia is not on the FATF grey or black list and faces no sanctions exposure. The 2024 CPI of 76 is among the strongest in this batch and confirms the integrity of Estonia's institutional environment.",
+    "analysis": "Estonia's profile reflects its governance indicators alone, with no FATF or sanctions overlay. Corruption is the strongest domain, consistent with the country's high CPI ranking globally. Rule of law and institutions, voice and accountability and political stability are similarly rated. All domains are tightly clustered in the low-risk range. Estonia is not on the FATF grey or black list and faces no sanctions exposure. The CPI reading is among the strongest in this batch and confirms the integrity of Estonia's institutional environment.",
     "outlook": "Estonia's risk profile is stable and well-grounded within EU and FATF frameworks. The country's governance indicators have been consistently strong. No enforcement data are available for this assessment period, which does not alter the overall risk picture. No escalation triggers are in prospect.",
     "keyWatchpoints": [
       "Monitor any AML-related supervisory guidance or enforcement activity from Estonian financial regulators.",
@@ -992,11 +992,11 @@ export const NARRATIVES: Record<string, CountryNarrative> = {
     "summary": "Egypt is characterised by elevated corruption, constrained voice and accountability, and a CPI score well below global benchmarks, though it is not FATF-listed and faces no sanctions.",
     "whyItMatters": [
       "Governance is weak across the four World Bank domains, with corruption and accountability the leading concerns.",
-      "Voice and accountability risk of 7.1 (weight 10%) is the highest individual domain reading, reflecting significant limitations on political freedoms and civil society.",
-      "Corruption risk of 6.9 (weight 35%) remains the principal governance driver, suggesting meaningful integrity vulnerabilities.",
-      "CPI score of 30 out of 100, ranked 129th of 179 in 2024, indicates substantial corruption perceptions across public institutions."
+      "Voice and accountability risk (weight 10%) is the highest individual domain reading, reflecting significant limitations on political freedoms and civil society.",
+      "Corruption risk (weight 35%) remains the principal governance driver, suggesting meaningful integrity vulnerabilities.",
+      "The CPI reading indicates substantial corruption perceptions across public institutions."
     ],
-    "analysis": "Egypt's profile rests on its governance indicators, with no FATF or sanctions overlay. Corruption (risk 6.9, weight 35%) is the dominant contributor, followed by voice and accountability (risk 7.1, weight 10%) and rule of law and institutions (risk 5.3, weight 40%). Political stability is comparatively more contained at 4.9. The 2024 CPI score of 30, ranked 129 of 179, corroborates the governance risk picture. Egypt is not on the FATF grey or black list. It sits below the median of assessed jurisdictions on the World Bank governance indicators.",
+    "analysis": "Egypt's profile rests on its governance indicators, with no FATF or sanctions overlay. Corruption (elevated risk, weight 35%) is the dominant contributor, followed by voice and accountability (severe risk, weight 10%) and rule of law and institutions (elevated risk, weight 40%). Political stability is comparatively more contained. The CPI reading corroborates the governance risk picture. Egypt is not on the FATF grey or black list. It sits below the median of assessed jurisdictions on the World Bank governance indicators.",
     "outlook": "Egypt's risk profile is driven by structural governance conditions rather than acute FATF or sanctions pressures. The country's large financial sector and significant cross-border flows mean that corruption and accountability weaknesses remain material to AML/CFT exposure. Progress would require measurable improvements in anti-corruption enforcement and institutional transparency, which are not currently signalled by the available indicators.",
     "keyWatchpoints": [
       "Any future FATF mutual evaluation outcomes or changes in monitoring status.",
@@ -1009,11 +1009,11 @@ export const NARRATIVES: Record<string, CountryNarrative> = {
     "summary": "Eritrea is underpinned by extremely weak voice and accountability, high corruption, and a near-total absence of institutional transparency, though it is not FATF-listed and subject to no current sanctions.",
     "whyItMatters": [
       "Governance is severely weak across the four World Bank domains, with accountability and corruption the most acute.",
-      "Voice and accountability risk of 8.2 (weight 10%) is the highest in this domain across the batch, reflecting one of the most closed political environments globally.",
-      "Rule of law and institutions risk of 7.53 (weight 40%) is the largest weighted contributor and indicates fundamental deficiencies in legal and institutional frameworks.",
-      "CPI score of 13 out of 100, ranked 172nd of 179 in 2024, equals Equatorial Guinea as the joint lowest score in this batch."
+      "Voice and accountability risk (weight 10%) is the highest in this domain across the batch, reflecting one of the most closed political environments globally.",
+      "Rule of law and institutions risk (weight 40%) is the largest weighted contributor and indicates fundamental deficiencies in legal and institutional frameworks.",
+      "The CPI reading places it as the joint lowest score in this batch."
     ],
-    "analysis": "Eritrea's profile rests on its governance indicators, as neither FATF listing nor sanctions currently apply. Rule of law and institutions is the primary driver (risk 7.53, weight 40%), followed by corruption at 8.1 (weight 35%) and voice and accountability at 8.2 (weight 10%). Political stability is comparatively more contained at 4.8. The 2024 CPI score of 13, ranked 172 of 179, places Eritrea at the extreme lower end of global integrity benchmarks. Eritrea is among the joint lowest performers in this batch on the World Bank governance indicators. The virtual absence of an open financial sector reduces some direct exposure risk for international firms, but reputational and compliance risks remain acute.",
+    "analysis": "Eritrea's profile rests on its governance indicators, as neither FATF listing nor sanctions currently apply. Rule of law and institutions is the primary driver (severe risk, weight 40%), followed by corruption (weight 35%) and voice and accountability (weight 10%). Political stability is comparatively more contained. The CPI reading places Eritrea at the extreme lower end of global integrity benchmarks. Eritrea is among the joint lowest performers in this batch on the World Bank governance indicators. The virtual absence of an open financial sector reduces some direct exposure risk for international firms, but reputational and compliance risks remain acute.",
     "outlook": "Eritrea's closed political environment and extreme governance indicators mean that the underlying risk drivers are deeply structural. The absence of FATF monitoring means less external accountability pressure. Firms should expect very limited transparency in any transactions involving Eritrean counterparties and should apply heightened due diligence commensurately.",
     "keyWatchpoints": [
       "Any future FATF mutual evaluation or grey-list designation.",
@@ -1023,14 +1023,14 @@ export const NARRATIVES: Record<string, CountryNarrative> = {
     ]
   },
   "ES": {
-    "summary": "Spain is a moderate-risk jurisdiction scoring 3.2, with active securities enforcement and a sound governance framework that sits comfortably below the global risk average.",
+    "summary": "Spain is a moderate-risk jurisdiction assessed as moderate, with active securities enforcement and a sound governance framework that sits comfortably below the global risk average.",
     "whyItMatters": [
       "The CNMV recorded 94 tracked enforcement actions across 2023 to 2024, indicating an active supervisory regime in capital markets.",
-      "Corruption (risk 3.7) is the weakest governance domain; the CPI score of 56/100 (rank 46 of 179, 2024) reflects some public-sector integrity concerns.",
-      "Political stability (risk 3.2) is the second-highest risk domain, reflecting periodic domestic political tension.",
+      "Corruption (moderate) is the weakest governance domain; the CPI reading reflects some public-sector integrity concerns.",
+      "Political stability (moderate) is the second-highest risk domain, reflecting periodic domestic political tension.",
       "No FATF listing and no sanctions apply, so the profile rests on governance alone."
     ],
-    "analysis": "Spain's profile is determined entirely by its governance indicators. Corruption (3.7) is the weakest domain, consistent with the CPI score of 56, which is mid-range for Western Europe. Rule of law and institutions (2.97) and voice and accountability (2.3) are comparatively robust, reflecting Spain's mature democratic and legal framework. Political stability (3.2) adds a modest additional risk element. The CNMV's 94 enforcement actions in 2023 to 2024 signal sustained regulatory vigilance in securities markets. Spain is not on the FATF grey or black list and faces no sanctions exposure. Spain sits in the upper tier of the World Bank governance indicators, confirming a broadly sound institutional environment.",
+    "analysis": "Spain's profile is determined entirely by its governance indicators. Corruption (moderate) is the weakest domain, consistent with the CPI reading, which is mid-range for Western Europe. Rule of law and institutions (strong) and voice and accountability (strong) are comparatively robust, reflecting Spain's mature democratic and legal framework. Political stability (moderate) adds a modest additional risk element. The CNMV's 94 enforcement actions in 2023 to 2024 signal sustained regulatory vigilance in securities markets. Spain is not on the FATF grey or black list and faces no sanctions exposure. Spain sits in the upper tier of the World Bank governance indicators, confirming a broadly sound institutional environment.",
     "outlook": "Spain's risk profile is stable. Continued CNMV enforcement activity and EU AML framework application support supervisory credibility. Firms should monitor corruption-related developments, particularly in public contracting and real estate sectors, which have historically attracted scrutiny. No FATF or sanctions deterioration is indicated by current facts.",
     "keyWatchpoints": [
       "Ongoing CNMV enforcement trends and any extension of supervisory scrutiny to AML-specific matters.",
@@ -1043,11 +1043,11 @@ export const NARRATIVES: Record<string, CountryNarrative> = {
     "summary": "Ethiopia is driven by broadly elevated governance weaknesses across all four domains, including political instability, with no FATF listing and no sanctions currently in place.",
     "whyItMatters": [
       "Governance is weak across the four World Bank domains, with the picture broadly systemic rather than concentrated in one area.",
-      "Political stability risk of 6.6 (weight 15%) reflects ongoing internal security pressures, making it the most elevated domain relative to others in this batch.",
-      "Rule of law and institutions risk of 6.03 (weight 40%) is the largest weighted driver, indicating systemic weaknesses in legal and institutional frameworks.",
-      "CPI score of 37 out of 100, ranked 98th of 179 in 2024, while relatively better than some regional peers, still reflects meaningful integrity concerns."
+      "Political stability risk (weight 15%) reflects ongoing internal security pressures, making it the most elevated domain relative to others in this batch.",
+      "Rule of law and institutions risk (weight 40%) is the largest weighted driver, indicating systemic weaknesses in legal and institutional frameworks.",
+      "The CPI reading while relatively better than some regional peers, still reflects meaningful integrity concerns."
     ],
-    "analysis": "Ethiopia's profile rests on its governance indicators, with no FATF or sanctions overlay. Rule of law and institutions (risk 6.03, weight 40%) is the primary contributor, followed by political stability (risk 6.6, weight 15%), corruption (risk 6.2, weight 35%), and voice and accountability (risk 6.4, weight 10%). The domains are broadly clustered, indicating systemic rather than narrowly concentrated governance risk. The 2024 CPI score of 37, ranked 98 of 179, places Ethiopia in the lower-middle range globally. Ethiopia sits below the median of assessed jurisdictions on the World Bank governance indicators.",
+    "analysis": "Ethiopia's profile rests on its governance indicators, with no FATF or sanctions overlay. Rule of law and institutions (elevated risk, weight 40%) is the primary contributor, followed by political stability (elevated risk, weight 15%), corruption (elevated risk, weight 35%), and voice and accountability (elevated risk, weight 10%). The domains are broadly clustered, indicating systemic rather than narrowly concentrated governance risk. The CPI reading places Ethiopia in the lower-middle range globally. Ethiopia sits below the median of assessed jurisdictions on the World Bank governance indicators.",
     "outlook": "Ethiopia's risk profile is shaped by internal security dynamics alongside structural governance weaknesses. The absence of a FATF designation means no formal international AML/CFT escalation applies currently, but the combination of political instability, rule-of-law gaps, and corruption creates conditions that can facilitate financial crime. Firms should monitor conflict-related developments and their effects on financial sector access and integrity.",
     "keyWatchpoints": [
       "Political stability developments, particularly any escalation or resolution of internal security situations.",
@@ -1057,14 +1057,14 @@ export const NARRATIVES: Record<string, CountryNarrative> = {
     ]
   },
   "FI": {
-    "summary": "Finland is a very low-risk jurisdiction, ranking second globally on the 2024 CPI, with no FATF listing and no sanctions exposure.",
+    "summary": "Finland is a very low-risk jurisdiction, ranking among the cleanest globally on the CPI, with no FATF listing and no sanctions exposure.",
     "whyItMatters": [
       "Governance is near-optimal across all four WGI domains, among the strongest in the world.",
-      "Corruption at 0.8 is the strongest domain, consistent with Finland's second-place ranking out of 179 countries in the 2024 Transparency International CPI.",
+      "Corruption is the strongest domain, consistent with Finland's second-place ranking out of 179 countries in the 2024 Transparency International CPI.",
       "The Finnish Financial Supervisory Authority (Finanssivalvonta) has recorded 44 tracked enforcement actions from 2013 to 2026, reflecting proportionate supervisory activity.",
       "No FATF grey or black listing applies, and Finland carries no sanctions exposure."
     ],
-    "analysis": "Finland's profile is governance-driven with no FATF or sanctions overlay. Corruption at 0.8 and rule of law and institutions at 1.27 are the strongest domains; voice and accountability at 1.1 is similarly low-risk. Political stability at 2.1 is the marginally weakest domain but remains firmly in the low-risk range. Finland is not on the FATF grey or black list and faces no sanctions exposure. The 2024 CPI of 88, placing Finland second globally, underscores the depth and consistency of the country's integrity framework. Finland sits in the upper decile of the World Bank governance indicators.",
+    "analysis": "Finland's profile is governance-driven with no FATF or sanctions overlay. Corruption and rule of law and institutions are the strongest domains; voice and accountability is similarly low-risk. Political stability is the marginally weakest domain but remains firmly in the low-risk range. Finland is not on the FATF grey or black list and faces no sanctions exposure. The CPI reading underscores the depth and consistency of the country's integrity framework. Finland sits in the upper decile of the World Bank governance indicators.",
     "outlook": "Finland is expected to remain one of the benchmark low-risk jurisdictions globally. Its governance and CPI indicators are among the most stable worldwide, and no escalation triggers are in sight. Firms may apply standard, proportionate due diligence for Finnish counterparties, with upward adjustment only where specific transaction factors warrant.",
     "keyWatchpoints": [
       "Monitor Finanssivalvonta for any thematic guidance, enforcement trends, or supervisory priority changes.",
@@ -1077,11 +1077,11 @@ export const NARRATIVES: Record<string, CountryNarrative> = {
     "summary": "Fiji has balanced governance domain scores, a respectable CPI position, and no FATF listing or sanctions exposure.",
     "whyItMatters": [
       "Governance is broadly balanced across the four World Bank domains, with no single acute weakness.",
-      "All four governance domains are broadly aligned in the 2.1 to 4.1 range.",
-      "CPI score of 55/100 (rank 50 of 179, 2024) places Fiji among the cleaner jurisdictions in the Asia-Pacific region.",
+      "All four governance domains are broadly aligned in a broadly comparable range.",
+      "The CPI reading places Fiji among the cleaner jurisdictions in the Asia-Pacific region.",
       "No FATF grey or black listing; no sanctions apply."
     ],
-    "analysis": "Fiji's profile reflects a relatively balanced governance picture. Corruption (4.1) and rule of law (4.1) are the weakest domains, though neither reaches a high-risk threshold. Political stability is the strongest area at 2.1. Voice and accountability (4.0) is broadly mid-range. The CPI of 55/100, ranking 50th globally, provides positive independent corroboration. No FATF or sanctions overlay applies. Fiji compares well against the global median on the World Bank governance indicators and performs strongly within the Pacific subregion.",
+    "analysis": "Fiji's profile reflects a relatively balanced governance picture. Corruption (moderate) and rule of law (moderate) are the weakest domains, though neither reaches a high-risk threshold. Political stability is the strongest area. Voice and accountability (moderate) is broadly mid-range. The CPI reading provides positive independent corroboration. No FATF or sanctions overlay applies. Fiji compares well against the global median on the World Bank governance indicators and performs strongly within the Pacific subregion.",
     "outlook": "Fiji's risk profile is broadly stable. The absence of FATF or sanctions pressures and a solid CPI position suggest no near-term escalation is anticipated. Firms should maintain standard due diligence proportionate to Fiji's moderate rating, with periodic review of institutional developments given the small-economy context and the October 2026 plenary cycle.",
     "keyWatchpoints": [
       "Monitor governance and institutional stability, particularly given the small-economy vulnerability to external shocks.",
@@ -1093,12 +1093,12 @@ export const NARRATIVES: Record<string, CountryNarrative> = {
   "FR": {
     "summary": "France is a low-risk jurisdiction with sound governance, dual-regulator enforcement across banking and markets, and no FATF listing or sanctions exposure.",
     "whyItMatters": [
-      "Governance is sound across the four World Bank domains, with political stability at 3.4 being the most elevated.",
+      "Governance is sound across the four World Bank domains, with political stability being the most elevated.",
       "Two regulators are active: the AMF (112 tracked actions, 2023 to 2024) covering securities markets, and the ACPR (75 tracked actions, 2011 to 2025) covering banking and insurance, giving France a combined 187 tracked enforcement actions.",
       "No FATF grey or black listing applies, and France carries no sanctions exposure.",
-      "CPI score of 67 out of 100 (ranked 25th of 179) is consistent with a well-governed, low-corruption environment."
+      "The CPI reading is consistent with a well-governed, low-corruption environment."
     ],
-    "analysis": "France's profile is driven entirely by its governance indicators, with no FATF or sanctions overlay. Political stability is the weakest domain at 3.4, reflecting a more dynamic domestic political environment relative to some European peers. Corruption and rule of law and institutions score 2.6 and 2.47 respectively, both in the low-risk range. Voice and accountability at 2.3 is a relative strength. France is not on the FATF grey or black list and carries no sanctions exposure. The dual enforcement regime, through the AMF for markets and the ACPR for prudential supervision, reflects France's significant financial-sector scale. The 2024 CPI of 67 aligns with the overall assessment.",
+    "analysis": "France's profile is driven entirely by its governance indicators, with no FATF or sanctions overlay. Political stability is the weakest domain, reflecting a more dynamic domestic political environment relative to some European peers. Corruption and rule of law and institutions are both strong, both in the low-risk range. Voice and accountability is a relative strength. France is not on the FATF grey or black list and carries no sanctions exposure. The dual enforcement regime, through the AMF for markets and the ACPR for prudential supervision, reflects France's significant financial-sector scale. The CPI reading aligns with the overall assessment.",
     "outlook": "France's risk profile is stable. Political stability is the domain most likely to fluctuate given the domestic political context, but governance fundamentals remain strong. The active dual-regulator framework provides ongoing supervisory oversight across market and prudential risks. No escalation triggers are foreseeable in the near term.",
     "keyWatchpoints": [
       "Monitor AMF and ACPR enforcement activity and thematic priorities, given the high combined volume of tracked actions.",
@@ -1111,11 +1111,11 @@ export const NARRATIVES: Record<string, CountryNarrative> = {
     "summary": "Gabon has corruption as its primary governance concern with relatively contained political stability risk, in a context of no FATF listing and no sanctions.",
     "whyItMatters": [
       "Governance is weak across the four World Bank domains, with corruption the dominant concern.",
-      "Corruption risk of 7.2 (weight 35%) is the dominant governance driver and reflects meaningful integrity vulnerabilities, particularly in the natural resources sector.",
-      "CPI score of 27 out of 100, ranked 134th of 179 in 2024, confirms significant corruption perceptions across public institutions.",
-      "Rule of law and institutions risk of 5.97 (weight 40%) indicates notable gaps in legal and institutional effectiveness."
+      "Corruption risk (weight 35%) is the dominant governance driver and reflects meaningful integrity vulnerabilities, particularly in the natural resources sector.",
+      "The CPI reading confirms significant corruption perceptions across public institutions.",
+      "Rule of law and institutions risk (weight 40%) indicates notable gaps in legal and institutional effectiveness."
     ],
-    "analysis": "Gabon's profile rests on its governance indicators, as neither FATF listing nor sanctions apply. Corruption (risk 7.2, weight 35%) is the principal driver, with rule of law and institutions following closely at 5.97 (weight 40%). Voice and accountability stands at 6.3 (weight 10%). Political stability at 3.9 is the most favourable domain, reflecting Gabon's relative internal security environment. The 2024 CPI score of 27, ranked 134 of 179, is consistent with the elevated corruption reading. Gabon sits below the median of assessed jurisdictions on the World Bank governance indicators.",
+    "analysis": "Gabon's profile rests on its governance indicators, as neither FATF listing nor sanctions apply. Corruption (severe risk, weight 35%) is the principal driver, with rule of law and institutions following closely (weight 40%). Voice and accountability stands (weight 10%). Political stability is the most favourable domain, reflecting Gabon's relative internal security environment. The CPI reading is consistent with the elevated corruption reading. Gabon sits below the median of assessed jurisdictions on the World Bank governance indicators.",
     "outlook": "Gabon's risk profile is primarily driven by corruption in an oil-dependent economy with historically concentrated political and economic power. Without a FATF designation, formal escalation pathways are not currently active. Firms should nonetheless apply appropriate scrutiny to transactions involving public officials and state-linked entities given the corruption risk profile.",
     "keyWatchpoints": [
       "Any future FATF mutual evaluation or monitoring designation.",
@@ -1128,11 +1128,11 @@ export const NARRATIVES: Record<string, CountryNarrative> = {
     "summary": "The United Kingdom combines strong institutions with a highly active FCA enforcement record across more than a decade.",
     "whyItMatters": [
       "The FCA has recorded 308 tracked enforcement actions from 2013 to 2026, representing the largest enforcement dataset in this report and signalling intensive supervisory activity.",
-      "The CPI score of 71/100 (rank 20 of 179, 2024) reflects broadly clean public administration, though below the very top tier of European peers.",
-      "Voice and accountability (risk 2.1) and rule of law and institutions (risk 2.27) are the two strongest domains, reflecting robust democratic and legal foundations.",
+      "The CPI reading reflects broadly clean public administration, though below the very top tier of European peers.",
+      "Voice and accountability (strong) and rule of law and institutions (strong) are the two strongest domains, reflecting robust democratic and legal foundations.",
       "No FATF listing and no sanctions apply, so the profile rests on the UK's strong governance alone."
     ],
-    "analysis": "The United Kingdom's profile reflects sound governance across all four domains. Voice and accountability (2.1) and rule of law and institutions (2.27) are the strongest, consistent with a mature legal system and free press. Corruption (2.2) is similarly low, supported by a CPI of 71 and an upper-tier standing on the World Bank governance indicators. Political stability (2.8) is the comparatively weakest domain but remains low in absolute terms. The United Kingdom is not on the FATF grey or black list and carries no sanctions exposure. The FCA's 308 enforcement actions from 2013 to 2026 represent a very active supervisory posture, making the UK one of the most heavily scrutinised financial markets globally.",
+    "analysis": "The United Kingdom's profile reflects sound governance across all four domains. Voice and accountability (strong) and rule of law and institutions (strong) are the strongest, consistent with a mature legal system and free press. Corruption (strong) is similarly low, supported by a strong CPI reading and an upper-tier standing on the World Bank governance indicators. Political stability (strong) is the comparatively weakest domain but remains low in absolute terms. The United Kingdom is not on the FATF grey or black list and carries no sanctions exposure. The FCA's 308 enforcement actions from 2013 to 2026 represent a very active supervisory posture, making the UK one of the most heavily scrutinised financial markets globally.",
     "outlook": "The United Kingdom's risk outlook is stable. The FCA continues to expand its enforcement and supervisory reach, including in AML and financial crime areas. Residual risk relates to the UK's role as a major global financial centre, which creates inherent exposure to complex international flows. Firms operating in the UK should maintain robust compliance frameworks in line with FCA expectations.",
     "keyWatchpoints": [
       "FCA enforcement activity, particularly in AML, sanctions compliance, and financial crime systems and controls.",
@@ -1144,29 +1144,29 @@ export const NARRATIVES: Record<string, CountryNarrative> = {
   "GD": {
     "summary": "Grenada, an Eastern Caribbean state with a citizenship-by-investment programme, rests on a strong governance base, with no FATF listing or sanctions in place.",
     "whyItMatters": [
-      "A solid governance base, with political stability at 1.4 the strongest domain, anchors the profile.",
-      "Corruption (4.2) and rule of law (4.2) are the weakest domains but remain within a moderate range.",
-      "The 2024 CPI score of 56 out of 100 (rank 46) is comparatively strong for the region and corroborates a relatively clean public-sector picture.",
+      "A solid governance base, with political stability the strongest domain, anchors the profile.",
+      "Corruption (moderate) and rule of law (moderate) are the weakest domains but remain within a moderate range.",
+      "The CPI reading (rank 46) is comparatively strong for the region and corroborates a relatively clean public-sector picture.",
       "Grenada operates a citizenship-by-investment programme, a structural feature relevant to identity and due diligence vulnerabilities for counterparties."
     ],
-    "analysis": "Grenada is an Eastern Caribbean state assessed for AML/CFT purposes by the Caribbean Financial Action Task Force (CFATF). Its risk picture is governance-derived, with no FATF or sanctions overlay. The governance base is solid: political stability scores 1.4, accountability 3.7, and corruption and rule of law both 4.2. The 2024 CPI score of 56 at rank 46 corroborates a relatively clean public-sector picture, while Grenada sits in the upper third of the World Bank governance indicators. The most material structural feature is Grenada's citizenship-by-investment programme, which has drawn international scrutiny over due diligence standards, including its historic status as the only Caribbean CBI programme granting access to a United States investor-visa treaty route, and which raises identity-verification risk for financial institutions with Grenadian counterparties. Grenada has been the subject of CFATF follow-up reporting on its mutual evaluation.",
+    "analysis": "Grenada is an Eastern Caribbean state assessed for AML/CFT purposes by the Caribbean Financial Action Task Force (CFATF). Its risk picture is governance-derived, with no FATF or sanctions overlay. The governance base is solid: political stability is strong, accountability is moderate, and corruption and rule of law are both moderate. The CPI reading corroborates a relatively clean public-sector picture, while Grenada sits in the upper third of the World Bank governance indicators. The most material structural feature is Grenada's citizenship-by-investment programme, which has drawn international scrutiny over due diligence standards, including its historic status as the only Caribbean CBI programme granting access to a United States investor-visa treaty route, and which raises identity-verification risk for financial institutions with Grenadian counterparties. Grenada has been the subject of CFATF follow-up reporting on its mutual evaluation.",
     "outlook": "Grenada's profile reflects a sound governance base offset by its citizenship-by-investment exposure. The forward picture depends on the strength of CBI due diligence and screening reforms, CFATF follow-up remediation, and the corruption and rule-of-law domains. Firms should apply enhanced due diligence where counterparties hold Grenadian passports or corporate registrations and monitor CFATF follow-up reporting and the October 2026 FATF plenary for any change in status.",
     "keyWatchpoints": [
       "Citizenship-by-investment programme due diligence and screening standards; apply enhanced due diligence to Grenadian passport-holders and corporate registrations.",
       "CFATF follow-up reporting on Grenada's mutual evaluation and any re-ratings.",
       "October 2026 FATF plenary for any change in listing status.",
-      "Corruption (4.2) and rule of law (4.2) domains as the weakest governance readings."
+      "Corruption (moderate) and rule of law (moderate) domains as the weakest governance readings."
     ]
   },
   "GE": {
     "summary": "Georgia has the strongest profile of the South Caucasus, supported by comparatively solid rule of law and no FATF listing or sanctions in place.",
     "whyItMatters": [
       "Governance is the strongest in the South Caucasus, ahead of regional peers Armenia and Azerbaijan.",
-      "Rule of law and institutions (risk 3.8) is the strongest governance domain; voice and accountability (risk 4.8) and political stability (risk 4.5) are the relative weaknesses.",
-      "CPI score of 50 out of 100 (rank 56 of 182, 2025) places Georgia in the upper-middle tier globally and is the best score in the South Caucasus.",
+      "Rule of law and institutions (moderate) is the strongest governance domain; voice and accountability (moderate) and political stability (moderate) are the relative weaknesses.",
+      "The CPI reading places Georgia in the upper-middle tier globally and is the best score in the South Caucasus.",
       "No FATF grey or black listing; no sanctions programmes apply. Georgia is evaluated by MONEYVAL, the Council of Europe FATF-style regional body."
     ],
-    "analysis": "Georgia's profile is governance-derived, with no FATF or sanctions overlay. Rule of law and institutions (3.8) is the strongest domain, reflecting reforms that have made Georgia a regional outperformer on institutional quality, while corruption (4.4), political stability (4.5) and voice and accountability (4.8) are moderate. The CPI of 50 out of 100 (rank 56 of 182) is the highest in the South Caucasus. Georgia sits just above the global midpoint on the World Bank governance indicators. MONEYVAL's fifth-round process has recorded steady progress: through successive enhanced follow-up reports, Georgia has re-rated Recommendations 1 and 15 to Largely Compliant after 2024 amendments that strengthened risk assessment and the regulation of virtual-asset service providers, which now register with the National Bank of Georgia. MONEYVAL nonetheless continues to flag the casino and wider gaming sector as the highest domestic money-laundering risk, alongside cash-intensive real estate and inadequate supervision of higher-risk non-financial businesses. The Financial Monitoring Service is the national financial intelligence unit.",
+    "analysis": "Georgia's profile is governance-derived, with no FATF or sanctions overlay. Rule of law and institutions (moderate) is the strongest domain, reflecting reforms that have made Georgia a regional outperformer on institutional quality, while corruption (moderate), political stability (moderate) and voice and accountability (moderate) are moderate. The CPI reading is the highest in the South Caucasus. Georgia sits just above the global midpoint on the World Bank governance indicators. MONEYVAL's fifth-round process has recorded steady progress: through successive enhanced follow-up reports, Georgia has re-rated Recommendations 1 and 15 to Largely Compliant after 2024 amendments that strengthened risk assessment and the regulation of virtual-asset service providers, which now register with the National Bank of Georgia. MONEYVAL nonetheless continues to flag the casino and wider gaming sector as the highest domestic money-laundering risk, alongside cash-intensive real estate and inadequate supervision of higher-risk non-financial businesses. The Financial Monitoring Service is the national financial intelligence unit.",
     "outlook": "Georgia's outlook is cautiously positive on the AML/CFT framework, but the risk picture is complicated by domestic political tension and by the country's role as a regional trade, transit and re-export hub, which raises exposure to Russia-linked circumvention flows following 2022. Firms should weight sector risk heavily: the gaming sector and high-value real estate are the principal domestic vulnerabilities, and virtual-asset activity remains a growing area despite the new registration regime. The next FATF plenary in October 2026 is not expected to alter Georgia's clean listing, and the MONEYVAL enhanced follow-up cycle remains the key checkpoint for continued technical-compliance progress.",
     "keyWatchpoints": [
       "Assess exposure to the casino and gaming sector, identified by MONEYVAL as the highest domestic money-laundering risk with limited AML supervision.",
@@ -1196,11 +1196,11 @@ export const NARRATIVES: Record<string, CountryNarrative> = {
     "summary": "Ghana reflects relatively stronger governance performance among West African peers, with no FATF listing or sanctions.",
     "whyItMatters": [
       "Governance is comparatively strong for the region, making Ghana one of the better performers in this batch.",
-      "Rule of law and institutions risk of 4.67 (weight 40%) is the primary governance driver but is well within the moderate range.",
-      "Corruption risk of 5.5 (weight 35%) remains the weakest domain and the area of greatest residual concern.",
-      "CPI score of 42 out of 100, ranked 79th of 179 in 2024, is the highest score in this batch, reflecting comparatively stronger institutional integrity."
+      "Rule of law and institutions risk (weight 40%) is the primary governance driver but is well within the moderate range.",
+      "Corruption risk (weight 35%) remains the weakest domain and the area of greatest residual concern.",
+      "The CPI reading is the highest score in this batch, reflecting comparatively stronger institutional integrity."
     ],
-    "analysis": "Ghana's profile rests on its governance indicators, with no FATF or sanctions overlay. Rule of law and institutions (risk 4.67, weight 40%) is the primary but manageable driver. Corruption (risk 5.5, weight 35%) is the domain most deserving of attention. Voice and accountability at 4.0 (weight 10%) and political stability at 3.5 (weight 15%) are both at levels associated with more stable democratic governance. The 2024 CPI score of 42, ranked 79 of 179, is consistent with a moderate risk picture. Ghana sits above the median of assessed jurisdictions on the World Bank governance indicators.",
+    "analysis": "Ghana's profile rests on its governance indicators, with no FATF or sanctions overlay. Rule of law and institutions (moderate risk, weight 40%) is the primary but manageable driver. Corruption (elevated risk, weight 35%) is the domain most deserving of attention. Voice and accountability (weight 10%) and political stability (weight 15%) are both at levels associated with more stable democratic governance. The CPI reading is consistent with a moderate risk picture. Ghana sits above the median of assessed jurisdictions on the World Bank governance indicators.",
     "outlook": "Ghana's moderate rating reflects genuine governance strengths relative to the African region. The country is not on the FATF grey or black list, and no sanctions apply. The principal risk pathway for firms is residual corruption, particularly in public contracting. Maintaining current governance standards and addressing corruption vulnerabilities would support further risk improvement.",
     "keyWatchpoints": [
       "Corruption risk developments, particularly in public procurement and extractive industries.",
@@ -1230,11 +1230,11 @@ export const NARRATIVES: Record<string, CountryNarrative> = {
     "summary": "The Gambia carries moderate governance weaknesses across all domains, with no FATF listing or sanctions in place.",
     "whyItMatters": [
       "Governance is moderately weak across the four World Bank domains, though relatively favourable for the sub-region.",
-      "Corruption risk of 5.8 (weight 35%) is the primary governance concern, reflecting integrity vulnerabilities in public institutions.",
-      "Rule of law and institutions risk of 5.4 (weight 40%) is the dominant weighted driver, indicating ongoing gaps in institutional effectiveness.",
-      "CPI score of 38 out of 100, ranked 95th of 179 in 2024, is relatively favourable compared with most African peers in this batch, suggesting some reform progress."
+      "Corruption risk (weight 35%) is the primary governance concern, reflecting integrity vulnerabilities in public institutions.",
+      "Rule of law and institutions risk (weight 40%) is the dominant weighted driver, indicating ongoing gaps in institutional effectiveness.",
+      "The CPI reading is relatively favourable compared with most African peers in this batch, suggesting some reform progress."
     ],
-    "analysis": "The Gambia's profile rests on its governance indicators, with no FATF or sanctions overlay. Corruption (risk 5.8, weight 35%) and rule of law and institutions (risk 5.4, weight 40%) are the two drivers of the elevated picture. Political stability is the strongest domain at 3.2, the most favourable score in this measure across the entire batch. Voice and accountability at 4.6 indicates some improvement in democratic conditions relative to other assessed jurisdictions. The 2024 CPI score of 38, ranked 95 of 179, reflects moderate integrity perceptions. The Gambia sits around the median of assessed jurisdictions on the World Bank governance indicators.",
+    "analysis": "The Gambia's profile rests on its governance indicators, with no FATF or sanctions overlay. Corruption (elevated risk, weight 35%) and rule of law and institutions (elevated risk, weight 40%) are the two drivers of the elevated picture. Political stability is the strongest domain, the most favourable score in this measure across the entire batch. Voice and accountability indicates some improvement in democratic conditions relative to other assessed jurisdictions. The CPI reading reflects moderate integrity perceptions. The Gambia sits around the median of assessed jurisdictions on the World Bank governance indicators.",
     "outlook": "The Gambia's governance performance is relatively favourable for its sub-region, with political stability and accountability measures trending positively compared with regional peers. The absence of any FATF or sanctions overlay leaves the profile primarily governance-driven. Continued reform in rule-of-law and anti-corruption frameworks could ease the risk picture further.",
     "keyWatchpoints": [
       "Any future FATF mutual evaluation findings, which could change the risk picture.",
@@ -1244,14 +1244,14 @@ export const NARRATIVES: Record<string, CountryNarrative> = {
     ]
   },
   "GN": {
-    "summary": "Guinea is driven by elevated corruption and rule-of-law weaknesses, with no FATF listing and no sanctions currently in place, but a CPI score of 28 that reflects deep integrity concerns.",
+    "summary": "Guinea is driven by elevated corruption and rule-of-law weaknesses, with no FATF listing and no sanctions currently in place, but a very weak CPI reading that reflects deep integrity concerns.",
     "whyItMatters": [
       "Governance is weak across the four World Bank domains, with corruption the leading concern.",
-      "Corruption risk of 7.3 (weight 35%) is the primary governance driver and one of the highest in this batch.",
-      "Rule of law and institutions risk of 6.27 (weight 40%) is the dominant weighted contributor, indicating systemic weaknesses in legal and institutional frameworks.",
-      "CPI score of 28 out of 100, ranked 132nd of 179 in 2024, confirms deeply entrenched corruption perceptions in public life."
+      "Corruption risk (weight 35%) is the primary governance driver and one of the highest in this batch.",
+      "Rule of law and institutions risk (weight 40%) is the dominant weighted contributor, indicating systemic weaknesses in legal and institutional frameworks.",
+      "The CPI reading confirms deeply entrenched corruption perceptions in public life."
     ],
-    "analysis": "Guinea's profile rests on its governance indicators, as neither FATF listing nor sanctions currently apply. Corruption (risk 7.3, weight 35%) is the primary driver, followed by rule of law and institutions (risk 6.27, weight 40%). Voice and accountability stands at 6.2 (weight 10%). Political stability at 4.9 is the most favourable domain but remains elevated. The 2024 CPI score of 28, ranked 132 of 179, underscores significant integrity deficits. Guinea sits well below the median of assessed jurisdictions on the World Bank governance indicators. The absence of a FATF listing or sanctions means the full profile reflects governance conditions alone.",
+    "analysis": "Guinea's profile rests on its governance indicators, as neither FATF listing nor sanctions currently apply. Corruption (severe risk, weight 35%) is the primary driver, followed by rule of law and institutions (elevated risk, weight 40%). Voice and accountability stands (weight 10%). Political stability is the most favourable domain but remains elevated. The CPI reading underscores significant integrity deficits. Guinea sits well below the median of assessed jurisdictions on the World Bank governance indicators. The absence of a FATF listing or sanctions means the full profile reflects governance conditions alone.",
     "outlook": "Guinea's high-risk rating is driven by structural governance weaknesses in a resource-rich economy with historically weak institutional oversight. The absence of a FATF designation means no formal international AML/CFT escalation is currently active, but the underlying conditions remain conducive to financial crime risk. Firms should monitor political and governance developments, particularly given the extractive sector's exposure to corruption and opacity.",
     "keyWatchpoints": [
       "Any future FATF mutual evaluation findings or grey-list consideration.",
@@ -1261,14 +1261,14 @@ export const NARRATIVES: Record<string, CountryNarrative> = {
     ]
   },
   "GQ": {
-    "summary": "Equatorial Guinea reflects the most severe corruption risk in this batch, very weak voice and accountability, and a CPI score of 13, among the lowest globally.",
+    "summary": "Equatorial Guinea reflects the most severe corruption risk in this batch, very weak voice and accountability, and a very weak CPI reading among the lowest globally.",
     "whyItMatters": [
       "Governance is very weak across the four World Bank domains, with corruption the overwhelming driver.",
-      "Corruption risk of 8.3 (weight 35%) is the single highest in this batch and the dominant governance driver.",
-      "CPI score of 13 out of 100, ranked 172nd of 179 in 2024, places Equatorial Guinea among the most corruption-affected jurisdictions globally.",
-      "Voice and accountability risk of 7.3 (weight 10%) reflects severely constrained democratic freedoms and civil society oversight."
+      "Corruption risk (weight 35%) is the single highest in this batch and the dominant governance driver.",
+      "The CPI reading places Equatorial Guinea among the most corruption-affected jurisdictions globally.",
+      "Voice and accountability risk (weight 10%) reflects severely constrained democratic freedoms and civil society oversight."
     ],
-    "analysis": "Equatorial Guinea's profile rests on its governance indicators, as neither FATF listing nor sanctions are in place. Corruption is overwhelmingly the primary driver, with a risk rating of 8.3 (weight 35%), followed by voice and accountability at 7.3 (weight 10%) and rule of law and institutions at 6.83 (weight 40%). Political stability is the strongest domain at 3.9. The 2024 CPI score of 13, ranking 172 of 179, ranks Equatorial Guinea near the bottom of global integrity measures. It sits among the lowest performers on the World Bank governance indicators.",
+    "analysis": "Equatorial Guinea's profile rests on its governance indicators, as neither FATF listing nor sanctions are in place. Corruption is overwhelmingly the primary driver, with a severe risk rating (weight 35%), followed by voice and accountability (weight 10%) and rule of law and institutions (weight 40%). Political stability is the strongest domain. The CPI reading places it near the bottom of global integrity measures. It sits among the lowest performers on the World Bank governance indicators.",
     "outlook": "Equatorial Guinea is not currently FATF-listed, which constrains one formal escalation pathway. However, the extreme corruption and accountability readings suggest underlying conditions that are conducive to financial crime risk. The country's oil-dependent economy and opacity in revenue management are structural features that firms should factor into relationship and transaction risk assessments.",
     "keyWatchpoints": [
       "Any future FATF mutual evaluation findings or grey-list designation, which would materially raise scrutiny.",
@@ -1281,11 +1281,11 @@ export const NARRATIVES: Record<string, CountryNarrative> = {
     "summary": "Greece presents moderate risk driven by elevated corruption and rule-of-law scores relative to EU peers, though it carries no FATF listing or sanctions exposure.",
     "whyItMatters": [
       "Governance is weaker than most Western European peers, reflecting persistent gaps in corruption and rule of law.",
-      "Corruption domain scores 4.5 (weighted 35%), the single heaviest risk contributor, indicating material weakness relative to other EU members.",
-      "CPI score of 49 out of 100 (rank 59 of 179) places Greece in the lower half of the Transparency International ranking, consistent with the governance-domain findings.",
+      "Corruption domain is moderate (weighted 35%), the single heaviest risk contributor, indicating material weakness relative to other EU members.",
+      "The CPI reading places Greece in the lower half of the Transparency International ranking, consistent with the governance-domain findings.",
       "Greece is not on the FATF grey or black list and carries no sanctions exposure, so the profile rests on governance alone."
     ],
-    "analysis": "Greece's profile is shaped primarily by its corruption domain (risk 4.5, weighted 35%) and rule of law and institutions domain (risk 3.9, weighted 40%), both of which are materially higher than Western European norms. Political stability (risk 2.8) and voice and accountability (risk 2.9) are comparatively better, tempering the overall picture. No FATF listing or sanctions are recorded. The CPI score of 49 is the weakest contextual indicator. Greece sits below the EU median on the World Bank governance indicators.",
+    "analysis": "Greece's profile is shaped primarily by its corruption domain (weighted 35%) and rule of law and institutions domain (weighted 40%), both of which are materially higher than Western European norms. Political stability (strong) and voice and accountability (strong) are comparatively better, tempering the overall picture. No FATF listing or sanctions are recorded. The CPI reading is the weakest contextual indicator. Greece sits below the EU median on the World Bank governance indicators.",
     "outlook": "Ongoing EU institutional oversight and judicial reform programmes provide a structural anchor for gradual improvement. The pace of improvement in perceived corruption has historically been slow, and Corruption domain scores are unlikely to shift sharply in the near term. Firms should calibrate enhanced due diligence proportionately, focusing on sectors and counterparties where corruption risk is highest rather than applying blanket restrictions.",
     "keyWatchpoints": [
       "Track progress on anti-corruption reforms under EU rule-of-law monitoring frameworks.",
@@ -1295,14 +1295,14 @@ export const NARRATIVES: Record<string, CountryNarrative> = {
     ]
   },
   "GT": {
-    "summary": "Guatemala has corruption as its weakest governance domain and a CPI of 25 indicating severe transparency deficits, though no FATF listing or sanctions are in effect.",
+    "summary": "Guatemala has corruption as its weakest governance domain and a very weak CPI reading indicating severe transparency deficits, though no FATF listing or sanctions are in effect.",
     "whyItMatters": [
-      "Corruption risk of 7.4 is the highest governance domain reading and the principal risk driver.",
-      "CPI score of 25/100 (ranked 145th of 179) places Guatemala among the more opaque jurisdictions in the Americas.",
-      "Rule of law and institutions risk of 5.9 reflects significant weaknesses in judicial integrity and enforcement capacity.",
+      "Corruption risk is the highest governance domain reading and the principal risk driver.",
+      "The CPI reading places Guatemala among the more opaque jurisdictions in the Americas.",
+      "Rule of law and institutions risk reflects significant weaknesses in judicial integrity and enforcement capacity.",
       "No FATF grey or black listing and no sanctions apply, so the profile is driven solely by governance deficiencies."
     ],
-    "analysis": "Guatemala's profile is characterised by severe corruption risk (7.4) and meaningful weaknesses across rule of law and institutions (5.9), voice and accountability (5.2), and political stability (3.8). A CPI of 25 and a ranking of 145th of 179 are consistent with a jurisdiction where anti-corruption mechanisms face systemic challenges. Guatemala sits in the lower two-fifths of the World Bank governance indicators. No FATF or sanctions overlay applies. Firms should apply comprehensive enhanced due diligence for relationships with Guatemalan counterparties.",
+    "analysis": "Guatemala's profile is characterised by severe corruption risk and meaningful weaknesses across rule of law and institutions (elevated), voice and accountability (elevated), and political stability (moderate). A very weak CPI reading is consistent with a jurisdiction where anti-corruption mechanisms face systemic challenges. Guatemala sits in the lower two-fifths of the World Bank governance indicators. No FATF or sanctions overlay applies. Firms should apply comprehensive enhanced due diligence for relationships with Guatemalan counterparties.",
     "outlook": "Guatemala's risk outlook is shaped by the structural challenges of corruption in public institutions, including the judicial system, and the influence of organised crime on the political economy. Progress on anti-corruption reform would be necessary to move the governance picture materially. Any introduction of FATF grey-listing or targeted sanctions would significantly elevate the risk profile. The October 2026 FATF plenary should be monitored. Deterioration in civil society protections would be an additional upward risk indicator.",
     "keyWatchpoints": [
       "Anti-corruption enforcement trends, including the independence and effectiveness of prosecutorial institutions.",
@@ -1314,12 +1314,12 @@ export const NARRATIVES: Record<string, CountryNarrative> = {
   "GW": {
     "summary": "Guinea-Bissau presents high financial-crime risk, driven by very weak corruption controls and fragile rule-of-law institutions.",
     "whyItMatters": [
-      "Corruption risk is among the most severe in the dataset, scoring 7.6 out of 10 on the WGI Corruption domain.",
-      "Rule of law and institutions score 6.87, indicating courts, regulators and AML supervisors operate under significant structural pressure.",
-      "The CPI score of 21 out of 100 (rank 157 of 179) signals deep-rooted perceptions of public-sector corruption.",
+      "Corruption risk is among the most severe in the dataset, scoring severe on the WGI Corruption domain.",
+      "Rule of law and institutions is elevated, indicating courts, regulators and AML supervisors operate under significant structural pressure.",
+      "The CPI reading signals deep-rooted perceptions of public-sector corruption.",
       "The profile is entirely governance-driven, with no FATF listing or sanctions adding further scrutiny."
     ],
-    "analysis": "Guinea-Bissau's profile is determined entirely by governance weaknesses. Corruption is the dominant driver at 7.6, followed by rule of law and institutions at 6.87, both well above the risk thresholds that matter for AML controls. Voice and accountability (5.4) and political stability (4.0) contribute more modestly. Guinea-Bissau is not on the FATF grey or black list and carries no sanctions exposure. The CPI score of 21 places it at rank 157 of 179 countries, corroborating the governance picture. No enforcement actions are tracked in the dataset.",
+    "analysis": "Guinea-Bissau's profile is determined entirely by governance weaknesses. Corruption is the dominant driver, followed by rule of law and institutions, both well above the risk thresholds that matter for AML controls. Voice and accountability (elevated) and political stability (moderate) contribute more modestly. Guinea-Bissau is not on the FATF grey or black list and carries no sanctions exposure. The CPI reading places it, corroborating the governance picture. No enforcement actions are tracked in the dataset.",
     "outlook": "Without structural improvements to anti-corruption frameworks and judicial independence, the governance risk trajectory is likely to remain elevated. Guinea-Bissau sits in the lower third of the World Bank governance indicators. Firms should note the absence of FATF listing does not diminish the underlying governance-driven risk, which the next FATF plenary cycle in October 2026 may reassess.",
     "keyWatchpoints": [
       "Monitor any FATF mutual evaluation outcomes or grey-list additions at the October 2026 plenary.",
@@ -1331,12 +1331,12 @@ export const NARRATIVES: Record<string, CountryNarrative> = {
   "GY": {
     "summary": "Guyana has corruption and rule-of-law weaknesses as its primary risk drivers, with no FATF listing and no sanctions, as the country manages rapid economic change driven by oil revenues.",
     "whyItMatters": [
-      "Corruption risk of 5.8 is the highest governance domain reading and the principal risk driver.",
-      "Rule of law and institutions risk of 5.2 indicates meaningful weaknesses in institutional integrity relative to peers.",
-      "CPI score of 39/100 (ranked 91st of 179) reflects persistent corruption concerns in a rapidly changing economic environment.",
-      "No FATF grey or black listing and no sanctions apply, and political stability (risk 3.1) is a comparative governance strength."
+      "Corruption risk is the highest governance domain reading and the principal risk driver.",
+      "Rule of law and institutions risk indicates meaningful weaknesses in institutional integrity relative to peers.",
+      "The CPI reading reflects persistent corruption concerns in a rapidly changing economic environment.",
+      "No FATF grey or black listing and no sanctions apply, and political stability (moderate) is a comparative governance strength."
     ],
-    "analysis": "Guyana's profile is driven entirely by its governance indicators, with no FATF or sanctions overlay. Corruption (risk 5.8) is the weakest domain, followed by rule of law and institutions (5.2) and voice and accountability (4.4). Political stability (3.1) is comparatively strong. A CPI of 39 places Guyana near the global midpoint of the World Bank governance indicators, though the rapid expansion of the oil sector introduces heightened beneficial ownership and procurement transparency risks that may not yet be fully reflected in current governance readings.",
+    "analysis": "Guyana's profile is driven entirely by its governance indicators, with no FATF or sanctions overlay. Corruption (elevated) is the weakest domain, followed by rule of law and institutions (elevated) and voice and accountability (moderate). Political stability (moderate) is comparatively strong. A weak CPI reading places Guyana near the global midpoint of the World Bank governance indicators, though the rapid expansion of the oil sector introduces heightened beneficial ownership and procurement transparency risks that may not yet be fully reflected in current governance readings.",
     "outlook": "Guyana's risk trajectory is subject to the pace at which governance and AML frameworks keep pace with the country's oil-driven economic expansion. The influx of substantial resource revenues increases the potential scale of financial flows requiring oversight. Strengthening anti-corruption capacity and beneficial ownership transparency will be critical. Without commensurate institutional development, the governance base could come under additional pressure. The October 2026 FATF plenary should be monitored for any regional assessments relevant to Guyana.",
     "keyWatchpoints": [
       "Beneficial ownership transparency and anti-corruption controls in the oil and gas sector.",
@@ -1349,12 +1349,12 @@ export const NARRATIVES: Record<string, CountryNarrative> = {
     "summary": "Hong Kong is underpinned by strong rule-of-law institutions, low corruption, and a highly active enforcement environment, with no FATF listing or sanctions exposure.",
     "whyItMatters": [
       "Governance is strong on corruption and rule of law, with accountability the sole weaker domain under the current constitutional framework.",
-      "CPI score of 74 out of 100 (ranked 17th of 179 in 2024) reflects one of the cleanest public sectors globally.",
+      "The CPI reading reflects one of the cleanest public sectors globally.",
       "Enforcement is substantial: 244 tracked regulatory actions across the SFC (221 actions, 2020-2026) and HKMA (23 actions, 2015-2025), demonstrating active supervision.",
-      "Voice and accountability at 4.9 is the sole governance domain above the midpoint, reflecting political constraints under the current constitutional framework."
+      "Voice and accountability is the sole governance domain above the midpoint, reflecting political constraints under the current constitutional framework."
     ],
-    "analysis": "Hong Kong's profile is supported by corruption risk of 2.1 and rule of law and institutions at 2.17, both among the strongest governance readings in the Asia Pacific region. Political stability at 2.7 is also well controlled. Voice and accountability at 4.9 is the weakest domain, reflecting reduced civil liberties. The country carries no FATF listing and no sanctions apply. The 244 tracked enforcement actions by the SFC and HKMA indicate a proactive supervisory culture, which is a key mitigant within the financial sector.",
-    "outlook": "Hong Kong's risk fundamentals are strong and are supported by active regulatory enforcement. The primary watch area is the voice and accountability domain and any further evolution of the political and legal environment. Its upper-tier standing on the World Bank governance indicators and CPI rank of 17th provide confidence in the near-term stability of the risk picture.",
+    "analysis": "Hong Kong's profile is supported by corruption risk and rule of law and institutions, both among the strongest governance readings in the Asia Pacific region. Political stability is also well controlled. Voice and accountability is the weakest domain, reflecting reduced civil liberties. The country carries no FATF listing and no sanctions apply. The 244 tracked enforcement actions by the SFC and HKMA indicate a proactive supervisory culture, which is a key mitigant within the financial sector.",
+    "outlook": "Hong Kong's risk fundamentals are strong and are supported by active regulatory enforcement. The primary watch area is the voice and accountability domain and any further evolution of the political and legal environment. Its upper-tier standing on the World Bank governance indicators and CPI ranking provide confidence in the near-term stability of the risk picture.",
     "keyWatchpoints": [
       "Monitor developments in the political and legal environment that may affect the voice and accountability domain.",
       "Track SFC and HKMA enforcement activity for changes in supervisory intensity or thematic focus.",
@@ -1363,14 +1363,14 @@ export const NARRATIVES: Record<string, CountryNarrative> = {
     ]
   },
   "HN": {
-    "summary": "Honduras has corruption and rule-of-law weaknesses as its primary risk drivers, a CPI of 22 indicating acute transparency concerns, and no FATF listing or sanctions.",
+    "summary": "Honduras has corruption and rule-of-law weaknesses as its primary risk drivers, a very weak CPI reading indicating acute transparency concerns, and no FATF listing or sanctions.",
     "whyItMatters": [
-      "Corruption risk of 7.4 is the highest governance domain reading and, alongside rule of law, the leading risk driver.",
-      "CPI score of 22/100 (ranked 153rd of 179) places Honduras among the more opaque jurisdictions in the Americas.",
-      "Rule of law and institutions risk of 6.0 reflects significant weaknesses in judicial and enforcement capacity.",
+      "Corruption risk is the highest governance domain reading and, alongside rule of law, the leading risk driver.",
+      "The CPI reading places Honduras among the more opaque jurisdictions in the Americas.",
+      "Rule of law and institutions risk reflects significant weaknesses in judicial and enforcement capacity.",
       "No FATF grey or black listing and no sanctions apply, though governance weaknesses alone keep the risk elevated."
     ],
-    "analysis": "Honduras's profile is driven entirely by its governance indicators, with no FATF or sanctions overlay. Corruption (risk 7.4) and rule of law and institutions (risk 6.0) are the weakest domains, consistent with a CPI score of 22 and a ranking of 153rd of 179. Voice and accountability (risk 5.4) represents a further concern. Political stability (risk 4.0) is comparatively moderate. Honduras sits below the global median on the World Bank governance indicators. The combination of high corruption risk and weak rule of law creates conditions that increase the potential for financial crime, particularly in sectors with limited supervisory reach.",
+    "analysis": "Honduras's profile is driven entirely by its governance indicators, with no FATF or sanctions overlay. Corruption (severe) and rule of law and institutions (elevated) are the weakest domains, consistent with a very weak CPI reading. Voice and accountability (elevated) represents a further concern. Political stability (moderate) is comparatively moderate. Honduras sits below the global median on the World Bank governance indicators. The combination of high corruption risk and weak rule of law creates conditions that increase the potential for financial crime, particularly in sectors with limited supervisory reach.",
     "outlook": "Honduras's risk trajectory is shaped by entrenched governance challenges, including corruption in public institutions and organised crime. Narcotics trafficking exerts ongoing pressure on law-enforcement and judicial systems. Without substantial improvement in anti-corruption capacity and judicial independence, the governance picture is unlikely to ease materially. Introduction of FATF grey-listing would materially raise the risk profile. Firms should maintain enhanced due diligence on Honduran counterparties and monitor the October 2026 FATF plenary.",
     "keyWatchpoints": [
       "Anti-corruption enforcement capacity and judicial independence trends.",
@@ -1382,12 +1382,12 @@ export const NARRATIVES: Record<string, CountryNarrative> = {
   "HR": {
     "summary": "Croatia presents a moderate financial-crime risk profile, with governance weaknesses primarily in corruption, but no FATF listing and no sanctions exposure.",
     "whyItMatters": [
-      "Corruption at a risk rating of 5.0 is the highest-risk individual domain and warrants attention.",
-      "Rule of law and institutions at 3.6 and voice and accountability at 3.2 are at intermediate levels; political stability at 2.2 is a relative strength.",
+      "Corruption at an elevated level is the highest-risk individual domain and warrants attention.",
+      "Rule of law and institutions and voice and accountability are at intermediate levels; political stability is a relative strength.",
       "No FATF grey or black listing applies, and Croatia carries no sanctions exposure.",
-      "CPI score of 47 out of 100 (ranked 63rd of 179) is consistent with the moderate governance assessment."
+      "The CPI reading is consistent with the moderate governance assessment."
     ],
-    "analysis": "Croatia's profile is driven entirely by its governance indicators, with no FATF or sanctions overlay. Corruption is the weakest domain at 5.0, at the boundary of moderate and elevated risk; this reflects persistent concerns around public-sector integrity in the country. Rule of law and institutions at 3.6 and voice and accountability at 3.2 are in the moderate range, while political stability at 2.2 is a relative strength. Croatia is not on the FATF grey or black list and faces no sanctions exposure. The 2024 CPI of 47 is consistent with the moderate risk picture, and Croatia sits in the upper tier of the World Bank governance indicators.",
+    "analysis": "Croatia's profile is driven entirely by its governance indicators, with no FATF or sanctions overlay. Corruption is the weakest domain, at the boundary of moderate and elevated risk; this reflects persistent concerns around public-sector integrity in the country. Rule of law and institutions and voice and accountability are in the moderate range, while political stability is a relative strength. Croatia is not on the FATF grey or black list and faces no sanctions exposure. The CPI reading is consistent with the moderate risk picture, and Croatia sits in the upper tier of the World Bank governance indicators.",
     "outlook": "Croatia's risk profile is broadly stable. As an EU member state, it is subject to the EU's AML framework and FATF oversight. The primary risk driver is corruption, and firms should calibrate their due diligence accordingly, particularly for public-sector linked transactions. No near-term escalation triggers are present.",
     "keyWatchpoints": [
       "Monitor annual CPI and WGI updates to assess whether corruption trends are improving or worsening.",
@@ -1400,11 +1400,11 @@ export const NARRATIVES: Record<string, CountryNarrative> = {
     "summary": "Haiti combines severely weak governance across all domains with a FATF grey-list designation, placing it among the highest-risk jurisdictions in the Caribbean.",
     "whyItMatters": [
       "Haiti is on the FATF grey list (last reviewed 19 June 2026), adding formal increased-monitoring obligations to an already severely weak governance profile.",
-      "Corruption risk of 8.3 is one of the highest in the Americas and the dominant governance weakness.",
-      "CPI score of 16/100 (ranked 167th of 179) reflects acute transparency deficits and institutional failure.",
-      "Rule of law and institutions risk of 7.6 indicates severe weaknesses in judicial and enforcement capacity across the system."
+      "Corruption risk is one of the highest in the Americas and the dominant governance weakness.",
+      "The CPI reading reflects acute transparency deficits and institutional failure.",
+      "Rule of law and institutions risk indicates severe weaknesses in judicial and enforcement capacity across the system."
     ],
-    "analysis": "Haiti combines a severely weak governance profile with current FATF grey listing, confirmed as current in the FATF review of 19 June 2026. Corruption (risk 8.3) is the most severe domain, corroborated by a CPI of 16 and a ranking of 167th of 179. Rule of law and institutions (7.6) and voice and accountability (6.5) are also severely compromised. Political stability (5.1), while the least acute domain, remains elevated. Haiti sits in the lowest third of the World Bank governance indicators. No sanctions apply.",
+    "analysis": "Haiti combines a severely weak governance profile with current FATF grey listing, confirmed as current in the FATF review of 19 June 2026. Corruption (severe) is the most severe domain, corroborated by a very weak CPI reading. Rule of law and institutions (severe) and voice and accountability (elevated) are also severely compromised. Political stability (elevated), while the least acute domain, remains elevated. Haiti sits in the lowest third of the World Bank governance indicators. No sanctions apply.",
     "outlook": "Haiti's risk outlook remains very challenging. Ongoing security and political instability constrain the institutional capacity needed to address FATF's identified AML deficiencies. Progress on the grey-list action plan is dependent on functioning government structures and law-enforcement capability, both of which face significant pressures. Removal from the grey list in the near term appears unlikely absent substantial structural improvement. The next FATF plenary in October 2026 will be a key indicator of progress or continued listing.",
     "keyWatchpoints": [
       "FATF grey-list status: progress on the action plan and any plenary decisions, particularly at October 2026.",
@@ -1417,11 +1417,11 @@ export const NARRATIVES: Record<string, CountryNarrative> = {
     "summary": "Hungary presents moderate risk, with corruption and voice-and-accountability scores among the weakest in the EU, though no FATF listing or sanctions apply.",
     "whyItMatters": [
       "Governance is the weakest among the Central European EU member states in this batch, reflecting genuine concerns in corruption and rule of law.",
-      "Corruption domain scores 5.0 (weighted 35%), at the midpoint of the 0-10 scale and the weakest result in this domain across the batch.",
-      "Voice and accountability scores 4.4 (weighted 10%), signalling constraints on independent oversight that can affect the credibility of public institutions.",
-      "CPI score of 41 out of 100 (rank 81 of 179) is the weakest CPI reading among EU member states in this batch."
+      "Corruption domain is elevated (weighted 35%), at the midpoint of the 0-10 scale and the weakest result in this domain across the batch.",
+      "Voice and accountability is moderate (weighted 10%), signalling constraints on independent oversight that can affect the credibility of public institutions.",
+      "The CPI reading is the weakest CPI reading among EU member states in this batch."
     ],
-    "analysis": "Hungary's profile is driven by the corruption domain (risk 5.0, weighted 35%) and rule of law and institutions (risk 3.97, weighted 40%), both of which sit at or near the moderate-to-high boundary. Voice and accountability (risk 4.4) is also elevated and reflects ongoing concerns about media freedom and institutional independence. Political stability (risk 2.4) is the strongest domain and limits the overall picture. No FATF listing or sanctions apply. The CPI score of 41 is significantly below the EU average, and Hungary sits above the global median on the World Bank governance indicators though behind its EU peers.",
+    "analysis": "Hungary's profile is driven by the corruption domain (weighted 35%) and rule of law and institutions (weighted 40%), both of which sit at or near the moderate-to-high boundary. Voice and accountability (moderate) is also elevated and reflects ongoing concerns about media freedom and institutional independence. Political stability (strong) is the strongest domain and limits the overall picture. No FATF listing or sanctions apply. The CPI reading is significantly below the EU average, and Hungary sits above the global median on the World Bank governance indicators though behind its EU peers.",
     "outlook": "Hungary's governance trajectory is subject to ongoing EU rule-of-law proceedings. Progress on anti-corruption and judicial independence measures linked to EU funding conditionality could improve scores over the medium term; however, structural changes tend to be incremental. Firms should maintain enhanced due diligence for politically exposed persons and public-sector-connected counterparties, and monitor the outcome of EU oversight processes.",
     "keyWatchpoints": [
       "Follow EU rule-of-law procedure outcomes and any conditionality conditions attached to EU structural fund access.",
@@ -1434,11 +1434,11 @@ export const NARRATIVES: Record<string, CountryNarrative> = {
     "summary": "Indonesia has elevated corruption as its primary governance concern, with no FATF or sanctions exposure.",
     "whyItMatters": [
       "Governance is mixed, with corruption the leading weakness against otherwise mid-range readings.",
-      "Corruption is the leading weakness at a risk rating of 6.1; the CPI score of 37/100 (rank 98 of 179, 2024) confirms this as a structural issue.",
-      "Rule of law (4.23) and political stability (4.5) sit at moderate levels, providing partial mitigation.",
+      "Corruption is the leading weakness at an elevated level; the CPI reading confirms this as a structural issue.",
+      "Rule of law (moderate) and political stability (moderate) sit at moderate levels, providing partial mitigation.",
       "No FATF grey or black listing; no sanctions programmes apply."
     ],
-    "analysis": "Indonesia's profile reflects a governance mix anchored by notable corruption risk (6.1) and a broadly mid-range rule-of-law environment (4.23). Voice and accountability (4.4) and political stability (4.5) are also moderate. The CPI of 37/100 (rank 98 of 179) provides consistent corroboration of the corruption picture. No FATF listing or sanctions apply. Indonesia sits slightly above the global midpoint on the World Bank governance indicators despite the elevated corruption domain.",
+    "analysis": "Indonesia's profile reflects a governance mix anchored by notable corruption risk (elevated) and a broadly mid-range rule-of-law environment (moderate). Voice and accountability (moderate) and political stability (moderate) are also moderate. The CPI reading provides consistent corroboration of the corruption picture. No FATF listing or sanctions apply. Indonesia sits slightly above the global midpoint on the World Bank governance indicators despite the elevated corruption domain.",
     "outlook": "Indonesia's governance trajectory has shown incremental reform effort in recent years, though structural corruption remains persistent. The country's large economy and complex regulatory landscape mean that compliance demands vary significantly by sector and geography. Firms should apply proportionate enhanced due diligence, particularly in sectors and provinces where corruption risk is concentrated.",
     "keyWatchpoints": [
       "Track corruption-related developments and the effectiveness of domestic anti-corruption enforcement.",
@@ -1451,11 +1451,11 @@ export const NARRATIVES: Record<string, CountryNarrative> = {
     "summary": "Ireland is a low-risk jurisdiction with strong governance indicators, a high CPI score and active regulatory enforcement, with no FATF listing or sanctions in place.",
     "whyItMatters": [
       "Governance is strong across all four World Bank domains, among the most favourable risk environments in this batch.",
-      "Rule of law and institutions scores 1.63 (weighted 40%), the single strongest governance domain and the heaviest contributor to the profile.",
+      "Rule of law and institutions is strong (weighted 40%), the single strongest governance domain and the heaviest contributor to the profile.",
       "Central Bank of Ireland recorded 119 tracked enforcement actions between 2021 and 2025, reflecting a proactive supervisory posture.",
-      "CPI score of 77 out of 100 (rank 10 of 179) ties Ireland with Iceland as joint 10th cleanest jurisdiction globally."
+      "The CPI reading ties Ireland with Iceland as joint 10th cleanest jurisdiction globally."
     ],
-    "analysis": "Ireland's profile is underpinned by strong performance across all governance domains. Rule of law and institutions (risk 1.63, weighted 40%) is the weightiest contributor and Ireland's strongest result. Corruption (risk 2.0, weighted 35%) and political stability (risk 1.9) are both low risk. Voice and accountability (risk 1.5) is the strongest individual reading in this batch for any country. No FATF listing or sanctions apply. The CPI score of 77 and an upper-decile standing on the World Bank governance indicators confirm Ireland's position as a well-governed financial centre.",
+    "analysis": "Ireland's profile is underpinned by strong performance across all governance domains. Rule of law and institutions (weighted 40%) is the weightiest contributor and Ireland's strongest result. Corruption (weighted 35%) and political stability (strong) are both low risk. Voice and accountability (strong) is the strongest individual reading in this batch for any country. No FATF listing or sanctions apply. The CPI reading and an upper-decile standing on the World Bank governance indicators confirm Ireland's position as a well-governed financial centre.",
     "outlook": "Ireland's role as a significant EU financial hub, hosting many international firms' European headquarters, means its supervisory environment continues to evolve in response to cross-border risk. The Central Bank of Ireland's active enforcement record suggests that the regulatory framework is operationally effective. No material deterioration in the risk profile is anticipated, though firms should remain attentive to evolving EU AML requirements applied through the Irish regulatory perimeter.",
     "keyWatchpoints": [
       "Monitor Central Bank of Ireland enforcement trends for sectoral themes relevant to financial services and fund management.",
@@ -1467,12 +1467,12 @@ export const NARRATIVES: Record<string, CountryNarrative> = {
   "IL": {
     "summary": "Israel has political stability as its primary governance concern and a relatively strong CPI ranking.",
     "whyItMatters": [
-      "Political stability (risk 5.2) is the highest-risk governance domain, reflecting the significant and sustained security environment in which Israel operates.",
-      "The CPI score of 64/100 (rank 30 of 179, 2024) indicates broadly sound public-sector integrity, placing Israel in the better-performing third of assessed countries.",
-      "Rule of law and institutions (risk 2.77) is the strongest governance domain, reflecting a developed legal system and independent judiciary.",
+      "Political stability (elevated) is the highest-risk governance domain, reflecting the significant and sustained security environment in which Israel operates.",
+      "The CPI reading indicates broadly sound public-sector integrity, placing Israel in the better-performing third of assessed countries.",
+      "Rule of law and institutions (strong) is the strongest governance domain, reflecting a developed legal system and independent judiciary.",
       "No FATF listing and no sanctions apply; no tracked enforcement actions are recorded."
     ],
-    "analysis": "Israel's profile is driven entirely by its governance indicators, with no FATF or sanctions overlay. Political stability (5.2) is the clear risk outlier, significantly higher than the other three domains, reflecting the ongoing regional security situation and its impact on political governance. Corruption (3.5) and voice and accountability (3.6) are moderate, consistent with a CPI of 64 and an upper-tier standing on the World Bank governance indicators. Rule of law and institutions (2.77) is the strongest domain, supporting confidence in the legal and regulatory framework. Israel is not on the FATF grey or black list and faces no sanctions exposure.",
+    "analysis": "Israel's profile is driven entirely by its governance indicators, with no FATF or sanctions overlay. Political stability (elevated) is the clear risk outlier, significantly higher than the other three domains, reflecting the ongoing regional security situation and its impact on political governance. Corruption (moderate) and voice and accountability (moderate) are moderate, consistent with a comparatively clean CPI reading and an upper-tier standing on the World Bank governance indicators. Rule of law and institutions (strong) is the strongest domain, supporting confidence in the legal and regulatory framework. Israel is not on the FATF grey or black list and faces no sanctions exposure.",
     "outlook": "Israel's risk profile is primarily shaped by the trajectory of the regional security and political situation, which directly affects the political stability domain. The legal and institutional framework remains comparatively robust. Firms should monitor political stability developments and their potential spillover effects on regulatory capacity and counterparty risk.",
     "keyWatchpoints": [
       "Political stability developments and their effect on institutional capacity and the operating environment.",
@@ -1502,16 +1502,16 @@ export const NARRATIVES: Record<string, CountryNarrative> = {
     "summary": "India has corruption as its principal governance driver, supported by active enforcement through SEBI, with no FATF or sanctions exposure.",
     "whyItMatters": [
       "Governance is mixed, with corruption the dominant weakness against otherwise moderate readings.",
-      "Corruption is the dominant weakness at a risk rating of 5.9; the CPI score of 38/100 (rank 95 of 179, 2024) corroborates this.",
+      "Corruption is the dominant weakness at an elevated level; the CPI reading corroborates this.",
       "SEBI has recorded 408 tracked enforcement actions between 2022 and 2026, indicating an active regulatory posture in the securities sector.",
       "No FATF grey or black listing; no sanctions programmes apply."
     ],
-    "analysis": "India's profile is driven primarily by elevated corruption risk (5.9), with political stability (4.8) and voice and accountability (4.6) also contributing at moderate levels. Rule of law (4.4) is somewhat stronger. The CPI of 38/100 (rank 95 of 179) confirms that corruption remains a structural concern. No FATF listing or sanctions apply. The presence of 408 SEBI enforcement actions across 2022 to 2026 signals active regulatory activity and may indicate both regulatory maturity and underlying market-conduct risk.",
+    "analysis": "India's profile is driven primarily by elevated corruption risk, with political stability (moderate) and voice and accountability (moderate) also contributing at moderate levels. Rule of law (moderate) is somewhat stronger. The CPI reading confirms that corruption remains a structural concern. No FATF listing or sanctions apply. The presence of 408 SEBI enforcement actions across 2022 to 2026 signals active regulatory activity and may indicate both regulatory maturity and underlying market-conduct risk.",
     "outlook": "India's enforcement trajectory suggests a strengthening regulatory environment in the securities sector. However, corruption and institutional risks remain structurally embedded and are unlikely to resolve quickly. Firms should factor in SEBI's active enforcement stance when assessing securities-sector counterparties, while maintaining enhanced due diligence on politically exposed persons and high-value transactions.",
     "keyWatchpoints": [
       "Monitor SEBI enforcement action trends, given 408 tracked actions between 2022 and 2026.",
       "Track CPI trends and domestic anti-corruption reform progress, particularly in public procurement and state-level institutions.",
-      "Assess beneficial ownership structures involving politically exposed persons given the corruption risk rating of 5.9.",
+      "Assess beneficial ownership structures involving politically exposed persons given the corruption elevated risk rating.",
       "Review AML/CFT compliance requirements in the banking and financial services sectors, where regulatory expectations continue to evolve."
     ]
   },
@@ -1519,11 +1519,11 @@ export const NARRATIVES: Record<string, CountryNarrative> = {
     "summary": "Iraq combines critical governance weaknesses with recent FATF grey-list placement in June 2026 and severe corruption indicators.",
     "whyItMatters": [
       "Iraq was added to the FATF grey list on 19 June 2026, indicating identified strategic AML and counter-financing-of-terrorism deficiencies subject to increased monitoring.",
-      "Corruption (risk 8.1) is the dominant governance weakness; the CPI score of 26/100 (rank 139 of 179, 2024) places Iraq among the most corrupt assessed countries.",
-      "Rule of law and institutions (risk 6.97) and political stability (risk 7.2) are both severely elevated, reflecting the legacy of conflict and fragmented state authority.",
+      "Corruption (severe) is the dominant governance weakness; the CPI reading places Iraq among the most corrupt assessed countries.",
+      "Rule of law and institutions and political stability are both severely elevated, reflecting the legacy of conflict and fragmented state authority.",
       "No sanctions apply to Iraq, so the FATF grey listing sits on top of an already severely weak governance picture."
     ],
-    "analysis": "Iraq combines a severely weak governance profile with recent FATF grey listing. All four governance domains are severely elevated. Corruption (8.1) is the most critical, consistent with a CPI of 26 and a position in the lowest third of the World Bank governance indicators. Political stability (7.2) and rule of law and institutions (6.97) reflect the ongoing challenges of institutional reconstruction following prolonged conflict. Voice and accountability (6.1) is comparatively the least adverse domain but remains high. The FATF grey-list placement in June 2026 confirms that strategic deficiencies in Iraq's AML and counter-financing-of-terrorism framework have been formally identified. No sanctions exposure applies.",
+    "analysis": "Iraq combines a severely weak governance profile with recent FATF grey listing. All four governance domains are severely elevated. Corruption (severe) is the most critical, consistent with a very weak CPI reading and a position in the lowest third of the World Bank governance indicators. Political stability (severe) and rule of law and institutions (elevated) reflect the ongoing challenges of institutional reconstruction following prolonged conflict. Voice and accountability (elevated) is comparatively the least adverse domain but remains high. The FATF grey-list placement in June 2026 confirms that strategic deficiencies in Iraq's AML and counter-financing-of-terrorism framework have been formally identified. No sanctions exposure applies.",
     "outlook": "Iraq's risk outlook is negative in the near term. The FATF grey-list placement requires Iraq to complete a remediation action plan under increased monitoring. Progress will depend on the pace of institutional reform, which faces structural headwinds from corruption and political fragmentation. Firms should treat Iraq as a very high-risk jurisdiction requiring enhanced due diligence and should monitor FATF progress reports for any change in listing status.",
     "keyWatchpoints": [
       "FATF grey-list progress reviews and any action plan milestones that may indicate remediation trajectory.",
@@ -1537,10 +1537,10 @@ export const NARRATIVES: Record<string, CountryNarrative> = {
     "whyItMatters": [
       "Iran is on the FATF black list (subject to call for action and countermeasures, last reviewed 19 June 2026), the highest possible FATF designation.",
       "Comprehensive sanctions apply under the US OFAC Iran embargo (ITSR), alongside targeted measures from the EU, UK, and UN.",
-      "Corruption (risk 7.6) and voice and accountability (risk 7.0) reflect a governance environment characterised by severe institutional weakness.",
-      "The CPI score of 23/100 (rank 150 of 179, 2024) places Iran among the most corrupt countries assessed."
+      "Corruption (severe) and voice and accountability (severe) reflect a governance environment characterised by severe institutional weakness.",
+      "The CPI reading places Iran among the most corrupt countries assessed."
     ],
-    "analysis": "Iran's profile combines an exceptionally weak governance picture with FATF blacklisting and a comprehensive sanctions regime. Governance is driven by corruption (7.6), voice and accountability (7.0), and rule of law and institutions (6.5), all of which are severely elevated. Political stability (5.6) is the relatively least-adverse domain but remains high. The CPI of 23 and a position in the lowest third of the World Bank governance indicators confirm a deeply deficient institutional environment. Multiple sanctions programmes are in force, including the comprehensive US OFAC Iran embargo, EU restrictive measures, UK Iran (Sanctions) Regulations, and UN proliferation measures. Business with Iran is effectively prohibited for most regulated firms.",
+    "analysis": "Iran's profile combines an exceptionally weak governance picture with FATF blacklisting and a comprehensive sanctions regime. Governance is driven by corruption (severe), voice and accountability (severe), and rule of law and institutions (elevated), all of which are severely elevated. Political stability (elevated) is the relatively least-adverse domain but remains high. The CPI reading and a position in the lowest third of the World Bank governance indicators confirm a deeply deficient institutional environment. Multiple sanctions programmes are in force, including the comprehensive US OFAC Iran embargo, EU restrictive measures, UK Iran (Sanctions) Regulations, and UN proliferation measures. Business with Iran is effectively prohibited for most regulated firms.",
     "outlook": "Iran's risk outlook is negative. FATF countermeasures remain in force and there is no indication of imminent removal from the black list. Comprehensive sanctions significantly constrain any legitimate financial exposure. Firms must apply the highest level of scrutiny to any transaction or relationship with a nexus to Iran, including indirect exposure through third-party jurisdictions.",
     "keyWatchpoints": [
       "Any FATF black-list review outcomes and the status of countermeasures at future plenaries.",
@@ -1553,11 +1553,11 @@ export const NARRATIVES: Record<string, CountryNarrative> = {
     "summary": "Iceland is a low-risk jurisdiction with consistently strong governance across all domains, a high CPI score and no FATF listing or sanctions exposure.",
     "whyItMatters": [
       "Governance is very strong across all four World Bank domains, among the strongest in this batch.",
-      "Political stability scores 1.4 (weighted 15%), the strongest of the four governance domains, and remains firmly in low-risk territory.",
-      "CPI score of 77 out of 100 (rank 10 of 179) places Iceland among the least corrupt countries globally.",
+      "Political stability is strong (weighted 15%), the strongest of the four governance domains, and remains firmly in low-risk territory.",
+      "The CPI reading places Iceland among the least corrupt countries globally.",
       "Iceland is not on the FATF grey or black list and carries no sanctions exposure."
     ],
-    "analysis": "Iceland's profile reflects near-uniform strength across all governance domains. Corruption (risk 1.8, weighted 35%) and rule of law and institutions (risk 1.87, weighted 40%) are the weightiest contributors and both indicate strong institutional integrity. Political stability (risk 1.4) is the single strongest domain. Voice and accountability (risk 1.8) is equally strong. No FATF listing or sanctions apply. The CPI score of 77 and an upper-decile standing on the World Bank governance indicators corroborate the low-risk picture.",
+    "analysis": "Iceland's profile reflects near-uniform strength across all governance domains. Corruption (weighted 35%) and rule of law and institutions (weighted 40%) are the weightiest contributors and both indicate strong institutional integrity. Political stability (strong) is the single strongest domain. Voice and accountability (strong) is equally strong. No FATF listing or sanctions apply. The CPI reading and an upper-decile standing on the World Bank governance indicators corroborate the low-risk picture.",
     "outlook": "Iceland's small, open economy with robust institutions and high social trust provides a stable long-term risk foundation. No material adverse drivers are present. Firms conducting business with Icelandic counterparties can generally apply standard, proportionate due diligence. Any future changes to the risk profile are more likely to reflect global AML standard evolution than domestic governance deterioration.",
     "keyWatchpoints": [
       "Monitor any FATF mutual evaluation outcomes to confirm continued compliance with international AML standards.",
@@ -1570,11 +1570,11 @@ export const NARRATIVES: Record<string, CountryNarrative> = {
     "summary": "Italy presents moderate risk, with corruption and rule-of-law scores above Western European norms, though active dual-regulator enforcement signals ongoing supervisory effort.",
     "whyItMatters": [
       "Governance is weaker than most Northern and Western European peers in this batch, with corruption and rule-of-law weaknesses as the primary drivers.",
-      "Corruption domain scores 4.1 (weighted 35%), the dominant risk contributor, reflecting persistent structural concerns.",
+      "Corruption domain is moderate (weighted 35%), the dominant risk contributor, reflecting persistent structural concerns.",
       "264 tracked enforcement actions across two regulators (Banca d'Italia and IVASS) between 2018 and 2026 indicate active, broad-based supervision.",
-      "CPI score of 54 out of 100 (rank 52 of 179) is below the EU average but still in the upper half of the global ranking."
+      "The CPI reading is below the EU average but still in the upper half of the global ranking."
     ],
-    "analysis": "Italy's profile is driven primarily by the corruption domain (risk 4.1, weighted 35%) and rule of law and institutions (risk 3.27, weighted 40%). Political stability (risk 2.6) and voice and accountability (risk 2.4) are comparatively better and temper the overall picture. No FATF listing or sanctions apply. The CPI score of 54 is consistent with the governance picture: below the EU core average but not in severely elevated territory. Italy sits in the upper tier of the World Bank governance indicators. Enforcement is conducted by both Banca d'Italia (banking) and IVASS (insurance), indicating comprehensive sectoral coverage.",
+    "analysis": "Italy's profile is driven primarily by the corruption domain (weighted 35%) and rule of law and institutions (weighted 40%). Political stability (strong) and voice and accountability (strong) are comparatively better and temper the overall picture. No FATF listing or sanctions apply. The CPI reading is consistent with the governance picture: below the EU core average but not in severely elevated territory. Italy sits in the upper tier of the World Bank governance indicators. Enforcement is conducted by both Banca d'Italia (banking) and IVASS (insurance), indicating comprehensive sectoral coverage.",
     "outlook": "Italy's governance scores reflect long-standing structural factors rather than acute deterioration. EU institutional oversight and domestic anti-corruption initiatives provide a framework for gradual improvement, but change in these domains tends to be slow. The dual-regulator model with a high volume of enforcement actions suggests that supervisory intensity is maintained. Firms should apply proportionate enhanced due diligence for higher-risk business lines while recognising Italy's overall moderate, not high, risk position.",
     "keyWatchpoints": [
       "Monitor Banca d'Italia and IVASS enforcement patterns for emerging sectoral or thematic risk areas.",
@@ -1587,11 +1587,11 @@ export const NARRATIVES: Record<string, CountryNarrative> = {
     "summary": "Jersey is a well-regulated Crown Dependency with strong governance indicators, no FATF listing or sanctions, and active oversight by the Jersey Financial Services Commission.",
     "whyItMatters": [
       "Jersey is not on the FATF grey or black list and no sanctions apply, so the profile is determined by governance factors alone.",
-      "Rule of law and institutions (risk 2.23) is the strongest governance domain, reflecting a mature and robust legal and regulatory framework.",
-      "Political stability risk (0.9) is very low, the strongest individual domain reading in this batch.",
+      "Rule of law and institutions (strong) is the strongest governance domain, reflecting a mature and robust legal and regulatory framework.",
+      "Political stability risk (strong) is very low, the strongest individual domain reading in this batch.",
       "The Jersey Financial Services Commission (JFSC) has recorded 1 tracked enforcement action (2021), indicating active but proportionate regulatory oversight."
     ],
-    "analysis": "Jersey's profile reflects a low-risk governance picture. Rule of law (2.23) and political stability (0.9) are the strongest dimensions. Voice and accountability (1.9) and corruption (3.1) are slightly more elevated but remain firmly in the low-risk range. No CPI data is available for Jersey. Jersey sits in the upper tier of the World Bank governance indicators. As an internationally recognised offshore financial centre and Crown Dependency, Jersey maintains AML/CFT standards aligned with UK and international requirements. JFSC enforcement activity, while limited in count, demonstrates active regulatory presence.",
+    "analysis": "Jersey's profile reflects a low-risk governance picture. Rule of law (strong) and political stability (strong) are the strongest dimensions. Voice and accountability (strong) and corruption (moderate) are slightly more elevated but remain firmly in the low-risk range. No CPI data is available for Jersey. Jersey sits in the upper tier of the World Bank governance indicators. As an internationally recognised offshore financial centre and Crown Dependency, Jersey maintains AML/CFT standards aligned with UK and international requirements. JFSC enforcement activity, while limited in count, demonstrates active regulatory presence.",
     "outlook": "Jersey's low-risk standing is well-grounded and unlikely to change materially in the near term given its strong institutional foundations and alignment with UK regulatory standards. The primary monitoring consideration is the robustness of beneficial ownership transparency and the effectiveness of AML/CFT supervision for complex offshore structures. Any changes to the UK regulatory relationship post-Brexit may be relevant over the medium term.",
     "keyWatchpoints": [
       "JFSC supervisory activity and any material increase in enforcement actions.",
@@ -1601,14 +1601,14 @@ export const NARRATIVES: Record<string, CountryNarrative> = {
     ]
   },
   "JM": {
-    "summary": "Jamaica has corruption as its principal governance weakness, a CPI of 44 consistent with regional peers, and no FATF listing or sanctions in effect.",
+    "summary": "Jamaica has corruption as its principal governance weakness, a weak CPI reading consistent with regional peers, and no FATF listing or sanctions in effect.",
     "whyItMatters": [
-      "Corruption risk of 5.5 is the highest governance domain and the primary risk driver.",
-      "CPI score of 44/100 (ranked 73rd of 179) is among the stronger results in the Caribbean, though corruption remains a concern.",
+      "Corruption risk is the highest governance domain and the primary risk driver.",
+      "The CPI reading is among the stronger results in the Caribbean, though corruption remains a concern.",
       "No FATF grey or black listing and no sanctions apply, so the profile rests on governance alone.",
-      "Political stability risk of 2.6 and voice and accountability risk of 3.5 are comparative strengths in the governance profile."
+      "Political stability risk and voice and accountability risk are comparative strengths in the governance profile."
     ],
-    "analysis": "Jamaica's profile reflects a governance picture with moderate overall risk. Corruption (risk 5.5) is the weakest domain and the main driver, though the CPI score of 44 indicates a comparatively better corruption environment than several regional peers. Rule of law and institutions (risk 4.4) presents a secondary concern. Political stability (2.6) and voice and accountability (3.5) are relative strengths, reflecting Jamaica's democratic tradition. No FATF or sanctions overlay applies. Jamaica sits above the global midpoint on the World Bank governance indicators, making it one of the lower-risk jurisdictions in the Caribbean.",
+    "analysis": "Jamaica's profile reflects a governance picture with moderate overall risk. Corruption (elevated) is the weakest domain and the main driver, though the CPI reading indicates a comparatively better corruption environment than several regional peers. Rule of law and institutions (moderate) presents a secondary concern. Political stability (strong) and voice and accountability (moderate) are relative strengths, reflecting Jamaica's democratic tradition. No FATF or sanctions overlay applies. Jamaica sits above the global midpoint on the World Bank governance indicators, making it one of the lower-risk jurisdictions in the Caribbean.",
     "outlook": "Jamaica's risk outlook is moderately stable. The country's democratic institutions and functioning rule-of-law framework provide a sound foundation, though organised crime and narcotics-related financial flows represent persistent structural risks. Continued investment in financial intelligence capacity and AML supervision would be needed to maintain the current standing. Any move towards FATF listing would be a significant adverse development. The October 2026 FATF plenary should be monitored for regional Caribbean assessments.",
     "keyWatchpoints": [
       "Organised crime and narcotics proceeds flowing through the financial system.",
@@ -1620,12 +1620,12 @@ export const NARRATIVES: Record<string, CountryNarrative> = {
   "JO": {
     "summary": "Jordan has voice and accountability and corruption as its leading governance concerns, with no FATF or sanctions listing.",
     "whyItMatters": [
-      "Voice and accountability (risk 5.6) is the highest-risk governance domain, reflecting significant constraints on political participation and civil freedoms.",
-      "Corruption (risk 5.0) sits at a mid-range level; the CPI score of 49/100 (rank 59 of 179, 2024) indicates moderate public-sector integrity concerns.",
-      "Rule of law and institutions (risk 4.07) is a mid-range reading, pointing to a functional but imperfect legal framework.",
+      "Voice and accountability (elevated) is the highest-risk governance domain, reflecting significant constraints on political participation and civil freedoms.",
+      "Corruption (elevated) sits at a mid-range level; the CPI reading indicates moderate public-sector integrity concerns.",
+      "Rule of law and institutions (moderate) is a mid-range reading, pointing to a functional but imperfect legal framework.",
       "No FATF listing and no sanctions apply; no tracked enforcement actions are recorded."
     ],
-    "analysis": "Jordan's profile is determined entirely by its governance indicators, with no FATF or sanctions overlay. Voice and accountability (5.6) is the weakest domain, reflecting the country's constrained political system. Corruption (5.0) sits at a mid-range level and is consistent with the CPI of 49. Rule of law and institutions (4.07) and political stability (3.9) are at moderate levels, the latter reflecting Jordan's relatively stable position in an otherwise volatile subregion. Jordan sits in the lower half of the World Bank governance indicators. Jordan is not on the FATF grey or black list and carries no sanctions exposure.",
+    "analysis": "Jordan's profile is determined entirely by its governance indicators, with no FATF or sanctions overlay. Voice and accountability (elevated) is the weakest domain, reflecting the country's constrained political system. Corruption (elevated) sits at a mid-range level and is consistent with the CPI reading. Rule of law and institutions (moderate) and political stability (moderate) are at moderate levels, the latter reflecting Jordan's relatively stable position in an otherwise volatile subregion. Jordan sits in the lower half of the World Bank governance indicators. Jordan is not on the FATF grey or black list and carries no sanctions exposure.",
     "outlook": "Jordan's risk profile is likely to remain at the moderate level. The jurisdiction benefits from relative political stability in a challenging subregion, but the governance gaps in voice and accountability and corruption constrain a more favourable rating. Firms should maintain standard enhanced due diligence proportionate to a mid-range moderate-risk jurisdiction and monitor any FATF assessment outcomes.",
     "keyWatchpoints": [
       "PEP and state-linked entity exposure given the elevated voice and accountability score and centralised political authority.",
@@ -1638,11 +1638,11 @@ export const NARRATIVES: Record<string, CountryNarrative> = {
     "summary": "Japan is underpinned by very strong rule of law and political stability, a high CPI ranking, and no FATF or sanctions exposure.",
     "whyItMatters": [
       "Governance is consistently strong across all four World Bank domains.",
-      "Rule of law is the strongest governance domain at a risk rating of 1.67, among the best readings in the Asia-Pacific region.",
-      "CPI score of 71/100 (rank 20 of 179, 2024) independently confirms Japan as a clean jurisdiction.",
+      "Rule of law is the strongest governance domain at a low-risk level, among the best readings in the Asia-Pacific region.",
+      "The CPI reading independently confirms Japan as a clean jurisdiction.",
       "SESC has recorded 66 tracked enforcement actions between 2023 and 2026, reflecting an active and functioning capital-markets regulator."
     ],
-    "analysis": "Japan's profile reflects consistently strong governance across all four domains. Rule of law (1.67) and political stability (1.2) are the standout strengths. Corruption (2.5) and voice and accountability (2.3) are also low-risk. The CPI of 71/100 (rank 20 of 179) strongly corroborates the governance picture. No FATF listing or sanctions apply. Japan sits in the upper tier of the World Bank governance indicators. The 66 SESC enforcement actions from 2023 to 2026 are consistent with an active regulatory regime in a sophisticated capital market.",
+    "analysis": "Japan's profile reflects consistently strong governance across all four domains. Rule of law (strong) and political stability (strong) are the standout strengths. Corruption (strong) and voice and accountability (strong) are also low-risk. The CPI reading strongly corroborates the governance picture. No FATF listing or sanctions apply. Japan sits in the upper tier of the World Bank governance indicators. The 66 SESC enforcement actions from 2023 to 2026 are consistent with an active regulatory regime in a sophisticated capital market.",
     "outlook": "Japan's risk profile is stable and well-governed. No near-term deterioration is anticipated. Firms may apply standard, proportionate due diligence. The SESC's enforcement record suggests ongoing regulatory vigilance in the securities sector, which firms with Japanese securities-market exposure should factor into compliance planning.",
     "keyWatchpoints": [
       "Monitor SESC enforcement trends, given 66 tracked actions from 2023 to 2026.",
@@ -1655,11 +1655,11 @@ export const NARRATIVES: Record<string, CountryNarrative> = {
     "summary": "Kenya combines a current FATF grey-list designation with elevated corruption and broad governance weaknesses.",
     "whyItMatters": [
       "Kenya is on the FATF grey list (last reviewed 19 June 2026), adding formal increased-monitoring obligations to an already weak governance profile.",
-      "Corruption risk scores 6.8, indicating significant weaknesses in public-sector integrity and AML gatekeeping.",
-      "The CPI score of 32 out of 100 (rank 120 of 179) reflects persistent corruption perceptions across the public and private sectors.",
+      "Corruption risk is elevated, indicating significant weaknesses in public-sector integrity and AML gatekeeping.",
+      "The CPI reading reflects persistent corruption perceptions across the public and private sectors.",
       "Governance is weak across the four World Bank domains, so the FATF listing compounds an already elevated base of concern."
     ],
-    "analysis": "Kenya combines a weak governance profile with current FATF grey listing. Corruption is the strongest risk driver at 6.8, followed by rule of law and institutions at 5.2 and political stability at 5.1. Voice and accountability at 4.8 is the comparatively lower-risk domain. Kenya carries no sanctions exposure. The CPI rank of 120 of 179 confirms a below-median position on transparency, and Kenya sits below the median of assessed jurisdictions on the World Bank governance indicators. No enforcement actions are recorded in the dataset.",
+    "analysis": "Kenya combines a weak governance profile with current FATF grey listing. Corruption is the strongest risk driver, followed by rule of law and institutions and political stability. Voice and accountability is the comparatively lower-risk domain. Kenya carries no sanctions exposure. The CPI ranking confirms a below-median position on transparency, and Kenya sits below the median of assessed jurisdictions on the World Bank governance indicators. No enforcement actions are recorded in the dataset.",
     "outlook": "Kenya's FATF grey-list status means it is subject to increased monitoring and must demonstrate progress on its action plan before delisting. The October 2026 plenary represents the next key review milestone. Sustained reform of AML supervision and beneficial-ownership registries would be required for the risk picture to improve materially. Without delisting, the FATF overlay will remain in place.",
     "keyWatchpoints": [
       "Track FATF progress reports and the outcome of the October 2026 plenary for any delisting or escalation decision.",
@@ -1672,16 +1672,16 @@ export const NARRATIVES: Record<string, CountryNarrative> = {
     "summary": "Kyrgyzstan has severe corruption and weak rule of law as its primary risk drivers, with no FATF listing currently in place and no sanctions exposure.",
     "whyItMatters": [
       "Governance is weak across the four World Bank domains, with corruption and rule of law the most acute.",
-      "Corruption is the most acute weakness at a risk rating of 7.6; the CPI score of 25/100 (rank 145 of 179, 2024) corroborates the severity.",
-      "Rule of law is also severely weak at a risk rating of 6.07, undermining institutional capacity to address financial crime.",
+      "Corruption is the most acute weakness at a severe level; the CPI reading corroborates the severity.",
+      "Rule of law is also severely weak at an elevated level, undermining institutional capacity to address financial crime.",
       "No FATF grey or black listing applies at present; no sanctions programmes are in force."
     ],
-    "analysis": "Kyrgyzstan's profile is driven by severe corruption (7.6) and materially weak rule of law (6.07). Voice and accountability (5.6) is also elevated. Political stability at 4.3 is relatively less acute but remains a moderate concern. The CPI of 25/100 (rank 145 of 179) provides strong independent corroboration of entrenched corruption. No FATF listing or sanctions apply, so the profile reflects governance risk alone. Kyrgyzstan sits well below the median of assessed jurisdictions on the World Bank governance indicators.",
+    "analysis": "Kyrgyzstan's profile is driven by severe corruption and materially weak rule of law. Voice and accountability (elevated) is also elevated. Political stability is relatively less acute but remains a moderate concern. The CPI reading provides strong independent corroboration of entrenched corruption. No FATF listing or sanctions apply, so the profile reflects governance risk alone. Kyrgyzstan sits well below the median of assessed jurisdictions on the World Bank governance indicators.",
     "outlook": "Kyrgyzstan's governance challenges are structural and long-standing. Corruption and institutional weakness are unlikely to improve materially in the short term. Firms should apply enhanced due diligence for Kyrgyz counterparties and monitor FATF plenary cycles given the jurisdiction's governance profile, which may attract heightened international scrutiny over time.",
     "keyWatchpoints": [
       "Monitor FATF plenary outcomes in October 2026 for any change in listing status, given the high governance risk profile.",
       "Track corruption-related enforcement and any domestic reform measures affecting beneficial ownership transparency.",
-      "Assess exposure to state-linked entities and politically exposed persons given the corruption risk rating of 7.6.",
+      "Assess exposure to state-linked entities and politically exposed persons given the corruption severe risk rating.",
       "Review correspondent banking relationships in light of Kyrgyzstan's elevated risk and weak rule-of-law environment."
     ]
   },
@@ -1689,16 +1689,16 @@ export const NARRATIVES: Record<string, CountryNarrative> = {
     "summary": "Cambodia reflects severe corruption and very weak voice and accountability, though no FATF listing or sanctions currently apply.",
     "whyItMatters": [
       "Governance is weak across the four World Bank domains, with corruption and accountability the most acute.",
-      "Corruption is the most acute weakness at a risk rating of 7.5, one of the highest domain readings in the region.",
-      "CPI score of 21/100 (rank 157 of 179, 2024) confirms Cambodia as one of the more corrupt jurisdictions globally.",
+      "Corruption is the most acute weakness at a severe level, one of the highest domain readings in the region.",
+      "The CPI reading confirms Cambodia as one of the more corrupt jurisdictions globally.",
       "No FATF grey or black listing applies at present, and no sanctions overlay bears on the profile."
     ],
-    "analysis": "Cambodia's profile is anchored in severe corruption (7.5) and weak voice and accountability (7.0), with rule of law also materially weak at 5.83. Political stability is comparatively stronger at 3.2. The CPI score of 21/100 (rank 157 of 179) provides independent corroboration of the corruption picture. Cambodia is not on the FATF grey or black list, and no sanctions programmes apply, so the profile reflects governance risk alone. Cambodia sits well below the median of assessed jurisdictions on the World Bank governance indicators.",
+    "analysis": "Cambodia's profile is anchored in severe corruption and weak voice and accountability, with rule of law also materially weak. Political stability is comparatively stronger. The CPI reading provides independent corroboration of the corruption picture. Cambodia is not on the FATF grey or black list, and no sanctions programmes apply, so the profile reflects governance risk alone. Cambodia sits well below the median of assessed jurisdictions on the World Bank governance indicators.",
     "outlook": "Structural corruption and institutional weaknesses are entrenched and unlikely to resolve rapidly. FATF listing risk warrants ongoing monitoring, as jurisdictions with Cambodia's governance profile have historically attracted enhanced scrutiny. Firms should expect heightened due diligence requirements to persist and anticipate potential regulatory developments in the October 2026 plenary cycle.",
     "keyWatchpoints": [
       "Monitor FATF plenary decisions in October 2026 for any change to Cambodia's listing status.",
       "Track CPI trends and any domestic anti-corruption enforcement developments.",
-      "Assess beneficial ownership transparency, given weak rule of law (risk 5.83) and accountability constraints.",
+      "Assess beneficial ownership transparency, given weak rule of law and accountability constraints.",
       "Review exposure to real estate, gaming, and casino sectors given known typologies in jurisdictions with similar profiles."
     ]
   },
@@ -1706,28 +1706,28 @@ export const NARRATIVES: Record<string, CountryNarrative> = {
     "summary": "Comoros is characterised by weak rule of law and very low transparency, though it carries no FATF listing or sanctions.",
     "whyItMatters": [
       "Governance is weak across the four World Bank domains, so the risk is structural and governance-driven.",
-      "Corruption (WGI) at a risk rating of 7.5 (35% weight) is the most acute governance domain.",
-      "Rule of law and institutions at a risk rating of 6.7 (40% weight) is the primary structural driver.",
-      "CPI score of 21/100, ranked 157th of 179 in 2024, places Comoros in the bottom decile globally on transparency."
+      "Corruption (WGI) at a severe level (35% weight) is the most acute governance domain.",
+      "Rule of law and institutions at an elevated level (40% weight) is the primary structural driver.",
+      "The CPI reading places Comoros in the bottom decile globally on transparency."
     ],
-    "analysis": "Comoros' profile reflects a weak governance picture with no FATF or sanctions overlay. Corruption at a risk rating of 7.5 (35% weight) is the most severe domain, and rule of law and institutions at 6.7 (40% weight) is the largest contributor. Voice and accountability at 6.6 indicates constrained institutional oversight. Political stability at 4.1 is the relative governance strength, though it remains elevated in absolute terms. The CPI score of 21/100, tied 157th of 179 with Chad, signals extremely low transparency and significant embedded corruption risk.",
-    "outlook": "Comoros presents structural governance risks that are unlikely to resolve quickly. The CPI score of 21/100 alongside high WGI corruption and rule-of-law readings indicate persistent institutional weaknesses. Firms should apply enhanced due diligence commensurate with the elevated risk and monitor whether any FATF assessment of the country is initiated given the underlying risk indicators.",
+    "analysis": "Comoros' profile reflects a weak governance picture with no FATF or sanctions overlay. Corruption at a severe level (35% weight) is the most severe domain, and rule of law and institutions (40% weight) is the largest contributor. Voice and accountability indicates constrained institutional oversight. Political stability is the relative governance strength, though it remains elevated in absolute terms. The CPI reading with Chad, signals extremely low transparency and significant embedded corruption risk.",
+    "outlook": "Comoros presents structural governance risks that are unlikely to resolve quickly. The CPI reading alongside high WGI corruption and rule-of-law readings indicate persistent institutional weaknesses. Firms should apply enhanced due diligence commensurate with the elevated risk and monitor whether any FATF assessment of the country is initiated given the underlying risk indicators.",
     "keyWatchpoints": [
-      "Corruption (WGI) at a risk rating of 7.5, the most critical governance domain and a significant financial crime risk factor.",
-      "Rule of law and institutions at a risk rating of 6.7, the most heavily weighted domain and primary governance driver.",
-      "CPI trajectory, given the current score of 21/100 is one of the lowest globally.",
+      "Corruption (WGI) at a severe level, the most critical governance domain and a significant financial crime risk factor.",
+      "Rule of law and institutions at an elevated level, the most heavily weighted domain and primary governance driver.",
+      "CPI trajectory, given the current CPI reading is one of the lowest globally.",
       "Any FATF engagement with Comoros, which has not been listed but exhibits high inherent risk characteristics."
     ]
   },
   "KN": {
     "summary": "Saint Kitts and Nevis, an Eastern Caribbean state with a long-running citizenship-by-investment programme, rests on a strong governance base, with no FATF listing or sanctions in place.",
     "whyItMatters": [
-      "A solid governance base, with political stability at 1.9 the strongest domain, anchors the profile.",
-      "Corruption at 4.5 is the weakest governance domain; rule of law scores 3.53 and accountability 3.5.",
+      "A solid governance base, with political stability the strongest domain, anchors the profile.",
+      "Corruption is the weakest governance domain; rule of law is moderate and accountability is moderate.",
       "Saint Kitts and Nevis operates the world's longest-running citizenship-by-investment programme, a structural feature relevant to identity and due diligence vulnerabilities.",
       "No FATF grey or black listing applies and no sanctions are in place; no CPI data are published, so corruption context rests on WGI alone."
     ],
-    "analysis": "Saint Kitts and Nevis is a twin-island Eastern Caribbean federation assessed for AML/CFT purposes by the Caribbean Financial Action Task Force (CFATF). Its risk picture is governance-derived, with no FATF or sanctions overlay. The governance base is solid: political stability scores 1.9, accountability 3.5, rule of law 3.53, and corruption is the weakest domain at 4.5. It sits in the upper third of the World Bank governance indicators, though no CPI data are published to corroborate the corruption reading. The defining structural feature is its citizenship-by-investment programme, the oldest such scheme in the world, which has drawn sustained international scrutiny over due diligence standards. The federation completed its CFATF mutual evaluation following an on-site visit in March 2021 and has since undertaken follow-up reporting; it reconstituted its Citizenship by Investment Unit as a statutory body in October 2024 with enhanced AML and screening protocols.",
+    "analysis": "Saint Kitts and Nevis is a twin-island Eastern Caribbean federation assessed for AML/CFT purposes by the Caribbean Financial Action Task Force (CFATF). Its risk picture is governance-derived, with no FATF or sanctions overlay. The governance base is solid: political stability is strong, accountability is moderate, rule of law is moderate, and corruption is the weakest domain. It sits in the upper third of the World Bank governance indicators, though no CPI data are published to corroborate the corruption reading. The defining structural feature is its citizenship-by-investment programme, the oldest such scheme in the world, which has drawn sustained international scrutiny over due diligence standards. The federation completed its CFATF mutual evaluation following an on-site visit in March 2021 and has since undertaken follow-up reporting; it reconstituted its Citizenship by Investment Unit as a statutory body in October 2024 with enhanced AML and screening protocols.",
     "outlook": "The federation's profile reflects a sound governance base offset by its citizenship-by-investment exposure. The forward picture depends on the durability of the 2024 CBI screening reforms, CFATF follow-up remediation, and the corruption domain as the weakest governance reading. Firms should apply enhanced due diligence where counterparties hold Kittitian passports or corporate registrations and monitor CFATF follow-up reporting and the October 2026 FATF plenary for any change in status.",
     "keyWatchpoints": [
       "Citizenship-by-investment programme due diligence and the durability of the 2024 screening reforms; apply enhanced due diligence to Kittitian passport-holders and corporate registrations.",
@@ -1742,9 +1742,9 @@ export const NARRATIVES: Record<string, CountryNarrative> = {
       "North Korea combines catastrophic governance with the most severe FATF and sanctions treatment applied to any jurisdiction.",
       "North Korea is on the FATF black list and is subject to a call for action and countermeasures, as last reviewed on 19 June 2026.",
       "Comprehensive sanctions are imposed by OFAC (North Korea Sanctions Regulations); sectoral programmes are maintained by the UN (DPRK 1718 regime), EU (DPRK restrictive measures), and UK (North Korea (Sanctions) Regulations).",
-      "CPI score of 15/100 (rank 169 of 179, 2024) is among the worst globally, consistent with near-total absence of institutional accountability."
+      "The CPI reading is among the worst globally, consistent with near-total absence of institutional accountability."
     ],
-    "analysis": "North Korea's profile combines catastrophic governance with FATF blacklisting and a comprehensive sanctions regime. Governance is driven by corruption (risk 8.4), rule of law (risk 7.23), and voice and accountability (risk 7.7). The FATF black-list status is subject to a call for action and countermeasures as reviewed on 19 June 2026. Comprehensive OFAC sanctions apply, supplemented by UN, EU, and UK sectoral programmes. The CPI of 15/100 (rank 169 of 179) independently confirms the near-total absence of governance. No enforcement data is available from domestic regulators.",
+    "analysis": "North Korea's profile combines catastrophic governance with FATF blacklisting and a comprehensive sanctions regime. Governance is driven by corruption (severe), rule of law (severe), and voice and accountability (severe). The FATF black-list status is subject to a call for action and countermeasures as reviewed on 19 June 2026. Comprehensive OFAC sanctions apply, supplemented by UN, EU, and UK sectoral programmes. The CPI reading independently confirms the near-total absence of governance. No enforcement data is available from domestic regulators.",
     "outlook": "North Korea's risk profile is the most acute available in this model and is not expected to improve. FATF countermeasures remain in force, and the multilateral sanctions architecture is comprehensive. Firms must apply the strictest prohibitions and should treat any exposure as a severe red flag requiring immediate escalation. The FATF plenary in October 2026 should be monitored for any listing review, though no change is anticipated.",
     "keyWatchpoints": [
       "FATF black-list status and active call for countermeasures require firms to apply enhanced countermeasures in line with FATF Recommendation 19.",
@@ -1757,11 +1757,11 @@ export const NARRATIVES: Record<string, CountryNarrative> = {
     "summary": "South Korea reflects strong rule of law and institutional governance, a solid CPI ranking, and no FATF listing or sanctions exposure.",
     "whyItMatters": [
       "Governance is consistently solid across all four World Bank domains.",
-      "Rule of law is the strongest domain at a risk rating of 2.4, and political stability (1.8) is also notably strong.",
-      "CPI score of 64/100 (rank 30 of 179, 2024) places South Korea among the cleaner jurisdictions globally.",
+      "Rule of law is the strongest domain at a low-risk level, and political stability (strong) is also notably strong.",
+      "The CPI reading places South Korea among the cleaner jurisdictions globally.",
       "No FATF grey or black listing; no sanctions programmes apply."
     ],
-    "analysis": "South Korea's profile reflects consistently solid governance. Rule of law (2.4) and political stability (1.8) are the strongest domains. Corruption (3.4) and voice and accountability (2.7) are also at low-risk levels. The CPI of 64/100 (rank 30 of 179) independently supports the picture. No FATF listing or sanctions apply. South Korea sits well above the world median on the World Bank governance indicators and among the stronger economies in the Asia-Pacific region.",
+    "analysis": "South Korea's profile reflects consistently solid governance. Rule of law (strong) and political stability (strong) are the strongest domains. Corruption (moderate) and voice and accountability (strong) are also at low-risk levels. The CPI reading independently supports the picture. No FATF listing or sanctions apply. South Korea sits well above the world median on the World Bank governance indicators and among the stronger economies in the Asia-Pacific region.",
     "outlook": "South Korea's risk profile is stable and well-governed. No near-term escalation is expected. The country's sophisticated regulatory and judicial institutions provide meaningful structural protections against financial crime. Firms may apply standard, proportionate due diligence for South Korean counterparties.",
     "keyWatchpoints": [
       "Monitor any shifts in political stability, given South Korea's active democratic processes and periodic electoral cycles.",
@@ -1774,11 +1774,11 @@ export const NARRATIVES: Record<string, CountryNarrative> = {
     "summary": "Kuwait's profile is driven by its current FATF grey-list status, layered on an otherwise moderate governance picture.",
     "whyItMatters": [
       "Kuwait is currently on the FATF grey list, meaning it is subject to enhanced monitoring for strategic AML/CFT deficiencies.",
-      "Voice and accountability is the weakest governance domain (risk 6.3), reflecting constraints on political participation and transparency.",
-      "Corruption risk (4.9) is moderate by regional standards but remains an area of concern, supported by a CPI score of 46 out of 100 (rank 65 of 179).",
-      "Political stability is the strongest governance dimension (risk 2.9), reflecting relatively low internal conflict exposure."
+      "Voice and accountability is the weakest governance domain (elevated), reflecting constraints on political participation and transparency.",
+      "Corruption risk (moderate) is moderate by regional standards but remains an area of concern, supported by a CPI reading.",
+      "Political stability is the strongest governance dimension (strong), reflecting relatively low internal conflict exposure."
     ],
-    "analysis": "Kuwait's profile combines an otherwise moderate governance picture with current FATF grey listing. Rule of law and institutions (risk 4.1) and political stability (risk 2.9) are the stronger domains, while voice and accountability (risk 5.3) is the weakest. No sanctions apply. The CPI score of 46 (rank 65 of 179) places Kuwait in the middle tier of the global corruption spectrum, consistent with the moderate underlying governance picture. No tracked enforcement actions are recorded.",
+    "analysis": "Kuwait's profile combines an otherwise moderate governance picture with current FATF grey listing. Rule of law and institutions (moderate) and political stability (strong) are the stronger domains, while voice and accountability (elevated) is the weakest. No sanctions apply. The CPI reading places Kuwait in the middle tier of the global corruption spectrum, consistent with the moderate underlying governance picture. No tracked enforcement actions are recorded.",
     "outlook": "Kuwait's FATF grey-list status is the principal near-term variable. Firms should monitor FATF plenary outcomes, with the next scheduled review in October 2026. Sustained progress on AML/CFT technical compliance and effectiveness could support a grey-list exit; failure to demonstrate measurable improvement would maintain elevated exposure for correspondent and trade-finance relationships.",
     "keyWatchpoints": [
       "FATF plenary outcomes (next: October 2026) and any change to Kuwait's grey-list status.",
@@ -1791,14 +1791,14 @@ export const NARRATIVES: Record<string, CountryNarrative> = {
     "summary": "The Cayman Islands, a well-regulated British Overseas Territory and major offshore financial centre, is shaped chiefly by moderate corruption concerns against otherwise strong governance.",
     "whyItMatters": [
       "Major global hub for investment funds, structured finance, and private equity, making AML control standards directly relevant to institutional counterparties worldwide.",
-      "Corruption domain scores a risk rating of 4.0, the weakest governance dimension and the primary risk driver.",
-      "Rule of law and institutions score 2.77 and political stability scores 0.9, reflecting strong institutional frameworks and a stable environment.",
+      "Corruption domain shows a moderate risk rating, the weakest governance dimension and the primary risk driver.",
+      "Rule of law and institutions is strong and political stability is strong, reflecting strong institutional frameworks and a stable environment.",
       "Not on the FATF grey or black list and subject to no sanctions; no tracked regulatory enforcement actions recorded in the dataset."
     ],
-    "analysis": "The Cayman Islands' governance is shaped by a corruption domain risk of 4.0, the most elevated of the four dimensions, reflecting the inherent complexity of overseeing a large, internationally oriented financial sector. Rule of law and institutions (2.77) and voice and accountability (2.6) are materially stronger, and political stability is very low at 0.9. The jurisdiction carries no FATF listing or sanctions overlay. No CPI data are available for comparison.",
+    "analysis": "The Cayman Islands' governance is shaped by a corruption domain risk, the most elevated of the four dimensions, reflecting the inherent complexity of overseeing a large, internationally oriented financial sector. Rule of law and institutions (strong) and voice and accountability (strong) are materially stronger, and political stability is very low. The jurisdiction carries no FATF listing or sanctions overlay. No CPI data are available for comparison.",
     "outlook": "The Cayman Islands' risk trajectory is stable. Its status as a British Overseas Territory with an independent regulator provides structural governance anchors, and it sits in the upper tier of the World Bank governance indicators. Firms should monitor any developments ahead of the next FATF plenary in October 2026 and track whether the corruption domain improves as global scrutiny of offshore centres intensifies.",
     "keyWatchpoints": [
-      "Corruption domain risk (4.0) remains the single weakest governance dimension; monitor regulatory updates on beneficial ownership transparency.",
+      "Corruption domain risk (moderate) remains the single weakest governance dimension; monitor regulatory updates on beneficial ownership transparency.",
       "FATF plenary scheduled for October 2026 could alter listing status; firms should track outcomes.",
       "High volume of fund structures and special purpose vehicles warrants robust counterparty due diligence on Cayman-domiciled entities.",
       "Absence of CPI data limits independent corruption benchmarking; rely on WGI-based governance signals."
@@ -1808,11 +1808,11 @@ export const NARRATIVES: Record<string, CountryNarrative> = {
     "summary": "Kazakhstan is driven by elevated corruption and weak accountability, with no FATF listing or sanctions in place.",
     "whyItMatters": [
       "Governance is mixed, with corruption and accountability the weakest of the four World Bank domains.",
-      "Voice and accountability (risk 5.8) and corruption (risk 5.7) are the two most acute governance concerns.",
-      "CPI score of 40/100 (rank 87 of 179, 2024) places Kazakhstan in the lower-middle tier globally.",
+      "Voice and accountability (elevated) and corruption (elevated) are the two most acute governance concerns.",
+      "The CPI reading places Kazakhstan in the lower-middle tier globally.",
       "No FATF grey or black listing; no sanctions programmes currently apply."
     ],
-    "analysis": "Kazakhstan's profile is driven by elevated corruption (5.7) and weak voice and accountability (5.8), with rule of law at 4.7 providing partial mitigation. Political stability (3.8) is a relative strength. The CPI of 40/100 (rank 87 of 179) supports the assessment of meaningful corruption risk. No FATF listing or sanctions apply. Kazakhstan sits near the global midpoint on the World Bank governance indicators, though the weighting of its weakest domains keeps the overall risk elevated.",
+    "analysis": "Kazakhstan's profile is driven by elevated corruption and weak voice and accountability, with rule of law providing partial mitigation. Political stability (moderate) is a relative strength. The CPI reading supports the assessment of meaningful corruption risk. No FATF listing or sanctions apply. Kazakhstan sits near the global midpoint on the World Bank governance indicators, though the weighting of its weakest domains keeps the overall risk elevated.",
     "outlook": "Kazakhstan's risk environment is influenced by its resource-dependent economy and single-party political structure, which constrain accountability mechanisms. Governance reforms have been incremental, and corruption remains a structural feature. Firms should apply enhanced due diligence, particularly in relation to state-linked entities, extractive industries, and politically exposed persons.",
     "keyWatchpoints": [
       "Monitor corruption-related enforcement and anti-corruption institutional developments.",
@@ -1826,15 +1826,15 @@ export const NARRATIVES: Record<string, CountryNarrative> = {
     "whyItMatters": [
       "Laos is on the FATF grey list, as confirmed at the last review on 19 June 2026, compounding an already weak governance profile.",
       "Governance is weak across the four World Bank domains, so the FATF listing sits on top of an already elevated base of concern.",
-      "Corruption (risk 7.2) and voice and accountability (risk 6.8) are the most severe governance weaknesses; the CPI score of 33/100 (rank 113 of 179, 2024) provides independent corroboration.",
+      "Corruption (severe) and voice and accountability (elevated) are the most severe governance weaknesses; the CPI reading provides independent corroboration.",
       "No sanctions programmes currently apply."
     ],
-    "analysis": "Laos combines a weak governance profile with current FATF grey listing. The governance picture reflects severe corruption (7.2) and weak voice and accountability (6.8), with rule of law also weak at 5.93. Political stability (2.2) is the standout relative strength. The CPI of 33/100 (rank 113 of 179) supports the picture of entrenched corruption. FATF grey-list status, last reviewed 19 June 2026, signals identified strategic AML/CFT deficiencies and an active remediation process. No sanctions apply. Laos sits below the median of assessed jurisdictions on the World Bank governance indicators.",
+    "analysis": "Laos combines a weak governance profile with current FATF grey listing. The governance picture reflects severe corruption and weak voice and accountability, with rule of law also weak. Political stability (strong) is the standout relative strength. The CPI reading supports the picture of entrenched corruption. FATF grey-list status, last reviewed 19 June 2026, signals identified strategic AML/CFT deficiencies and an active remediation process. No sanctions apply. Laos sits below the median of assessed jurisdictions on the World Bank governance indicators.",
     "outlook": "Laos faces a demanding remediation path to exit the FATF grey list. Progress will depend on addressing the strategic deficiencies identified by FATF, which requires both legislative reform and effective enforcement capacity. The October 2026 plenary represents a key milestone for assessing whether Laos has made sufficient progress. Until exit is confirmed, firms should apply enhanced due diligence in line with FATF Recommendation 20 expectations for grey-listed jurisdictions.",
     "keyWatchpoints": [
       "FATF grey-list status requires firms to apply enhanced due diligence to transactions involving Laos; monitor the October 2026 plenary for progress updates.",
       "Track domestic AML/CFT legislative and enforcement developments against the FATF action plan.",
-      "Assess beneficial ownership transparency and real-sector oversight, given corruption (risk 7.2) and accountability (risk 6.8) readings.",
+      "Assess beneficial ownership transparency and real-sector oversight, given corruption (severe) and accountability (elevated) readings.",
       "Review exposure to border-trade, gaming, and special economic zone sectors, which present elevated typology risk in the regional context."
     ]
   },
@@ -1842,11 +1842,11 @@ export const NARRATIVES: Record<string, CountryNarrative> = {
     "summary": "Lebanon combines deep governance deficiencies and very weak corruption controls with a current FATF grey-list designation.",
     "whyItMatters": [
       "Lebanon is on the FATF grey list, adding formal increased-monitoring obligations to an already severely weak governance profile.",
-      "Corruption risk is very high (7.8), the weakest domain, consistent with a CPI score of 22 out of 100 (rank 153 of 179).",
-      "Rule of law and institutions risk (6.4) reflects sustained institutional fragility and limited judicial independence.",
-      "Political stability risk (5.6) captures ongoing structural instability and prolonged state dysfunction."
+      "Corruption risk is very high (severe), the weakest domain, consistent with a CPI reading.",
+      "Rule of law and institutions risk (elevated) reflects sustained institutional fragility and limited judicial independence.",
+      "Political stability risk (elevated) captures ongoing structural instability and prolonged state dysfunction."
     ],
-    "analysis": "Lebanon combines a severely weak governance profile with current FATF grey listing. All four governance domains are elevated: corruption (7.8) is the most pronounced weakness, followed by rule of law (6.4), voice and accountability (5.6), and political stability (5.6). No sanctions apply. The CPI score of 22 (rank 153 of 179) confirms Lebanon as a high-corruption environment. The combination of grey-list status, institutional collapse, and very weak corruption controls makes Lebanon one of the higher-risk jurisdictions in the Middle East region.",
+    "analysis": "Lebanon combines a severely weak governance profile with current FATF grey listing. All four governance domains are elevated: corruption (severe) is the most pronounced weakness, followed by rule of law (elevated), voice and accountability (elevated), and political stability (elevated). No sanctions apply. The CPI reading confirms Lebanon as a high-corruption environment. The combination of grey-list status, institutional collapse, and very weak corruption controls makes Lebanon one of the higher-risk jurisdictions in the Middle East region.",
     "outlook": "Lebanon's outlook is contingent on political stabilisation, meaningful banking-sector reform, and demonstrated AML/CFT progress sufficient to address FATF concerns. The October 2026 plenary will be a key milestone. Without substantial institutional recovery, the elevated risk is unlikely to ease in the near term. Firms should apply enhanced due diligence to all Lebanon-connected relationships.",
     "keyWatchpoints": [
       "FATF plenary outcomes (next: October 2026) and any update to grey-list status.",
@@ -1858,29 +1858,29 @@ export const NARRATIVES: Record<string, CountryNarrative> = {
   "LC": {
     "summary": "Saint Lucia, an Eastern Caribbean state with a citizenship-by-investment programme, rests on a strong governance base, with no FATF listing or sanctions in place.",
     "whyItMatters": [
-      "A solid governance base, with political stability at 1.6 the strongest domain, anchors the profile.",
-      "Corruption at 4.3 is the weakest governance domain; rule of law scores 3.97 and accountability 3.2.",
-      "The 2024 CPI score of 59 out of 100 (rank 39) is comparatively strong and corroborates a relatively clean public-sector picture.",
+      "A solid governance base, with political stability the strongest domain, anchors the profile.",
+      "Corruption is the weakest governance domain; rule of law is moderate and accountability is moderate.",
+      "The CPI reading (rank 39) is comparatively strong and corroborates a relatively clean public-sector picture.",
       "Saint Lucia operates a citizenship-by-investment programme, a structural feature relevant to identity and due diligence vulnerabilities."
     ],
-    "analysis": "Saint Lucia is an Eastern Caribbean state assessed for AML/CFT purposes by the Caribbean Financial Action Task Force (CFATF). Its risk picture is governance-derived, with no FATF or sanctions overlay. The governance base is solid: political stability scores 1.6, accountability 3.2, rule of law 3.97, and corruption is the weakest domain at 4.3. The 2024 CPI score of 59 at rank 39 corroborates a relatively clean public-sector picture, and Saint Lucia sits in the upper third of the World Bank governance indicators. The most material structural feature is its citizenship-by-investment programme, which raises identity-verification risk for financial institutions with Saint Lucian counterparties. Saint Lucia completed its CFATF fourth-round mutual evaluation and has since progressed through enhanced follow-up, with technical compliance re-ratings recorded in successive follow-up reports.",
+    "analysis": "Saint Lucia is an Eastern Caribbean state assessed for AML/CFT purposes by the Caribbean Financial Action Task Force (CFATF). Its risk picture is governance-derived, with no FATF or sanctions overlay. The governance base is solid: political stability is strong, accountability is moderate, rule of law is moderate, and corruption is the weakest domain. The CPI reading corroborates a relatively clean public-sector picture, and Saint Lucia sits in the upper third of the World Bank governance indicators. The most material structural feature is its citizenship-by-investment programme, which raises identity-verification risk for financial institutions with Saint Lucian counterparties. Saint Lucia completed its CFATF fourth-round mutual evaluation and has since progressed through enhanced follow-up, with technical compliance re-ratings recorded in successive follow-up reports.",
     "outlook": "Saint Lucia's profile reflects a sound governance base offset by its citizenship-by-investment exposure. The forward picture depends on the strength of CBI due diligence and screening reforms, continued CFATF follow-up remediation, and the corruption domain as the weakest governance reading. Firms should apply enhanced due diligence where counterparties hold Saint Lucian passports or corporate registrations and monitor CFATF follow-up reporting and the October 2026 FATF plenary for any change in status.",
     "keyWatchpoints": [
       "Citizenship-by-investment programme due diligence and screening standards; apply enhanced due diligence to Saint Lucian passport-holders and corporate registrations.",
       "CFATF enhanced follow-up reporting on Saint Lucia's fourth-round mutual evaluation and any re-ratings.",
       "October 2026 FATF plenary for any change in listing status.",
-      "Corruption domain (4.3) and CPI trend as the key governance indicators."
+      "Corruption domain (moderate) and CPI trend as the key governance indicators."
     ]
   },
   "LI": {
     "summary": "Liechtenstein is a well-governed jurisdiction with one of the strongest governance profiles in this batch and no FATF listing, sanctions or recorded enforcement actions.",
     "whyItMatters": [
       "Governance is exceptionally strong across all four domains, among the strongest in this batch.",
-      "Political stability scores 0.7 (weighted 15%), the strongest single domain result across all 12 countries in this batch, indicating very high stability.",
+      "Political stability is strong (weighted 15%), the strongest single domain result across all 12 countries in this batch, indicating very high stability.",
       "Liechtenstein sits in the upper tier of the World Bank governance indicators, the strongest position in this batch.",
       "No FATF listing, no sanctions exposure and no tracked enforcement actions are recorded, so no AML overlay bears on the profile."
     ],
-    "analysis": "Liechtenstein's profile reflects uniformly strong governance. Corruption (risk 1.7, weighted 35%) and rule of law and institutions (risk 1.67, weighted 40%) are both very low risk and together carry 75% of the governance weight. Political stability (risk 0.7) is the outstanding result. Voice and accountability (risk 2.0) is the comparatively weakest domain but remains well within low-risk territory. No FATF listing or sanctions apply. No CPI data is published for Liechtenstein, but the WGI governance picture is consistently strong. Its upper-tier standing on the World Bank governance indicators confirms Liechtenstein's position as one of the best-governed financial centres in the dataset.",
+    "analysis": "Liechtenstein's profile reflects uniformly strong governance. Corruption (weighted 35%) and rule of law and institutions (weighted 40%) are both very low risk and together carry 75% of the governance weight. Political stability (strong) is the outstanding result. Voice and accountability (strong) is the comparatively weakest domain but remains well within low-risk territory. No FATF listing or sanctions apply. No CPI data is published for Liechtenstein, but the WGI governance picture is consistently strong. Its upper-tier standing on the World Bank governance indicators confirms Liechtenstein's position as one of the best-governed financial centres in the dataset.",
     "outlook": "Liechtenstein's small, highly regulated financial centre operates within a framework shaped by EEA membership, FATF compliance and bilateral agreements with the European Union. The risk profile is stable and well-anchored institutionally. Firms should apply standard, proportionate due diligence for Liechtenstein counterparties. The principal area requiring ongoing attention is the jurisdiction's role as a private wealth management hub, where beneficial ownership transparency and source-of-wealth verification remain important irrespective of the low base risk.",
     "keyWatchpoints": [
       "Maintain source-of-wealth and beneficial ownership scrutiny for private wealth management relationships, consistent with the jurisdiction's financial centre profile.",
@@ -1892,12 +1892,12 @@ export const NARRATIVES: Record<string, CountryNarrative> = {
   "LK": {
     "summary": "Sri Lanka is driven by elevated corruption and rule-of-law risks, with no FATF listing or sanctions currently in place.",
     "whyItMatters": [
-      "Corruption risk scores 6.0, the weakest governance domain, reflecting persistent anti-corruption challenges heightened by recent economic instability.",
-      "Rule of law and institutions scores 5.1, indicating meaningful weaknesses in judicial and regulatory institutions.",
+      "Corruption risk is elevated, the weakest governance domain, reflecting persistent anti-corruption challenges heightened by recent economic instability.",
+      "Rule of law and institutions is elevated, indicating meaningful weaknesses in judicial and regulatory institutions.",
       "Sri Lanka is not on the FATF grey or black list and carries no sanctions exposure, so the profile is driven entirely by governance factors.",
       "No enforcement actions are tracked in the available data, limiting assessment of supervisory capacity and effectiveness."
     ],
-    "analysis": "Sri Lanka's profile is determined solely by its governance indicators, with no FATF or sanctions overlay. Corruption (6.0) is the weakest domain, followed by voice and accountability (5.0), political stability (4.6) and rule of law and institutions (5.1). The CPI score of 32 out of 100, ranked 120th of 179 in 2024, confirms material corruption concerns. Sri Lanka sits just below the global midpoint on the World Bank governance indicators.",
+    "analysis": "Sri Lanka's profile is determined solely by its governance indicators, with no FATF or sanctions overlay. Corruption (elevated) is the weakest domain, followed by voice and accountability (elevated), political stability (moderate) and rule of law and institutions (elevated). The CPI reading confirms material corruption concerns. Sri Lanka sits just below the global midpoint on the World Bank governance indicators.",
     "outlook": "Sri Lanka's risk profile reflects governance weaknesses that have been compounded by the economic crisis in recent years. Anti-corruption and rule-of-law reforms will be key determinants of future movement. Any deterioration leading to FATF grey-listing would materially raise the risk profile. Conversely, successful economic stabilisation and institutional strengthening could support gradual governance improvement.",
     "keyWatchpoints": [
       "Any change in FATF status, which would materially raise scrutiny of Sri Lanka-connected business.",
@@ -1909,12 +1909,12 @@ export const NARRATIVES: Record<string, CountryNarrative> = {
   "LR": {
     "summary": "Liberia is dominated by very weak corruption controls and institutional deficiencies, though it is not FATF-listed and carries no sanctions.",
     "whyItMatters": [
-      "Corruption risk scores 7.3, one of the weaker readings in this cohort, reflecting deep structural integrity challenges.",
-      "Rule of law and institutions scores 6.33, indicating courts and regulators operate with limited effectiveness.",
-      "The CPI score of 27 out of 100 (rank 134 of 179) corroborates severe corruption perceptions across the economy.",
+      "Corruption risk is severe, one of the weaker readings in this cohort, reflecting deep structural integrity challenges.",
+      "Rule of law and institutions is elevated, indicating courts and regulators operate with limited effectiveness.",
+      "The CPI reading corroborates severe corruption perceptions across the economy.",
       "No FATF listing or sanctions apply, so the entire risk is governance-driven and therefore structural in nature."
     ],
-    "analysis": "Liberia's profile derives entirely from governance weaknesses. Corruption at 7.3 is the primary driver, with rule of law and institutions at 6.33 adding further weight. Political stability is a relative strength at 3.7, as is voice and accountability at 4.5. Liberia is not on the FATF grey or black list and faces no sanctions exposure. Liberia sits below the median of the World Bank governance indicators and at CPI rank 134 of 179. No enforcement actions are tracked in the dataset.",
+    "analysis": "Liberia's profile derives entirely from governance weaknesses. Corruption is the primary driver, with rule of law and institutions adding further weight. Political stability is a relative strength, as is voice and accountability. Liberia is not on the FATF grey or black list and faces no sanctions exposure. Liberia sits below the median of the World Bank governance indicators and in the CPI ranking. No enforcement actions are tracked in the dataset.",
     "outlook": "The structural nature of Liberia's risk means improvement depends on sustained anti-corruption reform and investment in judicial and regulatory capacity. The absence of FATF listing provides some relief, but the underlying governance picture warrants ongoing vigilance. The October 2026 plenary could bring Liberia into scope if recent FATF monitoring identifies material AML deficiencies.",
     "keyWatchpoints": [
       "Monitor FATF assessment activity and the October 2026 plenary for any grey-list consideration.",
@@ -1926,12 +1926,12 @@ export const NARRATIVES: Record<string, CountryNarrative> = {
   "LS": {
     "summary": "Lesotho is driven by moderate corruption and rule-of-law weaknesses; it is not FATF-listed and carries no sanctions exposure.",
     "whyItMatters": [
-      "Corruption risk scores 5.8 and rule of law and institutions 5.6, both above the midpoint, reflecting meaningful governance gaps.",
-      "The CPI score of 37 out of 100 (rank 98 of 179) places Lesotho in the lower half of the global corruption perception ranking.",
+      "Corruption risk is elevated and rule of law and institutions is elevated, both above the midpoint, reflecting meaningful governance gaps.",
+      "The CPI reading places Lesotho in the lower half of the global corruption perception ranking.",
       "Governance weaknesses are above-average but not acute across the four World Bank domains.",
       "Lesotho is not on the FATF grey or black list and faces no sanctions, so the profile rests on governance alone."
     ],
-    "analysis": "Lesotho's profile is entirely governance-driven. Corruption at 5.8 and rule of law and institutions at 5.6 are the main drivers, while political stability at 3.6 and voice and accountability at 4.6 are relative strengths. Lesotho sits almost exactly at the global median on the World Bank governance indicators. Lesotho is not on the FATF grey or black list and has no sanctions exposure. The CPI score of 37 and rank of 98 of 179 provide contextual support for a moderate-to-elevated corruption environment. No enforcement actions are recorded.",
+    "analysis": "Lesotho's profile is entirely governance-driven. Corruption and rule of law and institutions are the main drivers, while political stability and voice and accountability are relative strengths. Lesotho sits almost exactly at the global median on the World Bank governance indicators. Lesotho is not on the FATF grey or black list and has no sanctions exposure. The CPI reading and rank of 98 of 179 provide contextual support for a moderate-to-elevated corruption environment. No enforcement actions are recorded.",
     "outlook": "Lesotho's risk profile is stable rather than acute. The absence of FATF listing and sanctions keeps the risk relatively contained. Improvements in anti-corruption enforcement and judicial capacity could ease the picture over time. Firms should monitor governance reform progress and any future FATF mutual evaluation outcomes.",
     "keyWatchpoints": [
       "Monitor FATF mutual evaluation results and any subsequent grey-list consideration for Lesotho.",
@@ -1944,11 +1944,11 @@ export const NARRATIVES: Record<string, CountryNarrative> = {
     "summary": "Lithuania is a low-risk jurisdiction with solid governance foundations, a CPI score in the upper third globally and no FATF listing or sanctions exposure.",
     "whyItMatters": [
       "Governance is good overall, with some residual corruption concerns the main qualifier.",
-      "Corruption domain scores 3.4 (weighted 35%), the primary risk contributor, indicating a degree of vulnerability that is still comparatively contained.",
-      "CPI score of 63 out of 100 (rank 32 of 179) places Lithuania in the upper third of the global ranking, confirming a broadly favourable integrity environment.",
+      "Corruption domain is moderate (weighted 35%), the primary risk contributor, indicating a degree of vulnerability that is still comparatively contained.",
+      "The CPI reading places Lithuania in the upper third of the global ranking, confirming a broadly favourable integrity environment.",
       "Lithuania is not on the FATF grey or black list and carries no sanctions exposure."
     ],
-    "analysis": "Lithuania's profile is driven primarily by corruption (risk 3.4, weighted 35%), which is the weakest governance domain but still well within moderate-low territory. Rule of law and institutions (risk 2.53, weighted 40%) is solid. Political stability (risk 1.8) and voice and accountability (risk 2.2) are both strong. No FATF listing or sanctions apply. The CPI score of 63 (rank 32 of 179) corroborates a low-to-moderate corruption environment. Lithuania sits comfortably in the better-governed half of the world on the World Bank governance indicators.",
+    "analysis": "Lithuania's profile is driven primarily by corruption (weighted 35%), which is the weakest governance domain but still well within moderate-low territory. Rule of law and institutions (weighted 40%) is solid. Political stability and voice and accountability are both strong. No FATF listing or sanctions apply. The CPI reading corroborates a low-to-moderate corruption environment. Lithuania sits comfortably in the better-governed half of the world on the World Bank governance indicators.",
     "outlook": "Lithuania has undergone sustained governance improvement as an EU and NATO member, with anti-corruption institutions gaining capacity over time. The jurisdiction plays a growing role in the EU financial services landscape, including payment institution authorisations, which brings supervisory attention. The risk profile is stable and the trend is broadly positive, though firms should remain attentive to the corruption domain score as the most meaningful residual indicator.",
     "keyWatchpoints": [
       "Monitor the Bank of Lithuania's supervisory activity, particularly regarding payment institutions and e-money firms authorised in the jurisdiction.",
@@ -1961,11 +1961,11 @@ export const NARRATIVES: Record<string, CountryNarrative> = {
     "summary": "Luxembourg is a very low-risk, highly rated jurisdiction with the strongest CPI score in this batch, robust rule-of-law institutions and active financial sector supervision through CSSF.",
     "whyItMatters": [
       "Governance is outstanding across all four World Bank domains, among the strongest in this batch.",
-      "CPI score of 81 out of 100 (rank 5 of 179) places Luxembourg among the five least corrupt countries globally, the highest CPI result in this batch.",
+      "The CPI reading places Luxembourg among the five least corrupt countries globally, the highest CPI result in this batch.",
       "CSSF recorded 163 tracked enforcement actions between 2020 and 2026, reflecting intensive supervision of one of Europe's largest fund management and financial centres.",
       "Luxembourg sits in the upper decile of the World Bank governance indicators, the strongest position in this batch."
     ],
-    "analysis": "Luxembourg's profile is the product of exceptional governance performance. Corruption (risk 1.1, weighted 35%) is the lowest corruption reading in the batch and among the lowest globally. Rule of law and institutions (risk 1.2, weighted 40%) is equally strong. Voice and accountability (risk 1.4) is excellent. Political stability (risk 1.7) is the comparatively weakest domain and still firmly low risk. No FATF listing or sanctions apply. The CPI score of 81 (rank 5 of 179) and an upper-decile standing on the World Bank governance indicators confirm Luxembourg's position as a flagship low-risk jurisdiction. CSSF enforcement activity reflects the breadth and depth of a major international financial centre.",
+    "analysis": "Luxembourg's profile is the product of exceptional governance performance. Corruption (weighted 35%) is the lowest corruption reading in the batch and among the lowest globally. Rule of law and institutions (weighted 40%) is equally strong. Voice and accountability (strong) is excellent. Political stability (strong) is the comparatively weakest domain and still firmly low risk. No FATF listing or sanctions apply. The CPI reading and an upper-decile standing on the World Bank governance indicators confirm Luxembourg's position as a flagship low-risk jurisdiction. CSSF enforcement activity reflects the breadth and depth of a major international financial centre.",
     "outlook": "Luxembourg's status as a premier European investment funds and private banking centre means its regulatory environment continues to evolve in step with EU AML developments, including AMLA and the new AML regulation package. The risk profile is stable and well-governed. Firms should apply standard proportionate due diligence but should be alert to the jurisdiction's role as an intermediary for global capital flows, where the source-of-funds integrity of non-EU investors and fund structures warrants appropriate scrutiny.",
     "keyWatchpoints": [
       "Monitor CSSF enforcement patterns for sectoral themes relevant to fund management, private banking and payment services.",
@@ -1978,11 +1978,11 @@ export const NARRATIVES: Record<string, CountryNarrative> = {
     "summary": "Latvia presents moderate risk with corruption and rule-of-law scores above Western European norms, though its governance has improved materially in recent years and no FATF listing or sanctions apply.",
     "whyItMatters": [
       "Governance reflects meaningful progress relative to earlier periods of heightened AML concern.",
-      "Corruption domain scores 3.6 (weighted 35%), the heaviest risk contributor, though this is notably lower than Southern or Eastern European peers with comparable readings.",
-      "CPI score of 59 out of 100 (rank 38 of 179) places Latvia in the upper third of the global ranking, a positive contextual signal.",
+      "Corruption domain is moderate (weighted 35%), the heaviest risk contributor, though this is notably lower than Southern or Eastern European peers with comparable readings.",
+      "The CPI reading places Latvia in the upper third of the global ranking, a positive contextual signal.",
       "Latvia is not on the FATF grey or black list and carries no sanctions exposure."
     ],
-    "analysis": "Latvia's profile reflects moderate governance conditions. Corruption (risk 3.6, weighted 35%) and rule of law and institutions (risk 3.0, weighted 40%) are the two dominant contributors and both sit in the lower-moderate range. Political stability (risk 2.0) and voice and accountability (risk 2.4) are considerably stronger and help contain the overall picture. No FATF listing or sanctions apply. The CPI score of 59 (rank 38 of 179) provides contextual support for the moderate rather than elevated risk assessment. Latvia sits in the upper tier of the World Bank governance indicators.",
+    "analysis": "Latvia's profile reflects moderate governance conditions. Corruption (weighted 35%) and rule of law and institutions (weighted 40%) are the two dominant contributors and both sit in the lower-moderate range. Political stability (strong) and voice and accountability (strong) are considerably stronger and help contain the overall picture. No FATF listing or sanctions apply. The CPI reading provides contextual support for the moderate rather than elevated risk assessment. Latvia sits in the upper tier of the World Bank governance indicators.",
     "outlook": "Latvia has undertaken significant AML and governance reform since a period of heightened international scrutiny that concluded with removal from elevated-risk categorisations. The current moderate score reflects continued, if incomplete, institutional strengthening. EU membership and ECB supervisory oversight provide durable structural anchors. Firms should apply standard moderate-risk due diligence while remaining attentive to legacy vulnerabilities in the financial sector, particularly around non-resident business flows.",
     "keyWatchpoints": [
       "Monitor ongoing AML reform implementation and supervisory capacity developments in the Latvian financial sector.",
@@ -1994,29 +1994,29 @@ export const NARRATIVES: Record<string, CountryNarrative> = {
   "LY": {
     "summary": "Libya reflects severe weaknesses across all governance domains and one of the lowest CPI scores globally; it is not FATF-listed and carries no sanctions.",
     "whyItMatters": [
-      "Corruption risk scores 8.3, the highest domain reading in this batch, indicating near-total breakdown of integrity controls.",
-      "Rule of law and institutions scores 7.43 and political stability scores 6.9, reflecting a fragile state environment.",
-      "The CPI score of 13 out of 100 (rank 172 of 179) places Libya among the most corruption-affected countries in the world.",
+      "Corruption risk is severe, the highest domain reading in this batch, indicating near-total breakdown of integrity controls.",
+      "Rule of law and institutions is severe and political stability is elevated, reflecting a fragile state environment.",
+      "The CPI reading places Libya among the most corruption-affected countries in the world.",
       "Libya sits in the bottom quarter of the World Bank governance indicators, confirming pervasive institutional weakness."
     ],
-    "analysis": "Libya's profile is entirely governance-driven, with no FATF listing or sanctions overlay. Despite the absence of formal listings, the governance picture is severe across all domains. Corruption at 8.3 is the dominant driver; rule of law and institutions at 7.43 and political stability at 6.9 reinforce a picture of institutional fragility. Voice and accountability at 6.7 offers no significant relief. Libya is not on the FATF grey or black list and faces no sanctions exposure at this time. The CPI score of 13 ranks Libya 172nd of 179 countries. No enforcement actions are tracked.",
+    "analysis": "Libya's profile is entirely governance-driven, with no FATF listing or sanctions overlay. Despite the absence of formal listings, the governance picture is severe across all domains. Corruption is the dominant driver; rule of law and institutions and political stability reinforce a picture of institutional fragility. Voice and accountability offers no significant relief. Libya is not on the FATF grey or black list and faces no sanctions exposure at this time. The CPI reading,. No enforcement actions are tracked.",
     "outlook": "Libya's risk profile reflects prolonged state fragility and the near-absence of functioning AML infrastructure. Without significant stabilisation of governance and security conditions, the risk score is unlikely to improve materially. Firms should treat the absence of a FATF listing as providing limited assurance given the severity of underlying governance deficiencies. The October 2026 plenary may bring Libya's AML framework under closer scrutiny.",
     "keyWatchpoints": [
       "Monitor FATF mutual evaluation progress and any grey-list consideration given the severe governance environment.",
       "Apply the highest levels of due diligence and senior management approval for any Libya-connected business.",
       "Track political and security developments closely, as state fragility directly affects AML control effectiveness.",
-      "Verify beneficial ownership with heightened scepticism given the corruption score of 8.3 and CPI rank of 172."
+      "Verify beneficial ownership with heightened scepticism given the corruption score and CPI ranking."
     ]
   },
   "MA": {
     "summary": "Morocco is driven by elevated corruption and limited accountability, though it is not FATF-listed and carries no sanctions exposure.",
     "whyItMatters": [
-      "Corruption risk scores 6.3, indicating notable public-sector integrity challenges that affect financial-crime controls.",
-      "Voice and accountability scores 5.6, reflecting constraints on political freedoms and civil society oversight.",
-      "The CPI score of 37 out of 100 (rank 98 of 179) places Morocco in the lower half of global corruption perceptions.",
+      "Corruption risk is elevated, indicating notable public-sector integrity challenges that affect financial-crime controls.",
+      "Voice and accountability is elevated, reflecting constraints on political freedoms and civil society oversight.",
+      "The CPI reading places Morocco in the lower half of global corruption perceptions.",
       "Governance weaknesses drive the profile, with no escalation from FATF or sanctions."
     ],
-    "analysis": "Morocco's profile is entirely governance-driven. Corruption at 6.3 is the dominant risk factor, with voice and accountability at 5.6 adding further weight. Rule of law and institutions at 4.83 and political stability at 4.3 are comparatively stronger domains. Morocco is not on the FATF grey or black list and carries no sanctions exposure. The CPI score of 37 and rank of 98 of 179 place Morocco near the global median of the World Bank governance indicators. No enforcement actions are tracked in the dataset.",
+    "analysis": "Morocco's profile is entirely governance-driven. Corruption is the dominant risk factor, with voice and accountability adding further weight. Rule of law and institutions and political stability are comparatively stronger domains. Morocco is not on the FATF grey or black list and carries no sanctions exposure. The CPI reading and rank of 98 of 179 place Morocco near the global median of the World Bank governance indicators. No enforcement actions are tracked in the dataset.",
     "outlook": "Morocco's risk is structurally rooted in corruption and accountability constraints. The absence of FATF listing and sanctions exposure is a positive factor. Continued anti-corruption reform and improvements in voice and accountability indicators could ease the picture over time. Firms with Moroccan counterparties should apply proportionate enhanced due diligence, focused particularly on corruption risk.",
     "keyWatchpoints": [
       "Monitor FATF assessment outputs and October 2026 plenary outcomes for any change in Morocco's listing status.",
@@ -2029,11 +2029,11 @@ export const NARRATIVES: Record<string, CountryNarrative> = {
     "summary": "Monaco's profile is shaped principally by its current FATF grey-list status, layered on an otherwise low-risk governance picture.",
     "whyItMatters": [
       "Monaco is on the FATF grey list (last reviewed 19 June 2026), the defining feature of its current risk profile.",
-      "The underlying governance picture is strong: corruption scores 2.8, rule of law and institutions 1.97, and political stability just 1.1.",
+      "The underlying governance picture is strong: corruption is strong, rule of law and institutions is strong, and political stability strong.",
       "No CPI data is available for Monaco, so the corruption picture relies on WGI domain scores alone.",
       "There are no sanctions in place and no tracked enforcement actions, so the grey-list status is the sole elevated risk factor."
     ],
-    "analysis": "Monaco's profile is shaped almost entirely by its FATF grey-list status applied to an otherwise strong governance picture, itself among the strongest in the dataset. The governance domains are uniformly strong: political stability scores 1.1 (the joint lowest risk), rule of law and institutions 1.97, and voice and accountability 2.8. Corruption at 2.8 is the weakest governance domain but still reflects a well-functioning public sector. The grey-list classification, last reviewed in June 2026, is the key risk differentiator and must be monitored closely. No sanctions apply, and no enforcement actions are tracked.",
+    "analysis": "Monaco's profile is shaped almost entirely by its FATF grey-list status applied to an otherwise strong governance picture, itself among the strongest in the dataset. The governance domains are uniformly strong: political stability is strong (the joint lowest risk), rule of law and institutions is strong, and voice and accountability is strong. Corruption is the weakest governance domain but still reflects a well-functioning public sector. The grey-list classification, last reviewed in June 2026, is the key risk differentiator and must be monitored closely. No sanctions apply, and no enforcement actions are tracked.",
     "outlook": "The principal forward-looking question for Monaco is the pace and outcome of its FATF action-plan implementation. Successful completion would remove the grey-list overlay and return Monaco to a low-risk position consistent with its governance profile. Delayed or incomplete remediation could sustain the current elevated rating beyond the next plenary. Firms should treat the grey-list status as the dominant watchpoint.",
     "keyWatchpoints": [
       "Progress against Monaco's FATF action plan and the timing of any grey-list exit at upcoming plenary sessions.",
@@ -2045,12 +2045,12 @@ export const NARRATIVES: Record<string, CountryNarrative> = {
   "MD": {
     "summary": "Moldova is driven primarily by elevated corruption and weaker rule-of-law indicators, though it faces no FATF listing or sanctions exposure.",
     "whyItMatters": [
-      "Corruption is the dominant risk driver, with a WGI Corruption domain risk rating of 5.8, the highest of Moldova's four governance domains.",
-      "Rule of law and institutions score 4.7, reflecting structural weaknesses in judicial independence and enforcement capacity.",
-      "The Transparency International CPI score of 43 out of 100 (rank 75 of 179) confirms material perceived corruption, broadly in line with the governance picture.",
+      "Corruption is the dominant risk driver, with a WGI Corruption domain elevated risk rating, the highest of Moldova's four governance domains.",
+      "Rule of law and institutions is moderate, reflecting structural weaknesses in judicial independence and enforcement capacity.",
+      "The Transparency International The CPI reading confirms material perceived corruption, broadly in line with the governance picture.",
       "Moldova is not on the FATF grey or black list and carries no sanctions exposure, so the profile rests on governance alone."
     ],
-    "analysis": "Moldova's profile is driven entirely by the governance indicators, with no FATF or sanctions overlay. The weakest domain is corruption (5.8), weighted at 35%, reflecting persistent challenges with public-sector integrity. Rule of law and institutions (4.7, 40% weight) compound the picture, pointing to limited institutional capacity to deter financial crime. Political stability (3.9) and voice and accountability (3.9) are comparatively more favourable. The CPI score of 43 places Moldova in the lower half of the global cleanliness ranking. Moldova is not FATF-listed and is subject to no sanctions.",
+    "analysis": "Moldova's profile is driven entirely by the governance indicators, with no FATF or sanctions overlay. The weakest domain is corruption (elevated), weighted at 35%, reflecting persistent challenges with public-sector integrity. Rule of law and institutions (40% weight) compound the picture, pointing to limited institutional capacity to deter financial crime. Political stability (moderate) and voice and accountability (moderate) are comparatively more favourable. The CPI reading places Moldova in the lower half of the global cleanliness ranking. Moldova is not FATF-listed and is subject to no sanctions.",
     "outlook": "Moldova's EU candidacy process introduces some reform impetus, particularly around anti-corruption and judicial independence, which could reduce the governance base over time. However, progress has been uneven and the country's proximity to regional geopolitical tensions adds uncertainty. Firms should expect the corruption and rule-of-law domains to remain the primary risk drivers for the near term.",
     "keyWatchpoints": [
       "Trajectory of anti-corruption and judicial reforms linked to EU accession conditionality.",
@@ -2062,12 +2062,12 @@ export const NARRATIVES: Record<string, CountryNarrative> = {
   "ME": {
     "summary": "Montenegro primarily reflects corruption and rule-of-law weaknesses, with no FATF listing or sanctions exposure.",
     "whyItMatters": [
-      "Corruption is the weakest domain, at a risk rating of 5.4, reflecting persistent concerns about public-sector integrity in a small, EU-candidate economy.",
-      "Rule of law and institutions score 4.2, indicating structural constraints on judicial independence and enforcement effectiveness.",
-      "The CPI score of 46 out of 100 (rank 65 of 179) broadly corroborates the governance picture.",
+      "Corruption is the weakest domain, at an elevated level, reflecting persistent concerns about public-sector integrity in a small, EU-candidate economy.",
+      "Rule of law and institutions is moderate, indicating structural constraints on judicial independence and enforcement effectiveness.",
+      "The CPI reading broadly corroborates the governance picture.",
       "Montenegro is not on the FATF grey or black list and faces no sanctions, so the profile rests on governance alone."
     ],
-    "analysis": "Montenegro's profile is driven wholly by governance factors, with no FATF or sanctions overlay. The dominant risk domain is corruption (5.4, 35% weight), followed by rule of law and institutions (4.2, 40% weight), which together carry three-quarters of the governance weighting. Political stability (3.0) and voice and accountability (3.9) are more moderate risk contributors. Montenegro sits slightly above the global median in governance quality on the World Bank indicators. The CPI score of 46, ranked 65th of 179, is consistent with these findings. No enforcement actions are tracked.",
+    "analysis": "Montenegro's profile is driven wholly by governance factors, with no FATF or sanctions overlay. The dominant risk domain is corruption (35% weight), followed by rule of law and institutions (40% weight), which together carry three-quarters of the governance weighting. Political stability (moderate) and voice and accountability (moderate) are more moderate risk contributors. Montenegro sits slightly above the global median in governance quality on the World Bank indicators. The CPI reading is consistent with these findings. No enforcement actions are tracked.",
     "outlook": "Montenegro's EU accession process provides a degree of reform pressure, particularly on the judiciary and anti-corruption frameworks. Progress has been slow, however, and structural corruption remains an entrenched challenge. The next FATF plenary in October 2026 represents a monitoring point, albeit with no current listing risk. Firms should expect the governance base to remain broadly stable unless accession-related reforms accelerate.",
     "keyWatchpoints": [
       "Anti-corruption and judicial reform milestones within the EU accession negotiations.",
@@ -2079,12 +2079,12 @@ export const NARRATIVES: Record<string, CountryNarrative> = {
   "MG": {
     "summary": "Madagascar is driven by severe corruption and weak institutions; it is not FATF-listed and carries no sanctions exposure.",
     "whyItMatters": [
-      "Corruption risk scores 7.2, indicating deeply entrenched governance integrity deficiencies.",
-      "Rule of law and institutions scores 6.17, reflecting limited capacity of courts and regulators to enforce financial crime controls.",
-      "The CPI score of 26 out of 100 (rank 139 of 179) confirms severe corruption perceptions across the public and private sectors.",
+      "Corruption risk is severe, indicating deeply entrenched governance integrity deficiencies.",
+      "Rule of law and institutions is elevated, reflecting limited capacity of courts and regulators to enforce financial crime controls.",
+      "The CPI reading confirms severe corruption perceptions across the public and private sectors.",
       "Governance weaknesses are material across the four World Bank domains, with no FATF or sanctions escalation."
     ],
-    "analysis": "Madagascar's profile is governance-driven, with corruption at 7.2 and rule of law and institutions at 6.17 as the primary risk factors. Voice and accountability at 5.4 and political stability at 4.8 are comparatively lower-risk domains. Madagascar is not on the FATF grey or black list and carries no sanctions exposure. The CPI score of 26 and rank of 139 of 179 are consistent with material corruption risk, and Madagascar sits below the global median on the World Bank governance indicators. No enforcement actions are recorded in the dataset.",
+    "analysis": "Madagascar's profile is governance-driven, with corruption and rule of law and institutions as the primary risk factors. Voice and accountability and political stability are comparatively lower-risk domains. Madagascar is not on the FATF grey or black list and carries no sanctions exposure. The CPI reading and rank of 139 of 179 are consistent with material corruption risk, and Madagascar sits below the global median on the World Bank governance indicators. No enforcement actions are recorded in the dataset.",
     "outlook": "Madagascar's risk is structurally rooted in corruption and institutional weakness rather than immediate regulatory action. The absence of FATF listing does not diminish the underlying risk exposure for firms with Madagascar-connected counterparties. Sustained anti-corruption reform and improvements in AML supervisory capacity would be required to shift the risk band downward.",
     "keyWatchpoints": [
       "Monitor FATF assessment outputs and October 2026 plenary outcomes for any change in listing status.",
@@ -2096,12 +2096,12 @@ export const NARRATIVES: Record<string, CountryNarrative> = {
   "MH": {
     "summary": "The Marshall Islands, a Pacific state with a large non-resident offshore corporate registry, rests on a mixed governance base, with no FATF listing or sanctions in place.",
     "whyItMatters": [
-      "A mixed governance base has political stability at 1.2 the strongest domain and accountability at 2.6 a relative strength.",
-      "Rule of law at 4.63 and corruption at 4.4 are the weakest domains.",
+      "A mixed governance base has political stability the strongest domain and accountability a relative strength.",
+      "Rule of law and corruption are the weakest domains.",
       "The Marshall Islands hosts a large non-resident corporate and ship registry, a structural feature that raises beneficial ownership and transparency risk.",
       "No FATF grey or black listing applies and no sanctions are in place; no CPI data are published, so corruption context rests on WGI alone."
     ],
-    "analysis": "The Republic of the Marshall Islands is a Pacific state in free association with the United States and a member of the Asia/Pacific Group on Money Laundering (APG). Its risk picture is governance-derived, with no FATF or sanctions overlay. The governance base is mixed: political stability is very strong at 1.2 and accountability scores 2.6, but rule of law (4.63) and corruption (4.4) are weaker. It sits in the upper-middle tier of the World Bank governance indicators, though no CPI data are published. The defining structural feature is its large non-resident corporate registry: the APG's third-round mutual evaluation, adopted in September 2024, found that non-resident domestic corporations are not required to disclose officers, directors, shareholders or beneficial owners to the Registrar, that corporate entities may act as directors and shareholders, and that the ML/TF risks of the offshore corporate and ship-registry sectors were insufficiently assessed and understood.",
+    "analysis": "The Republic of the Marshall Islands is a Pacific state in free association with the United States and a member of the Asia/Pacific Group on Money Laundering (APG). Its risk picture is governance-derived, with no FATF or sanctions overlay. The governance base is mixed: political stability is very strong and accountability is strong, but rule of law (moderate) and corruption (moderate) are weaker. It sits in the upper-middle tier of the World Bank governance indicators, though no CPI data are published. The defining structural feature is its large non-resident corporate registry: the APG's third-round mutual evaluation, adopted in September 2024, found that non-resident domestic corporations are not required to disclose officers, directors, shareholders or beneficial owners to the Registrar, that corporate entities may act as directors and shareholders, and that the ML/TF risks of the offshore corporate and ship-registry sectors were insufficiently assessed and understood.",
     "outlook": "The Marshall Islands' governance-based profile understates the practical exposure created by its opaque non-resident corporate registry, which the September 2024 APG evaluation identified as a significant vulnerability. The forward picture depends on the pace of APG follow-up remediation, particularly on beneficial ownership disclosure for non-resident corporations and on the risk understanding of the offshore and ship-registry sectors. Firms should apply enhanced due diligence to Marshall Islands non-resident entities and verify beneficial ownership independently of the Registrar.",
     "keyWatchpoints": [
       "APG follow-up reporting on the September 2024 third-round mutual evaluation, especially beneficial ownership disclosure for non-resident corporations.",
@@ -2113,12 +2113,12 @@ export const NARRATIVES: Record<string, CountryNarrative> = {
   "MK": {
     "summary": "North Macedonia reflects the highest corruption reading among its governance domains and persistent rule-of-law weaknesses, with no FATF listing or sanctions in place.",
     "whyItMatters": [
-      "Corruption is the dominant risk driver at a risk rating of 5.9, the highest of the four governance domains and approaching the elevated range.",
-      "Rule of law and institutions score 4.6, reflecting ongoing challenges with judicial independence and the effectiveness of anti-corruption bodies.",
-      "The CPI score of 40 out of 100 (rank 87 of 179) places North Macedonia in the lower half of the global cleanliness table.",
+      "Corruption is the dominant risk driver at an elevated level, the highest of the four governance domains and approaching the elevated range.",
+      "Rule of law and institutions is moderate, reflecting ongoing challenges with judicial independence and the effectiveness of anti-corruption bodies.",
+      "The CPI reading places North Macedonia in the lower half of the global cleanliness table.",
       "North Macedonia is not on the FATF grey or black list and is subject to no sanctions, so the profile rests on governance alone."
     ],
-    "analysis": "North Macedonia's profile is attributable entirely to its governance indicators, with no FATF or sanctions overlay. The weakest domain is corruption (5.9, 35% weight), close to the threshold for elevated risk. Rule of law and institutions (4.6, 40% weight) is the second weakest and carries the highest weighting, making it a significant contributor. Political stability (3.0) and voice and accountability (4.3) are somewhat less acute. North Macedonia sits slightly above the global median in governance quality on the World Bank indicators. The CPI score of 40, ranked 87th of 179, independently corroborates the picture. No enforcement actions are tracked.",
+    "analysis": "North Macedonia's profile is attributable entirely to its governance indicators, with no FATF or sanctions overlay. The weakest domain is corruption (35% weight), close to the threshold for elevated risk. Rule of law and institutions (40% weight) is the second weakest and carries the highest weighting, making it a significant contributor. Political stability (moderate) and voice and accountability (moderate) are somewhat less acute. North Macedonia sits slightly above the global median in governance quality on the World Bank indicators. The CPI reading independently corroborates the picture. No enforcement actions are tracked.",
     "outlook": "North Macedonia's EU candidacy process is the primary structural driver of potential governance improvement, particularly in anti-corruption and rule-of-law domains. Progress has been gradual and the corruption domain remains the most acute concern. The country's Western Balkans regional context introduces additional considerations around organised crime and illicit financial flows. Absent a material reform acceleration, the risk picture is likely to remain near current levels.",
     "keyWatchpoints": [
       "Anti-corruption reform milestones within the EU accession process, particularly regarding judicial independence.",
@@ -2130,15 +2130,15 @@ export const NARRATIVES: Record<string, CountryNarrative> = {
   "ML": {
     "summary": "Mali combines severe political instability, elevated corruption and weak institutions; it is not FATF-listed and carries no sanctions exposure.",
     "whyItMatters": [
-      "Political stability scores 7.8, the highest domain reading for Mali, reflecting an acute security and governance environment.",
-      "Corruption risk scores 6.9, indicating systemic integrity weaknesses that constrain effective AML supervision.",
-      "Rule of law and institutions scores 6.33, reflecting severely limited judicial and regulatory capacity.",
-      "The CPI score of 27 out of 100 (rank 134 of 179) corroborates deep corruption perceptions across the economy."
+      "Political stability is severe, the highest domain reading for Mali, reflecting an acute security and governance environment.",
+      "Corruption risk is elevated, indicating systemic integrity weaknesses that constrain effective AML supervision.",
+      "Rule of law and institutions is elevated, reflecting severely limited judicial and regulatory capacity.",
+      "The CPI reading corroborates deep corruption perceptions across the economy."
     ],
-    "analysis": "Mali's profile is entirely governance-driven. Political instability at 7.8 is the most acute domain risk, directly undermining the operational capacity of AML and compliance institutions. Corruption at 6.9 and rule of law and institutions at 6.33 reinforce a picture of structural governance failure. Voice and accountability at 6.2 offers no meaningful offset. Mali is not on the FATF grey or black list and faces no sanctions exposure. Mali sits in the bottom third of the World Bank governance indicators, and the CPI score of 27 (rank 134 of 179) aligns with that standing. No enforcement actions are recorded.",
+    "analysis": "Mali's profile is entirely governance-driven. Political instability is the most acute domain risk, directly undermining the operational capacity of AML and compliance institutions. Corruption and rule of law and institutions reinforce a picture of structural governance failure. Voice and accountability offers no meaningful offset. Mali is not on the FATF grey or black list and faces no sanctions exposure. Mali sits in the bottom third of the World Bank governance indicators, and the CPI reading aligns with that standing. No enforcement actions are recorded.",
     "outlook": "Mali's elevated political instability is the defining forward-looking concern. Security conditions directly affect the ability of financial institutions and regulators to implement and enforce AML controls. Without political stabilisation and sustained governance reform, risk is unlikely to decline. The October 2026 FATF plenary may examine Mali's AML framework in light of its deteriorating institutional environment.",
     "keyWatchpoints": [
-      "Monitor political and security developments closely, as instability at 7.8 directly undermines financial-crime controls.",
+      "Monitor political and security developments closely, as instability directly undermines financial-crime controls.",
       "Track FATF assessment activity and October 2026 plenary outcomes for any grey-list consideration.",
       "Apply enhanced due diligence and heightened transaction monitoring for all Mali-connected counterparties.",
       "Assess whether local correspondent partners retain operational AML capacity in the current security environment."
@@ -2149,10 +2149,10 @@ export const NARRATIVES: Record<string, CountryNarrative> = {
     "whyItMatters": [
       "Myanmar is on the FATF black list (call for action, last reviewed June 2026), the most severe FATF treatment, on top of an already severely weak governance profile.",
       "Targeted sanctions are in force from OFAC (Burma Sanctions Regulations), the EU (Myanmar restrictive measures) and the UK (Myanmar (Sanctions) Regulations).",
-      "All four governance domains carry risk ratings above 7.0, with voice and accountability the weakest at 7.8 and corruption at 7.5.",
-      "The CPI score of 16 out of 100, ranked 167th of 179 countries in 2024, reflects near-total governance breakdown."
+      "All four governance domains carry risk ratings in the severe range, with voice and accountability the weakest and corruption.",
+      "The CPI reading reflects near-total governance breakdown."
     ],
-    "analysis": "Myanmar's profile combines a severely weak governance picture with FATF blacklisting and targeted sanctions. No governance domain carries a risk rating below 7.0. Voice and accountability (7.8) and corruption (7.5) are the weakest, while political stability (7.2) and rule of law and institutions (7.33) are only marginally less severe. The CPI score of 16 places Myanmar among the most corruption-affected countries globally. Myanmar sits in the lowest third of the World Bank governance indicators.",
+    "analysis": "Myanmar's profile combines a severely weak governance picture with FATF blacklisting and targeted sanctions. No governance domain carries a a risk rating in the low-to-moderate range. Voice and accountability (severe) and corruption (severe) are the weakest, while political stability (severe) and rule of law and institutions (severe) are only marginally less severe. The CPI reading places Myanmar among the most corruption-affected countries globally. Myanmar sits in the lowest third of the World Bank governance indicators.",
     "outlook": "The outlook for Myanmar is exceptionally adverse in the near term. FATF black-list status requires enhanced due diligence by obliged entities globally, and the existence of multiple targeted sanctions regimes means that financial institutions must apply comprehensive screening. Exit from the black list would require substantial, demonstrated AML/CFT reforms at a time when institutional capacity is severely compromised.",
     "keyWatchpoints": [
       "FATF plenary decisions and any change in black-list status at the next review.",
@@ -2162,31 +2162,31 @@ export const NARRATIVES: Record<string, CountryNarrative> = {
     ]
   },
   "MN": {
-    "summary": "Mongolia is driven by elevated corruption risk and a CPI rank of 113th, though it carries no FATF listing or sanctions.",
+    "summary": "Mongolia is driven by elevated corruption risk and a CPI ranking, though it carries no FATF listing or sanctions.",
     "whyItMatters": [
-      "Corruption risk scores 6.5, the weakest governance domain and the principal risk driver.",
-      "Rule of law and institutions scores 4.93, indicating institutional weaknesses that compound financial crime exposure.",
+      "Corruption risk is elevated, the weakest governance domain and the principal risk driver.",
+      "Rule of law and institutions is moderate, indicating institutional weaknesses that compound financial crime exposure.",
       "Mongolia is not on the FATF grey or black list and faces no sanctions, so the profile reflects pure governance concerns.",
       "No enforcement actions are tracked, reducing visibility into the effectiveness of the regulatory and supervisory framework."
     ],
-    "analysis": "Mongolia's profile is determined entirely by its governance indicators, with no FATF or sanctions overlay. Corruption is the weakest domain at 6.5, followed by rule of law and institutions at 4.93. Voice and accountability scores 4.0 and political stability is comparatively strong at 2.3. The CPI score of 33 out of 100, ranked 113th of 179 countries in 2024, underscores material corruption concerns. Mongolia sits marginally above the global midpoint on the World Bank governance indicators.",
+    "analysis": "Mongolia's profile is determined entirely by its governance indicators, with no FATF or sanctions overlay. Corruption is the weakest domain, followed by rule of law and institutions. Voice and accountability is moderate and political stability is comparatively strong. The CPI reading underscores material corruption concerns. Mongolia sits marginally above the global midpoint on the World Bank governance indicators.",
     "outlook": "Mongolia's elevated corruption reading is the key risk factor. With no current FATF listing and no sanctions, the trajectory depends on the pace of governance and anti-corruption reforms. A future FATF grey-listing would materially raise scrutiny. Improved institutional integrity and rule of law indicators would be the most meaningful signal of improving risk.",
     "keyWatchpoints": [
       "Corruption risk trends and the implementation of anti-corruption measures.",
       "Any change in FATF status, which would materially raise scrutiny of Mongolia-connected business.",
       "Development of enforcement data as supervisory frameworks mature.",
-      "Rule of law reform progress given the 4.93 domain score."
+      "Rule of law reform progress given the current domain score."
     ]
   },
   "MO": {
     "summary": "Macau is supported by strong rule-of-law institutions and very low political instability risk, though corruption remains a moderate concern and no FATF listing or sanctions apply.",
     "whyItMatters": [
       "Governance is generally sound, with the profile shaped chiefly by corruption against otherwise strong readings.",
-      "Rule of law and institutions at 2.67 is Macau's strongest governance domain and a key anchor for the overall profile.",
-      "Corruption risk at 4.1 is the leading weakness, reflecting inherent vulnerabilities associated with the gaming and hospitality sector.",
-      "Political stability at 1.7 is a notable strength, and no FATF listing or sanctions exposure applies."
+      "Rule of law and institutions is Macau's strongest governance domain and a key anchor for the overall profile.",
+      "Corruption risk is the leading weakness, reflecting inherent vulnerabilities associated with the gaming and hospitality sector.",
+      "Political stability is a notable strength, and no FATF listing or sanctions exposure applies."
     ],
-    "analysis": "Macau's profile reflects a generally sound governance foundation, with rule of law at 2.67 and political stability at 1.7 providing strong mitigation. Corruption at 4.1 and voice and accountability at 4.2 are the more elevated domains and represent the primary risk drivers. No FATF listing applies and the country carries no sanctions exposure, so the profile reflects the governance indicators alone. Macau sits in the upper third of the World Bank governance indicators. No CPI data is included for Macau in the 2024 dataset.",
+    "analysis": "Macau's profile reflects a generally sound governance foundation, with rule of law and political stability providing strong mitigation. Corruption and voice and accountability are the more elevated domains and represent the primary risk drivers. No FATF listing applies and the country carries no sanctions exposure, so the profile reflects the governance indicators alone. Macau sits in the upper third of the World Bank governance indicators. No CPI data is included for Macau in the 2024 dataset.",
     "outlook": "Macau's risk profile is likely to remain broadly stable in the near term, with the corruption domain the primary variable to watch given the economy's concentration in gaming. Regulatory oversight of casino-linked financial flows will be the key determinant of how the AML risk environment evolves. The October 2026 FATF plenary should be monitored for any regional developments.",
     "keyWatchpoints": [
       "Monitor AML supervisory developments in the gaming and junket operator sector.",
@@ -2198,12 +2198,12 @@ export const NARRATIVES: Record<string, CountryNarrative> = {
   "MR": {
     "summary": "Mauritania is driven by elevated corruption and weak rule of law; it is not FATF-listed and carries no sanctions exposure.",
     "whyItMatters": [
-      "Corruption risk scores 6.8, indicating significant integrity weaknesses across public and financial-sector institutions.",
-      "Rule of law and institutions scores 6.07, reflecting limited effectiveness of courts and AML supervisory bodies.",
-      "The CPI score of 30 out of 100 (rank 129 of 179) places Mauritania in the lower third of global corruption perceptions.",
+      "Corruption risk is elevated, indicating significant integrity weaknesses across public and financial-sector institutions.",
+      "Rule of law and institutions is elevated, reflecting limited effectiveness of courts and AML supervisory bodies.",
+      "The CPI reading places Mauritania in the lower third of global corruption perceptions.",
       "No FATF listing or sanctions apply, so risk is entirely governance-driven."
     ],
-    "analysis": "Mauritania's profile is entirely governance-driven. Corruption at 6.8 and rule of law and institutions at 6.07 are the primary risk drivers. Voice and accountability at 5.8 and political stability at 4.3 contribute less to the overall risk picture. Mauritania is not on the FATF grey or black list and faces no sanctions exposure. The CPI score of 30 and rank of 129 of 179 indicate a below-median global position, and Mauritania sits below the median on the World Bank governance indicators. No enforcement actions are tracked in the dataset.",
+    "analysis": "Mauritania's profile is entirely governance-driven. Corruption and rule of law and institutions are the primary risk drivers. Voice and accountability and political stability contribute less to the overall risk picture. Mauritania is not on the FATF grey or black list and faces no sanctions exposure. The CPI reading and rank of 129 of 179 indicate a below-median global position, and Mauritania sits below the median on the World Bank governance indicators. No enforcement actions are tracked in the dataset.",
     "outlook": "Mauritania's risk profile is stable but elevated, driven primarily by structural corruption and institutional weakness. The absence of FATF and sanctions escalators limits the immediate regulatory exposure for firms, but the underlying governance environment warrants ongoing caution. Improvements in AML supervisory effectiveness would be necessary to achieve a meaningful improvement in the risk picture.",
     "keyWatchpoints": [
       "Monitor FATF mutual evaluation activity and the October 2026 plenary for any change in Mauritania's listing status.",
@@ -2233,11 +2233,11 @@ export const NARRATIVES: Record<string, CountryNarrative> = {
     "summary": "Malta presents moderate risk, with corruption scores the weakest of any EU member state in this batch, though it has exited prior elevated-risk status and no FATF listing or sanctions currently apply.",
     "whyItMatters": [
       "Persistent governance weaknesses, particularly in the corruption domain, remain despite institutional reforms in recent years.",
-      "Corruption domain scores 4.6 (weighted 35%), the weakest corruption reading among EU member states in this batch and a material risk driver.",
-      "CPI score of 46 out of 100 (rank 65 of 179) is the lowest CPI result among EU members in this batch, corroborating the governance-domain assessment.",
+      "Corruption domain is moderate (weighted 35%), the weakest corruption reading among EU member states in this batch and a material risk driver.",
+      "The CPI reading is the lowest CPI result among EU members in this batch, corroborating the governance-domain assessment.",
       "MFSA has recorded 52 tracked enforcement actions between 2007 and 2026, a relatively low volume for an EU financial centre of Malta's scale."
     ],
-    "analysis": "Malta's profile is driven primarily by corruption (risk 4.6, weighted 35%) and rule of law and institutions (risk 3.33, weighted 40%). Both domains are the weakest for any EU member state in this batch. Political stability (risk 1.8) is the standout strength. Voice and accountability (risk 2.6) is moderate. No FATF listing or sanctions currently apply; Malta was previously subject to enhanced FATF scrutiny but is not listed at the time of this assessment. The CPI score of 46 is the lowest in the batch for an EU member. Malta sits in the upper tier of the World Bank governance indicators.",
+    "analysis": "Malta's profile is driven primarily by corruption (weighted 35%) and rule of law and institutions (weighted 40%). Both domains are the weakest for any EU member state in this batch. Political stability (strong) is the standout strength. Voice and accountability (strong) is moderate. No FATF listing or sanctions currently apply; Malta was previously subject to enhanced FATF scrutiny but is not listed at the time of this assessment. The CPI reading is the lowest in the batch for an EU member. Malta sits in the upper tier of the World Bank governance indicators.",
     "outlook": "Malta has undertaken regulatory reform following a period of significant international scrutiny. Continued progress in anti-corruption enforcement, judicial independence and AML supervisory capacity will be critical to sustaining its current unlisted status and improving its governance profile. Firms should apply enhanced due diligence for Maltese-connected business, particularly where high-risk business lines, gaming, crypto or high-value residency schemes are involved, and monitor MFSA supervisory developments closely.",
     "keyWatchpoints": [
       "Monitor MFSA enforcement activity and supervisory guidance for signs of increased or decreased regulatory stringency.",
@@ -2250,11 +2250,11 @@ export const NARRATIVES: Record<string, CountryNarrative> = {
     "summary": "Mauritius is the strongest performer in this batch, reflecting comparatively sound governance, strong rule of law and the absence of any FATF or sanctions exposure.",
     "whyItMatters": [
       "Governance is comparatively strong, making Mauritius the better-governed jurisdiction within the African cohort.",
-      "Rule of law and institutions scores 3.17 and political stability scores 2.0, both indicating relatively effective governance.",
-      "The CPI score of 51 out of 100 (rank 56 of 179) is the highest in this batch, reflecting comparatively clean public institutions.",
+      "Rule of law and institutions is moderate and political stability is strong, both indicating relatively effective governance.",
+      "The CPI reading is the highest in this batch, reflecting comparatively clean public institutions.",
       "Mauritius is not on the FATF grey or black list and carries no sanctions exposure, so the profile rests on governance alone."
     ],
-    "analysis": "Mauritius stands out as a notably lower-risk jurisdiction within the African cohort. Political stability at 2.0 and rule of law and institutions at 3.17 are the strongest governance domains. Corruption at 4.5 is the highest domain risk but remains below the midpoint. Mauritius is not on the FATF grey or black list and carries no sanctions exposure. The CPI score of 51 and rank of 56 of 179 confirm that Mauritius sits firmly in the better-governed tier globally on the World Bank governance indicators. No enforcement actions are recorded.",
+    "analysis": "Mauritius stands out as a notably lower-risk jurisdiction within the African cohort. Political stability and rule of law and institutions are the strongest governance domains. Corruption is the highest domain risk but remains below the midpoint. Mauritius is not on the FATF grey or black list and carries no sanctions exposure. The CPI reading and rank of 56 of 179 confirm that Mauritius sits firmly in the better-governed tier globally on the World Bank governance indicators. No enforcement actions are recorded.",
     "outlook": "Mauritius is expected to maintain a comparatively low risk profile, supported by its established financial services regulatory framework and sound governance indicators. Sustaining CPI performance and institutional quality will be key to preserving its standing. Firms can apply standard risk-based due diligence proportionate to the specific product and customer profile, rather than blanket enhanced measures.",
     "keyWatchpoints": [
       "Monitor any change in FATF listing status at the October 2026 plenary, noting that Mauritius was previously removed from the grey list.",
@@ -2266,29 +2266,29 @@ export const NARRATIVES: Record<string, CountryNarrative> = {
   "MV": {
     "summary": "The Maldives has corruption as its dominant governance weakness, with no FATF listing or sanctions in place.",
     "whyItMatters": [
-      "Corruption risk scores 5.8, the weakest governance domain and the primary risk driver.",
-      "Rule of law and institutions scores 4.83, indicating meaningful institutional vulnerabilities.",
+      "Corruption risk is elevated, the weakest governance domain and the primary risk driver.",
+      "Rule of law and institutions is moderate, indicating meaningful institutional vulnerabilities.",
       "No enforcement actions are tracked, limiting visibility into regulatory activity and supervisory intensity.",
       "The Maldives is not on the FATF grey or black list and faces no sanctions exposure, so the profile rests on governance alone."
     ],
-    "analysis": "The Maldives' profile is determined solely by governance factors, as neither FATF nor sanctions overlay applies. Corruption (5.8) is the weakest domain, followed by rule of law and institutions (4.83) and voice and accountability (4.7). Political stability is comparatively strong at 3.3. The CPI score of 38 out of 100, ranked 95th of 179 in 2024, confirms meaningful corruption concerns. The country sits broadly mid-table on the World Bank governance indicators.",
+    "analysis": "The Maldives' profile is determined solely by governance factors, as neither FATF nor sanctions overlay applies. Corruption (elevated) is the weakest domain, followed by rule of law and institutions (moderate) and voice and accountability (moderate). Political stability is comparatively strong. The CPI reading confirms meaningful corruption concerns. The country sits broadly mid-table on the World Bank governance indicators.",
     "outlook": "The Maldives' risk profile is shaped principally by corruption and institutional weakness. Without tracked enforcement data, supervisory capacity is difficult to assess. Any deterioration in rule of law or a future FATF grey-listing would raise the risk profile materially. Conversely, demonstrated AML/CFT reforms and improved CPI performance would support a more favourable assessment.",
     "keyWatchpoints": [
       "Any change in FATF status, which would materially raise scrutiny of Maldives-connected business.",
       "Developments in anti-corruption legislation and enforcement capacity.",
       "Availability of future enforcement data to assess supervisory activity.",
-      "Rule of law trends given the relatively elevated risk rating of 4.83 in that domain."
+      "Rule of law trends given the relatively elevated moderate risk rating in that domain."
     ]
   },
   "MW": {
     "summary": "Malawi reflects notable corruption and rule-of-law weaknesses; it is not FATF-listed and faces no sanctions exposure.",
     "whyItMatters": [
-      "Corruption risk scores 6.5, indicating significant public-sector integrity challenges affecting AML gatekeeping.",
-      "Rule of law and institutions scores 5.5, reflecting moderate but meaningful institutional deficiencies.",
-      "The CPI score of 34 out of 100 (rank 106 of 179) places Malawi in the lower half of global corruption perceptions.",
+      "Corruption risk is elevated, indicating significant public-sector integrity challenges affecting AML gatekeeping.",
+      "Rule of law and institutions is elevated, reflecting moderate but meaningful institutional deficiencies.",
+      "The CPI reading places Malawi in the lower half of global corruption perceptions.",
       "Governance weaknesses drive the profile, and no FATF or sanctions overlay applies."
     ],
-    "analysis": "Malawi's profile is entirely governance-driven. Corruption at 6.5 is the dominant risk factor, with rule of law and institutions at 5.5 adding further weight. Political stability at 3.8 and voice and accountability at 4.4 are relative strengths. Malawi is not on the FATF grey or black list and carries no sanctions exposure. The CPI score of 34 and rank of 106 of 179, together with a slightly below-median standing on the World Bank governance indicators, reflect a near-median global position. No enforcement actions are tracked in the dataset.",
+    "analysis": "Malawi's profile is entirely governance-driven. Corruption is the dominant risk factor, with rule of law and institutions adding further weight. Political stability and voice and accountability are relative strengths. Malawi is not on the FATF grey or black list and carries no sanctions exposure. The CPI reading and rank of 106 of 179, together with a slightly below-median standing on the World Bank governance indicators, reflect a near-median global position. No enforcement actions are tracked in the dataset.",
     "outlook": "Malawi's risk profile is elevated primarily by corruption and institutional capacity constraints. The relatively benign political stability score and absence of FATF or sanctions exposure provide some offset. Reforms targeting anti-corruption institutions and judicial effectiveness could, over time, ease Malawi's risk picture. Firms should monitor developments in Malawi's AML supervisory framework following the October 2026 plenary cycle.",
     "keyWatchpoints": [
       "Track FATF mutual evaluation outcomes and the October 2026 plenary for any change in listing status.",
@@ -2298,14 +2298,14 @@ export const NARRATIVES: Record<string, CountryNarrative> = {
     ]
   },
   "MX": {
-    "summary": "Mexico has corruption as its most severe governance weakness and a CPI of 26 reflecting acute transparency concerns, while no FATF listing or sanctions currently apply.",
+    "summary": "Mexico has corruption as its most severe governance weakness and a very weak CPI reading reflecting acute transparency concerns, while no FATF listing or sanctions currently apply.",
     "whyItMatters": [
-      "Corruption risk of 7.1 is the highest governance domain reading and the principal risk driver.",
-      "CPI score of 26/100 (ranked 139th of 179) reflects severe corruption concerns in a major economy and financial hub.",
-      "Rule of law and institutions risk of 5.33 and political stability risk of 4.4 reflect systemic pressures from organised crime.",
+      "Corruption risk is the highest governance domain reading and the principal risk driver.",
+      "The CPI reading reflects severe corruption concerns in a major economy and financial hub.",
+      "Rule of law and institutions risk and political stability risk reflect systemic pressures from organised crime.",
       "No FATF grey or black listing and no sanctions apply, though governance weaknesses alone keep the risk elevated."
     ],
-    "analysis": "Mexico's profile is driven entirely by its governance indicators, with no FATF or sanctions overlay. Corruption (risk 7.1) is the weakest domain, corroborated by a CPI of 26 and a ranking of 139th of 179 jurisdictions. Rule of law and institutions (risk 5.33) and political stability (risk 4.4) are significantly elevated, reflecting the sustained impact of organised crime on public institutions. Voice and accountability (risk 4.8) presents a further concern. Mexico sits below the global midpoint on the World Bank governance indicators. As a major regional financial centre and trading economy, Mexico's risk profile has significant implications for cross-border financial flows.",
+    "analysis": "Mexico's profile is driven entirely by its governance indicators, with no FATF or sanctions overlay. Corruption (severe) is the weakest domain, corroborated by a very weak CPI reading. Rule of law and institutions (elevated) and political stability (moderate) are significantly elevated, reflecting the sustained impact of organised crime on public institutions. Voice and accountability (moderate) presents a further concern. Mexico sits below the global midpoint on the World Bank governance indicators. As a major regional financial centre and trading economy, Mexico's risk profile has significant implications for cross-border financial flows.",
     "outlook": "Mexico's risk trajectory is primarily shaped by the structural influence of organised crime on governance, law enforcement, and financial flows. The scale and sophistication of narcotics-related money laundering represents a systemic challenge. Any deterioration in the rule-of-law domain or introduction of FATF grey-listing would materially raise the risk profile. Conversely, sustained anti-corruption reform and stronger AML enforcement would be the principal drivers of improvement. Firms with significant Mexican exposure should maintain comprehensive enhanced due diligence programmes. The October 2026 FATF plenary is a key monitoring point.",
     "keyWatchpoints": [
       "Organised crime influence on financial institutions, including shell company and real estate sectors.",
@@ -2317,12 +2317,12 @@ export const NARRATIVES: Record<string, CountryNarrative> = {
   "MY": {
     "summary": "Malaysia has voice and accountability as its weakest governance domain, with no FATF listing or sanctions.",
     "whyItMatters": [
-      "Corruption risk is a leading governance concern, at a risk rating of 4.4, reflecting ongoing weaknesses in anti-corruption controls.",
-      "Voice and accountability scores 4.6, the weakest domain, indicating constraints on transparency and public oversight of institutions.",
+      "Corruption risk is a leading governance concern, at a moderate level, reflecting ongoing weaknesses in anti-corruption controls.",
+      "Voice and accountability is moderate, the weakest domain, indicating constraints on transparency and public oversight of institutions.",
       "The Securities Commission Malaysia has recorded 88 tracked enforcement actions between 2022 and 2026, signalling active regulatory activity.",
       "Malaysia is not on the FATF grey or black list and carries no sanctions exposure, so the profile rests on governance alone."
     ],
-    "analysis": "Malaysia's profile is driven entirely by its governance indicators, with no FATF or sanctions overlay. The weakest domain is voice and accountability (4.6), followed by corruption (4.4). Rule of law and institutions scores 3.6 and political stability is the strongest domain at 3.0. Malaysia's CPI score of 50 out of 100, ranked 57th of 179 countries in 2024, places it broadly in the middle tier globally. The country sits above the global median on the World Bank governance indicators, indicating better-than-average governance by regional and global standards.",
+    "analysis": "Malaysia's profile is driven entirely by its governance indicators, with no FATF or sanctions overlay. The weakest domain is voice and accountability (moderate), followed by corruption (moderate). Rule of law and institutions is moderate and political stability is the strongest domain. Malaysia's The CPI reading places it broadly in the middle tier globally. The country sits above the global median on the World Bank governance indicators, indicating better-than-average governance by regional and global standards.",
     "outlook": "Malaysia's regulatory posture appears stable. The Securities Commission's sustained enforcement record suggests an active supervisory regime. Provided governance reforms continue and the country remains outside FATF listings, the risk profile is unlikely to deteriorate materially. Corruption and accountability indicators remain the areas most likely to influence any future movement.",
     "keyWatchpoints": [
       "Trends in corruption risk and anti-corruption enforcement effectiveness.",
@@ -2334,29 +2334,29 @@ export const NARRATIVES: Record<string, CountryNarrative> = {
   "MZ": {
     "summary": "Mozambique reflects elevated corruption, weak institutions and notable political instability; it is not FATF-listed and carries no sanctions exposure.",
     "whyItMatters": [
-      "Corruption risk scores 7.0, indicating deep structural integrity weaknesses across public and financial-sector institutions.",
-      "Political stability scores 5.8, reflecting meaningful insecurity risks that undermine governance and AML infrastructure.",
-      "The CPI score of 25 out of 100 (rank 145 of 179) places Mozambique among the more severely corruption-affected countries globally.",
-      "Rule of law and institutions scores 6.1, confirming limited judicial and regulatory effectiveness."
+      "Corruption risk is severe, indicating deep structural integrity weaknesses across public and financial-sector institutions.",
+      "Political stability is elevated, reflecting meaningful insecurity risks that undermine governance and AML infrastructure.",
+      "The CPI reading places Mozambique among the more severely corruption-affected countries globally.",
+      "Rule of law and institutions is elevated, confirming limited judicial and regulatory effectiveness."
     ],
-    "analysis": "Mozambique's profile is entirely governance-driven. Corruption at 7.0 is the primary risk driver, followed by rule of law and institutions at 6.1 and political stability at 5.8. Voice and accountability at 5.7 provides no material offset. Mozambique is not on the FATF grey or black list and carries no sanctions exposure. The CPI score of 25 and rank of 145 of 179 confirm a position in the lower third of the World Bank governance indicators. No enforcement actions are recorded in the dataset.",
+    "analysis": "Mozambique's profile is entirely governance-driven. Corruption is the primary risk driver, followed by rule of law and institutions and political stability. Voice and accountability provides no material offset. Mozambique is not on the FATF grey or black list and carries no sanctions exposure. The CPI reading and rank of 145 of 179 confirm a position in the lower third of the World Bank governance indicators. No enforcement actions are recorded in the dataset.",
     "outlook": "Mozambique's combination of high corruption, institutional weakness and political instability creates a challenging environment for effective AML controls. Without significant governance reform, the risk score is unlikely to improve. The absence of FATF listing provides limited assurance given the severity of the underlying governance deficiencies. Firms should monitor both governance developments and the October 2026 plenary for any change in AML oversight status.",
     "keyWatchpoints": [
       "Monitor FATF assessment activity and October 2026 plenary outcomes for any grey-list consideration.",
-      "Track political stability developments, given that insecurity at 5.8 can rapidly degrade AML supervisory capacity.",
+      "Track political stability developments, given that insecurity can rapidly degrade AML supervisory capacity.",
       "Apply enhanced due diligence to all Mozambique-connected beneficial ownership structures and politically exposed persons.",
       "Review CPI and governance percentile trends annually as indicators of the direction of structural corruption risk."
     ]
   },
   "NA": {
-    "summary": "Namibia presents moderate financial-crime risk, supported by relatively strong governance and a CPI score of 49/100, with no current FATF listing and no sanctions in force.",
+    "summary": "Namibia presents moderate financial-crime risk, supported by relatively strong governance and a middling CPI reading, with no current FATF listing and no sanctions in force.",
     "whyItMatters": [
       "Governance is broadly functional, relatively strong for the African region.",
-      "Political stability is the strongest governance domain (risk 2.7), indicating a low threat of instability-driven illicit flows.",
-      "Corruption (risk 4.9) and rule of law (risk 4.27) are the weakest domains and represent the primary residual AML/CFT concern.",
+      "Political stability is the strongest governance domain (strong), indicating a low threat of instability-driven illicit flows.",
+      "Corruption (moderate) and rule of law (moderate) are the weakest domains and represent the primary residual AML/CFT concern.",
       "Namibia was removed from the FATF grey list in June 2026, signalling improved AML/CFT framework effectiveness."
     ],
-    "analysis": "Namibia's profile is driven by a governance picture that is broadly sound relative to the African region. The corruption domain (risk 4.9, weighted 35%) and rule of law domain (risk 4.27, weighted 40%) are the weakest contributors, though both remain at moderate levels. Political stability (risk 2.7) and voice and accountability (risk 3.6) are relative strengths. Namibia is not on the FATF grey or black list and carries no sanctions. Its CPI score of 49/100 (ranked 59th of 179) corroborates the moderate risk picture.",
+    "analysis": "Namibia's profile is driven by a governance picture that is broadly sound relative to the African region. The corruption domain (weighted 35%) and rule of law domain (weighted 40%) are the weakest contributors, though both remain at moderate levels. Political stability (strong) and voice and accountability (moderate) are relative strengths. Namibia is not on the FATF grey or black list and carries no sanctions. Its CPI reading corroborates the moderate risk picture.",
     "outlook": "The removal from the FATF grey list in June 2026 is a meaningful positive signal, suggesting sustained improvement in AML/CFT controls and supervisory capacity. Continued attention to anti-corruption measures and institutional rule-of-law reforms will be necessary to maintain this trajectory. The next FATF plenary in October 2026 provides a further assessment checkpoint.",
     "keyWatchpoints": [
       "Monitor whether post-grey-list removal standards are sustained in FATF follow-up reporting.",
@@ -2366,14 +2366,14 @@ export const NARRATIVES: Record<string, CountryNarrative> = {
     ]
   },
   "NE": {
-    "summary": "Niger presents high financial-crime risk, with uniformly weak governance across all domains, a CPI score of 34/100, and elevated political instability, though it is not FATF-listed or sanctioned.",
+    "summary": "Niger presents high financial-crime risk, with uniformly weak governance across all domains, a weak CPI reading, and elevated political instability, though it is not FATF-listed or sanctioned.",
     "whyItMatters": [
       "Governance is uniformly weak across all four World Bank domains.",
-      "Political stability is a significant concern (risk 6.2), consistent with recurring unconstitutional changes of government.",
-      "Corruption (risk 6.3) is the weakest governance domain, posing direct exposure for financial institutions handling Niger-sourced transactions.",
-      "Rule of law (risk 5.83) and voice and accountability (risk 5.7) compound the risk, indicating limited institutional checks."
+      "Political stability is a significant concern (elevated), consistent with recurring unconstitutional changes of government.",
+      "Corruption (elevated) is the weakest governance domain, posing direct exposure for financial institutions handling Niger-sourced transactions.",
+      "Rule of law (elevated) and voice and accountability (elevated) compound the risk, indicating limited institutional checks."
     ],
-    "analysis": "Niger's profile reflects uniform weakness across all four governance domains. Corruption (risk 6.3, weighted 35%) is the most acute concern and is consistent with a CPI score of 34/100 (ranked 106th of 179), which places Niger well below the global median. Rule of law (risk 5.83, weighted 40%) and political stability (risk 6.2) further elevate inherent risk. Niger is not on the FATF grey or black list and carries no sanctions. Enforcement data are not available in the current dataset.",
+    "analysis": "Niger's profile reflects uniform weakness across all four governance domains. Corruption (weighted 35%) is the most acute concern and is consistent with a CPI reading, which places Niger well below the global median. Rule of law (weighted 40%) and political stability (elevated) further elevate inherent risk. Niger is not on the FATF grey or black list and carries no sanctions. Enforcement data are not available in the current dataset.",
     "outlook": "Niger's high risk profile is unlikely to improve materially in the near term given the structural nature of the governance deficits and the political instability recorded in the data. Financial institutions should apply enhanced due diligence to transactions involving Niger. The October 2026 FATF plenary will be a key moment to monitor whether Niger is placed under heightened FATF scrutiny.",
     "keyWatchpoints": [
       "Watch for any FATF listing decision at or after the October 2026 plenary.",
@@ -2383,14 +2383,14 @@ export const NARRATIVES: Record<string, CountryNarrative> = {
     ]
   },
   "NG": {
-    "summary": "Nigeria presents high financial-crime risk, driven by very weak corruption and rule-of-law scores, a CPI of 26/100, and persistent political instability, though it is not currently FATF-listed or sanctioned.",
+    "summary": "Nigeria presents high financial-crime risk, driven by very weak corruption and rule-of-law scores, a very weak CPI reading, and persistent political instability, though it is not currently FATF-listed or sanctioned.",
     "whyItMatters": [
       "Governance is weak across the four World Bank domains, with corruption and rule of law the most acute.",
-      "Corruption (risk 7.4) is the weakest governance domain and the primary driver of elevated inherent risk.",
-      "Rule of law (risk 6.1, weighted 40%) reflects significant institutional weaknesses that undermine AML/CFT enforcement.",
-      "CPI score of 26/100 (ranked 139th of 179) confirms deep structural corruption concerns across the economy."
+      "Corruption (severe) is the weakest governance domain and the primary driver of elevated inherent risk.",
+      "Rule of law (weighted 40%) reflects significant institutional weaknesses that undermine AML/CFT enforcement.",
+      "The CPI reading confirms deep structural corruption concerns across the economy."
     ],
-    "analysis": "Nigeria's profile is anchored by a corruption domain risk of 7.4 (weighted 35%), which is the single largest risk contributor. Rule of law (risk 6.1, weighted 40%) and political stability (risk 6.8, weighted 15%) further compound the risk picture. Voice and accountability (risk 5.6) is the relatively least acute domain but remains elevated. Nigeria is not on the FATF grey or black list and carries no sanctions exposure. The CPI score of 26/100 (139th of 179) reflects one of the higher corruption perceptions in the dataset, reinforcing the governance-driven risk assessment.",
+    "analysis": "Nigeria's profile is anchored by a corruption domain risk (weighted 35%), which is the single largest risk contributor. Rule of law (weighted 40%) and political stability (weighted 15%) further compound the risk picture. Voice and accountability (elevated) is the relatively least acute domain but remains elevated. Nigeria is not on the FATF grey or black list and carries no sanctions exposure. The CPI reading reflects one of the higher corruption perceptions in the dataset, reinforcing the governance-driven risk assessment.",
     "outlook": "Nigeria's risk profile is shaped by deep-rooted structural factors that are unlikely to shift rapidly. Ongoing AML/CFT reform efforts, if sustained, could support incremental improvements in rule-of-law and institutional effectiveness. Firms should monitor FATF and GIABA assessments of Nigeria's mutual evaluation progress. The October 2026 plenary provides a near-term checkpoint.",
     "keyWatchpoints": [
       "Monitor FATF and GIABA mutual evaluation outcomes for Nigeria.",
@@ -2400,14 +2400,14 @@ export const NARRATIVES: Record<string, CountryNarrative> = {
     ]
   },
   "NI": {
-    "summary": "Nicaragua has corruption and voice and accountability as its most severe governance weaknesses, a CPI of 14 indicating acute transparency failure, and no FATF listing or sanctions currently in effect.",
+    "summary": "Nicaragua has corruption and voice and accountability as its most severe governance weaknesses, a very weak CPI reading indicating acute transparency failure, and no FATF listing or sanctions currently in effect.",
     "whyItMatters": [
-      "Corruption risk of 7.8 is the highest governance domain reading and the primary risk driver.",
-      "Voice and accountability risk of 7.0 reflects severe constraints on democratic freedoms and independent oversight.",
-      "CPI score of 14/100 (ranked 171st of 179) is among the lowest in the Americas, indicating acute institutional failure.",
-      "Rule of law and institutions risk of 6.63 confirms significant weaknesses in judicial integrity and enforcement capacity."
+      "Corruption risk is the highest governance domain reading and the primary risk driver.",
+      "Voice and accountability risk reflects severe constraints on democratic freedoms and independent oversight.",
+      "The CPI reading is among the lowest in the Americas, indicating acute institutional failure.",
+      "Rule of law and institutions risk confirms significant weaknesses in judicial integrity and enforcement capacity."
     ],
-    "analysis": "Nicaragua's profile is driven entirely by a severe governance picture, with no FATF or sanctions overlay. Corruption (risk 7.8) and voice and accountability (risk 7.0) are the most acute weaknesses, consistent with a CPI of 14 that ranks Nicaragua 171st of 179 jurisdictions globally. Rule of law and institutions (risk 6.63) is also severely compromised. Political stability (risk 3.5) is the comparatively least acute domain. Nicaragua sits in the lower third of the World Bank governance indicators. The combination of pervasive corruption, restricted accountability, and weak rule of law creates significant financial-crime exposure.",
+    "analysis": "Nicaragua's profile is driven entirely by a severe governance picture, with no FATF or sanctions overlay. Corruption (severe) and voice and accountability (severe) are the most acute weaknesses, consistent with a very weak CPI reading. Rule of law and institutions (elevated) is also severely compromised. Political stability (moderate) is the comparatively least acute domain. Nicaragua sits in the lower third of the World Bank governance indicators. The combination of pervasive corruption, restricted accountability, and weak rule of law creates significant financial-crime exposure.",
     "outlook": "Nicaragua's risk outlook is unfavourable. Structural political constraints limit the prospect of meaningful governance reform in the near term, and the CPI trajectory indicates persistent deterioration rather than improvement. Should targeted or sectoral sanctions be introduced against Nicaragua or its leadership, the risk profile would rise significantly. FATF grey-listing would similarly raise scrutiny materially. Firms should apply robust enhanced due diligence for any Nicaraguan nexus and monitor both the October 2026 FATF plenary and international sanctions developments closely.",
     "keyWatchpoints": [
       "Sanctions risk: any introduction of targeted or sectoral measures against Nicaragua or associated individuals would materially raise its risk profile.",
@@ -2419,46 +2419,46 @@ export const NARRATIVES: Record<string, CountryNarrative> = {
   "NL": {
     "summary": "The Netherlands is a low-risk jurisdiction supported by strong governance across all domains, no FATF listing, and no sanctions exposure.",
     "whyItMatters": [
-      "Governance is strong across all four domains: Corruption scores just 1.4, Voice and accountability 1.3, Rule of law and institutions 1.53, and Political stability 2.4.",
-      "The CPI score of 78 out of 100 (rank 9 of 179) confirms the Netherlands as one of the world's least corrupt jurisdictions.",
+      "Governance is strong across all four domains: Corruption scores strong, Voice and accountability is strong, Rule of law and institutions is strong, and Political stability is strong.",
+      "The CPI reading confirms the Netherlands as one of the world's least corrupt jurisdictions.",
       "Seven tracked enforcement actions across two regulators (AFM and DNB, 2023-2024) reflect active, functioning supervisory oversight rather than systemic weakness.",
       "No FATF listing and no sanctions apply, so the profile rests on the Netherlands' strong governance alone."
     ],
-    "analysis": "The Netherlands' profile is anchored by strong governance across all four domains, each carrying a low risk rating, with voice and accountability (1.3) and corruption (1.4) the strongest performers. Rule of law and institutions (1.53, 40% weight) similarly reflects a highly developed legal and regulatory framework. The CPI score of 78 (9th of 179) independently validates the low-corruption assessment. The AFM and DNB together recorded seven tracked enforcement actions between 2023 and 2024, which is a sign of active supervisory engagement rather than regulatory failure. No FATF listing or sanctions apply.",
+    "analysis": "The Netherlands' profile is anchored by strong governance across all four domains, each carrying a low risk rating, with voice and accountability (strong) and corruption (strong) the strongest performers. Rule of law and institutions (40% weight) similarly reflects a highly developed legal and regulatory framework. The CPI reading independently validates the low-corruption assessment. The AFM and DNB together recorded seven tracked enforcement actions between 2023 and 2024, which is a sign of active supervisory engagement rather than regulatory failure. No FATF listing or sanctions apply.",
     "outlook": "The Netherlands is well-established as a low-risk jurisdiction and is unlikely to see significant deterioration in its governance profile. The active supervisory posture of the AFM and DNB, evidenced by recent enforcement activity, supports continued confidence in the effectiveness of the AML and financial crime control framework. Firms should nonetheless monitor supervisory developments and any changes in EU-level regulatory requirements that may affect compliance obligations.",
     "keyWatchpoints": [
       "Continued enforcement activity by the AFM and DNB and any significant changes in supervisory priorities or penalty levels.",
       "EU-level AML regulatory developments, including implementation of the EU AML Authority framework.",
       "Any change to FATF listing status, though the risk of listing is remote given current governance indicators.",
-      "Political stability domain (2.4), the weakest governance score, warrants monitoring in the context of domestic political developments."
+      "Political stability domain (strong), the weakest governance score, warrants monitoring in the context of domestic political developments."
     ]
   },
   "NO": {
     "summary": "Norway is a very low-risk jurisdiction underpinned by near-best-in-class governance across all domains, a strong CPI ranking, and no FATF listing or sanctions exposure.",
     "whyItMatters": [
-      "All four governance domains carry exceptionally low risk ratings: corruption 1.0, voice and accountability 0.9, rule of law and institutions 1.4, and political stability 1.8.",
-      "The CPI score of 81 out of 100 (rank 5 of 179) places Norway among the world's least corrupt countries.",
+      "All four governance domains carry exceptionally low risk ratings: corruption is strong, voice and accountability is strong, rule of law and institutions is strong, and political stability is strong.",
+      "The CPI reading places Norway among the world's least corrupt countries.",
       "The Financial Supervisory Authority of Norway (Finanstilsynet) recorded 40 tracked enforcement actions between 2023 and 2026, demonstrating robust and active supervisory oversight.",
       "Norway is not on the FATF grey or black list and faces no sanctions, so the profile rests on governance alone."
     ],
-    "analysis": "Norway's governance is among the strongest in the dataset, reflecting an exceptionally strong institutional environment. Voice and accountability (0.9, 10% weight) and corruption (1.0, 35% weight) are effectively best-in-class. Rule of law and institutions (1.4, 40% weight) and political stability (1.8, 15% weight) similarly point to a highly stable and legally robust environment. The CPI score of 81, ranked 5th of 179 countries, independently validates the low-corruption assessment. Finanstilsynet's 40 tracked enforcement actions from 2023 to 2026 reflect a vigorous supervisory authority rather than any systemic weakness. No FATF listing or sanctions apply.",
+    "analysis": "Norway's governance is among the strongest in the dataset, reflecting an exceptionally strong institutional environment. Voice and accountability (10% weight) and corruption (35% weight) are effectively best-in-class. Rule of law and institutions (40% weight) and political stability (15% weight) similarly point to a highly stable and legally robust environment. The CPI reading independently validates the low-corruption assessment. Finanstilsynet's 40 tracked enforcement actions from 2023 to 2026 reflect a vigorous supervisory authority rather than any systemic weakness. No FATF listing or sanctions apply.",
     "outlook": "Norway's risk profile is very stable and well-anchored in its governance fundamentals. The active enforcement posture of Finanstilsynet is likely to persist, supporting continued compliance standards across the Norwegian financial sector. No material deterioration in governance is anticipated. Firms operating in Norway should focus on technical compliance with supervisory expectations rather than elevated inherent country risk.",
     "keyWatchpoints": [
       "Supervisory priorities and enforcement trends at Finanstilsynet, particularly any shifts in AML and financial crime focus.",
       "Any changes to Norway's EEA regulatory alignment with EU AML standards as the EU AML Authority framework develops.",
-      "Political stability domain (1.8), the weakest governance score, warrants low-level monitoring though it poses no current concern.",
+      "Political stability domain (strong), the weakest governance score, warrants low-level monitoring though it poses no current concern.",
       "Any change to FATF listing status, though the risk is negligible given current governance metrics."
     ]
   },
   "NR": {
     "summary": "Nauru, a small Pacific state, rests on a mixed governance base, with no FATF listing or sanctions, though its ship registry was flagged in its 2024 APG mutual evaluation.",
     "whyItMatters": [
-      "A mixed governance base has political stability at 1.5 the strongest domain.",
-      "Rule of law at 4.67 and corruption at 4.2 are the weakest domains; accountability scores 3.3.",
+      "A mixed governance base has political stability the strongest domain.",
+      "Rule of law and corruption are the weakest domains; accountability is moderate.",
       "Nauru's ship registry was specifically flagged for money-laundering, terrorist-financing and proliferation-financing review in its 2024 APG mutual evaluation.",
       "No FATF grey or black listing applies and no sanctions are in place; no CPI data are published, so corruption context rests on WGI alone."
     ],
-    "analysis": "Nauru is a small Pacific island state and a member of the Asia/Pacific Group on Money Laundering (APG). Its risk picture is governance-derived, with no FATF or sanctions overlay. The governance base is mixed: political stability is strong at 1.5, accountability scores 3.3, corruption 4.2 and rule of law 4.67. It sits in the upper-middle tier of the World Bank governance indicators, though no CPI data are published. The APG's third-round mutual evaluation, adopted in September 2024, recommended that Nauru urgently review the ML, TF and proliferation-financing implications of its ship registry and establish effective reporting, cooperation and coordination mechanisms among stakeholders. Nauru had historically been a jurisdiction of AML concern in the early 2000s, and the 2024 evaluation frames its residual vulnerabilities around the registry and supervisory capacity rather than the banking sector.",
+    "analysis": "Nauru is a small Pacific island state and a member of the Asia/Pacific Group on Money Laundering (APG). Its risk picture is governance-derived, with no FATF or sanctions overlay. The governance base is mixed: political stability is strong, accountability is moderate, corruption is moderate and rule of law is moderate. It sits in the upper-middle tier of the World Bank governance indicators, though no CPI data are published. The APG's third-round mutual evaluation, adopted in September 2024, recommended that Nauru urgently review the ML, TF and proliferation-financing implications of its ship registry and establish effective reporting, cooperation and coordination mechanisms among stakeholders. Nauru had historically been a jurisdiction of AML concern in the early 2000s, and the 2024 evaluation frames its residual vulnerabilities around the registry and supervisory capacity rather than the banking sector.",
     "outlook": "Nauru's governance base is stronger on political stability than on rule of law, tempered by the ship-registry concern raised in the September 2024 APG evaluation. The forward picture depends on the pace of APG follow-up remediation, particularly the review of the ship registry, and on supervisory capacity in a very small administration. Firms should apply enhanced due diligence to any Nauru-linked shipping or corporate exposure and monitor APG follow-up reporting.",
     "keyWatchpoints": [
       "APG follow-up reporting on the September 2024 third-round mutual evaluation, especially the ship-registry review.",
@@ -2471,11 +2471,11 @@ export const NARRATIVES: Record<string, CountryNarrative> = {
     "summary": "Nepal combines a moderate governance profile with a FATF grey-list designation and elevated corruption and rule-of-law domain scores.",
     "whyItMatters": [
       "Nepal is on the FATF grey list (last reviewed June 2026), adding formal increased-monitoring obligations to its governance profile.",
-      "Corruption risk scores 6.5, the weakest governance domain, reflecting persistent anti-corruption challenges.",
-      "Rule of law and institutions scores 5.63, indicating material institutional weaknesses relevant to financial crime controls.",
+      "Corruption risk is elevated, the weakest governance domain, reflecting persistent anti-corruption challenges.",
+      "Rule of law and institutions is elevated, indicating material institutional weaknesses relevant to financial crime controls.",
       "Nepal faces no sanctions exposure, so the FATF grey listing is the defining overlay on its governance profile."
     ],
-    "analysis": "Nepal combines a moderate governance profile with current FATF grey listing. Corruption is the weakest governance domain at 6.5, followed by rule of law and institutions at 5.63. Voice and accountability scores 4.4 and political stability is the strongest domain at 3.9. No sanctions apply. The CPI score of 34 out of 100, ranked 106th of 179 in 2024, confirms material corruption concerns. Nepal sits below the global midpoint on the World Bank governance indicators.",
+    "analysis": "Nepal combines a moderate governance profile with current FATF grey listing. Corruption is the weakest governance domain, followed by rule of law and institutions. Voice and accountability is moderate and political stability is the strongest domain. No sanctions apply. The CPI reading confirms material corruption concerns. Nepal sits below the global midpoint on the World Bank governance indicators.",
     "outlook": "Nepal's FATF grey-list status is the key near-term variable. Successful completion of the action plan and exit from the grey list would ease the FATF overlay. Persistent corruption and institutional weakness, however, would keep the underlying governance picture elevated even following delisting. The next FATF plenary provides the nearest scheduled review point.",
     "keyWatchpoints": [
       "Progress on the FATF action plan and prospects for grey-list exit at upcoming plenaries.",
@@ -2487,29 +2487,29 @@ export const NARRATIVES: Record<string, CountryNarrative> = {
   "NU": {
     "summary": "Niue, a small self-governing Pacific state in free association with New Zealand, has corruption as the weakest governance domain and a fresh APG mutual evaluation pending, with no FATF listing or sanctions.",
     "whyItMatters": [
-      "Political stability at 1.0 is the strongest governance domain against a weaker corruption and rule-of-law picture.",
-      "Corruption at 6.2 is by far the weakest governance domain and the principal governance driver; rule of law scores 5.3.",
+      "Political stability is the strongest governance domain against a weaker corruption and rule-of-law picture.",
+      "Corruption is by far the weakest governance domain and the principal governance driver; rule of law is elevated.",
       "Niue underwent an APG on-site mutual evaluation in late 2024, with the report scheduled for consideration at the 2025 APG annual meeting.",
       "No FATF grey or black listing applies and no sanctions are in place; no CPI data are published, so corruption context rests on WGI alone."
     ],
-    "analysis": "Niue is a very small self-governing Pacific state in free association with New Zealand and a member of the Asia/Pacific Group on Money Laundering (APG). Its risk picture is governance-derived, with no FATF or sanctions overlay. The governance base is uneven: political stability is very strong at 1.0 and accountability scores 2.4, but corruption at 6.2 is the weakest domain and, with the heaviest domain weighting, is the principal governance driver, while rule of law at 5.3 is also elevated. Niue sits near the global midpoint of the World Bank governance indicators, and no CPI data are published. Niue was the subject of AML concern in the early 2000s over its former offshore sector, which has since been wound down. The APG conducted an on-site evaluation visit between 25 November and 5 December 2024, with the resulting mutual evaluation report scheduled for consideration at the 2025 APG annual meeting.",
+    "analysis": "Niue is a very small self-governing Pacific state in free association with New Zealand and a member of the Asia/Pacific Group on Money Laundering (APG). Its risk picture is governance-derived, with no FATF or sanctions overlay. The governance base is uneven: political stability is very strong and accountability is strong, but corruption is the weakest domain and, with the heaviest domain weighting, is the principal governance driver, while rule of law is also elevated. Niue sits near the global midpoint of the World Bank governance indicators, and no CPI data are published. Niue was the subject of AML concern in the early 2000s over its former offshore sector, which has since been wound down. The APG conducted an on-site evaluation visit between 25 November and 5 December 2024, with the resulting mutual evaluation report scheduled for consideration at the 2025 APG annual meeting.",
     "outlook": "Niue's profile is shaped by its weak corruption and rule-of-law domains against very strong political stability. The single most important forward indicator is the outcome of its pending APG mutual evaluation, following the late-2024 on-site visit, which will provide the first current effectiveness read on its AML/CFT framework. Firms should treat corruption as the dominant governance concern and monitor the 2025 APG annual meeting for the report's adoption.",
     "keyWatchpoints": [
       "Outcome of Niue's APG mutual evaluation, following the November to December 2024 on-site visit, expected at the 2025 APG annual meeting.",
-      "Corruption domain (6.2) as the dominant governance driver; monitor for reform and transparency developments.",
-      "Rule of law (5.3) and supervisory capacity constraints in a very small administration.",
+      "Corruption domain (elevated) as the dominant governance driver; monitor for reform and transparency developments.",
+      "Rule of law (elevated) and supervisory capacity constraints in a very small administration.",
       "Absence of CPI data limits independent corruption benchmarking; supplement with credible third-party indicators."
     ]
   },
   "NZ": {
-    "summary": "New Zealand is underpinned by strong governance across all domains, a CPI rank of 4th globally, and no FATF listing or sanctions.",
+    "summary": "New Zealand is underpinned by strong governance across all domains, a CPI ranking globally, and no FATF listing or sanctions.",
     "whyItMatters": [
-      "All four governance domains carry low risk ratings, with corruption the strongest at 1.1, reflecting consistently high institutional integrity.",
-      "New Zealand ranks 4th of 179 countries on the 2024 CPI with a score of 83, among the cleanest jurisdictions globally.",
+      "All four governance domains carry low risk ratings, with corruption the strongest, reflecting consistently high institutional integrity.",
+      "New Zealand places it among the world's least corrupt economies on the CPI reading among the cleanest jurisdictions globally.",
       "The Financial Markets Authority has recorded 99 tracked enforcement actions between 2015 and 2026, demonstrating an active and well-established supervisory regime.",
       "New Zealand is not on the FATF grey or black list and carries no sanctions exposure."
     ],
-    "analysis": "New Zealand's profile is determined entirely by a robust governance picture. Corruption (1.1) is the strongest domain, followed by political stability (1.2), voice and accountability (1.3) and rule of law and institutions (1.5). No FATF or sanctions overlay applies. The CPI score of 83, ranked 4th of 179, places New Zealand amongst the world's most transparent and well-governed countries. It sits in the upper decile of the World Bank governance indicators and consistently outperforms regional and global peers.",
+    "analysis": "New Zealand's profile is determined entirely by a robust governance picture. Corruption (strong) is the strongest domain, followed by political stability (strong), voice and accountability (strong) and rule of law and institutions (strong). No FATF or sanctions overlay applies. The CPI reading places New Zealand amongst the world's most transparent and well-governed countries. It sits in the upper decile of the World Bank governance indicators and consistently outperforms regional and global peers.",
     "outlook": "New Zealand's risk profile is stable and among the most favourable globally. The sustained enforcement record of the Financial Markets Authority indicates that supervisory standards are actively maintained. No foreseeable structural changes are expected to alter the country's governance position materially. Firms should monitor any emerging AML/CFT legislative developments, although the baseline risk remains very low.",
     "keyWatchpoints": [
       "Any changes to AML/CFT legislation or supervisory scope by the Financial Markets Authority.",
@@ -2522,11 +2522,11 @@ export const NARRATIVES: Record<string, CountryNarrative> = {
     "summary": "Oman is underpinned by relatively sound rule-of-law institutions and political stability, with no FATF listing or sanctions in place.",
     "whyItMatters": [
       "Oman is not on the FATF grey or black list, and no sanctions apply, so the profile rests on governance alone.",
-      "Rule of law and institutions is the strongest governance domain (risk 3.8), supporting a relatively stable legal framework.",
-      "Political stability risk (2.5) is low, reflecting Oman's track record of domestic stability.",
-      "Voice and accountability (risk 5.7) is the weakest domain, reflecting limitations on political participation and civil freedoms."
+      "Rule of law and institutions is the strongest governance domain (moderate), supporting a relatively stable legal framework.",
+      "Political stability risk (strong) is low, reflecting Oman's track record of domestic stability.",
+      "Voice and accountability (elevated) is the weakest domain, reflecting limitations on political participation and civil freedoms."
     ],
-    "analysis": "Oman's profile is driven entirely by its governance indicators, with no FATF or sanctions overlay. Rule of law (3.8) and political stability (2.5) are the strongest dimensions. Voice and accountability (5.7) is the most elevated, reflecting a constrained political environment. Corruption risk (4.8) sits mid-range. The CPI score of 55 (rank 50 of 179) confirms a broadly moderate corruption environment by global standards. Oman sits above the global median on the World Bank governance indicators. No enforcement actions are tracked.",
+    "analysis": "Oman's profile is driven entirely by its governance indicators, with no FATF or sanctions overlay. Rule of law (moderate) and political stability (strong) are the strongest dimensions. Voice and accountability (elevated) is the most elevated, reflecting a constrained political environment. Corruption risk (moderate) sits mid-range. The CPI reading confirms a broadly moderate corruption environment by global standards. Oman sits above the global median on the World Bank governance indicators. No enforcement actions are tracked.",
     "outlook": "Oman's profile reflects a stable governance foundation. The primary forward-looking concern is the voice-and-accountability dimension; firms should monitor any changes to the political or civil liberties environment. Continued diversification of the economy and ongoing financial-sector development may over time affect the AML/CFT framework's robustness. No near-term escalation drivers are evident from the available facts.",
     "keyWatchpoints": [
       "Developments in Oman's AML/CFT framework and any FATF engagement.",
@@ -2538,12 +2538,12 @@ export const NARRATIVES: Record<string, CountryNarrative> = {
   "PA": {
     "summary": "Panama is driven by elevated corruption and financial-centre exposure, though political stability and accountability show relative strength.",
     "whyItMatters": [
-      "Corruption (WGI) is the weakest domain at a risk rating of 6.4, reflecting persistent governance concerns in a significant international financial centre.",
-      "CPI score of 33/100 (rank 113 of 179 in 2024) signals meaningful transparency deficits.",
-      "Rule of law scores 4.67, indicating institutional constraints that can impede effective AML supervision.",
+      "Corruption (WGI) is the weakest domain at an elevated level, reflecting persistent governance concerns in a significant international financial centre.",
+      "The CPI reading signals meaningful transparency deficits.",
+      "Rule of law is moderate, indicating institutional constraints that can impede effective AML supervision.",
       "Panama is not on the FATF grey or black list and carries no sanctions, so the profile rests on governance alone."
     ],
-    "analysis": "Panama's profile is driven primarily by its governance indicators, with corruption (WGI) the heaviest contributor at 6.4. Rule of law and institutions (4.67) adds further pressure, though political stability (2.8) and voice and accountability (3.5) represent relative strengths. The CPI score of 33 places Panama at rank 113 of 179, consistent with the elevated corruption signal. No FATF listing or sanctions apply. Panama sits above the global midpoint for governance on the World Bank indicators, broadly in line with its moderate risk picture.",
+    "analysis": "Panama's profile is driven primarily by its governance indicators, with corruption (WGI) the heaviest contributor. Rule of law and institutions (moderate) adds further pressure, though political stability (strong) and voice and accountability (moderate) represent relative strengths. The CPI reading places Panama, consistent with the elevated corruption signal. No FATF listing or sanctions apply. Panama sits above the global midpoint for governance on the World Bank indicators, broadly in line with its moderate risk picture.",
     "outlook": "Panama's trajectory will depend on the effectiveness of ongoing institutional reforms and the depth of AML supervision applied to its international financial sector. Absent FATF listing pressures, incremental governance improvement remains plausible, but the structural role of the jurisdiction as a financial hub means corruption and rule-of-law risks will persist as the dominant watchpoints.",
     "keyWatchpoints": [
       "Corruption indicators: any deterioration in WGI Corruption scores or CPI ranking.",
@@ -2555,12 +2555,12 @@ export const NARRATIVES: Record<string, CountryNarrative> = {
   "PE": {
     "summary": "Peru has corruption and political instability as the dominant governance weaknesses across all four WGI domains.",
     "whyItMatters": [
-      "Corruption (WGI) scores a risk rating of 6.6, reflecting persistent governance challenges in both public and private sectors.",
-      "Political stability scores 4.6, capturing recurring executive instability that has weakened institutional continuity.",
-      "CPI score of 31/100 (rank 126 of 179 in 2024) is consistent with the elevated corruption signal.",
+      "Corruption (WGI) shows an elevated risk rating, reflecting persistent governance challenges in both public and private sectors.",
+      "Political stability is moderate, capturing recurring executive instability that has weakened institutional continuity.",
+      "The CPI reading is consistent with the elevated corruption signal.",
       "Peru is not on the FATF grey or black list and carries no sanctions, so the profile rests on governance alone."
     ],
-    "analysis": "Peru's profile is underpinned by weakness across all governance domains. Corruption (WGI) at 6.6 is the highest-risk domain, supported by a CPI rank of 126 of 179. Rule of law and institutions (4.87) and political stability (4.6) both contribute material risk, with political instability reflecting a history of executive disruption. Voice and accountability (4.1) is relatively stronger. No FATF listing or sanctions apply. Peru sits near the global midpoint on the World Bank governance indicators.",
+    "analysis": "Peru's profile is underpinned by weakness across all governance domains. Corruption (WGI) is the highest-risk domain, supported by a CPI ranking. Rule of law and institutions (moderate) and political stability (moderate) both contribute material risk, with political instability reflecting a history of executive disruption. Voice and accountability (moderate) is relatively stronger. No FATF listing or sanctions apply. Peru sits near the global midpoint on the World Bank governance indicators.",
     "outlook": "Peru's risk outlook is sensitive to the pace of political stabilisation and the effectiveness of anti-corruption enforcement. The absence of FATF or sanctions overlay means any future listing would represent a meaningful step-change in scrutiny. Firms should monitor legislative and judicial developments, particularly those affecting anti-corruption institutions and AML supervision.",
     "keyWatchpoints": [
       "Political stability, given recurring executive instability and its effect on institutional continuity.",
@@ -2573,11 +2573,11 @@ export const NARRATIVES: Record<string, CountryNarrative> = {
     "summary": "Papua New Guinea combines a FATF grey-list designation with significant corruption and rule-of-law weaknesses.",
     "whyItMatters": [
       "Papua New Guinea is on the FATF grey list (last reviewed June 2026), adding formal increased-monitoring obligations to an already weak governance profile.",
-      "Corruption risk scores 6.4, the weakest domain, reflecting endemic corruption challenges within government and business environments.",
-      "Rule of law and institutions scores 5.93, indicating material weaknesses in judicial and regulatory infrastructure.",
+      "Corruption risk is elevated, the weakest domain, reflecting endemic corruption challenges within government and business environments.",
+      "Rule of law and institutions is elevated, indicating material weaknesses in judicial and regulatory infrastructure.",
       "No sanctions are in force, but the grey-list status alone requires enhanced due diligence from regulated firms."
     ],
-    "analysis": "Papua New Guinea combines a weak governance profile with current FATF grey listing; no sanctions apply. Corruption (6.4) and rule of law and institutions (5.93) are the weakest governance domains. Voice and accountability scores 4.5 and political stability 4.3. The CPI score of 31 out of 100, ranked 126th of 179 in 2024, confirms severe corruption concerns. The country sits below the global midpoint on the World Bank governance indicators.",
+    "analysis": "Papua New Guinea combines a weak governance profile with current FATF grey listing; no sanctions apply. Corruption (elevated) and rule of law and institutions (elevated) are the weakest governance domains. Voice and accountability is moderate and political stability is moderate. The CPI reading confirms severe corruption concerns. The country sits below the global midpoint on the World Bank governance indicators.",
     "outlook": "Resolution of FATF grey-list status is the most direct lever on Papua New Guinea's risk profile. Exit from the grey list would ease the FATF overlay, though the governance picture would remain elevated absent structural improvements to anti-corruption and rule of law. Firms should treat the country as a higher-risk jurisdiction requiring enhanced due diligence until FATF status changes.",
     "keyWatchpoints": [
       "Progress on the FATF action plan and timing of any grey-list exit.",
@@ -2589,12 +2589,12 @@ export const NARRATIVES: Record<string, CountryNarrative> = {
   "PH": {
     "summary": "The Philippines has corruption as its dominant governance concern and no current FATF listing or sanctions.",
     "whyItMatters": [
-      "Corruption risk scores 6.4, the weakest governance domain and the principal risk driver.",
-      "Political stability scores 4.6 and voice and accountability 5.0, indicating meaningful pressures on institutional integrity.",
+      "Corruption risk is elevated, the weakest governance domain and the principal risk driver.",
+      "Political stability is moderate and voice and accountability is elevated, indicating meaningful pressures on institutional integrity.",
       "The Philippines is not on the FATF grey or black list and carries no sanctions exposure, so the profile is entirely governance-driven.",
       "No enforcement actions are tracked in the available data, limiting assessment of supervisory intensity."
     ],
-    "analysis": "The Philippines' profile is determined solely by its governance indicators, with no FATF or sanctions overlay. Corruption (6.4) is the weakest domain, followed by voice and accountability (5.0), political stability (4.6) and rule of law and institutions (4.8). The CPI score of 33 out of 100, ranked 113th of 179 in 2024, highlights significant corruption concerns. The country sits just below the global midpoint on the World Bank governance indicators.",
+    "analysis": "The Philippines' profile is determined solely by its governance indicators, with no FATF or sanctions overlay. Corruption (elevated) is the weakest domain, followed by voice and accountability (elevated), political stability (moderate) and rule of law and institutions (moderate). The CPI reading highlights significant corruption concerns. The country sits just below the global midpoint on the World Bank governance indicators.",
     "outlook": "The Philippines' risk profile is shaped primarily by corruption and accountability pressures. The country has previously exited the FATF grey list and, whilst it is not currently listed, continued weaknesses in anti-corruption and accountability raise the possibility of future scrutiny. Strengthened enforcement capacity and improved CPI performance would be the clearest indicators of a moderating risk trajectory.",
     "keyWatchpoints": [
       "Any change in FATF status, given the country's prior grey-list experience.",
@@ -2606,12 +2606,12 @@ export const NARRATIVES: Record<string, CountryNarrative> = {
   "PK": {
     "summary": "Pakistan is driven by weak corruption and political stability indicators, though it is currently not on the FATF grey list and carries no sanctions.",
     "whyItMatters": [
-      "Corruption risk scores 7.3, the weakest governance domain, reflecting deeply entrenched corruption concerns.",
-      "Political stability scores 6.7, indicating significant exposure to instability risks that undermine AML/CFT enforcement capacity.",
-      "Rule of law and institutions scores 5.97, with systemic weaknesses affecting judicial and regulatory effectiveness.",
+      "Corruption risk is severe, the weakest governance domain, reflecting deeply entrenched corruption concerns.",
+      "Political stability is elevated, indicating significant exposure to instability risks that undermine AML/CFT enforcement capacity.",
+      "Rule of law and institutions is elevated, with systemic weaknesses affecting judicial and regulatory effectiveness.",
       "Pakistan is not currently on the FATF grey list and faces no sanctions, so the profile reflects governance factors only; any future grey-listing would materially raise scrutiny."
     ],
-    "analysis": "Pakistan's profile is driven entirely by its governance indicators, with no FATF or sanctions overlay currently applying. Corruption is the dominant weakness at 7.3, followed by political stability at 6.7 and voice and accountability at 6.1. Rule of law and institutions scores 5.97. The CPI score of 27 out of 100, ranked 134th of 179 in 2024, places Pakistan firmly in the high-corruption tier globally. The country sits significantly below the global midpoint on the World Bank governance indicators. No enforcement actions are tracked in the available data.",
+    "analysis": "Pakistan's profile is driven entirely by its governance indicators, with no FATF or sanctions overlay currently applying. Corruption is the dominant weakness, followed by political stability and voice and accountability. Rule of law and institutions is elevated. The CPI reading places Pakistan firmly in the high-corruption tier globally. The country sits significantly below the global midpoint on the World Bank governance indicators. No enforcement actions are tracked in the available data.",
     "outlook": "Pakistan's governance profile reflects persistent structural weaknesses across corruption, political stability and rule of law. The country has previously appeared on the FATF grey list and, whilst it is not currently listed, any regression in AML/CFT compliance could result in re-listing and a material increase in scrutiny. Continued political instability and corruption pressures are the primary risk drivers in the medium term.",
     "keyWatchpoints": [
       "Any change in FATF status, given Pakistan's prior history on the grey list.",
@@ -2623,12 +2623,12 @@ export const NARRATIVES: Record<string, CountryNarrative> = {
   "PL": {
     "summary": "Poland has governance readings that are above the EU average in some respects but weaker on corruption and rule of law, with no FATF listing or sanctions exposure.",
     "whyItMatters": [
-      "Corruption scores 3.7 out of 10, the weakest governance domain, reflecting ongoing concerns about public-sector integrity despite Poland's EU membership.",
-      "Rule of law and institutions score 3.57, indicating persistent structural concerns that have been the subject of EU-level scrutiny.",
-      "The CPI score of 53 out of 100 (rank 53 of 179) places Poland in the mid-range globally, consistent with the model's moderate risk assessment.",
+      "Corruption scores moderate, the weakest governance domain, reflecting ongoing concerns about public-sector integrity despite Poland's EU membership.",
+      "Rule of law and institutions is moderate, indicating persistent structural concerns that have been the subject of EU-level scrutiny.",
+      "The CPI reading places Poland in the mid-range globally, consistent with the model's moderate risk assessment.",
       "Poland is not on the FATF grey or black list and faces no sanctions, so the profile rests on governance alone."
     ],
-    "analysis": "Poland's profile places it in moderate-risk territory. The weakest governance domains are corruption (3.7, 35% weight) and rule of law and institutions (3.57, 40% weight), both of which have been the subject of sustained EU scrutiny relating to judicial independence and the separation of powers. Political stability (2.5, 15% weight) and voice and accountability (3.6, 10% weight) are slightly more favourable contributors. Poland sits in the upper third of the World Bank governance indicators. The CPI score of 53 (ranked 53rd of 179) is broadly consistent with the governance picture. No FATF listing or sanctions apply, and no enforcement actions are tracked.",
+    "analysis": "Poland's profile places it in moderate-risk territory. The weakest governance domains are corruption (35% weight) and rule of law and institutions (40% weight), both of which have been the subject of sustained EU scrutiny relating to judicial independence and the separation of powers. Political stability (15% weight) and voice and accountability (10% weight) are slightly more favourable contributors. Poland sits in the upper third of the World Bank governance indicators. The CPI reading is broadly consistent with the governance picture. No FATF listing or sanctions apply, and no enforcement actions are tracked.",
     "outlook": "Poland's risk trajectory is closely linked to the resolution of ongoing rule-of-law concerns within the EU framework. A normalisation of relations with EU institutions could improve the rule-of-law and governance scores over time. Conversely, continued institutional tensions may sustain or modestly increase the governance base. The corruption domain warrants ongoing monitoring given its weight in the governance profile.",
     "keyWatchpoints": [
       "Progress on EU rule-of-law conditionality and any changes to Poland's judicial independence framework.",
@@ -2641,11 +2641,11 @@ export const NARRATIVES: Record<string, CountryNarrative> = {
     "summary": "Palestine carries elevated governance deficiencies across all domains, compounded by severe political instability, with no FATF listing or sanctions recorded.",
     "whyItMatters": [
       "Palestine is not on the FATF grey or black list and no sanctions apply, so the profile reflects governance factors alone.",
-      "Political stability is a significant driver (risk 6.2), reflecting the protracted conflict environment and fragmented governing authority.",
-      "Voice and accountability (risk 6.3) is the weakest domain, indicating very limited political rights and civil liberties.",
-      "No CPI data is available for Palestine; corruption risk from WGI indicators stands at 6.4."
+      "Political stability is a significant driver (elevated), reflecting the protracted conflict environment and fragmented governing authority.",
+      "Voice and accountability (elevated) is the weakest domain, indicating very limited political rights and civil liberties.",
+      "No CPI data is available for Palestine; corruption risk from WGI indicators stands."
     ],
-    "analysis": "Palestine's profile is derived from its governance indicators alone, as neither FATF nor sanctions overlay applies. All four governance domains are elevated: voice and accountability (6.3) and corruption (6.4) are the weakest, while rule of law (5.93) and political stability (6.2) are also substantially above the low-risk threshold. No CPI data is available for comparative context. Palestine sits below the median of assessed jurisdictions on the World Bank governance indicators. The combination of ongoing conflict, divided governance structures, and weak institutional capacity drives the elevated risk.",
+    "analysis": "Palestine's profile is derived from its governance indicators alone, as neither FATF nor sanctions overlay applies. All four governance domains are elevated: voice and accountability (elevated) and corruption (elevated) are the weakest, while rule of law (elevated) and political stability (elevated) are also substantially above the low-risk threshold. No CPI data is available for comparative context. Palestine sits below the median of assessed jurisdictions on the World Bank governance indicators. The combination of ongoing conflict, divided governance structures, and weak institutional capacity drives the elevated risk.",
     "outlook": "The risk outlook for Palestine is closely tied to the trajectory of the political and security situation. Without a meaningful improvement in institutional stability and governance capacity, the High risk rating is likely to persist. Firms should ensure enhanced due diligence on all Palestine-connected flows, with particular attention to beneficial ownership transparency and humanitarian-channel misuse risks.",
     "keyWatchpoints": [
       "Political and security developments affecting institutional authority and territorial control.",
@@ -2657,12 +2657,12 @@ export const NARRATIVES: Record<string, CountryNarrative> = {
   "PT": {
     "summary": "Portugal is supported by sound governance across all domains and an active financial markets regulator, with no FATF listing or sanctions exposure.",
     "whyItMatters": [
-      "Rule of law and institutions (2.9) and political stability (2.1) are the strongest governance contributors, reflecting Portugal's stable EU-member legal environment.",
-      "Corruption scores 3.6, the weakest governance domain, and is corroborated by a CPI score of 57 out of 100 (rank 43 of 179).",
+      "Rule of law and institutions (strong) and political stability (strong) are the strongest governance contributors, reflecting Portugal's stable EU-member legal environment.",
+      "Corruption is moderate, the weakest governance domain, and is corroborated by a CPI reading.",
       "The CMVM (Comissao do Mercado de Valores Mobiliarios) has recorded 133 tracked enforcement actions from 1999 to 2026, indicating sustained and active securities market supervision.",
       "Portugal is not on the FATF grey or black list and faces no sanctions, so the profile rests on governance alone."
     ],
-    "analysis": "Portugal's profile is anchored by sound governance. The weakest domain is corruption (3.6, 35% weight), though it remains within a range consistent with a well-functioning EU economy. Rule of law and institutions (2.9, 40% weight) and political stability (2.1, 15% weight) provide a strong institutional foundation. Voice and accountability (2.0) is the lowest risk domain. The CPI score of 57, ranked 43rd of 179 countries, validates the moderate-low corruption picture. The CMVM's 133 enforcement actions over more than two decades reflect a regulator with consistent supervisory activity. No FATF listing or sanctions apply.",
+    "analysis": "Portugal's profile is anchored by sound governance. The weakest domain is corruption (35% weight), though it remains within a range consistent with a well-functioning EU economy. Rule of law and institutions (40% weight) and political stability (15% weight) provide a strong institutional foundation. Voice and accountability (strong) is the lowest risk domain. The CPI reading, validates the moderate-low corruption picture. The CMVM's 133 enforcement actions over more than two decades reflect a regulator with consistent supervisory activity. No FATF listing or sanctions apply.",
     "outlook": "Portugal's risk profile is expected to remain stable within the low-risk band. The CMVM's sustained enforcement record is a positive indicator of supervisory quality. The corruption domain, while the weakest governance score, remains manageable. EU regulatory alignment is likely to continue supporting strong institutional frameworks. No material deterioration is anticipated.",
     "keyWatchpoints": [
       "Ongoing enforcement trends at the CMVM and any changes in supervisory priorities or focus areas.",
@@ -2674,29 +2674,29 @@ export const NARRATIVES: Record<string, CountryNarrative> = {
   "PW": {
     "summary": "Palau, a Pacific state in free association with the United States, rests on a strong governance base, but sits on the EU list of non-cooperative tax jurisdictions, which shapes its counterparty risk.",
     "whyItMatters": [
-      "A strong governance base, with political stability at 1.3 the strongest domain, anchors the profile.",
+      "A strong governance base, with political stability the strongest domain, anchors the profile.",
       "Palau is on the EU list of non-cooperative jurisdictions for tax purposes (Annex I, as adopted 17 February 2026), reflecting unresolved tax good-governance concerns.",
-      "Corruption at 4.2 is the weakest governance domain; rule of law scores 3.63 and accountability 2.5.",
+      "Corruption is the weakest governance domain; rule of law is moderate and accountability is strong.",
       "No FATF grey or black listing applies and no sanctions are in place; no CPI data are published, so corruption context rests on WGI alone."
     ],
-    "analysis": "Palau is a Pacific island state in free association with the United States and a member of the Asia/Pacific Group on Money Laundering (APG). Its risk picture is governance-derived, with no FATF or sanctions overlay. The governance base is strong: political stability scores 1.3, accountability 2.5, rule of law 3.63, and corruption is the weakest domain at 4.2. Palau sits in the upper third of the World Bank governance indicators, though no CPI data are published. The most material external signal is its presence on the EU Annex I tax list, which the Council last confirmed on 17 February 2026; that listing reflects tax transparency and cooperation concerns rather than an AML/CFT deficiency. Palau completed its APG mutual evaluation, with the report adopted at the 2018 APG annual meeting following an on-site visit in late 2017, and its trustee sector was noted as falling outside comprehensive AML/CFT obligations at that time.",
+    "analysis": "Palau is a Pacific island state in free association with the United States and a member of the Asia/Pacific Group on Money Laundering (APG). Its risk picture is governance-derived, with no FATF or sanctions overlay. The governance base is strong: political stability is strong, accountability is strong, rule of law is moderate, and corruption is the weakest domain. Palau sits in the upper third of the World Bank governance indicators, though no CPI data are published. The most material external signal is its presence on the EU Annex I tax list, which the Council last confirmed on 17 February 2026; that listing reflects tax transparency and cooperation concerns rather than an AML/CFT deficiency. Palau completed its APG mutual evaluation, with the report adopted at the 2018 APG annual meeting following an on-site visit in late 2017, and its trustee sector was noted as falling outside comprehensive AML/CFT obligations at that time.",
     "outlook": "Palau's practical risk profile turns on its EU tax-list status and its offshore exposure more than on its governance base. The Council of the EU reviews Annex I twice a year, with the next scheduled revision in October 2026, so any de-listing or continued inclusion is the single most important forward indicator. APG follow-up reporting on the adequacy of AML/CFT coverage of the trustee and corporate sectors is the other key consideration. Firms should monitor the EU tax list and apply enhanced due diligence to Palauan structures.",
     "keyWatchpoints": [
       "EU Council review of the Annex I tax list (next scheduled October 2026): monitor whether Palau is retained or removed.",
       "APG follow-up reporting on the adequacy of AML/CFT coverage of Palau's trustee and corporate sectors.",
-      "Corruption domain (4.2) as the weakest governance reading.",
+      "Corruption domain (moderate) as the weakest governance reading.",
       "Absence of CPI data limits independent corruption benchmarking; supplement with credible third-party indicators."
     ]
   },
   "PY": {
     "summary": "Paraguay has corruption as its dominant risk driver, with transparency metrics among the weakest in the South American subregion.",
     "whyItMatters": [
-      "Corruption (WGI) reaches a risk rating of 7.3, the highest-risk domain, reflecting deeply embedded governance weaknesses.",
-      "CPI score of 24/100 (rank 148 of 179 in 2024) places Paraguay among the least transparent economies in the Americas.",
-      "Rule of law scores 5.2, indicating material institutional deficiencies that affect AML framework effectiveness.",
+      "Corruption (WGI) reaches a severe risk rating, the highest-risk domain, reflecting deeply embedded governance weaknesses.",
+      "The CPI reading places Paraguay among the least transparent economies in the Americas.",
+      "Rule of law is elevated, indicating material institutional deficiencies that affect AML framework effectiveness.",
       "Paraguay is not on the FATF grey or black list and carries no sanctions."
     ],
-    "analysis": "Paraguay's profile is driven almost entirely by its governance indicators. Corruption (WGI) at 7.3 is the single largest contributor and reflects a long-standing transparency challenge confirmed by the CPI rank of 148 of 179. Rule of law and institutions (5.2) compounds the picture, while political stability (3.4) and voice and accountability (4.6) are comparatively lower-risk. No FATF listing or sanctions apply. Paraguay sits below the global median on the World Bank governance indicators.",
+    "analysis": "Paraguay's profile is driven almost entirely by its governance indicators. Corruption (WGI) is the single largest contributor and reflects a long-standing transparency challenge confirmed by the CPI ranking. Rule of law and institutions (elevated) compounds the picture, while political stability (moderate) and voice and accountability (moderate) are comparatively lower-risk. No FATF listing or sanctions apply. Paraguay sits below the global median on the World Bank governance indicators.",
     "outlook": "Improvement in Paraguay's risk profile will require sustained anti-corruption reform and strengthening of judicial and supervisory institutions. Without FATF listing pressure, reform momentum may be uneven. The CPI trajectory and any changes in rule-of-law indicators will be the primary signals for whether the high-risk band is sustained or worsens.",
     "keyWatchpoints": [
       "Corruption (WGI) and CPI scores, given Paraguay's outlier position in the subregion.",
@@ -2709,11 +2709,11 @@ export const NARRATIVES: Record<string, CountryNarrative> = {
     "summary": "Qatar is supported by strong rule-of-law institutions and political stability, partially offset by the weakest regional voice-and-accountability indicators.",
     "whyItMatters": [
       "Qatar is not on the FATF grey or black list and no sanctions apply, so the profile rests on governance alone.",
-      "Rule of law and institutions is the strongest governance domain (risk 2.97), reflecting a well-developed legal and regulatory framework.",
-      "Political stability risk (1.7) is low, indicating a stable political environment with minimal conflict exposure.",
-      "Voice and accountability (risk 5.9) is the weakest domain and the principal governance concern, reflecting restricted political and civil freedoms."
+      "Rule of law and institutions is the strongest governance domain (strong), reflecting a well-developed legal and regulatory framework.",
+      "Political stability risk (strong) is low, indicating a stable political environment with minimal conflict exposure.",
+      "Voice and accountability (elevated) is the weakest domain and the principal governance concern, reflecting restricted political and civil freedoms."
     ],
-    "analysis": "Qatar's profile is determined by its governance indicators alone. Rule of law (2.97) and political stability (1.7) are strong, situating Qatar well relative to regional peers. Voice and accountability (5.9) is a persistent weakness and is notably the highest-risk domain. Corruption risk (3.6) is moderate, consistent with a CPI score of 59 (rank 38 of 179), which places Qatar among the cleaner jurisdictions globally. Qatar sits in the upper third of the World Bank governance indicators. No enforcement actions are tracked.",
+    "analysis": "Qatar's profile is determined by its governance indicators alone. Rule of law (strong) and political stability (strong) are strong, situating Qatar well relative to regional peers. Voice and accountability (elevated) is a persistent weakness and is notably the highest-risk domain. Corruption risk (moderate) is moderate, consistent with a CPI reading, which places Qatar among the cleaner jurisdictions globally. Qatar sits in the upper third of the World Bank governance indicators. No enforcement actions are tracked.",
     "outlook": "Qatar's risk position is well supported by its institutional and legal architecture. The primary structural risk remains the voice-and-accountability domain; firms should monitor any regulatory or governance reforms. Qatar's role as a major financial hub means that developments in its AML/CFT supervisory capacity, particularly around high-value transactions and real estate, warrant ongoing attention.",
     "keyWatchpoints": [
       "Voice and accountability developments, including political openness and civil-society access.",
@@ -2725,12 +2725,12 @@ export const NARRATIVES: Record<string, CountryNarrative> = {
   "RO": {
     "summary": "Romania is primarily driven by elevated corruption and rule-of-law weaknesses, while remaining free of FATF listing and sanctions exposure.",
     "whyItMatters": [
-      "Corruption is the highest-risk governance domain at 5.2 out of 10, reflecting persistent concerns about public-sector integrity despite EU membership.",
-      "Rule of law and institutions score 4.07 (the highest weighted domain at 40%), indicating ongoing structural constraints on judicial and enforcement effectiveness.",
-      "The CPI score of 46 out of 100 (rank 65 of 179) corroborates the model's governance assessment, placing Romania in the moderate-lower range globally.",
+      "Corruption is the highest-risk governance domain at elevated, reflecting persistent concerns about public-sector integrity despite EU membership.",
+      "Rule of law and institutions is moderate (the highest weighted domain at 40%), indicating ongoing structural constraints on judicial and enforcement effectiveness.",
+      "The CPI reading corroborates the model's governance assessment, placing Romania in the moderate-lower range globally.",
       "Romania is not on the FATF grey or black list and faces no sanctions, so the profile rests on governance alone."
     ],
-    "analysis": "Romania's profile is driven entirely by the governance indicators, with no FATF or sanctions overlay. The weakest domain is corruption (5.2, 35% weight), reflecting a pattern of high-level corruption cases and variable enforcement. Rule of law and institutions (4.07, 40% weight) is the heaviest-weighted domain and remains a significant risk contributor, with concerns about judicial independence and the effectiveness of anti-money laundering bodies. Political stability (2.6, 15% weight) and voice and accountability (3.4, 10% weight) are comparatively more positive. Romania sits slightly above the global midpoint on the World Bank governance indicators. The CPI score of 46, ranked 65th of 179, is consistent with the governance picture. No enforcement actions are tracked.",
+    "analysis": "Romania's profile is driven entirely by the governance indicators, with no FATF or sanctions overlay. The weakest domain is corruption (35% weight), reflecting a pattern of high-level corruption cases and variable enforcement. Rule of law and institutions (40% weight) is the heaviest-weighted domain and remains a significant risk contributor, with concerns about judicial independence and the effectiveness of anti-money laundering bodies. Political stability (15% weight) and voice and accountability (10% weight) are comparatively more positive. Romania sits slightly above the global midpoint on the World Bank governance indicators. The CPI reading is consistent with the governance picture. No enforcement actions are tracked.",
     "outlook": "Romania's governance trajectory is shaped by ongoing EU anti-corruption monitoring and domestic institutional reform efforts. Progress on judicial independence and anti-corruption enforcement could reduce the governance base over time, but structural challenges are entrenched. The corruption and rule-of-law domains are the primary risk levers to watch. No change to FATF status is anticipated absent a material deterioration.",
     "keyWatchpoints": [
       "Corruption domain developments, including EU monitoring mechanisms and domestic enforcement activity against high-level corruption.",
@@ -2742,12 +2742,12 @@ export const NARRATIVES: Record<string, CountryNarrative> = {
   "RS": {
     "summary": "Serbia is driven by the highest corruption reading among its governance domains and notable weaknesses in voice and accountability, with no FATF listing or sanctions in place.",
     "whyItMatters": [
-      "Corruption is the highest-risk domain at a risk rating of 6.2, approaching the elevated range and reflecting deep-rooted public-sector integrity concerns.",
-      "Voice and accountability scores 5.0, the joint second-highest risk domain, pointing to constrained civil society and media freedom.",
-      "The CPI score of 35 out of 100 (rank 104 of 179) places Serbia in the lower half of the global cleanliness table, among the weaker performers in the European region.",
+      "Corruption is the highest-risk domain at an elevated level, approaching the elevated range and reflecting deep-rooted public-sector integrity concerns.",
+      "Voice and accountability is elevated, the joint second-highest risk domain, pointing to constrained civil society and media freedom.",
+      "The CPI reading places Serbia in the lower half of the global cleanliness table, among the weaker performers in the European region.",
       "Serbia is not on the FATF grey or black list and faces no sanctions, so the profile rests on governance alone."
     ],
-    "analysis": "Serbia's profile is driven by its governance indicators, with no FATF or sanctions overlay. The weakest domain is corruption (6.2, 35% weight), reflecting persistent concerns about public procurement, political patronage, and anti-corruption enforcement. Rule of law and institutions (4.57, 40% weight) indicates structural weaknesses in the judiciary and law-enforcement capacity. Voice and accountability (5.0, 10% weight) is notably elevated for an EU-candidate country, pointing to concerns about media freedom and civil society space. Political stability (3.3, 15% weight) is a relatively more positive contributor. Serbia sits marginally above the global median on the World Bank governance indicators. The CPI score of 35, ranked 104th of 179, independently corroborates the moderate-high corruption risk. No enforcement actions are tracked.",
+    "analysis": "Serbia's profile is driven by its governance indicators, with no FATF or sanctions overlay. The weakest domain is corruption (35% weight), reflecting persistent concerns about public procurement, political patronage, and anti-corruption enforcement. Rule of law and institutions (40% weight) indicates structural weaknesses in the judiciary and law-enforcement capacity. Voice and accountability (10% weight) is notably elevated for an EU-candidate country, pointing to concerns about media freedom and civil society space. Political stability (15% weight) is a relatively more positive contributor. Serbia sits marginally above the global median on the World Bank governance indicators. The CPI reading independently corroborates the moderate-high corruption risk. No enforcement actions are tracked.",
     "outlook": "Serbia's EU accession process provides some structural reform pressure, but progress has been slow and the corruption and rule-of-law domains are entrenched challenges. The voice and accountability reading reflects concerns that have not improved materially in recent years. Absent a significant acceleration in EU-aligned reforms, the risk picture is likely to remain at or near its current level. Firms should apply enhanced scrutiny to Serbian counterparties, particularly in sectors associated with public procurement and state-linked enterprises.",
     "keyWatchpoints": [
       "Anti-corruption and judicial reform progress within EU accession conditionality, particularly chapters 23 and 24.",
@@ -2760,11 +2760,11 @@ export const NARRATIVES: Record<string, CountryNarrative> = {
     "summary": "Russia reflects severely weak governance across all domains, a broad sectoral sanctions regime, and a CPI score that ranks it among the most corrupt countries globally.",
     "whyItMatters": [
       "Sectoral sanctions imposed by OFAC, the EU, and the UK across finance, energy, and defence sectors are the defining feature of Russia's counterparty risk profile.",
-      "Corruption scores a risk rating of 7.0 and voice and accountability 6.6, both reflecting severely degraded governance fundamentals.",
-      "The CPI score of 22 out of 100 (rank 153 of 179) places Russia among the most corrupt countries in the world by perception.",
+      "Corruption shows a severe risk rating and voice and accountability is elevated, both reflecting severely degraded governance fundamentals.",
+      "The CPI reading places Russia among the most corrupt countries in the world by perception.",
       "Russia is not currently on the FATF grey or black list, but its governance and sanctions profile presents extreme compliance risk for counterpart firms."
     ],
-    "analysis": "Russia's profile combines a severely weak governance picture with a broad sectoral sanctions regime. The weakest governance domains are corruption (7.0, 35% weight) and voice and accountability (6.6, 10% weight), both in the severely elevated range. Rule of law and institutions (5.8, 40% weight) and political stability (4.8, 15% weight) similarly reflect a deeply compromised institutional environment. Russia sits below the global median on the World Bank governance indicators. The CPI score of 22, ranked 153rd of 179 countries, independently corroborates the picture. Sectoral sanctions are in place from three major jurisdictions: OFAC's Russian Harmful Foreign Activities programme, EU restrictive measures, and UK Russia (Sanctions) Regulations. Russia is not on the FATF grey or black list, but that does not diminish the material compliance burden arising from its governance and sanctions profile.",
+    "analysis": "Russia's profile combines a severely weak governance picture with a broad sectoral sanctions regime. The weakest governance domains are corruption (35% weight) and voice and accountability (10% weight), both in the severely elevated range. Rule of law and institutions (40% weight) and political stability (15% weight) similarly reflect a deeply compromised institutional environment. Russia sits below the global median on the World Bank governance indicators. The CPI reading independently corroborates the picture. Sectoral sanctions are in place from three major jurisdictions: OFAC's Russian Harmful Foreign Activities programme, EU restrictive measures, and UK Russia (Sanctions) Regulations. Russia is not on the FATF grey or black list, but that does not diminish the material compliance burden arising from its governance and sanctions profile.",
     "outlook": "Russia's risk profile is unlikely to improve in the near to medium term. The sectoral sanctions regime is embedded across major Western jurisdictions and is subject to periodic expansion. Governance indicators across all four domains show no structural improvement trajectory. Firms should apply the most stringent due diligence and enhanced monitoring to any exposure involving Russian counterparties, entities, or funds, and maintain close watch on sanctions developments from OFAC, the EU, and the UK.",
     "keyWatchpoints": [
       "Amendments or expansions to OFAC, EU, and UK sectoral sanctions programmes, including new designation lists and sector-specific restrictions.",
@@ -2774,14 +2774,14 @@ export const NARRATIVES: Record<string, CountryNarrative> = {
     ]
   },
   "RW": {
-    "summary": "Rwanda presents moderate financial-crime risk, with comparatively strong anti-corruption performance, a CPI of 57/100, sound political stability, and no FATF listing or sanctions.",
+    "summary": "Rwanda presents moderate financial-crime risk, with comparatively strong anti-corruption performance, a comparatively clean CPI reading, sound political stability, and no FATF listing or sanctions.",
     "whyItMatters": [
       "Governance is generally sound within the African context, a comparative strength for the region.",
-      "CPI score of 57/100 (ranked 43rd of 179) is notably strong for the region and reflects relatively effective anti-corruption measures.",
-      "Corruption (risk 3.8) and political stability (risk 3.3) are the strongest governance domains, limiting key AML/CFT exposure vectors.",
-      "Voice and accountability (risk 5.2) is the weakest domain and warrants ongoing attention from a governance perspective."
+      "The CPI reading is notably strong for the region and reflects relatively effective anti-corruption measures.",
+      "Corruption (moderate) and political stability (moderate) are the strongest governance domains, limiting key AML/CFT exposure vectors.",
+      "Voice and accountability (elevated) is the weakest domain and warrants ongoing attention from a governance perspective."
     ],
-    "analysis": "Rwanda's profile reflects governance performance that compares favourably within the African region. The corruption domain (risk 3.8, weighted 35%) and political stability (risk 3.3, weighted 15%) are relative strengths, consistent with the CPI ranking of 43rd of 179. Rule of law (risk 4.17, weighted 40%) is mid-range. Voice and accountability (risk 5.2, weighted 10%) is the weakest domain, though its lower weighting limits its overall impact. Rwanda is not on the FATF grey or black list and carries no sanctions.",
+    "analysis": "Rwanda's profile reflects governance performance that compares favourably within the African region. The corruption domain (weighted 35%) and political stability (weighted 15%) are relative strengths, consistent with the CPI ranking. Rule of law (weighted 40%) is mid-range. Voice and accountability (weighted 10%) is the weakest domain, though its lower weighting limits its overall impact. Rwanda is not on the FATF grey or black list and carries no sanctions.",
     "outlook": "Rwanda's comparatively strong governance reflects genuine progress, though institutional development remains ongoing. Sustaining improvements in rule of law and accountability will be important for maintaining and improving the current profile. No near-term escalation of FATF or sanctions risk is indicated by the current facts. The October 2026 plenary is the next relevant FATF checkpoint.",
     "keyWatchpoints": [
       "Monitor voice and accountability indicators, the weakest governance domain, for adverse trends.",
@@ -2794,11 +2794,11 @@ export const NARRATIVES: Record<string, CountryNarrative> = {
     "summary": "Saudi Arabia has sound rule-of-law institutions and low corruption by regional standards, though voice and accountability remains a significant governance weakness.",
     "whyItMatters": [
       "Saudi Arabia is not on the FATF grey or black list and no sanctions apply, so the profile reflects governance factors only.",
-      "Rule of law and institutions (risk 3.73) is the strongest domain, reflecting a functioning legal and regulatory system.",
-      "Voice and accountability (risk 7.0) is the weakest domain by a material margin, reflecting restricted political participation and civil freedoms.",
-      "The CPI score of 59 (rank 38 of 179) places Saudi Arabia among the cleaner jurisdictions globally on corruption perception."
+      "Rule of law and institutions (moderate) is the strongest domain, reflecting a functioning legal and regulatory system.",
+      "Voice and accountability (severe) is the weakest domain by a material margin, reflecting restricted political participation and civil freedoms.",
+      "The CPI reading places Saudi Arabia among the cleaner jurisdictions globally on corruption perception."
     ],
-    "analysis": "Saudi Arabia's profile is driven by its governance indicators alone, with no FATF or sanctions overlay. Rule of law (3.73) and political stability (3.8) are the stronger domains. Voice and accountability (7.0) stands out as the single weakest dimension and materially elevates the overall picture above what corruption and rule-of-law metrics alone would suggest. Corruption risk (4.2) is moderate, broadly consistent with the CPI score of 59. Saudi Arabia sits above the global midpoint on the World Bank governance indicators. No enforcement actions are tracked.",
+    "analysis": "Saudi Arabia's profile is driven by its governance indicators alone, with no FATF or sanctions overlay. Rule of law (moderate) and political stability (moderate) are the stronger domains. Voice and accountability (severe) stands out as the single weakest dimension and materially elevates the overall picture above what corruption and rule-of-law metrics alone would suggest. Corruption risk (moderate) is moderate, broadly consistent with the CPI reading. Saudi Arabia sits above the global midpoint on the World Bank governance indicators. No enforcement actions are tracked.",
     "outlook": "Saudi Arabia's risk profile is likely to remain stable in the near term. The ongoing Vision 2030 economic reform programme may strengthen financial-sector oversight and AML/CFT capacity over time. The voice-and-accountability dimension is unlikely to improve materially in the short term given the political structure. Firms should maintain appropriate due diligence on high-value transactions, particularly in real estate and investment sectors.",
     "keyWatchpoints": [
       "Developments in AML/CFT regulation and supervisory capacity under Vision 2030 reform.",
@@ -2810,29 +2810,29 @@ export const NARRATIVES: Record<string, CountryNarrative> = {
   "SB": {
     "summary": "Solomon Islands, a Pacific state, has corruption and rule of law as its weakest governance domains, with no FATF listing or sanctions, and a World Bank-supported APG mutual evaluation.",
     "whyItMatters": [
-      "Political stability at 2.1 is the strongest governance domain against weaker corruption and rule-of-law readings.",
-      "Corruption and rule of law both score 5.5, the joint-weakest domains, and together carry the majority of the governance weighting.",
-      "The 2024 CPI score of 44 out of 100 (rank 73) corroborates a meaningful corruption picture.",
+      "Political stability is the strongest governance domain against weaker corruption and rule-of-law readings.",
+      "Corruption and rule of law are both elevated, the joint-weakest domains, and together carry the majority of the governance weighting.",
+      "The CPI reading (rank 73) corroborates a meaningful corruption picture.",
       "No FATF grey or black listing applies and no sanctions are in place, so the headline risk reflects the governance profile alone."
     ],
-    "analysis": "Solomon Islands is a Pacific archipelagic state and a member of the Asia/Pacific Group on Money Laundering (APG). Its risk picture is governance-derived, with no FATF or sanctions overlay. Corruption and rule of law are the joint-weakest domains at 5.5, together carrying the majority of the governance weighting, while accountability scores 3.7 and political stability 2.1 is a relative strength. The 2024 CPI score of 44 at rank 73 corroborates the corruption reading, and Solomon Islands sits near the global midpoint of the World Bank governance indicators. Its APG mutual evaluation, supported by the World Bank and adopted in October 2019, identified capacity and effectiveness challenges typical of a developing Pacific economy, alongside a legal framework broadly aligned with FATF standards.",
+    "analysis": "Solomon Islands is a Pacific archipelagic state and a member of the Asia/Pacific Group on Money Laundering (APG). Its risk picture is governance-derived, with no FATF or sanctions overlay. Corruption and rule of law are the joint-weakest domains, together carrying the majority of the governance weighting, while accountability is moderate and political stability is a relative strength. The CPI reading corroborates the corruption reading, and Solomon Islands sits near the global midpoint of the World Bank governance indicators. Its APG mutual evaluation, supported by the World Bank and adopted in October 2019, identified capacity and effectiveness challenges typical of a developing Pacific economy, alongside a legal framework broadly aligned with FATF standards.",
     "outlook": "Solomon Islands' profile reflects a governance base weighed down by corruption and rule-of-law weaknesses against relatively strong political stability. The forward picture depends on the pace of APG follow-up remediation, anti-corruption reform, and supervisory capacity in a resource-constrained administration. Firms should apply proportionate enhanced due diligence to Solomon Islands exposure and monitor APG follow-up reporting and the October 2026 FATF plenary for any change in status.",
     "keyWatchpoints": [
       "APG follow-up reporting on the October 2019 mutual evaluation and any technical compliance re-ratings.",
-      "Corruption and rule of law (both 5.5) as the dominant governance drivers; monitor anti-corruption reform and the CPI trend.",
+      "Corruption and rule of law (are both elevated) as the dominant governance drivers; monitor anti-corruption reform and the CPI trend.",
       "October 2026 FATF plenary for any change in listing status.",
       "Supervisory and institutional capacity constraints in a developing Pacific economy."
     ]
   },
   "SC": {
-    "summary": "Seychelles presents low-to-moderate financial-crime risk, with the strongest CPI score in this batch at 72/100, sound governance across all domains, and no FATF listing or sanctions.",
+    "summary": "Seychelles presents low-to-moderate financial-crime risk, with the strongest a strong CPI standing, sound governance across all domains, and no FATF listing or sanctions.",
     "whyItMatters": [
       "Governance is sound across all four World Bank domains, among the lower-risk jurisdictions in the African region.",
-      "CPI score of 72/100 (ranked 18th of 179) reflects strong anti-corruption performance and is among the highest scores in the African region.",
-      "Political stability (risk 1.8) is the strongest governance domain, indicating a very stable political environment.",
-      "Rule of law (risk 3.63, weighted 40%) is the weakest domain but remains at a low-to-moderate level, reflecting generally functional institutions."
+      "The CPI reading reflects strong anti-corruption performance and is among the highest scores in the African region.",
+      "Political stability (strong) is the strongest governance domain, indicating a very stable political environment.",
+      "Rule of law (weighted 40%) is the weakest domain but remains at a low-to-moderate level, reflecting generally functional institutions."
     ],
-    "analysis": "Seychelles' profile is driven by uniformly low governance risks across all four domains. Political stability (risk 1.8, weighted 15%) and corruption (risk 2.9, weighted 35%) are the strongest contributors to the favourable profile. Rule of law (risk 3.63, weighted 40%) and voice and accountability (risk 3.2, weighted 10%) are at low-to-moderate levels. Seychelles is not on the FATF grey or black list and carries no sanctions. The CPI of 72/100, ranked 18th of 179, strongly corroborates the low-risk picture.",
+    "analysis": "Seychelles' profile is driven by uniformly low governance risks across all four domains. Political stability (weighted 15%) and corruption (weighted 35%) are the strongest contributors to the favourable profile. Rule of law (weighted 40%) and voice and accountability (weighted 10%) are at low-to-moderate levels. Seychelles is not on the FATF grey or black list and carries no sanctions. The CPI reading, strongly corroborates the low-risk picture.",
     "outlook": "Seychelles' risk profile is positive and stable. As an offshore financial centre, maintaining robust AML/CFT frameworks for international business structures will remain the key supervisory priority. Provided institutional standards are sustained, no material risk escalation is anticipated. The October 2026 FATF plenary is the next relevant checkpoint.",
     "keyWatchpoints": [
       "Monitor AML/CFT frameworks applicable to international business companies and offshore structures, given Seychelles' role as a financial centre.",
@@ -2842,14 +2842,14 @@ export const NARRATIVES: Record<string, CountryNarrative> = {
     ]
   },
   "SD": {
-    "summary": "Sudan presents very high financial-crime risk, with severely weak governance across all domains, a CPI of 15/100, and deep political instability, though it is not currently FATF-listed or sanctioned.",
+    "summary": "Sudan presents very high financial-crime risk, with severely weak governance across all domains, a very weak CPI reading, and deep political instability, though it is not currently FATF-listed or sanctioned.",
     "whyItMatters": [
       "Governance is severely weak across all four World Bank domains, with corruption and rule of law the most acute.",
-      "Corruption (risk 8.2, weighted 35%) is the weakest governance domain and reflects near-systemic public sector corruption.",
-      "Rule of law (risk 7.5, weighted 40%) indicates severely dysfunctional institutions with limited capacity for AML/CFT oversight.",
-      "CPI score of 15/100 (ranked 169th of 179) confirms extreme corruption perceptions, consistent with the very high risk picture."
+      "Corruption (weighted 35%) is the weakest governance domain and reflects near-systemic public sector corruption.",
+      "Rule of law (weighted 40%) indicates severely dysfunctional institutions with limited capacity for AML/CFT oversight.",
+      "The CPI reading confirms extreme corruption perceptions, consistent with the very high risk picture."
     ],
-    "analysis": "Sudan's profile is driven by severe weaknesses across all four governance domains. Corruption (risk 8.2, weighted 35%) and rule of law (risk 7.5, weighted 40%) are the principal contributors. Political stability (risk 6.9, weighted 15%) and voice and accountability (risk 7.4, weighted 10%) are also acutely elevated, reflecting a deeply fragile institutional environment. Sudan is not on the FATF grey or black list and carries no sanctions. Sudan sits in the lowest quartile of the World Bank governance indicators. The CPI of 15/100 ranked 169th of 179 confirms the severity of the corruption risk.",
+    "analysis": "Sudan's profile is driven by severe weaknesses across all four governance domains. Corruption (weighted 35%) and rule of law (weighted 40%) are the principal contributors. Political stability (weighted 15%) and voice and accountability (weighted 10%) are also acutely elevated, reflecting a deeply fragile institutional environment. Sudan is not on the FATF grey or black list and carries no sanctions. Sudan sits in the lowest quartile of the World Bank governance indicators. The CPI reading confirms the severity of the corruption risk.",
     "outlook": "Sudan's very high risk profile reflects deep structural fragility, including conflict dynamics and severely degraded institutional capacity. Meaningful risk reduction would require sustained and verifiable progress in governance, rule of law, and AML/CFT supervisory capacity over an extended period. Firms should apply stringent enhanced due diligence to any Sudan-linked exposures and should monitor FATF listing decisions closely, as the governance profile would support future scrutiny.",
     "keyWatchpoints": [
       "Watch for any FATF listing decision, as the governance profile is consistent with grey-list risk.",
@@ -2861,12 +2861,12 @@ export const NARRATIVES: Record<string, CountryNarrative> = {
   "SE": {
     "summary": "Sweden is distinguished by exceptional governance, near-zero corruption risk, and a strong track record of supervisory enforcement.",
     "whyItMatters": [
-      "The CPI score of 80/100 (rank 8 of 179, 2024) places Sweden among the least corrupt countries in the world.",
-      "Corruption risk (1.2) and voice and accountability (1.3) are the strongest governance domains, reflecting deep institutional integrity.",
+      "The CPI reading places Sweden among the least corrupt countries in the world.",
+      "Corruption risk (strong) and voice and accountability (strong) are the strongest governance domains, reflecting deep institutional integrity.",
       "Finansinspektionen has recorded 39 tracked enforcement actions across 2014 to 2026, demonstrating consistent regulatory activity over an extended period.",
       "No FATF listing and no sanctions apply, so the profile rests on Sweden's exceptional governance alone."
     ],
-    "analysis": "Sweden's profile reflects one of the most robust governance environments globally. Corruption (1.2) and voice and accountability (1.3) are among the strongest domain readings in the dataset, supported by a CPI of 80 and an upper-decile standing on the World Bank governance indicators. Rule of law and institutions (1.63) is similarly sound. Political stability (2.1) is the comparatively highest-risk domain but remains low in absolute terms. Sweden is not on the FATF grey or black list and carries no sanctions exposure. Finansinspektionen's enforcement record signals a proactive supervisory culture.",
+    "analysis": "Sweden's profile reflects one of the most robust governance environments globally. Corruption (strong) and voice and accountability (strong) are among the strongest domain readings in the dataset, supported by a strong CPI reading and an upper-decile standing on the World Bank governance indicators. Rule of law and institutions (strong) is similarly sound. Political stability (strong) is the comparatively highest-risk domain but remains low in absolute terms. Sweden is not on the FATF grey or black list and carries no sanctions exposure. Finansinspektionen's enforcement record signals a proactive supervisory culture.",
     "outlook": "Sweden's risk outlook is positive. The institutional framework is strong and the supervisory regime is active. The primary long-term watch area is political stability, which, while still low-risk, has seen some marginal increase in tension in the Nordic region. No adverse FATF or sanctions developments are expected based on current facts.",
     "keyWatchpoints": [
       "Finansinspektionen enforcement trends, particularly in AML and transaction-monitoring areas.",
@@ -2878,12 +2878,12 @@ export const NARRATIVES: Record<string, CountryNarrative> = {
   "SG": {
     "summary": "Singapore is a low-risk financial centre, exceptionally strong on corruption and rule of law, though voice and accountability is a relative outlier within an otherwise very strong governance profile.",
     "whyItMatters": [
-      "Corruption risk scores 1.3 and rule of law and institutions 1.2, among the strongest governance indicators globally and the core foundation of Singapore's low-risk profile.",
-      "Singapore ranks 3rd of 179 countries on the 2024 CPI with a score of 84, reflecting near-exemplary anti-corruption standards.",
-      "Voice and accountability scores 4.2, the weakest domain, and is the primary internal governance differentiator within an otherwise very low-risk profile.",
+      "Corruption risk is strong and rule of law and institutions is strong, among the strongest governance indicators globally and the core foundation of Singapore's low-risk profile.",
+      "Singapore places it among the world's least corrupt economies on the CPI reading reflecting near-exemplary anti-corruption standards.",
+      "Voice and accountability is moderate, the weakest domain, and is the primary internal governance differentiator within an otherwise very low-risk profile.",
       "The Monetary Authority of Singapore has recorded 21 tracked enforcement actions between 2023 and 2026, consistent with active supervisory engagement in a major financial centre."
     ],
-    "analysis": "Singapore's profile is driven entirely by its governance indicators, with no FATF or sanctions overlay. Corruption (1.3) and rule of law and institutions (1.2) are exceptionally strong. Political stability scores 1.4. Voice and accountability at 4.2 is the relative outlier but does not materially impair the overall low-risk picture. The CPI score of 84, ranked 3rd globally, places Singapore among the world's most transparent jurisdictions. The country sits in the upper decile of the World Bank governance indicators.",
+    "analysis": "Singapore's profile is driven entirely by its governance indicators, with no FATF or sanctions overlay. Corruption (strong) and rule of law and institutions (strong) are exceptionally strong. Political stability is strong. Voice and accountability is the relative outlier but does not materially impair the overall low-risk picture. The CPI reading places Singapore among the world's most transparent jurisdictions. The country sits in the upper decile of the World Bank governance indicators.",
     "outlook": "Singapore's risk profile is stable and among the strongest in the Asia Pacific region. The Monetary Authority of Singapore's active enforcement record indicates a well-resourced supervisory regime. No near-term structural changes are expected to alter the fundamental low-risk classification. Firms should remain attentive to the evolving AML/CFT landscape given Singapore's role as a major regional financial hub.",
     "keyWatchpoints": [
       "MAS enforcement trends and any changes in regulatory priorities or supervisory scope.",
@@ -2895,12 +2895,12 @@ export const NARRATIVES: Record<string, CountryNarrative> = {
   "SI": {
     "summary": "Slovenia is underpinned by solid institutions and a strong CPI ranking that keep it among the better-governed jurisdictions in the region.",
     "whyItMatters": [
-      "The CPI score of 60/100 (rank 36 of 179, 2024) reflects relatively clean public administration by regional and global standards.",
-      "Rule of law and institutions (risk 2.83) and political stability (risk 1.9) are the strongest governance domains, pointing to a reliable legal framework.",
+      "The CPI reading reflects relatively clean public administration by regional and global standards.",
+      "Rule of law and institutions (strong) and political stability (strong) are the strongest governance domains, pointing to a reliable legal framework.",
       "No FATF listing and no sanctions apply, so the profile rests on governance alone.",
       "No tracked enforcement actions are on record, which limits external insight into supervisory activity levels."
     ],
-    "analysis": "Slovenia's profile rests entirely on its governance indicators, which are among the better profiles in Eastern and Southern Europe. The strongest domains are political stability (1.9) and rule of law and institutions (2.83), both reflecting the country's EU and OECD-aligned institutional framework. Corruption (3.8) is the comparatively weakest area but remains moderate in absolute terms. Voice and accountability (2.5) is also sound. The CPI score of 60 and an upper-tier standing on the World Bank governance indicators further support a broadly well-governed picture. Slovenia is not on the FATF grey or black list and carries no sanctions exposure.",
+    "analysis": "Slovenia's profile rests entirely on its governance indicators, which are among the better profiles in Eastern and Southern Europe. The strongest domains are political stability (strong) and rule of law and institutions (strong), both reflecting the country's EU and OECD-aligned institutional framework. Corruption (moderate) is the comparatively weakest area but remains moderate in absolute terms. Voice and accountability (strong) is also sound. The CPI reading and an upper-tier standing on the World Bank governance indicators further support a broadly well-governed picture. Slovenia is not on the FATF grey or black list and carries no sanctions exposure.",
     "outlook": "Slovenia's trajectory is stable. Continued alignment with EU AML and counter-financing-of-terrorism standards provides a structural safeguard. The main watch area is the corruption domain, where gradual improvement would further reduce residual risk. No near-term adverse listing or sanctions developments are indicated by the current facts.",
     "keyWatchpoints": [
       "Corruption indicators in public procurement and state-linked entities, which represent the highest relative risk domain.",
@@ -2912,12 +2912,12 @@ export const NARRATIVES: Record<string, CountryNarrative> = {
   "SK": {
     "summary": "Slovakia presents a moderate financial-crime risk, with corruption the principal governance weakness.",
     "whyItMatters": [
-      "Corruption risk (4.4) is the highest-scoring governance domain and sits above the EU norm, requiring enhanced due diligence for public-sector and state-linked counterparties.",
-      "The CPI score of 49/100 (rank 59 of 179, 2024) indicates meaningful corruption exposure for a Central European jurisdiction.",
+      "Corruption risk (moderate) is the highest-scoring governance domain and sits above the EU norm, requiring enhanced due diligence for public-sector and state-linked counterparties.",
+      "The CPI reading indicates meaningful corruption exposure for a Central European jurisdiction.",
       "No FATF listing and no sanctions apply, so the profile rests on governance alone.",
       "No tracked regulatory enforcement actions are recorded, limiting visibility into supervisory intensity."
     ],
-    "analysis": "Slovakia's profile is driven entirely by its governance indicators. Corruption (4.4) is the weakest domain, reflecting moderate integrity deficits in public administration. Rule of law and institutions (3.6) and voice and accountability (2.6) are at mid-range, while political stability (2.4) is relatively strong. The CPI score of 49 places Slovakia in the lower half of European Union members for perceived public-sector honesty. Slovakia is not on the FATF grey or black list, and no sanctions regime applies. The absence of tracked enforcement data makes supervisory culture harder to assess from external sources.",
+    "analysis": "Slovakia's profile is driven entirely by its governance indicators. Corruption (moderate) is the weakest domain, reflecting moderate integrity deficits in public administration. Rule of law and institutions (moderate) and voice and accountability (strong) are at mid-range, while political stability (strong) is relatively strong. The CPI reading places Slovakia in the lower half of European Union members for perceived public-sector honesty. Slovakia is not on the FATF grey or black list, and no sanctions regime applies. The absence of tracked enforcement data makes supervisory culture harder to assess from external sources.",
     "outlook": "Slovakia's EU membership provides a structural anchor through the application of EU AML directives and European Banking Authority guidance. Governance improvements will depend on sustained anti-corruption reform. Firms should monitor domestic legislative developments and any future FATF or EU evaluations. The risk trajectory is stable, though corruption indicators warrant periodic reassessment.",
     "keyWatchpoints": [
       "Public-sector and state-owned-enterprise exposure, where corruption risk is most pronounced.",
@@ -2927,14 +2927,14 @@ export const NARRATIVES: Record<string, CountryNarrative> = {
     ]
   },
   "SL": {
-    "summary": "Sierra Leone presents high financial-crime risk, with weak corruption and rule-of-law scores and a CPI of 33/100, though it is not currently FATF-listed or sanctioned.",
+    "summary": "Sierra Leone presents high financial-crime risk, with weak corruption and rule-of-law scores and a weak CPI reading, though it is not currently FATF-listed or sanctioned.",
     "whyItMatters": [
       "Governance is weak across the four World Bank domains, with corruption and rule of law the most acute.",
-      "Corruption (risk 6.4) is the weakest governance domain and the most significant driver of financial-crime vulnerability.",
-      "Rule of law (risk 6.17, weighted 40%) reflects significant institutional weaknesses, limiting AML/CFT supervisory effectiveness.",
-      "CPI score of 33/100 (ranked 113th of 179) confirms deep corruption concerns and is consistent with the elevated risk picture."
+      "Corruption (elevated) is the weakest governance domain and the most significant driver of financial-crime vulnerability.",
+      "Rule of law (weighted 40%) reflects significant institutional weaknesses, limiting AML/CFT supervisory effectiveness.",
+      "The CPI reading confirms deep corruption concerns and is consistent with the elevated risk picture."
     ],
-    "analysis": "Sierra Leone's profile is driven by weak performance across corruption (risk 6.4, weighted 35%) and rule of law (risk 6.17, weighted 40%), which together carry 75% of the governance weighting. Political stability (risk 4.4, weighted 15%) and voice and accountability (risk 5.1, weighted 10%) are less acute but remain elevated. Sierra Leone is not on the FATF grey or black list and carries no sanctions. The CPI of 33/100, ranked 113th of 179, corroborates the high inherent corruption risk.",
+    "analysis": "Sierra Leone's profile is driven by weak performance across corruption (weighted 35%) and rule of law (weighted 40%), which together carry 75% of the governance weighting. Political stability (weighted 15%) and voice and accountability (weighted 10%) are less acute but remain elevated. Sierra Leone is not on the FATF grey or black list and carries no sanctions. The CPI reading corroborates the high inherent corruption risk.",
     "outlook": "Sierra Leone's high-risk rating reflects structural governance deficits that will require sustained institutional reform to address. Financial institutions should apply enhanced due diligence to transactions and counterparties in Sierra Leone. FATF mutual evaluation outcomes and any listing decisions at the October 2026 plenary will be important monitoring points.",
     "keyWatchpoints": [
       "Monitor FATF assessments and any listing decisions at forthcoming plenaries.",
@@ -2946,12 +2946,12 @@ export const NARRATIVES: Record<string, CountryNarrative> = {
   "SM": {
     "summary": "San Marino is a low-risk jurisdiction reflecting sound governance across all domains and no FATF listing or sanctions exposure.",
     "whyItMatters": [
-      "Political stability scores just 1.1, the joint lowest risk domain in the model, reflecting San Marino's exceptionally stable political environment.",
-      "Corruption (2.8) and voice and accountability (2.1) are the weakest governance domains, though both remain well within the low-risk range.",
+      "Political stability scores strong, the joint lowest risk domain in the model, reflecting San Marino's exceptionally stable political environment.",
+      "Corruption (strong) and voice and accountability (strong) are the weakest governance domains, though both remain well within the low-risk range.",
       "No CPI data is available for San Marino, so the corruption picture relies on WGI domain scores alone.",
       "San Marino is not on the FATF grey or black list and faces no sanctions; no enforcement actions are tracked."
     ],
-    "analysis": "San Marino's profile reflects a low-risk governance environment, with no FATF or sanctions overlay. The strongest governance domains are political stability (1.1, 15% weight) and rule of law and institutions (2.73, 40% weight), both indicative of a well-ordered microstate. Corruption (2.8, 35% weight) and voice and accountability (2.1, 10% weight) are the comparatively weaker domains, though both are low in absolute terms. San Marino sits in the upper quarter of the World Bank governance indicators. No CPI data is available to provide independent cross-validation of the corruption reading. No enforcement actions are tracked, and no FATF listing or sanctions apply.",
+    "analysis": "San Marino's profile reflects a low-risk governance environment, with no FATF or sanctions overlay. The strongest governance domains are political stability (15% weight) and rule of law and institutions (40% weight), both indicative of a well-ordered microstate. Corruption (35% weight) and voice and accountability (10% weight) are the comparatively weaker domains, though both are low in absolute terms. San Marino sits in the upper quarter of the World Bank governance indicators. No CPI data is available to provide independent cross-validation of the corruption reading. No enforcement actions are tracked, and no FATF listing or sanctions apply.",
     "outlook": "San Marino's risk profile is stable and no material change is anticipated. As a microstate with a small financial sector, supervisory capacity and international cooperation are the primary qualitative watchpoints. The absence of CPI data is a minor limitation for independent benchmarking but does not alter the overall low-risk assessment. The next FATF plenary in October 2026 represents a routine monitoring point with no current listing concern.",
     "keyWatchpoints": [
       "Supervisory capacity and the effectiveness of San Marino's AML framework given its microstate status and reliance on international cooperation.",
@@ -2964,11 +2964,11 @@ export const NARRATIVES: Record<string, CountryNarrative> = {
     "summary": "Senegal presents moderate financial-crime risk, with broadly balanced governance domains and no FATF listing or sanctions, though corruption remains the principal concern.",
     "whyItMatters": [
       "Governance is broadly balanced across the four World Bank domains, reflecting a moderate risk environment.",
-      "Corruption (risk 5.1) is the weakest governance domain and the primary AML/CFT concern for counterparties.",
-      "Political stability (risk 3.7) and voice and accountability (risk 4.3) are relative strengths, supporting institutional continuity.",
-      "CPI score of 45/100 (ranked 69th of 179) places Senegal in the mid-range and is consistent with moderate corruption perceptions."
+      "Corruption (elevated) is the weakest governance domain and the primary AML/CFT concern for counterparties.",
+      "Political stability (moderate) and voice and accountability (moderate) are relative strengths, supporting institutional continuity.",
+      "The CPI reading places Senegal in the mid-range and is consistent with moderate corruption perceptions."
     ],
-    "analysis": "Senegal's profile reflects a broadly balanced governance picture. Corruption (risk 5.1, weighted 35%) is the weakest domain and the most significant individual contributor to risk. Rule of law (risk 4.7, weighted 40%) is at a moderate level, indicating functional but imperfect institutions. Political stability (risk 3.7) and voice and accountability (risk 4.3) are relative positives. Senegal is not on the FATF grey or black list and carries no sanctions. The CPI of 45/100, ranked 69th of 179, is consistent with the moderate risk picture.",
+    "analysis": "Senegal's profile reflects a broadly balanced governance picture. Corruption (weighted 35%) is the weakest domain and the most significant individual contributor to risk. Rule of law (weighted 40%) is at a moderate level, indicating functional but imperfect institutions. Political stability (moderate) and voice and accountability (moderate) are relative positives. Senegal is not on the FATF grey or black list and carries no sanctions. The CPI reading is consistent with the moderate risk picture.",
     "outlook": "Senegal's moderate risk profile reflects a stable institutional base but persistent anti-corruption challenges. Progress in anti-corruption frameworks and rule-of-law strengthening would be the principal levers for improvement. No near-term FATF or sanctions escalation is indicated by the current data. The October 2026 FATF plenary is the next relevant review point.",
     "keyWatchpoints": [
       "Monitor anti-corruption enforcement and asset recovery developments, given corruption is the weakest domain.",
@@ -2978,14 +2978,14 @@ export const NARRATIVES: Record<string, CountryNarrative> = {
     ]
   },
   "SO": {
-    "summary": "Somalia presents very high financial-crime risk, with near-maximum corruption and rule-of-law scores, a CPI of 9/100, and severe political instability, though it is not currently FATF-listed or sanctioned.",
+    "summary": "Somalia presents very high financial-crime risk, with near-maximum corruption and rule-of-law scores, a very weak CPI reading, and severe political instability, though it is not currently FATF-listed or sanctioned.",
     "whyItMatters": [
       "Governance has failed across all four World Bank domains, placing Somalia among the highest-risk jurisdictions in the dataset.",
-      "Corruption (risk 8.5, weighted 35%) is the primary risk driver and one of the most acute in the full dataset.",
-      "Rule of law (risk 7.9, weighted 40%) reflects near-total institutional weakness, severely limiting any AML/CFT oversight capacity.",
-      "CPI score of 9/100 (ranked 178th of 179) is among the lowest in the world, indicating pervasive corruption throughout the public sector."
+      "Corruption (weighted 35%) is the primary risk driver and one of the most acute in the full dataset.",
+      "Rule of law (weighted 40%) reflects near-total institutional weakness, severely limiting any AML/CFT oversight capacity.",
+      "The CPI reading is among the lowest in the world, indicating pervasive corruption throughout the public sector."
     ],
-    "analysis": "Somalia's profile reflects governance failure across all four domains. Corruption (risk 8.5, weighted 35%) and rule of law (risk 7.9, weighted 40%) are the dominant drivers and together represent the near-total absence of functional institutional controls. Political stability (risk 7.1) and voice and accountability (risk 6.9) are also severely elevated. Somalia is not on the FATF grey or black list and carries no sanctions; however, its governance profile places it at the extreme end of inherent financial-crime risk. Somalia sits in the lowest quartile of the World Bank governance indicators. The CPI of 9/100 ranked 178th of 179 confirms the depth of the structural problem.",
+    "analysis": "Somalia's profile reflects governance failure across all four domains. Corruption (weighted 35%) and rule of law (weighted 40%) are the dominant drivers and together represent the near-total absence of functional institutional controls. Political stability (severe) and voice and accountability (elevated) are also severely elevated. Somalia is not on the FATF grey or black list and carries no sanctions; however, its governance profile places it at the extreme end of inherent financial-crime risk. Somalia sits in the lowest quartile of the World Bank governance indicators. The CPI reading confirms the depth of the structural problem.",
     "outlook": "Somalia's very high risk profile is driven by deep structural factors including protracted conflict, institutional fragility, and near-absent regulatory capacity. Meaningful risk reduction would require sustained and verifiable improvements in state capacity, rule of law, and financial sector governance over an extended period. Firms should treat Somalia as requiring the most stringent enhanced due diligence measures and should monitor any future FATF listing decisions carefully.",
     "keyWatchpoints": [
       "Watch for any FATF grey or black list designation, which the governance profile would readily support.",
@@ -2997,12 +2997,12 @@ export const NARRATIVES: Record<string, CountryNarrative> = {
   "SR": {
     "summary": "Suriname is shaped by moderate corruption and rule-of-law deficiencies against a relatively stable political backdrop.",
     "whyItMatters": [
-      "Rule of law and institutions scores a risk rating of 5.3, the weakest domain, reflecting capacity constraints in the legal and supervisory framework.",
-      "Corruption (WGI) at 5.9 is elevated but tempered by a CPI score of 40/100 (rank 87 of 179 in 2024), which is comparatively stronger within the Americas.",
-      "Political stability is relatively benign at 2.9, providing some governance floor.",
+      "Rule of law and institutions shows an elevated risk rating, the weakest domain, reflecting capacity constraints in the legal and supervisory framework.",
+      "Corruption (WGI) is elevated but tempered by a weak CPI reading, which is comparatively stronger within the Americas.",
+      "Political stability is relatively benign, providing some governance floor.",
       "Suriname is not on the FATF grey or black list and carries no sanctions."
     ],
-    "analysis": "Suriname's profile is driven by corruption (WGI) at 5.9 and rule of law at 5.3, while political stability (2.9) and voice and accountability (4.1) add less pressure. The CPI score of 40, ranking 87 of 179, is relatively more favourable than the WGI corruption signal suggests, providing a partially mitigating context. No FATF listing or sanctions apply. Suriname sits near the global midpoint on the World Bank governance indicators.",
+    "analysis": "Suriname's profile is driven by corruption (WGI) and rule of law, while political stability (strong) and voice and accountability (moderate) add less pressure. The CPI reading is relatively more favourable than the WGI corruption signal suggests, providing a partially mitigating context. No FATF listing or sanctions apply. Suriname sits near the global midpoint on the World Bank governance indicators.",
     "outlook": "Suriname's risk trajectory is linked to fiscal stabilisation and the development of legal and supervisory capacity. The relatively contained political-stability risk is a positive factor. Firms should watch for any FATF engagement as Suriname's AML framework matures, and for changes in rule-of-law metrics as judicial capacity evolves.",
     "keyWatchpoints": [
       "Rule-of-law capacity and the effectiveness of financial supervisory institutions.",
@@ -3012,14 +3012,14 @@ export const NARRATIVES: Record<string, CountryNarrative> = {
     ]
   },
   "SS": {
-    "summary": "South Sudan presents very high financial-crime risk, with near-maximum corruption and rule-of-law scores, a CPI of 8/100, active FATF grey-list status, and the lowest CPI ranking in the dataset.",
+    "summary": "South Sudan presents very high financial-crime risk, with near-maximum corruption and rule-of-law scores, a very weak CPI reading, active FATF grey-list status, and the lowest CPI ranking in the dataset.",
     "whyItMatters": [
       "Governance is severely weak across all four World Bank domains, compounded by a current FATF grey-list designation.",
       "FATF grey-list status (as at June 2026) confirms identified strategic deficiencies in the AML/CFT framework.",
-      "Corruption (risk 9.0, weighted 35%) and rule of law (risk 8.2, weighted 40%) are near-maximum, reflecting a deeply dysfunctional institutional environment.",
-      "CPI score of 8/100 (ranked 179th of 179) is the lowest in the full dataset, confirming pervasive and systemic corruption."
+      "Corruption (weighted 35%) and rule of law (weighted 40%) are near-maximum, reflecting a deeply dysfunctional institutional environment.",
+      "The CPI reading is the lowest in the full dataset, confirming pervasive and systemic corruption."
     ],
-    "analysis": "South Sudan combines an extremely weak governance profile with current FATF grey listing. Corruption (risk 9.0, weighted 35%) and rule of law (risk 8.2, weighted 40%) are the dominant contributors. Voice and accountability (risk 7.6) and political stability (risk 6.0) are also severely elevated. FATF grey-list status as at June 2026 reflects identified strategic AML/CFT deficiencies. South Sudan carries no sanctions. The CPI of 8/100 ranked 179th of 179 confirms the most extreme corruption environment in the dataset.",
+    "analysis": "South Sudan combines an extremely weak governance profile with current FATF grey listing. Corruption (weighted 35%) and rule of law (weighted 40%) are the dominant contributors. Voice and accountability (severe) and political stability (elevated) are also severely elevated. FATF grey-list status as at June 2026 reflects identified strategic AML/CFT deficiencies. South Sudan carries no sanctions. The CPI reading confirms the most extreme corruption environment in the dataset.",
     "outlook": "South Sudan's very high risk profile is driven by structural state fragility, near-absent institutional capacity, and FATF grey-list status. Exit from the FATF grey list would require demonstrable and sustained progress on AML/CFT technical compliance and effectiveness, which is a long-term undertaking given the structural conditions. Firms should treat South Sudan as requiring the most stringent enhanced due diligence and should monitor FATF plenary outcomes closely.",
     "keyWatchpoints": [
       "Track FATF plenary decisions on South Sudan's grey-list status at each review cycle.",
@@ -3032,11 +3032,11 @@ export const NARRATIVES: Record<string, CountryNarrative> = {
     "summary": "Sao Tome and Principe presents moderate financial-crime risk, with relatively strong political stability and no FATF listing or sanctions, offset by moderate corruption and rule-of-law concerns.",
     "whyItMatters": [
       "Governance is moderate but manageable across the four World Bank domains.",
-      "Political stability (risk 2.4) is the strongest governance domain, reflecting a stable political context for a small island state.",
-      "Rule of law (risk 5.67, weighted 40%) is the weakest domain and the primary risk driver.",
-      "CPI score of 45/100 (ranked 69th of 179) suggests mid-range corruption perceptions, broadly consistent with the governance profile."
+      "Political stability (strong) is the strongest governance domain, reflecting a stable political context for a small island state.",
+      "Rule of law (weighted 40%) is the weakest domain and the primary risk driver.",
+      "The CPI reading suggests mid-range corruption perceptions, broadly consistent with the governance profile."
     ],
-    "analysis": "Sao Tome and Principe's profile is shaped primarily by rule-of-law weaknesses (risk 5.67, weighted 40%), which represent the most significant governance gap. Corruption (risk 5.0, weighted 35%) is at the moderate level, consistent with the CPI of 45/100 ranked 69th of 179. Political stability (risk 2.4, weighted 15%) is a notable strength. Voice and accountability (risk 4.1, weighted 10%) is mid-range. The country is not on the FATF grey or black list and carries no sanctions exposure. No enforcement data are available in the current dataset.",
+    "analysis": "Sao Tome and Principe's profile is shaped primarily by rule-of-law weaknesses (weighted 40%), which represent the most significant governance gap. Corruption (weighted 35%) is at the moderate level, consistent with the CPI reading. Political stability (weighted 15%) is a notable strength. Voice and accountability (weighted 10%) is mid-range. The country is not on the FATF grey or black list and carries no sanctions exposure. No enforcement data are available in the current dataset.",
     "outlook": "Sao Tome and Principe's risk trajectory is broadly stable. As a small island economy with limited financial sector depth, the primary concerns relate to correspondent banking access and the capacity of AML/CFT supervisory authorities. Improvements in rule of law and institutional capacity would be the most effective levers for risk reduction. The October 2026 FATF plenary is the next checkpoint.",
     "keyWatchpoints": [
       "Monitor rule-of-law and institutional capacity developments, as this is the weakest governance domain.",
@@ -3048,12 +3048,12 @@ export const NARRATIVES: Record<string, CountryNarrative> = {
   "SV": {
     "summary": "El Salvador is driven by significant corruption and voice-and-accountability weaknesses, with no FATF listing or sanctions currently applied.",
     "whyItMatters": [
-      "Corruption risk of 6.4 is the highest governance domain reading and the primary risk driver.",
-      "Voice and accountability risk of 5.4 reflects concerns about democratic checks and civil society freedoms.",
-      "CPI score of 30/100 (ranked 129th of 179) indicates a materially weak corruption environment.",
+      "Corruption risk is the highest governance domain reading and the primary risk driver.",
+      "Voice and accountability risk reflects concerns about democratic checks and civil society freedoms.",
+      "The CPI reading indicates a materially weak corruption environment.",
       "No FATF grey or black listing and no sanctions apply, so the profile rests on governance alone."
     ],
-    "analysis": "El Salvador's profile is driven entirely by its governance indicators, with corruption (risk 6.4) as the most significant concern, corroborated by a CPI of 30 and a ranking of 129th of 179. Voice and accountability (risk 5.4) is equally elevated, indicating meaningful constraints on political freedoms and oversight mechanisms. Rule of law and institutions (risk 5.2) presents a further weakness, while political stability (risk 3.3) is a comparative strength within an otherwise challenging governance landscape. El Salvador sits just below the global midpoint on the World Bank governance indicators. No FATF or sanctions overlay applies.",
+    "analysis": "El Salvador's profile is driven entirely by its governance indicators, with corruption (elevated) as the most significant concern, corroborated by a weak CPI reading. Voice and accountability (elevated) is equally elevated, indicating meaningful constraints on political freedoms and oversight mechanisms. Rule of law and institutions (elevated) presents a further weakness, while political stability (moderate) is a comparative strength within an otherwise challenging governance landscape. El Salvador sits just below the global midpoint on the World Bank governance indicators. No FATF or sanctions overlay applies.",
     "outlook": "El Salvador's risk profile is subject to evolving governance dynamics, including policy changes affecting institutional independence. Concentration of political authority, if sustained, could weaken the voice-and-accountability domain further. The country's adoption of Bitcoin as legal tender introduces additional compliance considerations for virtual asset exposure. Any deterioration in anti-corruption enforcement capacity would place upward pressure on the risk profile. The October 2026 FATF plenary should be monitored for any indications of enhanced regional scrutiny.",
     "keyWatchpoints": [
       "Virtual asset exposure following Bitcoin's status as legal tender and associated AML compliance requirements.",
@@ -3084,10 +3084,10 @@ export const NARRATIVES: Record<string, CountryNarrative> = {
     "whyItMatters": [
       "Syria carries comprehensive OFAC sanctions (Syria Sanctions Regulations), as well as targeted EU and UK restrictive measures, the defining feature of its counterparty risk profile.",
       "Syria is on the FATF grey list, adding formal increased-monitoring obligations to an already severely weak governance profile.",
-      "All four governance domains are severely elevated: corruption (8.8), rule of law (7.67), political stability (7.6), and voice and accountability (7.7).",
-      "The CPI score of 12 (rank 176 of 179) is among the lowest globally, confirming pervasive corruption."
+      "All four governance domains are severely elevated: corruption (severe), rule of law (severe), political stability (severe), and voice and accountability (severe).",
+      "The CPI reading is among the lowest globally, confirming pervasive corruption."
     ],
-    "analysis": "Syria's profile combines a severely weak governance picture with FATF grey listing and a comprehensive sanctions regime. Every governance domain is severely impaired. Corruption risk (8.8) is the highest individual domain reading, consistent with a CPI of 12. Rule of law (7.67), political stability (7.6), and voice and accountability (7.7) are all critically elevated. Syria sits in the lowest quartile of the World Bank governance indicators. Comprehensive OFAC sanctions and targeted EU and UK measures mean that virtually all financial activity involving Syria requires specific legal authorisation.",
+    "analysis": "Syria's profile combines a severely weak governance picture with FATF grey listing and a comprehensive sanctions regime. Every governance domain is severely impaired. Corruption risk (severe) is the highest individual domain reading, consistent with a very weak CPI reading. Rule of law (severe), political stability (severe), and voice and accountability (severe) are all critically elevated. Syria sits in the lowest quartile of the World Bank governance indicators. Comprehensive OFAC sanctions and targeted EU and UK measures mean that virtually all financial activity involving Syria requires specific legal authorisation.",
     "outlook": "Syria's risk profile is unlikely to improve materially without a fundamental change in the political and security situation, coupled with international sanctions relief and reconstruction of governance institutions. FATF grey-list status adds a further layer of AML/CFT concern. Firms should treat Syria as a jurisdiction requiring the highest level of caution; routine business relationships are effectively precluded by the sanctions regime.",
     "keyWatchpoints": [
       "OFAC, EU, and UK sanctions developments, including any easing or tightening of comprehensive measures.",
@@ -3100,11 +3100,11 @@ export const NARRATIVES: Record<string, CountryNarrative> = {
     "summary": "Eswatini reflects elevated corruption and voice and accountability deficits within a small, monarchy-governed economy, with no FATF listing and no sanctions in place.",
     "whyItMatters": [
       "Governance is weak across the four World Bank domains, with corruption and accountability the leading concerns.",
-      "Voice and accountability risk of 6.6 (weight 10%) reflects the highly constrained political environment in an absolute monarchy.",
-      "Corruption risk of 6.5 (weight 35%) is the dominant governance driver, pointing to meaningful integrity vulnerabilities.",
-      "CPI score of 27 out of 100, ranked 134th of 179 in 2024, confirms notable corruption perceptions in public life."
+      "Voice and accountability risk (weight 10%) reflects the highly constrained political environment in an absolute monarchy.",
+      "Corruption risk (weight 35%) is the dominant governance driver, pointing to meaningful integrity vulnerabilities.",
+      "The CPI reading confirms notable corruption perceptions in public life."
     ],
-    "analysis": "Eswatini's profile rests on its governance indicators, as no FATF or sanctions overlay applies. Corruption (risk 6.5, weight 35%) is the primary driver, supplemented by voice and accountability (risk 6.6, weight 10%) and rule of law and institutions (risk 5.8, weight 40%). Political stability is the most favourable domain at 4.7, reflecting the country's relative internal security. The 2024 CPI score of 27, ranked 134 of 179, underscores persistent integrity concerns. Eswatini sits slightly below the median of assessed jurisdictions on the World Bank governance indicators.",
+    "analysis": "Eswatini's profile rests on its governance indicators, as no FATF or sanctions overlay applies. Corruption (elevated risk, weight 35%) is the primary driver, supplemented by voice and accountability (elevated risk, weight 10%) and rule of law and institutions (elevated risk, weight 40%). Political stability is the most favourable domain, reflecting the country's relative internal security. The CPI reading underscores persistent integrity concerns. Eswatini sits slightly below the median of assessed jurisdictions on the World Bank governance indicators.",
     "outlook": "Eswatini's risk profile is driven by structural governance features tied to its political system rather than acute AML/CFT concerns. With no current FATF listing, the principal risk pathway for firms is corruption exposure in contracting and financial transactions. Improvement would depend on measurable progress in anti-corruption enforcement, which current indicators do not signal.",
     "keyWatchpoints": [
       "Any future FATF mutual evaluation findings or monitoring designation.",
@@ -3134,28 +3134,28 @@ export const NARRATIVES: Record<string, CountryNarrative> = {
     "summary": "Chad has near-uniformly weak governance across all domains, particularly corruption, though it carries no FATF listing or sanctions.",
     "whyItMatters": [
       "Governance is weak across all four World Bank domains, with corruption by far the most acute.",
-      "Corruption (WGI) is the most acute domain at a risk rating of 8.2 (35% weight), representing the single largest risk contributor.",
-      "Rule of law and institutions at a risk rating of 6.73 (40% weight) is the dominant structural driver.",
-      "CPI score of 21/100, ranked 157th of 179 in 2024, places Chad among the least transparent countries globally."
+      "Corruption (WGI) is the most acute domain at a severe level (35% weight), representing the single largest risk contributor.",
+      "Rule of law and institutions at an elevated level (40% weight) is the dominant structural driver.",
+      "The CPI reading places Chad among the least transparent countries globally."
     ],
-    "analysis": "Chad's profile is based entirely on its governance indicators; no FATF listing or sanctions apply. Corruption at a risk rating of 8.2 (35% weight) is the most severe domain in this batch overall and represents the primary financial crime risk driver. Rule of law and institutions at 6.73 (40% weight) is the largest structural contributor. Political stability at 6.3 and voice and accountability at 6.7 indicate a broadly fragile institutional environment. The CPI score of 21/100, ranked 157th of 179, reflects severe corruption in the real economy and corroborates the governance data.",
-    "outlook": "Chad's risk profile remains severe and is unlikely to improve materially in the near term without fundamental changes in political governance. Corruption at a risk rating of 8.2 is the key metric to monitor, and the CPI score of 21/100 indicates limited institutional capacity to address financial crime vulnerabilities. The next FATF plenary in October 2026 could bring additional scrutiny if regional AML/CFT trends prompt reassessment.",
+    "analysis": "Chad's profile is based entirely on its governance indicators; no FATF listing or sanctions apply. Corruption at a severe level (35% weight) is the most severe domain in this batch overall and represents the primary financial crime risk driver. Rule of law and institutions (40% weight) is the largest structural contributor. Political stability and voice and accountability indicate a broadly fragile institutional environment. The CPI reading reflects severe corruption in the real economy and corroborates the governance data.",
+    "outlook": "Chad's risk profile remains severe and is unlikely to improve materially in the near term without fundamental changes in political governance. Corruption at a severe level is the key metric to monitor, and the CPI reading indicates limited institutional capacity to address financial crime vulnerabilities. The next FATF plenary in October 2026 could bring additional scrutiny if regional AML/CFT trends prompt reassessment.",
     "keyWatchpoints": [
-      "Corruption (WGI) at a risk rating of 8.2, the highest corruption reading in this batch and the most heavily weighted risk factor.",
-      "Rule of law and institutions at a risk rating of 6.73, carrying 40% weighting and driving the structural picture.",
+      "Corruption (WGI) at a severe level, the highest corruption reading in this batch and the most heavily weighted risk factor.",
+      "Rule of law and institutions at an elevated level, carrying 40% weighting and driving the structural picture.",
       "Any FATF engagement, given that underlying governance weakness is severe despite no current listing.",
-      "Political stability at a risk rating of 6.3, which if it deteriorates further could undermine already fragile institutions."
+      "Political stability at an elevated level, which if it deteriorates further could undermine already fragile institutions."
     ]
   },
   "TG": {
-    "summary": "Togo has all four governance domains elevated and a CPI rank of 120th, reflecting persistent corruption and accountability weaknesses.",
+    "summary": "Togo has all four governance domains elevated and a CPI ranking, reflecting persistent corruption and accountability weaknesses.",
     "whyItMatters": [
-      "Corruption (WGI risk 6.4) is the weakest domain and the highest-weighted component, placing Togo among the more corruption-exposed West African jurisdictions in the model.",
-      "Voice and accountability risk of 5.8 signals constrained political freedoms, which historically correlates with reduced capacity for independent AML oversight.",
-      "Rule of law and institutions score 5.77, indicating limited reliability of legal and judicial mechanisms.",
-      "Togo's CPI score of 32 out of 100 (rank 120 of 179) indicates that corruption perceptions are materially worse than the global median."
+      "Corruption (WGI elevated risk) is the weakest domain and the highest-weighted component, placing Togo among the more corruption-exposed West African jurisdictions in the model.",
+      "Voice and accountability risk signals constrained political freedoms, which historically correlates with reduced capacity for independent AML oversight.",
+      "Rule of law and institutions is elevated, indicating limited reliability of legal and judicial mechanisms.",
+      "Togo's The CPI reading indicates that corruption perceptions are materially worse than the global median."
     ],
-    "analysis": "Togo's profile is derived entirely from its governance indicators; it is not on the FATF grey or black list, and no sanctions apply. All four domains are in elevated territory: corruption (6.4, weighted 35%) and voice and accountability (5.8, weighted 10%) are the most concerning, whilst rule of law and institutions (5.77, weighted 40%) carries the greatest compositional weight. Political stability (5.0, weighted 15%) is the least adverse domain. The 2024 CPI score of 32 reinforces the WGI picture of a country where integrity risks are broad-based.",
+    "analysis": "Togo's profile is derived entirely from its governance indicators; it is not on the FATF grey or black list, and no sanctions apply. All four domains are in elevated territory: corruption (weighted 35%) and voice and accountability (weighted 10%) are the most concerning, whilst rule of law and institutions (weighted 40%) carries the greatest compositional weight. Political stability (weighted 15%) is the least adverse domain. The CPI reading reinforces the WGI picture of a country where integrity risks are broad-based.",
     "outlook": "Togo's risk profile is likely to remain elevated absent structural reforms to judicial independence and public-sector accountability. The absence of any FATF listing provides some headroom, but the broad weakness across all governance domains means incremental deterioration is possible without sustained institutional investment. Firms should watch the October 2026 FATF plenary for any escalation.",
     "keyWatchpoints": [
       "October 2026 FATF plenary outcome and any identification of strategic AML/CFT deficiencies.",
@@ -3168,11 +3168,11 @@ export const NARRATIVES: Record<string, CountryNarrative> = {
     "summary": "Thailand has elevated corruption and accountability deficits partially offset by moderate rule-of-law performance, with no FATF or sanctions exposure.",
     "whyItMatters": [
       "Governance is mixed, with corruption and accountability the weakest of the four World Bank domains.",
-      "Corruption risk of 6.1 is the most significant governance weakness, consistent with the 2024 CPI score of 34 (ranked 106th of 179).",
-      "Voice and accountability risk of 5.5 reflects constraints on political freedoms and civil liberties.",
+      "Corruption risk is the most significant governance weakness, consistent with the CPI reading.",
+      "Voice and accountability risk reflects constraints on political freedoms and civil liberties.",
       "Thailand is not FATF listed and carries no sanctions exposure, so the profile rests on governance alone."
     ],
-    "analysis": "Thailand's profile is anchored by a corruption risk of 6.1 and voice and accountability risk of 5.5, both materially above the midpoint of the scale. Rule of law and institutions, while weaker at 4.4, is the most governed domain relative to the others. Political stability at 4.2 remains a moderate concern. No FATF listing or sanctions apply. Thailand sits close to the median globally on the World Bank governance indicators, reflecting a mixed institutional picture.",
+    "analysis": "Thailand's profile is anchored by a corruption risk and voice and accountability risk, both materially above the midpoint of the scale. Rule of law and institutions, while weaker, is the most governed domain relative to the others. Political stability remains a moderate concern. No FATF listing or sanctions apply. Thailand sits close to the median globally on the World Bank governance indicators, reflecting a mixed institutional picture.",
     "outlook": "Thailand's risk profile is likely to remain elevated absent meaningful improvements in anti-corruption enforcement and political accountability. Progress on structural governance reforms and any future FATF engagement will be the principal drivers of change. The October 2026 plenary should be monitored for any mutual evaluation developments.",
     "keyWatchpoints": [
       "Watch FATF mutual evaluation and plenary outcomes for any grey-listing risk.",
@@ -3185,11 +3185,11 @@ export const NARRATIVES: Record<string, CountryNarrative> = {
     "summary": "Tajikistan is driven by severe corruption, weak rule-of-law institutions, and very limited political accountability, though it is not FATF listed and faces no sanctions.",
     "whyItMatters": [
       "Governance is weak across three of the four World Bank domains, with corruption and accountability the most acute.",
-      "Corruption risk of 7.5 and voice and accountability risk of 7.0 are the two most acute governance weaknesses.",
-      "CPI score of 19 out of 100 (ranked 163rd of 179) confirms pervasive corruption by international comparison.",
+      "Corruption risk and voice and accountability risk are the two most acute governance weaknesses.",
+      "The CPI reading confirms pervasive corruption by international comparison.",
       "Tajikistan sits below the median of assessed jurisdictions on the World Bank governance indicators."
     ],
-    "analysis": "Tajikistan's profile reflects poor governance across three of its four WGI domains. Corruption is the dominant driver at 7.5, followed closely by voice and accountability at 7.0 and rule of law and institutions at 6.2. Political stability is comparatively less acute at 3.9. The country is not on the FATF grey or black list and carries no sanctions exposure, so the profile rests on governance alone. The 2024 CPI rank of 163rd out of 179 underscores the depth of the corruption challenge.",
+    "analysis": "Tajikistan's profile reflects poor governance across three of its four WGI domains. Corruption is the dominant driver, followed closely by voice and accountability and rule of law and institutions. Political stability is comparatively less acute. The country is not on the FATF grey or black list and carries no sanctions exposure, so the profile rests on governance alone. The 2024 CPI ranking out of 179 underscores the depth of the corruption challenge.",
     "outlook": "Without structural reforms to judicial independence and public accountability, Tajikistan's governance indicators are unlikely to improve materially in the near term. The absence of a FATF listing provides some mitigation, but the underlying governance deficit sustains elevated financial crime risk. The October 2026 plenary will be a key moment to assess whether any FATF engagement has been initiated.",
     "keyWatchpoints": [
       "Monitor FATF plenary outcomes in October 2026 for any new listing or mutual evaluation updates.",
@@ -3202,11 +3202,11 @@ export const NARRATIVES: Record<string, CountryNarrative> = {
     "summary": "Timor-Leste has elevated corruption and rule-of-law weaknesses, tempered by strong political stability and no FATF or sanctions exposure.",
     "whyItMatters": [
       "Governance is weak on corruption and rule of law, partly offset by strong political stability.",
-      "Corruption risk of 6.1 and rule-of-law risk of 5.9 are the two principal governance drivers.",
-      "Political stability is notably low risk at 2.7, a relative strength that partially moderates the overall picture.",
-      "CPI score of 44 (ranked 73rd of 179 in 2024) indicates moderate corruption perceptions for a developing economy."
+      "Corruption risk and rule-of-law risk are the two principal governance drivers.",
+      "Political stability is notably low risk, a relative strength that partially moderates the overall picture.",
+      "The CPI reading indicates moderate corruption perceptions for a developing economy."
     ],
-    "analysis": "Timor-Leste's profile is driven primarily by corruption risk at 6.1 and rule of law and institutions at 5.9. These weaknesses reflect an early-stage institutional development context for a young state. Voice and accountability at 3.7 and political stability at 2.7 are comparatively more favourable and moderate the overall picture somewhat. The country is not on the FATF grey or black list and carries no sanctions exposure. Timor-Leste sits at the median of the global peer group on the World Bank governance indicators.",
+    "analysis": "Timor-Leste's profile is driven primarily by corruption risk and rule of law and institutions. These weaknesses reflect an early-stage institutional development context for a young state. Voice and accountability and political stability are comparatively more favourable and moderate the overall picture somewhat. The country is not on the FATF grey or black list and carries no sanctions exposure. Timor-Leste sits at the median of the global peer group on the World Bank governance indicators.",
     "outlook": "Timor-Leste's risk trajectory will depend on the pace of institutional capacity building, particularly in judicial and law-enforcement functions. The relatively moderate CPI ranking for its development stage provides a degree of optimism, but corruption and rule-of-law constraints are likely to persist in the medium term. Firms should monitor FATF engagement and any mutual evaluation updates.",
     "keyWatchpoints": [
       "Track FATF plenary outcomes and any mutual evaluation of Timor-Leste's AML/CFT framework.",
@@ -3219,11 +3219,11 @@ export const NARRATIVES: Record<string, CountryNarrative> = {
     "summary": "Turkmenistan reflects severe corruption, very weak rule-of-law institutions, and near-total absence of political accountability, with no FATF listing or sanctions currently applied.",
     "whyItMatters": [
       "Governance is severely weak across three of the four World Bank domains, with corruption and accountability the most acute.",
-      "Corruption risk of 7.9 and voice and accountability risk of 7.9 are the joint highest governance risk ratings in this profile.",
-      "CPI score of 17 out of 100 (ranked 164th of 179) places Turkmenistan among the most corrupt countries surveyed in 2024.",
+      "Corruption risk and voice and accountability risk are the joint highest governance risk ratings in this profile.",
+      "The CPI reading places Turkmenistan among the most corrupt countries surveyed in 2024.",
       "Turkmenistan sits below the median of assessed jurisdictions on the World Bank governance indicators."
     ],
-    "analysis": "Turkmenistan's profile is led by corruption and voice and accountability, both at a risk rating of 7.9. Rule of law and institutions is also severely weak at 6.6. Political stability, at 3.1, is the sole domain offering meaningful mitigation. The country is not on the FATF grey or black list and no sanctions apply, so the profile reflects governance risk alone. The 2024 CPI rank of 164th out of 179 confirms the depth of the corruption challenge in international context.",
+    "analysis": "Turkmenistan's profile is led by corruption and voice and accountability, both at a severe level. Rule of law and institutions is also severely weak. Political stability, is the sole domain offering meaningful mitigation. The country is not on the FATF grey or black list and no sanctions apply, so the profile reflects governance risk alone. The 2024 CPI ranking out of 179 confirms the depth of the corruption challenge in international context.",
     "outlook": "Turkmenistan's closed political system and entrenched governance deficits make near-term improvement unlikely. The absence of a FATF listing provides some practical mitigation for compliance purposes, but the underlying risk environment warrants enhanced due diligence on Turkmen-connected transactions. The October 2026 plenary and any related mutual evaluation developments should be monitored.",
     "keyWatchpoints": [
       "Monitor FATF plenary outcomes for any listing or mutual evaluation engagement.",
@@ -3235,12 +3235,12 @@ export const NARRATIVES: Record<string, CountryNarrative> = {
   "TN": {
     "summary": "Tunisia has balanced governance weaknesses across all four domains and no FATF listing or sanctions.",
     "whyItMatters": [
-      "Corruption (WGI risk 5.6) is the weakest domain and the highest-weighted component, reflecting persistent integrity concerns in public administration.",
-      "Rule of law and institutions score 5.07 indicates moderate institutional reliability, with some vulnerability to judicial or regulatory inconsistency.",
+      "Corruption (WGI elevated risk) is the weakest domain and the highest-weighted component, reflecting persistent integrity concerns in public administration.",
+      "Rule of law and institutions is elevated indicates moderate institutional reliability, with some vulnerability to judicial or regulatory inconsistency.",
       "Tunisia sits just below the global median for AML-relevant governance quality on the World Bank indicators.",
-      "The 2024 CPI score of 39 (rank 91 of 179) is consistent with the WGI assessment and signals a country in the middle tier of corruption risk."
+      "The CPI reading is consistent with the WGI assessment and signals a country in the middle tier of corruption risk."
     ],
-    "analysis": "Tunisia's profile is driven entirely by its governance indicators; it is not FATF-listed and no sanctions apply. The most adverse domain is corruption (5.6, weighted 35%), followed closely by voice and accountability (5.2, weighted 10%) and rule of law and institutions (5.07, weighted 40%). Political stability (4.7, weighted 15%) is the strongest domain, though still in elevated territory. The 2024 CPI score of 39 out of 100 places Tunisia 91st of 179 countries, broadly confirming a moderate-to-elevated corruption environment.",
+    "analysis": "Tunisia's profile is driven entirely by its governance indicators; it is not FATF-listed and no sanctions apply. The most adverse domain is corruption (weighted 35%), followed closely by voice and accountability (weighted 10%) and rule of law and institutions (weighted 40%). Political stability (weighted 15%) is the strongest domain, though still in elevated territory. The CPI reading places Tunisia, broadly confirming a moderate-to-elevated corruption environment.",
     "outlook": "Tunisia's near-median position means risk could move in either direction. Progress in restoring democratic checks and independent judicial oversight following recent constitutional changes could improve governance scores over time. Conversely, further centralisation of power or weakening of anti-corruption institutions would be likely to push the score higher. The October 2026 FATF plenary should be monitored for any listing consideration.",
     "keyWatchpoints": [
       "Developments in constitutional governance and judicial independence, which bear directly on the Rule of law domain.",
@@ -3252,16 +3252,16 @@ export const NARRATIVES: Record<string, CountryNarrative> = {
   "TO": {
     "summary": "Tonga, a Pacific kingdom, has corruption as by far its weakest governance domain, with no FATF listing or sanctions in place.",
     "whyItMatters": [
-      "Political stability at 1.3 is the strongest governance domain against a weaker corruption picture.",
-      "Corruption at 6.0 is by far the weakest governance domain and the principal governance driver; rule of law scores 4.27.",
+      "Political stability is the strongest governance domain against a weaker corruption picture.",
+      "Corruption is by far the weakest governance domain and the principal governance driver; rule of law is moderate.",
       "Tonga underwent its APG mutual evaluation with an on-site visit in 2019, placing it within the current assessment cycle.",
       "No FATF grey or black listing applies and no sanctions are in place; no CPI data are published, so corruption context rests on WGI alone."
     ],
-    "analysis": "Tonga is a Pacific archipelagic kingdom and a member of the Asia/Pacific Group on Money Laundering (APG). Its risk picture is governance-derived, with no FATF or sanctions overlay. The governance base is uneven: political stability is very strong at 1.3 and accountability scores 2.9, but corruption at 6.0 is the weakest domain and, with the heaviest domain weighting, is the principal governance driver, while rule of law at 4.27 is moderate. Tonga sits in the upper-middle tier of the World Bank governance indicators, and no CPI data are published to corroborate the corruption reading independently. Tonga completed its APG mutual evaluation following an on-site visit in 2019, which assessed a legal framework broadly consistent with FATF standards alongside the effectiveness and capacity constraints typical of a small Pacific economy.",
+    "analysis": "Tonga is a Pacific archipelagic kingdom and a member of the Asia/Pacific Group on Money Laundering (APG). Its risk picture is governance-derived, with no FATF or sanctions overlay. The governance base is uneven: political stability is very strong and accountability is strong, but corruption is the weakest domain and, with the heaviest domain weighting, is the principal governance driver, while rule of law is moderate. Tonga sits in the upper-middle tier of the World Bank governance indicators, and no CPI data are published to corroborate the corruption reading independently. Tonga completed its APG mutual evaluation following an on-site visit in 2019, which assessed a legal framework broadly consistent with FATF standards alongside the effectiveness and capacity constraints typical of a small Pacific economy.",
     "outlook": "Tonga's profile is shaped by its weak corruption domain against very strong political stability. The forward picture depends on the pace of APG follow-up remediation, anti-corruption reform, and supervisory capacity in a small administration. Firms should treat corruption as the dominant governance concern, apply proportionate enhanced due diligence to Tongan exposure, and monitor APG follow-up reporting for any change in status.",
     "keyWatchpoints": [
       "APG follow-up reporting on Tonga's 2019 mutual evaluation and any technical compliance re-ratings.",
-      "Corruption domain (6.0) as the dominant governance driver; monitor anti-corruption reform and transparency developments.",
+      "Corruption domain (elevated) as the dominant governance driver; monitor anti-corruption reform and transparency developments.",
       "Supervisory and institutional capacity constraints in a small Pacific economy.",
       "Absence of CPI data limits independent corruption benchmarking; supplement with credible third-party indicators."
     ]
@@ -3270,11 +3270,11 @@ export const NARRATIVES: Record<string, CountryNarrative> = {
     "summary": "Turkiye reflects elevated corruption and rule-of-law concerns alongside weak voice-and-accountability indicators, with no FATF listing or sanctions currently in place.",
     "whyItMatters": [
       "Turkiye is not on the FATF grey or black list and no sanctions apply, so the profile is determined by governance factors alone.",
-      "Corruption risk (6.1) is the most elevated domain, consistent with a CPI score of 34 (rank 106 of 179).",
-      "Voice and accountability (6.2) is marginally the weakest domain, reflecting constraints on media freedom and political pluralism.",
-      "Rule of law and institutions (5.2) and political stability (4.9) are the more moderate domains, though both remain elevated."
+      "Corruption risk (elevated) is the most elevated domain, consistent with a CPI reading.",
+      "Voice and accountability (elevated) is marginally the weakest domain, reflecting constraints on media freedom and political pluralism.",
+      "Rule of law and institutions (elevated) and political stability (moderate) are the more moderate domains, though both remain elevated."
     ],
-    "analysis": "Turkiye's profile is driven entirely by its governance indicators. Corruption (6.1) and voice and accountability (6.2) are the weakest dimensions. Rule of law (5.2) and political stability (4.9) are elevated but represent relative strengths within the profile. The CPI score of 34 (rank 106 of 179) signals a meaningful corruption environment. Turkiye sits below the global median on the World Bank governance indicators. No enforcement actions are tracked in the available data. The absence of any FATF or sanctions overlay means the elevated risk reflects underlying institutional quality rather than any regulatory designation.",
+    "analysis": "Turkiye's profile is driven entirely by its governance indicators. Corruption (elevated) and voice and accountability (elevated) are the weakest dimensions. Rule of law (elevated) and political stability (moderate) are elevated but represent relative strengths within the profile. The CPI reading signals a meaningful corruption environment. Turkiye sits below the global median on the World Bank governance indicators. No enforcement actions are tracked in the available data. The absence of any FATF or sanctions overlay means the elevated risk reflects underlying institutional quality rather than any regulatory designation.",
     "outlook": "Turkiye's risk profile will be shaped by the trajectory of rule-of-law and judicial independence reforms, progress on anti-corruption enforcement, and developments in the political environment affecting press and civil freedoms. Any future FATF engagement or listing decision would materially raise scrutiny. Firms should apply appropriate enhanced due diligence to complex or politically connected transactions.",
     "keyWatchpoints": [
       "Corruption trends and anti-corruption enforcement capacity, including judicial independence.",
@@ -3286,12 +3286,12 @@ export const NARRATIVES: Record<string, CountryNarrative> = {
   "TT": {
     "summary": "Trinidad and Tobago has corruption as its primary governance concern, with relatively stable political and accountability conditions.",
     "whyItMatters": [
-      "Corruption (WGI) scores a risk rating of 5.9, the dominant risk domain, reflecting governance challenges in a small open economy.",
-      "CPI score of 41/100 (rank 81 of 179 in 2024) is among the more favourable in the Caribbean subregion.",
-      "Rule of law and institutions (4.73) and voice and accountability (3.5) contribute moderate risk.",
+      "Corruption (WGI) shows an elevated risk rating, the dominant risk domain, reflecting governance challenges in a small open economy.",
+      "The CPI reading is among the more favourable in the Caribbean subregion.",
+      "Rule of law and institutions (moderate) and voice and accountability (moderate) contribute moderate risk.",
       "Trinidad and Tobago is not on the FATF grey or black list and carries no sanctions."
     ],
-    "analysis": "Trinidad and Tobago's profile is driven by corruption (WGI) at 5.9, while rule of law (4.73) adds secondary pressure. Political stability (2.8) and voice and accountability (3.5) are comparatively lower risk. The CPI score of 41 at rank 81 of 179 provides a more positive transparency signal. No FATF listing or sanctions apply. The country sits above the global midpoint on the World Bank governance indicators, consistent with its moderate risk picture.",
+    "analysis": "Trinidad and Tobago's profile is driven by corruption (WGI), while rule of law (moderate) adds secondary pressure. Political stability (strong) and voice and accountability (moderate) are comparatively lower risk. The CPI reading provides a more positive transparency signal. No FATF listing or sanctions apply. The country sits above the global midpoint on the World Bank governance indicators, consistent with its moderate risk picture.",
     "outlook": "Trinidad and Tobago's moderate risk profile could be sustained if anti-corruption efforts continue and rule-of-law institutions are strengthened. Energy-sector dependence creates fiscal and governance vulnerability over the medium term. Firms should monitor any changes to FATF status, given the Caribbean subregion's history of enhanced monitoring engagements.",
     "keyWatchpoints": [
       "Corruption trends and anti-corruption enforcement effectiveness.",
@@ -3305,10 +3305,10 @@ export const NARRATIVES: Record<string, CountryNarrative> = {
     "whyItMatters": [
       "Governance is robust across all four WGI domains, among the stronger profiles in the region.",
       "Governance quality is strong across the World Bank indicators, placing Taiwan in the upper tier globally.",
-      "CPI score of 67 out of 100 (ranked 25th of 179) confirms a relatively clean public sector by international standards.",
+      "The CPI reading confirms a relatively clean public sector by international standards.",
       "No FATF grey or black listing and no sanctions regime apply, so the profile rests on governance alone."
     ],
-    "analysis": "Taiwan's profile is driven by consistently low governance risk across all domains. Rule of law and institutions is the strongest contributor, with a risk rating of 2.17, while corruption scores 2.8 and voice and accountability 2.5. Political stability is the lowest risk domain at 1.6. Taiwan carries no FATF listing and no sanctions exposure. The CPI rank of 25th out of 179 countries in 2024 corroborates the governance picture. No tracked enforcement actions are recorded in the dataset.",
+    "analysis": "Taiwan's profile is driven by consistently low governance risk across all domains. Rule of law and institutions is the strongest contributor, with a low risk rating, while corruption is strong and voice and accountability is strong. Political stability is the lowest risk domain. Taiwan carries no FATF listing and no sanctions exposure. The CPI ranking out of 179 countries in 2024 corroborates the governance picture. No tracked enforcement actions are recorded in the dataset.",
     "outlook": "Taiwan's governance fundamentals are well established, and the absence of any FATF or sanctions designation supports a stable risk outlook. Firms should expect the country to remain low-risk at the next FATF plenary in October 2026. Sustained institutional quality and anti-corruption performance are the primary factors to watch.",
     "keyWatchpoints": [
       "Monitor any changes to FATF listing status at the October 2026 plenary.",
@@ -3320,12 +3320,12 @@ export const NARRATIVES: Record<string, CountryNarrative> = {
   "TZ": {
     "summary": "Tanzania is driven by elevated corruption and weak rule-of-law indicators, though it faces no FATF listing or sanctions exposure.",
     "whyItMatters": [
-      "Corruption (WGI risk 5.9) is the single largest risk driver, reflecting persistent vulnerabilities in public-sector integrity.",
-      "Rule of law and institutions score 5.43, indicating limited reliability in contract enforcement and judicial independence.",
-      "Voice and accountability risk stands at 5.4, pointing to constraints on political pluralism that can weaken oversight.",
+      "Corruption (WGI elevated risk) is the single largest risk driver, reflecting persistent vulnerabilities in public-sector integrity.",
+      "Rule of law and institutions is elevated, indicating limited reliability in contract enforcement and judicial independence.",
+      "Voice and accountability risk stands, pointing to constraints on political pluralism that can weaken oversight.",
       "Tanzania sits below the median of assessed jurisdictions on the World Bank governance indicators, meaning most peers score better on AML-relevant controls."
     ],
-    "analysis": "Tanzania's profile is anchored entirely in its governance indicators; no FATF or sanctions overlay applies. The weakest domain is corruption (5.9), which carries the highest weighting at 35%, and voice and accountability (5.4) adds further drag. Rule of law and institutions (5.43) and political stability (3.8, the strongest domain) round out the picture. The 2024 CPI score of 41 out of 100, placing Tanzania 81st of 179 countries, is broadly consistent with the WGI-based assessment and confirms moderate-to-elevated corruption risk.",
+    "analysis": "Tanzania's profile is anchored entirely in its governance indicators; no FATF or sanctions overlay applies. The weakest domain is corruption (elevated), which carries the highest weighting at 35%, and voice and accountability (elevated) adds further drag. Rule of law and institutions (elevated) and political stability (the strongest domain) round out the picture. The CPI reading is broadly consistent with the WGI-based assessment and confirms moderate-to-elevated corruption risk.",
     "outlook": "Without FATF listing or sanctions pressure, Tanzania's risk trajectory is governed principally by domestic anti-corruption reform and judicial strengthening. Improvements in public-sector governance and enforcement capacity could ease the picture over the medium term, whilst further erosion of institutional independence would worsen it. Firms should monitor the October 2026 FATF plenary for any change in listing status.",
     "keyWatchpoints": [
       "Any FATF grey-listing determination at the October 2026 plenary, which would materially raise scrutiny of Tanzania-connected business.",
@@ -3337,12 +3337,12 @@ export const NARRATIVES: Record<string, CountryNarrative> = {
   "UA": {
     "summary": "Ukraine is driven by significant corruption and institutional weakness, compounded by the ongoing effects of armed conflict.",
     "whyItMatters": [
-      "Corruption (risk 6.7) is the most critical governance weakness, placing Ukraine among the higher-risk countries for financial-crime exposure.",
-      "The CPI score of 35/100 (rank 104 of 179, 2024) confirms widespread perceived corruption across public administration.",
-      "Rule of law and institutions (risk 5.57) reflects material concerns about judicial independence and enforcement capacity.",
+      "Corruption (elevated) is the most critical governance weakness, placing Ukraine among the higher-risk countries for financial-crime exposure.",
+      "The CPI reading confirms widespread perceived corruption across public administration.",
+      "Rule of law and institutions (elevated) reflects material concerns about judicial independence and enforcement capacity.",
       "No FATF listing and no sanctions apply to Ukraine itself, so the profile rests on governance alone, though governance weaknesses keep the risk elevated."
     ],
-    "analysis": "Ukraine's profile is driven by a weak governance picture across all four domains. Corruption (6.7) is the dominant risk factor, supported by a CPI of 35 and a position below the median of the World Bank governance indicators. Rule of law and institutions (5.57) reflects longstanding concerns about the independence of the judiciary and state institutions. Political stability (4.3) and voice and accountability (4.5) are both elevated, reflecting the impact of the ongoing military conflict on institutional functioning. Ukraine is not on the FATF grey or black list and no sanctions regime targets Ukraine. No tracked enforcement data are available.",
+    "analysis": "Ukraine's profile is driven by a weak governance picture across all four domains. Corruption (elevated) is the dominant risk factor, supported by a weak CPI reading and a position below the median of the World Bank governance indicators. Rule of law and institutions (elevated) reflects longstanding concerns about the independence of the judiciary and state institutions. Political stability and voice and accountability are both elevated, reflecting the impact of the ongoing military conflict on institutional functioning. Ukraine is not on the FATF grey or black list and no sanctions regime targets Ukraine. No tracked enforcement data are available.",
     "outlook": "Ukraine's risk profile remains elevated and is shaped primarily by the trajectory of the armed conflict and post-war reconstruction dynamics. Anti-corruption reform progress, including judicial independence and asset recovery, will be a key indicator. International support and EU accession negotiations may provide long-term governance improvement levers, but near-term risk is likely to remain high.",
     "keyWatchpoints": [
       "Corruption exposure in state procurement, reconstruction financing, and state-owned enterprise relationships.",
@@ -3354,12 +3354,12 @@ export const NARRATIVES: Record<string, CountryNarrative> = {
   "UG": {
     "summary": "Uganda has the highest corruption risk among this batch of East African peers and broad governance weaknesses across all four domains.",
     "whyItMatters": [
-      "Corruption (WGI risk 7.2) is by far the weakest domain, placing Uganda in the upper tier of corruption risk globally and driving the majority of the risk picture.",
-      "Voice and accountability risk of 5.9 reflects constrained political freedoms, limiting independent oversight of public institutions.",
-      "The 2024 CPI score of 26 (rank 139 of 179) confirms that corruption perceptions are severely adverse, consistent with the WGI-based model.",
+      "Corruption (WGI severe risk) is by far the weakest domain, placing Uganda in the upper tier of corruption risk globally and driving the majority of the risk picture.",
+      "Voice and accountability risk reflects constrained political freedoms, limiting independent oversight of public institutions.",
+      "The CPI reading confirms that corruption perceptions are severely adverse, consistent with the WGI-based model.",
       "Uganda falls below the median of assessed jurisdictions on the World Bank governance indicators, meaning most peers perform better across AML-relevant governance measures."
     ],
-    "analysis": "Uganda's profile is derived entirely from its governance indicators; it is not on the FATF grey or black list and no sanctions apply. The dominant risk driver is corruption (7.2, weighted 35%), which is the highest reading in this group. Rule of law and institutions (5.53, weighted 40%) and voice and accountability (5.9, weighted 10%) are also materially elevated. Political stability (5.2, weighted 15%) is the least adverse domain. The 2024 CPI score of 26 out of 100, at rank 139 of 179, signals a severely adverse corruption environment that warrants heightened due-diligence scrutiny.",
+    "analysis": "Uganda's profile is derived entirely from its governance indicators; it is not on the FATF grey or black list and no sanctions apply. The dominant risk driver is corruption (weighted 35%), which is the highest reading in this group. Rule of law and institutions (weighted 40%) and voice and accountability (weighted 10%) are also materially elevated. Political stability (weighted 15%) is the least adverse domain. The CPI reading signals a severely adverse corruption environment that warrants heightened due-diligence scrutiny.",
     "outlook": "Uganda's governance trajectory is under pressure from long-standing structural corruption challenges and limited accountability mechanisms. Without significant reform of anti-corruption institutions and judicial independence, the risk picture is unlikely to improve materially in the near term. Firms should treat Uganda as an elevated-risk jurisdiction requiring enhanced customer due diligence and monitor the October 2026 FATF plenary for any listing developments.",
     "keyWatchpoints": [
       "October 2026 FATF plenary outcome for any determination on Uganda's AML/CFT framework.",
@@ -3371,13 +3371,13 @@ export const NARRATIVES: Record<string, CountryNarrative> = {
   "US": {
     "summary": "The United States is underpinned by strong rule of law and low corruption, with the world's largest and most active financial-crime enforcement landscape.",
     "whyItMatters": [
-      "Rule of law and institutions scores a risk rating of 2.4 (lower is stronger), reflecting deep institutional capacity and legal certainty.",
-      "Corruption (WGI) at 2.8 and a CPI score of 65/100 (rank 28 of 179 in 2024) confirm strong transparency standards.",
+      "Rule of law and institutions shows a low risk rating (lower is stronger), reflecting deep institutional capacity and legal certainty.",
+      "Corruption (WGI) and a comparatively clean CPI reading confirm strong transparency standards.",
       "11,481 tracked enforcement actions across four regulators (OCC, FINRA, SEC, FinCEN) from 1987 to 2026 demonstrate active and well-resourced supervision.",
       "No FATF listing or sanctions apply; the US is not on the FATF grey or black list."
     ],
-    "analysis": "The United States has strong governance across all four domains. Rule of law (2.4) is the best-performing domain, followed by corruption (2.8) and voice and accountability (2.8). Political stability (3.7) is the relatively weakest domain but still low risk. The CPI score of 65 at rank 28 of 179 reinforces the low-corruption assessment. No FATF or sanctions overlay applies. The US sits in the upper tier of the World Bank governance indicators. Enforcement activity is extensive, with 11,481 tracked actions across OCC, FINRA, SEC and FinCEN, reflecting a mature and assertive supervisory culture.",
-    "outlook": "The United States is expected to maintain its low-risk standing. The primary forward risk relates to the pace and direction of regulatory change and the continued effectiveness of enforcement. Political stability, while the comparatively weakest governance domain at 3.7, does not materially alter the low-risk assessment. Firms should track regulatory developments and enforcement priorities across the four active regulators.",
+    "analysis": "The United States has strong governance across all four domains. Rule of law (strong) is the best-performing domain, followed by corruption (strong) and voice and accountability (strong). Political stability (moderate) is the relatively weakest domain but still low risk. The CPI reading reinforces the low-corruption assessment. No FATF or sanctions overlay applies. The US sits in the upper tier of the World Bank governance indicators. Enforcement activity is extensive, with 11,481 tracked actions across OCC, FINRA, SEC and FinCEN, reflecting a mature and assertive supervisory culture.",
+    "outlook": "The United States is expected to maintain its low-risk standing. The primary forward risk relates to the pace and direction of regulatory change and the continued effectiveness of enforcement. Political stability, while the comparatively weakest governance domain, does not materially alter the low-risk assessment. Firms should track regulatory developments and enforcement priorities across the four active regulators.",
     "keyWatchpoints": [
       "Regulatory and legislative changes affecting AML, sanctions and securities frameworks.",
       "Enforcement trends across OCC, FINRA, SEC and FinCEN, particularly in AML and sanctions compliance.",
@@ -3388,12 +3388,12 @@ export const NARRATIVES: Record<string, CountryNarrative> = {
   "UY": {
     "summary": "Uruguay is a low-risk jurisdiction recording among the strongest governance and transparency indicators in Latin America.",
     "whyItMatters": [
-      "Corruption (WGI) at a risk rating of 2.1 and a CPI score of 76/100 (rank 13 of 179 in 2024) make Uruguay one of the least corrupt countries in the Americas.",
-      "Political stability scores an exceptionally low 1.4, indicating a highly stable political environment.",
-      "Rule of law and institutions (3.1) is the comparatively weakest domain but remains firmly in low-risk territory.",
+      "Corruption (WGI) at a low-risk level and a strong CPI reading make Uruguay one of the least corrupt countries in the Americas.",
+      "Political stability is strong, indicating a highly stable political environment.",
+      "Rule of law and institutions (moderate) is the comparatively weakest domain but remains firmly in low-risk territory.",
       "Uruguay is not on the FATF grey or black list and carries no sanctions."
     ],
-    "analysis": "Uruguay's profile sits comfortably in low-risk territory. Corruption (WGI) at 2.1 is the strongest governance signal, corroborated by a CPI rank of 13 of 179, among the highest in Latin America. Political stability (1.4) is outstanding. Rule of law (3.1) and voice and accountability (2.2) add minimal risk. No FATF listing or sanctions apply. Uruguay sits in the upper tier of the World Bank governance indicators. No enforcement actions are tracked, reflecting a smaller financial sector.",
+    "analysis": "Uruguay's profile sits comfortably in low-risk territory. Corruption (WGI) is the strongest governance signal, corroborated by a CPI ranking, among the highest in Latin America. Political stability (strong) is outstanding. Rule of law (moderate) and voice and accountability (strong) add minimal risk. No FATF listing or sanctions apply. Uruguay sits in the upper tier of the World Bank governance indicators. No enforcement actions are tracked, reflecting a smaller financial sector.",
     "outlook": "Uruguay is expected to maintain its low-risk position. The country's strong institutions and transparency record provide a stable foundation. Firms should remain attentive to any shifts in the rule-of-law domain, which is the relatively weakest governance area, and to any future FATF engagement as the financial sector develops.",
     "keyWatchpoints": [
       "Rule-of-law developments, as the comparatively weakest governance domain.",
@@ -3406,11 +3406,11 @@ export const NARRATIVES: Record<string, CountryNarrative> = {
     "summary": "Uzbekistan is driven by significant corruption and accountability deficits, though political stability is a relative strength and the country carries no FATF listing or sanctions.",
     "whyItMatters": [
       "Governance is weak on corruption and accountability across the four World Bank domains.",
-      "Corruption risk of 6.6 is the leading governance weakness, consistent with a 2024 CPI score of 32 (ranked 120th of 179).",
-      "Voice and accountability risk of 6.1 reflects significant constraints on political freedoms.",
-      "Political stability at 3.8 is a relative strength and provides some offset to the higher-risk domains."
+      "Corruption risk is the leading governance weakness, consistent with a CPI reading.",
+      "Voice and accountability risk reflects significant constraints on political freedoms.",
+      "Political stability is a relative strength and provides some offset to the higher-risk domains."
     ],
-    "analysis": "Uzbekistan's profile is dominated by corruption risk at 6.6 and voice and accountability at 6.1, with rule of law and institutions at 5.5 also above the midpoint of the scale. Political stability, at 3.8, is the strongest governance domain. No FATF listing or sanctions apply, so the profile rests on governance alone. Uzbekistan sits in the lower half of the World Bank governance indicators. The CPI rank of 120th reflects meaningful but not acute corruption risk relative to the region.",
+    "analysis": "Uzbekistan's profile is dominated by corruption risk and voice and accountability, with rule of law and institutions also above the midpoint of the scale. Political stability, is the strongest governance domain. No FATF listing or sanctions apply, so the profile rests on governance alone. Uzbekistan sits in the lower half of the World Bank governance indicators. The CPI ranking reflects meaningful but not acute corruption risk relative to the region.",
     "outlook": "Uzbekistan has undertaken a range of reform initiatives in recent years, and the political stability domain reflects a degree of institutional continuity. Sustained reform momentum in judicial independence and anti-corruption enforcement could ease the risk picture over the medium term. Firms should monitor FATF engagement and reform progress ahead of the October 2026 plenary.",
     "keyWatchpoints": [
       "Watch for FATF mutual evaluation outcomes and any plenary listing decisions.",
@@ -3439,18 +3439,18 @@ export const NARRATIVES: Record<string, CountryNarrative> = {
   "VC": {
     "summary": "Saint Vincent and the Grenadines, an Eastern Caribbean state, rests on a strong governance base, with no FATF listing or sanctions in place.",
     "whyItMatters": [
-      "A solid governance base, with political stability at 1.6 the strongest domain, anchors the profile.",
-      "Corruption at 3.8 and rule of law at 4.0 are the weakest domains but remain within a moderate range.",
-      "The 2024 CPI score of 63 out of 100 (rank 31) is comparatively strong and places the country among the cleaner jurisdictions in the region.",
+      "A solid governance base, with political stability the strongest domain, anchors the profile.",
+      "Corruption and rule of law are the weakest domains but remain within a moderate range.",
+      "The CPI reading (rank 31) is comparatively strong and places the country among the cleaner jurisdictions in the region.",
       "No FATF grey or black listing applies and no sanctions are in place, so the headline risk reflects the governance profile alone."
     ],
-    "analysis": "Saint Vincent and the Grenadines is an Eastern Caribbean state assessed for AML/CFT purposes by the Caribbean Financial Action Task Force (CFATF). Its risk picture is governance-derived, with no FATF or sanctions overlay. The governance base is solid: political stability scores 1.6, accountability 3.4, corruption 3.8 and rule of law 4.0. The 2024 CPI score of 63 at rank 31 is comparatively strong and corroborates a relatively clean public-sector picture, while the country sits in the upper third of the World Bank governance indicators. Unlike several of its Eastern Caribbean neighbours, Saint Vincent and the Grenadines does not operate a citizenship-by-investment programme, which removes one common source of identity-verification risk. It has an international financial-services sector and is subject to CFATF mutual evaluation and follow-up reporting.",
+    "analysis": "Saint Vincent and the Grenadines is an Eastern Caribbean state assessed for AML/CFT purposes by the Caribbean Financial Action Task Force (CFATF). Its risk picture is governance-derived, with no FATF or sanctions overlay. The governance base is solid: political stability is strong, accountability is moderate, corruption is moderate and rule of law is moderate. The CPI reading is comparatively strong and corroborates a relatively clean public-sector picture, while the country sits in the upper third of the World Bank governance indicators. Unlike several of its Eastern Caribbean neighbours, Saint Vincent and the Grenadines does not operate a citizenship-by-investment programme, which removes one common source of identity-verification risk. It has an international financial-services sector and is subject to CFATF mutual evaluation and follow-up reporting.",
     "outlook": "Saint Vincent and the Grenadines' profile reflects a sound governance base and a comparatively clean CPI reading. The forward picture depends on continued CFATF follow-up remediation, the effectiveness of supervision for its international financial-services sector, and the corruption and rule-of-law domains as the weakest governance readings. Firms should apply proportionate due diligence and monitor CFATF follow-up reporting and the October 2026 FATF plenary for any change in status.",
     "keyWatchpoints": [
       "CFATF follow-up reporting on the country's mutual evaluation and any technical compliance re-ratings.",
       "October 2026 FATF plenary for any change in listing status.",
       "Beneficial ownership transparency and supervision of the international financial-services sector.",
-      "Corruption (3.8) and rule of law (4.0) domains as the weakest governance readings."
+      "Corruption (moderate) and rule of law (moderate) domains as the weakest governance readings."
     ]
   },
   "VE": {
@@ -3458,10 +3458,10 @@ export const NARRATIVES: Record<string, CountryNarrative> = {
     "whyItMatters": [
       "Venezuela is on the FATF grey list (as of June 2026), adding formal increased-monitoring obligations to an already extreme governance profile.",
       "OFAC targeted sanctions under the Venezuela Sanctions Regulations are active, a further major feature of its counterparty risk profile.",
-      "CPI score of 10/100 (rank 177 of 179 in 2024) reflects near-total corruption, among the worst globally.",
-      "Voice and accountability (7.4) and corruption (WGI) (8.4) reflect severe democratic and institutional breakdown."
+      "The CPI reading reflects near-total corruption, among the worst globally.",
+      "Voice and accountability (severe) and corruption (WGI) reflect severe democratic and institutional breakdown."
     ],
-    "analysis": "Venezuela's profile combines an extreme governance picture with FATF grey listing and targeted OFAC sanctions. Every governance domain is severely impaired: corruption (WGI) at 8.4 is the dominant driver, followed by rule of law (7.77) and voice and accountability (7.4). Political stability (5.3) is the least-weak domain, though it remains high risk. The CPI score of 10 at rank 177 of 179 confirms systemic corruption. Venezuela sits in the lowest quartile of the World Bank governance indicators.",
+    "analysis": "Venezuela's profile combines an extreme governance picture with FATF grey listing and targeted OFAC sanctions. Every governance domain is severely impaired: corruption (WGI) is the dominant driver, followed by rule of law (severe) and voice and accountability (severe). Political stability (elevated) is the least-weak domain, though it remains high risk. The CPI reading confirms systemic corruption. Venezuela sits in the lowest quartile of the World Bank governance indicators.",
     "outlook": "Venezuela's very-high-risk status is structurally entrenched. Resolution of the FATF grey-list listing and removal of sanctions would require sustained and verified improvements in AML effectiveness and governance that are not currently in evidence. Firms should treat Venezuela as a maximum-risk jurisdiction requiring the most stringent due diligence. Any change in FATF listing status, sanctions programmes or political configuration would be the key signal for re-assessment.",
     "keyWatchpoints": [
       "FATF grey-list status and progress (or lack thereof) at future FATF plenaries, with the next scheduled for October 2026.",
@@ -3492,10 +3492,10 @@ export const NARRATIVES: Record<string, CountryNarrative> = {
     "whyItMatters": [
       "Vietnam is on the FATF grey list, adding formal increased-monitoring obligations to a governance profile already marked by corruption and accountability weaknesses.",
       "Vietnam was placed on the FATF grey list, last reviewed on 19 June 2026, signalling identified strategic AML/CFT deficiencies.",
-      "Corruption risk of 5.8 and voice and accountability risk of 6.2 are the leading governance weaknesses.",
-      "CPI score of 40 (ranked 87th of 179 in 2024) is consistent with moderate-to-elevated corruption perceptions."
+      "Corruption risk and voice and accountability risk are the leading governance weaknesses.",
+      "The CPI reading is consistent with moderate-to-elevated corruption perceptions."
     ],
-    "analysis": "Vietnam combines a governance picture marked by corruption and accountability weaknesses with current FATF grey listing. Governance is driven by voice and accountability at 6.2 and corruption at 5.8, with rule of law and institutions at 5.03 and political stability at 3.3 providing partial mitigation. The FATF grey-list status, reviewed as recently as June 2026, is the most significant near-term risk factor and will require enhanced due diligence from regulated firms. No sanctions apply. Vietnam sits just below the global median on the World Bank governance indicators.",
+    "analysis": "Vietnam combines a governance picture marked by corruption and accountability weaknesses with current FATF grey listing. Governance is driven by voice and accountability and corruption, with rule of law and institutions and political stability providing partial mitigation. The FATF grey-list status, reviewed as recently as June 2026, is the most significant near-term risk factor and will require enhanced due diligence from regulated firms. No sanctions apply. Vietnam sits just below the global median on the World Bank governance indicators.",
     "outlook": "Vietnam's risk profile will be heavily influenced by its progress in addressing the FATF-identified deficiencies. Successful completion of the FATF action plan could lead to removal from the grey list, easing the FATF overlay, though the underlying governance weaknesses would remain. The October 2026 plenary is a critical milestone. Firms should apply enhanced due diligence to Vietnamese counterparties until the listing is resolved.",
     "keyWatchpoints": [
       "Track Vietnam's progress against its FATF action plan ahead of the October 2026 plenary.",
@@ -3508,11 +3508,11 @@ export const NARRATIVES: Record<string, CountryNarrative> = {
     "summary": "Vanuatu has moderate corruption and rule-of-law risks offset by strong political stability, and the country is not FATF listed nor subject to any sanctions.",
     "whyItMatters": [
       "Governance is mixed but generally manageable across the four World Bank domains.",
-      "Corruption risk of 5.6 and rule-of-law risk of 5.1 are the two domains requiring attention, both above the midpoint.",
-      "Political stability is a notable strength at a risk rating of 1.8, the lowest domain reading in this profile.",
-      "CPI score of 50 (ranked 57th of 179 in 2024) places Vanuatu in the upper half of the global distribution for perceived public sector integrity."
+      "Corruption risk and rule-of-law risk are the two domains requiring attention, both above the midpoint.",
+      "Political stability is a notable strength at a low-risk level, the lowest domain reading in this profile.",
+      "The CPI reading places Vanuatu in the upper half of the global distribution for perceived public sector integrity."
     ],
-    "analysis": "Vanuatu's profile reflects a mixed but generally manageable risk picture. Corruption at 5.6 and rule of law at 5.1 are the principal risk drivers, while political stability at 1.8 and voice and accountability at 3.4 provide meaningful mitigation. The country is not on the FATF grey or black list and carries no sanctions exposure. Vanuatu sits above the global midpoint on the World Bank governance indicators, and its CPI rank of 57th confirms that it performs reasonably well by regional and global standards despite being a small island developing state.",
+    "analysis": "Vanuatu's profile reflects a mixed but generally manageable risk picture. Corruption and rule of law are the principal risk drivers, while political stability and voice and accountability provide meaningful mitigation. The country is not on the FATF grey or black list and carries no sanctions exposure. Vanuatu sits above the global midpoint on the World Bank governance indicators, and its CPI ranking confirms that it performs reasonably well by regional and global standards despite being a small island developing state.",
     "outlook": "Vanuatu's overall risk trajectory appears stable. The primary watch area is the corruption and rule-of-law domain, particularly given the island economy's reliance on offshore financial services. Continued adherence to international AML/CFT standards will be important for sustaining the current positioning. The October 2026 plenary should be watched for any emerging FATF engagement.",
     "keyWatchpoints": [
       "Monitor FATF plenary outcomes for any potential listing or mutual evaluation follow-up.",
@@ -3524,12 +3524,12 @@ export const NARRATIVES: Record<string, CountryNarrative> = {
   "WS": {
     "summary": "Samoa has political stability as its strongest governance domain, with no FATF listing or sanctions.",
     "whyItMatters": [
-      "Political stability scores 1.3, the strongest governance domain and a meaningful positive factor in the overall picture.",
-      "Rule of law and institutions scores 3.8 and corruption 3.6, both moderate and within the lower-risk range.",
+      "Political stability is strong, the strongest governance domain and a meaningful positive factor in the overall picture.",
+      "Rule of law and institutions is moderate and corruption is moderate and within the lower-risk range.",
       "Samoa is not on the FATF grey or black list and faces no sanctions exposure, so the profile rests on governance alone.",
       "No CPI data or enforcement actions are available for Samoa, limiting the depth of quantitative assessment."
     ],
-    "analysis": "Samoa's profile is driven entirely by its governance indicators, with no FATF or sanctions overlay. Political stability is the strongest domain at 1.3, followed by voice and accountability (2.4), corruption (3.6) and rule of law and institutions (3.8). The country sits in the upper third of the World Bank governance indicators, indicating above-average governance relative to global peers. No CPI data is available and no enforcement actions are tracked, which constrains the completeness of the risk picture.",
+    "analysis": "Samoa's profile is driven entirely by its governance indicators, with no FATF or sanctions overlay. Political stability is the strongest domain, followed by voice and accountability (strong), corruption (moderate) and rule of law and institutions (moderate). The country sits in the upper third of the World Bank governance indicators, indicating above-average governance relative to global peers. No CPI data is available and no enforcement actions are tracked, which constrains the completeness of the risk picture.",
     "outlook": "Samoa's moderate and stable risk profile reflects its comparatively sound governance position. The absence of FATF listing and sanctions is a positive factor. Without available CPI data or enforcement records, monitoring relies primarily on governance indicators and any future regulatory developments. A change in FATF status would be the most significant near-term risk event.",
     "keyWatchpoints": [
       "Any change in FATF status, which would materially raise scrutiny of Samoa-connected business.",
@@ -3542,11 +3542,11 @@ export const NARRATIVES: Record<string, CountryNarrative> = {
     "summary": "Kosovo presents moderate-to-elevated risk, with the weakest corruption and rule-of-law scores among the European countries in this batch, though no FATF listing or sanctions apply.",
     "whyItMatters": [
       "Governance is the weakest among the European countries in this batch, indicating material risk.",
-      "Corruption domain scores 5.5 (weighted 35%), the weakest result in this domain across the entire batch and the primary risk driver.",
-      "Rule of law and institutions scores 4.77 (weighted 40%), the second-weakest result in this domain across the batch, compounding the overall risk picture.",
+      "Corruption domain is elevated (weighted 35%), the weakest result in this domain across the entire batch and the primary risk driver.",
+      "Rule of law and institutions is moderate (weighted 40%), the second-weakest result in this domain across the batch, compounding the overall risk picture.",
       "No CPI data is available for Kosovo, limiting independent corroboration of the governance assessment."
     ],
-    "analysis": "Kosovo's profile is shaped by two weak governance domains: corruption (risk 5.5, weighted 35%) and rule of law and institutions (risk 4.77, weighted 40%). Together these two domains carry 75% of the governance weight and both register at the upper end of the moderate-risk range. Political stability (risk 3.7) and voice and accountability (risk 4.0) also contribute meaningfully. No FATF listing or sanctions apply, so the profile rests on governance alone. No CPI data is available. Kosovo sits only marginally above the median on the World Bank governance indicators.",
+    "analysis": "Kosovo's profile is shaped by two weak governance domains: corruption (weighted 35%) and rule of law and institutions (weighted 40%). Together these two domains carry 75% of the governance weight and both register at the upper end of the moderate-risk range. Political stability (moderate) and voice and accountability (moderate) also contribute meaningfully. No FATF listing or sanctions apply, so the profile rests on governance alone. No CPI data is available. Kosovo sits only marginally above the median on the World Bank governance indicators.",
     "outlook": "Kosovo's governance challenges reflect its status as a young state still consolidating institutions and rule-of-law frameworks. Progress in EU accession-related reforms and donor-supported anti-corruption initiatives could improve scores over the medium term, but structural change will take time. Firms engaging with Kosovo counterparties should apply enhanced due diligence, with particular attention to beneficial ownership, PEP screening and the integrity of contractual and judicial enforcement mechanisms.",
     "keyWatchpoints": [
       "Monitor progress on EU integration and associated rule-of-law and anti-corruption conditionality.",
@@ -3559,11 +3559,11 @@ export const NARRATIVES: Record<string, CountryNarrative> = {
     "summary": "Yemen is driven by near-total governance collapse, critical scores across all four domains, and FATF grey-list status layered on an already extreme picture.",
     "whyItMatters": [
       "Yemen is on the FATF grey list, adding formal increased-monitoring obligations to an already severely weak governance profile.",
-      "Political stability risk (7.9) is the highest individual domain reading, consistent with the protracted armed conflict and fragmented state authority.",
-      "Corruption risk (8.5) and rule-of-law risk (7.67) are both critically elevated, consistent with a CPI score of 13 (rank 172 of 179).",
+      "Political stability risk (severe) is the highest individual domain reading, consistent with the protracted armed conflict and fragmented state authority.",
+      "Corruption risk (severe) and rule-of-law risk (severe) are both critically elevated, consistent with a CPI reading.",
       "No sanctions apply to Yemen under the facts provided, so the profile reflects governance and FATF factors only."
     ],
-    "analysis": "Yemen combines a severely weak governance profile with current FATF grey listing. All governance domains are severely impaired: political stability (7.9) is the highest risk dimension, followed by corruption (8.5), rule of law (7.67), and voice and accountability (7.2). The CPI score of 13 (rank 172 of 179) confirms Yemen as one of the most corrupt environments globally. Yemen sits in the lowest quartile of the World Bank governance indicators. No tracked enforcement actions exist, reflecting the effective absence of functioning financial regulators.",
+    "analysis": "Yemen combines a severely weak governance profile with current FATF grey listing. All governance domains are severely impaired: political stability (severe) is the highest risk dimension, followed by corruption (severe), rule of law (severe), and voice and accountability (severe). The CPI reading confirms Yemen as one of the most corrupt environments globally. Yemen sits in the lowest quartile of the World Bank governance indicators. No tracked enforcement actions exist, reflecting the effective absence of functioning financial regulators.",
     "outlook": "Yemen's risk profile is unlikely to improve without a fundamental resolution of the conflict and reconstruction of state institutions. FATF grey-list status adds AML/CFT supervisory concerns to an already extreme governance picture. The October 2026 plenary is a key monitoring point. Firms should treat Yemen as requiring the most stringent due diligence and should be alert to humanitarian-financing and sanctions-evasion risks through third-country channels.",
     "keyWatchpoints": [
       "FATF grey-list status and any update at the October 2026 plenary.",
@@ -3573,14 +3573,14 @@ export const NARRATIVES: Record<string, CountryNarrative> = {
     ]
   },
   "ZA": {
-    "summary": "South Africa presents moderate financial-crime risk, with a mixed governance picture, a CPI of 41/100, and no current FATF listing or sanctions, following removal from the grey list.",
+    "summary": "South Africa presents moderate financial-crime risk, with a mixed governance picture, a weak CPI reading, and no current FATF listing or sanctions, following removal from the grey list.",
     "whyItMatters": [
       "Governance is mixed, reflecting an economy with established institutions but persistent governance weaknesses.",
-      "Corruption (risk 5.6, weighted 35%) is the weakest governance domain and remains the principal AML/CFT concern.",
-      "Voice and accountability (risk 3.3) and rule of law (risk 4.67) are the strongest governance domains, reflecting a functioning constitutional democracy.",
-      "CPI score of 41/100 (ranked 81st of 179) is consistent with the moderate risk picture and indicates meaningful but incomplete anti-corruption progress."
+      "Corruption (weighted 35%) is the weakest governance domain and remains the principal AML/CFT concern.",
+      "Voice and accountability (moderate) and rule of law (moderate) are the strongest governance domains, reflecting a functioning constitutional democracy.",
+      "The CPI reading is consistent with the moderate risk picture and indicates meaningful but incomplete anti-corruption progress."
     ],
-    "analysis": "South Africa's profile is shaped by a governance picture that is mixed in character. Corruption (risk 5.6, weighted 35%) is the weakest domain and the largest single risk contributor. Rule of law (risk 4.67, weighted 40%) and voice and accountability (risk 3.3, weighted 10%) reflect functioning democratic and legal institutions. Political stability (risk 4.5) is at a moderate level. South Africa is not on the FATF grey or black list and carries no sanctions. The CPI of 41/100 ranked 81st of 179 indicates moderate corruption perceptions, consistent with the risk picture.",
+    "analysis": "South Africa's profile is shaped by a governance picture that is mixed in character. Corruption (weighted 35%) is the weakest domain and the largest single risk contributor. Rule of law (weighted 40%) and voice and accountability (weighted 10%) reflect functioning democratic and legal institutions. Political stability (moderate) is at a moderate level. South Africa is not on the FATF grey or black list and carries no sanctions. The CPI reading indicates moderate corruption perceptions, consistent with the risk picture.",
     "outlook": "South Africa's moderate risk profile reflects a jurisdiction with strong institutional foundations that has faced sustained pressure from corruption and state-capture dynamics. Anti-corruption and AML/CFT reform progress will be the critical determinants of the risk trajectory. The October 2026 FATF plenary is a near-term monitoring point, and sustained compliance with FATF standards will be important for maintaining the current status.",
     "keyWatchpoints": [
       "Monitor anti-corruption enforcement outcomes and the effectiveness of anti-state-capture measures.",
@@ -3592,12 +3592,12 @@ export const NARRATIVES: Record<string, CountryNarrative> = {
   "ZM": {
     "summary": "Zambia is shaped by elevated corruption and rule-of-law weaknesses, but offset by relatively stable political conditions and the absence of FATF listing or sanctions.",
     "whyItMatters": [
-      "Corruption (WGI risk 6.0) is the weakest governance domain and its 35% weighting makes it the largest single risk contributor.",
-      "Rule of law and institutions (5.53) indicates meaningful weaknesses in the reliability of legal and judicial mechanisms.",
-      "Political stability is the strongest domain at 3.4, which moderates the overall picture compared to other elevated-risk peers.",
-      "The 2024 CPI score of 39 (rank 91 of 179) is broadly aligned with the WGI assessment and reflects a moderate-to-elevated corruption environment."
+      "Corruption (WGI elevated risk) is the weakest governance domain and its 35% weighting makes it the largest single risk contributor.",
+      "Rule of law and institutions (elevated) indicates meaningful weaknesses in the reliability of legal and judicial mechanisms.",
+      "Political stability is the strongest domain, which moderates the overall picture compared to other elevated-risk peers.",
+      "The CPI reading is broadly aligned with the WGI assessment and reflects a moderate-to-elevated corruption environment."
     ],
-    "analysis": "Zambia's profile is driven entirely by its governance indicators; it is not FATF-listed and no sanctions apply. Corruption (6.0, weighted 35%) is the primary risk driver, compounded by rule of law and institutions (5.53, weighted 40%). Voice and accountability (5.0, weighted 10%) is elevated but not extreme, and political stability (3.4, weighted 15%) is the standout positive, reflecting a relatively orderly political environment by regional standards. The 2024 CPI score of 39 is consistent with a country where integrity risks are real but not among the most severe in the region.",
+    "analysis": "Zambia's profile is driven entirely by its governance indicators; it is not FATF-listed and no sanctions apply. Corruption (weighted 35%) is the primary risk driver, compounded by rule of law and institutions (weighted 40%). Voice and accountability (weighted 10%) is elevated but not extreme, and political stability (weighted 15%) is the standout positive, reflecting a relatively orderly political environment by regional standards. The CPI reading is consistent with a country where integrity risks are real but not among the most severe in the region.",
     "outlook": "Zambia's relatively stable political environment provides a foundation for governance improvement if anti-corruption reforms gain traction. Sustained progress in public financial management and independent oversight could ease the corruption picture over time. However, structural weaknesses in the rule-of-law environment limit the pace of progress. Monitoring the October 2026 FATF plenary remains advisable.",
     "keyWatchpoints": [
       "October 2026 FATF plenary for any change in listing status.",
@@ -3609,12 +3609,12 @@ export const NARRATIVES: Record<string, CountryNarrative> = {
   "ZW": {
     "summary": "Zimbabwe has one of the weakest governance profiles in the region, reflecting severely weak corruption, rule-of-law and accountability indicators, with no FATF listing or sanctions currently recorded.",
     "whyItMatters": [
-      "Corruption (WGI risk 7.6) is the highest reading across the four governance domains and, with a 35% weighting, is the dominant risk driver.",
-      "Rule of law and institutions (6.6, 40% weighting) is the most heavily weighted domain and is severely impaired, signalling deep structural deficiencies in legal and judicial reliability.",
-      "The 2024 CPI score of 21 (rank 157 of 179) places Zimbabwe among the most corruption-affected countries in the world by perception.",
+      "Corruption (WGI severe risk) is the highest reading across the four governance domains and, with a 35% weighting, is the dominant risk driver.",
+      "Rule of law and institutions (40% weighting) is the most heavily weighted domain and is severely impaired, signalling deep structural deficiencies in legal and judicial reliability.",
+      "The CPI reading places Zimbabwe among the most corruption-affected countries in the world by perception.",
       "Zimbabwe sits well below the median of assessed jurisdictions on the World Bank governance indicators, meaning most countries have stronger AML-relevant governance frameworks."
     ],
-    "analysis": "Zimbabwe's profile is among the weakest in this batch and is driven entirely by its governance indicators; it is not on the FATF grey or black list and no sanctions apply. The two most critical domains are corruption (7.6, weighted 35%) and rule of law and institutions (6.6, weighted 40%), which together carry 75% of the weighting and are both severely elevated. Voice and accountability (6.4, weighted 10%) adds further weight. Political stability (5.1, weighted 15%) is the least adverse domain. The 2024 CPI score of 21 out of 100, at rank 157 of 179, is among the weakest globally and provides independent corroboration of the assessment.",
+    "analysis": "Zimbabwe's profile is among the weakest in this batch and is driven entirely by its governance indicators; it is not on the FATF grey or black list and no sanctions apply. The two most critical domains are corruption (weighted 35%) and rule of law and institutions (weighted 40%), which together carry 75% of the weighting and are both severely elevated. Voice and accountability (weighted 10%) adds further weight. Political stability (weighted 15%) is the least adverse domain. The CPI reading is among the weakest globally and provides independent corroboration of the assessment.",
     "outlook": "Zimbabwe's risk profile is unlikely to improve materially in the short to medium term given the depth and breadth of governance deficiencies. Meaningful progress would require sustained institutional reform across the judiciary, anti-corruption bodies and the financial sector regulatory framework. Firms should apply enhanced due diligence to Zimbabwean exposures and remain alert to any FATF listing decision at the October 2026 plenary, which would materially raise scrutiny.",
     "keyWatchpoints": [
       "October 2026 FATF plenary for any grey-listing determination, which would materially raise scrutiny of Zimbabwe-connected business.",

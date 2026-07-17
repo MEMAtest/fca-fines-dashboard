@@ -584,13 +584,17 @@ function renderCountryFatfBody(view: CountryView): string {
   // Grounded narrative prose (analysis / outlook / watchpoints). This was gated
   // out while the narrative corpus quoted v1-era composite scores that
   // contradicted the published v2 number. The narrative-v2 reconciliation
-  // (Wave F1) de-scored the full corpus so the prose is now engine-agnostic:
-  // it describes the DRIVERS of risk (WGI domains, CPI, FATF/sanctions facts,
-  // MER dates) but never a composite score, band label, escalator or percentile
-  // (enforced by src/data/thinNarratives.test.ts), so it can safely be
-  // published into crawler-visible HTML. This is the country pages' single
-  // largest previously-dead SEO asset (~211 entries of grounded prose). The
-  // summary is omitted here because the intro paragraph already leads the page.
+  // de-scored the full corpus so the prose is now engine-agnostic: it describes
+  // the DRIVERS of risk (WGI domains, CPI, FATF/sanctions facts, MER dates) but
+  // never a composite score, band label, escalator or percentile, and (after the
+  // crawler-prose reconciliation) never a raw CPI numeral or WGI domain decimal
+  // either, since those drift against the live CPI/WGI module blocks printed on
+  // the same page (all enforced by src/data/thinNarratives.test.ts). It can
+  // therefore be published safely into crawler-visible HTML. This is the country
+  // pages' single largest previously-dead SEO asset (~211 entries of grounded
+  // prose). narrative.summary is not rendered here at all: the page's intro
+  // paragraph is built from the decision verdict (verdictHeadline +
+  // verdictParagraph, see introHtml below), so the summary would be redundant.
   const narrative = getNarrative(country.iso2);
   const analysisHtml = narrative
     ? `<h2>${escapeHtml(`${country.name}: analysis`)}</h2><p>${escapeHtml(
