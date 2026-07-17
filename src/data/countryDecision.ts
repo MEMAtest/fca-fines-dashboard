@@ -128,8 +128,8 @@ function verdict(input: DecisionInput): { headline: string; paragraph: string } 
       ? `It remains subject to the FATF ${input.fatf.listing === "call-for-action" ? "call-for-action" : "increased-monitoring"} flag, which must be handled independently.`
       : "It is not currently FATF grey- or black-listed, but that absence does not establish low risk.";
     return {
-      headline: "Insufficient evidence for a headline country-risk score",
-      paragraph: `${input.name} has fewer than two available v2 pillars, so RegActions withholds the numerical score and risk band. ${fatfPhrase} No zero or Low-risk conclusion is inferred from missing evidence.`,
+      headline: "Not enough information for a country risk score",
+      paragraph: `${input.name} has information for fewer than two of the three parts of the score, so RegActions does not publish a number or risk band. ${fatfPhrase} Missing information is not treated as zero or Low risk.`,
     };
   }
   const doms = topDomains(input.breakdown);
@@ -150,7 +150,7 @@ function verdict(input: DecisionInput): { headline: string; paragraph: string } 
       : "on the FATF grey list"
     : "not currently FATF grey- or black-listed";
   const sancClause = !input.sanctionsCoverageComplete
-    ? "The v2 geographic-sanctions evidence is unavailable, so the absence of a programme is not inferred"
+    ? "International sanctions information is unavailable, so the absence of a programme is not assumed"
     : `${input.name} is ${hasComprehensiveSanctions(input.sanctions)
         ? "subject to comprehensive country-wide sanctions"
         : "not subject to comprehensive country-wide sanctions"}`;
@@ -159,15 +159,15 @@ function verdict(input: DecisionInput): { headline: string; paragraph: string } 
       ? ""
       : " Firms should apply additional scrutiny where exposure involves state-linked entities, restricted sectors, sensitive technology, dual-use goods or politically exposed counterparties.";
   const statusClause = input.riskResult.status === "provisional"
-    ? " The result is provisional because one pillar is unavailable, and a Low label is not permitted."
+    ? " Some information is unavailable, so the available parts are rebalanced and the country will not be labelled Low risk while information is missing."
     : "";
-  const paragraph = `${input.name}'s v2 country risk score is ${input.riskResult.score.toFixed(1)}/10, placing it in the ${bandLower}-risk band.${statusClause} The principal driver is ${driverPhrase}. ${input.name} is ${fatfPhrase}. ${sancClause}.${scrutiny}`;
+  const paragraph = `${input.name}'s country risk score is ${input.riskResult.score.toFixed(1)}/10, placing it in the ${bandLower}-risk band.${statusClause} The principal driver is ${driverPhrase}. ${input.name} is ${fatfPhrase}. ${sancClause}.${scrutiny}`;
   return { headline, paragraph };
 }
 
 function riskDrivers(input: DecisionInput): string[] {
   const out: string[] = [];
-  if (!input.scoreAvailable) out.push("World Bank WGI governance evidence unavailable; headline score withheld");
+  if (!input.scoreAvailable) out.push("Government effectiveness and rule of law information is unavailable; no headline score is published");
   if (input.fatf)
     out.push(`FATF ${input.fatf.listing === "call-for-action" ? "black" : "grey"}-list status`);
   if (input.sanctionsCoverageComplete && input.sanctionsTier)
@@ -181,8 +181,8 @@ function riskDrivers(input: DecisionInput): string[] {
   return out.length
     ? out
     : [input.sanctionsCoverageComplete
-        ? "Governance-driven baseline risk; no listing or sanctions escalators"
-        : "Governance-driven baseline risk; sanctions evidence unavailable"];
+        ? "Government effectiveness and rule of law drive the score; no FATF listing or direct country-level sanctions were identified"
+        : "Government effectiveness and rule of law drive the available score; international sanctions information is unavailable"];
 }
 
 function mitigatingFactors(input: DecisionInput): string[] {

@@ -48,12 +48,12 @@ export function buildCountryFaqs(view: CountryView): CountryFaq[] {
     answer: sanctionsAnswer(view),
   });
 
-  // 3. AML risk rating — score/band; honest wording when withheld.
+  // 3. Country risk rating — score/band; honest wording when withheld.
   faqs.push({
-    question: `What is ${name}'s AML risk rating?`,
+    question: `What is ${name}'s country risk rating?`,
     answer: riskV2.score !== null && riskV2.band !== null
-      ? `RegActions rates ${name} at ${riskV2.score.toFixed(1)}/10 (${bandLabel(riskV2.band)} risk) under methodology v2, where a higher score means higher risk. The result combines FATF mutual-evaluation ratings, World Bank WGI governance and classified geographic sanctions exposure.${riskV2.status === "provisional" ? " This is a provisional result: one pillar is unavailable, so the available weights are renormalised and a Low label is not permitted." : ""}${cpi ? ` Transparency International's ${CPI_YEAR} Corruption Perceptions Index scores ${name} ${cpi.score}/100 (rank #${cpi.rank} of ${CPI_TOTAL}).` : ""}`
-      : `RegActions does not publish a headline AML risk score for ${name}. Fewer than two v2 pillars are available, and RegActions withholds the score rather than converting missing evidence into a 0.0 or a Low-risk label.${cpi ? ` Transparency International's ${CPI_YEAR} Corruption Perceptions Index scores ${name} ${cpi.score}/100 (rank #${cpi.rank} of ${CPI_TOTAL}).` : ""}`,
+      ? `RegActions rates ${name} at ${riskV2.score.toFixed(1)}/10 (${bandLabel(riskV2.band)} risk), where a higher score means higher country risk. The score combines financial crime controls, government effectiveness and rule of law, and international sanctions.${riskV2.status === "provisional" ? " Some information is unavailable, so the available parts are rebalanced and the country will not be labelled Low risk while information is missing." : ""}${cpi ? ` Transparency International's ${CPI_YEAR} Corruption Perceptions Index scores ${name} ${cpi.score}/100 (rank #${cpi.rank} of ${CPI_TOTAL}).` : ""}`
+      : `RegActions does not publish a headline country risk score for ${name}. Fewer than two parts are available, so missing information is not converted into a 0.0 or a Low-risk label.${cpi ? ` Transparency International's ${CPI_YEAR} Corruption Perceptions Index scores ${name} ${cpi.score}/100 (rank #${cpi.rank} of ${CPI_TOTAL}).` : ""}`,
   });
 
   // 4. Due diligence — from decision.treatment.

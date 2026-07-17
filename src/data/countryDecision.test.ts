@@ -34,7 +34,7 @@ describe("country decision missing-evidence handling", () => {
       const view = buildCountryView(country!);
       expect(view.scoreStatus).toBe("provisional");
       expect(view.decision.verdictHeadline).not.toContain("Low country risk");
-      expect(view.decision.verdictParagraph).toContain("a Low label is not permitted");
+      expect(view.decision.verdictParagraph).toContain("will not be labelled Low risk");
     });
   }
 });

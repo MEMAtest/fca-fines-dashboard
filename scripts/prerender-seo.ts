@@ -94,6 +94,10 @@ import {
   bandLabel,
 } from "../src/data/countryRiskScore.js";
 import {
+  buildCountryRiskPublicExplanation,
+  COUNTRY_RISK_PILLAR_LABELS,
+} from "../src/data/countryRiskPresentation.js";
+import {
   GOVERNANCE_SOURCE,
   GOVERNANCE_VINTAGE,
   GOVERNANCE_LICENCE,
@@ -515,26 +519,29 @@ function renderCountryFaqBlock(faqs: CountryFaq[]): string {
 function renderCountryFatfBody(view: CountryView): string {
   const { country, statusHeading, statusDetail, history, enforcement, sanctions, sanctionsTier, riskV2, breakdown, globalAverage, cpi, decision, enforcementAssessed, hasComprehensiveSanctions, hasTargetedSanctions, sanctionsCoverageComplete, regulatory, regionalPeers, attribution } = view;
   const scoreAvailable = riskV2.score !== null && riskV2.band !== null;
+  const publicExplanation = buildCountryRiskPublicExplanation(riskV2);
   const title = `${country.name} — Country Risk Report`;
   const pillarLis = Object.entries(riskV2.pillars)
-    .map(([name, pillar]) => `<li>${escapeHtml(`${name}: ${pillar.score === null ? "unavailable" : `${pillar.score.toFixed(1)}/10`} at ${Math.round(pillar.appliedWeight * 100)}% applied weight`)}</li>`)
+    .map(([name, pillar]) => `<li>${escapeHtml(`${COUNTRY_RISK_PILLAR_LABELS[name as keyof typeof COUNTRY_RISK_PILLAR_LABELS]}: ${pillar.score === null ? "information unavailable" : `${pillar.score.toFixed(1)}/10`} — ${Math.round(pillar.appliedWeight * 100)}% of this score`)}</li>`)
     .join("");
+  const floorLis = publicExplanation.floorMessages.map((message) => `<li>${escapeHtml(message)}</li>`).join("");
+  const missingLis = publicExplanation.missingInformation.map((message) => `<li>${escapeHtml(message)}</li>`).join("");
   const scoreHtml = scoreAvailable
-    ? `<h2>Country Risk Score v2: ${escapeHtml(
+    ? `<h2>Country Risk Score: ${escapeHtml(
         `${riskV2.score!.toFixed(1)}/10 (${bandLabel(riskV2.band!)})`,
       )}</h2><p>${escapeHtml(
-        `Higher score means higher inherent jurisdiction risk (global average ${globalAverage.toFixed(1)}). Publication status: ${riskV2.status}; confidence: ${riskV2.confidence}. Enforcement volume and CPI are shown but not scored.`,
-      )}</p><h3>Exact calculation</h3><ul>${pillarLis}</ul><p>${escapeHtml(riskV2.arithmetic)}</p>`
-    : `<h2>Country Risk Score: withheld</h2><p>${escapeHtml(
-        "Fewer than two v2 pillars are available. RegActions does not convert missing evidence into a 0.0 score or a Low-risk label.",
-      )}</p><h3>Evidence status</h3><ul>${pillarLis}<li>Headline score: withheld</li></ul>`;
+        `Higher score means higher country risk (global average ${globalAverage.toFixed(1)}). ${publicExplanation.statusLabel}. ${publicExplanation.confidenceLabel}. Enforcement activity and CPI are shown for context but do not change the score.`,
+      )}</p><p>${escapeHtml(publicExplanation.statusExplanation)}</p><h3>How this score was calculated</h3><ul>${pillarLis}${missingLis}${floorLis}</ul>${publicExplanation.sanctionsZeroExplanation ? `<p>${escapeHtml(publicExplanation.sanctionsZeroExplanation)}</p>` : ""}<details><summary>Show the exact calculation</summary><p>${escapeHtml(riskV2.arithmetic)}</p></details>`
+    : `<h2>Country Risk Score: not published</h2><p>${escapeHtml(
+        publicExplanation.statusExplanation,
+      )}</p><h3>Information available</h3><ul>${pillarLis}${missingLis}<li>Headline score: not published</li></ul>`;
   const glanceHtml = `<h2>At a glance</h2><ul><li>${escapeHtml(
-    `FATF status: ${statusHeading} (one indicator only; does not by itself set the overall AML risk rating)`,
+    `FATF status: ${statusHeading} (one indicator only; it does not set the overall country risk rating by itself)`,
   )}</li><li>${escapeHtml(
     sanctionsCoverageComplete
       ? `Comprehensive country sanctions: ${hasComprehensiveSanctions ? "in place" : "none identified"}. Targeted sanctions exposure: ${hasComprehensiveSanctions || hasTargetedSanctions ? "programmes in place, screen applicable lists" : "possible, screen applicable persons, entities and sectors"}`
       : "Geographic sanctions evidence: incomplete; absence is not inferred and applicable lists must still be screened.",
-  )}</li><li>${escapeHtml(riskV2.pillars.governance.score === null ? "Governance (WGI) pillar: unavailable" : `Governance (WGI) pillar: ${riskV2.pillars.governance.score.toFixed(1)}/10`)}</li><li>${escapeHtml(
+  )}</li><li>${escapeHtml(riskV2.pillars.governance.score === null ? "Government effectiveness and rule of law: information unavailable" : `Government effectiveness and rule of law: ${riskV2.pillars.governance.score.toFixed(1)}/10`)}</li><li>${escapeHtml(
     cpi
       ? `Corruption (CPI ${CPI_YEAR}): ${cpi.score}/100, rank #${cpi.rank} of ${CPI_TOTAL}`
       : "Corruption (CPI): no score",
@@ -562,9 +569,9 @@ function renderCountryFatfBody(view: CountryView): string {
   const sanctionsAttributionHtml = sanctionsCoverageComplete
     ? `<ul>${attribution.sanctions.imposers
         .map((r) => `<li>${escapeHtml(`${r.imposer}: ${r.active ? `Yes (${r.tierLabel})` : "No"}`)}</li>`)
-        .join("")}</ul><p>No means no country-level programme was identified in the approved snapshot; individual listed persons may still exist.</p>`
-    : `<p>Official-source evidence is incomplete for OFAC, UK, EU and UN geographic regimes. Absence of a programme is not inferred.</p>`;
-  const attrHtml = `<h2>Attributed indicators</h2><h3>Sanctions programme by imposer</h3>${sanctionsAttributionHtml}<h3>Governance sub-scores (World Bank WGI ${escapeHtml(
+        .join("")}</ul><p>No means the complete UN, UK, EU and US review found no direct country-level programme. People or organisations may still appear on sanctions lists.</p>`
+    : `<p>International sanctions information is incomplete. Missing information is not treated as zero.</p>`;
+  const attrHtml = `<h2>Source details</h2><h3>International sanctions by issuing body</h3>${sanctionsAttributionHtml}<h3>Government effectiveness and rule of law (World Bank ${escapeHtml(
     attribution.governance.vintage,
   )}, percentile)</h3><ul>${attribution.governance.subScores
     .map(
@@ -657,7 +664,7 @@ function renderCountryFatfBody(view: CountryView): string {
   const frameworkSignalsHtml = `<ul><li>${escapeHtml(
     `FATF listing: ${statusHeading}`,
   )}</li><li>${escapeHtml(
-    `Sanctions exposure: ${
+    `International sanctions: ${
       !sanctionsCoverageComplete
         ? "official-source evidence incomplete"
         : hasComprehensiveSanctions
@@ -914,16 +921,16 @@ function renderGlobalIndexBody(): string {
           e.country.region,
         )}</td><td>${e.fatf ? escapeHtml(fatfLabel(e.fatf.listing)) : "—"}</td><td>${
           SANCTIONS_APPROVED_SNAPSHOT.coverageComplete
-            ? (e.sanctionsTier ? escapeHtml(sanctionsTierLabel(e.sanctionsTier)) : "No direct regime")
-            : "Evidence incomplete"
+            ? (e.sanctionsTier ? escapeHtml(sanctionsTierLabel(e.sanctionsTier)) : "No direct country restrictions")
+            : "Information incomplete"
         }</td></tr>`,
     )
     .join("");
   return `<div class="blog-page"><div class="blog-post-container"><article class="blog-article-modal"><h1 class="blog-post-title">Global Country Risk Ratings</h1><div class="blog-article-content"><p>${escapeHtml(
-    `RegActions country-risk methodology v2 covers ${index.length} jurisdictions: ${complete} complete, ${provisional} provisional and ${insufficient} insufficient-data results. Missing evidence is never converted to zero risk. Enforcement volume and CPI are shown on each country page but not scored.`,
+    `Compare financial-crime and country risk across ${index.length} jurisdictions. Full information is available for ${complete}; ${provisional} have some information missing; ${insufficient} do not have enough information for a score. Missing information is never treated as zero risk. Enforcement activity and CPI are shown for context but do not change the score.`,
   )}</p><p>${escapeHtml(
     `Very high: ${counts["very-high"]} · High: ${counts.high} · Moderate: ${counts.moderate} · Low: ${counts.low} · Insufficient data: ${insufficient}.`,
-  )} <a href="/countries/fatf-grey-list">See the FATF grey list &amp; black list</a>.</p><table><thead><tr><th>#</th><th>Country</th><th>Score v2</th><th>Risk</th><th>Region</th><th>FATF</th><th>Sanctions exposure</th></tr></thead><tbody>${rowsHtml}</tbody></table></div></article></div></div>`;
+  )} <a href="/countries/fatf-grey-list">See the FATF grey list &amp; black list</a>.</p><table><thead><tr><th>#</th><th>Country</th><th>Risk score</th><th>Risk</th><th>Region</th><th>FATF</th><th>International sanctions</th></tr></thead><tbody>${rowsHtml}</tbody></table></div></article></div></div>`;
 }
 
 /** Crawlable methodology page — mirrors CountryMethodology.tsx. */
@@ -932,7 +939,7 @@ function renderMethodologyBody(): string {
 }
 
 function renderMethodologyV2Body(): string {
-  return `<div class="blog-page"><div class="blog-post-container"><article class="blog-article-modal"><h1 class="blog-post-title">Trusted Country Risk Score v2</h1><div class="blog-article-content"><p>A deterministic 0-10 benchmark of inherent jurisdictional risk in production. It is structured with reference to Basel and Wolfsberg factors, is not described as Basel-validated, and is not a customer accept/reject decision.</p><h2>Three pillars</h2><ul><li>AML/CFT framework (50%): FATF effectiveness ratings at 70% and technical compliance at 30%.</li><li>Governance (30%): equal-weight mean of six inverted World Bank WGI percentiles.</li><li>Sanctions exposure (20%): 70% highest geographic regime scope and 30% mean across UN, UK, EU and US.</li></ul><h2>Missing evidence</h2><p>Missing inputs are never scored as zero. One missing pillar is provisional and cannot be Low; fewer than two pillars produces no headline score.</p><h2>Sanctions evidence gate</h2><p>Official catalogue candidates never enter scoring directly. The versioned classifier requires a current official catalogue, measure-specific evidence, a reproducible scope rule, an explicit country nexus and complete country-by-imposer coverage. Unknown or contradictory evidence fails closed. The published snapshot records that it is deterministic evidence, not independent practitioner validation.</p><h2>Regulatory floors</h2><p>FATF grey list 6.0; FATF call for action 9.0; sectoral sanctions 6.0; comprehensive sanctions 8.0. Targeted sanctions remain a visible flag.</p><h2>Context only</h2><p>Transparency International CPI and RegActions enforcement volume are displayed but not scored.</p></div></article></div></div>`;
+  return `<div class="blog-page"><div class="blog-post-container"><article class="blog-article-modal"><h1 class="blog-post-title">Country Risk Score</h1><div class="blog-article-content"><p>The score compares the underlying financial-crime risk of countries on a 0-10 scale. A higher number means higher risk. It is a country comparison, not a decision about an individual person or business.</p><h2>What the score considers</h2><ul><li>Financial crime controls (50%): FATF assessments of effectiveness and international standards.</li><li>Government effectiveness and rule of law (30%): six World Bank measures covering institutions, regulation, stability, accountability and corruption control.</li><li>International sanctions (20%): the reach of active country-level UN, UK, EU and US sanctions.</li></ul><h2>When information is missing</h2><p>Missing information is never treated as zero risk. If one of the three parts is unavailable, the remaining parts are rebalanced and the country cannot be labelled Low risk. Fewer than two parts means no headline score is published.</p><h2>How sanctions information is checked</h2><p>A sanctions score of zero is possible only after the complete UN, UK, EU and US country-level catalogues have been checked. People or organisations may still appear on sanctions lists. Unexpected source changes or unclear evidence stop scoring until the information is complete.</p><h2>When the score has a minimum</h2><p>FATF grey list 6.0; FATF call for action 9.0; sector-wide sanctions 6.0; comprehensive sanctions 8.0. Targeted sanctions remain visible but do not set a minimum.</p><h2>Separate context</h2><p>Transparency International CPI and RegActions enforcement activity are displayed but do not change the score.</p></div></article></div></div>`;
 }
 
 /**

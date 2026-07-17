@@ -56,10 +56,17 @@ describe("country-risk v2 public API contract", () => {
     expect(invoke(countryHandler, { iso2: "MM" }).payload.evidence.aml.listing.requiredAction).toBe("enhanced-due-diligence");
   });
 
-  it("reports the complete promoted sanctions snapshot and default readiness", () => {
+  it("reports the complete sanctions snapshot but fails closed when operational history is unavailable", () => {
     const response = invoke(sourcesHandler);
     expect(response.code).toBe(200);
-    expect(response.payload.readyForDefault).toBe(true);
+    expect(response.payload.readyForDefault).toBe(false);
+    expect(response.payload.sourceHealth).toMatchObject({
+      status: "critical",
+      readyForScoring: false,
+    });
+    expect(response.payload.sourceHealth.issues).toContainEqual(expect.objectContaining({
+      code: "database-unavailable",
+    }));
     expect(response.payload.sanctionsReview).toMatchObject({
       scoringReady: true,
       pending: 0,
