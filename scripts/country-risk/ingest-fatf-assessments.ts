@@ -30,30 +30,71 @@ async function loadWithPlaywright(): Promise<Record<FatfAssessmentMethodology, B
   if (browserDownloads) return browserDownloads;
   browserDownloads = (async () => {
     const { chromium } = await import("playwright");
-    // FATF's challenge currently clears in a real headed browser but not in headless mode.
-    // CI runs this fragile lane under Xvfb; a headless fallback would silently regress to 403.
-    const browser = await chromium.launch({ headless: false });
-    try {
-      const page = await browser.newPage({ acceptDownloads: true });
-      await page.goto(SOURCE_PAGE, { waitUntil: "domcontentloaded", timeout: 60_000 });
-      await page.getByRole("heading", { name: "Consolidated assessment ratings", exact: true }).waitFor({ timeout: 30_000 });
-      const output = {} as Record<FatfAssessmentMethodology, Buffer>;
-      for (const methodology of ["2013", "2022"] as const) {
-        const filename = `consolidated-assessment-ratings-${methodology}-methodology.xlsx`;
-        const link = page.locator(`a[href*="${filename}"]`).first();
-        await link.waitFor({ timeout: 30_000 });
-        const [download] = await Promise.all([
-          page.waitForEvent("download", { timeout: 60_000 }),
-          link.click(),
-        ]);
-        const path = await download.path();
-        if (!path) throw new Error(`Playwright did not retain the FATF ${methodology} download`);
-        output[methodology] = await readFile(path);
+    const configuredHeadless = process.env.FATF_BROWSER_HEADLESS;
+    const browserModes = configuredHeadless === undefined
+      ? [false, true]
+      : [configuredHeadless !== "false"];
+    let lastError: unknown;
+
+    for (const headless of browserModes) {
+      const browser = await chromium.launch({ headless });
+      try {
+        for (let attempt = 1; attempt <= 3; attempt++) {
+          const context = await browser.newContext({
+            acceptDownloads: true,
+            viewport: { width: 1440, height: 1000 },
+            userAgent: "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36",
+          });
+          try {
+            const page = await context.newPage();
+            try {
+              await page.goto(SOURCE_PAGE, { waitUntil: "domcontentloaded", timeout: 60_000 });
+            } catch (error) {
+              if (page.url() === "about:blank") throw error;
+            }
+
+            await page.waitForFunction(() => {
+              const body = document.body?.innerText ?? "";
+              const hasChallenge = /just a moment|checking your browser|captcha|challenge-platform/i.test(body);
+              const links = [...document.querySelectorAll<HTMLAnchorElement>("a[href]")]
+                .map((link) => link.href);
+              const has2013 = links.some((href) => href.includes("consolidated-assessment-ratings-2013-methodology.xlsx"));
+              const has2022 = links.some((href) => href.includes("consolidated-assessment-ratings-2022-methodology.xlsx"));
+              return has2013 && has2022 && !hasChallenge;
+            }, undefined, { timeout: 45_000 });
+
+            const output = {} as Record<FatfAssessmentMethodology, Buffer>;
+            for (const methodology of ["2013", "2022"] as const) {
+              const filename = `consolidated-assessment-ratings-${methodology}-methodology.xlsx`;
+              const link = page.locator(`a[href*="${filename}"]`).first();
+              const [download] = await Promise.all([
+                page.waitForEvent("download", { timeout: 60_000 }),
+                link.click(),
+              ]);
+              const failure = await download.failure();
+              if (failure) throw new Error(`FATF ${methodology} download failed: ${failure}`);
+              const path = await download.path();
+              if (!path) throw new Error(`Playwright did not retain the FATF ${methodology} download`);
+              const buffer = await readFile(path);
+              if (buffer.subarray(0, 2).toString("ascii") !== "PK") {
+                throw new Error(`FATF ${methodology} download is not an XLSX workbook`);
+              }
+              output[methodology] = buffer;
+            }
+            return output;
+          } catch (error) {
+            lastError = error;
+            console.warn(`FATF workbook Playwright ${headless ? "headless" : "headed"} attempt ${attempt} failed: ${error instanceof Error ? error.message : error}`);
+          } finally {
+            await context.close().catch(() => undefined);
+          }
+        }
+      } finally {
+        await browser.close();
       }
-      return output;
-    } finally {
-      await browser.close();
     }
+
+    throw new Error(`FATF workbook browser lane failed: ${lastError instanceof Error ? lastError.message : lastError}`);
   })();
   return browserDownloads;
 }

@@ -89,6 +89,7 @@ jobs:
       - name: Verify FATF official black and grey lists
         run: xvfb-run -a npm run country-risk:verify-fatf
       - name: Verify FATF official workbook lane
+        if: always()
         run: xvfb-run -a npm run country-risk:ingest-fatf -- --dry-run
       - if: always()
         uses: actions/upload-artifact@v4
