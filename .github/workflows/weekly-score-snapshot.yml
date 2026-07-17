@@ -1,0 +1,48 @@
+name: Weekly country score snapshot
+
+# Accrues the forward score history that powers the risk-trend charts: each run
+# appends a dated {date, scores} entry to src/data/scoreSnapshots.json (the
+# script is idempotent per date). Ships as a reviewable PR rather than a direct
+# push so deploys stay user-controlled; when two or more snapshots exist the
+# country pages' trend panels switch from the honest "Baseline" state to a real
+# line automatically.
+
+on:
+  schedule:
+    - cron: "30 6 * * 1" # Mondays 06:30 UTC
+  workflow_dispatch: {}
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  snapshot:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Record this week's snapshot
+        run: npx tsx scripts/snapshot-scores.ts
+
+      - name: Open snapshot PR (no-op when nothing changed)
+        uses: peter-evans/create-pull-request@v7
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          branch: automation/weekly-score-snapshot
+          delete-branch: true
+          add-paths: src/data/scoreSnapshots.json
+          commit-message: "data(countries): weekly score snapshot"
+          title: "data(countries): weekly score snapshot"
+          body: |
+            Automated weekly append to `src/data/scoreSnapshots.json` via
+            `scripts/snapshot-scores.ts` (idempotent per date; no back-dated
+            data). Merging updates the risk-trend panels on the country pages.
