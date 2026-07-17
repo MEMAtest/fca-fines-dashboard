@@ -825,9 +825,9 @@ function GlobalIndex() {
         <h1 className="country-index__title">Global Country Risk Ratings</h1>
         <p className="cx-dash__lead">
           Country-by-country AML and financial-crime risk coverage for {index.length} jurisdictions.
-          {" "}{ratedCount} historical v1 comparison scores are published; {insufficientCount} are
-          explicitly withheld because the required World Bank governance base is unavailable.
-          FATF flags remain visible and sanctions classification remains under independent review.
+          {" "}{ratedCount} scores are published; {insufficientCount} are
+          withheld because the required World Bank governance base is unavailable.
+          FATF flags remain visible and sanctions are classified per imposer against official UN, UK, EU and US sources.
           Enforcement volume and corruption perception are shown for context but never scored.{" "}
           <Link to="/countries/methodology">How the score works →</Link>
         </p>
@@ -1092,7 +1092,7 @@ function GlobalIndex() {
                   <td>{e.band ? bandLabel(e.band) : "Insufficient data"}</td>
                   <td className="country-ratings__region">{e.country.region}</td>
                   <td>{e.fatf ? fatfLabel(e.fatf.listing) : "—"}</td>
-                  <td>{e.sanctionsTier ? sanctionsTierLabel(e.sanctionsTier) : "Review pending"}</td>
+                  <td>{e.sanctionsTier ? sanctionsTierLabel(e.sanctionsTier) : "None identified"}</td>
                 </tr>
               ))}
               {rows.length === 0 && (

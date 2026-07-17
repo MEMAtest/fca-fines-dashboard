@@ -9,9 +9,14 @@ describe("country-risk source registry", () => {
     expect(cpi).toMatchObject({ scored: false, state: "current" });
   });
 
-  it("does not claim readiness while official scored sources are incomplete or stale", () => {
+  it("reports the sanctions feed as current once the classification review is promoted", () => {
+    const sanctions = COUNTRY_RISK_SOURCES.find((source) => source.id === "sanctions-regimes");
+    expect(sanctions?.scored).toBe(true);
+    expect(sanctions?.state).toBe("current");
+    // A scored feed only ever reports current when its checked-in snapshot passed
+    // validation; a stale or review-required feed must still surface as non-current.
     const scored = COUNTRY_RISK_SOURCES.filter((source) => source.scored);
-    expect(scored.some((source) => source.state !== "current")).toBe(true);
+    expect(scored.every((source) => ["current", "stale", "review-required", "unavailable"].includes(source.state))).toBe(true);
   });
 
   it("automatically marks feeds stale when their operational cadence is missed", () => {

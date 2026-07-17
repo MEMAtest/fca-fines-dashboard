@@ -11,18 +11,24 @@ function decisionFor(iso2: string) {
 
 const EM_DASH = /[—]/; // em dash — house style forbids it in user-facing prose
 
-describe("country decision sanctions uncertainty", () => {
-  for (const iso2 of ["GB", "BA", "IQ"]) {
-    it(`${iso2} does not translate an incomplete catalogue into no sanctions`, () => {
-      const country = getCountryByIso2(iso2);
-      expect(country).toBeDefined();
-      const view = buildCountryView(country!);
-      expect(view.sanctionsCoverageComplete).toBe(false);
-      expect(view.decision.verdictParagraph).toContain("under independent review");
-      expect(view.decision.verdictParagraph).not.toContain("not subject to comprehensive country-wide sanctions");
-      expect(view.decision.mitigatingFactors).not.toContain("No comprehensive country-wide sanctions programme.");
+describe("country decision sanctions classification (promoted snapshot)", () => {
+  it("reports a verified no-sanctions country without inferring absence from a gap", () => {
+    const view = buildCountryView(getCountryByIso2("GB")!);
+    expect(view.sanctionsCoverageComplete).toBe(true);
+    expect(view.decision.verdictParagraph).toContain("not subject to comprehensive country-wide sanctions");
+    expect(view.decision.whatChanged.find((item) => item.label === "Sanctions exposure")?.value)
+      .toBe("None identified");
+  });
+
+  for (const iso2 of ["BA", "IQ"]) {
+    it(`${iso2} surfaces its approved targeted programmes without overstating them as comprehensive`, () => {
+      const view = buildCountryView(getCountryByIso2(iso2)!);
+      expect(view.sanctionsCoverageComplete).toBe(true);
+      // These countries carry approved targeted regimes, not a comprehensive embargo.
+      expect(view.hasTargetedSanctions).toBe(true);
+      expect(view.hasComprehensiveSanctions).toBe(false);
       expect(view.decision.whatChanged.find((item) => item.label === "Sanctions exposure")?.value)
-        .toContain("absence not inferred");
+        .toContain("programmes in place");
     });
   }
 });
@@ -76,9 +82,9 @@ describe("treatmentChecklist derivation", () => {
     expect(cuba).not.toEqual(japan);
   });
 
-  it("does not promote a candidate comprehensive tier before sanctions approval", () => {
+  it("promotes Cuba's approved comprehensive tier into a prohibition/licensing check", () => {
     const cuba = decisionFor("CU").treatmentChecklist;
-    expect(cuba.some((i) => /prohibition or licensing/i.test(i))).toBe(false);
+    expect(cuba.some((i) => /prohibition or licensing/i.test(i))).toBe(true);
   });
 
   it("FATF-listed country flags remediation/action-plan monitoring", () => {

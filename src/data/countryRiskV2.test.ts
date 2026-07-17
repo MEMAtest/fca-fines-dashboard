@@ -52,23 +52,28 @@ describe("country risk v2 primitives", () => {
 });
 
 describe("country risk v2 publication rules", () => {
+  // Golden results after the v2 sanctions classification was promoted
+  // (coverageComplete). The sanctions pillar now contributes: comprehensive
+  // OFAC embargoes drive IR/KP to 9.3; Syria's post-PAARSS sectoral posture and
+  // Russia's cross-imposer sectoral measures are reflected; GB/SG carry a
+  // verified zero rather than an unknown.
   it.each([
-    ["GB", 2.4, "provisional", "moderate", 2.5, 2.3],
-    ["SG", 2.9, "provisional", "moderate", 3.6, 1.7],
-    ["VG", null, "insufficient-data", null, 6.9, null],
-    ["BA", 6, "provisional", "high", 6.4, 5.3],
-    ["MM", 9, "provisional", "very-high", 8, 7.5],
-    ["IR", null, "insufficient-data", null, null, 6.7],
-    ["IQ", 6.1, "provisional", "high", 5.7, 6.7],
-    ["RU", 4.7, "provisional", "moderate", 3.9, 6.1],
-    ["SY", null, "insufficient-data", null, null, 7.8],
-    ["KP", null, "insufficient-data", null, null, 6.8],
-  ] as const)("keeps the reviewed ten-country golden result for %s", (iso2, score, status, band, aml, governanceScore) => {
+    ["GB", 1.9, "complete", "low", 2.5, 2.3, 0, "medium"],
+    ["SG", 2.3, "complete", "low", 3.6, 1.7, 0, "high"],
+    ["VG", 6, "provisional", "high", 6.9, null, 0, "low"],
+    ["BA", 6, "complete", "high", 6.4, 5.3, 2.8, "high"],
+    ["MM", 9, "complete", "very-high", 8, 7.5, 5.9, "medium"],
+    ["IR", 9, "provisional", "very-high", null, 6.7, 9.3, "low"],
+    ["IQ", 6, "complete", "high", 5.7, 6.7, 3.3, "high"],
+    ["RU", 6, "complete", "high", 3.9, 6.1, 6.2, "medium"],
+    ["SY", 7, "provisional", "very-high", null, 7.8, 5.9, "low"],
+    ["KP", 9, "provisional", "very-high", null, 6.8, 9.3, "low"],
+  ] as const)("keeps the reviewed ten-country golden result for %s", (iso2, score, status, band, aml, governanceScore, sanctions, confidence) => {
     const result = computeCountryRiskV2(iso2, { asOf: new Date("2026-07-16T12:00:00.000Z") });
-    expect(result).toMatchObject({ score, status, band, confidence: "low" });
+    expect(result).toMatchObject({ score, status, band, confidence });
     expect(result.pillars.aml.score).toBe(aml);
     expect(result.pillars.governance.score).toBe(governanceScore);
-    expect(result.pillars.sanctions.score).toBeNull();
+    expect(result.pillars.sanctions.score).toBe(sanctions);
   });
 
   it("distinguishes FATF countermeasures from enhanced due diligence", () => {
@@ -80,7 +85,15 @@ describe("country risk v2 publication rules", () => {
   });
 
   it("does not describe a floor as non-binding when no headline can be calculated", () => {
-    const result = computeCountryRiskV2("VG", { asOf: new Date("2026-07-16T12:00:00.000Z") });
+    // VG is grey-listed but here has no governance and no sanctions coverage, so
+    // fewer than two pillars exist and no headline can be produced. The FATF-grey
+    // floor must report as not-evaluated rather than a false non-binding.
+    const result = computeCountryRiskV2("VG", {
+      asOf: new Date("2026-07-16T12:00:00.000Z"),
+      governance: undefined,
+      sanctionsCoverageComplete: false,
+      sourceStates: { aml: "current", governance: "unavailable", sanctions: "review-required" },
+    });
     expect(result.status).toBe("insufficient-data");
     expect(result.floors).toContainEqual({
       reason: "fatf-grey",

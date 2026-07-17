@@ -122,9 +122,16 @@ function verdict(input: DecisionInput): { headline: string; paragraph: string } 
     const fatfPhrase = input.fatf
       ? `It remains subject to the FATF ${input.fatf.listing === "call-for-action" ? "call-for-action" : "increased-monitoring"} flag, which must be handled independently.`
       : "It is not currently FATF grey- or black-listed, but that absence does not establish low risk.";
+    const withheldSancPhrase = input.sanctionsCoverageComplete
+      ? hasComprehensiveSanctions(input.sanctions)
+        ? `${input.name} is subject to comprehensive country-wide sanctions.`
+        : input.sanctionsTier
+          ? `${input.name} carries targeted sanctions exposure; screen applicable lists.`
+          : "No country-level sanctions programme was identified; individual listed persons may still exist."
+      : "Geographic sanctions classification remains under independent review.";
     return {
       headline: "Insufficient evidence for a headline country-risk score",
-      paragraph: `${input.name} has no World Bank WGI governance base for the historical v1 formula, so RegActions withholds the numerical score and risk band. ${fatfPhrase} Geographic sanctions classification remains under independent review. No zero or Low-risk conclusion is inferred from the missing evidence.`,
+      paragraph: `${input.name} has no World Bank WGI governance base, so RegActions withholds the numerical score and risk band. ${fatfPhrase} ${withheldSancPhrase} No zero or Low-risk conclusion is inferred from the missing evidence.`,
     };
   }
   const doms = topDomains(input.breakdown);

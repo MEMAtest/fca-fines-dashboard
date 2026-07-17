@@ -71,27 +71,27 @@ describe("deriveSectorExposure shape", () => {
   });
 });
 
-describe("unapproved sanctions candidates remain fail-closed", () => {
-  it("does not use Cuba's candidate comprehensive tier in live sector exposure", () => {
+describe("approved sanctions classifications flow into sector exposure", () => {
+  it("uses Cuba's approved comprehensive tier in live trade exposure", () => {
     const trade = row(sectorsFor("CU"), "Trade & export controls");
-    expect(trade.level).toBe("Review");
-    expect(trade.rationale.toLowerCase()).not.toContain("comprehensive");
+    expect(trade.level).toBe("High");
+    expect(trade.rationale.toLowerCase()).toContain("comprehensive");
   });
 
-  it("does not use Cuba's candidate tier in State-linked exposure", () => {
-    expect(row(sectorsFor("CU"), "State-linked & procurement").level).toBe("Low");
+  it("captures state entities and procurement under Cuba's comprehensive tier", () => {
+    expect(row(sectorsFor("CU"), "State-linked & procurement").level).toBe("High");
   });
 
-  it("does not use Russia's candidate sectoral tier before approval", () => {
+  it("uses Russia's approved sectoral tier in trade exposure", () => {
     const trade = row(sectorsFor("RU"), "Trade & export controls");
-    expect(trade.level).toBe("Review");
-    expect(trade.rationale.toLowerCase()).not.toContain("sectoral sanctions");
+    expect(trade.level).toBe("High");
+    expect(trade.rationale.toLowerCase()).toContain("sectoral sanctions");
   });
 
-  it("still derives Iran High trade exposure from its FATF call-for-action flag", () => {
+  it("derives Iran High trade exposure from its comprehensive embargo", () => {
     const trade = row(sectorsFor("IR"), "Trade & export controls");
     expect(trade.level).toBe("High");
-    expect(trade.rationale.toLowerCase()).toContain("fatf black-list");
+    expect(trade.rationale.toLowerCase()).toContain("comprehensive sanctions embargo");
   });
 });
 
@@ -104,30 +104,34 @@ describe("Nigeria real estate is Elevated via CPI", () => {
   });
 });
 
-describe("low-risk countries preserve the sanctions evidence caveat", () => {
-  it("Japan is Low except for trade while sanctions review is incomplete", () => {
+describe("low-risk countries carry a verified no-sanctions result", () => {
+  it("Japan is Low across every sector once sanctions are verified absent", () => {
     const rows = sectorsFor("JP");
-    expect(row(rows, "Trade & export controls").level).toBe("Review");
-    expect(rows.filter((r) => r.sector !== "Trade & export controls").every((r) => r.level === "Low")).toBe(true);
+    expect(rows.every((r) => r.level === "Low")).toBe(true);
+    expect(row(rows, "Trade & export controls").rationale.toLowerCase()).toContain("no sanctions programme");
   });
 
-  it("Denmark is Low except for trade while sanctions review is incomplete", () => {
+  it("Denmark is Low across every sector once sanctions are verified absent", () => {
     const rows = sectorsFor("DK");
-    expect(row(rows, "Trade & export controls").level).toBe("Review");
-    expect(rows.filter((r) => r.sector !== "Trade & export controls").every((r) => r.level === "Low")).toBe(true);
+    expect(rows.every((r) => r.level === "Low")).toBe(true);
   });
 });
 
 describe("missing evidence never becomes Low sector exposure", () => {
-  it("marks unavailable governance and sanctions conclusions for Curaçao as Review", () => {
-    expect(sectorsFor("CW").every((r) => r.level === "Review")).toBe(true);
+  it("still marks unavailable-governance sectors for Curaçao as Review, trade verified Low", () => {
+    const rows = sectorsFor("CW");
+    // Governance-driven sectors stay Review while WGI is unavailable; trade now
+    // resolves to Low because the sanctions catalogue verified no programme.
+    expect(rows.filter((r) => r.sector !== "Trade & export controls").every((r) => r.level === "Review")).toBe(true);
+    expect(row(rows, "Trade & export controls").level).toBe("Low");
   });
 
-  it("retains FATF-derived exposure for the British Virgin Islands and reviews the gaps", () => {
+  it("retains FATF-derived exposure for the British Virgin Islands and clears trade", () => {
     const rows = sectorsFor("VG");
     expect(row(rows, "Banking & payments").level).toBe("Elevated");
     expect(row(rows, "Crypto & virtual assets").level).toBe("Elevated");
-    expect(row(rows, "Trade & export controls").level).toBe("Review");
+    // No sanctions programme for VG -> trade drops from Review to Low.
+    expect(row(rows, "Trade & export controls").level).toBe("Low");
   });
 });
 

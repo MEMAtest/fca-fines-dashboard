@@ -59,7 +59,7 @@ import {
 } from "./countryDecision.js";
 import SCORE_SNAPSHOTS from "./scoreSnapshots.json" with { type: "json" };
 import { getFatfAssessment } from "./fatfAssessmentData.js";
-import { SANCTIONS_APPROVED_SNAPSHOT } from "./sanctionsApprovedData.js";
+import { SANCTIONS_APPROVED_SNAPSHOT, getApprovedSanctions } from "./sanctionsApprovedData.js";
 import {
   deriveSectorExposure,
   type SectorRow,
@@ -229,6 +229,32 @@ const TIER_RANK: Record<SanctionsTier, number> = {
   targeted: 1,
 };
 
+/**
+ * The sanctions data a country view should render.
+ *
+ * Once the independent classification review is promoted (coverageComplete),
+ * every imposer/tier the page shows comes from the approved v2 snapshot — the
+ * single reviewed source of truth. Until then we fall back to the retained v1
+ * table so the rest of the page still functions, but the rendering layer keeps
+ * every imposer marked "review pending" while coverageComplete is false.
+ */
+function resolveSanctions(iso2: string): {
+  sanctions: CountrySanctions | undefined;
+  sanctionsTier: SanctionsTier | undefined;
+} {
+  if (SANCTIONS_APPROVED_SNAPSHOT.coverageComplete) {
+    const approved = getApprovedSanctions(iso2);
+    const tier = approved?.programs.length
+      ? approved.programs.reduce<SanctionsTier>(
+          (top, prog) => (TIER_RANK[prog.tier] > TIER_RANK[top] ? prog.tier : top),
+          approved.programs[0].tier,
+        )
+      : undefined;
+    return { sanctions: approved, sanctionsTier: tier };
+  }
+  return { sanctions: getSanctions(iso2), sanctionsTier: highestSanctionsTier(iso2) };
+}
+
 /** Build the attributed indicator blocks from the sourced data modules. */
 export function buildAttribution(
   country: Country,
@@ -240,7 +266,15 @@ export function buildAttribution(
     lastPlenary: string;
   },
 ): CountryAttribution {
-  const tier = highestSanctionsTier(country.iso2);
+  // Headline tier comes from the same programme set the imposer rows render, so
+  // the attributed grid and its summary label never disagree.
+  const allProgs = view.sanctions?.programs ?? [];
+  const tier = allProgs.length
+    ? allProgs.reduce<SanctionsTier>(
+        (top, prog) => (TIER_RANK[prog.tier] > TIER_RANK[top] ? prog.tier : top),
+        allProgs[0].tier,
+      )
+    : undefined;
   const imposers: SanctionsImposerRow[] = ATTR_IMPOSERS.map(({ imposer, label }) => {
     // pick the highest-tier programme for this imposer, if any
     const progs = view.sanctions?.programs.filter((p) => p.imposer === imposer) ?? [];
@@ -266,7 +300,9 @@ export function buildAttribution(
   return {
     sanctions: {
       imposers,
-      reviewed: SANCTIONS_REVIEWED,
+      reviewed: SANCTIONS_APPROVED_SNAPSHOT.coverageComplete
+        ? (SANCTIONS_APPROVED_SNAPSHOT.effectiveAt ?? SANCTIONS_REVIEWED).slice(0, 7)
+        : SANCTIONS_REVIEWED,
       headlineTier: tier ? sanctionsTierLabel(tier) : undefined,
     },
     governance: { subScores, vintage: GOVERNANCE_VINTAGE },
@@ -340,8 +376,7 @@ export function buildCountryView(country: Country): CountryView {
   const fatf = getFatfStatus(country.iso2);
   const history = FATF_RECENT_CHANGES.filter((c) => c.iso2 === country.iso2);
   const enforcement = getCountryEnforcementSummary(country.iso2);
-  const sanctions = getSanctions(country.iso2);
-  const sanctionsTier = highestSanctionsTier(country.iso2);
+  const { sanctions, sanctionsTier } = resolveSanctions(country.iso2);
 
   const statusHeading = fatf ? fatfLabel(fatf.listing) : "Not currently listed";
   const statusDetail = fatf
@@ -469,6 +504,7 @@ export function pageCountries(): Country[] {
       hasGovernanceData(c.iso2) ||
       Boolean(getFatfAssessment(c.iso2)) ||
       isFatfListed(c.iso2) ||
+      Boolean(resolveSanctions(c.iso2).sanctions?.programs.length) ||
       isSanctioned(c.iso2) ||
       hasEnforcementCoverage(c.iso2),
   );
@@ -554,7 +590,7 @@ export function buildCountryIndex(): CountryIndexEntry[] {
         band: rs.hasGovernance ? rs.band : null,
         status,
         fatf: getFatfStatus(country.iso2),
-        sanctionsTier: highestSanctionsTier(country.iso2),
+        sanctionsTier: resolveSanctions(country.iso2).sanctionsTier,
         hasEnforcement: hasEnforcementCoverage(country.iso2),
         controlStrength: controlStrength(country.iso2),
         enforcementExposure: enforcementExposure(country.iso2),

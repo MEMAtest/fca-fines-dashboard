@@ -256,14 +256,14 @@ function renderCountryFatfBody(view: CountryView): string {
       ? `<li>${escapeHtml(`FATF ${riskScore.fatf.label}: +${riskScore.fatf.points}`)}</li>`
       : "",
     riskScore.sanctions.points > 0
-      ? `<li>${escapeHtml(`Legacy v1 sanctions snapshot ${riskScore.sanctions.label}: +${riskScore.sanctions.points} (v2 classification review pending)`)}</li>`
+      ? `<li>${escapeHtml(`Sanctions escalator ${riskScore.sanctions.label}: +${riskScore.sanctions.points}`)}</li>`
       : "",
   ].join("");
   const scoreHtml = riskScore.hasGovernance
-    ? `<h2>Historical v1 Country Risk Score: ${escapeHtml(
+    ? `<h2>RegActions Country Risk Score: ${escapeHtml(
         `${riskScore.score.toFixed(1)}/10 (${bandLabel(riskScore.band)})`,
       )}</h2><p>${escapeHtml(
-        `Higher score = higher risk (global average ${globalAverage.toFixed(1)}). The historical comparison uses a World Bank WGI governance base with FATF and the legacy sanctions snapshot as escalators (capped at 10). V2 remains in parallel validation. Enforcement volume and CPI are shown but not scored.`,
+        `Higher score = higher risk (global average ${globalAverage.toFixed(1)}). The score uses a World Bank WGI governance base with FATF and sanctions status as escalators (capped at 10). Enforcement volume and CPI are shown but not scored.`,
       )}</p><h3>How it is scored</h3><ul>${domainLis}<li>${escapeHtml(
         `Governance base: ${riskScore.base.toFixed(1)}`,
       )}</li>${escLis}<li>${escapeHtml(`Composite: ${riskScore.score.toFixed(1)}`)}</li></ul>`
@@ -516,10 +516,10 @@ function renderGlobalIndexBody(): string {
     )
     .join("");
   return `<div class="blog-page"><div class="blog-post-container"><article class="blog-article-modal"><h1 class="blog-post-title">Global Country Risk Ratings</h1><div class="blog-article-content"><p>${escapeHtml(
-    `RegActions country-risk coverage spans ${index.length} jurisdictions. ${rated} historical v1 comparison scores are published and ${insufficient} are withheld because the required World Bank governance base is unavailable. V2 explicitly withholds the sanctions pillar while independent classification review is pending. Enforcement volume and CPI are shown on each country page but not scored.`,
+    `RegActions country-risk coverage spans ${index.length} jurisdictions. ${rated} scores are published and ${insufficient} are withheld because the required World Bank governance base is unavailable. Sanctions status is classified per imposer against official UN, UK, EU and US sources. Enforcement volume and CPI are shown on each country page but not scored.`,
   )}</p><p>${escapeHtml(
     `Very high: ${counts["very-high"]} · High: ${counts.high} · Moderate: ${counts.moderate} · Low: ${counts.low} · Insufficient data: ${insufficient}.`,
-  )} <a href="/countries/fatf-grey-list">See the FATF grey list &amp; black list</a>.</p><table><thead><tr><th>#</th><th>Country</th><th>Score</th><th>Risk</th><th>Region</th><th>FATF</th><th>Sanctions review</th></tr></thead><tbody>${rowsHtml}</tbody></table></div></article></div></div>`;
+  )} <a href="/countries/fatf-grey-list">See the FATF grey list &amp; black list</a>.</p><table><thead><tr><th>#</th><th>Country</th><th>Score</th><th>Risk</th><th>Region</th><th>FATF</th><th>Sanctions</th></tr></thead><tbody>${rowsHtml}</tbody></table></div></article></div></div>`;
 }
 
 /** Crawlable methodology page — mirrors CountryMethodology.tsx. */
@@ -538,7 +538,7 @@ function renderMethodologyBody(): string {
   )}</li><li>${escapeHtml(
     `Voice and accountability, WGI Voice & Accountability (${pc(DOMAIN_WEIGHTS.accountability)}).`,
   )}</li></ul><h2>2. Escalators (FATF and sanctions)</h2><p>${escapeHtml(
-    `Added on top of the governance base, capped at 10: FATF grey +${FATF_ESCALATION.grey}, black +${FATF_ESCALATION.black}; sanctions targeted +${SANCTIONS_ESCALATION.targeted}, sectoral +${SANCTIONS_ESCALATION.sectoral}, comprehensive +${SANCTIONS_ESCALATION.comprehensive} (highest tier across OFAC / UK / EU / UN). When a WGI domain is missing, the remaining domain weights are renormalised. When every WGI domain is unavailable, v1 publishes no score or risk band; missing evidence is never represented as 0.0.`,
+    `Added on top of the governance base, capped at 10: FATF grey +${FATF_ESCALATION.grey}, black +${FATF_ESCALATION.black}; sanctions targeted +${SANCTIONS_ESCALATION.targeted}, sectoral +${SANCTIONS_ESCALATION.sectoral}, comprehensive +${SANCTIONS_ESCALATION.comprehensive} (highest tier across OFAC / UK / EU / UN). When a WGI domain is missing, the remaining domain weights are renormalised. When every WGI domain is unavailable, no score or risk band is published; missing evidence is never represented as 0.0.`,
   )}</p><h2>Risk bands</h2><ul><li>Low 0-2.9</li><li>Moderate 3.0-4.9</li><li>High 5.0-6.9</li><li>Very high 7.0-10</li></ul><h2>Structured with reference to Basel and Wolfsberg</h2><p>${escapeHtml(
     "The domain structure follows the Basel AML Index and the factor set follows the Wolfsberg Group country-risk guidance. RegActions does not reproduce the Basel AML Index scores, which are licensed for non-commercial use only; this is an independent composite from licence-clean public data. FATF Mutual-Evaluation effectiveness ratings are a planned enhancement.",
   )}</p><h2>Not scored</h2><p>${escapeHtml(
@@ -547,7 +547,7 @@ function renderMethodologyBody(): string {
     `World Bank WGI, six dimensions (${GOVERNANCE_VINTAGE}, ${GOVERNANCE_LICENCE}).`,
   )} <a href="${escapeHtml(GOVERNANCE_SOURCE)}" rel="noopener">Source</a></li><li>FATF plenary public statements (black &amp; grey lists). <a href="${escapeHtml(
     FATF_SOURCE_URL,
-  )}" rel="noopener">Source</a></li><li>OFAC / UK / EU / UN geographic-regime candidates; independent classification and country-nexus review is required before v2 scoring. The legacy v1 sanctions snapshot is retained only for historical comparison.</li><li>${escapeHtml(
+  )}" rel="noopener">Source</a></li><li>OFAC / UK / EU / UN geographic sanctions regimes, classified per imposer against official sources (score withheld where governance evidence is unavailable).</li><li>${escapeHtml(
     `Transparency International CPI ${CPI_YEAR} (${CPI_LICENCE}), display only.`,
   )} <a href="${escapeHtml(CPI_SOURCE)}" rel="noopener">Source</a></li></ul></div></article></div></div>`;
 }
@@ -1282,7 +1282,7 @@ async function buildPageMetas(): Promise<PageMeta[]> {
   pages.push({
     path: "/countries",
     title: `Global Country Risk Ratings ${fatfYear} | RegActions`,
-    description: `Country-risk coverage for ${globalIndexCount} jurisdictions: ${globalIndexRated} historical v1 comparison scores and ${globalIndexInsufficient} explicitly withheld for insufficient governance evidence.`,
+    description: `Country-risk coverage for ${globalIndexCount} jurisdictions: ${globalIndexRated} published scores and ${globalIndexInsufficient} withheld where governance evidence is unavailable.`,
     keywords: `country risk ratings, country risk score, AML country risk, FATF status by country, sanctions by country, high-risk countries`,
     ogType: "website",
     bodyContent: renderGlobalIndexBody(),
@@ -1291,7 +1291,7 @@ async function buildPageMetas(): Promise<PageMeta[]> {
       "@context": "https://schema.org",
       "@type": "CollectionPage",
       name: `Global Country Risk Ratings ${fatfYear}`,
-      description: `${globalIndexRated} historical v1 comparison scores across ${globalIndexCount} covered jurisdictions; ${globalIndexInsufficient} are withheld rather than treated as zero risk.`,
+      description: `${globalIndexRated} published scores across ${globalIndexCount} covered jurisdictions; ${globalIndexInsufficient} are withheld rather than treated as zero risk.`,
       url: `${BASE_URL}/countries`,
       isPartOf: { "@type": "WebSite", name: SITE_NAME, url: "https://regactions.com" },
     },
@@ -1317,7 +1317,7 @@ async function buildPageMetas(): Promise<PageMeta[]> {
     path: "/countries/methodology",
     title: "Country Risk Score Methodology | RegActions",
     description:
-      "Historical v1 RegActions Country Risk Score methodology, retained for comparison while the evidence-gated v2 model runs in parallel validation.",
+      "How the RegActions Country Risk Score is calculated: a transparent World Bank WGI governance base with FATF and sanctions escalators, from licence-clean public sources.",
     keywords:
       "country risk score methodology, AML country risk methodology, FATF sanctions WGI composite, how country risk is calculated",
     ogType: "article",
@@ -1328,7 +1328,7 @@ async function buildPageMetas(): Promise<PageMeta[]> {
       "@type": "Article",
       headline: "How the RegActions Country Risk Score is calculated",
       description:
-        "Historical v1 comparison methodology for the RegActions Country Risk Score.",
+        "The RegActions Country Risk Score methodology: WGI governance base with FATF and sanctions escalators.",
       url: `${BASE_URL}/countries/methodology`,
       author: { "@type": "Organization", name: SITE_NAME, url: "https://regactions.com" },
       publisher: { "@type": "Organization", name: SITE_NAME },
@@ -1389,7 +1389,11 @@ async function buildPageMetas(): Promise<PageMeta[]> {
     const datasetDesc =
       [
         status ? `FATF ${listLabel} status` : "FATF listing status",
-        sanctionsClassificationPublished ? `${sanctionsLabel} sanctions programmes` : "sanctions classification review pending",
+        sanctionsClassificationPublished
+          ? `${sanctionsLabel} sanctions programmes`
+          : view.sanctionsCoverageComplete
+            ? "no sanctions programme identified"
+            : "sanctions classification review pending",
         enforcement
           ? `${formatCount(enforcement.trackedActions)} tracked enforcement actions`
           : "",

@@ -35,11 +35,22 @@ describe("sanctions v2 candidate catalogue", () => {
     }
   });
 
-  it("keeps candidate classifications out of production scoring until independent approval", () => {
+  it("retains the full candidate catalogue as the immutable audit record", () => {
+    // The candidate module never scores directly: it is the reviewable catalogue.
+    // Every row stays pending here; approve/reject decisions live in the promoted
+    // snapshot, which must still account for every candidate.
     expect(SANCTIONS_CANDIDATE_SCORING_READY).toBe(false);
     expect(SANCTIONS_REGIME_CANDIDATES.every((item) => item.reviewStatus === "pending-independent-review")).toBe(true);
     expect(SANCTIONS_APPROVED_SNAPSHOT.candidateCount).toBe(SANCTIONS_REGIME_CANDIDATES.length);
-    expect(SANCTIONS_APPROVED_SNAPSHOT.coverageComplete).toBe(false);
+  });
+
+  it("has promoted a complete snapshot that decides every candidate", () => {
+    expect(SANCTIONS_APPROVED_SNAPSHOT.coverageComplete).toBe(true);
+    expect(SANCTIONS_APPROVED_SNAPSHOT.approvedCount + SANCTIONS_APPROVED_SNAPSHOT.rejectedCount)
+      .toBe(SANCTIONS_REGIME_CANDIDATES.length);
+    expect(SANCTIONS_APPROVED_SNAPSHOT.rejectedCount).toBe(
+      SANCTIONS_REGIME_CANDIDATES.filter((item) => item.relationship === "situation-related").length,
+    );
   });
 
   it("captures material current-scope corrections and victim-country handling", () => {
