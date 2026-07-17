@@ -292,6 +292,7 @@ function FilterBar({
   setFatfFilter,
   sanctionsFilter,
   setSanctionsFilter,
+  sanctionsScoringReady,
   hasFilters,
   clearFilters,
 }: any) {
@@ -312,8 +313,14 @@ function FilterBar({
         <option value="grey">Grey list</option>
         <option value="none">Not listed</option>
       </select>
-      <select value={sanctionsFilter} onChange={(e) => setSanctionsFilter(e.target.value)} aria-label="Sanctions">
-        <option value="All">All sanctions</option>
+      <select
+        value={sanctionsFilter}
+        onChange={(e) => setSanctionsFilter(e.target.value)}
+        aria-label="Sanctions"
+        disabled={!sanctionsScoringReady}
+        title={sanctionsScoringReady ? undefined : "V2 sanctions legal review is not complete"}
+      >
+        <option value="All">{sanctionsScoringReady ? "All sanctions" : "V2 review pending"}</option>
         <option value="comprehensive">Comprehensive</option>
         <option value="sectoral">Sectoral</option>
         <option value="targeted">Targeted</option>
@@ -676,6 +683,10 @@ function GlobalIndex() {
   const [sortDir, setSortDir] = useState<"asc" | "desc">("desc");
   const [selectedIso, setSelectedIso] = useState<string | null>(null);
   const [showAll, setShowAll] = useState(false);
+  const sanctionsScoringReady = useMemo(
+    () => index.every((entry) => entry.sanctionsCoverageComplete),
+    [index],
+  );
 
   const counts = useMemo(() => {
     const c: Record<RiskBand, number> = { "very-high": 0, high: 0, moderate: 0, low: 0 };
@@ -708,10 +719,12 @@ function GlobalIndex() {
         const key = l === "call-for-action" ? "black" : l === "increased-monitoring" ? "grey" : "none";
         if (key !== fatfFilter) return false;
       }
-      if (sanctionsFilter !== "All" && (e.sanctionsTier ?? "none") !== sanctionsFilter) return false;
+      if (sanctionsScoringReady
+        && sanctionsFilter !== "All"
+        && (e.sanctionsTier ?? "none") !== sanctionsFilter) return false;
       return true;
     });
-  }, [index, region, band, statusFilter, query, fatfFilter, sanctionsFilter]);
+  }, [index, region, band, statusFilter, query, fatfFilter, sanctionsFilter, sanctionsScoringReady]);
 
   const rows = useMemo(() => {
     const filtered = quadrant ? baseFiltered.filter((e) => inQuadrant(e, quadrant)) : baseFiltered;
@@ -913,8 +926,13 @@ function GlobalIndex() {
               </div>
               <div className="cx-rail__group">
                 <span className="cx-rail__title">Sanctions exposure</span>
-                <select value={sanctionsFilter} onChange={(e) => setSanctionsFilter(e.target.value as typeof sanctionsFilter)}>
-                  <option value="All">All</option>
+                <select
+                  value={sanctionsFilter}
+                  onChange={(e) => setSanctionsFilter(e.target.value as typeof sanctionsFilter)}
+                  disabled={!sanctionsScoringReady}
+                  title={sanctionsScoringReady ? undefined : "V2 sanctions legal review is not complete"}
+                >
+                  <option value="All">{sanctionsScoringReady ? "All" : "Review pending"}</option>
                   <option value="comprehensive">Comprehensive</option>
                   <option value="sectoral">Sectoral</option>
                   <option value="targeted">Targeted</option>
@@ -926,7 +944,13 @@ function GlobalIndex() {
                 <div className="cx-rail__segments">
                   <button type="button" className="cx-seg" onClick={() => { clearFilters(); setFatfFilter("grey"); }}>FATF grey list <b>{fatfCounts.grey}</b></button>
                   <button type="button" className="cx-seg" onClick={() => { clearFilters(); setFatfFilter("black"); }}>Black list <b>{fatfCounts.black}</b></button>
-                  <button type="button" className="cx-seg" onClick={() => { clearFilters(); setSanctionsFilter("comprehensive"); }}>Comprehensive sanctions</button>
+                  <button
+                    type="button"
+                    className="cx-seg"
+                    disabled={!sanctionsScoringReady}
+                    title={sanctionsScoringReady ? undefined : "V2 sanctions legal review is not complete"}
+                    onClick={() => { clearFilters(); setSanctionsFilter("comprehensive"); }}
+                  >Comprehensive sanctions</button>
                   <button type="button" className="cx-seg" onClick={() => { clearFilters(); setBand("very-high"); }}>Very high risk <b>{counts["very-high"]}</b></button>
                   <button type="button" className="cx-seg" onClick={() => { clearFilters(); setQuadrant("weak-high"); setTab("matrix"); }}>Weak controls · high exposure</button>
                 </div>
@@ -1059,6 +1083,7 @@ function GlobalIndex() {
             setFatfFilter={setFatfFilter}
             sanctionsFilter={sanctionsFilter}
             setSanctionsFilter={setSanctionsFilter}
+            sanctionsScoringReady={sanctionsScoringReady}
             hasFilters={hasFilters}
             clearFilters={clearFilters}
           />
@@ -1068,11 +1093,11 @@ function GlobalIndex() {
               <tr>
                 <th>#</th>
                 <th><button type="button" className="cx-sort" onClick={() => toggleSort("name")}>Country{sortArrow("name")}</button></th>
-                <th className="country-ratings__num"><button type="button" className="cx-sort" onClick={() => toggleSort("score")}>Score{sortArrow("score")}</button></th>
+                <th className="country-ratings__num"><button type="button" className="cx-sort" onClick={() => toggleSort("score")}>Score · v1{sortArrow("score")}</button></th>
                 <th>Risk</th>
                 <th><button type="button" className="cx-sort" onClick={() => toggleSort("region")}>Region{sortArrow("region")}</button></th>
                 <th>FATF</th>
-                <th>Sanctions</th>
+                <th>Sanctions · v2</th>
               </tr>
             </thead>
             <tbody>
@@ -1092,7 +1117,9 @@ function GlobalIndex() {
                   <td>{e.band ? bandLabel(e.band) : "Insufficient data"}</td>
                   <td className="country-ratings__region">{e.country.region}</td>
                   <td>{e.fatf ? fatfLabel(e.fatf.listing) : "—"}</td>
-                  <td>{e.sanctionsTier ? sanctionsTierLabel(e.sanctionsTier) : "Review pending"}</td>
+                  <td>{e.sanctionsCoverageComplete && e.sanctionsTier
+                    ? sanctionsTierLabel(e.sanctionsTier)
+                    : "Not scored — legal review"}</td>
                 </tr>
               ))}
               {rows.length === 0 && (

@@ -28,6 +28,20 @@ const client = await pool.connect();
 
 try {
   await client.query("BEGIN");
+  const existing = await client.query<{
+    iso2: string;
+    imposer: string;
+    regime_name: string;
+    status: "pending" | "approved" | "rejected";
+  }>(`SELECT iso2, imposer, regime_name, status FROM country_risk_sanctions_regimes`);
+  const candidateKeys = new Set(SANCTIONS_REGIME_CANDIDATES.map((candidate) =>
+    `${candidate.iso2}|${candidate.imposer}|${candidate.regime}`));
+  const stale = existing.rows.filter((row) =>
+    !candidateKeys.has(`${row.iso2.trim()}|${row.imposer}|${row.regime_name}`));
+  const staleReviewed = stale.filter((row) => row.status !== "pending");
+  if (staleReviewed.length) {
+    throw new Error(`Refusing candidate sync: ${staleReviewed.length} reviewed records are absent from the current catalogue`);
+  }
   let written = 0;
   for (const candidate of SANCTIONS_REGIME_CANDIDATES) {
     const result = await client.query(
@@ -57,6 +71,15 @@ try {
     );
     written += result.rowCount ?? 0;
   }
+  let removedStalePending = 0;
+  for (const row of stale) {
+    const removed = await client.query(
+      `DELETE FROM country_risk_sanctions_regimes
+       WHERE iso2=$1 AND imposer=$2 AND regime_name=$3 AND status='pending'`,
+      [row.iso2.trim(), row.imposer, row.regime_name],
+    );
+    removedStalePending += removed.rowCount ?? 0;
+  }
   const coverage = await client.query<{
     status: string;
     records: string;
@@ -69,6 +92,7 @@ try {
   console.log(JSON.stringify({
     candidates: SANCTIONS_REGIME_CANDIDATES.length,
     written,
+    removedStalePending,
     coverage: coverage.rows,
     productionScoresChanged: false,
   }, null, 2));

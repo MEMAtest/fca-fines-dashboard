@@ -13,6 +13,11 @@ import type {
   SanctionsTier,
 } from "./sanctionsStatus.js";
 import type { SanctionsRegimeRelationship } from "./sanctionsRegimeCandidates.js";
+import type {
+  SanctionsCoverageState,
+  SanctionsLegalStatus,
+  SanctionsMeasureType,
+} from "./sanctionsEvidence.js";
 
 export interface ApprovedSanctionsProgram extends SanctionsProgram {
   imposer: SanctionsImposer;
@@ -24,6 +29,14 @@ export interface ApprovedSanctionsProgram extends SanctionsProgram {
   reviewerOrganisation: string;
   reviewedAt: string;
   reviewNote: string;
+  legalStatus: SanctionsLegalStatus;
+  legalInstrumentId: string;
+  legalInstrumentUrl: string;
+  officialGuidanceUrl: string | null;
+  legalEffectiveFrom: string;
+  legalEffectiveTo: string | null;
+  measures: SanctionsMeasureType[];
+  evidenceLocator: string;
 }
 
 export interface ApprovedCountrySanctions extends CountrySanctions {
@@ -50,6 +63,15 @@ export interface ApprovedSanctionsSnapshotMetadata {
   rejectedCount: number;
   countryCount: number;
   sources: ApprovedSanctionsSource[];
+  coverageCellCount: number;
+}
+
+export interface ApprovedSanctionsCoverageCell {
+  iso2: string;
+  imposer: SanctionsImposer;
+  state: SanctionsCoverageState;
+  regimeCount: number;
+  evidenceUrls: string[];
 }
 
 export const SANCTIONS_APPROVED_SNAPSHOT: ApprovedSanctionsSnapshotMetadata = {
@@ -59,17 +81,24 @@ export const SANCTIONS_APPROVED_SNAPSHOT: ApprovedSanctionsSnapshotMetadata = {
   generatedAt: null,
   sha256: null,
   sourceReportSha256: null,
-  candidateCount: 94,
+  candidateCount: 117,
   approvedCount: 0,
   rejectedCount: 0,
   countryCount: 0,
   sources: [],
+  coverageCellCount: 0,
 };
 
 export const SANCTIONS_APPROVED_STATUS: ApprovedCountrySanctions[] = [];
+export const SANCTIONS_APPROVED_COVERAGE: ApprovedSanctionsCoverageCell[] = [];
 
 const BY_ISO2 = new Map(SANCTIONS_APPROVED_STATUS.map((record) => [record.iso2, record]));
 
 export function getApprovedSanctions(iso2: string): ApprovedCountrySanctions | undefined {
   return BY_ISO2.get(iso2.toUpperCase());
+}
+
+export function getApprovedSanctionsCoverage(iso2: string): ApprovedSanctionsCoverageCell[] {
+  const code = iso2.toUpperCase();
+  return SANCTIONS_APPROVED_COVERAGE.filter((record) => record.iso2 === code);
 }

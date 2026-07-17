@@ -3,6 +3,7 @@ import { countryRiskSourcesAsOf } from "../../../src/data/countryRiskSources.js"
 import { pageCountries } from "../../../src/data/countryView.js";
 import { computeCountryRiskV2 } from "../../../src/data/countryRiskV2.js";
 import { SANCTIONS_APPROVED_SNAPSHOT } from "../../../src/data/sanctionsApprovedData.js";
+import { SANCTIONS_IMPOSERS } from "../../../src/data/sanctionsEvidence.js";
 import {
   SANCTIONS_CANDIDATE_COUNTRY_COUNT,
   SANCTIONS_CATALOGUE_COVERAGE,
@@ -34,7 +35,13 @@ export default function handler(req: VercelRequest, res: VercelResponse) {
       scoringReady: SANCTIONS_APPROVED_SNAPSHOT.coverageComplete,
       approvedSnapshot: SANCTIONS_APPROVED_SNAPSHOT,
       countries: SANCTIONS_CANDIDATE_COUNTRY_COUNT,
+      regimeCountryRecords: SANCTIONS_REGIME_CANDIDATES.length,
       imposerCountryRecords: SANCTIONS_REGIME_CANDIDATES.length,
+      coverageModel: "explicit-country-by-imposer",
+      expectedCoverageCells: results.length * SANCTIONS_IMPOSERS.length,
+      materialisedCoverageCells: SANCTIONS_APPROVED_SNAPSHOT.coverageCellCount,
+      explicitCoverageCells: SANCTIONS_APPROVED_SNAPSHOT.coverageCellCount,
+      catalogueAttestationsRequired: SANCTIONS_IMPOSERS.length,
       pending: SANCTIONS_APPROVED_SNAPSHOT.coverageComplete
         ? 0
         : SANCTIONS_APPROVED_SNAPSHOT.candidateCount - SANCTIONS_APPROVED_SNAPSHOT.approvedCount - SANCTIONS_APPROVED_SNAPSHOT.rejectedCount,

@@ -82,7 +82,7 @@ const COUNTRY_RISK_SOURCE_BASE: CountryRiskSourceStatus[] = [
     sha256: SANCTIONS_APPROVED_SNAPSHOT.sha256,
     note: SANCTIONS_APPROVED_SNAPSHOT.coverageComplete
       ? `Approved snapshot ${SANCTIONS_APPROVED_SNAPSHOT.version} contains ${SANCTIONS_APPROVED_SNAPSHOT.approvedCount} classifications across ${SANCTIONS_APPROVED_SNAPSHOT.countryCount} countries; rejected candidates remain retained in the promotion hash.`
-      : `Official catalogues now cover ${SANCTIONS_REGIME_CANDIDATES.length} candidate imposer-country records across ${SANCTIONS_CANDIDATE_COUNTRY_COUNT} countries. Tier and country-nexus decisions await independent compliance approval; absence remains unknown in v2.`,
+      : `Official catalogues now cover ${SANCTIONS_REGIME_CANDIDATES.length} candidate regime-country records across ${SANCTIONS_CANDIDATE_COUNTRY_COUNT} countries. Tier, country-nexus and full-catalogue decisions await independent compliance approval; absence remains unknown in v2.`,
   },
   {
     id: "transparency-cpi",

@@ -399,7 +399,7 @@ export function CountryHub() {
                     <span className="cx-attr__imp">{r.imposer}</span>
                     {!view.sanctionsCoverageComplete ? (
                       <span className="cx-attr__yn cx-attr__yn--pending">
-                        <AlertCircle size={11} /> Review pending
+                        <AlertCircle size={11} /> Legal review pending
                       </span>
                     ) : r.active ? (
                       <span className="cx-attr__yn cx-attr__yn--yes">
@@ -416,7 +416,7 @@ export function CountryHub() {
               <p className="cx-attr__note">
                 {view.sanctionsCoverageComplete
                   ? "No means no country-level programme was identified in the approved snapshot; listed persons may still exist."
-                  : "Independent classification is incomplete. Absence of a programme is not inferred."}
+                  : "Independent legal and catalogue review is incomplete. Absence of a programme is not inferred or scored as zero."}
               </p>
             </div>
 

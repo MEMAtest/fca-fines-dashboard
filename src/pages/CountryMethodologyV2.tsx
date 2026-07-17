@@ -52,10 +52,11 @@ export function CountryMethodologyV2() {
       <section className="cx-method__section">
         <h2 className="cx-method__h2">Sanctions promotion gate</h2>
         <p className="cx-method__p">
-          Official catalogue candidates never enter scoring directly. Every imposer-country row must
-          be approved or rejected by an independent compliance practitioner using country-specific
-          legal-measure evidence, and the latest OFAC, UK, EU and UN source fingerprints must be
-          current and stable. The generated approved snapshot is currently{" "}
+          Official catalogue candidates never enter scoring directly. Every regime-country row and
+          every official catalogue-item mapping or exclusion must be approved by an independent
+          compliance practitioner using measure-specific legal evidence. The latest OFAC, UK, EU and
+          UN source fingerprints and the complete 211 × 4 coverage census must also be current and stable.
+          The generated approved snapshot is currently{" "}
           <strong>{SANCTIONS_APPROVED_SNAPSHOT.coverageComplete ? SANCTIONS_APPROVED_SNAPSHOT.version : "not promoted"}</strong>;
           until promotion, the sanctions pillar is unavailable for every country and absence is never scored as zero.
         </p>

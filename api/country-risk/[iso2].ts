@@ -8,7 +8,11 @@ import { getCpi, CPI_LICENCE, CPI_SOURCE, CPI_YEAR } from "../../src/data/cpiDat
 import { computeCountryRiskScore } from "../../src/data/countryRiskScore.js";
 import { countryRiskSourcesAsOf } from "../../src/data/countryRiskSources.js";
 import { getSanctionsRegimeCandidates } from "../../src/data/sanctionsRegimeCandidates.js";
-import { getApprovedSanctions, SANCTIONS_APPROVED_SNAPSHOT } from "../../src/data/sanctionsApprovedData.js";
+import {
+  getApprovedSanctions,
+  getApprovedSanctionsCoverage,
+  SANCTIONS_APPROVED_SNAPSHOT,
+} from "../../src/data/sanctionsApprovedData.js";
 
 export default function handler(req: VercelRequest, res: VercelResponse) {
   res.setHeader("Access-Control-Allow-Origin", "*");
@@ -28,6 +32,7 @@ export default function handler(req: VercelRequest, res: VercelResponse) {
   const fatf = getFatfStatus(iso2);
   const governance = getGovernanceDimensions(iso2);
   const sanctions = getApprovedSanctions(iso2);
+  const sanctionsCoverage = getApprovedSanctionsCoverage(iso2);
   const sanctionsCandidates = getSanctionsRegimeCandidates(iso2);
   const appliedFloors = result.floors.filter((floor) => floor.applied);
   const sources = countryRiskSourcesAsOf(asOf);
@@ -108,6 +113,7 @@ export default function handler(req: VercelRequest, res: VercelResponse) {
         sourceState: result.pillars.sanctions.sourceState,
         approvedSnapshot: SANCTIONS_APPROVED_SNAPSHOT,
         approvedPrograms: sanctions?.programs ?? [],
+        imposerCoverage: sanctionsCoverage,
         catalogueCandidates: sanctionsCandidates,
         pendingCandidates: SANCTIONS_APPROVED_SNAPSHOT.coverageComplete ? [] : sanctionsCandidates,
         formula: "70% of the highest imposer score plus 30% of the mean across OFAC, UK, EU and UN; an absent programme can score zero only after complete catalogue approval.",

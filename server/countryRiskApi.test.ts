@@ -62,7 +62,7 @@ describe("country-risk v2 public API contract", () => {
     expect(response.payload.readyForDefault).toBe(false);
     expect(response.payload.sanctionsReview).toMatchObject({
       scoringReady: false,
-      pending: 94,
+      pending: 117,
       approvedSnapshot: { coverageComplete: false, approvedCount: 0 },
     });
   });
