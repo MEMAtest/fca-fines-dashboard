@@ -1,244 +1,216 @@
 /**
- * FRB (Federal Reserve Board - USA) Scraper
+ * FRB (Federal Reserve Board — USA) Scraper
  *
- * Strategy: Scrape enforcement actions database
- * URL: https://www.federalreserve.gov/supervisionreg/enforcementactions.htm
+ * Strategy: Official CSV export behind the enforcement-actions search tool.
+ * URL: https://www.federalreserve.gov/supervisionreg/files/enforcementactions.csv
+ * (linked from https://www.federalreserve.gov/supervisionreg/enforcementactions.htm).
  *
- * Difficulty: 4/10 (Medium) - Searchable database, may have API endpoint
- * Expected: 500-1000+ enforcement actions
+ * Difficulty: 3/10 (Low) — a single official CSV of every enforcement action.
+ * Note: the FRB rarely publishes fine amounts in this export. Many actions are
+ *   non-monetary (Written Agreements, Cease & Desist, Prohibitions), so most rows
+ *   carry a null amount. Where the Action column embeds a penalty (e.g.
+ *   "Civil Money Penalty $5,000") the amount is parsed out.
+ * Language: English.
  *
- * Run: npx tsx scripts/scraper/scrapeFrb.ts
+ * Run: npx tsx scripts/scraper/scrapeFrb.ts --dry-run
  */
 
-import 'dotenv/config';
+import "dotenv/config";
+import { parse } from "csv-parse/sync";
+import { fileURLToPath } from "node:url";
 import {
-  type ParsedEnforcementRecord,
+  makeAbsoluteUrl,
   buildEuFineRecord,
-  createSqlClient,
   fetchText,
+  getCliFlags,
   normalizeWhitespace,
-  parseMonthNameDate,
-  parseLargestAmountFromText,
-  upsertEuFines,
-  printDryRunSummary,
-} from './lib/euFineHelpers.js';
-import * as cheerio from 'cheerio';
+  parsePlainAmount,
+  type DbReadyRecord,
+} from "./lib/euFineHelpers.js";
+import { runScraper } from "./lib/runScraper.js";
 
-const FRB_CONFIG = {
-  baseUrl: 'https://www.federalreserve.gov',
-  enforcementUrl: 'https://www.federalreserve.gov/supervisionreg/enforcementactions.htm',
-  rateLimit: 1000,
-};
+const FRB_CSV_URL =
+  "https://www.federalreserve.gov/supervisionreg/files/enforcementactions.csv";
+const FRB_SOURCE_URL =
+  "https://www.federalreserve.gov/supervisionreg/enforcementactions.htm";
 
-const sql = createSqlClient();
-
-interface FRBRecord {
-  firm: string;
-  amount: number | null;
-  currency: string;
-  date: string;
-  actionType: string;
-  breach: string;
-  link: string | null;
-  summary: string;
+export interface FrbCsvRow {
+  effectiveDate: string;
+  terminationDate: string;
+  individual: string;
+  individualAffiliation: string;
+  bankingOrganization: string;
+  action: string;
+  url: string;
+  name: string;
+  note: string;
 }
 
-async function main() {
-  console.log('🇺🇸 FRB Enforcement Actions Scraper\n');
-  console.log('Target: Federal Reserve Board (USA)');
-  console.log('Method: Enforcement database scraping\n');
-
-  // Check for command-line flags
-  const useTestData = process.argv.includes('--test-data');
-  const dryRun = process.argv.includes('--dry-run');
-
-  if (useTestData) {
-    console.log('⚠️  Using test data (--test-data flag detected)\n');
-  }
-  if (dryRun) {
-    console.log('🔍 Dry run mode - no database writes (--dry-run flag detected)\n');
-  }
-
-  try {
-    // Scrape real FRB data or use test data
-    const records = useTestData ? getTestData() : await scrapeFrbData();
-
-    console.log(`\n📊 Extracted ${records.length} enforcement actions`);
-
-    // Transform to ParsedEnforcementRecord format
-    const parsedRecords = records.map((r) => transformToEnforcementRecord(r));
-
-    // Build database records
-    const dbRecords = parsedRecords.map((r) => buildEuFineRecord(r));
-
-    // Insert into database (skip if dry-run)
-    if (dryRun) {
-      printDryRunSummary(dbRecords);
-    } else {
-      await upsertEuFines(sql, dbRecords);
-
-      // Refresh materialized view
-      console.log('\n🔄 Refreshing unified regulatory fines view...');
-      await sql`SELECT refresh_all_fines()`;
-      console.log('✅ View refreshed');
-    }
-
-    // Summary
-    const totalFrb = await sql`SELECT COUNT(*) as count FROM eu_fines WHERE regulator = 'FRB'`;
-    const totalAll = await sql`SELECT COUNT(*) as count FROM all_regulatory_fines`;
-
-    console.log('\n📈 Database Summary:');
-    console.log(`   - FRB enforcement actions: ${totalFrb[0].count}`);
-    console.log(`   - Total regulatory fines (FCA + EU): ${totalAll[0].count}`);
-
-    console.log('\n✅ FRB scraper completed successfully!');
-    await sql.end();
-    process.exit(0);
-  } catch (error) {
-    console.error('❌ FRB scraper failed:', error);
-    await sql.end();
-    process.exit(1);
-  }
+interface RawCsvRecord {
+  "Effective Date"?: string;
+  "Termination Date"?: string;
+  Individual?: string;
+  "Individual Affiliation"?: string;
+  "Banking Organization"?: string;
+  Action?: string;
+  URL?: string;
+  Name?: string;
+  Note?: string;
 }
 
-function getTestData(): FRBRecord[] {
-  // Test data based on known FRB enforcement actions
-  return [
-    {
-      firm: 'Goldman Sachs & Co. LLC',
-      amount: 44000000,
-      currency: 'USD',
-      date: '2024-09-18',
-      actionType: 'Civil Money Penalty',
-      breach: 'Unsafe and unsound practices in foreign exchange market',
-      link: 'https://www.federalreserve.gov/newsevents/pressreleases/enforcement20240918a.htm',
-      summary: 'Civil money penalty for unsafe practices in FX market',
-    },
-    {
-      firm: 'Deutsche Bank AG',
-      amount: 186000000,
-      currency: 'USD',
-      date: '2024-07-12',
-      actionType: 'Civil Money Penalty',
-      breach: 'Deficiencies in AML and sanctions compliance programs',
-      link: 'https://www.federalreserve.gov/newsevents/pressreleases/enforcement20240712a.htm',
-      summary: 'Civil money penalty for AML and sanctions compliance failures',
-    },
-    {
-      firm: 'TD Bank, N.A.',
-      amount: 123500000,
-      currency: 'USD',
-      date: '2023-11-09',
-      actionType: 'Civil Money Penalty',
-      breach: 'Failure to maintain adequate BSA/AML compliance program',
-      link: 'https://www.federalreserve.gov/newsevents/pressreleases/enforcement20231109a.htm',
-      summary: 'Civil money penalty for BSA/AML program deficiencies',
-    },
-    {
-      firm: 'Charles Schwab Bank, SSB',
-      amount: 187000000,
-      currency: 'USD',
-      date: '2023-06-29',
-      actionType: 'Civil Money Penalty',
-      breach: 'Deficiencies in risk management for cash sweep program',
-      link: 'https://www.federalreserve.gov/newsevents/pressreleases/enforcement20230629a.htm',
-      summary: 'Civil money penalty for risk management failures',
-    },
-  ];
+function parseFrbDate(value: string): string | null {
+  const match = normalizeWhitespace(value).match(/^(\d{4})-(\d{2})-(\d{2})/);
+  return match ? `${match[1]}-${match[2]}-${match[3]}` : null;
 }
 
-async function scrapeFrbData(): Promise<FRBRecord[]> {
-  console.log('📡 Fetching FRB enforcement actions...');
-  console.log(`   URL: ${FRB_CONFIG.enforcementUrl}`);
-
-  // NOTE: Live scraping implementation would go here
-  // For now, throwing error to force use of --test-data
-  throw new Error('FRB live scraping is not implemented yet. Use --test-data flag for now.');
-
-  // Future implementation would:
-  // 1. Visit enforcement page, inspect Network tab for AJAX/API calls
-  // 2. If API found: Query JSON endpoint with pagination
-  // 3. If no API: Use Puppeteer to render JavaScript and scrape DOM
-  // 4. Extract: institution name, action type, effective date, document URL
-  // 5. Parse amounts (note: FRB doesn't always publish fines, many actions have no amount)
-  // 6. Return FRBRecord[]
+/**
+ * The FRB Action column sometimes embeds the penalty, e.g.
+ * "Civil Money Penalty $10,000" or "Cease and Desist Order, Civil Money Penalty $50,000".
+ */
+export function parseFrbAmount(action: string): number | null {
+  const match = normalizeWhitespace(action).match(/\$\s*([\d,]+(?:\.\d+)?)/);
+  if (!match) {
+    return null;
+  }
+  return parsePlainAmount(match[1]);
 }
 
-function transformToEnforcementRecord(record: FRBRecord): ParsedEnforcementRecord {
-  return {
-    regulator: 'FRB',
-    regulatorFullName: 'Federal Reserve Board',
-    countryCode: 'US',
-    countryName: 'United States',
-    firmIndividual: record.firm,
-    firmCategory: null,
-    amount: record.amount,
-    currency: record.currency,
-    dateIssued: record.date,
-    breachType: extractBreachType(record.breach),
-    breachCategories: categorizeBreachType(record.breach),
-    summary: record.amount
-      ? `${record.firm} fined $${(record.amount).toLocaleString('en-US')} by FRB. ${record.summary}`
-      : `${record.firm} subject to ${record.actionType} by FRB. ${record.summary}`,
-    finalNoticeUrl: record.link,
-    sourceUrl: FRB_CONFIG.enforcementUrl,
-    rawPayload: record,
-  };
+/**
+ * FRB actions target either a named Individual or a Banking Organization
+ * (occasionally both). Prefer the individual when named, else the organisation.
+ */
+export function extractFrbEntity(row: FrbCsvRow): string {
+  const individual = normalizeWhitespace(row.individual);
+  const org = normalizeWhitespace(row.bankingOrganization);
+
+  if (individual && org) {
+    return `${individual} (${org})`;
+  }
+  return individual || org;
 }
 
-function extractBreachType(breach: string): string {
-  const lower = breach.toLowerCase();
-
-  if (lower.includes('bsa') || lower.includes('aml') || lower.includes('anti-money laundering')) {
-    return 'BSA/AML Violations';
-  }
-  if (lower.includes('sanctions')) {
-    return 'Sanctions Violations';
-  }
-  if (lower.includes('foreign exchange') || lower.includes('fx market')) {
-    return 'FX Market Violations';
-  }
-  if (lower.includes('risk management') || lower.includes('unsafe and unsound')) {
-    return 'Risk Management Failures';
-  }
-  if (lower.includes('consumer') || lower.includes('compliance')) {
-    return 'Consumer Compliance Violations';
-  }
-  if (lower.includes('capital') || lower.includes('liquidity')) {
-    return 'Capital and Liquidity';
-  }
-
-  return 'Regulatory Breach';
-}
-
-function categorizeBreachType(breach: string): string[] {
+export function categorizeFrbAction(action: string): string[] {
+  const normalized = action.toLowerCase();
   const categories: string[] = [];
-  const lower = breach.toLowerCase();
 
-  if (lower.includes('bsa') || lower.includes('aml') || lower.includes('anti-money laundering')) {
-    categories.push('AML');
+  if (/civil money penalty/.test(normalized)) {
+    categories.push("MONETARY_SANCTION");
   }
-  if (lower.includes('sanctions')) {
-    categories.push('SANCTIONS');
+  if (/prohibition|section 19|removal/.test(normalized)) {
+    categories.push("PROHIBITION");
   }
-  if (lower.includes('foreign exchange') || lower.includes('fx')) {
-    categories.push('FX_MARKET');
+  if (/cease and desist/.test(normalized)) {
+    categories.push("CEASE_AND_DESIST");
   }
-  if (lower.includes('risk management') || lower.includes('unsafe and unsound')) {
-    categories.push('RISK_MANAGEMENT');
+  if (/written agreement/.test(normalized)) {
+    categories.push("WRITTEN_AGREEMENT");
   }
-  if (lower.includes('consumer')) {
-    categories.push('CONSUMER_PROTECTION');
+  if (/prompt corrective action|capital/.test(normalized)) {
+    categories.push("CAPITAL_LIQUIDITY");
   }
-  if (lower.includes('capital') || lower.includes('liquidity')) {
-    categories.push('CAPITAL_LIQUIDITY');
-  }
-  if (lower.includes('governance') || lower.includes('controls')) {
-    categories.push('GOVERNANCE');
+  if (/bsa|aml|money laundering/.test(normalized)) {
+    categories.push("AML");
   }
 
-  return categories.length > 0 ? categories : ['OTHER'];
+  return categories.length > 0 ? [...new Set(categories)] : ["SUPERVISORY_SANCTION"];
 }
 
-// Run scraper
-main();
+export function parseFrbCsv(csv: string): FrbCsvRow[] {
+  const records = parse(csv, {
+    columns: true,
+    skip_empty_lines: true,
+    bom: true,
+    relax_column_count: true,
+    trim: true,
+  }) as RawCsvRecord[];
+
+  return records.map((record) => ({
+    effectiveDate: record["Effective Date"] || "",
+    terminationDate: record["Termination Date"] || "",
+    individual: record.Individual || "",
+    individualAffiliation: record["Individual Affiliation"] || "",
+    bankingOrganization: record["Banking Organization"] || "",
+    action: record.Action || "",
+    url: record.URL || "",
+    name: record.Name || "",
+    note: record.Note || "",
+  }));
+}
+
+export function buildFrbRecord(row: FrbCsvRow): DbReadyRecord | null {
+  const dateIssued = parseFrbDate(row.effectiveDate);
+  const firm = extractFrbEntity(row);
+
+  if (!dateIssued || !firm) {
+    return null;
+  }
+
+  const action = normalizeWhitespace(row.action) || "Enforcement action";
+  const amount = parseFrbAmount(row.action);
+  // The FRB CSV mixes absolute and relative notice URLs; a relative one stored
+  // raw resolves against regactions.com and 404s. Absolutize before storing
+  // AND before hashing so a later absolute re-serve doesn't duplicate the row.
+  const rawUrl = normalizeWhitespace(row.url);
+  const url = rawUrl ? makeAbsoluteUrl(FRB_SOURCE_URL, rawUrl) : null;
+
+  return buildEuFineRecord({
+    regulator: "FRB",
+    regulatorFullName: "Federal Reserve Board",
+    countryCode: "US",
+    countryName: "United States",
+    firmIndividual: firm,
+    firmCategory: normalizeWhitespace(row.individual) ? "Individual" : "Banking Organization",
+    amount,
+    currency: "USD",
+    dateIssued,
+    breachType: action,
+    breachCategories: categorizeFrbAction(action),
+    summary: amount
+      ? `${firm} — ${action} by the Federal Reserve Board.`
+      : `${firm} subject to a Federal Reserve Board ${action.toLowerCase()}.`,
+    finalNoticeUrl: url,
+    sourceUrl: FRB_SOURCE_URL,
+    // Effective date + entity + action + release URL is unique per FRB action.
+    dedupeKey: `${dateIssued}::${firm}::${action}::${url ?? "no-url"}`,
+    rawPayload: row,
+  });
+}
+
+export function buildFrbRecords(rows: FrbCsvRow[]): DbReadyRecord[] {
+  const seen = new Map<string, DbReadyRecord>();
+
+  for (const row of rows) {
+    const record = buildFrbRecord(row);
+    if (record) {
+      seen.set(record.contentHash, record);
+    }
+  }
+
+  return [...seen.values()].sort((left, right) =>
+    right.dateIssued.localeCompare(left.dateIssued),
+  );
+}
+
+export async function loadFrbLiveRecords(): Promise<DbReadyRecord[]> {
+  const flags = getCliFlags();
+  const csv = await fetchText(FRB_CSV_URL, { timeout: 90000 });
+  const records = buildFrbRecords(parseFrbCsv(csv));
+  return flags.limit && flags.limit > 0 ? records.slice(0, flags.limit) : records;
+}
+
+export async function main() {
+  await runScraper({
+    name: "🇺🇸 FRB Enforcement Actions Scraper",
+    region: "North America",
+    regulatorCode: "FRB",
+    liveLoader: loadFrbLiveRecords,
+    testLoader: loadFrbLiveRecords,
+  });
+}
+
+if (process.argv[1] && fileURLToPath(import.meta.url) === process.argv[1]) {
+  main().catch((error) => {
+    console.error("❌ FRB scraper failed:", error);
+    process.exit(1);
+  });
+}

@@ -52,6 +52,8 @@ const EUR_RATES: Record<string, number> = {
   MYR: 0.21,
   KYD: 1.10,
   BMD: 0.92,
+  TRY: 0.024,
+  GHS: 0.061,
 };
 
 const GBP_RATES: Record<string, number> = {
@@ -88,6 +90,8 @@ const GBP_RATES: Record<string, number> = {
   MYR: 0.18,
   KYD: 0.94,
   BMD: 0.78,
+  TRY: 0.020,
+  GHS: 0.052,
 };
 
 export interface CliFlags {
