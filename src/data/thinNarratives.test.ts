@@ -1,24 +1,30 @@
 /**
  * Coverage for the ~22 previously thin country pages (SEO audit L3): the micro-
- * states, small-island offshore centres and score-withheld territories that had
+ * states, small-island offshore centres and limited-evidence territories that had
  * a report page in pageCountries() but no bespoke narrative block.
  *
- * Guards two things:
+ * Guards three things:
  *   1. Completeness: EVERY pageCountries() entry now has a grounded narrative,
  *      so no report page falls back to near-boilerplate.
  *   2. Well-formedness: each newly authored narrative matches the house shape
  *      (non-empty fields, 4 whyItMatters, 2+ watchpoints) and the house style
  *      (no em-dashes or en-dashes anywhere in the prose).
+ *   3. Score-agnosticism: the prose describes the DRIVERS of each country's risk
+ *      (governance domains, CPI, FATF/sanctions/tax-list status) but never quotes
+ *      a composite risk score, band label or "score withheld" claim. Those are
+ *      products of the scoring engine and drift as the engine evolves, so tying
+ *      the static prose to a specific composite value would silently rot. This
+ *      guard makes that class of drift impossible to re-introduce.
  *
- * The batch splits into scored jurisdictions (WGI governance present -> a
- * composite score) and score-withheld jurisdictions (no WGI data -> the page
- * honestly acknowledges the evidence-limited picture). Both are asserted below.
+ * These are a CONTENT FOUNDATION consumed client-side only (two watchpoints per
+ * page) until the deferred "narrative-v2 reconciliation" de-scores the full
+ * legacy corpus and re-enables the crawler-visible prose. Engine-independent
+ * facts (WGI domain figures, CPI numbers) may appear; composite scores may not.
  */
 import { describe, it, expect } from "vitest";
 
 import { pageCountries } from "./countryView.js";
 import { getNarrative, NARRATIVES } from "./countryNarratives.js";
-import { computeCountryRiskScore } from "./countryRiskScore.js";
 import { isFatfListed } from "./fatfStatus.js";
 import { isSanctioned } from "./sanctionsStatus.js";
 
@@ -48,8 +54,35 @@ const FILLED = [
   "VC",
 ] as const;
 
-/** Of those, the ones with no WGI governance data -> score is withheld. */
-const SCORE_WITHHELD = ["CW", "GI", "IM", "MS", "SX", "TC", "VA"] as const;
+/**
+ * Of those, the ones with no WGI governance data. Their prose rests on a
+ * limited evidence base rather than a full governance profile. (The scoring
+ * engine's own handling of these jurisdictions is out of scope for this static
+ * content and is asserted by the engine's own tests, not here.)
+ */
+const LIMITED_EVIDENCE = ["CW", "GI", "IM", "MS", "SX", "TC", "VA"] as const;
+
+/**
+ * Patterns that quote a composite risk score, a risk band label, or a
+ * "score withheld / no composite" claim. None of these may appear in the prose:
+ * they are engine-derived and would contradict the published number as the
+ * engine evolves. WGI domain figures ("corruption at 4.3") and CPI scores
+ * ("CPI score of 60 out of 100") are engine-independent facts and are allowed.
+ */
+const COMPOSITE_SCORE_PATTERNS: RegExp[] = [
+  /\b\d(?:\.\d)?\s*\/\s*10\b/, // "4.7/10"
+  /composite (?:risk )?score of \d/i, // "composite score of 4.7"
+  /composite score,?\s+band/i, // "composite score, band or..."
+  /\brated (?:Low|Moderate|High|Very High)\b/i, // "rated Moderate risk"
+  /\b(?:Low|Moderate|High|Very High) (?:risk )?band\b/i, // "Moderate band"
+  // Title-case risk-band "rating" only (e.g. "Moderate rating"). Lower-case
+  // "low rating" is MONEYVAL effectiveness wording, not a composite band, so
+  // the match is deliberately case-sensitive here.
+  /\b(?:Low|Moderate|High|Very High) rating\b/,
+  /score of \d(?:\.\d)? (?:places|sits|is|reflects|rests)/i, // composite-score sentence stems
+  /no composite (?:risk )?score/i, // "no composite risk score is modelled"
+  /score is withheld|score-withheld|withholds a (?:composite )?score/i,
+];
 
 describe("thin-page narratives (SEO audit L3 fill)", () => {
   it("gives EVERY pageCountries() entry a narrative (zero gaps remain)", () => {
@@ -94,6 +127,28 @@ describe("thin-page narratives (SEO audit L3 fill)", () => {
     }
   });
 
+  it("quotes no composite score, band label or score-withheld claim (score-agnostic)", () => {
+    for (const iso of FILLED) {
+      const n = getNarrative(iso)!;
+      const prose = [
+        n.summary,
+        ...n.whyItMatters,
+        n.analysis,
+        n.outlook,
+        ...n.keyWatchpoints,
+      ].join(" ");
+      for (const pattern of COMPOSITE_SCORE_PATTERNS) {
+        const hit = prose.match(pattern);
+        expect(
+          hit,
+          `${iso} prose must not quote a composite score/band: matched ${
+            hit ? JSON.stringify(hit[0]) : ""
+          } via ${pattern}`,
+        ).toBeNull();
+      }
+    }
+  });
+
   it("applies no FATF or sanctions escalator (none of the batch is listed)", () => {
     for (const iso of FILLED) {
       expect(isFatfListed(iso), iso).toBe(false);
@@ -101,37 +156,18 @@ describe("thin-page narratives (SEO audit L3 fill)", () => {
     }
   });
 
-  it("computes a moderate/low composite for the scored jurisdictions", () => {
-    const scored = FILLED.filter(
-      (iso) => !(SCORE_WITHHELD as readonly string[]).includes(iso),
-    );
-    for (const iso of scored) {
-      const rs = computeCountryRiskScore(iso);
-      expect(rs.hasGovernance, iso).toBe(true);
-      if (!rs.hasGovernance) throw new Error(`${iso} governance fixture missing`);
-      // Small, well-governed island/offshore centres: comfortably below high.
-      expect(rs.score, iso).toBeGreaterThan(0);
-      expect(rs.score, iso).toBeLessThan(6);
-      // No escalator applies; the composite equals the governance base.
-      expect(rs.fatf.points, iso).toBe(0);
-      expect(rs.sanctions.points, iso).toBe(0);
-    }
-  });
-
-  it("withholds a score where WGI governance data is absent", () => {
-    for (const iso of SCORE_WITHHELD) {
-      const rs = computeCountryRiskScore(iso);
-      expect(rs.hasGovernance, iso).toBe(false);
-      expect(rs.score, iso).toBeNull();
-      // The narrative must acknowledge the evidence-limited picture honestly.
+  it("acknowledges the limited evidence base where WGI governance data is absent", () => {
+    for (const iso of LIMITED_EVIDENCE) {
       const n = getNarrative(iso)!;
       const prose = `${n.summary} ${n.analysis} ${n.outlook}`.toLowerCase();
+      // Engine-agnostic honesty: the page must flag the WGI data gap without
+      // asserting whether or not a score is published for the jurisdiction.
       expect(
         prose.includes("evidence-limited") ||
-          prose.includes("no composite") ||
-          prose.includes("withhold") ||
-          prose.includes("data are available") ||
-          prose.includes("no world bank"),
+          prose.includes("limited evidence base") ||
+          prose.includes("governance indicators do not cover") ||
+          prose.includes("not available") ||
+          prose.includes("not published"),
         iso,
       ).toBe(true);
     }
