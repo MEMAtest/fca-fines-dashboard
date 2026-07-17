@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { computeCountryRiskV2 } from "../../../src/data/countryRiskV2.js";
+import { COUNTRIES } from "../../../src/data/countries.js";
 import { SANCTIONS_REGIME_CANDIDATES } from "../../../src/data/sanctionsRegimeCandidates.js";
 import type { SanctionsMeasureType } from "../../../src/data/sanctionsEvidence.js";
 import {
@@ -198,15 +199,17 @@ describe("sanctions snapshot promotion gate", () => {
     })).toThrow(/catalogue item review mismatch/);
   });
 
-  it("creates a complete, hashed snapshot with 844 cells and drives reviewed country scores", () => {
+  it("creates a complete, hashed snapshot for every country-imposer cell and drives reviewed country scores", () => {
     const snapshot = build(rows(["RU", "SY", "KP"]));
     expect(snapshot.metadata).toMatchObject({
       coverageComplete: true,
       candidateCount: SANCTIONS_REGIME_CANDIDATES.length,
       countryCount: 3,
-      coverageCellCount: 844,
+      coverageCellCount: COUNTRIES.length * 4,
+      approvalMode: "deterministic-evidence",
+      externalValidation: "not-independently-validated",
     });
-    expect(snapshot.coverage).toHaveLength(844);
+    expect(snapshot.coverage).toHaveLength(COUNTRIES.length * 4);
     expect(snapshot.metadata.sha256).toMatch(/^[a-f0-9]{64}$/);
     expect(snapshot.metadata.sources).toHaveLength(4);
     expect(snapshot.metadata.sources[0].rawSha256).toMatch(/^[a-f0-9]{64}$/);

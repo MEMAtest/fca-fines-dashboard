@@ -17,7 +17,7 @@ export function CountryMethodologyV2() {
     <div className="cx-method">
       <Link to="/countries" className="country-hub__back"><ArrowLeft size={16} /> Countries</Link>
       <header className="cx-method__header">
-        <span className="cx-v2__eyebrow">Methodology {COUNTRY_RISK_METHODOLOGY_VERSION} · parallel validation</span>
+        <span className="cx-v2__eyebrow">Methodology {COUNTRY_RISK_METHODOLOGY_VERSION} · production</span>
         <h1 className="cx-method__title">Trusted Country Risk Score v2</h1>
         <p className="cx-method__lead">
           A deterministic benchmark of inherent jurisdictional AML/CFT, governance and sanctions
@@ -53,12 +53,13 @@ export function CountryMethodologyV2() {
         <h2 className="cx-method__h2">Sanctions promotion gate</h2>
         <p className="cx-method__p">
           Official catalogue candidates never enter scoring directly. Every regime-country row and
-          every official catalogue-item mapping or exclusion must be approved by an independent
-          compliance practitioner using measure-specific legal evidence. The latest OFAC, UK, EU and
-          UN source fingerprints and the complete 211 × 4 coverage census must also be current and stable.
-          The generated approved snapshot is currently{" "}
+          every official catalogue-item mapping or exclusion must pass the versioned deterministic
+          classifier using measure-specific evidence, explicit country nexus and published scope rules.
+          Contradictions or unknowns fail closed. The latest OFAC, UK, EU and UN source fingerprints and
+          the complete 214 × 4 coverage census must also be current and stable. The generated snapshot is{" "}
           <strong>{SANCTIONS_APPROVED_SNAPSHOT.coverageComplete ? SANCTIONS_APPROVED_SNAPSHOT.version : "not promoted"}</strong>;
-          until promotion, the sanctions pillar is unavailable for every country and absence is never scored as zero.
+          its metadata explicitly records deterministic evidence and no independent practitioner validation.
+          Until promotion, the sanctions pillar is unavailable for every country and absence is never scored as zero.
         </p>
       </section>
 

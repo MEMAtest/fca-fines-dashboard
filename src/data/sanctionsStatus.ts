@@ -9,7 +9,7 @@
  * This eight-country table is retained only to reproduce the v1 snapshot. It is
  * incomplete and is not eligible for v2 scoring. The complete, reviewable v2
  * catalogue lives in sanctionsRegimeCandidates.ts and remains fail-closed until
- * an independent compliance practitioner approves its country nexus and tiers.
+ * the deterministic v2 evidence pipeline proves its country nexus and tier.
  *
  * Tiers:
  *   comprehensive — broad embargo (virtually all trade/finance prohibited)

@@ -13,7 +13,8 @@ on:
         default: "all"
 
 permissions:
-  contents: read
+  contents: write
+  pull-requests: write
 
 jobs:
   sanctions-daily:
@@ -43,7 +44,6 @@ jobs:
   sanctions-weekly-fragile-evidence:
     if: (github.event_name == 'schedule' && github.event.schedule == '23 6 * * 0') || inputs.lane == 'weekly' || inputs.lane == 'all'
     runs-on: ubuntu-latest
-    continue-on-error: true
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -62,6 +62,50 @@ jobs:
         run: xvfb-run -a npm run country-risk:prepare-sanctions-evidence
       - run: npm run country-risk:sanctions-census
       - run: npm run country-risk:sanctions-review-pack
+      - name: Complete deterministic sanctions decisions
+        run: npm run country-risk:classify-sanctions
+      - name: Sync, validate, apply and promote the evidence snapshot
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+        run: |
+          npm run country-risk:migrate
+          npm run country-risk:sync-sanctions
+          npm run country-risk:apply-sanctions-review -- --dry-run
+          npm run country-risk:apply-sanctions-review
+          npm run country-risk:promote-sanctions -- --dry-run
+          npm run country-risk:promote-sanctions
+      - name: Verify the promoted model
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+        run: |
+          npx tsx scripts/country-risk/generate-score-run.ts --require-ready --persist
+          npm run country-risk:validate
+          npm test -- --run
+          npm run build
+      - name: Open the content-addressed snapshot update
+        id: snapshot_pr
+        uses: peter-evans/create-pull-request@v7
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          branch: automation/country-risk-snapshot
+          delete-branch: true
+          commit-message: "data(country-risk): promote official-source snapshot"
+          title: "data(country-risk): promote official-source snapshot"
+          body: |
+            Automated country-risk source assurance passed.
+
+            - official catalogue hashes and fingerprints current
+            - deterministic classifications complete
+            - 214 x 4 sanctions coverage complete
+            - score release gate, tests and build passed
+
+            External validation remains explicitly labelled in snapshot metadata.
+          labels: country-risk,automated-data
+      - name: Merge the verified snapshot update
+        if: steps.snapshot_pr.outputs.pull-request-number != ''
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: gh pr merge --squash "${{ steps.snapshot_pr.outputs.pull-request-number }}"
       - if: always()
         uses: actions/upload-artifact@v4
         with:
@@ -73,11 +117,13 @@ jobs:
             /tmp/country-risk-sanctions-legal-evidence.json
             /tmp/country-risk-sanctions-taxonomy-review.json
             /tmp/country-risk-sanctions-taxonomy-review.md
+            /tmp/country-risk-sanctions-deterministic-review.json
+            /tmp/country-risk-v2-score-run.json
+            /tmp/country-risk-v2-validation.json
 
   fatf-weekly-fragile:
     if: (github.event_name == 'schedule' && github.event.schedule == '23 6 * * 0') || inputs.lane == 'weekly' || inputs.lane == 'all'
     runs-on: ubuntu-latest
-    continue-on-error: true
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -88,9 +134,32 @@ jobs:
       - run: npx playwright install --with-deps chromium
       - name: Verify FATF official black and grey lists
         run: xvfb-run -a npm run country-risk:verify-fatf
-      - name: Verify FATF official workbook lane
-        if: always()
-        run: xvfb-run -a npm run country-risk:ingest-fatf -- --dry-run
+      - name: Ingest the latest FATF consolidated ratings
+        run: xvfb-run -a npm run country-risk:ingest-fatf
+      - name: Persist and verify the updated score run
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+        run: |
+          npx tsx scripts/country-risk/generate-score-run.ts --require-ready --persist
+          npm run country-risk:validate
+          npm test -- --run
+          npm run build
+      - name: Open the FATF ratings update
+        id: fatf_pr
+        uses: peter-evans/create-pull-request@v7
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          branch: automation/country-risk-fatf
+          delete-branch: true
+          commit-message: "data(country-risk): refresh FATF evidence"
+          title: "data(country-risk): refresh FATF evidence"
+          body: "Automated FATF browser verification, ratings ingestion, score persistence, validation, tests and build passed."
+          labels: country-risk,automated-data
+      - name: Merge the verified FATF update
+        if: steps.fatf_pr.outputs.pull-request-number != ''
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: gh pr merge --squash "${{ steps.fatf_pr.outputs.pull-request-number }}"
       - if: always()
         uses: actions/upload-artifact@v4
         with:
@@ -107,10 +176,32 @@ jobs:
           node-version: 22
           cache: npm
       - run: npm ci
-      - run: npx tsx scripts/ingest-wgi.ts --year=2024 --dry-run
-      - run: npm run country-risk:ingest-cpi -- --dry-run
-      - run: npm run country-risk:score-run
+      - name: Ingest the latest complete WGI release
+        run: npx tsx scripts/ingest-wgi.ts
+      - name: Ingest the latest official CPI release for context
+        run: npm run country-risk:ingest-cpi
+      - env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+        run: npx tsx scripts/country-risk/generate-score-run.ts --require-ready --persist
       - run: npm run country-risk:validate
+      - run: npm test -- --run
+      - run: npm run build
+      - name: Open the monthly source and score update
+        id: monthly_pr
+        uses: peter-evans/create-pull-request@v7
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          branch: automation/country-risk-monthly
+          delete-branch: true
+          commit-message: "data(country-risk): refresh monthly sources"
+          title: "data(country-risk): refresh monthly sources"
+          body: "Automated WGI/CPI release detection, score persistence, validation, tests and build passed."
+          labels: country-risk,automated-data
+      - name: Merge the verified monthly update
+        if: steps.monthly_pr.outputs.pull-request-number != ''
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: gh pr merge --squash "${{ steps.monthly_pr.outputs.pull-request-number }}"
       - uses: actions/upload-artifact@v4
         with:
           name: country-risk-monthly-evidence

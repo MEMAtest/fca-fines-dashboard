@@ -13,8 +13,9 @@ import {
   getApprovedSanctionsCoverage,
   SANCTIONS_APPROVED_SNAPSHOT,
 } from "../../src/data/sanctionsApprovedData.js";
+import { getSqlClient } from "../../server/db.js";
 
-export default function handler(req: VercelRequest, res: VercelResponse) {
+export default async function handler(req: VercelRequest, res: VercelResponse) {
   res.setHeader("Access-Control-Allow-Origin", "*");
   if (req.method !== "GET") return res.status(405).json({ error: "Method not allowed" });
   const iso2 = String(req.query.iso2 ?? "").toUpperCase();
@@ -36,6 +37,36 @@ export default function handler(req: VercelRequest, res: VercelResponse) {
   const sanctionsCandidates = getSanctionsRegimeCandidates(iso2);
   const appliedFloors = result.floors.filter((floor) => floor.applied);
   const sources = countryRiskSourcesAsOf(asOf);
+  let persistedHistory: Array<Record<string, unknown>> = [];
+  try {
+    const sql = getSqlClient();
+    persistedHistory = await sql(
+      `SELECT sr.id AS score_run_id,
+              sr.run_hash,
+              sr.completed_at,
+              s.score,
+              s.band,
+              s.publication_status,
+              s.confidence,
+              s.arithmetic
+       FROM country_risk_scores s
+       JOIN country_risk_score_runs sr ON sr.id = s.score_run_id
+       WHERE s.iso2 = $1 AND sr.methodology_version = $2
+       ORDER BY sr.completed_at DESC, sr.id DESC
+       LIMIT 12`,
+      [iso2, COUNTRY_RISK_METHODOLOGY_VERSION],
+    );
+  } catch (error) {
+    console.warn("Country-risk score history unavailable", error instanceof Error ? error.message : error);
+  }
+  const currentPersisted = persistedHistory[0] ?? null;
+  const persistedScore = currentPersisted?.score == null ? null : Number(currentPersisted.score);
+  const currentMatchesPersisted = Boolean(currentPersisted)
+    && persistedScore === result.score
+    && currentPersisted?.band === result.band
+    && currentPersisted?.publication_status === result.status
+    && currentPersisted?.confidence === result.confidence
+    && currentPersisted?.arithmetic === result.arithmetic;
   res.setHeader("Cache-Control", "public, max-age=300, s-maxage=3600");
   return res.status(200).json({
     country,
@@ -63,9 +94,16 @@ export default function handler(req: VercelRequest, res: VercelResponse) {
     calculationContext: {
       asOf: result.asOf,
       methodologyVersion: COUNTRY_RISK_METHODOLOGY_VERSION,
-      persistedScoreRunId: null,
-      note: "This API response is calculated deterministically at request time. Persisted score-run IDs are emitted by the versioned score-run pipeline.",
+      persistedScoreRunId: currentPersisted?.score_run_id ?? null,
+      runHash: currentPersisted?.run_hash ?? null,
+      matchesRequestTimeCalculation: currentMatchesPersisted,
+      note: currentMatchesPersisted
+        ? "The request-time calculation matches an immutable persisted v2 score-run lineage."
+        : currentPersisted
+          ? "The request-time inputs differ from the latest persisted run; publication should remain fail-closed until a new run is persisted."
+          : "This API response is calculated deterministically at request time; persisted history is temporarily unavailable.",
     },
+    history: persistedHistory,
     evidence: {
       aml: {
         coverageStatus: result.pillars.aml.coverageStatus,

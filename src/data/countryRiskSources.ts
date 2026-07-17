@@ -40,7 +40,7 @@ const COUNTRY_RISK_SOURCE_BASE: CountryRiskSourceStatus[] = [
     effectiveAt: FATF_LAST_PLENARY,
     retrievedAt: FATF_VERIFIED_AT,
     sha256: FATF_LIST_SHA256,
-    note: `The official black and grey list statements were reverified on ${FATF_VERIFIED_AT}; future status changes still require approval before publication.`,
+    note: `The official black and grey list statements were reverified on ${FATF_VERIFIED_AT}; detected status changes fail closed until the versioned evidence snapshot is regenerated.`,
   },
   {
     id: "fatf-assessments",
@@ -81,8 +81,8 @@ const COUNTRY_RISK_SOURCE_BASE: CountryRiskSourceStatus[] = [
     retrievedAt: SANCTIONS_APPROVED_SNAPSHOT.generatedAt ?? SANCTIONS_CATALOGUE_REVIEWED_AS_OF,
     sha256: SANCTIONS_APPROVED_SNAPSHOT.sha256,
     note: SANCTIONS_APPROVED_SNAPSHOT.coverageComplete
-      ? `Approved snapshot ${SANCTIONS_APPROVED_SNAPSHOT.version} contains ${SANCTIONS_APPROVED_SNAPSHOT.approvedCount} classifications across ${SANCTIONS_APPROVED_SNAPSHOT.countryCount} countries; rejected candidates remain retained in the promotion hash.`
-      : `Official catalogues now cover ${SANCTIONS_REGIME_CANDIDATES.length} candidate regime-country records across ${SANCTIONS_CANDIDATE_COUNTRY_COUNT} countries. Tier, country-nexus and full-catalogue decisions await independent compliance approval; absence remains unknown in v2.`,
+      ? `Deterministically promoted snapshot ${SANCTIONS_APPROVED_SNAPSHOT.version} contains ${SANCTIONS_APPROVED_SNAPSHOT.approvedCount} direct classifications across ${SANCTIONS_APPROVED_SNAPSHOT.countryCount} countries; rejected candidates remain in the promotion hash. External validation status: ${SANCTIONS_APPROVED_SNAPSHOT.externalValidation}.`
+      : `Official catalogues cover ${SANCTIONS_REGIME_CANDIDATES.length} candidate regime-country records across ${SANCTIONS_CANDIDATE_COUNTRY_COUNT} countries. Until deterministic country-nexus, tier and full-catalogue decisions are complete, absence remains unknown in v2.`,
   },
   {
     id: "transparency-cpi",
@@ -102,7 +102,9 @@ const MAX_AGE_DAYS: Partial<Record<CountryRiskSourceStatus["id"], number>> = {
   "fatf-lists": 14,
   "fatf-assessments": 45,
   "world-bank-wgi": 400,
-  "sanctions-regimes": 2,
+  // Structural discovery runs daily, while a content-addressed score snapshot
+  // is regenerated weekly when the four catalogues remain stable.
+  "sanctions-regimes": 8,
 };
 
 export function countryRiskSourcesAsOf(asOf: Date): CountryRiskSourceStatus[] {

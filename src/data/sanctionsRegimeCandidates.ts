@@ -104,7 +104,7 @@ const OFAC_CANDIDATES = candidates("OFAC", [
   ["NI", "targeted", "Nicaragua-Related Sanctions", `${OFAC}/nicaragua-related-sanctions`, "Designation-led programme."],
   ["KP", "comprehensive", "North Korea Sanctions", `${OFAC}/north-korea-sanctions`, "Broad country-wide trade and financial prohibitions operate alongside designations."],
   ["SY", "targeted", "Promoting Accountability for Assad and Regional Stabilization Sanctions", `${OFAC}/paarss`, "OFAC removed broad Syria sanctions effective 1 July 2025; remaining measures target Assad and other specified actors."],
-  ["RU", "sectoral", "Russia-related Sanctions", `${OFAC}/russia-related-sanctions`, "Country-related authorities include material transaction restrictions; operative scope requires independent legal review."],
+  ["RU", "sectoral", "Russia-related Sanctions", `${OFAC}/russia-related-sanctions`, "Country-related authorities include material transaction restrictions; operative scope must pass the versioned evidence classifier."],
   ["RU", "sectoral", "Russian Harmful Foreign Activities Sanctions", `${OFAC}/russian-harmful-foreign-activities-sanctions`, "Finance, energy, services and other sector-level restrictions apply."],
   ["RU", "sectoral", "Ukraine-/Russia-related Sanctions", `${OFAC}/ukraine-russia-related-sanctions`, "Measures target Russia and occupied regions; Ukraine is not treated as the sanctioned country."],
   ["SO", "targeted", "Somalia Sanctions", `${OFAC}/somalia-sanctions`, "OFAC programme is primarily designation-led; UN measures are assessed separately."],

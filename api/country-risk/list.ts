@@ -3,6 +3,7 @@ import { pageCountries } from "../../src/data/countryView.js";
 import { computeCountryRiskV2, COUNTRY_RISK_METHODOLOGY_VERSION } from "../../src/data/countryRiskV2.js";
 import { computeCountryRiskScore } from "../../src/data/countryRiskScore.js";
 import { countryRiskSourcesAsOf } from "../../src/data/countryRiskSources.js";
+import { assessCountryRiskReadiness } from "../../src/data/countryRiskReadiness.js";
 
 export default function handler(req: VercelRequest, res: VercelResponse) {
   res.setHeader("Access-Control-Allow-Origin", "*");
@@ -34,10 +35,14 @@ export default function handler(req: VercelRequest, res: VercelResponse) {
     })
     .sort((a, b) => (b.result.score ?? -1) - (a.result.score ?? -1) || a.country.name.localeCompare(b.country.name));
   res.setHeader("Cache-Control", "public, max-age=300, s-maxage=3600");
+  const readiness = assessCountryRiskReadiness(results.map(({ result }) => result), sources);
   return res.status(200).json({
     methodologyVersion: COUNTRY_RISK_METHODOLOGY_VERSION,
     calculatedAt: asOf.toISOString(),
     count: results.length,
+    readyForDefault: readiness.readyForDefault,
+    readinessReasons: readiness.reasons,
+    coverage: readiness.coverage,
     sources,
     results,
   });

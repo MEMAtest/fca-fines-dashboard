@@ -148,7 +148,7 @@ export function validateCompletedSanctionsReview(args: {
     }
     const legalInstrumentId = text(record.legalInstrumentId, "legalInstrumentId", candidateKey);
     const legalInstrumentUrl = httpsUrl(record.legalInstrumentUrl, "legalInstrumentUrl", candidateKey, candidate.catalogueUrl);
-    const legalEffectiveFrom = text(record.legalEffectiveFrom, "legalEffectiveFrom", candidateKey);
+    const legalEffectiveFrom = record.legalEffectiveFrom?.trim() || null;
     const evidenceLocator = text(record.evidenceLocator, "evidenceLocator", candidateKey);
     const preparedBy = text(record.preparedBy, "preparedBy", candidateKey);
     const preparedAt = timestamp(record.preparedAt, "preparedAt", candidateKey);

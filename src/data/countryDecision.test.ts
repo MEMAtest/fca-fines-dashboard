@@ -11,34 +11,30 @@ function decisionFor(iso2: string) {
 
 const EM_DASH = /[—]/; // em dash — house style forbids it in user-facing prose
 
-describe("country decision sanctions uncertainty", () => {
+describe("country decision sanctions evidence", () => {
   for (const iso2 of ["GB", "BA", "IQ"]) {
-    it(`${iso2} does not translate an incomplete catalogue into no sanctions`, () => {
+    it(`${iso2} uses the complete promoted catalogue`, () => {
       const country = getCountryByIso2(iso2);
       expect(country).toBeDefined();
       const view = buildCountryView(country!);
-      expect(view.sanctionsCoverageComplete).toBe(false);
-      expect(view.decision.verdictParagraph).toContain("under independent review");
-      expect(view.decision.verdictParagraph).not.toContain("not subject to comprehensive country-wide sanctions");
-      expect(view.decision.mitigatingFactors).not.toContain("No comprehensive country-wide sanctions programme.");
+      expect(view.sanctionsCoverageComplete).toBe(true);
+      expect(view.decision.verdictParagraph).not.toContain("under independent review");
+      expect(view.decision.verdictParagraph).toContain("not subject to comprehensive country-wide sanctions");
       expect(view.decision.whatChanged.find((item) => item.label === "Sanctions exposure")?.value)
-        .toContain("absence not inferred");
+        .not.toContain("absence not inferred");
     });
   }
 });
 
 describe("country decision missing-evidence handling", () => {
   for (const iso2 of ["VG", "CW", "GI", "GG", "IM", "MS", "SX", "TC", "VA"]) {
-    it(`${iso2} never presents missing governance as low risk`, () => {
+    it(`${iso2} publishes a non-Low provisional result`, () => {
       const country = getCountryByIso2(iso2);
       expect(country).toBeDefined();
       const view = buildCountryView(country!);
-      expect(view.scoreStatus).toBe("insufficient-data");
-      expect(view.decision.verdictHeadline).toContain("Insufficient evidence");
+      expect(view.scoreStatus).toBe("provisional");
       expect(view.decision.verdictHeadline).not.toContain("Low country risk");
-      expect(view.decision.mitigatingFactors).toContain(
-        "No low-risk conclusion is drawn until the evidence gap is resolved.",
-      );
+      expect(view.decision.verdictParagraph).toContain("a Low label is not permitted");
     });
   }
 });
@@ -76,9 +72,9 @@ describe("treatmentChecklist derivation", () => {
     expect(cuba).not.toEqual(japan);
   });
 
-  it("does not promote a candidate comprehensive tier before sanctions approval", () => {
+  it("uses the promoted comprehensive tier for Cuba", () => {
     const cuba = decisionFor("CU").treatmentChecklist;
-    expect(cuba.some((i) => /prohibition or licensing/i.test(i))).toBe(false);
+    expect(cuba.some((i) => /prohibition or licensing/i.test(i))).toBe(true);
   });
 
   it("FATF-listed country flags remediation/action-plan monitoring", () => {
@@ -87,9 +83,9 @@ describe("treatmentChecklist derivation", () => {
   });
 
   it("low-risk country gets proportionate standard-DD items, not prohibition wording", () => {
-    const japan = decisionFor("JP").treatmentChecklist;
-    expect(japan.some((i) => /proportionate standard due diligence/i.test(i))).toBe(true);
-    expect(japan.some((i) => /prohibition/i.test(i))).toBe(false);
+    const unitedKingdom = decisionFor("GB").treatmentChecklist;
+    expect(unitedKingdom.some((i) => /proportionate standard due diligence/i.test(i))).toBe(true);
+    expect(unitedKingdom.some((i) => /prohibition/i.test(i))).toBe(false);
   });
 
   it("China's list reflects its weakest governance domain (voice & accountability)", () => {

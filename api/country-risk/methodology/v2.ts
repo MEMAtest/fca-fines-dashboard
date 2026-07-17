@@ -19,7 +19,7 @@ export default function handler(req: VercelRequest, res: VercelResponse) {
   res.setHeader("Cache-Control", "public, max-age=300, s-maxage=86400");
   return res.status(200).json({
     version: COUNTRY_RISK_METHODOLOGY_VERSION,
-    status: "parallel-validation",
+    status: "production",
     scale: { minimum: 0, maximum: 10, higherMeans: "higher inherent jurisdiction risk" },
     weights: COUNTRY_RISK_PILLAR_WEIGHTS,
     mappings: {
@@ -38,7 +38,7 @@ export default function handler(req: VercelRequest, res: VercelResponse) {
     contextOnly: ["Transparency International CPI", "RegActions enforcement volume"],
     sanctionsPromotion: {
       approvedSnapshot: SANCTIONS_APPROVED_SNAPSHOT,
-      rule: "Only a complete independently reviewed snapshot with current stable OFAC, UK, EU and UN source fingerprints may enter scoring; catalogue candidates never enter scoring directly.",
+      rule: "Only a complete deterministic evidence snapshot with current stable OFAC, UK, EU and UN source fingerprints may enter scoring; catalogue candidates never enter scoring directly.",
       deterministicTierRules: SANCTIONS_TIER_RULES,
       candidateRegimeCountryRecords: SANCTIONS_REGIME_CANDIDATES.length,
       coverageModel: {
@@ -48,7 +48,9 @@ export default function handler(req: VercelRequest, res: VercelResponse) {
         expectedCells: COUNTRIES.length * SANCTIONS_IMPOSERS.length,
         zeroRule: "A zero is available only when all four country-imposer cells are present in an approved catalogue and item-disposition snapshot.",
       },
-      approvalGate: "Maker-checker legal review of every candidate plus final disposition of every official catalogue item; source drift or an unknown cell blocks promotion.",
+      approvalMode: SANCTIONS_APPROVED_SNAPSHOT.approvalMode,
+      externalValidation: SANCTIONS_APPROVED_SNAPSHOT.externalValidation,
+      approvalGate: "Versioned evidence rules require measure-specific facts, explicit country nexus and final disposition of every official catalogue item; source drift, contradictory evidence or an unknown cell blocks promotion.",
     },
     sources: COUNTRY_RISK_SOURCES,
   });

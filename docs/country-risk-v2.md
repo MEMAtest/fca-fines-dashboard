@@ -1,46 +1,146 @@
 # Trusted Country Risk Score v2 operations
 
-Methodology `2.0.0` runs in parallel with v1. It must not become the default until the scored source registry is current, every jurisdiction has three pillars, the review gates below are complete, and the two-week comparison report has been approved.
+Methodology `2.0.0` is the production country-risk methodology. It is a public,
+neutral benchmark and never a customer accept/reject decision by itself. It is
+structured with reference to Basel and Wolfsberg factors; it is not described as
+Basel-validated or independently practitioner-validated.
 
-## Data flow and evidence
+## Scored model
 
-1. Run migration `npm run country-risk:migrate` to create source-run, indicator, methodology, score-run, score-evidence, and review records.
-2. Refresh WGI with `npx tsx scripts/ingest-wgi.ts --year=2024 --dry-run`; a non-dry run writes only after schema and minimum-coverage validation.
-3. Refresh CPI with `npm run country-risk:ingest-cpi -- --dry-run`. CPI is unmodified display context and validation evidence, never a scored pillar.
-4. Run `npm run country-risk:verify-fatf`. It diffs the curated black and grey lists against the official page, writes retrieval/hash evidence to `/tmp/country-risk-fatf-list-review.json`, and fails on any status drift. Direct HTTP is attempted first and a headed Playwright browser is used for FATF's challenge-protected page.
-5. Run `npm run country-risk:ingest-fatf -- --dry-run`. The importer first tries the official XLSX endpoints and automatically falls back to a headed Playwright download from the official methodology page when FATF returns a browser challenge. CI runs that fragile lane under Xvfb. Local `--file-2013 <path> --file-2022 <path>` inputs remain available for reproducible fixture runs. HTML challenges, missing tables, unresolved countries, zero results and low coverage fail closed.
-6. Run `npm run country-risk:check-sanctions`. It performs source-specific discovery over the live OFAC active-programme catalogue, UK country and thematic regime guidance, the official EU Sanctions Map API corpus, and UN committee list types. The v2 report records each complete inventory, raw hash, schema checks and stable fingerprint in `/tmp/country-risk-sanctions-review.json`. Empty responses, source challenges, count collapses, schema drift and fingerprint drift fail closed; this structural assurance is not legal or tier approval. Run `npm run country-risk:persist-sanctions-source-run` with `DATABASE_URL` configured to append the exact report hash, raw source hashes, fingerprints and inventories to the source-run history; rerunning the same report is idempotent.
-7. Run `npm run country-risk:ingest-eu-sanctions`. It rebuilds the EU candidate snapshot from all official country regimes and their legal acts and measures.
-8. Run `npm run country-risk:prepare-sanctions-evidence`, then `npm run country-risk:sanctions-census`. Evidence preparation builds a legal-source dossier for every candidate: OFAC and UK use direct official pages, EU uses the Sanctions Map legal-act payload, and the UN detail and active-committee catalogues use Playwright when direct requests receive the UN access challenge. The census reconciles all 144 official catalogue items, the UN consolidated designation-list types, 117 candidate records and the two supplemental UK arms-embargo mappings. Browser-derived UN evidence remains in the fragile scraper lane and cannot auto-promote a score.
-9. Run `npm run country-risk:sanctions-review-pack`. It binds the source fingerprints, item-by-item census hash and legal-evidence hash into a JSON decision file and human-readable checklist in `/tmp`. The pack contains 117 regime-country candidates across 38 countries: OFAC 25, UK 29, EU 49 official country-regime records and UN 14. It separately reconciles the UN active-committee catalogue with the consolidated designation-list types and previews all 844 country-by-imposer coverage cells for the 211 published jurisdictions. All records remain outside v2 scoring until independent review is complete.
-10. A preparer verifies operative legal instruments, dates, measures and scope facts. A different named compliance practitioner then completes every `records[]` decision and all four `catalogueReviews[]` attestations. Run `npm run country-risk:apply-sanctions-review -- --dry-run` to validate exact coverage, maker-checker separation, source and census bindings, reviewer identity and organisation, timestamps, deterministic tiers, relationship decisions, notes and measure-specific HTTPS evidence. Remove `--dry-run` only after the validation summary is approved; the importer is transactional, never changes scores, and refuses to overwrite a different existing reviewed decision.
-11. Run the source check, EU ingestion and census again, then run `npm run country-risk:promote-sanctions -- --dry-run`. Promotion fails unless the assurance report is under 24 hours old, all four catalogue attestations match the current fingerprints and census, every decision has full provenance, and the derived 211 x 4 coverage matrix contains no unknown cells. Remove `--dry-run` only after reviewing the reported counts and snapshot hash; promotion persists the immutable snapshot and coverage matrix and atomically replaces `src/data/sanctionsApprovedData.ts` as the sole v2 sanctions input.
-12. Run `npm run country-risk:score-run` and `npm run country-risk:validate`. Add `--require-ready` to the score run for a promotion gate.
+- AML/CFT framework, 50%: FATF Mutual Evaluation effectiveness ratings at 70%
+  and technical compliance at 30%. The 11 Immediate Outcomes and 40
+  Recommendations are equally weighted within their groups.
+- Governance, 30%: the equal-weight mean of the six World Bank WGI percentile
+  dimensions, each inverted with `(100 - percentile) / 10`.
+- Sanctions exposure, 20%: `70% x highest imposer scope + 30% x mean imposer
+  scope` across UN, UK, EU and US. Targeted = 3.33, sectoral = 6.67 and
+  comprehensive = 10.
 
-Every production ingestion should persist source URL, retrieval and effective dates, raw SHA-256, parser version, methodology version, and calculation evidence using the v2 migration tables. Generated TypeScript snapshots remain reproducible application inputs; database rows are the operational audit trail.
+Regulatory floors are applied after weighting: FATF grey list 6.0, FATF call
+for action 9.0, sectoral sanctions 6.0 and comprehensive sanctions 8.0.
+Targeted sanctions remain a visible flag without a floor.
 
-Apply `npm run country-risk:migrate` before `npm run country-risk:sync-sanctions`. The migration runner applies the base v2 provenance schema plus the additive sanctions-review and promotion-provenance schemas idempotently; the sync command seeds or refreshes only pending candidates and never overwrites approved or rejected decisions.
+Missing evidence is never zero risk. Three available pillars is `complete`; two
+is `provisional` with renormalised weights and no Low label; fewer than two is
+`insufficient-data` with no headline score. Confidence is independent of risk.
 
-## Approval gates
+Transparency International CPI and RegActions enforcement volume are context
+only and never enter the score.
 
-- FATF list status and sanctions tier changes require human approval before score publication.
-- Sanctions tiers use a mutually exclusive rule: `comprehensive` requires broad country-wide trade and finance prohibitions; `sectoral` requires a non-designation restriction on a material class of country transactions, goods or an economic sector (including a country-wide arms embargo); `targeted` is limited principally to designated persons, entities, vessels and owned/controlled entities.
-- A reviewer may correct the underlying legal status, country nexus, measures or scope facts, but cannot override the tier produced by those facts. Approval and promotion require the final tier to equal the deterministic classifier exactly.
-- A regime named after a country does not automatically create country exposure. The reviewer must separately approve `direct-country-exposure` or `situation-related`. The current pack contains nine situation-related regime records, including measures concerning Guatemala, Moldova, Türkiye, Ukraine and the protective EU blocking-statute treatment associated with the United States; none can become country exposure by name matching alone.
-- Sanctions classifications require country-specific legal-measure evidence from the relevant UN, UK, EU or US programme. A designation list or generic catalogue page alone does not prove a geographic regime tier. The source catalogue and proposed classifications are in `src/data/sanctionsRegimeCandidates.ts`; the legacy eight-country `sanctionsStatus.ts` table remains v1-only, and v2 reads only `src/data/sanctionsApprovedData.ts`.
-- A compliance practitioner approves factor interpretation, missing-data policy and sanctions taxonomy.
-- A quantitative reviewer approves sensitivity, historical back-test design and the parallel-run comparison.
-- Production promotion requires two weeks of v1/v2 results, stable full ingestion, complete evidence links, no missing-as-zero cases, public API checks, and rendered page verification.
+## Reproducible source flow
 
-Until those gates pass, v2 remains labelled `parallel-validation`; incomplete evidence produces `provisional` or `insufficient-data`, never a falsely reassuring Low score.
+Apply the idempotent schema first:
 
-### Exact sanctions sign-off required
+```bash
+npm run country-risk:migrate
+```
 
-The remaining sanctions gate is one named compliance practitioner, independent of the implementation, completing every row in the generated review pack. For each row they must confirm that the regime is active, confirm whether it creates direct exposure to the named country, and approve, amend or reject the proposed tier using a country-specific official legal-measure page. The completed `country_risk_sanctions_regimes` record must retain the reviewer name and organisation, timestamp, decision, evidence URL and reason. The promotion command then verifies complete database coverage and the latest four-source assurance report, hashes every decision and source fingerprint, and generates the immutable v2 scoring snapshot. Pending rows, source drift, generic catalogue evidence or missing provenance fail closed without modifying scores.
+Refresh and verify official sources:
 
-## Operating cadence and change control
+```bash
+npx tsx scripts/ingest-wgi.ts --year=2024 --dry-run
+npm run country-risk:ingest-cpi -- --dry-run
+npm run country-risk:verify-fatf
+npm run country-risk:ingest-fatf -- --dry-run
+npm run country-risk:check-sanctions
+npm run country-risk:persist-sanctions-source-run
+npm run country-risk:ingest-eu-sanctions
+npm run country-risk:prepare-sanctions-evidence
+npm run country-risk:sanctions-census
+npm run country-risk:sanctions-review-pack
+```
 
-- Daily: run the four-source structural assurance and rebuild the EU regime snapshot. Any unexplained change opens a review event; it does not alter scoring.
-- Weekly: run the Playwright-assisted UN committee and legal-evidence preparation, generate the complete item-by-item census, and produce a fresh reviewer dossier. Keep this job non-promoting while the UN detail lane remains challenge-protected.
-- On detected legal or catalogue change: create a new preparer record, obtain independent compliance approval for affected regime and catalogue decisions, rerun the full census, and produce a new immutable sanctions snapshot. Never mutate an already promoted snapshot.
-- After promotion: rerun country scores, produce country-by-country change reasons, verify the public methodology and source-status APIs, and retain the previous methodology/snapshot for comparison.
+FATF verification uses direct HTTP first and Playwright for the
+challenge-protected lane. Empty responses, missing list headings, schema drift,
+unresolved countries and coverage collapse fail closed.
+
+The sanctions pipeline covers the current official OFAC programme catalogue,
+UK regimes, EU Sanctions Map legal acts and UN committee/list inventories. It
+binds raw source hashes and fingerprints, 144 catalogue items, 117 candidate
+regime-country records and measure-specific evidence into one decision pack.
+
+## Deterministic sanctions decision and promotion
+
+No user spreadsheet or manual row-by-row classification is required. Run:
+
+```bash
+npm run country-risk:classify-sanctions
+npm run country-risk:apply-sanctions-review -- --dry-run
+npm run country-risk:apply-sanctions-review
+npm run country-risk:promote-sanctions -- --dry-run
+npm run country-risk:promote-sanctions
+```
+
+The versioned classifier requires all of the following before a record can be
+promoted:
+
+- a current official catalogue item;
+- an explicit direct-country or situation-related relationship;
+- an active or terminated legal status;
+- a measure-specific legal instrument and HTTPS evidence URL;
+- reproducible scope facts or a published scope rule that reproduces the tier;
+- a complete catalogue-item disposition and country-by-imposer census;
+- matching current source hashes, fingerprints and census hashes.
+
+Situation-related regimes are rejected from direct country exposure. Unknown or
+contradictory evidence throws and leaves the prior production snapshot unchanged.
+Promotion is transactional and content-addressed. The generated snapshot records
+`approvalMode: deterministic-evidence` and
+`externalValidation: not-independently-validated`; those labels must not be
+silently upgraded.
+
+The current coverage model contains all 214 canonical jurisdictions by four
+imposers, or 856 explicit cells. A zero sanctions pillar is available only after
+all four cells are present in the promoted snapshot.
+
+## Score runs, evidence and validation
+
+```bash
+npm run country-risk:score-run -- --require-ready
+npx tsx scripts/country-risk/generate-score-run.ts --require-ready --persist
+npm run country-risk:validate
+```
+
+The release gate allows the methodology's explicit `provisional` state, but
+fails when any scored source is unhealthy, any jurisdiction has fewer than two
+pillars, or any unexplained 0.0 headline score appears.
+
+Persisted runs are content-addressed and idempotent. PostgreSQL retains:
+
+- methodology definition and assurance labels;
+- source-run URL, retrieval/effective dates, hash and parser version;
+- normalised per-country AML, governance and sanctions pillar indicators;
+- score, band, publication status, confidence, floors and arithmetic;
+- per-country links from every score to its indicator evidence;
+- code commit, run hash and immutable score history.
+
+Validation includes golden calculations, source/schema failure fixtures,
+country-name reconciliation, sensitivity with each pillar weight varied by 20%,
+CPI direction comparison and a leakage-safe exploratory back-test. The back-test
+uses WGI 2024 governance risk only for jurisdictions added to FATF monitoring in
+2026; current FATF listings, current ratings and sanctions are excluded from the
+historical input. Its small sample is a limitation, not independent validation.
+
+## Operating cadence
+
+- Daily: verify all four sanctions catalogues and fail closed on structural or
+  fingerprint drift.
+- Weekly and around FATF plenaries: Playwright-assisted FATF list verification,
+  FATF workbook checks, sanctions legal evidence, census and deterministic
+  promotion checks.
+- Monthly: WGI and CPI release detection, FATF ratings refresh detection,
+  reproducible score run, persistence and validation.
+- After any promoted change: retain the prior immutable run, publish the score
+  delta and calculation explanation, test the public APIs, build the static
+  country pages and verify the production deployment.
+
+The public endpoints are:
+
+- `GET /api/country-risk/list?methodology=v2`
+- `GET /api/country-risk/{iso2}?methodology=v2`
+- `GET /api/country-risk/methodology/v2`
+- `GET /api/country-risk/sources/status`
+
+Independent practitioner and quantitative review remain worthwhile external
+assurance enhancements. They are not represented as an unfinished data gate and
+the product never claims they have occurred when they have not.

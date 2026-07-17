@@ -148,6 +148,35 @@ export function CountryHub() {
   );
   const [watched, setWatched] = useState(false);
   const [zoomed, setZoomed] = useState<null | "attr" | "impact" | "sect" | "peers">(null);
+  const [persistedScoreHistory, setPersistedScoreHistory] = useState<Array<{
+    date: string;
+    score: number;
+    arithmetic?: string;
+  }>>([]);
+  useEffect(() => {
+    if (!country) {
+      setPersistedScoreHistory([]);
+      return;
+    }
+    const controller = new AbortController();
+    fetch(`/api/country-risk/${country.iso2}?methodology=v2`, { signal: controller.signal })
+      .then((response) => response.ok ? response.json() : Promise.reject(new Error(`HTTP ${response.status}`)))
+      .then((payload: { history?: Array<{ completed_at?: string; score?: string | number; arithmetic?: string }> }) => {
+        const history = (payload.history ?? [])
+          .map((item) => ({
+            date: item.completed_at ?? "",
+            score: Number(item.score),
+            arithmetic: item.arithmetic,
+          }))
+          .filter((item) => item.date && Number.isFinite(item.score))
+          .sort((a, b) => a.date.localeCompare(b.date));
+        setPersistedScoreHistory(history);
+      })
+      .catch((error: unknown) => {
+        if (!(error instanceof DOMException && error.name === "AbortError")) setPersistedScoreHistory([]);
+      });
+    return () => controller.abort();
+  }, [country]);
   useEffect(() => {
     if (!zoomed) return;
     const onKey = (e: KeyboardEvent) => e.key === "Escape" && setZoomed(null);
@@ -172,6 +201,7 @@ export function CountryHub() {
   const {
     statusHeading,
     riskScore,
+    riskV2,
     breakdown,
     globalAverage,
     regionalPeers,
@@ -186,11 +216,21 @@ export function CountryHub() {
   } = view;
 
   const rank = globalRank(country.iso2);
-  const scoreAvailable = riskScore.hasGovernance;
-  const publishedScore = riskScore.hasGovernance ? riskScore.score : null;
-  const publishedBand = riskScore.hasGovernance ? riskScore.band : null;
+  const scoreAvailable = riskV2.score !== null && riskV2.band !== null;
+  const publishedScore = riskV2.score;
+  const publishedBand = riskV2.band;
+  const previousScore = riskScore.hasGovernance ? riskScore.score : null;
+  const versionChange = publishedScore === null || previousScore === null
+    ? null
+    : Math.round((publishedScore - previousScore) * 10) / 10;
+  const effectiveScoreHistory = persistedScoreHistory.length ? persistedScoreHistory : scoreHistory;
+  const latestHistory = effectiveScoreHistory[effectiveScoreHistory.length - 1];
+  const previousHistory = effectiveScoreHistory[effectiveScoreHistory.length - 2];
+  const runChange = latestHistory && previousHistory
+    ? Math.round((latestHistory.score - previousHistory.score) * 10) / 10
+    : null;
   const markerPct = Math.min(100, (globalAverage / 10) * 100);
-  const baseline = scoreHistory[0];
+  const baseline = latestHistory;
   const tiles = controlTiles(publishedBand);
   // Country-specific monitoring items from the grounded narrative (unique per country).
   const watchpointItems = (getNarrative(country.iso2)?.keyWatchpoints ?? []).slice(0, 2);
@@ -233,11 +273,9 @@ export function CountryHub() {
     `World Bank — Worldwide Governance Indicators (${GOVERNANCE_VINTAGE})`,
     `Transparency International — CPI ${CPI_YEAR}`,
     `FATF — consolidated ratings (plenary ${formatDate(view.lastPlenary)})`,
-    // Keep the caveat in step with the framework-signal wording: while the
-    // independent sanctions-classification review is open, say so here too.
     view.sanctionsCoverageComplete
-      ? "OFAC / UK / EU / UN — sanctions programmes"
-      : "OFAC / UK / EU / UN — sanctions programmes (classification review in progress)",
+      ? "OFAC / UK / EU / UN — deterministic official-evidence sanctions snapshot"
+      : "OFAC / UK / EU / UN — sanctions evidence incomplete",
   ];
 
   // ── Regulators & legal framework module ──────────────────────────────────
@@ -253,7 +291,7 @@ export function CountryHub() {
   // Framework signals: deterministic, data-derived only (no invented statutes).
   const ruleOfLaw = breakdown.domains.find((d) => d.key === "ruleOfLaw");
   const sanctionsSignal = !view.sanctionsCoverageComplete
-    ? "Independent classification review pending"
+    ? "Official-source evidence incomplete"
     : hasComprehensiveSanctions
       ? "Comprehensive country programme"
       : sanctionsTier
@@ -408,7 +446,7 @@ export function CountryHub() {
                     <span className="cx-attr__imp">{r.imposer}</span>
                     {!view.sanctionsCoverageComplete ? (
                       <span className="cx-attr__yn cx-attr__yn--pending">
-                        <AlertCircle size={11} /> Legal review pending
+                        <AlertCircle size={11} /> Evidence incomplete
                       </span>
                     ) : r.active ? (
                       <span className="cx-attr__yn cx-attr__yn--yes">
@@ -424,8 +462,8 @@ export function CountryHub() {
               </ul>
               <p className="cx-attr__note">
                 {view.sanctionsCoverageComplete
-                  ? "No means no country-level programme was identified in the approved snapshot; listed persons may still exist."
-                  : "Independent legal and catalogue review is incomplete. Absence of a programme is not inferred or scored as zero."}
+                  ? "No means no direct country-level programme was identified in the complete, hashed snapshot; listed persons may still exist."
+                  : "Official catalogue evidence is incomplete. Absence of a programme is not inferred or scored as zero."}
               </p>
             </div>
 
@@ -570,6 +608,9 @@ export function CountryHub() {
                   <p className="cx-osc__band-txt">
                     {publishedBand ? `${bandLabel(publishedBand)} risk` : "Insufficient data"}
                   </p>
+                  <p className="cx-osc__avg">
+                    {riskV2.status} · {riskV2.confidence} confidence · v{riskV2.methodologyVersion}
+                  </p>
                   <p className="cx-osc__avg">Global average: {globalAverage.toFixed(1)}</p>
                 </div>
                 <div className="cx-osc__cell">
@@ -622,13 +663,13 @@ export function CountryHub() {
               <span className="cx-card__eyebrow">
                 <TrendingUp size={12} /> Risk trend
               </span>
-              {scoreAvailable && scoreHistory.length >= 2 ? (
+              {scoreAvailable && effectiveScoreHistory.length >= 2 ? (
                 <>
                   <p className="cx-trend__state">Tracking</p>
                   <svg className="cx-trend__svg" viewBox="0 0 200 60" preserveAspectRatio="none">
                     <polyline
-                      points={scoreHistory
-                        .map((p, i) => `${(i / (scoreHistory.length - 1)) * 200},${60 - (p.score / 10) * 60}`)
+                      points={effectiveScoreHistory
+                        .map((p, i) => `${(i / (effectiveScoreHistory.length - 1)) * 200},${60 - (p.score / 10) * 60}`)
                         .join(" ")}
                       fill="none"
                       stroke="#136a9b"
@@ -645,22 +686,30 @@ export function CountryHub() {
                       <span>Current</span>
                     </div>
                     <div>
-                      <b>—</b>
-                      <span>12m ago</span>
+                      <b>{previousScore === null ? "—" : previousScore.toFixed(1)}</b>
+                      <span>v1 comparison</span>
                     </div>
                     <div>
-                      <b>n/a</b>
-                      <span>Change</span>
+                      <b>{versionChange === null ? "n/a" : `${versionChange > 0 ? "+" : ""}${versionChange.toFixed(1)}`}</b>
+                      <span>Method change</span>
                     </div>
                   </div>
                 </>
               )}
               <p className="cx-card__note">
-                {scoreAvailable && baseline ? `Baseline recorded ${formatDate(baseline.date)}. ` : ""}
+                {scoreAvailable && baseline ? `V2 baseline recorded ${formatDate(baseline.date)}. ` : ""}
                 {scoreAvailable
-                  ? "Trend accrues from future snapshots; no back-dated data shown."
-                  : "Trend unavailable until the governance evidence gap is resolved."}
+                  ? riskV2.arithmetic
+                  : "Trend unavailable until at least two scored pillars are available."}
               </p>
+              {scoreAvailable && (
+                <p className="cx-card__note">
+                  <strong>Why this changed:</strong>{" "}
+                  {runChange === null
+                    ? `the v2 methodology replaced the v1 governance-led snapshot${versionChange === null ? "" : `, changing the comparable score by ${versionChange > 0 ? "+" : ""}${versionChange.toFixed(1)}`}.`
+                    : `the latest persisted source run moved the score by ${runChange > 0 ? "+" : ""}${runChange.toFixed(1)}; the exact current arithmetic is shown above.`}
+                </p>
+              )}
             </div>
 
             <div className="cx-card cx-mapw">
@@ -854,17 +903,17 @@ export function CountryHub() {
               <Info size={12} /> Methodology
             </span>
             <p className="cx-meth__intro">
-              This score combines four World Bank WGI governance drivers with FATF listing status
-              and sanctions exposure. Where the WGI evidence is unavailable, the headline score and
-              risk band are withheld rather than shown as zero risk.
+              Methodology v2 weights FATF AML/CFT assessment ratings at 50%, six World Bank WGI
+              governance dimensions at 30%, and classified geographic sanctions exposure at 20%.
+              Missing pillars are never converted to zero risk.
             </p>
             <ul className="cx-domains">
-              {breakdown.domains.map((d) => (
-                <DomainBar key={d.key} label={`${d.label} · ${d.weightPct}%`} risk={d.risk} />
-              ))}
+              <DomainBar label={`AML/CFT · ${Math.round(riskV2.pillars.aml.appliedWeight * 100)}% applied`} risk={riskV2.pillars.aml.score} />
+              <DomainBar label={`Governance · ${Math.round(riskV2.pillars.governance.appliedWeight * 100)}% applied`} risk={riskV2.pillars.governance.score} />
+              <DomainBar label={`Sanctions · ${Math.round(riskV2.pillars.sanctions.appliedWeight * 100)}% applied`} risk={riskV2.pillars.sanctions.score} />
             </ul>
             <div className="cx-meth__base">
-              Governance base score <b>{breakdown.base === null ? "Unavailable" : `${breakdown.base.toFixed(1)} / 10`}</b>
+              Exact calculation <b>{riskV2.arithmetic}</b>
             </div>
             <p className="cx-card__note">
               Structured with reference to Basel and Wolfsberg factors · WGI {GOVERNANCE_VINTAGE} · FATF{" "}
