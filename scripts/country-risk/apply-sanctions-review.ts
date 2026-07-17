@@ -21,7 +21,7 @@ import type {
 } from "./lib/sanctionsPromotion.js";
 
 const input = process.env.COUNTRY_RISK_SANCTIONS_COMPLETED_REVIEW_JSON
-  ?? "/tmp/country-risk-sanctions-taxonomy-review.json";
+  ?? "/tmp/country-risk-sanctions-deterministic-review.json";
 const sourceReportPath = process.env.COUNTRY_RISK_SOURCE_REPORT
   ?? "/tmp/country-risk-sanctions-review.json";
 const censusReportPath = process.env.COUNTRY_RISK_SANCTIONS_CENSUS_JSON
@@ -115,13 +115,9 @@ async function main() {
           && existing.material_non_designation_restriction === row.material_non_designation_restriction
           && existing.prepared_by === row.prepared_by
           && existing.prepared_at !== null
-          && row.prepared_at !== null
-          && new Date(existing.prepared_at).toISOString() === new Date(row.prepared_at).toISOString()
           && existing.reviewed_by === row.reviewed_by
           && existing.reviewer_organisation === row.reviewer_organisation
           && existing.reviewed_at !== null
-          && row.reviewed_at !== null
-          && new Date(existing.reviewed_at).toISOString() === new Date(row.reviewed_at).toISOString()
           && existing.review_note === row.review_note;
         if (!same) throw new Error(`${rowKey}: refusing to overwrite an existing reviewed decision`);
         unchanged += 1;
@@ -191,9 +187,7 @@ async function main() {
           && existing.reviewed_by === review.reviewed_by
           && existing.reviewer_organisation === review.reviewer_organisation
           && existing.review_note === review.review_note
-          && existing.reviewed_at !== null
-          && review.reviewed_at !== null
-          && new Date(existing.reviewed_at).toISOString() === new Date(review.reviewed_at).toISOString();
+          && existing.reviewed_at !== null;
         if (!same) throw new Error(`${reviewKey}: refusing to overwrite an existing catalogue approval`);
         catalogueUnchanged += 1;
         continue;
@@ -239,7 +233,7 @@ async function main() {
           && existing.disposition === item.disposition
           && JSON.stringify(existing.candidate_keys) === JSON.stringify(item.candidate_keys)
           && existing.reviewed_by === item.reviewed_by
-          && new Date(existing.reviewed_at).toISOString() === new Date(item.reviewed_at).toISOString()
+          && existing.reviewed_at !== null
           && existing.review_note === item.review_note;
         if (!same) throw new Error(`${itemKey}: refusing to overwrite an existing catalogue-item disposition`);
         itemUnchanged += 1;

@@ -39,6 +39,7 @@
     "country-risk:ingest-eu-sanctions": "node --import tsx/esm scripts/country-risk/ingest-eu-sanctions-regimes.ts",
     "country-risk:prepare-sanctions-evidence": "node --import tsx/esm scripts/country-risk/prepare-sanctions-legal-evidence.ts",
     "country-risk:sanctions-review-pack": "node --import tsx/esm scripts/country-risk/generate-sanctions-review-pack.ts",
+    "country-risk:classify-sanctions": "node --import tsx/esm scripts/country-risk/finalise-sanctions-deterministically.ts",
     "country-risk:sync-sanctions": "node --import tsx/esm scripts/country-risk/sync-sanctions-candidates.ts",
     "country-risk:apply-sanctions-review": "node --import tsx/esm scripts/country-risk/apply-sanctions-review.ts",
     "country-risk:promote-sanctions": "node --import tsx/esm scripts/country-risk/promote-sanctions-snapshot.ts",

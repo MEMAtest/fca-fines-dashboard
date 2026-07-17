@@ -58,22 +58,22 @@ describe("country risk v2 primitives", () => {
 
 describe("country risk v2 publication rules", () => {
   it.each([
-    ["GB", 2.4, "provisional", "moderate", 2.5, 2.3],
-    ["SG", 2.9, "provisional", "moderate", 3.6, 1.7],
-    ["VG", null, "insufficient-data", null, 6.9, null],
-    ["BA", 6, "provisional", "high", 6.4, 5.3],
-    ["MM", 9, "provisional", "very-high", 8, 7.5],
-    ["IR", null, "insufficient-data", null, null, 6.7],
-    ["IQ", 6.1, "provisional", "high", 5.7, 6.7],
-    ["RU", 4.7, "provisional", "moderate", 3.9, 6.1],
-    ["SY", null, "insufficient-data", null, null, 7.8],
-    ["KP", null, "insufficient-data", null, null, 6.8],
-  ] as const)("keeps the reviewed ten-country golden result for %s", (iso2, score, status, band, aml, governanceScore) => {
+    ["GB", 1.9, "complete", "low", "medium", 2.5, 2.3, 0],
+    ["SG", 2.3, "complete", "low", "high", 3.6, 1.7, 0],
+    ["VG", 6, "provisional", "high", "low", 6.9, null, 0],
+    ["BA", 6, "complete", "high", "high", 6.4, 5.3, 2.8],
+    ["MM", 9, "complete", "very-high", "medium", 8, 7.5, 5.9],
+    ["IR", 9, "provisional", "very-high", "low", null, 6.7, 9.3],
+    ["IQ", 6, "complete", "high", "high", 5.7, 6.7, 5.9],
+    ["RU", 6, "complete", "high", "medium", 3.9, 6.1, 6.2],
+    ["SY", 7, "provisional", "very-high", "low", null, 7.8, 5.9],
+    ["KP", 9, "provisional", "very-high", "low", null, 6.8, 9.3],
+  ] as const)("keeps the reviewed ten-country golden result for %s", (iso2, score, status, band, confidence, aml, governanceScore, sanctionsScore) => {
     const result = computeCountryRiskV2(iso2, { asOf: new Date("2026-07-16T12:00:00.000Z") });
-    expect(result).toMatchObject({ score, status, band, confidence: "low" });
+    expect(result).toMatchObject({ score, status, band, confidence });
     expect(result.pillars.aml.score).toBe(aml);
     expect(result.pillars.governance.score).toBe(governanceScore);
-    expect(result.pillars.sanctions.score).toBeNull();
+    expect(result.pillars.sanctions.score).toBe(sanctionsScore);
   });
 
   it("distinguishes FATF countermeasures from enhanced due diligence", () => {
@@ -84,14 +84,14 @@ describe("country risk v2 publication rules", () => {
       .toContainEqual({ type: "fatf-black", label: "FATF call for action — enhanced due diligence" });
   });
 
-  it("does not describe a floor as non-binding when no headline can be calculated", () => {
+  it("applies the grey-list floor to a provisional result with two available pillars", () => {
     const result = computeCountryRiskV2("VG", { asOf: new Date("2026-07-16T12:00:00.000Z") });
-    expect(result.status).toBe("insufficient-data");
+    expect(result.status).toBe("provisional");
     expect(result.floors).toContainEqual({
       reason: "fatf-grey",
       minimum: 6,
-      applied: false,
-      status: "not-evaluated",
+      applied: true,
+      status: "applied",
     });
   });
 

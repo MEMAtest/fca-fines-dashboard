@@ -15,6 +15,7 @@ async function main() {
     "20260716_country_risk_sanctions_review.sql",
     "20260716_country_risk_sanctions_promotion.sql",
     "20260717_country_risk_sanctions_evidence.sql",
+    "20260717_country_risk_deterministic_decisions.sql",
   ];
   const pool = new pg.Pool(buildPgPoolConfig(connectionString));
   try {

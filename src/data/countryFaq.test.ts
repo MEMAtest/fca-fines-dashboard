@@ -41,19 +41,20 @@ describe("buildCountryFaqs", () => {
     expect(faqs[0].answer).toContain("FATF black list");
   });
 
-  it("honours the sanctions coverage caveat (does not falsely assert 'not sanctioned')", () => {
+  it("distinguishes no direct country regime from person-level screening", () => {
     const faqs = faqsFor("FR");
-    // While coverage is fail-closed, the sanctions answer must not claim confirmation.
-    expect(faqs[1].answer).not.toMatch(/^No\./);
+    expect(faqs[1].answer).toContain("No country-level programme was identified");
+    expect(faqs[1].answer).toContain("individual listed persons may still exist");
   });
 
-  it("withholds the AML score honestly when governance data is unavailable", () => {
-    const view = buildCountryView(getCountryByIso2("US")!);
+  it("publishes an honest complete or provisional v2 score", () => {
+    const view = buildCountryView(getCountryByIso2("VG")!);
     const faqs = buildCountryFaqs(view);
     const amlFaq = faqs.find((f) => f.question.includes("AML risk rating"));
     expect(amlFaq).toBeTruthy();
-    if (view.riskScore.hasGovernance) {
+    if (view.riskV2.score !== null) {
       expect(amlFaq!.answer).toContain("/10");
+      expect(amlFaq!.answer).toContain("provisional");
     } else {
       expect(amlFaq!.answer.toLowerCase()).toContain("withhold");
     }

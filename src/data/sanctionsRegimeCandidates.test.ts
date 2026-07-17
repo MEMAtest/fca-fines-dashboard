@@ -36,11 +36,18 @@ describe("sanctions v2 candidate catalogue", () => {
     }
   });
 
-  it("keeps candidate classifications out of production scoring until independent approval", () => {
+  it("keeps raw candidates outside scoring and uses only the promoted deterministic snapshot", () => {
     expect(SANCTIONS_CANDIDATE_SCORING_READY).toBe(false);
     expect(SANCTIONS_REGIME_CANDIDATES.every((item) => item.reviewStatus === "pending-independent-review")).toBe(true);
     expect(SANCTIONS_APPROVED_SNAPSHOT.candidateCount).toBe(SANCTIONS_REGIME_CANDIDATES.length);
-    expect(SANCTIONS_APPROVED_SNAPSHOT.coverageComplete).toBe(false);
+    expect(SANCTIONS_APPROVED_SNAPSHOT.coverageComplete).toBe(true);
+    expect(SANCTIONS_APPROVED_SNAPSHOT).toMatchObject({
+      approvedCount: 107,
+      rejectedCount: 10,
+      coverageCellCount: 856,
+      approvalMode: "deterministic-evidence",
+      externalValidation: "not-independently-validated",
+    });
   });
 
   it("captures material current-scope corrections and victim-country handling", () => {

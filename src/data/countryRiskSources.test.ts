@@ -9,9 +9,11 @@ describe("country-risk source registry", () => {
     expect(cpi).toMatchObject({ scored: false, state: "current" });
   });
 
-  it("does not claim readiness while official scored sources are incomplete or stale", () => {
+  it("marks every scored source current after deterministic sanctions promotion", () => {
     const scored = COUNTRY_RISK_SOURCES.filter((source) => source.scored);
-    expect(scored.some((source) => source.state !== "current")).toBe(true);
+    expect(scored.every((source) => source.state === "current")).toBe(true);
+    expect(scored.find((source) => source.id === "sanctions-regimes")?.note)
+      .toContain("not-independently-validated");
   });
 
   it("automatically marks feeds stale when their operational cadence is missed", () => {

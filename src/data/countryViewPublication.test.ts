@@ -1,6 +1,5 @@
 import { describe, expect, it } from "vitest";
 import { getCountryByIso2 } from "./countries.js";
-import { computeCountryRiskScore } from "./countryRiskScore.js";
 import {
   buildCountryIndex,
   buildCountryView,
@@ -8,53 +7,46 @@ import {
   regionalAverages,
 } from "./countryView.js";
 
-const INSUFFICIENT = ["VG", "CW", "GI", "GG", "IM", "MS", "SX", "TC", "VA"];
+const FORMER_V1_GAPS = ["VG", "CW", "GI", "GG", "IM", "MS", "SX", "TC", "VA"];
 
 describe("country score publication safeguards", () => {
   it("never publishes missing governance evidence as a 0.0 score", () => {
     const index = buildCountryIndex();
     expect(index).toHaveLength(211);
     expect(index.filter((entry) => entry.score === 0)).toEqual([]);
-    expect(index.filter((entry) => entry.score === null).map((entry) => entry.country.iso2))
-      .toEqual(INSUFFICIENT);
+    expect(index.filter((entry) => entry.score === null)).toEqual([]);
+    expect(index.filter((entry) => entry.status === "insufficient-data")).toEqual([]);
   });
 
-  it.each(INSUFFICIENT)("withholds %s instead of assigning a Low band", (iso2) => {
-    const engineResult = computeCountryRiskScore(iso2);
-    expect(engineResult).toMatchObject({
-      hasGovernance: false,
-      score: null,
-      band: null,
-      base: null,
-    });
+  it.each(FORMER_V1_GAPS)("publishes %s provisionally without assigning a Low band", (iso2) => {
     const entry = buildCountryIndex().find((candidate) => candidate.country.iso2 === iso2);
-    expect(entry).toMatchObject({ score: null, band: null, status: "insufficient-data" });
-    expect(globalRank(iso2).rank).toBeNull();
+    expect(entry?.score).not.toBeNull();
+    expect(entry?.status).toBe("provisional");
+    expect(entry?.band).not.toBe("low");
+    expect(globalRank(iso2).rank).not.toBeNull();
   });
 
-  it("excludes withheld jurisdictions from ranks and regional averages", () => {
+  it("includes complete and provisional jurisdictions in ranks and regional averages", () => {
     const rated = buildCountryIndex().filter((entry) => entry.score !== null);
-    expect(rated).toHaveLength(202);
-    expect(globalRank("GB").total).toBe(202);
-    expect(regionalAverages().reduce((sum, region) => sum + region.count, 0)).toBe(202);
+    expect(rated).toHaveLength(211);
+    expect(globalRank("GB").total).toBe(211);
+    expect(regionalAverages().reduce((sum, region) => sum + region.count, 0)).toBe(211);
   });
 
-  it("does not expose legacy sanctions tiers as v2 while legal review is incomplete", () => {
+  it("exposes only the complete promoted sanctions snapshot", () => {
     const index = buildCountryIndex();
-    expect(index.every((entry) => entry.sanctionsCoverageComplete === false)).toBe(true);
-    expect(index.every((entry) => entry.sanctionsTier === undefined)).toBe(true);
+    expect(index.every((entry) => entry.sanctionsCoverageComplete)).toBe(true);
+    expect(index.filter((entry) => entry.sanctionsTier).length).toBeGreaterThan(0);
   });
 
   it.each(["CW", "VG"])("uses safe decision copy for %s", (iso2) => {
     const country = getCountryByIso2(iso2);
     expect(country).toBeDefined();
     const view = buildCountryView(country!);
-    expect(view.scoreStatus).toBe("insufficient-data");
-    expect(view.decision.verdictHeadline).toContain("Insufficient evidence");
-    expect(view.decision.verdictParagraph).toContain("withholds the numerical score");
-    expect(view.decision.verdictParagraph).toContain("No zero or Low-risk conclusion");
-    expect(view.decision.treatmentChecklist).toContain(
-      "Do not classify the jurisdiction as low risk from missing evidence",
-    );
+    expect(view.scoreStatus).toBe("provisional");
+    expect(view.riskV2.score).not.toBeNull();
+    expect(view.riskV2.band).not.toBe("low");
+    expect(view.decision.verdictParagraph).toContain("provisional");
+    expect(view.decision.verdictParagraph).toContain("Low label is not permitted");
   });
 });

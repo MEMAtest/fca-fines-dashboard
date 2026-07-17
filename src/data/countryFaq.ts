@@ -28,7 +28,7 @@ export interface CountryFaq {
  * its `CountryView`. Same country always yields the same list.
  */
 export function buildCountryFaqs(view: CountryView): CountryFaq[] {
-  const { country, statusHeading, fatf, riskScore, cpi, decision } = view;
+  const { country, statusHeading, fatf, riskV2, cpi, decision } = view;
   const name = country.name;
   const faqs: CountryFaq[] = [];
 
@@ -51,9 +51,9 @@ export function buildCountryFaqs(view: CountryView): CountryFaq[] {
   // 3. AML risk rating — score/band; honest wording when withheld.
   faqs.push({
     question: `What is ${name}'s AML risk rating?`,
-    answer: riskScore.hasGovernance
-      ? `RegActions rates ${name} at ${riskScore.score.toFixed(1)}/10 (${bandLabel(riskScore.band)} risk) on its historical v1 country-risk scale, where a higher score means higher risk. The score uses a World Bank WGI governance base with FATF and legacy sanctions escalators.${cpi ? ` Transparency International's ${CPI_YEAR} Corruption Perceptions Index scores ${name} ${cpi.score}/100 (rank #${cpi.rank} of ${CPI_TOTAL}).` : ""}`
-      : `RegActions does not publish a headline AML risk score for ${name}. The required World Bank WGI governance base is unavailable, and RegActions withholds the score rather than converting missing evidence into a 0.0 or a Low-risk label.${cpi ? ` Transparency International's ${CPI_YEAR} Corruption Perceptions Index scores ${name} ${cpi.score}/100 (rank #${cpi.rank} of ${CPI_TOTAL}).` : ""}`,
+    answer: riskV2.score !== null && riskV2.band !== null
+      ? `RegActions rates ${name} at ${riskV2.score.toFixed(1)}/10 (${bandLabel(riskV2.band)} risk) under methodology v2, where a higher score means higher risk. The result combines FATF mutual-evaluation ratings, World Bank WGI governance and classified geographic sanctions exposure.${riskV2.status === "provisional" ? " This is a provisional result: one pillar is unavailable, so the available weights are renormalised and a Low label is not permitted." : ""}${cpi ? ` Transparency International's ${CPI_YEAR} Corruption Perceptions Index scores ${name} ${cpi.score}/100 (rank #${cpi.rank} of ${CPI_TOTAL}).` : ""}`
+      : `RegActions does not publish a headline AML risk score for ${name}. Fewer than two v2 pillars are available, and RegActions withholds the score rather than converting missing evidence into a 0.0 or a Low-risk label.${cpi ? ` Transparency International's ${CPI_YEAR} Corruption Perceptions Index scores ${name} ${cpi.score}/100 (rank #${cpi.rank} of ${CPI_TOTAL}).` : ""}`,
   });
 
   // 4. Due diligence — from decision.treatment.
@@ -79,7 +79,7 @@ function sanctionsAnswer(view: CountryView): string {
   const { country, sanctionsCoverageComplete, sanctionsTier, hasComprehensiveSanctions } = view;
   const name = country.name;
   if (!sanctionsCoverageComplete) {
-    return `RegActions cannot confirm this yet. The geographic sanctions classification for ${name} (OFAC, UK, EU and UN regimes) is under independent review, so absence of a programme is not inferred. Firms must still screen ${name} against the applicable UN, UK, EU and US sanctions lists.`;
+    return `RegActions cannot confirm this yet. The official geographic-sanctions evidence for ${name} (OFAC, UK, EU and UN regimes) is incomplete, so absence of a programme is not inferred. Firms must still screen ${name} against the applicable UN, UK, EU and US sanctions lists.`;
   }
   if (hasComprehensiveSanctions) {
     return `Yes. ${name} is subject to a comprehensive country-wide sanctions programme across one or more of the OFAC, UK, EU and UN regimes. Firms should treat ${name} as a prohibited or severely restricted jurisdiction and screen all counterparties against the applicable lists.`;

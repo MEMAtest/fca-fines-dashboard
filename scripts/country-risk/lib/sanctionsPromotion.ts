@@ -36,9 +36,9 @@ export interface SanctionsReviewRow {
   legal_instrument_id: string | null;
   legal_instrument_url: string | null;
   official_guidance_url: string | null;
-  legal_effective_from: string | null;
-  legal_effective_to: string | null;
-  source_last_updated: string | null;
+  legal_effective_from: string | Date | null;
+  legal_effective_to: string | Date | null;
+  source_last_updated: string | Date | null;
   evidence_locator: string | null;
   measures: SanctionsMeasureType[];
   broad_trade_prohibition: boolean | null;
@@ -141,6 +141,13 @@ function iso(value: string | Date): string {
   const parsed = value instanceof Date ? value : new Date(value);
   if (Number.isNaN(parsed.getTime())) throw new Error(`Invalid review timestamp: ${String(value)}`);
   return parsed.toISOString();
+}
+
+function optionalDate(value: string | Date | null): string | null {
+  if (!value) return null;
+  if (value instanceof Date) return value.toISOString().slice(0, 10);
+  const normalized = value.trim();
+  return normalized || null;
 }
 
 export function buildPromotedSanctionsSnapshot(args: {
@@ -270,7 +277,9 @@ export function buildPromotedSanctionsSnapshot(args: {
     if (!/^https:\/\//i.test(legalInstrumentUrl) || legalInstrumentUrl === row.catalogue_url) {
       throw new Error(`${key(row)}: legal instrument must be a measure-specific HTTPS URL`);
     }
-    const legalEffectiveFrom = required(row.legal_effective_from, "legal_effective_from", row);
+    const legalEffectiveFrom = optionalDate(row.legal_effective_from);
+    const legalEffectiveTo = optionalDate(row.legal_effective_to);
+    const sourceLastUpdated = optionalDate(row.source_last_updated);
     const evidenceLocator = required(row.evidence_locator, "evidence_locator", row);
     if (row.broad_trade_prohibition === null
       || row.broad_financial_prohibition === null
@@ -297,7 +306,8 @@ export function buildPromotedSanctionsSnapshot(args: {
       legalInstrumentId,
       legalInstrumentUrl,
       legalEffectiveFrom,
-      legalEffectiveTo: row.legal_effective_to,
+      legalEffectiveTo,
+      sourceLastUpdated,
       evidenceLocator,
       measures: row.measures,
       evidenceUrl: decisionEvidenceUrl,
@@ -344,7 +354,7 @@ export function buildPromotedSanctionsSnapshot(args: {
       legalInstrumentUrl,
       officialGuidanceUrl: row.official_guidance_url,
       legalEffectiveFrom,
-      legalEffectiveTo: row.legal_effective_to,
+      legalEffectiveTo,
       measures: row.measures,
       evidenceLocator,
     });
@@ -415,6 +425,8 @@ export function buildPromotedSanctionsSnapshot(args: {
       countryCount: countryRows.length,
       sources,
       coverageCellCount: coverage.length,
+      approvalMode: "deterministic-evidence",
+      externalValidation: "not-independently-validated",
     },
     countries: countryRows,
     coverage,

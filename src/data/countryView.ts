@@ -24,8 +24,6 @@ import {
   type CountryEnforcementSummary,
 } from "./countryEnforcement.js";
 import {
-  getSanctions,
-  highestSanctionsTier,
   isSanctioned,
   sanctionsTierLabel,
   SANCTIONS_REVIEWED,
@@ -41,7 +39,6 @@ import {
 import {
   computeCountryRiskScore,
   scoreBreakdown,
-  globalAverageRiskScore,
   type CountryRiskScore,
   type ScoreBreakdown,
   type RiskBand as ScoreBand,
@@ -57,16 +54,21 @@ import {
   hasComprehensiveSanctions as computeHasComprehensiveSanctions,
   type CountryDecision,
 } from "./countryDecision.js";
-import SCORE_SNAPSHOTS from "./scoreSnapshots.json" with { type: "json" };
 import { getFatfAssessment } from "./fatfAssessmentData.js";
-import { SANCTIONS_APPROVED_SNAPSHOT } from "./sanctionsApprovedData.js";
+import {
+  getApprovedSanctions,
+  SANCTIONS_APPROVED_SNAPSHOT,
+} from "./sanctionsApprovedData.js";
+import {
+  computeCountryRiskV2,
+  type CountryRiskPublicationStatus,
+  type CountryRiskV2Result,
+} from "./countryRiskV2.js";
 import {
   deriveSectorExposure,
   type SectorRow,
   type SectorExposureInput,
 } from "./sectorExposure.js";
-
-const SNAPSHOTS = SCORE_SNAPSHOTS as { date: string; scores: Record<string, number> }[];
 
 const MONTHS = [
   "Jan", "Feb", "Mar", "Apr", "May", "Jun",
@@ -177,7 +179,9 @@ export interface CountryView {
   sanctionsBand: RiskBand;
   /** Composite RegActions Country Risk Score (governance base + escalators). */
   riskScore: CountryRiskScore;
-  /** Whether the historical v1 formula has enough evidence to publish a score. */
+  /** Decision-grade v2 score used for the headline, ranking and public status. */
+  riskV2: CountryRiskV2Result;
+  /** V2 publication state; provisional scores remain visible but can never be labelled Low. */
   scoreStatus: CountryScorePublicationStatus;
   /** Score derivation for the "how is this scored?" card. */
   breakdown: ScoreBreakdown;
@@ -229,6 +233,13 @@ const TIER_RANK: Record<SanctionsTier, number> = {
   targeted: 1,
 };
 
+function highestTier(sanctions: CountrySanctions | undefined): SanctionsTier | undefined {
+  return sanctions?.programs.reduce<SanctionsTier | undefined>(
+    (highest, program) => !highest || TIER_RANK[program.tier] > TIER_RANK[highest] ? program.tier : highest,
+    undefined,
+  );
+}
+
 /** Build the attributed indicator blocks from the sourced data modules. */
 export function buildAttribution(
   country: Country,
@@ -240,7 +251,7 @@ export function buildAttribution(
     lastPlenary: string;
   },
 ): CountryAttribution {
-  const tier = highestSanctionsTier(country.iso2);
+  const tier = highestTier(view.sanctions);
   const imposers: SanctionsImposerRow[] = ATTR_IMPOSERS.map(({ imposer, label }) => {
     // pick the highest-tier programme for this imposer, if any
     const progs = view.sanctions?.programs.filter((p) => p.imposer === imposer) ?? [];
@@ -266,7 +277,7 @@ export function buildAttribution(
   return {
     sanctions: {
       imposers,
-      reviewed: SANCTIONS_REVIEWED,
+      reviewed: SANCTIONS_APPROVED_SNAPSHOT.effectiveAt?.slice(0, 7) ?? SANCTIONS_REVIEWED,
       headlineTier: tier ? sanctionsTierLabel(tier) : undefined,
     },
     governance: { subScores, vintage: GOVERNANCE_VINTAGE },
@@ -340,8 +351,10 @@ export function buildCountryView(country: Country): CountryView {
   const fatf = getFatfStatus(country.iso2);
   const history = FATF_RECENT_CHANGES.filter((c) => c.iso2 === country.iso2);
   const enforcement = getCountryEnforcementSummary(country.iso2);
-  const sanctions = getSanctions(country.iso2);
-  const sanctionsTier = highestSanctionsTier(country.iso2);
+  const sanctions = SANCTIONS_APPROVED_SNAPSHOT.coverageComplete
+    ? getApprovedSanctions(country.iso2)
+    : undefined;
+  const sanctionsTier = highestTier(sanctions);
 
   const statusHeading = fatf ? fatfLabel(fatf.listing) : "Not currently listed";
   const statusDetail = fatf
@@ -359,9 +372,8 @@ export function buildCountryView(country: Country): CountryView {
       )} plenary.`;
 
   const riskScore = computeCountryRiskScore(country.iso2);
-  const scoreStatus: CountryScorePublicationStatus = riskScore.hasGovernance
-    ? "rated"
-    : "insufficient-data";
+  const riskV2 = computeCountryRiskV2(country.iso2);
+  const scoreStatus = riskV2.status;
   const breakdown = scoreBreakdown(country.iso2);
   const cpi = getCpi(country.iso2);
   const enforcementAssessed = !!enforcement;
@@ -370,8 +382,12 @@ export function buildCountryView(country: Country): CountryView {
 
   const decision = buildDecision({
     name: country.name,
-    riskScore,
-    scoreAvailable: scoreStatus === "rated",
+    riskResult: {
+      score: riskV2.score,
+      band: riskV2.band,
+      status: riskV2.status,
+    },
+    scoreAvailable: riskV2.score !== null,
     breakdown,
     sanctions,
     sanctionsTier,
@@ -404,9 +420,10 @@ export function buildCountryView(country: Country): CountryView {
     sanctionsTier,
     sanctionsBand: sanctionsToBand(sanctionsTier),
     riskScore,
+    riskV2,
     scoreStatus,
     breakdown,
-    globalAverage: globalAverageRiskScore(),
+    globalAverage: globalAverageRiskScoreV2(),
     cpi,
     regionalPeers: regionalPeers(country.iso2, country.region),
     decision,
@@ -414,10 +431,9 @@ export function buildCountryView(country: Country): CountryView {
     hasComprehensiveSanctions,
     hasTargetedSanctions,
     sanctionsCoverageComplete: SANCTIONS_APPROVED_SNAPSHOT.coverageComplete,
-    scoreHistory: SNAPSHOTS.filter((s) => s.scores[country.iso2] != null).map((s) => ({
-      date: s.date,
-      score: s.scores[country.iso2],
-    })),
+    scoreHistory: riskV2.score === null || !SANCTIONS_APPROVED_SNAPSHOT.generatedAt
+      ? []
+      : [{ date: SANCTIONS_APPROVED_SNAPSHOT.generatedAt.slice(0, 10), score: riskV2.score }],
     attribution: buildAttribution(country, {
       sanctions,
       cpi,
@@ -521,7 +537,7 @@ export function enforcementExposure(iso2: string): number {
 export interface CountryIndexEntry {
   country: Country;
   flag: string;
-  /** Null means the required v1 governance base is unavailable. */
+  /** Null means fewer than two v2 pillars are available. */
   score: number | null;
   band: ScoreBand | null;
   status: CountryScorePublicationStatus;
@@ -535,7 +551,7 @@ export interface CountryIndexEntry {
   enforcementExposure: number;
 }
 
-export type CountryScorePublicationStatus = "rated" | "insufficient-data";
+export type CountryScorePublicationStatus = CountryRiskPublicationStatus;
 
 let _index: CountryIndexEntry[] | undefined;
 
@@ -544,19 +560,19 @@ export function buildCountryIndex(): CountryIndexEntry[] {
   if (_index) return _index;
   _index = pageCountries()
     .map((country) => {
-      const rs = computeCountryRiskScore(country.iso2);
-      const status: CountryScorePublicationStatus = rs.hasGovernance
-        ? "rated"
-        : "insufficient-data";
+      const result = computeCountryRiskV2(country.iso2);
+      const sanctions = SANCTIONS_APPROVED_SNAPSHOT.coverageComplete
+        ? getApprovedSanctions(country.iso2)
+        : undefined;
       return {
         country,
         flag: flagEmoji(country.iso2),
-        score: rs.hasGovernance ? rs.score : null,
-        band: rs.hasGovernance ? rs.band : null,
-        status,
+        score: result.score,
+        band: result.band,
+        status: result.status,
         fatf: getFatfStatus(country.iso2),
         sanctionsTier: SANCTIONS_APPROVED_SNAPSHOT.coverageComplete
-          ? highestSanctionsTier(country.iso2)
+          ? highestTier(sanctions)
           : undefined,
         sanctionsCoverageComplete: SANCTIONS_APPROVED_SNAPSHOT.coverageComplete,
         hasEnforcement: hasEnforcementCoverage(country.iso2),
@@ -570,6 +586,20 @@ export function buildCountryIndex(): CountryIndexEntry[] {
       return b.score - a.score || a.country.name.localeCompare(b.country.name);
     });
   return _index;
+}
+
+let _globalAverageV2: number | undefined;
+
+/** Mean published v2 result across complete and explicitly provisional jurisdictions. */
+export function globalAverageRiskScoreV2(): number {
+  if (_globalAverageV2 !== undefined) return _globalAverageV2;
+  const scores = buildCountryIndex()
+    .map((entry) => entry.score)
+    .filter((score): score is number => score !== null);
+  _globalAverageV2 = scores.length
+    ? Math.round((scores.reduce((sum, score) => sum + score, 0) / scores.length) * 10) / 10
+    : 0;
+  return _globalAverageV2;
 }
 
 /** Global rank (1 = highest risk) and total, from the sorted index. */
@@ -620,19 +650,18 @@ export function regionalAverages(): RegionalAverage[] {
 }
 
 export interface PillarAverages {
-  /** Mean governance base (0–10). */
+  /** Mean weighted governance contribution. */
   governance: number;
-  /** Mean FATF escalator points added. */
+  /** Mean weighted AML/CFT contribution. */
   fatf: number;
-  /** Mean sanctions escalator points added. */
+  /** Mean weighted sanctions contribution. */
   sanctions: number;
 }
 
 let _pillarAverages: PillarAverages | undefined;
 
 /**
- * Global mean contribution of each part of the composite across page countries:
- * the governance base and the FATF / sanctions escalator points. Drives the
+ * Global mean weighted contribution of each v2 pillar across published countries. Drives the
  * "what drives global risk" donut on the index.
  */
 export function pillarAverages(): PillarAverages {
@@ -642,11 +671,11 @@ export function pillarAverages(): PillarAverages {
   let s = 0;
   let n = 0;
   for (const c of pageCountries()) {
-    const rs = computeCountryRiskScore(c.iso2);
-    if (!rs.hasGovernance) continue;
-    base += rs.base;
-    f += rs.fatf.points;
-    s += rs.sanctions.points;
+    const result = computeCountryRiskV2(c.iso2);
+    if (result.score === null) continue;
+    base += (result.pillars.governance.score ?? 0) * result.pillars.governance.appliedWeight;
+    f += (result.pillars.aml.score ?? 0) * result.pillars.aml.appliedWeight;
+    s += (result.pillars.sanctions.score ?? 0) * result.pillars.sanctions.appliedWeight;
     n += 1;
   }
   const round = (x: number) => Math.round(x * 10) / 10;

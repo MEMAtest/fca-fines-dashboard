@@ -42,10 +42,10 @@ import { sanctionsTierLabel, type SanctionsTier } from "../data/sanctionsStatus.
 import {
   bandLabel,
   bandFor,
-  computeCountryRiskScore,
   scoreBreakdown,
   type RiskBand,
 } from "../data/countryRiskScore.js";
+import { computeCountryRiskV2 } from "../data/countryRiskV2.js";
 import {
   buildCountryIndex,
   regionalAverages,
@@ -100,20 +100,20 @@ const DRIVER_LABEL: Record<string, string> = {
 
 function keyDrivers(iso2: string): string[] {
   const bd = scoreBreakdown(iso2);
-  const score = computeCountryRiskScore(iso2);
-  if (!score.hasGovernance) {
-    return ["Headline score withheld: World Bank WGI governance evidence unavailable"];
+  const result = computeCountryRiskV2(iso2);
+  if (result.score === null) {
+    return ["Headline score withheld: fewer than two v2 pillars are available"];
   }
   const out: string[] = [];
-  if (bd.fatf.points > 0) out.push(`FATF ${bd.fatf.label.toLowerCase()}`);
-  if (bd.sanctions.points > 0) out.push(`${bd.sanctions.label} sanctions`);
+  result.regulatoryFlags.forEach((flag) => out.push(flag.label));
   bd.domains
     .filter((d) => d.risk !== null && (d.risk as number) >= 5)
     .sort((a, b) => (b.risk as number) - (a.risk as number))
     .forEach((d) => {
       if (out.length < 4) out.push(DRIVER_LABEL[d.key] ?? d.label);
     });
-  return out.length ? out : ["Governance-driven baseline risk"];
+  if (result.status === "provisional") out.push("Provisional: one pillar unavailable");
+  return out.length ? out.slice(0, 4) : ["No elevated regulatory flag identified"];
 }
 
 function inQuadrant(e: CountryIndexEntry, q: Quadrant): boolean {
@@ -320,9 +320,9 @@ function FilterBar({
         onChange={(e) => setSanctionsFilter(e.target.value)}
         aria-label="Sanctions"
         disabled={!sanctionsScoringReady}
-        title={sanctionsScoringReady ? undefined : "V2 sanctions legal review is not complete"}
+        title={sanctionsScoringReady ? undefined : "Official sanctions evidence is incomplete"}
       >
-        <option value="All">{sanctionsScoringReady ? "All sanctions" : "V2 review pending"}</option>
+        <option value="All">{sanctionsScoringReady ? "All sanctions" : "Evidence incomplete"}</option>
         <option value="comprehensive">Comprehensive</option>
         <option value="sectoral">Sectoral</option>
         <option value="targeted">Targeted</option>
@@ -679,7 +679,7 @@ function GlobalIndex() {
   const [query, setQuery] = useState("");
   const [fatfFilter, setFatfFilter] = useState<"All" | "black" | "grey" | "none">("All");
   const [sanctionsFilter, setSanctionsFilter] = useState<"All" | SanctionsTier | "none">("All");
-  const [statusFilter, setStatusFilter] = useState<"All" | "rated" | "insufficient-data">("All");
+  const [statusFilter, setStatusFilter] = useState<"All" | "complete" | "provisional" | "insufficient-data">("All");
   const [quadrant, setQuadrant] = useState<Quadrant | null>(null);
   const [sortKey, setSortKey] = useState<"score" | "name" | "region">("score");
   const [sortDir, setSortDir] = useState<"asc" | "desc">("desc");
@@ -696,7 +696,9 @@ function GlobalIndex() {
     return c;
   }, [index]);
   const ratedCount = useMemo(() => index.filter(isRatedEntry).length, [index]);
-  const insufficientCount = index.length - ratedCount;
+  const completeCount = useMemo(() => index.filter((entry) => entry.status === "complete").length, [index]);
+  const provisionalCount = useMemo(() => index.filter((entry) => entry.status === "provisional").length, [index]);
+  const insufficientCount = useMemo(() => index.filter((entry) => entry.status === "insufficient-data").length, [index]);
   const fatfCounts = useMemo(() => {
     let black = 0;
     let grey = 0;
@@ -796,9 +798,9 @@ function GlobalIndex() {
   const nameOf = (iso2: string) => getCountryByIso2(iso2)?.name ?? iso2;
 
   const pillarData = [
-    { key: "governance", name: "Governance base", value: pillars.governance },
-    { key: "fatf", name: "FATF escalator", value: pillars.fatf },
-    { key: "sanctions", name: "Sanctions escalator", value: pillars.sanctions },
+    { key: "governance", name: "Governance contribution", value: pillars.governance },
+    { key: "fatf", name: "AML/CFT contribution", value: pillars.fatf },
+    { key: "sanctions", name: "Sanctions contribution", value: pillars.sanctions },
   ];
 
   const toggleSort = (key: "score" | "name" | "region") => {
@@ -823,8 +825,8 @@ function GlobalIndex() {
   };
 
   const kpis: Array<{ label: string; value: number; cls: string; pressed: boolean; onClick: () => void }> = [
-    { label: "Countries rated", value: ratedCount, cls: "rated", pressed: statusFilter === "rated", onClick: () => setStatusFilter(statusFilter === "rated" ? "All" : "rated") },
-    { label: "Insufficient data", value: insufficientCount, cls: "insufficient", pressed: statusFilter === "insufficient-data", onClick: () => setStatusFilter(statusFilter === "insufficient-data" ? "All" : "insufficient-data") },
+    { label: "Complete", value: completeCount, cls: "rated", pressed: statusFilter === "complete", onClick: () => setStatusFilter(statusFilter === "complete" ? "All" : "complete") },
+    { label: "Provisional", value: provisionalCount, cls: "insufficient", pressed: statusFilter === "provisional", onClick: () => setStatusFilter(statusFilter === "provisional" ? "All" : "provisional") },
     { label: "Black list", value: fatfCounts.black, cls: "black", pressed: fatfFilter === "black", onClick: () => setFatfFilter(fatfFilter === "black" ? "All" : "black") },
     { label: "Grey list", value: fatfCounts.grey, cls: "grey", pressed: fatfFilter === "grey", onClick: () => setFatfFilter(fatfFilter === "grey" ? "All" : "grey") },
     { label: "High risk", value: counts.high + counts["very-high"], cls: "high", pressed: band === "high", onClick: () => setBand(band === "high" ? "All" : "high") },
@@ -840,9 +842,9 @@ function GlobalIndex() {
         <h1 className="country-index__title">Global Country Risk Ratings</h1>
         <p className="cx-dash__lead">
           Country-by-country AML and financial-crime risk coverage for {index.length} jurisdictions.
-          {" "}{ratedCount} historical v1 comparison scores are published; {insufficientCount} are
-          explicitly withheld because the required World Bank governance base is unavailable.
-          FATF flags remain visible and sanctions classification remains under independent review.
+          {" "}{completeCount} v2 scores are complete and {provisionalCount} are explicitly provisional;
+          {insufficientCount ? ` ${insufficientCount} are withheld because fewer than two pillars are available.` : " no headline score is currently withheld."}
+          The sanctions pillar is based on a complete deterministic official-evidence snapshot.
           Enforcement volume and corruption perception are shown for context but never scored.{" "}
           <Link to="/countries/methodology">How the score works →</Link>
         </p>
@@ -932,9 +934,9 @@ function GlobalIndex() {
                   value={sanctionsFilter}
                   onChange={(e) => setSanctionsFilter(e.target.value as typeof sanctionsFilter)}
                   disabled={!sanctionsScoringReady}
-                  title={sanctionsScoringReady ? undefined : "V2 sanctions legal review is not complete"}
+                  title={sanctionsScoringReady ? undefined : "Official sanctions evidence is incomplete"}
                 >
-                  <option value="All">{sanctionsScoringReady ? "All" : "Review pending"}</option>
+                  <option value="All">{sanctionsScoringReady ? "All" : "Evidence incomplete"}</option>
                   <option value="comprehensive">Comprehensive</option>
                   <option value="sectoral">Sectoral</option>
                   <option value="targeted">Targeted</option>
@@ -950,7 +952,7 @@ function GlobalIndex() {
                     type="button"
                     className="cx-seg"
                     disabled={!sanctionsScoringReady}
-                    title={sanctionsScoringReady ? undefined : "V2 sanctions legal review is not complete"}
+                    title={sanctionsScoringReady ? undefined : "Official sanctions evidence is incomplete"}
                     onClick={() => { clearFilters(); setSanctionsFilter("comprehensive"); }}
                   >Comprehensive sanctions</button>
                   <button type="button" className="cx-seg" onClick={() => { clearFilters(); setBand("very-high"); }}>Very high risk <b>{counts["very-high"]}</b></button>
@@ -1095,7 +1097,7 @@ function GlobalIndex() {
               <tr>
                 <th>#</th>
                 <th><button type="button" className="cx-sort" onClick={() => toggleSort("name")}>Country{sortArrow("name")}</button></th>
-                <th className="country-ratings__num"><button type="button" className="cx-sort" onClick={() => toggleSort("score")}>Score · v1{sortArrow("score")}</button></th>
+                <th className="country-ratings__num"><button type="button" className="cx-sort" onClick={() => toggleSort("score")}>Score · v2{sortArrow("score")}</button></th>
                 <th>Risk</th>
                 <th><button type="button" className="cx-sort" onClick={() => toggleSort("region")}>Region{sortArrow("region")}</button></th>
                 <th>FATF</th>
@@ -1116,12 +1118,14 @@ function GlobalIndex() {
                       {e.score === null ? "—" : e.score.toFixed(1)}
                     </span>
                   </td>
-                  <td>{e.band ? bandLabel(e.band) : "Insufficient data"}</td>
+                  <td>{e.band ? `${bandLabel(e.band)}${e.status === "provisional" ? " · provisional" : ""}` : "Insufficient data"}</td>
                   <td className="country-ratings__region">{e.country.region}</td>
                   <td>{e.fatf ? fatfLabel(e.fatf.listing) : "—"}</td>
-                  <td>{e.sanctionsCoverageComplete && e.sanctionsTier
-                    ? sanctionsTierLabel(e.sanctionsTier)
-                    : "Not scored — legal review"}</td>
+                  <td>{e.sanctionsCoverageComplete
+                    ? e.sanctionsTier
+                      ? sanctionsTierLabel(e.sanctionsTier)
+                      : "No direct regime"
+                    : "Evidence incomplete"}</td>
                 </tr>
               ))}
               {rows.length === 0 && (

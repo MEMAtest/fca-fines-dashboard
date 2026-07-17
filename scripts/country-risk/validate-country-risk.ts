@@ -1,8 +1,10 @@
 #!/usr/bin/env npx tsx
 import { writeFile } from "node:fs/promises";
 import { pageCountries } from "../../src/data/countryView.js";
-import { computeCountryRiskV2, COUNTRY_RISK_PILLAR_WEIGHTS } from "../../src/data/countryRiskV2.js";
+import { computeCountryRiskV2, COUNTRY_RISK_PILLAR_WEIGHTS, governancePillarRisk } from "../../src/data/countryRiskV2.js";
 import { getCpi } from "../../src/data/cpiData.js";
+import { FATF_CHANGE_LOG } from "../../src/data/fatfStatus.js";
+import { getGovernanceDimensions, GOVERNANCE_VINTAGE } from "../../src/data/governanceData.js";
 
 const output = process.argv.find((arg) => arg.startsWith("--output="))?.split("=")[1]
   ?? "/tmp/country-risk-v2-validation.json";
@@ -33,6 +35,39 @@ const correlation = (() => {
   );
   return denominator ? Math.round((numerator / denominator) * 1000) / 1000 : null;
 })();
+const mean = (values: number[]) => values.reduce((sum, value) => sum + value, 0) / values.length;
+const median = (values: number[]) => {
+  const sorted = [...values].sort((a, b) => a - b);
+  const middle = Math.floor(sorted.length / 2);
+  return sorted.length % 2 ? sorted[middle] : (sorted[middle - 1] + sorted[middle]) / 2;
+};
+// A deliberately narrow, non-leaking back-test: only WGI 2024 governance risk
+// is used to test direction before later FATF additions. Current FATF status,
+// current FATF ratings and sanctions are excluded from the historical input.
+const additionEvents = [...new Map(
+  FATF_CHANGE_LOG
+    .filter((change) => change.change === "added" && change.date > `${GOVERNANCE_VINTAGE}-12-31`)
+    .map((change) => [change.iso2, change]),
+).values()];
+const governanceUniverse = pageCountries().flatMap((country) => {
+  const score = governancePillarRisk(getGovernanceDimensions(country.iso2)).score;
+  return score === null ? [] : [{ iso2: country.iso2, score }];
+});
+const eventSet = new Set(additionEvents.map((event) => event.iso2));
+const comparators = governanceUniverse.filter((item) => !eventSet.has(item.iso2));
+const comparatorScores = comparators.map((item) => item.score);
+const eventScores = additionEvents.flatMap((event) => {
+  const score = governancePillarRisk(getGovernanceDimensions(event.iso2)).score;
+  return score === null ? [] : [{ ...event, governanceRisk: score }];
+});
+const comparatorMedian = median(comparatorScores);
+const backtestEvents = eventScores.map((event) => ({
+  ...event,
+  higherRiskPercentile: Math.round(
+    (comparators.filter((item) => item.score <= event.governanceRisk).length / comparators.length) * 1000,
+  ) / 10,
+  aboveComparatorMedian: event.governanceRisk > comparatorMedian,
+}));
 const report = {
   generatedAt: asOf.toISOString(),
   summary: {
@@ -45,8 +80,18 @@ const report = {
   },
   sensitivity,
   backtest: {
-    status: "not-run",
-    reason: "Historical point-in-time FATF assessments and WGI snapshots are required; current listings must not leak into historical scores.",
+    status: "completed-limited",
+    design: `WGI ${GOVERNANCE_VINTAGE} governance-only risk compared with jurisdictions added to FATF increased monitoring after ${GOVERNANCE_VINTAGE}; current listing, assessment and sanctions inputs are excluded.`,
+    eventCount: backtestEvents.length,
+    comparatorCount: comparators.length,
+    eventMeanGovernanceRisk: Math.round(mean(eventScores.map((event) => event.governanceRisk)) * 100) / 100,
+    comparatorMeanGovernanceRisk: Math.round(mean(comparatorScores) * 100) / 100,
+    comparatorMedianGovernanceRisk: comparatorMedian,
+    proportionAboveComparatorMedian: Math.round(
+      (backtestEvents.filter((event) => event.aboveComparatorMedian).length / backtestEvents.length) * 1000,
+    ) / 1000,
+    events: backtestEvents,
+    limitation: "Exploratory direction test with a small event sample; it is not causal validation and independent quantitative review remains a separately disclosed assurance step.",
   },
 };
 await writeFile(output, `${JSON.stringify(report, null, 2)}\n`);

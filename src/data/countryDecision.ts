@@ -8,7 +8,8 @@
  * country. Templated from data, so it is prerender-safe and never hallucinated.
  * Generic guidance, NOT legal advice.
  */
-import { bandLabel, type CountryRiskScore, type ScoreBreakdown } from "./countryRiskScore.js";
+import { bandLabel, type RiskBand, type ScoreBreakdown } from "./countryRiskScore.js";
+import type { CountryRiskPublicationStatus } from "./countryRiskV2.js";
 import {
   SANCTIONS_REVIEWED,
   type CountrySanctions,
@@ -59,8 +60,12 @@ export interface CountryDecision {
 
 export interface DecisionInput {
   name: string;
-  riskScore: CountryRiskScore;
-  /** False when the historical v1 formula has no WGI governance base. */
+  riskResult: {
+    score: number | null;
+    band: RiskBand | null;
+    status: CountryRiskPublicationStatus;
+  };
+  /** False when fewer than two v2 pillars are available. */
   scoreAvailable: boolean;
   breakdown: ScoreBreakdown;
   sanctions?: CountrySanctions;
@@ -101,7 +106,7 @@ export function hasComprehensiveSanctions(sanctions?: CountrySanctions): boolean
 function treatmentFor(input: DecisionInput): string {
   const black = input.fatf?.listing === "call-for-action";
   const comprehensive = input.sanctionsCoverageComplete && hasComprehensiveSanctions(input.sanctions);
-  const band = input.riskScore.band;
+  const band = input.riskResult.band;
   if (black || comprehensive)
     return "Enhanced due diligence, with restriction or prohibition of higher-risk activity.";
   if (!input.scoreAvailable)
@@ -118,21 +123,21 @@ function treatmentFor(input: DecisionInput): string {
 }
 
 function verdict(input: DecisionInput): { headline: string; paragraph: string } {
-  if (!input.riskScore.hasGovernance) {
+  if (!input.scoreAvailable || input.riskResult.score === null || input.riskResult.band === null) {
     const fatfPhrase = input.fatf
       ? `It remains subject to the FATF ${input.fatf.listing === "call-for-action" ? "call-for-action" : "increased-monitoring"} flag, which must be handled independently.`
       : "It is not currently FATF grey- or black-listed, but that absence does not establish low risk.";
     return {
       headline: "Insufficient evidence for a headline country-risk score",
-      paragraph: `${input.name} has no World Bank WGI governance base for the historical v1 formula, so RegActions withholds the numerical score and risk band. ${fatfPhrase} Geographic sanctions classification remains under independent review. No zero or Low-risk conclusion is inferred from the missing evidence.`,
+      paragraph: `${input.name} has fewer than two available v2 pillars, so RegActions withholds the numerical score and risk band. ${fatfPhrase} No zero or Low-risk conclusion is inferred from missing evidence.`,
     };
   }
   const doms = topDomains(input.breakdown);
   const top = doms[0];
   const qualifier = top && (top.risk as number) >= 4 ? DOMAIN_QUALIFIER[top.key] : "";
-  const headline = `${bandLabel(input.riskScore.band)} country risk${qualifier ? `, with ${qualifier}` : ""}`;
+  const headline = `${bandLabel(input.riskResult.band)} country risk${qualifier ? `, with ${qualifier}` : ""}`;
 
-  const bandLower = bandLabel(input.riskScore.band).toLowerCase();
+  const bandLower = bandLabel(input.riskResult.band).toLowerCase();
   const driverPhrase =
     doms.length > 1 && (doms[1].risk as number) >= 4
       ? `weak ${DOMAIN_NOUN[top.key]}, alongside ${DOMAIN_NOUN[doms[1].key]} risk`
@@ -145,15 +150,18 @@ function verdict(input: DecisionInput): { headline: string; paragraph: string } 
       : "on the FATF grey list"
     : "not currently FATF grey- or black-listed";
   const sancClause = !input.sanctionsCoverageComplete
-    ? "The v2 geographic-sanctions classification is under independent review, so the absence of a programme is not inferred"
+    ? "The v2 geographic-sanctions evidence is unavailable, so the absence of a programme is not inferred"
     : `${input.name} is ${hasComprehensiveSanctions(input.sanctions)
         ? "subject to comprehensive country-wide sanctions"
         : "not subject to comprehensive country-wide sanctions"}`;
   const scrutiny =
-    input.riskScore.band === "low"
+    input.riskResult.band === "low"
       ? ""
       : " Firms should apply additional scrutiny where exposure involves state-linked entities, restricted sectors, sensitive technology, dual-use goods or politically exposed counterparties.";
-  const paragraph = `${input.name}'s overall country risk score is ${input.riskScore.score.toFixed(1)}/10, placing it in the ${bandLower}-risk band. The principal driver is ${driverPhrase}. ${input.name} is ${fatfPhrase}. ${sancClause}.${scrutiny}`;
+  const statusClause = input.riskResult.status === "provisional"
+    ? " The result is provisional because one pillar is unavailable, and a Low label is not permitted."
+    : "";
+  const paragraph = `${input.name}'s v2 country risk score is ${input.riskResult.score.toFixed(1)}/10, placing it in the ${bandLower}-risk band.${statusClause} The principal driver is ${driverPhrase}. ${input.name} is ${fatfPhrase}. ${sancClause}.${scrutiny}`;
   return { headline, paragraph };
 }
 
@@ -174,7 +182,7 @@ function riskDrivers(input: DecisionInput): string[] {
     ? out
     : [input.sanctionsCoverageComplete
         ? "Governance-driven baseline risk; no listing or sanctions escalators"
-        : "Governance-driven baseline risk; sanctions classification pending independent review"];
+        : "Governance-driven baseline risk; sanctions evidence unavailable"];
 }
 
 function mitigatingFactors(input: DecisionInput): string[] {
@@ -188,7 +196,7 @@ function mitigatingFactors(input: DecisionInput): string[] {
   out.push(
     !input.scoreAvailable
       ? "No low-risk conclusion is drawn until the evidence gap is resolved."
-      : input.riskScore.band === "low"
+      : input.riskResult.band === "low"
       ? "Overall governance and institutional quality are relatively strong."
       : "Risk is concentrated in specific counterparties, sectors and transactions rather than applying uniformly.",
   );
@@ -199,11 +207,11 @@ function businessImpact(input: DecisionInput): BusinessImpactRow[] {
   const level =
     !input.scoreAvailable
       ? "Review"
-      : input.riskScore.band === "low"
+      : input.riskResult.band === "low"
       ? "Low"
-      : input.riskScore.band === "moderate"
+      : input.riskResult.band === "moderate"
         ? "Medium"
-        : input.riskScore.band === "high"
+        : input.riskResult.band === "high"
           ? "High"
           : "Enhanced";
   return [
@@ -300,7 +308,7 @@ export function treatmentChecklist(input: DecisionInput): string[] {
   }
 
   // 5. Proportionate standard-DD items for lower-risk / thin profiles.
-  const isLow = input.scoreAvailable && input.riskScore.band === "low";
+  const isLow = input.scoreAvailable && input.riskResult.band === "low";
   const standardItems = isLow
     ? [
         "Apply proportionate standard due diligence to new counterparties",
@@ -322,7 +330,7 @@ export function treatmentChecklist(input: DecisionInput): string[] {
 
 function whatChanged(input: DecisionInput): WhatChangedItem[] {
   const sancValue = !input.sanctionsCoverageComplete
-    ? "Classification review pending — absence not inferred"
+    ? "Official-source evidence incomplete; absence not inferred"
     : hasComprehensiveSanctions(input.sanctions)
       ? "Comprehensive programme in place"
       : input.sanctionsTier
