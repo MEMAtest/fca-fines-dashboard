@@ -107,6 +107,9 @@ const REGULATOR_PALETTES: Record<string, RegulatorPalette> = {
   SPK: { ink: "#991b1b", surface: "#fee2e2", ring: "#fca5a5" },
   GHSEC: { ink: "#166534", surface: "#dcfce7", ring: "#86efac" },
   IOMFSA: { ink: "#1e3a8a", surface: "#dbeafe", ring: "#93c5fd" },
+  AMMC: { ink: "#9a3412", surface: "#ffedd5", ring: "#fdba74" },
+  CNV: { ink: "#0369a1", surface: "#e0f2fe", ring: "#7dd3fc" },
+  FSS: { ink: "#1e40af", surface: "#dbeafe", ring: "#93c5fd" },
 };
 
 export const OFFICIAL_REGULATOR_LOGOS: Partial<
@@ -408,6 +411,33 @@ export const OFFICIAL_REGULATOR_LOGOS: Partial<
     sourceType: "official-site",
     backgroundMode: "light-box-required",
     approvedForDarkUi: false,
+    approvedForPrint: true,
+    lastReviewedAt: "2026-07-17",
+  },
+  AMMC: {
+    assetPath: "/regulator-logos/ammc.png",
+    sourceUrl: "https://www.ammc.ma/sites/default/files/logo_ammc_website.png",
+    sourceType: "official-site",
+    backgroundMode: "transparent",
+    approvedForDarkUi: false,
+    approvedForPrint: true,
+    lastReviewedAt: "2026-07-17",
+  },
+  CNV: {
+    assetPath: "/regulator-logos/cnv.png",
+    sourceUrl: "https://www.cnv.gov.ar/SitioWeb/wwwroot/img/Logo-para-firma.png",
+    sourceType: "official-site",
+    backgroundMode: "transparent",
+    approvedForDarkUi: false,
+    approvedForPrint: true,
+    lastReviewedAt: "2026-07-17",
+  },
+  FSS: {
+    assetPath: "/regulator-logos/fss.png",
+    sourceUrl: "https://www.fss.or.kr/static/ico/apple-icon-152x152.png",
+    sourceType: "official-site",
+    backgroundMode: "transparent",
+    approvedForDarkUi: true,
     approvedForPrint: true,
     lastReviewedAt: "2026-07-17",
   },
