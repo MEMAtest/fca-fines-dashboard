@@ -1,222 +1,346 @@
 /**
- * FDIC (Federal Deposit Insurance Corporation - USA) Scraper
+ * FDIC (Federal Deposit Insurance Corporation — USA) Enforcement Decisions & Orders
  *
- * Strategy: Scrape press releases archive with enforcement keyword filtering
- * URL: https://www.fdic.gov/news/press-releases
+ * Strategy: The FDIC's public "Enforcement Decisions and Orders" register
+ *   (https://orders.fdic.gov/s/searchform) is a Salesforce Lightning (Aura)
+ *   community app — its search grid cannot be scraped from static HTML. However,
+ *   the register exposes a "Download All" button that streams the entire order
+ *   set as a single CSV (EDOOrders.csv). This loader renders the page with a
+ *   headless browser (Playwright/Chromium), clicks "Download All", and parses
+ *   the CSV. No Aura reverse-engineering is required.
  *
- * Difficulty: 3/10 (Easy) - Clean HTML, clear pagination, consistent format
- * Expected: 100-300 enforcement actions
+ * URL: https://orders.fdic.gov/s/searchform
  *
- * Run: npx tsx scripts/scraper/scrapeFdic.ts
+ * Difficulty: 6/10 (Medium-High) — Salesforce Aura shell, but the official CSV
+ *   export sidesteps the JS grid entirely.
+ * Language: English. Amounts are civil money penalties (CMP) in USD. The CSV
+ *   aligns one Respondent to one CMP Amount via parallel semicolon-delimited
+ *   lists, so each (order × respondent) becomes one record carrying that
+ *   respondent's own penalty. A zero or blank CMP fails toward a null amount
+ *   (many orders are prohibition / cease-and-desist actions with no penalty).
+ *
+ * Run: npx tsx scripts/scraper/scrapeFdic.ts --dry-run
  */
 
-import 'dotenv/config';
+import "dotenv/config";
+import { parse } from "csv-parse/sync";
+import { fileURLToPath } from "node:url";
 import {
-  type ParsedEnforcementRecord,
   buildEuFineRecord,
-  createSqlClient,
-  fetchText,
   normalizeWhitespace,
-  parseMonthNameDate,
-  parseLargestAmountFromText,
-  upsertEuFines,
-  printDryRunSummary,
-} from './lib/euFineHelpers.js';
-import * as cheerio from 'cheerio';
+  parsePlainAmount,
+  type DbReadyRecord,
+} from "./lib/euFineHelpers.js";
+import { runScraper } from "./lib/runScraper.js";
 
-const FDIC_CONFIG = {
-  baseUrl: 'https://www.fdic.gov',
-  pressReleasesUrl: 'https://www.fdic.gov/news/press-releases',
-  rateLimit: 1000,
-};
+const FDIC_EDOS_URL = "https://orders.fdic.gov/s/searchform";
 
-const sql = createSqlClient();
-
-interface FDICRecord {
-  firm: string;
-  amount: number | null;
-  currency: string;
-  date: string;
-  breach: string;
-  link: string | null;
-  summary: string;
+/** One respondent under one FDIC enforcement order. */
+export interface FdicOrderRow {
+  orderTitle: string;
+  dateIssued: string;
+  respondent: string;
+  cmpAmount: number | null;
+  bankName: string;
+  bankCity: string;
+  bankState: string;
+  category: string;
+  actionType: string;
+  docketNumber: string;
+  fileUrl: string | null;
 }
 
-async function main() {
-  console.log('🇺🇸 FDIC Enforcement Actions Scraper\n');
-  console.log('Target: Federal Deposit Insurance Corporation (USA)');
-  console.log('Method: Press release archive scraping\n');
+/** FDIC CSV dates are ISO (YYYY-MM-DD). */
+export function parseFdicDate(input: string): string | null {
+  const match = normalizeWhitespace(input).match(/^(\d{4})-(\d{2})-(\d{2})/);
+  return match ? `${match[1]}-${match[2]}-${match[3]}` : null;
+}
 
-  // Check for command-line flags
-  const useTestData = process.argv.includes('--test-data');
-  const dryRun = process.argv.includes('--dry-run');
-
-  if (useTestData) {
-    console.log('⚠️  Using test data (--test-data flag detected)\n');
+/** A respondent value carries no publishable identity when it is masked or redacted. */
+export function isUnpublishableRespondent(value: string): boolean {
+  const cleaned = normalizeWhitespace(value);
+  if (!cleaned) {
+    return true;
   }
-  if (dryRun) {
-    console.log('🔍 Dry run mode - no database writes (--dry-run flag detected)\n');
+  // "**********" masks, literal "Redacted", and "N/A" placeholders are anonymised
+  // source rows with no real entity name — they cannot be published as a fine.
+  return (
+    /^\*+$/.test(cleaned) || /^(redacted|n\/a)$/i.test(cleaned)
+  );
+}
+
+/**
+ * The CSV joins per-respondent values with ";". Split preserves list alignment
+ * for pairing against the parallel CMP Amount list; caller filters unpublishable
+ * names afterwards so alignment is not broken here.
+ */
+function splitList(value: string): string[] {
+  return value
+    .split(";")
+    .map((entry) => normalizeWhitespace(entry));
+}
+
+/** A CMP cell fails toward null unless it is a positive, finite figure. */
+function parseCmpAmount(value: string): number | null {
+  const cleaned = normalizeWhitespace(value);
+  if (!cleaned || /^(n\/a|redacted)$/i.test(cleaned)) {
+    return null;
   }
+  const amount = parsePlainAmount(cleaned);
+  return amount !== null && amount > 0 ? amount : null;
+}
 
-  try {
-    // Scrape real FDIC data or use test data
-    const records = useTestData ? getTestData() : await scrapeFdicData();
+function cleanCell(value: string | undefined): string {
+  const cleaned = normalizeWhitespace(value ?? "").replace(/;$/, "");
+  return /^n\/a$/i.test(cleaned) ? "" : cleaned;
+}
 
-    console.log(`\n📊 Extracted ${records.length} enforcement actions`);
+/**
+ * Parse the EDOOrders.csv export into one row per (order × respondent).
+ * Respondent[i] is paired with CMP Amount[i]; when the CMP list is shorter
+ * (or absent) the amount is null.
+ */
+export function parseFdicCsv(csv: string): FdicOrderRow[] {
+  const records = parse(csv, {
+    columns: (header: string[]) => header.map((h) => h.trim()),
+    skip_empty_lines: true,
+    relax_column_count: true,
+    trim: true,
+  }) as Record<string, string>[];
 
-    // Transform to ParsedEnforcementRecord format
-    const parsedRecords = records.map((r) => transformToEnforcementRecord(r));
+  const rows: FdicOrderRow[] = [];
+  let droppedRespondents = 0;
+  let droppedDates = 0;
 
-    // Build database records
-    const dbRecords = parsedRecords.map((r) => buildEuFineRecord(r));
-
-    // Insert into database (skip if dry-run)
-    if (dryRun) {
-      printDryRunSummary(dbRecords);
-    } else {
-      await upsertEuFines(sql, dbRecords);
-
-      // Refresh materialized view
-      console.log('\n🔄 Refreshing unified regulatory fines view...');
-      await sql`SELECT refresh_all_fines()`;
-      console.log('✅ View refreshed');
+  for (const record of records) {
+    const dateIssued = parseFdicDate(record["Issued Date"] ?? "");
+    if (!dateIssued) {
+      // A row with no issue date cannot be published; skip it (counted so a
+      // future source date-format change cannot silently drop rows).
+      droppedDates += 1;
+      continue;
     }
 
-    // Summary
-    const totalFdic = await sql`SELECT COUNT(*) as count FROM eu_fines WHERE regulator = 'FDIC'`;
-    const totalAll = await sql`SELECT COUNT(*) as count FROM all_regulatory_fines`;
+    const respondents = splitList(record["Respondent"] ?? "");
+    if (respondents.every((entry) => entry.length === 0)) {
+      continue;
+    }
 
-    console.log('\n📈 Database Summary:');
-    console.log(`   - FDIC enforcement actions: ${totalFdic[0].count}`);
-    console.log(`   - Total regulatory fines (FCA + EU): ${totalAll[0].count}`);
+    const cmpCells = (record["CMP Amount"] ?? "").split(";");
+    const fileUrlRaw = cleanCell(record["File URL"]);
+    const fileUrl = /^https?:\/\//i.test(fileUrlRaw) ? fileUrlRaw : null;
 
-    console.log('\n✅ FDIC scraper completed successfully!');
-    await sql.end();
-    process.exit(0);
-  } catch (error) {
-    console.error('❌ FDIC scraper failed:', error);
-    await sql.end();
-    process.exit(1);
+    respondents.forEach((respondent, index) => {
+      // Skip masked/redacted respondents but keep the CMP index alignment intact.
+      if (isUnpublishableRespondent(respondent)) {
+        if (respondent.length > 0) {
+          droppedRespondents += 1;
+        }
+        return;
+      }
+
+      rows.push({
+        orderTitle: cleanCell(record["Order Title"]),
+        dateIssued,
+        respondent,
+        cmpAmount: parseCmpAmount(cmpCells[index] ?? ""),
+        bankName: cleanCell(record["Bank Name"]),
+        bankCity: cleanCell(record["Bank City"]),
+        bankState: cleanCell(record["Bank State"]),
+        category: cleanCell(record["Category"]),
+        actionType: cleanCell(record["Action Type"]),
+        docketNumber: cleanCell(record["Docket Number"]),
+        fileUrl,
+      });
+    });
   }
+
+  if (droppedRespondents > 0) {
+    // Anonymised rows cannot be published; log for auditability.
+    console.warn(
+      `FDIC: dropped ${droppedRespondents} masked/redacted respondent name(s) with no publishable identity`,
+    );
+  }
+  if (droppedDates > 0) {
+    // eslint-disable-next-line no-console
+    console.warn(`FDIC: dropped ${droppedDates} row(s) with non-ISO issued dates`);
+  }
+
+  return rows;
 }
 
-function getTestData(): FDICRecord[] {
-  // Test data based on known FDIC enforcement actions
-  return [
-    {
-      firm: 'Wells Fargo Bank, N.A.',
-      amount: 1000000000,
-      currency: 'USD',
-      date: '2024-07-11',
-      breach: 'Consumer compliance violations',
-      link: 'https://www.fdic.gov/news/press-releases/2024/pr24059.html',
-      summary: 'Civil money penalty for widespread consumer compliance failures',
-    },
-    {
-      firm: 'Citibank, N.A.',
-      amount: 25300000,
-      currency: 'USD',
-      date: '2023-10-25',
-      breach: 'Deficiencies in data governance and internal controls',
-      link: 'https://www.fdic.gov/news/press-releases/2023/pr23082.html',
-      summary: 'Civil money penalty for data quality and risk management failures',
-    },
-    {
-      firm: 'U.S. Bank National Association',
-      amount: 37500000,
-      currency: 'USD',
-      date: '2023-05-10',
-      breach: 'Failure to file suspicious activity reports',
-      link: 'https://www.fdic.gov/news/press-releases/2023/pr23032.html',
-      summary: 'Civil money penalty for BSA/AML compliance failures',
-    },
-  ];
-}
-
-async function scrapeFdicData(): Promise<FDICRecord[]> {
-  console.log('📡 Fetching FDIC press releases...');
-  console.log(`   URL: ${FDIC_CONFIG.pressReleasesUrl}`);
-
-  // NOTE: Live scraping implementation would go here
-  // For now, throwing error to force use of --test-data
-  throw new Error('FDIC live scraping is not implemented yet. Use --test-data flag for now.');
-
-  // Future implementation would:
-  // 1. Scrape press releases page with pagination
-  // 2. Filter for enforcement keywords: "enforcement", "action", "order", "consent", "prohibition", "civil money penalty"
-  // 3. Fetch detail pages for full text
-  // 4. Extract firm name from title pattern: "FDIC Issues Action Against [Name]"
-  // 5. Extract amount with parseLargestAmountFromText()
-  // 6. Return FDICRecord[]
-}
-
-function transformToEnforcementRecord(record: FDICRecord): ParsedEnforcementRecord {
-  return {
-    regulator: 'FDIC',
-    regulatorFullName: 'Federal Deposit Insurance Corporation',
-    countryCode: 'US',
-    countryName: 'United States',
-    firmIndividual: record.firm,
-    firmCategory: null,
-    amount: record.amount,
-    currency: record.currency,
-    dateIssued: record.date,
-    breachType: extractBreachType(record.breach),
-    breachCategories: categorizeBreachType(record.breach),
-    summary: `${record.firm} fined $${(record.amount || 0).toLocaleString('en-US')} by FDIC. ${record.summary}`,
-    finalNoticeUrl: record.link,
-    sourceUrl: FDIC_CONFIG.pressReleasesUrl,
-    rawPayload: record,
-  };
-}
-
-function extractBreachType(breach: string): string {
-  const lower = breach.toLowerCase();
-
-  if (lower.includes('bsa') || lower.includes('aml') || lower.includes('suspicious activity')) {
-    return 'BSA/AML Violations';
-  }
-  if (lower.includes('consumer') || lower.includes('compliance')) {
-    return 'Consumer Compliance Violations';
-  }
-  if (lower.includes('data') || lower.includes('governance') || lower.includes('risk management')) {
-    return 'Data Governance and Risk Management';
-  }
-  if (lower.includes('safety') || lower.includes('soundness')) {
-    return 'Safety and Soundness';
-  }
-  if (lower.includes('lending') || lower.includes('credit')) {
-    return 'Lending Violations';
-  }
-
-  return 'Regulatory Breach';
-}
-
-function categorizeBreachType(breach: string): string[] {
+export function categorizeFdicRow(row: FdicOrderRow): string[] {
+  const corpus =
+    `${row.actionType} ${row.orderTitle} ${row.category}`.toLowerCase();
   const categories: string[] = [];
-  const lower = breach.toLowerCase();
 
-  if (lower.includes('bsa') || lower.includes('aml') || lower.includes('suspicious activity')) {
-    categories.push('AML');
+  if (/civil money penalty|\bcmp\b|order to pay/.test(corpus)) {
+    categories.push("MONETARY_SANCTION");
   }
-  if (lower.includes('consumer') || lower.includes('compliance')) {
-    categories.push('CONSUMER_PROTECTION');
+  if (/removal|prohibition/.test(corpus)) {
+    categories.push("PROHIBITION");
   }
-  if (lower.includes('data') || lower.includes('governance')) {
-    categories.push('GOVERNANCE');
+  if (/cease and desist|c&d|pc&d/.test(corpus)) {
+    categories.push("CEASE_AND_DESIST");
   }
-  if (lower.includes('risk management') || lower.includes('internal controls')) {
-    categories.push('RISK_MANAGEMENT');
+  if (/restitution/.test(corpus)) {
+    categories.push("RESTITUTION");
   }
-  if (lower.includes('lending') || lower.includes('credit')) {
-    categories.push('LENDING');
+  if (/deposit insurance|termination/.test(corpus)) {
+    categories.push("DEPOSIT_INSURANCE");
   }
-  if (lower.includes('safety') || lower.includes('soundness')) {
-    categories.push('SAFETY_SOUNDNESS');
+  if (/misrep|section 18/.test(corpus)) {
+    categories.push("DISCLOSURE");
   }
 
-  return categories.length > 0 ? categories : ['OTHER'];
+  return categories.length > 0 ? [...new Set(categories)] : ["SUPERVISORY_ACTION"];
 }
 
-// Run scraper
-main();
+function buildFdicBreachType(row: FdicOrderRow): string {
+  return row.actionType || row.orderTitle || "FDIC enforcement action";
+}
+
+function buildFdicSummary(row: FdicOrderRow): string {
+  const bank = row.bankName && row.bankName !== row.respondent ? row.bankName : "";
+  const location = [row.bankCity, row.bankState].filter(Boolean).join(", ");
+  const penalty =
+    row.cmpAmount !== null
+      ? ` with a civil money penalty of USD ${row.cmpAmount.toLocaleString("en-US")}`
+      : "";
+  const context = bank
+    ? ` in connection with ${bank}${location ? ` (${location})` : ""}`
+    : location
+      ? ` (${location})`
+      : "";
+  const action = (row.actionType || row.orderTitle || "enforcement action").toLowerCase();
+
+  return normalizeWhitespace(
+    `${row.respondent}: FDIC ${action}${context}${penalty}, issued ${row.dateIssued}${
+      row.docketNumber ? ` (docket ${row.docketNumber})` : ""
+    }.`,
+  ).slice(0, 500);
+}
+
+export function buildFdicRecord(row: FdicOrderRow): DbReadyRecord {
+  return buildEuFineRecord({
+    regulator: "FDIC",
+    regulatorFullName: "Federal Deposit Insurance Corporation",
+    countryCode: "US",
+    countryName: "United States",
+    firmIndividual: row.respondent,
+    firmCategory: row.bankName && row.bankName === row.respondent ? "Bank" : "Institution-Affiliated Party",
+    amount: row.cmpAmount,
+    currency: "USD",
+    dateIssued: row.dateIssued,
+    breachType: buildFdicBreachType(row),
+    breachCategories: categorizeFdicRow(row),
+    summary: buildFdicSummary(row),
+    finalNoticeUrl: row.fileUrl,
+    sourceUrl: FDIC_EDOS_URL,
+    // Docket + respondent gives a stable per-party key; some old orders share
+    // a docket across respondents, so the respondent name disambiguates.
+    dedupeKey: `${row.docketNumber || row.orderTitle}::${row.respondent}::${row.dateIssued}`,
+    rawPayload: row,
+  });
+}
+
+export function buildFdicRecords(rows: FdicOrderRow[]): DbReadyRecord[] {
+  // Two orders can legitimately share (docket, respondent, date) after cleaning
+  // (e.g. re-issued corrections); the content hash dedupes those to one row.
+  const byHash = new Map<string, DbReadyRecord>();
+  for (const row of rows) {
+    const record = buildFdicRecord(row);
+    byHash.set(record.contentHash, record);
+  }
+
+  return [...byHash.values()].sort(
+    (left, right) =>
+      right.dateIssued.localeCompare(left.dateIssued) ||
+      left.firmIndividual.localeCompare(right.firmIndividual),
+  );
+}
+
+/**
+ * Render the EDOS register, click "Download All", and return the CSV text.
+ * Kept in the browser context so the Salesforce guest session/token that
+ * authorises the export is the one that requests it.
+ */
+async function downloadEdosCsv(): Promise<string> {
+  const { chromium } = await import("playwright");
+  const headless = process.env.SCRAPER_BROWSER_HEADLESS !== "false";
+  const browser = await chromium.launch({
+    headless,
+    args: ["--no-sandbox", "--disable-setuid-sandbox", "--disable-dev-shm-usage"],
+  });
+  try {
+    const context = await browser.newContext({
+      userAgent:
+        "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 " +
+        "(KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36",
+      locale: "en-US",
+      acceptDownloads: true,
+    });
+    const page = await context.newPage();
+    await page.goto(FDIC_EDOS_URL, { waitUntil: "domcontentloaded", timeout: 90_000 });
+    // The "Download All" button is rendered by the Aura component after boot.
+    await page.waitForSelector("button", { timeout: 60_000 });
+    await page.waitForTimeout(6_000);
+
+    const [download] = await Promise.all([
+      page.waitForEvent("download", { timeout: 60_000 }),
+      page.evaluate(() => {
+        const button = [...document.querySelectorAll("button")].find((element) =>
+          /download all/i.test(element.textContent || ""),
+        );
+        if (!button) {
+          throw new Error("FDIC EDOS 'Download All' button not found on the page.");
+        }
+        (button as HTMLButtonElement).click();
+      }),
+    ]);
+
+    const stream = await download.createReadStream();
+    const chunks: Buffer[] = [];
+    for await (const chunk of stream) {
+      chunks.push(Buffer.from(chunk));
+    }
+    return Buffer.concat(chunks).toString("utf8");
+  } finally {
+    await browser.close().catch(() => undefined);
+  }
+}
+
+export async function loadFdicLiveRecords(): Promise<DbReadyRecord[]> {
+  const csv = await downloadEdosCsv();
+  if (!csv.includes("Issued Date")) {
+    throw new Error("FDIC EDOS export did not contain the expected CSV header.");
+  }
+  const rows = parseFdicCsv(csv);
+  // Completeness floor: the register holds ~11k respondent rows; a truncated
+  // or throttled export must be rejected, not silently published as partial.
+  if (rows.length < 5000) {
+    throw new Error(
+      `FDIC: Download All export looks truncated (${rows.length} rows; expected several thousand)`,
+    );
+  }
+  return buildFdicRecords(rows);
+}
+
+export async function main() {
+  await runScraper({
+    name: "🇺🇸 FDIC Enforcement Decisions & Orders Scraper",
+    region: "North America",
+    regulatorCode: "FDIC",
+    liveLoader: loadFdicLiveRecords,
+    testLoader: loadFdicLiveRecords,
+    // Salesforce boot can flake; a single retry is cheap versus a browser launch.
+    retryOnTransientFailure: true,
+  });
+}
+
+if (process.argv[1] && fileURLToPath(import.meta.url) === process.argv[1]) {
+  main().catch((error) => {
+    console.error("❌ FDIC scraper failed:", error);
+    process.exit(1);
+  });
+}
