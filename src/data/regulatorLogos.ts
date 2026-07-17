@@ -104,6 +104,9 @@ const REGULATOR_PALETTES: Record<string, RegulatorPalette> = {
   CIMA: { ink: "#7c2d12", surface: "#ffedd5", ring: "#fdba74" },
   BMA: { ink: "#1d4ed8", surface: "#dbeafe", ring: "#93c5fd" },
   CBN: { ink: "#166534", surface: "#dcfce7", ring: "#86efac" },
+  SPK: { ink: "#991b1b", surface: "#fee2e2", ring: "#fca5a5" },
+  GHSEC: { ink: "#166534", surface: "#dcfce7", ring: "#86efac" },
+  IOMFSA: { ink: "#1e3a8a", surface: "#dbeafe", ring: "#93c5fd" },
 };
 
 export const OFFICIAL_REGULATOR_LOGOS: Partial<
@@ -379,6 +382,34 @@ export const OFFICIAL_REGULATOR_LOGOS: Partial<
     approvedForDarkUi: true,
     approvedForPrint: true,
     lastReviewedAt: "2026-04-03",
+  },
+  SPK: {
+    assetPath: "/regulator-logos/spk.png",
+    sourceUrl: "https://www.spk.gov.tr/",
+    sourceType: "official-site",
+    backgroundMode: "transparent",
+    approvedForDarkUi: true,
+    approvedForPrint: true,
+    lastReviewedAt: "2026-07-17",
+  },
+  GHSEC: {
+    assetPath: "/regulator-logos/ghsec.png",
+    sourceUrl:
+      "https://ucarecdn.com/6f641253-8e37-4c9c-98f0-7a6a76c6839b/cropped-SEC-final-logo-footer-04-e1488983562337-1.png",
+    sourceType: "official-site",
+    backgroundMode: "transparent",
+    approvedForDarkUi: true,
+    approvedForPrint: true,
+    lastReviewedAt: "2026-07-17",
+  },
+  IOMFSA: {
+    assetPath: "/regulator-logos/iomfsa.png",
+    sourceUrl: "https://www.iomfsa.im/images/IOMFSA_logo.png",
+    sourceType: "official-site",
+    backgroundMode: "light-box-required",
+    approvedForDarkUi: false,
+    approvedForPrint: true,
+    lastReviewedAt: "2026-07-17",
   },
   CVM: {
     assetPath: "/regulator-logos/cvm.png",
