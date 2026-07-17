@@ -13,7 +13,7 @@
 
 import { readFileSync, writeFileSync, mkdirSync, existsSync } from "node:fs";
 import { join, dirname } from "node:path";
-import { fileURLToPath } from "node:url";
+import { fileURLToPath, pathToFileURL } from "node:url";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -581,10 +581,32 @@ function renderCountryFatfBody(view: CountryView): string {
         )}</li>`,
     )
     .join("")}</ul>`;
-  // Historical prose narratives contain v1 scores. The v2 page uses the
-  // deterministic decision and exact arithmetic above instead of publishing
-  // stale score claims into crawler-visible HTML.
-  const analysisHtml = "";
+  // Grounded narrative prose (analysis / outlook / watchpoints). This was gated
+  // out while the narrative corpus quoted v1-era composite scores that
+  // contradicted the published v2 number. The narrative-v2 reconciliation
+  // (Wave F1) de-scored the full corpus so the prose is now engine-agnostic:
+  // it describes the DRIVERS of risk (WGI domains, CPI, FATF/sanctions facts,
+  // MER dates) but never a composite score, band label, escalator or percentile
+  // (enforced by src/data/thinNarratives.test.ts), so it can safely be
+  // published into crawler-visible HTML. This is the country pages' single
+  // largest previously-dead SEO asset (~211 entries of grounded prose). The
+  // summary is omitted here because the intro paragraph already leads the page.
+  const narrative = getNarrative(country.iso2);
+  const analysisHtml = narrative
+    ? `<h2>${escapeHtml(`${country.name}: analysis`)}</h2><p>${escapeHtml(
+        narrative.analysis,
+      )}</p><h3>${escapeHtml("Outlook")}</h3><p>${escapeHtml(
+        narrative.outlook,
+      )}</p>${
+        narrative.keyWatchpoints.length > 0
+          ? `<h3>${escapeHtml(
+              "Key watchpoints",
+            )}</h3><ul>${narrative.keyWatchpoints
+              .map((w) => `<li>${escapeHtml(w)}</li>`)
+              .join("")}</ul>`
+          : ""
+      }`
+    : "";
   const sanctionsHtml =
     sanctionsCoverageComplete && sanctions && sanctionsTier
       ? `<h2>Sanctions: ${escapeHtml(sanctionsTierLabel(sanctionsTier))}</h2><ul>${sanctions.programs
@@ -2986,7 +3008,22 @@ async function main() {
   console.log("Done!");
 }
 
-main().catch((error) => {
-  console.error("Pre-render failed:", error);
-  process.exit(1);
-});
+// Only run the full pre-render when executed directly (e.g. `tsx prerender-seo.ts`),
+// not when imported (e.g. by the prerender-content unit test that exercises
+// renderCountryFatfBody). Compares the resolved entry path to this module's URL.
+const isMain =
+  typeof process !== "undefined" &&
+  Array.isArray(process.argv) &&
+  process.argv[1] !== undefined &&
+  import.meta.url === pathToFileURL(process.argv[1]).href;
+
+if (isMain) {
+  main().catch((error) => {
+    console.error("Pre-render failed:", error);
+    process.exit(1);
+  });
+}
+
+// Exported for unit testing the crawler-visible HTML (see
+// scripts/country-risk/lib/prerenderCountryBody.test.ts). Not part of the CLI surface.
+export { renderCountryFatfBody };
