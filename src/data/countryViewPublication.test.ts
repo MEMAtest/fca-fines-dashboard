@@ -3,6 +3,7 @@ import { getCountryByIso2 } from "./countries.js";
 import {
   buildCountryIndex,
   buildCountryView,
+  formatDate,
   globalRank,
   regionalAverages,
 } from "./countryView.js";
@@ -10,6 +11,10 @@ import {
 const FORMER_V1_GAPS = ["VG", "CW", "GI", "GG", "IM", "MS", "SX", "TC", "VA"];
 
 describe("country score publication safeguards", () => {
+  it("formats persisted ISO score-run timestamps as calendar dates", () => {
+    expect(formatDate("2026-07-17T10:03:29.041Z")).toBe("17 Jul 2026");
+  });
+
   it("never publishes missing governance evidence as a 0.0 score", () => {
     const index = buildCountryIndex();
     expect(index).toHaveLength(211);

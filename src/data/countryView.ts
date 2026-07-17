@@ -77,7 +77,8 @@ const MONTHS = [
 
 /** Format an ISO date (YYYY-MM-DD or YYYY-MM) as "19 Jun 2026" / "Oct 2026". */
 export function formatDate(iso: string): string {
-  const [y, m, d] = iso.split("-");
+  const [y, m, dayValue] = iso.split("T")[0].split("-");
+  const d = dayValue?.slice(0, 2);
   const monthIdx = m ? Number(m) - 1 : NaN;
   const mon = monthIdx >= 0 && monthIdx < 12 ? MONTHS[monthIdx] : undefined;
   if (d && mon) return `${Number(d)} ${mon} ${y}`;
