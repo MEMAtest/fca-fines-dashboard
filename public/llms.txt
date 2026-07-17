@@ -1,0 +1,39 @@
+# RegActions
+
+> RegActions is a global regulatory enforcement intelligence platform built by MEMA Consultants. It tracks fines and enforcement actions from 45+ financial regulators worldwide and publishes country-level AML/financial-crime risk ratings that combine FATF listing status, a World Bank WGI governance base, sanctions exposure and the Transparency International Corruption Perceptions Index. All data is drawn from licence-clean official sources and cited on-page.
+
+## About
+
+- Site: https://regactions.com
+- Operator: MEMA Consultants (https://memaconsultants.com)
+- Coverage: 45+ financial regulators; 200+ jurisdictions with country-risk profiles; enforcement records from 2013 onward.
+
+## Key pages
+
+- [Homepage](https://regactions.com/): overview of enforcement and country-risk coverage.
+- [Regulator data hub](https://regactions.com/regulators): enforcement actions by regulator, firm, year, sector and breach type.
+- [Enforcement search](https://regactions.com/search): search the global enforcement dataset.
+- [Country risk ratings](https://regactions.com/countries): global country AML risk ratings and bands.
+- [FATF grey list](https://regactions.com/countries/fatf-grey-list): FATF grey and black lists, current as of the latest plenary.
+- [Country risk methodology (v1)](https://regactions.com/countries/methodology) and [v2](https://regactions.com/countries/methodology/v2).
+- [Developer API docs](https://regactions.com/developers): free, keyless, CORS-open endpoints.
+- [Blog / insights](https://regactions.com/blog): analysis of enforcement trends.
+- [About](https://regactions.com/about) and [Privacy](https://regactions.com/privacy).
+
+## Datasets
+
+- RegActions Regulatory Fines Database: enforcement actions and penalties from 45+ regulators (2013 onward).
+- RegActions Country AML Risk Ratings: FATF status, WGI governance base, sanctions exposure, CPI and a composite risk band per jurisdiction.
+
+## API endpoints (free, keyless, CORS-open, JSON)
+
+- Country risk list: https://regactions.com/api/country-risk/list
+- Country risk detail (by ISO 3166-1 alpha-2): https://regactions.com/api/country-risk/{iso2} (e.g. .../api/country-risk/GB)
+- Enforcement search: https://regactions.com/api/unified/search?q={query}
+- Full documentation: https://regactions.com/developers
+
+## Licence and attribution
+
+- Data licence: CC BY-NC 4.0 (https://creativecommons.org/licenses/by-nc/4.0/). Non-commercial reuse permitted with attribution.
+- Required attribution (visible, clickable link): Data: RegActions — regactions.com
+- Contact: contact@memaconsultants.com

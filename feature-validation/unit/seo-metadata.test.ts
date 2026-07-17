@@ -217,10 +217,12 @@ describe('SEO Metadata - index.html Validation', () => {
       const hreflangs = htmlContent.match(/<link rel="alternate" hreflang="([^"]+)"/g) || [];
       expect(hreflangs.length).toBeGreaterThan(0);
 
-      const hreflangsSet = new Set(hreflangs.map(h => h.match(/hreflang="([^"]+)/)[1]));
-      expect(hreflangsSet.has('en')).toBe(true);
-      expect(hreflangsSet.has('en-us')).toBe(true);
-      expect(hreflangsSet.has('en-gb')).toBe(true);
+      // The redundant en/en-gb/en-us trio was dropped (schema hygiene). The site is
+      // single-locale, so a single locale-neutral x-default self-reference is kept —
+      // which is the opposite of UK-only geo-targeting.
+      const hreflangsSet = new Set(hreflangs.map(h => h.match(/hreflang="([^"]+)/)![1]));
+      expect(hreflangsSet.has('x-default')).toBe(true);
+      expect(hreflangsSet.has('en-gb')).toBe(false);
     });
 
     it('MUST NOT have geo location meta tags for UK only', () => {

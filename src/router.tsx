@@ -279,6 +279,11 @@ const About = lazyPage(() =>
     default: module.About,
   })),
 );
+const Developers = lazyPage(() =>
+  import("./pages/Developers.js").then((module) => ({
+    default: module.Developers,
+  })),
+);
 const Privacy = lazyPage(() =>
   import("./pages/Privacy.js").then((module) => ({
     default: module.Privacy,
@@ -427,6 +432,27 @@ const router = createBrowserRouter([
       {
         path: "/privacy",
         element: <Suspense fallback={<div style={{ minHeight: "60vh" }} />}><Privacy /></Suspense>,
+      },
+      {
+        path: "/developers",
+        element: (
+          <Suspense
+            fallback={
+              <div
+                style={{
+                  minHeight: "100vh",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                }}
+              >
+                Loading developers...
+              </div>
+            }
+          >
+            <Developers />
+          </Suspense>
+        ),
       },
       {
         path: "/search",

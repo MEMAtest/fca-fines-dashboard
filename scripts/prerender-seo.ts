@@ -70,7 +70,7 @@ import {
   fatfChangeText,
   type CountryView,
 } from "../src/data/countryView.js";
-import { sanctionsTierLabel } from "../src/data/sanctionsStatus.js";
+import { sanctionsTierLabel, SANCTIONS_REVIEWED } from "../src/data/sanctionsStatus.js";
 import { SANCTIONS_APPROVED_SNAPSHOT } from "../src/data/sanctionsApprovedData.js";
 import { getNarrative } from "../src/data/countryNarratives.js";
 import {
@@ -94,6 +94,18 @@ import {
   FATF_RECENT_CHANGES,
   type FatfStatus,
 } from "../src/data/fatfStatus.js";
+import {
+  buildCountryFaqs,
+  generateCountryFaqSchema,
+  type CountryFaq,
+} from "../src/data/countryFaq.js";
+import {
+  DEVELOPER_ENDPOINTS,
+  DEVELOPERS_ATTRIBUTION_HTML,
+  DEVELOPERS_ATTRIBUTION_TEXT,
+  DEVELOPERS_LICENCE_NAME,
+  DEVELOPERS_LICENCE_URL,
+} from "../src/data/developersApiDocs.js";
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -141,6 +153,41 @@ function humanize(label: string) {
     .toLowerCase()
     .replace(/\b[a-z]/g, (c) => c.toUpperCase());
 }
+
+/**
+ * Normalise a partial date (YYYY, YYYY-MM or YYYY-MM-DD) to a full YYYY-MM-DD.
+ * Missing month/day default to the last day available, so a "2024" vintage doesn't
+ * mask a later fine-grained date when we take the max across sources.
+ */
+function normalizeToFullDate(value: string): string {
+  if (/^\d{4}-\d{2}-\d{2}$/.test(value)) return value;
+  if (/^\d{4}-\d{2}$/.test(value)) {
+    const [y, m] = value.split("-").map(Number);
+    const lastDay = new Date(Date.UTC(y, m, 0)).getUTCDate();
+    return `${value}-${String(lastDay).padStart(2, "0")}`;
+  }
+  if (/^\d{4}$/.test(value)) return `${value}-12-31`;
+  return "";
+}
+
+/** Latest (max) of a set of partial dates, normalised to YYYY-MM-DD; empty ones ignored. */
+function latestDate(...values: string[]): string {
+  const full = values.map(normalizeToFullDate).filter(Boolean).sort();
+  return full.length ? full[full.length - 1] : "";
+}
+
+/**
+ * Real per-country-page freshness date: the latest data-change date across the
+ * signals a country page actually shows — FATF plenary, sanctions review month,
+ * WGI governance vintage and CPI vintage. Never fabricated, never the build date.
+ */
+// Clamped to today: month-precision vintages normalise to month-END (so a
+// "2026-07" review doesn't lose to an earlier full date), which can land in
+// the future mid-month — and Google ignores future lastmod/dateModified.
+const COUNTRY_PAGE_DATE = clampISODate(
+  latestDate(FATF_LAST_PLENARY, SANCTIONS_REVIEWED, GOVERNANCE_VINTAGE, CPI_YEAR),
+  todayISO(),
+);
 
 interface PageMeta {
   path: string; // e.g. '/blog/fca-fines-2025-complete-list'
@@ -233,6 +280,22 @@ function renderHubBody(
     )
     .join("");
   return `<div class="blog-page"><div class="blog-post-container"><article class="blog-article-modal"><h1 class="blog-post-title">${escapeHtml(title)}</h1><div class="blog-article-content"><p>${escapeHtml(description)}</p><h2>Coverage Snapshot</h2><ul>${metricsHtml}</ul><h2>Use This Data</h2><p>Open the live RegActions workspace to filter the source records, inspect related firms, compare breach themes, and export the evidence for compliance or board reporting.</p><p><a href="${ctaPath}">Open live enforcement data</a></p></div></article></div></div>`;
+}
+
+/**
+ * Visible FAQ block for a country page. The answer text here is byte-identical to
+ * the FAQPage JSON-LD (both come from `buildCountryFaqs`), satisfying Google's
+ * requirement that the marked-up answer match the on-page answer.
+ */
+function renderCountryFaqBlock(faqs: CountryFaq[]): string {
+  if (faqs.length === 0) return "";
+  const items = faqs
+    .map(
+      (faq) =>
+        `<div class="country-faq__item"><h3>${escapeHtml(faq.question)}</h3><p>${escapeHtml(faq.answer)}</p></div>`,
+    )
+    .join("");
+  return `<section class="country-faq"><h2>FAQ</h2>${items}</section>`;
 }
 
 /**
@@ -452,13 +515,16 @@ function renderCountryFatfBody(view: CountryView): string {
   )} · <a href="${escapeHtml(CPI_SOURCE)}" rel="noopener">${escapeHtml(
     `TI CPI (${CPI_LICENCE}, display only)`,
   )}</a></p>`;
+  // Visible FAQ block — answers MUST match the FAQPage JSON-LD verbatim (Google
+  // requirement). Both derive from buildCountryFaqs(view), so they cannot drift.
+  const faqHtml = renderCountryFaqBlock(buildCountryFaqs(view));
   return `<div class="blog-page"><div class="blog-post-container"><article class="blog-article-modal"><h1 class="blog-post-title">${escapeHtml(
     title,
   )}</h1><div class="blog-article-content">${introHtml}${treatmentHtml}${glanceHtml}${scoreHtml}${decisionHtml}<h2>FATF status: ${escapeHtml(
     statusHeading,
   )}</h2><p>${escapeHtml(
     statusDetail,
-  )}</p>${sanctionsHtml}${attrHtml}${historyHtml}${enforcementHtml}${regulatoryHtml}${sectorHtml}${analysisHtml}${whatChangedHtml}${peersHtml}${sourcesHtml}</div></article></div></div>`;
+  )}</p>${sanctionsHtml}${attrHtml}${historyHtml}${enforcementHtml}${regulatoryHtml}${sectorHtml}${analysisHtml}${whatChangedHtml}${peersHtml}${faqHtml}${sourcesHtml}</div></article></div></div>`;
 }
 
 /** Crawlable body for the /countries index (FATF grey + black lists). */
@@ -591,6 +657,40 @@ function renderTopicsLandingBody(): string {
   return `<div class="blog-page"><div class="blog-post-container"><article class="blog-article-modal"><h1 class="blog-post-title">Explore Enforcement Topics</h1><div class="blog-article-content"><p>Browse RegActions editorial clusters for FCA fines, AML, Consumer Duty, market abuse, and board reporting, then move into breach, year, sector, and firm data hubs.</p><h2>Editorial Topic Clusters</h2><ul>${clusterLinks}</ul><h2>Data Hubs</h2><ul><li><a href="/breaches">Breach categories</a></li><li><a href="/years">Fines by year</a></li><li><a href="/sectors">Fines by sector</a></li><li><a href="/firms">Top firms and individuals</a></li></ul></div></article></div></div>`;
 }
 
+/** Crawlable body for the /developers API docs page — mirrors Developers.tsx. */
+function renderDevelopersBody(): string {
+  const termsHtml = `<h2>Access and terms</h2><ul><li><strong>Keyless.</strong> No registration, token or API key is required.</li><li><strong>CORS-open.</strong> Every endpoint returns Access-Control-Allow-Origin: *, so browser clients can call it directly.</li><li><strong>Update cadence.</strong> Responses are computed deterministically at request time and edge-cached for about five minutes. Underlying data changes when its source does: FATF lists per plenary (three times a year), sanctions on review, World Bank WGI annually, and enforcement records as new official notices are published.</li><li><strong>Licence and attribution.</strong> Data is provided under <a href="${escapeHtml(
+    DEVELOPERS_LICENCE_URL,
+  )}" rel="noopener">${escapeHtml(
+    DEVELOPERS_LICENCE_NAME,
+  )}</a>. Non-commercial reuse is permitted with a visible, clickable credit link back to RegActions.</li></ul>`;
+  const attributionHtml = `<h2>Required attribution</h2><p>Show this visible link wherever you display the data:</p><p><a href="https://regactions.com">${escapeHtml(
+    DEVELOPERS_ATTRIBUTION_TEXT,
+  )}</a></p><p>Copy-paste HTML:</p><pre><code>${escapeHtml(
+    DEVELOPERS_ATTRIBUTION_HTML,
+  )}</code></pre>`;
+  const endpointsHtml = DEVELOPER_ENDPOINTS.map((endpoint) => {
+    const rows = endpoint.fields
+      .map(
+        (f) =>
+          `<tr><td><code>${escapeHtml(f.name)}</code></td><td>${escapeHtml(
+            f.type,
+          )}</td><td>${escapeHtml(f.description)}</td></tr>`,
+      )
+      .join("");
+    return `<section><h2><code>${escapeHtml(endpoint.method)} ${escapeHtml(
+      endpoint.path,
+    )}</code></h2><p>${escapeHtml(
+      endpoint.summary,
+    )}</p><h3>Example</h3><pre><code>${escapeHtml(
+      endpoint.example,
+    )}</code></pre><h3>Response fields</h3><table><thead><tr><th>Field</th><th>Type</th><th>Description</th></tr></thead><tbody>${rows}</tbody></table></section>`;
+  }).join("");
+  const intro = `<p>RegActions exposes three read-only JSON endpoints for country AML risk ratings and global enforcement data. They are free to use, need no API key, and are CORS-open, so you can call them directly from the browser or a server.</p>`;
+  const outro = `<h2>Questions</h2><p>For volume, commercial licensing, or a data question, contact <a href="mailto:contact@memaconsultants.com">contact@memaconsultants.com</a>. See also the <a href="/countries">country risk hub</a> and the <a href="/regulators">regulator data hub</a>.</p>`;
+  return `<div class="blog-page"><div class="blog-post-container"><article class="blog-article-modal"><h1 class="blog-post-title">Free RegActions data APIs</h1><div class="blog-article-content">${intro}${termsHtml}${attributionHtml}${endpointsHtml}${outro}</div></article></div></div>`;
+}
+
 function renderHomepageBody(): string {
   const latestArticles = [...blogArticles]
     .sort((a, b) => b.dateISO.localeCompare(a.dateISO))
@@ -602,7 +702,7 @@ function renderHomepageBody(): string {
     )
     .join("");
 
-  return `<div class="blog-page"><div class="blog-post-container"><article class="blog-article-modal"><h1 class="blog-post-title">Global Regulatory Fines & Enforcement Intelligence</h1><div class="blog-article-content"><p>RegActions tracks enforcement actions, penalties, breach categories, firms, and regulator activity across 45+ global financial regulators.</p><h2>What RegActions Covers</h2><ul><li><strong>Regulators:</strong> 45+ global financial regulators across the UK, Europe, North America, APAC, the Middle East, Africa, and offshore markets.</li><li><strong>Dataset:</strong> searchable enforcement actions, monetary penalties, breach themes, dates, sectors, and source links.</li><li><strong>Use cases:</strong> compliance monitoring, board packs, regulator benchmarking, control reviews, and trend analysis.</li></ul><h2>Start With The Data</h2><p><a href="/regulators">Open the regulator data hub</a>, <a href="/search">search enforcement actions</a>, or <a href="/board-pack">create a board pack</a> from the evidence.</p><h2>Latest Insights</h2><ul>${articleLinks}</ul><h2>Frequently Asked Questions</h2><p>RegActions combines official-source enforcement monitoring with practical analysis so compliance teams can understand what changed, why it matters, and what action to take next.</p></div></article></div></div>`;
+  return `<div class="blog-page"><div class="blog-post-container"><article class="blog-article-modal"><h1 class="blog-post-title">Global Regulatory Fines & Enforcement Intelligence</h1><div class="blog-article-content"><p>RegActions tracks enforcement actions, penalties, breach categories, firms, and regulator activity across 45+ global financial regulators.</p><h2>What RegActions Covers</h2><ul><li><strong>Regulators:</strong> 45+ global financial regulators across the UK, Europe, North America, APAC, the Middle East, Africa, and offshore markets.</li><li><strong>Dataset:</strong> searchable enforcement actions, monetary penalties, breach themes, dates, sectors, and source links.</li><li><strong>Use cases:</strong> compliance monitoring, board packs, regulator benchmarking, control reviews, and trend analysis.</li></ul><h2>Start With The Data</h2><p><a href="/regulators">Open the regulator data hub</a>, <a href="/search">search enforcement actions</a>, <a href="/board-pack">create a board pack</a>, or use the <a href="/developers">free data API</a>.</p><h2>Latest Insights</h2><ul>${articleLinks}</ul><h2>Frequently Asked Questions</h2><p>RegActions combines official-source enforcement monitoring with practical analysis so compliance teams can understand what changed, why it matters, and what action to take next.</p></div></article></div></div>`;
 }
 
 function renderBlogListingBody(): string {
@@ -743,6 +843,9 @@ function generatePageGraph(meta: PageMeta): object {
       logo: { "@type": "ImageObject", url: `${BASE_URL}/regactions-mark.png` },
       description:
         "Global regulatory enforcement intelligence from 45+ financial regulators worldwide",
+      // Only profiles that actually exist: RegActions is built by MEMA Consultants
+      // (linked site-wide) and its code org is on GitHub. No LinkedIn/X profile exists.
+      sameAs: ["https://memaconsultants.com", "https://github.com/MEMAtest"],
     },
     {
       "@type": "WebSite",
@@ -983,6 +1086,49 @@ async function buildPageMetas(): Promise<PageMeta[]> {
     ),
   });
 
+  // Developer API docs — free/keyless/CORS-open endpoints, fields, attribution.
+  pages.push({
+    path: "/developers",
+    title: "Developer API | Free Country-Risk & Enforcement Data | RegActions",
+    description:
+      "Free, keyless, CORS-open RegActions APIs: country AML risk ratings, per-country risk detail, and global enforcement search. Fields, curl examples, cadence and attribution terms.",
+    keywords:
+      "RegActions API, country risk API, AML risk API, enforcement data API, free financial regulator API, CORS open API",
+    ogType: "website",
+    breadcrumbLabel: "Developers",
+    bodyContent: renderDevelopersBody(),
+    jsonLd: {
+      "@context": "https://schema.org",
+      "@type": "TechArticle",
+      headline: "Free RegActions data APIs",
+      description:
+        "Documentation for the free, keyless, CORS-open RegActions country-risk and enforcement search APIs, including response fields, curl examples, update cadence and attribution terms.",
+      url: `${BASE_URL}/developers`,
+      author: { "@id": `${BASE_URL}/#organization` },
+      publisher: { "@id": `${BASE_URL}/#organization` },
+      license: DEVELOPERS_LICENCE_URL,
+    },
+    extraJsonLd: [
+      {
+        "@context": "https://schema.org",
+        "@type": "WebAPI",
+        name: "RegActions Country Risk & Enforcement API",
+        description:
+          "Free, keyless, CORS-open JSON API for country AML risk ratings and global regulatory enforcement search.",
+        documentation: `${BASE_URL}/developers`,
+        termsOfService: DEVELOPERS_LICENCE_URL,
+        provider: { "@id": `${BASE_URL}/#organization` },
+        isAccessibleForFree: true,
+        endpointDescription: DEVELOPER_ENDPOINTS.map((e) => ({
+          "@type": "EntryPoint",
+          urlTemplate: `${BASE_URL}${e.path}`,
+          httpMethod: e.method,
+          description: e.summary,
+        })),
+      },
+    ],
+  });
+
   pages.push({
     path: "/search",
     title: "Enforcement Search | Search Enforcement Actions by Firm, Regulator, and Theme",
@@ -1221,6 +1367,8 @@ async function buildPageMetas(): Promise<PageMeta[]> {
       description,
       keywords,
       ogType: "website",
+      // Breadcrumb: use the regulator code ("FCA"), not humanize("fca") -> "Fca".
+      breadcrumbLabel: code,
       ogImage: `${BASE_URL}/og/${code.toLowerCase()}-hub.png`,
       bodyContent: renderHubBody(
         title,
@@ -1285,6 +1433,7 @@ async function buildPageMetas(): Promise<PageMeta[]> {
     description: `Country-risk coverage for ${globalIndexCount} jurisdictions: ${globalIndexRated} historical v1 comparison scores and ${globalIndexInsufficient} explicitly withheld for insufficient governance evidence.`,
     keywords: `country risk ratings, country risk score, AML country risk, FATF status by country, sanctions by country, high-risk countries`,
     ogType: "website",
+    dateModified: COUNTRY_PAGE_DATE,
     bodyContent: renderGlobalIndexBody(),
     breadcrumbLabel: "Countries",
     jsonLd: {
@@ -1295,6 +1444,43 @@ async function buildPageMetas(): Promise<PageMeta[]> {
       url: `${BASE_URL}/countries`,
       isPartOf: { "@type": "WebSite", name: SITE_NAME, url: "https://regactions.com" },
     },
+    extraJsonLd: [
+      {
+        "@context": "https://schema.org",
+        "@type": "Dataset",
+        name: "RegActions Country AML Risk Ratings",
+        description: `Country-level AML/financial-crime risk ratings for ${globalIndexCount} jurisdictions, combining FATF listing status, a World Bank WGI governance base, sanctions exposure and the Transparency International CPI into a composite risk band. ${globalIndexRated} scores are published and ${globalIndexInsufficient} are explicitly withheld where the governance base is unavailable.`,
+        url: `${BASE_URL}/countries`,
+        keywords: [
+          "country risk ratings",
+          "AML country risk",
+          "FATF grey list",
+          "sanctions by country",
+          "governance indicators",
+          "corruption perceptions index",
+        ],
+        creator: { "@id": `${BASE_URL}/#organization` },
+        variableMeasured: [
+          { "@type": "PropertyValue", name: "FATF status" },
+          { "@type": "PropertyValue", name: "World Bank WGI governance base" },
+          { "@type": "PropertyValue", name: "Sanctions exposure" },
+          { "@type": "PropertyValue", name: "Corruption Perceptions Index" },
+          { "@type": "PropertyValue", name: "Composite risk band" },
+        ],
+        temporalCoverage: `2013/${COUNTRY_PAGE_DATE}`,
+        spatialCoverage: { "@type": "Place", name: "Global" },
+        license: "https://creativecommons.org/licenses/by-nc/4.0/",
+        isAccessibleForFree: true,
+        dateModified: COUNTRY_PAGE_DATE,
+        distribution: [
+          {
+            "@type": "DataDownload",
+            encodingFormat: "application/json",
+            contentUrl: `${BASE_URL}/api/country-risk/list`,
+          },
+        ],
+      },
+    ],
   });
   pages.push({
     path: "/countries/fatf-grey-list",
@@ -1402,6 +1588,7 @@ async function buildPageMetas(): Promise<PageMeta[]> {
       description,
       keywords,
       ogType: "website",
+      dateModified: COUNTRY_PAGE_DATE,
       bodyContent: renderCountryFatfBody(view),
       breadcrumbLabel: country.name,
       jsonLd: {
@@ -1419,11 +1606,30 @@ async function buildPageMetas(): Promise<PageMeta[]> {
           description: datasetDesc,
           url: `${BASE_URL}${path}`,
           keywords: [`${country.name} FATF`, "AML country risk", `${country.name} enforcement`],
-          dateModified: FATF_LAST_PLENARY,
+          dateModified: COUNTRY_PAGE_DATE,
+          // Full coverage window: FATF listing history (2013+) through the latest signal.
+          temporalCoverage: `2013/${COUNTRY_PAGE_DATE}`,
           spatialCoverage: { "@type": "Place", name: country.name },
-          creator: { "@type": "Organization", name: SITE_NAME, url: "https://regactions.com" },
+          creator: { "@id": `${BASE_URL}/#organization` },
+          license: "https://creativecommons.org/licenses/by-nc/4.0/",
+          isAccessibleForFree: true,
+          variableMeasured: [
+            { "@type": "PropertyValue", name: "FATF listing status" },
+            { "@type": "PropertyValue", name: "Sanctions exposure" },
+            { "@type": "PropertyValue", name: "World Bank WGI governance base" },
+            { "@type": "PropertyValue", name: "Corruption Perceptions Index" },
+            { "@type": "PropertyValue", name: "Composite risk band" },
+          ],
+          distribution: [
+            {
+              "@type": "DataDownload",
+              encodingFormat: "application/json",
+              contentUrl: `${BASE_URL}/api/country-risk/${country.iso2}`,
+            },
+          ],
           isBasedOn: FATF_SOURCE_URL,
         },
+        generateCountryFaqSchema(buildCountryFaqs(view)),
       ],
     });
   }
@@ -1824,19 +2030,8 @@ function renderPage(template: string, meta: PageMeta): string {
     `<link rel="canonical" href="${canonicalUrl}" />`,
   );
 
-  // Replace hreflang URLs (including en-us)
-  html = html.replace(
-    /<link\s+rel="alternate"\s+hreflang="en-gb"\s+href="[^"]*"\s*\/?>/,
-    `<link rel="alternate" hreflang="en-gb" href="${canonicalUrl}" />`,
-  );
-  html = html.replace(
-    /<link\s+rel="alternate"\s+hreflang="en"\s+href="[^"]*"\s*\/?>/,
-    `<link rel="alternate" hreflang="en" href="${canonicalUrl}" />`,
-  );
-  html = html.replace(
-    /<link\s+rel="alternate"\s+hreflang="en-us"\s+href="[^"]*"\s*\/?>/,
-    `<link rel="alternate" hreflang="en-us" href="${canonicalUrl}" />`,
-  );
+  // Single self-referencing hreflang alternate (en/en-gb/en-us trio removed as
+  // redundant; the site is single-locale). Only the x-default alternate remains.
   html = html.replace(
     /<link\s+rel="alternate"\s+hreflang="x-default"\s+href="[^"]*"\s*\/?>/,
     `<link rel="alternate" hreflang="x-default" href="${canonicalUrl}" />`,
@@ -1962,6 +2157,19 @@ function renderPage(template: string, meta: PageMeta): string {
 // Generate sitemap.xml
 // ---------------------------------------------------------------------------
 
+/**
+ * Regulator-hub lastmod from the regulator's own latest enforcement year (real,
+ * per-regulator). Returns a year-only date (valid W3C Datetime) rather than
+ * fabricating a specific day; null if the code is unknown (omit lastmod).
+ */
+function regulatorHubLastmod(path: string): string | null {
+  const code = path.replace("/regulators/", "").split("/")[0]?.toUpperCase();
+  if (!code) return null;
+  const coverage = REGULATOR_COVERAGE[code];
+  if (!coverage || !coverage.latestYear) return null;
+  return String(coverage.latestYear);
+}
+
 function generateSitemap(pages: PageMeta[]): string {
   const buildDate = todayISO();
   const lines: string[] = [
@@ -1972,7 +2180,9 @@ function generateSitemap(pages: PageMeta[]): string {
   for (const page of pages) {
     const fullUrl = `${BASE_URL}${page.path}`;
 
-    let lastmod = buildDate;
+    // Real freshness: prefer a page's actual data-change date. `null` means "omit
+    // lastmod" — honest for pages with no cheap real date (better than faking one).
+    let lastmod: string | null = buildDate;
     let changefreq = "monthly";
     let priority = "0.75";
 
@@ -2006,9 +2216,12 @@ function generateSitemap(pages: PageMeta[]): string {
       priority = "0.85";
       changefreq = "weekly";
     } else if (page.path.startsWith("/regulators/")) {
-      // Regulator hub pages
+      // Regulator hub pages — lastmod from the regulator's own latest enforcement
+      // year (real, per-regulator). We only know year granularity, so we emit a
+      // year-only lastmod rather than fabricate a specific day.
       priority = "0.85";
       changefreq = "weekly";
+      lastmod = regulatorHubLastmod(page.path);
     } else if (page.path === "/blog") {
       priority = "0.9";
       changefreq = "weekly";
@@ -2021,6 +2234,17 @@ function generateSitemap(pages: PageMeta[]): string {
     } else if (page.path === "/guide/fca-enforcement") {
       priority = "0.9";
       changefreq = "weekly";
+    } else if (page.path === "/developers") {
+      priority = "0.7";
+      changefreq = "monthly";
+      lastmod = page.dateModified ?? buildDate;
+    } else if (page.path === "/countries" || page.path.startsWith("/countries/")) {
+      // Country index + per-country pages: real per-page max data-change date
+      // (FATF plenary / sanctions review / WGI / CPI vintage). Pages without a
+      // computed date (e.g. methodology) fall back to the build date.
+      priority = page.path === "/countries" ? "0.9" : "0.8";
+      changefreq = "monthly";
+      lastmod = page.dateModified ?? buildDate;
     } else if (page.datePublished) {
       // Blog articles use their publish date
       lastmod = clampISODate(
@@ -2060,7 +2284,7 @@ function generateSitemap(pages: PageMeta[]): string {
 
     lines.push("  <url>");
     lines.push(`    <loc>${fullUrl}</loc>`);
-    lines.push(`    <lastmod>${lastmod}</lastmod>`);
+    if (lastmod) lines.push(`    <lastmod>${lastmod}</lastmod>`);
     lines.push(`    <changefreq>${changefreq}</changefreq>`);
     lines.push(`    <priority>${priority}</priority>`);
     lines.push("  </url>");

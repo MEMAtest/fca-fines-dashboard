@@ -8,6 +8,10 @@ Allow: /regulators
 Allow: /search
 Allow: /blog
 Allow: /blog/
+Allow: /countries
+Allow: /countries/
+Allow: /developers
+Allow: /llms.txt
 
 # Disallow API endpoints from indexing
 Disallow: /api/
