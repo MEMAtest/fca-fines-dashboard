@@ -51,7 +51,7 @@ describe("country score publication safeguards", () => {
     expect(view.scoreStatus).toBe("provisional");
     expect(view.riskV2.score).not.toBeNull();
     expect(view.riskV2.band).not.toBe("low");
-    expect(view.decision.verdictParagraph).toContain("provisional");
-    expect(view.decision.verdictParagraph).toContain("Low label is not permitted");
+    expect(view.decision.verdictParagraph).toContain("Some information is unavailable");
+    expect(view.decision.verdictParagraph).toContain("will not be labelled Low risk");
   });
 });

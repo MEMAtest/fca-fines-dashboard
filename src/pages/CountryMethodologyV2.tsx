@@ -12,65 +12,78 @@ import "../styles/country-hub.css";
 
 const percent = (value: number) => `${Math.round(value * 100)}%`;
 
+function publicSourceNote(id: string): string {
+  if (id === "fatf-lists") return "Checked against FATF's official grey and black lists.";
+  if (id === "fatf-assessments") return "Uses FATF's published country assessment ratings.";
+  if (id === "world-bank-wgi") return "Uses the latest complete World Bank governance release in the score.";
+  if (id === "sanctions-regimes") return "Checks the complete official country-level catalogues from the UN, UK, EU and US.";
+  return "Shown unchanged as a separate corruption comparison.";
+}
+
+function cadenceLabel(cadence: string): string {
+  if (cadence === "daily") return "checked daily";
+  if (cadence === "weekly") return "checked weekly";
+  if (cadence === "monthly") return "checked monthly";
+  return "checked annually";
+}
+
 export function CountryMethodologyV2() {
   return (
     <div className="cx-method">
       <Link to="/countries" className="country-hub__back"><ArrowLeft size={16} /> Countries</Link>
       <header className="cx-method__header">
-        <span className="cx-v2__eyebrow">Methodology {COUNTRY_RISK_METHODOLOGY_VERSION} · production</span>
-        <h1 className="cx-method__title">Trusted Country Risk Score v2</h1>
+        <span className="cx-v2__eyebrow">How country scores work</span>
+        <h1 className="cx-method__title">Country Risk Score</h1>
         <p className="cx-method__lead">
-          A deterministic benchmark of inherent jurisdictional AML/CFT, governance and sanctions
-          exposure. It is structured with reference to Basel and Wolfsberg factors, not presented
-          as independently Basel-validated, and is never a customer accept/reject decision on its own.
+          The score compares the underlying financial-crime risk of countries on a 0–10 scale.
+          A higher number means higher risk. It is a country comparison, not a decision about an
+          individual person or business.
         </p>
       </header>
 
       <section className="cx-method__section">
-        <h2 className="cx-method__h2">Three scored pillars</h2>
+        <h2 className="cx-method__h2">What the score considers</h2>
         <div className="cx-sources">
-          <div className="cx-source-card"><div className="cx-source-card__name">AML/CFT · {percent(COUNTRY_RISK_PILLAR_WEIGHTS.aml)}</div><div className="cx-source-card__desc">FATF Mutual Evaluation effectiveness ratings at 70% and technical compliance at 30%. Equal weighting within the 11 Immediate Outcomes and 40 Recommendations.</div></div>
-          <div className="cx-source-card"><div className="cx-source-card__name">Governance · {percent(COUNTRY_RISK_PILLAR_WEIGHTS.governance)}</div><div className="cx-source-card__desc">Equal-weight mean of the six World Bank WGI percentiles, inverted so higher means higher risk.</div></div>
-          <div className="cx-source-card"><div className="cx-source-card__name">Sanctions · {percent(COUNTRY_RISK_PILLAR_WEIGHTS.sanctions)}</div><div className="cx-source-card__desc">70% highest geographic regime scope plus 30% mean across UN, UK, EU and US regimes.</div></div>
+          <div className="cx-source-card"><div className="cx-source-card__name">Financial crime controls · {percent(COUNTRY_RISK_PILLAR_WEIGHTS.aml)}</div><div className="cx-source-card__desc">FATF assessments of how effectively a country prevents money laundering and terrorist financing, and whether its rules meet international standards.</div></div>
+          <div className="cx-source-card"><div className="cx-source-card__name">Government effectiveness and rule of law · {percent(COUNTRY_RISK_PILLAR_WEIGHTS.governance)}</div><div className="cx-source-card__desc">Six World Bank measures covering public institutions, regulation, political stability, accountability and control of corruption.</div></div>
+          <div className="cx-source-card"><div className="cx-source-card__name">International sanctions · {percent(COUNTRY_RISK_PILLAR_WEIGHTS.sanctions)}</div><div className="cx-source-card__desc">The reach of active country-level sanctions imposed by the UN, UK, EU and US.</div></div>
         </div>
       </section>
 
       <section className="cx-method__section">
-        <h2 className="cx-method__h2">Regulatory floors</h2>
-        <p className="cx-method__p">Grey list ≥ {COUNTRY_RISK_FLOORS.fatfGrey.toFixed(1)} · FATF call for action ≥ {COUNTRY_RISK_FLOORS.fatfBlack.toFixed(1)} · sectoral sanctions ≥ {COUNTRY_RISK_FLOORS.sanctionsSectoral.toFixed(1)} · comprehensive sanctions ≥ {COUNTRY_RISK_FLOORS.sanctionsComprehensive.toFixed(1)}. Targeted sanctions remain a visible flag without a floor.</p>
+        <h2 className="cx-method__h2">When the score has a minimum</h2>
+        <p className="cx-method__p">Some official warnings mean a country score cannot fall below a set level: FATF grey list {COUNTRY_RISK_FLOORS.fatfGrey.toFixed(1)}, FATF call for action {COUNTRY_RISK_FLOORS.fatfBlack.toFixed(1)}, sector-wide sanctions {COUNTRY_RISK_FLOORS.sanctionsSectoral.toFixed(1)}, and comprehensive sanctions {COUNTRY_RISK_FLOORS.sanctionsComprehensive.toFixed(1)}. Targeted sanctions are shown clearly but do not set a minimum score.</p>
       </section>
 
       <section className="cx-method__section">
-        <h2 className="cx-method__h2">Missing data and confidence</h2>
+        <h2 className="cx-method__h2">When information is missing</h2>
         <div className="cx-callout">
-          <div className="cx-callout__item"><strong>Complete</strong><span>All three pillars are available. Confidence is high only when every source is current.</span></div>
-          <div className="cx-callout__item"><strong>Provisional</strong><span>One pillar is missing; available weights are renormalised and the result cannot be labelled Low.</span></div>
-          <div className="cx-callout__item"><strong>Insufficient data</strong><span>Fewer than two pillars are available, so no headline score is published.</span></div>
+          <div className="cx-callout__item"><strong>Full information available</strong><span>All three parts of the score are available. Data coverage is strongest when every source is current.</span></div>
+          <div className="cx-callout__item"><strong>Some information unavailable</strong><span>One part is missing. The other parts are rebalanced, and the country will not be labelled Low risk while information is missing.</span></div>
+          <div className="cx-callout__item"><strong>Not enough information to score</strong><span>Fewer than two parts are available, so no headline score is published. Missing information is never entered as zero.</span></div>
         </div>
       </section>
 
       <section className="cx-method__section">
-        <h2 className="cx-method__h2">Sanctions promotion gate</h2>
+        <h2 className="cx-method__h2">How sanctions information is checked</h2>
         <p className="cx-method__p">
-          Official catalogue candidates never enter scoring directly. Every regime-country row and
-          every official catalogue-item mapping or exclusion must pass the versioned deterministic
-          classifier using measure-specific evidence, explicit country nexus and published scope rules.
-          Contradictions or unknowns fail closed. The latest OFAC, UK, EU and UN source fingerprints and
-          the complete 214 × 4 coverage census must also be current and stable. The generated snapshot is{" "}
-          <strong>{SANCTIONS_APPROVED_SNAPSHOT.coverageComplete ? SANCTIONS_APPROVED_SNAPSHOT.version : "not promoted"}</strong>;
-          its metadata explicitly records deterministic evidence and no independent practitioner validation.
-          Until promotion, the sanctions pillar is unavailable for every country and absence is never scored as zero.
+          RegActions checks the complete official catalogues from the UN, UK, EU and US. A country can
+          receive a zero for this part only when all four catalogues have been checked and no direct
+          country-level programme is found. People or organisations may still appear on sanctions lists.
+          If a source changes unexpectedly or the evidence is unclear, scoring stops until the evidence
+          is complete. The current checked snapshot is{" "}
+          <strong>{SANCTIONS_APPROVED_SNAPSHOT.coverageComplete ? SANCTIONS_APPROVED_SNAPSHOT.version : "awaiting completion"}</strong>.
         </p>
       </section>
 
       <section className="cx-method__section">
-        <h2 className="cx-method__h2">Source assurance</h2>
+        <h2 className="cx-method__h2">Sources and freshness</h2>
         <div className="cx-sources">
           {COUNTRY_RISK_SOURCES.map((source) => (
             <div className="cx-source-card" key={source.id}>
               <div className="cx-source-card__name">{source.name}</div>
-              <div className="cx-source-card__desc">{source.scored ? "Scored" : "Context only"} · {source.state} · {source.cadence}</div>
-              <p>{source.note}</p>
+              <div className="cx-source-card__desc">{source.scored ? "Used in the score" : "Shown for context"} · {cadenceLabel(source.cadence)}</div>
+              <p>{publicSourceNote(source.id)}</p>
               <a href={source.sourceUrl} target="_blank" rel="noopener noreferrer">Official source <ExternalLink size={11} /></a>
             </div>
           ))}
@@ -80,8 +93,8 @@ export function CountryMethodologyV2() {
       <section className="cx-method__section">
         <h2 className="cx-method__h2">Transparency International CPI</h2>
         <p className="cx-method__p">
-          CPI {CPI_YEAR} is displayed unchanged as an external corruption comparator and used for
-          divergence testing. It is not inverted, weighted or blended into v2 under {CPI_LICENCE}.{" "}
+          CPI {CPI_YEAR} is displayed unchanged as a separate corruption comparison. It does not
+          change the country score and is used under {CPI_LICENCE}. Methodology version {COUNTRY_RISK_METHODOLOGY_VERSION}.{" "}
           <a href={CPI_SOURCE} target="_blank" rel="noopener noreferrer">Official CPI source <ExternalLink size={11} /></a>
         </p>
       </section>

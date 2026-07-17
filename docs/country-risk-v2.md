@@ -134,6 +134,33 @@ historical input. Its small sample is a limitation, not independent validation.
   delta and calculation explanation, test the public APIs, build the static
   country pages and verify the production deployment.
 
+## Source-health monitoring and alerts
+
+Run the production health assessment with database access:
+
+```bash
+npm run country-risk:source-health
+```
+
+The assessment checks the latest persisted run for the four sanctions
+catalogues, FATF lists, FATF assessments, World Bank WGI and the promoted
+sanctions snapshot. A missing run, failed or review-required status, stale run,
+empty result, missing hash or unavailable operational database is critical and
+fails closed. It writes machine-readable and human-readable evidence to:
+
+- `/tmp/country-risk-source-health.json`
+- `/tmp/country-risk-source-health.md`
+
+The scheduled assurance workflow runs this check after the source lanes. A
+failure opens or updates one deduplicated GitHub issue named
+`[Country Risk] Source health alert`; recovery comments on and closes the same
+issue. The workflow remains failed after alert creation, so the warning cannot
+be mistaken for a successful source run.
+
+Technical health detail remains in the source-status API and workflow evidence.
+Consumer country reports show only plain-language score explanations and the
+date of the latest source check.
+
 The public endpoints are:
 
 - `GET /api/country-risk/list?methodology=v2`

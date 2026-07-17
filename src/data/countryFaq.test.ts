@@ -17,7 +17,7 @@ describe("buildCountryFaqs", () => {
     expect(faqs.length).toBeLessThanOrEqual(5);
     expect(faqs[0].question).toBe("Is China on the FATF grey list?");
     expect(faqs[1].question).toBe("Is China subject to sanctions?");
-    expect(faqs[2].question).toBe("What is China's AML risk rating?");
+    expect(faqs[2].question).toBe("What is China's country risk rating?");
     expect(faqs[3].question).toBe("What due diligence applies to China?");
     for (const faq of faqs) {
       expect(faq.question.length).toBeGreaterThan(0);
@@ -50,13 +50,13 @@ describe("buildCountryFaqs", () => {
   it("publishes an honest complete or provisional v2 score", () => {
     const view = buildCountryView(getCountryByIso2("VG")!);
     const faqs = buildCountryFaqs(view);
-    const amlFaq = faqs.find((f) => f.question.includes("AML risk rating"));
-    expect(amlFaq).toBeTruthy();
+    const riskFaq = faqs.find((f) => f.question.includes("country risk rating"));
+    expect(riskFaq).toBeTruthy();
     if (view.riskV2.score !== null) {
-      expect(amlFaq!.answer).toContain("/10");
-      expect(amlFaq!.answer).toContain("provisional");
+      expect(riskFaq!.answer).toContain("/10");
+      expect(riskFaq!.answer).toContain("Some information is unavailable");
     } else {
-      expect(amlFaq!.answer.toLowerCase()).toContain("withhold");
+      expect(riskFaq!.answer).toContain("does not publish");
     }
   });
 

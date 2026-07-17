@@ -7,6 +7,10 @@ import { SANCTIONS_IMPOSERS } from "../../../src/data/sanctionsEvidence.js";
 import { COUNTRIES } from "../../../src/data/countries.js";
 import { assessCountryRiskReadiness } from "../../../src/data/countryRiskReadiness.js";
 import {
+  assessCountryRiskSourceHealth,
+  type CountryRiskOperationalSourceRun,
+} from "../../../src/data/countryRiskSourceHealth.js";
+import {
   SANCTIONS_CANDIDATE_COUNTRY_COUNT,
   SANCTIONS_CATALOGUE_COVERAGE,
   SANCTIONS_REGIME_CANDIDATES,
@@ -22,27 +26,44 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   const sources = countryRiskSourcesAsOf(asOf);
   const results = pageCountries().map((country) => computeCountryRiskV2(country.iso2, { asOf }));
   const readiness = assessCountryRiskReadiness(results, sources);
-  let operationalSourceRuns: Array<Record<string, unknown>> = [];
+  let operationalSourceRuns: CountryRiskOperationalSourceRun[] = [];
+  let operationalHistoryAvailable = true;
+  let operationalHistoryError: string | null = null;
   try {
     const sql = getSqlClient();
     operationalSourceRuns = await sql(
       `SELECT DISTINCT ON (source_id)
               source_id, status, source_url, retrieved_at, effective_at, sha256,
-              parser_version, record_count, metadata
+              parser_version, record_count, error_message, metadata
        FROM country_risk_source_runs
        WHERE source_id IN ('ofac-programmes', 'uk-regimes', 'eu-resources', 'un-consolidated-list',
                            'fatf-lists', 'fatf-assessments', 'world-bank-wgi', 'sanctions-regimes')
        ORDER BY source_id, retrieved_at DESC, id DESC`,
-    );
+    ) as unknown as CountryRiskOperationalSourceRun[];
   } catch (error) {
-    console.warn("Country-risk operational source history unavailable", error instanceof Error ? error.message : error);
+    operationalHistoryAvailable = false;
+    const errorDetail = error instanceof Error ? error.message : String(error);
+    operationalHistoryError = "operational source history unavailable";
+    console.warn("Country-risk operational source history unavailable", errorDetail);
   }
+  const sourceHealth = assessCountryRiskSourceHealth({
+    asOf,
+    declaredSources: sources,
+    operationalRuns: operationalSourceRuns,
+    databaseAvailable: operationalHistoryAvailable,
+    databaseError: operationalHistoryError,
+  });
+  const readinessReasons = [
+    ...readiness.reasons,
+    ...sourceHealth.issues.map((issue) => issue.message),
+  ];
   return res.status(200).json({
     generatedAt: asOf.toISOString(),
-    readyForDefault: readiness.readyForDefault,
-    readinessReasons: readiness.reasons,
+    readyForDefault: readiness.readyForDefault && sourceHealth.readyForScoring,
+    readinessReasons,
     coverage: readiness.coverage,
     sources,
+    sourceHealth,
     operationalSourceRuns,
     sanctionsReview: {
       scoringReady: SANCTIONS_APPROVED_SNAPSHOT.coverageComplete,

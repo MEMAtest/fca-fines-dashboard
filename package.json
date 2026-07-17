@@ -46,6 +46,7 @@
     "country-risk:promote-sanctions": "node --import tsx/esm scripts/country-risk/promote-sanctions-snapshot.ts",
     "country-risk:score-run": "node --import tsx/esm scripts/country-risk/generate-score-run.ts",
     "country-risk:validate": "node --import tsx/esm scripts/country-risk/validate-country-risk.ts",
+    "country-risk:source-health": "node --import tsx/esm scripts/country-risk/check-source-health.ts",
     "scrape:uk-enforcement": "node --import tsx/esm scripts/scraper/scrapeUkEnforcement.ts --",
     "scrape:fca-enforcement": "node --import tsx/esm scripts/scraper/scrapeFcaEnforcement.ts --",
     "check:uk-enforcement-health": "node --import tsx/esm scripts/scraper/checkUkEnforcementHealth.ts --",

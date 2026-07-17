@@ -46,6 +46,7 @@ import {
   type RiskBand,
 } from "../data/countryRiskScore.js";
 import { computeCountryRiskV2 } from "../data/countryRiskV2.js";
+import { publicCountryRiskStatusLabel } from "../data/countryRiskPresentation.js";
 import {
   buildCountryIndex,
   regionalAverages,
@@ -102,7 +103,7 @@ function keyDrivers(iso2: string): string[] {
   const bd = scoreBreakdown(iso2);
   const result = computeCountryRiskV2(iso2);
   if (result.score === null) {
-    return ["Headline score withheld: fewer than two v2 pillars are available"];
+    return ["Not enough information is available to publish a score"];
   }
   const out: string[] = [];
   result.regulatoryFlags.forEach((flag) => out.push(flag.label));
@@ -112,7 +113,7 @@ function keyDrivers(iso2: string): string[] {
     .forEach((d) => {
       if (out.length < 4) out.push(DRIVER_LABEL[d.key] ?? d.label);
     });
-  if (result.status === "provisional") out.push("Provisional: one pillar unavailable");
+  if (result.status === "provisional") out.push("Some information is unavailable");
   return out.length ? out.slice(0, 4) : ["No elevated regulatory flag identified"];
 }
 
@@ -153,7 +154,7 @@ function DetailPanel({
         <div className="cx-detail__id">
           <h3 className="cx-detail__name">{entry.country.name}</h3>
           <span className={`cx-detail__band cx-detail__band--${entry.band ?? "insufficient"}`}>
-            {hasScore ? `${bandLabel(entry.band!)} risk` : "Insufficient data"}
+            {hasScore ? `${bandLabel(entry.band!)} risk` : "Not enough information"}
           </span>
         </div>
         {onClose && (
@@ -167,7 +168,7 @@ function DetailPanel({
           <span className={`country-ratings__score country-ratings__score--${entry.band ?? "insufficient"}`}>
             {hasScore ? entry.score!.toFixed(1) : "—"}
           </span>
-          <span className="cx-detail__cap">{hasScore ? "Overall / 10" : "Score withheld"}</span>
+          <span className="cx-detail__cap">{hasScore ? "Overall / 10" : "No score published"}</span>
         </div>
         <div>
           <b>{gr.rank === null ? "—" : `#${gr.rank}`}</b>
@@ -191,6 +192,7 @@ function DetailPanel({
       <div className="cx-detail__fatf">
         FATF: <strong>{entry.fatf ? fatfLabel(entry.fatf.listing) : "Not listed"}</strong>
       </div>
+      <p className="cx-detail__status">{publicCountryRiskStatusLabel(entry.status)}</p>
       <div className="cx-detail__drivers">
         <span className="cx-detail__drivers-title">Key drivers</span>
         <ul>
@@ -318,11 +320,11 @@ function FilterBar({
       <select
         value={sanctionsFilter}
         onChange={(e) => setSanctionsFilter(e.target.value)}
-        aria-label="Sanctions"
+        aria-label="International sanctions"
         disabled={!sanctionsScoringReady}
-        title={sanctionsScoringReady ? undefined : "Official sanctions evidence is incomplete"}
+        title={sanctionsScoringReady ? undefined : "International sanctions information is incomplete"}
       >
-        <option value="All">{sanctionsScoringReady ? "All sanctions" : "Evidence incomplete"}</option>
+        <option value="All">{sanctionsScoringReady ? "All international sanctions" : "Information incomplete"}</option>
         <option value="comprehensive">Comprehensive</option>
         <option value="sectoral">Sectoral</option>
         <option value="targeted">Targeted</option>
@@ -633,7 +635,7 @@ function OverviewTab({
             <li>Highest-risk regions: {topRegions.join(" and ")}.</li>
             <li>{fatfCounts.black + fatfCounts.grey} jurisdictions under FATF monitoring.</li>
             <li>{insufficient} jurisdictions have no headline score because the required governance evidence is unavailable.</li>
-            <li>Governance quality is the primary risk driver across the index.</li>
+            <li>Government effectiveness and rule of law are major drivers across the index.</li>
           </ul>
           <Link to="/countries/methodology" className="cx-panel-link">View methodology →</Link>
         </div>
@@ -798,9 +800,9 @@ function GlobalIndex() {
   const nameOf = (iso2: string) => getCountryByIso2(iso2)?.name ?? iso2;
 
   const pillarData = [
-    { key: "governance", name: "Governance contribution", value: pillars.governance },
-    { key: "fatf", name: "AML/CFT contribution", value: pillars.fatf },
-    { key: "sanctions", name: "Sanctions contribution", value: pillars.sanctions },
+    { key: "governance", name: "Government and rule of law", value: pillars.governance },
+    { key: "fatf", name: "Financial crime controls", value: pillars.fatf },
+    { key: "sanctions", name: "International sanctions", value: pillars.sanctions },
   ];
 
   const toggleSort = (key: "score" | "name" | "region") => {
@@ -825,8 +827,8 @@ function GlobalIndex() {
   };
 
   const kpis: Array<{ label: string; value: number; cls: string; pressed: boolean; onClick: () => void }> = [
-    { label: "Complete", value: completeCount, cls: "rated", pressed: statusFilter === "complete", onClick: () => setStatusFilter(statusFilter === "complete" ? "All" : "complete") },
-    { label: "Provisional", value: provisionalCount, cls: "insufficient", pressed: statusFilter === "provisional", onClick: () => setStatusFilter(statusFilter === "provisional" ? "All" : "provisional") },
+    { label: "Full information", value: completeCount, cls: "rated", pressed: statusFilter === "complete", onClick: () => setStatusFilter(statusFilter === "complete" ? "All" : "complete") },
+    { label: "Some information missing", value: provisionalCount, cls: "insufficient", pressed: statusFilter === "provisional", onClick: () => setStatusFilter(statusFilter === "provisional" ? "All" : "provisional") },
     { label: "Black list", value: fatfCounts.black, cls: "black", pressed: fatfFilter === "black", onClick: () => setFatfFilter(fatfFilter === "black" ? "All" : "black") },
     { label: "Grey list", value: fatfCounts.grey, cls: "grey", pressed: fatfFilter === "grey", onClick: () => setFatfFilter(fatfFilter === "grey" ? "All" : "grey") },
     { label: "High risk", value: counts.high + counts["very-high"], cls: "high", pressed: band === "high", onClick: () => setBand(band === "high" ? "All" : "high") },
@@ -841,14 +843,14 @@ function GlobalIndex() {
       <header className="cx-dash__head">
         <h1 className="country-index__title">Global Country Risk Ratings</h1>
         <p className="cx-dash__lead">
-          Country-by-country AML and financial-crime risk coverage for {index.length} jurisdictions.
-          {" "}{completeCount} v2 scores are complete and {provisionalCount} are explicitly provisional;
-          {insufficientCount ? ` ${insufficientCount} are withheld because fewer than two pillars are available.` : " no headline score is currently withheld."}
-          The sanctions pillar is based on a complete deterministic official-evidence snapshot.
-          Enforcement volume and corruption perception are shown for context but never scored.{" "}
-          <Link to="/countries/methodology">How the score works →</Link>
+          Compare financial-crime and country risk across {index.length} jurisdictions. Full
+          information is available for {completeCount}; {provisionalCount} have some information
+          missing{insufficientCount ? `; ${insufficientCount} do not have enough information for a score` : ""}.
+          Missing information is never treated as zero risk. Enforcement activity and corruption
+          perception are shown as useful context but do not change the score.{" "}
+          <Link to="/countries/methodology">How scores are calculated →</Link>
           {" · "}
-          <Link to="/countries/changes">What changed →</Link>
+          <Link to="/countries/changes">See what changed →</Link>
         </p>
       </header>
 
@@ -931,14 +933,14 @@ function GlobalIndex() {
                 </select>
               </div>
               <div className="cx-rail__group">
-                <span className="cx-rail__title">Sanctions exposure</span>
+                <span className="cx-rail__title">International sanctions</span>
                 <select
                   value={sanctionsFilter}
                   onChange={(e) => setSanctionsFilter(e.target.value as typeof sanctionsFilter)}
                   disabled={!sanctionsScoringReady}
-                  title={sanctionsScoringReady ? undefined : "Official sanctions evidence is incomplete"}
+                  title={sanctionsScoringReady ? undefined : "International sanctions information is incomplete"}
                 >
-                  <option value="All">{sanctionsScoringReady ? "All" : "Evidence incomplete"}</option>
+                  <option value="All">{sanctionsScoringReady ? "All" : "Information incomplete"}</option>
                   <option value="comprehensive">Comprehensive</option>
                   <option value="sectoral">Sectoral</option>
                   <option value="targeted">Targeted</option>
@@ -954,7 +956,7 @@ function GlobalIndex() {
                     type="button"
                     className="cx-seg"
                     disabled={!sanctionsScoringReady}
-                    title={sanctionsScoringReady ? undefined : "Official sanctions evidence is incomplete"}
+                    title={sanctionsScoringReady ? undefined : "International sanctions information is incomplete"}
                     onClick={() => { clearFilters(); setSanctionsFilter("comprehensive"); }}
                   >Comprehensive sanctions</button>
                   <button type="button" className="cx-seg" onClick={() => { clearFilters(); setBand("very-high"); }}>Very high risk <b>{counts["very-high"]}</b></button>
@@ -1099,11 +1101,11 @@ function GlobalIndex() {
               <tr>
                 <th>#</th>
                 <th><button type="button" className="cx-sort" onClick={() => toggleSort("name")}>Country{sortArrow("name")}</button></th>
-                <th className="country-ratings__num"><button type="button" className="cx-sort" onClick={() => toggleSort("score")}>Score · v2{sortArrow("score")}</button></th>
+                <th className="country-ratings__num"><button type="button" className="cx-sort" onClick={() => toggleSort("score")}>Risk score{sortArrow("score")}</button></th>
                 <th>Risk</th>
                 <th><button type="button" className="cx-sort" onClick={() => toggleSort("region")}>Region{sortArrow("region")}</button></th>
                 <th>FATF</th>
-                <th>Sanctions · v2</th>
+                <th>International sanctions</th>
               </tr>
             </thead>
             <tbody>
@@ -1120,14 +1122,14 @@ function GlobalIndex() {
                       {e.score === null ? "—" : e.score.toFixed(1)}
                     </span>
                   </td>
-                  <td>{e.band ? `${bandLabel(e.band)}${e.status === "provisional" ? " · provisional" : ""}` : "Insufficient data"}</td>
+                  <td>{e.band ? `${bandLabel(e.band)}${e.status === "provisional" ? " · some information missing" : ""}` : "Not enough information"}</td>
                   <td className="country-ratings__region">{e.country.region}</td>
                   <td>{e.fatf ? fatfLabel(e.fatf.listing) : "—"}</td>
                   <td>{e.sanctionsCoverageComplete
                     ? e.sanctionsTier
                       ? sanctionsTierLabel(e.sanctionsTier)
-                      : "No direct regime"
-                    : "Evidence incomplete"}</td>
+                      : "No direct country restrictions"
+                    : "Information incomplete"}</td>
                 </tr>
               ))}
               {rows.length === 0 && (
@@ -1150,7 +1152,7 @@ function GlobalIndex() {
       <footer className="country-hub__sources">
         <span>Sources:</span>{" "}
         <a href={FATF_SOURCE_URL} target="_blank" rel="noopener noreferrer">FATF <ExternalLink size={12} /></a>{" "}
-        · World Bank WGI (CC BY 4.0) · OFAC / UK / EU / UN sanctions · TI CPI (display)
+        · World Bank WGI (CC BY 4.0) · UN / UK / EU / US sanctions · TI CPI (context only)
       </footer>
     </div>
   );
@@ -1318,7 +1320,7 @@ function FatfList() {
       <header className="mon__header">
         <div>
           <h1 className="mon__title">Country Monitoring Command Centre</h1>
-          <p className="mon__subtitle">FATF-style AML/CFT monitoring lists and country risk status</p>
+          <p className="mon__subtitle">FATF monitoring lists and country risk status</p>
           <p className="mon__asof">
             <strong>{grey.length}</strong> jurisdictions under increased monitoring
             {" · "}as of {formatDate(FATF_LAST_PLENARY)}

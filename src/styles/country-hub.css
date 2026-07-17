@@ -2173,6 +2173,7 @@ button.cx-kpi:hover {
   border-top: 1px solid #eef2f7;
   padding-top: 0.7rem;
 }
+.cx-detail__status { margin: 0.35rem 0 0; color: #64748b; font-size: 0.76rem; }
 .cx-detail__drivers-title {
   font-size: 0.7rem;
   text-transform: uppercase;
@@ -3016,6 +3017,7 @@ button.cx-kpi:hover {
 .cx-osc__main .cx-gauge { margin: 0.5rem 0 0.35rem; }
 .cx-osc__band-txt { font-size: 0.8rem; font-weight: 700; color: #475569; margin: 0.1rem 0 0; }
 .cx-osc__avg { font-size: 0.72rem; color: #94a3b8; margin: 0.15rem 0 0; }
+.cx-osc__status-note { font-size: 0.68rem; color: #64748b; line-height: 1.35; margin: 0.3rem 0 0; }
 .cx-osc__cell { display: flex; flex-direction: column; gap: 0.2rem; border-left: 1px solid #eef2f7; padding-left: 0.9rem; }
 .cx-osc__k {
   display: flex; align-items: center; gap: 0.25rem;
@@ -3149,6 +3151,9 @@ button.cx-kpi:hover {
 .cx-drivers__score { display: inline-flex; align-items: center; gap: 0.4rem; white-space: nowrap; }
 .cx-drivers__score b { font-size: 0.92rem; font-variant-numeric: tabular-nums; }
 .cx-drivers__desc { font-size: 0.74rem; color: #64748b; margin: 0.2rem 0 0; line-height: 1.4; }
+.cx-drivers__plain { display: flex; align-items: flex-start; gap: 0.45rem; color: #334155; font-size: 0.79rem; line-height: 1.45; }
+.cx-drivers__plain svg { flex: 0 0 auto; color: #c2410c; margin-top: 0.12rem; }
+.cx-drivers__plain--missing svg { color: #64748b; }
 
 /* small band tags */
 .cx-tag {
@@ -3296,6 +3301,20 @@ button.cx-kpi:hover {
 /* Right rail */
 .cx-meth__intro { font-size: 0.76rem; color: #475569; margin: 0 0 0.6rem; line-height: 1.45; }
 .cx-meth__base { font-size: 0.8rem; color: #334155; margin: 0.5rem 0 0; }
+.cx-meth__plain-note {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+  margin: 0.55rem 0 0;
+  padding: 0.55rem 0.65rem;
+  border-radius: 8px;
+  background: #f8fafc;
+  color: #475569;
+  font-size: 0.72rem;
+  line-height: 1.45;
+}
+.cx-meth__details { margin-top: 0.65rem; font-size: 0.72rem; color: #475569; }
+.cx-meth__details summary { cursor: pointer; color: #0b7f66; font-weight: 700; }
 
 /* Peer bars (rail) */
 .cx-peerc__list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 0.25rem; }
