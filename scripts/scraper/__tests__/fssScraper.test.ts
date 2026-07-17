@@ -2,12 +2,10 @@ import { readFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { dirname, join } from "node:path";
 import { describe, expect, it } from "vitest";
-import {
-  buildFssRecords,
+import {buildFssRecords,
   categorizeFssRow,
   parseFssDate,
-  parseFssListHtml,
-} from "../scrapeFss.js";
+  parseFssListHtml,, canonicalizeFssDetailUrl } from "../scrapeFss.js";
 
 const FIXTURE_DIR = join(dirname(fileURLToPath(import.meta.url)), "fixtures");
 const html = readFileSync(join(FIXTURE_DIR, "fss-sample.html"), "utf8");
@@ -25,7 +23,7 @@ describe("FSS scraper", () => {
     expect(first.nttId).toBe("54491");
     expect(first.dateIssued).toBe("2022-01-23");
     expect(first.detailUrl).toBe(
-      "https://www.fss.or.kr/eng/bbs/B0000211/view.do?nttId=54491&menuNo=300147&pageIndex=1",
+      "https://www.fss.or.kr/eng/bbs/B0000211/view.do?nttId=54491",
     );
     expect(first.categories).toContain("Supervision-Examination");
   });
@@ -74,5 +72,13 @@ describe("FSS scraper", () => {
     // De-dupes when the same nttId appears twice (page overlap).
     const doubled = buildFssRecords([...rows, ...rows]);
     expect(doubled).toHaveLength(records.length);
+  });
+
+  it("canonicalizes detail URLs: volatile pagination state never enters the hash", () => {
+    expect(
+      canonicalizeFssDetailUrl(
+        "https://www.fss.or.kr/eng/bbs/B0000211/view.do?nttId=99&menuNo=300147&pageIndex=4",
+      ),
+    ).toBe("https://www.fss.or.kr/eng/bbs/B0000211/view.do?nttId=99");
   });
 });

@@ -110,11 +110,14 @@ export function parseFdicCsv(csv: string): FdicOrderRow[] {
 
   const rows: FdicOrderRow[] = [];
   let droppedRespondents = 0;
+  let droppedDates = 0;
 
   for (const record of records) {
     const dateIssued = parseFdicDate(record["Issued Date"] ?? "");
     if (!dateIssued) {
-      // A row with no issue date cannot be published; skip it.
+      // A row with no issue date cannot be published; skip it (counted so a
+      // future source date-format change cannot silently drop rows).
+      droppedDates += 1;
       continue;
     }
 
@@ -157,6 +160,10 @@ export function parseFdicCsv(csv: string): FdicOrderRow[] {
     console.warn(
       `FDIC: dropped ${droppedRespondents} masked/redacted respondent name(s) with no publishable identity`,
     );
+  }
+  if (droppedDates > 0) {
+    // eslint-disable-next-line no-console
+    console.warn(`FDIC: dropped ${droppedDates} row(s) with non-ISO issued dates`);
   }
 
   return rows;
@@ -309,6 +316,13 @@ export async function loadFdicLiveRecords(): Promise<DbReadyRecord[]> {
     throw new Error("FDIC EDOS export did not contain the expected CSV header.");
   }
   const rows = parseFdicCsv(csv);
+  // Completeness floor: the register holds ~11k respondent rows; a truncated
+  // or throttled export must be rejected, not silently published as partial.
+  if (rows.length < 5000) {
+    throw new Error(
+      `FDIC: Download All export looks truncated (${rows.length} rows; expected several thousand)`,
+    );
+  }
   return buildFdicRecords(rows);
 }
 

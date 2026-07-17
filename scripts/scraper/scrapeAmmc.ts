@@ -83,6 +83,19 @@ export function extractAmmcFirm(title: string): { firm: string; decisionRef: str
   return { firm: withoutRef || cleaned, decisionRef };
 }
 
+/**
+ * Mirror the FDIC policy: anonymised parties ("un actionnaire personne
+ * physique") and whole-title fallbacks (no "à l'encontre de X" clause, so the
+ * extracted "party" is an entire sentence) are not publishable party names.
+ */
+export function isUnpublishableAmmcParty(firm: string, title: string): boolean {
+  const f = firm.toLowerCase();
+  if (/personne\s+physique|personne\s+morale\s+non\s+identifi/.test(f)) return true;
+  // Whole-title fallback: the "firm" equals the (ref-stripped) title itself.
+  const stripped = normalizeWhitespace(title).replace(/[_\s]*\([^)]*\)\s*$/i, "").trim();
+  return firm === stripped && /^sanction\s/i.test(firm);
+}
+
 export function parseAmmcHtml(html: string, pageUrl = AMMC_URL): AmmcRow[] {
   const $ = cheerio.load(html);
   const rows = new Map<string, AmmcRow>();
@@ -103,6 +116,11 @@ export function parseAmmcHtml(html: string, pageUrl = AMMC_URL): AmmcRow[] {
       $li.find('a[href$=".pdf"], a[href*=".pdf"]').first().attr("href") || "",
     );
     const { firm, decisionRef } = extractAmmcFirm(title);
+    if (isUnpublishableAmmcParty(firm, title)) {
+      // eslint-disable-next-line no-console
+      console.warn(`AMMC: dropped record with no publishable party name: "${title}"`);
+      return;
+    }
     const nodeUrl = makeAbsoluteUrl(pageUrl, nodeHref);
 
     rows.set(nodeUrl, {

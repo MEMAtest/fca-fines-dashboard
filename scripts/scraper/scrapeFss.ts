@@ -100,11 +100,30 @@ export function parseFssListHtml(html: string, pageUrl = buildListUrl(1)): FssRo
       title,
       categories,
       dateIssued,
-      detailUrl: makeAbsoluteUrl(pageUrl, href),
+      detailUrl: canonicalizeFssDetailUrl(makeAbsoluteUrl(pageUrl, href)),
     });
   });
 
   return rows;
+}
+
+
+/**
+ * The board embeds volatile pagination state (pageIndex, menuNo) in every
+ * detail href; hashing that duplicated rows whenever new releases shifted the
+ * pagination. Keep only the stable nttId route parameters.
+ */
+export function canonicalizeFssDetailUrl(url: string): string {
+  try {
+    const u = new URL(url);
+    const nttId = u.searchParams.get("nttId");
+    if (!nttId) return url;
+    const keep = new URLSearchParams();
+    keep.set("nttId", nttId);
+    return `${u.origin}${u.pathname}?${keep.toString()}`;
+  } catch {
+    return url;
+  }
 }
 
 export function categorizeFssRow(row: FssRow): string[] {

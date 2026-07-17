@@ -110,6 +110,14 @@ export function parseCnvHtml(html: string, pageUrl = CNV_URL): CnvRow[] {
     if (cells.length === 1 && current) {
       // A continuation row: another sumariado under the current resolution.
       pushParty(normalizeWhitespace(cells.eq(0).text()), current, rows);
+    } else if (cells.length > 1 && cells.length < 4) {
+      // Neither a header row (>=4 cells) nor a clean continuation (1 cell):
+      // a party silently vanishing here is the worst failure mode for a
+      // compliance dataset, so make the anomaly loud instead of dropping it.
+      // eslint-disable-next-line no-console
+      console.warn(
+        `CNV: unexpected ${cells.length}-cell row skipped: "${normalizeWhitespace(cells.text()).slice(0, 80)}"`,
+      );
     }
   });
 

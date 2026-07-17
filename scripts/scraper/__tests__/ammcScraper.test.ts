@@ -36,7 +36,10 @@ describe("AMMC scraper", () => {
 
   it("parses the actualités rows with node URLs and PDF attachments", () => {
     const rows = parseAmmcHtml(html);
-    expect(rows.length).toBeGreaterThanOrEqual(3);
+    // The fixture's anonymised-party row ("un actionnaire personne physique")
+    // is correctly dropped as unpublishable, mirroring the FDIC policy.
+    expect(rows.length).toBeGreaterThanOrEqual(2);
+    expect(rows.some((row) => /personne physique/i.test(row.firm))).toBe(false);
     const redMed = rows.find((row) => row.firm === "RED Med Asset Management");
     expect(redMed).toBeDefined();
     expect(redMed?.dateIssued).toBe("2024-03-07");
