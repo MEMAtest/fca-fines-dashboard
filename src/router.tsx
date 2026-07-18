@@ -312,8 +312,17 @@ const NotFound = lazyPage(() =>
     default: module.NotFound,
   })),
 );
+const OpsDashboard = lazyPage(() =>
+  import("./pages/OpsDashboard.js").then((module) => ({
+    default: module.OpsDashboard,
+  })),
+);
 
 const router = createBrowserRouter([
+  {
+    path: "/ops",
+    element: <Suspense fallback={ROUTE_FALLBACK}><OpsDashboard /></Suspense>,
+  },
   {
     element: <SiteLayout />,
     errorElement: <RouteErrorBoundary />,

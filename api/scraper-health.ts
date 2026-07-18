@@ -1,5 +1,6 @@
 import type { VercelRequest, VercelResponse } from "@vercel/node";
 import { getSqlClient } from "../server/db.js";
+import { isOpsRequestAuthorised } from "../server/services/opsAuth.js";
 
 const sql = getSqlClient();
 
@@ -29,8 +30,13 @@ export default async function handler(
   req: VercelRequest,
   res: VercelResponse,
 ) {
+  res.setHeader("Cache-Control", "no-store");
+  res.setHeader("X-Robots-Tag", "noindex, nofollow, noarchive");
   if (req.method !== "GET") {
     return res.status(405).json({ error: "Method not allowed" });
+  }
+  if (!isOpsRequestAuthorised(req)) {
+    return res.status(401).json({ error: "Unauthorised" });
   }
 
   try {
@@ -153,8 +159,6 @@ export default async function handler(
       ).length,
       generatedAt: new Date().toISOString(),
     };
-
-    res.setHeader("Cache-Control", "public, max-age=60, s-maxage=120");
 
     return res.status(200).json({
       summary,

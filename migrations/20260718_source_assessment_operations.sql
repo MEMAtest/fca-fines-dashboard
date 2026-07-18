@@ -137,7 +137,8 @@ LEFT JOIN public.regulatory_source_assessments AS assessment
 DO $$
 BEGIN
   IF EXISTS (SELECT 1 FROM pg_roles WHERE rolname = 'fca_app') THEN
-    GRANT SELECT ON public.regulatory_source_assessment_history TO fca_app;
+    GRANT SELECT, INSERT ON public.regulatory_source_assessment_history TO fca_app;
+    GRANT USAGE, SELECT ON SEQUENCE public.regulatory_source_assessment_history_id_seq TO fca_app;
     GRANT SELECT ON public.regulatory_source_review_queue TO fca_app;
     GRANT SELECT ON public.all_regulatory_fines_trusted TO fca_app;
   END IF;

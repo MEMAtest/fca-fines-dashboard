@@ -3,9 +3,10 @@ import path from "node:path";
 import postgres from "postgres";
 import "dotenv/config";
 import { backfillRegulatoryAmountAssessments } from "./backfill-regulatory-amount-assessments.js";
+import { resolveConnectionString } from "../server/db.js";
 
-const databaseUrl = process.env.DATABASE_URL?.trim();
-if (!databaseUrl) throw new Error("DATABASE_URL is required");
+const databaseUrl = resolveConnectionString();
+if (!databaseUrl) throw new Error("A supported database connection string is required");
 
 const sql = postgres(databaseUrl, {
   max: 1,
@@ -36,6 +37,7 @@ async function main() {
     "migrations/20260718_delivery_journey_operations.sql",
     "migrations/20260718_scraper_quality_operations.sql",
     "migrations/20260718_product_funnel_events.sql",
+    "migrations/20260718_ops_alert_state.sql",
   ].map((file) => path.resolve(process.cwd(), file));
 
   for (const migrationPath of migrationPaths) {
