@@ -457,6 +457,12 @@ export function RegulatorDashboard() {
     () => filteredFines.reduce((sum, fine) => sum + safeNum(fine.amount), 0),
     [filteredFines],
   );
+  // Regulators whose sources publish no monetary figures (licence actions,
+  // press releases) must not render their real actions as "£0" fines.
+  const hasAnyAmount = useMemo(
+    () => filteredFines.some((fine) => safeNum(fine.amount) > 0),
+    [filteredFines],
+  );
   const largestFineRecord = useMemo(
     () =>
       [...filteredFines].sort(
@@ -861,27 +867,31 @@ export function RegulatorDashboard() {
           <article className="regulator-dashboard__stat-card">
             <p className="regulator-dashboard__stat-label">Total amount</p>
             <p className="regulator-dashboard__stat-value">
-              {formatCurrency(totalAmount, currency)}
+              {hasAnyAmount ? formatCurrency(totalAmount, currency) : "Not published"}
             </p>
             <p className="regulator-dashboard__stat-meta">
-              {filteredFines.length} actions in view
+              {hasAnyAmount
+                ? `${filteredFines.length} actions in view`
+                : `${filteredFines.length} actions in view · source does not publish amounts`}
             </p>
           </article>
           <article className="regulator-dashboard__stat-card">
             <p className="regulator-dashboard__stat-label">Largest fine</p>
             <p className="regulator-dashboard__stat-value">
-              {largestFineRecord
+              {hasAnyAmount && largestFineRecord
                 ? formatCurrency(safeNum(largestFineRecord.amount), currency)
-                : "Not available"}
+                : "Not published"}
             </p>
             <p className="regulator-dashboard__stat-meta">
-              {largestFineRecord?.firm_individual || "No firm available"}
+              {hasAnyAmount
+                ? largestFineRecord?.firm_individual || "No firm available"
+                : "Licence and supervisory actions without monetary penalties"}
             </p>
           </article>
           <article className="regulator-dashboard__stat-card">
             <p className="regulator-dashboard__stat-label">Average fine</p>
             <p className="regulator-dashboard__stat-value">
-              {filteredFines.length
+              {hasAnyAmount && filteredFines.length
                 ? formatCurrency(averageFine, currency)
                 : "Not available"}
             </p>

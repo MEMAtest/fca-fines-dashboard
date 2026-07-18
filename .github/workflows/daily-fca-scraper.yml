@@ -101,6 +101,21 @@ jobs:
             script: scrape:bma
           - code: CIMA
             script: scrape:cima
+          # Wave F3 go-live: stable HTTP/JSON/CSV feeds join the daily batch.
+          - code: SPK
+            script: scrape:spk
+          - code: FRB
+            script: scrape:frb
+          - code: GHSEC
+            script: scrape:ghana-sec
+          - code: TWFSC
+            script: scrape:twfsc
+          - code: AMMC
+            script: scrape:ammc
+          - code: CNV
+            script: scrape:cnv
+          - code: FSS
+            script: scrape:fss
     steps:
       - name: Checkout repository
         uses: actions/checkout@v6

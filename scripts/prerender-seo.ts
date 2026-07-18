@@ -1814,7 +1814,7 @@ async function buildPageMetas(): Promise<PageMeta[]> {
             {
               "@type": "PropertyValue",
               name: "Fine Amount",
-              unitText: coverage.defaultCurrency,
+              unitText: "GBP", // table amounts are GBP-normalised; native currency varies
             },
             { "@type": "PropertyValue", name: "Enforcement Date" },
             { "@type": "PropertyValue", name: "Breach Category" },
