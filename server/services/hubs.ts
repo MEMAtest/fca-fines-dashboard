@@ -232,8 +232,22 @@ export interface RegulatorTopFine {
  *      but that trailing dot makes it truncated; we catch it separately).
  *   2. Name contains obvious verb-phrase tokens that indicate a headline sentence
  *      rather than a party name: "to Pay", " fines ", " fined ", " charged ",
- *      "overcharged", "finds ", "ruled", "to Return", "to Appeal".
- *   3. Name is a well-known placeholder: "Unknown", "Undisclosed", "N/A", "N/a".
+ *      "overcharged", "finds ", "ruled", "to Return", "to Appeal", "Paying",
+ *      "Agrees to", "Sanctions on", "Fines Against", "Fine Imposition on",
+ *      "Imposed on", "Received a Warning", "admits to illegal/cartel",
+ *      "increases fine", "commence prosecution", "Misconduct Tribunal", and
+ *      document-title colon forms (": an open letter", ": guidance", etc.).
+ *   3. Name is a well-known placeholder: "Unknown", "Undisclosed", "N/A", "N/a",
+ *      and exact-match DNB/CMVM anonymisation tokens ("Onderneming",
+ *      "Bank N.V.", "Netherlands B.V.", "dois arguidos").
+ *      Deliberate keeps (conservative): "Personen" (Danish anonymisation),
+ *      named companies whose legal form ends in "N.V." or "B.V." (e.g.
+ *      "Volksbank N.V.", "Aegon Bank N.V.") are NOT excluded because they
+ *      are real firm names, not bare generic tokens.
+ *      Note: "dois arguidos" (Portuguese "two defendants") was previously listed
+ *      as a deliberate keep, but the reviewer overturned that: it is a generic
+ *      legal term, not a firm name. Excluding it means CMVM renders no fines
+ *      table, which is the correct graceful empty state.
  *   4. Name matches a date-shaped action title like "Enforcement Action YYYY-MM-DD".
  *   5. Name starts with a regulator's own name (e.g. "CMA finds …", "CMVM divulgou …",
  *      "The FSC Imposed …") — these are press-release titles, not party names.
@@ -244,6 +258,8 @@ export interface RegulatorTopFine {
  *      by spaces without logical connectives, caught by the >80-char heuristic
  *      combined with verb-phrase absence — but we surface it via the "starts
  *      with lowercase" check for the specific AFM truncation pattern).
+ *   9. Name ends with a bare hanging connective word (e.g. "water tank firms over"),
+ *      indicating a truncated sentence fragment.
  *
  * False-exclusion risk: legitimate firm names that are long phrases (e.g.
  * "Citigroup Global Markets Limited, Citibank N.A. London Branch and Citibank
@@ -259,8 +275,11 @@ export function isGarbageFirmName(name: string): boolean {
   // Rule 7: HTTP error strings
   if (/^\d{3}\s+ERROR$/i.test(n)) return true;
 
-  // Rule 3: known placeholder values
-  if (/^(Unknown|Undisclosed|N\/A|N\/a)$/i.test(n)) return true;
+  // Rule 3: known placeholder values — exact matches only to avoid killing real
+  // firm names like "Volksbank N.V." or "Jmond Corporate Solutions B.V.".
+  // "dois arguidos" (Portuguese "two defendants") is a CMVM generic legal term,
+  // not a firm name; excluding it yields a graceful empty table for CMVM.
+  if (/^(Unknown|Undisclosed|N\/A|N\/a|Onderneming|Bank N\.V\.|Netherlands B\.V\.|dois arguidos)$/i.test(n)) return true;
 
   // Rule 4: date-shaped enforcement action titles ("Enforcement Action YYYY-MM-DD")
   if (/^Enforcement Action \d{4}-\d{2}-\d{2}$/i.test(n)) return true;
@@ -289,7 +308,7 @@ export function isGarbageFirmName(name: string): boolean {
     /\bproferiu\b/i, // Portuguese CMVM decision titles ("proferiu decisão")
     /^Contraorden/i, // Portuguese quarter-report section titles (CMVM)
     /^Decisão do Conselho\b/i, // Portuguese formal decision titles
-    /\bSanction on\b/i, // TWFSC action-phrase titles
+    /\bSanctions? on\b/i, // TWFSC action-phrase titles (singular + plural: "Sanction on", "Sanctions on")
     /\bDisposition Imposed on\b/i,
     /\bDisciplinary [Aa]ction\b/i, // TWFSC action-phrase titles
     /\bDisciplinary [Cc]ase\b/i,
@@ -297,6 +316,18 @@ export function isGarbageFirmName(name: string): boolean {
     /\bdealings in the shares/i, // SFC sentence-as-name
     /\bImposed\b.*\bSanctions\b/i, // TWFSC bulk-action titles
     /\blessons learnt\b/i, // CMA case-study title
+    // --- patterns added to close 16 filter escapes found in prod review ---
+    /\bPaying\b/i, // SEC: "Teva Pharmaceutical Paying $519M …", "Oil Services Company Paying $140M …"
+    /\bAgrees? to\b/i, // SEC: "Barclays Agrees to a $361M Settlement …" (missed by Reaches Settlement)
+    /\bFines? Against\b/i, // TWFSC: "Fines Against the Person Responsible …"
+    /\bFine Imposition on\b/i, // TWFSC: "Fine Imposition on Person Responsible …"
+    /\bImposed on\b/i, // TWFSC: "NT$1,200,000 Fine and Warning Imposed on …"
+    /\bReceived a Warning\b/i, // TWFSC: "Capital Investment Trust Corp. Received a Warning …"
+    /\badmit(s|ted)?\s+(to\s+)?(an?\s+)?(illegal|cartel)/i, // CMA: "Two UK roofing lead firms admit to illegal cartel"
+    /\bincreases fine\b/i, // CMA: "CAT increases fine after musical instrument firm …"
+    /:\s*(an?\s+)?(open letter|guidance|consultation|case study)\b/i, // CMA: "Restricting resale prices: an open letter …"
+    /^commence prosecution\b/i, // SFC: "commence prosecution in securities fraud case …" (starts lowercase)
+    /\bMisconduct Tribunal\b/i, // SFC: "Market Misconduct Tribunal sanctions Magic Holdings …"
   ];
   for (const re of verbPhrases) {
     if (re.test(n)) return true;
@@ -306,13 +337,31 @@ export function isGarbageFirmName(name: string): boolean {
   // (catches "CMA finds …", "CMA decision …", "CMA to appeal …",
   //  "The FSC Imposed …", "CMVM divulgou …").
   if (/^(?:CMA|CMVM|FSC|FCA|SEC|DNB|AFM)\b[^A-Z]/i.test(n)) return true;
-  if (/^The [A-Z]{2,4} /i.test(n)) return true;
+  // Note: no /i flag here — [A-Z]{2,4} must be uppercase-only to catch "The FSC",
+  // "The FCA", "The SEC" etc., while keeping "The Bank of Nova Scotia" (mixed case).
+  if (/^The [A-Z]{2,4} /.test(n)) return true;
 
   // Rule 1 + truncation: very short names that look like truncated strings.
   // "J.P" (3 chars, ends with dot) is a BaFin scraper truncation artifact.
   // We match the specific pattern: 1-4 chars total, ends with "." and no
   // space — distinguishes it from legitimate abbreviations that end mid-word.
   if (/^[A-Z]\.[A-Z]\.?$/.test(n) && !n.includes(" ")) return true;
+
+  // Rule 9: truncated sentence fragments ending in a bare hanging connective
+  // word — indicates the scraper caught a partial sentence, not a party name.
+  //
+  // Design notes:
+  //   • Space lookbehind ((?<= )) ensures we only match full standalone words,
+  //     not abbreviation suffixes like "N.A" or "S.A" (the 'A' is preceded by '.').
+  //   • Negative comma+space lookbehind ((?<!, )) preserves the OCC/FDIC naming
+  //     convention "BANK NAME, THE" where the article is appended with a comma —
+  //     those are legitimate legal entity names, not sentence fragments.
+  //   • "a" and "an" are intentionally omitted: a single capital "A" at end of
+  //     string is indistinguishable from an initial (e.g. "Air France-KLM and Mr A",
+  //     "Saxo Bank A"). Those names must be kept.
+  //   • "Pfizer and Flynn" (ends "Flynn") and "The Bank of Nova Scotia" (ends
+  //     "Scotia") are safely kept — neither ends with a listed connective word.
+  if (/(?<!, )(?<= )(over|and|the|of|to|for|with)$/i.test(n)) return true;
 
   return false;
 }
@@ -360,6 +409,13 @@ export async function getRegulatorTopFines(
   const clean = rows
     .filter((row: any) => !isGarbageFirmName(String(row.firm_individual ?? "")))
     .slice(0, clamped);
+
+  // Zero-out diagnostic: distinguish "no data" from "all data structurally garbage".
+  if (rows.length > 0 && clean.length === 0) {
+    console.warn(
+      `[hubs] getRegulatorTopFines(${regulatorCode}): ${rows.length} row(s) fetched but ALL removed by isGarbageFirmName — every party-name field appears structurally garbage. Investigate scraper output.`,
+    );
+  }
 
   return clean.map((row: any) => ({
     firm: String(row.firm_individual ?? ""),

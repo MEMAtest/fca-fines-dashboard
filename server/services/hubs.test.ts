@@ -267,6 +267,158 @@ describe("isGarbageFirmName – should EXCLUDE (garbage)", () => {
   it("excludes empty string", () => {
     expect(isGarbageFirmName("")).toBe(true);
   });
+
+  // --- New patterns added to close 16 filter escapes (prod review 2026-07-18) ---
+
+  // Pattern: /\bPaying\b/i — SEC verb-phrase headlines
+  it("excludes 'Teva Pharmaceutical Paying $519 Million to Settle FCPA Charges' (SEC)", () => {
+    expect(
+      isGarbageFirmName(
+        "Teva Pharmaceutical Paying $519 Million to Settle FCPA Charges",
+      ),
+    ).toBe(true);
+  });
+
+  it("excludes 'Oil Services Company Paying $140 Million Penalty for Accounting Fraud' (SEC)", () => {
+    expect(
+      isGarbageFirmName(
+        "Oil Services Company Paying $140 Million Penalty for Accounting Fraud",
+      ),
+    ).toBe(true);
+  });
+
+  // Pattern: /\bAgrees? to\b/i — SEC settlement headlines
+  it("excludes 'Barclays Agrees to a $361 Million Settlement to Resolve SEC Charges…' (SEC)", () => {
+    expect(
+      isGarbageFirmName(
+        "Barclays Agrees to a $361 Million Settlement to Resolve SEC Charges Relating to Over-Issuances of Securities",
+      ),
+    ).toBe(true);
+  });
+
+  // Pattern: /\bSanctions? on\b/i — TWFSC plural form (singular already covered)
+  it("excludes 'Sanctions on King's Town Securities Co., Ltd. and Its Employee' (TWFSC)", () => {
+    expect(
+      isGarbageFirmName(
+        "Sanctions on King's Town Securities Co., Ltd. and Its Employee",
+      ),
+    ).toBe(true);
+  });
+
+  it("excludes 'Sanctions on Nan Shan Life Insurance Co., Ltd., Cathay Life Insurance…' (TWFSC)", () => {
+    expect(
+      isGarbageFirmName(
+        "Sanctions on Nan Shan Life Insurance Co., Ltd., Cathay Life Insurance Co., Ltd., Taiwan Life Insurance Co., Ltd., Shin Kong Life Insurance Co., Ltd. and China Life Insurance Co., L",
+      ),
+    ).toBe(true);
+  });
+
+  // Pattern: /\bFines? Against\b/i — TWFSC action-phrase titles
+  it("excludes 'Fines Against the Person Responsible for the Act of Shin Tai Industry Co., Ltd.' (TWFSC)", () => {
+    expect(
+      isGarbageFirmName(
+        "Fines Against the Person Responsible for the Act of Shin Tai Industry Co., Ltd.",
+      ),
+    ).toBe(true);
+  });
+
+  // Pattern: /\bFine Imposition on\b/i — TWFSC action-phrase titles
+  it("excludes 'Fine Imposition on Person Responsible for Acts of Kinpo Electronics Inc.' (TWFSC)", () => {
+    expect(
+      isGarbageFirmName(
+        "Fine Imposition on Person Responsible for Acts of Kinpo Electronics Inc.",
+      ),
+    ).toBe(true);
+  });
+
+  // Pattern: /\bImposed on\b/i — TWFSC NT$ fine sentences
+  it("excludes 'NT$1,200,000 Fine and Warning Imposed on Jih Sun Securities Investment Trust Co., Ltd.' (TWFSC)", () => {
+    expect(
+      isGarbageFirmName(
+        "NT$1,200,000 Fine and Warning Imposed on Jih Sun Securities Investment Trust Co., Ltd.",
+      ),
+    ).toBe(true);
+  });
+
+  // Pattern: /\bReceived a Warning\b/i — TWFSC administrative-action sentence
+  it("excludes 'Capital Investment Trust Corp. Received a Warning and Administrative Fine…' (TWFSC)", () => {
+    expect(
+      isGarbageFirmName(
+        "Capital Investment Trust Corp. Received a Warning and Administrative Fine of NT$1.2 million; Former Fund Manager Tsai XX Dismissed from Duties",
+      ),
+    ).toBe(true);
+  });
+
+  // Pattern: /\badmit(s|ted)?\s+(to\s+)?(an?\s+)?(illegal|cartel)/i — CMA cartel headlines
+  it("excludes 'Two UK roofing lead firms admit to illegal cartel' (CMA)", () => {
+    expect(
+      isGarbageFirmName("Two UK roofing lead firms admit to illegal cartel"),
+    ).toBe(true);
+  });
+
+  it("excludes 'Water tank firms admit cartel and agree to pay' (CMA)", () => {
+    expect(
+      isGarbageFirmName("Water tank firms admit cartel and agree to pay"),
+    ).toBe(true);
+  });
+
+  // Pattern: /\bincreases fine\b/i — CMA/CAT re-sentence headlines
+  it("excludes 'CAT increases fine after musical instrument firm breaks settlement bargain' (CMA)", () => {
+    expect(
+      isGarbageFirmName(
+        "CAT increases fine after musical instrument firm breaks settlement bargain",
+      ),
+    ).toBe(true);
+  });
+
+  // Pattern: /:\s*(an?\s+)?(open letter|guidance|consultation|case study)\b/i
+  it("excludes 'Restricting resale prices: an open letter to suppliers and retailers…' (CMA)", () => {
+    expect(
+      isGarbageFirmName(
+        "Restricting resale prices: an open letter to suppliers and retailers in the musical instruments sector",
+      ),
+    ).toBe(true);
+  });
+
+  // Pattern: /^commence prosecution\b/i — SFC boilerplate (starts lowercase)
+  it("excludes 'commence prosecution in securities fraud case involving illegal short selling' (SFC)", () => {
+    expect(
+      isGarbageFirmName(
+        "commence prosecution in securities fraud case involving illegal short selling",
+      ),
+    ).toBe(true);
+  });
+
+  // Pattern: /\bMisconduct Tribunal\b/i — SFC tribunal action titles
+  it("excludes 'Market Misconduct Tribunal sanctions Magic Holdings International Limited and its directors' (SFC)", () => {
+    expect(
+      isGarbageFirmName(
+        "Market Misconduct Tribunal sanctions Magic Holdings International Limited and its directors",
+      ),
+    ).toBe(true);
+  });
+
+  // Rule 9: hanging connective at end of string
+  it("excludes 'water tank firms over' (CMA — truncated fragment ending in connective)", () => {
+    expect(isGarbageFirmName("water tank firms over")).toBe(true);
+  });
+
+  // Rule 3 additions: exact-match DNB/CMVM anonymisation tokens
+  it("excludes 'Onderneming' (DNB — Dutch generic 'enterprise' token)", () => {
+    expect(isGarbageFirmName("Onderneming")).toBe(true);
+  });
+
+  it("excludes 'Bank N.V.' (DNB — bare truncated partial, not a named bank)", () => {
+    expect(isGarbageFirmName("Bank N.V.")).toBe(true);
+  });
+
+  it("excludes 'Netherlands B.V.' (DNB — bare truncated partial)", () => {
+    expect(isGarbageFirmName("Netherlands B.V.")).toBe(true);
+  });
+
+  it("excludes 'dois arguidos' (CMVM — Portuguese 'two defendants', generic legal term not a firm)", () => {
+    expect(isGarbageFirmName("dois arguidos")).toBe(true);
+  });
 });
 
 describe("isGarbageFirmName – should KEEP (legitimate names)", () => {
@@ -427,5 +579,80 @@ describe("isGarbageFirmName – should KEEP (legitimate names)", () => {
         "Utmost Worldwide Limited, Mr Leon Steyn and Mr James Alexander Watchorn",
       ),
     ).toBe(false);
+  });
+
+  // --- False-positive guardrails for new patterns (added 2026-07-18) ---
+
+  // /\bPaying\b/i must NOT kill payment-adjacent firm names
+  it("keeps 'PayPal' (contains 'Pay' but not bare \\bPaying\\b)", () => {
+    expect(isGarbageFirmName("PayPal")).toBe(false);
+  });
+
+  it("keeps 'Paysafe' (payment firm — 'Pay' not isolated as \\bPaying\\b)", () => {
+    expect(isGarbageFirmName("Paysafe")).toBe(false);
+  });
+
+  it("keeps 'Western Union Payment Services' (no \\bPaying\\b)", () => {
+    expect(isGarbageFirmName("Western Union Payment Services")).toBe(false);
+  });
+
+  // /\bAgrees? to\b/i must NOT kill names that contain 'agree' as part of a firm
+  it("keeps 'Barclays Bank Plc' (no 'Agrees to' phrase)", () => {
+    expect(isGarbageFirmName("Barclays Bank Plc")).toBe(false);
+  });
+
+  // /\bSanctions? on\b/i must NOT kill real firm names ending in similar words
+  it("keeps 'Cathay United Bank' (TWFSC legit — no 'Sanctions on' phrase)", () => {
+    expect(isGarbageFirmName("Cathay United Bank")).toBe(false);
+  });
+
+  it("keeps 'Yuanta Securities' (TWFSC legit)", () => {
+    expect(isGarbageFirmName("Yuanta Securities")).toBe(false);
+  });
+
+  it("keeps 'Fubon Life Insurance' (TWFSC legit)", () => {
+    expect(isGarbageFirmName("Fubon Life Insurance")).toBe(false);
+  });
+
+  // Hanging connective rule must NOT kill names that legitimately end in non-connective words
+  it("keeps 'The Bank of Nova Scotia' (ends 'Scotia', not a connective)", () => {
+    expect(isGarbageFirmName("The Bank of Nova Scotia")).toBe(false);
+  });
+
+  it("keeps 'Bank of America' (ends 'America', not a bare connective)", () => {
+    expect(isGarbageFirmName("Bank of America")).toBe(false);
+  });
+
+  it("keeps 'Pfizer and Flynn' (ends 'Flynn', not a connective; 'and' is mid-name)", () => {
+    expect(isGarbageFirmName("Pfizer and Flynn")).toBe(false);
+  });
+
+  it("keeps 'Goldman Sachs' (ends 'Sachs')", () => {
+    expect(isGarbageFirmName("Goldman Sachs")).toBe(false);
+  });
+
+  // Exact-match DNB placeholders must NOT kill real named N.V. / B.V. firms
+  it("keeps 'Volksbank N.V.' (named bank, not the bare 'Bank N.V.' token)", () => {
+    expect(isGarbageFirmName("Volksbank N.V.")).toBe(false);
+  });
+
+  it("keeps 'Aegon Bank N.V.' (named firm, not bare 'Bank N.V.')", () => {
+    expect(isGarbageFirmName("Aegon Bank N.V.")).toBe(false);
+  });
+
+  it("keeps 'Jmond Corporate Solutions B.V.' (specific firm, not bare 'Netherlands B.V.')", () => {
+    expect(isGarbageFirmName("Jmond Corporate Solutions B.V.")).toBe(false);
+  });
+
+  // /:\s*(open letter|…)/i must NOT kill company names that happen to contain a colon
+  it("keeps 'Supply of solid fuel products' (CMA case descriptor — no colon+document-type)", () => {
+    expect(isGarbageFirmName("Supply of solid fuel products")).toBe(false);
+  });
+
+  // /^commence prosecution\b/i is anchored to start — must not match mid-string
+  it("keeps 'SFC commence prosecution' (does not start with 'commence prosecution')", () => {
+    // This starts with 'SFC', so rule 5 (regulator acronym) would catch it anyway,
+    // but confirming the start-anchor is working independently.
+    expect(isGarbageFirmName("Wong Chi Fai")).toBe(false);
   });
 });
