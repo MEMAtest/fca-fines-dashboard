@@ -260,12 +260,15 @@ export interface RegulatorTopFine {
  *      with lowercase" check for the specific AFM truncation pattern).
  *   9. Name ends with a bare hanging connective word (e.g. "water tank firms over"),
  *      indicating a truncated sentence fragment.
+ *  10. Name is paragraph-scale (>= 180 chars) — a scraped press-release
+ *      paragraph, never a party name (observed from FMA-AT).
  *
  * False-exclusion risk: legitimate firm names that are long phrases (e.g.
  * "Citigroup Global Markets Limited, Citibank N.A. London Branch and Citibank
  * Europe Plc") are intentionally NOT excluded because they contain no verb
  * phrases and have no placeholder tokens. The heuristics are applied as an
- * OR of specific patterns, not a blanket length cut-off.
+ * OR of specific patterns, not a name-scale length cut-off (rule 10 only
+ * fires at paragraph scale, roughly double the longest known real name).
  */
 export function isGarbageFirmName(name: string): boolean {
   if (!name || name.trim().length === 0) return true;
@@ -328,6 +331,12 @@ export function isGarbageFirmName(name: string): boolean {
     /:\s*(an?\s+)?(open letter|guidance|consultation|case study)\b/i, // CMA: "Restricting resale prices: an open letter …"
     /^commence prosecution\b/i, // SFC: "commence prosecution in securities fraud case …" (starts lowercase)
     /\bMisconduct Tribunal\b/i, // SFC: "Market Misconduct Tribunal sanctions Magic Holdings …"
+    // --- residue found by post-fix dist sweep of all baked hub tables ---
+    /\bSanctioned\b/i, // TWFSC: "Concord Futures Corp. Sanctioned", "Masterlink Futures Corp.,Ltd and Its Associated Person Sanctioned"
+    /\bDisciplinary Procedures?\b/i, // TWFSC: "Disciplinary Procedures Against Asia Pacific International Securities …"
+    /\bto Settle\b/i, // SEC: "Bank of America Admits Disclosure Failures to Settle SEC Charges"
+    /\bhereby announces\b/i, // FMA-AT: press-release paragraph scraped as the party name
+    /\bdue to (a )?breach of\b/i, // FMA-AT: "Lang & Schwarz AG due to breach of the ban on market manipulation …"
   ];
   for (const re of verbPhrases) {
     if (re.test(n)) return true;
@@ -362,6 +371,13 @@ export function isGarbageFirmName(name: string): boolean {
   //   • "Pfizer and Flynn" (ends "Flynn") and "The Bank of Nova Scotia" (ends
   //     "Scotia") are safely kept — neither ends with a listed connective word.
   if (/(?<!, )(?<= )(over|and|the|of|to|for|with)$/i.test(n)) return true;
+
+  // Rule 10: paragraph-scale blobs. Long legitimate multi-entity names exist
+  // (e.g. the ~93-char "The Bank of New York Mellon London Branch & The Bank of
+  // New York Mellon International Limited"), so this is NOT a name-scale
+  // cut-off — but nothing at >= 180 chars is a party name; that is a scraped
+  // press-release paragraph (observed from FMA-AT).
+  if (n.length >= 180) return true;
 
   return false;
 }

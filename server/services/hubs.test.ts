@@ -219,6 +219,50 @@ describe("isGarbageFirmName – should EXCLUDE (garbage)", () => {
     ).toBe(true);
   });
 
+  // Residue found by post-fix dist sweep of all baked hub tables
+  it("excludes 'Concord Futures Corp. Sanctioned' (TWFSC trailing headline verb)", () => {
+    expect(isGarbageFirmName("Concord Futures Corp. Sanctioned")).toBe(true);
+  });
+
+  it("excludes 'Masterlink Futures Corp.,Ltd and Its Associated Person Sanctioned'", () => {
+    expect(
+      isGarbageFirmName(
+        "Masterlink Futures Corp.,Ltd and Its Associated Person Sanctioned",
+      ),
+    ).toBe(true);
+  });
+
+  it("excludes 'Disciplinary Procedures Against Asia Pacific International Securities Investment Consultant Co., Ltd in Violation of Money Laundering Control Act'", () => {
+    expect(
+      isGarbageFirmName(
+        "Disciplinary Procedures Against Asia Pacific International Securities Investment Consultant Co., Ltd in Violation of Money Laundering Control Act",
+      ),
+    ).toBe(true);
+  });
+
+  it("excludes 'Bank of America Admits Disclosure Failures to Settle SEC Charges'", () => {
+    expect(
+      isGarbageFirmName(
+        "Bank of America Admits Disclosure Failures to Settle SEC Charges",
+      ),
+    ).toBe(true);
+  });
+
+  it("excludes FMA-AT press-release paragraph scraped as party name ('hereby announces')", () => {
+    expect(
+      isGarbageFirmName(
+        "BKS Bank AG due to breach of the ban on market manipulation The Austrian Financial Market Authority FMA hereby announces that it has imposed a fine of EUR 160,000.00 against BKS Bank AG due to a breach of the ban on market manipulation",
+      ),
+    ).toBe(true);
+  });
+
+  it("excludes any paragraph-scale blob (>= 180 chars) even without a known verb phrase", () => {
+    const blob =
+      "Zeta Holdings Limited registered office in Vienna Austria with respect to the administrative proceedings concerning the supervisory framework applicable to market participants in the financial sector generally";
+    expect(blob.length).toBeGreaterThanOrEqual(180);
+    expect(isGarbageFirmName(blob)).toBe(true);
+  });
+
   // TWFSC action-phrase titles
   it("excludes 'Sanction on KGI Securities Co., Ltd'", () => {
     expect(isGarbageFirmName("Sanction on KGI Securities Co., Ltd")).toBe(
@@ -654,5 +698,21 @@ describe("isGarbageFirmName – should KEEP (legitimate names)", () => {
     // This starts with 'SFC', so rule 5 (regulator acronym) would catch it anyway,
     // but confirming the start-anchor is working independently.
     expect(isGarbageFirmName("Wong Chi Fai")).toBe(false);
+  });
+
+  // Residue-sweep patterns must not over-reach
+  it("keeps 'Transasia Airways Corporation' (TWFSC legit survivor)", () => {
+    expect(isGarbageFirmName("Transasia Airways Corporation")).toBe(false);
+  });
+
+  it("keeps 'Settlement Services Ltd' ('Settlement' is not the 'to Settle' phrase)", () => {
+    expect(isGarbageFirmName("Settlement Services Ltd")).toBe(false);
+  });
+
+  it("keeps the ~93-char Bank of New York Mellon multi-entity name (long but under the 180-char paragraph ceiling)", () => {
+    const longName =
+      "The Bank of New York Mellon London Branch & The Bank of New York Mellon International Limited";
+    expect(longName.length).toBeLessThan(180);
+    expect(isGarbageFirmName(longName)).toBe(false);
   });
 });
