@@ -30,6 +30,7 @@
     "data-trust:migrate": "npx tsx scripts/run-data-trust-migration.ts",
     "data-trust:assess-amounts": "node --import tsx/esm scripts/backfill-regulatory-amount-assessments.ts",
     "data-trust:check-sources": "node --import tsx/esm scripts/check-regulatory-source-evidence.ts",
+    "data-trust:backfill-sources": "node --import tsx/esm scripts/check-regulatory-source-evidence.ts --all --limit=100 --concurrency=6",
     "country-risk:migrate": "node --import tsx/esm scripts/run-country-risk-migration.ts",
     "country-risk:ingest-fatf": "node --import tsx/esm scripts/country-risk/ingest-fatf-assessments.ts",
     "country-risk:ingest-cpi": "node --import tsx/esm scripts/ingest-cpi.ts",

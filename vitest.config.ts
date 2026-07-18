@@ -15,6 +15,7 @@ export default defineConfig({
       'server/**/*.{test,spec}.{ts,tsx}',
       'scripts/country-risk/lib/**/*.{test,spec}.{ts,tsx}',
       'scripts/scraper/__tests__/**/*.{test,spec}.{ts,tsx}',
+      'scripts/check-regulatory-source-evidence.test.ts',
       'feature-validation/**/*.{test,spec}.{ts,tsx}',
     ],
     exclude: [
