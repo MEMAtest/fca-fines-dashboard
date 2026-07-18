@@ -221,6 +221,103 @@ export interface RegulatorTopFine {
 }
 
 /**
+ * Display-sanity heuristics for the "Largest enforcement actions" table.
+ *
+ * These filters apply ONLY to the top-N showcase table baked into regulator
+ * hub pages. Rows excluded here remain in the database, the full fines list,
+ * and search — only the static highlight table is affected.
+ *
+ * Rules (conservative — when in doubt, keep the row):
+ *   1. Name is too short (<= 2 chars, e.g. "J.P" truncated to "J.P" is 3 chars
+ *      but that trailing dot makes it truncated; we catch it separately).
+ *   2. Name contains obvious verb-phrase tokens that indicate a headline sentence
+ *      rather than a party name: "to Pay", " fines ", " fined ", " charged ",
+ *      "overcharged", "finds ", "ruled", "to Return", "to Appeal".
+ *   3. Name is a well-known placeholder: "Unknown", "Undisclosed", "N/A", "N/a".
+ *   4. Name matches a date-shaped action title like "Enforcement Action YYYY-MM-DD".
+ *   5. Name starts with a regulator's own name (e.g. "CMA finds …", "CMVM divulgou …",
+ *      "The FSC Imposed …") — these are press-release titles, not party names.
+ *   6. Name is a press-release boilerplate snippet (e.g. starts with "interviews are").
+ *   7. Name is an HTTP error code string (e.g. "403 ERROR").
+ *   8. Name appears to be a truncated navigation menu fragment (starts with
+ *      lowercase and contains multiple unrelated Dutch/administrative terms joined
+ *      by spaces without logical connectives, caught by the >80-char heuristic
+ *      combined with verb-phrase absence — but we surface it via the "starts
+ *      with lowercase" check for the specific AFM truncation pattern).
+ *
+ * False-exclusion risk: legitimate firm names that are long phrases (e.g.
+ * "Citigroup Global Markets Limited, Citibank N.A. London Branch and Citibank
+ * Europe Plc") are intentionally NOT excluded because they contain no verb
+ * phrases and have no placeholder tokens. The heuristics are applied as an
+ * OR of specific patterns, not a blanket length cut-off.
+ */
+export function isGarbageFirmName(name: string): boolean {
+  if (!name || name.trim().length === 0) return true;
+
+  const n = name.trim();
+
+  // Rule 7: HTTP error strings
+  if (/^\d{3}\s+ERROR$/i.test(n)) return true;
+
+  // Rule 3: known placeholder values
+  if (/^(Unknown|Undisclosed|N\/A|N\/a)$/i.test(n)) return true;
+
+  // Rule 4: date-shaped enforcement action titles ("Enforcement Action YYYY-MM-DD")
+  if (/^Enforcement Action \d{4}-\d{2}-\d{2}$/i.test(n)) return true;
+
+  // Rule 6: press-release boilerplate snippets
+  if (/^interviews are coordinated by/i.test(n)) return true;
+
+  // Rule 2: headline verb phrases that indicate a sentence, not a party name.
+  // These appear inside the string (not anchored) because headlines embed the
+  // verb mid-sentence. We check for word-boundary variants to avoid false
+  // positives on firm names like "Payday Lender Penalised".
+  const verbPhrases = [
+    /\bto Pay\b/i,
+    /\bto Return\b/i,
+    /\bto Appeal\b/i,
+    / fines /i,
+    / fined /i,
+    / charged /i,
+    /overcharged/i,
+    /\bfinds \b/i,
+    /\bruled\b/i,
+    /\bOrders?\b.*\bJudgment\b/i, // "Court Orders $1 Billion Judgment …"
+    /\bReaches? Settlement\b/i, // "Petrobras Reaches Settlement With SEC …"
+    /\bSettles\b.{0,40}\b(FCPA|Charges?|Violations?)\b/i, // "X Settles FCPA Violations"
+    /\bdivulgou\b/i, // Portuguese CMVM press-release titles ("divulgou hoje")
+    /\bproferiu\b/i, // Portuguese CMVM decision titles ("proferiu decisão")
+    /^Contraorden/i, // Portuguese quarter-report section titles (CMVM)
+    /^Decisão do Conselho\b/i, // Portuguese formal decision titles
+    /\bSanction on\b/i, // TWFSC action-phrase titles
+    /\bDisposition Imposed on\b/i,
+    /\bDisciplinary [Aa]ction\b/i, // TWFSC action-phrase titles
+    /\bDisciplinary [Cc]ase\b/i,
+    /\brevokes the licen/i, // SFC "revokes the licence of …"
+    /\bdealings in the shares/i, // SFC sentence-as-name
+    /\bImposed\b.*\bSanctions\b/i, // TWFSC bulk-action titles
+    /\blessons learnt\b/i, // CMA case-study title
+  ];
+  for (const re of verbPhrases) {
+    if (re.test(n)) return true;
+  }
+
+  // Rule 5: name starts with a known regulator acronym followed by a verb
+  // (catches "CMA finds …", "CMA decision …", "CMA to appeal …",
+  //  "The FSC Imposed …", "CMVM divulgou …").
+  if (/^(?:CMA|CMVM|FSC|FCA|SEC|DNB|AFM)\b[^A-Z]/i.test(n)) return true;
+  if (/^The [A-Z]{2,4} /i.test(n)) return true;
+
+  // Rule 1 + truncation: very short names that look like truncated strings.
+  // "J.P" (3 chars, ends with dot) is a BaFin scraper truncation artifact.
+  // We match the specific pattern: 1-4 chars total, ends with "." and no
+  // space — distinguishes it from legitimate abbreviations that end mid-word.
+  if (/^[A-Z]\.[A-Z]\.?$/.test(n) && !n.includes(" ")) return true;
+
+  return false;
+}
+
+/**
  * Top enforcement actions for a single regulator, largest-first. Used by the
  * pre-render step to bake a static, crawlable fines table into each regulator
  * hub page (the live fines list is otherwise client-only). Reads the canonical
@@ -231,6 +328,12 @@ export interface RegulatorTopFine {
  * house-normalised GBP amount, matching the hub table's "normalised to GBP"
  * label. Returns [] on any error so callers can fall back to the DB-less hub
  * body.
+ *
+ * Applies display-sanity filtering via {@link isGarbageFirmName} to exclude
+ * rows whose party-name field contains a headline sentence, placeholder, or
+ * scraping artefact. The DB rows are never mutated — only the showcase table
+ * is affected. The query over-fetches (limit × 3, capped at 100) to ensure
+ * enough clean rows remain after filtering.
  */
 export async function getRegulatorTopFines(
   regulatorCode: string,
@@ -238,6 +341,8 @@ export async function getRegulatorTopFines(
 ): Promise<RegulatorTopFine[]> {
   const sql = getSqlClient();
   const clamped = Math.max(1, Math.min(limit, 100));
+  // Over-fetch so filtering doesn't leave us with fewer rows than requested.
+  const fetchLimit = Math.min(clamped * 3, 100);
   const rows = (await sql(
     `
       SELECT firm_individual, regulator,
@@ -249,10 +354,14 @@ export async function getRegulatorTopFines(
       ORDER BY amount_gbp DESC, date_issued DESC
       LIMIT $2
     `,
-    [regulatorCode, clamped],
+    [regulatorCode, fetchLimit],
   )) as any[];
 
-  return rows.map((row: any) => ({
+  const clean = rows
+    .filter((row: any) => !isGarbageFirmName(String(row.firm_individual ?? "")))
+    .slice(0, clamped);
+
+  return clean.map((row: any) => ({
     firm: String(row.firm_individual ?? ""),
     dateIssued: row.date_issued ? String(row.date_issued) : null,
     amount: Number(row.amount) || 0,
