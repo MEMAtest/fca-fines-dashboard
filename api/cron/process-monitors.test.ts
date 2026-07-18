@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { buildMonitorScopeQuery } from "./process-monitors.js";
+import { buildMonitorScopeQuery, buildMonitorSmokeMessage } from "./process-monitors.js";
 
 describe("monitor scope query", () => {
   it("preserves regulator, year, theme, sector and text scope", () => {
@@ -20,5 +20,16 @@ describe("monitor scope query", () => {
     const result = buildMonitorScopeQuery("/fines/compare?years=2024,2025&regulators=FCA,SEC&themes=AML,Market%20abuse", null);
     expect(result.values).toEqual([["FCA", "SEC"], [2024, 2025], ["AML", "Market abuse"]]);
     expect(result.newWhere).toBe(result.baseWhere);
+  });
+});
+
+describe("monitor smoke delivery", () => {
+  it("is visibly operational and cannot be mistaken for a new enforcement result", () => {
+    const message = buildMonitorSmokeMessage({ label: "AML <Board>" });
+    expect(message.subject).toContain("delivery test");
+    expect(message.text).toContain("does not report a new enforcement case");
+    expect(message.text).toContain("alter the monitor baseline");
+    expect(message.html).toContain("AML &lt;Board&gt;");
+    expect(message.html).not.toContain("AML <Board>");
   });
 });

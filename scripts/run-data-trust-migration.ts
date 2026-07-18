@@ -33,6 +33,7 @@ async function main() {
     "migrations/20260717_evidence_first_trust_gate.sql",
     "migrations/20260717_monitor_profiles.sql",
     "migrations/20260718_source_assessment_operations.sql",
+    "migrations/20260718_delivery_journey_operations.sql",
   ].map((file) => path.resolve(process.cwd(), file));
 
   for (const migrationPath of migrationPaths) {

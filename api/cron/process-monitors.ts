@@ -113,7 +113,7 @@ async function sendMonitorEmail(ses: SESClient, monitor: MonitorRow, results: Aw
   const manageUrl = `${BASE_URL}/monitor?token=${encodeURIComponent(monitor.management_token)}`;
   const scopeUrl = `${BASE_URL}${results.path}`;
   const rows = results.rows.map((row) => `<li style="margin:0 0 10px"><strong>${escapeHtml(row.firm_individual)}</strong><br/>${escapeHtml(row.regulator)} · ${escapeHtml(row.date_issued)} · ${escapeHtml(row.breach_type || "Theme not recorded")}</li>`).join("");
-  await ses.send(new SendEmailCommand({
+  const delivery = await ses.send(new SendEmailCommand({
     Source: process.env.SES_FROM_EMAIL?.trim() || "alerts@memaconsultants.com",
     Destination: { ToAddresses: [monitor.email] },
     Message: {
@@ -124,6 +124,31 @@ async function sendMonitorEmail(ses: SESClient, monitor: MonitorRow, results: Aw
       },
     },
   }));
+  return delivery.MessageId ?? null;
+}
+
+export function buildMonitorSmokeMessage(monitor: Pick<MonitorRow, "label">) {
+  return {
+    subject: `RegActions monitor delivery test: ${monitor.label}`,
+    text: `RegActions monitor delivery test\n\nEmail delivery is configured for ${monitor.label}. This test does not report a new enforcement case or alter the monitor baseline.`,
+    html: `<div style="font-family:Arial,sans-serif;max-width:620px;margin:auto;color:#102536"><h1>RegActions monitor delivery test</h1><p>Email delivery is configured for <strong>${escapeHtml(monitor.label)}</strong>.</p><p>This operational test does not report a new enforcement case or alter the monitor baseline.</p></div>`,
+  };
+}
+
+async function sendMonitorSmokeEmail(ses: SESClient, monitor: MonitorRow) {
+  const message = buildMonitorSmokeMessage(monitor);
+  const delivery = await ses.send(new SendEmailCommand({
+    Source: process.env.SES_FROM_EMAIL?.trim() || "alerts@memaconsultants.com",
+    Destination: { ToAddresses: [monitor.email] },
+    Message: {
+      Subject: { Data: message.subject, Charset: "UTF-8" },
+      Body: {
+        Html: { Data: message.html, Charset: "UTF-8" },
+        Text: { Data: message.text, Charset: "UTF-8" },
+      },
+    },
+  }));
+  return delivery.MessageId ?? null;
 }
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
@@ -143,6 +168,50 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY.trim(),
     },
   });
+  const mode = req.query.mode === "smoke" ? "smoke" : "process";
+  const monitorId = typeof req.query.monitorId === "string" ? req.query.monitorId : "";
+  const uuidPattern = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+  if (mode === "smoke") {
+    if (!uuidPattern.test(monitorId)) {
+      return res.status(400).json({ error: "A valid monitorId is required for smoke delivery" });
+    }
+    const [monitor] = await sql(
+      `SELECT id::text, email, label, scope, frequency, management_token::text, last_run_at::text
+       FROM public.monitor_profiles WHERE id = $1::uuid AND status = 'active' LIMIT 1`,
+      [monitorId],
+    ) as MonitorRow[];
+    if (!monitor) return res.status(404).json({ error: "Active monitor not found" });
+    try {
+      const messageId = await sendMonitorSmokeEmail(ses, monitor);
+      await sql(
+        `UPDATE public.monitor_profiles SET last_delivery_status = 'smoke_sent', last_error = NULL, updated_at = now()
+         WHERE id = $1::uuid`,
+        [monitor.id],
+      );
+      await sql(
+        `INSERT INTO public.monitor_delivery_log (
+           monitor_id, delivery_kind, delivery_status, provider, message_id
+         ) VALUES ($1::uuid, 'smoke', 'sent', 'ses', $2)`,
+        [monitor.id, messageId],
+      );
+      return res.status(200).json({ processed: 1, smokeSent: true, messageId });
+    } catch (error) {
+      const message = (error instanceof Error ? error.message : String(error)).slice(0, 1000);
+      await sql(
+        `UPDATE public.monitor_profiles SET last_delivery_status = 'smoke_failed', last_error = $2, updated_at = now()
+         WHERE id = $1::uuid`,
+        [monitor.id, message],
+      );
+      await sql(
+        `INSERT INTO public.monitor_delivery_log (
+           monitor_id, delivery_kind, delivery_status, provider, error_message
+         ) VALUES ($1::uuid, 'smoke', 'failed', 'ses', $2)`,
+        [monitor.id, message],
+      );
+      return res.status(502).json({ processed: 1, smokeSent: false, error: "Monitor smoke delivery failed" });
+    }
+  }
+
   const monitors = await sql(
     `SELECT id::text, email, label, scope, frequency, management_token::text, last_run_at::text
      FROM public.monitor_profiles
@@ -159,21 +228,57 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   for (const monitor of monitors) {
     try {
       const results = await loadMonitorResults(sql, monitor);
+      let messageId: string | null = null;
       if (monitor.last_run_at && results.newCount > 0) {
-        await sendMonitorEmail(ses, monitor, results);
+        await sql(
+          `UPDATE public.monitor_profiles
+           SET last_notification_attempt_at = now(), notification_attempts = notification_attempts + 1, updated_at = now()
+           WHERE id = $1::uuid`,
+          [monitor.id],
+        );
+        messageId = await sendMonitorEmail(ses, monitor, results);
+        await sql(
+          `INSERT INTO public.monitor_delivery_log (
+             monitor_id, delivery_kind, delivery_status, provider, message_id
+           ) VALUES ($1::uuid, 'notification', 'sent', 'ses', $2)`,
+          [monitor.id, messageId],
+        );
         notified += 1;
       }
       await sql(
         `UPDATE public.monitor_profiles SET last_run_at = now(), last_result_count = $2, new_item_count = $3,
          last_notified_at = CASE WHEN $3::int > 0 AND $4::boolean THEN now() ELSE last_notified_at END,
+         baseline_established_at = CASE WHEN $5::boolean THEN COALESCE(baseline_established_at, now()) ELSE baseline_established_at END,
+         last_notification_message_id = CASE WHEN $4::boolean THEN $6 ELSE last_notification_message_id END,
+         last_delivery_status = CASE
+           WHEN $4::boolean THEN 'notification_sent'
+           WHEN $5::boolean THEN 'baseline_set'
+           ELSE last_delivery_status
+         END,
          last_error = NULL, updated_at = now() WHERE id = $1::uuid`,
-        [monitor.id, results.total, results.newCount, Boolean(monitor.last_run_at && results.newCount > 0)],
+        [
+          monitor.id,
+          results.total,
+          results.newCount,
+          Boolean(monitor.last_run_at && results.newCount > 0),
+          !monitor.last_run_at,
+          messageId,
+        ],
       );
     } catch (error) {
       failed += 1;
+      const message = (error instanceof Error ? error.message : String(error)).slice(0, 1000);
       await sql(
-        `UPDATE public.monitor_profiles SET last_error = $2, updated_at = now() WHERE id = $1::uuid`,
-        [monitor.id, (error instanceof Error ? error.message : String(error)).slice(0, 1000)],
+        `UPDATE public.monitor_profiles
+         SET last_delivery_status = 'notification_failed', last_error = $2, updated_at = now()
+         WHERE id = $1::uuid`,
+        [monitor.id, message],
+      );
+      await sql(
+        `INSERT INTO public.monitor_delivery_log (
+           monitor_id, delivery_kind, delivery_status, provider, error_message
+         ) VALUES ($1::uuid, 'notification', 'failed', 'ses', $2)`,
+        [monitor.id, message],
       );
     }
   }

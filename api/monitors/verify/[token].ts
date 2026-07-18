@@ -11,7 +11,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   if (!UUID_PATTERN.test(token)) return res.redirect(`${BASE_URL}/monitor?status=invalid`);
   const [monitor] = await sql`
     UPDATE public.monitor_profiles
-    SET status = 'active', updated_at = now()
+    SET status = 'active', last_delivery_status = 'verified', updated_at = now()
     WHERE verification_token = ${token}::uuid
       AND verification_expires_at > now()
       AND status = 'pending'
