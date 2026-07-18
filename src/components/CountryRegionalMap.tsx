@@ -89,7 +89,9 @@ export function CountryRegionalMap({ iso2, region }: Props) {
       : [focusFeature, ...ranked.slice(0, NEIGHBOURHOOD - 1)];
   }, [world, meta, focusFeature, region]);
 
-  const height = Math.round(width * 0.9);
+  // Wider-than-tall aspect keeps the regional map compact in the country-hub
+  // row without cropping the focus country (the projection re-fits to this box).
+  const height = Math.round(width * 0.62);
 
   const pathGen = useMemo(() => {
     if (!width || areaFeatures.length === 0) return null;

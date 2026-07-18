@@ -127,11 +127,13 @@ function controlTiles(band: RiskBand | null): { name: string; blurb: string; pri
   ];
 }
 
-function DomainBar({ label, risk }: { label: string; risk: number | null }) {
+function DomainBar({ label, weightPct, risk }: { label: string; weightPct: number; risk: number | null }) {
   const band = risk === null ? null : bandFor(risk);
   return (
     <li className="cx-domain">
-      <span className="cx-domain__label">{label}</span>
+      <span className="cx-domain__label">
+        {label} <span className="cx-domain__wt">{weightPct}%</span>
+      </span>
       <span className="cx-domain__track">
         <span
           className="cx-domain__fill"
@@ -770,12 +772,14 @@ export function CountryHub() {
                   : "A trend will appear when enough information is available to publish a score."}
               </p>
               {scoreAvailable && (
-                <p className="cx-card__note">
-                  <strong>Why this changed:</strong>{" "}
-                  {runChange === null
-                    ? `the current score adds financial crime controls and international sanctions to the earlier government-data comparison${versionChange === null ? "" : `, changing the comparable score by ${versionChange > 0 ? "+" : ""}${versionChange.toFixed(1)}`}.`
-                    : `the latest persisted source run moved the score by ${runChange > 0 ? "+" : ""}${runChange.toFixed(1)}; the exact current arithmetic is shown above.`}
-                </p>
+                <details className="cx-trend__why">
+                  <summary>Why this changed</summary>
+                  <p className="cx-card__note">
+                    {runChange === null
+                      ? `The current score adds financial crime controls and international sanctions to the earlier government-data comparison${versionChange === null ? "" : `, changing the comparable score by ${versionChange > 0 ? "+" : ""}${versionChange.toFixed(1)}`}.`
+                      : `The latest persisted source run moved the score by ${runChange > 0 ? "+" : ""}${runChange.toFixed(1)}; the exact current arithmetic is shown above.`}
+                  </p>
+                </details>
               )}
             </div>
 
@@ -974,14 +978,15 @@ export function CountryHub() {
               <Info size={12} /> How this score was calculated
             </span>
             <p className="cx-meth__intro">
-              We combine three checks. A higher number means greater country risk. Missing
-              information is never treated as zero risk.
+              Three weighted checks; higher means greater country risk. Missing information is
+              never treated as zero risk.
             </p>
             <ul className="cx-domains">
               {publicExplanation.pillars.map((pillar) => (
                 <DomainBar
                   key={pillar.key}
-                  label={`${pillar.label} · ${Math.round(pillar.appliedWeight * 100)}% of this score`}
+                  label={pillar.label}
+                  weightPct={Math.round(pillar.appliedWeight * 100)}
                   risk={pillar.score}
                 />
               ))}
