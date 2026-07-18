@@ -30,6 +30,7 @@ import { PUBLIC_REGULATOR_SHELL_ITEMS } from "../data/regulatorShellNav.js";
 import { useSEO } from "../hooks/useSEO.js";
 import { useEvidenceModal } from "../components/EvidenceModalProvider.js";
 import { buildEvidenceCase } from "../utils/evidenceCase.js";
+import { trackEvent } from "../utils/analytics.js";
 import "../styles/intelligence.css";
 
 const PERSONA_OPTIONS = [
@@ -316,6 +317,10 @@ export function Intelligence() {
         limit: 45,
       });
       setResult(next);
+      trackEvent("briefing_generated", {
+        surface: "intelligence_workspace",
+        result_status: next.fallbackUsed ? "deterministic" : "model",
+      });
     } catch (err) {
       setError(err instanceof Error ? err.message : "Unable to generate briefing.");
     } finally {

@@ -35,6 +35,7 @@ async function main() {
     "migrations/20260718_source_assessment_operations.sql",
     "migrations/20260718_delivery_journey_operations.sql",
     "migrations/20260718_scraper_quality_operations.sql",
+    "migrations/20260718_product_funnel_events.sql",
   ].map((file) => path.resolve(process.cwd(), file));
 
   for (const migrationPath of migrationPaths) {

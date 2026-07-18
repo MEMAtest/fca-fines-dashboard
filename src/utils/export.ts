@@ -1,5 +1,6 @@
 import type { FineRecord } from "../types.js";
 import { getBestRecordSourceUrl } from "./sourceLinks.js";
+import { trackEvent } from "./analytics.js";
 
 export interface ExportOptions {
   filename: string;
@@ -133,6 +134,16 @@ export async function exportData({
     default:
       throw new Error(`Unsupported format: ${format}`);
   }
+
+  const path = typeof window === "undefined" ? "server" : window.location.pathname;
+  const surface = path.startsWith("/regulators/")
+    ? "regulator_workspace"
+    : path.startsWith("/fines")
+      ? "fines_workspace"
+      : path.startsWith("/enforcement")
+        ? "enforcement_workspace"
+        : "other_workspace";
+  trackEvent("evidence_export_completed", { format, surface });
 }
 
 function downloadBlob(content: string, filename: string, type: string) {

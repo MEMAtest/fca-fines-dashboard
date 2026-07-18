@@ -1,5 +1,8 @@
 import type { VercelRequest, VercelResponse } from "@vercel/node";
+import { randomUUID } from "node:crypto";
 import { getSqlClient } from "../../../server/db.js";
+import { recordProductFunnelEvent } from "../../../server/services/productFunnel.js";
+import { buildProductFunnelEvent } from "../../../src/utils/productAnalyticsContract.js";
 
 const sql = getSqlClient();
 const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL?.trim() || "https://regactions.com";
@@ -15,8 +18,12 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     WHERE verification_token = ${token}::uuid
       AND verification_expires_at > now()
       AND status = 'pending'
-    RETURNING management_token
+    RETURNING management_token, frequency
   `.catch(() => []);
   if (!monitor) return res.redirect(`${BASE_URL}/monitor?status=invalid`);
+  const funnelEvent = buildProductFunnelEvent("monitor_verified", {
+    frequency: monitor.frequency,
+  }, randomUUID());
+  if (funnelEvent) void recordProductFunnelEvent(funnelEvent, sql).catch(() => undefined);
   return res.redirect(`${BASE_URL}/monitor?token=${monitor.management_token}&status=verified`);
 }

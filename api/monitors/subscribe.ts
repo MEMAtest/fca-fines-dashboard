@@ -2,6 +2,8 @@ import { createHash, randomUUID } from "node:crypto";
 import type { VercelRequest, VercelResponse } from "@vercel/node";
 import { SESClient, SendEmailCommand } from "@aws-sdk/client-ses";
 import { getSqlClient } from "../../server/db.js";
+import { recordProductFunnelEvent } from "../../server/services/productFunnel.js";
+import { buildProductFunnelEvent } from "../../src/utils/productAnalyticsContract.js";
 
 const sql = getSqlClient();
 const ses = new SESClient({
@@ -103,6 +105,11 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
           ${monitorId}::uuid, 'verification', 'sent', 'ses', ${delivery.MessageId ?? null}
         )
       `;
+      const funnelEvent = buildProductFunnelEvent("monitor_submitted", {
+        surface: "monitor_modal",
+        frequency,
+      }, randomUUID());
+      if (funnelEvent) void recordProductFunnelEvent(funnelEvent, sql).catch(() => undefined);
       return res.status(200).json({ success: true, message: "Verification email sent" });
     } catch (deliveryError) {
       const message = deliveryError instanceof Error ? deliveryError.message : String(deliveryError);
