@@ -1,7 +1,11 @@
 import { mkdir, writeFile } from "node:fs/promises";
 import { dirname } from "node:path";
 import type { DbReadyRecord } from "./euFineHelpers.js";
-import { getRegulatorCoverage } from "../../../src/data/regulatorCoverage.js";
+import {
+  resolveScraperQualityContract,
+  type ResolvedScraperQualityContract,
+  type ScraperQualityContractOverride,
+} from "./scraperQualityContract.js";
 import {
   createSqlClient,
   getCliFlags,
@@ -11,7 +15,7 @@ import {
   upsertEuFines,
 } from "./euFineHelpers.js";
 
-interface RunnerOptions {
+export interface RunnerOptions {
   name: string;
   regulatorCode?: string;
   region?: string;
@@ -23,11 +27,7 @@ interface RunnerOptions {
   ) => Promise<void>;
   retryOnTransientFailure?: boolean;
   maxRetries?: number;
-  qualityContract?: {
-    allowZeroRecords?: boolean;
-    minimumPreparedRecords?: number;
-    maximumPreparedCountDropFraction?: number;
-  };
+  qualityContract?: ScraperQualityContractOverride;
 }
 
 interface ScraperRunSummary {
@@ -42,6 +42,10 @@ interface ScraperRunSummary {
   errorMessage: string | null;
   durationMs: number | null;
   retryAttempt: number;
+  regulatorCode: string;
+  contractVersion: string;
+  sourceClass: string;
+  qualityStatus: "unknown" | "passed" | "quarantined";
 }
 
 const DEFAULT_RETRY_DELAY_MS = 60_000;
@@ -100,6 +104,8 @@ async function runScraperAttempt(
   startedAt: Date,
   attempt: number,
 ) {
+  const regulatorCode = options.regulatorCode ?? extractRegulatorCode(options.name);
+  const contract = resolveScraperQualityContract(regulatorCode, options.qualityContract);
   const summary: ScraperRunSummary = {
     name: options.name,
     status: flags.dryRun ? "dry-run" : "success",
@@ -112,9 +118,13 @@ async function runScraperAttempt(
     errorMessage: null,
     durationMs: null,
     retryAttempt: attempt,
+    regulatorCode: contract.regulatorCode,
+    contractVersion: contract.version,
+    sourceClass: contract.sourceClass,
+    qualityStatus: "unknown",
   };
   let sql: ReturnType<typeof createSqlClient> | null = null;
-  let scraperRunId: number | null = null;
+  let scraperRunId: string | number | null = null;
 
   if (attempt === 0) {
     console.log(`${options.name}\n`);
@@ -123,6 +133,12 @@ async function runScraperAttempt(
   }
 
   try {
+    if (!flags.dryRun) {
+      requireDatabaseUrl();
+      sql = createSqlClient();
+      scraperRunId = await insertScraperRun(sql, options, contract, startedAt);
+    }
+
     let records =
       flags.useTestData && options.testLoader
         ? await options.testLoader()
@@ -131,7 +147,7 @@ async function runScraperAttempt(
     records = limitRecords(records, flags.limit);
     summary.recordsPrepared = records.length;
 
-    assertPreparedBatch(options, records, flags);
+    assertPreparedBatch(options, records, flags, contract);
 
     console.log(`📊 Prepared ${records.length} records`);
 
@@ -140,12 +156,11 @@ async function runScraperAttempt(
       return;
     }
 
-    requireDatabaseUrl();
-    sql = createSqlClient();
+    if (!sql || scraperRunId === null) {
+      throw new Error(`${options.name} cannot promote without an operational scraper run record.`);
+    }
 
-    scraperRunId = await insertScraperRun(sql, options, startedAt);
-
-    await assertPreparedCountContinuity(sql, options, records.length, flags);
+    await assertPreparedCountContinuity(sql, options, contract, records.length, flags);
 
     const result = await upsertEuFines(sql, records);
     summary.inserted = result.inserted;
@@ -170,15 +185,15 @@ async function runScraperAttempt(
     await refreshUnifiedView(sql);
     console.log("✅ View refreshed");
 
-    if (scraperRunId) {
-      await updateScraperRun(sql, scraperRunId, summary);
-    }
+    summary.qualityStatus = "passed";
+    await updateScraperRun(sql, scraperRunId, summary);
   } catch (error) {
     summary.status = "error";
+    summary.qualityStatus = "quarantined";
     summary.errorMessage =
       error instanceof Error ? error.message : String(error);
 
-    if (sql && scraperRunId) {
+    if (sql && scraperRunId !== null) {
       try {
         await updateScraperRun(sql, scraperRunId, summary);
       } catch {
@@ -202,22 +217,14 @@ export function assertPreparedBatch(
   options: RunnerOptions,
   records: DbReadyRecord[],
   flags: ReturnType<typeof getCliFlags>,
+  resolvedContract?: ResolvedScraperQualityContract,
 ) {
   const regulatorCode = options.regulatorCode ?? extractRegulatorCode(options.name);
-  const coverage = getRegulatorCoverage(regulatorCode);
-  const sourceAllowsSparseZero = coverage?.feedContract.zeroResultPolicy === "sparse_source";
-  const allowZero = options.qualityContract?.allowZeroRecords ?? sourceAllowsSparseZero;
+  const contract = resolvedContract ?? resolveScraperQualityContract(regulatorCode, options.qualityContract);
 
-  if (!flags.useTestData && records.length === 0 && !allowZero) {
+  if (!flags.useTestData && records.length === 0 && !contract.allowZeroRecords) {
     throw new Error(
       `${options.name} quarantined: the official source returned zero records, contrary to its source contract.`,
-    );
-  }
-
-  const minimum = options.qualityContract?.minimumPreparedRecords ?? 0;
-  if (!flags.useTestData && !flags.limit && records.length < minimum) {
-    throw new Error(
-      `${options.name} quarantined: ${records.length} records were prepared, below the configured minimum of ${minimum}.`,
     );
   }
 
@@ -237,25 +244,37 @@ export function assertPreparedBatch(
       `${options.name} quarantined: ${invalid.length} record${invalid.length === 1 ? "" : "s"} failed required-field or official-source URL validation.`,
     );
   }
+
+  const canonicalCode = (value: string) => value.toUpperCase().replace(/[^A-Z0-9]/g, "");
+  const mismatched = records.filter((record) => canonicalCode(record.regulator) !== canonicalCode(contract.regulatorCode));
+  if (mismatched.length > 0) {
+    throw new Error(
+      `${options.name} quarantined: ${mismatched.length} record${mismatched.length === 1 ? " has" : "s have"} a regulator code outside the ${contract.regulatorCode} source contract.`,
+    );
+  }
+
+  const minimum = contract.minimumPreparedRecords;
+  if (!flags.useTestData && !flags.limit && records.length < minimum) {
+    throw new Error(
+      `${options.name} quarantined: ${records.length} records were prepared, below the configured minimum of ${minimum}.`,
+    );
+  }
 }
 
 async function assertPreparedCountContinuity(
   sql: ReturnType<typeof createSqlClient>,
   options: RunnerOptions,
+  contract: ResolvedScraperQualityContract,
   currentCount: number,
   flags: ReturnType<typeof getCliFlags>,
 ) {
-  const maximumDrop = options.qualityContract?.maximumPreparedCountDropFraction;
-  if (maximumDrop === undefined || flags.limit || flags.useTestData) return;
-  if (maximumDrop < 0 || maximumDrop >= 1) {
-    throw new Error("maximumPreparedCountDropFraction must be at least 0 and below 1.");
-  }
+  const maximumDrop = contract.maximumPreparedCountDropFraction;
+  if (flags.limit || flags.useTestData) return;
 
-  const regulatorCode = options.regulatorCode ?? extractRegulatorCode(options.name);
   const previous = await sql`
     SELECT records_prepared::int AS count
     FROM scraper_runs
-    WHERE regulator = ${regulatorCode}
+    WHERE regulator = ${contract.regulatorCode}
       AND status = 'success'
       AND records_prepared IS NOT NULL
     ORDER BY started_at DESC
@@ -275,32 +294,38 @@ async function assertPreparedCountContinuity(
 async function insertScraperRun(
   sql: ReturnType<typeof createSqlClient>,
   options: RunnerOptions,
+  contract: ResolvedScraperQualityContract,
   startedAt: Date,
-): Promise<number | null> {
-  try {
-    const regulatorCode = options.regulatorCode ?? extractRegulatorCode(options.name);
+): Promise<string | number> {
     const region = options.region ?? "Unknown";
     const runUrl = process.env.GITHUB_SERVER_URL && process.env.GITHUB_REPOSITORY && process.env.GITHUB_RUN_ID
       ? `${process.env.GITHUB_SERVER_URL}/${process.env.GITHUB_REPOSITORY}/actions/runs/${process.env.GITHUB_RUN_ID}`
       : null;
 
     const result = await sql`
-      INSERT INTO scraper_runs (regulator, region, started_at, status, source, run_url)
-      VALUES (${regulatorCode}, ${region}, ${startedAt.toISOString()}, 'running', 'github-actions', ${runUrl})
+      INSERT INTO scraper_runs (
+        regulator, region, started_at, status, source, run_url,
+        contract_version, source_class, feed_cadence, allow_zero_records,
+        minimum_prepared_records, maximum_count_drop_fraction, stale_after_days,
+        quality_status
+      ) VALUES (
+        ${contract.regulatorCode}, ${region}, ${startedAt.toISOString()}, 'running', 'github-actions', ${runUrl},
+        ${contract.version}, ${contract.sourceClass}, ${contract.cadence}, ${contract.allowZeroRecords},
+        ${contract.minimumPreparedRecords}, ${contract.maximumPreparedCountDropFraction}, ${contract.staleAfterDays},
+        'unknown'
+      )
       RETURNING id
     `;
 
-    return result[0]?.id ?? null;
-  } catch {
-    // Table may not exist yet — don't break the scraper
-    console.warn("⚠️ Could not insert scraper_runs row (table may not exist yet)");
-    return null;
-  }
+    if (result[0]?.id === undefined || result[0]?.id === null) {
+      throw new Error(`${options.name} cannot promote because scraper run tracking did not return an id.`);
+    }
+    return result[0].id as string | number;
 }
 
 async function updateScraperRun(
   sql: ReturnType<typeof createSqlClient>,
-  runId: number,
+  runId: string | number,
   summary: ScraperRunSummary,
 ) {
   try {
@@ -317,11 +342,14 @@ async function updateScraperRun(
         records_updated = ${summary.updated},
         errors = ${summary.errors},
         error_message = ${summary.errorMessage},
-        duration_ms = ${durationMs}
+        duration_ms = ${durationMs},
+        quality_status = ${summary.qualityStatus},
+        quarantine_reason = ${summary.qualityStatus === "quarantined" ? summary.errorMessage : null}
       WHERE id = ${runId}
     `;
-  } catch {
-    // Metrics update failure should not break anything
+  } catch (error) {
+    console.error("Could not update the operational scraper run record", error);
+    throw error;
   }
 }
 
@@ -335,7 +363,7 @@ const REGULATOR_CODE_ALIASES: Array<[string, string]> = [
   ["FMA Austria", "FMAAT"],
   ["ADGM FSRA", "FSRA"],
   ["SC Malaysia", "SC"],
-  ["FSC Korea", "FSCKR"],
+  ["FSC Korea", "FSC-KR"],
 ];
 
 const KNOWN_REGULATOR_CODES = [

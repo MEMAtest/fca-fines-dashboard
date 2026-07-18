@@ -61,4 +61,12 @@ describe("runScraper promotion gate", () => {
   it("quarantines malformed source evidence before any database write", () => {
     expect(() => assertPreparedBatch({ name: "FCA Scraper", regulatorCode: "FCA", liveLoader: async () => [] }, [{ ...record, sourceUrl: "not-a-url" }], liveFlags)).toThrow(/source URL validation/);
   });
+
+  it("quarantines batches below the regulator minimum", () => {
+    expect(() => assertPreparedBatch({ name: "FCA Scraper", regulatorCode: "FCA", liveLoader: async () => [] }, [record], liveFlags)).toThrow(/configured minimum/);
+  });
+
+  it("quarantines cross-regulator contamination", () => {
+    expect(() => assertPreparedBatch({ name: "SEC Scraper", regulatorCode: "SEC", liveLoader: async () => [] }, [{ ...record, regulator: "FCA" }], liveFlags)).toThrow(/outside the SEC source contract/);
+  });
 });

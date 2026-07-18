@@ -1,4 +1,5 @@
 import "dotenv/config";
+import { fileURLToPath } from "node:url";
 import * as cheerio from "cheerio";
 import * as XLSX from "xlsx";
 import {
@@ -171,8 +172,17 @@ async function loadIvassLiveRecords() {
     .sort((left, right) => right.dateIssued.localeCompare(left.dateIssued) || left.firmIndividual.localeCompare(right.firmIndividual));
 }
 
-runScraper({
-  name: "🇮🇹 IVASS Sanctions Scraper",
-  region: "Europe",
-  liveLoader: loadIvassLiveRecords,
-});
+export async function main() {
+  await runScraper({
+    name: "🇮🇹 IVASS Sanctions Scraper",
+    region: "Europe",
+    liveLoader: loadIvassLiveRecords,
+  });
+}
+
+if (process.argv[1] && fileURLToPath(import.meta.url) === process.argv[1]) {
+  main().catch((error) => {
+    console.error("IVASS scraper failed:", error);
+    process.exit(1);
+  });
+}
