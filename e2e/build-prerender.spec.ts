@@ -18,6 +18,20 @@ function extractJsonLdBlocks(html: string) {
   );
 }
 
+function readSitemapUrlsets(distDir: string) {
+  const filenames = [
+    'sitemap-core.xml',
+    'sitemap-regulators.xml',
+    'sitemap-editorial.xml',
+    'sitemap-country-risk.xml',
+    'sitemap-entities.xml',
+  ];
+  return filenames
+    .filter((filename) => existsSync(join(distDir, filename)))
+    .map((filename) => readFileSync(join(distDir, filename), 'utf-8'))
+    .join('\n');
+}
+
 test.describe('Build & Pre-rendering', () => {
   const DIST_DIR = join(__dirname, '..', 'dist');
 
@@ -118,7 +132,7 @@ test.describe('Build & Pre-rendering', () => {
         typeof block['@type'] === 'string' && block['@type'].includes('Article'),
       );
       expect(jsonLd).toBeTruthy();
-      expect(jsonLd.datePublished).toBe('2024-01-01');
+      expect(jsonLd.datePublished).toBe('2024-12-31');
       expect(jsonLd.dateModified).toBe('2024-12-31');
     });
 
@@ -157,7 +171,7 @@ test.describe('Build & Pre-rendering', () => {
   });
 
   test.describe('Sitemap.xml', () => {
-    test('should have generated sitemap.xml', () => {
+    test('should have generated a sitemap index and section URL sets', () => {
       const sitemapPath = join(DIST_DIR, 'sitemap.xml');
       expect(existsSync(sitemapPath)).toBe(true);
 
@@ -165,29 +179,25 @@ test.describe('Build & Pre-rendering', () => {
 
       // Should be valid XML
       expect(sitemap).toContain('<?xml version="1.0" encoding="UTF-8"?>');
-      expect(sitemap).toContain('<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">');
+      expect(sitemap).toContain('<sitemapindex xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">');
+      expect(sitemap).toContain('<loc>https://regactions.com/sitemap-core.xml</loc>');
+      expect(sitemap).toContain('<loc>https://regactions.com/sitemap-regulators.xml</loc>');
+      expect(sitemap).toContain('<loc>https://regactions.com/sitemap-editorial.xml</loc>');
 
-      // Should have homepage
-      expect(sitemap).toContain('<loc>https://regactions.com/</loc>');
-
-      // Should have the canonical public data hub
-      expect(sitemap).toContain('<loc>https://regactions.com/regulators</loc>');
-      expect(sitemap).not.toContain('<loc>https://regactions.com/dashboard</loc>');
-
-      // Should have topics + hub lists
-      expect(sitemap).toContain('<loc>https://regactions.com/topics</loc>');
-      expect(sitemap).toContain('<loc>https://regactions.com/breaches</loc>');
-      expect(sitemap).toContain('<loc>https://regactions.com/years</loc>');
-      expect(sitemap).toContain('<loc>https://regactions.com/sectors</loc>');
-      expect(sitemap).toContain('<loc>https://regactions.com/firms</loc>');
-
-      // Should have blog listing
-      expect(sitemap).toContain('<loc>https://regactions.com/blog</loc>');
+      const urlsets = readSitemapUrlsets(DIST_DIR);
+      expect(urlsets).toContain('<loc>https://regactions.com/</loc>');
+      expect(urlsets).toContain('<loc>https://regactions.com/regulators</loc>');
+      expect(urlsets).not.toContain('<loc>https://regactions.com/dashboard</loc>');
+      expect(urlsets).toContain('<loc>https://regactions.com/topics</loc>');
+      expect(urlsets).toContain('<loc>https://regactions.com/breaches</loc>');
+      expect(urlsets).toContain('<loc>https://regactions.com/years</loc>');
+      expect(urlsets).toContain('<loc>https://regactions.com/sectors</loc>');
+      expect(urlsets).toContain('<loc>https://regactions.com/firms</loc>');
+      expect(urlsets).toContain('<loc>https://regactions.com/blog</loc>');
     });
 
-    test('should include core URLs and blog URLs in sitemap', () => {
-      const sitemapPath = join(DIST_DIR, 'sitemap.xml');
-      const sitemap = readFileSync(sitemapPath, 'utf-8');
+    test('should include core URLs and blog URLs in section sitemaps', () => {
+      const sitemap = readSitemapUrlsets(DIST_DIR);
 
       // Count <url> tags
       const urlMatches = sitemap.match(/<url>/g);
@@ -202,40 +212,23 @@ test.describe('Build & Pre-rendering', () => {
       expect(sitemap).toContain('https://regactions.com/blog/fca-fines-2013-annual-review');
     });
 
-    test('should have correct priority and changefreq in sitemap', () => {
-      const sitemapPath = join(DIST_DIR, 'sitemap.xml');
-      const sitemap = readFileSync(sitemapPath, 'utf-8');
-
-      // Homepage should have priority 1.0 and daily changefreq
-      const homepageUrl = sitemap.match(/<url>[\s\S]*?<loc>https:\/\/regactions\.com\/<\/loc>[\s\S]*?<\/url>/);
-      expect(homepageUrl).toBeTruthy();
-      expect(homepageUrl![0]).toContain('<priority>1.0</priority>');
-      expect(homepageUrl![0]).toContain('<changefreq>daily</changefreq>');
-
-      // Data hub should have priority 0.95 and daily changefreq
-      const regulatorsUrl = sitemap.match(/<url>[\s\S]*?<loc>https:\/\/regactions\.com\/regulators<\/loc>[\s\S]*?<\/url>/);
-      expect(regulatorsUrl).toBeTruthy();
-      expect(regulatorsUrl![0]).toContain('<priority>0.95</priority>');
-      expect(regulatorsUrl![0]).toContain('<changefreq>daily</changefreq>');
-
-      // Blog listing should have priority 0.9
-      const blogUrl = sitemap.match(/<url>[\s\S]*?<loc>https:\/\/regactions\.com\/blog<\/loc>[\s\S]*?<\/url>/);
-      expect(blogUrl).toBeTruthy();
-      expect(blogUrl![0]).toContain('<priority>0.9</priority>');
+    test('should omit ignored priority and changefreq hints', () => {
+      const sitemap = readSitemapUrlsets(DIST_DIR);
+      expect(sitemap).not.toContain('<priority>');
+      expect(sitemap).not.toContain('<changefreq>');
     });
 
-    test('should have lastmod dates in sitemap', () => {
-      const sitemapPath = join(DIST_DIR, 'sitemap.xml');
-      const sitemap = readFileSync(sitemapPath, 'utf-8');
+    test('should emit only complete, defensible lastmod dates', () => {
+      const sitemap = readSitemapUrlsets(DIST_DIR);
 
-      // Should have <lastmod> tags
       const lastmodMatches = sitemap.match(/<lastmod>/g);
       expect(lastmodMatches).toBeTruthy();
       const urlMatches = sitemap.match(/<url>/g) || [];
-      expect(lastmodMatches!.length).toBe(urlMatches.length);
+      expect(lastmodMatches!.length).toBeLessThan(urlMatches.length);
 
-      // Date format should be YYYY-MM-DD
-      expect(sitemap).toMatch(/<lastmod>\d{4}-\d{2}-\d{2}<\/lastmod>/);
+      const dates = Array.from(sitemap.matchAll(/<lastmod>([^<]+)<\/lastmod>/g));
+      expect(dates.length).toBeGreaterThan(0);
+      dates.forEach((match) => expect(match[1]).toMatch(/^\d{4}-\d{2}-\d{2}$/));
     });
   });
 

@@ -25,6 +25,10 @@ const SITE_NAME = "RegActions";
 const OG_IMAGE = `${BASE_URL}/og-image.png`;
 const RSS_URL = `${BASE_URL}/rss.xml`;
 const CHANGES_RSS_URL = `${BASE_URL}/changes.xml`;
+const MIN_ENTITY_ACTIONS_FOR_INDEX = 5;
+const MIN_FIRM_ACTIONS_FOR_INDEX = 2;
+const MIN_FIRM_TOTAL_FOR_INDEX_GBP = 10_000_000;
+const COMPARE_SITEMAP_COMPARATORS_PER_ANCHOR = 3;
 const GOOGLE_SITE_VERIFICATION =
   process.env.VITE_GOOGLE_SITE_VERIFICATION?.trim() || "";
 const BING_SITE_VERIFICATION =
@@ -226,7 +230,8 @@ interface PageMeta {
   breadcrumbLabel?: string; // Short name for last breadcrumb item (defaults to humanized slug)
   bodyContent?: string; // Pre-rendered HTML body for SSG (injected into #root)
   ogImage?: string; // Custom OG image URL
-  noindex?: boolean; // Emit robots noindex (used by the 404 shell)
+  noindex?: boolean; // Emit robots noindex for pages that should not compete in search
+  includeInSitemap?: boolean; // Defaults true; false keeps a page out of crawl-priority sitemaps
   rssAlternates?: Array<{ title: string; href: string }>; // Extra RSS feed alternates
 }
 
@@ -2165,8 +2170,17 @@ async function buildPageMetas(): Promise<PageMeta[]> {
   }
 
   // 4b. Curated country-vs-country compare pages. The React route handles ANY
-  // valid pair client-side; only this curated high-intent set (~20 anchors x
-  // top comparators, de-duplicated by canonical slug) is prerendered/sitemapped.
+  // valid pair client-side; this curated high-intent set (~20 anchors x top
+  // comparators, de-duplicated by canonical slug) is prerendered, while only a
+  // smaller priority subset is advertised in the sitemap.
+  // All curated pairs remain usable and indexable, but the sitemap advertises a
+  // smaller priority set so a new domain does not ask Google to crawl hundreds
+  // of similar comparison URLs before its core regulator/editorial pages.
+  const priorityComparePaths = new Set(
+    curatedComparePairs(COMPARE_SITEMAP_COMPARATORS_PER_ANCHOR).map(
+      (pair) => `/countries/compare/${pair.slug}`,
+    ),
+  );
   for (const pair of curatedComparePairs()) {
     const compareView = buildCompareView(pair.a, pair.b);
     const path = compareView.canonicalPath;
@@ -2178,6 +2192,7 @@ async function buildPageMetas(): Promise<PageMeta[]> {
       keywords,
       ogType: "website",
       dateModified: COUNTRY_PAGE_DATE,
+      includeInSitemap: priorityComparePaths.has(path),
       bodyContent: renderCompareBody(compareView),
       breadcrumbLabel: `${pair.a.name} vs ${pair.b.name}`,
       jsonLd: {
@@ -2466,6 +2481,7 @@ async function buildPageMetas(): Promise<PageMeta[]> {
     ]);
 
     categories.slice(0, 30).forEach((cat: any) => {
+      const indexable = cat.fineCount >= MIN_ENTITY_ACTIONS_FOR_INDEX;
       const title = `${humanize(cat.name)} Enforcement Actions | ${cat.fineCount} actions totalling ${gbp.format(cat.totalAmount)}`;
       const description = `Explore regulatory enforcement actions tagged ${humanize(cat.name)}. ${cat.fineCount} actions totalling ${gbp.format(cat.totalAmount)} across 2013-2026.`;
       pages.push({
@@ -2474,6 +2490,8 @@ async function buildPageMetas(): Promise<PageMeta[]> {
         description,
         keywords: `${humanize(cat.name)} regulatory fines, ${humanize(cat.name)} enforcement, fines by breach`,
         ogType: "website",
+        noindex: !indexable,
+        includeInSitemap: indexable,
         bodyContent: renderHubBody(
           title,
           description,
@@ -2488,6 +2506,7 @@ async function buildPageMetas(): Promise<PageMeta[]> {
     });
 
     years.slice(0, 25).forEach((y: any) => {
+      const indexable = y.fineCount >= MIN_ENTITY_ACTIONS_FOR_INDEX;
       const title = `Enforcement Actions ${y.year} | ${y.fineCount} actions totalling ${gbp.format(y.totalAmount)}`;
       const description = `Explore regulatory fines issued in ${y.year}. ${y.fineCount} actions totalling ${gbp.format(y.totalAmount)}.`;
       pages.push({
@@ -2496,6 +2515,8 @@ async function buildPageMetas(): Promise<PageMeta[]> {
         description,
         keywords: `regulatory fines ${y.year}, regulatory penalties ${y.year}, enforcement ${y.year}`,
         ogType: "website",
+        noindex: !indexable,
+        includeInSitemap: indexable,
         bodyContent: renderHubBody(
           title,
           description,
@@ -2510,6 +2531,7 @@ async function buildPageMetas(): Promise<PageMeta[]> {
     });
 
     sectors.slice(0, 30).forEach((s: any) => {
+      const indexable = s.fineCount >= MIN_ENTITY_ACTIONS_FOR_INDEX;
       const title = `Regulatory Fines for ${s.name} | ${s.fineCount} actions totalling ${gbp.format(s.totalAmount)}`;
       const description = `Explore regulatory enforcement actions for ${s.name}. ${s.fineCount} actions totalling ${gbp.format(s.totalAmount)} across 2013-2026.`;
       pages.push({
@@ -2518,6 +2540,8 @@ async function buildPageMetas(): Promise<PageMeta[]> {
         description,
         keywords: `regulatory fines ${s.name}, regulatory penalties ${s.name}, fines by sector`,
         ogType: "website",
+        noindex: !indexable,
+        includeInSitemap: indexable,
         bodyContent: renderHubBody(
           title,
           description,
@@ -2532,6 +2556,9 @@ async function buildPageMetas(): Promise<PageMeta[]> {
     });
 
     firms.slice(0, 120).forEach((f: any) => {
+      const indexable =
+        f.fineCount >= MIN_FIRM_ACTIONS_FOR_INDEX ||
+        f.totalAmount >= MIN_FIRM_TOTAL_FOR_INDEX_GBP;
       const title = `${f.name} Enforcement History | ${f.fineCount} actions totalling ${gbp.format(f.totalAmount)}`;
       const description = `Explore regulatory enforcement actions for ${f.name}. ${f.fineCount} actions totalling ${gbp.format(f.totalAmount)} across 2013-2026.`;
       pages.push({
@@ -2540,6 +2567,9 @@ async function buildPageMetas(): Promise<PageMeta[]> {
         description,
         keywords: `regulatory fines ${f.name}, penalties ${f.name}, regulatory enforcement ${f.name}`,
         ogType: "website",
+        dateModified: f.latestDate ?? undefined,
+        noindex: !indexable,
+        includeInSitemap: indexable,
         bodyContent: renderHubBody(
           title,
           description,
@@ -2752,22 +2782,73 @@ function renderPage(template: string, meta: PageMeta): string {
 // Generate sitemap.xml
 // ---------------------------------------------------------------------------
 
-/**
- * Regulator-hub lastmod from the regulator's own latest enforcement year (real,
- * per-regulator). Returns a year-only date (valid W3C Datetime) rather than
- * fabricating a specific day; null if the code is unknown (omit lastmod).
- */
-function regulatorHubLastmod(path: string): string | null {
-  const code = path.replace("/regulators/", "").split("/")[0]?.toUpperCase();
-  if (!code) return null;
-  const coverageKey = Object.keys(REGULATOR_COVERAGE).find((item) => item.toUpperCase() === code);
-  const coverage = coverageKey ? REGULATOR_COVERAGE[coverageKey] : undefined;
-  if (!coverage || !coverage.latestYear) return null;
-  return String(coverage.latestYear);
+type SitemapSection =
+  | "core"
+  | "regulators"
+  | "editorial"
+  | "country-risk"
+  | "entities";
+
+const SITEMAP_SECTIONS: SitemapSection[] = [
+  "core",
+  "regulators",
+  "editorial",
+  "country-risk",
+  "entities",
+];
+
+function sitemapSectionForPath(path: string): SitemapSection {
+  if (path === "/regulators" || path.startsWith("/regulators/")) {
+    return "regulators";
+  }
+  if (
+    path === "/blog" ||
+    path.startsWith("/blog/") ||
+    path === "/topics" ||
+    path.startsWith("/topics/") ||
+    path === "/faq" ||
+    path.startsWith("/guide/")
+  ) {
+    return "editorial";
+  }
+  if (path === "/countries" || path.startsWith("/countries/")) {
+    return "country-risk";
+  }
+  if (
+    path === "/breaches" ||
+    path.startsWith("/breaches/") ||
+    path === "/years" ||
+    path.startsWith("/years/") ||
+    path === "/sectors" ||
+    path.startsWith("/sectors/") ||
+    path === "/firms" ||
+    path.startsWith("/firms/")
+  ) {
+    return "entities";
+  }
+  return "core";
 }
 
-function generateSitemap(pages: PageMeta[]): string {
-  const buildDate = todayISO();
+/**
+ * A sitemap lastmod is useful only when it reflects a real, significant page
+ * update. Reject partial years/months and omit undated pages instead of marking
+ * almost the whole site as changed on every deployment.
+ */
+function sitemapLastmod(page: PageMeta): string | null {
+  const raw = page.dateModified || page.datePublished;
+  if (!raw) return null;
+  const match = raw.match(/^(\d{4}-\d{2}-\d{2})(?:T.*)?$/);
+  if (!match) return null;
+  return clampISODate(match[1], todayISO());
+}
+
+function sitemapEligiblePages(pages: PageMeta[]): PageMeta[] {
+  return pages.filter(
+    (page) => !page.noindex && page.includeInSitemap !== false,
+  );
+}
+
+function generateSitemapUrlset(pages: PageMeta[]): string {
   const lines: string[] = [
     '<?xml version="1.0" encoding="UTF-8"?>',
     '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">',
@@ -2775,119 +2856,51 @@ function generateSitemap(pages: PageMeta[]): string {
 
   for (const page of pages) {
     const fullUrl = `${BASE_URL}${page.path}`;
-
-    // Real freshness: prefer a page's actual data-change date. `null` means "omit
-    // lastmod" — honest for pages with no cheap real date (better than faking one).
-    let lastmod: string | null = buildDate;
-    let changefreq = "monthly";
-    let priority = "0.75";
-
-    if (page.path === "/") {
-      priority = "1.0";
-      changefreq = "daily";
-    } else if (page.path === "/regulators") {
-      priority = "0.95";
-      changefreq = "daily";
-    } else if (page.path === "/search") {
-      priority = "0.9";
-      changefreq = "daily";
-    } else if (page.path === "/topics") {
-      priority = "0.9";
-      changefreq = "weekly";
-    } else if (page.path.startsWith("/topics/")) {
-      priority = "0.88";
-      changefreq = "weekly";
-    } else if (page.path === "/fines" || page.path.startsWith("/fines/")) {
-      priority = "0.9";
-      changefreq = "daily";
-    } else if (["/board-pack", "/features", "/uk-enforcement", "/intelligence"].includes(page.path)) {
-      priority = "0.85";
-      changefreq = "weekly";
-    } else if (
-      page.path === "/breaches" ||
-      page.path === "/years" ||
-      page.path === "/sectors" ||
-      page.path === "/firms"
-    ) {
-      priority = "0.85";
-      changefreq = "weekly";
-    } else if (page.path.startsWith("/regulators/")) {
-      // Regulator hub pages — lastmod from the regulator's own latest enforcement
-      // year (real, per-regulator). We only know year granularity, so we emit a
-      // year-only lastmod rather than fabricate a specific day.
-      priority = "0.85";
-      changefreq = "weekly";
-      lastmod = page.dateModified ?? regulatorHubLastmod(page.path);
-    } else if (page.path === "/blog") {
-      priority = "0.9";
-      changefreq = "weekly";
-    } else if (page.path === "/faq") {
-      priority = "0.9";
-      changefreq = "monthly";
-    } else if (page.path === "/sitemap") {
-      priority = "0.5";
-      changefreq = "monthly";
-    } else if (page.path === "/guide/fca-enforcement") {
-      priority = "0.9";
-      changefreq = "weekly";
-    } else if (page.path === "/developers") {
-      priority = "0.7";
-      changefreq = "monthly";
-      lastmod = page.dateModified ?? buildDate;
-    } else if (page.path === "/countries" || page.path.startsWith("/countries/")) {
-      // Country index + per-country pages: real per-page max data-change date
-      // (FATF plenary / sanctions review / WGI / CPI vintage). Pages without a
-      // computed date (e.g. methodology) fall back to the build date.
-      priority = page.path === "/countries" ? "0.9" : "0.8";
-      changefreq = "monthly";
-      lastmod = page.dateModified ?? buildDate;
-    } else if (page.datePublished) {
-      // Blog articles use their publish date
-      lastmod = clampISODate(
-        page.dateModified || page.datePublished,
-        buildDate,
-      );
-
-      // Featured / recent articles get higher priority
-      const isFeatured = blogArticles.some(
-        (a) => `/blog/${a.slug}` === page.path && a.featured,
-      );
-      if (isFeatured) {
-        priority = "0.9";
-        changefreq = "weekly";
-      } else if (page.path.includes("annual-review")) {
-        // Yearly reviews: recent years get higher priority
-        const yearMatch = page.path.match(/(\d{4})-annual-review/);
-        const year = yearMatch ? parseInt(yearMatch[1]) : 0;
-        priority = year >= 2023 ? "0.85" : "0.75";
-        changefreq = year >= 2024 ? "weekly" : "monthly";
-      } else {
-        priority = "0.8";
-      }
-    } else if (
-      page.path.startsWith("/breaches/") ||
-      page.path.startsWith("/sectors/")
-    ) {
-      priority = "0.75";
-      changefreq = "monthly";
-    } else if (
-      page.path.startsWith("/years/") ||
-      page.path.startsWith("/firms/")
-    ) {
-      priority = "0.75";
-      changefreq = "monthly";
-    }
+    const lastmod = sitemapLastmod(page);
 
     lines.push("  <url>");
     lines.push(`    <loc>${fullUrl}</loc>`);
     if (lastmod) lines.push(`    <lastmod>${lastmod}</lastmod>`);
-    lines.push(`    <changefreq>${changefreq}</changefreq>`);
-    lines.push(`    <priority>${priority}</priority>`);
     lines.push("  </url>");
   }
 
   lines.push("</urlset>");
   return lines.join("\n") + "\n";
+}
+
+function generateSitemapIndex(sections: SitemapSection[]): string {
+  const lines = [
+    '<?xml version="1.0" encoding="UTF-8"?>',
+    '<sitemapindex xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">',
+    ...sections.flatMap((section) => [
+      "  <sitemap>",
+      `    <loc>${BASE_URL}/sitemap-${section}.xml</loc>`,
+      "  </sitemap>",
+    ]),
+    "</sitemapindex>",
+  ];
+  return lines.join("\n") + "\n";
+}
+
+function generateSitemapDocuments(pages: PageMeta[]): Map<string, string> {
+  const eligible = sitemapEligiblePages(pages);
+  const documents = new Map<string, string>();
+  const populatedSections: SitemapSection[] = [];
+
+  for (const section of SITEMAP_SECTIONS) {
+    const sectionPages = eligible.filter(
+      (page) => sitemapSectionForPath(page.path) === section,
+    );
+    if (sectionPages.length === 0) continue;
+    populatedSections.push(section);
+    documents.set(
+      `sitemap-${section}.xml`,
+      generateSitemapUrlset(sectionPages),
+    );
+  }
+
+  documents.set("sitemap.xml", generateSitemapIndex(populatedSections));
+  return documents;
 }
 
 // ---------------------------------------------------------------------------
@@ -3063,11 +3076,17 @@ async function main() {
   writeFileSync(join(notFoundDir, "index.html"), notFoundHtml, "utf-8");
   console.log("  Created 404.html (noindex not-found shell).");
 
-  // Generate sitemap
-  const sitemap = generateSitemap(pages);
-  const sitemapPath = join(DIST, "sitemap.xml");
-  writeFileSync(sitemapPath, sitemap, "utf-8");
-  console.log(`  Generated sitemap.xml with ${pages.length} URLs.`);
+  // Generate a sitemap index plus section-specific URL sets. Splitting does not
+  // manufacture crawl demand, but it lets Search Console expose whether core,
+  // editorial, regulator, country-risk or entity URLs are being deferred.
+  const sitemapDocuments = generateSitemapDocuments(pages);
+  for (const [filename, xml] of sitemapDocuments) {
+    writeFileSync(join(DIST, filename), xml, "utf-8");
+  }
+  const sitemapUrlCount = sitemapEligiblePages(pages).length;
+  console.log(
+    `  Generated sitemap index with ${sitemapUrlCount} eligible URLs across ${sitemapDocuments.size - 1} sections.`,
+  );
 
   // Generate RSS feed
   const rss = generateRss();
@@ -3099,6 +3118,12 @@ if (isMain) {
   });
 }
 
-// Exported for unit testing the crawler-visible HTML (see
-// scripts/country-risk/lib/prerenderCountryBody.test.ts). Not part of the CLI surface.
-export { renderCountryFatfBody };
+// Exported for unit testing crawler-visible HTML and sitemap policy. Not part of
+// the CLI surface.
+export {
+  generateSitemapDocuments,
+  generateSitemapUrlset,
+  renderCountryFatfBody,
+  sitemapLastmod,
+  sitemapSectionForPath,
+};

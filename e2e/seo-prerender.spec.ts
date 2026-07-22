@@ -23,6 +23,19 @@ function crawlableInternalLinks(html: string) {
     .filter((href) => href.startsWith('/') || href.startsWith(BASE_URL));
 }
 
+function readSitemapUrlsets() {
+  return [
+    'sitemap-core.xml',
+    'sitemap-regulators.xml',
+    'sitemap-editorial.xml',
+    'sitemap-country-risk.xml',
+    'sitemap-entities.xml',
+  ]
+    .filter((filename) => existsSync(join(DIST, filename)))
+    .map((filename) => readFileSync(join(DIST, filename), 'utf-8'))
+    .join('\n');
+}
+
 /**
  * These tests verify the build-time pre-rendered HTML files in dist/
  * have correct SEO meta tags. They read static files directly (no server needed).
@@ -424,16 +437,21 @@ test.describe('Pre-rendered HTML SEO Meta Tags', () => {
 });
 
 test.describe('Sitemap Validation', () => {
+  let sitemapIndex: string;
   let sitemap: string;
 
   test.beforeAll(() => {
-    sitemap = readFileSync(join(DIST, 'sitemap.xml'), 'utf-8');
+    sitemapIndex = readFileSync(join(DIST, 'sitemap.xml'), 'utf-8');
+    sitemap = readSitemapUrlsets();
   });
 
-  test('should be valid XML with urlset root', () => {
-    expect(sitemap).toContain('<?xml version="1.0" encoding="UTF-8"?>');
+  test('should have an index with section-specific URL sets', () => {
+    expect(sitemapIndex).toContain('<?xml version="1.0" encoding="UTF-8"?>');
+    expect(sitemapIndex).toContain('<sitemapindex xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">');
+    expect(sitemapIndex).toContain(`<loc>${BASE_URL}/sitemap-core.xml</loc>`);
+    expect(sitemapIndex).toContain(`<loc>${BASE_URL}/sitemap-regulators.xml</loc>`);
+    expect(sitemapIndex).toContain(`<loc>${BASE_URL}/sitemap-editorial.xml</loc>`);
     expect(sitemap).toContain('<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">');
-    expect(sitemap).toContain('</urlset>');
   });
 
   test('should contain all 30 URLs', () => {
@@ -443,12 +461,10 @@ test.describe('Sitemap Validation', () => {
     expect(urlCount).toBeGreaterThanOrEqual(35);
   });
 
-  test('should contain homepage with priority 1.0', () => {
+  test('should contain the homepage without ignored priority hints', () => {
     expect(sitemap).toContain(`<loc>${BASE_URL}/</loc>`);
-    // Homepage should have priority 1.0
-    const homepageBlock = sitemap.match(new RegExp(`<url>[\\s\\S]*?${BASE_URL}/</loc>[\\s\\S]*?</url>`));
-    expect(homepageBlock).toBeTruthy();
-    expect(homepageBlock![0]).toContain('<priority>1.0</priority>');
+    expect(sitemap).not.toContain('<priority>');
+    expect(sitemap).not.toContain('<changefreq>');
   });
 
   test('should contain data hub URL and exclude legacy dashboard canonical', () => {
@@ -511,24 +527,17 @@ test.describe('Sitemap Validation', () => {
   test('should have valid W3C lastmod dates', () => {
     const lastmods = sitemap.match(/<lastmod>([^<]+)<\/lastmod>/g) || [];
     const urlCount = (sitemap.match(/<loc>/g) || []).length;
-    expect(lastmods.length).toBe(urlCount);
+    expect(lastmods.length).toBeGreaterThan(0);
+    expect(lastmods.length).toBeLessThan(urlCount);
 
     for (const lm of lastmods) {
       const date = lm.replace(/<\/?lastmod>/g, '');
-      expect(date).toMatch(/^\d{4}(?:-\d{2}-\d{2})?$/);
+      expect(date).toMatch(/^\d{4}-\d{2}-\d{2}$/);
     }
   });
 
-  test('should have valid priorities between 0 and 1', () => {
-    const priorities = sitemap.match(/<priority>([^<]+)<\/priority>/g) || [];
-    const urlCount = (sitemap.match(/<loc>/g) || []).length;
-    expect(priorities.length).toBe(urlCount);
-
-    for (const p of priorities) {
-      const val = parseFloat(p.replace(/<\/?priority>/g, ''));
-      expect(val).toBeGreaterThanOrEqual(0);
-      expect(val).toBeLessThanOrEqual(1);
-    }
+  test('should not promote noindex pages in URL sets', () => {
+    expect(sitemap).not.toContain('/404</loc>');
   });
 });
 
