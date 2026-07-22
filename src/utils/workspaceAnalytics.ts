@@ -155,6 +155,50 @@ export function buildMonthlyTrend(records: FineRecord[]): WorkspaceTrendPoint[] 
     }));
 }
 
+export function buildContiguousMonthlyWindow(
+  points: WorkspaceTrendPoint[],
+  selectedYear?: number,
+  now = new Date(),
+  windowSize = 12,
+): WorkspaceTrendPoint[] {
+  const pointByKey = new Map(points.map((point) => [point.key, point]));
+  const monthCount = selectedYear
+    ? selectedYear === now.getFullYear()
+      ? now.getMonth() + 1
+      : 12
+    : Math.max(1, windowSize);
+  const populatedPoints = points
+    .filter((point) => point.month)
+    .slice()
+    .sort((left, right) => left.key.localeCompare(right.key));
+  const lastPopulated = populatedPoints[populatedPoints.length - 1];
+  const anchor = selectedYear
+    ? new Date(selectedYear, monthCount - 1, 1)
+    : lastPopulated
+      ? new Date(lastPopulated.year, (lastPopulated.month ?? 1) - 1, 1)
+      : new Date(now.getFullYear(), now.getMonth(), 1);
+
+  return Array.from({ length: monthCount }, (_, index) => {
+    const offset = monthCount - index - 1;
+    const date = new Date(anchor.getFullYear(), anchor.getMonth() - offset, 1);
+    const year = date.getFullYear();
+    const month = date.getMonth() + 1;
+    const key = `${year}-${String(month).padStart(2, "0")}`;
+    const populated = pointByKey.get(key);
+    return {
+      key,
+      label: new Intl.DateTimeFormat("en-GB", {
+        month: "short",
+        year: "2-digit",
+      }).format(date),
+      year,
+      month,
+      count: populated?.count ?? 0,
+      amount: populated?.amount ?? 0,
+    };
+  });
+}
+
 export function recordsForSelection(
   records: FineRecord[],
   selection: { year?: number; month?: number; regulator?: string; theme?: string; sector?: string; firm?: string },

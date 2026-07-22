@@ -127,6 +127,15 @@
 .workspace-heatmap button { display: grid; gap: 3px; min-height: 65px; padding: 8px; border: 1px solid rgba(38,102,183,.18); border-radius: 6px; background: color-mix(in srgb,#236fe8 calc(var(--heat) * 75%),#f4f8fc); color: #17334d; font: inherit; text-align: left; cursor: pointer; }
 .workspace-heatmap span,.workspace-heatmap small { font-size: 8px; }
 .workspace-heatmap strong { font-size: 10px; }
+.workspace-actions-layout { display: grid; gap: 12px; }
+.workspace-month-breakdown { display: grid; grid-template-columns: repeat(12,minmax(0,1fr)); gap: 6px; }
+.workspace-month-breakdown button { display: grid; gap: 4px; min-width: 0; min-height: 78px; padding: 9px; border: 1px solid #d8e3ed; border-radius: 7px; background: linear-gradient(150deg,#f9fcff,#eef5ff); color: #17334d; font: inherit; text-align: left; cursor: pointer; }
+.workspace-month-breakdown button:hover { border-color: #2d72dc; box-shadow: 0 4px 12px rgba(28,94,188,.1); }
+.workspace-month-breakdown button:focus-visible { outline: 2px solid #236fe8; outline-offset: 2px; }
+.workspace-month-breakdown button:disabled { border-color: #e6ebf0; background: #fafbfc; color: #8c99a7; cursor: default; box-shadow: none; }
+.workspace-month-breakdown span { color: #65778a; font-size: 9px; font-weight: 700; text-transform: uppercase; }
+.workspace-month-breakdown strong { overflow: hidden; font-size: 13px; text-overflow: ellipsis; }
+.workspace-month-breakdown small { margin-top: auto; color: #718096; font-size: 9px; }
 
 .workspace-kpis { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); margin-bottom: 12px; border: 1px solid var(--workspace-line); border-radius: 10px; overflow: hidden; background: #fff; }
 .workspace-kpi { position: relative; min-height: 102px; padding: 15px; border-right: 1px solid #e8edf2; }
@@ -271,6 +280,7 @@
 @media (max-width: 1150px) {
   .workspace-distribution { grid-template-columns: repeat(3,minmax(0,1fr)); }
   .workspace-heatmap { grid-template-columns: repeat(6,minmax(0,1fr)); }
+  .workspace-month-breakdown { grid-template-columns: repeat(6,minmax(0,1fr)); }
   .workspace-assurance-strip { grid-template-columns: repeat(3,minmax(0,1fr)); }
   .workspace-filterbar { grid-template-columns: repeat(3, minmax(150px, 1fr)); }
   .workspace-kpis { grid-template-columns: repeat(3, 1fr); }
@@ -304,6 +314,7 @@
 @media (max-width: 650px) {
   .workspace-distribution { grid-template-columns: repeat(2,minmax(0,1fr)); }
   .workspace-heatmap { grid-template-columns: repeat(3,minmax(0,1fr)); }
+  .workspace-month-breakdown { grid-template-columns: repeat(3,minmax(0,1fr)); }
   .workspace-assurance-strip { grid-template-columns: 1fr; }
   .workspace-assurance-strip > div { border-right: 0; border-bottom: 1px solid #dce9e5; }
   .workspace-filterbar { grid-template-columns: 1fr 1fr; }

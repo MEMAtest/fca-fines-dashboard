@@ -30,6 +30,7 @@ import { useWorkspaceOverview } from "../hooks/useWorkspaceOverview.js";
 import type { FineRecord } from "../types.js";
 import {
   buildBreakdown,
+  buildContiguousMonthlyWindow,
   buildMonthlyTrend,
   buildYearlyTrend,
   formatWorkspaceActionCount,
@@ -134,6 +135,10 @@ export function FinesWorkspace({ view }: FinesWorkspaceProps) {
   const sampleMetrics = useMemo(() => getWorkspaceMetrics(filtered), [filtered]);
   const yearly = useMemo(() => overview.data?.yearly ?? buildYearlyTrend(filtered), [filtered, overview.data?.yearly]);
   const monthly = useMemo(() => (overview.data?.monthly ?? buildMonthlyTrend(filtered)).slice(-36), [filtered, overview.data?.monthly]);
+  const actionMonths = useMemo(
+    () => buildContiguousMonthlyWindow(monthly, year || undefined),
+    [monthly, year],
+  );
   const themes = useMemo(() => (overview.data?.themes ?? buildBreakdown(filtered, getRecordThemes, 9)).slice(0, 9), [filtered, overview.data?.themes]);
   const regulators = useMemo(() => (overview.data?.regulators ?? buildBreakdown(filtered, (record) => [record.regulator], 9)).slice(0, 9), [filtered, overview.data?.regulators]);
   const sectors = useMemo(() => (overview.data?.sectors ?? buildBreakdown(filtered, (record) => [record.firm_category || "Sector not recorded"], 8)).slice(0, 8), [filtered, overview.data?.sectors]);
@@ -351,10 +356,30 @@ export function FinesWorkspace({ view }: FinesWorkspaceProps) {
         )}
 
         {view === "actions" ? (
-          <section className="workspace-card workspace-card--full">
-            <div className="workspace-card__heading"><h2>Matching enforcement actions</h2><span>First {Math.min(100, filtered.length).toLocaleString("en-GB")} shown | {metricCount.toLocaleString("en-GB")} total</span></div>
-            <RecordTable records={recent} limit={100} onOpen={(record) => setDrawer({ title: record.firm_individual, records: [record], description: record.summary })} />
-          </section>
+          <div className="workspace-actions-layout">
+            <section className="workspace-card workspace-card--full">
+              <div className="workspace-card__heading"><h2>Monthly breakdown</h2><span>{year ? `${year} monthly totals` : "Latest 12 months in this view"}</span></div>
+              <div className="workspace-month-breakdown">
+                {actionMonths.map((item) => (
+                  <button
+                    type="button"
+                    key={item.key}
+                    disabled={!item.count}
+                    aria-label={`${item.label}: ${formatWorkspaceAmount(item.amount)}, ${formatWorkspaceActionCount(item.count)}${item.count ? ". Open matching actions" : ""}`}
+                    onClick={() => openSelection({ year: item.year, month: item.month }, `${item.label} actions`)}
+                  >
+                    <span>{item.label}</span>
+                    <strong>{formatWorkspaceAmount(item.amount)}</strong>
+                    <small>{item.count ? formatWorkspaceActionCount(item.count) : "No actions"}</small>
+                  </button>
+                ))}
+              </div>
+            </section>
+            <section className="workspace-card workspace-card--full">
+              <div className="workspace-card__heading"><h2>Matching enforcement actions</h2><span>First {Math.min(100, filtered.length).toLocaleString("en-GB")} shown | {metricCount.toLocaleString("en-GB")} total</span></div>
+              <RecordTable records={recent} limit={100} onOpen={(record) => setDrawer({ title: record.firm_individual, records: [record], description: record.summary })} />
+            </section>
+          </div>
         ) : view === "compare" ? (
           <div className="workspace-grid">
             <section className="workspace-card workspace-card--half"><div className="workspace-card__heading"><h2>Select years</h2><span>Maximum 3</span></div><div className="workspace-treemap">{yearly.slice(-12).map((point) => <button type="button" aria-pressed={selectedYears.includes(point.year)} className={`workspace-tile${selectedYears.includes(point.year) ? " workspace-tile--selected" : ""}`} key={point.year} onClick={() => handleYearClick(point.year)}><span>{point.year}</span><strong>{formatWorkspaceAmount(point.amount)}</strong><small>{formatWorkspaceActionCount(point.count)}</small></button>)}</div></section>

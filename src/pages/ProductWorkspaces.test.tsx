@@ -73,6 +73,15 @@ describe("product workspaces", () => {
     expect(fetchWorkspaceRecords).toHaveBeenCalledWith(expect.objectContaining({ sector: "Banking" }));
   });
 
+  it("shows a contiguous monthly breakdown and opens the selected month's evidence", async () => {
+    render(<MemoryRouter initialEntries={["/fines/actions"]}><EvidenceModalProvider><FinesWorkspace view="actions" /></EvidenceModalProvider></MemoryRouter>);
+
+    expect(screen.getByRole("heading", { name: "Monthly breakdown" })).toBeInTheDocument();
+    fireEvent.click(screen.getByRole("button", { name: /Apr 25: £12m, 1 action\. Open matching actions/i }));
+    expect(fetchWorkspaceRecords).toHaveBeenCalledWith(expect.objectContaining({ year: 2025, month: 4 }));
+    expect(screen.getByRole("dialog", { name: /Apr 25 actions/i })).toBeInTheDocument();
+  });
+
   it("uses the canonical regulator executive-summary layout", () => {
     render(<MemoryRouter initialEntries={["/regulators/fca"]}><EvidenceModalProvider><Routes><Route path="/regulators/:regulatorCode" element={<RegulatorWorkspace view="overview" />} /></Routes></EvidenceModalProvider></MemoryRouter>);
     expect(screen.getByRole("heading", { name: /Financial Conduct Authority \(FCA\)/i })).toBeInTheDocument();
