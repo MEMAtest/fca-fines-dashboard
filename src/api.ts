@@ -3,6 +3,7 @@ import type {
   CategoriesResponse,
   FirmResponse,
   FirmsResponse,
+  FcaFineCaseResponse,
   ListResponse,
   NotificationsResponse,
   SectorResponse,
@@ -14,6 +15,16 @@ import type {
 
 const fallbackBase = import.meta.env.DEV ? "http://localhost:4000" : "";
 const API_BASE = import.meta.env.VITE_API_BASE ?? fallbackBase;
+
+export class FcaFineCaseRequestError extends Error {
+  status: number;
+
+  constructor(status: number) {
+    super(status === 404 ? "FCA fine case not found" : "Unable to load FCA fine case");
+    this.name = "FcaFineCaseRequestError";
+    this.status = status;
+  }
+}
 
 async function fetchJSON<T>(path: string): Promise<T> {
   const response = await fetch(`${API_BASE}${path}`);
@@ -28,6 +39,15 @@ export function fetchFines(year: number) {
   return fetchJSON<ListResponse>(
     `/api/fca-fines/list?year=${yearParam}&limit=5000`,
   );
+}
+
+export async function fetchFcaFineCase(caseId: string, signal?: AbortSignal) {
+  const path = `/api/fca-fines/${encodeURIComponent(caseId)}`;
+  const response = await fetch(`${API_BASE}${path}`, { signal });
+  if (!response.ok) {
+    throw new FcaFineCaseRequestError(response.status);
+  }
+  return response.json() as Promise<FcaFineCaseResponse>;
 }
 
 export function fetchStats(year: number) {
