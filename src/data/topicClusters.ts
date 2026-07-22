@@ -36,7 +36,7 @@ export const topicClusters: TopicCluster[] = [
     keywords:
       "FCA fines 2026, FCA enforcement 2026, FCA monthly fines, FCA penalties, FCA final notices 2026",
     summary:
-      "Use this cluster to move from the latest monthly FCA insight into the live FCA regulator hub, source-backed search, and board-ready evidence. The 2026 picture is not just monetary penalties: individual action, permission cancellations, market disclosure, pension advice and systems-and-controls findings all matter.",
+      "This report tracks disclosed FCA monetary penalties in 2026 month by month, with case-level links to regulator evidence. It separates monetary totals from non-monetary enforcement so readers can verify the headline figure and still see the wider supervisory picture.",
     evidenceFocus: [
       "Monthly monetary penalties, supervisory action and permission cancellations.",
       "Individual accountability and reasonable-steps evidence for senior managers.",
@@ -64,6 +64,11 @@ export const topicClusters: TopicCluster[] = [
         title: "FCA Fines March 2026: Market Disclosure and Controls",
         slug: "fca-fines-march-2026",
         role: "Firm-level controls",
+      },
+      {
+        title: "FCA Fines February 2026: Monthly Enforcement Analysis",
+        slug: "fca-fines-february-2026",
+        role: "Monthly enforcement analysis",
       },
       {
         title: "FCA Fines January 2026: Individual Accountability Guide",

@@ -135,6 +135,11 @@ export function YearHub() {
                 Read Annual Review
               </Link>
             )}
+            {year === 2026 && (
+              <Link to="/topics/fca-fines-2026" className="btn btn-ghost">
+                FCA fines 2026 report
+              </Link>
+            )}
           </div>
         </header>
 

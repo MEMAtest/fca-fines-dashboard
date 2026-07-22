@@ -84,8 +84,11 @@ describe("product workspaces", () => {
 
   it("uses the canonical regulator executive-summary layout", () => {
     render(<MemoryRouter initialEntries={["/regulators/fca"]}><EvidenceModalProvider><Routes><Route path="/regulators/:regulatorCode" element={<RegulatorWorkspace view="overview" />} /></Routes></EvidenceModalProvider></MemoryRouter>);
-    expect(screen.getByRole("heading", { name: /Financial Conduct Authority \(FCA\)/i })).toBeInTheDocument();
-    expect(screen.getByText(/All data on this page reflects FCA enforcement activity/i)).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "FCA Fines and Enforcement Actions" })).toBeInTheDocument();
+    expect(screen.getByText(/Financial Conduct Authority enforcement activity and official-source evidence/i)).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "FCA fines in 2026" })).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: /View the 2026 monthly report/i })).toHaveAttribute("href", "/topics/fca-fines-2026");
+    expect(screen.getByRole("link", { name: /official fines page/i })).toHaveAttribute("href", "https://www.fca.org.uk/news/news-stories/2026-fines");
     expect(screen.getByText(/You are viewing data for/i)).toBeInTheDocument();
     expect(screen.getByText("FCA · United Kingdom")).toBeInTheDocument();
     expect(screen.getByText("+200.0%")).toBeInTheDocument();

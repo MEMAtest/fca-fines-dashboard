@@ -46,6 +46,8 @@ export type RegulatorWorkspaceView = "overview" | "actions" | "analytics" | "com
 interface RegulatorWorkspaceProps { view: RegulatorWorkspaceView; }
 interface DrawerState { title: string; description?: string; records: FineRecord[]; }
 
+const CURRENT_YEAR = new Date().getFullYear();
+
 function formatDate(value: string) {
   return new Intl.DateTimeFormat("en-GB", { day: "2-digit", month: "short", year: "numeric" }).format(new Date(value));
 }
@@ -113,7 +115,33 @@ export function RegulatorWorkspace({ view }: RegulatorWorkspaceProps) {
     return { latest, previous, change };
   }, [yearly]);
 
-  useSEO({ title: `${coverage?.fullName ?? code} ${view === "overview" ? "Executive Summary" : view} | RegActions`, description: `Public enforcement intelligence, penalties and official evidence for ${coverage?.fullName ?? code}.` });
+  const currentYearFines = useMemo(() => primary.fines
+    .filter((record) => record.year_issued === CURRENT_YEAR && !record.requires_amount_review && record.amount > 0)
+    .sort((left, right) => right.date_issued.localeCompare(left.date_issued)), [primary.fines]);
+  const currentYearTotal = useMemo(
+    () => currentYearFines.reduce((total, record) => total + record.amount, 0),
+    [currentYearFines],
+  );
+  const currentYearLargest = useMemo(
+    () => currentYearFines.slice().sort((left, right) => right.amount - left.amount)[0],
+    [currentYearFines],
+  );
+  const isFcaOverview = code === "FCA" && view === "overview";
+  const showFcaAnswer = isFcaOverview && year === 0 && theme === "All" && sector === "All" && !query;
+
+  useSEO({
+    title: isFcaOverview
+      ? "FCA Fines: Latest Penalties, Totals and Enforcement Actions | RegActions"
+      : `${coverage?.fullName ?? code} ${view === "overview" ? "Executive Summary" : view} | RegActions`,
+    description: isFcaOverview
+      ? `Search FCA fines and enforcement actions, inspect official source evidence, and review ${CURRENT_YEAR} totals, trends, firms and breach themes.`
+      : `Public enforcement intelligence, penalties and official evidence for ${coverage?.fullName ?? code}.`,
+    keywords: isFcaOverview
+      ? `FCA fines, FCA fines ${CURRENT_YEAR}, FCA penalties, Financial Conduct Authority fines, FCA enforcement actions`
+      : undefined,
+    canonicalPath: `/regulators/${regulatorCode.toLowerCase()}${view === "overview" ? "" : `/${view}`}`,
+    ogType: "website",
+  });
 
   if (!coverage || !coverage.dashboardEnabled) return <Navigate to="/regulators" replace />;
   // Cross-link to this regulator's country risk report (fixes the orphaned
@@ -176,13 +204,34 @@ export function RegulatorWorkspace({ view }: RegulatorWorkspaceProps) {
         <section className="regulator-workspace__hero">
           <div className="regulator-workspace__identity">
             <div className="regulator-workspace__mark"><RegulatorMark regulator={code} label={coverage.fullName} size="large" /></div>
-            <div><h1>{coverage.fullName} ({code})</h1><p><ShieldCheck size={13} /> All data on this page reflects {code} enforcement activity in {coverage.country}.</p></div>
+            <div><h1>{isFcaOverview ? "FCA Fines and Enforcement Actions" : `${coverage.fullName} (${code})`}</h1><p><ShieldCheck size={13} /> {isFcaOverview ? `${coverage.fullName} enforcement activity and official-source evidence for the United Kingdom.` : `All data on this page reflects ${code} enforcement activity in ${coverage.country}.`}</p></div>
           </div>
           <div className="regulator-workspace__context">
             <div className="regulator-workspace__country"><span>{coverage.flag}</span><div><strong>{coverage.country}</strong><small>Jurisdiction</small></div></div>
             <div className="regulator-workspace__scope"><ShieldCheck size={18}/><div><small>You are viewing data for</small><strong>{code} · {coverage.country}</strong><span>Charts and tables are restricted to this regulator.</span></div></div>
           </div>
         </section>
+
+        {showFcaAnswer && (
+          <section className="regulator-workspace__answer" aria-labelledby="fca-fines-current-year">
+            <div className="regulator-workspace__answer-copy">
+              <span>Latest FCA fines</span>
+              <h2 id="fca-fines-current-year">FCA fines in {CURRENT_YEAR}</h2>
+              <p>
+                RegActions currently records {formatWorkspaceAmount(currentYearTotal)} across {formatWorkspaceActionCount(currentYearFines.length)} with a disclosed monetary penalty in {CURRENT_YEAR}. Non-monetary actions and amounts awaiting review are excluded from this total.
+              </p>
+              <div className="regulator-workspace__answer-links">
+                <Link to={`/topics/fca-fines-${CURRENT_YEAR}`}>View the {CURRENT_YEAR} monthly report <ArrowRight size={13} /></Link>
+                <a href={`https://www.fca.org.uk/news/news-stories/${CURRENT_YEAR}-fines`} target="_blank" rel="noopener noreferrer">Check the FCA&apos;s official fines page <ExternalLink size={13} /></a>
+              </div>
+            </div>
+            <div className="regulator-workspace__answer-metrics">
+              <div><span>Disclosed total</span><strong>{formatWorkspaceAmount(currentYearTotal)}</strong></div>
+              <div><span>Monetary penalties</span><strong>{currentYearFines.length.toLocaleString("en-GB")}</strong></div>
+              <div><span>Largest penalty</span><strong>{formatWorkspaceAmount(currentYearLargest?.amount ?? 0)}</strong><small>{currentYearLargest?.firm_individual ?? "No disclosed penalty recorded"}</small></div>
+            </div>
+          </section>
+        )}
 
         <section className="workspace-assurance-strip" aria-label={`${code} coverage assurance`}>
           <div><span>Coverage confidence</span><strong>{coverage.operationalConfidence === "standard" ? "Standard" : "Directional"}</strong><small>{coverage.automationLevel.replaceAll("_", " ")}</small></div>

@@ -321,6 +321,12 @@ export function FinesWorkspace({ view }: FinesWorkspaceProps) {
           </div>
         </header>
 
+        <nav className="workspace-scope-summary" aria-label="FCA fines reports">
+          <strong>Looking for FCA fines?</strong>
+          <Link to="/regulators/fca">Open the FCA fines database</Link>
+          <Link to="/topics/fca-fines-2026">Read the FCA fines 2026 monthly report</Link>
+        </nav>
+
         <section className="workspace-filterbar" aria-label="Fines filters">
           <label>Year<select value={year} onChange={(event) => setYear(Number(event.target.value))}><option value={0}>All years</option>{YEARS.map((value) => <option value={value} key={value}>{value}</option>)}</select></label>
           <label>Jurisdiction<select value={country} onChange={(event) => setCountry(event.target.value)}><option>All</option>{countries.map((value) => <option value={value} key={value}>{value}</option>)}</select></label>

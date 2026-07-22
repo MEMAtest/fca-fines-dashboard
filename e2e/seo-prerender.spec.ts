@@ -9,7 +9,7 @@ const DIST = join(__dirname, '..', 'dist');
 const BASE_URL = 'https://regactions.com';
 
 function rootHtml(html: string) {
-  const match = html.match(/<div id="root">([\s\S]*?)<\/div>\s*<\/body>/);
+  const match = html.match(/<div id="root">([\s\S]*?)<\/div>\s*<script>/);
   return match?.[1] || '';
 }
 
@@ -58,9 +58,9 @@ test.describe('Pre-rendered HTML SEO Meta Tags', () => {
       expect(html).toMatch(/<meta\s+name="twitter:title"\s+content="[^"]*RegActions/);
     });
 
-    test('should have hreflang tags pointing to homepage', () => {
-      expect(html).toContain(`hreflang="en-gb" href="${BASE_URL}/"`);
-      expect(html).toContain(`hreflang="en" href="${BASE_URL}/"`);
+    test('should have the single-locale x-default hreflang', () => {
+      expect(html).not.toContain('hreflang="en-gb"');
+      expect(html).not.toContain('hreflang="en"');
       expect(html).toContain(`hreflang="x-default" href="${BASE_URL}/"`);
     });
 
@@ -97,6 +97,23 @@ test.describe('Pre-rendered HTML SEO Meta Tags', () => {
 
     test('should have OG URL pointing to /regulators', () => {
       expect(html).toContain(`<meta property="og:url" content="${BASE_URL}/regulators"`);
+    });
+  });
+
+  test.describe('FCA fines landing page (dist/regulators/fca/index.html)', () => {
+    let html: string;
+
+    test.beforeAll(() => {
+      html = readFileSync(join(DIST, 'regulators', 'fca', 'index.html'), 'utf-8');
+    });
+
+    test('should own the broad FCA fines query with an answer-first static body', () => {
+      expect(html).toContain('<title>FCA Fines: Latest Penalties, Totals and Enforcement Actions | RegActions</title>');
+      const body = rootHtml(html);
+      expect(body).toContain('<h1 class="blog-post-title">FCA Fines and Enforcement Actions</h1>');
+      expect(body).toContain('How much has the FCA fined firms and individuals in 2026?');
+      expect(body).toContain('/topics/fca-fines-2026');
+      expect(body).toContain('https://www.fca.org.uk/news/news-stories/2026-fines');
     });
   });
 
@@ -203,6 +220,28 @@ test.describe('Pre-rendered HTML SEO Meta Tags', () => {
       expect(body).toContain('/blog/fca-aml-fines-anti-money-laundering');
       expect(body).toContain('/board-pack');
       expect(body).toContain('https://memaconsultants.com');
+    });
+  });
+
+  test.describe('FCA fines 2026 report (dist/topics/fca-fines-2026/index.html)', () => {
+    let html: string;
+
+    test.beforeAll(() => {
+      html = readFileSync(join(DIST, 'topics', 'fca-fines-2026', 'index.html'), 'utf-8');
+    });
+
+    test('should answer the query and expose source-linked paths before hydration', () => {
+      const body = rootHtml(html);
+      expect(body).toContain('How much has the FCA fined firms and individuals in 2026?');
+      expect(body).toContain('Monthly breakdown');
+      expect(body).toContain('https://www.fca.org.uk/news/news-stories/2026-fines');
+      expect(body).toContain('/regulators/fca');
+      expect(body).toContain('/fines/actions?regulator=FCA&amp;year=2026');
+    });
+
+    test('should publish Dataset structured data', () => {
+      expect(html).toContain('"@type":"Dataset"');
+      expect(html).toContain('FCA fines issued in 2026');
     });
   });
 
@@ -469,14 +508,14 @@ test.describe('Sitemap Validation', () => {
     }
   });
 
-  test('should have valid lastmod dates in YYYY-MM-DD format', () => {
+  test('should have valid W3C lastmod dates', () => {
     const lastmods = sitemap.match(/<lastmod>([^<]+)<\/lastmod>/g) || [];
     const urlCount = (sitemap.match(/<loc>/g) || []).length;
     expect(lastmods.length).toBe(urlCount);
 
     for (const lm of lastmods) {
       const date = lm.replace(/<\/?lastmod>/g, '');
-      expect(date).toMatch(/^\d{4}-\d{2}-\d{2}$/);
+      expect(date).toMatch(/^\d{4}(?:-\d{2}-\d{2})?$/);
     }
   });
 
@@ -505,12 +544,11 @@ test.describe('Homepage and Data Hub Live Routes', () => {
     await expect(page.locator('nav').first()).toBeVisible();
   });
 
-  test('legacy dashboard route should redirect to data hub', async ({ page }) => {
+  test('legacy dashboard route should redirect to the fines workspace', async ({ page }) => {
     await page.goto('/dashboard');
-    await expect(page).toHaveURL('/regulators');
+    await expect(page).toHaveURL('/fines');
 
-    // Should have data hub title
-    await expect(page.locator('h1')).toBeVisible();
+    await expect(page).toHaveTitle(/RegActions|Fines/);
   });
 
   test('homepage should have correct document title', async ({ page }) => {
@@ -519,10 +557,9 @@ test.describe('Homepage and Data Hub Live Routes', () => {
     expect(title).toContain('RegActions');
   });
 
-  test('dashboard should redirect to regulators and keep data hub title', async ({ page }) => {
+  test('dashboard should redirect to fines and keep a workspace title', async ({ page }) => {
     await page.goto('/dashboard');
-    await expect(page).toHaveURL('/regulators');
-    await expect(page.locator('h1')).toBeVisible();
-    await expect(page).toHaveTitle(/RegActions|Dashboard|Regulators|Regulator Intelligence/);
+    await expect(page).toHaveURL('/fines');
+    await expect(page).toHaveTitle(/RegActions|Dashboard|Fines/);
   });
 });

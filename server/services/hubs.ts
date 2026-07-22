@@ -220,6 +220,25 @@ export interface RegulatorTopFine {
   sourceUrl: string | null;
 }
 
+export interface RegulatorYearMonth {
+  month: number;
+  fineCount: number;
+  totalAmount: number;
+}
+
+export interface RegulatorYearReport {
+  regulator: string;
+  year: number;
+  fineCount: number;
+  totalAmount: number;
+  previousYearFineCount: number;
+  previousYearTotalAmount: number;
+  latestDate: string | null;
+  largestFine: RegulatorTopFine | null;
+  monthly: RegulatorYearMonth[];
+  fines: RegulatorTopFine[];
+}
+
 /**
  * Display-sanity heuristics for the "Largest enforcement actions" table.
  *
@@ -441,6 +460,91 @@ export async function getRegulatorTopFines(
     breach: row.breach_type ? String(row.breach_type) : null,
     sourceUrl: row.notice_url ? String(row.notice_url) : null,
   }));
+}
+
+/**
+ * Exact monetary-fine report for a regulator and calendar year. This powers
+ * the crawlable FCA answer pages, so it deliberately excludes non-monetary
+ * actions, undisclosed values and amounts still awaiting review. The canonical
+ * view prevents duplicate source records from inflating the published totals.
+ */
+export async function getRegulatorYearReport(
+  regulatorCode: string,
+  year: number,
+): Promise<RegulatorYearReport> {
+  const sql = getSqlClient();
+  const rows = (await sql(
+    `
+      SELECT firm_individual,
+             date_issued::text AS date_issued,
+             month_issued,
+             amount_gbp AS amount,
+             breach_type,
+             COALESCE(
+               NULLIF(notice_url, ''),
+               NULLIF(source_url, '')
+             ) AS source_url
+      FROM all_regulatory_fines_canonical
+      WHERE regulator = $1
+        AND year_issued = $2
+        AND amount_gbp > 0
+        AND requires_amount_review IS NOT TRUE
+      ORDER BY date_issued DESC, amount_gbp DESC
+      LIMIT 500
+    `,
+    [regulatorCode, year],
+  )) as any[];
+  const previousRows = (await sql(
+    `
+      SELECT COUNT(*)::int AS fine_count,
+             COALESCE(SUM(amount_gbp), 0)::float8 AS total_amount
+      FROM all_regulatory_fines_canonical
+      WHERE regulator = $1
+        AND year_issued = $2
+        AND amount_gbp > 0
+        AND requires_amount_review IS NOT TRUE
+    `,
+    [regulatorCode, year - 1],
+  )) as any[];
+
+  const fines = rows
+    .filter((row: any) => !isGarbageFirmName(String(row.firm_individual ?? "")))
+    .map((row: any): RegulatorTopFine => ({
+      firm: String(row.firm_individual ?? ""),
+      dateIssued: row.date_issued ? String(row.date_issued) : null,
+      amount: Number(row.amount) || 0,
+      currency: "GBP",
+      breach: row.breach_type ? String(row.breach_type) : null,
+      sourceUrl: row.source_url ? String(row.source_url) : null,
+    }));
+  const monthlyMap = new Map<number, { fineCount: number; totalAmount: number }>();
+  rows.forEach((row: any) => {
+    const month = Math.min(12, Math.max(1, Number(row.month_issued) || 1));
+    const current = monthlyMap.get(month) ?? { fineCount: 0, totalAmount: 0 };
+    current.fineCount += 1;
+    current.totalAmount += Number(row.amount) || 0;
+    monthlyMap.set(month, current);
+  });
+  const totalAmount = rows.reduce((sum: number, row: any) => sum + (Number(row.amount) || 0), 0);
+  const largestFine = fines.slice().sort((left, right) => right.amount - left.amount)[0] ?? null;
+  const previous = previousRows[0];
+
+  return {
+    regulator: regulatorCode,
+    year,
+    fineCount: rows.length,
+    totalAmount,
+    previousYearFineCount: Number(previous?.fine_count) || 0,
+    previousYearTotalAmount: Number(previous?.total_amount) || 0,
+    latestDate: rows[0]?.date_issued ? String(rows[0].date_issued) : null,
+    largestFine,
+    monthly: Array.from({ length: 12 }, (_, index) => ({
+      month: index + 1,
+      fineCount: monthlyMap.get(index + 1)?.fineCount ?? 0,
+      totalAmount: monthlyMap.get(index + 1)?.totalAmount ?? 0,
+    })),
+    fines,
+  };
 }
 
 export async function getFirmDetailsBySlug(

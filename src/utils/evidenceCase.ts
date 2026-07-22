@@ -19,7 +19,8 @@ export type EvidenceSurface =
   | "latest_notices"
   | "lessons_analysis"
   | "intelligence_briefing"
-  | "dashboard_hero";
+  | "dashboard_hero"
+  | "fca_fines_report";
 
 export interface EvidenceCase {
   id: string;

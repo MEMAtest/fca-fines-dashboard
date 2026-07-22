@@ -30,4 +30,12 @@ test.describe('Topic Clusters', () => {
       page.getByRole('link', { name: /Market Abuse Enforcement/i }),
     ).toHaveAttribute('href', '/topics/market-abuse-enforcement');
   });
+
+  test('should render the FCA 2026 answer and source pathways', async ({ page }) => {
+    await page.goto('/topics/fca-fines-2026');
+
+    await expect(page.getByRole('heading', { name: 'How much has the FCA fined firms and individuals in 2026?' })).toBeVisible();
+    await expect(page.getByRole('link', { name: /FCA 2026 fines page/i })).toHaveAttribute('href', 'https://www.fca.org.uk/news/news-stories/2026-fines');
+    await expect(page.getByRole('link', { name: 'Complete FCA fines database' })).toHaveAttribute('href', '/regulators/fca');
+  });
 });

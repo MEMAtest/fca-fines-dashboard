@@ -293,6 +293,28 @@ function RelatedArticles({ currentSlug }: { currentSlug: string }) {
   );
 }
 
+function FcaFinesPathways({ currentSlug, annual = false }: { currentSlug: string; annual?: boolean }) {
+  const isFcaArticle = annual || /^fca-|[-_]fca[-_]/i.test(currentSlug);
+  if (!isFcaArticle) return null;
+  return (
+    <nav className="related-articles" aria-label="FCA fines data pathways">
+      <h3 className="related-articles__title">Continue with FCA fines data</h3>
+      <div className="related-articles__grid">
+        <Link to="/regulators/fca" className="related-articles__card">
+          <span className="related-articles__category">Live evidence</span>
+          <span className="related-articles__headline">FCA fines database and enforcement actions</span>
+          <span className="related-articles__meta">Totals, trends, firms and official sources</span>
+        </Link>
+        <Link to="/topics/fca-fines-2026" className="related-articles__card">
+          <span className="related-articles__category">Current year</span>
+          <span className="related-articles__headline">FCA fines in 2026 monthly report</span>
+          <span className="related-articles__meta">Monthly totals and case-level evidence</span>
+        </Link>
+      </div>
+    </nav>
+  );
+}
+
 function RelatedYearlyArticles({ currentYear }: { currentYear: number }) {
   const adjacent = yearlyArticles
     .filter((a) => Math.abs(a.year - currentYear) === 1)
@@ -1117,6 +1139,7 @@ function BlogArticlePage({ article }: { article: BlogArticleMeta }) {
             </div>
           )}
 
+          <FcaFinesPathways currentSlug={article.slug} />
           <RelatedArticles currentSlug={article.slug} />
 
           <div className="blog-article-modal-footer">
@@ -1339,6 +1362,7 @@ function YearlyArticlePage({ article }: { article: YearlyArticleMeta }) {
             </div>
           )}
 
+          <FcaFinesPathways currentSlug={article.slug} annual />
           <RelatedYearlyArticles currentYear={article.year} />
 
           <div className="blog-article-modal-footer">
