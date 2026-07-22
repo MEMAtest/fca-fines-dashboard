@@ -319,11 +319,15 @@ describe('BlogPost Schema - Article Structure', () => {
     }
   });
 
-  it('BlogPost schema MUST NOT have FCA-only positioning', () => {
+  it('BlogPost schema MUST preserve neutral product positioning', () => {
     if (blogPostContent) {
       const lowerContent = blogPostContent.toLowerCase();
-      expect(lowerContent.includes('fca fines database')).toBe(false);
       expect(lowerContent.includes('flagship fca')).toBe(false);
+      expect(lowerContent).toContain('regactions');
+      // FCA-specific articles may legitimately link to the FCA dataset. The
+      // contract guards against presenting the FCA as the flagship product,
+      // rather than banning a useful search phrase from contextual pathways.
+      expect(lowerContent).toContain('/regulators/fca');
     }
   });
 });

@@ -16,10 +16,10 @@ vi.mock("../utils/fetchWorkspaceRecords.js", () => ({
 
 const records = [
   {
-    id: "fca-1", fine_reference: "FCA-1", firm_individual: "Alpha Bank", firm_category: "Banking", regulator: "FCA", final_notice_url: "https://example.com/alpha", summary: "AML systems and controls failures", breach_type: "Financial crime", breach_categories: ["AML"], amount: 12_000_000, date_issued: "2025-04-12", year_issued: 2025, month_issued: 4,
+    id: "fca-1", canonical_case_id: "b40e17fe-6592-450e-934c-80b4a427f87a", fine_reference: "FCA-1", firm_individual: "Alpha Bank", firm_category: "Banking", regulator: "FCA", final_notice_url: "https://example.com/alpha", summary: "AML systems and controls failures", breach_type: "Financial crime", breach_categories: ["AML"], amount: 12_000_000, date_issued: "2025-04-12", year_issued: 2025, month_issued: 4,
   },
   {
-    id: "fca-2", fine_reference: "FCA-2", firm_individual: "Beta Markets", firm_category: "Investment firm", regulator: "FCA", final_notice_url: "https://example.com/beta", summary: "Market conduct failings", breach_type: "Market abuse", breach_categories: ["Market abuse"], amount: 4_000_000, date_issued: "2024-02-10", year_issued: 2024, month_issued: 2,
+    id: "fca-2", canonical_case_id: "789af44d-c44b-4536-a574-ae10dd6a8d0e", fine_reference: "FCA-2", firm_individual: "Beta Markets", firm_category: "Investment firm", regulator: "FCA", final_notice_url: "https://example.com/beta", summary: "Market conduct failings", breach_type: "Market abuse", breach_categories: ["Market abuse"], amount: 4_000_000, date_issued: "2024-02-10", year_issued: 2024, month_issued: 2,
   },
   {
     id: "sec-1", fine_reference: "SEC-1", firm_individual: "Gamma Securities", firm_category: "Broker", regulator: "SEC", final_notice_url: "https://example.com/gamma", summary: "Disclosure failings", breach_type: "Disclosure", breach_categories: ["Disclosure"], amount: 2_500_000, date_issued: "2025-06-01", year_issued: 2025, month_issued: 6,
@@ -41,7 +41,7 @@ describe("product workspaces", () => {
     expect(screen.getByRole("heading", { name: /Fines Command Centre/i })).toBeInTheDocument();
     expect(screen.getByRole("link", { name: "Open Alpha Bank FCA fine case" })).toHaveAttribute(
       "href",
-      "/fca-fines/2025/alpha-bank/fca-1",
+      "/fca-fines/2025/alpha-bank/b40e17fe-6592-450e-934c-80b4a427f87a",
     );
     const rowLabel = screen.getAllByText("Alpha Bank").find((element) => element.tagName === "STRONG");
     expect(rowLabel).toBeDefined();

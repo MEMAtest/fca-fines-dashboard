@@ -1,6 +1,9 @@
 import type { SqlClient } from "../db.js";
 import { getSqlClient } from "../db.js";
-import { slugify } from "../utils/slugify.js";
+import {
+  buildFcaFineCasePath as buildSharedFcaFineCasePath,
+  normaliseFcaFineFirmSlug,
+} from "../../src/utils/fcaFineCasePath.js";
 
 export const FCA_FINE_CASE_ID_PATTERN =
   /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
@@ -194,6 +197,41 @@ function sourceReviewStatus(value: unknown): FcaFineSourceReviewStatus | null {
     : null;
 }
 
+function titleCasePublicationSlug(value: string): string {
+  return value
+    .split("-")
+    .filter(Boolean)
+    .map((word) => `${word.charAt(0).toUpperCase()}${word.slice(1).toLowerCase()}`)
+    .join(" ");
+}
+
+/**
+ * A small number of imported FCA news rows carry the article headline in the
+ * party field. Where an official case-level publication is available, its
+ * filename provides a more accurate, source-grounded entity name.
+ */
+export function normaliseFcaFineEntityName(
+  value: unknown,
+  caseSourceUrl: string | null,
+): string {
+  const raw = nullableString(value) ?? "";
+  if (!/^FCA\b/i.test(raw) || !caseSourceUrl) return raw;
+
+  try {
+    const url = new URL(caseSourceUrl);
+    if (url.hostname !== "fca.org.uk" && !url.hostname.endsWith(".fca.org.uk")) {
+      return raw;
+    }
+    const filename = decodeURIComponent(url.pathname.split("/").pop() ?? "")
+      .replace(/\.pdf$/i, "")
+      .replace(/-\d{4}$/i, "")
+      .trim();
+    return filename ? titleCasePublicationSlug(filename) : raw;
+  } catch {
+    return raw;
+  }
+}
+
 export function isValidFcaFineCaseId(value: unknown): value is string {
   return typeof value === "string" && FCA_FINE_CASE_ID_PATTERN.test(value);
 }
@@ -323,15 +361,18 @@ interface MappedCase extends QualityInput {
 }
 
 function mapCaseRow(row: RawCaseRow): MappedCase {
-  const firm = nullableString(row.firm_individual) ?? "";
   const noticeUrl = nullableString(row.notice_url);
   const listingSourceUrl = nullableString(row.source_url);
   const resolvedSourceUrl = nullableString(row.source_resolved_url);
+  const firm = normaliseFcaFineEntityName(
+    row.firm_individual,
+    noticeUrl ?? resolvedSourceUrl,
+  );
 
   return {
     caseId: nullableString(row.public_case_id) ?? "",
     firm,
-    firmSlug: slugify(firm),
+    firmSlug: normaliseFcaFineFirmSlug(firm),
     amount: numberValue(row.trusted_amount_gbp),
     dateIssued: dateOnly(row.date_issued),
     year: numberValue(row.year_issued),
@@ -395,8 +436,11 @@ export function buildFcaFineCasePath(
   if (!Number.isInteger(record.year) || record.year < 2000 || record.year > 2100) {
     throw new Error("FCA fine case year is invalid");
   }
-  const safeFirmSlug = slugify(record.firm);
-  return `/fca-fines/${record.year}/${safeFirmSlug}/${record.caseId.toLowerCase()}`;
+  return buildSharedFcaFineCasePath({
+    year: record.year,
+    firm: record.firm,
+    caseId: record.caseId.toLowerCase(),
+  });
 }
 
 function normaliseEvidenceUrl(value: string | null): string | null {

@@ -32,26 +32,38 @@ describe("FCA fine case paths", () => {
   });
 
   it("links only FCA monetary records with a stable public id", () => {
+    const caseId = "b40e17fe-6592-450e-934c-80b4a427f87a";
     expect(getFcaFineCasePath({
       regulator: "FCA",
       year_issued: 2025,
       firm_individual: "Example Bank plc",
-      canonical_case_id: "public-123",
+      canonical_case_id: caseId,
       amount: 1_000_000,
       requires_amount_review: false,
-    })).toBe("/fca-fines/2025/example-bank-plc/public-123");
+    })).toBe(`/fca-fines/2025/example-bank-plc/${caseId}`);
     expect(getFcaFineCasePath({
       regulator: "FCA",
       year_issued: 2025,
       firm_individual: "Example Bank plc",
-      canonical_case_id: "public-123",
+      canonical_case_id: caseId,
       amount: 0,
     })).toBeNull();
     expect(getFcaFineCasePath({
       regulator: "SEC",
       year_issued: 2025,
       firm_individual: "Example Bank plc",
-      canonical_case_id: "public-123",
+      canonical_case_id: caseId,
+      amount: 1_000_000,
+    })).toBeNull();
+  });
+
+  it("does not link legacy row identifiers that the case API cannot resolve", () => {
+    expect(getFcaFineCasePath({
+      regulator: "FCA",
+      year_issued: 2025,
+      firm_individual: "Example Bank plc",
+      id: "FCA-2025-example-row",
+      fine_reference: "Example notice",
       amount: 1_000_000,
     })).toBeNull();
   });

@@ -69,6 +69,23 @@ function hubSlug(value: string) {
   return slug || "item";
 }
 
+function themeLabel(value: string) {
+  const cleaned = value.replace(/_/g, " ").trim();
+  if (cleaned !== cleaned.toUpperCase()) {
+    return cleaned.replace(/^./, (character) => character.toUpperCase());
+  }
+  const acronyms = new Set(["AML", "CFT", "FCA", "KYC", "SMCR"]);
+  return cleaned
+    .split(/\s+/)
+    .map((word) => acronyms.has(word) ? word : `${word[0]}${word.slice(1).toLowerCase()}`)
+    .join(" ");
+}
+
+function statusLabel(value: string | null) {
+  if (!value) return "Recorded";
+  return themeLabel(value);
+}
+
 function sourceStatusCopy(status: FcaFineCaseSourceStatus) {
   if (status === "verified_publication") {
     return {
@@ -86,8 +103,8 @@ function sourceStatusCopy(status: FcaFineCaseSourceStatus) {
   }
   if (status === "official_unverified") {
     return {
-      label: "Official source pending persisted verification",
-      detail: "The source appears to be official but has not completed the persisted RegActions source check.",
+      label: "Official source pending verification",
+      detail: "The source is on the official FCA domain but has not yet completed the RegActions source check.",
       tone: "review",
     } as const;
   }
@@ -106,13 +123,24 @@ function sourceStatusCopy(status: FcaFineCaseSourceStatus) {
 }
 
 const QUALITY_REASON_COPY: Record<string, string> = {
+  invalid_case_id: "The public case identifier is not valid.",
+  missing_firm: "The firm or individual name is not sufficiently recorded.",
+  invalid_date: "The issue date is not valid.",
+  date_parts_mismatch: "The recorded issue date needs reconciliation.",
+  non_positive_amount: "A confirmed positive monetary amount is not available.",
   missing_summary: "A case summary is not yet available.",
   summary_missing: "A case summary is not yet available.",
+  thin_summary: "The case summary needs additional source-grounded detail.",
+  missing_breach_context: "A breach or control theme is not yet recorded.",
   missing_source: "A reliable official source is not yet available.",
   source_missing: "A reliable official source is not yet available.",
-  missing_official_source: "A reliable official source is not yet available.",
+  missing_official_source: "A reliable official FCA source is not yet available.",
   source_unverified: "The official source has not completed verification.",
   unverified_source: "The official source has not completed verification.",
+  source_check_missing: "The source check has not yet been completed.",
+  source_check_failed: "The latest source check did not complete successfully.",
+  source_domain_mismatch: "The source domain needs review.",
+  source_needs_review: "The source has been queued for manual review.",
   amount_review_required: "The recorded amount requires review.",
   amount_under_review: "The recorded amount requires review.",
 };
@@ -144,7 +172,7 @@ function CaseState({
   retry?: () => void;
 }) {
   return (
-    <main className="fca-case-page">
+    <article className="fca-case-page">
       <div className="fca-case-shell">
         <section className="fca-case-state" role="status">
           <FileSearch size={32} aria-hidden="true" />
@@ -156,7 +184,7 @@ function CaseState({
           </div>
         </section>
       </div>
-    </main>
+    </article>
   );
 }
 
@@ -174,7 +202,7 @@ export function FcaFineCase() {
   const canonicalPath = record?.canonicalPath
     || `/fca-fines/${routeYear || "case"}/${routeFirmSlug || "record"}/${caseId || "unknown"}`;
   const pageTitle = record
-    ? `${record.firm} FCA Fine ${record.year} | ${record.requiresAmountReview ? "Amount Under Review" : currency.format(record.amount)}`
+    ? `${record.firm} FCA Fine: ${record.requiresAmountReview ? "Amount Under Review" : currency.format(record.amount)} (${record.year}) | RegActions`
     : "FCA Fine Case | RegActions";
   const pageDescription = record?.summary?.trim()
     || (record
@@ -219,9 +247,13 @@ export function FcaFineCase() {
 
   const themes = useMemo(() => {
     if (!record) return [];
-    return Array.from(new Set([record.breach, ...record.categories].filter(
-      (theme): theme is string => Boolean(theme?.trim()),
-    )));
+    const bySlug = new Map<string, string>();
+    for (const theme of [record.breach, ...record.categories]) {
+      if (!theme?.trim()) continue;
+      const slug = hubSlug(theme);
+      if (!bySlug.has(slug)) bySlug.set(slug, themeLabel(theme));
+    }
+    return Array.from(bySlug, ([slug, label]) => ({ slug, label }));
   }, [record]);
 
   const evidence = useMemo(() => {
@@ -237,7 +269,9 @@ export function FcaFineCase() {
       amount: record.amount,
       currency: "GBP",
       breachType: record.breach,
-      categories: record.categories,
+      categories: themes
+        .filter((theme) => !record.breach || theme.slug !== hubSlug(record.breach))
+        .map((theme) => theme.label),
       summary: record.summary,
       final_notice_url: record.noticeUrl,
       source_url: record.sourceUrl,
@@ -251,7 +285,7 @@ export function FcaFineCase() {
       amountQuality: record.amountQuality,
       requiresAmountReview: record.requiresAmountReview,
     }, "fca_fines_report");
-  }, [record]);
+  }, [record, themes]);
 
   if (loading) {
     return <CaseState title="Loading FCA enforcement record" message="Checking the canonical record and its official evidence status." />;
@@ -275,7 +309,7 @@ export function FcaFineCase() {
   const routeDiffersFromCanonical = canonicalPath !== `/fca-fines/${routeYear}/${routeFirmSlug}/${caseId}`;
 
   return (
-    <main className="fca-case-page">
+    <article className="fca-case-page">
       <div className="fca-case-shell">
         <nav className="fca-case-breadcrumbs" aria-label="Breadcrumb">
           <Link to="/">Home</Link><span aria-hidden="true">/</span>
@@ -329,7 +363,7 @@ export function FcaFineCase() {
 
         <section className="fca-case-facts" aria-label="Case facts">
           <article><CalendarDays aria-hidden="true" /><span>Date issued</span><strong>{formatDate(record.dateIssued)}</strong></article>
-          <article><Scale aria-hidden="true" /><span>Amount status</span><strong>{record.requiresAmountReview ? "Review required" : record.amountQuality || "Recorded"}</strong></article>
+          <article><Scale aria-hidden="true" /><span>Amount status</span><strong>{record.requiresAmountReview ? "Review required" : statusLabel(record.amountQuality)}</strong></article>
           <article><Landmark aria-hidden="true" /><span>Regulator</span><strong>Financial Conduct Authority</strong></article>
           <article><FileSearch aria-hidden="true" /><span>Case ID</span><strong>{record.caseId}</strong></article>
         </section>
@@ -354,7 +388,7 @@ export function FcaFineCase() {
               <h2>Breach and control themes</h2>
               {themes.length ? (
                 <div className="fca-case-themes">
-                  {themes.map((theme) => <Link key={theme} to={`/breaches/${hubSlug(theme)}`}>{theme}</Link>)}
+                  {themes.map((theme) => <Link key={theme.slug} to={`/breaches/${theme.slug}`}>{theme.label}</Link>)}
                 </div>
               ) : <p className="fca-case-muted">No breach theme has been assigned to this record.</p>}
               <p className="fca-case-caption">Themes support comparison and research. They do not replace the findings in the official FCA material.</p>
@@ -406,12 +440,12 @@ export function FcaFineCase() {
               <Link to="/regulators/fca"><span>FCA overview</span><small>Coverage, trends and methodology</small></Link>
               <Link to={`/years/${record.year}`}><span>FCA actions in {record.year}</span><small>Annual totals and largest cases</small></Link>
               <Link to={`/firms/${record.firmSlug}`}><span>{record.firm}</span><small>All matched firm records</small></Link>
-              {themes.slice(0, 1).map((theme) => <Link key={theme} to={`/breaches/${hubSlug(theme)}`}><span>{theme}</span><small>Explore this breach theme</small></Link>)}
+              {themes.slice(0, 1).map((theme) => <Link key={theme.slug} to={`/breaches/${theme.slug}`}><span>{theme.label}</span><small>Explore this breach theme</small></Link>)}
             </section>
           </aside>
         </div>
       </div>
-    </main>
+    </article>
   );
 }
 

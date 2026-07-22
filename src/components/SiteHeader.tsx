@@ -125,7 +125,10 @@ export function SiteHeader() {
   );
   const regulatorCloseTimerRef = useRef<number | null>(null);
   const breadcrumbs = getBreadcrumbs(location.pathname);
-  const showBreadcrumbs = location.pathname !== "/";
+  const isFcaFineCasePage = /^\/fca-fines\/\d{4}\/[^/]+\/[0-9a-f-]{36}\/?$/i.test(
+    location.pathname,
+  );
+  const showBreadcrumbs = location.pathname !== "/" && !isFcaFineCasePage;
 
   const closeMobile = useCallback(() => {
     setMobileOpen(false);

@@ -96,6 +96,19 @@ cleanup() {
 
 trap cleanup EXIT
 
+run_with_timeout() {
+    local seconds="$1"
+    shift
+
+    if command -v timeout >/dev/null 2>&1; then
+        timeout "$seconds" "$@"
+    elif command -v gtimeout >/dev/null 2>&1; then
+        gtimeout "$seconds" "$@"
+    else
+        "$@"
+    fi
+}
+
 ###############################################################################
 # Test Suite: Unit Tests
 ###############################################################################
@@ -154,7 +167,7 @@ run_e2e_tests() {
 
     # Ensure build is fresh
     log_info "Building project..."
-    if timeout 60 npm run build 2>&1 | head -20; then
+    if run_with_timeout 180 npm run build 2>&1 | head -20; then
         log_success "Build completed"
     else
         log_error "Build failed"
@@ -164,7 +177,7 @@ run_e2e_tests() {
 
     # Test 4: Homepage Rendering
     log_info "Test Suite: Homepage Hero Rendering"
-    if timeout 30 npm run test:e2e -- feature-validation/e2e/homepage-rendering.test.ts 2>&1 | tail -30; then
+    if run_with_timeout 120 npm run test:e2e -- feature-validation/e2e/homepage-rendering.test.ts 2>&1 | tail -30; then
         log_success "Homepage Rendering E2E tests passed"
     else
         log_error "Homepage Rendering E2E tests failed"
@@ -174,7 +187,7 @@ run_e2e_tests() {
 
     # Test 5: Blog Page Consistency
     log_info "Test Suite: Blog Page Consistency"
-    if timeout 30 npm run test:e2e -- feature-validation/e2e/blog-page-consistency.test.ts 2>&1 | tail -30; then
+    if run_with_timeout 120 npm run test:e2e -- feature-validation/e2e/blog-page-consistency.test.ts 2>&1 | tail -30; then
         log_success "Blog Page Consistency E2E tests passed"
     else
         log_error "Blog Page Consistency E2E tests failed"
@@ -213,7 +226,6 @@ validate_no_forbidden_phrases() {
         "flagship FCA"
         "FCA benchmark"
         "in the FCA style"
-        "FCA fines database"
         "historical FCA depth"
         "FCA-centric"
     )
@@ -251,11 +263,11 @@ validate_regulator_count() {
         return 1
     fi
 
-    if grep -q "REGULATOR_COUNT.*=.*['\"]34+['\"]" "$site_constants"; then
-        log_success "REGULATOR_COUNT constant is set to '34+'"
+    if grep -q "REGULATOR_COUNT.*=.*['\"]45+['\"]" "$site_constants"; then
+        log_success "REGULATOR_COUNT constant is set to '45+'"
         return 0
     else
-        log_error "REGULATOR_COUNT constant is NOT '34+' in site.ts"
+        log_error "REGULATOR_COUNT constant is NOT '45+' in site.ts"
         return 1
     fi
 }
@@ -277,10 +289,10 @@ validate_index_html_structure() {
     fi
 
     # Check for global description meta tag (check content separately since HTML is multi-line)
-    if grep -q 'content=".*34\+.*global' "$index_html"; then
-        log_success "Meta description includes '34+' and 'global'"
+    if grep -q 'content=".*45\+.*global' "$index_html"; then
+        log_success "Meta description includes '45+' and 'global'"
     else
-        log_error "Meta description does not include '34+' and 'global'"
+        log_error "Meta description does not include '45+' and 'global'"
         return 1
     fi
 

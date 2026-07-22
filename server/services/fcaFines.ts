@@ -17,7 +17,8 @@ export async function listFines(year: number, limit: number) {
   const instance = sql;
   const { text: where, params } = buildWhereClause(year);
   const query = `
-    SELECT fine_reference, firm_individual, firm_category, regulator,
+    SELECT public_case_id AS canonical_case_id,
+           fine_reference, firm_individual, firm_category, regulator,
            final_notice_url, summary, breach_type, breach_categories,
            amount, date_issued, year_issued, month_issued
     FROM fca_fines

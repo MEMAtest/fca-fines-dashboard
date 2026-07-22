@@ -13,7 +13,7 @@ vi.mock("../hooks/useUnifiedData.js", () => ({
   useUnifiedData: vi.fn(({ year }: { year: number }) => ({
     fines: year === 2026 ? [{
       id: "fca-2026-1",
-      canonical_case_id: "fca-2026-1",
+      canonical_case_id: "6d4e098d-80db-4714-9875-b135b66ffc5d",
       fine_reference: "FCA-2026-1",
       firm_individual: "Example Bank plc",
       firm_category: "Banking",
@@ -67,7 +67,7 @@ describe("FCA fines 2026 topic report", () => {
     expect(screen.getAllByText("Example Bank plc").length).toBeGreaterThan(0);
     expect(screen.getByRole("link", { name: "Example Bank plc" })).toHaveAttribute(
       "href",
-      "/fca-fines/2026/example-bank-plc/fca-2026-1",
+      "/fca-fines/2026/example-bank-plc/6d4e098d-80db-4714-9875-b135b66ffc5d",
     );
     expect(screen.getByRole("link", { name: /FCA 2026 fines page/i })).toHaveAttribute("href", "https://www.fca.org.uk/news/news-stories/2026-fines");
     expect(screen.getByRole("link", { name: "Complete FCA fines database" })).toHaveAttribute("href", "/regulators/fca");

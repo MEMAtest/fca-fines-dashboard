@@ -574,7 +574,8 @@ export async function getFirmDetailsBySlug(
   const clamped = Math.max(1, Math.min(limit, 5000));
   const records = (await sql(
     `
-      SELECT fine_reference, firm_individual, firm_category, regulator,
+      SELECT public_case_id AS canonical_case_id,
+             fine_reference, firm_individual, firm_category, regulator,
              final_notice_url, summary, breach_type, breach_categories,
              amount, date_issued::text AS date_issued, year_issued, month_issued
       FROM fca_fines
@@ -642,7 +643,8 @@ export async function getBreachDetailsBySlug(
 
   const penaltiesLimit = Math.max(1, Math.min(limitPenalties, 50));
   const penalties = (await sql(
-    `SELECT fine_reference, firm_individual, firm_category, regulator,
+    `SELECT public_case_id AS canonical_case_id,
+            fine_reference, firm_individual, firm_category, regulator,
              final_notice_url, summary, breach_type, breach_categories,
              amount, date_issued::text AS date_issued, year_issued, month_issued
       FROM fca_fines
@@ -722,7 +724,8 @@ export async function getSectorDetailsBySlug(
   const penaltiesLimit = Math.max(1, Math.min(limitPenalties, 50));
   const penalties = (await sql(
     `
-      SELECT fine_reference, firm_individual, firm_category, regulator,
+      SELECT public_case_id AS canonical_case_id,
+             fine_reference, firm_individual, firm_category, regulator,
              final_notice_url, summary, breach_type, breach_categories,
              amount, date_issued::text AS date_issued, year_issued, month_issued
       FROM fca_fines

@@ -248,6 +248,8 @@ export interface FcaMonetaryCaseSeoRecord {
   sourceStatus?: string | null;
   sourceCheckedAt?: string | null;
   requiresAmountReview?: boolean | null;
+  indexable?: boolean;
+  indexabilityReasons?: string[];
 }
 
 export interface FcaFineCaseIndexability {
@@ -256,6 +258,7 @@ export interface FcaFineCaseIndexability {
 }
 
 const FCA_CASE_MIN_YEAR = 2013;
+const FCA_CASE_MINIMUM_PRODUCTION_INVENTORY = 350;
 const UNSAFE_CASE_ENTITY = /^(?:unknown|undisclosed|not available|n\/?a|null|test|firm|individual)$/i;
 
 function isOfficialFcaUrl(value: string | null | undefined): boolean {
@@ -290,6 +293,12 @@ export function evaluateFcaFineCaseIndexability(
   const summaryLength = String(record.summary || "").replace(/\s+/g, " ").trim().length;
   const breachLength = String(record.breach || "").replace(/\s+/g, " ").trim().length;
   const sourceStatus = String(record.sourceStatus || "").toLowerCase();
+
+  if (record.indexable === false) {
+    reasons.push(...(record.indexabilityReasons?.length
+      ? record.indexabilityReasons
+      : ["backend_quality_gate"]));
+  }
 
   if (!Number.isInteger(year) || year < FCA_CASE_MIN_YEAR || year > currentYear) reasons.push("invalid_year");
   if (!dateMatch || Number(dateMatch?.[1]) !== year || Number.isNaN(Date.parse(record.dateIssued))) reasons.push("invalid_date");
@@ -1891,6 +1900,14 @@ async function buildPageMetas(): Promise<PageMeta[]> {
       buildFcaFineCasePath,
     } = await import(fcaCasesServicePath);
     const cases = await listFcaMonetaryCasesForSeo() as FcaMonetaryCaseSeoRecord[];
+    if (
+      process.env.VERCEL_ENV === "production" &&
+      cases.length < FCA_CASE_MINIMUM_PRODUCTION_INVENTORY
+    ) {
+      throw new Error(
+        `FCA case inventory regression: expected at least ${FCA_CASE_MINIMUM_PRODUCTION_INVENTORY} monetary records, received ${cases.length}.`,
+      );
+    }
     const seenPaths = new Set<string>();
     let indexableCount = 0;
 
@@ -1910,6 +1927,7 @@ async function buildPageMetas(): Promise<PageMeta[]> {
       `  FCA fine cases: prerendering ${seenPaths.size} routes (${indexableCount} indexable).`,
     );
   } catch (error) {
+    if (process.env.VERCEL_ENV === "production") throw error;
     console.warn(
       "WARN: DB unreachable for FCA case prerendering; omitting the dedicated case sitemap:",
       error instanceof Error ? error.message : String(error),

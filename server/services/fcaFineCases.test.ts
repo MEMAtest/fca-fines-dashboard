@@ -5,6 +5,7 @@ import {
   buildFcaFineCasePath,
   getFcaFineCaseById,
   listFcaMonetaryCasesForSeo,
+  normaliseFcaFineEntityName,
   parseFcaFineCategories,
 } from "./fcaFineCases.js";
 
@@ -69,6 +70,21 @@ describe("FCA fine case service", () => {
     ]);
     expect(parseFcaFineCategories("not-json")).toEqual(["not-json"]);
     expect(parseFcaFineCategories(null)).toEqual([]);
+  });
+
+  it("replaces headline-shaped party fields only from an official case publication", () => {
+    expect(normaliseFcaFineEntityName(
+      "FCA decides to fine Carlos Ricardo Fuenmayor £99,600",
+      "https://www.fca.org.uk/publication/decision-notices/carlos-ricardo-fuenmayor-2026.pdf",
+    )).toBe("Carlos Ricardo Fuenmayor");
+    expect(normaliseFcaFineEntityName(
+      "FCA publishes decisions against director and financial adviser",
+      "https://www.fca.org.uk/publication/decision-notices/heather-dunne-2024.pdf",
+    )).toBe("Heather Dunne");
+    expect(normaliseFcaFineEntityName(
+      "FCA decides to fine Example Person",
+      "https://example.com/example-person-2026.pdf",
+    )).toBe("FCA decides to fine Example Person");
   });
 
   it("keeps an official FCA case indexable while surfacing evidence and copy warnings", () => {

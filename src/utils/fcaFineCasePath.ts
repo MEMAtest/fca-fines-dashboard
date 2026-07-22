@@ -15,6 +15,9 @@ export interface FcaFineCaseRecordPathInput {
   requires_amount_review?: boolean | null;
 }
 
+const FCA_FINE_PUBLIC_CASE_ID =
+  /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+
 /**
  * Browser-safe firm segment used by both public case links and the server-side
  * prerender inventory. The public case id keeps the full route unique, so the
@@ -48,19 +51,23 @@ export function buildFcaFineCasePath({
 export function getFcaFineCasePath(
   record: FcaFineCaseRecordPathInput,
 ): string | null {
-  const caseId = record.canonical_case_id || record.id || record.fine_reference;
+  const caseId = record.canonical_case_id?.trim() || "";
   const year = Number(record.year_issued);
   const amount = Number(record.amount);
   if (
     String(record.regulator || "").toUpperCase() !== "FCA" ||
     !Number.isInteger(year) ||
     !record.firm_individual?.trim() ||
-    !caseId?.trim() ||
+    !FCA_FINE_PUBLIC_CASE_ID.test(caseId) ||
     !Number.isFinite(amount) ||
     amount <= 0 ||
     record.requires_amount_review
   ) {
     return null;
   }
-  return buildFcaFineCasePath({ year, firm: record.firm_individual, caseId });
+  return buildFcaFineCasePath({
+    year,
+    firm: record.firm_individual,
+    caseId: caseId.toLowerCase(),
+  });
 }

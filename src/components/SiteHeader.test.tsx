@@ -25,4 +25,17 @@ describe("SiteHeader research navigation", () => {
     expect(within(mainNavigation).getByRole("link", { name: "Enforcement Explorer" })).toHaveAttribute("href", "/search");
     expect(within(mainNavigation).getByRole("link", { name: "Enforcement Briefing" })).toHaveAttribute("href", "/intelligence");
   });
+
+  it("leaves individual FCA case breadcrumbs to the evidence page", () => {
+    render(
+      <MemoryRouter initialEntries={[
+        "/fca-fines/2026/example-firm/b40e17fe-6592-450e-934c-80b4a427f87a",
+      ]}>
+        <SiteHeader />
+      </MemoryRouter>,
+    );
+
+    expect(document.querySelector(".site-header__breadcrumbs")).not.toBeInTheDocument();
+    expect(screen.queryByText(/b40e17fe/i)).not.toBeInTheDocument();
+  });
 });
