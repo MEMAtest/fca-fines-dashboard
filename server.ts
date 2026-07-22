@@ -26,6 +26,10 @@ import {
   listUKEnforcementActions,
 } from "./server/services/ukEnforcement.js";
 import { getUKEnforcementHealth } from "./server/services/ukEnforcementHealth.js";
+import {
+  getFcaFineCaseById,
+  isValidFcaFineCaseId,
+} from "./server/services/fcaFineCases.js";
 import searchHandler from "./api/search.js";
 import enforcementBriefingHandler from "./api/agentic/enforcement-briefing.js";
 import agenticWorkbenchHandler from "./api/agentic/workbench.js";
@@ -202,6 +206,27 @@ app.get("/api/fca-fines/sector", async (req, res) => {
   } catch (error) {
     console.error("Sector endpoint error:", error);
     res.status(500).json({ success: false, error: "Failed to fetch sector" });
+  }
+});
+
+// Keep this parameterised route after the named FCA fine routes so values such
+// as "categories" and "sector" retain their existing handlers in local dev.
+app.get("/api/fca-fines/:caseId", async (req, res) => {
+  const caseId = String(req.params.caseId || "").trim().toLowerCase();
+  if (!isValidFcaFineCaseId(caseId)) {
+    return res.status(400).json({ success: false, error: "Invalid FCA fine case ID" });
+  }
+
+  try {
+    const record = await getFcaFineCaseById(caseId);
+    if (!record) {
+      return res.status(404).json({ success: false, error: "FCA fine case not found" });
+    }
+    res.setHeader("Cache-Control", "public, max-age=300, s-maxage=3600, stale-while-revalidate=86400");
+    return res.json({ success: true, data: record });
+  } catch (error) {
+    console.error("FCA fine case endpoint error:", error);
+    return res.status(500).json({ success: false, error: "Failed to fetch FCA fine case" });
   }
 });
 
