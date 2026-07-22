@@ -115,16 +115,16 @@ SELECT
     ELSE 'missing'
   END AS source_link_status,
   assessment.checked_at AS source_checked_at,
+  assessment.http_status AS source_http_status,
+  assessment.official_domain_match AS source_official_domain_match,
+  assessment.content_hash AS source_content_hash,
+  assessment.resolved_url AS source_resolved_url,
   assessment.last_verified_at AS source_last_verified_at,
   assessment.next_check_at AS source_next_check_at,
   assessment.consecutive_failures AS source_consecutive_failures,
   assessment.review_status AS source_review_status,
   assessment.review_reason AS source_review_reason,
-  assessment.http_status AS source_http_status,
-  assessment.official_domain_match AS source_official_domain_match,
-  assessment.content_hash AS source_content_hash,
-  assessment.last_successful_content_hash AS source_last_successful_content_hash,
-  assessment.resolved_url AS source_resolved_url
+  assessment.last_successful_content_hash AS source_last_successful_content_hash
 FROM public.all_regulatory_fines_canonical AS canonical
 LEFT JOIN public.regulatory_case_registry AS registry
   ON registry.source_row_id = canonical.id::text
