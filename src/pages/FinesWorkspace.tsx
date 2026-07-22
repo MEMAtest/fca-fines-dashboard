@@ -41,6 +41,7 @@ import {
 } from "../utils/workspaceAnalytics.js";
 import { fetchWorkspaceRecords } from "../utils/fetchWorkspaceRecords.js";
 import { exportData } from "../utils/export.js";
+import { getFcaFineCasePath } from "../utils/fcaFineCasePath.js";
 
 export type FinesWorkspaceView = "overview" | "actions" | "analytics" | "compare";
 
@@ -74,7 +75,7 @@ function RecordTable({ records, onOpen, limit = 8 }: { records: FineRecord[]; on
         {records.slice(0, limit).map((record) => (
           <tr key={`${record.id ?? record.fine_reference}-${record.date_issued}`} onClick={() => onOpen(record)} tabIndex={0} onKeyDown={(event) => { if (event.key === "Enter") onOpen(record); }}>
             <td>{formatDate(record.date_issued)}</td>
-            <td><strong>{record.firm_individual}</strong></td>
+            <td><strong>{record.firm_individual}</strong>{getFcaFineCasePath(record) ? <> <Link to={getFcaFineCasePath(record)!} onClick={(event) => event.stopPropagation()} aria-label={`Open ${record.firm_individual} FCA fine case`}>Case page</Link></> : null}</td>
             <td><span className="workspace-tag">{record.regulator}</span></td>
             <td>{getRecordThemes(record)[0]}</td>
             <td><strong>{formatWorkspaceAmount(record.amount)}</strong></td>

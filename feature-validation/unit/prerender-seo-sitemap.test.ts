@@ -21,11 +21,40 @@ function page(path: string, overrides: Record<string, unknown> = {}) {
 describe("prerender sitemap policy", () => {
   it("segments URLs into diagnostic sitemap sections", () => {
     expect(sitemapSectionForPath("/regulators/fca")).toBe("regulators");
+    expect(sitemapSectionForPath("/fca-fines/2026/example-bank/case-1")).toBe("fca-fines");
     expect(sitemapSectionForPath("/topics/fca-fines-2026")).toBe("editorial");
     expect(sitemapSectionForPath("/blog/fca-fines-database-how-to-search")).toBe("editorial");
     expect(sitemapSectionForPath("/countries/united-kingdom")).toBe("country-risk");
     expect(sitemapSectionForPath("/firms/example-bank-123456")).toBe("entities");
     expect(sitemapSectionForPath("/fines")).toBe("core");
+  });
+
+  it("publishes the dedicated FCA fines sitemap only when an indexable case exists", () => {
+    const empty = generateSitemapDocuments([
+      page("/"),
+      page("/fca-fines/2026/thin-firm/case-1", {
+        noindex: true,
+        includeInSitemap: false,
+      }),
+    ]);
+    expect(empty.has("sitemap-fca-fines.xml")).toBe(false);
+    expect(empty.get("sitemap.xml")).not.toContain("sitemap-fca-fines.xml");
+
+    const populated = generateSitemapDocuments([
+      page("/"),
+      page("/fca-fines/2026/example-bank/case-2", {
+        dateModified: "2026-07-20",
+      }),
+      page("/fca-fines/2026/thin-firm/case-1", {
+        noindex: true,
+        includeInSitemap: false,
+      }),
+    ]);
+    expect(populated.get("sitemap.xml")).toContain("sitemap-fca-fines.xml");
+    expect(populated.get("sitemap-fca-fines.xml")).toContain(
+      "https://regactions.com/fca-fines/2026/example-bank/case-2",
+    );
+    expect(populated.get("sitemap-fca-fines.xml")).not.toContain("thin-firm");
   });
 
   it("keeps noindex and explicitly deferred pages out of every sitemap", () => {

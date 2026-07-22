@@ -26,6 +26,7 @@ function crawlableInternalLinks(html: string) {
 function readSitemapUrlsets() {
   return [
     'sitemap-core.xml',
+    'sitemap-fca-fines.xml',
     'sitemap-regulators.xml',
     'sitemap-editorial.xml',
     'sitemap-country-risk.xml',
@@ -255,6 +256,34 @@ test.describe('Pre-rendered HTML SEO Meta Tags', () => {
     test('should publish Dataset structured data', () => {
       expect(html).toContain('"@type":"Dataset"');
       expect(html).toContain('FCA fines issued in 2026');
+    });
+  });
+
+  test.describe('FCA fine case prerender inventory', () => {
+    test('should publish only indexable case pages in the dedicated sitemap', () => {
+      const index = readFileSync(join(DIST, 'sitemap.xml'), 'utf-8');
+      const caseSitemapPath = join(DIST, 'sitemap-fca-fines.xml');
+      if (!existsSync(caseSitemapPath)) {
+        expect(index).not.toContain('/sitemap-fca-fines.xml');
+        return;
+      }
+
+      expect(index).toContain(`${BASE_URL}/sitemap-fca-fines.xml`);
+      const caseSitemap = readFileSync(caseSitemapPath, 'utf-8');
+      const caseUrls = Array.from(caseSitemap.matchAll(/<loc>([^<]+)<\/loc>/g)).map((match) => match[1]);
+      expect(caseUrls.length).toBeGreaterThan(0);
+
+      const representativeUrl = new URL(caseUrls[0]);
+      expect(representativeUrl.pathname).toMatch(/^\/fca-fines\/\d{4}\/[a-z0-9-]+\/[^/]+$/);
+      const html = readFileSync(join(DIST, representativeUrl.pathname.slice(1), 'index.html'), 'utf-8');
+      expect(html).toContain(`<link rel="canonical" href="${representativeUrl.href}" />`);
+      expect(html).not.toContain('name="robots" content="noindex, follow"');
+      expect(html).toContain('Official evidence');
+      expect(html).toContain('https://www.fca.org.uk/');
+      expect(crawlableInternalLinks(rootHtml(html))).toEqual(expect.arrayContaining([
+        '/regulators/fca',
+        `/years/${representativeUrl.pathname.split('/')[2]}`,
+      ]));
     });
   });
 

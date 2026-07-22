@@ -5,6 +5,7 @@ import { useSEO } from "../hooks/useSEO.js";
 import type { FirmDetails } from "../types.js";
 import { buildFineRecordEvidence } from "../utils/evidenceCase.js";
 import { EvidenceTrigger } from "../components/EvidenceTrigger.js";
+import { getFcaFineCasePath } from "../utils/fcaFineCasePath.js";
 
 const currency = new Intl.NumberFormat("en-GB", {
   style: "currency",
@@ -209,7 +210,7 @@ export function FirmPage() {
                     <tr
                       key={`${r.fine_reference || ""}-${r.date_issued}-${r.amount}`}
                     >
-                      <td><EvidenceTrigger className="hub-link hub-link--button" evidence={buildFineRecordEvidence(r, "firm_hub")}>{formatDate(r.date_issued)}</EvidenceTrigger></td>
+                      <td>{getFcaFineCasePath(r) ? <Link className="hub-link" to={getFcaFineCasePath(r)!}>{formatDate(r.date_issued)}</Link> : <EvidenceTrigger className="hub-link hub-link--button" evidence={buildFineRecordEvidence(r, "firm_hub")}>{formatDate(r.date_issued)}</EvidenceTrigger>}</td>
                       <td>{currency.format(r.amount)}</td>
                       <td>{r.regulator}</td>
                       <td>

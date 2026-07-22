@@ -7,6 +7,7 @@ import { injectStructuredData, useSEO } from "../hooks/useSEO.js";
 import { useUnifiedData } from "../hooks/useUnifiedData.js";
 import type { FineRecord } from "../types.js";
 import { buildFineRecordEvidence } from "../utils/evidenceCase.js";
+import { getFcaFineCasePath } from "../utils/fcaFineCasePath.js";
 import {
   buildContiguousMonthlyWindow,
   buildMonthlyTrend,
@@ -117,10 +118,11 @@ function FcaFinesYearReport() {
                   {fines.map((record) => {
                     const evidence = buildFineRecordEvidence(record, "fca_fines_report");
                     const href = evidence.directSourceUrl || evidence.listingSourceUrl || FCA_2026_OFFICIAL_URL;
+                    const casePath = getFcaFineCasePath(record);
                     return (
                       <tr key={`${record.canonical_case_id ?? record.id}-${record.date_issued}`}>
                         <td>{formatReportDate(record.date_issued)}</td>
-                        <td>{record.firm_individual}</td>
+                        <td>{casePath ? <Link className="hub-link" to={casePath}>{record.firm_individual}</Link> : record.firm_individual}</td>
                         <td><strong>{formatWorkspaceAmount(record.amount)}</strong></td>
                         <td>{record.breach_type || record.breach_categories?.[0] || "Not classified"}</td>
                         <td><a className="hub-link" href={href} onClick={(event) => { event.preventDefault(); openEvidence(evidence); }}>View evidence</a></td>

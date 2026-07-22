@@ -39,6 +39,10 @@ describe("product workspaces", () => {
   it("opens the underlying data when a Command Centre table row is selected", () => {
     render(<MemoryRouter initialEntries={["/fines"]}><EvidenceModalProvider><FinesWorkspace view="overview" /></EvidenceModalProvider></MemoryRouter>);
     expect(screen.getByRole("heading", { name: /Fines Command Centre/i })).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: "Open Alpha Bank FCA fine case" })).toHaveAttribute(
+      "href",
+      "/fca-fines/2025/alpha-bank/fca-1",
+    );
     const rowLabel = screen.getAllByText("Alpha Bank").find((element) => element.tagName === "STRONG");
     expect(rowLabel).toBeDefined();
     fireEvent.click(rowLabel!);

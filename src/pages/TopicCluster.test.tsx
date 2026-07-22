@@ -65,6 +65,10 @@ describe("FCA fines 2026 topic report", () => {
     expect(screen.getAllByText("£12m").length).toBeGreaterThan(0);
     expect(screen.getByRole("heading", { name: "FCA fines by month in 2026" })).toBeInTheDocument();
     expect(screen.getAllByText("Example Bank plc").length).toBeGreaterThan(0);
+    expect(screen.getByRole("link", { name: "Example Bank plc" })).toHaveAttribute(
+      "href",
+      "/fca-fines/2026/example-bank-plc/fca-2026-1",
+    );
     expect(screen.getByRole("link", { name: /FCA 2026 fines page/i })).toHaveAttribute("href", "https://www.fca.org.uk/news/news-stories/2026-fines");
     expect(screen.getByRole("link", { name: "Complete FCA fines database" })).toHaveAttribute("href", "/regulators/fca");
     expect(screen.getByRole("link", { name: "View evidence" })).toHaveAttribute("href", "https://www.fca.org.uk/publication/final-notices/example-bank-2026.pdf");

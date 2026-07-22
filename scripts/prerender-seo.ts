@@ -60,6 +60,7 @@ import {
   PUBLIC_REGULATOR_CODES,
 } from "../src/data/regulatorCoverage.js";
 import { topicClusters } from "../src/data/topicClusters.js";
+import { buildFcaFineCasePath as buildSharedFcaFineCasePath } from "../src/utils/fcaFineCasePath.js";
 import {
   getCountryByIso2,
   countrySlug,
@@ -235,6 +236,143 @@ interface PageMeta {
   rssAlternates?: Array<{ title: string; href: string }>; // Extra RSS feed alternates
 }
 
+export interface FcaMonetaryCaseSeoRecord {
+  caseId: string;
+  year: number;
+  firm: string;
+  dateIssued: string;
+  amount: number;
+  breach: string | null;
+  summary: string | null;
+  sourceUrl: string | null;
+  sourceStatus?: string | null;
+  sourceCheckedAt?: string | null;
+  requiresAmountReview?: boolean | null;
+}
+
+export interface FcaFineCaseIndexability {
+  indexable: boolean;
+  reasons: string[];
+}
+
+const FCA_CASE_MIN_YEAR = 2013;
+const UNSAFE_CASE_ENTITY = /^(?:unknown|undisclosed|not available|n\/?a|null|test|firm|individual)$/i;
+
+function isOfficialFcaUrl(value: string | null | undefined): boolean {
+  if (!value) return false;
+  try {
+    const url = new URL(value);
+    return url.protocol === "https:" && /^(?:www\.)?fca\.org\.uk$/i.test(url.hostname);
+  } catch {
+    return false;
+  }
+}
+
+function isAnnualFcaListingUrl(value: string | null | undefined): boolean {
+  if (!value) return false;
+  try {
+    return /^\/news\/news-stories\/\d{4}-fines\/?$/i.test(new URL(value).pathname);
+  } catch {
+    return false;
+  }
+}
+
+export function evaluateFcaFineCaseIndexability(
+  record: FcaMonetaryCaseSeoRecord,
+): FcaFineCaseIndexability {
+  const reasons: string[] = [];
+  const year = Number(record.year);
+  const currentYear = Number(todayISO().slice(0, 4));
+  const dateMatch = String(record.dateIssued || "").match(/^(\d{4})-(\d{2})-(\d{2})/);
+  const firm = String(record.firm || "").trim();
+  const caseId = String(record.caseId || "").trim();
+  const amount = Number(record.amount);
+  const summaryLength = String(record.summary || "").replace(/\s+/g, " ").trim().length;
+  const breachLength = String(record.breach || "").replace(/\s+/g, " ").trim().length;
+  const sourceStatus = String(record.sourceStatus || "").toLowerCase();
+
+  if (!Number.isInteger(year) || year < FCA_CASE_MIN_YEAR || year > currentYear) reasons.push("invalid_year");
+  if (!dateMatch || Number(dateMatch?.[1]) !== year || Number.isNaN(Date.parse(record.dateIssued))) reasons.push("invalid_date");
+  if (firm.length < 3 || firm.length > 180 || UNSAFE_CASE_ENTITY.test(firm) || /[<>]/.test(firm)) reasons.push("unsafe_entity");
+  if (caseId.length < 3 || caseId.length > 200 || UNSAFE_CASE_ENTITY.test(caseId)) reasons.push("unsafe_case_id");
+  if (!Number.isFinite(amount) || amount <= 0 || record.requiresAmountReview) reasons.push("untrusted_amount");
+  if (!isOfficialFcaUrl(record.sourceUrl)) reasons.push("missing_official_source");
+  if (sourceStatus === "missing" || sourceStatus === "listing_only" || isAnnualFcaListingUrl(record.sourceUrl)) reasons.push("case_source_not_specific");
+  if (summaryLength < 60 && breachLength < 6) reasons.push("thin_case_context");
+
+  return { indexable: reasons.length === 0, reasons };
+}
+
+function fcaCaseLookupKey(
+  firm: string,
+  dateIssued: string | null | undefined,
+  amount: number,
+): string {
+  return `${firm.trim().toLowerCase()}|${String(dateIssued || "").slice(0, 10)}|${Number(amount).toFixed(2)}`;
+}
+
+function renderFcaFineCaseBody(
+  record: FcaMonetaryCaseSeoRecord,
+  indexability = evaluateFcaFineCaseIndexability(record),
+): string {
+  const amount = formatMoney(record.amount, "GBP");
+  const date = formatDate(record.dateIssued);
+  const breach = record.breach?.trim() || "Not classified";
+  const summary = record.summary?.replace(/\s+/g, " ").trim() || "No additional case summary is recorded.";
+  const source = isOfficialFcaUrl(record.sourceUrl)
+    ? `<a href="${escapeHtml(record.sourceUrl!)}" rel="noopener">Open the official FCA source</a>`
+    : `<span>An official case-level source is not currently available.</span>`;
+  const status = indexability.indexable
+    ? "This page meets the public case-page evidence threshold."
+    : "This route is available for navigation but is excluded from search indexing until its evidence coverage meets the public case-page threshold.";
+  const topicLink = record.year === 2026
+    ? `<li><a href="/topics/fca-fines-2026">FCA fines 2026 monthly report</a></li>`
+    : "";
+
+  return `<div class="blog-page"><div class="blog-post-container"><article class="blog-article-modal"><p><a href="/regulators/fca">FCA fines</a> / <a href="/years/${record.year}">${record.year}</a> / ${escapeHtml(record.firm)}</p><h1 class="blog-post-title">${escapeHtml(record.firm)} FCA fine</h1><div class="blog-article-content"><p>RegActions records a disclosed FCA monetary penalty of <strong>${escapeHtml(amount)}</strong> dated <strong>${escapeHtml(date)}</strong> for ${escapeHtml(record.firm)}.</p><h2>Case facts</h2><table><tbody><tr><th>Firm or individual</th><td>${escapeHtml(record.firm)}</td></tr><tr><th>Regulator</th><td>Financial Conduct Authority (FCA)</td></tr><tr><th>Date</th><td>${escapeHtml(date)}</td></tr><tr><th>Penalty</th><td>${escapeHtml(amount)}</td></tr><tr><th>RegActions breach classification</th><td>${escapeHtml(breach)}</td></tr><tr><th>Public case ID</th><td>${escapeHtml(record.caseId)}</td></tr></tbody></table><h2>Case summary</h2><p>${escapeHtml(summary)}</p><h2>Official evidence</h2><p>${source}</p><p>${escapeHtml(status)}</p><h2>Continue your research</h2><ul><li><a href="/regulators/fca">Search the complete FCA fines database</a></li><li><a href="/fines/actions?regulator=FCA&amp;year=${record.year}">View FCA actions from ${record.year}</a></li><li><a href="/years/${record.year}">Compare enforcement actions in ${record.year}</a></li>${topicLink}<li><a href="/methodology/enforcement">Read the enforcement data methodology</a></li></ul><h2>Scope</h2><p>This page describes one source-linked monetary record. RegActions excludes non-monetary outcomes and amounts awaiting review from FCA fine totals. The FCA publication remains the authoritative source.</p></div></article></div></div>`;
+}
+
+export function buildFcaFineCasePageMeta(
+  record: FcaMonetaryCaseSeoRecord,
+  path = buildSharedFcaFineCasePath(record),
+): PageMeta {
+  const indexability = evaluateFcaFineCaseIndexability(record);
+  const amount = formatMoney(record.amount, "GBP");
+  const firmTitle = record.firm.length > 72 ? `${record.firm.slice(0, 69).trim()}...` : record.firm;
+  const sourceCheckedDate = String(record.sourceCheckedAt || "").match(/^(\d{4}-\d{2}-\d{2})/)?.[1];
+  const dateModified = sourceCheckedDate || String(record.dateIssued || "").slice(0, 10) || undefined;
+  const title = `${firmTitle} FCA Fine: ${amount} (${record.year}) | RegActions`;
+  const description = `Source-linked record of the ${amount} FCA monetary penalty for ${record.firm}, dated ${formatDate(record.dateIssued)}. Review the case facts and official source.`;
+  const extraJsonLd = indexability.indexable ? [{
+    "@context": "https://schema.org",
+    "@type": "Thing",
+    name: `${record.firm} FCA monetary penalty`,
+    identifier: record.caseId,
+    url: `${BASE_URL}${path}`,
+    sameAs: record.sourceUrl,
+    additionalProperty: [
+      { "@type": "PropertyValue", name: "Regulator", value: "Financial Conduct Authority" },
+      { "@type": "PropertyValue", name: "Penalty amount", value: record.amount, unitText: "GBP" },
+      { "@type": "PropertyValue", name: "Decision date", value: record.dateIssued },
+      ...(record.breach ? [{ "@type": "PropertyValue", name: "RegActions breach classification", value: record.breach }] : []),
+    ],
+  }] : [];
+
+  return {
+    path,
+    title,
+    description,
+    keywords: `${record.firm} FCA fine, FCA fine ${record.year}, ${record.firm} Financial Conduct Authority penalty`,
+    ogType: "website",
+    dateModified,
+    breadcrumbLabel: `${record.firm} FCA fine`,
+    bodyContent: renderFcaFineCaseBody(record, indexability),
+    noindex: !indexability.indexable,
+    includeInSitemap: indexability.indexable,
+    extraJsonLd,
+  };
+}
+
 // ---------------------------------------------------------------------------
 // Markdown → HTML renderer (pure regex, mirrors BlogPost.tsx renderMarkdownContent)
 // ---------------------------------------------------------------------------
@@ -395,6 +533,7 @@ function formatMoney(amount: number, currency: string): string {
 function renderRegulatorFinesTable(
   fines: RegulatorTopFine[],
   currency: string,
+  casePaths: ReadonlyMap<string, string> = new Map(),
 ): string {
   if (fines.length === 0) return "";
   const rows = fines
@@ -409,7 +548,9 @@ function renderRegulatorFinesTable(
         f.sourceUrl && /^https?:\/\//i.test(f.sourceUrl)
           ? `<a href="${escapeHtml(f.sourceUrl)}" rel="noopener">Notice</a>`
           : "—";
-      return `<tr><td>${firm}</td><td>${date}</td><td>${amount}</td><td>${breach}</td><td>${source}</td></tr>`;
+      const casePath = casePaths.get(fcaCaseLookupKey(f.firm, f.dateIssued, f.amount));
+      const entity = casePath ? `<a href="${escapeHtml(casePath)}">${firm}</a>` : firm;
+      return `<tr><td>${entity}</td><td>${date}</td><td>${amount}</td><td>${breach}</td><td>${source}</td></tr>`;
     })
     .join("");
   return `<h2>Largest enforcement actions</h2><table class="hub-fines-table"><thead><tr><th>Firm or individual</th><th>Date</th><th>Amount</th><th>Breach category</th><th>Source</th></tr></thead><tbody>${rows}</tbody></table><p>Amounts are normalised to GBP for comparison.</p>`;
@@ -429,11 +570,12 @@ function renderRegulatorHubBody(
   fines: RegulatorTopFine[],
   currency: string,
   yearReport?: RegulatorYearReport | null,
+  casePaths: ReadonlyMap<string, string> = new Map(),
 ): string {
   const base = renderHubBody(title, description, metrics, path);
   const countryLink = regulatorCountryLinkHtml(code);
-  const yearReportHtml = code === "FCA" ? renderFcaYearReport(yearReport) : "";
-  const finesTable = renderRegulatorFinesTable(fines, currency);
+  const yearReportHtml = code === "FCA" ? renderFcaYearReport(yearReport, casePaths) : "";
+  const finesTable = renderRegulatorFinesTable(fines, currency, casePaths);
   // Splice the extra crawlable content in just before the closing wrappers so it
   // sits inside .blog-article-content alongside the coverage snapshot.
   const closing = "</div></article></div></div>";
@@ -444,7 +586,10 @@ function renderRegulatorHubBody(
     : `${base}${injected}`;
 }
 
-function renderFcaYearReport(report?: RegulatorYearReport | null): string {
+function renderFcaYearReport(
+  report?: RegulatorYearReport | null,
+  casePaths: ReadonlyMap<string, string> = new Map(),
+): string {
   const year = report?.year ?? 2026;
   const officialUrl = `https://www.fca.org.uk/news/news-stories/${year}-fines`;
   const summary = report
@@ -459,7 +604,9 @@ function renderFcaYearReport(report?: RegulatorYearReport | null): string {
       const source = fine.sourceUrl && /^https?:\/\//i.test(fine.sourceUrl)
         ? `<a href="${escapeHtml(fine.sourceUrl)}" rel="noopener">Official source</a>`
         : `<a href="${officialUrl}" rel="noopener">FCA fines page</a>`;
-      return `<tr><td>${escapeHtml(fine.firm)}</td><td>${escapeHtml(fine.dateIssued ? formatDate(fine.dateIssued) : "Date not recorded")}</td><td>${escapeHtml(formatMoney(fine.amount, "GBP"))}</td><td>${escapeHtml(fine.breach || "Not categorised")}</td><td>${source}</td></tr>`;
+      const casePath = casePaths.get(fcaCaseLookupKey(fine.firm, fine.dateIssued, fine.amount));
+      const entity = casePath ? `<a href="${escapeHtml(casePath)}">${escapeHtml(fine.firm)}</a>` : escapeHtml(fine.firm);
+      return `<tr><td>${entity}</td><td>${escapeHtml(fine.dateIssued ? formatDate(fine.dateIssued) : "Date not recorded")}</td><td>${escapeHtml(formatMoney(fine.amount, "GBP"))}</td><td>${escapeHtml(fine.breach || "Not categorised")}</td><td>${source}</td></tr>`;
     })
     .join("") ?? "";
   const monthlyTable = monthlyRows
@@ -1032,7 +1179,11 @@ function renderChangesBody(events: ChangeEvent[]): string {
   return `<div class="blog-page"><div class="blog-post-container"><article class="blog-article-modal"><h1 class="blog-post-title">What changed in country risk</h1><div class="blog-article-content">${intro}${groupsHtml}${outro}</div></article></div></div>`;
 }
 
-function renderTopicClusterBody(slug: string, fcaYearReport?: RegulatorYearReport | null): string {
+function renderTopicClusterBody(
+  slug: string,
+  fcaYearReport?: RegulatorYearReport | null,
+  casePaths: ReadonlyMap<string, string> = new Map(),
+): string {
   const cluster = topicClusters.find((item) => item.slug === slug);
   if (!cluster) return "";
   const articles = cluster.primaryArticles
@@ -1054,7 +1205,7 @@ function renderTopicClusterBody(slug: string, fcaYearReport?: RegulatorYearRepor
     )
     .join("");
 
-  const report = slug === "fca-fines-2026" ? renderFcaYearReport(fcaYearReport) : "";
+  const report = slug === "fca-fines-2026" ? renderFcaYearReport(fcaYearReport, casePaths) : "";
   return `<div class="blog-page"><div class="blog-post-container"><article class="blog-article-modal"><h1 class="blog-post-title">${escapeHtml(cluster.title)}</h1><div class="blog-article-content"><p>${escapeHtml(cluster.summary)}</p>${report}<h2>Core Articles</h2><ul>${articles}</ul><h2>Evidence Focus</h2><ul>${evidence}</ul><h2>Board Questions</h2><ul>${questions}</ul><h2>Search, Data and Advisory Paths</h2><ul>${links}</ul></div></article></div></div>`;
 }
 
@@ -1217,6 +1368,16 @@ function generateBreadcrumbItems(
 ): Array<{ name: string; item: string }> {
   const crumbs = [{ name: "Home", item: `${BASE_URL}/` }];
   if (path === "/") return crumbs;
+
+  const fcaCaseMatch = path.match(/^\/fca-fines\/(\d{4})\/[^/]+\/[^/]+$/);
+  if (fcaCaseMatch) {
+    return [
+      ...crumbs,
+      { name: "FCA fines", item: `${BASE_URL}/regulators/fca` },
+      { name: fcaCaseMatch[1], item: `${BASE_URL}/years/${fcaCaseMatch[1]}` },
+      { name: "FCA fine case", item: `${BASE_URL}${path}` },
+    ];
+  }
 
   const segments = path.split("/").filter(Boolean);
   let current = "";
@@ -1718,6 +1879,43 @@ async function buildPageMetas(): Promise<PageMeta[]> {
     bodyContent: renderTopicsLandingBody(),
   });
 
+  // Every current canonical FCA monetary record receives a stable route. The
+  // evidence gate controls indexability and sitemap membership, not whether the
+  // route is generated, so weak records remain navigable without competing in
+  // search until their source coverage improves.
+  const fcaCasePaths = new Map<string, string>();
+  try {
+    const fcaCasesServicePath = "../server/services/fcaFineCases.js";
+    const {
+      listFcaMonetaryCasesForSeo,
+      buildFcaFineCasePath,
+    } = await import(fcaCasesServicePath);
+    const cases = await listFcaMonetaryCasesForSeo() as FcaMonetaryCaseSeoRecord[];
+    const seenPaths = new Set<string>();
+    let indexableCount = 0;
+
+    for (const record of cases) {
+      const path = buildFcaFineCasePath(record);
+      if (seenPaths.has(path)) continue;
+      seenPaths.add(path);
+      const meta = buildFcaFineCasePageMeta(record, path);
+      pages.push(meta);
+      if (!meta.noindex) indexableCount += 1;
+      fcaCasePaths.set(
+        fcaCaseLookupKey(record.firm, record.dateIssued, record.amount),
+        path,
+      );
+    }
+    console.log(
+      `  FCA fine cases: prerendering ${seenPaths.size} routes (${indexableCount} indexable).`,
+    );
+  } catch (error) {
+    console.warn(
+      "WARN: DB unreachable for FCA case prerendering; omitting the dedicated case sitemap:",
+      error instanceof Error ? error.message : String(error),
+    );
+  }
+
   let fcaYearReport: RegulatorYearReport | null = null;
   try {
     const { getRegulatorYearReport } = await import("../server/services/hubs.js");
@@ -1739,7 +1937,7 @@ async function buildPageMetas(): Promise<PageMeta[]> {
       keywords: cluster.keywords,
       ogType: "website",
       dateModified: isFcaYearReport ? fcaYearReport?.latestDate ?? undefined : undefined,
-      bodyContent: renderTopicClusterBody(cluster.slug, fcaYearReport),
+      bodyContent: renderTopicClusterBody(cluster.slug, fcaYearReport, fcaCasePaths),
       extraJsonLd: [
         {
           "@context": "https://schema.org",
@@ -1885,6 +2083,7 @@ async function buildPageMetas(): Promise<PageMeta[]> {
         // regulator's native currency.
         "GBP",
         code === "FCA" ? fcaYearReport : null,
+        code === "FCA" ? fcaCasePaths : new Map(),
       ),
       extraJsonLd: [
         {
@@ -2784,6 +2983,7 @@ function renderPage(template: string, meta: PageMeta): string {
 
 type SitemapSection =
   | "core"
+  | "fca-fines"
   | "regulators"
   | "editorial"
   | "country-risk"
@@ -2791,6 +2991,7 @@ type SitemapSection =
 
 const SITEMAP_SECTIONS: SitemapSection[] = [
   "core",
+  "fca-fines",
   "regulators",
   "editorial",
   "country-risk",
@@ -2798,6 +2999,9 @@ const SITEMAP_SECTIONS: SitemapSection[] = [
 ];
 
 function sitemapSectionForPath(path: string): SitemapSection {
+  if (path.startsWith("/fca-fines/")) {
+    return "fca-fines";
+  }
   if (path === "/regulators" || path.startsWith("/regulators/")) {
     return "regulators";
   }
@@ -3123,6 +3327,7 @@ if (isMain) {
 export {
   generateSitemapDocuments,
   generateSitemapUrlset,
+  renderPage,
   renderCountryFatfBody,
   sitemapLastmod,
   sitemapSectionForPath,

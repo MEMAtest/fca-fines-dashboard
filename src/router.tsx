@@ -246,6 +246,11 @@ const FinesWorkspace = lazyPage(() =>
     default: module.FinesWorkspace,
   })),
 );
+const FcaFineCase = lazyPage(() =>
+  import("./pages/FcaFineCase.js").then((module) => ({
+    default: module.FcaFineCase,
+  })),
+);
 const RegulatorWorkspace = lazyPage(() =>
   import("./pages/RegulatorWorkspace.js").then((module) => ({
     default: module.RegulatorWorkspace,
@@ -367,6 +372,10 @@ const router = createBrowserRouter([
       {
         path: "/fines/compare",
         element: <Suspense fallback={<DashboardSkeleton />}><FinesWorkspace view="compare" /></Suspense>,
+      },
+      {
+        path: "/fca-fines/:year/:firmSlug/:caseId",
+        element: <Suspense fallback={<DashboardSkeleton />}><FcaFineCase /></Suspense>,
       },
       {
         path: "/board-pack",

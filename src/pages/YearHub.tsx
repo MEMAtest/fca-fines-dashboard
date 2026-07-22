@@ -5,6 +5,7 @@ import { useSEO } from "../hooks/useSEO.js";
 import type { FineRecord, YearSummary } from "../types.js";
 import { buildFineRecordEvidence } from "../utils/evidenceCase.js";
 import { EvidenceTrigger } from "../components/EvidenceTrigger.js";
+import { getFcaFineCasePath } from "../utils/fcaFineCasePath.js";
 
 const currency = new Intl.NumberFormat("en-GB", {
   style: "currency",
@@ -210,7 +211,7 @@ export function YearHub() {
                     <tr
                       key={`${r.firm_individual}-${r.date_issued}-${r.amount}`}
                     >
-                      <td><EvidenceTrigger className="hub-link hub-link--button" evidence={buildFineRecordEvidence(r, "year_hub")}>{r.firm_individual}</EvidenceTrigger></td>
+                      <td>{getFcaFineCasePath(r) ? <Link className="hub-link" to={getFcaFineCasePath(r)!}>{r.firm_individual}</Link> : <EvidenceTrigger className="hub-link hub-link--button" evidence={buildFineRecordEvidence(r, "year_hub")}>{r.firm_individual}</EvidenceTrigger>}</td>
                       <td>
                         {new Date(r.date_issued).toLocaleDateString("en-GB", {
                           day: "2-digit",
