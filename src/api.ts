@@ -115,13 +115,13 @@ export function fetchSector(
 // Unified API endpoints for multi-regulator data
 export interface UnifiedSearchParams {
   q?: string;
-  regulator?: string;
+  regulator?: string | string[];
   country?: string;
-  year?: number;
+  year?: number | number[];
   month?: number;
   minAmount?: number;
   maxAmount?: number;
-  breachCategory?: string;
+  breachCategory?: string | string[];
   sector?: string;
   currency?: string;
   firmName?: string;
@@ -164,6 +164,7 @@ export interface UnifiedSearchResponse {
       | null;
     source_link_label?: string | null;
     canonical_case_id?: string | null;
+    canonical_case_path?: string | null;
     duplicate_count?: number | string | null;
     amount_quality?: string | null;
     requires_amount_review?: boolean | null;
@@ -184,13 +185,15 @@ export interface UnifiedSearchResponse {
     currentPage: number;
   };
   filters: {
+    q: string | null;
     regulator: string | null;
     country: string | null;
-    year: number | null;
+    year: number[] | null;
     month: number | null;
     minAmount: number | null;
     maxAmount: number | null;
-    breachCategory: string | null;
+    breachCategory: string[] | null;
+    sector: string | null;
     currency: string;
     firmName: string | null;
   };
@@ -243,11 +246,19 @@ export function fetchUnifiedSearch(params: UnifiedSearchParams = {}) {
   if (params.q?.trim()) queryParams.set("q", params.q.trim());
 
   if (params.regulator && params.regulator !== "All")
-    queryParams.set("regulator", params.regulator);
+    queryParams.set(
+      "regulator",
+      Array.isArray(params.regulator)
+        ? params.regulator.join(",")
+        : params.regulator,
+    );
   if (params.country && params.country !== "All")
     queryParams.set("country", params.country);
   if (params.year && params.year !== 0)
-    queryParams.set("year", String(params.year));
+    queryParams.set(
+      "year",
+      Array.isArray(params.year) ? params.year.join(",") : String(params.year),
+    );
   if (params.month && params.month >= 1 && params.month <= 12)
     queryParams.set("month", String(params.month));
   if (params.minAmount !== undefined)
@@ -255,7 +266,12 @@ export function fetchUnifiedSearch(params: UnifiedSearchParams = {}) {
   if (params.maxAmount !== undefined)
     queryParams.set("maxAmount", String(params.maxAmount));
   if (params.breachCategory)
-    queryParams.set("breachCategory", params.breachCategory);
+    queryParams.set(
+      "breachCategory",
+      Array.isArray(params.breachCategory)
+        ? params.breachCategory.join(",")
+        : params.breachCategory,
+    );
   if (params.sector) queryParams.set("sector", params.sector);
   if (params.currency) queryParams.set("currency", params.currency);
   if (params.firmName) queryParams.set("firmName", params.firmName);
@@ -294,10 +310,10 @@ export function fetchUnifiedCompare(
 }
 
 export interface UnifiedOverviewParams {
-  regulator?: string;
+  regulator?: string | string[];
   country?: string;
-  year?: number;
-  breachCategory?: string;
+  year?: number | number[];
+  breachCategory?: string | string[];
   sector?: string;
   q?: string;
   currency?: string;
@@ -330,10 +346,29 @@ export interface UnifiedOverviewResponse {
 
 export function fetchUnifiedOverview(params: UnifiedOverviewParams = {}) {
   const query = new URLSearchParams();
-  if (params.regulator && params.regulator !== "All") query.set("regulator", params.regulator);
+  if (params.regulator && params.regulator !== "All") {
+    query.set(
+      "regulator",
+      Array.isArray(params.regulator)
+        ? params.regulator.join(",")
+        : params.regulator,
+    );
+  }
   if (params.country && params.country !== "All") query.set("country", params.country);
-  if (params.year) query.set("year", String(params.year));
-  if (params.breachCategory && params.breachCategory !== "All") query.set("breachCategory", params.breachCategory);
+  if (params.year) {
+    query.set(
+      "year",
+      Array.isArray(params.year) ? params.year.join(",") : String(params.year),
+    );
+  }
+  if (params.breachCategory && params.breachCategory !== "All") {
+    query.set(
+      "breachCategory",
+      Array.isArray(params.breachCategory)
+        ? params.breachCategory.join(",")
+        : params.breachCategory,
+    );
+  }
   if (params.sector && params.sector !== "All") query.set("sector", params.sector);
   if (params.q) query.set("q", params.q);
   query.set("currency", params.currency || "GBP");

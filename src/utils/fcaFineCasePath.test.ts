@@ -67,4 +67,16 @@ describe("FCA fine case paths", () => {
       amount: 1_000_000,
     })).toBeNull();
   });
+
+  it("prefers the authoritative API case path over a headline-derived firm segment", () => {
+    const caseId = "b40e17fe-6592-450e-934c-80b4a427f87a";
+    expect(getFcaFineCasePath({
+      regulator: "FCA",
+      year_issued: 2026,
+      firm_individual: "FCA decides to fine Example Person",
+      canonical_case_id: caseId,
+      canonical_case_path: `/fca-fines/2026/example-person/${caseId}`,
+      amount: 99_600,
+    })).toBe(`/fca-fines/2026/example-person/${caseId}`);
+  });
 });

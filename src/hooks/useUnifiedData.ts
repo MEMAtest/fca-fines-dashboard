@@ -73,6 +73,7 @@ export function transformUnifiedRecord(
   return {
     id: record.id,
     canonical_case_id: record.canonical_case_id || record.id,
+    canonical_case_path: record.canonical_case_path || undefined,
     fine_reference: record.canonical_case_id || record.id,
     firm_individual: record.firm_individual,
     firm_category: record.firm_category || "",

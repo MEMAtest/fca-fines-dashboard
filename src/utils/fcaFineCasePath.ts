@@ -9,6 +9,7 @@ export interface FcaFineCaseRecordPathInput {
   year_issued?: number | null;
   firm_individual?: string | null;
   canonical_case_id?: string | null;
+  canonical_case_path?: string | null;
   id?: string | null;
   fine_reference?: string | null;
   amount?: number | null;
@@ -51,6 +52,14 @@ export function buildFcaFineCasePath({
 export function getFcaFineCasePath(
   record: FcaFineCaseRecordPathInput,
 ): string | null {
+  const authoritativePath = record.canonical_case_path?.trim() || "";
+  if (
+    /^\/fca-fines\/\d{4}\/[a-z0-9-]+\/[0-9a-f-]{36}$/i.test(
+      authoritativePath,
+    )
+  ) {
+    return authoritativePath;
+  }
   const caseId = record.canonical_case_id?.trim() || "";
   const year = Number(record.year_issued);
   const amount = Number(record.amount);

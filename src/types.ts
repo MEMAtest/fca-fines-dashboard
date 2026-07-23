@@ -1,6 +1,7 @@
 export interface FineRecord {
   id?: string;
   canonical_case_id?: string;
+  canonical_case_path?: string;
   fine_reference: string | null;
   firm_individual: string;
   firm_category: string | null;
@@ -61,6 +62,7 @@ export type FcaFineCaseIndexabilityReason =
   | 'thin_summary'
   | 'missing_breach_context'
   | 'missing_official_source'
+  | 'case_source_not_specific'
   | 'unverified_source'
   | 'source_check_missing'
   | 'source_check_failed'

@@ -9,6 +9,11 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 import postgres from 'postgres';
 import { resolveConnectionString } from '../../server/db.js';
+import {
+  buildFcaFineCasePath,
+  isValidFcaFineCaseId,
+  normaliseFcaFineEntityName,
+} from '../../server/services/fcaFineCases.js';
 import { PUBLIC_REGULATOR_CODES } from '../../src/data/regulatorCoverage.js';
 
 const databaseUrl = resolveConnectionString() || '';
@@ -99,8 +104,17 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     }
 
     if (year) {
-      conditions.push(`year_issued = $${paramIndex++}`);
-      params.push(parseInt(year));
+      const yearList = year
+        .split(',')
+        .map((value) => Number(value.trim()))
+        .filter((value) => Number.isInteger(value));
+      if (yearList.length > 1) {
+        conditions.push(`year_issued = ANY($${paramIndex++})`);
+        params.push(yearList);
+      } else if (yearList.length === 1) {
+        conditions.push(`year_issued = $${paramIndex++}`);
+        params.push(yearList[0]);
+      }
     }
 
     if (month && Number(month) >= 1 && Number(month) <= 12) {
@@ -119,9 +133,18 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     }
 
     if (breachCategory) {
-      // Handle double-encoded JSONB and records that only carry breach_type.
-      conditions.push(`${categoryExpression} @> $${paramIndex++}::jsonb`);
-      params.push([breachCategory]);
+      const breachList = breachCategory
+        .split(',')
+        .map((value) => value.trim())
+        .filter(Boolean);
+      // Multiple selected themes are an inclusive match, consistent with the
+      // comparison UI. The expression also handles double-encoded JSONB.
+      conditions.push(`EXISTS (
+        SELECT 1
+        FROM jsonb_array_elements_text(${categoryExpression}) AS selected_theme(value)
+        WHERE selected_theme.value = ANY($${paramIndex++}::text[])
+      )`);
+      params.push(breachList);
     }
 
     if (sector) {
@@ -191,6 +214,31 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     params.push(limitNum, offsetNum);
 
     const results = await sql.unsafe(query, params);
+    const normalizedResults = results.map((row) => {
+      if (String(row.regulator || '').toUpperCase() !== 'FCA') return row;
+      const firm = normaliseFcaFineEntityName(
+        row.firm_individual,
+        row.notice_url ? String(row.notice_url) : null,
+      );
+      const caseId = row.canonical_case_id
+        ? String(row.canonical_case_id).toLowerCase()
+        : '';
+      const casePath =
+        isValidFcaFineCaseId(caseId) &&
+        Number(row.amount_gbp) > 0 &&
+        row.requires_amount_review !== true
+          ? buildFcaFineCasePath({
+              caseId,
+              firm,
+              year: Number(row.year_issued),
+            })
+          : null;
+      return {
+        ...row,
+        firm_individual: firm,
+        canonical_case_path: casePath,
+      };
+    });
 
     // Query for total count
     const countQuery = `
@@ -204,7 +252,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
     // Return response
     return res.status(200).json({
-      results,
+      results: normalizedResults,
       pagination: {
         total: totalCount,
         limit: limitNum,
@@ -217,11 +265,15 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         q: q || null,
         regulator: regulator || null,
         country: country || null,
-        year: year ? parseInt(year) : null,
+        year: year
+          ? year.split(',').map(Number).filter(Number.isInteger)
+          : null,
         month: month ? parseInt(month) : null,
         minAmount: minAmount ? parseFloat(minAmount) : null,
         maxAmount: maxAmount ? parseFloat(maxAmount) : null,
-        breachCategory: breachCategory || null,
+        breachCategory: breachCategory
+          ? breachCategory.split(',').map((value) => value.trim()).filter(Boolean)
+          : null,
         sector: sector || null,
         currency,
         firmName: firmName || null

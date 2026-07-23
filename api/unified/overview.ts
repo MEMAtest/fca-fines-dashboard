@@ -33,16 +33,29 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       conditions.push(condition(params.length));
     };
 
-    if (regulator) add((position) => `regulator = $${position}`, regulator);
+    if (regulator) {
+      const regulators = regulator.split(",").map((value) => value.trim()).filter(Boolean);
+      if (regulators.length > 1) add((position) => `regulator = ANY($${position})`, regulators);
+      else add((position) => `regulator = $${position}`, regulators[0]);
+    }
     else add((position) => `regulator = ANY($${position})`, PUBLIC_REGULATOR_CODES);
     if (country) add((position) => `country_code = $${position}`, country);
-    if (year && Number.isInteger(Number(year))) add((position) => `year_issued = $${position}`, Number(year));
+    if (year) {
+      const years = year.split(",").map(Number).filter(Number.isInteger);
+      if (years.length > 1) add((position) => `year_issued = ANY($${position})`, years);
+      else if (years.length === 1) add((position) => `year_issued = $${position}`, years[0]);
+    }
     if (sector) add((position) => `COALESCE(firm_category, 'Sector not recorded') = $${position}`, sector);
     if (q?.trim()) add((position) => `(firm_individual ILIKE $${position} OR summary ILIKE $${position} OR breach_type ILIKE $${position})`, `%${q.trim()}%`);
     if (breachCategory) {
+      const categories = breachCategory.split(",").map((value) => value.trim()).filter(Boolean);
       add(
-        (position) => `${categoryExpression} @> $${position}::jsonb`,
-        [breachCategory],
+        (position) => `EXISTS (
+          SELECT 1
+          FROM jsonb_array_elements_text(${categoryExpression}) AS selected_theme(value)
+          WHERE selected_theme.value = ANY($${position}::text[])
+        )`,
+        categories,
       );
     }
     const where = `WHERE ${conditions.join(" AND ")}`;
@@ -82,7 +95,15 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       regulators: mapBreakdown(byRegulator),
       sectors: mapBreakdown(bySector),
       firms: mapBreakdown(byFirm),
-      filters: { regulator: regulator || null, country: country || null, year: year ? Number(year) : null, breachCategory: breachCategory || null, sector: sector || null, q: q || null, currency },
+      filters: {
+        regulator: regulator ? regulator.split(",").map((value) => value.trim()).filter(Boolean) : null,
+        country: country || null,
+        year: year ? year.split(",").map(Number).filter(Number.isInteger) : null,
+        breachCategory: breachCategory ? breachCategory.split(",").map((value) => value.trim()).filter(Boolean) : null,
+        sector: sector || null,
+        q: q || null,
+        currency,
+      },
     });
   } catch (error) {
     console.error("Unified overview error:", error instanceof Error ? error.message : error);

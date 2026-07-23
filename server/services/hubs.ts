@@ -1,5 +1,6 @@
 import type { FineRecord } from "../../src/types.js";
 import { getSqlClient } from "../db.js";
+import { normaliseFcaFineEntityName } from "./fcaFineCases.js";
 import { firmSlug, hubSlug } from "../utils/slugify.js";
 
 export interface CategorySummary {
@@ -60,6 +61,15 @@ export interface SectorDetails {
 }
 
 const HUB_INDEX_TTL_MS = 15 * 60_000;
+const FCA_TRUSTED_FINE_FILTER =
+  "upper(regulator) = 'FCA' AND trusted_amount_gbp > 0";
+const FCA_CATEGORY_EXPRESSION = `COALESCE(
+  CASE WHEN jsonb_typeof(breach_categories) = 'string'
+    THEN (breach_categories #>> '{}')::jsonb
+    ELSE breach_categories
+  END,
+  jsonb_build_array(COALESCE(breach_type, 'Other / not classified'))
+)`;
 let cachedFirmSlugMap: { builtAt: number; map: Map<string, string> } | null =
   null;
 let cachedCategorySlugMap: {
@@ -69,6 +79,35 @@ let cachedCategorySlugMap: {
 let cachedSectorSlugMap: { builtAt: number; map: Map<string, string> } | null =
   null;
 
+function mapTrustedFineRecord(row: Record<string, unknown>): FineRecord {
+  const caseSourceUrl = row.case_source_url
+    ? String(row.case_source_url)
+    : null;
+  return {
+    ...(row as unknown as FineRecord),
+    firm_individual: normaliseFcaFineEntityName(
+      row.firm_individual,
+      caseSourceUrl,
+    ),
+    breach_categories: Array.isArray(row.breach_categories)
+      ? row.breach_categories.map(String)
+      : (() => {
+          try {
+            const parsed =
+              typeof row.breach_categories === "string"
+                ? JSON.parse(row.breach_categories)
+                : [];
+            return Array.isArray(parsed) ? parsed.map(String) : [];
+          } catch {
+            return [];
+          }
+        })(),
+    amount: Number(row.amount) || 0,
+    year_issued: Number(row.year_issued) || 0,
+    month_issued: Number(row.month_issued) || 0,
+  };
+}
+
 async function getFirmSlugMap(): Promise<Map<string, string>> {
   const now = Date.now();
   if (cachedFirmSlugMap && now - cachedFirmSlugMap.builtAt < HUB_INDEX_TTL_MS) {
@@ -76,12 +115,25 @@ async function getFirmSlugMap(): Promise<Map<string, string>> {
   }
 
   const sql = getSqlClient();
-  const rows =
-    (await sql`SELECT DISTINCT firm_individual FROM fca_fines`) as any[];
+  const rows = (await sql(`
+    SELECT DISTINCT ON (firm_individual)
+      firm_individual,
+      COALESCE(NULLIF(notice_url, ''), NULLIF(source_resolved_url, '')) AS case_source_url
+    FROM public.all_regulatory_fines_trusted
+    WHERE ${FCA_TRUSTED_FINE_FILTER}
+    ORDER BY firm_individual, date_issued DESC
+  `)) as any[];
   const map = new Map<string, string>();
   rows.forEach((row: any) => {
-    const name = String(row.firm_individual);
-    map.set(firmSlug(name), name);
+    const rawName = String(row.firm_individual);
+    const displayName = normaliseFcaFineEntityName(
+      rawName,
+      row.case_source_url ? String(row.case_source_url) : null,
+    );
+    map.set(firmSlug(displayName), rawName);
+    map.set(hubSlug(displayName), rawName);
+    map.set(firmSlug(rawName), rawName);
+    map.set(hubSlug(rawName), rawName);
   });
 
   cachedFirmSlugMap = { builtAt: now, map };
@@ -124,20 +176,27 @@ async function getSectorSlugMap(): Promise<Map<string, string>> {
 
 export async function listBreachCategories(): Promise<CategorySummary[]> {
   const sql = getSqlClient();
-  const rows = (await sql`
+  const rows = (await sql(`
     SELECT
       cat.category AS category,
       COUNT(*)::int AS fine_count,
-      COALESCE(SUM(f.amount), 0)::float8 AS total_amount
-    FROM fca_fines f
-    CROSS JOIN LATERAL jsonb_array_elements_text(
-      CASE WHEN jsonb_typeof(f.breach_categories) = 'string'
-           THEN (f.breach_categories #>> '{}')::jsonb
-           ELSE f.breach_categories END
-    ) AS cat(category)
+      COALESCE(SUM(f.trusted_amount_gbp), 0)::float8 AS total_amount
+    FROM public.all_regulatory_fines_trusted f
+    CROSS JOIN LATERAL (
+      SELECT DISTINCT labels.category
+      FROM (
+        SELECT jsonb_array_elements_text(${FCA_CATEGORY_EXPRESSION
+          .replaceAll("breach_categories", "f.breach_categories")
+          .replaceAll("breach_type", "f.breach_type")}) AS category
+        UNION ALL
+        SELECT NULLIF(trim(f.breach_type), '')
+      ) labels
+      WHERE labels.category IS NOT NULL
+    ) AS cat
+    WHERE upper(f.regulator) = 'FCA' AND f.trusted_amount_gbp > 0
     GROUP BY cat.category
     ORDER BY total_amount DESC, fine_count DESC, cat.category ASC
-  `) as any[];
+  `)) as any[];
 
   return rows.map((row: any) => ({
     name: String(row.category),
@@ -149,15 +208,16 @@ export async function listBreachCategories(): Promise<CategorySummary[]> {
 
 export async function listYears(): Promise<YearSummary[]> {
   const sql = getSqlClient();
-  const rows = (await sql`
+  const rows = (await sql(`
     SELECT
       year_issued::int AS year,
       COUNT(*)::int AS fine_count,
-      COALESCE(SUM(amount), 0)::float8 AS total_amount
-    FROM fca_fines
+      COALESCE(SUM(trusted_amount_gbp), 0)::float8 AS total_amount
+    FROM public.all_regulatory_fines_trusted
+    WHERE ${FCA_TRUSTED_FINE_FILTER}
     GROUP BY year_issued
     ORDER BY year DESC
-  `) as any[];
+  `)) as any[];
 
   return rows.map((row: any) => ({
     year: Number(row.year) || 0,
@@ -168,16 +228,17 @@ export async function listYears(): Promise<YearSummary[]> {
 
 export async function listSectors(): Promise<SectorSummary[]> {
   const sql = getSqlClient();
-  const rows = (await sql`
+  const rows = (await sql(`
     SELECT
       firm_category AS sector,
       COUNT(*)::int AS fine_count,
-      COALESCE(SUM(amount), 0)::float8 AS total_amount
-    FROM fca_fines
+      COALESCE(SUM(trusted_amount_gbp), 0)::float8 AS total_amount
+    FROM public.all_regulatory_fines_trusted
     WHERE firm_category IS NOT NULL AND firm_category <> ''
+      AND ${FCA_TRUSTED_FINE_FILTER}
     GROUP BY firm_category
     ORDER BY total_amount DESC, fine_count DESC, firm_category ASC
-  `) as any[];
+  `)) as any[];
 
   return rows.map((row: any) => ({
     name: String(row.sector),
@@ -190,25 +251,36 @@ export async function listSectors(): Promise<SectorSummary[]> {
 export async function listTopFirms(limit = 100): Promise<FirmSummary[]> {
   const sql = getSqlClient();
   const clamped = Math.max(1, Math.min(limit, 1000));
-  const rows = (await sql`
+  const rows = (await sql(`
     SELECT
       firm_individual,
       COUNT(*)::int AS fine_count,
-      COALESCE(SUM(amount), 0)::float8 AS total_amount,
-      MAX(date_issued)::text AS latest_date
-    FROM fca_fines
+      COALESCE(SUM(trusted_amount_gbp), 0)::float8 AS total_amount,
+      MAX(date_issued)::text AS latest_date,
+      (ARRAY_AGG(
+        COALESCE(NULLIF(notice_url, ''), NULLIF(source_resolved_url, ''))
+        ORDER BY date_issued DESC
+      ))[1] AS case_source_url
+    FROM public.all_regulatory_fines_trusted
+    WHERE ${FCA_TRUSTED_FINE_FILTER}
     GROUP BY firm_individual
     ORDER BY total_amount DESC, fine_count DESC, firm_individual ASC
-    LIMIT ${clamped}
-  `) as any[];
+    LIMIT $1
+  `, [clamped])) as any[];
 
-  return rows.map((row: any) => ({
-    name: String(row.firm_individual),
-    slug: firmSlug(String(row.firm_individual)),
-    fineCount: Number(row.fine_count) || 0,
-    totalAmount: Number(row.total_amount) || 0,
-    latestDate: row.latest_date ? String(row.latest_date) : null,
-  }));
+  return rows.map((row: any) => {
+    const name = normaliseFcaFineEntityName(
+      row.firm_individual,
+      row.case_source_url ? String(row.case_source_url) : null,
+    );
+    return {
+      name,
+      slug: firmSlug(name),
+      fineCount: Number(row.fine_count) || 0,
+      totalAmount: Number(row.total_amount) || 0,
+      latestDate: row.latest_date ? String(row.latest_date) : null,
+    };
+  });
 }
 
 export interface RegulatorTopFine {
@@ -562,39 +634,60 @@ export async function getFirmDetailsBySlug(
   const summaryRows = (await sql`
     SELECT
       COUNT(*)::int AS fine_count,
-      COALESCE(SUM(amount), 0)::float8 AS total_amount,
-      COALESCE(MAX(amount), 0)::float8 AS max_fine,
+      COALESCE(SUM(trusted_amount_gbp), 0)::float8 AS total_amount,
+      COALESCE(MAX(trusted_amount_gbp), 0)::float8 AS max_fine,
       MIN(date_issued)::text AS earliest_date,
-      MAX(date_issued)::text AS latest_date
-    FROM fca_fines
-    WHERE firm_individual = ${firmName}
+      MAX(date_issued)::text AS latest_date,
+      (ARRAY_AGG(
+        COALESCE(NULLIF(notice_url, ''), NULLIF(source_resolved_url, ''))
+        ORDER BY date_issued DESC
+      ))[1] AS case_source_url
+    FROM public.all_regulatory_fines_trusted
+    WHERE upper(regulator) = 'FCA'
+      AND trusted_amount_gbp > 0
+      AND firm_individual = ${firmName}
   `) as any[];
   const summary = summaryRows[0];
+  const displayName = normaliseFcaFineEntityName(
+    firmName,
+    summary?.case_source_url ? String(summary.case_source_url) : null,
+  );
 
   const clamped = Math.max(1, Math.min(limit, 5000));
   const records = (await sql(
     `
       SELECT public_case_id AS canonical_case_id,
-             fine_reference, firm_individual, firm_category, regulator,
-             final_notice_url, summary, breach_type, breach_categories,
-             amount, date_issued::text AS date_issued, year_issued, month_issued
-      FROM fca_fines
-      WHERE firm_individual = $1
-      ORDER BY date_issued DESC, amount DESC
+             public_case_id AS fine_reference,
+             firm_individual, firm_category, regulator,
+             notice_url AS final_notice_url,
+             source_url, summary, breach_type, breach_categories,
+             trusted_amount_gbp AS amount,
+             date_issued::text AS date_issued, year_issued, month_issued,
+             amount_quality, requires_amount_review,
+             amount_verification_url, amount_override_reason,
+             source_link_status, source_checked_at, source_http_status,
+             source_official_domain_match, source_content_hash,
+             duplicate_count, created_at,
+             COALESCE(NULLIF(notice_url, ''), NULLIF(source_resolved_url, '')) AS case_source_url
+      FROM public.all_regulatory_fines_trusted
+      WHERE upper(regulator) = 'FCA'
+        AND trusted_amount_gbp > 0
+        AND firm_individual = $1
+      ORDER BY date_issued DESC, trusted_amount_gbp DESC
       LIMIT $2
     `,
     [firmName, clamped],
-  )) as unknown as FineRecord[];
+  )) as unknown as Array<Record<string, unknown>>;
 
   return {
-    name: firmName,
-    slug,
+    name: displayName,
+    slug: firmSlug(displayName),
     fineCount: Number(summary?.fine_count) || 0,
     totalAmount: Number(summary?.total_amount) || 0,
     maxFine: Number(summary?.max_fine) || 0,
     earliestDate: summary?.earliest_date ? String(summary.earliest_date) : null,
     latestDate: summary?.latest_date ? String(summary.latest_date) : null,
-    records,
+    records: records.map(mapTrustedFineRecord),
   };
 }
 
@@ -610,18 +703,22 @@ export async function getBreachDetailsBySlug(
 
   // Handle double-encoded breach_categories: 312/316 rows store a JSON string
   // instead of a native array, so the ? operator won't match them directly.
-  const catFilter = `(CASE WHEN jsonb_typeof(breach_categories) = 'string'
-    THEN (breach_categories #>> '{}')::jsonb ELSE breach_categories END)`;
+  const catFilter = FCA_CATEGORY_EXPRESSION;
 
   const summaryRows = (await sql(
     `SELECT
       COUNT(*)::int AS fine_count,
-      COALESCE(SUM(amount), 0)::float8 AS total_amount,
-      COALESCE(MAX(amount), 0)::float8 AS max_fine,
+      COALESCE(SUM(trusted_amount_gbp), 0)::float8 AS total_amount,
+      COALESCE(MAX(trusted_amount_gbp), 0)::float8 AS max_fine,
       MIN(date_issued)::text AS earliest_date,
       MAX(date_issued)::text AS latest_date
-    FROM fca_fines
-    WHERE breach_categories IS NOT NULL AND ${catFilter} ? $1`,
+    FROM public.all_regulatory_fines_trusted
+    WHERE upper(regulator) = 'FCA'
+      AND trusted_amount_gbp > 0
+      AND (
+        ${catFilter} @> jsonb_build_array($1::text)
+        OR lower(trim(breach_type)) = lower(trim($1))
+      )`,
     [categoryName],
   )) as any[];
   const summary = summaryRows[0];
@@ -631,10 +728,19 @@ export async function getBreachDetailsBySlug(
     `SELECT
       firm_individual,
       COUNT(*)::int AS fine_count,
-      COALESCE(SUM(amount), 0)::float8 AS total_amount,
-      MAX(date_issued)::text AS latest_date
-    FROM fca_fines
-    WHERE breach_categories IS NOT NULL AND ${catFilter} ? $1
+      COALESCE(SUM(trusted_amount_gbp), 0)::float8 AS total_amount,
+      MAX(date_issued)::text AS latest_date,
+      (ARRAY_AGG(
+        COALESCE(NULLIF(notice_url, ''), NULLIF(source_resolved_url, ''))
+        ORDER BY date_issued DESC
+      ))[1] AS case_source_url
+    FROM public.all_regulatory_fines_trusted
+    WHERE upper(regulator) = 'FCA'
+      AND trusted_amount_gbp > 0
+      AND (
+        ${catFilter} @> jsonb_build_array($1::text)
+        OR lower(trim(breach_type)) = lower(trim($1))
+      )
     GROUP BY firm_individual
     ORDER BY total_amount DESC, fine_count DESC, firm_individual ASC
     LIMIT $2`,
@@ -644,15 +750,29 @@ export async function getBreachDetailsBySlug(
   const penaltiesLimit = Math.max(1, Math.min(limitPenalties, 50));
   const penalties = (await sql(
     `SELECT public_case_id AS canonical_case_id,
-            fine_reference, firm_individual, firm_category, regulator,
-             final_notice_url, summary, breach_type, breach_categories,
-             amount, date_issued::text AS date_issued, year_issued, month_issued
-      FROM fca_fines
-      WHERE breach_categories IS NOT NULL AND ${catFilter} ? $1
-      ORDER BY amount DESC, date_issued DESC
+            public_case_id AS fine_reference,
+            firm_individual, firm_category, regulator,
+            notice_url AS final_notice_url,
+            source_url, summary, breach_type, breach_categories,
+            trusted_amount_gbp AS amount,
+            date_issued::text AS date_issued, year_issued, month_issued,
+            amount_quality, requires_amount_review,
+            amount_verification_url, amount_override_reason,
+            source_link_status, source_checked_at, source_http_status,
+            source_official_domain_match, source_content_hash,
+            duplicate_count, created_at,
+            COALESCE(NULLIF(notice_url, ''), NULLIF(source_resolved_url, '')) AS case_source_url
+      FROM public.all_regulatory_fines_trusted
+      WHERE upper(regulator) = 'FCA'
+        AND trusted_amount_gbp > 0
+        AND (
+          ${catFilter} @> jsonb_build_array($1::text)
+          OR lower(trim(breach_type)) = lower(trim($1))
+        )
+      ORDER BY trusted_amount_gbp DESC, date_issued DESC
       LIMIT $2`,
     [categoryName, penaltiesLimit],
-  )) as unknown as FineRecord[];
+  )) as unknown as Array<Record<string, unknown>>;
 
   const category: CategorySummary = {
     name: categoryName,
@@ -662,8 +782,14 @@ export async function getBreachDetailsBySlug(
   };
 
   const topFirms: FirmSummary[] = topFirmRows.map((row: any) => ({
-    name: String(row.firm_individual),
-    slug: firmSlug(String(row.firm_individual)),
+    name: normaliseFcaFineEntityName(
+      row.firm_individual,
+      row.case_source_url ? String(row.case_source_url) : null,
+    ),
+    slug: firmSlug(normaliseFcaFineEntityName(
+      row.firm_individual,
+      row.case_source_url ? String(row.case_source_url) : null,
+    )),
     fineCount: Number(row.fine_count) || 0,
     totalAmount: Number(row.total_amount) || 0,
     latestDate: row.latest_date ? String(row.latest_date) : null,
@@ -675,7 +801,7 @@ export async function getBreachDetailsBySlug(
     earliestDate: summary?.earliest_date ? String(summary.earliest_date) : null,
     latestDate: summary?.latest_date ? String(summary.latest_date) : null,
     topFirms,
-    topPenalties: penalties,
+    topPenalties: penalties.map(mapTrustedFineRecord),
   };
 }
 
@@ -692,12 +818,14 @@ export async function getSectorDetailsBySlug(
   const summaryRows = (await sql`
     SELECT
       COUNT(*)::int AS fine_count,
-      COALESCE(SUM(amount), 0)::float8 AS total_amount,
-      COALESCE(MAX(amount), 0)::float8 AS max_fine,
+      COALESCE(SUM(trusted_amount_gbp), 0)::float8 AS total_amount,
+      COALESCE(MAX(trusted_amount_gbp), 0)::float8 AS max_fine,
       MIN(date_issued)::text AS earliest_date,
       MAX(date_issued)::text AS latest_date
-    FROM fca_fines
-    WHERE firm_category = ${sectorName}
+    FROM public.all_regulatory_fines_trusted
+    WHERE upper(regulator) = 'FCA'
+      AND trusted_amount_gbp > 0
+      AND firm_category = ${sectorName}
   `) as any[];
   const summary = summaryRows[0];
 
@@ -706,8 +834,8 @@ export async function getSectorDetailsBySlug(
     SELECT
       COALESCE(cat.category, 'Unclassified') AS category,
       COUNT(*)::int AS fine_count,
-      COALESCE(SUM(f.amount), 0)::float8 AS total_amount
-    FROM fca_fines f
+      COALESCE(SUM(f.trusted_amount_gbp), 0)::float8 AS total_amount
+    FROM public.all_regulatory_fines_trusted f
     LEFT JOIN LATERAL (
       SELECT jsonb_array_elements_text(
         CASE WHEN jsonb_typeof(f.breach_categories) = 'string'
@@ -715,7 +843,9 @@ export async function getSectorDetailsBySlug(
              ELSE f.breach_categories END
       ) AS category
     ) AS cat ON TRUE
-    WHERE f.firm_category = ${sectorName}
+    WHERE upper(f.regulator) = 'FCA'
+      AND f.trusted_amount_gbp > 0
+      AND f.firm_category = ${sectorName}
     GROUP BY category
     ORDER BY total_amount DESC, fine_count DESC, category ASC
     LIMIT ${clampedBreaches}
@@ -725,16 +855,27 @@ export async function getSectorDetailsBySlug(
   const penalties = (await sql(
     `
       SELECT public_case_id AS canonical_case_id,
-             fine_reference, firm_individual, firm_category, regulator,
-             final_notice_url, summary, breach_type, breach_categories,
-             amount, date_issued::text AS date_issued, year_issued, month_issued
-      FROM fca_fines
-      WHERE firm_category = $1
-      ORDER BY amount DESC, date_issued DESC
+             public_case_id AS fine_reference,
+             firm_individual, firm_category, regulator,
+             notice_url AS final_notice_url,
+             source_url, summary, breach_type, breach_categories,
+             trusted_amount_gbp AS amount,
+             date_issued::text AS date_issued, year_issued, month_issued,
+             amount_quality, requires_amount_review,
+             amount_verification_url, amount_override_reason,
+             source_link_status, source_checked_at, source_http_status,
+             source_official_domain_match, source_content_hash,
+             duplicate_count, created_at,
+             COALESCE(NULLIF(notice_url, ''), NULLIF(source_resolved_url, '')) AS case_source_url
+      FROM public.all_regulatory_fines_trusted
+      WHERE upper(regulator) = 'FCA'
+        AND trusted_amount_gbp > 0
+        AND firm_category = $1
+      ORDER BY trusted_amount_gbp DESC, date_issued DESC
       LIMIT $2
     `,
     [sectorName, penaltiesLimit],
-  )) as unknown as FineRecord[];
+  )) as unknown as Array<Record<string, unknown>>;
 
   const sector: SectorSummary = {
     name: sectorName,
@@ -756,6 +897,6 @@ export async function getSectorDetailsBySlug(
     earliestDate: summary?.earliest_date ? String(summary.earliest_date) : null,
     latestDate: summary?.latest_date ? String(summary.latest_date) : null,
     topBreaches,
-    topPenalties: penalties,
+    topPenalties: penalties.map(mapTrustedFineRecord),
   };
 }

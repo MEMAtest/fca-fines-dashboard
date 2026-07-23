@@ -1,16 +1,22 @@
 import type { NotificationItem } from '../../src/types.js';
 import { getSqlClient } from '../db.js';
+import {
+  normaliseFcaFineEntityName,
+  parseFcaFineCategories,
+} from './fcaFineCases.js';
 
 const sql = getSqlClient();
 
 function buildWhereClause(year: number) {
+  const base =
+    "WHERE upper(regulator) = 'FCA' AND trusted_amount_gbp > 0";
   if (year > 0) {
     return {
-      text: 'WHERE year_issued = $1',
+      text: `${base} AND year_issued = $1`,
       params: [year],
     };
   }
-  return { text: '', params: [] as Array<number> };
+  return { text: base, params: [] as Array<number> };
 }
 
 export async function listFines(year: number, limit: number) {
@@ -18,15 +24,36 @@ export async function listFines(year: number, limit: number) {
   const { text: where, params } = buildWhereClause(year);
   const query = `
     SELECT public_case_id AS canonical_case_id,
-           fine_reference, firm_individual, firm_category, regulator,
-           final_notice_url, summary, breach_type, breach_categories,
-           amount, date_issued, year_issued, month_issued
-    FROM fca_fines
+           public_case_id AS fine_reference,
+           firm_individual, firm_category, regulator,
+           notice_url AS final_notice_url,
+           source_url,
+           summary, breach_type, breach_categories,
+           trusted_amount_gbp AS amount,
+           date_issued, year_issued, month_issued,
+           amount_quality, requires_amount_review,
+           amount_verification_url, amount_override_reason,
+           source_link_status, source_checked_at, source_http_status,
+           source_official_domain_match, source_content_hash,
+           duplicate_count, created_at
+           ,COALESCE(NULLIF(notice_url, ''), NULLIF(source_resolved_url, '')) AS case_source_url
+    FROM public.all_regulatory_fines_trusted
     ${where}
     ORDER BY date_issued DESC
     LIMIT $${params.length + 1}
   `;
-  return instance(query, [...params, limit]);
+  const rows = await instance(query, [...params, limit]);
+  return rows.map((row: any) => ({
+    ...row,
+    firm_individual: normaliseFcaFineEntityName(
+      row.firm_individual,
+      row.case_source_url ? String(row.case_source_url) : null,
+    ),
+    breach_categories: parseFcaFineCategories(row.breach_categories),
+    amount: Number(row.amount) || 0,
+    year_issued: Number(row.year_issued) || 0,
+    month_issued: Number(row.month_issued) || 0,
+  }));
 }
 
 export async function getStats(year: number) {
@@ -36,10 +63,10 @@ export async function getStats(year: number) {
   const statsQuery = `
     SELECT
       COUNT(*)::int AS total_fines,
-      COALESCE(SUM(amount), 0)::float8 AS total_amount,
-      COALESCE(AVG(amount), 0)::float8 AS avg_amount,
-      COALESCE(MAX(amount), 0)::float8 AS max_fine
-    FROM fca_fines
+      COALESCE(SUM(trusted_amount_gbp), 0)::float8 AS total_amount,
+      COALESCE(AVG(trusted_amount_gbp), 0)::float8 AS avg_amount,
+      COALESCE(MAX(trusted_amount_gbp), 0)::float8 AS max_fine
+    FROM public.all_regulatory_fines_trusted
     ${where}
   `;
   const statsRows = (await instance(statsQuery, params)) as any[];
@@ -47,23 +74,24 @@ export async function getStats(year: number) {
 
   const maxQuery = `
     SELECT firm_individual
-    FROM fca_fines
+    FROM public.all_regulatory_fines_trusted
     ${where}
-    ORDER BY amount DESC
+    ORDER BY trusted_amount_gbp DESC
     LIMIT 1
   `;
   const maxRows = (await instance(maxQuery, params)) as any[];
   const maxRow = maxRows[0];
 
   const breachWhere = where
-    ? where.replace('date_issued', 'f.date_issued') + ' AND'
-    : 'WHERE';
+    .replaceAll('regulator', 'f.regulator')
+    .replaceAll('trusted_amount_gbp', 'f.trusted_amount_gbp')
+    .replaceAll('year_issued', 'f.year_issued') + ' AND';
 
   const breachQuery = `
     SELECT
       cat.category,
       COUNT(*) AS category_count
-    FROM fca_fines f
+    FROM public.all_regulatory_fines_trusted f
     CROSS JOIN LATERAL jsonb_array_elements_text(
       CASE WHEN jsonb_typeof(f.breach_categories) = 'string'
            THEN (f.breach_categories #>> '{}')::jsonb
@@ -134,7 +162,12 @@ export async function getNotifications(limit = 5): Promise<NotificationItem[]> {
   const rows = (await instance(
     `
       SELECT id, firm_individual, breach_type, amount, date_issued
-      FROM fca_fines
+      FROM (
+        SELECT public_case_id AS id, firm_individual, breach_type,
+               trusted_amount_gbp AS amount, date_issued
+        FROM public.all_regulatory_fines_trusted
+        WHERE upper(regulator) = 'FCA' AND trusted_amount_gbp > 0
+      ) fines
       ORDER BY date_issued DESC, amount DESC
       LIMIT $1
     `,

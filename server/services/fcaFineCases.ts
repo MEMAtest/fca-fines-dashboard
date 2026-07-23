@@ -31,6 +31,7 @@ export type FcaFineCaseIndexabilityReason =
   | "thin_summary"
   | "missing_breach_context"
   | "missing_official_source"
+  | "case_source_not_specific"
   | "unverified_source"
   | "source_check_missing"
   | "source_check_failed"
@@ -280,6 +281,17 @@ function summaryWordCount(summary: string): number {
   return summary.trim().split(/\s+/).filter(Boolean).length;
 }
 
+function isAnnualFcaListingUrl(value: string | null): boolean {
+  if (!value) return false;
+  try {
+    return /^\/news\/news-stories\/\d{4}-fines\/?$/i.test(
+      new URL(value).pathname,
+    );
+  } catch {
+    return false;
+  }
+}
+
 /**
  * Fail closed for facts that make a public case page unsafe or materially
  * incomplete. A valid official FCA URL is sufficient evidence provenance for
@@ -315,6 +327,13 @@ export function assessFcaFineCaseIndexability(
   if (!record.breach && record.categories.length === 0) reasons.push("missing_breach_context");
 
   if (!isOfficialFcaUrl(record.sourceUrl)) reasons.push("missing_official_source");
+  if (
+    record.sourceStatus === "missing" ||
+    record.sourceStatus === "listing_only" ||
+    isAnnualFcaListingUrl(record.sourceUrl)
+  ) {
+    reasons.push("case_source_not_specific");
+  }
   if (record.sourceStatus !== "verified_detail" && record.sourceStatus !== "verified_publication") {
     warnings.push("unverified_source");
   }

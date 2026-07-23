@@ -148,6 +148,31 @@ describe("FCA fine case service", () => {
     ]));
   });
 
+  it("keeps annual listing-only records out of the case sitemap and API index flag", () => {
+    const result = assessFcaFineCaseIndexability({
+      caseId,
+      firm: "Example Bank plc",
+      amount: 1_000_000,
+      dateIssued: "2026-06-12",
+      year: 2026,
+      month: 6,
+      summary:
+        "The annual listing records the disclosed monetary penalty and the classified breach context for this enforcement action.",
+      breach: "AML",
+      categories: ["AML"],
+      sourceUrl: "https://www.fca.org.uk/news/news-stories/2026-fines",
+      sourceStatus: "listing_only",
+      sourceCheckedAt: "2026-07-22T10:30:00Z",
+      sourceHttpStatus: 200,
+      sourceOfficialDomainMatch: true,
+      sourceReviewStatus: "clear",
+      requiresAmountReview: false,
+    });
+
+    expect(result.indexable).toBe(false);
+    expect(result.reasons).toContain("case_source_not_specific");
+  });
+
   it("returns SEO rows from the trusted FCA monetary query", async () => {
     const sql = fakeSql([trustedRow()]);
     const rows = await listFcaMonetaryCasesForSeo(sql);

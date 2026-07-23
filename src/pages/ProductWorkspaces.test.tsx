@@ -13,6 +13,56 @@ vi.mock("../hooks/useWorkspaceOverview.js", () => ({
 vi.mock("../utils/fetchWorkspaceRecords.js", () => ({
   fetchWorkspaceRecords: vi.fn(async () => ({ records, total: records.length, truncated: false })),
 }));
+vi.mock("../api.js", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("../api.js")>();
+  return {
+    ...actual,
+    fetchUnifiedOverview: vi.fn(async (params: {
+      year?: number | number[];
+      regulator?: string | string[];
+      breachCategory?: string | string[];
+    }) => {
+      const years = params.year == null
+        ? []
+        : Array.isArray(params.year)
+          ? params.year
+          : [params.year];
+      const regulators = params.regulator == null
+        ? []
+        : Array.isArray(params.regulator)
+          ? params.regulator
+          : [params.regulator];
+      const themes = params.breachCategory == null
+        ? []
+        : Array.isArray(params.breachCategory)
+          ? params.breachCategory
+          : [params.breachCategory];
+      const matching = records.filter((record) =>
+        (!years.length || years.includes(record.year_issued)) &&
+        (!regulators.length || regulators.includes(record.regulator)) &&
+        (!themes.length || record.breach_categories.some((item) => themes.includes(item))),
+      );
+      return {
+        metrics: {
+          count: matching.length,
+          total: matching.reduce((sum, record) => sum + record.amount, 0),
+          average: 0,
+          median: 0,
+          largest: 0,
+          largestFirm: "",
+          affectedFirms: 0,
+          latestDate: null,
+        },
+        yearly: [],
+        monthly: [],
+        themes: [],
+        regulators: [],
+        sectors: [],
+        firms: [],
+      };
+    }),
+  };
+});
 
 const records = [
   {
@@ -59,7 +109,7 @@ describe("product workspaces", () => {
     expect(drawer).toBeInTheDocument();
   });
 
-  it("supports guided multi-selection with a three-year limit", () => {
+  it("supports guided multi-selection with exact server-side summaries", async () => {
     render(<MemoryRouter initialEntries={["/fines/compare"]}><EvidenceModalProvider><FinesWorkspace view="compare" /></EvidenceModalProvider></MemoryRouter>);
     expect(screen.getByRole("heading", { name: /Guided comparison/i })).toBeInTheDocument();
     fireEvent.click(screen.getByRole("button", { name: /2025/i }));
@@ -67,7 +117,7 @@ describe("product workspaces", () => {
     expect(screen.getByRole("button", { name: "Remove year 2025" })).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Remove year 2024" })).toBeInTheDocument();
     expect(screen.getByRole("heading", { name: "Comparison summary" })).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: /Year 2025.*£14\.5m.*2 actions/i })).toBeInTheDocument();
+    expect(await screen.findByRole("button", { name: /Year 2025.*£14\.5m.*2 actions/i })).toBeInTheDocument();
     expect(screen.getByRole("button", { name: /Year 2024.*£4m.*1 action/i })).toBeInTheDocument();
   });
 

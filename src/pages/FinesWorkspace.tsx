@@ -42,6 +42,10 @@ import {
 import { fetchWorkspaceRecords } from "../utils/fetchWorkspaceRecords.js";
 import { exportData } from "../utils/export.js";
 import { getFcaFineCasePath } from "../utils/fcaFineCasePath.js";
+import {
+  fetchUnifiedOverview,
+  type UnifiedOverviewParams,
+} from "../api.js";
 
 export type FinesWorkspaceView = "overview" | "actions" | "analytics" | "compare";
 
@@ -54,6 +58,22 @@ interface DrawerState {
   description?: string;
   records: FineRecord[];
   apply?: () => void;
+}
+
+interface ComparisonSummary {
+  key: string;
+  dimension: string;
+  label: string;
+  selection: {
+    year?: number;
+    regulator?: string;
+    theme?: string;
+  };
+  records: FineRecord[];
+  metrics: {
+    count: number;
+    total: number;
+  };
 }
 
 const CURRENT_YEAR = new Date().getFullYear();
@@ -105,6 +125,11 @@ export function FinesWorkspace({ view }: FinesWorkspaceProps) {
   const [theme, setTheme] = useState(searchParams.get("theme") ?? "All");
   const [sector, setSector] = useState(searchParams.get("sector") ?? "All");
   const [query, setQuery] = useState(searchParams.get("q") ?? "");
+  const [comparisonRecords, setComparisonRecords] = useState<FineRecord[]>([]);
+  const [comparisonTotal, setComparisonTotal] = useState(0);
+  const [comparisonTruncated, setComparisonTruncated] = useState(false);
+  const [comparisonLoading, setComparisonLoading] = useState(false);
+  const [comparisonSummaries, setComparisonSummaries] = useState<ComparisonSummary[]>([]);
 
   useSEO({
     title: `${view === "overview" ? "Fines Command Centre" : view[0].toUpperCase() + view.slice(1)} | RegActions`,
@@ -220,7 +245,7 @@ export function FinesWorkspace({ view }: FinesWorkspaceProps) {
     else openSelection({ year: value }, `${value} enforcement actions`);
   };
 
-  const compareRecords = useMemo(() => filtered.filter((record) => {
+  const loadedComparisonFallback = useMemo(() => filtered.filter((record) => {
     if (selectedYears.length && !selectedYears.includes(record.year_issued)) return false;
     if (selectedRegulators.length && !selectedRegulators.includes(record.regulator)) return false;
     if (selectedThemes.length && !getRecordThemes(record).some((item) => selectedThemes.includes(item))) return false;
@@ -237,40 +262,149 @@ export function FinesWorkspace({ view }: FinesWorkspaceProps) {
       : null;
     return { latest, previous, change };
   }, [yearly]);
-  const comparisonSummaries = useMemo(() => {
-    const summaries: Array<{ key: string; dimension: string; label: string; records: FineRecord[] }> = [];
-    selectedYears.forEach((selectedYear) => summaries.push({
-      key: `year-${selectedYear}`,
-      dimension: "Year",
-      label: String(selectedYear),
-      records: filtered.filter((record) =>
-        record.year_issued === selectedYear
-        && (!selectedRegulators.length || selectedRegulators.includes(record.regulator))
-        && (!selectedThemes.length || getRecordThemes(record).some((item) => selectedThemes.includes(item))),
+  useEffect(() => {
+    let active = true;
+    const hasSelection =
+      selectedYears.length > 0 ||
+      selectedRegulators.length > 0 ||
+      selectedThemes.length > 0;
+
+    if (!hasSelection) {
+      setComparisonRecords([]);
+      setComparisonTotal(0);
+      setComparisonTruncated(false);
+      setComparisonSummaries([]);
+      setComparisonLoading(false);
+      return () => {
+        active = false;
+      };
+    }
+
+    const years = selectedYears.length
+      ? selectedYears
+      : year
+        ? [year]
+        : undefined;
+    const regulatorsForComparison = selectedRegulators.length
+      ? selectedRegulators
+      : regulator !== "All"
+        ? [regulator]
+        : undefined;
+    const themesForComparison = selectedThemes.length
+      ? selectedThemes
+      : theme !== "All"
+        ? [theme]
+        : undefined;
+    const shared: Omit<UnifiedOverviewParams, "year" | "regulator" | "breachCategory"> = {
+      country: country !== "All" ? country : undefined,
+      sector: sector !== "All" ? sector : undefined,
+      q: query || undefined,
+      currency: "GBP",
+    };
+    const descriptors: Array<Omit<ComparisonSummary, "metrics" | "records">> = [
+      ...selectedYears.map((selectedYear) => ({
+        key: `year-${selectedYear}`,
+        dimension: "Year",
+        label: String(selectedYear),
+        selection: { year: selectedYear },
+      })),
+      ...selectedRegulators.map((selectedRegulator) => ({
+        key: `regulator-${selectedRegulator}`,
+        dimension: "Regulator",
+        label: selectedRegulator,
+        selection: { regulator: selectedRegulator },
+      })),
+      ...selectedThemes.map((selectedTheme) => ({
+        key: `theme-${selectedTheme}`,
+        dimension: "Theme",
+        label: selectedTheme,
+        selection: { theme: selectedTheme },
+      })),
+    ];
+
+    setComparisonLoading(true);
+    Promise.all([
+      fetchWorkspaceRecords({
+        regulator: regulatorsForComparison,
+        country: shared.country,
+        year: years,
+        breachCategory: themesForComparison,
+        sector: shared.sector,
+        q: shared.q,
+        sortBy: "date_issued",
+        order: "desc",
+      }),
+      Promise.all(
+        descriptors.map((descriptor) =>
+          fetchUnifiedOverview({
+            ...shared,
+            year: descriptor.selection.year ?? years,
+            regulator: descriptor.selection.regulator
+              ? [descriptor.selection.regulator]
+              : regulatorsForComparison,
+            breachCategory: descriptor.selection.theme
+              ? [descriptor.selection.theme]
+              : themesForComparison,
+          }),
+        ),
       ),
-    }));
-    selectedRegulators.forEach((selectedRegulator) => summaries.push({
-      key: `regulator-${selectedRegulator}`,
-      dimension: "Regulator",
-      label: selectedRegulator,
-      records: filtered.filter((record) =>
-        record.regulator === selectedRegulator
-        && (!selectedYears.length || selectedYears.includes(record.year_issued))
-        && (!selectedThemes.length || getRecordThemes(record).some((item) => selectedThemes.includes(item))),
-      ),
-    }));
-    selectedThemes.forEach((selectedTheme) => summaries.push({
-      key: `theme-${selectedTheme}`,
-      dimension: "Theme",
-      label: selectedTheme,
-      records: filtered.filter((record) =>
-        getRecordThemes(record).includes(selectedTheme)
-        && (!selectedYears.length || selectedYears.includes(record.year_issued))
-        && (!selectedRegulators.length || selectedRegulators.includes(record.regulator)),
-      ),
-    }));
-    return summaries.map((summary) => ({ ...summary, metrics: getWorkspaceMetrics(summary.records) }));
-  }, [filtered, selectedRegulators, selectedThemes, selectedYears]);
+    ])
+      .then(([recordResult, summaryResults]) => {
+        if (!active) return;
+        setComparisonRecords(recordResult.records);
+        setComparisonTotal(recordResult.total);
+        setComparisonTruncated(recordResult.truncated);
+        setComparisonSummaries(
+          descriptors.map((descriptor, index) => ({
+            ...descriptor,
+            metrics: {
+              count: summaryResults[index]?.metrics.count ?? 0,
+              total: summaryResults[index]?.metrics.total ?? 0,
+            },
+            records: recordResult.records.filter((record) => {
+              if (
+                descriptor.selection.year &&
+                record.year_issued !== descriptor.selection.year
+              ) return false;
+              if (
+                descriptor.selection.regulator &&
+                record.regulator !== descriptor.selection.regulator
+              ) return false;
+              if (
+                descriptor.selection.theme &&
+                !getRecordThemes(record).includes(descriptor.selection.theme)
+              ) return false;
+              return true;
+            }),
+          })),
+        );
+      })
+      .catch(() => {
+        if (!active) return;
+        setComparisonRecords(loadedComparisonFallback);
+        setComparisonTotal(loadedComparisonFallback.length);
+        setComparisonTruncated(false);
+        setComparisonSummaries([]);
+      })
+      .finally(() => {
+        if (active) setComparisonLoading(false);
+      });
+
+    return () => {
+      active = false;
+    };
+  }, [
+    country,
+    loadedComparisonFallback,
+    query,
+    regulator,
+    sector,
+    selectedRegulators,
+    selectedThemes,
+    selectedYears,
+    theme,
+    year,
+  ]);
   const decisionAnalytics = useMemo(() => {
     const monetary = filtered.filter((record) => !record.requires_amount_review && record.amount > 0).slice().sort((left, right) => left.amount - right.amount);
     const monetaryTotal = monetary.reduce((sum, record) => sum + record.amount, 0);
@@ -356,7 +490,7 @@ export function FinesWorkspace({ view }: FinesWorkspaceProps) {
             </div>
             <div className="workspace-selection-tray__actions">
               {(selectedYears.length > 0 || selectedRegulators.length > 0 || selectedThemes.length > 0) && <button type="button" className="workspace-button" onClick={() => { setSelectedYears([]); setSelectedRegulators([]); setSelectedThemes([]); }}>Clear</button>}
-              <button type="button" className="workspace-button" disabled={!compareRecords.length} onClick={() => setDrawer({ title: "Selected comparison data", records: compareRecords, description: `${formatWorkspaceActionCount(compareRecords.length)} in the selected comparison, with source evidence where available.` })}>Open selected data</button>
+              <button type="button" className="workspace-button" disabled={comparisonLoading || !comparisonTotal} onClick={() => setDrawer({ title: "Selected comparison data", records: comparisonRecords, description: comparisonTruncated ? `Showing the first ${comparisonRecords.length.toLocaleString("en-GB")} of ${comparisonTotal.toLocaleString("en-GB")} selected actions.` : `${formatWorkspaceActionCount(comparisonTotal)} in the selected comparison, with source evidence where available.` })}>{comparisonLoading ? "Loading comparison..." : "Open selected data"}</button>
               <button type="button" className="workspace-button workspace-button--primary" onClick={() => navigator.clipboard.writeText(window.location.href)}><Clipboard size={14} /> Copy comparison link</button>
             </div>
           </div>
@@ -392,8 +526,8 @@ export function FinesWorkspace({ view }: FinesWorkspaceProps) {
             <section className="workspace-card workspace-card--half"><div className="workspace-card__heading"><h2>Select years</h2><span>Maximum 3</span></div><div className="workspace-treemap">{yearly.slice(-12).map((point) => <button type="button" aria-pressed={selectedYears.includes(point.year)} className={`workspace-tile${selectedYears.includes(point.year) ? " workspace-tile--selected" : ""}`} key={point.year} onClick={() => handleYearClick(point.year)}><span>{point.year}</span><strong>{formatWorkspaceAmount(point.amount)}</strong><small>{formatWorkspaceActionCount(point.count)}</small></button>)}</div></section>
             <section className="workspace-card workspace-card--half"><div className="workspace-card__heading"><h2>Select regulators</h2><span>Maximum 5</span></div><div className="workspace-treemap">{regulators.map((item) => <button type="button" aria-pressed={selectedRegulators.includes(item.label)} className={`workspace-tile${selectedRegulators.includes(item.label) ? " workspace-tile--selected" : ""}`} key={item.label} onClick={() => handleRegulatorClick(item.label)}><span>{item.label}</span><strong>{formatWorkspaceAmount(item.amount)}</strong><small>{formatWorkspaceActionCount(item.count)}</small></button>)}</div></section>
             <section className="workspace-card workspace-card--half"><div className="workspace-card__heading"><h2>Select themes</h2><span>Maximum 5</span></div><div className="workspace-treemap">{themes.map((item) => <button type="button" aria-pressed={selectedThemes.includes(item.label)} className={`workspace-tile${selectedThemes.includes(item.label) ? " workspace-tile--selected" : ""}`} key={item.label} onClick={() => handleThemeClick(item.label)}><span>{item.label}</span><strong>{formatWorkspaceAmount(item.amount)}</strong><small>{formatWorkspaceActionCount(item.count)}</small></button>)}</div></section>
-            <section className="workspace-card workspace-card--half"><div className="workspace-card__heading"><h2>Comparison summary</h2><span>{comparisonSummaries.length ? `${comparisonSummaries.length} selected views` : "Choose at least one view"}</span></div>{comparisonSummaries.length ? <div className="workspace-comparison-cards">{comparisonSummaries.map((item) => <button type="button" aria-label={`${item.dimension} ${item.label}: ${formatWorkspaceAmount(item.metrics.total)}, ${formatWorkspaceActionCount(item.metrics.count)}`} key={item.key} onClick={() => setDrawer({ title: `${item.dimension}: ${item.label}`, records: item.records, description: `${formatWorkspaceActionCount(item.records.length)} in this comparison view.` })}><small>{item.dimension}</small><strong>{item.label}</strong><span>{formatWorkspaceAmount(item.metrics.total)}</span><em>{formatWorkspaceActionCount(item.metrics.count)}</em></button>)}</div> : <p className="workspace-empty-guidance">Select two or more years to compare annual fine value, or combine years with regulators and themes.</p>}</section>
-            <section className="workspace-card workspace-card--full"><div className="workspace-card__heading"><h2>Comparison result</h2><button type="button" className="workspace-card__action" disabled={!compareRecords.length} onClick={() => setDrawer({ title: "Selected comparison data", records: compareRecords, description: `${formatWorkspaceActionCount(compareRecords.length)} in the selected comparison.` })}>Open all selected data <ArrowRight size={11}/></button></div><RecordTable records={compareRecords.slice().sort((a,b) => b.amount-a.amount)} limit={12} onOpen={(record) => setDrawer({ title: record.firm_individual, records: [record], description: record.summary })} /></section>
+            <section className="workspace-card workspace-card--half"><div className="workspace-card__heading"><h2>Comparison summary</h2><span>{comparisonLoading ? "Calculating exact totals..." : comparisonSummaries.length ? `${comparisonSummaries.length} selected views` : "Choose at least one view"}</span></div>{comparisonSummaries.length ? <div className="workspace-comparison-cards">{comparisonSummaries.map((item) => <button type="button" aria-label={`${item.dimension} ${item.label}: ${formatWorkspaceAmount(item.metrics.total)}, ${formatWorkspaceActionCount(item.metrics.count)}`} key={item.key} onClick={() => setDrawer({ title: `${item.dimension}: ${item.label}`, records: item.records, description: item.records.length < item.metrics.count ? `Showing ${item.records.length.toLocaleString("en-GB")} loaded records from ${formatWorkspaceActionCount(item.metrics.count)} in this comparison view.` : `${formatWorkspaceActionCount(item.metrics.count)} in this comparison view.` })}><small>{item.dimension}</small><strong>{item.label}</strong><span>{formatWorkspaceAmount(item.metrics.total)}</span><em>{formatWorkspaceActionCount(item.metrics.count)}</em></button>)}</div> : <p className="workspace-empty-guidance">Select two or more years to compare annual fine value, or combine years with regulators and themes.</p>}</section>
+            <section className="workspace-card workspace-card--full"><div className="workspace-card__heading"><h2>Comparison result</h2><button type="button" className="workspace-card__action" disabled={comparisonLoading || !comparisonTotal} onClick={() => setDrawer({ title: "Selected comparison data", records: comparisonRecords, description: comparisonTruncated ? `Showing the first ${comparisonRecords.length.toLocaleString("en-GB")} of ${comparisonTotal.toLocaleString("en-GB")} selected actions.` : `${formatWorkspaceActionCount(comparisonTotal)} in the selected comparison.` })}>Open all selected data <ArrowRight size={11}/></button></div><RecordTable records={comparisonRecords.slice().sort((a,b) => b.amount-a.amount)} limit={12} onOpen={(record) => setDrawer({ title: record.firm_individual, records: [record], description: record.summary })} /></section>
           </div>
         ) : (
           <div className="workspace-grid">

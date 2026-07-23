@@ -45,7 +45,11 @@ export function FirmPage() {
     keywords: firm
       ? `${firm.name} regulatory fines, enforcement actions ${firm.name}, penalties ${firm.name}, regulatory enforcement ${firm.name}`
       : "regulatory fines by firm, regulatory fines by individual",
-    canonicalPath: slug ? `/firms/${slug}` : "/firms",
+    canonicalPath: firm?.slug
+      ? `/firms/${firm.slug}`
+      : slug
+        ? `/firms/${slug}`
+        : "/firms",
     ogType: "website",
   });
 

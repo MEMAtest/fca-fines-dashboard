@@ -111,6 +111,58 @@ function getRegulator(route: Route) {
   return new URL(route.request().url()).searchParams.get("regulator") ?? "All";
 }
 
+function resultsForRequest(route: Route) {
+  const url = new URL(route.request().url());
+  const regulator = getRegulator(route);
+  const years = url.searchParams.get("year")?.split(",").map(Number).filter(Boolean) ?? [];
+  const breachCategories = url.searchParams.get("breachCategory")?.split(",").filter(Boolean) ?? [];
+  const baseResults = regulator === "SEC"
+    ? SEC_RESULTS
+    : regulator === "FCA"
+      ? FCA_RESULTS
+      : regulator === "JFSC"
+        ? JFSC_RESULTS
+        : [...FCA_RESULTS, ...SEC_RESULTS];
+  return baseResults.filter((record) => {
+    if (years.length && !years.includes(record.year_issued)) return false;
+    if (breachCategories.length && !breachCategories.some((category) => record.breach_categories.includes(category))) {
+      return false;
+    }
+    return true;
+  });
+}
+
+function filteredOverviewFor(route: Route) {
+  const url = new URL(route.request().url());
+  const regulator = getRegulator(route);
+  const hasFilters = Boolean(url.searchParams.get("year") || url.searchParams.get("breachCategory"));
+  const overview = overviewFor(regulator);
+  if (!hasFilters) return overview;
+
+  const records = resultsForRequest(route);
+  const amounts = records.map((record) => record.amount_gbp).sort((a, b) => a - b);
+  const total = amounts.reduce((sum, amount) => sum + amount, 0);
+  const median = amounts.length
+    ? amounts.length % 2
+      ? amounts[Math.floor(amounts.length / 2)]
+      : (amounts[amounts.length / 2 - 1] + amounts[amounts.length / 2]) / 2
+    : 0;
+  const largestRecord = [...records].sort((a, b) => b.amount_gbp - a.amount_gbp)[0];
+  return {
+    ...overview,
+    metrics: {
+      count: records.length,
+      total,
+      average: records.length ? total / records.length : 0,
+      median,
+      largest: largestRecord?.amount_gbp ?? 0,
+      largestFirm: largestRecord?.firm_individual ?? "",
+      affectedFirms: new Set(records.map((record) => record.firm_individual)).size,
+      latestDate: [...records].sort((a, b) => b.date_issued.localeCompare(a.date_issued))[0]?.date_issued ?? null,
+    },
+  };
+}
+
 function overviewFor(regulator: string) {
   if (regulator === "All") {
     return {
@@ -211,23 +263,8 @@ function overviewFor(regulator: string) {
 
 async function installWorkspaceApi(page: Page) {
   await page.route("**/api/unified/search**", async (route) => {
-    const url = new URL(route.request().url());
     const regulator = getRegulator(route);
-    const breachCategory = url.searchParams.get("breachCategory");
-    const selectedYear = Number(url.searchParams.get("year") ?? 0);
-    const baseResults = regulator === "SEC"
-      ? SEC_RESULTS
-      : regulator === "FCA"
-        ? FCA_RESULTS
-        : regulator === "JFSC"
-          ? JFSC_RESULTS
-          : [...FCA_RESULTS, ...SEC_RESULTS];
-    const themeResults = breachCategory
-      ? baseResults.filter((record) => record.breach_categories.includes(breachCategory))
-      : baseResults;
-    const results = selectedYear
-      ? themeResults.filter((record) => record.year_issued === selectedYear)
-      : themeResults;
+    const results = resultsForRequest(route);
     await route.fulfill({
       status: 200,
       contentType: "application/json",
@@ -239,8 +276,7 @@ async function installWorkspaceApi(page: Page) {
     });
   });
   await page.route("**/api/unified/overview**", async (route) => {
-    const regulator = getRegulator(route);
-    await route.fulfill({ status: 200, contentType: "application/json", body: JSON.stringify(overviewFor(regulator)) });
+    await route.fulfill({ status: 200, contentType: "application/json", body: JSON.stringify(filteredOverviewFor(route)) });
   });
 }
 
@@ -257,7 +293,7 @@ test.describe("FCA regulator workspace", () => {
   });
 
   test("shows a regulator-restricted executive summary with annual movement", async ({ page }) => {
-    await expect(page.getByRole("heading", { level: 1, name: "Financial Conduct Authority (FCA)" })).toBeVisible();
+    await expect(page.getByRole("heading", { level: 1, name: "FCA Fines and Enforcement Actions" })).toBeVisible();
     await expect(page.getByText("You are viewing data for")).toBeVisible();
     await expect(page.getByText("FCA · United Kingdom")).toBeVisible();
     await expect(page.getByText("Charts and tables are restricted to this regulator.")).toBeVisible();
