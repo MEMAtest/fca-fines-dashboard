@@ -6,12 +6,17 @@ import {
   buildFssRecords,
   categorizeFssRow,
   parseFssDate,
+  parseFssDartHtml,
   parseFssListHtml,
   canonicalizeFssDetailUrl,
 } from "../scrapeFss.js";
 
 const FIXTURE_DIR = join(dirname(fileURLToPath(import.meta.url)), "fixtures");
 const html = readFileSync(join(FIXTURE_DIR, "fss-sample.html"), "utf8");
+const dartHtml = readFileSync(
+  join(FIXTURE_DIR, "fss-dart-current-sample.html"),
+  "utf8",
+);
 
 describe("FSS scraper", () => {
   it("reads the already-ISO board date", () => {
@@ -55,6 +60,18 @@ describe("FSS scraper", () => {
     expect(sanction).toEqual(
       expect.arrayContaining(["SUPERVISORY_SANCTION", "MARKET_ABUSE"]),
     );
+  });
+
+  it("adds only enforcement-relevant current DART releases", () => {
+    const rows = parseFssDartHtml(dartHtml);
+    expect(rows).toHaveLength(1);
+    expect(rows[0]).toMatchObject({
+      nttId: "dart-28116",
+      dateIssued: "2026-04-19",
+      detailUrl:
+        "https://dart.fss.or.kr/dsaa003/selectBodoMain.ax?seqno=28116",
+    });
+    expect(categorizeFssRow(rows[0])).toContain("SUPERVISORY_SANCTION");
   });
 
   it("builds unique KRW records keyed by nttId, newest-first, null amount (idempotent)", () => {

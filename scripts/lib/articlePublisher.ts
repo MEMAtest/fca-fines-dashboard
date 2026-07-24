@@ -1,5 +1,20 @@
 import ts from "typescript";
 
+export function resolveArticleReleaseDate(
+  requestedDateISO: string | undefined,
+  todayISO: string,
+) {
+  const scheduled = Boolean(requestedDateISO && requestedDateISO > todayISO);
+  const dateISO = scheduled ? requestedDateISO! : todayISO;
+  const date = new Intl.DateTimeFormat("en-GB", {
+    day: "numeric",
+    month: "long",
+    year: "numeric",
+    timeZone: "UTC",
+  }).format(new Date(`${dateISO}T12:00:00.000Z`));
+  return { scheduled, date, dateISO };
+}
+
 function getStringProperty(
   object: ts.ObjectLiteralExpression,
   name: string,

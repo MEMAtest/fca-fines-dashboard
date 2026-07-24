@@ -478,5 +478,35 @@
     "qualityScore": 85,
     "qualityPassed": false,
     "wordCount": 711
+  },
+  {
+    "timestamp": "2026-07-24T11:10:00.304Z",
+    "slug": "fca-fines-january-2026",
+    "type": "monthly",
+    "dateISO": "2026-02-01",
+    "outcome": "insufficient_data",
+    "qualityScore": null,
+    "qualityPassed": null,
+    "wordCount": null
+  },
+  {
+    "timestamp": "2026-07-24T11:10:22.156Z",
+    "slug": "fca-fines-july-2025",
+    "type": "monthly",
+    "dateISO": "2025-08-01",
+    "outcome": "all_attempts_failed",
+    "qualityScore": null,
+    "qualityPassed": null,
+    "wordCount": null
+  },
+  {
+    "timestamp": "2026-07-24T11:12:39.238Z",
+    "slug": "fca-fines-july-2025",
+    "type": "monthly",
+    "dateISO": "2025-08-01",
+    "outcome": "draft_saved",
+    "qualityScore": 100,
+    "qualityPassed": true,
+    "wordCount": 1386
   }
 ]

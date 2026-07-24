@@ -20,29 +20,44 @@ const date =
   process.argv.find((a) => a.startsWith("--date="))?.split("=")[1] ??
   new Date().toISOString().slice(0, 10);
 
-interface Snapshot {
+export interface Snapshot {
   date: string;
   scores: Record<string, number>;
 }
 
-const scores: Record<string, number> = {};
-for (const c of pageCountries()) {
-  const result = computeCountryRiskScore(c.iso2);
-  if (result.hasGovernance) scores[c.iso2] = result.score;
+export function upsertSnapshot(
+  snapshots: Snapshot[],
+  date: string,
+  scores: Record<string, number>,
+) {
+  return [
+    ...snapshots.filter((snapshot) => snapshot.date !== date),
+    { date, scores },
+  ].sort((left, right) => left.date.localeCompare(right.date));
 }
 
-let snapshots: Snapshot[] = [];
-if (existsSync(OUT)) {
-  try {
-    snapshots = JSON.parse(readFileSync(OUT, "utf8")) as Snapshot[];
-  } catch {
-    snapshots = [];
+function main() {
+  const scores: Record<string, number> = {};
+  for (const c of pageCountries()) {
+    const result = computeCountryRiskScore(c.iso2);
+    if (result.hasGovernance) scores[c.iso2] = result.score;
   }
+
+  let snapshots: Snapshot[] = [];
+  if (existsSync(OUT)) {
+    try {
+      snapshots = JSON.parse(readFileSync(OUT, "utf8")) as Snapshot[];
+    } catch {
+      snapshots = [];
+    }
+  }
+  snapshots = upsertSnapshot(snapshots, date, scores);
+  writeFileSync(OUT, JSON.stringify(snapshots));
+  console.log(
+    `Recorded snapshot ${date}: ${Object.keys(scores).length} countries. Total snapshots: ${snapshots.length}.`,
+  );
 }
-snapshots = snapshots.filter((s) => s.date !== date); // idempotent per date
-snapshots.push({ date, scores });
-snapshots.sort((a, b) => a.date.localeCompare(b.date));
-writeFileSync(OUT, JSON.stringify(snapshots));
-console.log(
-  `Recorded snapshot ${date}: ${Object.keys(scores).length} countries. Total snapshots: ${snapshots.length}.`,
-);
+
+if (process.argv[1] && fileURLToPath(import.meta.url) === process.argv[1]) {
+  main();
+}

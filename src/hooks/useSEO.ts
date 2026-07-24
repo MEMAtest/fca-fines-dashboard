@@ -15,6 +15,7 @@ interface SEOConfig {
   articleTags?: string[];
   relNext?: string;
   relPrev?: string;
+  robots?: string;
 }
 
 const BASE_URL = 'https://regactions.com';
@@ -54,7 +55,7 @@ export function useSEO(config: SEOConfig) {
     // Real routes recovered client-side from the 404 shell must not keep its
     // noindex — reset robots for every SEO'd page (the NotFound page sets its
     // own noindex).
-    setMetaTag('robots', 'index, follow');
+    setMetaTag('robots', config.robots || 'index, follow');
     if (config.keywords) {
       setMetaTag('keywords', config.keywords);
     }

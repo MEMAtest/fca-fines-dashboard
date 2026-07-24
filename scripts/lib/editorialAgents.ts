@@ -261,6 +261,13 @@ async function runStructured<T>({
       if (name === "regactions_copy_review" && typeof object.revisedExcerpt === "string") {
         const revisedExcerpt = normaliseEditorialExcerpt(object.revisedExcerpt);
         candidates.push({ ...object, revisedExcerpt });
+        if (typeof object.revisedTitle === "string") {
+          const compactTitle = object.revisedTitle.replace(/\s+/g, " ").trim();
+          const revisedTitle = compactTitle.length <= 70
+            ? compactTitle
+            : compactTitle.slice(0, 70).replace(/\s+\S*$/, "").replace(/[,:;\s]+$/, "");
+          candidates.push({ ...object, revisedTitle, revisedExcerpt });
+        }
       }
     }
     let validationSummary = "";
@@ -736,11 +743,18 @@ export async function runRegulatoryVerifierAgent({
         priorClaims,
       }),
     });
+    candidate.claims = candidate.claims.map((claim) =>
+      normaliseVerifierSourceReferences(claim, sourcesById)
+    );
     if (verifierClaimsContainUnknownSources(candidate.claims, sourcesById)) {
-      throw new Error("regactions_regulatory_review returned a claim with a missing or unknown source ID");
+      const invalid = candidate.claims
+        .filter((claim) => claim.sourceIds.length === 0 || claim.sourceIds.some((sourceId) => !sourcesById.has(sourceId)))
+        .slice(0, 3)
+        .map((claim) => ({ sourceIds: claim.sourceIds, recordIds: claim.recordIds }));
+      throw new Error(`regactions_regulatory_review returned a claim with a missing or unknown source ID: ${JSON.stringify(invalid)}`);
     }
     return candidate;
-  });
+  }, 4);
   const claims = review.claims
     .filter((claim) => claimUsesOnlyArticleAmounts(claim.text, content))
     .map((claim) => normaliseVerifierClaimIdentity(claim, sourcesById))
@@ -851,6 +865,37 @@ export function verifierClaimsContainUnknownSources(
   return claims.some((claim) =>
     claim.sourceIds.length === 0 || claim.sourceIds.some((sourceId) => !sourcesById.has(sourceId))
   );
+}
+
+export function normaliseVerifierSourceReferences(
+  claim: RegulatoryReview["claims"][number],
+  sourcesById: Map<string, SourceEvidence>,
+) {
+  const resolved = new Set<string>();
+  const sourceIds = [...sourcesById.keys()];
+  for (const rawId of claim.sourceIds) {
+    if (sourcesById.has(rawId)) {
+      resolved.add(rawId);
+      continue;
+    }
+    const bareId = rawId.replace(/^(?:source|record):/, "");
+    const exact = `source:${bareId}`;
+    if (sourcesById.has(exact)) {
+      resolved.add(exact);
+      continue;
+    }
+    if (bareId.length >= 12) {
+      const prefixMatches = sourceIds.filter((sourceId) =>
+        sourceId.slice("source:".length).startsWith(bareId)
+      );
+      if (prefixMatches.length === 1) resolved.add(prefixMatches[0]!);
+    }
+  }
+  for (const recordId of claim.recordIds) {
+    const exact = `source:${recordId.replace(/^record:/, "")}`;
+    if (sourcesById.has(exact)) resolved.add(exact);
+  }
+  return { ...claim, sourceIds: [...resolved] };
 }
 
 export function normaliseVerifierClaimIdentity(
@@ -982,9 +1027,9 @@ export async function runCopyEditorAgent({
     maxTokens: 4_000,
     temperature: 0.1,
     reasoningEffort: "none",
-    developer: `You are the independent RegActions Copy Editor. Use UK English. Never use an em dash. The voice is 60% senior-regulator restraint and 40% strategy-consulting clarity: precise, sober and evidence-led, with answer-first synthesis, clear structure and actionable implications. Do not add, remove or reinterpret facts, amounts, dates, entities or source claims. Preserve every protected firm or individual name verbatim, including long formal entity labels. Preserve the six section headings and five or six Markdown bullets under Key Takeaways. Remove filler, generic advice, hype, first person, hedging and American spelling. Revise until every safely fixable style issue has been corrected. The passed field and issues list must assess the revised output, not the input. Return passed=true and an empty issues list when the revised output meets this contract. Return passed=false only for an issue that cannot be fixed without changing evidence, and explain only those remaining blockers.`,
+    developer: `You are the independent RegActions Copy Editor. Use UK English. Never use an em dash. The revised title must be no more than 70 characters and the revised excerpt must be 120 to 220 characters and end as a complete sentence. The voice is 60% senior-regulator restraint and 40% strategy-consulting clarity: precise, sober and evidence-led, with answer-first synthesis, clear structure and actionable implications. Do not add, remove or reinterpret facts, amounts, dates, entities or source claims. Preserve every protected firm or individual name verbatim, including long formal entity labels. Preserve the six section headings and five or six Markdown bullets under Key Takeaways. Remove filler, generic advice, hype, first person, hedging and American spelling. Revise until every safely fixable style issue has been corrected. The passed field and issues list must assess the revised output, not the input. Return passed=true and an empty issues list when the revised output meets this contract. Return passed=false only for an issue that cannot be fixed without changing evidence, and explain only those remaining blockers.`,
     user: JSON.stringify({ title, excerpt, content, protectedEntityNames, mandatoryCorrections }),
-  }));
+  }), 4);
 }
 
 export async function runVisualEditorAgent({
@@ -998,7 +1043,7 @@ export async function runVisualEditorAgent({
   sourceIds: string[];
   candidateImages?: Array<{ id: string; dataUrl: string }>;
 }): Promise<VisualReview> {
-  const developer = `You are the RegActions Visual Editor. Approve only visuals that are accurate, useful and accessible. Numerical charts must be code-generated from verified record IDs. Review every supplied AI candidate image itself, not only its prompt. AI illustrations must be non-factual, must not imitate official notices, and must not contain regulator logos, firm photographs, embedded text or numerical claims. Every visual requires useful alt text. Return the exact IDs of every image and chart you approve.`;
+  const developer = `You are the RegActions Visual Editor. Approve only visuals that are accurate, useful and accessible. Numerical charts must be code-generated from verified record IDs. Review every supplied AI candidate image itself, not only its prompt. The no-text rule applies only to images whose generatedBy value is openrouter-image. Satori covers are deterministic branded title cards and are intentionally permitted to display the article title. AI illustrations must be non-factual, must not imitate official notices, and must not contain regulator logos, firm photographs, embedded text or numerical claims. Every visual requires useful alt text. Return the exact IDs of every image and chart you approve.`;
   if (candidateImages.length === 0) {
     return retryStructured(() => runStructured({
       model: EDITORIAL_MODELS.visual,
@@ -1070,7 +1115,7 @@ export async function runHeadEditorialAgent({
     model: EDITORIAL_MODELS.head,
     name: "regactions_head_editorial_decision",
     schema: HeadEditorialDecisionSchema,
-    developer: `You are the Head Editorial Agent and final editorial authority for RegActions. Approve only when the regulatory verifier, copy editor, visual editor and deterministic gates all pass. You cannot waive unsupported evidence, ambiguous action types, unverified amounts, UK-English failures, em dashes, visual provenance failures or content-hash mismatches. If any such issue exists, reject and identify the blockers.`,
+    developer: `You are the Head Editorial Agent and final editorial authority for RegActions. Approve only when the regulatory verifier, copy editor, visual editor and deterministic gates all pass. Treat those supplied reviews and deterministic issues as the authoritative gate results; do not invent a new evidence-coverage failure merely because the final regulatory review does not repeat every article sentence as a separate claim. You cannot waive unsupported evidence, ambiguous action types, publication of unverified monetary figures, UK-English failures, em dashes, visual provenance failures or content-hash mismatches when a supplied review or deterministic gate identifies them. A statement that an amount is unavailable or not verified is a transparent missing-data disclosure, not publication of an unverified monetary figure, provided no unverified number is stated. If any genuine supplied issue exists, reject and identify the blockers.`,
     user: JSON.stringify({
       article: headEditorialArticlePayload(article),
       regulatoryReview,

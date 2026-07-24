@@ -335,21 +335,40 @@ if (textOnly) {
   process.exit(textApproved ? 0 : 2);
 }
 
-draft.editorialManifest.images = await generateAiImageCandidates(
-  join(__dirname, ".."),
-  draft.editorialManifest.images,
-);
+const reviewRoot = join(__dirname, "..");
+const MAX_VISUAL_CANDIDATE_ATTEMPTS = 3;
+let visualReview: Awaited<ReturnType<typeof runVisualEditorAgent>> | null = null;
+for (let attempt = 1; attempt <= MAX_VISUAL_CANDIDATE_ATTEMPTS; attempt++) {
+  draft.editorialManifest.images = await generateAiImageCandidates(
+    reviewRoot,
+    draft.editorialManifest.images,
+  );
+  visualReview = await runVisualEditorAgent({
+    charts: draft.editorialManifest.charts,
+    images: draft.editorialManifest.images,
+    sourceIds: draft.editorialManifest.sources.map((source) => source.id),
+    candidateImages: imageCandidatesForReview(reviewRoot, draft.editorialManifest.images),
+  });
+  draft.editorialManifest.images = applyVisualReviewApprovals(
+    draft.editorialManifest.images,
+    visualReview.approvedImageIds,
+  );
+  const rejectedAiImages = draft.editorialManifest.images.filter(
+    (image) => image.generatedBy === "openrouter-image" && !image.approved,
+  );
+  if (visualReview.passed && rejectedAiImages.length === 0) break;
+  if (attempt === MAX_VISUAL_CANDIDATE_ATTEMPTS || rejectedAiImages.length === 0) break;
 
-const visualReview = await runVisualEditorAgent({
-  charts: draft.editorialManifest.charts,
-  images: draft.editorialManifest.images,
-  sourceIds: draft.editorialManifest.sources.map((source) => source.id),
-  candidateImages: imageCandidatesForReview(join(__dirname, ".."), draft.editorialManifest.images),
-});
-draft.editorialManifest.images = applyVisualReviewApprovals(
-  draft.editorialManifest.images,
-  visualReview.approvedImageIds,
-);
+  console.log(`[review:${slug}] stage=visual-editor candidate-retry attempt=${attempt + 1}`);
+  cleanupReviewImageCandidates(reviewRoot, rejectedAiImages);
+  const rejectedIds = new Set(rejectedAiImages.map((image) => image.id));
+  draft.editorialManifest.images = draft.editorialManifest.images.map((image) =>
+    rejectedIds.has(image.id)
+      ? { ...image, approved: false, reviewAssetPath: undefined, assetHash: undefined }
+      : image
+  );
+}
+if (!visualReview) throw new Error("Visual Editor did not return a review");
 const visualApprovalIssues: string[] = [];
 for (const image of draft.editorialManifest.images) {
   if (!image.approved) {

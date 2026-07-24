@@ -10,7 +10,7 @@ import {
 } from "../../scripts/prerender-seo.js";
 
 const representativeCase: FcaMonetaryCaseSeoRecord = {
-  caseId: "fca-2026-example-001",
+  caseId: "b40e17fe-6592-450e-934c-80b4a427f87a",
   year: 2026,
   firm: "Example Bank plc",
   dateIssued: "2026-07-15",
@@ -22,6 +22,8 @@ const representativeCase: FcaMonetaryCaseSeoRecord = {
   sourceStatus: "verified_detail",
   sourceCheckedAt: "2026-07-20T08:15:00.000Z",
   requiresAmountReview: false,
+  indexable: true,
+  indexabilityReasons: [],
 };
 
 describe("FCA fine case prerender policy", () => {
@@ -32,7 +34,7 @@ describe("FCA fine case prerender policy", () => {
     });
     const meta = buildFcaFineCasePageMeta(representativeCase);
     expect(meta.path).toBe(
-      "/fca-fines/2026/example-bank-plc/fca-2026-example-001",
+      "/fca-fines/2026/example-bank-plc/b40e17fe-6592-450e-934c-80b4a427f87a",
     );
     expect(meta.noindex).toBe(false);
     expect(meta.includeInSitemap).toBe(true);
@@ -42,23 +44,17 @@ describe("FCA fine case prerender policy", () => {
   it("prerenders weak or unsafe records but keeps them out of search", () => {
     const weak = {
       ...representativeCase,
-      caseId: "x",
-      firm: "Unknown",
-      amount: 0,
-      summary: "",
-      breach: "AML",
-      sourceUrl: "https://example.com/not-an-fca-source",
-      sourceStatus: "missing",
+      indexable: false,
+      indexabilityReasons: [
+        "missing_breach_context",
+        "missing_official_source",
+      ],
     };
     const result = evaluateFcaFineCaseIndexability(weak);
     expect(result.indexable).toBe(false);
     expect(result.reasons).toEqual(expect.arrayContaining([
-      "unsafe_entity",
-      "unsafe_case_id",
-      "untrusted_amount",
+      "missing_breach_context",
       "missing_official_source",
-      "case_source_not_specific",
-      "thin_case_context",
     ]));
     const meta = buildFcaFineCasePageMeta(weak);
     expect(meta.noindex).toBe(true);
@@ -73,7 +69,7 @@ describe("FCA fine case prerender policy", () => {
 
     expect(html).toContain("<title>Example Bank plc FCA Fine: £12,500,000 (2026) | RegActions</title>");
     expect(html).toContain(
-      '<link rel="canonical" href="https://regactions.com/fca-fines/2026/example-bank-plc/fca-2026-example-001" />',
+      '<link rel="canonical" href="https://regactions.com/fca-fines/2026/example-bank-plc/b40e17fe-6592-450e-934c-80b4a427f87a" />',
     );
     expect(html).not.toContain('name="robots" content="noindex, follow"');
     expect(html).toContain("Example Bank plc FCA fine");

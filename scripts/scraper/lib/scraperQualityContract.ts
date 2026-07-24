@@ -34,6 +34,7 @@ function defaultMinimum(coverage: RegulatorCoverage) {
 function defaultMaximumDrop(coverage: RegulatorCoverage) {
   if (coverage.automationLevel === "sparse_source") return 0.9;
   if (coverage.automationLevel === "curated_archive") return 0.8;
+  if (coverage.automationLevel === "low_frequency") return 0.55;
   return coverage.feedContract.cadence === "fragile" ? 0.55 : 0.35;
 }
 

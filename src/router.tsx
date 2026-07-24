@@ -11,6 +11,10 @@ import { lazy, Suspense, type ComponentType } from "react";
 import { DashboardSkeleton } from "./components/LoadingSkeletons.js";
 import { SiteLayout } from "./components/SiteLayout.js";
 
+const BoardPackShared = lazy(() =>
+  import("./pages/BoardPackShared.js").then((module) => ({ default: module.BoardPackShared })),
+);
+
 /**
  * Redirect the legacy dashboard entry point to the Fines Command Centre.
  */
@@ -397,6 +401,10 @@ const router = createBrowserRouter([
             <BoardIntelligence />
           </Suspense>
         ),
+      },
+      {
+        path: "/board-pack/shared/:shareToken",
+        element: <Suspense fallback={<div>Loading shared Board Pack...</div>}><BoardPackShared /></Suspense>,
       },
       {
         path: "/board-intelligence",

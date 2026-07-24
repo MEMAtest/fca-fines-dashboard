@@ -30,6 +30,14 @@ export interface TopicSelection {
   dataType: 'timely' | 'thematic';
 }
 
+export function getEditorialArticleType(topic: TopicSelection): "monthly" | "thematic" | "trends" {
+  if (topic.track === "timely") return "monthly";
+  if (topic.track === "evergreen-thematic" && /\b(?:trend|trends|trajectory|over time)\b/i.test(topic.title)) {
+    return "trends";
+  }
+  return "thematic";
+}
+
 interface PublishedTopic {
   slug: string;
   title: string;

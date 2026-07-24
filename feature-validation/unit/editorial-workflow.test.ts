@@ -23,6 +23,7 @@ import {
   claimMakesNoAmountButSourceConfirmsPenalty,
   headEditorialArticlePayload,
   normaliseVerifierClaimIdentity,
+  normaliseVerifierSourceReferences,
   quotedObjectionAppearsInSources,
   structuredDateSupportsClaim,
   verifierClaimsContainUnknownSources,
@@ -164,6 +165,15 @@ describe("Editorial Engine evidence and publishing gates", () => {
     expect(verifierClaimsContainUnknownSources([{ ...baseClaim, sourceIds: ["source:record-1"] }], sources)).toBe(false);
     expect(verifierClaimsContainUnknownSources([{ ...baseClaim, sourceIds: ["source:rec"] }], sources)).toBe(true);
     expect(verifierClaimsContainUnknownSources([{ ...baseClaim, sourceIds: [] }], sources)).toBe(true);
+    expect(normaliseVerifierSourceReferences({
+      ...baseClaim,
+      sourceIds: ["record:record-1"],
+    }, sources).sourceIds).toEqual(["source:record-1"]);
+    expect(normaliseVerifierSourceReferences({
+      ...baseClaim,
+      sourceIds: [],
+      recordIds: ["record-1"],
+    }, sources).sourceIds).toEqual(["source:record-1"]);
   });
 
   test("preserves deterministic Satori approval while requiring explicit AI-image approval", () => {
@@ -333,12 +343,16 @@ describe("Editorial Engine evidence and publishing gates", () => {
   });
 
   test("uses branded covers for every article and AI illustration selectively", () => {
-    expect(buildDefaultImageSpecs("monthly-example", "monthly").map((image) => image.purpose)).toEqual([
+    const monthly = buildDefaultImageSpecs("monthly-example", "monthly", "Monthly Example");
+    expect(monthly.map((image) => image.purpose)).toEqual([
       "hero",
       "open_graph",
       "social_square",
       "social_portrait",
     ]);
+    expect(monthly.every((image) =>
+      image.altText === "Deep navy RegActions cover displaying “Monthly Example” in white type"
+    )).toBe(true);
     const thematic = buildDefaultImageSpecs("thematic-example", "thematic");
     expect(thematic.some((image) => image.generatedBy === "openrouter-image" && image.purpose === "inline_illustration")).toBe(true);
   });

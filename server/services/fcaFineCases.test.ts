@@ -5,6 +5,7 @@ import {
   buildFcaFineCasePath,
   getFcaFineCaseById,
   listFcaMonetaryCasesForSeo,
+  mapFcaFineCaseRow,
   normaliseFcaFineEntityName,
   parseFcaFineCategories,
 } from "./fcaFineCases.js";
@@ -70,6 +71,23 @@ describe("FCA fine case service", () => {
     ]);
     expect(parseFcaFineCategories("not-json")).toEqual(["not-json"]);
     expect(parseFcaFineCategories(null)).toEqual([]);
+  });
+
+  it("preserves PostgreSQL DATE calendar values across British Summer Time", () => {
+    const pgDate = new Date("2018-09-30T23:00:00.000Z");
+    vi.spyOn(pgDate, "getFullYear").mockReturnValue(2018);
+    vi.spyOn(pgDate, "getMonth").mockReturnValue(9);
+    vi.spyOn(pgDate, "getDate").mockReturnValue(1);
+    const mapped = mapFcaFineCaseRow(trustedRow({
+      date_issued: pgDate,
+      year_issued: 2018,
+      month_issued: 10,
+    }));
+
+    expect(mapped.dateIssued).toBe("2018-10-01");
+    expect(assessFcaFineCaseIndexability(mapped).reasons).not.toContain(
+      "date_parts_mismatch",
+    );
   });
 
   it("replaces headline-shaped party fields only from an official case publication", () => {

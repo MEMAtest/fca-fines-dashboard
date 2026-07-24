@@ -1,6 +1,8 @@
 import type { NotificationItem } from '../../src/types.js';
 import { getSqlClient } from '../db.js';
 import {
+  assessFcaFineCaseIndexability,
+  mapFcaFineCaseRow,
   normaliseFcaFineEntityName,
   parseFcaFineCategories,
 } from './fcaFineCases.js';
@@ -35,7 +37,8 @@ export async function listFines(year: number, limit: number) {
            amount_verification_url, amount_override_reason,
            source_link_status, source_checked_at, source_http_status,
            source_official_domain_match, source_content_hash,
-           duplicate_count, created_at
+           duplicate_count, created_at,
+           source_resolved_url, source_review_status
            ,COALESCE(NULLIF(notice_url, ''), NULLIF(source_resolved_url, '')) AS case_source_url
     FROM public.all_regulatory_fines_trusted
     ${where}
@@ -43,17 +46,28 @@ export async function listFines(year: number, limit: number) {
     LIMIT $${params.length + 1}
   `;
   const rows = await instance(query, [...params, limit]);
-  return rows.map((row: any) => ({
-    ...row,
-    firm_individual: normaliseFcaFineEntityName(
+  return rows.map((row: any) => {
+    const mapped = mapFcaFineCaseRow({
+      ...row,
+      public_case_id: row.canonical_case_id,
+      trusted_amount_gbp: row.amount,
+      notice_url: row.final_notice_url,
+    });
+    const quality = assessFcaFineCaseIndexability(mapped);
+    return {
+      ...row,
+      firm_individual: normaliseFcaFineEntityName(
       row.firm_individual,
       row.case_source_url ? String(row.case_source_url) : null,
-    ),
-    breach_categories: parseFcaFineCategories(row.breach_categories),
-    amount: Number(row.amount) || 0,
-    year_issued: Number(row.year_issued) || 0,
-    month_issued: Number(row.month_issued) || 0,
-  }));
+      ),
+      breach_categories: parseFcaFineCategories(row.breach_categories),
+      amount: Number(row.amount) || 0,
+      year_issued: Number(row.year_issued) || 0,
+      month_issued: Number(row.month_issued) || 0,
+      indexable: quality.indexable,
+      indexability_reasons: quality.reasons,
+    };
+  });
 }
 
 export async function getStats(year: number) {

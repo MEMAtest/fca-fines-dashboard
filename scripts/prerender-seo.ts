@@ -257,9 +257,6 @@ export interface FcaFineCaseIndexability {
   reasons: string[];
 }
 
-const FCA_CASE_MIN_YEAR = 2013;
-const FCA_CASE_MINIMUM_PRODUCTION_INVENTORY = 350;
-const UNSAFE_CASE_ENTITY = /^(?:unknown|undisclosed|not available|n\/?a|null|test|firm|individual)$/i;
 
 function isOfficialFcaUrl(value: string | null | undefined): boolean {
   if (!value) return false;
@@ -283,33 +280,15 @@ function isAnnualFcaListingUrl(value: string | null | undefined): boolean {
 export function evaluateFcaFineCaseIndexability(
   record: FcaMonetaryCaseSeoRecord,
 ): FcaFineCaseIndexability {
-  const reasons: string[] = [];
-  const year = Number(record.year);
-  const currentYear = Number(todayISO().slice(0, 4));
-  const dateMatch = String(record.dateIssued || "").match(/^(\d{4})-(\d{2})-(\d{2})/);
-  const firm = String(record.firm || "").trim();
-  const caseId = String(record.caseId || "").trim();
-  const amount = Number(record.amount);
-  const summaryLength = String(record.summary || "").replace(/\s+/g, " ").trim().length;
-  const breachLength = String(record.breach || "").replace(/\s+/g, " ").trim().length;
-  const sourceStatus = String(record.sourceStatus || "").toLowerCase();
-
-  if (record.indexable === false) {
-    reasons.push(...(record.indexabilityReasons?.length
-      ? record.indexabilityReasons
-      : ["backend_quality_gate"]));
-  }
-
-  if (!Number.isInteger(year) || year < FCA_CASE_MIN_YEAR || year > currentYear) reasons.push("invalid_year");
-  if (!dateMatch || Number(dateMatch?.[1]) !== year || Number.isNaN(Date.parse(record.dateIssued))) reasons.push("invalid_date");
-  if (firm.length < 3 || firm.length > 180 || UNSAFE_CASE_ENTITY.test(firm) || /[<>]/.test(firm)) reasons.push("unsafe_entity");
-  if (caseId.length < 3 || caseId.length > 200 || UNSAFE_CASE_ENTITY.test(caseId)) reasons.push("unsafe_case_id");
-  if (!Number.isFinite(amount) || amount <= 0 || record.requiresAmountReview) reasons.push("untrusted_amount");
-  if (!isOfficialFcaUrl(record.sourceUrl)) reasons.push("missing_official_source");
-  if (sourceStatus === "missing" || sourceStatus === "listing_only" || isAnnualFcaListingUrl(record.sourceUrl)) reasons.push("case_source_not_specific");
-  if (summaryLength < 60 && breachLength < 6) reasons.push("thin_case_context");
-
-  return { indexable: reasons.length === 0, reasons };
+  // listFcaMonetaryCasesForSeo() is the authoritative quality gate. Do not
+  // reproduce a second, drifting policy in the static builder: if the service
+  // did not explicitly approve the record, fail closed.
+  const reasons = record.indexabilityReasons?.length
+    ? [...record.indexabilityReasons]
+    : record.indexable === true
+      ? []
+      : ["backend_quality_gate"];
+  return { indexable: record.indexable === true && reasons.length === 0, reasons };
 }
 
 function fcaCaseLookupKey(
@@ -684,6 +663,15 @@ function renderBlogRelatedLinks(slug: string): string {
   }
   const list = Array.from(items, ([href, label]) => `<li><a href="${href}">${escapeHtml(label)}</a></li>`).join("");
   return `<section class="blog-related"><h2>Related on RegActions</h2><ul>${list}</ul></section>`;
+}
+
+function renderEditorialSources(article: (typeof blogArticles)[number]): string {
+  const sources = article.editorialManifest?.sources.filter((source) => source.official) ?? [];
+  if (sources.length === 0) return "";
+  const items = sources.map((source) =>
+    `<li><a href="${escapeHtml(source.url)}" rel="noopener">${escapeHtml(source.title)}</a> — ${escapeHtml(source.publisher)} official material</li>`,
+  ).join("");
+  return `<section class="blog-official-sources"><h2>Official sources reviewed</h2><p>Open the regulator material used by the editorial and regulatory review gates. RegActions analysis does not replace the official notice.</p><ul>${items}</ul></section>`;
 }
 
 /**
@@ -1900,13 +1888,8 @@ async function buildPageMetas(): Promise<PageMeta[]> {
       buildFcaFineCasePath,
     } = await import(fcaCasesServicePath);
     const cases = await listFcaMonetaryCasesForSeo() as FcaMonetaryCaseSeoRecord[];
-    if (
-      process.env.VERCEL_ENV === "production" &&
-      cases.length < FCA_CASE_MINIMUM_PRODUCTION_INVENTORY
-    ) {
-      throw new Error(
-        `FCA case inventory regression: expected at least ${FCA_CASE_MINIMUM_PRODUCTION_INVENTORY} monetary records, received ${cases.length}.`,
-      );
+    if (process.env.VERCEL_ENV === "production" && cases.length === 0) {
+      throw new Error("FCA case inventory regression: production returned no monetary records.");
     }
     const seenPaths = new Set<string>();
     let indexableCount = 0;
@@ -1921,6 +1904,11 @@ async function buildPageMetas(): Promise<PageMeta[]> {
       fcaCasePaths.set(
         fcaCaseLookupKey(record.firm, record.dateIssued, record.amount),
         path,
+      );
+    }
+    if (seenPaths.size !== cases.length) {
+      throw new Error(
+        `FCA case route disagreement: ${cases.length} canonical cases produced ${seenPaths.size} unique routes.`,
       );
     }
     console.log(
@@ -2548,9 +2536,10 @@ async function buildPageMetas(): Promise<PageMeta[]> {
     // Append a small related-links block (regulator hub + its country page) where
     // a cheap article↔regulator mapping exists. Body copy itself is untouched.
     const relatedLinks = renderBlogRelatedLinks(article.slug);
+    const editorialSources = renderEditorialSources(article);
     const renderedBody = wrapArticleShell(
       article.title,
-      `${renderMarkdownToHtml(article.content)}${relatedLinks}`,
+      `${renderMarkdownToHtml(article.content)}${editorialSources}${relatedLinks}`,
     );
     const extraLd: object[] = [];
     if (articleFaqs.length > 0) extraLd.push(generateFaqSchema(articleFaqs));

@@ -58,7 +58,11 @@ export interface RegulatorCoverage {
   coverageStatus: "anchor" | "growing" | "emerging";
   maturity: "anchor" | "emerging" | "limited";
   operationalConfidence: "standard" | "lower";
-  automationLevel: "automated" | "curated_archive" | "sparse_source";
+  automationLevel:
+    | "automated"
+    | "curated_archive"
+    | "sparse_source"
+    | "low_frequency";
   feedContract: RegulatorFeedContract;
   dashboardEnabled: boolean;
   officialSources: RegulatorOfficialSource[];
@@ -121,6 +125,7 @@ const LOW_CONFIDENCE_LIVE_REGULATOR_SET = new Set([
 
 const CURATED_ARCHIVE_REGULATOR_SET = new Set(["DFSA", "CBUAE"]);
 const SPARSE_SOURCE_REGULATOR_SET = new Set(["JFSC"]);
+const LOW_FREQUENCY_REGULATOR_SET = new Set(["AMMC", "IOMFSA", "HKMA"]);
 
 const DEFAULT_AUTOMATED_STALE_AFTER_DAYS = 180;
 const DEFAULT_FRAGILE_STALE_AFTER_DAYS = 365;
@@ -139,6 +144,8 @@ const REGULATOR_STALE_AFTER_DAYS: Partial<Record<string, number>> = {
   AMF: 365,
   CBI: 365,
   HKMA: 365,
+  AMMC: 180,
+  IOMFSA: 365,
   OSC: 365,
   IVASS: 760,
   DFSA: 365,
@@ -2670,11 +2677,13 @@ export const REGULATOR_COVERAGE: Record<string, RegulatorCoverage> =
           : "standard",
         dashboardEnabled:
           coverage.stage === "live" ? coverage.dashboardEnabled : false,
-        automationLevel: SPARSE_SOURCE_REGULATOR_SET.has(code)
-          ? "sparse_source"
-          : CURATED_ARCHIVE_REGULATOR_SET.has(code)
-            ? "curated_archive"
-            : "automated",
+        automationLevel: LOW_FREQUENCY_REGULATOR_SET.has(code)
+          ? "low_frequency"
+          : SPARSE_SOURCE_REGULATOR_SET.has(code)
+            ? "sparse_source"
+            : CURATED_ARCHIVE_REGULATOR_SET.has(code)
+              ? "curated_archive"
+              : "automated",
         feedContract: buildFeedContract(code, coverage),
       },
     ]),
@@ -2825,6 +2834,20 @@ function buildFeedContract(
       minimumHealthyRecords: Math.max(1, Math.floor(coverage.count * 0.8)),
       operatorAction:
         "Confirm whether the source has published any new monetary penalties before treating unchanged volume as an issue.",
+    };
+  }
+
+  if (LOW_FREQUENCY_REGULATOR_SET.has(code)) {
+    return {
+      cadence,
+      collectionMethod: "Low-frequency official enforcement source",
+      sourceContractSummary:
+        "The official source publishes enforceable actions irregularly. A quiet period is not evidence of parser failure, but the complete source must still return its known archive.",
+      zeroResultPolicy: "investigate",
+      staleAfterDays,
+      minimumHealthyRecords: Math.max(1, Math.floor(coverage.count * 0.5)),
+      operatorAction:
+        "Compare the complete official source with stored records and investigate any missing archive rows or newer enforcement publication.",
     };
   }
 

@@ -113,6 +113,45 @@ function EditorialInlineImages({ article }: { article: BlogArticleMeta }) {
   );
 }
 
+function EditorialSources({ article }: { article: BlogArticleMeta }) {
+  const sources = article.editorialManifest?.sources.filter(
+    (source) => source.official,
+  ) || [];
+  if (sources.length === 0) return null;
+  return (
+    <section
+      className="regulator-sources-section"
+      aria-labelledby="editorial-official-sources"
+    >
+      <h2 id="editorial-official-sources">Official sources reviewed</h2>
+      <p>
+        Open the regulator material used by the editorial and regulatory review
+        gates. RegActions analysis does not replace the official notice.
+      </p>
+      <div className="regulator-source-grid">
+        {sources.map((source) => (
+          <a
+            key={source.id}
+            className="regulator-source-card"
+            href={source.url}
+            target="_blank"
+            rel="noreferrer"
+          >
+            <span className="regulator-source-card__label">{source.title}</span>
+            <span className="regulator-source-card__description">
+              {source.publisher} official material
+            </span>
+            <span className="regulator-source-card__cta">
+              Open source
+              <ExternalLink size={14} />
+            </span>
+          </a>
+        ))}
+      </div>
+    </section>
+  );
+}
+
 // Helper function to format currency (same as Blog.tsx)
 const formatYearlyCurrency = (amount: number): string => {
   if (amount >= 1_000_000_000) {
@@ -1027,6 +1066,7 @@ function BlogArticlePage({ article }: { article: BlogArticleMeta }) {
 
           <GeneratedArticleCharts charts={article.editorialManifest?.charts || []} />
           <EditorialInlineImages article={article} />
+          <EditorialSources article={article} />
 
           {/* Article-specific charts */}
           {article.id === "largest-fca-fines-history" && (

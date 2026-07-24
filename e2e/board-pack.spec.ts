@@ -1,4 +1,9 @@
 import { expect, test, type Route } from "@playwright/test";
+import {
+  DEFAULT_BOARD_PACK_SETTINGS,
+  DEFAULT_BOARD_PROFILE,
+} from "../src/data/boardIntelligence.js";
+import { buildBoardPack } from "../src/utils/boardIntelligence.js";
 
 const BOARD_PACK_RESULTS = {
   results: [
@@ -119,7 +124,7 @@ test.describe("Quick Board Pack", () => {
   });
 
   test("renders a no-account builder with a live committee preview", async ({ page }) => {
-    await expect(page.getByRole("heading", { level: 1, name: /Create a committee-ready regulatory board pack/i })).toBeVisible();
+    await expect(page.getByRole("heading", { level: 1, name: /Create a committee-ready enforcement brief/i })).toBeVisible();
     await expect(page.getByRole("heading", { name: "Build your pack" })).toBeVisible();
     await expect(page.getByText(/No account is required/i)).toBeVisible();
     await expect(page.getByRole("heading", { name: "Executive takeaways" })).toBeVisible();
@@ -178,5 +183,69 @@ test.describe("Quick Board Pack", () => {
 
     await expect(page.getByRole("dialog")).toBeHidden();
     await expect(page.getByRole("status")).toContainText(/recorded.*queued/i);
+  });
+});
+
+test.describe("Shared Board Pack", () => {
+  test("is immutable, read-only and excluded from indexing", async ({ page }) => {
+    await page.setViewportSize({ width: 390, height: 844 });
+    const snapshot = {
+      schemaVersion: 1,
+      payload: {
+        schemaVersion: 1,
+        label: "NorthStar assurance snapshot",
+        currency: "GBP",
+        firmProfile: {
+          ...DEFAULT_BOARD_PROFILE,
+          firmName: "NorthStar Payments",
+          archetypeId: "payments-fintech",
+          priorityRegulators: ["FCA"],
+          focusRegions: ["UK"],
+          priorityThemeIds: ["aml-controls"],
+        },
+        presentationSettings: DEFAULT_BOARD_PACK_SETTINGS,
+        analystNote: "Prepared for the July risk committee. <img src=x onerror=alert(1)>",
+        evidenceLocators: [],
+        assuranceMode: true,
+        controlStatuses: {},
+      },
+      result: buildBoardPack([], {
+        ...DEFAULT_BOARD_PROFILE,
+        firmName: "NorthStar Payments",
+        archetypeId: "payments-fintech",
+        priorityRegulators: ["FCA"],
+        focusRegions: ["UK"],
+        priorityThemeIds: ["aml-controls"],
+      }, []),
+      generatedAt: "2026-07-24T12:00:00.000Z",
+      applicationCommit: "test-commit",
+      sourceRevision: 3,
+    };
+    await page.route("**/api/board-pack/shares/**", async (route) => {
+      await route.fulfill({
+        status: 200,
+        contentType: "application/json",
+        headers: { "X-Robots-Tag": "noindex, nofollow, noarchive" },
+        body: JSON.stringify({
+          snapshot,
+          snapshot_hash: "a".repeat(64),
+        }),
+      });
+    });
+
+    await page.goto(`/board-pack/shared/${"S".repeat(43)}`);
+
+    await expect(page.getByText("Read-only shared snapshot")).toBeVisible();
+    await expect(page.getByRole("heading", { name: "NorthStar assurance snapshot" })).toBeVisible();
+    await expect(page.getByRole("heading", { name: "NorthStar Payments" })).toBeVisible();
+    await expect(page.getByRole("combobox", { name: /Control status for/i })).toHaveCount(0);
+    await expect(page.locator('meta[name="robots"]')).toHaveAttribute(
+      "content",
+      "noindex, nofollow, noarchive",
+    );
+    await expect(page.getByText(/immutable snapshot cannot edit the owner/i)).toBeVisible();
+    await expect(page.locator('img[src="x"]')).toHaveCount(0);
+    expect(await page.evaluate(() => document.documentElement.scrollWidth))
+      .toBeLessThanOrEqual(390);
   });
 });

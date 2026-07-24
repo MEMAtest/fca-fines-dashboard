@@ -25,6 +25,8 @@ export function DataCoverageNotice({
       ? "This regulator publishes outcomes across separate official documents. Treat trend comparisons as directional while the historical record is expanded."
       : coverage.automationLevel === "sparse_source"
         ? "This regulator is live, but the official source publishes very few explicit monetary penalties. Trend views are directionally useful, but the source itself remains sparse."
+        : coverage.automationLevel === "low_frequency"
+          ? "This regulator's official source publishes enforcement outcomes irregularly. The archive is monitored in full, but quiet periods make trend comparisons directional."
         : "This regulator currently has a thinner official publication history than the anchor datasets. Treat trend comparisons as directional while coverage expands.";
   const modifierClass = shouldShowWarning
     ? isLowerConfidence

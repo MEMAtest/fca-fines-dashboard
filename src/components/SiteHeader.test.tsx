@@ -38,4 +38,17 @@ describe("SiteHeader research navigation", () => {
     expect(document.querySelector(".site-header__breadcrumbs")).not.toBeInTheDocument();
     expect(screen.queryByText(/b40e17fe/i)).not.toBeInTheDocument();
   });
+
+  it("does not expose a Board Pack share token in the visible breadcrumb", () => {
+    const shareToken = "S".repeat(43);
+    render(
+      <MemoryRouter initialEntries={[`/board-pack/shared/${shareToken}`]}>
+        <SiteHeader />
+      </MemoryRouter>,
+    );
+
+    expect(screen.getByText("Snapshot", { selector: ".site-header__crumb-current" }))
+      .toBeInTheDocument();
+    expect(screen.queryByText(shareToken)).not.toBeInTheDocument();
+  });
 });

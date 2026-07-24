@@ -39,6 +39,8 @@ const FSS_MENU_NO = "300147";
 /** selectCate2=1007 = "Supervision-Examination" (the enforcement/supervisory subset). */
 const FSS_SUPERVISION_CATE2 = "1007";
 const FSS_MAX_PAGES = 20;
+const FSS_DART_RELEASES_URL = "https://dart.fss.or.kr/info/searchBodo.do";
+const FSS_DART_MAX_PAGES = 3;
 
 export interface FssRow {
   nttId: string;
@@ -55,6 +57,12 @@ function buildListUrl(pageIndex: number): string {
     pageIndex: String(pageIndex),
   });
   return `${FSS_BASE_URL}${FSS_LIST_PATH}?${params.toString()}`;
+}
+
+function buildDartListUrl(pageIndex: number): string {
+  return pageIndex === 1
+    ? FSS_DART_RELEASES_URL
+    : `${FSS_DART_RELEASES_URL}?currentPage=${pageIndex}`;
 }
 
 /** FSS board dates are already ISO (YYYY-MM-DD). */
@@ -107,6 +115,44 @@ export function parseFssListHtml(html: string, pageUrl = buildListUrl(1)): FssRo
   return rows;
 }
 
+const FSS_DART_ENFORCEMENT_TITLE =
+  /(?:위반.*조치|조치현황|엄단|제재|과징금|불공정거래|시세조종|공매도.*조사)/;
+
+export function parseFssDartHtml(html: string): FssRow[] {
+  const $ = cheerio.load(html);
+  const rows: FssRow[] = [];
+
+  $("table tbody tr, table tr").each((_, element) => {
+    const $tr = $(element);
+    const $link = $tr.find("a[onclick*='selectBodo']").first();
+    const onclick = $link.attr("onclick") || "";
+    const seqno = onclick.match(/selectBodo\(['"]?(\d+)['"]?\)/)?.[1];
+    const title = normalizeWhitespace($link.attr("title") || $link.text());
+    const dateIssued = parseFssDate(
+      $tr
+        .find("td")
+        .map((__, cell) => normalizeWhitespace($(cell).text()))
+        .get()
+        .find((value) => /^\d{4}\.\d{2}\.\d{2}$/.test(value))
+        ?.replace(/\./g, "-") || "",
+    );
+
+    if (!seqno || !title || !dateIssued || !FSS_DART_ENFORCEMENT_TITLE.test(title)) {
+      return;
+    }
+
+    rows.push({
+      nttId: `dart-${seqno}`,
+      title,
+      categories: ["DART press release"],
+      dateIssued,
+      detailUrl: `https://dart.fss.or.kr/dsaa003/selectBodoMain.ax?seqno=${seqno}`,
+    });
+  });
+
+  return rows;
+}
+
 
 /**
  * The board embeds volatile pagination state (pageIndex, menuNo) in every
@@ -130,19 +176,19 @@ export function categorizeFssRow(row: FssRow): string[] {
   const corpus = `${row.title} ${row.categories.join(" ")}`.toLowerCase();
   const categories: string[] = [];
 
-  if (/sanction|penalt|disciplinary|enforcement/.test(corpus)) {
+  if (/sanction|penalt|disciplinary|enforcement|제재|엄단|조치/.test(corpus)) {
     categories.push("SUPERVISORY_SANCTION");
   }
-  if (/short-selling|market manipulation|insider|unfair trading/.test(corpus)) {
+  if (/short-selling|market manipulation|insider|unfair trading|공매도|시세조종|불공정거래/.test(corpus)) {
     categories.push("MARKET_ABUSE");
   }
-  if (/money laundering|aml/.test(corpus)) {
+  if (/money laundering|aml|자금세탁/.test(corpus)) {
     categories.push("AML");
   }
-  if (/internal control|governance|compliance/.test(corpus)) {
+  if (/internal control|governance|compliance|내부통제|지배구조|준법/.test(corpus)) {
     categories.push("GOVERNANCE");
   }
-  if (/disclosure|reporting|transparen/.test(corpus)) {
+  if (/disclosure|reporting|transparen|공시|보고/.test(corpus)) {
     categories.push("DISCLOSURE");
   }
 
@@ -213,6 +259,16 @@ export async function loadFssLiveRecords(): Promise<DbReadyRecord[]> {
     // adds nothing new.
     if (addedThisPage === 0) {
       break;
+    }
+  }
+
+  for (let pageIndex = 1; pageIndex <= FSS_DART_MAX_PAGES; pageIndex += 1) {
+    const html = await fetchText(buildDartListUrl(pageIndex), { timeout: 60_000 });
+    for (const row of parseFssDartHtml(html)) {
+      if (!seenIds.has(row.nttId)) {
+        seenIds.add(row.nttId);
+        collected.push(row);
+      }
     }
   }
 
