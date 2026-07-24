@@ -104,6 +104,35 @@ export function boardPackPersistenceEnabled() {
   return process.env.BOARD_PACK_PERSISTENCE_ENABLED === "true";
 }
 
+const requestLimitTableReadiness = new WeakMap<SqlClient, Promise<void>>();
+
+export async function ensureBoardPackRequestLimitTable(
+  sql: SqlClient = getSqlClient(),
+) {
+  let readiness = requestLimitTableReadiness.get(sql);
+  if (!readiness) {
+    readiness = (async () => {
+      await sql(`
+        CREATE TABLE IF NOT EXISTS public.board_pack_request_limits (
+          scope_hash text NOT NULL,
+          window_start timestamptz NOT NULL,
+          request_count integer NOT NULL DEFAULT 1,
+          PRIMARY KEY (scope_hash, window_start)
+        )
+      `);
+      await sql(`
+        CREATE INDEX IF NOT EXISTS idx_board_pack_request_limits_window
+          ON public.board_pack_request_limits(window_start)
+      `);
+    })().catch((error) => {
+      requestLimitTableReadiness.delete(sql);
+      throw error;
+    });
+    requestLimitTableReadiness.set(sql, readiness);
+  }
+  await readiness;
+}
+
 interface BoardPackDraftCreateResult {
   id: string;
   revision: number;
@@ -136,6 +165,7 @@ export async function enforceBoardPackRateLimit(
   sql: SqlClient = getSqlClient(),
   maximum = 30,
 ) {
+  await ensureBoardPackRequestLimitTable(sql);
   const scopeHash = hashToken(scope.slice(0, 1_000));
   const rows = await sql(
     `INSERT INTO public.board_pack_request_limits (scope_hash, window_start, request_count)
