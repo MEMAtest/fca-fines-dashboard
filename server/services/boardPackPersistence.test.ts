@@ -68,7 +68,7 @@ describe("Board Pack persistence contract", () => {
       .rejects.toMatchObject({ statusCode: 429 });
   });
 
-  it("ensures the rate-limit table on the runtime connection before counting", async () => {
+  it("ensures the persistence schema on the runtime connection before counting", async () => {
     const queries: string[] = [];
     const sql = Object.assign(
       async (query: string) => {
@@ -82,9 +82,17 @@ describe("Board Pack persistence contract", () => {
 
     await expect(enforceBoardPackRateLimit("203.0.113.2|packs", sql, 30))
       .resolves.toBeUndefined();
-    expect(queries).toHaveLength(3);
-    expect(queries[0]).toContain("CREATE TABLE IF NOT EXISTS public.board_pack_request_limits");
-    expect(queries[1]).toContain("CREATE INDEX IF NOT EXISTS idx_board_pack_request_limits_window");
-    expect(queries[2]).toContain("INSERT INTO public.board_pack_request_limits");
+    expect(queries).toHaveLength(10);
+    expect(queries[0]).toContain("CREATE EXTENSION IF NOT EXISTS pgcrypto");
+    expect(queries.some((query) => (
+      query.includes("CREATE TABLE IF NOT EXISTS public.board_pack_drafts")
+    ))).toBe(true);
+    expect(queries.some((query) => (
+      query.includes("CREATE TABLE IF NOT EXISTS public.board_pack_shares")
+    ))).toBe(true);
+    expect(queries.some((query) => (
+      query.includes("CREATE TABLE IF NOT EXISTS public.board_pack_request_limits")
+    ))).toBe(true);
+    expect(queries.at(-1)).toContain("INSERT INTO public.board_pack_request_limits");
   });
 });
