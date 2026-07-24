@@ -104,14 +104,56 @@ export function boardPackPersistenceEnabled() {
   return process.env.BOARD_PACK_PERSISTENCE_ENABLED === "true";
 }
 
-const requestLimitTableReadiness = new WeakMap<SqlClient, Promise<void>>();
+const persistenceTableReadiness = new WeakMap<SqlClient, Promise<void>>();
 
-export async function ensureBoardPackRequestLimitTable(
+export async function ensureBoardPackPersistenceTables(
   sql: SqlClient = getSqlClient(),
 ) {
-  let readiness = requestLimitTableReadiness.get(sql);
+  let readiness = persistenceTableReadiness.get(sql);
   if (!readiness) {
     readiness = (async () => {
+      await sql("CREATE EXTENSION IF NOT EXISTS pgcrypto");
+      await sql(`
+        CREATE TABLE IF NOT EXISTS public.board_pack_drafts (
+          id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+          owner_token_hash text NOT NULL,
+          revision integer NOT NULL DEFAULT 1 CHECK (revision > 0),
+          payload jsonb NOT NULL,
+          created_at timestamptz NOT NULL DEFAULT now(),
+          updated_at timestamptz NOT NULL DEFAULT now(),
+          expires_at timestamptz NOT NULL DEFAULT (now() + interval '90 days')
+        )
+      `);
+      await sql(`
+        CREATE UNIQUE INDEX IF NOT EXISTS idx_board_pack_drafts_owner
+          ON public.board_pack_drafts(id, owner_token_hash)
+      `);
+      await sql(`
+        CREATE INDEX IF NOT EXISTS idx_board_pack_drafts_expiry
+          ON public.board_pack_drafts(expires_at)
+      `);
+      await sql(`
+        CREATE TABLE IF NOT EXISTS public.board_pack_shares (
+          id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+          pack_id uuid NOT NULL REFERENCES public.board_pack_drafts(id) ON DELETE CASCADE,
+          share_token_hash text NOT NULL UNIQUE,
+          source_revision integer NOT NULL CHECK (source_revision > 0),
+          snapshot jsonb NOT NULL,
+          snapshot_hash text NOT NULL,
+          application_commit text NOT NULL,
+          generated_at timestamptz NOT NULL DEFAULT now(),
+          expires_at timestamptz NOT NULL DEFAULT (now() + interval '30 days'),
+          revoked_at timestamptz
+        )
+      `);
+      await sql(`
+        CREATE INDEX IF NOT EXISTS idx_board_pack_shares_pack
+          ON public.board_pack_shares(pack_id, generated_at DESC)
+      `);
+      await sql(`
+        CREATE INDEX IF NOT EXISTS idx_board_pack_shares_expiry
+          ON public.board_pack_shares(expires_at)
+      `);
       await sql(`
         CREATE TABLE IF NOT EXISTS public.board_pack_request_limits (
           scope_hash text NOT NULL,
@@ -125,10 +167,10 @@ export async function ensureBoardPackRequestLimitTable(
           ON public.board_pack_request_limits(window_start)
       `);
     })().catch((error) => {
-      requestLimitTableReadiness.delete(sql);
+      persistenceTableReadiness.delete(sql);
       throw error;
     });
-    requestLimitTableReadiness.set(sql, readiness);
+    persistenceTableReadiness.set(sql, readiness);
   }
   await readiness;
 }
@@ -165,7 +207,7 @@ export async function enforceBoardPackRateLimit(
   sql: SqlClient = getSqlClient(),
   maximum = 30,
 ) {
-  await ensureBoardPackRequestLimitTable(sql);
+  await ensureBoardPackPersistenceTables(sql);
   const scopeHash = hashToken(scope.slice(0, 1_000));
   const rows = await sql(
     `INSERT INTO public.board_pack_request_limits (scope_hash, window_start, request_count)
