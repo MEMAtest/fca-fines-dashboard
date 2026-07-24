@@ -67,4 +67,24 @@ describe("Board Pack persistence contract", () => {
     await expect(enforceBoardPackRateLimit("203.0.113.1|packs", sql, 30))
       .rejects.toMatchObject({ statusCode: 429 });
   });
+
+  it("ensures the rate-limit table on the runtime connection before counting", async () => {
+    const queries: string[] = [];
+    const sql = Object.assign(
+      async (query: string) => {
+        queries.push(query);
+        return query.includes("INSERT INTO public.board_pack_request_limits")
+          ? [{ request_count: 1 }]
+          : [];
+      },
+      { end: async () => undefined },
+    ) as unknown as SqlClient;
+
+    await expect(enforceBoardPackRateLimit("203.0.113.2|packs", sql, 30))
+      .resolves.toBeUndefined();
+    expect(queries).toHaveLength(3);
+    expect(queries[0]).toContain("CREATE TABLE IF NOT EXISTS public.board_pack_request_limits");
+    expect(queries[1]).toContain("CREATE INDEX IF NOT EXISTS idx_board_pack_request_limits_window");
+    expect(queries[2]).toContain("INSERT INTO public.board_pack_request_limits");
+  });
 });
