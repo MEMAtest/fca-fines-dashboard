@@ -165,7 +165,8 @@ export function evaluateLiveRegulatorHealth(
       status: "stale",
       severity:
         coverage.automationLevel === "sparse_source" ||
-        coverage.automationLevel === "curated_archive"
+        coverage.automationLevel === "curated_archive" ||
+        coverage.automationLevel === "low_frequency"
           ? "watch"
           : "action_required",
       message: `Latest record is ${ageDays} days old, outside the ${freshnessWindowDays}-day ${cadence} source-contract window.`,

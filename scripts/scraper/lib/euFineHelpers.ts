@@ -280,6 +280,20 @@ export async function extractPdfTextFromUrl(url: string) {
   }
 }
 
+export async function extractPdfLayoutTextFromUrl(url: string) {
+  const tempDir = await mkdtemp(join(tmpdir(), 'mema-regulator-pdf-'));
+  const pdfPath = join(tempDir, 'document.pdf');
+
+  try {
+    const buffer = await fetchBinary(url, { maxRedirects: 5 });
+    await writeFile(pdfPath, buffer);
+    const { stdout } = await execFileAsync('pdftotext', ['-layout', pdfPath, '-']);
+    return stdout.replace(/\r\n/g, '\n');
+  } finally {
+    await rm(tempDir, { recursive: true, force: true });
+  }
+}
+
 export function normalizeWhitespace(value: string) {
   return value
     .replace(/\u00a0/g, ' ')

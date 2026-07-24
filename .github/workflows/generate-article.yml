@@ -47,7 +47,25 @@ jobs:
 
       - name: Resolve generated slug
         id: article
-        run: echo "slug=$(node -p \"JSON.parse(require('fs').readFileSync('/tmp/editorial-result.json','utf8')).slug\")" >> "$GITHUB_OUTPUT"
+        run: |
+          node --input-type=module <<'NODE'
+          import { appendFileSync, readFileSync } from 'node:fs';
+
+          const result = JSON.parse(readFileSync('/tmp/editorial-result.json', 'utf8'));
+          if (
+            typeof result?.slug !== 'string'
+            || !/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(result.slug)
+          ) {
+            throw new Error('Editorial result must contain a valid kebab-case slug');
+          }
+
+          const outputPath = process.env.GITHUB_OUTPUT;
+          if (!outputPath) {
+            throw new Error('GITHUB_OUTPUT is not available');
+          }
+
+          appendFileSync(outputPath, `slug=${result.slug}\n`, 'utf8');
+          NODE
 
       - name: Independent regulatory, copy, visual, and head review
         id: review

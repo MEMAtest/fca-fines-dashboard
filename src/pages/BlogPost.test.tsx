@@ -142,4 +142,26 @@ describe("BlogPost", () => {
       }),
     ).toBeInTheDocument();
   });
+
+  it("publishes the controlled monthly report with its release date and official evidence links", () => {
+    renderBlogPost("fca-fines-july-2025");
+
+    expect(screen.getByRole("heading", {
+      name: "FCA Final Notices: July 2025 Enforcement Actions Analysed",
+    })).toBeInTheDocument();
+    expect(screen.getByText("24 July 2026")).toHaveAttribute(
+      "datetime",
+      "2026-07-24",
+    );
+    expect(screen.getByRole("heading", { name: "Official sources reviewed" }))
+      .toBeInTheDocument();
+    expect(screen.getByRole("link", {
+      name: /FCA action concerning Markos Theodosi Markou/i,
+    })).toHaveAttribute(
+      "href",
+      "https://www.fca.org.uk/publication/final-notices/markos-theodosi-markou-2025.pdf",
+    );
+    expect(screen.getAllByRole("link", { name: /FCA action concerning/i }))
+      .toHaveLength(9);
+  });
 });

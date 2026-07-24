@@ -19,7 +19,10 @@ import { renderEditorialChartSpecs } from './lib/articleCharts.js';
 import { publishApprovedAiImages } from './lib/editorialImages.js';
 import type { PublicationManifest } from '../src/types/editorial.js';
 import { recordPublishedTopic } from './lib/editorialCalendar.js';
-import { upsertApprovedArticleSource } from './lib/articlePublisher.js';
+import {
+  resolveArticleReleaseDate,
+  upsertApprovedArticleSource,
+} from './lib/articlePublisher.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -69,9 +72,17 @@ if (draft.qualityReport?.passed !== true) {
 await renderEditorialChartSpecs(draft.editorialManifest.charts);
 publishApprovedAiImages(ROOT, draft.editorialManifest.images);
 
-// 2. Set status — calendar articles with future dateISO stay "scheduled"; past-dated publish immediately
+// 2. Set status. A future calendar date remains scheduled. Once an article is
+// actually released, its public date is the release date rather than an
+// historical target date from the editorial calendar.
 const today = new Date().toISOString().slice(0, 10);
-draft.status = (draft.dateISO && draft.dateISO > today) ? 'scheduled' : 'published';
+const release = resolveArticleReleaseDate(draft.dateISO, today);
+const { scheduled } = release;
+draft.status = scheduled ? 'scheduled' : 'published';
+if (!scheduled) {
+  draft.dateISO = release.dateISO;
+  draft.date = release.date;
+}
 draft.generatedAt = draft.generatedAt || new Date().toISOString();
 draft.editorialManifest.status = draft.status === 'scheduled' ? 'scheduled' : 'published';
 const publicationManifest: PublicationManifest = {

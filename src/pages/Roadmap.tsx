@@ -60,13 +60,23 @@ interface ProductRoadmapItem {
   id: string;
   title: string;
   targetWindow: string;
-  status: "in-progress" | "planned";
+  status: "live" | "in-progress" | "planned";
   description: string;
   outcome: string;
   icon: typeof BellRing;
 }
 
 const PRODUCT_ROADMAP_ITEMS: ProductRoadmapItem[] = [
+  {
+    id: "evidence-editorial-assurance",
+    title: "Evidence and editorial assurance",
+    targetWindow: "2026 Q3",
+    status: "live",
+    description:
+      "Apply one indexability policy across FCA case APIs, canonical pages, structured data, prerendering and sitemaps, with gated article generation and publication.",
+    outcome: "Source-linked case research and independently reviewed editorial releases.",
+    icon: Sparkles,
+  },
   {
     id: "alerts",
     title: "Search and alert precision",
@@ -81,10 +91,10 @@ const PRODUCT_ROADMAP_ITEMS: ProductRoadmapItem[] = [
     id: "board-pack",
     title: "Board pack persistence",
     targetWindow: "2026 Q3",
-    status: "planned",
+    status: "live",
     description:
-      "Move board-pack profiles and consultant workflow beyond local browser storage.",
-    outcome: "Reusable advisory packs and easier internal collaboration.",
+      "Optional anonymous server persistence now complements local browser drafts, with immutable, expiring read-only shares and owner-only updates.",
+    outcome: "Reusable advisory packs without requiring an account or weakening the local PDF flow.",
     icon: BookOpenText,
   },
   {
@@ -161,7 +171,7 @@ function buildTimelineItems(): TimelineItem[] {
       title: item.title,
       subtitle: item.outcome,
       quarter: productWindowToQuarter(item.targetWindow),
-      status: item.status === "in-progress" ? "in-progress" : "planned",
+      status: item.status,
       icon: item.icon,
       description: item.description,
       outcome: item.outcome,
@@ -226,6 +236,7 @@ function getStatusLabel(status: TimelineStatus): string {
 function formatCollectionMode(coverage: RegulatorCoverage) {
   if (coverage.automationLevel === "curated_archive") return "Official archive";
   if (coverage.automationLevel === "sparse_source") return "Limited publications";
+  if (coverage.automationLevel === "low_frequency") return "Low-frequency publications";
   return "Regular review";
 }
 

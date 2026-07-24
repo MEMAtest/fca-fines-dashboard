@@ -13,7 +13,11 @@ import {
   type EnforcementRecord,
 } from '../../scripts/lib/articleData.js';
 import { runQualityGate } from '../../scripts/lib/articleQuality.js';
-import { getOverrideTopicKeywords } from '../../scripts/lib/editorialCalendar.js';
+import {
+  getEditorialArticleType,
+  getOverrideTopicKeywords,
+  selectTopic,
+} from '../../scripts/lib/editorialCalendar.js';
 
 const baseRecord: EnforcementRecord = {
   id: 'record-1',
@@ -257,5 +261,10 @@ describe('Editorial evidence contract', () => {
       'IT failure',
     ]);
     expect(getOverrideTopicKeywords('Board Guide: Building Effective AML Controls')).toContain('money laundering');
+  });
+
+  test('routes enforcement-trend topics to the chart-backed trends article type', () => {
+    expect(getEditorialArticleType(selectTopic('AML/KYC Enforcement Trends Across Global Regulators'))).toBe('trends');
+    expect(getEditorialArticleType(selectTopic('Board Guide: Building Effective AML Controls'))).toBe('thematic');
   });
 });

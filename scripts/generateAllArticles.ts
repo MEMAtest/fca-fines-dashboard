@@ -70,11 +70,13 @@ const noEmail     = argv.includes('--no-email');
 const trial       = argv.includes('--trial');
 const trialDirArg = argv.find(a => a.startsWith('--trial-dir='))?.split('=').slice(1).join('=');
 const slugFilter  = argv.find(a => a.startsWith('--slug='))?.split('=')[1];
+const monthFilter = argv.find(a => a.startsWith('--month='))?.split('=')[1];
 const typeFilter  = argv.find(a => a.startsWith('--type='))?.split('=')[1];
 const dueWithin   = Number(argv.find(a => a.startsWith('--due-within='))?.split('=')[1] ?? 0);
 const batchDelay  = Number(argv.find(a => a.startsWith('--batch-delay='))?.split('=')[1] ?? 5000);
 if (trial && !trialDirArg) throw new Error('--trial requires --trial-dir=<temporary output directory>');
 if (!trial && trialDirArg) throw new Error('--trial-dir requires --trial');
+if (slugFilter && monthFilter) throw new Error('--slug and --month are mutually exclusive');
 if (trial) process.env.EDITORIAL_TRIAL_MODE = 'true';
 const OUTPUT_DRAFTS_DIR = trial ? resolve(trialDirArg!) : DRAFTS_DIR;
 const OUTPUT_LOG_FILE = trial ? join(OUTPUT_DRAFTS_DIR, 'generation-log.json') : LOG_FILE;
@@ -94,7 +96,25 @@ async function main(): Promise<void> {
 
   // 2. Build candidate list
   let candidates: CalendarEntry[];
-  if (slugFilter) {
+  if (monthFilter) {
+    const match = monthFilter.match(/^(\d{4})-(0[1-9]|1[0-2])$/);
+    if (!match) throw new Error('--month must use YYYY-MM');
+    const year = Number(match[1]);
+    const month = Number(match[2]);
+    const monthName = new Date(Date.UTC(year, month - 1, 1)).toLocaleString('en-GB', {
+      month: 'long',
+      timeZone: 'UTC',
+    });
+    candidates = [{
+      slug: `fca-fines-${monthName.toLowerCase()}-${year}`,
+      type: 'monthly',
+      dateISO: new Date(Date.UTC(year, month, 1)).toISOString().slice(0, 10),
+      titleGuidance: `FCA fines and enforcement ${monthName} ${year} — complete source-grounded monthly tracker`,
+      category: `FCA Fines ${year}`,
+      dataConfig: { type: 'monthly', year, month },
+      prerequisite: `${monthName} ${year} FCA enforcement data`,
+    }];
+  } else if (slugFilter) {
     const entry = CALENDAR_ENTRIES.find(e => e.slug === slugFilter);
     if (!entry) {
       console.error(`Unknown slug: ${slugFilter}`);

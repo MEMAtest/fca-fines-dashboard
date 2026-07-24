@@ -108,6 +108,7 @@ jobs:
             script: scrape:frb
           - code: GHSEC
             script: scrape:ghana-sec
+            pdf: poppler
           - code: TWFSC
             script: scrape:twfsc
           - code: AMMC
@@ -130,6 +131,12 @@ jobs:
 
       - name: Install dependencies
         run: npm ci
+
+      - name: Install PDF text extraction
+        if: ${{ matrix.pdf == 'poppler' }}
+        run: |
+          sudo apt-get update
+          sudo apt-get install --yes poppler-utils
 
       - name: Verify environment configuration
         env:

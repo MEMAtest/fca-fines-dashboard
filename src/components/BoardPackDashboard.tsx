@@ -33,6 +33,7 @@ interface BoardPackDashboardProps {
   clientLabel: string;
   analystNote: string;
   workingMode: boolean;
+  readOnly?: boolean;
   lowerConfidenceCodes: string[];
   controlSummary: ControlChallengeSummary | null;
   controlChecklist: ControlChecklistItem[];
@@ -116,6 +117,7 @@ export function BoardPackDashboard({
   clientLabel,
   analystNote,
   workingMode,
+  readOnly = false,
   lowerConfidenceCodes,
   controlSummary,
   controlChecklist,
@@ -394,7 +396,7 @@ export function BoardPackDashboard({
                     <strong>{item.control}</strong>
                     <small>{item.themeLabel}</small>
                   </span>
-                  {workingMode ? (
+                  {workingMode && !readOnly ? (
                     <select
                       value={status}
                       onChange={(event) =>

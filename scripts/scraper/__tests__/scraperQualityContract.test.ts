@@ -32,6 +32,17 @@ describe("regulator-specific scraper quality contracts", () => {
     });
   });
 
+  it("keeps low-frequency complete archives fail-closed on zero records", () => {
+    for (const code of ["AMMC", "IOMFSA", "HKMA"]) {
+      const contract = resolveScraperQualityContract(code);
+      expect(contract).toMatchObject({
+        sourceClass: "low_frequency",
+        allowZeroRecords: false,
+      });
+      expect(contract.minimumPreparedRecords).toBeGreaterThan(0);
+    }
+  });
+
   it("fails closed when a runner has no registered regulator contract", () => {
     expect(() => resolveScraperQualityContract("UNKNOWN")).toThrow("No regulator feed contract");
   });

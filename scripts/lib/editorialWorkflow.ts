@@ -257,6 +257,7 @@ export function buildDeterministicClaims(records: EditorialEvidenceRecord[]): Ev
 }
 
 export function buildDefaultImageSpecs(slug: string, articleType?: string, articleTitle?: string): ImageSpec[] {
+  const coverTitle = articleTitle || slug.replace(/-/g, " ");
   const images: ImageSpec[] = [
     ["hero", 1600, 900, `/blog/images/${slug}-hero.png`],
     ["open_graph", 1200, 630, `/og/${slug}.png`],
@@ -267,7 +268,7 @@ export function buildDefaultImageSpecs(slug: string, articleType?: string, artic
     purpose: purpose as ImageSpec["purpose"],
     width: width as number,
     height: height as number,
-    altText: `RegActions editorial cover for ${slug.replace(/-/g, " ")}`,
+    altText: `Deep navy RegActions cover displaying “${coverTitle}” in white type`,
     outputPath: outputPath as string,
     generatedBy: "satori" as const,
     factual: false,

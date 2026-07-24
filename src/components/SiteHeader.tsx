@@ -82,6 +82,11 @@ function getBreadcrumbs(pathname: string) {
     else if (seg === "sectors") label = "Sectors";
     else if (seg === "firms") label = "Firms";
     else if (seg === "countries") label = "Countries";
+    else if (i > 0 && segments[i - 1] === "shared") {
+      // Public share tokens are route credentials, not meaningful navigation
+      // labels. Keep them out of the visible breadcrumb and mobile layout.
+      label = "Snapshot";
+    }
     else if (i > 0 && segments[i - 1] === "countries") {
       // /countries/<slug> — resolve to the real country name (not a humanized slug)
       label =

@@ -18,8 +18,11 @@ import * as cheerio from "cheerio";
 import { fileURLToPath } from "node:url";
 import {
   buildEuFineRecord,
+  extractPdfLayoutTextFromUrl,
   fetchText,
+  makeAbsoluteUrl,
   normalizeWhitespace,
+  parsePlainAmount,
   parseMonthNameDate,
   type DbReadyRecord,
 } from "./lib/euFineHelpers.js";
@@ -27,11 +30,21 @@ import { runScraper } from "./lib/runScraper.js";
 
 const GHANA_SEC_URL =
   "https://sec.gov.gh/suspension-revocation-cessation-of-licenses/";
+const GHANA_SEC_NEWS_URL = "https://sec.gov.gh/category/sec-news/";
 
 export interface GhanaSecRow {
   company: string;
   status: string;
   dateIssued: string;
+}
+
+export interface GhanaSecPenaltyRow {
+  company: string;
+  infringement: string;
+  amount: number;
+  dateIssued: string;
+  newsletterUrl: string;
+  pdfUrl: string;
 }
 
 /** Ghana dates carry ordinal suffixes ("8th November, 2019"). Strip them, then parse. */
@@ -65,6 +78,92 @@ export function parseGhanaSecHtml(html: string): GhanaSecRow[] {
   });
 
   return [...rows.values()];
+}
+
+export function parseLatestGhanaSecNewsletterUrl(html: string) {
+  const $ = cheerio.load(html);
+  const href = $("a[href]")
+    .map((_, link) => normalizeWhitespace($(link).attr("href") || ""))
+    .get()
+    .find((value) => /\/sec-newsletter-\d{4}-(?:first|second|third|fourth)-quarter-edition\/?$/i.test(value));
+  return href ? makeAbsoluteUrl(GHANA_SEC_NEWS_URL, href) : null;
+}
+
+export function parseGhanaSecNewsletterPdfUrl(html: string, pageUrl: string) {
+  const $ = cheerio.load(html);
+  const href = $("a[href$='.pdf'], a[href*='.pdf?']")
+    .map((_, link) => normalizeWhitespace($(link).attr("href") || ""))
+    .get()
+    .find((value) => /SEC-Quarterly-Newsletters/i.test(value));
+  return href ? makeAbsoluteUrl(pageUrl, href) : null;
+}
+
+export function quarterEndDateFromNewsletterUrl(url: string) {
+  const match = url.match(/(First|Second|Third|Fourth)-Quarter-(\d{4})/i);
+  if (!match) return null;
+  const quarterEnd: Record<string, string> = {
+    first: "03-31",
+    second: "06-30",
+    third: "09-30",
+    fourth: "12-31",
+  };
+  return `${match[2]}-${quarterEnd[match[1].toLowerCase()]}`;
+}
+
+export function parseGhanaSecPenaltyText(
+  text: string,
+  newsletterUrl: string,
+  pdfUrl: string,
+): GhanaSecPenaltyRow[] {
+  const dateIssued = quarterEndDateFromNewsletterUrl(pdfUrl);
+  if (!dateIssued) return [];
+
+  const lines = text.replace(/\r\n/g, "\n").split("\n");
+  let sectionStart = -1;
+  for (let index = lines.length - 1; index >= 0; index -= 1) {
+    if (/INFRACT(?:ION|ON)S?\s+AND\s+PENALTIES/i.test(lines[index])) {
+      sectionStart = index;
+      break;
+    }
+  }
+  const sectionEnd = lines.findIndex(
+    (line, index) => index > sectionStart && /^\s*2\.\s+COMPLAINTS/i.test(line),
+  );
+  if (sectionStart < 0 || sectionEnd < 0) return [];
+
+  const rows: GhanaSecPenaltyRow[] = [];
+  let current: GhanaSecPenaltyRow | null = null;
+
+  for (const line of lines.slice(sectionStart + 1, sectionEnd)) {
+    if (/COMPANY\s+INFRINGEMENT\s+PENALTY/i.test(line)) continue;
+    const companyPart = line.slice(0, 44).trim();
+    const infringementPart = line.slice(44, 98).trim();
+    const penaltyPart = line.slice(98).trim();
+    const amount = parsePlainAmount(penaltyPart.replace(/[^\d.,]/g, ""));
+
+    if (amount !== null && companyPart && infringementPart) {
+      current = {
+        company: companyPart,
+        infringement: infringementPart,
+        amount,
+        dateIssued,
+        newsletterUrl,
+        pdfUrl,
+      };
+      rows.push(current);
+      continue;
+    }
+
+    if (!current) continue;
+    if (companyPart) current.company = normalizeWhitespace(`${current.company} ${companyPart}`);
+    if (infringementPart) {
+      current.infringement = normalizeWhitespace(
+        `${current.infringement} ${infringementPart}`,
+      );
+    }
+  }
+
+  return rows;
 }
 
 export function categorizeGhanaSecStatus(status: string): string[] {
@@ -118,9 +217,52 @@ export function buildGhanaSecRecords(rows: GhanaSecRow[]): DbReadyRecord[] {
     );
 }
 
+export function buildGhanaSecPenaltyRecord(row: GhanaSecPenaltyRow): DbReadyRecord {
+  return buildEuFineRecord({
+    regulator: "GHSEC",
+    regulatorFullName: "Securities and Exchange Commission, Ghana",
+    countryCode: "GH",
+    countryName: "Ghana",
+    firmIndividual: row.company,
+    firmCategory: "Capital Market Operator",
+    amount: row.amount,
+    currency: "GHS",
+    dateIssued: row.dateIssued,
+    breachType: row.infringement,
+    breachCategories: ["MONETARY_SANCTION", "REPORTING"],
+    summary: `${row.company} received a GH¢${row.amount.toLocaleString("en-GB")} penalty for ${row.infringement.toLowerCase()}.`,
+    finalNoticeUrl: row.pdfUrl,
+    sourceUrl: row.newsletterUrl,
+    dedupeKey: `${row.pdfUrl}::${row.company}::${row.infringement}::${row.amount}`,
+    rawPayload: row,
+  });
+}
+
 export async function loadGhanaSecLiveRecords(): Promise<DbReadyRecord[]> {
-  const html = await fetchText(GHANA_SEC_URL, { timeout: 60000 });
-  return buildGhanaSecRecords(parseGhanaSecHtml(html));
+  const [licenceHtml, newsHtml] = await Promise.all([
+    fetchText(GHANA_SEC_URL, { timeout: 60_000 }),
+    fetchText(GHANA_SEC_NEWS_URL, { timeout: 60_000 }),
+  ]);
+  const licenceRecords = buildGhanaSecRecords(parseGhanaSecHtml(licenceHtml));
+  const newsletterUrl = parseLatestGhanaSecNewsletterUrl(newsHtml);
+  if (!newsletterUrl) return licenceRecords;
+
+  const newsletterHtml = await fetchText(newsletterUrl, { timeout: 60_000 });
+  const pdfUrl = parseGhanaSecNewsletterPdfUrl(newsletterHtml, newsletterUrl);
+  if (!pdfUrl) return licenceRecords;
+
+  const penaltyText = await extractPdfLayoutTextFromUrl(pdfUrl);
+  const penaltyRecords = parseGhanaSecPenaltyText(
+    penaltyText,
+    newsletterUrl,
+    pdfUrl,
+  ).map(buildGhanaSecPenaltyRecord);
+
+  return [...licenceRecords, ...penaltyRecords].sort(
+    (left, right) =>
+      right.dateIssued.localeCompare(left.dateIssued) ||
+      left.firmIndividual.localeCompare(right.firmIndividual),
+  );
 }
 
 export async function main() {

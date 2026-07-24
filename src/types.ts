@@ -42,6 +42,8 @@ export interface FineRecord {
   source_http_status?: number | null;
   source_official_domain_match?: boolean | null;
   source_content_hash?: string | null;
+  indexable?: boolean;
+  indexability_reasons?: FcaFineCaseIndexabilityReason[];
 }
 
 export type FcaFineCaseSourceStatus =

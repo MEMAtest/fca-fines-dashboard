@@ -24,7 +24,7 @@ import {
   getRequiredVerifiedAmountCount,
   type DataContext,
 } from './lib/articleData.js';
-import { selectTopic, type TopicSelection } from './lib/editorialCalendar.js';
+import { getEditorialArticleType, selectTopic, type TopicSelection } from './lib/editorialCalendar.js';
 import { getArticleQualityWordRange, runQualityGate, formatQualityReport, type QualityReport } from './lib/articleQuality.js';
 import { sendArticleReviewEmail } from './lib/articleReview.js';
 import { EDITORIAL_MODELS, EDITORIAL_PROMPT_VERSION, normaliseEditorialExcerpt, runDraftingAgent } from './lib/editorialAgents.js';
@@ -70,7 +70,7 @@ async function main(): Promise<void> {
   console.log(`Topic: ${topic.title}`);
   console.log(`Track: ${topic.track} | Slug: ${topic.slug}`);
   console.log('');
-  const articleType = topic.track === 'timely' ? 'monthly' : 'thematic';
+  const articleType = getEditorialArticleType(topic);
   const wordRange = getArticleQualityWordRange(articleType);
 
   // 2. Fetch enforcement data
@@ -198,7 +198,7 @@ async function callAI(
   const userPrompt = buildUserPrompt(topic, data, feedback);
 
   try {
-    const articleType = topic.track === 'timely' ? 'monthly' : 'thematic';
+    const articleType = getEditorialArticleType(topic);
     const article = await runDraftingAgent(systemPrompt, userPrompt, {
       records: data.records,
       ...getArticleQualityWordRange(articleType),
@@ -356,7 +356,7 @@ function saveDraft(
 
   const now = new Date();
   const dateISO = now.toISOString().slice(0, 10);
-  const articleType = topic.track === 'timely' ? 'monthly' : 'thematic';
+  const articleType = getEditorialArticleType(topic);
   const generationModel = EDITORIAL_MODELS.drafting;
   const editorialManifest = buildInitialEditorialManifest({
     slug: topic.slug,

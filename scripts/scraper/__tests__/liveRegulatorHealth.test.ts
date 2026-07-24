@@ -58,6 +58,28 @@ describe("liveRegulatorHealth", () => {
     expect(result.sourceContractSummary).toContain("challenge-protected");
   });
 
+  it("keeps low-frequency official sources fail-closed without widening their thresholds", () => {
+    const coverage = getRegulatorCoverage("AMMC");
+    expect(coverage).not.toBeNull();
+
+    const result = evaluateLiveRegulatorHealth(
+      coverage!,
+      {
+        regulator: "AMMC",
+        recordCount: 9,
+        earliestRecordDate: "2019-10-03",
+        latestRecordDate: "2024-03-07",
+      },
+      new Date("2026-07-24T00:00:00Z"),
+    );
+
+    expect(result.status).toBe("stale");
+    expect(result.severity).toBe("watch");
+    expect(result.freshnessWindowDays).toBe(180);
+    expect(result.automationLevel).toBe("low_frequency");
+    expect(result.zeroResultPolicy).toBe("investigate");
+  });
+
   it("warns when live archive volume collapses below the healthy floor", () => {
     const coverage = getRegulatorCoverage("CIRO");
 

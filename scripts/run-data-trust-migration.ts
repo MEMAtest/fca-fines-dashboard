@@ -38,6 +38,7 @@ async function main() {
     "migrations/20260718_scraper_quality_operations.sql",
     "migrations/20260718_product_funnel_events.sql",
     "migrations/20260718_ops_alert_state.sql",
+    "migrations/20260724_board_pack_persistence.sql",
   ].map((file) => path.resolve(process.cwd(), file));
 
   for (const migrationPath of migrationPaths) {

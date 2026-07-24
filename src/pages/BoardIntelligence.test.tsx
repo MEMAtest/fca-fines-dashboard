@@ -1,6 +1,6 @@
-import { fireEvent, render, screen } from "@testing-library/react";
+import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { MemoryRouter } from "react-router-dom";
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { BoardIntelligence } from "./BoardIntelligence.js";
 
 vi.mock("../hooks/useSEO.js", () => ({ useSEO: vi.fn() }));
@@ -49,6 +49,11 @@ function renderPage(initialEntry = "/board-pack") {
 describe("BoardIntelligence quick pack", () => {
   beforeEach(() => {
     Object.defineProperty(window, "localStorage", { value: createLocalStorageMock(), configurable: true });
+  });
+
+  afterEach(() => {
+    vi.unstubAllEnvs();
+    vi.unstubAllGlobals();
   });
 
   it("renders a no-account builder without the old NorthStar profile toolbar", () => {
@@ -133,5 +138,63 @@ describe("BoardIntelligence quick pack", () => {
       "href",
       "/regulators/fca/analytics",
     );
+  });
+
+  it("saves the current revision before creating an immutable share", async () => {
+    vi.stubEnv("VITE_BOARD_PACK_PERSISTENCE_ENABLED", "true");
+    const requests: Array<{ url: string; method: string; body?: string }> = [];
+    vi.stubGlobal("fetch", vi.fn(async (input: RequestInfo | URL, init?: RequestInit) => {
+      const url = String(input);
+      const method = init?.method ?? "GET";
+      requests.push({
+        url,
+        method,
+        body: typeof init?.body === "string" ? init.body : undefined,
+      });
+      if (url === "/api/board-pack/packs") {
+        return new Response(JSON.stringify({
+          id: "9f3bd8b4-6cb0-4d31-b632-d33f28ff0dd0",
+          ownerToken: "O".repeat(43),
+          revision: 1,
+        }), { status: 201, headers: { "Content-Type": "application/json" } });
+      }
+      if (url.endsWith("/shares")) {
+        return new Response(JSON.stringify({
+          id: "8f3bd8b4-6cb0-4d31-b632-d33f28ff0dd1",
+          shareToken: "S".repeat(43),
+          shareUrl: `/board-pack/shared/${"S".repeat(43)}`,
+        }), { status: 201, headers: { "Content-Type": "application/json" } });
+      }
+      return new Response(JSON.stringify({ error: "Unexpected request" }), {
+        status: 500,
+        headers: { "Content-Type": "application/json" },
+      });
+    }));
+
+    renderPage();
+    fireEvent.change(screen.getByLabelText(/Organisation name/i), {
+      target: { value: "Current revision firm" },
+    });
+    fireEvent.click(screen.getByRole("button", { name: "Create read-only share" }));
+
+    await waitFor(() => {
+      expect(requests.filter(({ url, method }) =>
+        url.startsWith("/api/board-pack/") && method !== "GET",
+      ).map(({ url, method }) => ({ url, method }))).toEqual([
+        { url: "/api/board-pack/packs", method: "POST" },
+        {
+          url: "/api/board-pack/packs/9f3bd8b4-6cb0-4d31-b632-d33f28ff0dd0/shares",
+          method: "POST",
+        },
+      ]);
+    });
+    const savedPayload = JSON.parse(
+      requests.find(({ url, method }) =>
+        url === "/api/board-pack/packs" && method === "POST",
+      )?.body ?? "{}",
+    );
+    expect(savedPayload.firmProfile.firmName).toBe("Current revision firm");
+    expect(screen.getByRole("link", { name: "Open shared snapshot" }).getAttribute("href"))
+      .toMatch(new RegExp(`/board-pack/shared/${"S".repeat(43)}$`));
   });
 });

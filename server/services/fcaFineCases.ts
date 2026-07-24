@@ -163,7 +163,14 @@ function booleanValue(value: unknown): boolean {
 
 function dateOnly(value: unknown): string {
   if (value instanceof Date && !Number.isNaN(value.valueOf())) {
-    return value.toISOString().slice(0, 10);
+    // PostgreSQL DATE values are calendar dates without a timezone. The pg
+    // driver materialises them at local midnight, so toISOString() moves dates
+    // in British Summer Time back to the previous UTC day. Preserve the
+    // driver's calendar components instead.
+    const year = value.getFullYear();
+    const month = String(value.getMonth() + 1).padStart(2, "0");
+    const day = String(value.getDate()).padStart(2, "0");
+    return `${year}-${month}-${day}`;
   }
   const text = nullableString(value);
   if (!text) return "";
@@ -379,7 +386,7 @@ interface MappedCase extends QualityInput {
   createdAt: string | null;
 }
 
-function mapCaseRow(row: RawCaseRow): MappedCase {
+export function mapFcaFineCaseRow(row: RawCaseRow): MappedCase {
   const noticeUrl = nullableString(row.notice_url);
   const listingSourceUrl = nullableString(row.source_url);
   const resolvedSourceUrl = nullableString(row.source_resolved_url);
@@ -495,7 +502,7 @@ export async function listFcaMonetaryCasesForSeo(
     ORDER BY date_issued DESC NULLS LAST, public_case_id ASC
   `);
 
-  return rows.map((row) => toSeoRow(mapCaseRow(row)));
+  return rows.map((row) => toSeoRow(mapFcaFineCaseRow(row)));
 }
 
 export async function getFcaFineCaseById(
@@ -515,7 +522,7 @@ export async function getFcaFineCaseById(
   );
   if (!rows[0]) return null;
 
-  const primary = mapCaseRow(rows[0]);
+  const primary = mapFcaFineCaseRow(rows[0]);
   const relatedRows = await sql(
     `SELECT ${CASE_COLUMNS}
      FROM public.all_regulatory_fines_trusted
@@ -566,7 +573,7 @@ export async function getFcaFineCaseById(
   return {
     ...recordBase,
     relatedCases: relatedRows.map((row) => {
-      const related = mapCaseRow(row);
+      const related = mapFcaFineCaseRow(row);
       const relatedSeo = toSeoRow(related);
       return {
         ...relatedSeo,

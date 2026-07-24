@@ -1,4 +1,4 @@
-import { useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { Link, useSearchParams } from "react-router-dom";
 import {
   ArrowLeft,
@@ -19,6 +19,7 @@ import {
   BOARD_ARCHETYPES_BY_ID,
   BOARD_FOCUS_OPTIONS,
   BOARD_THEME_OPTIONS,
+  DEFAULT_BOARD_PACK_SETTINGS,
   DEFAULT_BOARD_PROFILE,
   type BoardArchetypeId,
   type BoardFirmProfile,
@@ -38,6 +39,14 @@ import {
   summarizeControlChallenge,
   type ControlStatus,
 } from "../utils/boardIntelligence.js";
+import type { BoardPackDraftPayloadV1 } from "../types/boardPackPersistence.js";
+import {
+  BOARD_PACK_LOCAL_DRAFT_V1,
+  migrateBoardPackLocalDraftV1,
+  readBoardPackRemoteOwner,
+  writeBoardPackRemoteOwner,
+  type BoardPackRemoteOwnerV1,
+} from "../utils/boardPackDraftStorage.js";
 import "../styles/board-intelligence.css";
 
 interface LeadForm {
@@ -80,6 +89,14 @@ export function BoardIntelligence() {
   const [downloading, setDownloading] = useState(false);
   const [status, setStatus] = useState<string | null>(null);
   const [assuranceMode, setAssuranceMode] = useState(false);
+  const persistenceEnabled = import.meta.env.VITE_BOARD_PACK_PERSISTENCE_ENABLED === "true";
+  const [remoteOwner, setRemoteOwner] = useState<BoardPackRemoteOwnerV1 | null>(() => {
+    if (typeof window === "undefined") return null;
+    migrateBoardPackLocalDraftV1();
+    return readBoardPackRemoteOwner();
+  });
+  const [persistenceBusy, setPersistenceBusy] = useState(false);
+  const [shareUrl, setShareUrl] = useState("");
   const [controlStatuses, setControlStatuses] = useLocalStorage<Record<string, ControlStatus>>(
     "regactions-board-pack-control-statuses-v1",
     {},
@@ -89,6 +106,43 @@ export function BoardIntelligence() {
   const idempotencyKey = useRef(crypto.randomUUID());
   const builderStarted = useRef(false);
   const { fines, loading, error } = useUnifiedData({ regulator: "All", country: "All", year: 0, currency: "GBP" });
+
+  useEffect(() => {
+    if (!persistenceEnabled || !remoteOwner) return;
+    const controller = new AbortController();
+    fetch(`/api/board-pack/packs/${remoteOwner.packId}`, {
+      headers: { Authorization: `Bearer ${remoteOwner.ownerToken}` },
+      signal: controller.signal,
+    })
+      .then(async (response) => {
+        if (response.status === 404) {
+          writeBoardPackRemoteOwner(null);
+          setRemoteOwner(null);
+          return null;
+        }
+        const body = await response.json().catch(() => ({}));
+        if (!response.ok) throw new Error(body.error || "Unable to reopen the saved Board Pack");
+        return body;
+      })
+      .then((body) => {
+        if (!body?.payload) return;
+        const payload = body.payload as BoardPackDraftPayloadV1;
+        setProfile(payload.firmProfile);
+        setControlStatuses(payload.controlStatuses);
+        setAssuranceMode(payload.assuranceMode);
+        const next = { ...remoteOwner, revision: Number(body.revision) };
+        writeBoardPackRemoteOwner(next);
+        setRemoteOwner(next);
+      })
+      .catch((caught) => {
+        if ((caught as Error).name !== "AbortError") {
+          setStatus(caught instanceof Error ? caught.message : "Unable to reopen the saved Board Pack");
+        }
+      });
+    return () => controller.abort();
+  // Reopen only when the stored pack identity changes.
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [persistenceEnabled, remoteOwner?.packId]);
 
   const safeProfile = useMemo(() => ({
     ...profile,
@@ -150,6 +204,124 @@ export function BoardIntelligence() {
     if (builderStarted.current) return;
     builderStarted.current = true;
     trackEvent("board_pack_builder_started", { source: "public_builder" });
+  };
+
+  const buildDraftPayload = (): BoardPackDraftPayloadV1 => {
+    const uuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+    return {
+      schemaVersion: 1,
+      label: safeProfile.firmName,
+      currency: "GBP",
+      firmProfile: safeProfile,
+      presentationSettings: DEFAULT_BOARD_PACK_SETTINGS,
+      analystNote: "",
+      evidenceLocators: evidenceBasket.items
+        .filter((item) => uuid.test(item.id))
+        .slice(0, 50)
+        .map((item) => ({ caseId: item.id, regulator: item.regulator })),
+      assuranceMode,
+      controlStatuses: effectiveControlStatuses,
+    };
+  };
+
+  useEffect(() => {
+    window.localStorage.setItem(
+      BOARD_PACK_LOCAL_DRAFT_V1,
+      JSON.stringify(buildDraftPayload()),
+    );
+  // The legacy keys remain the active local editor state for two releases.
+  // This v1 mirror enables rollback without uploading anything automatically.
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [profile, assuranceMode, effectiveControlStatuses, evidenceBasket.items]);
+
+  const saveAnonymousDraft = async () => {
+    setPersistenceBusy(true);
+    setStatus(null);
+    try {
+      const payload = buildDraftPayload();
+      window.localStorage.setItem(BOARD_PACK_LOCAL_DRAFT_V1, JSON.stringify(payload));
+      const response = remoteOwner
+        ? await fetch(`/api/board-pack/packs/${remoteOwner.packId}`, {
+            method: "PATCH",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${remoteOwner.ownerToken}`,
+            },
+            body: JSON.stringify({ revision: remoteOwner.revision, payload }),
+          })
+        : await fetch("/api/board-pack/packs", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(payload),
+          });
+      const body = await response.json().catch(() => ({}));
+      if (!response.ok) throw new Error(body.error || "Unable to save the anonymous draft");
+      const next: BoardPackRemoteOwnerV1 = remoteOwner
+        ? { ...remoteOwner, revision: Number(body.revision) }
+        : { packId: body.id, ownerToken: body.ownerToken, revision: Number(body.revision) };
+      writeBoardPackRemoteOwner(next);
+      setRemoteOwner(next);
+      setStatus("Anonymous draft saved. The owner credential stays only in this browser.");
+      return next;
+    } catch (caught) {
+      setStatus(caught instanceof Error ? caught.message : "Unable to save the anonymous draft");
+      return null;
+    } finally {
+      setPersistenceBusy(false);
+    }
+  };
+
+  const shareAnonymousDraft = async () => {
+    setStatus(null);
+    try {
+      // A share must capture the inputs currently visible in the editor, not
+      // the last explicitly saved revision.
+      const owner = await saveAnonymousDraft();
+      if (!owner) return;
+      setPersistenceBusy(true);
+      const response = await fetch(`/api/board-pack/packs/${owner.packId}/shares`, {
+        method: "POST",
+        headers: { Authorization: `Bearer ${owner.ownerToken}` },
+      });
+      const body = await response.json().catch(() => ({}));
+      if (!response.ok) throw new Error(body.error || "Unable to create a shared snapshot");
+      const next = {
+        ...owner,
+        latestShare: { shareId: body.id, shareToken: body.shareToken },
+      };
+      writeBoardPackRemoteOwner(next);
+      setRemoteOwner(next);
+      setShareUrl(new URL(body.shareUrl, window.location.origin).toString());
+      setStatus("Read-only snapshot created. It expires after 30 days.");
+    } catch (caught) {
+      setStatus(caught instanceof Error ? caught.message : "Unable to create a shared snapshot");
+    } finally {
+      setPersistenceBusy(false);
+    }
+  };
+
+  const revokeLatestShare = async () => {
+    if (!remoteOwner?.latestShare) return;
+    setPersistenceBusy(true);
+    try {
+      const response = await fetch(
+        `/api/board-pack/packs/${remoteOwner.packId}/shares/${remoteOwner.latestShare.shareId}`,
+        { method: "DELETE", headers: { Authorization: `Bearer ${remoteOwner.ownerToken}` } },
+      );
+      if (!response.ok) {
+        const body = await response.json().catch(() => ({}));
+        throw new Error(body.error || "Unable to revoke the shared snapshot");
+      }
+      const next = { ...remoteOwner, latestShare: undefined };
+      writeBoardPackRemoteOwner(next);
+      setRemoteOwner(next);
+      setShareUrl("");
+      setStatus("Shared snapshot revoked.");
+    } catch (caught) {
+      setStatus(caught instanceof Error ? caught.message : "Unable to revoke the shared snapshot");
+    } finally {
+      setPersistenceBusy(false);
+    }
   };
 
   const updateArchetype = (archetypeId: BoardArchetypeId) => {
@@ -283,6 +455,10 @@ export function BoardIntelligence() {
         <div className="board-quick__hero-actions">
           <button type="button" className="board-quick__download" onClick={downloadPack} disabled={loading || downloading}>{downloading?<LoaderCircle className="spin" size={18}/>:<Download size={18}/>} {downloading?"Creating PDF...":"Download PDF"}</button>
           <button type="button" className="board-quick__secondary" onClick={openAdvisoryRequest}><Mail size={17}/> Request tailored support</button>
+          {persistenceEnabled ? <button type="button" className="board-quick__secondary" onClick={saveAnonymousDraft} disabled={persistenceBusy}>{remoteOwner ? "Update anonymous draft" : "Save anonymous draft"}</button> : null}
+          {persistenceEnabled ? <button type="button" className="board-quick__secondary" onClick={shareAnonymousDraft} disabled={persistenceBusy}>Create read-only share</button> : null}
+          {persistenceEnabled && remoteOwner?.latestShare ? <button type="button" className="board-quick__secondary" onClick={revokeLatestShare} disabled={persistenceBusy}>Revoke latest share</button> : null}
+          {shareUrl ? <a className="board-quick__secondary" href={shareUrl} target="_blank" rel="noreferrer">Open shared snapshot</a> : null}
         </div>
       </section>
 
