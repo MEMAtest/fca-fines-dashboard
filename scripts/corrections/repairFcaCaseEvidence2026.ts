@@ -55,6 +55,7 @@ const BREACH_REPAIRS: BreachRepair[] = [
 ];
 
 const SOURCE_REPAIRS = new Map<string, string>([
+  ["d9a82a1b-db99-4b51-b8f2-ba8bc523effb", "https://www.fca.org.uk/news/press-releases/financial-conduct-authority-imposes-%C2%A321m-fine-and-places-restriction-bank-beirut"],
   ["890f7a35-ef0f-4831-a449-4e0f1c7d24bb", "https://www.fca.org.uk/publication/final-notices/christopher-john-riches.pdf"],
   ["d3adfedf-16d3-422b-9c76-069c9ab26e45", "https://www.fca.org.uk/publication/final-notices/final-notice-craig-mcneil.pdf"],
   ["599a1a96-c6b6-4142-96f9-9a6f81931b50", "https://www.fca.org.uk/news/press-releases/fca-secures-high-court-judgment-awarding-injunction-and-over-%C2%A37-million"],
