@@ -95,14 +95,13 @@ jobs:
             echo "No structured summary emitted for ${{ matrix.code }}."
           fi
 
-      - name: Fail on scraper errors
+      - name: Record scraper outcome for the freshness gate
         if: always()
         run: |
           SUMMARY_FILE="/tmp/${{ matrix.code }}-scrape-summary.json"
 
           if [ "${{ steps.run_scraper.outcome }}" = "failure" ]; then
-            echo "${{ matrix.code }} scraper command failed."
-            exit 1
+            echo "::warning title=${{ matrix.code }} scraper fetch failed::The centralized freshness gate will decide whether this source requires action or remains watch-only."
           fi
 
           if [ -f "$SUMMARY_FILE" ]; then
@@ -111,12 +110,13 @@ jobs:
               const file = process.argv[1];
               const summary = JSON.parse(fs.readFileSync(file, "utf8"));
               if (summary.status && summary.status !== "success") {
-                console.error(`${summary.name || "${{ matrix.code }}"} reported status=${summary.status}`);
-                if (summary.errorMessage) console.error(summary.errorMessage);
-                process.exit(1);
+                const message = summary.errorMessage || `status=${summary.status}`;
+                console.log(`::warning title=${summary.name || "${{ matrix.code }}"} scraper summary::${message}`);
               }
             ' "$SUMMARY_FILE"
           fi
+
+          echo "Scraper execution is observational; the live-regulator freshness job is the authoritative workflow gate."
 
   freshness:
     name: Check fragile live-regulator freshness

@@ -404,7 +404,7 @@ const router = createBrowserRouter([
       },
       {
         path: "/board-pack/shared/:shareToken",
-        element: <Suspense fallback={<div>Loading shared Board Pack...</div>}><BoardPackShared /></Suspense>,
+        element: <Suspense fallback={<main className="board-quick" aria-busy="true"><section className="board-quick__empty board-quick__empty--loading" aria-live="polite"><span className="board-quick__loading-mark" aria-hidden="true">R</span><div><span className="board-quick__loading-eyebrow">Secure read-only snapshot</span><h1>Opening shared Board Pack</h1><p>Loading the immutable pack and its control assurance summary.</p></div></section></main>}><BoardPackShared /></Suspense>,
       },
       {
         path: "/board-intelligence",

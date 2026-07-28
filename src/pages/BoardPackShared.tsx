@@ -53,8 +53,19 @@ export function BoardPackShared() {
     [controls, snapshot],
   );
 
-  if (error) return <main className="board-quick"><section className="board-quick__empty"><h1>Shared pack unavailable</h1><p>{error}</p><Link to="/board-pack">Create a local Board Pack</Link></section></main>;
-  if (!snapshot || !controlSummary) return <main className="board-quick"><section className="board-quick__empty">Loading shared Board Pack...</section></main>;
+  if (error) return <main className="board-quick"><section className="board-quick__empty board-quick__empty--message"><span className="board-quick__loading-eyebrow">Read-only Board Pack</span><h1>Shared pack unavailable</h1><p>{error}</p><Link to="/board-pack">Create a local Board Pack</Link></section></main>;
+  if (!snapshot || !controlSummary) return (
+    <main className="board-quick" aria-busy="true">
+      <section className="board-quick__empty board-quick__empty--loading" aria-live="polite">
+        <span className="board-quick__loading-mark" aria-hidden="true">R</span>
+        <div>
+          <span className="board-quick__loading-eyebrow">Secure read-only snapshot</span>
+          <h1>Opening shared Board Pack</h1>
+          <p>Loading the immutable pack and its control assurance summary.</p>
+        </div>
+      </section>
+    </main>
+  );
 
   const archetype = BOARD_ARCHETYPES_BY_ID[snapshot.payload.firmProfile.archetypeId];
   const focus = BOARD_FOCUS_OPTIONS.find((item) => item.id === snapshot.payload.firmProfile.boardFocus)!;
