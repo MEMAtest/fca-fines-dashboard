@@ -176,7 +176,9 @@ jobs:
           SCRAPER_RUN_SUMMARY_FILE: /tmp/${{ matrix.code }}-scrape-summary.json
         run: |
           echo "Starting ${{ matrix.code }} via npm run ${{ matrix.script }}"
-          npm run ${{ matrix.script }}
+          # Return control to the freshness gate before the outer 30-minute job
+          # timeout can cancel the matrix entry and mark the whole run red.
+          timeout --signal=TERM --kill-after=30s 25m npm run ${{ matrix.script }}
 
       - name: Print structured scraper summary
         if: always()
