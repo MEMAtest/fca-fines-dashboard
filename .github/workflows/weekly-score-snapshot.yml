@@ -13,7 +13,8 @@ on:
   workflow_dispatch: {}
 
 permissions:
-  contents: read
+  contents: write
+  pull-requests: write
 
 jobs:
   snapshot:
@@ -32,23 +33,17 @@ jobs:
       - name: Record this week's snapshot
         run: npx tsx scripts/snapshot-scores.ts
 
-      - name: Verify review-PR token
-        env:
-          SNAPSHOT_PR_TOKEN: ${{ secrets.SNAPSHOT_PR_TOKEN }}
-        run: |
-          if [ -z "$SNAPSHOT_PR_TOKEN" ]; then
-            echo "SNAPSHOT_PR_TOKEN must be a fine-grained token scoped only to this repository with Contents and Pull requests set to Read and write."
-            exit 1
-          fi
+      # PRs opened by GITHUB_TOKEN do not start another workflow run, so keep
+      # the snapshot's focused validation inside this trusted scheduled job.
+      - name: Validate country score snapshot
+        run: npm test -- src/data/snapshotScores.test.ts --run
 
       - name: Open snapshot PR (no-op when nothing changed)
         uses: peter-evans/create-pull-request@v7
         with:
-          # Fine-grained token scoped only to this repository, with Contents
-          # and Pull requests set to Read and write. The default GITHUB_TOKEN
-          # can push the branch, but this repository's Actions policy forbids
-          # it from creating the review PR.
-          token: ${{ secrets.SNAPSHOT_PR_TOKEN }}
+          # Repository-scoped, short-lived credential; no personal token is
+          # stored in Actions secrets.
+          token: ${{ github.token }}
           branch: automation/weekly-score-snapshot
           delete-branch: true
           add-paths: src/data/scoreSnapshots.json
