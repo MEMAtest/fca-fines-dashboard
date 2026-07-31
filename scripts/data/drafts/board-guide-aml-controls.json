@@ -1,0 +1,852 @@
+{
+  "id": "ai-board-guide-aml-controls",
+  "slug": "board-guide-aml-controls",
+  "title": "Board Guide: Effective Anti-Money Laundering Controls",
+  "seoTitle": "Board Guide: Effective Anti-Money Laundering Controls | RegActions",
+  "excerpt": "Recent enforcement actions highlight persistent anti-money laundering control failures. This analysis examines specific cases to identify common weaknesses and provides a framework for board-level oversight of.",
+  "content": "## Overview\n\nRecent enforcement actions demonstrate that failures in anti-money laundering (AML) programmes are systemic, not isolated. Boards must move beyond policy approval to actively govern the design and operational effectiveness of controls.\n\nIn the United States, FINRA has censured and fined multiple firms for persistent AML programme deficiencies. RBC Capital Markets, LLC was fined $275,000 for failing to develop and implement a reasonably designed AML programme from 2016 through 2023. Beta Capital Securities LLC d/b/a Creand Securities was fined $145,000 for similar failures in its programme and customer due diligence procedures between 2019 and 2023. Prime Number Capital, LLC was fined $335,000 for programme failures and inadequate independent testing from 2021 onward. MCAP LLC was fined $15,000 for failing to conduct reasonable independent testing of its AML programme in 2021 and 2022.\n\nIn the United Arab Emirates, the Central Bank has taken more severe structural action. It revoked the licences of both Omda Exchange and Malik Exchange and imposed financial sanctions following identified AML and compliance failures.\n\nThese cases, spanning years and jurisdictions, show that inadequate control design, testing, and implementation are common root causes. Effective board governance requires continuous oversight of these operational elements to prevent such breaches.\n\n## Key Enforcement Actions\n\nRecent enforcement actions by FINRA and the Central Bank of the UAE (CBUAE) highlight a regulatory focus on anti-money laundering (AML) programme failures. These cases demonstrate deficiencies in programme design, independent testing, and risk adaptation. These failures resulted in censures, fines, and licence revocations.\n\nFINRA has targeted firms for failing to establish and implement AML programmes designed to detect and report suspicious activity. Prime Number Capital, LLC was fined USD 335,000 for programme failures and for not conducting reasonable independent testing of its AML programme from January 2021. RBC Capital Markets, LLC was censured and fined USD 275,000 for programme design violations from February 2016 through September 2023. Beta Capital Securities LLC d/b/a Creand Securities faced a USD 145,000 fine for an inadequate AML programme and a lack of appropriate risk-based customer due diligence procedures between October 2019 and July 2023.\n\nA critical failure is the absence of adequate independent testing. MCAP LLC was censured and fined USD 15,000 for conducting no independent testing of its AML programme in 2021 and 2022. Its independent testing in 2023 and 2024 was unreasonable. This underscores that the testing requirement is non-negotiable.\n\nRegulators also penalise failures to tailor programmes to specific business risks. Outset Global Trading Limited was fined USD 130,000. Its AML programme was not reasonably designed to detect and report suspicious transactions given its business of executing trades in thinly traded low-priced securities from January 2022 to December 2025.\n\nBeyond fines, the CBUAE has taken severe non-monetary actions for systemic failures. It revoked the operating licences of Omda Exchange and Malik Exchange following identified AML and compliance failures. These actions resulted in the firms being struck from the register, terminating their operations. The OCC issued a Cease-and-Desist Order against United Texas Bank, National Association for BSA/AML and oversight deficiencies.\n\n## Analysis\n\nFINRA enforcement actions reveal recurring anti-money laundering (AML) programme failures. These issues often involve suspicious activity detection, independent testing, and risk-based customer due diligence. Regulators cite violations of FINRA Rules 3310 and 2010 for these deficiencies.\n\nRBC Capital Markets, LLC was fined USD 275,000. From February 2016 through September 2023, its AML programme was not designed to detect and report suspicious transactions.\n\nBeta Capital Securities LLC d/b/a Creand Securities was fined USD 145,000. From October 2019 to July 2023, its AML programme failed to detect suspicious transactions. It also lacked appropriate risk-based customer due diligence procedures.\n\nOutset Global Trading Limited received a USD 130,000 fine. From January 2022 to December 2025, its AML programme was not designed to detect and report suspicious transactions related to its outsourced trading desk activities.\n\nPrime Number Capital, LLC was fined USD 335,000. From January 2021, it failed to establish an AML programme to detect suspicious transactions. It also failed to conduct reasonable testing of its programme.\n\nMCAP LLC was fined USD 15,000. It failed to conduct independent testing of its AML programme in 2021 and 2022. Its independent testing in 2023 and 2024 was also unreasonable.\n\nThe Ultima Global Markets (USA), Inc., fka BCS Global Markets, was fined USD 100,000. From August 2021 through September 2024, its AML programme failed to detect suspicious activity in low-priced securities transactions within correspondent accounts.\n\n## Regulatory Implications\n\nRegulatory actions show that anti-money laundering programmes must be tailored to a firm's risk profile. Generic programmes are insufficient. Failures lead to significant sanctions.\n\nFINRA fined Outset Global Trading Limited USD 130,000. Its AML programme was not reasonably designed for its outsourced trading desk business. This included executing transactions in thinly traded securities.\n\nFINRA also fined The Ultima Global Markets (USA), Inc. USD 100,000. Its programme failed to detect suspicious activity in correspondent accounts. These accounts were used for low-priced securities trades.\n\nVelox Clearing LLC faced action for an AML programme not reasonably designed. This related to its clearing services for foreign financial institutions. These institutions transacted in low-priced securities.\n\nThe Central Bank of the UAE revoked the licences of Omda Exchange and Malik Exchange. This followed identified AML failures. The OCC issued a Cease-and-Desist Order against United Texas Bank, National Association. This cited failures in board oversight and its Bank Secrecy Act programme.\n\nThese cases show regulators treat effective AML programme design as a core governance duty. Boards must ensure controls are demonstrably effective for specific operations.\n\n## Key Takeaways\n\n- RBC Capital Markets, LLC was censured and fined USD 275,000.\n- This was for failing to implement an AML compliance programme from February 2016 through September 2023.\n- Beta Capital Securities LLC d/b/a Creand Securities was fined USD 145,000.\n- This was for failing to establish an AML programme from October 2019 to July 2023. It also failed to include appropriate risk-based procedures for ongoing customer due diligence.\n- Prime Number Capital, LLC faced a USD 335,000 fine. This was for failing to establish an AML programme and conduct reasonable testing from January 2021.\n- MCAP LLC was censured and fined USD 15,000. This was for failing to conduct independent testing of its AML programme in 2021 and 2022. Its independent testing in 2023 and 2024 was unreasonable.\n- TradingBlock was censured for failing to establish and implement an AML compliance programme. The firm also failed to include appropriate risk-based procedures for ongoing customer due diligence.\n- Brentwood Capital Advisers LLC failed to establish and implement an AML compliance programme. This was between January 2021 and December 2025. It also failed to identify beneficial owners of legal entity customers.\n\n## About the Data\n\nThis analysis uses 18 topic-filtered actions linked to official regulatory sources across 7 regulators: FINRA, CBUAE, FSMA, OCC, CBI, AUSTRAC, SFC. The records cover 2025-06-23 to 2026-07-28. 7 records contain a monetary penalty verified against the evidence contract. Monetary values retain their source currency; GBP-normalised values are reserved for explicitly labelled aggregate charts. Other records may describe cancellations, prohibitions, investigations, orders or sanctions whose monetary value is not verified. The selection supports this article's analysis but is not a complete catalogue of every action in the period.",
+  "category": "Board Governance",
+  "readTime": "6 min read",
+  "date": "31 July 2026",
+  "dateISO": "2026-07-31",
+  "keywords": [
+    "AML controls",
+    "board oversight",
+    "enforcement actions",
+    "compliance programme",
+    "risk-based procedures",
+    "independent testing",
+    "suspicious activity reporting"
+  ],
+  "status": "draft",
+  "generatedBy": "ai",
+  "generatedAt": "2026-07-31T06:08:55.324Z",
+  "articleType": "thematic",
+  "topicTrack": "evergreen-guide",
+  "sourceRecords": [
+    {
+      "id": "2f83223f-7fa6-4618-b8d7-4be095c208f0",
+      "regulator": "FINRA",
+      "firm_individual": "RBC Capital Markets, LLC",
+      "amount": 275000,
+      "currency": "USD",
+      "amount_gbp": 214500,
+      "date_issued": "2026-07-28",
+      "breach_type": "AWCs (Letters of Acceptance, Waiver, and Consent)",
+      "summary": "From February 2016 through September 2023, RBC failed to develop and implement an anti-money laundering (AML) compliance program reasonably designed to detect and cause the reporting of suspicious transactions, in violation of FINRA Rules 3310(a), 3310(f)(ii) and 2010. For these violations, RBC is censured and fined $275,000.",
+      "notice_url": "https://www.finra.org/sites/default/files/fda_documents/2022075967301%20RBC%20Capital%20Markets%20LLC%20CRD%2031194%20AWC%20lp%20.pdf",
+      "source_url": "https://www.finra.org/rules-guidance/oversight-enforcement/finra-disciplinary-actions",
+      "raw_firm_individual": "RBC Capital Markets, LLC",
+      "amount_verified": true
+    },
+    {
+      "id": "7764cb13-0fe1-4064-a40b-1a2791b272b7",
+      "regulator": "FINRA",
+      "firm_individual": "Beta Capital Securities LLC d/b/a Creand Securities",
+      "amount": 145000,
+      "currency": "USD",
+      "amount_gbp": 113100,
+      "date_issued": "2026-06-29",
+      "breach_type": "AWCs (Letters of Acceptance, Waiver, and Consent)",
+      "summary": "From October 2019 to July 2023, Beta Capital failed to establish and implement an antimoney laundering (AML) program that was reasonably designed to detect and cause the reporting of suspicious transactions. During the same period, the firm’s AML program also failed to include appropriate risk-based procedures for conducting ongoing customer due diligence. For these violations of FINRA Rules 3310(a), 3310(f), and 2010, Beta Capital is censured and fined $145,000.",
+      "notice_url": "https://www.finra.org/sites/default/files/fda_documents/2022073419001%20Beta%20Capital%20Securities%20LLC%20dba%20Creand%20Securities%20CRD%2038964%20AWC%20lp.pdf",
+      "source_url": "https://www.finra.org/rules-guidance/oversight-enforcement/finra-disciplinary-actions",
+      "raw_firm_individual": "Beta Capital Securities LLC d/b/a Creand Securities",
+      "amount_verified": true
+    },
+    {
+      "id": "0c18b8ad-f7f1-4f27-9d92-2c2e72767aa8",
+      "regulator": "FINRA",
+      "firm_individual": "Outset Global Trading Limited",
+      "amount": 130000,
+      "currency": "USD",
+      "amount_gbp": 101400,
+      "date_issued": "2026-06-16",
+      "breach_type": "AWCs (Letters of Acceptance, Waiver, and Consent)",
+      "summary": "From January 2022 to December 2025, Outset served as an outsourced trading desk by executing equities and options transactions for its institutional customers, including transactions in thinly traded low-priced securities. During this time, the firm’s anti money laundering (AML) program was not reasonably designed to detect and report suspicious transactions given this business. As a result, the firm failed to detect and investigate potentially suspicious activity, including instances of potentially manipulative trading. Therefore, Outset violated FINRA Rules 3310 and 2010 and is censured and fined $130,000...",
+      "notice_url": "https://www.finra.org/sites/default/files/fda_documents/2024080217601%20Outset%20Global%20Trading%20Limited%20CRD%20281065%20AWC%20vrp.pdf",
+      "source_url": "https://www.finra.org/rules-guidance/oversight-enforcement/finra-disciplinary-actions",
+      "raw_firm_individual": "Outset Global Trading Limited",
+      "amount_verified": true
+    },
+    {
+      "id": "3b58dac5-413b-4ed1-9dbf-a24466d6dcf1",
+      "regulator": "FINRA",
+      "firm_individual": "Prime Number Capital, LLC",
+      "amount": 335000,
+      "currency": "USD",
+      "amount_gbp": 261300,
+      "date_issued": "2026-06-10",
+      "breach_type": "AWCs (Letters of Acceptance, Waiver, and Consent)",
+      "summary": "From January 2021 to the present, Prime Number failed to establish and implement an anti-money laundering (AML) program reasonably designed to detect and cause the reporting of suspicious transactions and failed to conduct reasonable testing of its AML program, in violation of FINRA Rules 3310(a), 3310(f)(ii), 3310(c), and 2010. From July 2020 to December 2024, Prime Number failed to supervise or preserve its registered representatives’ business-related communications sent or received using unapproved communications platforms, in violation of Section 17(a) of the Securities Exchange Act of 1934, Exchange Act Rule 17a-4, and FINRA Rules 3110, 4511, and 2010. From September 2020 to October 2025, in connection with its underwriting of IPOs, the firm failed to timely file required documentation with FINRA, in violation of FINRA Rules 5110 and 2010. For these violations, Prime Number is censured, fined $335,000, and has agreed to retain an independent consultant.",
+      "notice_url": "https://www.finra.org/sites/default/files/fda_documents/2023076995501%20Prime%20Number%20Capital%2C%20LLC%20CRD%20297029%20AWC%20ks.pdf",
+      "source_url": "https://www.finra.org/rules-guidance/oversight-enforcement/finra-disciplinary-actions",
+      "raw_firm_individual": "Prime Number Capital, LLC",
+      "amount_verified": true
+    },
+    {
+      "id": "7b344910-c28e-467a-8a4a-2ea851855d81",
+      "regulator": "FINRA",
+      "firm_individual": "Moody Capital Solutions, Inc.",
+      "amount": 50000,
+      "currency": "USD",
+      "amount_gbp": 39000,
+      "date_issued": "2026-05-07",
+      "breach_type": "AWCs (Letters of Acceptance, Waiver, and Consent)",
+      "summary": "From January 2020 to May 2023, Moody Capital failed to establish, maintain, and enforce a supervisory system, including written supervisory procedures (WSPs), reasonably designed to achieve compliance with FINRA rules governing outside business activities (OBAs) and outside securities accounts, in violation of FINRA Rules 3110 and 2010. Additionally, from January 2020 to December 2022, the firm did not evaluate 23 OBAs disclosed by registered representatives, in violation of FINRA Rules 3270.01 and 2010. Further, from January 2020 to June 2023, the firm’s anti-money laundering (AML) program was not reasonably designed to achieve compliance with Customer Identification Program (CIP) and Customer Due Diligence (CDD) requirements. Finally, the firm did not conduct independent tests of its AML program from 2020 to the present. Therefore, the firm violated FINRA Rules 3310 and 2010. For these violations, the firm is censured and fined $50,000, and agrees to an undertaking...",
+      "notice_url": "https://www.finra.org/sites/default/files/fda_documents/2022073261701%20Moody%20Capital%20Solutions%2C%20Inc.%20CRD%2015989%20AWC%20vrp.pdf",
+      "source_url": "https://www.finra.org/rules-guidance/oversight-enforcement/finra-disciplinary-actions",
+      "raw_firm_individual": "Moody Capital Solutions, Inc.",
+      "amount_verified": true
+    },
+    {
+      "id": "c1232fc7-4447-482d-b4a0-d89e9de1614f",
+      "regulator": "FINRA",
+      "firm_individual": "MCAP LLC",
+      "amount": 15000,
+      "currency": "USD",
+      "amount_gbp": 11700,
+      "date_issued": "2026-04-09",
+      "breach_type": "AWCs (Letters of Acceptance, Waiver, and Consent)",
+      "summary": "MCAP failed to conduct any independent testing of its anti-money laundering (AML) program in calendar years 2021 and 2022, and the firm’s independent testing of its AML program in calendar years 2023 and 2024 was unreasonable, in violation of FINRA Rules 3310(c) and 2010. For these violations, MCAP is censured and fined $15,000.",
+      "notice_url": "https://www.finra.org/sites/default/files/fda_documents/2023077010801%20MCAP%20LLC%20CRD%20139515%20AWC%20ks.pdf",
+      "source_url": "https://www.finra.org/rules-guidance/oversight-enforcement/finra-disciplinary-actions",
+      "raw_firm_individual": "MCAP LLC",
+      "amount_verified": true
+    },
+    {
+      "id": "cae4040c-4528-45df-bf70-d456a9668340",
+      "regulator": "FINRA",
+      "firm_individual": "The Ultima Global Markets (USA), Inc., fka BCS Global Markets",
+      "amount": 100000,
+      "currency": "USD",
+      "amount_gbp": 78000,
+      "date_issued": "2026-03-16",
+      "breach_type": "AWCs (Letters of Acceptance, Waiver, and Consent)",
+      "summary": "From at least August 2021 through September 2024, Ultima failed to establish and implement an anti-money laundering (AML) program that could be reasonably expected to detect and cause the reporting of potentially suspicious activity relating to low-priced securities transactions in correspondent accounts controlled by the firm’s affiliated FFIs, who traded on behalf of undisclosed customers. As a result, Ultima violated FINRA Rules 3310(a), 3310(f)(ii), and 2010. During the same period, Ultima also failed to establish and implement a reasonably designed due diligence program for correspondent accounts of FFIs, including by failing to conduct periodic reviews of account activity to determine whether the activity was consistent with the type, purpose, and anticipated activity of the account. As a result, the firm violated FINRA Rules 3310(b) and 2010. For these violations, Ultima is censured and fined $100,000...",
+      "notice_url": "https://www.finra.org/sites/default/files/fda_documents/2023078062701%20The%20Ultima%20Global%20Markets%20%28USA%29%2C%20Inc.%2C%20fka%20BCS%20Global%20Markets%20CRD%2047895%20AWC%20vrp.pdf",
+      "source_url": "https://www.finra.org/rules-guidance/oversight-enforcement/finra-disciplinary-actions",
+      "raw_firm_individual": "The Ultima Global Markets (USA), Inc., fka BCS Global Markets",
+      "amount_verified": true
+    },
+    {
+      "id": "cd9b073d-b271-4b5a-bc34-9c4fbfc6a706",
+      "regulator": "CBUAE",
+      "firm_individual": "Omda Exchange",
+      "amount": 10000000,
+      "currency": "AED",
+      "amount_gbp": 2100000,
+      "date_issued": "2025-12-23",
+      "breach_type": "AML and regulatory failures by exchange house",
+      "summary": "The Central Bank of the UAE revoked the licence of Omda Exchange, struck it off the register, and imposed a financial sanction of AED 10 million following AML and regulatory failures.",
+      "notice_url": "https://www.centralbank.ae/en/news-and-publications/news-and-insights/press-release/cbuae-revokes-the-licence-of-omda-exchange-and-imposes-a-financial-sanction-of-aed-10-million/",
+      "source_url": "https://www.centralbank.ae/en/news-and-publications/news-and-insights/press-release/cbuae-revokes-the-licence-of-omda-exchange-and-imposes-a-financial-sanction-of-aed-10-million/",
+      "raw_firm_individual": "Omda Exchange",
+      "amount_verified": false
+    },
+    {
+      "id": "3b548571-0a59-4e97-ae26-be0f4d79dd17",
+      "regulator": "FSMA",
+      "firm_individual": "X, Y et Z",
+      "amount": 0,
+      "currency": "EUR",
+      "amount_gbp": 0,
+      "date_issued": "2025-08-29",
+      "breach_type": "Mesure administrative prononcée à l’encontre de X, Y et Z pour cause d’ infractions sur la législation AML (Seulement disponible en néerlandais)",
+      "summary": "Mesure administrative prononcée à l’encontre de X, Y et Z pour cause d’ infractions sur la législation AML (Seulement disponible en néerlandais)",
+      "notice_url": "https://www.fsma.be/sites/default/files/media/files/2025-08/2025-08-29_beslissing.pdf",
+      "source_url": "https://www.fsma.be/fr/reglements-transactionnels",
+      "raw_firm_individual": "X, Y et Z",
+      "amount_verified": false
+    },
+    {
+      "id": "89316548-5dbb-471f-93a8-e25eab51e946",
+      "regulator": "CBUAE",
+      "firm_individual": "Malik Exchange",
+      "amount": 2000000,
+      "currency": "AED",
+      "amount_gbp": 420000,
+      "date_issued": "2025-08-20",
+      "breach_type": "AML and compliance failures by exchange house",
+      "summary": "The Central Bank of the UAE revoked the licence of Malik Exchange and imposed a financial sanction of AED 2 million after identifying AML and compliance failures.",
+      "notice_url": "https://www.centralbank.ae/en/news-and-publications/news-and-insights/press-release/cbuae-revokes-the-licence-of-malik-exchange-and-imposes-a-financial-sanction-of-aed-2-million/",
+      "source_url": "https://www.centralbank.ae/en/news-and-publications/news-and-insights/press-release/cbuae-revokes-the-licence-of-malik-exchange-and-imposes-a-financial-sanction-of-aed-2-million/",
+      "raw_firm_individual": "Malik Exchange",
+      "amount_verified": false
+    },
+    {
+      "id": "12e1ec48-fbf2-4f4c-93c8-ab77e2297ffd",
+      "regulator": "OCC",
+      "firm_individual": "United Texas Bank, National Association",
+      "amount": 0,
+      "currency": "USD",
+      "amount_gbp": 0,
+      "date_issued": "2026-06-16",
+      "breach_type": "Cease-and-Desist Order (C&D) or Personal Cease-and-Desist Order (PC&D)",
+      "summary": "United Texas Bank, National Association subject to OCC Cease-and-Desist Order (C&D) or Personal Cease-and-Desist Order (PC&D). Subject matters: Board / Management Oversight; BSA Independent Testing/Audit; BSA Internal Controls; BSA Officer; BSA Program Violation / 12 CFR 21.21; BSA Risk Assessment; BSA Training; BSA Violation Cited; BSA/AML; Customer/Enhanced Due Diligence (CDD/EDD); OFAC Compliance Issue; SAR/CTR Monitoring/Filing Issue. Docket AA-ENF-2026-29",
+      "notice_url": "",
+      "source_url": "https://apps.occ.gov/EASearch?q=United%20Texas%20Bank%2C%20National%20Association&cat=&srt=&pgsz=100",
+      "raw_firm_individual": "United Texas Bank, National Association",
+      "amount_verified": false
+    },
+    {
+      "id": "6cfde520-ad48-4694-b943-421d0fa8e1e4",
+      "regulator": "FINRA",
+      "firm_individual": "TradingBlock",
+      "amount": 0,
+      "currency": "USD",
+      "amount_gbp": 0,
+      "date_issued": "2026-06-05",
+      "breach_type": "AWCs (Letters of Acceptance, Waiver, and Consent)",
+      "summary": "From December 2018 to the present, TradingBlock failed to establish and implement an anti-money laundering (AML) compliance program reasonably designed to detect and cause the reporting of suspicious transactions. The firm also failed to include in its AML program appropriate risk-based procedures for conducting ongoing customer due diligence and monitoring. As a result, the firm violated FINRA Rules 3310(a), 3310(f), and 2010. For these violations, TradingBlock consented to a censure, a $210,000 fine, and an undertaking to certify that it has remediated its AML policies and procedures.",
+      "notice_url": "https://www.finra.org/sites/default/files/fda_documents/2023077078301%20TradingBlock%20CRD%20128605%20AWC%20ks.pdf",
+      "source_url": "https://www.finra.org/rules-guidance/oversight-enforcement/finra-disciplinary-actions",
+      "raw_firm_individual": "TradingBlock",
+      "amount_verified": false
+    },
+    {
+      "id": "bd5895c4-52c0-425e-8fbb-7cf2efd5173e",
+      "regulator": "FINRA",
+      "firm_individual": "Pictet Overseas Inc.",
+      "amount": 0,
+      "currency": "USD",
+      "amount_gbp": 0,
+      "date_issued": "2026-05-18",
+      "breach_type": "AWCs (Letters of Acceptance, Waiver, and Consent)",
+      "summary": "From September 2021 to February 2025, Pictet’s anti-money laundering (AML) compliance program was not reasonably designed to detect and cause the reporting of suspicious transactions in low-priced securities. As a result, Pictet violated FINRA Rules 3310(a), 3310(f)(ii), and 2010. During the same period, Pictet failed to implement reasonably designed policies, procedures, and controls to conduct due diligence on correspondent accounts of foreign financial institutions (FFIs), including by failing to conduct periodic reviews of FFI account activity. As a result, Pictet violated FINRA Rules 3310(b) and 2010.",
+      "notice_url": "https://www.finra.org/sites/default/files/fda_documents/2022076395201%20Pictet%20Overseas%20Inc%20CRD%2036500%20AWC%20lp.pdf",
+      "source_url": "https://www.finra.org/rules-guidance/oversight-enforcement/finra-disciplinary-actions",
+      "raw_firm_individual": "Pictet Overseas Inc.",
+      "amount_verified": false
+    },
+    {
+      "id": "ed79e3a4-0535-4102-a49a-335cc39c37f3",
+      "regulator": "FINRA",
+      "firm_individual": "Brentwood Capital Advisors LLC",
+      "amount": 0,
+      "currency": "USD",
+      "amount_gbp": 0,
+      "date_issued": "2026-04-14",
+      "breach_type": "AWCs (Letters of Acceptance, Waiver, and Consent)",
+      "summary": "Between January 2021 and December 2025, Brentwood failed to establish and implement an anti-money laundering (AML) compliance program reasonably designed to identify and verify the identities of the beneficial owners of its legal entity customers, in violation of FINRARules 3310(b) and 2010. Between January 2018 and January 2024, Brentwood failed to establish and implement a written AML compliance program that provided for annual (on a calendar-year basis) independent AML testing, and the firm conducted no independent AML testing between 2018 and 2023, in violation of FINRA Rules 3310(c) and 2010.",
+      "notice_url": "https://www.finra.org/sites/default/files/fda_documents/2023077012601%20Brentwood%20Capital%20Advisors%20LLC%20CRD%20118712%20AWC%20lp.pdf",
+      "source_url": "https://www.finra.org/rules-guidance/oversight-enforcement/finra-disciplinary-actions",
+      "raw_firm_individual": "Brentwood Capital Advisors LLC",
+      "amount_verified": false
+    },
+    {
+      "id": "4d1b9d3d-f4d2-416c-ab32-41aa5eead2d2",
+      "regulator": "CBI",
+      "firm_individual": "Coinbase Europe Limited",
+      "amount": 3398975,
+      "currency": "EUR",
+      "amount_gbp": 2889128.75,
+      "date_issued": "2025-11-06",
+      "breach_type": "Anti-Money Laundering Violations",
+      "summary": "Coinbase Europe Limited fined €3,398,975 by CBI for AML compliance failures",
+      "notice_url": "https://www.centralbank.ie/docs/default-source/news-and-media/legal-notices/settlement-agreements/settlement-notice-coinbase-europe-limited.pdf",
+      "source_url": "https://www.centralbank.ie/news-media/legal-notices/enforcement-actions",
+      "raw_firm_individual": "Coinbase Europe Limited",
+      "amount_verified": false
+    },
+    {
+      "id": "4bec34b1-d1e0-4d85-a53e-5e8468363927",
+      "regulator": "AUSTRAC",
+      "firm_individual": "Mount Pritchard and District Community Club Ltd",
+      "amount": 0,
+      "currency": "AUD",
+      "amount_gbp": 0,
+      "date_issued": "2025-07-30",
+      "breach_type": "Mount Pritchard and District Community Club Ltd (Mounties)",
+      "summary": "On 30 July 2025, AUSTRAC applied for civil penalty orders against Mount Pritchard and District Community Club Ltd for alleged serious and systemic non-compliance with Australia’s AML/CTF laws. Information about these proceedings includes:",
+      "notice_url": "https://www.austrac.gov.au/news-and-media/media-release/austrac-launches-civil-penalty-proceedings-against-pokies-giant-mounties",
+      "source_url": "https://www.austrac.gov.au/about-us/record-our-actions/enforcement-actions-taken",
+      "raw_firm_individual": "Mount Pritchard and District Community Club Ltd",
+      "amount_verified": false
+    },
+    {
+      "id": "a239bc6c-bac3-40ba-a745-0947b376629d",
+      "regulator": "SFC",
+      "firm_individual": "Freeman Commodities Limited",
+      "amount": 3400000,
+      "currency": "HKD",
+      "amount_gbp": 340000,
+      "date_issued": "2025-07-03",
+      "breach_type": "SFC reprimands and fines Freeman Commodities Limited $3.4 million and suspends its former responsible officer for regulatory breaches",
+      "summary": "The Securities and Futures Commission (SFC) has reprimanded and fined Freeman Commodities Limited (Freeman), now known as Arta Global Futures Limited (Arta), $3.4 million for failures in complying with anti-money laundering and counter-financing of terrorism (AML/CFT) and other regulatory requirements between June 2017 and December 2018 (Note 1). The SFC has also suspended Mr Li Chun Kei, a former responsible officer (RO), managing director and manager-in-charge of key business line of Freeman, ",
+      "notice_url": "https://apps.sfc.hk/edistributionWeb/gateway/EN/news-and-announcements/news/doc?refNo=25PR103",
+      "source_url": "https://apps.sfc.hk/edistributionWeb/api/news/list-content?lang=EN&refNo=25PR103",
+      "raw_firm_individual": "Freeman Commodities Limited",
+      "amount_verified": false
+    },
+    {
+      "id": "d3c4e4b1-8c1b-44fc-b1d8-bd18ea7fc5a4",
+      "regulator": "FINRA",
+      "firm_individual": "Velox Clearing LLC",
+      "amount": 1300000,
+      "currency": "USD",
+      "amount_gbp": 1014000,
+      "date_issued": "2025-06-23",
+      "breach_type": "AWCs (Letters of Acceptance, Waiver, and Consent)",
+      "summary": "Velox Clearing provides clearing services to a number of foreign financial institutions that transact in thinly traded, low-priced securities through omnibus accounts. Since January 2019, Velox failed to establish and implement an AML program reasonably designed to detect and cause the reporting of suspicious transactions given this business, in violation of FINRA Rules 3310 and 2010. As a result, the firm failed to detect or investigate red flags of spoofing, layering, bid support, and marking the close. The firm also has failed to retain and review business communications on non-firm communications platforms, in violation of Exchange Act § 17(a), Exchange Act Rule 17a-4 and FINRA Rules 3110, 4511, and 2010. Additionally, between January 2019 and February 2024, the firm failed to reasonably supervise outside brokerage accounts in violation of FINRA Rule 3110(d). For these violations Velox is censured, fined $1.3 million, and has agreed to retain an independent consultant.",
+      "notice_url": "https://www.finra.org/sites/default/files/fda_documents/2022077267702%20Velox%20Clearing%20LLC%20%20CRD%20290215%20AWC%20gg%20%282025-1753316402405%29.pdf",
+      "source_url": "https://www.finra.org/rules-guidance/oversight-enforcement/finra-disciplinary-actions",
+      "raw_firm_individual": "Velox Clearing LLC",
+      "amount_verified": false
+    }
+  ],
+  "editorialManifest": {
+    "version": 1,
+    "status": "blocked",
+    "contentHash": "7e437747dc871d79bee9e9d2ad39bcd9458465c4aa31b53b29d3e7402d99dfd3",
+    "generatedAt": "2026-07-31T06:08:55.324Z",
+    "generationModel": "deepseek/deepseek-v3.2",
+    "promptVersion": "regactions-editorial-v2.1",
+    "sources": [
+      {
+        "id": "source:2f83223f-7fa6-4618-b8d7-4be095c208f0",
+        "url": "https://www.finra.org/sites/default/files/fda_documents/2022075967301%20RBC%20Capital%20Markets%20LLC%20CRD%2031194%20AWC%20lp%20.pdf",
+        "title": "FINRA action concerning RBC Capital Markets, LLC",
+        "publisher": "FINRA",
+        "sourceType": "official_notice",
+        "retrievedAt": "2026-07-31T06:08:55.324Z",
+        "official": true,
+        "excerpt": "Official evidence record date: 2026-07-28. Verified penalty amount: USD 275000. Evidence summary: From February 2016 through September 2023, RBC failed to develop and implement an anti-money laundering (AML) compliance program reasonably designed to detect and cause the reporting of suspicious transactions, in violation of FINRA Rules 3310(a), 3310(f)(ii) and 2010. For these violations, RBC is censured and fined $275,000."
+      },
+      {
+        "id": "source:7764cb13-0fe1-4064-a40b-1a2791b272b7",
+        "url": "https://www.finra.org/sites/default/files/fda_documents/2022073419001%20Beta%20Capital%20Securities%20LLC%20dba%20Creand%20Securities%20CRD%2038964%20AWC%20lp.pdf",
+        "title": "FINRA action concerning Beta Capital Securities LLC d/b/a Creand Securities",
+        "publisher": "FINRA",
+        "sourceType": "official_notice",
+        "retrievedAt": "2026-07-31T06:08:55.324Z",
+        "official": true,
+        "excerpt": "Official evidence record date: 2026-06-29. Verified penalty amount: USD 145000. Evidence summary: From October 2019 to July 2023, Beta Capital failed to establish and implement an antimoney laundering (AML) program that was reasonably designed to detect and cause the reporting of suspicious transactions. During the same period, the firm’s AML program also failed to include appropriate risk-based procedures for conducting ongoing customer due diligence. For these violations of FINRA Rules 3310(a), 3310(f), and 2010, Beta Capital is censured and fined $145,000."
+      },
+      {
+        "id": "source:0c18b8ad-f7f1-4f27-9d92-2c2e72767aa8",
+        "url": "https://www.finra.org/sites/default/files/fda_documents/2024080217601%20Outset%20Global%20Trading%20Limited%20CRD%20281065%20AWC%20vrp.pdf",
+        "title": "FINRA action concerning Outset Global Trading Limited",
+        "publisher": "FINRA",
+        "sourceType": "official_notice",
+        "retrievedAt": "2026-07-31T06:08:55.324Z",
+        "official": true,
+        "excerpt": "Official evidence record date: 2026-06-16. Verified penalty amount: USD 130000. Evidence summary: From January 2022 to December 2025, Outset served as an outsourced trading desk by executing equities and options transactions for its institutional customers, including transactions in thinly traded low-priced securities. During this time, the firm’s anti money laundering (AML) program was not reasonably designed to detect and report suspicious transactions given this business. As a result, the firm failed to detect and investigate potentially suspicious activity, including instances of potentially manipulative trading. Therefore, Outset violated FINRA Rules 3310 and 2010 and is censured and fined $130,000..."
+      },
+      {
+        "id": "source:3b58dac5-413b-4ed1-9dbf-a24466d6dcf1",
+        "url": "https://www.finra.org/sites/default/files/fda_documents/2023076995501%20Prime%20Number%20Capital%2C%20LLC%20CRD%20297029%20AWC%20ks.pdf",
+        "title": "FINRA action concerning Prime Number Capital, LLC",
+        "publisher": "FINRA",
+        "sourceType": "official_notice",
+        "retrievedAt": "2026-07-31T06:08:55.324Z",
+        "official": true,
+        "excerpt": "Official evidence record date: 2026-06-10. Verified penalty amount: USD 335000. Evidence summary: From January 2021 to the present, Prime Number failed to establish and implement an anti-money laundering (AML) program reasonably designed to detect and cause the reporting of suspicious transactions and failed to conduct reasonable testing of its AML program, in violation of FINRA Rules 3310(a), 3310(f)(ii), 3310(c), and 2010. From July 2020 to December 2024, Prime Number failed to supervise or preserve its registered representatives’ business-related communications sent or received using unapproved communications platforms, in violation of Section 17(a) of the Securities Exchange Act of 1934, Exchange Act Rule 17a-4, and FINRA Rules 3110, 4511, and 2010. From September 2020 to October 2025, in connection with its underwriting of IPOs, the firm failed to timely file required documentation with FINRA, in violation of FINRA Rules 5110 and 2010. For these violations, Prime Number is censured, fined $335,000, and has agreed to retain an independent consultant."
+      },
+      {
+        "id": "source:7b344910-c28e-467a-8a4a-2ea851855d81",
+        "url": "https://www.finra.org/sites/default/files/fda_documents/2022073261701%20Moody%20Capital%20Solutions%2C%20Inc.%20CRD%2015989%20AWC%20vrp.pdf",
+        "title": "FINRA action concerning Moody Capital Solutions, Inc.",
+        "publisher": "FINRA",
+        "sourceType": "official_notice",
+        "retrievedAt": "2026-07-31T06:08:55.324Z",
+        "official": true,
+        "excerpt": "Official evidence record date: 2026-05-07. Verified penalty amount: USD 50000. Evidence summary: From January 2020 to May 2023, Moody Capital failed to establish, maintain, and enforce a supervisory system, including written supervisory procedures (WSPs), reasonably designed to achieve compliance with FINRA rules governing outside business activities (OBAs) and outside securities accounts, in violation of FINRA Rules 3110 and 2010. Additionally, from January 2020 to December 2022, the firm did not evaluate 23 OBAs disclosed by registered representatives, in violation of FINRA Rules 3270.01 and 2010. Further, from January 2020 to June 2023, the firm’s anti-money laundering (AML) program was not reasonably designed to achieve compliance with Customer Identification Program (CIP) and Customer Due Diligence (CDD) requirements. Finally, the firm did not conduct independent tests of its AML program from 2020 to the present. Therefore, the firm violated FINRA Rules 3310 and 2010. For these violations, the firm is censured and fined $50,000, and agrees to an undertaking..."
+      },
+      {
+        "id": "source:c1232fc7-4447-482d-b4a0-d89e9de1614f",
+        "url": "https://www.finra.org/sites/default/files/fda_documents/2023077010801%20MCAP%20LLC%20CRD%20139515%20AWC%20ks.pdf",
+        "title": "FINRA action concerning MCAP LLC",
+        "publisher": "FINRA",
+        "sourceType": "official_notice",
+        "retrievedAt": "2026-07-31T06:08:55.324Z",
+        "official": true,
+        "excerpt": "Official evidence record date: 2026-04-09. Verified penalty amount: USD 15000. Evidence summary: MCAP failed to conduct any independent testing of its anti-money laundering (AML) program in calendar years 2021 and 2022, and the firm’s independent testing of its AML program in calendar years 2023 and 2024 was unreasonable, in violation of FINRA Rules 3310(c) and 2010. For these violations, MCAP is censured and fined $15,000."
+      },
+      {
+        "id": "source:cae4040c-4528-45df-bf70-d456a9668340",
+        "url": "https://www.finra.org/sites/default/files/fda_documents/2023078062701%20The%20Ultima%20Global%20Markets%20%28USA%29%2C%20Inc.%2C%20fka%20BCS%20Global%20Markets%20CRD%2047895%20AWC%20vrp.pdf",
+        "title": "FINRA action concerning The Ultima Global Markets (USA), Inc., fka BCS Global Markets",
+        "publisher": "FINRA",
+        "sourceType": "official_notice",
+        "retrievedAt": "2026-07-31T06:08:55.324Z",
+        "official": true,
+        "excerpt": "Official evidence record date: 2026-03-16. Verified penalty amount: USD 100000. Evidence summary: From at least August 2021 through September 2024, Ultima failed to establish and implement an anti-money laundering (AML) program that could be reasonably expected to detect and cause the reporting of potentially suspicious activity relating to low-priced securities transactions in correspondent accounts controlled by the firm’s affiliated FFIs, who traded on behalf of undisclosed customers. As a result, Ultima violated FINRA Rules 3310(a), 3310(f)(ii), and 2010. During the same period, Ultima also failed to establish and implement a reasonably designed due diligence program for correspondent accounts of FFIs, including by failing to conduct periodic reviews of account activity to determine whether the activity was consistent with the type, purpose, and anticipated activity of the account. As a result, the firm violated FINRA Rules 3310(b) and 2010. For these violations, Ultima is censured and fined $100,000..."
+      },
+      {
+        "id": "source:cd9b073d-b271-4b5a-bc34-9c4fbfc6a706",
+        "url": "https://www.centralbank.ae/en/news-and-publications/news-and-insights/press-release/cbuae-revokes-the-licence-of-omda-exchange-and-imposes-a-financial-sanction-of-aed-10-million/",
+        "title": "CBUAE action concerning Omda Exchange",
+        "publisher": "CBUAE",
+        "sourceType": "official_notice",
+        "retrievedAt": "2026-07-31T06:08:55.324Z",
+        "official": true,
+        "excerpt": "Official evidence record date: 2025-12-23. No verified penalty amount. Evidence summary: The Central Bank of the UAE revoked the licence of Omda Exchange, struck it off the register, and imposed a financial sanction of [unverified monetary figure removed] following AML and regulatory failures."
+      },
+      {
+        "id": "source:3b548571-0a59-4e97-ae26-be0f4d79dd17",
+        "url": "https://www.fsma.be/sites/default/files/media/files/2025-08/2025-08-29_beslissing.pdf",
+        "title": "FSMA action concerning X, Y et Z",
+        "publisher": "FSMA",
+        "sourceType": "official_notice",
+        "retrievedAt": "2026-07-31T06:08:55.324Z",
+        "official": true,
+        "excerpt": "Official evidence record date: 2025-08-29. No verified penalty amount. Evidence summary: Mesure administrative prononcée à l’encontre de X, Y et Z pour cause d’ infractions sur la législation AML (Seulement disponible en néerlandais)"
+      },
+      {
+        "id": "source:89316548-5dbb-471f-93a8-e25eab51e946",
+        "url": "https://www.centralbank.ae/en/news-and-publications/news-and-insights/press-release/cbuae-revokes-the-licence-of-malik-exchange-and-imposes-a-financial-sanction-of-aed-2-million/",
+        "title": "CBUAE action concerning Malik Exchange",
+        "publisher": "CBUAE",
+        "sourceType": "official_notice",
+        "retrievedAt": "2026-07-31T06:08:55.324Z",
+        "official": true,
+        "excerpt": "Official evidence record date: 2025-08-20. No verified penalty amount. Evidence summary: The Central Bank of the UAE revoked the licence of Malik Exchange and imposed a financial sanction of [unverified monetary figure removed] after identifying AML and compliance failures."
+      },
+      {
+        "id": "source:12e1ec48-fbf2-4f4c-93c8-ab77e2297ffd",
+        "url": "https://apps.occ.gov/EASearch?q=United%20Texas%20Bank%2C%20National%20Association&cat=&srt=&pgsz=100",
+        "title": "OCC action concerning United Texas Bank, National Association",
+        "publisher": "OCC",
+        "sourceType": "official_notice",
+        "retrievedAt": "2026-07-31T06:08:55.324Z",
+        "official": true,
+        "excerpt": "Official evidence record date: 2026-06-16. No verified penalty amount. Evidence summary: United Texas Bank, National Association subject to OCC Cease-and-Desist Order (C&D) or Personal Cease-and-Desist Order (PC&D). Subject matters: Board / Management Oversight; BSA Independent Testing/Audit; BSA Internal Controls; BSA Officer; BSA Program Violation / 12 CFR 21.21; BSA Risk Assessment; BSA Training; BSA Violation Cited; BSA/AML; Customer/Enhanced Due Diligence (CDD/EDD); OFAC Compliance Issue; SAR/CTR Monitoring/Filing Issue. Docket AA-ENF-2026-29"
+      },
+      {
+        "id": "source:6cfde520-ad48-4694-b943-421d0fa8e1e4",
+        "url": "https://www.finra.org/sites/default/files/fda_documents/2023077078301%20TradingBlock%20CRD%20128605%20AWC%20ks.pdf",
+        "title": "FINRA action concerning TradingBlock",
+        "publisher": "FINRA",
+        "sourceType": "official_notice",
+        "retrievedAt": "2026-07-31T06:08:55.324Z",
+        "official": true,
+        "excerpt": "Official evidence record date: 2026-06-05. No verified penalty amount. Evidence summary: From December 2018 to the present, TradingBlock failed to establish and implement an anti-money laundering (AML) compliance program reasonably designed to detect and cause the reporting of suspicious transactions. The firm also failed to include in its AML program appropriate risk-based procedures for conducting ongoing customer due diligence and monitoring. As a result, the firm violated FINRA Rules 3310(a), 3310(f), and 2010. For these violations, TradingBlock consented to a censure, a [unverified monetary figure removed] fine, and an undertaking to certify that it has remediated its AML policies and procedures."
+      },
+      {
+        "id": "source:bd5895c4-52c0-425e-8fbb-7cf2efd5173e",
+        "url": "https://www.finra.org/sites/default/files/fda_documents/2022076395201%20Pictet%20Overseas%20Inc%20CRD%2036500%20AWC%20lp.pdf",
+        "title": "FINRA action concerning Pictet Overseas Inc.",
+        "publisher": "FINRA",
+        "sourceType": "official_notice",
+        "retrievedAt": "2026-07-31T06:08:55.324Z",
+        "official": true,
+        "excerpt": "Official evidence record date: 2026-05-18. No verified penalty amount. Evidence summary: From September 2021 to February 2025, Pictet’s anti-money laundering (AML) compliance program was not reasonably designed to detect and cause the reporting of suspicious transactions in low-priced securities. As a result, Pictet violated FINRA Rules 3310(a), 3310(f)(ii), and 2010. During the same period, Pictet failed to implement reasonably designed policies, procedures, and controls to conduct due diligence on correspondent accounts of foreign financial institutions (FFIs), including by failing to conduct periodic reviews of FFI account activity. As a result, Pictet violated FINRA Rules 3310(b) and 2010."
+      },
+      {
+        "id": "source:ed79e3a4-0535-4102-a49a-335cc39c37f3",
+        "url": "https://www.finra.org/sites/default/files/fda_documents/2023077012601%20Brentwood%20Capital%20Advisors%20LLC%20CRD%20118712%20AWC%20lp.pdf",
+        "title": "FINRA action concerning Brentwood Capital Advisors LLC",
+        "publisher": "FINRA",
+        "sourceType": "official_notice",
+        "retrievedAt": "2026-07-31T06:08:55.324Z",
+        "official": true,
+        "excerpt": "Official evidence record date: 2026-04-14. No verified penalty amount. Evidence summary: Between January 2021 and December 2025, Brentwood failed to establish and implement an anti-money laundering (AML) compliance program reasonably designed to identify and verify the identities of the beneficial owners of its legal entity customers, in violation of FINRARules 3310(b) and 2010. Between January 2018 and January 2024, Brentwood failed to establish and implement a written AML compliance program that provided for annual (on a calendar-year basis) independent AML testing, and the firm conducted no independent AML testing between 2018 and 2023, in violation of FINRA Rules 3310(c) and 2010."
+      },
+      {
+        "id": "source:4d1b9d3d-f4d2-416c-ab32-41aa5eead2d2",
+        "url": "https://www.centralbank.ie/docs/default-source/news-and-media/legal-notices/settlement-agreements/settlement-notice-coinbase-europe-limited.pdf",
+        "title": "CBI action concerning Coinbase Europe Limited",
+        "publisher": "CBI",
+        "sourceType": "official_notice",
+        "retrievedAt": "2026-07-31T06:08:55.324Z",
+        "official": true,
+        "excerpt": "Official evidence record date: 2025-11-06. No verified penalty amount. Evidence summary: Coinbase Europe Limited fined [unverified monetary figure removed] by CBI for AML compliance failures"
+      },
+      {
+        "id": "source:4bec34b1-d1e0-4d85-a53e-5e8468363927",
+        "url": "https://www.austrac.gov.au/news-and-media/media-release/austrac-launches-civil-penalty-proceedings-against-pokies-giant-mounties",
+        "title": "AUSTRAC action concerning Mount Pritchard and District Community Club Ltd",
+        "publisher": "AUSTRAC",
+        "sourceType": "official_notice",
+        "retrievedAt": "2026-07-31T06:08:55.324Z",
+        "official": true,
+        "excerpt": "Official evidence record date: 2025-07-30. No verified penalty amount. Evidence summary: On 30 July 2025, AUSTRAC applied for civil penalty orders against Mount Pritchard and District Community Club Ltd for alleged serious and systemic non-compliance with Australia’s AML/CTF laws. Information about these proceedings includes:"
+      },
+      {
+        "id": "source:a239bc6c-bac3-40ba-a745-0947b376629d",
+        "url": "https://apps.sfc.hk/edistributionWeb/gateway/EN/news-and-announcements/news/doc?refNo=25PR103",
+        "title": "SFC action concerning Freeman Commodities Limited",
+        "publisher": "SFC",
+        "sourceType": "official_notice",
+        "retrievedAt": "2026-07-31T06:08:55.324Z",
+        "official": true,
+        "excerpt": "Official evidence record date: 2025-07-03. No verified penalty amount. Evidence summary: The Securities and Futures Commission (SFC) has reprimanded and fined Freeman Commodities Limited (Freeman), now known as Arta Global Futures Limited (Arta), [unverified monetary figure removed] for failures in complying with anti-money laundering and counter-financing of terrorism (AML/CFT) and other regulatory requirements between June 2017 and December 2018 (Note 1). The SFC has also suspended Mr Li Chun Kei, a former responsible officer (RO), managing director and manager-in-charge of key business line of Freeman, "
+      },
+      {
+        "id": "source:d3c4e4b1-8c1b-44fc-b1d8-bd18ea7fc5a4",
+        "url": "https://www.finra.org/sites/default/files/fda_documents/2022077267702%20Velox%20Clearing%20LLC%20%20CRD%20290215%20AWC%20gg%20%282025-1753316402405%29.pdf",
+        "title": "FINRA action concerning Velox Clearing LLC",
+        "publisher": "FINRA",
+        "sourceType": "official_notice",
+        "retrievedAt": "2026-07-31T06:08:55.324Z",
+        "official": true,
+        "excerpt": "Official evidence record date: 2025-06-23. No verified penalty amount. Evidence summary: Velox Clearing provides clearing services to a number of foreign financial institutions that transact in thinly traded, low-priced securities through omnibus accounts. Since January 2019, Velox failed to establish and implement an AML program reasonably designed to detect and cause the reporting of suspicious transactions given this business, in violation of FINRA Rules 3310 and 2010. As a result, the firm failed to detect or investigate red flags of spoofing, layering, bid support, and marking the close. The firm also has failed to retain and review business communications on non-firm communications platforms, in violation of Exchange Act § 17(a), Exchange Act Rule 17a-4 and FINRA Rules 3110, 4511, and 2010. Additionally, between January 2019 and February 2024, the firm failed to reasonably supervise outside brokerage accounts in violation of FINRA Rule 3110(d). For these violations Velox is censured, fined [unverified monetary figure removed], and has agreed to retain an independent consultant."
+      }
+    ],
+    "claims": [
+      {
+        "id": "claim-1",
+        "text": "RBC Capital Markets, LLC was fined $275,000 for failing to develop and implement a reasonably designed AML programme from 2016 through 2023.",
+        "kind": "action_type",
+        "sourceIds": [
+          "source:2f83223f-7fa6-4618-b8d7-4be095c208f0"
+        ],
+        "recordIds": [
+          "2f83223f-7fa6-4618-b8d7-4be095c208f0"
+        ],
+        "verdict": "verified",
+        "verifier": "regulatory-verifier-agent",
+        "notes": "The source confirms that RBC Capital Markets, LLC was fined $275,000 for failing to develop and implement a reasonably designed AML programme from February 2016 through September 2023."
+      },
+      {
+        "id": "claim-2",
+        "text": "Beta Capital Securities LLC d/b/a Creand Securities was fined $145,000 for failing to establish an AML programme from 2019 to 2023 and for failing to include appropriate risk-based procedures for ongoing customer due diligence.",
+        "kind": "action_type",
+        "sourceIds": [
+          "source:7764cb13-0fe1-4064-a40b-1a2791b272b7"
+        ],
+        "recordIds": [
+          "7764cb13-0fe1-4064-a40b-1a2791b272b7"
+        ],
+        "verdict": "verified",
+        "verifier": "regulatory-verifier-agent",
+        "notes": "The source confirms that Beta Capital Securities LLC d/b/a Creand Securities was fined $145,000 for failing to establish an AML programme from October 2019 to July 2023 and for failing to include appropriate risk-based procedures for ongoing customer due diligence."
+      },
+      {
+        "id": "claim-3",
+        "text": "Prime Number Capital, LLC was fined $335,000 for failing to establish an AML programme and conduct reasonable testing from 2021 onward.",
+        "kind": "action_type",
+        "sourceIds": [
+          "source:3b58dac5-413b-4ed1-9dbf-a24466d6dcf1"
+        ],
+        "recordIds": [
+          "3b58dac5-413b-4ed1-9dbf-a24466d6dcf1"
+        ],
+        "verdict": "verified",
+        "verifier": "regulatory-verifier-agent",
+        "notes": "The source confirms that Prime Number Capital, LLC was fined $335,000 for failing to establish an AML programme and conduct reasonable testing from January 2021 onward."
+      },
+      {
+        "id": "claim-4",
+        "text": "MCAP LLC was censured and fined $15,000 for failing to conduct independent testing of its AML programme in 2021 and 2022, and for unreasonable testing in 2023 and 2024.",
+        "kind": "action_type",
+        "sourceIds": [
+          "source:c1232fc7-4447-482d-b4a0-d89e9de1614f"
+        ],
+        "recordIds": [
+          "c1232fc7-4447-482d-b4a0-d89e9de1614f"
+        ],
+        "verdict": "verified",
+        "verifier": "regulatory-verifier-agent",
+        "notes": "The source confirms that MCAP LLC was censured and fined $15,000 for failing to conduct independent testing of its AML programme in 2021 and 2022, and for unreasonable testing in 2023 and 2024."
+      },
+      {
+        "id": "claim-5",
+        "text": "The Central Bank of the UAE revoked the licences of both Omda Exchange and Malik Exchange following identified AML and compliance failures.",
+        "kind": "finding",
+        "sourceIds": [
+          "source:cd9b073d-b271-4b5a-bc34-9c4fbfc6a706",
+          "source:89316548-5dbb-471f-93a8-e25eab51e946"
+        ],
+        "recordIds": [
+          "cd9b073d-b271-4b5a-bc34-9c4fbfc6a706",
+          "89316548-5dbb-471f-93a8-e25eab51e946"
+        ],
+        "verdict": "verified",
+        "verifier": "regulatory-verifier-agent",
+        "notes": "The sources confirm that the Central Bank of the UAE revoked the licences of both Omda Exchange and Malik Exchange following identified AML and compliance failures."
+      },
+      {
+        "id": "claim-6",
+        "text": "Outset Global Trading Limited was fined $130,000 for failing to design its AML programme to detect and report suspicious transactions related to its outsourced trading desk activities from 2022 to 2025.",
+        "kind": "action_type",
+        "sourceIds": [
+          "source:0c18b8ad-f7f1-4f27-9d92-2c2e72767aa8"
+        ],
+        "recordIds": [
+          "0c18b8ad-f7f1-4f27-9d92-2c2e72767aa8"
+        ],
+        "verdict": "verified",
+        "verifier": "regulatory-verifier-agent",
+        "notes": "The source confirms that Outset Global Trading Limited was fined $130,000 for failing to design its AML programme to detect and report suspicious transactions related to its outsourced trading desk activities from January 2022 to December 2025."
+      },
+      {
+        "id": "claim-7",
+        "text": "The Ultima Global Markets (USA), Inc., fka BCS Global Markets, was fined $100,000 for failing to detect suspicious activity in low-priced securities transactions within correspondent accounts from 2021 through 2024.",
+        "kind": "action_type",
+        "sourceIds": [
+          "source:cae4040c-4528-45df-bf70-d456a9668340"
+        ],
+        "recordIds": [
+          "cae4040c-4528-45df-bf70-d456a9668340"
+        ],
+        "verdict": "verified",
+        "verifier": "regulatory-verifier-agent",
+        "notes": "The source confirms that The Ultima Global Markets (USA), Inc., fka BCS Global Markets, was fined $100,000 for failing to detect suspicious activity in low-priced securities transactions within correspondent accounts from August 2021 through September 2024."
+      },
+      {
+        "id": "claim-8",
+        "text": "United Texas Bank, National Association was subject to an OCC Cease-and-Desist Order for failures in board oversight and the Bank Secrecy Act programme.",
+        "kind": "finding",
+        "sourceIds": [
+          "source:12e1ec48-fbf2-4f4c-93c8-ab77e2297ffd"
+        ],
+        "recordIds": [
+          "12e1ec48-fbf2-4f4c-93c8-ab77e2297ffd"
+        ],
+        "verdict": "verified",
+        "verifier": "regulatory-verifier-agent",
+        "notes": "The source confirms that United Texas Bank, National Association was subject to an OCC Cease-and-Desist Order for failures in board oversight and the Bank Secrecy Act programme."
+      },
+      {
+        "id": "claim-9",
+        "text": "TradingBlock was censured and fined for failing to establish and implement an AML compliance programme and for failing to include appropriate risk-based procedures for conducting ongoing customer due diligence.",
+        "kind": "action_type",
+        "sourceIds": [
+          "source:6cfde520-ad48-4694-b943-421d0fa8e1e4"
+        ],
+        "recordIds": [
+          "6cfde520-ad48-4694-b943-421d0fa8e1e4"
+        ],
+        "verdict": "ambiguous",
+        "verifier": "regulatory-verifier-agent",
+        "notes": "The source confirms that TradingBlock was censured and fined for failing to establish and implement an AML compliance programme and for failing to include appropriate risk-based procedures for conducting ongoing customer due diligence, but the verified penalty amount is not provided."
+      }
+    ],
+    "charts": [],
+    "images": [
+      {
+        "id": "image:board-guide-aml-controls:1",
+        "purpose": "hero",
+        "width": 1600,
+        "height": 900,
+        "altText": "Deep navy RegActions cover displaying “Board Guide: Building Effective Anti-Money Laundering Controls” in white type",
+        "outputPath": "/blog/images/board-guide-aml-controls-hero.png",
+        "generatedBy": "satori",
+        "factual": false,
+        "sourceIds": [],
+        "approved": true
+      },
+      {
+        "id": "image:board-guide-aml-controls:2",
+        "purpose": "open_graph",
+        "width": 1200,
+        "height": 630,
+        "altText": "Deep navy RegActions cover displaying “Board Guide: Building Effective Anti-Money Laundering Controls” in white type",
+        "outputPath": "/og/board-guide-aml-controls.png",
+        "generatedBy": "satori",
+        "factual": false,
+        "sourceIds": [],
+        "approved": true
+      },
+      {
+        "id": "image:board-guide-aml-controls:3",
+        "purpose": "social_square",
+        "width": 1080,
+        "height": 1080,
+        "altText": "Deep navy RegActions cover displaying “Board Guide: Building Effective Anti-Money Laundering Controls” in white type",
+        "outputPath": "/blog/images/board-guide-aml-controls-square.png",
+        "generatedBy": "satori",
+        "factual": false,
+        "sourceIds": [],
+        "approved": true
+      },
+      {
+        "id": "image:board-guide-aml-controls:4",
+        "purpose": "social_portrait",
+        "width": 1080,
+        "height": 1350,
+        "altText": "Deep navy RegActions cover displaying “Board Guide: Building Effective Anti-Money Laundering Controls” in white type",
+        "outputPath": "/blog/images/board-guide-aml-controls-portrait.png",
+        "generatedBy": "satori",
+        "factual": false,
+        "sourceIds": [],
+        "approved": true
+      },
+      {
+        "id": "image:board-guide-aml-controls:inline-1",
+        "purpose": "inline_illustration",
+        "width": 1536,
+        "height": 1024,
+        "altText": "Abstract editorial illustration about board guide aml controls",
+        "caption": "Conceptual illustration. It does not depict an enforcement notice or factual event.",
+        "prompt": "An abstract conceptual interpretation of the editorial theme \"Board Guide: Building Effective Anti-Money Laundering Controls\", expressed through governance systems, oversight, decision pathways and emerging risk signals.",
+        "outputPath": "/blog/images/board-guide-aml-controls-inline-1.png",
+        "generatedBy": "openrouter-image",
+        "factual": false,
+        "sourceIds": [],
+        "approved": false
+      }
+    ],
+    "reviews": [
+      {
+        "role": "regulatory-verifier-agent",
+        "model": "mistralai/mistral-small-3.2-24b-instruct",
+        "promptVersion": "regactions-editorial-v2.1",
+        "completedAt": "2026-07-31T06:09:56.387Z",
+        "passed": false,
+        "issues": [
+          "The article claims that MCAP LLC was fined $15,000 for failing to conduct independent testing of its AML programme in 2021 and 2022, and for unreasonable testing in 2023 and 2024. However, the source confirms that MCAP LLC was censured and fined $15,000 for failing to conduct independent testing of its AML programme in 2021 and 2022, and for unreasonable testing in 2023 and 2024. The article does not mention the censure.",
+          "The article claims that The Ultima Global Markets (USA), Inc., fka BCS Global Markets, was fined $100,000 for failing to detect suspicious activity in low-priced securities transactions within correspondent accounts from 2021 through 2024. However, the source confirms that The Ultima Global Markets (USA), Inc., fka BCS Global Markets, was fined $100,000 for failing to detect suspicious activity in low-priced securities transactions within correspondent accounts from August 2021 through September 2024. The article does not mention the exact dates.",
+          "The article claims that TradingBlock was censured and fined for failing to establish and implement an AML compliance programme and for failing to include appropriate risk-based procedures for conducting ongoing customer due diligence. However, the source confirms that TradingBlock was censured and fined for failing to establish and implement an AML compliance programme and for failing to include appropriate risk-based procedures for conducting ongoing customer due diligence, but the verified penalty amount is not provided. The article does not mention the lack of verified penalty amount.",
+          "ambiguous: TradingBlock was censured and fined for failing to establish and implement an AML compliance programme and for failing to include appropriate risk-based procedures for conducting ongoing customer due diligence."
+        ],
+        "contentHash": "7e437747dc871d79bee9e9d2ad39bcd9458465c4aa31b53b29d3e7402d99dfd3"
+      }
+    ],
+    "outline": {
+      "title": "Board Guide: Building Effective Anti-Money Laundering Controls",
+      "excerpt": "Recent enforcement actions reveal persistent AML control failures. This analysis examines specific cases to identify common weaknesses and provide a framework for board-level oversight of compliance programmes.",
+      "keywords": [
+        "AML controls",
+        "board oversight",
+        "enforcement actions",
+        "compliance programme",
+        "risk-based procedures",
+        "independent testing",
+        "suspicious activity reporting"
+      ],
+      "sections": [
+        {
+          "key": "overview",
+          "heading": "Overview",
+          "targetWords": 180,
+          "angle": "Enforcement data demonstrates that AML programme failures are systemic, not isolated. Boards must move beyond policy approval to active governance of control design and operational effectiveness.",
+          "sourceRecordIds": [
+            "2f83223f-7fa6-4618-b8d7-4be095c208f0",
+            "7764cb13-0fe1-4064-a40b-1a2791b272b7",
+            "3b58dac5-413b-4ed1-9dbf-a24466d6dcf1",
+            "c1232fc7-4447-482d-b4a0-d89e9de1614f",
+            "cd9b073d-b271-4b5a-bc34-9c4fbfc6a706",
+            "89316548-5dbb-471f-93a8-e25eab51e946"
+          ]
+        },
+        {
+          "key": "actions",
+          "heading": "Key Enforcement Actions",
+          "targetWords": 320,
+          "angle": "Specific cases from FINRA, the CBUAE, and others show enforcement for programme design flaws, inadequate testing, and failure to adapt to business risks. Verified fines range from USD 15,000 to USD 335,000.",
+          "sourceRecordIds": [
+            "2f83223f-7fa6-4618-b8d7-4be095c208f0",
+            "7764cb13-0fe1-4064-a40b-1a2791b272b7",
+            "0c18b8ad-f7f1-4f27-9d92-2c2e72767aa8",
+            "3b58dac5-413b-4ed1-9dbf-a24466d6dcf1",
+            "c1232fc7-4447-482d-b4a0-d89e9de1614f",
+            "cd9b073d-b271-4b5a-bc34-9c4fbfc6a706",
+            "89316548-5dbb-471f-93a8-e25eab51e946",
+            "12e1ec48-fbf2-4f4c-93c8-ab77e2297ffd"
+          ]
+        },
+        {
+          "key": "analysis",
+          "heading": "Analysis",
+          "targetWords": 270,
+          "angle": "A clear pattern emerges across regulators and firm types. Failures cluster in three areas: suspicious activity detection, independent testing, and risk-based customer due diligence. These are not technical lapses but fundamental governance shortcomings.",
+          "sourceRecordIds": [
+            "2f83223f-7fa6-4618-b8d7-4be095c208f0",
+            "7764cb13-0fe1-4064-a40b-1a2791b272b7",
+            "3b58dac5-413b-4ed1-9dbf-a24466d6dcf1",
+            "c1232fc7-4447-482d-b4a0-d89e9de1614f",
+            "0c18b8ad-f7f1-4f27-9d92-2c2e72767aa8",
+            "cae4040c-4528-45df-bf70-d456a9668340"
+          ]
+        },
+        {
+          "key": "implications",
+          "heading": "Regulatory Implications",
+          "targetWords": 230,
+          "angle": "The data signals that regulators treat AML programme design as a core board responsibility. Mere existence of a programme is insufficient. Controls must demonstrably match the firm's specific risk profile and business activities.",
+          "sourceRecordIds": [
+            "0c18b8ad-f7f1-4f27-9d92-2c2e72767aa8",
+            "cae4040c-4528-45df-bf70-d456a9668340",
+            "d3c4e4b1-8c1b-44fc-b1d8-bd18ea7fc5a4",
+            "12e1ec48-fbf2-4f4c-93c8-ab77e2297ffd",
+            "cd9b073d-b271-4b5a-bc34-9c4fbfc6a706",
+            "89316548-5dbb-471f-93a8-e25eab51e946"
+          ]
+        },
+        {
+          "key": "takeaways",
+          "heading": "Key Takeaways",
+          "targetWords": 200,
+          "angle": "Boards must demand evidence that AML controls are risk-based, tested, and effective. Key questions should focus on programme design, independent validation, and the integration of customer due diligence with transaction monitoring.",
+          "sourceRecordIds": [
+            "2f83223f-7fa6-4618-b8d7-4be095c208f0",
+            "7764cb13-0fe1-4064-a40b-1a2791b272b7",
+            "3b58dac5-413b-4ed1-9dbf-a24466d6dcf1",
+            "c1232fc7-4447-482d-b4a0-d89e9de1614f",
+            "ed79e3a4-0535-4102-a49a-335cc39c37f3",
+            "6cfde520-ad48-4694-b943-421d0fa8e1e4"
+          ]
+        },
+        {
+          "key": "data",
+          "heading": "About the Data",
+          "targetWords": 120,
+          "angle": "This analysis is based on 18 enforcement actions from seven regulators between June 2025 and July 2026. It includes verified monetary penalties from FINRA and descriptive actions from the CBUAE, OCC, FSMA, CBI, AUSTRAC, and SFC.",
+          "sourceRecordIds": [
+            "2f83223f-7fa6-4618-b8d7-4be095c208f0",
+            "7764cb13-0fe1-4064-a40b-1a2791b272b7",
+            "0c18b8ad-f7f1-4f27-9d92-2c2e72767aa8",
+            "3b58dac5-413b-4ed1-9dbf-a24466d6dcf1",
+            "7b344910-c28e-467a-8a4a-2ea851855d81",
+            "c1232fc7-4447-482d-b4a0-d89e9de1614f"
+          ]
+        }
+      ]
+    },
+    "repairHistory": [
+      {
+        "completedAt": "2026-07-31T06:09:23.977Z",
+        "model": "google/gemini-2.5-flash",
+        "issues": [
+          "The article claims that MCAP LLC was fined $15,000 for failing to conduct reasonable independent testing of its AML programme in 2021 and 2022. However, the source [flexi-news.com](https://www.flexi-news.com/post/finra-censures-mcap-llc-over-critical-failures-in-anti-money-laundering-oversight) does not provide a verified penalty amount, making it ambiguous.",
+          "ambiguous: TradingBlock was censured and fined for failing to establish and implement an AML compliance programme and for failing to include appropriate risk-based procedures for conducting ongoing customer due diligence.",
+          "ambiguous: Pictet Overseas Inc. was fined for failing to design its AML compliance programme to detect and report suspicious transactions in low-priced securities from 2021 to 2025.",
+          "ambiguous: Brentwood Capital Advisors LLC was fined for failing to establish and implement an AML compliance programme reasonably designed to identify and verify the identities of the beneficial owners of its legal entity customers from 2021 to 2025.",
+          "ambiguous: Coinbase Europe Limited was fined by CBI for AML compliance failures.",
+          "ambiguous: The SFC reprimanded and fined Freeman Commodities Limited for failures in complying with AML/CFT and other regulatory requirements between 2017 and 2018.",
+          "ambiguous: Velox Clearing LLC was censured and fined for failing to establish and implement an AML programme reasonably designed to detect and cause the reporting of suspicious transactions given its business."
+        ],
+        "affectedSections": [
+          "takeaways",
+          "actions",
+          "implications"
+        ],
+        "beforeHash": "ef220879ba2ec9f9342b2733a210c53f3cfe3a227ed83a1e298a966fe17e16cf",
+        "afterHash": "9c5b64a0bc8eff1db487eebe331a0c566578ad90ca7d30a524f96875505c4596"
+      },
+      {
+        "completedAt": "2026-07-31T06:09:40.921Z",
+        "model": "google/gemini-2.5-flash",
+        "issues": [
+          "The article contains multiple claims that are not supported by the provided sources or have ambiguous penalty amounts.",
+          "ambiguous: TradingBlock was censured and fined for failing to establish and implement an AML compliance programme and for failing to include appropriate risk-based procedures for conducting ongoing customer due diligence."
+        ],
+        "affectedSections": [
+          "takeaways",
+          "implications"
+        ],
+        "beforeHash": "9c5b64a0bc8eff1db487eebe331a0c566578ad90ca7d30a524f96875505c4596",
+        "afterHash": "7e437747dc871d79bee9e9d2ad39bcd9458465c4aa31b53b29d3e7402d99dfd3"
+      }
+    ],
+    "headApproval": {
+      "status": "rejected",
+      "reviewer": "head-editorial-agent",
+      "contentHash": "7e437747dc871d79bee9e9d2ad39bcd9458465c4aa31b53b29d3e7402d99dfd3",
+      "model": "google/gemini-2.5-flash",
+      "promptVersion": "regactions-editorial-v2.1",
+      "rationale": "Evidence repair exhausted without full verification: The article claims that MCAP LLC was fined $15,000 for failing to conduct independent testing of its AML programme in 2021 and 2022, and for unreasonable testing in 2023 and 2024. However, the source confirms that MCAP LLC was censured and fined $15,000 for failing to conduct independent testing of its AML programme in 2021 and 2022, and for unreasonable testing in 2023 and 2024. The article does not mention the censure.; The article claims that The Ultima Global Markets (USA), Inc., fka BCS Global Markets, was fined $100,000 for failing to detect suspicious activity in low-priced securities transactions within correspondent accounts from 2021 through 2024. However, the source confirms that The Ultima Global Markets (USA), Inc., fka BCS Global Markets, was fined $100,000 for failing to detect suspicious activity in low-priced securities transactions within correspondent accounts from August 2021 through September 2024. The article does not mention the exact dates.; The article claims that TradingBlock was censured and fined for failing to establish and implement an AML compliance programme and for failing to include appropriate risk-based procedures for conducting ongoing customer due diligence. However, the source confirms that TradingBlock was censured and fined for failing to establish and implement an AML compliance programme and for failing to include appropriate risk-based procedures for conducting ongoing customer due diligence, but the verified penalty amount is not provided. The article does not mention the lack of verified penalty amount."
+    }
+  },
+  "qualityReport": {
+    "score": 100,
+    "passed": true,
+    "requiredPassed": 13,
+    "requiredTotal": 13,
+    "softPassed": 3,
+    "softTotal": 3
+  }
+}

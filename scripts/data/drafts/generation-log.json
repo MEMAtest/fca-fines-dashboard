@@ -8,5 +8,15 @@
     "qualityScore": 100,
     "qualityPassed": true,
     "wordCount": 1345
+  },
+  {
+    "timestamp": "2026-07-31T06:08:55.330Z",
+    "topic": "Board Guide: Building Effective AML Controls",
+    "slug": "board-guide-aml-controls",
+    "track": "evergreen-guide",
+    "outcome": "draft_saved",
+    "qualityScore": 100,
+    "qualityPassed": true,
+    "wordCount": 1217
   }
 ]
