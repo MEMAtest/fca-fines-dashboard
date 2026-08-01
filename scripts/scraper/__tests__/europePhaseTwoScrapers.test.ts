@@ -379,6 +379,19 @@ describe("europe phase 2 scrapers", () => {
       "https://www.finanssivalvonta.fi/en/publications-and-press-releases/Press-release/2025/penalty-payment-of-eur-500000-to-localbitcoins-oy-for-failures-to-comply-with-anti-money-laundering-regulations/",
     );
 
+    const currentLandingEntries = parseFinfsaArchiveHtml(`
+      <div class="page-list-block"><ul class="listing pagelist"><li>
+        <div class="page-list-block-time"><span>Press release</span><time datetime="2026-05-15">15 May 2026</time></div>
+        <a href="/en/publications-and-press-releases/Press-release/2026/combined-penalty-payment-of-eur-400000-for-oma-savings-bank-plc-for-omissions-regarding-maintenance-of-insider-lists/">Combined penalty payment of EUR 400,000 for Oma Savings Bank Plc for omissions regarding maintenance of insider lists</a>
+      </li></ul></div>
+    `);
+    expect(currentLandingEntries).toEqual([
+      expect.objectContaining({
+        dateIssued: "2026-05-15",
+        title: "Combined penalty payment of EUR 400,000 for Oma Savings Bank Plc for omissions regarding maintenance of insider lists",
+      }),
+    ]);
+
     const detail = parseFinfsaDetailHtml(
       detailHtml,
       "https://www.finanssivalvonta.fi/en/publications-and-press-releases/Press-release/2022/penalty-payment-of-eur-25000-and-public-warning-for-nada-express-osk-due-to-omissions-concerning-compliance-with-anti-money-laundering-regulations/",

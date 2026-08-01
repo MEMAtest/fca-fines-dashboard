@@ -23,8 +23,10 @@ jobs:
             script: scrape:cbuae
           - code: JFSC
             script: scrape:jfsc
-          - code: CIRO
-            script: scrape:ciro
+          # CIRO runs on the Hetzner scraper host at 05:20 UTC daily, where
+          # its local FlareSolverr service can clear the regulator's Cloudflare
+          # challenge. GitHub-hosted runners are challenge-blocked and must not
+          # create misleading CIRO failure records here.
           - code: FMAAT
             script: scrape:fmaat
           - code: FINMA
