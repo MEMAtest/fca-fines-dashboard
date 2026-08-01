@@ -16,7 +16,6 @@ import { runScraper } from "./lib/runScraper.js";
 const FINFSA_BASE_URL = "https://www.finanssivalvonta.fi";
 const FINFSA_PRESS_RELEASES_URL =
   "https://www.finanssivalvonta.fi/en/publications-and-press-releases/Press-release/";
-const FINFSA_START_YEAR = 2013;
 
 export interface FinfsaArchiveEntry {
   title: string;
@@ -41,7 +40,9 @@ function stripFinfsaDecisionAppendixPrefix(title: string) {
 }
 
 function parseFinfsaDate(input: string) {
-  return parseMonthNameDate(normalizeWhitespace(input));
+  const normalized = normalizeWhitespace(input);
+  const isoDate = normalized.match(/\b(\d{4}-\d{2}-\d{2})\b/);
+  return isoDate?.[1] || parseMonthNameDate(normalized);
 }
 
 function isFinfsaSanctionLike(title: string, keywords: string[]) {
@@ -207,7 +208,10 @@ export function parseFinfsaArchiveHtml(html: string) {
       .first();
     const href = normalizeWhitespace(link.attr("href") || "");
     const title = stripFinfsaDecisionAppendixPrefix(link.text());
-    const dateIssued = parseFinfsaDate(item.find("time.meta").first().text());
+    const time = item.find("time").first();
+    const dateIssued = parseFinfsaDate(
+      time.attr("datetime") || time.text(),
+    );
     const keywords = item
       .find(".page-list-block-time span")
       .map((__, keywordElement) => normalizeWhitespace($(keywordElement).text()))
@@ -337,27 +341,18 @@ async function enrichFinfsaEntry(entry: FinfsaArchiveEntry) {
 
 export async function loadFinfsaLiveRecords() {
   const flags = getCliFlags();
-  const currentYear = new Date().getUTCFullYear();
-  const archiveEntries = new Map<string, FinfsaArchiveEntry>();
-
-  for (let year = currentYear; year >= FINFSA_START_YEAR; year -= 1) {
-    const yearUrl = `${FINFSA_PRESS_RELEASES_URL}${year}/`;
-    const html = await fetchText(yearUrl);
-    const entries = parseFinfsaArchiveHtml(html).sort((left, right) =>
-      right.dateIssued.localeCompare(left.dateIssued),
-    );
-
-    for (const entry of entries) {
-      archiveEntries.set(entry.detailUrl, entry);
-      if (flags.limit && flags.limit > 0 && archiveEntries.size >= flags.limit) {
-        break;
-      }
-    }
-
-    if (flags.limit && flags.limit > 0 && archiveEntries.size >= flags.limit) {
-      break;
-    }
-  }
+  // The landing feed remains public and includes current sanction releases.
+  // FIN-FSA retired the old year-suffixed archive route for 2020 and earlier;
+  // those URLs now redirect to a login path. Treat the public landing feed as
+  // an incremental source and preserve existing historical records through
+  // normal upsert semantics rather than attempting retired archives.
+  const html = await fetchText(FINFSA_PRESS_RELEASES_URL);
+  const archiveEntries = new Map(
+    parseFinfsaArchiveHtml(html)
+      .sort((left, right) => right.dateIssued.localeCompare(left.dateIssued))
+      .slice(0, flags.limit && flags.limit > 0 ? flags.limit : undefined)
+      .map((entry) => [entry.detailUrl, entry]),
+  );
 
   const records = await mapWithConcurrency(
     [...archiveEntries.values()],

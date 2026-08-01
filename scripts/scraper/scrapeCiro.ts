@@ -12,6 +12,11 @@ import {
   createBrowserHtmlClient,
   type BrowserHtmlClient,
 } from "./lib/browserChallengeFetch.js";
+import {
+  createFlareSolverrClient,
+  flareSolverrEnabled,
+  type FlareSolverrClient,
+} from "./lib/flaresolverr.js";
 import { runScraper } from "./lib/runScraper.js";
 
 const CIRO_PUBLICATIONS_URL =
@@ -215,13 +220,64 @@ function buildCiroListingRecord(row: CiroListingRow) {
 
 export async function loadCiroLiveRecords() {
   let browserClient: BrowserHtmlClient | null = null;
+  let flareClient: FlareSolverrClient | null = null;
 
-  const loadPage = async (url: string) => {
-    if (browserClient) {
-      return browserClient.get(url, {
+  const safeErrorDetail = (error: unknown) => {
+    const message = error instanceof Error ? error.message : String(error);
+    // Do not carry credentials from a solver endpoint into job logs.
+    return message
+      .replace(/https?:\/\/[^\s/@]+@/g, "https://[redacted]@")
+      .replace(/([?&](?:token|key|password|secret)=)[^&\s]+/gi, "$1[redacted]");
+  };
+
+  const loadWithBrowser = async (url: string, solverDetail?: string) => {
+    if (browserClient === null) {
+      browserClient = await createBrowserHtmlClient();
+    }
+    try {
+      return await browserClient.get(url, {
         readySelector: ".views-row",
         timeoutMs: 60_000,
       });
+    } catch (browserError) {
+      const solverContext = solverDetail
+        ? ` FlareSolverr detail: ${solverDetail}.`
+        : "";
+      throw new Error(
+        "CIRO's official site is serving a Cloudflare managed challenge that "
+        + "the available challenge clients could not clear. Configure or repair "
+        + "FLARESOLVERR_URL on the scraper runner, then rerun the official CIRO loader."
+        + solverContext
+        + ` Browser detail: ${safeErrorDetail(browserError)}`,
+      );
+    }
+  };
+
+  const loadWithFlareSolverrThenBrowser = async (url: string) => {
+    try {
+      if (flareClient === null) {
+        flareClient = await createFlareSolverrClient();
+      }
+      return await flareClient.get(url);
+    } catch (solverError) {
+      const solverDetail = safeErrorDetail(solverError);
+      console.warn(
+        `CIRO FlareSolverr request failed; falling back to Puppeteer: ${solverDetail}`,
+      );
+      if (flareClient !== null) {
+        await (flareClient as FlareSolverrClient).destroy().catch(() => undefined);
+        flareClient = null;
+      }
+      return loadWithBrowser(url, solverDetail);
+    }
+  };
+
+  const loadPage = async (url: string) => {
+    if (flareClient) {
+      return loadWithFlareSolverrThenBrowser(url);
+    }
+    if (browserClient) {
+      return loadWithBrowser(url);
     }
 
     try {
@@ -232,11 +288,10 @@ export async function loadCiroLiveRecords() {
           error instanceof Error ? error.message : String(error)
         }`,
       );
-      browserClient = await createBrowserHtmlClient();
-      return browserClient.get(url, {
-        readySelector: ".views-row",
-        timeoutMs: 60_000,
-      });
+      if (flareSolverrEnabled()) {
+        return loadWithFlareSolverrThenBrowser(url);
+      }
+      return loadWithBrowser(url);
     }
   };
 
@@ -257,6 +312,11 @@ export async function loadCiroLiveRecords() {
     );
     return mergeCiroRecords(uniqueRows.map((row) => buildCiroListingRecord(row)));
   } finally {
+    // The clients are assigned inside `loadPage`, so TypeScript's closure
+    // analysis cannot see the mutation at this point.
+    if (flareClient !== null) {
+      await (flareClient as FlareSolverrClient).destroy();
+    }
     if (browserClient !== null) {
       await (browserClient as BrowserHtmlClient).close();
     }

@@ -22,8 +22,32 @@ import {
   parseFsmaDate,
   parseFsmaHtml,
 } from "../scrapeFsma.js";
+import { parseBaFinListingHtml } from "../scrapeBafin.js";
 
 describe("europe phase 1 scrapers", () => {
+  it("parses BaFin's current official Profisuche sanction cards", () => {
+    const html = `
+      <div class="c-teaser-search-result">
+        <a class="c-teaser-search-result__link-main" href="/SharedDocs/Veroeffentlichungen/DE/Massnahmen/40c_neu_124_WpHG/meldung_2026_07_30_leo_international_precision_health_ag.html">
+          <h3>Leo International Precision Health AG: Bafin setzt Geldbußen fest</h3>
+        </a>
+        <p class="c-teaser-search-result__topline"><span class="is-date">30.07.2026</span> | Maßnahme</p>
+      </div>
+    `;
+    const rows = parseBaFinListingHtml(
+      html,
+      "https://www.bafin.de/SiteGlobals/Forms/Suche/Expertensuche/Servicesuche_Formular.html?pageLocale=de&cl2Categories_Format=massnahme&sortOrder=searchDate_dt%20desc",
+    );
+
+    expect(rows).toEqual([
+      expect.objectContaining({
+        date: "2026-07-30",
+        firm: "Leo International Precision Health AG",
+        link: "https://www.bafin.de/SharedDocs/Veroeffentlichungen/DE/Massnahmen/40c_neu_124_WpHG/meldung_2026_07_30_leo_international_precision_health_ag.html",
+      }),
+    ]);
+  });
+
   it("parses BDI archive years and sanction rows", () => {
     const yearHtml = `
       <ul class="bdi-form-archive-list">

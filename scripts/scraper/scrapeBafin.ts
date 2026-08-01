@@ -39,12 +39,15 @@ import { runScraper } from './lib/runScraper.js';
 
 const BAFIN = {
   baseUrl: 'https://www.bafin.de',
-  // Aggregated "all measures & sanctions" listing (German). The English
-  // equivalent was removed in the 2026 site restructure.
-  listingPath:
-    '/DE/die-bafin/aktuelles-presse/massnahmen-sanktionen/massnahmen-alle/massnahmen-alle_node.html',
-  // Pagination/list identifier for the measures table (see `#table_150012`).
-  listTableId: '150012',
+  // Since the 2026 redesign, the "all measures" page is a landing page that
+  // links to BaFin's official Profisuche rather than publishing its own table.
+  // This search endpoint is server rendered and exposes the current "Maßnahme"
+  // results and pagination in the response HTML.
+  searchPath:
+    '/SiteGlobals/Forms/Suche/Expertensuche/Servicesuche_Formular.html',
+  // The value is supplied by the current official search pagination links.
+  // It is intentionally double encoded in the request (`%253D`).
+  searchListId: '239378',
   maxPages: 10,
   maxRecords: 150,
   detailConcurrency: 3,
@@ -58,14 +61,18 @@ interface BaFinRow {
   listingUrl: string;
 }
 
-/** Build the URL for a given 1-based listing page. */
+/** Build the official Profisuche URL for a given 1-based result page. */
 function listingPageUrl(page: number): string {
-  const base = BAFIN.baseUrl + BAFIN.listingPath;
-  if (page <= 1) {
-    return base;
+  const url = new URL(BAFIN.searchPath, BAFIN.baseUrl);
+  url.searchParams.set('pageLocale', 'de');
+  url.searchParams.set('cl2Categories_Format', 'massnahme');
+  url.searchParams.set('sortOrder', 'searchDate_dt desc');
+  if (page > 1) {
+    // URLSearchParams serializes the percent in `%3D`, yielding the `gtp`
+    // shape BaFin serves in its own pagination links (`...%253D2`).
+    url.searchParams.set('gtp', `${BAFIN.searchListId}_list%3D${page}`);
   }
-  // `=` must be double-encoded (%253D) exactly as BaFin's pagination links emit.
-  return `${base}?gtp=${BAFIN.listTableId}_unnamed%253D${page}`;
+  return url.toString();
 }
 
 function absoluteUrl(href: string | null | undefined): string | null {
@@ -323,16 +330,17 @@ function extractBodyText($: cheerio.CheerioAPI): string {
 }
 
 function extractRows($: cheerio.CheerioAPI, pageUrl: string): BaFinRow[] {
-  const table = $('table.textualData.links').first();
   const rows: BaFinRow[] = [];
 
-  table.find('tr').each((_, element) => {
-    const cells = $(element).find('td');
-    if (cells.length < 2) {
-      return; // header row or layout row
-    }
-    const date = parseGermanDate(normalizeWhitespace(cells.eq(0).text()));
-    const linkElement = cells.eq(1).find('a').first();
+  // The current official Profisuche uses search-result cards, not the
+  // withdrawn `table.textualData.links` archive table. Keep the table parser
+  // as a defensive compatibility fallback for previously saved fixtures.
+  $('.c-teaser-search-result').each((_, element) => {
+    const result = $(element);
+    const linkElement = result.find('a.c-teaser-search-result__link-main').first();
+    const date = parseGermanDate(
+      normalizeWhitespace(result.find('.c-teaser-search-result__topline .is-date').first().text()),
+    );
     const title = normalizeWhitespace(linkElement.text());
     const link = absoluteUrl(linkElement.attr('href'));
 
@@ -349,7 +357,28 @@ function extractRows($: cheerio.CheerioAPI, pageUrl: string): BaFinRow[] {
     });
   });
 
+  if (rows.length > 0) {
+    return rows;
+  }
+
+  const table = $('table.textualData.links').first();
+  table.find('tr').each((_, element) => {
+    const cells = $(element).find('td');
+    if (cells.length < 2) return;
+    const date = parseGermanDate(normalizeWhitespace(cells.eq(0).text()));
+    const linkElement = cells.eq(1).find('a').first();
+    const title = normalizeWhitespace(linkElement.text());
+    const link = absoluteUrl(linkElement.attr('href'));
+    if (!date || !title || !link) return;
+    rows.push({ date, title, link, firm: extractFirm(title), listingUrl: pageUrl });
+  });
+
   return rows;
+}
+
+/** Parse an official BaFin Profisuche/listing response without fetching it. */
+export function parseBaFinListingHtml(html: string, pageUrl: string): BaFinRow[] {
+  return extractRows(cheerio.load(html), pageUrl);
 }
 
 async function enrichRow(row: BaFinRow): Promise<ParsedEnforcementRecord | null> {
