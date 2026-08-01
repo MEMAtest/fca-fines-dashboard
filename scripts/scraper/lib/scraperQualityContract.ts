@@ -6,6 +6,9 @@ export interface ScraperQualityContractOverride {
   allowZeroRecords?: boolean;
   minimumPreparedRecords?: number;
   maximumPreparedCountDropFraction?: number;
+  /** A current-window feed adds or updates recent records but is not a
+   * complete replacement for the stored historical archive. */
+  preparedBatchScope?: "complete_archive" | "incremental";
 }
 
 export interface ResolvedScraperQualityContract {
@@ -16,6 +19,7 @@ export interface ResolvedScraperQualityContract {
   allowZeroRecords: boolean;
   minimumPreparedRecords: number;
   maximumPreparedCountDropFraction: number;
+  preparedBatchScope: "complete_archive" | "incremental";
   staleAfterDays: number;
   operatorAction: string;
 }
@@ -55,6 +59,7 @@ export function resolveScraperQualityContract(
     minimumPreparedRecords: override.minimumPreparedRecords
       ?? (override.allowZeroRecords === true ? 0 : defaultMinimum(coverage)),
     maximumPreparedCountDropFraction: override.maximumPreparedCountDropFraction ?? defaultMaximumDrop(coverage),
+    preparedBatchScope: override.preparedBatchScope ?? "complete_archive",
     staleAfterDays: coverage.feedContract.staleAfterDays,
     operatorAction: coverage.feedContract.operatorAction,
   };

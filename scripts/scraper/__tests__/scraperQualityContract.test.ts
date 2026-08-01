@@ -43,6 +43,17 @@ describe("regulator-specific scraper quality contracts", () => {
     }
   });
 
+  it("marks FIN-FSA's retired archive replacement as an incremental batch", () => {
+    const contract = resolveScraperQualityContract("FINFSA", {
+      preparedBatchScope: "incremental",
+    });
+    expect(contract).toMatchObject({
+      preparedBatchScope: "incremental",
+      allowZeroRecords: false,
+    });
+    expect(contract.minimumPreparedRecords).toBeGreaterThan(0);
+  });
+
   it("fails closed when a runner has no registered regulator contract", () => {
     expect(() => resolveScraperQualityContract("UNKNOWN")).toThrow("No regulator feed contract");
   });
