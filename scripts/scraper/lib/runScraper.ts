@@ -269,7 +269,11 @@ async function assertPreparedCountContinuity(
   flags: ReturnType<typeof getCliFlags>,
 ) {
   const maximumDrop = contract.maximumPreparedCountDropFraction;
-  if (flags.limit || flags.useTestData) return;
+  // Incremental public feeds are deliberately not complete archive snapshots:
+  // comparing their recent-window batch with an earlier historical backfill
+  // would quarantine healthy updates. Their non-zero/minimum batch and source
+  // evidence gates still apply before any database write.
+  if (flags.limit || flags.useTestData || contract.preparedBatchScope === "incremental") return;
 
   const previous = await sql`
     SELECT records_prepared::int AS count

@@ -368,6 +368,13 @@ export async function loadFinfsaLiveRecords() {
 export async function main() {
   await runScraper({
     name: "🇫🇮 FIN-FSA Sanctions Press Release Scraper",
+    // FIN-FSA's public landing page is now an incremental current-window feed;
+    // the historical year archive is no longer publicly enumerable. Preserve
+    // stored history through upserts, but do not compare this batch to the old
+    // one-time archive backfill count.
+    qualityContract: {
+      preparedBatchScope: "incremental",
+    },
     liveLoader: loadFinfsaLiveRecords,
     testLoader: loadFinfsaLiveRecords,
     afterUpsert: async (sql, records) => {
