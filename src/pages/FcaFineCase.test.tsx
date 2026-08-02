@@ -153,7 +153,7 @@ describe("FcaFineCase", () => {
     expect(screen.getByText("A case summary is not yet available.")).toBeInTheDocument();
     expect(screen.getByText("A reliable official FCA source is not yet available.")).toBeInTheDocument();
     expect(screen.getByText(/A concise case summary is not currently available/i)).toBeInTheDocument();
-    expect(document.querySelector('meta[name="robots"]')).toHaveAttribute("content", "noindex, follow");
+    await waitFor(() => expect(document.querySelector('meta[name="robots"]')).toHaveAttribute("content", "noindex, follow"));
   });
 
   it("shows an honest noindex 404 state without case facts", async () => {
