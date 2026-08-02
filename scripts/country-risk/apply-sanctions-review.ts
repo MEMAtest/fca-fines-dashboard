@@ -19,6 +19,7 @@ import type {
   SanctionsReviewRow,
   SanctionsSourceAssuranceReport,
 } from "./lib/sanctionsPromotion.js";
+import { canRefreshAutomatedSanctionsDecision } from "./lib/sanctionsReviewRefresh.js";
 
 const input = process.env.COUNTRY_RISK_SANCTIONS_COMPLETED_REVIEW_JSON
   ?? "/tmp/country-risk-sanctions-deterministic-review.json";
@@ -95,6 +96,7 @@ async function main() {
       const rowKey = `${row.iso2}|${row.imposer}|${row.regime_name}`;
       const existing = currentByKey.get(rowKey);
       if (!existing) throw new Error(`${rowKey}: database candidate is missing`);
+      let refreshAutomatedDecision = false;
       if (existing.status !== "pending") {
         const same = existing.status === row.status
           && existing.relationship === row.relationship
@@ -119,9 +121,14 @@ async function main() {
           && existing.reviewer_organisation === row.reviewer_organisation
           && existing.reviewed_at !== null
           && existing.review_note === row.review_note;
-        if (!same) throw new Error(`${rowKey}: refusing to overwrite an existing reviewed decision`);
-        unchanged += 1;
-        continue;
+        if (same) {
+          unchanged += 1;
+          continue;
+        }
+        refreshAutomatedDecision = canRefreshAutomatedSanctionsDecision(existing, row);
+        if (!refreshAutomatedDecision) {
+          throw new Error(`${rowKey}: refusing to overwrite an existing reviewed decision`);
+        }
       }
       const update = await client.query(
         `UPDATE country_risk_sanctions_regimes
@@ -136,7 +143,8 @@ async function main() {
              material_non_designation_restriction=$24, prepared_by=$25,
              prepared_at=$26,
              updated_at=NOW()
-         WHERE iso2=$1 AND imposer=$2 AND regime_name=$3 AND status='pending'`,
+         WHERE iso2=$1 AND imposer=$2 AND regime_name=$3
+           AND (status='pending' OR ($27 AND reviewed_by=$28 AND reviewer_organisation=$29))`,
         [
           row.iso2,
           row.imposer,
@@ -164,6 +172,9 @@ async function main() {
           row.material_non_designation_restriction,
           row.prepared_by,
           row.prepared_at,
+          refreshAutomatedDecision,
+          row.reviewed_by,
+          row.reviewer_organisation,
         ],
       );
       if (update.rowCount !== 1) throw new Error(`${rowKey}: concurrent review update detected`);
