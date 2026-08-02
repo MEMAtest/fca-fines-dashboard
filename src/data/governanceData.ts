@@ -13,7 +13,7 @@
 export const GOVERNANCE_SOURCE =
   "https://www.worldbank.org/en/publication/worldwide-governance-indicators";
 export const GOVERNANCE_VINTAGE = "2024";
-export const GOVERNANCE_RETRIEVED_AT = "2026-07-16T09:06:15.751Z";
+export const GOVERNANCE_RETRIEVED_AT = "2026-08-02T05:04:38.378Z";
 export const GOVERNANCE_SHA256 = "be3d4838a7a3babcdfb24f1b1caa79663e131c6158186ed09d37f316bf741d23";
 export const GOVERNANCE_LICENCE = "CC BY 4.0 — World Bank WGI";
 
@@ -66,8 +66,10 @@ export const GOVERNANCE_DIMENSIONS: Record<string, Partial<WgiDimensions>> = {
   AI: { cc: 72, rl: 68, rq: 69, ge: 73, pv: 89 },
   BM: { cc: 72, rl: 71, rq: 65, ge: 80, pv: 82 },
   KY: { cc: 60, rl: 71, rq: 72, ge: 74, pv: 91, va: 74 },
+  GU: { cc: 72, rl: 75, rq: 61, ge: 76, pv: 83, va: 77 },
   HK: { cc: 80, rl: 73, rq: 82, ge: 83, pv: 77, va: 51 },
   AW: { cc: 65, rl: 78, rq: 70, ge: 64, pv: 89, va: 74 },
+  AS: { cc: 72, rl: 76, rq: 61, ge: 66, pv: 87, va: 73 },
   KR: { cc: 65, rl: 76, rq: 71, ge: 80, pv: 77, va: 71 },
   FR: { cc: 73, rl: 74, rq: 73, ge: 75, pv: 62, va: 77 },
   LV: { cc: 65, rl: 76, rq: 72, ge: 66, pv: 76, va: 77 },
@@ -101,6 +103,7 @@ export const GOVERNANCE_DIMENSIONS: Record<string, Partial<WgiDimensions>> = {
   LC: { cc: 57, rl: 66, rq: 58, ge: 57, pv: 84, va: 68 },
   SK: { cc: 50, rl: 67, rq: 61, ge: 64, pv: 77, va: 73 },
   VC: { cc: 62, rl: 66, rq: 57, ge: 57, pv: 84, va: 66 },
+  VI: { cc: 46, rl: 67, rq: 72, ge: 59, pv: 82 },
   DM: { cc: 59, rl: 64, rq: 56, ge: 54, pv: 87, va: 63 },
   FJ: { cc: 59, rl: 62, rq: 56, ge: 63, pv: 78, va: 63 },
   GD: { cc: 58, rl: 66, rq: 56, ge: 52, pv: 86, va: 63 },
@@ -269,11 +272,11 @@ export const GOVERNANCE_PERCENTILE: Record<string, number> = {
   LT: 76,
   SM: 76,
   UY: 75,
-  AI: 74,
-  BM: 74,
   KY: 74,
+  GU: 74,
   HK: 74,
   AW: 73,
+  AS: 73,
   KR: 73,
   FR: 72,
   LV: 72,
