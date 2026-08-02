@@ -240,6 +240,7 @@ jobs:
       - name: Assess production source health
         id: health
         continue-on-error: true
+        timeout-minutes: 3
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
         run: npm run country-risk:source-health
