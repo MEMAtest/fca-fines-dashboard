@@ -138,7 +138,12 @@ jobs:
       - run: npm ci
       - run: npx playwright install --with-deps chromium
       - name: Verify FATF official black and grey lists
+        id: fatf_lists
+        continue-on-error: true
         run: xvfb-run -a npm run country-risk:verify-fatf -- --write
+      - name: Retain current FATF list evidence as a watch
+        if: steps.fatf_lists.outcome == 'failure'
+        run: node --import tsx/esm scripts/country-risk/check-fatf-list-watch.ts
       - name: Ingest the latest FATF consolidated ratings
         run: xvfb-run -a npm run country-risk:ingest-fatf
       - name: Validate the FATF evidence update
@@ -159,7 +164,13 @@ jobs:
           delete-branch: true
           commit-message: "data(country-risk): refresh FATF evidence"
           title: "data(country-risk): refresh FATF evidence"
-          body: "Automated FATF browser verification, ratings ingestion, focused FATF tests, validation and build passed. The dependent sanctions job performs the combined score-readiness persistence and full-suite gate."
+          body: |
+            Automated FATF ratings ingestion, focused tests, validation and build passed.
+
+            Live black/grey-list verification outcome: `${{ steps.fatf_lists.outcome }}`.
+            When the protected page was unavailable, the job retained the last verified list only after confirming that its dated, hashed evidence remained inside the operational freshness threshold; the outage is recorded as a watch artifact.
+
+            The dependent sanctions job performs the combined score-readiness persistence and full-suite gate.
           labels: country-risk,automated-data
       - name: Merge the verified FATF update
         if: steps.fatf_pr.outputs.pull-request-number != ''
@@ -170,7 +181,9 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: fatf-list-review
-          path: /tmp/country-risk-fatf-list-review.json
+          path: |
+            /tmp/country-risk-fatf-list-review.json
+            /tmp/country-risk-fatf-list-watch.json
 
   monthly-release-detection:
     if: (github.event_name == 'schedule' && github.event.schedule == '31 7 1 * *') || inputs.lane == 'monthly' || inputs.lane == 'all'
