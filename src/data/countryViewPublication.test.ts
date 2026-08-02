@@ -17,7 +17,7 @@ describe("country score publication safeguards", () => {
 
   it("never publishes missing governance evidence as a 0.0 score", () => {
     const index = buildCountryIndex();
-    expect(index).toHaveLength(211);
+    expect(index).toHaveLength(213);
     expect(index.filter((entry) => entry.score === 0)).toEqual([]);
     expect(index.filter((entry) => entry.score === null)).toEqual([]);
     expect(index.filter((entry) => entry.status === "insufficient-data")).toEqual([]);
@@ -33,9 +33,9 @@ describe("country score publication safeguards", () => {
 
   it("includes complete and provisional jurisdictions in ranks and regional averages", () => {
     const rated = buildCountryIndex().filter((entry) => entry.score !== null);
-    expect(rated).toHaveLength(211);
-    expect(globalRank("GB").total).toBe(211);
-    expect(regionalAverages().reduce((sum, region) => sum + region.count, 0)).toBe(211);
+    expect(rated).toHaveLength(213);
+    expect(globalRank("GB").total).toBe(213);
+    expect(regionalAverages().reduce((sum, region) => sum + region.count, 0)).toBe(213);
   });
 
   it("exposes only the complete promoted sanctions snapshot", () => {

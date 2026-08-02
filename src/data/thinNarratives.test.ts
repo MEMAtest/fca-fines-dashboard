@@ -1,5 +1,5 @@
 /**
- * Coverage for the ~22 previously thin country pages (SEO audit L3): the micro-
+ * Coverage for the previously thin country pages (SEO audit L3): the micro-
  * states, small-island offshore centres and limited-evidence territories that had
  * a report page in pageCountries() but no bespoke narrative block.
  *
@@ -35,15 +35,17 @@ import { getNarrative, NARRATIVES } from "./countryNarratives.js";
 import { isFatfListed, getFatfStatus } from "./fatfStatus.js";
 import { isSanctioned } from "./sanctionsStatus.js";
 
-/** The 22 pages that were thin before this wave. */
+/** The pages that were thin before this wave, including source-driven additions. */
 const FILLED = [
   "AI",
+  "AS",
   "AW",
   "BZ",
   "CK",
   "CW",
   "DM",
   "GD",
+  "GU",
   "GI",
   "IM",
   "KN",
