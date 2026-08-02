@@ -16,7 +16,7 @@ export const FATF_ASSESSMENT_SOURCE = "https://www.fatf-gafi.org/en/publications
 export const FATF_ASSESSMENT_2013_EFFECTIVE_AT = "2026-07-31";
 export const FATF_ASSESSMENT_2022_EFFECTIVE_AT = "2026-05-26";
 export const FATF_ASSESSMENT_EFFECTIVE_AT = "2026-07-31";
-export const FATF_ASSESSMENT_RETRIEVED_AT = "2026-08-02T03:53:53.893Z";
+export const FATF_ASSESSMENT_RETRIEVED_AT = "2026-08-02T04:09:20.561Z";
 export const FATF_ASSESSMENT_SHA256 = "06770da1a51c24b8f1a4b63d1ce5da60e165ffcade6a14064a7b108b58ad7dc0";
 export const FATF_ASSESSMENT_RECORDS: Record<string, FatfAssessmentRecord> = {
   "AL": {"iso2":"AL","country":"Albania","methodology":"2013","ratingsDate":"2023-05","effectiveness":{"IO1":"ME","IO2":"ME","IO3":"ME","IO4":"SE","IO5":"ME","IO6":"SE","IO7":"ME","IO8":"ME","IO9":"LE","IO10":"ME","IO11":"LE"},"technicalCompliance":{"R1":"LC","R2":"LC","R3":"LC","R4":"LC","R5":"LC","R6":"C","R7":"PC","R8":"LC","R9":"LC","R10":"LC","R11":"LC","R12":"LC","R13":"LC","R14":"C","R15":"PC","R16":"LC","R18":"LC","R19":"C","R20":"LC","R21":"C","R22":"LC","R23":"LC","R24":"LC","R25":"LC","R26":"LC","R27":"LC","R28":"LC","R29":"LC","R30":"C","R31":"LC","R32":"LC","R33":"LC","R34":"LC","R35":"LC","R36":"LC","R37":"LC","R38":"C","R39":"LC","R40":"LC"},"technicalNotApplicable":["R17"],"assessmentDate":"2018-12"},
