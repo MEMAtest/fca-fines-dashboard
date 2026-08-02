@@ -19,7 +19,10 @@ import type {
   SanctionsReviewRow,
   SanctionsSourceAssuranceReport,
 } from "./lib/sanctionsPromotion.js";
-import { canRefreshAutomatedSanctionsDecision } from "./lib/sanctionsReviewRefresh.js";
+import {
+  canRefreshAutomatedCatalogueReview,
+  canRefreshAutomatedSanctionsDecision,
+} from "./lib/sanctionsReviewRefresh.js";
 
 const input = process.env.COUNTRY_RISK_SANCTIONS_COMPLETED_REVIEW_JSON
   ?? "/tmp/country-risk-sanctions-deterministic-review.json";
@@ -191,6 +194,7 @@ async function main() {
     for (const review of catalogueReviews) {
       const reviewKey = `${review.imposer}|${review.source_fingerprint}`;
       const existing = catalogueByKey.get(reviewKey);
+      let refreshAutomatedCatalogue = false;
       if (existing?.status === "approved") {
         const same = existing.source_id === review.source_id
           && existing.catalogue_url === review.catalogue_url
@@ -199,9 +203,14 @@ async function main() {
           && existing.reviewer_organisation === review.reviewer_organisation
           && existing.review_note === review.review_note
           && existing.reviewed_at !== null;
-        if (!same) throw new Error(`${reviewKey}: refusing to overwrite an existing catalogue approval`);
-        catalogueUnchanged += 1;
-        continue;
+        if (same) {
+          catalogueUnchanged += 1;
+          continue;
+        }
+        refreshAutomatedCatalogue = canRefreshAutomatedCatalogueReview(existing, review);
+        if (!refreshAutomatedCatalogue) {
+          throw new Error(`${reviewKey}: refusing to overwrite an existing catalogue approval`);
+        }
       }
       const result = await client.query(
         `INSERT INTO country_risk_sanctions_catalogue_reviews (
@@ -215,11 +224,14 @@ async function main() {
            reviewer_organisation=EXCLUDED.reviewer_organisation,
            reviewed_at=EXCLUDED.reviewed_at, review_note=EXCLUDED.review_note,
            updated_at=NOW()
-         WHERE country_risk_sanctions_catalogue_reviews.status='pending'`,
+         WHERE country_risk_sanctions_catalogue_reviews.status='pending'
+            OR ($11 AND country_risk_sanctions_catalogue_reviews.reviewed_by=$12
+                    AND country_risk_sanctions_catalogue_reviews.reviewer_organisation=$13)`,
         [
           review.imposer, review.source_id, review.catalogue_url,
           review.source_fingerprint, review.census_sha256, review.status, review.reviewed_by,
           review.reviewer_organisation, review.reviewed_at, review.review_note,
+          refreshAutomatedCatalogue, review.reviewed_by, review.reviewer_organisation,
         ],
       );
       if (result.rowCount !== 1) throw new Error(`${reviewKey}: concurrent catalogue review update detected`);
