@@ -39,9 +39,9 @@ export interface FatfChange {
 /** Last plenary reflected in this data, and the next scheduled review. */
 export const FATF_LAST_PLENARY = "2026-06-19";
 /** Last direct verification of both official list pages (Playwright browser check). */
-export const FATF_VERIFIED_AT = "2026-07-16";
+export const FATF_VERIFIED_AT = "2026-08-02";
 /** SHA-256 of the official page HTML retained by the latest verification run. */
-export const FATF_LIST_SHA256 = "844e7892b6c6589aca8648f9f24ea907473357e43e20181fc8478adae61de531";
+export const FATF_LIST_SHA256 = "1d23e03177cd9f53befc85e615b8c9b507df13b211e7adf72aaee71a277ef4c1";
 export const FATF_NEXT_PLENARY = "2026-10"; // October 2026 plenary (month precision)
 /**
  * Scheduled start of the next FATF plenary, for the live countdown. The October
