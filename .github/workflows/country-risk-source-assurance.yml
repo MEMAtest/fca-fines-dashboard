@@ -226,6 +226,12 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          # Upstream ingestion jobs can merge refreshed evidence into main.
+          # Assess the resulting repository state, not the workflow's stale
+          # trigger SHA, otherwise a successful promotion reports a false
+          # source-health failure until the next run.
+          ref: main
       - uses: actions/setup-node@v4
         with:
           node-version: 22
