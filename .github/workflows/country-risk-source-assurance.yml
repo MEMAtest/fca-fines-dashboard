@@ -144,7 +144,11 @@ jobs:
       - name: Validate the FATF evidence update
         run: |
           npm run country-risk:validate
-          npm test -- --run
+          npm test -- --run \
+            feature-validation/unit/fatf-verify.test.ts \
+            src/data/fatfChangeLog.test.ts \
+            src/data/fatfAssessmentLinks.test.ts \
+            scripts/scraper/__tests__/fatfAssessmentParser.test.ts
           npm run build
       - name: Open the FATF ratings update
         id: fatf_pr
@@ -155,7 +159,7 @@ jobs:
           delete-branch: true
           commit-message: "data(country-risk): refresh FATF evidence"
           title: "data(country-risk): refresh FATF evidence"
-          body: "Automated FATF browser verification, ratings ingestion, validation, tests and build passed. The dependent sanctions job performs the combined score-readiness persistence gate."
+          body: "Automated FATF browser verification, ratings ingestion, focused FATF tests, validation and build passed. The dependent sanctions job performs the combined score-readiness persistence and full-suite gate."
           labels: country-risk,automated-data
       - name: Merge the verified FATF update
         if: steps.fatf_pr.outputs.pull-request-number != ''
