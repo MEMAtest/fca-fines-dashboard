@@ -34,7 +34,7 @@ export interface CountryNarrative {
   keyWatchpoints: string[];
 }
 
-/** iso2 -> narrative (211 countries). */
+/** iso2 -> narrative (213 countries). */
 export const NARRATIVES: Record<string, CountryNarrative> = {
   "AD": {
     "summary": "Andorra rests on strong rule-of-law institutions, very low political instability, and manageable corruption levels, with no FATF listing or sanctions exposure.",
@@ -187,6 +187,23 @@ export const NARRATIVES: Record<string, CountryNarrative> = {
       "October 2026 FATF plenary for any change in listing status.",
       "Domestic anti-corruption enforcement trends and the independence of the judiciary.",
       "Economic and political stability developments that could affect institutional capacity for financial crime oversight."
+    ]
+  },
+  "AS": {
+    "summary": "American Samoa is a small US Pacific territory with a complete WGI governance profile, while offshore tax cooperation remains the main external watchpoint for counterparties.",
+    "whyItMatters": [
+      "The official WGI release supplies all six governance dimensions, allowing the governance evidence to be assessed without filling missing values.",
+      "Its status as a US territory links legal and financial infrastructure to the United States while leaving important local institutional features in place.",
+      "American Samoa appears on the EU list of non-cooperative jurisdictions for tax purposes, which can affect onboarding and tax transparency reviews.",
+      "The territory has a small financial system and limited standalone enforcement visibility, so source provenance matters more than activity volume."
+    ],
+    "analysis": "American Samoa combines a complete World Bank governance evidence set with the practical characteristics of a small, non-sovereign Pacific territory. The WGI dimensions provide a usable institutional baseline, but they do not replace counterparty-level checks on ownership, tax residence or the use of offshore structures. The territory's appearance on the EU tax list is a tax cooperation signal rather than an AML or sanctions designation, and those categories should not be conflated. For firms, the useful approach is to preserve the distinction between US-linked legal infrastructure, local administrative capacity and the separate transparency concerns signalled by the tax listing.",
+    "outlook": "The profile should be monitored through official WGI revisions, changes to the EU tax list and any material development in US or territorial beneficial ownership requirements. Removal from or continued inclusion on the EU list would be a meaningful external signal, but it should be interpreted alongside the reason given by the Council and the effective date of any change. Because local enforcement volumes may remain low, absence of frequent actions should be treated as limited observation rather than proof of weak or strong supervision. New evidence should therefore update the narrative progressively without inventing a failure state between infrequent official releases.",
+    "keyWatchpoints": [
+      "Council of the EU updates to the non-cooperative tax jurisdiction list and the stated basis for any change.",
+      "World Bank WGI revisions across all six governance dimensions.",
+      "US and territorial beneficial ownership, company registration and tax transparency requirements.",
+      "Any official supervisory or enforcement publication affecting locally registered financial businesses."
     ]
   },
   "AT": {
@@ -1309,6 +1326,23 @@ export const NARRATIVES: Record<string, CountryNarrative> = {
       "Organised crime influence on the financial system and public procurement processes.",
       "CPI trajectory: any further decline below 25 would signal acute corruption deterioration.",
       "FATF plenary in October 2026 for any indications of increased monitoring interest in Guatemala."
+    ]
+  },
+  "GU": {
+    "summary": "Guam is a US Pacific territory with complete WGI governance evidence, while tax cooperation and the limits of a small local enforcement record remain key watchpoints.",
+    "whyItMatters": [
+      "The latest official WGI evidence covers all six governance dimensions and supports a complete governance composite.",
+      "US federal law and institutions shape much of the operating environment, but local licensing and administrative capacity still matter for counterparties.",
+      "Guam appears on the EU list of non-cooperative jurisdictions for tax purposes, creating a distinct tax transparency consideration.",
+      "Low publication frequency should be recorded as limited local observation rather than converted into a scraper failure or a clean bill of health."
+    ],
+    "analysis": "Guam's institutional picture is anchored by a complete World Bank governance record and its constitutional relationship with the United States. That evidence supports governance analysis, but firms should still distinguish federal safeguards from local company, licensing and enforcement arrangements. The EU tax listing is the most prominent external transparency signal and concerns tax cooperation rather than a direct AML or sanctions classification. A proportionate assessment should therefore combine the official governance evidence, the precise basis of the tax listing and transaction-specific exposure instead of treating territorial status as a substitute for due diligence.",
+    "outlook": "Future movement is most likely to come from World Bank data revisions, Council of the EU tax list decisions, or changes in US and Guam transparency requirements. The tax list should be monitored for both additions and removals, with the accompanying Council explanation retained as evidence. Local regulatory publications may remain infrequent because of the size of the market, so a quiet period is best shown as a watch with a last-checked date. Any new local enforcement action, licensing change or beneficial ownership reform should be incorporated when officially published and should not be inferred from third-party summaries alone.",
+    "keyWatchpoints": [
+      "Official changes to Guam's treatment on the EU list of non-cooperative tax jurisdictions.",
+      "Complete six-dimension WGI revisions and any material movement in the institutional profile.",
+      "US federal and Guam-specific beneficial ownership, tax transparency and licensing developments.",
+      "Low-frequency official enforcement publications and evidence of changes in local supervisory capacity."
     ]
   },
   "GW": {
