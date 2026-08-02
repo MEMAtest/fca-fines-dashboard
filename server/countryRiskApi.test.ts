@@ -1,7 +1,13 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import type { VercelRequest, VercelResponse } from "@vercel/node";
 import countryHandler from "../api/country-risk/[iso2].js";
 import sourcesHandler from "../api/country-risk/sources/status.js";
+
+vi.mock("./db.js", () => ({
+  getSqlClient: () => {
+    throw new Error("test database unavailable");
+  },
+}));
 
 async function invoke(handler: (req: VercelRequest, res: VercelResponse) => unknown, query: Record<string, string> = {}) {
   let code = 200;
