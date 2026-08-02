@@ -1,6 +1,6 @@
 {
   "version": 2,
-  "approvedAt": "2026-07-17T07:49:38.331Z",
+  "approvedAt": "2026-08-02T01:23:20.944Z",
   "sources": [
     {
       "id": "ofac-programmes",
@@ -28,7 +28,7 @@
       "minimumBytes": 100000,
       "minimumRecords": 50,
       "requiredText": "legal_acts",
-      "approvedFingerprint": "a7af2add9759fdf7714ad93e4583d9ccfa0c4559fc040e723256fe00af4dfb08"
+      "approvedFingerprint": "6b92ce9900755fad28ca68e3c579f509601823a80e4722cc8facb5d7e839441c"
     },
     {
       "id": "un-consolidated-list",
