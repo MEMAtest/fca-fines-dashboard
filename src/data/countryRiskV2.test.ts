@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import type { FatfAssessmentRecord } from "./fatfAssessmentData.js";
 import { getFatfStatus } from "./fatfStatus.js";
+import { GOVERNANCE_DIMENSIONS, GOVERNANCE_PERCENTILE } from "./governanceData.js";
 import type { CountrySanctions } from "./sanctionsStatus.js";
 import {
   computeCountryRiskV2,
@@ -30,6 +31,12 @@ const currentStates = {
   governance: "current",
   sanctions: "current",
 } as const;
+
+it("publishes governance composites only when all six WGI dimensions exist", () => {
+  for (const iso2 of Object.keys(GOVERNANCE_PERCENTILE)) {
+    expect(Object.keys(GOVERNANCE_DIMENSIONS[iso2] ?? {}), iso2).toHaveLength(6);
+  }
+});
 
 describe("country risk v2 primitives", () => {
   it("weights FATF effectiveness 70% and technical compliance 30%", () => {

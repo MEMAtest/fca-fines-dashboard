@@ -181,7 +181,9 @@ async function main(): Promise<void> {
     console.log(`  ${ind.code} (${ind.key}): ${result.values.size} countries`);
   }
 
-  // Collect every ISO3 seen, map to ISO2, store per-dimension + mean.
+  // Collect every ISO3 seen and retain all available per-dimension evidence.
+  // Publish the scored mean only when all six WGI dimensions are present so
+  // hasGovernanceData cannot advertise a composite the v2 pillar will reject.
   const iso3s = new Set<string>();
   for (const m of perIndicator.values()) for (const k of m.keys()) iso3s.add(k);
 
@@ -201,11 +203,13 @@ async function main(): Promise<void> {
     }
     if (vals.length === 0) continue;
     dims[country.iso2] = d;
-    mean[country.iso2] = Math.round(vals.reduce((s, v) => s + v, 0) / vals.length);
+    if (vals.length === DIM_KEYS.length) {
+      mean[country.iso2] = Math.round(vals.reduce((s, v) => s + v, 0) / vals.length);
+    }
   }
 
   console.log(
-    `Resolved WGI for ${Object.keys(mean).length}/${COUNTRIES.length} reference countries (per-dimension + mean).`,
+    `Resolved complete six-dimension WGI composites for ${Object.keys(mean).length}/${COUNTRIES.length} reference countries.`,
   );
   if (Object.keys(mean).length < 175) {
     throw new Error(`WGI coverage too small: ${Object.keys(mean).length}; refusing to publish`);
