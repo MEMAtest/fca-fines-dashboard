@@ -43,10 +43,14 @@ jobs:
             src/data/euSanctionsRegimeData.ts
 
   sanctions-weekly-fragile-evidence:
+    needs: fatf-weekly-fragile
     if: (github.event_name == 'schedule' && github.event.schedule == '23 6 * * 0') || inputs.lane == 'weekly' || inputs.lane == 'all'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          # FATF may have merged a refreshed evidence snapshot in the preceding job.
+          ref: main
       - uses: actions/setup-node@v4
         with:
           node-version: 22
@@ -123,8 +127,7 @@ jobs:
             /tmp/country-risk-v2-validation.json
 
   fatf-weekly-fragile:
-    needs: sanctions-weekly-fragile-evidence
-    if: always() && ((github.event_name == 'schedule' && github.event.schedule == '23 6 * * 0') || inputs.lane == 'weekly' || inputs.lane == 'all')
+    if: (github.event_name == 'schedule' && github.event.schedule == '23 6 * * 0') || inputs.lane == 'weekly' || inputs.lane == 'all'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -138,11 +141,8 @@ jobs:
         run: xvfb-run -a npm run country-risk:verify-fatf
       - name: Ingest the latest FATF consolidated ratings
         run: xvfb-run -a npm run country-risk:ingest-fatf
-      - name: Persist and verify the updated score run
-        env:
-          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+      - name: Validate the FATF evidence update
         run: |
-          npx tsx scripts/country-risk/generate-score-run.ts --require-ready --persist
           npm run country-risk:validate
           npm test -- --run
           npm run build
@@ -155,7 +155,7 @@ jobs:
           delete-branch: true
           commit-message: "data(country-risk): refresh FATF evidence"
           title: "data(country-risk): refresh FATF evidence"
-          body: "Automated FATF browser verification, ratings ingestion, score persistence, validation, tests and build passed."
+          body: "Automated FATF browser verification, ratings ingestion, validation, tests and build passed. The dependent sanctions job performs the combined score-readiness persistence gate."
           labels: country-risk,automated-data
       - name: Merge the verified FATF update
         if: steps.fatf_pr.outputs.pull-request-number != ''
