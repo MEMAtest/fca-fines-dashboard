@@ -3,6 +3,7 @@ import {
   extractMentionedIso2,
   diffFatfStatus,
   formatFatfDiff,
+  refreshFatfVerificationMetadata,
 } from "../../scripts/lib/fatfVerify.js";
 import { FATF_STATUS, type FatfStatus } from "../../src/data/fatfStatus.js";
 
@@ -68,5 +69,23 @@ describe("diffFatfStatus", () => {
     ];
     const diff = diffFatfStatus(new Set(["IR"]), new Set(["KE"]), curated);
     expect(diff.inSync).toBe(true);
+  });
+});
+
+describe("refreshFatfVerificationMetadata", () => {
+  const source = [
+    'export const FATF_VERIFIED_AT = "2026-07-16";',
+    `export const FATF_LIST_SHA256 = "${"a".repeat(64)}";`,
+  ].join("\n");
+
+  it("refreshes only the verification date and evidence hash", () => {
+    const refreshed = refreshFatfVerificationMetadata(source, "2026-08-02", "b".repeat(64));
+    expect(refreshed).toContain('FATF_VERIFIED_AT = "2026-08-02"');
+    expect(refreshed).toContain(`FATF_LIST_SHA256 = "${"b".repeat(64)}"`);
+  });
+
+  it("rejects malformed provenance values", () => {
+    expect(() => refreshFatfVerificationMetadata(source, "02-08-2026", "b".repeat(64))).toThrow();
+    expect(() => refreshFatfVerificationMetadata(source, "2026-08-02", "not-a-hash")).toThrow();
   });
 });
