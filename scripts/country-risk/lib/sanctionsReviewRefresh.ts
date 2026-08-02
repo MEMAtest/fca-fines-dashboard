@@ -33,14 +33,23 @@ export function canRefreshAutomatedSanctionsDecision(
   existing: ExistingReviewedDecision,
   incoming: IncomingReviewedDecision,
 ): boolean {
-  return existing.reviewed_by === SANCTIONS_AUTOMATED_DECISION_ACTOR
+  const automatedOwnersMatch = existing.reviewed_by === SANCTIONS_AUTOMATED_DECISION_ACTOR
     && existing.reviewer_organisation === SANCTIONS_AUTOMATED_DECISION_ORGANISATION
     && incoming.reviewed_by === SANCTIONS_AUTOMATED_DECISION_ACTOR
-    && incoming.reviewer_organisation === SANCTIONS_AUTOMATED_DECISION_ORGANISATION
-    && existing.status === incoming.status
+    && incoming.reviewer_organisation === SANCTIONS_AUTOMATED_DECISION_ORGANISATION;
+  const scoringOutcomeMatches = existing.status === incoming.status
     && existing.relationship === incoming.relationship
     && existing.proposed_tier === incoming.proposed_tier
-    && existing.final_tier === incoming.final_tier
-    && existing.legal_status === incoming.legal_status
+    && existing.final_tier === incoming.final_tier;
+  const evidenceClassificationMatches = existing.legal_status === incoming.legal_status
     && existing.coverage_state === incoming.coverage_state;
+  const nonScoringSituationCorrection = existing.relationship === "situation-related"
+    && existing.status === "rejected"
+    && existing.final_tier === null
+    && incoming.status === "rejected"
+    && incoming.final_tier === null;
+
+  return automatedOwnersMatch
+    && scoringOutcomeMatches
+    && (evidenceClassificationMatches || nonScoringSituationCorrection);
 }
