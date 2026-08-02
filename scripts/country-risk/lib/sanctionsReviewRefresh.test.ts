@@ -3,7 +3,10 @@ import {
   SANCTIONS_AUTOMATED_DECISION_ACTOR,
   SANCTIONS_AUTOMATED_DECISION_ORGANISATION,
 } from "./deterministicSanctionsDecision.js";
-import { canRefreshAutomatedSanctionsDecision } from "./sanctionsReviewRefresh.js";
+import {
+  canRefreshAutomatedCatalogueReview,
+  canRefreshAutomatedSanctionsDecision,
+} from "./sanctionsReviewRefresh.js";
 
 const existing = {
   status: "approved",
@@ -67,5 +70,30 @@ describe("automated sanctions decision refresh", () => {
       legal_status: "terminated",
       coverage_state: "inactive",
     })).toBe(false);
+  });
+});
+
+describe("automated catalogue attestation refresh", () => {
+  const catalogue = {
+    status: "approved",
+    source_id: "eu-resources",
+    catalogue_url: "https://sanctionsmap.eu/api/v1/regime?lang=en",
+    reviewed_by: SANCTIONS_AUTOMATED_DECISION_ACTOR,
+    reviewer_organisation: SANCTIONS_AUTOMATED_DECISION_ORGANISATION,
+  };
+
+  it("allows a new census to refresh the automated attestation for the same catalogue", () => {
+    expect(canRefreshAutomatedCatalogueReview(catalogue, catalogue)).toBe(true);
+  });
+
+  it("preserves manual attestations and catalogue identity", () => {
+    expect(canRefreshAutomatedCatalogueReview(
+      { ...catalogue, reviewed_by: "Human reviewer" },
+      catalogue,
+    )).toBe(false);
+    expect(canRefreshAutomatedCatalogueReview(
+      catalogue,
+      { ...catalogue, catalogue_url: "https://example.invalid" },
+    )).toBe(false);
   });
 });

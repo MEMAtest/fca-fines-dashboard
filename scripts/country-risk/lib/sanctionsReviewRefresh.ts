@@ -25,6 +25,14 @@ interface IncomingReviewedDecision {
   reviewer_organisation: string;
 }
 
+interface CatalogueReviewIdentity {
+  status: string;
+  source_id: string;
+  catalogue_url: string;
+  reviewed_by: string | null;
+  reviewer_organisation: string | null;
+}
+
 /**
  * Permit evidence-only refreshes of decisions made by the versioned automated
  * classifier. Manual decisions and any classification change remain fail-closed.
@@ -52,4 +60,19 @@ export function canRefreshAutomatedSanctionsDecision(
   return automatedOwnersMatch
     && scoringOutcomeMatches
     && (evidenceClassificationMatches || nonScoringSituationCorrection);
+}
+
+/** Allow a new census hash to replace only its own automated attestation. */
+export function canRefreshAutomatedCatalogueReview(
+  existing: CatalogueReviewIdentity,
+  incoming: CatalogueReviewIdentity,
+): boolean {
+  return existing.status === "approved"
+    && incoming.status === "approved"
+    && existing.source_id === incoming.source_id
+    && existing.catalogue_url === incoming.catalogue_url
+    && existing.reviewed_by === SANCTIONS_AUTOMATED_DECISION_ACTOR
+    && existing.reviewer_organisation === SANCTIONS_AUTOMATED_DECISION_ORGANISATION
+    && incoming.reviewed_by === SANCTIONS_AUTOMATED_DECISION_ACTOR
+    && incoming.reviewer_organisation === SANCTIONS_AUTOMATED_DECISION_ORGANISATION;
 }
