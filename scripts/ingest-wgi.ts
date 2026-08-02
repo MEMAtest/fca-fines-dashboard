@@ -35,6 +35,8 @@ const INDICATORS: Array<{ code: string; key: string }> = [
 ];
 const DIM_KEYS = INDICATORS.map((i) => i.key);
 const REQUESTED_YEAR = process.argv.find((a) => a.startsWith("--year="))?.split("=")[1];
+const FETCH_ATTEMPTS = 5;
+const RETRY_BASE_MS = 5_000;
 
 interface Row {
   REF_AREA: string;
@@ -47,9 +49,15 @@ async function fetchPercentiles(indicator: string, year: string): Promise<{ valu
     `${BASE}?DATABASE_ID=WB_WGI&INDICATOR=${indicator}` +
     `&COMP_BREAKDOWN_1=WGI_SC&timePeriodFrom=${year}&timePeriodTo=${year}&per_page=1000`;
   const map = new Map<string, number>();
-  for (let attempt = 0; attempt < 4; attempt++) {
+  for (let attempt = 0; attempt < FETCH_ATTEMPTS; attempt++) {
     try {
-      const res = await fetch(url, { signal: AbortSignal.timeout(45_000) });
+      const res = await fetch(url, {
+        headers: {
+          Accept: "application/json",
+          "User-Agent": "RegActions-source-assurance/1.0 (+https://regactions.com/methodology/country-risk)",
+        },
+        signal: AbortSignal.timeout(45_000),
+      });
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       const body = await res.text();
       const json = JSON.parse(body) as { value?: Row[] };
@@ -61,11 +69,15 @@ async function fetchPercentiles(indicator: string, year: string): Promise<{ valu
       }
       return { values: map, rawSha256: createHash("sha256").update(body).digest("hex") };
     } catch (err) {
-      if (attempt === 3) {
+      if (attempt === FETCH_ATTEMPTS - 1) {
         console.error(`  ${indicator} failed: ${err instanceof Error ? err.message : err}`);
         return { values: map, rawSha256: null };
       }
-      await new Promise((r) => setTimeout(r, 3000));
+      const delayMs = RETRY_BASE_MS * 2 ** attempt;
+      console.warn(
+        `  ${indicator} attempt ${attempt + 1}/${FETCH_ATTEMPTS} failed; retrying in ${delayMs / 1000}s`,
+      );
+      await new Promise((resolve) => setTimeout(resolve, delayMs));
     }
   }
   return { values: map, rawSha256: null };
