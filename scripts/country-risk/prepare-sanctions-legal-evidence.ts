@@ -113,6 +113,8 @@ async function prepare(candidate: (typeof SANCTIONS_REGIME_CANDIDATES)[number]) 
     ? EU_SANCTIONS_REGIMES.find((record) => record.apiUrl === candidate.measureEvidenceUrl)
     : undefined;
   if (eu) {
+    const expirationReviewRequired = Boolean(eu.expiration &&
+      new Date(eu.expiration).getTime() <= new Date(EU_SANCTIONS_REGIME_SNAPSHOT.retrievedAt).getTime());
     return {
       key: key(candidate),
       iso2: candidate.iso2,
@@ -135,7 +137,12 @@ async function prepare(candidate: (typeof SANCTIONS_REGIME_CANDIDATES)[number]) 
       broadTradeProhibition: eu.broadTradeProhibition,
       broadFinancialProhibition: eu.broadFinancialProhibition,
       materialNonDesignationRestriction: eu.materialNonDesignationRestriction,
-      warnings: eu.primaryLegalAct ? [] : ["No legal act is supplied by the official API; reviewer must add primary evidence."],
+      warnings: [
+        ...(eu.primaryLegalAct ? [] : ["No legal act is supplied by the official API; reviewer must add primary evidence."]),
+        ...(expirationReviewRequired
+          ? ["The recorded expiry has passed but the regime remains in the current official EU inventory; retain active status and reconcile the lagging expiry against the Council renewal record."]
+          : []),
+      ],
     };
   }
 
