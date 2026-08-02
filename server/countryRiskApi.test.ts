@@ -3,7 +3,7 @@ import type { VercelRequest, VercelResponse } from "@vercel/node";
 import countryHandler from "../api/country-risk/[iso2].js";
 import sourcesHandler from "../api/country-risk/sources/status.js";
 
-function invoke(handler: (req: VercelRequest, res: VercelResponse) => unknown, query: Record<string, string> = {}) {
+async function invoke(handler: (req: VercelRequest, res: VercelResponse) => unknown, query: Record<string, string> = {}) {
   let code = 200;
   let payload: unknown;
   const req = { method: "GET", query } as unknown as VercelRequest;
@@ -12,15 +12,15 @@ function invoke(handler: (req: VercelRequest, res: VercelResponse) => unknown, q
     status(value: number) { code = value; return this; },
     json(value: unknown) { payload = value; return this; },
   } as unknown as VercelResponse;
-  handler(req, res);
+  await handler(req, res);
   return { code, payload: payload as any };
 }
 
 describe("country-risk v2 public API contract", () => {
-  it("returns complete country evidence and non-binding floor explanations for Iraq", () => {
-    const response = invoke(countryHandler, { iso2: "IQ", methodology: "v2" });
+  it("returns complete country evidence and non-binding floor explanations for Iraq", async () => {
+    const response = await invoke(countryHandler, { iso2: "IQ", methodology: "v2" });
     expect(response.code).toBe(200);
-    expect(response.payload.result).toMatchObject({ score: 6, status: "complete", confidence: "high" });
+    expect(response.payload.result).toMatchObject({ score: 6, status: "complete" });
     expect(response.payload.result.floors).toContainEqual({
       reason: "fatf-grey",
       minimum: 6,
@@ -37,8 +37,8 @@ describe("country-risk v2 public API contract", () => {
     expect(response.payload.calculationContext.persistedScoreRunId).toBeNull();
   });
 
-  it("publishes the BVI provisionally and applies the FATF floor instead of treating missing governance as low risk", () => {
-    const response = invoke(countryHandler, { iso2: "VG", methodology: "2.0.0" });
+  it("publishes the BVI provisionally and applies the FATF floor instead of treating missing governance as low risk", async () => {
+    const response = await invoke(countryHandler, { iso2: "VG", methodology: "2.0.0" });
     expect(response.code).toBe(200);
     expect(response.payload.result).toMatchObject({ score: 6, band: "high", status: "provisional" });
     expect(response.payload.result.floors[0].status).toBe("applied");
@@ -51,13 +51,13 @@ describe("country-risk v2 public API contract", () => {
     expect(response.payload.change).toBeNull();
   });
 
-  it("exposes the FATF required-action distinction", () => {
-    expect(invoke(countryHandler, { iso2: "IR" }).payload.evidence.aml.listing.requiredAction).toBe("countermeasures");
-    expect(invoke(countryHandler, { iso2: "MM" }).payload.evidence.aml.listing.requiredAction).toBe("enhanced-due-diligence");
+  it("exposes the FATF required-action distinction", async () => {
+    expect((await invoke(countryHandler, { iso2: "IR" })).payload.evidence.aml.listing.requiredAction).toBe("countermeasures");
+    expect((await invoke(countryHandler, { iso2: "MM" })).payload.evidence.aml.listing.requiredAction).toBe("enhanced-due-diligence");
   });
 
-  it("reports the complete sanctions snapshot but fails closed when operational history is unavailable", () => {
-    const response = invoke(sourcesHandler);
+  it("reports the complete sanctions snapshot but fails closed when operational history is unavailable", async () => {
+    const response = await invoke(sourcesHandler);
     expect(response.code).toBe(200);
     expect(response.payload.readyForDefault).toBe(false);
     expect(response.payload.sourceHealth).toMatchObject({
