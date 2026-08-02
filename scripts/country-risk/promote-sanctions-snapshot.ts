@@ -193,7 +193,9 @@ async function main() {
       `SELECT imposer, source_id, catalogue_url, source_fingerprint, census_sha256, status,
               reviewed_by, reviewer_organisation, reviewed_at, review_note
        FROM country_risk_sanctions_catalogue_reviews
+       WHERE census_sha256=$1
        ORDER BY imposer`,
+      [censusSha256],
     );
     const catalogueItemResult = await pool.query<SanctionsCatalogueItemReviewRow>(
       `SELECT census_sha256, imposer, item_key, label, url, disposition, candidate_keys,
