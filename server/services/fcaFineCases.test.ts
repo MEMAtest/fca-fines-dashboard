@@ -214,6 +214,18 @@ describe("FCA fine case service", () => {
     expect(query).toContain("trusted_amount_gbp > 0");
   });
 
+  it("keeps legacy non-UUID rows out of the canonical SEO route inventory", async () => {
+    const sql = fakeSql([
+      trustedRow({ public_case_id: "legacy-fca-case-123" }),
+      trustedRow(),
+    ]);
+
+    const rows = await listFcaMonetaryCasesForSeo(sql);
+
+    expect(rows).toHaveLength(1);
+    expect(rows[0]?.caseId).toBe(caseId);
+  });
+
   it("returns a canonical case with useful same-entity and same-evidence relations", async () => {
     const sharedEvidence = "https://www.fca.org.uk/publication/final-notices/example-bank-2026.pdf";
     const sql = fakeSql(

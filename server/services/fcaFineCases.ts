@@ -502,7 +502,13 @@ export async function listFcaMonetaryCasesForSeo(
     ORDER BY date_issued DESC NULLS LAST, public_case_id ASC
   `);
 
-  return rows.map((row) => toSeoRow(mapFcaFineCaseRow(row)));
+  return rows
+    .map((row) => mapFcaFineCaseRow(row))
+    // Legacy rows can predate the canonical public UUID contract. They remain
+    // available to the underlying trusted dataset, but must not create an
+    // unstable public route or abort the complete production prerender.
+    .filter((row) => isValidFcaFineCaseId(row.caseId))
+    .map(toSeoRow);
 }
 
 export async function getFcaFineCaseById(
