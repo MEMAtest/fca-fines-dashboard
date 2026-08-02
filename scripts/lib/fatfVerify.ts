@@ -21,6 +21,28 @@ export interface FatfDiff {
   inSync: boolean;
 }
 
+export function refreshFatfVerificationMetadata(
+  source: string,
+  verifiedAt: string,
+  sha256: string,
+): string {
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(verifiedAt)) {
+    throw new Error(`Invalid FATF verification date: ${verifiedAt}`);
+  }
+  if (!/^[a-f0-9]{64}$/.test(sha256)) {
+    throw new Error("Invalid FATF verification SHA-256");
+  }
+
+  const verifiedAtPattern = /export const FATF_VERIFIED_AT = "[^"]+";/;
+  const shaPattern = /export const FATF_LIST_SHA256 = "[a-f0-9]{64}";/;
+  if (!verifiedAtPattern.test(source) || !shaPattern.test(source)) {
+    throw new Error("Could not locate FATF verification metadata constants");
+  }
+  return source
+    .replace(verifiedAtPattern, `export const FATF_VERIFIED_AT = "${verifiedAt}";`)
+    .replace(shaPattern, `export const FATF_LIST_SHA256 = "${sha256}";`);
+}
+
 /**
  * Extract ISO2 codes for every country NAME mentioned in a blob of text,
  * using the canonical alias resolver. Longest names first so multi-word names

@@ -4,6 +4,7 @@
  *
  * Usage:
  *   npx tsx scripts/verify-fatf-status.ts                 # direct fetch, then Playwright
+ *   npx tsx scripts/verify-fatf-status.ts --write         # refresh evidence metadata if in sync
  *   npx tsx scripts/verify-fatf-status.ts --file page.txt # diff against saved text
  *                                                          # (FATF is Cloudflare-gated;
  *                                                          #  save the page or a secondary
@@ -20,6 +21,7 @@ import {
   extractMentionedIso2,
   diffFatfStatus,
   formatFatfDiff,
+  refreshFatfVerificationMetadata,
 } from "./lib/fatfVerify.js";
 
 const GREY_HEADING = /jurisdictions?\s+under\s+increased\s+monitoring/i;
@@ -152,6 +154,13 @@ async function main(): Promise<void> {
   }, null, 2)}\n`);
   console.log(formatFatfDiff(diff));
   console.log(`\n(live: ${liveBlack.size} black, ${liveGrey.size} grey; lane: ${source.lane}; sha256: ${sha256})`);
+  if (diff.inSync && process.argv.includes("--write")) {
+    const statusPath = "src/data/fatfStatus.ts";
+    const current = readFileSync(statusPath, "utf8");
+    const refreshed = refreshFatfVerificationMetadata(current, checkedAt.slice(0, 10), sha256);
+    writeFileSync(statusPath, refreshed);
+    console.log(`Refreshed FATF verification metadata in ${statusPath}.`);
+  }
   process.exit(diff.inSync ? 0 : 1);
 }
 
