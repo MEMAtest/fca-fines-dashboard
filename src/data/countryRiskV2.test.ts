@@ -24,7 +24,12 @@ const assessment: FatfAssessmentRecord = {
   ])),
 };
 const governance = { cc: 80, rl: 80, rq: 80, ge: 80, pv: 80, va: 80 };
-const currentStates = { aml: "current", governance: "current", sanctions: "current" } as const;
+const currentStates = {
+  aml: "current",
+  fatfLists: "current",
+  governance: "current",
+  sanctions: "current",
+} as const;
 
 describe("country risk v2 primitives", () => {
   it("weights FATF effectiveness 70% and technical compliance 30%", () => {
@@ -69,7 +74,10 @@ describe("country risk v2 publication rules", () => {
     ["SY", 7, "provisional", "very-high", "low", null, 7.8, 5.9],
     ["KP", 9, "provisional", "very-high", "low", null, 6.8, 9.3],
   ] as const)("keeps the reviewed ten-country golden result for %s", (iso2, score, status, band, confidence, aml, governanceScore, sanctionsScore) => {
-    const result = computeCountryRiskV2(iso2, { asOf: new Date("2026-07-16T12:00:00.000Z") });
+    const result = computeCountryRiskV2(iso2, {
+      asOf: new Date("2026-07-16T12:00:00.000Z"),
+      sourceStates: currentStates,
+    });
     expect(result).toMatchObject({ score, status, band, confidence });
     expect(result.pillars.aml.score).toBe(aml);
     expect(result.pillars.governance.score).toBe(governanceScore);
@@ -80,12 +88,18 @@ describe("country risk v2 publication rules", () => {
     expect(getFatfStatus("IR")?.requiredAction).toBe("countermeasures");
     expect(getFatfStatus("KP")?.requiredAction).toBe("countermeasures");
     expect(getFatfStatus("MM")?.requiredAction).toBe("enhanced-due-diligence");
-    expect(computeCountryRiskV2("MM", { asOf: new Date("2026-07-16T12:00:00.000Z") }).regulatoryFlags)
+    expect(computeCountryRiskV2("MM", {
+      asOf: new Date("2026-07-16T12:00:00.000Z"),
+      sourceStates: currentStates,
+    }).regulatoryFlags)
       .toContainEqual({ type: "fatf-black", label: "FATF call for action — enhanced due diligence" });
   });
 
   it("applies the grey-list floor to a provisional result with two available pillars", () => {
-    const result = computeCountryRiskV2("VG", { asOf: new Date("2026-07-16T12:00:00.000Z") });
+    const result = computeCountryRiskV2("VG", {
+      asOf: new Date("2026-07-16T12:00:00.000Z"),
+      sourceStates: currentStates,
+    });
     expect(result.status).toBe("provisional");
     expect(result.floors).toContainEqual({
       reason: "fatf-grey",
