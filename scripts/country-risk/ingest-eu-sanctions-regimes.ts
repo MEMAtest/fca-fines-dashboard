@@ -4,6 +4,7 @@ import { readFile, rename, writeFile } from "node:fs/promises";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import type { SanctionsMeasureType } from "../../src/data/sanctionsEvidence.js";
+import { assessEuRegimeStatus } from "./lib/euSanctionsStatus.js";
 
 interface InventorySource {
   id: string;
@@ -69,7 +70,7 @@ const regimes = euSource.inventory.filter((record) => record.type === 0).map((re
     .flatMap((measure: { types: SanctionsMeasureType[] }) => measure.types))].sort();
   const designationOnly = activeMeasureTypes.every((type) => type === "asset-freeze" || type === "travel-ban");
   const expiration = typeof record.expiration === "number" ? new Date(record.expiration * 1000) : null;
-  const legalStatus = expiration && expiration.getTime() <= asOf.getTime() ? "terminated" : "active";
+  const { legalStatus } = assessEuRegimeStatus(expiration, asOf);
   const legalActs = (record.legalActs?.data ?? []).map((act: Record<string, any>) => ({
     id: Number(act.id),
     title: String(act.title ?? "").trim(),
@@ -128,6 +129,8 @@ console.log(JSON.stringify({
   situationRelated: regimes.filter((regime) => regime.relationship === "situation-related").length,
   sectoralProposals: regimes.filter((regime) => regime.proposedTier === "sectoral").length,
   targetedProposals: regimes.filter((regime) => regime.proposedTier === "targeted").length,
+  expirationReviewWatches: regimes.filter((regime) =>
+    regime.expiration && new Date(regime.expiration).getTime() <= asOf.getTime()).length,
   dataSha256,
   productionScoresChanged: false,
 }, null, 2));

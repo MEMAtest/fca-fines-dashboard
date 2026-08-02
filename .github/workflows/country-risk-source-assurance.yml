@@ -123,7 +123,8 @@ jobs:
             /tmp/country-risk-v2-validation.json
 
   fatf-weekly-fragile:
-    if: (github.event_name == 'schedule' && github.event.schedule == '23 6 * * 0') || inputs.lane == 'weekly' || inputs.lane == 'all'
+    needs: sanctions-weekly-fragile-evidence
+    if: always() && ((github.event_name == 'schedule' && github.event.schedule == '23 6 * * 0') || inputs.lane == 'weekly' || inputs.lane == 'all')
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
