@@ -40,4 +40,32 @@ describe("automated sanctions decision refresh", () => {
     expect(canRefreshAutomatedSanctionsDecision(existing, { ...incoming, final_tier: "targeted" })).toBe(false);
     expect(canRefreshAutomatedSanctionsDecision(existing, { ...incoming, coverage_state: "unknown" })).toBe(false);
   });
+
+  it("allows a situation-related evidence correction when the scoring outcome remains excluded", () => {
+    const excludedExisting = {
+      ...existing,
+      status: "rejected",
+      relationship: "situation-related",
+      final_tier: null,
+      legal_status: "terminated",
+      coverage_state: "inactive",
+    };
+    const excludedIncoming = {
+      ...incoming,
+      status: "rejected",
+      relationship: "situation-related",
+      final_tier: null,
+      legal_status: "active",
+      coverage_state: "active-situation-related",
+    };
+    expect(canRefreshAutomatedSanctionsDecision(excludedExisting, excludedIncoming)).toBe(true);
+  });
+
+  it("still blocks the same evidence correction for a scoring decision", () => {
+    expect(canRefreshAutomatedSanctionsDecision(existing, {
+      ...incoming,
+      legal_status: "terminated",
+      coverage_state: "inactive",
+    })).toBe(false);
+  });
 });
