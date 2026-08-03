@@ -2368,6 +2368,115 @@ For an interactive view of BaFin and FCA enforcement side by side — including 
     ],
   },
   {
+    id: "biggest-fine-h1-2026-forensic",
+    slug: "biggest-fine-h1-2026-forensic",
+    title: "Anatomy of H1 2026's Biggest Fine: John Wood Group PLC, £12,993,700",
+    seoTitle:
+      "John Wood Group PLC £12.99m FCA Fine: H1 2026 Biggest Penalty Analysis",
+    excerpt:
+      "A single March 2026 Final Notice against John Wood Group PLC — £12,993,700 for fraud-related conduct spanning 2017 to 2021 — accounts for 77% of the FCA's entire H1 2026 fine total. This forensic analysis examines what happened, how a penalty of this scale is constructed, and what the case teaches listed companies and their boards about corporate disclosure risk.",
+    content: `
+## Anatomy of H1 2026's Biggest Fine: John Wood Group PLC, £12,993,700
+
+**A single enforcement action against John Wood Group PLC — a March 2026 Final Notice for fraud-related conduct dating to 2017–2021 — accounts for 77% of the FCA's entire first-half 2026 monetary-penalty total of £16,842,723.** The £12,993,700 penalty is the largest FCA fine since Nationwide Building Society's £44m action in January 2025 and one of the largest issuer-level corporate-disclosure cases in recent enforcement history. This piece forensically examines the action: what happened, the underlying breach, how a penalty of this scale is constructed, and what the case teaches compliance professionals and boards about issuer accountability.
+
+## H1 2026 at a Glance: One Fine Rules Them All
+
+| Metric | Value |
+| ------ | ----- |
+| Total H1 2026 FCA monetary penalties | 9 |
+| Total H1 2026 penalty value | £16,842,723 |
+| John Wood Group PLC penalty | £12,993,700 |
+| John Wood Group as % of H1 total | 77.1% |
+| Remaining 8 penalties combined | £3,849,023 |
+| Largest of remaining 8 | Frank Breuer (May): £755,000 |
+
+The concentration is striking: remove the John Wood Group action and the rest of H1 2026's fines average £481,128 each — a very different enforcement landscape from the headline figure.
+
+## The Firm: John Wood Group PLC
+
+John Wood Group PLC (trading as Wood) is a global energy services and project-management engineering company headquartered in Aberdeen, Scotland. The company is listed on the London Stock Exchange and, as a consequence, is subject to the FCA's Listing Rules and the Disclosure Guidance and Transparency Rules (DTR), as well as the UK Market Abuse Regulation (UK MAR).
+
+The conduct period identified in the FCA's enforcement action — 2017 to 2021 — spans the period following the company's transformative acquisition of Amec Foster Wheeler in October 2017, a deal that created one of the world's largest energy services companies. The post-acquisition integration period was marked by significant operational complexity, substantial goodwill recognition, and — as the FCA found — conduct that the regulator classified as fraud-related in its enforcement record. The FCA's complete findings are set out in the March 2026 Final Notice available at fca.org.uk/news/final-notices.
+
+## The Breach: Fraud-Related Corporate Disclosure Conduct
+
+The FCA categorises enforcement actions using breach-type labels drawn from each firm's Final Notice. The John Wood Group action carries a fraud-related classification — a designation that indicates the FCA's case concerned conduct materially more serious than a systems-and-controls failing or process weakness. In the FCA's enforcement architecture, fraud-related corporate cases for listed issuers typically involve allegations under FSMA 2000, UK MAR Article 15 (market manipulation), Article 12 (market abuse prohibitions), or DTR breaches around material information disclosure.
+
+For a listed issuer, the practical anatomy of a fraud-related case involves one or more of: delayed or inadequate disclosure of materially adverse information; market statements that were misleading in a material respect; or disclosures in investor presentations, results announcements, or regulatory news service releases that conveyed a materially more positive picture of the company's position than the underlying facts supported.
+
+The five-year conduct window (2017–2021) is significant. It encompasses the acquisition of Amec Foster Wheeler and the years immediately following, during which integration complexity, goodwill impairment risk, and forward guidance all created information asymmetry between management and the market. The FCA's investment in investigating this window reflects its commitment to pursuing corporate-disclosure failures even when the underlying conduct is five to nine years old.
+
+## How a Penalty of £12,993,700 Is Constructed
+
+The FCA calculates monetary penalties using a five-step framework under DEPP (Decision Procedure and Penalties Manual). Understanding each step contextualises how a disclosed-conduct penalty reaches just under £13m.
+
+| Step | What it sets | Note for this case |
+| ---- | ------------ | ------------------ |
+| Step 1 | Financial benefit derived from the breach | For disclosure-delay or misleading-statement cases, this reflects capital-market benefit during the misconduct window — shares not falling as they would have on accurate disclosure |
+| Step 2 | Seriousness of breach (multiplied against Step 1 or a fixed figure) | Fraud-related findings attract the highest seriousness scores under DEPP 6.5 |
+| Step 3 | Aggravating and mitigating circumstances | Settlement cooperation, voluntary disclosure, remediation steps, duration and repetition of conduct |
+| Step 4 | Deterrence uplift | Applied where Step 1–3 output is insufficient to deter equivalent conduct by similarly-sized firms |
+| Step 5 | Settlement discount (Stage 1: 30%) | Available where the firm agrees facts and settlement at the earliest opportunity |
+
+At £12,993,700 — a very precise figure — the penalty is almost certainly a post-discount settlement amount, reflecting a Stage 1 cooperation credit of approximately 30%. The implied pre-discount figure of around £18.5m to £19m places the raw penalty in a range consistent with a serious, multi-year, fraud-related breach by a FTSE-listed company. The precision of the final number reflects the FCA's financial-benefit calculation anchored to market prices over the specific misconduct period.
+
+## The Investigation-to-Publication Lag: A Structural Feature
+
+One of the most analytically important aspects of this case is its timeline. The conduct occurred during 2017–2021. The Final Notice was published in March 2026. That is a five-to-nine-year investigation-to-publication arc, depending on when the breach began and when FCA investigation commenced.
+
+This lag is not unusual for fraud-related corporate-disclosure cases. The FCA's process involves: initial surveillance and data gathering (typically one to two years); formal enforcement referral (six months to one year); Warning Notice issuance; a Supervisory Notices period; and — where the firm cooperates — settlement negotiations. For a global listed company with complex corporate-disclosure facts, multi-jurisdiction complexity, and likely extensive document review, a five-to-nine-year timeline from investigation open to Final Notice publication is structurally predictable.
+
+The practical lesson: enforcement actions published in 2026 for 2017–2021 conduct confirm that the FCA's investigation window on that period remains open. Listed companies and their senior managers with legacy disclosure or market-conduct exposure from those years should not regard that period as closed.
+
+## How the Case Compares
+
+Contextualising £12,993,700 against the FCA's enforcement record for issuer-level conduct:
+
+| Year | Firm | Amount | Breach type |
+| ---- | ---- | ------ | ----------- |
+| 2024 | Crispin Odey | £1.8m personal | Market misconduct |
+| 2023 | Multiple AML firms | £1m–£8m | AML systems |
+| 2022 | Santander UK | £107.8m | AML control failures |
+| 2021 | NatWest | £264.8m | AML systems |
+| 2017 | Deutsche Bank | £227m | AML / mirror trades |
+| 2026 | John Wood Group PLC | £12.99m | Fraud-related disclosure |
+
+The John Wood Group penalty sits in a mid-range tier — above the typical individual penalty, below the mega-AML cases — but its significance within 2026 is disproportionate, representing 77% of all H1 monetary value. It signals that the FCA's corporate-disclosure track is running at meaningful scale, a dimension that compliance and legal teams at listed companies should weight alongside the AML and conduct-finance tracks that receive more coverage.
+
+## What This Means for Compliance Teams
+
+For Heads of Compliance and MLROs at listed firms: the John Wood Group case is the sharpest 2026 signal that the FCA's issuer-enforcement capability is live and operating at scale. Three operational priorities. (1) Audit your firm's disclosure controls — specifically the processes by which material adverse information reaches the DTR disclosure committee and then the market. Multi-year delays in disclosure are the characteristic pattern of fraud-related classification cases. (2) Review your UK MAR Article 15 procedures: does your internal alert and escalation process catch potential market-manipulation scenarios before they become enforcement exposures? (3) Extend your regulatory monitoring to capture FCA Final Notices relating to listed companies, not just conduct and AML cases. The corporate-disclosure enforcement track produces penalties that dwarf many AML actions.
+
+For boards and NEDs: four questions for the next risk committee or audit committee. (1) Do our disclosure controls give the board early warning of potentially material adverse developments — before the question becomes "when must we disclose?" rather than "should we disclose?" (2) Has the board reviewed its DTR policy since this case, specifically whether the disclosure committee's scope, authority, and timeliness standards are fit for current regulatory expectations? (3) Are individual senior managers and directors aware that UK MAR enforcement can name individuals personally in parallel with firm-level actions? (4) If the FCA opened an investigation into our disclosure practices from 2017–2022 tomorrow, what evidence would we present to demonstrate the accuracy and timeliness of our regulatory communications in that period?
+
+For consultants and law firms: the forensic case study pattern — one penalty dominating an enforcement period, flowing from a corporate-disclosure failure uncovered years later — is the template for a significant body of future FCA work. Listed companies with 2017–2022 conduct exposure remain within the investigation horizon. Practical advisory engagements: disclosure-controls audits, UK MAR surveillance-framework reviews, and pre-emptive regulatory liaison for issuers that have had complex post-acquisition integration periods, profit warnings, or subsequent restatements.
+
+## What's Next
+
+The John Wood Group penalty reshapes the H2 2026 narrative. It confirms that the FCA can produce a single issuer-level action large enough to dominate an entire half-year penalty total, and that corporate disclosure is as much an enforcement frontier as AML or conduct. The Consumer Duty first Final Notice, further pension transfer adviser cases, and potentially additional listed-company disclosure cases from the current investigation pipeline all sit in H2 2026's frame.
+
+For a complete interactive view of FCA enforcement by firm, year, and breach category — including the full 2026 monthly tracker and the underlying case data behind this analysis — explore the RegActions dashboard.
+    `,
+    category: "Case Study",
+    readTime: "8 min read",
+    date: "August 2026",
+    dateISO: "2026-08-06",
+    featured: false,
+    status: "scheduled",
+    articleType: "forensic",
+    keywords: [
+      "John Wood Group FCA fine",
+      "FCA corporate disclosure enforcement",
+      "H1 2026 biggest FCA fine",
+      "FCA fraud related fine 2026",
+      "FCA penalty calculation DEPP",
+      "issuer FCA enforcement 2026",
+      "FCA March 2026 fine",
+      "DTR disclosure FCA enforcement",
+    ],
+  },
+  {
     id: "fca-fines-insurance",
     slug: "fca-fines-insurance-sector",
     title: "FCA Fines for Insurance Companies: Complete Sector Analysis",
