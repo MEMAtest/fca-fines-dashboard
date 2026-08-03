@@ -101,6 +101,7 @@ const iconMap: Record<string, React.ReactNode> = {
   ),
   "bafin-vs-fca-uk-german-firms": <Scale className="blog-card-icon" />,
   "biggest-fine-h1-2026-forensic": <Scale className="blog-card-icon" />,
+  "h1-2026-enforcement-halftime": <TrendingUp className="blog-card-icon" />,
   "fca-fines-insurance": <Shield className="blog-card-icon" />,
   "fca-enforcement-guide": <Landmark className="blog-card-icon" />,
   "bafin-enforcement-guide": <Landmark className="blog-card-icon" />,

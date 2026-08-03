@@ -2477,6 +2477,119 @@ For a complete interactive view of FCA enforcement by firm, year, and breach cat
     ],
   },
   {
+    id: "h1-2026-enforcement-halftime",
+    slug: "h1-2026-enforcement-halftime",
+    title: "H1 2026 FCA Enforcement Halftime: 10 Things We Learned",
+    seoTitle:
+      "H1 2026 FCA Enforcement: 10 Things We Learned | RegActions Halftime Review",
+    excerpt:
+      "The FCA issued 9 monetary fines worth £16,842,723 in H1 2026 — up 41% in value over H1 2025 — but one action accounts for 77% of that total. Our halftime review extracts ten data-grounded lessons on where enforcement is concentrated, where the supervisory pipeline is building, and what H2 2026 is likely to bring.",
+    content: `
+## H1 2026 FCA Enforcement Halftime: 10 Things We Learned
+
+**The FCA issued 9 monetary penalties totalling £16,842,723 in the first half of 2026 — a 41% increase in value over H1 2025's £11,941,599 across four fines — but the headline conceals a far more uneven enforcement distribution than any annual figure can capture.** RegActions' analysis of the full month-by-month docket reveals a pattern that is simultaneously more concentrated, more individually focused, and more supervisory-action-heavy than recent years. Here are the ten data-grounded things H1 2026 taught us.
+
+## H1 2026 at a Glance
+
+| Metric | H1 2025 | H1 2026 | Change |
+| ------ | ------- | ------- | ------ |
+| Monetary fines | 4 | 9 | +125% |
+| Total fine value | £11,941,599 | £16,842,723 | +41% |
+| Largest single fine | — | £12,993,700 (John Wood Group) | — |
+| Months with zero monetary fines | 0 | 2 (April, June) | — |
+
+## 1. One Fine Was 77% of the Entire Half-Year Total
+
+John Wood Group PLC's £12,993,700 March 2026 penalty accounts for 77.1% of H1's £16,842,723 in value. Strip it out and the remaining eight fines average £481,128 each — which would represent a combined H1 total of £3.85m, well below H1 2025's £11.94m. The headline value increase is real. The underlying enforcement breadth is narrower than it appears.
+
+## 2. The 41% Value Increase Is Entirely Attributable to One Corporate Case
+
+The +41% H1 value growth over H1 2025 flows entirely from the John Wood Group action. The remaining eight H1 2026 fines combined (£3.85m) are materially less than H1 2025's £11.94m total. Compliance teams should resist the narrative that H1 2026 represents broad enforcement intensification — it represents one large corporate-disclosure case plus a continuation of the individual-accountability and supervisory-action pattern established in late 2025.
+
+## 3. Individual Accountability Dominated Monetary Fines Eight-to-One
+
+Eight of the nine H1 2026 monetary penalties were against named individuals, not regulated firms. The one firm-level fine was John Wood Group (corporate disclosure) plus Dinosaur Merchant Bank (£338,000, March). All other monetary actions targeted owner-managers, company directors, and senior individuals.
+
+| Month | Subject | Amount | Category |
+| ----- | ------- | ------ | -------- |
+| January (×3) | Carillion FDs; Darren Reynolds | ~£2.41m | Individual (financial reporting, pension transfer) |
+| January (×2) | Market abuse individuals | ~£108k | Individual (market abuse) |
+| February | Market abuse individual | £237,700 | Individual (market abuse) |
+| March | John Wood Group PLC | £12,993,700 | Firm (corporate disclosure) |
+| March | Dinosaur Merchant Bank | £338,000 | Firm (firm-level) |
+| May | Frank Breuer (Bluesky Wealth Mgmt) | £755,000 | Individual (pension transfer) |
+
+The FCA's deliberate 2026 strategy is to hold named individuals personally accountable first — particularly at owner-managed and advisory firms — while reserving firm-level monetary action for cases involving significant market-facing conduct.
+
+## 4. Two Months Had Zero Monetary Fines — Enforcement Is Episodic
+
+April 2026 (eleven enforcement actions, £0 monetary) and June 2026 (implied zero, since H1 total equals May running total) were entirely supervisory months. The FCA's monetary penalty pipeline is not metered. It operates in bursts: clusters of Final Notices separated by supervisory-only intervals. Month-to-month volatility is high; the trailing six-month total is the more meaningful signal.
+
+## 5. Motor Finance Was the Dominant Supervisory Theme by Volume
+
+April's eleven actions — the highest single-month action count of H1 2026 — were overwhelmingly permissions cancellations of motor finance and consumer credit firms failing the FCA's suitability threshold conditions. The running count of motor-finance-related permission losses was at least nine through May 2026. For consumer credit firms, permissions cancellation has been 2026's primary enforcement mechanism in the sector, not monetary fines.
+
+## 6. Pension Transfer Enforcement Is Still Running Five to Seven Years Hot
+
+Three H1 2026 monetary penalties directly concern pension transfer advice: Darren Reynolds' £2.04m tribunal outcome (January), the Carillion finance directors (January), and Frank Breuer's £755,000 fine and lifetime ban (May, Bluesky Wealth Management). The FCA's investigation-to-publication lag in pension transfer cases typically runs five to seven years from the originating conduct. The Breuer and Reynolds cases both arise from conduct in the 2017–2020 period. Firms with material pre-2021 pension transfer books remain within the FCA's live investigation horizon.
+
+## 7. Corporate Disclosure Is the FCA's Underestimated Enforcement Track
+
+John Wood Group's £12,993,700 fine confirms that the FCA's corporate-disclosure enforcement track — often overshadowed by attention to AML and conduct — is operating at material scale. The five-to-nine-year investigation arc on this case (2017–2021 conduct, 2026 fine) shows the regulator's sustained commitment to pursuing issuer-level disclosure failures. Listed companies with 2017–2022 conduct exposure should treat that period as within the FCA's live investigation horizon, not a closed chapter.
+
+## 8. The FCA Ranks Fifth by Enforcement Value Globally in 2026
+
+Against a backdrop of 771 enforcement actions worth £303.6m across 39 global regulators in the year to 17 July 2026, the FCA's broader enforcement dataset (73 actions, £19.87m) places it fifth by value behind the SFC Hong Kong (£79.2m), DNB Netherlands (£51.1m), OSC Canada (£50.3m), and the SEC United States (£32.1m). Volume-wise, the FCA is far more active than any single EU national supervisor. Value-wise, Asia-Pacific and US enforcers dominate.
+
+| Regulator | Jurisdiction | Actions | Value (GBP) |
+| --------- | ------------ | ------- | ----------- |
+| SFC | Hong Kong | 19 | £79,245,972 |
+| DNB | Netherlands | 3 | £51,106,250 |
+| OSC | Canada | 6 | £50,296,098 |
+| SEC | United States | 2 | £32,120,363 |
+| FCA | United Kingdom | 73 | £19,868,415 |
+
+## 9. Consumer Duty Has Produced No Fine — But the Evidence Base Is Built
+
+Three years after the Consumer Duty entered force (July 2023), no FCA Final Notice has cited it as the basis for a monetary penalty. The April 2026 Year 2 Board Report review confirms the supervisory evidence base is now developed enough to support enforcement. Board Reports from 2024 and 2025 gave the FCA firm-specific longitudinal data on where implementation falls short. The first Consumer Duty Final Notice is the most-anticipated enforcement event of H2 2026.
+
+## 10. H2 2026 May Look Very Different From H1
+
+June's implied zero plus the anticipated Consumer Duty first case create unusual H2 pressure on the enforcement calendar. The FCA pipeline — typically 18–36 months from investigation open to Final Notice — has been filling through 2024 and 2025. H2 2026 is structurally set up for: a Consumer Duty first case (wealth management, retail investments, or general insurance add-ons are the most-cited candidate sectors); further pension transfer adviser Final Notices; and potentially additional listed-company disclosure cases. Whether it arrives as one large action or a series of medium-sized ones will shape the full-year 2026 total significantly.
+
+## What This Means for Compliance Teams
+
+For Heads of Compliance and MLROs: the H1 2026 data supports three operational priorities. (1) Track the enforcement docket monthly, not annually — April and June's zero-fine months would have suggested "quiet" enforcement if viewed in isolation, but the John Wood Group action in March was the regulator's largest of the year to that point. (2) Ensure your individual-accountability monitoring covers owner-manager liability, not just formal controlled-function holders — four of H1's eight individual penalties targeted owner-managers and company directors. (3) Treat supervisory action volume (permissions cancellations, s166, Dear CEO letters) as equally important intelligence to monetary penalties: the motor-finance pipeline operated entirely outside the monetary-fine count.
+
+For boards and NEDs: three questions for the next risk committee. (1) Do we understand the distinction between the FCA's monetary-penalty total and its total enforcement activity? H1 2026's £16.84m headline rests on a single case; the underlying supervisory action volume is higher than that figure captures. (2) Where does our firm sit in the FCA's current enforcement horizon — AML, Consumer Duty, pension transfer, corporate disclosure, market abuse — and do we have current control evidence across each category? (3) Are we monitoring FCA enforcement against our peer group in real time? The motor-finance permissions pipeline is a live risk for consumer credit lenders in ways the H1 monetary total does not reveal.
+
+For consultants and law firms advising regulated firms: H1 2026 creates three high-value advisory postures for H2. First, individual-accountability pre-emptive review for owner-managers and senior directors of advisory firms — H1's eight individual penalties confirm this remains the FCA's primary personal-accountability mechanism. Second, pension transfer book audits for firms with legacy pre-2021 books — the investigation horizon is open. Third, Consumer Duty first-wave preparation — Q3 2026 is the window before the regulatory position crystallises into a Final Notice.
+
+## What's Next
+
+H2 2026 opens with Consumer Duty enforcement anticipated, the motor-finance supervisory pipeline ongoing, and the John Wood Group case establishing that a single corporate-disclosure action can dominate an entire enforcement period's value. Whether the Consumer Duty first case lands in Q3 2026 or slips to early 2027 may be the single most watched enforcement event in the UK compliance calendar.
+
+For a live, interactive view of H1 2026 enforcement broken down by month, firm, breach category, and sector — and updated as H2 cases emerge — explore the RegActions dashboard.
+    `,
+    category: "Trends Analysis",
+    readTime: "8 min read",
+    date: "August 2026",
+    dateISO: "2026-08-11",
+    featured: false,
+    status: "scheduled",
+    articleType: "trends",
+    keywords: [
+      "H1 2026 FCA enforcement",
+      "FCA fines halftime 2026",
+      "FCA enforcement trends 2026",
+      "FCA individual accountability 2026",
+      "motor finance FCA enforcement",
+      "Consumer Duty enforcement 2026",
+      "FCA H1 analysis",
+      "FCA enforcement statistics 2026",
+    ],
+  },
+  {
     id: "fca-fines-insurance",
     slug: "fca-fines-insurance-sector",
     title: "FCA Fines for Insurance Companies: Complete Sector Analysis",
