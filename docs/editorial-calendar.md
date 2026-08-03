@@ -33,12 +33,12 @@
 | 5 | 2026-07-01 | Recurring | FCA Fines May 2026: Individual Accountability Returns to the Docket | `fca-fines-may-2026` | FCA Fines 2026 | scheduled |
 | 6 | 2026-07-14 | Thematic | Consumer Duty Three Years In: Why the FCA Hasn't Fined Anyone | `consumer-duty-three-years-enforcement` | Thematic Analysis | scheduled |
 | 7 | 2026-07-21 | Persona | Wealth Managers: Why You're at the Front of the Consumer Duty Queue | `wealth-managers-consumer-duty-enforcement` | Sector Analysis | scheduled |
-| 8 | 2026-07-28 | Forensic | Anatomy of H1 2026's Biggest Fine *(picked at publish)* | `biggest-fine-h1-2026-forensic` | Case Study | planned |
-| 9 | 2026-08-04 | H1 special | H1 2026 Global Enforcement Halftime: 10 Things We Learned | `h1-2026-enforcement-halftime` | Trends Analysis | planned |
+| 8 | 2026-07-28 | Forensic | Anatomy of H1 2026's Biggest Fine *(picked at publish)* | `biggest-fine-h1-2026-forensic` | Case Study | scheduled |
+| 9 | 2026-08-04 | H1 special | H1 2026 Global Enforcement Halftime: 10 Things We Learned | `h1-2026-enforcement-halftime` | Trends Analysis | scheduled |
 | 10 | 2026-08-11 | Thematic | OFSI, OFAC and EU Sanctions: A Side-by-Side Enforcement Map | `sanctions-enforcement-ofsi-ofac-eu` | Thematic Analysis | scheduled |
 | 11 | 2026-08-18 | Persona | Crypto Firms Under MiCA, FCA and MAS: What Enforcement Looks Like Now | `crypto-firms-global-enforcement-mica-fca-mas` | Sector Analysis | scheduled |
 | 12 | 2026-08-25 | Comparison | BaFin vs FCA: What UK Firms with German Subsidiaries Need to Know | `bafin-vs-fca-uk-german-firms` | Regional Benchmark | scheduled |
-| 13 | 2026-09-01 | Recurring | FCA Fines July 2026: Complete Monthly List | `fca-fines-july-2026` | FCA Fines 2026 | planned |
+| 13 | 2026-09-01 | Recurring | FCA Fines July 2026: Complete Monthly List | `fca-fines-july-2026` | FCA Fines 2026 | scheduled |
 | 14 | 2026-09-09 | Thematic | Greenwashing Enforcement 2026: Who's Actually Fining? | `greenwashing-enforcement-2026` | Thematic Analysis | planned |
 | 15 | 2026-09-16 | Persona | Insurance: Conduct Failures in 2026 Enforcement Data | `insurance-conduct-failures-2026` | Sector Analysis | planned |
 | 16 | 2026-09-23 | Forensic | Anatomy of 2026's Biggest Greenwashing Fine *(picked)* | `biggest-greenwashing-fine-2026-forensic` | Case Study | planned |

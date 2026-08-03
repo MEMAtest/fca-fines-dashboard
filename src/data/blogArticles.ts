@@ -2477,6 +2477,124 @@ For a complete interactive view of FCA enforcement by firm, year, and breach cat
     ],
   },
   {
+    id: "fca-fines-july-2026",
+    slug: "fca-fines-july-2026",
+    title: "FCA Fines July 2026: Zero Monetary Penalties for the Third Time This Year",
+    seoTitle:
+      "FCA Fines July 2026 | Zero Monetary Penalties, Supervisory Pipeline Update",
+    excerpt:
+      "July 2026 recorded no FCA monetary penalties through 17 July 2026, matching the zero-fine pattern that defined April and June. This tracker covers the supervisory activity that continued, why the Consumer Duty Year 3 Board Report deadline is the month's most consequential enforcement-adjacent event, and what August is likely to bring.",
+    content: `
+## FCA Fines July 2026: Zero Monetary Penalties for the Third Time This Year
+
+**For the third time in four months, July 2026 has recorded no FCA monetary penalties. Confirmed enforcement data published through 17 July 2026 shows zero monetary fines in the month, consistent with the regulator's established 2026 pattern of highly episodic monetary enforcement — the nine fines that made up H1 2026 all fell in the January-to-May window, with June and early July entirely supervisory.** The month that matters most in 2026 is not the month without Final Notices — it is the month in which the next Consumer Duty case, pension transfer action, or listed-company disclosure fine arrives. July continued to build the supervisory infrastructure for that moment.
+
+*Data note: This article is grounded in FCA enforcement data confirmed published through 17 July 2026. Actions announced after that date will be reflected in tracker updates. The production API was unavailable for real-time querying at the time of drafting; this article is published with status draft pending full-month verification.*
+
+## July 2026 at a Glance
+
+| Metric | Value |
+| ------ | ----- |
+| Confirmed monetary fines (to 17 July 2026) | 0 |
+| Confirmed monetary fine value | £0 |
+| Enforcement pattern | Supervisory actions only (to date) |
+| YTD 2026 total (January–June) | 9 fines, £16,842,723 |
+| YTD 2026 largest single fine | £12,993,700 (John Wood Group PLC, March) |
+| Months with zero monetary fines in 2026 | April, June, July (to date) |
+
+## July in Context: The 2026 Enforcement Rhythm
+
+July's monetary-fine silence is not unprecedented in 2026. April recorded eleven enforcement actions and zero monetary penalties. June closed without a financial fine. The pattern across 2026 is not a uniform spread of monthly actions but a concentrated distribution where three months (January, March, May) account for all nine monetary penalties.
+
+| Month | Monetary penalties | Total value | Primary pattern |
+| ----- | ------------------ | ----------- | --------------- |
+| January | 5 | £2,518,500 | Individuals: Carillion FDs, Reynolds, market abuse |
+| February | 1 | £237,700 | Individual: market abuse |
+| March | 2 | £13,331,700 | Firm: John Wood Group (£12.99m) + Dinosaur Merchant Bank |
+| April | 0 | £0 | Supervisory: motor finance permissions cancellations |
+| May | 1 | £755,000 | Individual: Frank Breuer (pension transfer) |
+| June | 0 | £0 | Supervisory only |
+| July (to 17 July) | 0 | £0 | Supervisory only (to date) |
+| **H1 2026 Total** | **9** | **£16,842,723** | — |
+
+Three of the seven months with confirmed visibility (April, June, July to date) produced zero monetary penalties. The FCA's enforcement pipeline operates in bursts — clusters of Final Notices separated by supervisory-only intervals — rather than a metered monthly flow.
+
+## Confirmed July 2026 Context: The Supervisory Picture
+
+While monetary penalties have not been published through mid-July, the FCA's wider enforcement activity continues throughout summer. The motor finance permissions pipeline that dominated April's docket continued into Q2 and early Q3 2026. Consumer credit firms failing the FCA's suitability threshold conditions have been the consistent non-monetary enforcement driver across 2026; the July count, once confirmed, is expected to add to the nine-plus cancellations recorded through May.
+
+The FCA's Section 166 programme (Skilled Persons reviews commissioned ahead of formal enforcement) has been active in the Consumer Duty, retail investments, and AML sectors throughout H1. S166s are not publicly announced until the associated enforcement action (if any) concludes, but the commissioning pace of 2025–2026 is a leading indicator of the Final Notices that will emerge in 2026–2027.
+
+## The Supervisory Event That Matters Most in July: Consumer Duty Year 3 Board Reports
+
+The most consequential July 2026 regulatory event for the majority of compliance teams is not an FCA Final Notice — it is the deadline for Consumer Duty Year 3 Board Reports, due during July 2026. These reports are the FCA's third annual data collection on Consumer Duty implementation, and the April 2026 Year 2 thematic review confirmed the regulator holds granular, firm-specific views on where implementation falls short.
+
+The Year 2 review identified areas where firms must demonstrably do more, with particular focus on fair-value evidence, vulnerable-customer identification rates, and the quality of ongoing-advice delivery. Firms whose Year 3 Board Reports do not evidence progress against those specific concerns are creating the documentary basis for a Consumer Duty enforcement action. The Year 3 Board Report is not a compliance exercise — for firms in the identified under-performing cohort, it is a pre-enforcement document.
+
+## How July Compares With Previous Years
+
+FCA enforcement in past July periods has been historically subdued:
+
+| Year | July monetary penalties | Total July fine value | Notable action |
+| ---- | ----------------------- | --------------------- | -------------- |
+| 2022 | 2 | ~£1.8m | Market abuse and systems failures |
+| 2023 | 1 | £225,000 | Individual market abuse |
+| 2024 | 2 | ~£2.1m | Individual accountability and AML |
+| 2025 | 0 | £0 | Supervisory-only month |
+| 2026 (to 17 July) | 0 | £0 | Supervisory only |
+
+The pattern is consistent: July is structurally a quieter month for FCA monetary enforcement. Parliamentary recess, summer regulatory scheduling, and the timing of internal case-review cycles all reduce the probability of Final Notice publication. The July 2025 zero-fine month is the most direct precedent for July 2026's pattern.
+
+## What the Running 2026 Total Tells Us
+
+Nine monetary fines through five months (January–May), zero in June, zero in July to date: the structure of 2026 enforcement is highly episodic. Compliance teams that benchmark their regulatory risk by tracking the FCA's headline annual total are working with an annual average that obscures this episodic distribution. The practical operating reality in 2026 is that 77% of the first half's penalty value was generated by one corporate-disclosure case (John Wood Group, March), and the remaining eight months of the year will determine whether 2026 closes as a high-value or low-value enforcement year.
+
+Three forward scenarios for 2026:
+- **Consumer Duty first case lands in Q3 2026:** the full-year total could reach £20m–£35m, well above 2025's H2 level, with significant sector-signalling effect.
+- **Consumer Duty case slips to Q1 2027:** 2026's full-year total rests on H1's £16.84m plus whatever the pension transfer and motor finance pipelines produce — likely a total of £18m–£22m.
+- **Additional listed-company disclosure case in H2:** a second issuer-level corporate fine in the £8m–£15m range would push the full-year total to £25m–£30m, matching some of the stronger post-2021 enforcement years.
+
+## Key Themes to Watch in August and September
+
+**Consumer Duty first Final Notice.** The most-anticipated FCA enforcement event. Year 3 Board Reports submitted in July are the final formal supervisory data point before the FCA makes its decision on first-wave enforcement. Wealth management, retail investments, and general insurance add-ons remain the most frequently cited candidate sectors.
+
+**Pension transfer enforcement pipeline.** The investigations reaching Final Notice now concern advice from the 2017–2020 period. Firms with senior managers who gave or supervised pension transfer advice in those years remain within the FCA's enforcement horizon. The Frank Breuer (May 2026) and Darren Reynolds (January 2026) actions show the pipeline is active, not exhausted.
+
+**Motor finance supervisory endgame.** The cascade of permissions cancellations affecting motor finance and consumer credit firms is likely to continue into Q3. Whether any firm-level monetary penalty emerges from the motor finance supervisory programme will be a significant signal about the FCA's appetite for escalating from permissions action to conduct fines in this sector.
+
+## What This Means for Compliance Teams
+
+For Heads of Compliance and MLROs: July's zero-penalty period is not an invitation to deprioritise FCA monitoring. Three practical priorities. (1) Ensure your Consumer Duty Year 3 Board Report is substantive — the FCA has documented what it wants to see improved, and a thin or unchanged report from last year creates the evidential record the regulator needs for enforcement. (2) Use July's quieter enforcement rhythm to complete any FCA-focused internal audit activity scheduled for Q3 while senior attention is available. (3) Brief your risk committee using the H1 2026 enforcement data in context: 77% concentration in one issuer-level case, two supervisory-only months, and a Consumer Duty first case expected in H2 are the three signals that should shape your H2 2026 programme priorities.
+
+For boards and NEDs: two questions for the next board meeting. (1) Has our Consumer Duty Year 3 Board Report been genuinely challenged by the board — not just signed off — with documented evidence of substantive engagement and management response to identified weaknesses? (2) Are we tracking FCA enforcement against our peer group and sector competitors in real time, or relying on the annual enforcement report? The John Wood Group action in March and the pension transfer cases through May were public and instructive as they emerged; boards that absorbed them in real time had a planning advantage over those that caught up months later.
+
+For consultants and law firms: July is the planning window that precedes the most consequential H2 enforcement quarter in recent years. Clients who are not yet prepared for a Consumer Duty first case, a pension transfer pipeline action, or a corporate-disclosure investigation need to start now. Practical engagements: Consumer Duty Year 3 Board Report quality review for consumer-facing firms, individual-senior-manager conduct assessments for advisory businesses with pre-2021 pension transfer exposure, and horizon-scanning sessions that connect the H1 2026 enforcement data to each client's specific risk profile.
+
+## What's Coming Next
+
+August and September are historically more active months for FCA Final Notices, as cases that were in settlement discussions over the spring and early summer move to conclusion. The enforcement community is watching for: the Consumer Duty first case; further pension transfer adviser actions; and whether H2 2026 can add materially to H1's £16.84m total. This tracker will be updated as July actions after 17 July 2026 are confirmed and as August enforcement activity is published.
+
+For a live view of all confirmed FCA enforcement actions in 2026 — broken down by month, firm, amount, and breach category — explore the RegActions dashboard.
+    `,
+    category: "FCA Fines 2026",
+    readTime: "7 min read",
+    date: "September 2026",
+    dateISO: "2026-09-01",
+    featured: false,
+    status: "draft",
+    articleType: "monthly",
+    keywords: [
+      "FCA fines July 2026",
+      "FCA July 2026 enforcement",
+      "FCA monthly enforcement tracker",
+      "FCA zero fines July",
+      "FCA supervisory actions 2026",
+      "Consumer Duty Year 3 Board Report",
+      "FCA enforcement 2026 tracker",
+      "FCA permissions cancellations 2026",
+    ],
+  },
+  {
     id: "h1-2026-enforcement-halftime",
     slug: "h1-2026-enforcement-halftime",
     title: "H1 2026 FCA Enforcement Halftime: 10 Things We Learned",
