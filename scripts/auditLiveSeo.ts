@@ -34,6 +34,27 @@ function robotsFor(html: string) {
   return html.match(/<meta\s+name="robots"\s+content="([^"]+)"/)?.[1] || "";
 }
 
+function xmlLocations(xml: string) {
+  return Array.from(xml.matchAll(/<loc>([^<]+)<\/loc>/g), (match) => match[1]);
+}
+
+async function loadSitemapDocuments(rootXml: string) {
+  const childUrls = rootXml.includes("<sitemapindex") ? xmlLocations(rootXml) : [];
+  if (childUrls.length === 0) {
+    return [rootXml];
+  }
+
+  return Promise.all(
+    childUrls.map(async (url) => {
+      const response = await fetch(url, {
+        headers: { "user-agent": "RegActionsSeoAudit/1.0" },
+      });
+      record(`child sitemap ${url} returns 200`, response.status === 200, `status=${response.status}`);
+      return response.text();
+    }),
+  );
+}
+
 async function auditHtmlPage(path: string, expectedCanonical: string, requiredText: string) {
   const { response, text } = await fetchText(path, {
     headers: { "user-agent": "RegActionsSeoAudit/1.0" },
@@ -55,19 +76,25 @@ async function main() {
   record("robots lists sitemap", robots.text.includes(`${baseUrl}/sitemap.xml`));
 
   const sitemap = await fetchText("/sitemap.xml");
-  const urlCount = countMatches(sitemap.text, /<url>/g);
   record("sitemap returns 200", sitemap.response.status === 200, `status=${sitemap.response.status}`);
+  const sitemapDocuments = await loadSitemapDocuments(sitemap.text);
+  const sitemapContent = sitemapDocuments.join("\n");
+  const urlCount = countMatches(sitemapContent, /<url>/g);
   record("sitemap has at least 100 URLs", urlCount >= 100, `urls=${urlCount}`);
-  record("sitemap includes blog", sitemap.text.includes(`${baseUrl}/blog`));
+  record("sitemap includes blog", sitemapContent.includes(`${baseUrl}/blog`));
   record(
     "sitemap includes latest July article",
-    sitemap.text.includes(`${baseUrl}/blog/wealth-managers-consumer-duty-enforcement`),
+    sitemapContent.includes(`${baseUrl}/blog/wealth-managers-consumer-duty-enforcement`),
   );
   record(
     "sitemap excludes unapproved DekaBank article",
-    !sitemap.text.includes(`${baseUrl}/blog/biggest-fine-h1-2026-forensic`),
+    !sitemapContent.includes(`${baseUrl}/blog/biggest-fine-h1-2026-forensic`),
   );
-  record("sitemap excludes legacy dashboard", !sitemap.text.includes(`${baseUrl}/dashboard`));
+  record("sitemap excludes legacy dashboard", !sitemapContent.includes(`${baseUrl}/dashboard`));
+
+  const missing = await fetchText("/fca-fines");
+  record("unknown route returns HTTP 404", missing.response.status === 404, `status=${missing.response.status}`);
+  record("unknown route is noindex", robotsFor(missing.text).includes("noindex"), robotsFor(missing.text));
 
   const rss = await fetchText("/rss.xml");
   record("rss returns 200", rss.response.status === 200, `status=${rss.response.status}`);

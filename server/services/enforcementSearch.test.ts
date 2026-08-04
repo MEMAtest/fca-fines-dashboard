@@ -141,6 +141,13 @@ describe('enforcementSearch helpers', () => {
       .toContain('OFSI');
   });
 
+  it('keeps regulator-intent hints for every monitored failing phrase', () => {
+    expect(prepareEnforcementSearch('prudential regulation bank fines').regulatorHints)
+      .toContain('PRA');
+    expect(prepareEnforcementSearch('competition penalties consumer refunds').regulatorHints)
+      .toContain('CMA');
+  });
+
   it('maps country adjectives and crypto intent into richer search terms', () => {
     const prepared = prepareEnforcementSearch('irish crypto aml failures');
 

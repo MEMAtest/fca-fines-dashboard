@@ -2053,12 +2053,10 @@ async function buildPageMetas(): Promise<PageMeta[]> {
   PUBLIC_REGULATOR_CODES.forEach((code) => {
     const coverage = REGULATOR_COVERAGE[code];
     const path = `/regulators/${code.toLowerCase()}`;
-    const title = code === "FCA"
-      ? "FCA Fines: Latest Penalties, Totals and Enforcement Actions | RegActions"
-      : `${code} Fines Database | ${coverage.fullName} Enforcement Actions`;
-    const description = code === "FCA"
-      ? "Search FCA fines and enforcement actions, inspect official source evidence, and review 2026 totals, monthly trends, firms and breach themes."
-      : `Track all ${coverage.fullName} (${code}) fines and enforcement actions. ${coverage.count} penalties from ${coverage.years}. Complete database with stats, trends, and analysis.`;
+    const title = coverage.seoTitle
+      ?? `${code} Fines Database | ${coverage.fullName} Enforcement Actions`;
+    const description = coverage.seoDescription
+      ?? `Track all ${coverage.fullName} (${code}) fines and enforcement actions. ${coverage.count} penalties from ${coverage.years}. Complete database with stats, trends, and analysis.`;
     const keywords = `${code} fines, ${coverage.fullName}, regulatory enforcement, financial penalties, ${coverage.country}, compliance data, ${code} enforcement`;
 
     pages.push({

@@ -65,6 +65,8 @@ export interface RegulatorCoverage {
     | "low_frequency";
   feedContract: RegulatorFeedContract;
   dashboardEnabled: boolean;
+  seoTitle?: string;
+  seoDescription?: string;
   officialSources: RegulatorOfficialSource[];
 }
 
@@ -214,6 +216,8 @@ const REGULATOR_COVERAGE_SEED: Record<string, RegulatorCoverageSeed> = {
     coverageStatus: "anchor",
     maturity: "anchor",
     dashboardEnabled: true,
+    seoTitle: "FCA Fines: Latest Penalties, Totals and Enforcement Actions | RegActions",
+    seoDescription: "Search FCA fines and enforcement actions, inspect official source evidence, and review 2026 totals, monthly trends, firms and breach themes.",
     officialSources: [
       {
         label: "FCA news search",
@@ -741,6 +745,8 @@ const REGULATOR_COVERAGE_SEED: Record<string, RegulatorCoverageSeed> = {
     coverageStatus: "emerging",
     maturity: "limited",
     dashboardEnabled: true,
+    seoTitle: "JFSC Enforcement Actions & Civil Penalties | Jersey",
+    seoDescription: "Search Jersey Financial Services Commission enforcement actions and civil penalties, with official-source links, case dates, firms and breach details.",
     officialSources: [
       {
         label: "JFSC enforcement",
@@ -1198,6 +1204,8 @@ const REGULATOR_COVERAGE_SEED: Record<string, RegulatorCoverageSeed> = {
     coverageStatus: "growing",
     maturity: "emerging",
     dashboardEnabled: true,
+    seoTitle: "MAS Enforcement Actions & Fines | Singapore",
+    seoDescription: "Search Monetary Authority of Singapore enforcement actions and financial penalties, with official-source links, case dates, firms and regulatory themes.",
     officialSources: [
       {
         label: "MAS enforcement actions",
