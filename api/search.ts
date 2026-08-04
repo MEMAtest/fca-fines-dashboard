@@ -890,6 +890,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
           created_at,
           CASE
             WHEN $16 <> '' AND firm_norm.normalized_name = $16 THEN 430
+            WHEN $16 <> '' AND firm_norm.normalized_name LIKE $16 || ' %' THEN 420
             WHEN $17 <> '' AND firm_legal.legal_stripped_name = $17 THEN 410
             WHEN $8 <> '' AND firm_norm.normalized_name = $8 THEN 405
             WHEN $8 <> '' AND firm_legal.legal_stripped_name = $8 THEN 395
@@ -1136,7 +1137,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
           END AS category_theme_synergy_score
         FROM filtered_results
         WHERE
-          firm_match_score > 0
+          regulator_hint_score > 0
+          OR firm_match_score > 0
           OR firm_token_match_score > 0
           OR fuzzy_firm_match_score > 0
           OR fuzzy_firm_token_match_score > 0

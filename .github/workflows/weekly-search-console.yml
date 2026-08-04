@@ -1,0 +1,36 @@
+name: Weekly Search Console measurement
+
+on:
+  schedule:
+    - cron: "15 7 * * 1"
+  workflow_dispatch: {}
+
+permissions:
+  contents: read
+
+jobs:
+  measure:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: Capture seven-day Search Console movement
+        env:
+          SC_PROPERTY: ${{ secrets.SC_PROPERTY }}
+          SC_CREDENTIALS_JSON: ${{ secrets.SC_CREDENTIALS_JSON }}
+          GSC_REPORT_JSON_PATH: /tmp/search-console-weekly.json
+          GSC_REPORT_MARKDOWN_PATH: /tmp/search-console-weekly.md
+        run: npm run seo:report:weekly
+      - name: Upload weekly report
+        uses: actions/upload-artifact@v7
+        with:
+          name: search-console-weekly-${{ github.run_id }}
+          path: |
+            /tmp/search-console-weekly.json
+            /tmp/search-console-weekly.md
+          retention-days: 90

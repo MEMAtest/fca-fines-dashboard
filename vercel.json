@@ -89,8 +89,9 @@
       ]
     }
   ],
-  "rewrites": [
-    { "source": "/((?!api/).*)", "destination": "/404.html" }
+  "routes": [
+    { "handle": "filesystem" },
+    { "src": "/((?!api/).*)", "status": 404, "dest": "/404.html" }
   ],
   "crons": [
     {
