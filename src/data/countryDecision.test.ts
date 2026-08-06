@@ -82,6 +82,27 @@ describe("treatmentChecklist derivation", () => {
     expect(iran.some((i) => /FATF/i.test(i))).toBe(true);
   });
 
+  it("distinguishes Myanmar enhanced due diligence from Iran countermeasures", () => {
+    const myanmar = decisionFor("MM");
+    const iran = decisionFor("IR");
+    expect(myanmar.treatment).toContain("does not call for countermeasures");
+    expect(myanmar.treatment).not.toContain("prohibition");
+    expect(myanmar.treatmentChecklist.some((item) => /humanitarian, NPO and remittance/i.test(item))).toBe(true);
+    expect(iran.treatment).toContain("restriction or prohibition");
+    expect(iran.treatmentChecklist.some((item) => /countermeasures/i.test(item))).toBe(true);
+  });
+
+  it("surfaces Russia as suspended FATF membership context without changing the v2 score", () => {
+    const country = getCountryByIso2("RU")!;
+    const view = buildCountryView(country);
+    expect(view.riskV2.score).toBe(6);
+    expect(view.publicSurface.fatfAction.action).toBe("none");
+    expect(view.publicSurface.contextualSignals).toContainEqual(expect.objectContaining({
+      id: "fatf-membership",
+      state: "suspended",
+    }));
+  });
+
   it("low-risk country gets proportionate standard-DD items, not prohibition wording", () => {
     const unitedKingdom = decisionFor("GB").treatmentChecklist;
     expect(unitedKingdom.some((i) => /proportionate standard due diligence/i.test(i))).toBe(true);

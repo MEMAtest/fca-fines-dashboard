@@ -58,8 +58,25 @@ describe("country-risk v2 public API contract", () => {
   });
 
   it("exposes the FATF required-action distinction", async () => {
-    expect((await invoke(countryHandler, { iso2: "IR" })).payload.evidence.aml.listing.requiredAction).toBe("countermeasures");
-    expect((await invoke(countryHandler, { iso2: "MM" })).payload.evidence.aml.listing.requiredAction).toBe("enhanced-due-diligence");
+    const iran = (await invoke(countryHandler, { iso2: "IR" })).payload;
+    const myanmar = (await invoke(countryHandler, { iso2: "MM" })).payload;
+    expect(iran.evidence.aml.listing.requiredAction).toBe("countermeasures");
+    expect(iran.surface.fatfAction.action).toBe("countermeasures");
+    expect(myanmar.evidence.aml.listing.requiredAction).toBe("enhanced-due-diligence");
+    expect(myanmar.surface.fatfAction.action).toBe("enhanced-due-diligence");
+    expect(myanmar.surface.freshness.find((item: any) => item.id === "fatf-assessment"))
+      .toMatchObject({ assessmentDate: expect.any(String), ratingsDate: expect.any(String) });
+  });
+
+  it("adds Russia suspension context without changing the compatibility-critical result", async () => {
+    const response = await invoke(countryHandler, { iso2: "ru" });
+    expect(response.code).toBe(200);
+    expect(response.payload.result).toMatchObject({ score: 6, band: "high" });
+    expect(response.payload.surface.contextualSignals).toContainEqual(expect.objectContaining({
+      id: "fatf-membership",
+      state: "suspended",
+    }));
+    expect(response.payload.surface.note).toContain("do not change");
   });
 
   it("reports the complete sanctions snapshot but fails closed when operational history is unavailable", async () => {

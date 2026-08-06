@@ -211,6 +211,7 @@ export function CountryHub() {
     statusHeading,
     riskScore,
     riskV2,
+    publicSurface,
     breakdown,
     globalAverage,
     regionalPeers,
@@ -609,9 +610,15 @@ export function CountryHub() {
           <span className="cx-ws__crumb-current">{country.name}</span>
         </nav>
         <div className="cx-ws__actions">
-          <button type="button" className="cx-btn" onClick={() => window.print()}>
-            <Download size={14} /> Export
-          </button>
+          <a className="cx-btn" href={`/api/country-risk/evidence/${country.iso2}?format=pdf`}>
+            <Download size={14} /> PDF
+          </a>
+          <a className="cx-btn" href={`/api/country-risk/evidence/${country.iso2}?format=csv`}>
+            CSV
+          </a>
+          <a className="cx-btn" href={`/api/country-risk/evidence/${country.iso2}?format=json`}>
+            JSON
+          </a>
           <button
             type="button"
             className={`cx-btn${watched ? " cx-btn--on" : ""}`}
@@ -1019,6 +1026,41 @@ export function CountryHub() {
           {recentDevCard}
 
           {attrCard}
+
+          <div className="cx-card cx-public-evidence">
+            <span className="cx-card__eyebrow">
+              <ShieldCheck size={12} /> Public evidence layer
+            </span>
+            <p className="cx-public-evidence__action">
+              <strong>FATF action:</strong> {publicSurface.fatfAction.action.replaceAll("-", " ")}
+            </p>
+            <p className="cx-card__note">{publicSurface.fatfAction.explanation}</p>
+            <ul className="cx-public-evidence__signals">
+              {publicSurface.contextualSignals.map((signal) => (
+                <li key={signal.id}>
+                  <span>{signal.label}</span>
+                  <strong className={`is-${signal.state}`}>{signal.value}</strong>
+                </li>
+              ))}
+            </ul>
+            <details className="cx-meth__details">
+              <summary>Evidence dates and freshness</summary>
+              <ul className="cx-public-evidence__freshness">
+                {publicSurface.freshness.map((item) => (
+                  <li key={item.id}>
+                    <span>{item.label}</span>
+                    <strong>{item.sourceState}</strong>
+                    <small>
+                      Data {item.underlyingDataEffectiveAt ?? "not available"}
+                      {item.ratingsDate ? ` · follow-up ${item.ratingsDate}` : ""}
+                      {item.assessmentDate ? ` · base assessment ${item.assessmentDate}` : ""}
+                    </small>
+                  </li>
+                ))}
+              </ul>
+            </details>
+            <p className="cx-card__note">{publicSurface.note}</p>
+          </div>
 
           {peersCard}
 

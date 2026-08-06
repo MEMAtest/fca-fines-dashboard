@@ -4,6 +4,7 @@ import { computeCountryRiskV2, COUNTRY_RISK_METHODOLOGY_VERSION } from "../../sr
 import { computeCountryRiskScore } from "../../src/data/countryRiskScore.js";
 import { countryRiskSourcesAsOf } from "../../src/data/countryRiskSources.js";
 import { assessCountryRiskReadiness } from "../../src/data/countryRiskReadiness.js";
+import { buildCountryRiskPublicSurface } from "../../src/data/countryRiskSurface.js";
 
 export default function handler(req: VercelRequest, res: VercelResponse) {
   res.setHeader("Access-Control-Allow-Origin", "*");
@@ -22,6 +23,7 @@ export default function handler(req: VercelRequest, res: VercelResponse) {
       return {
         country,
         result,
+        surface: buildCountryRiskPublicSurface(country.iso2, asOf),
         previous: {
           methodologyVersion: "1.0.0",
           score: previousScore,

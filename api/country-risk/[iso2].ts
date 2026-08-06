@@ -7,6 +7,7 @@ import { computeCountryRiskV2, COUNTRY_RISK_METHODOLOGY_VERSION, fatfAssessmentR
 import { getCpi, CPI_LICENCE, CPI_SOURCE, CPI_YEAR } from "../../src/data/cpiData.js";
 import { computeCountryRiskScore } from "../../src/data/countryRiskScore.js";
 import { countryRiskSourcesAsOf } from "../../src/data/countryRiskSources.js";
+import { buildCountryRiskPublicSurface } from "../../src/data/countryRiskSurface.js";
 import { getSanctionsRegimeCandidates } from "../../src/data/sanctionsRegimeCandidates.js";
 import {
   getApprovedSanctions,
@@ -37,6 +38,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   const sanctionsCandidates = getSanctionsRegimeCandidates(iso2);
   const appliedFloors = result.floors.filter((floor) => floor.applied);
   const sources = countryRiskSourcesAsOf(asOf);
+  const surface = buildCountryRiskPublicSurface(iso2, asOf);
   let persistedHistory: Array<Record<string, unknown>> = [];
   try {
     const sql = getSqlClient();
@@ -71,6 +73,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   return res.status(200).json({
     country,
     result,
+    surface,
     previous: {
       methodologyVersion: "1.0.0",
       score: previousScore,

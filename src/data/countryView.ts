@@ -24,7 +24,6 @@ import {
   type CountryEnforcementSummary,
 } from "./countryEnforcement.js";
 import {
-  isSanctioned,
   sanctionsTierLabel,
   SANCTIONS_REVIEWED,
   type CountrySanctions,
@@ -64,6 +63,10 @@ import {
   type CountryRiskPublicationStatus,
   type CountryRiskV2Result,
 } from "./countryRiskV2.js";
+import {
+  buildCountryRiskPublicSurface,
+  type CountryRiskPublicSurface,
+} from "./countryRiskSurface.js";
 import {
   deriveSectorExposure,
   type SectorRow,
@@ -182,6 +185,8 @@ export interface CountryView {
   riskScore: CountryRiskScore;
   /** Decision-grade v2 score used for the headline, ranking and public status. */
   riskV2: CountryRiskV2Result;
+  /** Additive, non-scoring public evidence, freshness and change-history surface. */
+  publicSurface: CountryRiskPublicSurface;
   /** V2 publication state; provisional scores remain visible but can never be labelled Low. */
   scoreStatus: CountryScorePublicationStatus;
   /** Score derivation for the "how is this scored?" card. */
@@ -374,6 +379,7 @@ export function buildCountryView(country: Country): CountryView {
 
   const riskScore = computeCountryRiskScore(country.iso2);
   const riskV2 = computeCountryRiskV2(country.iso2);
+  const publicSurface = buildCountryRiskPublicSurface(country.iso2);
   const scoreStatus = riskV2.status;
   const breakdown = scoreBreakdown(country.iso2);
   const cpi = getCpi(country.iso2);
@@ -422,6 +428,7 @@ export function buildCountryView(country: Country): CountryView {
     sanctionsBand: sanctionsToBand(sanctionsTier),
     riskScore,
     riskV2,
+    publicSurface,
     scoreStatus,
     breakdown,
     globalAverage: globalAverageRiskScoreV2(),
@@ -486,7 +493,7 @@ export function pageCountries(): Country[] {
       hasGovernanceData(c.iso2) ||
       Boolean(getFatfAssessment(c.iso2)) ||
       isFatfListed(c.iso2) ||
-      isSanctioned(c.iso2) ||
+      Boolean(getApprovedSanctions(c.iso2)) ||
       hasEnforcementCoverage(c.iso2),
   );
 }
