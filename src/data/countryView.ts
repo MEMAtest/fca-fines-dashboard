@@ -353,14 +353,30 @@ export function fatfBand(fatf: FatfStatus | undefined): RiskBand {
   return fatf.listing === "call-for-action" ? "very-high" : "high";
 }
 
+/** Keep every presentation and decision consumer on the scorer's country-level coverage gate. */
+export function countrySanctionsPresentation(
+  iso2: string,
+  riskResult: CountryRiskV2Result = computeCountryRiskV2(iso2),
+): {
+  sanctionsCoverageComplete: boolean;
+  sanctions: CountrySanctions | undefined;
+  sanctionsTier: SanctionsTier | undefined;
+} {
+  const sanctionsCoverageComplete = riskResult.sanctionsCoverageComplete;
+  const sanctions = sanctionsCoverageComplete ? getApprovedSanctions(iso2) : undefined;
+  return {
+    sanctionsCoverageComplete,
+    sanctions,
+    sanctionsTier: highestTier(sanctions),
+  };
+}
+
 export function buildCountryView(country: Country): CountryView {
   const fatf = getFatfStatus(country.iso2);
   const history = FATF_RECENT_CHANGES.filter((c) => c.iso2 === country.iso2);
   const enforcement = getCountryEnforcementSummary(country.iso2);
-  const sanctions = SANCTIONS_APPROVED_SNAPSHOT.coverageComplete
-    ? getApprovedSanctions(country.iso2)
-    : undefined;
-  const sanctionsTier = highestTier(sanctions);
+  const riskV2 = computeCountryRiskV2(country.iso2);
+  const { sanctionsCoverageComplete, sanctions, sanctionsTier } = countrySanctionsPresentation(country.iso2, riskV2);
 
   const statusHeading = fatf ? fatfLabel(fatf.listing) : "Not currently listed";
   const statusDetail = fatf
@@ -378,7 +394,6 @@ export function buildCountryView(country: Country): CountryView {
       )} plenary.`;
 
   const riskScore = computeCountryRiskScore(country.iso2);
-  const riskV2 = computeCountryRiskV2(country.iso2);
   const publicSurface = buildCountryRiskPublicSurface(country.iso2);
   const scoreStatus = riskV2.status;
   const breakdown = scoreBreakdown(country.iso2);
@@ -398,7 +413,7 @@ export function buildCountryView(country: Country): CountryView {
     breakdown,
     sanctions,
     sanctionsTier,
-    sanctionsCoverageComplete: SANCTIONS_APPROVED_SNAPSHOT.coverageComplete,
+    sanctionsCoverageComplete,
     enforcementAssessed,
     regulatorCodes: enforcement?.regulators.map((r) => r.code),
     cpi,
@@ -438,7 +453,7 @@ export function buildCountryView(country: Country): CountryView {
     enforcementAssessed,
     hasComprehensiveSanctions,
     hasTargetedSanctions,
-    sanctionsCoverageComplete: SANCTIONS_APPROVED_SNAPSHOT.coverageComplete,
+    sanctionsCoverageComplete,
     scoreHistory: riskV2.score === null || !SANCTIONS_APPROVED_SNAPSHOT.generatedAt
       ? []
       : [{ date: SANCTIONS_APPROVED_SNAPSHOT.generatedAt.slice(0, 10), score: riskV2.score }],
@@ -453,9 +468,9 @@ export function buildCountryView(country: Country): CountryView {
     nextPlenary: FATF_NEXT_PLENARY,
     regulatory,
     sectorExposure: buildSectorExposure({
-      sanctions: SANCTIONS_APPROVED_SNAPSHOT.coverageComplete ? sanctions : undefined,
-      sanctionsTier: SANCTIONS_APPROVED_SNAPSHOT.coverageComplete ? sanctionsTier : undefined,
-      sanctionsEvidenceComplete: SANCTIONS_APPROVED_SNAPSHOT.coverageComplete,
+      sanctions: sanctionsCoverageComplete ? sanctions : undefined,
+      sanctionsTier: sanctionsCoverageComplete ? sanctionsTier : undefined,
+      sanctionsEvidenceComplete: sanctionsCoverageComplete,
       fatf,
       breakdown,
       cpi,
@@ -569,9 +584,7 @@ export function buildCountryIndex(): CountryIndexEntry[] {
   _index = pageCountries()
     .map((country) => {
       const result = computeCountryRiskV2(country.iso2);
-      const sanctions = SANCTIONS_APPROVED_SNAPSHOT.coverageComplete
-        ? getApprovedSanctions(country.iso2)
-        : undefined;
+      const { sanctions, sanctionsTier, sanctionsCoverageComplete } = countrySanctionsPresentation(country.iso2, result);
       return {
         country,
         flag: flagEmoji(country.iso2),
@@ -579,10 +592,8 @@ export function buildCountryIndex(): CountryIndexEntry[] {
         band: result.band,
         status: result.status,
         fatf: getFatfStatus(country.iso2),
-        sanctionsTier: SANCTIONS_APPROVED_SNAPSHOT.coverageComplete
-          ? highestTier(sanctions)
-          : undefined,
-        sanctionsCoverageComplete: SANCTIONS_APPROVED_SNAPSHOT.coverageComplete,
+        sanctionsTier,
+        sanctionsCoverageComplete,
         hasEnforcement: hasEnforcementCoverage(country.iso2),
         controlStrength: controlStrength(country.iso2),
         enforcementExposure: enforcementExposure(country.iso2),

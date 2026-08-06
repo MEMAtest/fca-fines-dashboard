@@ -150,6 +150,7 @@ describe("country risk v2 publication rules", () => {
     expect(result.preFloorScore).toBe(3.6);
     expect(result.asOf).toMatch(/^\d{4}-/);
     expect(result.pillars.sanctions.coverageStatus).toBe("available");
+    expect(result.sanctionsCoverageComplete).toBe(true);
     expect(result.arithmetic).toContain("aml 6 × 50%");
   });
 
@@ -163,6 +164,7 @@ describe("country risk v2 publication rules", () => {
     expect(result.status).toBe("provisional");
     expect(result.pillars.sanctions.score).toBeNull();
     expect(result.pillars.sanctions.coverageStatus).toBe("unavailable");
+    expect(result.sanctionsCoverageComplete).toBe(false);
     expect(result.pillars.sanctions.sourceState).toBe("review-required");
     expect(result.confidence).toBe("low");
   });

@@ -13,6 +13,7 @@ const result = (status: CountryRiskV2Result["status"], score: number | null): Co
   bandAdjustment: null,
   status,
   confidence: status === "complete" ? "high" : "low",
+  sanctionsCoverageComplete: true,
   pillars: {} as CountryRiskV2Result["pillars"],
   floors: [],
   regulatoryFlags: [],

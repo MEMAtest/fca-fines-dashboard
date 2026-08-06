@@ -61,6 +61,8 @@ export interface CountryRiskV2Result {
   } | null;
   status: CountryRiskPublicationStatus;
   confidence: CountryRiskConfidence;
+  /** True only when this jurisdiction has explicit OFAC, UK, EU and UN coverage. */
+  sanctionsCoverageComplete: boolean;
   pillars: {
     aml: CountryRiskPillar;
     governance: CountryRiskPillar;
@@ -331,6 +333,7 @@ export function computeCountryRiskV2(iso2: string, supplied: CountryRiskV2Inputs
     bandAdjustment,
     status,
     confidence: confidenceFor([fatfListState, assessmentState, governanceState, sanctionsState], status, assessmentAge),
+    sanctionsCoverageComplete,
     pillars,
     floors,
     regulatoryFlags,
