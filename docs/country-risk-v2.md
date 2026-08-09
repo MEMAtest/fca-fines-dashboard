@@ -27,6 +27,42 @@ is `provisional` with renormalised weights and no Low label; fewer than two is
 Transparency International CPI and RegActions enforcement volume are context
 only and never enter the score.
 
+## Public decision and evidence layer
+
+Every published jurisdiction exposes an additive public surface alongside the
+score. It distinguishes the exact FATF required action:
+
+- `countermeasures` for jurisdictions subject to a FATF call for action;
+- `enhanced-due-diligence` where FATF calls for enhanced due diligence but not
+  countermeasures;
+- `increased-monitoring` for grey-list monitoring; and
+- `none` where no FATF list action applies.
+
+This distinction is operationally important. Myanmar, for example, must not be
+described as subject to countermeasures. Its decision guidance calls for
+proportionate enhanced due diligence and retains safeguards against wholesale
+de-risking of humanitarian, non-profit and remittance activity.
+
+The same surface publishes membership and suspension context, EU tax-list
+status, Egmont FIU membership, beneficial-ownership-register availability and
+CPI context when sourced. Every contextual signal is explicitly marked
+`scored: false`; unavailable evidence is shown as unavailable, not as zero risk.
+
+Freshness is split into separate dates for data effectiveness, base FATF
+assessment, later ratings or follow-up, retrieval and verification. A recent
+follow-up therefore cannot silently make an old base assessment appear new.
+Country change history is published separately from the current score.
+
+Machine-readable evidence and a human-readable PDF are available directly:
+
+- `GET /api/country-risk/evidence/{iso2}?format=json`
+- `GET /api/country-risk/evidence/{iso2}?format=csv`
+- `GET /api/country-risk/evidence/{iso2}?format=pdf`
+
+The JSON bundle includes the score, calculation evidence, public surface,
+source registry, per-country sanctions coverage and the assurance label
+`not-independently-validated`.
+
 ## Reproducible source flow
 
 Apply the idempotent schema first:
@@ -167,6 +203,24 @@ The public endpoints are:
 - `GET /api/country-risk/{iso2}?methodology=v2`
 - `GET /api/country-risk/methodology/v2`
 - `GET /api/country-risk/sources/status`
+- `GET /api/country-risk/benchmark`
+
+## Public market benchmark
+
+Run `npm run country-risk:benchmark` to reproduce the checked-in, stratified
+30-jurisdiction comparison with Know Your Country's public bands. The benchmark
+contains high-risk, offshore, emerging-market and lower-risk comparators. It
+does not infer or reverse-engineer private numeric scores, and public bands are
+directional evidence rather than calibration targets.
+
+The competitor's public 245-country coverage claim and RegActions' 213 public
+jurisdictions leave a count difference of 32. This is recorded as an open
+jurisdiction-reconciliation item; it is not presented as 32 proven missing
+countries because the two products may count territories and naming variants
+differently. Future terrorism-financing, proliferation-financing, organised-
+crime or additional US AML signals must remain absent or unavailable until a
+licensed, reproducible source and deterministic mapping are implemented. They
+must never be improvised into the score.
 
 Independent practitioner and quantitative review remain worthwhile external
 assurance enhancements. They are not represented as an unfinished data gate and

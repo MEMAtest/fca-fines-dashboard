@@ -1,7 +1,12 @@
 import { getFatfAssessment, type FatfAssessmentRecord } from "./fatfAssessmentData.js";
 import { getFatfStatus } from "./fatfStatus.js";
 import { getGovernanceDimensions, type WgiDimensions } from "./governanceData.js";
-import { getApprovedSanctions, SANCTIONS_APPROVED_SNAPSHOT } from "./sanctionsApprovedData.js";
+import {
+  getApprovedSanctions,
+  getApprovedSanctionsCoverage,
+  SANCTIONS_APPROVED_SNAPSHOT,
+  type ApprovedSanctionsCoverageCell,
+} from "./sanctionsApprovedData.js";
 import type { CountrySanctions, SanctionsTier } from "./sanctionsStatus.js";
 import { countryRiskSourceStatus, type CountryRiskSourceState } from "./countryRiskSources.js";
 import { bandFor, type RiskBand } from "./countryRiskScore.js";
@@ -56,6 +61,8 @@ export interface CountryRiskV2Result {
   } | null;
   status: CountryRiskPublicationStatus;
   confidence: CountryRiskConfidence;
+  /** True only when this jurisdiction has explicit OFAC, UK, EU and UN coverage. */
+  sanctionsCoverageComplete: boolean;
   pillars: {
     aml: CountryRiskPillar;
     governance: CountryRiskPillar;
@@ -72,6 +79,7 @@ export interface CountryRiskV2Inputs {
   governance?: Partial<WgiDimensions>;
   sanctions?: CountrySanctions;
   sanctionsCoverageComplete?: boolean;
+  sanctionsCoverage?: ApprovedSanctionsCoverageCell[];
   sourceStates?: Partial<Record<"fatfLists" | "aml" | "governance" | "sanctions", CountryRiskSourceState>>;
   pillarWeights?: { aml: number; governance: number; sanctions: number };
   asOf?: Date;
@@ -160,6 +168,14 @@ export function sanctionsPillarRisk(
   };
 }
 
+export function hasCompleteCountrySanctionsCoverage(
+  coverage: ApprovedSanctionsCoverageCell[],
+): boolean {
+  if (coverage.length !== IMPOSERS.length) return false;
+  const byImposer = new Set(coverage.map((cell) => cell.imposer));
+  return IMPOSERS.every((imposer) => byImposer.has(imposer));
+}
+
 function assessmentAgeYears(assessment: FatfAssessmentRecord | undefined, asOf: Date): number | null {
   if (!assessment?.assessmentDate) return null;
   const value = /^\d{4}$/.test(assessment.assessmentDate)
@@ -190,7 +206,10 @@ export function computeCountryRiskV2(iso2: string, supplied: CountryRiskV2Inputs
   const fatfListState = supplied.sourceStates?.fatfLists ?? countryRiskSourceStatus("fatf-lists", asOf).state;
   const governanceState = supplied.sourceStates?.governance ?? countryRiskSourceStatus("world-bank-wgi", asOf).state;
   const sanctionsState = supplied.sourceStates?.sanctions ?? countryRiskSourceStatus("sanctions-regimes", asOf).state;
-  const sanctionsCoverageComplete = supplied.sanctionsCoverageComplete ?? SANCTIONS_APPROVED_SNAPSHOT.coverageComplete;
+  const sanctionsCoverage = supplied.sanctionsCoverage ?? getApprovedSanctionsCoverage(code);
+  const sanctionsCoverageComplete = supplied.sanctionsCoverageComplete !== undefined
+    ? supplied.sanctionsCoverageComplete
+    : SANCTIONS_APPROVED_SNAPSHOT.coverageComplete && hasCompleteCountrySanctionsCoverage(sanctionsCoverage);
   const weights = supplied.pillarWeights ?? COUNTRY_RISK_PILLAR_WEIGHTS;
   if (Object.values(weights).some((weight) => !Number.isFinite(weight) || weight < 0)) {
     throw new Error("Country-risk pillar weights must be finite and non-negative");
@@ -314,6 +333,7 @@ export function computeCountryRiskV2(iso2: string, supplied: CountryRiskV2Inputs
     bandAdjustment,
     status,
     confidence: confidenceFor([fatfListState, assessmentState, governanceState, sanctionsState], status, assessmentAge),
+    sanctionsCoverageComplete,
     pillars,
     floors,
     regulatoryFlags,

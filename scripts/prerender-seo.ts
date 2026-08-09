@@ -696,7 +696,7 @@ function renderCountryFaqBlock(faqs: CountryFaq[]): string {
  * prerendered HTML and the SPA can't drift apart in copy/logic.
  */
 function renderCountryFatfBody(view: CountryView): string {
-  const { country, statusHeading, statusDetail, history, enforcement, sanctions, sanctionsTier, riskV2, breakdown, globalAverage, cpi, decision, enforcementAssessed, hasComprehensiveSanctions, hasTargetedSanctions, sanctionsCoverageComplete, regulatory, regionalPeers, attribution } = view;
+  const { country, statusHeading, statusDetail, history, enforcement, sanctions, sanctionsTier, riskV2, publicSurface, breakdown, globalAverage, cpi, decision, enforcementAssessed, hasComprehensiveSanctions, hasTargetedSanctions, sanctionsCoverageComplete, regulatory, regionalPeers, attribution } = view;
   const scoreAvailable = riskV2.score !== null && riskV2.band !== null;
   const publicExplanation = buildCountryRiskPublicExplanation(riskV2);
   const title = `${country.name} — Country Risk Report`;
@@ -941,6 +941,13 @@ function renderCountryFatfBody(view: CountryView): string {
   )} · <a href="${escapeHtml(CPI_SOURCE)}" rel="noopener">${escapeHtml(
     `TI CPI (${CPI_LICENCE}, display only)`,
   )}</a></p>`;
+  const publicEvidenceHtml = `<h2>Public evidence layer</h2><p><strong>${escapeHtml(
+    `FATF action: ${publicSurface.fatfAction.action.replaceAll("-", " ")}`,
+  )}</strong>. ${escapeHtml(publicSurface.fatfAction.explanation)}</p><h3>Contextual signals (not scored)</h3><ul>${publicSurface.contextualSignals
+    .map((signal) => `<li>${escapeHtml(`${signal.label}: ${signal.value} (${signal.state}, as of ${signal.effectiveAt ?? "not available"})`)}</li>`)
+    .join("")}</ul><h3>Evidence freshness</h3><ul>${publicSurface.freshness
+    .map((item) => `<li>${escapeHtml(`${item.label}: ${item.sourceState}; data ${item.underlyingDataEffectiveAt ?? "not available"}${item.ratingsDate ? `; follow-up ${item.ratingsDate}` : ""}${item.assessmentDate ? `; base assessment ${item.assessmentDate}` : ""}`)}</li>`)
+    .join("")}</ul><p>${escapeHtml(publicSurface.note)}</p><p><a href="/api/country-risk/evidence/${country.iso2}?format=pdf">Download evidence PDF</a> · <a href="/api/country-risk/evidence/${country.iso2}?format=csv">CSV</a> · <a href="/api/country-risk/evidence/${country.iso2}?format=json">JSON</a></p>`;
   // Visible FAQ block — answers MUST match the FAQPage JSON-LD verbatim (Google
   // requirement). Both derive from buildCountryFaqs(view), so they cannot drift.
   const faqHtml = renderCountryFaqBlock(buildCountryFaqs(view));
@@ -950,7 +957,7 @@ function renderCountryFatfBody(view: CountryView): string {
     statusHeading,
   )}</h2><p>${escapeHtml(
     statusDetail,
-  )}</p>${sanctionsHtml}${attrHtml}${historyHtml}${enforcementHtml}${regulatoryHtml}${sectorHtml}${analysisHtml}${whatChangedHtml}${peersHtml}${faqHtml}${sourcesHtml}</div></article></div></div>`;
+  )}</p>${sanctionsHtml}${attrHtml}${historyHtml}${enforcementHtml}${regulatoryHtml}${sectorHtml}${analysisHtml}${whatChangedHtml}${publicEvidenceHtml}${peersHtml}${faqHtml}${sourcesHtml}</div></article></div></div>`;
 }
 
 /**

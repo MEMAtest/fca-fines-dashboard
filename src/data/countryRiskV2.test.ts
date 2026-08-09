@@ -7,8 +7,10 @@ import {
   computeCountryRiskV2,
   fatfAssessmentRisk,
   governancePillarRisk,
+  hasCompleteCountrySanctionsCoverage,
   sanctionsPillarRisk,
 } from "./countryRiskV2.js";
+import { getApprovedSanctionsCoverage } from "./sanctionsApprovedData.js";
 
 const assessment: FatfAssessmentRecord = {
   iso2: "GB",
@@ -80,6 +82,7 @@ describe("country risk v2 publication rules", () => {
     ["RU", 6, "complete", "high", "medium", 3.9, 6.1, 6.2],
     ["SY", 7, "provisional", "very-high", "low", null, 7.8, 5.9],
     ["KP", 9, "provisional", "very-high", "low", null, 6.8, 9.3],
+    ["CD", 7.6, "complete", "very-high", "medium", 8.4, 7.2, 6.4],
   ] as const)("keeps the reviewed ten-country golden result for %s", (iso2, score, status, band, confidence, aml, governanceScore, sanctionsScore) => {
     const result = computeCountryRiskV2(iso2, {
       asOf: new Date("2026-07-16T12:00:00.000Z"),
@@ -101,6 +104,23 @@ describe("country risk v2 publication rules", () => {
     }).regulatoryFlags)
       .toContainEqual({ type: "fatf-black", label: "FATF call for action — enhanced due diligence" });
   });
+
+  it("requires four distinct imposer coverage cells before a country can receive a reviewed sanctions zero", () => {
+    const complete = getApprovedSanctionsCoverage("GB");
+    expect(hasCompleteCountrySanctionsCoverage(complete)).toBe(true);
+    expect(hasCompleteCountrySanctionsCoverage(complete.slice(0, 3))).toBe(false);
+    expect(hasCompleteCountrySanctionsCoverage([...complete, complete[0]])).toBe(false);
+  });
+
+  it.each(["JE", "GG", "IM", "GI", "VG", "TC", "MS", "CW", "SX", "VA"])(
+    "%s has four direct coverage decisions and never inherits a parent sanctions programme",
+    (iso2) => {
+      const coverage = getApprovedSanctionsCoverage(iso2);
+      expect(hasCompleteCountrySanctionsCoverage(coverage)).toBe(true);
+      expect(coverage).toHaveLength(4);
+      expect(coverage.every((cell) => cell.iso2 === iso2)).toBe(true);
+    },
+  );
 
   it("applies the grey-list floor to a provisional result with two available pillars", () => {
     const result = computeCountryRiskV2("VG", {
@@ -130,6 +150,7 @@ describe("country risk v2 publication rules", () => {
     expect(result.preFloorScore).toBe(3.6);
     expect(result.asOf).toMatch(/^\d{4}-/);
     expect(result.pillars.sanctions.coverageStatus).toBe("available");
+    expect(result.sanctionsCoverageComplete).toBe(true);
     expect(result.arithmetic).toContain("aml 6 × 50%");
   });
 
@@ -143,6 +164,7 @@ describe("country risk v2 publication rules", () => {
     expect(result.status).toBe("provisional");
     expect(result.pillars.sanctions.score).toBeNull();
     expect(result.pillars.sanctions.coverageStatus).toBe("unavailable");
+    expect(result.sanctionsCoverageComplete).toBe(false);
     expect(result.pillars.sanctions.sourceState).toBe("review-required");
     expect(result.confidence).toBe("low");
   });

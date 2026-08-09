@@ -3,10 +3,13 @@ import { getCountryByIso2 } from "./countries.js";
 import {
   buildCountryIndex,
   buildCountryView,
+  countrySanctionsPresentation,
   formatDate,
   globalRank,
   regionalAverages,
 } from "./countryView.js";
+import { computeCountryRiskV2 } from "./countryRiskV2.js";
+import { getApprovedSanctionsCoverage } from "./sanctionsApprovedData.js";
 
 const FORMER_V1_GAPS = ["VG", "CW", "GI", "GG", "IM", "MS", "SX", "TC", "VA"];
 
@@ -42,6 +45,17 @@ describe("country score publication safeguards", () => {
     const index = buildCountryIndex();
     expect(index.every((entry) => entry.sanctionsCoverageComplete)).toBe(true);
     expect(index.filter((entry) => entry.sanctionsTier).length).toBeGreaterThan(0);
+  });
+
+  it("keeps the public coverage result fail-closed for a future partial jurisdiction", () => {
+    const partialCoverage = getApprovedSanctionsCoverage("GB").slice(0, 3);
+    const result = computeCountryRiskV2("GB", { sanctionsCoverage: partialCoverage });
+    const presentation = countrySanctionsPresentation("GB", result);
+    expect(presentation.sanctionsCoverageComplete).toBe(false);
+    expect(presentation.sanctions).toBeUndefined();
+    expect(presentation.sanctionsTier).toBeUndefined();
+    expect(result.pillars.sanctions.coverageStatus).toBe("unavailable");
+    expect(result.limitingReasons).toContain("Sanctions regime coverage is not yet complete");
   });
 
   it.each(["CW", "VG"])("uses safe decision copy for %s", (iso2) => {

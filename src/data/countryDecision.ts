@@ -104,11 +104,14 @@ export function hasComprehensiveSanctions(sanctions?: CountrySanctions): boolean
 }
 
 function treatmentFor(input: DecisionInput): string {
-  const black = input.fatf?.listing === "call-for-action";
+  const countermeasures = input.fatf?.requiredAction === "countermeasures";
+  const enhancedDueDiligence = input.fatf?.requiredAction === "enhanced-due-diligence";
   const comprehensive = input.sanctionsCoverageComplete && hasComprehensiveSanctions(input.sanctions);
   const band = input.riskResult.band;
-  if (black || comprehensive)
+  if (countermeasures || comprehensive)
     return "Enhanced due diligence, with restriction or prohibition of higher-risk activity.";
+  if (enhancedDueDiligence)
+    return "Enhanced due diligence proportionate to the risks; FATF does not call for countermeasures.";
   if (!input.scoreAvailable)
     return input.fatf
       ? "Enhanced due diligence while the missing country-risk evidence is resolved."
@@ -146,8 +149,10 @@ function verdict(input: DecisionInput): { headline: string; paragraph: string } 
         : "its governance profile";
   const fatfPhrase = input.fatf
     ? input.fatf.listing === "call-for-action"
-      ? "on the FATF black list"
-      : "on the FATF grey list"
+      ? input.fatf.requiredAction === "countermeasures"
+        ? "subject to a FATF call for action requiring countermeasures"
+        : "subject to a FATF call for action requiring enhanced due diligence, not countermeasures"
+      : "subject to FATF increased monitoring"
     : "not currently FATF grey- or black-listed";
   const sancClause = !input.sanctionsCoverageComplete
     ? "International sanctions information is unavailable, so the absence of a programme is not assumed"
@@ -168,8 +173,14 @@ function verdict(input: DecisionInput): { headline: string; paragraph: string } 
 function riskDrivers(input: DecisionInput): string[] {
   const out: string[] = [];
   if (!input.scoreAvailable) out.push("Government effectiveness and rule of law information is unavailable; no headline score is published");
-  if (input.fatf)
-    out.push(`FATF ${input.fatf.listing === "call-for-action" ? "black" : "grey"}-list status`);
+  if (input.fatf) {
+    const action = input.fatf.listing === "increased-monitoring"
+      ? "increased-monitoring status"
+      : input.fatf.requiredAction === "countermeasures"
+        ? "call for action requiring countermeasures"
+        : "call for action requiring enhanced due diligence";
+    out.push(`FATF ${action}`);
+  }
   if (input.sanctionsCoverageComplete && input.sanctionsTier)
     out.push(
       `${input.sanctionsTier.charAt(0).toUpperCase() + input.sanctionsTier.slice(1)} sanctions exposure`,
@@ -263,7 +274,8 @@ const DOMAIN_DILIGENCE: Record<string, string> = {
 export function treatmentChecklist(input: DecisionInput): string[] {
   const out: string[] = [];
   const comprehensive = input.sanctionsCoverageComplete && hasComprehensiveSanctions(input.sanctions);
-  const black = input.fatf?.listing === "call-for-action";
+  const countermeasures = input.fatf?.requiredAction === "countermeasures";
+  const enhancedDueDiligence = input.fatf?.requiredAction === "enhanced-due-diligence";
 
   if (!input.scoreAvailable) {
     out.push("Obtain or document an approved alternative country-risk assessment");
@@ -284,10 +296,15 @@ export function treatmentChecklist(input: DecisionInput): string[] {
   // 2. FATF listing → remediation-progress monitoring.
   if (input.fatf) {
     out.push(
-      black
+      countermeasures
         ? "Track FATF countermeasures and action-plan status each plenary"
-        : "Monitor FATF grey-list remediation progress each plenary",
+        : enhancedDueDiligence
+          ? "Apply proportionate FATF enhanced due diligence; do not treat it as a call for countermeasures"
+          : "Monitor FATF increased-monitoring remediation progress each plenary",
     );
+    if (enhancedDueDiligence) {
+      out.push("Protect legitimate humanitarian, NPO and remittance flows from indiscriminate de-risking");
+    }
   }
 
   // 3. Weakest governance domain → matching diligence emphasis.
@@ -337,7 +354,17 @@ function whatChanged(input: DecisionInput): WhatChangedItem[] {
         ? "Targeted programmes in place"
         : "None identified";
   return [
-    { label: "FATF status", value: input.fatf ? (input.fatf.listing === "call-for-action" ? "Black list" : "Grey list") : "Not listed", asOf: fmt(input.lastPlenary) },
+    {
+      label: "FATF status",
+      value: input.fatf
+        ? input.fatf.listing === "increased-monitoring"
+          ? "Increased monitoring"
+          : input.fatf.requiredAction === "countermeasures"
+            ? "Call for action: countermeasures"
+            : "Call for action: enhanced due diligence"
+        : "Not listed",
+      asOf: fmt(input.lastPlenary),
+    },
     { label: "Sanctions exposure", value: sancValue, asOf: fmt(input.sanctionsCoverageComplete ? SANCTIONS_REVIEWED : SANCTIONS_CATALOGUE_REVIEWED_AS_OF) },
     {
       label: "Governance (WGI)",
