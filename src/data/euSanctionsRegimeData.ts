@@ -37,11 +37,11 @@ export interface EuSanctionsRegimeRecord {
 
 export const EU_SANCTIONS_REGIME_SNAPSHOT = {
   "sourceUrl": "https://sanctionsmap.eu/api/v1/regime?lang=en",
-  "sourceFingerprint": "6b92ce9900755fad28ca68e3c579f509601823a80e4722cc8facb5d7e839441c",
-  "sourceRawSha256": "dc708985fd47db58be6702696a41aa790e52d492c90b085b677bd592d03d97fa",
-  "sourceReportSha256": "1b4ac1bc981f888950f4616846042d81d4144610b95612fb7e1862a0d7559afe",
-  "retrievedAt": "2026-08-02T08:47:40.935Z",
-  "dataSha256": "9198169af1ca70bc74486a9b067ee0c50f1299f6c8534ac81f0b002949ef573e",
+  "sourceFingerprint": "64d2f6b5a056030f6e574397b65608c782335c9d765e82327fd5178afec11cff",
+  "sourceRawSha256": "b88d16ab31e91ccdec0e10fb36d37bbbb244eeadd2879a3a6d8247c52ceb3785",
+  "sourceReportSha256": "7057cb8677dcaf41a8ab807ab259dd77f90f04db202983239087cee61dd4824c",
+  "retrievedAt": "2026-08-09T00:22:59.038Z",
+  "dataSha256": "165277c08b870946377b4e9f5e0dd8b4664755fe18d2b56354d9dd729930faf6",
   "recordCount": 49
 } as const;
 
@@ -4880,6 +4880,20 @@ export const EU_SANCTIONS_REGIMES: EuSanctionsRegimeRecord[] = [
         "number": "23.07.2026 - amendments not yet included in the consolidated legal act - (EU) 2026/1844",
         "url": "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=OJ:L_202601844",
         "type": "EC Council Regulation"
+      },
+      {
+        "id": 1793,
+        "title": "Council Decision concerning restrictive measures in respect of actions undermining or threatening the territorial integrity, sovereignty and independence of Ukraine",
+        "number": "07.08.2026 - amendments not yet included in the consolidated legal act - 2026/1939",
+        "url": "https://eur-lex.europa.eu/eli/dec/2026/1939/oj?eliuri=eli%3Adec%3A2026%3A1939%3Aoj&locale=en",
+        "type": "EC Council Decision"
+      },
+      {
+        "id": 1794,
+        "title": "Council Implementing Regulation concerning restrictive measures in respect of actions undermining or threatening the territorial integrity, sovereignty and independence of Ukraine",
+        "number": "2026/1940 - amendments not yet included in the consolidated legal act - 07.08.2026",
+        "url": "https://eur-lex.europa.eu/eli/reg_impl/2026/1940/oj",
+        "type": "EU Council Implementing Regulation"
       }
     ],
     "primaryLegalAct": {
