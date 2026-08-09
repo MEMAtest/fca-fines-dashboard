@@ -18,6 +18,7 @@ import {
   parseHkmaAmount,
   parseHkmaApiPayload,
   parseHkmaDetailHtml,
+  parseHkmaEnforcementListingHtml,
 } from "../scrapeHkma.js";
 import {
   extractMasFirm,
@@ -381,6 +382,24 @@ describe("apac wave scrapers", () => {
     const detail = parseHkmaDetailHtml(html);
     expect(detail.summary).toContain("China CITIC Bank International Limited");
     expect(parseHkmaAmount(detail.body)).toBe(7_500_000);
+  });
+
+  it("parses the official HKMA enforcement listing used for API availability fallback", () => {
+    const entries = parseHkmaEnforcementListingHtml(`
+      <div id="press-release-result">
+        <ul><li>11 Dec 2025</li><li><a href="/eng/news-and-media/press-releases/2025/12/20251211-4/" title="Monetary Authority takes disciplinary action against EFG Bank AG for regulatory breaches and internal control failures">EFG Bank AG enforcement</a></li></ul>
+        <ul><li>06 Dec 2024</li><li><a href="/eng/news-and-media/press-releases/2024/12/20241206-6/">Monetary Authority takes disciplinary action against China CITIC Bank International Limited for contraventions of Anti-Money Laundering and Counter-Terrorist Financing Ordinance</a></li></ul>
+        <ul><li>05 Aug 2026</li><li><a href="/eng/news-and-media/press-releases/2026/08/20260805-3/">Result of the tenders of RMB Sovereign Bonds held on 05 August 2026</a></li></ul>
+      </div>
+    `);
+
+    expect(entries).toHaveLength(2);
+    expect(entries[0]).toMatchObject({
+      dateIssued: "2025-12-11",
+      detailUrl:
+        "https://www.hkma.gov.hk/eng/news-and-media/press-releases/2025/12/20251211-4/",
+    });
+    expect(entries[1].dateIssued).toBe("2024-12-06");
   });
 
   it("splits HKMA multi-bank disciplinary notices into firm-level action fragments", () => {
