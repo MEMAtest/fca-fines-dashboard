@@ -14,6 +14,11 @@ import {
 import { runScraper } from "./lib/runScraper.js";
 
 const HKMA_API_URL = "https://api.hkma.gov.hk/public/press-releases";
+// The API is HKMA's canonical machine-readable source.  The regulator also
+// publishes the same enforcement category as an official HTML listing; use it
+// only as a fail-closed availability fallback when the API is unavailable.
+const HKMA_ENFORCEMENT_PAGE_URL =
+  "https://www.hkma.gov.hk/eng/news-and-media/press-releases/enforcement/";
 const HKMA_LIST_PAGE_SIZE =
   Number.parseInt(process.env.HKMA_LIST_PAGE_SIZE || "", 10) || 100;
 const HKMA_API_RETRY_ATTEMPTS =
@@ -236,6 +241,35 @@ export function parseHkmaApiPayload(payload: HkmaApiResponse) {
   return [...entries.values()];
 }
 
+/**
+ * Parse the official HKMA enforcement-category HTML listing.
+ *
+ * This deliberately accepts only the regulator's `#press-release-result`
+ * links and the same enforcement-title predicate used by the API parser. It
+ * is an availability fallback, not a second source or a broader search.
+ */
+export function parseHkmaEnforcementListingHtml(html: string) {
+  const $ = cheerio.load(html);
+  const entries = new Map<string, HkmaEntry>();
+
+  $("#press-release-result > ul").each((_, element) => {
+    const item = $(element);
+    const dateIssued = parseHkmaDate(item.find("li").first().text());
+    const link = item.find("a[href]").first();
+    const title = normalizeWhitespace(link.attr("title") || link.text() || "");
+    const href = normalizeWhitespace(link.attr("href") || "");
+
+    if (!title || !href || !dateIssued || !isHkmaEnforcementTitle(title)) {
+      return;
+    }
+
+    const detailUrl = new URL(href, HKMA_ENFORCEMENT_PAGE_URL).toString();
+    entries.set(detailUrl, { title, detailUrl, dateIssued });
+  });
+
+  return [...entries.values()];
+}
+
 export function parseHkmaDetailHtml(html: string) {
   const $ = cheerio.load(html);
   const title =
@@ -330,10 +364,23 @@ function categorizeHkmaRecord(text: string) {
 
 async function loadHkmaEntries(limit: number | null) {
   const entries = new Map<string, HkmaEntry>();
+  let apiUnavailable = false;
 
   for (let offset = 0; ; offset += HKMA_LIST_PAGE_SIZE) {
     console.log(`📡 Fetching HKMA API page (offset: ${offset})...`);
-    const response = await fetchHkmaApiPage(offset);
+    let response: HkmaApiResponse;
+    try {
+      response = await fetchHkmaApiPage(offset);
+    } catch (error) {
+      apiUnavailable = true;
+      console.warn(
+        `⚠️ HKMA API unavailable at offset ${offset}; falling back to the official enforcement listing.`,
+      );
+      if (axios.isAxiosError(error)) {
+        console.warn(`   Error: ${error.code || "UNKNOWN"} - ${error.message}`);
+      }
+      break;
+    }
 
     const records = response.result?.records || [];
     for (const entry of parseHkmaApiPayload(response)) {
@@ -345,6 +392,34 @@ async function loadHkmaEntries(limit: number | null) {
 
     if (records.length < HKMA_LIST_PAGE_SIZE) {
       break;
+    }
+  }
+
+  if (apiUnavailable) {
+    try {
+      const response = await axios.get<string>(HKMA_ENFORCEMENT_PAGE_URL, {
+        responseType: "text",
+        timeout: 180000,
+        headers: {
+          "User-Agent":
+            "Mozilla/5.0 (compatible; MEMA-Regulatory-Scraper/1.0; +https://regactions.com)",
+          Accept: "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+          "Accept-Language": "en-US,en;q=0.9",
+        },
+      });
+
+      for (const entry of parseHkmaEnforcementListingHtml(response.data)) {
+        entries.set(entry.detailUrl, entry);
+        if (limit && entries.size >= limit) {
+          break;
+        }
+      }
+    } catch (error) {
+      throw new Error(
+        `HKMA API and official enforcement listing both failed: ${
+          error instanceof Error ? error.message : String(error)
+        }`,
+      );
     }
   }
 
