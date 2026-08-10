@@ -91,8 +91,11 @@ jobs:
             script: scrape:asic
           - code: HKMA
             script: scrape:hkma
-          - code: FMANZ
-            script: scrape:fmanz
+          # FMANZ migrated to the Hetzner scraper host, where the configured
+          # FlareSolverr clears the official site's Cloudflare challenge.
+          # Running it from GitHub Actions would create false zero/error runs.
+          # - code: FMANZ
+          #   script: scrape:fmanz
           - code: MAS
             script: scrape:mas
           - code: SC

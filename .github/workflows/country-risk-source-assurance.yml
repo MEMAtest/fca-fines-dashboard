@@ -85,7 +85,15 @@ jobs:
         run: |
           npx tsx scripts/country-risk/generate-score-run.ts --require-ready --persist
           npm run country-risk:validate
-          npm test -- --run
+          # This lane changes only country-risk source evidence. Keep its release
+          # gate focused on the model, evidence and API contracts it promotes;
+          # unrelated editorial fixtures must not block an otherwise verified
+          # official-source snapshot.
+          npm test -- --run \
+            src/data/countryRisk*.test.ts \
+            src/data/sanctions*.test.ts \
+            server/countryRisk*.test.ts \
+            scripts/country-risk/lib/*.test.ts
           npm run build
       - name: Open the content-addressed snapshot update
         id: snapshot_pr

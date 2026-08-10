@@ -12,6 +12,11 @@ import {
   parseMonthNameDate,
   parseScaledAmount,
 } from "./lib/euFineHelpers.js";
+import {
+  createFlareSolverrClient,
+  flareSolverrEnabled,
+  type FlareSolverrClient,
+} from "./lib/flaresolverr.js";
 import { runScraper } from "./lib/runScraper.js";
 
 const FMANZ_BASE_URL = "https://www.fma.govt.nz";
@@ -36,6 +41,14 @@ interface FmanzDetail {
   summary: string;
   body: string;
   pdfUrl: string | null;
+}
+
+type FmanzHtmlLoader = (url: string) => Promise<string>;
+
+export function isFmanzChallengeHtml(html: string) {
+  return /<title[^>]*>\s*Just a moment|cf-chl-|challenge-platform|Enable JavaScript and cookies/i.test(
+    html,
+  );
 }
 
 function parseFmanzDate(input: string) {
@@ -157,7 +170,10 @@ function categorizeFmanzRecord(text: string) {
   return categories.length > 0 ? categories : ["SUPERVISORY_SANCTION"];
 }
 
-export async function loadFmanzEntries(limit: number | null) {
+export async function loadFmanzEntries(
+  limit: number | null,
+  loadHtml: FmanzHtmlLoader = requestFmanzHtml,
+) {
   const entries = new Map<string, FmanzListEntry>();
   const visited = new Set<string>();
   let nextPageUrl: string | null = FMANZ_LIST_URL;
@@ -168,7 +184,7 @@ export async function loadFmanzEntries(limit: number | null) {
     }
     visited.add(nextPageUrl);
 
-    const html = await requestFmanzHtml(nextPageUrl);
+    const html = await loadHtml(nextPageUrl);
     const page = parseFmanzListingHtml(html, nextPageUrl);
 
     for (const entry of page.entries) {
@@ -184,8 +200,11 @@ export async function loadFmanzEntries(limit: number | null) {
   return [...entries.values()];
 }
 
-async function enrichFmanzEntry(entry: FmanzListEntry) {
-  const detailHtml = await requestFmanzHtml(entry.detailUrl);
+async function enrichFmanzEntry(
+  entry: FmanzListEntry,
+  loadHtml: FmanzHtmlLoader = requestFmanzHtml,
+) {
+  const detailHtml = await loadHtml(entry.detailUrl);
   const detail = parseFmanzDetailHtml(detailHtml, entry.detailUrl);
   const textCorpus = `${entry.title} ${entry.intro} ${detail.summary} ${detail.body}`;
 
@@ -213,11 +232,46 @@ async function enrichFmanzEntry(entry: FmanzListEntry) {
 
 export async function loadFmanzLiveRecords() {
   const flags = getCliFlags();
-  const entries = await loadFmanzEntries(
-    flags.limit && flags.limit > 0 ? flags.limit : null,
-  );
-  const records = await mapWithConcurrency(entries, 4, enrichFmanzEntry);
-  return records.filter((record) => record !== null);
+  let flareSolverr: FlareSolverrClient | null = null;
+
+  const loadOfficialHtml: FmanzHtmlLoader = async (url) => {
+    try {
+      const directHtml = await requestFmanzHtml(url);
+      if (!isFmanzChallengeHtml(directHtml)) {
+        return directHtml;
+      }
+    } catch (error) {
+      if (!flareSolverrEnabled()) {
+        throw error;
+      }
+    }
+
+    if (!flareSolverrEnabled()) {
+      throw new Error(
+        `FMANZ official source returned a Cloudflare challenge for ${url}; FLARESOLVERR_URL is not configured`,
+      );
+    }
+
+    flareSolverr ??= await createFlareSolverrClient({ maxTimeoutMs: 120_000 });
+    const solvedHtml = await flareSolverr.get(url);
+    if (isFmanzChallengeHtml(solvedHtml)) {
+      throw new Error(`FlareSolverr did not clear the FMANZ challenge for ${url}`);
+    }
+    return solvedHtml;
+  };
+
+  try {
+    const entries = await loadFmanzEntries(
+      flags.limit && flags.limit > 0 ? flags.limit : null,
+      loadOfficialHtml,
+    );
+    const records = await mapWithConcurrency(entries, 4, (entry) =>
+      enrichFmanzEntry(entry, loadOfficialHtml),
+    );
+    return records.filter((record) => record !== null);
+  } finally {
+    await flareSolverr?.destroy();
+  }
 }
 
 async function requestFmanzHtml(url: string) {

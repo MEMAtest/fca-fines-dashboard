@@ -8,6 +8,7 @@ import {
   parseAsicRegisterHtml,
 } from "../scrapeAsic.js";
 import {
+  isFmanzChallengeHtml,
   parseFmanzAmount,
   parseFmanzDetailHtml,
   parseFmanzListingHtml,
@@ -35,6 +36,19 @@ import {
 } from "../scrapeSesc.js";
 
 describe("apac wave scrapers", () => {
+  it("detects FMA NZ Cloudflare challenge pages", () => {
+    expect(
+      isFmanzChallengeHtml(
+        '<html><head><title>Just a moment...</title></head><body><div class="cf-chl-widget">Checking</div></body></html>',
+      ),
+    ).toBe(true);
+    expect(
+      isFmanzChallengeHtml(
+        '<html><head><title>Enforcement Activity | Financial Markets Authority</title></head><body><li class="search-results-semantic__result-item"></li></body></html>',
+      ),
+    ).toBe(false);
+  });
+
   it("parses AUSTRAC enforcement sections across court, undertakings, notices, and remedial directions", () => {
     const html = `
       <main>
