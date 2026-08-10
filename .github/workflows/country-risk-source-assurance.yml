@@ -153,7 +153,12 @@ jobs:
         if: steps.fatf_lists.outcome == 'failure'
         run: node --import tsx/esm scripts/country-risk/check-fatf-list-watch.ts
       - name: Ingest the latest FATF consolidated ratings
+        id: fatf_assessments
+        continue-on-error: true
         run: xvfb-run -a npm run country-risk:ingest-fatf
+      - name: Retain current FATF assessment evidence as a watch
+        if: steps.fatf_assessments.outcome == 'failure'
+        run: node --import tsx/esm scripts/country-risk/check-fatf-assessment-watch.ts
       - name: Validate the FATF evidence update
         run: |
           npm run country-risk:validate
@@ -176,7 +181,9 @@ jobs:
             Automated FATF ratings ingestion, focused tests, validation and build passed.
 
             Live black/grey-list verification outcome: `${{ steps.fatf_lists.outcome }}`.
+            Consolidated-ratings workbook ingestion outcome: `${{ steps.fatf_assessments.outcome }}`.
             When the protected page was unavailable, the job retained the last verified list only after confirming that its dated, hashed evidence remained inside the operational freshness threshold; the outage is recorded as a watch artifact.
+            When the protected workbooks were unavailable, the job retained the last schema-validated ratings only after confirming at least 100 records and a dated hash inside the 45-day freshness threshold.
 
             The dependent sanctions job performs the combined score-readiness persistence and full-suite gate.
           labels: country-risk,automated-data
@@ -192,6 +199,7 @@ jobs:
           path: |
             /tmp/country-risk-fatf-list-review.json
             /tmp/country-risk-fatf-list-watch.json
+            /tmp/country-risk-fatf-assessment-watch.json
 
   monthly-release-detection:
     if: (github.event_name == 'schedule' && github.event.schedule == '31 7 1 * *') || inputs.lane == 'monthly' || inputs.lane == 'all'
