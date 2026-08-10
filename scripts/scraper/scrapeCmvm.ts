@@ -232,7 +232,7 @@ async function collectCmvmSearchResults(query: string, limit: number | null) {
     async function waitForElasticResponse(page) {
       const response = await page.waitForResponse(
         (candidate) => candidate.url().includes("DataActionGetElastic"),
-        { timeout: 30000 },
+        { timeout: 90000 },
       );
       return response.text();
     }
@@ -245,11 +245,21 @@ async function collectCmvmSearchResults(query: string, limit: number | null) {
       await page.keyboard.press("Backspace");
       await page.keyboard.type(searchQuery);
 
-      const responseTextPromise = waitForElasticResponse(page);
-      await page.keyboard.press("Enter");
-      const responseText = await responseTextPromise;
-      await new Promise((resolve) => setTimeout(resolve, 800));
-      return responseText;
+      for (let attempt = 1; attempt <= 2; attempt += 1) {
+        const responseTextPromise = waitForElasticResponse(page);
+        await page.keyboard.press("Enter");
+        try {
+          const responseText = await responseTextPromise;
+          await new Promise((resolve) => setTimeout(resolve, 800));
+          return responseText;
+        } catch (error) {
+          if (attempt === 2) throw error;
+          await new Promise((resolve) => setTimeout(resolve, 1500));
+          await page.focus("#b2-Search");
+        }
+      }
+
+      throw new Error("CMVM search did not return a response");
     }
 
     async function advancePage(page) {
@@ -282,7 +292,9 @@ async function collectCmvmSearchResults(query: string, limit: number | null) {
         const page = await browser.newPage();
         await page.setUserAgent(userAgent);
         await page.setExtraHTTPHeaders({ "accept-language": "pt-PT,pt;q=0.9,en;q=0.8" });
-        await page.goto(portalUrl, { waitUntil: "networkidle2", timeout: 120000 });
+        await page.goto(portalUrl, { waitUntil: "domcontentloaded", timeout: 120000 });
+        await page.waitForSelector("#b2-Search", { visible: true, timeout: 60000 });
+        await new Promise((resolve) => setTimeout(resolve, 2000));
 
         const payloads = [];
         payloads.push(await submitSearch(page, query));
