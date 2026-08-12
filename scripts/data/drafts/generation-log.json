@@ -58,5 +58,15 @@
     "qualityScore": 100,
     "qualityPassed": true,
     "wordCount": 1269
+  },
+  {
+    "timestamp": "2026-08-12T04:50:05.606Z",
+    "topic": "AML/KYC Enforcement Trends Across Global Regulators",
+    "slug": "aml-kyc-enforcement-trends",
+    "track": "evergreen-thematic",
+    "outcome": "draft_saved",
+    "qualityScore": 100,
+    "qualityPassed": true,
+    "wordCount": 1324
   }
 ]

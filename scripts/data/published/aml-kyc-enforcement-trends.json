@@ -1,27 +1,27 @@
 {
   "id": "ai-aml-kyc-enforcement-trends",
   "slug": "aml-kyc-enforcement-trends",
-  "title": "Global AML Enforcement Trends: Key Actions and Penalties",
-  "seoTitle": "Global AML Enforcement Trends: Key Actions and Penalties | RegActions",
-  "excerpt": "Recent enforcement data reveals a global regulatory focus on Anti-Money Laundering programme failures, with significant actions against firms for inadequate risk-based controls, testing, and customer due diligence.",
-  "content": "## Overview\n\nRecent enforcement actions demonstrate a global regulatory focus on penalising firms for fundamental failures in their Anti-Money Laundering (AML) compliance programmes. Regulators are targeting deficiencies in programme design and implementation, particularly where controls are not aligned with a firm's specific risk profile.\n\nIn the United States, FINRA fined Outset Global Trading Limited USD 130,000 for an AML programme that was not reasonably designed to detect suspicious activity related to its business of executing trades in thinly traded securities. Similarly, RBC Capital Markets, LLC was censured and fined USD 275,000 for failing to develop and implement an adequate AML programme from 2016 through 2023.\n\nIn Europe, the Austrian Financial Market Authority (FMA) imposed a fine of EUR 60,000 on Sparkasse Oberösterreich Bank AG for breaches of due diligence obligations under anti-money laundering law. In the United Kingdom, the Financial Conduct Authority (FCA) issued a Final Notice against the Institute of Certified Bookkeepers for breaches of the Money Laundering Regulations 2017, though no monetary penalty was specified in the available evidence.\n\nThese actions collectively underscore that regulators are holding firms accountable for ensuring their AML frameworks are effectively tailored to their operational risks.\n\n## Key Enforcement Actions\n\nRecent enforcement actions by FINRA and the Austrian Financial Market Authority (FMA) illustrate specific deficiencies in anti-money laundering (AML) programme design, independent testing, and customer due diligence. The penalties, which include both fines and censures, demonstrate a consistent regulatory focus on the core operational pillars of an effective compliance framework.\n\nIn the United States, FINRA censured and fined Prime Number Capital, LLC USD 335,000 for failures spanning from 2021 onwards. The firm did not establish an AML programme reasonably designed to detect and report suspicious transactions and failed to conduct reasonable independent testing of its programme. Similarly, RBC Capital Markets, LLC was censured and fined USD 275,000 for a programme that was not reasonably designed from February 2016 through September 2023. For Outset Global Trading Limited, which served as an outsourced trading desk, a USD 130,000 penalty was levied because its AML programme was not reasonably designed to monitor its specific business involving thinly traded low-priced securities.\n\nIn Austria, the FMA imposed administrative fines for breaches of due diligence obligations under the Financial Markets Anti-Money Laundering Act. NOTARTREUHANDBANK AG received a fine of EUR 127,500 for not having appropriate strategies, controls, and procedures in place regarding due diligence obligations. Sparkasse Oberösterreich Bank AG and bank99 AG were each fined EUR 60,000, with proceedings concluded via an accelerated process. Volksbank Niederösterreich AG was fined EUR 52,000.\n\nThe actions reveal a pattern of programmatic failure. For FINRA, the core issue is the reasonable design and testing of the AML programme itself. For the Austrian FMA, the focus is on the underlying due diligence controls and procedures that form the programme's foundation. These are not isolated incidents but represent enforceable expectations for programme adequacy and operational diligence across jurisdictions.\n\n## Analysis\n\nEnforcement actions highlight recurring deficiencies in anti-money laundering (AML) programmes. A primary concern is the failure to design AML programmes that are reasonably tailored to detect and report suspicious activities. Outset Global Trading Limited faced a USD 130,000 penalty for an AML programme not reasonably designed for its business. RBC Capital Markets, LLC was fined USD 275,000 for failing to develop and implement a reasonably designed AML programme. Prime Number Capital, LLC received a USD 335,000 penalty for a deficient AML programme and unreasonable testing.\n\nAnother pattern involves failures in the independent testing of AML controls. MCAP LLC was penalised USD 15,000 for failing to conduct any independent testing in 2021 and 2022. Its independent testing in 2023 and 2024 was also found unreasonable. These cases underscore the importance of robust and regular validation of AML systems.\n\nDeficiencies in customer due diligence (CDD) and customer identification programmes (CIP) also feature prominently. Beta Capital Securities LLC was cited for an AML programme that lacked appropriate risk-based procedures for ongoing CDD, resulting in a USD 145,000 fine. Stash Capital LLC faced a USD 450,000 penalty for an inadequate CIP and a deficient AML compliance programme. These actions collectively signal a regulatory focus on the entire AML control lifecycle, from initial customer identification to ongoing monitoring and independent validation. The penalties demonstrate the regulators' commitment to enforcing AML compliance across the financial sector.\n\n## Regulatory Implications\n\nThe enforcement actions demonstrate that regulators expect anti-money laundering programmes to be tailored to the specific risks of a firm's business model. A failure to design a programme capable of detecting the inherent threats of that model is a core regulatory breach. For firms handling low-priced or thinly traded securities, this is a persistent focal point.\n\nFINRA's actions against Outset Global Trading Limited, RBC Capital Markets, LLC, The Ultima Global Markets (USA), Inc., and Pictet Overseas Inc. all cite AML programmes that were not reasonably designed to detect and report suspicious activity linked to low-priced securities. The programmes were deemed inadequate for the specific business conducted, whether it was outsourced trading, correspondent account activity, or general securities transactions. This indicates that a generic AML framework is insufficient; the system must be calibrated to the precise risk profile.\n\nSimilarly, the FCA's action against Barclays Bank plc concerned a failure to adequately manage the money laundering risks associated with a specific corporate banking customer. The breach spanned over six years, underscoring that risk assessments and monitoring must be dynamic and applied to individual client relationships, not just product lines.\n\nThe consistent implication is that a compliance programme's design, implementation, and testing must directly address the identifiable threats posed by a firm's particular activities and clientele. Regulators are scrutinising the logical connection between a firm's operations and its controls, with enforcement following when that link is broken.\n\n## Key Takeaways\n\n- FINRA fined Outset Global Trading Limited $130,000 for an AML programme not reasonably designed to detect and report suspicious transactions, given its business as an outsourced trading desk for equities and options, including thinly traded low-priced securities, from January 2022 to December 2025.\n- RBC Capital Markets, LLC was fined $275,000 by FINRA for failing to develop and implement a reasonably designed AML compliance programme to detect and report suspicious transactions between February 2016 and September 2023.\n- MCAP LLC received a $15,000 fine from FINRA for failing to conduct independent testing of its AML programme in 2021 and 2022, and for unreasonable independent testing in 2023 and 2024.\n- Beta Capital Securities LLC d/b/a Creand Securities was fined $145,000 by FINRA for failing to establish and implement a reasonably designed AML programme and for lacking appropriate risk-based procedures for ongoing customer due diligence from October 2019 to July 2023.\n- Stash Capital LLC incurred a $450,000 fine from FINRA for failing to establish and maintain a reasonable customer identification programme and for not developing and implementing a reasonably designed AML compliance programme between January 2019 and June 2023.\n\n## About the Data\n\nThis analysis uses 30 topic-filtered actions linked to official regulatory sources across 10 regulators: FINRA, FMAAT, FSRA, SFC, FCA, CBI, CBUAE, FSMA, OCC, AUSTRAC. The records cover 2025-06-13 to 2026-07-28. 15 records contain a monetary penalty verified against the evidence contract. Monetary values retain their source currency; GBP-normalised values are reserved for explicitly labelled aggregate charts. Other records may describe cancellations, prohibitions, investigations, orders or sanctions whose monetary value is not verified. The selection supports this article's analysis but is not a complete catalogue of every action in the period.",
+  "title": "Global AML Enforcement: Key Trends and Regulatory Expectations",
+  "seoTitle": "Global AML Enforcement: Key Trends and Regulatory Expectations | RegActions",
+  "excerpt": "Analysis of 30 recent enforcement actions reveals a global regulatory focus on Anti-Money Laundering (AML) programme failures, with significant penalties for inadequate transaction monitoring and customer due diligence.",
+  "content": "## Overview\n\nData from 30 enforcement actions between July 2025 and July 2026 demonstrates a sustained, global regulatory focus on Anti-Money Laundering (AML) and Know Your Customer (KYC) compliance failures. Regulators across multiple jurisdictions are taking formal action against firms for deficiencies in core AML programme elements. The Financial Industry Regulatory Authority (FINRA) fined Outset Global Trading Limited USD 130,000 for an AML programme not reasonably designed to detect suspicious activity in its institutional trading business. FINRA also fined UBS Financial Services Inc. USD 20,000,000 for failing to establish adequate policies to detect and report suspicious foreign currency wire transactions. The Austrian Financial Market Authority (FMA) imposed a fine of EUR 60,000 on Sparkasse Oberösterreich Bank AG for breaches of due diligence obligations. The UK Financial Conduct Authority (FCA) issued a Final Notice to Barclays Bank plc for failures in managing money laundering risks associated with a corporate banking customer. In Australia, AUSTRAC has applied for civil penalty orders against Mount Pritchard and District Community Club Ltd for alleged serious and systemic non-compliance. These actions collectively underscore a consistent regulatory emphasis on the adequacy of transaction monitoring, customer due diligence, and risk assessment frameworks.\n\n## Key Enforcement Actions\n\nRecent enforcement actions demonstrate a consistent regulatory focus on specific operational failures within AML and KYC programmes. These cases reveal censure for inadequate transaction monitoring tailored to business lines, insufficient customer due diligence, and failures in independent testing.\n\nFINRA has sanctioned several firms for programme design flaws. Outset Global Trading Limited was fined USD 130,000 for an AML programme not reasonably designed to detect suspicious activity linked to its business of executing trades, including in thinly traded low-priced securities, for institutional clients. Beta Capital Securities LLC d/b/a Creand Securities faced a penalty of USD 145,000 for failing to establish an AML programme reasonably designed to detect suspicious transactions and for lacking appropriate risk-based ongoing customer due diligence procedures from October 2019 to July 2023. In a separate action, MCAP LLC was censured and fined USD 15,000 for failing to conduct any independent testing of its AML programme in 2021 and 2022, and for unreasonable testing in 2023 and 2024.\n\nThe Austrian Financial Market Authority (FMA) has imposed fines for breaches of due diligence obligations. NOTARTREUHANDBANK AG was fined EUR 127,500 for not having appropriate strategies, controls, and procedures in place regarding due diligence obligations. Sparkasse Oberösterreich Bank AG received a fine of EUR 60,000 for similar breaches of due diligence duties.\n\nOther regulators have pursued significant non-monetary actions. AUSTRAC has applied for civil penalty orders against Mount Pritchard and District Community Club Ltd for alleged serious and systemic non-compliance with AML/CTF laws. The UK Financial Conduct Authority (FCA) issued a Final Notice to Barclays Bank plc for a breach of Principle 2, relating to failures in managing money laundering risks associated with a corporate banking customer between 2015 and 2021.\n\nA notable monetary penalty was levied against UBS Financial Services Inc. by FINRA. The firm was fined USD 20,000,000 for failing to establish and implement policies and procedures reasonably expected to detect and report suspicious transactions involving foreign currency wires from January 2019 through June 2023, leading to monitoring failures for high-risk activity.\n\n## Analysis\n\nEnforcement data reveals distinct regulatory methodologies. FINRA's actions, resolved via Letters of Acceptance, Waiver, and Consent (AWCs), consistently target failures in AML programmes. Outset Global Trading Limited was fined USD 130,000 for an AML programme not designed to detect suspicious transactions. The Ultima Global Markets (USA), Inc. received a USD 100,000 penalty for failing to detect suspicious activity in correspondent accounts. UBS Financial Services Inc. was penalised USD 20,000,000 for failures in monitoring foreign currency wire transactions.\n\nIn contrast, the Austrian FMA's sanctions are public announcements for breaches of due diligence obligations under the Financial Markets Anti-Money Laundering Act. Sparkasse Oberösterreich Bank AG was fined EUR 60,000. NOTARTREUHANDBANK AG received a penalty of EUR 127,500. bank99 AG was fined EUR 60,000. Two of these cases were concluded via an accelerated process.\n\nFINRA employs a detailed, violation-specific narrative within its AWC framework. The FMA cites broader legislative breaches. Both authorities concentrate on business models with inherent vulnerabilities. FINRA focuses on firms facilitating trading in opaque or high-risk securities. The FMA focuses on retail and specialised banking institutions.\n\n## Regulatory Implications\n\nRegulators require AML programmes to address specific business risks. Generic frameworks are insufficient for high-risk activities. Outset Global Trading Limited's programme was not reasonably designed for its business in thinly traded low-priced securities. This led to a USD 130,000 fine. The Ultima Global Markets (USA), Inc. failed to implement an adequate programme for correspondent accounts. This resulted in a USD 100,000 penalty for issues involving low-priced securities.\n\nRobust programme governance and independent testing are necessary. MCAP LLC was censured and fined USD 15,000 for failing to conduct independent testing of its AML programme in 2021 and 2022. Its testing in 2023 and 2024 was also unreasonable. This shows that a programme's existence is inadequate without effective oversight.\n\nProgramme failures often span multiple core requirements. Beta Capital Securities LLC d/b/a Creand Securities was fined USD 145,000. Its programme failed to detect suspicious transactions and lacked appropriate risk-based procedures for customer due diligence. Stash Capital LLC's USD 450,000 fine combined failures in its customer identification programme with broader AML compliance deficiencies.\n\nFor larger institutions, financial and operational stakes are higher. UBS Financial Services Inc. incurred a USD 20,000,000 penalty. Its policies and procedures failed to monitor and investigate foreign currency wires. This included wires involving high-risk jurisdictions. Regulators expect sophisticated monitoring systems commensurate with a firm's scale and transaction complexity.\n\n## Key Takeaways\n\n* FINRA imposed a USD 20,000,000 penalty on UBS Financial Services Inc. for failing to establish and implement adequate AML compliance policies and procedures for detecting and reporting suspicious foreign currency wire transactions between January 2019 and June 2023.\n* Stash Capital LLC was fined USD 450,000 by FINRA for deficiencies between January 2019 and June 2023, including an unreasonable customer identification programme and an AML compliance programme not designed to detect and report suspicious activity.\n* Beta Capital Securities LLC d/b/a Creand Securities received a USD 145,000 fine from FINRA for failing to establish and implement a reasonably designed AML programme and for inadequate risk-based customer due diligence procedures from October 2019 to July 2023.\n* Outset Global Trading Limited incurred a USD 130,000 penalty from FINRA due to its AML programme not being reasonably designed to detect and report suspicious transactions, particularly concerning its outsourced trading desk activities involving thinly traded low-priced securities from January 2022 to December 2025.\n* MCAP LLC was fined USD 15,000 by FINRA for failing to conduct independent testing of its AML programme in 2021 and 2022, and for unreasonable testing in 2023 and 2024.\n* Barclays Bank plc was found by the FCA to have breached Principle 2 (skill, care and diligence) between January 2015 and April 2021, specifically for failures in identifying, assessing, monitoring, and managing money laundering risks associated with banking services provided to a corporate customer.\n\n## About the Data\n\nThis analysis uses 30 topic-filtered actions linked to official regulatory sources across 10 regulators: FINRA, FMA, FSRA, SFC, FCA, CBI, CBUAE, FSMA, OCC, AUSTRAC. The records cover 3 July 2025 to 31 July 2026. 15 records contain a monetary penalty verified against the evidence contract. Monetary values retain their source currency; GBP-normalised values are reserved for explicitly labelled aggregate charts. Other records may describe cancellations, prohibitions, investigations, orders or sanctions whose monetary value is not verified. The selection supports this article's analysis but is not a complete catalogue of every action in the period.",
   "category": "Enforcement Analysis",
   "readTime": "7 min read",
-  "date": "5 August 2026",
-  "dateISO": "2026-08-05",
+  "date": "12 August 2026",
+  "dateISO": "2026-08-12",
   "keywords": [
     "AML enforcement",
+    "KYC compliance",
+    "regulatory penalties",
+    "transaction monitoring",
+    "customer due diligence",
     "global regulators",
     "FINRA",
-    "FMAAT",
-    "compliance failures",
-    "risk-based controls",
-    "suspicious activity reporting",
-    "customer due diligence"
+    "FMAAT"
   ],
-  "status": "draft",
+  "status": "published",
   "generatedBy": "ai",
-  "generatedAt": "2026-08-05T05:42:27.124Z",
+  "generatedAt": "2026-08-12T04:50:05.596Z",
   "articleType": "trends",
   "topicTrack": "evergreen-thematic",
   "sourceRecords": [
@@ -221,21 +221,6 @@
       "amount_verified": true
     },
     {
-      "id": "e30f160b-7688-44b6-b8fa-d81a534d3989",
-      "regulator": "FMAAT",
-      "firm_individual": "Coinfinity GmbH",
-      "amount": 105000,
-      "currency": "EUR",
-      "amount_gbp": 89250,
-      "date_issued": "2025-10-06",
-      "breach_type": "Announcement: FMA imposes sanction against Coinfinity GmbH for breaches of due diligence obligations for the prevention of money laundering and terrorist financing",
-      "summary": "The Austrian Financial Market Authority (FMA) has imposed a fine of EUR 105,000 against Coinfinity GmbH. The proceedings were concluded in an accelerated manner pursuant to Article 22 para. 2b of the Financial Market Authority Act (FMABG; Finanzmarktaufsichtsbehördengesetz). The reason for the fine is due to breaches of the Financial Markets Anti-Money Laundering Act (FM-GwG; Finanzmarkt-Geldwäsche-Gesetz). The breaches specifically relate to the risk assessment at company level, employee training measures, as well as Coinfinity GmbH’s policies and procedures regarding the application of customer due diligence when conducting occasional transactions. The penal order is final.",
-      "notice_url": "https://www.fma.gv.at/en/announcement-fma-imposes-sanction-against-coinfinity-gmbh-for-breaches-of-due-diligence-obligations-for-the-prevention-of-money-laundering-and-terrorist-financing/",
-      "source_url": "https://www.fma.gv.at/en/announcement-fma-imposes-sanction-against-coinfinity-gmbh-for-breaches-of-due-diligence-obligations-for-the-prevention-of-money-laundering-and-terrorist-financing/",
-      "raw_firm_individual": "Coinfinity GmbH",
-      "amount_verified": true
-    },
-    {
       "id": "cb188b45-5a68-42ca-b08c-7c5576514043",
       "regulator": "FMAAT",
       "firm_individual": "Kurant GmbH",
@@ -251,18 +236,18 @@
       "amount_verified": true
     },
     {
-      "id": "60de3083-641d-44a3-a297-0e8d07e95238",
+      "id": "e30f160b-7688-44b6-b8fa-d81a534d3989",
       "regulator": "FMAAT",
-      "firm_individual": "Raiffeisenlandesbank Niederösterreich-Wien AG",
-      "amount": 60000,
+      "firm_individual": "Coinfinity GmbH",
+      "amount": 105000,
       "currency": "EUR",
-      "amount_gbp": 51000,
-      "date_issued": "2025-06-13",
-      "breach_type": "Announcement: FMA imposes sanction against Raiffeisenlandesbank Niederösterreich-Wien AG for a breach of due diligence obligations for the prevention of money laundering and terrorist financing",
-      "summary": "The Austrian Financial Market Authority (FMA) has imposed a fine of EUR 60,000 against Raiffeisenlandesbank Niederösterreich-Wien AG. The proceedings were concluded in an accelerated manner pursuant to Article 22 para. 2b of the Financial Market Authority Act (FMABG; Finanzmarktaufsichtsbehördengesetz). The reason for the fine is a breach of the Financial Markets Anti-Money Laundering Act (FM-GwG; Finanzmarkt-Geldwäsche-Gesetz). Raiffeisenlandesbank Niederösterreich-Wien AG specifically failed to continually apply its policies and procedures regarding due diligence obligations for updating the information, data and documents under the FM-GwG as well as for the ongoing monitoring of the business relationship. In addition, its policies and procedures regarding individual due diligence obligations were inadequate. The penal order is final.",
-      "notice_url": "https://www.fma.gv.at/en/sanction-imposed-against-raiffeisenlandesbank-niederoumlsterreich-wien-ag-for-breach-of-aml-due-diligence-obligations/",
-      "source_url": "https://www.fma.gv.at/en/sanction-imposed-against-raiffeisenlandesbank-niederoumlsterreich-wien-ag-for-breach-of-aml-due-diligence-obligations/",
-      "raw_firm_individual": "Raiffeisenlandesbank Niederösterreich-Wien AG",
+      "amount_gbp": 89250,
+      "date_issued": "2025-10-06",
+      "breach_type": "Announcement: FMA imposes sanction against Coinfinity GmbH for breaches of due diligence obligations for the prevention of money laundering and terrorist financing",
+      "summary": "The Austrian Financial Market Authority (FMA) has imposed a fine of EUR 105,000 against Coinfinity GmbH. The proceedings were concluded in an accelerated manner pursuant to Article 22 para. 2b of the Financial Market Authority Act (FMABG; Finanzmarktaufsichtsbehördengesetz). The reason for the fine is due to breaches of the Financial Markets Anti-Money Laundering Act (FM-GwG; Finanzmarkt-Geldwäsche-Gesetz). The breaches specifically relate to the risk assessment at company level, employee training measures, as well as Coinfinity GmbH’s policies and procedures regarding the application of customer due diligence when conducting occasional transactions. The penal order is final.",
+      "notice_url": "https://www.fma.gv.at/en/announcement-fma-imposes-sanction-against-coinfinity-gmbh-for-breaches-of-due-diligence-obligations-for-the-prevention-of-money-laundering-and-terrorist-financing/",
+      "source_url": "https://www.fma.gv.at/en/announcement-fma-imposes-sanction-against-coinfinity-gmbh-for-breaches-of-due-diligence-obligations-for-the-prevention-of-money-laundering-and-terrorist-financing/",
+      "raw_firm_individual": "Coinfinity GmbH",
       "amount_verified": true
     },
     {
@@ -371,12 +356,27 @@
       "amount_verified": true
     },
     {
-      "id": "5d2aeb14-0c49-492a-be39-c76cc99987f5",
+      "id": "5fd99307-91d4-43b4-8bd4-2ab10a7e1251",
+      "regulator": "FINRA",
+      "firm_individual": "UBS Financial Services Inc.",
+      "amount": 20000000,
+      "currency": "USD",
+      "amount_gbp": 15600000,
+      "date_issued": "2026-07-31",
+      "breach_type": "AWCs (Letters of Acceptance, Waiver, and Consent)",
+      "summary": "From January 2019 through June 2023, UBS Financial failed to establish and implement policies and procedures for its AML compliance program that could be reasonably expected to detect and cause the reporting of suspicious transactions involving foreign currency wires. As a result, the firm failed to reasonably monitor and investigate foreign currency wires involving, among other issues, high-risk geographic locations, unusually large dollar amounts, and no apparent business purpose. Additionally, between January 2019 and December 2022, UBS Financial failed to reasonably implement its customer due diligence program with respect to certain customers. The firm also failed to timely detect and report suspicious transactions involving money movements by these same customers. As a result, UBS Financial violated FINRA Rules 3310(a), 3310(f), and 2010, and is censured, fined $20 million, and required to take corrective action...",
+      "notice_url": "https://www.finra.org/sites/default/files/fda_documents/2021069426901%20UBS%20Financial%20Services%20Inc.%20CRD%208174%20AWC%20vrp.pdf",
+      "source_url": "https://www.finra.org/rules-guidance/oversight-enforcement/finra-disciplinary-actions",
+      "raw_firm_individual": "UBS Financial Services Inc.",
+      "amount_verified": true
+    },
+    {
+      "id": "5ba062b2-6f64-4729-8dd3-0d0e37d7d732",
       "regulator": "FSRA",
       "firm_individual": "FWS Group Limited",
-      "amount": 63750,
+      "amount": 0,
       "currency": "USD",
-      "amount_gbp": 49725,
+      "amount_gbp": 0,
       "date_issued": "2025-11-24",
       "breach_type": "ADGM FSRA imposes financial penalty for contraventions of Anti-Money Laundering requirements",
       "summary": "FWS Group Limited: ADGM FSRA imposes financial penalty for contraventions of Anti-Money Laundering requirements",
@@ -386,12 +386,12 @@
       "amount_verified": false
     },
     {
-      "id": "9288c61a-f0fa-463a-a731-ca22dfce57be",
+      "id": "a00bd320-5493-4b44-829a-52a18a7c2c0b",
       "regulator": "FSRA",
       "firm_individual": "UHY James Chartered Accountants LLC",
-      "amount": 0,
+      "amount": 30000,
       "currency": "USD",
-      "amount_gbp": 0,
+      "amount_gbp": 23400,
       "date_issued": "2025-08-26",
       "breach_type": "ADGM FSRA imposes financial penalty for contraventions of Anti-Money Laundering requirements",
       "summary": "UHY James Chartered Accountants LLC: ADGM FSRA imposes financial penalty for contraventions of Anti-Money Laundering requirements",
@@ -478,9 +478,9 @@
   ],
   "editorialManifest": {
     "version": 1,
-    "status": "drafted",
-    "contentHash": "b89b9b6c992920eaed6302a743bda88b17dbddbe231149eb596a051d330c1f77",
-    "generatedAt": "2026-08-05T05:42:27.124Z",
+    "status": "published",
+    "contentHash": "b70bcb1fd01dabcb9b22db3c6bc9b85ad24ede915bf028270a378933e5c08715",
+    "generatedAt": "2026-08-12T04:50:05.596Z",
     "generationModel": "deepseek/deepseek-v3.2",
     "promptVersion": "regactions-editorial-v2.1",
     "sources": [
@@ -490,7 +490,7 @@
         "title": "FINRA action concerning Outset Global Trading Limited",
         "publisher": "FINRA",
         "sourceType": "official_notice",
-        "retrievedAt": "2026-08-05T05:42:27.124Z",
+        "retrievedAt": "2026-08-12T04:50:05.596Z",
         "official": true,
         "excerpt": "Official evidence record date: 2026-06-16. Verified penalty amount: USD 130000. Evidence summary: From January 2022 to December 2025, Outset served as an outsourced trading desk by executing equities and options transactions for its institutional customers, including transactions in thinly traded low-priced securities. During this time, the firm’s anti money laundering (AML) program was not reasonably designed to detect and report suspicious transactions given this business. As a result, the firm failed to detect and investigate potentially suspicious activity, including instances of potentially manipulative trading. Therefore, Outset violated FINRA Rules 3310 and 2010 and is censured and fined $130,000..."
       },
@@ -500,7 +500,7 @@
         "title": "FMAAT action concerning Sparkasse Oberösterreich Bank AG",
         "publisher": "FMAAT",
         "sourceType": "official_notice",
-        "retrievedAt": "2026-08-05T05:42:27.124Z",
+        "retrievedAt": "2026-08-12T04:50:05.596Z",
         "official": true,
         "excerpt": "Official evidence record date: 2026-05-05. Verified penalty amount: EUR 60000. Evidence summary: The Austrian Financial Market Authority (FMA) has imposed a fine of EUR 60,000 on Sparkasse Oberösterreich Bank AG. The proceedings were concluded in an accelerated manner pursuant to Article 22 para. 2b of the Financial Market Authority Act (FMABG; Finanzmarktaufsichtsbehördengesetz). The reason for the fine is due to breaches of the Financial Markets Anti-Money Laundering Act (FM-GwG; Finanzmarkt-Geldwäsche-Gesetz). These breaches specifically related to the drawing-up of policies and procedures for ensuring that the obligation to take appropriate actions to understand the customer’s ownership and control structure was observed, as well as drawing up such strategies in written form, applying them on an ongoing basis and checking that the duty to regularly update all information, data and documents required under the FM-GwG was duly observed. The penal order is final."
       },
@@ -510,7 +510,7 @@
         "title": "FSRA action concerning Payward MENA Holdings Limited",
         "publisher": "FSRA",
         "sourceType": "official_notice",
-        "retrievedAt": "2026-08-05T05:42:27.124Z",
+        "retrievedAt": "2026-08-12T04:50:05.596Z",
         "official": true,
         "excerpt": "Official evidence record date: 2025-12-17. No verified penalty amount. Evidence summary: Payward MENA Holdings Limited: ADGM FSRA imposes financial penalty for contraventions of Anti-Money Laundering requirements"
       },
@@ -520,7 +520,7 @@
         "title": "SFC action concerning Freeman Commodities Limited",
         "publisher": "SFC",
         "sourceType": "official_notice",
-        "retrievedAt": "2026-08-05T05:42:27.124Z",
+        "retrievedAt": "2026-08-12T04:50:05.596Z",
         "official": true,
         "excerpt": "Official evidence record date: 2025-07-03. No verified penalty amount. Evidence summary: The Securities and Futures Commission (SFC) has reprimanded and fined Freeman Commodities Limited (Freeman), now known as Arta Global Futures Limited (Arta), [unverified monetary figure removed] for failures in complying with anti-money laundering and counter-financing of terrorism (AML/CFT) and other regulatory requirements between June 2017 and December 2018 (Note 1). The SFC has also suspended Mr Li Chun Kei, a former responsible officer (RO), managing director and manager-in-charge of key business line of Freeman, "
       },
@@ -530,7 +530,7 @@
         "title": "FCA action concerning STALLION MONEY LIMITED",
         "publisher": "FCA",
         "sourceType": "official_notice",
-        "retrievedAt": "2026-08-05T05:42:27.124Z",
+        "retrievedAt": "2026-08-12T04:50:05.596Z",
         "official": true,
         "excerpt": "Official evidence record date: 2026-02-24. No verified penalty amount. Evidence summary: Final Notice 2026: STALLION MONEY LIMITED. The Final Notice concerns breaches of the Payment Services Regulations 2017, including failure to meet the conditions of authorisation and to comply with the Money Laundering, Terrorist Financing and Transfer of Funds (Information on the Payer)"
       },
@@ -540,7 +540,7 @@
         "title": "CBI action concerning Coinbase Europe Limited",
         "publisher": "CBI",
         "sourceType": "official_notice",
-        "retrievedAt": "2026-08-05T05:42:27.124Z",
+        "retrievedAt": "2026-08-12T04:50:05.596Z",
         "official": true,
         "excerpt": "Official evidence record date: 2025-11-06. No verified penalty amount. Evidence summary: Coinbase Europe Limited fined [unverified monetary figure removed] by CBI for AML compliance failures"
       },
@@ -550,7 +550,7 @@
         "title": "CBUAE action concerning Omda Exchange",
         "publisher": "CBUAE",
         "sourceType": "official_notice",
-        "retrievedAt": "2026-08-05T05:42:27.124Z",
+        "retrievedAt": "2026-08-12T04:50:05.596Z",
         "official": true,
         "excerpt": "Official evidence record date: 2025-12-23. No verified penalty amount. Evidence summary: The Central Bank of the UAE revoked the licence of Omda Exchange, struck it off the register, and imposed a financial sanction of [unverified monetary figure removed] following AML and regulatory failures."
       },
@@ -560,7 +560,7 @@
         "title": "FSMA action concerning X, Y et Z",
         "publisher": "FSMA",
         "sourceType": "official_notice",
-        "retrievedAt": "2026-08-05T05:42:27.124Z",
+        "retrievedAt": "2026-08-12T04:50:05.596Z",
         "official": true,
         "excerpt": "Official evidence record date: 2025-08-29. No verified penalty amount. Evidence summary: Mesure administrative prononcée à l’encontre de X, Y et Z pour cause d’ infractions sur la législation AML (Seulement disponible en néerlandais)"
       },
@@ -570,7 +570,7 @@
         "title": "OCC action concerning United Texas Bank, National Association",
         "publisher": "OCC",
         "sourceType": "official_notice",
-        "retrievedAt": "2026-08-05T05:42:27.124Z",
+        "retrievedAt": "2026-08-12T04:50:05.596Z",
         "official": true,
         "excerpt": "Official evidence record date: 2026-06-16. No verified penalty amount. Evidence summary: United Texas Bank, National Association subject to OCC Cease-and-Desist Order (C&D) or Personal Cease-and-Desist Order (PC&D). Subject matters: Board / Management Oversight; BSA Independent Testing/Audit; BSA Internal Controls; BSA Officer; BSA Program Violation / 12 CFR 21.21; BSA Risk Assessment; BSA Training; BSA Violation Cited; BSA/AML; Customer/Enhanced Due Diligence (CDD/EDD); OFAC Compliance Issue; SAR/CTR Monitoring/Filing Issue. Docket AA-ENF-2026-29"
       },
@@ -580,7 +580,7 @@
         "title": "AUSTRAC action concerning Mount Pritchard and District Community Club Ltd",
         "publisher": "AUSTRAC",
         "sourceType": "official_notice",
-        "retrievedAt": "2026-08-05T05:42:27.124Z",
+        "retrievedAt": "2026-08-12T04:50:05.596Z",
         "official": true,
         "excerpt": "Official evidence record date: 2025-07-30. No verified penalty amount. Evidence summary: On 30 July 2025, AUSTRAC applied for civil penalty orders against Mount Pritchard and District Community Club Ltd for alleged serious and systemic non-compliance with Australia’s AML/CTF laws. Information about these proceedings includes:"
       },
@@ -590,7 +590,7 @@
         "title": "FMAAT action concerning NOTARTREUHANDBANK AG",
         "publisher": "FMAAT",
         "sourceType": "official_notice",
-        "retrievedAt": "2026-08-05T05:42:27.124Z",
+        "retrievedAt": "2026-08-12T04:50:05.596Z",
         "official": true,
         "excerpt": "Official evidence record date: 2026-03-17. Verified penalty amount: EUR 127500. Evidence summary: The Austrian Financial Market Authority (FMA) has imposed a fine of EUR 127,500 against NOTARTREUHANDBANK AG. The reason for the fine is due to breaches of the Financial Markets Anti-Money Laundering Act (FM-GwG; Finanzmarkt-Geldwäsche-Gesetz). NOTARTREUHANDBANK AG specifically did not have appropriate strategies, controls and procedures in place regarding due diligence for the ongoing monitoring of its business relationships with customers, including the checking of transactions conducted during the course of the business relationship, to ensure that they match the bank’s knowledge about the customer, its business activities, and risk profile as well as where necessary regarding the source of their funds that were commensurate to their size and activity, and such information was also not adequately determined in written form. The penal order is not final."
       },
@@ -600,7 +600,7 @@
         "title": "FMAAT action concerning bank99 AG",
         "publisher": "FMAAT",
         "sourceType": "official_notice",
-        "retrievedAt": "2026-08-05T05:42:27.124Z",
+        "retrievedAt": "2026-08-12T04:50:05.596Z",
         "official": true,
         "excerpt": "Official evidence record date: 2025-12-19. Verified penalty amount: EUR 60000. Evidence summary: The Austrian Financial Market Authority (FMA) has imposed a fine of EUR 60,000 against bank99 AG. The proceedings were concluded in an accelerated manner pursuant to Article 22 para. 2b of the Financial Market Authority Act (FMABG; Finanzmarktaufsichtsbehördengesetz). The reason for the fine is due to breaches of the Financial Markets Anti-Money Laundering Act (FM-GwG; Finanzmarkt-Geldwäsche-Gesetz). The breaches specifically related to the risk classification at customer level, identification and verification of the identity of payers of cash transfers as well as the collection of information about the original of funds used in cash transfers. The penal order is final."
       },
@@ -610,19 +610,9 @@
         "title": "FMAAT action concerning Volksbank Niederösterreich AG",
         "publisher": "FMAAT",
         "sourceType": "official_notice",
-        "retrievedAt": "2026-08-05T05:42:27.124Z",
+        "retrievedAt": "2026-08-12T04:50:05.596Z",
         "official": true,
         "excerpt": "Official evidence record date: 2025-10-23. Verified penalty amount: EUR 52000. Evidence summary: The Austrian Financial Market Authority (FMA) has imposed a fine of EUR 52,000 against Volksbank Niederösterreich AG. The proceedings were concluded in an accelerated manner pursuant to Article 22 para. 2b of the Financial Market Authority Act (FMABG; Finanzmarktaufsichtsbehördengesetz). The reason for the fine is due to breaches of the Financial Markets Anti-Money Laundering Act (FM-GwG; Finanzmarkt-Geldwäsche-Gesetz). Specifically, Volksbank Niederösterreich AG did not have appropriate policies and procedures in place to ensure observance of the obligation to obtain and verify the origin of funds when conducting incoming payments made in cash and accompanying ex-post checks. The penal order is final."
-      },
-      {
-        "id": "source:e30f160b-7688-44b6-b8fa-d81a534d3989",
-        "url": "https://www.fma.gv.at/en/announcement-fma-imposes-sanction-against-coinfinity-gmbh-for-breaches-of-due-diligence-obligations-for-the-prevention-of-money-laundering-and-terrorist-financing/",
-        "title": "FMAAT action concerning Coinfinity GmbH",
-        "publisher": "FMAAT",
-        "sourceType": "official_notice",
-        "retrievedAt": "2026-08-05T05:42:27.124Z",
-        "official": true,
-        "excerpt": "Official evidence record date: 2025-10-06. Verified penalty amount: EUR 105000. Evidence summary: The Austrian Financial Market Authority (FMA) has imposed a fine of EUR 105,000 against Coinfinity GmbH. The proceedings were concluded in an accelerated manner pursuant to Article 22 para. 2b of the Financial Market Authority Act (FMABG; Finanzmarktaufsichtsbehördengesetz). The reason for the fine is due to breaches of the Financial Markets Anti-Money Laundering Act (FM-GwG; Finanzmarkt-Geldwäsche-Gesetz). The breaches specifically relate to the risk assessment at company level, employee training measures, as well as Coinfinity GmbH’s policies and procedures regarding the application of customer due diligence when conducting occasional transactions. The penal order is final."
       },
       {
         "id": "source:cb188b45-5a68-42ca-b08c-7c5576514043",
@@ -630,19 +620,19 @@
         "title": "FMAAT action concerning Kurant GmbH",
         "publisher": "FMAAT",
         "sourceType": "official_notice",
-        "retrievedAt": "2026-08-05T05:42:27.124Z",
+        "retrievedAt": "2026-08-12T04:50:05.596Z",
         "official": true,
         "excerpt": "Official evidence record date: 2025-10-06. Verified penalty amount: EUR 70000. Evidence summary: The Austrian Financial Market Authority (FMA) has imposed a fine of EUR 70,000 against Kurant GmbH. The proceedings were concluded in an accelerated manner pursuant to Article 22 para. 2b of the Financial Market Authority Act (FMABG; Finanzmarktaufsichtsbehördengesetz). The reason for the fine is a breach of the Financial Markets – Anti-Money Laundering Act (FM-GwG). Specifically Kurant GmbH’s policies and procedures for ensuring compliance with the obligation for ongoing monitoring of the business relationship were not set out in written form. The penal order is final."
       },
       {
-        "id": "source:60de3083-641d-44a3-a297-0e8d07e95238",
-        "url": "https://www.fma.gv.at/en/sanction-imposed-against-raiffeisenlandesbank-niederoumlsterreich-wien-ag-for-breach-of-aml-due-diligence-obligations/",
-        "title": "FMAAT action concerning Raiffeisenlandesbank Niederösterreich-Wien AG",
+        "id": "source:e30f160b-7688-44b6-b8fa-d81a534d3989",
+        "url": "https://www.fma.gv.at/en/announcement-fma-imposes-sanction-against-coinfinity-gmbh-for-breaches-of-due-diligence-obligations-for-the-prevention-of-money-laundering-and-terrorist-financing/",
+        "title": "FMAAT action concerning Coinfinity GmbH",
         "publisher": "FMAAT",
         "sourceType": "official_notice",
-        "retrievedAt": "2026-08-05T05:42:27.124Z",
+        "retrievedAt": "2026-08-12T04:50:05.596Z",
         "official": true,
-        "excerpt": "Official evidence record date: 2025-06-13. Verified penalty amount: EUR 60000. Evidence summary: The Austrian Financial Market Authority (FMA) has imposed a fine of EUR 60,000 against Raiffeisenlandesbank Niederösterreich-Wien AG. The proceedings were concluded in an accelerated manner pursuant to Article 22 para. 2b of the Financial Market Authority Act (FMABG; Finanzmarktaufsichtsbehördengesetz). The reason for the fine is a breach of the Financial Markets Anti-Money Laundering Act (FM-GwG; Finanzmarkt-Geldwäsche-Gesetz). Raiffeisenlandesbank Niederösterreich-Wien AG specifically failed to continually apply its policies and procedures regarding due diligence obligations for updating the information, data and documents under the FM-GwG as well as for the ongoing monitoring of the business relationship. In addition, its policies and procedures regarding individual due diligence obligations were inadequate. The penal order is final."
+        "excerpt": "Official evidence record date: 2025-10-06. Verified penalty amount: EUR 105000. Evidence summary: The Austrian Financial Market Authority (FMA) has imposed a fine of EUR 105,000 against Coinfinity GmbH. The proceedings were concluded in an accelerated manner pursuant to Article 22 para. 2b of the Financial Market Authority Act (FMABG; Finanzmarktaufsichtsbehördengesetz). The reason for the fine is due to breaches of the Financial Markets Anti-Money Laundering Act (FM-GwG; Finanzmarkt-Geldwäsche-Gesetz). The breaches specifically relate to the risk assessment at company level, employee training measures, as well as Coinfinity GmbH’s policies and procedures regarding the application of customer due diligence when conducting occasional transactions. The penal order is final."
       },
       {
         "id": "source:2f83223f-7fa6-4618-b8d7-4be095c208f0",
@@ -650,7 +640,7 @@
         "title": "FINRA action concerning RBC Capital Markets, LLC",
         "publisher": "FINRA",
         "sourceType": "official_notice",
-        "retrievedAt": "2026-08-05T05:42:27.124Z",
+        "retrievedAt": "2026-08-12T04:50:05.596Z",
         "official": true,
         "excerpt": "Official evidence record date: 2026-07-28. Verified penalty amount: USD 275000. Evidence summary: From February 2016 through September 2023, RBC failed to develop and implement an anti-money laundering (AML) compliance program reasonably designed to detect and cause the reporting of suspicious transactions, in violation of FINRA Rules 3310(a), 3310(f)(ii) and 2010. For these violations, RBC is censured and fined $275,000."
       },
@@ -660,7 +650,7 @@
         "title": "FINRA action concerning Prime Number Capital, LLC",
         "publisher": "FINRA",
         "sourceType": "official_notice",
-        "retrievedAt": "2026-08-05T05:42:27.124Z",
+        "retrievedAt": "2026-08-12T04:50:05.596Z",
         "official": true,
         "excerpt": "Official evidence record date: 2026-06-10. Verified penalty amount: USD 335000. Evidence summary: From January 2021 to the present, Prime Number failed to establish and implement an anti-money laundering (AML) program reasonably designed to detect and cause the reporting of suspicious transactions and failed to conduct reasonable testing of its AML program, in violation of FINRA Rules 3310(a), 3310(f)(ii), 3310(c), and 2010. From July 2020 to December 2024, Prime Number failed to supervise or preserve its registered representatives’ business-related communications sent or received using unapproved communications platforms, in violation of Section 17(a) of the Securities Exchange Act of 1934, Exchange Act Rule 17a-4, and FINRA Rules 3110, 4511, and 2010. From September 2020 to October 2025, in connection with its underwriting of IPOs, the firm failed to timely file required documentation with FINRA, in violation of FINRA Rules 5110 and 2010. For these violations, Prime Number is censured, fined $335,000, and has agreed to retain an independent consultant."
       },
@@ -670,7 +660,7 @@
         "title": "FINRA action concerning Moody Capital Solutions, Inc.",
         "publisher": "FINRA",
         "sourceType": "official_notice",
-        "retrievedAt": "2026-08-05T05:42:27.124Z",
+        "retrievedAt": "2026-08-12T04:50:05.596Z",
         "official": true,
         "excerpt": "Official evidence record date: 2026-05-07. Verified penalty amount: USD 50000. Evidence summary: From January 2020 to May 2023, Moody Capital failed to establish, maintain, and enforce a supervisory system, including written supervisory procedures (WSPs), reasonably designed to achieve compliance with FINRA rules governing outside business activities (OBAs) and outside securities accounts, in violation of FINRA Rules 3110 and 2010. Additionally, from January 2020 to December 2022, the firm did not evaluate 23 OBAs disclosed by registered representatives, in violation of FINRA Rules 3270.01 and 2010. Further, from January 2020 to June 2023, the firm’s anti-money laundering (AML) program was not reasonably designed to achieve compliance with Customer Identification Program (CIP) and Customer Due Diligence (CDD) requirements. Finally, the firm did not conduct independent tests of its AML program from 2020 to the present. Therefore, the firm violated FINRA Rules 3310 and 2010. For these violations, the firm is censured and fined $50,000, and agrees to an undertaking..."
       },
@@ -680,7 +670,7 @@
         "title": "FINRA action concerning MCAP LLC",
         "publisher": "FINRA",
         "sourceType": "official_notice",
-        "retrievedAt": "2026-08-05T05:42:27.124Z",
+        "retrievedAt": "2026-08-12T04:50:05.596Z",
         "official": true,
         "excerpt": "Official evidence record date: 2026-04-09. Verified penalty amount: USD 15000. Evidence summary: MCAP failed to conduct any independent testing of its anti-money laundering (AML) program in calendar years 2021 and 2022, and the firm’s independent testing of its AML program in calendar years 2023 and 2024 was unreasonable, in violation of FINRA Rules 3310(c) and 2010. For these violations, MCAP is censured and fined $15,000."
       },
@@ -690,7 +680,7 @@
         "title": "FINRA action concerning The Ultima Global Markets (USA), Inc., fka BCS Global Markets",
         "publisher": "FINRA",
         "sourceType": "official_notice",
-        "retrievedAt": "2026-08-05T05:42:27.124Z",
+        "retrievedAt": "2026-08-12T04:50:05.596Z",
         "official": true,
         "excerpt": "Official evidence record date: 2026-03-16. Verified penalty amount: USD 100000. Evidence summary: From at least August 2021 through September 2024, Ultima failed to establish and implement an anti-money laundering (AML) program that could be reasonably expected to detect and cause the reporting of potentially suspicious activity relating to low-priced securities transactions in correspondent accounts controlled by the firm’s affiliated FFIs, who traded on behalf of undisclosed customers. As a result, Ultima violated FINRA Rules 3310(a), 3310(f)(ii), and 2010. During the same period, Ultima also failed to establish and implement a reasonably designed due diligence program for correspondent accounts of FFIs, including by failing to conduct periodic reviews of account activity to determine whether the activity was consistent with the type, purpose, and anticipated activity of the account. As a result, the firm violated FINRA Rules 3310(b) and 2010. For these violations, Ultima is censured and fined $100,000..."
       },
@@ -700,7 +690,7 @@
         "title": "FINRA action concerning Beta Capital Securities LLC d/b/a Creand Securities",
         "publisher": "FINRA",
         "sourceType": "official_notice",
-        "retrievedAt": "2026-08-05T05:42:27.124Z",
+        "retrievedAt": "2026-08-12T04:50:05.596Z",
         "official": true,
         "excerpt": "Official evidence record date: 2026-06-29. Verified penalty amount: USD 145000. Evidence summary: From October 2019 to July 2023, Beta Capital failed to establish and implement an antimoney laundering (AML) program that was reasonably designed to detect and cause the reporting of suspicious transactions. During the same period, the firm’s AML program also failed to include appropriate risk-based procedures for conducting ongoing customer due diligence. For these violations of FINRA Rules 3310(a), 3310(f), and 2010, Beta Capital is censured and fined $145,000."
       },
@@ -710,27 +700,37 @@
         "title": "FINRA action concerning Stash Capital LLC",
         "publisher": "FINRA",
         "sourceType": "official_notice",
-        "retrievedAt": "2026-08-05T05:42:27.124Z",
+        "retrievedAt": "2026-08-12T04:50:05.596Z",
         "official": true,
         "excerpt": "Official evidence record date: 2026-03-20. Verified penalty amount: USD 450000. Evidence summary: Between January 2019 and June 2023, Stash Capital failed to establish and maintain a customer identification program that was reasonable in light of the size and nature of the firm’s business and customer base in violation of FINRA Rules 3310(b) and 2010. Stash Capital also failed to develop and implement an anti-money laundering compliance program reasonably designed to detect and cause the reporting of suspicious transactions in violation of FINRA Rules 3310(a), 3310(f), and 2010. During the same period, the firm also failed to develop and implement a written Identity Theft Prevention Program reasonably designed to detect, prevent, and mitigate identity theft in violation of Rule 201 of Regulation S-ID of the Securities Exchange Act of 1934 and FINRA Rule 2010. For these violations, Stash Capital is censured and fined $450,000."
       },
       {
-        "id": "source:5d2aeb14-0c49-492a-be39-c76cc99987f5",
+        "id": "source:5fd99307-91d4-43b4-8bd4-2ab10a7e1251",
+        "url": "https://www.finra.org/sites/default/files/fda_documents/2021069426901%20UBS%20Financial%20Services%20Inc.%20CRD%208174%20AWC%20vrp.pdf",
+        "title": "FINRA action concerning UBS Financial Services Inc.",
+        "publisher": "FINRA",
+        "sourceType": "official_notice",
+        "retrievedAt": "2026-08-12T04:50:05.596Z",
+        "official": true,
+        "excerpt": "Official evidence record date: 2026-07-31. Verified penalty amount: USD 20000000. Evidence summary: From January 2019 through June 2023, UBS Financial failed to establish and implement policies and procedures for its AML compliance program that could be reasonably expected to detect and cause the reporting of suspicious transactions involving foreign currency wires. As a result, the firm failed to reasonably monitor and investigate foreign currency wires involving, among other issues, high-risk geographic locations, unusually large dollar amounts, and no apparent business purpose. Additionally, between January 2019 and December 2022, UBS Financial failed to reasonably implement its customer due diligence program with respect to certain customers. The firm also failed to timely detect and report suspicious transactions involving money movements by these same customers. As a result, UBS Financial violated FINRA Rules 3310(a), 3310(f), and 2010, and is censured, fined $20 million, and required to take corrective action..."
+      },
+      {
+        "id": "source:5ba062b2-6f64-4729-8dd3-0d0e37d7d732",
         "url": "https://assets.adgm.com/download/assets/FSRA+Final+Notice+FWS+Group+Ltd.pdf/7833d1d6cac111f09d442aaa8facbbfe",
         "title": "FSRA action concerning FWS Group Limited",
         "publisher": "FSRA",
         "sourceType": "official_notice",
-        "retrievedAt": "2026-08-05T05:42:27.124Z",
+        "retrievedAt": "2026-08-12T04:50:05.596Z",
         "official": true,
         "excerpt": "Official evidence record date: 2025-11-24. No verified penalty amount. Evidence summary: FWS Group Limited: ADGM FSRA imposes financial penalty for contraventions of Anti-Money Laundering requirements"
       },
       {
-        "id": "source:9288c61a-f0fa-463a-a731-ca22dfce57be",
+        "id": "source:a00bd320-5493-4b44-829a-52a18a7c2c0b",
         "url": "https://assets.adgm.com/download/assets/Final+Notice+RE+UHY+James+20250826.pdf/f0d65c1c83e011f0a5f69e2739edbdb2",
         "title": "FSRA action concerning UHY James Chartered Accountants LLC",
         "publisher": "FSRA",
         "sourceType": "official_notice",
-        "retrievedAt": "2026-08-05T05:42:27.124Z",
+        "retrievedAt": "2026-08-12T04:50:05.596Z",
         "official": true,
         "excerpt": "Official evidence record date: 2025-08-26. No verified penalty amount. Evidence summary: UHY James Chartered Accountants LLC: ADGM FSRA imposes financial penalty for contraventions of Anti-Money Laundering requirements"
       },
@@ -740,7 +740,7 @@
         "title": "FINRA action concerning TradingBlock",
         "publisher": "FINRA",
         "sourceType": "official_notice",
-        "retrievedAt": "2026-08-05T05:42:27.124Z",
+        "retrievedAt": "2026-08-12T04:50:05.596Z",
         "official": true,
         "excerpt": "Official evidence record date: 2026-06-05. No verified penalty amount. Evidence summary: From December 2018 to the present, TradingBlock failed to establish and implement an anti-money laundering (AML) compliance program reasonably designed to detect and cause the reporting of suspicious transactions. The firm also failed to include in its AML program appropriate risk-based procedures for conducting ongoing customer due diligence and monitoring. As a result, the firm violated FINRA Rules 3310(a), 3310(f), and 2010. For these violations, TradingBlock consented to a censure, a [unverified monetary figure removed] fine, and an undertaking to certify that it has remediated its AML policies and procedures."
       },
@@ -750,7 +750,7 @@
         "title": "FINRA action concerning Pictet Overseas Inc.",
         "publisher": "FINRA",
         "sourceType": "official_notice",
-        "retrievedAt": "2026-08-05T05:42:27.124Z",
+        "retrievedAt": "2026-08-12T04:50:05.596Z",
         "official": true,
         "excerpt": "Official evidence record date: 2026-05-18. No verified penalty amount. Evidence summary: From September 2021 to February 2025, Pictet’s anti-money laundering (AML) compliance program was not reasonably designed to detect and cause the reporting of suspicious transactions in low-priced securities. As a result, Pictet violated FINRA Rules 3310(a), 3310(f)(ii), and 2010. During the same period, Pictet failed to implement reasonably designed policies, procedures, and controls to conduct due diligence on correspondent accounts of foreign financial institutions (FFIs), including by failing to conduct periodic reviews of FFI account activity. As a result, Pictet violated FINRA Rules 3310(b) and 2010."
       },
@@ -760,7 +760,7 @@
         "title": "FINRA action concerning Brentwood Capital Advisors LLC",
         "publisher": "FINRA",
         "sourceType": "official_notice",
-        "retrievedAt": "2026-08-05T05:42:27.124Z",
+        "retrievedAt": "2026-08-12T04:50:05.596Z",
         "official": true,
         "excerpt": "Official evidence record date: 2026-04-14. No verified penalty amount. Evidence summary: Between January 2021 and December 2025, Brentwood failed to establish and implement an anti-money laundering (AML) compliance program reasonably designed to identify and verify the identities of the beneficial owners of its legal entity customers, in violation of FINRARules 3310(b) and 2010. Between January 2018 and January 2024, Brentwood failed to establish and implement a written AML compliance program that provided for annual (on a calendar-year basis) independent AML testing, and the firm conducted no independent AML testing between 2018 and 2023, in violation of FINRA Rules 3310(c) and 2010."
       },
@@ -770,7 +770,7 @@
         "title": "FCA action concerning Institute of Certified Bookkeepers",
         "publisher": "FCA",
         "sourceType": "official_notice",
-        "retrievedAt": "2026-08-05T05:42:27.124Z",
+        "retrievedAt": "2026-08-12T04:50:05.596Z",
         "official": true,
         "excerpt": "Official evidence record date: 2025-12-02. No verified penalty amount. Evidence summary: Final Notice 2025: Institute of Certified Bookkeepers. The Institute of Certified Bookkeepers were found to have breached certain provisions in the Money Laundering Regulations 2017."
       },
@@ -780,611 +780,53 @@
         "title": "FCA action concerning Barclays Bank plc",
         "publisher": "FCA",
         "sourceType": "official_notice",
-        "retrievedAt": "2026-08-05T05:42:27.124Z",
+        "retrievedAt": "2026-08-12T04:50:05.596Z",
         "official": true,
         "excerpt": "Official evidence record date: 2025-07-14. No verified penalty amount. Evidence summary: This Final Notice refers to a breach of Principle 2 (skill, care and diligence) of the Authority’s Principles for Businesses that occurred between 9 January 2015 and 23 April 2021. Barclays’ breach relates to its failures to identify, assess, monitor and manage adequately the money laundering risks associated with the provision of banking services to one of its corporate banking customers."
       }
     ],
     "claims": [
       {
-        "id": "claim:0c18b8ad-f7f1-4f27-9d92-2c2e72767aa8:action",
-        "text": "FINRA recorded an action concerning Outset Global Trading Limited on 2026-06-16.",
+        "id": "claim-25",
+        "text": "Beta Capital Securities LLC d/b/a Creand Securities was fined USD 145,000 by FINRA for failing to establish and implement a reasonably designed AML programme and for inadequate risk-based customer due diligence procedures from October 2019 to July 2023.",
         "kind": "action_type",
-        "verdict": "verified",
-        "sourceIds": [
-          "source:0c18b8ad-f7f1-4f27-9d92-2c2e72767aa8"
-        ],
-        "recordIds": [
-          "0c18b8ad-f7f1-4f27-9d92-2c2e72767aa8"
-        ],
-        "verifier": "deterministic-source-gate"
-      },
-      {
-        "id": "claim:0c18b8ad-f7f1-4f27-9d92-2c2e72767aa8:amount",
-        "text": "Outset Global Trading Limited received a financial penalty of USD 130000.",
-        "kind": "amount",
-        "verdict": "verified",
-        "notes": "Penalty language is present in the official-source summary.",
-        "sourceIds": [
-          "source:0c18b8ad-f7f1-4f27-9d92-2c2e72767aa8"
-        ],
-        "recordIds": [
-          "0c18b8ad-f7f1-4f27-9d92-2c2e72767aa8"
-        ],
-        "verifier": "deterministic-source-gate"
-      },
-      {
-        "id": "claim:041b9f65-6b79-456c-b5f7-fca3d16c1d09:action",
-        "text": "FMAAT recorded an action concerning Sparkasse Oberösterreich Bank AG on 2026-05-05.",
-        "kind": "action_type",
-        "verdict": "verified",
-        "sourceIds": [
-          "source:041b9f65-6b79-456c-b5f7-fca3d16c1d09"
-        ],
-        "recordIds": [
-          "041b9f65-6b79-456c-b5f7-fca3d16c1d09"
-        ],
-        "verifier": "deterministic-source-gate"
-      },
-      {
-        "id": "claim:041b9f65-6b79-456c-b5f7-fca3d16c1d09:amount",
-        "text": "Sparkasse Oberösterreich Bank AG received a financial penalty of EUR 60000.",
-        "kind": "amount",
-        "verdict": "verified",
-        "notes": "Penalty language is present in the official-source summary.",
-        "sourceIds": [
-          "source:041b9f65-6b79-456c-b5f7-fca3d16c1d09"
-        ],
-        "recordIds": [
-          "041b9f65-6b79-456c-b5f7-fca3d16c1d09"
-        ],
-        "verifier": "deterministic-source-gate"
-      },
-      {
-        "id": "claim:7a784d99-723e-4b15-8463-8856ca69437f:action",
-        "text": "FSRA recorded an action concerning Payward MENA Holdings Limited on 2025-12-17.",
-        "kind": "action_type",
-        "verdict": "verified",
-        "sourceIds": [
-          "source:7a784d99-723e-4b15-8463-8856ca69437f"
-        ],
-        "recordIds": [
-          "7a784d99-723e-4b15-8463-8856ca69437f"
-        ],
-        "verifier": "deterministic-source-gate"
-      },
-      {
-        "id": "claim:a239bc6c-bac3-40ba-a745-0947b376629d:action",
-        "text": "SFC recorded an action concerning Freeman Commodities Limited on 2025-07-03.",
-        "kind": "action_type",
-        "verdict": "verified",
-        "sourceIds": [
-          "source:a239bc6c-bac3-40ba-a745-0947b376629d"
-        ],
-        "recordIds": [
-          "a239bc6c-bac3-40ba-a745-0947b376629d"
-        ],
-        "verifier": "deterministic-source-gate"
-      },
-      {
-        "id": "claim:FCA-2026-02-24-stallion-money-limited-458ba65c:action",
-        "text": "FCA recorded an action concerning STALLION MONEY LIMITED on 2026-02-24.",
-        "kind": "action_type",
-        "verdict": "verified",
-        "sourceIds": [
-          "source:FCA-2026-02-24-stallion-money-limited-458ba65c"
-        ],
-        "recordIds": [
-          "FCA-2026-02-24-stallion-money-limited-458ba65c"
-        ],
-        "verifier": "deterministic-source-gate"
-      },
-      {
-        "id": "claim:4d1b9d3d-f4d2-416c-ab32-41aa5eead2d2:action",
-        "text": "CBI recorded an action concerning Coinbase Europe Limited on 2025-11-06.",
-        "kind": "action_type",
-        "verdict": "verified",
-        "sourceIds": [
-          "source:4d1b9d3d-f4d2-416c-ab32-41aa5eead2d2"
-        ],
-        "recordIds": [
-          "4d1b9d3d-f4d2-416c-ab32-41aa5eead2d2"
-        ],
-        "verifier": "deterministic-source-gate"
-      },
-      {
-        "id": "claim:cd9b073d-b271-4b5a-bc34-9c4fbfc6a706:action",
-        "text": "CBUAE recorded an action concerning Omda Exchange on 2025-12-23.",
-        "kind": "action_type",
-        "verdict": "verified",
-        "sourceIds": [
-          "source:cd9b073d-b271-4b5a-bc34-9c4fbfc6a706"
-        ],
-        "recordIds": [
-          "cd9b073d-b271-4b5a-bc34-9c4fbfc6a706"
-        ],
-        "verifier": "deterministic-source-gate"
-      },
-      {
-        "id": "claim:3b548571-0a59-4e97-ae26-be0f4d79dd17:action",
-        "text": "FSMA recorded an action concerning X, Y et Z on 2025-08-29.",
-        "kind": "action_type",
-        "verdict": "verified",
-        "sourceIds": [
-          "source:3b548571-0a59-4e97-ae26-be0f4d79dd17"
-        ],
-        "recordIds": [
-          "3b548571-0a59-4e97-ae26-be0f4d79dd17"
-        ],
-        "verifier": "deterministic-source-gate"
-      },
-      {
-        "id": "claim:12e1ec48-fbf2-4f4c-93c8-ab77e2297ffd:action",
-        "text": "OCC recorded an action concerning United Texas Bank, National Association on 2026-06-16.",
-        "kind": "action_type",
-        "verdict": "verified",
-        "sourceIds": [
-          "source:12e1ec48-fbf2-4f4c-93c8-ab77e2297ffd"
-        ],
-        "recordIds": [
-          "12e1ec48-fbf2-4f4c-93c8-ab77e2297ffd"
-        ],
-        "verifier": "deterministic-source-gate"
-      },
-      {
-        "id": "claim:4bec34b1-d1e0-4d85-a53e-5e8468363927:action",
-        "text": "AUSTRAC recorded an action concerning Mount Pritchard and District Community Club Ltd on 2025-07-30.",
-        "kind": "action_type",
-        "verdict": "verified",
-        "sourceIds": [
-          "source:4bec34b1-d1e0-4d85-a53e-5e8468363927"
-        ],
-        "recordIds": [
-          "4bec34b1-d1e0-4d85-a53e-5e8468363927"
-        ],
-        "verifier": "deterministic-source-gate"
-      },
-      {
-        "id": "claim:6006b40f-1587-4c0a-8954-a1feb8f11068:action",
-        "text": "FMAAT recorded an action concerning NOTARTREUHANDBANK AG on 2026-03-17.",
-        "kind": "action_type",
-        "verdict": "verified",
-        "sourceIds": [
-          "source:6006b40f-1587-4c0a-8954-a1feb8f11068"
-        ],
-        "recordIds": [
-          "6006b40f-1587-4c0a-8954-a1feb8f11068"
-        ],
-        "verifier": "deterministic-source-gate"
-      },
-      {
-        "id": "claim:6006b40f-1587-4c0a-8954-a1feb8f11068:amount",
-        "text": "NOTARTREUHANDBANK AG received a financial penalty of EUR 127500.",
-        "kind": "amount",
-        "verdict": "verified",
-        "notes": "Penalty language is present in the official-source summary.",
-        "sourceIds": [
-          "source:6006b40f-1587-4c0a-8954-a1feb8f11068"
-        ],
-        "recordIds": [
-          "6006b40f-1587-4c0a-8954-a1feb8f11068"
-        ],
-        "verifier": "deterministic-source-gate"
-      },
-      {
-        "id": "claim:3448484d-37b5-4c1a-a286-e4cebe53f1bf:action",
-        "text": "FMAAT recorded an action concerning bank99 AG on 2025-12-19.",
-        "kind": "action_type",
-        "verdict": "verified",
-        "sourceIds": [
-          "source:3448484d-37b5-4c1a-a286-e4cebe53f1bf"
-        ],
-        "recordIds": [
-          "3448484d-37b5-4c1a-a286-e4cebe53f1bf"
-        ],
-        "verifier": "deterministic-source-gate"
-      },
-      {
-        "id": "claim:3448484d-37b5-4c1a-a286-e4cebe53f1bf:amount",
-        "text": "bank99 AG received a financial penalty of EUR 60000.",
-        "kind": "amount",
-        "verdict": "verified",
-        "notes": "Penalty language is present in the official-source summary.",
-        "sourceIds": [
-          "source:3448484d-37b5-4c1a-a286-e4cebe53f1bf"
-        ],
-        "recordIds": [
-          "3448484d-37b5-4c1a-a286-e4cebe53f1bf"
-        ],
-        "verifier": "deterministic-source-gate"
-      },
-      {
-        "id": "claim:aa50fbc3-554a-4e96-a12a-16449c30c3fb:action",
-        "text": "FMAAT recorded an action concerning Volksbank Niederösterreich AG on 2025-10-23.",
-        "kind": "action_type",
-        "verdict": "verified",
-        "sourceIds": [
-          "source:aa50fbc3-554a-4e96-a12a-16449c30c3fb"
-        ],
-        "recordIds": [
-          "aa50fbc3-554a-4e96-a12a-16449c30c3fb"
-        ],
-        "verifier": "deterministic-source-gate"
-      },
-      {
-        "id": "claim:aa50fbc3-554a-4e96-a12a-16449c30c3fb:amount",
-        "text": "Volksbank Niederösterreich AG received a financial penalty of EUR 52000.",
-        "kind": "amount",
-        "verdict": "verified",
-        "notes": "Penalty language is present in the official-source summary.",
-        "sourceIds": [
-          "source:aa50fbc3-554a-4e96-a12a-16449c30c3fb"
-        ],
-        "recordIds": [
-          "aa50fbc3-554a-4e96-a12a-16449c30c3fb"
-        ],
-        "verifier": "deterministic-source-gate"
-      },
-      {
-        "id": "claim:e30f160b-7688-44b6-b8fa-d81a534d3989:action",
-        "text": "FMAAT recorded an action concerning Coinfinity GmbH on 2025-10-06.",
-        "kind": "action_type",
-        "verdict": "verified",
-        "sourceIds": [
-          "source:e30f160b-7688-44b6-b8fa-d81a534d3989"
-        ],
-        "recordIds": [
-          "e30f160b-7688-44b6-b8fa-d81a534d3989"
-        ],
-        "verifier": "deterministic-source-gate"
-      },
-      {
-        "id": "claim:e30f160b-7688-44b6-b8fa-d81a534d3989:amount",
-        "text": "Coinfinity GmbH received a financial penalty of EUR 105000.",
-        "kind": "amount",
-        "verdict": "verified",
-        "notes": "Penalty language is present in the official-source summary.",
-        "sourceIds": [
-          "source:e30f160b-7688-44b6-b8fa-d81a534d3989"
-        ],
-        "recordIds": [
-          "e30f160b-7688-44b6-b8fa-d81a534d3989"
-        ],
-        "verifier": "deterministic-source-gate"
-      },
-      {
-        "id": "claim:cb188b45-5a68-42ca-b08c-7c5576514043:action",
-        "text": "FMAAT recorded an action concerning Kurant GmbH on 2025-10-06.",
-        "kind": "action_type",
-        "verdict": "verified",
-        "sourceIds": [
-          "source:cb188b45-5a68-42ca-b08c-7c5576514043"
-        ],
-        "recordIds": [
-          "cb188b45-5a68-42ca-b08c-7c5576514043"
-        ],
-        "verifier": "deterministic-source-gate"
-      },
-      {
-        "id": "claim:cb188b45-5a68-42ca-b08c-7c5576514043:amount",
-        "text": "Kurant GmbH received a financial penalty of EUR 70000.",
-        "kind": "amount",
-        "verdict": "verified",
-        "notes": "Penalty language is present in the official-source summary.",
-        "sourceIds": [
-          "source:cb188b45-5a68-42ca-b08c-7c5576514043"
-        ],
-        "recordIds": [
-          "cb188b45-5a68-42ca-b08c-7c5576514043"
-        ],
-        "verifier": "deterministic-source-gate"
-      },
-      {
-        "id": "claim:60de3083-641d-44a3-a297-0e8d07e95238:action",
-        "text": "FMAAT recorded an action concerning Raiffeisenlandesbank Niederösterreich-Wien AG on 2025-06-13.",
-        "kind": "action_type",
-        "verdict": "verified",
-        "sourceIds": [
-          "source:60de3083-641d-44a3-a297-0e8d07e95238"
-        ],
-        "recordIds": [
-          "60de3083-641d-44a3-a297-0e8d07e95238"
-        ],
-        "verifier": "deterministic-source-gate"
-      },
-      {
-        "id": "claim:60de3083-641d-44a3-a297-0e8d07e95238:amount",
-        "text": "Raiffeisenlandesbank Niederösterreich-Wien AG received a financial penalty of EUR 60000.",
-        "kind": "amount",
-        "verdict": "verified",
-        "notes": "Penalty language is present in the official-source summary.",
-        "sourceIds": [
-          "source:60de3083-641d-44a3-a297-0e8d07e95238"
-        ],
-        "recordIds": [
-          "60de3083-641d-44a3-a297-0e8d07e95238"
-        ],
-        "verifier": "deterministic-source-gate"
-      },
-      {
-        "id": "claim:2f83223f-7fa6-4618-b8d7-4be095c208f0:action",
-        "text": "FINRA recorded an action concerning RBC Capital Markets, LLC on 2026-07-28.",
-        "kind": "action_type",
-        "verdict": "verified",
-        "sourceIds": [
-          "source:2f83223f-7fa6-4618-b8d7-4be095c208f0"
-        ],
-        "recordIds": [
-          "2f83223f-7fa6-4618-b8d7-4be095c208f0"
-        ],
-        "verifier": "deterministic-source-gate"
-      },
-      {
-        "id": "claim:2f83223f-7fa6-4618-b8d7-4be095c208f0:amount",
-        "text": "RBC Capital Markets, LLC received a financial penalty of USD 275000.",
-        "kind": "amount",
-        "verdict": "verified",
-        "notes": "Penalty language is present in the official-source summary.",
-        "sourceIds": [
-          "source:2f83223f-7fa6-4618-b8d7-4be095c208f0"
-        ],
-        "recordIds": [
-          "2f83223f-7fa6-4618-b8d7-4be095c208f0"
-        ],
-        "verifier": "deterministic-source-gate"
-      },
-      {
-        "id": "claim:3b58dac5-413b-4ed1-9dbf-a24466d6dcf1:action",
-        "text": "FINRA recorded an action concerning Prime Number Capital, LLC on 2026-06-10.",
-        "kind": "action_type",
-        "verdict": "verified",
-        "sourceIds": [
-          "source:3b58dac5-413b-4ed1-9dbf-a24466d6dcf1"
-        ],
-        "recordIds": [
-          "3b58dac5-413b-4ed1-9dbf-a24466d6dcf1"
-        ],
-        "verifier": "deterministic-source-gate"
-      },
-      {
-        "id": "claim:3b58dac5-413b-4ed1-9dbf-a24466d6dcf1:amount",
-        "text": "Prime Number Capital, LLC received a financial penalty of USD 335000.",
-        "kind": "amount",
-        "verdict": "verified",
-        "notes": "Penalty language is present in the official-source summary.",
-        "sourceIds": [
-          "source:3b58dac5-413b-4ed1-9dbf-a24466d6dcf1"
-        ],
-        "recordIds": [
-          "3b58dac5-413b-4ed1-9dbf-a24466d6dcf1"
-        ],
-        "verifier": "deterministic-source-gate"
-      },
-      {
-        "id": "claim:7b344910-c28e-467a-8a4a-2ea851855d81:action",
-        "text": "FINRA recorded an action concerning Moody Capital Solutions, Inc. on 2026-05-07.",
-        "kind": "action_type",
-        "verdict": "verified",
-        "sourceIds": [
-          "source:7b344910-c28e-467a-8a4a-2ea851855d81"
-        ],
-        "recordIds": [
-          "7b344910-c28e-467a-8a4a-2ea851855d81"
-        ],
-        "verifier": "deterministic-source-gate"
-      },
-      {
-        "id": "claim:7b344910-c28e-467a-8a4a-2ea851855d81:amount",
-        "text": "Moody Capital Solutions, Inc. received a financial penalty of USD 50000.",
-        "kind": "amount",
-        "verdict": "verified",
-        "notes": "Penalty language is present in the official-source summary.",
-        "sourceIds": [
-          "source:7b344910-c28e-467a-8a4a-2ea851855d81"
-        ],
-        "recordIds": [
-          "7b344910-c28e-467a-8a4a-2ea851855d81"
-        ],
-        "verifier": "deterministic-source-gate"
-      },
-      {
-        "id": "claim:c1232fc7-4447-482d-b4a0-d89e9de1614f:action",
-        "text": "FINRA recorded an action concerning MCAP LLC on 2026-04-09.",
-        "kind": "action_type",
-        "verdict": "verified",
-        "sourceIds": [
-          "source:c1232fc7-4447-482d-b4a0-d89e9de1614f"
-        ],
-        "recordIds": [
-          "c1232fc7-4447-482d-b4a0-d89e9de1614f"
-        ],
-        "verifier": "deterministic-source-gate"
-      },
-      {
-        "id": "claim:c1232fc7-4447-482d-b4a0-d89e9de1614f:amount",
-        "text": "MCAP LLC received a financial penalty of USD 15000.",
-        "kind": "amount",
-        "verdict": "verified",
-        "notes": "Penalty language is present in the official-source summary.",
-        "sourceIds": [
-          "source:c1232fc7-4447-482d-b4a0-d89e9de1614f"
-        ],
-        "recordIds": [
-          "c1232fc7-4447-482d-b4a0-d89e9de1614f"
-        ],
-        "verifier": "deterministic-source-gate"
-      },
-      {
-        "id": "claim:cae4040c-4528-45df-bf70-d456a9668340:action",
-        "text": "FINRA recorded an action concerning The Ultima Global Markets (USA), Inc., fka BCS Global Markets on 2026-03-16.",
-        "kind": "action_type",
-        "verdict": "verified",
-        "sourceIds": [
-          "source:cae4040c-4528-45df-bf70-d456a9668340"
-        ],
-        "recordIds": [
-          "cae4040c-4528-45df-bf70-d456a9668340"
-        ],
-        "verifier": "deterministic-source-gate"
-      },
-      {
-        "id": "claim:cae4040c-4528-45df-bf70-d456a9668340:amount",
-        "text": "The Ultima Global Markets (USA), Inc., fka BCS Global Markets received a financial penalty of USD 100000.",
-        "kind": "amount",
-        "verdict": "verified",
-        "notes": "Penalty language is present in the official-source summary.",
-        "sourceIds": [
-          "source:cae4040c-4528-45df-bf70-d456a9668340"
-        ],
-        "recordIds": [
-          "cae4040c-4528-45df-bf70-d456a9668340"
-        ],
-        "verifier": "deterministic-source-gate"
-      },
-      {
-        "id": "claim:7764cb13-0fe1-4064-a40b-1a2791b272b7:action",
-        "text": "FINRA recorded an action concerning Beta Capital Securities LLC d/b/a Creand Securities on 2026-06-29.",
-        "kind": "action_type",
-        "verdict": "verified",
         "sourceIds": [
           "source:7764cb13-0fe1-4064-a40b-1a2791b272b7"
         ],
         "recordIds": [
           "7764cb13-0fe1-4064-a40b-1a2791b272b7"
         ],
-        "verifier": "deterministic-source-gate"
+        "verdict": "verified",
+        "verifier": "regulatory-verifier-agent",
+        "notes": "The source confirms the fine amount, period, and nature of AML programme and customer due diligence failures for Beta Capital Securities LLC d/b/a Creand Securities."
       },
       {
-        "id": "claim:7764cb13-0fe1-4064-a40b-1a2791b272b7:amount",
-        "text": "Beta Capital Securities LLC d/b/a Creand Securities received a financial penalty of USD 145000.",
-        "kind": "amount",
-        "verdict": "verified",
-        "notes": "Penalty language is present in the official-source summary.",
+        "id": "claim-26",
+        "text": "MCAP LLC was fined USD 15,000 by FINRA for failing to conduct independent testing of its AML programme in 2021 and 2022, and for unreasonable testing in 2023 and 2024.",
+        "kind": "action_type",
         "sourceIds": [
-          "source:7764cb13-0fe1-4064-a40b-1a2791b272b7"
+          "source:c1232fc7-4447-482d-b4a0-d89e9de1614f"
         ],
         "recordIds": [
-          "7764cb13-0fe1-4064-a40b-1a2791b272b7"
+          "c1232fc7-4447-482d-b4a0-d89e9de1614f"
         ],
-        "verifier": "deterministic-source-gate"
+        "verdict": "verified",
+        "verifier": "regulatory-verifier-agent",
+        "notes": "The source confirms the fine amount and the specific years of independent testing failures for MCAP LLC."
       },
       {
-        "id": "claim:1b6003d3-40e9-4d24-9c9b-173a3d218ef2:action",
-        "text": "FINRA recorded an action concerning Stash Capital LLC on 2026-03-20.",
+        "id": "claim-27",
+        "text": "Stash Capital LLC was fined USD 450,000 by FINRA for deficiencies between January 2019 and June 2023, including an unreasonable customer identification programme and an AML compliance programme not designed to detect and report suspicious activity.",
         "kind": "action_type",
-        "verdict": "verified",
         "sourceIds": [
           "source:1b6003d3-40e9-4d24-9c9b-173a3d218ef2"
         ],
         "recordIds": [
           "1b6003d3-40e9-4d24-9c9b-173a3d218ef2"
         ],
-        "verifier": "deterministic-source-gate"
-      },
-      {
-        "id": "claim:1b6003d3-40e9-4d24-9c9b-173a3d218ef2:amount",
-        "text": "Stash Capital LLC received a financial penalty of USD 450000.",
-        "kind": "amount",
         "verdict": "verified",
-        "notes": "Penalty language is present in the official-source summary.",
-        "sourceIds": [
-          "source:1b6003d3-40e9-4d24-9c9b-173a3d218ef2"
-        ],
-        "recordIds": [
-          "1b6003d3-40e9-4d24-9c9b-173a3d218ef2"
-        ],
-        "verifier": "deterministic-source-gate"
-      },
-      {
-        "id": "claim:5d2aeb14-0c49-492a-be39-c76cc99987f5:action",
-        "text": "FSRA recorded an action concerning FWS Group Limited on 2025-11-24.",
-        "kind": "action_type",
-        "verdict": "verified",
-        "sourceIds": [
-          "source:5d2aeb14-0c49-492a-be39-c76cc99987f5"
-        ],
-        "recordIds": [
-          "5d2aeb14-0c49-492a-be39-c76cc99987f5"
-        ],
-        "verifier": "deterministic-source-gate"
-      },
-      {
-        "id": "claim:9288c61a-f0fa-463a-a731-ca22dfce57be:action",
-        "text": "FSRA recorded an action concerning UHY James Chartered Accountants LLC on 2025-08-26.",
-        "kind": "action_type",
-        "verdict": "verified",
-        "sourceIds": [
-          "source:9288c61a-f0fa-463a-a731-ca22dfce57be"
-        ],
-        "recordIds": [
-          "9288c61a-f0fa-463a-a731-ca22dfce57be"
-        ],
-        "verifier": "deterministic-source-gate"
-      },
-      {
-        "id": "claim:6cfde520-ad48-4694-b943-421d0fa8e1e4:action",
-        "text": "FINRA recorded an action concerning TradingBlock on 2026-06-05.",
-        "kind": "action_type",
-        "verdict": "verified",
-        "sourceIds": [
-          "source:6cfde520-ad48-4694-b943-421d0fa8e1e4"
-        ],
-        "recordIds": [
-          "6cfde520-ad48-4694-b943-421d0fa8e1e4"
-        ],
-        "verifier": "deterministic-source-gate"
-      },
-      {
-        "id": "claim:bd5895c4-52c0-425e-8fbb-7cf2efd5173e:action",
-        "text": "FINRA recorded an action concerning Pictet Overseas Inc. on 2026-05-18.",
-        "kind": "action_type",
-        "verdict": "verified",
-        "sourceIds": [
-          "source:bd5895c4-52c0-425e-8fbb-7cf2efd5173e"
-        ],
-        "recordIds": [
-          "bd5895c4-52c0-425e-8fbb-7cf2efd5173e"
-        ],
-        "verifier": "deterministic-source-gate"
-      },
-      {
-        "id": "claim:ed79e3a4-0535-4102-a49a-335cc39c37f3:action",
-        "text": "FINRA recorded an action concerning Brentwood Capital Advisors LLC on 2026-04-14.",
-        "kind": "action_type",
-        "verdict": "verified",
-        "sourceIds": [
-          "source:ed79e3a4-0535-4102-a49a-335cc39c37f3"
-        ],
-        "recordIds": [
-          "ed79e3a4-0535-4102-a49a-335cc39c37f3"
-        ],
-        "verifier": "deterministic-source-gate"
-      },
-      {
-        "id": "claim:FCA-2025-12-02-institute-of-certified-bookkeepers-5e498c2a:action",
-        "text": "FCA recorded an action concerning Institute of Certified Bookkeepers on 2025-12-02.",
-        "kind": "action_type",
-        "verdict": "verified",
-        "sourceIds": [
-          "source:FCA-2025-12-02-institute-of-certified-bookkeepers-5e498c2a"
-        ],
-        "recordIds": [
-          "FCA-2025-12-02-institute-of-certified-bookkeepers-5e498c2a"
-        ],
-        "verifier": "deterministic-source-gate"
-      },
-      {
-        "id": "claim:c0aa47b0-94a6-4b6a-9bd8-69ab079c08a9:action",
-        "text": "FCA recorded an action concerning Barclays Bank plc on 2025-07-14.",
-        "kind": "action_type",
-        "verdict": "verified",
-        "sourceIds": [
-          "source:c0aa47b0-94a6-4b6a-9bd8-69ab079c08a9"
-        ],
-        "recordIds": [
-          "c0aa47b0-94a6-4b6a-9bd8-69ab079c08a9"
-        ],
-        "verifier": "deterministic-source-gate"
+        "verifier": "regulatory-verifier-agent",
+        "notes": "The source confirms the fine amount, period, and nature of AML and customer identification programme failures for Stash Capital LLC."
       }
     ],
     "charts": [
@@ -1403,6 +845,10 @@
           }
         ],
         "data": [
+          {
+            "firm": "UBS Financial Services Inc.",
+            "amount": 15600000
+          },
           {
             "firm": "Stash Capital LLC",
             "amount": 351000
@@ -1430,25 +876,21 @@
           {
             "firm": "Coinfinity GmbH",
             "amount": 89250
-          },
-          {
-            "firm": "The Ultima Global Markets (USA), Inc., fka BCS Global Markets",
-            "amount": 78000
           }
         ],
         "sourceRecordIds": [
+          "5fd99307-91d4-43b4-8bd4-2ab10a7e1251",
           "1b6003d3-40e9-4d24-9c9b-173a3d218ef2",
           "3b58dac5-413b-4ed1-9dbf-a24466d6dcf1",
           "2f83223f-7fa6-4618-b8d7-4be095c208f0",
           "7764cb13-0fe1-4064-a40b-1a2791b272b7",
           "6006b40f-1587-4c0a-8954-a1feb8f11068",
           "0c18b8ad-f7f1-4f27-9d92-2c2e72767aa8",
-          "e30f160b-7688-44b6-b8fa-d81a534d3989",
-          "cae4040c-4528-45df-bf70-d456a9668340"
+          "e30f160b-7688-44b6-b8fa-d81a534d3989"
         ],
         "reportingPeriod": {
-          "start": "2025-06-13",
-          "end": "2026-07-28"
+          "start": "2025-07-03",
+          "end": "2026-07-31"
         },
         "currencyBasis": "GBP values supplied by the verified RegActions record set.",
         "caption": "Only monetary penalties verified against official-source records are included.",
@@ -1463,7 +905,7 @@
         "purpose": "hero",
         "width": 1600,
         "height": 900,
-        "altText": "Deep navy RegActions cover displaying “Global AML Enforcement Trends: Key Actions and Penalties” in white type",
+        "altText": "Deep navy RegActions cover displaying “AML/KYC Enforcement Trends Across Global Regulators” in white type",
         "outputPath": "/blog/images/aml-kyc-enforcement-trends-hero.png",
         "generatedBy": "satori",
         "factual": false,
@@ -1475,7 +917,7 @@
         "purpose": "open_graph",
         "width": 1200,
         "height": 630,
-        "altText": "Deep navy RegActions cover displaying “Global AML Enforcement Trends: Key Actions and Penalties” in white type",
+        "altText": "Deep navy RegActions cover displaying “AML/KYC Enforcement Trends Across Global Regulators” in white type",
         "outputPath": "/og/aml-kyc-enforcement-trends.png",
         "generatedBy": "satori",
         "factual": false,
@@ -1487,7 +929,7 @@
         "purpose": "social_square",
         "width": 1080,
         "height": 1080,
-        "altText": "Deep navy RegActions cover displaying “Global AML Enforcement Trends: Key Actions and Penalties” in white type",
+        "altText": "Deep navy RegActions cover displaying “AML/KYC Enforcement Trends Across Global Regulators” in white type",
         "outputPath": "/blog/images/aml-kyc-enforcement-trends-square.png",
         "generatedBy": "satori",
         "factual": false,
@@ -1499,7 +941,7 @@
         "purpose": "social_portrait",
         "width": 1080,
         "height": 1350,
-        "altText": "Deep navy RegActions cover displaying “Global AML Enforcement Trends: Key Actions and Penalties” in white type",
+        "altText": "Deep navy RegActions cover displaying “AML/KYC Enforcement Trends Across Global Regulators” in white type",
         "outputPath": "/blog/images/aml-kyc-enforcement-trends-portrait.png",
         "generatedBy": "satori",
         "factual": false,
@@ -1507,112 +949,310 @@
         "approved": true
       }
     ],
-    "reviews": [],
+    "reviews": [
+      {
+        "role": "regulatory-verifier-agent",
+        "model": "mistralai/mistral-small-3.2-24b-instruct",
+        "promptVersion": "regactions-editorial-v2.1",
+        "completedAt": "2026-08-12T04:56:50.167Z",
+        "passed": true,
+        "issues": [],
+        "contentHash": "70b0971d44b914d6bfb331a9bcb2533d520e026ab729166bd6405e24c1e4869c"
+      },
+      {
+        "role": "regulatory-verifier-agent",
+        "model": "openai/gpt-4.1-mini",
+        "promptVersion": "regactions-editorial-v2.1",
+        "completedAt": "2026-08-12T04:56:50.167Z",
+        "passed": true,
+        "issues": [],
+        "contentHash": "b70bcb1fd01dabcb9b22db3c6bc9b85ad24ede915bf028270a378933e5c08715"
+      },
+      {
+        "role": "copy-editor-agent",
+        "model": "google/gemini-2.5-flash",
+        "promptVersion": "regactions-editorial-v2.1",
+        "completedAt": "2026-08-12T04:56:50.167Z",
+        "passed": true,
+        "issues": [],
+        "contentHash": "b70bcb1fd01dabcb9b22db3c6bc9b85ad24ede915bf028270a378933e5c08715"
+      },
+      {
+        "role": "visual-editor-agent",
+        "model": "google/gemini-2.5-flash",
+        "promptVersion": "regactions-editorial-v2.1",
+        "completedAt": "2026-08-12T04:56:50.167Z",
+        "passed": true,
+        "issues": [],
+        "contentHash": "b70bcb1fd01dabcb9b22db3c6bc9b85ad24ede915bf028270a378933e5c08715"
+      },
+      {
+        "role": "head-editorial-agent",
+        "model": "google/gemini-2.5-flash",
+        "promptVersion": "regactions-editorial-v2.1",
+        "completedAt": "2026-08-12T04:56:52.392Z",
+        "passed": true,
+        "issues": [],
+        "contentHash": "b70bcb1fd01dabcb9b22db3c6bc9b85ad24ede915bf028270a378933e5c08715"
+      }
+    ],
     "outline": {
-      "title": "Global AML Enforcement Trends: Key Actions and Penalties",
-      "excerpt": "Recent enforcement data reveals a global regulatory focus on Anti-Money Laundering programme failures, with significant actions against firms for inadequate risk-based controls, testing, and customer due diligence.",
+      "title": "AML/KYC Enforcement Trends Across Global Regulators",
+      "excerpt": "Analysis of 30 recent enforcement actions reveals a global regulatory focus on AML programme failures, with significant penalties for inadequate transaction monitoring and customer due diligence.",
       "keywords": [
         "AML enforcement",
+        "KYC compliance",
+        "regulatory penalties",
+        "transaction monitoring",
+        "customer due diligence",
         "global regulators",
         "FINRA",
-        "FMAAT",
-        "compliance failures",
-        "risk-based controls",
-        "suspicious activity reporting",
-        "customer due diligence"
+        "FMAAT"
       ],
       "sections": [
         {
           "key": "overview",
           "heading": "Overview",
           "targetWords": 180,
-          "angle": "Global regulators are actively penalising firms for fundamental Anti-Money Laundering programme failures, with a clear focus on risk-based design and testing.",
+          "angle": "The data set of 30 enforcement actions from July 2025 to July 2026 demonstrates a sustained, global regulatory focus on Anti-Money Laundering and Know Your Customer compliance failures. Regulators across multiple jurisdictions are taking formal action against firms for deficiencies in core AML programme elements. The FIN",
           "sourceRecordIds": [
             "0c18b8ad-f7f1-4f27-9d92-2c2e72767aa8",
             "041b9f65-6b79-456c-b5f7-fca3d16c1d09",
-            "2f83223f-7fa6-4618-b8d7-4be095c208f0",
-            "FCA-2025-12-02-institute-of-certified-bookkeepers-5e498c2a"
+            "5fd99307-91d4-43b4-8bd4-2ab10a7e1251",
+            "c0aa47b0-94a6-4b6a-9bd8-69ab079c08a9",
+            "4bec34b1-d1e0-4d85-a53e-5e8468363927"
           ]
         },
         {
           "key": "actions",
           "heading": "Key Enforcement Actions",
           "targetWords": 320,
-          "angle": "Enforcement actions from FINRA, the Austrian FMA, and others demonstrate specific failures in programme design, independent testing, and customer due diligence, with verified penalties reaching hundreds of thousands.",
+          "angle": "Specific cases highlight the precise nature of AML programme failures attracting regulatory censure. These include failures in transaction monitoring for specific business lines, inadequate customer due diligence, and insufficient independent testing. The actions span multiple firm types and jurisdictions, with verified",
           "sourceRecordIds": [
             "0c18b8ad-f7f1-4f27-9d92-2c2e72767aa8",
             "041b9f65-6b79-456c-b5f7-fca3d16c1d09",
             "6006b40f-1587-4c0a-8954-a1feb8f11068",
-            "2f83223f-7fa6-4618-b8d7-4be095c208f0",
-            "3b58dac5-413b-4ed1-9dbf-a24466d6dcf1",
-            "3448484d-37b5-4c1a-a286-e4cebe53f1bf",
-            "aa50fbc3-554a-4e96-a12a-16449c30c3fb",
-            "c1232fc7-4447-482d-b4a0-d89e9de1614f"
+            "5fd99307-91d4-43b4-8bd4-2ab10a7e1251",
+            "c1232fc7-4447-482d-b4a0-d89e9de1614f",
+            "7764cb13-0fe1-4064-a40b-1a2791b272b7",
+            "c0aa47b0-94a6-4b6a-9bd8-69ab079c08a9",
+            "4bec34b1-d1e0-4d85-a53e-5e8468363927"
           ]
         },
         {
           "key": "analysis",
           "heading": "Analysis",
           "targetWords": 270,
-          "angle": "The data shows a pattern of enforcement against inadequate risk-based procedures, failures in independent testing, and persistent weaknesses in customer identification and due diligence across multiple jurisdictions.",
+          "angle": "The enforcement data reveals clear patterns in regulatory priorities and sanctioning methodologies. A comparative analysis of FINRA and the Austrian FMAAT shows distinct approaches to penalty imposition and public disclosure. The concentration of actions against specific business models, particularly those involving",
           "sourceRecordIds": [
+            "5fd99307-91d4-43b4-8bd4-2ab10a7e1251",
             "0c18b8ad-f7f1-4f27-9d92-2c2e72767aa8",
-            "2f83223f-7fa6-4618-b8d7-4be095c208f0",
-            "3b58dac5-413b-4ed1-9dbf-a24466d6dcf1",
-            "c1232fc7-4447-482d-b4a0-d89e9de1614f",
-            "7764cb13-0fe1-4064-a40b-1a2791b272b7",
-            "1b6003d3-40e9-4d24-9c9b-173a3d218ef2"
+            "cae4040c-4528-45df-bf70-d456a9668340",
+            "041b9f65-6b79-456c-b5f7-fca3d16c1d09",
+            "6006b40f-1587-4c0a-8954-a1feb8f11068",
+            "3448484d-37b5-4c1a-a286-e4cebe53f1bf"
           ]
         },
         {
           "key": "implications",
           "heading": "Regulatory Implications",
           "targetWords": 230,
-          "angle": "Regulators expect Anti-Money Laundering programmes to be demonstrably risk-based, rigorously tested, and capable of detecting specific threats inherent to a firm's business model, with enforcement targeting these core pillars.",
+          "angle": "The enforcement trends have direct implications for compliance programmes at regulated firms. The data underscores that generic AML frameworks are insufficient. Regulators expect programmes tailored to specific business risks, particularly in high-risk segments like correspondent banking, low-priced securities, and",
           "sourceRecordIds": [
             "0c18b8ad-f7f1-4f27-9d92-2c2e72767aa8",
-            "2f83223f-7fa6-4618-b8d7-4be095c208f0",
             "cae4040c-4528-45df-bf70-d456a9668340",
-            "bd5895c4-52c0-425e-8fbb-7cf2efd5173e",
-            "c0aa47b0-94a6-4b6a-9bd8-69ab079c08a9"
+            "5fd99307-91d4-43b4-8bd4-2ab10a7e1251",
+            "7764cb13-0fe1-4064-a40b-1a2791b272b7",
+            "1b6003d3-40e9-4d24-9c9b-173a3d218ef2",
+            "c1232fc7-4447-482d-b4a0-d89e9de1614f"
           ]
         },
         {
           "key": "takeaways",
           "heading": "Key Takeaways",
           "targetWords": 200,
-          "angle": "Compliance officers must ensure their Anti-Money Laundering programmes are tailored to specific business risks, subject to robust independent testing, and incorporate effective customer identification and ongoing due diligence procedures.",
+          "angle": "Key actionable insights for senior compliance professionals and MLROs, derived directly from the enforcement evidence.",
           "sourceRecordIds": [
+            "5fd99307-91d4-43b4-8bd4-2ab10a7e1251",
             "0c18b8ad-f7f1-4f27-9d92-2c2e72767aa8",
-            "2f83223f-7fa6-4618-b8d7-4be095c208f0",
             "c1232fc7-4447-482d-b4a0-d89e9de1614f",
             "7764cb13-0fe1-4064-a40b-1a2791b272b7",
-            "1b6003d3-40e9-4d24-9c9b-173a3d218ef2"
+            "1b6003d3-40e9-4d24-9c9b-173a3d218ef2",
+            "c0aa47b0-94a6-4b6a-9bd8-69ab079c08a9"
           ]
         },
         {
           "key": "data",
           "heading": "About the Data",
           "targetWords": 120,
-          "angle": "The enforcement data is drawn from official regulatory notices and announcements published between June 2025 and July 2026, covering actions from ten distinct global regulators.",
+          "angle": "The analysis is based on 30 selected enforcement actions published by regulators between July 2025 and July 2026. The data includes actions from ten distinct regulatory bodies. Monetary penalties are only cited where the source row explicitly verifies the amount. Many actions involve non-monetary sanctions or",
           "sourceRecordIds": [
             "0c18b8ad-f7f1-4f27-9d92-2c2e72767aa8",
             "041b9f65-6b79-456c-b5f7-fca3d16c1d09",
-            "2f83223f-7fa6-4618-b8d7-4be095c208f0",
-            "FCA-2025-12-02-institute-of-certified-bookkeepers-5e498c2a",
-            "c0aa47b0-94a6-4b6a-9bd8-69ab079c08a9"
+            "7a784d99-723e-4b15-8463-8856ca69437f",
+            "a239bc6c-bac3-40ba-a745-0947b376629d",
+            "FCA-2026-02-24-stallion-money-limited-458ba65c",
+            "4d1b9d3d-f4d2-416c-ab32-41aa5eead2d2"
           ]
         }
       ]
     },
-    "repairHistory": []
+    "repairHistory": [
+      {
+        "completedAt": "2026-08-12T04:55:21.054Z",
+        "model": "google/gemini-2.5-flash",
+        "issues": [
+          "The article contains unsupported claims and ambiguous statements that need verification.",
+          "ambiguous: The scale of penalties varies significantly, indicating differing sanctioning philosophies."
+        ],
+        "affectedSections": [
+          "analysis",
+          "implications"
+        ],
+        "beforeHash": "428411ba266bbc9f5a0ca27ee87f939584d4acd694e2041564b7cc444f5800b6",
+        "afterHash": "70b0971d44b914d6bfb331a9bcb2533d520e026ab729166bd6405e24c1e4869c"
+      }
+    ],
+    "headApproval": {
+      "status": "approved",
+      "reviewer": "head-editorial-agent",
+      "approvedAt": "2026-08-12T04:56:52.392Z",
+      "contentHash": "b70bcb1fd01dabcb9b22db3c6bc9b85ad24ede915bf028270a378933e5c08715",
+      "model": "google/gemini-2.5-flash",
+      "promptVersion": "regactions-editorial-v2.1",
+      "rationale": "All editorial gates passed. The regulatory review confirmed the verification of all claims against their sources. The copy review and visual review also passed without issues. No deterministic issues were identified."
+    }
   },
   "qualityReport": {
-    "score": 100,
     "passed": true,
+    "score": 100,
+    "checks": [
+      {
+        "id": "word_count",
+        "name": "Word Count",
+        "weight": "required",
+        "passed": true,
+        "message": "1268 words (required 1100-1600)"
+      },
+      {
+        "id": "section_structure",
+        "name": "Section Structure",
+        "weight": "required",
+        "passed": true,
+        "message": "6 valid H2 sections (min 4)"
+      },
+      {
+        "id": "takeaway_structure",
+        "name": "Key Takeaway Structure",
+        "weight": "required",
+        "passed": true,
+        "message": "6 substantive Markdown bullets"
+      },
+      {
+        "id": "data_accuracy",
+        "name": "Data Accuracy (Regulators)",
+        "weight": "required",
+        "passed": true,
+        "message": "All 7 regulator mentions verified"
+      },
+      {
+        "id": "amount_accuracy",
+        "name": "Amount Accuracy",
+        "weight": "required",
+        "passed": true,
+        "message": "All 8 amounts verified"
+      },
+      {
+        "id": "no_truncation",
+        "name": "No Truncation",
+        "weight": "required",
+        "passed": true,
+        "message": "Content ends cleanly"
+      },
+      {
+        "id": "no_duplicates",
+        "name": "No Duplicates",
+        "weight": "required",
+        "passed": true,
+        "message": "No duplicate paragraphs"
+      },
+      {
+        "id": "no_hallucinated_firms",
+        "name": "No Hallucinated Firms",
+        "weight": "required",
+        "passed": true,
+        "message": "Firm references verified (10 found)"
+      },
+      {
+        "id": "no_internal_record_ids",
+        "name": "No Internal Record IDs",
+        "weight": "required",
+        "passed": true,
+        "message": "No internal evidence identifiers exposed"
+      },
+      {
+        "id": "title_quality",
+        "name": "Title & Excerpt Quality",
+        "weight": "required",
+        "passed": true,
+        "message": "Title: 62 chars (max 70), Excerpt: 219 chars (120-220, complete sentence required)"
+      },
+      {
+        "id": "house_style",
+        "name": "RegActions House Style",
+        "weight": "required",
+        "passed": true,
+        "message": "UK English and punctuation rules passed"
+      },
+      {
+        "id": "data_usage",
+        "name": "Data Usage (Firm Citations)",
+        "weight": "required",
+        "passed": true,
+        "message": "10/30 named firms cited"
+      },
+      {
+        "id": "specificity",
+        "name": "Specificity",
+        "weight": "required",
+        "passed": true,
+        "message": "8 source-backed amounts cited (need ≥3)"
+      },
+      {
+        "id": "keyword_count",
+        "name": "Keyword Count",
+        "weight": "soft",
+        "passed": true,
+        "message": "8 keywords (target 5-8)"
+      },
+      {
+        "id": "editorial_tone",
+        "name": "Editorial Tone",
+        "weight": "soft",
+        "passed": true,
+        "message": "Professional tone maintained"
+      },
+      {
+        "id": "readability",
+        "name": "Readability",
+        "weight": "soft",
+        "passed": true,
+        "message": "Avg 16.8 words/sentence (max 35), longest: 44 words (max 60)"
+      }
+    ],
     "requiredPassed": 13,
     "requiredTotal": 13,
     "softPassed": 3,
     "softTotal": 3
+  },
+  "publicationManifest": {
+    "version": 1,
+    "slug": "aml-kyc-enforcement-trends",
+    "contentHash": "b70bcb1fd01dabcb9b22db3c6bc9b85ad24ede915bf028270a378933e5c08715",
+    "approvedBy": "head-editorial-agent",
+    "approvedAt": "2026-08-12T04:56:52.392Z",
+    "publishedBy": "publisher-agent",
+    "publishedAt": "2026-08-12T04:56:53.793Z",
+    "liveUrl": "https://regactions.com/blog/aml-kyc-enforcement-trends"
   }
 }
