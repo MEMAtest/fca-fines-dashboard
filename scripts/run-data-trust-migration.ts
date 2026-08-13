@@ -42,6 +42,7 @@ async function main() {
     "migrations/20260813_enforcement_evidence_quality_guard.sql",
     "migrations/20260813_coverage_discovery_candidates.sql",
     "migrations/20260813_registry_alias_reconciliation.sql",
+    "migrations/20260813_email_digest_outbox.sql",
   ].map((file) => path.resolve(process.cwd(), file));
 
   for (const migrationPath of migrationPaths) {

@@ -42,6 +42,10 @@ export interface CnvRow {
   party: string;
   /** Resolution PDF/blob URL, when present. */
   resolutionUrl: string | null;
+  /** Whether CNV published this row as an opening or a concluded outcome. */
+  proceedingStage: "opening" | "conclusion";
+  /** CNV's published decision for conclusions (for example Multa). */
+  decision: string | null;
 }
 
 /** CNV dates are D/M/YYYY (single-digit day/month allowed). */
@@ -77,10 +81,6 @@ export function parseCnvHtml(html: string, pageUrl = CNV_URL): CnvRow[] {
       );
     })
     .first();
-
-  if (table.length === 0) {
-    return rows;
-  }
 
   let current: {
     resolutionNumber: string;
@@ -121,6 +121,56 @@ export function parseCnvHtml(html: string, pageUrl = CNV_URL): CnvRow[] {
     }
   });
 
+  const conclusionsTable = $("table")
+    .filter((_, element) => {
+      const headers = $(element)
+        .find("thead th")
+        .map((__, th) => normalizeWhitespace($(th).text()).toUpperCase())
+        .get();
+      return (
+        headers.some((header) => header.includes("RESOLUCIÓN") || header.includes("RESOLUCION")) &&
+        headers.some((header) => header.includes("SUMARIADO")) &&
+        headers.some((header) => header.includes("DECISIÓN") || header.includes("DECISION"))
+      );
+    })
+    .first();
+
+  let currentConclusion: {
+    resolutionNumber: string;
+    dateIssued: string | null;
+    resolutionUrl: string | null;
+  } | null = null;
+
+  conclusionsTable.find("tbody tr").each((_, element) => {
+    const cells = $(element).children("td");
+    if (cells.length >= 4) {
+      const linkHref = normalizeWhitespace(
+        cells.eq(0).find("a[href]").first().attr("href") || "",
+      );
+      currentConclusion = {
+        resolutionNumber: normalizeWhitespace(cells.eq(0).text()),
+        dateIssued: parseCnvDate(cells.eq(1).text()),
+        resolutionUrl: linkHref ? makeAbsoluteUrl(pageUrl, linkHref) : null,
+      };
+      pushConclusion(
+        normalizeWhitespace(cells.eq(2).text()),
+        normalizeWhitespace(cells.eq(3).text()),
+        currentConclusion,
+        rows,
+      );
+      return;
+    }
+
+    if (cells.length === 2 && currentConclusion) {
+      pushConclusion(
+        normalizeWhitespace(cells.eq(0).text()),
+        normalizeWhitespace(cells.eq(1).text()),
+        currentConclusion,
+        rows,
+      );
+    }
+  });
+
   return rows;
 }
 
@@ -143,6 +193,30 @@ function pushParty(
     caratula: current.caratula,
     party,
     resolutionUrl: current.resolutionUrl,
+    proceedingStage: "opening",
+    decision: null,
+  });
+}
+
+function pushConclusion(
+  party: string,
+  decision: string,
+  current: {
+    resolutionNumber: string;
+    dateIssued: string | null;
+    resolutionUrl: string | null;
+  },
+  rows: CnvRow[],
+) {
+  if (!party || !decision || !current.dateIssued || !current.resolutionNumber) return;
+  rows.push({
+    resolutionNumber: current.resolutionNumber,
+    dateIssued: current.dateIssued,
+    caratula: `Conclusión disciplinaria: ${decision}`,
+    party,
+    resolutionUrl: current.resolutionUrl,
+    proceedingStage: "conclusion",
+    decision,
   });
 }
 
@@ -163,7 +237,11 @@ export function categorizeCnvRow(row: CnvRow): string[] {
     categories.push("DISCLOSURE");
   }
 
-  categories.push("DISCIPLINARY_SANCTION");
+  const decision = row.decision?.toLowerCase() ?? "";
+  if (/exclusi[oó]n|inhabilitaci[oó]n|suspensi[oó]n/.test(decision)) {
+    categories.push("PROHIBITION");
+  }
+  categories.push(row.proceedingStage === "conclusion" ? "DISCIPLINARY_OUTCOME" : "DISCIPLINARY_SANCTION");
   return [...new Set(categories)];
 }
 
@@ -179,11 +257,15 @@ export function buildCnvRecord(row: CnvRow): DbReadyRecord {
     amount: null,
     currency: "ARS",
     dateIssued: row.dateIssued,
-    breachType: `Resolución disciplinaria ${row.resolutionNumber}`,
+    breachType: row.decision
+      ? `Conclusión disciplinaria: ${row.decision}`
+      : `Resolución disciplinaria ${row.resolutionNumber}`,
     breachCategories: categorizeCnvRow(row),
     // Spanish source text preserved verbatim.
     summary: normalizeWhitespace(
-      `${row.party}: resolución disciplinaria CNV ${row.resolutionNumber} del ${row.dateIssued}. ${row.caratula}`,
+      row.decision
+        ? `${row.party}: CNV publicó la conclusión ${row.resolutionNumber} del ${row.dateIssued}. Decisión: ${row.decision}.`
+        : `${row.party}: resolución disciplinaria CNV ${row.resolutionNumber} del ${row.dateIssued}. ${row.caratula}`,
     ).slice(0, 500),
     finalNoticeUrl: row.resolutionUrl,
     sourceUrl: CNV_URL,
@@ -196,6 +278,12 @@ export function buildCnvRecord(row: CnvRow): DbReadyRecord {
 export function buildCnvRecords(rows: CnvRow[]): DbReadyRecord[] {
   const byHash = new Map<string, DbReadyRecord>();
   for (const row of rows) {
+    // An explicit acquittal is a useful source-health signal but is not an
+    // enforcement action. Parse it to prove the table is complete, then keep
+    // it out of the public action dataset and its aggregate counts.
+    if (row.proceedingStage === "conclusion" && /^absoluci[oó]n$/i.test(row.decision ?? "")) {
+      continue;
+    }
     const record = buildCnvRecord(row);
     byHash.set(record.contentHash, record);
   }
