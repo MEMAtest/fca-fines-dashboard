@@ -76,7 +76,10 @@ export async function persistPreparedDiscoveryCandidates(
 ) {
   const rows = records.map((record) => buildDiscoveryCandidateRow(record, scraperRunId));
   if (!rows.length) return 0;
-  const payload = JSON.stringify(rows);
+  // postgres.js serialises plain JavaScript values for json/jsonb parameters.
+  // Passing a pre-stringified value produces a JSON string scalar, so
+  // jsonb_to_recordset rejects it as a non-array.
+  const payload = rows;
   await sql.unsafe(`
     INSERT INTO public.coverage_discovery_candidates (
       fingerprint, regulator, source_url, source_content_hash, entity,
