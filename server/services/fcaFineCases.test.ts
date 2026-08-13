@@ -232,6 +232,10 @@ describe("FCA fine case service", () => {
       [trustedRow()],
       [
         trustedRow({
+          public_case_id: "387f5fcb2866866304b14a64095a5d8f",
+          date_issued: "2026-06-10",
+        }),
+        trustedRow({
           public_case_id: relatedCaseId,
           date_issued: "2025-05-02",
           year_issued: 2025,
@@ -258,6 +262,7 @@ describe("FCA fine case service", () => {
       expect.objectContaining({ caseId: relatedCaseId, relationship: "same_entity_and_evidence" }),
       expect.objectContaining({ relationship: "same_evidence" }),
     ]);
+    expect(record?.relatedCases).toHaveLength(2);
     const lookupParameters = (sql as unknown as ReturnType<typeof vi.fn>).mock.calls[0]?.[1];
     expect(lookupParameters).toEqual([caseId]);
   });

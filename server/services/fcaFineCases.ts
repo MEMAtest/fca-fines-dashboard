@@ -578,14 +578,19 @@ export async function getFcaFineCaseById(
 
   return {
     ...recordBase,
-    relatedCases: relatedRows.map((row) => {
-      const related = mapFcaFineCaseRow(row);
-      const relatedSeo = toSeoRow(related);
-      return {
-        ...relatedSeo,
-        canonicalPath: buildFcaFineCasePath(relatedSeo),
-        relationship: relatedCaseRelationship(primary, related),
-      };
-    }),
+    relatedCases: relatedRows
+      // Related evidence can include legacy rows whose public_case_id predates
+      // the UUID route contract. They remain in the dataset, but cannot safely
+      // be exposed as canonical case links and must not break a valid case.
+      .map((row) => mapFcaFineCaseRow(row))
+      .filter((related) => isValidFcaFineCaseId(related.caseId))
+      .map((related) => {
+        const relatedSeo = toSeoRow(related);
+        return {
+          ...relatedSeo,
+          canonicalPath: buildFcaFineCasePath(relatedSeo),
+          relationship: relatedCaseRelationship(primary, related),
+        };
+      }),
   };
 }
