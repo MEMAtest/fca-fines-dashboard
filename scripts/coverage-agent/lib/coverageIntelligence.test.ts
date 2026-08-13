@@ -98,6 +98,15 @@ describe("Coverage and Content Intelligence Agent", () => {
     expect(result.qaIssueQueue.find((issue) => issue.code === "aggregate_amount_repeated")).toBeUndefined();
   });
 
+  it("does not treat undisclosed or zero amounts as repeated aggregate money", () => {
+    const result = runCoverageIntelligenceAgent([], [
+      record({ id: "one", regulator: "CVM", entity: "Person One", sourceContentHash: null, sourceUrl: "https://dados.cvm.gov.br/dataset/processo-sancionador", amount: null, currency: "BRL" }),
+      record({ id: "two", regulator: "CVM", entity: "Person Two", sourceContentHash: null, sourceUrl: "https://dados.cvm.gov.br/dataset/processo-sancionador", amount: null, currency: "BRL" }),
+      record({ id: "three", regulator: "CVM", entity: "Person Three", sourceContentHash: null, sourceUrl: "https://dados.cvm.gov.br/dataset/processo-sancionador", amount: 0, currency: "BRL" }),
+    ], undefined, { officialDomainResolver: resolver });
+    expect(result.qaIssueQueue.find((issue) => issue.code === "aggregate_amount_repeated")).toBeUndefined();
+  });
+
   it("does not make a penalty without a verified amount publish-ready when a record exists", () => {
     const result = runCoverageIntelligenceAgent([candidate({ amount: null })], [record({ sourceContentHash: null, amount: null })], undefined, { officialDomainResolver: resolver });
     expect(result.coverageReport.decisions[0].kind).toBe("exact_duplicate");
