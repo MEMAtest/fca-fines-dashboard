@@ -2463,7 +2463,10 @@ For a complete interactive view of FCA enforcement by firm, year, and breach cat
     date: "August 2026",
     dateISO: "2026-08-06",
     featured: false,
-    status: "scheduled",
+    // Quarantined: the draft's conduct period and breach description do not
+    // match the FCA's 3 March 2026 Final Notice. Keep it out of every public
+    // selector until the article is rebuilt from the official findings.
+    status: "draft",
     articleType: "forensic",
     keywords: [
       "John Wood Group FCA fine",

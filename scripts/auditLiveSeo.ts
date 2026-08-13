@@ -87,7 +87,7 @@ async function main() {
     sitemapContent.includes(`${baseUrl}/blog/wealth-managers-consumer-duty-enforcement`),
   );
   record(
-    "sitemap excludes unapproved DekaBank article",
+    "sitemap excludes unapproved forensic article",
     !sitemapContent.includes(`${baseUrl}/blog/biggest-fine-h1-2026-forensic`),
   );
   record("sitemap excludes legacy dashboard", !sitemapContent.includes(`${baseUrl}/dashboard`));
@@ -99,7 +99,7 @@ async function main() {
   const rss = await fetchText("/rss.xml");
   record("rss returns 200", rss.response.status === 200, `status=${rss.response.status}`);
   record("rss has latest July article", rss.text.includes("wealth-managers-consumer-duty-enforcement"));
-  record("rss excludes unapproved DekaBank article", !rss.text.includes("biggest-fine-h1-2026-forensic"));
+  record("rss excludes unapproved forensic article", !rss.text.includes("biggest-fine-h1-2026-forensic"));
   record("rss has at least 30 items", countMatches(rss.text, /<item>/g) >= 30);
 
   await auditHtmlPage(

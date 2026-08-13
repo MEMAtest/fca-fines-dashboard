@@ -133,6 +133,11 @@ describe("isPublished", () => {
     expect(articles.some((article) => article.slug === "biggest-fine-h1-2026-forensic")).toBe(false);
   });
 
+  test("keeps the unverified forensic article out after its former schedule date", () => {
+    const articles = getPublishedBlogArticles("2026-08-13");
+    expect(articles.some((article) => article.slug === "biggest-fine-h1-2026-forensic")).toBe(false);
+  });
+
   test("yearly articles are normalized to the shared article shape", () => {
     expect(yearlyArticles.length).toBeGreaterThan(0);
     expect(yearlyArticles[0]).toMatchObject({
