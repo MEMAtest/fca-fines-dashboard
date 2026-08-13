@@ -82,4 +82,15 @@ describe("canonical regulatory evidence layer", () => {
     const search = fs.readFileSync(path.join(root, "api/unified/search.ts"), "utf8");
     expect(search).toContain("ORDER BY ${sortColumn} ${sortOrder}, canonical_case_id ASC, id ASC");
   });
+
+  it("preserves immutable public IDs when canonical deduplication selects a different source row", () => {
+    const migration = fs.readFileSync(
+      path.join(root, "migrations/20260813_registry_alias_reconciliation.sql"),
+      "utf8",
+    );
+    expect(migration).toContain("fingerprint_alias.public_case_id::text");
+    expect(migration).toContain("fingerprint_alias.fingerprint = canonical.canonical_case_id");
+    expect(migration).toContain("ON CONFLICT DO NOTHING");
+    expect(migration).not.toContain("DELETE FROM public.regulatory_case_registry");
+  });
 });

@@ -234,9 +234,9 @@ describe("regulatorCoverage", () => {
     expect(getRegulatorCoverage("FINFSA")?.stage).toBe("live");
     expect(getRegulatorCoverage("FTNO")?.stage).toBe("live");
     expect(getRegulatorCoverage("CNBCZ")?.stage).toBe("live");
-    expect(getRegulatorCoverage("FINMA")?.count).toBe(23);
+    expect(getRegulatorCoverage("FINMA")?.count).toBe(26);
     expect(getRegulatorCoverage("BDI")?.count).toBe(153);
-    expect(getRegulatorCoverage("ACPR")?.count).toBe(75);
+    expect(getRegulatorCoverage("ACPR")?.count).toBe(78);
     expect(getRegulatorCoverage("CSSF")?.count).toBe(163);
     expect(getRegulatorCoverage("FSMA")?.count).toBe(182);
     expect(getRegulatorCoverage("FMAAT")?.count).toBe(118);
@@ -252,13 +252,13 @@ describe("regulatorCoverage", () => {
     expect(getRegulatorCoverage("OCC")?.count).toBe(5579);
     expect(getRegulatorCoverage("FINCEN")?.count).toBe(118);
     expect(getRegulatorCoverage("FINRA")?.count).toBe(3987);
-    expect(getRegulatorCoverage("OSC")?.count).toBe(483);
+    expect(getRegulatorCoverage("OSC")?.count).toBe(653);
     expect(getRegulatorCoverage("SC")?.count).toBe(88);
     expect(getRegulatorCoverage("ASIC")?.count).toBe(112);
     expect(getRegulatorCoverage("HKMA")?.count).toBe(23);
     expect(getRegulatorCoverage("FMANZ")?.count).toBe(99);
     expect(getRegulatorCoverage("MAS")?.count).toBe(21);
-    expect(getRegulatorCoverage("AUSTRAC")?.count).toBe(66);
+    expect(getRegulatorCoverage("AUSTRAC")?.count).toBe(70);
   });
 
   it("flags lower-confidence live regulators separately from the stable daily set", () => {
@@ -388,7 +388,7 @@ describe("regulatorCoverage", () => {
     expect(getRegulatorCoverage("cnbv")?.country).toBe("Mexico");
     expect(getRegulatorCoverage("cmf")?.country).toBe("Chile");
     expect(getRegulatorCoverage("osc")?.country).toBe("Canada");
-    expect(getRegulatorCoverage("osc")?.count).toBe(483);
+    expect(getRegulatorCoverage("osc")?.count).toBe(653);
   });
 
   it("groups the Europe and EEA rollout into three explicit phases", () => {

@@ -41,6 +41,7 @@ async function main() {
     "migrations/20260724_board_pack_persistence.sql",
     "migrations/20260813_enforcement_evidence_quality_guard.sql",
     "migrations/20260813_coverage_discovery_candidates.sql",
+    "migrations/20260813_registry_alias_reconciliation.sql",
   ].map((file) => path.resolve(process.cwd(), file));
 
   for (const migrationPath of migrationPaths) {
@@ -66,11 +67,15 @@ async function main() {
 
   await sql`
     INSERT INTO public.regulatory_case_registry (source_row_id, current_fingerprint)
-    SELECT id::text, canonical_case_id
-    FROM public.all_regulatory_fines_canonical
-    ON CONFLICT (source_row_id) DO UPDATE SET
-      current_fingerprint = EXCLUDED.current_fingerprint,
-      updated_at = now()
+    SELECT canonical.id::text, canonical.canonical_case_id
+    FROM public.all_regulatory_fines_canonical AS canonical
+    LEFT JOIN public.regulatory_case_registry AS source_registry
+      ON source_registry.source_row_id = canonical.id::text
+    LEFT JOIN public.regulatory_case_registry AS fingerprint_registry
+      ON fingerprint_registry.current_fingerprint = canonical.canonical_case_id
+    WHERE source_registry.public_case_id IS NULL
+      AND fingerprint_registry.public_case_id IS NULL
+    ON CONFLICT DO NOTHING
   `;
   await sql`
     INSERT INTO public.regulatory_case_aliases (fingerprint, public_case_id)
@@ -150,9 +155,11 @@ async function main() {
       (
         SELECT COUNT(*)::int
         FROM public.all_regulatory_fines_canonical AS canonical
-        LEFT JOIN public.regulatory_case_registry AS registry
-          ON registry.source_row_id = canonical.id::text
-        WHERE registry.public_case_id IS NULL
+        LEFT JOIN public.regulatory_case_registry AS source_registry
+          ON source_registry.source_row_id = canonical.id::text
+        LEFT JOIN public.regulatory_case_aliases AS fingerprint_alias
+          ON fingerprint_alias.fingerprint = canonical.canonical_case_id
+        WHERE COALESCE(source_registry.public_case_id, fingerprint_alias.public_case_id) IS NULL
       ) AS missing_registry_cases
   `;
   if (!trustGate?.trusted_view_ready || !trustGate?.monitor_profiles_ready) {
