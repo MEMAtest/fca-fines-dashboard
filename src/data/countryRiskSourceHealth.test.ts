@@ -59,6 +59,27 @@ describe("country-risk source health", () => {
     ]));
   });
 
+  it("keeps explicitly unchanged catalogues healthy while blocking only the changed catalogue", () => {
+    const runs = healthyRuns();
+    for (const id of ["ofac-programmes", "uk-regimes", "un-consolidated-list"]) {
+      const run = runs.find((item) => item.source_id === id)!;
+      run.status = "review_required";
+      run.metadata = { changed: false, baselineMissing: false, reportRequiresHumanReview: true };
+    }
+    const eu = runs.find((item) => item.source_id === "eu-resources")!;
+    eu.status = "review_required";
+    eu.metadata = { changed: true, baselineMissing: false, reportRequiresHumanReview: true };
+
+    const report = assessCountryRiskSourceHealth({ asOf, declaredSources, operationalRuns: runs });
+    expect(report.status).toBe("critical");
+    expect(report.issues).toEqual([
+      expect.objectContaining({
+        sourceId: "eu-resources",
+        code: "operational-run-review-required",
+      }),
+    ]);
+  });
+
   it("flags stale operational evidence and unhealthy declared scored sources", () => {
     const runs = healthyRuns();
     runs.find((run) => run.source_id === "eu-resources")!.retrieved_at = "2026-07-01T00:00:00.000Z";

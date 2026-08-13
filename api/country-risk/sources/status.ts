@@ -7,16 +7,14 @@ import { SANCTIONS_IMPOSERS } from "../../../src/data/sanctionsEvidence.js";
 import { COUNTRIES } from "../../../src/data/countries.js";
 import { assessCountryRiskReadiness } from "../../../src/data/countryRiskReadiness.js";
 import {
-  assessCountryRiskSourceHealth,
-  type CountryRiskOperationalSourceRun,
-} from "../../../src/data/countryRiskSourceHealth.js";
+  getCountryRiskOperationalHealth,
+} from "../../../server/services/countryRiskOperationalHealth.js";
 import {
   SANCTIONS_CANDIDATE_COUNTRY_COUNT,
   SANCTIONS_CATALOGUE_COVERAGE,
   SANCTIONS_REGIME_CANDIDATES,
   SANCTIONS_TIER_RULES,
 } from "../../../src/data/sanctionsRegimeCandidates.js";
-import { getSqlClient } from "../../../server/db.js";
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   res.setHeader("Access-Control-Allow-Origin", "*");
@@ -26,40 +24,17 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   const sources = countryRiskSourcesAsOf(asOf);
   const results = pageCountries().map((country) => computeCountryRiskV2(country.iso2, { asOf }));
   const readiness = assessCountryRiskReadiness(results, sources);
-  let operationalSourceRuns: CountryRiskOperationalSourceRun[] = [];
-  let operationalHistoryAvailable = true;
-  let operationalHistoryError: string | null = null;
-  try {
-    const sql = getSqlClient();
-    operationalSourceRuns = await sql(
-      `SELECT DISTINCT ON (source_id)
-              source_id, status, source_url, retrieved_at, effective_at, sha256,
-              parser_version, record_count, error_message, metadata
-       FROM country_risk_source_runs
-       WHERE source_id IN ('ofac-programmes', 'uk-regimes', 'eu-resources', 'un-consolidated-list',
-                           'fatf-lists', 'fatf-assessments', 'world-bank-wgi', 'sanctions-regimes')
-       ORDER BY source_id, retrieved_at DESC, id DESC`,
-    ) as unknown as CountryRiskOperationalSourceRun[];
-  } catch (error) {
-    operationalHistoryAvailable = false;
-    const errorDetail = error instanceof Error ? error.message : String(error);
-    operationalHistoryError = "operational source history unavailable";
-    console.warn("Country-risk operational source history unavailable", errorDetail);
-  }
-  const sourceHealth = assessCountryRiskSourceHealth({
-    asOf,
-    declaredSources: sources,
-    operationalRuns: operationalSourceRuns,
-    databaseAvailable: operationalHistoryAvailable,
-    databaseError: operationalHistoryError,
-  });
+  const { sourceHealth, operationalSourceRuns } = await getCountryRiskOperationalHealth(asOf, sources);
   const readinessReasons = [
     ...readiness.reasons,
     ...sourceHealth.issues.map((issue) => issue.message),
   ];
   return res.status(200).json({
     generatedAt: asOf.toISOString(),
+    // The default needs both a valid approved snapshot and current operational evidence.
     readyForDefault: readiness.readyForDefault && sourceHealth.readyForScoring,
+    snapshotReady: readiness.readyForDefault,
+    sourcesCurrent: sourceHealth.readyForScoring,
     readinessReasons,
     coverage: readiness.coverage,
     sources,

@@ -4,6 +4,7 @@ import { readFile, writeFile } from "node:fs/promises";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import * as cheerio from "cheerio";
+import { classifySanctionsCatalogueChange } from "./lib/sanctionsCatalogueChange.js";
 
 type DiscoveryMode = "ofac-programmes" | "uk-country-regimes" | "eu-regime-api" | "un-list-types";
 
@@ -16,12 +17,36 @@ interface ManifestSource {
   minimumRecords: number;
   requiredText: string;
   approvedFingerprint: string | null;
+  approvedScoringFingerprint?: string | null;
+  approvedCoverageFingerprint?: string | null;
 }
 interface Manifest { version: number; approvedAt: string | null; sources: ManifestSource[] }
 
 interface DiscoveryResult {
-  fingerprintItems: string[];
+  /** Country-regime identity used to distinguish thematic-only catalogue drift. */
+  coverageFingerprintItems: string[];
+  /** Scoring-relevant country-regime evidence: coverage, expiry and measures. */
+  scoringFingerprintItems: string[];
+  /** Complete official catalogue, retained for audit even when not scored. */
+  catalogueFingerprintItems: string[];
   inventory: Array<Record<string, unknown>>;
+}
+
+function euMeasureTypes(title: string, description: string): string[] {
+  const text = `${title} ${description}`.toLowerCase();
+  const result = new Set<string>();
+  if (/asset freeze|funds available/.test(text)) result.add("asset-freeze");
+  if (/admission|travel ban|travel restriction/.test(text)) result.add("travel-ban");
+  if (/arms|military cooperation/.test(text)) result.add("arms-embargo");
+  if (/import|purchase|transfer .* from/.test(text)) result.add("import-restriction");
+  if (/export|sell|supply|transfer .* to/.test(text)) result.add("export-restriction");
+  if (/financ|capital|securit|deposit|loan|credit|insurance|claims/.test(text)) result.add("financial-restriction");
+  if (/service|technical assistance|brokering/.test(text)) result.add("services-restriction");
+  if (/transport|flight|aircraft|airport|vessel|shipping|road/.test(text)) result.add("transport-restriction");
+  if (/oil|petroleum|gas|gold|diamond|charcoal|mineral|commodity|cement|steel|wood|rubber|potash|tobacco/.test(text)) {
+    result.add("commodity-restriction");
+  }
+  return [...result].sort();
 }
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..", "..");
@@ -56,7 +81,9 @@ function extractDiscovery(source: ManifestSource, text: string): DiscoveryResult
     const names = [...new Set([...text.matchAll(/<UN_LIST_TYPE>([^<]+)<\/UN_LIST_TYPE>/g)]
       .map((match) => match[1].replace(/\s+/g, " ").trim()))].sort();
     return {
-      fingerprintItems: names,
+      coverageFingerprintItems: names,
+      scoringFingerprintItems: names,
+      catalogueFingerprintItems: names,
       inventory: names.map((name) => ({ regimeListType: name })),
     };
   }
@@ -77,7 +104,27 @@ function extractDiscovery(source: ManifestSource, text: string): DiscoveryResult
       measures: record.measures,
     }));
     return {
-      fingerprintItems: fingerprintRecords.map((record) => JSON.stringify(record)).sort(),
+      coverageFingerprintItems: fingerprintRecords
+        .filter((record: any) => record.type === 0 && /^[A-Z]{2}$/.test(String(record.country?.data?.code ?? "")))
+        .map((record: any) => JSON.stringify({ id: record.id, iso2: record.country.data.code })).sort(),
+      // The score engine consumes only country regimes (type 0) with an ISO
+      // country. Legal status and classified measure types can affect a tier,
+      // so they are deliberately inside the score-evidence fingerprint. Full
+      // catalogue additions remain visible below without blocking a score.
+      scoringFingerprintItems: records
+        .filter((record: any) => record.type === 0 && /^[A-Z]{2}$/.test(String(record.country?.data?.code ?? "")))
+        .map((record: any) => canonical({
+          id: record.id,
+          iso2: record.country.data.code,
+          expiration: typeof record.expiration === "number" ? new Date(record.expiration * 1000).toISOString() : null,
+          measures: (record.measures?.data ?? []).map((measure: any) => ({
+            id: Number(measure.id),
+            suspended: Boolean(measure.suspend),
+            types: euMeasureTypes(String(measure.type?.data?.title ?? ""), String(measure.description ?? "")),
+          })).sort((a: any, b: any) => a.id - b.id),
+        }))
+        .map((record) => JSON.stringify(record)).sort(),
+      catalogueFingerprintItems: fingerprintRecords.map((record) => JSON.stringify(record)).sort(),
       inventory: records.map((record) => ({
         id: record.id,
         type: record.type,
@@ -100,7 +147,9 @@ function extractDiscovery(source: ManifestSource, text: string): DiscoveryResult
       .map((link) => [link.href, link]));
     const inventory = [...byHref.values()].sort((a, b) => a.href.localeCompare(b.href));
     return {
-      fingerprintItems: inventory.map(({ label, href }) => `${label}|${href}`),
+      coverageFingerprintItems: inventory.map(({ label, href }) => `${label}|${href}`),
+      scoringFingerprintItems: inventory.map(({ label, href }) => `${label}|${href}`),
+      catalogueFingerprintItems: inventory.map(({ label, href }) => `${label}|${href}`),
       inventory: inventory.map((record) => ({ ...record, kind: "active-programme" })),
     };
   }
@@ -110,7 +159,9 @@ function extractDiscovery(source: ManifestSource, text: string): DiscoveryResult
     .map((link) => [link.href, link]));
   const inventory = [...byHref.values()].sort((a, b) => a.href.localeCompare(b.href));
   return {
-    fingerprintItems: inventory.map(({ label, href }) => `${label}|${href}`),
+    coverageFingerprintItems: inventory.map(({ label, href }) => `${label}|${href}`),
+    scoringFingerprintItems: inventory.map(({ label, href }) => `${label}|${href}`),
+    catalogueFingerprintItems: inventory.map(({ label, href }) => `${label}|${href}`),
     inventory: inventory.map((record) => ({
       ...record,
       kind: /chemical|terror|cyber|global|drilling/i.test(record.label) ? "thematic-candidate" : "country-candidate",
@@ -138,9 +189,20 @@ async function fetchSource(source: ManifestSource) {
   if (discovery.inventory.length < source.minimumRecords) {
     throw new Error(`${source.id}: discovery corpus too small (${discovery.inventory.length} < ${source.minimumRecords})`);
   }
-  const fingerprint = createHash("sha256")
-    .update(discovery.fingerprintItems.join("\n"))
+  const coverageFingerprint = createHash("sha256")
+    .update(discovery.coverageFingerprintItems.join("\n"))
     .digest("hex");
+  const scoringFingerprint = createHash("sha256")
+    .update(discovery.scoringFingerprintItems.join("\n"))
+    .digest("hex");
+  const catalogueFingerprint = createHash("sha256")
+    .update(discovery.catalogueFingerprintItems.join("\n"))
+    .digest("hex");
+  const change = classifySanctionsCatalogueChange(source, {
+    catalogueFingerprint,
+    coverageFingerprint,
+    scoringFingerprint,
+  });
   return {
     id: source.id,
     url: source.url,
@@ -148,10 +210,20 @@ async function fetchSource(source: ManifestSource) {
     retrievedAt: new Date().toISOString(),
     bytes: data.length,
     sha256,
-    fingerprint,
+    // Keep `fingerprint` as the complete official catalogue fingerprint. It
+    // binds the legal-evidence and promotion ledger to exactly what was read.
+    fingerprint: catalogueFingerprint,
+    catalogueFingerprint,
+    coverageFingerprint,
+    scoringFingerprint,
     discoveryItems: discovery.inventory.length,
     inventory: discovery.inventory,
-    changed: source.approvedFingerprint !== null && source.approvedFingerprint !== fingerprint,
+    // `changed` is deliberately score-affecting only. A thematic catalogue
+    // addition is retained below as `catalogueChanged`, but must not put the
+    // country-score snapshot into review.
+    changed: change.scoreEvidenceChanged || change.coverageChanged,
+    coverageChanged: change.coverageChanged,
+    catalogueChanged: change.catalogueChanged,
     baselineMissing: source.approvedFingerprint === null,
   };
 }
@@ -175,8 +247,15 @@ async function main() {
     const failed = results.filter((result) => !result.healthy);
     if (failed.length) throw new Error(`Cannot approve: ${failed.map((result) => result.id).join(", ")}`);
     const fingerprints = new Map(results.map((result) => [result.id, "fingerprint" in result ? result.fingerprint : null]));
+    const scoringFingerprints = new Map(results.map((result) => [result.id, "scoringFingerprint" in result ? result.scoringFingerprint : null]));
+    const coverageFingerprints = new Map(results.map((result) => [result.id, "coverageFingerprint" in result ? result.coverageFingerprint : null]));
     manifest.approvedAt = report.checkedAt;
-    manifest.sources = manifest.sources.map((source) => ({ ...source, approvedFingerprint: fingerprints.get(source.id) ?? null }));
+    manifest.sources = manifest.sources.map((source) => ({
+      ...source,
+      approvedFingerprint: fingerprints.get(source.id) ?? null,
+      approvedScoringFingerprint: scoringFingerprints.get(source.id) ?? null,
+      approvedCoverageFingerprint: coverageFingerprints.get(source.id) ?? null,
+    }));
     await writeFile(MANIFEST_PATH, `${JSON.stringify(manifest, null, 2)}\n`);
   }
 

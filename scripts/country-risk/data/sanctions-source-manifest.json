@@ -28,7 +28,9 @@
       "minimumBytes": 100000,
       "minimumRecords": 50,
       "requiredText": "legal_acts",
-      "approvedFingerprint": "64d2f6b5a056030f6e574397b65608c782335c9d765e82327fd5178afec11cff"
+      "approvedFingerprint": "64d2f6b5a056030f6e574397b65608c782335c9d765e82327fd5178afec11cff",
+      "approvedCoverageFingerprint": "04054286218040113833cf3dc869c70554706af46fdbacc47bdaf8ca579381b9",
+      "approvedScoringFingerprint": "dcb6feff8c728d6a11cac5832899bf9dcba8b057e97d3b1dc22924bd81c74729"
     },
     {
       "id": "un-consolidated-list",

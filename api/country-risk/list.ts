@@ -5,8 +5,9 @@ import { computeCountryRiskScore } from "../../src/data/countryRiskScore.js";
 import { countryRiskSourcesAsOf } from "../../src/data/countryRiskSources.js";
 import { assessCountryRiskReadiness } from "../../src/data/countryRiskReadiness.js";
 import { buildCountryRiskPublicSurface } from "../../src/data/countryRiskSurface.js";
+import { getCountryRiskOperationalHealth } from "../../server/services/countryRiskOperationalHealth.js";
 
-export default function handler(req: VercelRequest, res: VercelResponse) {
+export default async function handler(req: VercelRequest, res: VercelResponse) {
   res.setHeader("Access-Control-Allow-Origin", "*");
   if (req.method !== "GET") return res.status(405).json({ error: "Method not allowed" });
   const requested = String(req.query.methodology ?? COUNTRY_RISK_METHODOLOGY_VERSION);
@@ -38,12 +39,18 @@ export default function handler(req: VercelRequest, res: VercelResponse) {
     .sort((a, b) => (b.result.score ?? -1) - (a.result.score ?? -1) || a.country.name.localeCompare(b.country.name));
   res.setHeader("Cache-Control", "public, max-age=300, s-maxage=3600");
   const readiness = assessCountryRiskReadiness(results.map(({ result }) => result), sources);
+  const { sourceHealth } = await getCountryRiskOperationalHealth(asOf, sources);
   return res.status(200).json({
     methodologyVersion: COUNTRY_RISK_METHODOLOGY_VERSION,
     calculatedAt: asOf.toISOString(),
     count: results.length,
-    readyForDefault: readiness.readyForDefault,
-    readinessReasons: readiness.reasons,
+    // `snapshotReady` describes the approved model inputs. `sourcesCurrent`
+    // describes whether the operational source checks remain current. Only
+    // their conjunction is safe to present as default-ready.
+    readyForDefault: readiness.readyForDefault && sourceHealth.readyForScoring,
+    snapshotReady: readiness.readyForDefault,
+    sourcesCurrent: sourceHealth.readyForScoring,
+    readinessReasons: [...readiness.reasons, ...sourceHealth.issues.map((issue) => issue.message)],
     coverage: readiness.coverage,
     sources,
     results,
