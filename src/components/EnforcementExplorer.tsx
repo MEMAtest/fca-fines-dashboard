@@ -155,7 +155,7 @@ export function EnforcementExplorer() {
               <label className="enforcement-explorer__select"><input type="checkbox" checked={selected} onChange={() => selected ? basket.remove(evidence.id) : basket.add(evidence)}/><span className="sr-only">Select {record.firm_individual}</span></label>
               <RegulatorMark regulator={record.regulator} label={record.regulator_full_name ?? record.regulator} size="small" showCode />
               <button type="button" className="enforcement-explorer__entity" onClick={() => openEvidence(evidence)}><strong>{record.firm_individual}</strong><span>{record.summary || record.breach_type || "No summary recorded"}</span></button>
-              <div className="enforcement-explorer__meta"><span>{formatDate(record.date_issued)}</span><span>{getRecordThemes(record)[0]}</span><strong>{record.requires_amount_review ? "Amount under review" : formatWorkspaceAmount(record.amount)}</strong></div>
+              <div className="enforcement-explorer__meta"><span>{formatDate(record.date_issued)}</span><span>{getRecordThemes(record)[0]}</span><strong>{record.requires_amount_review ? "Amount under review" : record.amount_disclosed === false ? "Not disclosed" : formatWorkspaceAmount(record.amount)}</strong></div>
               <div className="enforcement-explorer__actions"><WatchFirmButton firmName={record.firm_individual} variant="text" source="search_result"/><button type="button" onClick={() => openEvidence(evidence)}><FileSearch size={14}/> Evidence</button></div>
             </article>;
           })}

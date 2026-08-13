@@ -382,13 +382,13 @@ export function GlobeHero({ onCountryClick }: GlobeHeroProps) {
         </motion.p>
 
         <motion.a
-          href="/dashboard"
+          href="/fines?regulator=FCA&country=GB"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, delay: 0.25 }}
           className="globe-hero__cta"
         >
-          Access the Intelligence Hub
+          Explore UK enforcement
         </motion.a>
 
         <motion.div

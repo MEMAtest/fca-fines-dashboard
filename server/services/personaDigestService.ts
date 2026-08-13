@@ -18,19 +18,10 @@ import {
 import { personaDigestEmail, type DigestBriefingSummary, type DigestItem } from './personaDigestEmail.js';
 import { generatePersonaDigestPdf } from './personaDigestPdf.js';
 import { generateEnforcementBriefing } from './enforcementBriefingAgent.js';
-import { SESClient, SendRawEmailCommand } from '@aws-sdk/client-ses';
+import { enqueueDigestItem } from './emailDigest.js';
 
 const sql = getSqlClient();
 
-const ses = new SESClient({
-  region: process.env.AWS_SES_REGION?.trim() || 'eu-west-2',
-  credentials: {
-    accessKeyId: process.env.AWS_ACCESS_KEY_ID?.trim() || '',
-    secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY?.trim() || '',
-  },
-});
-
-const FROM_EMAIL = process.env.SES_FROM_EMAIL?.trim() || 'alerts@memaconsultants.com';
 const DEDUP_WINDOW_DAYS = 45;
 
 interface PersonaDigestResult {
@@ -218,56 +209,19 @@ async function sendDigestToRecipient(
   pdfBuffer?: Buffer,
   pdfFilename?: string,
 ): Promise<void> {
-  if (pdfBuffer && pdfFilename) {
-    // Send with PDF attachment using raw MIME
-    const boundary = `boundary_${Date.now()}_${Math.random().toString(36).slice(2)}`;
-    const rawMessage = [
-      `From: ${FROM_EMAIL}`,
-      `To: ${to}`,
-      `Subject: ${emailContent.subject}`,
-      `MIME-Version: 1.0`,
-      `Content-Type: multipart/mixed; boundary="${boundary}"`,
-      '',
-      `--${boundary}`,
-      'Content-Type: multipart/alternative; boundary="alt_boundary"',
-      '',
-      '--alt_boundary',
-      'Content-Type: text/plain; charset=UTF-8',
-      'Content-Transfer-Encoding: 7bit',
-      '',
-      emailContent.text,
-      '',
-      '--alt_boundary',
-      'Content-Type: text/html; charset=UTF-8',
-      'Content-Transfer-Encoding: 7bit',
-      '',
-      emailContent.html,
-      '',
-      '--alt_boundary--',
-      '',
-      `--${boundary}`,
-      `Content-Type: text/plain; charset=UTF-8; name="${pdfFilename}"`,
-      'Content-Transfer-Encoding: base64',
-      `Content-Disposition: attachment; filename="${pdfFilename}"`,
-      '',
-      pdfBuffer.toString('base64'),
-      '',
-      `--${boundary}--`,
-    ].join('\r\n');
-
-    await ses.send(new SendRawEmailCommand({
-      RawMessage: { Data: Buffer.from(rawMessage) },
-    }));
-  } else {
-    // Simple email without attachment
-    const { sendEmail } = await import('./email.js');
-    await sendEmail({
-      to,
-      subject: emailContent.subject,
-      html: emailContent.html,
-      text: emailContent.text,
-    });
-  }
+  await enqueueDigestItem(sql, {
+    recipient: to,
+    audience: 'customer',
+    cadence: pdfBuffer ? 'monthly' : 'weekly',
+    category: 'persona-digest',
+    fingerprint: `${emailContent.subject}:${pdfFilename || 'weekly'}`,
+    subject: emailContent.subject,
+    html: emailContent.html,
+    text: emailContent.text,
+    attachmentName: pdfFilename ?? null,
+    attachmentContentType: pdfBuffer ? 'text/plain' : null,
+    attachmentBase64: pdfBuffer?.toString('base64') ?? null,
+  });
 }
 
 /**

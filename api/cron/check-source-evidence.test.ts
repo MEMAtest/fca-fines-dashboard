@@ -13,7 +13,7 @@ describe("source evidence cron controls", () => {
   });
 
   it("uses a bounded batch size", () => {
-    expect(sourceCheckLimit(undefined)).toBe(25);
+    expect(sourceCheckLimit(undefined)).toBe(60);
     expect(sourceCheckLimit("0")).toBe(1);
     expect(sourceCheckLimit("35")).toBe(35);
     expect(sourceCheckLimit("1000")).toBe(60);

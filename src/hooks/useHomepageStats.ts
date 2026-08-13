@@ -7,6 +7,12 @@ export interface HomepageStats {
   earliestYear: number;
   latestYear: number;
   yoyChange: string | null;
+  scope?: { regulator: string; country: string };
+  definition?: string;
+  disclosedAmountCount?: number;
+  asOf?: string;
+  latestIngestionAt?: string | null;
+  yoyPeriod?: { current: string; previous: string };
   latestFines: Array<{
     firm: string;
     amount: number;

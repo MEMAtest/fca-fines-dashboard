@@ -20,21 +20,12 @@
  */
 
 import type { VercelRequest, VercelResponse } from "@vercel/node";
-import { SESClient, SendEmailCommand } from "@aws-sdk/client-ses";
 import { getSqlClient } from "../../server/db.js";
+import { enqueueDigestItem } from "../../server/services/emailDigest.js";
 import { buildCountryChanges, CHANGE_KIND_LABELS } from "../../src/data/countryChanges.js";
 
 const sql = getSqlClient();
 
-const ses = new SESClient({
-  region: process.env.AWS_SES_REGION?.trim() || "eu-west-2",
-  credentials: {
-    accessKeyId: process.env.AWS_ACCESS_KEY_ID?.trim() || "",
-    secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY?.trim() || "",
-  },
-});
-
-const FROM_EMAIL = process.env.SES_FROM_EMAIL?.trim() || "alerts@memaconsultants.com";
 const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL?.trim() || "https://regactions.com";
 
 function escapeHtml(str: string): string {
@@ -119,22 +110,16 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         .join("\n")}\n\nSee all: ${BASE_URL}/countries/changes\nUnsubscribe: ${unsubUrl}`;
 
       try {
-        await ses.send(
-          new SendEmailCommand({
-            Source: FROM_EMAIL,
-            Destination: { ToAddresses: [sub.email] },
-            Message: {
-              Subject: {
-                Data: `RegActions: ${fresh.length} country-risk change${fresh.length === 1 ? "" : "s"} this week`,
-                Charset: "UTF-8",
-              },
-              Body: {
-                Html: { Data: htmlContent, Charset: "UTF-8" },
-                Text: { Data: textContent, Charset: "UTF-8" },
-              },
-            },
-          }),
-        );
+        await enqueueDigestItem(sql, {
+          recipient: sub.email,
+          audience: "customer",
+          cadence: "weekly",
+          category: "country-risk-changes",
+          fingerprint: `${sub.id}:${newestDate}`,
+          subject: `RegActions: ${fresh.length} country-risk change${fresh.length === 1 ? "" : "s"} this week`,
+          html: htmlContent,
+          text: textContent,
+        });
 
         await sql`
           UPDATE alert_subscriptions

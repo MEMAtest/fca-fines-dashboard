@@ -26,6 +26,7 @@ const MOCK_RECORDS: FineRecord[] = [
     month_issued: 11,
     country_code: "GB",
     country_name: "United Kingdom",
+    source_link_status: "verified_detail",
   },
   {
     id: "2",
@@ -45,6 +46,7 @@ const MOCK_RECORDS: FineRecord[] = [
     month_issued: 8,
     country_code: "IN",
     country_name: "India",
+    source_link_status: "verified_publication",
   },
   {
     id: "3",
@@ -64,6 +66,7 @@ const MOCK_RECORDS: FineRecord[] = [
     month_issued: 9,
     country_code: "DE",
     country_name: "Germany",
+    source_link_status: "verified_detail",
   },
 ];
 
@@ -106,5 +109,33 @@ describe("boardIntelligence", () => {
     expect(summary.assessedControlCount).toBe(2);
     expect(summary.evidenceGapCount).toBeGreaterThan(0);
     expect(summary.actionItems.length).toBeGreaterThan(0);
+  });
+
+  it("uses regulator, region and theme choices as hard filters without global fallback", () => {
+    const profile = {
+      ...DEFAULT_BOARD_PROFILE,
+      priorityRegulators: ["FCA"],
+      focusRegions: ["UK"],
+      priorityThemeIds: ["aml-controls" as const],
+    };
+    const pack = buildBoardPack(MOCK_RECORDS, profile);
+
+    expect(pack.relevantActionCount).toBe(1);
+    expect(pack.primaryRegulators).toEqual(["FCA"]);
+    expect(pack.notableCases.map((item) => item.firm)).toEqual([
+      "NorthBridge Wealth Ltd",
+    ]);
+  });
+
+  it("returns an explicit evidence gap instead of substituting global records", () => {
+    const pack = buildBoardPack(MOCK_RECORDS, {
+      ...DEFAULT_BOARD_PROFILE,
+      priorityRegulators: ["HKMA"],
+      focusRegions: ["APAC"],
+    });
+
+    expect(pack.relevantActionCount).toBe(0);
+    expect(pack.evidenceSufficient).toBe(false);
+    expect(pack.summaryHeadline).toContain("insufficient verified evidence");
   });
 });

@@ -7,21 +7,11 @@
  */
 
 import postgres from 'postgres';
-import { SESClient, SendEmailCommand } from '@aws-sdk/client-ses';
 
 const sql = postgres(process.env.DATABASE_URL?.trim() || '', {
   ssl: process.env.DATABASE_URL?.includes('sslmode=') ? 'require' : undefined
 });
 
-const ses = new SESClient({
-  region: process.env.AWS_SES_REGION?.trim() || 'eu-west-2',
-  credentials: {
-    accessKeyId: process.env.AWS_ACCESS_KEY_ID?.trim() || '',
-    secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY?.trim() || '',
-  },
-});
-
-const FROM_EMAIL = process.env.SES_FROM_EMAIL?.trim() || 'alerts@memaconsultants.com';
 const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL?.trim() || 'https://regactions.com';
 
 interface Fine {
@@ -119,7 +109,7 @@ async function main() {
           )
         `;
 
-        console.log(`Sent ${frequency} digest to ${subscription.email}`);
+        console.log(`Queued ${frequency} digest for ${subscription.email}`);
       } catch (error) {
         console.error(`Failed to send digest to ${subscription.email}:`, error);
       }
@@ -247,17 +237,19 @@ View full dashboard: ${BASE_URL}/dashboard
 
 Unsubscribe: ${unsubscribeUrl}`;
 
-  await ses.send(new SendEmailCommand({
-    Source: FROM_EMAIL,
-    Destination: { ToAddresses: [subscription.email] },
-    Message: {
-      Subject: { Data: `${periodLabel}: ${allFines.length} enforcement actions, £${(totalAmount / 1_000_000).toFixed(1)}m monetary total`, Charset: 'UTF-8' },
-      Body: {
-        Html: { Data: htmlContent, Charset: 'UTF-8' },
-        Text: { Data: textContent, Charset: 'UTF-8' },
-      },
-    },
-  }));
+  await sql`
+    INSERT INTO public.email_digest_outbox (
+      recipient, audience, cadence, category, fingerprint, subject,
+      text_body, html_body, eligible_local_date
+    ) VALUES (
+      ${subscription.email.toLowerCase()}, 'customer', ${frequency}, 'enforcement-digest',
+      ${`${frequency}:${allFines.map((fine) => fine.id).sort().join(':')}`},
+      ${`${periodLabel}: ${allFines.length} enforcement actions, £${(totalAmount / 1_000_000).toFixed(1)}m monetary total`},
+      ${textContent}, ${htmlContent},
+      (now() AT TIME ZONE 'Europe/London')::date
+    ) ON CONFLICT (recipient, cadence, category, fingerprint, eligible_local_date)
+      DO NOTHING
+  `;
 }
 
 main()

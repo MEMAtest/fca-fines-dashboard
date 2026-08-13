@@ -10,7 +10,8 @@
 
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 import { runMaintenance, buildMaintenanceEmailReport } from '../../server/services/maintenanceAgent.js';
-import { sendEmail } from '../../server/services/email.js';
+import { getSqlClient } from '../../server/db.js';
+import { enqueueDigestItem } from '../../server/services/emailDigest.js';
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   // Verify cron secret — fail closed when CRON_SECRET is not set
@@ -32,13 +33,17 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
     if (result.analyzed > 0 || result.trends.length > 0) {
       const emailReport = await buildMaintenanceEmailReport(result);
-      await sendEmail({
-        to: reportRecipient,
+      await enqueueDigestItem(getSqlClient(), {
+        recipient: reportRecipient,
+        audience: 'internal',
+        cadence: 'daily',
+        category: 'scraper-maintenance',
+        fingerprint: `${result.timestamp}:${result.analyzed}:${result.needsHuman}:${result.trends.length}`,
         subject: emailReport.subject,
         html: emailReport.html,
         text: emailReport.text,
       });
-      console.log(`Maintenance report sent to ${reportRecipient}`);
+      console.log(`Maintenance report queued for ${reportRecipient}`);
     } else {
       console.log('No issues to report — all scrapers healthy');
     }

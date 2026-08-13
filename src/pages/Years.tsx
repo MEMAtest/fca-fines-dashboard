@@ -58,7 +58,7 @@ export function Years() {
             dashboard for the complete record and exports.
           </p>
           <div className="hub-hero__actions">
-            <Link to="/dashboard?year=0" className="btn btn-primary">
+            <Link to="/fines?year=0" className="btn btn-primary">
               Explore All Years
             </Link>
             <Link to="/topics" className="btn btn-ghost">

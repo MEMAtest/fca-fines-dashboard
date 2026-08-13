@@ -18,7 +18,7 @@ export function sourceCheckLimit(value: unknown) {
   const parsed = Number(Array.isArray(value) ? value[0] : value);
   return Number.isFinite(parsed)
     ? Math.max(1, Math.min(60, Math.floor(parsed)))
-    : 25;
+    : 60;
 }
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {

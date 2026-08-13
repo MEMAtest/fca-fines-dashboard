@@ -1087,8 +1087,8 @@ export const blogArticleEditorialUpgrades: Record<
       searchQuery: "CVM%20CNBV%20CMF%20Latin%20America",
       hubLinks: [
         "[CVM](/regulators/cvm)",
-        "[CNBV](/regulators/cnbv)",
-        "[CMF](/regulators/cmf)",
+        "[CNBV enforcement search](/search?regulator=CNBV)",
+        "[CMF enforcement search](/search?regulator=CMF)",
       ],
       sources: [
         {

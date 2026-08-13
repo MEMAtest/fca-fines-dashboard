@@ -77,7 +77,7 @@ export function Firms() {
             Open an entity page for totals, largest penalties, and history.
           </p>
           <div className="hub-hero__actions">
-            <Link to="/dashboard?year=0" className="btn btn-primary">
+            <Link to="/fines?year=0" className="btn btn-primary">
               Explore In Dashboard
             </Link>
             <Link to="/topics" className="btn btn-ghost">

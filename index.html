@@ -220,7 +220,8 @@
   <body>
     <div id="root"></div>
     <script>
-      if (["regactions.com", "www.regactions.com"].includes(window.location.hostname)) {
+      const isPrivateBoardPackShare = /^\/board-pack\/shared\/[^/]+\/?$/i.test(window.location.pathname);
+      if (["regactions.com", "www.regactions.com"].includes(window.location.hostname) && !isPrivateBoardPackShare) {
         const ownedAnalytics = document.createElement("script");
         ownedAnalytics.defer = true;
         ownedAnalytics.src = "https://owned-portfolio-analytics.mema-consultants.workers.dev/tracker.js";

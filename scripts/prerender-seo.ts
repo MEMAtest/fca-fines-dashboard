@@ -1289,6 +1289,10 @@ function renderHomepageBody(): string {
   return `<div class="blog-page"><div class="blog-post-container"><article class="blog-article-modal"><h1 class="blog-post-title">Global Regulatory Fines & Enforcement Intelligence</h1><div class="blog-article-content"><p>RegActions tracks enforcement actions, penalties, breach categories, firms, and regulator activity across 45+ global financial regulators.</p><h2>What RegActions Covers</h2><ul><li><strong>Regulators:</strong> 45+ global financial regulators across the UK, Europe, North America, APAC, the Middle East, Africa, and offshore markets.</li><li><strong>Dataset:</strong> searchable enforcement actions, monetary penalties, breach themes, dates, sectors, and source links.</li><li><strong>Use cases:</strong> compliance monitoring, board packs, regulator benchmarking, control reviews, and trend analysis.</li></ul><h2>Start With The Data</h2><p><a href="/regulators">Open the regulator data hub</a>, <a href="/search">search enforcement actions</a>, <a href="/board-pack">create a board pack</a>, or use the <a href="/developers">free data API</a>.</p><h2>Latest Insights</h2><ul>${articleLinks}</ul><h2>Frequently Asked Questions</h2><p>RegActions combines official-source enforcement monitoring with practical analysis so compliance teams can understand what changed, why it matters, and what action to take next.</p></div></article></div></div>`;
 }
 
+function renderEnforcementMethodologyBody(): string {
+  return `<main class="content-page"><header><span class="eyebrow">Evidence and counting contract</span><h1>Enforcement data methodology</h1><p>RegActions separates source records, cases, actions and monetary outcomes so totals remain reproducible and limitations remain visible.</p></header><section><h2>Counting unit</h2><p>The primary counting unit is a canonical public enforcement case. One regulator operation may produce several notices or outcomes, and one notice may cover several subjects.</p></section><section><h2>Canonical identity and duplicates</h2><p>Source rows are matched into canonical cases using regulator, entity, date, source and outcome evidence. Duplicate source rows are collapsed and each published case receives an immutable public identifier.</p></section><section><h2>Monetary outcomes</h2><p>Original currency and reported value are retained. GBP and EUR normalisation supports comparison but does not restate the legal outcome. Values requiring review are excluded from monetary analysis.</p></section><section><h2>Source evidence</h2><p>A link is called verified only after a persisted source check confirms a reachable case-level source on a configured official regulator domain. Listing pages and unchecked official links remain explicitly provisional.</p></section><section><h2>Freshness and coverage</h2><p>Latest official action date, last successful source check and last ingestion time are separate measures. Coverage confidence reflects archive completeness, collection method and operational stability.</p></section></main>`;
+}
+
 function renderBlogListingBody(): string {
   const sortedArticles = [...blogArticles].sort((a, b) =>
     b.dateISO.localeCompare(a.dateISO),
@@ -1996,6 +2000,7 @@ async function buildPageMetas(): Promise<PageMeta[]> {
     keywords:
       "regulatory fines by breach, market abuse enforcement, AML fines, regulatory principles fines, breach category fines",
     ogType: "website",
+    bodyContent: '<main class="content-page"><h1>Enforcement actions by breach category</h1><p>Browse enforcement evidence by breach theme, then open the Fines workspace for the complete filtered record.</p></main>',
   });
   pages.push({
     path: "/years",
@@ -2005,6 +2010,7 @@ async function buildPageMetas(): Promise<PageMeta[]> {
     keywords:
       "regulatory fines by year, enforcement actions 2026, enforcement actions 2025, financial enforcement by year",
     ogType: "website",
+    bodyContent: '<main class="content-page"><h1>Enforcement actions by year</h1><p>Compare annual enforcement totals and open each year\'s full evidence set.</p></main>',
   });
   pages.push({
     path: "/sectors",
@@ -2014,6 +2020,7 @@ async function buildPageMetas(): Promise<PageMeta[]> {
     keywords:
       "regulatory fines by sector, bank enforcement penalties, insurance enforcement penalties, individual enforcement penalties",
     ogType: "website",
+    bodyContent: '<main class="content-page"><h1>Regulatory fines by sector</h1><p>Review which sectors receive the most enforcement attention and monetary penalties.</p></main>',
   });
   pages.push({
     path: "/firms",
@@ -2024,6 +2031,7 @@ async function buildPageMetas(): Promise<PageMeta[]> {
     keywords:
       "top regulatory fines firms, biggest enforcement penalty recipients, fines by firm, fines by individual, largest regulatory penalties",
     ogType: "website",
+    bodyContent: '<main class="content-page"><h1>Top firms and individuals</h1><p>Browse leading penalty recipients and their source-linked enforcement history.</p></main>',
   });
 
   // 4b. Regulator Hub Pages
@@ -2242,6 +2250,22 @@ async function buildPageMetas(): Promise<PageMeta[]> {
         "Dated country-risk changes derived from FATF plenaries, sanctions snapshots, the EU tax list and framework-data reviews.",
       url: `${BASE_URL}/countries/changes`,
       isPartOf: { "@type": "WebSite", name: SITE_NAME, url: "https://regactions.com" },
+    },
+  });
+  pages.push({
+    path: "/methodology/enforcement",
+    title: "Enforcement Data Methodology | RegActions",
+    description: "How RegActions counts, verifies, deduplicates and presents public regulatory enforcement evidence.",
+    keywords: "enforcement data methodology, regulatory evidence verification, enforcement deduplication",
+    ogType: "article",
+    bodyContent: renderEnforcementMethodologyBody(),
+    breadcrumbLabel: "Enforcement methodology",
+    jsonLd: {
+      "@context": "https://schema.org",
+      "@type": "Article",
+      headline: "Enforcement data methodology",
+      url: `${BASE_URL}/methodology/enforcement`,
+      author: { "@type": "Organization", name: SITE_NAME },
     },
   });
   pages.push({
@@ -2466,6 +2490,7 @@ async function buildPageMetas(): Promise<PageMeta[]> {
       "Complete sitemap of RegActions. Browse all pages including the interactive dashboard, blog articles, annual reviews, and hub pages.",
     keywords: "RegActions sitemap, regulatory enforcement pages, regulatory fines navigation",
     ogType: "website",
+    bodyContent: '<main class="content-page"><h1>RegActions sitemap</h1><p>Browse the main enforcement, regulator, country-risk, research and methodology pages.</p></main>',
   });
 
   // 5c. Pillar page: Complete Guide to FCA Enforcement
@@ -2478,6 +2503,7 @@ async function buildPageMetas(): Promise<PageMeta[]> {
     keywords:
       "FCA enforcement guide, FCA fines guide, FCA fines explained, how FCA fines work, FCA enforcement process, FCA penalties guide",
     ogType: "article",
+    bodyContent: '<main class="content-page"><h1>Complete guide to FCA enforcement and fines</h1><p>Understand the FCA enforcement process, penalty decisions and the official evidence behind RegActions records.</p></main>',
     datePublished: "2026-02-01",
     dateModified: todayISO(),
     articleSection: "Guide",
@@ -2531,6 +2557,7 @@ async function buildPageMetas(): Promise<PageMeta[]> {
     keywords:
       "regulatory fines FAQ, global enforcement questions, FCA fines, BaFin fines, SEC enforcement, ASIC fines, MAS penalties, ESMA regulation, FINRA, CNMV, AMF, financial regulator comparison, AML enforcement, biggest regulatory fines, RegActions",
     ogType: "website",
+    bodyContent: '<main class="content-page"><h1>Regulatory fines frequently asked questions</h1><p>Answers about regulatory enforcement coverage, evidence, amounts, comparisons and methodology.</p></main>',
     jsonLd: generateFaqSchema(faqItems),
   });
 
@@ -3059,9 +3086,12 @@ function sitemapLastmod(page: PageMeta): string | null {
 }
 
 function sitemapEligiblePages(pages: PageMeta[]): PageMeta[] {
-  return pages.filter(
-    (page) => !page.noindex && page.includeInSitemap !== false,
-  );
+  const seen = new Set<string>();
+  return pages.filter((page) => {
+    if (page.noindex || page.includeInSitemap === false || seen.has(page.path)) return false;
+    seen.add(page.path);
+    return true;
+  });
 }
 
 function generateSitemapUrlset(pages: PageMeta[]): string {

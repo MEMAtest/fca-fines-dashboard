@@ -8,7 +8,6 @@
  */
 
 import postgres from 'postgres';
-import { SESClient, SendEmailCommand } from '@aws-sdk/client-ses';
 
 const sql = postgres(process.env.DATABASE_URL?.trim() || '', {
   ssl: process.env.DATABASE_URL?.includes('sslmode=')
@@ -16,15 +15,6 @@ const sql = postgres(process.env.DATABASE_URL?.trim() || '', {
     : false
 });
 
-const ses = new SESClient({
-  region: process.env.AWS_SES_REGION?.trim() || 'eu-west-2',
-  credentials: {
-    accessKeyId: process.env.AWS_ACCESS_KEY_ID?.trim() || '',
-    secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY?.trim() || '',
-  },
-});
-
-const FROM_EMAIL = process.env.SES_FROM_EMAIL?.trim() || 'alerts@memaconsultants.com';
 const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL?.trim() || 'https://regactions.com';
 
 interface Fine {
@@ -112,7 +102,7 @@ async function main() {
 }
 
 async function processImmediateAlerts(fines: Fine[]) {
-  // Get active immediate alert subscriptions
+  // Legacy "immediate" subscriptions now enter the daily London-time digest.
   const subscriptions = await sql`
     SELECT id, email, min_amount, breach_types, frequency,
            last_notified_at, unsubscribe_token
@@ -190,7 +180,7 @@ async function processImmediateAlerts(fines: Fine[]) {
         WHERE id = ${subscription.id}
       `;
 
-      console.log(`Sent alert to ${subscription.email} for ${newFines.length} enforcement actions`);
+      console.log(`Queued daily alert for ${subscription.email} with ${newFines.length} enforcement actions`);
     } catch (error) {
       console.error(`Failed to process subscription ${subscription.id}:`, error);
     }
@@ -270,7 +260,7 @@ async function processWatchlistAlerts(fines: Fine[]) {
         WHERE id = ${entry.id}
       `;
 
-      console.log(`Sent watchlist alert to ${entry.email} for ${entry.firm_name}`);
+      console.log(`Queued daily watchlist alert for ${entry.email} for ${entry.firm_name}`);
     } catch (error) {
       console.error(`Failed to process watchlist entry ${entry.id}:`, error);
     }
@@ -344,17 +334,19 @@ View Dashboard: ${BASE_URL}/dashboard
 
 Unsubscribe: ${unsubscribeUrl}`;
 
-  await ses.send(new SendEmailCommand({
-    Source: FROM_EMAIL,
-    Destination: { ToAddresses: [subscription.email] },
-    Message: {
-      Subject: { Data: `RegActions Alert: ${fines.length} new enforcement action${fines.length !== 1 ? 's' : ''}`, Charset: 'UTF-8' },
-      Body: {
-        Html: { Data: htmlContent, Charset: 'UTF-8' },
-        Text: { Data: textContent, Charset: 'UTF-8' },
-      },
-    },
-  }));
+  await sql`
+    INSERT INTO public.email_digest_outbox (
+      recipient, audience, cadence, category, fingerprint, subject,
+      text_body, html_body, eligible_local_date
+    ) VALUES (
+      ${subscription.email.toLowerCase()}, 'customer', 'daily', 'enforcement-alert',
+      ${fines.map((fine) => fine.id).sort().join(':')},
+      ${`RegActions Alert: ${fines.length} new enforcement action${fines.length !== 1 ? 's' : ''}`},
+      ${textContent}, ${htmlContent},
+      (now() AT TIME ZONE 'Europe/London')::date
+    ) ON CONFLICT (recipient, cadence, category, fingerprint, eligible_local_date)
+      DO NOTHING
+  `;
 }
 
 async function sendWatchlistEmail(entry: WatchlistEntry, fines: Fine[]) {
@@ -415,19 +407,22 @@ async function sendWatchlistEmail(entry: WatchlistEntry, fines: Fine[]) {
   const totalAmount = fines.reduce((sum, f) => sum + (f.amount ?? 0), 0);
   const hasMonetaryAction = fines.some((fine) => fine.amount !== null);
 
-  await ses.send(new SendEmailCommand({
-    Source: FROM_EMAIL,
-    Destination: { ToAddresses: [entry.email] },
-    Message: {
-      Subject: { Data: hasMonetaryAction
-        ? `Watchlist Alert: ${entry.firm_name} enforcement action, £${totalAmount.toLocaleString('en-GB')}`
-        : `Watchlist Alert: ${entry.firm_name} enforcement action`, Charset: 'UTF-8' },
-      Body: {
-        Html: { Data: htmlContent, Charset: 'UTF-8' },
-        Text: { Data: `Watchlist Alert: ${entry.firm_name}\n\nA firm you're watching has received a new tracked enforcement action.\n\nActions:\n${fines.map(f => `${formatAmount(f.amount)} - ${f.regulator} - ${f.breach_type}`).join('\n')}\n\nView details: ${BASE_URL}/dashboard\n\nStop watching: ${unsubscribeUrl}`, Charset: 'UTF-8' },
-      },
-    },
-  }));
+  const subject = hasMonetaryAction
+    ? `Watchlist Alert: ${entry.firm_name} enforcement action, £${totalAmount.toLocaleString('en-GB')}`
+    : `Watchlist Alert: ${entry.firm_name} enforcement action`;
+  const textContent = `Watchlist Alert: ${entry.firm_name}\n\nA firm you're watching has received a new tracked enforcement action.\n\nActions:\n${fines.map(f => `${formatAmount(f.amount)} - ${f.regulator} - ${f.breach_type}`).join('\n')}\n\nView details: ${BASE_URL}/dashboard\n\nStop watching: ${unsubscribeUrl}`;
+  await sql`
+    INSERT INTO public.email_digest_outbox (
+      recipient, audience, cadence, category, fingerprint, subject,
+      text_body, html_body, eligible_local_date
+    ) VALUES (
+      ${entry.email.toLowerCase()}, 'customer', 'daily', 'firm-watchlist',
+      ${`${entry.id}:${fines.map((fine) => fine.id).sort().join(':')}`},
+      ${subject}, ${textContent}, ${htmlContent},
+      (now() AT TIME ZONE 'Europe/London')::date
+    ) ON CONFLICT (recipient, cadence, category, fingerprint, eligible_local_date)
+      DO NOTHING
+  `;
 }
 
 main()

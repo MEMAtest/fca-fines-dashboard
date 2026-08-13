@@ -5,7 +5,6 @@ import {
   CircleHelp,
   ClipboardCheck,
   FileSearch,
-  Gauge,
   Landmark,
   ListChecks,
   ShieldCheck,
@@ -87,26 +86,6 @@ function buildDriverGradient(scores: number[]) {
   return `conic-gradient(${stops.join(", ")})`;
 }
 
-function ScoreMeter({
-  value,
-  benchmark,
-}: {
-  value: number;
-  benchmark?: number;
-}) {
-  return (
-    <div
-      className="board-pack-dashboard__meter"
-      aria-label={`Score ${value} out of 100`}
-    >
-      <span style={{ width: `${Math.min(Math.max(value, 0), 100)}%` }} />
-      {typeof benchmark === "number" && (
-        <i style={{ left: `${Math.min(Math.max(benchmark, 0), 100)}%` }} />
-      )}
-    </div>
-  );
-}
-
 export function BoardPackDashboard({
   pack,
   profileSummary,
@@ -126,7 +105,7 @@ export function BoardPackDashboard({
 }: BoardPackDashboardProps) {
   const driverThemes = pack.topThemes.slice(0, 5);
   const driverTotal =
-    driverThemes.reduce((sum, theme) => sum + Math.max(theme.score, 1), 0) || 1;
+    driverThemes.reduce((sum, theme) => sum + theme.matchedActions, 0) || 1;
   const actionItems = [...pack.recommendedActions, ...pack.nextSteps].filter(
     (item, index, all) => all.indexOf(item) === index,
   );
@@ -153,21 +132,14 @@ export function BoardPackDashboard({
           </div>
         </div>
         <div className="board-pack-dashboard__headline-score">
-          <span>Enforcement pressure</span>
-          <strong>
-            {pack.exposureScore}
-            <small>/100</small>
-          </strong>
+          <span>Evidence-led pressure</span>
+          <strong>{pack.evidenceSufficient ? getBandLabel(pack.exposureBand) : "Evidence gap"}</strong>
           <em
             className={`board-pack-dashboard__band board-pack-dashboard__band--${pack.exposureBand}`}
           >
             {getBandLabel(pack.exposureBand)} external pressure
           </em>
-          <ScoreMeter
-            value={pack.exposureScore}
-            benchmark={pack.peerBaselineScore}
-          />
-          <small>Reference benchmark {pack.peerBaselineScore}</small>
+          <small>{pack.verifiedEvidenceCount} verified of {pack.relevantActionCount} in-scope actions</small>
         </div>
       </header>
 
@@ -176,10 +148,10 @@ export function BoardPackDashboard({
         aria-label="Board pack key indicators"
       >
         <article>
-          <Gauge size={18} />
-          <span>Enforcement pressure</span>
-          <strong>{pack.exposureScore}/100</strong>
-          <small>{getBandLabel(pack.exposureBand)} external pressure</small>
+          <FileSearch size={18} />
+          <span>Verified evidence</span>
+          <strong>{pack.verifiedEvidenceCount}</strong>
+          <small>of {pack.relevantActionCount} in-scope actions</small>
         </article>
         <article>
           <ShieldCheck size={18} />
@@ -217,6 +189,15 @@ export function BoardPackDashboard({
             Directional source coverage applies to{" "}
             {lowerConfidenceCodes.join(", ")}. Validate material decisions
             against the linked official evidence.
+          </span>
+        </div>
+      )}
+
+      {!pack.evidenceSufficient && (
+        <div className="board-pack-dashboard__coverage-warning">
+          <AlertCircle size={17} />
+          <span>
+            Evidence-gap brief: fewer than three verified case-level sources match this scope. No committee-level exposure conclusion or peer comparison is presented.
           </span>
         </div>
       )}
@@ -268,15 +249,15 @@ export function BoardPackDashboard({
               className="board-pack-dashboard__donut"
               style={{
                 background: buildDriverGradient(
-                  driverThemes.map((theme) => theme.score),
+                  driverThemes.map((theme) => theme.matchedActions),
                 ),
               }}
               role="img"
               aria-label="Share of exposure by leading theme"
             >
               <div>
-                <strong>{pack.exposureScore}</strong>
-                <span>Exposure</span>
+                <strong>{pack.relevantActionCount}</strong>
+                <span>Actions</span>
               </div>
             </div>
             <ol className="board-pack-dashboard__legend">
@@ -285,7 +266,7 @@ export function BoardPackDashboard({
                   <i style={{ background: DRIVER_COLOURS[index] }} />
                   <span>{theme.shortLabel}</span>
                   <strong>
-                    {Math.round((Math.max(theme.score, 1) / driverTotal) * 100)}
+                    {Math.round((theme.matchedActions / driverTotal) * 100)}
                     %
                   </strong>
                 </li>
@@ -297,23 +278,18 @@ export function BoardPackDashboard({
         <section className="board-pack-dashboard__card">
           <div className="board-pack-dashboard__card-heading">
             <Users size={19} />
-            <h2>Peer comparison</h2>
+            <h2>Evidence coverage</h2>
           </div>
           <div className="board-pack-dashboard__comparison">
             <div>
-              <span>Exposure score</span>
-              <strong>{pack.exposureScore}</strong>
-              <ScoreMeter
-                value={pack.exposureScore}
-                benchmark={pack.peerBaselineScore}
-              />
-              <small>Peer average {pack.peerBaselineScore}</small>
+              <span>In-scope actions</span>
+              <strong>{pack.relevantActionCount}</strong>
+              <small>{pack.activeRegulatorCount} regulators in the selected perimeter</small>
             </div>
             {pack.pillarScores.slice(0, 3).map((pillar) => (
               <div key={pillar.id}>
                 <span>{pillar.label}</span>
-                <strong>{pillar.score}</strong>
-                <ScoreMeter value={pillar.score} />
+                <strong>{pillar.actionCount}</strong>
                 <small>{pillar.actionCount} matched actions</small>
               </div>
             ))}

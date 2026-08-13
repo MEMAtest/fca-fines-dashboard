@@ -217,6 +217,8 @@ jobs:
           SCRAPE_DETAIL: ${{ steps.scraper_health.outputs.detail }}
           ALERT_EMAIL: ${{ vars.ALERT_EMAIL || 'ademola@memaconsultants.com' }}
           WORKFLOW_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          DIGEST_CATEGORY: infrastructure-monitoring
         run: |
           echo "========================================="
           echo "  Daily Infrastructure Monitoring Report"
@@ -286,9 +288,9 @@ jobs:
               }, null, 2));
             '
 
-            aws ses send-email --cli-input-json file:///tmp/ses-email.json --region eu-west-2
+            npx tsx scripts/jobs/enqueueSesDigest.ts /tmp/ses-email.json
 
-            echo "Alert email sent"
+            echo "Alert queued for the daily digest"
             exit 1
           else
             echo "✅ All checks passed — no alert needed"

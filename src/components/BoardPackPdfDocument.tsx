@@ -132,8 +132,8 @@ export function BoardPackPdfDocument({ pack, profile, generatedLabel, controlSum
         <PageHeader profile={profile} generatedLabel={generatedLabel} section="Executive summary" />
         <Text style={styles.eyebrow}>Executive summary</Text><Text style={styles.title}>{pack.summaryHeadline.replaceAll("—", "-")}</Text><Text style={styles.lead}>{pack.summaryNarrative.replaceAll("—", "-")}</Text>
         <View style={styles.kpis}>
-          <View style={styles.kpi}><Text style={styles.kpiLabel}>Enforcement pressure</Text><Text style={styles.kpiValue}>{pack.exposureScore}/100</Text><Text style={styles.kpiMeta}>{pack.exposureBand} external pressure</Text></View>
-          <View style={styles.kpi}><Text style={styles.kpiLabel}>Reference benchmark</Text><Text style={styles.kpiValue}>{pack.peerBaselineScore}/100</Text><Text style={styles.kpiMeta}>{pack.peerBaselineDelta >= 0 ? "+" : ""}{pack.peerBaselineDelta} points</Text></View>
+          <View style={styles.kpi}><Text style={styles.kpiLabel}>Evidence-led pressure</Text><Text style={styles.kpiValue}>{pack.evidenceSufficient ? titleCase(pack.exposureBand) : "Evidence gap"}</Text><Text style={styles.kpiMeta}>Directional, not a calibrated score</Text></View>
+          <View style={styles.kpi}><Text style={styles.kpiLabel}>Verified evidence</Text><Text style={styles.kpiValue}>{pack.verifiedEvidenceCount}</Text><Text style={styles.kpiMeta}>case-level official sources</Text></View>
           <View style={styles.kpi}><Text style={styles.kpiLabel}>Relevant actions</Text><Text style={styles.kpiValue}>{pack.relevantActionCount}</Text><Text style={styles.kpiMeta}>{pack.activeRegulatorCount} regulators</Text></View>
           <View style={styles.kpi}><Text style={styles.kpiLabel}>Control readiness</Text><Text style={styles.kpiValue}>{controlSummary.readinessBand ? titleCase(controlSummary.readinessBand) : "Unassessed"}</Text><Text style={styles.kpiMeta}>{controlSummary.assessedControlCount} controls assessed</Text></View>
         </View>
@@ -144,9 +144,9 @@ export function BoardPackPdfDocument({ pack, profile, generatedLabel, controlSum
 
       <Page size="A4" style={styles.page}>
         <PageHeader profile={profile} generatedLabel={generatedLabel} section="Exposure and peers" />
-        <Text style={styles.eyebrow}>External pressure and reference comparison</Text><Text style={styles.title}>The themes driving enforcement pressure</Text><Text style={styles.lead}>{pack.peerBaselineNarrative.replaceAll("—", "-")}</Text>
+        <Text style={styles.eyebrow}>External pressure and evidence coverage</Text><Text style={styles.title}>The themes driving enforcement pressure</Text><Text style={styles.lead}>{pack.summaryNarrative.replaceAll("—", "-")}</Text>
         <View style={styles.grid}>
-          <View style={styles.card}><Text style={styles.cardTitle}>Exposure drivers</Text>{primaryThemes.map((theme) => <View style={styles.barRow} key={theme.id}><View style={styles.barHead}><Text style={styles.barLabel}>{theme.shortLabel}</Text><Text>{theme.score}/100</Text></View><View style={styles.barTrack}><View style={[styles.barFill,{width:`${Math.max(theme.score,3)}%`}]} /></View><Text style={styles.kpiMeta}>{theme.matchedActions} matched actions | {theme.activeRegulators.join(", ") || "Regulator mix limited"}</Text></View>)}</View>
+          <View style={styles.card}><Text style={styles.cardTitle}>Exposure drivers</Text>{primaryThemes.map((theme) => <View style={styles.barRow} key={theme.id}><View style={styles.barHead}><Text style={styles.barLabel}>{theme.shortLabel}</Text><Text>{theme.matchedActions} actions</Text></View><Text style={styles.kpiMeta}>{titleCase(theme.band)} directional signal | {theme.activeRegulators.join(", ") || "Regulator mix limited"}</Text></View>)}</View>
           <View style={styles.card}><Text style={styles.cardTitle}>Regulator signals</Text>{pack.regulatorSignals.slice(0,6).map((signal) => <View style={styles.scopeRow} key={signal.code}><Text style={styles.colSmall}>{signal.code}</Text><Text style={styles.col}>{signal.actionCount} actions</Text><Text style={signal.band === "severe" || signal.band === "material" ? styles.statusHigh : styles.statusMedium}>{titleCase(signal.band)}</Text></View>)}</View>
         </View>
         <View style={styles.panel}><Text style={styles.cardTitle}>Board implications</Text><Bullets items={pack.implications} limit={6}/></View>
