@@ -19,6 +19,7 @@ import type {
 import { coverageAgentSchemas } from "../../src/types/coverageAgent.js";
 import { runCoverageIntelligenceAgent } from "./lib/coverageIntelligence.js";
 import { lookupCandidatesViaUnifiedSearch } from "./lib/regactionsLookup.js";
+import { mapDiscoveryQueueCandidate, type DiscoveryQueueDatabaseRow } from "./lib/discoveryQueue.js";
 
 const candidateSchema = z.object({
   id: z.string().min(1), regulator: z.string().min(1), sourceUrl: z.string().url(), sourceContentHash: z.string().nullable().optional(),
@@ -45,6 +46,7 @@ Inputs:
   --api-base=URL           Read-only /api/unified/search lookup for candidate matching
   --current-state=FILE     Current-state audit JSON; overrides input currentState
   --recent-records=DAYS    Run existing-record duplicate/amount QA only (not discovery)
+  --pending-discovery=DAYS Load newly prepared official-source candidates pending human disposition
   --output-dir=DIR         Where four report-only JSON artifacts are written
 
 This command does not scrape the network, publish an article, or mutate any database table.
@@ -93,6 +95,47 @@ async function loadRecentRecords(days: number) {
   }
 }
 
+async function loadPendingDiscovery(days: number): Promise<EnforcementCandidate[]> {
+  const connection = resolveConnectionString();
+  if (!connection) throw new Error("DATABASE_URL is required for --pending-discovery.");
+  const pool = new pg.Pool(buildPgPoolConfig(connection));
+  try {
+    const result = await pool.query<DiscoveryQueueDatabaseRow>(`
+      SELECT fingerprint, regulator, source_url, source_content_hash, entity,
+             issued_date::text, amount, currency, summary
+      FROM public.coverage_discovery_candidates
+      WHERE status = 'pending'
+        AND first_seen_at >= NOW() - $1::int * INTERVAL '1 day'
+      ORDER BY first_seen_at DESC, fingerprint ASC
+      LIMIT 5000
+    `, [days]);
+    return result.rows.map(mapDiscoveryQueueCandidate);
+  } finally {
+    await pool.end();
+  }
+}
+
+async function loadTrustedRecordsForRegulators(regulators: string[]): Promise<ExistingEnforcementRecord[]> {
+  if (!regulators.length) return [];
+  const connection = resolveConnectionString();
+  if (!connection) throw new Error("DATABASE_URL is required to match pending discovery candidates.");
+  const pool = new pg.Pool(buildPgPoolConfig(connection));
+  try {
+    const result = await pool.query(`
+      SELECT public_case_id::text AS id, regulator, firm_individual, source_url, notice_url,
+             source_content_hash, date_issued::text, amount_original, currency, summary,
+             requires_amount_review, amount_quality
+      FROM public.all_regulatory_fines_trusted
+      WHERE regulator = ANY($1::text[])
+      ORDER BY regulator ASC, date_issued DESC NULLS LAST, public_case_id ASC
+      LIMIT 50000
+    `, [regulators]);
+    return result.rows.map((row) => mapRecord(row));
+  } finally {
+    await pool.end();
+  }
+}
+
 async function main() {
   if (process.argv.includes("--help") || process.argv.includes("-h")) return usage();
   const inputPath = arg("input");
@@ -101,8 +144,10 @@ async function main() {
   const apiBase = arg("api-base");
   const recentRecordDaysArg = arg("recent-records");
   const recentRecordDays = recentRecordDaysArg === null ? Number.NaN : Number(recentRecordDaysArg);
+  const pendingDiscoveryDaysArg = arg("pending-discovery");
+  const pendingDiscoveryDays = pendingDiscoveryDaysArg === null ? Number.NaN : Number(pendingDiscoveryDaysArg);
   const outputDir = arg("output-dir") ?? path.join("artifacts", "coverage-agent", new Date().toISOString().replace(/[:.]/g, "-"));
-  if (!inputPath && !Number.isFinite(recentRecordDays)) throw new Error("Provide --input=FILE or --recent-records=DAYS. Use --help for details.");
+  if (!inputPath && !Number.isFinite(recentRecordDays) && !Number.isFinite(pendingDiscoveryDays)) throw new Error("Provide --input=FILE, --recent-records=DAYS or --pending-discovery=DAYS. Use --help for details.");
 
   const input = inputPath ? inputSchema.parse(await jsonFile(inputPath)) : { candidates: [] as EnforcementCandidate[] };
   let existingRecords: ExistingEnforcementRecord[] = input.existingRecords ?? [];
@@ -120,6 +165,17 @@ async function main() {
   if (Number.isFinite(recentRecordDays)) {
     const recent = await loadRecentRecords(Math.max(1, Math.min(recentRecordDays, 3650)));
     if (!recordsPath && !input.existingRecords) existingRecords = recent;
+  }
+  if (Number.isFinite(pendingDiscoveryDays)) {
+    const pending = await loadPendingDiscovery(Math.max(1, Math.min(pendingDiscoveryDays, 3650)));
+    candidates = [...candidates, ...pending];
+    // The canonical trusted view is the production equivalent of querying the
+    // public unified-search API, and allows evidence matching even before a
+    // candidate is visible through the public API.
+    if (!recordsPath && !input.existingRecords && !apiBase) {
+      const pendingRecords = await loadTrustedRecordsForRegulators([...new Set(pending.map((candidate) => candidate.regulator))]);
+      existingRecords = [...existingRecords, ...pendingRecords];
+    }
   }
   const currentState = currentStatePath ? await jsonFile(currentStatePath) as CurrentStateSnapshot : input.currentState;
   const result = runCoverageIntelligenceAgent(candidates, existingRecords, currentState);

@@ -1,5 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { assertPreparedBatch, extractRegulatorCode } from "../lib/runScraper.js";
+import { readFileSync } from "node:fs";
+import { resolve } from "node:path";
 import type { CliFlags, DbReadyRecord } from "../lib/euFineHelpers.js";
 
 const liveFlags: CliFlags = { dryRun: false, useTestData: false, strictLive: true, limit: null };
@@ -68,5 +70,11 @@ describe("runScraper promotion gate", () => {
 
   it("quarantines cross-regulator contamination", () => {
     expect(() => assertPreparedBatch({ name: "SEC Scraper", regulatorCode: "SEC", liveLoader: async () => [] }, [{ ...record, regulator: "FCA" }], liveFlags)).toThrow(/outside the SEC source contract/);
+  });
+
+  it("persists prepared discovery evidence before an enforcement upsert", () => {
+    const source = readFileSync(resolve(process.cwd(), "scripts/scraper/lib/runScraper.ts"), "utf8");
+    expect(source.indexOf("persistPreparedDiscoveryCandidates")).toBeGreaterThan(-1);
+    expect(source.indexOf("persistPreparedDiscoveryCandidates(sql, records, scraperRunId)")).toBeLessThan(source.indexOf("upsertEuFines(sql, records)"));
   });
 });

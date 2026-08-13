@@ -14,6 +14,7 @@ import {
   requireDatabaseUrl,
   upsertEuFines,
 } from "./euFineHelpers.js";
+import { persistPreparedDiscoveryCandidates } from "./coverageDiscoveryCandidates.js";
 
 export interface RunnerOptions {
   name: string;
@@ -161,6 +162,12 @@ async function runScraperAttempt(
     }
 
     await assertPreparedCountContinuity(sql, options, contract, records.length, flags);
+
+    // Persist the official, prepared source evidence before any public-record
+    // upsert. This creates a reviewable discovery queue even if the following
+    // upsert fails; it never changes an existing candidate's human status.
+    const discoveryCandidates = await persistPreparedDiscoveryCandidates(sql, records, scraperRunId);
+    console.log(`🔎 Persisted ${discoveryCandidates} coverage discovery candidate${discoveryCandidates === 1 ? "" : "s"}`);
 
     const result = await upsertEuFines(sql, records);
     summary.inserted = result.inserted;

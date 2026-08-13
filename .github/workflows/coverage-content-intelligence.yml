@@ -46,6 +46,7 @@ jobs:
         run: |
           npm run --silent coverage:agent -- \
             --recent-records=7 \
+            --pending-discovery=7 \
             --current-state=coverage-agent-artifacts/current-state-snapshot.json \
             --output-dir=coverage-agent-artifacts
 

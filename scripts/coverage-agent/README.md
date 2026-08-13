@@ -52,3 +52,9 @@ duplicate and amount QA and does not pretend to discover missing enforcement
 records. Missing-record coverage requires an upstream official-discovery JSON
 feed passed via `--input`; the scheduled workflow only runs QA until that feed
 is supplied.
+
+Shared `runScraper` jobs now persist prepared official-source candidates before
+their enforcement upsert. The scheduled agent uses `--pending-discovery=7` to
+compare those recent, still-pending candidates with the canonical trusted view.
+It never marks them matched, imported or ignored; those remain explicit human
+operational dispositions.
