@@ -31,7 +31,12 @@ describe("prepared official-source discovery persistence", () => {
     expect(unsafe).toHaveBeenCalledWith(expect.stringContaining("ON CONFLICT (fingerprint) DO UPDATE"), [expect.any(Array)]);
     expect(unsafe.mock.calls[0][0]).not.toContain("status =");
     expect(unsafe.mock.calls[0][1][0]).toEqual(expect.arrayContaining([
-      expect.objectContaining({ sourceContentHash: "initial-hash" }),
+      expect.objectContaining({
+        source_content_hash: "initial-hash",
+        source_url: "https://www.fca.org.uk/news/example",
+        issued_date: "2026-08-13",
+        scraper_run_id: 12,
+      }),
     ]));
   });
 });
