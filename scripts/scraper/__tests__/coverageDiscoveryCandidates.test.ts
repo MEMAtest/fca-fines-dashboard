@@ -28,8 +28,10 @@ describe("prepared official-source discovery persistence", () => {
     const unsafe = vi.fn().mockResolvedValue([]);
     const sql = { unsafe };
     await expect(persistPreparedDiscoveryCandidates(sql as never, [record], 12)).resolves.toBe(1);
-    expect(unsafe).toHaveBeenCalledWith(expect.stringContaining("ON CONFLICT (fingerprint) DO UPDATE"), [expect.any(String)]);
+    expect(unsafe).toHaveBeenCalledWith(expect.stringContaining("ON CONFLICT (fingerprint) DO UPDATE"), [expect.any(Array)]);
     expect(unsafe.mock.calls[0][0]).not.toContain("status =");
-    expect(unsafe.mock.calls[0][1][0]).toContain("initial-hash");
+    expect(unsafe.mock.calls[0][1][0]).toEqual(expect.arrayContaining([
+      expect.objectContaining({ sourceContentHash: "initial-hash" }),
+    ]));
   });
 });
