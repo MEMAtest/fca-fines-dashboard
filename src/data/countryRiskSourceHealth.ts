@@ -23,6 +23,7 @@ export interface CountryRiskSourceHealthIssue {
     | "declared-source-unhealthy"
     | "missing-operational-run"
     | "operational-run-failed"
+    | "operational-run-review-required"
     | "operational-run-stale"
     | "operational-run-empty"
     | "operational-run-unhashed"
@@ -77,6 +78,25 @@ function formatPublicDate(value: number): string {
     year: "numeric",
     timeZone: "UTC",
   }).format(new Date(value));
+}
+
+function sourceRunMetadata(run: CountryRiskOperationalSourceRun): Record<string, unknown> | null {
+  if (!run.metadata || typeof run.metadata !== "object" || Array.isArray(run.metadata)) return null;
+  return run.metadata as Record<string, unknown>;
+}
+
+/**
+ * Before source-level persistence was introduced, one changed catalogue wrote
+ * `review_required` against every source in that report. Preserve the
+ * fail-closed behaviour for unknown review-required runs, while interpreting
+ * the explicitly attested unchanged records correctly during the transition.
+ */
+function isKnownUnchangedCatalogueRun(run: CountryRiskOperationalSourceRun): boolean {
+  const metadata = sourceRunMetadata(run);
+  return run.status === "review_required"
+    && metadata?.changed === false
+    && metadata?.baselineMissing === false
+    && !run.error_message;
 }
 
 export function assessCountryRiskSourceHealth(input: {
@@ -140,12 +160,14 @@ export function assessCountryRiskSourceHealth(input: {
       });
     }
 
-    if (run.status !== "succeeded") {
+    if (run.status !== "succeeded" && !isKnownUnchangedCatalogueRun(run)) {
       issues.push({
         sourceId: rule.id,
         severity: "critical",
-        code: "operational-run-failed",
-        message: `${rule.id} last finished with status ${run.status}${run.error_message ? `: ${run.error_message}` : "."}`,
+        code: run.status === "review_required" ? "operational-run-review-required" : "operational-run-failed",
+        message: run.status === "review_required"
+          ? `${rule.id} changed or lacks an approved baseline and requires review before scores can be refreshed.`
+          : `${rule.id} last finished with status ${run.status}${run.error_message ? `: ${run.error_message}` : "."}`,
       });
     }
     if (!Number.isFinite(Number(run.record_count)) || Number(run.record_count) <= 0) {
@@ -167,7 +189,7 @@ export function assessCountryRiskSourceHealth(input: {
   }
 
   const successfulTimes = [...latest.values()]
-    .filter((run) => run.status === "succeeded")
+    .filter((run) => run.status === "succeeded" || isKnownUnchangedCatalogueRun(run))
     .map((run) => asTime(run.retrieved_at))
     .filter(Number.isFinite);
   const lastSuccessfulTime = successfulTimes.length ? Math.max(...successfulTimes) : null;

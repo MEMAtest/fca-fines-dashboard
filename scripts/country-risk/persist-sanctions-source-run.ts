@@ -4,6 +4,10 @@ import { createHash } from "node:crypto";
 import { readFile } from "node:fs/promises";
 import pg from "pg";
 import { buildPgPoolConfig, resolveConnectionString } from "../../server/db.js";
+import {
+  sanctionsSourceRunPersistenceSummary,
+  sanctionsSourceRunStatus,
+} from "./lib/sanctionsSourceRun.js";
 
 const REPORT_PATH = process.env.COUNTRY_RISK_SOURCE_REPORT
   ?? "/tmp/country-risk-sanctions-review.json";
@@ -17,6 +21,9 @@ interface SourceResult {
   bytes?: number;
   sha256?: string;
   fingerprint?: string;
+  catalogueFingerprint?: string;
+  scoringFingerprint?: string;
+  coverageFingerprint?: string;
   discoveryMode?: string;
   discoveryItems?: number;
   inventory?: unknown[];
@@ -58,11 +65,7 @@ try {
       unchanged += 1;
       continue;
     }
-    const status = !source.healthy
-      ? "failed"
-      : source.changed || source.baselineMissing || report.requiresHumanReview
-        ? "review_required"
-        : "succeeded";
+    const status = sanctionsSourceRunStatus(source);
     await client.query(
       `INSERT INTO country_risk_source_runs (
          source_id, status, source_url, retrieved_at, effective_at, sha256,
@@ -82,10 +85,14 @@ try {
           reportSha256,
           reportCheckedAt: report.checkedAt,
           fingerprint: source.fingerprint ?? null,
+          catalogueFingerprint: source.catalogueFingerprint ?? null,
+          scoringFingerprint: source.scoringFingerprint ?? null,
+          coverageFingerprint: source.coverageFingerprint ?? null,
           discoveryMode: source.discoveryMode ?? null,
           byteLength: source.bytes ?? null,
           changed: source.changed ?? null,
           baselineMissing: source.baselineMissing ?? null,
+          reportRequiresHumanReview: report.requiresHumanReview,
           inventory: source.inventory ?? [],
         }),
       ],
@@ -99,7 +106,7 @@ try {
     sourceRuns: report.results.length,
     inserted,
     unchanged,
-    productionScoresChanged: false,
+    ...sanctionsSourceRunPersistenceSummary(report.results),
   }, null, 2));
 } catch (error) {
   await client.query("ROLLBACK");

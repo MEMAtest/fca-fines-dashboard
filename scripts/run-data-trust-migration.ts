@@ -39,6 +39,8 @@ async function main() {
     "migrations/20260718_product_funnel_events.sql",
     "migrations/20260718_ops_alert_state.sql",
     "migrations/20260724_board_pack_persistence.sql",
+    "migrations/20260813_enforcement_evidence_quality_guard.sql",
+    "migrations/20260813_coverage_discovery_candidates.sql",
   ].map((file) => path.resolve(process.cwd(), file));
 
   for (const migrationPath of migrationPaths) {
@@ -84,7 +86,13 @@ async function main() {
       (SELECT COUNT(*)::int FROM public.all_regulatory_fines) AS source_rows,
       (SELECT COUNT(*)::int FROM public.all_regulatory_fines_canonical) AS canonical_rows,
       (SELECT COALESCE(SUM(duplicate_count - 1), 0)::int FROM public.all_regulatory_fines_canonical) AS collapsed_rows,
-      (SELECT COUNT(*)::int FROM public.all_regulatory_fines_canonical WHERE requires_amount_review) AS amount_review_rows
+      (SELECT COUNT(*)::int FROM public.all_regulatory_fines_canonical WHERE requires_amount_review) AS amount_review_rows,
+      (
+        SELECT COUNT(*)::int
+        FROM public.all_regulatory_fines_trusted
+        WHERE requires_amount_review
+          AND (trusted_amount_gbp IS NOT NULL OR trusted_amount_eur IS NOT NULL)
+      ) AS exposed_unreviewed_amount_rows
   `;
   const verified = await sql`
     SELECT regulator, firm_individual, amount_original, currency, duplicate_count, amount_quality
@@ -106,10 +114,13 @@ async function main() {
   if (verified.length < 4) {
     throw new Error("Verified amount corrections were not applied");
   }
-  if (Number(counts.amount_review_rows) !== 0) {
+  if (Number(counts.amount_review_rows) === 0) {
     throw new Error(
-      `Canonical evidence still contains ${counts.amount_review_rows} amount-review rows`,
+      "Expected explicit aggregate-amount review markers were not applied",
     );
+  }
+  if (Number(counts.exposed_unreviewed_amount_rows) !== 0) {
+    throw new Error("Trusted evidence exposes amounts that are awaiting aggregate-allocation review");
   }
   if (Number(jfsc?.canonical_rows) !== 6 || Number(jfsc?.reviewed_source_rows) !== 6) {
     throw new Error("JFSC canonical evidence is not restricted to the six reviewed actions");

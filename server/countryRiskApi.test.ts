@@ -1,6 +1,7 @@
 import { describe, expect, it, vi } from "vitest";
 import type { VercelRequest, VercelResponse } from "@vercel/node";
 import countryHandler from "../api/country-risk/[iso2].js";
+import listHandler from "../api/country-risk/list.js";
 import sourcesHandler from "../api/country-risk/sources/status.js";
 
 vi.mock("./db.js", () => ({
@@ -96,5 +97,15 @@ describe("country-risk v2 public API contract", () => {
       expectedCoverageCells: 856,
       approvedSnapshot: { coverageComplete: true, approvedCount: 107, rejectedCount: 10 },
     });
+  });
+
+  it("uses the same explicit snapshot and operational readiness semantics on list and source-status APIs", async () => {
+    const [list, status] = await Promise.all([invoke(listHandler), invoke(sourcesHandler)]);
+    expect(list.code).toBe(200);
+    expect(list.payload.readyForDefault).toBe(list.payload.snapshotReady && list.payload.sourcesCurrent);
+    expect(status.payload.readyForDefault).toBe(status.payload.snapshotReady && status.payload.sourcesCurrent);
+    expect(list.payload.sourcesCurrent).toBe(status.payload.sourcesCurrent);
+    expect(list.payload.sourcesCurrent).toBe(false);
+    expect(status.payload.sourceHealth).toMatchObject({ readyForScoring: false });
   });
 });

@@ -20,8 +20,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     const stats = (await sql`
       SELECT
         COUNT(*)::int AS total_fines,
-        COUNT(amount_gbp) FILTER (WHERE NOT requires_amount_review)::int AS disclosed_amount_count,
-        COALESCE(SUM(amount_gbp) FILTER (WHERE NOT requires_amount_review), 0)::float8 AS total_amount,
+        COUNT(trusted_amount_gbp)::int AS disclosed_amount_count,
+        COALESCE(SUM(trusted_amount_gbp), 0)::float8 AS total_amount,
         MIN(year_issued)::int AS earliest_year,
         MAX(year_issued)::int AS latest_year,
         MAX(created_at) AS latest_ingestion_at
@@ -40,7 +40,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     const latestFines = (await sql`
       SELECT
         firm_individual,
-        CASE WHEN requires_amount_review THEN NULL ELSE amount_gbp END AS amount,
+        trusted_amount_gbp AS amount,
         date_issued,
         breach_type,
         notice_url AS final_notice_url
@@ -61,7 +61,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       SELECT
         year_issued,
         COUNT(*)::int AS fine_count,
-        COALESCE(SUM(amount_gbp) FILTER (WHERE NOT requires_amount_review), 0)::float8 AS total_amount
+        COALESCE(SUM(trusted_amount_gbp), 0)::float8 AS total_amount
       FROM public.all_regulatory_fines_trusted
       WHERE regulator = 'FCA'
         AND (

@@ -109,6 +109,15 @@ describe("product workspaces", () => {
     expect(drawer).toBeInTheDocument();
   });
 
+  it("leads with global research shortcuts while retaining FCA routes", () => {
+    render(<MemoryRouter initialEntries={["/fines"]}><EvidenceModalProvider><FinesWorkspace view="overview" /></EvidenceModalProvider></MemoryRouter>);
+    expect(screen.getByRole("navigation", { name: "Enforcement research shortcuts" })).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: "Browse all enforcement actions" })).toHaveAttribute("href", "/fines/actions");
+    expect(screen.getByRole("link", { name: "Compare regulator coverage" })).toHaveAttribute("href", "/regulators");
+    expect(screen.getByRole("link", { name: "Explore AML enforcement" })).toHaveAttribute("href", "/topics/aml-enforcement");
+    expect(screen.getByRole("link", { name: "FCA fines database" })).toHaveAttribute("href", "/regulators/fca");
+  });
+
   it("supports guided multi-selection with exact server-side summaries", async () => {
     render(<MemoryRouter initialEntries={["/fines/compare"]}><EvidenceModalProvider><FinesWorkspace view="compare" /></EvidenceModalProvider></MemoryRouter>);
     expect(screen.getByRole("heading", { name: /Guided comparison/i })).toBeInTheDocument();
