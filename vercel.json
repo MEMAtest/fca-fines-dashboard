@@ -121,10 +121,6 @@
     {
       "path": "/api/cron/ops-health",
       "schedule": "45 */4 * * *"
-    },
-    {
-      "path": "/api/cron/dispatch-email-digests",
-      "schedule": "*/15 6-7 * * *"
     }
   ],
   "functions": {

@@ -46,12 +46,33 @@ describe("CNV scraper", () => {
     expect(keller?.caratula).toContain("CELULOSA ARGENTINA S.A.");
   });
 
+  it("ingests the official conclusions table and preserves each published outcome", () => {
+    const rows = parseCnvHtml(html);
+    const julyConclusion = rows.filter(
+      (row) => row.resolutionNumber === "RRFCO-2026-336-APN-DIR#CNV",
+    );
+    expect(julyConclusion).toHaveLength(2);
+    expect(julyConclusion.every((row) => row.proceedingStage === "conclusion")).toBe(true);
+    expect(julyConclusion.every((row) => row.decision === "Absolución")).toBe(true);
+    expect(julyConclusion.map((row) => row.party)).toContain("BANCO CMF S.A.");
+
+    const fine = rows.find(
+      (row) => row.resolutionNumber === "RRFCO-2026-333-APN-DIR#CNV",
+    );
+    expect(fine).toMatchObject({
+      party: "MARCHETTI SEIJAS AGUSTIN",
+      dateIssued: "2026-06-10",
+      decision: "Multa",
+    });
+  });
+
   it("builds unique ARS records with null amount, newest-first (idempotent)", () => {
     const records = buildCnvRecords(parseCnvHtml(html));
     const hashes = new Set(records.map((record) => record.contentHash));
 
     expect(hashes.size).toBe(records.length);
-    expect(records[0].dateIssued).toBe("2026-02-11");
+    expect(records[0].dateIssued).toBe("2026-06-10");
+    expect(records.some((record) => record.breachType.includes("Absolución"))).toBe(false);
     expect(records[0]).toMatchObject({
       regulator: "CNV",
       countryCode: "AR",
