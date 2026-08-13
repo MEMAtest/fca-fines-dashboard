@@ -1,0 +1,60 @@
+name: Coverage and Content Intelligence
+
+on:
+  workflow_dispatch:
+    inputs:
+      candidate_input:
+        description: "Repository path to an official-discovery candidate JSON artifact"
+        required: false
+        default: ""
+        type: string
+  schedule:
+    - cron: "25 8 * * 1-5" # weekday reporting queue; never publishes or imports
+
+permissions:
+  contents: read
+
+jobs:
+  report:
+    name: Build report-only coverage queue
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 1
+
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Generate existing-record QA report
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+        run: |
+          npm run --silent coverage:agent -- \
+            --recent-records=7 \
+            --output-dir=coverage-agent-artifacts
+
+      - name: Analyse official discovery candidates when supplied
+        if: github.event_name == 'workflow_dispatch' && inputs.candidate_input != ''
+        run: |
+          test -f "${{ inputs.candidate_input }}"
+          npm run --silent coverage:agent -- \
+            --input="${{ inputs.candidate_input }}" \
+            --output-dir=coverage-agent-candidate-artifacts
+
+      - name: Upload report-only artifacts
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: coverage-content-intelligence-${{ github.run_id }}
+          path: |
+            coverage-agent-artifacts
+            coverage-agent-candidate-artifacts
+          if-no-files-found: warn
+          retention-days: 30

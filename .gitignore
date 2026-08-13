@@ -14,3 +14,4 @@ fcafines.db
 scripts/data/previews/
 scripts/data/review-assets/
 *.pdf
+artifacts/coverage-agent/

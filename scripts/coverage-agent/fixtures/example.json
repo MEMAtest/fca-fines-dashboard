@@ -1,0 +1,22 @@
+{
+  "candidates": [
+    {
+      "id": "fca-example-2026-08-01",
+      "regulator": "FCA",
+      "sourceUrl": "https://www.fca.org.uk/news/example-enforcement",
+      "title": "FCA action: example enforcement development",
+      "entity": "Example Firm Ltd",
+      "issuedDate": "2026-08-01",
+      "amount": 250000,
+      "currency": "GBP",
+      "summary": "The regulator cited reporting control failures.",
+      "candidateKind": "enforcement",
+      "contentType": "penalty"
+    }
+  ],
+  "existingRecords": [],
+  "currentState": {
+    "urls": [],
+    "regulatorHubs": []
+  }
+}
