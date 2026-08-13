@@ -39,4 +39,17 @@ describe("prepared official-source discovery persistence", () => {
       }),
     ]));
   });
+
+  it("deduplicates discovery fingerprints without changing the enforcement batch", async () => {
+    const unsafe = vi.fn().mockResolvedValue([]);
+    const sql = { unsafe };
+    const corrected = { ...record, contentHash: "corrected-hash", amount: 120000 };
+
+    await expect(persistPreparedDiscoveryCandidates(sql as never, [record, corrected], 13)).resolves.toBe(1);
+    expect(unsafe.mock.calls[0][1][0]).toHaveLength(1);
+    expect(unsafe.mock.calls[0][1][0][0]).toMatchObject({
+      source_content_hash: "corrected-hash",
+      amount: 120000,
+    });
+  });
 });
