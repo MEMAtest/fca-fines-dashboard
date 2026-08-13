@@ -69,13 +69,13 @@ test.describe('Homepage Hero - Global Messaging Rendering', () => {
     expect(pageText).toContain('45+');
   });
 
-  test('Hero CTA button MUST link to /dashboard', async ({ page }) => {
+  test('Hero CTA button MUST open the UK-first FCA evidence view', async ({ page }) => {
     // Wait for CTA button
     const ctaButton = page.locator('a.globe-hero__cta, a:has-text("Access the Intelligence Hub")');
     await ctaButton.waitFor({ timeout: 5000 });
 
     const href = await ctaButton.getAttribute('href');
-    expect(href).toBe('/dashboard');
+    expect(href).toBe('/fines?regulator=FCA&country=GB');
   });
 
   test('MUST NOT have "FCA Fines Database" in hero section', async ({ page }) => {
