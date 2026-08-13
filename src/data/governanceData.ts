@@ -13,7 +13,7 @@
 export const GOVERNANCE_SOURCE =
   "https://www.worldbank.org/en/publication/worldwide-governance-indicators";
 export const GOVERNANCE_VINTAGE = "2024";
-export const GOVERNANCE_RETRIEVED_AT = "2026-08-02T05:39:14.955Z";
+export const GOVERNANCE_RETRIEVED_AT = "2026-08-13T11:45:25.085Z";
 export const GOVERNANCE_SHA256 = "be3d4838a7a3babcdfb24f1b1caa79663e131c6158186ed09d37f316bf741d23";
 export const GOVERNANCE_LICENCE = "CC BY 4.0 — World Bank WGI";
 
