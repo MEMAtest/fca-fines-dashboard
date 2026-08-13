@@ -3,7 +3,8 @@
 -- A regulator publication can name several respondents while disclosing one
 -- aggregate sanction. That total must never be copied to each participant and
 -- included in public aggregates. This migration also collapses repeat imports
--- where the same regulator, entity, date, amount, source and summary recur.
+-- where the same regulator, entity, date, amount and source recur. Differing
+-- generated summaries do not turn one official action into two cases.
 
 BEGIN;
 
@@ -20,6 +21,38 @@ CREATE TABLE IF NOT EXISTS public.regulatory_case_amount_reviews (
 
 CREATE INDEX IF NOT EXISTS idx_regulatory_case_amount_reviews_status
   ON public.regulatory_case_amount_reviews(review_status, detected_at DESC);
+
+-- These official ASIC publications state one publication-level total for
+-- multiple companies. Quarantine those copied totals without inventing or
+-- dividing participant allocations.
+INSERT INTO public.regulatory_case_amount_reviews (
+  source_row_id, review_status, reason, evidence_url, detected_at, updated_at
+)
+SELECT
+  fines.id::text,
+  'required',
+  CASE
+    WHEN public.normalise_regulatory_evidence_url(COALESCE(NULLIF(fines.notice_url, ''), NULLIF(fines.source_url, ''), ''))
+      LIKE '%25-298mr-asic-issues-over-2-2-million-in-infringement-notices-to-12-large-proprietary-companies%'
+      THEN 'The official ASIC publication reports an aggregate AUD 2.2 million across 12 companies; no participant allocation is evidenced.'
+    ELSE 'The official ASIC publication reports an aggregate AUD 594,000 across multiple Mecca companies; no participant allocation is evidenced.'
+  END,
+  public.normalise_regulatory_evidence_url(COALESCE(NULLIF(fines.notice_url, ''), NULLIF(fines.source_url, ''), '')),
+  now(),
+  now()
+FROM public.all_regulatory_fines AS fines
+WHERE upper(fines.regulator) = 'ASIC'
+  AND (
+    public.normalise_regulatory_evidence_url(COALESCE(NULLIF(fines.notice_url, ''), NULLIF(fines.source_url, ''), ''))
+      LIKE '%25-298mr-asic-issues-over-2-2-million-in-infringement-notices-to-12-large-proprietary-companies%'
+    OR public.normalise_regulatory_evidence_url(COALESCE(NULLIF(fines.notice_url, ''), NULLIF(fines.source_url, ''), ''))
+      LIKE '%26-057mr-mecca-companies-pay-594-000-in-infringement-notices%'
+  )
+ON CONFLICT (source_row_id) DO UPDATE SET
+  reason = EXCLUDED.reason,
+  evidence_url = EXCLUDED.evidence_url,
+  updated_at = now()
+WHERE regulatory_case_amount_reviews.review_status = 'required';
 
 -- The trusted view is recreated after the canonical materialised view below.
 DROP VIEW IF EXISTS public.all_regulatory_fines_trusted;
@@ -62,24 +95,9 @@ WITH corrected AS (
    AND override.evidence_url = public.normalise_regulatory_evidence_url(
      COALESCE(NULLIF(fines.notice_url, ''), NULLIF(fines.source_url, ''), '')
    )
-), shared_amount_groups AS (
-  SELECT
-    upper(regulator) AS regulator,
-    normalised_evidence_url,
-    date_issued,
-    amount_original,
-    upper(COALESCE(currency, '')) AS currency,
-    count(DISTINCT regexp_replace(lower(trim(COALESCE(firm_individual, ''))), '[[:space:]]+', ' ', 'g'))::integer AS participant_count
-  FROM corrected
-  WHERE normalised_evidence_url <> ''
-    AND amount_original IS NOT NULL
-    AND NULLIF(trim(COALESCE(firm_individual, '')), '') IS NOT NULL
-  GROUP BY upper(regulator), normalised_evidence_url, date_issued, amount_original, upper(COALESCE(currency, ''))
-  HAVING count(DISTINCT regexp_replace(lower(trim(COALESCE(firm_individual, ''))), '[[:space:]]+', ' ', 'g')) > 1
 ), identified AS (
   SELECT
     corrected.*,
-    shared.participant_count AS shared_amount_participant_count,
     review.review_status AS amount_review_status,
     review.reason AS amount_review_reason,
     concat_ws(
@@ -101,17 +119,10 @@ WITH corrected AS (
         corrected.date_issued::text,
         corrected.normalised_evidence_url,
         COALESCE(corrected.amount_original::text, 'undisclosed'),
-        upper(COALESCE(corrected.currency, '')),
-        regexp_replace(lower(trim(COALESCE(corrected.summary, ''))), '[[:space:]]+', ' ', 'g')
+        upper(COALESCE(corrected.currency, ''))
       )
     END AS source_duplicate_identity
   FROM corrected
-  LEFT JOIN shared_amount_groups AS shared
-   ON shared.regulator = upper(corrected.regulator)
-   AND shared.normalised_evidence_url = corrected.normalised_evidence_url
-   AND shared.date_issued IS NOT DISTINCT FROM corrected.date_issued
-   AND shared.amount_original IS NOT DISTINCT FROM corrected.amount_original
-   AND shared.currency = upper(COALESCE(corrected.currency, ''))
   LEFT JOIN public.regulatory_case_amount_reviews AS review
     ON review.source_row_id = corrected.id::text
 ), ranked AS (
@@ -157,9 +168,7 @@ SELECT
   md5(canonical_identity) AS canonical_case_id,
   duplicate_count,
   CASE
-    WHEN shared_amount_participant_count IS NOT NULL
-      AND COALESCE(amount_review_status, 'required') <> 'approved'
-      THEN 'aggregate_unallocated'
+    WHEN amount_review_status = 'required' THEN 'aggregate_unallocated'
     WHEN has_verified_amount_override THEN override_quality_status
     WHEN amount_original IS NULL THEN 'not_disclosed'
     ELSE 'reported'
@@ -167,16 +176,9 @@ SELECT
   (
     (amount_gbp >= 1000000000 AND NOT has_verified_amount_override)
     OR amount_review_status = 'required'
-    OR (
-      shared_amount_participant_count IS NOT NULL
-      AND COALESCE(amount_review_status, 'required') <> 'approved'
-    )
   ) AS requires_amount_review,
   CASE
     WHEN amount_review_status = 'required' THEN amount_review_reason
-    WHEN shared_amount_participant_count IS NOT NULL
-      AND COALESCE(amount_review_status, 'required') <> 'approved'
-      THEN format('One %s %s amount is repeated across %s participants on the same date in the same official publication; a participant allocation has not been verified.', currency, amount_original, shared_amount_participant_count)
     WHEN amount_gbp >= 1000000000 AND NOT has_verified_amount_override
       THEN 'Large amount requires official-source verification before publication.'
     ELSE NULL
@@ -196,6 +198,8 @@ CREATE INDEX idx_all_regulatory_fines_canonical_country
   ON public.all_regulatory_fines_canonical(country_code);
 CREATE INDEX idx_all_regulatory_fines_canonical_date
   ON public.all_regulatory_fines_canonical(date_issued DESC);
+CREATE INDEX idx_all_regulatory_fines_canonical_year
+  ON public.all_regulatory_fines_canonical(year_issued);
 CREATE INDEX idx_all_regulatory_fines_canonical_amount_gbp
   ON public.all_regulatory_fines_canonical(amount_gbp DESC NULLS LAST);
 CREATE INDEX idx_all_regulatory_fines_canonical_amount_eur

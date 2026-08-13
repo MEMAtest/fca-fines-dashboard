@@ -19,30 +19,27 @@ describe("canonical regulatory evidence layer", () => {
     expect(migration).toContain("REFRESH MATERIALIZED VIEW public.all_regulatory_fines_canonical");
   });
 
-  it("fails closed where a publication-level amount is repeated across participants", () => {
+  it("fails closed only for explicitly reviewed publication-level aggregate amounts", () => {
     const guard = fs.readFileSync(
       path.join(root, "migrations/20260813_enforcement_evidence_quality_guard.sql"),
       "utf8",
     );
     expect(guard).toContain("regulatory_case_amount_reviews");
-    expect(guard).toContain("shared_amount_groups");
-    expect(guard).toContain("date_issued");
+    expect(guard).not.toContain("shared_amount_groups");
     expect(guard).toContain("aggregate_unallocated");
+    expect(guard).toContain("25-298mr-asic-issues-over-2-2-million");
+    expect(guard).toContain("26-057mr-mecca-companies-pay-594-000");
     expect(guard).toContain("requires_amount_review");
     expect(guard).toContain("source_duplicate_identity");
     expect(guard).toContain("PARTITION BY identified.source_duplicate_identity");
+    expect(guard).toContain("idx_all_regulatory_fines_canonical_year");
   });
 
-  it("does not treat a shared register URL on different action dates as one aggregate penalty", () => {
-    const guard = fs.readFileSync(
-      path.join(root, "migrations/20260813_enforcement_evidence_quality_guard.sql"),
-      "utf8",
-    );
+  it("does not offer shared-source aggregate candidates across different action dates", () => {
     const audit = fs.readFileSync(
       path.join(root, "scripts/corrections/auditEnforcementDataQuality.ts"),
       "utf8",
     );
-    expect(guard).toContain("shared.date_issued IS NOT DISTINCT FROM corrected.date_issued");
     expect(audit).toContain("GROUP BY upper(regulator), ${NORMALISED_URL}, date_issued, amount_original");
   });
 
@@ -55,6 +52,7 @@ describe("canonical regulatory evidence layer", () => {
     expect(audit).toContain("regulatory_case_amount_reviews");
     expect(audit).toContain("exactSameSourceDuplicates");
     expect(audit).toContain("aggregateAmountCandidates");
+    expect(audit).toContain("--apply requires --source-url=");
     expect(audit).not.toMatch(/UPDATE public\.(?:fca_fines|eu_fines)/);
   });
 

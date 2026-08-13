@@ -12,8 +12,8 @@ export const CORE_PLATFORM_ROUTES = [
   "/regulators",
   "/fines",
   "/blog",
-  "/topics/aml",
-  "/topics/market-abuse",
+  "/topics/aml-enforcement",
+  "/topics/market-abuse-enforcement",
   "/methodology/enforcement",
   "/developers",
 ] as const;

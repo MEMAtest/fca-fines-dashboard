@@ -56,6 +56,7 @@ jobs:
           test -f "${{ inputs.candidate_input }}"
           npm run --silent coverage:agent -- \
             --input="${{ inputs.candidate_input }}" \
+            --api-base=https://regactions.com \
             --current-state=coverage-agent-artifacts/current-state-snapshot.json \
             --output-dir=coverage-agent-candidate-artifacts
 

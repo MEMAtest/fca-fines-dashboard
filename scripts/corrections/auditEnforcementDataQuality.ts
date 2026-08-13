@@ -65,8 +65,7 @@ async function main() {
 
   try {
     await client.query("BEGIN");
-    const [exactDuplicates, aggregateCandidates, malformedEntities, nonSpecificSources] = await Promise.all([
-      client.query<ExactDuplicateGroup>(`
+    const exactDuplicates = await client.query<ExactDuplicateGroup>(`
         SELECT
           upper(regulator) AS regulator,
           ${NORMALISED_URL} AS evidence_url,
@@ -78,11 +77,11 @@ async function main() {
           count(*)::integer AS row_count
         FROM public.all_regulatory_fines
         WHERE ${NORMALISED_URL} <> ''
-        GROUP BY upper(regulator), ${NORMALISED_URL}, ${NORMALISED_TEXT("firm_individual")}, date_issued, amount_original, upper(currency), ${NORMALISED_TEXT("summary")}
+        GROUP BY upper(regulator), ${NORMALISED_URL}, ${NORMALISED_TEXT("firm_individual")}, date_issued, amount_original, upper(currency)
         HAVING count(*) > 1
         ORDER BY count(*) DESC, regulator, evidence_url
-      `),
-      client.query<AggregateCandidate>(`
+      `);
+    const aggregateCandidates = await client.query<AggregateCandidate>(`
         SELECT
           upper(regulator) AS regulator,
           ${NORMALISED_URL} AS evidence_url,
@@ -95,31 +94,42 @@ async function main() {
         FROM public.all_regulatory_fines
         WHERE ${NORMALISED_URL} <> ''
           AND amount_original IS NOT NULL
+          AND amount_original > 0
           AND NULLIF(trim(COALESCE(firm_individual, '')), '') IS NOT NULL
         GROUP BY upper(regulator), ${NORMALISED_URL}, date_issued, amount_original, upper(currency)
         HAVING count(DISTINCT ${NORMALISED_TEXT("firm_individual")}) > 1
         ORDER BY participant_count DESC, regulator, evidence_url
-      `),
-      client.query<QaRecord>(`
+      `);
+    const malformedEntities = await client.query<QaRecord>(`
         SELECT id::text, upper(regulator) AS regulator, firm_individual, date_issued::text,
           notice_url, source_url, 'malformed_entity' AS issue
         FROM public.all_regulatory_fines
         WHERE firm_individual ~* '^(aktuelles( & presse)?|news|press release|enforcement|sanctions|details|untitled)\\s*[-:|]'
         ORDER BY regulator, date_issued DESC NULLS LAST
-      `),
-      client.query<QaRecord>(`
+      `);
+    const nonSpecificSources = await client.query<QaRecord>(`
         SELECT id::text, upper(regulator) AS regulator, firm_individual, date_issued::text,
           notice_url, source_url, 'missing_or_non_specific_source' AS issue
         FROM public.all_regulatory_fines
         WHERE ${NORMALISED_URL} = ''
           OR ${NORMALISED_URL} ~ '/(search|news|enforcement)(/)?$'
         ORDER BY regulator, date_issued DESC NULLS LAST
-      `),
-    ]);
+      `);
+
+    const selectedSource = process.argv.find((value) => value.startsWith("--source-url="))?.slice("--source-url=".length);
+    const selectedCandidates = selectedSource
+      ? aggregateCandidates.rows.filter((candidate) => candidate.evidence_url === selectedSource)
+      : [];
+    if (apply && !selectedSource) {
+      throw new Error("--apply requires --source-url=<normalised official URL>; bulk heuristic promotion is not permitted");
+    }
+    if (apply && selectedSource && selectedCandidates.length === 0) {
+      throw new Error("The selected --source-url is not an aggregate candidate in this audit run");
+    }
 
     let persistedReviewMarkers = 0;
-    if (apply && aggregateCandidates.rows.length) {
-      const rows = aggregateCandidates.rows.flatMap((candidate) =>
+    if (apply && selectedCandidates.length) {
+      const rows = selectedCandidates.flatMap((candidate) =>
         candidate.source_row_ids.map((sourceRowId) => ({
           sourceRowId,
           evidenceUrl: candidate.evidence_url,

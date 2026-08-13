@@ -31,7 +31,11 @@ CREATE INDEX IF NOT EXISTS idx_coverage_discovery_scraper_run
 DO $$
 BEGIN
   IF EXISTS (SELECT 1 FROM pg_roles WHERE rolname = 'fca_app') THEN
-    GRANT SELECT, INSERT, UPDATE ON public.coverage_discovery_candidates TO fca_app;
+    GRANT SELECT, INSERT ON public.coverage_discovery_candidates TO fca_app;
+    GRANT UPDATE (
+      source_content_hash, amount, currency, summary, scraper_run_id,
+      last_seen_at, updated_at
+    ) ON public.coverage_discovery_candidates TO fca_app;
   END IF;
   IF EXISTS (SELECT 1 FROM pg_roles WHERE rolname = 'monitor_readonly') THEN
     GRANT SELECT ON public.coverage_discovery_candidates TO monitor_readonly;
