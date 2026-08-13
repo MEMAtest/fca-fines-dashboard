@@ -28,6 +28,26 @@ export interface CurrentStateAuditOptions {
   now?: () => Date;
 }
 
+const AUDIT_CONCURRENCY = 4;
+
+async function mapWithConcurrency<T, R>(
+  items: readonly T[],
+  concurrency: number,
+  operation: (item: T) => Promise<R>,
+): Promise<R[]> {
+  const results = new Array<R>(items.length);
+  let nextIndex = 0;
+  const workers = Array.from({ length: Math.min(concurrency, items.length) }, async () => {
+    while (nextIndex < items.length) {
+      const index = nextIndex;
+      nextIndex += 1;
+      results[index] = await operation(items[index]);
+    }
+  });
+  await Promise.all(workers);
+  return results;
+}
+
 function routeUrl(baseUrl: string, route: string) {
   return new URL(route, `${baseUrl.replace(/\/$/, "")}/`).toString();
 }
@@ -104,11 +124,11 @@ export async function collectCurrentStateSnapshot(options: CurrentStateAuditOpti
   const legacyUrl = options.legacyUrl ?? LEGACY_DOMAIN_URL;
   const fetchImpl = options.fetchImpl ?? fetch;
   const regulators = options.regulators ?? PUBLIC_REGULATOR_NAV_ITEMS;
-  const core = await Promise.all(CORE_PLATFORM_ROUTES.map((route) => inspectUrl(routeUrl(baseUrl, route), route === "/blog" ? "blog" : route === "/methodology/enforcement" ? "methodology" : "other", fetchImpl)));
-  const hubs = await Promise.all(regulators.map(async (regulator) => ({
+  const core = await mapWithConcurrency(CORE_PLATFORM_ROUTES, AUDIT_CONCURRENCY, (route) => inspectUrl(routeUrl(baseUrl, route), route === "/blog" ? "blog" : route === "/methodology/enforcement" ? "methodology" : "other", fetchImpl));
+  const hubs = await mapWithConcurrency(regulators, AUDIT_CONCURRENCY, async (regulator) => ({
     page: await inspectUrl(routeUrl(baseUrl, regulator.overviewPath), "hub", fetchImpl),
     latest: await latestHubRecord(baseUrl, regulator, fetchImpl),
-  })));
+  }));
   const legacy = await inspectUrl(legacyUrl, "legacy", fetchImpl);
   const urls = [...core, ...hubs.map((entry) => entry.page), legacy];
   const fetchFailures = [

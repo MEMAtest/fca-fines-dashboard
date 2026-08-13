@@ -47,4 +47,35 @@ describe("current RegActions state audit", () => {
     ]));
     expect(snapshot.urls).toContainEqual(expect.objectContaining({ url: "https://regactions.test/blog", status: null, errorMessage: expect.stringContaining("network unavailable") }));
   });
+
+  it("bounds concurrent checks so the audit cannot exhaust production database connections", async () => {
+    let active = 0;
+    let maximumActive = 0;
+    const fetchMock = vi.fn(async (input: string | URL) => {
+      active += 1;
+      maximumActive = Math.max(maximumActive, active);
+      await new Promise((resolve) => setTimeout(resolve, 2));
+      active -= 1;
+      const url = String(input);
+      return new Response(url.includes("/api/unified/search") ? JSON.stringify({ results: [] }) : html("Healthy"), {
+        status: 200,
+        headers: { "content-type": url.includes("/api/") ? "application/json" : "text/html" },
+      });
+    });
+    const regulators = Array.from({ length: 12 }, (_, index) => ({
+      code: `R${index}`,
+      overviewPath: `/regulators/r${index}`,
+      years: "2024-2026",
+    }));
+
+    const snapshot = await collectCurrentStateSnapshot({
+      baseUrl: "https://regactions.test",
+      legacyUrl: "https://legacy.example",
+      regulators,
+      fetchImpl: fetchMock as typeof fetch,
+    });
+
+    expect(snapshot.fetchFailures).toEqual([]);
+    expect(maximumActive).toBeLessThanOrEqual(4);
+  });
 });
