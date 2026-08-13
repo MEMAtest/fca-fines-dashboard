@@ -74,7 +74,11 @@ export async function persistPreparedDiscoveryCandidates(
   records: DbReadyRecord[],
   scraperRunId: string | number,
 ) {
-  const rows = records.map((record) => buildDiscoveryCandidateRow(record, scraperRunId));
+  const rows = [...new Map(
+    records
+      .map((record) => buildDiscoveryCandidateRow(record, scraperRunId))
+      .map((row) => [row.fingerprint, row] as const),
+  ).values()];
   if (!rows.length) return 0;
   // postgres.js serialises plain JavaScript values for json/jsonb parameters.
   // Passing a pre-stringified value produces a JSON string scalar, so
