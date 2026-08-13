@@ -121,6 +121,10 @@
     {
       "path": "/api/cron/ops-health",
       "schedule": "45 */4 * * *"
+    },
+    {
+      "path": "/api/cron/dispatch-email-digests",
+      "schedule": "*/15 6-7 * * *"
     }
   ],
   "functions": {
@@ -152,6 +156,9 @@
       "maxDuration": 300
     },
     "api/cron/ops-health.ts": {
+      "maxDuration": 120
+    },
+    "api/cron/dispatch-email-digests.ts": {
       "maxDuration": 120
     }
   }

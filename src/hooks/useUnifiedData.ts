@@ -105,6 +105,9 @@ export function transformUnifiedRecord(
     duplicate_count: toInteger(record.duplicate_count),
     amount_quality: record.amount_quality || "reported",
     requires_amount_review: amountRequiresReview,
+    amount_disclosed:
+      !amountRequiresReview &&
+      (currency === "EUR" ? record.amount_eur != null : record.amount_gbp != null),
     amount_verification_url: record.amount_verification_url || null,
     amount_override_reason: record.amount_override_reason || null,
     source_checked_at: record.source_checked_at || null,

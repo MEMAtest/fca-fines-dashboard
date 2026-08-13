@@ -142,8 +142,8 @@ export interface UnifiedSearchResponse {
     firm_category: string | null;
     amount_original: number;
     currency: string;
-    amount_gbp: number;
-    amount_eur: number;
+    amount_gbp: number | null;
+    amount_eur: number | null;
     date_issued: string;
     year_issued: number;
     month_issued: number;

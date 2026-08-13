@@ -138,6 +138,8 @@ export interface BoardPackResult {
   topThemes: ExposureThemeSummary[];
   notableCases: BoardPackCaseStudy[];
   selectedCases: BoardPackCaseStudy[];
+  evidenceSufficient: boolean;
+  verifiedEvidenceCount: number;
   implications: string[];
   boardQuestions: string[];
   nextSteps: string[];
@@ -421,6 +423,26 @@ function scoreRecord(
   };
 }
 
+export function isRecordInBoardPackScope(
+  record: FineRecord,
+  profile: BoardFirmProfile,
+): boolean {
+  const regulatorInScope =
+    profile.priorityRegulators.length === 0 ||
+    profile.priorityRegulators.includes(record.regulator);
+  const regionInScope =
+    profile.focusRegions.length === 0 ||
+    profile.focusRegions.includes(getRegulatorRegion(record));
+  const haystack = getRecordHaystack(record);
+  const themeInScope = getEffectiveThemeIds(profile).some((themeId) =>
+    BOARD_THEME_DEFINITIONS[themeId].keywords.some((keyword) =>
+      haystack.includes(keyword),
+    ),
+  );
+
+  return regulatorInScope && regionInScope && themeInScope;
+}
+
 function buildThemeRationale(
   matchedActions: number,
   totalAmount: number,
@@ -522,7 +544,7 @@ function buildExecutiveSummaryBullets(
   topThemes: ExposureThemeSummary[],
   regulatorSignals: RegulatorSignalSummary[],
   recentActionCount: number,
-  peerBaselineLabel: string,
+  _peerBaselineLabel: string,
 ) {
   const leadTheme = topThemes[0];
   const leadRegulators = regulatorSignals
@@ -536,7 +558,7 @@ function buildExecutiveSummaryBullets(
         ? `${profile.firmName} shows a material enforcement profile that should stay on the next committee agenda.`
         : `${profile.firmName} remains a credible exposure profile with enough signal to justify continued board oversight.`,
     leadTheme
-      ? `${leadTheme.label} is the strongest current theme, supported by ${leadTheme.matchedActions} matched actions and a ${leadTheme.score}/100 theme score.`
+      ? `${leadTheme.label} is the strongest current theme, supported by ${leadTheme.matchedActions} matched actions.`
       : null,
     leadRegulators.length
       ? `${formatList(leadRegulators)} are the main regulators shaping the current evidence set.`
@@ -544,7 +566,7 @@ function buildExecutiveSummaryBullets(
     recentActionCount > 0
       ? `${recentActionCount} recent matched actions are driving the near-term enforcement backdrop.`
       : null,
-    `${peerBaselineLabel} for the chosen archetype and board lens.`,
+    `The selected scope contains ${leadRegulators.length ? formatList(leadRegulators) : "no regulator"} evidence and should be read against the stated denominator, not as a market-wide peer score.`,
   ]).slice(0, 5);
 }
 
@@ -620,11 +642,11 @@ function buildNextSteps(
 
 function buildMethodologyNotes(
   profile: BoardFirmProfile,
-  baselineScore: number,
+  _baselineScore: number,
 ) {
   return [
-    `Exposure scoring is heuristic, built from matched actions, recency, regulator spread, and published monetary severity under the ${BOARD_ARCHETYPES_BY_ID[profile.archetypeId].label.toLowerCase()} archetype.`,
-    `The peer baseline of ${baselineScore}/100 is an archetype benchmark used to frame board discussion; it is not a market-wide statistical average.`,
+    `Directional pressure bands use matched actions, recency, regulator spread, and published monetary severity under the ${BOARD_ARCHETYPES_BY_ID[profile.archetypeId].label.toLowerCase()} archetype; no calibrated numeric score is presented.`,
+    `The pack applies the selected regulator, region and theme perimeter as hard filters. It does not substitute global records when that scope is thin.`,
     `Scenario and controls sections are bounded board tools designed to support challenge and evidence requests, not fine prediction or legal advice.`,
   ];
 }
@@ -683,7 +705,10 @@ export function buildBoardPack(
       ? { ...record, amount: 0, amount_gbp: 0, amount_eur: 0 }
       : record,
   );
-  const scored = trustedRecords
+  const scopedRecords = trustedRecords.filter((record) =>
+    isRecordInBoardPackScope(record, profile),
+  );
+  const scored = scopedRecords
     .map((record) => scoreRecord(record, profile))
     .filter((entry) => entry.score > 0);
   const selectedIdSet = new Set(selectedCaseIds);
@@ -699,20 +724,10 @@ export function buildBoardPack(
     return right.record.date_issued.localeCompare(left.record.date_issued);
   });
 
-  const fallbackRecords = trustedRecords
-    .slice()
-    .sort((left, right) => right.date_issued.localeCompare(left.date_issued))
-    .slice(0, 12)
-    .map((record) => ({
-      record,
-      score: 1,
-      matchedThemes: [] as BoardThemeId[],
-      reasons: ["recent enforcement history"],
-      region: getRegulatorRegion(record),
-      isRecent: isRecentRecord(record),
-    }));
-
-  const relevant = ranked.length ? ranked.slice(0, 120) : fallbackRecords;
+  // Do not silently widen an empty scope to the global dataset. A committee
+  // pack must either describe the chosen perimeter or clearly disclose that
+  // the current evidence is insufficient.
+  const relevant = ranked.slice(0, 120);
   const effectiveThemes = getEffectiveThemeIds(profile);
 
   const topThemes = effectiveThemes
@@ -905,8 +920,15 @@ export function buildBoardPack(
     })
     .slice(0, 4);
 
-  const notableCases = relevant.slice(0, 5).map(toCaseStudy);
-  const fullCaseList = relevant.slice(0, 8).map(toCaseStudy);
+  const verifiedRelevant = relevant.filter(
+    (entry) =>
+      entry.record.source_link_status === "verified_detail" ||
+      entry.record.source_link_status === "verified_publication",
+  );
+  const verifiedEvidenceCount = verifiedRelevant.length;
+  const evidenceSufficient = verifiedEvidenceCount >= 3;
+  const notableCases = verifiedRelevant.slice(0, 5).map(toCaseStudy);
+  const fullCaseList = verifiedRelevant.slice(0, 8).map(toCaseStudy);
 
   const boardQuestions = unique([
     ...topThemes.flatMap((theme) => theme.boardQuestions),
@@ -936,8 +958,9 @@ export function buildBoardPack(
     } satisfies ScenarioCard;
   });
 
-  const summaryHeadline =
-    exposureBand === "severe"
+  const summaryHeadline = !evidenceSufficient
+    ? `${profile.firmName} has insufficient verified evidence in the selected scope for a committee-level exposure conclusion.`
+    : exposureBand === "severe"
       ? `${profile.firmName} should be treated as a near-term board challenge, not a monitoring-only topic.`
       : exposureBand === "material"
         ? `${profile.firmName} shows a material enforcement profile that warrants direct board and committee challenge.`
@@ -945,7 +968,7 @@ export function buildBoardPack(
           ? `${profile.firmName} has a credible exposure pattern that still merits disciplined board attention.`
           : `${profile.firmName} currently sits at the lower end of the exposure range, but with identifiable watchpoints that should stay visible.`;
 
-  const summaryNarrative = `${archetype.boardLens} This pack draws on ${relevantActionCount} relevant actions across ${activeRegulators.length} regulators, with ${recentActionCount} recent signals shaping the near-term view. The strongest pressure points are ${formatList(
+  const summaryNarrative = `${archetype.boardLens} This pack draws on ${relevantActionCount} in-scope actions across ${activeRegulators.length} regulators, including ${verifiedEvidenceCount} with verified case-level sources. The strongest pressure points are ${formatList(
     topThemes.slice(0, 2).map((theme) => theme.shortLabel.toLowerCase()),
   )} under a ${getFocusLabel(profile.boardFocus)} lens.`;
 
@@ -990,6 +1013,8 @@ export function buildBoardPack(
     topThemes,
     notableCases,
     selectedCases,
+    evidenceSufficient,
+    verifiedEvidenceCount,
     implications,
     boardQuestions,
     nextSteps,

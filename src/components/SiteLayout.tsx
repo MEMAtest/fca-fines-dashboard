@@ -3,6 +3,7 @@ import { SiteHeader } from "./SiteHeader.js";
 import { SiteFooter } from "./SiteFooter.js";
 import { useEffect } from "react";
 import { EvidenceModalProvider } from "./EvidenceModalProvider.js";
+import { canonicalizeAnalyticsPath } from "../utils/analyticsPath.js";
 
 function PageviewTracker() {
   const location = useLocation();
@@ -11,7 +12,7 @@ function PageviewTracker() {
     if (!import.meta.env.PROD) return;
 
     // Never include query params in analytics (can contain PII).
-    const path = location.pathname;
+    const path = canonicalizeAnalyticsPath(location.pathname);
     fetch("/api/pageview?path=" + encodeURIComponent(path), {
       keepalive: true,
     }).catch(() => {});

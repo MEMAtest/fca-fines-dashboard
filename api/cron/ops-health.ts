@@ -1,8 +1,8 @@
 import type { VercelRequest, VercelResponse } from "@vercel/node";
-import { SESClient, SendEmailCommand } from "@aws-sdk/client-ses";
 import { getSqlClient } from "../../server/db.js";
 import { buildOpsAlertMessage, buildOpsFingerprint, decideOpsAlert } from "../../server/services/opsAlerts.js";
 import { loadOpsSummary, type OpsStatus } from "../../server/services/opsSummary.js";
+import { enqueueDigestItem } from "../../server/services/emailDigest.js";
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   res.setHeader("Cache-Control", "no-store");
@@ -43,9 +43,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     }
 
     const recipient = process.env.OPS_ALERT_EMAIL?.trim() || "";
-    const accessKeyId = process.env.AWS_ACCESS_KEY_ID?.trim() || "";
-    const secretAccessKey = process.env.AWS_SECRET_ACCESS_KEY?.trim() || "";
-    if (!recipient || !/^\S+@\S+\.\S+$/.test(recipient) || !accessKeyId || !secretAccessKey) {
+    if (!recipient || !/^\S+@\S+\.\S+$/.test(recipient)) {
       await sql(
         `UPDATE public.ops_alert_state SET
            last_status = $1, last_fingerprint = $2, last_checked_at = now(),
@@ -57,42 +55,37 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     }
 
     const message = buildOpsAlertMessage(summary, decision.action);
-    const ses = new SESClient({
-      region: process.env.AWS_SES_REGION?.trim() || "eu-west-2",
-      credentials: { accessKeyId, secretAccessKey },
-    });
     try {
-      const delivery = await ses.send(new SendEmailCommand({
-        Source: process.env.OPS_ALERT_FROM?.trim() || process.env.SES_FROM_EMAIL?.trim() || "alerts@memaconsultants.com",
-        Destination: { ToAddresses: [recipient] },
-        Message: {
-          Subject: { Data: message.subject, Charset: "UTF-8" },
-          Body: {
-            Text: { Data: message.text, Charset: "UTF-8" },
-            Html: { Data: message.html, Charset: "UTF-8" },
-          },
-        },
-      }));
+      const queued = await enqueueDigestItem(sql, {
+        recipient,
+        audience: "internal",
+        cadence: "daily",
+        category: `ops-${decision.action}`,
+        fingerprint,
+        subject: message.subject,
+        text: message.text,
+        html: message.html,
+      });
       await sql(
         `INSERT INTO public.ops_alert_state (
            singleton, last_status, last_fingerprint, last_alerted_at, last_checked_at,
            last_recovered_at, last_delivery_status, last_message_id, last_error, updated_at
          ) VALUES (
            true, $1, $2, now(), now(), CASE WHEN $3 = 'recovery' THEN now() ELSE NULL END,
-           'sent', $4, NULL, now()
+           'queued', $4, NULL, now()
          ) ON CONFLICT (singleton) DO UPDATE SET
            last_status = EXCLUDED.last_status,
            last_fingerprint = EXCLUDED.last_fingerprint,
            last_alerted_at = now(),
            last_checked_at = now(),
            last_recovered_at = CASE WHEN $3 = 'recovery' THEN now() ELSE ops_alert_state.last_recovered_at END,
-           last_delivery_status = 'sent',
+           last_delivery_status = 'queued',
            last_message_id = EXCLUDED.last_message_id,
            last_error = NULL,
            updated_at = now()`,
-        [summary.status, fingerprint, decision.action, delivery.MessageId ?? null],
+        [summary.status, fingerprint, decision.action, queued?.id ?? null],
       );
-      return res.status(200).json({ checked: true, status: summary.status, alert: decision.action, messageId: delivery.MessageId ?? null });
+      return res.status(200).json({ checked: true, status: summary.status, alert: decision.action, queued: true });
     } catch (error) {
       await sql(
         `UPDATE public.ops_alert_state SET last_status = $1, last_fingerprint = $2,

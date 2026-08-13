@@ -167,6 +167,7 @@ jobs:
           AWS_DEFAULT_REGION: eu-west-2
           ALERT_EMAIL: ${{ vars.ALERT_EMAIL || 'ademola@memaconsultants.com' }}
           WORKFLOW_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+          DIGEST_CATEGORY: fragile-scraper-failures
         run: |
           set +e
           FAILING_REGULATORS=$(node -e "
@@ -223,7 +224,7 @@ jobs:
               }, null, 2));
             '
 
-            aws ses send-email --cli-input-json file:///tmp/ses-alert.json --region eu-west-2 || echo "Failed to send alert email"
+            npx tsx scripts/jobs/enqueueSesDigest.ts /tmp/ses-alert.json || echo "Failed to queue alert"
           else
             echo "✅ No consecutive scraper failures detected"
           fi

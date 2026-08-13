@@ -529,6 +529,7 @@ export async function getFcaFineCaseById(
   if (!rows[0]) return null;
 
   const primary = mapFcaFineCaseRow(rows[0]);
+  const primaryStoredFirm = nullableString(rows[0]?.firm_individual) ?? primary.firm;
   const relatedRows = await sql(
     `SELECT ${CASE_COLUMNS}
      FROM public.all_regulatory_fines_trusted
@@ -536,17 +537,16 @@ export async function getFcaFineCaseById(
        AND trusted_amount_gbp > 0
        AND public_case_id <> $1
        AND (
-         lower(trim(firm_individual)) = lower(trim($2))
-         OR public.normalise_regulatory_evidence_url(
-           COALESCE(NULLIF(notice_url, ''), NULLIF(source_url, ''), '')
-         ) = public.normalise_regulatory_evidence_url(COALESCE($3, ''))
+         lower(trim(firm_individual)) = lower(trim($2::text))
+         OR lower(trim(COALESCE(NULLIF(notice_url, ''), NULLIF(source_url, ''), '')))
+           = lower(trim(COALESCE($3::text, '')))
        )
      ORDER BY
-       CASE WHEN lower(trim(firm_individual)) = lower(trim($2)) THEN 0 ELSE 1 END,
+       CASE WHEN lower(trim(firm_individual)) = lower(trim($2::text)) THEN 0 ELSE 1 END,
        date_issued DESC NULLS LAST,
        public_case_id ASC
      LIMIT 8`,
-    [primary.caseId, primary.firm, primary.sourceUrl],
+    [primary.caseId, primaryStoredFirm, primary.sourceUrl],
   );
 
   const quality = assessFcaFineCaseIndexability(primary);

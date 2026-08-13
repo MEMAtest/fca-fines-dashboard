@@ -25,6 +25,7 @@ export interface FineRecord {
   duplicate_count?: number;
   amount_quality?: string;
   requires_amount_review?: boolean;
+  amount_disclosed?: boolean;
   amount_verification_url?: string | null;
   amount_override_reason?: string | null;
   source_url?: string | null;

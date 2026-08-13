@@ -57,7 +57,7 @@ export function Sectors() {
             sectors attract the largest penalties.
           </p>
           <div className="hub-hero__actions">
-            <Link to="/dashboard?year=0" className="btn btn-primary">
+            <Link to="/fines?year=0" className="btn btn-primary">
               Explore All Fines
             </Link>
             <Link to="/topics" className="btn btn-ghost">

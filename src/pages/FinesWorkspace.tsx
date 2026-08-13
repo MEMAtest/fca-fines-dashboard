@@ -98,7 +98,7 @@ function RecordTable({ records, onOpen, limit = 8 }: { records: FineRecord[]; on
             <td><strong>{record.firm_individual}</strong>{getFcaFineCasePath(record) ? <> <Link to={getFcaFineCasePath(record)!} onClick={(event) => event.stopPropagation()} aria-label={`Open ${record.firm_individual} FCA fine case`}>Case page</Link></> : null}</td>
             <td><span className="workspace-tag">{record.regulator}</span></td>
             <td>{getRecordThemes(record)[0]}</td>
-            <td><strong>{formatWorkspaceAmount(record.amount)}</strong></td>
+            <td><strong>{record.requires_amount_review ? "Amount under review" : record.amount_disclosed === false ? "Not disclosed" : formatWorkspaceAmount(record.amount)}</strong></td>
           </tr>
         ))}
       </tbody>

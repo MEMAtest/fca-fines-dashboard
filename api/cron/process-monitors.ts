@@ -1,6 +1,7 @@
 import type { VercelRequest, VercelResponse } from "@vercel/node";
 import { SESClient, SendEmailCommand } from "@aws-sdk/client-ses";
 import { getSqlClient, type SqlClient } from "../../server/db.js";
+import { enqueueDigestItem } from "../../server/services/emailDigest.js";
 
 interface MonitorRow extends Record<string, unknown> {
   id: string;
@@ -109,22 +110,21 @@ async function loadMonitorResults(sql: SqlClient, monitor: MonitorRow) {
   return { path, total: Number(total?.count ?? 0), newCount: Number(newCount?.count ?? 0), rows };
 }
 
-async function sendMonitorEmail(ses: SESClient, monitor: MonitorRow, results: Awaited<ReturnType<typeof loadMonitorResults>>) {
+async function queueMonitorEmail(sql: SqlClient, monitor: MonitorRow, results: Awaited<ReturnType<typeof loadMonitorResults>>) {
   const manageUrl = `${BASE_URL}/monitor?token=${encodeURIComponent(monitor.management_token)}`;
   const scopeUrl = `${BASE_URL}${results.path}`;
   const rows = results.rows.map((row) => `<li style="margin:0 0 10px"><strong>${escapeHtml(row.firm_individual)}</strong><br/>${escapeHtml(row.regulator)} · ${escapeHtml(row.date_issued)} · ${escapeHtml(row.breach_type || "Theme not recorded")}</li>`).join("");
-  const delivery = await ses.send(new SendEmailCommand({
-    Source: process.env.SES_FROM_EMAIL?.trim() || "alerts@memaconsultants.com",
-    Destination: { ToAddresses: [monitor.email] },
-    Message: {
-      Subject: { Data: `${results.newCount} new result${results.newCount === 1 ? "" : "s"}: ${monitor.label}`, Charset: "UTF-8" },
-      Body: {
-        Html: { Data: `<div style="font-family:Arial,sans-serif;max-width:620px;margin:auto;color:#102536"><h1>${escapeHtml(monitor.label)}</h1><p>RegActions found <strong>${results.newCount} new enforcement result${results.newCount === 1 ? "" : "s"}</strong> in your verified evidence scope.</p><ul>${rows}</ul><p><a href="${scopeUrl}">Open the saved evidence scope</a></p><p style="font-size:12px;color:#64748b"><a href="${manageUrl}">Pause, change or unsubscribe from this monitor</a></p></div>`, Charset: "UTF-8" },
-        Text: { Data: `${monitor.label}\n\n${results.newCount} new enforcement results.\n\nOpen scope: ${scopeUrl}\nManage monitor: ${manageUrl}`, Charset: "UTF-8" },
-      },
-    },
-  }));
-  return delivery.MessageId ?? null;
+  const queued = await enqueueDigestItem(sql, {
+    recipient: monitor.email,
+    audience: "customer",
+    cadence: monitor.frequency,
+    category: "saved-monitor",
+    fingerprint: `${monitor.id}:${results.rows.map((row) => row.canonical_case_id).sort().join(":")}`,
+    subject: `${results.newCount} new result${results.newCount === 1 ? "" : "s"}: ${monitor.label}`,
+    html: `<div style="font-family:Arial,sans-serif;max-width:620px;margin:auto;color:#102536"><h1>${escapeHtml(monitor.label)}</h1><p>RegActions found <strong>${results.newCount} new enforcement result${results.newCount === 1 ? "" : "s"}</strong> in your verified evidence scope.</p><ul>${rows}</ul><p><a href="${scopeUrl}">Open the saved evidence scope</a></p><p style="font-size:12px;color:#64748b"><a href="${manageUrl}">Pause, change or unsubscribe from this monitor</a></p></div>`,
+    text: `${monitor.label}\n\n${results.newCount} new enforcement results.\n\nOpen scope: ${scopeUrl}\nManage monitor: ${manageUrl}`,
+  });
+  return queued?.id ? String(queued.id) : null;
 }
 
 export function buildMonitorSmokeMessage(monitor: Pick<MonitorRow, "label">) {
@@ -236,11 +236,11 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
            WHERE id = $1::uuid`,
           [monitor.id],
         );
-        messageId = await sendMonitorEmail(ses, monitor, results);
+        messageId = await queueMonitorEmail(sql, monitor, results);
         await sql(
           `INSERT INTO public.monitor_delivery_log (
              monitor_id, delivery_kind, delivery_status, provider, message_id
-           ) VALUES ($1::uuid, 'notification', 'sent', 'ses', $2)`,
+           ) VALUES ($1::uuid, 'notification', 'queued', 'digest_outbox', $2)`,
           [monitor.id, messageId],
         );
         notified += 1;
@@ -251,7 +251,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
          baseline_established_at = CASE WHEN $5::boolean THEN COALESCE(baseline_established_at, now()) ELSE baseline_established_at END,
          last_notification_message_id = CASE WHEN $4::boolean THEN $6 ELSE last_notification_message_id END,
          last_delivery_status = CASE
-           WHEN $4::boolean THEN 'notification_sent'
+           WHEN $4::boolean THEN 'notification_queued'
            WHEN $5::boolean THEN 'baseline_set'
            ELSE last_delivery_status
          END,

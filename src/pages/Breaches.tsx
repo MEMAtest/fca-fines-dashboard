@@ -58,7 +58,7 @@ export function Breaches() {
             page links straight into the dashboard filters.
           </p>
           <div className="hub-hero__actions">
-            <Link to="/dashboard?year=0" className="btn btn-primary">
+            <Link to="/fines?year=0" className="btn btn-primary">
               Explore All Actions
             </Link>
             <Link to="/topics" className="btn btn-ghost">

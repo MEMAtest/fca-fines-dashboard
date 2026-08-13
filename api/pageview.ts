@@ -1,5 +1,6 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 import { recordPageview } from '../server/services/analytics.js';
+import { canonicalizeAnalyticsPath } from '../src/utils/analyticsPath.js';
 
 function sanitizePath(input: unknown): string {
   let raw = typeof input === 'string' ? input : String(input ?? '');
@@ -25,7 +26,7 @@ function sanitizePath(input: unknown): string {
   // Keep paths bounded in size.
   if (raw.length > 2048) raw = raw.slice(0, 2048);
 
-  return raw || '/';
+  return canonicalizeAnalyticsPath(raw || '/');
 }
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
