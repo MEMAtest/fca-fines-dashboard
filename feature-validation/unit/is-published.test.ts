@@ -202,6 +202,12 @@ describe("isPublished", () => {
     expect(duplicates).toEqual([]);
   });
 
+  test("the unapproved DekaBank draft cannot claim the forensic article URL", () => {
+    const draft = allBlogArticles.find((article) => article.id === "ai-biggest-fine-h1-2026-forensic");
+    expect(draft).toMatchObject({ slug: "ai-dekabank-unpublished-2026", status: "draft" });
+    expect(isPublished(draft!, "2026-08-13")).toBe(false);
+  });
+
   test("blog quality upgrade batch keeps substantial content and links", () => {
     const articlesBySlug = new Map(
       blogArticles.map((article) => [article.slug, article]),

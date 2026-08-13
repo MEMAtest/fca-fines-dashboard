@@ -4238,7 +4238,10 @@ Firms operating under **both regulators** must:
   },
   {
     id: "ai-biggest-fine-h1-2026-forensic",
-    slug: "biggest-fine-h1-2026-forensic",
+    // This AI draft was never approved and conflicted with the published
+    // forensic case route. Keep it quarantined under an internal-only slug so
+    // it cannot shadow the approved article in any public selector.
+    slug: "ai-dekabank-unpublished-2026",
     title: "DekaBank Deutsche Girozentrale’s £406.30M BaFin Case",
     seoTitle: "DekaBank Deutsche Girozentrale’s £406.30M BaFin Case | RegActions",
     excerpt: "BaFin fined DekaBank £406.30M for securities/supervisory violations in 2026 over flawed 2024 financial disclosures, marking H1 2026’s second-largest penalty.",
@@ -4292,7 +4295,7 @@ The penalty aligns with BaFin’s 2025–2030 enforcement framework, which caps 
     date: "July 2026",
     dateISO: "2026-07-08",
     keywords: ["BaFin","DekaBank","financial reporting","supervisory violations","securities breach","disclosure failures","regulatory fine"],
-    status: "published",
+    status: "draft",
     generatedBy: "ai",
     generatedAt: "2026-06-26T15:22:29.933Z",
   },
@@ -4661,8 +4664,8 @@ This analysis uses 18 topic-filtered actions linked to official regulatory sourc
   {
     id: "ai-enforcement-weekly-2026-w33",
     slug: "enforcement-weekly-2026-w33",
-    title: "Global Enforcement: AML, Reporting, and Conduct Penalties (27 July-10",
-    seoTitle: "Global Enforcement: AML, Reporting, and Conduct Penalties (27 July-10 | RegActions",
+    title: "Global Enforcement: AML, Reporting, and Conduct Penalties (27 July-10 August)",
+    seoTitle: "Global Enforcement: AML, Reporting, and Conduct Penalties (27 July-10 August) | RegActions",
     excerpt: "This analysis covers 12 global enforcement actions from 27 July to 10 August 2026, including a USD 20 million AML fine for UBS, a German financial reporting penalty, and diverse sanctions from SEBI, BaFin, and CIRO.",
     content: `## Overview
 

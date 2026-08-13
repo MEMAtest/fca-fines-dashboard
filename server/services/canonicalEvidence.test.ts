@@ -19,6 +19,45 @@ describe("canonical regulatory evidence layer", () => {
     expect(migration).toContain("REFRESH MATERIALIZED VIEW public.all_regulatory_fines_canonical");
   });
 
+  it("fails closed where a publication-level amount is repeated across participants", () => {
+    const guard = fs.readFileSync(
+      path.join(root, "migrations/20260813_enforcement_evidence_quality_guard.sql"),
+      "utf8",
+    );
+    expect(guard).toContain("regulatory_case_amount_reviews");
+    expect(guard).toContain("shared_amount_groups");
+    expect(guard).toContain("date_issued");
+    expect(guard).toContain("aggregate_unallocated");
+    expect(guard).toContain("requires_amount_review");
+    expect(guard).toContain("source_duplicate_identity");
+    expect(guard).toContain("PARTITION BY identified.source_duplicate_identity");
+  });
+
+  it("does not treat a shared register URL on different action dates as one aggregate penalty", () => {
+    const guard = fs.readFileSync(
+      path.join(root, "migrations/20260813_enforcement_evidence_quality_guard.sql"),
+      "utf8",
+    );
+    const audit = fs.readFileSync(
+      path.join(root, "scripts/corrections/auditEnforcementDataQuality.ts"),
+      "utf8",
+    );
+    expect(guard).toContain("shared.date_issued IS NOT DISTINCT FROM corrected.date_issued");
+    expect(audit).toContain("GROUP BY upper(regulator), ${NORMALISED_URL}, date_issued, amount_original");
+  });
+
+  it("ships a dry-run-first audit that can persist review markers without altering source rows", () => {
+    const audit = fs.readFileSync(
+      path.join(root, "scripts/corrections/auditEnforcementDataQuality.ts"),
+      "utf8",
+    );
+    expect(audit).toContain('mode: apply ? "apply-review-markers" : "dry-run"');
+    expect(audit).toContain("regulatory_case_amount_reviews");
+    expect(audit).toContain("exactSameSourceDuplicates");
+    expect(audit).toContain("aggregateAmountCandidates");
+    expect(audit).not.toMatch(/UPDATE public\.(?:fca_fines|eu_fines)/);
+  });
+
   it("routes every public analytics query through the canonical view", () => {
     const applicationFiles = [
       "api/search.ts",

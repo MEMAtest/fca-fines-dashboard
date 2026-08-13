@@ -39,6 +39,7 @@ async function main() {
     "migrations/20260718_product_funnel_events.sql",
     "migrations/20260718_ops_alert_state.sql",
     "migrations/20260724_board_pack_persistence.sql",
+    "migrations/20260813_enforcement_evidence_quality_guard.sql",
   ].map((file) => path.resolve(process.cwd(), file));
 
   for (const migrationPath of migrationPaths) {
@@ -105,11 +106,6 @@ async function main() {
   }
   if (verified.length < 4) {
     throw new Error("Verified amount corrections were not applied");
-  }
-  if (Number(counts.amount_review_rows) !== 0) {
-    throw new Error(
-      `Canonical evidence still contains ${counts.amount_review_rows} amount-review rows`,
-    );
   }
   if (Number(jfsc?.canonical_rows) !== 6 || Number(jfsc?.reviewed_source_rows) !== 6) {
     throw new Error("JFSC canonical evidence is not restricted to the six reviewed actions");

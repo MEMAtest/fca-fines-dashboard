@@ -456,10 +456,14 @@ export function FinesWorkspace({ view }: FinesWorkspaceProps) {
           </div>
         </header>
 
-        <nav className="workspace-scope-summary" aria-label="FCA fines reports">
-          <strong>Looking for FCA fines?</strong>
-          <Link to="/regulators/fca">Open the FCA fines database</Link>
-          <Link to="/topics/fca-fines-2026">Read the FCA fines 2026 monthly report</Link>
+        <nav className="workspace-scope-summary" aria-label="Enforcement research shortcuts">
+          <strong>Start with global enforcement</strong>
+          <Link to="/fines/actions">Browse all enforcement actions</Link>
+          <Link to="/regulators">Compare regulator coverage</Link>
+          <Link to="/topics/aml-enforcement">Explore AML enforcement</Link>
+          <span>FCA research:</span>
+          <Link to="/regulators/fca">FCA fines database</Link>
+          <Link to="/topics/fca-fines-2026">FCA fines 2026 report</Link>
         </nav>
 
         <section className="workspace-filterbar" aria-label="Fines filters">

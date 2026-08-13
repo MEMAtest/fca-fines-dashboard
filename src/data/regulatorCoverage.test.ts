@@ -72,6 +72,15 @@ describe("regulatorCoverage", () => {
     expect(coverage?.stage).toBe("live");
   });
 
+  it("keeps AMF public coverage metadata aligned with the live 2026 corpus", () => {
+    expect(getRegulatorCoverage("AMF")).toMatchObject({
+      stage: "live",
+      years: "2023-2026",
+      earliestYear: 2023,
+      latestYear: 2026,
+    });
+  });
+
   it("keeps official source entry points on current secure URLs", () => {
     const prohibitedUrls = new Set([
       "https://www.fca.org.uk/news/news-stories",
