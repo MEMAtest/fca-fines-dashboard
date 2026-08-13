@@ -224,10 +224,12 @@ function recordIssues(records: ExistingEnforcementRecord[]) {
     // Repeated money is only evidence of an aggregate allocation within one
     // action. A date and (where present) a regulator action ID prevent the
     // check conflating separate actions that happen to share an amount.
-    const aggregateKey = record.aggregateActionId
-      ? `${regulator}|action:${record.aggregateActionId}|${amount}|${String(record.currency ?? "").toUpperCase()}`
-      : `${regulator}|url:${source}|${record.issuedDate ?? "unknown"}|${amount}|${String(record.currency ?? "").toUpperCase()}`;
-    aggregateGroups.set(aggregateKey, [...(aggregateGroups.get(aggregateKey) ?? []), record]);
+    if (typeof record.amount === "number" && Number.isFinite(record.amount) && record.amount > 0) {
+      const aggregateKey = record.aggregateActionId
+        ? `${regulator}|action:${record.aggregateActionId}|${amount}|${String(record.currency ?? "").toUpperCase()}`
+        : `${regulator}|url:${source}|${record.issuedDate ?? "unknown"}|${amount}|${String(record.currency ?? "").toUpperCase()}`;
+      aggregateGroups.set(aggregateKey, [...(aggregateGroups.get(aggregateKey) ?? []), record]);
+    }
   }
   for (const group of duplicateGroups.values()) {
     if (group.length < 2) continue;
