@@ -32,12 +32,21 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      - name: Capture current RegActions platform state
+        id: current_state
+        continue-on-error: true
+        run: |
+          npm run --silent coverage:current-state -- \
+            --output=coverage-agent-artifacts/current-state-snapshot.json
+
       - name: Generate existing-record QA report
+        if: always()
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
         run: |
           npm run --silent coverage:agent -- \
             --recent-records=7 \
+            --current-state=coverage-agent-artifacts/current-state-snapshot.json \
             --output-dir=coverage-agent-artifacts
 
       - name: Analyse official discovery candidates when supplied
@@ -46,6 +55,7 @@ jobs:
           test -f "${{ inputs.candidate_input }}"
           npm run --silent coverage:agent -- \
             --input="${{ inputs.candidate_input }}" \
+            --current-state=coverage-agent-artifacts/current-state-snapshot.json \
             --output-dir=coverage-agent-candidate-artifacts
 
       - name: Upload report-only artifacts
@@ -58,3 +68,11 @@ jobs:
             coverage-agent-candidate-artifacts
           if-no-files-found: warn
           retention-days: 30
+
+      - name: Fail closed when the current-state audit could not complete
+        if: always()
+        run: |
+          if [ "${{ steps.current_state.outcome }}" != "success" ]; then
+            echo "Current-state audit had fetch failures; QA artifacts were uploaded and no publishing/import occurred."
+            exit 1
+          fi

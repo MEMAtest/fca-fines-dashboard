@@ -70,6 +70,10 @@ export interface CurrentStateUrl {
   url: string;
   status?: number | null;
   title?: string | null;
+  canonicalUrl?: string | null;
+  finalUrl?: string | null;
+  redirectUrl?: string | null;
+  errorMessage?: string | null;
   indexed?: boolean;
   kind?: "methodology" | "blog" | "hub" | "legacy" | "other";
 }
@@ -82,6 +86,8 @@ export interface RegulatorHubState {
 
 export interface CurrentStateSnapshot {
   capturedAt?: string;
+  baseUrl?: string;
+  fetchFailures?: string[];
   urls?: CurrentStateUrl[];
   regulatorHubs?: RegulatorHubState[];
   notes?: string[];

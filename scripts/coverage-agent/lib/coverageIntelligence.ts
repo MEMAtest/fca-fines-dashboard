@@ -244,8 +244,11 @@ function recordIssues(records: ExistingEnforcementRecord[]) {
 function currentStateIssues(snapshot: CurrentStateSnapshot | undefined) {
   const issues: QaIssue[] = [];
   if (!snapshot) return issues;
+  for (const failure of snapshot.fetchFailures ?? []) {
+    issues.push({ id: qaId("broken_url", ["current-state-fetch", failure]), severity: "error", code: "broken_url", message: `Current-state audit incomplete: ${failure}`, url: snapshot.baseUrl });
+  }
   for (const entry of snapshot.urls ?? []) {
-    if ((entry.status ?? 200) >= 400) issues.push({ id: qaId("broken_url", [entry.url]), severity: "error", code: "broken_url", message: `Current-state URL returned HTTP ${entry.status}.`, url: entry.url });
+    if (entry.status === null || entry.status === undefined || entry.status >= 400) issues.push({ id: qaId("broken_url", [entry.url]), severity: "error", code: "broken_url", message: entry.errorMessage ?? `Current-state URL returned HTTP ${entry.status}.`, url: entry.url });
     if (entry.title && malformedTitle(entry.title)) issues.push({ id: qaId("malformed_title", [entry.url]), severity: "warning", code: "malformed_title", message: "Current-state page title appears truncated or malformed.", url: entry.url });
     const host = hostname(entry.url);
     if (entry.indexed && host && host !== "regactions.com" && host.endsWith("memaconsultants.com")) issues.push({ id: qaId("legacy_domain_indexed", [entry.url]), severity: "warning", code: "legacy_domain_indexed", message: "An indexed legacy domain URL requires canonicalisation/delisting review.", url: entry.url });
@@ -270,7 +273,7 @@ function briefFor(candidate: EnforcementCandidate, decision: MatchDecision, issu
         ? "ready_after_qa_fix"
         : "ready_to_publish";
   const sourceName = candidate.entity || `${candidate.regulator} enforcement action`;
-  const summary = candidate.summary?.trim() || candidate.title;
+  const summary = (candidate.summary?.trim() || candidate.title).replace(/[.!?]+$/, "");
   return {
     candidateId: candidate.id,
     readiness,
@@ -278,7 +281,7 @@ function briefFor(candidate: EnforcementCandidate, decision: MatchDecision, issu
     sourceUrl: candidate.sourceUrl,
     linkedRecordIds: decision.matchedRecordIds,
     cause: `Official ${candidate.regulator} material identifies ${sourceName} in connection with ${summary}.`,
-    failure: candidate.summary?.trim() || "State only the documented regulatory failure; do not infer conduct beyond the official source.",
+    failure: candidate.summary?.trim().replace(/[.!?]+$/, "") || "State only the documented regulatory failure; do not infer conduct beyond the official source.",
     outcome: candidate.amount !== null && candidate.amount !== undefined
       ? `The official source records ${candidate.currency ?? "the stated currency"} ${candidate.amount.toLocaleString("en-GB")}; confirm whether this is entity-specific or aggregate before publication.`
       : "The outcome is documented without asserting an unverified monetary amount.",

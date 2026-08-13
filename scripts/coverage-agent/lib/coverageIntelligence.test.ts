@@ -104,6 +104,17 @@ describe("Coverage and Content Intelligence Agent", () => {
     expect(result.articleBriefs[0].readiness).toBe("ready_after_qa_fix");
   });
 
+  it("does not introduce double punctuation when the official summary already ends a sentence", () => {
+    const result = runCoverageIntelligenceAgent([candidate({ summary: "Reporting control failures." })], [], undefined, { officialDomainResolver: resolver });
+    expect(result.articleBriefs[0].cause).not.toContain("failures..");
+    expect(result.articleBriefs[0].failure).toBe("Reporting control failures");
+  });
+
+  it("turns an incomplete current-state audit into a visible fail-closed QA finding", () => {
+    const result = runCoverageIntelligenceAgent([], [], { baseUrl: "https://regactions.com", fetchFailures: ["FCA unified-search check returned HTTP 503"] }, { officialDomainResolver: resolver });
+    expect(result.qaIssueQueue).toContainEqual(expect.objectContaining({ code: "broken_url", severity: "error", message: expect.stringContaining("Current-state audit incomplete") }));
+  });
+
   it("does not treat intelligence-only material as a missing fine", () => {
     const result = runCoverageIntelligenceAgent([candidate({ candidateKind: "intelligence", contentType: "investigation", amount: null })], [], undefined, { officialDomainResolver: resolver });
     expect(result.coverageReport.decisions[0].kind).toBe("intelligence_only");
