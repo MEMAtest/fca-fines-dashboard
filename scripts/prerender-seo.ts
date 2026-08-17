@@ -1252,13 +1252,14 @@ function renderDevelopersBody(): string {
       endpoint.example,
     )}</code></pre><h3>Response fields</h3><table><thead><tr><th>Field</th><th>Type</th><th>Description</th></tr></thead><tbody>${rows}</tbody></table></section>`;
   }).join("");
-  const intro = `<p>RegActions exposes read-only endpoints for country AML risk ratings and global enforcement data, plus an embeddable SVG risk badge. They are free to use, need no API key, and are CORS-open, so you can call them directly from the browser or a server.</p>`;
+  const intro = `<p>RegActions exposes read-only endpoints for country AML risk ratings and global enforcement data, plus an embeddable SVG risk badge. They are free for non-commercial use, need no API key, and are CORS-open, so you can call them directly from the browser or a server.</p>`;
+  const commercialUseHtml = `<h2 id="commercial-licensing">Internal AML and commercial use</h2><p>The free API is licensed under ${escapeHtml(DEVELOPERS_LICENCE_NAME)}. It permits non-commercial reuse with attribution; using the data in a paid client assessment, commercial service, or internal business workflow needs separate permission.</p><p>To discuss commercial internal use, email <a href="mailto:contact@memaconsultants.com">contact@memaconsultants.com</a> with your organisation size, intended use, jurisdictions, users or systems, and expected request volume. We will confirm whether a licence is available and the applicable terms.</p>`;
   const badgeHtml = `<section><h2>Embed a country risk badge</h2><p>The badge endpoint returns a small SVG you can drop into any page with a plain &lt;img&gt; tag. It shows the jurisdiction's AML risk band and 0-10 score, coloured by band, and reads its number from the same scoring path as the country report. Withheld jurisdictions render an honest "Not rated" badge, and unknown codes return a 404 badge. Swap GB for any ISO 3166-1 alpha-2 code; the .svg suffix is optional.</p><h3>Live preview</h3><p><a href="https://regactions.com/countries" title="AML country risk rating by RegActions"><img src="/api/badge/GB.svg" alt="United Kingdom AML risk rating by RegActions" height="20" /></a> <a href="https://regactions.com/countries" title="AML country risk rating by RegActions"><img src="/api/badge/IR.svg" alt="Iran AML risk rating by RegActions" height="20" /></a></p><h3>Copy-paste embed</h3><p>Keep the surrounding link: it is the visible, clickable credit the licence requires.</p><pre><code>${escapeHtml(
     BADGE_EMBED_HTML,
   )}</code></pre></section>`;
   const feedsHtml = `<h2>Feeds</h2><ul><li><a href="/rss.xml" rel="noopener">Regulatory insights RSS</a> — new analysis and enforcement articles.</li><li><a href="/changes.xml" rel="noopener">Country-risk changes RSS</a> — dated FATF, sanctions, EU tax list and score changes. See the <a href="/countries/changes">changes page</a>.</li></ul>`;
-  const outro = `${feedsHtml}<h2>Questions</h2><p>For volume, commercial licensing, or a data question, contact <a href="mailto:contact@memaconsultants.com">contact@memaconsultants.com</a>. See also the <a href="/countries">country risk hub</a> and the <a href="/regulators">regulator data hub</a>.</p>`;
-  return `<div class="blog-page"><div class="blog-post-container"><article class="blog-article-modal"><h1 class="blog-post-title">Free RegActions data APIs</h1><div class="blog-article-content">${intro}${termsHtml}${attributionHtml}${endpointsHtml}${badgeHtml}${outro}</div></article></div></div>`;
+  const outro = `${feedsHtml}<h2>Questions</h2><p>For volume, licensing, or a data question, contact <a href="mailto:contact@memaconsultants.com">contact@memaconsultants.com</a>. See also the <a href="/countries">country risk hub</a> and the <a href="/regulators">regulator data hub</a>.</p>`;
+  return `<div class="blog-page"><div class="blog-post-container"><article class="blog-article-modal"><h1 class="blog-post-title">Free RegActions data APIs</h1><div class="blog-article-content">${intro}${termsHtml}${commercialUseHtml}${attributionHtml}${endpointsHtml}${badgeHtml}${outro}</div></article></div></div>`;
 }
 
 /**
@@ -2326,21 +2327,21 @@ async function buildPageMetas(): Promise<PageMeta[]> {
       ? `${country.name} FATF Status ${fatfYear} | Country Risk Report`
       : sanctionsClassificationPublished
         ? `${country.name} Sanctions & Country Risk | Is ${country.name} Sanctioned?`
-        : `${country.name} Financial Enforcement & Regulators | Country Risk`;
+        : `${country.name} AML Country Risk Rating | FATF, Sanctions & Enforcement`;
     const description = status
       ? `Is ${country.name} on the FATF grey list? ${country.name} is on the FATF ${listLabel.toLowerCase()} as of the ${FATF_LAST_PLENARY} plenary. AML/CFT country risk profile with sanctions, enforcement activity and cited sources.`
       : sanctionsClassificationPublished
         ? `Is ${country.name} sanctioned? ${country.name} is subject to ${sanctionsLabel} sanctions programmes. Country risk profile: sanctions posture, FATF status, enforcement activity and cited sources.`
-        : `${country.name} financial regulators, enforcement activity and AML/CFT risk.${
+        : `${country.name} AML country risk rating: FATF status, country-level sanctions, governance and enforcement evidence.${
             enforcement
               ? ` RegActions tracks ${formatCount(enforcement.trackedActions)} actions from ${enforcement.regulatorCount} regulators.`
               : ""
-          } Country risk profile with cited sources.`;
+          } Cited sources and recommended controls.`;
     const keywords = status
       ? `${country.name} FATF, ${country.name} grey list, ${country.name} AML risk, is ${country.name} high risk, ${country.name} country risk`
       : sanctionsClassificationPublished
         ? `${country.name} sanctions, is ${country.name} sanctioned, ${country.name} OFAC, ${country.name} embargo, ${country.name} country risk`
-        : `${country.name} enforcement, ${country.name} financial regulators, ${country.name} fines, ${country.name} AML risk, ${country.name} country risk`;
+        : `${country.name} AML country risk rating, ${country.name} FATF status, ${country.name} sanctions, ${country.name} enforcement, ${country.name} AML risk`;
     const datasetDesc =
       [
         status ? `FATF ${listLabel} status` : "FATF listing status",
