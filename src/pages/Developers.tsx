@@ -14,7 +14,7 @@ export function Developers() {
   useSEO({
     title: "Developer API | Free Country-Risk & Enforcement Data | RegActions",
     description:
-      "Free, keyless, CORS-open RegActions APIs: country AML risk ratings, per-country risk detail, and global enforcement search. Fields, curl examples, cadence and attribution terms.",
+      "Keyless, CORS-open RegActions APIs for non-commercial use: country AML risk ratings, per-country risk detail and global enforcement search. Commercial-use permission available on request.",
     keywords:
       "RegActions API, country risk API, AML risk API, enforcement data API, free financial regulator API, CORS open API",
     canonicalPath: "/developers",
@@ -29,8 +29,8 @@ export function Developers() {
         <p>
           RegActions exposes read-only endpoints for country AML risk ratings
           and global enforcement data, plus an embeddable SVG risk badge. They
-          are free to use, need no API key, and are CORS-open, so you can call
-          them directly from the browser or a server.
+          are free for non-commercial use, need no API key, and are CORS-open,
+          so you can call them directly from the browser or a server.
         </p>
         <div className="about-hero__actions">
           <Link to="/countries" className="about-button about-button--primary">
@@ -39,7 +39,29 @@ export function Developers() {
           <Link to="/countries/methodology/v2" className="about-button">
             Read the methodology
           </Link>
+          <a href="#commercial-licensing" className="about-button">
+            Commercial-use permission
+          </a>
         </div>
+      </section>
+
+      <section className="about-section" id="commercial-licensing">
+        <h2>Internal AML and commercial use</h2>
+        <p>
+          The free API is licensed under {DEVELOPERS_LICENCE_NAME}. It permits
+          non-commercial reuse with attribution; using the data in a paid
+          client assessment, commercial service, or internal business workflow
+          needs separate permission.
+        </p>
+        <p>
+          To discuss commercial internal use, email{" "}
+          <a href="mailto:contact@memaconsultants.com">
+            contact@memaconsultants.com
+          </a>{" "}
+          with your organisation size, intended use, jurisdictions, users or
+          systems, and expected request volume. We will confirm whether a
+          licence is available and the applicable terms.
+        </p>
       </section>
 
       <section className="about-section">
@@ -166,7 +188,7 @@ export function Developers() {
       <section className="about-section">
         <h2>Questions</h2>
         <p>
-          For volume, commercial licensing, or a data question, contact{" "}
+          For volume, licensing, or a data question, contact{" "}
           <a href="mailto:contact@memaconsultants.com">
             contact@memaconsultants.com
           </a>
