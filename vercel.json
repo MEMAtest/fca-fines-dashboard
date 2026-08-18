@@ -55,6 +55,12 @@
       ]
     },
     {
+      "source": "/api/(.*)",
+      "headers": [
+        { "key": "X-Robots-Tag", "value": "noindex, nofollow" }
+      ]
+    },
+    {
       "source": "/board-pack/shared/(.*)",
       "headers": [
         { "key": "Cache-Control", "value": "private, no-store" },

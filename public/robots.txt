@@ -16,18 +16,15 @@ Allow: /llms.txt
 # Disallow API endpoints from indexing
 Disallow: /api/
 
-# Allow all major search engine crawlers
-User-agent: Googlebot
-Allow: /
-
-User-agent: Bingbot
-Allow: /
-
-User-agent: Slurp
-Allow: /
-
-User-agent: DuckDuckBot
-Allow: /
+# NOTE: do not add per-crawler groups here. A user-agent-specific group REPLACES
+# the `*` group outright rather than extending it, so the bare
+# `User-agent: Googlebot / Allow: /` blocks that used to sit below this line
+# silently exempted Googlebot, Bingbot, Slurp and DuckDuckBot from the
+# `Disallow: /api/` above. That let every API endpoint into the index
+# (`/api/country-risk/evidence/HK?format=pdf` was ranking in Google). They added
+# nothing -- `Allow: /` is already the default -- so they are gone. If a future
+# rule genuinely needs to target one crawler, that group must repeat EVERY
+# directive from `*` that should still apply to it.
 
 # Sitemap location
 Sitemap: https://regactions.com/sitemap.xml
