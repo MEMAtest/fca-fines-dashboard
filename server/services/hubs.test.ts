@@ -715,4 +715,43 @@ describe("isGarbageFirmName – should KEEP (legitimate names)", () => {
     expect(longName.length).toBeLessThan(180);
     expect(isGarbageFirmName(longName)).toBe(false);
   });
+
+  // Rule 11 — lowercase leading article marks a mid-sentence fragment
+  it("kills the SFC 'the Code of Conduct' row (clause captured, not a party)", () => {
+    expect(isGarbageFirmName("the Code of Conduct")).toBe(true);
+  });
+
+  it("kills other lowercase-article fragments", () => {
+    expect(isGarbageFirmName("the licensed corporation concerned")).toBe(true);
+    expect(isGarbageFirmName("a former responsible officer")).toBe(true);
+    expect(isGarbageFirmName("an approved person")).toBe(true);
+    expect(isGarbageFirmName("their client accounts")).toBe(true);
+  });
+
+  it("keeps title-cased names beginning with 'The' (rule 11 is case-sensitive)", () => {
+    expect(isGarbageFirmName("The Bank of Nova Scotia")).toBe(false);
+    expect(isGarbageFirmName("The Royal Bank of Scotland Plc")).toBe(false);
+  });
+
+  it("keeps lowercase names that are not article-led fragments", () => {
+    // Existing CMA fixture — proves rule 11 targets the article, not the casing.
+    expect(isGarbageFirmName("pharma firm")).toBe(false);
+    expect(isGarbageFirmName("thebroker Ltd")).toBe(false);
+  });
+
+  // Rule 12 — bare rulebook references are never a party
+  it("kills bare instrument references regardless of casing or article", () => {
+    expect(isGarbageFirmName("Code of Conduct")).toBe(true);
+    expect(isGarbageFirmName("The Takeovers Code")).toBe(true);
+    expect(isGarbageFirmName("Securities and Futures Ordinance")).toBe(true);
+    expect(isGarbageFirmName("Listing Rules")).toBe(true);
+  });
+
+  it("keeps real firms whose legal name merely contains an instrument phrase", () => {
+    // Rule 12 is exact-match, so a longer name carrying the phrase survives.
+    expect(isGarbageFirmName("Code of Conduct Advisory Services Limited")).toBe(
+      false,
+    );
+    expect(isGarbageFirmName("Listing Rules Consulting LLP")).toBe(false);
+  });
 });

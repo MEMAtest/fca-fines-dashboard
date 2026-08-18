@@ -441,6 +441,30 @@ export function isGarbageFirmName(name: string): boolean {
   // "The FCA", "The SEC" etc., while keeping "The Bank of Nova Scotia" (mixed case).
   if (/^The [A-Z]{2,4} /.test(n)) return true;
 
+  // Rule 11: sentence fragments that begin with a LOWERCASE article or
+  // determiner. Scraped hub titles are title-cased, so a leading lowercase
+  // "the"/"a"/"an" means the scraper started mid-sentence and captured a clause
+  // rather than a party — e.g. the SFC row "the Code of Conduct", carved out of
+  // "… for breaches of the Code of Conduct".
+  //
+  // Deliberately NOT /i: "The Bank of Nova Scotia" is a real party and must be
+  // kept, and lowercase names that are not fragments (the CMA fixture
+  // "pharma firm") do not start with an article so they are unaffected.
+  if (/^(?:the|a|an|this|that|its|their|his|her)\s/.test(n)) return true;
+
+  // Rule 12: bare references to a rulebook or instrument. These are the thing
+  // that was BREACHED, never the party that breached it, so they are garbage
+  // wherever the scraper picks them up. Exact-match only (optionally with a
+  // leading article) so a real firm that merely contains one of these phrases
+  // in a longer legal name is not swept up with it.
+  if (
+    /^(?:the\s+)?(?:Code of Conduct|Takeovers Code|Listing Rules|Securities and Futures Ordinance)$/i.test(
+      n,
+    )
+  ) {
+    return true;
+  }
+
   // Rule 1 + truncation: very short names that look like truncated strings.
   // "J.P" (3 chars, ends with dot) is a BaFin scraper truncation artifact.
   // We match the specific pattern: 1-4 chars total, ends with "." and no
