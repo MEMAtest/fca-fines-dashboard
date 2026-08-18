@@ -639,6 +639,33 @@ function regulatorCodeForBlogSlug(slug: string): string | null {
   return code ?? null;
 }
 
+/**
+ * Anchor text for a blog guide -> regulator hub link.
+ *
+ * The hubs rank but do not convert: /regulators/fca sits page-2 for "fca
+ * enforcement actions" (pos 16.8), "fca enforcement notices" (15.4) and "fca
+ * final notices" (12.3), and /regulators/mas is pos 9.5 overall (Search
+ * Console, 28d to 2026-08-15). Anchor text is one of the few on-site relevance
+ * signals left, and the previous anchor ("<Full Name> (CODE) enforcement data")
+ * carried none of those phrases.
+ *
+ * Rotated deterministically by slug so the corpus covers several query shapes
+ * instead of repeating one identical anchor across every guide — which would
+ * both waste the coverage and read as templated link-building.
+ */
+function regulatorHubAnchor(code: string, slug: string): string {
+  const variants = [
+    `${code} fines and enforcement actions`,
+    `${code} enforcement notices and penalties`,
+    `${code} fines database`,
+  ];
+  let hash = 0;
+  for (let i = 0; i < slug.length; i += 1) {
+    hash = (hash * 31 + slug.charCodeAt(i)) % 1_000_003;
+  }
+  return variants[hash % variants.length];
+}
+
 function renderBlogRelatedLinks(slug: string): string {
   const code = regulatorCodeForBlogSlug(slug);
   const isFcaArticle = code === "FCA" || /^fca-|[-_]fca[-_]/i.test(slug);
@@ -649,7 +676,7 @@ function renderBlogRelatedLinks(slug: string): string {
     if (coverage) {
       items.set(
         `/regulators/${code.toLowerCase()}`,
-        `${coverage.fullName} (${code}) enforcement data`,
+        regulatorHubAnchor(code, slug),
       );
       const country = coverage.countryCode
         ? getCountryByIso2(coverage.countryCode)
@@ -2042,6 +2069,30 @@ async function buildPageMetas(): Promise<PageMeta[]> {
   // On a DB-less build (no DATABASE_URL etc.) this whole block is skipped and the
   // map stays empty, so hubs fall back to the existing coverage-snapshot body.
   const regulatorTopFines = new Map<string, RegulatorTopFine[]>();
+  // Live action count + latest action date per regulator. Drives dateModified,
+  // the "Tracked actions"/"Latest action" facts and the meta description, so
+  // none of those read from the hand-maintained (and stale) coverage.count.
+  // Best-effort like the fines tables: on a DB-less build the map stays empty
+  // and every consumer falls back to the coverage snapshot.
+  let regulatorFreshness = new Map<
+    string,
+    { actionCount: number; latestActionDate: string | null }
+  >();
+  try {
+    const { getRegulatorFreshness } = await import(
+      "../server/services/hubs.js"
+    );
+    regulatorFreshness = await getRegulatorFreshness();
+    console.log(
+      `  Regulator hubs: live freshness for ${regulatorFreshness.size} regulators.`,
+    );
+  } catch (error) {
+    console.warn(
+      "WARN: DB unreachable for regulator freshness; hubs fall back to coverage-snapshot counts and carry no dateModified:",
+      error instanceof Error ? error.message : String(error),
+    );
+  }
+
   try {
     const { getRegulatorTopFines } = await import("../server/services/hubs.js");
     const results = await Promise.all(
@@ -2068,10 +2119,19 @@ async function buildPageMetas(): Promise<PageMeta[]> {
   PUBLIC_REGULATOR_CODES.forEach((code) => {
     const coverage = REGULATOR_COVERAGE[code];
     const path = `/regulators/${code.toLowerCase()}`;
+    const freshness = regulatorFreshness.get(code.toUpperCase());
+    // Live count where available; the coverage snapshot only as a fallback.
+    const trackedActions = freshness?.actionCount ?? coverage.count;
+    // Clamped: a source row dated in the future (regulators do publish
+    // forward-dated notices) would otherwise emit a future dateModified, which
+    // Google ignores outright.
+    const latestActionDate = freshness?.latestActionDate
+      ? clampISODate(freshness.latestActionDate, todayISO())
+      : null;
     const title = coverage.seoTitle
       ?? `${code} Fines Database | ${coverage.fullName} Enforcement Actions`;
     const description = coverage.seoDescription
-      ?? `Track all ${coverage.fullName} (${code}) fines and enforcement actions. ${coverage.count} penalties from ${coverage.years}. Complete database with stats, trends, and analysis.`;
+      ?? `Track all ${coverage.fullName} (${code}) fines and enforcement actions. ${trackedActions.toLocaleString("en-GB")} penalties from ${coverage.years}. Complete database with stats, trends, and analysis.`;
     const keywords = `${code} fines, ${coverage.fullName}, regulatory enforcement, financial penalties, ${coverage.country}, compliance data, ${code} enforcement`;
 
     pages.push({
@@ -2080,7 +2140,13 @@ async function buildPageMetas(): Promise<PageMeta[]> {
       description,
       keywords,
       ogType: "website",
-      dateModified: code === "FCA" ? fcaYearReport?.latestDate ?? undefined : undefined,
+      // Every hub now carries a real freshness date (the latest tracked action),
+      // not just FCA. Previously all 52 other hubs emitted none at all, so a
+      // regulator hub updated weekly looked static to a crawler.
+      dateModified:
+        (code === "FCA" ? fcaYearReport?.latestDate : null)
+        ?? latestActionDate
+        ?? undefined,
       // Breadcrumb: use the regulator code ("FCA"), not humanize("fca") -> "Fca".
       breadcrumbLabel: code,
       ogImage: `${BASE_URL}/og/${code.toLowerCase()}-hub.png`,
@@ -2091,7 +2157,13 @@ async function buildPageMetas(): Promise<PageMeta[]> {
           { label: "Regulator", value: coverage.fullName },
           { label: "Jurisdiction", value: coverage.country },
           { label: "Tracked period", value: coverage.years },
-          { label: "Tracked actions", value: String(coverage.count) },
+          {
+            label: "Tracked actions",
+            value: trackedActions.toLocaleString("en-GB"),
+          },
+          ...(latestActionDate
+            ? [{ label: "Latest tracked action", value: latestActionDate }]
+            : []),
           { label: "Default currency", value: coverage.defaultCurrency },
         ],
         path,

@@ -1,71 +1,17 @@
-import { createSign } from "node:crypto";
 import { writeFileSync } from "node:fs";
-
-type SearchConsoleRow = {
-  keys?: string[];
-  clicks: number;
-  impressions: number;
-  ctr: number;
-  position: number;
-};
+import {
+  accessToken,
+  query,
+  readCredentialsFromEnv,
+  type SearchConsoleRow,
+} from "./lib/searchConsole.js";
 
 type Metrics = Pick<SearchConsoleRow, "clicks" | "impressions" | "ctr" | "position">;
-
-const SEARCH_CONSOLE_SCOPE = "https://www.googleapis.com/auth/webmasters.readonly";
-const TOKEN_URL = "https://oauth2.googleapis.com/token";
 
 function isoDaysAgo(days: number) {
   const date = new Date();
   date.setUTCDate(date.getUTCDate() - days);
   return date.toISOString().slice(0, 10);
-}
-
-function encode(value: string | Buffer) {
-  return Buffer.from(value).toString("base64url");
-}
-
-async function accessToken(credentials: { client_email: string; private_key: string }) {
-  const now = Math.floor(Date.now() / 1000);
-  const header = encode(JSON.stringify({ alg: "RS256", typ: "JWT" }));
-  const claims = encode(JSON.stringify({
-    iss: credentials.client_email,
-    scope: SEARCH_CONSOLE_SCOPE,
-    aud: TOKEN_URL,
-    iat: now,
-    exp: now + 3600,
-  }));
-  const unsigned = `${header}.${claims}`;
-  const signer = createSign("RSA-SHA256");
-  signer.update(unsigned);
-  const assertion = `${unsigned}.${signer.sign(credentials.private_key, "base64url")}`;
-  const response = await fetch(TOKEN_URL, {
-    method: "POST",
-    headers: { "content-type": "application/x-www-form-urlencoded" },
-    body: new URLSearchParams({
-      grant_type: "urn:ietf:params:oauth:grant-type:jwt-bearer",
-      assertion,
-    }),
-  });
-  if (!response.ok) throw new Error(`Search Console authentication failed (${response.status})`);
-  const payload = await response.json() as { access_token?: string };
-  if (!payload.access_token) throw new Error("Search Console authentication returned no token");
-  return payload.access_token;
-}
-
-async function query(
-  token: string,
-  property: string,
-  body: { startDate: string; endDate: string; dimensions?: string[]; rowLimit?: number },
-) {
-  const url = `https://searchconsole.googleapis.com/webmasters/v3/sites/${encodeURIComponent(property)}/searchAnalytics/query`;
-  const response = await fetch(url, {
-    method: "POST",
-    headers: { authorization: `Bearer ${token}`, "content-type": "application/json" },
-    body: JSON.stringify(body),
-  });
-  if (!response.ok) throw new Error(`Search Console query failed (${response.status}): ${await response.text()}`);
-  const payload = await response.json() as { rows?: SearchConsoleRow[] };
-  return payload.rows ?? [];
 }
 
 function pct(current: number, previous: number) {
@@ -98,10 +44,8 @@ export function topTwentyMovement(current: SearchConsoleRow[], previous: SearchC
 
 async function main() {
   const property = process.env.SC_PROPERTY?.trim();
-  const rawCredentials = process.env.SC_CREDENTIALS_JSON?.trim();
-  if (!property || !rawCredentials) throw new Error("SC_PROPERTY and SC_CREDENTIALS_JSON are required");
-  const credentials = JSON.parse(rawCredentials) as { client_email: string; private_key: string };
-  const token = await accessToken(credentials);
+  if (!property) throw new Error("SC_PROPERTY is required");
+  const token = await accessToken(readCredentialsFromEnv());
   const current = { startDate: isoDaysAgo(8), endDate: isoDaysAgo(2) };
   const previous = { startDate: isoDaysAgo(15), endDate: isoDaysAgo(9) };
   const [currentTotalRows, previousTotalRows, currentQueries, previousQueries, pages] = await Promise.all([

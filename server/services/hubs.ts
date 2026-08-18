@@ -292,6 +292,52 @@ export interface RegulatorTopFine {
   sourceUrl: string | null;
 }
 
+export interface RegulatorFreshness {
+  /** Enforcement actions currently held for this regulator. */
+  actionCount: number;
+  /** ISO date of the most recent tracked action, or null if none. */
+  latestActionDate: string | null;
+}
+
+/**
+ * Live action count and latest action date for every regulator, in one grouped
+ * query.
+ *
+ * Exists because `regulatorCoverage.ts` carries a HAND-MAINTAINED `count`
+ * (FCA reads 308) which no script updates. Anything derived from it — hub
+ * copy, meta descriptions, freshness signals — silently goes stale as the
+ * scrapers ingest. Read counts from here instead whenever the number is shown
+ * to a user or a crawler.
+ *
+ * Unfiltered by `isGarbageFirmName`: that filter is a display concern for the
+ * top-N table, whereas this is "how many actions do we hold", which should
+ * match the searchable dataset.
+ */
+export async function getRegulatorFreshness(): Promise<
+  Map<string, RegulatorFreshness>
+> {
+  const sql = getSqlClient();
+  const rows = (await sql(`
+    SELECT regulator,
+           COUNT(*)::int AS action_count,
+           MAX(date_issued)::text AS latest_action_date
+    FROM all_regulatory_fines_canonical
+    WHERE regulator IS NOT NULL
+    GROUP BY regulator
+  `)) as any[];
+
+  const map = new Map<string, RegulatorFreshness>();
+  for (const row of rows) {
+    map.set(String(row.regulator).toUpperCase(), {
+      actionCount: Number(row.action_count) || 0,
+      latestActionDate: row.latest_action_date
+        ? String(row.latest_action_date)
+        : null,
+    });
+  }
+  return map;
+}
+
 export interface RegulatorYearMonth {
   month: number;
   fineCount: number;
