@@ -203,7 +203,8 @@ export function RegulatorWorkspace({ view }: RegulatorWorkspaceProps) {
   return (
     <ProductWorkspaceShell scope="regulator" regulatorCode={regulatorCode} title={code}>
       <div className="workspace-page">
-        <div className="workspace-page__breadcrumb"><Link to="/regulators">Regulators</Link><span>/</span><span>{code}</span><span>/</span><strong>{view === "overview" ? "Executive Summary" : view[0].toUpperCase()+view.slice(1)}</strong></div>
+        {/* Breadcrumbs come from SiteHeader (which also emits the BreadcrumbList
+            JSON-LD). This page used to render a second, near-identical trail. */}
 
         <section className="regulator-workspace__hero">
           <div className="regulator-workspace__identity">

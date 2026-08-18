@@ -1,0 +1,17 @@
+/* "Back to {workspace}" link for pages reached from the workspace sidebar but
+   rendered outside ProductWorkspaceShell. Mirrors .board-quick__back, which is
+   the same affordance scoped to the board-pack builder. */
+.workspace-return {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  margin: 0 0 12px;
+  color: #31536d;
+  font-size: 12px;
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.workspace-return:hover {
+  color: #078e61;
+}

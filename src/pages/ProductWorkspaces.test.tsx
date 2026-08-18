@@ -165,11 +165,21 @@ describe("product workspaces", () => {
 
     expect(screen.queryByRole("link", { name: "Reports" })).not.toBeInTheDocument();
     expect(screen.queryByRole("link", { name: "Data Hub" })).not.toBeInTheDocument();
-    expect(screen.getByRole("link", { name: "Regulator directory" })).toHaveAttribute("href", "/regulators");
-    expect(screen.getByRole("link", { name: "Methodology" })).toHaveAttribute("href", "/methodology/enforcement");
+    // Every secondary destination renders outside ProductWorkspaceShell, so all
+    // three carry the return trail that powers their "Back to …" link. Board
+    // Pack used to be the only one, leaving the other two as dead ends.
+    const trail = "from=%2Ffines%2Fanalytics%3Fyear%3D2025&fromLabel=Fines+workspace";
+    expect(screen.getByRole("link", { name: "Regulator directory" })).toHaveAttribute(
+      "href",
+      `/regulators?${trail}`,
+    );
+    expect(screen.getByRole("link", { name: "Methodology" })).toHaveAttribute(
+      "href",
+      `/methodology/enforcement?${trail}`,
+    );
     expect(screen.getByRole("link", { name: "Board Pack" })).toHaveAttribute(
       "href",
-      "/board-pack?from=%2Ffines%2Fanalytics%3Fyear%3D2025&fromLabel=Fines+workspace",
+      `/board-pack?${trail}`,
     );
   });
 

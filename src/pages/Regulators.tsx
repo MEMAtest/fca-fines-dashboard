@@ -8,7 +8,9 @@ import {
   type RegulatorCoverage,
 } from "../data/regulatorCoverage.js";
 import { useSEO } from "../hooks/useSEO.js";
+import { WorkspaceReturnLink } from "../components/WorkspaceReturnLink.js";
 import "../styles/regulators-grid.css";
+import "../styles/workspace-return.css";
 
 type RegionFilter =
   | "all"
@@ -101,6 +103,7 @@ export function Regulators() {
 
   return (
     <div className="reg-grid-page">
+      <WorkspaceReturnLink />
       <div className="reg-grid-page__header">
         <h1 className="reg-grid-page__title">
           Consolidated Global Regulator Intelligence

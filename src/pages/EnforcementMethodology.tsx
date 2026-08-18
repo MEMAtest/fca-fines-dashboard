@@ -1,5 +1,7 @@
-import { Link } from "react-router-dom";
 import { useSEO } from "../hooks/useSEO.js";
+import { WorkspaceReturnLink } from "../components/WorkspaceReturnLink.js";
+import "../styles/content-page.css";
+import "../styles/workspace-return.css";
 
 export function EnforcementMethodology() {
   useSEO({
@@ -8,7 +10,10 @@ export function EnforcementMethodology() {
   });
 
   return <main className="content-page">
-    <div className="content-page__breadcrumb"><Link to="/search">Enforcement Explorer</Link><span>/</span><strong>Methodology</strong></div>
+    {/* Breadcrumbs come from SiteHeader. This page used to hardcode a second
+        trail claiming the user arrived from /search regardless of origin; the
+        real origin now arrives as a ?from trail from the workspace sidebar. */}
+    <WorkspaceReturnLink />
     <header><span className="eyebrow">Evidence and counting contract</span><h1>Enforcement data methodology</h1><p>RegActions separates source records, cases, actions and monetary outcomes so totals remain reproducible and limitations remain visible.</p></header>
     <section><h2>Counting unit</h2><p>The primary counting unit is a canonical public enforcement case. One regulator operation may produce several notices or outcomes, and one notice may cover several subjects. Counts should therefore not be interpreted as regulator operations unless a chart says so explicitly.</p></section>
     <section><h2>Canonical identity and duplicates</h2><p>Source rows are matched into canonical cases using regulator, entity, date, source and outcome evidence. Duplicate source rows are collapsed. Each published case receives an immutable public identifier, while mutable matching fingerprints and aliases support later corrections.</p></section>
