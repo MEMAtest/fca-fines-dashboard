@@ -10,6 +10,7 @@ import {
   parseMonthNameDate,
 } from "./lib/euFineHelpers.js";
 import { runScraper } from "./lib/runScraper.js";
+import { extractCimaEntity } from "./lib/cimaEntity.js";
 
 const CIMA_BASE_URL = "https://www.cima.ky";
 const CIMA_ENFORCEMENT_URL = `${CIMA_BASE_URL}/enforcement-notices`;
@@ -66,35 +67,23 @@ export function parseCimaActionsHtml(
     const href = normalizeWhitespace(link.attr("href") || "");
     const actionUrl = href ? makeAbsoluteUrl(pageUrl, href) : "";
 
-    // Extract entity name from description
-    // Common patterns:
-    // - "OneTRADEx LTD. ..."
-    // - "Struck and Dissolved Entities"
-    // - "Entity Name - Action"
-    let entity = "CIMA Enforcement Action";
-    let title = description || "CIMA Enforcement Notice";
+    // The party name lives in the HEADLINE, not the paragraph. Every item's
+    // paragraph opens with the same boilerplate ("The Cayman Islands Monetary
+    // Authority (the "Authority") has imposed discretionary administrative
+    // fines totalling CI$..."), so the previous description-based extraction
+    // matched nothing and every row fell through to the date placeholder --
+    // which the display filter then removed, leaving the hub with no table.
+    const headline = normalizeWhitespace(
+      $el.find("h1, h2, h3, h4, h5").first().text() || link.text(),
+    );
 
-    // Try to extract entity from description
-    if (description) {
-      // Look for company names (words ending in Ltd., Limited, Inc., etc.)
-      const companyMatch = description.match(/\b([A-Z][A-Za-z\s&.]+?(?:Ltd\.?|Limited|Inc\.?|LLC|Plc))/);
-      if (companyMatch) {
-        entity = companyMatch[1].trim();
-        title = description;
-      } else {
-        // Use first sentence as entity
-        const firstSentence = description.split(/[.!?]/)[0];
-        if (firstSentence && firstSentence.length < 100) {
-          entity = firstSentence.trim();
-          title = description;
-        }
-      }
-    }
+    const extracted = extractCimaEntity(headline);
+    const title = headline || description || "CIMA Enforcement Notice";
 
-    // If we still don't have a good entity name, use a generic one with date
-    if (entity === "CIMA Enforcement Action") {
-      entity = `Enforcement Action ${dateIssued}`;
-    }
+    // Bulk "Struck or Dissolved Entities" sweeps genuinely name no party. Keep
+    // the date placeholder for those rather than inventing a name: the display
+    // filter excludes it, which is the correct outcome for a row with no party.
+    const entity = extracted ?? `Enforcement Action ${dateIssued}`;
 
     rows.push({
       title,

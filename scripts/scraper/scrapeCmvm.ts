@@ -78,6 +78,49 @@ function isGenericCmvmTitle(title: string) {
   return CMVM_GENERIC_TITLE_PATTERN.test(normalizeWhitespace(title));
 }
 
+/** Corporate forms that appear in Portuguese and EU legal entity names. */
+const CMVM_ENTITY_SUFFIX =
+  /\b(S\.?A\.?|Lda\.?|L\.?D\.?A\.?|SGPS|S\.?G\.?P\.?S\.?|Unipessoal|SICAV|SCR|SIMFE|Sociedade|Banco|Caixa|Companhia|Seguros|Investimento|Corretora|Financeira|PLC|Limited|Ltd|GmbH|N\.?V\.?|B\.?V\.?)\b/i;
+
+/**
+ * Portuguese verbs and nouns that mark a CMVM press-release SENTENCE rather
+ * than a party. `divulgou` (disclosed), `proferiu` (issued), `instaurado`
+ * (brought against), `aplicou` (applied), `Contraordenaç*` (administrative
+ * offence — a section title, not a firm).
+ */
+const CMVM_SENTENCE_MARKER =
+  /\b(divulgou|proferiu|instaurad[oa]s?|aplicad[oa]s?|aplicou|foram|foi|decis(ão|ões)|process[oa]s?|trimestre|comunicado|contraordena|contra-ordena|nos termos|relativo|referente)\b/i;
+
+/**
+ * True when a CMVM listing title can stand as a party name.
+ *
+ * This replaces a two-prefix blocklist (`CMVM divulgou hoje` /
+ * `Contraordenações graves e muito graves`). Any other headline shape passed
+ * that gate and was written into `firm_individual` verbatim, which is why all
+ * 43 CMVM rows in the canonical table are Portuguese headlines rather than
+ * firms.
+ *
+ * Deliberately a POSITIVE test. Enumerating the bad headline shapes is
+ * unbounded — the regulator writes new prose every quarter — whereas a party
+ * name has a recognisable shape: a corporate suffix, or title-cased words with
+ * no sentence verb. Titles that fail fall through to the highlight-based
+ * Portuguese patterns below, which extract the party from the decision text.
+ */
+export function looksLikeCmvmParty(title: string): boolean {
+  const value = normalizeWhitespace(title ?? "");
+  if (value.length < 7 || value.length > 140) return false;
+  if (isGenericCmvmTitle(value)) return false;
+  if (CMVM_SENTENCE_MARKER.test(value)) return false;
+  if (CMVM_ENTITY_SUFFIX.test(value)) return true;
+
+  // Otherwise require title-case shape: at least two capitalised words and no
+  // majority-lowercase prose.
+  const words = value.split(/\s+/).filter(Boolean);
+  if (words.length > 12) return false;
+  const capitalised = words.filter((word) => /^[A-ZÀ-Þ]/.test(word));
+  return capitalised.length >= 2 && capitalised.length >= words.length / 2;
+}
+
 function cleanCmvmEntity(input: string) {
   return normalizeWhitespace(
     input
@@ -92,11 +135,9 @@ function cleanCmvmEntity(input: string) {
 
 export function extractCmvmFirm(title: string, highlights: string[] = []) {
   const normalizedTitle = normalizeWhitespace(title);
-  if (
-    normalizedTitle
-    && !isGenericCmvmTitle(normalizedTitle)
-    && normalizedTitle.length > 6
-  ) {
+  // Only accept the listing title as a party when it actually looks like one.
+  // Otherwise fall through to the Portuguese decision-text patterns below.
+  if (looksLikeCmvmParty(normalizedTitle)) {
     return normalizedTitle;
   }
 
