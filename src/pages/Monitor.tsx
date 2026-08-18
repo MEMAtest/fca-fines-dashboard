@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { Link, useSearchParams } from "react-router-dom";
 import { Bell, Pause, Play, Trash2 } from "lucide-react";
 import { useSEO } from "../hooks/useSEO.js";
+import "../styles/content-page.css";
 
 interface ManagedMonitor {
   label: string;

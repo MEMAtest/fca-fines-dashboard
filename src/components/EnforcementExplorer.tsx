@@ -117,7 +117,9 @@ export function EnforcementExplorer() {
 
   return (
     <div className="workspace-page enforcement-explorer">
-      <div className="workspace-page__breadcrumb"><span>Home</span><span>/</span><strong>Enforcement Explorer</strong></div>
+      {/* Breadcrumbs come from SiteHeader (which also emits the BreadcrumbList
+          JSON-LD). This component used to render a second trail whose "Home"
+          was a dead <span> rather than a link. */}
       <header className="workspace-page__heading">
         <div><h1>Enforcement Explorer</h1><p>Browse, filter and select canonical enforcement cases without entering a keyword.</p></div>
         <div className="workspace-page__heading-actions">

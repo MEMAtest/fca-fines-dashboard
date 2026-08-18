@@ -29,6 +29,7 @@ import {
 import { LIVE_REGULATOR_NAV_ITEMS } from "../data/regulatorCoverage.js";
 import { useLocalStorage } from "../hooks/useLocalStorage.js";
 import { useEvidenceBasket } from "../hooks/useEvidenceBasket.js";
+import { useWorkspaceReturn } from "../hooks/useWorkspaceReturn.js";
 import type { FineRecord } from "../types.js";
 import { useSEO } from "../hooks/useSEO.js";
 import { useUnifiedData } from "../hooks/useUnifiedData.js";
@@ -193,12 +194,11 @@ export function BoardIntelligence() {
   const archetype = BOARD_ARCHETYPES_BY_ID[profile.archetypeId];
   const boardFocus = BOARD_FOCUS_OPTIONS.find((item) => item.id === profile.boardFocus)!;
   const lowerConfidenceCodes = profile.priorityRegulators.filter((code) => LIVE_REGULATOR_NAV_ITEMS.find((item) => item.code === code)?.operationalConfidence === "lower");
-  const returnDestination = useMemo(() => {
-    const candidate = searchParams.get("from");
-    if (!candidate || !candidate.startsWith("/") || candidate.startsWith("//")) return null;
-    return candidate;
-  }, [searchParams]);
-  const returnLabel = searchParams.get("fromLabel")?.trim() || "previous workspace";
+  // Shared with the other workspace-sidebar destinations (/regulators,
+  // /methodology/enforcement) so the open-redirect guard on `from` has exactly
+  // one implementation.
+  const { destination: returnDestination, label: returnLabel } =
+    useWorkspaceReturn();
 
   const markBuilderStarted = () => {
     if (builderStarted.current) return;

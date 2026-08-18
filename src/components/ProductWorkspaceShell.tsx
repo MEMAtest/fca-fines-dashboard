@@ -70,18 +70,30 @@ export function ProductWorkspaceShell({
     : scope === "search"
       ? "Enforcement Explorer"
       : `${regulatorCode?.toUpperCase() ?? "Regulator"} workspace`;
-  const boardPackParams = new URLSearchParams({
+  // Every secondary destination lives OUTSIDE this shell, so following one
+  // drops the workspace navigation entirely. Each therefore carries the return
+  // trail that the destination renders as a "Back to …" link. Board Pack was
+  // the only one doing this; Regulator directory and Methodology were dead ends.
+  const returnParams = new URLSearchParams({
     from: `${location.pathname}${location.search}`,
     fromLabel: returnLabel,
-  });
+  }).toString();
   const secondaryNav = [
     {
       label: "Board Pack",
       icon: BookOpenCheck,
-      to: `/board-pack?${boardPackParams.toString()}`,
+      to: `/board-pack?${returnParams}`,
     },
-    { label: "Regulator directory", icon: Database, to: "/regulators" },
-    { label: "Methodology", icon: CircleHelp, to: "/methodology/enforcement" },
+    {
+      label: "Regulator directory",
+      icon: Database,
+      to: `/regulators?${returnParams}`,
+    },
+    {
+      label: "Methodology",
+      icon: CircleHelp,
+      to: `/methodology/enforcement?${returnParams}`,
+    },
   ];
   const currentLabel = useMemo(
     () =>

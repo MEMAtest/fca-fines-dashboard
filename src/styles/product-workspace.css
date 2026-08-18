@@ -90,8 +90,6 @@
 .product-workspace__mobile-trigger { display: none; }
 
 .workspace-page { max-width: 1560px; margin: 0 auto; color: var(--workspace-ink); }
-.workspace-page__breadcrumb { display: flex; align-items: center; gap: 6px; margin-bottom: 10px; color: #718096; font-size: 11px; }
-.workspace-page__breadcrumb a { color: inherit; text-decoration: none; }
 .workspace-page__heading { display: flex; align-items: flex-end; justify-content: space-between; gap: 20px; margin-bottom: 14px; }
 .workspace-page__heading h1 { margin: 0; font-size: clamp(24px, 3vw, 34px); letter-spacing: -.04em; }
 .workspace-page__heading p { margin: 5px 0 0; max-width: 720px; color: var(--workspace-muted); font-size: 13px; }

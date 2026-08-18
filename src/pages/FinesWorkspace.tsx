@@ -443,7 +443,8 @@ export function FinesWorkspace({ view }: FinesWorkspaceProps) {
   return (
     <ProductWorkspaceShell scope="fines" title="Fines">
       <div className="workspace-page">
-        <div className="workspace-page__breadcrumb"><Link to="/">Home</Link><span>/</span><span>Fines</span><span>/</span><strong>{view === "overview" ? "Command Centre" : view[0].toUpperCase() + view.slice(1)}</strong></div>
+        {/* Breadcrumbs come from SiteHeader (which also emits the BreadcrumbList
+            JSON-LD). This page used to render a second, near-identical trail. */}
         <header className="workspace-page__heading">
           <div>
             <h1>{view === "overview" ? "Fines Command Centre" : view === "actions" ? "Enforcement actions" : view === "analytics" ? "Fines analytics" : "Guided comparison"}</h1>

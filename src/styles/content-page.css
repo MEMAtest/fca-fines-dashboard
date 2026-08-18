@@ -1,0 +1,52 @@
+/* Shared container for plain prose routes (/methodology/enforcement, /monitor).
+   Both markup up as <main className="content-page"> but no stylesheet ever
+   defined the class, so they rendered full-bleed and flush to the viewport
+   edge. Matches the 1120px column used by .about-hero / .about-section. */
+.content-page {
+  max-width: 1120px;
+  margin: 0 auto;
+  padding: 48px 24px 72px;
+  color: #0f172a;
+}
+
+.content-page header {
+  margin-bottom: 32px;
+}
+
+.content-page .eyebrow {
+  display: block;
+  margin: 0 0 12px;
+  color: #0f766e;
+  font-size: 0.8rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.content-page h1 {
+  margin: 0 0 12px;
+  font-size: clamp(1.9rem, 3.4vw, 2.6rem);
+  line-height: 1.15;
+}
+
+.content-page h2 {
+  margin: 0 0 10px;
+  font-size: 1.15rem;
+}
+
+.content-page section {
+  margin-bottom: 28px;
+}
+
+.content-page p {
+  margin: 0 0 12px;
+  max-width: 78ch;
+  color: #334155;
+  line-height: 1.65;
+}
+
+@media (max-width: 640px) {
+  .content-page {
+    padding: 32px 16px 56px;
+  }
+}
