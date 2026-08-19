@@ -78,5 +78,15 @@
     "qualityScore": 100,
     "qualityPassed": true,
     "wordCount": 1316
+  },
+  {
+    "timestamp": "2026-08-19T03:42:19.741Z",
+    "topic": "Market Abuse and Insider Dealing: A Cross-Regulator Analysis",
+    "slug": "market-abuse-insider-dealing-analysis",
+    "track": "evergreen-thematic",
+    "outcome": "draft_saved",
+    "qualityScore": 100,
+    "qualityPassed": true,
+    "wordCount": 1128
   }
 ]
