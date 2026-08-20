@@ -59,6 +59,7 @@ import {
   REGULATOR_COVERAGE,
   PUBLIC_REGULATOR_CODES,
 } from "../src/data/regulatorCoverage.js";
+const PUBLIC_REGULATOR_COUNT = PUBLIC_REGULATOR_CODES.length;
 import { topicClusters } from "../src/data/topicClusters.js";
 import { buildFcaFineCasePath as buildSharedFcaFineCasePath } from "../src/utils/fcaFineCasePath.js";
 import {
@@ -947,7 +948,7 @@ function renderCountryFatfBody(view: CountryView): string {
     )}</ul><p>Derived from sanctions tier, FATF listing, World Bank WGI governance and CPI; no per-sector dataset is asserted.</p>`;
   const signal = getRegulatorySignalCountry(country.iso2);
   const regulatorySignalHtml = signal
-    ? `<h2>Regulatory ecosystem and enforcement visibility</h2><p>This evidence map is separate from Country Risk v3. It describes official mandates, publication access and RegActions coverage; it does not judge regulatory strength or add points to country risk.</p><p><strong>Transparency Index:</strong> not assessed · <strong>Evidence disposition:</strong> ${escapeHtml(signal.authorityEvidenceState)} · <strong>Mapped official authorities:</strong> ${signal.officialDirectoryAuthorities}.</p>${signal.authorityEvidenceNote ? `<p>${escapeHtml(signal.authorityEvidenceNote)}${signal.externalAuthorityEvidenceUrl ? ` <a href="${escapeHtml(signal.externalAuthorityEvidenceUrl)}" rel="noopener">External evidence</a>` : ""}</p>` : ""}${signal.authorities.length ? `<ul>${signal.authorities.map((authority) => `<li><strong>${escapeHtml(authority.name)}</strong> — ${escapeHtml(authority.roles.map(roleLabel).join(", ") || "Mandate not classified")}; ${escapeHtml(authorityAccessLabel(authority.accessState))}${authority.website ? ` · <a href="${escapeHtml(authority.website)}" rel="noopener">official site</a>` : ""}${authority.publicationUrl ? ` · <a href="${escapeHtml(authority.publicationUrl)}" rel="noopener">publication candidate</a>` : ""}</li>`).join("")}</ul>` : `<p>No local authority entry was resolved in this public directory snapshot. This is not evidence that no regulator exists.</p>`}<p><a href="/api/regulatory-signal/evidence/${signal.iso2}?format=pdf">Download regulatory ecosystem PDF</a> · <a href="/api/regulatory-signal/evidence/${signal.iso2}?format=csv">CSV</a> · <a href="/api/regulatory-signal/evidence/${signal.iso2}?format=json">JSON</a></p>`
+    ? `<h2>Regulatory ecosystem and enforcement visibility</h2><p>This evidence map is separate from Country Risk v3. It describes official mandates, publication access and RegActions coverage; it does not judge regulatory strength or add points to country risk.</p><p><strong>Transparency Index:</strong> not assessed · <strong>Evidence disposition:</strong> ${escapeHtml(signal.authorityEvidenceState)} · <strong>Mapped official authorities:</strong> ${signal.officialDirectoryAuthorities}.</p>${signal.authorityEvidenceNote ? `<p>${escapeHtml(signal.authorityEvidenceNote)}${signal.externalAuthorityEvidenceUrl ? ` <a href="${escapeHtml(signal.externalAuthorityEvidenceUrl)}" rel="noopener">External evidence</a>` : ""}</p>` : ""}${signal.authorities.length ? `<ul>${signal.authorities.map((authority) => `<li><strong>${escapeHtml(authority.name)}</strong> — ${escapeHtml(authority.roles.map(roleLabel).join(", ") || "Mandate not classified")}; ${escapeHtml(authorityAccessLabel(authority.accessState))}${authority.website ? ` · <a href="${escapeHtml(authority.website)}" rel="noopener">official site</a>` : ""}${authority.publicationUrl ? ` · <a href="${escapeHtml(authority.publicationUrl)}" rel="noopener">publication candidate</a>` : ""} · directory source ${escapeHtml(authority.directorySources.join(", ") || "not recorded")} · source checked ${escapeHtml(authority.sourceCheckedAt.slice(0, 10))}</li>`).join("")}</ul>` : `<p>No local authority entry was resolved in this public directory snapshot. This is not evidence that no regulator exists.</p>`}<p><a href="/api/regulatory-signal/evidence/${signal.iso2}?format=pdf">Download regulatory ecosystem PDF</a> · <a href="/api/regulatory-signal/evidence/${signal.iso2}?format=csv">CSV</a> · <a href="/api/regulatory-signal/evidence/${signal.iso2}?format=json">JSON</a></p>`
     : "";
   const peersHtml =
     regionalPeers.length > 0
@@ -1321,7 +1322,7 @@ function renderHomepageBody(): string {
     )
     .join("");
 
-  return `<div class="blog-page"><div class="blog-post-container"><article class="blog-article-modal"><h1 class="blog-post-title">Global Regulatory Fines & Enforcement Intelligence</h1><div class="blog-article-content"><p>RegActions tracks enforcement actions, penalties, breach categories, firms, and regulator activity across 45+ global financial regulators.</p><h2>What RegActions Covers</h2><ul><li><strong>Regulators:</strong> 45+ global financial regulators across the UK, Europe, North America, APAC, the Middle East, Africa, and offshore markets.</li><li><strong>Dataset:</strong> searchable enforcement actions, monetary penalties, breach themes, dates, sectors, and source links.</li><li><strong>Use cases:</strong> compliance monitoring, board packs, regulator benchmarking, control reviews, and trend analysis.</li></ul><h2>Start With The Data</h2><p><a href="/regulators">Open the regulator data hub</a>, <a href="/search">search enforcement actions</a>, <a href="/board-pack">create a board pack</a>, or use the <a href="/developers">free data API</a>.</p><h2>Latest Insights</h2><ul>${articleLinks}</ul><h2>Frequently Asked Questions</h2><p>RegActions combines official-source enforcement monitoring with practical analysis so compliance teams can understand what changed, why it matters, and what action to take next.</p></div></article></div></div>`;
+  return `<div class="blog-page"><div class="blog-post-container"><article class="blog-article-modal"><h1 class="blog-post-title">Global Regulatory Fines & Enforcement Intelligence</h1><div class="blog-article-content"><p>RegActions tracks enforcement actions, penalties, breach categories, firms, and regulator activity across ${PUBLIC_REGULATOR_COUNT} configured live global financial regulators.</p><h2>What RegActions Covers</h2><ul><li><strong>Regulators:</strong> ${PUBLIC_REGULATOR_COUNT} configured live financial regulators across the UK, Europe, North America, APAC, the Middle East, Africa, and offshore markets.</li><li><strong>Dataset:</strong> searchable enforcement actions, monetary penalties, breach themes, dates, sectors, and source links.</li><li><strong>Use cases:</strong> compliance monitoring, board packs, regulator benchmarking, control reviews, and trend analysis.</li></ul><h2>Start With The Data</h2><p><a href="/regulators">Open the regulator data hub</a>, <a href="/search">search enforcement actions</a>, <a href="/board-pack">create a board pack</a>, or use the <a href="/developers">free data API</a>.</p><h2>Latest Insights</h2><ul>${articleLinks}</ul><h2>Frequently Asked Questions</h2><p>RegActions combines official-source enforcement monitoring with practical analysis so compliance teams can understand what changed, why it matters, and what action to take next.</p></div></article></div></div>`;
 }
 
 function renderEnforcementMethodologyBody(): string {
@@ -1360,7 +1361,7 @@ const HOWTO_SCHEMA = {
   "@type": "HowTo",
   name: "How to Search the Global Regulatory Fines Database",
   description:
-    "Step-by-step guide to searching and filtering enforcement actions from 45+ global financial regulators using RegActions.",
+    `Step-by-step guide to searching and filtering enforcement actions from ${PUBLIC_REGULATOR_COUNT} configured live global financial regulators using RegActions.`,
   step: [
     {
       "@type": "HowToStep",
@@ -1475,7 +1476,7 @@ function generatePageGraph(meta: PageMeta): object {
       url: BASE_URL,
       logo: { "@type": "ImageObject", url: `${BASE_URL}/regactions-mark.png` },
       description:
-        "Global regulatory enforcement intelligence from 45+ financial regulators worldwide",
+        `Global regulatory enforcement intelligence from ${PUBLIC_REGULATOR_COUNT} configured live financial regulators worldwide`,
       // Only profiles that actually exist: RegActions is built by MEMA Consultants
       // (linked site-wide) and its code org is on GitHub. No LinkedIn/X profile exists.
       sameAs: ["https://memaconsultants.com", "https://github.com/MEMAtest"],
@@ -1486,7 +1487,7 @@ function generatePageGraph(meta: PageMeta): object {
       url: `${BASE_URL}/`,
       name: SITE_NAME,
       description:
-        "Regulatory fines and enforcement intelligence from 45+ global financial regulators including FCA, BaFin, AMF, SEC, and more",
+        `Regulatory fines and enforcement intelligence from ${PUBLIC_REGULATOR_COUNT} configured live financial regulators including FCA, BaFin, AMF, SEC, and more`,
       publisher: { "@id": `${BASE_URL}/#organization` },
       potentialAction: {
         "@type": "SearchAction",
@@ -1529,7 +1530,7 @@ function generatePageGraph(meta: PageMeta): object {
       "@type": "Dataset",
       name: "RegActions Regulatory Fines Database",
       description:
-        "Comprehensive database of regulatory fines and enforcement actions from 45+ global financial regulators. Includes penalty amounts, breach categories, and firm details.",
+        `Comprehensive database of regulatory fines and enforcement actions from ${PUBLIC_REGULATOR_COUNT} configured live financial regulators. Includes penalty amounts, breach categories, and firm details.`,
       url: `${BASE_URL}/regulators`,
       keywords: [
         "regulatory fines",
@@ -1583,7 +1584,7 @@ async function buildPageMetas(): Promise<PageMeta[]> {
     title:
       "RegActions | Global Regulatory Fines & Enforcement Intelligence",
     description:
-      "Track fines from 45+ global financial regulators including BaFin, SEC, FCA, AMF, and more. Analyze £5B+ in enforcement actions from 2013-2026 with interactive charts, breach categories, and compliance insights.",
+      `Track fines from ${PUBLIC_REGULATOR_COUNT} configured live global financial regulators including BaFin, SEC, FCA, AMF, and more. Analyze current source-linked enforcement actions from 2013-2026 with interactive charts, breach categories, and compliance insights.`,
     keywords:
       "regulatory fines, financial regulator fines, enforcement actions, BaFin fines, SEC fines, FCA fines, AMF fines, CNMV fines, global fines database, multi-regulator tracker, financial compliance",
     ogType: "website",
@@ -1597,7 +1598,7 @@ async function buildPageMetas(): Promise<PageMeta[]> {
     path: "/regulators",
     title: "RegActions Data Hub | Global Regulatory Fines Analytics",
     description:
-      "Interactive multi-regulator data hub. Search enforcement actions from 45+ global financial regulators by firm, year, amount, breach category, and regulator.",
+      `Interactive multi-regulator data hub. Search enforcement actions from ${PUBLIC_REGULATOR_COUNT} configured live global financial regulators by firm, year, amount, breach category, and regulator.`,
     keywords:
       "regulatory fines data hub, global enforcement tracker, multi-regulator search, BaFin fines, SEC fines, FCA fines, regulatory analytics",
     ogType: "website",
@@ -1625,7 +1626,7 @@ async function buildPageMetas(): Promise<PageMeta[]> {
         "@type": "DataFeed",
         name: "RegActions Live Enforcement Feed",
         description:
-          "Real-time feed of regulatory fines and enforcement actions from 45+ global financial regulators, updated as new penalties are published.",
+          `Real-time feed of regulatory fines and enforcement actions from ${PUBLIC_REGULATOR_COUNT} configured live global financial regulators, updated as new penalties are published.`,
         url: `${BASE_URL}/regulators`,
         dateModified: todayISO(),
         potentialAction: [
@@ -2096,7 +2097,7 @@ async function buildPageMetas(): Promise<PageMeta[]> {
     );
   } catch (error) {
     console.warn(
-      "WARN: DB unreachable for regulator freshness; hubs fall back to coverage-snapshot counts and carry no dateModified:",
+      "WARN: DB unreachable for regulator freshness; hubs omit current counts and carry no dateModified:",
       error instanceof Error ? error.message : String(error),
     );
   }
@@ -2128,8 +2129,10 @@ async function buildPageMetas(): Promise<PageMeta[]> {
     const coverage = REGULATOR_COVERAGE[code];
     const path = `/regulators/${code.toLowerCase()}`;
     const freshness = regulatorFreshness.get(code.toUpperCase());
-    // Live count where available; the coverage snapshot only as a fallback.
-    const trackedActions = freshness?.actionCount ?? coverage.count;
+    // Never publish the hand-maintained coverage count when the live database
+    // is unavailable. A snapshot count is not a current count and caused the
+    // FCA 308/752 contradiction in crawler-visible pages.
+    const trackedActions = freshness?.actionCount ?? null;
     // Clamped: a source row dated in the future (regulators do publish
     // forward-dated notices) would otherwise emit a future dateModified, which
     // Google ignores outright.
@@ -2139,7 +2142,7 @@ async function buildPageMetas(): Promise<PageMeta[]> {
     const title = coverage.seoTitle
       ?? `${code} Fines Database | ${coverage.fullName} Enforcement Actions`;
     const description = coverage.seoDescription
-      ?? `Track all ${coverage.fullName} (${code}) fines and enforcement actions. ${trackedActions.toLocaleString("en-GB")} penalties from ${coverage.years}. Complete database with stats, trends, and analysis.`;
+      ?? `Track ${coverage.fullName} (${code}) fines and enforcement actions from ${coverage.years}. Current totals are loaded from the live evidence view. Complete database with stats, trends, and analysis.`;
     const keywords = `${code} fines, ${coverage.fullName}, regulatory enforcement, financial penalties, ${coverage.country}, compliance data, ${code} enforcement`;
 
     pages.push({
@@ -2167,7 +2170,7 @@ async function buildPageMetas(): Promise<PageMeta[]> {
           { label: "Tracked period", value: coverage.years },
           {
             label: "Tracked actions",
-            value: trackedActions.toLocaleString("en-GB"),
+            value: trackedActions === null ? "Live view" : trackedActions.toLocaleString("en-GB"),
           },
           ...(latestActionDate
             ? [{ label: "Latest tracked action", value: latestActionDate }]
@@ -2644,7 +2647,7 @@ async function buildPageMetas(): Promise<PageMeta[]> {
     title:
       "Regulatory Fines FAQ | Global Financial Enforcement | RegActions",
     description:
-      "Answers to common questions about regulatory fines from 45+ global financial regulators including FCA, BaFin, SEC, ASIC, and MAS. Compare enforcement trends.",
+      `Answers to common questions about regulatory fines from ${PUBLIC_REGULATOR_COUNT} configured live global financial regulators including FCA, BaFin, SEC, ASIC, and MAS. Compare enforcement trends.`,
     keywords:
       "regulatory fines FAQ, global enforcement questions, FCA fines, BaFin fines, SEC enforcement, ASIC fines, MAS penalties, ESMA regulation, FINRA, CNMV, AMF, financial regulator comparison, AML enforcement, biggest regulatory fines, RegActions",
     ogType: "website",

@@ -4,6 +4,7 @@ import {
   REGULATORY_SIGNAL_METHODOLOGY_VERSION,
 } from "../../src/data/regulatorySignalExport.js";
 import { listRegulatorySignalCountries, REGULATORY_SIGNAL_COUNTRY_COUNT, REGULATORY_SIGNAL_GENERATED_AT } from "../../src/data/regulatorySignal.js";
+import { PUBLIC_REGULATOR_CODES } from "../../src/data/regulatorCoverage.js";
 
 export default function handler(req: VercelRequest, res: VercelResponse) {
   res.setHeader("Access-Control-Allow-Origin", "*");
@@ -30,6 +31,9 @@ export default function handler(req: VercelRequest, res: VercelResponse) {
         transparencyIndex: null,
       };
     });
+  const allCountries = listRegulatorySignalCountries();
+  const liveRegulatorCodes = new Set(allCountries.flatMap((country) => country.liveRegulatorCodes));
+  const configuredRegulatorCodes = new Set(allCountries.flatMap((country) => [...country.liveRegulatorCodes, ...country.pipelineRegulatorCodes]));
   return res.status(200).json({
     schemaVersion: "1.0.0",
     methodologyVersion: REGULATORY_SIGNAL_METHODOLOGY_VERSION,
@@ -37,6 +41,9 @@ export default function handler(req: VercelRequest, res: VercelResponse) {
     generatedAt: REGULATORY_SIGNAL_GENERATED_AT,
     count: rows.length,
     totalJurisdictions: REGULATORY_SIGNAL_COUNTRY_COUNT,
+    liveRegulatorCount: liveRegulatorCodes.size,
+    configuredRegulatorCount: PUBLIC_REGULATOR_CODES.length,
+    countryMappedConfiguredRegulatorCount: configuredRegulatorCodes.size,
     rows,
   });
 }

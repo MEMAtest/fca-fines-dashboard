@@ -7,6 +7,7 @@ import {
   roleLabel,
   type RegulatorySignalAuthority,
   type RegulatorySignalCountry,
+  type RegulatoryEvidenceState,
 } from "./regulatorySignal.js";
 
 export const REGULATORY_SIGNAL_METHODOLOGY_VERSION = "research-only-1.0.0" as const;
@@ -18,6 +19,11 @@ export interface RegulatorySignalPublicAuthority {
   accessState: RegulatorySignalAuthority["accessState"];
   accessLabel: string;
   publicationUrl: string | null;
+  directorySources: string[];
+  directoryEvidenceUrls: string[];
+  researchEffectiveAt: string;
+  retrievedAt: string;
+  sourceCheckedAt: string;
 }
 export interface RegulatorySignalEvidence {
   schemaVersion: "1.0.0";
@@ -34,7 +40,7 @@ export interface RegulatorySignalEvidence {
     parentJurisdiction: string | null;
   };
   evidenceDisposition: {
-    state: string;
+    state: RegulatoryEvidenceState;
     label: string;
     note: string | null;
     externalEvidenceUrl: string | null;
@@ -52,7 +58,7 @@ export interface RegulatorySignalEvidence {
     pipelineRegulatorCodes: string[];
     observedRecords: number;
     latestObservedAction: string | null;
-    state: "live-coverage" | "pipeline-coverage" | "ecosystem-mapped-no-validated-feed" | "unobservable";
+    state: "live-coverage" | "pipeline-coverage" | "ecosystem-mapped-no-validated-feed" | "external-evidence-only";
   };
   activitySignal: {
     label: "observed enforcement" | "no recent observed signal" | "not assessed";
@@ -80,6 +86,11 @@ function authorityEvidence(authority: RegulatorySignalAuthority): RegulatorySign
     accessState: authority.accessState,
     accessLabel: authorityAccessLabel(authority.accessState),
     publicationUrl: authority.publicationUrl,
+    directorySources: authority.directorySources,
+    directoryEvidenceUrls: authority.directoryEvidenceUrls,
+    researchEffectiveAt: authority.researchEffectiveAt,
+    retrievedAt: authority.retrievedAt,
+    sourceCheckedAt: authority.sourceCheckedAt,
   };
 }
 
@@ -88,13 +99,13 @@ export function buildRegulatorySignalEvidence(iso2: string): RegulatorySignalEvi
   if (!country) return null;
   const live = country.liveRegulators > 0;
   const pipeline = country.pipelineRegulatorCodes.length > 0;
-  const coverageState = live
+  const coverageState = country.authorityEvidenceState === "external-evidence-only" || country.authorityEvidenceState === "unobservable"
+    ? "external-evidence-only"
+    : live
     ? "live-coverage"
     : pipeline
       ? "pipeline-coverage"
-      : country.authorityEvidenceState === "unobservable"
-        ? "unobservable"
-        : "ecosystem-mapped-no-validated-feed";
+      : "ecosystem-mapped-no-validated-feed";
   const observed = country.liveObservedRecords > 0;
   return {
     schemaVersion: "1.0.0",
@@ -151,7 +162,7 @@ export function buildRegulatorySignalEvidence(iso2: string): RegulatorySignalEvi
 const csvCell = (value: unknown): string => `"${String(value ?? "").replaceAll('"', '""')}"`;
 
 export function regulatorySignalEvidenceCsv(evidence: RegulatorySignalEvidence): string {
-  const header = ["iso2", "country", "authority", "roles", "website", "accessState", "accessLabel", "publicationUrl", "regActionsCoverageState", "transparencyIndex", "generatedAt"];
+  const header = ["iso2", "country", "authority", "roles", "website", "accessState", "accessLabel", "publicationUrl", "directorySources", "directoryEvidenceUrls", "researchEffectiveAt", "retrievedAt", "sourceCheckedAt", "regActionsCoverageState", "transparencyIndex", "generatedAt"];
   const rows = evidence.ecosystem.authorities.map((authority) => [
     evidence.country.iso2,
     evidence.country.name,
@@ -161,12 +172,17 @@ export function regulatorySignalEvidenceCsv(evidence: RegulatorySignalEvidence):
     authority.accessState,
     authority.accessLabel,
     authority.publicationUrl,
+    authority.directorySources.join("; "),
+    authority.directoryEvidenceUrls.join("; "),
+    authority.researchEffectiveAt,
+    authority.retrievedAt,
+    authority.sourceCheckedAt,
     evidence.regActionsCoverage.state,
     "",
     evidence.generatedAt,
   ]);
   if (rows.length === 0) {
-    rows.push([evidence.country.iso2, evidence.country.name, "No local authority entry", "", "", evidence.evidenceDisposition.state, evidence.evidenceDisposition.label, evidence.evidenceDisposition.externalEvidenceUrl, evidence.regActionsCoverage.state, "", evidence.generatedAt]);
+    rows.push([evidence.country.iso2, evidence.country.name, "No local authority entry", "", "", evidence.evidenceDisposition.state, evidence.evidenceDisposition.label, evidence.evidenceDisposition.externalEvidenceUrl, "", "", evidence.generatedAt, evidence.generatedAt, evidence.generatedAt, evidence.regActionsCoverage.state, "", evidence.generatedAt]);
   }
   return [header, ...rows].map((row) => row.map(csvCell).join(",")).join("\n") + "\n";
 }

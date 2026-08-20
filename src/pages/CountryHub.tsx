@@ -754,7 +754,7 @@ export function CountryHub() {
               </div>
               <div className="cx-regsignal__status">
                 <span className="cx-regsignal__pill">Transparency Index: not assessed</span>
-                <span>{regulatorySignal.authorityEvidenceState === "external-risk-evidence-only" ? "Domestic authority publication is not observable in this evidence set." : regulatorySignal.authorityEvidenceState === "unobservable" ? "Domestic authority publication is not publicly observable." : "Publication access is shown authority by authority below."}</span>
+                <span>{regulatorySignal.authorityEvidenceState === "external-evidence-only" ? "Domestic authority publication is not observable in this evidence set; external risk evidence is preserved separately." : regulatorySignal.authorityEvidenceState === "unobservable" ? "Domestic authority publication is not publicly observable." : "Publication access is shown authority by authority below."}</span>
               </div>
               {regulatorySignal.authorityEvidenceNote && <p className="cx-regsignal__note">{regulatorySignal.authorityEvidenceNote}{regulatorySignal.externalAuthorityEvidenceUrl && <> <a href={regulatorySignal.externalAuthorityEvidenceUrl} target="_blank" rel="noopener noreferrer">Review external evidence <ExternalLink size={10} /></a></>}</p>}
               <div className="cx-regsignal__authorities">
@@ -768,6 +768,10 @@ export function CountryHub() {
                       <span>{authority.roles.map(roleLabel).join(" · ") || "Mandate family not classified"}</span>
                       {authority.website && <a href={authority.website} target="_blank" rel="noopener noreferrer">Official authority site <ExternalLink size={10} /></a>}
                       {authority.publicationUrl && <a href={authority.publicationUrl} target="_blank" rel="noopener noreferrer">Publication candidate <ExternalLink size={10} /></a>}
+                      <span className="cx-regsignal__source-note">
+                        Directory source: {authority.directorySources.length > 0 ? authority.directorySources.join(", ") : "not recorded"} · Source checked {authority.sourceCheckedAt.slice(0, 10)}
+                      </span>
+                      {authority.directoryEvidenceUrls.length > 0 && <span className="cx-regsignal__source-note">Directory evidence: {authority.directoryEvidenceUrls.map((url) => <a key={url} href={url} target="_blank" rel="noopener noreferrer">Official listing <ExternalLink size={10} /></a>)}</span>}
                       <span className="cx-regsignal__source-note">Access state is an observation of this research snapshot; blocked, challenge-protected and non-public states are not treated as failed regulators.</span>
                     </div>
                   </details>

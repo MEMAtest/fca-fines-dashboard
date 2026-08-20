@@ -13,10 +13,10 @@ export function DataCoverageNotice({
   showWarning = true,
   recordCount,
 }: DataCoverageNoticeProps) {
-  const displayedCount = recordCount ?? coverage.count;
+  const displayedCount = recordCount ?? null;
   const isLowerConfidence =
     coverage.stage === "live" && coverage.operationalConfidence === "lower";
-  const isLimitedSample = displayedCount < 10;
+  const isLimitedSample = displayedCount !== null && displayedCount < 10;
   const isRecentWindow = coverage.earliestYear >= 2021;
   const shouldShowWarning =
     showWarning && (isLowerConfidence || isLimitedSample || isRecentWindow);
@@ -43,7 +43,7 @@ export function DataCoverageNotice({
         <div className="data-coverage__header">
           <strong>Data Coverage: {coverage.years}</strong>
           <span className="data-coverage__badge">
-            {displayedCount.toLocaleString()} enforcement actions
+            {displayedCount === null ? "Current count unavailable" : `${displayedCount.toLocaleString()} enforcement actions`}
           </span>
         </div>
         <p className="data-coverage__note">

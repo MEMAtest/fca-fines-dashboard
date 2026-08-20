@@ -26,6 +26,7 @@ describe("regulatory signal read-only APIs", () => {
     expect(response.statusCode).toBe(200);
     expect(payload.count).toBe(213);
     expect(payload.totalJurisdictions).toBe(213);
+    expect((payload as unknown as { configuredRegulatorCount: number }).configuredRegulatorCount).toBe(54);
     expect(payload.rows.every((row) => row.transparencyIndex === null)).toBe(true);
   });
 
@@ -35,6 +36,15 @@ describe("regulatory signal read-only APIs", () => {
     expect(detail.statusCode).toBe(200);
     expect(detail.payload).toMatchObject({ status: "research-only", transparencyIndex: null, country: { iso2: "VE" } });
     expect((detail.payload as { ecosystem: { authorities: unknown[] } }).ecosystem.authorities.length).toBeGreaterThan(0);
+    const authority = (detail.payload as { ecosystem: { authorities: Array<{ directorySources: string[]; sourceCheckedAt: string }> } }).ecosystem.authorities[0];
+    expect(authority.directorySources).toBeInstanceOf(Array);
+    expect(authority.sourceCheckedAt).toMatch(/^2026-/);
+    const kp = responseDouble();
+    detailHandler({ method: "GET", query: { iso2: "KP" } } as unknown as VercelRequest, kp as unknown as VercelResponse);
+    expect(kp.payload).toMatchObject({
+      evidenceDisposition: { state: "external-evidence-only", externalEvidenceUrl: expect.stringContaining("fatf-gafi.org") },
+      regActionsCoverage: { state: "external-evidence-only" },
+    });
     const missing = responseDouble();
     detailHandler({ method: "GET", query: { iso2: "ZZ" } } as unknown as VercelRequest, missing as unknown as VercelResponse);
     expect(missing.statusCode).toBe(404);

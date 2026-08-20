@@ -18,12 +18,24 @@ export type RegulatoryAuthorityAccessState =
   | "no-public-website"
   | "not-observed";
 
+export type RegulatoryEvidenceState =
+  | "local-authority-evidence"
+  | "parent-context-only"
+  | "external-evidence-only"
+  | "structural-absence"
+  | "unobservable";
+
 export interface RegulatorySignalAuthority {
   name: string;
   website: string | null;
   roles: RegulatorySignalRole[];
   accessState: RegulatoryAuthorityAccessState;
   publicationUrl: string | null;
+  directorySources: string[];
+  directoryEvidenceUrls: string[];
+  researchEffectiveAt: string;
+  retrievedAt: string;
+  sourceCheckedAt: string;
 }
 
 export interface RegulatorySignalCountry {
@@ -33,7 +45,7 @@ export interface RegulatorySignalCountry {
   region: string;
   subregion: string;
   parentJurisdiction: string | null;
-  authorityEvidenceState: string;
+  authorityEvidenceState: RegulatoryEvidenceState;
   authorityEvidenceNote: string | null;
   externalAuthorityEvidenceUrl: string | null;
   ecosystemResearchDepth: string;
@@ -78,7 +90,18 @@ type ManifestRow = {
   v: string[];
   h: string[];
   k: string;
-  q2: Array<{ n: string; w: string | null; r: RegulatorySignalRole[]; s: RegulatoryAuthorityAccessState; u: string | null }>;
+  q2: Array<{
+    n: string;
+    w: string | null;
+    r: RegulatorySignalRole[];
+    s: RegulatoryAuthorityAccessState;
+    u: string | null;
+    d?: string[];
+    e?: string[];
+    f?: string;
+    v?: string;
+    c?: string;
+  }>;
 };
 
 const rawRows = manifest.rows as ManifestRow[];
@@ -93,7 +116,7 @@ function mapRow(row: ManifestRow): RegulatorySignalCountry {
     region: row.r,
     subregion: row.s,
     parentJurisdiction: row.p,
-    authorityEvidenceState: row.e,
+    authorityEvidenceState: row.e === "external-risk-evidence-only" ? "external-evidence-only" : row.e as RegulatoryEvidenceState,
     authorityEvidenceNote: row.q,
     externalAuthorityEvidenceUrl: row.u,
     ecosystemResearchDepth: row.d,
@@ -113,6 +136,11 @@ function mapRow(row: ManifestRow): RegulatorySignalCountry {
       roles: authority.r,
       accessState: authority.s,
       publicationUrl: authority.u,
+      directorySources: authority.d ?? [],
+      directoryEvidenceUrls: authority.e ?? [],
+      researchEffectiveAt: authority.f ?? String(manifest.generatedAt),
+      retrievedAt: authority.v ?? String(manifest.generatedAt),
+      sourceCheckedAt: authority.c ?? authority.v ?? String(manifest.generatedAt),
     })),
   };
 }
@@ -157,6 +185,7 @@ export function countryEvidenceLabel(state: string): string {
     "local-authority-evidence": "Local authority evidence",
     "parent-context-only": "Parent jurisdiction context only",
     "external-risk-evidence-only": "External risk evidence only",
+    "external-evidence-only": "External risk evidence only",
     "structural-absence": "Legitimate structural absence",
     unobservable: "Domestic authority not publicly observable",
   }[state] ?? "Evidence disposition recorded";

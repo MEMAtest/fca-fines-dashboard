@@ -8,8 +8,8 @@ import { describe, it, expect } from 'vitest';
 import { REGULATOR_COUNT, SITE_NAME } from '../../src/constants/site';
 
 describe('Site Constants - Single Source of Truth', () => {
-  it('REGULATOR_COUNT must be exactly "45+"', () => {
-    expect(REGULATOR_COUNT).toBe('45+');
+  it('REGULATOR_COUNT must match the configured live public set', () => {
+    expect(REGULATOR_COUNT).toBe('54');
   });
 
   it('SITE_NAME must be "RegActions"', () => {
@@ -66,7 +66,7 @@ describe('FCA-Centric Language Detection', () => {
 });
 
 describe('Regulator Count Consistency', () => {
-  const ALLOWED_COUNTS = ['45+', '{REGULATOR_COUNT}', '${REGULATOR_COUNT}'];
+  const ALLOWED_COUNTS = ['54', '{REGULATOR_COUNT}', '${REGULATOR_COUNT}'];
   const FORBIDDEN_COUNTS = ['30+', '5 more', '5+'];
 
   it('MUST NOT use hardcoded "30+" anywhere', async () => {

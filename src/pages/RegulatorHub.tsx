@@ -77,7 +77,7 @@ export function RegulatorHub() {
 
   // SEO metadata
   const metaTitle = coverage.seoTitle ?? `${coverage.code} Fines Database | ${coverage.fullName} Enforcement Actions`;
-  const metaDescription = coverage.seoDescription ?? `Track all ${coverage.fullName} (${coverage.code}) fines and enforcement actions. ${coverage.count} penalties from ${coverage.years}. Complete database with stats, trends, and analysis.`;
+  const metaDescription = coverage.seoDescription ?? `Track ${coverage.fullName} (${coverage.code}) fines and enforcement actions from ${coverage.years}. Current totals are loaded from the live evidence view. Complete database with stats, trends, and analysis.`;
   const canonicalPath = `/regulators/${coverage.code.toLowerCase()}`;
   const keywords = `${coverage.code} fines, ${coverage.fullName}, regulatory enforcement, financial penalties, ${coverage.country}, compliance data, ${coverage.code} enforcement`;
 

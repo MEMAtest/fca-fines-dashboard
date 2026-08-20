@@ -29,6 +29,7 @@ export interface PublicBenchmarkReport {
   unreconciledCoverageCount: number;
   sampleSize: number;
   comparisonCounts: Record<Comparison, number>;
+  unavailableCount: number;
   changedSinceObservation: Array<{
     iso2: string;
     observed: BenchmarkRow["regActions"];
@@ -77,6 +78,7 @@ export function buildPublicBenchmarkReport(
     unreconciledCoverageCount: Math.max(0, data.competitor.publicCoverageClaim - regActionsCoverage),
     sampleSize: rows.length,
     comparisonCounts,
+    unavailableCount: comparisonCounts.unavailable,
     changedSinceObservation,
     rows,
   };
@@ -94,6 +96,7 @@ export function renderPublicBenchmarkMarkdown(report: PublicBenchmarkReport): st
     `- Competitor public coverage claim: ${report.competitorPublicCoverageClaim}`,
     `- Coverage-count difference requiring jurisdiction reconciliation: ${report.unreconciledCoverageCount}`,
     `- Directional comparison: ${report.comparisonCounts.aligned} aligned, ${report.comparisonCounts["kyc-higher"]} KYC higher, ${report.comparisonCounts["regactions-higher"]} RegActions higher`,
+    `- Unavailable current scores: ${report.unavailableCount} (included in the sample and comparison reconciliation)`,
     `- Changed RegActions records since observation: ${report.changedSinceObservation.length}`,
     "",
     "| Country | RegActions current | KYC public band | Comparison | Evidence note |",

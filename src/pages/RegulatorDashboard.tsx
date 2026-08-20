@@ -336,7 +336,7 @@ export function RegulatorDashboard() {
 
   useSEO({
     title: `${coverage.fullName} Enforcement Dashboard | ${coverage.code} Analytics`,
-    description: `Single-regulator analytics for ${coverage.fullName}. Explore ${coverage.count} tracked enforcement actions across ${coverage.years}, with timeline, breach, and top-firm views.`,
+    description: `Single-regulator analytics for ${coverage.fullName}. Explore current tracked enforcement actions across ${coverage.years}, with timeline, breach, and top-firm views.`,
     keywords: `${coverage.code} dashboard, ${coverage.fullName}, ${coverage.country} enforcement, regulator analytics, enforcement notices`,
     canonicalPath: `/regulators/${coverage.code.toLowerCase()}/dashboard`,
     ogType: "website",
@@ -830,10 +830,7 @@ export function RegulatorDashboard() {
               </span>
               <span className="regulator-dashboard__pill">
                 <Globe2 size={16} />
-                {(loading || error
-                  ? coverage.count
-                  : fines.length
-                ).toLocaleString()} tracked actions
+                {loading ? "Loading…" : error ? "Unavailable" : fines.length.toLocaleString()} tracked actions
               </span>
             </div>
           </div>
@@ -1032,10 +1029,7 @@ export function RegulatorDashboard() {
                     </div>
                     <div className="filters__metric">
                       <strong>
-                        {(loading || error
-                          ? coverage.count
-                          : fines.length
-                        ).toLocaleString()}
+                        {loading ? "Loading…" : error ? "Unavailable" : fines.length.toLocaleString()}
                       </strong>
                       tracked actions
                     </div>

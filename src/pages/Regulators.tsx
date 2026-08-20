@@ -96,10 +96,6 @@ export function Regulators() {
 
   const liveCount = LIVE_REGULATOR_NAV_ITEMS.length;
   const pipelineCount = PIPELINE_REGULATOR_NAV_ITEMS.length;
-  const totalActions = LIVE_REGULATOR_NAV_ITEMS.reduce(
-    (sum, r) => sum + r.count,
-    0,
-  );
 
   return (
     <div className="reg-grid-page">
@@ -109,9 +105,9 @@ export function Regulators() {
           Consolidated Global Regulator Intelligence
         </h1>
         <p className="reg-grid-page__subtitle">
-          Built on deep FCA history, with additional insights from{" "}
-          {liveCount - 1} other financial regulators.{" "}
-          {pipelineCount} more in the validated pipeline.
+          Built on deep FCA history, with {liveCount} configured live regulator
+          feeds. {pipelineCount} more are in the validated pipeline; current
+          action totals load from each live hub.
         </p>
       </div>
 
@@ -168,7 +164,7 @@ export function Regulators() {
           <strong>{liveCount}</strong> live
         </span>
         <span>
-          <strong>{totalActions.toLocaleString()}</strong> actions tracked
+          Current action totals load in each live hub
         </span>
       </div>
 
@@ -195,7 +191,7 @@ export function Regulators() {
               </div>
 
               <span className="reg-grid__card-count">
-                {reg.count > 0 ? reg.count.toLocaleString() : "\u2014"}
+                {isLive ? "Live feed" : "Pipeline source"}
               </span>
 
               <span className="reg-grid__card-country">{reg.country}</span>

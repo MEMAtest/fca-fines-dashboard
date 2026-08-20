@@ -39,7 +39,7 @@ export function FAQ() {
     title:
       "Regulatory Fines FAQ | Global Financial Enforcement | RegActions",
     description:
-      "Answers to common questions about regulatory fines from 45+ global financial regulators including FCA, BaFin, SEC, ASIC, and MAS. Compare enforcement trends.",
+      "Answers to common questions about regulatory fines from 54 configured live financial regulators including FCA, BaFin, SEC, ASIC, and MAS. Compare enforcement trends.",
     keywords:
       "regulatory fines FAQ, global enforcement questions, FCA fines, BaFin fines, SEC enforcement, ASIC fines, MAS penalties, ESMA regulation, financial regulator comparison, AML enforcement, biggest regulatory fines, RegActions",
     canonicalPath: "/faq",
@@ -70,7 +70,7 @@ export function FAQ() {
 
           <p className="faq-intro">
             Answers to the most common questions about regulatory fines and
-            enforcement actions from 45+ financial regulators across Europe,
+            enforcement actions from 54 configured live financial regulators across Europe,
             the Americas, Asia-Pacific, the Middle East, and the Caribbean.
           </p>
 

@@ -14,7 +14,7 @@
 import type { CountryView } from "./countryView.js";
 import { bandLabel } from "./countryRiskScore.js";
 import { sanctionsTierLabel } from "./sanctionsStatus.js";
-import { formatDate, formatCount } from "./countryView.js";
+import { formatDate } from "./countryView.js";
 import { FATF_LAST_PLENARY, FATF_NEXT_PLENARY } from "./fatfStatus.js";
 import { CPI_YEAR, CPI_TOTAL } from "./cpiData.js";
 
@@ -67,7 +67,7 @@ export function buildCountryFaqs(view: CountryView): CountryFaq[] {
     const enf = view.enforcement;
     faqs.push({
       question: `How much enforcement activity is tracked for ${name}?`,
-      answer: `RegActions tracks ${formatCount(enf.trackedActions)} enforcement action${enf.trackedActions === 1 ? "" : "s"} from ${enf.regulatorCount} regulator${enf.regulatorCount === 1 ? "" : "s"} in ${name}. Enforcement volume measures regulator activity, not country risk, so it is shown as evidence but never fed into the RegActions Country Risk Score.`,
+      answer: `RegActions has live enforcement coverage from ${enf.regulatorCount} regulator${enf.regulatorCount === 1 ? "" : "s"} in ${name}. The current action total is loaded from the source-linked evidence view rather than this country-risk snapshot. Enforcement volume measures regulator activity, not country risk, so it is shown as evidence but never fed into the RegActions Country Risk Score.`,
     });
   }
 

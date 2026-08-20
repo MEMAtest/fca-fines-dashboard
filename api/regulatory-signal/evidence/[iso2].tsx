@@ -42,10 +42,14 @@ function EvidencePdf({ evidence }: { evidence: RegulatorySignalEvidence }) {
             <Text>{authority.accessLabel}</Text>
             {authority.website && <Text style={styles.source}>{authority.website}</Text>}
             {authority.publicationUrl && <Text style={styles.source}>{authority.publicationUrl}</Text>}
+            <Text style={styles.source}>Directory source: {authority.directorySources.join(", ") || "not recorded"} · source checked: {authority.sourceCheckedAt.slice(0, 10)}</Text>
+            {authority.directoryEvidenceUrls.length > 0 && <Text style={styles.source}>Directory evidence: {authority.directoryEvidenceUrls.join("; ")}</Text>}
+            <Text style={styles.source}>Research effective: {authority.researchEffectiveAt.slice(0, 10)} · retrieved: {authority.retrievedAt.slice(0, 10)}</Text>
           </View>
         ))}
         <Text style={styles.heading}>RegActions coverage</Text>
         <Text>{evidence.regActionsCoverage.liveRegulators} live regulator feeds; {evidence.regActionsCoverage.observedRecords.toLocaleString("en-GB")} records in the research snapshot.</Text>
+        {evidence.evidenceDisposition.externalEvidenceUrl && <Text style={styles.source}>External evidence: {evidence.evidenceDisposition.externalEvidenceUrl}</Text>}
         <Text style={styles.heading}>Limitations</Text>
         {evidence.limitations.map((limitation) => <Text key={limitation} style={styles.row}>• {limitation}</Text>)}
       </Page>

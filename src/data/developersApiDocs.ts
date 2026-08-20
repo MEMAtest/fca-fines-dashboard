@@ -142,7 +142,7 @@ export const DEVELOPER_ENDPOINTS: ApiEndpoint[] = [
     path: "/api/unified/search",
     title: "Enforcement search",
     summary:
-      "Search the global enforcement dataset across 45+ regulators. Supports query and filter params: q, regulator, country, year, month, minAmount, maxAmount, breachCategory, sector, currency, firmName, limit, offset.",
+      "Search the global enforcement dataset across 54 configured live regulators. Supports query and filter params: q, regulator, country, year, month, minAmount, maxAmount, breachCategory, sector, currency, firmName, limit, offset.",
     example: "curl 'https://regactions.com/api/unified/search?q=aml&limit=5'",
     fields: [
       { name: "results[].id", type: "string (uuid)", description: "Stable record id." },
