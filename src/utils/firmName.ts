@@ -186,6 +186,39 @@ export function isGarbageFirmName(name: string): boolean {
   //     "Scotia") are safely kept — neither ends with a listed connective word.
   if (/(?<!, )(?<= )(over|and|the|of|to|for|with)$/i.test(n)) return true;
 
+  // ── Rules added from the live homepage feed (2026-08-20) ──────────────
+  // These reached the front page as if they were firms. Each is anchored to a
+  // shape observed in real data, not a guess.
+
+  // Rule 13: a raw HTML entity means scraper output, never a party name.
+  //   "duurzaam financieel welzijn in Nederland. &copy"  (AFM)
+  if (/&(copy|amp|nbsp|quot|apos|lt|gt|#\d+);?/i.test(n)) return true;
+
+  // Rule 14: lowercase-initial prose. Real names are capitalised; a
+  // lowercase start with several words is a sentence fragment. The 4-word
+  // floor keeps the CMA descriptor "pharma firm", and the honorific exemption
+  // keeps CNMV parties like "don Santiago Reyna Herrero, don Luis ...".
+  if (
+    /^[a-z]/.test(n)
+    && !/^(don|do(ñ|n)a|dhr|mevr|mr|mrs|ms|sr|sra|hr|fr)\b/i.test(n)
+    && n.split(/\s+/).length >= 4
+  ) {
+    return true;
+  }
+
+  // Rule 15: SEC headline fragments that describe unnamed parties.
+  //   "Former Executives", "Boiler Room Operator and Three Entities",
+  //   "Toms River Trio in Connection", "... Its CEO and Affiliated"
+  if (/^(Former|Ex-)\s/i.test(n) && !/\b(ltd|limited|inc|llc|plc|corp|s\.a|n\.v|b\.v)\b/i.test(n)) return true;
+  if (/\bin Connection\b\s*$/i.test(n)) return true;
+  if (/\band (Three|Two|Several|Multiple) Entities\b/i.test(n)) return true;
+  if (/\band Affiliated\s*$/i.test(n)) return true;
+
+  // Rule 16: sentences that open with an event or a charge rather than a party.
+  //   "Hearing adjourned in criminal prosecution"  (SFC)
+  //   "Violation of Securities Regulations by ..."  (TWFSC)
+  if (/^(Hearing|Violation of|Proceedings?|Notice of|Statement of)\s/i.test(n)) return true;
+
   // Rule 10: paragraph-scale blobs. Long legitimate multi-entity names exist
   // (e.g. the ~93-char "The Bank of New York Mellon London Branch & The Bank of
   // New York Mellon International Limited"), so this is NOT a name-scale
