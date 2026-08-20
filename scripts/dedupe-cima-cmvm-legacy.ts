@@ -67,6 +67,24 @@ const PLACEHOLDER = sql`(
   OR firm_individual ILIKE 'Contraordena%'
 )`;
 
+/**
+ * `all_regulatory_fines_canonical` is a MATERIALIZED view, so deleting from
+ * `eu_fines` does not change what the hubs read until it is refreshed. The
+ * scrapers do this via `runScraper`; a direct DELETE has to do it explicitly or
+ * the deleted rows keep being served.
+ */
+async function refreshUnifiedView() {
+  console.log("Refreshing all_regulatory_fines_canonical...");
+  await sql`SELECT refresh_all_fines()`;
+  const rows = await sql<{ regulator: string; n: number }[]>`
+    SELECT regulator, COUNT(*)::int AS n
+    FROM all_regulatory_fines_canonical
+    WHERE regulator = ANY(${REGULATORS})
+    GROUP BY 1 ORDER BY 1
+  `;
+  rows.forEach((r) => console.log(`  canonical ${r.regulator}: ${r.n}`));
+}
+
 async function main() {
   console.log(APPLY ? "MODE: APPLY (rows will be deleted)\n" : "MODE: DRY RUN (no changes)\n");
 
@@ -83,7 +101,10 @@ async function main() {
   }
 
   if (expected === 0) {
-    console.log("\nNothing to do.");
+    console.log("\nNothing to delete.");
+    // Still refresh on --apply: a previous run may have deleted rows without
+    // refreshing, leaving the materialized view serving them.
+    if (APPLY) await refreshUnifiedView();
     await sql.end();
     return;
   }
@@ -140,6 +161,7 @@ async function main() {
     `;
     console.log(`${regulator}: total=${row.total} placeholder=${row.placeholder}`);
   }
+  await refreshUnifiedView();
   await sql.end();
 }
 
