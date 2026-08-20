@@ -1,0 +1,77 @@
+regulator_code,country_code,authority_id,component,blocker,evidence
+BaFin,DE,ra-auth-de-ba7351f59cf176d7,accessibility,Official route remains under review and cannot support an accessibility component.,qualification_state=manual-review-required
+BaFin,DE,ra-auth-de-ba7351f59cf176d7,archiveDepth,"Archive span is present in the live observation, but the mapped official publication route is not approved-for-human-contract.",active_years=6
+CNMV,ES,ra-auth-es-db7b4ceffc1383fb,accessibility,No qualified official publication route matched the live regulator.,
+CNMV,ES,ra-auth-es-db7b4ceffc1383fb,archiveDepth,"Archive span is present in the live observation, but the mapped official publication route is not approved-for-human-contract.",active_years=6
+SFC,HK,ra-auth-hk-7242883237a6e80c,accessibility,No qualified official publication route matched the live regulator.,
+SFC,HK,ra-auth-hk-7242883237a6e80c,archiveDepth,"Archive span is present in the live observation, but the mapped official publication route is not approved-for-human-contract.",active_years=7
+AFM,NL,ra-auth-nl-3dea2d27ee965e72,accessibility,Official route remains under review and cannot support an accessibility component.,qualification_state=manual-review-required
+AFM,NL,ra-auth-nl-3dea2d27ee965e72,archiveDepth,"Archive span is present in the live observation, but the mapped official publication route is not approved-for-human-contract.",active_years=2
+ECB,EU,,accessibility,No qualified official publication route matched the live regulator.,
+ECB,EU,,archiveDepth,"Archive span is present in the live observation, but the mapped official publication route is not approved-for-human-contract.",active_years=11
+DFSA,AE,ra-auth-ae-cc9e71ec2ffbc2f5,accessibility,No qualified official publication route matched the live regulator.,
+DFSA,AE,ra-auth-ae-cc9e71ec2ffbc2f5,archiveDepth,"Archive span is present in the live observation, but the mapped official publication route is not approved-for-human-contract.",active_years=8
+FSRA,AE,ra-auth-ae-a2eaf322568b7d54,accessibility,No qualified official publication route matched the live regulator.,
+FSRA,AE,ra-auth-ae-a2eaf322568b7d54,archiveDepth,"Archive span is present in the live observation, but the mapped official publication route is not approved-for-human-contract.",active_years=2
+CBUAE,AE,ra-auth-ae-da705b04944a16ff,accessibility,No qualified official publication route matched the live regulator.,
+CBUAE,AE,ra-auth-ae-da705b04944a16ff,archiveDepth,"Archive span is present in the live observation, but the mapped official publication route is not approved-for-human-contract.",active_years=6
+JFSC,JE,ra-auth-je-5a2e6c5b726f4bd9,accessibility,No qualified official publication route matched the live regulator.,
+JFSC,JE,ra-auth-je-5a2e6c5b726f4bd9,archiveDepth,"Archive span is present in the live observation, but the mapped official publication route is not approved-for-human-contract.",active_years=5
+JFSC,JE,ra-auth-je-5a2e6c5b726f4bd9,timeliness,Low-frequency or sparse source is kept as a watch; observation age is not treated as a failed transparency score.,age_days=385;automation_level=sparse_source
+CIRO,CA,,accessibility,No qualified official publication route matched the live regulator.,
+CIRO,CA,,archiveDepth,"Archive span is present in the live observation, but the mapped official publication route is not approved-for-human-contract.",active_years=8
+SEBI,IN,ra-auth-in-1a442264a9b3e9f5,accessibility,No qualified official publication route matched the live regulator.,
+SEBI,IN,ra-auth-in-1a442264a9b3e9f5,archiveDepth,"Archive span is present in the live observation, but the mapped official publication route is not approved-for-human-contract.",active_years=5
+TWFSC,TW,ra-auth-tw-19b695d9525b0615,accessibility,Official route remains under review and cannot support an accessibility component.,qualification_state=manual-review-required
+TWFSC,TW,ra-auth-tw-19b695d9525b0615,archiveDepth,"Archive span is present in the live observation, but the mapped official publication route is not approved-for-human-contract.",active_years=15
+CVM,BR,ra-auth-br-a59437c9ce1f582b,accessibility,Official route remains under review and cannot support an accessibility component.,qualification_state=browser-review-required
+CVM,BR,ra-auth-br-a59437c9ce1f582b,archiveDepth,"Archive span is present in the live observation, but the mapped official publication route is not approved-for-human-contract.",active_years=6
+HKMA,HK,ra-auth-hk-a01a8df1dfe9cf6d,timeliness,Low-frequency or sparse source is kept as a watch; observation age is not treated as a failed transparency score.,age_days=394;automation_level=low_frequency
+AUSTRAC,AU,ra-auth-au-a991c73127987db8,accessibility,No qualified official publication route matched the live regulator.,
+AUSTRAC,AU,ra-auth-au-a991c73127987db8,archiveDepth,"Archive span is present in the live observation, but the mapped official publication route is not approved-for-human-contract.",active_years=18
+OCC,US,ra-auth-us-536892012d88d798,accessibility,Official route remains under review and cannot support an accessibility component.,qualification_state=manual-review-required
+OCC,US,ra-auth-us-536892012d88d798,archiveDepth,"Archive span is present in the live observation, but the mapped official publication route is not approved-for-human-contract.",active_years=39
+FINCEN,US,ra-auth-us-62a5bd0929843be2,accessibility,No qualified official publication route matched the live regulator.,
+FINCEN,US,ra-auth-us-62a5bd0929843be2,archiveDepth,"Archive span is present in the live observation, but the mapped official publication route is not approved-for-human-contract.",active_years=28
+SESC,JP,,accessibility,No qualified official publication route matched the live regulator.,
+SESC,JP,,archiveDepth,"Archive span is present in the live observation, but the mapped official publication route is not approved-for-human-contract.",active_years=4
+FMANZ,NZ,ra-auth-nz-26cfbdac8baf745d,accessibility,No qualified official publication route matched the live regulator.,
+FMANZ,NZ,ra-auth-nz-26cfbdac8baf745d,archiveDepth,"Archive span is present in the live observation, but the mapped official publication route is not approved-for-human-contract.",active_years=12
+FDIC,US,ra-auth-us-1d4a8d980adde2a5,accessibility,No qualified official publication route matched the live regulator.,
+FDIC,US,ra-auth-us-1d4a8d980adde2a5,archiveDepth,"Archive span is present in the live observation, but the mapped official publication route is not approved-for-human-contract.",active_years=38
+SPK,TR,,accessibility,No qualified official publication route matched the live regulator.,
+SPK,TR,,archiveDepth,"Archive span is present in the live observation, but the mapped official publication route is not approved-for-human-contract.",active_years=11
+GHSEC,GH,ra-auth-gh-1276eb0564999d02,accessibility,No qualified official publication route matched the live regulator.,
+GHSEC,GH,ra-auth-gh-1276eb0564999d02,archiveDepth,"Archive span is present in the live observation, but the mapped official publication route is not approved-for-human-contract.",active_years=5
+IOMFSA,IM,ra-auth-im-fd7b7763058345b6,accessibility,No qualified official publication route matched the live regulator.,
+IOMFSA,IM,ra-auth-im-fd7b7763058345b6,archiveDepth,"Archive span is present in the live observation, but the mapped official publication route is not approved-for-human-contract.",active_years=7
+IOMFSA,IM,ra-auth-im-fd7b7763058345b6,timeliness,Low-frequency or sparse source is kept as a watch; observation age is not treated as a failed transparency score.,age_days=429;automation_level=low_frequency
+AMMC,MA,ra-auth-ma-b5cfe30602d176ea,accessibility,No qualified official publication route matched the live regulator.,
+AMMC,MA,ra-auth-ma-b5cfe30602d176ea,archiveDepth,"Archive span is present in the live observation, but the mapped official publication route is not approved-for-human-contract.",active_years=3
+AMMC,MA,ra-auth-ma-b5cfe30602d176ea,timeliness,Low-frequency or sparse source is kept as a watch; observation age is not treated as a failed transparency score.,age_days=896;automation_level=low_frequency
+CNV,AR,ra-auth-ar-12eb11a773eaa5ef,accessibility,No qualified official publication route matched the live regulator.,
+CNV,AR,ra-auth-ar-12eb11a773eaa5ef,archiveDepth,"Archive span is present in the live observation, but the mapped official publication route is not approved-for-human-contract.",active_years=2
+BDI,IT,,accessibility,No qualified official publication route matched the live regulator.,
+BDI,IT,,archiveDepth,"Archive span is present in the live observation, but the mapped official publication route is not approved-for-human-contract.",active_years=7
+FMAAT,AT,ra-auth-at-0c2dcb3373507cc1,accessibility,No qualified official publication route matched the live regulator.,
+FMAAT,AT,ra-auth-at-0c2dcb3373507cc1,archiveDepth,"Archive span is present in the live observation, but the mapped official publication route is not approved-for-human-contract.",active_years=8
+CNBCZ,CZ,ra-auth-cz-c9c68c4d2da33262,accessibility,Official route remains under review and cannot support an accessibility component.,qualification_state=manual-review-required
+CNBCZ,CZ,ra-auth-cz-c9c68c4d2da33262,archiveDepth,"Archive span is present in the live observation, but the mapped official publication route is not approved-for-human-contract.",active_years=18
+CMVM,PT,ra-auth-pt-9416ad68ffc0ead8,accessibility,No qualified official publication route matched the live regulator.,
+CMVM,PT,ra-auth-pt-9416ad68ffc0ead8,archiveDepth,"Archive span is present in the live observation, but the mapped official publication route is not approved-for-human-contract.",active_years=10
+CYSEC,CY,ra-auth-cy-763f7fdf3a372e1b,accessibility,Official route remains under review and cannot support an accessibility component.,qualification_state=browser-review-required
+CYSEC,CY,ra-auth-cy-763f7fdf3a372e1b,archiveDepth,"Archive span is present in the live observation, but the mapped official publication route is not approved-for-human-contract.",active_years=14
+FTDK,DK,ra-auth-dk-74ed5e7e0e14a760,accessibility,No qualified official publication route matched the live regulator.,
+FTDK,DK,ra-auth-dk-74ed5e7e0e14a760,archiveDepth,"Archive span is present in the live observation, but the mapped official publication route is not approved-for-human-contract.",active_years=13
+FINFSA,FI,ra-auth-fi-e59f9db9ae9280fc,accessibility,Official route remains under review and cannot support an accessibility component.,qualification_state=manual-review-required
+FINFSA,FI,ra-auth-fi-e59f9db9ae9280fc,archiveDepth,"Archive span is present in the live observation, but the mapped official publication route is not approved-for-human-contract.",active_years=13
+FTNO,NO,ra-auth-no-80719903f3ffe2e0,accessibility,No qualified official publication route matched the live regulator.,
+FTNO,NO,ra-auth-no-80719903f3ffe2e0,archiveDepth,"Archive span is present in the live observation, but the mapped official publication route is not approved-for-human-contract.",active_years=6
+MFSA,MT,ra-auth-mt-0d68677a8237087f,accessibility,No qualified official publication route matched the live regulator.,
+MFSA,MT,ra-auth-mt-0d68677a8237087f,archiveDepth,"Archive span is present in the live observation, but the mapped official publication route is not approved-for-human-contract.",active_years=18
+IVASS,IT,ra-auth-it-d255f9df495ac260,accessibility,Official route remains under review and cannot support an accessibility component.,qualification_state=manual-review-required
+IVASS,IT,ra-auth-it-d255f9df495ac260,archiveDepth,"Archive span is present in the live observation, but the mapped official publication route is not approved-for-human-contract.",active_years=4
+FINRA,US,,accessibility,No qualified official publication route matched the live regulator.,
+FINRA,US,,archiveDepth,"Archive span is present in the live observation, but the mapped official publication route is not approved-for-human-contract.",active_years=22
+CIMA,KY,ra-auth-ky-4cae34554efc1a6b,accessibility,Official route remains under review and cannot support an accessibility component.,qualification_state=browser-review-required
+CIMA,KY,ra-auth-ky-4cae34554efc1a6b,archiveDepth,"Archive span is present in the live observation, but the mapped official publication route is not approved-for-human-contract.",active_years=10

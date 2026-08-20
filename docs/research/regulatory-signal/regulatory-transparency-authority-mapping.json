@@ -1,0 +1,741 @@
+{
+  "methodology_version": "1.0.0",
+  "as_of": "2026-08-20T12:11:07.553Z",
+  "rows": [
+    {
+      "regulatorCode": "FCA",
+      "stableRegulatorId": "ra-reg-fca",
+      "authorityId": "ra-auth-gb-9eea37a5bdddca65",
+      "authority": "The Financial Conduct Authority",
+      "authorityWebsite": "http://www.fca.org.uk/",
+      "iso2": "GB",
+      "roles": [
+        "prudential_supervision",
+        "securities",
+        "insurance"
+      ],
+      "mappingStatus": "official-directory-match",
+      "mappingBasis": "Explicit live-code authority alias matched official directory."
+    },
+    {
+      "regulatorCode": "BaFin",
+      "stableRegulatorId": "ra-reg-bafin",
+      "authorityId": "ra-auth-de-ba7351f59cf176d7",
+      "authority": "Federal Financial Supervisory Authority",
+      "authorityWebsite": "http://www.bafin.de/",
+      "iso2": "DE",
+      "roles": [
+        "prudential_supervision",
+        "securities",
+        "insurance",
+        "pensions"
+      ],
+      "mappingStatus": "official-directory-match",
+      "mappingBasis": "Explicit live-code authority alias matched official directory."
+    },
+    {
+      "regulatorCode": "AMF",
+      "stableRegulatorId": "ra-reg-amf",
+      "authorityId": "ra-auth-fr-27fcd26120dee0c9",
+      "authority": "Autorité des marchés financiers*",
+      "authorityWebsite": "http://www.amf-france.org/",
+      "iso2": "FR",
+      "roles": [
+        "securities"
+      ],
+      "mappingStatus": "official-directory-match",
+      "mappingBasis": "Explicit live-code authority alias matched official directory."
+    },
+    {
+      "regulatorCode": "CNMV",
+      "stableRegulatorId": "ra-reg-cnmv",
+      "authorityId": "ra-auth-es-db7b4ceffc1383fb",
+      "authority": "Comisión Nacional del Mercado de Valores*",
+      "authorityWebsite": "http://www.cnmv.es/",
+      "iso2": "ES",
+      "roles": [
+        "securities"
+      ],
+      "mappingStatus": "official-directory-match",
+      "mappingBasis": "Explicit live-code authority alias matched official directory."
+    },
+    {
+      "regulatorCode": "CBI",
+      "stableRegulatorId": "ra-reg-cbi",
+      "authorityId": "ra-auth-ie-c0b5db67449c98df",
+      "authority": "Central Bank of Ireland",
+      "authorityWebsite": "http://www.centralbank.ie/",
+      "iso2": "IE",
+      "roles": [
+        "prudential_supervision",
+        "securities",
+        "insurance"
+      ],
+      "mappingStatus": "official-directory-match",
+      "mappingBasis": "Explicit live-code authority alias matched official directory."
+    },
+    {
+      "regulatorCode": "SFC",
+      "stableRegulatorId": "ra-reg-sfc",
+      "authorityId": "ra-auth-hk-7242883237a6e80c",
+      "authority": "Securities and Futures Commission*",
+      "authorityWebsite": "https://www.sfc.hk/web/EN/index.html",
+      "iso2": "HK",
+      "roles": [
+        "securities"
+      ],
+      "mappingStatus": "official-directory-match",
+      "mappingBasis": "Explicit live-code authority alias matched official directory."
+    },
+    {
+      "regulatorCode": "AFM",
+      "stableRegulatorId": "ra-reg-afm",
+      "authorityId": "ra-auth-nl-3dea2d27ee965e72",
+      "authority": "The Dutch Authority for the Financial Markets*",
+      "authorityWebsite": "http://www.afm.nl/",
+      "iso2": "NL",
+      "roles": [
+        "securities",
+        "insurance"
+      ],
+      "mappingStatus": "official-directory-match",
+      "mappingBasis": "Explicit live-code authority alias matched official directory."
+    },
+    {
+      "regulatorCode": "DNB",
+      "stableRegulatorId": "ra-reg-dnb",
+      "authorityId": "ra-auth-nl-6a14d64a431056ac",
+      "authority": "De Nederlandsche Bank",
+      "authorityWebsite": "https://www.dnb.nl/en",
+      "iso2": "NL",
+      "roles": [
+        "prudential_supervision",
+        "insurance",
+        "pensions"
+      ],
+      "mappingStatus": "official-directory-match",
+      "mappingBasis": "Explicit live-code authority alias matched official directory."
+    },
+    {
+      "regulatorCode": "ECB",
+      "stableRegulatorId": "ra-reg-ecb",
+      "authorityId": null,
+      "authority": null,
+      "authorityWebsite": null,
+      "iso2": "EU",
+      "roles": [],
+      "mappingStatus": "eu-level-excluded",
+      "mappingBasis": "EU-level authority is intentionally excluded from country aggregation."
+    },
+    {
+      "regulatorCode": "DFSA",
+      "stableRegulatorId": "ra-reg-dfsa",
+      "authorityId": "ra-auth-ae-cc9e71ec2ffbc2f5",
+      "authority": "Dubai Financial Services Authority",
+      "authorityWebsite": "http://www.dfsa.ae/",
+      "iso2": "AE",
+      "roles": [
+        "prudential_supervision",
+        "securities",
+        "insurance"
+      ],
+      "mappingStatus": "official-directory-match",
+      "mappingBasis": "Explicit live-code authority alias matched official directory."
+    },
+    {
+      "regulatorCode": "FSRA",
+      "stableRegulatorId": "ra-reg-fsra",
+      "authorityId": "ra-auth-ae-a2eaf322568b7d54",
+      "authority": "Financial Services Regulatory Authority",
+      "authorityWebsite": "http://www.adgm.com/",
+      "iso2": "AE",
+      "roles": [
+        "securities",
+        "insurance"
+      ],
+      "mappingStatus": "official-directory-match",
+      "mappingBasis": "Explicit live-code authority alias matched official directory."
+    },
+    {
+      "regulatorCode": "CBUAE",
+      "stableRegulatorId": "ra-reg-cbuae",
+      "authorityId": "ra-auth-ae-da705b04944a16ff",
+      "authority": "Central Bank of the United Arab Emirates",
+      "authorityWebsite": "https://www.centralbank.ae/en",
+      "iso2": "AE",
+      "roles": [
+        "prudential_supervision"
+      ],
+      "mappingStatus": "official-directory-match",
+      "mappingBasis": "Explicit live-code authority alias matched official directory."
+    },
+    {
+      "regulatorCode": "JFSC",
+      "stableRegulatorId": "ra-reg-jfsc",
+      "authorityId": "ra-auth-je-5a2e6c5b726f4bd9",
+      "authority": "Jersey Financial Services Commission",
+      "authorityWebsite": "http://www.jerseyfsc.org/",
+      "iso2": "JE",
+      "roles": [
+        "prudential_supervision",
+        "securities",
+        "insurance"
+      ],
+      "mappingStatus": "official-directory-match",
+      "mappingBasis": "Explicit live-code authority alias matched official directory."
+    },
+    {
+      "regulatorCode": "GFSC",
+      "stableRegulatorId": "ra-reg-gfsc",
+      "authorityId": "ra-auth-gg-1e035352eed2575c",
+      "authority": "Guernsey Financial Services Commission",
+      "authorityWebsite": "http://www.gfsc.gg/",
+      "iso2": "GG",
+      "roles": [
+        "prudential_supervision",
+        "securities",
+        "insurance",
+        "pensions"
+      ],
+      "mappingStatus": "official-directory-match",
+      "mappingBasis": "Explicit live-code authority alias matched official directory."
+    },
+    {
+      "regulatorCode": "CIRO",
+      "stableRegulatorId": "ra-reg-ciro",
+      "authorityId": null,
+      "authority": null,
+      "authorityWebsite": null,
+      "iso2": "CA",
+      "roles": [],
+      "mappingStatus": "registry-only",
+      "mappingBasis": "No sufficiently specific official-directory name match; excluded from country role aggregation pending manual authority mapping."
+    },
+    {
+      "regulatorCode": "SEC",
+      "stableRegulatorId": "ra-reg-sec",
+      "authorityId": "ra-auth-us-321899cf1be8b63f",
+      "authority": "Securities and Exchange Commission*",
+      "authorityWebsite": "http://www.sec.gov/",
+      "iso2": "US",
+      "roles": [
+        "securities"
+      ],
+      "mappingStatus": "official-directory-match",
+      "mappingBasis": "Explicit live-code authority alias matched official directory."
+    },
+    {
+      "regulatorCode": "SEBI",
+      "stableRegulatorId": "ra-reg-sebi",
+      "authorityId": "ra-auth-in-1a442264a9b3e9f5",
+      "authority": "Securities and Exchange Board of India*",
+      "authorityWebsite": "http://www.sebi.gov.in/",
+      "iso2": "IN",
+      "roles": [
+        "securities"
+      ],
+      "mappingStatus": "official-directory-match",
+      "mappingBasis": "Explicit live-code authority alias matched official directory."
+    },
+    {
+      "regulatorCode": "TWFSC",
+      "stableRegulatorId": "ra-reg-twfsc",
+      "authorityId": "ra-auth-tw-19b695d9525b0615",
+      "authority": "Financial Supervisory Commission",
+      "authorityWebsite": "http://www.fsc.gov.tw/",
+      "iso2": "TW",
+      "roles": [
+        "securities",
+        "insurance"
+      ],
+      "mappingStatus": "official-directory-match",
+      "mappingBasis": "Explicit live-code authority alias matched official directory."
+    },
+    {
+      "regulatorCode": "CVM",
+      "stableRegulatorId": "ra-reg-cvm",
+      "authorityId": "ra-auth-br-a59437c9ce1f582b",
+      "authority": "Comissão de Valores Mobiliários*",
+      "authorityWebsite": "http://www.cvm.gov.br/",
+      "iso2": "BR",
+      "roles": [
+        "securities"
+      ],
+      "mappingStatus": "official-directory-match",
+      "mappingBasis": "Explicit live-code authority alias matched official directory."
+    },
+    {
+      "regulatorCode": "HKMA",
+      "stableRegulatorId": "ra-reg-hkma",
+      "authorityId": "ra-auth-hk-a01a8df1dfe9cf6d",
+      "authority": "Hong Kong Monetary Authority",
+      "authorityWebsite": "https://www.hkma.gov.hk/eng",
+      "iso2": "HK",
+      "roles": [
+        "prudential_supervision"
+      ],
+      "mappingStatus": "official-directory-match",
+      "mappingBasis": "Explicit live-code authority alias matched official directory."
+    },
+    {
+      "regulatorCode": "ASIC",
+      "stableRegulatorId": "ra-reg-asic",
+      "authorityId": "ra-auth-au-5c0fc27b9fcb29ac",
+      "authority": "Australian Securities and Investments Commission*",
+      "authorityWebsite": "http://www.asic.gov.au/",
+      "iso2": "AU",
+      "roles": [
+        "securities",
+        "insurance"
+      ],
+      "mappingStatus": "official-directory-match",
+      "mappingBasis": "Explicit live-code authority alias matched official directory."
+    },
+    {
+      "regulatorCode": "AUSTRAC",
+      "stableRegulatorId": "ra-reg-austrac",
+      "authorityId": "ra-auth-au-a991c73127987db8",
+      "authority": "The Australian Transaction Reports and Analysis Centre (AUSTRAC)",
+      "authorityWebsite": "http://www.austrac.gov.au/",
+      "iso2": "AU",
+      "roles": [
+        "financial_intelligence"
+      ],
+      "mappingStatus": "official-directory-match",
+      "mappingBasis": "Explicit live-code authority alias matched official directory."
+    },
+    {
+      "regulatorCode": "MAS",
+      "stableRegulatorId": "ra-reg-mas",
+      "authorityId": "ra-auth-sg-ed322819dc95a306",
+      "authority": "Monetary Authority of Singapore",
+      "authorityWebsite": "http://www.mas.gov.sg/",
+      "iso2": "SG",
+      "roles": [
+        "prudential_supervision",
+        "securities",
+        "insurance"
+      ],
+      "mappingStatus": "official-directory-match",
+      "mappingBasis": "Explicit live-code authority alias matched official directory."
+    },
+    {
+      "regulatorCode": "OCC",
+      "stableRegulatorId": "ra-reg-occ",
+      "authorityId": "ra-auth-us-536892012d88d798",
+      "authority": "Office of the Comptroller of the Currency",
+      "authorityWebsite": "http://www.occ.treas.gov/",
+      "iso2": "US",
+      "roles": [
+        "prudential_supervision"
+      ],
+      "mappingStatus": "official-directory-match",
+      "mappingBasis": "Explicit live-code authority alias matched official directory."
+    },
+    {
+      "regulatorCode": "FINCEN",
+      "stableRegulatorId": "ra-reg-fincen",
+      "authorityId": "ra-auth-us-62a5bd0929843be2",
+      "authority": "Financial Crimes Enforcement Network (FinCEN)",
+      "authorityWebsite": "https://www.fincen.gov/",
+      "iso2": "US",
+      "roles": [
+        "financial_intelligence"
+      ],
+      "mappingStatus": "official-directory-match",
+      "mappingBasis": "Explicit live-code authority alias matched official directory."
+    },
+    {
+      "regulatorCode": "FINMA",
+      "stableRegulatorId": "ra-reg-finma",
+      "authorityId": "ra-auth-ch-fef82880ed479788",
+      "authority": "Swiss Financial Market Supervisory Authority (FINMA)",
+      "authorityWebsite": "http://www.finma.ch/",
+      "iso2": "CH",
+      "roles": [
+        "prudential_supervision",
+        "securities",
+        "insurance"
+      ],
+      "mappingStatus": "official-directory-match",
+      "mappingBasis": "Explicit live-code authority alias matched official directory."
+    },
+    {
+      "regulatorCode": "SESC",
+      "stableRegulatorId": "ra-reg-sesc",
+      "authorityId": null,
+      "authority": null,
+      "authorityWebsite": null,
+      "iso2": "JP",
+      "roles": [],
+      "mappingStatus": "registry-only",
+      "mappingBasis": "No sufficiently specific official-directory name match; excluded from country role aggregation pending manual authority mapping."
+    },
+    {
+      "regulatorCode": "FMANZ",
+      "stableRegulatorId": "ra-reg-fmanz",
+      "authorityId": "ra-auth-nz-26cfbdac8baf745d",
+      "authority": "Financial Markets Authority",
+      "authorityWebsite": "https://www.fma.govt.nz/",
+      "iso2": "NZ",
+      "roles": [
+        "securities"
+      ],
+      "mappingStatus": "official-directory-match",
+      "mappingBasis": "Explicit live-code authority alias matched official directory."
+    },
+    {
+      "regulatorCode": "FDIC",
+      "stableRegulatorId": "ra-reg-fdic",
+      "authorityId": "ra-auth-us-1d4a8d980adde2a5",
+      "authority": "Federal Deposit Insurance Corporation DC",
+      "authorityWebsite": "http://www.fdic.gov/",
+      "iso2": "US",
+      "roles": [
+        "prudential_supervision"
+      ],
+      "mappingStatus": "official-directory-match",
+      "mappingBasis": "Explicit live-code authority alias matched official directory."
+    },
+    {
+      "regulatorCode": "FRB",
+      "stableRegulatorId": "ra-reg-frb",
+      "authorityId": "ra-auth-us-4a694cd3deb787a6",
+      "authority": "Board of Governors of the Federal Reserve System",
+      "authorityWebsite": "http://www.federalreserve.gov/",
+      "iso2": "US",
+      "roles": [
+        "prudential_supervision",
+        "insurance"
+      ],
+      "mappingStatus": "official-directory-match",
+      "mappingBasis": "Explicit live-code authority alias matched official directory."
+    },
+    {
+      "regulatorCode": "SPK",
+      "stableRegulatorId": "ra-reg-spk",
+      "authorityId": null,
+      "authority": null,
+      "authorityWebsite": null,
+      "iso2": "TR",
+      "roles": [],
+      "mappingStatus": "registry-only",
+      "mappingBasis": "No sufficiently specific official-directory name match; excluded from country role aggregation pending manual authority mapping."
+    },
+    {
+      "regulatorCode": "GHSEC",
+      "stableRegulatorId": "ra-reg-ghsec",
+      "authorityId": "ra-auth-gh-1276eb0564999d02",
+      "authority": "Securities and Exchange Commission",
+      "authorityWebsite": "http://www.sec.gov.gh/",
+      "iso2": "GH",
+      "roles": [
+        "securities"
+      ],
+      "mappingStatus": "official-directory-match",
+      "mappingBasis": "Explicit live-code authority alias matched official directory."
+    },
+    {
+      "regulatorCode": "IOMFSA",
+      "stableRegulatorId": "ra-reg-iomfsa",
+      "authorityId": "ra-auth-im-fd7b7763058345b6",
+      "authority": "Isle of Man Financial Services Authority",
+      "authorityWebsite": "http://www.iomfsa.im/",
+      "iso2": "IM",
+      "roles": [
+        "securities"
+      ],
+      "mappingStatus": "official-directory-match",
+      "mappingBasis": "Explicit live-code authority alias matched official directory."
+    },
+    {
+      "regulatorCode": "AMMC",
+      "stableRegulatorId": "ra-reg-ammc",
+      "authorityId": "ra-auth-ma-b5cfe30602d176ea",
+      "authority": "Autorité Marocaine du Marché des Capitaux*",
+      "authorityWebsite": "http://www.ammc.ma/",
+      "iso2": "MA",
+      "roles": [
+        "securities"
+      ],
+      "mappingStatus": "official-directory-match",
+      "mappingBasis": "Explicit live-code authority alias matched official directory."
+    },
+    {
+      "regulatorCode": "CNV",
+      "stableRegulatorId": "ra-reg-cnv",
+      "authorityId": "ra-auth-ar-12eb11a773eaa5ef",
+      "authority": "Comisión Nacional de Valores*",
+      "authorityWebsite": "http://www.cnv.gob.ar/",
+      "iso2": "AR",
+      "roles": [
+        "securities"
+      ],
+      "mappingStatus": "official-directory-match",
+      "mappingBasis": "Explicit live-code authority alias matched official directory."
+    },
+    {
+      "regulatorCode": "FSS",
+      "stableRegulatorId": "ra-reg-fss",
+      "authorityId": "ra-auth-kr-49ea1165285ae629",
+      "authority": "Financial Supervisory Service",
+      "authorityWebsite": "http://english.fss.or.kr/",
+      "iso2": "KR",
+      "roles": [
+        "prudential_supervision",
+        "insurance"
+      ],
+      "mappingStatus": "official-directory-match",
+      "mappingBasis": "Explicit live-code authority alias matched official directory."
+    },
+    {
+      "regulatorCode": "OSC",
+      "stableRegulatorId": "ra-reg-osc",
+      "authorityId": "ra-auth-ca-27956873427bb2b2",
+      "authority": "Ontario Securities Commission*",
+      "authorityWebsite": "http://www.osc.ca/",
+      "iso2": "CA",
+      "roles": [
+        "securities"
+      ],
+      "mappingStatus": "official-directory-match",
+      "mappingBasis": "Explicit live-code authority alias matched official directory."
+    },
+    {
+      "regulatorCode": "BDI",
+      "stableRegulatorId": "ra-reg-bdi",
+      "authorityId": null,
+      "authority": null,
+      "authorityWebsite": null,
+      "iso2": "IT",
+      "roles": [],
+      "mappingStatus": "registry-only",
+      "mappingBasis": "No sufficiently specific official-directory name match; excluded from country role aggregation pending manual authority mapping."
+    },
+    {
+      "regulatorCode": "ACPR",
+      "stableRegulatorId": "ra-reg-acpr",
+      "authorityId": "ra-auth-fr-97fa854639130439",
+      "authority": "Autorité de Contrôle Prudentiel et de Résolution",
+      "authorityWebsite": "https://acpr.banque-france.fr/",
+      "iso2": "FR",
+      "roles": [
+        "prudential_supervision",
+        "insurance",
+        "pensions"
+      ],
+      "mappingStatus": "official-directory-match",
+      "mappingBasis": "Explicit live-code authority alias matched official directory."
+    },
+    {
+      "regulatorCode": "CSSF",
+      "stableRegulatorId": "ra-reg-cssf",
+      "authorityId": "ra-auth-lu-4fbb7469ba4b7756",
+      "authority": "Commission de Surveillance du Secteur Financier",
+      "authorityWebsite": "http://www.cssf.lu/en/",
+      "iso2": "LU",
+      "roles": [
+        "prudential_supervision",
+        "securities",
+        "pensions"
+      ],
+      "mappingStatus": "official-directory-match",
+      "mappingBasis": "Explicit live-code authority alias matched official directory."
+    },
+    {
+      "regulatorCode": "FSMA",
+      "stableRegulatorId": "ra-reg-fsma",
+      "authorityId": "ra-auth-be-60ac8fc270c21dc9",
+      "authority": "Financial Services and Markets Authority*",
+      "authorityWebsite": "http://www.fsma.be/",
+      "iso2": "BE",
+      "roles": [
+        "securities",
+        "insurance",
+        "pensions"
+      ],
+      "mappingStatus": "official-directory-match",
+      "mappingBasis": "Explicit live-code authority alias matched official directory."
+    },
+    {
+      "regulatorCode": "FMAAT",
+      "stableRegulatorId": "ra-reg-fmaat",
+      "authorityId": "ra-auth-at-0c2dcb3373507cc1",
+      "authority": "Austrian Financial Market Authority",
+      "authorityWebsite": "http://www.fma.gv.at/",
+      "iso2": "AT",
+      "roles": [
+        "prudential_supervision",
+        "securities",
+        "insurance",
+        "pensions"
+      ],
+      "mappingStatus": "official-directory-match",
+      "mappingBasis": "Deterministic normalized-name match to official directory."
+    },
+    {
+      "regulatorCode": "CNBCZ",
+      "stableRegulatorId": "ra-reg-cnbcz",
+      "authorityId": "ra-auth-cz-c9c68c4d2da33262",
+      "authority": "Czech National Bank",
+      "authorityWebsite": "http://www.cnb.cz/en/index.html",
+      "iso2": "CZ",
+      "roles": [
+        "prudential_supervision",
+        "securities",
+        "insurance",
+        "pensions"
+      ],
+      "mappingStatus": "official-directory-match",
+      "mappingBasis": "Explicit live-code authority alias matched official directory."
+    },
+    {
+      "regulatorCode": "CMVM",
+      "stableRegulatorId": "ra-reg-cmvm",
+      "authorityId": "ra-auth-pt-9416ad68ffc0ead8",
+      "authority": "Comissão do Mercado de Valores Mobiliários",
+      "authorityWebsite": "http://www.cmvm.pt/",
+      "iso2": "PT",
+      "roles": [
+        "securities"
+      ],
+      "mappingStatus": "official-directory-match",
+      "mappingBasis": "Explicit live-code authority alias matched official directory."
+    },
+    {
+      "regulatorCode": "CYSEC",
+      "stableRegulatorId": "ra-reg-cysec",
+      "authorityId": "ra-auth-cy-763f7fdf3a372e1b",
+      "authority": "Cyprus Securities and Exchange Commission",
+      "authorityWebsite": "http://www.cysec.gov.cy/",
+      "iso2": "CY",
+      "roles": [
+        "securities"
+      ],
+      "mappingStatus": "official-directory-match",
+      "mappingBasis": "Explicit live-code authority alias matched official directory."
+    },
+    {
+      "regulatorCode": "FISE",
+      "stableRegulatorId": "ra-reg-fise",
+      "authorityId": "ra-auth-se-0ad84971070398be",
+      "authority": "Finansinspektionen",
+      "authorityWebsite": "http://www.fi.se/",
+      "iso2": "SE",
+      "roles": [
+        "prudential_supervision",
+        "securities",
+        "financial_intelligence"
+      ],
+      "mappingStatus": "official-directory-match",
+      "mappingBasis": "Explicit live-code authority alias matched official directory."
+    },
+    {
+      "regulatorCode": "FTDK",
+      "stableRegulatorId": "ra-reg-ftdk",
+      "authorityId": "ra-auth-dk-74ed5e7e0e14a760",
+      "authority": "Danish Financial Supervisory Authority",
+      "authorityWebsite": "http://www.finanstilsynet.dk/en.aspx",
+      "iso2": "DK",
+      "roles": [
+        "prudential_supervision",
+        "securities",
+        "insurance"
+      ],
+      "mappingStatus": "official-directory-match",
+      "mappingBasis": "Explicit live-code authority alias matched official directory."
+    },
+    {
+      "regulatorCode": "FINFSA",
+      "stableRegulatorId": "ra-reg-finfsa",
+      "authorityId": "ra-auth-fi-e59f9db9ae9280fc",
+      "authority": "Financial Supervisory Authority",
+      "authorityWebsite": "http://www.fin-fsa.fi/en",
+      "iso2": "FI",
+      "roles": [
+        "prudential_supervision"
+      ],
+      "mappingStatus": "official-directory-match",
+      "mappingBasis": "Explicit live-code authority alias matched official directory."
+    },
+    {
+      "regulatorCode": "FTNO",
+      "stableRegulatorId": "ra-reg-ftno",
+      "authorityId": "ra-auth-no-80719903f3ffe2e0",
+      "authority": "Finanstilsynet (The Financial Supervisory Authority of Norway)",
+      "authorityWebsite": "http://www.finanstilsynet.no/",
+      "iso2": "NO",
+      "roles": [
+        "prudential_supervision",
+        "securities",
+        "insurance"
+      ],
+      "mappingStatus": "official-directory-match",
+      "mappingBasis": "Explicit live-code authority alias matched official directory."
+    },
+    {
+      "regulatorCode": "MFSA",
+      "stableRegulatorId": "ra-reg-mfsa",
+      "authorityId": "ra-auth-mt-0d68677a8237087f",
+      "authority": "Malta Financial Services Authority",
+      "authorityWebsite": "http://www.mfsa.com.mt/",
+      "iso2": "MT",
+      "roles": [
+        "prudential_supervision",
+        "insurance"
+      ],
+      "mappingStatus": "official-directory-match",
+      "mappingBasis": "Explicit live-code authority alias matched official directory."
+    },
+    {
+      "regulatorCode": "IVASS",
+      "stableRegulatorId": "ra-reg-ivass",
+      "authorityId": "ra-auth-it-d255f9df495ac260",
+      "authority": "Istituto per la Vigilanza sulle Assicurazioni (IVASS)",
+      "authorityWebsite": "https://www.ivass.it/",
+      "iso2": "IT",
+      "roles": [
+        "insurance"
+      ],
+      "mappingStatus": "official-directory-match",
+      "mappingBasis": "Explicit live-code authority alias matched official directory."
+    },
+    {
+      "regulatorCode": "FINRA",
+      "stableRegulatorId": "ra-reg-finra",
+      "authorityId": null,
+      "authority": null,
+      "authorityWebsite": null,
+      "iso2": "US",
+      "roles": [],
+      "mappingStatus": "registry-only",
+      "mappingBasis": "No sufficiently specific official-directory name match; excluded from country role aggregation pending manual authority mapping."
+    },
+    {
+      "regulatorCode": "SC",
+      "stableRegulatorId": "ra-reg-sc",
+      "authorityId": "ra-auth-my-9c2184698cd1832e",
+      "authority": "Securities Commission*",
+      "authorityWebsite": "http://www.sc.com.my/",
+      "iso2": "MY",
+      "roles": [
+        "securities"
+      ],
+      "mappingStatus": "official-directory-match",
+      "mappingBasis": "Explicit live-code authority alias matched official directory."
+    },
+    {
+      "regulatorCode": "CIMA",
+      "stableRegulatorId": "ra-reg-cima",
+      "authorityId": "ra-auth-ky-4cae34554efc1a6b",
+      "authority": "Cayman Islands Monetary Authority",
+      "authorityWebsite": "http://www.cimoney.com.ky/",
+      "iso2": "KY",
+      "roles": [
+        "prudential_supervision"
+      ],
+      "mappingStatus": "official-directory-match",
+      "mappingBasis": "Explicit live-code authority alias matched official directory."
+    }
+  ]
+}

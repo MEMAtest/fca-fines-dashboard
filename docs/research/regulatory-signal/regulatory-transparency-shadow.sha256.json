@@ -1,0 +1,16 @@
+{
+  "live-regulator-sample-snapshot.json": "045be8a8762227cf698c5c431d70cb957390ee657db84016aa01afe7b369b353",
+  "regulatory-transparency-authority-mapping.json": "576e4254bb2f63f61c1212c2bd1b2642cc74cf01a01d3e19f84e23bab8981d14",
+  "regulatory-transparency-authority-mapping.csv": "c186719f4c99880e50b1d0ab20663ffa4db1600ec3a73d2d6787b1e64351ffde",
+  "regulatory-transparency-component-evidence.json": "b24110d88196ce51fec35eb908b7b79d753ecd4e4bd4d74665565e0ccb79d9a7",
+  "regulatory-transparency-component-evidence.csv": "1fef21bf7049c214f6e718dba24637de3255dfd9b70d8e51a06b17e844b93f09",
+  "regulatory-transparency-regulator-results.json": "9882dd1356868aea20f9f1e6f365166e291613e3312efe614f2a9cf8086b1c28",
+  "regulatory-transparency-regulator-results.csv": "4dcfe5c41773e6efdf387cd4c944afc259c8ed2ac67efbe34602ebde44dc7529",
+  "regulatory-transparency-country-results.json": "1dcd551dee879e656d0ac8ce851abb74352730927cc20eed0711b8c1e4b8dc52",
+  "regulatory-transparency-country-results.csv": "6d57c8f5bbf8d19adc260399c40601d732e6ba29b81e3ef49042b54271897472",
+  "regulatory-transparency-bias-calibration.json": "92ba5651e1b41c03c4294f209406509149f13d6c3ba046695303b0815597d09f",
+  "regulatory-transparency-unresolved-gaps.csv": "84a497421fe47262a88a7df7c58218b116478c9cb657a75e468a137e327de825",
+  "regulatory-transparency-shadow.json": "4bd3fbb3c751f2fa0c947cf3795924022c0af89aca96fb19d2f0665086fa4f76",
+  "regulatory-transparency-methodology-1.0.0.md": "d6f2ec7c1d1d9e96a9c13f60e8272f06f83cc69d63f654a8ead8285328523cbe",
+  "methodology_version": "1.0.0"
+}
