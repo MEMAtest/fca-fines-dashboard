@@ -270,6 +270,9 @@ export function computeCountryRiskV3(iso2: string, supplied: CountryRiskV3Inputs
     : available.length === 2 ? "provisional" : "insufficient-data";
   const availableWeight = available.reduce((sum, [, , weight]) => sum + weight, 0);
   const appliedWeight = (key: (typeof values)[number][0]) => {
+    // A single available pillar is evidence, not a composite. Do not normalise
+    // it to 100% when the headline score is withheld.
+    if (status === "insufficient-data") return 0;
     const entry = available.find(([candidate]) => candidate === key);
     return entry && availableWeight ? round4(entry[2] / availableWeight) : 0;
   };
@@ -315,7 +318,9 @@ export function computeCountryRiskV3(iso2: string, supplied: CountryRiskV3Inputs
     score: scoreValue,
     weight,
     appliedWeight: appliedWeight(key),
-    contribution: scoreValue === null ? null : round1(scoreValue * appliedWeight(key)),
+    contribution: scoreValue === null || status === "insufficient-data"
+      ? null
+      : round1(scoreValue * appliedWeight(key)),
     evidenceCount,
     coverageStatus: scoreValue === null ? "unavailable" : "available",
     sourceState,
@@ -339,8 +344,7 @@ export function computeCountryRiskV3(iso2: string, supplied: CountryRiskV3Inputs
     sanctionsCoverageComplete,
     limitingReasons,
     arithmetic: score === null
-      ? "No score: fewer than two scored pillars are available."
+      ? "Score withheld: fewer than two scored pillars are available; available evidence is shown but no weight or contribution is applied."
       : `${available.map(([key, value]) => `${key} ${value} × ${round1(appliedWeight(key) * 100)}%`).join(" + ")} = ${score}; sanctions and FATF listing are overlays, not score inputs`,
   };
 }
-

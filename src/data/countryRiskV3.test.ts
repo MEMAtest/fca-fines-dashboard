@@ -91,4 +91,18 @@ describe("country risk v3", () => {
     expect(result.overlays.sanctions.treatment).toBe("unavailable");
     expect(result.limitingReasons).toContain("Sanctions overlay coverage is not complete; no absence is assumed");
   });
+
+  it("shows Libya's sole WGI pillar as evidence without a 100% calculation", () => {
+    const result = computeCountryRiskV3("LY", { asOf: new Date("2026-08-20T00:00:00Z") });
+    expect(result.status).toBe("insufficient-data");
+    expect(result.score).toBeNull();
+    expect(result.pillars.governance.score).toBe(7.3);
+    for (const pillar of Object.values(result.pillars)) {
+      expect(pillar.appliedWeight).toBe(0);
+      expect(pillar.contribution).toBeNull();
+    }
+    expect(result.arithmetic).toContain("Score withheld");
+    expect(result.arithmetic).toContain("no weight or contribution is applied");
+    expect(result.arithmetic).not.toContain("100%");
+  });
 });

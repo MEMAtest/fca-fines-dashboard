@@ -26,4 +26,17 @@ describe("CountryRiskV3Panel presentation adapter", () => {
     expect(html).toContain("Beneficial-ownership transparency");
     expect(html).toContain("Register status");
   });
+
+  it("shows Libya's WGI evidence without presenting it as a 100% score", () => {
+    const result = computeCountryRiskV3("LY", { asOf: new Date("2026-08-20T00:00:00Z") });
+    const payload = countryRiskV3PanelPayload(result);
+    const governance = payload.pillars.find((pillar) => pillar.key === "governance");
+    expect(governance).toMatchObject({ score: 7.3, weight: 0, contribution: null });
+
+    const html = renderToStaticMarkup(createElement(CountryRiskV3Panel, { payload }));
+    expect(html).toContain("Headline score withheld");
+    expect(html).toContain("Evidence available; not included until at least two pillars are available");
+    expect(html).not.toContain("7.3 × 100%");
+    expect(html).not.toContain("= 7.3 points");
+  });
 });

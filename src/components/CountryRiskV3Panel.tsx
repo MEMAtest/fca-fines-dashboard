@@ -158,7 +158,10 @@ export function CountryRiskV3Panel({ payload, showHeadline = true }: { payload: 
         </div>}
         <div className="cx-v3__pillars">
           {payload.pillars.map((pillar) => {
-            const contribution = pillar.contribution ?? (pillar.score === null ? null : pillar.score * pillar.weight);
+            const calculationWithheld = payload.status === "insufficient-data" || payload.score === null;
+            const contribution = pillar.contribution ?? (
+              calculationWithheld || pillar.score === null ? null : pillar.score * pillar.weight
+            );
             return (
               <div className="cx-v3__pillar" key={pillar.key}>
                 <div className="cx-v3__pillar-head">
@@ -168,14 +171,18 @@ export function CountryRiskV3Panel({ payload, showHeadline = true }: { payload: 
                     label={pillar.label}
                     description={pillar.explanation}
                     value={pillar.score === null ? null : `${pillar.score.toFixed(1)} / 10`}
-                    weight={percent(pillar.weight)}
+                    weight={calculationWithheld ? null : percent(pillar.weight)}
                     contribution={contribution === null ? null : `${contribution.toFixed(1)} points`}
                     source={pillar.source}
                   />
                 </div>
                 <strong>{number(pillar.score)}<small> / 10</small></strong>
                 <span className="cx-v3__contribution">
-                  {pillar.score === null ? "Not included until evidence is available" : `${number(pillar.score)} × ${percent(pillar.weight)} = ${number(contribution)} points`}
+                  {pillar.score === null
+                    ? "Not included until evidence is available"
+                    : calculationWithheld
+                      ? "Evidence available; not included until at least two pillars are available"
+                      : `${number(pillar.score)} × ${percent(pillar.weight)} = ${number(contribution)} points`}
                 </span>
               </div>
             );
