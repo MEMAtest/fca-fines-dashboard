@@ -1,5 +1,9 @@
 import { describe, expect, it } from "vitest";
-import { extractCmvmFirm, looksLikeCmvmParty } from "../scrapeCmvm.js";
+import {
+  extractCmvmFirm,
+  isCmvmSanctionRecord,
+  looksLikeCmvmParty,
+} from "../scrapeCmvm.js";
 
 /**
  * The reject cases are the real CMVM strings recorded in the canonical table
@@ -93,5 +97,120 @@ describe("looksLikeCmvmParty — boundaries", () => {
     expect(looksLikeCmvmParty("comunicado sobre a supervisão do mercado")).toBe(
       false,
     );
+  });
+});
+
+/**
+ * The scraper searches CMVM for "contraordenacao" and "coima", which returns
+ * the whole institutional corpus for those words. Prod measured 157 CMVM rows
+ * of which only 5 carried an amount — most were never enforcement actions.
+ *
+ * The reject cases below are real `summary` values read from `eu_fines`.
+ */
+describe("isCmvmSanctionRecord — keeps genuine enforcement actions", () => {
+  const sanctions: Array<[string, string]> = [
+    [
+      "CMVM Aplica Coima à Lisgráfica - Impressão e Artes Gráficas, S.A.",
+      "coima aplicada nos termos do Código dos Valores Mobiliários",
+    ],
+    [
+      "CMVM divulgou hoje três decisões de contraordenação",
+      "decisões de contraordenação",
+    ],
+    [
+      "Decisão do Conselho Directivo da CMVM num Processo de Contra-Ordenação Muito Grave",
+      "processo de contra-ordenação",
+    ],
+    ["Contraordenações - 2º Trimestre 2020", "contraordenações graves"],
+  ];
+
+  for (const [title, highlight] of sanctions) {
+    it(`keeps ${JSON.stringify(title.slice(0, 46))}`, () => {
+      expect(isCmvmSanctionRecord(title, "Supervisão", [highlight])).toBe(true);
+    });
+  }
+});
+
+describe("isCmvmSanctionRecord — drops documents that are not enforcement", () => {
+  const notSanctions: string[] = [
+    // Real rows found in prod with no amount, because they are not fines.
+    "Informação privilegiada de Celulose do Caima, SGPS, SA",
+    "Relatório sobre os aspetos relacionados com o clima nas demonstrações financeiras",
+    "CMVM Informa sobre Site na Internet",
+    "Comunicado de mercado sobre a oferta pública",
+    "Estatísticas trimestrais dos mercados",
+    "Consulta pública sobre o regime de intermediação",
+    "Plano de atividades e orçamento",
+    "Advertência ao público sobre entidades não autorizadas",
+  ];
+
+  for (const title of notSanctions) {
+    it(`drops ${JSON.stringify(title.slice(0, 46))}`, () => {
+      expect(isCmvmSanctionRecord(title, "Supervisão", [])).toBe(false);
+    });
+  }
+
+  it("drops a report even when its body mentions contraordenações", () => {
+    // The title is what the document IS. A report that merely counts offences
+    // is still a report, not an enforcement action against a party.
+    expect(
+      isCmvmSanctionRecord(
+        "Relatório anual da atividade de supervisão",
+        "Supervisão",
+        ["foram instaurados 42 processos de contraordenação durante o ano"],
+      ),
+    ).toBe(false);
+  });
+
+  it("drops empty input rather than defaulting to a sanction", () => {
+    expect(isCmvmSanctionRecord("", "", [])).toBe(false);
+    expect(isCmvmSanctionRecord("   ", "", ["  "])).toBe(false);
+  });
+
+  it("drops a document with no sanction language at all", () => {
+    expect(
+      isCmvmSanctionRecord("Sociedade Comercial Orey Antunes S.A.", "SDI", [
+        "informa os seus accionistas",
+      ]),
+    ).toBe(false);
+  });
+});
+
+/**
+ * Regressions from sweeping all 157 real CMVM rows rather than a sample.
+ *
+ * The first version of the filter matched the search HIGHLIGHTS as well as the
+ * title, and kept 60 of 157 rows — including these, which are register and
+ * disclosure documents that surface only because the search term appears
+ * somewhere in their indexed body. Title-only matching takes it to 14, all of
+ * which are genuine enforcement actions, with no amount-bearing row lost.
+ */
+describe("isCmvmSanctionRecord — title-only (full-corpus regressions)", () => {
+  const registerDocs = [
+    "Perdas de qualidade de sociedade aberta",
+    "Organismos de investimento coletivo estrangeiros comercializados em Portugal",
+    "Intermediários financeiros que prestam o serviço de elaboração de estudos de investimento",
+    "Sociedades Gestoras",
+  ];
+
+  for (const title of registerDocs) {
+    it(`drops ${JSON.stringify(title.slice(0, 44))} even when the highlight mentions contraordenação`, () => {
+      expect(
+        isCmvmSanctionRecord(title, "Supervisão", [
+          "processos de contraordenação instaurados",
+        ]),
+      ).toBe(false);
+    });
+  }
+
+  it("keeps the real decision-publication titles", () => {
+    for (const title of [
+      "Publicação de decisão - Processo de Contra-ordenação n.º 39/2000",
+      "Notificação - Processo de Contra-ordenação n.º 39/2000",
+      "CMVM Aplica Coima à ACS, Actividades de Construcción y Servicios, S.A.",
+      "CMVM divulgou hoje seis decisões de contraordenação",
+    ]) {
+      expect(isCmvmSanctionRecord(title, "", [])).toBe(true);
+    }
   });
 });
