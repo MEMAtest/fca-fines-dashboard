@@ -18,9 +18,11 @@ export interface CountryRiskEvidenceBundle {
   exportedAt: string;
   methodologyVersion: string;
   country: NonNullable<ReturnType<typeof getCountryByIso2>>;
-  result: ReturnType<typeof computeCountryRiskV2>;
-  /** v3 is optional during shadow operation; v2 remains the compatibility result. */
+  /** The selected methodology result. The default/current result is v3. */
+  result: ReturnType<typeof computeCountryRiskV2> | CountryRiskV3Result;
+  /** Explicitly exposed v3/v2 projections for consumers migrating schemas. */
   v3?: CountryRiskV3Result;
+  v2?: ReturnType<typeof computeCountryRiskV2>;
   surface: ReturnType<typeof buildCountryRiskPublicSurface>;
   evidence: {
     fatfAssessment: ReturnType<typeof getFatfAssessment> | null;
@@ -66,12 +68,14 @@ export function buildCountryRiskEvidenceBundle(
   const country = getCountryByIso2(iso2.toUpperCase());
   if (!country) return null;
   const sanctions = getApprovedSanctions(country.iso2);
+  const v2 = computeCountryRiskV2(country.iso2, { asOf });
+  const v3 = computeCountryRiskV3(country.iso2, { asOf });
   return {
     exportedAt: asOf.toISOString(),
     methodologyVersion: methodology === "v3" ? COUNTRY_RISK_V3_METHODOLOGY_VERSION : COUNTRY_RISK_METHODOLOGY_VERSION,
     country,
-    result: computeCountryRiskV2(country.iso2, { asOf }),
-    ...(methodology === "v3" ? { v3: computeCountryRiskV3(country.iso2, { asOf }) } : {}),
+    result: methodology === "v3" ? v3 : v2,
+    ...(methodology === "v3" ? { v3 } : { v2 }),
     surface: buildCountryRiskPublicSurface(country.iso2, asOf),
     evidence: {
       fatfAssessment: getFatfAssessment(country.iso2) ?? null,

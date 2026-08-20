@@ -1,9 +1,10 @@
 import benchmarkRaw from "../../research/country-risk-public-benchmark.json" with { type: "json" };
 import { getCountryByIso2 } from "../../src/data/countries.js";
-import { computeCountryRiskV2 } from "../../src/data/countryRiskV2.js";
+import { computeCountryRiskCurrent } from "../../src/data/countryRiskMethodology.js";
 import { pageCountries } from "../../src/data/countryView.js";
 
-type Comparison = "aligned" | "kyc-higher" | "regactions-higher";
+type Comparison = "aligned" | "kyc-higher" | "regactions-higher" | "unavailable";
+type CurrentBenchmarkResult = { score: number | null; band: string | null; status: string; confidence: string };
 interface BenchmarkRow {
   iso2: string;
   kycBand: string;
@@ -31,9 +32,9 @@ export interface PublicBenchmarkReport {
   changedSinceObservation: Array<{
     iso2: string;
     observed: BenchmarkRow["regActions"];
-    current: BenchmarkRow["regActions"];
+    current: CurrentBenchmarkResult;
   }>;
-  rows: Array<BenchmarkRow & { country: string; current: BenchmarkRow["regActions"] }>;
+  rows: Array<BenchmarkRow & { country: string; current: CurrentBenchmarkResult }>;
 }
 
 export function buildPublicBenchmarkReport(
@@ -41,7 +42,7 @@ export function buildPublicBenchmarkReport(
   asOf = new Date(),
 ): PublicBenchmarkReport {
   const seen = new Set<string>();
-  const comparisonCounts: Record<Comparison, number> = { aligned: 0, "kyc-higher": 0, "regactions-higher": 0 };
+  const comparisonCounts: Record<Comparison, number> = { aligned: 0, "kyc-higher": 0, "regactions-higher": 0, unavailable: 0 };
   const changedSinceObservation: PublicBenchmarkReport["changedSinceObservation"] = [];
   const rows = data.rows.map((row) => {
     if (seen.has(row.iso2)) throw new Error(`Duplicate benchmark ISO2: ${row.iso2}`);
@@ -49,8 +50,10 @@ export function buildPublicBenchmarkReport(
     const country = getCountryByIso2(row.iso2);
     if (!country) throw new Error(`Unknown benchmark ISO2: ${row.iso2}`);
     if (!row.kycUrl.startsWith("https://www.knowyourcountry.com/")) throw new Error(`Invalid KYC URL for ${row.iso2}`);
-    const result = computeCountryRiskV2(row.iso2, { asOf });
-    if (result.score === null || result.band === null) throw new Error(`Benchmark country is not currently scored: ${row.iso2}`);
+    // Public benchmark rows are always compared with the current published
+    // methodology. Historical v2 remains available only through an explicit
+    // methodology selector on the country-risk APIs and evidence exports.
+    const result = computeCountryRiskCurrent(row.iso2, { asOf });
     const current = {
       score: result.score,
       band: result.band,
@@ -60,8 +63,9 @@ export function buildPublicBenchmarkReport(
     if (JSON.stringify(current) !== JSON.stringify(row.regActions)) {
       changedSinceObservation.push({ iso2: row.iso2, observed: row.regActions, current });
     }
-    comparisonCounts[row.comparison] += 1;
-    return { ...row, country: country.name, current };
+    const comparison = result.score === null || result.band === null ? "unavailable" : row.comparison;
+    comparisonCounts[comparison] += 1;
+    return { ...row, country: country.name, comparison, current };
   });
   const regActionsCoverage = pageCountries().length;
   return {
@@ -94,7 +98,7 @@ export function renderPublicBenchmarkMarkdown(report: PublicBenchmarkReport): st
     "",
     "| Country | RegActions current | KYC public band | Comparison | Evidence note |",
     "|---|---:|---|---|---|",
-    ...report.rows.map((row) => `| ${row.country} | ${row.current.score.toFixed(1)} ${row.current.band} (${row.current.status}/${row.current.confidence}) | [${row.kycBand}](${row.kycUrl}) | ${row.comparison} | ${row.note} |`),
+    ...report.rows.map((row) => `| ${row.country} | ${row.current.score === null ? "Not scored" : `${row.current.score.toFixed(1)} ${row.current.band}`} (${row.current.status}/${row.current.confidence}) | [${row.kycBand}](${row.kycUrl}) | ${row.comparison} | ${row.note} |`),
     "",
     "KYC numeric scores are not public and are not inferred. Bands are directional evidence only, not calibration targets.",
   ];

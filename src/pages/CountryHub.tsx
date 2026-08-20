@@ -51,6 +51,11 @@ import {
 import { buildCountryRiskV3PublicExplanation } from "../data/countryRiskV3Presentation.js";
 import { buildCountryRiskGovernanceEvidenceRows } from "../data/countryRiskGovernancePresentation.js";
 import {
+  authorityAccessLabel,
+  getRegulatorySignalCountry,
+  roleLabel,
+} from "../data/regulatorySignal.js";
+import {
   buildCountryView,
   formatDate,
   globalRank,
@@ -245,6 +250,7 @@ export function CountryHub() {
   const tiles = controlTiles(publishedBand);
   // Country-specific monitoring items from the grounded narrative (unique per country).
   const watchpointItems = (getNarrative(country.iso2)?.keyWatchpoints ?? []).slice(0, 2);
+  const regulatorySignal = getRegulatorySignalCountry(country.iso2);
 
   const overallImpact = decision.businessImpact.reduce(
     (max, r) =>
@@ -583,9 +589,9 @@ export function CountryHub() {
                 </span>
                 {attribution.enforcement.assessed ? (
                   <>
-                    <b className="cx-attr__stat-v">{attribution.enforcement.trackedActions}</b>
+                    <b className="cx-attr__stat-v">Live</b>
                     <span className="cx-attr__stat-d">
-                      actions · {attribution.enforcement.regulatorCount} regulator
+                      data · {attribution.enforcement.regulatorCount} regulator
                       {attribution.enforcement.regulatorCount === 1 ? "" : "s"}
                     </span>
                   </>
@@ -723,6 +729,53 @@ export function CountryHub() {
             })}
             showHeadline={false}
           />
+
+          {regulatorySignal && (
+            <section className="cx-card cx-regsignal" aria-labelledby="regulatory-signal-heading">
+              <div className="cx-regsignal__head">
+                <div>
+                  <span className="cx-card__eyebrow"><Landmark size={12} /> Regulatory ecosystem and enforcement visibility</span>
+                  <h2 id="regulatory-signal-heading" className="cx-regsignal__title">Who regulates {country.name}, and what can be observed publicly?</h2>
+                  <p className="cx-regsignal__intro">
+                    This evidence map is separate from Country Risk v3. It describes official mandates, publication access and RegActions coverage; it does not judge regulatory strength or add points to country risk.
+                  </p>
+                </div>
+                <div className="cx-regsignal__actions">
+                  <a className="cx-btn" href={`/api/regulatory-signal/evidence/${country.iso2}?format=pdf`}>PDF</a>
+                  <a className="cx-btn" href={`/api/regulatory-signal/evidence/${country.iso2}?format=csv`}>CSV</a>
+                  <a className="cx-btn" href={`/api/regulatory-signal/evidence/${country.iso2}?format=json`}>JSON</a>
+                </div>
+              </div>
+              <div className="cx-regsignal__summary" aria-label="Regulatory ecosystem summary">
+                <div><b>{regulatorySignal.officialDirectoryAuthorities}</b><span>official authorities mapped</span></div>
+                <div><b>{regulatorySignal.officialDirectoryRoles.length}</b><span>mandate families evidenced</span></div>
+                <div><b>{regulatorySignal.liveRegulators || "—"}</b><span>live RegActions feeds</span></div>
+                <div><b>{regulatorySignal.liveObservedRecords ? regulatorySignal.liveObservedRecords.toLocaleString("en-GB") : "—"}</b><span>observed actions in snapshot</span></div>
+              </div>
+              <div className="cx-regsignal__status">
+                <span className="cx-regsignal__pill">Transparency Index: not assessed</span>
+                <span>{regulatorySignal.authorityEvidenceState === "external-risk-evidence-only" ? "Domestic authority publication is not observable in this evidence set." : regulatorySignal.authorityEvidenceState === "unobservable" ? "Domestic authority publication is not publicly observable." : "Publication access is shown authority by authority below."}</span>
+              </div>
+              {regulatorySignal.authorityEvidenceNote && <p className="cx-regsignal__note">{regulatorySignal.authorityEvidenceNote}{regulatorySignal.externalAuthorityEvidenceUrl && <> <a href={regulatorySignal.externalAuthorityEvidenceUrl} target="_blank" rel="noopener noreferrer">Review external evidence <ExternalLink size={10} /></a></>}</p>}
+              <div className="cx-regsignal__authorities">
+                {regulatorySignal.authorities.length > 0 ? regulatorySignal.authorities.map((authority) => (
+                  <details key={`${authority.name}-${authority.website ?? ""}`} className="cx-regsignal__authority">
+                    <summary>
+                      <span className="cx-regsignal__authority-name">{authority.name}</span>
+                      <span className={`cx-regsignal__state cx-regsignal__state--${authority.accessState}`}>{authorityAccessLabel(authority.accessState)}</span>
+                    </summary>
+                    <div className="cx-regsignal__authority-body">
+                      <span>{authority.roles.map(roleLabel).join(" · ") || "Mandate family not classified"}</span>
+                      {authority.website && <a href={authority.website} target="_blank" rel="noopener noreferrer">Official authority site <ExternalLink size={10} /></a>}
+                      {authority.publicationUrl && <a href={authority.publicationUrl} target="_blank" rel="noopener noreferrer">Publication candidate <ExternalLink size={10} /></a>}
+                      <span className="cx-regsignal__source-note">Access state is an observation of this research snapshot; blocked, challenge-protected and non-public states are not treated as failed regulators.</span>
+                    </div>
+                  </details>
+                )) : <p className="cx-regsignal__note">No local authority entry was resolved in the public directory snapshot. This is not evidence that no regulator exists.</p>}
+              </div>
+              <p className="cx-regsignal__footnote">Observed enforcement is a neutral publication signal. No recent observation can reflect low-frequency reporting, access constraints, non-public decisions or lack of a validated RegActions feed.</p>
+            </section>
+          )}
 
           {/* ── Row 2: treatment | trend | map (attribution lives in the rail) ── */}
           <div className="cx-ws__row2">
@@ -1001,7 +1054,7 @@ export function CountryHub() {
                           <b>{r.code}</b> {r.fullName}
                         </Link>
                         <span className="cx-regf__meta">
-                          {r.count.toLocaleString("en-GB")} actions · {r.years}
+                          Live feed · {r.years}
                         </span>
                       </li>
                     ))}

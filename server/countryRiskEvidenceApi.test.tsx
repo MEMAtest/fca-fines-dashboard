@@ -22,7 +22,7 @@ describe("country-risk evidence export API", () => {
     const json = await invoke({ iso2: "MM", format: "json" });
     expect(json.code).toBe(200);
     expect(json.headers["Content-Disposition"]).toContain("regactions-mm-country-risk-evidence.json");
-    expect(json.payload).toMatchObject({ result: { score: 9 }, surface: { fatfAction: { action: "enhanced-due-diligence" } } });
+    expect(json.payload).toMatchObject({ result: { score: 7.8 }, v3: { score: 7.8 }, surface: { fatfAction: { action: "enhanced-due-diligence" } } });
     expect(json.payload.sources).toContainEqual(expect.objectContaining({ id: "fatf-lists", scored: false }));
     expect(json.payload.sources).toContainEqual(expect.objectContaining({ id: "sanctions-regimes", scored: false }));
     const csv = await invoke({ iso2: "MM", format: "csv" });

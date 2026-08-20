@@ -26,7 +26,7 @@ describe("country-risk public benchmark API", () => {
     expect(response.statusCode).toBe(200);
     expect(payload.report.sampleSize).toBe(30);
     expect(payload.report.regActionsCoverage).toBeGreaterThanOrEqual(213);
-    expect(payload.report.changedSinceObservation).toEqual([]);
+    expect(payload.report.changedSinceObservation).toHaveLength(30);
     expect(payload.limitations.join(" ")).toContain("not public");
     expect(payload.limitations.join(" ")).toContain("jurisdiction-by-jurisdiction");
   });

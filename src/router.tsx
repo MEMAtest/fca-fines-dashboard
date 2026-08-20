@@ -190,6 +190,11 @@ const CountryChanges = lazyPage(() =>
     default: module.CountryChanges,
   })),
 );
+const RegulatoryTransparency = lazyPage(() =>
+  import("./pages/RegulatoryTransparency.js").then((module) => ({
+    default: module.RegulatoryTransparency,
+  })),
+);
 
 // Shared Suspense fallback for the country routes.
 const ROUTE_FALLBACK = (
@@ -692,6 +697,10 @@ const router = createBrowserRouter([
             <CountryChanges />
           </Suspense>
         ),
+      },
+      {
+        path: "/countries/regulatory-transparency",
+        element: <Suspense fallback={ROUTE_FALLBACK}><RegulatoryTransparency /></Suspense>,
       },
       {
         path: "/countries/compare/:pair",

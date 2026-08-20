@@ -82,6 +82,7 @@ import { isEuTaxListed } from "../src/data/euTaxList.js";
 import { getEgmontMember } from "../src/data/egmontMembership.js";
 import { getFatfAssessmentLink } from "../src/data/fatfAssessmentLinks.js";
 import { getBoRegister, boRegisterSignal } from "../src/data/boRegisters.js";
+import { getRegulatorySignalCountry, authorityAccessLabel, roleLabel } from "../src/data/regulatorySignal.js";
 import {
   buildCountryChanges,
   changesByDate,
@@ -760,7 +761,7 @@ function renderCountryFatfBody(view: CountryView): string {
       : "Corruption (CPI): no score",
   )}</li><li>${escapeHtml(
     enforcementAssessed
-      ? `Enforcement: ${formatCount(enforcement!.trackedActions)} actions from ${enforcement!.regulatorCount} regulator${enforcement!.regulatorCount === 1 ? "" : "s"}`
+      ? `Enforcement: ${enforcement!.regulatorCount} live regulator feed${enforcement!.regulatorCount === 1 ? "" : "s"}; current totals are loaded from the live evidence API`
       : "Enforcement data: not yet assessed (no RegActions coverage)",
   )}</li></ul>`;
   const treatmentHtml = `<h2>Recommended treatment</h2><p>${escapeHtml(decision.treatment)}</p>`;
@@ -846,15 +847,13 @@ function renderCountryFatfBody(view: CountryView): string {
       : "";
   const enforcementHtml = enforcement
     ? `<h2>Enforcement activity</h2><p>${escapeHtml(
-        `RegActions tracks ${formatCount(enforcement.trackedActions)} enforcement actions from ${enforcement.regulatorCount} ${
-          enforcement.regulatorCount === 1 ? "regulator" : "regulators"
-        } in ${country.name}.`,
+        `RegActions has ${enforcement.regulatorCount} live regulator ${enforcement.regulatorCount === 1 ? "feed" : "feeds"} mapped to ${country.name}. Current action totals are loaded from the live evidence API rather than the static registry.`,
       )}</p><ul>${enforcement.regulators
         .map(
           (r) =>
             `<li><a href="${escapeHtml(r.overviewPath)}"><strong>${escapeHtml(r.code)}</strong> — ${escapeHtml(
               r.fullName,
-            )}</a> (${escapeHtml(formatCount(r.count))} actions, ${escapeHtml(r.years)})</li>`,
+            )}</a> (live feed, ${escapeHtml(r.years)})</li>`,
         )
         .join("")}</ul><p>The composite RegActions Country Risk Score does not use enforcement volume.</p>`
     : "";
@@ -885,9 +884,7 @@ function renderCountryFatfBody(view: CountryView): string {
             (r) =>
               `<li><a href="${escapeHtml(r.overviewPath)}"><strong>${escapeHtml(
                 r.code,
-              )}</strong> — ${escapeHtml(r.fullName)}</a> (${escapeHtml(
-                formatCount(r.count),
-              )} actions, ${escapeHtml(r.years)})</li>`,
+              )}</strong> — ${escapeHtml(r.fullName)}</a> (live feed, ${escapeHtml(r.years)})</li>`,
           )
           .join("")}</ul>`
       : `<p>Regulator profiles not yet available on RegActions.</p>`;
@@ -948,6 +945,10 @@ function renderCountryFatfBody(view: CountryView): string {
     .join(
       "",
     )}</ul><p>Derived from sanctions tier, FATF listing, World Bank WGI governance and CPI; no per-sector dataset is asserted.</p>`;
+  const signal = getRegulatorySignalCountry(country.iso2);
+  const regulatorySignalHtml = signal
+    ? `<h2>Regulatory ecosystem and enforcement visibility</h2><p>This evidence map is separate from Country Risk v3. It describes official mandates, publication access and RegActions coverage; it does not judge regulatory strength or add points to country risk.</p><p><strong>Transparency Index:</strong> not assessed · <strong>Evidence disposition:</strong> ${escapeHtml(signal.authorityEvidenceState)} · <strong>Mapped official authorities:</strong> ${signal.officialDirectoryAuthorities}.</p>${signal.authorityEvidenceNote ? `<p>${escapeHtml(signal.authorityEvidenceNote)}${signal.externalAuthorityEvidenceUrl ? ` <a href="${escapeHtml(signal.externalAuthorityEvidenceUrl)}" rel="noopener">External evidence</a>` : ""}</p>` : ""}${signal.authorities.length ? `<ul>${signal.authorities.map((authority) => `<li><strong>${escapeHtml(authority.name)}</strong> — ${escapeHtml(authority.roles.map(roleLabel).join(", ") || "Mandate not classified")}; ${escapeHtml(authorityAccessLabel(authority.accessState))}${authority.website ? ` · <a href="${escapeHtml(authority.website)}" rel="noopener">official site</a>` : ""}${authority.publicationUrl ? ` · <a href="${escapeHtml(authority.publicationUrl)}" rel="noopener">publication candidate</a>` : ""}</li>`).join("")}</ul>` : `<p>No local authority entry was resolved in this public directory snapshot. This is not evidence that no regulator exists.</p>`}<p><a href="/api/regulatory-signal/evidence/${signal.iso2}?format=pdf">Download regulatory ecosystem PDF</a> · <a href="/api/regulatory-signal/evidence/${signal.iso2}?format=csv">CSV</a> · <a href="/api/regulatory-signal/evidence/${signal.iso2}?format=json">JSON</a></p>`
+    : "";
   const peersHtml =
     regionalPeers.length > 0
       ? `<h2>Regional peer scores</h2><ul>${regionalPeers
@@ -989,7 +990,7 @@ function renderCountryFatfBody(view: CountryView): string {
     statusHeading,
   )}</h2><p>${escapeHtml(
     statusDetail,
-  )}</p>${sanctionsHtml}${attrHtml}${historyHtml}${enforcementHtml}${regulatoryHtml}${sectorHtml}${analysisHtml}${whatChangedHtml}${publicEvidenceHtml}${peersHtml}${faqHtml}${sourcesHtml}</div></article></div></div>`;
+  )}</p>${sanctionsHtml}${attrHtml}${historyHtml}${enforcementHtml}${regulatoryHtml}${regulatorySignalHtml}${sectorHtml}${analysisHtml}${whatChangedHtml}${publicEvidenceHtml}${peersHtml}${faqHtml}${sourcesHtml}</div></article></div></div>`;
 }
 
 /**
@@ -1182,6 +1183,10 @@ function renderMethodologyBody(): string {
 
 function renderMethodologyV2Body(): string {
   return `<div class="blog-page"><div class="blog-post-container"><article class="blog-article-modal"><h1 class="blog-post-title">Country Risk Score</h1><div class="blog-article-content"><p>The score compares the underlying financial-crime risk of countries on a 0-10 scale. A higher number means higher risk. It is a country comparison, not a decision about an individual person or business.</p><h2>What the score considers</h2><ul><li>Financial crime controls (50%): FATF assessments of effectiveness and international standards.</li><li>Government effectiveness and rule of law (30%): six World Bank measures covering institutions, regulation, stability, accountability and corruption control.</li><li>International sanctions (20%): the reach of active country-level UN, UK, EU and US sanctions.</li></ul><h2>When information is missing</h2><p>Missing information is never treated as zero risk. If one of the three parts is unavailable, the remaining parts are rebalanced and the country cannot be labelled Low risk. Fewer than two parts means no headline score is published.</p><h2>How sanctions information is checked</h2><p>A sanctions score of zero is possible only after the complete UN, UK, EU and US country-level catalogues have been checked. People or organisations may still appear on sanctions lists. Unexpected source changes or unclear evidence stop scoring until the information is complete.</p><h2>When the score has a minimum</h2><p>FATF grey list 6.0; FATF call for action 9.0; sector-wide sanctions 6.0; comprehensive sanctions 8.0. Targeted sanctions remain visible but do not set a minimum.</p><h2>Separate context</h2><p>Transparency International CPI and RegActions enforcement activity are displayed but do not change the score.</p></div></article></div></div>`;
+}
+
+function renderRegulatoryTransparencyBody(): string {
+  return `<main class="content-page"><h1>Regulatory ecosystem and enforcement visibility</h1><p>RegActions maps official authorities, mandate families, publication access states and RegActions feed coverage across 213 jurisdictions. This evidence layer is separate from Country Risk v3 and does not judge regulatory strength.</p><p><strong>Transparency Index:</strong> not assessed while source qualification and shadow calibration continue.</p><h2>Evidence states</h2><p>Reachable, challenge-protected, access-blocked, timeout, no-public-website and unobservable states remain visible. Low-frequency publication and access constraints are not treated as scraper failures.</p><p><a href="/api/regulatory-signal/list">Browse the read-only regulatory signal API</a> · <a href="/countries">Browse country profiles</a></p><h2>Official directory sources</h2><ul><li><a href="https://www.bis.org/regauth.htm" rel="noopener">BIS regulatory authorities</a></li><li><a href="https://www.iosco.org/v2/about/?subsection=membership&amp;memid=1" rel="noopener">IOSCO members</a></li><li><a href="https://www.iais.org/about-the-iais/iais-members/" rel="noopener">IAIS members</a></li><li><a href="https://www.iopsweb.org/en/membership/iops-members-and-observers.html" rel="noopener">IOPS members and observers</a></li><li><a href="https://egmontgroup.org/members-by-region/" rel="noopener">Egmont Group FIUs</a></li></ul></main>`;
 }
 
 /**
@@ -2385,6 +2390,23 @@ async function buildPageMetas(): Promise<PageMeta[]> {
       publisher: { "@type": "Organization", name: SITE_NAME },
     },
   });
+  pages.push({
+    path: "/countries/regulatory-transparency",
+    title: "Regulatory Ecosystem and Transparency Evidence | RegActions",
+    description: "Evidence-first map of financial regulators, official publication access and RegActions enforcement coverage across 213 jurisdictions. The transparency index is not yet assessed.",
+    keywords: "financial regulators by country, regulatory ecosystem, enforcement publication transparency, regulator coverage",
+    ogType: "article",
+    bodyContent: renderRegulatoryTransparencyBody(),
+    breadcrumbLabel: "Regulatory transparency",
+    jsonLd: {
+      "@context": "https://schema.org",
+      "@type": "Article",
+      headline: "Regulatory ecosystem and enforcement visibility",
+      description: "Evidence-first regulatory ecosystem map across 213 jurisdictions.",
+      url: `${BASE_URL}/countries/regulatory-transparency`,
+      author: { "@type": "Organization", name: SITE_NAME, url: BASE_URL },
+    },
+  });
   // Every country with a risk signal (governance / FATF / sanctions / enforcement)
   // gets a page — the near-complete world, not just the FATF-listed few.
   const countryPageIso2 = pageCountries().map((c) => c.iso2);
@@ -2409,11 +2431,7 @@ async function buildPageMetas(): Promise<PageMeta[]> {
       ? `Is ${country.name} on the FATF grey list? ${country.name} is on the FATF ${listLabel.toLowerCase()} as of the ${FATF_LAST_PLENARY} plenary. AML/CFT country risk profile with sanctions, enforcement activity and cited sources.`
       : sanctionsClassificationPublished
         ? `Is ${country.name} sanctioned? ${country.name} is subject to ${sanctionsLabel} sanctions programmes. Country risk profile: sanctions posture, FATF status, enforcement activity and cited sources.`
-        : `${country.name} financial regulators, enforcement activity and AML/CFT risk.${
-            enforcement
-              ? ` RegActions tracks ${formatCount(enforcement.trackedActions)} actions from ${enforcement.regulatorCount} regulators.`
-              : ""
-          } Country risk profile with cited sources.`;
+        : `${country.name} financial regulators, enforcement activity and AML/CFT risk. RegActions shows live-feed availability and a cited regulatory ecosystem map; current action totals come from the evidence API. Country risk profile with cited sources.`;
     const keywords = status
       ? `${country.name} FATF, ${country.name} grey list, ${country.name} AML risk, is ${country.name} high risk, ${country.name} country risk`
       : sanctionsClassificationPublished
@@ -2423,7 +2441,7 @@ async function buildPageMetas(): Promise<PageMeta[]> {
       status ? `FATF ${listLabel} status` : "FATF listing status"
     }, ${
       sanctionsClassificationPublished ? `${sanctionsLabel || "no direct"} sanctions programmes shown as a treatment overlay` : "sanctions evidence incomplete"
-    }${enforcement ? `, ${formatCount(enforcement.trackedActions)} tracked enforcement actions` : ""}. The headline score combines financial-crime effectiveness, legal and supervisory safeguards, and governance and institutional integrity; beneficial ownership is a breakout and FATF/sanctions are not score inputs.`;
+    }. The headline score combines financial-crime effectiveness, legal and supervisory safeguards, and governance and institutional integrity; beneficial ownership is a breakout and FATF/sanctions are not score inputs. Regulatory ecosystem and enforcement visibility are separate evidence signals.`;
     pages.push({
       path,
       title,

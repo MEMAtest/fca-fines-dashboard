@@ -20,7 +20,7 @@ describe("public competitor benchmark", () => {
     expect(Object.values(report.comparisonCounts).reduce((sum, value) => sum + value, 0)).toBe(30);
     const markdown = renderPublicBenchmarkMarkdown(report);
     expect(markdown).toContain("KYC numeric scores are not public and are not inferred");
-    expect(markdown).toContain("| Myanmar | 9.0 very-high");
-    expect(markdown).toContain("| Russia | 6.0 high");
+    expect(markdown).toContain("| Myanmar | 7.8 very-high");
+    expect(markdown).toContain("| Russia | 4.6 moderate");
   });
 });

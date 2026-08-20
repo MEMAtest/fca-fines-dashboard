@@ -95,6 +95,50 @@ export const DEVELOPER_ENDPOINTS: ApiEndpoint[] = [
   },
   {
     method: "GET",
+    path: "/api/regulatory-signal/list",
+    title: "Regulatory ecosystem list",
+    summary:
+      "Evidence-first ecosystem summaries for all 213 jurisdictions. The transparency index is null in this research-only release; authority publication states and RegActions coverage remain separate from Country Risk v3.",
+    example: "curl https://regactions.com/api/regulatory-signal/list",
+    fields: [
+      { name: "count", type: "number", description: "Number of jurisdictions returned (213 unless filtered by ?region=)." },
+      { name: "rows[].country", type: "object", description: "Jurisdiction identity and region." },
+      { name: "rows[].ecosystem", type: "object", description: "Mapped authority count, mandate-family counts and research depth." },
+      { name: "rows[].evidenceDisposition", type: "object", description: "Explicit local, parent-context, structural or unobservable evidence state." },
+      { name: "rows[].regActionsCoverage", type: "object", description: "Live/pipeline coverage and neutral observed activity fields." },
+      { name: "rows[].transparencyIndex", type: "null", description: "Intentionally null pending source qualification and shadow calibration." },
+    ],
+  },
+  {
+    method: "GET",
+    path: "/api/regulatory-signal/{iso2}",
+    title: "Regulatory ecosystem detail",
+    summary:
+      "Official authority mandates, source-access states, publication candidates and RegActions coverage for one jurisdiction. Reachability is evidence state, not a regulator-quality judgement.",
+    example: "curl https://regactions.com/api/regulatory-signal/VE",
+    fields: [
+      { name: "country", type: "object", description: "Jurisdiction identity, region and parent context." },
+      { name: "ecosystem.authorities[]", type: "object[]", description: "Authority name, official site, mandate roles, access state and publication candidate." },
+      { name: "regActionsCoverage", type: "object", description: "Live/pipeline feed state, observed records and latest observed action." },
+      { name: "activitySignal", type: "object", description: "Neutral observed/no-recent/not-assessed label; never a country-risk input." },
+      { name: "transparencyIndex", type: "null", description: "No index is published in Phase 1." },
+    ],
+  },
+  {
+    method: "GET",
+    path: "/api/regulatory-signal/evidence/{iso2}",
+    title: "Regulatory ecosystem evidence export",
+    summary:
+      "Download the same source-backed ecosystem evidence as JSON, CSV or PDF using ?format=json|csv|pdf. The export preserves explicit unavailable and challenge-protected states.",
+    example: "curl -OJ 'https://regactions.com/api/regulatory-signal/evidence/VE?format=pdf'",
+    fields: [
+      { name: "format=json", type: "application/json", description: "Full evidence object with authorities, sources, limitations and null transparency index." },
+      { name: "format=csv", type: "text/csv", description: "One row per mapped authority with role and access-state provenance." },
+      { name: "format=pdf", type: "application/pdf", description: "Human-readable evidence pack for board or audit working papers." },
+    ],
+  },
+  {
+    method: "GET",
     path: "/api/unified/search",
     title: "Enforcement search",
     summary:
