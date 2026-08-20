@@ -77,7 +77,9 @@ export interface RegulatorySignalEvidence {
     neutral: true;
     note: string;
   };
-  activitySummary: RegulatorySignalCountry["activitySummary"];
+  activitySummary: Omit<RegulatorySignalCountry["activitySummary"], "scanContract"> & {
+    scanContract: RegulatorySignalCountry["activitySummary"]["scanContract"] | null;
+  };
   secondaryReporting: null | {
     status: "optional-context-not-populated";
     sources: string[];
@@ -179,7 +181,9 @@ export function buildRegulatorySignalEvidence(iso2: string): RegulatorySignalEvi
         ? "Observed publication activity describes what was collected; it is not a judgement about regulatory strength or country risk."
         : "No recent RegActions observation is not evidence that no enforcement exists. Publication cadence, access and coverage may explain the absence.",
     },
-    activitySummary: country.activitySummary,
+    activitySummary: country.authorities.length > 0
+      ? country.activitySummary
+      : { ...country.activitySummary, scanContract: null },
     secondaryReporting: null,
     sources: REGULATORY_SIGNAL_SOURCE_DIRECTORY_URLS,
     limitations: [

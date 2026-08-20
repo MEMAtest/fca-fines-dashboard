@@ -43,6 +43,7 @@ describe("regulatory signal evidence manifest", () => {
     expect(kp?.evidenceDisposition.state).toBe("external-evidence-only");
     expect(kp?.evidenceDisposition.externalEvidenceUrl).toContain("fatf-gafi.org");
     expect(kp?.regActionsCoverage.state).toBe("external-evidence-only");
+    expect(kp?.activitySummary.scanContract).toBeNull();
     expect(buildRegulatorySignalEvidence("PW")?.ecosystem.authorityCount).toBeGreaterThan(0);
     expect(getRegulatorySignalCountry("ZZ")).toBeNull();
   });
@@ -110,7 +111,7 @@ describe("regulatory signal evidence manifest", () => {
     const evidence = buildRegulatorySignalEvidence("GB")!;
     expect(evidence.transparencyIndex).toBeNull();
     expect(evidence.secondaryReporting).toBeNull();
-    expect(evidence.activitySummary.scanContract.startMonth).toBe("2024-01");
+    expect(evidence.activitySummary.scanContract?.startMonth).toBe("2024-01");
   });
 
   it("keeps external official context out of authority evidence promotion", () => {

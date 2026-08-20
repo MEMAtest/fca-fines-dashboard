@@ -62,7 +62,7 @@ function EvidencePdf({ evidence }: { evidence: RegulatorySignalEvidence }) {
         <Text style={styles.heading}>RegActions coverage</Text>
         <Text>{evidence.regActionsCoverage.liveRegulators} live regulator feeds; {evidence.regActionsCoverage.observedRecords.toLocaleString("en-GB")} records in the research snapshot.</Text>
         {evidence.evidenceDisposition.externalEvidenceUrl && <Text style={styles.source}>External evidence: {evidence.evidenceDisposition.externalEvidenceUrl}</Text>}
-        {evidence.ecosystem.authorityCount > 0
+        {evidence.ecosystem.authorityCount > 0 && evidence.activitySummary.scanContract
           ? <Text style={styles.source}>Provisional first-page scan summary: recent {evidence.activitySummary.recentAuthorities}; periodic {evidence.activitySummary.periodicAuthorities}; low-frequency {evidence.activitySummary.lowFrequencyAuthorities}; unknown {evidence.activitySummary.unknownAuthorities}. Automated scan contract {evidence.activitySummary.scanContract.startMonth} to {evidence.activitySummary.scanContract.endMonth}, as of {evidence.activitySummary.scanContract.asOf}; month precision; first-page-only and unvalidated.</Text>
           : <Text style={styles.source}>No local authority activity scan applies to this disposition.</Text>}
         <Text style={styles.heading}>Limitations</Text>
