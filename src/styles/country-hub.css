@@ -2802,6 +2802,8 @@ button.cx-kpi:hover {
 .cx-ov__mid > *,
 .cx-ov__bot > *,
 .cx-ov__kpis > *,
+.cx-ov__bands > *,
+.cx-ov__highlights > *,
 .cx-attn > * {
   min-width: 0;
 }
@@ -2829,6 +2831,342 @@ button.cx-kpi:hover {
   .cx-attn {
     grid-template-columns: minmax(0, 1fr);
   }
+}
+
+/* ═══ Stage 4: index sidebar, numbered sections, band cards, highlights ══════ */
+
+/* Page-level 246px sticky nav + main content. A fixed track width on the grid
+   is fine — the danger this file guards against is grid ITEMS defaulting to
+   `min-width: auto`, not a fixed column track, so both children get an
+   explicit `min-width: 0`. Below 1024px the sidebar drops out of the grid
+   and renders as a plain, wrapping horizontal bar above the content instead
+   of a column, so it can never contribute to page width on a phone. */
+.cx-idx-shell {
+  display: grid;
+  grid-template-columns: 246px minmax(0, 1fr);
+  gap: 1.25rem;
+  align-items: start;
+}
+.cx-idx-shell > * {
+  min-width: 0;
+}
+.cx-idx-nav__inner {
+  position: sticky;
+  top: 74px;
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+  padding: 0.9rem 0.6rem;
+  border: 1px solid var(--ra-border);
+  border-radius: var(--ra-radius-lg);
+  background: var(--ra-rail);
+}
+.cx-idx-nav__label {
+  font-size: 0.66rem;
+  font-weight: 700;
+  letter-spacing: 0.11em;
+  text-transform: uppercase;
+  color: var(--ra-text-tertiary);
+  padding: 0 0.5rem 0.5rem;
+}
+.cx-idx-nav__list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+}
+.cx-idx-nav__divider {
+  height: 1px;
+  background: var(--ra-border);
+  margin: 0.7rem 0.3rem;
+}
+.cx-idx-nav__item {
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+  padding: 0.5rem 0.6rem;
+  border-radius: 8px;
+  border-left: 3px solid transparent;
+  font-size: 0.85rem;
+  font-weight: 500;
+  color: var(--ra-text-secondary);
+  text-decoration: none;
+  background: none;
+}
+a.cx-idx-nav__item:hover {
+  background: #e9edee;
+  color: var(--ra-ink);
+}
+.cx-idx-nav__item--on {
+  color: var(--ra-accent-text);
+  background: var(--ra-accent-soft);
+  border-left-color: var(--ra-accent);
+  font-weight: 700;
+}
+@media (max-width: 1024px) {
+  .cx-idx-shell {
+    display: block;
+  }
+  .cx-idx-nav__inner {
+    position: static;
+    flex-direction: row;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+    margin-bottom: 1rem;
+  }
+  .cx-idx-nav__label {
+    width: 100%;
+    padding: 0 0.2rem 0.2rem;
+  }
+  .cx-idx-nav__list {
+    flex-direction: row;
+    flex-wrap: wrap;
+  }
+  .cx-idx-nav__divider {
+    display: none;
+  }
+}
+
+/* Numbered section header ("01 The global picture") */
+.cx-secnum-row {
+  display: flex;
+  align-items: center;
+  gap: 0.9rem;
+  margin: 1.5rem 0 1rem;
+}
+.cx-ov > .cx-secnum-row:first-child {
+  margin-top: 0;
+}
+.cx-secnum {
+  flex-shrink: 0;
+  font-family: var(--ra-font-mono);
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: var(--ra-accent-text);
+  background: var(--ra-accent-soft);
+  border-radius: 6px;
+  padding: 0.25rem 0.5rem;
+}
+.cx-secnum-title {
+  min-width: 0;
+  font-family: var(--ra-font-serif);
+  font-size: 1.1rem;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  margin: 0;
+  color: var(--ra-ink);
+}
+.cx-secnum-rule {
+  flex: 1 1 0.75rem;
+  min-width: 0.75rem;
+  height: 1px;
+  background: var(--ra-border);
+}
+@media (max-width: 640px) {
+  .cx-secnum-rule {
+    display: none;
+  }
+}
+
+/* 5 band KPI cards */
+.cx-ov__bands {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 0.8rem;
+  margin-bottom: 1rem;
+}
+.cx-ovband {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  text-align: left;
+  border: 1px solid var(--ra-border);
+  border-radius: var(--ra-radius-lg);
+  background: var(--ra-surface);
+  padding: 0.9rem 1rem;
+  font: inherit;
+  box-shadow: var(--ra-shadow-card);
+}
+button.cx-ovband--btn {
+  cursor: pointer;
+  transition: border-color 0.12s ease;
+}
+button.cx-ovband--btn:hover {
+  border-color: var(--ra-accent);
+}
+.cx-ovband__head {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+.cx-ovband__icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+.cx-ovband__label {
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--ra-text-secondary);
+  line-height: 1.25;
+}
+.cx-ovband__value {
+  font-family: var(--ra-font-mono);
+  font-size: 1.7rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  color: var(--ra-ink);
+}
+.cx-ovband__note {
+  font-size: 0.74rem;
+  line-height: 1.45;
+  color: var(--ra-text-tertiary);
+}
+@media (max-width: 1024px) {
+  .cx-ov__bands {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+@media (max-width: 640px) {
+  .cx-ov__bands {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+/* "Changes this cycle" card */
+.cx-ov__changes {
+  margin-bottom: 1rem;
+}
+.cx-ovchg__row {
+  display: flex;
+  gap: 2rem;
+  margin-top: 0.6rem;
+  flex-wrap: wrap;
+}
+.cx-ovchg__stat {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+}
+.cx-ovchg__n {
+  font-family: var(--ra-font-mono);
+  font-size: 1.5rem;
+  font-weight: 700;
+}
+.cx-ovchg__stat--add .cx-ovchg__n { color: var(--ra-accent-text); }
+.cx-ovchg__stat--rem .cx-ovchg__n { color: #b91c1c; }
+.cx-ovchg__l {
+  font-size: 0.76rem;
+  color: var(--ra-text-tertiary);
+}
+
+/* "Recent highlights" table + band-definitions/scoring-notes side column */
+.cx-ov__highlights {
+  display: grid;
+  grid-template-columns: minmax(0, 1.9fr) minmax(0, 1fr);
+  gap: 1rem;
+  align-items: start;
+  margin-bottom: 1rem;
+}
+.cx-recent-table__change {
+  color: var(--ra-text-secondary);
+  max-width: 22rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.cx-recent-table__date {
+  color: var(--ra-text-tertiary);
+  white-space: nowrap;
+}
+.cx-ov__highlights-side {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+@media (max-width: 1024px) {
+  .cx-ov__highlights {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+.cx-banddefs {
+  display: flex;
+  flex-direction: column;
+  margin-top: 0.5rem;
+}
+.cx-banddefs__row {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 0.3rem 0.75rem;
+  padding: 0.55rem 0;
+  border-bottom: 1px solid #f3f6f8;
+}
+.cx-banddefs__row:last-child { border-bottom: none; }
+.cx-banddefs__label {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.83rem;
+  font-weight: 600;
+  color: var(--ra-ink);
+}
+.cx-banddefs__range {
+  font-family: var(--ra-font-mono);
+  font-size: 0.78rem;
+  color: var(--ra-text-secondary);
+  text-align: right;
+}
+.cx-banddefs__note {
+  grid-column: 1 / -1;
+  font-size: 0.78rem;
+  line-height: 1.5;
+  color: var(--ra-text-tertiary);
+  padding-left: 1.35rem;
+}
+
+.cx-scoringnotes {
+  list-style: none;
+  margin: 0.5rem 0 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.9rem;
+}
+.cx-scoringnotes li {
+  display: grid;
+  grid-template-columns: 26px 1fr;
+  gap: 0.65rem;
+  align-items: start;
+}
+.cx-scoringnotes__ico {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  height: 26px;
+  border-radius: 7px;
+  background: var(--ra-accent-soft);
+  color: var(--ra-accent-text);
+  flex-shrink: 0;
+}
+.cx-scoringnotes__title {
+  display: block;
+  font-size: 0.83rem;
+  font-weight: 700;
+  color: var(--ra-ink);
+}
+.cx-scoringnotes__body {
+  display: block;
+  font-size: 0.78rem;
+  line-height: 1.5;
+  color: var(--ra-text-tertiary);
+  margin-top: 0.15rem;
 }
 
 /* ═══ Review-fix styles ══════════════════════════════════════════════════════ */
@@ -3555,6 +3893,16 @@ button.cx-kpi:hover {
 .cx-regf__fiu-k { font-weight: 700; color: #0b1f2a; }
 
 /* Right rail */
+.cx-onreport__list { list-style: none; margin: 0.4rem 0 0; padding: 0; display: flex; flex-direction: column; gap: 0.15rem; }
+.cx-onreport__list a {
+  display: block;
+  padding: 0.4rem 0.55rem;
+  border-radius: 7px;
+  font-size: 0.79rem;
+  color: var(--ra-text-secondary);
+  text-decoration: none;
+}
+.cx-onreport__list a:hover { background: var(--ra-rail); color: var(--ra-accent-text); }
 .cx-meth__intro { font-size: 0.74rem; color: #475569; margin: 0 0 0.5rem; line-height: 1.4; }
 .cx-meth__base { font-size: 0.8rem; color: #334155; margin: 0.5rem 0 0; }
 .cx-meth__plain-note {

@@ -761,6 +761,11 @@ export function CountryHub() {
           )}
 
           {/* ── Row 2: treatment | trend | map (attribution lives in the rail) ── */}
+          <div className="cx-secnum-row" id="cx-sec-decision">
+            <span className="cx-secnum">01</span>
+            <h2 className="cx-secnum-title">The decision this drives</h2>
+            <span className="cx-secnum-rule" aria-hidden="true" />
+          </div>
           <div className="cx-ws__row2">
             <div className="cx-card cx-treatw">
               <span className="cx-card__eyebrow cx-treatw__eyebrow">
@@ -854,6 +859,11 @@ export function CountryHub() {
           </div>
 
           {/* ── Row 3: score drivers + overlays | mitigating factors | business impact ── */}
+          <div className="cx-secnum-row" id="cx-sec-drivers">
+            <span className="cx-secnum">02</span>
+            <h2 className="cx-secnum-title">Score drivers and mitigants</h2>
+            <span className="cx-secnum-rule" aria-hidden="true" />
+          </div>
           <div className="cx-ws__row3">
             <div className="cx-card cx-drivers">
               <span className="cx-card__eyebrow">
@@ -933,6 +943,11 @@ export function CountryHub() {
           </div>
 
           {/* ── Row 4: recommended controls | EDD triggers ── */}
+          <div className="cx-secnum-row" id="cx-sec-controls">
+            <span className="cx-secnum">03</span>
+            <h2 className="cx-secnum-title">Recommended controls</h2>
+            <span className="cx-secnum-rule" aria-hidden="true" />
+          </div>
           <div className="cx-ws__row4">
             <div id="controls" className="cx-card cx-controls">
               <span className="cx-card__eyebrow">
@@ -972,6 +987,11 @@ export function CountryHub() {
           </div>
 
           {/* ── Row 5: sector exposure | regulators & legal framework ── */}
+          <div className="cx-secnum-row" id="cx-sec-sector">
+            <span className="cx-secnum">04</span>
+            <h2 className="cx-secnum-title">Sector and regulatory exposure</h2>
+            <span className="cx-secnum-rule" aria-hidden="true" />
+          </div>
           <div className="cx-ws__row5">
           {/* Sector exposure (derived from sourced modules, nothing asserted) */}
           {sectCard}
@@ -1075,6 +1095,15 @@ export function CountryHub() {
 
         {/* ── Right rail: methodology | peers | sources ── */}
         <aside className="cx-ws__rail">
+          <nav className="cx-card cx-onreport" aria-label="On this report">
+            <span className="cx-card__eyebrow">On this report</span>
+            <ul className="cx-onreport__list">
+              <li><a href="#cx-sec-decision">The decision this drives</a></li>
+              <li><a href="#cx-sec-drivers">Score drivers and mitigants</a></li>
+              <li><a href="#cx-sec-controls">Recommended controls</a></li>
+              <li><a href="#cx-sec-sector">Sector and regulatory exposure</a></li>
+            </ul>
+          </nav>
           <div className="cx-card cx-meth">
             <span className="cx-card__eyebrow">
               <Info size={12} /> How this score was calculated
