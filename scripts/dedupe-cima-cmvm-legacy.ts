@@ -46,6 +46,11 @@ if (!databaseUrl) {
 
 const sql = postgres(databaseUrl, {
   ssl: databaseUrl.includes("sslmode=") ? { rejectUnauthorized: false } : undefined,
+  // postgres.js rejects a hand-rolled BEGIN on a pooled connection
+  // ("UNSAFE_TRANSACTION: Only use sql.begin, sql.reserved or max: 1") because
+  // pooling could route the COMMIT to a different backend. A one-off
+  // maintenance script has no concurrency to gain from a pool.
+  max: 1,
 });
 
 const REGULATORS = ["CIMA", "CMVM"];
