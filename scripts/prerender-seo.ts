@@ -103,6 +103,7 @@ import {
   buildCountryRiskPublicExplanation,
   COUNTRY_RISK_PILLAR_LABELS,
 } from "../src/data/countryRiskPresentation.js";
+import { buildCountryRiskV3PublicExplanation, COUNTRY_RISK_V3_PILLAR_LABELS } from "../src/data/countryRiskV3Presentation.js";
 import {
   GOVERNANCE_SOURCE,
   GOVERNANCE_VINTAGE,
@@ -724,21 +725,20 @@ function renderCountryFaqBlock(faqs: CountryFaq[]): string {
  * prerendered HTML and the SPA can't drift apart in copy/logic.
  */
 function renderCountryFatfBody(view: CountryView): string {
-  const { country, statusHeading, statusDetail, history, enforcement, sanctions, sanctionsTier, riskV2, publicSurface, breakdown, globalAverage, cpi, decision, enforcementAssessed, hasComprehensiveSanctions, hasTargetedSanctions, sanctionsCoverageComplete, regulatory, regionalPeers, attribution } = view;
-  const scoreAvailable = riskV2.score !== null && riskV2.band !== null;
-  const publicExplanation = buildCountryRiskPublicExplanation(riskV2);
+  const { country, statusHeading, statusDetail, history, enforcement, sanctions, sanctionsTier, riskV3, publicSurface, breakdown, globalAverage, cpi, decision, enforcementAssessed, hasComprehensiveSanctions, hasTargetedSanctions, sanctionsCoverageComplete, regulatory, regionalPeers, attribution } = view;
+  const scoreAvailable = riskV3.score !== null && riskV3.band !== null;
+  const publicExplanation = buildCountryRiskV3PublicExplanation(riskV3);
   const title = `${country.name} — Country Risk Report`;
-  const pillarLis = Object.entries(riskV2.pillars)
-    .map(([name, pillar]) => `<li>${escapeHtml(`${COUNTRY_RISK_PILLAR_LABELS[name as keyof typeof COUNTRY_RISK_PILLAR_LABELS]}: ${pillar.score === null ? "information unavailable" : `${pillar.score.toFixed(1)}/10`} — ${Math.round(pillar.appliedWeight * 100)}% of this score`)}</li>`)
+  const pillarLis = Object.entries(riskV3.pillars)
+    .map(([name, pillar]) => `<li>${escapeHtml(`${COUNTRY_RISK_V3_PILLAR_LABELS[name as keyof typeof COUNTRY_RISK_V3_PILLAR_LABELS]}: ${pillar.score === null ? "information unavailable" : `${pillar.score.toFixed(1)}/10`} — ${Math.round(pillar.appliedWeight * 100)}% of this score`)}</li>`)
     .join("");
-  const floorLis = publicExplanation.floorMessages.map((message) => `<li>${escapeHtml(message)}</li>`).join("");
   const missingLis = publicExplanation.missingInformation.map((message) => `<li>${escapeHtml(message)}</li>`).join("");
   const scoreHtml = scoreAvailable
     ? `<h2>Country Risk Score: ${escapeHtml(
-        `${riskV2.score!.toFixed(1)}/10 (${bandLabel(riskV2.band!)})`,
+        `${riskV3.score!.toFixed(1)}/10 (${bandLabel(riskV3.band!)})`,
       )}</h2><p>${escapeHtml(
-        `Higher score means higher country risk (global average ${globalAverage.toFixed(1)}). ${publicExplanation.statusLabel}. ${publicExplanation.confidenceLabel}. Enforcement activity and CPI are shown for context but do not change the score.`,
-      )}</p><p>${escapeHtml(publicExplanation.statusExplanation)}</p><h3>How this score was calculated</h3><ul>${pillarLis}${missingLis}${floorLis}</ul>${publicExplanation.sanctionsZeroExplanation ? `<p>${escapeHtml(publicExplanation.sanctionsZeroExplanation)}</p>` : ""}<details><summary>Show the exact calculation</summary><p>${escapeHtml(riskV2.arithmetic)}</p></details>`
+        `Higher score means higher country risk (global average ${globalAverage.toFixed(1)}). ${publicExplanation.statusLabel}. ${publicExplanation.confidenceLabel}. Enforcement activity and CPI are context only; FATF listing and sanctions are regulatory overlays.`,
+      )}</p><p>${escapeHtml(publicExplanation.statusExplanation)}</p><h3>How this score was calculated</h3><ul>${pillarLis}${missingLis}</ul><p>Sanctions treatment: ${escapeHtml(publicExplanation.overlayLabels.sanctions)}. FATF treatment: ${escapeHtml(publicExplanation.overlayLabels.fatf)}.</p><details><summary>Show the exact calculation</summary><p>${escapeHtml(riskV3.arithmetic)}</p></details>`
     : `<h2>Country Risk Score: not published</h2><p>${escapeHtml(
         publicExplanation.statusExplanation,
       )}</p><h3>Information available</h3><ul>${pillarLis}${missingLis}<li>Headline score: not published</li></ul>`;
@@ -748,7 +748,7 @@ function renderCountryFatfBody(view: CountryView): string {
     sanctionsCoverageComplete
       ? `Comprehensive country sanctions: ${hasComprehensiveSanctions ? "in place" : "none identified"}. Targeted sanctions exposure: ${hasComprehensiveSanctions || hasTargetedSanctions ? "programmes in place, screen applicable lists" : "possible, screen applicable persons, entities and sectors"}`
       : "Geographic sanctions evidence: incomplete; absence is not inferred and applicable lists must still be screened.",
-  )}</li><li>${escapeHtml(riskV2.pillars.governance.score === null ? "Government effectiveness and rule of law: information unavailable" : `Government effectiveness and rule of law: ${riskV2.pillars.governance.score.toFixed(1)}/10`)}</li><li>${escapeHtml(
+  )}</li><li>${escapeHtml(riskV3.pillars.governance.score === null ? "Governance and institutional integrity: information unavailable" : `Governance and institutional integrity: ${riskV3.pillars.governance.score.toFixed(1)}/10`)}</li><li>${escapeHtml(
     cpi
       ? `Corruption (CPI ${CPI_YEAR}): ${cpi.score}/100, rank #${cpi.rank} of ${CPI_TOTAL}`
       : "Corruption (CPI): no score",
@@ -1173,7 +1173,7 @@ function renderGlobalIndexBody(): string {
 
 /** Crawlable methodology page — mirrors CountryMethodology.tsx. */
 function renderMethodologyBody(): string {
-  return renderMethodologyV2Body();
+  return `<div class="blog-page"><div class="blog-post-container"><article class="blog-article-modal"><h1 class="blog-post-title">Country Risk Score</h1><div class="blog-article-content"><p>The current RegActions v3 score estimates underlying jurisdiction risk on a 0-10 scale. Higher means greater risk. Sanctions and FATF listings are legal and regulatory overlays, not extra points in the underlying score.</p><h2>What the score considers</h2><ul><li>Financial-crime effectiveness (45%): FATF evidence across the 11 Immediate Outcomes.</li><li>Legal and supervisory safeguards (20%): FATF Recommendations 1-40, excluding explicit not-applicable ratings.</li><li>Governance and institutional integrity (35%): six inverted World Bank governance dimensions.</li></ul><h2>Beneficial ownership</h2><p>Beneficial ownership is a visible breakout using FATF IO5 (60%), Recommendation 24 on companies (20%), and Recommendation 25 on trusts and arrangements (20%). A public register alone does not prove current, accurate and promptly available ownership information.</p><h2>Regulatory overlays</h2><p>UN, UK, EU and US sanctions trigger screening and transaction review. FATF increased monitoring or call-for-action status is shown with its required treatment. Neither overlay changes the underlying numeric score.</p><h2>Missing information</h2><p>If one pillar is unavailable, available weights are rebalanced and the result is provisional. Fewer than two available pillars means no headline score. Missing information is never treated as zero risk.</p><h2>Historical v2</h2><p>The previous sanctions-weighted model remains available at <a href="/countries/methodology/v2">the v2 methodology page</a> and through explicit API requests using <code>?methodology=v2</code>.</p></div></article></div></div>`;
 }
 
 function renderMethodologyV2Body(): string {
@@ -2343,7 +2343,7 @@ async function buildPageMetas(): Promise<PageMeta[]> {
     path: "/countries/methodology",
     title: "Country Risk Score Methodology | RegActions",
     description:
-      "RegActions Country Risk Score v2 methodology, including pillar weights, regulatory floors, missing-data rules, provenance and confidence.",
+      "RegActions Country Risk Score v3 methodology: FATF effectiveness, legal safeguards, World Bank governance, beneficial ownership and regulatory overlays.",
     keywords:
       "country risk score methodology, AML country risk methodology, FATF sanctions WGI composite, how country risk is calculated",
     ogType: "article",
@@ -2354,7 +2354,7 @@ async function buildPageMetas(): Promise<PageMeta[]> {
       "@type": "Article",
       headline: "How the RegActions Country Risk Score is calculated",
       description:
-        "Production methodology v2 for the deterministic RegActions Country Risk Score.",
+        "Current methodology v3 for the deterministic RegActions Country Risk Score.",
       url: `${BASE_URL}/countries/methodology`,
       author: { "@type": "Organization", name: SITE_NAME, url: "https://regactions.com" },
       publisher: { "@type": "Organization", name: SITE_NAME },

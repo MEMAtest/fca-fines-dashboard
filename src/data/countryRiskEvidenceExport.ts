@@ -61,7 +61,7 @@ const valueText = (value: unknown): string => {
 export function buildCountryRiskEvidenceBundle(
   iso2: string,
   asOf = new Date(),
-  methodology: "v2" | "v3" = "v2",
+  methodology: "v2" | "v3" = "v3",
 ): CountryRiskEvidenceBundle | null {
   const country = getCountryByIso2(iso2.toUpperCase());
   if (!country) return null;
@@ -120,7 +120,7 @@ export function countryRiskEvidenceRows(bundle: CountryRiskEvidenceBundle): Coun
       key: bundle.surface.fatfAction.action,
       value: bundle.surface.fatfAction.explanation,
       status: bundle.surface.fatfAction.listing ?? "not-listed",
-      scored: "true",
+      scored: bundle.v3 ? "false" : "true",
       effectiveAt: bundle.surface.fatfAction.lastReviewed,
       retrievedAt: bundle.exportedAt,
       sourceUrl: bundle.surface.fatfAction.sourceUrl,
@@ -136,7 +136,7 @@ export function countryRiskEvidenceRows(bundle: CountryRiskEvidenceBundle): Coun
       scored: "true",
       effectiveAt: bundle.v3.asOf,
       retrievedAt: bundle.exportedAt,
-      sourceUrl: "https://regactions.com/countries/methodology/v3",
+      sourceUrl: "https://regactions.com/countries/methodology",
     };
     rows[1] = {
       section: "score",
@@ -146,7 +146,7 @@ export function countryRiskEvidenceRows(bundle: CountryRiskEvidenceBundle): Coun
       scored: "true",
       effectiveAt: bundle.v3.asOf,
       retrievedAt: bundle.exportedAt,
-      sourceUrl: "https://regactions.com/countries/methodology/v3",
+      sourceUrl: "https://regactions.com/countries/methodology",
     };
     for (const [key, pillar] of Object.entries(bundle.v3.pillars)) {
       rows.push({
@@ -186,21 +186,23 @@ export function countryRiskEvidenceRows(bundle: CountryRiskEvidenceBundle): Coun
     }
   }
 
-  for (const [key, pillar] of Object.entries(bundle.result.pillars)) {
-    rows.push({
-      section: "pillar",
-      key,
-      value: valueText(pillar.score),
-      status: pillar.coverageStatus,
-      scored: "true",
-      effectiveAt: bundle.result.asOf,
-      retrievedAt: bundle.exportedAt,
-      sourceUrl: bundle.sources.find((source) => source.scored && (
-        (key === "aml" && source.id === "fatf-assessments") ||
-        (key === "governance" && source.id === "world-bank-wgi") ||
-        (key === "sanctions" && source.id === "sanctions-regimes")
-      ))?.sourceUrl ?? "",
-    });
+  if (!bundle.v3) {
+    for (const [key, pillar] of Object.entries(bundle.result.pillars)) {
+      rows.push({
+        section: "pillar",
+        key,
+        value: valueText(pillar.score),
+        status: pillar.coverageStatus,
+        scored: "true",
+        effectiveAt: bundle.result.asOf,
+        retrievedAt: bundle.exportedAt,
+        sourceUrl: bundle.sources.find((source) => source.scored && (
+          (key === "aml" && source.id === "fatf-assessments") ||
+          (key === "governance" && source.id === "world-bank-wgi") ||
+          (key === "sanctions" && source.id === "sanctions-regimes")
+        ))?.sourceUrl ?? "",
+      });
+    }
   }
 
   for (const signal of bundle.surface.contextualSignals) {
@@ -235,7 +237,7 @@ export function countryRiskEvidenceRows(bundle: CountryRiskEvidenceBundle): Coun
       key: `${program.imposer}:${program.program}`,
       value: `${program.tier}; ${program.measures.join(", ")}`,
       status: program.legalStatus,
-      scored: "true",
+      scored: bundle.v3 ? "false" : "true",
       effectiveAt: program.legalEffectiveFrom ?? program.reviewedAt,
       retrievedAt: program.reviewedAt,
       sourceUrl: program.legalInstrumentUrl,

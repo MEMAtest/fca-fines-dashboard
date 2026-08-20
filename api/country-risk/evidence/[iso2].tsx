@@ -15,6 +15,7 @@ import {
   countryRiskEvidenceRows,
   type CountryRiskEvidenceBundle,
 } from "../../../src/data/countryRiskEvidenceExport.js";
+import { resolveCountryRiskMethodology } from "../../../src/data/countryRiskMethodology.js";
 
 type EvidenceFormat = "json" | "csv" | "pdf";
 
@@ -103,7 +104,7 @@ function CountryRiskEvidencePdf({ bundle }: { bundle: CountryRiskEvidenceBundle 
           <Text>{bundle.assurance.disclaimer}</Text>
           <Text style={styles.source}>Sanctions external validation: {bundle.assurance.externalSanctionsValidation ?? "not recorded"}</Text>
         </View>
-        <Text style={styles.footerLeft} fixed>regactions.com/countries/methodology/v2</Text>
+        <Text style={styles.footerLeft} fixed>regactions.com/countries/methodology{bundle.v3 ? "" : "/v2"}</Text>
         <Text style={styles.footerRight} fixed>Public evidence pack</Text>
       </Page>
     </Document>
@@ -115,7 +116,13 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   if (req.method !== "GET") return res.status(405).json({ error: "Method not allowed" });
   const iso2 = String(req.query.iso2 ?? "").toUpperCase();
   const format = String(req.query.format ?? "json").toLowerCase() as EvidenceFormat;
-  const methodology = String(req.query.methodology ?? "v2") === "v3" ? "v3" : "v2";
+  const requested = req.query.methodology == null ? null : String(req.query.methodology);
+  let methodology: "v2" | "v3";
+  try {
+    methodology = resolveCountryRiskMethodology(requested);
+  } catch {
+    return res.status(400).json({ error: `Unsupported methodology: ${requested}` });
+  }
   if (!(["json", "csv", "pdf"] as string[]).includes(format)) {
     return res.status(400).json({ error: `Unsupported evidence format: ${format}` });
   }

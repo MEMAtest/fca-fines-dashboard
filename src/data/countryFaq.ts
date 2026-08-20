@@ -28,7 +28,7 @@ export interface CountryFaq {
  * its `CountryView`. Same country always yields the same list.
  */
 export function buildCountryFaqs(view: CountryView): CountryFaq[] {
-  const { country, statusHeading, fatf, riskV2, cpi, decision } = view;
+  const { country, statusHeading, fatf, riskV3, cpi, decision } = view;
   const name = country.name;
   const faqs: CountryFaq[] = [];
 
@@ -51,9 +51,9 @@ export function buildCountryFaqs(view: CountryView): CountryFaq[] {
   // 3. Country risk rating — score/band; honest wording when withheld.
   faqs.push({
     question: `What is ${name}'s country risk rating?`,
-    answer: riskV2.score !== null && riskV2.band !== null
-      ? `RegActions rates ${name} at ${riskV2.score.toFixed(1)}/10 (${bandLabel(riskV2.band)} risk), where a higher score means higher country risk. The score combines financial crime controls, government effectiveness and rule of law, and international sanctions.${riskV2.status === "provisional" ? " Some information is unavailable, so the available parts are rebalanced and the country will not be labelled Low risk while information is missing." : ""}${cpi ? ` Transparency International's ${CPI_YEAR} Corruption Perceptions Index scores ${name} ${cpi.score}/100 (rank #${cpi.rank} of ${CPI_TOTAL}).` : ""}`
-      : `RegActions does not publish a headline country risk score for ${name}. Fewer than two parts are available, so missing information is not converted into a 0.0 or a Low-risk label.${cpi ? ` Transparency International's ${CPI_YEAR} Corruption Perceptions Index scores ${name} ${cpi.score}/100 (rank #${cpi.rank} of ${CPI_TOTAL}).` : ""}`,
+    answer: riskV3.score !== null && riskV3.band !== null
+      ? `RegActions rates ${name} at ${riskV3.score.toFixed(1)}/10 (${bandLabel(riskV3.band)} risk), where a higher score means higher country risk. The v3 score combines financial-crime effectiveness, legal and supervisory safeguards, and governance and institutional integrity. FATF listing and sanctions are shown as overlays and do not add points.${riskV3.status === "provisional" ? " Some information is unavailable, so the available pillars are rebalanced and the result is provisional." : ""}${cpi ? ` Transparency International's ${CPI_YEAR} Corruption Perceptions Index scores ${name} ${cpi.score}/100 (rank #${cpi.rank} of ${CPI_TOTAL}) as context only.` : ""}`
+      : `RegActions does not publish a headline country risk score for ${name}. Fewer than two underlying v3 pillars are available, so missing information is not converted into a 0.0 or a Low-risk label.${cpi ? ` Transparency International's ${CPI_YEAR} Corruption Perceptions Index scores ${name} ${cpi.score}/100 (rank #${cpi.rank} of ${CPI_TOTAL}) as context only.` : ""}`,
   });
 
   // 4. Due diligence — from decision.treatment.
@@ -76,16 +76,17 @@ export function buildCountryFaqs(view: CountryView): CountryFaq[] {
 
 /** Sanctions answer — honours the fail-closed coverage caveat used across the country view. */
 function sanctionsAnswer(view: CountryView): string {
-  const { country, sanctionsCoverageComplete, sanctionsTier, hasComprehensiveSanctions } = view;
+  const { country, riskV3 } = view;
   const name = country.name;
-  if (!sanctionsCoverageComplete) {
+  const overlay = riskV3.overlays.sanctions;
+  if (!overlay.coverageComplete) {
     return `RegActions cannot confirm this yet. The official geographic-sanctions evidence for ${name} (OFAC, UK, EU and UN regimes) is incomplete, so absence of a programme is not inferred. Firms must still screen ${name} against the applicable UN, UK, EU and US sanctions lists.`;
   }
-  if (hasComprehensiveSanctions) {
+  if (overlay.highestTier === "comprehensive") {
     return `Yes. ${name} is subject to a comprehensive country-wide sanctions programme across one or more of the OFAC, UK, EU and UN regimes. Firms should treat ${name} as a prohibited or severely restricted jurisdiction and screen all counterparties against the applicable lists.`;
   }
-  if (sanctionsTier) {
-    return `Partly. ${name} has ${sanctionsTierLabel(sanctionsTier).toLowerCase()} sanctions exposure rather than a comprehensive country-wide programme. Firms should screen applicable persons, entities and sectors against the OFAC, UK, EU and UN lists.`;
+  if (overlay.highestTier) {
+    return `Partly. ${name} has ${sanctionsTierLabel(overlay.highestTier).toLowerCase()} sanctions exposure rather than a comprehensive country-wide programme. Sanctions are a legal overlay, not an extra country-risk score. Firms should screen applicable persons, entities and sectors against the OFAC, UK, EU and UN lists.`;
   }
   return `No country-level programme was identified. In the approved RegActions snapshot, no comprehensive or targeted country-wide sanctions programme was found for ${name}, but individual listed persons may still exist, so firms should continue to screen counterparties against the applicable lists.`;
 }

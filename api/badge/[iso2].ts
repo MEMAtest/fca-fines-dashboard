@@ -5,8 +5,9 @@
  *
  * Returns a small, self-contained SVG that third parties can embed with a
  * plain <img> tag. The badge reads its score from the SAME scoring path as
- * /api/country-risk/[iso2] (computeCountryRiskV2), so the number on the badge
- * can never drift from the number on the country report. Scores that the
+ * /api/country-risk/[iso2] (current v3 by default), so the number on the badge
+ * can never drift from the number on the country report. Add ?methodology=v2
+ * only for the historical compatibility badge. Scores that the
  * methodology withholds (insufficient-data) render an honest "Not rated"
  * variant rather than inventing a value.
  *
@@ -17,6 +18,8 @@
 import type { VercelRequest, VercelResponse } from "@vercel/node";
 import { getCountryByIso2 } from "../../src/data/countries.js";
 import { computeCountryRiskV2 } from "../../src/data/countryRiskV2.js";
+import { computeCountryRiskV3 } from "../../src/data/countryRiskV3.js";
+import { resolveCountryRiskMethodology } from "../../src/data/countryRiskMethodology.js";
 import { bandLabel, type RiskBand } from "../../src/data/countryRiskScore.js";
 
 // Local copy of the band palette. We deliberately do NOT import it from
@@ -114,6 +117,13 @@ export default function handler(req: VercelRequest, res: VercelResponse) {
   }
 
   const iso2 = parseBadgeIso2(String(req.query.iso2 ?? ""));
+  let methodology: "v2" | "v3";
+  try {
+    methodology = resolveCountryRiskMethodology(req.query.methodology == null ? null : String(req.query.methodology));
+  } catch {
+    res.setHeader("Content-Type", "application/json; charset=utf-8");
+    return res.status(400).json({ error: `Unsupported methodology: ${String(req.query.methodology)}` });
+  }
 
   res.setHeader("Content-Type", "image/svg+xml; charset=utf-8");
 
@@ -128,8 +138,11 @@ export default function handler(req: VercelRequest, res: VercelResponse) {
     return res.status(404).send(notFoundSvg(iso2));
   }
 
-  // Reuse the exact scoring path that powers /api/country-risk/[iso2].
-  const result = computeCountryRiskV2(iso2, { asOf: new Date() });
+  // Reuse the exact scoring path that powers /api/country-risk/[iso2]. The
+  // current badge is v3; ?methodology=v2 remains an explicit historical badge.
+  const result = methodology === "v3"
+    ? computeCountryRiskV3(iso2, { asOf: new Date() })
+    : computeCountryRiskV2(iso2, { asOf: new Date() });
 
   if (result.score === null || result.band === null) {
     // The methodology withholds a score for this jurisdiction. Say so plainly.

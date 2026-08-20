@@ -10,7 +10,7 @@ import {
   type RiskBand,
   type RiskDomains,
 } from "../data/countryRiskScore.js";
-import { computeCountryRiskV2 } from "../data/countryRiskV2.js";
+import { computeCountryRiskCurrent } from "../data/countryRiskMethodology.js";
 import { iso2ForFeature } from "../data/atlasResolve.js";
 
 export const BAND_COLOUR: Record<RiskBand, string> = {
@@ -92,7 +92,7 @@ export function buildFeatureMeta(features: any[]): Map<any, FeatureMeta> {
       continue;
     }
     const legacyDomains = computeCountryRiskScore(iso2);
-    const result = computeCountryRiskV2(iso2);
+    const result = computeCountryRiskCurrent(iso2);
     m.set(f, {
       iso2,
       band: result.band,

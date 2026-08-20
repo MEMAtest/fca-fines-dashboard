@@ -36,7 +36,7 @@ export function Developers() {
           <Link to="/countries" className="about-button about-button--primary">
             Browse country ratings
           </Link>
-          <Link to="/countries/methodology/v2" className="about-button">
+          <Link to="/countries/methodology" className="about-button">
             Read the methodology
           </Link>
         </div>
