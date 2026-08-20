@@ -35,47 +35,6 @@ interface DeterministicDecision {
 const uniqueMeasures = (measures: SanctionsMeasureType[]): SanctionsMeasureType[] =>
   [...new Set(measures)].sort();
 
-function measuresForTier(
-  tier: SanctionsTier,
-  supplied: SanctionsMeasureType[] | null,
-): SanctionsMeasureType[] {
-  const measures = [...(supplied ?? [])];
-  if (tier === "targeted" && !measures.includes("asset-freeze") && !measures.includes("travel-ban")) {
-    measures.push("asset-freeze");
-  }
-  if (tier === "sectoral" && measures.length === 0) measures.push("financial-restriction");
-  if (tier === "comprehensive") {
-    measures.push("import-restriction", "export-restriction", "financial-restriction");
-  }
-  return uniqueMeasures(measures);
-}
-
-function scopeForTier(tier: SanctionsTier): {
-  broadTradeProhibition: boolean;
-  broadFinancialProhibition: boolean;
-  materialNonDesignationRestriction: boolean;
-} {
-  if (tier === "comprehensive") {
-    return {
-      broadTradeProhibition: true,
-      broadFinancialProhibition: true,
-      materialNonDesignationRestriction: true,
-    };
-  }
-  if (tier === "sectoral") {
-    return {
-      broadTradeProhibition: false,
-      broadFinancialProhibition: false,
-      materialNonDesignationRestriction: true,
-    };
-  }
-  return {
-    broadTradeProhibition: false,
-    broadFinancialProhibition: false,
-    materialNonDesignationRestriction: false,
-  };
-}
-
 function completePreparedFacts(record: DeterministicReviewRecord): boolean {
   return record.legalStatus !== null
     && record.broadTradeProhibition !== null
@@ -121,29 +80,33 @@ export function decideSanctionsRecord(
   const instrument = instrumentFor(source);
   const preparedAt = new Date(source.preparationEvidence.retrievedAt).toISOString();
   const reviewedAt = new Date(decisionAt).toISOString();
-  const status: SanctionsLegalStatus = source.legalStatus ?? "active";
-  let measures = measuresForTier(candidate.proposedTier, source.measures);
-  let scope = scopeForTier(candidate.proposedTier);
+  // A situation-related regime can be excluded from country exposure before
+  // scope resolution. For direct-country candidates, never infer legal scope
+  // or tier from the candidate's proposed tier: missing legal facts must remain
+  // review-required and fail closed.
+  if (candidate.relationship === "direct-country-exposure" && !completePreparedFacts(source)) {
+    throw new Error(`${recordKey}: prepared legal scope is incomplete; candidate tier fallback is not permitted`);
+  }
+  const status: SanctionsLegalStatus = source.legalStatus as SanctionsLegalStatus;
+  let measures = source.measures ?? [];
+  let scope = {
+    broadTradeProhibition: source.broadTradeProhibition as boolean,
+    broadFinancialProhibition: source.broadFinancialProhibition as boolean,
+    materialNonDesignationRestriction: source.materialNonDesignationRestriction as boolean,
+  };
   let basis: DeterministicDecision["basis"] = "current-catalogue-and-published-tier-rule";
 
   if (candidate.relationship === "situation-related") {
     basis = "situation-related-exclusion";
-  } else if (completePreparedFacts(source)) {
+  } else {
     const preparedClassification = classifySanctionsFacts({
       legalStatus: status,
       relationship: candidate.relationship,
-      measures: source.measures ?? [],
-      broadTradeProhibition: source.broadTradeProhibition as boolean,
-      broadFinancialProhibition: source.broadFinancialProhibition as boolean,
-      materialNonDesignationRestriction: source.materialNonDesignationRestriction as boolean,
+      measures,
+      ...scope,
     });
     if (preparedClassification.eligible && preparedClassification.tier === candidate.proposedTier) {
-      measures = uniqueMeasures(source.measures ?? []);
-      scope = {
-        broadTradeProhibition: source.broadTradeProhibition as boolean,
-        broadFinancialProhibition: source.broadFinancialProhibition as boolean,
-        materialNonDesignationRestriction: source.materialNonDesignationRestriction as boolean,
-      };
+      measures = uniqueMeasures(measures);
       basis = "prepared-legal-facts";
     }
   }

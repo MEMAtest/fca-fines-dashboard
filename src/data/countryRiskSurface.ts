@@ -167,7 +167,7 @@ function contextualSignalsFor(iso2: string): CountryRiskContextSignal[] {
       retrievedAt: FSRB_REVIEWED,
       sourceUrl: FATF_BODY.url,
       licence: null,
-      whyContextOnly: "Membership and suspension are operational context; they do not replace FATF assessment evidence or the published v2 weights.",
+      whyContextOnly: "Membership and suspension are operational context; they do not replace FATF assessment evidence or the published score weights.",
     },
     {
       id: "eu-tax-list",
@@ -179,7 +179,7 @@ function contextualSignalsFor(iso2: string): CountryRiskContextSignal[] {
       retrievedAt: EU_TAX_LIST_REVIEWED,
       sourceUrl: EU_TAX_LIST_SOURCE_URL,
       licence: null,
-      whyContextOnly: "Tax-cooperation status is shown as a separate exposure signal and is not silently added to the public v2 score.",
+      whyContextOnly: "Tax-cooperation status is shown as a separate exposure signal and is not silently added to the public score.",
     },
     {
       id: "egmont-fiu",
@@ -290,6 +290,6 @@ export function buildCountryRiskPublicSurface(
     contextualSignals: contextualSignalsFor(code),
     freshness: freshnessFor(code, asOf),
     changeHistory: recentChangesForCountry(code, 12),
-    note: "Contextual signals are public evidence only and do not change the immutable v2 score.",
+    note: "Contextual signals are public evidence only and do not change the current country-risk score.",
   };
 }

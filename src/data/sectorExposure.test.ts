@@ -80,6 +80,7 @@ describe("promoted sanctions evidence drives sector exposure", () => {
 
   it("uses Cuba's promoted tier in State-linked exposure", () => {
     expect(row(sectorsFor("CU"), "State-linked & procurement").level).toBe("High");
+    expect(row(sectorsFor("CU"), "State-linked & procurement").rationale.toLowerCase()).toContain("comprehensive sanctions");
   });
 
   it("uses Russia's promoted sectoral tier", () => {
@@ -92,18 +93,18 @@ describe("promoted sanctions evidence drives sector exposure", () => {
     const banking = row(sectorsFor("IR"), "Banking & payments");
     const trade = row(sectorsFor("IR"), "Trade & export controls");
     expect(banking.level).toBe("High");
-    expect(banking.rationale.toLowerCase()).toContain("fatf black-list");
+    expect(banking.rationale.toLowerCase()).toContain("fatf call-for-action");
     expect(trade.level).toBe("High");
     expect(trade.rationale.toLowerCase()).toContain("comprehensive sanctions");
   });
 });
 
-describe("Nigeria real estate is Elevated via CPI", () => {
-  it("real estate Elevated with the CPI figure in the rationale", () => {
+describe("Nigeria real estate combines BO evidence with CPI context", () => {
+  it("real estate keeps the v3 BO signal primary and retains CPI as context", () => {
     const re = row(sectorsFor("NG"), "Real estate & luxury assets");
-    // Nigeria CPI is 26 (>=25, <40) -> Elevated, not High
-    expect(re.level).toBe("Elevated");
-    expect(re.rationale).toMatch(/CPI\s*26/);
+    // Nigeria's v3 BO subscore is high; CPI is contextual, not a second score.
+    expect(re.level).toBe("High");
+    expect(re.rationale).toMatch(/CPI context\s*26/);
   });
 });
 
@@ -123,7 +124,10 @@ describe("missing governance remains visible with complete sanctions evidence", 
   it("keeps Curaçao governance-dependent sectors under Review", () => {
     const rows = sectorsFor("CW");
     expect(row(rows, "Trade & export controls").level).toBe("Low");
-    expect(rows.filter((r) => r.sector !== "Trade & export controls").every((r) => r.level === "Review")).toBe(true);
+    expect(row(rows, "Banking & payments").level).toBe("Review");
+    expect(row(rows, "Crypto & virtual assets").level).toBe("Elevated");
+    expect(row(rows, "Real estate & luxury assets").level).toBe("High");
+    expect(row(rows, "State-linked & procurement").level).toBe("High");
   });
 
   it("retains FATF-derived exposure for the British Virgin Islands and reviews governance gaps", () => {

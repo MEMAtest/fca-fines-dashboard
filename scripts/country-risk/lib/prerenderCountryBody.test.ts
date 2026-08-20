@@ -136,4 +136,14 @@ describe("prerender country body: crawler-visible narrative prose", () => {
       ).toBe(true);
     }
   });
+
+  it("uses the v3 sanctions overlay tier in no-JS country copy", () => {
+    const country = getCountryByIso2("VE")!;
+    const html = renderCountryFatfBody(buildCountryView(country));
+    expect(country.name).toBe("Venezuela");
+    expect(html).toContain("Sectoral country-level sanctions programme identified");
+    expect(html).toContain("legal treatment overlay");
+    expect(html).not.toContain("Targeted sanctions exposure");
+    expect(html).not.toContain("Comprehensive country sanctions: none identified");
+  });
 });

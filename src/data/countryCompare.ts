@@ -3,7 +3,7 @@
  * BOTH the React compare page (`CountryCompare.tsx`) and the prerendered HTML
  * (`renderCompareBody` in `scripts/prerender-seo.ts`). Same pattern as
  * `buildCountryView`: the data and copy (bands, verdict line, FATF/sanctions
- * posture, WGI/CPI, framework signals) are computed here once so the
+ * posture, v3 pillars, WGI/CPI and framework signals) are computed here once so the
  * crawler-visible page and the user-facing page cannot drift.
  *
  * NO React/JSX imports here — consumed by the pure-TS prerender script too.
@@ -28,7 +28,7 @@ import { isEuTaxListed } from "./euTaxList.js";
 import { getEgmontMember } from "./egmontMembership.js";
 import { getFatfAssessmentLink } from "./fatfAssessmentLinks.js";
 import { getBoRegister, boRegisterSignal } from "./boRegisters.js";
-import { pageCountries } from "./countryView.js";
+import { pageCountries, regionalPeers } from "./countryView.js";
 
 // ---------------------------------------------------------------------------
 // Slug + canonicalisation
@@ -107,11 +107,15 @@ export interface CompareSide {
   country: Country;
   flag: string;
   slug: string;
-  /** Composite score 0–10, or null when withheld (insufficient WGI). */
+  /** Current v3 composite score 0–10, or null when withheld (insufficient evidence). */
   score: number | null;
   band: ScoreBand | null;
   bandLabel: string;
   scoreWithheld: boolean;
+  /** Active methodology metadata used to make comparisons auditable. */
+  methodologyVersion: string;
+  scoreStatus: string;
+  confidence: string;
   fatfStatus: string;
   sanctionsSignal: string;
   cpi: string;
@@ -140,10 +144,23 @@ const BAND_ORDER: Record<ScoreBand, number> = {
   "very-high": 3,
 };
 
-function buildSide(country: Country): CompareSide {
+// Prerendering emits several hundred compare documents. CountryView derives
+// multiple sourced surfaces, so reuse the immutable per-process result while
+// building a sitemap instead of recomputing it for every pair/candidate.
+const comparisonViewCache = new Map<string, CountryView>();
+function comparisonViewFor(country: Country): CountryView {
+  const cached = comparisonViewCache.get(country.iso2);
+  if (cached) return cached;
   const view = buildCountryView(country);
-  const score = view.riskScore.hasGovernance ? view.riskScore.score : null;
-  const band = view.riskScore.hasGovernance ? view.riskScore.band : null;
+  comparisonViewCache.set(country.iso2, view);
+  return view;
+}
+
+function buildSide(country: Country): CompareSide {
+  const view = comparisonViewFor(country);
+  const risk = activeRiskFor(view);
+  const score = risk.score;
+  const band = risk.band;
   return {
     country,
     flag: view.flag,
@@ -152,12 +169,46 @@ function buildSide(country: Country): CompareSide {
     band,
     bandLabel: band ? bandLabel(band) : "Insufficient data",
     scoreWithheld: score === null,
+    methodologyVersion: risk.methodologyVersion,
+    scoreStatus: risk.status,
+    confidence: risk.confidence,
     fatfStatus: view.statusHeading,
     sanctionsSignal: sanctionsSignalFor(view),
     cpi: view.cpi
       ? `${view.cpi.score}/100 (rank #${view.cpi.rank})`
       : "No score",
     view,
+  };
+}
+
+/**
+ * Return the active country-risk result for comparison consumers.
+ *
+ * The comparison model always resolves the current methodology result. The
+ * historical v2 result remains on CountryView for explicit audit/API routes,
+ * but must not drive current comparison scores or copy.
+ */
+export interface ActiveComparableRisk {
+  methodologyVersion: string;
+  score: number | null;
+  band: ScoreBand | null;
+  status: string;
+  confidence: string;
+}
+
+export function activeRiskFor(view: CountryView): ActiveComparableRisk {
+  const transitional = view as CountryView & {
+    riskActive?: Partial<ActiveComparableRisk>;
+    riskV3?: Partial<ActiveComparableRisk>;
+    riskCurrent?: Partial<ActiveComparableRisk>;
+  };
+  const candidate = transitional.riskActive ?? transitional.riskCurrent ?? transitional.riskV3 ?? view.riskV3;
+  return {
+    methodologyVersion: candidate.methodologyVersion ?? "3.0.0",
+    score: candidate.score ?? null,
+    band: candidate.band ?? null,
+    status: candidate.status ?? "insufficient-data",
+    confidence: candidate.confidence ?? "low",
   };
 }
 
@@ -247,11 +298,12 @@ export function buildCompareView(a: Country, b: Country): CompareView {
             : "b",
   });
 
-  // 4. WGI institutional domains (rule of law) — higher risk value = worse.
+  // 4. WGI institutional domains (rule of law) — a scored governance input;
+  // higher risk value = worse.
   const rlA = ruleOfLawRisk(va);
   const rlB = ruleOfLawRisk(vb);
   rows.push({
-    label: "Rule of law (WGI risk)",
+    label: "Governance: rule of law (WGI risk)",
     a: rlA === null ? "No data" : `${rlA.toFixed(1)}/10`,
     b: rlB === null ? "No data" : `${rlB.toFixed(1)}/10`,
     higherRisk: compareRisk(rlA, rlB),
@@ -359,10 +411,10 @@ export function buildVerdict(a: CompareSide, b: CompareSide): string {
 
   // One scored, one withheld.
   if (a.score !== null && b.score === null) {
-    return `${a.country.name} carries a published RegActions risk score of ${a.score.toFixed(1)}/10, while ${b.country.name}'s headline score is withheld for insufficient governance evidence, so the two are not directly rank-comparable on the composite.`;
+    return `${a.country.name} carries a published RegActions risk score of ${a.score.toFixed(1)}/10, while ${b.country.name}'s headline score is withheld for insufficient underlying v3 evidence, so the two are not directly rank-comparable on the composite.`;
   }
   if (b.score !== null && a.score === null) {
-    return `${b.country.name} carries a published RegActions risk score of ${b.score.toFixed(1)}/10, while ${a.country.name}'s headline score is withheld for insufficient governance evidence, so the two are not directly rank-comparable on the composite.`;
+    return `${b.country.name} carries a published RegActions risk score of ${b.score.toFixed(1)}/10, while ${a.country.name}'s headline score is withheld for insufficient underlying v3 evidence, so the two are not directly rank-comparable on the composite.`;
   }
 
   // Neither scored → fall back to the sharpest categorical discriminator.
@@ -370,41 +422,48 @@ export function buildVerdict(a: CompareSide, b: CompareSide): string {
   const fb = fatfSeverity(vb);
   if (fa !== fb) {
     const hi = fa > fb ? a : b;
-    return `Both countries have their composite score withheld for insufficient governance evidence; on FATF listing status, ${hi.country.name} currently reads as the higher-risk jurisdiction.`;
+    return `Both countries have their composite score withheld for insufficient underlying v3 evidence; on FATF listing status, ${hi.country.name} currently reads as the higher-risk jurisdiction.`;
   }
-  return `Both countries have their composite score withheld for insufficient governance evidence, so compare them on the specific FATF, sanctions and governance signals below rather than a single number.`;
+  return `Both countries have their composite score withheld for insufficient underlying v3 evidence, so compare them on the specific FATF, sanctions and governance signals below rather than a single number.`;
 }
 
 /**
- * The single strongest reason the higher-risk side outranks the other, in plain
- * words. Deterministic: checks sanctions, then FATF, then CPI gap, then WGI.
+ * The single strongest scored reason the higher-risk side outranks the other.
+ * Only v3 pillar contributions may explain a numeric difference. FATF and
+ * sanctions remain separate treatment overlays in the comparison rows/copy.
  */
 function topDriver(hi: CountryView, lo: CountryView): string | undefined {
-  if (sanctionsSeverity(hi) > sanctionsSeverity(lo) && sanctionsSeverity(hi) > 0) {
-    return "its heavier sanctions exposure";
-  }
-  if (fatfSeverity(hi) > fatfSeverity(lo)) {
-    return hi.fatf?.listing === "call-for-action"
-      ? "its FATF call-for-action (black list) status"
-      : "its FATF increased-monitoring (grey list) status";
-  }
-  const cpiHi = hi.cpi?.score;
-  const cpiLo = lo.cpi?.score;
-  if (cpiHi !== undefined && cpiLo !== undefined && cpiLo - cpiHi >= 8) {
-    return "weaker corruption-control scores";
-  }
-  const rlHi = ruleOfLawRisk(hi);
-  const rlLo = ruleOfLawRisk(lo);
-  if (rlHi !== null && rlLo !== null && rlHi - rlLo >= 0.5) {
-    return "weaker rule-of-law and institutional governance";
-  }
-  return "weaker governance indicators overall";
+  const labels = {
+    effectiveness: "financial-crime effectiveness",
+    safeguards: "legal and supervisory safeguards",
+    governance: "governance and institutional integrity",
+  } as const;
+  const keys = Object.keys(labels) as Array<keyof typeof labels>;
+  const candidates = keys
+    .map((key) => {
+      const hiPillar = hi.riskV3.pillars[key];
+      const loPillar = lo.riskV3.pillars[key];
+      if (hiPillar.score === null || loPillar.score === null) return null;
+      const hiContribution = hiPillar.contribution ?? hiPillar.score * hiPillar.appliedWeight;
+      const loContribution = loPillar.contribution ?? loPillar.score * loPillar.appliedWeight;
+      return {
+        key,
+        gap: hiContribution - loContribution,
+        hiScore: hiPillar.score,
+        loScore: loPillar.score,
+      };
+    })
+    .filter((candidate): candidate is { key: keyof typeof labels; gap: number; hiScore: number; loScore: number } => candidate !== null)
+    .sort((left, right) => Math.abs(right.gap) - Math.abs(left.gap));
+  const strongest = candidates[0];
+  if (!strongest || strongest.gap <= 0) return "higher v3 pillar risk overall";
+  return `higher ${labels[strongest.key]} risk (${strongest.hiScore.toFixed(1)} vs ${strongest.loScore.toFixed(1)})`;
 }
 
 function compareMetaDescription(a: CompareSide, b: CompareSide): string {
   const sa = a.score === null ? "withheld" : `${a.score.toFixed(1)}/10`;
   const sb = b.score === null ? "withheld" : `${b.score.toFixed(1)}/10`;
-  return `Compare ${a.country.name} vs ${b.country.name} on AML/CFT country risk: RegActions score (${sa} vs ${sb}), FATF status, sanctions posture, WGI governance and CPI, side by side with cited sources.`;
+  return `Compare ${a.country.name} vs ${b.country.name} on AML/CFT country risk: RegActions v3 score (${sa} vs ${sb}), its effectiveness, safeguards and governance pillars, plus FATF and sanctions treatment overlays, side by side with cited sources.`;
 }
 
 // ---------------------------------------------------------------------------
@@ -461,47 +520,80 @@ export const COMPARATORS_PER_ANCHOR = 10;
  * Ties break by ISO2 for stability. The anchor itself is always excluded.
  */
 export function compareComparators(anchorIso2: string, limit = COMPARATORS_PER_ANCHOR): Country[] {
+  return compareComparatorDetails(anchorIso2, limit).map((item) => item.country);
+}
+
+export type ComparatorReason = "same-subregion" | "same-region";
+
+export interface ComparatorSelection {
+  country: Country;
+  reason: ComparatorReason;
+  reasonLabel: string;
+  score: number | null;
+  status: string;
+  confidence: string;
+  methodologyVersion: string;
+}
+
+/**
+ * Select comparable countries using the active score only. Complete scores in
+ * the same UN/M49-style subregion are preferred, nearest score first; when
+ * fewer than `limit` exist, complete scores in the same macro-region fill the
+ * slate. Countries with provisional/withheld scores are never silently ranked.
+ */
+export function compareComparatorDetails(
+  anchorIso2: string,
+  limit = COMPARATORS_PER_ANCHOR,
+): ComparatorSelection[] {
   const anchor = COUNTRIES.find((c) => c.iso2 === anchorIso2);
-  if (!anchor) return [];
-  const anchorView = buildCountryView(anchor);
-  const anchorScore = anchorView.riskScore.hasGovernance ? anchorView.riskScore.score : null;
-  const anchorBand = anchorView.riskScore.hasGovernance ? anchorView.riskScore.band : null;
-
-  const anchorSet = new Set(COMPARE_ANCHOR_ISO2);
-  // Pool: other anchors + same-region profiled page countries.
+  if (!anchor || limit <= 0) return [];
+  const anchorRisk = activeRiskFor(comparisonViewFor(anchor));
+  const anchorScore = anchorRisk.score;
   const pool = new Map<string, Country>();
-  for (const iso2 of COMPARE_ANCHOR_ISO2) {
-    if (iso2 === anchorIso2) continue;
-    const c = COUNTRIES.find((x) => x.iso2 === iso2);
-    if (c) pool.set(iso2, c);
-  }
   for (const c of pageCountries()) {
-    if (c.iso2 === anchorIso2) continue;
-    if (c.region === anchor.region) pool.set(c.iso2, c);
+    if (c.iso2 !== anchorIso2) pool.set(c.iso2, c);
   }
-
-  const scored = [...pool.values()].map((c) => {
-    const v = buildCountryView(c);
-    const s = v.riskScore.hasGovernance ? v.riskScore.score : null;
-    const band = v.riskScore.hasGovernance ? v.riskScore.band : null;
-    const isAnchor = anchorSet.has(c.iso2);
-    const sameRegion = c.region === anchor.region;
-    const sameBand = band !== null && anchorBand !== null && band === anchorBand;
-    const scoreDist =
-      s !== null && anchorScore !== null ? Math.abs(s - anchorScore) : Number.POSITIVE_INFINITY;
-    // Tier (lower sorts first): 0 = anchor same-region, 1 = other same-region,
-    // 2 = anchor same-band, 3 = nearest-score anchor, 4 = rest.
-    const tier = sameRegion && isAnchor ? 0 : sameRegion ? 1 : isAnchor && sameBand ? 2 : isAnchor ? 3 : 4;
-    return { country: c, tier, scoreDist };
-  });
-
-  scored.sort((x, y) => {
-    if (x.tier !== y.tier) return x.tier - y.tier;
-    if (x.scoreDist !== y.scoreDist) return x.scoreDist - y.scoreDist;
-    return x.country.iso2.localeCompare(y.country.iso2);
-  });
-
-  return scored.slice(0, limit).map((s) => s.country);
+  // Anchor jurisdictions are high-intent and may not have a page signal in a
+  // future data snapshot; include them when they resolve to an existing country.
+  for (const iso2 of COMPARE_ANCHOR_ISO2) {
+    const c = COUNTRIES.find((candidate) => candidate.iso2 === iso2);
+    if (c && c.iso2 !== anchorIso2) pool.set(c.iso2, c);
+  }
+  const candidates = [...pool.values()]
+    .map((country) => {
+      const risk = activeRiskFor(comparisonViewFor(country));
+      const complete = risk.score !== null && risk.status === "complete";
+      const sameSubregion = country.subregion === anchor.subregion && country.region === anchor.region;
+      const sameRegion = country.region === anchor.region;
+      const reason: ComparatorReason | null = sameSubregion
+        ? "same-subregion"
+        : sameRegion
+          ? "same-region"
+          : null;
+      const distance =
+        complete && anchorScore !== null ? Math.abs(risk.score! - anchorScore) : Number.POSITIVE_INFINITY;
+      return { country, risk, complete, reason, distance };
+    })
+    .filter((candidate) => candidate.complete && candidate.reason !== null)
+    .sort((left, right) => {
+      const leftTier = left.reason === "same-subregion" ? 0 : 1;
+      const rightTier = right.reason === "same-subregion" ? 0 : 1;
+      if (leftTier !== rightTier) return leftTier - rightTier;
+      if (left.distance !== right.distance) return left.distance - right.distance;
+      return left.country.iso2.localeCompare(right.country.iso2);
+    });
+  return candidates.slice(0, limit).map((candidate) => ({
+    country: candidate.country,
+    reason: candidate.reason!,
+    reasonLabel:
+      candidate.reason === "same-subregion"
+        ? `Same subregion: ${anchor.subregion}`
+        : `Same macro-region: ${anchor.region}`,
+    score: candidate.risk.score,
+    status: candidate.risk.status,
+    confidence: candidate.risk.confidence,
+    methodologyVersion: candidate.risk.methodologyVersion,
+  }));
 }
 
 /**
@@ -522,6 +614,35 @@ export function curatedComparePairs(comparatorsPerAnchor = COMPARATORS_PER_ANCHO
       // Emit in canonical (alphabetical) order so the page matches its URL.
       const [a, b] = countrySlug(anchor) <= countrySlug(other) ? [anchor, other] : [other, anchor];
       out.push({ a, b, slug });
+    }
+  }
+  return out;
+}
+
+/**
+ * Every comparison URL linked from a country page must have a static document
+ * behind it. Curated pairs remain the smaller high-intent sitemap set; this
+ * additional set covers the six same-region bars currently emitted by
+ * CountryHub as well as the active comparator slate used by newer surfaces.
+ */
+export function emittedComparePairs(): { a: Country; b: Country; slug: string }[] {
+  const seen = new Set<string>();
+  const out: { a: Country; b: Country; slug: string }[] = [];
+  const add = (a: Country, b: Country) => {
+    if (a.iso2 === b.iso2) return;
+    const slug = comparePairSlug(a, b);
+    if (seen.has(slug)) return;
+    seen.add(slug);
+    const ordered = countrySlug(a) <= countrySlug(b) ? [a, b] : [b, a];
+    out.push({ a: ordered[0], b: ordered[1], slug });
+  };
+  for (const pair of curatedComparePairs()) add(pair.a, pair.b);
+  for (const country of pageCountries()) {
+    for (const peer of regionalPeers(country.iso2, country.region, 6)) {
+      add(country, peer.country);
+    }
+    for (const comparator of compareComparatorDetails(country.iso2, 5)) {
+      add(country, comparator.country);
     }
   }
   return out;
@@ -559,22 +680,8 @@ export function compareLinksForCountry(
   country: Country,
   limit = 5,
 ): { other: Country; slug: string }[] {
-  // Regional peers with a score, nearest-risk first — the same people compare.
-  const anchorView = buildCountryView(country);
-  const anchorScore = anchorView.riskScore.hasGovernance ? anchorView.riskScore.score : null;
-  const peers = pageCountries()
-    .filter((c) => c.region === country.region && c.iso2 !== country.iso2)
-    .map((c) => {
-      const v = buildCountryView(c);
-      const s = v.riskScore.hasGovernance ? v.riskScore.score : null;
-      const dist =
-        s !== null && anchorScore !== null ? Math.abs(s - anchorScore) : Number.POSITIVE_INFINITY;
-      return { country: c, score: s, dist };
-    })
-    .sort((x, y) => {
-      if (x.dist !== y.dist) return x.dist - y.dist;
-      return x.country.name.localeCompare(y.country.name);
-    })
-    .slice(0, limit);
-  return peers.map((p) => ({ other: p.country, slug: comparePairSlug(country, p.country) }));
+  return compareComparatorDetails(country.iso2, limit).map((item) => ({
+    other: item.country,
+    slug: comparePairSlug(country, item.country),
+  }));
 }

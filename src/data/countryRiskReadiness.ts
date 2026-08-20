@@ -1,5 +1,9 @@
-import type { CountryRiskV2Result } from "./countryRiskV2.js";
 import type { CountryRiskSourceStatus } from "./countryRiskSources.js";
+
+type CountryRiskReadinessResult = Pick<{
+  status: "complete" | "provisional" | "insufficient-data";
+  score: number | null;
+}, "status" | "score">;
 
 export interface CountryRiskReadiness {
   readyForDefault: boolean;
@@ -18,7 +22,7 @@ export interface CountryRiskReadiness {
  * fail closed.
  */
 export function assessCountryRiskReadiness(
-  results: CountryRiskV2Result[],
+  results: CountryRiskReadinessResult[],
   sources: CountryRiskSourceStatus[],
 ): CountryRiskReadiness {
   const coverage = {

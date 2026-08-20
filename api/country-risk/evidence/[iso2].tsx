@@ -15,6 +15,7 @@ import {
   countryRiskEvidenceRows,
   type CountryRiskEvidenceBundle,
 } from "../../../src/data/countryRiskEvidenceExport.js";
+import { resolveCountryRiskMethodology } from "../../../src/data/countryRiskMethodology.js";
 
 type EvidenceFormat = "json" | "csv" | "pdf";
 
@@ -56,7 +57,8 @@ function CountryRiskEvidencePdf({ bundle }: { bundle: CountryRiskEvidenceBundle 
     (acc[row.section] ??= []).push(row);
     return acc;
   }, {});
-  const score = bundle.result.score === null ? "Not scored" : `${bundle.result.score.toFixed(1)} / 10`;
+  const scoreResult = bundle.v3 ?? bundle.result;
+  const score = scoreResult.score === null ? "Not scored" : `${scoreResult.score.toFixed(1)} / 10`;
   return (
     <Document
       title={`${bundle.country.name} country-risk evidence pack`}
@@ -73,9 +75,9 @@ function CountryRiskEvidencePdf({ bundle }: { bundle: CountryRiskEvidenceBundle 
         <View style={styles.scoreCard}>
           <Text style={styles.score}>{score}</Text>
           <Text style={styles.scoreMeta}>
-            {bundle.result.band ?? "No band"} · {bundle.result.status} · {bundle.result.confidence} confidence
+            {scoreResult.band ?? "No band"} · {scoreResult.status} · {scoreResult.confidence} confidence
           </Text>
-          <Text style={styles.scoreMeta}>{bundle.result.arithmetic}</Text>
+          <Text style={styles.scoreMeta}>{scoreResult.arithmetic}</Text>
         </View>
         <View style={styles.callout}>
           <Text>{bundle.surface.fatfAction.explanation}</Text>
@@ -98,11 +100,11 @@ function CountryRiskEvidencePdf({ bundle }: { bundle: CountryRiskEvidenceBundle 
         ))}
         <View style={styles.section}>
           <Text style={styles.heading}>ASSURANCE</Text>
-          <Text>Contextual signals do not change the v2 score. Missing evidence is not treated as zero risk.</Text>
+          <Text>Contextual signals and sanctions overlays do not change the underlying score. Missing evidence is not treated as zero risk.</Text>
           <Text>{bundle.assurance.disclaimer}</Text>
           <Text style={styles.source}>Sanctions external validation: {bundle.assurance.externalSanctionsValidation ?? "not recorded"}</Text>
         </View>
-        <Text style={styles.footerLeft} fixed>regactions.com/countries/methodology/v2</Text>
+        <Text style={styles.footerLeft} fixed>regactions.com/countries/methodology{bundle.v3 ? "" : "/v2"}</Text>
         <Text style={styles.footerRight} fixed>Public evidence pack</Text>
       </Page>
     </Document>
@@ -114,10 +116,17 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   if (req.method !== "GET") return res.status(405).json({ error: "Method not allowed" });
   const iso2 = String(req.query.iso2 ?? "").toUpperCase();
   const format = String(req.query.format ?? "json").toLowerCase() as EvidenceFormat;
+  const requested = req.query.methodology == null ? null : String(req.query.methodology);
+  let methodology: "v2" | "v3";
+  try {
+    methodology = resolveCountryRiskMethodology(requested);
+  } catch {
+    return res.status(400).json({ error: `Unsupported methodology: ${requested}` });
+  }
   if (!(["json", "csv", "pdf"] as string[]).includes(format)) {
     return res.status(400).json({ error: `Unsupported evidence format: ${format}` });
   }
-  const bundle = buildCountryRiskEvidenceBundle(iso2, new Date());
+  const bundle = buildCountryRiskEvidenceBundle(iso2, new Date(), methodology);
   if (!bundle) return res.status(404).json({ error: "Country not found" });
   const filename = `regactions-${bundle.country.iso2.toLowerCase()}-country-risk-evidence.${format}`;
   res.setHeader("Cache-Control", "public, max-age=300, s-maxage=3600");

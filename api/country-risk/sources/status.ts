@@ -1,7 +1,7 @@
 import type { VercelRequest, VercelResponse } from "@vercel/node";
 import { countryRiskSourcesAsOf } from "../../../src/data/countryRiskSources.js";
 import { pageCountries } from "../../../src/data/countryView.js";
-import { computeCountryRiskV2 } from "../../../src/data/countryRiskV2.js";
+import { computeCountryRiskV3, COUNTRY_RISK_V3_METHODOLOGY_VERSION } from "../../../src/data/countryRiskV3.js";
 import { SANCTIONS_APPROVED_SNAPSHOT } from "../../../src/data/sanctionsApprovedData.js";
 import { SANCTIONS_IMPOSERS } from "../../../src/data/sanctionsEvidence.js";
 import { COUNTRIES } from "../../../src/data/countries.js";
@@ -22,7 +22,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   res.setHeader("Cache-Control", "public, max-age=300, s-maxage=3600");
   const asOf = new Date();
   const sources = countryRiskSourcesAsOf(asOf);
-  const results = pageCountries().map((country) => computeCountryRiskV2(country.iso2, { asOf }));
+  const results = pageCountries().map((country) => computeCountryRiskV3(country.iso2, { asOf }));
   const readiness = assessCountryRiskReadiness(results, sources);
   const { sourceHealth, operationalSourceRuns } = await getCountryRiskOperationalHealth(asOf, sources);
   const readinessReasons = [
@@ -30,6 +30,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     ...sourceHealth.issues.map((issue) => issue.message),
   ];
   return res.status(200).json({
+    methodologyVersion: COUNTRY_RISK_V3_METHODOLOGY_VERSION,
     generatedAt: asOf.toISOString(),
     // The default needs both a valid approved snapshot and current operational evidence.
     readyForDefault: readiness.readyForDefault && sourceHealth.readyForScoring,

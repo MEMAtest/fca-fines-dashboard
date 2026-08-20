@@ -22,7 +22,7 @@
 import type { VercelRequest, VercelResponse } from "@vercel/node";
 import { getSqlClient } from "../../server/db.js";
 import { enqueueDigestItem } from "../../server/services/emailDigest.js";
-import { buildCountryChanges, CHANGE_KIND_LABELS } from "../../src/data/countryChanges.js";
+import { buildCountryChanges, currentMethodologyChangeEvents, CHANGE_KIND_LABELS } from "../../src/data/countryChanges.js";
 
 const sql = getSqlClient();
 
@@ -51,7 +51,9 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   }
 
   try {
-    const events = buildCountryChanges();
+    // Keep the migration/rebaseline guard at the delivery boundary as well as
+    // in scoreDeltaEvents, so a stale cached event can never mass-mail users.
+    const events = currentMethodologyChangeEvents(buildCountryChanges());
     const newestDate = events[0]?.date ?? null;
 
     const subs = (await sql`

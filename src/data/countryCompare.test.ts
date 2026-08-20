@@ -7,6 +7,8 @@ import {
   comparePairSlug,
   comparePath,
   compareComparators,
+  compareComparatorDetails,
+  emittedComparePairs,
   compareLinksForCountry,
   curatedComparePairs,
   parseComparePair,
@@ -16,6 +18,7 @@ import {
 const US = getCountryByIso2("US")!;
 const GB = getCountryByIso2("GB")!;
 const IR = getCountryByIso2("IR")!;
+const VE = getCountryByIso2("VE")!;
 
 describe("country-vs-country compare slugs + canonicalisation", () => {
   it("orders the pair slug alphabetically (a-vs-b == b-vs-a)", () => {
@@ -85,6 +88,14 @@ describe("compare view model", () => {
     expect(scored).toMatch(/0-10|similar assessed risk|higher assessed risk/);
   });
 
+  it("explains numeric differences with v3 pillars, not sanctions or FATF overlays", () => {
+    const view = buildCompareView(getCountryByIso2("CO")!, VE);
+    expect(view.a.methodologyVersion).toBe("3.0.0");
+    expect(view.b.methodologyVersion).toBe("3.0.0");
+    expect(view.verdict).toMatch(/financial-crime effectiveness|legal and supervisory safeguards|governance and institutional integrity/);
+    expect(view.verdict).not.toMatch(/sanctions exposure|FATF|CPI|corruption-control/i);
+  });
+
   it("surfaces the pending-review sanctions caveat", () => {
     const view = buildCompareView(GB, US);
     const sanctionsRow = view.rows.find((r) => r.label === "Sanctions posture");
@@ -113,7 +124,8 @@ describe("curated comparator selection", () => {
   it("gives each anchor a deterministic top comparator slate excluding itself", () => {
     for (const iso2 of COMPARE_ANCHOR_ISO2) {
       const comps = compareComparators(iso2, 8);
-      expect(comps.length).toBe(8);
+      expect(comps.length).toBeGreaterThan(0);
+      expect(comps.length).toBeLessThanOrEqual(8);
       expect(comps.every((c) => c.iso2 !== iso2)).toBe(true);
       // deterministic
       const again = compareComparators(iso2, 8).map((c) => c.iso2);
@@ -154,6 +166,22 @@ describe("curated comparator selection", () => {
     for (const l of links) {
       expect(l.other.iso2).not.toBe("GB");
       expect(getCountryBySlug(l.slug.split("-vs-")[0])).toBeTruthy();
+    }
+  });
+
+  it("selects complete active-methodology peers and discloses the selection reason", () => {
+    const details = compareComparatorDetails("VE", 5);
+    expect(details.length).toBeGreaterThan(0);
+    expect(details.every((item) => item.status === "complete")).toBe(true);
+    expect(details.every((item) => item.reason === "same-subregion" || item.reason === "same-region")).toBe(true);
+    expect(details.every((item) => item.reasonLabel.length > 0)).toBe(true);
+    expect(new Set(details.map((item) => item.methodologyVersion)).size).toBe(1);
+  });
+
+  it("includes country-page comparison targets in the prerender set", () => {
+    const emitted = new Set(emittedComparePairs().map((pair) => pair.slug));
+    for (const link of compareLinksForCountry(VE, 5)) {
+      expect(emitted.has(link.slug)).toBe(true);
     }
   });
 });

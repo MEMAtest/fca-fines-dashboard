@@ -47,12 +47,12 @@ describe("buildCountryFaqs", () => {
     expect(faqs[1].answer).toContain("individual listed persons may still exist");
   });
 
-  it("publishes an honest complete or provisional v2 score", () => {
+  it("publishes an honest complete or provisional v3 score", () => {
     const view = buildCountryView(getCountryByIso2("VG")!);
     const faqs = buildCountryFaqs(view);
     const riskFaq = faqs.find((f) => f.question.includes("country risk rating"));
     expect(riskFaq).toBeTruthy();
-    if (view.riskV2.score !== null) {
+    if (view.riskV3.score !== null) {
       expect(riskFaq!.answer).toContain("/10");
       expect(riskFaq!.answer).toContain("Some information is unavailable");
     } else {

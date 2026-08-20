@@ -141,7 +141,7 @@ const UK_GUIDANCE: readonly CandidateSpec[] = [
   ["SD", "sectoral", "Sudan sanctions", `${UK}/government/publications/sudan-sanctions-guidance`, "Arms restrictions apply in addition to designations."],
   ["SY", "sectoral", "Syria sanctions", `${UK}/government/publications/syria-sanctions-guidance`, "Trade, finance and sector restrictions apply beyond designations."],
   ["SY", "sectoral", "Syria cultural property sanctions", `${UK}/government/publications/syria-cultural-property-sanctions-guidance`, "Country-specific cultural-property trade restrictions apply beyond named designations."],
-  ["VE", "targeted", "Venezuela sanctions", `${UK}/government/publications/venezuela-sanctions-guidance`, "Designation-led regime."],
+  ["VE", "sectoral", "Venezuela sanctions", `${UK}/government/publications/venezuela-sanctions-guidance`, "The UK regime includes an arms embargo and other non-designation restrictions beyond named persons."],
   ["YE", "targeted", "Yemen sanctions", `${UK}/government/publications/yemen-sanctions-guidance`, "Designation-led regime."],
   ["ZW", "sectoral", "Zimbabwe sanctions", `${UK}/government/publications/zimbabwe-sanctions-guidance`, "Arms restrictions apply in addition to designations."],
 ];

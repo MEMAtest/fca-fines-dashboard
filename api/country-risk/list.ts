@@ -1,6 +1,8 @@
 import type { VercelRequest, VercelResponse } from "@vercel/node";
 import { pageCountries } from "../../src/data/countryView.js";
 import { computeCountryRiskV2, COUNTRY_RISK_METHODOLOGY_VERSION } from "../../src/data/countryRiskV2.js";
+import { computeCountryRiskV3 } from "../../src/data/countryRiskV3.js";
+import { resolveCountryRiskMethodology, CURRENT_COUNTRY_RISK_METHODOLOGY_VERSION } from "../../src/data/countryRiskMethodology.js";
 import { computeCountryRiskScore } from "../../src/data/countryRiskScore.js";
 import { countryRiskSourcesAsOf } from "../../src/data/countryRiskSources.js";
 import { assessCountryRiskReadiness } from "../../src/data/countryRiskReadiness.js";
@@ -10,26 +12,37 @@ import { getCountryRiskOperationalHealth } from "../../server/services/countryRi
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   res.setHeader("Access-Control-Allow-Origin", "*");
   if (req.method !== "GET") return res.status(405).json({ error: "Method not allowed" });
-  const requested = String(req.query.methodology ?? COUNTRY_RISK_METHODOLOGY_VERSION);
-  if (requested !== "v2" && requested !== COUNTRY_RISK_METHODOLOGY_VERSION) {
+  const requested = req.query.methodology == null ? null : String(req.query.methodology);
+  let methodology: "v2" | "v3";
+  try {
+    methodology = resolveCountryRiskMethodology(requested);
+  } catch {
     return res.status(400).json({ error: `Unsupported methodology: ${requested}` });
   }
   const asOf = new Date();
   const sources = countryRiskSourcesAsOf(asOf);
   const results = pageCountries()
     .map((country) => {
-      const result = computeCountryRiskV2(country.iso2, { asOf });
-      const previous = computeCountryRiskScore(country.iso2);
-      const previousScore = previous.hasGovernance ? previous.score : null;
+      const result = methodology === "v3"
+        ? computeCountryRiskV3(country.iso2, { asOf })
+        : computeCountryRiskV2(country.iso2, { asOf });
+      const previous = methodology === "v3" ? computeCountryRiskV2(country.iso2, { asOf }) : computeCountryRiskScore(country.iso2);
+      const previousScore = "hasGovernance" in previous
+        ? (previous.hasGovernance ? previous.score : null)
+        : previous.score;
       return {
         country,
         result,
         surface: buildCountryRiskPublicSurface(country.iso2, asOf),
         previous: {
-          methodologyVersion: "1.0.0",
+          methodologyVersion: methodology === "v3" ? COUNTRY_RISK_METHODOLOGY_VERSION : "1.0.0",
           score: previousScore,
-          band: previous.hasGovernance ? previous.band : null,
-          status: previous.hasGovernance ? "rated" : "insufficient-data",
+          band: "hasGovernance" in previous
+            ? (previous.hasGovernance ? previous.band : null)
+            : previous.band,
+          status: "hasGovernance" in previous
+            ? (previous.hasGovernance ? "rated" : "insufficient-data")
+            : previous.status,
         },
         change: result.score === null || previousScore === null
           ? null
@@ -41,7 +54,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   const readiness = assessCountryRiskReadiness(results.map(({ result }) => result), sources);
   const { sourceHealth } = await getCountryRiskOperationalHealth(asOf, sources);
   return res.status(200).json({
-    methodologyVersion: COUNTRY_RISK_METHODOLOGY_VERSION,
+    methodologyVersion: methodology === "v3" ? CURRENT_COUNTRY_RISK_METHODOLOGY_VERSION : COUNTRY_RISK_METHODOLOGY_VERSION,
     calculatedAt: asOf.toISOString(),
     count: results.length,
     // `snapshotReady` describes the approved model inputs. `sourcesCurrent`

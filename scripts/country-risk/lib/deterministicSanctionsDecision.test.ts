@@ -21,7 +21,7 @@ function record(overrides: Partial<DeterministicReviewRecord> = {}): Determinist
     reviewDecision: null,
     finalTier: null,
     coverageState: null,
-    legalStatus: null,
+    legalStatus: "active",
     legalInstrumentId: "Executive Order 1",
     legalInstrumentUrl: "https://example.test/legal/1",
     officialGuidanceUrl: candidate.measureEvidenceUrl,
@@ -29,10 +29,10 @@ function record(overrides: Partial<DeterministicReviewRecord> = {}): Determinist
     legalEffectiveTo: null,
     sourceLastUpdated: "2026-07-17",
     evidenceLocator: "Official programme page",
-    measures: [],
-    broadTradeProhibition: null,
-    broadFinancialProhibition: null,
-    materialNonDesignationRestriction: null,
+    measures: ["asset-freeze"],
+    broadTradeProhibition: false,
+    broadFinancialProhibition: false,
+    materialNonDesignationRestriction: false,
     preparedBy: null,
     preparedAt: null,
     decisionEvidenceUrl: "https://example.test/legal/1",
@@ -53,7 +53,7 @@ function record(overrides: Partial<DeterministicReviewRecord> = {}): Determinist
 describe("deterministic sanctions decisions", () => {
   it("turns a current designation-led catalogue record into targeted exposure", () => {
     const result = decideSanctionsRecord(candidate, record(), "2026-07-17T10:00:00.000Z");
-    expect(result.basis).toBe("current-catalogue-and-published-tier-rule");
+    expect(result.basis).toBe("prepared-legal-facts");
     expect(result.record).toMatchObject({
       reviewDecision: "approved",
       finalTier: "targeted",
@@ -75,6 +75,16 @@ describe("deterministic sanctions decisions", () => {
       finalTier: null,
       coverageState: "active-situation-related",
     });
+  });
+
+  it("fails closed instead of using the candidate tier when direct legal scope is incomplete", () => {
+    expect(() => decideSanctionsRecord(candidate, record({
+      legalStatus: null,
+      measures: null,
+      broadTradeProhibition: null,
+      broadFinancialProhibition: null,
+      materialNonDesignationRestriction: null,
+    }), "2026-07-17T10:00:00.000Z")).toThrow("candidate tier fallback is not permitted");
   });
 
   it("classifies catalogue exclusions deterministically", () => {

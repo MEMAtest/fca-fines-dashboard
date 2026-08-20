@@ -17,6 +17,7 @@ import {
   type CompareSide,
 } from "../data/countryCompare.js";
 import { getFatfAssessmentLink } from "../data/fatfAssessmentLinks.js";
+import { useSEO } from "../hooks/useSEO.js";
 import "../styles/country-compare.css";
 
 /** Which side's cell to emphasise as higher-risk. */
@@ -40,6 +41,9 @@ function SideHeader({ side }: { side: CompareSide }) {
           {side.score === null ? "Withheld" : `${side.score.toFixed(1)}/10`}
           {side.band ? ` · ${bandLabel(side.band)}` : ""}
         </span>
+        <span className="cxc-side__evidence">
+          {side.methodologyVersion} · {side.scoreStatus} · {side.confidence} confidence
+        </span>
       </div>
     </div>
   );
@@ -48,6 +52,22 @@ function SideHeader({ side }: { side: CompareSide }) {
 export function CountryCompare() {
   const { pair } = useParams<{ pair: string }>();
   const parsed = useMemo(() => (pair ? parseComparePair(pair) : undefined), [pair]);
+  const view = useMemo(
+    () => (parsed ? buildCompareView(parsed.a, parsed.b) : null),
+    [parsed],
+  );
+
+  useSEO({
+    title: view?.title ?? "Country risk comparison | RegActions",
+    description:
+      view?.metaDescription ??
+      "Compare country risk, FATF status, sanctions posture and governance evidence side by side.",
+    keywords: view
+      ? `${view.a.country.name} ${view.b.country.name} country risk, AML country risk comparison, FATF comparison`
+      : "country risk comparison, AML country risk, FATF comparison",
+    canonicalPath: view?.canonicalPath ?? "/countries",
+    ogType: "website",
+  });
 
   useEffect(() => {
     window.scrollTo(0, 0);
@@ -58,7 +78,7 @@ export function CountryCompare() {
     return <Navigate to={`/countries/compare/${parsed.canonicalSlug}`} replace />;
   }
 
-  if (!parsed) {
+  if (!parsed || !view) {
     return (
       <div className="cxc-wrap">
         <div className="cxc-notfound">
@@ -72,7 +92,6 @@ export function CountryCompare() {
     );
   }
 
-  const view = buildCompareView(parsed.a, parsed.b);
   const related = relatedComparePairs(parsed.a, parsed.b, 6);
   const meA = getFatfAssessmentLink(parsed.a.iso2);
   const meB = getFatfAssessmentLink(parsed.b.iso2);
@@ -176,7 +195,7 @@ export function CountryCompare() {
 
       {related.length > 0 && (
         <section className="cxc-related" aria-label="Related comparisons">
-          <h2 className="cxc-related__h">Related comparisons</h2>
+          <h2 className="cxc-related__h">Related regional comparisons</h2>
           <ul className="cxc-related__list">
             {related.map((r) => (
               <li key={r.slug}>
@@ -188,9 +207,9 @@ export function CountryCompare() {
       )}
 
       <p className="cxc-sources">
-        Scores combine World Bank WGI governance, FATF listing status and sanctions exposure;
-        CPI and enforcement volume are shown but not scored. See each country&rsquo;s full report
-        for cited sources and the{" "}
+        The comparison uses the active RegActions country-risk methodology. FATF listings and
+        sanctions are shown as regulatory overlays; CPI and enforcement volume are contextual,
+        not score inputs. See each country&rsquo;s full report for cited sources and the{" "}
         <Link to="/countries/methodology">scoring methodology</Link>.
       </p>
     </div>

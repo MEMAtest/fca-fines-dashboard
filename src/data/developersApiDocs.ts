@@ -46,15 +46,15 @@ export const DEVELOPER_ENDPOINTS: ApiEndpoint[] = [
     path: "/api/country-risk/list",
     title: "Country risk list",
     summary:
-      "Every scored jurisdiction with the v2 composite result and the provenance of each source (FATF lists, FATF assessments, World Bank WGI, sanctions regimes, Transparency International CPI). Cached for 5 minutes.",
+      "Every profiled jurisdiction with the current v3 country-risk result and source provenance. Use ?methodology=v2 only when you need the historical sanctions-weighted compatibility result. Cached for 5 minutes.",
     example: "curl https://regactions.com/api/country-risk/list",
     fields: [
-      { name: "methodologyVersion", type: "string", description: "Scoring methodology version (e.g. \"2.0.0\")." },
+      { name: "methodologyVersion", type: "string", description: "Scoring methodology version (current default: \"3.0.0\")." },
       { name: "calculatedAt", type: "string (ISO 8601)", description: "When the response was computed (deterministic at request time)." },
       { name: "count", type: "number", description: "Number of jurisdictions in results." },
       { name: "sources[]", type: "object[]", description: "Per-source provenance: id, name, sourceUrl, scored, cadence, state, effectiveAt, retrievedAt, sha256, note." },
       { name: "results[].country", type: "object", description: "Country identity: iso2, iso3, name, region, subregion, unMember, aliases[]." },
-      { name: "results[].result", type: "object", description: "Composite result: score, band, status, confidence, per-pillar scores (aml/governance/sanctions), floors, limitingReasons, arithmetic." },
+      { name: "results[].result", type: "object", description: "Current composite result: score, band, status, confidence, effectiveness/safeguards/governance pillars, beneficial ownership, sanctions and FATF overlays, limitingReasons and arithmetic." },
     ],
   },
   {
@@ -62,15 +62,17 @@ export const DEVELOPER_ENDPOINTS: ApiEndpoint[] = [
     path: "/api/country-risk/{iso2}",
     title: "Country risk detail",
     summary:
-      "The full v2 result for a single jurisdiction by ISO 3166-1 alpha-2 code, including the pillar breakdown, band adjustments, change vs the previous methodology, and the evidence behind each pillar. Cached for 5 minutes.",
+      "The current v3 result for a single jurisdiction by ISO 3166-1 alpha-2 code, including the three underlying pillars, beneficial-ownership breakout, legal overlays and source evidence. Add ?methodology=v2 for the historical result. Cached for 5 minutes.",
     example: "curl https://regactions.com/api/country-risk/GB",
     fields: [
       { name: "country", type: "object", description: "Country identity (iso2, iso3, name, region, subregion, unMember, aliases[])." },
       { name: "result.score", type: "number | null", description: "Composite 0-10 risk score (higher = higher risk); null when withheld." },
       { name: "result.band", type: "string", description: "Risk band: low | moderate | high | very-high." },
-      { name: "result.status", type: "string", description: "rated | provisional (provisional when a pillar is unavailable)." },
+      { name: "result.status", type: "string", description: "complete | provisional | insufficient-data." },
       { name: "result.confidence", type: "string", description: "Confidence level for the score." },
-      { name: "result.pillars", type: "object", description: "aml, governance and sanctions pillars with score, weight, coverageStatus and explanation." },
+      { name: "result.pillars", type: "object", description: "effectiveness, safeguards and governance pillars with score, weight, contribution, coverageStatus and explanation." },
+      { name: "result.beneficialOwnership", type: "object", description: "FATF IO5, Recommendations 24 and 25 breakout with availability, score and source." },
+      { name: "result.overlays", type: "object", description: "FATF listing and sanctions treatment overlays; these do not change the underlying score." },
       { name: "result.limitingReasons", type: "string[]", description: "Human-readable reasons the score is provisional or capped." },
       { name: "previous", type: "object", description: "Prior methodology (v1) score and band for comparison." },
       { name: "change", type: "object", description: "Points delta and the drivers behind it." },
@@ -82,7 +84,7 @@ export const DEVELOPER_ENDPOINTS: ApiEndpoint[] = [
     path: "/api/badge/{iso2}",
     title: "Country risk badge (SVG)",
     summary:
-      "An embeddable SVG badge showing a jurisdiction's AML risk band and 0-10 score, coloured by band. Withheld jurisdictions render a \"Not rated\" variant and unknown codes return a 404 badge. Returns image/svg+xml and is edge-cached for a day. Embed it with a plain <img> tag; a `.svg` suffix on the code is accepted and ignored.",
+      "An embeddable SVG badge showing the current v3 jurisdiction risk band and 0-10 score, coloured by band. Withheld jurisdictions render a \"Not rated\" variant and unknown codes return a 404 badge. Add ?methodology=v2 for the historical badge.",
     example: "curl https://regactions.com/api/badge/GB.svg",
     fields: [
       { name: "(response body)", type: "image/svg+xml", description: "A self-contained SVG badge, e.g. \"United Kingdom AML risk: Low (1.9/10)\", sized to its text." },

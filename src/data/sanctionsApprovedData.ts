@@ -3063,7 +3063,7 @@ export const SANCTIONS_APPROVED_STATUS: ApprovedCountrySanctions[] = [
       },
       {
         "imposer": "UK",
-        "tier": "targeted",
+        "tier": "sectoral",
         "program": "Venezuela sanctions",
         "sourceUrl": "https://www.legislation.gov.uk/uksi/2019/135/contents",
         "reviewed": "2026-08",
@@ -3073,7 +3073,7 @@ export const SANCTIONS_APPROVED_STATUS: ApprovedCountrySanctions[] = [
         "reviewedBy": "RegActions deterministic sanctions classifier v2",
         "reviewerOrganisation": "RegActions automated evidence system",
         "reviewedAt": "2026-08-16T07:12:09.072Z",
-        "reviewNote": "The programme is present in the current official catalogue and the versioned scope rule reproduces the published tier from the linked measure-specific evidence. Classification: The active direct programme is principally designation-led. External practitioner validation is not claimed.",
+        "reviewNote": "Prepared measure-specific legal facts reproduce the published deterministic tier. Classification: A material class of ordinary transactions is restricted beyond named targets. External practitioner validation is not claimed.",
         "legalStatus": "active",
         "legalInstrumentId": "Venezuela (Sanctions) (EU Exit) Regulations 2019",
         "legalInstrumentUrl": "https://www.legislation.gov.uk/uksi/2019/135/contents",

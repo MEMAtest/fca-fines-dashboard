@@ -8,7 +8,7 @@ import {
   globalRank,
   regionalAverages,
 } from "./countryView.js";
-import { computeCountryRiskV2 } from "./countryRiskV2.js";
+import { computeCountryRiskCurrent } from "./countryRiskMethodology.js";
 import { getApprovedSanctionsCoverage } from "./sanctionsApprovedData.js";
 
 const FORMER_V1_GAPS = ["VG", "CW", "GI", "GG", "IM", "MS", "SX", "TC", "VA"];
@@ -22,8 +22,8 @@ describe("country score publication safeguards", () => {
     const index = buildCountryIndex();
     expect(index).toHaveLength(213);
     expect(index.filter((entry) => entry.score === 0)).toEqual([]);
-    expect(index.filter((entry) => entry.score === null)).toEqual([]);
-    expect(index.filter((entry) => entry.status === "insufficient-data")).toEqual([]);
+    expect(index.filter((entry) => entry.score === null).length).toBe(14);
+    expect(index.filter((entry) => entry.status === "insufficient-data").length).toBe(14);
   });
 
   it.each(FORMER_V1_GAPS)("publishes %s provisionally without assigning a Low band", (iso2) => {
@@ -36,9 +36,9 @@ describe("country score publication safeguards", () => {
 
   it("includes complete and provisional jurisdictions in ranks and regional averages", () => {
     const rated = buildCountryIndex().filter((entry) => entry.score !== null);
-    expect(rated).toHaveLength(213);
-    expect(globalRank("GB").total).toBe(213);
-    expect(regionalAverages().reduce((sum, region) => sum + region.count, 0)).toBe(213);
+    expect(rated).toHaveLength(199);
+    expect(globalRank("GB").total).toBe(199);
+    expect(regionalAverages().reduce((sum, region) => sum + region.count, 0)).toBe(199);
   });
 
   it("exposes only the complete promoted sanctions snapshot", () => {
@@ -49,13 +49,13 @@ describe("country score publication safeguards", () => {
 
   it("keeps the public coverage result fail-closed for a future partial jurisdiction", () => {
     const partialCoverage = getApprovedSanctionsCoverage("GB").slice(0, 3);
-    const result = computeCountryRiskV2("GB", { sanctionsCoverage: partialCoverage });
+    const result = computeCountryRiskCurrent("GB", { sanctionsCoverage: partialCoverage });
     const presentation = countrySanctionsPresentation("GB", result);
     expect(presentation.sanctionsCoverageComplete).toBe(false);
     expect(presentation.sanctions).toBeUndefined();
     expect(presentation.sanctionsTier).toBeUndefined();
-    expect(result.pillars.sanctions.coverageStatus).toBe("unavailable");
-    expect(result.limitingReasons).toContain("Sanctions regime coverage is not yet complete");
+    expect(result.overlays.sanctions.treatment).toBe("unavailable");
+    expect(result.limitingReasons).toContain("Sanctions overlay coverage is not complete; no absence is assumed");
   });
 
   it.each(["CW", "VG"])("uses safe decision copy for %s", (iso2) => {
@@ -63,7 +63,7 @@ describe("country score publication safeguards", () => {
     expect(country).toBeDefined();
     const view = buildCountryView(country!);
     expect(view.scoreStatus).toBe("provisional");
-    expect(view.riskV2.score).not.toBeNull();
+    expect(view.riskV3.score).not.toBeNull();
     expect(view.riskV2.band).not.toBe("low");
     expect(view.decision.verdictParagraph).toContain("Some information is unavailable");
     expect(view.decision.verdictParagraph).toContain("will not be labelled Low risk");

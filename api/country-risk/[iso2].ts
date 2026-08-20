@@ -4,6 +4,8 @@ import { getFatfAssessment, FATF_ASSESSMENT_EFFECTIVE_AT, FATF_ASSESSMENT_RETRIE
 import { getFatfStatus, FATF_LIST_SHA256, FATF_SOURCE_URL, FATF_VERIFIED_AT } from "../../src/data/fatfStatus.js";
 import { getGovernanceDimensions, GOVERNANCE_LICENCE, GOVERNANCE_RETRIEVED_AT, GOVERNANCE_SHA256, GOVERNANCE_SOURCE, GOVERNANCE_VINTAGE } from "../../src/data/governanceData.js";
 import { computeCountryRiskV2, COUNTRY_RISK_METHODOLOGY_VERSION, fatfAssessmentRisk } from "../../src/data/countryRiskV2.js";
+import { computeCountryRiskV3 } from "../../src/data/countryRiskV3.js";
+import { resolveCountryRiskMethodology, CURRENT_COUNTRY_RISK_METHODOLOGY_VERSION } from "../../src/data/countryRiskMethodology.js";
 import { getCpi, CPI_LICENCE, CPI_SOURCE, CPI_YEAR } from "../../src/data/cpiData.js";
 import { computeCountryRiskScore } from "../../src/data/countryRiskScore.js";
 import { countryRiskSourcesAsOf } from "../../src/data/countryRiskSources.js";
@@ -20,13 +22,54 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   res.setHeader("Access-Control-Allow-Origin", "*");
   if (req.method !== "GET") return res.status(405).json({ error: "Method not allowed" });
   const iso2 = String(req.query.iso2 ?? "").toUpperCase();
-  const methodology = String(req.query.methodology ?? "v2");
-  if (methodology !== "v2" && methodology !== COUNTRY_RISK_METHODOLOGY_VERSION) {
-    return res.status(400).json({ error: `Unsupported methodology: ${methodology}` });
+  const requested = req.query.methodology == null ? null : String(req.query.methodology);
+  let methodology: "v2" | "v3";
+  try {
+    methodology = resolveCountryRiskMethodology(requested);
+  } catch {
+    return res.status(400).json({ error: `Unsupported methodology: ${requested}` });
   }
   const country = getCountryByIso2(iso2);
   if (!country) return res.status(404).json({ error: "Country not found" });
   const asOf = new Date();
+  res.setHeader("Cache-Control", "public, max-age=300, s-maxage=3600");
+  if (methodology === "v3") {
+    const result = computeCountryRiskV3(iso2, { asOf });
+    const sources = countryRiskSourcesAsOf(asOf);
+    const fatf = getFatfStatus(iso2);
+    const governance = getGovernanceDimensions(iso2);
+    const sanctions = getApprovedSanctions(iso2);
+    let history: Array<Record<string, unknown>> = [];
+    try {
+      const sql = getSqlClient();
+      history = await sql(
+        `SELECT sr.id AS score_run_id, sr.run_hash, sr.completed_at,
+                s.score, s.band, s.publication_status, s.confidence, s.arithmetic
+         FROM country_risk_scores s
+         JOIN country_risk_score_runs sr ON sr.id = s.score_run_id
+         WHERE s.iso2 = $1 AND sr.methodology_version = $2
+         ORDER BY sr.completed_at DESC, sr.id DESC LIMIT 12`,
+        [iso2, CURRENT_COUNTRY_RISK_METHODOLOGY_VERSION],
+      );
+    } catch (error) {
+      console.warn("Country-risk v3 score history unavailable", error instanceof Error ? error.message : error);
+    }
+    return res.status(200).json({
+      country,
+      result,
+      history,
+      methodologyVersion: CURRENT_COUNTRY_RISK_METHODOLOGY_VERSION,
+      sources,
+      evidence: {
+        beneficialOwnership: result.beneficialOwnership,
+        overlays: result.overlays,
+        fatf: fatf ?? null,
+        governance: governance ?? null,
+        sanctions: sanctions?.programs ?? [],
+      },
+      context: { transparencyInternationalCpi: getCpi(iso2) ?? null, scored: false },
+    });
+  }
   const result = computeCountryRiskV2(iso2, { asOf });
   const previous = computeCountryRiskScore(iso2);
   const previousScore = previous.hasGovernance ? previous.score : null;
@@ -69,7 +112,6 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     && currentPersisted?.publication_status === result.status
     && currentPersisted?.confidence === result.confidence
     && currentPersisted?.arithmetic === result.arithmetic;
-  res.setHeader("Cache-Control", "public, max-age=300, s-maxage=3600");
   return res.status(200).json({
     country,
     result,
