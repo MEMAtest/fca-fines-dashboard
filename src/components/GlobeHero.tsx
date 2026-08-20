@@ -15,6 +15,26 @@ import '../styles/globe-hero.css';
 const Globe = lazy(() => import('react-globe.gl'));
 
 interface GlobeHeroProps {
+  /**
+   * Render ONLY the globe, without this component's own headline, CTA,
+   * stat cards and regulator grid. The homepage hero supplies all of those;
+   * rendering both produced two competing headings and a second,
+   * contradictory set of figures on the same page.
+   */
+  visualOnly?: boolean;
+  /**
+   * Authoritative figures from the page that renders this. GlobeHero otherwise
+   * fetches its own stats endpoint, which returns DIFFERENT numbers from
+   * /api/unified/overview — the homepage showed "54 live regulators" beside
+   * this component's "61 live", and 38,116 actions beside 82,345. One page,
+   * one source of truth.
+   */
+  figures?: {
+    actions?: number | null;
+    countries?: number | null;
+    penalties?: string | null;
+    regulatorFeeds?: number | null;
+  };
   onCountryClick: (countryCode: string) => void;
 }
 
@@ -165,7 +185,7 @@ function useGlobeSize(): number {
   return size;
 }
 
-export function GlobeHero({ onCountryClick }: GlobeHeroProps) {
+export function GlobeHero({ onCountryClick, visualOnly = false, figures }: GlobeHeroProps) {
   const globeEl = useRef<any>(null);
   const resumeTimer = useRef<ReturnType<typeof setTimeout> | null>(null) as MutableRefObject<ReturnType<typeof setTimeout> | null>;
   const userInteracting = useRef(false);
@@ -206,12 +226,30 @@ export function GlobeHero({ onCountryClick }: GlobeHeroProps) {
   }, []);
 
   // 4 floating data cards around the globe (dark translucent panels with icons)
-  const globeStats: FloatingStat[] = useMemo(() => [
-    { value: stats.totalActions.toLocaleString(), label: 'Total Enforcement Actions', variant: 'inside', size: 'lg', top: '10%', left: '5%', icon: <Activity size={16} /> },
-    { value: `${stats.totalCountries}`, label: 'Countries Monitored', variant: 'inside', size: 'md', top: '8%', right: '5%', icon: <Flag size={16} /> },
-    { value: `${stats.totalRegulators}`, label: 'Live Regulators on Dashboard', variant: 'inside', size: 'md', bottom: '18%', left: '5%', icon: <Users size={16} /> },
-    { value: `${stats.earliestYear}\u2013${stats.latestYear}`, label: 'Historical Depth Coverage', variant: 'inside', size: 'lg', bottom: '18%', right: '2%', icon: <Calendar size={16} /> },
-  ], [stats]);
+  const globeStats: FloatingStat[] = useMemo(() => {
+    if (visualOnly) {
+      // Three cards, matching the design, all from the caller's figures. A card
+      // whose figure is unavailable is omitted rather than shown as a zero or a
+      // stale fallback.
+      const cards: FloatingStat[] = [];
+      if (typeof figures?.actions === 'number') {
+        cards.push({ value: figures.actions.toLocaleString(), label: 'total enforcement actions', variant: 'inside', size: 'lg', top: '12%', left: '2%', icon: <Activity size={16} /> });
+      }
+      if (typeof figures?.countries === 'number') {
+        cards.push({ value: `${figures.countries}`, label: 'countries monitored', variant: 'inside', size: 'md', top: '8%', right: '4%', icon: <Flag size={16} /> });
+      }
+      if (figures?.penalties) {
+        cards.push({ value: figures.penalties, label: 'in penalties tracked', variant: 'inside', size: 'lg', bottom: '20%', right: '2%', icon: <Gavel size={16} /> });
+      }
+      return cards;
+    }
+    return [
+      { value: stats.totalActions.toLocaleString(), label: 'Total Enforcement Actions', variant: 'inside', size: 'lg', top: '10%', left: '5%', icon: <Activity size={16} /> },
+      { value: `${stats.totalCountries}`, label: 'Countries Monitored', variant: 'inside', size: 'md', top: '8%', right: '5%', icon: <Flag size={16} /> },
+      { value: `${stats.totalRegulators}`, label: 'Live Regulators on Dashboard', variant: 'inside', size: 'md', bottom: '18%', left: '5%', icon: <Users size={16} /> },
+      { value: `${stats.earliestYear}\u2013${stats.latestYear}`, label: 'Historical Depth Coverage', variant: 'inside', size: 'lg', bottom: '18%', right: '2%', icon: <Calendar size={16} /> },
+    ];
+  }, [stats, visualOnly, figures]);
 
   const coveredCountries = useMemo(() => new Set(getCoveredCountries()), []);
 
@@ -367,8 +405,9 @@ export function GlobeHero({ onCountryClick }: GlobeHeroProps) {
   }
 
   return (
-    <div className="globe-hero-wrapper">
-      {/* ===== LEFT COLUMN: Content ===== */}
+    <div className={`globe-hero-wrapper${visualOnly ? ' globe-hero-wrapper--visual-only' : ''}`}>
+      {/* ===== LEFT COLUMN: Content (suppressed in visualOnly) ===== */}
+      {!visualOnly && (
       <div className="globe-hero-wrapper__left">
         {/* h2, not h1: the homepage's own hero owns the single <h1>. Two
             <h1> elements on the highest-traffic page is an SEO defect. */}
@@ -451,6 +490,8 @@ export function GlobeHero({ onCountryClick }: GlobeHeroProps) {
         </motion.div>
       </div>
 
+      )}
+
       {/* ===== RIGHT COLUMN: Globe on light bg ===== */}
       <div className="globe-hero-wrapper__right">
         <div className="globe-container">
@@ -492,8 +533,30 @@ export function GlobeHero({ onCountryClick }: GlobeHeroProps) {
           {/* Hover tooltip */}
           {hoveredCountry && <HoverTooltip countryCode={hoveredCountry} />}
 
-          {/* 4 floating data cards around globe */}
+          {/* Floating data cards around the globe */}
           <FloatingStats stats={globeStats} />
+
+          {visualOnly && (
+            <div className="globe-legend">
+              <div className="globe-legend__row">
+                <span className="globe-legend__swatch globe-legend__swatch--covered" aria-hidden="true" />
+                {typeof figures?.countries === 'number'
+                  ? `${figures.countries} countries covered`
+                  : 'countries covered'}
+              </div>
+              <div className="globe-legend__row globe-legend__row--muted">
+                <span className="globe-legend__swatch globe-legend__swatch--uncovered" aria-hidden="true" />
+                not yet monitored
+              </div>
+              <div className="globe-legend__row">
+                <span className="globe-legend__dot" aria-hidden="true" />
+                {typeof figures?.regulatorFeeds === 'number'
+                  ? `${figures.regulatorFeeds} regulator feeds`
+                  : 'regulator feeds'}
+              </div>
+              <p className="globe-legend__hint">Drag to rotate · tap a country</p>
+            </div>
+          )}
         </div>
       </div>
     </div>
