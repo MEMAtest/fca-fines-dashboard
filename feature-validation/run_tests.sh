@@ -263,11 +263,11 @@ validate_regulator_count() {
         return 1
     fi
 
-    if grep -q "REGULATOR_COUNT.*=.*['\"]45+['\"]" "$site_constants"; then
-        log_success "REGULATOR_COUNT constant is set to '45+'"
+    if grep -q 'REGULATOR_COUNT = "54"' "$site_constants" && grep -q 'REGULATOR_COUNT_NUMERIC = 54' "$site_constants"; then
+        log_success "REGULATOR_COUNT constants are set to 54"
         return 0
     else
-        log_error "REGULATOR_COUNT constant is NOT '45+' in site.ts"
+        log_error "REGULATOR_COUNT constants are not set to 54 in site.ts"
         return 1
     fi
 }
@@ -289,10 +289,10 @@ validate_index_html_structure() {
     fi
 
     # Check for global description meta tag (check content separately since HTML is multi-line)
-    if grep -q 'content=".*45\+.*global' "$index_html"; then
-        log_success "Meta description includes '45+' and 'global'"
+    if grep -q 'content=".*54.*global' "$index_html"; then
+        log_success "Meta description includes '54' and 'global'"
     else
-        log_error "Meta description does not include '45+' and 'global'"
+        log_error "Meta description does not include '54' and 'global'"
         return 1
     fi
 
