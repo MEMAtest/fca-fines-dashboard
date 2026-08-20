@@ -5,7 +5,6 @@
 
 import { useRef, useEffect, useState, useMemo, useCallback, Suspense, lazy, type MutableRefObject } from 'react';
 import { motion } from 'framer-motion';
-import { REGULATOR_COUNT } from '../constants/site.js';
 import { Gavel, Users, Calendar, Activity, Flag } from 'lucide-react';
 import { getRegulatorsForCountry, getCoveredCountries, getAllCountryInfo } from '../data/countryRegulatorMapping.js';
 import { FloatingStats, type FloatingStat } from './FloatingStats.js';
@@ -179,6 +178,7 @@ export function GlobeHero({ onCountryClick }: GlobeHeroProps) {
   // Dynamic stats from API
   const [stats, setStats] = useState({
     totalActions: FALLBACK_TOTAL_ACTIONS,
+    fcaActions: null as number | null,
     totalRegulators: FALLBACK_TOTAL_REGULATORS,
     totalCountries: FALLBACK_COVERED_COUNTRIES,
     earliestYear: FALLBACK_EARLIEST_YEAR,
@@ -192,6 +192,7 @@ export function GlobeHero({ onCountryClick }: GlobeHeroProps) {
       .then(data => {
         setStats({
           totalActions: data.totalActions,
+          fcaActions: typeof data.fcaActions === 'number' ? data.fcaActions : null,
           totalRegulators: data.totalRegulators,
           totalCountries: data.totalCountries,
           earliestYear: data.earliestYear,
@@ -378,7 +379,7 @@ export function GlobeHero({ onCountryClick }: GlobeHeroProps) {
           transition={{ duration: 0.6, delay: 0.15 }}
           className="globe-hero__description"
         >
-          Global enforcement intelligence across {REGULATOR_COUNT} financial regulators worldwide.
+          Global enforcement intelligence across {LIVE_REGULATOR_NAV_ITEMS.length} configured live financial regulators worldwide.
         </motion.p>
 
         <motion.a
@@ -399,9 +400,9 @@ export function GlobeHero({ onCountryClick }: GlobeHeroProps) {
         >
           <div className="hero-stat-card hero-stat-card--premium">
             <div className="hero-stat-card__icon-row"><Gavel size={18} className="hero-stat-card__icon" /></div>
-            <div className="hero-stat-card__value">{FCA_DATA?.count ?? 308} FCA</div>
+            <div className="hero-stat-card__value">{stats.fcaActions === null ? '—' : `${stats.fcaActions.toLocaleString()} FCA`}</div>
             <div className="hero-stat-card__label">actions</div>
-            <div className="hero-stat-card__sub">SINCE {FCA_DATA?.earliestYear ?? 2013}</div>
+            <div className="hero-stat-card__sub">{stats.fcaActions === null ? 'LIVE COUNT UNAVAILABLE' : `SINCE ${FCA_DATA?.earliestYear ?? 2013}`}</div>
           </div>
           <div className="hero-stat-card hero-stat-card--premium">
             <div className="hero-stat-card__icon-row"><Users size={18} className="hero-stat-card__icon" /></div>

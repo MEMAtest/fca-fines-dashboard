@@ -20,7 +20,7 @@ describe("DataCoverageNotice", () => {
     expect(
       screen.queryByText(/scrap|manifest|feed floor/i),
     ).not.toBeInTheDocument();
-    expect(screen.getByText(/19 enforcement actions/i)).toBeInTheDocument();
+    expect(screen.getByText(/Current count unavailable/i)).toBeInTheDocument();
   });
 
   it("explains sparse source coverage for thin official feeds", () => {

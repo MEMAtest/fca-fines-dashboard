@@ -1,0 +1,47 @@
+{
+  "generatedAt": "2026-08-20T12:09:41.497Z",
+  "rows": [
+    {
+      "countryLabel": "Euro area",
+      "iso2": "EU",
+      "authority": "European Central Bank",
+      "website": "http://www.ecb.europa.eu/",
+      "role": "central_banking",
+      "source": "BIS",
+      "sourceUrl": "https://www.bis.org/cbanks.htm"
+    },
+    {
+      "countryLabel": "Puerto Rico",
+      "iso2": "PR",
+      "authority": "Office of the Commissioner of Financial Institutions",
+      "website": "http://www.ocif.gobierno.pr/index_eng.html",
+      "role": "prudential_supervision",
+      "source": "BIS",
+      "sourceUrl": "https://www.bis.org/regauth.htm"
+    },
+    {
+      "countryLabel": "EIOPA",
+      "authority": "European Insurance and Occupational Pensions Authority (EIOPA)",
+      "website": "https://eiopa.europa.eu/",
+      "role": "insurance",
+      "source": "IAIS",
+      "sourceUrl": "https://www.iais.org/about-the-iais/iais-members/"
+    },
+    {
+      "countryLabel": "France - Calédonie",
+      "authority": "Gouvernement de la Nouvelle-Calédonie",
+      "website": null,
+      "role": "insurance",
+      "source": "IAIS",
+      "sourceUrl": "https://www.iais.org/about-the-iais/iais-members/"
+    },
+    {
+      "countryLabel": "French Polynesia",
+      "authority": "French Polynesia Presidency",
+      "website": null,
+      "role": "insurance",
+      "source": "IAIS",
+      "sourceUrl": "https://www.iais.org/about-the-iais/iais-members/"
+    }
+  ]
+}

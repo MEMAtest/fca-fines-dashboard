@@ -1,0 +1,6755 @@
+{
+  "methodology_version": "1.0.0",
+  "as_of": "2026-08-20T12:11:07.553Z",
+  "status": "shadow-only",
+  "rows": [
+    {
+      "iso2": "DZ",
+      "country": "Algeria",
+      "region": "Africa",
+      "applicableRoles": [
+        "financial_intelligence",
+        "prudential_supervision",
+        "securities"
+      ],
+      "assessedRoles": [],
+      "roleScores": {
+        "financial_intelligence": null,
+        "prudential_supervision": null,
+        "securities": null
+      },
+      "roleAuthorityCounts": {
+        "financial_intelligence": 0,
+        "prudential_supervision": 0,
+        "securities": 0
+      },
+      "roleCoveragePct": 0,
+      "score": null,
+      "band": null,
+      "status": "not-assessed",
+      "blocker": "Fewer than two assessed mandate roles (0/3).",
+      "provenance": [
+        "docs/research/regulatory-signal/country-regulatory-ecosystem-baseline.json",
+        "regulator-shadow-results.json"
+      ]
+    },
+    {
+      "iso2": "AO",
+      "country": "Angola",
+      "region": "Africa",
+      "applicableRoles": [
+        "financial_intelligence",
+        "insurance",
+        "pensions",
+        "prudential_supervision",
+        "securities"
+      ],
+      "assessedRoles": [],
+      "roleScores": {
+        "financial_intelligence": null,
+        "insurance": null,
+        "pensions": null,
+        "prudential_supervision": null,
+        "securities": null
+      },
+      "roleAuthorityCounts": {
+        "financial_intelligence": 0,
+        "insurance": 0,
+        "pensions": 0,
+        "prudential_supervision": 0,
+        "securities": 0
+      },
+      "roleCoveragePct": 0,
+      "score": null,
+      "band": null,
+      "status": "not-assessed",
+      "blocker": "Fewer than two assessed mandate roles (0/5).",
+      "provenance": [
+        "docs/research/regulatory-signal/country-regulatory-ecosystem-baseline.json",
+        "regulator-shadow-results.json"
+      ]
+    },
+    {
+      "iso2": "BJ",
+      "country": "Benin",
+      "region": "Africa",
+      "applicableRoles": [
+        "financial_intelligence",
+        "insurance",
+        "prudential_supervision",
+        "securities"
+      ],
+      "assessedRoles": [],
+      "roleScores": {
+        "financial_intelligence": null,
+        "insurance": null,
+        "prudential_supervision": null,
+        "securities": null
+      },
+      "roleAuthorityCounts": {
+        "financial_intelligence": 0,
+        "insurance": 0,
+        "prudential_supervision": 0,
+        "securities": 0
+      },
+      "roleCoveragePct": 0,
+      "score": null,
+      "band": null,
+      "status": "not-assessed",
+      "blocker": "Fewer than two assessed mandate roles (0/4).",
+      "provenance": [
+        "docs/research/regulatory-signal/country-regulatory-ecosystem-baseline.json",
+        "regulator-shadow-results.json"
+      ]
+    },
+    {
+      "iso2": "BW",
+      "country": "Botswana",
+      "region": "Africa",
+      "applicableRoles": [
+        "financial_intelligence",
+        "insurance",
+        "pensions",
+        "prudential_supervision"
+      ],
+      "assessedRoles": [],
+      "roleScores": {
+        "financial_intelligence": null,
+        "insurance": null,
+        "pensions": null,
+        "prudential_supervision": null
+      },
+      "roleAuthorityCounts": {
+        "financial_intelligence": 0,
+        "insurance": 0,
+        "pensions": 0,
+        "prudential_supervision": 0
+      },
+      "roleCoveragePct": 0,
+      "score": null,
+      "band": null,
+      "status": "not-assessed",
+      "blocker": "Fewer than two assessed mandate roles (0/4).",
+      "provenance": [
+        "docs/research/regulatory-signal/country-regulatory-ecosystem-baseline.json",
+        "regulator-shadow-results.json"
+      ]
+    },
+    {
+      "iso2": "BF",
+      "country": "Burkina Faso",
+      "region": "Africa",
+      "applicableRoles": [
+        "financial_intelligence",
+        "insurance",
+        "prudential_supervision",
+        "securities"
+      ],
+      "assessedRoles": [],
+      "roleScores": {
+        "financial_intelligence": null,
+        "insurance": null,
+        "prudential_supervision": null,
+        "securities": null
+      },
+      "roleAuthorityCounts": {
+        "financial_intelligence": 0,
+        "insurance": 0,
+        "prudential_supervision": 0,
+        "securities": 0
+      },
+      "roleCoveragePct": 0,
+      "score": null,
+      "band": null,
+      "status": "not-assessed",
+      "blocker": "Fewer than two assessed mandate roles (0/4).",
+      "provenance": [
+        "docs/research/regulatory-signal/country-regulatory-ecosystem-baseline.json",
+        "regulator-shadow-results.json"
+      ]
+    },
+    {
+      "iso2": "BI",
+      "country": "Burundi",
+      "region": "Africa",
+      "applicableRoles": [
+        "insurance",
+        "prudential_supervision"
+      ],
+      "assessedRoles": [],
+      "roleScores": {
+        "insurance": null,
+        "prudential_supervision": null
+      },
+      "roleAuthorityCounts": {
+        "insurance": 0,
+        "prudential_supervision": 0
+      },
+      "roleCoveragePct": 0,
+      "score": null,
+      "band": null,
+      "status": "not-assessed",
+      "blocker": "Fewer than two assessed mandate roles (0/2).",
+      "provenance": [
+        "docs/research/regulatory-signal/country-regulatory-ecosystem-baseline.json",
+        "regulator-shadow-results.json"
+      ]
+    },
+    {
+      "iso2": "CV",
+      "country": "Cabo Verde",
+      "region": "Africa",
+      "applicableRoles": [
+        "financial_intelligence",
+        "insurance",
+        "prudential_supervision",
+        "securities"
+      ],
+      "assessedRoles": [],
+      "roleScores": {
+        "financial_intelligence": null,
+        "insurance": null,
+        "prudential_supervision": null,
+        "securities": null
+      },
+      "roleAuthorityCounts": {
+        "financial_intelligence": 0,
+        "insurance": 0,
+        "prudential_supervision": 0,
+        "securities": 0
+      },
+      "roleCoveragePct": 0,
+      "score": null,
+      "band": null,
+      "status": "not-assessed",
+      "blocker": "Fewer than two assessed mandate roles (0/4).",
+      "provenance": [
+        "docs/research/regulatory-signal/country-regulatory-ecosystem-baseline.json",
+        "regulator-shadow-results.json"
+      ]
+    },
+    {
+      "iso2": "CM",
+      "country": "Cameroon",
+      "region": "Africa",
+      "applicableRoles": [
+        "financial_intelligence",
+        "insurance",
+        "securities"
+      ],
+      "assessedRoles": [],
+      "roleScores": {
+        "financial_intelligence": null,
+        "insurance": null,
+        "securities": null
+      },
+      "roleAuthorityCounts": {
+        "financial_intelligence": 0,
+        "insurance": 0,
+        "securities": 0
+      },
+      "roleCoveragePct": 0,
+      "score": null,
+      "band": null,
+      "status": "not-assessed",
+      "blocker": "Fewer than two assessed mandate roles (0/3).",
+      "provenance": [
+        "docs/research/regulatory-signal/country-regulatory-ecosystem-baseline.json",
+        "regulator-shadow-results.json"
+      ]
+    },
+    {
+      "iso2": "CF",
+      "country": "Central African Republic",
+      "region": "Africa",
+      "applicableRoles": [
+        "insurance",
+        "prudential_supervision",
+        "securities"
+      ],
+      "assessedRoles": [],
+      "roleScores": {
+        "insurance": null,
+        "prudential_supervision": null,
+        "securities": null
+      },
+      "roleAuthorityCounts": {
+        "insurance": 0,
+        "prudential_supervision": 0,
+        "securities": 0
+      },
+      "roleCoveragePct": 0,
+      "score": null,
+      "band": null,
+      "status": "not-assessed",
+      "blocker": "Fewer than two assessed mandate roles (0/3).",
+      "provenance": [
+        "docs/research/regulatory-signal/country-regulatory-ecosystem-baseline.json",
+        "regulator-shadow-results.json"
+      ]
+    },
+    {
+      "iso2": "TD",
+      "country": "Chad",
+      "region": "Africa",
+      "applicableRoles": [
+        "financial_intelligence",
+        "insurance",
+        "securities"
+      ],
+      "assessedRoles": [],
+      "roleScores": {
+        "financial_intelligence": null,
+        "insurance": null,
+        "securities": null
+      },
+      "roleAuthorityCounts": {
+        "financial_intelligence": 0,
+        "insurance": 0,
+        "securities": 0
+      },
+      "roleCoveragePct": 0,
+      "score": null,
+      "band": null,
+      "status": "not-assessed",
+      "blocker": "Fewer than two assessed mandate roles (0/3).",
+      "provenance": [
+        "docs/research/regulatory-signal/country-regulatory-ecosystem-baseline.json",
+        "regulator-shadow-results.json"
+      ]
+    },
+    {
+      "iso2": "KM",
+      "country": "Comoros",
+      "region": "Africa",
+      "applicableRoles": [
+        "prudential_supervision"
+      ],
+      "assessedRoles": [],
+      "roleScores": {
+        "prudential_supervision": null
+      },
+      "roleAuthorityCounts": {
+        "prudential_supervision": 0
+      },
+      "roleCoveragePct": 0,
+      "score": null,
+      "band": null,
+      "status": "not-assessed",
+      "blocker": "Fewer than two assessed mandate roles (0/1).",
+      "provenance": [
+        "docs/research/regulatory-signal/country-regulatory-ecosystem-baseline.json",
+        "regulator-shadow-results.json"
+      ]
+    },
+    {
+      "iso2": "CG",
+      "country": "Republic of the Congo",
+      "region": "Africa",
+      "applicableRoles": [
+        "financial_intelligence",
+        "insurance",
+        "securities"
+      ],
+      "assessedRoles": [],
+      "roleScores": {
+        "financial_intelligence": null,
+        "insurance": null,
+        "securities": null
+      },
+      "roleAuthorityCounts": {
+        "financial_intelligence": 0,
+        "insurance": 0,
+        "securities": 0
+      },
+      "roleCoveragePct": 0,
+      "score": null,
+      "band": null,
+      "status": "not-assessed",
+      "blocker": "Fewer than two assessed mandate roles (0/3).",
+      "provenance": [
+        "docs/research/regulatory-signal/country-regulatory-ecosystem-baseline.json",
+        "regulator-shadow-results.json"
+      ]
+    },
+    {
+      "iso2": "CD",
+      "country": "Democratic Republic of the Congo",
+      "region": "Africa",
+      "applicableRoles": [
+        "financial_intelligence",
+        "insurance",
+        "prudential_supervision"
+      ],
+      "assessedRoles": [],
+      "roleScores": {
+        "financial_intelligence": null,
+        "insurance": null,
+        "prudential_supervision": null
+      },
+      "roleAuthorityCounts": {
+        "financial_intelligence": 0,
+        "insurance": 0,
+        "prudential_supervision": 0
+      },
+      "roleCoveragePct": 0,
+      "score": null,
+      "band": null,
+      "status": "not-assessed",
+      "blocker": "Fewer than two assessed mandate roles (0/3).",
+      "provenance": [
+        "docs/research/regulatory-signal/country-regulatory-ecosystem-baseline.json",
+        "regulator-shadow-results.json"
+      ]
+    },
+    {
+      "iso2": "CI",
+      "country": "Côte d'Ivoire",
+      "region": "Africa",
+      "applicableRoles": [
+        "financial_intelligence",
+        "insurance",
+        "prudential_supervision",
+        "securities"
+      ],
+      "assessedRoles": [],
+      "roleScores": {
+        "financial_intelligence": null,
+        "insurance": null,
+        "prudential_supervision": null,
+        "securities": null
+      },
+      "roleAuthorityCounts": {
+        "financial_intelligence": 0,
+        "insurance": 0,
+        "prudential_supervision": 0,
+        "securities": 0
+      },
+      "roleCoveragePct": 0,
+      "score": null,
+      "band": null,
+      "status": "not-assessed",
+      "blocker": "Fewer than two assessed mandate roles (0/4).",
+      "provenance": [
+        "docs/research/regulatory-signal/country-regulatory-ecosystem-baseline.json",
+        "regulator-shadow-results.json"
+      ]
+    },
+    {
+      "iso2": "DJ",
+      "country": "Djibouti",
+      "region": "Africa",
+      "applicableRoles": [
+        "prudential_supervision"
+      ],
+      "assessedRoles": [],
+      "roleScores": {
+        "prudential_supervision": null
+      },
+      "roleAuthorityCounts": {
+        "prudential_supervision": 0
+      },
+      "roleCoveragePct": 0,
+      "score": null,
+      "band": null,
+      "status": "not-assessed",
+      "blocker": "Fewer than two assessed mandate roles (0/1).",
+      "provenance": [
+        "docs/research/regulatory-signal/country-regulatory-ecosystem-baseline.json",
+        "regulator-shadow-results.json"
+      ]
+    },
+    {
+      "iso2": "EG",
+      "country": "Egypt",
+      "region": "Africa",
+      "applicableRoles": [
+        "financial_intelligence",
+        "insurance",
+        "pensions",
+        "prudential_supervision",
+        "securities"
+      ],
+      "assessedRoles": [],
+      "roleScores": {
+        "financial_intelligence": null,
+        "insurance": null,
+        "pensions": null,
+        "prudential_supervision": null,
+        "securities": null
+      },
+      "roleAuthorityCounts": {
+        "financial_intelligence": 0,
+        "insurance": 0,
+        "pensions": 0,
+        "prudential_supervision": 0,
+        "securities": 0
+      },
+      "roleCoveragePct": 0,
+      "score": null,
+      "band": null,
+      "status": "not-assessed",
+      "blocker": "Fewer than two assessed mandate roles (0/5).",
+      "provenance": [
+        "docs/research/regulatory-signal/country-regulatory-ecosystem-baseline.json",
+        "regulator-shadow-results.json"
+      ]
+    },
+    {
+      "iso2": "GQ",
+      "country": "Equatorial Guinea",
+      "region": "Africa",
+      "applicableRoles": [
+        "financial_intelligence",
+        "insurance",
+        "securities"
+      ],
+      "assessedRoles": [],
+      "roleScores": {
+        "financial_intelligence": null,
+        "insurance": null,
+        "securities": null
+      },
+      "roleAuthorityCounts": {
+        "financial_intelligence": 0,
+        "insurance": 0,
+        "securities": 0
+      },
+      "roleCoveragePct": 0,
+      "score": null,
+      "band": null,
+      "status": "not-assessed",
+      "blocker": "Fewer than two assessed mandate roles (0/3).",
+      "provenance": [
+        "docs/research/regulatory-signal/country-regulatory-ecosystem-baseline.json",
+        "regulator-shadow-results.json"
+      ]
+    },
+    {
+      "iso2": "ER",
+      "country": "Eritrea",
+      "region": "Africa",
+      "applicableRoles": [
+        "prudential_supervision"
+      ],
+      "assessedRoles": [],
+      "roleScores": {
+        "prudential_supervision": null
+      },
+      "roleAuthorityCounts": {
+        "prudential_supervision": 0
+      },
+      "roleCoveragePct": 0,
+      "score": null,
+      "band": null,
+      "status": "not-assessed",
+      "blocker": "Fewer than two assessed mandate roles (0/1).",
+      "provenance": [
+        "docs/research/regulatory-signal/country-regulatory-ecosystem-baseline.json",
+        "regulator-shadow-results.json"
+      ]
+    },
+    {
+      "iso2": "SZ",
+      "country": "Eswatini",
+      "region": "Africa",
+      "applicableRoles": [
+        "financial_intelligence",
+        "insurance",
+        "pensions",
+        "prudential_supervision"
+      ],
+      "assessedRoles": [],
+      "roleScores": {
+        "financial_intelligence": null,
+        "insurance": null,
+        "pensions": null,
+        "prudential_supervision": null
+      },
+      "roleAuthorityCounts": {
+        "financial_intelligence": 0,
+        "insurance": 0,
+        "pensions": 0,
+        "prudential_supervision": 0
+      },
+      "roleCoveragePct": 0,
+      "score": null,
+      "band": null,
+      "status": "not-assessed",
+      "blocker": "Fewer than two assessed mandate roles (0/4).",
+      "provenance": [
+        "docs/research/regulatory-signal/country-regulatory-ecosystem-baseline.json",
+        "regulator-shadow-results.json"
+      ]
+    },
+    {
+      "iso2": "ET",
+      "country": "Ethiopia",
+      "region": "Africa",
+      "applicableRoles": [
+        "financial_intelligence",
+        "prudential_supervision"
+      ],
+      "assessedRoles": [],
+      "roleScores": {
+        "financial_intelligence": null,
+        "prudential_supervision": null
+      },
+      "roleAuthorityCounts": {
+        "financial_intelligence": 0,
+        "prudential_supervision": 0
+      },
+      "roleCoveragePct": 0,
+      "score": null,
+      "band": null,
+      "status": "not-assessed",
+      "blocker": "Fewer than two assessed mandate roles (0/2).",
+      "provenance": [
+        "docs/research/regulatory-signal/country-regulatory-ecosystem-baseline.json",
+        "regulator-shadow-results.json"
+      ]
+    },
+    {
+      "iso2": "GA",
+      "country": "Gabon",
+      "region": "Africa",
+      "applicableRoles": [
+        "financial_intelligence",
+        "insurance",
+        "securities"
+      ],
+      "assessedRoles": [],
+      "roleScores": {
+        "financial_intelligence": null,
+        "insurance": null,
+        "securities": null
+      },
+      "roleAuthorityCounts": {
+        "financial_intelligence": 0,
+        "insurance": 0,
+        "securities": 0
+      },
+      "roleCoveragePct": 0,
+      "score": null,
+      "band": null,
+      "status": "not-assessed",
+      "blocker": "Fewer than two assessed mandate roles (0/3).",
+      "provenance": [
+        "docs/research/regulatory-signal/country-regulatory-ecosystem-baseline.json",
+        "regulator-shadow-results.json"
+      ]
+    },
+    {
+      "iso2": "GM",
+      "country": "The Gambia",
+      "region": "Africa",
+      "applicableRoles": [
+        "financial_intelligence",
+        "prudential_supervision"
+      ],
+      "assessedRoles": [],
+      "roleScores": {
+        "financial_intelligence": null,
+        "prudential_supervision": null
+      },
+      "roleAuthorityCounts": {
+        "financial_intelligence": 0,
+        "prudential_supervision": 0
+      },
+      "roleCoveragePct": 0,
+      "score": null,
+      "band": null,
+      "status": "not-assessed",
+      "blocker": "Fewer than two assessed mandate roles (0/2).",
+      "provenance": [
+        "docs/research/regulatory-signal/country-regulatory-ecosystem-baseline.json",
+        "regulator-shadow-results.json"
+      ]
+    },
+    {
+      "iso2": "GH",
+      "country": "Ghana",
+      "region": "Africa",
+      "applicableRoles": [
+        "financial_intelligence",
+        "insurance",
+        "pensions",
+        "prudential_supervision",
+        "securities"
+      ],
+      "assessedRoles": [],
+      "roleScores": {
+        "financial_intelligence": null,
+        "insurance": null,
+        "pensions": null,
+        "prudential_supervision": null,
+        "securities": null
+      },
+      "roleAuthorityCounts": {
+        "financial_intelligence": 0,
+        "insurance": 0,
+        "pensions": 0,
+        "prudential_supervision": 0,
+        "securities": 1
+      },
+      "roleCoveragePct": 0,
+      "score": null,
+      "band": null,
+      "status": "not-assessed",
+      "blocker": "Fewer than two assessed mandate roles (0/5).",
+      "provenance": [
+        "docs/research/regulatory-signal/country-regulatory-ecosystem-baseline.json",
+        "regulator-shadow-results.json"
+      ]
+    },
+    {
+      "iso2": "GN",
+      "country": "Guinea",
+      "region": "Africa",
+      "applicableRoles": [
+        "prudential_supervision"
+      ],
+      "assessedRoles": [],
+      "roleScores": {
+        "prudential_supervision": null
+      },
+      "roleAuthorityCounts": {
+        "prudential_supervision": 0
+      },
+      "roleCoveragePct": 0,
+      "score": null,
+      "band": null,
+      "status": "not-assessed",
+      "blocker": "Fewer than two assessed mandate roles (0/1).",
+      "provenance": [
+        "docs/research/regulatory-signal/country-regulatory-ecosystem-baseline.json",
+        "regulator-shadow-results.json"
+      ]
+    },
+    {
+      "iso2": "GW",
+      "country": "Guinea-Bissau",
+      "region": "Africa",
+      "applicableRoles": [
+        "insurance",
+        "prudential_supervision",
+        "securities"
+      ],
+      "assessedRoles": [],
+      "roleScores": {
+        "insurance": null,
+        "prudential_supervision": null,
+        "securities": null
+      },
+      "roleAuthorityCounts": {
+        "insurance": 0,
+        "prudential_supervision": 0,
+        "securities": 0
+      },
+      "roleCoveragePct": 0,
+      "score": null,
+      "band": null,
+      "status": "not-assessed",
+      "blocker": "Fewer than two assessed mandate roles (0/3).",
+      "provenance": [
+        "docs/research/regulatory-signal/country-regulatory-ecosystem-baseline.json",
+        "regulator-shadow-results.json"
+      ]
+    },
+    {
+      "iso2": "KE",
+      "country": "Kenya",
+      "region": "Africa",
+      "applicableRoles": [
+        "financial_intelligence",
+        "insurance",
+        "pensions",
+        "prudential_supervision",
+        "securities"
+      ],
+      "assessedRoles": [],
+      "roleScores": {
+        "financial_intelligence": null,
+        "insurance": null,
+        "pensions": null,
+        "prudential_supervision": null,
+        "securities": null
+      },
+      "roleAuthorityCounts": {
+        "financial_intelligence": 0,
+        "insurance": 0,
+        "pensions": 0,
+        "prudential_supervision": 0,
+        "securities": 0
+      },
+      "roleCoveragePct": 0,
+      "score": null,
+      "band": null,
+      "status": "not-assessed",
+      "blocker": "Fewer than two assessed mandate roles (0/5).",
+      "provenance": [
+        "docs/research/regulatory-signal/country-regulatory-ecosystem-baseline.json",
+        "regulator-shadow-results.json"
+      ]
+    },
+    {
+      "iso2": "LS",
+      "country": "Lesotho",
+      "region": "Africa",
+      "applicableRoles": [
+        "financial_intelligence",
+        "insurance",
+        "pensions",
+        "prudential_supervision"
+      ],
+      "assessedRoles": [],
+      "roleScores": {
+        "financial_intelligence": null,
+        "insurance": null,
+        "pensions": null,
+        "prudential_supervision": null
+      },
+      "roleAuthorityCounts": {
+        "financial_intelligence": 0,
+        "insurance": 0,
+        "pensions": 0,
+        "prudential_supervision": 0
+      },
+      "roleCoveragePct": 0,
+      "score": null,
+      "band": null,
+      "status": "not-assessed",
+      "blocker": "Fewer than two assessed mandate roles (0/4).",
+      "provenance": [
+        "docs/research/regulatory-signal/country-regulatory-ecosystem-baseline.json",
+        "regulator-shadow-results.json"
+      ]
+    },
+    {
+      "iso2": "LR",
+      "country": "Liberia",
+      "region": "Africa",
+      "applicableRoles": [
+        "financial_intelligence"
+      ],
+      "assessedRoles": [],
+      "roleScores": {
+        "financial_intelligence": null
+      },
+      "roleAuthorityCounts": {
+        "financial_intelligence": 0
+      },
+      "roleCoveragePct": 0,
+      "score": null,
+      "band": null,
+      "status": "not-assessed",
+      "blocker": "Fewer than two assessed mandate roles (0/1).",
+      "provenance": [
+        "docs/research/regulatory-signal/country-regulatory-ecosystem-baseline.json",
+        "regulator-shadow-results.json"
+      ]
+    },
+    {
+      "iso2": "LY",
+      "country": "Libya",
+      "region": "Africa",
+      "applicableRoles": [
+        "prudential_supervision"
+      ],
+      "assessedRoles": [],
+      "roleScores": {
+        "prudential_supervision": null
+      },
+      "roleAuthorityCounts": {
+        "prudential_supervision": 0
+      },
+      "roleCoveragePct": 0,
+      "score": null,
+      "band": null,
+      "status": "not-assessed",
+      "blocker": "Fewer than two assessed mandate roles (0/1).",
+      "provenance": [
+        "docs/research/regulatory-signal/country-regulatory-ecosystem-baseline.json",
+        "regulator-shadow-results.json"
+      ]
+    },
+    {
+      "iso2": "MG",
+      "country": "Madagascar",
+      "region": "Africa",
+      "applicableRoles": [
+        "financial_intelligence",
+        "prudential_supervision"
+      ],
+      "assessedRoles": [],
+      "roleScores": {
+        "financial_intelligence": null,
+        "prudential_supervision": null
+      },
+      "roleAuthorityCounts": {
+        "financial_intelligence": 0,
+        "prudential_supervision": 0
+      },
+      "roleCoveragePct": 0,
+      "score": null,
+      "band": null,
+      "status": "not-assessed",
+      "blocker": "Fewer than two assessed mandate roles (0/2).",
+      "provenance": [
+        "docs/research/regulatory-signal/country-regulatory-ecosystem-baseline.json",
+        "regulator-shadow-results.json"
+      ]
+    },
+    {
+      "iso2": "MW",
+      "country": "Malawi",
+      "region": "Africa",
+      "applicableRoles": [
+        "financial_intelligence",
+        "insurance",
+        "pensions",
+        "prudential_supervision",
+        "securities"
+      ],
+      "assessedRoles": [],
+      "roleScores": {
+        "financial_intelligence": null,
+        "insurance": null,
+        "pensions": null,
+        "prudential_supervision": null,
+        "securities": null
+      },
+      "roleAuthorityCounts": {
+        "financial_intelligence": 0,
+        "insurance": 0,
+        "pensions": 0,
+        "prudential_supervision": 0,
+        "securities": 0
+      },
+      "roleCoveragePct": 0,
+      "score": null,
+      "band": null,
+      "status": "not-assessed",
+      "blocker": "Fewer than two assessed mandate roles (0/5).",
+      "provenance": [
+        "docs/research/regulatory-signal/country-regulatory-ecosystem-baseline.json",
+        "regulator-shadow-results.json"
+      ]
+    },
+    {
+      "iso2": "ML",
+      "country": "Mali",
+      "region": "Africa",
+      "applicableRoles": [
+        "financial_intelligence",
+        "insurance",
+        "prudential_supervision",
+        "securities"
+      ],
+      "assessedRoles": [],
+      "roleScores": {
+        "financial_intelligence": null,
+        "insurance": null,
+        "prudential_supervision": null,
+        "securities": null
+      },
+      "roleAuthorityCounts": {
+        "financial_intelligence": 0,
+        "insurance": 0,
+        "prudential_supervision": 0,
+        "securities": 0
+      },
+      "roleCoveragePct": 0,
+      "score": null,
+      "band": null,
+      "status": "not-assessed",
+      "blocker": "Fewer than two assessed mandate roles (0/4).",
+      "provenance": [
+        "docs/research/regulatory-signal/country-regulatory-ecosystem-baseline.json",
+        "regulator-shadow-results.json"
+      ]
+    },
+    {
+      "iso2": "MR",
+      "country": "Mauritania",
+      "region": "Africa",
+      "applicableRoles": [
+        "prudential_supervision",
+        "securities"
+      ],
+      "assessedRoles": [],
+      "roleScores": {
+        "prudential_supervision": null,
+        "securities": null
+      },
+      "roleAuthorityCounts": {
+        "prudential_supervision": 0,
+        "securities": 0
+      },
+      "roleCoveragePct": 0,
+      "score": null,
+      "band": null,
+      "status": "not-assessed",
+      "blocker": "Fewer than two assessed mandate roles (0/2).",
+      "provenance": [
+        "docs/research/regulatory-signal/country-regulatory-ecosystem-baseline.json",
+        "regulator-shadow-results.json"
+      ]
+    },
+    {
+      "iso2": "MU",
+      "country": "Mauritius",
+      "region": "Africa",
+      "applicableRoles": [
+        "financial_intelligence",
+        "insurance",
+        "pensions",
+        "prudential_supervision",
+        "securities"
+      ],
+      "assessedRoles": [],
+      "roleScores": {
+        "financial_intelligence": null,
+        "insurance": null,
+        "pensions": null,
+        "prudential_supervision": null,
+        "securities": null
+      },
+      "roleAuthorityCounts": {
+        "financial_intelligence": 0,
+        "insurance": 0,
+        "pensions": 0,
+        "prudential_supervision": 0,
+        "securities": 0
+      },
+      "roleCoveragePct": 0,
+      "score": null,
+      "band": null,
+      "status": "not-assessed",
+      "blocker": "Fewer than two assessed mandate roles (0/5).",
+      "provenance": [
+        "docs/research/regulatory-signal/country-regulatory-ecosystem-baseline.json",
+        "regulator-shadow-results.json"
+      ]
+    },
+    {
+      "iso2": "MA",
+      "country": "Morocco",
+      "region": "Africa",
+      "applicableRoles": [
+        "financial_intelligence",
+        "insurance",
+        "pensions",
+        "prudential_supervision",
+        "securities"
+      ],
+      "assessedRoles": [],
+      "roleScores": {
+        "financial_intelligence": null,
+        "insurance": null,
+        "pensions": null,
+        "prudential_supervision": null,
+        "securities": null
+      },
+      "roleAuthorityCounts": {
+        "financial_intelligence": 0,
+        "insurance": 0,
+        "pensions": 0,
+        "prudential_supervision": 0,
+        "securities": 1
+      },
+      "roleCoveragePct": 0,
+      "score": null,
+      "band": null,
+      "status": "not-assessed",
+      "blocker": "Fewer than two assessed mandate roles (0/5).",
+      "provenance": [
+        "docs/research/regulatory-signal/country-regulatory-ecosystem-baseline.json",
+        "regulator-shadow-results.json"
+      ]
+    },
+    {
+      "iso2": "MZ",
+      "country": "Mozambique",
+      "region": "Africa",
+      "applicableRoles": [
+        "financial_intelligence",
+        "insurance",
+        "pensions",
+        "prudential_supervision"
+      ],
+      "assessedRoles": [],
+      "roleScores": {
+        "financial_intelligence": null,
+        "insurance": null,
+        "pensions": null,
+        "prudential_supervision": null
+      },
+      "roleAuthorityCounts": {
+        "financial_intelligence": 0,
+        "insurance": 0,
+        "pensions": 0,
+        "prudential_supervision": 0
+      },
+      "roleCoveragePct": 0,
+      "score": null,
+      "band": null,
+      "status": "not-assessed",
+      "blocker": "Fewer than two assessed mandate roles (0/4).",
+      "provenance": [
+        "docs/research/regulatory-signal/country-regulatory-ecosystem-baseline.json",
+        "regulator-shadow-results.json"
+      ]
+    },
+    {
+      "iso2": "NA",
+      "country": "Namibia",
+      "region": "Africa",
+      "applicableRoles": [
+        "financial_intelligence",
+        "insurance",
+        "pensions",
+        "prudential_supervision"
+      ],
+      "assessedRoles": [],
+      "roleScores": {
+        "financial_intelligence": null,
+        "insurance": null,
+        "pensions": null,
+        "prudential_supervision": null
+      },
+      "roleAuthorityCounts": {
+        "financial_intelligence": 0,
+        "insurance": 0,
+        "pensions": 0,
+        "prudential_supervision": 0
+      },
+      "roleCoveragePct": 0,
+      "score": null,
+      "band": null,
+      "status": "not-assessed",
+      "blocker": "Fewer than two assessed mandate roles (0/4).",
+      "provenance": [
+        "docs/research/regulatory-signal/country-regulatory-ecosystem-baseline.json",
+        "regulator-shadow-results.json"
+      ]
+    },
+    {
+      "iso2": "NE",
+      "country": "Niger",
+      "region": "Africa",
+      "applicableRoles": [
+        "financial_intelligence",
+        "insurance",
+        "prudential_supervision",
+        "securities"
+      ],
+      "assessedRoles": [],
+      "roleScores": {
+        "financial_intelligence": null,
+        "insurance": null,
+        "prudential_supervision": null,
+        "securities": null
+      },
+      "roleAuthorityCounts": {
+        "financial_intelligence": 0,
+        "insurance": 0,
+        "prudential_supervision": 0,
+        "securities": 0
+      },
+      "roleCoveragePct": 0,
+      "score": null,
+      "band": null,
+      "status": "not-assessed",
+      "blocker": "Fewer than two assessed mandate roles (0/4).",
+      "provenance": [
+        "docs/research/regulatory-signal/country-regulatory-ecosystem-baseline.json",
+        "regulator-shadow-results.json"
+      ]
+    },
+    {
+      "iso2": "NG",
+      "country": "Nigeria",
+      "region": "Africa",
+      "applicableRoles": [
+        "financial_intelligence",
+        "insurance",
+        "pensions",
+        "prudential_supervision",
+        "securities"
+      ],
+      "assessedRoles": [],
+      "roleScores": {
+        "financial_intelligence": null,
+        "insurance": null,
+        "pensions": null,
+        "prudential_supervision": null,
+        "securities": null
+      },
+      "roleAuthorityCounts": {
+        "financial_intelligence": 0,
+        "insurance": 0,
+        "pensions": 0,
+        "prudential_supervision": 0,
+        "securities": 0
+      },
+      "roleCoveragePct": 0,
+      "score": null,
+      "band": null,
+      "status": "not-assessed",
+      "blocker": "Fewer than two assessed mandate roles (0/5).",
+      "provenance": [
+        "docs/research/regulatory-signal/country-regulatory-ecosystem-baseline.json",
+        "regulator-shadow-results.json"
+      ]
+    },
+    {
+      "iso2": "RW",
+      "country": "Rwanda",
+      "region": "Africa",
+      "applicableRoles": [
+        "financial_intelligence",
+        "insurance",
+        "pensions",
+        "prudential_supervision"
+      ],
+      "assessedRoles": [],
+      "roleScores": {
+        "financial_intelligence": null,
+        "insurance": null,
+        "pensions": null,
+        "prudential_supervision": null
+      },
+      "roleAuthorityCounts": {
+        "financial_intelligence": 0,
+        "insurance": 0,
+        "pensions": 0,
+        "prudential_supervision": 0
+      },
+      "roleCoveragePct": 0,
+      "score": null,
+      "band": null,
+      "status": "not-assessed",
+      "blocker": "Fewer than two assessed mandate roles (0/4).",
+      "provenance": [
+        "docs/research/regulatory-signal/country-regulatory-ecosystem-baseline.json",
+        "regulator-shadow-results.json"
+      ]
+    },
+    {
+      "iso2": "ST",
+      "country": "São Tomé and Príncipe",
+      "region": "Africa",
+      "applicableRoles": [
+        "prudential_supervision"
+      ],
+      "assessedRoles": [],
+      "roleScores": {
+        "prudential_supervision": null
+      },
+      "roleAuthorityCounts": {
+        "prudential_supervision": 0
+      },
+      "roleCoveragePct": 0,
+      "score": null,
+      "band": null,
+      "status": "not-assessed",
+      "blocker": "Fewer than two assessed mandate roles (0/1).",
+      "provenance": [
+        "docs/research/regulatory-signal/country-regulatory-ecosystem-baseline.json",
+        "regulator-shadow-results.json"
+      ]
+    },
+    {
+      "iso2": "SN",
+      "country": "Senegal",
+      "region": "Africa",
+      "applicableRoles": [
+        "financial_intelligence",
+        "insurance",
+        "prudential_supervision",
+        "securities"
+      ],
+      "assessedRoles": [],
+      "roleScores": {
+        "financial_intelligence": null,
+        "insurance": null,
+        "prudential_supervision": null,
+        "securities": null
+      },
+      "roleAuthorityCounts": {
+        "financial_intelligence": 0,
+        "insurance": 0,
+        "prudential_supervision": 0,
+        "securities": 0
+      },
+      "roleCoveragePct": 0,
+      "score": null,
+      "band": null,
+      "status": "not-assessed",
+      "blocker": "Fewer than two assessed mandate roles (0/4).",
+      "provenance": [
+        "docs/research/regulatory-signal/country-regulatory-ecosystem-baseline.json",
+        "regulator-shadow-results.json"
+      ]
+    },
+    {
+      "iso2": "SC",
+      "country": "Seychelles",
+      "region": "Africa",
+      "applicableRoles": [
+        "financial_intelligence",
+        "insurance",
+        "pensions",
+        "prudential_supervision"
+      ],
+      "assessedRoles": [],
+      "roleScores": {
+        "financial_intelligence": null,
+        "insurance": null,
+        "pensions": null,
+        "prudential_supervision": null
+      },
+      "roleAuthorityCounts": {
+        "financial_intelligence": 0,
+        "insurance": 0,
+        "pensions": 0,
+        "prudential_supervision": 0
+      },
+      "roleCoveragePct": 0,
+      "score": null,
+      "band": null,
+      "status": "not-assessed",
+      "blocker": "Fewer than two assessed mandate roles (0/4).",
+      "provenance": [
+        "docs/research/regulatory-signal/country-regulatory-ecosystem-baseline.json",
+        "regulator-shadow-results.json"
+      ]
+    },
+    {
+      "iso2": "SL",
+      "country": "Sierra Leone",
+      "region": "Africa",
+      "applicableRoles": [
+        "financial_intelligence",
+        "prudential_supervision"
+      ],
+      "assessedRoles": [],
+      "roleScores": {
+        "financial_intelligence": null,
+        "prudential_supervision": null
+      },
+      "roleAuthorityCounts": {
+        "financial_intelligence": 0,
+        "prudential_supervision": 0
+      },
+      "roleCoveragePct": 0,
+      "score": null,
+      "band": null,
+      "status": "not-assessed",
+      "blocker": "Fewer than two assessed mandate roles (0/2).",
+      "provenance": [
+        "docs/research/regulatory-signal/country-regulatory-ecosystem-baseline.json",
+        "regulator-shadow-results.json"
+      ]
+    },
+    {
+      "iso2": "SO",
+      "country": "Somalia",
+      "region": "Africa",
+      "applicableRoles": [
+        "prudential_supervision"
+      ],
+      "assessedRoles": [],
+      "roleScores": {
+        "prudential_supervision": null
+      },
+      "roleAuthorityCounts": {
+        "prudential_supervision": 0
+      },
+      "roleCoveragePct": 0,
+      "score": null,
+      "band": null,
+      "status": "not-assessed",
+      "blocker": "Fewer than two assessed mandate roles (0/1).",
+      "provenance": [
+        "docs/research/regulatory-signal/country-regulatory-ecosystem-baseline.json",
+        "regulator-shadow-results.json"
+      ]
+    },
+    {
+      "iso2": "ZA",
+      "country": "South Africa",
+      "region": "Africa",
+      "applicableRoles": [
+        "financial_intelligence",
+        "insurance",
+        "pensions",
+        "prudential_supervision",
+        "securities"
+      ],
+      "assessedRoles": [],
+      "roleScores": {
+        "financial_intelligence": null,
+        "insurance": null,
+        "pensions": null,
+        "prudential_supervision": null,
+        "securities": null
+      },
+      "roleAuthorityCounts": {
+        "financial_intelligence": 0,
+        "insurance": 0,
+        "pensions": 0,
+        "prudential_supervision": 0,
+        "securities": 0
+      },
+      "roleCoveragePct": 0,
+      "score": null,
+      "band": null,
+      "status": "not-assessed",
+      "blocker": "Fewer than two assessed mandate roles (0/5).",
+      "provenance": [
+        "docs/research/regulatory-signal/country-regulatory-ecosystem-baseline.json",
+        "regulator-shadow-results.json"
+      ]
+    },
+    {
+      "iso2": "SS",
+      "country": "South Sudan",
+      "region": "Africa",
+      "applicableRoles": [
+        "prudential_supervision"
+      ],
+      "assessedRoles": [],
+      "roleScores": {
+        "prudential_supervision": null
+      },
+      "roleAuthorityCounts": {
+        "prudential_supervision": 0
+      },
+      "roleCoveragePct": 0,
+      "score": null,
+      "band": null,
+      "status": "not-assessed",
+      "blocker": "Fewer than two assessed mandate roles (0/1).",
+      "provenance": [
+        "docs/research/regulatory-signal/country-regulatory-ecosystem-baseline.json",
+        "regulator-shadow-results.json"
+      ]
+    },
+    {
+      "iso2": "SD",
+      "country": "Sudan",
+      "region": "Africa",
+      "applicableRoles": [
+        "financial_intelligence",
+        "prudential_supervision"
+      ],
+      "assessedRoles": [],
+      "roleScores": {
+        "financial_intelligence": null,
+        "prudential_supervision": null
+      },
+      "roleAuthorityCounts": {
+        "financial_intelligence": 0,
+        "prudential_supervision": 0
+      },
+      "roleCoveragePct": 0,
+      "score": null,
+      "band": null,
+      "status": "not-assessed",
+      "blocker": "Fewer than two assessed mandate roles (0/2).",
+      "provenance": [
+        "docs/research/regulatory-signal/country-regulatory-ecosystem-baseline.json",
+        "regulator-shadow-results.json"
+      ]
+    },
+    {
+      "iso2": "TZ",
+      "country": "Tanzania",
+      "region": "Africa",
+      "applicableRoles": [
+        "financial_intelligence",
+        "prudential_supervision",
+        "securities"
+      ],
+      "assessedRoles": [],
+      "roleScores": {
+        "financial_intelligence": null,
+        "prudential_supervision": null,
+        "securities": null
+      },
+      "roleAuthorityCounts": {
+        "financial_intelligence": 0,
+        "prudential_supervision": 0,
+        "securities": 0
+      },
+      "roleCoveragePct": 0,
+      "score": null,
+      "band": null,
+      "status": "not-assessed",
+      "blocker": "Fewer than two assessed mandate roles (0/3).",
+      "provenance": [
+        "docs/research/regulatory-signal/country-regulatory-ecosystem-baseline.json",
+        "regulator-shadow-results.json"
+      ]
+    },
+    {
+      "iso2": "TG",
+      "country": "Togo",
+      "region": "Africa",
+      "applicableRoles": [
+        "financial_intelligence",
+        "insurance",
+        "prudential_supervision",
+        "securities"
+      ],
+      "assessedRoles": [],
+      "roleScores": {
+        "financial_intelligence": null,
+        "insurance": null,
+        "prudential_supervision": null,
+        "securities": null
+      },
+      "roleAuthorityCounts": {
+        "financial_intelligence": 0,
+        "insurance": 0,
+        "prudential_supervision": 0,
+        "securities": 0
+      },
+      "roleCoveragePct": 0,
+      "score": null,
+      "band": null,
+      "status": "not-assessed",
+      "blocker": "Fewer than two assessed mandate roles (0/4).",
+      "provenance": [
+        "docs/research/regulatory-signal/country-regulatory-ecosystem-baseline.json",
+        "regulator-shadow-results.json"
+      ]
+    },
+    {
+      "iso2": "TN",
+      "country": "Tunisia",
+      "region": "Africa",
+      "applicableRoles": [
+        "financial_intelligence",
+        "insurance",
+        "prudential_supervision",
+        "securities"
+      ],
+      "assessedRoles": [],
+      "roleScores": {
+        "financial_intelligence": null,
+        "insurance": null,
+        "prudential_supervision": null,
+        "securities": null
+      },
+      "roleAuthorityCounts": {
+        "financial_intelligence": 0,
+        "insurance": 0,
+        "prudential_supervision": 0,
+        "securities": 0
+      },
+      "roleCoveragePct": 0,
+      "score": null,
+      "band": null,
+      "status": "not-assessed",
+      "blocker": "Fewer than two assessed mandate roles (0/4).",
+      "provenance": [
+        "docs/research/regulatory-signal/country-regulatory-ecosystem-baseline.json",
+        "regulator-shadow-results.json"
+      ]
+    },
+    {
+      "iso2": "UG",
+      "country": "Uganda",
+      "region": "Africa",
+      "applicableRoles": [
+        "financial_intelligence",
+        "insurance",
+        "pensions",
+        "prudential_supervision",
+        "securities"
+      ],
+      "assessedRoles": [],
+      "roleScores": {
+        "financial_intelligence": null,
+        "insurance": null,
+        "pensions": null,
+        "prudential_supervision": null,
+        "securities": null
+      },
+      "roleAuthorityCounts": {
+        "financial_intelligence": 0,
+        "insurance": 0,
+        "pensions": 0,
+        "prudential_supervision": 0,
+        "securities": 0
+      },
+      "roleCoveragePct": 0,
+      "score": null,
+      "band": null,
+      "status": "not-assessed",
+      "blocker": "Fewer than two assessed mandate roles (0/5).",
+      "provenance": [
+        "docs/research/regulatory-signal/country-regulatory-ecosystem-baseline.json",
+        "regulator-shadow-results.json"
+      ]
+    },
+    {
+      "iso2": "ZM",
+      "country": "Zambia",
+      "region": "Africa",
+      "applicableRoles": [
+        "financial_intelligence",
+        "insurance",
+        "pensions",
+        "prudential_supervision",
+        "securities"
+      ],
+      "assessedRoles": [],
+      "roleScores": {
+        "financial_intelligence": null,
+        "insurance": null,
+        "pensions": null,
+        "prudential_supervision": null,
+        "securities": null
+      },
+      "roleAuthorityCounts": {
+        "financial_intelligence": 0,
+        "insurance": 0,
+        "pensions": 0,
+        "prudential_supervision": 0,
+        "securities": 0
+      },
+      "roleCoveragePct": 0,
+      "score": null,
+      "band": null,
+      "status": "not-assessed",
+      "blocker": "Fewer than two assessed mandate roles (0/5).",
+      "provenance": [
+        "docs/research/regulatory-signal/country-regulatory-ecosystem-baseline.json",
+        "regulator-shadow-results.json"
+      ]
+    },
+    {
+      "iso2": "ZW",
+      "country": "Zimbabwe",
+      "region": "Africa",
+      "applicableRoles": [
+        "financial_intelligence",
+        "insurance",
+        "pensions",
+        "prudential_supervision"
+      ],
+      "assessedRoles": [],
+      "roleScores": {
+        "financial_intelligence": null,
+        "insurance": null,
+        "pensions": null,
+        "prudential_supervision": null
+      },
+      "roleAuthorityCounts": {
+        "financial_intelligence": 0,
+        "insurance": 0,
+        "pensions": 0,
+        "prudential_supervision": 0
+      },
+      "roleCoveragePct": 0,
+      "score": null,
+      "band": null,
+      "status": "not-assessed",
+      "blocker": "Fewer than two assessed mandate roles (0/4).",
+      "provenance": [
+        "docs/research/regulatory-signal/country-regulatory-ecosystem-baseline.json",
+        "regulator-shadow-results.json"
+      ]
+    },
+    {
+      "iso2": "AR",
+      "country": "Argentina",
+      "region": "Americas",
+      "applicableRoles": [
+        "financial_intelligence",
+        "insurance",
+        "prudential_supervision",
+        "securities"
+      ],
+      "assessedRoles": [],
+      "roleScores": {
+        "financial_intelligence": null,
+        "insurance": null,
+        "prudential_supervision": null,
+        "securities": null
+      },
+      "roleAuthorityCounts": {
+        "financial_intelligence": 0,
+        "insurance": 0,
+        "prudential_supervision": 0,
+        "securities": 1
+      },
+      "roleCoveragePct": 0,
+      "score": null,
+      "band": null,
+      "status": "not-assessed",
+      "blocker": "Fewer than two assessed mandate roles (0/4).",
+      "provenance": [
+        "docs/research/regulatory-signal/country-regulatory-ecosystem-baseline.json",
+        "regulator-shadow-results.json"
+      ]
+    },
+    {
+      "iso2": "BZ",
+      "country": "Belize",
+      "region": "Americas",
+      "applicableRoles": [
+        "financial_intelligence",
+        "insurance",
+        "prudential_supervision",
+        "securities"
+      ],
+      "assessedRoles": [],
+      "roleScores": {
+        "financial_intelligence": null,
+        "insurance": null,
+        "prudential_supervision": null,
+        "securities": null
+      },
+      "roleAuthorityCounts": {
+        "financial_intelligence": 0,
+        "insurance": 0,
+        "prudential_supervision": 0,
+        "securities": 0
+      },
+      "roleCoveragePct": 0,
+      "score": null,
+      "band": null,
+      "status": "not-assessed",
+      "blocker": "Fewer than two assessed mandate roles (0/4).",
+      "provenance": [
+        "docs/research/regulatory-signal/country-regulatory-ecosystem-baseline.json",
+        "regulator-shadow-results.json"
+      ]
+    },
+    {
+      "iso2": "BO",
+      "country": "Bolivia",
+      "region": "Americas",
+      "applicableRoles": [
+        "financial_intelligence",
+        "prudential_supervision",
+        "securities"
+      ],
+      "assessedRoles": [],
+      "roleScores": {
+        "financial_intelligence": null,
+        "prudential_supervision": null,
+        "securities": null
+      },
+      "roleAuthorityCounts": {
+        "financial_intelligence": 0,
+        "prudential_supervision": 0,
+        "securities": 0
+      },
+      "roleCoveragePct": 0,
+      "score": null,
+      "band": null,
+      "status": "not-assessed",
+      "blocker": "Fewer than two assessed mandate roles (0/3).",
+      "provenance": [
+        "docs/research/regulatory-signal/country-regulatory-ecosystem-baseline.json",
+        "regulator-shadow-results.json"
+      ]
+    },
+    {
+      "iso2": "BR",
+      "country": "Brazil",
+      "region": "Americas",
+      "applicableRoles": [
+        "financial_intelligence",
+        "insurance",
+        "pensions",
+        "prudential_supervision",
+        "securities"
+      ],
+      "assessedRoles": [],
+      "roleScores": {
+        "financial_intelligence": null,
+        "insurance": null,
+        "pensions": null,
+        "prudential_supervision": null,
+        "securities": null
+      },
+      "roleAuthorityCounts": {
+        "financial_intelligence": 0,
+        "insurance": 0,
+        "pensions": 0,
+        "prudential_supervision": 0,
+        "securities": 1
+      },
+      "roleCoveragePct": 0,
+      "score": null,
+      "band": null,
+      "status": "not-assessed",
+      "blocker": "Fewer than two assessed mandate roles (0/5).",
+      "provenance": [
+        "docs/research/regulatory-signal/country-regulatory-ecosystem-baseline.json",
+        "regulator-shadow-results.json"
+      ]
+    },
+    {
+      "iso2": "CA",
+      "country": "Canada",
+      "region": "Americas",
+      "applicableRoles": [
+        "financial_intelligence",
+        "insurance",
+        "pensions",
+        "prudential_supervision",
+        "securities"
+      ],
+      "assessedRoles": [
+        "securities"
+      ],
+      "roleScores": {
+        "financial_intelligence": null,
+        "insurance": null,
+        "pensions": null,
+        "prudential_supervision": null,
+        "securities": 96.7534
+      },
+      "roleAuthorityCounts": {
+        "financial_intelligence": 0,
+        "insurance": 0,
+        "pensions": 0,
+        "prudential_supervision": 0,
+        "securities": 1
+      },
+      "roleCoveragePct": 20,
+      "score": null,
+      "band": null,
+      "status": "not-assessed",
+      "blocker": "Fewer than two assessed mandate roles (1/5).",
+      "provenance": [
+        "docs/research/regulatory-signal/country-regulatory-ecosystem-baseline.json",
+        "regulator-shadow-results.json"
+      ]
+    },
+    {
+      "iso2": "CL",
+      "country": "Chile",
+      "region": "Americas",
+      "applicableRoles": [
+        "financial_intelligence",
+        "insurance",
+        "pensions",
+        "prudential_supervision",
+        "securities"
+      ],
+      "assessedRoles": [],
+      "roleScores": {
+        "financial_intelligence": null,
+        "insurance": null,
+        "pensions": null,
+        "prudential_supervision": null,
+        "securities": null
+      },
+      "roleAuthorityCounts": {
+        "financial_intelligence": 0,
+        "insurance": 0,
+        "pensions": 0,
+        "prudential_supervision": 0,
+        "securities": 0
+      },
+      "roleCoveragePct": 0,
+      "score": null,
+      "band": null,
+      "status": "not-assessed",
+      "blocker": "Fewer than two assessed mandate roles (0/5).",
+      "provenance": [
+        "docs/research/regulatory-signal/country-regulatory-ecosystem-baseline.json",
+        "regulator-shadow-results.json"
+      ]
+    },
+    {
+      "iso2": "CO",
+      "country": "Colombia",
+      "region": "Americas",
+      "applicableRoles": [
+        "financial_intelligence",
+        "insurance",
+        "pensions",
+        "prudential_supervision",
+        "securities"
+      ],
+      "assessedRoles": [],
+      "roleScores": {
+        "financial_intelligence": null,
+        "insurance": null,
+        "pensions": null,
+        "prudential_supervision": null,
+        "securities": null
+      },
+      "roleAuthorityCounts": {
+        "financial_intelligence": 0,
+        "insurance": 0,
+        "pensions": 0,
+        "prudential_supervision": 0,
+        "securities": 0
+      },
+      "roleCoveragePct": 0,
+      "score": null,
+      "band": null,
+      "status": "not-assessed",
+      "blocker": "Fewer than two assessed mandate roles (0/5).",
+      "provenance": [
+        "docs/research/regulatory-signal/country-regulatory-ecosystem-baseline.json",
+        "regulator-shadow-results.json"
+      ]
+    },
+    {
+      "iso2": "CR",
+      "country": "Costa Rica",
+      "region": "Americas",
+      "applicableRoles": [
+        "financial_intelligence",
+        "insurance",
+        "pensions",
+        "prudential_supervision",
+        "securities"
+      ],
+      "assessedRoles": [],
+      "roleScores": {
+        "financial_intelligence": null,
+        "insurance": null,
+        "pensions": null,
+        "prudential_supervision": null,
+        "securities": null
+      },
+      "roleAuthorityCounts": {
+        "financial_intelligence": 0,
+        "insurance": 0,
+        "pensions": 0,
+        "prudential_supervision": 0,
+        "securities": 0
+      },
+      "roleCoveragePct": 0,
+      "score": null,
+      "band": null,
+      "status": "not-assessed",
+      "blocker": "Fewer than two assessed mandate roles (0/5).",
+      "provenance": [
+        "docs/research/regulatory-signal/country-regulatory-ecosystem-baseline.json",
+        "regulator-shadow-results.json"
+      ]
+    },
+    {
+      "iso2": "CU",
+      "country": "Cuba",
+      "region": "Americas",
+      "applicableRoles": [
+        "financial_intelligence",
+        "prudential_supervision"
+      ],
+      "assessedRoles": [],
+      "roleScores": {
+        "financial_intelligence": null,
+        "prudential_supervision": null
+      },
+      "roleAuthorityCounts": {
+        "financial_intelligence": 0,
+        "prudential_supervision": 0
+      },
+      "roleCoveragePct": 0,
+      "score": null,
+      "band": null,
+      "status": "not-assessed",
+      "blocker": "Fewer than two assessed mandate roles (0/2).",
+      "provenance": [
+        "docs/research/regulatory-signal/country-regulatory-ecosystem-baseline.json",
+        "regulator-shadow-results.json"
+      ]
+    },
+    {
+      "iso2": "DM",
+      "country": "Dominica",
+      "region": "Americas",
+      "applicableRoles": [
+        "financial_intelligence",
+        "prudential_supervision"
+      ],
+      "assessedRoles": [],
+      "roleScores": {
+        "financial_intelligence": null,
+        "prudential_supervision": null
+      },
+      "roleAuthorityCounts": {
+        "financial_intelligence": 0,
+        "prudential_supervision": 0
+      },
+      "roleCoveragePct": 0,
+      "score": null,
+      "band": null,
+      "status": "not-assessed",
+      "blocker": "Fewer than two assessed mandate roles (0/2).",
+      "provenance": [
+        "docs/research/regulatory-signal/country-regulatory-ecosystem-baseline.json",
+        "regulator-shadow-results.json"
+      ]
+    },
+    {
+      "iso2": "DO",
+      "country": "Dominican Republic",
+      "region": "Americas",
+      "applicableRoles": [
+        "financial_intelligence",
+        "insurance",
+        "pensions",
+        "prudential_supervision",
+        "securities"
+      ],
+      "assessedRoles": [],
+      "roleScores": {
+        "financial_intelligence": null,
+        "insurance": null,
+        "pensions": null,
+        "prudential_supervision": null,
+        "securities": null
+      },
+      "roleAuthorityCounts": {
+        "financial_intelligence": 0,
+        "insurance": 0,
+        "pensions": 0,
+        "prudential_supervision": 0,
+        "securities": 0
+      },
+      "roleCoveragePct": 0,
+      "score": null,
+      "band": null,
+      "status": "not-assessed",
+      "blocker": "Fewer than two assessed mandate roles (0/5).",
+      "provenance": [
+        "docs/research/regulatory-signal/country-regulatory-ecosystem-baseline.json",
+        "regulator-shadow-results.json"
+      ]
+    },
+    {
+      "iso2": "EC",
+      "country": "Ecuador",
+      "region": "Americas",
+      "applicableRoles": [
+        "financial_intelligence",
+        "prudential_supervision",
+        "securities"
+      ],
+      "assessedRoles": [],
+      "roleScores": {
+        "financial_intelligence": null,
+        "prudential_supervision": null,
+        "securities": null
+      },
+      "roleAuthorityCounts": {
+        "financial_intelligence": 0,
+        "prudential_supervision": 0,
+        "securities": 0
+      },
+      "roleCoveragePct": 0,
+      "score": null,
+      "band": null,
+      "status": "not-assessed",
+      "blocker": "Fewer than two assessed mandate roles (0/3).",
+      "provenance": [
+        "docs/research/regulatory-signal/country-regulatory-ecosystem-baseline.json",
+        "regulator-shadow-results.json"
+      ]
+    },
+    {
+      "iso2": "SV",
+      "country": "El Salvador",
+      "region": "Americas",
+      "applicableRoles": [
+        "financial_intelligence",
+        "insurance",
+        "pensions",
+        "prudential_supervision",
+        "securities"
+      ],
+      "assessedRoles": [],
+      "roleScores": {
+        "financial_intelligence": null,
+        "insurance": null,
+        "pensions": null,
+        "prudential_supervision": null,
+        "securities": null
+      },
+      "roleAuthorityCounts": {
+        "financial_intelligence": 0,
+        "insurance": 0,
+        "pensions": 0,
+        "prudential_supervision": 0,
+        "securities": 0
+      },
+      "roleCoveragePct": 0,
+      "score": null,
+      "band": null,
+      "status": "not-assessed",
+      "blocker": "Fewer than two assessed mandate roles (0/5).",
+      "provenance": [
+        "docs/research/regulatory-signal/country-regulatory-ecosystem-baseline.json",
+        "regulator-shadow-results.json"
+      ]
+    },
+    {
+      "iso2": "GT",
+      "country": "Guatemala",
+      "region": "Americas",
+      "applicableRoles": [
+        "financial_intelligence",
+        "insurance",
+        "prudential_supervision"
+      ],
+      "assessedRoles": [],
+      "roleScores": {
+        "financial_intelligence": null,
+        "insurance": null,
+        "prudential_supervision": null
+      },
+      "roleAuthorityCounts": {
+        "financial_intelligence": 0,
+        "insurance": 0,
+        "prudential_supervision": 0
+      },
+      "roleCoveragePct": 0,
+      "score": null,
+      "band": null,
+      "status": "not-assessed",
+      "blocker": "Fewer than two assessed mandate roles (0/3).",
+      "provenance": [
+        "docs/research/regulatory-signal/country-regulatory-ecosystem-baseline.json",
+        "regulator-shadow-results.json"
+      ]
+    },
+    {
+      "iso2": "GD",
+      "country": "Grenada",
+      "region": "Americas",
+      "applicableRoles": [
+        "financial_intelligence",
+        "prudential_supervision"
+      ],
+      "assessedRoles": [],
+      "roleScores": {
+        "financial_intelligence": null,
+        "prudential_supervision": null
+      },
+      "roleAuthorityCounts": {
+        "financial_intelligence": 0,
+        "prudential_supervision": 0
+      },
+      "roleCoveragePct": 0,
+      "score": null,
+      "band": null,
+      "status": "not-assessed",
+      "blocker": "Fewer than two assessed mandate roles (0/2).",
+      "provenance": [
+        "docs/research/regulatory-signal/country-regulatory-ecosystem-baseline.json",
+        "regulator-shadow-results.json"
+      ]
+    },
+    {
+      "iso2": "GY",
+      "country": "Guyana",
+      "region": "Americas",
+      "applicableRoles": [
+        "financial_intelligence",
+        "prudential_supervision"
+      ],
+      "assessedRoles": [],
+      "roleScores": {
+        "financial_intelligence": null,
+        "prudential_supervision": null
+      },
+      "roleAuthorityCounts": {
+        "financial_intelligence": 0,
+        "prudential_supervision": 0
+      },
+      "roleCoveragePct": 0,
+      "score": null,
+      "band": null,
+      "status": "not-assessed",
+      "blocker": "Fewer than two assessed mandate roles (0/2).",
+      "provenance": [
+        "docs/research/regulatory-signal/country-regulatory-ecosystem-baseline.json",
+        "regulator-shadow-results.json"
+      ]
+    },
+    {
+      "iso2": "HT",
+      "country": "Haiti",
+      "region": "Americas",
+      "applicableRoles": [
+        "prudential_supervision"
+      ],
+      "assessedRoles": [],
+      "roleScores": {
+        "prudential_supervision": null
+      },
+      "roleAuthorityCounts": {
+        "prudential_supervision": 0
+      },
+      "roleCoveragePct": 0,
+      "score": null,
+      "band": null,
+      "status": "not-assessed",
+      "blocker": "Fewer than two assessed mandate roles (0/1).",
+      "provenance": [
+        "docs/research/regulatory-signal/country-regulatory-ecosystem-baseline.json",
+        "regulator-shadow-results.json"
+      ]
+    },
+    {
+      "iso2": "HN",
+      "country": "Honduras",
+      "region": "Americas",
+      "applicableRoles": [
+        "financial_intelligence",
+        "pensions",
+        "prudential_supervision"
+      ],
+      "assessedRoles": [],
+      "roleScores": {
+        "financial_intelligence": null,
+        "pensions": null,
+        "prudential_supervision": null
+      },
+      "roleAuthorityCounts": {
+        "financial_intelligence": 0,
+        "pensions": 0,
+        "prudential_supervision": 0
+      },
+      "roleCoveragePct": 0,
+      "score": null,
+      "band": null,
+      "status": "not-assessed",
+      "blocker": "Fewer than two assessed mandate roles (0/3).",
+      "provenance": [
+        "docs/research/regulatory-signal/country-regulatory-ecosystem-baseline.json",
+        "regulator-shadow-results.json"
+      ]
+    },
+    {
+      "iso2": "JM",
+      "country": "Jamaica",
+      "region": "Americas",
+      "applicableRoles": [
+        "financial_intelligence",
+        "insurance",
+        "pensions",
+        "prudential_supervision",
+        "securities"
+      ],
+      "assessedRoles": [],
+      "roleScores": {
+        "financial_intelligence": null,
+        "insurance": null,
+        "pensions": null,
+        "prudential_supervision": null,
+        "securities": null
+      },
+      "roleAuthorityCounts": {
+        "financial_intelligence": 0,
+        "insurance": 0,
+        "pensions": 0,
+        "prudential_supervision": 0,
+        "securities": 0
+      },
+      "roleCoveragePct": 0,
+      "score": null,
+      "band": null,
+      "status": "not-assessed",
+      "blocker": "Fewer than two assessed mandate roles (0/5).",
+      "provenance": [
+        "docs/research/regulatory-signal/country-regulatory-ecosystem-baseline.json",
+        "regulator-shadow-results.json"
+      ]
+    },
+    {
+      "iso2": "MX",
+      "country": "Mexico",
+      "region": "Americas",
+      "applicableRoles": [
+        "financial_intelligence",
+        "insurance",
+        "pensions",
+        "prudential_supervision",
+        "securities"
+      ],
+      "assessedRoles": [],
+      "roleScores": {
+        "financial_intelligence": null,
+        "insurance": null,
+        "pensions": null,
+        "prudential_supervision": null,
+        "securities": null
+      },
+      "roleAuthorityCounts": {
+        "financial_intelligence": 0,
+        "insurance": 0,
+        "pensions": 0,
+        "prudential_supervision": 0,
+        "securities": 0
+      },
+      "roleCoveragePct": 0,
+      "score": null,
+      "band": null,
+      "status": "not-assessed",
+      "blocker": "Fewer than two assessed mandate roles (0/5).",
+      "provenance": [
+        "docs/research/regulatory-signal/country-regulatory-ecosystem-baseline.json",
+        "regulator-shadow-results.json"
+      ]
+    },
+    {
+      "iso2": "NI",
+      "country": "Nicaragua",
+      "region": "Americas",
+      "applicableRoles": [
+        "prudential_supervision"
+      ],
+      "assessedRoles": [],
+      "roleScores": {
+        "prudential_supervision": null
+      },
+      "roleAuthorityCounts": {
+        "prudential_supervision": 0
+      },
+      "roleCoveragePct": 0,
+      "score": null,
+      "band": null,
+      "status": "not-assessed",
+      "blocker": "Fewer than two assessed mandate roles (0/1).",
+      "provenance": [
+        "docs/research/regulatory-signal/country-regulatory-ecosystem-baseline.json",
+        "regulator-shadow-results.json"
+      ]
+    },
+    {
+      "iso2": "PA",
+      "country": "Panama",
+      "region": "Americas",
+      "applicableRoles": [
+        "financial_intelligence",
+        "insurance",
+        "prudential_supervision",
+        "securities"
+      ],
+      "assessedRoles": [],
+      "roleScores": {
+        "financial_intelligence": null,
+        "insurance": null,
+        "prudential_supervision": null,
+        "securities": null
+      },
+      "roleAuthorityCounts": {
+        "financial_intelligence": 0,
+        "insurance": 0,
+        "prudential_supervision": 0,
+        "securities": 0
+      },
+      "roleCoveragePct": 0,
+      "score": null,
+      "band": null,
+      "status": "not-assessed",
+      "blocker": "Fewer than two assessed mandate roles (0/4).",
+      "provenance": [
+        "docs/research/regulatory-signal/country-regulatory-ecosystem-baseline.json",
+        "regulator-shadow-results.json"
+      ]
+    },
+    {
+      "iso2": "PY",
+      "country": "Paraguay",
+      "region": "Americas",
+      "applicableRoles": [
+        "financial_intelligence",
+        "insurance",
+        "prudential_supervision",
+        "securities"
+      ],
+      "assessedRoles": [],
+      "roleScores": {
+        "financial_intelligence": null,
+        "insurance": null,
+        "prudential_supervision": null,
+        "securities": null
+      },
+      "roleAuthorityCounts": {
+        "financial_intelligence": 0,
+        "insurance": 0,
+        "prudential_supervision": 0,
+        "securities": 0
+      },
+      "roleCoveragePct": 0,
+      "score": null,
+      "band": null,
+      "status": "not-assessed",
+      "blocker": "Fewer than two assessed mandate roles (0/4).",
+      "provenance": [
+        "docs/research/regulatory-signal/country-regulatory-ecosystem-baseline.json",
+        "regulator-shadow-results.json"
+      ]
+    },
+    {
+      "iso2": "PE",
+      "country": "Peru",
+      "region": "Americas",
+      "applicableRoles": [
+        "financial_intelligence",
+        "insurance",
+        "pensions",
+        "prudential_supervision",
+        "securities"
+      ],
+      "assessedRoles": [],
+      "roleScores": {
+        "financial_intelligence": null,
+        "insurance": null,
+        "pensions": null,
+        "prudential_supervision": null,
+        "securities": null
+      },
+      "roleAuthorityCounts": {
+        "financial_intelligence": 0,
+        "insurance": 0,
+        "pensions": 0,
+        "prudential_supervision": 0,
+        "securities": 0
+      },
+      "roleCoveragePct": 0,
+      "score": null,
+      "band": null,
+      "status": "not-assessed",
+      "blocker": "Fewer than two assessed mandate roles (0/5).",
+      "provenance": [
+        "docs/research/regulatory-signal/country-regulatory-ecosystem-baseline.json",
+        "regulator-shadow-results.json"
+      ]
+    },
+    {
+      "iso2": "SR",
+      "country": "Suriname",
+      "region": "Americas",
+      "applicableRoles": [
+        "financial_intelligence",
+        "insurance",
+        "pensions",
+        "prudential_supervision"
+      ],
+      "assessedRoles": [],
+      "roleScores": {
+        "financial_intelligence": null,
+        "insurance": null,
+        "pensions": null,
+        "prudential_supervision": null
+      },
+      "roleAuthorityCounts": {
+        "financial_intelligence": 0,
+        "insurance": 0,
+        "pensions": 0,
+        "prudential_supervision": 0
+      },
+      "roleCoveragePct": 0,
+      "score": null,
+      "band": null,
+      "status": "not-assessed",
+      "blocker": "Fewer than two assessed mandate roles (0/4).",
+      "provenance": [
+        "docs/research/regulatory-signal/country-regulatory-ecosystem-baseline.json",
+        "regulator-shadow-results.json"
+      ]
+    },
+    {
+      "iso2": "KN",
+      "country": "Saint Kitts and Nevis",
+      "region": "Americas",
+      "applicableRoles": [
+        "financial_intelligence",
+        "prudential_supervision"
+      ],
+      "assessedRoles": [],
+      "roleScores": {
+        "financial_intelligence": null,
+        "prudential_supervision": null
+      },
+      "roleAuthorityCounts": {
+        "financial_intelligence": 0,
+        "prudential_supervision": 0
+      },
+      "roleCoveragePct": 0,
+      "score": null,
+      "band": null,
+      "status": "not-assessed",
+      "blocker": "Fewer than two assessed mandate roles (0/2).",
+      "provenance": [
+        "docs/research/regulatory-signal/country-regulatory-ecosystem-baseline.json",
+        "regulator-shadow-results.json"
+      ]
+    },
+    {
+      "iso2": "LC",
+      "country": "Saint Lucia",
+      "region": "Americas",
+      "applicableRoles": [
+        "financial_intelligence",
+        "prudential_supervision"
+      ],
+      "assessedRoles": [],
+      "roleScores": {
+        "financial_intelligence": null,
+        "prudential_supervision": null
+      },
+      "roleAuthorityCounts": {
+        "financial_intelligence": 0,
+        "prudential_supervision": 0
+      },
+      "roleCoveragePct": 0,
+      "score": null,
+      "band": null,
+      "status": "not-assessed",
+      "blocker": "Fewer than two assessed mandate roles (0/2).",
+      "provenance": [
+        "docs/research/regulatory-signal/country-regulatory-ecosystem-baseline.json",
+        "regulator-shadow-results.json"
+      ]
+    },
+    {
+      "iso2": "VC",
+      "country": "Saint Vincent and the Grenadines",
+      "region": "Americas",
+      "applicableRoles": [
+        "financial_intelligence",
+        "prudential_supervision"
+      ],
+      "assessedRoles": [],
+      "roleScores": {
+        "financial_intelligence": null,
+        "prudential_supervision": null
+      },
+      "roleAuthorityCounts": {
+        "financial_intelligence": 0,
+        "prudential_supervision": 0
+      },
+      "roleCoveragePct": 0,
+      "score": null,
+      "band": null,
+      "status": "not-assessed",
+      "blocker": "Fewer than two assessed mandate roles (0/2).",
+      "provenance": [
+        "docs/research/regulatory-signal/country-regulatory-ecosystem-baseline.json",
+        "regulator-shadow-results.json"
+      ]
+    },
+    {
+      "iso2": "TT",
+      "country": "Trinidad and Tobago",
+      "region": "Americas",
+      "applicableRoles": [
+        "financial_intelligence",
+        "insurance",
+        "pensions",
+        "prudential_supervision",
+        "securities"
+      ],
+      "assessedRoles": [],
+      "roleScores": {
+        "financial_intelligence": null,
+        "insurance": null,
+        "pensions": null,
+        "prudential_supervision": null,
+        "securities": null
+      },
+      "roleAuthorityCounts": {
+        "financial_intelligence": 0,
+        "insurance": 0,
+        "pensions": 0,
+        "prudential_supervision": 0,
+        "securities": 0
+      },
+      "roleCoveragePct": 0,
+      "score": null,
+      "band": null,
+      "status": "not-assessed",
+      "blocker": "Fewer than two assessed mandate roles (0/5).",
+      "provenance": [
+        "docs/research/regulatory-signal/country-regulatory-ecosystem-baseline.json",
+        "regulator-shadow-results.json"
+      ]
+    },
+    {
+      "iso2": "US",
+      "country": "United States",
+      "region": "Americas",
+      "applicableRoles": [
+        "financial_intelligence",
+        "insurance",
+        "pensions",
+        "prudential_supervision",
+        "securities"
+      ],
+      "assessedRoles": [
+        "insurance",
+        "prudential_supervision",
+        "securities"
+      ],
+      "roleScores": {
+        "financial_intelligence": null,
+        "insurance": 98.75,
+        "pensions": null,
+        "prudential_supervision": 98.75,
+        "securities": 99.75
+      },
+      "roleAuthorityCounts": {
+        "financial_intelligence": 1,
+        "insurance": 1,
+        "pensions": 0,
+        "prudential_supervision": 3,
+        "securities": 1
+      },
+      "roleCoveragePct": 60,
+      "score": 99.0833,
+      "band": "highly-transparent",
+      "status": "provisional",
+      "blocker": "Assessed role coverage is 60%; country result is provisional.",
+      "provenance": [
+        "docs/research/regulatory-signal/country-regulatory-ecosystem-baseline.json",
+        "regulator-shadow-results.json"
+      ]
+    },
+    {
+      "iso2": "UY",
+      "country": "Uruguay",
+      "region": "Americas",
+      "applicableRoles": [
+        "financial_intelligence",
+        "insurance",
+        "prudential_supervision",
+        "securities"
+      ],
+      "assessedRoles": [],
+      "roleScores": {
+        "financial_intelligence": null,
+        "insurance": null,
+        "prudential_supervision": null,
+        "securities": null
+      },
+      "roleAuthorityCounts": {
+        "financial_intelligence": 0,
+        "insurance": 0,
+        "prudential_supervision": 0,
+        "securities": 0
+      },
+      "roleCoveragePct": 0,
+      "score": null,
+      "band": null,
+      "status": "not-assessed",
+      "blocker": "Fewer than two assessed mandate roles (0/4).",
+      "provenance": [
+        "docs/research/regulatory-signal/country-regulatory-ecosystem-baseline.json",
+        "regulator-shadow-results.json"
+      ]
+    },
+    {
+      "iso2": "VE",
+      "country": "Venezuela",
+      "region": "Americas",
+      "applicableRoles": [
+        "financial_intelligence",
+        "prudential_supervision"
+      ],
+      "assessedRoles": [],
+      "roleScores": {
+        "financial_intelligence": null,
+        "prudential_supervision": null
+      },
+      "roleAuthorityCounts": {
+        "financial_intelligence": 0,
+        "prudential_supervision": 0
+      },
+      "roleCoveragePct": 0,
+      "score": null,
+      "band": null,
+      "status": "not-assessed",
+      "blocker": "Fewer than two assessed mandate roles (0/2).",
+      "provenance": [
+        "docs/research/regulatory-signal/country-regulatory-ecosystem-baseline.json",
+        "regulator-shadow-results.json"
+      ]
+    },
+    {
+      "iso2": "AF",
+      "country": "Afghanistan",
+      "region": "Asia Pacific",
+      "applicableRoles": [],
+      "assessedRoles": [],
+      "roleScores": {},
+      "roleAuthorityCounts": {},
+      "roleCoveragePct": 0,
+      "score": null,
+      "band": null,
+      "status": "not-assessed",
+      "blocker": "No applicable non-central mandate roles are mapped for this country.",
+      "provenance": [
+        "docs/research/regulatory-signal/country-regulatory-ecosystem-baseline.json",
+        "regulator-shadow-results.json"
+      ]
+    },
+    {
+      "iso2": "AU",
+      "country": "Australia",
+      "region": "Asia Pacific",
+      "applicableRoles": [
+        "financial_intelligence",
+        "insurance",
+        "pensions",
+        "prudential_supervision",
+        "securities"
+      ],
+      "assessedRoles": [
+        "insurance",
+        "securities"
+      ],
+      "roleScores": {
+        "financial_intelligence": null,
+        "insurance": 98.3333,
+        "pensions": null,
+        "prudential_supervision": null,
+        "securities": 98.3333
+      },
+      "roleAuthorityCounts": {
+        "financial_intelligence": 1,
+        "insurance": 1,
+        "pensions": 0,
+        "prudential_supervision": 0,
+        "securities": 1
+      },
+      "roleCoveragePct": 40,
+      "score": null,
+      "band": null,
+      "status": "not-assessed",
+      "blocker": "Assessed role coverage is 40%, below the 50% provisional threshold.",
+      "provenance": [
+        "docs/research/regulatory-signal/country-regulatory-ecosystem-baseline.json",
+        "regulator-shadow-results.json"
+      ]
+    },
+    {
+      "iso2": "BD",
+      "country": "Bangladesh",
+      "region": "Asia Pacific",
+      "applicableRoles": [
+        "financial_intelligence",
+        "prudential_supervision",
+        "securities"
+      ],
+      "assessedRoles": [],
+      "roleScores": {
+        "financial_intelligence": null,
+        "prudential_supervision": null,
+        "securities": null
+      },
+      "roleAuthorityCounts": {
+        "financial_intelligence": 0,
+        "prudential_supervision": 0,
+        "securities": 0
+      },
+      "roleCoveragePct": 0,
+      "score": null,
+      "band": null,
+      "status": "not-assessed",
+      "blocker": "Fewer than two assessed mandate roles (0/3).",
+      "provenance": [
+        "docs/research/regulatory-signal/country-regulatory-ecosystem-baseline.json",
+        "regulator-shadow-results.json"
+      ]
+    },
+    {
+      "iso2": "BT",
+      "country": "Bhutan",
+      "region": "Asia Pacific",
+      "applicableRoles": [
+        "financial_intelligence",
+        "prudential_supervision"
+      ],
+      "assessedRoles": [],
+      "roleScores": {
+        "financial_intelligence": null,
+        "prudential_supervision": null
+      },
+      "roleAuthorityCounts": {
+        "financial_intelligence": 0,
+        "prudential_supervision": 0
+      },
+      "roleCoveragePct": 0,
+      "score": null,
+      "band": null,
+      "status": "not-assessed",
+      "blocker": "Fewer than two assessed mandate roles (0/2).",
+      "provenance": [
+        "docs/research/regulatory-signal/country-regulatory-ecosystem-baseline.json",
+        "regulator-shadow-results.json"
+      ]
+    },
+    {
+      "iso2": "BN",
+      "country": "Brunei",
+      "region": "Asia Pacific",
+      "applicableRoles": [
+        "financial_intelligence",
+        "insurance",
+        "securities"
+      ],
+      "assessedRoles": [],
+      "roleScores": {
+        "financial_intelligence": null,
+        "insurance": null,
+        "securities": null
+      },
+      "roleAuthorityCounts": {
+        "financial_intelligence": 0,
+        "insurance": 0,
+        "securities": 0
+      },
+      "roleCoveragePct": 0,
+      "score": null,
+      "band": null,
+      "status": "not-assessed",
+      "blocker": "Fewer than two assessed mandate roles (0/3).",
+      "provenance": [
+        "docs/research/regulatory-signal/country-regulatory-ecosystem-baseline.json",
+        "regulator-shadow-results.json"
+      ]
+    },
+    {
+      "iso2": "KH",
+      "country": "Cambodia",
+      "region": "Asia Pacific",
+      "applicableRoles": [
+        "financial_intelligence",
+        "insurance",
+        "pensions"
+      ],
+      "assessedRoles": [],
+      "roleScores": {
+        "financial_intelligence": null,
+        "insurance": null,
+        "pensions": null
+      },
+      "roleAuthorityCounts": {
+        "financial_intelligence": 0,
+        "insurance": 0,
+        "pensions": 0
+      },
+      "roleCoveragePct": 0,
+      "score": null,
+      "band": null,
+      "status": "not-assessed",
+      "blocker": "Fewer than two assessed mandate roles (0/3).",
+      "provenance": [
+        "docs/research/regulatory-signal/country-regulatory-ecosystem-baseline.json",
+        "regulator-shadow-results.json"
+      ]
+    },
+    {
+      "iso2": "CN",
+      "country": "China",
+      "region": "Asia Pacific",
+      "applicableRoles": [
+        "insurance",
+        "pensions",
+        "prudential_supervision",
+        "securities"
+      ],
+      "assessedRoles": [],
+      "roleScores": {
+        "insurance": null,
+        "pensions": null,
+        "prudential_supervision": null,
+        "securities": null
+      },
+      "roleAuthorityCounts": {
+        "insurance": 0,
+        "pensions": 0,
+        "prudential_supervision": 0,
+        "securities": 0
+      },
+      "roleCoveragePct": 0,
+      "score": null,
+      "band": null,
+      "status": "not-assessed",
+      "blocker": "Fewer than two assessed mandate roles (0/4).",
+      "provenance": [
+        "docs/research/regulatory-signal/country-regulatory-ecosystem-baseline.json",
+        "regulator-shadow-results.json"
+      ]
+    },
+    {
+      "iso2": "CK",
+      "country": "Cook Islands",
+      "region": "Asia Pacific",
+      "applicableRoles": [
+        "financial_intelligence",
+        "prudential_supervision"
+      ],
+      "assessedRoles": [],
+      "roleScores": {
+        "financial_intelligence": null,
+        "prudential_supervision": null
+      },
+      "roleAuthorityCounts": {
+        "financial_intelligence": 0,
+        "prudential_supervision": 0
+      },
+      "roleCoveragePct": 0,
+      "score": null,
+      "band": null,
+      "status": "not-assessed",
+      "blocker": "Fewer than two assessed mandate roles (0/2).",
+      "provenance": [
+        "docs/research/regulatory-signal/country-regulatory-ecosystem-baseline.json",
+        "regulator-shadow-results.json"
+      ]
+    },
+    {
+      "iso2": "FJ",
+      "country": "Fiji",
+      "region": "Asia Pacific",
+      "applicableRoles": [
+        "financial_intelligence",
+        "prudential_supervision"
+      ],
+      "assessedRoles": [],
+      "roleScores": {
+        "financial_intelligence": null,
+        "prudential_supervision": null
+      },
+      "roleAuthorityCounts": {
+        "financial_intelligence": 0,
+        "prudential_supervision": 0
+      },
+      "roleCoveragePct": 0,
+      "score": null,
+      "band": null,
+      "status": "not-assessed",
+      "blocker": "Fewer than two assessed mandate roles (0/2).",
+      "provenance": [
+        "docs/research/regulatory-signal/country-regulatory-ecosystem-baseline.json",
+        "regulator-shadow-results.json"
+      ]
+    },
+    {
+      "iso2": "IN",
+      "country": "India",
+      "region": "Asia Pacific",
+      "applicableRoles": [
+        "financial_intelligence",
+        "insurance",
+        "pensions",
+        "prudential_supervision",
+        "securities"
+      ],
+      "assessedRoles": [],
+      "roleScores": {
+        "financial_intelligence": null,
+        "insurance": null,
+        "pensions": null,
+        "prudential_supervision": null,
+        "securities": null
+      },
+      "roleAuthorityCounts": {
+        "financial_intelligence": 0,
+        "insurance": 0,
+        "pensions": 0,
+        "prudential_supervision": 0,
+        "securities": 1
+      },
+      "roleCoveragePct": 0,
+      "score": null,
+      "band": null,
+      "status": "not-assessed",
+      "blocker": "Fewer than two assessed mandate roles (0/5).",
+      "provenance": [
+        "docs/research/regulatory-signal/country-regulatory-ecosystem-baseline.json",
+        "regulator-shadow-results.json"
+      ]
+    },
+    {
+      "iso2": "ID",
+      "country": "Indonesia",
+      "region": "Asia Pacific",
+      "applicableRoles": [
+        "financial_intelligence",
+        "insurance",
+        "pensions",
+        "prudential_supervision",
+        "securities"
+      ],
+      "assessedRoles": [],
+      "roleScores": {
+        "financial_intelligence": null,
+        "insurance": null,
+        "pensions": null,
+        "prudential_supervision": null,
+        "securities": null
+      },
+      "roleAuthorityCounts": {
+        "financial_intelligence": 0,
+        "insurance": 0,
+        "pensions": 0,
+        "prudential_supervision": 0,
+        "securities": 0
+      },
+      "roleCoveragePct": 0,
+      "score": null,
+      "band": null,
+      "status": "not-assessed",
+      "blocker": "Fewer than two assessed mandate roles (0/5).",
+      "provenance": [
+        "docs/research/regulatory-signal/country-regulatory-ecosystem-baseline.json",
+        "regulator-shadow-results.json"
+      ]
+    },
+    {
+      "iso2": "JP",
+      "country": "Japan",
+      "region": "Asia Pacific",
+      "applicableRoles": [
+        "financial_intelligence",
+        "insurance",
+        "prudential_supervision",
+        "securities"
+      ],
+      "assessedRoles": [],
+      "roleScores": {
+        "financial_intelligence": null,
+        "insurance": null,
+        "prudential_supervision": null,
+        "securities": null
+      },
+      "roleAuthorityCounts": {
+        "financial_intelligence": 0,
+        "insurance": 0,
+        "prudential_supervision": 0,
+        "securities": 0
+      },
+      "roleCoveragePct": 0,
+      "score": null,
+      "band": null,
+      "status": "not-assessed",
+      "blocker": "Fewer than two assessed mandate roles (0/4).",
+      "provenance": [
+        "docs/research/regulatory-signal/country-regulatory-ecosystem-baseline.json",
+        "regulator-shadow-results.json"
+      ]
+    },
+    {
+      "iso2": "KZ",
+      "country": "Kazakhstan",
+      "region": "Asia Pacific",
+      "applicableRoles": [
+        "financial_intelligence",
+        "insurance",
+        "pensions",
+        "prudential_supervision",
+        "securities"
+      ],
+      "assessedRoles": [],
+      "roleScores": {
+        "financial_intelligence": null,
+        "insurance": null,
+        "pensions": null,
+        "prudential_supervision": null,
+        "securities": null
+      },
+      "roleAuthorityCounts": {
+        "financial_intelligence": 0,
+        "insurance": 0,
+        "pensions": 0,
+        "prudential_supervision": 0,
+        "securities": 0
+      },
+      "roleCoveragePct": 0,
+      "score": null,
+      "band": null,
+      "status": "not-assessed",
+      "blocker": "Fewer than two assessed mandate roles (0/5).",
+      "provenance": [
+        "docs/research/regulatory-signal/country-regulatory-ecosystem-baseline.json",
+        "regulator-shadow-results.json"
+      ]
+    },
+    {
+      "iso2": "KP",
+      "country": "North Korea",
+      "region": "Asia Pacific",
+      "applicableRoles": [],
+      "assessedRoles": [],
+      "roleScores": {},
+      "roleAuthorityCounts": {},
+      "roleCoveragePct": 0,
+      "score": null,
+      "band": null,
+      "status": "not-assessed",
+      "blocker": "No applicable non-central mandate roles are mapped for this country.",
+      "provenance": [
+        "docs/research/regulatory-signal/country-regulatory-ecosystem-baseline.json",
+        "regulator-shadow-results.json"
+      ]
+    },
+    {
+      "iso2": "KR",
+      "country": "South Korea",
+      "region": "Asia Pacific",
+      "applicableRoles": [
+        "financial_intelligence",
+        "insurance",
+        "pensions",
+        "prudential_supervision",
+        "securities"
+      ],
+      "assessedRoles": [
+        "insurance",
+        "pensions",
+        "prudential_supervision"
+      ],
+      "roleScores": {
+        "financial_intelligence": null,
+        "insurance": 89.75,
+        "pensions": 89.75,
+        "prudential_supervision": 89.75,
+        "securities": null
+      },
+      "roleAuthorityCounts": {
+        "financial_intelligence": 0,
+        "insurance": 1,
+        "pensions": 1,
+        "prudential_supervision": 1,
+        "securities": 0
+      },
+      "roleCoveragePct": 60,
+      "score": 89.75,
+      "band": "highly-transparent",
+      "status": "provisional",
+      "blocker": "Assessed role coverage is 60%; country result is provisional.",
+      "provenance": [
+        "docs/research/regulatory-signal/country-regulatory-ecosystem-baseline.json",
+        "regulator-shadow-results.json"
+      ]
+    },
+    {
+      "iso2": "KG",
+      "country": "Kyrgyzstan",
+      "region": "Asia Pacific",
+      "applicableRoles": [
+        "financial_intelligence",
+        "prudential_supervision",
+        "securities"
+      ],
+      "assessedRoles": [],
+      "roleScores": {
+        "financial_intelligence": null,
+        "prudential_supervision": null,
+        "securities": null
+      },
+      "roleAuthorityCounts": {
+        "financial_intelligence": 0,
+        "prudential_supervision": 0,
+        "securities": 0
+      },
+      "roleCoveragePct": 0,
+      "score": null,
+      "band": null,
+      "status": "not-assessed",
+      "blocker": "Fewer than two assessed mandate roles (0/3).",
+      "provenance": [
+        "docs/research/regulatory-signal/country-regulatory-ecosystem-baseline.json",
+        "regulator-shadow-results.json"
+      ]
+    },
+    {
+      "iso2": "LA",
+      "country": "Laos",
+      "region": "Asia Pacific",
+      "applicableRoles": [
+        "financial_intelligence"
+      ],
+      "assessedRoles": [],
+      "roleScores": {
+        "financial_intelligence": null
+      },
+      "roleAuthorityCounts": {
+        "financial_intelligence": 0
+      },
+      "roleCoveragePct": 0,
+      "score": null,
+      "band": null,
+      "status": "not-assessed",
+      "blocker": "Fewer than two assessed mandate roles (0/1).",
+      "provenance": [
+        "docs/research/regulatory-signal/country-regulatory-ecosystem-baseline.json",
+        "regulator-shadow-results.json"
+      ]
+    },
+    {
+      "iso2": "MY",
+      "country": "Malaysia",
+      "region": "Asia Pacific",
+      "applicableRoles": [
+        "financial_intelligence",
+        "insurance",
+        "prudential_supervision",
+        "securities"
+      ],
+      "assessedRoles": [
+        "securities"
+      ],
+      "roleScores": {
+        "financial_intelligence": null,
+        "insurance": null,
+        "prudential_supervision": null,
+        "securities": 84.1389
+      },
+      "roleAuthorityCounts": {
+        "financial_intelligence": 0,
+        "insurance": 0,
+        "prudential_supervision": 0,
+        "securities": 1
+      },
+      "roleCoveragePct": 25,
+      "score": null,
+      "band": null,
+      "status": "not-assessed",
+      "blocker": "Fewer than two assessed mandate roles (1/4).",
+      "provenance": [
+        "docs/research/regulatory-signal/country-regulatory-ecosystem-baseline.json",
+        "regulator-shadow-results.json"
+      ]
+    },
+    {
+      "iso2": "MV",
+      "country": "Maldives",
+      "region": "Asia Pacific",
+      "applicableRoles": [
+        "financial_intelligence",
+        "insurance",
+        "pensions",
+        "prudential_supervision",
+        "securities"
+      ],
+      "assessedRoles": [],
+      "roleScores": {
+        "financial_intelligence": null,
+        "insurance": null,
+        "pensions": null,
+        "prudential_supervision": null,
+        "securities": null
+      },
+      "roleAuthorityCounts": {
+        "financial_intelligence": 0,
+        "insurance": 0,
+        "pensions": 0,
+        "prudential_supervision": 0,
+        "securities": 0
+      },
+      "roleCoveragePct": 0,
+      "score": null,
+      "band": null,
+      "status": "not-assessed",
+      "blocker": "Fewer than two assessed mandate roles (0/5).",
+      "provenance": [
+        "docs/research/regulatory-signal/country-regulatory-ecosystem-baseline.json",
+        "regulator-shadow-results.json"
+      ]
+    },
+    {
+      "iso2": "MH",
+      "country": "Marshall Islands",
+      "region": "Asia Pacific",
+      "applicableRoles": [
+        "financial_intelligence"
+      ],
+      "assessedRoles": [],
+      "roleScores": {
+        "financial_intelligence": null
+      },
+      "roleAuthorityCounts": {
+        "financial_intelligence": 0
+      },
+      "roleCoveragePct": 0,
+      "score": null,
+      "band": null,
+      "status": "not-assessed",
+      "blocker": "Fewer than two assessed mandate roles (0/1).",
+      "provenance": [
+        "docs/research/regulatory-signal/country-regulatory-ecosystem-baseline.json",
+        "regulator-shadow-results.json"
+      ]
+    },
+    {
+      "iso2": "MN",
+      "country": "Mongolia",
+      "region": "Asia Pacific",
+      "applicableRoles": [
+        "financial_intelligence",
+        "insurance",
+        "securities"
+      ],
+      "assessedRoles": [],
+      "roleScores": {
+        "financial_intelligence": null,
+        "insurance": null,
+        "securities": null
+      },
+      "roleAuthorityCounts": {
+        "financial_intelligence": 0,
+        "insurance": 0,
+        "securities": 0
+      },
+      "roleCoveragePct": 0,
+      "score": null,
+      "band": null,
+      "status": "not-assessed",
+      "blocker": "Fewer than two assessed mandate roles (0/3).",
+      "provenance": [
+        "docs/research/regulatory-signal/country-regulatory-ecosystem-baseline.json",
+        "regulator-shadow-results.json"
+      ]
+    },
+    {
+      "iso2": "MM",
+      "country": "Myanmar",
+      "region": "Asia Pacific",
+      "applicableRoles": [
+        "prudential_supervision"
+      ],
+      "assessedRoles": [],
+      "roleScores": {
+        "prudential_supervision": null
+      },
+      "roleAuthorityCounts": {
+        "prudential_supervision": 0
+      },
+      "roleCoveragePct": 0,
+      "score": null,
+      "band": null,
+      "status": "not-assessed",
+      "blocker": "Fewer than two assessed mandate roles (0/1).",
+      "provenance": [
+        "docs/research/regulatory-signal/country-regulatory-ecosystem-baseline.json",
+        "regulator-shadow-results.json"
+      ]
+    },
+    {
+      "iso2": "NP",
+      "country": "Nepal",
+      "region": "Asia Pacific",
+      "applicableRoles": [
+        "financial_intelligence",
+        "insurance",
+        "prudential_supervision"
+      ],
+      "assessedRoles": [],
+      "roleScores": {
+        "financial_intelligence": null,
+        "insurance": null,
+        "prudential_supervision": null
+      },
+      "roleAuthorityCounts": {
+        "financial_intelligence": 0,
+        "insurance": 0,
+        "prudential_supervision": 0
+      },
+      "roleCoveragePct": 0,
+      "score": null,
+      "band": null,
+      "status": "not-assessed",
+      "blocker": "Fewer than two assessed mandate roles (0/3).",
+      "provenance": [
+        "docs/research/regulatory-signal/country-regulatory-ecosystem-baseline.json",
+        "regulator-shadow-results.json"
+      ]
+    },
+    {
+      "iso2": "NR",
+      "country": "Nauru",
+      "region": "Asia Pacific",
+      "applicableRoles": [
+        "financial_intelligence"
+      ],
+      "assessedRoles": [],
+      "roleScores": {
+        "financial_intelligence": null
+      },
+      "roleAuthorityCounts": {
+        "financial_intelligence": 0
+      },
+      "roleCoveragePct": 0,
+      "score": null,
+      "band": null,
+      "status": "not-assessed",
+      "blocker": "Fewer than two assessed mandate roles (0/1).",
+      "provenance": [
+        "docs/research/regulatory-signal/country-regulatory-ecosystem-baseline.json",
+        "regulator-shadow-results.json"
+      ]
+    },
+    {
+      "iso2": "NZ",
+      "country": "New Zealand",
+      "region": "Asia Pacific",
+      "applicableRoles": [
+        "financial_intelligence",
+        "insurance",
+        "prudential_supervision",
+        "securities"
+      ],
+      "assessedRoles": [],
+      "roleScores": {
+        "financial_intelligence": null,
+        "insurance": null,
+        "prudential_supervision": null,
+        "securities": null
+      },
+      "roleAuthorityCounts": {
+        "financial_intelligence": 0,
+        "insurance": 0,
+        "prudential_supervision": 0,
+        "securities": 1
+      },
+      "roleCoveragePct": 0,
+      "score": null,
+      "band": null,
+      "status": "not-assessed",
+      "blocker": "Fewer than two assessed mandate roles (0/4).",
+      "provenance": [
+        "docs/research/regulatory-signal/country-regulatory-ecosystem-baseline.json",
+        "regulator-shadow-results.json"
+      ]
+    },
+    {
+      "iso2": "NU",
+      "country": "Niue",
+      "region": "Asia Pacific",
+      "applicableRoles": [
+        "financial_intelligence"
+      ],
+      "assessedRoles": [],
+      "roleScores": {
+        "financial_intelligence": null
+      },
+      "roleAuthorityCounts": {
+        "financial_intelligence": 0
+      },
+      "roleCoveragePct": 0,
+      "score": null,
+      "band": null,
+      "status": "not-assessed",
+      "blocker": "Fewer than two assessed mandate roles (0/1).",
+      "provenance": [
+        "docs/research/regulatory-signal/country-regulatory-ecosystem-baseline.json",
+        "regulator-shadow-results.json"
+      ]
+    },
+    {
+      "iso2": "PK",
+      "country": "Pakistan",
+      "region": "Asia Pacific",
+      "applicableRoles": [
+        "insurance",
+        "pensions",
+        "prudential_supervision",
+        "securities"
+      ],
+      "assessedRoles": [],
+      "roleScores": {
+        "insurance": null,
+        "pensions": null,
+        "prudential_supervision": null,
+        "securities": null
+      },
+      "roleAuthorityCounts": {
+        "insurance": 0,
+        "pensions": 0,
+        "prudential_supervision": 0,
+        "securities": 0
+      },
+      "roleCoveragePct": 0,
+      "score": null,
+      "band": null,
+      "status": "not-assessed",
+      "blocker": "Fewer than two assessed mandate roles (0/4).",
+      "provenance": [
+        "docs/research/regulatory-signal/country-regulatory-ecosystem-baseline.json",
+        "regulator-shadow-results.json"
+      ]
+    },
+    {
+      "iso2": "PW",
+      "country": "Palau",
+      "region": "Asia Pacific",
+      "applicableRoles": [
+        "financial_intelligence",
+        "prudential_supervision"
+      ],
+      "assessedRoles": [],
+      "roleScores": {
+        "financial_intelligence": null,
+        "prudential_supervision": null
+      },
+      "roleAuthorityCounts": {
+        "financial_intelligence": 0,
+        "prudential_supervision": 0
+      },
+      "roleCoveragePct": 0,
+      "score": null,
+      "band": null,
+      "status": "not-assessed",
+      "blocker": "Fewer than two assessed mandate roles (0/2).",
+      "provenance": [
+        "docs/research/regulatory-signal/country-regulatory-ecosystem-baseline.json",
+        "regulator-shadow-results.json"
+      ]
+    },
+    {
+      "iso2": "PG",
+      "country": "Papua New Guinea",
+      "region": "Asia Pacific",
+      "applicableRoles": [
+        "financial_intelligence",
+        "insurance",
+        "pensions",
+        "prudential_supervision",
+        "securities"
+      ],
+      "assessedRoles": [],
+      "roleScores": {
+        "financial_intelligence": null,
+        "insurance": null,
+        "pensions": null,
+        "prudential_supervision": null,
+        "securities": null
+      },
+      "roleAuthorityCounts": {
+        "financial_intelligence": 0,
+        "insurance": 0,
+        "pensions": 0,
+        "prudential_supervision": 0,
+        "securities": 0
+      },
+      "roleCoveragePct": 0,
+      "score": null,
+      "band": null,
+      "status": "not-assessed",
+      "blocker": "Fewer than two assessed mandate roles (0/5).",
+      "provenance": [
+        "docs/research/regulatory-signal/country-regulatory-ecosystem-baseline.json",
+        "regulator-shadow-results.json"
+      ]
+    },
+    {
+      "iso2": "PH",
+      "country": "Philippines",
+      "region": "Asia Pacific",
+      "applicableRoles": [
+        "financial_intelligence",
+        "insurance",
+        "prudential_supervision",
+        "securities"
+      ],
+      "assessedRoles": [],
+      "roleScores": {
+        "financial_intelligence": null,
+        "insurance": null,
+        "prudential_supervision": null,
+        "securities": null
+      },
+      "roleAuthorityCounts": {
+        "financial_intelligence": 0,
+        "insurance": 0,
+        "prudential_supervision": 0,
+        "securities": 0
+      },
+      "roleCoveragePct": 0,
+      "score": null,
+      "band": null,
+      "status": "not-assessed",
+      "blocker": "Fewer than two assessed mandate roles (0/4).",
+      "provenance": [
+        "docs/research/regulatory-signal/country-regulatory-ecosystem-baseline.json",
+        "regulator-shadow-results.json"
+      ]
+    },
+    {
+      "iso2": "WS",
+      "country": "Samoa",
+      "region": "Asia Pacific",
+      "applicableRoles": [
+        "financial_intelligence",
+        "insurance",
+        "prudential_supervision"
+      ],
+      "assessedRoles": [],
+      "roleScores": {
+        "financial_intelligence": null,
+        "insurance": null,
+        "prudential_supervision": null
+      },
+      "roleAuthorityCounts": {
+        "financial_intelligence": 0,
+        "insurance": 0,
+        "prudential_supervision": 0
+      },
+      "roleCoveragePct": 0,
+      "score": null,
+      "band": null,
+      "status": "not-assessed",
+      "blocker": "Fewer than two assessed mandate roles (0/3).",
+      "provenance": [
+        "docs/research/regulatory-signal/country-regulatory-ecosystem-baseline.json",
+        "regulator-shadow-results.json"
+      ]
+    },
+    {
+      "iso2": "SG",
+      "country": "Singapore",
+      "region": "Asia Pacific",
+      "applicableRoles": [
+        "financial_intelligence",
+        "insurance",
+        "pensions",
+        "prudential_supervision",
+        "securities"
+      ],
+      "assessedRoles": [
+        "insurance",
+        "prudential_supervision",
+        "securities"
+      ],
+      "roleScores": {
+        "financial_intelligence": null,
+        "insurance": 82.4167,
+        "pensions": null,
+        "prudential_supervision": 82.4167,
+        "securities": 82.4167
+      },
+      "roleAuthorityCounts": {
+        "financial_intelligence": 0,
+        "insurance": 1,
+        "pensions": 0,
+        "prudential_supervision": 1,
+        "securities": 1
+      },
+      "roleCoveragePct": 60,
+      "score": 82.4167,
+      "band": "highly-transparent",
+      "status": "provisional",
+      "blocker": "Assessed role coverage is 60%; country result is provisional.",
+      "provenance": [
+        "docs/research/regulatory-signal/country-regulatory-ecosystem-baseline.json",
+        "regulator-shadow-results.json"
+      ]
+    },
+    {
+      "iso2": "SB",
+      "country": "Solomon Islands",
+      "region": "Asia Pacific",
+      "applicableRoles": [
+        "financial_intelligence",
+        "prudential_supervision"
+      ],
+      "assessedRoles": [],
+      "roleScores": {
+        "financial_intelligence": null,
+        "prudential_supervision": null
+      },
+      "roleAuthorityCounts": {
+        "financial_intelligence": 0,
+        "prudential_supervision": 0
+      },
+      "roleCoveragePct": 0,
+      "score": null,
+      "band": null,
+      "status": "not-assessed",
+      "blocker": "Fewer than two assessed mandate roles (0/2).",
+      "provenance": [
+        "docs/research/regulatory-signal/country-regulatory-ecosystem-baseline.json",
+        "regulator-shadow-results.json"
+      ]
+    },
+    {
+      "iso2": "LK",
+      "country": "Sri Lanka",
+      "region": "Asia Pacific",
+      "applicableRoles": [
+        "financial_intelligence",
+        "insurance",
+        "prudential_supervision",
+        "securities"
+      ],
+      "assessedRoles": [],
+      "roleScores": {
+        "financial_intelligence": null,
+        "insurance": null,
+        "prudential_supervision": null,
+        "securities": null
+      },
+      "roleAuthorityCounts": {
+        "financial_intelligence": 0,
+        "insurance": 0,
+        "prudential_supervision": 0,
+        "securities": 0
+      },
+      "roleCoveragePct": 0,
+      "score": null,
+      "band": null,
+      "status": "not-assessed",
+      "blocker": "Fewer than two assessed mandate roles (0/4).",
+      "provenance": [
+        "docs/research/regulatory-signal/country-regulatory-ecosystem-baseline.json",
+        "regulator-shadow-results.json"
+      ]
+    },
+    {
+      "iso2": "TW",
+      "country": "Taiwan",
+      "region": "Asia Pacific",
+      "applicableRoles": [
+        "financial_intelligence",
+        "insurance",
+        "securities"
+      ],
+      "assessedRoles": [],
+      "roleScores": {
+        "financial_intelligence": null,
+        "insurance": null,
+        "securities": null
+      },
+      "roleAuthorityCounts": {
+        "financial_intelligence": 0,
+        "insurance": 1,
+        "securities": 1
+      },
+      "roleCoveragePct": 0,
+      "score": null,
+      "band": null,
+      "status": "not-assessed",
+      "blocker": "Fewer than two assessed mandate roles (0/3).",
+      "provenance": [
+        "docs/research/regulatory-signal/country-regulatory-ecosystem-baseline.json",
+        "regulator-shadow-results.json"
+      ]
+    },
+    {
+      "iso2": "TJ",
+      "country": "Tajikistan",
+      "region": "Asia Pacific",
+      "applicableRoles": [
+        "financial_intelligence",
+        "prudential_supervision"
+      ],
+      "assessedRoles": [],
+      "roleScores": {
+        "financial_intelligence": null,
+        "prudential_supervision": null
+      },
+      "roleAuthorityCounts": {
+        "financial_intelligence": 0,
+        "prudential_supervision": 0
+      },
+      "roleCoveragePct": 0,
+      "score": null,
+      "band": null,
+      "status": "not-assessed",
+      "blocker": "Fewer than two assessed mandate roles (0/2).",
+      "provenance": [
+        "docs/research/regulatory-signal/country-regulatory-ecosystem-baseline.json",
+        "regulator-shadow-results.json"
+      ]
+    },
+    {
+      "iso2": "TH",
+      "country": "Thailand",
+      "region": "Asia Pacific",
+      "applicableRoles": [
+        "financial_intelligence",
+        "insurance",
+        "pensions",
+        "prudential_supervision",
+        "securities"
+      ],
+      "assessedRoles": [],
+      "roleScores": {
+        "financial_intelligence": null,
+        "insurance": null,
+        "pensions": null,
+        "prudential_supervision": null,
+        "securities": null
+      },
+      "roleAuthorityCounts": {
+        "financial_intelligence": 0,
+        "insurance": 0,
+        "pensions": 0,
+        "prudential_supervision": 0,
+        "securities": 0
+      },
+      "roleCoveragePct": 0,
+      "score": null,
+      "band": null,
+      "status": "not-assessed",
+      "blocker": "Fewer than two assessed mandate roles (0/5).",
+      "provenance": [
+        "docs/research/regulatory-signal/country-regulatory-ecosystem-baseline.json",
+        "regulator-shadow-results.json"
+      ]
+    },
+    {
+      "iso2": "TO",
+      "country": "Tonga",
+      "region": "Asia Pacific",
+      "applicableRoles": [
+        "prudential_supervision"
+      ],
+      "assessedRoles": [],
+      "roleScores": {
+        "prudential_supervision": null
+      },
+      "roleAuthorityCounts": {
+        "prudential_supervision": 0
+      },
+      "roleCoveragePct": 0,
+      "score": null,
+      "band": null,
+      "status": "not-assessed",
+      "blocker": "Fewer than two assessed mandate roles (0/1).",
+      "provenance": [
+        "docs/research/regulatory-signal/country-regulatory-ecosystem-baseline.json",
+        "regulator-shadow-results.json"
+      ]
+    },
+    {
+      "iso2": "TL",
+      "country": "Timor-Leste",
+      "region": "Asia Pacific",
+      "applicableRoles": [
+        "financial_intelligence"
+      ],
+      "assessedRoles": [],
+      "roleScores": {
+        "financial_intelligence": null
+      },
+      "roleAuthorityCounts": {
+        "financial_intelligence": 0
+      },
+      "roleCoveragePct": 0,
+      "score": null,
+      "band": null,
+      "status": "not-assessed",
+      "blocker": "Fewer than two assessed mandate roles (0/1).",
+      "provenance": [
+        "docs/research/regulatory-signal/country-regulatory-ecosystem-baseline.json",
+        "regulator-shadow-results.json"
+      ]
+    },
+    {
+      "iso2": "TM",
+      "country": "Turkmenistan",
+      "region": "Asia Pacific",
+      "applicableRoles": [
+        "financial_intelligence",
+        "prudential_supervision"
+      ],
+      "assessedRoles": [],
+      "roleScores": {
+        "financial_intelligence": null,
+        "prudential_supervision": null
+      },
+      "roleAuthorityCounts": {
+        "financial_intelligence": 0,
+        "prudential_supervision": 0
+      },
+      "roleCoveragePct": 0,
+      "score": null,
+      "band": null,
+      "status": "not-assessed",
+      "blocker": "Fewer than two assessed mandate roles (0/2).",
+      "provenance": [
+        "docs/research/regulatory-signal/country-regulatory-ecosystem-baseline.json",
+        "regulator-shadow-results.json"
+      ]
+    },
+    {
+      "iso2": "UZ",
+      "country": "Uzbekistan",
+      "region": "Asia Pacific",
+      "applicableRoles": [
+        "financial_intelligence",
+        "insurance",
+        "prudential_supervision",
+        "securities"
+      ],
+      "assessedRoles": [],
+      "roleScores": {
+        "financial_intelligence": null,
+        "insurance": null,
+        "prudential_supervision": null,
+        "securities": null
+      },
+      "roleAuthorityCounts": {
+        "financial_intelligence": 0,
+        "insurance": 0,
+        "prudential_supervision": 0,
+        "securities": 0
+      },
+      "roleCoveragePct": 0,
+      "score": null,
+      "band": null,
+      "status": "not-assessed",
+      "blocker": "Fewer than two assessed mandate roles (0/4).",
+      "provenance": [
+        "docs/research/regulatory-signal/country-regulatory-ecosystem-baseline.json",
+        "regulator-shadow-results.json"
+      ]
+    },
+    {
+      "iso2": "VU",
+      "country": "Vanuatu",
+      "region": "Asia Pacific",
+      "applicableRoles": [
+        "financial_intelligence",
+        "insurance",
+        "prudential_supervision"
+      ],
+      "assessedRoles": [],
+      "roleScores": {
+        "financial_intelligence": null,
+        "insurance": null,
+        "prudential_supervision": null
+      },
+      "roleAuthorityCounts": {
+        "financial_intelligence": 0,
+        "insurance": 0,
+        "prudential_supervision": 0
+      },
+      "roleCoveragePct": 0,
+      "score": null,
+      "band": null,
+      "status": "not-assessed",
+      "blocker": "Fewer than two assessed mandate roles (0/3).",
+      "provenance": [
+        "docs/research/regulatory-signal/country-regulatory-ecosystem-baseline.json",
+        "regulator-shadow-results.json"
+      ]
+    },
+    {
+      "iso2": "VN",
+      "country": "Vietnam",
+      "region": "Asia Pacific",
+      "applicableRoles": [
+        "insurance",
+        "prudential_supervision",
+        "securities"
+      ],
+      "assessedRoles": [],
+      "roleScores": {
+        "insurance": null,
+        "prudential_supervision": null,
+        "securities": null
+      },
+      "roleAuthorityCounts": {
+        "insurance": 0,
+        "prudential_supervision": 0,
+        "securities": 0
+      },
+      "roleCoveragePct": 0,
+      "score": null,
+      "band": null,
+      "status": "not-assessed",
+      "blocker": "Fewer than two assessed mandate roles (0/3).",
+      "provenance": [
+        "docs/research/regulatory-signal/country-regulatory-ecosystem-baseline.json",
+        "regulator-shadow-results.json"
+      ]
+    },
+    {
+      "iso2": "HK",
+      "country": "Hong Kong",
+      "region": "Asia Pacific",
+      "applicableRoles": [
+        "financial_intelligence",
+        "insurance",
+        "pensions",
+        "prudential_supervision",
+        "securities"
+      ],
+      "assessedRoles": [
+        "prudential_supervision"
+      ],
+      "roleScores": {
+        "financial_intelligence": null,
+        "insurance": null,
+        "pensions": null,
+        "prudential_supervision": 89.5425,
+        "securities": null
+      },
+      "roleAuthorityCounts": {
+        "financial_intelligence": 0,
+        "insurance": 0,
+        "pensions": 0,
+        "prudential_supervision": 1,
+        "securities": 1
+      },
+      "roleCoveragePct": 20,
+      "score": null,
+      "band": null,
+      "status": "not-assessed",
+      "blocker": "Fewer than two assessed mandate roles (1/5).",
+      "provenance": [
+        "docs/research/regulatory-signal/country-regulatory-ecosystem-baseline.json",
+        "regulator-shadow-results.json"
+      ]
+    },
+    {
+      "iso2": "MO",
+      "country": "Macau",
+      "region": "Asia Pacific",
+      "applicableRoles": [
+        "financial_intelligence",
+        "insurance",
+        "pensions",
+        "prudential_supervision"
+      ],
+      "assessedRoles": [],
+      "roleScores": {
+        "financial_intelligence": null,
+        "insurance": null,
+        "pensions": null,
+        "prudential_supervision": null
+      },
+      "roleAuthorityCounts": {
+        "financial_intelligence": 0,
+        "insurance": 0,
+        "pensions": 0,
+        "prudential_supervision": 0
+      },
+      "roleCoveragePct": 0,
+      "score": null,
+      "band": null,
+      "status": "not-assessed",
+      "blocker": "Fewer than two assessed mandate roles (0/4).",
+      "provenance": [
+        "docs/research/regulatory-signal/country-regulatory-ecosystem-baseline.json",
+        "regulator-shadow-results.json"
+      ]
+    },
+    {
+      "iso2": "AL",
+      "country": "Albania",
+      "region": "Europe",
+      "applicableRoles": [
+        "financial_intelligence",
+        "insurance",
+        "pensions",
+        "prudential_supervision",
+        "securities"
+      ],
+      "assessedRoles": [],
+      "roleScores": {
+        "financial_intelligence": null,
+        "insurance": null,
+        "pensions": null,
+        "prudential_supervision": null,
+        "securities": null
+      },
+      "roleAuthorityCounts": {
+        "financial_intelligence": 0,
+        "insurance": 0,
+        "pensions": 0,
+        "prudential_supervision": 0,
+        "securities": 0
+      },
+      "roleCoveragePct": 0,
+      "score": null,
+      "band": null,
+      "status": "not-assessed",
+      "blocker": "Fewer than two assessed mandate roles (0/5).",
+      "provenance": [
+        "docs/research/regulatory-signal/country-regulatory-ecosystem-baseline.json",
+        "regulator-shadow-results.json"
+      ]
+    },
+    {
+      "iso2": "AD",
+      "country": "Andorra",
+      "region": "Europe",
+      "applicableRoles": [
+        "financial_intelligence",
+        "insurance",
+        "securities"
+      ],
+      "assessedRoles": [],
+      "roleScores": {
+        "financial_intelligence": null,
+        "insurance": null,
+        "securities": null
+      },
+      "roleAuthorityCounts": {
+        "financial_intelligence": 0,
+        "insurance": 0,
+        "securities": 0
+      },
+      "roleCoveragePct": 0,
+      "score": null,
+      "band": null,
+      "status": "not-assessed",
+      "blocker": "Fewer than two assessed mandate roles (0/3).",
+      "provenance": [
+        "docs/research/regulatory-signal/country-regulatory-ecosystem-baseline.json",
+        "regulator-shadow-results.json"
+      ]
+    },
+    {
+      "iso2": "AM",
+      "country": "Armenia",
+      "region": "Europe",
+      "applicableRoles": [
+        "financial_intelligence",
+        "insurance",
+        "pensions",
+        "prudential_supervision",
+        "securities"
+      ],
+      "assessedRoles": [],
+      "roleScores": {
+        "financial_intelligence": null,
+        "insurance": null,
+        "pensions": null,
+        "prudential_supervision": null,
+        "securities": null
+      },
+      "roleAuthorityCounts": {
+        "financial_intelligence": 0,
+        "insurance": 0,
+        "pensions": 0,
+        "prudential_supervision": 0,
+        "securities": 0
+      },
+      "roleCoveragePct": 0,
+      "score": null,
+      "band": null,
+      "status": "not-assessed",
+      "blocker": "Fewer than two assessed mandate roles (0/5).",
+      "provenance": [
+        "docs/research/regulatory-signal/country-regulatory-ecosystem-baseline.json",
+        "regulator-shadow-results.json"
+      ]
+    },
+    {
+      "iso2": "AT",
+      "country": "Austria",
+      "region": "Europe",
+      "applicableRoles": [
+        "financial_intelligence",
+        "insurance",
+        "pensions",
+        "prudential_supervision",
+        "securities"
+      ],
+      "assessedRoles": [],
+      "roleScores": {
+        "financial_intelligence": null,
+        "insurance": null,
+        "pensions": null,
+        "prudential_supervision": null,
+        "securities": null
+      },
+      "roleAuthorityCounts": {
+        "financial_intelligence": 0,
+        "insurance": 1,
+        "pensions": 1,
+        "prudential_supervision": 1,
+        "securities": 1
+      },
+      "roleCoveragePct": 0,
+      "score": null,
+      "band": null,
+      "status": "not-assessed",
+      "blocker": "Fewer than two assessed mandate roles (0/5).",
+      "provenance": [
+        "docs/research/regulatory-signal/country-regulatory-ecosystem-baseline.json",
+        "regulator-shadow-results.json"
+      ]
+    },
+    {
+      "iso2": "AZ",
+      "country": "Azerbaijan",
+      "region": "Europe",
+      "applicableRoles": [
+        "financial_intelligence",
+        "insurance",
+        "prudential_supervision"
+      ],
+      "assessedRoles": [],
+      "roleScores": {
+        "financial_intelligence": null,
+        "insurance": null,
+        "prudential_supervision": null
+      },
+      "roleAuthorityCounts": {
+        "financial_intelligence": 0,
+        "insurance": 0,
+        "prudential_supervision": 0
+      },
+      "roleCoveragePct": 0,
+      "score": null,
+      "band": null,
+      "status": "not-assessed",
+      "blocker": "Fewer than two assessed mandate roles (0/3).",
+      "provenance": [
+        "docs/research/regulatory-signal/country-regulatory-ecosystem-baseline.json",
+        "regulator-shadow-results.json"
+      ]
+    },
+    {
+      "iso2": "BY",
+      "country": "Belarus",
+      "region": "Europe",
+      "applicableRoles": [
+        "financial_intelligence",
+        "prudential_supervision"
+      ],
+      "assessedRoles": [],
+      "roleScores": {
+        "financial_intelligence": null,
+        "prudential_supervision": null
+      },
+      "roleAuthorityCounts": {
+        "financial_intelligence": 0,
+        "prudential_supervision": 0
+      },
+      "roleCoveragePct": 0,
+      "score": null,
+      "band": null,
+      "status": "not-assessed",
+      "blocker": "Fewer than two assessed mandate roles (0/2).",
+      "provenance": [
+        "docs/research/regulatory-signal/country-regulatory-ecosystem-baseline.json",
+        "regulator-shadow-results.json"
+      ]
+    },
+    {
+      "iso2": "BE",
+      "country": "Belgium",
+      "region": "Europe",
+      "applicableRoles": [
+        "financial_intelligence",
+        "insurance",
+        "pensions",
+        "prudential_supervision",
+        "securities"
+      ],
+      "assessedRoles": [
+        "insurance",
+        "pensions",
+        "securities"
+      ],
+      "roleScores": {
+        "financial_intelligence": null,
+        "insurance": 95.4167,
+        "pensions": 95.4167,
+        "prudential_supervision": null,
+        "securities": 95.4167
+      },
+      "roleAuthorityCounts": {
+        "financial_intelligence": 0,
+        "insurance": 1,
+        "pensions": 1,
+        "prudential_supervision": 0,
+        "securities": 1
+      },
+      "roleCoveragePct": 60,
+      "score": 95.4167,
+      "band": "highly-transparent",
+      "status": "provisional",
+      "blocker": "Assessed role coverage is 60%; country result is provisional.",
+      "provenance": [
+        "docs/research/regulatory-signal/country-regulatory-ecosystem-baseline.json",
+        "regulator-shadow-results.json"
+      ]
+    },
+    {
+      "iso2": "BA",
+      "country": "Bosnia and Herzegovina",
+      "region": "Europe",
+      "applicableRoles": [
+        "financial_intelligence",
+        "insurance",
+        "prudential_supervision",
+        "securities"
+      ],
+      "assessedRoles": [],
+      "roleScores": {
+        "financial_intelligence": null,
+        "insurance": null,
+        "prudential_supervision": null,
+        "securities": null
+      },
+      "roleAuthorityCounts": {
+        "financial_intelligence": 0,
+        "insurance": 0,
+        "prudential_supervision": 0,
+        "securities": 0
+      },
+      "roleCoveragePct": 0,
+      "score": null,
+      "band": null,
+      "status": "not-assessed",
+      "blocker": "Fewer than two assessed mandate roles (0/4).",
+      "provenance": [
+        "docs/research/regulatory-signal/country-regulatory-ecosystem-baseline.json",
+        "regulator-shadow-results.json"
+      ]
+    },
+    {
+      "iso2": "BG",
+      "country": "Bulgaria",
+      "region": "Europe",
+      "applicableRoles": [
+        "financial_intelligence",
+        "insurance",
+        "pensions",
+        "prudential_supervision",
+        "securities"
+      ],
+      "assessedRoles": [],
+      "roleScores": {
+        "financial_intelligence": null,
+        "insurance": null,
+        "pensions": null,
+        "prudential_supervision": null,
+        "securities": null
+      },
+      "roleAuthorityCounts": {
+        "financial_intelligence": 0,
+        "insurance": 0,
+        "pensions": 0,
+        "prudential_supervision": 0,
+        "securities": 0
+      },
+      "roleCoveragePct": 0,
+      "score": null,
+      "band": null,
+      "status": "not-assessed",
+      "blocker": "Fewer than two assessed mandate roles (0/5).",
+      "provenance": [
+        "docs/research/regulatory-signal/country-regulatory-ecosystem-baseline.json",
+        "regulator-shadow-results.json"
+      ]
+    },
+    {
+      "iso2": "HR",
+      "country": "Croatia",
+      "region": "Europe",
+      "applicableRoles": [
+        "financial_intelligence",
+        "insurance",
+        "pensions",
+        "prudential_supervision",
+        "securities"
+      ],
+      "assessedRoles": [],
+      "roleScores": {
+        "financial_intelligence": null,
+        "insurance": null,
+        "pensions": null,
+        "prudential_supervision": null,
+        "securities": null
+      },
+      "roleAuthorityCounts": {
+        "financial_intelligence": 0,
+        "insurance": 0,
+        "pensions": 0,
+        "prudential_supervision": 0,
+        "securities": 0
+      },
+      "roleCoveragePct": 0,
+      "score": null,
+      "band": null,
+      "status": "not-assessed",
+      "blocker": "Fewer than two assessed mandate roles (0/5).",
+      "provenance": [
+        "docs/research/regulatory-signal/country-regulatory-ecosystem-baseline.json",
+        "regulator-shadow-results.json"
+      ]
+    },
+    {
+      "iso2": "CY",
+      "country": "Cyprus",
+      "region": "Europe",
+      "applicableRoles": [
+        "financial_intelligence",
+        "prudential_supervision",
+        "securities"
+      ],
+      "assessedRoles": [],
+      "roleScores": {
+        "financial_intelligence": null,
+        "prudential_supervision": null,
+        "securities": null
+      },
+      "roleAuthorityCounts": {
+        "financial_intelligence": 0,
+        "prudential_supervision": 0,
+        "securities": 1
+      },
+      "roleCoveragePct": 0,
+      "score": null,
+      "band": null,
+      "status": "not-assessed",
+      "blocker": "Fewer than two assessed mandate roles (0/3).",
+      "provenance": [
+        "docs/research/regulatory-signal/country-regulatory-ecosystem-baseline.json",
+        "regulator-shadow-results.json"
+      ]
+    },
+    {
+      "iso2": "CZ",
+      "country": "Czechia",
+      "region": "Europe",
+      "applicableRoles": [
+        "financial_intelligence",
+        "insurance",
+        "pensions",
+        "prudential_supervision",
+        "securities"
+      ],
+      "assessedRoles": [],
+      "roleScores": {
+        "financial_intelligence": null,
+        "insurance": null,
+        "pensions": null,
+        "prudential_supervision": null,
+        "securities": null
+      },
+      "roleAuthorityCounts": {
+        "financial_intelligence": 0,
+        "insurance": 1,
+        "pensions": 1,
+        "prudential_supervision": 1,
+        "securities": 1
+      },
+      "roleCoveragePct": 0,
+      "score": null,
+      "band": null,
+      "status": "not-assessed",
+      "blocker": "Fewer than two assessed mandate roles (0/5).",
+      "provenance": [
+        "docs/research/regulatory-signal/country-regulatory-ecosystem-baseline.json",
+        "regulator-shadow-results.json"
+      ]
+    },
+    {
+      "iso2": "DK",
+      "country": "Denmark",
+      "region": "Europe",
+      "applicableRoles": [
+        "financial_intelligence",
+        "insurance",
+        "prudential_supervision",
+        "securities"
+      ],
+      "assessedRoles": [],
+      "roleScores": {
+        "financial_intelligence": null,
+        "insurance": null,
+        "prudential_supervision": null,
+        "securities": null
+      },
+      "roleAuthorityCounts": {
+        "financial_intelligence": 0,
+        "insurance": 1,
+        "prudential_supervision": 1,
+        "securities": 1
+      },
+      "roleCoveragePct": 0,
+      "score": null,
+      "band": null,
+      "status": "not-assessed",
+      "blocker": "Fewer than two assessed mandate roles (0/4).",
+      "provenance": [
+        "docs/research/regulatory-signal/country-regulatory-ecosystem-baseline.json",
+        "regulator-shadow-results.json"
+      ]
+    },
+    {
+      "iso2": "EE",
+      "country": "Estonia",
+      "region": "Europe",
+      "applicableRoles": [
+        "financial_intelligence",
+        "insurance",
+        "prudential_supervision",
+        "securities"
+      ],
+      "assessedRoles": [],
+      "roleScores": {
+        "financial_intelligence": null,
+        "insurance": null,
+        "prudential_supervision": null,
+        "securities": null
+      },
+      "roleAuthorityCounts": {
+        "financial_intelligence": 0,
+        "insurance": 0,
+        "prudential_supervision": 0,
+        "securities": 0
+      },
+      "roleCoveragePct": 0,
+      "score": null,
+      "band": null,
+      "status": "not-assessed",
+      "blocker": "Fewer than two assessed mandate roles (0/4).",
+      "provenance": [
+        "docs/research/regulatory-signal/country-regulatory-ecosystem-baseline.json",
+        "regulator-shadow-results.json"
+      ]
+    },
+    {
+      "iso2": "FI",
+      "country": "Finland",
+      "region": "Europe",
+      "applicableRoles": [
+        "financial_intelligence",
+        "insurance",
+        "prudential_supervision",
+        "securities"
+      ],
+      "assessedRoles": [],
+      "roleScores": {
+        "financial_intelligence": null,
+        "insurance": null,
+        "prudential_supervision": null,
+        "securities": null
+      },
+      "roleAuthorityCounts": {
+        "financial_intelligence": 0,
+        "insurance": 0,
+        "prudential_supervision": 1,
+        "securities": 0
+      },
+      "roleCoveragePct": 0,
+      "score": null,
+      "band": null,
+      "status": "not-assessed",
+      "blocker": "Fewer than two assessed mandate roles (0/4).",
+      "provenance": [
+        "docs/research/regulatory-signal/country-regulatory-ecosystem-baseline.json",
+        "regulator-shadow-results.json"
+      ]
+    },
+    {
+      "iso2": "FR",
+      "country": "France",
+      "region": "Europe",
+      "applicableRoles": [
+        "financial_intelligence",
+        "insurance",
+        "pensions",
+        "prudential_supervision",
+        "securities"
+      ],
+      "assessedRoles": [
+        "insurance",
+        "pensions",
+        "prudential_supervision",
+        "securities"
+      ],
+      "roleScores": {
+        "financial_intelligence": null,
+        "insurance": 91.75,
+        "pensions": 91.75,
+        "prudential_supervision": 91.75,
+        "securities": 99.0548
+      },
+      "roleAuthorityCounts": {
+        "financial_intelligence": 0,
+        "insurance": 1,
+        "pensions": 1,
+        "prudential_supervision": 1,
+        "securities": 1
+      },
+      "roleCoveragePct": 80,
+      "score": 93.5762,
+      "band": "highly-transparent",
+      "status": "complete",
+      "blocker": null,
+      "provenance": [
+        "docs/research/regulatory-signal/country-regulatory-ecosystem-baseline.json",
+        "regulator-shadow-results.json"
+      ]
+    },
+    {
+      "iso2": "DE",
+      "country": "Germany",
+      "region": "Europe",
+      "applicableRoles": [
+        "financial_intelligence",
+        "insurance",
+        "pensions",
+        "prudential_supervision",
+        "securities"
+      ],
+      "assessedRoles": [],
+      "roleScores": {
+        "financial_intelligence": null,
+        "insurance": null,
+        "pensions": null,
+        "prudential_supervision": null,
+        "securities": null
+      },
+      "roleAuthorityCounts": {
+        "financial_intelligence": 0,
+        "insurance": 1,
+        "pensions": 1,
+        "prudential_supervision": 1,
+        "securities": 1
+      },
+      "roleCoveragePct": 0,
+      "score": null,
+      "band": null,
+      "status": "not-assessed",
+      "blocker": "Fewer than two assessed mandate roles (0/5).",
+      "provenance": [
+        "docs/research/regulatory-signal/country-regulatory-ecosystem-baseline.json",
+        "regulator-shadow-results.json"
+      ]
+    },
+    {
+      "iso2": "GE",
+      "country": "Georgia",
+      "region": "Europe",
+      "applicableRoles": [
+        "financial_intelligence",
+        "insurance",
+        "pensions",
+        "prudential_supervision",
+        "securities"
+      ],
+      "assessedRoles": [],
+      "roleScores": {
+        "financial_intelligence": null,
+        "insurance": null,
+        "pensions": null,
+        "prudential_supervision": null,
+        "securities": null
+      },
+      "roleAuthorityCounts": {
+        "financial_intelligence": 0,
+        "insurance": 0,
+        "pensions": 0,
+        "prudential_supervision": 0,
+        "securities": 0
+      },
+      "roleCoveragePct": 0,
+      "score": null,
+      "band": null,
+      "status": "not-assessed",
+      "blocker": "Fewer than two assessed mandate roles (0/5).",
+      "provenance": [
+        "docs/research/regulatory-signal/country-regulatory-ecosystem-baseline.json",
+        "regulator-shadow-results.json"
+      ]
+    },
+    {
+      "iso2": "GR",
+      "country": "Greece",
+      "region": "Europe",
+      "applicableRoles": [
+        "financial_intelligence",
+        "insurance",
+        "prudential_supervision",
+        "securities"
+      ],
+      "assessedRoles": [],
+      "roleScores": {
+        "financial_intelligence": null,
+        "insurance": null,
+        "prudential_supervision": null,
+        "securities": null
+      },
+      "roleAuthorityCounts": {
+        "financial_intelligence": 0,
+        "insurance": 0,
+        "prudential_supervision": 0,
+        "securities": 0
+      },
+      "roleCoveragePct": 0,
+      "score": null,
+      "band": null,
+      "status": "not-assessed",
+      "blocker": "Fewer than two assessed mandate roles (0/4).",
+      "provenance": [
+        "docs/research/regulatory-signal/country-regulatory-ecosystem-baseline.json",
+        "regulator-shadow-results.json"
+      ]
+    },
+    {
+      "iso2": "HU",
+      "country": "Hungary",
+      "region": "Europe",
+      "applicableRoles": [
+        "financial_intelligence",
+        "insurance",
+        "pensions",
+        "prudential_supervision",
+        "securities"
+      ],
+      "assessedRoles": [],
+      "roleScores": {
+        "financial_intelligence": null,
+        "insurance": null,
+        "pensions": null,
+        "prudential_supervision": null,
+        "securities": null
+      },
+      "roleAuthorityCounts": {
+        "financial_intelligence": 0,
+        "insurance": 0,
+        "pensions": 0,
+        "prudential_supervision": 0,
+        "securities": 0
+      },
+      "roleCoveragePct": 0,
+      "score": null,
+      "band": null,
+      "status": "not-assessed",
+      "blocker": "Fewer than two assessed mandate roles (0/5).",
+      "provenance": [
+        "docs/research/regulatory-signal/country-regulatory-ecosystem-baseline.json",
+        "regulator-shadow-results.json"
+      ]
+    },
+    {
+      "iso2": "IS",
+      "country": "Iceland",
+      "region": "Europe",
+      "applicableRoles": [
+        "financial_intelligence",
+        "prudential_supervision",
+        "securities"
+      ],
+      "assessedRoles": [],
+      "roleScores": {
+        "financial_intelligence": null,
+        "prudential_supervision": null,
+        "securities": null
+      },
+      "roleAuthorityCounts": {
+        "financial_intelligence": 0,
+        "prudential_supervision": 0,
+        "securities": 0
+      },
+      "roleCoveragePct": 0,
+      "score": null,
+      "band": null,
+      "status": "not-assessed",
+      "blocker": "Fewer than two assessed mandate roles (0/3).",
+      "provenance": [
+        "docs/research/regulatory-signal/country-regulatory-ecosystem-baseline.json",
+        "regulator-shadow-results.json"
+      ]
+    },
+    {
+      "iso2": "IE",
+      "country": "Ireland",
+      "region": "Europe",
+      "applicableRoles": [
+        "financial_intelligence",
+        "insurance",
+        "pensions",
+        "prudential_supervision",
+        "securities"
+      ],
+      "assessedRoles": [
+        "insurance",
+        "prudential_supervision",
+        "securities"
+      ],
+      "roleScores": {
+        "financial_intelligence": null,
+        "insurance": 89.6849,
+        "pensions": null,
+        "prudential_supervision": 89.6849,
+        "securities": 89.6849
+      },
+      "roleAuthorityCounts": {
+        "financial_intelligence": 0,
+        "insurance": 1,
+        "pensions": 0,
+        "prudential_supervision": 1,
+        "securities": 1
+      },
+      "roleCoveragePct": 60,
+      "score": 89.6849,
+      "band": "highly-transparent",
+      "status": "provisional",
+      "blocker": "Assessed role coverage is 60%; country result is provisional.",
+      "provenance": [
+        "docs/research/regulatory-signal/country-regulatory-ecosystem-baseline.json",
+        "regulator-shadow-results.json"
+      ]
+    },
+    {
+      "iso2": "IT",
+      "country": "Italy",
+      "region": "Europe",
+      "applicableRoles": [
+        "financial_intelligence",
+        "insurance",
+        "pensions",
+        "prudential_supervision",
+        "securities"
+      ],
+      "assessedRoles": [],
+      "roleScores": {
+        "financial_intelligence": null,
+        "insurance": null,
+        "pensions": null,
+        "prudential_supervision": null,
+        "securities": null
+      },
+      "roleAuthorityCounts": {
+        "financial_intelligence": 0,
+        "insurance": 1,
+        "pensions": 0,
+        "prudential_supervision": 0,
+        "securities": 0
+      },
+      "roleCoveragePct": 0,
+      "score": null,
+      "band": null,
+      "status": "not-assessed",
+      "blocker": "Fewer than two assessed mandate roles (0/5).",
+      "provenance": [
+        "docs/research/regulatory-signal/country-regulatory-ecosystem-baseline.json",
+        "regulator-shadow-results.json"
+      ]
+    },
+    {
+      "iso2": "XK",
+      "country": "Kosovo",
+      "region": "Europe",
+      "applicableRoles": [
+        "financial_intelligence",
+        "insurance",
+        "pensions",
+        "prudential_supervision"
+      ],
+      "assessedRoles": [],
+      "roleScores": {
+        "financial_intelligence": null,
+        "insurance": null,
+        "pensions": null,
+        "prudential_supervision": null
+      },
+      "roleAuthorityCounts": {
+        "financial_intelligence": 0,
+        "insurance": 0,
+        "pensions": 0,
+        "prudential_supervision": 0
+      },
+      "roleCoveragePct": 0,
+      "score": null,
+      "band": null,
+      "status": "not-assessed",
+      "blocker": "Fewer than two assessed mandate roles (0/4).",
+      "provenance": [
+        "docs/research/regulatory-signal/country-regulatory-ecosystem-baseline.json",
+        "regulator-shadow-results.json"
+      ]
+    },
+    {
+      "iso2": "LV",
+      "country": "Latvia",
+      "region": "Europe",
+      "applicableRoles": [
+        "financial_intelligence",
+        "insurance",
+        "pensions",
+        "prudential_supervision",
+        "securities"
+      ],
+      "assessedRoles": [],
+      "roleScores": {
+        "financial_intelligence": null,
+        "insurance": null,
+        "pensions": null,
+        "prudential_supervision": null,
+        "securities": null
+      },
+      "roleAuthorityCounts": {
+        "financial_intelligence": 0,
+        "insurance": 0,
+        "pensions": 0,
+        "prudential_supervision": 0,
+        "securities": 0
+      },
+      "roleCoveragePct": 0,
+      "score": null,
+      "band": null,
+      "status": "not-assessed",
+      "blocker": "Fewer than two assessed mandate roles (0/5).",
+      "provenance": [
+        "docs/research/regulatory-signal/country-regulatory-ecosystem-baseline.json",
+        "regulator-shadow-results.json"
+      ]
+    },
+    {
+      "iso2": "LI",
+      "country": "Liechtenstein",
+      "region": "Europe",
+      "applicableRoles": [
+        "financial_intelligence",
+        "insurance",
+        "pensions",
+        "prudential_supervision",
+        "securities"
+      ],
+      "assessedRoles": [],
+      "roleScores": {
+        "financial_intelligence": null,
+        "insurance": null,
+        "pensions": null,
+        "prudential_supervision": null,
+        "securities": null
+      },
+      "roleAuthorityCounts": {
+        "financial_intelligence": 0,
+        "insurance": 0,
+        "pensions": 0,
+        "prudential_supervision": 0,
+        "securities": 0
+      },
+      "roleCoveragePct": 0,
+      "score": null,
+      "band": null,
+      "status": "not-assessed",
+      "blocker": "Fewer than two assessed mandate roles (0/5).",
+      "provenance": [
+        "docs/research/regulatory-signal/country-regulatory-ecosystem-baseline.json",
+        "regulator-shadow-results.json"
+      ]
+    },
+    {
+      "iso2": "LT",
+      "country": "Lithuania",
+      "region": "Europe",
+      "applicableRoles": [
+        "financial_intelligence",
+        "insurance",
+        "pensions",
+        "prudential_supervision",
+        "securities"
+      ],
+      "assessedRoles": [],
+      "roleScores": {
+        "financial_intelligence": null,
+        "insurance": null,
+        "pensions": null,
+        "prudential_supervision": null,
+        "securities": null
+      },
+      "roleAuthorityCounts": {
+        "financial_intelligence": 0,
+        "insurance": 0,
+        "pensions": 0,
+        "prudential_supervision": 0,
+        "securities": 0
+      },
+      "roleCoveragePct": 0,
+      "score": null,
+      "band": null,
+      "status": "not-assessed",
+      "blocker": "Fewer than two assessed mandate roles (0/5).",
+      "provenance": [
+        "docs/research/regulatory-signal/country-regulatory-ecosystem-baseline.json",
+        "regulator-shadow-results.json"
+      ]
+    },
+    {
+      "iso2": "LU",
+      "country": "Luxembourg",
+      "region": "Europe",
+      "applicableRoles": [
+        "financial_intelligence",
+        "insurance",
+        "pensions",
+        "prudential_supervision",
+        "securities"
+      ],
+      "assessedRoles": [
+        "pensions",
+        "prudential_supervision",
+        "securities"
+      ],
+      "roleScores": {
+        "financial_intelligence": null,
+        "insurance": null,
+        "pensions": 90.8333,
+        "prudential_supervision": 90.8333,
+        "securities": 90.8333
+      },
+      "roleAuthorityCounts": {
+        "financial_intelligence": 0,
+        "insurance": 0,
+        "pensions": 1,
+        "prudential_supervision": 1,
+        "securities": 1
+      },
+      "roleCoveragePct": 60,
+      "score": 90.8333,
+      "band": "highly-transparent",
+      "status": "provisional",
+      "blocker": "Assessed role coverage is 60%; country result is provisional.",
+      "provenance": [
+        "docs/research/regulatory-signal/country-regulatory-ecosystem-baseline.json",
+        "regulator-shadow-results.json"
+      ]
+    },
+    {
+      "iso2": "MT",
+      "country": "Malta",
+      "region": "Europe",
+      "applicableRoles": [
+        "financial_intelligence",
+        "insurance",
+        "pensions",
+        "prudential_supervision",
+        "securities"
+      ],
+      "assessedRoles": [],
+      "roleScores": {
+        "financial_intelligence": null,
+        "insurance": null,
+        "pensions": null,
+        "prudential_supervision": null,
+        "securities": null
+      },
+      "roleAuthorityCounts": {
+        "financial_intelligence": 0,
+        "insurance": 1,
+        "pensions": 1,
+        "prudential_supervision": 1,
+        "securities": 1
+      },
+      "roleCoveragePct": 0,
+      "score": null,
+      "band": null,
+      "status": "not-assessed",
+      "blocker": "Fewer than two assessed mandate roles (0/5).",
+      "provenance": [
+        "docs/research/regulatory-signal/country-regulatory-ecosystem-baseline.json",
+        "regulator-shadow-results.json"
+      ]
+    },
+    {
+      "iso2": "MD",
+      "country": "Moldova",
+      "region": "Europe",
+      "applicableRoles": [
+        "financial_intelligence",
+        "insurance",
+        "prudential_supervision"
+      ],
+      "assessedRoles": [],
+      "roleScores": {
+        "financial_intelligence": null,
+        "insurance": null,
+        "prudential_supervision": null
+      },
+      "roleAuthorityCounts": {
+        "financial_intelligence": 0,
+        "insurance": 0,
+        "prudential_supervision": 0
+      },
+      "roleCoveragePct": 0,
+      "score": null,
+      "band": null,
+      "status": "not-assessed",
+      "blocker": "Fewer than two assessed mandate roles (0/3).",
+      "provenance": [
+        "docs/research/regulatory-signal/country-regulatory-ecosystem-baseline.json",
+        "regulator-shadow-results.json"
+      ]
+    },
+    {
+      "iso2": "MC",
+      "country": "Monaco",
+      "region": "Europe",
+      "applicableRoles": [
+        "financial_intelligence",
+        "securities"
+      ],
+      "assessedRoles": [],
+      "roleScores": {
+        "financial_intelligence": null,
+        "securities": null
+      },
+      "roleAuthorityCounts": {
+        "financial_intelligence": 0,
+        "securities": 0
+      },
+      "roleCoveragePct": 0,
+      "score": null,
+      "band": null,
+      "status": "not-assessed",
+      "blocker": "Fewer than two assessed mandate roles (0/2).",
+      "provenance": [
+        "docs/research/regulatory-signal/country-regulatory-ecosystem-baseline.json",
+        "regulator-shadow-results.json"
+      ]
+    },
+    {
+      "iso2": "ME",
+      "country": "Montenegro",
+      "region": "Europe",
+      "applicableRoles": [
+        "financial_intelligence",
+        "insurance",
+        "securities"
+      ],
+      "assessedRoles": [],
+      "roleScores": {
+        "financial_intelligence": null,
+        "insurance": null,
+        "securities": null
+      },
+      "roleAuthorityCounts": {
+        "financial_intelligence": 0,
+        "insurance": 0,
+        "securities": 0
+      },
+      "roleCoveragePct": 0,
+      "score": null,
+      "band": null,
+      "status": "not-assessed",
+      "blocker": "Fewer than two assessed mandate roles (0/3).",
+      "provenance": [
+        "docs/research/regulatory-signal/country-regulatory-ecosystem-baseline.json",
+        "regulator-shadow-results.json"
+      ]
+    },
+    {
+      "iso2": "NL",
+      "country": "Netherlands",
+      "region": "Europe",
+      "applicableRoles": [
+        "financial_intelligence",
+        "insurance",
+        "pensions",
+        "prudential_supervision",
+        "securities"
+      ],
+      "assessedRoles": [
+        "insurance",
+        "pensions",
+        "prudential_supervision"
+      ],
+      "roleScores": {
+        "financial_intelligence": null,
+        "insurance": 74.9722,
+        "pensions": 74.9722,
+        "prudential_supervision": 74.9722,
+        "securities": null
+      },
+      "roleAuthorityCounts": {
+        "financial_intelligence": 0,
+        "insurance": 2,
+        "pensions": 1,
+        "prudential_supervision": 1,
+        "securities": 1
+      },
+      "roleCoveragePct": 60,
+      "score": 74.9722,
+      "band": "transparent",
+      "status": "provisional",
+      "blocker": "Assessed role coverage is 60%; country result is provisional.",
+      "provenance": [
+        "docs/research/regulatory-signal/country-regulatory-ecosystem-baseline.json",
+        "regulator-shadow-results.json"
+      ]
+    },
+    {
+      "iso2": "MK",
+      "country": "North Macedonia",
+      "region": "Europe",
+      "applicableRoles": [
+        "financial_intelligence",
+        "insurance",
+        "pensions",
+        "prudential_supervision",
+        "securities"
+      ],
+      "assessedRoles": [],
+      "roleScores": {
+        "financial_intelligence": null,
+        "insurance": null,
+        "pensions": null,
+        "prudential_supervision": null,
+        "securities": null
+      },
+      "roleAuthorityCounts": {
+        "financial_intelligence": 0,
+        "insurance": 0,
+        "pensions": 0,
+        "prudential_supervision": 0,
+        "securities": 0
+      },
+      "roleCoveragePct": 0,
+      "score": null,
+      "band": null,
+      "status": "not-assessed",
+      "blocker": "Fewer than two assessed mandate roles (0/5).",
+      "provenance": [
+        "docs/research/regulatory-signal/country-regulatory-ecosystem-baseline.json",
+        "regulator-shadow-results.json"
+      ]
+    },
+    {
+      "iso2": "NO",
+      "country": "Norway",
+      "region": "Europe",
+      "applicableRoles": [
+        "financial_intelligence",
+        "insurance",
+        "prudential_supervision",
+        "securities"
+      ],
+      "assessedRoles": [],
+      "roleScores": {
+        "financial_intelligence": null,
+        "insurance": null,
+        "prudential_supervision": null,
+        "securities": null
+      },
+      "roleAuthorityCounts": {
+        "financial_intelligence": 0,
+        "insurance": 1,
+        "prudential_supervision": 1,
+        "securities": 1
+      },
+      "roleCoveragePct": 0,
+      "score": null,
+      "band": null,
+      "status": "not-assessed",
+      "blocker": "Fewer than two assessed mandate roles (0/4).",
+      "provenance": [
+        "docs/research/regulatory-signal/country-regulatory-ecosystem-baseline.json",
+        "regulator-shadow-results.json"
+      ]
+    },
+    {
+      "iso2": "PL",
+      "country": "Poland",
+      "region": "Europe",
+      "applicableRoles": [
+        "financial_intelligence",
+        "insurance",
+        "pensions",
+        "prudential_supervision",
+        "securities"
+      ],
+      "assessedRoles": [],
+      "roleScores": {
+        "financial_intelligence": null,
+        "insurance": null,
+        "pensions": null,
+        "prudential_supervision": null,
+        "securities": null
+      },
+      "roleAuthorityCounts": {
+        "financial_intelligence": 0,
+        "insurance": 0,
+        "pensions": 0,
+        "prudential_supervision": 0,
+        "securities": 0
+      },
+      "roleCoveragePct": 0,
+      "score": null,
+      "band": null,
+      "status": "not-assessed",
+      "blocker": "Fewer than two assessed mandate roles (0/5).",
+      "provenance": [
+        "docs/research/regulatory-signal/country-regulatory-ecosystem-baseline.json",
+        "regulator-shadow-results.json"
+      ]
+    },
+    {
+      "iso2": "PT",
+      "country": "Portugal",
+      "region": "Europe",
+      "applicableRoles": [
+        "financial_intelligence",
+        "insurance",
+        "pensions",
+        "prudential_supervision",
+        "securities"
+      ],
+      "assessedRoles": [],
+      "roleScores": {
+        "financial_intelligence": null,
+        "insurance": null,
+        "pensions": null,
+        "prudential_supervision": null,
+        "securities": null
+      },
+      "roleAuthorityCounts": {
+        "financial_intelligence": 0,
+        "insurance": 0,
+        "pensions": 0,
+        "prudential_supervision": 0,
+        "securities": 1
+      },
+      "roleCoveragePct": 0,
+      "score": null,
+      "band": null,
+      "status": "not-assessed",
+      "blocker": "Fewer than two assessed mandate roles (0/5).",
+      "provenance": [
+        "docs/research/regulatory-signal/country-regulatory-ecosystem-baseline.json",
+        "regulator-shadow-results.json"
+      ]
+    },
+    {
+      "iso2": "RO",
+      "country": "Romania",
+      "region": "Europe",
+      "applicableRoles": [
+        "financial_intelligence",
+        "insurance",
+        "pensions",
+        "prudential_supervision",
+        "securities"
+      ],
+      "assessedRoles": [],
+      "roleScores": {
+        "financial_intelligence": null,
+        "insurance": null,
+        "pensions": null,
+        "prudential_supervision": null,
+        "securities": null
+      },
+      "roleAuthorityCounts": {
+        "financial_intelligence": 0,
+        "insurance": 0,
+        "pensions": 0,
+        "prudential_supervision": 0,
+        "securities": 0
+      },
+      "roleCoveragePct": 0,
+      "score": null,
+      "band": null,
+      "status": "not-assessed",
+      "blocker": "Fewer than two assessed mandate roles (0/5).",
+      "provenance": [
+        "docs/research/regulatory-signal/country-regulatory-ecosystem-baseline.json",
+        "regulator-shadow-results.json"
+      ]
+    },
+    {
+      "iso2": "RU",
+      "country": "Russia",
+      "region": "Europe",
+      "applicableRoles": [
+        "financial_intelligence",
+        "prudential_supervision",
+        "securities"
+      ],
+      "assessedRoles": [],
+      "roleScores": {
+        "financial_intelligence": null,
+        "prudential_supervision": null,
+        "securities": null
+      },
+      "roleAuthorityCounts": {
+        "financial_intelligence": 0,
+        "prudential_supervision": 0,
+        "securities": 0
+      },
+      "roleCoveragePct": 0,
+      "score": null,
+      "band": null,
+      "status": "not-assessed",
+      "blocker": "Fewer than two assessed mandate roles (0/3).",
+      "provenance": [
+        "docs/research/regulatory-signal/country-regulatory-ecosystem-baseline.json",
+        "regulator-shadow-results.json"
+      ]
+    },
+    {
+      "iso2": "SM",
+      "country": "San Marino",
+      "region": "Europe",
+      "applicableRoles": [
+        "financial_intelligence",
+        "prudential_supervision"
+      ],
+      "assessedRoles": [],
+      "roleScores": {
+        "financial_intelligence": null,
+        "prudential_supervision": null
+      },
+      "roleAuthorityCounts": {
+        "financial_intelligence": 0,
+        "prudential_supervision": 0
+      },
+      "roleCoveragePct": 0,
+      "score": null,
+      "band": null,
+      "status": "not-assessed",
+      "blocker": "Fewer than two assessed mandate roles (0/2).",
+      "provenance": [
+        "docs/research/regulatory-signal/country-regulatory-ecosystem-baseline.json",
+        "regulator-shadow-results.json"
+      ]
+    },
+    {
+      "iso2": "RS",
+      "country": "Serbia",
+      "region": "Europe",
+      "applicableRoles": [
+        "financial_intelligence",
+        "insurance",
+        "pensions",
+        "prudential_supervision",
+        "securities"
+      ],
+      "assessedRoles": [],
+      "roleScores": {
+        "financial_intelligence": null,
+        "insurance": null,
+        "pensions": null,
+        "prudential_supervision": null,
+        "securities": null
+      },
+      "roleAuthorityCounts": {
+        "financial_intelligence": 0,
+        "insurance": 0,
+        "pensions": 0,
+        "prudential_supervision": 0,
+        "securities": 0
+      },
+      "roleCoveragePct": 0,
+      "score": null,
+      "band": null,
+      "status": "not-assessed",
+      "blocker": "Fewer than two assessed mandate roles (0/5).",
+      "provenance": [
+        "docs/research/regulatory-signal/country-regulatory-ecosystem-baseline.json",
+        "regulator-shadow-results.json"
+      ]
+    },
+    {
+      "iso2": "SK",
+      "country": "Slovakia",
+      "region": "Europe",
+      "applicableRoles": [
+        "financial_intelligence",
+        "insurance",
+        "pensions",
+        "prudential_supervision",
+        "securities"
+      ],
+      "assessedRoles": [],
+      "roleScores": {
+        "financial_intelligence": null,
+        "insurance": null,
+        "pensions": null,
+        "prudential_supervision": null,
+        "securities": null
+      },
+      "roleAuthorityCounts": {
+        "financial_intelligence": 0,
+        "insurance": 0,
+        "pensions": 0,
+        "prudential_supervision": 0,
+        "securities": 0
+      },
+      "roleCoveragePct": 0,
+      "score": null,
+      "band": null,
+      "status": "not-assessed",
+      "blocker": "Fewer than two assessed mandate roles (0/5).",
+      "provenance": [
+        "docs/research/regulatory-signal/country-regulatory-ecosystem-baseline.json",
+        "regulator-shadow-results.json"
+      ]
+    },
+    {
+      "iso2": "SI",
+      "country": "Slovenia",
+      "region": "Europe",
+      "applicableRoles": [
+        "financial_intelligence",
+        "insurance",
+        "prudential_supervision",
+        "securities"
+      ],
+      "assessedRoles": [],
+      "roleScores": {
+        "financial_intelligence": null,
+        "insurance": null,
+        "prudential_supervision": null,
+        "securities": null
+      },
+      "roleAuthorityCounts": {
+        "financial_intelligence": 0,
+        "insurance": 0,
+        "prudential_supervision": 0,
+        "securities": 0
+      },
+      "roleCoveragePct": 0,
+      "score": null,
+      "band": null,
+      "status": "not-assessed",
+      "blocker": "Fewer than two assessed mandate roles (0/4).",
+      "provenance": [
+        "docs/research/regulatory-signal/country-regulatory-ecosystem-baseline.json",
+        "regulator-shadow-results.json"
+      ]
+    },
+    {
+      "iso2": "ES",
+      "country": "Spain",
+      "region": "Europe",
+      "applicableRoles": [
+        "financial_intelligence",
+        "insurance",
+        "pensions",
+        "prudential_supervision",
+        "securities"
+      ],
+      "assessedRoles": [],
+      "roleScores": {
+        "financial_intelligence": null,
+        "insurance": null,
+        "pensions": null,
+        "prudential_supervision": null,
+        "securities": null
+      },
+      "roleAuthorityCounts": {
+        "financial_intelligence": 0,
+        "insurance": 0,
+        "pensions": 0,
+        "prudential_supervision": 0,
+        "securities": 1
+      },
+      "roleCoveragePct": 0,
+      "score": null,
+      "band": null,
+      "status": "not-assessed",
+      "blocker": "Fewer than two assessed mandate roles (0/5).",
+      "provenance": [
+        "docs/research/regulatory-signal/country-regulatory-ecosystem-baseline.json",
+        "regulator-shadow-results.json"
+      ]
+    },
+    {
+      "iso2": "SE",
+      "country": "Sweden",
+      "region": "Europe",
+      "applicableRoles": [
+        "financial_intelligence",
+        "prudential_supervision",
+        "securities"
+      ],
+      "assessedRoles": [
+        "prudential_supervision",
+        "securities"
+      ],
+      "roleScores": {
+        "financial_intelligence": null,
+        "prudential_supervision": 94.6667,
+        "securities": 94.6667
+      },
+      "roleAuthorityCounts": {
+        "financial_intelligence": 0,
+        "prudential_supervision": 1,
+        "securities": 1
+      },
+      "roleCoveragePct": 66.6667,
+      "score": 94.6667,
+      "band": "highly-transparent",
+      "status": "provisional",
+      "blocker": "Assessed role coverage is 66.6667%; country result is provisional.",
+      "provenance": [
+        "docs/research/regulatory-signal/country-regulatory-ecosystem-baseline.json",
+        "regulator-shadow-results.json"
+      ]
+    },
+    {
+      "iso2": "CH",
+      "country": "Switzerland",
+      "region": "Europe",
+      "applicableRoles": [
+        "financial_intelligence",
+        "insurance",
+        "pensions",
+        "prudential_supervision",
+        "securities"
+      ],
+      "assessedRoles": [
+        "insurance",
+        "prudential_supervision",
+        "securities"
+      ],
+      "roleScores": {
+        "financial_intelligence": null,
+        "insurance": 93.2161,
+        "pensions": null,
+        "prudential_supervision": 93.2161,
+        "securities": 93.2161
+      },
+      "roleAuthorityCounts": {
+        "financial_intelligence": 0,
+        "insurance": 1,
+        "pensions": 0,
+        "prudential_supervision": 1,
+        "securities": 1
+      },
+      "roleCoveragePct": 60,
+      "score": 93.2161,
+      "band": "highly-transparent",
+      "status": "provisional",
+      "blocker": "Assessed role coverage is 60%; country result is provisional.",
+      "provenance": [
+        "docs/research/regulatory-signal/country-regulatory-ecosystem-baseline.json",
+        "regulator-shadow-results.json"
+      ]
+    },
+    {
+      "iso2": "UA",
+      "country": "Ukraine",
+      "region": "Europe",
+      "applicableRoles": [
+        "financial_intelligence",
+        "insurance",
+        "pensions",
+        "prudential_supervision",
+        "securities"
+      ],
+      "assessedRoles": [],
+      "roleScores": {
+        "financial_intelligence": null,
+        "insurance": null,
+        "pensions": null,
+        "prudential_supervision": null,
+        "securities": null
+      },
+      "roleAuthorityCounts": {
+        "financial_intelligence": 0,
+        "insurance": 0,
+        "pensions": 0,
+        "prudential_supervision": 0,
+        "securities": 0
+      },
+      "roleCoveragePct": 0,
+      "score": null,
+      "band": null,
+      "status": "not-assessed",
+      "blocker": "Fewer than two assessed mandate roles (0/5).",
+      "provenance": [
+        "docs/research/regulatory-signal/country-regulatory-ecosystem-baseline.json",
+        "regulator-shadow-results.json"
+      ]
+    },
+    {
+      "iso2": "GB",
+      "country": "United Kingdom",
+      "region": "Europe",
+      "applicableRoles": [
+        "financial_intelligence",
+        "insurance",
+        "pensions",
+        "prudential_supervision",
+        "securities"
+      ],
+      "assessedRoles": [
+        "insurance",
+        "prudential_supervision",
+        "securities"
+      ],
+      "roleScores": {
+        "financial_intelligence": null,
+        "insurance": 99.75,
+        "pensions": null,
+        "prudential_supervision": 99.75,
+        "securities": 99.75
+      },
+      "roleAuthorityCounts": {
+        "financial_intelligence": 0,
+        "insurance": 1,
+        "pensions": 0,
+        "prudential_supervision": 1,
+        "securities": 1
+      },
+      "roleCoveragePct": 60,
+      "score": 99.75,
+      "band": "highly-transparent",
+      "status": "provisional",
+      "blocker": "Assessed role coverage is 60%; country result is provisional.",
+      "provenance": [
+        "docs/research/regulatory-signal/country-regulatory-ecosystem-baseline.json",
+        "regulator-shadow-results.json"
+      ]
+    },
+    {
+      "iso2": "VA",
+      "country": "Vatican City",
+      "region": "Europe",
+      "applicableRoles": [
+        "financial_intelligence"
+      ],
+      "assessedRoles": [],
+      "roleScores": {
+        "financial_intelligence": null
+      },
+      "roleAuthorityCounts": {
+        "financial_intelligence": 0
+      },
+      "roleCoveragePct": 0,
+      "score": null,
+      "band": null,
+      "status": "not-assessed",
+      "blocker": "Fewer than two assessed mandate roles (0/1).",
+      "provenance": [
+        "docs/research/regulatory-signal/country-regulatory-ecosystem-baseline.json",
+        "regulator-shadow-results.json"
+      ]
+    },
+    {
+      "iso2": "BH",
+      "country": "Bahrain",
+      "region": "Middle East",
+      "applicableRoles": [
+        "financial_intelligence",
+        "insurance",
+        "prudential_supervision",
+        "securities"
+      ],
+      "assessedRoles": [],
+      "roleScores": {
+        "financial_intelligence": null,
+        "insurance": null,
+        "prudential_supervision": null,
+        "securities": null
+      },
+      "roleAuthorityCounts": {
+        "financial_intelligence": 0,
+        "insurance": 0,
+        "prudential_supervision": 0,
+        "securities": 0
+      },
+      "roleCoveragePct": 0,
+      "score": null,
+      "band": null,
+      "status": "not-assessed",
+      "blocker": "Fewer than two assessed mandate roles (0/4).",
+      "provenance": [
+        "docs/research/regulatory-signal/country-regulatory-ecosystem-baseline.json",
+        "regulator-shadow-results.json"
+      ]
+    },
+    {
+      "iso2": "IR",
+      "country": "Iran",
+      "region": "Middle East",
+      "applicableRoles": [
+        "prudential_supervision",
+        "securities"
+      ],
+      "assessedRoles": [],
+      "roleScores": {
+        "prudential_supervision": null,
+        "securities": null
+      },
+      "roleAuthorityCounts": {
+        "prudential_supervision": 0,
+        "securities": 0
+      },
+      "roleCoveragePct": 0,
+      "score": null,
+      "band": null,
+      "status": "not-assessed",
+      "blocker": "Fewer than two assessed mandate roles (0/2).",
+      "provenance": [
+        "docs/research/regulatory-signal/country-regulatory-ecosystem-baseline.json",
+        "regulator-shadow-results.json"
+      ]
+    },
+    {
+      "iso2": "IQ",
+      "country": "Iraq",
+      "region": "Middle East",
+      "applicableRoles": [
+        "financial_intelligence"
+      ],
+      "assessedRoles": [],
+      "roleScores": {
+        "financial_intelligence": null
+      },
+      "roleAuthorityCounts": {
+        "financial_intelligence": 0
+      },
+      "roleCoveragePct": 0,
+      "score": null,
+      "band": null,
+      "status": "not-assessed",
+      "blocker": "Fewer than two assessed mandate roles (0/1).",
+      "provenance": [
+        "docs/research/regulatory-signal/country-regulatory-ecosystem-baseline.json",
+        "regulator-shadow-results.json"
+      ]
+    },
+    {
+      "iso2": "IL",
+      "country": "Israel",
+      "region": "Middle East",
+      "applicableRoles": [
+        "financial_intelligence",
+        "insurance",
+        "pensions",
+        "prudential_supervision",
+        "securities"
+      ],
+      "assessedRoles": [],
+      "roleScores": {
+        "financial_intelligence": null,
+        "insurance": null,
+        "pensions": null,
+        "prudential_supervision": null,
+        "securities": null
+      },
+      "roleAuthorityCounts": {
+        "financial_intelligence": 0,
+        "insurance": 0,
+        "pensions": 0,
+        "prudential_supervision": 0,
+        "securities": 0
+      },
+      "roleCoveragePct": 0,
+      "score": null,
+      "band": null,
+      "status": "not-assessed",
+      "blocker": "Fewer than two assessed mandate roles (0/5).",
+      "provenance": [
+        "docs/research/regulatory-signal/country-regulatory-ecosystem-baseline.json",
+        "regulator-shadow-results.json"
+      ]
+    },
+    {
+      "iso2": "JO",
+      "country": "Jordan",
+      "region": "Middle East",
+      "applicableRoles": [
+        "financial_intelligence",
+        "insurance",
+        "prudential_supervision",
+        "securities"
+      ],
+      "assessedRoles": [],
+      "roleScores": {
+        "financial_intelligence": null,
+        "insurance": null,
+        "prudential_supervision": null,
+        "securities": null
+      },
+      "roleAuthorityCounts": {
+        "financial_intelligence": 0,
+        "insurance": 0,
+        "prudential_supervision": 0,
+        "securities": 0
+      },
+      "roleCoveragePct": 0,
+      "score": null,
+      "band": null,
+      "status": "not-assessed",
+      "blocker": "Fewer than two assessed mandate roles (0/4).",
+      "provenance": [
+        "docs/research/regulatory-signal/country-regulatory-ecosystem-baseline.json",
+        "regulator-shadow-results.json"
+      ]
+    },
+    {
+      "iso2": "KW",
+      "country": "Kuwait",
+      "region": "Middle East",
+      "applicableRoles": [
+        "financial_intelligence",
+        "insurance",
+        "prudential_supervision",
+        "securities"
+      ],
+      "assessedRoles": [],
+      "roleScores": {
+        "financial_intelligence": null,
+        "insurance": null,
+        "prudential_supervision": null,
+        "securities": null
+      },
+      "roleAuthorityCounts": {
+        "financial_intelligence": 0,
+        "insurance": 0,
+        "prudential_supervision": 0,
+        "securities": 0
+      },
+      "roleCoveragePct": 0,
+      "score": null,
+      "band": null,
+      "status": "not-assessed",
+      "blocker": "Fewer than two assessed mandate roles (0/4).",
+      "provenance": [
+        "docs/research/regulatory-signal/country-regulatory-ecosystem-baseline.json",
+        "regulator-shadow-results.json"
+      ]
+    },
+    {
+      "iso2": "LB",
+      "country": "Lebanon",
+      "region": "Middle East",
+      "applicableRoles": [
+        "financial_intelligence",
+        "prudential_supervision"
+      ],
+      "assessedRoles": [],
+      "roleScores": {
+        "financial_intelligence": null,
+        "prudential_supervision": null
+      },
+      "roleAuthorityCounts": {
+        "financial_intelligence": 0,
+        "prudential_supervision": 0
+      },
+      "roleCoveragePct": 0,
+      "score": null,
+      "band": null,
+      "status": "not-assessed",
+      "blocker": "Fewer than two assessed mandate roles (0/2).",
+      "provenance": [
+        "docs/research/regulatory-signal/country-regulatory-ecosystem-baseline.json",
+        "regulator-shadow-results.json"
+      ]
+    },
+    {
+      "iso2": "OM",
+      "country": "Oman",
+      "region": "Middle East",
+      "applicableRoles": [
+        "financial_intelligence",
+        "insurance",
+        "prudential_supervision",
+        "securities"
+      ],
+      "assessedRoles": [],
+      "roleScores": {
+        "financial_intelligence": null,
+        "insurance": null,
+        "prudential_supervision": null,
+        "securities": null
+      },
+      "roleAuthorityCounts": {
+        "financial_intelligence": 0,
+        "insurance": 0,
+        "prudential_supervision": 0,
+        "securities": 0
+      },
+      "roleCoveragePct": 0,
+      "score": null,
+      "band": null,
+      "status": "not-assessed",
+      "blocker": "Fewer than two assessed mandate roles (0/4).",
+      "provenance": [
+        "docs/research/regulatory-signal/country-regulatory-ecosystem-baseline.json",
+        "regulator-shadow-results.json"
+      ]
+    },
+    {
+      "iso2": "PS",
+      "country": "Palestine",
+      "region": "Middle East",
+      "applicableRoles": [
+        "financial_intelligence",
+        "insurance",
+        "prudential_supervision",
+        "securities"
+      ],
+      "assessedRoles": [],
+      "roleScores": {
+        "financial_intelligence": null,
+        "insurance": null,
+        "prudential_supervision": null,
+        "securities": null
+      },
+      "roleAuthorityCounts": {
+        "financial_intelligence": 0,
+        "insurance": 0,
+        "prudential_supervision": 0,
+        "securities": 0
+      },
+      "roleCoveragePct": 0,
+      "score": null,
+      "band": null,
+      "status": "not-assessed",
+      "blocker": "Fewer than two assessed mandate roles (0/4).",
+      "provenance": [
+        "docs/research/regulatory-signal/country-regulatory-ecosystem-baseline.json",
+        "regulator-shadow-results.json"
+      ]
+    },
+    {
+      "iso2": "QA",
+      "country": "Qatar",
+      "region": "Middle East",
+      "applicableRoles": [
+        "financial_intelligence",
+        "insurance",
+        "prudential_supervision",
+        "securities"
+      ],
+      "assessedRoles": [],
+      "roleScores": {
+        "financial_intelligence": null,
+        "insurance": null,
+        "prudential_supervision": null,
+        "securities": null
+      },
+      "roleAuthorityCounts": {
+        "financial_intelligence": 0,
+        "insurance": 0,
+        "prudential_supervision": 0,
+        "securities": 0
+      },
+      "roleCoveragePct": 0,
+      "score": null,
+      "band": null,
+      "status": "not-assessed",
+      "blocker": "Fewer than two assessed mandate roles (0/4).",
+      "provenance": [
+        "docs/research/regulatory-signal/country-regulatory-ecosystem-baseline.json",
+        "regulator-shadow-results.json"
+      ]
+    },
+    {
+      "iso2": "SA",
+      "country": "Saudi Arabia",
+      "region": "Middle East",
+      "applicableRoles": [
+        "financial_intelligence",
+        "insurance",
+        "prudential_supervision",
+        "securities"
+      ],
+      "assessedRoles": [],
+      "roleScores": {
+        "financial_intelligence": null,
+        "insurance": null,
+        "prudential_supervision": null,
+        "securities": null
+      },
+      "roleAuthorityCounts": {
+        "financial_intelligence": 0,
+        "insurance": 0,
+        "prudential_supervision": 0,
+        "securities": 0
+      },
+      "roleCoveragePct": 0,
+      "score": null,
+      "band": null,
+      "status": "not-assessed",
+      "blocker": "Fewer than two assessed mandate roles (0/4).",
+      "provenance": [
+        "docs/research/regulatory-signal/country-regulatory-ecosystem-baseline.json",
+        "regulator-shadow-results.json"
+      ]
+    },
+    {
+      "iso2": "SY",
+      "country": "Syria",
+      "region": "Middle East",
+      "applicableRoles": [
+        "financial_intelligence",
+        "prudential_supervision",
+        "securities"
+      ],
+      "assessedRoles": [],
+      "roleScores": {
+        "financial_intelligence": null,
+        "prudential_supervision": null,
+        "securities": null
+      },
+      "roleAuthorityCounts": {
+        "financial_intelligence": 0,
+        "prudential_supervision": 0,
+        "securities": 0
+      },
+      "roleCoveragePct": 0,
+      "score": null,
+      "band": null,
+      "status": "not-assessed",
+      "blocker": "Fewer than two assessed mandate roles (0/3).",
+      "provenance": [
+        "docs/research/regulatory-signal/country-regulatory-ecosystem-baseline.json",
+        "regulator-shadow-results.json"
+      ]
+    },
+    {
+      "iso2": "TR",
+      "country": "Türkiye",
+      "region": "Middle East",
+      "applicableRoles": [
+        "financial_intelligence",
+        "insurance",
+        "pensions",
+        "prudential_supervision",
+        "securities"
+      ],
+      "assessedRoles": [],
+      "roleScores": {
+        "financial_intelligence": null,
+        "insurance": null,
+        "pensions": null,
+        "prudential_supervision": null,
+        "securities": null
+      },
+      "roleAuthorityCounts": {
+        "financial_intelligence": 0,
+        "insurance": 0,
+        "pensions": 0,
+        "prudential_supervision": 0,
+        "securities": 0
+      },
+      "roleCoveragePct": 0,
+      "score": null,
+      "band": null,
+      "status": "not-assessed",
+      "blocker": "Fewer than two assessed mandate roles (0/5).",
+      "provenance": [
+        "docs/research/regulatory-signal/country-regulatory-ecosystem-baseline.json",
+        "regulator-shadow-results.json"
+      ]
+    },
+    {
+      "iso2": "AE",
+      "country": "United Arab Emirates",
+      "region": "Middle East",
+      "applicableRoles": [
+        "financial_intelligence",
+        "insurance",
+        "prudential_supervision",
+        "securities"
+      ],
+      "assessedRoles": [],
+      "roleScores": {
+        "financial_intelligence": null,
+        "insurance": null,
+        "prudential_supervision": null,
+        "securities": null
+      },
+      "roleAuthorityCounts": {
+        "financial_intelligence": 0,
+        "insurance": 2,
+        "prudential_supervision": 2,
+        "securities": 2
+      },
+      "roleCoveragePct": 0,
+      "score": null,
+      "band": null,
+      "status": "not-assessed",
+      "blocker": "Fewer than two assessed mandate roles (0/4).",
+      "provenance": [
+        "docs/research/regulatory-signal/country-regulatory-ecosystem-baseline.json",
+        "regulator-shadow-results.json"
+      ]
+    },
+    {
+      "iso2": "YE",
+      "country": "Yemen",
+      "region": "Middle East",
+      "applicableRoles": [],
+      "assessedRoles": [],
+      "roleScores": {},
+      "roleAuthorityCounts": {},
+      "roleCoveragePct": 0,
+      "score": null,
+      "band": null,
+      "status": "not-assessed",
+      "blocker": "No applicable non-central mandate roles are mapped for this country.",
+      "provenance": [
+        "docs/research/regulatory-signal/country-regulatory-ecosystem-baseline.json",
+        "regulator-shadow-results.json"
+      ]
+    },
+    {
+      "iso2": "JE",
+      "country": "Jersey",
+      "region": "Offshore / IFC",
+      "applicableRoles": [
+        "financial_intelligence",
+        "insurance",
+        "prudential_supervision",
+        "securities"
+      ],
+      "assessedRoles": [],
+      "roleScores": {
+        "financial_intelligence": null,
+        "insurance": null,
+        "prudential_supervision": null,
+        "securities": null
+      },
+      "roleAuthorityCounts": {
+        "financial_intelligence": 0,
+        "insurance": 1,
+        "prudential_supervision": 1,
+        "securities": 1
+      },
+      "roleCoveragePct": 0,
+      "score": null,
+      "band": null,
+      "status": "not-assessed",
+      "blocker": "Fewer than two assessed mandate roles (0/4).",
+      "provenance": [
+        "docs/research/regulatory-signal/country-regulatory-ecosystem-baseline.json",
+        "regulator-shadow-results.json"
+      ]
+    },
+    {
+      "iso2": "GG",
+      "country": "Guernsey",
+      "region": "Offshore / IFC",
+      "applicableRoles": [
+        "financial_intelligence",
+        "insurance",
+        "pensions",
+        "prudential_supervision",
+        "securities"
+      ],
+      "assessedRoles": [
+        "insurance",
+        "pensions",
+        "prudential_supervision",
+        "securities"
+      ],
+      "roleScores": {
+        "financial_intelligence": null,
+        "insurance": 84.1111,
+        "pensions": 84.1111,
+        "prudential_supervision": 84.1111,
+        "securities": 84.1111
+      },
+      "roleAuthorityCounts": {
+        "financial_intelligence": 0,
+        "insurance": 1,
+        "pensions": 1,
+        "prudential_supervision": 1,
+        "securities": 1
+      },
+      "roleCoveragePct": 80,
+      "score": 84.1111,
+      "band": "highly-transparent",
+      "status": "complete",
+      "blocker": null,
+      "provenance": [
+        "docs/research/regulatory-signal/country-regulatory-ecosystem-baseline.json",
+        "regulator-shadow-results.json"
+      ]
+    },
+    {
+      "iso2": "IM",
+      "country": "Isle of Man",
+      "region": "Offshore / IFC",
+      "applicableRoles": [
+        "financial_intelligence",
+        "insurance",
+        "prudential_supervision",
+        "securities"
+      ],
+      "assessedRoles": [],
+      "roleScores": {
+        "financial_intelligence": null,
+        "insurance": null,
+        "prudential_supervision": null,
+        "securities": null
+      },
+      "roleAuthorityCounts": {
+        "financial_intelligence": 0,
+        "insurance": 1,
+        "prudential_supervision": 0,
+        "securities": 1
+      },
+      "roleCoveragePct": 0,
+      "score": null,
+      "band": null,
+      "status": "not-assessed",
+      "blocker": "Fewer than two assessed mandate roles (0/4).",
+      "provenance": [
+        "docs/research/regulatory-signal/country-regulatory-ecosystem-baseline.json",
+        "regulator-shadow-results.json"
+      ]
+    },
+    {
+      "iso2": "GI",
+      "country": "Gibraltar",
+      "region": "Offshore / IFC",
+      "applicableRoles": [
+        "financial_intelligence",
+        "insurance",
+        "prudential_supervision",
+        "securities"
+      ],
+      "assessedRoles": [],
+      "roleScores": {
+        "financial_intelligence": null,
+        "insurance": null,
+        "prudential_supervision": null,
+        "securities": null
+      },
+      "roleAuthorityCounts": {
+        "financial_intelligence": 0,
+        "insurance": 0,
+        "prudential_supervision": 0,
+        "securities": 0
+      },
+      "roleCoveragePct": 0,
+      "score": null,
+      "band": null,
+      "status": "not-assessed",
+      "blocker": "Fewer than two assessed mandate roles (0/4).",
+      "provenance": [
+        "docs/research/regulatory-signal/country-regulatory-ecosystem-baseline.json",
+        "regulator-shadow-results.json"
+      ]
+    },
+    {
+      "iso2": "KY",
+      "country": "Cayman Islands",
+      "region": "Offshore / IFC",
+      "applicableRoles": [
+        "financial_intelligence",
+        "insurance",
+        "prudential_supervision",
+        "securities"
+      ],
+      "assessedRoles": [],
+      "roleScores": {
+        "financial_intelligence": null,
+        "insurance": null,
+        "prudential_supervision": null,
+        "securities": null
+      },
+      "roleAuthorityCounts": {
+        "financial_intelligence": 0,
+        "insurance": 1,
+        "prudential_supervision": 1,
+        "securities": 1
+      },
+      "roleCoveragePct": 0,
+      "score": null,
+      "band": null,
+      "status": "not-assessed",
+      "blocker": "Fewer than two assessed mandate roles (0/4).",
+      "provenance": [
+        "docs/research/regulatory-signal/country-regulatory-ecosystem-baseline.json",
+        "regulator-shadow-results.json"
+      ]
+    },
+    {
+      "iso2": "BM",
+      "country": "Bermuda",
+      "region": "Offshore / IFC",
+      "applicableRoles": [
+        "financial_intelligence",
+        "insurance",
+        "prudential_supervision",
+        "securities"
+      ],
+      "assessedRoles": [],
+      "roleScores": {
+        "financial_intelligence": null,
+        "insurance": null,
+        "prudential_supervision": null,
+        "securities": null
+      },
+      "roleAuthorityCounts": {
+        "financial_intelligence": 0,
+        "insurance": 0,
+        "prudential_supervision": 0,
+        "securities": 0
+      },
+      "roleCoveragePct": 0,
+      "score": null,
+      "band": null,
+      "status": "not-assessed",
+      "blocker": "Fewer than two assessed mandate roles (0/4).",
+      "provenance": [
+        "docs/research/regulatory-signal/country-regulatory-ecosystem-baseline.json",
+        "regulator-shadow-results.json"
+      ]
+    },
+    {
+      "iso2": "VG",
+      "country": "British Virgin Islands",
+      "region": "Offshore / IFC",
+      "applicableRoles": [
+        "financial_intelligence",
+        "insurance",
+        "prudential_supervision",
+        "securities"
+      ],
+      "assessedRoles": [],
+      "roleScores": {
+        "financial_intelligence": null,
+        "insurance": null,
+        "prudential_supervision": null,
+        "securities": null
+      },
+      "roleAuthorityCounts": {
+        "financial_intelligence": 0,
+        "insurance": 0,
+        "prudential_supervision": 0,
+        "securities": 0
+      },
+      "roleCoveragePct": 0,
+      "score": null,
+      "band": null,
+      "status": "not-assessed",
+      "blocker": "Fewer than two assessed mandate roles (0/4).",
+      "provenance": [
+        "docs/research/regulatory-signal/country-regulatory-ecosystem-baseline.json",
+        "regulator-shadow-results.json"
+      ]
+    },
+    {
+      "iso2": "TC",
+      "country": "Turks and Caicos Islands",
+      "region": "Offshore / IFC",
+      "applicableRoles": [
+        "financial_intelligence",
+        "insurance",
+        "prudential_supervision",
+        "securities"
+      ],
+      "assessedRoles": [],
+      "roleScores": {
+        "financial_intelligence": null,
+        "insurance": null,
+        "prudential_supervision": null,
+        "securities": null
+      },
+      "roleAuthorityCounts": {
+        "financial_intelligence": 0,
+        "insurance": 0,
+        "prudential_supervision": 0,
+        "securities": 0
+      },
+      "roleCoveragePct": 0,
+      "score": null,
+      "band": null,
+      "status": "not-assessed",
+      "blocker": "Fewer than two assessed mandate roles (0/4).",
+      "provenance": [
+        "docs/research/regulatory-signal/country-regulatory-ecosystem-baseline.json",
+        "regulator-shadow-results.json"
+      ]
+    },
+    {
+      "iso2": "AI",
+      "country": "Anguilla",
+      "region": "Offshore / IFC",
+      "applicableRoles": [
+        "financial_intelligence",
+        "prudential_supervision"
+      ],
+      "assessedRoles": [],
+      "roleScores": {
+        "financial_intelligence": null,
+        "prudential_supervision": null
+      },
+      "roleAuthorityCounts": {
+        "financial_intelligence": 0,
+        "prudential_supervision": 0
+      },
+      "roleCoveragePct": 0,
+      "score": null,
+      "band": null,
+      "status": "not-assessed",
+      "blocker": "Fewer than two assessed mandate roles (0/2).",
+      "provenance": [
+        "docs/research/regulatory-signal/country-regulatory-ecosystem-baseline.json",
+        "regulator-shadow-results.json"
+      ]
+    },
+    {
+      "iso2": "MS",
+      "country": "Montserrat",
+      "region": "Offshore / IFC",
+      "applicableRoles": [
+        "prudential_supervision"
+      ],
+      "assessedRoles": [],
+      "roleScores": {
+        "prudential_supervision": null
+      },
+      "roleAuthorityCounts": {
+        "prudential_supervision": 0
+      },
+      "roleCoveragePct": 0,
+      "score": null,
+      "band": null,
+      "status": "not-assessed",
+      "blocker": "Fewer than two assessed mandate roles (0/1).",
+      "provenance": [
+        "docs/research/regulatory-signal/country-regulatory-ecosystem-baseline.json",
+        "regulator-shadow-results.json"
+      ]
+    },
+    {
+      "iso2": "AS",
+      "country": "American Samoa",
+      "region": "Offshore / IFC",
+      "applicableRoles": [
+        "insurance"
+      ],
+      "assessedRoles": [],
+      "roleScores": {
+        "insurance": null
+      },
+      "roleAuthorityCounts": {
+        "insurance": 0
+      },
+      "roleCoveragePct": 0,
+      "score": null,
+      "band": null,
+      "status": "not-assessed",
+      "blocker": "Fewer than two assessed mandate roles (0/1).",
+      "provenance": [
+        "docs/research/regulatory-signal/country-regulatory-ecosystem-baseline.json",
+        "regulator-shadow-results.json"
+      ]
+    },
+    {
+      "iso2": "GU",
+      "country": "Guam",
+      "region": "Offshore / IFC",
+      "applicableRoles": [
+        "prudential_supervision"
+      ],
+      "assessedRoles": [],
+      "roleScores": {
+        "prudential_supervision": null
+      },
+      "roleAuthorityCounts": {
+        "prudential_supervision": 0
+      },
+      "roleCoveragePct": 0,
+      "score": null,
+      "band": null,
+      "status": "not-assessed",
+      "blocker": "Fewer than two assessed mandate roles (0/1).",
+      "provenance": [
+        "docs/research/regulatory-signal/country-regulatory-ecosystem-baseline.json",
+        "regulator-shadow-results.json"
+      ]
+    },
+    {
+      "iso2": "AW",
+      "country": "Aruba",
+      "region": "Offshore / IFC",
+      "applicableRoles": [
+        "financial_intelligence",
+        "insurance",
+        "prudential_supervision"
+      ],
+      "assessedRoles": [],
+      "roleScores": {
+        "financial_intelligence": null,
+        "insurance": null,
+        "prudential_supervision": null
+      },
+      "roleAuthorityCounts": {
+        "financial_intelligence": 0,
+        "insurance": 0,
+        "prudential_supervision": 0
+      },
+      "roleCoveragePct": 0,
+      "score": null,
+      "band": null,
+      "status": "not-assessed",
+      "blocker": "Fewer than two assessed mandate roles (0/3).",
+      "provenance": [
+        "docs/research/regulatory-signal/country-regulatory-ecosystem-baseline.json",
+        "regulator-shadow-results.json"
+      ]
+    },
+    {
+      "iso2": "CW",
+      "country": "Curaçao",
+      "region": "Offshore / IFC",
+      "applicableRoles": [
+        "financial_intelligence",
+        "insurance",
+        "prudential_supervision"
+      ],
+      "assessedRoles": [],
+      "roleScores": {
+        "financial_intelligence": null,
+        "insurance": null,
+        "prudential_supervision": null
+      },
+      "roleAuthorityCounts": {
+        "financial_intelligence": 0,
+        "insurance": 0,
+        "prudential_supervision": 0
+      },
+      "roleCoveragePct": 0,
+      "score": null,
+      "band": null,
+      "status": "not-assessed",
+      "blocker": "Fewer than two assessed mandate roles (0/3).",
+      "provenance": [
+        "docs/research/regulatory-signal/country-regulatory-ecosystem-baseline.json",
+        "regulator-shadow-results.json"
+      ]
+    },
+    {
+      "iso2": "SX",
+      "country": "Sint Maarten",
+      "region": "Offshore / IFC",
+      "applicableRoles": [
+        "financial_intelligence",
+        "insurance"
+      ],
+      "assessedRoles": [],
+      "roleScores": {
+        "financial_intelligence": null,
+        "insurance": null
+      },
+      "roleAuthorityCounts": {
+        "financial_intelligence": 0,
+        "insurance": 0
+      },
+      "roleCoveragePct": 0,
+      "score": null,
+      "band": null,
+      "status": "not-assessed",
+      "blocker": "Fewer than two assessed mandate roles (0/2).",
+      "provenance": [
+        "docs/research/regulatory-signal/country-regulatory-ecosystem-baseline.json",
+        "regulator-shadow-results.json"
+      ]
+    },
+    {
+      "iso2": "BS",
+      "country": "Bahamas",
+      "region": "Offshore / IFC",
+      "applicableRoles": [
+        "financial_intelligence",
+        "insurance",
+        "pensions",
+        "prudential_supervision",
+        "securities"
+      ],
+      "assessedRoles": [],
+      "roleScores": {
+        "financial_intelligence": null,
+        "insurance": null,
+        "pensions": null,
+        "prudential_supervision": null,
+        "securities": null
+      },
+      "roleAuthorityCounts": {
+        "financial_intelligence": 0,
+        "insurance": 0,
+        "pensions": 0,
+        "prudential_supervision": 0,
+        "securities": 0
+      },
+      "roleCoveragePct": 0,
+      "score": null,
+      "band": null,
+      "status": "not-assessed",
+      "blocker": "Fewer than two assessed mandate roles (0/5).",
+      "provenance": [
+        "docs/research/regulatory-signal/country-regulatory-ecosystem-baseline.json",
+        "regulator-shadow-results.json"
+      ]
+    },
+    {
+      "iso2": "BB",
+      "country": "Barbados",
+      "region": "Offshore / IFC",
+      "applicableRoles": [
+        "financial_intelligence",
+        "insurance",
+        "prudential_supervision",
+        "securities"
+      ],
+      "assessedRoles": [],
+      "roleScores": {
+        "financial_intelligence": null,
+        "insurance": null,
+        "prudential_supervision": null,
+        "securities": null
+      },
+      "roleAuthorityCounts": {
+        "financial_intelligence": 0,
+        "insurance": 0,
+        "prudential_supervision": 0,
+        "securities": 0
+      },
+      "roleCoveragePct": 0,
+      "score": null,
+      "band": null,
+      "status": "not-assessed",
+      "blocker": "Fewer than two assessed mandate roles (0/4).",
+      "provenance": [
+        "docs/research/regulatory-signal/country-regulatory-ecosystem-baseline.json",
+        "regulator-shadow-results.json"
+      ]
+    },
+    {
+      "iso2": "AG",
+      "country": "Antigua and Barbuda",
+      "region": "Offshore / IFC",
+      "applicableRoles": [
+        "financial_intelligence",
+        "prudential_supervision"
+      ],
+      "assessedRoles": [],
+      "roleScores": {
+        "financial_intelligence": null,
+        "prudential_supervision": null
+      },
+      "roleAuthorityCounts": {
+        "financial_intelligence": 0,
+        "prudential_supervision": 0
+      },
+      "roleCoveragePct": 0,
+      "score": null,
+      "band": null,
+      "status": "not-assessed",
+      "blocker": "Fewer than two assessed mandate roles (0/2).",
+      "provenance": [
+        "docs/research/regulatory-signal/country-regulatory-ecosystem-baseline.json",
+        "regulator-shadow-results.json"
+      ]
+    }
+  ]
+}

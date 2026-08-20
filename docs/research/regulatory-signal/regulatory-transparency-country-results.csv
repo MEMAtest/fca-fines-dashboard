@@ -1,0 +1,214 @@
+iso2,country,region,applicable_roles,assessed_roles,role_scores,role_authority_counts,role_coverage_pct,score,band,status,blocker
+DZ,Algeria,Africa,financial_intelligence;prudential_supervision;securities,,[object Object],[object Object],0,,,not-assessed,Fewer than two assessed mandate roles (0/3).
+AO,Angola,Africa,financial_intelligence;insurance;pensions;prudential_supervision;securities,,[object Object],[object Object],0,,,not-assessed,Fewer than two assessed mandate roles (0/5).
+BJ,Benin,Africa,financial_intelligence;insurance;prudential_supervision;securities,,[object Object],[object Object],0,,,not-assessed,Fewer than two assessed mandate roles (0/4).
+BW,Botswana,Africa,financial_intelligence;insurance;pensions;prudential_supervision,,[object Object],[object Object],0,,,not-assessed,Fewer than two assessed mandate roles (0/4).
+BF,Burkina Faso,Africa,financial_intelligence;insurance;prudential_supervision;securities,,[object Object],[object Object],0,,,not-assessed,Fewer than two assessed mandate roles (0/4).
+BI,Burundi,Africa,insurance;prudential_supervision,,[object Object],[object Object],0,,,not-assessed,Fewer than two assessed mandate roles (0/2).
+CV,Cabo Verde,Africa,financial_intelligence;insurance;prudential_supervision;securities,,[object Object],[object Object],0,,,not-assessed,Fewer than two assessed mandate roles (0/4).
+CM,Cameroon,Africa,financial_intelligence;insurance;securities,,[object Object],[object Object],0,,,not-assessed,Fewer than two assessed mandate roles (0/3).
+CF,Central African Republic,Africa,insurance;prudential_supervision;securities,,[object Object],[object Object],0,,,not-assessed,Fewer than two assessed mandate roles (0/3).
+TD,Chad,Africa,financial_intelligence;insurance;securities,,[object Object],[object Object],0,,,not-assessed,Fewer than two assessed mandate roles (0/3).
+KM,Comoros,Africa,prudential_supervision,,[object Object],[object Object],0,,,not-assessed,Fewer than two assessed mandate roles (0/1).
+CG,Republic of the Congo,Africa,financial_intelligence;insurance;securities,,[object Object],[object Object],0,,,not-assessed,Fewer than two assessed mandate roles (0/3).
+CD,Democratic Republic of the Congo,Africa,financial_intelligence;insurance;prudential_supervision,,[object Object],[object Object],0,,,not-assessed,Fewer than two assessed mandate roles (0/3).
+CI,Côte d'Ivoire,Africa,financial_intelligence;insurance;prudential_supervision;securities,,[object Object],[object Object],0,,,not-assessed,Fewer than two assessed mandate roles (0/4).
+DJ,Djibouti,Africa,prudential_supervision,,[object Object],[object Object],0,,,not-assessed,Fewer than two assessed mandate roles (0/1).
+EG,Egypt,Africa,financial_intelligence;insurance;pensions;prudential_supervision;securities,,[object Object],[object Object],0,,,not-assessed,Fewer than two assessed mandate roles (0/5).
+GQ,Equatorial Guinea,Africa,financial_intelligence;insurance;securities,,[object Object],[object Object],0,,,not-assessed,Fewer than two assessed mandate roles (0/3).
+ER,Eritrea,Africa,prudential_supervision,,[object Object],[object Object],0,,,not-assessed,Fewer than two assessed mandate roles (0/1).
+SZ,Eswatini,Africa,financial_intelligence;insurance;pensions;prudential_supervision,,[object Object],[object Object],0,,,not-assessed,Fewer than two assessed mandate roles (0/4).
+ET,Ethiopia,Africa,financial_intelligence;prudential_supervision,,[object Object],[object Object],0,,,not-assessed,Fewer than two assessed mandate roles (0/2).
+GA,Gabon,Africa,financial_intelligence;insurance;securities,,[object Object],[object Object],0,,,not-assessed,Fewer than two assessed mandate roles (0/3).
+GM,The Gambia,Africa,financial_intelligence;prudential_supervision,,[object Object],[object Object],0,,,not-assessed,Fewer than two assessed mandate roles (0/2).
+GH,Ghana,Africa,financial_intelligence;insurance;pensions;prudential_supervision;securities,,[object Object],[object Object],0,,,not-assessed,Fewer than two assessed mandate roles (0/5).
+GN,Guinea,Africa,prudential_supervision,,[object Object],[object Object],0,,,not-assessed,Fewer than two assessed mandate roles (0/1).
+GW,Guinea-Bissau,Africa,insurance;prudential_supervision;securities,,[object Object],[object Object],0,,,not-assessed,Fewer than two assessed mandate roles (0/3).
+KE,Kenya,Africa,financial_intelligence;insurance;pensions;prudential_supervision;securities,,[object Object],[object Object],0,,,not-assessed,Fewer than two assessed mandate roles (0/5).
+LS,Lesotho,Africa,financial_intelligence;insurance;pensions;prudential_supervision,,[object Object],[object Object],0,,,not-assessed,Fewer than two assessed mandate roles (0/4).
+LR,Liberia,Africa,financial_intelligence,,[object Object],[object Object],0,,,not-assessed,Fewer than two assessed mandate roles (0/1).
+LY,Libya,Africa,prudential_supervision,,[object Object],[object Object],0,,,not-assessed,Fewer than two assessed mandate roles (0/1).
+MG,Madagascar,Africa,financial_intelligence;prudential_supervision,,[object Object],[object Object],0,,,not-assessed,Fewer than two assessed mandate roles (0/2).
+MW,Malawi,Africa,financial_intelligence;insurance;pensions;prudential_supervision;securities,,[object Object],[object Object],0,,,not-assessed,Fewer than two assessed mandate roles (0/5).
+ML,Mali,Africa,financial_intelligence;insurance;prudential_supervision;securities,,[object Object],[object Object],0,,,not-assessed,Fewer than two assessed mandate roles (0/4).
+MR,Mauritania,Africa,prudential_supervision;securities,,[object Object],[object Object],0,,,not-assessed,Fewer than two assessed mandate roles (0/2).
+MU,Mauritius,Africa,financial_intelligence;insurance;pensions;prudential_supervision;securities,,[object Object],[object Object],0,,,not-assessed,Fewer than two assessed mandate roles (0/5).
+MA,Morocco,Africa,financial_intelligence;insurance;pensions;prudential_supervision;securities,,[object Object],[object Object],0,,,not-assessed,Fewer than two assessed mandate roles (0/5).
+MZ,Mozambique,Africa,financial_intelligence;insurance;pensions;prudential_supervision,,[object Object],[object Object],0,,,not-assessed,Fewer than two assessed mandate roles (0/4).
+NA,Namibia,Africa,financial_intelligence;insurance;pensions;prudential_supervision,,[object Object],[object Object],0,,,not-assessed,Fewer than two assessed mandate roles (0/4).
+NE,Niger,Africa,financial_intelligence;insurance;prudential_supervision;securities,,[object Object],[object Object],0,,,not-assessed,Fewer than two assessed mandate roles (0/4).
+NG,Nigeria,Africa,financial_intelligence;insurance;pensions;prudential_supervision;securities,,[object Object],[object Object],0,,,not-assessed,Fewer than two assessed mandate roles (0/5).
+RW,Rwanda,Africa,financial_intelligence;insurance;pensions;prudential_supervision,,[object Object],[object Object],0,,,not-assessed,Fewer than two assessed mandate roles (0/4).
+ST,São Tomé and Príncipe,Africa,prudential_supervision,,[object Object],[object Object],0,,,not-assessed,Fewer than two assessed mandate roles (0/1).
+SN,Senegal,Africa,financial_intelligence;insurance;prudential_supervision;securities,,[object Object],[object Object],0,,,not-assessed,Fewer than two assessed mandate roles (0/4).
+SC,Seychelles,Africa,financial_intelligence;insurance;pensions;prudential_supervision,,[object Object],[object Object],0,,,not-assessed,Fewer than two assessed mandate roles (0/4).
+SL,Sierra Leone,Africa,financial_intelligence;prudential_supervision,,[object Object],[object Object],0,,,not-assessed,Fewer than two assessed mandate roles (0/2).
+SO,Somalia,Africa,prudential_supervision,,[object Object],[object Object],0,,,not-assessed,Fewer than two assessed mandate roles (0/1).
+ZA,South Africa,Africa,financial_intelligence;insurance;pensions;prudential_supervision;securities,,[object Object],[object Object],0,,,not-assessed,Fewer than two assessed mandate roles (0/5).
+SS,South Sudan,Africa,prudential_supervision,,[object Object],[object Object],0,,,not-assessed,Fewer than two assessed mandate roles (0/1).
+SD,Sudan,Africa,financial_intelligence;prudential_supervision,,[object Object],[object Object],0,,,not-assessed,Fewer than two assessed mandate roles (0/2).
+TZ,Tanzania,Africa,financial_intelligence;prudential_supervision;securities,,[object Object],[object Object],0,,,not-assessed,Fewer than two assessed mandate roles (0/3).
+TG,Togo,Africa,financial_intelligence;insurance;prudential_supervision;securities,,[object Object],[object Object],0,,,not-assessed,Fewer than two assessed mandate roles (0/4).
+TN,Tunisia,Africa,financial_intelligence;insurance;prudential_supervision;securities,,[object Object],[object Object],0,,,not-assessed,Fewer than two assessed mandate roles (0/4).
+UG,Uganda,Africa,financial_intelligence;insurance;pensions;prudential_supervision;securities,,[object Object],[object Object],0,,,not-assessed,Fewer than two assessed mandate roles (0/5).
+ZM,Zambia,Africa,financial_intelligence;insurance;pensions;prudential_supervision;securities,,[object Object],[object Object],0,,,not-assessed,Fewer than two assessed mandate roles (0/5).
+ZW,Zimbabwe,Africa,financial_intelligence;insurance;pensions;prudential_supervision,,[object Object],[object Object],0,,,not-assessed,Fewer than two assessed mandate roles (0/4).
+AR,Argentina,Americas,financial_intelligence;insurance;prudential_supervision;securities,,[object Object],[object Object],0,,,not-assessed,Fewer than two assessed mandate roles (0/4).
+BZ,Belize,Americas,financial_intelligence;insurance;prudential_supervision;securities,,[object Object],[object Object],0,,,not-assessed,Fewer than two assessed mandate roles (0/4).
+BO,Bolivia,Americas,financial_intelligence;prudential_supervision;securities,,[object Object],[object Object],0,,,not-assessed,Fewer than two assessed mandate roles (0/3).
+BR,Brazil,Americas,financial_intelligence;insurance;pensions;prudential_supervision;securities,,[object Object],[object Object],0,,,not-assessed,Fewer than two assessed mandate roles (0/5).
+CA,Canada,Americas,financial_intelligence;insurance;pensions;prudential_supervision;securities,securities,[object Object],[object Object],20,,,not-assessed,Fewer than two assessed mandate roles (1/5).
+CL,Chile,Americas,financial_intelligence;insurance;pensions;prudential_supervision;securities,,[object Object],[object Object],0,,,not-assessed,Fewer than two assessed mandate roles (0/5).
+CO,Colombia,Americas,financial_intelligence;insurance;pensions;prudential_supervision;securities,,[object Object],[object Object],0,,,not-assessed,Fewer than two assessed mandate roles (0/5).
+CR,Costa Rica,Americas,financial_intelligence;insurance;pensions;prudential_supervision;securities,,[object Object],[object Object],0,,,not-assessed,Fewer than two assessed mandate roles (0/5).
+CU,Cuba,Americas,financial_intelligence;prudential_supervision,,[object Object],[object Object],0,,,not-assessed,Fewer than two assessed mandate roles (0/2).
+DM,Dominica,Americas,financial_intelligence;prudential_supervision,,[object Object],[object Object],0,,,not-assessed,Fewer than two assessed mandate roles (0/2).
+DO,Dominican Republic,Americas,financial_intelligence;insurance;pensions;prudential_supervision;securities,,[object Object],[object Object],0,,,not-assessed,Fewer than two assessed mandate roles (0/5).
+EC,Ecuador,Americas,financial_intelligence;prudential_supervision;securities,,[object Object],[object Object],0,,,not-assessed,Fewer than two assessed mandate roles (0/3).
+SV,El Salvador,Americas,financial_intelligence;insurance;pensions;prudential_supervision;securities,,[object Object],[object Object],0,,,not-assessed,Fewer than two assessed mandate roles (0/5).
+GT,Guatemala,Americas,financial_intelligence;insurance;prudential_supervision,,[object Object],[object Object],0,,,not-assessed,Fewer than two assessed mandate roles (0/3).
+GD,Grenada,Americas,financial_intelligence;prudential_supervision,,[object Object],[object Object],0,,,not-assessed,Fewer than two assessed mandate roles (0/2).
+GY,Guyana,Americas,financial_intelligence;prudential_supervision,,[object Object],[object Object],0,,,not-assessed,Fewer than two assessed mandate roles (0/2).
+HT,Haiti,Americas,prudential_supervision,,[object Object],[object Object],0,,,not-assessed,Fewer than two assessed mandate roles (0/1).
+HN,Honduras,Americas,financial_intelligence;pensions;prudential_supervision,,[object Object],[object Object],0,,,not-assessed,Fewer than two assessed mandate roles (0/3).
+JM,Jamaica,Americas,financial_intelligence;insurance;pensions;prudential_supervision;securities,,[object Object],[object Object],0,,,not-assessed,Fewer than two assessed mandate roles (0/5).
+MX,Mexico,Americas,financial_intelligence;insurance;pensions;prudential_supervision;securities,,[object Object],[object Object],0,,,not-assessed,Fewer than two assessed mandate roles (0/5).
+NI,Nicaragua,Americas,prudential_supervision,,[object Object],[object Object],0,,,not-assessed,Fewer than two assessed mandate roles (0/1).
+PA,Panama,Americas,financial_intelligence;insurance;prudential_supervision;securities,,[object Object],[object Object],0,,,not-assessed,Fewer than two assessed mandate roles (0/4).
+PY,Paraguay,Americas,financial_intelligence;insurance;prudential_supervision;securities,,[object Object],[object Object],0,,,not-assessed,Fewer than two assessed mandate roles (0/4).
+PE,Peru,Americas,financial_intelligence;insurance;pensions;prudential_supervision;securities,,[object Object],[object Object],0,,,not-assessed,Fewer than two assessed mandate roles (0/5).
+SR,Suriname,Americas,financial_intelligence;insurance;pensions;prudential_supervision,,[object Object],[object Object],0,,,not-assessed,Fewer than two assessed mandate roles (0/4).
+KN,Saint Kitts and Nevis,Americas,financial_intelligence;prudential_supervision,,[object Object],[object Object],0,,,not-assessed,Fewer than two assessed mandate roles (0/2).
+LC,Saint Lucia,Americas,financial_intelligence;prudential_supervision,,[object Object],[object Object],0,,,not-assessed,Fewer than two assessed mandate roles (0/2).
+VC,Saint Vincent and the Grenadines,Americas,financial_intelligence;prudential_supervision,,[object Object],[object Object],0,,,not-assessed,Fewer than two assessed mandate roles (0/2).
+TT,Trinidad and Tobago,Americas,financial_intelligence;insurance;pensions;prudential_supervision;securities,,[object Object],[object Object],0,,,not-assessed,Fewer than two assessed mandate roles (0/5).
+US,United States,Americas,financial_intelligence;insurance;pensions;prudential_supervision;securities,insurance;prudential_supervision;securities,[object Object],[object Object],60,99.0833,highly-transparent,provisional,Assessed role coverage is 60%; country result is provisional.
+UY,Uruguay,Americas,financial_intelligence;insurance;prudential_supervision;securities,,[object Object],[object Object],0,,,not-assessed,Fewer than two assessed mandate roles (0/4).
+VE,Venezuela,Americas,financial_intelligence;prudential_supervision,,[object Object],[object Object],0,,,not-assessed,Fewer than two assessed mandate roles (0/2).
+AF,Afghanistan,Asia Pacific,,,[object Object],[object Object],0,,,not-assessed,No applicable non-central mandate roles are mapped for this country.
+AU,Australia,Asia Pacific,financial_intelligence;insurance;pensions;prudential_supervision;securities,insurance;securities,[object Object],[object Object],40,,,not-assessed,"Assessed role coverage is 40%, below the 50% provisional threshold."
+BD,Bangladesh,Asia Pacific,financial_intelligence;prudential_supervision;securities,,[object Object],[object Object],0,,,not-assessed,Fewer than two assessed mandate roles (0/3).
+BT,Bhutan,Asia Pacific,financial_intelligence;prudential_supervision,,[object Object],[object Object],0,,,not-assessed,Fewer than two assessed mandate roles (0/2).
+BN,Brunei,Asia Pacific,financial_intelligence;insurance;securities,,[object Object],[object Object],0,,,not-assessed,Fewer than two assessed mandate roles (0/3).
+KH,Cambodia,Asia Pacific,financial_intelligence;insurance;pensions,,[object Object],[object Object],0,,,not-assessed,Fewer than two assessed mandate roles (0/3).
+CN,China,Asia Pacific,insurance;pensions;prudential_supervision;securities,,[object Object],[object Object],0,,,not-assessed,Fewer than two assessed mandate roles (0/4).
+CK,Cook Islands,Asia Pacific,financial_intelligence;prudential_supervision,,[object Object],[object Object],0,,,not-assessed,Fewer than two assessed mandate roles (0/2).
+FJ,Fiji,Asia Pacific,financial_intelligence;prudential_supervision,,[object Object],[object Object],0,,,not-assessed,Fewer than two assessed mandate roles (0/2).
+IN,India,Asia Pacific,financial_intelligence;insurance;pensions;prudential_supervision;securities,,[object Object],[object Object],0,,,not-assessed,Fewer than two assessed mandate roles (0/5).
+ID,Indonesia,Asia Pacific,financial_intelligence;insurance;pensions;prudential_supervision;securities,,[object Object],[object Object],0,,,not-assessed,Fewer than two assessed mandate roles (0/5).
+JP,Japan,Asia Pacific,financial_intelligence;insurance;prudential_supervision;securities,,[object Object],[object Object],0,,,not-assessed,Fewer than two assessed mandate roles (0/4).
+KZ,Kazakhstan,Asia Pacific,financial_intelligence;insurance;pensions;prudential_supervision;securities,,[object Object],[object Object],0,,,not-assessed,Fewer than two assessed mandate roles (0/5).
+KP,North Korea,Asia Pacific,,,[object Object],[object Object],0,,,not-assessed,No applicable non-central mandate roles are mapped for this country.
+KR,South Korea,Asia Pacific,financial_intelligence;insurance;pensions;prudential_supervision;securities,insurance;pensions;prudential_supervision,[object Object],[object Object],60,89.75,highly-transparent,provisional,Assessed role coverage is 60%; country result is provisional.
+KG,Kyrgyzstan,Asia Pacific,financial_intelligence;prudential_supervision;securities,,[object Object],[object Object],0,,,not-assessed,Fewer than two assessed mandate roles (0/3).
+LA,Laos,Asia Pacific,financial_intelligence,,[object Object],[object Object],0,,,not-assessed,Fewer than two assessed mandate roles (0/1).
+MY,Malaysia,Asia Pacific,financial_intelligence;insurance;prudential_supervision;securities,securities,[object Object],[object Object],25,,,not-assessed,Fewer than two assessed mandate roles (1/4).
+MV,Maldives,Asia Pacific,financial_intelligence;insurance;pensions;prudential_supervision;securities,,[object Object],[object Object],0,,,not-assessed,Fewer than two assessed mandate roles (0/5).
+MH,Marshall Islands,Asia Pacific,financial_intelligence,,[object Object],[object Object],0,,,not-assessed,Fewer than two assessed mandate roles (0/1).
+MN,Mongolia,Asia Pacific,financial_intelligence;insurance;securities,,[object Object],[object Object],0,,,not-assessed,Fewer than two assessed mandate roles (0/3).
+MM,Myanmar,Asia Pacific,prudential_supervision,,[object Object],[object Object],0,,,not-assessed,Fewer than two assessed mandate roles (0/1).
+NP,Nepal,Asia Pacific,financial_intelligence;insurance;prudential_supervision,,[object Object],[object Object],0,,,not-assessed,Fewer than two assessed mandate roles (0/3).
+NR,Nauru,Asia Pacific,financial_intelligence,,[object Object],[object Object],0,,,not-assessed,Fewer than two assessed mandate roles (0/1).
+NZ,New Zealand,Asia Pacific,financial_intelligence;insurance;prudential_supervision;securities,,[object Object],[object Object],0,,,not-assessed,Fewer than two assessed mandate roles (0/4).
+NU,Niue,Asia Pacific,financial_intelligence,,[object Object],[object Object],0,,,not-assessed,Fewer than two assessed mandate roles (0/1).
+PK,Pakistan,Asia Pacific,insurance;pensions;prudential_supervision;securities,,[object Object],[object Object],0,,,not-assessed,Fewer than two assessed mandate roles (0/4).
+PW,Palau,Asia Pacific,financial_intelligence;prudential_supervision,,[object Object],[object Object],0,,,not-assessed,Fewer than two assessed mandate roles (0/2).
+PG,Papua New Guinea,Asia Pacific,financial_intelligence;insurance;pensions;prudential_supervision;securities,,[object Object],[object Object],0,,,not-assessed,Fewer than two assessed mandate roles (0/5).
+PH,Philippines,Asia Pacific,financial_intelligence;insurance;prudential_supervision;securities,,[object Object],[object Object],0,,,not-assessed,Fewer than two assessed mandate roles (0/4).
+WS,Samoa,Asia Pacific,financial_intelligence;insurance;prudential_supervision,,[object Object],[object Object],0,,,not-assessed,Fewer than two assessed mandate roles (0/3).
+SG,Singapore,Asia Pacific,financial_intelligence;insurance;pensions;prudential_supervision;securities,insurance;prudential_supervision;securities,[object Object],[object Object],60,82.4167,highly-transparent,provisional,Assessed role coverage is 60%; country result is provisional.
+SB,Solomon Islands,Asia Pacific,financial_intelligence;prudential_supervision,,[object Object],[object Object],0,,,not-assessed,Fewer than two assessed mandate roles (0/2).
+LK,Sri Lanka,Asia Pacific,financial_intelligence;insurance;prudential_supervision;securities,,[object Object],[object Object],0,,,not-assessed,Fewer than two assessed mandate roles (0/4).
+TW,Taiwan,Asia Pacific,financial_intelligence;insurance;securities,,[object Object],[object Object],0,,,not-assessed,Fewer than two assessed mandate roles (0/3).
+TJ,Tajikistan,Asia Pacific,financial_intelligence;prudential_supervision,,[object Object],[object Object],0,,,not-assessed,Fewer than two assessed mandate roles (0/2).
+TH,Thailand,Asia Pacific,financial_intelligence;insurance;pensions;prudential_supervision;securities,,[object Object],[object Object],0,,,not-assessed,Fewer than two assessed mandate roles (0/5).
+TO,Tonga,Asia Pacific,prudential_supervision,,[object Object],[object Object],0,,,not-assessed,Fewer than two assessed mandate roles (0/1).
+TL,Timor-Leste,Asia Pacific,financial_intelligence,,[object Object],[object Object],0,,,not-assessed,Fewer than two assessed mandate roles (0/1).
+TM,Turkmenistan,Asia Pacific,financial_intelligence;prudential_supervision,,[object Object],[object Object],0,,,not-assessed,Fewer than two assessed mandate roles (0/2).
+UZ,Uzbekistan,Asia Pacific,financial_intelligence;insurance;prudential_supervision;securities,,[object Object],[object Object],0,,,not-assessed,Fewer than two assessed mandate roles (0/4).
+VU,Vanuatu,Asia Pacific,financial_intelligence;insurance;prudential_supervision,,[object Object],[object Object],0,,,not-assessed,Fewer than two assessed mandate roles (0/3).
+VN,Vietnam,Asia Pacific,insurance;prudential_supervision;securities,,[object Object],[object Object],0,,,not-assessed,Fewer than two assessed mandate roles (0/3).
+HK,Hong Kong,Asia Pacific,financial_intelligence;insurance;pensions;prudential_supervision;securities,prudential_supervision,[object Object],[object Object],20,,,not-assessed,Fewer than two assessed mandate roles (1/5).
+MO,Macau,Asia Pacific,financial_intelligence;insurance;pensions;prudential_supervision,,[object Object],[object Object],0,,,not-assessed,Fewer than two assessed mandate roles (0/4).
+AL,Albania,Europe,financial_intelligence;insurance;pensions;prudential_supervision;securities,,[object Object],[object Object],0,,,not-assessed,Fewer than two assessed mandate roles (0/5).
+AD,Andorra,Europe,financial_intelligence;insurance;securities,,[object Object],[object Object],0,,,not-assessed,Fewer than two assessed mandate roles (0/3).
+AM,Armenia,Europe,financial_intelligence;insurance;pensions;prudential_supervision;securities,,[object Object],[object Object],0,,,not-assessed,Fewer than two assessed mandate roles (0/5).
+AT,Austria,Europe,financial_intelligence;insurance;pensions;prudential_supervision;securities,,[object Object],[object Object],0,,,not-assessed,Fewer than two assessed mandate roles (0/5).
+AZ,Azerbaijan,Europe,financial_intelligence;insurance;prudential_supervision,,[object Object],[object Object],0,,,not-assessed,Fewer than two assessed mandate roles (0/3).
+BY,Belarus,Europe,financial_intelligence;prudential_supervision,,[object Object],[object Object],0,,,not-assessed,Fewer than two assessed mandate roles (0/2).
+BE,Belgium,Europe,financial_intelligence;insurance;pensions;prudential_supervision;securities,insurance;pensions;securities,[object Object],[object Object],60,95.4167,highly-transparent,provisional,Assessed role coverage is 60%; country result is provisional.
+BA,Bosnia and Herzegovina,Europe,financial_intelligence;insurance;prudential_supervision;securities,,[object Object],[object Object],0,,,not-assessed,Fewer than two assessed mandate roles (0/4).
+BG,Bulgaria,Europe,financial_intelligence;insurance;pensions;prudential_supervision;securities,,[object Object],[object Object],0,,,not-assessed,Fewer than two assessed mandate roles (0/5).
+HR,Croatia,Europe,financial_intelligence;insurance;pensions;prudential_supervision;securities,,[object Object],[object Object],0,,,not-assessed,Fewer than two assessed mandate roles (0/5).
+CY,Cyprus,Europe,financial_intelligence;prudential_supervision;securities,,[object Object],[object Object],0,,,not-assessed,Fewer than two assessed mandate roles (0/3).
+CZ,Czechia,Europe,financial_intelligence;insurance;pensions;prudential_supervision;securities,,[object Object],[object Object],0,,,not-assessed,Fewer than two assessed mandate roles (0/5).
+DK,Denmark,Europe,financial_intelligence;insurance;prudential_supervision;securities,,[object Object],[object Object],0,,,not-assessed,Fewer than two assessed mandate roles (0/4).
+EE,Estonia,Europe,financial_intelligence;insurance;prudential_supervision;securities,,[object Object],[object Object],0,,,not-assessed,Fewer than two assessed mandate roles (0/4).
+FI,Finland,Europe,financial_intelligence;insurance;prudential_supervision;securities,,[object Object],[object Object],0,,,not-assessed,Fewer than two assessed mandate roles (0/4).
+FR,France,Europe,financial_intelligence;insurance;pensions;prudential_supervision;securities,insurance;pensions;prudential_supervision;securities,[object Object],[object Object],80,93.5762,highly-transparent,complete,
+DE,Germany,Europe,financial_intelligence;insurance;pensions;prudential_supervision;securities,,[object Object],[object Object],0,,,not-assessed,Fewer than two assessed mandate roles (0/5).
+GE,Georgia,Europe,financial_intelligence;insurance;pensions;prudential_supervision;securities,,[object Object],[object Object],0,,,not-assessed,Fewer than two assessed mandate roles (0/5).
+GR,Greece,Europe,financial_intelligence;insurance;prudential_supervision;securities,,[object Object],[object Object],0,,,not-assessed,Fewer than two assessed mandate roles (0/4).
+HU,Hungary,Europe,financial_intelligence;insurance;pensions;prudential_supervision;securities,,[object Object],[object Object],0,,,not-assessed,Fewer than two assessed mandate roles (0/5).
+IS,Iceland,Europe,financial_intelligence;prudential_supervision;securities,,[object Object],[object Object],0,,,not-assessed,Fewer than two assessed mandate roles (0/3).
+IE,Ireland,Europe,financial_intelligence;insurance;pensions;prudential_supervision;securities,insurance;prudential_supervision;securities,[object Object],[object Object],60,89.6849,highly-transparent,provisional,Assessed role coverage is 60%; country result is provisional.
+IT,Italy,Europe,financial_intelligence;insurance;pensions;prudential_supervision;securities,,[object Object],[object Object],0,,,not-assessed,Fewer than two assessed mandate roles (0/5).
+XK,Kosovo,Europe,financial_intelligence;insurance;pensions;prudential_supervision,,[object Object],[object Object],0,,,not-assessed,Fewer than two assessed mandate roles (0/4).
+LV,Latvia,Europe,financial_intelligence;insurance;pensions;prudential_supervision;securities,,[object Object],[object Object],0,,,not-assessed,Fewer than two assessed mandate roles (0/5).
+LI,Liechtenstein,Europe,financial_intelligence;insurance;pensions;prudential_supervision;securities,,[object Object],[object Object],0,,,not-assessed,Fewer than two assessed mandate roles (0/5).
+LT,Lithuania,Europe,financial_intelligence;insurance;pensions;prudential_supervision;securities,,[object Object],[object Object],0,,,not-assessed,Fewer than two assessed mandate roles (0/5).
+LU,Luxembourg,Europe,financial_intelligence;insurance;pensions;prudential_supervision;securities,pensions;prudential_supervision;securities,[object Object],[object Object],60,90.8333,highly-transparent,provisional,Assessed role coverage is 60%; country result is provisional.
+MT,Malta,Europe,financial_intelligence;insurance;pensions;prudential_supervision;securities,,[object Object],[object Object],0,,,not-assessed,Fewer than two assessed mandate roles (0/5).
+MD,Moldova,Europe,financial_intelligence;insurance;prudential_supervision,,[object Object],[object Object],0,,,not-assessed,Fewer than two assessed mandate roles (0/3).
+MC,Monaco,Europe,financial_intelligence;securities,,[object Object],[object Object],0,,,not-assessed,Fewer than two assessed mandate roles (0/2).
+ME,Montenegro,Europe,financial_intelligence;insurance;securities,,[object Object],[object Object],0,,,not-assessed,Fewer than two assessed mandate roles (0/3).
+NL,Netherlands,Europe,financial_intelligence;insurance;pensions;prudential_supervision;securities,insurance;pensions;prudential_supervision,[object Object],[object Object],60,74.9722,transparent,provisional,Assessed role coverage is 60%; country result is provisional.
+MK,North Macedonia,Europe,financial_intelligence;insurance;pensions;prudential_supervision;securities,,[object Object],[object Object],0,,,not-assessed,Fewer than two assessed mandate roles (0/5).
+NO,Norway,Europe,financial_intelligence;insurance;prudential_supervision;securities,,[object Object],[object Object],0,,,not-assessed,Fewer than two assessed mandate roles (0/4).
+PL,Poland,Europe,financial_intelligence;insurance;pensions;prudential_supervision;securities,,[object Object],[object Object],0,,,not-assessed,Fewer than two assessed mandate roles (0/5).
+PT,Portugal,Europe,financial_intelligence;insurance;pensions;prudential_supervision;securities,,[object Object],[object Object],0,,,not-assessed,Fewer than two assessed mandate roles (0/5).
+RO,Romania,Europe,financial_intelligence;insurance;pensions;prudential_supervision;securities,,[object Object],[object Object],0,,,not-assessed,Fewer than two assessed mandate roles (0/5).
+RU,Russia,Europe,financial_intelligence;prudential_supervision;securities,,[object Object],[object Object],0,,,not-assessed,Fewer than two assessed mandate roles (0/3).
+SM,San Marino,Europe,financial_intelligence;prudential_supervision,,[object Object],[object Object],0,,,not-assessed,Fewer than two assessed mandate roles (0/2).
+RS,Serbia,Europe,financial_intelligence;insurance;pensions;prudential_supervision;securities,,[object Object],[object Object],0,,,not-assessed,Fewer than two assessed mandate roles (0/5).
+SK,Slovakia,Europe,financial_intelligence;insurance;pensions;prudential_supervision;securities,,[object Object],[object Object],0,,,not-assessed,Fewer than two assessed mandate roles (0/5).
+SI,Slovenia,Europe,financial_intelligence;insurance;prudential_supervision;securities,,[object Object],[object Object],0,,,not-assessed,Fewer than two assessed mandate roles (0/4).
+ES,Spain,Europe,financial_intelligence;insurance;pensions;prudential_supervision;securities,,[object Object],[object Object],0,,,not-assessed,Fewer than two assessed mandate roles (0/5).
+SE,Sweden,Europe,financial_intelligence;prudential_supervision;securities,prudential_supervision;securities,[object Object],[object Object],66.6667,94.6667,highly-transparent,provisional,Assessed role coverage is 66.6667%; country result is provisional.
+CH,Switzerland,Europe,financial_intelligence;insurance;pensions;prudential_supervision;securities,insurance;prudential_supervision;securities,[object Object],[object Object],60,93.2161,highly-transparent,provisional,Assessed role coverage is 60%; country result is provisional.
+UA,Ukraine,Europe,financial_intelligence;insurance;pensions;prudential_supervision;securities,,[object Object],[object Object],0,,,not-assessed,Fewer than two assessed mandate roles (0/5).
+GB,United Kingdom,Europe,financial_intelligence;insurance;pensions;prudential_supervision;securities,insurance;prudential_supervision;securities,[object Object],[object Object],60,99.75,highly-transparent,provisional,Assessed role coverage is 60%; country result is provisional.
+VA,Vatican City,Europe,financial_intelligence,,[object Object],[object Object],0,,,not-assessed,Fewer than two assessed mandate roles (0/1).
+BH,Bahrain,Middle East,financial_intelligence;insurance;prudential_supervision;securities,,[object Object],[object Object],0,,,not-assessed,Fewer than two assessed mandate roles (0/4).
+IR,Iran,Middle East,prudential_supervision;securities,,[object Object],[object Object],0,,,not-assessed,Fewer than two assessed mandate roles (0/2).
+IQ,Iraq,Middle East,financial_intelligence,,[object Object],[object Object],0,,,not-assessed,Fewer than two assessed mandate roles (0/1).
+IL,Israel,Middle East,financial_intelligence;insurance;pensions;prudential_supervision;securities,,[object Object],[object Object],0,,,not-assessed,Fewer than two assessed mandate roles (0/5).
+JO,Jordan,Middle East,financial_intelligence;insurance;prudential_supervision;securities,,[object Object],[object Object],0,,,not-assessed,Fewer than two assessed mandate roles (0/4).
+KW,Kuwait,Middle East,financial_intelligence;insurance;prudential_supervision;securities,,[object Object],[object Object],0,,,not-assessed,Fewer than two assessed mandate roles (0/4).
+LB,Lebanon,Middle East,financial_intelligence;prudential_supervision,,[object Object],[object Object],0,,,not-assessed,Fewer than two assessed mandate roles (0/2).
+OM,Oman,Middle East,financial_intelligence;insurance;prudential_supervision;securities,,[object Object],[object Object],0,,,not-assessed,Fewer than two assessed mandate roles (0/4).
+PS,Palestine,Middle East,financial_intelligence;insurance;prudential_supervision;securities,,[object Object],[object Object],0,,,not-assessed,Fewer than two assessed mandate roles (0/4).
+QA,Qatar,Middle East,financial_intelligence;insurance;prudential_supervision;securities,,[object Object],[object Object],0,,,not-assessed,Fewer than two assessed mandate roles (0/4).
+SA,Saudi Arabia,Middle East,financial_intelligence;insurance;prudential_supervision;securities,,[object Object],[object Object],0,,,not-assessed,Fewer than two assessed mandate roles (0/4).
+SY,Syria,Middle East,financial_intelligence;prudential_supervision;securities,,[object Object],[object Object],0,,,not-assessed,Fewer than two assessed mandate roles (0/3).
+TR,Türkiye,Middle East,financial_intelligence;insurance;pensions;prudential_supervision;securities,,[object Object],[object Object],0,,,not-assessed,Fewer than two assessed mandate roles (0/5).
+AE,United Arab Emirates,Middle East,financial_intelligence;insurance;prudential_supervision;securities,,[object Object],[object Object],0,,,not-assessed,Fewer than two assessed mandate roles (0/4).
+YE,Yemen,Middle East,,,[object Object],[object Object],0,,,not-assessed,No applicable non-central mandate roles are mapped for this country.
+JE,Jersey,Offshore / IFC,financial_intelligence;insurance;prudential_supervision;securities,,[object Object],[object Object],0,,,not-assessed,Fewer than two assessed mandate roles (0/4).
+GG,Guernsey,Offshore / IFC,financial_intelligence;insurance;pensions;prudential_supervision;securities,insurance;pensions;prudential_supervision;securities,[object Object],[object Object],80,84.1111,highly-transparent,complete,
+IM,Isle of Man,Offshore / IFC,financial_intelligence;insurance;prudential_supervision;securities,,[object Object],[object Object],0,,,not-assessed,Fewer than two assessed mandate roles (0/4).
+GI,Gibraltar,Offshore / IFC,financial_intelligence;insurance;prudential_supervision;securities,,[object Object],[object Object],0,,,not-assessed,Fewer than two assessed mandate roles (0/4).
+KY,Cayman Islands,Offshore / IFC,financial_intelligence;insurance;prudential_supervision;securities,,[object Object],[object Object],0,,,not-assessed,Fewer than two assessed mandate roles (0/4).
+BM,Bermuda,Offshore / IFC,financial_intelligence;insurance;prudential_supervision;securities,,[object Object],[object Object],0,,,not-assessed,Fewer than two assessed mandate roles (0/4).
+VG,British Virgin Islands,Offshore / IFC,financial_intelligence;insurance;prudential_supervision;securities,,[object Object],[object Object],0,,,not-assessed,Fewer than two assessed mandate roles (0/4).
+TC,Turks and Caicos Islands,Offshore / IFC,financial_intelligence;insurance;prudential_supervision;securities,,[object Object],[object Object],0,,,not-assessed,Fewer than two assessed mandate roles (0/4).
+AI,Anguilla,Offshore / IFC,financial_intelligence;prudential_supervision,,[object Object],[object Object],0,,,not-assessed,Fewer than two assessed mandate roles (0/2).
+MS,Montserrat,Offshore / IFC,prudential_supervision,,[object Object],[object Object],0,,,not-assessed,Fewer than two assessed mandate roles (0/1).
+AS,American Samoa,Offshore / IFC,insurance,,[object Object],[object Object],0,,,not-assessed,Fewer than two assessed mandate roles (0/1).
+GU,Guam,Offshore / IFC,prudential_supervision,,[object Object],[object Object],0,,,not-assessed,Fewer than two assessed mandate roles (0/1).
+AW,Aruba,Offshore / IFC,financial_intelligence;insurance;prudential_supervision,,[object Object],[object Object],0,,,not-assessed,Fewer than two assessed mandate roles (0/3).
+CW,Curaçao,Offshore / IFC,financial_intelligence;insurance;prudential_supervision,,[object Object],[object Object],0,,,not-assessed,Fewer than two assessed mandate roles (0/3).
+SX,Sint Maarten,Offshore / IFC,financial_intelligence;insurance,,[object Object],[object Object],0,,,not-assessed,Fewer than two assessed mandate roles (0/2).
+BS,Bahamas,Offshore / IFC,financial_intelligence;insurance;pensions;prudential_supervision;securities,,[object Object],[object Object],0,,,not-assessed,Fewer than two assessed mandate roles (0/5).
+BB,Barbados,Offshore / IFC,financial_intelligence;insurance;prudential_supervision;securities,,[object Object],[object Object],0,,,not-assessed,Fewer than two assessed mandate roles (0/4).
+AG,Antigua and Barbuda,Offshore / IFC,financial_intelligence;prudential_supervision,,[object Object],[object Object],0,,,not-assessed,Fewer than two assessed mandate roles (0/2).

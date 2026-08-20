@@ -304,10 +304,10 @@ export interface RegulatorFreshness {
  * query.
  *
  * Exists because `regulatorCoverage.ts` carries a HAND-MAINTAINED `count`
- * (FCA reads 308) which no script updates. Anything derived from it — hub
- * copy, meta descriptions, freshness signals — silently goes stale as the
- * scrapers ingest. Read counts from here instead whenever the number is shown
- * to a user or a crawler.
+ * which no script updates. Anything derived from it — hub copy, meta
+ * descriptions, freshness signals — silently goes stale as the scrapers
+ * ingest. Read counts from here instead whenever the number is shown to a
+ * user or a crawler.
  *
  * Unfiltered by `isGarbageFirmName`: that filter is a display concern for the
  * top-N table, whereas this is "how many actions do we hold", which should

@@ -33,7 +33,9 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   try {
     // Get counts from all tables
     const fcaCount = (await sql`
-      SELECT COUNT(*)::int as count FROM fca_fines
+      SELECT COUNT(*)::int as count
+      FROM public.all_regulatory_fines_canonical
+      WHERE upper(regulator) = 'FCA'
     `) as unknown as CountRow[];
     const euCount = (await sql`
       SELECT COUNT(*)::int as count FROM eu_fines
@@ -83,6 +85,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
     return res.status(200).json({
       totalActions,
+      fcaActions: toInt(fcaCount[0]?.count),
       totalRegulators,
       totalCountries,
       earliestYear,

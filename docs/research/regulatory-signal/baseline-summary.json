@@ -1,0 +1,26 @@
+{
+  "generatedAt": "2026-08-20T12:09:41.497Z",
+  "countryUniverse": 213,
+  "officialAuthorityRows": 642,
+  "countriesWithAnyOfficialAuthority": 212,
+  "countriesWithBroadRoleEvidence": 117,
+  "countriesWithNoResolvedAuthority": 0,
+  "roleCoverage": {
+    "centralBanking": 191,
+    "prudentialSupervision": 188,
+    "securities": 138,
+    "insurance": 148,
+    "pensions": 81,
+    "financialIntelligence": 187
+  },
+  "regActionsRegistry": {
+    "configured": 65,
+    "live": 54,
+    "internal": 1,
+    "pipeline": 10,
+    "liveCountries": 40,
+    "liveEuLevelAuthorities": 1
+  },
+  "liveObservationFailures": 0,
+  "unresolvedDirectoryEntries": 5
+}

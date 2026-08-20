@@ -1,0 +1,66 @@
+{
+  "methodology_version": "1.0.0",
+  "as_of": "2026-08-20T12:11:07.553Z",
+  "purpose": "Calibration-only report. No causal or normative interpretation is permitted.",
+  "region_cohorts": {
+    "Africa": {
+      "countries": 54,
+      "assessed": 0,
+      "mean_score": null
+    },
+    "Americas": {
+      "countries": 32,
+      "assessed": 1,
+      "mean_score": 99.0833
+    },
+    "Asia Pacific": {
+      "countries": 45,
+      "assessed": 2,
+      "mean_score": 86.0833
+    },
+    "Europe": {
+      "countries": 49,
+      "assessed": 8,
+      "mean_score": 91.5145
+    },
+    "Middle East": {
+      "countries": 15,
+      "assessed": 0,
+      "mean_score": null
+    },
+    "Offshore / IFC": {
+      "countries": 18,
+      "assessed": 1,
+      "mean_score": 84.1111
+    }
+  },
+  "architecture_cohorts": {
+    "integrated": {
+      "countries": 78,
+      "assessed": 6,
+      "mean_score": 86.878
+    },
+    "fragmented": {
+      "countries": 135,
+      "assessed": 6,
+      "mean_score": 94.3681
+    }
+  },
+  "language_cohort": {
+    "status": "not-assessed",
+    "blocker": "The qualified live-source snapshot does not provide a source-language field for every regulator; language bias must not be inferred from country or English accessibility."
+  },
+  "monetary_cohort": {
+    "status": "not-used",
+    "blocker": "Amount disclosure is descriptive and has zero weight in every component and aggregate."
+  },
+  "enforcement_volume_correlation_sample_size": 12,
+  "enforcement_volume_correlation": 0.610544,
+  "enforcement_volume_correlation_interpretation": "Descriptive diagnostic only. A non-zero association can arise through evidence availability and sample selection; it is not a score input and requires further calibration before any public release.",
+  "invariants": [
+    "Raw observed record count and monetary values are not score inputs.",
+    "Integrated and fragmented architecture use role medians and equal role means; authority count does not add weight.",
+    "Unavailable components are null and excluded from the weighted denominator; they are never imputed as zero.",
+    "Challenge-protected and low-frequency sources remain unavailable/watch states, not failures or low scores."
+  ]
+}

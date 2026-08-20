@@ -192,7 +192,7 @@ Across all 39 regulators with 2026 activity, the totals sum to **771 actions wor
 
 RegActions tags each action with the regulator's own breach description. Across 2026-to-date the most frequent tags are dominated by high-volume, lower-value process categories, in particular FINRA's Acceptance, Waiver and Consent letters (114 actions) and national administrative-penalty categories. The concentration of value, by contrast, sits in a small number of market-abuse, AML-control and disclosure cases. The read-across for compliance teams is familiar: most enforcement is high-frequency and procedural, but the tail risk that moves board-level numbers is a single control-failure or market-abuse finding.
 
-Because breach labels are regulator-specific and not yet fully harmonised across all 45+ sources, we report the pattern qualitatively here rather than publishing a cross-regulator category ranking that the underlying tags cannot yet support cleanly.
+Because breach labels are regulator-specific and not yet fully harmonised across all 54 configured regulator sources, we report the pattern qualitatively here rather than publishing a cross-regulator category ranking that the underlying tags cannot yet support cleanly.
 
 ## Country-risk landscape
 

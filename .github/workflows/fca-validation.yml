@@ -60,7 +60,8 @@ jobs:
 
       - name: Validate constants
         run: |
-          grep -q "REGULATOR_COUNT.*45+" src/constants/site.ts || exit 1
+          grep -q 'REGULATOR_COUNT = "54"' src/constants/site.ts || exit 1
+          grep -q 'REGULATOR_COUNT_NUMERIC = 54' src/constants/site.ts || exit 1
 
   unit-tests:
     name: Unit Tests

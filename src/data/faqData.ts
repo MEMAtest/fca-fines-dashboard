@@ -52,7 +52,7 @@ export const faqItems: FAQItem[] = [
   // ── Platform & Data ────────────────────────────────────────────────────────
   {
     question: 'How many regulators does RegActions track?',
-    answer: 'RegActions tracks enforcement actions from 45+ financial regulators across Europe, the Americas, Asia-Pacific, the Middle East, and the Caribbean. Coverage includes major regulators like the FCA, BaFin, SEC, AMF, ASIC, MAS, FINMA, and many more, providing the most comprehensive global view of regulatory enforcement available.',
+    answer: 'RegActions tracks enforcement actions from 54 configured live financial regulators across Europe, the Americas, Asia-Pacific, the Middle East, and the Caribbean. Coverage includes major regulators like the FCA, BaFin, SEC, AMF, ASIC, MAS, FINMA, and many more, providing a global view of regulatory enforcement.',
     category: 'Platform & Data',
     slug: 'how-many-regulators',
   },
@@ -70,7 +70,7 @@ export const faqItems: FAQItem[] = [
   },
   {
     question: 'Can I compare fines across different regulators?',
-    answer: 'Yes, RegActions provides cross-regulator comparison tools. You can search and filter enforcement actions across all 45+ regulators simultaneously, compare penalty amounts, breach categories, and enforcement trends. The unified dashboard normalises data from different jurisdictions so you can benchmark enforcement activity across regions.',
+    answer: 'Yes, RegActions provides cross-regulator comparison tools. You can search and filter enforcement actions across all 54 configured live regulators simultaneously, compare penalty amounts, breach categories, and enforcement trends. The unified dashboard normalises data from different jurisdictions so you can benchmark enforcement activity across regions.',
     category: 'Platform & Data',
     slug: 'compare-across-regulators',
   },
