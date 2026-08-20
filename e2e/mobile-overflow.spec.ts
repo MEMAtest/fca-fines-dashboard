@@ -15,6 +15,15 @@ import { test, expect } from "@playwright/test";
  * reported.
  *
  * This must stay green at every stage of the redesign.
+ *
+ * ⚠️ RUN IT AGAINST PRODUCTION TOO, not just the local build.
+ * `vite preview` serves no API, so data tables render EMPTY and cannot
+ * overflow. Three routes (/fines, /fines/actions, /regulators/fca) passed
+ * locally and then overflowed by 45-101px at 320px on the deployed site, purely
+ * because real rows loaded. After deploying:
+ *
+ *   PLAYWRIGHT_BASE_URL=https://regactions.com npx playwright test \
+ *     e2e/mobile-overflow.spec.ts --project=chromium
  */
 
 const ROUTES = [
