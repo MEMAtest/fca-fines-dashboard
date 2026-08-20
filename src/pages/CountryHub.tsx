@@ -627,20 +627,6 @@ export function CountryHub() {
         </div>
       </div>
 
-      <CountryRiskV3Panel
-        payload={countryRiskV3PanelPayload(riskV3, {
-          label: "Register status",
-          value: boReg ? `${boRegisterSignal(country.iso2)}${boReg.since ? ` · since ${boReg.since}` : ""}` : "No live register identified in the source snapshot",
-          source: {
-            name: "Open Ownership register map",
-            url: BO_REGISTERS_SOURCE_URL,
-            checkedAt: BO_REGISTERS_REVIEWED,
-            note: "Register availability is context only and does not establish the accuracy or completeness of ownership information.",
-          },
-        })}
-        showHeadline={false}
-      />
-
       <div className="cx-ws">
         <div className="cx-ws__main">
           {/* ── Header: identity | overall risk score ── */}
@@ -720,6 +706,20 @@ export function CountryHub() {
               </div>
             </div>
           </div>
+
+          <CountryRiskV3Panel
+            payload={countryRiskV3PanelPayload(riskV3, {
+              label: "Register status",
+              value: boReg ? `${boRegisterSignal(country.iso2)}${boReg.since ? ` · since ${boReg.since}` : ""}` : "No live register identified in the source snapshot",
+              source: {
+                name: "Open Ownership register map",
+                url: BO_REGISTERS_SOURCE_URL,
+                checkedAt: BO_REGISTERS_REVIEWED,
+                note: "Register availability is context only and does not establish the accuracy or completeness of ownership information.",
+              },
+            })}
+            showHeadline={false}
+          />
 
           {/* ── Row 2: treatment | trend | map (attribution lives in the rail) ── */}
           <div className="cx-ws__row2">
