@@ -39,6 +39,7 @@ import { getPublishedBlogArticles } from '../data/blogArticles.js';
 import { PUBLIC_REGULATOR_NAV_ITEMS, PUBLIC_REGULATOR_CODES } from '../data/regulatorCoverage.js';
 import '../styles/homepage.css';
 import '../styles/contact.css';
+import { formatBreachCategory } from '../utils/labelConversion.js';
 
 const HOMEPAGE_FAQS = getHomepageFaqs();
 const PUBLIC_REGULATOR_COUNT = PUBLIC_REGULATOR_CODES.length;
@@ -343,8 +344,10 @@ function HeroSection() {
   const noResults = hasQuery && regulatorMatches.length === 0 && themeMatches.length === 0;
 
   const chips = useMemo(() => {
+    // The API returns raw enum values (BOOKS_AND_RECORDS, FRAUD). Render the
+    // human label but keep querying on the raw value.
     const themeChips = (data?.themes ?? []).slice(0, 3).map((t) => ({
-      label: t.label,
+      label: formatBreachCategory(t.label),
       onClick: () => navigate(`/search?theme=${encodeURIComponent(t.label)}`),
     }));
     return [
