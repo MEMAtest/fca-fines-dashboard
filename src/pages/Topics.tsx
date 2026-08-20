@@ -2,6 +2,37 @@ import { Link } from "react-router-dom";
 import { topicClusters } from "../data/topicClusters.js";
 import { useSEO } from "../hooks/useSEO.js";
 
+const DATA_HUBS = [
+  {
+    tag: "Breach types",
+    title: "Breach Categories",
+    body: "See which breach types drive the most enforcement activity and penalty totals.",
+    meta: "Market abuse, AML, principles",
+    to: "/breaches",
+  },
+  {
+    tag: "Yearly view",
+    title: "Fines By Year",
+    body: "Compare enforcement volumes and totals across years with one click to the dashboard.",
+    meta: "2013–2026",
+    to: "/years",
+  },
+  {
+    tag: "Sectors",
+    title: "Fines By Sector",
+    body: "Explore penalty patterns by firm category and identify the most exposed areas of the market.",
+    meta: "Banks, insurance, individuals",
+    to: "/sectors",
+  },
+  {
+    tag: "Firm pages",
+    title: "Top Firms & Individuals",
+    body: "Browse the biggest penalty recipients and drill into each entity’s enforcement history.",
+    meta: "Totals + history",
+    to: "/firms",
+  },
+];
+
 export function Topics() {
   useSEO({
     title: "RegActions Topics | Breaches, Years, Sectors & Firm Pages",
@@ -14,105 +45,73 @@ export function Topics() {
   });
 
   return (
-    <div className="hub-page">
-      <div className="hub-container">
-        <header className="hub-hero">
-          <h1>Explore Enforcement Topics</h1>
-          <p>
-            Fast entry points into the data: breach categories, yearly
-            enforcement, firm sectors, and the biggest firms and individuals.
-          </p>
-          <div className="hub-hero__actions">
-            <Link to="/regulators" className="btn btn-primary">
+    <div className="hub-two-col">
+      <aside className="hub-rail">
+        <div className="hub-rail__inner">
+          <div className="hub-rail__label">Topics</div>
+          <nav className="hub-rail__nav" aria-label="Topic clusters">
+            {topicClusters.map((cluster) => (
+              <Link key={cluster.slug} to={`/topics/${cluster.slug}`} className="hub-rail__item">
+                {cluster.eyebrow}
+              </Link>
+            ))}
+          </nav>
+          <div className="hub-rail__divider" />
+          <div className="hub-rail__actions">
+            <Link to="/regulators" className="hub-rail__action">
               Open Dashboard
             </Link>
-            <Link to="/blog" className="btn btn-ghost">
+            <Link to="/blog" className="hub-rail__action">
               Read Research
             </Link>
           </div>
-        </header>
+        </div>
+      </aside>
 
-        <section className="hub-section" aria-labelledby="topic-clusters-heading">
+      <main className="hub-main">
+        <h1 className="hub-main__title">Explore enforcement topics</h1>
+        <p className="hub-main__lede">
+          Fast entry points into the data: breach categories, yearly enforcement, firm sectors, and the
+          biggest firms and individuals. Every card lands in the dashboard with filters already applied.
+        </p>
+
+        <div className="hub-section-head">
+          <span className="hub-section-head__num">01</span>
           <h2 id="topic-clusters-heading">Editorial Topic Clusters</h2>
-          <div className="hub-grid">
-            {topicClusters.map((cluster) => (
-              <Link
-                key={cluster.slug}
-                to={`/topics/${cluster.slug}`}
-                className="hub-card hover-lift"
-              >
-                <div className="hub-card__meta">
-                  <span className="hub-chip">{cluster.eyebrow}</span>
-                  <span className="hub-chip hub-chip--neutral">
-                    {cluster.primaryArticles.length} core reads
-                  </span>
-                </div>
-                <h3>{cluster.title}</h3>
-                <p>{cluster.description}</p>
-              </Link>
-            ))}
-          </div>
-        </section>
+          <span className="hub-section-head__rule" />
+        </div>
+        <div className="topic-cluster-cards" aria-labelledby="topic-clusters-heading">
+          {topicClusters.map((cluster) => (
+            <Link key={cluster.slug} to={`/topics/${cluster.slug}`} className="topic-cluster-card">
+              <div className="topic-cluster-card__top">
+                <span className="topic-cluster-card__eyebrow">{cluster.eyebrow}</span>
+                <span className="topic-cluster-card__meta">
+                  {cluster.primaryArticles.length} core reads
+                </span>
+              </div>
+              <div className="topic-cluster-card__title">{cluster.title}</div>
+              <p className="topic-cluster-card__body">{cluster.description}</p>
+              <span className="topic-cluster-card__cta">Open cluster &rarr;</span>
+            </Link>
+          ))}
+        </div>
 
-        <section className="hub-section" aria-labelledby="data-hubs-heading">
+        <div className="hub-section-head">
+          <span className="hub-section-head__num">02</span>
           <h2 id="data-hubs-heading">Data Hubs</h2>
-          <div className="hub-grid">
-            <Link to="/breaches" className="hub-card hover-lift">
-              <div className="hub-card__meta">
-                <span className="hub-chip">Breach types</span>
-                <span className="hub-chip hub-chip--neutral">
-                  Market abuse, AML, principles
-                </span>
-              </div>
-              <h3>Breach Categories</h3>
-              <p>
-                See which breach types drive the most enforcement activity and
-                penalty totals.
-              </p>
+          <span className="hub-section-head__rule" />
+        </div>
+        <div className="data-hub-row" aria-labelledby="data-hubs-heading">
+          {DATA_HUBS.map((hub) => (
+            <Link key={hub.to} to={hub.to} className="data-hub-cell">
+              <span className="data-hub-cell__tag">{hub.tag}</span>
+              <span className="data-hub-cell__title">{hub.title}</span>
+              <span className="data-hub-cell__body">{hub.body}</span>
+              <span className="data-hub-cell__meta">{hub.meta}</span>
             </Link>
-
-            <Link to="/years" className="hub-card hover-lift">
-              <div className="hub-card__meta">
-                <span className="hub-chip">Yearly view</span>
-                <span className="hub-chip hub-chip--neutral">2013–2026</span>
-              </div>
-              <h3>Fines By Year</h3>
-              <p>
-                Compare enforcement volumes and totals across years with one
-                click to the dashboard.
-              </p>
-            </Link>
-
-            <Link to="/sectors" className="hub-card hover-lift">
-              <div className="hub-card__meta">
-                <span className="hub-chip">Sectors</span>
-                <span className="hub-chip hub-chip--neutral">
-                  Banks, insurance, individuals
-                </span>
-              </div>
-              <h3>Fines By Sector</h3>
-              <p>
-                Explore penalty patterns by firm category and identify the most
-                exposed areas of the market.
-              </p>
-            </Link>
-
-            <Link to="/firms" className="hub-card hover-lift">
-              <div className="hub-card__meta">
-                <span className="hub-chip">Firm pages</span>
-                <span className="hub-chip hub-chip--neutral">
-                  Totals + history
-                </span>
-              </div>
-              <h3>Top Firms & Individuals</h3>
-              <p>
-                Browse the biggest penalty recipients and drill into each
-                entity’s enforcement history.
-              </p>
-            </Link>
-          </div>
-        </section>
-      </div>
+          ))}
+        </div>
+      </main>
     </div>
   );
 }

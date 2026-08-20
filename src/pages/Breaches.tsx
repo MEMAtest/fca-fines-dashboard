@@ -46,55 +46,94 @@ export function Breaches() {
     };
   }, []);
 
-  const top = useMemo(() => categories.slice(0, 12), [categories]);
+  const ranked = useMemo(
+    () => categories.slice().sort((a, b) => b.totalAmount - a.totalAmount),
+    [categories],
+  );
+  const railItems = useMemo(() => ranked.slice(0, 10), [ranked]);
+  const totalValue = useMemo(
+    () => ranked.reduce((sum, cat) => sum + cat.totalAmount, 0),
+    [ranked],
+  );
 
   return (
-    <div className="hub-page">
-      <div className="hub-container">
-        <header className="hub-hero">
-          <h1>Enforcement Actions by Breach Category</h1>
-          <p>
-            Explore enforcement actions grouped by breach category. Each topic
-            page links straight into the dashboard filters.
-          </p>
-          <div className="hub-hero__actions">
-            <Link to="/fines?year=0" className="btn btn-primary">
+    <div className="hub-two-col">
+      <aside className="hub-rail">
+        <div className="hub-rail__inner">
+          <div className="hub-rail__label">Breach types</div>
+          <nav className="hub-rail__nav" aria-label="Breach categories">
+            {railItems.map((cat) => (
+              <Link key={cat.slug} to={`/breaches/${cat.slug}`} className="hub-rail__item">
+                {cat.name}
+              </Link>
+            ))}
+          </nav>
+          <div className="hub-rail__divider" />
+          <div className="hub-rail__actions">
+            <Link to="/fines?year=0" className="hub-rail__action">
               Explore All Actions
             </Link>
-            <Link to="/topics" className="btn btn-ghost">
+            <Link to="/topics" className="hub-rail__action">
               Back to Topics
             </Link>
           </div>
-        </header>
+        </div>
+      </aside>
+
+      <main className="hub-main">
+        <div className="hub-header-row">
+          <div>
+            <h1 className="hub-main__title">Enforcement by breach category</h1>
+            <p className="hub-main__lede">
+              Which control failures actually attract enforcement, ranked by penalty value. Each row
+              opens the dashboard filtered to that category.
+            </p>
+          </div>
+          <Link to="/fines?year=0" className="btn btn-primary">
+            Explore all actions
+          </Link>
+        </div>
 
         {loading ? (
           <p className="status">Loading categories...</p>
         ) : error ? (
           <p className="status">{error}</p>
         ) : (
-          <div className="hub-grid">
-            {top.map((cat) => (
-              <Link
-                key={cat.slug}
-                to={`/breaches/${cat.slug}`}
-                className="hub-card hover-lift"
-              >
-                <div className="hub-card__meta">
-                  <span className="hub-chip">{cat.fineCount} actions</span>
-                  <span className="hub-chip hub-chip--neutral">
-                    {currency.format(cat.totalAmount)}
+          <div className="breach-table">
+            <div className="breach-table__head">
+              <span>#</span>
+              <span>Category</span>
+              <span>Value</span>
+              <span>Actions</span>
+              <span>Share of total value</span>
+            </div>
+            {ranked.map((cat, index) => {
+              const pct = totalValue > 0 ? Math.round((cat.totalAmount / totalValue) * 1000) / 10 : 0;
+              return (
+                <Link key={cat.slug} to={`/breaches/${cat.slug}`} className="breach-row">
+                  <span className="breach-row__rank">{index + 1}</span>
+                  <span>
+                    <span className="breach-row__name">{cat.name}</span>
+                    <span className="breach-row__note">
+                      {cat.fineCount.toLocaleString("en-GB")} actions tagged {cat.name}
+                    </span>
                   </span>
-                </div>
-                <h3>{cat.name}</h3>
-                <p>
-                  View cases, totals, and the biggest penalties tagged{" "}
-                  {cat.name}.
-                </p>
-              </Link>
-            ))}
+                  <span className="breach-row__value">{currency.format(cat.totalAmount)}</span>
+                  <span className="breach-row__count">{cat.fineCount.toLocaleString("en-GB")}</span>
+                  <span className="breach-row__share" aria-hidden="true">
+                    <span className="breach-row__share-fill" style={{ width: `${pct}%` }} />
+                  </span>
+                </Link>
+              );
+            })}
+            <div className="breach-table__note">
+              Ranked by total recorded penalty value. Value and volume leaders are not always the same
+              category — benchmarking on value alone can under-weight the theme most likely to appear in
+              your own supervisory correspondence.
+            </div>
           </div>
         )}
-      </div>
+      </main>
     </div>
   );
 }

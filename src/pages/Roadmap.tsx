@@ -210,13 +210,13 @@ function groupByQuarter(items: TimelineItem[]): QuarterGroup[] {
 function getStatusColor(status: TimelineStatus): string {
   switch (status) {
     case "live":
-      return "#10b981";
+      return "var(--ra-status-live-text)";
     case "in-progress":
-      return "#f59e0b";
+      return "var(--ra-status-progress-text)";
     case "planned":
-      return "#3b82f6";
+      return "var(--ra-status-planned-text)";
     case "future":
-      return "#94a3b8";
+      return "var(--ra-status-future-text)";
   }
 }
 
