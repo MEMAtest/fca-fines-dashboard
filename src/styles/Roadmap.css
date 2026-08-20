@@ -532,7 +532,8 @@
 }
 
 .tl-source-list a:hover {
-  color: var(--ra-accent);
+  /* --ra-accent is 3.07:1 on white — non-text only. Link hover is text. */
+  color: var(--ra-accent-text);
 }
 
 .tl-source-list p {

@@ -431,6 +431,7 @@
   .reg-hub-hero__stats > div { border-left: 0; border-top: 1px solid rgba(255,255,255,.14); padding: .8rem 0; }
   .reg-hub-cta { flex-direction: column; align-items: flex-start; }
   .reg-hub-breach-grid,.reg-hub-health-grid { grid-template-columns: 1fr; }
+}
 
 /* ------------------------------------------------------------------------
  * Rail-and-main layout for /topics and /breaches (redesign stage 7).
