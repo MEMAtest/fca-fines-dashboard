@@ -1,8 +1,8 @@
 import { describe, expect, it, vi } from "vitest";
 import type { VercelRequest, VercelResponse } from "@vercel/node";
-import listHandler from "./list.js";
-import detailHandler from "./[iso2].js";
-import evidenceHandler from "./evidence/[iso2].js";
+import listHandler from "../api/regulatory-signal/list.js";
+import detailHandler from "../api/regulatory-signal/[iso2].js";
+import evidenceHandler from "../api/regulatory-signal/evidence/[iso2].js";
 
 function responseDouble() {
   const response = {
