@@ -1643,7 +1643,9 @@
       "countryCode": "AU",
       "country": "Australia",
       "authority": "The Australian Transaction Reports and Analysis Centre (AUSTRAC)",
-      "roles": [],
+      "roles": [
+        "financial_intelligence"
+      ],
       "components": {
         "accessibility": {
           "value": null,
@@ -1871,7 +1873,9 @@
       "countryCode": "US",
       "country": "United States",
       "authority": "Financial Crimes Enforcement Network (FinCEN)",
-      "roles": [],
+      "roles": [
+        "financial_intelligence"
+      ],
       "components": {
         "accessibility": {
           "value": null,
@@ -6749,7 +6753,7 @@
         "securities": 99.75
       },
       "roleAuthorityCounts": {
-        "financial_intelligence": 0,
+        "financial_intelligence": 1,
         "insurance": 1,
         "pensions": 0,
         "prudential_supervision": 3,
@@ -6866,7 +6870,7 @@
         "securities": 98.3333
       },
       "roleAuthorityCounts": {
-        "financial_intelligence": 0,
+        "financial_intelligence": 1,
         "insurance": 1,
         "pensions": 0,
         "prudential_supervision": 0,

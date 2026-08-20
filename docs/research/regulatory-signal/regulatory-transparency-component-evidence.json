@@ -2164,7 +2164,9 @@
       "authority_id": "ra-auth-au-a991c73127987db8",
       "country_code": "AU",
       "authority": "The Australian Transaction Reports and Analysis Centre (AUSTRAC)",
-      "role_mapping": [],
+      "role_mapping": [
+        "financial_intelligence"
+      ],
       "component": "accessibility",
       "weight_pct": 20,
       "value": null,
@@ -2178,7 +2180,9 @@
       "authority_id": "ra-auth-au-a991c73127987db8",
       "country_code": "AU",
       "authority": "The Australian Transaction Reports and Analysis Centre (AUSTRAC)",
-      "role_mapping": [],
+      "role_mapping": [
+        "financial_intelligence"
+      ],
       "component": "caseLevelSpecificity",
       "weight_pct": 25,
       "value": 100,
@@ -2196,7 +2200,9 @@
       "authority_id": "ra-auth-au-a991c73127987db8",
       "country_code": "AU",
       "authority": "The Australian Transaction Reports and Analysis Centre (AUSTRAC)",
-      "role_mapping": [],
+      "role_mapping": [
+        "financial_intelligence"
+      ],
       "component": "sourceTraceability",
       "weight_pct": 20,
       "value": 100,
@@ -2215,7 +2221,9 @@
       "authority_id": "ra-auth-au-a991c73127987db8",
       "country_code": "AU",
       "authority": "The Australian Transaction Reports and Analysis Centre (AUSTRAC)",
-      "role_mapping": [],
+      "role_mapping": [
+        "financial_intelligence"
+      ],
       "component": "archiveDepth",
       "weight_pct": 20,
       "value": null,
@@ -2231,7 +2239,9 @@
       "authority_id": "ra-auth-au-a991c73127987db8",
       "country_code": "AU",
       "authority": "The Australian Transaction Reports and Analysis Centre (AUSTRAC)",
-      "role_mapping": [],
+      "role_mapping": [
+        "financial_intelligence"
+      ],
       "component": "timeliness",
       "weight_pct": 15,
       "value": 36.7123,
@@ -2461,7 +2471,9 @@
       "authority_id": "ra-auth-us-62a5bd0929843be2",
       "country_code": "US",
       "authority": "Financial Crimes Enforcement Network (FinCEN)",
-      "role_mapping": [],
+      "role_mapping": [
+        "financial_intelligence"
+      ],
       "component": "accessibility",
       "weight_pct": 20,
       "value": null,
@@ -2475,7 +2487,9 @@
       "authority_id": "ra-auth-us-62a5bd0929843be2",
       "country_code": "US",
       "authority": "Financial Crimes Enforcement Network (FinCEN)",
-      "role_mapping": [],
+      "role_mapping": [
+        "financial_intelligence"
+      ],
       "component": "caseLevelSpecificity",
       "weight_pct": 25,
       "value": 100,
@@ -2493,7 +2507,9 @@
       "authority_id": "ra-auth-us-62a5bd0929843be2",
       "country_code": "US",
       "authority": "Financial Crimes Enforcement Network (FinCEN)",
-      "role_mapping": [],
+      "role_mapping": [
+        "financial_intelligence"
+      ],
       "component": "sourceTraceability",
       "weight_pct": 20,
       "value": 100,
@@ -2512,7 +2528,9 @@
       "authority_id": "ra-auth-us-62a5bd0929843be2",
       "country_code": "US",
       "authority": "Financial Crimes Enforcement Network (FinCEN)",
-      "role_mapping": [],
+      "role_mapping": [
+        "financial_intelligence"
+      ],
       "component": "archiveDepth",
       "weight_pct": 20,
       "value": null,
@@ -2528,7 +2546,9 @@
       "authority_id": "ra-auth-us-62a5bd0929843be2",
       "country_code": "US",
       "authority": "Financial Crimes Enforcement Network (FinCEN)",
-      "role_mapping": [],
+      "role_mapping": [
+        "financial_intelligence"
+      ],
       "component": "timeliness",
       "weight_pct": 15,
       "value": 90.5556,

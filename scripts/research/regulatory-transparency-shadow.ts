@@ -187,7 +187,12 @@ function normalise(value: string): string {
   return value.normalize("NFKD").replace(/[\u0300-\u036f]/g, "").toLowerCase().replace(/[^a-z0-9]+/g, " ").trim();
 }
 
-function isExplicitFiuAuthority(authority: string): boolean {
+const EXPLICIT_FIU_REGULATOR_CODES = new Set(["AUSTRAC", "FINCEN"]);
+
+function isExplicitFiuAuthority(authority: string, regulatorCode: string): boolean {
+  // AUSTRAC and FinCEN are FIUs by their stable regulator identity even
+  // though their expanded authority names do not contain the literal "FIU".
+  if (EXPLICIT_FIU_REGULATOR_CODES.has(regulatorCode)) return true;
   return /\b(?:financial intelligence|financial investigation|intelligence unit|fiu|finanz intelligence|suspicious transaction reporting)\b/i.test(authority);
 }
 
@@ -270,7 +275,7 @@ export function mapLiveRegulator(regulator: LiveRegulator, authorities: Authorit
   const roleSet = new Set<string>();
   for (const row of duplicateRows) {
     for (const role of row.roles) {
-      if (role === "financial_intelligence" && !isExplicitFiuAuthority(row.authority)) continue;
+      if (role === "financial_intelligence" && !isExplicitFiuAuthority(row.authority, regulator.regulator_code)) continue;
       roleSet.add(role);
     }
   }

@@ -20,10 +20,10 @@ TWFSC,ra-reg-twfsc,ra-auth-tw-19b695d9525b0615,TW,Taiwan,Financial Supervisory C
 CVM,ra-reg-cvm,ra-auth-br-a59437c9ce1f582b,BR,Brazil,Comissão de Valores Mobiliários*,securities,,100,100,,95,60,,,not-assessed,100,563,frequent
 HKMA,ra-reg-hkma,ra-auth-hk-a01a8df1dfe9cf6d,HK,Hong Kong,Hong Kong Monetary Authority,prudential_supervision,100,100,100,55.5556,,85,89.5425,highly-transparent,provisional,23,23,periodic
 ASIC,ra-reg-asic,ra-auth-au-5c0fc27b9fcb29ac,AU,Australia,Australian Securities and Investments Commission*,insurance;securities,100,100,100,100,88.8889,100,98.3333,highly-transparent,complete,100,147,active
-AUSTRAC,ra-reg-austrac,ra-auth-au-a991c73127987db8,AU,Australia,The Australian Transaction Reports and Analysis Centre (AUSTRAC),,,100,100,,36.7123,60,,,not-assessed,70,70,periodic
+AUSTRAC,ra-reg-austrac,ra-auth-au-a991c73127987db8,AU,Australia,The Australian Transaction Reports and Analysis Centre (AUSTRAC),financial_intelligence,,100,100,,36.7123,60,,,not-assessed,70,70,periodic
 MAS,ra-reg-mas,ra-auth-sg-ed322819dc95a306,SG,Singapore,Monetary Authority of Singapore,insurance;prudential_supervision;securities,100,100,100,33.3333,71.6667,100,82.4167,highly-transparent,complete,27,27,periodic
 OCC,ra-reg-occ,ra-auth-us-536892012d88d798,US,United States,Office of the Comptroller of the Currency,prudential_supervision,,100,100,,80,60,,,not-assessed,100,5598,frequent
-FINCEN,ra-reg-fincen,ra-auth-us-62a5bd0929843be2,US,United States,Financial Crimes Enforcement Network (FinCEN),,,100,100,,90.5556,60,,,not-assessed,100,119,periodic
+FINCEN,ra-reg-fincen,ra-auth-us-62a5bd0929843be2,US,United States,Financial Crimes Enforcement Network (FinCEN),financial_intelligence,,100,100,,90.5556,60,,,not-assessed,100,119,periodic
 FINMA,ra-reg-finma,ra-auth-ch-fef82880ed479788,CH,Switzerland,Swiss Financial Market Supervisory Authority (FINMA),insurance;prudential_supervision;securities,100,100,100,88.8889,69.589,100,93.2161,highly-transparent,complete,26,26,periodic
 SESC,ra-reg-sesc,,JP,Japan,,,,100,100,,76.1111,60,,,not-assessed,74,74,frequent
 FMANZ,ra-reg-fmanz,ra-auth-nz-26cfbdac8baf745d,NZ,New Zealand,Financial Markets Authority,securities,,100,100,,75,60,,,not-assessed,100,177,frequent

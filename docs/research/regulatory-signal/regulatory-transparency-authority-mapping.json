@@ -298,7 +298,9 @@
       "authority": "The Australian Transaction Reports and Analysis Centre (AUSTRAC)",
       "authorityWebsite": "http://www.austrac.gov.au/",
       "iso2": "AU",
-      "roles": [],
+      "roles": [
+        "financial_intelligence"
+      ],
       "mappingStatus": "official-directory-match",
       "mappingBasis": "Explicit live-code authority alias matched official directory."
     },
@@ -337,7 +339,9 @@
       "authority": "Financial Crimes Enforcement Network (FinCEN)",
       "authorityWebsite": "https://www.fincen.gov/",
       "iso2": "US",
-      "roles": [],
+      "roles": [
+        "financial_intelligence"
+      ],
       "mappingStatus": "official-directory-match",
       "mappingBasis": "Explicit live-code authority alias matched official directory."
     },

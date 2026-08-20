@@ -67,8 +67,12 @@ describe("RegActions Regulatory Transparency shadow methodology", () => {
     expect(mapLiveRegulator(make("CIMA", "KY", "Cayman Islands Monetary Authority"), authorities).roles).toEqual(["insurance", "prudential_supervision", "securities"]);
   });
 
-  it("does not treat a securities supervisor named Finansinspektionen as an FIU", () => {
+  it("retains real FIU identities and excludes Sweden's general supervisor", () => {
+    const austrac = mapLiveRegulator({ ...regulator, regulator_code: "AUSTRAC", regulator: "Australian Transaction Reports and Analysis Centre", country_code: "AU", country: "Australia" }, [{ iso2: "AU", country: "Australia", authority: "The Australian Transaction Reports and Analysis Centre (AUSTRAC)", website: "https://austrac.example", roles: ["financial_intelligence"] }]);
+    const fincen = mapLiveRegulator({ ...regulator, regulator_code: "FINCEN", regulator: "Financial Crimes Enforcement Network", country_code: "US", country: "United States" }, [{ iso2: "US", country: "United States", authority: "Financial Crimes Enforcement Network (FinCEN)", website: "https://fincen.example", roles: ["financial_intelligence"] }]);
     const mapped = mapLiveRegulator({ ...regulator, regulator_code: "FISE", regulator: "Finansinspektionen", country_code: "SE", country: "Sweden" }, [{ iso2: "SE", country: "Sweden", authority: "Finansinspektionen", website: "https://fi.example", roles: ["prudential_supervision", "securities", "financial_intelligence"] }]);
+    expect(austrac.roles).toContain("financial_intelligence");
+    expect(fincen.roles).toContain("financial_intelligence");
     expect(mapped.roles).toEqual(["prudential_supervision", "securities"]);
     expect(mapped.roles).not.toContain("financial_intelligence");
   });

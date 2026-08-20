@@ -2609,7 +2609,7 @@
         "securities": 99.75
       },
       "roleAuthorityCounts": {
-        "financial_intelligence": 0,
+        "financial_intelligence": 1,
         "insurance": 1,
         "pensions": 0,
         "prudential_supervision": 3,
@@ -2726,7 +2726,7 @@
         "securities": 98.3333
       },
       "roleAuthorityCounts": {
-        "financial_intelligence": 0,
+        "financial_intelligence": 1,
         "insurance": 1,
         "pensions": 0,
         "prudential_supervision": 0,
