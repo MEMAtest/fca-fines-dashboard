@@ -3998,3 +3998,27 @@ button.cx-dist__seg:hover { opacity: 0.85; }
 @media (max-width: 640px) {
   .cx-chg__title { font-size: 1.4rem; }
 }
+
+/* At narrow widths the ratings table and the tab strip are both wider than the
+   viewport. Scroll each inside its own box rather than widening the document —
+   a page wider than the viewport renders the whole site zoomed out on a phone.
+   Applied to the table element itself, not a wrapper, because .country-ratings
+   is rendered in several different containers. */
+@media (max-width: 640px) {
+  .country-ratings {
+    display: block;
+    max-width: 100%;
+    overflow-x: auto;
+  }
+
+  .cx-tabs {
+    max-width: 100%;
+    overflow-x: auto;
+    flex-wrap: nowrap;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .cx-tabs .cx-tab {
+    flex-shrink: 0;
+  }
+}

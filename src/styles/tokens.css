@@ -1,0 +1,102 @@
+/**
+ * RegActions design tokens (redesign, 2026-08).
+ *
+ * Source of truth for the redesign palette, type and spacing. Imported after
+ * base.css so these win, while base.css keeps serving its legacy `--primary-*`
+ * / `--data-*` variables to sheets that still reference them.
+ *
+ * The accent is THREE values, not one, and the split is a WCAG requirement
+ * rather than a stylistic choice. Measured against the #F8FAFB canvas:
+ *
+ *   --ra-accent-text  #0A6B50   6.21:1  -> safe for text
+ *   --ra-accent-fill  #0B8463   4.46:1  -> NOT safe as text on canvas, but
+ *                                          white on it is 4.67:1, so it is the
+ *                                          button/solid fill
+ *   --ra-accent       #0FA77D   2.93:1  -> NON-TEXT ONLY: borders, dots, chart
+ *                                          fills, focus rings
+ *
+ * Never use --ra-accent for text. The previous muted grey #8A97A5 measured
+ * 2.84:1 and is deliberately absent — use --ra-text-secondary (6.13:1).
+ */
+
+:root {
+  /* ── Type ─────────────────────────────────────────────────────────────── */
+  --ra-font-serif: 'IBM Plex Serif', Georgia, 'Times New Roman', serif;
+  --ra-font-sans: 'IBM Plex Sans', system-ui, -apple-system, BlinkMacSystemFont,
+    'Segoe UI', sans-serif;
+  --ra-font-mono: 'IBM Plex Mono', ui-monospace, SFMono-Regular, Menlo,
+    monospace;
+
+  /* Headings are serif; UI is sans; figures are mono. */
+  --font-primary: var(--ra-font-sans);
+  --font-mono: var(--ra-font-mono);
+
+  --ra-text-xs: 0.75rem;
+  --ra-text-sm: 0.8125rem;
+  --ra-text-base: 0.875rem;
+  --ra-text-md: 1rem;
+  --ra-text-lg: 1.125rem;
+  --ra-text-xl: 1.375rem;
+  --ra-text-2xl: 1.75rem;
+  --ra-text-3xl: 2.25rem;
+
+  /* ── Accent (see contrast note above) ─────────────────────────────────── */
+  --ra-accent-text: #0a6b50;
+  --ra-accent-fill: #0b8463;
+  --ra-accent: #0fa77d;
+  --ra-accent-soft: #eaf7f3;
+
+  /* ── Ink and secondary text ───────────────────────────────────────────── */
+  --ra-ink: #0b1f2a;
+  --ra-text-secondary: #526071;
+  --ra-text-tertiary: #55636f;
+
+  /* ── Surfaces ─────────────────────────────────────────────────────────── */
+  --ra-surface: #ffffff;
+  --ra-canvas: #f8fafb;
+  --ra-rail: #f4f6f7;
+  --ra-border: #e5e7eb;
+
+  /* ── Status badges (text / background pairs, all AA on their own bg) ──── */
+  --ra-status-live-text: #0a6b50;
+  --ra-status-live-bg: #eaf7f3;
+  --ra-status-progress-text: #b45309;
+  --ra-status-progress-bg: #fef6e7;
+  --ra-status-planned-text: #0369a1;
+  --ra-status-planned-bg: #e8f4fd;
+  --ra-status-future-text: #55636f;
+  --ra-status-future-bg: #f1f5f7;
+
+  /* ── Radii ────────────────────────────────────────────────────────────── */
+  --ra-radius-sm: 8px;
+  --ra-radius-md: 10px;
+  --ra-radius-lg: 12px;
+  --ra-radius-xl: 16px;
+
+  /* ── Elevation ────────────────────────────────────────────────────────── */
+  --ra-shadow-card: 0 1px 2px rgba(11, 31, 42, 0.06);
+  --ra-shadow-raised: 0 6px 16px rgba(15, 167, 125, 0.28);
+}
+
+/*
+ * Canonical breakpoints. Custom properties do not work inside @media, so these
+ * are documented constants rather than variables — use these four and no
+ * others. Before the redesign this codebase had 18 ad-hoc max-widths.
+ *
+ *   640px   phone landscape / small tablet
+ *   768px   tablet portrait
+ *   1024px  tablet landscape / small laptop
+ *   1280px  desktop — the width the design prototype was drawn at
+ */
+
+body {
+  font-family: var(--ra-font-sans);
+  background: var(--ra-canvas);
+  color: var(--ra-ink);
+}
+
+h1,
+h2 {
+  font-family: var(--ra-font-serif);
+  font-weight: 600;
+}

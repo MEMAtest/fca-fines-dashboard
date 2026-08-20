@@ -124,7 +124,10 @@ test.describe('Pre-rendered HTML SEO Meta Tags', () => {
     test('should own the broad FCA fines query with an answer-first static body', () => {
       expect(html).toContain('<title>FCA Fines: Latest Penalties, Totals and Enforcement Actions | RegActions</title>');
       const body = rootHtml(html);
-      expect(body).toContain('<h1 class="blog-post-title">FCA Fines and Enforcement Actions</h1>');
+      // The prerendered SEO shell now uses neutral `seo-doc` classes rather
+      // than borrowing the blog's, so blog.css no longer styles the crawlable
+      // homepage, hubs and country reports. The heading text is unchanged.
+      expect(body).toContain('<h1 class="seo-doc__title">FCA Fines and Enforcement Actions</h1>');
       expect(body).toContain('How much has the FCA fined firms and individuals in 2026?');
       expect(body).toContain('/topics/fca-fines-2026');
       expect(body).toContain('https://www.fca.org.uk/news/news-stories/2026-fines');
