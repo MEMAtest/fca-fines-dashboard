@@ -1,11 +1,12 @@
 .board-pack-dashboard {
-  --pack-ink: #0b1f2a;
-  --pack-muted: #5d6b7f;
-  --pack-green: #00a66a;
-  --pack-line: #dfe5ea;
+  --pack-ink: var(--ra-ink);
+  --pack-muted: var(--ra-text-secondary);
+  --pack-green: var(--ra-accent-text);
+  --pack-line: var(--ra-border);
   display: grid;
   gap: 0.85rem;
   color: var(--pack-ink);
+  font-family: var(--ra-font-sans);
 }
 
 .board-pack-dashboard__profile-header {
@@ -644,13 +645,13 @@
   font-size: 0.66rem;
 }
 
-@media (max-width: 1120px) {
+@media (max-width: 1024px) {
   .board-pack-dashboard__grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
 
-@media (max-width: 820px) {
+@media (max-width: 768px) {
   .board-pack-dashboard__profile-header {
     grid-template-columns: 1fr;
   }
@@ -669,7 +670,7 @@
   }
 }
 
-@media (max-width: 560px) {
+@media (max-width: 640px) {
   .board-pack-dashboard__grid,
   .board-pack-dashboard__kpis {
     grid-template-columns: 1fr;
