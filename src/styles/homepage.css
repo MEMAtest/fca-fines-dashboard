@@ -85,7 +85,7 @@
 }
 
 .quicklink-card__icon {
-  color: #0FA77D;
+  color: var(--ra-accent-text);
   margin-bottom: 1.25rem;
   animation: iconPulse 3s ease-in-out infinite;
 }
@@ -122,7 +122,7 @@
 .quicklink-card__arrow {
   margin-top: 1.25rem;
   font-size: 1.25rem;
-  color: #0FA77D;
+  color: var(--ra-accent-text);
   font-weight: 600;
 }
 
@@ -424,7 +424,7 @@
 }
 
 .ra-hero__search-icon {
-  color: var(--ra-accent);
+  color: var(--ra-accent-text);
   flex-shrink: 0;
 }
 
@@ -571,7 +571,7 @@
 }
 
 .ra-hero__chip:hover {
-  border-color: var(--ra-accent);
+  border-color: var(--ra-accent-text);
   color: #fff;
 }
 
@@ -1288,7 +1288,7 @@
 }
 
 .ra-research__all:hover {
-  border-color: var(--ra-accent);
+  border-color: var(--ra-accent-text);
   color: var(--ra-accent-text);
 }
 
@@ -1312,7 +1312,7 @@
 }
 
 .ra-research__card:hover {
-  border-color: var(--ra-accent);
+  border-color: var(--ra-accent-text);
   box-shadow: 0 14px 34px rgba(11, 31, 42, 0.08);
 }
 
@@ -1430,7 +1430,7 @@
 }
 
 .ra-rail-section__cta:hover {
-  border-color: var(--ra-accent);
+  border-color: var(--ra-accent-text);
   color: var(--ra-accent-text);
 }
 

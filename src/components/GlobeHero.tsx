@@ -264,7 +264,13 @@ export function GlobeHero({ onCountryClick }: GlobeHeroProps) {
         const controller = new AbortController();
         const timeoutId = window.setTimeout(() => controller.abort(), 4000);
         const [topoData, topojsonClient] = await Promise.all([
-          fetch('//unpkg.com/world-atlas/countries-110m.json', { signal: controller.signal }).then(res => res.json()),
+          // Same-origin vendored topology (public/world-countries-110m.json,
+          // 107KB). Was '//unpkg.com/world-atlas/countries-110m.json', which
+          // put an external CDN on the critical path of the highest-traffic
+          // page and got CORS-blocked in some contexts — while the identical
+          // file was already vendored and used by CountryRiskMap via
+          // mapShared.ts. Same origin also means the two share the HTTP cache.
+          fetch('/world-countries-110m.json', { signal: controller.signal }).then(res => res.json()),
           import('topojson-client')
         ]);
         window.clearTimeout(timeoutId);
@@ -364,14 +370,16 @@ export function GlobeHero({ onCountryClick }: GlobeHeroProps) {
     <div className="globe-hero-wrapper">
       {/* ===== LEFT COLUMN: Content ===== */}
       <div className="globe-hero-wrapper__left">
-        <motion.h1
+        {/* h2, not h1: the homepage's own hero owns the single <h1>. Two
+            <h1> elements on the highest-traffic page is an SEO defect. */}
+        <motion.h2
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6 }}
           className="globe-hero__title"
         >
           Multi-regulator<br />enforcement intelligence
-        </motion.h1>
+        </motion.h2>
 
         <motion.p
           initial={{ opacity: 0, y: 20 }}
