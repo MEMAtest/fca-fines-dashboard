@@ -56,6 +56,7 @@
     "country-risk:source-health": "node --import tsx/esm scripts/country-risk/check-source-health.ts",
     "country-risk:benchmark": "node --import tsx/esm scripts/country-risk/report-public-benchmark.ts",
     "research:regulatory-transparency-shadow": "node --import tsx/esm scripts/research/generate-regulatory-transparency-shadow.ts",
+    "research:regulatory-fallback": "node --import tsx/esm scripts/research/compile-regulatory-signal-manifest.ts && node --import tsx/esm scripts/research/generate-regulatory-fallback-artifacts.ts",
     "scrape:uk-enforcement": "node --import tsx/esm scripts/scraper/scrapeUkEnforcement.ts --",
     "scrape:fca-enforcement": "node --import tsx/esm scripts/scraper/scrapeFcaEnforcement.ts --",
     "check:uk-enforcement-health": "node --import tsx/esm scripts/scraper/checkUkEnforcementHealth.ts --",

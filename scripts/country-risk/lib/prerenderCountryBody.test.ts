@@ -21,7 +21,7 @@ import { describe, expect, it } from "vitest";
 import { getCountryByIso2 } from "../../../src/data/countries.js";
 import { buildCountryView } from "../../../src/data/countryView.js";
 import { getNarrative } from "../../../src/data/countryNarratives.js";
-import { renderCountryFatfBody } from "../../prerender-seo.js";
+import { renderCountryFatfBody, renderPage } from "../../prerender-seo.js";
 
 /**
  * Countries spanning the risk spectrum and data-availability cases: China (large
@@ -72,6 +72,27 @@ const COMPOSITE_SCORE_PATTERNS: RegExp[] = [
 ];
 
 describe("prerender country body: crawler-visible narrative prose", () => {
+  it("injects country-specific regulatory evidence into the no-JS root", () => {
+    const country = getCountryByIso2("CW")!;
+    const bodyContent = renderCountryFatfBody(buildCountryView(country));
+    const template = '<!doctype html><html><head><title>Template</title><meta name="title" content="Template"><meta name="description" content="Template"><meta name="keywords" content="Template"><link rel="canonical" href="https://regactions.com/"><link rel="alternate" hreflang="x-default" href="https://regactions.com/"><meta property="og:type" content="website"><meta property="og:url" content="https://regactions.com/"><meta property="og:title" content="Template"><meta property="og:description" content="Template"><meta name="twitter:url" content="https://regactions.com/"><meta name="twitter:title" content="Template"><meta name="twitter:description" content="Template"><script type="application/ld+json">{}</script></head><body><div id="root"></div></body></html>';
+    const html = renderPage(template, {
+      path: "/countries/curacao",
+      title: "Curaçao country risk",
+      description: "Curaçao country risk evidence",
+      keywords: "Curaçao",
+      ogType: "website",
+      bodyContent,
+    } as any);
+
+    expect(html).toContain("Curaçao — Country Risk Report");
+    expect(html).toContain("Regulatory ecosystem and enforcement visibility");
+    expect(html).toContain("Transparency Index:</strong> not scored");
+    expect(html).toContain("Central Bank of Curaçao and Sint Maarten");
+    expect(html).toContain("Provisional first-page scan signal");
+    expect(html).not.toContain("Global Regulatory Fines");
+  });
+
   it("emits the grounded narrative for each sampled country", () => {
     for (const iso of SAMPLE) {
       const country = getCountryByIso2(iso);

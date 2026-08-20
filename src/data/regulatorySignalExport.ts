@@ -24,6 +24,18 @@ export interface RegulatorySignalPublicAuthority {
   researchEffectiveAt: string;
   retrievedAt: string;
   researchPublicationSnapshotCheckedAt: string;
+  evidenceLevel: RegulatorySignalAuthority["evidenceLevel"];
+  mandate: Array<{ key: string; label: string }>;
+  identityProvenance: RegulatorySignalAuthority["identityProvenance"];
+  publicationCandidates: RegulatorySignalAuthority["publicationCandidates"];
+  activity: RegulatorySignalAuthority["activity"];
+  publicationRelevance: string | null;
+  publicationRouteType: string | null;
+  sourceHostScope: string | null;
+  publicationKind: RegulatorySignalAuthority["publicationKind"];
+  regulatoryUpdates: RegulatorySignalAuthority["regulatoryUpdates"];
+  enforcementCandidates: RegulatorySignalAuthority["enforcementCandidates"];
+  externalContextCandidates: RegulatorySignalAuthority["externalContextCandidates"];
 }
 export interface RegulatorySignalEvidence {
   schemaVersion: "1.0.0";
@@ -65,6 +77,14 @@ export interface RegulatorySignalEvidence {
     neutral: true;
     note: string;
   };
+  activitySummary: Omit<RegulatorySignalCountry["activitySummary"], "scanContract"> & {
+    scanContract: RegulatorySignalCountry["activitySummary"]["scanContract"] | null;
+  };
+  secondaryReporting: null | {
+    status: "optional-context-not-populated";
+    sources: string[];
+    note: string;
+  };
   sources: readonly string[];
   limitations: string[];
 }
@@ -91,6 +111,18 @@ function authorityEvidence(authority: RegulatorySignalAuthority): RegulatorySign
     researchEffectiveAt: authority.researchEffectiveAt,
     retrievedAt: authority.retrievedAt,
     researchPublicationSnapshotCheckedAt: authority.sourceCheckedAt,
+    evidenceLevel: authority.evidenceLevel,
+    mandate: authority.mandate.map((key) => ({ key, label: roleLabel(key) })),
+    identityProvenance: authority.identityProvenance,
+    publicationCandidates: authority.publicationCandidates,
+    activity: authority.activity,
+    publicationRelevance: authority.publicationRelevance,
+    publicationRouteType: authority.publicationRouteType,
+    sourceHostScope: authority.sourceHostScope,
+    publicationKind: authority.publicationKind,
+    regulatoryUpdates: authority.regulatoryUpdates,
+    enforcementCandidates: authority.enforcementCandidates,
+    externalContextCandidates: authority.externalContextCandidates,
   };
 }
 
@@ -149,6 +181,10 @@ export function buildRegulatorySignalEvidence(iso2: string): RegulatorySignalEvi
         ? "Observed publication activity describes what was collected; it is not a judgement about regulatory strength or country risk."
         : "No recent RegActions observation is not evidence that no enforcement exists. Publication cadence, access and coverage may explain the absence.",
     },
+    activitySummary: country.authorities.length > 0
+      ? country.activitySummary
+      : { ...country.activitySummary, scanContract: null },
+    secondaryReporting: null,
     sources: REGULATORY_SIGNAL_SOURCE_DIRECTORY_URLS,
     limitations: [
       "This release is an evidence map only. The Regulatory Transparency Index is intentionally null pending source qualification and shadow calibration.",
@@ -162,27 +198,64 @@ export function buildRegulatorySignalEvidence(iso2: string): RegulatorySignalEvi
 const csvCell = (value: unknown): string => `"${String(value ?? "").replaceAll('"', '""')}"`;
 
 export function regulatorySignalEvidenceCsv(evidence: RegulatorySignalEvidence): string {
-  const header = ["iso2", "country", "authority", "roles", "website", "accessState", "accessLabel", "publicationUrl", "directorySources", "directoryEvidenceUrls", "researchEffectiveAt", "retrievedAt", "researchPublicationSnapshotCheckedAt", "regActionsCoverageState", "transparencyIndex", "generatedAt"];
+  const header = ["iso2", "country", "authority", "mandate", "evidenceLevel", "website", "accessState", "accessLabel", "publicationUrl", "publicationCandidatesWithProvenance", "authorityOwnedQualifiedRegulatoryUpdates", "authorityOwnedQualifiedEnforcementCandidates", "externalOfficialContextCandidates", "publicationKind", "directorySources", "directoryEvidenceUrls", "researchEffectiveAt", "retrievedAt", "researchPublicationSnapshotCheckedAt", "activitySignal", "activitySignalStatus", "scanType", "scanStartMonth", "scanEndMonth", "scanAsOf", "datePrecision", "archiveBoundary", "observedMonthCount", "observedMonths", "latestObservedMonth", "latestObservedPrecision", "publicationRelevance", "publicationRouteType", "sourceHostScope", "regActionsCoverageState", "transparencyIndex", "generatedAt"];
   const rows = evidence.ecosystem.authorities.map((authority) => [
     evidence.country.iso2,
     evidence.country.name,
     authority.name,
-    authority.roles.map((role) => role.label).join("; "),
+    authority.mandate.map((role) => role.label).join("; "),
+    authority.evidenceLevel,
     authority.website,
     authority.accessState,
     authority.accessLabel,
     authority.publicationUrl,
+    authority.publicationCandidates.map((candidate) => `${candidate.label ?? ""}|${candidate.url}|${candidate.contextLabel}|${candidate.qualificationState ?? "unqualified"}`).join("; "),
+    authority.regulatoryUpdates.map((candidate) => `${candidate.label ?? ""}|${candidate.url}`).join("; "),
+    authority.enforcementCandidates.map((candidate) => `${candidate.label ?? ""}|${candidate.url}`).join("; "),
+    authority.externalContextCandidates.map((candidate) => `${candidate.label ?? ""}|${candidate.url}`).join("; "),
+    authority.publicationKind,
     authority.directorySources.join("; "),
     authority.directoryEvidenceUrls.join("; "),
     authority.researchEffectiveAt,
     authority.retrievedAt,
     authority.researchPublicationSnapshotCheckedAt,
+    authority.activity.signal,
+    authority.activity.status,
+    authority.activity.scanContract.scanType,
+    authority.activity.scanContract.startMonth,
+    authority.activity.scanContract.endMonth,
+    authority.activity.scanContract.asOf,
+    authority.activity.scanContract.datePrecision,
+    authority.activity.scanContract.archiveBoundary,
+    authority.activity.observedMonthCount,
+    authority.activity.observedMonths.join("; "),
+    authority.activity.latestObservedMonth,
+    authority.activity.latestObservedPrecision,
+    authority.publicationRelevance,
+    authority.publicationRouteType,
+    authority.sourceHostScope,
     evidence.regActionsCoverage.state,
     "",
     evidence.generatedAt,
   ]);
   if (rows.length === 0) {
-    rows.push([evidence.country.iso2, evidence.country.name, "No local authority entry", "", "", evidence.evidenceDisposition.state, evidence.evidenceDisposition.label, evidence.evidenceDisposition.externalEvidenceUrl, "", "", evidence.generatedAt, evidence.generatedAt, evidence.generatedAt, evidence.regActionsCoverage.state, "", evidence.generatedAt]);
+    const dispositionOnly: Record<string, unknown> = {
+      iso2: evidence.country.iso2,
+      country: evidence.country.name,
+      authority: "No local authority entry",
+      evidenceLevel: "not-applicable",
+      accessState: evidence.evidenceDisposition.state,
+      accessLabel: evidence.evidenceDisposition.label,
+      externalOfficialContextCandidates: evidence.evidenceDisposition.externalEvidenceUrl
+        ? `External official context|${evidence.evidenceDisposition.externalEvidenceUrl}`
+        : "",
+      publicationKind: "not-applicable",
+      activitySignal: "unknown",
+      regActionsCoverageState: evidence.regActionsCoverage.state,
+      transparencyIndex: "",
+      generatedAt: evidence.generatedAt,
+    };
+    rows.push(header.map((column) => dispositionOnly[column] ?? ""));
   }
   return [header, ...rows].map((row) => row.map(csvCell).join(",")).join("\n") + "\n";
 }
