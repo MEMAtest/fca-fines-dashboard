@@ -29,6 +29,8 @@ export interface CountryRiskSourceStatus {
   note: string;
 }
 
+export type CountryRiskSourceMethodology = "v2" | "v3";
+
 const COUNTRY_RISK_SOURCE_BASE: CountryRiskSourceStatus[] = [
   {
     id: "fatf-lists",
@@ -121,6 +123,29 @@ export function countryRiskSourcesAsOf(asOf: Date): CountryRiskSourceStatus[] {
       };
     }
     return { ...source };
+  });
+}
+
+/**
+ * Return source metadata for a published methodology. The registry retains
+ * the historical v2 classification, while v3 treats FATF listing status and
+ * geographic sanctions as legal treatment overlays rather than numeric score
+ * inputs. Keeping the transformation at the response boundary preserves the
+ * explicit v2 API contract without mislabelling current v3 evidence.
+ */
+export function countryRiskSourcesForMethodology(
+  methodology: CountryRiskSourceMethodology,
+  asOf = new Date(),
+): CountryRiskSourceStatus[] {
+  const sources = countryRiskSourcesAsOf(asOf);
+  if (methodology === "v2") return sources;
+  return sources.map((source) => {
+    if (source.id !== "fatf-lists" && source.id !== "sanctions-regimes") return source;
+    return {
+      ...source,
+      scored: false,
+      note: `${source.note} In v3 this source is a legal/regulatory overlay and does not contribute to the numeric country-risk score.`,
+    };
   });
 }
 

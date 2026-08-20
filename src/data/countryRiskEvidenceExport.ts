@@ -11,7 +11,7 @@ import {
   COUNTRY_RISK_METHODOLOGY_VERSION,
 } from "./countryRiskV2.js";
 import { computeCountryRiskV3, COUNTRY_RISK_V3_METHODOLOGY_VERSION, type CountryRiskV3Result } from "./countryRiskV3.js";
-import { countryRiskSourcesAsOf } from "./countryRiskSources.js";
+import { countryRiskSourcesForMethodology } from "./countryRiskSources.js";
 import { buildCountryRiskPublicSurface } from "./countryRiskSurface.js";
 
 export interface CountryRiskEvidenceBundle {
@@ -31,7 +31,7 @@ export interface CountryRiskEvidenceBundle {
       snapshot: typeof SANCTIONS_APPROVED_SNAPSHOT;
     };
   };
-  sources: ReturnType<typeof countryRiskSourcesAsOf>;
+  sources: ReturnType<typeof countryRiskSourcesForMethodology>;
   assurance: {
     scoreIsPublicBaseline: true;
     contextualSignalsScored: false;
@@ -82,7 +82,7 @@ export function buildCountryRiskEvidenceBundle(
         snapshot: SANCTIONS_APPROVED_SNAPSHOT,
       },
     },
-    sources: countryRiskSourcesAsOf(asOf),
+    sources: countryRiskSourcesForMethodology(methodology, asOf),
     assurance: {
       scoreIsPublicBaseline: true,
       contextualSignalsScored: false,
