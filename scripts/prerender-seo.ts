@@ -789,8 +789,8 @@ function renderCountryFatfBody(view: CountryView): string {
     )
     .join("")}</ul>`;
   // Grounded narrative prose (analysis / outlook / watchpoints). This was gated
-  // out while the narrative corpus quoted v1-era composite scores that
-  // contradicted the published v2 number. The narrative-v2 reconciliation
+  // out while the narrative corpus quoted legacy composite scores that
+  // contradicted the published score. The narrative reconciliation
   // de-scored the full corpus so the prose is now engine-agnostic: it describes
   // the DRIVERS of risk (WGI domains, CPI, FATF/sanctions facts, MER dates) but
   // never a composite score, band label, escalator or percentile, and (after the
@@ -2225,7 +2225,7 @@ async function buildPageMetas(): Promise<PageMeta[]> {
   pages.push({
     path: "/countries",
     title: `Global Country Risk Ratings ${fatfYear} | RegActions`,
-    description: `Country-risk methodology v2 for ${globalIndexCount} jurisdictions: ${globalIndexComplete} complete, ${globalIndexProvisional} provisional and ${globalIndexInsufficient} insufficient-data results.`,
+    description: `Country-risk methodology v3 for ${globalIndexCount} jurisdictions: ${globalIndexComplete} complete, ${globalIndexProvisional} provisional and ${globalIndexInsufficient} insufficient-data results.`,
     keywords: `country risk ratings, country risk score, AML country risk, FATF status by country, sanctions by country, high-risk countries`,
     ogType: "website",
     dateModified: COUNTRY_PAGE_DATE,
@@ -2236,7 +2236,7 @@ async function buildPageMetas(): Promise<PageMeta[]> {
       "@context": "https://schema.org",
       "@type": "CollectionPage",
       name: `Global Country Risk Ratings ${fatfYear}`,
-      description: `${globalIndexRated} methodology v2 scores across ${globalIndexCount} covered jurisdictions; ${globalIndexProvisional} are explicitly provisional and ${globalIndexInsufficient} are withheld rather than treated as zero risk.`,
+      description: `${globalIndexRated} methodology v3 scores across ${globalIndexCount} covered jurisdictions; ${globalIndexProvisional} are explicitly provisional and ${globalIndexInsufficient} are withheld rather than treated as zero risk.`,
       url: `${BASE_URL}/countries`,
       isPartOf: { "@type": "WebSite", name: SITE_NAME, url: "https://regactions.com" },
     },
@@ -2245,7 +2245,7 @@ async function buildPageMetas(): Promise<PageMeta[]> {
         "@context": "https://schema.org",
         "@type": "Dataset",
         name: "RegActions Country AML Risk Ratings",
-        description: `Country-level AML/financial-crime risk ratings for ${globalIndexCount} jurisdictions, combining FATF assessment ratings, six World Bank WGI dimensions and classified geographic sanctions exposure. ${globalIndexComplete} are complete, ${globalIndexProvisional} provisional and ${globalIndexInsufficient} insufficient-data. Transparency International CPI is context only.`,
+        description: `Country-level AML/financial-crime risk ratings for ${globalIndexCount} jurisdictions under methodology v3. The headline score combines FATF financial-crime effectiveness, FATF legal and supervisory safeguards, and six inverted World Bank governance dimensions. Beneficial ownership is a visible breakout; FATF listings and sanctions are regulatory treatment overlays, not extra score inputs. ${globalIndexComplete} are complete, ${globalIndexProvisional} provisional and ${globalIndexInsufficient} insufficient-data. Transparency International CPI is context only.`,
         url: `${BASE_URL}/countries`,
         keywords: [
           "country risk ratings",
@@ -2257,10 +2257,13 @@ async function buildPageMetas(): Promise<PageMeta[]> {
         ],
         creator: { "@id": `${BASE_URL}/#organization` },
         variableMeasured: [
-          { "@type": "PropertyValue", name: "FATF status" },
-          { "@type": "PropertyValue", name: "World Bank WGI governance base" },
-          { "@type": "PropertyValue", name: "Sanctions exposure" },
-          { "@type": "PropertyValue", name: "Corruption Perceptions Index" },
+          { "@type": "PropertyValue", name: "FATF financial-crime effectiveness pillar" },
+          { "@type": "PropertyValue", name: "FATF legal and supervisory safeguards pillar" },
+          { "@type": "PropertyValue", name: "World Bank governance and institutional integrity pillar" },
+          { "@type": "PropertyValue", name: "Beneficial-ownership breakout" },
+          { "@type": "PropertyValue", name: "FATF listing treatment overlay" },
+          { "@type": "PropertyValue", name: "Sanctions treatment overlay" },
+          { "@type": "PropertyValue", name: "Corruption Perceptions Index (context)" },
           { "@type": "PropertyValue", name: "Composite risk band" },
         ],
         temporalCoverage: `2013/${COUNTRY_PAGE_DATE}`,
@@ -2345,7 +2348,7 @@ async function buildPageMetas(): Promise<PageMeta[]> {
     description:
       "RegActions Country Risk Score v3 methodology: FATF effectiveness, legal safeguards, World Bank governance, beneficial ownership and regulatory overlays.",
     keywords:
-      "country risk score methodology, AML country risk methodology, FATF sanctions WGI composite, how country risk is calculated",
+      "country risk score methodology, AML country risk methodology, FATF effectiveness, beneficial ownership, sanctions overlay, how country risk is calculated",
     ogType: "article",
     bodyContent: renderMethodologyBody(),
     breadcrumbLabel: "Methodology",
@@ -2412,16 +2415,11 @@ async function buildPageMetas(): Promise<PageMeta[]> {
       : sanctionsClassificationPublished
         ? `${country.name} sanctions, is ${country.name} sanctioned, ${country.name} OFAC, ${country.name} embargo, ${country.name} country risk`
         : `${country.name} enforcement, ${country.name} financial regulators, ${country.name} fines, ${country.name} AML risk, ${country.name} country risk`;
-    const datasetDesc =
-      [
-        status ? `FATF ${listLabel} status` : "FATF listing status",
-        sanctionsClassificationPublished ? `${sanctionsLabel || "no direct"} sanctions programmes` : "sanctions evidence incomplete",
-        enforcement
-          ? `${formatCount(enforcement.trackedActions)} tracked enforcement actions`
-          : "",
-      ]
-        .filter(Boolean)
-        .join(", ") + ` for ${country.name}.`;
+    const datasetDesc = `${country.name} country-risk profile under methodology v3: ${
+      status ? `FATF ${listLabel} status` : "FATF listing status"
+    }, ${
+      sanctionsClassificationPublished ? `${sanctionsLabel || "no direct"} sanctions programmes shown as a treatment overlay` : "sanctions evidence incomplete"
+    }${enforcement ? `, ${formatCount(enforcement.trackedActions)} tracked enforcement actions` : ""}. The headline score combines financial-crime effectiveness, legal and supervisory safeguards, and governance and institutional integrity; beneficial ownership is a breakout and FATF/sanctions are not score inputs.`;
     pages.push({
       path,
       title,
@@ -2454,10 +2452,13 @@ async function buildPageMetas(): Promise<PageMeta[]> {
           license: "https://creativecommons.org/licenses/by-nc/4.0/",
           isAccessibleForFree: true,
           variableMeasured: [
-            { "@type": "PropertyValue", name: "FATF listing status" },
-            { "@type": "PropertyValue", name: "Sanctions exposure" },
-            { "@type": "PropertyValue", name: "World Bank WGI governance base" },
-            { "@type": "PropertyValue", name: "Corruption Perceptions Index" },
+            { "@type": "PropertyValue", name: "FATF financial-crime effectiveness pillar" },
+            { "@type": "PropertyValue", name: "FATF legal and supervisory safeguards pillar" },
+            { "@type": "PropertyValue", name: "Governance and institutional integrity pillar" },
+            { "@type": "PropertyValue", name: "Beneficial-ownership breakout" },
+            { "@type": "PropertyValue", name: "FATF listing treatment overlay" },
+            { "@type": "PropertyValue", name: "Sanctions treatment overlay" },
+            { "@type": "PropertyValue", name: "Corruption Perceptions Index (context)" },
             { "@type": "PropertyValue", name: "Composite risk band" },
           ],
           distribution: [

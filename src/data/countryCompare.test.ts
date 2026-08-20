@@ -88,6 +88,14 @@ describe("compare view model", () => {
     expect(scored).toMatch(/0-10|similar assessed risk|higher assessed risk/);
   });
 
+  it("explains numeric differences with v3 pillars, not sanctions or FATF overlays", () => {
+    const view = buildCompareView(getCountryByIso2("CO")!, VE);
+    expect(view.a.methodologyVersion).toBe("3.0.0");
+    expect(view.b.methodologyVersion).toBe("3.0.0");
+    expect(view.verdict).toMatch(/financial-crime effectiveness|legal and supervisory safeguards|governance and institutional integrity/);
+    expect(view.verdict).not.toMatch(/sanctions exposure|FATF|CPI|corruption-control/i);
+  });
+
   it("surfaces the pending-review sanctions caveat", () => {
     const view = buildCompareView(GB, US);
     const sanctionsRow = view.rows.find((r) => r.label === "Sanctions posture");

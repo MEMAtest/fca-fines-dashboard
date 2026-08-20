@@ -3,7 +3,7 @@
  * BOTH the React compare page (`CountryCompare.tsx`) and the prerendered HTML
  * (`renderCompareBody` in `scripts/prerender-seo.ts`). Same pattern as
  * `buildCountryView`: the data and copy (bands, verdict line, FATF/sanctions
- * posture, WGI/CPI, framework signals) are computed here once so the
+ * posture, v3 pillars, WGI/CPI and framework signals) are computed here once so the
  * crawler-visible page and the user-facing page cannot drift.
  *
  * NO React/JSX imports here — consumed by the pure-TS prerender script too.
@@ -107,7 +107,7 @@ export interface CompareSide {
   country: Country;
   flag: string;
   slug: string;
-  /** Composite score 0–10, or null when withheld (insufficient WGI). */
+  /** Current v3 composite score 0–10, or null when withheld (insufficient evidence). */
   score: number | null;
   band: ScoreBand | null;
   bandLabel: string;
@@ -184,12 +184,9 @@ function buildSide(country: Country): CompareSide {
 /**
  * Return the active country-risk result for comparison consumers.
  *
- * The v3 rollout is shadow-first: the active resolver may be exposed by the
- * country view as `riskActive` (or `riskV3` during the transition), while the
- * production default remains the existing `riskV2`. Keeping this adapter in
- * the shared comparison model prevents the old display-only `riskScore` from
- * leaking into comparison pages and lets the resolver change without changing
- * the compare route contract.
+ * The comparison model always resolves the current methodology result. The
+ * historical v2 result remains on CountryView for explicit audit/API routes,
+ * but must not drive current comparison scores or copy.
  */
 export interface ActiveComparableRisk {
   methodologyVersion: string;
@@ -205,9 +202,9 @@ export function activeRiskFor(view: CountryView): ActiveComparableRisk {
     riskV3?: Partial<ActiveComparableRisk>;
     riskCurrent?: Partial<ActiveComparableRisk>;
   };
-  const candidate = transitional.riskActive ?? transitional.riskCurrent ?? transitional.riskV3 ?? view.riskV2;
+  const candidate = transitional.riskActive ?? transitional.riskCurrent ?? transitional.riskV3 ?? view.riskV3;
   return {
-    methodologyVersion: candidate.methodologyVersion ?? "2.0.0",
+    methodologyVersion: candidate.methodologyVersion ?? "3.0.0",
     score: candidate.score ?? null,
     band: candidate.band ?? null,
     status: candidate.status ?? "insufficient-data",
@@ -301,11 +298,12 @@ export function buildCompareView(a: Country, b: Country): CompareView {
             : "b",
   });
 
-  // 4. WGI institutional domains (rule of law) — higher risk value = worse.
+  // 4. WGI institutional domains (rule of law) — a scored governance input;
+  // higher risk value = worse.
   const rlA = ruleOfLawRisk(va);
   const rlB = ruleOfLawRisk(vb);
   rows.push({
-    label: "Rule of law (WGI risk)",
+    label: "Governance: rule of law (WGI risk)",
     a: rlA === null ? "No data" : `${rlA.toFixed(1)}/10`,
     b: rlB === null ? "No data" : `${rlB.toFixed(1)}/10`,
     higherRisk: compareRisk(rlA, rlB),
@@ -413,10 +411,10 @@ export function buildVerdict(a: CompareSide, b: CompareSide): string {
 
   // One scored, one withheld.
   if (a.score !== null && b.score === null) {
-    return `${a.country.name} carries a published RegActions risk score of ${a.score.toFixed(1)}/10, while ${b.country.name}'s headline score is withheld for insufficient governance evidence, so the two are not directly rank-comparable on the composite.`;
+    return `${a.country.name} carries a published RegActions risk score of ${a.score.toFixed(1)}/10, while ${b.country.name}'s headline score is withheld for insufficient underlying v3 evidence, so the two are not directly rank-comparable on the composite.`;
   }
   if (b.score !== null && a.score === null) {
-    return `${b.country.name} carries a published RegActions risk score of ${b.score.toFixed(1)}/10, while ${a.country.name}'s headline score is withheld for insufficient governance evidence, so the two are not directly rank-comparable on the composite.`;
+    return `${b.country.name} carries a published RegActions risk score of ${b.score.toFixed(1)}/10, while ${a.country.name}'s headline score is withheld for insufficient underlying v3 evidence, so the two are not directly rank-comparable on the composite.`;
   }
 
   // Neither scored → fall back to the sharpest categorical discriminator.
@@ -424,41 +422,48 @@ export function buildVerdict(a: CompareSide, b: CompareSide): string {
   const fb = fatfSeverity(vb);
   if (fa !== fb) {
     const hi = fa > fb ? a : b;
-    return `Both countries have their composite score withheld for insufficient governance evidence; on FATF listing status, ${hi.country.name} currently reads as the higher-risk jurisdiction.`;
+    return `Both countries have their composite score withheld for insufficient underlying v3 evidence; on FATF listing status, ${hi.country.name} currently reads as the higher-risk jurisdiction.`;
   }
-  return `Both countries have their composite score withheld for insufficient governance evidence, so compare them on the specific FATF, sanctions and governance signals below rather than a single number.`;
+  return `Both countries have their composite score withheld for insufficient underlying v3 evidence, so compare them on the specific FATF, sanctions and governance signals below rather than a single number.`;
 }
 
 /**
- * The single strongest reason the higher-risk side outranks the other, in plain
- * words. Deterministic: checks sanctions, then FATF, then CPI gap, then WGI.
+ * The single strongest scored reason the higher-risk side outranks the other.
+ * Only v3 pillar contributions may explain a numeric difference. FATF and
+ * sanctions remain separate treatment overlays in the comparison rows/copy.
  */
 function topDriver(hi: CountryView, lo: CountryView): string | undefined {
-  if (sanctionsSeverity(hi) > sanctionsSeverity(lo) && sanctionsSeverity(hi) > 0) {
-    return "its heavier sanctions exposure";
-  }
-  if (fatfSeverity(hi) > fatfSeverity(lo)) {
-    return hi.fatf?.listing === "call-for-action"
-      ? "its FATF call-for-action (black list) status"
-      : "its FATF increased-monitoring (grey list) status";
-  }
-  const cpiHi = hi.cpi?.score;
-  const cpiLo = lo.cpi?.score;
-  if (cpiHi !== undefined && cpiLo !== undefined && cpiLo - cpiHi >= 8) {
-    return "weaker corruption-control scores";
-  }
-  const rlHi = ruleOfLawRisk(hi);
-  const rlLo = ruleOfLawRisk(lo);
-  if (rlHi !== null && rlLo !== null && rlHi - rlLo >= 0.5) {
-    return "weaker rule-of-law and institutional governance";
-  }
-  return "weaker governance indicators overall";
+  const labels = {
+    effectiveness: "financial-crime effectiveness",
+    safeguards: "legal and supervisory safeguards",
+    governance: "governance and institutional integrity",
+  } as const;
+  const keys = Object.keys(labels) as Array<keyof typeof labels>;
+  const candidates = keys
+    .map((key) => {
+      const hiPillar = hi.riskV3.pillars[key];
+      const loPillar = lo.riskV3.pillars[key];
+      if (hiPillar.score === null || loPillar.score === null) return null;
+      const hiContribution = hiPillar.contribution ?? hiPillar.score * hiPillar.appliedWeight;
+      const loContribution = loPillar.contribution ?? loPillar.score * loPillar.appliedWeight;
+      return {
+        key,
+        gap: hiContribution - loContribution,
+        hiScore: hiPillar.score,
+        loScore: loPillar.score,
+      };
+    })
+    .filter((candidate): candidate is { key: keyof typeof labels; gap: number; hiScore: number; loScore: number } => candidate !== null)
+    .sort((left, right) => Math.abs(right.gap) - Math.abs(left.gap));
+  const strongest = candidates[0];
+  if (!strongest || strongest.gap <= 0) return "higher v3 pillar risk overall";
+  return `higher ${labels[strongest.key]} risk (${strongest.hiScore.toFixed(1)} vs ${strongest.loScore.toFixed(1)})`;
 }
 
 function compareMetaDescription(a: CompareSide, b: CompareSide): string {
   const sa = a.score === null ? "withheld" : `${a.score.toFixed(1)}/10`;
   const sb = b.score === null ? "withheld" : `${b.score.toFixed(1)}/10`;
-  return `Compare ${a.country.name} vs ${b.country.name} on AML/CFT country risk: RegActions score (${sa} vs ${sb}), FATF status, sanctions posture, WGI governance and CPI, side by side with cited sources.`;
+  return `Compare ${a.country.name} vs ${b.country.name} on AML/CFT country risk: RegActions v3 score (${sa} vs ${sb}), its effectiveness, safeguards and governance pillars, plus FATF and sanctions treatment overlays, side by side with cited sources.`;
 }
 
 // ---------------------------------------------------------------------------
