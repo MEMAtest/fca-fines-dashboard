@@ -1,0 +1,121 @@
+{
+  "asOf": "2026-08-20T00:00:00.000Z",
+  "modelBoundary": {
+    "recommendation": "Keep country risk v3 unchanged. Research a separate RegActions Regulatory Signal family.",
+    "measures": [
+      "Regulator Publication Transparency — how observable and reusable an authority's official enforcement record is.",
+      "RegActions Coverage Confidence — how reliably RegActions captures, verifies and refreshes that official record.",
+      "Enforcement Activity Signal — neutral description of observed publication frequency/intensity, never a good/bad score.",
+      "Regulatory Ecosystem Map — authority mandates and sector coverage, descriptive rather than evaluative."
+    ]
+  },
+  "countryUniverse": {
+    "jurisdictions": 213,
+    "authorityEvidenceStates": {
+      "local-authority-evidence": 212,
+      "external-risk-evidence-only": 1
+    },
+    "ecosystemDepth": {
+      "moderate": 66,
+      "broad": 117,
+      "limited": 29,
+      "externally-observable-unpublished": 1
+    },
+    "regActionsCoverageStates": {
+      "ecosystem-mapped-no-validated-feed": 165,
+      "live": 40,
+      "official-enforcement-source-validated": 7,
+      "domestic-publication-unobservable": 1
+    },
+    "regionCoverage": [
+      {
+        "region": "Africa",
+        "jurisdictions": 54,
+        "live_countries": 2,
+        "validated_pipeline_countries": 2,
+        "mapped_without_validated_feed": 50,
+        "domestic_publication_unobservable": 0,
+        "broad_ecosystem_evidence": 28
+      },
+      {
+        "region": "Americas",
+        "jurisdictions": 32,
+        "live_countries": 4,
+        "validated_pipeline_countries": 2,
+        "mapped_without_validated_feed": 26,
+        "domestic_publication_unobservable": 0,
+        "broad_ecosystem_evidence": 18
+      },
+      {
+        "region": "Asia Pacific",
+        "jurisdictions": 45,
+        "live_countries": 9,
+        "validated_pipeline_countries": 1,
+        "mapped_without_validated_feed": 34,
+        "domestic_publication_unobservable": 1,
+        "broad_ecosystem_evidence": 19
+      },
+      {
+        "region": "Europe",
+        "jurisdictions": 49,
+        "live_countries": 19,
+        "validated_pipeline_countries": 0,
+        "mapped_without_validated_feed": 30,
+        "domestic_publication_unobservable": 0,
+        "broad_ecosystem_evidence": 37
+      },
+      {
+        "region": "Middle East",
+        "jurisdictions": 15,
+        "live_countries": 2,
+        "validated_pipeline_countries": 1,
+        "mapped_without_validated_feed": 12,
+        "domestic_publication_unobservable": 0,
+        "broad_ecosystem_evidence": 10
+      },
+      {
+        "region": "Offshore / IFC",
+        "jurisdictions": 18,
+        "live_countries": 4,
+        "validated_pipeline_countries": 1,
+        "mapped_without_validated_feed": 13,
+        "domestic_publication_unobservable": 0,
+        "broad_ecosystem_evidence": 5
+      }
+    ]
+  },
+  "liveRegulators": {
+    "regulators": 54,
+    "observedRecords": 38138,
+    "activitySignals": {
+      "frequent": 20,
+      "active": 15,
+      "periodic": 14,
+      "low-frequency": 4,
+      "no-recent-signal": 1
+    },
+    "automationLevels": {
+      "automated": 48,
+      "curated_archive": 2,
+      "sparse_source": 1,
+      "low_frequency": 3
+    },
+    "operationalConfidence": {
+      "standard": 43,
+      "lower": 11
+    },
+    "freshnessStates": {
+      "within-contract": 51,
+      "watch-low-frequency-beyond-contract": 3
+    },
+    "registryCountsDifferFromLive": 39
+  },
+  "interpretationGuards": [
+    "Raw regulator count measures institutional structure, not regulatory quality.",
+    "More published actions can reflect stronger transparency, higher misconduct, broader powers, or all three.",
+    "Few actions can reflect low misconduct, low-frequency publication, weak enforcement, non-public decisions, or incomplete capture.",
+    "Monetary disclosure rates are not comparable where authorities use non-monetary orders or omit amounts by law/design.",
+    "A scraper freshness breach is RegActions operational evidence, not evidence that the regulator is ineffective.",
+    "FATF status, sanctions and country-risk pillars remain treatment/risk context, not regulator-performance inputs."
+  ]
+}

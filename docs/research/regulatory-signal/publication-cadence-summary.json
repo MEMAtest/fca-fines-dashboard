@@ -1,0 +1,26 @@
+{
+  "generatedAt": "2026-08-20T12:11:07.553Z",
+  "candidateAuthoritiesInspected": 264,
+  "accessStates": {
+    "reachable": 215,
+    "challenge-protected": 44,
+    "http-404": 4,
+    "timeout": 1
+  },
+  "provisionalCadenceSignals": {
+    "no-dated-first-page-signal": 145,
+    "not-observable": 49,
+    "low-frequency-first-page-signal": 40,
+    "active-first-page-signal": 4,
+    "periodic-first-page-signal": 21,
+    "frequent-first-page-signal": 5
+  },
+  "publicationRelevance": {
+    "generic-or-ambiguous-link": 88,
+    "strong-official-publication-candidate": 115,
+    "not-observable": 49,
+    "plausible-official-publication-candidate": 12
+  },
+  "countriesWithReachableDatedSignal": 50,
+  "limitation": "Discovery and first-page date signals are research leads, not validated publication-frequency metrics."
+}
