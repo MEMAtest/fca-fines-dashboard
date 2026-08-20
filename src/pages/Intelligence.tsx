@@ -1,4 +1,5 @@
 import { useMemo, useState } from "react";
+import { Link } from "react-router-dom";
 import {
   AlertTriangle,
   BarChart3,
@@ -381,8 +382,32 @@ export function Intelligence() {
   }
 
   return (
-    <main className="intelligence-page">
-      <section className="intelligence-page__header">
+    <div className="intelligence-shell">
+      <aside className="intelligence-sidebar" aria-label="Briefing navigation">
+        <div className="intelligence-sidebar__inner">
+          <p className="intelligence-sidebar__label">Briefing</p>
+          <nav className="intelligence-sidebar__nav">
+            <span className="intelligence-sidebar__link intelligence-sidebar__link--active">
+              New briefing
+            </span>
+            <Link className="intelligence-sidebar__link" to="/board-pack">
+              Board pack
+            </Link>
+          </nav>
+          <div className="intelligence-sidebar__divider" />
+          <nav className="intelligence-sidebar__nav">
+            <Link className="intelligence-sidebar__link" to="/methodology/enforcement">
+              Methodology
+            </Link>
+            <Link className="intelligence-sidebar__link" to="/regulators">
+              Regulator directory
+            </Link>
+          </nav>
+        </div>
+      </aside>
+
+      <main className="intelligence-page">
+        <section className="intelligence-page__header">
         <div>
           <p className="intelligence-page__eyebrow">
             <Bot size={16} aria-hidden="true" />
@@ -400,7 +425,35 @@ export function Intelligence() {
         </div>
       </section>
 
+      <div className="intelligence-steps">
+        <div className="intelligence-step">
+          <span className="intelligence-step__n">1</span>
+          <span>
+            <strong>Choose the evidence</strong>
+            <em>Filter by date, regulator, firm type or theme.</em>
+          </span>
+        </div>
+        <div className="intelligence-step">
+          <span className="intelligence-step__n">2</span>
+          <span>
+            <strong>Generate the briefing</strong>
+            <em>An executive summary, precedents and management questions, every claim cited.</em>
+          </span>
+        </div>
+        <div className="intelligence-step">
+          <span className="intelligence-step__n">3</span>
+          <span>
+            <strong>Apply it to a firm</strong>
+            <em>Sharpen the questions against a firm profile in the workbench.</em>
+          </span>
+        </div>
+      </div>
+
       <section className="intelligence-page__workspace">
+        <div className="intelligence-section-heading">
+          <span className="intelligence-section-heading__n">01</span>
+          <h2>Choose the evidence</h2>
+        </div>
         <section className="intelligence-presets" aria-label="Analysis presets">
           <div>
             <p className="intelligence-section-kicker">Briefing presets</p>
@@ -503,150 +556,10 @@ export function Intelligence() {
           </section>
         ) : null}
 
-        <section className="agentic-workbench">
-          <div className="agentic-workbench__header">
-            <div>
-              <p className="intelligence-section-kicker">Firm impact workbench</p>
-              <h2>Apply the enforcement evidence to a firm profile</h2>
-              <p>
-                Compare the qualified evidence with a selected firm profile, recent
-                change and the control information you provide.
-              </p>
-            </div>
-            <button type="button" onClick={runWorkbench} disabled={workbenchLoading}>
-              {workbenchLoading ? <Loader2 size={18} aria-hidden="true" className="spin" /> : <Bot size={18} aria-hidden="true" />}
-              <span>{workbenchLoading ? "Analysing" : "Analyse firm impact"}</span>
-            </button>
-          </div>
-
-          <div className="agentic-workbench__inputs">
-            <label>
-              <span>Profile name</span>
-              <input value={profileName} onChange={(event) => setProfileName(event.target.value)} />
-            </label>
-            <label>
-              <span>Agent profile</span>
-              <select
-                value={workbenchPersonaId}
-                onChange={(event) => setWorkbenchPersonaId(event.target.value)}
-              >
-                {PERSONA_OPTIONS.filter((option) => option.id).map((option) => (
-                  <option key={option.id} value={option.id}>
-                    {option.label}
-                  </option>
-                ))}
-              </select>
-            </label>
-            <label>
-              <span>Jurisdictions</span>
-              <input value={jurisdictions} onChange={(event) => setJurisdictions(event.target.value)} />
-            </label>
-            <label>
-              <span>Products</span>
-              <input value={products} onChange={(event) => setProducts(event.target.value)} />
-            </label>
-            <label className="agentic-workbench__wide">
-              <span>Risk flags</span>
-              <input value={riskFlags} onChange={(event) => setRiskFlags(event.target.value)} />
-            </label>
-            <label className="agentic-workbench__wide">
-              <span>Control framework</span>
-              <textarea
-                value={controlFramework}
-                onChange={(event) => setControlFramework(event.target.value)}
-                rows={3}
-              />
-            </label>
-            <label className="agentic-workbench__wide">
-              <span>Research question</span>
-              <input
-                value={researchQuestion}
-                onChange={(event) => setResearchQuestion(event.target.value)}
-              />
-            </label>
-          </div>
-
-          {workbenchError ? (
-            <div className="intelligence-alert" role="alert">
-              <AlertTriangle size={18} aria-hidden="true" />
-              <span>{workbenchError}</span>
-            </div>
-          ) : null}
-
-          {workbenchResult ? (
-            <div className="agentic-workbench__results">
-              <article>
-                <p className="intelligence-section-kicker">Comparator</p>
-                <h3>What would be worrying for this firm?</h3>
-                <p>{workbenchResult.comparator.summary}</p>
-                <ul>
-                  {workbenchResult.comparator.riskThemes.slice(0, 4).map((theme) => (
-                    <li key={theme.label}>
-                      <strong>{theme.label}</strong>
-                      <span>{theme.count} precedents - {theme.watchPoint}</span>
-                    </li>
-                  ))}
-                </ul>
-              </article>
-
-              <article>
-                <p className="intelligence-section-kicker">Horizon scan</p>
-                <h3>What changed recently?</h3>
-                <p>{workbenchResult.horizonScan.summary}</p>
-                <ul>
-                  {workbenchResult.horizonScan.trendDeltas.slice(0, 4).map((trend) => (
-                    <li key={trend.label}>
-                      <strong>{trend.label}</strong>
-                      <span>{trend.recentCount} recent / {trend.previousCount} previous</span>
-                    </li>
-                  ))}
-                </ul>
-              </article>
-
-              <article>
-                <p className="intelligence-section-kicker">Control gaps</p>
-                <h3>What is not evidenced?</h3>
-                <p>{workbenchResult.controlGapAnalysis.summary}</p>
-                <ul>
-                  {workbenchResult.controlGapAnalysis.priorityGaps.slice(0, 4).map((gap) => (
-                    <li key={gap.theme}>
-                      <strong>{gap.theme}</strong>
-                      <span>{gap.severity} - {gap.reason}</span>
-                    </li>
-                  ))}
-                </ul>
-              </article>
-
-              <article>
-                <p className="intelligence-section-kicker">Research agent</p>
-                <h3>Cited analytical answer</h3>
-                <p>{workbenchResult.research.answer}</p>
-                <ul>
-                  {workbenchResult.research.topFindings.slice(0, 4).map((finding) => (
-                    <li key={finding.label}>
-                      <strong>{finding.label}</strong>
-                      <span>{finding.count} cited precedents</span>
-                    </li>
-                  ))}
-                </ul>
-              </article>
-
-              <article className="agentic-workbench__impact">
-                <p className="intelligence-section-kicker">Impact agent</p>
-                <h3>{workbenchResult.impact.draftMemo.subject}</h3>
-                <p>{workbenchResult.impact.summary}</p>
-                <ul>
-                  {workbenchResult.impact.impactFlags.map((flag) => (
-                    <li key={flag.label}>
-                      <strong>{flag.label}</strong>
-                      <span>{flag.severity} - {flag.reason}</span>
-                    </li>
-                  ))}
-                </ul>
-              </article>
-            </div>
-          ) : null}
-        </section>
+        <div className="intelligence-section-heading">
+          <span className="intelligence-section-heading__n">02</span>
+          <h2>Your briefing</h2>
+        </div>
 
         {result ? (
           <section className="intelligence-output" aria-live="polite">
@@ -926,7 +839,158 @@ export function Intelligence() {
             </footer>
           </section>
         ) : null}
+
+        <div className="intelligence-section-heading">
+          <span className="intelligence-section-heading__n">03</span>
+          <h2>Firm impact workbench</h2>
+        </div>
+
+        <section className="agentic-workbench">
+          <div className="agentic-workbench__header">
+            <div>
+              <p className="intelligence-section-kicker">Firm impact workbench</p>
+              <h2>Apply the enforcement evidence to a firm profile</h2>
+              <p>
+                Compare the qualified evidence with a selected firm profile, recent
+                change and the control information you provide.
+              </p>
+            </div>
+            <button type="button" onClick={runWorkbench} disabled={workbenchLoading}>
+              {workbenchLoading ? <Loader2 size={18} aria-hidden="true" className="spin" /> : <Bot size={18} aria-hidden="true" />}
+              <span>{workbenchLoading ? "Analysing" : "Analyse firm impact"}</span>
+            </button>
+          </div>
+
+          <div className="agentic-workbench__inputs">
+            <label>
+              <span>Profile name</span>
+              <input value={profileName} onChange={(event) => setProfileName(event.target.value)} />
+            </label>
+            <label>
+              <span>Agent profile</span>
+              <select
+                value={workbenchPersonaId}
+                onChange={(event) => setWorkbenchPersonaId(event.target.value)}
+              >
+                {PERSONA_OPTIONS.filter((option) => option.id).map((option) => (
+                  <option key={option.id} value={option.id}>
+                    {option.label}
+                  </option>
+                ))}
+              </select>
+            </label>
+            <label>
+              <span>Jurisdictions</span>
+              <input value={jurisdictions} onChange={(event) => setJurisdictions(event.target.value)} />
+            </label>
+            <label>
+              <span>Products</span>
+              <input value={products} onChange={(event) => setProducts(event.target.value)} />
+            </label>
+            <label className="agentic-workbench__wide">
+              <span>Risk flags</span>
+              <input value={riskFlags} onChange={(event) => setRiskFlags(event.target.value)} />
+            </label>
+            <label className="agentic-workbench__wide">
+              <span>Control framework</span>
+              <textarea
+                value={controlFramework}
+                onChange={(event) => setControlFramework(event.target.value)}
+                rows={3}
+              />
+            </label>
+            <label className="agentic-workbench__wide">
+              <span>Research question</span>
+              <input
+                value={researchQuestion}
+                onChange={(event) => setResearchQuestion(event.target.value)}
+              />
+            </label>
+          </div>
+
+          {workbenchError ? (
+            <div className="intelligence-alert" role="alert">
+              <AlertTriangle size={18} aria-hidden="true" />
+              <span>{workbenchError}</span>
+            </div>
+          ) : null}
+
+          {workbenchResult ? (
+            <div className="agentic-workbench__results">
+              <article>
+                <p className="intelligence-section-kicker">Comparator</p>
+                <h3>What would be worrying for this firm?</h3>
+                <p>{workbenchResult.comparator.summary}</p>
+                <ul>
+                  {workbenchResult.comparator.riskThemes.slice(0, 4).map((theme) => (
+                    <li key={theme.label}>
+                      <strong>{theme.label}</strong>
+                      <span>{theme.count} precedents - {theme.watchPoint}</span>
+                    </li>
+                  ))}
+                </ul>
+              </article>
+
+              <article>
+                <p className="intelligence-section-kicker">Horizon scan</p>
+                <h3>What changed recently?</h3>
+                <p>{workbenchResult.horizonScan.summary}</p>
+                <ul>
+                  {workbenchResult.horizonScan.trendDeltas.slice(0, 4).map((trend) => (
+                    <li key={trend.label}>
+                      <strong>{trend.label}</strong>
+                      <span>{trend.recentCount} recent / {trend.previousCount} previous</span>
+                    </li>
+                  ))}
+                </ul>
+              </article>
+
+              <article>
+                <p className="intelligence-section-kicker">Control gaps</p>
+                <h3>What is not evidenced?</h3>
+                <p>{workbenchResult.controlGapAnalysis.summary}</p>
+                <ul>
+                  {workbenchResult.controlGapAnalysis.priorityGaps.slice(0, 4).map((gap) => (
+                    <li key={gap.theme}>
+                      <strong>{gap.theme}</strong>
+                      <span>{gap.severity} - {gap.reason}</span>
+                    </li>
+                  ))}
+                </ul>
+              </article>
+
+              <article>
+                <p className="intelligence-section-kicker">Research agent</p>
+                <h3>Cited analytical answer</h3>
+                <p>{workbenchResult.research.answer}</p>
+                <ul>
+                  {workbenchResult.research.topFindings.slice(0, 4).map((finding) => (
+                    <li key={finding.label}>
+                      <strong>{finding.label}</strong>
+                      <span>{finding.count} cited precedents</span>
+                    </li>
+                  ))}
+                </ul>
+              </article>
+
+              <article className="agentic-workbench__impact">
+                <p className="intelligence-section-kicker">Impact agent</p>
+                <h3>{workbenchResult.impact.draftMemo.subject}</h3>
+                <p>{workbenchResult.impact.summary}</p>
+                <ul>
+                  {workbenchResult.impact.impactFlags.map((flag) => (
+                    <li key={flag.label}>
+                      <strong>{flag.label}</strong>
+                      <span>{flag.severity} - {flag.reason}</span>
+                    </li>
+                  ))}
+                </ul>
+              </article>
+            </div>
+          ) : null}
+        </section>
       </section>
-    </main>
+      </main>
+    </div>
   );
 }
