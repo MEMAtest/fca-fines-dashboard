@@ -40,6 +40,7 @@ import { PUBLIC_REGULATOR_NAV_ITEMS, PUBLIC_REGULATOR_CODES } from '../data/regu
 import '../styles/homepage.css';
 import '../styles/contact.css';
 import { formatBreachCategory } from '../utils/labelConversion.js';
+import { isGarbageFirmName } from '../utils/firmName.js';
 
 const HOMEPAGE_FAQS = getHomepageFaqs();
 const PUBLIC_REGULATOR_COUNT = PUBLIC_REGULATOR_CODES.length;
@@ -538,7 +539,17 @@ function useRecentActions(limit: number) {
     let active = true;
     fetchUnifiedSearch({ sortBy: 'date_issued', order: 'desc', limit })
       .then((response) => {
-        if (active) setResults(response.results);
+        // Apply the same firm-name sanity check the hub tables use. Without it
+        // the homepage advertised scraped junk as enforcement actions:
+        // "duurzaam financieel welzijn in Nederland. &copy", "Former
+        // Executives", "Boiler Room Operator and Three Entities".
+        if (active) {
+          setResults(
+            response.results.filter(
+              (r) => !isGarbageFirmName(String(r.firm_individual ?? '')),
+            ),
+          );
+        }
       })
       .catch(() => {
         if (active) setError(true);
