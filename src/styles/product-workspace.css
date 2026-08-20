@@ -459,3 +459,19 @@
   .workspace-zone-header { margin: 22px 0 11px; }
   .workspace-zone-header__title { font-size: 14px; }
 }
+
+/* Data tables are wider than a phone viewport once real rows load. Scroll them
+   inside their own box rather than widening the document — a page wider than
+   the viewport renders the whole site zoomed out.
+
+   NOTE this was invisible in local preview, where the API returns nothing and
+   the tables render empty. It only appeared against production data, which is
+   why the overflow gate is run against the deployed site as well as the build. */
+@media (max-width: 1024px) {
+  .workspace-table {
+    display: block;
+    max-width: 100%;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+}

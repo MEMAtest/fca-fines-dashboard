@@ -706,3 +706,18 @@
     padding: 0.9rem;
   }
 }
+
+/* The milestone row's marker column sits beside the card, pushing the row a few
+   px past the viewport at tablet widths. Let both shrink. */
+@media (max-width: 1024px) {
+  .tl-milestone {
+    max-width: 100%;
+    min-width: 0;
+  }
+
+  .tl-card-wrapper,
+  .tl-card {
+    max-width: 100%;
+    min-width: 0;
+  }
+}
