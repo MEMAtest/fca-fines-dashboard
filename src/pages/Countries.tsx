@@ -46,6 +46,7 @@ import {
   type RiskBand,
 } from "../data/countryRiskScore.js";
 import { computeCountryRiskV2 } from "../data/countryRiskV2.js";
+import { buildCountryCsv, countryCsvFilename } from "../utils/countryCsv.js";
 import { publicCountryRiskStatusLabel } from "../data/countryRiskPresentation.js";
 import {
   buildCountryIndex,
@@ -299,6 +300,8 @@ function FilterBar({
   sanctionsScoringReady,
   hasFilters,
   clearFilters,
+  band,
+  setBand,
 }: any) {
   return (
     <div className="cx-filters">
@@ -306,6 +309,32 @@ function FilterBar({
         <Search size={15} />
         <input type="search" placeholder="Search country" value={query} onChange={(e) => setQuery(e.target.value)} />
       </label>
+      {/* Risk band was filterable only from the overview drill-downs, which set
+          the band and jumped here — leaving the table filtered with nothing on
+          screen saying which band was applied. */}
+      {setBand && (
+        <div className="cx-filters__bands" role="group" aria-label="Risk band">
+          <button
+            type="button"
+            aria-pressed={band === "All"}
+            className={`cx-chip${band === "All" ? " cx-chip--on" : ""}`}
+            onClick={() => setBand("All")}
+          >
+            All bands
+          </button>
+          {(["low", "moderate", "high", "very-high"] as RiskBand[]).map((b) => (
+            <button
+              key={b}
+              type="button"
+              aria-pressed={band === b}
+              className={`cx-chip cx-chip--${b}${band === b ? " cx-chip--on" : ""}`}
+              onClick={() => setBand(band === b ? "All" : b)}
+            >
+              {bandLabel(b)}
+            </button>
+          ))}
+        </div>
+      )}
       <select value={region} onChange={(e) => setRegion(e.target.value)} aria-label="Region">
         {regions.map((r: string) => (
           <option key={r} value={r}>{r === "All" ? "All regions" : r}</option>
@@ -795,6 +824,23 @@ function GlobalIndex() {
         : 0,
     [index, ratedCount],
   );
+  /**
+   * Exports the CURRENTLY FILTERED rows, not the whole index — the filters are
+   * the point of the export. Uses the same `rows` the table renders, so the CSV
+   * always matches what the user is looking at.
+   */
+  const downloadCountryCsv = () => {
+    const csv = buildCountryCsv(rows);
+    const url = URL.createObjectURL(new Blob([csv], { type: "text/csv;charset=utf-8" }));
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = countryCsvFilename(new Date().toISOString().slice(0, 10));
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+  };
+
   const added = FATF_RECENT_CHANGES.filter((c) => c.change === "added");
   const removed = FATF_RECENT_CHANGES.filter((c) => c.change === "removed");
   const nameOf = (iso2: string) => getCountryByIso2(iso2)?.name ?? iso2;
@@ -1094,8 +1140,20 @@ function GlobalIndex() {
             sanctionsScoringReady={sanctionsScoringReady}
             hasFilters={hasFilters}
             clearFilters={clearFilters}
+            band={band}
+            setBand={setBand}
           />
-          <p className="country-index__count">{rows.length} shown</p>
+          <div className="cx-index__toolbar">
+            <p className="country-index__count">{rows.length} shown</p>
+            <button
+              type="button"
+              className="cx-export"
+              onClick={downloadCountryCsv}
+              disabled={rows.length === 0}
+            >
+              <Download size={14} aria-hidden="true" /> Export CSV
+            </button>
+          </div>
           <table className="country-ratings">
             <thead>
               <tr>
