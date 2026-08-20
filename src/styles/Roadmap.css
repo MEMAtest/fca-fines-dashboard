@@ -721,3 +721,27 @@
     min-width: 0;
   }
 }
+
+/* The timeline indents its rows (.tl-timeline padding-left plus an inner
+   offset) but the milestone is still sized to the full parent width, so the
+   row ran 30px past the viewport at 390px and 6px at 768px.
+   Clamping against the viewport is robust here regardless of how the indent
+   chain resolves, which reverse-engineering the offsets was not. */
+@media (max-width: 1024px) {
+  /* 641-1024px still uses the desktop 3rem timeline indent, so the row starts
+     ~102px in and needs the larger subtraction. */
+  .tl-milestone,
+  .tl-card-wrapper,
+  .tl-card {
+    max-width: calc(100vw - 8rem);
+  }
+}
+
+@media (max-width: 640px) {
+  /* Below 640 the reduced 2.2rem indent applies, so less needs subtracting. */
+  .tl-milestone,
+  .tl-card-wrapper,
+  .tl-card {
+    max-width: calc(100vw - 6rem);
+  }
+}
