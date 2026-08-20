@@ -23,7 +23,7 @@ async function invoke(handler: (req: VercelRequest, res: VercelResponse) => unkn
   return { code, payload: payload as any };
 }
 
-describe("country-risk v2 public API contract", () => {
+describe("country-risk public API contract", () => {
   it("returns complete country evidence and non-binding floor explanations for Iraq", async () => {
     const response = await invoke(countryHandler, { iso2: "IQ", methodology: "v2" });
     expect(response.code).toBe(200);
@@ -58,9 +58,26 @@ describe("country-risk v2 public API contract", () => {
     expect(response.payload.change).toBeNull();
   });
 
+  it("defaults to the active v3 methodology", async () => {
+    const response = await invoke(countryHandler, { iso2: "GB" });
+    expect(response.code).toBe(200);
+    expect(response.payload.methodologyVersion).toBe("3.0.0");
+    expect(response.payload.result).toEqual(expect.objectContaining({
+      status: expect.stringMatching(/complete|provisional|insufficient-data/),
+      pillars: expect.objectContaining({
+        effectiveness: expect.any(Object),
+        safeguards: expect.any(Object),
+        governance: expect.any(Object),
+      }),
+      beneficialOwnership: expect.any(Object),
+      overlays: expect.any(Object),
+    }));
+    expect(response.payload.result).not.toHaveProperty("floors");
+  });
+
   it("exposes the FATF required-action distinction", async () => {
-    const iran = (await invoke(countryHandler, { iso2: "IR" })).payload;
-    const myanmar = (await invoke(countryHandler, { iso2: "MM" })).payload;
+    const iran = (await invoke(countryHandler, { iso2: "IR", methodology: "v2" })).payload;
+    const myanmar = (await invoke(countryHandler, { iso2: "MM", methodology: "v2" })).payload;
     expect(iran.evidence.aml.listing.requiredAction).toBe("countermeasures");
     expect(iran.surface.fatfAction.action).toBe("countermeasures");
     expect(myanmar.evidence.aml.listing.requiredAction).toBe("enhanced-due-diligence");
@@ -70,7 +87,7 @@ describe("country-risk v2 public API contract", () => {
   });
 
   it("adds Russia suspension context without changing the compatibility-critical result", async () => {
-    const response = await invoke(countryHandler, { iso2: "ru" });
+    const response = await invoke(countryHandler, { iso2: "ru", methodology: "v2" });
     expect(response.code).toBe(200);
     expect(response.payload.result).toMatchObject({ score: 6, band: "high" });
     expect(response.payload.surface.contextualSignals).toContainEqual(expect.objectContaining({
