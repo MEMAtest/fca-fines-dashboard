@@ -13,7 +13,7 @@ Country Risk v3, FATF/FSRB status, sanctions and beneficial-ownership evidence r
 
 ## Authority identity and mapping
 
-Every live RegActions code receives a stable code identity `ra-reg-{lowercase-code}`. Where the live code has a sufficiently specific match in the researched official authority directory, the authority receives `ra-auth-{iso2}-{sha256(iso2|authority)[0:16]}` and its directory roles. EU-level ECB is explicitly excluded from country aggregation. Registry-only mappings remain in the mapping artifact but cannot contribute to country role aggregation.
+Every live RegActions code receives a stable code identity `ra-reg-{lowercase-code}`. Where the live code has a sufficiently specific match in the researched official authority directory, the authority receives `ra-auth-{iso2}-{sha256(iso2|authority)[0:16]}` and the union of roles across all duplicate directory rows for that authority. EU-level ECB is explicitly excluded from country aggregation. Registry-only mappings remain in the mapping artifact but cannot contribute to country role aggregation. A financial-intelligence role is retained only where the matched authority name explicitly identifies an FIU/intelligence function; a general supervisor such as Sweden's Finansinspektionen is not treated as an FIU.
 
 The mapping is deterministic and auditable in `regulatory-transparency-authority-mapping.json`. Name aliases are explicit in the calculation source. Central banking is not an index role: a central bank contributes only where the official directory also maps it to an applicable supervisory role.
 
@@ -51,7 +51,7 @@ The sample snapshot is the deterministic input for this run. Re-running without 
 
 ## Calibration safeguards
 
-The bias report compares regional and integrated/fragmented architecture cohorts, records that language evidence is unavailable rather than inferring it, and reports the descriptive correlation between score and log observed-record volume. The implementation also tests that changing observed volume alone cannot change a component or composite score. The report is descriptive and does not authorise a public release.
+The bias report compares the baseline's region labels (including `Asia Pacific`, without inventing an empty `Oceania` bucket) and integrated/fragmented architecture cohorts, records that language evidence is unavailable rather than inferring it, and reports the descriptive correlation between score and log observed-record volume together with its assessed-country sample size. The implementation also tests that changing observed volume alone cannot change a component or composite score. The report is descriptive and does not authorise a public release.
 
 ## Inputs and outputs
 

@@ -11,9 +11,9 @@
       "country": "United Kingdom",
       "authority": "The Financial Conduct Authority",
       "roles": [
+        "insurance",
         "prudential_supervision",
-        "securities",
-        "insurance"
+        "securities"
       ],
       "components": {
         "accessibility": {
@@ -93,10 +93,10 @@
       "country": "Germany",
       "authority": "Federal Financial Supervisory Authority",
       "roles": [
-        "prudential_supervision",
-        "securities",
         "insurance",
-        "pensions"
+        "pensions",
+        "prudential_supervision",
+        "securities"
       ],
       "components": {
         "accessibility": {
@@ -324,9 +324,9 @@
       "country": "Ireland",
       "authority": "Central Bank of Ireland",
       "roles": [
+        "insurance",
         "prudential_supervision",
-        "securities",
-        "insurance"
+        "securities"
       ],
       "components": {
         "accessibility": {
@@ -479,8 +479,8 @@
       "country": "Netherlands",
       "authority": "The Dutch Authority for the Financial Markets*",
       "roles": [
-        "securities",
-        "insurance"
+        "insurance",
+        "securities"
       ],
       "components": {
         "accessibility": {
@@ -555,9 +555,9 @@
       "country": "Netherlands",
       "authority": "De Nederlandsche Bank",
       "roles": [
-        "prudential_supervision",
         "insurance",
-        "pensions"
+        "pensions",
+        "prudential_supervision"
       ],
       "components": {
         "accessibility": {
@@ -708,9 +708,9 @@
       "country": "Dubai International Financial Centre",
       "authority": "Dubai Financial Services Authority",
       "roles": [
+        "insurance",
         "prudential_supervision",
-        "securities",
-        "insurance"
+        "securities"
       ],
       "components": {
         "accessibility": {
@@ -783,8 +783,8 @@
       "country": "Abu Dhabi Global Market",
       "authority": "Financial Services Regulatory Authority",
       "roles": [
-        "securities",
-        "insurance"
+        "insurance",
+        "securities"
       ],
       "components": {
         "accessibility": {
@@ -930,9 +930,9 @@
       "country": "Jersey",
       "authority": "Jersey Financial Services Commission",
       "roles": [
+        "insurance",
         "prudential_supervision",
-        "securities",
-        "insurance"
+        "securities"
       ],
       "components": {
         "accessibility": {
@@ -1003,10 +1003,10 @@
       "country": "Guernsey",
       "authority": "Guernsey Financial Services Commission",
       "roles": [
-        "prudential_supervision",
-        "securities",
         "insurance",
-        "pensions"
+        "pensions",
+        "prudential_supervision",
+        "securities"
       ],
       "components": {
         "accessibility": {
@@ -1310,8 +1310,8 @@
       "country": "Taiwan",
       "authority": "Financial Supervisory Commission",
       "roles": [
-        "securities",
-        "insurance"
+        "insurance",
+        "securities"
       ],
       "components": {
         "accessibility": {
@@ -1539,8 +1539,8 @@
       "country": "Australia",
       "authority": "Australian Securities and Investments Commission*",
       "roles": [
-        "securities",
-        "insurance"
+        "insurance",
+        "securities"
       ],
       "components": {
         "accessibility": {
@@ -1619,9 +1619,7 @@
       "countryCode": "AU",
       "country": "Australia",
       "authority": "The Australian Transaction Reports and Analysis Centre (AUSTRAC)",
-      "roles": [
-        "financial_intelligence"
-      ],
+      "roles": [],
       "components": {
         "accessibility": {
           "value": null,
@@ -1693,9 +1691,9 @@
       "country": "Singapore",
       "authority": "Monetary Authority of Singapore",
       "roles": [
+        "insurance",
         "prudential_supervision",
-        "securities",
-        "insurance"
+        "securities"
       ],
       "components": {
         "accessibility": {
@@ -1849,9 +1847,7 @@
       "countryCode": "US",
       "country": "United States",
       "authority": "Financial Crimes Enforcement Network (FinCEN)",
-      "roles": [
-        "financial_intelligence"
-      ],
+      "roles": [],
       "components": {
         "accessibility": {
           "value": null,
@@ -1923,9 +1919,9 @@
       "country": "Switzerland",
       "authority": "Swiss Financial Market Supervisory Authority (FINMA)",
       "roles": [
+        "insurance",
         "prudential_supervision",
-        "securities",
-        "insurance"
+        "securities"
       ],
       "components": {
         "accessibility": {
@@ -2222,8 +2218,8 @@
       "country": "United States",
       "authority": "Board of Governors of the Federal Reserve System",
       "roles": [
-        "prudential_supervision",
-        "insurance"
+        "insurance",
+        "prudential_supervision"
       ],
       "components": {
         "accessibility": {
@@ -2447,6 +2443,7 @@
       "country": "Isle of Man",
       "authority": "Isle of Man Financial Services Authority",
       "roles": [
+        "insurance",
         "securities"
       ],
       "components": {
@@ -2662,8 +2659,9 @@
       "country": "South Korea",
       "authority": "Financial Supervisory Service",
       "roles": [
-        "prudential_supervision",
-        "insurance"
+        "insurance",
+        "pensions",
+        "prudential_supervision"
       ],
       "components": {
         "accessibility": {
@@ -2894,9 +2892,9 @@
       "country": "France",
       "authority": "Autorité de Contrôle Prudentiel et de Résolution",
       "roles": [
-        "prudential_supervision",
         "insurance",
-        "pensions"
+        "pensions",
+        "prudential_supervision"
       ],
       "components": {
         "accessibility": {
@@ -2976,9 +2974,9 @@
       "country": "Luxembourg",
       "authority": "Commission de Surveillance du Secteur Financier",
       "roles": [
+        "pensions",
         "prudential_supervision",
-        "securities",
-        "pensions"
+        "securities"
       ],
       "components": {
         "accessibility": {
@@ -3058,9 +3056,9 @@
       "country": "Belgium",
       "authority": "Financial Services and Markets Authority*",
       "roles": [
-        "securities",
         "insurance",
-        "pensions"
+        "pensions",
+        "securities"
       ],
       "components": {
         "accessibility": {
@@ -3140,10 +3138,10 @@
       "country": "Austria",
       "authority": "Austrian Financial Market Authority",
       "roles": [
-        "prudential_supervision",
-        "securities",
         "insurance",
-        "pensions"
+        "pensions",
+        "prudential_supervision",
+        "securities"
       ],
       "components": {
         "accessibility": {
@@ -3216,10 +3214,10 @@
       "country": "Czech Republic",
       "authority": "Czech National Bank",
       "roles": [
-        "prudential_supervision",
-        "securities",
         "insurance",
-        "pensions"
+        "pensions",
+        "prudential_supervision",
+        "securities"
       ],
       "components": {
         "accessibility": {
@@ -3443,8 +3441,7 @@
       "authority": "Finansinspektionen",
       "roles": [
         "prudential_supervision",
-        "securities",
-        "financial_intelligence"
+        "securities"
       ],
       "components": {
         "accessibility": {
@@ -3524,9 +3521,9 @@
       "country": "Denmark",
       "authority": "Danish Financial Supervisory Authority",
       "roles": [
+        "insurance",
         "prudential_supervision",
-        "securities",
-        "insurance"
+        "securities"
       ],
       "components": {
         "accessibility": {
@@ -3674,9 +3671,9 @@
       "country": "Norway",
       "authority": "Finanstilsynet (The Financial Supervisory Authority of Norway)",
       "roles": [
+        "insurance",
         "prudential_supervision",
-        "securities",
-        "insurance"
+        "securities"
       ],
       "components": {
         "accessibility": {
@@ -3749,8 +3746,10 @@
       "country": "Malta",
       "authority": "Malta Financial Services Authority",
       "roles": [
+        "insurance",
+        "pensions",
         "prudential_supervision",
-        "insurance"
+        "securities"
       ],
       "components": {
         "accessibility": {
@@ -4049,7 +4048,9 @@
       "country": "Cayman Islands",
       "authority": "Cayman Islands Monetary Authority",
       "roles": [
-        "prudential_supervision"
+        "insurance",
+        "prudential_supervision",
+        "securities"
       ],
       "components": {
         "accessibility": {

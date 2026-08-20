@@ -187,6 +187,10 @@ function normalise(value: string): string {
   return value.normalize("NFKD").replace(/[\u0300-\u036f]/g, "").toLowerCase().replace(/[^a-z0-9]+/g, " ").trim();
 }
 
+function isExplicitFiuAuthority(authority: string): boolean {
+  return /\b(?:financial intelligence|financial investigation|intelligence unit|fiu|finanz intelligence|suspicious transaction reporting)\b/i.test(authority);
+}
+
 const AUTHORITY_ALIASES: Record<string, string> = {
   FCA: "The Financial Conduct Authority",
   BaFin: "Federal Financial Supervisory Authority",
@@ -257,7 +261,20 @@ export function mapLiveRegulator(regulator: LiveRegulator, authorities: Authorit
   if (!chosen) {
     return { regulatorCode: regulator.regulator_code, stableRegulatorId: stableRegulatorId(regulator.regulator_code), authorityId: null, authority: null, authorityWebsite: null, iso2: regulator.country_code, roles: [], mappingStatus: "registry-only", mappingBasis: "No sufficiently specific official-directory name match; excluded from country role aggregation pending manual authority mapping." };
   }
-  const roles = chosen.roles.filter((role): role is IndexRole => (INDEX_ROLES as readonly string[]).includes(role));
+  // Some global directories split one authority into multiple rows by website
+  // or mandate. Union only rows that identify the same authority, rather than
+  // taking the first row and silently dropping valid mandates (e.g. CIMA,
+  // MFSA, IOMFSA and FSS). Financial-intelligence is stricter: it is accepted
+  // only where the authority name explicitly identifies an FIU function.
+  const duplicateRows = candidates.filter((row) => normalise(row.authority) === normalise(chosen.authority));
+  const roleSet = new Set<string>();
+  for (const row of duplicateRows) {
+    for (const role of row.roles) {
+      if (role === "financial_intelligence" && !isExplicitFiuAuthority(row.authority)) continue;
+      roleSet.add(role);
+    }
+  }
+  const roles = [...roleSet].filter((role): role is IndexRole => (INDEX_ROLES as readonly string[]).includes(role)).sort();
   return { regulatorCode: regulator.regulator_code, stableRegulatorId: stableRegulatorId(regulator.regulator_code), authorityId: stableAuthorityId(chosen.iso2, chosen.authority), authority: chosen.authority, authorityWebsite: chosen.website, iso2: chosen.iso2, roles, mappingStatus: "official-directory-match", mappingBasis: exact ? "Explicit live-code authority alias matched official directory." : "Deterministic normalized-name match to official directory." };
 }
 

@@ -2609,7 +2609,7 @@
         "securities": 99.75
       },
       "roleAuthorityCounts": {
-        "financial_intelligence": 1,
+        "financial_intelligence": 0,
         "insurance": 1,
         "pensions": 0,
         "prudential_supervision": 3,
@@ -2726,7 +2726,7 @@
         "securities": 98.3333
       },
       "roleAuthorityCounts": {
-        "financial_intelligence": 1,
+        "financial_intelligence": 0,
         "insurance": 1,
         "pensions": 0,
         "prudential_supervision": 0,
@@ -3118,27 +3118,28 @@
       ],
       "assessedRoles": [
         "insurance",
+        "pensions",
         "prudential_supervision"
       ],
       "roleScores": {
         "financial_intelligence": null,
         "insurance": 89.75,
-        "pensions": null,
+        "pensions": 89.75,
         "prudential_supervision": 89.75,
         "securities": null
       },
       "roleAuthorityCounts": {
         "financial_intelligence": 0,
         "insurance": 1,
-        "pensions": 0,
+        "pensions": 1,
         "prudential_supervision": 1,
         "securities": 0
       },
-      "roleCoveragePct": 40,
-      "score": null,
-      "band": null,
-      "status": "not-assessed",
-      "blocker": "Assessed role coverage is 40%, below the 50% provisional threshold.",
+      "roleCoveragePct": 60,
+      "score": 89.75,
+      "band": "highly-transparent",
+      "status": "provisional",
+      "blocker": "Assessed role coverage is 60%; country result is provisional.",
       "provenance": [
         "docs/research/regulatory-signal/country-regulatory-ecosystem-baseline.json",
         "regulator-shadow-results.json"
@@ -5045,9 +5046,9 @@
       "roleAuthorityCounts": {
         "financial_intelligence": 0,
         "insurance": 1,
-        "pensions": 0,
+        "pensions": 1,
         "prudential_supervision": 1,
-        "securities": 0
+        "securities": 1
       },
       "roleCoveragePct": 0,
       "score": null,
@@ -5571,25 +5572,24 @@
         "securities"
       ],
       "assessedRoles": [
-        "financial_intelligence",
         "prudential_supervision",
         "securities"
       ],
       "roleScores": {
-        "financial_intelligence": 94.6667,
+        "financial_intelligence": null,
         "prudential_supervision": 94.6667,
         "securities": 94.6667
       },
       "roleAuthorityCounts": {
-        "financial_intelligence": 1,
+        "financial_intelligence": 0,
         "prudential_supervision": 1,
         "securities": 1
       },
-      "roleCoveragePct": 100,
+      "roleCoveragePct": 66.6667,
       "score": 94.6667,
       "band": "highly-transparent",
-      "status": "complete",
-      "blocker": null,
+      "status": "provisional",
+      "blocker": "Assessed role coverage is 66.6667%; country result is provisional.",
       "provenance": [
         "docs/research/regulatory-signal/country-regulatory-ecosystem-baseline.json",
         "regulator-shadow-results.json"
@@ -6290,7 +6290,7 @@
       },
       "roleAuthorityCounts": {
         "financial_intelligence": 0,
-        "insurance": 0,
+        "insurance": 1,
         "prudential_supervision": 0,
         "securities": 1
       },
@@ -6356,9 +6356,9 @@
       },
       "roleAuthorityCounts": {
         "financial_intelligence": 0,
-        "insurance": 0,
+        "insurance": 1,
         "prudential_supervision": 1,
-        "securities": 0
+        "securities": 1
       },
       "roleCoveragePct": 0,
       "score": null,

@@ -9,9 +9,9 @@
       "country_code": "GB",
       "authority": "The Financial Conduct Authority",
       "role_mapping": [
+        "insurance",
         "prudential_supervision",
-        "securities",
-        "insurance"
+        "securities"
       ],
       "component": "accessibility",
       "weight_pct": 20,
@@ -31,9 +31,9 @@
       "country_code": "GB",
       "authority": "The Financial Conduct Authority",
       "role_mapping": [
+        "insurance",
         "prudential_supervision",
-        "securities",
-        "insurance"
+        "securities"
       ],
       "component": "caseLevelSpecificity",
       "weight_pct": 25,
@@ -53,9 +53,9 @@
       "country_code": "GB",
       "authority": "The Financial Conduct Authority",
       "role_mapping": [
+        "insurance",
         "prudential_supervision",
-        "securities",
-        "insurance"
+        "securities"
       ],
       "component": "sourceTraceability",
       "weight_pct": 20,
@@ -76,9 +76,9 @@
       "country_code": "GB",
       "authority": "The Financial Conduct Authority",
       "role_mapping": [
+        "insurance",
         "prudential_supervision",
-        "securities",
-        "insurance"
+        "securities"
       ],
       "component": "archiveDepth",
       "weight_pct": 20,
@@ -99,9 +99,9 @@
       "country_code": "GB",
       "authority": "The Financial Conduct Authority",
       "role_mapping": [
+        "insurance",
         "prudential_supervision",
-        "securities",
-        "insurance"
+        "securities"
       ],
       "component": "timeliness",
       "weight_pct": 15,
@@ -122,10 +122,10 @@
       "country_code": "DE",
       "authority": "Federal Financial Supervisory Authority",
       "role_mapping": [
-        "prudential_supervision",
-        "securities",
         "insurance",
-        "pensions"
+        "pensions",
+        "prudential_supervision",
+        "securities"
       ],
       "component": "accessibility",
       "weight_pct": 20,
@@ -143,10 +143,10 @@
       "country_code": "DE",
       "authority": "Federal Financial Supervisory Authority",
       "role_mapping": [
-        "prudential_supervision",
-        "securities",
         "insurance",
-        "pensions"
+        "pensions",
+        "prudential_supervision",
+        "securities"
       ],
       "component": "caseLevelSpecificity",
       "weight_pct": 25,
@@ -166,10 +166,10 @@
       "country_code": "DE",
       "authority": "Federal Financial Supervisory Authority",
       "role_mapping": [
-        "prudential_supervision",
-        "securities",
         "insurance",
-        "pensions"
+        "pensions",
+        "prudential_supervision",
+        "securities"
       ],
       "component": "sourceTraceability",
       "weight_pct": 20,
@@ -190,10 +190,10 @@
       "country_code": "DE",
       "authority": "Federal Financial Supervisory Authority",
       "role_mapping": [
-        "prudential_supervision",
-        "securities",
         "insurance",
-        "pensions"
+        "pensions",
+        "prudential_supervision",
+        "securities"
       ],
       "component": "archiveDepth",
       "weight_pct": 20,
@@ -211,10 +211,10 @@
       "country_code": "DE",
       "authority": "Federal Financial Supervisory Authority",
       "role_mapping": [
-        "prudential_supervision",
-        "securities",
         "insurance",
-        "pensions"
+        "pensions",
+        "prudential_supervision",
+        "securities"
       ],
       "component": "timeliness",
       "weight_pct": 15,
@@ -434,9 +434,9 @@
       "country_code": "IE",
       "authority": "Central Bank of Ireland",
       "role_mapping": [
+        "insurance",
         "prudential_supervision",
-        "securities",
-        "insurance"
+        "securities"
       ],
       "component": "accessibility",
       "weight_pct": 20,
@@ -456,9 +456,9 @@
       "country_code": "IE",
       "authority": "Central Bank of Ireland",
       "role_mapping": [
+        "insurance",
         "prudential_supervision",
-        "securities",
-        "insurance"
+        "securities"
       ],
       "component": "caseLevelSpecificity",
       "weight_pct": 25,
@@ -478,9 +478,9 @@
       "country_code": "IE",
       "authority": "Central Bank of Ireland",
       "role_mapping": [
+        "insurance",
         "prudential_supervision",
-        "securities",
-        "insurance"
+        "securities"
       ],
       "component": "sourceTraceability",
       "weight_pct": 20,
@@ -501,9 +501,9 @@
       "country_code": "IE",
       "authority": "Central Bank of Ireland",
       "role_mapping": [
+        "insurance",
         "prudential_supervision",
-        "securities",
-        "insurance"
+        "securities"
       ],
       "component": "archiveDepth",
       "weight_pct": 20,
@@ -524,9 +524,9 @@
       "country_code": "IE",
       "authority": "Central Bank of Ireland",
       "role_mapping": [
+        "insurance",
         "prudential_supervision",
-        "securities",
-        "insurance"
+        "securities"
       ],
       "component": "timeliness",
       "weight_pct": 15,
@@ -643,8 +643,8 @@
       "country_code": "NL",
       "authority": "The Dutch Authority for the Financial Markets*",
       "role_mapping": [
-        "securities",
-        "insurance"
+        "insurance",
+        "securities"
       ],
       "component": "accessibility",
       "weight_pct": 20,
@@ -662,8 +662,8 @@
       "country_code": "NL",
       "authority": "The Dutch Authority for the Financial Markets*",
       "role_mapping": [
-        "securities",
-        "insurance"
+        "insurance",
+        "securities"
       ],
       "component": "caseLevelSpecificity",
       "weight_pct": 25,
@@ -683,8 +683,8 @@
       "country_code": "NL",
       "authority": "The Dutch Authority for the Financial Markets*",
       "role_mapping": [
-        "securities",
-        "insurance"
+        "insurance",
+        "securities"
       ],
       "component": "sourceTraceability",
       "weight_pct": 20,
@@ -705,8 +705,8 @@
       "country_code": "NL",
       "authority": "The Dutch Authority for the Financial Markets*",
       "role_mapping": [
-        "securities",
-        "insurance"
+        "insurance",
+        "securities"
       ],
       "component": "archiveDepth",
       "weight_pct": 20,
@@ -724,8 +724,8 @@
       "country_code": "NL",
       "authority": "The Dutch Authority for the Financial Markets*",
       "role_mapping": [
-        "securities",
-        "insurance"
+        "insurance",
+        "securities"
       ],
       "component": "timeliness",
       "weight_pct": 15,
@@ -746,9 +746,9 @@
       "country_code": "NL",
       "authority": "De Nederlandsche Bank",
       "role_mapping": [
-        "prudential_supervision",
         "insurance",
-        "pensions"
+        "pensions",
+        "prudential_supervision"
       ],
       "component": "accessibility",
       "weight_pct": 20,
@@ -768,9 +768,9 @@
       "country_code": "NL",
       "authority": "De Nederlandsche Bank",
       "role_mapping": [
-        "prudential_supervision",
         "insurance",
-        "pensions"
+        "pensions",
+        "prudential_supervision"
       ],
       "component": "caseLevelSpecificity",
       "weight_pct": 25,
@@ -790,9 +790,9 @@
       "country_code": "NL",
       "authority": "De Nederlandsche Bank",
       "role_mapping": [
-        "prudential_supervision",
         "insurance",
-        "pensions"
+        "pensions",
+        "prudential_supervision"
       ],
       "component": "sourceTraceability",
       "weight_pct": 20,
@@ -813,9 +813,9 @@
       "country_code": "NL",
       "authority": "De Nederlandsche Bank",
       "role_mapping": [
-        "prudential_supervision",
         "insurance",
-        "pensions"
+        "pensions",
+        "prudential_supervision"
       ],
       "component": "archiveDepth",
       "weight_pct": 20,
@@ -836,9 +836,9 @@
       "country_code": "NL",
       "authority": "De Nederlandsche Bank",
       "role_mapping": [
-        "prudential_supervision",
         "insurance",
-        "pensions"
+        "pensions",
+        "prudential_supervision"
       ],
       "component": "timeliness",
       "weight_pct": 15,
@@ -945,9 +945,9 @@
       "country_code": "AE",
       "authority": "Dubai Financial Services Authority",
       "role_mapping": [
+        "insurance",
         "prudential_supervision",
-        "securities",
-        "insurance"
+        "securities"
       ],
       "component": "accessibility",
       "weight_pct": 20,
@@ -963,9 +963,9 @@
       "country_code": "AE",
       "authority": "Dubai Financial Services Authority",
       "role_mapping": [
+        "insurance",
         "prudential_supervision",
-        "securities",
-        "insurance"
+        "securities"
       ],
       "component": "caseLevelSpecificity",
       "weight_pct": 25,
@@ -985,9 +985,9 @@
       "country_code": "AE",
       "authority": "Dubai Financial Services Authority",
       "role_mapping": [
+        "insurance",
         "prudential_supervision",
-        "securities",
-        "insurance"
+        "securities"
       ],
       "component": "sourceTraceability",
       "weight_pct": 20,
@@ -1008,9 +1008,9 @@
       "country_code": "AE",
       "authority": "Dubai Financial Services Authority",
       "role_mapping": [
+        "insurance",
         "prudential_supervision",
-        "securities",
-        "insurance"
+        "securities"
       ],
       "component": "archiveDepth",
       "weight_pct": 20,
@@ -1028,9 +1028,9 @@
       "country_code": "AE",
       "authority": "Dubai Financial Services Authority",
       "role_mapping": [
+        "insurance",
         "prudential_supervision",
-        "securities",
-        "insurance"
+        "securities"
       ],
       "component": "timeliness",
       "weight_pct": 15,
@@ -1051,8 +1051,8 @@
       "country_code": "AE",
       "authority": "Financial Services Regulatory Authority",
       "role_mapping": [
-        "securities",
-        "insurance"
+        "insurance",
+        "securities"
       ],
       "component": "accessibility",
       "weight_pct": 20,
@@ -1068,8 +1068,8 @@
       "country_code": "AE",
       "authority": "Financial Services Regulatory Authority",
       "role_mapping": [
-        "securities",
-        "insurance"
+        "insurance",
+        "securities"
       ],
       "component": "caseLevelSpecificity",
       "weight_pct": 25,
@@ -1089,8 +1089,8 @@
       "country_code": "AE",
       "authority": "Financial Services Regulatory Authority",
       "role_mapping": [
-        "securities",
-        "insurance"
+        "insurance",
+        "securities"
       ],
       "component": "sourceTraceability",
       "weight_pct": 20,
@@ -1111,8 +1111,8 @@
       "country_code": "AE",
       "authority": "Financial Services Regulatory Authority",
       "role_mapping": [
-        "securities",
-        "insurance"
+        "insurance",
+        "securities"
       ],
       "component": "archiveDepth",
       "weight_pct": 20,
@@ -1130,8 +1130,8 @@
       "country_code": "AE",
       "authority": "Financial Services Regulatory Authority",
       "role_mapping": [
-        "securities",
-        "insurance"
+        "insurance",
+        "securities"
       ],
       "component": "timeliness",
       "weight_pct": 15,
@@ -1248,9 +1248,9 @@
       "country_code": "JE",
       "authority": "Jersey Financial Services Commission",
       "role_mapping": [
+        "insurance",
         "prudential_supervision",
-        "securities",
-        "insurance"
+        "securities"
       ],
       "component": "accessibility",
       "weight_pct": 20,
@@ -1266,9 +1266,9 @@
       "country_code": "JE",
       "authority": "Jersey Financial Services Commission",
       "role_mapping": [
+        "insurance",
         "prudential_supervision",
-        "securities",
-        "insurance"
+        "securities"
       ],
       "component": "caseLevelSpecificity",
       "weight_pct": 25,
@@ -1288,9 +1288,9 @@
       "country_code": "JE",
       "authority": "Jersey Financial Services Commission",
       "role_mapping": [
+        "insurance",
         "prudential_supervision",
-        "securities",
-        "insurance"
+        "securities"
       ],
       "component": "sourceTraceability",
       "weight_pct": 20,
@@ -1311,9 +1311,9 @@
       "country_code": "JE",
       "authority": "Jersey Financial Services Commission",
       "role_mapping": [
+        "insurance",
         "prudential_supervision",
-        "securities",
-        "insurance"
+        "securities"
       ],
       "component": "archiveDepth",
       "weight_pct": 20,
@@ -1331,9 +1331,9 @@
       "country_code": "JE",
       "authority": "Jersey Financial Services Commission",
       "role_mapping": [
+        "insurance",
         "prudential_supervision",
-        "securities",
-        "insurance"
+        "securities"
       ],
       "component": "timeliness",
       "weight_pct": 15,
@@ -1352,10 +1352,10 @@
       "country_code": "GG",
       "authority": "Guernsey Financial Services Commission",
       "role_mapping": [
-        "prudential_supervision",
-        "securities",
         "insurance",
-        "pensions"
+        "pensions",
+        "prudential_supervision",
+        "securities"
       ],
       "component": "accessibility",
       "weight_pct": 20,
@@ -1375,10 +1375,10 @@
       "country_code": "GG",
       "authority": "Guernsey Financial Services Commission",
       "role_mapping": [
-        "prudential_supervision",
-        "securities",
         "insurance",
-        "pensions"
+        "pensions",
+        "prudential_supervision",
+        "securities"
       ],
       "component": "caseLevelSpecificity",
       "weight_pct": 25,
@@ -1398,10 +1398,10 @@
       "country_code": "GG",
       "authority": "Guernsey Financial Services Commission",
       "role_mapping": [
-        "prudential_supervision",
-        "securities",
         "insurance",
-        "pensions"
+        "pensions",
+        "prudential_supervision",
+        "securities"
       ],
       "component": "sourceTraceability",
       "weight_pct": 20,
@@ -1422,10 +1422,10 @@
       "country_code": "GG",
       "authority": "Guernsey Financial Services Commission",
       "role_mapping": [
-        "prudential_supervision",
-        "securities",
         "insurance",
-        "pensions"
+        "pensions",
+        "prudential_supervision",
+        "securities"
       ],
       "component": "archiveDepth",
       "weight_pct": 20,
@@ -1446,10 +1446,10 @@
       "country_code": "GG",
       "authority": "Guernsey Financial Services Commission",
       "role_mapping": [
-        "prudential_supervision",
-        "securities",
         "insurance",
-        "pensions"
+        "pensions",
+        "prudential_supervision",
+        "securities"
       ],
       "component": "timeliness",
       "weight_pct": 15,
@@ -1755,8 +1755,8 @@
       "country_code": "TW",
       "authority": "Financial Supervisory Commission",
       "role_mapping": [
-        "securities",
-        "insurance"
+        "insurance",
+        "securities"
       ],
       "component": "accessibility",
       "weight_pct": 20,
@@ -1774,8 +1774,8 @@
       "country_code": "TW",
       "authority": "Financial Supervisory Commission",
       "role_mapping": [
-        "securities",
-        "insurance"
+        "insurance",
+        "securities"
       ],
       "component": "caseLevelSpecificity",
       "weight_pct": 25,
@@ -1795,8 +1795,8 @@
       "country_code": "TW",
       "authority": "Financial Supervisory Commission",
       "role_mapping": [
-        "securities",
-        "insurance"
+        "insurance",
+        "securities"
       ],
       "component": "sourceTraceability",
       "weight_pct": 20,
@@ -1817,8 +1817,8 @@
       "country_code": "TW",
       "authority": "Financial Supervisory Commission",
       "role_mapping": [
-        "securities",
-        "insurance"
+        "insurance",
+        "securities"
       ],
       "component": "archiveDepth",
       "weight_pct": 20,
@@ -1836,8 +1836,8 @@
       "country_code": "TW",
       "authority": "Financial Supervisory Commission",
       "role_mapping": [
-        "securities",
-        "insurance"
+        "insurance",
+        "securities"
       ],
       "component": "timeliness",
       "weight_pct": 15,
@@ -2057,8 +2057,8 @@
       "country_code": "AU",
       "authority": "Australian Securities and Investments Commission*",
       "role_mapping": [
-        "securities",
-        "insurance"
+        "insurance",
+        "securities"
       ],
       "component": "accessibility",
       "weight_pct": 20,
@@ -2078,8 +2078,8 @@
       "country_code": "AU",
       "authority": "Australian Securities and Investments Commission*",
       "role_mapping": [
-        "securities",
-        "insurance"
+        "insurance",
+        "securities"
       ],
       "component": "caseLevelSpecificity",
       "weight_pct": 25,
@@ -2099,8 +2099,8 @@
       "country_code": "AU",
       "authority": "Australian Securities and Investments Commission*",
       "role_mapping": [
-        "securities",
-        "insurance"
+        "insurance",
+        "securities"
       ],
       "component": "sourceTraceability",
       "weight_pct": 20,
@@ -2121,8 +2121,8 @@
       "country_code": "AU",
       "authority": "Australian Securities and Investments Commission*",
       "role_mapping": [
-        "securities",
-        "insurance"
+        "insurance",
+        "securities"
       ],
       "component": "archiveDepth",
       "weight_pct": 20,
@@ -2143,8 +2143,8 @@
       "country_code": "AU",
       "authority": "Australian Securities and Investments Commission*",
       "role_mapping": [
-        "securities",
-        "insurance"
+        "insurance",
+        "securities"
       ],
       "component": "timeliness",
       "weight_pct": 15,
@@ -2164,9 +2164,7 @@
       "authority_id": "ra-auth-au-a991c73127987db8",
       "country_code": "AU",
       "authority": "The Australian Transaction Reports and Analysis Centre (AUSTRAC)",
-      "role_mapping": [
-        "financial_intelligence"
-      ],
+      "role_mapping": [],
       "component": "accessibility",
       "weight_pct": 20,
       "value": null,
@@ -2180,9 +2178,7 @@
       "authority_id": "ra-auth-au-a991c73127987db8",
       "country_code": "AU",
       "authority": "The Australian Transaction Reports and Analysis Centre (AUSTRAC)",
-      "role_mapping": [
-        "financial_intelligence"
-      ],
+      "role_mapping": [],
       "component": "caseLevelSpecificity",
       "weight_pct": 25,
       "value": 100,
@@ -2200,9 +2196,7 @@
       "authority_id": "ra-auth-au-a991c73127987db8",
       "country_code": "AU",
       "authority": "The Australian Transaction Reports and Analysis Centre (AUSTRAC)",
-      "role_mapping": [
-        "financial_intelligence"
-      ],
+      "role_mapping": [],
       "component": "sourceTraceability",
       "weight_pct": 20,
       "value": 100,
@@ -2221,9 +2215,7 @@
       "authority_id": "ra-auth-au-a991c73127987db8",
       "country_code": "AU",
       "authority": "The Australian Transaction Reports and Analysis Centre (AUSTRAC)",
-      "role_mapping": [
-        "financial_intelligence"
-      ],
+      "role_mapping": [],
       "component": "archiveDepth",
       "weight_pct": 20,
       "value": null,
@@ -2239,9 +2231,7 @@
       "authority_id": "ra-auth-au-a991c73127987db8",
       "country_code": "AU",
       "authority": "The Australian Transaction Reports and Analysis Centre (AUSTRAC)",
-      "role_mapping": [
-        "financial_intelligence"
-      ],
+      "role_mapping": [],
       "component": "timeliness",
       "weight_pct": 15,
       "value": 36.7123,
@@ -2261,9 +2251,9 @@
       "country_code": "SG",
       "authority": "Monetary Authority of Singapore",
       "role_mapping": [
+        "insurance",
         "prudential_supervision",
-        "securities",
-        "insurance"
+        "securities"
       ],
       "component": "accessibility",
       "weight_pct": 20,
@@ -2283,9 +2273,9 @@
       "country_code": "SG",
       "authority": "Monetary Authority of Singapore",
       "role_mapping": [
+        "insurance",
         "prudential_supervision",
-        "securities",
-        "insurance"
+        "securities"
       ],
       "component": "caseLevelSpecificity",
       "weight_pct": 25,
@@ -2305,9 +2295,9 @@
       "country_code": "SG",
       "authority": "Monetary Authority of Singapore",
       "role_mapping": [
+        "insurance",
         "prudential_supervision",
-        "securities",
-        "insurance"
+        "securities"
       ],
       "component": "sourceTraceability",
       "weight_pct": 20,
@@ -2328,9 +2318,9 @@
       "country_code": "SG",
       "authority": "Monetary Authority of Singapore",
       "role_mapping": [
+        "insurance",
         "prudential_supervision",
-        "securities",
-        "insurance"
+        "securities"
       ],
       "component": "archiveDepth",
       "weight_pct": 20,
@@ -2351,9 +2341,9 @@
       "country_code": "SG",
       "authority": "Monetary Authority of Singapore",
       "role_mapping": [
+        "insurance",
         "prudential_supervision",
-        "securities",
-        "insurance"
+        "securities"
       ],
       "component": "timeliness",
       "weight_pct": 15,
@@ -2471,9 +2461,7 @@
       "authority_id": "ra-auth-us-62a5bd0929843be2",
       "country_code": "US",
       "authority": "Financial Crimes Enforcement Network (FinCEN)",
-      "role_mapping": [
-        "financial_intelligence"
-      ],
+      "role_mapping": [],
       "component": "accessibility",
       "weight_pct": 20,
       "value": null,
@@ -2487,9 +2475,7 @@
       "authority_id": "ra-auth-us-62a5bd0929843be2",
       "country_code": "US",
       "authority": "Financial Crimes Enforcement Network (FinCEN)",
-      "role_mapping": [
-        "financial_intelligence"
-      ],
+      "role_mapping": [],
       "component": "caseLevelSpecificity",
       "weight_pct": 25,
       "value": 100,
@@ -2507,9 +2493,7 @@
       "authority_id": "ra-auth-us-62a5bd0929843be2",
       "country_code": "US",
       "authority": "Financial Crimes Enforcement Network (FinCEN)",
-      "role_mapping": [
-        "financial_intelligence"
-      ],
+      "role_mapping": [],
       "component": "sourceTraceability",
       "weight_pct": 20,
       "value": 100,
@@ -2528,9 +2512,7 @@
       "authority_id": "ra-auth-us-62a5bd0929843be2",
       "country_code": "US",
       "authority": "Financial Crimes Enforcement Network (FinCEN)",
-      "role_mapping": [
-        "financial_intelligence"
-      ],
+      "role_mapping": [],
       "component": "archiveDepth",
       "weight_pct": 20,
       "value": null,
@@ -2546,9 +2528,7 @@
       "authority_id": "ra-auth-us-62a5bd0929843be2",
       "country_code": "US",
       "authority": "Financial Crimes Enforcement Network (FinCEN)",
-      "role_mapping": [
-        "financial_intelligence"
-      ],
+      "role_mapping": [],
       "component": "timeliness",
       "weight_pct": 15,
       "value": 90.5556,
@@ -2568,9 +2548,9 @@
       "country_code": "CH",
       "authority": "Swiss Financial Market Supervisory Authority (FINMA)",
       "role_mapping": [
+        "insurance",
         "prudential_supervision",
-        "securities",
-        "insurance"
+        "securities"
       ],
       "component": "accessibility",
       "weight_pct": 20,
@@ -2590,9 +2570,9 @@
       "country_code": "CH",
       "authority": "Swiss Financial Market Supervisory Authority (FINMA)",
       "role_mapping": [
+        "insurance",
         "prudential_supervision",
-        "securities",
-        "insurance"
+        "securities"
       ],
       "component": "caseLevelSpecificity",
       "weight_pct": 25,
@@ -2612,9 +2592,9 @@
       "country_code": "CH",
       "authority": "Swiss Financial Market Supervisory Authority (FINMA)",
       "role_mapping": [
+        "insurance",
         "prudential_supervision",
-        "securities",
-        "insurance"
+        "securities"
       ],
       "component": "sourceTraceability",
       "weight_pct": 20,
@@ -2635,9 +2615,9 @@
       "country_code": "CH",
       "authority": "Swiss Financial Market Supervisory Authority (FINMA)",
       "role_mapping": [
+        "insurance",
         "prudential_supervision",
-        "securities",
-        "insurance"
+        "securities"
       ],
       "component": "archiveDepth",
       "weight_pct": 20,
@@ -2658,9 +2638,9 @@
       "country_code": "CH",
       "authority": "Swiss Financial Market Supervisory Authority (FINMA)",
       "role_mapping": [
+        "insurance",
         "prudential_supervision",
-        "securities",
-        "insurance"
+        "securities"
       ],
       "component": "timeliness",
       "weight_pct": 15,
@@ -2959,8 +2939,8 @@
       "country_code": "US",
       "authority": "Board of Governors of the Federal Reserve System",
       "role_mapping": [
-        "prudential_supervision",
-        "insurance"
+        "insurance",
+        "prudential_supervision"
       ],
       "component": "accessibility",
       "weight_pct": 20,
@@ -2980,8 +2960,8 @@
       "country_code": "US",
       "authority": "Board of Governors of the Federal Reserve System",
       "role_mapping": [
-        "prudential_supervision",
-        "insurance"
+        "insurance",
+        "prudential_supervision"
       ],
       "component": "caseLevelSpecificity",
       "weight_pct": 25,
@@ -3001,8 +2981,8 @@
       "country_code": "US",
       "authority": "Board of Governors of the Federal Reserve System",
       "role_mapping": [
-        "prudential_supervision",
-        "insurance"
+        "insurance",
+        "prudential_supervision"
       ],
       "component": "sourceTraceability",
       "weight_pct": 20,
@@ -3023,8 +3003,8 @@
       "country_code": "US",
       "authority": "Board of Governors of the Federal Reserve System",
       "role_mapping": [
-        "prudential_supervision",
-        "insurance"
+        "insurance",
+        "prudential_supervision"
       ],
       "component": "archiveDepth",
       "weight_pct": 20,
@@ -3045,8 +3025,8 @@
       "country_code": "US",
       "authority": "Board of Governors of the Federal Reserve System",
       "role_mapping": [
-        "prudential_supervision",
-        "insurance"
+        "insurance",
+        "prudential_supervision"
       ],
       "component": "timeliness",
       "weight_pct": 15,
@@ -3249,6 +3229,7 @@
       "country_code": "IM",
       "authority": "Isle of Man Financial Services Authority",
       "role_mapping": [
+        "insurance",
         "securities"
       ],
       "component": "accessibility",
@@ -3265,6 +3246,7 @@
       "country_code": "IM",
       "authority": "Isle of Man Financial Services Authority",
       "role_mapping": [
+        "insurance",
         "securities"
       ],
       "component": "caseLevelSpecificity",
@@ -3285,6 +3267,7 @@
       "country_code": "IM",
       "authority": "Isle of Man Financial Services Authority",
       "role_mapping": [
+        "insurance",
         "securities"
       ],
       "component": "sourceTraceability",
@@ -3306,6 +3289,7 @@
       "country_code": "IM",
       "authority": "Isle of Man Financial Services Authority",
       "role_mapping": [
+        "insurance",
         "securities"
       ],
       "component": "archiveDepth",
@@ -3324,6 +3308,7 @@
       "country_code": "IM",
       "authority": "Isle of Man Financial Services Authority",
       "role_mapping": [
+        "insurance",
         "securities"
       ],
       "component": "timeliness",
@@ -3533,8 +3518,9 @@
       "country_code": "KR",
       "authority": "Financial Supervisory Service",
       "role_mapping": [
-        "prudential_supervision",
-        "insurance"
+        "insurance",
+        "pensions",
+        "prudential_supervision"
       ],
       "component": "accessibility",
       "weight_pct": 20,
@@ -3554,8 +3540,9 @@
       "country_code": "KR",
       "authority": "Financial Supervisory Service",
       "role_mapping": [
-        "prudential_supervision",
-        "insurance"
+        "insurance",
+        "pensions",
+        "prudential_supervision"
       ],
       "component": "caseLevelSpecificity",
       "weight_pct": 25,
@@ -3575,8 +3562,9 @@
       "country_code": "KR",
       "authority": "Financial Supervisory Service",
       "role_mapping": [
-        "prudential_supervision",
-        "insurance"
+        "insurance",
+        "pensions",
+        "prudential_supervision"
       ],
       "component": "sourceTraceability",
       "weight_pct": 20,
@@ -3597,8 +3585,9 @@
       "country_code": "KR",
       "authority": "Financial Supervisory Service",
       "role_mapping": [
-        "prudential_supervision",
-        "insurance"
+        "insurance",
+        "pensions",
+        "prudential_supervision"
       ],
       "component": "archiveDepth",
       "weight_pct": 20,
@@ -3619,8 +3608,9 @@
       "country_code": "KR",
       "authority": "Financial Supervisory Service",
       "role_mapping": [
-        "prudential_supervision",
-        "insurance"
+        "insurance",
+        "pensions",
+        "prudential_supervision"
       ],
       "component": "timeliness",
       "weight_pct": 15,
@@ -3830,9 +3820,9 @@
       "country_code": "FR",
       "authority": "Autorité de Contrôle Prudentiel et de Résolution",
       "role_mapping": [
-        "prudential_supervision",
         "insurance",
-        "pensions"
+        "pensions",
+        "prudential_supervision"
       ],
       "component": "accessibility",
       "weight_pct": 20,
@@ -3852,9 +3842,9 @@
       "country_code": "FR",
       "authority": "Autorité de Contrôle Prudentiel et de Résolution",
       "role_mapping": [
-        "prudential_supervision",
         "insurance",
-        "pensions"
+        "pensions",
+        "prudential_supervision"
       ],
       "component": "caseLevelSpecificity",
       "weight_pct": 25,
@@ -3874,9 +3864,9 @@
       "country_code": "FR",
       "authority": "Autorité de Contrôle Prudentiel et de Résolution",
       "role_mapping": [
-        "prudential_supervision",
         "insurance",
-        "pensions"
+        "pensions",
+        "prudential_supervision"
       ],
       "component": "sourceTraceability",
       "weight_pct": 20,
@@ -3897,9 +3887,9 @@
       "country_code": "FR",
       "authority": "Autorité de Contrôle Prudentiel et de Résolution",
       "role_mapping": [
-        "prudential_supervision",
         "insurance",
-        "pensions"
+        "pensions",
+        "prudential_supervision"
       ],
       "component": "archiveDepth",
       "weight_pct": 20,
@@ -3920,9 +3910,9 @@
       "country_code": "FR",
       "authority": "Autorité de Contrôle Prudentiel et de Résolution",
       "role_mapping": [
-        "prudential_supervision",
         "insurance",
-        "pensions"
+        "pensions",
+        "prudential_supervision"
       ],
       "component": "timeliness",
       "weight_pct": 15,
@@ -3943,9 +3933,9 @@
       "country_code": "LU",
       "authority": "Commission de Surveillance du Secteur Financier",
       "role_mapping": [
+        "pensions",
         "prudential_supervision",
-        "securities",
-        "pensions"
+        "securities"
       ],
       "component": "accessibility",
       "weight_pct": 20,
@@ -3965,9 +3955,9 @@
       "country_code": "LU",
       "authority": "Commission de Surveillance du Secteur Financier",
       "role_mapping": [
+        "pensions",
         "prudential_supervision",
-        "securities",
-        "pensions"
+        "securities"
       ],
       "component": "caseLevelSpecificity",
       "weight_pct": 25,
@@ -3987,9 +3977,9 @@
       "country_code": "LU",
       "authority": "Commission de Surveillance du Secteur Financier",
       "role_mapping": [
+        "pensions",
         "prudential_supervision",
-        "securities",
-        "pensions"
+        "securities"
       ],
       "component": "sourceTraceability",
       "weight_pct": 20,
@@ -4010,9 +4000,9 @@
       "country_code": "LU",
       "authority": "Commission de Surveillance du Secteur Financier",
       "role_mapping": [
+        "pensions",
         "prudential_supervision",
-        "securities",
-        "pensions"
+        "securities"
       ],
       "component": "archiveDepth",
       "weight_pct": 20,
@@ -4033,9 +4023,9 @@
       "country_code": "LU",
       "authority": "Commission de Surveillance du Secteur Financier",
       "role_mapping": [
+        "pensions",
         "prudential_supervision",
-        "securities",
-        "pensions"
+        "securities"
       ],
       "component": "timeliness",
       "weight_pct": 15,
@@ -4056,9 +4046,9 @@
       "country_code": "BE",
       "authority": "Financial Services and Markets Authority*",
       "role_mapping": [
-        "securities",
         "insurance",
-        "pensions"
+        "pensions",
+        "securities"
       ],
       "component": "accessibility",
       "weight_pct": 20,
@@ -4078,9 +4068,9 @@
       "country_code": "BE",
       "authority": "Financial Services and Markets Authority*",
       "role_mapping": [
-        "securities",
         "insurance",
-        "pensions"
+        "pensions",
+        "securities"
       ],
       "component": "caseLevelSpecificity",
       "weight_pct": 25,
@@ -4100,9 +4090,9 @@
       "country_code": "BE",
       "authority": "Financial Services and Markets Authority*",
       "role_mapping": [
-        "securities",
         "insurance",
-        "pensions"
+        "pensions",
+        "securities"
       ],
       "component": "sourceTraceability",
       "weight_pct": 20,
@@ -4123,9 +4113,9 @@
       "country_code": "BE",
       "authority": "Financial Services and Markets Authority*",
       "role_mapping": [
-        "securities",
         "insurance",
-        "pensions"
+        "pensions",
+        "securities"
       ],
       "component": "archiveDepth",
       "weight_pct": 20,
@@ -4146,9 +4136,9 @@
       "country_code": "BE",
       "authority": "Financial Services and Markets Authority*",
       "role_mapping": [
-        "securities",
         "insurance",
-        "pensions"
+        "pensions",
+        "securities"
       ],
       "component": "timeliness",
       "weight_pct": 15,
@@ -4169,10 +4159,10 @@
       "country_code": "AT",
       "authority": "Austrian Financial Market Authority",
       "role_mapping": [
-        "prudential_supervision",
-        "securities",
         "insurance",
-        "pensions"
+        "pensions",
+        "prudential_supervision",
+        "securities"
       ],
       "component": "accessibility",
       "weight_pct": 20,
@@ -4188,10 +4178,10 @@
       "country_code": "AT",
       "authority": "Austrian Financial Market Authority",
       "role_mapping": [
-        "prudential_supervision",
-        "securities",
         "insurance",
-        "pensions"
+        "pensions",
+        "prudential_supervision",
+        "securities"
       ],
       "component": "caseLevelSpecificity",
       "weight_pct": 25,
@@ -4211,10 +4201,10 @@
       "country_code": "AT",
       "authority": "Austrian Financial Market Authority",
       "role_mapping": [
-        "prudential_supervision",
-        "securities",
         "insurance",
-        "pensions"
+        "pensions",
+        "prudential_supervision",
+        "securities"
       ],
       "component": "sourceTraceability",
       "weight_pct": 20,
@@ -4235,10 +4225,10 @@
       "country_code": "AT",
       "authority": "Austrian Financial Market Authority",
       "role_mapping": [
-        "prudential_supervision",
-        "securities",
         "insurance",
-        "pensions"
+        "pensions",
+        "prudential_supervision",
+        "securities"
       ],
       "component": "archiveDepth",
       "weight_pct": 20,
@@ -4256,10 +4246,10 @@
       "country_code": "AT",
       "authority": "Austrian Financial Market Authority",
       "role_mapping": [
-        "prudential_supervision",
-        "securities",
         "insurance",
-        "pensions"
+        "pensions",
+        "prudential_supervision",
+        "securities"
       ],
       "component": "timeliness",
       "weight_pct": 15,
@@ -4280,10 +4270,10 @@
       "country_code": "CZ",
       "authority": "Czech National Bank",
       "role_mapping": [
-        "prudential_supervision",
-        "securities",
         "insurance",
-        "pensions"
+        "pensions",
+        "prudential_supervision",
+        "securities"
       ],
       "component": "accessibility",
       "weight_pct": 20,
@@ -4301,10 +4291,10 @@
       "country_code": "CZ",
       "authority": "Czech National Bank",
       "role_mapping": [
-        "prudential_supervision",
-        "securities",
         "insurance",
-        "pensions"
+        "pensions",
+        "prudential_supervision",
+        "securities"
       ],
       "component": "caseLevelSpecificity",
       "weight_pct": 25,
@@ -4324,10 +4314,10 @@
       "country_code": "CZ",
       "authority": "Czech National Bank",
       "role_mapping": [
-        "prudential_supervision",
-        "securities",
         "insurance",
-        "pensions"
+        "pensions",
+        "prudential_supervision",
+        "securities"
       ],
       "component": "sourceTraceability",
       "weight_pct": 20,
@@ -4348,10 +4338,10 @@
       "country_code": "CZ",
       "authority": "Czech National Bank",
       "role_mapping": [
-        "prudential_supervision",
-        "securities",
         "insurance",
-        "pensions"
+        "pensions",
+        "prudential_supervision",
+        "securities"
       ],
       "component": "archiveDepth",
       "weight_pct": 20,
@@ -4369,10 +4359,10 @@
       "country_code": "CZ",
       "authority": "Czech National Bank",
       "role_mapping": [
-        "prudential_supervision",
-        "securities",
         "insurance",
-        "pensions"
+        "pensions",
+        "prudential_supervision",
+        "securities"
       ],
       "component": "timeliness",
       "weight_pct": 15,
@@ -4588,8 +4578,7 @@
       "authority": "Finansinspektionen",
       "role_mapping": [
         "prudential_supervision",
-        "securities",
-        "financial_intelligence"
+        "securities"
       ],
       "component": "accessibility",
       "weight_pct": 20,
@@ -4610,8 +4599,7 @@
       "authority": "Finansinspektionen",
       "role_mapping": [
         "prudential_supervision",
-        "securities",
-        "financial_intelligence"
+        "securities"
       ],
       "component": "caseLevelSpecificity",
       "weight_pct": 25,
@@ -4632,8 +4620,7 @@
       "authority": "Finansinspektionen",
       "role_mapping": [
         "prudential_supervision",
-        "securities",
-        "financial_intelligence"
+        "securities"
       ],
       "component": "sourceTraceability",
       "weight_pct": 20,
@@ -4655,8 +4642,7 @@
       "authority": "Finansinspektionen",
       "role_mapping": [
         "prudential_supervision",
-        "securities",
-        "financial_intelligence"
+        "securities"
       ],
       "component": "archiveDepth",
       "weight_pct": 20,
@@ -4678,8 +4664,7 @@
       "authority": "Finansinspektionen",
       "role_mapping": [
         "prudential_supervision",
-        "securities",
-        "financial_intelligence"
+        "securities"
       ],
       "component": "timeliness",
       "weight_pct": 15,
@@ -4700,9 +4685,9 @@
       "country_code": "DK",
       "authority": "Danish Financial Supervisory Authority",
       "role_mapping": [
+        "insurance",
         "prudential_supervision",
-        "securities",
-        "insurance"
+        "securities"
       ],
       "component": "accessibility",
       "weight_pct": 20,
@@ -4718,9 +4703,9 @@
       "country_code": "DK",
       "authority": "Danish Financial Supervisory Authority",
       "role_mapping": [
+        "insurance",
         "prudential_supervision",
-        "securities",
-        "insurance"
+        "securities"
       ],
       "component": "caseLevelSpecificity",
       "weight_pct": 25,
@@ -4740,9 +4725,9 @@
       "country_code": "DK",
       "authority": "Danish Financial Supervisory Authority",
       "role_mapping": [
+        "insurance",
         "prudential_supervision",
-        "securities",
-        "insurance"
+        "securities"
       ],
       "component": "sourceTraceability",
       "weight_pct": 20,
@@ -4763,9 +4748,9 @@
       "country_code": "DK",
       "authority": "Danish Financial Supervisory Authority",
       "role_mapping": [
+        "insurance",
         "prudential_supervision",
-        "securities",
-        "insurance"
+        "securities"
       ],
       "component": "archiveDepth",
       "weight_pct": 20,
@@ -4783,9 +4768,9 @@
       "country_code": "DK",
       "authority": "Danish Financial Supervisory Authority",
       "role_mapping": [
+        "insurance",
         "prudential_supervision",
-        "securities",
-        "insurance"
+        "securities"
       ],
       "component": "timeliness",
       "weight_pct": 15,
@@ -4904,9 +4889,9 @@
       "country_code": "NO",
       "authority": "Finanstilsynet (The Financial Supervisory Authority of Norway)",
       "role_mapping": [
+        "insurance",
         "prudential_supervision",
-        "securities",
-        "insurance"
+        "securities"
       ],
       "component": "accessibility",
       "weight_pct": 20,
@@ -4922,9 +4907,9 @@
       "country_code": "NO",
       "authority": "Finanstilsynet (The Financial Supervisory Authority of Norway)",
       "role_mapping": [
+        "insurance",
         "prudential_supervision",
-        "securities",
-        "insurance"
+        "securities"
       ],
       "component": "caseLevelSpecificity",
       "weight_pct": 25,
@@ -4944,9 +4929,9 @@
       "country_code": "NO",
       "authority": "Finanstilsynet (The Financial Supervisory Authority of Norway)",
       "role_mapping": [
+        "insurance",
         "prudential_supervision",
-        "securities",
-        "insurance"
+        "securities"
       ],
       "component": "sourceTraceability",
       "weight_pct": 20,
@@ -4967,9 +4952,9 @@
       "country_code": "NO",
       "authority": "Finanstilsynet (The Financial Supervisory Authority of Norway)",
       "role_mapping": [
+        "insurance",
         "prudential_supervision",
-        "securities",
-        "insurance"
+        "securities"
       ],
       "component": "archiveDepth",
       "weight_pct": 20,
@@ -4987,9 +4972,9 @@
       "country_code": "NO",
       "authority": "Finanstilsynet (The Financial Supervisory Authority of Norway)",
       "role_mapping": [
+        "insurance",
         "prudential_supervision",
-        "securities",
-        "insurance"
+        "securities"
       ],
       "component": "timeliness",
       "weight_pct": 15,
@@ -5010,8 +4995,10 @@
       "country_code": "MT",
       "authority": "Malta Financial Services Authority",
       "role_mapping": [
+        "insurance",
+        "pensions",
         "prudential_supervision",
-        "insurance"
+        "securities"
       ],
       "component": "accessibility",
       "weight_pct": 20,
@@ -5027,8 +5014,10 @@
       "country_code": "MT",
       "authority": "Malta Financial Services Authority",
       "role_mapping": [
+        "insurance",
+        "pensions",
         "prudential_supervision",
-        "insurance"
+        "securities"
       ],
       "component": "caseLevelSpecificity",
       "weight_pct": 25,
@@ -5048,8 +5037,10 @@
       "country_code": "MT",
       "authority": "Malta Financial Services Authority",
       "role_mapping": [
+        "insurance",
+        "pensions",
         "prudential_supervision",
-        "insurance"
+        "securities"
       ],
       "component": "sourceTraceability",
       "weight_pct": 20,
@@ -5070,8 +5061,10 @@
       "country_code": "MT",
       "authority": "Malta Financial Services Authority",
       "role_mapping": [
+        "insurance",
+        "pensions",
         "prudential_supervision",
-        "insurance"
+        "securities"
       ],
       "component": "archiveDepth",
       "weight_pct": 20,
@@ -5089,8 +5082,10 @@
       "country_code": "MT",
       "authority": "Malta Financial Services Authority",
       "role_mapping": [
+        "insurance",
+        "pensions",
         "prudential_supervision",
-        "insurance"
+        "securities"
       ],
       "component": "timeliness",
       "weight_pct": 15,
@@ -5398,7 +5393,9 @@
       "country_code": "KY",
       "authority": "Cayman Islands Monetary Authority",
       "role_mapping": [
-        "prudential_supervision"
+        "insurance",
+        "prudential_supervision",
+        "securities"
       ],
       "component": "accessibility",
       "weight_pct": 20,
@@ -5416,7 +5413,9 @@
       "country_code": "KY",
       "authority": "Cayman Islands Monetary Authority",
       "role_mapping": [
-        "prudential_supervision"
+        "insurance",
+        "prudential_supervision",
+        "securities"
       ],
       "component": "caseLevelSpecificity",
       "weight_pct": 25,
@@ -5436,7 +5435,9 @@
       "country_code": "KY",
       "authority": "Cayman Islands Monetary Authority",
       "role_mapping": [
-        "prudential_supervision"
+        "insurance",
+        "prudential_supervision",
+        "securities"
       ],
       "component": "sourceTraceability",
       "weight_pct": 20,
@@ -5457,7 +5458,9 @@
       "country_code": "KY",
       "authority": "Cayman Islands Monetary Authority",
       "role_mapping": [
-        "prudential_supervision"
+        "insurance",
+        "prudential_supervision",
+        "securities"
       ],
       "component": "archiveDepth",
       "weight_pct": 20,
@@ -5475,7 +5478,9 @@
       "country_code": "KY",
       "authority": "Cayman Islands Monetary Authority",
       "role_mapping": [
-        "prudential_supervision"
+        "insurance",
+        "prudential_supervision",
+        "securities"
       ],
       "component": "timeliness",
       "weight_pct": 15,

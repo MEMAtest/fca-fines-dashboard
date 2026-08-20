@@ -99,7 +99,7 @@ ID,Indonesia,Asia Pacific,financial_intelligence;insurance;pensions;prudential_s
 JP,Japan,Asia Pacific,financial_intelligence;insurance;prudential_supervision;securities,,[object Object],[object Object],0,,,not-assessed,Fewer than two assessed mandate roles (0/4).
 KZ,Kazakhstan,Asia Pacific,financial_intelligence;insurance;pensions;prudential_supervision;securities,,[object Object],[object Object],0,,,not-assessed,Fewer than two assessed mandate roles (0/5).
 KP,North Korea,Asia Pacific,,,[object Object],[object Object],0,,,not-assessed,No applicable non-central mandate roles are mapped for this country.
-KR,South Korea,Asia Pacific,financial_intelligence;insurance;pensions;prudential_supervision;securities,insurance;prudential_supervision,[object Object],[object Object],40,,,not-assessed,"Assessed role coverage is 40%, below the 50% provisional threshold."
+KR,South Korea,Asia Pacific,financial_intelligence;insurance;pensions;prudential_supervision;securities,insurance;pensions;prudential_supervision,[object Object],[object Object],60,89.75,highly-transparent,provisional,Assessed role coverage is 60%; country result is provisional.
 KG,Kyrgyzstan,Asia Pacific,financial_intelligence;prudential_supervision;securities,,[object Object],[object Object],0,,,not-assessed,Fewer than two assessed mandate roles (0/3).
 LA,Laos,Asia Pacific,financial_intelligence,,[object Object],[object Object],0,,,not-assessed,Fewer than two assessed mandate roles (0/1).
 MY,Malaysia,Asia Pacific,financial_intelligence;insurance;prudential_supervision;securities,securities,[object Object],[object Object],25,,,not-assessed,Fewer than two assessed mandate roles (1/4).
@@ -174,7 +174,7 @@ RS,Serbia,Europe,financial_intelligence;insurance;pensions;prudential_supervisio
 SK,Slovakia,Europe,financial_intelligence;insurance;pensions;prudential_supervision;securities,,[object Object],[object Object],0,,,not-assessed,Fewer than two assessed mandate roles (0/5).
 SI,Slovenia,Europe,financial_intelligence;insurance;prudential_supervision;securities,,[object Object],[object Object],0,,,not-assessed,Fewer than two assessed mandate roles (0/4).
 ES,Spain,Europe,financial_intelligence;insurance;pensions;prudential_supervision;securities,,[object Object],[object Object],0,,,not-assessed,Fewer than two assessed mandate roles (0/5).
-SE,Sweden,Europe,financial_intelligence;prudential_supervision;securities,financial_intelligence;prudential_supervision;securities,[object Object],[object Object],100,94.6667,highly-transparent,complete,
+SE,Sweden,Europe,financial_intelligence;prudential_supervision;securities,prudential_supervision;securities,[object Object],[object Object],66.6667,94.6667,highly-transparent,provisional,Assessed role coverage is 66.6667%; country result is provisional.
 CH,Switzerland,Europe,financial_intelligence;insurance;pensions;prudential_supervision;securities,insurance;prudential_supervision;securities,[object Object],[object Object],60,93.2161,highly-transparent,provisional,Assessed role coverage is 60%; country result is provisional.
 UA,Ukraine,Europe,financial_intelligence;insurance;pensions;prudential_supervision;securities,,[object Object],[object Object],0,,,not-assessed,Fewer than two assessed mandate roles (0/5).
 GB,United Kingdom,Europe,financial_intelligence;insurance;pensions;prudential_supervision;securities,insurance;prudential_supervision;securities,[object Object],[object Object],60,99.75,highly-transparent,provisional,Assessed role coverage is 60%; country result is provisional.

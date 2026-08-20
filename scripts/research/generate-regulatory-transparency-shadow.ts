@@ -146,19 +146,12 @@ function correlation(left: number[], right: number[]): number | null {
 
 function buildBiasReport(countries: CountryShadowResult[], regulators: RegulatorShadowResult[], baseline: Array<Record<string, any>>) {
   const byIso = new Map(baseline.map((row) => [row.iso2, row]));
-  const cohorts = ["Africa", "Americas", "Asia", "Europe", "MENA", "Oceania", "Other"];
-  const regionCohort = (value: string): string => {
-    const region = value.toLowerCase();
-    if (region.includes("africa")) return "Africa";
-    if (region.includes("europe")) return "Europe";
-    if (region.includes("mena") || region.includes("middle east")) return "MENA";
-    if (region.includes("asia")) return "Asia";
-    if (region.includes("oceania") || region.includes("pacific")) return "Oceania";
-    if (region.includes("america")) return "Americas";
-    return "Other";
-  };
+  // Keep the research baseline's geography labels verbatim. In particular,
+  // Asia Pacific is one cohort here; inventing an Oceania bucket would make
+  // that cohort appear falsely empty without an explicit geography split.
+  const cohorts = [...new Set(baseline.map((row) => String(row.region || "Other")))].sort();
   const byRegion = Object.fromEntries(cohorts.map((region) => {
-    const rows = countries.filter((country) => regionCohort(String(byIso.get(country.iso2)?.region ?? "Other")) === region);
+    const rows = countries.filter((country) => String(byIso.get(country.iso2)?.region ?? "Other") === region);
     const assessed = rows.filter((row) => row.score !== null);
     return [region, { countries: rows.length, assessed: assessed.length, mean_score: assessed.length ? Number((assessed.reduce((sum, row) => sum + row.score!, 0) / assessed.length).toFixed(4)) : null }];
   }));
@@ -183,6 +176,7 @@ function buildBiasReport(countries: CountryShadowResult[], regulators: Regulator
     architecture_cohorts: architectureSummary,
     language_cohort: { status: "not-assessed", blocker: "The qualified live-source snapshot does not provide a source-language field for every regulator; language bias must not be inferred from country or English accessibility." },
     monetary_cohort: { status: "not-used", blocker: "Amount disclosure is descriptive and has zero weight in every component and aggregate." },
+    enforcement_volume_correlation_sample_size: assessedCountries.length,
     enforcement_volume_correlation: correlation(assessedCountries.map((row) => row.score), assessedCountries.map((row) => Math.log1p(row.volume))),
     enforcement_volume_correlation_interpretation: "Descriptive diagnostic only. A non-zero association can arise through evidence availability and sample selection; it is not a score input and requires further calibration before any public release.",
     invariants: [

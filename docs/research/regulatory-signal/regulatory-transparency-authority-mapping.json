@@ -10,9 +10,9 @@
       "authorityWebsite": "http://www.fca.org.uk/",
       "iso2": "GB",
       "roles": [
+        "insurance",
         "prudential_supervision",
-        "securities",
-        "insurance"
+        "securities"
       ],
       "mappingStatus": "official-directory-match",
       "mappingBasis": "Explicit live-code authority alias matched official directory."
@@ -25,10 +25,10 @@
       "authorityWebsite": "http://www.bafin.de/",
       "iso2": "DE",
       "roles": [
-        "prudential_supervision",
-        "securities",
         "insurance",
-        "pensions"
+        "pensions",
+        "prudential_supervision",
+        "securities"
       ],
       "mappingStatus": "official-directory-match",
       "mappingBasis": "Explicit live-code authority alias matched official directory."
@@ -67,9 +67,9 @@
       "authorityWebsite": "http://www.centralbank.ie/",
       "iso2": "IE",
       "roles": [
+        "insurance",
         "prudential_supervision",
-        "securities",
-        "insurance"
+        "securities"
       ],
       "mappingStatus": "official-directory-match",
       "mappingBasis": "Explicit live-code authority alias matched official directory."
@@ -95,8 +95,8 @@
       "authorityWebsite": "http://www.afm.nl/",
       "iso2": "NL",
       "roles": [
-        "securities",
-        "insurance"
+        "insurance",
+        "securities"
       ],
       "mappingStatus": "official-directory-match",
       "mappingBasis": "Explicit live-code authority alias matched official directory."
@@ -109,9 +109,9 @@
       "authorityWebsite": "https://www.dnb.nl/en",
       "iso2": "NL",
       "roles": [
-        "prudential_supervision",
         "insurance",
-        "pensions"
+        "pensions",
+        "prudential_supervision"
       ],
       "mappingStatus": "official-directory-match",
       "mappingBasis": "Explicit live-code authority alias matched official directory."
@@ -135,9 +135,9 @@
       "authorityWebsite": "http://www.dfsa.ae/",
       "iso2": "AE",
       "roles": [
+        "insurance",
         "prudential_supervision",
-        "securities",
-        "insurance"
+        "securities"
       ],
       "mappingStatus": "official-directory-match",
       "mappingBasis": "Explicit live-code authority alias matched official directory."
@@ -150,8 +150,8 @@
       "authorityWebsite": "http://www.adgm.com/",
       "iso2": "AE",
       "roles": [
-        "securities",
-        "insurance"
+        "insurance",
+        "securities"
       ],
       "mappingStatus": "official-directory-match",
       "mappingBasis": "Explicit live-code authority alias matched official directory."
@@ -177,9 +177,9 @@
       "authorityWebsite": "http://www.jerseyfsc.org/",
       "iso2": "JE",
       "roles": [
+        "insurance",
         "prudential_supervision",
-        "securities",
-        "insurance"
+        "securities"
       ],
       "mappingStatus": "official-directory-match",
       "mappingBasis": "Explicit live-code authority alias matched official directory."
@@ -192,10 +192,10 @@
       "authorityWebsite": "http://www.gfsc.gg/",
       "iso2": "GG",
       "roles": [
-        "prudential_supervision",
-        "securities",
         "insurance",
-        "pensions"
+        "pensions",
+        "prudential_supervision",
+        "securities"
       ],
       "mappingStatus": "official-directory-match",
       "mappingBasis": "Explicit live-code authority alias matched official directory."
@@ -245,8 +245,8 @@
       "authorityWebsite": "http://www.fsc.gov.tw/",
       "iso2": "TW",
       "roles": [
-        "securities",
-        "insurance"
+        "insurance",
+        "securities"
       ],
       "mappingStatus": "official-directory-match",
       "mappingBasis": "Explicit live-code authority alias matched official directory."
@@ -285,8 +285,8 @@
       "authorityWebsite": "http://www.asic.gov.au/",
       "iso2": "AU",
       "roles": [
-        "securities",
-        "insurance"
+        "insurance",
+        "securities"
       ],
       "mappingStatus": "official-directory-match",
       "mappingBasis": "Explicit live-code authority alias matched official directory."
@@ -298,9 +298,7 @@
       "authority": "The Australian Transaction Reports and Analysis Centre (AUSTRAC)",
       "authorityWebsite": "http://www.austrac.gov.au/",
       "iso2": "AU",
-      "roles": [
-        "financial_intelligence"
-      ],
+      "roles": [],
       "mappingStatus": "official-directory-match",
       "mappingBasis": "Explicit live-code authority alias matched official directory."
     },
@@ -312,9 +310,9 @@
       "authorityWebsite": "http://www.mas.gov.sg/",
       "iso2": "SG",
       "roles": [
+        "insurance",
         "prudential_supervision",
-        "securities",
-        "insurance"
+        "securities"
       ],
       "mappingStatus": "official-directory-match",
       "mappingBasis": "Explicit live-code authority alias matched official directory."
@@ -339,9 +337,7 @@
       "authority": "Financial Crimes Enforcement Network (FinCEN)",
       "authorityWebsite": "https://www.fincen.gov/",
       "iso2": "US",
-      "roles": [
-        "financial_intelligence"
-      ],
+      "roles": [],
       "mappingStatus": "official-directory-match",
       "mappingBasis": "Explicit live-code authority alias matched official directory."
     },
@@ -353,9 +349,9 @@
       "authorityWebsite": "http://www.finma.ch/",
       "iso2": "CH",
       "roles": [
+        "insurance",
         "prudential_supervision",
-        "securities",
-        "insurance"
+        "securities"
       ],
       "mappingStatus": "official-directory-match",
       "mappingBasis": "Explicit live-code authority alias matched official directory."
@@ -405,8 +401,8 @@
       "authorityWebsite": "http://www.federalreserve.gov/",
       "iso2": "US",
       "roles": [
-        "prudential_supervision",
-        "insurance"
+        "insurance",
+        "prudential_supervision"
       ],
       "mappingStatus": "official-directory-match",
       "mappingBasis": "Explicit live-code authority alias matched official directory."
@@ -443,6 +439,7 @@
       "authorityWebsite": "http://www.iomfsa.im/",
       "iso2": "IM",
       "roles": [
+        "insurance",
         "securities"
       ],
       "mappingStatus": "official-directory-match",
@@ -482,8 +479,9 @@
       "authorityWebsite": "http://english.fss.or.kr/",
       "iso2": "KR",
       "roles": [
-        "prudential_supervision",
-        "insurance"
+        "insurance",
+        "pensions",
+        "prudential_supervision"
       ],
       "mappingStatus": "official-directory-match",
       "mappingBasis": "Explicit live-code authority alias matched official directory."
@@ -520,9 +518,9 @@
       "authorityWebsite": "https://acpr.banque-france.fr/",
       "iso2": "FR",
       "roles": [
-        "prudential_supervision",
         "insurance",
-        "pensions"
+        "pensions",
+        "prudential_supervision"
       ],
       "mappingStatus": "official-directory-match",
       "mappingBasis": "Explicit live-code authority alias matched official directory."
@@ -535,9 +533,9 @@
       "authorityWebsite": "http://www.cssf.lu/en/",
       "iso2": "LU",
       "roles": [
+        "pensions",
         "prudential_supervision",
-        "securities",
-        "pensions"
+        "securities"
       ],
       "mappingStatus": "official-directory-match",
       "mappingBasis": "Explicit live-code authority alias matched official directory."
@@ -550,9 +548,9 @@
       "authorityWebsite": "http://www.fsma.be/",
       "iso2": "BE",
       "roles": [
-        "securities",
         "insurance",
-        "pensions"
+        "pensions",
+        "securities"
       ],
       "mappingStatus": "official-directory-match",
       "mappingBasis": "Explicit live-code authority alias matched official directory."
@@ -565,10 +563,10 @@
       "authorityWebsite": "http://www.fma.gv.at/",
       "iso2": "AT",
       "roles": [
-        "prudential_supervision",
-        "securities",
         "insurance",
-        "pensions"
+        "pensions",
+        "prudential_supervision",
+        "securities"
       ],
       "mappingStatus": "official-directory-match",
       "mappingBasis": "Deterministic normalized-name match to official directory."
@@ -581,10 +579,10 @@
       "authorityWebsite": "http://www.cnb.cz/en/index.html",
       "iso2": "CZ",
       "roles": [
-        "prudential_supervision",
-        "securities",
         "insurance",
-        "pensions"
+        "pensions",
+        "prudential_supervision",
+        "securities"
       ],
       "mappingStatus": "official-directory-match",
       "mappingBasis": "Explicit live-code authority alias matched official directory."
@@ -624,8 +622,7 @@
       "iso2": "SE",
       "roles": [
         "prudential_supervision",
-        "securities",
-        "financial_intelligence"
+        "securities"
       ],
       "mappingStatus": "official-directory-match",
       "mappingBasis": "Explicit live-code authority alias matched official directory."
@@ -638,9 +635,9 @@
       "authorityWebsite": "http://www.finanstilsynet.dk/en.aspx",
       "iso2": "DK",
       "roles": [
+        "insurance",
         "prudential_supervision",
-        "securities",
-        "insurance"
+        "securities"
       ],
       "mappingStatus": "official-directory-match",
       "mappingBasis": "Explicit live-code authority alias matched official directory."
@@ -666,9 +663,9 @@
       "authorityWebsite": "http://www.finanstilsynet.no/",
       "iso2": "NO",
       "roles": [
+        "insurance",
         "prudential_supervision",
-        "securities",
-        "insurance"
+        "securities"
       ],
       "mappingStatus": "official-directory-match",
       "mappingBasis": "Explicit live-code authority alias matched official directory."
@@ -681,8 +678,10 @@
       "authorityWebsite": "http://www.mfsa.com.mt/",
       "iso2": "MT",
       "roles": [
+        "insurance",
+        "pensions",
         "prudential_supervision",
-        "insurance"
+        "securities"
       ],
       "mappingStatus": "official-directory-match",
       "mappingBasis": "Explicit live-code authority alias matched official directory."
@@ -732,7 +731,9 @@
       "authorityWebsite": "http://www.cimoney.com.ky/",
       "iso2": "KY",
       "roles": [
-        "prudential_supervision"
+        "insurance",
+        "prudential_supervision",
+        "securities"
       ],
       "mappingStatus": "official-directory-match",
       "mappingBasis": "Explicit live-code authority alias matched official directory."

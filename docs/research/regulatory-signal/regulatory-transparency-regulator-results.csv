@@ -1,55 +1,55 @@
 regulator_code,stable_regulator_id,authority_id,country_code,country,authority,roles,accessibility,case_level_specificity,source_traceability,archive_depth,timeliness,component_coverage_weight_pct,score,band,status,sample_size,observed_records,enforcement_activity_signal
-FCA,ra-reg-fca,ra-auth-gb-9eea37a5bdddca65,GB,United Kingdom,The Financial Conduct Authority,prudential_supervision;securities;insurance,100,100,100,100,98.3333,100,99.75,highly-transparent,complete,100,752,frequent
-BaFin,ra-reg-bafin,ra-auth-de-ba7351f59cf176d7,DE,Germany,Federal Financial Supervisory Authority,prudential_supervision;securities;insurance;pensions,,100,100,,90.5556,60,,,not-assessed,100,380,frequent
+FCA,ra-reg-fca,ra-auth-gb-9eea37a5bdddca65,GB,United Kingdom,The Financial Conduct Authority,insurance;prudential_supervision;securities,100,100,100,100,98.3333,100,99.75,highly-transparent,complete,100,752,frequent
+BaFin,ra-reg-bafin,ra-auth-de-ba7351f59cf176d7,DE,Germany,Federal Financial Supervisory Authority,insurance;pensions;prudential_supervision;securities,,100,100,,90.5556,60,,,not-assessed,100,380,frequent
 AMF,ra-reg-amf,ra-auth-fr-27fcd26120dee0c9,FR,France,Autorité des marchés financiers*,securities,100,100,100,100,93.6986,100,99.0548,highly-transparent,complete,100,116,active
 CNMV,ra-reg-cnmv,ra-auth-es-db7b4ceffc1383fb,ES,Spain,Comisión Nacional del Mercado de Valores*,securities,,100,100,,81.1111,60,,,not-assessed,100,102,active
-CBI,ra-reg-cbi,ra-auth-ie-c0b5db67449c98df,IE,Ireland,Central Bank of Ireland,prudential_supervision;securities;insurance,100,100,100,100,31.2329,100,89.6849,highly-transparent,complete,100,119,periodic
+CBI,ra-reg-cbi,ra-auth-ie-c0b5db67449c98df,IE,Ireland,Central Bank of Ireland,insurance;prudential_supervision;securities,100,100,100,100,31.2329,100,89.6849,highly-transparent,complete,100,119,periodic
 SFC,ra-reg-sfc,ra-auth-hk-7242883237a6e80c,HK,Hong Kong,Securities and Futures Commission*,securities,,100,100,,96.1111,60,,,not-assessed,100,233,frequent
-AFM,ra-reg-afm,ra-auth-nl-3dea2d27ee965e72,NL,Netherlands,The Dutch Authority for the Financial Markets*,securities;insurance,,100,100,,100,60,,,not-assessed,8,8,periodic
-DNB,ra-reg-dnb,ra-auth-nl-6a14d64a431056ac,NL,Netherlands,De Nederlandsche Bank,prudential_supervision;insurance;pensions,100,100,100,44.4444,7.2222,100,74.9722,transparent,complete,48,48,active
+AFM,ra-reg-afm,ra-auth-nl-3dea2d27ee965e72,NL,Netherlands,The Dutch Authority for the Financial Markets*,insurance;securities,,100,100,,100,60,,,not-assessed,8,8,periodic
+DNB,ra-reg-dnb,ra-auth-nl-6a14d64a431056ac,NL,Netherlands,De Nederlandsche Bank,insurance;pensions;prudential_supervision,100,100,100,44.4444,7.2222,100,74.9722,transparent,complete,48,48,active
 ECB,ra-reg-ecb,,EU,Euro Area,,,,100,100,,65.5556,60,,,not-assessed,88,88,active
-DFSA,ra-reg-dfsa,ra-auth-ae-cc9e71ec2ffbc2f5,AE,Dubai International Financial Centre,Dubai Financial Services Authority,prudential_supervision;securities;insurance,,100,100,,46.5753,60,,,not-assessed,19,19,periodic
-FSRA,ra-reg-fsra,ra-auth-ae-a2eaf322568b7d54,AE,Abu Dhabi Global Market,Financial Services Regulatory Authority,securities;insurance,,100,100,,72.3288,60,,,not-assessed,28,28,active
+DFSA,ra-reg-dfsa,ra-auth-ae-cc9e71ec2ffbc2f5,AE,Dubai International Financial Centre,Dubai Financial Services Authority,insurance;prudential_supervision;securities,,100,100,,46.5753,60,,,not-assessed,19,19,periodic
+FSRA,ra-reg-fsra,ra-auth-ae-a2eaf322568b7d54,AE,Abu Dhabi Global Market,Financial Services Regulatory Authority,insurance;securities,,100,100,,72.3288,60,,,not-assessed,28,28,active
 CBUAE,ra-reg-cbuae,ra-auth-ae-da705b04944a16ff,AE,United Arab Emirates,Central Bank of the United Arab Emirates,prudential_supervision,,100,100,,34.2466,60,,,not-assessed,36,36,periodic
-JFSC,ra-reg-jfsc,ra-auth-je-5a2e6c5b726f4bd9,JE,Jersey,Jersey Financial Services Commission,prudential_supervision;securities;insurance,,100,100,,,45,,,not-assessed,6,6,low-frequency
-GFSC,ra-reg-gfsc,ra-auth-gg-1e035352eed2575c,GG,Guernsey,Guernsey Financial Services Commission,prudential_supervision;securities;insurance;pensions,100,100,100,88.8889,8.8889,100,84.1111,highly-transparent,complete,32,32,periodic
+JFSC,ra-reg-jfsc,ra-auth-je-5a2e6c5b726f4bd9,JE,Jersey,Jersey Financial Services Commission,insurance;prudential_supervision;securities,,100,100,,,45,,,not-assessed,6,6,low-frequency
+GFSC,ra-reg-gfsc,ra-auth-gg-1e035352eed2575c,GG,Guernsey,Guernsey Financial Services Commission,insurance;pensions;prudential_supervision;securities,100,100,100,88.8889,8.8889,100,84.1111,highly-transparent,complete,32,32,periodic
 CIRO,ra-reg-ciro,,CA,Canada,,,,100,100,,98.3562,60,,,not-assessed,100,308,frequent
 SEC,ra-reg-sec,ra-auth-us-321899cf1be8b63f,US,United States,Securities and Exchange Commission*,securities,100,100,100,100,98.3333,100,99.75,highly-transparent,complete,100,1803,active
 SEBI,ra-reg-sebi,ra-auth-in-1a442264a9b3e9f5,IN,India,Securities and Exchange Board of India*,securities,,100,100,,88.8889,60,,,not-assessed,100,433,frequent
-TWFSC,ra-reg-twfsc,ra-auth-tw-19b695d9525b0615,TW,Taiwan,Financial Supervisory Commission,securities;insurance,,100,100,,95,60,,,not-assessed,100,932,frequent
+TWFSC,ra-reg-twfsc,ra-auth-tw-19b695d9525b0615,TW,Taiwan,Financial Supervisory Commission,insurance;securities,,100,100,,95,60,,,not-assessed,100,932,frequent
 CVM,ra-reg-cvm,ra-auth-br-a59437c9ce1f582b,BR,Brazil,Comissão de Valores Mobiliários*,securities,,100,100,,95,60,,,not-assessed,100,563,frequent
 HKMA,ra-reg-hkma,ra-auth-hk-a01a8df1dfe9cf6d,HK,Hong Kong,Hong Kong Monetary Authority,prudential_supervision,100,100,100,55.5556,,85,89.5425,highly-transparent,provisional,23,23,periodic
-ASIC,ra-reg-asic,ra-auth-au-5c0fc27b9fcb29ac,AU,Australia,Australian Securities and Investments Commission*,securities;insurance,100,100,100,100,88.8889,100,98.3333,highly-transparent,complete,100,147,active
-AUSTRAC,ra-reg-austrac,ra-auth-au-a991c73127987db8,AU,Australia,The Australian Transaction Reports and Analysis Centre (AUSTRAC),financial_intelligence,,100,100,,36.7123,60,,,not-assessed,70,70,periodic
-MAS,ra-reg-mas,ra-auth-sg-ed322819dc95a306,SG,Singapore,Monetary Authority of Singapore,prudential_supervision;securities;insurance,100,100,100,33.3333,71.6667,100,82.4167,highly-transparent,complete,27,27,periodic
+ASIC,ra-reg-asic,ra-auth-au-5c0fc27b9fcb29ac,AU,Australia,Australian Securities and Investments Commission*,insurance;securities,100,100,100,100,88.8889,100,98.3333,highly-transparent,complete,100,147,active
+AUSTRAC,ra-reg-austrac,ra-auth-au-a991c73127987db8,AU,Australia,The Australian Transaction Reports and Analysis Centre (AUSTRAC),,,100,100,,36.7123,60,,,not-assessed,70,70,periodic
+MAS,ra-reg-mas,ra-auth-sg-ed322819dc95a306,SG,Singapore,Monetary Authority of Singapore,insurance;prudential_supervision;securities,100,100,100,33.3333,71.6667,100,82.4167,highly-transparent,complete,27,27,periodic
 OCC,ra-reg-occ,ra-auth-us-536892012d88d798,US,United States,Office of the Comptroller of the Currency,prudential_supervision,,100,100,,80,60,,,not-assessed,100,5598,frequent
-FINCEN,ra-reg-fincen,ra-auth-us-62a5bd0929843be2,US,United States,Financial Crimes Enforcement Network (FinCEN),financial_intelligence,,100,100,,90.5556,60,,,not-assessed,100,119,periodic
-FINMA,ra-reg-finma,ra-auth-ch-fef82880ed479788,CH,Switzerland,Swiss Financial Market Supervisory Authority (FINMA),prudential_supervision;securities;insurance,100,100,100,88.8889,69.589,100,93.2161,highly-transparent,complete,26,26,periodic
+FINCEN,ra-reg-fincen,ra-auth-us-62a5bd0929843be2,US,United States,Financial Crimes Enforcement Network (FinCEN),,,100,100,,90.5556,60,,,not-assessed,100,119,periodic
+FINMA,ra-reg-finma,ra-auth-ch-fef82880ed479788,CH,Switzerland,Swiss Financial Market Supervisory Authority (FINMA),insurance;prudential_supervision;securities,100,100,100,88.8889,69.589,100,93.2161,highly-transparent,complete,26,26,periodic
 SESC,ra-reg-sesc,,JP,Japan,,,,100,100,,76.1111,60,,,not-assessed,74,74,frequent
 FMANZ,ra-reg-fmanz,ra-auth-nz-26cfbdac8baf745d,NZ,New Zealand,Financial Markets Authority,securities,,100,100,,75,60,,,not-assessed,100,177,frequent
 FDIC,ra-reg-fdic,ra-auth-us-1d4a8d980adde2a5,US,United States,Federal Deposit Insurance Corporation DC,prudential_supervision,,100,100,,86.0274,60,,,not-assessed,100,11155,frequent
-FRB,ra-reg-frb,ra-auth-us-4a694cd3deb787a6,US,United States,Board of Governors of the Federal Reserve System,prudential_supervision;insurance,100,100,100,100,91.6667,100,98.75,highly-transparent,complete,100,2842,frequent
+FRB,ra-reg-frb,ra-auth-us-4a694cd3deb787a6,US,United States,Board of Governors of the Federal Reserve System,insurance;prudential_supervision,100,100,100,100,91.6667,100,98.75,highly-transparent,complete,100,2842,frequent
 SPK,ra-reg-spk,,TR,Turkey,,,,100,100,,96.1111,60,,,not-assessed,100,2189,frequent
 GHSEC,ra-reg-ghsec,ra-auth-gh-1276eb0564999d02,GH,Ghana,Securities and Exchange Commission,securities,,100,100,,21.1111,60,,,not-assessed,68,68,low-frequency
-IOMFSA,ra-reg-iomfsa,ra-auth-im-fd7b7763058345b6,IM,Isle of Man,Isle of Man Financial Services Authority,securities,,100,100,,,45,,,not-assessed,21,21,periodic
+IOMFSA,ra-reg-iomfsa,ra-auth-im-fd7b7763058345b6,IM,Isle of Man,Isle of Man Financial Services Authority,insurance;securities,,100,100,,,45,,,not-assessed,21,21,periodic
 AMMC,ra-reg-ammc,ra-auth-ma-b5cfe30602d176ea,MA,Morocco,Autorité Marocaine du Marché des Capitaux*,securities,,100,100,,,45,,,not-assessed,9,9,no-recent-signal
 CNV,ra-reg-cnv,ra-auth-ar-12eb11a773eaa5ef,AR,Argentina,Comisión Nacional de Valores*,securities,,100,100,,60.5556,60,,,not-assessed,41,41,periodic
-FSS,ra-reg-fss,ra-auth-kr-49ea1165285ae629,KR,South Korea,Financial Supervisory Service,prudential_supervision;insurance,100,100,100,100,31.6667,100,89.75,highly-transparent,complete,40,40,low-frequency
+FSS,ra-reg-fss,ra-auth-kr-49ea1165285ae629,KR,South Korea,Financial Supervisory Service,insurance;pensions;prudential_supervision,100,100,100,100,31.6667,100,89.75,highly-transparent,complete,40,40,low-frequency
 OSC,ra-reg-osc,ra-auth-ca-27956873427bb2b2,CA,Canada,Ontario Securities Commission*,securities,100,100,100,100,78.3562,100,96.7534,highly-transparent,complete,100,653,active
 BDI,ra-reg-bdi,,IT,Italy,,,,100,100,,67.7778,60,,,not-assessed,100,175,frequent
-ACPR,ra-reg-acpr,ra-auth-fr-97fa854639130439,FR,France,Autorité de Contrôle Prudentiel et de Résolution,prudential_supervision;insurance;pensions,100,100,100,100,45,100,91.75,highly-transparent,complete,78,78,periodic
-CSSF,ra-reg-cssf,ra-auth-lu-4fbb7469ba4b7756,LU,Luxembourg,Commission de Surveillance du Secteur Financier,prudential_supervision;securities;pensions,100,100,100,66.6667,83.3333,100,90.8333,highly-transparent,complete,100,168,frequent
-FSMA,ra-reg-fsma,ra-auth-be-60ac8fc270c21dc9,BE,Belgium,Financial Services and Markets Authority*,securities;insurance;pensions,100,100,100,100,69.4444,100,95.4167,highly-transparent,complete,100,191,frequent
-FMAAT,ra-reg-fmaat,ra-auth-at-0c2dcb3373507cc1,AT,Austria,Austrian Financial Market Authority,prudential_supervision;securities;insurance;pensions,,100,100,,86.5753,60,,,not-assessed,100,121,frequent
-CNBCZ,ra-reg-cnbcz,ra-auth-cz-c9c68c4d2da33262,CZ,Czech Republic,Czech National Bank,prudential_supervision;securities;insurance;pensions,,100,100,,91.6667,60,,,not-assessed,100,1779,frequent
+ACPR,ra-reg-acpr,ra-auth-fr-97fa854639130439,FR,France,Autorité de Contrôle Prudentiel et de Résolution,insurance;pensions;prudential_supervision,100,100,100,100,45,100,91.75,highly-transparent,complete,78,78,periodic
+CSSF,ra-reg-cssf,ra-auth-lu-4fbb7469ba4b7756,LU,Luxembourg,Commission de Surveillance du Secteur Financier,pensions;prudential_supervision;securities,100,100,100,66.6667,83.3333,100,90.8333,highly-transparent,complete,100,168,frequent
+FSMA,ra-reg-fsma,ra-auth-be-60ac8fc270c21dc9,BE,Belgium,Financial Services and Markets Authority*,insurance;pensions;securities,100,100,100,100,69.4444,100,95.4167,highly-transparent,complete,100,191,frequent
+FMAAT,ra-reg-fmaat,ra-auth-at-0c2dcb3373507cc1,AT,Austria,Austrian Financial Market Authority,insurance;pensions;prudential_supervision;securities,,100,100,,86.5753,60,,,not-assessed,100,121,frequent
+CNBCZ,ra-reg-cnbcz,ra-auth-cz-c9c68c4d2da33262,CZ,Czech Republic,Czech National Bank,insurance;pensions;prudential_supervision;securities,,100,100,,91.6667,60,,,not-assessed,100,1779,frequent
 CMVM,ra-reg-cmvm,ra-auth-pt-9416ad68ffc0ead8,PT,Portugal,Comissão do Mercado de Valores Mobiliários,securities,,100,100,,92.0548,60,,,not-assessed,100,140,periodic
 CYSEC,ra-reg-cysec,ra-auth-cy-763f7fdf3a372e1b,CY,Cyprus,Cyprus Securities and Exchange Commission,securities,,100,100,,90.5556,60,,,not-assessed,100,1136,frequent
-FISE,ra-reg-fise,ra-auth-se-0ad84971070398be,SE,Sweden,Finansinspektionen,prudential_supervision;securities;financial_intelligence,100,100,100,100,64.4444,100,94.6667,highly-transparent,complete,64,64,active
-FTDK,ra-reg-ftdk,ra-auth-dk-74ed5e7e0e14a760,DK,Denmark,Danish Financial Supervisory Authority,prudential_supervision;securities;insurance,,100,100,,75,60,,,not-assessed,59,59,active
+FISE,ra-reg-fise,ra-auth-se-0ad84971070398be,SE,Sweden,Finansinspektionen,prudential_supervision;securities,100,100,100,100,64.4444,100,94.6667,highly-transparent,complete,64,64,active
+FTDK,ra-reg-ftdk,ra-auth-dk-74ed5e7e0e14a760,DK,Denmark,Danish Financial Supervisory Authority,insurance;prudential_supervision;securities,,100,100,,75,60,,,not-assessed,59,59,active
 FINFSA,ra-reg-finfsa,ra-auth-fi-e59f9db9ae9280fc,FI,Finland,Financial Supervisory Authority,prudential_supervision,,100,100,,46.1111,60,,,not-assessed,48,48,active
-FTNO,ra-reg-ftno,ra-auth-no-80719903f3ffe2e0,NO,Norway,Finanstilsynet (The Financial Supervisory Authority of Norway),prudential_supervision;securities;insurance,,100,100,,60,60,,,not-assessed,42,42,active
-MFSA,ra-reg-mfsa,ra-auth-mt-0d68677a8237087f,MT,Malta,Malta Financial Services Authority,prudential_supervision;insurance,,100,100,,70.9589,60,,,not-assessed,100,275,active
+FTNO,ra-reg-ftno,ra-auth-no-80719903f3ffe2e0,NO,Norway,Finanstilsynet (The Financial Supervisory Authority of Norway),insurance;prudential_supervision;securities,,100,100,,60,60,,,not-assessed,42,42,active
+MFSA,ra-reg-mfsa,ra-auth-mt-0d68677a8237087f,MT,Malta,Malta Financial Services Authority,insurance;pensions;prudential_supervision;securities,,100,100,,70.9589,60,,,not-assessed,100,275,active
 IVASS,ra-reg-ivass,ra-auth-it-d255f9df495ac260,IT,Italy,Istituto per la Vigilanza sulle Assicurazioni (IVASS),insurance,,100,100,,21.4474,60,,,not-assessed,100,111,low-frequency
 FINRA,ra-reg-finra,,US,United States,,,,100,100,,90.5556,60,,,not-assessed,100,4209,frequent
 SC,ra-reg-sc,ra-auth-my-9c2184698cd1832e,MY,Malaysia,Securities Commission*,securities,100,100,100,44.4444,68.3333,100,84.1389,highly-transparent,complete,97,97,active
-CIMA,ra-reg-cima,ra-auth-ky-4cae34554efc1a6b,KY,Cayman Islands,Cayman Islands Monetary Authority,prudential_supervision,,100,100,,60,60,,,not-assessed,100,160,active
+CIMA,ra-reg-cima,ra-auth-ky-4cae34554efc1a6b,KY,Cayman Islands,Cayman Islands Monetary Authority,insurance;prudential_supervision;securities,,100,100,,60,60,,,not-assessed,100,160,active

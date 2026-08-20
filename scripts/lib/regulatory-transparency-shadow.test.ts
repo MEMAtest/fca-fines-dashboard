@@ -1,12 +1,14 @@
 import { describe, expect, it } from "vitest";
 import {
   AuthorityMapping,
+  Authority,
   CaseSample,
   LiveObservation,
   LiveRegulator,
   QualifiedRoute,
   calculateCountryShadow,
   calculateRegulatorShadow,
+  mapLiveRegulator,
   transparencyBand,
 } from "../research/regulatory-transparency-shadow.js";
 
@@ -45,5 +47,29 @@ describe("RegActions Regulatory Transparency shadow methodology", () => {
   it("enforces country role coverage and bands", () => {
     const noRoles = calculateCountryShadow({ iso2: "ZZ", country: "Testland", region: "Europe", applicableRoles: ["prudential_supervision"], regulators: [] });
     expect(noRoles.score).toBeNull(); expect(noRoles.status).toBe("not-assessed"); expect(transparencyBand(null)).toBeNull(); expect(transparencyBand(80)).toBe("highly-transparent"); expect(transparencyBand(60)).toBe("transparent"); expect(transparencyBand(40)).toBe("partially-transparent"); expect(transparencyBand(20)).toBe("limited-transparency"); expect(transparencyBand(19.99)).toBe("very-limited-transparency");
+  });
+
+  it("unions duplicate authority rows without dropping mandates", () => {
+    const make = (code: string, country: string, name: string): LiveRegulator => ({ ...regulator, regulator_code: code, regulator: name, country_code: country, country });
+    const authorities: Authority[] = [
+      { iso2: "IM", country: "Isle of Man", authority: "Isle of Man Financial Services Authority", website: "https://iom.example", roles: ["securities"] },
+      { iso2: "IM", country: "Isle of Man", authority: "Isle of Man Financial Services Authority", website: "https://iom-insurance.example", roles: ["insurance"] },
+      { iso2: "KR", country: "South Korea", authority: "Financial Supervisory Service", website: "https://fss.example", roles: ["prudential_supervision", "insurance"] },
+      { iso2: "KR", country: "South Korea", authority: "Financial Supervisory Service", website: "https://fss-pensions.example", roles: ["pensions"] },
+      { iso2: "MT", country: "Malta", authority: "Malta Financial Services Authority", website: "https://mfsa.example", roles: ["prudential_supervision", "insurance"] },
+      { iso2: "MT", country: "Malta", authority: "Malta Financial Services Authority", website: "https://mfsa-securities.example", roles: ["securities", "pensions"] },
+      { iso2: "KY", country: "Cayman Islands", authority: "Cayman Islands Monetary Authority", website: "https://cima-bank.example", roles: ["prudential_supervision"] },
+      { iso2: "KY", country: "Cayman Islands", authority: "Cayman Islands Monetary Authority", website: "https://cima-market.example", roles: ["securities", "insurance"] },
+    ];
+    expect(mapLiveRegulator(make("IOMFSA", "IM", "Isle of Man Financial Services Authority"), authorities).roles).toEqual(["insurance", "securities"]);
+    expect(mapLiveRegulator(make("FSS", "KR", "Financial Supervisory Service"), authorities).roles).toEqual(["insurance", "pensions", "prudential_supervision"]);
+    expect(mapLiveRegulator(make("MFSA", "MT", "Malta Financial Services Authority"), authorities).roles).toEqual(["insurance", "pensions", "prudential_supervision", "securities"]);
+    expect(mapLiveRegulator(make("CIMA", "KY", "Cayman Islands Monetary Authority"), authorities).roles).toEqual(["insurance", "prudential_supervision", "securities"]);
+  });
+
+  it("does not treat a securities supervisor named Finansinspektionen as an FIU", () => {
+    const mapped = mapLiveRegulator({ ...regulator, regulator_code: "FISE", regulator: "Finansinspektionen", country_code: "SE", country: "Sweden" }, [{ iso2: "SE", country: "Sweden", authority: "Finansinspektionen", website: "https://fi.example", roles: ["prudential_supervision", "securities", "financial_intelligence"] }]);
+    expect(mapped.roles).toEqual(["prudential_supervision", "securities"]);
+    expect(mapped.roles).not.toContain("financial_intelligence");
   });
 });
