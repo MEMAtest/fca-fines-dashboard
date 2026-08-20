@@ -3344,6 +3344,14 @@ button.cx-kpi:hover {
 .cx-drivers__plain--missing svg { color: #64748b; }
 .cx-drivers__overlay-heading { margin-top: 0.9rem; }
 .cx-drivers__plain--overlay svg { color: #2563eb; }
+.cx-drivers__evidence-heading { margin-top: 0.9rem; }
+.cx-drivers__evidence-row { display: flex; align-items: center; justify-content: space-between; gap: 0.65rem; color: #334155; font-size: 0.79rem; line-height: 1.4; }
+.cx-drivers__evidence-label { min-width: 0; }
+.cx-drivers__evidence-value { display: inline-flex; align-items: center; gap: 0.2rem; white-space: nowrap; color: #0f172a; font-variant-numeric: tabular-nums; }
+@media (max-width: 520px) {
+  .cx-drivers__evidence-row { align-items: flex-start; }
+  .cx-drivers__evidence-value { white-space: normal; flex: 0 0 auto; }
+}
 
 /* small band tags */
 .cx-tag {

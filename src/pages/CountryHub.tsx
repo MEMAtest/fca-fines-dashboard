@@ -49,6 +49,7 @@ import {
   latestCountryRiskSourceCheck,
 } from "../data/countryRiskPresentation.js";
 import { buildCountryRiskV3PublicExplanation } from "../data/countryRiskV3Presentation.js";
+import { buildCountryRiskGovernanceEvidenceRows } from "../data/countryRiskGovernancePresentation.js";
 import {
   buildCountryView,
   formatDate,
@@ -228,6 +229,7 @@ export function CountryHub() {
 
   const rank = globalRank(country.iso2);
   const publicExplanation = buildCountryRiskV3PublicExplanation(riskV3);
+  const governanceEvidenceRows = buildCountryRiskGovernanceEvidenceRows(country.iso2);
   const latestSourceCheck = latestCountryRiskSourceCheck(COUNTRY_RISK_SOURCES);
   const scoreAvailable = riskV3.score !== null && riskV3.band !== null;
   const publishedScore = riskV3.score;
@@ -832,6 +834,38 @@ export function CountryHub() {
                   </li>
                 ))}
               </ul>
+              {governanceEvidenceRows.length > 0 && (
+                <>
+                  <span className="cx-card__eyebrow cx-drivers__evidence-heading">
+                    <Landmark size={12} /> Supporting World Bank governance evidence
+                  </span>
+                  <ul className="cx-drivers__list" aria-label="Supporting World Bank governance evidence">
+                    {governanceEvidenceRows.map((row) => (
+                      <li key={row.key} className="cx-drivers__evidence-row">
+                        <span className="cx-drivers__evidence-label">{row.label}</span>
+                        <span className="cx-drivers__evidence-value">
+                          <strong>{row.risk.toFixed(1)}/10 risk</strong>
+                          <CountryRiskEvidencePopover
+                            compact
+                            label={row.label}
+                            description="This supporting World Bank indicator is inverted from a governance percentile to the 0-10 risk direction used by RegActions. It contributes only through the 35% governance pillar and is not an additional score or treatment overlay."
+                            value={`${row.risk.toFixed(1)} / 10 risk`}
+                            source={{
+                              name: "World Bank Worldwide Governance Indicators (WGI)",
+                              url: row.source,
+                              effectiveAt: row.vintage,
+                              checkedAt: row.checkedAt,
+                              confidence: riskV3.confidence,
+                              note: `Published percentile ${row.percentile}/100; higher percentile means stronger governance.`,
+                            }}
+                          />
+                        </span>
+                      </li>
+                    ))}
+                  </ul>
+                  <p className="cx-card__note">These six measures are supporting evidence for the governance pillar. They are not separately weighted again.</p>
+                </>
+              )}
               <span className="cx-card__eyebrow cx-drivers__overlay-heading">
                 <Layers size={12} /> Treatment overlays · not score inputs
               </span>
