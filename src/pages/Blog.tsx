@@ -697,6 +697,7 @@ export function Blog() {
 
       <main className="insights-shell">
         <aside className="insights-sidebar" aria-label="Insights filters">
+          <div className="insights-sidebar__inner">
           <div className="insights-panel insights-panel--filters">
             <div className="insights-panel__header">
               <h2>
@@ -778,6 +779,7 @@ export function Blog() {
               ))}
             </div>
           </div>
+          </div>
         </aside>
 
         <section className="insights-main" aria-labelledby="latest-heading">
@@ -836,7 +838,7 @@ export function Blog() {
             </div>
           )}
 
-          <div className="blog-section-header insights-results-heading">
+          <div className="insights-results-heading">
             <h2>All Enforcement Intelligence</h2>
             <p>
               Browse source-led analysis across regulators, sectors, themes,
