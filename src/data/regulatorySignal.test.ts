@@ -33,7 +33,7 @@ describe("regulatory signal evidence manifest", () => {
       directoryEvidenceUrls: expect.any(Array),
       researchEffectiveAt: expect.stringMatching(/^2026-/),
       retrievedAt: expect.stringMatching(/^2026-/),
-      sourceCheckedAt: expect.stringMatching(/^2026-/),
+      researchPublicationSnapshotCheckedAt: expect.stringMatching(/^2026-/),
     });
     expect(evidence?.limitations.join(" ")).toContain("intentionally null");
   });
@@ -51,7 +51,8 @@ describe("regulatory signal evidence manifest", () => {
     const evidence = buildRegulatorySignalEvidence("GB")!;
     const csv = regulatorySignalEvidenceCsv(evidence);
     expect(csv).toContain("accessState");
-    expect(csv).toContain("sourceCheckedAt");
+    expect(csv).toContain("researchPublicationSnapshotCheckedAt");
+    expect(csv).not.toContain("sourceCheckedAt");
     expect(csv).toContain("directorySources");
     expect(csv).not.toContain("Transparency Index");
     expect(csv).not.toMatch(/,[0-9]+\.[0-9]+,/);

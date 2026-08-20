@@ -36,9 +36,9 @@ describe("regulatory signal read-only APIs", () => {
     expect(detail.statusCode).toBe(200);
     expect(detail.payload).toMatchObject({ status: "research-only", transparencyIndex: null, country: { iso2: "VE" } });
     expect((detail.payload as { ecosystem: { authorities: unknown[] } }).ecosystem.authorities.length).toBeGreaterThan(0);
-    const authority = (detail.payload as { ecosystem: { authorities: Array<{ directorySources: string[]; sourceCheckedAt: string }> } }).ecosystem.authorities[0];
+    const authority = (detail.payload as { ecosystem: { authorities: Array<{ directorySources: string[]; researchPublicationSnapshotCheckedAt: string }> } }).ecosystem.authorities[0];
     expect(authority.directorySources).toBeInstanceOf(Array);
-    expect(authority.sourceCheckedAt).toMatch(/^2026-/);
+    expect(authority.researchPublicationSnapshotCheckedAt).toMatch(/^2026-/);
     const kp = responseDouble();
     detailHandler({ method: "GET", query: { iso2: "KP" } } as unknown as VercelRequest, kp as unknown as VercelResponse);
     expect(kp.payload).toMatchObject({
@@ -59,6 +59,8 @@ describe("regulatory signal read-only APIs", () => {
     await evidenceHandler({ method: "GET", query: { iso2: "GB", format: "csv" } } as unknown as VercelRequest, csv as unknown as VercelResponse);
     expect(csv.headers["Content-Type"]).toContain("text/csv");
     expect(String(csv.payload)).toContain("accessState");
+    expect(String(csv.payload)).toContain("researchPublicationSnapshotCheckedAt");
+    expect(String(csv.payload)).not.toContain("sourceCheckedAt");
     const pdf = responseDouble();
     await evidenceHandler({ method: "GET", query: { iso2: "GB", format: "pdf" } } as unknown as VercelRequest, pdf as unknown as VercelResponse);
     expect(pdf.headers["Content-Type"]).toBe("application/pdf");

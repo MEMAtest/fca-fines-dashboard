@@ -42,7 +42,8 @@ function EvidencePdf({ evidence }: { evidence: RegulatorySignalEvidence }) {
             <Text>{authority.accessLabel}</Text>
             {authority.website && <Text style={styles.source}>{authority.website}</Text>}
             {authority.publicationUrl && <Text style={styles.source}>{authority.publicationUrl}</Text>}
-            <Text style={styles.source}>Directory source: {authority.directorySources.join(", ") || "not recorded"} · source checked: {authority.sourceCheckedAt.slice(0, 10)}</Text>
+            <Text style={styles.source}>Directory source: {authority.directorySources.join(", ") || "not recorded"}</Text>
+            <Text style={styles.source}>Research/publication snapshot checked: {authority.researchPublicationSnapshotCheckedAt.slice(0, 10)}</Text>
             {authority.directoryEvidenceUrls.length > 0 && <Text style={styles.source}>Directory evidence: {authority.directoryEvidenceUrls.join("; ")}</Text>}
             <Text style={styles.source}>Research effective: {authority.researchEffectiveAt.slice(0, 10)} · retrieved: {authority.retrievedAt.slice(0, 10)}</Text>
           </View>

@@ -769,8 +769,9 @@ export function CountryHub() {
                       {authority.website && <a href={authority.website} target="_blank" rel="noopener noreferrer">Official authority site <ExternalLink size={10} /></a>}
                       {authority.publicationUrl && <a href={authority.publicationUrl} target="_blank" rel="noopener noreferrer">Publication candidate <ExternalLink size={10} /></a>}
                       <span className="cx-regsignal__source-note">
-                        Directory source: {authority.directorySources.length > 0 ? authority.directorySources.join(", ") : "not recorded"} · Source checked {authority.sourceCheckedAt.slice(0, 10)}
+                        Directory source: {authority.directorySources.length > 0 ? authority.directorySources.join(", ") : "not recorded"}
                       </span>
+                      <span className="cx-regsignal__source-note">Research/publication snapshot checked: {authority.sourceCheckedAt.slice(0, 10)}</span>
                       {authority.directoryEvidenceUrls.length > 0 && <span className="cx-regsignal__source-note">Directory evidence: {authority.directoryEvidenceUrls.map((url) => <a key={url} href={url} target="_blank" rel="noopener noreferrer">Official listing <ExternalLink size={10} /></a>)}</span>}
                       <span className="cx-regsignal__source-note">Access state is an observation of this research snapshot; blocked, challenge-protected and non-public states are not treated as failed regulators.</span>
                     </div>

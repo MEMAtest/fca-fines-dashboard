@@ -19,6 +19,7 @@ import {
   type ThematicData,
 } from '../articleData.js';
 import { getBrandVoiceSystemPrefix } from '../brandVoice.js';
+import { REGULATOR_COUNT_COPY } from '../../../src/constants/site.js';
 
 export interface GeneratorResult {
   systemPrompt: string;
@@ -40,7 +41,7 @@ export async function buildThematicGenerator(entry: CalendarEntry): Promise<Gene
 }
 
 function buildSystemPrompt(): string {
-  return `${getBrandVoiceSystemPrefix()}You are a senior regulatory affairs analyst at RegActions, a platform covering enforcement from 45+ global financial regulators. Write authoritative thematic analysis articles for heads of compliance, MLROs, regulatory advisers and board-level NEDs.
+  return `${getBrandVoiceSystemPrefix()}You are a senior regulatory affairs analyst at RegActions, a platform covering enforcement from ${REGULATOR_COUNT_COPY}. Write authoritative thematic analysis articles for heads of compliance, MLROs, regulatory advisers and board-level NEDs.
 
 Tone: Authoritative, analytical, evidence-based. No first person. No hedging ("might", "perhaps", "could potentially"). State conclusions directly from the evidence.
 

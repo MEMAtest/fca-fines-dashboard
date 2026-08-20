@@ -23,7 +23,7 @@ export interface RegulatorySignalPublicAuthority {
   directoryEvidenceUrls: string[];
   researchEffectiveAt: string;
   retrievedAt: string;
-  sourceCheckedAt: string;
+  researchPublicationSnapshotCheckedAt: string;
 }
 export interface RegulatorySignalEvidence {
   schemaVersion: "1.0.0";
@@ -90,7 +90,7 @@ function authorityEvidence(authority: RegulatorySignalAuthority): RegulatorySign
     directoryEvidenceUrls: authority.directoryEvidenceUrls,
     researchEffectiveAt: authority.researchEffectiveAt,
     retrievedAt: authority.retrievedAt,
-    sourceCheckedAt: authority.sourceCheckedAt,
+    researchPublicationSnapshotCheckedAt: authority.sourceCheckedAt,
   };
 }
 
@@ -162,7 +162,7 @@ export function buildRegulatorySignalEvidence(iso2: string): RegulatorySignalEvi
 const csvCell = (value: unknown): string => `"${String(value ?? "").replaceAll('"', '""')}"`;
 
 export function regulatorySignalEvidenceCsv(evidence: RegulatorySignalEvidence): string {
-  const header = ["iso2", "country", "authority", "roles", "website", "accessState", "accessLabel", "publicationUrl", "directorySources", "directoryEvidenceUrls", "researchEffectiveAt", "retrievedAt", "sourceCheckedAt", "regActionsCoverageState", "transparencyIndex", "generatedAt"];
+  const header = ["iso2", "country", "authority", "roles", "website", "accessState", "accessLabel", "publicationUrl", "directorySources", "directoryEvidenceUrls", "researchEffectiveAt", "retrievedAt", "researchPublicationSnapshotCheckedAt", "regActionsCoverageState", "transparencyIndex", "generatedAt"];
   const rows = evidence.ecosystem.authorities.map((authority) => [
     evidence.country.iso2,
     evidence.country.name,
@@ -176,7 +176,7 @@ export function regulatorySignalEvidenceCsv(evidence: RegulatorySignalEvidence):
     authority.directoryEvidenceUrls.join("; "),
     authority.researchEffectiveAt,
     authority.retrievedAt,
-    authority.sourceCheckedAt,
+    authority.researchPublicationSnapshotCheckedAt,
     evidence.regActionsCoverage.state,
     "",
     evidence.generatedAt,
