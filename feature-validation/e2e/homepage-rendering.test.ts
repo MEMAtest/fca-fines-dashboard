@@ -24,7 +24,9 @@ test.describe('Homepage Hero - Global Messaging Rendering', () => {
 
   test('MUST render hero title with global positioning', async ({ page }) => {
     // Wait for hero section to be visible
-    const heroTitle = page.locator('h1.globe-hero__title, h1:has-text("Multi-regulator")');
+    // The globe hero's title is an h2 — the page's single h1 belongs to the
+    // search hero above it. Assert the content renders, not its heading level.
+    const heroTitle = page.locator('.globe-hero__title');
     await heroTitle.waitFor({ timeout: 5000 });
 
     const titleText = await heroTitle.textContent();
@@ -250,7 +252,7 @@ test.describe('Homepage Responsive Design - Global Content', () => {
     await page.goto('/', { waitUntil: 'domcontentloaded', timeout: 15000 });
 
     // Hero should still be visible
-    const heroTitle = page.locator('h1.globe-hero__title, h1');
+    const heroTitle = page.locator('.globe-hero__title, h1');
     await heroTitle.first().waitFor({ timeout: 5000 });
 
     const text = await heroTitle.first().textContent();
