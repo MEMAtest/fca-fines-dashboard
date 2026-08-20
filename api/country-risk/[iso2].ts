@@ -8,7 +8,7 @@ import { computeCountryRiskV3 } from "../../src/data/countryRiskV3.js";
 import { resolveCountryRiskMethodology, CURRENT_COUNTRY_RISK_METHODOLOGY_VERSION } from "../../src/data/countryRiskMethodology.js";
 import { getCpi, CPI_LICENCE, CPI_SOURCE, CPI_YEAR } from "../../src/data/cpiData.js";
 import { computeCountryRiskScore } from "../../src/data/countryRiskScore.js";
-import { countryRiskSourcesAsOf } from "../../src/data/countryRiskSources.js";
+import { countryRiskSourcesForMethodology } from "../../src/data/countryRiskSources.js";
 import { buildCountryRiskPublicSurface } from "../../src/data/countryRiskSurface.js";
 import { getSanctionsRegimeCandidates } from "../../src/data/sanctionsRegimeCandidates.js";
 import {
@@ -35,7 +35,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   res.setHeader("Cache-Control", "public, max-age=300, s-maxage=3600");
   if (methodology === "v3") {
     const result = computeCountryRiskV3(iso2, { asOf });
-    const sources = countryRiskSourcesAsOf(asOf);
+    const sources = countryRiskSourcesForMethodology("v3", asOf);
     const fatf = getFatfStatus(iso2);
     const governance = getGovernanceDimensions(iso2);
     const sanctions = getApprovedSanctions(iso2);
@@ -80,7 +80,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   const sanctionsCoverage = getApprovedSanctionsCoverage(iso2);
   const sanctionsCandidates = getSanctionsRegimeCandidates(iso2);
   const appliedFloors = result.floors.filter((floor) => floor.applied);
-  const sources = countryRiskSourcesAsOf(asOf);
+  const sources = countryRiskSourcesForMethodology("v2", asOf);
   const surface = buildCountryRiskPublicSurface(iso2, asOf);
   let persistedHistory: Array<Record<string, unknown>> = [];
   try {

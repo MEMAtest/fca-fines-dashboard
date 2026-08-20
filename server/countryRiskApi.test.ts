@@ -42,6 +42,8 @@ describe("country-risk public API contract", () => {
     expect(response.payload.evidence.sanctions.coverageStatus).toBe("available");
     expect(response.payload.evidence.sanctions.pendingCandidates).toEqual([]);
     expect(response.payload.calculationContext.persistedScoreRunId).toBeNull();
+    expect(response.payload.sources).toContainEqual(expect.objectContaining({ id: "fatf-lists", scored: true }));
+    expect(response.payload.sources).toContainEqual(expect.objectContaining({ id: "sanctions-regimes", scored: true }));
   });
 
   it("publishes the BVI provisionally and applies the FATF floor instead of treating missing governance as low risk", async () => {
@@ -73,6 +75,10 @@ describe("country-risk public API contract", () => {
       overlays: expect.any(Object),
     }));
     expect(response.payload.result).not.toHaveProperty("floors");
+    expect(response.payload.sources).toContainEqual(expect.objectContaining({ id: "fatf-lists", scored: false }));
+    expect(response.payload.sources).toContainEqual(expect.objectContaining({ id: "sanctions-regimes", scored: false }));
+    expect(response.payload.sources).toContainEqual(expect.objectContaining({ id: "fatf-assessments", scored: true }));
+    expect(response.payload.sources).toContainEqual(expect.objectContaining({ id: "world-bank-wgi", scored: true }));
   });
 
   it("exposes the FATF required-action distinction", async () => {
@@ -124,5 +130,13 @@ describe("country-risk public API contract", () => {
     expect(list.payload.sourcesCurrent).toBe(status.payload.sourcesCurrent);
     expect(list.payload.sourcesCurrent).toBe(false);
     expect(status.payload.sourceHealth).toMatchObject({ readyForScoring: false });
+    expect(list.payload.sources).toContainEqual(expect.objectContaining({ id: "fatf-lists", scored: false }));
+    expect(list.payload.sources).toContainEqual(expect.objectContaining({ id: "sanctions-regimes", scored: false }));
+    expect(status.payload.sources).toContainEqual(expect.objectContaining({ id: "fatf-lists", scored: false }));
+    expect(status.payload.sources).toContainEqual(expect.objectContaining({ id: "sanctions-regimes", scored: false }));
+    const historical = await invoke(listHandler, { methodology: "v2" });
+    expect(historical.code).toBe(200);
+    expect(historical.payload.sources).toContainEqual(expect.objectContaining({ id: "fatf-lists", scored: true }));
+    expect(historical.payload.sources).toContainEqual(expect.objectContaining({ id: "sanctions-regimes", scored: true }));
   });
 });

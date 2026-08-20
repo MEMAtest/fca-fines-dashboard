@@ -6,10 +6,11 @@ import {
   COUNTRY_RISK_V3_PILLAR_WEIGHTS,
 } from "../data/countryRiskV3.js";
 import { COUNTRY_RISK_V3_PILLAR_LABELS } from "../data/countryRiskV3Presentation.js";
-import { COUNTRY_RISK_SOURCES } from "../data/countryRiskSources.js";
+import { countryRiskSourcesForMethodology } from "../data/countryRiskSources.js";
 import "../styles/country-hub.css";
 
 const percent = (value: number) => `${Math.round(value * 100)}%`;
+const CURRENT_COUNTRY_RISK_SOURCES = countryRiskSourcesForMethodology("v3");
 
 export function CountryMethodology() {
   useSEO({
@@ -78,10 +79,10 @@ export function CountryMethodology() {
       <section className="cx-method__section">
         <h2 className="cx-method__h2">Sources and freshness</h2>
         <div className="cx-sources">
-          {COUNTRY_RISK_SOURCES.map((source) => (
+          {CURRENT_COUNTRY_RISK_SOURCES.map((source) => (
             <div className="cx-source-card" key={source.id}>
               <div className="cx-source-card__name">{source.name}</div>
-              <div className="cx-source-card__desc">{source.scored ? "Used in the underlying score or overlay" : "Shown for context"} · checked {source.cadence}</div>
+              <div className="cx-source-card__desc">{source.scored ? "Used in the underlying score" : source.id === "fatf-lists" || source.id === "sanctions-regimes" ? "Shown as a legal treatment overlay" : "Shown for context"} · checked {source.cadence}</div>
               <a href={source.sourceUrl} target="_blank" rel="noopener noreferrer">Official source <ExternalLink size={11} /></a>
             </div>
           ))}

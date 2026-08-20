@@ -1,5 +1,5 @@
 import type { VercelRequest, VercelResponse } from "@vercel/node";
-import { countryRiskSourcesAsOf } from "../../../src/data/countryRiskSources.js";
+import { countryRiskSourcesForMethodology } from "../../../src/data/countryRiskSources.js";
 import { pageCountries } from "../../../src/data/countryView.js";
 import { computeCountryRiskV3, COUNTRY_RISK_V3_METHODOLOGY_VERSION } from "../../../src/data/countryRiskV3.js";
 import { SANCTIONS_APPROVED_SNAPSHOT } from "../../../src/data/sanctionsApprovedData.js";
@@ -21,7 +21,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   if (req.method !== "GET") return res.status(405).json({ error: "Method not allowed" });
   res.setHeader("Cache-Control", "public, max-age=300, s-maxage=3600");
   const asOf = new Date();
-  const sources = countryRiskSourcesAsOf(asOf);
+  const sources = countryRiskSourcesForMethodology("v3", asOf);
   const results = pageCountries().map((country) => computeCountryRiskV3(country.iso2, { asOf }));
   const readiness = assessCountryRiskReadiness(results, sources);
   const { sourceHealth, operationalSourceRuns } = await getCountryRiskOperationalHealth(asOf, sources);

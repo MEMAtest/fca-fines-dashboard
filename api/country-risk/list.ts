@@ -4,7 +4,7 @@ import { computeCountryRiskV2, COUNTRY_RISK_METHODOLOGY_VERSION } from "../../sr
 import { computeCountryRiskV3 } from "../../src/data/countryRiskV3.js";
 import { resolveCountryRiskMethodology, CURRENT_COUNTRY_RISK_METHODOLOGY_VERSION } from "../../src/data/countryRiskMethodology.js";
 import { computeCountryRiskScore } from "../../src/data/countryRiskScore.js";
-import { countryRiskSourcesAsOf } from "../../src/data/countryRiskSources.js";
+import { countryRiskSourcesForMethodology } from "../../src/data/countryRiskSources.js";
 import { assessCountryRiskReadiness } from "../../src/data/countryRiskReadiness.js";
 import { buildCountryRiskPublicSurface } from "../../src/data/countryRiskSurface.js";
 import { getCountryRiskOperationalHealth } from "../../server/services/countryRiskOperationalHealth.js";
@@ -20,7 +20,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     return res.status(400).json({ error: `Unsupported methodology: ${requested}` });
   }
   const asOf = new Date();
-  const sources = countryRiskSourcesAsOf(asOf);
+  const sources = countryRiskSourcesForMethodology(methodology, asOf);
   const results = pageCountries()
     .map((country) => {
       const result = methodology === "v3"

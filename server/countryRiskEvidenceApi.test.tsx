@@ -23,10 +23,20 @@ describe("country-risk evidence export API", () => {
     expect(json.code).toBe(200);
     expect(json.headers["Content-Disposition"]).toContain("regactions-mm-country-risk-evidence.json");
     expect(json.payload).toMatchObject({ result: { score: 9 }, surface: { fatfAction: { action: "enhanced-due-diligence" } } });
+    expect(json.payload.sources).toContainEqual(expect.objectContaining({ id: "fatf-lists", scored: false }));
+    expect(json.payload.sources).toContainEqual(expect.objectContaining({ id: "sanctions-regimes", scored: false }));
     const csv = await invoke({ iso2: "MM", format: "csv" });
     expect(csv.code).toBe(200);
     expect(csv.headers["Content-Type"]).toContain("text/csv");
     expect(csv.payload).toContain('"fatf-action","enhanced-due-diligence"');
+  });
+
+  it("retains historical v2 source scoring metadata only when explicitly requested", async () => {
+    const json = await invoke({ iso2: "MM", format: "json", methodology: "v2" });
+    expect(json.code).toBe(200);
+    expect(json.payload).toMatchObject({ methodologyVersion: "2.0.0" });
+    expect(json.payload.sources).toContainEqual(expect.objectContaining({ id: "fatf-lists", scored: true }));
+    expect(json.payload.sources).toContainEqual(expect.objectContaining({ id: "sanctions-regimes", scored: true }));
   });
 
   it("renders a real PDF evidence pack", async () => {
