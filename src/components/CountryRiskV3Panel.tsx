@@ -53,7 +53,10 @@ export interface CountryRiskV3Payload {
 }
 
 /** Convert the deterministic API result into the presentation contract. */
-export function countryRiskV3PanelPayload(result: CountryRiskV3Result): CountryRiskV3Payload {
+export function countryRiskV3PanelPayload(
+  result: CountryRiskV3Result,
+  register?: { label: string; value: string; source?: CountryRiskEvidenceSource | null } | null,
+): CountryRiskV3Payload {
   const fatfSource: CountryRiskEvidenceSource = {
     name: "FATF mutual-evaluation ratings",
     url: "https://www.fatf-gafi.org/en/publications/Mutualevaluations/Fatf-methodology.html",
@@ -108,7 +111,7 @@ export function countryRiskV3PanelPayload(result: CountryRiskV3Result): CountryR
       io5: ownershipDomain("io5", "FATF IO5 effectiveness", ownership.effectiveness),
       recommendation24: ownershipDomain("r24", "Recommendation 24 · companies", ownership.companies),
       recommendation25: ownershipDomain("r25", "Recommendation 25 · trusts", ownership.trustsAndArrangements),
-      register: null,
+      register: register ?? null,
     },
     overlays: [
       {
@@ -133,9 +136,8 @@ export function countryRiskV3PanelPayload(result: CountryRiskV3Result): CountryR
 const percent = (weight: number) => `${Math.round(weight * 100)}%`;
 const number = (value: number | null | undefined) => value === null || value === undefined ? "Not available" : value.toFixed(1);
 
-/** Human-readable v3 score card. Kept separate from the v2 CountryHub so the
- * API can run v3 in shadow without changing the current public headline. */
-export function CountryRiskV3Panel({ payload }: { payload: CountryRiskV3Payload }) {
+/** Human-readable v3 calculation card used by the current CountryHub. */
+export function CountryRiskV3Panel({ payload, showHeadline = true }: { payload: CountryRiskV3Payload; showHeadline?: boolean }) {
   return (
     <section className="cx-v3" aria-labelledby="country-risk-v3-heading">
       <div className="cx-v3__head">
@@ -150,10 +152,10 @@ export function CountryRiskV3Panel({ payload }: { payload: CountryRiskV3Payload 
         </div>
       </div>
       <div className="cx-v3__summary">
-        <div className="cx-v3__result">
+        {showHeadline && <div className="cx-v3__result">
           <strong>{number(payload.score)}{payload.score === null ? "" : " / 10"}</strong>
           <span>{payload.band ? `${payload.band} underlying risk` : "Headline score withheld"}</span>
-        </div>
+        </div>}
         <div className="cx-v3__pillars">
           {payload.pillars.map((pillar) => {
             const contribution = pillar.contribution ?? (pillar.score === null ? null : pillar.score * pillar.weight);

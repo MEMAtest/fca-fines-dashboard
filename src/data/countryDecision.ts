@@ -65,9 +65,13 @@ export interface DecisionInput {
     band: RiskBand | null;
     status: CountryRiskPublicationStatus;
   };
-  /** False when fewer than two v2 pillars are available. */
+  /** False when fewer than two current v3 pillars are available. */
   scoreAvailable: boolean;
   breakdown: ScoreBreakdown;
+  /** Current methodology pillars used for narrative drivers; v2 breakdown is historical compatibility only. */
+  currentPillars?: Array<{ label: string; risk: number | null }>;
+  /** Current WGI governance dimensions, used only to explain the governance pillar. */
+  currentGovernanceDomains?: Array<{ key: string; label: string; risk: number | null }>;
   sanctions?: CountrySanctions;
   sanctionsTier?: SanctionsTier;
   sanctionsCoverageComplete: boolean;
@@ -85,16 +89,32 @@ const DOMAIN_QUALIFIER: Record<string, string> = {
   ruleOfLaw: "rule-of-law and institutional weakness",
   politicalStability: "political-instability risk",
   accountability: "governance and transparency concerns",
+  effectiveness: "financial-crime effectiveness gaps",
+  safeguards: "technical safeguards gaps",
+  governance: "governance and institutional weakness",
 };
 const DOMAIN_NOUN: Record<string, string> = {
   corruption: "corruption",
   ruleOfLaw: "rule of law and institutions",
   politicalStability: "political stability",
   accountability: "voice and accountability",
+  effectiveness: "financial-crime effectiveness",
+  safeguards: "technical safeguards",
+  governance: "governance and institutions",
 };
 
-function topDomains(breakdown: ScoreBreakdown) {
-  return breakdown.domains
+function topDomains(
+  breakdown: ScoreBreakdown,
+  currentPillars?: DecisionInput["currentPillars"],
+  currentGovernanceDomains?: DecisionInput["currentGovernanceDomains"],
+) {
+  return (currentGovernanceDomains?.length
+    ? currentGovernanceDomains
+    : currentPillars?.map((domain, index) => ({
+      key: ["effectiveness", "safeguards", "governance"][index] ?? `current-${index}`,
+      label: domain.label,
+      risk: domain.risk,
+    })) ?? breakdown.domains)
     .filter((d) => d.risk !== null)
     .sort((a, b) => (b.risk as number) - (a.risk as number));
 }
@@ -135,17 +155,19 @@ function verdict(input: DecisionInput): { headline: string; paragraph: string } 
       paragraph: `${input.name} has information for fewer than two of the three parts of the score, so RegActions does not publish a number or risk band. ${fatfPhrase} Missing information is not treated as zero or Low risk.`,
     };
   }
-  const doms = topDomains(input.breakdown);
+  const doms = topDomains(input.breakdown, input.currentPillars, input.currentGovernanceDomains);
   const top = doms[0];
-  const qualifier = top && (top.risk as number) >= 4 ? DOMAIN_QUALIFIER[top.key] : "";
+  const qualifier = top && (top.risk as number) >= 4
+    ? DOMAIN_QUALIFIER[top.key] ?? `elevated ${top.label.toLowerCase()} risk`
+    : "";
   const headline = `${bandLabel(input.riskResult.band)} country risk${qualifier ? `, with ${qualifier}` : ""}`;
 
   const bandLower = bandLabel(input.riskResult.band).toLowerCase();
   const driverPhrase =
     doms.length > 1 && (doms[1].risk as number) >= 4
-      ? `weak ${DOMAIN_NOUN[top.key]}, alongside ${DOMAIN_NOUN[doms[1].key]} risk`
+      ? `weak ${DOMAIN_NOUN[top.key] ?? top.label.toLowerCase()}, alongside ${DOMAIN_NOUN[doms[1].key] ?? doms[1].label.toLowerCase()} risk`
       : top
-        ? `weak ${DOMAIN_NOUN[top.key]}`
+        ? `weak ${DOMAIN_NOUN[top.key] ?? top.label.toLowerCase()}`
         : "its governance profile";
   const fatfPhrase = input.fatf
     ? input.fatf.listing === "call-for-action"
@@ -172,7 +194,7 @@ function verdict(input: DecisionInput): { headline: string; paragraph: string } 
 
 function riskDrivers(input: DecisionInput): string[] {
   const out: string[] = [];
-  if (!input.scoreAvailable) out.push("Government effectiveness and rule of law information is unavailable; no headline score is published");
+  if (!input.scoreAvailable) out.push("Underlying country-risk evidence is incomplete; no headline score is published");
   if (input.fatf) {
     const action = input.fatf.listing === "increased-monitoring"
       ? "increased-monitoring status"
@@ -185,7 +207,7 @@ function riskDrivers(input: DecisionInput): string[] {
     out.push(
       `${input.sanctionsTier.charAt(0).toUpperCase() + input.sanctionsTier.slice(1)} sanctions exposure`,
     );
-  for (const d of topDomains(input.breakdown)) {
+  for (const d of topDomains(input.breakdown, input.currentPillars, input.currentGovernanceDomains)) {
     if ((d.risk as number) < 5 || out.length >= 5) break;
     out.push(`${d.label} — ${(d.risk as number).toFixed(1)}/10`);
   }
@@ -201,9 +223,9 @@ function mitigatingFactors(input: DecisionInput): string[] {
   if (!input.fatf) out.push("Not currently on the FATF grey or black list.");
   if (input.sanctionsCoverageComplete && !hasComprehensiveSanctions(input.sanctions))
     out.push("No comprehensive country-wide sanctions programme.");
-  const strongest = [...topDomains(input.breakdown)].reverse()[0];
+  const strongest = [...topDomains(input.breakdown, input.currentPillars, input.currentGovernanceDomains)].reverse()[0];
   if (strongest && (strongest.risk as number) < 5)
-    out.push(`Comparatively stronger ${DOMAIN_NOUN[strongest.key]} (${(strongest.risk as number).toFixed(1)}/10).`);
+    out.push(`Comparatively stronger ${DOMAIN_NOUN[strongest.key] ?? strongest.label.toLowerCase()} (${(strongest.risk as number).toFixed(1)}/10).`);
   out.push(
     !input.scoreAvailable
       ? "No low-risk conclusion is drawn until the evidence gap is resolved."
@@ -308,7 +330,7 @@ export function treatmentChecklist(input: DecisionInput): string[] {
   }
 
   // 3. Weakest governance domain → matching diligence emphasis.
-  const weakest = topDomains(input.breakdown)[0];
+  const weakest = topDomains(input.breakdown, input.currentPillars, input.currentGovernanceDomains)[0];
   if (weakest && (weakest.risk as number) >= 4) {
     const item = DOMAIN_DILIGENCE[weakest.key];
     if (item) out.push(item);
@@ -341,6 +363,10 @@ export function treatmentChecklist(input: DecisionInput): string[] {
     if (out.length >= 5) break;
     out.push(item);
   }
+
+  // A sparse profile can otherwise produce only three generic controls. Keep
+  // the card operationally useful without inventing a risk signal.
+  if (out.length < 4) out.push("Document the rationale for the selected country-risk treatment");
 
   return out.slice(0, 5);
 }

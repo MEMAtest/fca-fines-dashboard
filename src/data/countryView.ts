@@ -185,9 +185,9 @@ export interface CountryView {
   sanctionsTier?: SanctionsTier;
   /** Risk band for the sanctions card (mirrors the FATF band scale). */
   sanctionsBand: RiskBand;
-  /** Composite RegActions Country Risk Score (governance base + escalators). */
+  /** Legacy composite score retained only for historical/API compatibility. */
   riskScore: CountryRiskScore;
-  /** Decision-grade v2 score used for the headline, ranking and public status. */
+  /** Historical v2 result; never use this for current rankings or copy. */
   riskV2: CountryRiskV2Result;
   /** Current methodology result. v2 remains above solely for historical/API compatibility. */
   riskV3: CountryRiskCurrentResult;
@@ -195,11 +195,11 @@ export interface CountryView {
   riskCurrent: CountryRiskCurrentResult;
   /** Additive, non-scoring public evidence, freshness and change-history surface. */
   publicSurface: CountryRiskPublicSurface;
-  /** V2 publication state; provisional scores remain visible but can never be labelled Low. */
+  /** Current v3 publication state; provisional scores remain visible but can never be labelled Low. */
   scoreStatus: CountryScorePublicationStatus;
-  /** Score derivation for the "how is this scored?" card. */
+  /** Historical v2 score derivation; current pillar data lives in riskCurrent.pillars. */
   breakdown: ScoreBreakdown;
-  /** Mean score across profiled countries, for "vs global average". */
+  /** Mean score across current-methodology countries, for "vs global average". */
   globalAverage: number;
   /** Transparency International CPI (display only), if available. */
   cpi?: CpiEntry;
@@ -246,6 +246,12 @@ const TIER_RANK: Record<SanctionsTier, number> = {
   sectoral: 2,
   targeted: 1,
 };
+
+/** WGI percentile (higher is better) to the v3 governance risk direction. */
+function governanceRisk(iso2: string, key: "cc" | "rl" | "pv" | "va"): number | null {
+  const value = getGovernanceDimensions(iso2)?.[key];
+  return value === undefined ? null : Math.round(((100 - Math.max(0, Math.min(100, value))) / 10) * 10) / 10;
+}
 
 function highestTier(sanctions: CountrySanctions | undefined): SanctionsTier | undefined {
   return sanctions?.programs.reduce<SanctionsTier | undefined>(
@@ -349,6 +355,105 @@ export function buildSectorExposure(input: {
   });
 }
 
+/**
+ * Current-methodology sector view.  This is deliberately separate from the
+ * historical `buildSectorExposure` adapter above: v2 governance domains and
+ * sanctions points must not be quietly presented as part of the v3 result.
+ * Sanctions and FATF remain legal/compliance overlays here, not score inputs.
+ */
+export function buildSectorExposureCurrent(
+  risk: CountryRiskCurrentResult,
+): SectorRow[] {
+  const sanctions = risk.overlays.sanctions;
+  const fatf = risk.overlays.fatf.listing === "call-for-action"
+    ? "black"
+    : risk.overlays.fatf.listing === "increased-monitoring"
+      ? "grey"
+      : undefined;
+  const effectiveness = risk.pillars.effectiveness.score;
+  const safeguards = risk.pillars.safeguards.score;
+  const governance = risk.pillars.governance.score;
+  const bo = risk.beneficialOwnership.score;
+  const review = (sector: string, rationale: string): SectorRow => ({
+    sector,
+    level: "Review",
+    rationale,
+  });
+  const elevated = (sector: string, rationale: string): SectorRow => ({
+    sector,
+    level: "Elevated",
+    rationale,
+  });
+  const high = (sector: string, rationale: string): SectorRow => ({
+    sector,
+    level: "High",
+    rationale,
+  });
+  const low = (sector: string, rationale: string): SectorRow => ({
+    sector,
+    level: "Low",
+    rationale,
+  });
+
+  const banking = fatf === "black"
+    ? high("Banking & payments", "FATF call-for-action overlay requires enhanced treatment")
+    : fatf === "grey"
+      ? elevated("Banking & payments", "FATF increased-monitoring overlay raises correspondent risk")
+      : governance === null
+        ? review("Banking & payments", "Governance pillar unavailable; no low-exposure conclusion")
+        : governance >= 6
+          ? elevated("Banking & payments", `Governance pillar risk is ${governance.toFixed(1)}/10`)
+          : low("Banking & payments", "No FATF overlay and governance pillar within normal range");
+
+  const trade = !sanctions.coverageComplete
+    ? review("Trade & export controls", "Sanctions overlay coverage incomplete; verify before clearing trade")
+    : sanctions.highestTier === "comprehensive"
+      ? high("Trade & export controls", "Comprehensive sanctions overlay restricts most cross-border trade")
+      : sanctions.highestTier === "sectoral"
+        ? high("Trade & export controls", "Sectoral sanctions overlay restricts named trade sectors")
+        : sanctions.highestTier === "targeted"
+          ? elevated("Trade & export controls", "Targeted sanctions overlay requires counterparty screening")
+          : fatf === "black"
+            ? high("Trade & export controls", "FATF call-for-action overlay raises diversion risk")
+            : low("Trade & export controls", "No direct sanctions or FATF call-for-action overlay identified");
+
+  const crypto = fatf === "black"
+    ? high("Crypto & virtual assets", "FATF call-for-action overlay requires enhanced VASP treatment")
+    : fatf === "grey"
+      ? elevated("Crypto & virtual assets", "FATF increased-monitoring overlay raises VASP supervision risk")
+      : effectiveness === null
+        ? review("Crypto & virtual assets", "Effectiveness pillar unavailable; no low-exposure conclusion")
+        : effectiveness >= 6
+          ? elevated("Crypto & virtual assets", `Effectiveness pillar risk is ${effectiveness.toFixed(1)}/10`)
+          : low("Crypto & virtual assets", "No FATF overlay and effectiveness pillar within normal range");
+
+  const property = bo === null
+    ? review("Real estate & luxury assets", "Beneficial-ownership evidence unavailable; verify ownership controls")
+    : bo >= 6
+      ? high("Real estate & luxury assets", `Beneficial-ownership subscore is ${bo.toFixed(1)}/10`)
+      : governance !== null && governance >= 6
+        ? elevated("Real estate & luxury assets", `Governance pillar risk is ${governance.toFixed(1)}/10`)
+        : low("Real estate & luxury assets", "Beneficial-ownership and governance signals are within normal range");
+
+  const procurement = governance === null && effectiveness === null
+    ? review("State-linked & procurement", "Current risk pillars unavailable; no low-exposure conclusion")
+    : governance !== null && governance >= 7
+      ? high("State-linked & procurement", `Governance pillar risk is ${governance.toFixed(1)}/10`)
+      : effectiveness !== null && effectiveness >= 7
+        ? high("State-linked & procurement", `Effectiveness pillar risk is ${effectiveness.toFixed(1)}/10`)
+        : governance !== null && governance >= 6
+          ? elevated("State-linked & procurement", `Governance pillar risk is ${governance.toFixed(1)}/10`)
+          : low("State-linked & procurement", "Current risk pillars show no elevated procurement signal");
+
+  // Safeguards is intentionally included in the current derivation so it is
+  // visible to users, while sanctions/FATF remain overlays only.
+  if (safeguards !== null && safeguards >= 7 && procurement.level === "Low") {
+    procurement.level = "Elevated";
+    procurement.rationale = `Safeguards pillar risk is ${safeguards.toFixed(1)}/10`;
+  }
+  return [banking, trade, crypto, property, procurement];
+}
+
 /** Sanctions tier → risk band (comprehensive = very-high, sectoral = high, targeted = high). */
 function sanctionsToBand(tier: SanctionsTier | undefined): RiskBand {
   if (!tier) return "none";
@@ -364,7 +469,7 @@ export function fatfBand(fatf: FatfStatus | undefined): RiskBand {
 /** Keep every presentation and decision consumer on the scorer's country-level coverage gate. */
 export function countrySanctionsPresentation(
   iso2: string,
-  riskResult: Pick<CountryRiskV2Result, "sanctionsCoverageComplete"> = computeCountryRiskV2(iso2),
+  riskResult: Pick<CountryRiskCurrentResult, "sanctionsCoverageComplete"> = computeCountryRiskCurrent(iso2),
 ): {
   sanctionsCoverageComplete: boolean;
   sanctions: CountrySanctions | undefined;
@@ -385,7 +490,7 @@ export function buildCountryView(country: Country): CountryView {
   const enforcement = getCountryEnforcementSummary(country.iso2);
   const riskV2 = computeCountryRiskV2(country.iso2);
   const riskV3 = computeCountryRiskCurrent(country.iso2);
-  const { sanctionsCoverageComplete, sanctions, sanctionsTier } = countrySanctionsPresentation(country.iso2, riskV2);
+  const { sanctionsCoverageComplete, sanctions, sanctionsTier } = countrySanctionsPresentation(country.iso2, riskV3);
 
   const statusHeading = fatf ? fatfLabel(fatf.listing) : "Not currently listed";
   const statusDetail = fatf
@@ -404,7 +509,7 @@ export function buildCountryView(country: Country): CountryView {
 
   const riskScore = computeCountryRiskScore(country.iso2);
   const publicSurface = buildCountryRiskPublicSurface(country.iso2);
-  const scoreStatus = riskV2.status;
+  const scoreStatus = riskV3.status;
   const breakdown = scoreBreakdown(country.iso2);
   const cpi = getCpi(country.iso2);
   const enforcementAssessed = !!enforcement;
@@ -414,12 +519,23 @@ export function buildCountryView(country: Country): CountryView {
   const decision = buildDecision({
     name: country.name,
     riskResult: {
-      score: riskV2.score,
-      band: riskV2.band,
-      status: riskV2.status,
+      score: riskV3.score,
+      band: riskV3.band,
+      status: riskV3.status,
     },
-    scoreAvailable: riskV2.score !== null,
+    scoreAvailable: riskV3.score !== null,
     breakdown,
+    currentPillars: [
+      { label: "Financial-crime effectiveness", risk: riskV3.pillars.effectiveness.score },
+      { label: "Legal and supervisory safeguards", risk: riskV3.pillars.safeguards.score },
+      { label: "Governance and institutional integrity", risk: riskV3.pillars.governance.score },
+    ],
+    currentGovernanceDomains: [
+      { key: "corruption", label: "Corruption and integrity", risk: governanceRisk(country.iso2, "cc") },
+      { key: "ruleOfLaw", label: "Rule of law", risk: governanceRisk(country.iso2, "rl") },
+      { key: "politicalStability", label: "Political stability", risk: governanceRisk(country.iso2, "pv") },
+      { key: "accountability", label: "Voice and accountability", risk: governanceRisk(country.iso2, "va") },
+    ],
     sanctions,
     sanctionsTier,
     sanctionsCoverageComplete,
@@ -457,7 +573,7 @@ export function buildCountryView(country: Country): CountryView {
     publicSurface,
     scoreStatus,
     breakdown,
-    globalAverage: globalAverageRiskScoreV2(),
+    globalAverage: globalAverageRiskScoreCurrent(),
     cpi,
     regionalPeers: regionalPeers(country.iso2, country.region),
     decision,
@@ -465,9 +581,9 @@ export function buildCountryView(country: Country): CountryView {
     hasComprehensiveSanctions,
     hasTargetedSanctions,
     sanctionsCoverageComplete,
-    scoreHistory: riskV2.score === null || !SANCTIONS_APPROVED_SNAPSHOT.generatedAt
+    scoreHistory: riskV3.score === null || !SANCTIONS_APPROVED_SNAPSHOT.generatedAt
       ? []
-      : [{ date: SANCTIONS_APPROVED_SNAPSHOT.generatedAt.slice(0, 10), score: riskV2.score }],
+      : [{ date: SANCTIONS_APPROVED_SNAPSHOT.generatedAt.slice(0, 10), score: riskV3.score }],
     attribution: buildAttribution(country, {
       sanctions,
       cpi,
@@ -478,14 +594,7 @@ export function buildCountryView(country: Country): CountryView {
     lastPlenary: FATF_LAST_PLENARY,
     nextPlenary: FATF_NEXT_PLENARY,
     regulatory,
-    sectorExposure: buildSectorExposure({
-      sanctions: sanctionsCoverageComplete ? sanctions : undefined,
-      sanctionsTier: sanctionsCoverageComplete ? sanctionsTier : undefined,
-      sanctionsEvidenceComplete: sanctionsCoverageComplete,
-      fatf,
-      breakdown,
-      cpi,
-    }),
+    sectorExposure: buildSectorExposureCurrent(riskV3),
   };
 }
 
@@ -525,17 +634,12 @@ export function pageCountries(): Country[] {
 }
 
 /**
- * AML/CFT control strength (0–10, higher = stronger) — the mean WGI percentile
- * of the institutional dimensions (Rule of Law, Regulatory Quality, Government
- * Effectiveness) ÷ 10. A derived VIEW metric (not part of the scored composite),
- * used as the x-axis of the risk matrix and in the country detail panel.
+ * AML/CFT control strength (0–10, higher = stronger), derived from the current
+ * v3 technical-safeguards pillar. This is a view metric, not another score.
  */
 export function controlStrength(iso2: string): number | null {
-  const d = getGovernanceDimensions(iso2);
-  if (!d) return null;
-  const vals = [d.rl, d.rq, d.ge].filter((v): v is number => v !== undefined);
-  if (!vals.length) return null;
-  return Math.round((vals.reduce((s, v) => s + v, 0) / vals.length / 10) * 10) / 10;
+  const safeguardsRisk = computeCountryRiskCurrent(iso2).pillars.safeguards.score;
+  return safeguardsRisk === null ? null : Math.round((10 - safeguardsRisk) * 10) / 10;
 }
 
 let _coveredCounts: number[] | undefined;
@@ -571,7 +675,7 @@ export function enforcementExposure(iso2: string): number {
 export interface CountryIndexEntry {
   country: Country;
   flag: string;
-  /** Null means fewer than two v2 pillars are available. */
+  /** Null means fewer than two current v3 pillars are available. */
   score: number | null;
   band: ScoreBand | null;
   status: CountryScorePublicationStatus;
@@ -579,7 +683,7 @@ export interface CountryIndexEntry {
   sanctionsTier?: SanctionsTier;
   sanctionsCoverageComplete: boolean;
   hasEnforcement: boolean;
-  /** AML/CFT control strength 0–10 (higher = stronger), or null if no WGI. */
+  /** Current v3 safeguards strength 0–10 (higher = stronger), or null if unavailable. */
   controlStrength: number | null;
   /** Enforcement exposure 0–10 (log-normalised tracked actions). */
   enforcementExposure: number;
@@ -620,11 +724,11 @@ export function buildCountryIndex(): CountryIndexEntry[] {
 
 let _globalAverageV2: number | undefined;
 
-/** Mean published v2 result across complete and explicitly provisional jurisdictions. */
+/** Historical v2 average. Kept explicit so it cannot be mistaken for current data. */
 export function globalAverageRiskScoreV2(): number {
   if (_globalAverageV2 !== undefined) return _globalAverageV2;
-  const scores = buildCountryIndex()
-    .map((entry) => entry.score)
+  const scores = pageCountries()
+    .map((country) => computeCountryRiskV2(country.iso2).score)
     .filter((score): score is number => score !== null);
   _globalAverageV2 = scores.length
     ? Math.round((scores.reduce((sum, score) => sum + score, 0) / scores.length) * 10) / 10
@@ -690,39 +794,69 @@ export function regionalAverages(): RegionalAverage[] {
 }
 
 export interface PillarAverages {
-  /** Mean weighted governance contribution. */
+  /** Mean current v3 contribution from FATF effectiveness. */
+  effectiveness: number;
+  /** Mean current v3 contribution from technical safeguards. */
+  safeguards: number;
+  /** Mean current v3 contribution from governance. */
   governance: number;
-  /** Mean weighted AML/CFT contribution. */
+}
+
+/** Historical v2 pillar average, retained only for explicitly historical consumers. */
+export interface PillarAveragesV2 {
+  governance: number;
   fatf: number;
-  /** Mean weighted sanctions contribution. */
   sanctions: number;
 }
 
 let _pillarAverages: PillarAverages | undefined;
 
 /**
- * Global mean weighted contribution of each v2 pillar across published countries. Drives the
- * "what drives global risk" donut on the index.
+ * Global mean weighted contribution of each current v3 pillar across published countries.
  */
 export function pillarAverages(): PillarAverages {
   if (_pillarAverages) return _pillarAverages;
-  let base = 0;
-  let f = 0;
-  let s = 0;
+  let effectiveness = 0;
+  let safeguards = 0;
+  let governance = 0;
   let n = 0;
   for (const c of pageCountries()) {
-    const result = computeCountryRiskV2(c.iso2);
+    const result = computeCountryRiskCurrent(c.iso2);
     if (result.score === null) continue;
-    base += (result.pillars.governance.score ?? 0) * result.pillars.governance.appliedWeight;
-    f += (result.pillars.aml.score ?? 0) * result.pillars.aml.appliedWeight;
-    s += (result.pillars.sanctions.score ?? 0) * result.pillars.sanctions.appliedWeight;
+    effectiveness += result.pillars.effectiveness.contribution ?? 0;
+    safeguards += result.pillars.safeguards.contribution ?? 0;
+    governance += result.pillars.governance.contribution ?? 0;
     n += 1;
   }
   const round = (x: number) => Math.round(x * 10) / 10;
   _pillarAverages = {
-    governance: n ? round(base / n) : 0,
-    fatf: n ? round(f / n) : 0,
-    sanctions: n ? round(s / n) : 0,
+    effectiveness: n ? round(effectiveness / n) : 0,
+    safeguards: n ? round(safeguards / n) : 0,
+    governance: n ? round(governance / n) : 0,
   };
   return _pillarAverages;
+}
+
+let _pillarAveragesV2: PillarAveragesV2 | undefined;
+export function pillarAveragesV2(): PillarAveragesV2 {
+  if (_pillarAveragesV2) return _pillarAveragesV2;
+  let governance = 0;
+  let fatf = 0;
+  let sanctions = 0;
+  let n = 0;
+  for (const c of pageCountries()) {
+    const result = computeCountryRiskV2(c.iso2);
+    if (result.score === null) continue;
+    governance += (result.pillars.governance.score ?? 0) * result.pillars.governance.appliedWeight;
+    fatf += (result.pillars.aml.score ?? 0) * result.pillars.aml.appliedWeight;
+    sanctions += (result.pillars.sanctions.score ?? 0) * result.pillars.sanctions.appliedWeight;
+    n += 1;
+  }
+  const round = (x: number) => Math.round(x * 10) / 10;
+  _pillarAveragesV2 = {
+    governance: n ? round(governance / n) : 0,
+    fatf: n ? round(fatf / n) : 0,
+    sanctions: n ? round(sanctions / n) : 0,
+  };
+  return _pillarAveragesV2;
 }

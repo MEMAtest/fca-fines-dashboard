@@ -32,7 +32,7 @@ import { FATF_SOURCE_URL } from "../data/fatfStatus.js";
 import { isEuTaxListed } from "../data/euTaxList.js";
 import { getEgmontMember } from "../data/egmontMembership.js";
 import { getFatfAssessmentLink } from "../data/fatfAssessmentLinks.js";
-import { getBoRegister, boRegisterSignal } from "../data/boRegisters.js";
+import { BO_REGISTERS_REVIEWED, BO_REGISTERS_SOURCE_URL, getBoRegister, boRegisterSignal } from "../data/boRegisters.js";
 import {
   recentChangesForCountry,
   CHANGE_KIND_LABELS,
@@ -40,15 +40,15 @@ import {
 } from "../data/countryChanges.js";
 import { comparePairSlug } from "../data/countryCompare.js";
 import { bandLabel, bandFor, type RiskBand } from "../data/countryRiskScore.js";
-import { CountryRiskV3Panel, countryRiskV3PanelPayload, type CountryRiskV3Payload } from "../components/CountryRiskV3Panel.js";
+import { CountryRiskV3Panel, countryRiskV3PanelPayload } from "../components/CountryRiskV3Panel.js";
 import { CountryRiskEvidencePopover } from "../components/CountryRiskEvidencePopover.js";
 import { GOVERNANCE_VINTAGE } from "../data/governanceData.js";
 import { CPI_YEAR, CPI_TOTAL } from "../data/cpiData.js";
 import { COUNTRY_RISK_SOURCES } from "../data/countryRiskSources.js";
 import {
-  buildCountryRiskPublicExplanation,
   latestCountryRiskSourceCheck,
 } from "../data/countryRiskPresentation.js";
+import { buildCountryRiskV3PublicExplanation } from "../data/countryRiskV3Presentation.js";
 import {
   buildCountryView,
   formatDate,
@@ -158,9 +158,6 @@ export function CountryHub() {
     [country],
   );
   const [watched, setWatched] = useState(false);
-  // v3 remains opt-in during shadow operation. The API and current public
-  // headline therefore remain v2-compatible until the promotion gate passes.
-  const [v3Preview, setV3Preview] = useState<CountryRiskV3Payload | null>(null);
   const [zoomed, setZoomed] = useState<null | "attr" | "impact" | "sect" | "peers">(null);
   const [persistedScoreHistory, setPersistedScoreHistory] = useState<Array<{
     date: string;
@@ -173,7 +170,7 @@ export function CountryHub() {
       return;
     }
     const controller = new AbortController();
-    fetch(`/api/country-risk/${country.iso2}?methodology=v2`, { signal: controller.signal })
+    fetch(`/api/country-risk/${country.iso2}?methodology=v3`, { signal: controller.signal })
       .then((response) => response.ok ? response.json() : Promise.reject(new Error(`HTTP ${response.status}`)))
       .then((payload: { history?: Array<{ completed_at?: string; score?: string | number; arithmetic?: string }> }) => {
         const history = (payload.history ?? [])
@@ -188,20 +185,6 @@ export function CountryHub() {
       })
       .catch((error: unknown) => {
         if (!(error instanceof DOMException && error.name === "AbortError")) setPersistedScoreHistory([]);
-      });
-    return () => controller.abort();
-  }, [country]);
-  useEffect(() => {
-    setV3Preview(null);
-    if (!country || import.meta.env.VITE_COUNTRY_RISK_V3_PREVIEW !== "true") return;
-    const controller = new AbortController();
-    fetch(`/api/country-risk/${country.iso2}?methodology=v3`, { signal: controller.signal })
-      .then((response) => response.ok ? response.json() : Promise.reject(new Error(`HTTP ${response.status}`)))
-      .then((payload: { result?: import("../data/countryRiskV3.js").CountryRiskV3Result }) => {
-        if (payload.result) setV3Preview(countryRiskV3PanelPayload(payload.result));
-      })
-      .catch((error: unknown) => {
-        if (!(error instanceof DOMException && error.name === "AbortError")) setV3Preview(null);
       });
     return () => controller.abort();
   }, [country]);
@@ -228,8 +211,7 @@ export function CountryHub() {
 
   const {
     statusHeading,
-    riskScore,
-    riskV2,
+    riskV3,
     publicSurface,
     breakdown,
     globalAverage,
@@ -245,15 +227,11 @@ export function CountryHub() {
   } = view;
 
   const rank = globalRank(country.iso2);
-  const publicExplanation = buildCountryRiskPublicExplanation(riskV2);
+  const publicExplanation = buildCountryRiskV3PublicExplanation(riskV3);
   const latestSourceCheck = latestCountryRiskSourceCheck(COUNTRY_RISK_SOURCES);
-  const scoreAvailable = riskV2.score !== null && riskV2.band !== null;
-  const publishedScore = riskV2.score;
-  const publishedBand = riskV2.band;
-  const previousScore = riskScore.hasGovernance ? riskScore.score : null;
-  const versionChange = publishedScore === null || previousScore === null
-    ? null
-    : Math.round((publishedScore - previousScore) * 10) / 10;
+  const scoreAvailable = riskV3.score !== null && riskV3.band !== null;
+  const publishedScore = riskV3.score;
+  const publishedBand = riskV3.band;
   const effectiveScoreHistory = persistedScoreHistory.length ? persistedScoreHistory : scoreHistory;
   const latestHistory = effectiveScoreHistory[effectiveScoreHistory.length - 1];
   const previousHistory = effectiveScoreHistory[effectiveScoreHistory.length - 2];
@@ -649,7 +627,19 @@ export function CountryHub() {
         </div>
       </div>
 
-      {v3Preview && <CountryRiskV3Panel payload={v3Preview} />}
+      <CountryRiskV3Panel
+        payload={countryRiskV3PanelPayload(riskV3, {
+          label: "Register status",
+          value: boReg ? `${boRegisterSignal(country.iso2)}${boReg.since ? ` · since ${boReg.since}` : ""}` : "No live register identified in the source snapshot",
+          source: {
+            name: "Open Ownership register map",
+            url: BO_REGISTERS_SOURCE_URL,
+            checkedAt: BO_REGISTERS_REVIEWED,
+            note: "Register availability is context only and does not establish the accuracy or completeness of ownership information.",
+          },
+        })}
+        showHeadline={false}
+      />
 
       <div className="cx-ws">
         <div className="cx-ws__main">
@@ -705,7 +695,7 @@ export function CountryHub() {
                   <p className="cx-osc__avg">
                     {publicExplanation.statusLabel} · {publicExplanation.confidenceLabel}
                   </p>
-                  {riskV2.status !== "complete" && (
+                  {riskV3.status !== "complete" && (
                     <p className="cx-osc__status-note">{publicExplanation.statusExplanation}</p>
                   )}
                   <p className="cx-osc__avg">Global average: {globalAverage.toFixed(1)}</p>
@@ -783,12 +773,12 @@ export function CountryHub() {
                       <span>Current</span>
                     </div>
                     <div>
-                      <b>{previousScore === null ? "—" : previousScore.toFixed(1)}</b>
-                      <span>v1 comparison</span>
+                      <b>{previousHistory ? previousHistory.score.toFixed(1) : "—"}</b>
+                      <span>Previous run</span>
                     </div>
                     <div>
-                      <b>{versionChange === null ? "n/a" : `${versionChange > 0 ? "+" : ""}${versionChange.toFixed(1)}`}</b>
-                      <span>Method change</span>
+                      <b>{runChange === null ? "n/a" : `${runChange > 0 ? "+" : ""}${runChange.toFixed(1)}`}</b>
+                      <span>Run change</span>
                     </div>
                   </div>
                 </>
@@ -804,7 +794,7 @@ export function CountryHub() {
                   <summary>Why this changed</summary>
                   <p className="cx-card__note">
                     {runChange === null
-                      ? `The current score adds financial crime controls and international sanctions to the earlier government-data comparison${versionChange === null ? "" : `, changing the comparable score by ${versionChange > 0 ? "+" : ""}${versionChange.toFixed(1)}`}.`
+                      ? "The current score is calculated from the v3 underlying-risk pillars; sanctions and FATF status are shown as legal treatment overlays."
                       : `The latest persisted source run moved the score by ${runChange > 0 ? "+" : ""}${runChange.toFixed(1)}; the exact current arithmetic is shown above.`}
                   </p>
                 </details>
@@ -1009,8 +999,8 @@ export function CountryHub() {
               <Info size={12} /> How this score was calculated
             </span>
             <p className="cx-meth__intro">
-              Current v2 weighted checks; higher means greater country risk. Missing information is
-              never treated as zero risk. The v3 preview separates legal overlays from underlying risk.
+              Three current v3 pillars; higher means greater underlying country risk. Missing
+              information is never treated as zero risk. FATF status and sanctions are legal overlays.
             </p>
             <ul className="cx-domains">
               {publicExplanation.pillars.map((pillar) => (
@@ -1029,20 +1019,14 @@ export function CountryHub() {
                 {publicExplanation.missingInformation.map((message) => <span key={message}>{message}</span>)}
               </div>
             )}
-            {publicExplanation.floorMessages.map((message) => (
-              <p key={message} className="cx-meth__plain-note"><strong>Minimum score rule:</strong> {message}</p>
-            ))}
-            {publicExplanation.sanctionsZeroExplanation && (
-              <p className="cx-meth__plain-note">{publicExplanation.sanctionsZeroExplanation}</p>
-            )}
             <details className="cx-meth__details">
               <summary>Show the exact calculation</summary>
-              <div className="cx-meth__base"><b>{riskV2.arithmetic}</b></div>
+              <div className="cx-meth__base"><b>{riskV3.arithmetic}</b></div>
             </details>
             <p className="cx-card__note">
               World Bank {GOVERNANCE_VINTAGE} · FATF {formatDate(view.lastPlenary)}. Enforcement
-              activity and the Corruption Perceptions Index are context only; sanctions are currently
-              included in v2 pending v3 promotion.
+              activity and the Corruption Perceptions Index are context only; sanctions and FATF
+              status are shown separately as legal treatment overlays.
             </p>
             <Link to="/countries/methodology" className="cx-card__link">
               Read how scores are calculated →
