@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { looksLikeCmvmParty } from "../scrapeCmvm.js";
+import { extractCmvmFirm, looksLikeCmvmParty } from "../scrapeCmvm.js";
 
 /**
  * The reject cases are the real CMVM strings recorded in the canonical table
@@ -39,6 +39,43 @@ describe("looksLikeCmvmParty — accepts real party names", () => {
       expect(looksLikeCmvmParty(party)).toBe(true);
     });
   }
+});
+
+/**
+ * These reached `firm_individual` in PROD after the first fix, because they
+ * carry no verb from the sentence-marker list. Found by re-running the scraper
+ * and reading the resulting rows, not by the unit tests.
+ */
+describe("looksLikeCmvmParty — regulator-prefixed headlines", () => {
+  for (const headline of [
+    "CMVM Aplica Coima à Lisgráfica - Impressão e Artes Gráficas, S.A.",
+    "CMVM Informa sobre Site na Internet",
+    "CMVM delibera Dispensar a Empresa CRH,PLC do Lançamento de OPA sobre a Caima Cerâmica",
+  ]) {
+    it(`rejects ${JSON.stringify(headline.slice(0, 44))}`, () => {
+      expect(looksLikeCmvmParty(headline)).toBe(false);
+    });
+  }
+});
+
+describe("extractCmvmFirm — party named in the headline", () => {
+  it("reads the party after 'Coima à'", () => {
+    expect(
+      extractCmvmFirm("CMVM Aplica Coima à Lisgráfica - Impressão e Artes Gráficas, S.A."),
+    ).toBe("Lisgráfica - Impressão e Artes Gráficas, S.A");
+  });
+
+  it("drops a trailing role clause describing a third company", () => {
+    expect(
+      extractCmvmFirm("CMVM Aplica Coima à Círio de Rica, S.p.A. Accionista Maioritária da Sopragol"),
+    ).toBe("Círio de Rica, S.p.A");
+  });
+
+  it("still prefers a title that is already a plain party name", () => {
+    expect(extractCmvmFirm("Banco Comercial Português, S.A.")).toBe(
+      "Banco Comercial Português, S.A.",
+    );
+  });
 });
 
 describe("looksLikeCmvmParty — boundaries", () => {

@@ -110,6 +110,12 @@ export function looksLikeCmvmParty(title: string): boolean {
   const value = normalizeWhitespace(title ?? "");
   if (value.length < 7 || value.length > 140) return false;
   if (isGenericCmvmTitle(value)) return false;
+  // A title that opens with the regulator's own name is a press-release
+  // headline; CMVM is never the party it sanctions. Structural, so it holds for
+  // headline shapes nobody has written yet -- "CMVM Aplica Coima à X",
+  // "CMVM Informa sobre ...", "CMVM delibera ..." all reached firm_individual
+  // in prod because they carried no verb from the marker list below.
+  if (/^CMVM\b/i.test(value)) return false;
   if (CMVM_SENTENCE_MARKER.test(value)) return false;
   if (CMVM_ENTITY_SUFFIX.test(value)) return true;
 
@@ -139,6 +145,23 @@ export function extractCmvmFirm(title: string, highlights: string[] = []) {
   // Otherwise fall through to the Portuguese decision-text patterns below.
   if (looksLikeCmvmParty(normalizedTitle)) {
     return normalizedTitle;
+  }
+
+  // "CMVM Aplica Coima à <party>" / "... Coima a <party>" -- the party IS in the
+  // headline here, so read it before falling back to the decision text.
+  // A trailing role clause ("Accionista Maioritária da Sopragol") describes the
+  // party's relationship to a third company and is not part of its name.
+  const coimaInTitle = normalizedTitle.match(
+    /\bcoima\s+[aà]o?s?\s+(.+)$/i,
+  );
+  if (coimaInTitle?.[1]) {
+    const party = cleanCmvmEntity(
+      coimaInTitle[1].replace(
+        /\s+(Accionista|Acionista|Sociedade)\s+(Maioritária|Maioritario|Dominante)\b.*$/i,
+        "",
+      ),
+    );
+    if (party.length > 3) return party;
   }
 
   const corpus = highlights.map(stripCmvmHtml).join(" ");
