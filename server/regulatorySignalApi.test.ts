@@ -22,12 +22,14 @@ describe("regulatory signal read-only APIs", () => {
   it("lists all countries without publishing an index", () => {
     const response = responseDouble();
     listHandler({ method: "GET", query: {} } as unknown as VercelRequest, response as unknown as VercelResponse);
-    const payload = response.payload as { count: number; totalJurisdictions: number; rows: Array<{ transparencyIndex: null }> };
+    const payload = response.payload as { count: number; totalJurisdictions: number; rows: Array<{ transparencyIndex: null; activitySummary: { observedWindowStart: string }; evidenceLevels: Record<string, number> }> };
     expect(response.statusCode).toBe(200);
     expect(payload.count).toBe(213);
     expect(payload.totalJurisdictions).toBe(213);
     expect((payload as unknown as { configuredRegulatorCount: number }).configuredRegulatorCount).toBe(54);
     expect(payload.rows.every((row) => row.transparencyIndex === null)).toBe(true);
+    expect(payload.rows.every((row) => row.activitySummary.observedWindowStart === "2024-01")).toBe(true);
+    expect(payload.rows.some((row) => Object.keys(row.evidenceLevels).includes("identity-confirmed"))).toBe(true);
   });
 
   it("returns detailed official-source states and fails closed for unknown ISO2", () => {
@@ -36,9 +38,13 @@ describe("regulatory signal read-only APIs", () => {
     expect(detail.statusCode).toBe(200);
     expect(detail.payload).toMatchObject({ status: "research-only", transparencyIndex: null, country: { iso2: "VE" } });
     expect((detail.payload as { ecosystem: { authorities: unknown[] } }).ecosystem.authorities.length).toBeGreaterThan(0);
-    const authority = (detail.payload as { ecosystem: { authorities: Array<{ directorySources: string[]; researchPublicationSnapshotCheckedAt: string }> } }).ecosystem.authorities[0];
+    const authority = (detail.payload as { ecosystem: { authorities: Array<{ directorySources: string[]; researchPublicationSnapshotCheckedAt: string; evidenceLevel: string; activity: { signal: string }; regulatoryUpdates: unknown[]; enforcementCandidates: unknown[] }> } }).ecosystem.authorities[0];
     expect(authority.directorySources).toBeInstanceOf(Array);
     expect(authority.researchPublicationSnapshotCheckedAt).toMatch(/^2026-/);
+    expect(["identity-confirmed", "regulatory-activity-visible", "enforcement-visible", "score-eligible"]).toContain(authority.evidenceLevel);
+    expect(["recent", "periodic", "low-frequency", "unknown"]).toContain(authority.activity.signal);
+    expect(authority.regulatoryUpdates).toBeInstanceOf(Array);
+    expect(authority.enforcementCandidates).toBeInstanceOf(Array);
     const kp = responseDouble();
     detailHandler({ method: "GET", query: { iso2: "KP" } } as unknown as VercelRequest, kp as unknown as VercelResponse);
     expect(kp.payload).toMatchObject({

@@ -57,4 +57,32 @@ describe("regulatory signal evidence manifest", () => {
     expect(csv).not.toContain("Transparency Index");
     expect(csv).not.toMatch(/,[0-9]+\.[0-9]+,/);
   });
+
+  it("keeps blocked authorities useful without inferring inactivity", () => {
+    const country = listRegulatorySignalCountries().find((candidate) =>
+      candidate.authorities.some((authority) => ["challenge-protected", "access-blocked", "timeout", "network-error"].includes(authority.accessState)),
+    );
+    expect(country).toBeTruthy();
+    const authority = country!.authorities.find((candidate) => ["challenge-protected", "access-blocked", "timeout", "network-error"].includes(candidate.accessState))!;
+    expect(authority.evidenceLevel).toBe("identity-confirmed");
+    expect(authority.mandate.length).toBeGreaterThan(0);
+    expect(authority.identityProvenance.directorySources.length).toBeGreaterThan(0);
+    expect(authority.activity.signal).toBe("unknown");
+    expect(authority.activity.observedCount).toBe(0);
+    expect(authority.activity.note).toContain("not evidence of inactivity");
+  });
+
+  it("reports observed official activity separately from enforcement and leaves scoring unavailable", () => {
+    const countries = listRegulatorySignalCountries();
+    const observed = countries.flatMap((country) => country.authorities).find((authority) => authority.activity.observedCount > 0);
+    expect(observed).toBeTruthy();
+    expect(["recent", "periodic", "low-frequency", "unknown"]).toContain(observed!.activity.signal);
+    expect(observed!.activity.observedWindowStart).toBe("2024-01");
+    expect(observed!.activity.observedWindowEnd).toBe("2026-08");
+    expect(observed!.activity.latestObservedDate).toMatch(/^20\d\d-\d\d-01$/);
+    const evidence = buildRegulatorySignalEvidence("GB")!;
+    expect(evidence.transparencyIndex).toBeNull();
+    expect(evidence.secondaryReporting).toBeNull();
+    expect(evidence.activitySummary.observedWindowStart).toBe("2024-01");
+  });
 });

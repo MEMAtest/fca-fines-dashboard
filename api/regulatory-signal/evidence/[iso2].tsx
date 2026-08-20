@@ -38,19 +38,26 @@ function EvidencePdf({ evidence }: { evidence: RegulatorySignalEvidence }) {
         {evidence.ecosystem.authorities.map((authority) => (
           <View key={authority.name} style={styles.row} wrap={false}>
             <Text>{authority.name}</Text>
-            <Text>{authority.roles.map((role) => role.label).join(", ") || "Mandate not classified"}</Text>
+            <Text>Mandate: {authority.mandate.map((role) => role.label).join(", ") || "Mandate not classified"}</Text>
+            <Text>Evidence level: {authority.evidenceLevel}</Text>
+            <Text>Official publication kind: {authority.publicationKind}</Text>
             <Text>{authority.accessLabel}</Text>
             {authority.website && <Text style={styles.source}>{authority.website}</Text>}
             {authority.publicationUrl && <Text style={styles.source}>{authority.publicationUrl}</Text>}
+            {authority.publicationCandidates.length > 0 && <Text style={styles.source}>Official publication/channel candidates: {authority.publicationCandidates.map((candidate) => candidate.url).join("; ")}</Text>}
+            {authority.regulatoryUpdates.length > 0 && <Text style={styles.source}>Official regulatory updates: {authority.regulatoryUpdates.map((candidate) => candidate.url).join("; ")}</Text>}
+            {authority.enforcementCandidates.length > 0 && <Text style={styles.source}>Official enforcement candidates: {authority.enforcementCandidates.map((candidate) => candidate.url).join("; ")}</Text>}
             <Text style={styles.source}>Directory source: {authority.directorySources.join(", ") || "not recorded"}</Text>
             <Text style={styles.source}>Research/publication snapshot checked: {authority.researchPublicationSnapshotCheckedAt.slice(0, 10)}</Text>
             {authority.directoryEvidenceUrls.length > 0 && <Text style={styles.source}>Directory evidence: {authority.directoryEvidenceUrls.join("; ")}</Text>}
             <Text style={styles.source}>Research effective: {authority.researchEffectiveAt.slice(0, 10)} · retrieved: {authority.retrievedAt.slice(0, 10)}</Text>
+            <Text style={styles.source}>Official activity signal: {authority.activity.signal} · observed months: {authority.activity.observedCount} · window: {authority.activity.observedWindowStart} to {authority.activity.observedWindowEnd} · latest: {authority.activity.latestObservedDate ?? "not observed"}</Text>
           </View>
         ))}
         <Text style={styles.heading}>RegActions coverage</Text>
         <Text>{evidence.regActionsCoverage.liveRegulators} live regulator feeds; {evidence.regActionsCoverage.observedRecords.toLocaleString("en-GB")} records in the research snapshot.</Text>
         {evidence.evidenceDisposition.externalEvidenceUrl && <Text style={styles.source}>External evidence: {evidence.evidenceDisposition.externalEvidenceUrl}</Text>}
+        <Text style={styles.source}>Official activity summary: recent {evidence.activitySummary.recentAuthorities}; periodic {evidence.activitySummary.periodicAuthorities}; low-frequency {evidence.activitySummary.lowFrequencyAuthorities}; unknown {evidence.activitySummary.unknownAuthorities} (window {evidence.activitySummary.observedWindowStart} to {evidence.activitySummary.observedWindowEnd}).</Text>
         <Text style={styles.heading}>Limitations</Text>
         {evidence.limitations.map((limitation) => <Text key={limitation} style={styles.row}>• {limitation}</Text>)}
       </Page>

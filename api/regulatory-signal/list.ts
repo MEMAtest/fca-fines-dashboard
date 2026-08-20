@@ -28,6 +28,12 @@ export default function handler(req: VercelRequest, res: VercelResponse) {
         },
         regActionsCoverage: evidence.regActionsCoverage,
         activitySignal: evidence.activitySignal,
+        activitySummary: evidence.activitySummary,
+        evidenceLevels: evidence.ecosystem.authorities.reduce<Record<string, number>>((counts, authority) => {
+          counts[authority.evidenceLevel] = (counts[authority.evidenceLevel] ?? 0) + 1;
+          return counts;
+        }, {}),
+        secondaryReporting: null,
         transparencyIndex: null,
       };
     });

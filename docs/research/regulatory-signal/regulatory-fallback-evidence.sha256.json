@@ -1,0 +1,9 @@
+{
+  "schemaVersion": "1.0.0",
+  "methodologyVersion": "fallback-evidence-1.0.0",
+  "generatedAt": "2026-08-20T12:09:41.497Z",
+  "files": {
+    "regulatory-fallback-evidence.json": "3ba82f448b95626b4ce45a4dc1a817c4b62dc6fd7d3383acb05b961c1b47abd1",
+    "regulatory-fallback-evidence.csv": "dbed3dacc95befdb3345606114a0bd43156ca504b3e8c24aed8cb8dbd981d0a0"
+  }
+}
