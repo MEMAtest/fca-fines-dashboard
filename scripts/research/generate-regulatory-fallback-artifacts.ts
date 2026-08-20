@@ -18,7 +18,7 @@ function csvCell(value: unknown): string {
 }
 
 function buildCsv(): string {
-  const header = ["iso2", "iso3", "country", "authority", "mandate", "evidenceLevel", "website", "accessState", "publicationUrl", "publicationCandidates", "regulatoryUpdates", "enforcementCandidates", "publicationKind", "directorySources", "directoryEvidenceUrls", "researchEffectiveAt", "retrievedAt", "researchPublicationSnapshotCheckedAt", "activitySignal", "observedWindowStart", "observedWindowEnd", "observedCount", "observedMonths", "latestObservedDate", "publicationRelevance", "publicationRouteType", "sourceHostScope", "transparencyIndex"];
+  const header = ["iso2", "iso3", "country", "authority", "mandate", "evidenceLevel", "website", "accessState", "publicationUrl", "publicationCandidatesWithProvenance", "authorityOwnedQualifiedRegulatoryUpdates", "authorityOwnedQualifiedEnforcementCandidates", "externalOfficialContextCandidates", "publicationKind", "directorySources", "directoryEvidenceUrls", "researchEffectiveAt", "retrievedAt", "researchPublicationSnapshotCheckedAt", "activitySignal", "activitySignalStatus", "scanType", "scanStartMonth", "scanEndMonth", "scanAsOf", "datePrecision", "archiveBoundary", "observedMonthCount", "observedMonths", "latestObservedMonth", "latestObservedPrecision", "publicationRelevance", "publicationRouteType", "sourceHostScope", "transparencyIndex"];
   const rows: unknown[][] = [header];
   for (const country of listRegulatorySignalCountries()) {
     const evidence = buildRegulatorySignalEvidence(country.iso2)!;
@@ -32,9 +32,10 @@ function buildCsv(): string {
       authority.website,
       authority.accessState,
       authority.publicationUrl,
-      authority.publicationCandidates.map((candidate) => `${candidate.label ?? ""}|${candidate.url}`).join("; "),
+      authority.publicationCandidates.map((candidate) => `${candidate.label ?? ""}|${candidate.url}|${candidate.contextLabel}|${candidate.qualificationState ?? "unqualified"}`).join("; "),
       authority.regulatoryUpdates.map((candidate) => `${candidate.label ?? ""}|${candidate.url}`).join("; "),
       authority.enforcementCandidates.map((candidate) => `${candidate.label ?? ""}|${candidate.url}`).join("; "),
+      authority.externalContextCandidates.map((candidate) => `${candidate.label ?? ""}|${candidate.url}`).join("; "),
       authority.publicationKind,
       authority.identityProvenance.directorySources.join("; "),
       authority.identityProvenance.evidenceUrls.join("; "),
@@ -42,11 +43,17 @@ function buildCsv(): string {
       authority.retrievedAt,
       authority.researchPublicationSnapshotCheckedAt,
       authority.activity.signal,
-      authority.activity.observedWindowStart,
-      authority.activity.observedWindowEnd,
-      authority.activity.observedCount,
+      authority.activity.status,
+      authority.activity.scanContract.scanType,
+      authority.activity.scanContract.startMonth,
+      authority.activity.scanContract.endMonth,
+      authority.activity.scanContract.asOf,
+      authority.activity.scanContract.datePrecision,
+      authority.activity.scanContract.archiveBoundary,
+      authority.activity.observedMonthCount,
       authority.activity.observedMonths.join("; "),
-      authority.activity.latestObservedDate,
+      authority.activity.latestObservedMonth,
+      authority.activity.latestObservedPrecision,
       authority.publicationRelevance,
       authority.publicationRouteType,
       authority.sourceHostScope,

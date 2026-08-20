@@ -40,24 +40,25 @@ function EvidencePdf({ evidence }: { evidence: RegulatorySignalEvidence }) {
             <Text>{authority.name}</Text>
             <Text>Mandate: {authority.mandate.map((role) => role.label).join(", ") || "Mandate not classified"}</Text>
             <Text>Evidence level: {authority.evidenceLevel}</Text>
-            <Text>Official publication kind: {authority.publicationKind}</Text>
+            <Text>Selected candidate kind: {authority.publicationKind} · source scope: {authority.sourceHostScope ?? "not qualified"}</Text>
             <Text>{authority.accessLabel}</Text>
             {authority.website && <Text style={styles.source}>{authority.website}</Text>}
             {authority.publicationUrl && <Text style={styles.source}>{authority.publicationUrl}</Text>}
-            {authority.publicationCandidates.length > 0 && <Text style={styles.source}>Official publication/channel candidates: {authority.publicationCandidates.map((candidate) => candidate.url).join("; ")}</Text>}
-            {authority.regulatoryUpdates.length > 0 && <Text style={styles.source}>Official regulatory updates: {authority.regulatoryUpdates.map((candidate) => candidate.url).join("; ")}</Text>}
-            {authority.enforcementCandidates.length > 0 && <Text style={styles.source}>Official enforcement candidates: {authority.enforcementCandidates.map((candidate) => candidate.url).join("; ")}</Text>}
+            {authority.publicationCandidates.length > 0 && <Text style={styles.source}>Candidate routes: {authority.publicationCandidates.map((candidate) => `${candidate.url} [${candidate.contextLabel}; ${candidate.qualificationState ?? "unqualified"}]`).join("; ")}</Text>}
+            {authority.regulatoryUpdates.length > 0 && <Text style={styles.source}>Authority-owned qualified regulatory-update routes: {authority.regulatoryUpdates.map((candidate) => candidate.url).join("; ")}</Text>}
+            {authority.enforcementCandidates.length > 0 && <Text style={styles.source}>Authority-owned qualified enforcement routes: {authority.enforcementCandidates.map((candidate) => candidate.url).join("; ")}</Text>}
+            {authority.externalContextCandidates.length > 0 && <Text style={styles.source}>External official context only (not authority publication evidence): {authority.externalContextCandidates.map((candidate) => candidate.url).join("; ")}</Text>}
             <Text style={styles.source}>Directory source: {authority.directorySources.join(", ") || "not recorded"}</Text>
             <Text style={styles.source}>Research/publication snapshot checked: {authority.researchPublicationSnapshotCheckedAt.slice(0, 10)}</Text>
             {authority.directoryEvidenceUrls.length > 0 && <Text style={styles.source}>Directory evidence: {authority.directoryEvidenceUrls.join("; ")}</Text>}
             <Text style={styles.source}>Research effective: {authority.researchEffectiveAt.slice(0, 10)} · retrieved: {authority.retrievedAt.slice(0, 10)}</Text>
-            <Text style={styles.source}>Official activity signal: {authority.activity.signal} · observed months: {authority.activity.observedCount} · window: {authority.activity.observedWindowStart} to {authority.activity.observedWindowEnd} · latest: {authority.activity.latestObservedDate ?? "not observed"}</Text>
+            <Text style={styles.source}>Provisional first-page scan signal: {authority.activity.signal} · observed month count: {authority.activity.observedMonthCount} · scan contract: {authority.activity.scanContract.startMonth} to {authority.activity.scanContract.endMonth}, as of {authority.activity.scanContract.asOf}, month precision · latest observed month: {authority.activity.latestObservedMonth ?? "not observed"}</Text>
           </View>
         ))}
         <Text style={styles.heading}>RegActions coverage</Text>
         <Text>{evidence.regActionsCoverage.liveRegulators} live regulator feeds; {evidence.regActionsCoverage.observedRecords.toLocaleString("en-GB")} records in the research snapshot.</Text>
         {evidence.evidenceDisposition.externalEvidenceUrl && <Text style={styles.source}>External evidence: {evidence.evidenceDisposition.externalEvidenceUrl}</Text>}
-        <Text style={styles.source}>Official activity summary: recent {evidence.activitySummary.recentAuthorities}; periodic {evidence.activitySummary.periodicAuthorities}; low-frequency {evidence.activitySummary.lowFrequencyAuthorities}; unknown {evidence.activitySummary.unknownAuthorities} (window {evidence.activitySummary.observedWindowStart} to {evidence.activitySummary.observedWindowEnd}).</Text>
+        <Text style={styles.source}>Provisional first-page scan summary: recent {evidence.activitySummary.recentAuthorities}; periodic {evidence.activitySummary.periodicAuthorities}; low-frequency {evidence.activitySummary.lowFrequencyAuthorities}; unknown {evidence.activitySummary.unknownAuthorities}. Automated scan contract {evidence.activitySummary.scanContract.startMonth} to {evidence.activitySummary.scanContract.endMonth}, as of {evidence.activitySummary.scanContract.asOf}; month precision; first-page-only and unvalidated.</Text>
         <Text style={styles.heading}>Limitations</Text>
         {evidence.limitations.map((limitation) => <Text key={limitation} style={styles.row}>• {limitation}</Text>)}
       </Page>

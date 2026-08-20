@@ -22,13 +22,13 @@ describe("regulatory signal read-only APIs", () => {
   it("lists all countries without publishing an index", () => {
     const response = responseDouble();
     listHandler({ method: "GET", query: {} } as unknown as VercelRequest, response as unknown as VercelResponse);
-    const payload = response.payload as { count: number; totalJurisdictions: number; rows: Array<{ transparencyIndex: null; activitySummary: { observedWindowStart: string }; evidenceLevels: Record<string, number> }> };
+    const payload = response.payload as { count: number; totalJurisdictions: number; rows: Array<{ transparencyIndex: null; activitySummary: { scanContract: { startMonth: string; datePrecision: string } }; evidenceLevels: Record<string, number> }> };
     expect(response.statusCode).toBe(200);
     expect(payload.count).toBe(213);
     expect(payload.totalJurisdictions).toBe(213);
     expect((payload as unknown as { configuredRegulatorCount: number }).configuredRegulatorCount).toBe(54);
     expect(payload.rows.every((row) => row.transparencyIndex === null)).toBe(true);
-    expect(payload.rows.every((row) => row.activitySummary.observedWindowStart === "2024-01")).toBe(true);
+    expect(payload.rows.every((row) => row.activitySummary.scanContract.startMonth === "2024-01" && row.activitySummary.scanContract.datePrecision === "month")).toBe(true);
     expect(payload.rows.some((row) => Object.keys(row.evidenceLevels).includes("identity-confirmed"))).toBe(true);
   });
 

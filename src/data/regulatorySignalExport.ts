@@ -35,6 +35,7 @@ export interface RegulatorySignalPublicAuthority {
   publicationKind: RegulatorySignalAuthority["publicationKind"];
   regulatoryUpdates: RegulatorySignalAuthority["regulatoryUpdates"];
   enforcementCandidates: RegulatorySignalAuthority["enforcementCandidates"];
+  externalContextCandidates: RegulatorySignalAuthority["externalContextCandidates"];
 }
 export interface RegulatorySignalEvidence {
   schemaVersion: "1.0.0";
@@ -119,6 +120,7 @@ function authorityEvidence(authority: RegulatorySignalAuthority): RegulatorySign
     publicationKind: authority.publicationKind,
     regulatoryUpdates: authority.regulatoryUpdates,
     enforcementCandidates: authority.enforcementCandidates,
+    externalContextCandidates: authority.externalContextCandidates,
   };
 }
 
@@ -192,7 +194,7 @@ export function buildRegulatorySignalEvidence(iso2: string): RegulatorySignalEvi
 const csvCell = (value: unknown): string => `"${String(value ?? "").replaceAll('"', '""')}"`;
 
 export function regulatorySignalEvidenceCsv(evidence: RegulatorySignalEvidence): string {
-  const header = ["iso2", "country", "authority", "mandate", "evidenceLevel", "website", "accessState", "accessLabel", "publicationUrl", "publicationCandidates", "regulatoryUpdates", "enforcementCandidates", "publicationKind", "directorySources", "directoryEvidenceUrls", "researchEffectiveAt", "retrievedAt", "researchPublicationSnapshotCheckedAt", "activitySignal", "activityObservedWindowStart", "activityObservedWindowEnd", "activityObservedCount", "activityLatestObservedDate", "publicationRelevance", "publicationRouteType", "sourceHostScope", "regActionsCoverageState", "transparencyIndex", "generatedAt"];
+  const header = ["iso2", "country", "authority", "mandate", "evidenceLevel", "website", "accessState", "accessLabel", "publicationUrl", "publicationCandidatesWithProvenance", "authorityOwnedQualifiedRegulatoryUpdates", "authorityOwnedQualifiedEnforcementCandidates", "externalOfficialContextCandidates", "publicationKind", "directorySources", "directoryEvidenceUrls", "researchEffectiveAt", "retrievedAt", "researchPublicationSnapshotCheckedAt", "activitySignal", "activitySignalStatus", "scanType", "scanStartMonth", "scanEndMonth", "scanAsOf", "datePrecision", "archiveBoundary", "observedMonthCount", "observedMonths", "latestObservedMonth", "latestObservedPrecision", "publicationRelevance", "publicationRouteType", "sourceHostScope", "regActionsCoverageState", "transparencyIndex", "generatedAt"];
   const rows = evidence.ecosystem.authorities.map((authority) => [
     evidence.country.iso2,
     evidence.country.name,
@@ -203,9 +205,10 @@ export function regulatorySignalEvidenceCsv(evidence: RegulatorySignalEvidence):
     authority.accessState,
     authority.accessLabel,
     authority.publicationUrl,
-    authority.publicationCandidates.map((candidate) => `${candidate.label ?? ""}|${candidate.url}`).join("; "),
+    authority.publicationCandidates.map((candidate) => `${candidate.label ?? ""}|${candidate.url}|${candidate.contextLabel}|${candidate.qualificationState ?? "unqualified"}`).join("; "),
     authority.regulatoryUpdates.map((candidate) => `${candidate.label ?? ""}|${candidate.url}`).join("; "),
     authority.enforcementCandidates.map((candidate) => `${candidate.label ?? ""}|${candidate.url}`).join("; "),
+    authority.externalContextCandidates.map((candidate) => `${candidate.label ?? ""}|${candidate.url}`).join("; "),
     authority.publicationKind,
     authority.directorySources.join("; "),
     authority.directoryEvidenceUrls.join("; "),
@@ -213,10 +216,17 @@ export function regulatorySignalEvidenceCsv(evidence: RegulatorySignalEvidence):
     authority.retrievedAt,
     authority.researchPublicationSnapshotCheckedAt,
     authority.activity.signal,
-    authority.activity.observedWindowStart,
-    authority.activity.observedWindowEnd,
-    authority.activity.observedCount,
-    authority.activity.latestObservedDate,
+    authority.activity.status,
+    authority.activity.scanContract.scanType,
+    authority.activity.scanContract.startMonth,
+    authority.activity.scanContract.endMonth,
+    authority.activity.scanContract.asOf,
+    authority.activity.scanContract.datePrecision,
+    authority.activity.scanContract.archiveBoundary,
+    authority.activity.observedMonthCount,
+    authority.activity.observedMonths.join("; "),
+    authority.activity.latestObservedMonth,
+    authority.activity.latestObservedPrecision,
     authority.publicationRelevance,
     authority.publicationRouteType,
     authority.sourceHostScope,
@@ -225,7 +235,7 @@ export function regulatorySignalEvidenceCsv(evidence: RegulatorySignalEvidence):
     evidence.generatedAt,
   ]);
   if (rows.length === 0) {
-    rows.push([evidence.country.iso2, evidence.country.name, "No local authority entry", "", "identity-confirmed", "", evidence.evidenceDisposition.state, evidence.evidenceDisposition.label, evidence.evidenceDisposition.externalEvidenceUrl, "", "", "", "unknown", "", "", evidence.generatedAt, evidence.generatedAt, evidence.generatedAt, "unknown", "2024-01", "2026-08", 0, "", "", "", "", evidence.regActionsCoverage.state, "", evidence.generatedAt]);
+    rows.push([evidence.country.iso2, evidence.country.name, "No local authority entry", "", "identity-confirmed", "", evidence.evidenceDisposition.state, evidence.evidenceDisposition.label, evidence.evidenceDisposition.externalEvidenceUrl, "", "", "", "", "unknown", "", "", evidence.generatedAt, evidence.generatedAt, evidence.generatedAt, "unknown", "provisional-first-page-scan", "automated-first-page-date-scan", "2024-01", "2026-08", "2026-08-20", "month", "first-page-only-unvalidated", 0, "", "", "", "", "", "", evidence.regActionsCoverage.state, "", evidence.generatedAt]);
   }
   return [header, ...rows].map((row) => row.map(csvCell).join(",")).join("\n") + "\n";
 }

@@ -27,21 +27,40 @@ export type RegulatoryEvidenceLevel =
 
 export type RegulatoryEngagementSignal = "recent" | "periodic" | "low-frequency" | "unknown";
 export type RegulatoryPublicationKind = "enforcement" | "regulatory-update" | "unknown";
+export type RegulatorySourceHostScope = "authority-owned" | "official-external" | "external-unqualified" | "not-observable" | null;
 
 export interface RegulatoryPublicationCandidate {
   label: string | null;
   url: string;
+  publicationKind: RegulatoryPublicationKind;
+  publicationRouteType: string | null;
+  sourceHostScope: RegulatorySourceHostScope;
+  qualificationState: string | null;
+  archiveBoundary: string | null;
+  publicationRelevance: string | null;
+  provisionalSignal: string;
+  observedMonths: string[];
+  observedMonthCount: number;
+  latestObservedMonth: string | null;
+  contextLabel: "authority-owned-qualified-route" | "external-official-context" | "unqualified-candidate";
 }
 
 export interface RegulatoryActivityObservation {
   signal: RegulatoryEngagementSignal;
-  observedWindowStart: string;
-  observedWindowEnd: string;
-  observedCount: number;
+  status: "provisional-first-page-scan";
+  scanContract: {
+    scanType: "automated-first-page-date-scan";
+    startMonth: "2024-01";
+    endMonth: "2026-08";
+    asOf: "2026-08-20";
+    datePrecision: "month";
+    archiveBoundary: "first-page-only-unvalidated";
+  };
+  observedMonthCount: number;
   observedMonths: string[];
-  latestObservedDate: string | null;
   latestObservedMonth: string | null;
-  source: "official-first-page-observation" | "not-observable";
+  latestObservedPrecision: "month" | null;
+  source: "authority-owned-qualified-first-page-scan" | "not-qualified-or-not-observable";
   evidenceUrl: string | null;
   note: string;
 }
@@ -78,6 +97,7 @@ export interface RegulatorySignalAuthority {
   publicationKind: RegulatoryPublicationKind;
   regulatoryUpdates: RegulatoryPublicationCandidate[];
   enforcementCandidates: RegulatoryPublicationCandidate[];
+  externalContextCandidates: RegulatoryPublicationCandidate[];
 }
 
 export interface RegulatorySignalCountry {
@@ -110,13 +130,13 @@ export interface RegulatorySignalCountry {
   researchPriority: string;
   authorities: RegulatorySignalAuthority[];
   activitySummary: {
-    observedWindowStart: string;
-    observedWindowEnd: string;
+    scanContract: RegulatoryActivityObservation["scanContract"];
     recentAuthorities: number;
     periodicAuthorities: number;
     lowFrequencyAuthorities: number;
     unknownAuthorities: number;
-    latestObservedDate: string | null;
+    latestObservedMonth: string | null;
+    latestObservedPrecision: "month" | null;
   };
 }
 
@@ -152,7 +172,19 @@ type ManifestRow = {
     f?: string;
     v?: string;
     c?: string;
-    y?: Array<{ l?: string | null; u: string }>;
+    y?: Array<{
+      l?: string | null;
+      u: string;
+      m?: string[];
+      n?: number;
+      z?: string | null;
+      s?: string;
+      r?: string | null;
+      t?: string | null;
+      p?: RegulatorySourceHostScope;
+      q?: string | null;
+      a?: string | null;
+    }>;
     m?: string[];
     n2?: number;
     z2?: string | null;
@@ -160,6 +192,7 @@ type ManifestRow = {
     r2?: string | null;
     t2?: string | null;
     q3?: string | null;
+    q4?: string | null;
   }>;
 };
 
@@ -180,21 +213,55 @@ function mapRow(row: ManifestRow): RegulatorySignalCountry {
     if (value === "low-frequency-first-page-signal") return "low-frequency";
     return "unknown";
   };
+  const publicationKindFor = (route: string | null | undefined): RegulatoryPublicationKind => {
+    if (["enforcement_archive", "sanctions_or_penalty_list", "decision_register", "disciplinary_notice"].includes(route ?? "")) return "enforcement";
+    if (["news_or_notice", "publication_or_report"].includes(route ?? "")) return "regulatory-update";
+    return "unknown";
+  };
+  const scanContract: RegulatoryActivityObservation["scanContract"] = {
+    scanType: "automated-first-page-date-scan",
+    startMonth: "2024-01",
+    endMonth: "2026-08",
+    asOf: "2026-08-20",
+    datePrecision: "month",
+    archiveBoundary: "first-page-only-unvalidated",
+  };
   const authorities = row.q2.map((authority) => {
-    const observedMonths = authority.m ?? [];
-    const observedCount = Number(authority.n2 ?? observedMonths.length ?? 0);
-    const signal = activitySignal(authority.s2 ?? "not-observable", observedCount);
-    const route = authority.t2 ?? "";
-    const officialRoute = authority.q3 === "authority-owned" || authority.q3 === "official-external";
-    const activityVisible = officialRoute && authority.s2 !== "not-observable" && observedCount > 0;
-    const enforcementRoute = ["enforcement_archive", "sanctions_or_penalty_list", "decision_register", "disciplinary_notice"].includes(route);
-    const enforcementVisible = activityVisible && enforcementRoute && ["strong-official-publication-candidate", "plausible-official-publication-candidate"].includes(authority.r2 ?? "");
-    const publicationKind: RegulatoryPublicationKind = enforcementRoute
-      ? "enforcement"
-      : ["news_or_notice", "publication_or_report"].includes(route)
-        ? "regulatory-update"
-        : "unknown";
-    const publicationCandidates = (authority.y ?? []).map((candidate) => ({ label: candidate.l ?? null, url: candidate.u }));
+    const publicationCandidates: RegulatoryPublicationCandidate[] = (authority.y ?? []).map((candidate) => {
+      const sourceHostScope = candidate.p ?? null;
+      const qualificationState = candidate.q ?? null;
+      const qualifiedOwned = sourceHostScope === "authority-owned" && qualificationState === "approved-for-human-contract";
+      return {
+        label: candidate.l ?? null,
+        url: candidate.u,
+        publicationKind: publicationKindFor(candidate.t),
+        publicationRouteType: candidate.t ?? null,
+        sourceHostScope,
+        qualificationState,
+        archiveBoundary: candidate.a ?? null,
+        publicationRelevance: candidate.r ?? null,
+        provisionalSignal: candidate.s ?? "not-observable",
+        observedMonths: candidate.m ?? [],
+        observedMonthCount: Number(candidate.n ?? candidate.m?.length ?? 0),
+        latestObservedMonth: candidate.z ?? null,
+        contextLabel: qualifiedOwned
+          ? "authority-owned-qualified-route"
+          : sourceHostScope === "official-external"
+            ? "external-official-context"
+            : "unqualified-candidate",
+      };
+    });
+    const qualifiedOwnedCandidates = publicationCandidates.filter((candidate) => candidate.contextLabel === "authority-owned-qualified-route");
+    const activityCandidate = qualifiedOwnedCandidates
+      .filter((candidate) => candidate.observedMonthCount > 0 && candidate.provisionalSignal !== "not-observable")
+      .sort((a, b) => (b.latestObservedMonth ?? "").localeCompare(a.latestObservedMonth ?? ""))[0] ?? null;
+    const observedMonths = activityCandidate?.observedMonths ?? [];
+    const observedMonthCount = activityCandidate?.observedMonthCount ?? 0;
+    const signal = activitySignal(activityCandidate?.provisionalSignal ?? "not-observable", observedMonthCount);
+    const activityVisible = Boolean(activityCandidate);
+    const enforcementVisible = qualifiedOwnedCandidates.some((candidate) => candidate.publicationKind === "enforcement" && candidate.observedMonthCount > 0 && candidate.provisionalSignal !== "not-observable");
+    const selectedCandidate = publicationCandidates.find((candidate) => candidate.url === authority.u) ?? publicationCandidates[0] ?? null;
+    const publicationKind = selectedCandidate?.publicationKind ?? "unknown";
     const evidenceLevel: RegulatoryEvidenceLevel = enforcementVisible
       ? "enforcement-visible"
       : activityVisible
@@ -209,8 +276,9 @@ function mapRow(row: ManifestRow): RegulatorySignalCountry {
       publicationUrl: authority.u,
       publicationCandidates,
       publicationKind,
-      regulatoryUpdates: publicationKind === "regulatory-update" ? publicationCandidates : [],
-      enforcementCandidates: publicationKind === "enforcement" ? publicationCandidates : [],
+      regulatoryUpdates: qualifiedOwnedCandidates.filter((candidate) => candidate.publicationKind === "regulatory-update"),
+      enforcementCandidates: qualifiedOwnedCandidates.filter((candidate) => candidate.publicationKind === "enforcement"),
+      externalContextCandidates: publicationCandidates.filter((candidate) => candidate.contextLabel === "external-official-context"),
       directorySources: authority.d ?? [],
       directoryEvidenceUrls: authority.e ?? [],
       identityProvenance: { directorySources: authority.d ?? [], evidenceUrls: authority.e ?? [] },
@@ -220,26 +288,26 @@ function mapRow(row: ManifestRow): RegulatorySignalCountry {
       evidenceLevel,
       activity: {
         signal,
-        observedWindowStart: "2024-01",
-        observedWindowEnd: "2026-08",
-        observedCount,
+        status: "provisional-first-page-scan" as const,
+        scanContract,
+        observedMonthCount,
         observedMonths,
-        latestObservedDate: authority.z2 ? `${authority.z2}-01` : null,
-        latestObservedMonth: authority.z2 ?? null,
-        source: (authority.s2 === "not-observable" || !authority.s2 ? "not-observable" : "official-first-page-observation") as RegulatoryActivityObservation["source"],
-        evidenceUrl: authority.u,
-        note: observedCount > 0
-          ? "Observed official first-page publication months only; this is a visibility signal, not a validated frequency or effectiveness measure."
-          : "No dated official publication was observed in this snapshot. This is not evidence of inactivity; blocked, low-frequency and unvalidated sources remain unknown.",
+        latestObservedMonth: activityCandidate?.latestObservedMonth ?? null,
+        latestObservedPrecision: (activityCandidate?.latestObservedMonth ? "month" : null) as RegulatoryActivityObservation["latestObservedPrecision"],
+        source: (activityCandidate ? "authority-owned-qualified-first-page-scan" : "not-qualified-or-not-observable") as RegulatoryActivityObservation["source"],
+        evidenceUrl: activityCandidate?.url ?? null,
+        note: activityCandidate
+          ? "Provisional automated first-page date scan on an authority-owned qualified route. It is not a validated publication frequency or effectiveness measure."
+          : "No qualified authority-owned dated route supports an activity signal. This is not evidence of inactivity; blocked, external-context, low-frequency and unvalidated sources remain unknown.",
       },
-      publicationRelevance: authority.r2 ?? null,
-      publicationRouteType: authority.t2 ?? null,
-      sourceHostScope: authority.q3 ?? null,
+      publicationRelevance: selectedCandidate?.publicationRelevance ?? null,
+      publicationRouteType: selectedCandidate?.publicationRouteType ?? null,
+      sourceHostScope: selectedCandidate?.sourceHostScope ?? null,
     };
   });
   const allActivities = authorities.map((authority) => authority.activity);
-  const observedDates = allActivities.map((activity) => activity.latestObservedDate).filter((value): value is string => Boolean(value)).sort();
-  const latestObservedDate = observedDates.length ? observedDates[observedDates.length - 1] : null;
+  const observedMonths = allActivities.map((activity) => activity.latestObservedMonth).filter((value): value is string => Boolean(value)).sort();
+  const latestObservedMonth = observedMonths.length ? observedMonths[observedMonths.length - 1] : null;
   return {
     iso2: row.i,
     iso3: row.c,
@@ -263,13 +331,13 @@ function mapRow(row: ManifestRow): RegulatorySignalCountry {
     researchPriority: row.k,
     authorities,
     activitySummary: {
-      observedWindowStart: "2024-01",
-      observedWindowEnd: "2026-08",
+      scanContract,
       recentAuthorities: allActivities.filter((activity) => activity.signal === "recent").length,
       periodicAuthorities: allActivities.filter((activity) => activity.signal === "periodic").length,
       lowFrequencyAuthorities: allActivities.filter((activity) => activity.signal === "low-frequency").length,
       unknownAuthorities: allActivities.filter((activity) => activity.signal === "unknown").length,
-      latestObservedDate,
+      latestObservedMonth,
+      latestObservedPrecision: latestObservedMonth ? "month" : null,
     },
   };
 }

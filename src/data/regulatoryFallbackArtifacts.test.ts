@@ -21,7 +21,10 @@ describe("deterministic regulatory fallback artifacts", () => {
     expect(createHash("sha256").update(csv).digest("hex")).toBe(hashes.files["regulatory-fallback-evidence.csv"]);
     expect(csv.split("\n")[0]).toContain("evidenceLevel");
     expect(csv.split("\n")[0]).toContain("activitySignal");
-    expect(csv.split("\n")[0]).toContain("regulatoryUpdates");
-    expect(csv.split("\n")[0]).toContain("enforcementCandidates");
+    expect(csv.split("\n")[0]).toContain("authorityOwnedQualifiedRegulatoryUpdates");
+    expect(csv.split("\n")[0]).toContain("authorityOwnedQualifiedEnforcementCandidates");
+    expect(csv.split("\n")[0]).toContain("externalOfficialContextCandidates");
+    expect(csv.split("\n")[0]).toContain("latestObservedMonth");
+    expect(csv.split("\n")[0]).not.toContain("latestObservedDate");
   });
 });

@@ -24,13 +24,13 @@ type DiscoveryRow = {
 };
 const discovery = JSON.parse(readFileSync(path.join(research, "authority-publication-discovery.json"), "utf8")).rows as DiscoveryRow[];
 const discoveryByAuthority = new Map(discovery.map((row) => [`${row.iso2}|${row.authority}|${row.website ?? ""}`, row]));
-const cadenceByAuthority = new Map((cadenceSnapshot.rows as Array<Record<string, any>>).map((row) => [
+const cadenceByCandidate = new Map((cadenceSnapshot.rows as Array<Record<string, any>>).map((row) => [
   `${row.iso2}|${row.authority}|${row.candidate_url ?? ""}`,
   row,
 ]));
-const qualificationByAuthority = new Map<string, Record<string, any>>(
+const qualificationByCandidate = new Map<string, Record<string, any>>(
   qualificationLedger.rows.map((row: Record<string, any>) => [
-    `${row.iso2}|${row.authority}|${row.authority_website ?? ""}`,
+    `${row.iso2}|${row.authority}|${row.evidence_url ?? ""}`,
     row,
   ]),
 );
@@ -58,29 +58,48 @@ const rows = baseline.rows.map((row: Record<string, any>) => ({
   k: row.research_priority,
   q2: authorities.filter((authority: Record<string, any>) => authority.iso2 === row.iso2).map((authority: Record<string, any>) => {
     const found = discoveryByAuthority.get(`${authority.iso2}|${authority.authority}|${authority.website ?? ""}`);
-    const qualified = qualificationByAuthority.get(`${authority.iso2}|${authority.authority}|${authority.website ?? ""}`);
+    const candidates = (found?.candidates ?? []).filter((candidate) => candidate.url).map((candidate) => {
+      const candidateUrl = candidate.url!;
+      const key = `${authority.iso2}|${authority.authority}|${candidateUrl}`;
+      const cadence = cadenceByCandidate.get(key);
+      const qualified = qualificationByCandidate.get(key);
+      return {
+        l: candidate.label ?? null,
+        u: candidateUrl,
+        m: cadence?.observed_months_2024_2026 ?? [],
+        n: cadence?.observed_month_count ?? 0,
+        z: cadence?.latest_observed_month ?? null,
+        s: cadence?.provisional_cadence_signal ?? "not-observable",
+        r: qualified?.publication_relevance ?? null,
+        t: qualified?.publication_route_type ?? null,
+        p: qualified?.source_host_scope ?? null,
+        q: qualified?.qualification_state ?? null,
+        a: qualified?.archive_boundary ?? null,
+      };
+    });
+    const primary = candidates.find((candidate) => candidate.q === "approved-for-human-contract" && candidate.p === "authority-owned")
+      ?? candidates.find((candidate) => candidate.q)
+      ?? candidates[0];
     return {
       n: authority.authority,
       w: authority.website,
       r: authority.roles,
       s: found?.access_state ?? "not-observed",
-      u: found?.candidates?.[0]?.url ?? null,
-      y: (found?.candidates ?? []).filter((candidate) => candidate.url).map((candidate) => ({
-        l: candidate.label ?? null,
-        u: candidate.url,
-      })),
+      u: primary?.u ?? null,
+      y: candidates,
       d: authority.directory_sources ?? [],
       e: authority.evidence_urls ?? [],
       f: baseline.generatedAt,
       v: discoverySnapshot.generatedAt,
-      c: qualified?.source_checked_at ?? discoverySnapshot.generatedAt,
-      m: cadenceByAuthority.get(`${authority.iso2}|${authority.authority}|${found?.candidates?.[0]?.url ?? ""}`)?.observed_months_2024_2026 ?? [],
-      n2: cadenceByAuthority.get(`${authority.iso2}|${authority.authority}|${found?.candidates?.[0]?.url ?? ""}`)?.observed_month_count ?? 0,
-      z2: cadenceByAuthority.get(`${authority.iso2}|${authority.authority}|${found?.candidates?.[0]?.url ?? ""}`)?.latest_observed_month ?? null,
-      s2: cadenceByAuthority.get(`${authority.iso2}|${authority.authority}|${found?.candidates?.[0]?.url ?? ""}`)?.provisional_cadence_signal ?? "not-observable",
-      r2: qualified?.publication_relevance ?? null,
-      t2: qualified?.publication_route_type ?? null,
-      q3: qualified?.source_host_scope ?? null,
+      c: primary?.q ? qualificationLedger.sourceCheckedAt : discoverySnapshot.generatedAt,
+      m: primary?.m ?? [],
+      n2: primary?.n ?? 0,
+      z2: primary?.z ?? null,
+      s2: primary?.s ?? "not-observable",
+      r2: primary?.r ?? null,
+      t2: primary?.t ?? null,
+      q3: primary?.p ?? null,
+      q4: primary?.q ?? null,
     };
   }),
 }));

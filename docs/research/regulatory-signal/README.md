@@ -38,19 +38,24 @@ yet qualified:
 - `identity-confirmed` means the authority identity, mandate family and
   official directory provenance are present.
 - `regulatory-activity-visible` means a dated first-page observation was made
-  on an official or officially linked route.
+  on an authority-owned route approved for human source-contract work.
 - `enforcement-visible` is reserved for a dated observation on a qualified
   enforcement, sanctions, decision or disciplinary route.
 - `score-eligible` is reserved for a future approved scoring release and is
   not populated while `transparencyIndex` is null.
 
-Every authority has an explicit access state, publication/channel candidates,
-snapshot check dates and an engagement signal (`recent`, `periodic`,
-`low-frequency` or `unknown`) with the observed window, count and latest date.
+Every authority has an explicit access state, candidate-level provenance,
+snapshot check dates and a provisional scan signal (`recent`, `periodic`,
+`low-frequency` or `unknown`) with the automated scan contract, observed month
+count and latest observed month. The contract is an automated first-page date
+scan from 2024-01 through 2026-08, as of 2026-08-20, at month precision. It is
+not an archive-complete or validated engagement-frequency measure.
 `unknown` includes blocked, challenge-protected, transport-failed and
 undated observations. It never means that the regulator was inactive.
 
-Official regulatory updates and enforcement routes remain separate fields.
+Authority-owned qualified regulatory-update and enforcement routes remain
+separate fields. Official external material is labelled external context and
+does not promote an authority's evidence level.
 Optional secondary-reporting context is represented as `null` until cited
 evidence is independently supplied; it cannot contribute to any score.
 
