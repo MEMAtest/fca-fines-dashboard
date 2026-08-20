@@ -470,26 +470,46 @@ function footerCountryLinks(): Array<{ name: string; slug: string }> {
  * Shared crawlable footer. Plain <a> links only (no scripts/images) so page
  * weight barely moves. Rendered once and reused across all pages.
  */
-function renderSiteFooter(): string {
-  const exploreLinks: Array<[string, string]> = [
-    ["Country risk reports", "/countries"],
-    ["Regulator data hub", "/regulators"],
-    ["Enforcement topics", "/topics"],
-    ["FATF grey list", "/countries/fatf-grey-list"],
-    ["Country risk changes", "/countries/changes"],
-    ["Scoring methodology", "/countries/methodology"],
-    ["Free data API", "/developers"],
-  ];
-  const exploreHtml = exploreLinks
+const FOOTER_EXPLORE_LINKS: Array<[string, string]> = [
+  ["Country risk reports", "/countries"],
+  ["Regulator data hub", "/regulators"],
+  ["Enforcement topics", "/topics"],
+  ["Breach categories", "/breaches"],
+];
+
+const FOOTER_DATA_LINKS: Array<[string, string]> = [
+  ["Scoring methodology", "/countries/methodology"],
+  ["Country risk changes", "/countries/changes"],
+  ["Free data API", "/developers"],
+  ["FATF grey list", "/countries/fatf-grey-list"],
+];
+
+const FOOTER_COMPANY_LINKS: Array<[string, string]> = [
+  ["About", "/about"],
+  ["Roadmap", "/roadmap"],
+  ["Privacy", "/privacy"],
+];
+
+const FOOTER_CONTACT_EMAIL = "contact@memaconsultants.com";
+
+function renderFooterLinkList(links: Array<[string, string]>): string {
+  return links
     .map(([label, href]) => `<li><a href="${href}">${escapeHtml(label)}</a></li>`)
     .join("");
+}
+
+function renderSiteFooter(): string {
+  const exploreHtml = renderFooterLinkList(FOOTER_EXPLORE_LINKS);
+  const dataHtml = renderFooterLinkList(FOOTER_DATA_LINKS);
+  const companyHtml = `${renderFooterLinkList(FOOTER_COMPANY_LINKS)}<li><a href="mailto:${FOOTER_CONTACT_EMAIL}">Contact</a></li>`;
   const countryHtml = footerCountryLinks()
     .map(
       (c) =>
         `<li><a href="/countries/${c.slug}">${escapeHtml(c.name)}</a></li>`,
     )
     .join("");
-  return `<footer class="site-footer" aria-label="Site links"><div class="site-footer__inner"><nav class="site-footer__col" aria-label="Explore RegActions"><h2 class="site-footer__heading">Explore RegActions</h2><ul>${exploreHtml}</ul></nav><nav class="site-footer__col site-footer__col--wide" aria-label="Popular country risk reports"><h2 class="site-footer__heading">Popular country risk reports</h2><ul class="site-footer__countries">${countryHtml}</ul></nav></div></footer>`;
+  const year = new Date().getFullYear();
+  return `<footer class="site-footer" aria-label="Site links"><div class="site-footer__top"><div class="site-footer__brand"><div class="site-footer__wordmark"><svg width="24" height="24" viewBox="0 0 48 48" fill="none" aria-hidden="true"><circle cx="24" cy="24" r="18" stroke="#FFFFFF" stroke-width="2.2"></circle><ellipse cx="24" cy="24" rx="7" ry="18" stroke="#FFFFFF" stroke-width="2.2"></ellipse><path d="M6 24h36" stroke="#FFFFFF" stroke-width="2.2" stroke-linecap="round"></path><circle cx="24" cy="16.5" r="3.2" fill="#0FA77D"></circle><circle cx="24" cy="16.5" r="6.5" stroke="#0FA77D" stroke-width="1" opacity="0.35"></circle></svg>RegActions</div><p class="site-footer__tagline">Global regulatory enforcement intelligence, sourced from official regulator publications.</p></div><nav class="site-footer__col" aria-label="Explore RegActions"><h2 class="site-footer__heading">Explore</h2><ul>${exploreHtml}</ul></nav><nav class="site-footer__col" aria-label="Data"><h2 class="site-footer__heading">Data</h2><ul>${dataHtml}</ul></nav><nav class="site-footer__col" aria-label="Company"><h2 class="site-footer__heading">Company</h2><ul>${companyHtml}</ul></nav></div><div class="site-footer__inner"><nav class="site-footer__col site-footer__col--wide" aria-label="Popular country risk reports"><h2 class="site-footer__heading">Popular country risk reports</h2><ul class="site-footer__countries">${countryHtml}</ul></nav></div><div class="site-footer__bottom"><span>© ${year} RegActions. All rights reserved.</span><span class="site-footer__bottom-mono">Sourced from official regulator publications</span></div></footer>`;
 }
 
 const SITE_FOOTER_HTML = renderSiteFooter();
