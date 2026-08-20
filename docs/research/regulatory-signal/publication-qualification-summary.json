@@ -1,0 +1,344 @@
+{
+  "generatedAt": "2026-08-20T12:11:07.553Z",
+  "sourceCheckedAt": "2026-08-20T12:11:07.553Z",
+  "inputSnapshots": {
+    "discoveryGeneratedAt": "2026-08-20T12:10:41.904Z",
+    "cadenceGeneratedAt": "2026-08-20T12:11:07.553Z"
+  },
+  "candidateAuthorities": 264,
+  "uniqueAuthorities": 263,
+  "countries": 213,
+  "publicationRelevance": {
+    "generic-or-ambiguous-link": 88,
+    "strong-official-publication-candidate": 115,
+    "not-observable": 49,
+    "plausible-official-publication-candidate": 12
+  },
+  "accessStates": {
+    "reachable": 215,
+    "challenge-protected": 44,
+    "http-404": 4,
+    "timeout": 1
+  },
+  "qualificationStates": {
+    "manual-review-required": 110,
+    "approved-for-human-contract": 105,
+    "browser-review-required": 44,
+    "transport-follow-up-required": 5
+  },
+  "sourceHostScopes": {
+    "authority-owned": 196,
+    "not-observable": 49,
+    "external-unqualified": 13,
+    "official-external": 6
+  },
+  "scopeEvidenceStates": {
+    "manual-scope-review": 104,
+    "direct-http-scope-observed": 105,
+    "browser-clearance-required": 44,
+    "official-external-scope": 6,
+    "transport-review-required": 5
+  },
+  "routeTypes": {
+    "detail_document": 8,
+    "sanctions_or_penalty_list": 63,
+    "not-observable": 49,
+    "decision_register": 31,
+    "enforcement_archive": 53,
+    "news_or_notice": 40,
+    "generic_or_ambiguous": 14,
+    "disciplinary_notice": 5,
+    "publication_or_report": 1
+  },
+  "languageEvidenceStates": {
+    "not-determined": 34,
+    "explicit-url-or-label-hint": 230
+  },
+  "cadenceContractRecommendations": {
+    "manual-review": 150,
+    "browser-review": 44,
+    "semiannual": 40,
+    "monthly": 9,
+    "quarterly": 21
+  },
+  "countryBuildGates": {
+    "human-qualification-required": 56,
+    "source-contract-candidate": 73,
+    "deeper-research-required": 64,
+    "browser-review-required": 18,
+    "transport-follow-up-required": 2
+  },
+  "countryCompleteness": {
+    "reachable-but-unqualified": 56,
+    "direct-and-reachable": 73,
+    "no-candidate-route": 64,
+    "obstructed": 20
+  },
+  "browserOnlyCases": [
+    {
+      "authority_id": "ra-auth-al-9458202f9c2cf86f",
+      "iso2": "AL",
+      "authority": "Albanian Financial Supervisory Authority",
+      "evidence_url": "https://amf.gov.al/"
+    },
+    {
+      "authority_id": "ra-auth-as-ec3abe995dd5f5e2",
+      "iso2": "AS",
+      "authority": "Office of the Insurance Commissioner",
+      "evidence_url": "https://www.americansamoa.gov/notices"
+    },
+    {
+      "authority_id": "ra-auth-ao-8dbeceb628bbca2a",
+      "iso2": "AO",
+      "authority": "Comissão do Mercado de Capitais",
+      "evidence_url": "https://www.cmc.ao/pt-pt/AML/CFT"
+    },
+    {
+      "authority_id": "ra-auth-ar-db81036327862a78",
+      "iso2": "AR",
+      "authority": "Superintendencia de Seguros de la Nacion Argentina",
+      "evidence_url": "https://www.argentina.gob.ar/noticias/seguros-y-salud-la-ssn-presento-los-alcances-de-la-resolucion-2582026-en-la-fundacion"
+    },
+    {
+      "authority_id": "ra-auth-be-a783da4fdc4c6852",
+      "iso2": "BE",
+      "authority": "National Bank of Belgium",
+      "evidence_url": "https://www.nbb.be/en/news-events/events/advance-notice-events"
+    },
+    {
+      "authority_id": "ra-auth-br-bdab0eccc0c15021",
+      "iso2": "BR",
+      "authority": "Brazilian Pension Funds Authority",
+      "evidence_url": "https://www.gov.br/previc/pt-br/acesso-a-informacao-1/sancoes-administrativas"
+    },
+    {
+      "authority_id": "ra-auth-br-397b6bea8221fb92",
+      "iso2": "BR",
+      "authority": "Comissão de Valores Mobiliários*",
+      "evidence_url": "https://www.gov.br/cvm/pt-br/centrais-de-conteudo/publicacoes/relatorios/relatorio-de-atividade-sancionadora"
+    },
+    {
+      "authority_id": "ra-auth-cm-79a40bf0a57d6e87",
+      "iso2": "CM",
+      "authority": "Bank of Central African States",
+      "evidence_url": "https://www.beac.int/p-des-changes/circulaires-et-decisions/"
+    },
+    {
+      "authority_id": "ra-auth-ca-ede247dd162b770f",
+      "iso2": "CA",
+      "authority": "Bank of Canada",
+      "evidence_url": "https://www.bankofcanada.ca/markets/market-notices/?content_type%5B%5D=388"
+    },
+    {
+      "authority_id": "ra-auth-ca-4cfa7464640915e2",
+      "iso2": "CA",
+      "authority": "British Columbia Securities Commission",
+      "evidence_url": "https://www.bcsc.bc.ca/enforcement"
+    },
+    {
+      "authority_id": "ra-auth-ky-c3662e6aee940366",
+      "iso2": "KY",
+      "authority": "Cayman Islands Monetary Authority",
+      "evidence_url": "https://www.cima.ky/enforcement-1"
+    },
+    {
+      "authority_id": "ra-auth-cf-384a6a9e492a6c02",
+      "iso2": "CF",
+      "authority": "Bank of Central African States",
+      "evidence_url": "https://www.beac.int/p-des-changes/circulaires-et-decisions/"
+    },
+    {
+      "authority_id": "ra-auth-td-95c66a006cf361ec",
+      "iso2": "TD",
+      "authority": "Bank of Central African States",
+      "evidence_url": "https://www.beac.int/p-des-changes/circulaires-et-decisions/"
+    },
+    {
+      "authority_id": "ra-auth-ck-04431bc65dd59df8",
+      "iso2": "CK",
+      "authority": "Financial Supervisory Commission",
+      "evidence_url": "https://www.fsc.gov.ck/public/content.aspx?cn=CompanySanctions"
+    },
+    {
+      "authority_id": "ra-auth-cr-2df87e51b519812d",
+      "iso2": "CR",
+      "authority": "Central Bank of Costa Rica",
+      "evidence_url": "https://www.bccr.fi.cr/cr/es/transparencia-institucional/informacion-institucional-y-tramites/sanciones-por-hostigamiento-sexual.html"
+    },
+    {
+      "authority_id": "ra-auth-cy-5b44c9b773c83e12",
+      "iso2": "CY",
+      "authority": "Central Bank of Cyprus",
+      "evidence_url": "https://www.centralbank.cy/en/administrative-sanctions-and-measures"
+    },
+    {
+      "authority_id": "ra-auth-cy-39b816fc91fa9c04",
+      "iso2": "CY",
+      "authority": "Cyprus Securities and Exchange Commission",
+      "evidence_url": "https://www.cysec.gov.cy/el-GR/legislation/sanctions/"
+    },
+    {
+      "authority_id": "ra-auth-cz-776f01e4f3b6adf0",
+      "iso2": "CZ",
+      "authority": "Financial Analytical Unit (FAU-CR)",
+      "evidence_url": "https://www.fau.gov.cz/cs/rozcestnik/reseni-nekterych-zivotnich-situaci/informaciya-dlya-arendatorov-nedvizhimosti-nahodya-196"
+    },
+    {
+      "authority_id": "ra-auth-gq-7f386deb472fe6ed",
+      "iso2": "GQ",
+      "authority": "Bank of Central African States",
+      "evidence_url": "https://www.beac.int/p-des-changes/circulaires-et-decisions/"
+    },
+    {
+      "authority_id": "ra-auth-ga-798755084cc325db",
+      "iso2": "GA",
+      "authority": "Bank of Central African States",
+      "evidence_url": "https://www.beac.int/p-des-changes/circulaires-et-decisions/"
+    },
+    {
+      "authority_id": "ra-auth-gi-7e31de165301a6df",
+      "iso2": "GI",
+      "authority": "Gibraltar Financial Intelligence Unit (GCID GFIU)",
+      "evidence_url": "http://gfiu.gov.gi/sanctions"
+    },
+    {
+      "authority_id": "ra-auth-hu-5ccbdefbc824ee11",
+      "iso2": "HU",
+      "authority": "Central Bank of Hungary",
+      "evidence_url": "https://www.mnb.hu/en/reserve-management/decision-making-levels"
+    },
+    {
+      "authority_id": "ra-auth-is-c2c65bf8b9d7ee90",
+      "iso2": "IS",
+      "authority": "Central Bank of Iceland",
+      "evidence_url": "https://cb.is/news-and-publications/events/?category=72f27799-bbe1-4a72-87a7-0164438ef63f&tags=monetary%20policy%20committee"
+    },
+    {
+      "authority_id": "ra-auth-is-cada47c6ac649ceb",
+      "iso2": "IS",
+      "authority": "Financial Supervisory Authority of Iceland",
+      "evidence_url": "https://cb.is/news-and-publications/events/?category=72f27799-bbe1-4a72-87a7-0164438ef63f&tags=monetary%20policy%20committee"
+    },
+    {
+      "authority_id": "ra-auth-jo-2946b5a9d3aa6166",
+      "iso2": "JO",
+      "authority": "Central Bank of Jordan",
+      "evidence_url": "https://www.cbj.gov.jo/AR/List/%D9%82%D8%B1%D8%A7%D8%B1%D8%A7%D8%AA_%D8%A7%D9%84%D8%B3%D9%8A%D8%A7%D8%B3%D8%A9_%D8%A7%D9%84%D9%86%D9%82%D8%AF%D9%8A%D8%A9"
+    },
+    {
+      "authority_id": "ra-auth-ke-5c954037a3c08c4d",
+      "iso2": "KE",
+      "authority": "Insurance Regulatory Authority",
+      "evidence_url": "https://www.ira.go.ke/legal-notices/?_t=1510"
+    },
+    {
+      "authority_id": "ra-auth-kg-f52346c3ceacbc1d",
+      "iso2": "KG",
+      "authority": "The State Financial Intelligence Under the Government of the Kyrgyz Republic (FIS)",
+      "evidence_url": "http://fiu.gov.kg/sked/2"
+    },
+    {
+      "authority_id": "ra-auth-my-f81c008a715d8141",
+      "iso2": "MY",
+      "authority": "Labuan Financial Services Authority (Labuan FSA)",
+      "evidence_url": "https://www.labuanfsa.gov.my/"
+    },
+    {
+      "authority_id": "ra-auth-mu-f428becbb16b4775",
+      "iso2": "MU",
+      "authority": "Bank of Mauritius",
+      "evidence_url": "https://www.bom.mu/financial-stability/amlcft/implementation-targeted-sanctions"
+    },
+    {
+      "authority_id": "ra-auth-md-8b809648505080fe",
+      "iso2": "MD",
+      "authority": "National Bank of Moldova",
+      "evidence_url": "https://www.bnm.md/en/content/applied-sanctions-foreign-exchange-entities"
+    },
+    {
+      "authority_id": "ra-auth-mc-1900c62672733798",
+      "iso2": "MC",
+      "authority": "Commission de Contrôle des Activités Financières",
+      "evidence_url": "https://ccaf.mc/ccaf/les-sanctions-prononcees/"
+    },
+    {
+      "authority_id": "ra-auth-ma-338afef2320a3cef",
+      "iso2": "MA",
+      "authority": "Bank Al-Maghrib (Central Bank of Morocco)",
+      "evidence_url": "https://www.bkam.ma/en/Banking-supervision/Sanctions-regime"
+    },
+    {
+      "authority_id": "ra-auth-mm-df094c15b2de6b82",
+      "iso2": "MM",
+      "authority": "Central Bank of Myanmar",
+      "evidence_url": "https://www.cbm.gov.mm/content/2253"
+    },
+    {
+      "authority_id": "ra-auth-np-e44afb5d807b4521",
+      "iso2": "NP",
+      "authority": "Central Bank of Nepal (Nepal Rastra Bank)",
+      "evidence_url": "https://www.nrb.org.np/targeted-sanction-list-and-other"
+    },
+    {
+      "authority_id": "ra-auth-ng-ba9a7a6b118d8ce0",
+      "iso2": "NG",
+      "authority": "Central Bank of Nigeria",
+      "evidence_url": "https://www.cbn.gov.ng/Documents/Notices.html"
+    },
+    {
+      "authority_id": "ra-auth-ng-2a1f596657ede340",
+      "iso2": "NG",
+      "authority": "National Pension Commission",
+      "evidence_url": "https://www.pencom.gov.ng/website-privacy-notice/"
+    },
+    {
+      "authority_id": "ra-auth-qa-57a9d4785f79c95e",
+      "iso2": "QA",
+      "authority": "Qatar Financial Centre Regulatory Authority",
+      "evidence_url": "https://www.qfcra.com/enforcement/"
+    },
+    {
+      "authority_id": "ra-auth-cg-7f341a85e6904e9c",
+      "iso2": "CG",
+      "authority": "Bank of Central African States",
+      "evidence_url": "https://www.beac.int/p-des-changes/circulaires-et-decisions/"
+    },
+    {
+      "authority_id": "ra-auth-lc-6d1e98ee5ab6270a",
+      "iso2": "LC",
+      "authority": "Financial Intelligence Authority (FIA-Saint Lucia)",
+      "evidence_url": "https://www.slufia.com/p/notices-circulars"
+    },
+    {
+      "authority_id": "ra-auth-sc-65ac374335822991",
+      "iso2": "SC",
+      "authority": "Financial Services Authority",
+      "evidence_url": "https://fsaseychelles.sc/"
+    },
+    {
+      "authority_id": "ra-auth-za-af3bb9712cb90ce4",
+      "iso2": "ZA",
+      "authority": "Financial Intelligence Centre (FIC)",
+      "evidence_url": "https://www.fic.gov.za/targeted-financial-sanctions/"
+    },
+    {
+      "authority_id": "ra-auth-gm-c3c985b404801688",
+      "iso2": "GM",
+      "authority": "Central Bank of The Gambia",
+      "evidence_url": "http://www.cbg.gm/bonds-notices"
+    },
+    {
+      "authority_id": "ra-auth-tt-8c77dc972a123039",
+      "iso2": "TT",
+      "authority": "Financial Intelligence Unit of Trinidad and Tobago (FIUTT)",
+      "evidence_url": "https://fiu.gov.tt/reporting/enforcement/"
+    },
+    {
+      "authority_id": "ra-auth-zw-aee81327f842da53",
+      "iso2": "ZW",
+      "authority": "Insurance and Pensions Commission (IPEC)",
+      "evidence_url": "https://ipec.co.zw/local-news/notice-of-cancellation-of-orchid-funeral-assurance-company-registration-pursuant-to-section-23-of-the-insurance-act-chapter-2407/"
+    }
+  ],
+  "invariant": "No source is promoted; not-observable, low-frequency and no-candidate states remain explicit."
+}
