@@ -127,6 +127,55 @@ export function looksLikeCmvmParty(title: string): boolean {
   return capitalised.length >= 2 && capitalised.length >= words.length / 2;
 }
 
+/**
+ * Sanction language. A CMVM document is an enforcement action only if it says
+ * so: a coima (administrative fine), a contraordenação (administrative offence)
+ * or a sanctioning decision.
+ */
+const CMVM_SANCTION_MARKER =
+  /\b(coimas?|contraordena|contra-ordena|decis(ão|ões)\s+sancionat|san(ção|ções)\s+acess|processo\s+de\s+contra)/i;
+
+/**
+ * Document classes CMVM publishes that are NOT enforcement actions, even when
+ * the word "contraordenação" appears somewhere in their boilerplate: periodic
+ * statistics, market reports, and issuer disclosures filed under the SDI.
+ */
+const CMVM_NON_SANCTION_MARKER =
+  /\b(relat(ório|orio)\s+(anual|sobre|de\s+gest)|informa(ção|çoes)\s+privilegiada|demonstra(ções|coes)\s+financeiras|comunicado\s+de\s+mercado|estat(í|i)sticas?|newsletter|consulta\s+p(ú|u)blica|plano\s+de\s+atividades|advert(ê|e)ncia\s+ao\s+p(ú|u)blico)\b/i;
+
+/**
+ * True when a CMVM search hit is a genuine enforcement action.
+ *
+ * The scraper searches for "contraordenacao" and "coima", but CMVM's search
+ * returns the whole institutional corpus for those terms — annual reports,
+ * climate-disclosure notes, issuer filings. Those were being written to
+ * `eu_fines` as enforcement rows, which is why the regulator carried 157 rows
+ * of which only 5 had an amount: most were never fines at all.
+ *
+ * Positive test, deliberately: the qualifying language is a small closed set
+ * (a fine, an offence, a sanctioning decision), whereas the set of other
+ * documents CMVM publishes is unbounded and grows every quarter. Same reasoning
+ * as `looksLikeCmvmParty`.
+ */
+export function isCmvmSanctionRecord(
+  title: string,
+  _area: string,
+  _highlights: string[] = [],
+): boolean {
+  const heading = normalizeWhitespace(title ?? "");
+  if (!heading) return false;
+
+  // Deliberately TITLE-ONLY. Matching the highlights too was the first attempt
+  // and it kept 60 of 157 rows, including register documents like "Perdas de
+  // qualidade de sociedade aberta" and "Organismos de investimento coletivo
+  // estrangeiros comercializados em Portugal" — those surface in the search
+  // because the SEARCH TERM appears somewhere in the indexed body, not because
+  // the document is an enforcement action. The title is what the document IS.
+  if (!CMVM_SANCTION_MARKER.test(heading)) return false;
+  if (CMVM_NON_SANCTION_MARKER.test(heading)) return false;
+  return true;
+}
+
 function cleanCmvmEntity(input: string) {
   return normalizeWhitespace(
     input
@@ -434,7 +483,18 @@ export async function loadCmvmLiveRecords() {
     }
   }
 
-  return [...entries.values()].map((entry) => {
+  const all = [...entries.values()];
+  const sanctions = all.filter((entry) =>
+    isCmvmSanctionRecord(entry.title, entry.area, entry.highlights),
+  );
+  const dropped = all.length - sanctions.length;
+  if (dropped > 0) {
+    console.log(
+      `   Filtered out ${dropped} non-sanction document(s); ${sanctions.length} enforcement action(s) remain`,
+    );
+  }
+
+  return sanctions.map((entry) => {
     const summary = entry.highlights[0] || entry.title;
     const textCorpus = `${entry.title} ${entry.area} ${entry.highlights.join(" ")}`;
 
