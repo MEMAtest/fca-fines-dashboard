@@ -64,6 +64,10 @@ import {
   type CountryRiskV2Result,
 } from "./countryRiskV2.js";
 import {
+  computeCountryRiskCurrent,
+  type CountryRiskCurrentResult,
+} from "./countryRiskMethodology.js";
+import {
   buildCountryRiskPublicSurface,
   type CountryRiskPublicSurface,
 } from "./countryRiskSurface.js";
@@ -185,6 +189,10 @@ export interface CountryView {
   riskScore: CountryRiskScore;
   /** Decision-grade v2 score used for the headline, ranking and public status. */
   riskV2: CountryRiskV2Result;
+  /** Current methodology result. v2 remains above solely for historical/API compatibility. */
+  riskV3: CountryRiskCurrentResult;
+  /** Alias for consumers that should not encode a methodology version. */
+  riskCurrent: CountryRiskCurrentResult;
   /** Additive, non-scoring public evidence, freshness and change-history surface. */
   publicSurface: CountryRiskPublicSurface;
   /** V2 publication state; provisional scores remain visible but can never be labelled Low. */
@@ -356,7 +364,7 @@ export function fatfBand(fatf: FatfStatus | undefined): RiskBand {
 /** Keep every presentation and decision consumer on the scorer's country-level coverage gate. */
 export function countrySanctionsPresentation(
   iso2: string,
-  riskResult: CountryRiskV2Result = computeCountryRiskV2(iso2),
+  riskResult: Pick<CountryRiskV2Result, "sanctionsCoverageComplete"> = computeCountryRiskV2(iso2),
 ): {
   sanctionsCoverageComplete: boolean;
   sanctions: CountrySanctions | undefined;
@@ -376,6 +384,7 @@ export function buildCountryView(country: Country): CountryView {
   const history = FATF_RECENT_CHANGES.filter((c) => c.iso2 === country.iso2);
   const enforcement = getCountryEnforcementSummary(country.iso2);
   const riskV2 = computeCountryRiskV2(country.iso2);
+  const riskV3 = computeCountryRiskCurrent(country.iso2);
   const { sanctionsCoverageComplete, sanctions, sanctionsTier } = countrySanctionsPresentation(country.iso2, riskV2);
 
   const statusHeading = fatf ? fatfLabel(fatf.listing) : "Not currently listed";
@@ -443,6 +452,8 @@ export function buildCountryView(country: Country): CountryView {
     sanctionsBand: sanctionsToBand(sanctionsTier),
     riskScore,
     riskV2,
+    riskV3,
+    riskCurrent: riskV3,
     publicSurface,
     scoreStatus,
     breakdown,
@@ -583,7 +594,7 @@ export function buildCountryIndex(): CountryIndexEntry[] {
   if (_index) return _index;
   _index = pageCountries()
     .map((country) => {
-      const result = computeCountryRiskV2(country.iso2);
+      const result = computeCountryRiskCurrent(country.iso2);
       const { sanctions, sanctionsTier, sanctionsCoverageComplete } = countrySanctionsPresentation(country.iso2, result);
       return {
         country,
@@ -619,6 +630,16 @@ export function globalAverageRiskScoreV2(): number {
     ? Math.round((scores.reduce((sum, score) => sum + score, 0) / scores.length) * 10) / 10
     : 0;
   return _globalAverageV2;
+}
+
+/** Mean published current-methodology result across complete/provisional countries. */
+export function globalAverageRiskScoreCurrent(): number {
+  const scores = buildCountryIndex()
+    .map((entry) => entry.score)
+    .filter((score): score is number => score !== null);
+  return scores.length
+    ? Math.round((scores.reduce((sum, score) => sum + score, 0) / scores.length) * 10) / 10
+    : 0;
 }
 
 /** Global rank (1 = highest risk) and total, from the sorted index. */

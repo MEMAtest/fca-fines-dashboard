@@ -8,7 +8,7 @@ import {
   SANCTIONS_TIER_RULES,
   getSanctionsRegimeCandidates,
 } from "./sanctionsRegimeCandidates.js";
-import { SANCTIONS_APPROVED_SNAPSHOT } from "./sanctionsApprovedData.js";
+import { getApprovedSanctions, SANCTIONS_APPROVED_SNAPSHOT } from "./sanctionsApprovedData.js";
 
 describe("sanctions v2 candidate catalogue", () => {
   it("covers every country-specific programme in the four reviewed official catalogues", () => {
@@ -56,6 +56,7 @@ describe("sanctions v2 candidate catalogue", () => {
     expect(getSanctionsRegimeCandidates("UA").find((item) => item.imposer === "EU")?.relationship).toBe("situation-related");
     expect(getSanctionsRegimeCandidates("US").find((item) => item.imposer === "EU")?.relationship).toBe("situation-related");
     expect(getSanctionsRegimeCandidates("CN").some((item) => item.imposer === "EU" && item.proposedTier === "sectoral")).toBe(true);
+    expect(getSanctionsRegimeCandidates("VE").find((item) => item.imposer === "UK")?.proposedTier).toBe("sectoral");
   });
 
   it("publishes mutually exclusive deterministic tier definitions", () => {
@@ -63,5 +64,10 @@ describe("sanctions v2 candidate catalogue", () => {
     expect(SANCTIONS_TIER_RULES.comprehensive).toContain("country-wide");
     expect(SANCTIONS_TIER_RULES.sectoral).toContain("non-designation");
     expect(SANCTIONS_TIER_RULES.targeted).toContain("designated");
+  });
+
+  it("keeps the promoted Venezuela UK decision aligned with the corrected candidate tier", () => {
+    expect(getApprovedSanctions("VE")?.programs.find((item) => item.imposer === "UK")?.tier).toBe("sectoral");
+    expect(SANCTIONS_APPROVED_SNAPSHOT.externalValidation).toBe("not-independently-validated");
   });
 });
