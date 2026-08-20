@@ -1836,6 +1836,48 @@ button.cx-kpi:hover {
   align-items: center;
   margin-bottom: 0.75rem;
 }
+.cx-filters__bands {
+  display: inline-flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+  align-items: center;
+}
+
+/* Row above the ratings table: result count on the left, export on the right. */
+.cx-index__toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  margin-bottom: 0.5rem;
+}
+.cx-index__toolbar .country-index__count {
+  margin: 0;
+}
+
+.cx-export {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  background: #fff;
+  padding: 0.35rem 0.7rem;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: #31536d;
+  cursor: pointer;
+}
+.cx-export:hover:not(:disabled) {
+  border-color: #0fa77d;
+  color: #0fa77d;
+}
+.cx-export:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
 .cx-filters__search {
   display: inline-flex;
   align-items: center;
@@ -2459,7 +2501,7 @@ button.cx-kpi:hover {
 }
 .cx-ov__top {
   display: grid;
-  grid-template-columns: 1.7fr 1fr;
+  grid-template-columns: minmax(0, 1.7fr) minmax(0, 1fr);
   gap: 1rem;
   align-items: stretch;
 }
@@ -2592,7 +2634,7 @@ button.cx-kpi:hover {
 /* Bottom band: table + exec summary */
 .cx-ov__bot {
   display: grid;
-  grid-template-columns: 2fr 1fr;
+  grid-template-columns: minmax(0, 2fr) minmax(0, 1fr);
   gap: 1rem;
   align-items: start;
 }
@@ -2609,22 +2651,41 @@ button.cx-kpi:hover {
   margin: 0.5rem 0 0.3rem;
 }
 
+/* Grid items default to `min-width: auto`, so a wide child (the overview table)
+   forces its track wider than the container instead of shrinking. That is what
+   pushed the page 18px past a 390px viewport: `.cx-ov__bot` resolved a 391.6px
+   track inside a 358px parent. `minmax(0, …)` plus `min-width: 0` lets the
+   track shrink; the table then scrolls inside its own panel. */
+.cx-ov__top > *,
+.cx-ov__mid > *,
+.cx-ov__bot > *,
+.cx-ov__kpis > *,
+.cx-attn > * {
+  min-width: 0;
+}
+.cx-ov__table table,
+.cx-ov__exec table {
+  display: block;
+  max-width: 100%;
+  overflow-x: auto;
+}
+
 @media (max-width: 1040px) {
   .cx-ov__top {
-    grid-template-columns: 1fr;
+    grid-template-columns: minmax(0, 1fr);
   }
   .cx-ov__mid {
-    grid-template-columns: repeat(2, 1fr);
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
   .cx-ov__bot {
-    grid-template-columns: 1fr;
+    grid-template-columns: minmax(0, 1fr);
   }
 }
 @media (max-width: 640px) {
   .cx-ov__mid,
   .cx-ov__kpis,
   .cx-attn {
-    grid-template-columns: 1fr;
+    grid-template-columns: minmax(0, 1fr);
   }
 }
 
