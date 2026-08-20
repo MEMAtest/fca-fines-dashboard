@@ -21,4 +21,3 @@ describe("active country-risk methodology", () => {
     expect(computeCountryRiskByMethodology("VE", "v3").methodologyVersion).toBe("3.0.0");
   });
 });
-

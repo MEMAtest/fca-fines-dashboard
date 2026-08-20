@@ -59,4 +59,3 @@ export function computeCountryRiskByMethodology(
   if (methodology === "v3") return computeCountryRiskV3(iso2, supplied as CountryRiskV3Inputs);
   return computeCountryRiskV2(iso2, supplied as CountryRiskV2Inputs);
 }
-

@@ -77,4 +77,3 @@ const report = {
 await writeFile(output, `${JSON.stringify(report, null, 2)}\n`);
 console.log(JSON.stringify(report.summary));
 console.log(`Wrote v3 shadow evidence to ${output}`);
-
