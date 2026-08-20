@@ -3,6 +3,7 @@ import { describe, expect, it } from "vitest";
 import {
   generateSitemapDocuments,
   generateSitemapUrlset,
+  renderRegulatoryTransparencyBody,
   sitemapLastmod,
   sitemapSectionForPath,
 } from "../../scripts/prerender-seo.js";
@@ -19,6 +20,16 @@ function page(path: string, overrides: Record<string, unknown> = {}) {
 }
 
 describe("prerender sitemap policy", () => {
+  it("keeps the regulatory-transparency prerender summary-only", () => {
+    const html = renderRegulatoryTransparencyBody();
+    expect(html).toContain("View full country evidence");
+    expect(html).toContain("Level 1: Identity confirmed");
+    expect(html).not.toContain("Publication candidates and qualification");
+    expect(html).not.toContain("Provisional first-page scan signal");
+    expect(html).not.toContain("Identity source provenance");
+    expect(html.length).toBeLessThan(250_000);
+  });
+
   it("segments URLs into diagnostic sitemap sections", () => {
     expect(sitemapSectionForPath("/regulators/fca")).toBe("regulators");
     expect(sitemapSectionForPath("/fca-fines/2026/example-bank/case-1")).toBe("fca-fines");

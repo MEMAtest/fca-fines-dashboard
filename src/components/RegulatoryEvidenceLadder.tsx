@@ -189,28 +189,44 @@ function AuthorityEvidence({ authority }: { authority: RegulatorySignalAuthority
   );
 }
 
-export function RegulatoryEvidenceLadder({ country, compact = false }: { country: RegulatorySignalCountry; compact?: boolean }) {
+export function RegulatoryEvidenceLadder({ country, compact = false, fullEvidenceHref = "/countries" }: { country: RegulatorySignalCountry; compact?: boolean; fullEvidenceHref?: string }) {
   const level = countryEvidenceLevel(country);
   const currentLevel = level === null ? null : LEVELS[level - 1];
   const enforcementAuthorities = country.authorities.filter((authority) => authority.evidenceLevel === "enforcement-visible" || authority.evidenceLevel === "score-eligible");
   const enforcementCopy = enforcementAuthorities.length > 0
     ? `${enforcementAuthorities.length} authorit${enforcementAuthorities.length === 1 ? "y is" : "ies are"} classified as enforcement-visible in the authority evidence schema. This is based on qualified authority-owned route evidence and provisional first-page month observations; it is not a validated engagement frequency.`
     : "No authority is classified as enforcement-visible or score-eligible in the authority evidence schema. Enforcement visibility remains unknown or limited to identity/activity evidence; this is not evidence of no enforcement.";
+  if (compact) {
+    return (
+      <div className="reg-evidence-ladder reg-evidence-ladder--compact">
+        <div className="reg-evidence-ladder__heading">
+          <div><span className="reg-evidence-ladder__eyebrow">Evidence ladder</span><h3>{level === null ? "No local authority evidence level" : `Level ${level}: ${currentLevel!.label}`}</h3></div>
+          <span className="reg-evidence-ladder__not-scored">Transparency Index: not scored</span>
+        </div>
+        <div className="reg-evidence-enforcement"><strong>Enforcement visibility:</strong> {enforcementCopy}</div>
+        {country.authorities.length > 0 ? <ul className="reg-evidence-compact-authorities" aria-label={`Authority summary for ${country.name}`}>{country.authorities.slice(0, 2).map((authority, authorityIndex) => {
+          const authorityLevel = authorityEvidenceLevel(authority);
+          return <li key={`${authority.name}-${authority.website ?? ""}-${authorityIndex}`}><strong>{authority.name}</strong><span>Level {authorityLevel}: {LEVELS[authorityLevel - 1].label}</span><span>{authority.mandate.map(roleLabel).join(" · ") || "Mandate family not classified"}</span><span>{authorityAccessLabel(authority.accessState)}</span></li>;
+        })}</ul> : <p className="reg-evidence-authority__unknown">No authority entry was resolved in the directory snapshot. This is not evidence that no regulator exists.</p>}
+        {country.authorities.length > 2 && <p className="reg-evidence-compact-authorities__more">+ {country.authorities.length - 2} more mapped authorit{country.authorities.length - 2 === 1 ? "y" : "ies"}</p>}
+        <a className="reg-evidence-compact-link" href={fullEvidenceHref}>View full country evidence</a>
+      </div>
+    );
+  }
   return (
-    <div className={`reg-evidence-ladder${compact ? " reg-evidence-ladder--compact" : ""}`}>
+    <div className="reg-evidence-ladder">
       <div className="reg-evidence-ladder__heading">
         <div><span className="reg-evidence-ladder__eyebrow">Evidence ladder</span><h3>{level === null ? "No local authority evidence level" : `Level ${level}: ${currentLevel!.label}`}</h3></div>
         <span className="reg-evidence-ladder__not-scored">Transparency Index: not scored</span>
       </div>
       <p className="reg-evidence-ladder__summary">{countryEvidenceLabel(country.authorityEvidenceState)}. {currentLevel?.description ?? "No local authority identity was resolved in this snapshot."} The ladder describes evidence availability, not regulatory quality or enforcement effectiveness.</p>
-      {!compact && <EvidenceLadderLegend />}
+      <EvidenceLadderLegend />
       <details className="reg-evidence-definition">
         <summary><Info size={12} aria-hidden="true" /> How to read activity and enforcement visibility</summary>
         <p>Regulatory activity and enforcement visibility are separate authority-level evidence states. Only qualified authority-owned routes can support Level 2 or Level 3. External official context and unqualified candidates do not promote the evidence level. Blocked and unavailable sources remain unknown.</p>
       </details>
       <div className="reg-evidence-enforcement"><strong>Enforcement visibility:</strong> {enforcementCopy}</div>
-      {!compact && <div className="reg-evidence-authorities" aria-label={`Authorities regulating ${country.name}`}><h3>Authorities and mandate evidence</h3>{country.authorities.length > 0 ? country.authorities.map((authority, authorityIndex) => <AuthorityEvidence key={`${authority.name}-${authority.website ?? ""}-${authorityIndex}`} authority={authority} />) : <p>No authority entry was resolved in the directory snapshot. This is not evidence that no regulator exists.</p>}</div>}
-      {compact && country.authorities.length > 0 && <><div className="reg-evidence-compact-authorities" aria-label={`Mapped authorities for ${country.name}`}>{country.authorities.slice(0, 2).map((authority, authorityIndex) => <AuthorityEvidence key={`${authority.name}-${authority.website ?? ""}-${authorityIndex}`} authority={authority} />)}</div>{country.authorities.length > 2 && <details className="reg-evidence-authority-list"><summary>Show all {country.authorities.length} mapped authorities and mandates</summary><div className="reg-evidence-authorities">{country.authorities.slice(2).map((authority, authorityIndex) => <AuthorityEvidence key={`${authority.name}-${authority.website ?? ""}-${authorityIndex + 2}`} authority={authority} />)}</div></details>}</>}
+      <div className="reg-evidence-authorities" aria-label={`Authorities regulating ${country.name}`}><h3>Authorities and mandate evidence</h3>{country.authorities.length > 0 ? country.authorities.map((authority, authorityIndex) => <AuthorityEvidence key={`${authority.name}-${authority.website ?? ""}-${authorityIndex}`} authority={authority} />) : <p>No authority entry was resolved in the directory snapshot. This is not evidence that no regulator exists.</p>}</div>
     </div>
   );
 }

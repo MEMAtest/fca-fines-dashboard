@@ -1,4 +1,4 @@
-import { render, screen } from "@testing-library/react";
+import { render, screen, within } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
 import { RegulatoryTransparency } from "./RegulatoryTransparency.js";
 
@@ -15,5 +15,10 @@ describe("RegulatoryTransparency", () => {
     expect(screen.getByText(/Algeria · DZ/i)).toBeInTheDocument();
     expect(screen.getByText(/Bank of Algeria/i)).toBeInTheDocument();
     expect(screen.getAllByText(/Transparency Index: not scored/i).length).toBeGreaterThan(100);
+    const algeriaCard = screen.getByText(/Algeria · DZ/i).closest("article")!;
+    expect(within(algeriaCard).getByRole("list", { name: /Authority summary for Algeria/i }).children).toHaveLength(2);
+    expect(within(algeriaCard).getByRole("link", { name: /View full country evidence/i })).toHaveAttribute("href", "/countries/algeria");
+    expect(within(algeriaCard).queryByText(/Publication candidates and qualification/i)).not.toBeInTheDocument();
+    expect(within(algeriaCard).queryByText(/Provisional first-page scan signal/i)).not.toBeInTheDocument();
   });
 });

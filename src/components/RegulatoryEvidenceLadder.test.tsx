@@ -73,9 +73,12 @@ describe("RegulatoryEvidenceLadder", () => {
   it("uses semantic disclosures and a responsive compact structure", () => {
     const { container } = render(<RegulatoryEvidenceLadder country={getRegulatorySignalCountry("DZ")!} compact />);
     expect(container.querySelector(".reg-evidence-ladder--compact")).toBeInTheDocument();
-    expect(screen.getByText(/How to read activity and enforcement visibility/i).closest("details")).toBeInTheDocument();
-    expect(screen.getAllByRole("region", { name: /Provisional activity observation/i }).length).toBeGreaterThan(0);
-    expect(screen.getAllByText(/Scan contract and precision/i).length).toBeGreaterThan(0);
+    expect(screen.getByRole("list", { name: /Authority summary for Algeria/i }).children).toHaveLength(2);
+    expect(screen.getByRole("link", { name: /View full country evidence/i })).toHaveAttribute("href", "/countries");
+    expect(screen.queryByRole("region", { name: /Provisional activity observation/i })).not.toBeInTheDocument();
+    expect(screen.queryByText(/Scan contract and precision/i)).not.toBeInTheDocument();
+    expect(screen.queryByText(/Publication candidates and qualification/i)).not.toBeInTheDocument();
+    expect(screen.queryByText(/Identity source provenance/i)).not.toBeInTheDocument();
   });
 
   it("renders all four schema-level definitions without exposing a score", () => {

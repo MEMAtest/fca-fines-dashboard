@@ -1268,8 +1268,15 @@ function renderRegulatoryTransparencyBody(): string {
     const level = regulatorySignalEvidenceLevel(signal);
     const levelLabel = level === null ? "No local authority evidence level" : `Level ${level}: ${REGULATORY_EVIDENCE_LEVELS[level - 1][0]}`;
     const enforcementCount = signal.authorities.filter((authority) => authority.evidenceLevel === "enforcement-visible" || authority.evidenceLevel === "score-eligible").length;
-    const authorityItems = signal.authorities.length ? `<ul>${signal.authorities.map(regulatoryAuthorityHtml).join("")}</ul>` : `<p>No authority entry was resolved in the directory snapshot. This is not evidence that no regulator exists.</p>`;
-    return `<details><summary><strong>${escapeHtml(signal.name)} (${signal.iso2})</strong> — ${escapeHtml(levelLabel)} · Transparency Index: not scored</summary><p>${escapeHtml(signal.authorityEvidenceState)} · ${signal.officialDirectoryAuthorities} mapped official authorities. ${enforcementCount > 0 ? `${enforcementCount} authority evidence records are enforcement-visible.` : "Enforcement visibility remains unknown or limited to identity/activity evidence."} A blocked source is not described as no enforcement.</p>${authorityItems}</details>`;
+    const country = getCountryByIso2(signal.iso2);
+    const countryHref = country ? `/countries/${countrySlug(country)}` : "/countries";
+    const authorityItems = signal.authorities.length
+      ? `<ul>${signal.authorities.slice(0, 2).map((authority) => {
+          const authorityLevel = regulatoryAuthorityEvidenceLevel(authority);
+          return `<li><strong>${escapeHtml(authority.name)}</strong><br>Level ${authorityLevel}: ${escapeHtml(REGULATORY_EVIDENCE_LEVELS[authorityLevel - 1][0])} · ${escapeHtml(authority.mandate.map(roleLabel).join(", ") || "Mandate family not classified")} · ${escapeHtml(authorityAccessLabel(authority.accessState))}</li>`;
+        }).join("")}</ul>${signal.authorities.length > 2 ? `<p>+ ${signal.authorities.length - 2} more mapped authorities.</p>` : ""}`
+      : `<p>No authority entry was resolved in the directory snapshot. This is not evidence that no regulator exists.</p>`;
+    return `<article><h3>${escapeHtml(signal.name)} (${signal.iso2})</h3><p><strong>${escapeHtml(levelLabel)}</strong> · Transparency Index: not scored</p><p>${escapeHtml(signal.authorityEvidenceState)} · ${signal.officialDirectoryAuthorities} mapped official authorities. ${enforcementCount > 0 ? `${enforcementCount} authority evidence records are enforcement-visible.` : "Enforcement visibility remains unknown or limited to identity/activity evidence."} A blocked source is not described as no enforcement.</p>${authorityItems}<p><a href="${escapeHtml(countryHref)}">View full country evidence</a></p></article>`;
   }).join("");
   return `<main class="content-page"><h1>Regulatory ecosystem and enforcement visibility</h1><p>RegActions maps official authorities, mandate families, publication access states and RegActions feed coverage across 213 jurisdictions. This evidence layer is separate from Country Risk v3 and does not judge regulatory strength.</p><p><strong>Transparency Index:</strong> not scored while source qualification and shadow calibration continue.</p><h2>How to read the evidence ladder</h2><p>This four-level ladder uses each authority evidenceLevel directly. It is not a regulatory-quality score. Only qualified authority-owned routes can support activity or enforcement visibility; external context and unqualified candidates do not. Access failure remains unknown and is never treated as no enforcement.</p><ol>${levels}</ol><h2>Evidence states</h2><p>Reachable, challenge-protected, access-blocked, timeout, HTTP 404, no-public-website and unobservable states remain visible. Provisional first-page month observations are not a validated engagement frequency.</p><h2>Browse jurisdiction evidence</h2>${countries}<p><a href="/api/regulatory-signal/list">Browse the read-only regulatory signal API</a> · <a href="/countries">Browse country profiles</a></p><h2>Official directory sources</h2><ul><li><a href="https://www.bis.org/regauth.htm" rel="noopener">BIS regulatory authorities</a></li><li><a href="https://www.iosco.org/v2/about/?subsection=membership&amp;memid=1" rel="noopener">IOSCO members</a></li><li><a href="https://www.iais.org/about-the-iais/iais-members/" rel="noopener">IAIS members</a></li><li><a href="https://www.iopsweb.org/en/membership/iops-members-and-observers.html" rel="noopener">IOPS members and observers</a></li><li><a href="https://egmontgroup.org/members-by-region/" rel="noopener">Egmont Group FIUs</a></li></ul></main>`;
 }
@@ -3549,6 +3556,7 @@ export {
   generateSitemapUrlset,
   renderPage,
   renderCountryFatfBody,
+  renderRegulatoryTransparencyBody,
   sitemapLastmod,
   sitemapSectionForPath,
 };

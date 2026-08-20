@@ -49,14 +49,17 @@ export function RegulatoryTransparency() {
       <section className="about-section">
         <h2>Browse jurisdiction evidence</h2>
         <div className="cx-sources">
-          {countries.map((country) => (
+          {countries.map((country) => {
+            const resolvedCountry = getCountryByIso2(country.iso2);
+            const countryHref = resolvedCountry ? `/countries/${countrySlug(resolvedCountry)}` : "/countries";
+            return (
             <article key={country.iso2} className="cx-source-card cx-source-card--evidence">
-              <a className="cx-source-card__link" href={getCountryByIso2(country.iso2) ? `/countries/${countrySlug(getCountryByIso2(country.iso2)!)}` : `/countries`}>
+              <a className="cx-source-card__link" href={countryHref}>
                 <div className="cx-source-card__name">{country.name} · {country.iso2}</div>
               </a>
-              <RegulatoryEvidenceLadder country={country} compact />
+              <RegulatoryEvidenceLadder country={country} compact fullEvidenceHref={countryHref} />
             </article>
-          ))}
+          );})}
         </div>
       </section>
       <section className="about-section">

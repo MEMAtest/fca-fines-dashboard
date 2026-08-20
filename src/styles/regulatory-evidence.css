@@ -187,9 +187,12 @@
 .reg-evidence-ladder--compact .reg-evidence-ladder__not-scored { font-size: .6rem; }
 .reg-evidence-ladder--compact .reg-evidence-ladder__summary { margin-bottom: .4rem; }
 .reg-evidence-ladder--compact .reg-evidence-enforcement { font-size: .68rem; }
-.reg-evidence-compact-authorities { display: grid; gap: .3rem; margin-top: .55rem; }
-.reg-evidence-ladder--compact .reg-evidence-authority__name { font-size: .72rem; }
-.reg-evidence-ladder--compact .reg-evidence-authority__meta { font-size: .62rem; }
+.reg-evidence-compact-authorities { display: grid; gap: .35rem; margin: .55rem 0 0; padding: 0; list-style: none; }
+.reg-evidence-compact-authorities li { display: grid; gap: .12rem; padding: .45rem .5rem; border: 1px solid #d7dfda; border-radius: 6px; }
+.reg-evidence-compact-authorities li strong { color: #17211b; font-size: .72rem; }
+.reg-evidence-compact-authorities li span { color: #526057; font-size: .64rem; }
+.reg-evidence-compact-authorities__more { margin: .35rem 0 0; color: #526057; font-size: .64rem; }
+.reg-evidence-compact-link { display: inline-block; margin-top: .55rem; font-size: .7rem; font-weight: 700; }
 .cx-source-card--evidence { display: block; }
 .cx-source-card__link { display: block; text-decoration: none; }
 .cx-source-card__link:hover .cx-source-card__name { text-decoration: underline; }
