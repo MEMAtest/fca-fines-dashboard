@@ -143,11 +143,14 @@ export function CountryChanges() {
   return (
     <div className="cx-chg">
       <header className="cx-chg__header">
-        <nav className="cx-chg__crumbs" aria-label="Breadcrumb">
+        {/* A single back link, not a breadcrumb — the real trail comes from
+            SiteHeader. Labelling one link as a Breadcrumb landmark makes screen
+            readers announce a navigation structure that is not there. */}
+        <div className="cx-chg__crumbs">
           <Link to="/countries" className="cx-chg__back">
             <ArrowLeft size={14} aria-hidden="true" /> Country risk
           </Link>
-        </nav>
+        </div>
         <h1 className="cx-chg__title">What changed in country risk</h1>
         <p className="cx-chg__lead">
           A dated record of every change RegActions already tracks: FATF plenary

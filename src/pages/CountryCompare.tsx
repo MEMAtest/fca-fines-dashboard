@@ -98,16 +98,9 @@ export function CountryCompare() {
 
   return (
     <div className="cxc-wrap">
-      <nav className="cxc-crumbs" aria-label="Breadcrumb">
-        <Link to="/">Home</Link>
-        <span aria-hidden="true">›</span>
-        <Link to="/countries">Countries</Link>
-        <span aria-hidden="true">›</span>
-        <span className="cxc-crumb-current">
-          {parsed.a.name} vs {parsed.b.name}
-        </span>
-      </nav>
-
+      {/* Breadcrumb comes from SiteHeader, which renders one on every route and
+          owns the BreadcrumbList JSON-LD. This page rendered a second identical
+          trail directly beneath it. */}
       <header className="cxc-header">
         <h1 className="cxc-title">
           {parsed.a.name} vs {parsed.b.name}: country risk compared

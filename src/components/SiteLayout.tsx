@@ -3,6 +3,7 @@ import { SiteHeader } from "./SiteHeader.js";
 import { SiteFooter } from "./SiteFooter.js";
 import { useEffect } from "react";
 import { EvidenceModalProvider } from "./EvidenceModalProvider.js";
+import { ScrollToTop } from "./ScrollToTop.js";
 import { canonicalizeAnalyticsPath } from "../utils/analyticsPath.js";
 
 function PageviewTracker() {
@@ -25,6 +26,7 @@ export function SiteLayout() {
   return (
     <EvidenceModalProvider>
       <PageviewTracker />
+      <ScrollToTop />
       <SiteHeader />
       <main id="main-content">
         <Outlet />
