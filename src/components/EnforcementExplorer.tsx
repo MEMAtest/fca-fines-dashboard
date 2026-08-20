@@ -148,17 +148,38 @@ export function EnforcementExplorer() {
 
       <div className="enforcement-explorer__summary"><strong>{total.toLocaleString("en-GB")} results</strong><span>{basket.items.length} selected for Board Pack</span><span>Review-required amounts are excluded from monetary analysis.</span></div>
 
-      {error ? <div className="workspace-error">{error}</div> : loading ? <div className="workspace-loading">Loading enforcement evidence...</div> : (
+      {error ? <div className="workspace-error">{error}</div> : loading ? <div className="workspace-loading">Loading enforcement evidence...</div> : records.length === 0 ? (
+        <div className="enforcement-explorer__empty">
+          <div className="enforcement-explorer__empty-title">No actions match these filters</div>
+          <p>Widen the date range, clear the regulator selection or remove the amount floor to see more results.</p>
+          {(selectedRegulators.length || minAmount || maxAmount) ? (
+            <button type="button" className="workspace-button workspace-button--primary" onClick={() => update({ regulator: null, minAmount: null, maxAmount: null })}>Clear regulator and amount filters</button>
+          ) : null}
+        </div>
+      ) : (
         <section className="enforcement-explorer__results" aria-label="Enforcement results">
+          <div className="enforcement-explorer__results-head"><span>Matching actions</span><span>{total.toLocaleString("en-GB")} in the full set</span></div>
           {records.map((record) => {
             const evidence = buildFineRecordEvidence(record, "enforcement_search");
             const selected = basket.contains(evidence.id);
             return <article key={evidence.id} className={selected ? "is-selected" : ""}>
               <label className="enforcement-explorer__select"><input type="checkbox" checked={selected} onChange={() => selected ? basket.remove(evidence.id) : basket.add(evidence)}/><span className="sr-only">Select {record.firm_individual}</span></label>
               <RegulatorMark regulator={record.regulator} label={record.regulator_full_name ?? record.regulator} size="small" showCode />
-              <button type="button" className="enforcement-explorer__entity" onClick={() => openEvidence(evidence)}><strong>{record.firm_individual}</strong><span>{record.summary || record.breach_type || "No summary recorded"}</span></button>
-              <div className="enforcement-explorer__meta"><span>{formatDate(record.date_issued)}</span><span>{getRecordThemes(record)[0]}</span><strong>{record.requires_amount_review ? "Amount under review" : record.amount_disclosed === false ? "Not disclosed" : formatWorkspaceAmount(record.amount)}</strong></div>
-              <div className="enforcement-explorer__actions"><WatchFirmButton firmName={record.firm_individual} variant="text" source="search_result"/><button type="button" onClick={() => openEvidence(evidence)}><FileSearch size={14}/> Evidence</button></div>
+              <div className="enforcement-explorer__entity-col">
+                <button type="button" className="enforcement-explorer__entity" onClick={() => openEvidence(evidence)}>
+                  <strong>{record.firm_individual}</strong>
+                  <span>{record.summary || record.breach_type || "No summary recorded"}</span>
+                </button>
+                <div className="enforcement-explorer__tags">
+                  <span className="enforcement-explorer__theme-chip">{getRecordThemes(record)[0]}</span>
+                  <button type="button" className="enforcement-explorer__evidence-link" onClick={() => openEvidence(evidence)}><FileSearch size={12}/> Evidence</button>
+                  <WatchFirmButton firmName={record.firm_individual} variant="text" source="search_result"/>
+                </div>
+              </div>
+              <span className="enforcement-explorer__meta-col">
+                <span className="enforcement-explorer__date">{formatDate(record.date_issued)}</span>
+                <span className="enforcement-explorer__amount">{record.requires_amount_review ? "Amount under review" : record.amount_disclosed === false ? "Not disclosed" : formatWorkspaceAmount(record.amount)}</span>
+              </span>
             </article>;
           })}
         </section>

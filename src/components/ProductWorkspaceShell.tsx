@@ -17,7 +17,11 @@ import {
   X,
 } from "lucide-react";
 import { useLocalStorage } from "../hooks/useLocalStorage.js";
+import { useEvidenceBasket } from "../hooks/useEvidenceBasket.js";
+import { LIVE_REGULATOR_NAV_ITEMS } from "../data/regulatorCoverage.js";
 import { MonitorSubscribeModal } from "./MonitorSubscribeModal.js";
+
+const TRACKED_REGULATOR_COUNT = LIVE_REGULATOR_NAV_ITEMS.filter((item) => item.dashboardEnabled).length;
 
 interface ProductWorkspaceShellProps {
   scope: "fines" | "regulator" | "search";
@@ -61,6 +65,7 @@ export function ProductWorkspaceShell({
     "regactions-product-saved-views-v1",
     [],
   );
+  const basket = useEvidenceBasket();
   const base = buildBase(scope, regulatorCode);
   const nav = scope === "search"
     ? [{ segment: "", label: "Enforcement Explorer", icon: SearchIcon }]
@@ -95,6 +100,7 @@ export function ProductWorkspaceShell({
       to: `/methodology/enforcement?${returnParams}`,
     },
   ];
+  const briefingPath = `/board-pack?${returnParams}`;
   const currentLabel = useMemo(
     () =>
       nav.find(({ segment }) => {
@@ -188,6 +194,26 @@ export function ProductWorkspaceShell({
             </Link>
           ))}
         </nav>
+
+        {!collapsed && scope === "fines" && (
+          <div className="product-workspace__context-card">
+            <div className="product-workspace__context-card-title">
+              <span className="product-workspace__live-dot" aria-hidden="true" />
+              Data live
+            </div>
+            <p>{TRACKED_REGULATOR_COUNT} regulators tracked across this workspace, updated continuously.</p>
+          </div>
+        )}
+
+        {!collapsed && scope === "search" && basket.items.length > 0 && (
+          <div className="product-workspace__context-card product-workspace__context-card--accent">
+            <div className="product-workspace__context-card-title">{basket.items.length} selected</div>
+            <p>Selected actions carry into a briefing or board pack.</p>
+            <Link to={briefingPath} className="product-workspace__context-cta" onClick={() => setMobileOpen(false)}>
+              Brief these {basket.items.length}
+            </Link>
+          </div>
+        )}
 
         {!collapsed && (
           <div className="product-workspace__saved">
