@@ -2,7 +2,7 @@ import { describe, expect, it, vi } from "vitest";
 import type { VercelRequest, VercelResponse } from "@vercel/node";
 import listHandler from "../api/regulatory-signal/list.js";
 import detailHandler from "../api/regulatory-signal/[iso2].js";
-import evidenceHandler from "../api/regulatory-signal/evidence/[iso2].js";
+import evidenceHandler, { regulatoryEvidenceAuthorityKey } from "../api/regulatory-signal/evidence/[iso2].js";
 
 function responseDouble() {
   const response = {
@@ -19,6 +19,12 @@ function responseDouble() {
 }
 
 describe("regulatory signal read-only APIs", () => {
+  it("uses stable unique PDF keys when authority names repeat", () => {
+    const authority = { name: "Financial Services Authority", website: "https://example-regulator.test" };
+    expect(regulatoryEvidenceAuthorityKey(authority, 0)).not.toBe(regulatoryEvidenceAuthorityKey(authority, 1));
+    expect(regulatoryEvidenceAuthorityKey(authority, 0)).toBe(regulatoryEvidenceAuthorityKey(authority, 0));
+  });
+
   it("lists all countries without publishing an index", () => {
     const response = responseDouble();
     listHandler({ method: "GET", query: {} } as unknown as VercelRequest, response as unknown as VercelResponse);

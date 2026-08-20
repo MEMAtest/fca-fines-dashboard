@@ -47,6 +47,25 @@ describe("regulatory signal evidence manifest", () => {
     expect(getRegulatorySignalCountry("ZZ")).toBeNull();
   });
 
+  it("exports zero-authority dispositions without inventing authority or scan evidence", () => {
+    const evidence = buildRegulatorySignalEvidence("KP")!;
+    expect(evidence.ecosystem.authorities).toHaveLength(0);
+    const [headerLine, rowLine] = regulatorySignalEvidenceCsv(evidence).trim().split("\n");
+    const parseRow = (line: string) => line.slice(1, -1).split('\",\"').map((value) => value.replaceAll('\"\"', '\"'));
+    const header = parseRow(headerLine);
+    const row = parseRow(rowLine);
+    const value = (column: string) => row[header.indexOf(column)];
+
+    expect(value("authority")).toBe("No local authority entry");
+    expect(value("evidenceLevel")).toBe("not-applicable");
+    expect(value("activitySignal")).toBe("unknown");
+    for (const column of ["scanType", "scanStartMonth", "scanEndMonth", "scanAsOf", "datePrecision", "archiveBoundary", "observedMonthCount", "observedMonths", "latestObservedMonth", "latestObservedPrecision"]) {
+      expect(value(column), column).toBe("");
+    }
+    expect(rowLine).not.toContain("identity-confirmed");
+    expect(rowLine).not.toContain("automated-first-page-date-scan");
+  });
+
   it("exports evidence rows with source-access state and no score", () => {
     const evidence = buildRegulatorySignalEvidence("GB")!;
     const csv = regulatorySignalEvidenceCsv(evidence);

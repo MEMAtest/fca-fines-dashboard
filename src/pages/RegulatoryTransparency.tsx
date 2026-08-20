@@ -13,7 +13,7 @@ import "../styles/about.css";
 export function RegulatoryTransparency() {
   useSEO({
     title: "Regulatory Ecosystem and Transparency Evidence | RegActions",
-    description: `Evidence-first map of financial regulators, official publication access and RegActions enforcement coverage across ${REGULATORY_SIGNAL_COUNTRY_COUNT} jurisdictions. The transparency index is not yet assessed.`,
+    description: `Evidence-first map of financial regulators, official publication access and RegActions enforcement coverage across ${REGULATORY_SIGNAL_COUNTRY_COUNT} jurisdictions. The Transparency Index is not scored.`,
     keywords: "financial regulators by country, regulatory ecosystem, enforcement publication transparency, regulator coverage",
     canonicalPath: "/countries/regulatory-transparency",
     ogType: "article",
@@ -29,7 +29,7 @@ export function RegulatoryTransparency() {
           enforcement-feed coverage behind each country profile. This is descriptive evidence—not
           a judgement of regulatory strength and not part of Country Risk v3.
         </p>
-        <p><strong>Transparency Index:</strong> not assessed while source qualification and shadow calibration continue.</p>
+        <p><strong>Transparency Index:</strong> not scored while source qualification and shadow calibration continue.</p>
       </section>
       <section className="about-section">
         <h2>What is included</h2>

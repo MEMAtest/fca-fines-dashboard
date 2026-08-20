@@ -126,7 +126,9 @@
 }
 .reg-evidence-authority__body > span,
 .reg-evidence-authority__body > a,
-.reg-evidence-authority__body > details { flex-basis: 100%; }
+.reg-evidence-authority__body > details,
+.reg-evidence-authority__body > section,
+.reg-evidence-authority__body > p { flex-basis: 100%; }
 .reg-evidence-authority__body a { display: inline-flex; align-items: center; gap: .15rem; color: #0f5132; }
 .reg-evidence-source-checked { color: #718078; font-style: italic; }
 .reg-evidence-access--reachable { color: #0f5132; }
@@ -146,15 +148,48 @@
   color: #8a5b00;
   font-size: .68rem;
 }
+.reg-evidence-authority__unknown { margin: 0; color: #718078; font-size: .7rem; }
+.reg-evidence-activity {
+  border: 1px solid #d7dfda;
+  border-radius: 7px;
+  background: #f8faf8;
+  padding: .55rem .6rem;
+}
+.reg-evidence-activity__heading { display: flex; justify-content: space-between; gap: .6rem; color: #17211b; }
+.reg-evidence-activity__heading span { color: #0f5132; font-weight: 700; text-align: right; }
+.reg-evidence-activity dl,
+.reg-evidence-candidate dl,
+.reg-evidence-scan-contract dl { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: .3rem .7rem; margin: .45rem 0; }
+.reg-evidence-activity dl div,
+.reg-evidence-candidate dl div,
+.reg-evidence-scan-contract dl div { min-width: 0; }
+.reg-evidence-activity dt,
+.reg-evidence-candidate dt,
+.reg-evidence-scan-contract dt { color: #718078; font-size: .64rem; }
+.reg-evidence-activity dd,
+.reg-evidence-candidate dd,
+.reg-evidence-scan-contract dd { margin: .08rem 0 0; color: #17211b; overflow-wrap: anywhere; }
+.reg-evidence-activity p,
+.reg-evidence-scan-contract p { margin: .35rem 0 0; color: #526057; font-size: .68rem; }
+.reg-evidence-scan-contract summary { display: inline-flex; align-items: center; gap: .25rem; color: #0f5132; cursor: pointer; font-size: .68rem; font-weight: 700; }
+.reg-evidence-candidates h4 { margin: .1rem 0 .4rem; color: #17211b; font-size: .76rem; }
+.reg-evidence-candidates > ul { display: grid; gap: .35rem; list-style: none; margin: 0; padding: 0; }
+.reg-evidence-candidate { border: 1px solid #d7dfda; border-left-width: 3px; border-radius: 6px; padding: .45rem .55rem; }
+.reg-evidence-candidate--qualified { border-left-color: #6caa7d; }
+.reg-evidence-candidate--external { border-left-color: #7c8fa3; }
+.reg-evidence-candidate--unqualified { border-left-color: #c9a34e; }
+.reg-evidence-candidate__heading { display: grid; gap: .1rem; margin-bottom: .25rem; }
+.reg-evidence-candidate__heading strong { color: #17211b; font-size: .7rem; }
+.reg-evidence-candidate__heading span { color: #526057; font-size: .68rem; }
+.reg-evidence-candidate p { margin: .3rem 0; color: #526057; font-size: .67rem; }
 .reg-evidence-ladder--compact { margin-top: .55rem; padding-top: .55rem; }
 .reg-evidence-ladder--compact .reg-evidence-ladder__heading { gap: .4rem; }
 .reg-evidence-ladder--compact .reg-evidence-ladder__not-scored { font-size: .6rem; }
 .reg-evidence-ladder--compact .reg-evidence-ladder__summary { margin-bottom: .4rem; }
 .reg-evidence-ladder--compact .reg-evidence-enforcement { font-size: .68rem; }
 .reg-evidence-compact-authorities { display: grid; gap: .3rem; margin-top: .55rem; }
-.reg-evidence-compact-authorities > div { display: grid; gap: .12rem; border-top: 1px solid #e2e9e3; padding-top: .35rem; }
-.reg-evidence-compact-authorities strong { color: #17211b; font-size: .7rem; line-height: 1.3; }
-.reg-evidence-compact-authorities span { color: #526057; font-size: .65rem; line-height: 1.35; }
+.reg-evidence-ladder--compact .reg-evidence-authority__name { font-size: .72rem; }
+.reg-evidence-ladder--compact .reg-evidence-authority__meta { font-size: .62rem; }
 .cx-source-card--evidence { display: block; }
 .cx-source-card__link { display: block; text-decoration: none; }
 .cx-source-card__link:hover .cx-source-card__name { text-decoration: underline; }
@@ -166,6 +201,11 @@
   .reg-evidence-ladder__steps { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .reg-evidence-authority summary { align-items: flex-start; flex-direction: column; gap: .2rem; }
   .reg-evidence-authority__meta { text-align: left; }
+  .reg-evidence-activity__heading { display: grid; gap: .2rem; }
+  .reg-evidence-activity__heading span { text-align: left; }
+  .reg-evidence-activity dl,
+  .reg-evidence-candidate dl,
+  .reg-evidence-scan-contract dl { grid-template-columns: 1fr; }
 }
 
 @media (max-width: 430px) {

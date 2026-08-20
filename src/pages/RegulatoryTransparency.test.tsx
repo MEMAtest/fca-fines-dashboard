@@ -9,9 +9,9 @@ describe("RegulatoryTransparency", () => {
     render(<RegulatoryTransparency />);
 
     expect(screen.getByRole("heading", { name: /Regulatory ecosystem and enforcement visibility/i })).toBeInTheDocument();
-    expect(screen.getByText(/not assessed while source qualification/i)).toBeInTheDocument();
+    expect(screen.getByText(/not scored while source qualification/i)).toBeInTheDocument();
     expect(screen.getByRole("heading", { name: /How to read the evidence ladder/i })).toBeInTheDocument();
-    expect(screen.getByText("Regulator identified")).toBeInTheDocument();
+    expect(screen.getByText("Identity confirmed")).toBeInTheDocument();
     expect(screen.getByText(/Algeria · DZ/i)).toBeInTheDocument();
     expect(screen.getByText(/Bank of Algeria/i)).toBeInTheDocument();
     expect(screen.getAllByText(/Transparency Index: not scored/i).length).toBeGreaterThan(100);

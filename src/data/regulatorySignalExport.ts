@@ -235,7 +235,23 @@ export function regulatorySignalEvidenceCsv(evidence: RegulatorySignalEvidence):
     evidence.generatedAt,
   ]);
   if (rows.length === 0) {
-    rows.push([evidence.country.iso2, evidence.country.name, "No local authority entry", "", "identity-confirmed", "", evidence.evidenceDisposition.state, evidence.evidenceDisposition.label, evidence.evidenceDisposition.externalEvidenceUrl, "", "", "", "", "unknown", "", "", evidence.generatedAt, evidence.generatedAt, evidence.generatedAt, "unknown", "provisional-first-page-scan", "automated-first-page-date-scan", "2024-01", "2026-08", "2026-08-20", "month", "first-page-only-unvalidated", 0, "", "", "", "", "", "", evidence.regActionsCoverage.state, "", evidence.generatedAt]);
+    const dispositionOnly: Record<string, unknown> = {
+      iso2: evidence.country.iso2,
+      country: evidence.country.name,
+      authority: "No local authority entry",
+      evidenceLevel: "not-applicable",
+      accessState: evidence.evidenceDisposition.state,
+      accessLabel: evidence.evidenceDisposition.label,
+      externalOfficialContextCandidates: evidence.evidenceDisposition.externalEvidenceUrl
+        ? `External official context|${evidence.evidenceDisposition.externalEvidenceUrl}`
+        : "",
+      publicationKind: "not-applicable",
+      activitySignal: "unknown",
+      regActionsCoverageState: evidence.regActionsCoverage.state,
+      transparencyIndex: "",
+      generatedAt: evidence.generatedAt,
+    };
+    rows.push(header.map((column) => dispositionOnly[column] ?? ""));
   }
   return [header, ...rows].map((row) => row.map(csvCell).join(",")).join("\n") + "\n";
 }

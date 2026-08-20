@@ -20,6 +20,10 @@ const styles = StyleSheet.create({
   source: { color: "#526057", fontSize: 7, marginTop: 2 },
 });
 
+export function regulatoryEvidenceAuthorityKey(authority: Pick<RegulatorySignalEvidence["ecosystem"]["authorities"][number], "name" | "website">, authorityIndex: number): string {
+  return `${authority.name}-${authority.website ?? "no-site"}-${authorityIndex}`;
+}
+
 function EvidencePdf({ evidence }: { evidence: RegulatorySignalEvidence }) {
   return (
     <Document title={`${evidence.country.name} regulatory ecosystem evidence`} author="RegActions">
@@ -28,22 +32,22 @@ function EvidencePdf({ evidence }: { evidence: RegulatorySignalEvidence }) {
         <Text style={styles.title}>{evidence.country.name}</Text>
         <Text style={styles.muted}>ISO {evidence.country.iso2} · {evidence.country.region} · Research snapshot {evidence.generatedAt.slice(0, 10)}</Text>
         <View style={styles.card}>
-          <Text>Publication status: research-only · Transparency Index: not assessed</Text>
+          <Text>Publication status: research-only · Transparency Index: not scored</Text>
           <Text>Evidence disposition: {evidence.evidenceDisposition.label}</Text>
           <Text>RegActions coverage: {evidence.regActionsCoverage.state}</Text>
           <Text>Activity: {evidence.activitySignal.label} (neutral)</Text>
         </View>
         <Text style={styles.heading}>Regulatory ecosystem</Text>
         <Text>{evidence.ecosystem.authorityCount} mapped official authorities across {evidence.ecosystem.roleFamilies.filter((role) => role.authorityCount > 0).length} role families.</Text>
-        {evidence.ecosystem.authorities.map((authority) => (
-          <View key={authority.name} style={styles.row} wrap={false}>
+        {evidence.ecosystem.authorities.map((authority, authorityIndex) => (
+          <View key={regulatoryEvidenceAuthorityKey(authority, authorityIndex)} style={styles.row} wrap={false}>
             <Text>{authority.name}</Text>
             <Text>Mandate: {authority.mandate.map((role) => role.label).join(", ") || "Mandate not classified"}</Text>
             <Text>Evidence level: {authority.evidenceLevel}</Text>
             <Text>Selected candidate kind: {authority.publicationKind} · source scope: {authority.sourceHostScope ?? "not qualified"}</Text>
             <Text>{authority.accessLabel}</Text>
             {authority.website && <Text style={styles.source}>{authority.website}</Text>}
-            {authority.publicationUrl && <Text style={styles.source}>{authority.publicationUrl}</Text>}
+            {authority.publicationUrl && <Text style={styles.source}>Selected research candidate: {authority.publicationUrl}</Text>}
             {authority.publicationCandidates.length > 0 && <Text style={styles.source}>Candidate routes: {authority.publicationCandidates.map((candidate) => `${candidate.url} [${candidate.contextLabel}; ${candidate.qualificationState ?? "unqualified"}]`).join("; ")}</Text>}
             {authority.regulatoryUpdates.length > 0 && <Text style={styles.source}>Authority-owned qualified regulatory-update routes: {authority.regulatoryUpdates.map((candidate) => candidate.url).join("; ")}</Text>}
             {authority.enforcementCandidates.length > 0 && <Text style={styles.source}>Authority-owned qualified enforcement routes: {authority.enforcementCandidates.map((candidate) => candidate.url).join("; ")}</Text>}
@@ -58,7 +62,9 @@ function EvidencePdf({ evidence }: { evidence: RegulatorySignalEvidence }) {
         <Text style={styles.heading}>RegActions coverage</Text>
         <Text>{evidence.regActionsCoverage.liveRegulators} live regulator feeds; {evidence.regActionsCoverage.observedRecords.toLocaleString("en-GB")} records in the research snapshot.</Text>
         {evidence.evidenceDisposition.externalEvidenceUrl && <Text style={styles.source}>External evidence: {evidence.evidenceDisposition.externalEvidenceUrl}</Text>}
-        <Text style={styles.source}>Provisional first-page scan summary: recent {evidence.activitySummary.recentAuthorities}; periodic {evidence.activitySummary.periodicAuthorities}; low-frequency {evidence.activitySummary.lowFrequencyAuthorities}; unknown {evidence.activitySummary.unknownAuthorities}. Automated scan contract {evidence.activitySummary.scanContract.startMonth} to {evidence.activitySummary.scanContract.endMonth}, as of {evidence.activitySummary.scanContract.asOf}; month precision; first-page-only and unvalidated.</Text>
+        {evidence.ecosystem.authorityCount > 0
+          ? <Text style={styles.source}>Provisional first-page scan summary: recent {evidence.activitySummary.recentAuthorities}; periodic {evidence.activitySummary.periodicAuthorities}; low-frequency {evidence.activitySummary.lowFrequencyAuthorities}; unknown {evidence.activitySummary.unknownAuthorities}. Automated scan contract {evidence.activitySummary.scanContract.startMonth} to {evidence.activitySummary.scanContract.endMonth}, as of {evidence.activitySummary.scanContract.asOf}; month precision; first-page-only and unvalidated.</Text>
+          : <Text style={styles.source}>No local authority activity scan applies to this disposition.</Text>}
         <Text style={styles.heading}>Limitations</Text>
         {evidence.limitations.map((limitation) => <Text key={limitation} style={styles.row}>• {limitation}</Text>)}
       </Page>
