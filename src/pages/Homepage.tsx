@@ -172,27 +172,12 @@ export function Homepage() {
         />
       )}
 
-      <HeroSection />
+      <HeroSection onCountryClick={setSelectedCountry} />
       <EnforcementTicker />
       <WeeklyEnforcementSection />
       <FourWaysInSection />
 
-      {/* Coverage: the existing interactive globe, unmodified. GlobeHero.tsx owns
-          its own hero-style copy (title, CTA, stats, regulator grid) and is out
-          of scope for this redesign, so it keeps that content rather than being
-          sliced into a decorative visual only. */}
-      <section id="globe-coverage" className="ra-globe-section">
-        <div className="ra-globe-section__intro">
-          <span className="ra-eyebrow ra-eyebrow--light">Coverage</span>
-          <h2 className="ra-globe-section__title">Explore the coverage map</h2>
-          <p className="ra-globe-section__body">
-            Drag the globe to see which countries RegActions monitors, and jump straight into a regulator's evidence.
-          </p>
-        </div>
-        <Suspense fallback={<div className="globe-loading">Loading interactive globe...</div>}>
-          <GlobeHero onCountryClick={setSelectedCountry} />
-        </Suspense>
-      </section>
+
 
       <Suspense fallback={null}>
         <CountryModal
@@ -319,7 +304,7 @@ export function Homepage() {
  * Hero — search-first, real stat tiles, live "try" chips
  * ==========================================================================*/
 
-function HeroSection() {
+function HeroSection({ onCountryClick }: { onCountryClick: (iso2: string | null) => void }) {
   const navigate = useNavigate();
   const { data, loading, error } = useWorkspaceOverview({});
   const countries = (data?.metrics as { countries?: number } | undefined)?.countries;
@@ -498,20 +483,21 @@ function HeroSection() {
         </div>
 
         <div className="ra-hero__side">
-          <div className="ra-hero__side-panel">
-            <div className="ra-hero__side-eyebrow">Live coverage</div>
-            <div className="ra-hero__side-row">
-              <span className="ra-hero__side-dot" aria-hidden="true" />
-              {PUBLIC_REGULATOR_COUNT} regulator feeds
-            </div>
-            <div className="ra-hero__side-row">
-              <span className="ra-hero__side-swatch" aria-hidden="true" />
-              {typeof countries === 'number' ? `${countries} countries covered` : 'Countries covered — loading…'}
-            </div>
-            <a href="#globe-coverage" className="ra-hero__side-link">
-              Explore the interactive globe ↓
-            </a>
-          </div>
+          {/* The globe lives IN the hero. It used to sit in its own section
+              further down, which left this column empty and gave the page a
+              second heading and a second, contradictory set of figures. */}
+          <Suspense fallback={<div className="ra-hero__globe-loading">Loading globe…</div>}>
+            <GlobeHero
+              visualOnly
+              onCountryClick={onCountryClick}
+              figures={{
+                actions: data ? data.metrics.count : null,
+                countries: typeof countries === 'number' ? countries : null,
+                penalties: data ? gbpCompact(data.metrics.total) : null,
+                regulatorFeeds: PUBLIC_REGULATOR_COUNT,
+              }}
+            />
+          </Suspense>
         </div>
       </div>
     </section>

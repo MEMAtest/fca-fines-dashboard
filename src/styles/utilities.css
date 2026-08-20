@@ -78,7 +78,10 @@
 }
 
 .btn-primary {
-  background: var(--primary-600);
+  /* Was var(--primary-600), a legacy blue (#2563eb) left over from before the
+     brand palette. It rendered the Digest subscribe button and the Breaches CTA
+     blue on an otherwise green site. */
+  background: var(--ra-accent-fill);
   color: #fff;
 }
 
