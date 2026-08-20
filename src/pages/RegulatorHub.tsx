@@ -1,12 +1,6 @@
 import { useParams, Link, Navigate } from "react-router-dom";
 import { useEffect, useState } from "react";
-import {
-  ArrowLeft,
-  TrendingUp,
-  Calendar,
-  Building2,
-  ExternalLink,
-} from "lucide-react";
+import { ArrowLeft, ExternalLink } from "lucide-react";
 import {
   getRegulatorCoverage,
   hasPublicRegulatorHub,
@@ -15,8 +9,7 @@ import { DataCoverageNotice } from "../components/DataCoverageNotice.js";
 import RegulatorMark from "../components/RegulatorMark.js";
 import { useUnifiedData } from "../hooks/useUnifiedData.js";
 import { useSEO, injectStructuredData } from "../hooks/useSEO.js";
-import "../styles/regulator-hub.css";
-import "../styles/regulator-hub-sources.css";
+import "../styles/hubs.css";
 
 function toNumber(value: unknown): number {
   if (typeof value === "number") {
@@ -45,6 +38,10 @@ function formatCurrency(value: number, currency: "GBP" | "EUR"): string {
     return `${symbol}${(numeric / 1_000).toFixed(0)}K`;
   }
   return `${symbol}${numeric.toLocaleString("en-GB", { maximumFractionDigits: 0 })}`;
+}
+
+function automationLevelLabel(value: string) {
+  return value.replaceAll("_", " ").replace(/^./, (char) => char.toUpperCase());
 }
 
 export function RegulatorHub() {
@@ -185,278 +182,219 @@ export function RegulatorHub() {
       count: Number(count),
     }))
     .sort((a, b) => a.year - b.year);
+  const maxYearCount = Math.max(1, ...yearData.map((entry) => entry.count));
+
+  const heroStats = [
+    { label: "Total fines", value: formatCurrency(totalAmount, currency), note: `${coverage.years}` },
+    { label: "Actions on record", value: totalFines.toLocaleString("en-GB"), note: "Matching current filters" },
+    { label: "Largest fine", value: formatCurrency(largestFine, currency), note: "Single action" },
+    { label: "Average fine", value: formatCurrency(averageFine, currency), note: "Across disclosed actions" },
+  ];
+
+  const healthCards = [
+    { label: "Coverage confidence", value: coverage.operationalConfidence === "standard" ? "Standard" : "Directional", note: automationLevelLabel(coverage.automationLevel) },
+    { label: "Collection lane", value: coverage.feedContract.cadence === "daily" ? "Daily lane" : "Fragile lane", note: coverage.feedContract.collectionMethod },
+    { label: "Coverage status", value: coverage.coverageStatus.replace(/^./, (char) => char.toUpperCase()), note: `${coverage.years} on record` },
+    { label: "Stale-after window", value: `${coverage.feedContract.staleAfterDays}d`, note: "Before an operator check is triggered" },
+  ];
 
   return (
-    <div className="regulator-hub">
-      {/* Header */}
-      <div className="regulator-hub__header">
-        <Link to="/regulators" className="regulator-hub__back">
+    <div className="reg-hub-page">
+      <div className="reg-hub-shell">
+        <Link to="/regulators" className="reg-hub-back">
           <ArrowLeft size={16} />
-          Back to Dashboard
+          Back to regulator directory
         </Link>
 
-        <div className="regulator-hub__title-row">
-          <div>
-            <div className="regulator-hub__flag">
+        <section className="reg-hub-hero">
+          <div className="reg-hub-hero__copy">
+            <div className="reg-hub-hero__identity">
               <RegulatorMark
                 regulator={coverage.code}
                 label={coverage.fullName}
                 country={coverage.country}
                 size="large"
+                surface="dark"
                 decorative
               />
+              <span>{coverage.country} · {coverage.sourceType === "sro" ? "Self-regulatory organisation" : "Conduct regulator"}</span>
             </div>
-            <h1 className="regulator-hub__title">{coverage.fullName}</h1>
-            <p className="regulator-hub__subtitle">
-              {coverage.country} • {coverage.code}
+            <h1>{coverage.fullName}</h1>
+            <p>
+              {coverage.note ?? `${coverage.fullName} enforcement activity in ${coverage.country}, with every action linked to an official source where available.`}
             </p>
-          </div>
-
-          <div className="regulator-hub__currency-toggle">
-            <label htmlFor="currency-select">Currency</label>
-            <select
-              id="currency-select"
-              value={currency}
-              onChange={(e) => setCurrency(e.target.value as "GBP" | "EUR")}
-              className="regulator-hub__currency-select"
-            >
-              <option value="GBP">£ GBP</option>
-              <option value="EUR">€ EUR</option>
-            </select>
-          </div>
-        </div>
-      </div>
-
-      {/* Data Coverage Notice */}
-      <DataCoverageNotice
-        coverage={coverage}
-        recordCount={!loading && !error ? totalFines : undefined}
-      />
-
-      <div className="regulator-hub__cta">
-        <div>
-          <strong>Explore the full {coverage.code} dataset</strong>
-          <p>
-            Filter actions, compare themes and inspect the source evidence in a
-            dedicated analytics workspace.
-          </p>
-        </div>
-        <Link
-          to={`/regulators/${coverage.code.toLowerCase()}/dashboard`}
-          className="regulator-hub__cta-button"
-        >
-          Open {coverage.code} Dashboard
-        </Link>
-      </div>
-
-      {/* Loading/Error States */}
-      {loading && (
-        <div className="regulator-hub__loading">
-          <p>Loading {coverage.name} enforcement data...</p>
-        </div>
-      )}
-
-      {error && (
-        <div className="regulator-hub__error">
-          <p>Error loading data: {error}</p>
-        </div>
-      )}
-
-      {!loading && !error && (
-        <>
-          {/* Stats Grid */}
-          <div className="regulator-hub__stats-grid">
-            <div className="regulator-hub__stat-card">
-              <div className="regulator-hub__stat-icon">
-                <TrendingUp size={20} />
-              </div>
-              <div className="regulator-hub__stat-content">
-                <div className="regulator-hub__stat-value">
-                  {formatCurrency(totalAmount, currency)}
-                </div>
-                <div className="regulator-hub__stat-label">Total Fines</div>
-              </div>
+            <div className="reg-hub-hero__lane">
+              {coverage.feedContract.cadence === "daily" ? "Daily lane" : "Fragile lane"}
+              <span />
+              {coverage.operationalConfidence === "standard" ? "Standard confidence" : "Directional confidence"}
             </div>
-
-            <div className="regulator-hub__stat-card">
-              <div className="regulator-hub__stat-icon">
-                <Calendar size={20} />
-              </div>
-              <div className="regulator-hub__stat-content">
-                <div className="regulator-hub__stat-value">{totalFines}</div>
-                <div className="regulator-hub__stat-label">
-                  Enforcement Actions
-                </div>
-              </div>
-            </div>
-
-            <div className="regulator-hub__stat-card">
-              <div className="regulator-hub__stat-icon">
-                <Building2 size={20} />
-              </div>
-              <div className="regulator-hub__stat-content">
-                <div className="regulator-hub__stat-value">
-                  {formatCurrency(largestFine, currency)}
-                </div>
-                <div className="regulator-hub__stat-label">Largest Fine</div>
-              </div>
-            </div>
-
-            <div className="regulator-hub__stat-card">
-              <div className="regulator-hub__stat-icon">
-                <TrendingUp size={20} />
-              </div>
-              <div className="regulator-hub__stat-content">
-                <div className="regulator-hub__stat-value">
-                  {formatCurrency(averageFine, currency)}
-                </div>
-                <div className="regulator-hub__stat-label">Average Fine</div>
-              </div>
-            </div>
-          </div>
-
-          {/* Timeline */}
-          {yearData.length > 0 && (
-            <div className="regulator-hub__section">
-              <h2 className="regulator-hub__section-title">
-                Enforcement Timeline
-              </h2>
-              <div className="regulator-hub__timeline">
-                {yearData.map(({ year, count }) => {
-                  const maxCount = Math.max(...yearData.map((d) => d.count));
-                  const heightPercent = (count / maxCount) * 100;
-
-                  return (
-                    <div key={year} className="regulator-hub__timeline-bar">
-                      <div
-                        className="regulator-hub__timeline-bar-fill"
-                        style={{ height: `${heightPercent}%` }}
-                      />
-                      <div className="regulator-hub__timeline-year">{year}</div>
-                      <div className="regulator-hub__timeline-count">
-                        {count}
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
-          )}
-
-          {/* Top Breaches */}
-          {topBreaches.length > 0 && (
-            <div className="regulator-hub__section">
-              <h2 className="regulator-hub__section-title">
-                Top Breach Categories
-              </h2>
-              <div className="regulator-hub__breach-grid">
-                {topBreaches.map(([category, count]) => (
-                  <div key={category} className="regulator-hub__breach-card">
-                    <div className="regulator-hub__breach-category">
-                      {category}
-                    </div>
-                    <div className="regulator-hub__breach-count">
-                      {count} fines
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
-
-          {/* Top 10 Fines */}
-          {topFines.length > 0 && (
-            <div className="regulator-hub__section">
-              <h2 className="regulator-hub__section-title">Largest Fines</h2>
-              <div className="regulator-hub__fines-table">
-                <table>
-                  <thead>
-                    <tr>
-                      <th>Rank</th>
-                      <th>Firm</th>
-                      <th>Amount</th>
-                      <th>Date</th>
-                      <th>Breach</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {topFines.map((fine, index) => (
-                      <tr key={fine.id || index}>
-                        <td className="regulator-hub__rank">#{index + 1}</td>
-                        <td className="regulator-hub__firm">
-                          {fine.firm_individual}
-                        </td>
-                        <td className="regulator-hub__amount">
-                          {formatCurrency(fine.amount || 0, currency)}
-                        </td>
-                        <td className="regulator-hub__date">
-                          {new Date(fine.date_issued).toLocaleDateString(
-                            "en-GB",
-                          )}
-                        </td>
-                        <td className="regulator-hub__breach">
-                          {fine.breach_type}
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            </div>
-          )}
-        </>
-      )}
-
-      {coverage.officialSources.length > 0 && (
-        <section
-          className="regulator-hub-sources"
-          aria-labelledby="official-sources-title"
-        >
-          <div className="regulator-hub-sources__header">
-            <p className="regulator-hub-sources__eyebrow">Official sources</p>
-            <h2
-              id="official-sources-title"
-              className="regulator-hub-sources__title"
-            >
-              Verify against {coverage.code}&apos;s own publications
-            </h2>
-            <p className="regulator-hub-sources__intro">
-              Open the regulator&apos;s own publication pages to check
-              sanctions, decisions and official records at source.
-            </p>
-          </div>
-
-          <div className="regulator-hub-sources__grid">
-            {coverage.officialSources.map((source) => (
-              <a
-                key={source.url}
-                href={source.url}
-                target="_blank"
-                rel="noreferrer"
-                className="regulator-hub-sources__card"
+            <div className="reg-hub-hero__currency">
+              <label htmlFor="currency-select">Currency</label>
+              <select
+                id="currency-select"
+                value={currency}
+                onChange={(event) => setCurrency(event.target.value as "GBP" | "EUR")}
               >
-                <div className="regulator-hub-sources__card-copy">
-                  <span className="regulator-hub-sources__card-label">
-                    {source.label}
-                  </span>
-                  <span className="regulator-hub-sources__card-description">
-                    {source.description}
-                  </span>
-                </div>
-                <ExternalLink
-                  size={18}
-                  className="regulator-hub-sources__card-icon"
-                />
-              </a>
+                <option value="GBP">£ GBP</option>
+                <option value="EUR">€ EUR</option>
+              </select>
+            </div>
+          </div>
+          <div className="reg-hub-hero__stats">
+            {heroStats.map((stat) => (
+              <div key={stat.label}>
+                <span>{stat.label}</span>
+                <strong>{loading ? "…" : stat.value}</strong>
+                <em>{stat.note}</em>
+              </div>
             ))}
           </div>
-
-          <p className="regulator-hub-sources__footnote">
-            These links lead to regulator-level entry points. Individual action
-            records provide case-specific source links where available.
-          </p>
         </section>
-      )}
+
+        <DataCoverageNotice
+          coverage={coverage}
+          recordCount={!loading && !error ? totalFines : undefined}
+        />
+
+        <div className="reg-hub-section-head">
+          <span>01</span>
+          <h2>Explore the full dataset</h2>
+          <i />
+        </div>
+        <div className="reg-hub-cta">
+          <div>
+            <strong>Explore the full {coverage.code} dataset</strong>
+            <p>Filter actions, compare themes and inspect the source evidence in a dedicated analytics workspace.</p>
+          </div>
+          <Link to={`/regulators/${coverage.code.toLowerCase()}/dashboard`} className="reg-hub-cta__button">
+            Open {coverage.code} Dashboard
+          </Link>
+        </div>
+
+        {loading && <div className="reg-hub-loading">Loading {coverage.name} enforcement data...</div>}
+        {error && <div className="reg-hub-error">Error loading data: {error}</div>}
+
+        {coverage.officialSources.length > 0 && (
+          <>
+            <div className="reg-hub-section-head">
+              <span>02</span>
+              <h2>Official sources</h2>
+              <i />
+            </div>
+            <section className="reg-hub-sources" aria-labelledby="official-sources-title">
+              <p className="reg-hub-sources__eyebrow">Verified entry points</p>
+              <h2 id="official-sources-title">
+                Verify against {coverage.code}&apos;s own publications
+              </h2>
+              <p className="reg-hub-sources__intro">
+                Open the regulator&apos;s own publication pages to check sanctions, decisions and official records at source.
+              </p>
+              <div className="reg-hub-sources__grid">
+                {coverage.officialSources.map((source) => (
+                  <a key={source.url} href={source.url} target="_blank" rel="noreferrer" className="reg-hub-sources__card">
+                    <div>
+                      <span>{source.label}</span>
+                      <small>{source.description}</small>
+                    </div>
+                    <ExternalLink size={18} />
+                  </a>
+                ))}
+              </div>
+              <p className="reg-hub-sources__footnote">
+                These links lead to regulator-level entry points. Individual action records provide case-specific source links where available.
+              </p>
+            </section>
+          </>
+        )}
+
+        {!loading && !error && (
+          <>
+            {yearData.length > 0 && (
+              <>
+                <div className="reg-hub-section-head">
+                  <span>03</span>
+                  <h2>Enforcement timeline</h2>
+                  <i />
+                </div>
+                <div className="reg-hub-card">
+                  <div className="reg-hub-timeline">
+                    {yearData.map(({ year, count }) => (
+                      <div key={year} className="reg-hub-timeline__bar">
+                        <div style={{ height: `${Math.max(6, (count / maxYearCount) * 100)}%` }} />
+                        <span>{year}</span>
+                        <em>{count}</em>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </>
+            )}
+
+            {topBreaches.length > 0 && (
+              <>
+                <div className="reg-hub-section-head">
+                  <span>04</span>
+                  <h2>Top breach categories</h2>
+                  <i />
+                </div>
+                <div className="reg-hub-breach-grid">
+                  {topBreaches.map(([category, count]) => (
+                    <div key={category} className="reg-hub-card">
+                      <strong>{category}</strong>
+                      <span>{count} {count === 1 ? "fine" : "fines"}</span>
+                    </div>
+                  ))}
+                </div>
+              </>
+            )}
+
+            {topFines.length > 0 && (
+              <>
+                <div className="reg-hub-section-head">
+                  <span>05</span>
+                  <h2>Largest fines</h2>
+                  <i />
+                </div>
+                <div className="reg-hub-card reg-hub-card--table">
+                  <div className="reg-hub-table-scroll">
+                    <table>
+                      <thead>
+                        <tr><th>Rank</th><th>Firm</th><th>Amount</th><th>Date</th><th>Breach</th></tr>
+                      </thead>
+                      <tbody>
+                        {topFines.map((fine, index) => (
+                          <tr key={fine.id || index}>
+                            <td>#{index + 1}</td>
+                            <td>{fine.firm_individual}</td>
+                            <td>{formatCurrency(fine.amount || 0, currency)}</td>
+                            <td>{new Date(fine.date_issued).toLocaleDateString("en-GB")}</td>
+                            <td>{fine.breach_type}</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              </>
+            )}
+
+            <div className="reg-hub-section-head">
+              <span>06</span>
+              <h2>Source health</h2>
+              <i />
+            </div>
+            <div className="reg-hub-health-grid">
+              {healthCards.map((card) => (
+                <div key={card.label} className="reg-hub-card">
+                  <span>{card.label}</span>
+                  <strong>{card.value}</strong>
+                  <small>{card.note}</small>
+                </div>
+              ))}
+            </div>
+          </>
+        )}
+      </div>
     </div>
   );
 }
