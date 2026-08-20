@@ -321,7 +321,7 @@ function renderFcaFineCaseBody(
     ? `<li><a href="/topics/fca-fines-2026">FCA fines 2026 monthly report</a></li>`
     : "";
 
-  return `<div class="blog-page"><div class="blog-post-container"><article class="blog-article-modal"><p><a href="/regulators/fca">FCA fines</a> / <a href="/years/${record.year}">${record.year}</a> / ${escapeHtml(record.firm)}</p><h1 class="blog-post-title">${escapeHtml(record.firm)} FCA fine</h1><div class="blog-article-content"><p>RegActions records a disclosed FCA monetary penalty of <strong>${escapeHtml(amount)}</strong> dated <strong>${escapeHtml(date)}</strong> for ${escapeHtml(record.firm)}.</p><h2>Case facts</h2><table><tbody><tr><th>Firm or individual</th><td>${escapeHtml(record.firm)}</td></tr><tr><th>Regulator</th><td>Financial Conduct Authority (FCA)</td></tr><tr><th>Date</th><td>${escapeHtml(date)}</td></tr><tr><th>Penalty</th><td>${escapeHtml(amount)}</td></tr><tr><th>RegActions breach classification</th><td>${escapeHtml(breach)}</td></tr><tr><th>Public case ID</th><td>${escapeHtml(record.caseId)}</td></tr></tbody></table><h2>Case summary</h2><p>${escapeHtml(summary)}</p><h2>Official evidence</h2><p>${source}</p><p>${escapeHtml(status)}</p><h2>Continue your research</h2><ul><li><a href="/regulators/fca">Search the complete FCA fines database</a></li><li><a href="/fines/actions?regulator=FCA&amp;year=${record.year}">View FCA actions from ${record.year}</a></li><li><a href="/years/${record.year}">Compare enforcement actions in ${record.year}</a></li>${topicLink}<li><a href="/methodology/enforcement">Read the enforcement data methodology</a></li></ul><h2>Scope</h2><p>This page describes one source-linked monetary record. RegActions excludes non-monetary outcomes and amounts awaiting review from FCA fine totals. The FCA publication remains the authoritative source.</p></div></article></div></div>`;
+  return `<div class="seo-doc"><div class="seo-doc__container"><article class="seo-doc__article"><p><a href="/regulators/fca">FCA fines</a> / <a href="/years/${record.year}">${record.year}</a> / ${escapeHtml(record.firm)}</p><h1 class="seo-doc__title">${escapeHtml(record.firm)} FCA fine</h1><div class="seo-doc__body"><p>RegActions records a disclosed FCA monetary penalty of <strong>${escapeHtml(amount)}</strong> dated <strong>${escapeHtml(date)}</strong> for ${escapeHtml(record.firm)}.</p><h2>Case facts</h2><table><tbody><tr><th>Firm or individual</th><td>${escapeHtml(record.firm)}</td></tr><tr><th>Regulator</th><td>Financial Conduct Authority (FCA)</td></tr><tr><th>Date</th><td>${escapeHtml(date)}</td></tr><tr><th>Penalty</th><td>${escapeHtml(amount)}</td></tr><tr><th>RegActions breach classification</th><td>${escapeHtml(breach)}</td></tr><tr><th>Public case ID</th><td>${escapeHtml(record.caseId)}</td></tr></tbody></table><h2>Case summary</h2><p>${escapeHtml(summary)}</p><h2>Official evidence</h2><p>${source}</p><p>${escapeHtml(status)}</p><h2>Continue your research</h2><ul><li><a href="/regulators/fca">Search the complete FCA fines database</a></li><li><a href="/fines/actions?regulator=FCA&amp;year=${record.year}">View FCA actions from ${record.year}</a></li><li><a href="/years/${record.year}">Compare enforcement actions in ${record.year}</a></li>${topicLink}<li><a href="/methodology/enforcement">Read the enforcement data methodology</a></li></ul><h2>Scope</h2><p>This page describes one source-linked monetary record. RegActions excludes non-monetary outcomes and amounts awaiting review from FCA fine totals. The FCA publication remains the authoritative source.</p></div></article></div></div>`;
 }
 
 export function buildFcaFineCasePageMeta(
@@ -410,7 +410,7 @@ function renderMarkdownToHtml(content: string): string {
 }
 
 function wrapArticleShell(title: string, renderedContent: string): string {
-  return `<div class="blog-page"><div class="blog-post-container"><article class="blog-article-modal"><h1 class="blog-post-title">${escapeHtml(title)}</h1><div class="blog-article-content">${renderedContent}</div></article></div></div>`;
+  return `<div class="seo-doc"><div class="seo-doc__container"><article class="seo-doc__article"><h1 class="seo-doc__title">${escapeHtml(title)}</h1><div class="seo-doc__body">${renderedContent}</div></article></div></div>`;
 }
 
 function renderStaticPageBody(
@@ -424,7 +424,7 @@ function renderStaticPageBody(
         `<section><h2>${escapeHtml(section.heading)}</h2><p>${escapeHtml(section.body)}</p>${section.href ? `<p><a href="${escapeHtml(section.href)}">${escapeHtml(section.linkLabel || "Learn more")}</a></p>` : ""}</section>`,
     )
     .join("");
-  return `<div class="blog-page"><div class="blog-post-container"><article class="blog-article-modal"><h1 class="blog-post-title">${escapeHtml(title)}</h1><div class="blog-article-content"><p>${escapeHtml(intro)}</p>${sectionHtml}</div></article></div></div>`;
+  return `<div class="seo-doc"><div class="seo-doc__container"><article class="seo-doc__article"><h1 class="seo-doc__title">${escapeHtml(title)}</h1><div class="seo-doc__body"><p>${escapeHtml(intro)}</p>${sectionHtml}</div></article></div></div>`;
 }
 
 function renderHubBody(
@@ -439,7 +439,7 @@ function renderHubBody(
         `<li><strong>${escapeHtml(metric.label)}:</strong> ${escapeHtml(metric.value)}</li>`,
     )
     .join("");
-  return `<div class="blog-page"><div class="blog-post-container"><article class="blog-article-modal"><h1 class="blog-post-title">${escapeHtml(title)}</h1><div class="blog-article-content"><p>${escapeHtml(description)}</p><h2>Coverage Snapshot</h2><ul>${metricsHtml}</ul><h2>Use This Data</h2><p>Open the live RegActions workspace to filter the source records, inspect related firms, compare breach themes, and export the evidence for compliance or board reporting.</p><p><a href="${ctaPath}">Open live enforcement data</a></p></div></article></div></div>`;
+  return `<div class="seo-doc"><div class="seo-doc__container"><article class="seo-doc__article"><h1 class="seo-doc__title">${escapeHtml(title)}</h1><div class="seo-doc__body"><p>${escapeHtml(description)}</p><h2>Coverage Snapshot</h2><ul>${metricsHtml}</ul><h2>Use This Data</h2><p>Open the live RegActions workspace to filter the source records, inspect related firms, compare breach themes, and export the evidence for compliance or board reporting.</p><p><a href="${ctaPath}">Open live enforcement data</a></p></div></article></div></div>`;
 }
 
 // ---------------------------------------------------------------------------
@@ -693,7 +693,7 @@ function renderBlogRelatedLinks(slug: string): string {
     items.set("/topics/fca-fines-2026", "FCA fines in 2026 monthly report");
   }
   const list = Array.from(items, ([href, label]) => `<li><a href="${href}">${escapeHtml(label)}</a></li>`).join("");
-  return `<section class="blog-related"><h2>Related on RegActions</h2><ul>${list}</ul></section>`;
+  return `<section class="seo-doc__related"><h2>Related on RegActions</h2><ul>${list}</ul></section>`;
 }
 
 function renderEditorialSources(article: (typeof blogArticles)[number]): string {
@@ -702,7 +702,7 @@ function renderEditorialSources(article: (typeof blogArticles)[number]): string 
   const items = sources.map((source) =>
     `<li><a href="${escapeHtml(source.url)}" rel="noopener">${escapeHtml(source.title)}</a> — ${escapeHtml(source.publisher)} official material</li>`,
   ).join("");
-  return `<section class="blog-official-sources"><h2>Official sources reviewed</h2><p>Open the regulator material used by the editorial and regulatory review gates. RegActions analysis does not replace the official notice.</p><ul>${items}</ul></section>`;
+  return `<section class="seo-doc__sources"><h2>Official sources reviewed</h2><p>Open the regulator material used by the editorial and regulatory review gates. RegActions analysis does not replace the official notice.</p><ul>${items}</ul></section>`;
 }
 
 /**
@@ -1061,9 +1061,9 @@ function renderCountryFatfBody(view: CountryView): string {
   // Visible FAQ block — answers MUST match the FAQPage JSON-LD verbatim (Google
   // requirement). Both derive from buildCountryFaqs(view), so they cannot drift.
   const faqHtml = renderCountryFaqBlock(buildCountryFaqs(view));
-  return `<div class="blog-page"><div class="blog-post-container"><article class="blog-article-modal"><h1 class="blog-post-title">${escapeHtml(
+  return `<div class="seo-doc"><div class="seo-doc__container"><article class="seo-doc__article"><h1 class="seo-doc__title">${escapeHtml(
     title,
-  )}</h1><div class="blog-article-content">${introHtml}${treatmentHtml}${glanceHtml}${scoreHtml}${decisionHtml}<h2>FATF status: ${escapeHtml(
+  )}</h1><div class="seo-doc__body">${introHtml}${treatmentHtml}${glanceHtml}${scoreHtml}${decisionHtml}<h2>FATF status: ${escapeHtml(
     statusHeading,
   )}</h2><p>${escapeHtml(
     statusDetail,
@@ -1135,9 +1135,9 @@ function renderCompareBody(view: CompareView): string {
   const sourcesHtml = `<p>${escapeHtml(
     `Active methodology ${a.methodologyVersion}; ${a.country.name} is ${a.scoreStatus} with ${a.confidence} confidence and ${b.country.name} is ${b.scoreStatus} with ${b.confidence} confidence. FATF listings and sanctions are shown as regulatory overlays; CPI and enforcement volume are contextual, not score inputs.`,
   )} <a href="/countries/methodology">${escapeHtml("Scoring methodology")}</a>.</p>`;
-  return `<div class="blog-page"><div class="blog-post-container"><article class="blog-article-modal"><h1 class="blog-post-title">${escapeHtml(
+  return `<div class="seo-doc"><div class="seo-doc__container"><article class="seo-doc__article"><h1 class="seo-doc__title">${escapeHtml(
     title,
-  )}</h1><div class="blog-article-content"><p><strong>${escapeHtml(
+  )}</h1><div class="seo-doc__body"><p><strong>${escapeHtml(
     view.verdict,
   )}</strong></p><p>${headA} vs ${headB}.</p><h2>Side by side</h2>${tableHtml}${caveatHtml}${meHtml}${reportsHtml}${relatedHtml}${sourcesHtml}</div></article></div></div>`;
 }
@@ -1211,10 +1211,10 @@ function renderCountriesIndexBody(): string {
     ],
   };
   const datasetScript = `<script type="application/ld+json">${JSON.stringify(datasetLd)}</script>`;
-  return `<div class="blog-page"><div class="blog-post-container"><article class="blog-article-modal"><h1 class="blog-post-title">FATF Grey List &amp; Black List ${FATF_LAST_PLENARY.slice(
+  return `<div class="seo-doc"><div class="seo-doc__container"><article class="seo-doc__article"><h1 class="seo-doc__title">FATF Grey List &amp; Black List ${FATF_LAST_PLENARY.slice(
     0,
     4,
-  )}</h1><div class="blog-article-content"><p>${escapeHtml(
+  )}</h1><div class="seo-doc__body"><p>${escapeHtml(
     `FATF jurisdictions under increased monitoring (grey list) and subject to a call for action (black list), current as of the ${formatDate(FATF_LAST_PLENARY)} plenary.`,
   )}</p>${asOfHtml}${added ? `<p><strong>Added:</strong> ${escapeHtml(added)}</p>` : ""}${
     removed ? `<p><strong>Removed:</strong> ${escapeHtml(removed)}</p>` : ""
@@ -1246,7 +1246,7 @@ function renderGlobalIndexBody(): string {
         }</td></tr>`,
     )
     .join("");
-  return `<div class="blog-page"><div class="blog-post-container"><article class="blog-article-modal"><h1 class="blog-post-title">Global Country Risk Ratings</h1><div class="blog-article-content"><p>${escapeHtml(
+  return `<div class="seo-doc"><div class="seo-doc__container"><article class="seo-doc__article"><h1 class="seo-doc__title">Global Country Risk Ratings</h1><div class="seo-doc__body"><p>${escapeHtml(
     `Compare financial-crime and country risk across ${index.length} jurisdictions. Full information is available for ${complete}; ${provisional} have some information missing; ${insufficient} do not have enough information for a score. Missing information is never treated as zero risk. Enforcement activity and CPI are shown for context but do not change the score.`,
   )}</p><p>${escapeHtml(
     `Very high: ${counts["very-high"]} · High: ${counts.high} · Moderate: ${counts.moderate} · Low: ${counts.low} · Insufficient data: ${insufficient}.`,
@@ -1255,11 +1255,11 @@ function renderGlobalIndexBody(): string {
 
 /** Crawlable methodology page — mirrors CountryMethodology.tsx. */
 function renderMethodologyBody(): string {
-  return `<div class="blog-page"><div class="blog-post-container"><article class="blog-article-modal"><h1 class="blog-post-title">Country Risk Score</h1><div class="blog-article-content"><p>The current RegActions v3 score estimates underlying jurisdiction risk on a 0-10 scale. Higher means greater risk. Sanctions and FATF listings are legal and regulatory overlays, not extra points in the underlying score.</p><h2>What the score considers</h2><ul><li>Financial-crime effectiveness (45%): FATF evidence across the 11 Immediate Outcomes.</li><li>Legal and supervisory safeguards (20%): FATF Recommendations 1-40, excluding explicit not-applicable ratings.</li><li>Governance and institutional integrity (35%): six inverted World Bank governance dimensions.</li></ul><h2>Beneficial ownership</h2><p>Beneficial ownership is a visible breakout using FATF IO5 (60%), Recommendation 24 on companies (20%), and Recommendation 25 on trusts and arrangements (20%). A public register alone does not prove current, accurate and promptly available ownership information.</p><h2>Regulatory overlays</h2><p>UN, UK, EU and US sanctions trigger screening and transaction review. FATF increased monitoring or call-for-action status is shown with its required treatment. Neither overlay changes the underlying numeric score.</p><h2>Missing information</h2><p>If one pillar is unavailable, available weights are rebalanced and the result is provisional. Fewer than two available pillars means no headline score. Missing information is never treated as zero risk.</p><h2>Historical v2</h2><p>The previous sanctions-weighted model remains available at <a href="/countries/methodology/v2">the v2 methodology page</a> and through explicit API requests using <code>?methodology=v2</code>.</p></div></article></div></div>`;
+  return `<div class="seo-doc"><div class="seo-doc__container"><article class="seo-doc__article"><h1 class="seo-doc__title">Country Risk Score</h1><div class="seo-doc__body"><p>The current RegActions v3 score estimates underlying jurisdiction risk on a 0-10 scale. Higher means greater risk. Sanctions and FATF listings are legal and regulatory overlays, not extra points in the underlying score.</p><h2>What the score considers</h2><ul><li>Financial-crime effectiveness (45%): FATF evidence across the 11 Immediate Outcomes.</li><li>Legal and supervisory safeguards (20%): FATF Recommendations 1-40, excluding explicit not-applicable ratings.</li><li>Governance and institutional integrity (35%): six inverted World Bank governance dimensions.</li></ul><h2>Beneficial ownership</h2><p>Beneficial ownership is a visible breakout using FATF IO5 (60%), Recommendation 24 on companies (20%), and Recommendation 25 on trusts and arrangements (20%). A public register alone does not prove current, accurate and promptly available ownership information.</p><h2>Regulatory overlays</h2><p>UN, UK, EU and US sanctions trigger screening and transaction review. FATF increased monitoring or call-for-action status is shown with its required treatment. Neither overlay changes the underlying numeric score.</p><h2>Missing information</h2><p>If one pillar is unavailable, available weights are rebalanced and the result is provisional. Fewer than two available pillars means no headline score. Missing information is never treated as zero risk.</p><h2>Historical v2</h2><p>The previous sanctions-weighted model remains available at <a href="/countries/methodology/v2">the v2 methodology page</a> and through explicit API requests using <code>?methodology=v2</code>.</p></div></article></div></div>`;
 }
 
 function renderMethodologyV2Body(): string {
-  return `<div class="blog-page"><div class="blog-post-container"><article class="blog-article-modal"><h1 class="blog-post-title">Country Risk Score</h1><div class="blog-article-content"><p>The score compares the underlying financial-crime risk of countries on a 0-10 scale. A higher number means higher risk. It is a country comparison, not a decision about an individual person or business.</p><h2>What the score considers</h2><ul><li>Financial crime controls (50%): FATF assessments of effectiveness and international standards.</li><li>Government effectiveness and rule of law (30%): six World Bank measures covering institutions, regulation, stability, accountability and corruption control.</li><li>International sanctions (20%): the reach of active country-level UN, UK, EU and US sanctions.</li></ul><h2>When information is missing</h2><p>Missing information is never treated as zero risk. If one of the three parts is unavailable, the remaining parts are rebalanced and the country cannot be labelled Low risk. Fewer than two parts means no headline score is published.</p><h2>How sanctions information is checked</h2><p>A sanctions score of zero is possible only after the complete UN, UK, EU and US country-level catalogues have been checked. People or organisations may still appear on sanctions lists. Unexpected source changes or unclear evidence stop scoring until the information is complete.</p><h2>When the score has a minimum</h2><p>FATF grey list 6.0; FATF call for action 9.0; sector-wide sanctions 6.0; comprehensive sanctions 8.0. Targeted sanctions remain visible but do not set a minimum.</p><h2>Separate context</h2><p>Transparency International CPI and RegActions enforcement activity are displayed but do not change the score.</p></div></article></div></div>`;
+  return `<div class="seo-doc"><div class="seo-doc__container"><article class="seo-doc__article"><h1 class="seo-doc__title">Country Risk Score</h1><div class="seo-doc__body"><p>The score compares the underlying financial-crime risk of countries on a 0-10 scale. A higher number means higher risk. It is a country comparison, not a decision about an individual person or business.</p><h2>What the score considers</h2><ul><li>Financial crime controls (50%): FATF assessments of effectiveness and international standards.</li><li>Government effectiveness and rule of law (30%): six World Bank measures covering institutions, regulation, stability, accountability and corruption control.</li><li>International sanctions (20%): the reach of active country-level UN, UK, EU and US sanctions.</li></ul><h2>When information is missing</h2><p>Missing information is never treated as zero risk. If one of the three parts is unavailable, the remaining parts are rebalanced and the country cannot be labelled Low risk. Fewer than two parts means no headline score is published.</p><h2>How sanctions information is checked</h2><p>A sanctions score of zero is possible only after the complete UN, UK, EU and US country-level catalogues have been checked. People or organisations may still appear on sanctions lists. Unexpected source changes or unclear evidence stop scoring until the information is complete.</p><h2>When the score has a minimum</h2><p>FATF grey list 6.0; FATF call for action 9.0; sector-wide sanctions 6.0; comprehensive sanctions 8.0. Targeted sanctions remain visible but do not set a minimum.</p><h2>Separate context</h2><p>Transparency International CPI and RegActions enforcement activity are displayed but do not change the score.</p></div></article></div></div>`;
 }
 
 function renderRegulatoryTransparencyBody(): string {
@@ -1307,7 +1307,7 @@ function renderChangesBody(events: ChangeEvent[]): string {
     "A dated record of every change RegActions already tracks across country risk: FATF plenary additions and removals, sanctions-evidence snapshot promotions, EU tax list updates, framework-data reviews, and composite score moves once a trend accrues. Every entry is derived from a cited source.",
   )}</p><p><a href="/changes.xml" rel="noopener">Subscribe to the country-risk changes RSS feed</a>.</p>`;
   const outro = `<p><a href="/countries/fatf-grey-list">FATF grey &amp; black list</a> · <a href="/countries">All country risk reports</a> · <a href="/countries/methodology">Scoring methodology</a></p>`;
-  return `<div class="blog-page"><div class="blog-post-container"><article class="blog-article-modal"><h1 class="blog-post-title">What changed in country risk</h1><div class="blog-article-content">${intro}${groupsHtml}${outro}</div></article></div></div>`;
+  return `<div class="seo-doc"><div class="seo-doc__container"><article class="seo-doc__article"><h1 class="seo-doc__title">What changed in country risk</h1><div class="seo-doc__body">${intro}${groupsHtml}${outro}</div></article></div></div>`;
 }
 
 function renderTopicClusterBody(
@@ -1337,7 +1337,7 @@ function renderTopicClusterBody(
     .join("");
 
   const report = slug === "fca-fines-2026" ? renderFcaYearReport(fcaYearReport, casePaths) : "";
-  return `<div class="blog-page"><div class="blog-post-container"><article class="blog-article-modal"><h1 class="blog-post-title">${escapeHtml(cluster.title)}</h1><div class="blog-article-content"><p>${escapeHtml(cluster.summary)}</p>${report}<h2>Core Articles</h2><ul>${articles}</ul><h2>Evidence Focus</h2><ul>${evidence}</ul><h2>Board Questions</h2><ul>${questions}</ul><h2>Search, Data and Advisory Paths</h2><ul>${links}</ul></div></article></div></div>`;
+  return `<div class="seo-doc"><div class="seo-doc__container"><article class="seo-doc__article"><h1 class="seo-doc__title">${escapeHtml(cluster.title)}</h1><div class="seo-doc__body"><p>${escapeHtml(cluster.summary)}</p>${report}<h2>Core Articles</h2><ul>${articles}</ul><h2>Evidence Focus</h2><ul>${evidence}</ul><h2>Board Questions</h2><ul>${questions}</ul><h2>Search, Data and Advisory Paths</h2><ul>${links}</ul></div></article></div></div>`;
 }
 
 function renderTopicsLandingBody(): string {
@@ -1347,7 +1347,7 @@ function renderTopicsLandingBody(): string {
         `<li><a href="/topics/${cluster.slug}">${escapeHtml(cluster.title)}</a> — ${escapeHtml(cluster.description)}</li>`,
     )
     .join("");
-  return `<div class="blog-page"><div class="blog-post-container"><article class="blog-article-modal"><h1 class="blog-post-title">Explore Enforcement Topics</h1><div class="blog-article-content"><p>Browse RegActions editorial clusters for FCA fines, AML, Consumer Duty, market abuse, and board reporting, then move into breach, year, sector, and firm data hubs.</p><h2>Editorial Topic Clusters</h2><ul>${clusterLinks}</ul><h2>Data Hubs</h2><ul><li><a href="/breaches">Breach categories</a></li><li><a href="/years">Fines by year</a></li><li><a href="/sectors">Fines by sector</a></li><li><a href="/firms">Top firms and individuals</a></li></ul></div></article></div></div>`;
+  return `<div class="seo-doc"><div class="seo-doc__container"><article class="seo-doc__article"><h1 class="seo-doc__title">Explore Enforcement Topics</h1><div class="seo-doc__body"><p>Browse RegActions editorial clusters for FCA fines, AML, Consumer Duty, market abuse, and board reporting, then move into breach, year, sector, and firm data hubs.</p><h2>Editorial Topic Clusters</h2><ul>${clusterLinks}</ul><h2>Data Hubs</h2><ul><li><a href="/breaches">Breach categories</a></li><li><a href="/years">Fines by year</a></li><li><a href="/sectors">Fines by sector</a></li><li><a href="/firms">Top firms and individuals</a></li></ul></div></article></div></div>`;
 }
 
 /** Crawlable body for the /developers API docs page — mirrors Developers.tsx. */
@@ -1385,7 +1385,7 @@ function renderDevelopersBody(): string {
   )}</code></pre></section>`;
   const feedsHtml = `<h2>Feeds</h2><ul><li><a href="/rss.xml" rel="noopener">Regulatory insights RSS</a> — new analysis and enforcement articles.</li><li><a href="/changes.xml" rel="noopener">Country-risk changes RSS</a> — dated FATF, sanctions, EU tax list and score changes. See the <a href="/countries/changes">changes page</a>.</li></ul>`;
   const outro = `${feedsHtml}<h2>Questions</h2><p>For volume, commercial licensing, or a data question, contact <a href="mailto:contact@memaconsultants.com">contact@memaconsultants.com</a>. See also the <a href="/countries">country risk hub</a> and the <a href="/regulators">regulator data hub</a>.</p>`;
-  return `<div class="blog-page"><div class="blog-post-container"><article class="blog-article-modal"><h1 class="blog-post-title">Free RegActions data APIs</h1><div class="blog-article-content">${intro}${termsHtml}${attributionHtml}${endpointsHtml}${badgeHtml}${outro}</div></article></div></div>`;
+  return `<div class="seo-doc"><div class="seo-doc__container"><article class="seo-doc__article"><h1 class="seo-doc__title">Free RegActions data APIs</h1><div class="seo-doc__body">${intro}${termsHtml}${attributionHtml}${endpointsHtml}${badgeHtml}${outro}</div></article></div></div>`;
 }
 
 /**
@@ -1399,7 +1399,7 @@ function renderNotFoundBody(): string {
     .slice(0, 8)
     .map((c) => `<li><a href="/countries/${c.slug}">${escapeHtml(c.name)}</a></li>`)
     .join("");
-  return `<div class="blog-page"><div class="blog-post-container"><article class="blog-article-modal"><h1 class="blog-post-title">Page not found</h1><div class="blog-article-content"><p>The page you requested does not exist, or the country or regulator code in the URL is invalid.</p><h2>Popular destinations</h2><ul><li><a href="/">RegActions home</a></li><li><a href="/countries">Country risk reports</a></li><li><a href="/regulators">Regulator data hub</a></li><li><a href="/topics">Enforcement topics</a></li></ul><h2>Popular country risk reports</h2><ul>${countryHtml}</ul></div></article></div></div>`;
+  return `<div class="seo-doc"><div class="seo-doc__container"><article class="seo-doc__article"><h1 class="seo-doc__title">Page not found</h1><div class="seo-doc__body"><p>The page you requested does not exist, or the country or regulator code in the URL is invalid.</p><h2>Popular destinations</h2><ul><li><a href="/">RegActions home</a></li><li><a href="/countries">Country risk reports</a></li><li><a href="/regulators">Regulator data hub</a></li><li><a href="/topics">Enforcement topics</a></li></ul><h2>Popular country risk reports</h2><ul>${countryHtml}</ul></div></article></div></div>`;
 }
 
 function renderHomepageBody(): string {
@@ -1413,7 +1413,7 @@ function renderHomepageBody(): string {
     )
     .join("");
 
-  return `<div class="blog-page"><div class="blog-post-container"><article class="blog-article-modal"><h1 class="blog-post-title">Global Regulatory Fines & Enforcement Intelligence</h1><div class="blog-article-content"><p>RegActions tracks enforcement actions, penalties, breach categories, firms, and regulator activity across ${PUBLIC_REGULATOR_COUNT} configured live global financial regulators.</p><h2>What RegActions Covers</h2><ul><li><strong>Regulators:</strong> ${PUBLIC_REGULATOR_COUNT} configured live financial regulators across the UK, Europe, North America, APAC, the Middle East, Africa, and offshore markets.</li><li><strong>Dataset:</strong> searchable enforcement actions, monetary penalties, breach themes, dates, sectors, and source links.</li><li><strong>Use cases:</strong> compliance monitoring, board packs, regulator benchmarking, control reviews, and trend analysis.</li></ul><h2>Start With The Data</h2><p><a href="/regulators">Open the regulator data hub</a>, <a href="/search">search enforcement actions</a>, <a href="/board-pack">create a board pack</a>, or use the <a href="/developers">free data API</a>.</p><h2>Latest Insights</h2><ul>${articleLinks}</ul><h2>Frequently Asked Questions</h2><p>RegActions combines official-source enforcement monitoring with practical analysis so compliance teams can understand what changed, why it matters, and what action to take next.</p></div></article></div></div>`;
+  return `<div class="seo-doc"><div class="seo-doc__container"><article class="seo-doc__article"><h1 class="seo-doc__title">Global Regulatory Fines & Enforcement Intelligence</h1><div class="seo-doc__body"><p>RegActions tracks enforcement actions, penalties, breach categories, firms, and regulator activity across ${PUBLIC_REGULATOR_COUNT} configured live global financial regulators.</p><h2>What RegActions Covers</h2><ul><li><strong>Regulators:</strong> ${PUBLIC_REGULATOR_COUNT} configured live financial regulators across the UK, Europe, North America, APAC, the Middle East, Africa, and offshore markets.</li><li><strong>Dataset:</strong> searchable enforcement actions, monetary penalties, breach themes, dates, sectors, and source links.</li><li><strong>Use cases:</strong> compliance monitoring, board packs, regulator benchmarking, control reviews, and trend analysis.</li></ul><h2>Start With The Data</h2><p><a href="/regulators">Open the regulator data hub</a>, <a href="/search">search enforcement actions</a>, <a href="/board-pack">create a board pack</a>, or use the <a href="/developers">free data API</a>.</p><h2>Latest Insights</h2><ul>${articleLinks}</ul><h2>Frequently Asked Questions</h2><p>RegActions combines official-source enforcement monitoring with practical analysis so compliance teams can understand what changed, why it matters, and what action to take next.</p></div></article></div></div>`;
 }
 
 function renderEnforcementMethodologyBody(): string {
@@ -1443,7 +1443,7 @@ function renderBlogListingBody(): string {
     .map(([label, href]) => `<li><a href="${href}">${label}</a></li>`)
     .join("");
 
-  return `<div class="blog-page insights-page"><div class="blog-post-container"><article class="blog-article-modal"><h1 class="blog-post-title">Regulatory Insights</h1><div class="blog-article-content"><p>Expert analysis of significant regulatory penalties, enforcement trends, and compliance intelligence across global financial regulators.</p><h2>Latest Regulatory Enforcement Insight</h2><p><a href="/blog/${lead.slug}">${escapeHtml(lead.title)}</a> — ${escapeHtml(lead.excerpt)}</p><h2>Browse Recent Analysis</h2>${articlesHtml}<h2>Explore Enforcement Themes</h2><p>Use these crawlable topic pathways to move from insight into regulator hubs, board workflows, and advisory support.</p><ul>${categoryLinks}</ul><h2>Use The Intelligence</h2><p>Move from analysis to evidence: <a href="/regulators">open regulator hubs</a>, <a href="/search">search enforcement records</a>, or <a href="/board-pack">build a board pack</a>.</p></div></article></div></div>`;
+  return `<div class="seo-doc seo-doc--insights"><div class="seo-doc__container"><article class="seo-doc__article"><h1 class="seo-doc__title">Regulatory Insights</h1><div class="seo-doc__body"><p>Expert analysis of significant regulatory penalties, enforcement trends, and compliance intelligence across global financial regulators.</p><h2>Latest Regulatory Enforcement Insight</h2><p><a href="/blog/${lead.slug}">${escapeHtml(lead.title)}</a> — ${escapeHtml(lead.excerpt)}</p><h2>Browse Recent Analysis</h2>${articlesHtml}<h2>Explore Enforcement Themes</h2><p>Use these crawlable topic pathways to move from insight into regulator hubs, board workflows, and advisory support.</p><ul>${categoryLinks}</ul><h2>Use The Intelligence</h2><p>Move from analysis to evidence: <a href="/regulators">open regulator hubs</a>, <a href="/search">search enforcement records</a>, or <a href="/board-pack">build a board pack</a>.</p></div></article></div></div>`;
 }
 
 // HowTo schema for database guide

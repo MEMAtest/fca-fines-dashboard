@@ -1,0 +1,99 @@
+/**
+ * The crawlable pre-JS document.
+ *
+ * `scripts/prerender-seo.ts` injects static HTML into `<div id="root">` for
+ * crawlers. `src/main.tsx` uses `createRoot` (not `hydrateRoot`), so React
+ * DISCARDS this markup on mount — it exists for search engines and for the
+ * paint that happens before the bundle loads.
+ *
+ * These classes used to be `blog-page` / `blog-post-container` /
+ * `blog-article-modal` / `blog-post-title` / `blog-article-content`, styled by
+ * blog.css. No React component ever emitted them — they were the SEO shell
+ * wearing the blog's clothes — which meant restyling blog.css silently
+ * restyled the crawlable homepage, all ~213 country reports and every hub.
+ * Renaming them decouples the two. (The now-orphaned rules in blog.css can be
+ * deleted when blog.css is restyled.)
+ *
+ * Deliberately minimal and neutral: this paints for a moment and is then
+ * replaced. It should read as "loading", not as a differently-designed page,
+ * so the swap isn't a visual jolt.
+ */
+
+.seo-doc {
+  min-height: 60vh;
+  background: var(--ra-canvas, #f8fafb);
+}
+
+.seo-doc__container {
+  max-width: 760px;
+  margin: 0 auto;
+  padding: 48px 24px 72px;
+}
+
+.seo-doc__article {
+  color: var(--ra-ink, #0b1f2a);
+}
+
+.seo-doc__title {
+  font-family: var(--ra-font-serif, Georgia, serif);
+  font-weight: 600;
+  font-size: clamp(1.6rem, 4vw, 2.25rem);
+  line-height: 1.2;
+  margin: 0 0 16px;
+}
+
+.seo-doc__body {
+  font-family: var(--ra-font-sans, system-ui, sans-serif);
+  color: var(--ra-text-secondary, #526071);
+  line-height: 1.65;
+}
+
+.seo-doc__body h2 {
+  font-family: var(--ra-font-serif, Georgia, serif);
+  font-size: 1.15rem;
+  color: var(--ra-ink, #0b1f2a);
+  margin: 28px 0 8px;
+}
+
+.seo-doc__body h3 {
+  font-size: 1rem;
+  color: var(--ra-ink, #0b1f2a);
+  margin: 20px 0 6px;
+}
+
+.seo-doc__body p,
+.seo-doc__body li {
+  margin: 0 0 10px;
+}
+
+.seo-doc__body a {
+  color: var(--ra-accent-text, #0a6b50);
+}
+
+/* Tables scroll rather than widening the document — the prerendered regulator
+   hub tables are wide enough to overflow a phone otherwise. */
+.seo-doc__body table {
+  display: block;
+  max-width: 100%;
+  overflow-x: auto;
+  border-collapse: collapse;
+}
+
+.seo-doc__body th,
+.seo-doc__body td {
+  padding: 6px 10px;
+  border-bottom: 1px solid var(--ra-border, #e5e7eb);
+  text-align: left;
+  white-space: nowrap;
+}
+
+.seo-doc__related,
+.seo-doc__sources {
+  margin-top: 28px;
+}
+
+@media (max-width: 640px) {
+  .seo-doc__container {
+    padding: 32px 16px 56px;
+  }
+}

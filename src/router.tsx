@@ -137,11 +137,6 @@ const Homepage = lazyPage(() =>
     default: module.Homepage,
   })),
 );
-const Dashboard = lazyPage(() =>
-  import("./pages/Dashboard.js").then((module) => ({
-    default: module.Dashboard,
-  })),
-);
 const Topics = lazyPage(() =>
   import("./pages/Topics.js").then((module) => ({ default: module.Topics })),
 );
