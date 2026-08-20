@@ -41990,14 +41990,7 @@
         "note": "No recent RegActions observation is not evidence that no enforcement exists. Publication cadence, access and coverage may explain the absence."
       },
       "activitySummary": {
-        "scanContract": {
-          "scanType": "automated-first-page-date-scan",
-          "startMonth": "2024-01",
-          "endMonth": "2026-08",
-          "asOf": "2026-08-20",
-          "datePrecision": "month",
-          "archiveBoundary": "first-page-only-unvalidated"
-        },
+        "scanContract": null,
         "recentAuthorities": 0,
         "periodicAuthorities": 0,
         "lowFrequencyAuthorities": 0,
