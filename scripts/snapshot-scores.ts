@@ -12,7 +12,7 @@ import { readFileSync, writeFileSync, existsSync } from "fs";
 import { join, dirname } from "path";
 import { fileURLToPath } from "url";
 import { pageCountries } from "../src/data/countryView.js";
-import { computeCountryRiskScore } from "../src/data/countryRiskScore.js";
+import { computeCountryRiskCurrent, CURRENT_COUNTRY_RISK_METHODOLOGY_VERSION } from "../src/data/countryRiskMethodology.js";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const OUT = join(__dirname, "..", "src", "data", "scoreSnapshots.json");
@@ -23,6 +23,7 @@ const date =
 export interface Snapshot {
   date: string;
   scores: Record<string, number>;
+  methodologyVersion?: typeof CURRENT_COUNTRY_RISK_METHODOLOGY_VERSION;
 }
 
 export function upsertSnapshot(
@@ -32,15 +33,15 @@ export function upsertSnapshot(
 ) {
   return [
     ...snapshots.filter((snapshot) => snapshot.date !== date),
-    { date, scores },
+    { date, scores, methodologyVersion: CURRENT_COUNTRY_RISK_METHODOLOGY_VERSION },
   ].sort((left, right) => left.date.localeCompare(right.date));
 }
 
 function main() {
   const scores: Record<string, number> = {};
   for (const c of pageCountries()) {
-    const result = computeCountryRiskScore(c.iso2);
-    if (result.hasGovernance) scores[c.iso2] = result.score;
+    const result = computeCountryRiskCurrent(c.iso2);
+    if (result.score !== null) scores[c.iso2] = result.score;
   }
 
   let snapshots: Snapshot[] = [];

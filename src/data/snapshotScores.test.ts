@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { upsertSnapshot } from "../../scripts/snapshot-scores.js";
+import { CURRENT_COUNTRY_RISK_METHODOLOGY_VERSION } from "./countryRiskMethodology.js";
 
 describe("weekly score snapshots", () => {
   it("is byte-stable when the same date and scores are rerun", () => {
@@ -20,5 +21,6 @@ describe("weekly score snapshots", () => {
     expect(
       second.filter((snapshot) => snapshot.date === "2026-07-20"),
     ).toHaveLength(1);
+    expect(second[1].methodologyVersion).toBe(CURRENT_COUNTRY_RISK_METHODOLOGY_VERSION);
   });
 });

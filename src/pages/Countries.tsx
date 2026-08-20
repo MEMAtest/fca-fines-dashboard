@@ -42,10 +42,9 @@ import { sanctionsTierLabel, type SanctionsTier } from "../data/sanctionsStatus.
 import {
   bandLabel,
   bandFor,
-  scoreBreakdown,
   type RiskBand,
 } from "../data/countryRiskScore.js";
-import { computeCountryRiskV2 } from "../data/countryRiskV2.js";
+import { computeCountryRiskCurrent } from "../data/countryRiskMethodology.js";
 import { buildCountryCsv, countryCsvFilename } from "../utils/countryCsv.js";
 import { publicCountryRiskStatusLabel } from "../data/countryRiskPresentation.js";
 import {
@@ -88,34 +87,39 @@ function isRatedEntry(entry: CountryIndexEntry): entry is RatedCountryIndexEntry
 }
 
 const PILLAR_FILL: Record<string, string> = {
+  effectiveness: "#dc2626",
+  safeguards: "#ea580c",
   governance: "#0fa77d",
-  fatf: "#dc2626",
-  sanctions: "#ea580c",
 };
 
 const DRIVER_LABEL: Record<string, string> = {
-  corruption: "High corruption",
-  ruleOfLaw: "Weak rule of law",
-  politicalStability: "Political instability",
-  accountability: "Weak accountability",
+  effectiveness: "Financial-crime effectiveness gaps",
+  safeguards: "Technical safeguards gaps",
+  governance: "Governance and institutional weakness",
 };
 
 function keyDrivers(iso2: string): string[] {
-  const bd = scoreBreakdown(iso2);
-  const result = computeCountryRiskV2(iso2);
+  const result = computeCountryRiskCurrent(iso2);
   if (result.score === null) {
     return ["Not enough information is available to publish a score"];
   }
   const out: string[] = [];
-  result.regulatoryFlags.forEach((flag) => out.push(flag.label));
-  bd.domains
-    .filter((d) => d.risk !== null && (d.risk as number) >= 5)
-    .sort((a, b) => (b.risk as number) - (a.risk as number))
-    .forEach((d) => {
-      if (out.length < 4) out.push(DRIVER_LABEL[d.key] ?? d.label);
+  if (result.overlays.fatf.listing === "call-for-action") out.push("FATF call-for-action overlay");
+  else if (result.overlays.fatf.listing === "increased-monitoring") out.push("FATF increased-monitoring overlay");
+  if (result.overlays.sanctions.highestTier) {
+    out.push(`${result.overlays.sanctions.highestTier} sanctions overlay`);
+  }
+  Object.entries(result.pillars)
+    .filter(([, pillar]) => pillar.score !== null && pillar.score >= 5)
+    .sort(([, a], [, b]) => (b.score ?? 0) - (a.score ?? 0))
+    .forEach(([key]) => {
+      if (out.length < 4) out.push(DRIVER_LABEL[key] ?? key);
     });
+  if (result.beneficialOwnership.score !== null && result.beneficialOwnership.score >= 5 && out.length < 4) {
+    out.push("Beneficial-ownership control gaps");
+  }
   if (result.status === "provisional") out.push("Some information is unavailable");
-  return out.length ? out.slice(0, 4) : ["No elevated regulatory flag identified"];
+  return out.length ? out.slice(0, 4) : ["No elevated current-methodology driver identified"];
 }
 
 function inQuadrant(e: CountryIndexEntry, q: Quadrant): boolean {
@@ -846,9 +850,9 @@ function GlobalIndex() {
   const nameOf = (iso2: string) => getCountryByIso2(iso2)?.name ?? iso2;
 
   const pillarData = [
-    { key: "governance", name: "Government and rule of law", value: pillars.governance },
-    { key: "fatf", name: "Financial crime controls", value: pillars.fatf },
-    { key: "sanctions", name: "International sanctions", value: pillars.sanctions },
+    { key: "effectiveness", name: "FATF effectiveness", value: pillars.effectiveness },
+    { key: "safeguards", name: "Technical safeguards", value: pillars.safeguards },
+    { key: "governance", name: "Governance and institutions", value: pillars.governance },
   ];
 
   const toggleSort = (key: "score" | "name" | "region") => {

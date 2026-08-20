@@ -39,6 +39,7 @@ import {
   BO_REGISTERS_REVIEWED,
   BO_REGISTERS_SOURCE_URL,
 } from "./boRegisters.js";
+import { CURRENT_COUNTRY_RISK_METHODOLOGY_VERSION } from "./countryRiskMethodology.js";
 import scoreSnapshotsRaw from "./scoreSnapshots.json" with { type: "json" };
 
 /** The kinds of change event this surface tracks (all derived, none invented). */
@@ -64,11 +65,15 @@ export interface ChangeEvent {
   detail: string;
   /** Where the change should link to (country page or source). */
   href: string;
+  /** Present on score events so consumers can reject stale/rebased methodologies. */
+  methodologyVersion?: string;
 }
 
 interface ScoreSnapshot {
   date: string;
   scores: Record<string, number>;
+  /** Snapshots without this marker are historical and never enter the current feed. */
+  methodologyVersion?: string;
 }
 
 /** Human label for a change kind (filter chips + RSS categories). */
@@ -133,7 +138,7 @@ function sanctionsEvents(): ChangeEvent[] {
       kind: "sanctions",
       title: `Sanctions evidence snapshot promoted (${SANCTIONS_APPROVED_SNAPSHOT.countryCount} jurisdictions)`,
       detail: `RegActions promoted a new deterministic sanctions-evidence snapshot covering ${SANCTIONS_APPROVED_SNAPSHOT.countryCount} jurisdictions and ${SANCTIONS_APPROVED_SNAPSHOT.approvedCount} approved programmes, sourced from OFAC, UK, EU and UN catalogues.`,
-      href: "/countries/methodology/v2",
+      href: "/countries/methodology/v3",
     },
   ];
 
@@ -222,11 +227,16 @@ function euTaxListEvents(): ChangeEvent[] {
  * deterministically against a fixture.
  */
 export function scoreDeltaEvents(
-  snapshots: ScoreSnapshot[] = scoreSnapshotsRaw as ScoreSnapshot[],
+  snapshots: ScoreSnapshot[] = scoreSnapshotsRaw as unknown as ScoreSnapshot[],
   minDelta = 0.5,
+  methodologyVersion = CURRENT_COUNTRY_RISK_METHODOLOGY_VERSION,
 ): ChangeEvent[] {
-  if (snapshots.length < 2) return [];
-  const ordered = [...snapshots].sort((a, b) => a.date.localeCompare(b.date));
+  // A methodology migration/rebaseline must not look like a country-level
+  // move. Only compare snapshots carrying the same current methodology marker;
+  // old unmarked v1/v2 history is intentionally excluded from notifications.
+  const compatible = snapshots.filter((snapshot) => snapshot.methodologyVersion === methodologyVersion);
+  if (compatible.length < 2) return [];
+  const ordered = [...compatible].sort((a, b) => a.date.localeCompare(b.date));
   const events: ChangeEvent[] = [];
   for (let i = 1; i < ordered.length; i++) {
     const prev = ordered[i - 1];
@@ -248,6 +258,7 @@ export function scoreDeltaEvents(
         title: `${country.name} risk score ${direction} ${before.toFixed(1)} to ${after.toFixed(1)}`,
         detail: `The RegActions composite country-risk score for ${country.name} ${direction} from ${before.toFixed(1)} to ${after.toFixed(1)} out of 10 between ${prev.date} and ${curr.date}.`,
         href: countryHref(iso2),
+        methodologyVersion,
       });
     }
   }
@@ -308,6 +319,18 @@ export function buildCountryChanges(): ChangeEvent[] {
     if (a.kind !== b.kind) return a.kind.localeCompare(b.kind);
     return a.title.localeCompare(b.title);
   });
+}
+
+/**
+ * Digest safety gate: score events from an older/rebased methodology are not
+ * subscriber changes. Non-score events are unaffected and continue through.
+ */
+export function currentMethodologyChangeEvents(
+  events: ChangeEvent[] = buildCountryChanges(),
+): ChangeEvent[] {
+  return events.filter((event) =>
+    event.kind !== "score" || event.methodologyVersion === CURRENT_COUNTRY_RISK_METHODOLOGY_VERSION,
+  );
 }
 
 /** The distinct kinds present in the assembled feed, in stable label order. */

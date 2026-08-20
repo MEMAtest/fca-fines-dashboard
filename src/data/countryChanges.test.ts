@@ -5,12 +5,14 @@ import {
   changesByDate,
   recentChangesForCountry,
   scoreDeltaEvents,
+  currentMethodologyChangeEvents,
   CHANGE_KIND_LABELS,
   type ChangeEvent,
   type ScoreSnapshot,
 } from "./countryChanges.js";
 import { FATF_CHANGE_LOG } from "./fatfStatus.js";
 import { EU_TAX_LIST, EU_TAX_LIST_CHANGES } from "./euTaxList.js";
+import { CURRENT_COUNTRY_RISK_METHODOLOGY_VERSION } from "./countryRiskMethodology.js";
 
 describe("country changes surface", () => {
   const events = buildCountryChanges();
@@ -120,8 +122,8 @@ describe("score-snapshot deltas", () => {
 
   it("emits per-country move events once two snapshots exist", () => {
     const fixture: ScoreSnapshot[] = [
-      { date: "2026-07-16", scores: { GB: 2.3, US: 2.8, DE: 1.9 } },
-      { date: "2026-08-16", scores: { GB: 3.1, US: 2.9, DE: 1.9 } },
+      { date: "2026-07-16", methodologyVersion: CURRENT_COUNTRY_RISK_METHODOLOGY_VERSION, scores: { GB: 2.3, US: 2.8, DE: 1.9 } },
+      { date: "2026-08-16", methodologyVersion: CURRENT_COUNTRY_RISK_METHODOLOGY_VERSION, scores: { GB: 3.1, US: 2.9, DE: 1.9 } },
     ];
     const deltas = scoreDeltaEvents(fixture);
     // GB moved +0.8 (>= 0.5), US moved +0.1 (< 0.5, suppressed), DE unchanged.
@@ -138,28 +140,58 @@ describe("score-snapshot deltas", () => {
 
   it("labels a downward move as fell and honours the min-delta threshold", () => {
     const fixture: ScoreSnapshot[] = [
-      { date: "2026-07-16", scores: { GB: 5.0 } },
-      { date: "2026-08-16", scores: { GB: 4.2 } },
+      { date: "2026-07-16", methodologyVersion: CURRENT_COUNTRY_RISK_METHODOLOGY_VERSION, scores: { GB: 5.0 } },
+      { date: "2026-08-16", methodologyVersion: CURRENT_COUNTRY_RISK_METHODOLOGY_VERSION, scores: { GB: 4.2 } },
     ];
     const [gb] = scoreDeltaEvents(fixture);
     expect(gb.title).toContain("fell");
     // A tiny move is dropped.
     const tiny: ScoreSnapshot[] = [
-      { date: "2026-07-16", scores: { GB: 5.0 } },
-      { date: "2026-08-16", scores: { GB: 5.2 } },
+      { date: "2026-07-16", methodologyVersion: CURRENT_COUNTRY_RISK_METHODOLOGY_VERSION, scores: { GB: 5.0 } },
+      { date: "2026-08-16", methodologyVersion: CURRENT_COUNTRY_RISK_METHODOLOGY_VERSION, scores: { GB: 5.2 } },
     ];
     expect(scoreDeltaEvents(tiny).length).toBe(0);
   });
 
   it("skips countries missing from one snapshot and unknown ISO codes", () => {
     const fixture: ScoreSnapshot[] = [
-      { date: "2026-07-16", scores: { GB: 2.0, ZZ: 9.0 } },
-      { date: "2026-08-16", scores: { GB: 3.0, ZZ: 1.0, FR: 2.0 } },
+      { date: "2026-07-16", methodologyVersion: CURRENT_COUNTRY_RISK_METHODOLOGY_VERSION, scores: { GB: 2.0, ZZ: 9.0 } },
+      { date: "2026-08-16", methodologyVersion: CURRENT_COUNTRY_RISK_METHODOLOGY_VERSION, scores: { GB: 3.0, ZZ: 1.0, FR: 2.0 } },
     ];
     const deltas = scoreDeltaEvents(fixture);
     // ZZ is not a real country (dropped); FR is new (no prior value, dropped);
     // GB is the only valid delta.
     const isos = deltas.map((e: ChangeEvent) => e.iso2);
     expect(isos).toEqual(["GB"]);
+  });
+
+  it("suppresses legacy and mixed-methodology rebaseline deltas", () => {
+    const legacy: ScoreSnapshot[] = [
+      { date: "2026-07-16", scores: { GB: 2.0 } },
+      { date: "2026-08-16", scores: { GB: 9.0 } },
+    ];
+    expect(scoreDeltaEvents(legacy)).toEqual([]);
+    const mixed: ScoreSnapshot[] = [
+      { date: "2026-07-16", methodologyVersion: "2.0.0", scores: { GB: 2.0 } },
+      { date: "2026-08-16", methodologyVersion: CURRENT_COUNTRY_RISK_METHODOLOGY_VERSION, scores: { GB: 9.0 } },
+      { date: "2026-08-17", methodologyVersion: CURRENT_COUNTRY_RISK_METHODOLOGY_VERSION, scores: { GB: 9.2 } },
+    ];
+    expect(scoreDeltaEvents(mixed)).toEqual([]);
+  });
+
+  it("keeps non-score events while rejecting stale score events at the digest gate", () => {
+    const current = {
+      date: "2026-08-17",
+      scope: "country" as const,
+      kind: "score" as const,
+      iso2: "GB",
+      title: "Current move",
+      detail: "Current methodology move",
+      href: "/countries/united-kingdom",
+      methodologyVersion: CURRENT_COUNTRY_RISK_METHODOLOGY_VERSION,
+    };
+    const stale = { ...current, title: "Rebaseline", methodologyVersion: "2.0.0" };
+    const fatf = { ...current, kind: "fatf" as const, title: "FATF update", methodologyVersion: undefined };
+    expect(currentMethodologyChangeEvents([current, stale, fatf])).toEqual([current, fatf]);
   });
 });
