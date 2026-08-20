@@ -83,7 +83,7 @@ import { isEuTaxListed } from "../src/data/euTaxList.js";
 import { getEgmontMember } from "../src/data/egmontMembership.js";
 import { getFatfAssessmentLink } from "../src/data/fatfAssessmentLinks.js";
 import { getBoRegister, boRegisterSignal } from "../src/data/boRegisters.js";
-import { getRegulatorySignalCountry, authorityAccessLabel, roleLabel } from "../src/data/regulatorySignal.js";
+import { getRegulatorySignalCountry, listRegulatorySignalCountries, authorityAccessLabel, roleLabel } from "../src/data/regulatorySignal.js";
 import {
   buildCountryChanges,
   changesByDate,
@@ -721,6 +721,35 @@ function renderCountryFaqBlock(faqs: CountryFaq[]): string {
   return `<section class="country-faq"><h2>FAQ</h2>${items}</section>`;
 }
 
+function regulatorySignalEvidenceLevel(signal: ReturnType<typeof getRegulatorySignalCountry>): number {
+  if (!signal) return 1;
+  if (signal.liveRegulators > 0 && signal.liveObservedRecords > 0) return 4;
+  if (signal.authorities.some((authority) => Boolean(authority.publicationUrl))) return 3;
+  if (signal.authorities.some((authority) => authority.accessState === "reachable" || Boolean(authority.website))) return 2;
+  return 1;
+}
+
+const REGULATORY_EVIDENCE_LEVELS = [
+  ["Regulator identified", "An authority and its mandate are evidenced in an official directory or source."],
+  ["Official engagement visible", "An official website or publication route is identified and may expose broader regulatory activity."],
+  ["Official publication route", "An official publication route is identified; access can still be limited and this is not an enforcement count."],
+  ["Observed enforcement feed", "A validated RegActions feed contains observed actions in the country snapshot."],
+] as const;
+
+function regulatoryLadderHtml(signal: NonNullable<ReturnType<typeof getRegulatorySignalCountry>>): string {
+  const level = regulatorySignalEvidenceLevel(signal);
+  const enforcement = signal.liveRegulators > 0 && signal.liveObservedRecords > 0
+    ? `${signal.liveObservedRecords.toLocaleString("en-GB")} observed action${signal.liveObservedRecords === 1 ? "" : "s"} in the research snapshot${signal.latestObservedAction ? `; latest observed ${signal.latestObservedAction.slice(0, 10)}` : ""}.`
+    : signal.liveRegulators > 0
+      ? "A RegActions feed is configured, but no observed actions are included in this snapshot."
+      : "No validated RegActions enforcement observations are included in this snapshot.";
+  const levels = REGULATORY_EVIDENCE_LEVELS.map(([label, description], index) => `<li><strong>${index + 1}. ${escapeHtml(label)}</strong> — ${escapeHtml(description)}</li>`).join("");
+  const authorities = signal.authorities.length
+    ? `<ul>${signal.authorities.map((authority) => `<li><details><summary><strong>${escapeHtml(authority.name)}</strong> — Level ${authority.publicationUrl ? 3 : authority.accessState === "reachable" || authority.website ? 2 : 1} · ${escapeHtml(authorityAccessLabel(authority.accessState))}</summary><p><strong>Mandates:</strong> ${escapeHtml(authority.roles.map(roleLabel).join(", ") || "Mandate family not classified")} · <strong>Access status:</strong> ${escapeHtml(authorityAccessLabel(authority.accessState))} · <strong>Research/publication snapshot checked:</strong> ${escapeHtml(authority.sourceCheckedAt.slice(0, 10))}</p>${authority.website ? `<p><a href="${escapeHtml(authority.website)}" rel="noopener">Official authority site</a></p>` : ""}${authority.publicationUrl ? `<p><a href="${escapeHtml(authority.publicationUrl)}" rel="noopener">Alternative official publication URL</a></p>` : ""}${["challenge-protected", "access-blocked", "timeout", "network-error", "http-error"].includes(authority.accessState) ? `<p>Access limitation describes this research check only; it does not establish that the authority has no enforcement activity.</p>` : ""}</details></li>`).join("")}</ul>`
+    : `<p>No authority entry was resolved in the directory snapshot. This is not evidence that no regulator exists.</p>`;
+  return `<p><strong>Evidence level:</strong> Level ${level}: ${escapeHtml(REGULATORY_EVIDENCE_LEVELS[level - 1][0])}. The ladder describes evidence availability, not regulatory quality or enforcement effectiveness.</p><ol>${levels}</ol><details><summary>How to read enforcement visibility</summary><p>Official regulatory engagement—such as a regulator website, consultation, notice or report—is broader than enforcement visibility. Enforcement visibility requires a validated public enforcement feed or observed action. A blocked, challenge-protected, timed-out or non-public source is not treated as no enforcement.</p></details><p><strong>Enforcement visibility:</strong> ${escapeHtml(enforcement)}</p><h3>Authorities and mandate evidence</h3>${authorities}`;
+}
+
 /**
  * Crawlable body for a single country's risk report. Driven by the SAME
  * `CountryView` the React page uses (`src/data/countryView.ts`), so the
@@ -948,7 +977,7 @@ function renderCountryFatfBody(view: CountryView): string {
     )}</ul><p>Derived from sanctions tier, FATF listing, World Bank WGI governance and CPI; no per-sector dataset is asserted.</p>`;
   const signal = getRegulatorySignalCountry(country.iso2);
   const regulatorySignalHtml = signal
-    ? `<h2>Regulatory ecosystem and enforcement visibility</h2><p>This evidence map is separate from Country Risk v3. It describes official mandates, publication access and RegActions coverage; it does not judge regulatory strength or add points to country risk.</p><p><strong>Transparency Index:</strong> not assessed · <strong>Evidence disposition:</strong> ${escapeHtml(signal.authorityEvidenceState)} · <strong>Mapped official authorities:</strong> ${signal.officialDirectoryAuthorities}.</p>${signal.authorityEvidenceNote ? `<p>${escapeHtml(signal.authorityEvidenceNote)}${signal.externalAuthorityEvidenceUrl ? ` <a href="${escapeHtml(signal.externalAuthorityEvidenceUrl)}" rel="noopener">External evidence</a>` : ""}</p>` : ""}${signal.authorities.length ? `<ul>${signal.authorities.map((authority) => `<li><strong>${escapeHtml(authority.name)}</strong> — ${escapeHtml(authority.roles.map(roleLabel).join(", ") || "Mandate not classified")}; ${escapeHtml(authorityAccessLabel(authority.accessState))}${authority.website ? ` · <a href="${escapeHtml(authority.website)}" rel="noopener">official site</a>` : ""}${authority.publicationUrl ? ` · <a href="${escapeHtml(authority.publicationUrl)}" rel="noopener">publication candidate</a>` : ""} · directory source ${escapeHtml(authority.directorySources.join(", ") || "not recorded")} · research/publication snapshot checked ${escapeHtml(authority.sourceCheckedAt.slice(0, 10))}</li>`).join("")}</ul>` : `<p>No local authority entry was resolved in the public directory snapshot. This is not evidence that no regulator exists.</p>`}<p><a href="/api/regulatory-signal/evidence/${signal.iso2}?format=pdf">Download regulatory ecosystem PDF</a> · <a href="/api/regulatory-signal/evidence/${signal.iso2}?format=csv">CSV</a> · <a href="/api/regulatory-signal/evidence/${signal.iso2}?format=json">JSON</a></p>`
+    ? `<h2>Regulatory ecosystem and enforcement visibility</h2><p>This evidence map is separate from Country Risk v3. It describes official mandates, publication access and RegActions coverage; it does not judge regulatory strength or add points to country risk.</p><p><strong>Transparency Index:</strong> not scored · <strong>Evidence disposition:</strong> ${escapeHtml(signal.authorityEvidenceState)} · <strong>Mapped official authorities:</strong> ${signal.officialDirectoryAuthorities}.</p>${signal.authorityEvidenceNote ? `<p>${escapeHtml(signal.authorityEvidenceNote)}${signal.externalAuthorityEvidenceUrl ? ` <a href="${escapeHtml(signal.externalAuthorityEvidenceUrl)}" rel="noopener">External evidence</a>` : ""}</p>` : ""}${regulatoryLadderHtml(signal)}<p><a href="/api/regulatory-signal/evidence/${signal.iso2}?format=pdf">Download regulatory ecosystem PDF</a> · <a href="/api/regulatory-signal/evidence/${signal.iso2}?format=csv">CSV</a> · <a href="/api/regulatory-signal/evidence/${signal.iso2}?format=json">JSON</a></p>`
     : "";
   const peersHtml =
     regionalPeers.length > 0
@@ -1187,7 +1216,14 @@ function renderMethodologyV2Body(): string {
 }
 
 function renderRegulatoryTransparencyBody(): string {
-  return `<main class="content-page"><h1>Regulatory ecosystem and enforcement visibility</h1><p>RegActions maps official authorities, mandate families, publication access states and RegActions feed coverage across 213 jurisdictions. This evidence layer is separate from Country Risk v3 and does not judge regulatory strength.</p><p><strong>Transparency Index:</strong> not assessed while source qualification and shadow calibration continue.</p><h2>Evidence states</h2><p>Reachable, challenge-protected, access-blocked, timeout, no-public-website and unobservable states remain visible. Low-frequency publication and access constraints are not treated as scraper failures.</p><p><a href="/api/regulatory-signal/list">Browse the read-only regulatory signal API</a> · <a href="/countries">Browse country profiles</a></p><h2>Official directory sources</h2><ul><li><a href="https://www.bis.org/regauth.htm" rel="noopener">BIS regulatory authorities</a></li><li><a href="https://www.iosco.org/v2/about/?subsection=membership&amp;memid=1" rel="noopener">IOSCO members</a></li><li><a href="https://www.iais.org/about-the-iais/iais-members/" rel="noopener">IAIS members</a></li><li><a href="https://www.iopsweb.org/en/membership/iops-members-and-observers.html" rel="noopener">IOPS members and observers</a></li><li><a href="https://egmontgroup.org/members-by-region/" rel="noopener">Egmont Group FIUs</a></li></ul></main>`;
+  const levels = REGULATORY_EVIDENCE_LEVELS.map(([label, description], index) => `<li><strong>${index + 1}. ${escapeHtml(label)}</strong> — ${escapeHtml(description)}</li>`).join("");
+  const countries = listRegulatorySignalCountries().map((signal) => {
+    const authorityItems = signal.authorities.length
+      ? `<ul>${signal.authorities.map((authority) => `<li><strong>${escapeHtml(authority.name)}</strong> — ${escapeHtml(authority.roles.map(roleLabel).join(", ") || "Mandate family not classified")} · ${escapeHtml(authorityAccessLabel(authority.accessState))} · research/publication snapshot checked ${escapeHtml(authority.sourceCheckedAt.slice(0, 10))}${authority.publicationUrl ? ` · <a href="${escapeHtml(authority.publicationUrl)}" rel="noopener">alternative official publication URL</a>` : ""}</li>`).join("")}</ul>`
+      : `<p>No authority entry was resolved in the directory snapshot. This is not evidence that no regulator exists.</p>`;
+    return `<details><summary><strong>${escapeHtml(signal.name)} (${signal.iso2})</strong> — Level ${regulatorySignalEvidenceLevel(signal)} · Transparency Index: not scored</summary><p>${escapeHtml(signal.authorityEvidenceState)} · ${signal.officialDirectoryAuthorities} mapped official authorities. ${signal.liveRegulators > 0 && signal.liveObservedRecords > 0 ? `${signal.liveObservedRecords.toLocaleString("en-GB")} observed actions in the research snapshot.` : "No validated RegActions enforcement observations are included in this snapshot."} A blocked source is not described as no enforcement.</p>${authorityItems}</details>`;
+  }).join("");
+  return `<main class="content-page"><h1>Regulatory ecosystem and enforcement visibility</h1><p>RegActions maps official authorities, mandate families, publication access states and RegActions feed coverage across 213 jurisdictions. This evidence layer is separate from Country Risk v3 and does not judge regulatory strength.</p><p><strong>Transparency Index:</strong> not scored while source qualification and shadow calibration continue.</p><h2>How to read the evidence ladder</h2><p>This four-level ladder describes what can be evidenced publicly. It is not a regulatory-quality score. Official regulatory engagement is broader than enforcement visibility, and access failure is never treated as no enforcement.</p><ol>${levels}</ol><h2>Evidence states</h2><p>Reachable, challenge-protected, access-blocked, timeout, no-public-website and unobservable states remain visible. Low-frequency publication and access constraints are not treated as scraper failures.</p><h2>Browse jurisdiction evidence</h2>${countries}<p><a href="/api/regulatory-signal/list">Browse the read-only regulatory signal API</a> · <a href="/countries">Browse country profiles</a></p><h2>Official directory sources</h2><ul><li><a href="https://www.bis.org/regauth.htm" rel="noopener">BIS regulatory authorities</a></li><li><a href="https://www.iosco.org/v2/about/?subsection=membership&amp;memid=1" rel="noopener">IOSCO members</a></li><li><a href="https://www.iais.org/about-the-iais/iais-members/" rel="noopener">IAIS members</a></li><li><a href="https://www.iopsweb.org/en/membership/iops-members-and-observers.html" rel="noopener">IOPS members and observers</a></li><li><a href="https://egmontgroup.org/members-by-region/" rel="noopener">Egmont Group FIUs</a></li></ul></main>`;
 }
 
 /**

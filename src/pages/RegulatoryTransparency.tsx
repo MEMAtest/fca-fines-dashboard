@@ -7,6 +7,7 @@ import {
 } from "../data/regulatorySignal.js";
 import { listRegulatorySignalCountries } from "../data/regulatorySignal.js";
 import { getCountryByIso2, countrySlug } from "../data/countries.js";
+import { EvidenceLadderLegend, RegulatoryEvidenceLadder } from "../components/RegulatoryEvidenceLadder.js";
 import "../styles/about.css";
 
 export function RegulatoryTransparency() {
@@ -38,16 +39,23 @@ export function RegulatoryTransparency() {
           <li>Reachable, challenge-protected, access-blocked, timeout, no-public-website and unobservable states.</li>
           <li>RegActions live and pipeline coverage shown separately from observed activity.</li>
         </ul>
-        <p>Observed enforcement is neutral: strong publication activity can reflect either effective supervision or higher misconduct, while no observation can reflect low-frequency reporting or access constraints.</p>
+        <p>Observed enforcement is neutral: strong publication activity can reflect either effective supervision or higher misconduct, while no observation can reflect low-frequency reporting or access constraints. A blocked source is never described as no enforcement.</p>
+      </section>
+      <section className="about-section about-section--evidence-ladder" aria-labelledby="evidence-ladder-heading">
+        <h2 id="evidence-ladder-heading">How to read the evidence ladder</h2>
+        <p className="about-section__intro">This four-level ladder describes what can be evidenced publicly. It is not a regulatory-quality score, and the Transparency Index remains not scored.</p>
+        <EvidenceLadderLegend />
       </section>
       <section className="about-section">
         <h2>Browse jurisdiction evidence</h2>
         <div className="cx-sources">
           {countries.map((country) => (
-            <a key={country.iso2} className="cx-source-card" href={getCountryByIso2(country.iso2) ? `/countries/${countrySlug(getCountryByIso2(country.iso2)!)}` : `/countries`}>
-              <div className="cx-source-card__name">{country.name} · {country.iso2}</div>
-              <div className="cx-source-card__desc">{country.officialDirectoryAuthorities} authorities · {country.authorityEvidenceState.replaceAll("-", " ")}</div>
-            </a>
+            <article key={country.iso2} className="cx-source-card cx-source-card--evidence">
+              <a className="cx-source-card__link" href={getCountryByIso2(country.iso2) ? `/countries/${countrySlug(getCountryByIso2(country.iso2)!)}` : `/countries`}>
+                <div className="cx-source-card__name">{country.name} · {country.iso2}</div>
+              </a>
+              <RegulatoryEvidenceLadder country={country} compact />
+            </article>
           ))}
         </div>
       </section>
