@@ -538,9 +538,9 @@ export function buildCountryView(country: Country): CountryView {
     scoreAvailable: riskV3.score !== null,
     breakdown,
     currentPillars: [
-      { label: "Financial-crime effectiveness", risk: riskV3.pillars.effectiveness.score },
-      { label: "Legal and supervisory safeguards", risk: riskV3.pillars.safeguards.score },
-      { label: "Governance and institutional integrity", risk: riskV3.pillars.governance.score },
+      { key: "effectiveness", label: "Financial-crime effectiveness", risk: riskV3.pillars.effectiveness.score, appliedWeight: riskV3.pillars.effectiveness.appliedWeight, contribution: riskV3.pillars.effectiveness.contribution },
+      { key: "safeguards", label: "Legal and supervisory safeguards", risk: riskV3.pillars.safeguards.score, appliedWeight: riskV3.pillars.safeguards.appliedWeight, contribution: riskV3.pillars.safeguards.contribution },
+      { key: "governance", label: "Governance and institutional integrity", risk: riskV3.pillars.governance.score, appliedWeight: riskV3.pillars.governance.appliedWeight, contribution: riskV3.pillars.governance.contribution },
     ],
     currentGovernanceDomains: [
       { key: "corruption", label: "Corruption and integrity", risk: governanceRisk(country.iso2, "cc") },

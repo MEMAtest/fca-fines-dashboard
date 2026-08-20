@@ -814,21 +814,31 @@ export function CountryHub() {
             </div>
           </div>
 
-          {/* ── Row 3: risk drivers | mitigating factors | business impact ── */}
+          {/* ── Row 3: score drivers + overlays | mitigating factors | business impact ── */}
           <div className="cx-ws__row3">
             <div className="cx-card cx-drivers">
               <span className="cx-card__eyebrow">
-                <AlertTriangle size={12} /> Risk drivers
+                <BarChart3 size={12} /> Score drivers
               </span>
               <ul className="cx-drivers__list">
-                {decision.riskDrivers.map((driver) => (
+                {decision.scoreDrivers.map((driver) => (
                   <li key={driver} className="cx-drivers__plain">
-                    <AlertTriangle size={13} /> <span>{driver}</span>
+                    <BarChart3 size={13} /> <span>{driver}</span>
                   </li>
                 ))}
                 {publicExplanation.missingInformation.map((message) => (
                   <li key={message} className="cx-drivers__plain cx-drivers__plain--missing">
                     <Info size={13} /> <span>{message}</span>
+                  </li>
+                ))}
+              </ul>
+              <span className="cx-card__eyebrow cx-drivers__overlay-heading">
+                <Layers size={12} /> Treatment overlays · not score inputs
+              </span>
+              <ul className="cx-drivers__list">
+                {decision.treatmentOverlays.map((overlay) => (
+                  <li key={overlay} className="cx-drivers__plain cx-drivers__plain--overlay">
+                    <Layers size={13} /> <span>{overlay}</span>
                   </li>
                 ))}
               </ul>

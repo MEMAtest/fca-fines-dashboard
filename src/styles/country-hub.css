@@ -3342,6 +3342,8 @@ button.cx-kpi:hover {
 .cx-drivers__plain { display: flex; align-items: flex-start; gap: 0.45rem; color: #334155; font-size: 0.79rem; line-height: 1.45; }
 .cx-drivers__plain svg { flex: 0 0 auto; color: #c2410c; margin-top: 0.12rem; }
 .cx-drivers__plain--missing svg { color: #64748b; }
+.cx-drivers__overlay-heading { margin-top: 0.9rem; }
+.cx-drivers__plain--overlay svg { color: #2563eb; }
 
 /* small band tags */
 .cx-tag {

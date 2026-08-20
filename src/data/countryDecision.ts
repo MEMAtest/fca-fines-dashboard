@@ -49,6 +49,11 @@ export interface CountryDecision {
    * profiles yield visibly different lists.
    */
   treatmentChecklist: string[];
+  /** Numeric v3 pillars, ordered by their actual contribution to the score. */
+  scoreDrivers: string[];
+  /** FATF and sanctions treatment signals; explicitly excluded from the score. */
+  treatmentOverlays: string[];
+  /** @deprecated Historical alias. Contains score drivers only, never overlays. */
   riskDrivers: string[];
   mitigatingFactors: string[];
   businessImpact: BusinessImpactRow[];
@@ -69,7 +74,13 @@ export interface DecisionInput {
   scoreAvailable: boolean;
   breakdown: ScoreBreakdown;
   /** Current methodology pillars used for narrative drivers; v2 breakdown is historical compatibility only. */
-  currentPillars?: Array<{ label: string; risk: number | null }>;
+  currentPillars?: Array<{
+    key: "effectiveness" | "safeguards" | "governance";
+    label: string;
+    risk: number | null;
+    appliedWeight: number;
+    contribution: number | null;
+  }>;
   /** Current WGI governance dimensions, used only to explain the governance pillar. */
   currentGovernanceDomains?: Array<{ key: string; label: string; risk: number | null }>;
   sanctions?: CountrySanctions;
@@ -119,6 +130,12 @@ function topDomains(
     .sort((a, b) => (b.risk as number) - (a.risk as number));
 }
 
+function scoredPillars(input: DecisionInput) {
+  return (input.currentPillars ?? [])
+    .filter((pillar) => pillar.risk !== null && pillar.contribution !== null)
+    .sort((a, b) => (b.contribution as number) - (a.contribution as number));
+}
+
 export function hasComprehensiveSanctions(sanctions?: CountrySanctions): boolean {
   return !!sanctions?.programs.some((p) => p.tier === "comprehensive");
 }
@@ -155,20 +172,17 @@ function verdict(input: DecisionInput): { headline: string; paragraph: string } 
       paragraph: `${input.name} has information for fewer than two of the three parts of the score, so RegActions does not publish a number or risk band. ${fatfPhrase} Missing information is not treated as zero or Low risk.`,
     };
   }
-  const doms = topDomains(input.breakdown, input.currentPillars, input.currentGovernanceDomains);
-  const top = doms[0];
+  const drivers = scoredPillars(input);
+  const top = drivers[0];
   const qualifier = top && (top.risk as number) >= 4
     ? DOMAIN_QUALIFIER[top.key] ?? `elevated ${top.label.toLowerCase()} risk`
     : "";
   const headline = `${bandLabel(input.riskResult.band)} country risk${qualifier ? `, with ${qualifier}` : ""}`;
 
   const bandLower = bandLabel(input.riskResult.band).toLowerCase();
-  const driverPhrase =
-    doms.length > 1 && (doms[1].risk as number) >= 4
-      ? `weak ${DOMAIN_NOUN[top.key] ?? top.label.toLowerCase()}, alongside ${DOMAIN_NOUN[doms[1].key] ?? doms[1].label.toLowerCase()} risk`
-      : top
-        ? `weak ${DOMAIN_NOUN[top.key] ?? top.label.toLowerCase()}`
-        : "its governance profile";
+  const driverPhrase = top
+    ? `${top.label.toLowerCase()}, contributing ${(top.contribution as number).toFixed(1)} of ${input.riskResult.score.toFixed(1)} points`
+    : "the available scored pillars";
   const fatfPhrase = input.fatf
     ? input.fatf.listing === "call-for-action"
       ? input.fatf.requiredAction === "countermeasures"
@@ -178,9 +192,11 @@ function verdict(input: DecisionInput): { headline: string; paragraph: string } 
     : "not currently FATF grey- or black-listed";
   const sancClause = !input.sanctionsCoverageComplete
     ? "International sanctions information is unavailable, so the absence of a programme is not assumed"
-    : `${input.name} is ${hasComprehensiveSanctions(input.sanctions)
-        ? "subject to comprehensive country-wide sanctions"
-        : "not subject to comprehensive country-wide sanctions"}`;
+    : hasComprehensiveSanctions(input.sanctions)
+      ? `${input.name} is subject to comprehensive country-wide sanctions`
+      : input.sanctionsTier
+        ? `${input.name} has a ${input.sanctionsTier} sanctions programme`
+        : `${input.name} is not subject to comprehensive country-wide sanctions and has no direct country-level programme identified`;
   const scrutiny =
     input.riskResult.band === "low"
       ? ""
@@ -188,34 +204,38 @@ function verdict(input: DecisionInput): { headline: string; paragraph: string } 
   const statusClause = input.riskResult.status === "provisional"
     ? " Some information is unavailable, so the available parts are rebalanced and the country will not be labelled Low risk while information is missing."
     : "";
-  const paragraph = `${input.name}'s country risk score is ${input.riskResult.score.toFixed(1)}/10, placing it in the ${bandLower}-risk band.${statusClause} The principal driver is ${driverPhrase}. ${input.name} is ${fatfPhrase}. ${sancClause}.${scrutiny}`;
+  const paragraph = `${input.name}'s country risk score is ${input.riskResult.score.toFixed(1)}/10, placing it in the ${bandLower}-risk band.${statusClause} The principal score driver is ${driverPhrase}. Separately, the treatment overlays show that ${input.name} is ${fatfPhrase}, and that ${sancClause}.${scrutiny}`;
   return { headline, paragraph };
 }
 
-function riskDrivers(input: DecisionInput): string[] {
+function scoreDrivers(input: DecisionInput): string[] {
+  if (!input.scoreAvailable) {
+    return ["Headline score withheld; available evidence is not weighted until at least two pillars are available"];
+  }
+  const out = scoredPillars(input).map((pillar) =>
+    `${pillar.label}: ${(pillar.risk as number).toFixed(1)}/10 × ${Math.round(pillar.appliedWeight * 100)}% = ${(pillar.contribution as number).toFixed(1)} points`,
+  );
+  return out.length ? out : ["No scored pillar contribution is available"];
+}
+
+function treatmentOverlays(input: DecisionInput): string[] {
   const out: string[] = [];
-  if (!input.scoreAvailable) out.push("Underlying country-risk evidence is incomplete; no headline score is published");
   if (input.fatf) {
     const action = input.fatf.listing === "increased-monitoring"
       ? "increased-monitoring status"
       : input.fatf.requiredAction === "countermeasures"
         ? "call for action requiring countermeasures"
         : "call for action requiring enhanced due diligence";
-    out.push(`FATF ${action}`);
+    out.push(`FATF treatment overlay: ${action} (not a score input)`);
   }
   if (input.sanctionsCoverageComplete && input.sanctionsTier)
     out.push(
-      `${input.sanctionsTier.charAt(0).toUpperCase() + input.sanctionsTier.slice(1)} sanctions exposure`,
+      `Sanctions treatment overlay: ${input.sanctionsTier} programme (not a score input)`,
     );
-  for (const d of topDomains(input.breakdown, input.currentPillars, input.currentGovernanceDomains)) {
-    if ((d.risk as number) < 5 || out.length >= 5) break;
-    out.push(`${d.label} — ${(d.risk as number).toFixed(1)}/10`);
+  if (!input.sanctionsCoverageComplete) {
+    out.push("Sanctions treatment overlay: evidence incomplete; absence is not inferred");
   }
-  return out.length
-    ? out
-    : [input.sanctionsCoverageComplete
-        ? "Government effectiveness and rule of law drive the score; no FATF listing or direct country-level sanctions were identified"
-        : "Government effectiveness and rule of law drive the available score; international sanctions information is unavailable"];
+  return out.length ? out : ["No FATF or direct country-level sanctions treatment overlay identified"];
 }
 
 function mitigatingFactors(input: DecisionInput): string[] {
@@ -406,12 +426,15 @@ function whatChanged(input: DecisionInput): WhatChangedItem[] {
 
 export function buildDecision(input: DecisionInput): CountryDecision {
   const v = verdict(input);
+  const drivers = scoreDrivers(input);
   return {
     verdictHeadline: v.headline,
     verdictParagraph: v.paragraph,
     treatment: treatmentFor(input),
     treatmentChecklist: treatmentChecklist(input),
-    riskDrivers: riskDrivers(input),
+    scoreDrivers: drivers,
+    treatmentOverlays: treatmentOverlays(input),
+    riskDrivers: drivers,
     mitigatingFactors: mitigatingFactors(input),
     businessImpact: businessImpact(input),
     eddTriggers: EDD_TRIGGERS,
