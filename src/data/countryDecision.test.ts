@@ -55,6 +55,7 @@ describe("v3 score-driver explainability", () => {
     expect(decision.verdictParagraph).toContain("principal score driver is financial-crime effectiveness");
     expect(decision.verdictParagraph).toContain("Venezuela has a sectoral sanctions programme");
     expect(decision.verdictParagraph).not.toContain("principal driver is weak corruption");
+    expect(decision.whatChanged.find((item) => item.label === "Sanctions exposure")?.value).toBe("Sectoral programme in place");
   });
 
   it("keeps the historical riskDrivers alias free of treatment overlays", () => {

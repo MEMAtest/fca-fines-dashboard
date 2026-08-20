@@ -8,6 +8,7 @@ import {
 import { COUNTRY_RISK_SOURCES } from "../data/countryRiskSources.js";
 import { SANCTIONS_APPROVED_SNAPSHOT } from "../data/sanctionsApprovedData.js";
 import { CPI_LICENCE, CPI_SOURCE, CPI_YEAR } from "../data/cpiData.js";
+import { useSEO } from "../hooks/useSEO.js";
 import "../styles/country-hub.css";
 
 const percent = (value: number) => `${Math.round(value * 100)}%`;
@@ -28,6 +29,15 @@ function cadenceLabel(cadence: string): string {
 }
 
 export function CountryMethodologyV2() {
+  useSEO({
+    title: "Trusted Country Risk Score v2 Methodology | RegActions",
+    description:
+      "The deterministic RegActions country-risk v2 methodology, evidence rules, source assurance, confidence and regulatory floors.",
+    keywords: "country risk methodology v2, FATF assessment ratings, WGI governance, sanctions risk",
+    canonicalPath: "/countries/methodology/v2",
+    ogType: "article",
+  });
+
   return (
     <div className="cx-method">
       <Link to="/countries" className="country-hub__back"><ArrowLeft size={16} /> Countries</Link>

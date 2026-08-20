@@ -725,7 +725,10 @@ function renderCountryFaqBlock(faqs: CountryFaq[]): string {
  * prerendered HTML and the SPA can't drift apart in copy/logic.
  */
 function renderCountryFatfBody(view: CountryView): string {
-  const { country, statusHeading, statusDetail, history, enforcement, sanctions, sanctionsTier, riskV3, publicSurface, breakdown, globalAverage, cpi, decision, enforcementAssessed, hasComprehensiveSanctions, hasTargetedSanctions, sanctionsCoverageComplete, regulatory, regionalPeers, attribution } = view;
+  const { country, statusHeading, statusDetail, history, enforcement, sanctions, riskV3, publicSurface, breakdown, globalAverage, cpi, decision, enforcementAssessed, regulatory, regionalPeers, attribution } = view;
+  const sanctionsOverlay = riskV3.overlays.sanctions;
+  const sanctionsTier = sanctionsOverlay.highestTier;
+  const sanctionsCoverageComplete = sanctionsOverlay.coverageComplete;
   const scoreAvailable = riskV3.score !== null && riskV3.band !== null;
   const publicExplanation = buildCountryRiskV3PublicExplanation(riskV3);
   const title = `${country.name} — Country Risk Report`;
@@ -742,12 +745,15 @@ function renderCountryFatfBody(view: CountryView): string {
     : `<h2>Country Risk Score: not published</h2><p>${escapeHtml(
         publicExplanation.statusExplanation,
       )}</p><h3>Information available</h3><ul>${pillarLis}${missingLis}<li>Headline score: not published</li></ul>`;
+  const sanctionsGlance = !sanctionsCoverageComplete
+    ? "Geographic sanctions evidence: incomplete; absence is not inferred and applicable lists must still be screened."
+    : sanctionsTier
+      ? `${sanctionsTierLabel(sanctionsTier)} country-level sanctions programme identified; this is a legal treatment overlay and does not change the numeric country-risk score.`
+      : "No direct country-level sanctions programme identified; sanctions remain a legal treatment overlay and applicable lists must still be screened.";
   const glanceHtml = `<h2>At a glance</h2><ul><li>${escapeHtml(
     `FATF status: ${statusHeading} (one indicator only; it does not set the overall country risk rating by itself)`,
   )}</li><li>${escapeHtml(
-    sanctionsCoverageComplete
-      ? `Comprehensive country sanctions: ${hasComprehensiveSanctions ? "in place" : "none identified"}. Targeted sanctions exposure: ${hasComprehensiveSanctions || hasTargetedSanctions ? "programmes in place, screen applicable lists" : "possible, screen applicable persons, entities and sectors"}`
-      : "Geographic sanctions evidence: incomplete; absence is not inferred and applicable lists must still be screened.",
+    sanctionsGlance,
   )}</li><li>${escapeHtml(riskV3.pillars.governance.score === null ? "Governance and institutional integrity: information unavailable" : `Governance and institutional integrity: ${riskV3.pillars.governance.score.toFixed(1)}/10`)}</li><li>${escapeHtml(
     cpi
       ? `Corruption (CPI ${CPI_YEAR}): ${cpi.score}/100, rank #${cpi.rank} of ${CPI_TOTAL}`
@@ -900,11 +906,9 @@ function renderCountryFatfBody(view: CountryView): string {
     `International sanctions: ${
       !sanctionsCoverageComplete
         ? "official-source evidence incomplete"
-        : hasComprehensiveSanctions
-        ? "comprehensive country programme"
         : sanctionsTier
-          ? `${sanctionsTierLabel(sanctionsTier).toLowerCase()} exposure`
-          : "no listed programme identified"
+          ? `${sanctionsTierLabel(sanctionsTier).toLowerCase()} country programme (legal treatment overlay)`
+          : "no direct country programme identified (legal treatment overlay remains applicable)"
     }`,
   )}</li>${euTaxLi}${boLi}<li>${escapeHtml(
     cpi

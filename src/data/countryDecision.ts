@@ -397,7 +397,7 @@ function whatChanged(input: DecisionInput): WhatChangedItem[] {
     : hasComprehensiveSanctions(input.sanctions)
       ? "Comprehensive programme in place"
       : input.sanctionsTier
-        ? "Targeted programmes in place"
+        ? `${input.sanctionsTier.charAt(0).toUpperCase() + input.sanctionsTier.slice(1)} programme in place`
         : "None identified";
   return [
     {
