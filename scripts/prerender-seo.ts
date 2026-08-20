@@ -91,6 +91,7 @@ import {
 import {
   buildCompareView,
   curatedComparePairs,
+  emittedComparePairs,
   relatedComparePairs,
   type CompareView,
 } from "../src/data/countryCompare.js";
@@ -998,9 +999,7 @@ function renderCompareBody(view: CompareView): string {
   const headA = `${a.flag} ${escapeHtml(a.country.name)} (${
     a.score === null ? "score withheld" : `${a.score.toFixed(1)}/10, ${escapeHtml(a.bandLabel)}`
   })`;
-  const headB = `${b.flag} ${escapeHtml(b.country.name)} (${
-    b.score === null ? "score withheld" : `${b.score.toFixed(1)}/10, ${escapeHtml(b.bandLabel)}`
-  })`;
+  const headB = `${b.flag} ${escapeHtml(b.country.name)} (${b.score === null ? "score withheld" : `${b.score.toFixed(1)}/10, ${escapeHtml(b.bandLabel)}`})`;
   const rowsHtml = view.rows
     .map(
       (r) =>
@@ -1052,7 +1051,7 @@ function renderCompareBody(view: CompareView): string {
           .join("")}</ul>`
       : "";
   const sourcesHtml = `<p>${escapeHtml(
-    "Scores combine World Bank WGI governance, FATF listing status and sanctions exposure; CPI and enforcement volume are shown but not scored.",
+    `Active methodology ${a.methodologyVersion}; ${a.country.name} is ${a.scoreStatus} with ${a.confidence} confidence and ${b.country.name} is ${b.scoreStatus} with ${b.confidence} confidence. FATF listings and sanctions are shown as regulatory overlays; CPI and enforcement volume are contextual, not score inputs.`,
   )} <a href="/countries/methodology">${escapeHtml("Scoring methodology")}</a>.</p>`;
   return `<div class="blog-page"><div class="blog-post-container"><article class="blog-article-modal"><h1 class="blog-post-title">${escapeHtml(
     title,
@@ -2475,19 +2474,16 @@ async function buildPageMetas(): Promise<PageMeta[]> {
     });
   }
 
-  // 4b. Curated country-vs-country compare pages. The React route handles ANY
-  // valid pair client-side; this curated high-intent set (~20 anchors x top
-  // comparators, de-duplicated by canonical slug) is prerendered, while only a
-  // smaller priority subset is advertised in the sitemap.
-  // All curated pairs remain usable and indexable, but the sitemap advertises a
-  // smaller priority set so a new domain does not ask Google to crawl hundreds
-  // of similar comparison URLs before its core regulator/editorial pages.
+  // 4b. Country-vs-country compare pages. The React route handles any valid
+  // pair client-side, but every comparison URL emitted by a country page is
+  // also prerendered so a crawler/direct request receives a real 200 document.
+  // The smaller curated high-intent subset remains the sitemap priority set.
   const priorityComparePaths = new Set(
     curatedComparePairs(COMPARE_SITEMAP_COMPARATORS_PER_ANCHOR).map(
       (pair) => `/countries/compare/${pair.slug}`,
     ),
   );
-  for (const pair of curatedComparePairs()) {
+  for (const pair of emittedComparePairs()) {
     const compareView = buildCompareView(pair.a, pair.b);
     const path = compareView.canonicalPath;
     const keywords = `${pair.a.name} vs ${pair.b.name}, ${pair.a.name} ${pair.b.name} country risk, ${pair.a.name} vs ${pair.b.name} AML, compare country risk, ${pair.a.name} ${pair.b.name} FATF`;
