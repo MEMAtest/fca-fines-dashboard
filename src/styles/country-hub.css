@@ -3042,26 +3042,24 @@ button.cx-kpi:hover {
   padding: 0 1.25rem 1.5rem;
   color: #0b1f2a;
 }
+/* Holds the export/watch actions only -- the breadcrumb moved out to
+   SiteHeader, which already renders one on every route. `justify-content: end`
+   keeps the buttons right-aligned on desktop now that nothing sits opposite. */
 .cx-ws__topbar {
   display: flex;
   align-items: center;
-  justify-content: space-between;
+  justify-content: flex-end;
   padding: 0.6rem 0 0.9rem;
 }
-.cx-ws__crumbs {
+/* Wraps: this row is 282px of buttons and used to run 85px past a 390px
+   viewport, which rendered the whole country report zoomed out on a phone. */
+.cx-ws__actions {
   display: flex;
-  align-items: center;
-  gap: 0.4rem;
-  font-size: 0.8rem;
-  color: #94a3b8;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 0.5rem;
+  max-width: 100%;
 }
-.cx-ws__crumbs a {
-  color: #64748b;
-  text-decoration: none;
-}
-.cx-ws__crumbs a:hover { color: #0b7f66; }
-.cx-ws__crumb-current { color: #0b1f2a; font-weight: 600; }
-.cx-ws__actions { display: flex; gap: 0.5rem; }
 .cx-btn {
   display: inline-flex;
   align-items: center;

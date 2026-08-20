@@ -599,15 +599,16 @@ export function CountryHub() {
 
   return (
     <div className="cx-ws-wrap">
-      {/* Breadcrumb + actions */}
+      {/* Actions only. The breadcrumb comes from SiteHeader, which renders one
+          on every route and owns the BreadcrumbList JSON-LD; this page used to
+          render a second, identical trail directly beneath it. On mobile that
+          cost 34px of vertical space before the title for no information.
+
+          The export row sat in a flex row BESIDE that trail and did not wrap,
+          which pushed the page 85px past a 390px viewport and made the whole
+          country report render zoomed out. It now owns the full width and
+          wraps. */}
       <div className="cx-ws__topbar">
-        <nav className="cx-ws__crumbs" aria-label="Breadcrumb">
-          <Link to="/">Home</Link>
-          <span aria-hidden="true">›</span>
-          <Link to="/countries">Countries</Link>
-          <span aria-hidden="true">›</span>
-          <span className="cx-ws__crumb-current">{country.name}</span>
-        </nav>
         <div className="cx-ws__actions">
           <a className="cx-btn" href={`/api/country-risk/evidence/${country.iso2}?format=pdf`}>
             <Download size={14} /> PDF
