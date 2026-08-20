@@ -755,3 +755,52 @@ describe("isGarbageFirmName – should KEEP (legitimate names)", () => {
     expect(isGarbageFirmName("Listing Rules Consulting LLP")).toBe(false);
   });
 });
+
+/**
+ * Rules 13-16, added from the LIVE homepage feed. Each of these reached the
+ * front page as if it were a firm; they are kept as regressions so the feed
+ * cannot start advertising scraped prose again.
+ */
+describe("isGarbageFirmName — live homepage feed regressions", () => {
+  const junk = [
+    "duurzaam financieel welzijn in Nederland. &copy",
+    "Former Executives",
+    "Boiler Room Operator and Three Entities",
+    "Toms River Trio in Connection",
+    "Hearing adjourned in criminal prosecution",
+    "Violation of Securities Regulations by Pocket Securities Co., Ltd.",
+    "unauthorised pledge of immovable property of Zee Entertainment Enterprises",
+    "front running of the trades of Axis Mutual Fund",
+    "Private Fund Adviser Adit Ventures Management, Its CEO and Affiliated",
+  ];
+
+  for (const name of junk) {
+    it(`rejects ${JSON.stringify(name.slice(0, 44))}`, () => {
+      expect(isGarbageFirmName(name)).toBe(true);
+    });
+  }
+
+  it("keeps the real parties that appear alongside them in the same feed", () => {
+    for (const name of [
+      "Demetrios Christos Hadjigeorgiou",
+      "Scotia Securities Inc",
+      "RBC Dominion Securities Inc",
+      "EURO FİNANS MENKUL DEĞERLER ANONİM ŞİRKETİ",
+      "JOAO GUSTAVO REBELLO DE PAULA",
+      "Debojyoti (Debo) Majumder",
+    ]) {
+      expect(isGarbageFirmName(name)).toBe(false);
+    }
+  });
+
+  it("keeps lowercase honorific names (CNMV lists parties as 'don ...')", () => {
+    expect(
+      isGarbageFirmName("don Santiago Reyna Herrero, don Luis Manuel Martínez"),
+    ).toBe(false);
+  });
+
+  it("still keeps the short lowercase CMA descriptor", () => {
+    // The 4-word floor on rule 14 exists for this.
+    expect(isGarbageFirmName("pharma firm")).toBe(false);
+  });
+});
