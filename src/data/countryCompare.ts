@@ -144,8 +144,20 @@ const BAND_ORDER: Record<ScoreBand, number> = {
   "very-high": 3,
 };
 
-function buildSide(country: Country): CompareSide {
+// Prerendering emits several hundred compare documents. CountryView derives
+// multiple sourced surfaces, so reuse the immutable per-process result while
+// building a sitemap instead of recomputing it for every pair/candidate.
+const comparisonViewCache = new Map<string, CountryView>();
+function comparisonViewFor(country: Country): CountryView {
+  const cached = comparisonViewCache.get(country.iso2);
+  if (cached) return cached;
   const view = buildCountryView(country);
+  comparisonViewCache.set(country.iso2, view);
+  return view;
+}
+
+function buildSide(country: Country): CompareSide {
+  const view = comparisonViewFor(country);
   const risk = activeRiskFor(view);
   const score = risk.score;
   const band = risk.band;
@@ -530,7 +542,7 @@ export function compareComparatorDetails(
 ): ComparatorSelection[] {
   const anchor = COUNTRIES.find((c) => c.iso2 === anchorIso2);
   if (!anchor || limit <= 0) return [];
-  const anchorRisk = activeRiskFor(buildCountryView(anchor));
+  const anchorRisk = activeRiskFor(comparisonViewFor(anchor));
   const anchorScore = anchorRisk.score;
   const pool = new Map<string, Country>();
   for (const c of pageCountries()) {
@@ -544,7 +556,7 @@ export function compareComparatorDetails(
   }
   const candidates = [...pool.values()]
     .map((country) => {
-      const risk = activeRiskFor(buildCountryView(country));
+      const risk = activeRiskFor(comparisonViewFor(country));
       const complete = risk.score !== null && risk.status === "complete";
       const sameSubregion = country.subregion === anchor.subregion && country.region === anchor.region;
       const sameRegion = country.region === anchor.region;

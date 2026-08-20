@@ -4,6 +4,7 @@ import { getFatfAssessment, FATF_ASSESSMENT_EFFECTIVE_AT, FATF_ASSESSMENT_RETRIE
 import { getFatfStatus, FATF_LIST_SHA256, FATF_SOURCE_URL, FATF_VERIFIED_AT } from "../../src/data/fatfStatus.js";
 import { getGovernanceDimensions, GOVERNANCE_LICENCE, GOVERNANCE_RETRIEVED_AT, GOVERNANCE_SHA256, GOVERNANCE_SOURCE, GOVERNANCE_VINTAGE } from "../../src/data/governanceData.js";
 import { computeCountryRiskV2, COUNTRY_RISK_METHODOLOGY_VERSION, fatfAssessmentRisk } from "../../src/data/countryRiskV2.js";
+import { computeCountryRiskV3, COUNTRY_RISK_V3_METHODOLOGY_VERSION } from "../../src/data/countryRiskV3.js";
 import { getCpi, CPI_LICENCE, CPI_SOURCE, CPI_YEAR } from "../../src/data/cpiData.js";
 import { computeCountryRiskScore } from "../../src/data/countryRiskScore.js";
 import { countryRiskSourcesAsOf } from "../../src/data/countryRiskSources.js";
@@ -21,12 +22,33 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   if (req.method !== "GET") return res.status(405).json({ error: "Method not allowed" });
   const iso2 = String(req.query.iso2 ?? "").toUpperCase();
   const methodology = String(req.query.methodology ?? "v2");
-  if (methodology !== "v2" && methodology !== COUNTRY_RISK_METHODOLOGY_VERSION) {
+  if (methodology !== "v2" && methodology !== COUNTRY_RISK_METHODOLOGY_VERSION && methodology !== "v3" && methodology !== COUNTRY_RISK_V3_METHODOLOGY_VERSION) {
     return res.status(400).json({ error: `Unsupported methodology: ${methodology}` });
   }
   const country = getCountryByIso2(iso2);
   if (!country) return res.status(404).json({ error: "Country not found" });
   const asOf = new Date();
+  if (methodology === "v3" || methodology === COUNTRY_RISK_V3_METHODOLOGY_VERSION) {
+    const result = computeCountryRiskV3(iso2, { asOf });
+    const sources = countryRiskSourcesAsOf(asOf);
+    const fatf = getFatfStatus(iso2);
+    const governance = getGovernanceDimensions(iso2);
+    const sanctions = getApprovedSanctions(iso2);
+    return res.status(200).json({
+      country,
+      result,
+      methodologyVersion: COUNTRY_RISK_V3_METHODOLOGY_VERSION,
+      sources,
+      evidence: {
+        beneficialOwnership: result.beneficialOwnership,
+        overlays: result.overlays,
+        fatf: fatf ?? null,
+        governance: governance ?? null,
+        sanctions: sanctions?.programs ?? [],
+      },
+      context: { transparencyInternationalCpi: getCpi(iso2) ?? null, scored: false },
+    });
+  }
   const result = computeCountryRiskV2(iso2, { asOf });
   const previous = computeCountryRiskScore(iso2);
   const previousScore = previous.hasGovernance ? previous.score : null;

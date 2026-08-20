@@ -10,14 +10,17 @@ import {
   computeCountryRiskV2,
   COUNTRY_RISK_METHODOLOGY_VERSION,
 } from "./countryRiskV2.js";
+import { computeCountryRiskV3, COUNTRY_RISK_V3_METHODOLOGY_VERSION, type CountryRiskV3Result } from "./countryRiskV3.js";
 import { countryRiskSourcesAsOf } from "./countryRiskSources.js";
 import { buildCountryRiskPublicSurface } from "./countryRiskSurface.js";
 
 export interface CountryRiskEvidenceBundle {
   exportedAt: string;
-  methodologyVersion: typeof COUNTRY_RISK_METHODOLOGY_VERSION;
+  methodologyVersion: string;
   country: NonNullable<ReturnType<typeof getCountryByIso2>>;
   result: ReturnType<typeof computeCountryRiskV2>;
+  /** v3 is optional during shadow operation; v2 remains the compatibility result. */
+  v3?: CountryRiskV3Result;
   surface: ReturnType<typeof buildCountryRiskPublicSurface>;
   evidence: {
     fatfAssessment: ReturnType<typeof getFatfAssessment> | null;
@@ -58,15 +61,17 @@ const valueText = (value: unknown): string => {
 export function buildCountryRiskEvidenceBundle(
   iso2: string,
   asOf = new Date(),
+  methodology: "v2" | "v3" = "v2",
 ): CountryRiskEvidenceBundle | null {
   const country = getCountryByIso2(iso2.toUpperCase());
   if (!country) return null;
   const sanctions = getApprovedSanctions(country.iso2);
   return {
     exportedAt: asOf.toISOString(),
-    methodologyVersion: COUNTRY_RISK_METHODOLOGY_VERSION,
+    methodologyVersion: methodology === "v3" ? COUNTRY_RISK_V3_METHODOLOGY_VERSION : COUNTRY_RISK_METHODOLOGY_VERSION,
     country,
     result: computeCountryRiskV2(country.iso2, { asOf }),
+    ...(methodology === "v3" ? { v3: computeCountryRiskV3(country.iso2, { asOf }) } : {}),
     surface: buildCountryRiskPublicSurface(country.iso2, asOf),
     evidence: {
       fatfAssessment: getFatfAssessment(country.iso2) ?? null,
@@ -121,6 +126,65 @@ export function countryRiskEvidenceRows(bundle: CountryRiskEvidenceBundle): Coun
       sourceUrl: bundle.surface.fatfAction.sourceUrl,
     },
   ];
+
+  if (bundle.v3) {
+    rows[0] = {
+      section: "score",
+      key: "headline",
+      value: bundle.v3.score === null ? "Not scored" : `${bundle.v3.score}/10 (${bundle.v3.band})`,
+      status: bundle.v3.status,
+      scored: "true",
+      effectiveAt: bundle.v3.asOf,
+      retrievedAt: bundle.exportedAt,
+      sourceUrl: "https://regactions.com/countries/methodology/v3",
+    };
+    rows[1] = {
+      section: "score",
+      key: "confidence",
+      value: bundle.v3.confidence,
+      status: bundle.v3.status,
+      scored: "true",
+      effectiveAt: bundle.v3.asOf,
+      retrievedAt: bundle.exportedAt,
+      sourceUrl: "https://regactions.com/countries/methodology/v3",
+    };
+    for (const [key, pillar] of Object.entries(bundle.v3.pillars)) {
+      rows.push({
+        section: "pillar",
+        key,
+        value: valueText(pillar.score),
+        status: pillar.coverageStatus,
+        scored: "true",
+        effectiveAt: bundle.v3.asOf,
+        retrievedAt: bundle.exportedAt,
+        sourceUrl: key === "governance"
+          ? "https://www.worldbank.org/en/publication/worldwide-governance-indicators"
+          : "https://www.fatf-gafi.org/en/publications/Mutualevaluations/Fatf-methodology.html",
+      });
+    }
+    rows.push({
+      section: "beneficial-ownership",
+      key: "score",
+      value: valueText(bundle.v3.beneficialOwnership.score),
+      status: bundle.v3.beneficialOwnership.availability,
+      scored: "true",
+      effectiveAt: bundle.v3.beneficialOwnership.assessmentDate ?? bundle.v3.asOf,
+      retrievedAt: bundle.exportedAt,
+      sourceUrl: bundle.v3.beneficialOwnership.sourceUrl,
+    });
+    for (const [key, value] of Object.entries(bundle.v3.overlays)) {
+      rows.push({
+        section: "overlay",
+        key,
+        value: valueText(value),
+        status: "context",
+        scored: "false",
+        effectiveAt: bundle.v3.asOf,
+        retrievedAt: bundle.exportedAt,
+        sourceUrl: key === "fatf" ? "https://www.fatf-gafi.org/en/publications/High-risk-and-other-monitored-jurisdictions.html" : "",
+      });
+    }
+  }
 
   for (const [key, pillar] of Object.entries(bundle.result.pillars)) {
     rows.push({

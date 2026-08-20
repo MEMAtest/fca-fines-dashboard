@@ -27,4 +27,14 @@ describe("country-risk public evidence exports", () => {
   it("returns null for an unknown jurisdiction", () => {
     expect(buildCountryRiskEvidenceBundle("ZZ")).toBeNull();
   });
+
+  it("exports v3 pillars, beneficial ownership and legal overlays", () => {
+    const bundle = buildCountryRiskEvidenceBundle("VE", new Date("2026-08-20T00:00:00.000Z"), "v3");
+    expect(bundle?.methodologyVersion).toBe("3.0.0");
+    expect(bundle?.v3?.pillars).toHaveProperty("effectiveness");
+    expect(bundle?.v3?.beneficialOwnership).toHaveProperty("formula");
+    const rows = countryRiskEvidenceRows(bundle!);
+    expect(rows).toContainEqual(expect.objectContaining({ section: "beneficial-ownership", key: "score" }));
+    expect(rows).toContainEqual(expect.objectContaining({ section: "overlay", key: "sanctions", scored: "false" }));
+  });
 });
