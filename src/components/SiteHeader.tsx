@@ -9,7 +9,7 @@ import {
 import { UK_ENFORCEMENT_REGULATORS } from "../data/ukEnforcement.js";
 import { getCountryBySlug } from "../data/countries.js";
 import RegulatorMark from "./RegulatorMark.js";
-import { LogoLockup, BRAND } from "./RegActionsLogo.js";
+import { LogoLockup } from "./RegActionsLogo.js";
 import "../styles/siteheader.css";
 
 const NAV_LINKS = [
@@ -20,6 +20,34 @@ const NAV_LINKS = [
   { to: "/intelligence", label: "Enforcement Briefing" },
   { to: "/countries", label: "Countries" },
 ];
+
+// Newer surfaces that don't warrant a primary nav slot but still need one
+// reachable click from every page. `kind` is a short mono tag shown at the
+// right edge of the "More" menu row.
+const MORE_LINKS: Array<{
+  to: string;
+  label: string;
+  kind: string;
+  mailto?: boolean;
+}> = [
+  { to: "/board-pack", label: "Board Pack", kind: "TOOL" },
+  { to: "/topics", label: "Topics", kind: "HUB" },
+  { to: "/breaches", label: "Breaches", kind: "HUB" },
+  { to: "/roadmap", label: "Roadmap", kind: "INFO" },
+  { to: "/about", label: "About", kind: "INFO" },
+  { to: "mailto:contact@memaconsultants.com", label: "Contact", kind: "INFO", mailto: true },
+  { to: "/regulators", label: "Regulator hubs", kind: "HUB" },
+  { to: "/ops", label: "Ops", kind: "TOOL" },
+];
+
+function isMoreActive(pathname: string) {
+  return MORE_LINKS.some((item) => {
+    if (item.mailto) return false;
+    // "/regulators" already has its own primary trigger — don't double-light "More".
+    if (item.to === "/regulators") return false;
+    return pathname === item.to || pathname.startsWith(`${item.to}/`);
+  });
+}
 
 function isNavActive(to: string, pathname: string) {
   if (to === "/") return pathname === "/";
@@ -128,7 +156,12 @@ export function SiteHeader() {
   const [mobileRegulatorsOpen, setMobileRegulatorsOpen] = useState(
     location.pathname.startsWith("/regulators"),
   );
+  const [moreOpen, setMoreOpen] = useState(false);
+  const [mobileMoreOpen, setMobileMoreOpen] = useState(
+    isMoreActive(location.pathname),
+  );
   const regulatorCloseTimerRef = useRef<number | null>(null);
+  const moreCloseTimerRef = useRef<number | null>(null);
   const breadcrumbs = getBreadcrumbs(location.pathname);
   const isFcaFineCasePage = /^\/fca-fines\/\d{4}\/[^/]+\/[0-9a-f-]{36}\/?$/i.test(
     location.pathname,
@@ -165,6 +198,29 @@ export function SiteHeader() {
       setRegulatorDropdownOpen(false);
       setRegulatorQuery("");
       regulatorCloseTimerRef.current = null;
+    }, 220);
+  }, []);
+  const closeMore = useCallback(() => {
+    if (moreCloseTimerRef.current) {
+      window.clearTimeout(moreCloseTimerRef.current);
+      moreCloseTimerRef.current = null;
+    }
+    setMoreOpen(false);
+  }, []);
+  const openMore = useCallback(() => {
+    if (moreCloseTimerRef.current) {
+      window.clearTimeout(moreCloseTimerRef.current);
+      moreCloseTimerRef.current = null;
+    }
+    setMoreOpen(true);
+  }, []);
+  const scheduleMoreClose = useCallback(() => {
+    if (moreCloseTimerRef.current) {
+      window.clearTimeout(moreCloseTimerRef.current);
+    }
+    moreCloseTimerRef.current = window.setTimeout(() => {
+      setMoreOpen(false);
+      moreCloseTimerRef.current = null;
     }, 220);
   }, []);
 
@@ -277,16 +333,24 @@ export function SiteHeader() {
 
   // Close mobile menu or desktop dropdown on Escape key
   useEffect(() => {
-    if (!mobileOpen && !regulatorDropdownOpen) return;
+    if (!mobileOpen && !regulatorDropdownOpen && !moreOpen) return;
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === "Escape") {
         if (mobileOpen) closeMobile();
         else if (regulatorDropdownOpen) closeRegulatorDropdown();
+        else if (moreOpen) closeMore();
       }
     };
     document.addEventListener("keydown", handleKeyDown);
     return () => document.removeEventListener("keydown", handleKeyDown);
-  }, [mobileOpen, regulatorDropdownOpen, closeMobile, closeRegulatorDropdown]);
+  }, [
+    mobileOpen,
+    regulatorDropdownOpen,
+    moreOpen,
+    closeMobile,
+    closeRegulatorDropdown,
+    closeMore,
+  ]);
 
   useEffect(() => {
     if (!mobileOpen || typeof document === "undefined") return;
@@ -300,16 +364,21 @@ export function SiteHeader() {
   useEffect(() => {
     setMobileOpen(false);
     setRegulatorDropdownOpen(false);
+    setMoreOpen(false);
     setMobileRegulatorsOpen(
       location.pathname.startsWith("/regulators") ||
         location.pathname.startsWith("/uk-enforcement"),
     );
+    setMobileMoreOpen(isMoreActive(location.pathname));
   }, [location.pathname]);
 
   useEffect(
     () => () => {
       if (regulatorCloseTimerRef.current) {
         window.clearTimeout(regulatorCloseTimerRef.current);
+      }
+      if (moreCloseTimerRef.current) {
+        window.clearTimeout(moreCloseTimerRef.current);
       }
     },
     [],
@@ -320,12 +389,12 @@ export function SiteHeader() {
       <div className="site-header__inner">
         <Link to="/" className="site-header__logo">
           <LogoLockup
-            markSize={32}
-            wordSize={19}
-            wordWeight={600}
-            color={BRAND.navy}
-            accent={BRAND.teal}
-            gap={10}
+            markSize={26}
+            wordSize={17}
+            wordWeight={700}
+            color="var(--ra-ink)"
+            accent="var(--ra-accent-text)"
+            gap={8}
           />
         </Link>
 
@@ -520,7 +589,83 @@ export function SiteHeader() {
               </div>
             )}
           </div>
+
+          {/* More dropdown — newer surfaces that don't warrant a primary slot */}
+          <div
+            className="site-header__dropdown"
+            onMouseEnter={openMore}
+            onMouseLeave={scheduleMoreClose}
+          >
+            <button
+              type="button"
+              className={`site-header__more-trigger${
+                isMoreActive(location.pathname) ? " site-header__link--active" : ""
+              }`}
+              onClick={() => setMoreOpen((open) => !open)}
+              aria-expanded={moreOpen}
+              aria-haspopup="true"
+            >
+              More
+              <ChevronDown
+                size={14}
+                style={{
+                  transform: moreOpen ? "rotate(180deg)" : "none",
+                  transition: "transform 0.2s",
+                }}
+              />
+            </button>
+
+            {moreOpen && (
+              <div className="site-header__dropdown-menu site-header__more-menu">
+                {MORE_LINKS.map((item) =>
+                  item.mailto ? (
+                    <a
+                      key={item.to}
+                      href={item.to}
+                      className="site-header__more-item"
+                      onClick={closeMore}
+                    >
+                      <span>{item.label}</span>
+                      <span className="site-header__more-kind">{item.kind}</span>
+                    </a>
+                  ) : (
+                    <Link
+                      key={item.to}
+                      to={item.to}
+                      className={`site-header__more-item${
+                        item.to !== "/regulators" &&
+                        (location.pathname === item.to ||
+                          location.pathname.startsWith(`${item.to}/`))
+                          ? " site-header__more-item--active"
+                          : ""
+                      }`}
+                      onClick={closeMore}
+                    >
+                      <span>{item.label}</span>
+                      <span className="site-header__more-kind">{item.kind}</span>
+                    </Link>
+                  ),
+                )}
+              </div>
+            )}
+          </div>
         </nav>
+
+        {/* Search cluster */}
+        <div className="site-header__actions">
+          <Link
+            to="/search"
+            title="Search enforcement"
+            aria-label="Search enforcement"
+            className="site-header__icon-btn"
+          >
+            <Search size={16} strokeWidth={2.4} />
+          </Link>
+          <Link to="/search" className="site-header__search-btn">
+            Search enforcement
+            <ChevronRight size={14} strokeWidth={2.6} />
+          </Link>
+        </div>
 
         {/* Mobile hamburger */}
         <button
@@ -698,6 +843,60 @@ export function SiteHeader() {
                           </span>
                         </Link>
                       ))}
+                    </div>
+                  )}
+                </div>
+
+                <div className="site-header__mobile-group">
+                  <button
+                    type="button"
+                    className={`site-header__mobile-accordion-trigger${
+                      isMoreActive(location.pathname)
+                        ? " site-header__mobile-accordion-trigger--active"
+                        : ""
+                    }`}
+                    onClick={() => setMobileMoreOpen((open) => !open)}
+                    aria-expanded={mobileMoreOpen}
+                    aria-controls="mobile-more-panel"
+                  >
+                    <span>More</span>
+                    <ChevronDown
+                      size={18}
+                      className={`site-header__mobile-accordion-icon${mobileMoreOpen ? " site-header__mobile-accordion-icon--open" : ""}`}
+                    />
+                  </button>
+
+                  {mobileMoreOpen && (
+                    <div
+                      id="mobile-more-panel"
+                      className="site-header__mobile-accordion-panel"
+                    >
+                      {MORE_LINKS.map((item) =>
+                        item.mailto ? (
+                          <a
+                            key={item.to}
+                            href={item.to}
+                            className="site-header__mobile-link"
+                            onClick={closeMobile}
+                          >
+                            {item.label}
+                          </a>
+                        ) : (
+                          <Link
+                            key={item.to}
+                            to={item.to}
+                            className={`site-header__mobile-link${
+                              location.pathname === item.to ||
+                              location.pathname.startsWith(`${item.to}/`)
+                                ? " site-header__mobile-link--active"
+                                : ""
+                            }`}
+                            onClick={closeMobile}
+                          >
+                            {item.label}
+                          </Link>
+                        ),
+                      )}
                     </div>
                   )}
                 </div>
