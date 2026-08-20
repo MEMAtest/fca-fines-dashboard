@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { buildCountryIndex } from "./countryView.js";
+import { computeCountryRiskCurrent } from "./countryRiskMethodology.js";
 
 /**
  * Guards the Risk-matrix population contract (PR #39): the scatter plots ONLY
@@ -40,5 +41,12 @@ describe("risk-matrix population", () => {
     // Genuinely-low covered countries may sit near 0, but the uncovered mass
     // (150+) must not: the plotted zero-exposure count stays a small handful.
     expect(flatLine.length).toBeLessThan(10);
+  });
+
+  it("uses the current governance pillar for the independent control axis", () => {
+    const gb = index.find((entry) => entry.country.iso2 === "GB");
+    const risk = computeCountryRiskCurrent("GB");
+    expect(gb?.controlStrength).toBeCloseTo(10 - (risk.pillars.governance.score ?? 10), 1);
+    expect(gb?.controlStrength).not.toBeCloseTo(10 - (risk.pillars.safeguards.score ?? 10), 1);
   });
 });

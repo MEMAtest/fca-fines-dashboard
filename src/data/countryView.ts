@@ -363,6 +363,7 @@ export function buildSectorExposure(input: {
  */
 export function buildSectorExposureCurrent(
   risk: CountryRiskCurrentResult,
+  context: { cpi?: number } = {},
 ): SectorRow[] {
   const sanctions = risk.overlays.sanctions;
   const fatf = risk.overlays.fatf.listing === "call-for-action"
@@ -423,19 +424,30 @@ export function buildSectorExposureCurrent(
       ? elevated("Crypto & virtual assets", "FATF increased-monitoring overlay raises VASP supervision risk")
       : effectiveness === null
         ? review("Crypto & virtual assets", "Effectiveness pillar unavailable; no low-exposure conclusion")
-        : effectiveness >= 6
+        : effectiveness >= 7
           ? elevated("Crypto & virtual assets", `Effectiveness pillar risk is ${effectiveness.toFixed(1)}/10`)
           : low("Crypto & virtual assets", "No FATF overlay and effectiveness pillar within normal range");
 
   const property = bo === null
     ? review("Real estate & luxury assets", "Beneficial-ownership evidence unavailable; verify ownership controls")
     : bo >= 6
-      ? high("Real estate & luxury assets", `Beneficial-ownership subscore is ${bo.toFixed(1)}/10`)
+      ? high(
+          "Real estate & luxury assets",
+          context.cpi === undefined
+            ? `Beneficial-ownership subscore is ${bo.toFixed(1)}/10`
+            : `BO subscore ${bo.toFixed(1)}/10; CPI context ${context.cpi}/100`,
+        )
+      : context.cpi !== undefined && context.cpi < 40
+        ? elevated("Real estate & luxury assets", `CPI context ${context.cpi}/100; BO subscore ${bo.toFixed(1)}/10`)
       : governance !== null && governance >= 6
         ? elevated("Real estate & luxury assets", `Governance pillar risk is ${governance.toFixed(1)}/10`)
-        : low("Real estate & luxury assets", "Beneficial-ownership and governance signals are within normal range");
+        : governance === null
+          ? review("Real estate & luxury assets", "Governance evidence unavailable; no low-exposure conclusion")
+          : low("Real estate & luxury assets", "Beneficial-ownership and governance signals are within normal range");
 
-  const procurement = governance === null && effectiveness === null
+  const procurement = sanctions.highestTier === "comprehensive"
+    ? high("State-linked & procurement", "Comprehensive sanctions overlay restricts state-linked dealings")
+    : governance === null && effectiveness === null
     ? review("State-linked & procurement", "Current risk pillars unavailable; no low-exposure conclusion")
     : governance !== null && governance >= 7
       ? high("State-linked & procurement", `Governance pillar risk is ${governance.toFixed(1)}/10`)
@@ -594,7 +606,7 @@ export function buildCountryView(country: Country): CountryView {
     lastPlenary: FATF_LAST_PLENARY,
     nextPlenary: FATF_NEXT_PLENARY,
     regulatory,
-    sectorExposure: buildSectorExposureCurrent(riskV3),
+    sectorExposure: buildSectorExposureCurrent(riskV3, { cpi: cpi?.score }),
   };
 }
 
@@ -634,12 +646,14 @@ export function pageCountries(): Country[] {
 }
 
 /**
- * AML/CFT control strength (0–10, higher = stronger), derived from the current
- * v3 technical-safeguards pillar. This is a view metric, not another score.
+ * Institutional control strength (0–10, higher = stronger), derived from the
+ * current v3 governance pillar. This keeps the risk-matrix x-axis independent
+ * from enforcement exposure and does not duplicate the technical-safeguards
+ * pillar. Missing governance evidence remains null (fail closed).
  */
 export function controlStrength(iso2: string): number | null {
-  const safeguardsRisk = computeCountryRiskCurrent(iso2).pillars.safeguards.score;
-  return safeguardsRisk === null ? null : Math.round((10 - safeguardsRisk) * 10) / 10;
+  const governanceRisk = computeCountryRiskCurrent(iso2).pillars.governance.score;
+  return governanceRisk === null ? null : Math.round((10 - governanceRisk) * 10) / 10;
 }
 
 let _coveredCounts: number[] | undefined;
@@ -683,7 +697,7 @@ export interface CountryIndexEntry {
   sanctionsTier?: SanctionsTier;
   sanctionsCoverageComplete: boolean;
   hasEnforcement: boolean;
-  /** Current v3 safeguards strength 0–10 (higher = stronger), or null if unavailable. */
+  /** Current v3 institutional control strength 0–10, or null if governance is unavailable. */
   controlStrength: number | null;
   /** Enforcement exposure 0–10 (log-normalised tracked actions). */
   enforcementExposure: number;
