@@ -223,7 +223,7 @@
 }
 
 .site-header__crumb-link:hover {
-  color: #0FA77D;
+  color: var(--ra-accent-text);
 }
 
 .site-header__crumb-current {
@@ -287,7 +287,7 @@
 }
 
 .site-header__mobile-link--active {
-  color: #0FA77D;
+  color: var(--ra-accent-text);
   background: #EAF7F5;
   font-weight: 600;
 }
@@ -321,7 +321,7 @@
 }
 
 .site-header__mobile-accordion-trigger--active {
-  color: #0FA77D;
+  color: var(--ra-accent-text);
   background: #EAF7F5;
 }
 
@@ -332,7 +332,7 @@
 
 .site-header__mobile-accordion-icon--open {
   transform: rotate(180deg);
-  color: #0FA77D;
+  color: var(--ra-accent-text);
 }
 
 .site-header__mobile-accordion-panel {
@@ -588,7 +588,7 @@
   gap: 0.35rem;
   font-size: 0.875rem;
   font-weight: 600;
-  color: #0FA77D;
+  color: var(--ra-accent-text);
   text-decoration: none;
   padding: 0.4rem 0.6rem;
   border-radius: 6px;
@@ -607,7 +607,7 @@
 /* Mobile "View all" link */
 .site-header__mobile-accordion-panel .site-header__mobile-view-all {
   font-weight: 700;
-  color: #0FA77D;
+  color: var(--ra-accent-text);
   border-color: rgba(15, 167, 125, 0.25);
   background: #F2FBF9;
 }
