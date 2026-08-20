@@ -87,6 +87,16 @@ function formatDate(value: string) {
   }).format(new Date(value));
 }
 
+function ZoneHeader({ index, title }: { index: string; title: string }) {
+  return (
+    <div className="workspace-zone-header">
+      <span className="workspace-zone-header__index">{index}</span>
+      <h2 className="workspace-zone-header__title">{title}</h2>
+      <div className="workspace-zone-header__rule" />
+    </div>
+  );
+}
+
 function RecordTable({ records, onOpen, limit = 8 }: { records: FineRecord[]; onOpen: (record: FineRecord) => void; limit?: number }) {
   return (
     <table className="workspace-table">
@@ -426,6 +436,28 @@ export function FinesWorkspace({ view }: FinesWorkspaceProps) {
     };
   }, [filtered]);
 
+  // "So what" callouts for the overview zone: derived from the loaded monthly
+  // trend and theme breakdown, not invented figures.
+  const monthlySoWhat = useMemo(() => {
+    if (monthly.length < 2) return null;
+    const windowTotal = monthly.reduce((sum, point) => sum + point.amount, 0);
+    if (windowTotal <= 0) return null;
+    const peak = monthly.slice().sort((left, right) => right.amount - left.amount)[0];
+    const share = (peak.amount / windowTotal) * 100;
+    if (share < 15) return null;
+    return `${peak.label} carries ${share.toFixed(0)}% of the ${monthly.length}-month total in this view. Read the trend on volume as well as value.`;
+  }, [monthly]);
+  const themeSoWhat = useMemo(() => {
+    if (themes.length < 2) return null;
+    const byValue = themes[0];
+    const byVolume = themes.slice().sort((left, right) => right.count - left.count)[0];
+    if (!byValue || !byVolume) return null;
+    if (byValue.label === byVolume.label) {
+      return `${byValue.label} leads both fine value and action count in this view — the most concentrated theme by either measure.`;
+    }
+    return `${byValue.label} leads by fine value; ${byVolume.label} leads by number of actions. Benchmarking on value alone under-weights ${byVolume.label}.`;
+  }, [themes]);
+
   const exact = overview.data?.metrics;
   const metricCount = exact?.count ?? sampleMetrics.count;
   const metricTotal = exact?.total ?? sampleMetrics.total;
@@ -476,14 +508,16 @@ export function FinesWorkspace({ view }: FinesWorkspaceProps) {
           <label>Search<input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Firm, person, keyword..." /></label>
         </section>
 
-        <section className="workspace-kpis" aria-label="Current view key figures">
-          <article className="workspace-kpi"><span>Total fines</span><strong>{formatWorkspaceAmount(metricTotal)}</strong><small>{overview.error ? "Loaded working set" : "Exact current public view"}</small></article>
-          <article className="workspace-kpi"><span>Number of actions</span><strong>{metricCount.toLocaleString("en-GB")}</strong><small>Click any chart mark to inspect</small></article>
-          <article className="workspace-kpi"><span>Median fine</span><strong>{formatWorkspaceAmount(metricMedian)}</strong><small>Less distorted by outliers</small></article>
-          <article className="workspace-kpi"><span>Largest fine</span><strong>{formatWorkspaceAmount(metricLargest)}</strong><small>{metricLargestFirm}</small></article>
-          <article className="workspace-kpi"><span>Firms affected</span><strong>{metricAffectedFirms.toLocaleString("en-GB")}</strong><small>Distinct firms and individuals</small></article>
-          <article className="workspace-kpi"><span>Year-over-year change</span><strong><em>{annualMovement.change === null ? "Not available" : `${annualMovement.change >= 0 ? "+" : ""}${annualMovement.change.toFixed(1)}%`}</em></strong><small>{annualMovement.latest && annualMovement.previous ? `${annualMovement.latest.year} vs ${annualMovement.previous.year}` : "Insufficient annual history"}</small></article>
-        </section>
+        {view !== "overview" && (
+          <section className="workspace-kpis" aria-label="Current view key figures">
+            <article className="workspace-kpi"><span>Total fines</span><strong>{formatWorkspaceAmount(metricTotal)}</strong><small>{overview.error ? "Loaded working set" : "Exact current public view"}</small></article>
+            <article className="workspace-kpi"><span>Number of actions</span><strong>{metricCount.toLocaleString("en-GB")}</strong><small>Click any chart mark to inspect</small></article>
+            <article className="workspace-kpi"><span>Median fine</span><strong>{formatWorkspaceAmount(metricMedian)}</strong><small>Less distorted by outliers</small></article>
+            <article className="workspace-kpi"><span>Largest fine</span><strong>{formatWorkspaceAmount(metricLargest)}</strong><small>{metricLargestFirm}</small></article>
+            <article className="workspace-kpi"><span>Firms affected</span><strong>{metricAffectedFirms.toLocaleString("en-GB")}</strong><small>Distinct firms and individuals</small></article>
+            <article className="workspace-kpi"><span>Year-over-year change</span><strong><em>{annualMovement.change === null ? "Not available" : `${annualMovement.change >= 0 ? "+" : ""}${annualMovement.change.toFixed(1)}%`}</em></strong><small>{annualMovement.latest && annualMovement.previous ? `${annualMovement.latest.year} vs ${annualMovement.previous.year}` : "Insufficient annual history"}</small></article>
+          </section>
+        )}
 
         {compareMode && (
           <div className="workspace-selection-tray">
@@ -534,6 +568,58 @@ export function FinesWorkspace({ view }: FinesWorkspaceProps) {
             <section className="workspace-card workspace-card--half"><div className="workspace-card__heading"><h2>Comparison summary</h2><span>{comparisonLoading ? "Calculating exact totals..." : comparisonSummaries.length ? `${comparisonSummaries.length} selected views` : "Choose at least one view"}</span></div>{comparisonSummaries.length ? <div className="workspace-comparison-cards">{comparisonSummaries.map((item) => <button type="button" aria-label={`${item.dimension} ${item.label}: ${formatWorkspaceAmount(item.metrics.total)}, ${formatWorkspaceActionCount(item.metrics.count)}`} key={item.key} onClick={() => setDrawer({ title: `${item.dimension}: ${item.label}`, records: item.records, description: item.records.length < item.metrics.count ? `Showing ${item.records.length.toLocaleString("en-GB")} loaded records from ${formatWorkspaceActionCount(item.metrics.count)} in this comparison view.` : `${formatWorkspaceActionCount(item.metrics.count)} in this comparison view.` })}><small>{item.dimension}</small><strong>{item.label}</strong><span>{formatWorkspaceAmount(item.metrics.total)}</span><em>{formatWorkspaceActionCount(item.metrics.count)}</em></button>)}</div> : <p className="workspace-empty-guidance">Select two or more years to compare annual fine value, or combine years with regulators and themes.</p>}</section>
             <section className="workspace-card workspace-card--full"><div className="workspace-card__heading"><h2>Comparison result</h2><button type="button" className="workspace-card__action" disabled={comparisonLoading || !comparisonTotal} onClick={() => setDrawer({ title: "Selected comparison data", records: comparisonRecords, description: comparisonTruncated ? `Showing the first ${comparisonRecords.length.toLocaleString("en-GB")} of ${comparisonTotal.toLocaleString("en-GB")} selected actions.` : `${formatWorkspaceActionCount(comparisonTotal)} in the selected comparison.` })}>Open all selected data <ArrowRight size={11}/></button></div><RecordTable records={comparisonRecords.slice().sort((a,b) => b.amount-a.amount)} limit={12} onOpen={(record) => setDrawer({ title: record.firm_individual, records: [record], description: record.summary })} /></section>
           </div>
+        ) : view === "overview" ? (
+          <>
+            <ZoneHeader index="01" title="Where the value sits" />
+            <div className="workspace-hero-band">
+              <div>
+                <div className="workspace-hero-band__eyebrow">Total fines · current view</div>
+                <div className="workspace-hero-band__total">{formatWorkspaceAmount(metricTotal)}</div>
+                <div className="workspace-hero-band__meta">
+                  <span>{formatWorkspaceActionCount(metricCount)}</span>
+                  <span>
+                    <em>{annualMovement.change === null ? "Not available" : `${annualMovement.change >= 0 ? "+" : ""}${annualMovement.change.toFixed(1)}%`}</em>{" "}
+                    {annualMovement.latest && annualMovement.previous ? `${annualMovement.latest.year} vs ${annualMovement.previous.year}` : "Insufficient annual history"}
+                  </span>
+                </div>
+              </div>
+              <div className="workspace-hero-band__kpis">
+                <div><span>Median fine</span><strong>{formatWorkspaceAmount(metricMedian)}</strong><small>Less distorted by outliers</small></div>
+                <div><span>Largest fine</span><strong>{formatWorkspaceAmount(metricLargest)}</strong><small>{metricLargestFirm}</small></div>
+                <div><span>Firms affected</span><strong>{metricAffectedFirms.toLocaleString("en-GB")}</strong><small>Distinct firms and individuals</small></div>
+                <div><span>Regulators in view</span><strong>{regulators.length}</strong><small>By disclosed value</small></div>
+              </div>
+            </div>
+
+            <ZoneHeader index="02" title="What changed" />
+            <div className="workspace-grid">
+              <section className="workspace-card workspace-card--half">
+                <div className="workspace-card__heading"><h2>Monthly fines trend</h2><span>Click a mark to open its actions</span></div>
+                <p className="workspace-chart__hint">Every mark is a drill-down. Filtering is a separate action inside the evidence drawer.</p>
+                <div className="workspace-chart">
+                  <ResponsiveContainer width="100%" height="100%" minWidth={0} initialDimension={{ width: 640, height: 250 }}>
+                    <BarChart data={monthly} margin={{ top: 10, right: 6, left: 0, bottom: 0 }}>
+                      <CartesianGrid strokeDasharray="3 3" /><XAxis dataKey="label" interval="preserveStartEnd" /><YAxis tickFormatter={(value) => formatWorkspaceAmount(Number(value))} width={62}/><Tooltip formatter={(value) => formatWorkspaceAmount(Number(value))}/>
+                      <Bar isAnimationActive={false} className="workspace-chart__click-target" dataKey="amount" fill="#0FA77D" radius={[3,3,0,0]} onClick={(payload: any) => openSelection({ year: Number(payload?.year), month: Number(payload?.month) }, `${payload?.label ?? "Selected period"} actions`)} />
+                    </BarChart>
+                  </ResponsiveContainer>
+                </div>
+                {monthlySoWhat && <div className="workspace-so-what"><span>So what</span><p>{monthlySoWhat}</p></div>}
+              </section>
+
+              <section className="workspace-card workspace-card--half">
+                <div className="workspace-card__heading"><h2>Top themes by fine value</h2><button type="button" className="workspace-card__action" onClick={() => setDrawer({ title: "All themes", records: filtered })}>View data <ArrowRight size={11}/></button></div>
+                <div className="workspace-bars">{themes.slice(0, 7).map((item) => <button className="workspace-bar" type="button" key={item.label} onClick={() => handleThemeClick(item.label)}><span>{item.label}</span><div className="workspace-bar__track"><div className="workspace-bar__fill" style={{ width: `${Math.max(4, item.share)}%` }}/></div><strong>{formatWorkspaceAmount(item.amount)}</strong></button>)}</div>
+                {themeSoWhat && <div className="workspace-so-what"><span>So what</span><p>{themeSoWhat}</p></div>}
+              </section>
+            </div>
+
+            <ZoneHeader index="03" title="What to do next" />
+            <div className="workspace-grid">
+              <section className="workspace-card workspace-card--wide"><div className="workspace-card__heading"><h2>Recent enforcement actions</h2><Link className="workspace-card__action" to="/fines/actions">View all <ArrowRight size={11}/></Link></div><RecordTable records={recent} onOpen={(record) => setDrawer({ title: record.firm_individual, records: [record], description: record.summary })} /></section>
+              <section className="workspace-card"><div className="workspace-card__heading"><h2>What matters now</h2><Sparkles size={15}/></div><ul className="workspace-insights"><li><CheckCircle2 size={14}/><span>{themes[0] ? `${themes[0].label} represents the largest disclosed fine value in this view.` : "No dominant theme in the current view."}</span></li><li><CheckCircle2 size={14}/><span>{regulators[0] ? `${regulators[0].label} is the most active regulator by disclosed value.` : "No regulator activity matches the current filters."}</span></li><li><CheckCircle2 size={14}/><span>{metricLargest ? `${metricLargestFirm} is the largest penalty in scope at ${formatWorkspaceAmount(metricLargest)}.` : "No penalty is in scope."}</span></li><li><Info size={14}/><span>Open records to test each conclusion against the linked official evidence.</span></li></ul></section>
+            </div>
+          </>
         ) : (
           <div className="workspace-grid">
             <section className={`workspace-card ${view === "analytics" ? "workspace-card--wide" : "workspace-card--half"}`}>
@@ -543,9 +629,9 @@ export function FinesWorkspace({ view }: FinesWorkspaceProps) {
                 <ResponsiveContainer width="100%" height="100%" minWidth={0} initialDimension={{ width: 640, height: 250 }}>
                   {view === "analytics" ? (
                     <AreaChart data={yearly} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
-                      <defs><linearGradient id="workspaceArea" x1="0" y1="0" x2="0" y2="1"><stop offset="5%" stopColor="#236fe8" stopOpacity={0.25}/><stop offset="95%" stopColor="#236fe8" stopOpacity={0}/></linearGradient></defs>
+                      <defs><linearGradient id="workspaceArea" x1="0" y1="0" x2="0" y2="1"><stop offset="5%" stopColor="#0FA77D" stopOpacity={0.25}/><stop offset="95%" stopColor="#0FA77D" stopOpacity={0}/></linearGradient></defs>
                       <CartesianGrid strokeDasharray="3 3" /><XAxis dataKey="label" /><YAxis tickFormatter={(value) => formatWorkspaceAmount(Number(value))} width={62}/><Tooltip formatter={(value) => formatWorkspaceAmount(Number(value))}/>
-                      <Area isAnimationActive={false} className="workspace-chart__click-target" type="monotone" dataKey="amount" stroke="#176ee7" strokeWidth={2.2} fill="url(#workspaceArea)" activeDot={{ r: 6, onClick: (_event: unknown, payload: any) => handleYearClick(Number(payload?.payload?.year)) }} />
+                      <Area isAnimationActive={false} className="workspace-chart__click-target" type="monotone" dataKey="amount" stroke="#0B8463" strokeWidth={2.2} fill="url(#workspaceArea)" activeDot={{ r: 6, onClick: (_event: unknown, payload: any) => handleYearClick(Number(payload?.payload?.year)) }} />
                     </AreaChart>
                   ) : (
                     <BarChart data={monthly} margin={{ top: 10, right: 6, left: 0, bottom: 0 }}>
