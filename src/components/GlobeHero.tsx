@@ -164,23 +164,43 @@ function hasWebGLSupport(): boolean {
 }
 
 /** Match globe pixel size to CSS container breakpoints */
-function useGlobeSize(): number {
-  const [size, setSize] = useState(650);
+/**
+ * Sizes the globe to its CONTAINER, not the window.
+ *
+ * This previously read `window.innerWidth`, which was fine while the globe
+ * owned a full-width section. Once it moved into the hero's right column the
+ * two diverged: at a 1440px viewport it rendered 650px wide inside a 513px
+ * column, so the wrapper's `overflow: hidden` clipped the right-hand overlay
+ * cards — "41 countries monito…", "£55.53… in penalties tra…".
+ *
+ * Note the page-overflow gate cannot catch that: the clipping keeps
+ * `scrollWidth` clean while the content is cut off.
+ */
+function useGlobeSize(containerRef: React.RefObject<HTMLElement | null>): number {
+  const [size, setSize] = useState(480);
 
   useEffect(() => {
+    const el = containerRef.current;
+
     const update = () => {
-      const w = window.innerWidth;
-      if (w <= 640) setSize(Math.min(w - 32, 350));
-      else if (w <= 768) setSize(Math.min(w - 32, 420));
-      else if (w <= 1024) setSize(Math.min(w - 48, 550));
-      else if (w <= 1200) setSize(480);
-      else if (w <= 1400) setSize(560);
-      else setSize(650);
+      const available = el?.clientWidth ?? window.innerWidth;
+      // Cap so the globe never dominates a wide column, and floor so it stays
+      // legible on a phone.
+      const next = Math.max(260, Math.min(available, 620));
+      setSize(Math.round(next));
     };
+
     update();
+
+    if (el && typeof ResizeObserver !== 'undefined') {
+      const ro = new ResizeObserver(update);
+      ro.observe(el);
+      return () => ro.disconnect();
+    }
+
     window.addEventListener('resize', update);
     return () => window.removeEventListener('resize', update);
-  }, []);
+  }, [containerRef]);
 
   return size;
 }
@@ -189,7 +209,8 @@ export function GlobeHero({ onCountryClick, visualOnly = false, figures }: Globe
   const globeEl = useRef<any>(null);
   const resumeTimer = useRef<ReturnType<typeof setTimeout> | null>(null) as MutableRefObject<ReturnType<typeof setTimeout> | null>;
   const userInteracting = useRef(false);
-  const globeSize = useGlobeSize();
+  const globeFrameRef = useRef<HTMLDivElement>(null);
+  const globeSize = useGlobeSize(globeFrameRef);
   const webglAvailable = useMemo(() => hasWebGLSupport(), []);
   const [hoveredCountry, setHoveredCountry] = useState<string | null>(null);
   const [countries, setCountries] = useState<{ features: any[] }>({ features: [] });
@@ -494,7 +515,7 @@ export function GlobeHero({ onCountryClick, visualOnly = false, figures }: Globe
 
       {/* ===== RIGHT COLUMN: Globe on light bg ===== */}
       <div className="globe-hero-wrapper__right">
-        <div className="globe-container">
+        <div className="globe-container" ref={globeFrameRef}>
           {webglAvailable ? (
             <Suspense fallback={<div className="globe-loading">Loading globe...</div>}>
               <Globe
