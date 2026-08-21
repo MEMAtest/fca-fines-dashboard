@@ -1628,3 +1628,22 @@
 .homepage-quicklinks {
   padding-top: 2.6rem;
 }
+
+/* The globe frame fills its column; the globe canvas is sized to match by
+   useGlobeSize, so the overlay cards stay inside the wrapper's clip. */
+.ra-hero__side .globe-container {
+  width: 100%;
+  max-width: 100%;
+  display: grid;
+  place-items: center;
+}
+
+.ra-hero__side .globe-container canvas {
+  max-width: 100%;
+  height: auto;
+}
+
+/* Keep the cards fully within the frame rather than hanging off its edges. */
+.ra-hero__side .hero-stat-card {
+  max-width: 46%;
+}
