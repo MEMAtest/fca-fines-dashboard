@@ -21,13 +21,17 @@
 /* ── Quick Links Section ── */
 
 .homepage-quicklinks {
-  padding: 5rem 2rem;
+  padding: 0;
   background: #ffffff;
 }
 
 .homepage-quicklinks__container {
   max-width: 1200px;
   margin: 0 auto;
+  /* Padding sits on the container, not the section, so the content edge
+     lands at 152px like every .ra-* section. Section padding around a
+     1200px container puts it at 120px -- a visible 32px jog. */
+  padding: 3.6rem 2rem;
 }
 
 .homepage-quicklinks__title {
@@ -50,18 +54,10 @@
 }
 
 /* Wrapper for continuous float animation */
-.quicklink-card-wrapper {
-  animation: cardFloat 6s ease-in-out infinite;
-}
-
-.quicklink-card-wrapper:nth-child(1) { animation-delay: 0s; }
-.quicklink-card-wrapper:nth-child(2) { animation-delay: 2s; }
-.quicklink-card-wrapper:nth-child(3) { animation-delay: 4s; }
-
-@keyframes cardFloat {
-  0%, 100% { transform: translateY(0); }
-  50% { transform: translateY(-8px); }
-}
+/* The cards used to bob on a 6s loop with 0s/2s/4s delays, which meant the
+   three of them were almost never level with each other -- it read as a
+   layout bug rather than as motion. The redesign is still elsewhere; the
+   hover lift is enough. */
 
 .quicklink-card {
   background: #ffffff;
@@ -133,21 +129,33 @@
 /* ── FAQ Section ── */
 
 .homepage-faq {
-  padding: 5rem 2rem;
+  padding: 0;
   background: #f8fafb;
 }
 
 .homepage-faq__container {
-  max-width: 720px;
+  /* 1200px, not 720px: a narrow centred column straight after four full-width
+     sections read as a different site. */
+  max-width: 1200px;
   margin: 0 auto;
+  /* Padding sits on the container, not the section, so the content edge
+     lands at 152px like every .ra-* section. Section padding around a
+     1200px container puts it at 120px -- a visible 32px jog. */
+  padding: 3.6rem 2rem;
 }
 
 .homepage-faq__title {
-  text-align: center;
-  font-size: 2rem;
-  font-weight: 700;
-  color: #0B1F2A;
-  margin: 0 0 2.5rem;
+  text-align: left;
+  font-family: var(--ra-font-serif);
+  font-size: clamp(1.5rem, 2.4vw, 1.9rem);
+  font-weight: 600;
+  color: var(--ra-ink);
+  margin: 0.5rem 0 1.6rem;
+}
+
+/* The accordion keeps a readable measure inside the wider shell. */
+.homepage-faq .faq-list {
+  max-width: 760px;
 }
 
 .faq-list {
@@ -210,25 +218,30 @@
 /* ── Contact Section ── */
 
 .homepage-contact {
-  padding: 5rem 2rem;
+  padding: 0;
   background: #ffffff;
 }
 
 .homepage-contact__container {
-  max-width: 800px;
+  max-width: 1200px;
   margin: 0 auto;
+  /* Padding sits on the container, not the section, so the content edge
+     lands at 152px like every .ra-* section. Section padding around a
+     1200px container puts it at 120px -- a visible 32px jog. */
+  padding: 3.6rem 2rem;
 }
 
 .homepage-contact__header {
-  text-align: center;
-  margin-bottom: 2.5rem;
+  text-align: left;
+  margin-bottom: 1.6rem;
 }
 
 .homepage-contact__header h2 {
-  font-size: 2rem;
-  font-weight: 700;
-  color: #0B1F2A;
-  margin: 0 0 0.75rem;
+  font-family: var(--ra-font-serif);
+  font-size: clamp(1.5rem, 2.4vw, 1.9rem);
+  font-weight: 600;
+  color: var(--ra-ink);
+  margin: 0.5rem 0 0.6rem;
 }
 
 .homepage-contact__header p {
@@ -236,72 +249,15 @@
   color: #526071;
   line-height: 1.65;
   margin: 0;
+  max-width: 62ch;
 }
 
-/* ── Footer ── */
-
-.homepage-footer {
-  background: #0B1F2A;
-  padding: 3rem 2rem;
-  color: #e2e8f0;
-}
-
-.homepage-footer__container {
-  max-width: 1200px;
-  margin: 0 auto;
-}
-
-.homepage-footer__content {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 1rem;
-  text-align: center;
-}
-
-.homepage-footer__brand {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  font-size: 1.25rem;
-  font-weight: 700;
-  color: #ffffff;
-}
-
-.homepage-footer__brand svg {
-  color: #14b8a6;
-}
-
-.homepage-footer__tagline {
+/* Left-aligned with the heading rather than centred by an 800px container. */
+.homepage-contact__container form {
+  max-width: 760px;
   margin: 0;
-  font-size: 0.92rem;
-  color: rgba(226, 232, 240, 0.7);
 }
 
-.homepage-footer__links {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 1.5rem;
-  justify-content: center;
-  margin: 0.5rem 0;
-}
-
-.homepage-footer__links a {
-  color: rgba(226, 232, 240, 0.8);
-  text-decoration: none;
-  font-size: 0.9375rem;
-  transition: color 0.2s ease;
-}
-
-.homepage-footer__links a:hover {
-  color: #ffffff;
-}
-
-.homepage-footer__copyright {
-  margin: 0.5rem 0 0;
-  font-size: 0.85rem;
-  color: rgba(226, 232, 240, 0.5);
-}
 
 /* ============================================================================
  * Redesign stage 2 — hero, ticker, weekly feed, product tour, briefing,
@@ -1488,7 +1444,6 @@
 
 /* Accessibility: respect reduced motion preference */
 @media (prefers-reduced-motion: reduce) {
-  .quicklink-card-wrapper,
   .quicklink-card__icon {
     animation: none !important;
   }
@@ -1496,10 +1451,6 @@
 
 /* Mobile: disable GPU-heavy effects for performance */
 @media (max-width: 768px) {
-  .quicklink-card-wrapper {
-    animation: none;
-  }
-
   .quicklinks-grid {
     grid-template-columns: 1fr;
   }
@@ -1508,8 +1459,8 @@
     font-size: 1.75rem;
   }
 
-  .homepage-faq {
-    padding: 3.5rem 1.25rem;
+  .homepage-faq__container {
+    padding: 3.5rem 2rem;
   }
 
   .homepage-faq__title {
@@ -1524,12 +1475,12 @@
     padding: 0 1.25rem 1rem;
   }
 
-  .homepage-contact {
-    padding: 3.5rem 1.25rem;
+  .homepage-contact__container {
+    padding: 3.5rem 2rem;
   }
 
-  .homepage-footer__links {
-    gap: 1rem;
+  .homepage-quicklinks__container {
+    padding: 3.5rem 2rem;
   }
 }
 
@@ -1625,7 +1576,7 @@
   padding-bottom: 1.6rem;
 }
 
-.homepage-quicklinks {
+.homepage-quicklinks__container {
   padding-top: 2.6rem;
 }
 
@@ -1646,4 +1597,13 @@
 /* Keep the cards fully within the frame rather than hanging off its edges. */
 .ra-hero__side .hero-stat-card {
   max-width: 46%;
+}
+
+/* Below 640 the .ra-* sections drop to a 1.25rem gutter; match them. */
+@media (max-width: 640px) {
+  .homepage-quicklinks__container,
+  .homepage-faq__container,
+  .homepage-contact__container {
+    padding: 2.4rem 1.25rem;
+  }
 }

@@ -25,7 +25,7 @@
 import { motion, useReducedMotion } from 'framer-motion';
 import { useEffect, useMemo, useState, Suspense, lazy, type FormEvent, type KeyboardEvent } from 'react';
 import { useSearchParams, useNavigate, Link } from 'react-router-dom';
-import { Map, Zap, FileText, Globe2, Search as SearchIcon } from 'lucide-react';
+import { Map, Zap, FileText, Search as SearchIcon } from 'lucide-react';
 import { useHomepageVisit } from '../hooks/useHomepageVisit.js';
 import { useWorkspaceOverview } from '../hooks/useWorkspaceOverview.js';
 import { fetchUnifiedSearch, type UnifiedSearchResponse } from '../api.js';
@@ -194,6 +194,7 @@ export function Homepage() {
       {/* Quick Links Section */}
       <section className="homepage-quicklinks">
         <div className="homepage-quicklinks__container">
+          <span className="ra-eyebrow">Go deeper</span>
           <motion.h2
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
@@ -233,6 +234,7 @@ export function Homepage() {
       {/* FAQ Section */}
       <section className="homepage-faq">
         <div className="homepage-faq__container">
+          <span className="ra-eyebrow">Common questions</span>
           <motion.h2
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
@@ -261,6 +263,7 @@ export function Homepage() {
             transition={{ duration: 0.6 }}
             className="homepage-contact__header"
           >
+            <span className="ra-eyebrow">Talk to us</span>
             <h2>Get in Touch</h2>
             <p>
               Questions about coverage, data access, or custom solutions? Reach
@@ -272,31 +275,6 @@ export function Homepage() {
         </div>
       </section>
 
-      {/* Footer */}
-      <footer className="homepage-footer">
-        <div className="homepage-footer__container">
-          <div className="homepage-footer__content">
-            <div className="homepage-footer__brand">
-              <Globe2 size={32} strokeWidth={2.5} />
-              <span>RegActions</span>
-            </div>
-            <p className="homepage-footer__tagline">
-              Global Regulatory Enforcement Tracker
-            </p>
-            <div className="homepage-footer__links">
-              <Link to="/about">About</Link>
-              <Link to="/roadmap">Roadmap</Link>
-              <Link to="/features">Features</Link>
-              <Link to="/blog">Blog</Link>
-              <Link to="/regulators">Data Hub</Link>
-              <Link to="/developers">Developers</Link>
-            </div>
-            <p className="homepage-footer__copyright">
-              © {new Date().getFullYear()} RegActions. All rights reserved.
-            </p>
-          </div>
-        </div>
-      </footer>
     </div>
   );
 }
