@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import { fetchCategories } from "../api.js";
 import { useSEO } from "../hooks/useSEO.js";
 import type { CategorySummary } from "../types.js";
+import { formatBreachCategory } from "../utils/labelConversion.js";
 
 const currency = new Intl.NumberFormat("en-GB", {
   style: "currency",
@@ -64,7 +65,7 @@ export function Breaches() {
           <nav className="hub-rail__nav" aria-label="Breach categories">
             {railItems.map((cat) => (
               <Link key={cat.slug} to={`/breaches/${cat.slug}`} className="hub-rail__item">
-                {cat.name}
+                {formatBreachCategory(cat.name)}
               </Link>
             ))}
           </nav>
@@ -113,9 +114,9 @@ export function Breaches() {
                 <Link key={cat.slug} to={`/breaches/${cat.slug}`} className="breach-row">
                   <span className="breach-row__rank">{index + 1}</span>
                   <span>
-                    <span className="breach-row__name">{cat.name}</span>
+                    <span className="breach-row__name">{formatBreachCategory(cat.name)}</span>
                     <span className="breach-row__note">
-                      {cat.fineCount.toLocaleString("en-GB")} actions tagged {cat.name}
+                      {cat.fineCount.toLocaleString("en-GB")} actions tagged {formatBreachCategory(cat.name)}
                     </span>
                   </span>
                   <span className="breach-row__value">{currency.format(cat.totalAmount)}</span>

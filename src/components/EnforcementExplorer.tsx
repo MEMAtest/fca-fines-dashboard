@@ -141,7 +141,7 @@ export function EnforcementExplorer() {
 
       <section className="workspace-filterbar enforcement-explorer__filters" aria-label="Evidence filters">
         <label>Year<input type="number" min="2000" max="2100" value={year ?? ""} onChange={(event) => update({ year: event.target.value })} placeholder="All years"/></label>
-        <label>Theme<select value={breachCategory} onChange={(event) => update({ theme: event.target.value })}><option value="">All themes</option>{themeOptions.map((item) => <option key={item}>{item}</option>)}</select></label>
+        <label>Theme<select value={breachCategory} onChange={(event) => update({ theme: event.target.value })}><option value="">All themes</option>{themeOptions.map((item) => <option value={item} key={item}>{formatBreachCategory(item)}</option>)}</select></label>
         <label>Sector<select value={sector} onChange={(event) => update({ sector: event.target.value })}><option value="">All sectors</option>{sectorOptions.map((item) => <option key={item}>{item}</option>)}</select></label>
         <label>Minimum GBP<input type="number" min="0" value={minAmount ?? ""} onChange={(event) => update({ minAmount: event.target.value })} placeholder="No minimum"/></label>
         <label>Maximum GBP<input type="number" min="0" value={maxAmount ?? ""} onChange={(event) => update({ maxAmount: event.target.value })} placeholder="No maximum"/></label>
@@ -170,7 +170,7 @@ export function EnforcementExplorer() {
               <div className="enforcement-explorer__entity-col">
                 <button type="button" className="enforcement-explorer__entity" onClick={() => openEvidence(evidence)}>
                   <strong>{displayFirmName(record.firm_individual)}</strong>
-                  <span>{record.summary || record.breach_type || "No summary recorded"}</span>
+                  <span>{record.summary || (record.breach_type ? formatBreachCategory(record.breach_type) : "") || "No summary recorded"}</span>
                 </button>
                 <div className="enforcement-explorer__tags">
                   <span className="enforcement-explorer__theme-chip">{formatBreachCategory(getRecordThemes(record)[0] ?? "")}</span>
