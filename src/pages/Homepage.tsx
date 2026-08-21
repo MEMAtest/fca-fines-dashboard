@@ -426,7 +426,7 @@ function HeroSection({ onCountryClick }: { onCountryClick: (iso2: string | null)
                       >
                         <span className="ra-hero__suggest-tag">THEME</span>
                         <span className="ra-hero__suggest-text">
-                          <span className="ra-hero__suggest-title">{t.label}</span>
+                          <span className="ra-hero__suggest-title">{formatBreachCategory(t.label)}</span>
                           <span className="ra-hero__suggest-meta">{compactCount.format(t.count)} actions</span>
                         </span>
                       </button>
@@ -711,7 +711,7 @@ function WeeklyEnforcementSection() {
                   <div className="ra-week__themes">
                     {topThemes.map((t) => (
                       <div className="ra-week__theme" key={t.label}>
-                        <span className="ra-week__theme-name">{t.label}</span>
+                        <span className="ra-week__theme-name">{formatBreachCategory(t.label)}</span>
                         <span className="ra-week__theme-bar">
                           <span className="ra-week__theme-bar-fill" style={{ width: `${t.pct}%` }} />
                         </span>
