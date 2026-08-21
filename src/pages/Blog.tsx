@@ -1129,25 +1129,6 @@ export function Blog() {
         </div>
       </section>
 
-      <footer className="blog-footer">
-        <div className="blog-footer-content">
-          <div className="blog-footer-brand">
-            <p className="blog-footer-logo">RegActions</p>
-            <p className="blog-footer-tagline">
-              Global enforcement intelligence platform
-            </p>
-          </div>
-          <nav className="blog-footer-nav" aria-label="Footer navigation">
-            <Link to="/">Home</Link>
-            <Link to="/regulators">Data</Link>
-            <Link to="/blog">Insights</Link>
-            <Link to="/sitemap">Sitemap</Link>
-          </nav>
-          <p className="blog-footer-copyright">
-            © {new Date().getFullYear()} RegActions · All rights reserved
-          </p>
-        </div>
-      </footer>
     </div>
   );
 }

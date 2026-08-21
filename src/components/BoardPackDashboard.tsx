@@ -541,13 +541,13 @@ export function BoardPackDashboard({
         </section>
       </div>
 
-      <footer className="board-pack-dashboard__footer">
+      <div className="board-pack-dashboard__footer">
         <span>
           Based on selected scope and linked regulatory evidence. Data reviewed{" "}
           {generatedLabel}.
         </span>
         <strong>{confidentialityLabel}</strong>
-      </footer>
+      </div>
     </div>
   );
 }

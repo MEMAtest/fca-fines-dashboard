@@ -1203,7 +1203,7 @@ export function CountryHub() {
         </aside>
       </div>
 
-      <footer className="cx-ws__footer">
+      <div className="cx-ws__footer">
         <span>
           FATF status as of {formatDate(view.lastPlenary)} plenary:{" "}
           <strong>{statusHeading}</strong>
@@ -1214,7 +1214,7 @@ export function CountryHub() {
             sources
           </a>
         </span>
-      </footer>
+      </div>
 
       {zoomed && (
         <div className="cx-zoom" role="dialog" aria-modal="true" onClick={() => setZoomed(null)}>

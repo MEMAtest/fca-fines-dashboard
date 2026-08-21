@@ -482,6 +482,7 @@ const FOOTER_DATA_LINKS: Array<[string, string]> = [
   ["Country risk changes", "/countries/changes"],
   ["Free data API", "/developers"],
   ["FATF grey list", "/countries/fatf-grey-list"],
+  ["Sitemap", "/sitemap"],
 ];
 
 const FOOTER_COMPANY_LINKS: Array<[string, string]> = [

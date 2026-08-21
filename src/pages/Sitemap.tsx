@@ -123,27 +123,6 @@ export function Sitemap() {
         </article>
       </div>
 
-      {/* Footer */}
-      <footer className="blog-footer">
-        <div className="blog-footer-content">
-          <div className="blog-footer-brand">
-            <p className="blog-footer-logo">RegActions</p>
-            <p className="blog-footer-tagline">
-              Global regulatory enforcement intelligence
-            </p>
-          </div>
-          <nav className="blog-footer-nav" aria-label="Footer navigation">
-            <Link to="/">Home</Link>
-            <Link to="/regulators">Data Hub</Link>
-            <Link to="/board-pack">Board Pack</Link>
-            <Link to="/blog">Blog</Link>
-            <Link to="/sitemap">Sitemap</Link>
-          </nav>
-          <p className="blog-footer-copyright">
-            © {new Date().getFullYear()} RegActions · All rights reserved
-          </p>
-        </div>
-      </footer>
     </div>
   );
 }
