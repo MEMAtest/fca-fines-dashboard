@@ -240,7 +240,18 @@ export function isGarbageFirmName(name: string): boolean {
  * evidence table should not hide a record because its name is untidy).
  * `isGarbageFirmName` remains the right tool where a row can be excluded.
  */
-export function displayFirmName(raw: string | null | undefined): string {
+/**
+ * Decode/strip the HTML entities that survive scraping, for any display text.
+ *
+ * Scrapers store what the page markup said, so `&amp;`, `&nbsp;` and a bare
+ * `&copy` (the semicolon is often lost to truncation) reach the browser as
+ * literal characters — React escapes them, so they render as the text
+ * "&copy" rather than "©".
+ *
+ * Unlike `displayFirmName` this keeps trailing punctuation: a summary is prose
+ * and should end in a full stop.
+ */
+export function cleanDisplayText(raw: string | null | undefined): string {
   if (!raw) return "";
   return String(raw)
     // Decode the entities that actually appear, then strip any stragglers.
@@ -251,6 +262,11 @@ export function displayFirmName(raw: string | null | undefined): string {
     .replace(/&copy;?/gi, "")
     .replace(/&[a-z]{2,8};?/gi, "")
     .replace(/\s{2,}/g, " ")
-    .replace(/[\s.,;:–-]+$/u, "")
     .trim();
+}
+
+export function displayFirmName(raw: string | null | undefined): string {
+  // A name, unlike prose, should not keep the punctuation a truncated scrape
+  // left behind ("J.P. Morgan," / "Acme Ltd -").
+  return cleanDisplayText(raw).replace(/[\s.,;:–-]+$/u, "").trim();
 }
