@@ -8,6 +8,7 @@ import { useUnifiedData } from "../hooks/useUnifiedData.js";
 import type { FineRecord } from "../types.js";
 import { buildFineRecordEvidence } from "../utils/evidenceCase.js";
 import { getFcaFineCasePath } from "../utils/fcaFineCasePath.js";
+import { formatBreachCategory } from "../utils/labelConversion.js";
 import {
   buildContiguousMonthlyWindow,
   buildMonthlyTrend,
@@ -124,7 +125,7 @@ function FcaFinesYearReport() {
                         <td>{formatReportDate(record.date_issued)}</td>
                         <td>{casePath ? <Link className="hub-link" to={casePath}>{record.firm_individual}</Link> : record.firm_individual}</td>
                         <td><strong>{formatWorkspaceAmount(record.amount)}</strong></td>
-                        <td>{record.breach_type || record.breach_categories?.[0] || "Not classified"}</td>
+                        <td>{formatBreachCategory(record.breach_type || record.breach_categories?.[0] || "Not classified")}</td>
                         <td><a className="hub-link" href={href} onClick={(event) => { event.preventDefault(); openEvidence(evidence); }}>View evidence</a></td>
                       </tr>
                     );

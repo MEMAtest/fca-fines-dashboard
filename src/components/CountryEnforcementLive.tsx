@@ -2,6 +2,7 @@ import { useMemo } from "react";
 import { Link } from "react-router-dom";
 import { useUnifiedData } from "../hooks/useUnifiedData.js";
 import type { FineRecord } from "../types.js";
+import { formatBreachCategory } from "../utils/labelConversion.js";
 
 const gbp = new Intl.NumberFormat("en-GB", {
   style: "currency",
@@ -27,7 +28,7 @@ function fmtDate(iso: string): string {
 
 function breachLabel(record: FineRecord): string {
   if (record.breach_categories?.length) return record.breach_categories[0];
-  return record.breach_type || "—";
+  return record.breach_type ? formatBreachCategory(record.breach_type) : "—";
 }
 
 interface Props {

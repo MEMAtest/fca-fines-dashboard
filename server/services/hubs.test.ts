@@ -13,6 +13,7 @@
  */
 import { describe, expect, it } from "vitest";
 import { isGarbageFirmName } from "./hubs.js";
+import { displayFirmName } from "../../src/utils/firmName.js";
 
 describe("isGarbageFirmName – should EXCLUDE (garbage)", () => {
   // SEC headline sentences
@@ -802,5 +803,30 @@ describe("isGarbageFirmName — live homepage feed regressions", () => {
   it("still keeps the short lowercase CMA descriptor", () => {
     // The 4-word floor on rule 14 exists for this.
     expect(isGarbageFirmName("pharma firm")).toBe(false);
+  });
+});
+
+describe("displayFirmName", () => {
+  it("strips the HTML entity the AFM feed carried onto the site", () => {
+    expect(displayFirmName("duurzaam financieel welzijn in Nederland. &copy")).toBe(
+      "duurzaam financieel welzijn in Nederland",
+    );
+  });
+
+  it("decodes the entities that carry meaning", () => {
+    expect(displayFirmName("Marks &amp; Spencer plc")).toBe("Marks & Spencer plc");
+    expect(displayFirmName("O&#39;Brien Financial")).toBe("O'Brien Financial");
+  });
+
+  it("leaves a clean name untouched", () => {
+    expect(displayFirmName("Scotia Securities Inc")).toBe("Scotia Securities Inc");
+    expect(displayFirmName("EURO FİNANS MENKUL DEĞERLER ANONİM ŞİRKETİ")).toBe(
+      "EURO FİNANS MENKUL DEĞERLER ANONİM ŞİRKETİ",
+    );
+  });
+
+  it("handles null and undefined", () => {
+    expect(displayFirmName(null)).toBe("");
+    expect(displayFirmName(undefined)).toBe("");
   });
 });
