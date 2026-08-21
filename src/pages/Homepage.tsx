@@ -60,6 +60,30 @@ const CountryModal = lazy(() => import('../components/CountryModal.js').then(m =
 type ToastState = { message: string; type: 'success' | 'error' } | null;
 type SearchResult = UnifiedSearchResponse['results'][number];
 
+/**
+ * Render a formatted figure with a tightened decimal point.
+ *
+ * The display figures are IBM Plex Mono, where the period occupies a full
+ * character advance. At 4rem with -0.045em tracking the digits sit tight
+ * together and the separator does not, so "£55.53bn" reads on the page as
+ * "£55 . 53bn" — it looks like a spacing bug rather than a decimal.
+ *
+ * Only the two display sizes need this. At ticker and table sizes the mono
+ * advance is not noticeable, and evenly-spaced figures are the point of using
+ * a mono face there.
+ */
+function Figure({ value }: { value: string }) {
+  const at = value.indexOf('.');
+  if (at < 0) return <>{value}</>;
+  return (
+    <>
+      {value.slice(0, at)}
+      <span className="figure-decimal">.</span>
+      {value.slice(at + 1)}
+    </>
+  );
+}
+
 const gbpCompact = (amount: number): string => {
   if (amount >= 1_000_000_000) return `£${(amount / 1_000_000_000).toFixed(2)}bn`;
   if (amount >= 1_000_000) return `£${(amount / 1_000_000).toFixed(1)}m`;
@@ -498,7 +522,7 @@ function StatTile({
   return (
     <div className="ra-stat-tile">
       <div className={`ra-stat-tile__value${loading || value === null ? ' ra-stat-tile__value--loading' : ''}`}>
-        {loading || value === null ? '—' : value}
+        {loading || value === null ? '—' : <Figure value={value} />}
       </div>
       <div className="ra-stat-tile__label">{label}</div>
     </div>
@@ -654,7 +678,7 @@ function WeeklyEnforcementSection() {
           {!error && (
             <>
               <div className={`ra-week__total${loading || !data ? ' ra-week__total--loading' : ''}`}>
-                {loading || !data ? '—' : gbpCompact(data.metrics.total)}
+                {loading || !data ? '—' : <Figure value={gbpCompact(data.metrics.total)} />}
               </div>
               <div className="ra-week__total-sub">
                 {loading || !data

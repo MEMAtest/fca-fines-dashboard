@@ -1607,3 +1607,9 @@
     padding: 2.4rem 1.25rem;
   }
 }
+
+/* Pull the mono period's full character advance in at display sizes. See the
+   Figure component in Homepage.tsx for why. */
+.figure-decimal {
+  margin: 0 -0.11em;
+}
