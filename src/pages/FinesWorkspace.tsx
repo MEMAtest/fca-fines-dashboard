@@ -108,7 +108,7 @@ function RecordTable({ records, onOpen, limit = 8 }: { records: FineRecord[]; on
             <td>{formatDate(record.date_issued)}</td>
             <td><strong>{record.firm_individual}</strong>{getFcaFineCasePath(record) ? <> <Link to={getFcaFineCasePath(record)!} onClick={(event) => event.stopPropagation()} aria-label={`Open ${record.firm_individual} FCA fine case`}>Case page</Link></> : null}</td>
             <td><span className="workspace-tag">{record.regulator}</span></td>
-            <td>{getRecordThemes(record)[0]}</td>
+            <td>{formatBreachCategory(getRecordThemes(record)[0] ?? "")}</td>
             <td><strong>{record.requires_amount_review ? "Amount under review" : record.amount_disclosed === false ? "Not disclosed" : formatWorkspaceAmount(record.amount)}</strong></td>
           </tr>
         ))}
@@ -504,7 +504,7 @@ export function FinesWorkspace({ view }: FinesWorkspaceProps) {
           <label>Year<select value={year} onChange={(event) => setYear(Number(event.target.value))}><option value={0}>All years</option>{YEARS.map((value) => <option value={value} key={value}>{value}</option>)}</select></label>
           <label>Jurisdiction<select value={country} onChange={(event) => setCountry(event.target.value)}><option>All</option>{countries.map((value) => <option value={value} key={value}>{value}</option>)}</select></label>
           <label>Regulator<select value={regulator} onChange={(event) => setRegulator(event.target.value)}><option>All</option>{LIVE_REGULATOR_NAV_ITEMS.filter((item) => item.dashboardEnabled).map((item) => <option value={item.code} key={item.code}>{item.code}</option>)}</select></label>
-          <label>Breach theme<select value={theme} onChange={(event) => setTheme(event.target.value)}><option>All</option>{availableThemes.map((value) => <option value={value} key={value}>{value}</option>)}</select></label>
+          <label>Breach theme<select value={theme} onChange={(event) => setTheme(event.target.value)}><option>All</option>{availableThemes.map((value) => <option value={value} key={value}>{formatBreachCategory(value)}</option>)}</select></label>
           <label>Sector<select value={sector} onChange={(event) => setSector(event.target.value)}><option>All</option>{availableSectors.map((value) => <option value={value} key={value}>{value}</option>)}</select></label>
           <label>Search<input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Firm, person, keyword..." /></label>
         </section>
