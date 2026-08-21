@@ -487,6 +487,7 @@ const FOOTER_DATA_LINKS: Array<[string, string]> = [
 const FOOTER_COMPANY_LINKS: Array<[string, string]> = [
   ["About", "/about"],
   ["Roadmap", "/roadmap"],
+  ["Features", "/features"],
   ["Privacy", "/privacy"],
 ];
 
