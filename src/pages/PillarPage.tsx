@@ -345,26 +345,6 @@ export function PillarPage() {
         </article>
       </div>
 
-      {/* Footer */}
-      <footer className="blog-footer">
-        <div className="blog-footer-content">
-          <div className="blog-footer-brand">
-            <p className="blog-footer-logo">RegActions</p>
-            <p className="blog-footer-tagline">
-              FCA enforcement intelligence from RegActions
-            </p>
-          </div>
-          <nav className="blog-footer-nav" aria-label="Footer navigation">
-            <Link to="/">Home</Link>
-            <Link to="/regulators">Dashboard</Link>
-            <Link to="/blog">Blog</Link>
-            <Link to="/sitemap">Sitemap</Link>
-          </nav>
-          <p className="blog-footer-copyright">
-            © {new Date().getFullYear()} RegActions · All rights reserved
-          </p>
-        </div>
-      </footer>
     </div>
   );
 }

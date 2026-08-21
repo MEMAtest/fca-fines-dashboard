@@ -1507,11 +1507,11 @@ function GlobalIndex() {
         </section>
       )}
 
-      <footer className="country-hub__sources">
+      <div className="country-hub__sources">
         <span>Sources:</span>{" "}
         <a href={FATF_SOURCE_URL} target="_blank" rel="noopener noreferrer">FATF <ExternalLink size={12} /></a>{" "}
         · World Bank WGI (CC BY 4.0) · UN / UK / EU / US sanctions · TI CPI (context only)
-      </footer>
+      </div>
       </div>
     </div>
   );
