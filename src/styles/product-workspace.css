@@ -205,9 +205,13 @@
 .workspace-assurance-strip span,.workspace-assurance-strip small { display: block; color: var(--ra-text-secondary); font-size: 9px; }
 .workspace-assurance-strip span { font-weight: 700; text-transform: uppercase; letter-spacing: .045em; }
 .workspace-assurance-strip strong { display: block; margin: 5px 0 3px; font-size: 12px; }
-.workspace-scope-summary { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; margin-top: 10px; }
-.workspace-scope-summary strong,.workspace-scope-summary span { padding: 5px 8px; border-radius: 999px; background: #eef4ff; color: var(--ra-accent-text); font-size: 10px; }
-.workspace-scope-summary strong { background: var(--ra-accent-text); color: var(--ra-surface); }
+/* Was 6px gaps and 10px text in blue-tinted pills, which read as cramped and
+   off-brand. */
+.workspace-scope-summary { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin-top: 14px; padding: 10px 12px; border: 1px solid var(--ra-border); border-radius: var(--ra-radius-md); background: var(--ra-rail); }
+.workspace-scope-summary strong,.workspace-scope-summary span { padding: 5px 10px; border-radius: 999px; background: var(--ra-accent-soft); color: var(--ra-accent-text); font-size: 11px; }
+.workspace-scope-summary strong { background: var(--ra-accent-fill); color: var(--ra-surface); }
+.workspace-scope-summary a { padding: 5px 10px; border-radius: 999px; color: var(--ra-accent-text); font-size: 11px; font-weight: 600; text-decoration: none; }
+.workspace-scope-summary a:hover { background: var(--ra-accent-soft); }
 .workspace-decision-metric { display: grid; gap: 8px; width: 100%; min-height: 145px; place-content: center; padding: 15px; border: 0; border-radius: 9px; background: linear-gradient(145deg,#eef7ff,#edf9f4); color: var(--ra-ink); font: inherit; text-align: center; cursor: pointer; }
 .workspace-decision-metric strong { color: var(--ra-accent-text); font-size: clamp(32px,4vw,52px); letter-spacing: -.05em; }
 .workspace-decision-metric span { max-width: 230px; color: var(--ra-text-secondary); font-size: 11px; line-height: 1.4; }

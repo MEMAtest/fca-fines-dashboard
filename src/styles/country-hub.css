@@ -2841,22 +2841,28 @@ button.cx-kpi:hover {
    explicit `min-width: 0`. Below 1024px the sidebar drops out of the grid
    and renders as a plain, wrapping horizontal bar above the content instead
    of a column, so it can never contribute to page width on a phone. */
+/* Single column. This was a 246px grid rail, but it held only three links —
+   188px of content beside a 4,000px page — so it left an empty column the full
+   height of the document, and its own heading read as a second page header.
+   The links now sit in one horizontal row under the page heading. */
 .cx-idx-shell {
-  display: grid;
-  grid-template-columns: 246px minmax(0, 1fr);
-  gap: 1.25rem;
-  align-items: start;
+  display: block;
 }
 .cx-idx-shell > * {
   min-width: 0;
 }
+.cx-idx-nav {
+  /* Match the page container inset so the row lines up with the heading below
+     it rather than bleeding to the viewport edge. */
+  max-width: 1248px;
+  margin: 0 auto 1rem;
+}
 .cx-idx-nav__inner {
-  position: sticky;
-  top: 74px;
   display: flex;
-  flex-direction: column;
-  gap: 0.15rem;
-  padding: 0.9rem 0.6rem;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.5rem 0.7rem;
   border: 1px solid var(--ra-border);
   border-radius: var(--ra-radius-lg);
   background: var(--ra-rail);
@@ -2867,17 +2873,19 @@ button.cx-kpi:hover {
   letter-spacing: 0.11em;
   text-transform: uppercase;
   color: var(--ra-text-tertiary);
-  padding: 0 0.5rem 0.5rem;
+  padding: 0 0.35rem 0 0;
+  white-space: nowrap;
 }
 .cx-idx-nav__list {
   display: flex;
-  flex-direction: column;
-  gap: 0.15rem;
+  flex-wrap: wrap;
+  gap: 0.35rem;
 }
 .cx-idx-nav__divider {
-  height: 1px;
+  width: 1px;
+  align-self: stretch;
   background: var(--ra-border);
-  margin: 0.7rem 0.3rem;
+  margin: 0 0.35rem;
 }
 .cx-idx-nav__item {
   display: flex;
@@ -2885,7 +2893,7 @@ button.cx-kpi:hover {
   gap: 0.55rem;
   padding: 0.5rem 0.6rem;
   border-radius: 8px;
-  border-left: 3px solid transparent;
+  border: 1px solid transparent;
   font-size: 0.85rem;
   font-weight: 500;
   color: var(--ra-text-secondary);
@@ -2899,30 +2907,18 @@ a.cx-idx-nav__item:hover {
 .cx-idx-nav__item--on {
   color: var(--ra-accent-text);
   background: var(--ra-accent-soft);
-  border-left-color: var(--ra-accent);
+  border-color: var(--ra-accent);
   font-weight: 700;
 }
-@media (max-width: 1024px) {
-  .cx-idx-shell {
-    display: block;
-  }
-  .cx-idx-nav__inner {
-    position: static;
-    flex-direction: row;
-    flex-wrap: wrap;
-    gap: 0.4rem;
-    margin-bottom: 1rem;
+/* The row is now the default at every width; only the divider needs hiding
+   once the items wrap. */
+@media (max-width: 640px) {
+  .cx-idx-nav__divider {
+    display: none;
   }
   .cx-idx-nav__label {
     width: 100%;
-    padding: 0 0.2rem 0.2rem;
-  }
-  .cx-idx-nav__list {
-    flex-direction: row;
-    flex-wrap: wrap;
-  }
-  .cx-idx-nav__divider {
-    display: none;
+    padding: 0 0 0.2rem;
   }
 }
 
@@ -3552,11 +3548,25 @@ button.cx-ovband--btn:hover {
 .cx-card__link:hover { text-decoration: underline; }
 
 /* Header row */
+ /* Three columns: identity | risk score | map. The map used to sit ~1,580px
+    down the page, below "01 The decision this drives", so a reader could not
+    see WHERE the country was without scrolling a third of the report. */
 .cx-ws__head {
   display: grid;
-  grid-template-columns: minmax(210px, 0.78fr) minmax(0, 2.1fr);
+  grid-template-columns: minmax(190px, 0.7fr) minmax(0, 1.9fr) minmax(180px, 0.85fr);
   gap: 1rem;
   align-items: stretch;
+}
+
+.cx-ws__head .cx-mapw {
+  display: flex;
+  flex-direction: column;
+}
+
+@media (max-width: 1024px) {
+  .cx-ws__head {
+    grid-template-columns: minmax(0, 1fr);
+  }
 }
 .cx-ident {
   display: flex;
