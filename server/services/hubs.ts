@@ -175,16 +175,44 @@ async function getSectorSlugMap(): Promise<Map<string, string>> {
   return map;
 }
 
+/**
+ * Breach categories reach us in two spellings.
+ *
+ * `breach_categories` holds enum-shaped values ("MARKET_ABUSE") while
+ * `breach_type` holds free text from the notice ("Market Abuse"), and the
+ * category list unions both. Grouping on the raw string therefore produced two
+ * rows for the same category on /breaches -- "Market Abuse 63 actions" and
+ * "Market Abuse 5 actions" -- which both linked to /breaches/market-abuse,
+ * because hubSlug() strips underscores and already collapsed them.
+ *
+ * Worse, the hub page behind that one URL filtered on a single raw spelling,
+ * so it silently under-reported: whichever variant the slug map happened to
+ * hold won, and the other variant's actions were unreachable.
+ *
+ * Canonicalise instead: lowercase, underscores to spaces, collapsed
+ * whitespace. Applied identically when grouping the list and when filtering a
+ * hub, so the two agree by construction.
+ */
+const CANONICAL_CATEGORY_SQL = (expr: string) =>
+  `regexp_replace(lower(trim(replace(${expr}, '_', ' '))), '\\s+', ' ', 'g')`;
+
 export async function listBreachCategories(): Promise<CategorySummary[]> {
   const sql = getSqlClient();
   const rows = (await sql(`
     SELECT
-      cat.category AS category,
+      -- Prefer the enum spelling: formatBreachCategory() has an explicit
+      -- label for "MARKET_ABUSE" but has to guess at "Market Abuse".
+      (ARRAY_AGG(cat.category ORDER BY (position('_' in cat.category) > 0) DESC, cat.category))[1] AS category,
       COUNT(*)::int AS fine_count,
       COALESCE(SUM(f.trusted_amount_gbp), 0)::float8 AS total_amount
     FROM public.all_regulatory_fines_trusted f
     CROSS JOIN LATERAL (
-      SELECT DISTINCT labels.category
+      -- DISTINCT ON the canonical form, not the raw string. A fine whose
+      -- breach_categories says "MARKET_ABUSE" and whose breach_type says
+      -- "Market Abuse" must contribute ONE row, or it is counted twice in the
+      -- group those two now share. Ties resolve to the enum spelling, which
+      -- becomes the group's representative label.
+      SELECT DISTINCT ON (${CANONICAL_CATEGORY_SQL("labels.category")}) labels.category
       FROM (
         SELECT jsonb_array_elements_text(${FCA_CATEGORY_EXPRESSION
           .replaceAll("breach_categories", "f.breach_categories")
@@ -193,10 +221,14 @@ export async function listBreachCategories(): Promise<CategorySummary[]> {
         SELECT NULLIF(trim(f.breach_type), '')
       ) labels
       WHERE labels.category IS NOT NULL
+      ORDER BY
+        ${CANONICAL_CATEGORY_SQL("labels.category")},
+        (position('_' in labels.category) > 0) DESC,
+        labels.category
     ) AS cat
     WHERE upper(f.regulator) = 'FCA' AND f.trusted_amount_gbp > 0
-    GROUP BY cat.category
-    ORDER BY total_amount DESC, fine_count DESC, cat.category ASC
+    GROUP BY ${CANONICAL_CATEGORY_SQL("cat.category")}
+    ORDER BY total_amount DESC, fine_count DESC, category ASC
   `)) as any[];
 
   return rows.map((row: any) => ({
@@ -606,8 +638,11 @@ export async function getBreachDetailsBySlug(
     WHERE upper(regulator) = 'FCA'
       AND trusted_amount_gbp > 0
       AND (
-        ${catFilter} @> jsonb_build_array($1::text)
-        OR lower(trim(breach_type)) = lower(trim($1))
+        EXISTS (
+          SELECT 1 FROM jsonb_array_elements_text(${catFilter}) AS label
+          WHERE ${CANONICAL_CATEGORY_SQL("label")} = ${CANONICAL_CATEGORY_SQL("$1::text")}
+        )
+        OR ${CANONICAL_CATEGORY_SQL("breach_type")} = ${CANONICAL_CATEGORY_SQL("$1::text")}
       )`,
     [categoryName],
   )) as any[];
@@ -628,8 +663,11 @@ export async function getBreachDetailsBySlug(
     WHERE upper(regulator) = 'FCA'
       AND trusted_amount_gbp > 0
       AND (
-        ${catFilter} @> jsonb_build_array($1::text)
-        OR lower(trim(breach_type)) = lower(trim($1))
+        EXISTS (
+          SELECT 1 FROM jsonb_array_elements_text(${catFilter}) AS label
+          WHERE ${CANONICAL_CATEGORY_SQL("label")} = ${CANONICAL_CATEGORY_SQL("$1::text")}
+        )
+        OR ${CANONICAL_CATEGORY_SQL("breach_type")} = ${CANONICAL_CATEGORY_SQL("$1::text")}
       )
     GROUP BY firm_individual
     ORDER BY total_amount DESC, fine_count DESC, firm_individual ASC
@@ -656,8 +694,11 @@ export async function getBreachDetailsBySlug(
       WHERE upper(regulator) = 'FCA'
         AND trusted_amount_gbp > 0
         AND (
-          ${catFilter} @> jsonb_build_array($1::text)
-          OR lower(trim(breach_type)) = lower(trim($1))
+          EXISTS (
+            SELECT 1 FROM jsonb_array_elements_text(${catFilter}) AS label
+            WHERE ${CANONICAL_CATEGORY_SQL("label")} = ${CANONICAL_CATEGORY_SQL("$1::text")}
+          )
+          OR ${CANONICAL_CATEGORY_SQL("breach_type")} = ${CANONICAL_CATEGORY_SQL("$1::text")}
         )
       ORDER BY trusted_amount_gbp DESC, date_issued DESC
       LIMIT $2`,
