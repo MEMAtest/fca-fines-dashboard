@@ -713,6 +713,17 @@ export function CountryHub() {
                 </div>
               </div>
             </div>
+            <div className="cx-card cx-mapw">
+              <span className="cx-card__eyebrow">
+                <Globe2 size={12} /> Country map
+              </span>
+              <Suspense fallback={<div className="cx-rmap__ph" style={{ height: 170 }} />}>
+                <CountryRegionalMap iso2={country.iso2} region={country.region} />
+              </Suspense>
+              <Link to="/countries" className="cx-card__link cx-mapw__link">
+                View full map →
+              </Link>
+            </div>
           </div>
 
           <CountryRiskV3Panel
@@ -845,17 +856,6 @@ export function CountryHub() {
               )}
             </div>
 
-            <div className="cx-card cx-mapw">
-              <span className="cx-card__eyebrow">
-                <Globe2 size={12} /> Country map
-              </span>
-              <Suspense fallback={<div className="cx-rmap__ph" style={{ height: 170 }} />}>
-                <CountryRegionalMap iso2={country.iso2} region={country.region} />
-              </Suspense>
-              <Link to="/countries" className="cx-card__link cx-mapw__link">
-                View full map →
-              </Link>
-            </div>
           </div>
 
           {/* ── Row 3: score drivers + overlays | mitigating factors | business impact ── */}

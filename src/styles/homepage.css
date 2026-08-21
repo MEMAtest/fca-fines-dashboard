@@ -31,11 +31,15 @@
 }
 
 .homepage-quicklinks__title {
-  text-align: center;
-  font-size: 2.25rem;
-  font-weight: 700;
-  color: #0B1F2A;
-  margin: 0 0 2.5rem;
+  /* Left-aligned to match every other section heading on the page. It was
+     centred, which broke the rhythm right after the coverage rail and made the
+     two blocks read as unrelated. */
+  text-align: left;
+  font-family: var(--ra-font-serif);
+  font-size: clamp(1.5rem, 2.4vw, 1.9rem);
+  font-weight: 600;
+  color: var(--ra-ink);
+  margin: 0 0 1.6rem;
 }
 
 .quicklinks-grid {
@@ -1613,4 +1617,14 @@
     position: static;
     margin-top: 0.6rem;
   }
+}
+
+/* Shared section rhythm. The coverage rail previously butted straight into the
+   platform grid with a hairline border and no breathing room. */
+.ra-rail-section {
+  padding-bottom: 1.6rem;
+}
+
+.homepage-quicklinks {
+  padding-top: 2.6rem;
 }
