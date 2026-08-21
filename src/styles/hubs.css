@@ -400,7 +400,10 @@
 .reg-hub-card--table { padding: 0; overflow: hidden; }
 .reg-hub-table-scroll { overflow-x: auto; }
 
-.reg-hub-timeline { display: grid; grid-auto-flow: column; grid-auto-columns: minmax(28px,1fr); align-items: end; gap: .5rem; height: 180px; }
+/* Each bar has a 28px floor, so a decade-plus of data cannot shrink below
+   ~400px and widened the page by 203px at 320px. Scroll the chart instead of
+   the document; the floor is what keeps the bars readable. */
+.reg-hub-timeline { display: grid; grid-auto-flow: column; grid-auto-columns: minmax(28px,1fr); align-items: end; gap: .5rem; height: 180px; max-width: 100%; overflow-x: auto; overflow-y: hidden; -webkit-overflow-scrolling: touch; padding-bottom: .25rem; }
 .reg-hub-timeline__bar { display: grid; grid-template-rows: 1fr auto auto; align-items: end; justify-items: center; gap: .3rem; height: 100%; }
 .reg-hub-timeline__bar div { width: 100%; max-width: 34px; border-radius: 4px 4px 0 0; background: var(--ra-accent); }
 .reg-hub-timeline__bar span { color: var(--ra-text-tertiary); font-size: .72rem; }
