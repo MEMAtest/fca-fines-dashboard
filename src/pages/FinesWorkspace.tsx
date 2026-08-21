@@ -43,6 +43,7 @@ import { fetchWorkspaceRecords } from "../utils/fetchWorkspaceRecords.js";
 import { formatBreachCategory } from "../utils/labelConversion.js";
 import { exportData } from "../utils/export.js";
 import { getFcaFineCasePath } from "../utils/fcaFineCasePath.js";
+import { displayFirmName } from "../utils/firmName.js";
 import {
   fetchUnifiedOverview,
   type UnifiedOverviewParams,
@@ -106,7 +107,7 @@ function RecordTable({ records, onOpen, limit = 8 }: { records: FineRecord[]; on
         {records.slice(0, limit).map((record) => (
           <tr key={`${record.id ?? record.fine_reference}-${record.date_issued}`} onClick={() => onOpen(record)} tabIndex={0} onKeyDown={(event) => { if (event.key === "Enter") onOpen(record); }}>
             <td>{formatDate(record.date_issued)}</td>
-            <td><strong>{record.firm_individual}</strong>{getFcaFineCasePath(record) ? <> <Link to={getFcaFineCasePath(record)!} onClick={(event) => event.stopPropagation()} aria-label={`Open ${record.firm_individual} FCA fine case`}>Case page</Link></> : null}</td>
+            <td><strong>{displayFirmName(record.firm_individual)}</strong>{getFcaFineCasePath(record) ? <> <Link to={getFcaFineCasePath(record)!} onClick={(event) => event.stopPropagation()} aria-label={`Open ${record.firm_individual} FCA fine case`}>Case page</Link></> : null}</td>
             <td><span className="workspace-tag">{record.regulator}</span></td>
             <td>{formatBreachCategory(getRecordThemes(record)[0] ?? "")}</td>
             <td><strong>{record.requires_amount_review ? "Amount under review" : record.amount_disclosed === false ? "Not disclosed" : formatWorkspaceAmount(record.amount)}</strong></td>

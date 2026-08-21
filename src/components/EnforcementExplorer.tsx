@@ -14,6 +14,8 @@ import { useEvidenceModal } from "./EvidenceModalProvider.js";
 import RegulatorMark from "./RegulatorMark.js";
 import { WatchFirmButton } from "./WatchFirmButton.js";
 import "../styles/enforcement-explorer.css";
+import { formatBreachCategory } from "../utils/labelConversion.js";
+import { displayFirmName } from "../utils/firmName.js";
 
 const PAGE_SIZE = 50;
 
@@ -163,17 +165,17 @@ export function EnforcementExplorer() {
             const evidence = buildFineRecordEvidence(record, "enforcement_search");
             const selected = basket.contains(evidence.id);
             return <article key={evidence.id} className={selected ? "is-selected" : ""}>
-              <label className="enforcement-explorer__select"><input type="checkbox" checked={selected} onChange={() => selected ? basket.remove(evidence.id) : basket.add(evidence)}/><span className="sr-only">Select {record.firm_individual}</span></label>
+              <label className="enforcement-explorer__select"><input type="checkbox" checked={selected} onChange={() => selected ? basket.remove(evidence.id) : basket.add(evidence)}/><span className="sr-only">Select {displayFirmName(record.firm_individual)}</span></label>
               <RegulatorMark regulator={record.regulator} label={record.regulator_full_name ?? record.regulator} size="small" showCode />
               <div className="enforcement-explorer__entity-col">
                 <button type="button" className="enforcement-explorer__entity" onClick={() => openEvidence(evidence)}>
-                  <strong>{record.firm_individual}</strong>
+                  <strong>{displayFirmName(record.firm_individual)}</strong>
                   <span>{record.summary || record.breach_type || "No summary recorded"}</span>
                 </button>
                 <div className="enforcement-explorer__tags">
-                  <span className="enforcement-explorer__theme-chip">{getRecordThemes(record)[0]}</span>
+                  <span className="enforcement-explorer__theme-chip">{formatBreachCategory(getRecordThemes(record)[0] ?? "")}</span>
                   <button type="button" className="enforcement-explorer__evidence-link" onClick={() => openEvidence(evidence)}><FileSearch size={12}/> Evidence</button>
-                  <WatchFirmButton firmName={record.firm_individual} variant="text" source="search_result"/>
+                  <WatchFirmButton firmName={displayFirmName(record.firm_individual)} variant="text" source="search_result"/>
                 </div>
               </div>
               <span className="enforcement-explorer__meta-col">

@@ -17,6 +17,8 @@ import {
 import { formatWorkspaceAmount } from "../utils/workspaceAnalytics.js";
 import { buildFineRecordEvidence } from "../utils/evidenceCase.js";
 import { useEvidenceModal } from "./EvidenceModalProvider.js";
+import { formatBreachCategory } from "../utils/labelConversion.js";
+import { displayFirmName } from "../utils/firmName.js";
 
 interface ActionDrawerProps {
   open: boolean;
@@ -182,10 +184,10 @@ export function ActionDrawer({
               {paged.map((record) => {
                 return (
                   <tr key={`${record.id ?? record.fine_reference}-${record.date_issued}`}>
-                    <td><button type="button" className="action-drawer__entity" onClick={() => openEvidence(buildFineRecordEvidence(record, "workspace_drawer", currency))}><strong>{record.firm_individual}</strong></button><small>{record.firm_category || "Sector not recorded"}</small></td>
+                    <td><button type="button" className="action-drawer__entity" onClick={() => openEvidence(buildFineRecordEvidence(record, "workspace_drawer", currency))}><strong>{displayFirmName(record.firm_individual)}</strong></button><small>{record.firm_category || "Sector not recorded"}</small></td>
                     <td><span className="action-drawer__regulator">{record.regulator}</span></td>
                     <td>{new Intl.DateTimeFormat("en-GB", { day: "2-digit", month: "short", year: "numeric" }).format(new Date(record.date_issued))}</td>
-                    <td>{record.breach_type || "Not classified"}</td>
+                    <td>{record.breach_type ? formatBreachCategory(record.breach_type) : "Not classified"}</td>
                     <td><strong>{formatWorkspaceAmount(record.amount, currency)}</strong></td>
                     <td><button type="button" className="action-drawer__evidence" onClick={() => openEvidence(buildFineRecordEvidence(record, "workspace_drawer", currency))}><FileSearch size={13} /> View evidence</button></td>
                   </tr>

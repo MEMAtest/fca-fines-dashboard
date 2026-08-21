@@ -228,3 +228,29 @@ export function isGarbageFirmName(name: string): boolean {
 
   return false;
 }
+
+/**
+ * Display-clean a firm name.
+ *
+ * Scraper output sometimes carries raw HTML entities into the party name — the
+ * AFM feed produced "duurzaam financieel welzijn in Nederland. &copy", which
+ * rendered literally on the fines and search tables.
+ *
+ * This is for DISPLAY only, on surfaces that must keep showing the row (an
+ * evidence table should not hide a record because its name is untidy).
+ * `isGarbageFirmName` remains the right tool where a row can be excluded.
+ */
+export function displayFirmName(raw: string | null | undefined): string {
+  if (!raw) return "";
+  return String(raw)
+    // Decode the entities that actually appear, then strip any stragglers.
+    .replace(/&amp;?/gi, "&")
+    .replace(/&nbsp;?/gi, " ")
+    .replace(/&quot;?/gi, '"')
+    .replace(/&#39;|&apos;?/gi, "'")
+    .replace(/&copy;?/gi, "")
+    .replace(/&[a-z]{2,8};?/gi, "")
+    .replace(/\s{2,}/g, " ")
+    .replace(/[\s.,;:–-]+$/u, "")
+    .trim();
+}
