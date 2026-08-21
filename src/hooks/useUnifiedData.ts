@@ -9,6 +9,7 @@ import { useEffect, useState, useMemo } from "react";
 import { fetchUnifiedSearch, type UnifiedSearchResponse } from "../api.js";
 import type { FineRecord, StatsResponse } from "../types.js";
 import { getRecordSourceStatus } from "../utils/sourceLinks.js";
+import { cleanDisplayText } from "../utils/firmName.js";
 
 interface UseUnifiedDataParams {
   regulator: string;
@@ -83,7 +84,11 @@ export function transformUnifiedRecord(
     month_issued: toInteger(record.month_issued),
     breach_type: record.breach_type,
     breach_categories: parseBreachCategories(record.breach_categories),
-    summary: record.summary,
+    // Scraped summaries carry raw HTML entities ("&copy", "&amp;"), which
+    // React escapes and renders literally. Clean once here, at the single
+    // boundary every client surface reads through, rather than at each of the
+    // ~15 places a summary is displayed.
+    summary: cleanDisplayText(record.summary),
     final_notice_url: record.notice_url,
     source_url: record.source_url,
     listing_url: record.listing_url || record.source_url,
