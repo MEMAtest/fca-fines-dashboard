@@ -35,7 +35,7 @@ import { DigestSubscribeForm } from '../components/DigestSubscribeForm.js';
 import { RegulatorMark } from '../components/RegulatorMark.js';
 import { trackOwnedEvent } from '../utils/ownedAnalytics.js';
 import { getHomepageFaqs, generateFaqSchema } from '../data/faqData.js';
-import { getPublishedBlogArticles } from '../data/blogArticles.js';
+import { BLOG_ARTICLE_INDEX, BLOG_ARTICLE_COUNT } from '../data/blogArticleIndex.js';
 import { PUBLIC_REGULATOR_NAV_ITEMS, PUBLIC_REGULATOR_CODES } from '../data/regulatorCoverage.js';
 import '../styles/homepage.css';
 import '../styles/contact.css';
@@ -45,10 +45,11 @@ import { isGarbageFirmName } from '../utils/firmName.js';
 const HOMEPAGE_FAQS = getHomepageFaqs();
 const PUBLIC_REGULATOR_COUNT = PUBLIC_REGULATOR_CODES.length;
 const REGION_COUNT = new Set(PUBLIC_REGULATOR_NAV_ITEMS.map((r) => r.region)).size;
-const LATEST_ARTICLES = [...getPublishedBlogArticles()]
-  .sort((a, b) => b.dateISO.localeCompare(a.dateISO))
-  .slice(0, 3);
-const TOTAL_ARTICLE_COUNT = getPublishedBlogArticles().length;
+// The index is already sorted newest-first and carries only the six fields
+// these cards render. Importing blogArticles.ts here pulled the body of every
+// article on the site into the homepage bundle: 985 KB on the wire.
+const LATEST_ARTICLES = BLOG_ARTICLE_INDEX.slice(0, 3);
+const TOTAL_ARTICLE_COUNT = BLOG_ARTICLE_COUNT;
 const COVERAGE_RAIL_ITEMS = [...PUBLIC_REGULATOR_NAV_ITEMS].sort((a, b) => a.code.localeCompare(b.code));
 const RECENT_ACTIONS_LIMIT = 24;
 const WEEK_MS = 7 * 24 * 60 * 60 * 1000;

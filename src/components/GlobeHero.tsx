@@ -3,7 +3,7 @@
  * Content left, globe right on light background with floating data cards
  */
 
-import { useRef, useEffect, useState, useMemo, useCallback, Suspense, lazy, type MutableRefObject } from 'react';
+import { useRef, useEffect, useState, useMemo, useCallback } from 'react';
 import { motion } from 'framer-motion';
 import { Gavel, Users, Calendar, Activity, Flag } from 'lucide-react';
 import { getRegulatorsForCountry, getCoveredCountries, getAllCountryInfo } from '../data/countryRegulatorMapping.js';
@@ -12,7 +12,10 @@ import { RegulatorMark } from './RegulatorMark.js';
 import { LIVE_REGULATOR_NAV_ITEMS } from '../data/regulatorCoverage.js';
 import '../styles/globe-hero.css';
 
-const Globe = lazy(() => import('react-globe.gl'));
+// Was `lazy(() => import('react-globe.gl'))`, which pulled `three` behind it:
+// a 1,740 KB chunk on the homepage's critical path. D3Globe draws the same
+// scene with d3-geo, which was already a dependency.
+import { D3Globe } from './D3Globe.js';
 
 interface GlobeHeroProps {
   /**
@@ -151,18 +154,6 @@ const REGULATORS_BY_REGION = (() => {
 })();
 
 // Auto-rotate resume delay after user interaction (ms)
-const AUTO_ROTATE_RESUME_MS = 5000;
-
-function hasWebGLSupport(): boolean {
-  if (typeof document === 'undefined') return true;
-  try {
-    const canvas = document.createElement('canvas');
-    return Boolean(canvas.getContext('webgl') || canvas.getContext('experimental-webgl'));
-  } catch {
-    return false;
-  }
-}
-
 /** Match globe pixel size to CSS container breakpoints */
 /**
  * Sizes the globe to its CONTAINER, not the window.
@@ -206,12 +197,8 @@ function useGlobeSize(containerRef: React.RefObject<HTMLElement | null>): number
 }
 
 export function GlobeHero({ onCountryClick, visualOnly = false, figures }: GlobeHeroProps) {
-  const globeEl = useRef<any>(null);
-  const resumeTimer = useRef<ReturnType<typeof setTimeout> | null>(null) as MutableRefObject<ReturnType<typeof setTimeout> | null>;
-  const userInteracting = useRef(false);
   const globeFrameRef = useRef<HTMLDivElement>(null);
   const globeSize = useGlobeSize(globeFrameRef);
-  const webglAvailable = useMemo(() => hasWebGLSupport(), []);
   const [hoveredCountry, setHoveredCountry] = useState<string | null>(null);
   const [countries, setCountries] = useState<{ features: any[] }>({ features: [] });
   const [isLoading, setIsLoading] = useState(false);
@@ -342,67 +329,13 @@ export function GlobeHero({ onCountryClick, visualOnly = false, figures }: Globe
     loadCountries();
   }, []);
 
-  // Schedule auto-rotate resume after user stops interacting
-  const scheduleAutoResume = useCallback(() => {
-    if (resumeTimer.current) clearTimeout(resumeTimer.current);
-    resumeTimer.current = setTimeout(() => {
-      userInteracting.current = false;
-      if (globeEl.current) globeEl.current.controls().autoRotate = true;
-    }, AUTO_ROTATE_RESUME_MS);
-  }, []);
-
-  // Stop auto-rotate immediately (user drag / scroll / click on globe)
-  const stopAutoRotate = useCallback(() => {
-    userInteracting.current = true;
-    if (globeEl.current) globeEl.current.controls().autoRotate = false;
-    scheduleAutoResume();
-  }, [scheduleAutoResume]);
-
-  useEffect(() => {
-    if (globeEl.current && !isLoading) {
-      const controls = globeEl.current.controls();
-      controls.autoRotate = true;
-      controls.autoRotateSpeed = 0.3;
-      controls.enableZoom = true;
-      controls.minDistance = 120;   // allow closer zoom (was 180)
-      controls.maxDistance = 600;
-      globeEl.current.pointOfView({ altitude: 2.2 }, 0);
-
-      // Stop rotation when user drags or scrolls the globe
-      controls.addEventListener('start', stopAutoRotate);
-
-      return () => {
-        controls.removeEventListener('start', stopAutoRotate);
-        if (resumeTimer.current) clearTimeout(resumeTimer.current);
-      };
-    }
-  }, [isLoading, stopAutoRotate]);
-
-  const getPolygonColor = useCallback((polygon: any) => {
-    const countryCode = getAlpha2(polygon);
-    const isCovered = countryCode ? coveredCountries.has(countryCode) : false;
-    const isHovered = countryCode ? hoveredCountry === countryCode : false;
-    if (isHovered && isCovered) return 'rgba(99, 102, 241, 0.95)';
-    if (isCovered) return 'rgba(99, 102, 241, 0.6)';
-    return 'rgba(100, 116, 139, 0.15)';
-  }, [coveredCountries, hoveredCountry]);
-
   const handlePolygonHover = useCallback((polygon: any) => {
     if (polygon) {
       const countryCode = getAlpha2(polygon);
       const info = countryCode ? getRegulatorsForCountry(countryCode) : null;
-      if (info && countryCode) {
-        setHoveredCountry(countryCode);
-        // Pause rotation on hover (only if not already paused by user drag)
-        if (globeEl.current) globeEl.current.controls().autoRotate = false;
-        if (resumeTimer.current) clearTimeout(resumeTimer.current);
-      }
+      if (info && countryCode) setHoveredCountry(countryCode);
     } else {
       setHoveredCountry(null);
-      // Resume rotation only if user isn't actively interacting
-      if (!userInteracting.current && globeEl.current) {
-        globeEl.current.controls().autoRotate = true;
-      }
     }
   }, []);
 
@@ -516,40 +449,17 @@ export function GlobeHero({ onCountryClick, visualOnly = false, figures }: Globe
       {/* ===== RIGHT COLUMN: Globe on light bg ===== */}
       <div className="globe-hero-wrapper__right">
         <div className="globe-container" ref={globeFrameRef}>
-          {webglAvailable ? (
-            <Suspense fallback={<div className="globe-loading">Loading globe...</div>}>
-              <Globe
-                ref={globeEl}
-                globeImageUrl="//unpkg.com/three-globe/example/img/earth-night.jpg"
-                backgroundColor="rgba(0,0,0,0)"
-                polygonsData={countries.features}
-                polygonCapColor={getPolygonColor}
-                polygonSideColor={() => 'rgba(0, 0, 0, 0)'}
-                polygonStrokeColor={() => 'rgba(6, 182, 212, 0.15)'}
-                polygonAltitude={0.01}
-                onPolygonHover={handlePolygonHover}
-                onPolygonClick={handlePolygonClick}
-                arcsData={arcsData}
-                arcColor={'color'}
-                arcStroke={0.5}
-                arcDashLength={0.4}
-                arcDashGap={0.2}
-                arcDashAnimateTime={3000}
-                arcsTransitionDuration={0}
-                pointsData={pointsData}
-                pointColor={'color'}
-                pointAltitude={0.02}
-                pointRadius={'size'}
-                pointsMerge={false}
-                atmosphereColor="rgba(6, 182, 212, 0.3)"
-                atmosphereAltitude={0.2}
-                width={globeSize}
-                height={globeSize}
-              />
-            </Suspense>
-          ) : (
-            <div className="globe-loading">Interactive globe unavailable in this browser.</div>
-          )}
+          <D3Globe
+            features={countries.features}
+            size={globeSize}
+            covered={coveredCountries}
+            hovered={hoveredCountry}
+            arcs={arcsData}
+            points={pointsData}
+            alpha2={getAlpha2}
+            onHover={handlePolygonHover}
+            onSelect={handlePolygonClick}
+          />
 
           {/* Hover tooltip */}
           {hoveredCountry && <HoverTooltip countryCode={hoveredCountry} />}
