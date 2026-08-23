@@ -1,4 +1,5 @@
 import { getFatfAssessment, type FatfAssessmentRecord } from "./fatfAssessmentData.js";
+import { beneficialOwnershipRegisterRisk, type BoRegisterEvidence } from "./beneficialOwnershipRegisters.js";
 import { getFatfStatus, type FatfStatus } from "./fatfStatus.js";
 import { getGovernanceDimensions, type WgiDimensions } from "./governanceData.js";
 import {
@@ -55,6 +56,8 @@ export interface BeneficialOwnershipEvidence {
   score: number | null;
   availability: BeneficialOwnershipAvailability;
   evidenceCount: number;
+  /** Whether a live register exists and who may read it (Open Ownership, CC BY 4.0). */
+  register: BoRegisterEvidence;
   formula: string;
   sourceUrl: string;
   assessmentDate: string | null;
@@ -175,25 +178,55 @@ export function fatfSafeguardsRisk(record: FatfAssessmentRecord | undefined): {
 
 /**
  * Beneficial ownership is an interpretable breakout, not an additional headline
- * weight. It combines FATF IO5 effectiveness with Recommendations 24 and 25.
+ * weight. It combines FATF IO5 effectiveness with Recommendations 24 and 25,
+ * and now with whether a register actually exists and who may read it.
+ *
+ * The two halves answer different questions and neither substitutes for the
+ * other. FATF rates the legal framework and how well it works in practice; Open
+ * Ownership records the operational reality — a country can hold a Largely
+ * Compliant rating on Recommendation 24 while its register is readable only by
+ * the registrar, and a country can run an open register while enforcement of it
+ * is weak. They overlap enough that the register is weighted modestly at 20%,
+ * leaving FATF's assessment at 80% of the breakout.
+ *
+ * Where the register position is unknown, the FATF-only formula is used
+ * unchanged rather than treating "unrecorded" as a bad result.
  */
-export function beneficialOwnershipRisk(record: FatfAssessmentRecord | undefined): BeneficialOwnershipEvidence {
+export function beneficialOwnershipRisk(
+  record: FatfAssessmentRecord | undefined,
+  iso2?: string,
+): BeneficialOwnershipEvidence {
   const effectiveness = assessmentValue(record, "IO5");
   const companies = assessmentValue(record, "R24");
   const trustsAndArrangements = assessmentValue(record, "R25");
   const values = [effectiveness, companies, trustsAndArrangements];
   const evidenceCount = values.filter((value): value is number => value !== null).length;
-  const score = evidenceCount === 3
-    ? round1((effectiveness as number) * 0.6 + (companies as number) * 0.2 + (trustsAndArrangements as number) * 0.2)
+  const register = beneficialOwnershipRegisterRisk(iso2 ?? record?.iso2 ?? null);
+  const fatfScore = evidenceCount === 3
+    ? (effectiveness as number) * 0.6 + (companies as number) * 0.2 + (trustsAndArrangements as number) * 0.2
     : null;
+  const score = fatfScore === null
+    // No FATF ratings: the register is the only beneficial-ownership evidence
+    // there is, so it stands alone rather than the breakout showing nothing.
+    ? (register.risk === null ? null : round1(register.risk))
+    : register.risk === null
+      ? round1(fatfScore)
+      : round1(fatfScore * 0.8 + register.risk * 0.2);
   return {
     effectiveness,
     companies,
     trustsAndArrangements,
     score,
-    availability: evidenceCount === 3 ? "available" : evidenceCount > 0 ? "partial" : "unavailable",
+    availability: evidenceCount === 3
+      ? "available"
+      : evidenceCount > 0 || register.risk !== null ? "partial" : "unavailable",
     evidenceCount,
-    formula: "60% FATF IO5 effectiveness + 20% Recommendation 24 + 20% Recommendation 25",
+    register,
+    formula: fatfScore === null
+      ? "Register access only; no FATF beneficial-ownership ratings are available"
+      : register.risk === null
+        ? "60% FATF IO5 effectiveness + 20% Recommendation 24 + 20% Recommendation 25"
+        : "80% FATF (60% IO5 + 20% R24 + 20% R25) + 20% register access",
     sourceUrl: "https://www.fatf-gafi.org/en/publications/Mutualevaluations/Fatf-methodology.html",
     assessmentDate: record?.assessmentDate ?? null,
     note: "A register being public or restricted is shown separately; register availability alone does not establish beneficial-ownership effectiveness.",
@@ -414,7 +447,7 @@ export function computeCountryRiskV3(iso2: string, supplied: CountryRiskV3Inputs
         "icrg",
       ),
     },
-    beneficialOwnership: beneficialOwnershipRisk(assessment),
+    beneficialOwnership: beneficialOwnershipRisk(assessment, code),
     overlays: { sanctions: sanctionsOverlay, fatf: fatfOverlay },
     sanctionsCoverageComplete,
     limitingReasons,

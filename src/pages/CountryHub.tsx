@@ -32,6 +32,7 @@ import { FATF_SOURCE_URL } from "../data/fatfStatus.js";
 import { isEuTaxListed } from "../data/euTaxList.js";
 import { getEgmontMember } from "../data/egmontMembership.js";
 import { getFatfAssessmentLink } from "../data/fatfAssessmentLinks.js";
+import { beneficialOwnershipRegisterRisk } from "../data/beneficialOwnershipRegisters.js";
 import { BO_REGISTERS_REVIEWED, BO_REGISTERS_SOURCE_URL, getBoRegister, boRegisterSignal } from "../data/boRegisters.js";
 import {
   recentChangesForCountry,
@@ -326,6 +327,7 @@ export function CountryHub() {
   // Beneficial-ownership register availability (Open Ownership, CC BY 4.0) —
   // a Framework-signals line, only where the source confirms a live register.
   const boReg = getBoRegister(country.iso2);
+  const boRegisterAccess = beneficialOwnershipRegisterRisk(country.iso2);
   const frameworkSignals: { label: string; value: string }[] = [
     { label: "FATF listing", value: statusHeading },
     { label: "International sanctions", value: sanctionsSignal },
@@ -738,7 +740,22 @@ export function CountryHub() {
           <CountryRiskV3Panel
             payload={countryRiskV3PanelPayload(riskV3, {
               label: "Register status",
-              value: boReg ? `${boRegisterSignal(country.iso2)}${boReg.since ? ` · since ${boReg.since}` : ""}` : "No live register identified in the source snapshot",
+              // Access tier first: for AML work the question is whether a
+              // regulated firm can read the register, not whether it happens to
+              // be public. Scope follows, because a register covering only
+              // extractives or land leaves most legal entities outside it.
+              value: [
+                boRegisterAccess.label,
+                boReg?.since ? `live since ${boReg.since}` : null,
+                boRegisterAccess.registers.length > 1
+                  ? `${boRegisterAccess.registers.length} registers`
+                  : null,
+                boRegisterAccess.registers.length > 0 && !boRegisterAccess.fullEconomy
+                  ? "sectoral coverage only"
+                  : null,
+              ]
+                .filter(Boolean)
+                .join(" · "),
               source: {
                 name: "Open Ownership register map",
                 url: BO_REGISTERS_SOURCE_URL,

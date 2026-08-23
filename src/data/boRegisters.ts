@@ -3,61 +3,50 @@
  *
  * A licence-clean framework signal for country pages: does the jurisdiction run
  * a live beneficial-ownership register, and can the general public access it, or
- * only competent authorities / obliged entities? Public UBO registers are a
- * material AML/CFT transparency signal (they make it harder to hide behind shell
- * companies), so a one-line "BO register: Public" / "Restricted" flag is a cheap,
- * high-value addition next to the FATF, sanctions and Egmont signals.
+ * only competent authorities / obliged entities?
  *
  * Source & licence — Open Ownership "Worldwide action on beneficial ownership
- * transparency" map (CC BY 4.0). Compiled 17 July 2026 from the official map
- * country-data download:
+ * transparency" map (CC BY 4.0):
  *   Map:  https://www.openownership.org/en/map/
  *   Data: https://www.openownership.org/en/map/oo_all_country_data.csv
  *   Licence: Creative Commons Attribution 4.0 International (CC BY 4.0)
  *            https://creativecommons.org/licenses/by/4.0/
  *
- * We surface only the facts the source publishes: it records live registers and,
- * per register, which audiences may access them ("Who can access"). We do NOT
- * invent an access taxonomy — the source's own audience field drives the flag:
+ * This file used to hold its own hand-compiled table, transcribed from the same
+ * download on 17 July 2026. It is now DERIVED from the scripted snapshot in
+ * beneficialOwnershipRegisterData.ts, refreshed by
+ * scripts/country-risk/ingest-open-ownership.ts. Two independently maintained
+ * copies of one source can only drift apart, and the transcription had already
+ * flattened the multi-register countries down to a single row.
  *
- *   - "General public" is among the register's audiences  -> live-public
- *   - only competent authorities / obliged entities        -> live-restricted
+ * The published meaning is unchanged. "General public" among a register's
+ * audiences resolves to live-public, anything narrower to live-restricted, and
+ * the most-open register wins where a country runs several. That is a stricter
+ * test than the one the risk ladder in beneficialOwnershipRegisters.ts uses,
+ * which treats obliged-entity access as equivalent to public access for
+ * customer due diligence, and deliberately so: this flag reports what the
+ * source says, the ladder interprets it.
  *
- * Where a country runs several registers (e.g. the UK's Companies House PSC
- * register, the Register of Overseas Entities and HMRC's Trust Registration),
- * the most-open register is taken, so the UK resolves to a public register (its
- * PSC register, live since 2016) and the US to a restricted register (FinCEN's
- * Beneficial Ownership Information System, 2024). Countries the source does not
- * list as running a live register are simply absent (treated as "none identified"
- * by getBoRegister — the source does not confirm a register for them).
- *
- * Two ISO2 codes present in the source (GL Greenland, SH Saint Helena) are not
- * RegActions-profiled jurisdictions and are omitted so every entry resolves in
- * countries.ts.
- *
- * Keyed by ISO 3166-1 alpha-2 (see countries.ts).
+ * Countries the source does not list are not confirmed as running a live
+ * register, which is an absence of evidence rather than a finding.
  */
+import {
+  BO_REGISTER_RECORDS,
+  BO_REGISTER_RETRIEVED_AT,
+} from "./beneficialOwnershipRegisterData.js";
 
 export const BO_REGISTERS_SOURCE_URL = "https://www.openownership.org/en/map/";
 
-/** Open Ownership map data download this register was compiled from. */
 export const BO_REGISTERS_DATA_URL =
   "https://www.openownership.org/en/map/oo_all_country_data.csv";
 
-/** Data licence — Open Ownership map (CC BY 4.0). */
 export const BO_REGISTERS_LICENCE = "CC BY 4.0";
 export const BO_REGISTERS_LICENCE_URL =
   "https://creativecommons.org/licenses/by/4.0/";
 
-/** Date this register availability data was last compiled/verified. */
-export const BO_REGISTERS_REVIEWED = "2026-07-17";
+/** Date the snapshot was retrieved, from the generated data file. */
+export const BO_REGISTERS_REVIEWED = BO_REGISTER_RETRIEVED_AT.slice(0, 10);
 
-/**
- * BO register status. Only statuses the source publishes are used:
- *  - `live-public`     — a live register the general public can access.
- *  - `live-restricted` — a live register limited to competent authorities /
- *                        obliged entities (no general-public access).
- */
 export type BoRegisterStatus = "live-public" | "live-restricted";
 
 export interface BoRegister {
@@ -67,115 +56,36 @@ export interface BoRegister {
   since?: string;
 }
 
+/** Earliest launch year the source records across a country's registers. */
+function earliestLaunch(launches: Array<string | null>): string | undefined {
+  const known = launches.filter((value): value is string => Boolean(value)).sort();
+  return known[0];
+}
+
 /**
- * Live beneficial-ownership registers, keyed by ISO2. Compiled from the Open
- * Ownership map country-data download (CC BY 4.0); the most-open register per
- * country is taken where several exist. Countries absent here are not confirmed
- * by the source as running a live register.
+ * Open Ownership lists Greenland and Saint Helena, which are not jurisdictions
+ * RegActions covers. The July transcription silently omitted them; deriving from
+ * the source surfaced them, and the existing resolve-against-countries.ts test
+ * caught it. Filter here rather than in the generated data, which stays faithful
+ * to what the source publishes.
  */
-export const BO_REGISTERS: BoRegister[] = [
-  { iso2: "AI", status: "live-restricted", since: "2022" },  // Anguilla
-  { iso2: "AL", status: "live-public", since: "2021" },  // Albania
-  { iso2: "AM", status: "live-public", since: "2020" },  // Armenia
-  { iso2: "AR", status: "live-restricted", since: "2020" },  // Argentina
-  { iso2: "AT", status: "live-restricted", since: "2018" },  // Austria
-  { iso2: "BA", status: "live-restricted" },  // Bosnia and Herzegovina
-  { iso2: "BE", status: "live-restricted", since: "2018" },  // Belgium
-  { iso2: "BG", status: "live-public", since: "2019" },  // Bulgaria
-  { iso2: "BM", status: "live-restricted", since: "2018" },  // Bermuda
-  { iso2: "BN", status: "live-restricted", since: "2021" },  // Brunei Darussalam
-  { iso2: "BR", status: "live-restricted", since: "2017" },  // Brazil
-  { iso2: "BW", status: "live-public", since: "2019" },  // Botswana
-  { iso2: "BZ", status: "live-restricted", since: "2023" },  // Belize
-  { iso2: "CA", status: "live-public", since: "2024" },  // Canada
-  { iso2: "CD", status: "live-public" },  // Democratic Republic of the Congo
-  { iso2: "CN", status: "live-restricted", since: "2024" },  // China
-  { iso2: "CO", status: "live-restricted", since: "2022" },  // Colombia
-  { iso2: "CR", status: "live-restricted", since: "2019" },  // Costa Rica
-  { iso2: "CY", status: "live-restricted", since: "2022" },  // Cyprus
-  { iso2: "CZ", status: "live-public", since: "2021" },  // Czech Republic
-  { iso2: "DE", status: "live-restricted", since: "2017" },  // Germany
-  { iso2: "DK", status: "live-public", since: "2017" },  // Denmark
-  { iso2: "DZ", status: "live-public", since: "2023" },  // Algeria
-  { iso2: "EC", status: "live-public" },  // Ecuador
-  { iso2: "EE", status: "live-public", since: "2018" },  // Estonia
-  { iso2: "EG", status: "live-restricted", since: "2020" },  // Egypt
-  { iso2: "ES", status: "live-public", since: "2018" },  // Spain
-  { iso2: "FI", status: "live-restricted", since: "2019" },  // Finland
-  { iso2: "FR", status: "live-public", since: "2018" },  // France
-  { iso2: "GB", status: "live-public", since: "2016" },  // United Kingdom (Companies House PSC register)
-  { iso2: "GG", status: "live-restricted", since: "2018" },  // Guernsey
-  { iso2: "GH", status: "live-public", since: "2020" },  // Ghana
-  { iso2: "GI", status: "live-public", since: "2020" },  // Gibraltar
-  { iso2: "GR", status: "live-restricted", since: "2021" },  // Greece
-  { iso2: "GY", status: "live-public" },  // Guyana
-  { iso2: "HR", status: "live-restricted", since: "2020" },  // Croatia
-  { iso2: "HU", status: "live-public", since: "2021" },  // Hungary
-  { iso2: "ID", status: "live-public", since: "2019" },  // Indonesia
-  { iso2: "IE", status: "live-restricted", since: "2019" },  // Ireland
-  { iso2: "IM", status: "live-restricted", since: "2017" },  // Isle of Man
-  { iso2: "IN", status: "live-restricted", since: "2018" },  // India
-  { iso2: "IS", status: "live-public", since: "2019" },  // Iceland
-  { iso2: "IT", status: "live-public", since: "2023" },  // Italy
-  { iso2: "JE", status: "live-restricted", since: "2021" },  // Jersey
-  { iso2: "JM", status: "live-restricted", since: "2023" },  // Jamaica
-  { iso2: "JP", status: "live-restricted", since: "2022" },  // Japan
-  { iso2: "KE", status: "live-public", since: "2020" },  // Kenya
-  { iso2: "KN", status: "live-restricted" },  // Saint Kitts and Nevis
-  { iso2: "KW", status: "live-restricted", since: "2025" },  // Kuwait
-  { iso2: "KY", status: "live-restricted", since: "2017" },  // Cayman Islands
-  { iso2: "KZ", status: "live-restricted", since: "2023" },  // Kazakhstan
-  { iso2: "LT", status: "live-public", since: "2022" },  // Lithuania
-  { iso2: "LU", status: "live-restricted", since: "2019" },  // Luxembourg
-  { iso2: "LV", status: "live-public", since: "2017" },  // Latvia
-  { iso2: "MA", status: "live-public", since: "2022" },  // Morocco
-  { iso2: "MC", status: "live-public", since: "2018" },  // Monaco
-  { iso2: "MK", status: "live-public", since: "2021" },  // North Macedonia
-  { iso2: "MN", status: "live-public", since: "2022" },  // Mongolia
-  { iso2: "MS", status: "live-restricted", since: "2024" },  // Montserrat
-  { iso2: "MT", status: "live-restricted", since: "2018" },  // Malta
-  { iso2: "MU", status: "live-restricted", since: "2020" },  // Mauritius
-  { iso2: "MW", status: "live-public", since: "2022" },  // Malawi
-  { iso2: "MY", status: "live-public", since: "2024" },  // Malaysia
-  { iso2: "NA", status: "live-public", since: "2023" },  // Namibia
-  { iso2: "NG", status: "live-public", since: "2022" },  // Nigeria
-  { iso2: "NI", status: "live-restricted", since: "2021" },  // Nicaragua
-  { iso2: "NL", status: "live-restricted", since: "2020" },  // Netherlands
-  { iso2: "NO", status: "live-restricted", since: "2024" },  // Norway
-  { iso2: "PA", status: "live-restricted", since: "2020" },  // Panama
-  { iso2: "PE", status: "live-restricted", since: "2021" },  // Peru
-  { iso2: "PH", status: "live-public", since: "2021" },  // Philippines
-  { iso2: "PL", status: "live-public", since: "2019" },  // Poland
-  { iso2: "PT", status: "live-public", since: "2018" },  // Portugal
-  { iso2: "PY", status: "live-restricted", since: "2020" },  // Paraguay
-  { iso2: "QA", status: "live-restricted", since: "2021" },  // Qatar
-  { iso2: "RO", status: "live-public", since: "2019" },  // Romania
-  { iso2: "RS", status: "live-public", since: "2018" },  // Serbia
-  { iso2: "RW", status: "live-restricted", since: "2023" },  // Rwanda
-  { iso2: "SC", status: "live-restricted" },  // Seychelles
-  { iso2: "SE", status: "live-public", since: "2017" },  // Sweden
-  { iso2: "SG", status: "live-restricted", since: "2020" },  // Singapore
-  { iso2: "SI", status: "live-public", since: "2019" },  // Slovenia
-  { iso2: "SK", status: "live-public", since: "2018" },  // Slovak Republic
-  { iso2: "SN", status: "live-public" },  // Senegal
-  { iso2: "TC", status: "live-restricted", since: "2019" },  // Turks and Caicos Islands
-  { iso2: "TJ", status: "live-public", since: "2021" },  // Tajikistan
-  { iso2: "TR", status: "live-restricted", since: "2021" },  // Turkey
-  { iso2: "TT", status: "live-public", since: "2020" },  // Trinidad and Tobago
-  { iso2: "TZ", status: "live-restricted", since: "2021" },  // Tanzania
-  { iso2: "UA", status: "live-public", since: "2015" },  // Ukraine
-  { iso2: "US", status: "live-restricted", since: "2024" },  // United States (FinCEN BOIS)
-  { iso2: "UY", status: "live-restricted", since: "2017" },  // Uruguay
-  { iso2: "VG", status: "live-restricted", since: "2017" },  // British Virgin Islands
-  { iso2: "ZA", status: "live-restricted", since: "2023" },  // South Africa
-  { iso2: "ZM", status: "live-public", since: "2019" },  // Zambia
-];
+const UNCOVERED = new Set(["GL", "SH"]);
 
-const BY_ISO2 = new Map<string, BoRegister>(
-  BO_REGISTERS.map((r) => [r.iso2, r]),
-);
+export const BO_REGISTERS: BoRegister[] = Object.values(BO_REGISTER_RECORDS)
+  .filter((record) => !UNCOVERED.has(record.iso2))
+  .map((record) => {
+    const anyPublic = record.registers.some((entry) => entry.access.includes("General public"));
+    const since = earliestLaunch(record.registers.map((entry) => entry.launched));
+    return {
+      iso2: record.iso2,
+      status: (anyPublic ? "live-public" : "live-restricted") as BoRegisterStatus,
+      ...(since ? { since } : {}),
+    };
+  })
+  .sort((left, right) => left.iso2.localeCompare(right.iso2));
 
-/** The BO register record for a jurisdiction, or undefined if none identified. */
+const BY_ISO2 = new Map(BO_REGISTERS.map((register) => [register.iso2, register]));
+
 export function getBoRegister(iso2: string): BoRegister | undefined {
   return BY_ISO2.get(iso2.toUpperCase());
 }
