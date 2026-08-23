@@ -1328,6 +1328,23 @@ export const NARRATIVES: Record<string, CountryNarrative> = {
       "FATF plenary in October 2026 for any indications of increased monitoring interest in Guatemala."
     ]
   },
+  "VI": {
+    "summary": "US Virgin Islands is a US Caribbean territory where federal AML law applies but no separate FATF evaluation exists, and where an EU tax listing and an incentive-driven corporate base are the main watchpoints.",
+    "whyItMatters": [
+      "The territory has no mutual evaluation of its own. It sits within the United States assessment, so its score rests on governance evidence rather than on AML framework ratings.",
+      "Official World Bank evidence covers five of the six governance dimensions, which is enough to publish a governance reading but less than the complete series most jurisdictions carry.",
+      "US Virgin Islands appears on the EU list of non-cooperative jurisdictions for tax purposes, which is a tax cooperation finding rather than an AML or sanctions classification.",
+      "Economic development incentives attract corporate registrations that are larger than the local economy would suggest, so entity structure deserves attention on its own terms."
+    ],
+    "analysis": "The territory is covered by United States federal law, including the Bank Secrecy Act and FinCEN reporting requirements, but it has never been assessed in its own right by FATF or a regional body. That absence is why the published score leans on World Bank governance evidence and is marked as indicative rather than as a full composite. Five of the six governance dimensions are available, with Voice and Accountability missing, and that gap is a data coverage limitation rather than a finding. The EU tax listing is the most prominent external signal and concerns tax cooperation specifically. Firms should treat federal AML obligations, local licensing and company formation practice, and the incentive regime as separate questions rather than assuming that US territorial status settles all three.",
+    "outlook": "Movement is most likely to come from Council of the EU decisions on the tax list, World Bank data revisions that complete or restate the governance series, or changes to US federal beneficial ownership reporting as it applies in the territory. A future United States mutual evaluation may also comment on territorial coverage, which would be the first direct AML framework evidence for this jurisdiction. Local enforcement publication is infrequent given the size of the market, so quiet periods should be recorded as limited observation with a last-checked date rather than read as an absence of risk.",
+    "keyWatchpoints": [
+      "Official changes to the territory's treatment on the EU list of non-cooperative tax jurisdictions.",
+      "Completion or revision of the World Bank governance series, particularly the missing Voice and Accountability dimension.",
+      "Any FATF or FSRB commentary on how United States territories are covered by the US evaluation.",
+      "US federal beneficial ownership reporting as applied locally, and changes to the economic development incentive regime."
+    ]
+  },
   "GU": {
     "summary": "Guam is a US Pacific territory with complete WGI governance evidence, while tax cooperation and the limits of a small local enforcement record remain key watchpoints.",
     "whyItMatters": [

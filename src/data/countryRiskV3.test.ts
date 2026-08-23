@@ -44,9 +44,16 @@ describe("country risk v3", () => {
     expect(bo).toMatchObject({ effectiveness: 10, companies: 10, trustsAndArrangements: 6.67, score: 9.3, availability: "available", evidenceCount: 3 });
   });
 
-  it("uses inverted WGI dimensions and withholds incomplete governance", () => {
+  it("uses inverted WGI dimensions and withholds governance below five of six", () => {
     expect(governanceSafeguardsRisk({ cc: 80, rl: 80, rq: 80, ge: 80, pv: 80, va: 80 })).toEqual({ score: 2, evidenceCount: 6 });
-    expect(governanceSafeguardsRisk({ cc: 80, rl: 80, rq: 80, ge: 80, pv: 80 })).toEqual({ score: null, evidenceCount: 5 });
+    // Five of six now scores. Exactly three jurisdictions sit here — Bermuda,
+    // Anguilla and US Virgin Islands, each missing only Voice and
+    // Accountability — and none has between one and four dimensions, so this
+    // threshold admits those three and nothing else. Requiring all six dropped
+    // US Virgin Islands from the site entirely over one absent series.
+    expect(governanceSafeguardsRisk({ cc: 80, rl: 80, rq: 80, ge: 80, pv: 80 })).toEqual({ score: 2, evidenceCount: 5 });
+    expect(governanceSafeguardsRisk({ cc: 80, rl: 80, rq: 80, ge: 80 })).toEqual({ score: null, evidenceCount: 4 });
+    expect(governanceSafeguardsRisk(undefined)).toEqual({ score: null, evidenceCount: 0 });
   });
 
   it("rebalances two available pillars and suppresses a provisional Low band", () => {
@@ -92,17 +99,34 @@ describe("country risk v3", () => {
     expect(result.limitingReasons).toContain("Sanctions overlay coverage is not complete; no absence is assumed");
   });
 
-  it("shows Libya's sole WGI pillar as evidence without a 100% calculation", () => {
+  it("publishes Libya from its sole WGI pillar, flagged as indicative", () => {
+    // This test previously asserted the opposite: status "insufficient-data",
+    // a null score, every appliedWeight zero. That was a deliberate rule — one
+    // pillar is evidence, not a composite, so do not normalise it to 100%.
+    //
+    // It was changed on purpose. Withholding a number for Libya, Somalia,
+    // Sudan and twelve others meant the platform said "not enough information"
+    // about some of the highest-risk jurisdictions on earth while holding a
+    // clear governance reading for every one of them. The score is now
+    // published and the thinness of the evidence is disclosed instead of the
+    // score being suppressed: status provisional, confidence low, and an
+    // explicit limiting reason.
+    //
+    // The invariant that actually mattered still holds and is asserted below:
+    // missing evidence is never scored as zero.
     const result = computeCountryRiskV3("LY", { asOf: new Date("2026-08-20T00:00:00Z") });
-    expect(result.status).toBe("insufficient-data");
-    expect(result.score).toBeNull();
+    expect(result.status).toBe("provisional");
+    expect(result.score).toBe(7.3);
+    expect(result.confidence).toBe("low");
     expect(result.pillars.governance.score).toBe(7.3);
-    for (const pillar of Object.values(result.pillars)) {
-      expect(pillar.appliedWeight).toBe(0);
-      expect(pillar.contribution).toBeNull();
-    }
-    expect(result.arithmetic).toContain("Score withheld");
-    expect(result.arithmetic).toContain("no weight or contribution is applied");
-    expect(result.arithmetic).not.toContain("100%");
+    expect(result.pillars.governance.appliedWeight).toBe(1);
+    expect(result.limitingReasons).toContain(
+      "Only one line of evidence is available, so the score is indicative rather than a composite",
+    );
+    // Missing pillars contribute nothing — they are not read as zero risk.
+    expect(result.pillars.effectiveness.score).toBeNull();
+    expect(result.pillars.effectiveness.contribution).toBeNull();
+    expect(result.pillars.safeguards.score).toBeNull();
+    expect(result.pillars.safeguards.contribution).toBeNull();
   });
 });

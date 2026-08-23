@@ -27,16 +27,21 @@ describe("CountryRiskV3Panel presentation adapter", () => {
     expect(html).toContain("Register status");
   });
 
-  it("shows Libya's WGI evidence without presenting it as a 100% score", () => {
+  it("shows Libya's governance pillar carrying the score on its own", () => {
+    // Was: "without presenting it as a 100% score", asserting a withheld
+    // headline. The model now publishes single-pillar jurisdictions rather than
+    // saying nothing about Libya, Somalia and Sudan; the panel's job changed
+    // from hiding the number to showing what little it rests on.
     const result = computeCountryRiskV3("LY", { asOf: new Date("2026-08-20T00:00:00Z") });
     const payload = countryRiskV3PanelPayload(result);
     const governance = payload.pillars.find((pillar) => pillar.key === "governance");
-    expect(governance).toMatchObject({ score: 7.3, weight: 0, contribution: null });
+    expect(governance).toMatchObject({ score: 7.3, weight: 1, contribution: 7.3 });
 
     const html = renderToStaticMarkup(createElement(CountryRiskV3Panel, { payload }));
-    expect(html).toContain("Headline score withheld");
-    expect(html).toContain("Evidence available; not included until at least two pillars are available");
-    expect(html).not.toContain("7.3 × 100%");
-    expect(html).not.toContain("= 7.3 points");
+    expect(html).not.toContain("Headline score withheld");
+    // The thinness of the evidence must still be on the page.
+    expect(result.limitingReasons).toContain(
+      "Only one line of evidence is available, so the score is indicative rather than a composite",
+    );
   });
 });

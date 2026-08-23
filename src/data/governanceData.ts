@@ -459,5 +459,11 @@ export function getGovernanceDimensions(
 }
 
 export function hasGovernanceData(iso2: string): boolean {
-  return iso2.toUpperCase() in GOVERNANCE_PERCENTILE;
+  // GOVERNANCE_PERCENTILE holds only jurisdictions with a complete six-dimension
+  // series; GOVERNANCE_DIMENSIONS holds whatever the World Bank publishes. The
+  // two disagreed for US Virgin Islands, which has five of the six dimensions:
+  // the risk model could score it while pageCountries() dropped it from the site
+  // entirely, so it was the one country in the list with no page at all.
+  const code = iso2.toUpperCase();
+  return code in GOVERNANCE_PERCENTILE || code in GOVERNANCE_DIMENSIONS;
 }
