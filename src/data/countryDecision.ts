@@ -167,8 +167,24 @@ function verdict(input: DecisionInput): { headline: string; paragraph: string } 
     const fatfPhrase = input.fatf
       ? `It remains subject to the FATF ${input.fatf.listing === "call-for-action" ? "call-for-action" : "increased-monitoring"} flag, which must be handled independently.`
       : "It is not currently FATF grey- or black-listed, but that absence does not establish low risk.";
+    // The one-line verdict is the headline of the whole report. "Not enough
+    // information for a country risk score" is true, but for Iran and North
+    // Korea it buried the fact that both are subject to a FATF call for action
+    // requiring countermeasures -- which the very next paragraph then stated.
+    // Lead with the legal status where there is one; it is a fact, not a
+    // modelled estimate, so it is safe to state exactly where a score is not.
+    const legalHeadline =
+      input.fatf?.listing === "call-for-action"
+        ? input.fatf.requiredAction === "countermeasures"
+          ? "FATF call for action requiring countermeasures; no score published"
+          : "FATF call for action requiring enhanced due diligence; no score published"
+        : input.sanctionsCoverageComplete && hasComprehensiveSanctions(input.sanctions)
+          ? "Comprehensive sanctions programme; no score published"
+          : input.fatf?.listing === "increased-monitoring"
+            ? "FATF increased monitoring; no score published"
+            : null;
     return {
-      headline: "Not enough information for a country risk score",
+      headline: legalHeadline ?? "Not enough information for a country risk score",
       paragraph: `${input.name} has information for fewer than two of the three parts of the score, so RegActions does not publish a number or risk band. ${fatfPhrase} Missing information is not treated as zero or Low risk.`,
     };
   }

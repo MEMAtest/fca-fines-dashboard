@@ -68,3 +68,31 @@ describe("unscoredStatusLabel", () => {
     expect(withStatus.map((c) => c.iso2).sort()).toEqual(["IR", "KP", "SS", "SY", "YE"]);
   });
 });
+
+/**
+ * The one-line verdict is the headline of the whole report, so it gets its own
+ * cover: it must not lead with "not enough information" for a jurisdiction
+ * under a FATF call for action.
+ */
+describe("unscored verdict headline", () => {
+  it("leads with the legal status for Iran and North Korea", async () => {
+    const { getCountryByIso2 } = await import("./countries.js");
+    const { buildCountryView } = await import("./countryView.js");
+    for (const iso2 of ["IR", "KP"]) {
+      const view = buildCountryView(getCountryByIso2(iso2)!);
+      expect(view.decision.verdictHeadline, iso2).toBe(
+        "FATF call for action requiring countermeasures; no score published",
+      );
+      // The score itself is still withheld -- that part was always right.
+      expect(computeCountryRiskCurrent(iso2).score).toBeNull();
+    }
+  });
+
+  it("still says so plainly where there is genuinely nothing", async () => {
+    const { getCountryByIso2 } = await import("./countries.js");
+    const { buildCountryView } = await import("./countryView.js");
+    expect(buildCountryView(getCountryByIso2("BI")!).decision.verdictHeadline).toBe(
+      "Not enough information for a country risk score",
+    );
+  });
+});
