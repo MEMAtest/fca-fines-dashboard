@@ -830,7 +830,7 @@ export function CountryHub() {
                 </>
               ) : (
                 <>
-                  <p className="cx-trend__state">{scoreAvailable ? "Baseline" : "Not enough information"}</p>
+                  <p className="cx-trend__state">{scoreAvailable ? "Baseline" : "No score to trend"}</p>
                   <div className="cx-trend__stats">
                     <div>
                       <b>{publishedScore === null ? "—" : publishedScore.toFixed(1)}</b>
