@@ -2815,12 +2815,14 @@ button.cx-kpi:hover {
    and fills the panel; below the min-width the wrapper scrolls, so the page
    still never overflows. */
 .cx-ov__table,
-.cx-ov__exec {
+.cx-ov__exec,
+.cx-ov__recent {
   overflow-x: auto;
 }
 
 .cx-ov__table table,
-.cx-ov__exec table {
+.cx-ov__exec table,
+.cx-ov__recent table {
   width: 100%;
   min-width: 560px;
 }
