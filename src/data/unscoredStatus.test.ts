@@ -60,6 +60,15 @@ describe("unscoredStatusLabel", () => {
     // 15 of 214 countries cannot be scored. Five of them carry a legal status
     // that is worth stating; if that count moves, the data changed and the
     // presentation should be re-checked rather than silently drift.
+    //
+    // Note the deliberate mismatch with the site: /countries says "14
+    // jurisdictions have no headline score", and it is right. It counts
+    // pageCountries() (213), which drops any country with no evidence at all
+    // of any kind — no governance data, no FATF assessment or listing, no
+    // sanctions programme, no enforcement coverage. US Virgin Islands is the
+    // one country that fails every test, so it is not published at all. This
+    // test counts the raw COUNTRIES list, hence 15. Both are correct; only the
+    // denominators differ.
     const unscored = COUNTRIES.filter(
       (c) => computeCountryRiskCurrent(c.iso2).score === null,
     );
