@@ -77,10 +77,14 @@
   border-top: 1px solid rgba(255, 255, 255, 0.08);
 }
 
-.site-footer__countries {
+/* `.site-footer__col ul` above is (0,1,1) and this was (0,1,0), so its
+   `display: flex; flex-direction: column` won and the grid never applied --
+   twenty countries rendered as one 567px-tall column with the other 1000px of
+   the footer empty. Qualifying the selector is enough to win the cascade. */
+.site-footer__col .site-footer__countries {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
-  gap: 0.4rem 1rem;
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  gap: 0.55rem 1.5rem;
 }
 
 .site-footer__bottom {

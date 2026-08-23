@@ -27,6 +27,7 @@ import {
   buildFeatureMeta,
   type FeatureMeta,
 } from "./mapShared.js";
+import { unscoredStatusLabel, hasLegalStatus } from "../data/unscoredStatus.js";
 
 interface HoverState {
   x: number;
@@ -256,7 +257,10 @@ export function CountryRiskMap({
 
   const onEnterMove = (e: React.MouseEvent, fm: FeatureMeta) => {
     if (dragRef.current) return; // don't chase the pointer mid-pan
-    if (!fm.iso2 || !fm.band) return; // popup only for scored countries
+    // Previously `if (!fm.iso2 || !fm.band) return` — the popup was scored-only,
+    // so the 20 grey shapes had no tooltip AND no <title>, and hovering them
+    // did nothing. They looked like holes in the map rather than countries.
+    if (!fm.iso2) return;
     const rect = wrapRef.current?.getBoundingClientRect();
     if (!rect) return;
     // clientX/Y - rect gives a wrapper-relative position that is unaffected by the
@@ -300,6 +304,7 @@ export function CountryRiskMap({
                 return (
                   <path
                     key={fm.iso2 ?? `x-${i}`}
+                    data-iso2={fm.iso2 ?? undefined}
                     d={d}
                     fill={fm.band ? BAND_COLOUR[fm.band] : NO_DATA}
                     stroke={selected ? "#0b1f2a" : "#ffffff"}
@@ -312,8 +317,12 @@ export function CountryRiskMap({
                     onMouseLeave={() => setHover(null)}
                     onClick={() => handleClick(fm)}
                   >
-                    {live && (
-                      <title>{`${fm.name} — ${fm.score?.toFixed(1)}/10 (${bandLabel(fm.band!)})`}</title>
+                    {fm.iso2 && (
+                      <title>
+                        {live
+                          ? `${fm.name} — ${fm.score?.toFixed(1)}/10 (${bandLabel(fm.band!)})`
+                          : `${fm.name} — not scored (${unscoredStatusLabel(fm.iso2)})`}
+                      </title>
                     )}
                   </path>
                 );
@@ -353,7 +362,7 @@ export function CountryRiskMap({
         </>
       )}
 
-      {hover && hover.meta.band && (
+      {hover && hover.meta.iso2 && (
         <div
           className="cx-map__pop"
           style={{
@@ -371,11 +380,21 @@ export function CountryRiskMap({
               {flagEmoji(hover.meta.iso2!)}
             </span>
             <span className="cx-map__pop-name">{hover.meta.name}</span>
-            <span className={`cx-map__pop-score cx-map__pop-score--${hover.meta.band}`}>
-              {hover.meta.score?.toFixed(1)}
+            <span
+              className={`cx-map__pop-score cx-map__pop-score--${hover.meta.band ?? "insufficient"}`}
+            >
+              {hover.meta.band ? hover.meta.score?.toFixed(1) : "—"}
             </span>
           </div>
-          <span className="cx-map__pop-band">{bandLabel(hover.meta.band)} risk</span>
+          <span
+            className={`cx-map__pop-band${
+              !hover.meta.band && hasLegalStatus(hover.meta.iso2) ? " cx-map__pop-band--legal" : ""
+            }`}
+          >
+            {hover.meta.band
+              ? `${bandLabel(hover.meta.band)} risk`
+              : unscoredStatusLabel(hover.meta.iso2)}
+          </span>
           <ul className="cx-map__pop-bars">
             {PILLAR_ROWS.map(({ key, label }) => {
               const v = hover.meta.domains?.[key];
@@ -410,7 +429,7 @@ export function CountryRiskMap({
         ))}
         <span className="cx-map__legend-item">
           <span className="cx-map__legend-swatch" style={{ background: NO_DATA }} />
-          No data
+          Not scored
         </span>
       </div>
     </div>
