@@ -90,6 +90,12 @@ export interface CountryRiskV3Result {
     effectiveness: CountryRiskV3Pillar;
     safeguards: CountryRiskV3Pillar;
     governance: CountryRiskV3Pillar;
+    /**
+     * Present only where the country has no mutual evaluation and FATF has
+     * nonetheless made a public determination about it. Substitutes for the two
+     * MER pillars and carries their combined weight.
+     */
+    icrg: CountryRiskV3Pillar;
   };
   beneficialOwnership: BeneficialOwnershipEvidence;
   overlays: {
@@ -202,10 +208,57 @@ export function governanceSafeguardsRisk(dimensions: Partial<WgiDimensions> | un
   const values = [dimensions.cc, dimensions.rl, dimensions.rq, dimensions.ge, dimensions.pv, dimensions.va]
     .filter((value): value is number => value !== undefined)
     .map((value) => (100 - Math.max(0, Math.min(100, value))) / 10);
+  // Five of the six dimensions is still a governance picture. Requiring all six
+  // dropped US Virgin Islands for want of one series (Voice and Accountability),
+  // which is a data-coverage quirk rather than a reason to publish nothing about
+  // a jurisdiction. Exactly three countries have five dimensions — Bermuda,
+  // Anguilla and US Virgin Islands — and none has between one and four, so this
+  // threshold admits those three and changes nothing else.
   return {
-    score: values.length === 6 ? round1(mean(values) as number) : null,
+    score: values.length >= 5 ? round1(mean(values) as number) : null,
     evidenceCount: values.length,
   };
+}
+
+/**
+ * FATF's public statements as AML/CFT framework evidence, used ONLY where the
+ * country has no mutual evaluation at all.
+ *
+ * The v3 model treats FATF listing as an overlay — a legal treatment that never
+ * moves the score — and for an assessed country that is right: the MER ratings
+ * already measure the framework, and adding the listing on top would double
+ * count the same finding.
+ *
+ * For an unassessed country the reasoning inverts. FATF speaks about a
+ * jurisdiction's AML/CFT regime in two ways: mutual evaluation ratings, and
+ * ICRG public statements. Iran and North Korea have no MER, but FATF has
+ * publicly determined that their strategic AML/CFT deficiencies are serious
+ * enough to require countermeasures. That is a finding about the AML framework,
+ * made by the standard-setter, through its own process. Discarding it and
+ * scoring those countries on World Bank governance alone put Iran at 6.7 and
+ * North Korea at 6.8 — below the 75th percentile, ranked beneath fifty
+ * countries with functioning AML regimes.
+ *
+ * So: where there is no MER, the ICRG determination stands in for the two
+ * FATF-derived pillars and carries their combined weight. Where there IS an
+ * MER, this returns null and nothing changes.
+ *
+ * Values are ordinal positions on FATF's own escalation ladder, not estimates
+ * of a rating the assessors never gave.
+ */
+export function icrgFrameworkRisk(
+  listing: FatfStatus | undefined,
+  hasAssessment: boolean,
+): { score: number | null; evidenceCount: number } {
+  if (hasAssessment || !listing) return { score: null, evidenceCount: 0 };
+  if (listing.listing === "call-for-action") {
+    return {
+      score: listing.requiredAction === "countermeasures" ? 9.5 : 8.5,
+      evidenceCount: 1,
+    };
+  }
+  if (listing.listing === "increased-monitoring") return { score: 6.5, evidenceCount: 1 };
+  return { score: null, evidenceCount: 0 };
 }
 
 function assessmentAgeYears(assessment: FatfAssessmentRecord | undefined, asOf: Date): number | null {
@@ -259,19 +312,25 @@ export function computeCountryRiskV3(iso2: string, supplied: CountryRiskV3Inputs
   const effectiveness = fatfEffectivenessRisk(assessment);
   const safeguards = fatfSafeguardsRisk(assessment);
   const governanceValue = governanceSafeguardsRisk(governance);
+  // Substitutes for the two MER pillars where no mutual evaluation exists, and
+  // carries their combined 65%. Null whenever an MER is present.
+  const icrg = icrgFrameworkRisk(getFatfStatus(code), Boolean(assessment));
   const values = [
     ["effectiveness", effectiveness.score, COUNTRY_RISK_V3_PILLAR_WEIGHTS.effectiveness],
     ["safeguards", safeguards.score, COUNTRY_RISK_V3_PILLAR_WEIGHTS.safeguards],
+    ["icrg", icrg.score, COUNTRY_RISK_V3_PILLAR_WEIGHTS.effectiveness + COUNTRY_RISK_V3_PILLAR_WEIGHTS.safeguards],
     ["governance", governanceValue.score, COUNTRY_RISK_V3_PILLAR_WEIGHTS.governance],
   ] as const;
   const available = values.filter(([, score]) => score !== null);
-  const status: CountryRiskPublicationStatus = available.length === 3
+  // "complete" still means a full mutual evaluation plus governance. One pillar
+  // now publishes rather than withholding: a governance reading for Somalia or
+  // Libya is thin evidence, but it is real evidence, and printing nothing at all
+  // was read as having nothing to say about them.
+  const status: CountryRiskPublicationStatus = available.length >= 3
     ? "complete"
-    : available.length === 2 ? "provisional" : "insufficient-data";
+    : available.length === 0 ? "insufficient-data" : "provisional";
   const availableWeight = available.reduce((sum, [, , weight]) => sum + weight, 0);
   const appliedWeight = (key: (typeof values)[number][0]) => {
-    // A single available pillar is evidence, not a composite. Do not normalise
-    // it to 100% when the headline score is withheld.
     if (status === "insufficient-data") return 0;
     const entry = available.find(([candidate]) => candidate === key);
     return entry && availableWeight ? round4(entry[2] / availableWeight) : 0;
@@ -305,6 +364,14 @@ export function computeCountryRiskV3(iso2: string, supplied: CountryRiskV3Inputs
   if (effectiveness.score === null) limitingReasons.push("FATF effectiveness ratings are incomplete");
   if (safeguards.score === null) limitingReasons.push("FATF technical safeguard ratings are incomplete");
   if (governanceValue.score === null) limitingReasons.push("World Bank governance data is incomplete");
+  if (icrg.score !== null) {
+    limitingReasons.push(
+      "No FATF mutual evaluation exists for this jurisdiction; FATF's public determination is used in place of assessment ratings",
+    );
+  }
+  if (available.length === 1) {
+    limitingReasons.push("Only one line of evidence is available, so the score is indicative rather than a composite");
+  }
   if (!sanctionsCoverageComplete) limitingReasons.push("Sanctions overlay coverage is not complete; no absence is assumed");
   if (assessment && assessmentAgeYears(assessment, asOf) === null) limitingReasons.push("FATF assessment date is unavailable");
   const buildPillar = (
@@ -338,13 +405,21 @@ export function computeCountryRiskV3(iso2: string, supplied: CountryRiskV3Inputs
       effectiveness: buildPillar(effectiveness.score, COUNTRY_RISK_V3_PILLAR_WEIGHTS.effectiveness, effectiveness.evidenceCount, assessmentState, "FATF effectiveness across the 11 Immediate Outcomes.", "effectiveness"),
       safeguards: buildPillar(safeguards.score, COUNTRY_RISK_V3_PILLAR_WEIGHTS.safeguards, safeguards.evidenceCount, assessmentState, "FATF technical safeguards across Recommendations 1-40, excluding explicit not-applicable ratings.", "safeguards"),
       governance: buildPillar(governanceValue.score, COUNTRY_RISK_V3_PILLAR_WEIGHTS.governance, governanceValue.evidenceCount, governanceState, "Equal-weight mean of the six inverted World Bank governance dimensions.", "governance"),
+      icrg: buildPillar(
+        icrg.score,
+        COUNTRY_RISK_V3_PILLAR_WEIGHTS.effectiveness + COUNTRY_RISK_V3_PILLAR_WEIGHTS.safeguards,
+        icrg.evidenceCount,
+        fatfListState,
+        "FATF public determination, used in place of mutual-evaluation ratings where the country has never been assessed.",
+        "icrg",
+      ),
     },
     beneficialOwnership: beneficialOwnershipRisk(assessment),
     overlays: { sanctions: sanctionsOverlay, fatf: fatfOverlay },
     sanctionsCoverageComplete,
     limitingReasons,
     arithmetic: score === null
-      ? "Score withheld: fewer than two scored pillars are available; available evidence is shown but no weight or contribution is applied."
+      ? "Score withheld: no scored evidence is available for this jurisdiction."
       : `${available.map(([key, value]) => `${key} ${value} × ${round1(appliedWeight(key) * 100)}%`).join(" + ")} = ${score}; sanctions and FATF listing are overlays, not score inputs`,
   };
 }

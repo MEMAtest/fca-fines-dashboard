@@ -20,10 +20,17 @@ describe("country score publication safeguards", () => {
 
   it("never publishes missing governance evidence as a 0.0 score", () => {
     const index = buildCountryIndex();
-    expect(index).toHaveLength(213);
+    // 214, not 213: US Virgin Islands has five of the six WGI dimensions, and
+    // hasGovernanceData() only recognised the complete-series table, so it was
+    // the one country in the list with no page at all.
+    expect(index).toHaveLength(214);
+    // The invariant that matters, and the reason this test exists: absent
+    // evidence must never surface as a 0.0 "no risk" score.
     expect(index.filter((entry) => entry.score === 0)).toEqual([]);
-    expect(index.filter((entry) => entry.score === null).length).toBe(14);
-    expect(index.filter((entry) => entry.status === "insufficient-data").length).toBe(14);
+    // Every jurisdiction now carries a score. Thin evidence is disclosed
+    // through status and confidence rather than by withholding the number.
+    expect(index.filter((entry) => entry.score === null)).toEqual([]);
+    expect(index.filter((entry) => entry.status === "insufficient-data")).toEqual([]);
   });
 
   it.each(FORMER_V1_GAPS)("publishes %s provisionally without assigning a Low band", (iso2) => {
@@ -36,9 +43,9 @@ describe("country score publication safeguards", () => {
 
   it("includes complete and provisional jurisdictions in ranks and regional averages", () => {
     const rated = buildCountryIndex().filter((entry) => entry.score !== null);
-    expect(rated).toHaveLength(199);
-    expect(globalRank("GB").total).toBe(199);
-    expect(regionalAverages().reduce((sum, region) => sum + region.count, 0)).toBe(199);
+    expect(rated).toHaveLength(214);
+    expect(globalRank("GB").total).toBe(214);
+    expect(regionalAverages().reduce((sum, region) => sum + region.count, 0)).toBe(214);
   });
 
   it("exposes only the complete promoted sanctions snapshot", () => {

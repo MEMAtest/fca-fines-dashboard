@@ -56,25 +56,19 @@ describe("unscoredStatusLabel", () => {
     expect(scored.length).toBeGreaterThan(150);
   });
 
-  it("covers the unscored set without regressing", () => {
-    // 15 of 214 countries cannot be scored. Five of them carry a legal status
-    // that is worth stating; if that count moves, the data changed and the
-    // presentation should be re-checked rather than silently drift.
+  it("no longer has an unscored set to cover", () => {
+    // This asserted 15 unscored countries, 5 of which carried a legal status
+    // worth stating. Every jurisdiction now scores: FATF's public
+    // determinations stand in for mutual-evaluation ratings where no evaluation
+    // exists, and a single pillar publishes rather than withholding.
     //
-    // Note the deliberate mismatch with the site: /countries says "14
-    // jurisdictions have no headline score", and it is right. It counts
-    // pageCountries() (213), which drops any country with no evidence at all
-    // of any kind — no governance data, no FATF assessment or listing, no
-    // sanctions programme, no enforcement coverage. US Virgin Islands is the
-    // one country that fails every test, so it is not published at all. This
-    // test counts the raw COUNTRIES list, hence 15. Both are correct; only the
-    // denominators differ.
+    // unscoredStatusLabel is deliberately kept. It is the fallback if a source
+    // ever drops a country again, and these labels remain the right words for
+    // that case.
     const unscored = COUNTRIES.filter(
       (c) => computeCountryRiskCurrent(c.iso2).score === null,
     );
-    const withStatus = unscored.filter((c) => hasLegalStatus(c.iso2));
-    expect(unscored.length).toBe(15);
-    expect(withStatus.map((c) => c.iso2).sort()).toEqual(["IR", "KP", "SS", "SY", "YE"]);
+    expect(unscored).toEqual([]);
   });
 });
 
@@ -84,24 +78,12 @@ describe("unscoredStatusLabel", () => {
  * under a FATF call for action.
  */
 describe("unscored verdict headline", () => {
-  it("leads with the legal status for Iran and North Korea", async () => {
-    const { getCountryByIso2 } = await import("./countries.js");
-    const { buildCountryView } = await import("./countryView.js");
-    for (const iso2 of ["IR", "KP"]) {
-      const view = buildCountryView(getCountryByIso2(iso2)!);
-      expect(view.decision.verdictHeadline, iso2).toBe(
-        "FATF call for action requiring countermeasures; no score published",
-      );
-      // The score itself is still withheld -- that part was always right.
-      expect(computeCountryRiskCurrent(iso2).score).toBeNull();
-    }
-  });
-
-  it("still says so plainly where there is genuinely nothing", async () => {
-    const { getCountryByIso2 } = await import("./countries.js");
-    const { buildCountryView } = await import("./countryView.js");
-    expect(buildCountryView(getCountryByIso2("BI")!).decision.verdictHeadline).toBe(
-      "Not enough information for a country risk score",
-    );
+  it("still names the legal status if a country ever loses its score again", () => {
+    // Iran and North Korea are scored now, so this verdict path is unreachable
+    // for them. The labels are still the right ones should a source drop out,
+    // which is why the helper stays.
+    expect(unscoredStatusLabel("IR")).toBe("FATF countermeasures");
+    expect(unscoredStatusLabel("KP")).toBe("FATF countermeasures");
+    expect(unscoredStatusLabel("BI")).toBe("Not enough information");
   });
 });
