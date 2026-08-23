@@ -317,11 +317,13 @@ export function CountryRiskMap({
                     onMouseLeave={() => setHover(null)}
                     onClick={() => handleClick(fm)}
                   >
-                    {fm.iso2 && (
+                    {fm.name && (
                       <title>
                         {live
                           ? `${fm.name} — ${fm.score?.toFixed(1)}/10 (${bandLabel(fm.band!)})`
-                          : `${fm.name} — not scored (${unscoredStatusLabel(fm.iso2)})`}
+                          : fm.iso2
+                            ? `${fm.name} — not scored (${unscoredStatusLabel(fm.iso2)})`
+                            : `${fm.name} — not covered as a separate jurisdiction`}
                       </title>
                     )}
                   </path>
