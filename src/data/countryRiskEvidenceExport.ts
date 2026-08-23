@@ -11,6 +11,7 @@ import {
   COUNTRY_RISK_METHODOLOGY_VERSION,
 } from "./countryRiskV2.js";
 import { computeCountryRiskV3, COUNTRY_RISK_V3_METHODOLOGY_VERSION, type CountryRiskV3Result } from "./countryRiskV3.js";
+import { countryRiskV3PublishedPillarKeys } from "./countryRiskV3Presentation.js";
 import { countryRiskSourcesForMethodology } from "./countryRiskSources.js";
 import { buildCountryRiskPublicSurface } from "./countryRiskSurface.js";
 import { buildCountryRiskContext, type CountryRiskContextCountry } from "./countryRiskContext.js";
@@ -178,7 +179,8 @@ export function countryRiskEvidenceRows(bundle: CountryRiskEvidenceBundle): Coun
       retrievedAt: bundle.exportedAt,
       sourceUrl: "https://regactions.com/countries/methodology",
     };
-    for (const [key, pillar] of Object.entries(bundle.v3.pillars)) {
+    for (const key of countryRiskV3PublishedPillarKeys(bundle.v3)) {
+      const pillar = bundle.v3.pillars[key];
       rows.push({
         section: "pillar",
         key,
@@ -189,6 +191,8 @@ export function countryRiskEvidenceRows(bundle: CountryRiskEvidenceBundle): Coun
         retrievedAt: bundle.exportedAt,
         sourceUrl: key === "governance"
           ? "https://www.worldbank.org/en/publication/worldwide-governance-indicators"
+          : key === "icrg"
+            ? "https://www.fatf-gafi.org/en/publications/High-risk-and-other-monitored-jurisdictions.html"
           : "https://www.fatf-gafi.org/en/publications/Mutualevaluations/Fatf-methodology.html",
       });
     }

@@ -105,7 +105,7 @@ import {
   buildCountryRiskPublicExplanation,
   COUNTRY_RISK_PILLAR_LABELS,
 } from "../src/data/countryRiskPresentation.js";
-import { buildCountryRiskV3PublicExplanation, COUNTRY_RISK_V3_PILLAR_LABELS, countryRiskV3BandLabel } from "../src/data/countryRiskV3Presentation.js";
+import { buildCountryRiskV3PublicExplanation, countryRiskV3BandLabel } from "../src/data/countryRiskV3Presentation.js";
 import { buildCountryRiskContext } from "../src/data/countryRiskContext.js";
 import {
   GOVERNANCE_SOURCE,
@@ -834,8 +834,8 @@ function renderCountryFatfBody(view: CountryView): string {
   const scoreAvailable = riskV3.score !== null && riskV3.band !== null;
   const publicExplanation = buildCountryRiskV3PublicExplanation(riskV3);
   const title = `${country.name} — Country Risk Report`;
-  const pillarLis = Object.entries(riskV3.pillars)
-    .map(([name, pillar]) => `<li>${escapeHtml(`${COUNTRY_RISK_V3_PILLAR_LABELS[name as keyof typeof COUNTRY_RISK_V3_PILLAR_LABELS]}: ${pillar.score === null ? "information unavailable" : `${pillar.score.toFixed(1)}/10`} — ${Math.round(pillar.appliedWeight * 100)}% of this score`)}</li>`)
+  const pillarLis = publicExplanation.pillars
+    .map((pillar) => `<li>${escapeHtml(`${pillar.label}: ${pillar.score === null ? "information unavailable" : `${pillar.score.toFixed(1)}/10`} — ${Math.round(pillar.appliedWeight * 100)}% of this score`)}</li>`)
     .join("");
   const missingLis = publicExplanation.missingInformation.map((message) => `<li>${escapeHtml(message)}</li>`).join("");
   const scoreHtml = scoreAvailable

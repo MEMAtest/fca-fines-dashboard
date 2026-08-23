@@ -49,4 +49,13 @@ describe("country-risk public evidence exports", () => {
     expect(rows).toContainEqual(expect.objectContaining({ section: "beneficial-ownership", key: "score" }));
     expect(rows).toContainEqual(expect.objectContaining({ section: "overlay", key: "sanctions", scored: "false" }));
   });
+
+  it("excludes the uninstantiated ICRG pillar for assessed/proxy countries and includes it for no-MER countries", () => {
+    for (const iso2 of ["GB", "VE", "LY", "VI"]) {
+      const rows = countryRiskEvidenceRows(buildCountryRiskEvidenceBundle(iso2, new Date("2026-08-20T00:00:00Z"))!);
+      expect(rows.some((row) => row.section === "pillar" && row.key === "icrg"), iso2).toBe(false);
+    }
+    const iranRows = countryRiskEvidenceRows(buildCountryRiskEvidenceBundle("IR", new Date("2026-08-20T00:00:00Z"))!);
+    expect(iranRows).toContainEqual(expect.objectContaining({ section: "pillar", key: "icrg", scored: "true" }));
+  });
 });

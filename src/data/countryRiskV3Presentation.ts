@@ -75,8 +75,7 @@ export function buildCountryRiskV3PublicExplanation(result: CountryRiskV3Result)
   // ICRG is deliberately conditional: assessed jurisdictions must not see a
   // phantom substitute, while no-MER jurisdictions must see the 65% input
   // that actually drives their headline result.
-  const keys = (Object.keys(COUNTRY_RISK_V3_PILLAR_LABELS) as Array<keyof typeof COUNTRY_RISK_V3_PILLAR_LABELS>)
-    .filter((key) => key !== "icrg" || result.pillars.icrg.score !== null);
+  const keys = countryRiskV3PublishedPillarKeys(result);
   return {
     statusLabel: countryRiskV3StatusLabel(result.status),
     statusExplanation: countryRiskV3StatusExplanation(result.status),
@@ -102,4 +101,14 @@ export function buildCountryRiskV3PublicExplanation(result: CountryRiskV3Result)
     beneficialOwnershipNote: result.beneficialOwnership.note,
     missingInformation: result.limitingReasons,
   };
+}
+
+/** Pillars that are part of the public v3 explanation contract. The ICRG
+ * substitute is a conditional input: assessed countries must not expose a
+ * null/zero-weight phantom pillar in exports or crawlable HTML. */
+export function countryRiskV3PublishedPillarKeys(
+  result: CountryRiskV3Result,
+): Array<keyof typeof COUNTRY_RISK_V3_PILLAR_LABELS> {
+  return (Object.keys(COUNTRY_RISK_V3_PILLAR_LABELS) as Array<keyof typeof COUNTRY_RISK_V3_PILLAR_LABELS>)
+    .filter((key) => key !== "icrg" || result.pillars.icrg.score !== null);
 }
