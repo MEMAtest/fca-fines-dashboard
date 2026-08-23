@@ -64,6 +64,13 @@ export function countryRiskV3PanelPayload(
     checkedAt: result.asOf.slice(0, 10),
     confidence: result.confidence,
   };
+  const icrgSource: CountryRiskEvidenceSource = {
+    name: "FATF public ICRG determination",
+    url: "https://www.fatf-gafi.org/en/publications/High-risk-and-other-monitored-jurisdictions.html",
+    checkedAt: result.asOf.slice(0, 10),
+    confidence: result.confidence,
+    note: "Used only where FATF has not published a mutual evaluation; this substitutes for the two missing FATF pillars and is not an additional overlay.",
+  };
   const wgiSource: CountryRiskEvidenceSource = {
     name: "World Bank Worldwide Governance Indicators",
     url: "https://www.worldbank.org/en/publication/worldwide-governance-indicators",
@@ -79,7 +86,7 @@ export function countryRiskV3PanelPayload(
       weight: item.appliedWeight,
       contribution: item.contribution,
       explanation: item.explanation,
-      source: key === "governance" ? wgiSource : fatfSource,
+      source: key === "governance" ? wgiSource : key === "icrg" ? icrgSource : fatfSource,
     };
   };
   const ownership = result.beneficialOwnership;
@@ -101,6 +108,7 @@ export function countryRiskV3PanelPayload(
       pillar("effectiveness", "Financial-crime effectiveness"),
       pillar("safeguards", "Legal and supervisory safeguards"),
       pillar("governance", "Governance and institutional integrity"),
+      ...(result.pillars.icrg.score === null ? [] : [pillar("icrg", "FATF public determination (ICRG substitute)")]),
     ],
     domains: [
       ownershipDomain("beneficial-ownership", "Beneficial ownership (breakout)", ownership.score),
@@ -221,7 +229,7 @@ export function CountryRiskV3Panel({ payload, showHeadline = true }: { payload: 
           ))}
         </div>
       )}
-      <p className="cx-v3__note"><ShieldCheck size={13} aria-hidden="true" /> Sanctions and FATF status are shown as treatment overlays. They do not silently increase or reduce the underlying country-risk score. {payload.note}</p>
+      <p className="cx-v3__note"><ShieldCheck size={13} aria-hidden="true" /> Sanctions and FATF listing status are shown as treatment overlays. They do not silently increase or reduce the underlying country-risk score. Where shown, the labelled ICRG substitute is the exception for jurisdictions without a mutual evaluation. {payload.note}</p>
     </section>
   );
 }

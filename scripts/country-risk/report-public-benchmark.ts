@@ -78,11 +78,16 @@ export function buildPublicBenchmarkReport(
     const regActionsOrder = result.band === "very-high" ? 4
       : result.band === "high" ? 3
         : result.band === "moderate" ? 2 : 1;
-    const comparison = result.score === null || result.band === null ? "unavailable"
+    const comparison: Comparison = result.score === null || result.band === null ? "unavailable"
       : regActionsOrder === kycOrder ? "aligned"
         : regActionsOrder > kycOrder ? "regactions-higher" : "kyc-higher";
     comparisonCounts[comparison] += 1;
-    return { ...row, country: country.name, comparison, current };
+    const currentNote = result.resultKind === "indicative-governance-proxy"
+      ? "Current v3.1 result is an indicative governance proxy; it is visible for discovery but excluded from exact ranking."
+      : result.pillars.icrg.score !== null
+        ? "Current v3.1 uses the labelled FATF ICRG substitute because no mutual evaluation is available; listing and sanctions treatment remain separate overlays."
+        : "Current v3.1 is calculated from the available headline pillars; FATF listing and sanctions are treatment overlays, not added points.";
+    return { ...row, country: country.name, comparison, note: `Current evidence: ${currentNote} Historical observation note (not current): ${row.note}`, current };
   });
   const regActionsCoverage = pageCountries().length;
   return {

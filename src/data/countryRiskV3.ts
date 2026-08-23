@@ -335,6 +335,20 @@ function sensitivityFor(
     return { nearThreshold: false, nearestThreshold: null, scoreRange: null, maxWeightShift: 0 };
   }
   const baseline = available.filter(([, value]) => value !== null) as Array<[string, number, number]>;
+  const nearestThreshold = BAND_THRESHOLDS.reduce<number | null>((nearest, threshold) =>
+    nearest === null || Math.abs(score - threshold) < Math.abs(score - nearest) ? threshold : nearest, null);
+  // A one-pillar result is intentionally published as an indicative proxy.
+  // There is no meaningful weight perturbation to perform when only one input
+  // exists, so do not present a degenerate `x–x` sensitivity range as if it
+  // were a robustness interval.
+  if (baseline.length < 2) {
+    return {
+      nearThreshold: BAND_THRESHOLDS.some((threshold) => Math.abs(score - threshold) <= 0.2),
+      nearestThreshold,
+      scoreRange: null,
+      maxWeightShift: 0,
+    };
+  }
   const candidateScores = [score];
   // A bounded ±20% relative perturbation is a display sensitivity check, not a
   // new score. It tells the reader whether the headline is robust to reasonable
@@ -348,8 +362,6 @@ function sensitivityFor(
   });
   const low = Math.min(...candidateScores);
   const high = Math.max(...candidateScores);
-  const nearestThreshold = BAND_THRESHOLDS.reduce<number | null>((nearest, threshold) =>
-    nearest === null || Math.abs(score - threshold) < Math.abs(score - nearest) ? threshold : nearest, null);
   return {
     nearThreshold: BAND_THRESHOLDS.some((threshold) => Math.abs(score - threshold) <= 0.2),
     nearestThreshold,

@@ -1,9 +1,14 @@
 import type { CountryRiskV3Result } from "./countryRiskV3.js";
 
+export function countryRiskV3BandLabel(band: NonNullable<CountryRiskV3Result["band"]>): string {
+  return band === "low" ? "Lower" : band === "moderate" ? "Moderate" : band === "high" ? "High" : "Very high";
+}
+
 export const COUNTRY_RISK_V3_PILLAR_LABELS = {
   effectiveness: "Financial-crime effectiveness",
   safeguards: "Legal and supervisory safeguards",
   governance: "Governance and institutional integrity",
+  icrg: "FATF public determination (ICRG substitute)",
 } as const;
 
 export function countryRiskV3StatusLabel(status: CountryRiskV3Result["status"]): string {
@@ -67,7 +72,11 @@ export interface CountryRiskV3PublicExplanation {
 }
 
 export function buildCountryRiskV3PublicExplanation(result: CountryRiskV3Result): CountryRiskV3PublicExplanation {
-  const keys = Object.keys(COUNTRY_RISK_V3_PILLAR_LABELS) as Array<keyof typeof COUNTRY_RISK_V3_PILLAR_LABELS>;
+  // ICRG is deliberately conditional: assessed jurisdictions must not see a
+  // phantom substitute, while no-MER jurisdictions must see the 65% input
+  // that actually drives their headline result.
+  const keys = (Object.keys(COUNTRY_RISK_V3_PILLAR_LABELS) as Array<keyof typeof COUNTRY_RISK_V3_PILLAR_LABELS>)
+    .filter((key) => key !== "icrg" || result.pillars.icrg.score !== null);
   return {
     statusLabel: countryRiskV3StatusLabel(result.status),
     statusExplanation: countryRiskV3StatusExplanation(result.status),

@@ -41,6 +41,14 @@ describe("buildCountryFaqs", () => {
     expect(faqs[0].answer).toContain("FATF black list");
   });
 
+  it("explains the ICRG exception for Iran but keeps listing overlay-only wording for assessed countries", () => {
+    const iran = faqsFor("IR").find((faq) => faq.question.includes("country risk rating"))!;
+    expect(iran.answer).toContain("ICRG public determination substitutes");
+    const gb = faqsFor("GB").find((faq) => faq.question.includes("country risk rating"))!;
+    expect(gb.answer).toContain("shown as overlays and do not add points");
+    expect(gb.answer).not.toContain("ICRG public determination substitutes");
+  });
+
   it("distinguishes no direct country regime from person-level screening", () => {
     const faqs = faqsFor("FR");
     expect(faqs[1].answer).toContain("No country-level programme was identified");

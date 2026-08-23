@@ -13,6 +13,7 @@ import {
 import { computeCountryRiskV3, COUNTRY_RISK_V3_METHODOLOGY_VERSION, type CountryRiskV3Result } from "./countryRiskV3.js";
 import { countryRiskSourcesForMethodology } from "./countryRiskSources.js";
 import { buildCountryRiskPublicSurface } from "./countryRiskSurface.js";
+import { buildCountryRiskContext, type CountryRiskContextCountry } from "./countryRiskContext.js";
 
 export interface CountryRiskEvidenceBundle {
   exportedAt: string;
@@ -24,6 +25,8 @@ export interface CountryRiskEvidenceBundle {
   v3?: CountryRiskV3Result;
   v2?: ReturnType<typeof computeCountryRiskV2>;
   surface: ReturnType<typeof buildCountryRiskPublicSurface>;
+  /** Eight-factor country context; never a headline score input. */
+  contextualEvidence: CountryRiskContextCountry;
   evidence: {
     fatfAssessment: ReturnType<typeof getFatfAssessment> | null;
     governance: ReturnType<typeof getGovernanceDimensions> | null;
@@ -77,6 +80,7 @@ export function buildCountryRiskEvidenceBundle(
     result: methodology === "v3" ? v3 : v2,
     ...(methodology === "v3" ? { v3 } : { v2 }),
     surface: buildCountryRiskPublicSurface(country.iso2, asOf),
+    contextualEvidence: buildCountryRiskContext(country.iso2)!,
     evidence: {
       fatfAssessment: getFatfAssessment(country.iso2) ?? null,
       governance: getGovernanceDimensions(country.iso2) ?? null,
@@ -241,6 +245,19 @@ export function countryRiskEvidenceRows(bundle: CountryRiskEvidenceBundle): Coun
       effectiveAt: signal.effectiveAt ?? "",
       retrievedAt: signal.retrievedAt ?? "",
       sourceUrl: signal.sourceUrl,
+    });
+  }
+
+  for (const item of bundle.contextualEvidence.factors) {
+    rows.push({
+      section: "country-context",
+      key: item.factor,
+      value: item.value?.label ?? "Not available",
+      status: item.availability,
+      scored: "false",
+      effectiveAt: item.source?.effectiveAt ?? "",
+      retrievedAt: item.source?.retrievedAt ?? "",
+      sourceUrl: item.source?.url ?? "",
     });
   }
 

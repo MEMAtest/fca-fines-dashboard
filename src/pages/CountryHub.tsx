@@ -44,7 +44,7 @@ import {
   type ChangeKind,
 } from "../data/countryChanges.js";
 import { comparePairSlug } from "../data/countryCompare.js";
-import { bandLabel, bandFor, type RiskBand } from "../data/countryRiskScore.js";
+import { bandFor, type RiskBand } from "../data/countryRiskScore.js";
 import { CountryRiskV3Panel, countryRiskV3PanelPayload } from "../components/CountryRiskV3Panel.js";
 import { CountryRiskEvidencePopover } from "../components/CountryRiskEvidencePopover.js";
 import { RegulatoryEvidenceLadder } from "../components/RegulatoryEvidenceLadder.js";
@@ -54,7 +54,9 @@ import { COUNTRY_RISK_SOURCES } from "../data/countryRiskSources.js";
 import {
   latestCountryRiskSourceCheck,
 } from "../data/countryRiskPresentation.js";
-import { buildCountryRiskV3PublicExplanation } from "../data/countryRiskV3Presentation.js";
+import { buildCountryRiskV3PublicExplanation, countryRiskV3BandLabel } from "../data/countryRiskV3Presentation.js";
+import { buildCountryRiskContext } from "../data/countryRiskContext.js";
+import { CountryRiskContextPanel } from "../components/CountryRiskContextPanel.js";
 import { buildCountryRiskGovernanceEvidenceRows } from "../data/countryRiskGovernancePresentation.js";
 import {
   getRegulatorySignalCountry,
@@ -239,6 +241,7 @@ export function CountryHub() {
 
   const rank = globalRank(country.iso2);
   const publicExplanation = buildCountryRiskV3PublicExplanation(riskV3);
+  const countryRiskContext = buildCountryRiskContext(country.iso2);
   const governanceEvidenceRows = buildCountryRiskGovernanceEvidenceRows(country.iso2);
   const latestSourceCheck = latestCountryRiskSourceCheck(COUNTRY_RISK_SOURCES);
   const scoreAvailable = riskV3.score !== null && riskV3.band !== null;
@@ -463,7 +466,7 @@ export function CountryHub() {
                   p.band ?? (hasLegalStatus(p.iso2) ? "legal" : "insufficient")
                 }`}
               >
-                {p.band ? bandLabel(p.band) : unscoredStatusLabel(p.iso2)}
+                {p.band ? countryRiskV3BandLabel(p.band) : unscoredStatusLabel(p.iso2)}
               </span>
             </Link>
             {!p.current && "compareSlug" in p && p.compareSlug && (
@@ -713,7 +716,7 @@ export function CountryHub() {
                     <span className="cx-gauge__marker" style={{ left: `${markerPct}%` }} />
                   </div>
                   <p className="cx-osc__band-txt">
-                    {publishedBand ? `${bandLabel(publishedBand)} risk` : unscoredStatusLabel(country.iso2)}
+                    {publishedBand ? `${countryRiskV3BandLabel(publishedBand)} risk` : unscoredStatusLabel(country.iso2)}
                   </p>
                   <p className="cx-osc__avg">Global average: {globalAverage.toFixed(1)}</p>
                   <p className="cx-osc__avg">{publicExplanation.statusLabel}</p>
@@ -727,7 +730,7 @@ export function CountryHub() {
                       publishedBand ?? (hasLegalStatus(country.iso2) ? "legal" : "insufficient")
                     }`}
                   >
-                    {publishedBand ? bandLabel(publishedBand) : unscoredStatusLabel(country.iso2)}
+                    {publishedBand ? countryRiskV3BandLabel(publishedBand) : unscoredStatusLabel(country.iso2)}
                   </span>
                 </div>
                 <div className="cx-osc__cell">
@@ -790,6 +793,8 @@ export function CountryHub() {
             })}
             showHeadline={false}
           />
+
+          {countryRiskContext && <CountryRiskContextPanel context={countryRiskContext} />}
 
           {regulatorySignal && (
             <section className="cx-card cx-regsignal" aria-labelledby="regulatory-signal-heading">

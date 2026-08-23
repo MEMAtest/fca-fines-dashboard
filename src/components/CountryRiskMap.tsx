@@ -19,7 +19,8 @@ import { useNavigate } from "react-router-dom";
 import { geoNaturalEarth1, geoPath } from "d3-geo";
 import { Minus, Plus, RotateCcw } from "lucide-react";
 import { resolveCountry, countrySlug, flagEmoji } from "../data/countries.js";
-import { bandLabel, type RiskBand, type RiskDomains } from "../data/countryRiskScore.js";
+import { type RiskBand, type RiskDomains } from "../data/countryRiskScore.js";
+import { countryRiskV3BandLabel } from "../data/countryRiskV3Presentation.js";
 import {
   BAND_COLOUR,
   NO_DATA,
@@ -320,7 +321,7 @@ export function CountryRiskMap({
                     {fm.name && (
                       <title>
                         {live
-                          ? `${fm.name} — ${fm.score?.toFixed(1)}/10 (${bandLabel(fm.band!)})`
+                          ? `${fm.name} — ${fm.score?.toFixed(1)}/10 (${countryRiskV3BandLabel(fm.band!)})`
                           : fm.iso2
                             ? `${fm.name} — not scored (${unscoredStatusLabel(fm.iso2)})`
                             : `${fm.name} — not covered as a separate jurisdiction`}
@@ -394,7 +395,7 @@ export function CountryRiskMap({
             }`}
           >
             {hover.meta.band
-              ? `${bandLabel(hover.meta.band)} risk`
+              ? `${countryRiskV3BandLabel(hover.meta.band)} risk`
               : unscoredStatusLabel(hover.meta.iso2)}
           </span>
           <ul className="cx-map__pop-bars">
@@ -426,7 +427,7 @@ export function CountryRiskMap({
         {(["low", "moderate", "high", "very-high"] as RiskBand[]).map((b) => (
           <span key={b} className="cx-map__legend-item">
             <span className="cx-map__legend-swatch" style={{ background: BAND_COLOUR[b] }} />
-            {bandLabel(b)}
+            {countryRiskV3BandLabel(b)}
           </span>
         ))}
         <span className="cx-map__legend-item">

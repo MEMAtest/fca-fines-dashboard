@@ -56,6 +56,7 @@
     "country-risk:source-health": "node --import tsx/esm scripts/country-risk/check-source-health.ts",
     "country-risk:benchmark": "node --import tsx/esm scripts/country-risk/report-public-benchmark.ts",
     "country-risk:context": "node --import tsx/esm scripts/country-risk/export-context-evidence.ts",
+    "country-risk:verify-context": "node --import tsx/esm scripts/country-risk/verify-context-artifact.ts",
     "country-risk:calibrate": "node --import tsx/esm scripts/country-risk/report-calibration.ts",
     "research:regulatory-transparency-shadow": "node --import tsx/esm scripts/research/generate-regulatory-transparency-shadow.ts",
     "research:regulatory-fallback": "node --import tsx/esm scripts/research/compile-regulatory-signal-manifest.ts && node --import tsx/esm scripts/research/generate-regulatory-fallback-artifacts.ts",

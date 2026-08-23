@@ -24,6 +24,8 @@ describe("country-risk public evidence exports", () => {
     const csv = countryRiskEvidenceCsv(bundle!);
     expect(csv).toContain('"pillar","effectiveness"');
     expect(csv).toContain('"context","transparency-cpi"');
+    expect(csv).toContain('"country-context","tax-cooperation"');
+    expect(rows.find((row) => row.section === "country-context" && row.key === "organised-crime")).toMatchObject({ effectiveAt: "", retrievedAt: "", sourceUrl: "" });
   });
 
   it("returns null for an unknown jurisdiction", () => {

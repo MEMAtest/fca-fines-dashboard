@@ -105,7 +105,8 @@ import {
   buildCountryRiskPublicExplanation,
   COUNTRY_RISK_PILLAR_LABELS,
 } from "../src/data/countryRiskPresentation.js";
-import { buildCountryRiskV3PublicExplanation, COUNTRY_RISK_V3_PILLAR_LABELS } from "../src/data/countryRiskV3Presentation.js";
+import { buildCountryRiskV3PublicExplanation, COUNTRY_RISK_V3_PILLAR_LABELS, countryRiskV3BandLabel } from "../src/data/countryRiskV3Presentation.js";
+import { buildCountryRiskContext } from "../src/data/countryRiskContext.js";
 import {
   GOVERNANCE_SOURCE,
   GOVERNANCE_VINTAGE,
@@ -839,7 +840,7 @@ function renderCountryFatfBody(view: CountryView): string {
   const missingLis = publicExplanation.missingInformation.map((message) => `<li>${escapeHtml(message)}</li>`).join("");
   const scoreHtml = scoreAvailable
     ? `<h2>Country Risk Score: ${escapeHtml(
-        `${riskV3.score!.toFixed(1)}/10 (${bandLabel(riskV3.band!)})`,
+        `${riskV3.score!.toFixed(1)}/10 (${countryRiskV3BandLabel(riskV3.band!)})`,
       )}</h2><p>${escapeHtml(
         `Higher score means higher country risk (global average ${globalAverage.toFixed(1)}). ${publicExplanation.statusLabel}. ${publicExplanation.resultKindLabel}. ${publicExplanation.confidenceLabel}. Enforcement activity and CPI are context only; FATF listing and sanctions are regulatory overlays except the labelled ICRG substitute used where no mutual evaluation exists.`,
       )}</p><p>${escapeHtml(publicExplanation.statusExplanation)} ${escapeHtml(publicExplanation.resultKindExplanation)}${publicExplanation.sensitivityLabel ? ` ${escapeHtml(publicExplanation.sensitivityLabel)}.` : ""}</p><h3>How this score was calculated</h3><ul>${pillarLis}${missingLis}</ul><p>Sanctions treatment: ${escapeHtml(publicExplanation.overlayLabels.sanctions)}. FATF treatment: ${escapeHtml(publicExplanation.overlayLabels.fatf)}.</p><details><summary>Show the exact calculation</summary><p>${escapeHtml(riskV3.arithmetic)}</p></details>`
@@ -1059,7 +1060,7 @@ function renderCountryFatfBody(view: CountryView): string {
               )}</a>: ${escapeHtml(
                 p.score === null || p.band === null
                   ? "score withheld (insufficient data)"
-                  : `${p.score.toFixed(1)}/10 (${bandLabel(p.band)})`,
+                  : `${p.score.toFixed(1)}/10 (${countryRiskV3BandLabel(p.band)})`,
               )}</li>`,
           )
           .join("")}</ul>`
@@ -1081,6 +1082,12 @@ function renderCountryFatfBody(view: CountryView): string {
     .join("")}</ul><h3>Evidence freshness</h3><ul>${publicSurface.freshness
     .map((item) => `<li>${escapeHtml(`${item.label}: ${item.sourceState}; data ${item.underlyingDataEffectiveAt ?? "not available"}${item.ratingsDate ? `; follow-up ${item.ratingsDate}` : ""}${item.assessmentDate ? `; base assessment ${item.assessmentDate}` : ""}`)}</li>`)
     .join("")}</ul><p>${escapeHtml(publicSurface.note)}</p><p><a href="/api/country-risk/evidence/${country.iso2}?format=pdf">Download evidence PDF</a> · <a href="/api/country-risk/evidence/${country.iso2}?format=csv">CSV</a> · <a href="/api/country-risk/evidence/${country.iso2}?format=json">JSON</a></p>`;
+  const context = buildCountryRiskContext(country.iso2);
+  const contextHtml = context
+    ? `<h2>Contextual risk evidence (not scored)</h2><p>These eight evidence families provide context only. They do not change the v3.1 headline score. Unavailable means no reviewed, country-comparable evidence is currently ingested; it does not mean the risk is absent.</p><ul>${context.factors
+        .map((item) => `<li><strong>${escapeHtml(item.label)}:</strong> ${escapeHtml(item.value?.label ?? "Not available")}. ${escapeHtml(item.availability === "available" ? item.limitation : `${item.limitation} Candidate sources are research leads only; they have not been ingested as evidence.`)}${item.source ? ` <a href="${escapeHtml(item.source.url)}" rel="noopener">Source</a>` : ""}</li>`)
+        .join("")}</ul>`
+    : "";
   // Visible FAQ block — answers MUST match the FAQPage JSON-LD verbatim (Google
   // requirement). Both derive from buildCountryFaqs(view), so they cannot drift.
   const faqHtml = renderCountryFaqBlock(buildCountryFaqs(view));
@@ -1090,7 +1097,7 @@ function renderCountryFatfBody(view: CountryView): string {
     statusHeading,
   )}</h2><p>${escapeHtml(
     statusDetail,
-  )}</p>${sanctionsHtml}${attrHtml}${historyHtml}${enforcementHtml}${regulatoryHtml}${regulatorySignalHtml}${sectorHtml}${analysisHtml}${whatChangedHtml}${publicEvidenceHtml}${peersHtml}${faqHtml}${sourcesHtml}</div></article></div></div>`;
+  )}</p>${sanctionsHtml}${attrHtml}${historyHtml}${enforcementHtml}${regulatoryHtml}${regulatorySignalHtml}${sectorHtml}${analysisHtml}${whatChangedHtml}${publicEvidenceHtml}${contextHtml}${peersHtml}${faqHtml}${sourcesHtml}</div></article></div></div>`;
 }
 
 /**

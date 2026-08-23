@@ -159,4 +159,16 @@ describe("country risk v3", () => {
     expect(result.sensitivity.scoreRange?.high).toBeGreaterThanOrEqual(result.score!);
     expect(result.sensitivity.nearThreshold).toBe(true);
   });
+
+  it("does not publish a degenerate sensitivity range for a one-pillar proxy", () => {
+    const result = computeCountryRiskV3("LY", { asOf: new Date("2026-08-20T00:00:00Z") });
+    expect(result.resultKind).toBe("indicative-governance-proxy");
+    expect(result.sensitivity.scoreRange).toBeNull();
+    expect(result.sensitivity.maxWeightShift).toBe(0);
+  });
+
+  it("exposes the ICRG substitute as a visible score input where no MER exists", () => {
+    const result = computeCountryRiskV3("IR", { asOf: new Date("2026-08-20T00:00:00Z") });
+    expect(result.pillars.icrg).toMatchObject({ score: 9.5, appliedWeight: 0.65, contribution: 6.2 });
+  });
 });

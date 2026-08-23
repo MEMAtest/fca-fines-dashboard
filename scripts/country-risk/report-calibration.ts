@@ -8,6 +8,8 @@
  */
 import { readFile } from "node:fs/promises";
 import { buildPublicBenchmarkReport, renderPublicBenchmarkMarkdown } from "./report-public-benchmark.js";
+import { pageCountries } from "../../src/data/countryView.js";
+import { computeCountryRiskCurrent } from "../../src/data/countryRiskMethodology.js";
 
 interface BaselRow { iso2: string; score: number }
 
@@ -22,6 +24,22 @@ function pearson(pairs: Array<[number, number]>): number | null {
 }
 
 export async function buildCalibrationReport(baselPath?: string) {
+  const asOf = new Date();
+  const countryResults = pageCountries().map((country) => ({ iso2: country.iso2, result: computeCountryRiskCurrent(country.iso2, { asOf }) }));
+  const allCountries = {
+    total: countryResults.length,
+    status: Object.fromEntries(["complete", "provisional", "insufficient-data"].map((status) => [status, countryResults.filter(({ result }) => result.status === status).length])),
+    resultKind: Object.fromEntries(["complete", "provisional", "indicative-governance-proxy"].map((kind) => [kind, countryResults.filter(({ result }) => result.resultKind === kind).length])),
+    confidence: Object.fromEntries(["high", "medium", "low"].map((confidence) => [confidence, countryResults.filter(({ result }) => result.confidence === confidence).length])),
+    band: Object.fromEntries(["low", "moderate", "high", "very-high"].map((band) => [band, countryResults.filter(({ result }) => result.band === band).length])),
+    rankedEligible: countryResults.filter(({ result }) => result.score !== null && result.band !== null && result.resultKind !== "indicative-governance-proxy").length,
+    completeRanked: countryResults.filter(({ result }) => result.score !== null && result.band !== null && result.resultKind === "complete").length,
+    provisionalCompositeRanked: countryResults.filter(({ result }) => result.score !== null && result.band !== null && result.resultKind === "provisional").length,
+    indicativeProxyUnranked: countryResults.filter(({ result }) => result.resultKind === "indicative-governance-proxy").length,
+  };
+  const thresholds = [3, 5, 7];
+  const nearThreshold = (distance: number) => countryResults.filter(({ result }) => result.score !== null && thresholds.some((threshold) => Math.abs(result.score! - threshold) <= distance)).length;
+  const sensitivity = countryResults.map(({ result }) => result.sensitivity).filter((item) => item.scoreRange !== null);
   const kyc = buildPublicBenchmarkReport();
   let basel: { status: "not-loaded" | "loaded"; source?: string; sampleSize: number; pearson: number | null } = {
     status: "not-loaded",
@@ -39,7 +57,19 @@ export async function buildCalibrationReport(baselPath?: string) {
   }
   return {
     methodologyVersion: "3.1.0",
-    generatedAt: kyc.generatedAt,
+    generatedAt: asOf.toISOString(),
+    allCountries: {
+      ...allCountries,
+      nearThresholdCounts: { within0_1: nearThreshold(0.1), within0_2: nearThreshold(0.2), within0_3: nearThreshold(0.3) },
+      sensitivity: {
+        availableResults: sensitivity.length,
+        meanSpan: sensitivity.length ? Math.round((sensitivity.reduce((sum, item) => sum + (item.scoreRange!.high - item.scoreRange!.low), 0) / sensitivity.length) * 10) / 10 : null,
+        maxSpan: sensitivity.length ? Math.max(...sensitivity.map((item) => item.scoreRange!.high - item.scoreRange!.low)) : null,
+        maxWeightShift: sensitivity.length ? Math.max(...sensitivity.map((item) => item.maxWeightShift)) : null,
+        bandCrossingCount: countryResults.filter(({ result }) => result.resultKind !== "indicative-governance-proxy" && result.sensitivity.scoreRange !== null && thresholds.some((threshold) => result.sensitivity.scoreRange!.low < threshold && result.sensitivity.scoreRange!.high >= threshold)).length,
+        onePillarRangeNotApplicable: countryResults.filter(({ result }) => result.resultKind === "indicative-governance-proxy").length,
+      },
+    },
     kyc: {
       observedAt: kyc.observedAt,
       baselineMethodologyVersion: kyc.baselineMethodologyVersion,
