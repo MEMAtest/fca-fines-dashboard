@@ -45,6 +45,7 @@ import {
   type FatfStatus,
 } from "../data/fatfStatus.js";
 import { sanctionsTierLabel, type SanctionsTier } from "../data/sanctionsStatus.js";
+import { unscoredStatusLabel, hasLegalStatus } from "../data/unscoredStatus.js";
 import {
   bandLabel,
   bandFor,
@@ -111,7 +112,13 @@ const DRIVER_LABEL: Record<string, string> = {
 function keyDrivers(iso2: string): string[] {
   const result = computeCountryRiskCurrent(iso2);
   if (result.score === null) {
-    return ["Not enough information is available to publish a score"];
+    // Withholding the score does not mean there is nothing to say: the legal
+    // status is a fact, and it is the most useful thing a reviewer can be told
+    // about a country the model declines to score.
+    const legal = hasLegalStatus(iso2)
+      ? [`${unscoredStatusLabel(iso2)} — legal status, not a modelled score`]
+      : [];
+    return [...legal, "Not enough information is available to publish a score"];
   }
   const out: string[] = [];
   if (result.overlays.fatf.listing === "call-for-action") out.push("FATF call-for-action overlay");
@@ -168,8 +175,12 @@ function DetailPanel({
         <span className="cx-detail__flag" aria-hidden="true">{entry.flag}</span>
         <div className="cx-detail__id">
           <h3 className="cx-detail__name">{entry.country.name}</h3>
-          <span className={`cx-detail__band cx-detail__band--${entry.band ?? "insufficient"}`}>
-            {hasScore ? `${bandLabel(entry.band!)} risk` : "Not enough information"}
+          <span
+            className={`cx-detail__band cx-detail__band--${
+              entry.band ?? (hasLegalStatus(iso2) ? "legal" : "insufficient")
+            }`}
+          >
+            {hasScore ? `${bandLabel(entry.band!)} risk` : unscoredStatusLabel(iso2)}
           </span>
         </div>
         {onClose && (
@@ -567,7 +578,7 @@ function RecentHighlightsTable({ index }: { index: CountryIndexEntry[] }) {
                     "—"
                   )}
                 </td>
-                <td>{entry.band ? bandLabel(entry.band) : "Not enough information"}</td>
+                <td>{entry.band ? bandLabel(entry.band) : unscoredStatusLabel(entry.country.iso2)}</td>
                 <td className="cx-recent-table__change">{event.title}</td>
                 <td className="country-ratings__num cx-recent-table__date">{formatDate(event.date)}</td>
               </tr>
@@ -944,7 +955,7 @@ function OverviewTab({
                   </td>
                   <td>{bandLabel(e.band)}</td>
                   <td className="country-ratings__region">{e.country.region}</td>
-                  <td>{e.fatf ? fatfLabel(e.fatf.listing) : "—"}</td>
+                  <td>{e.fatf ? fatfLabel(e.fatf.listing) : <span className="cx-fatf-none">Not listed</span>}</td>
                 </tr>
               ))}
             </tbody>
@@ -1480,9 +1491,9 @@ function GlobalIndex() {
                       {e.score === null ? "—" : e.score.toFixed(1)}
                     </span>
                   </td>
-                  <td>{e.band ? `${bandLabel(e.band)}${e.status === "provisional" ? " · some information missing" : ""}` : "Not enough information"}</td>
+                  <td>{e.band ? `${bandLabel(e.band)}${e.status === "provisional" ? " · some information missing" : ""}` : unscoredStatusLabel(e.country.iso2)}</td>
                   <td className="country-ratings__region">{e.country.region}</td>
-                  <td>{e.fatf ? fatfLabel(e.fatf.listing) : "—"}</td>
+                  <td>{e.fatf ? fatfLabel(e.fatf.listing) : <span className="cx-fatf-none">Not listed</span>}</td>
                   <td>{e.sanctionsCoverageComplete
                     ? e.sanctionsTier
                       ? sanctionsTierLabel(e.sanctionsTier)

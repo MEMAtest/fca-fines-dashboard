@@ -59,6 +59,7 @@ import {
   formatDate,
   globalRank,
 } from "../data/countryView.js";
+import { unscoredStatusLabel, hasLegalStatus } from "../data/unscoredStatus.js";
 import "../styles/country-hub.css";
 
 // Dark regional map — lazy so first paint isn't blocked on d3-geo.
@@ -434,8 +435,12 @@ export function CountryHub() {
                 />
               </span>
               <span className="cx-peer__score">{p.score === null ? "—" : p.score.toFixed(1)}</span>
-              <span className={`cx-peer__band cx-peer__band--${p.band ?? "insufficient"}`}>
-                {p.band ? bandLabel(p.band) : "Not enough information"}
+              <span
+                className={`cx-peer__band cx-peer__band--${
+                  p.band ?? (hasLegalStatus(p.iso2) ? "legal" : "insufficient")
+                }`}
+              >
+                {p.band ? bandLabel(p.band) : unscoredStatusLabel(p.iso2)}
               </span>
             </Link>
             {!p.current && "compareSlug" in p && p.compareSlug && (
@@ -684,7 +689,7 @@ export function CountryHub() {
                     <span className="cx-gauge__marker" style={{ left: `${markerPct}%` }} />
                   </div>
                   <p className="cx-osc__band-txt">
-                    {publishedBand ? `${bandLabel(publishedBand)} risk` : "Not enough information"}
+                    {publishedBand ? `${bandLabel(publishedBand)} risk` : unscoredStatusLabel(country.iso2)}
                   </p>
                   <p className="cx-osc__avg">
                     {publicExplanation.statusLabel} · {publicExplanation.confidenceLabel}
@@ -696,8 +701,12 @@ export function CountryHub() {
                 </div>
                 <div className="cx-osc__cell">
                   <span className="cx-osc__k">Risk band</span>
-                  <span className={`cx-band-pill cx-band-pill--${publishedBand ?? "insufficient"}`}>
-                    {publishedBand ? bandLabel(publishedBand) : "Not enough information"}
+                  <span
+                    className={`cx-band-pill cx-band-pill--${
+                      publishedBand ?? (hasLegalStatus(country.iso2) ? "legal" : "insufficient")
+                    }`}
+                  >
+                    {publishedBand ? bandLabel(publishedBand) : unscoredStatusLabel(country.iso2)}
                   </span>
                 </div>
                 <div className="cx-osc__cell">

@@ -2807,11 +2807,22 @@ button.cx-kpi:hover {
 .cx-attn > * {
   min-width: 0;
 }
+/* This was `display: block; overflow-x: auto` on the TABLE, applied at every
+   width. It stopped page overflow, but a block-level table does not stretch
+   its columns: at 1440 the six columns summed to 593px inside a 784px table
+   and the rest of the panel was dead white space.
+   Put the scroll on the wrapper instead. The table goes back to being a table
+   and fills the panel; below the min-width the wrapper scrolls, so the page
+   still never overflows. */
+.cx-ov__table,
+.cx-ov__exec {
+  overflow-x: auto;
+}
+
 .cx-ov__table table,
 .cx-ov__exec table {
-  display: block;
-  max-width: 100%;
-  overflow-x: auto;
+  width: 100%;
+  min-width: 560px;
 }
 
 @media (max-width: 1040px) {
@@ -3553,7 +3564,11 @@ button.cx-ovband--btn:hover {
     see WHERE the country was without scrolling a third of the report. */
 .cx-ws__head {
   display: grid;
-  grid-template-columns: minmax(190px, 0.7fr) minmax(0, 1.9fr) minmax(180px, 0.85fr);
+  /* The identity track was minmax(190px, 0.7fr), which left 144px for the
+     text once the flag and gap were taken out. "Cuba" fit; the region chips
+     wrapped onto two lines, which pushed the stack to 103px, and since
+     .cx-ident centres its row the flag then floated 26px below the name. */
+  grid-template-columns: minmax(250px, 0.95fr) minmax(0, 1.9fr) minmax(180px, 0.85fr);
   gap: 1rem;
   align-items: stretch;
 }
@@ -3572,6 +3587,11 @@ button.cx-ovband--btn:hover {
   display: flex;
   align-items: center;
   gap: 0.9rem;
+  /* Stretching to the cards' 240px left the name floating in the middle of an
+     empty column. Sit at the top instead, so the country name lines up with
+     the card headings beside it. */
+  align-self: start;
+  padding-top: 1.15rem;
 }
 .cx-ident__flag {
   font-size: 2.8rem;
@@ -4378,3 +4398,16 @@ button.cx-dist__seg:hover { opacity: 0.85; }
     flex-shrink: 0;
   }
 }
+
+/* Unscored countries that nonetheless carry a legal status.
+   "FATF countermeasures" must not be painted in the same muted grey as "Not
+   enough information" — one is the strongest risk signal there is, the other
+   is the absence of a signal. Amber rather than red: it is a legal treatment,
+   not a modelled score, and the palette reserves red for scored bands. */
+.cx-band-pill--legal { background: #b45309; }
+.cx-detail__band--legal,
+.cx-peer__band--legal { color: #7c2d12; background: #fef3c7; }
+
+/* "Not listed" in a FATF column is a finding, not missing data, but it should
+   not shout as loudly as an actual listing. */
+.cx-fatf-none { color: #64748b; }
