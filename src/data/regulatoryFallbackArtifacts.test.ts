@@ -19,11 +19,11 @@ describe("deterministic regulatory fallback artifacts", () => {
       evidenceLevelCounts: Record<string, number>;
       countries: Array<{ country: { iso2: string }; ecosystem: { authorityCount: number }; activitySummary: { scanContract: unknown | null } }>;
     };
-    expect(parsed.totalJurisdictions).toBe(213);
-    expect(parsed.totalAuthorities).toBe(642);
+    expect(parsed.totalJurisdictions).toBe(214);
+    expect(parsed.totalAuthorities).toBe(643);
     expect(parsed.transparencyIndex).toBeNull();
     expect(parsed.secondaryReporting).toBeNull();
-    expect(Object.values(parsed.evidenceLevelCounts).reduce((sum, count) => sum + count, 0)).toBe(642);
+    expect(Object.values(parsed.evidenceLevelCounts).reduce((sum, count) => sum + count, 0)).toBe(643);
     const zeroAuthorityCountries = parsed.countries.filter((country) => country.ecosystem.authorityCount === 0);
     expect(zeroAuthorityCountries.map((country) => country.country.iso2)).toContain("KP");
     expect(zeroAuthorityCountries.every((country) => country.activitySummary.scanContract === null)).toBe(true);
@@ -37,5 +37,6 @@ describe("deterministic regulatory fallback artifacts", () => {
     expect(csv.split("\n")[0]).toContain("externalOfficialContextCandidates");
     expect(csv.split("\n")[0]).toContain("latestObservedMonth");
     expect(csv.split("\n")[0]).not.toContain("latestObservedDate");
+    expect(parsed.countries.find((country) => country.country.iso2 === "VI")?.ecosystem.authorityCount).toBe(1);
   });
 });

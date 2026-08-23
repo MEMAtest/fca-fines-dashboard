@@ -4,7 +4,7 @@
 
 RegActions has the raw ingredients for a defensible proprietary regulatory-intelligence layer, but not for a single global “regulator quality” score. The sound product is a family of separately explained signals covering institutional mandates, publication transparency, RegActions' own coverage confidence and observed enforcement activity.
 
-The research universe contains 213 jurisdictions. Official evidence now identifies local authority structures for 212; North Korea is retained as externally observable through FATF but without a credible public domestic regulator source. This avoids the false conclusion that no discoverable website means no regulator or low risk.
+The research universe contains 214 jurisdictions after the deterministic USVI overlay. Official evidence identifies local authority structures for 213; North Korea is retained as externally observable through FATF but without a credible public domestic regulator source. The USVI local evidence is sourced to the Office of the Lieutenant Governor's Division of Banking, Insurance and Financial Regulation, while applicable US federal parent context remains separate.
 
 RegActions currently has 54 live regulators across 40 countries plus one EU-level authority. That is meaningful enforcement depth—38,138 records were returned by the live APIs during this snapshot—but the geographic footprint remains concentrated in Europe, North America and selected APAC/IFC centres. The proposed regulatory layer should make both the depth and the gaps visible.
 
@@ -25,7 +25,7 @@ The World Bank Bank Regulation and Supervision Survey was considered as a contex
 
 ## Global ecosystem result
 
-The merged directory contains 642 authority records:
+The merged directory contains 643 authority records:
 
 - central banking evidence in 191 jurisdictions;
 - prudential supervision in 188;
@@ -34,13 +34,13 @@ The merged directory contains 642 authority records:
 - pensions supervision in 81;
 - financial-intelligence units in 187.
 
-Of 213 jurisdictions, 117 have broad evidence across at least five role families, 66 have moderate evidence across three or four, 29 have limited directory evidence, and one is externally observable but domestically unpublished/unobservable.
+Of 214 jurisdictions, 117 have broad evidence across at least five role families, 67 have moderate evidence across three or four, 29 have limited directory evidence, and one is externally observable but domestically unpublished/unobservable.
 
 These are evidence-depth categories, not judgments about regulatory quality. Pension arrangements, for example, are not universally organized through a standalone public supervisor.
 
 ## Official-site publication discovery
 
-All 642 authority records were checked. Results at the time of research:
+All 643 authority records were checked. Results at the time of research:
 
 - 356 sites reachable;
 - 110 challenge-protected;
@@ -50,7 +50,7 @@ All 642 authority records were checked. Results at the time of research:
 - 18 other HTTP errors;
 - 29 authority records had no public website.
 
-The root-page multilingual scan found 1,179 potential enforcement, sanctions, disciplinary or decision links across 264 authorities. A follow-up request to one best candidate per authority found:
+The root-page multilingual scan found 1,179 potential enforcement, sanctions, disciplinary or decision links across 264 authorities, plus one USVI authority-owned Orders and bulletins route retained as a generic manual-review candidate. A follow-up request to one best candidate per authority found:
 
 - 115 strong official-publication candidates;
 - 12 plausible candidates;
@@ -61,7 +61,7 @@ Dated first-page evidence was visible for candidate pages in 50 countries. Those
 
 ## Current RegActions position
 
-Country coverage is 40 of 213 jurisdictions (18.8%), with seven additional countries having an official enforcement source already validated in the pipeline. Coverage by region is:
+Country coverage is 40 of 214 jurisdictions (18.7%), with seven additional countries having an official enforcement source already validated in the pipeline. Coverage by region is:
 
 | Region | Jurisdictions | Live countries | Validated pipeline | Live share |
 |---|---:|---:|---:|---:|
@@ -106,4 +106,4 @@ After human validation and shadow calibration, a regulator publication-transpare
 
 ## Research disposition for every jurisdiction
 
-The 213-row `coverage-gap-register.csv` records official authority evidence, mandate roles, FATF/FSRB context, live and pipeline regulators, publication candidates, provisional cadence evidence and the next research/control action. Every jurisdiction therefore has a documented disposition before product work begins; none is silently represented as zero.
+The 214-row `coverage-gap-register.csv` records official authority evidence, mandate roles, FATF/FSRB context, live and pipeline regulators, publication candidates, provisional cadence evidence and the next research/control action. Every jurisdiction therefore has a documented disposition before product work begins; none is silently represented as zero. The USVI route remains unqualified and has no inferred cadence or activity score.

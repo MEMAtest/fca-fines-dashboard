@@ -1,10 +1,10 @@
 {
   "generatedAt": "2026-08-20T12:11:07.553Z",
-  "reportSha256": "c30bc135f86bb8444843e048b03fce20027abf8673b0f66beed40920edf21b55",
+  "reportSha256": "3e1da02506c302abf5b544dd2622d15a27d6bc7c53d5fbca36c696824130650f",
   "exactTotals": {
-    "candidateAuthorities": 264,
-    "countries": 213,
-    "generic-or-ambiguous-link": 88,
+    "candidateAuthorities": 265,
+    "countries": 214,
+    "generic-or-ambiguous-link": 89,
     "strong-official-publication-candidate": 115,
     "not-observable": 49,
     "plausible-official-publication-candidate": 12

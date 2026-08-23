@@ -1,14 +1,14 @@
 {
   "generatedAt": "2026-08-20T12:11:07.553Z",
-  "candidateAuthoritiesInspected": 264,
+  "candidateAuthoritiesInspected": 265,
   "accessStates": {
-    "reachable": 215,
+    "reachable": 216,
     "challenge-protected": 44,
     "http-404": 4,
     "timeout": 1
   },
   "provisionalCadenceSignals": {
-    "no-dated-first-page-signal": 145,
+    "no-dated-first-page-signal": 146,
     "not-observable": 49,
     "low-frequency-first-page-signal": 40,
     "active-first-page-signal": 4,
@@ -16,7 +16,7 @@
     "frequent-first-page-signal": 5
   },
   "publicationRelevance": {
-    "generic-or-ambiguous-link": 88,
+    "generic-or-ambiguous-link": 89,
     "strong-official-publication-candidate": 115,
     "not-observable": 49,
     "plausible-official-publication-candidate": 12
@@ -6205,6 +6205,29 @@
       "latest_observed_month": "2026-06",
       "provisional_cadence_signal": "not-observable",
       "interpretation": "Automated first-page signal only. Human validation, pagination and archive-depth research are required before any published metric.",
+      "error": null
+    },
+    {
+      "iso2": "VI",
+      "country": "US Virgin Islands",
+      "authority": "Office of the Lieutenant Governor — Division of Banking, Insurance and Financial Regulation",
+      "roles": [
+        "prudential_supervision",
+        "securities",
+        "insurance"
+      ],
+      "candidate_label": "Orders and bulletins — official authority page",
+      "candidate_url": "https://ltg.gov.vi/departments/banking-insurance-and-financial-regulation/",
+      "final_url": "https://ltg.gov.vi/departments/banking-insurance-and-financial-regulation/",
+      "access_state": "reachable",
+      "http_status": 200,
+      "title": "Banking, Insurance & Financial Regulation – United States Virgin Islands",
+      "publication_relevance": "generic-or-ambiguous-link",
+      "observed_months_2024_2026": [],
+      "observed_month_count": 0,
+      "latest_observed_month": null,
+      "provisional_cadence_signal": "no-dated-first-page-signal",
+      "interpretation": "The official authority page exposes Orders and bulletins, but no dated first-page signal was used to infer frequency or inactivity.",
       "error": null
     }
   ]

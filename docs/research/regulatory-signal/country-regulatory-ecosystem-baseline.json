@@ -9565,6 +9565,56 @@
       "live_curated_archives": 0,
       "live_lower_confidence_feeds": 0,
       "research_priority": "coverage-candidate"
+    },
+    {
+      "iso2": "VI",
+      "iso3": "VIR",
+      "country": "US Virgin Islands",
+      "region": "Offshore / IFC",
+      "subregion": "US Caribbean Territory",
+      "un_member": false,
+      "parent_jurisdiction": "US",
+      "country_risk_v3_score": 3.5,
+      "country_risk_v3_status": "provisional",
+      "official_directory_authorities": 1,
+      "official_directory_roles": [
+        "insurance",
+        "prudential_supervision",
+        "securities"
+      ],
+      "parent_directory_authorities": 22,
+      "parent_directory_roles": [
+        "central_banking",
+        "financial_intelligence",
+        "insurance",
+        "pensions",
+        "prudential_supervision",
+        "securities"
+      ],
+      "authority_evidence_state": "local-authority-evidence",
+      "authority_evidence_note": "Local USVI authority evidence is distinct from applicable United States federal parent context; no parent authority is reclassified as local.",
+      "external_authority_evidence_url": "",
+      "central_banking_authorities": 0,
+      "prudential_authorities": 1,
+      "securities_authorities": 1,
+      "insurance_authorities": 1,
+      "pension_authorities": 0,
+      "financial_intelligence_units": 0,
+      "ecosystem_research_depth": "moderate",
+      "configured_regulators": 0,
+      "live_regulators": 0,
+      "live_regulator_codes": [],
+      "pipeline_regulator_codes": [],
+      "internal_regulator_codes": [],
+      "registry_static_records": 0,
+      "live_observed_records": 0,
+      "latest_observed_action": null,
+      "live_automated_feeds": 0,
+      "live_low_frequency_feeds": 0,
+      "live_sparse_sources": 0,
+      "live_curated_archives": 0,
+      "live_lower_confidence_feeds": 0,
+      "research_priority": "coverage-candidate"
     }
   ]
 }

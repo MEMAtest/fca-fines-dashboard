@@ -1,8 +1,8 @@
 {
   "generatedAt": "2026-08-20T12:10:41.904Z",
-  "authoritiesInspected": 642,
+  "authoritiesInspected": 643,
   "accessStates": {
-    "reachable": 356,
+    "reachable": 357,
     "challenge-protected": 110,
     "network-error": 58,
     "timeout": 56,
@@ -10,10 +10,10 @@
     "access-blocked": 15,
     "http-error": 18
   },
-  "authoritiesWithCandidateLinks": 264,
-  "candidateLinks": 1179,
+  "authoritiesWithCandidateLinks": 265,
+  "candidateLinks": 1180,
   "countryDiscoveryStates": {
-    "official-site-candidate-found": 107,
+    "official-site-candidate-found": 108,
     "official-site-reachable-no-root-link": 37,
     "official-site-access-obstructed": 17,
     "no-public-site-evidence": 5,

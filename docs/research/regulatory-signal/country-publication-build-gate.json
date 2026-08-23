@@ -4687,6 +4687,28 @@
       "country_build_gate": "source-contract-candidate",
       "evidence_completeness": "direct-and-reachable",
       "recommended_next_action": "Human-validate archive pagination, case fields, archive boundary and cadence before any scraper work."
+    },
+    {
+      "iso2": "VI",
+      "country": "US Virgin Islands",
+      "region": "Offshore / IFC",
+      "parent_jurisdiction": "US",
+      "authority_evidence_state": "local-authority-evidence",
+      "official_authority_count": 1,
+      "official_role_count": 3,
+      "candidate_authority_count": 1,
+      "strong_candidate_count": 0,
+      "plausible_candidate_count": 0,
+      "generic_candidate_count": 1,
+      "obstructed_candidate_count": 0,
+      "direct_http_scope_count": 0,
+      "manual_scope_review_count": 1,
+      "browser_review_count": 0,
+      "transport_follow_up_count": 0,
+      "dated_first_page_signal_count": 0,
+      "country_build_gate": "human-qualification-required",
+      "evidence_completeness": "reachable-but-unqualified",
+      "recommended_next_action": "Resolve route scope and publication semantics against the official authority site, then define a source contract."
     }
   ]
 }

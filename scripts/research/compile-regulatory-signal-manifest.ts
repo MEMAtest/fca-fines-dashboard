@@ -14,6 +14,7 @@ const authorities = JSON.parse(readFileSync(path.join(research, "official-author
 const discoverySnapshot = JSON.parse(readFileSync(path.join(research, "authority-publication-discovery.json"), "utf8"));
 const cadenceSnapshot = JSON.parse(readFileSync(path.join(research, "authority-publication-cadence-observations.json"), "utf8"));
 const qualificationLedger = JSON.parse(readFileSync(path.join(research, "publication-qualification-ledger.json"), "utf8"));
+const usviFixture = JSON.parse(readFileSync(path.join(research, "usvi-regulatory-signal-fixture.json"), "utf8"));
 
 type DiscoveryRow = {
   iso2: string;
@@ -22,20 +23,27 @@ type DiscoveryRow = {
   access_state?: string;
   candidates?: Array<{ label?: string; url?: string }>;
 };
-const discovery = JSON.parse(readFileSync(path.join(research, "authority-publication-discovery.json"), "utf8")).rows as DiscoveryRow[];
+const appendIfMissing = <T extends { iso2?: string }>(rows: T[], extra: T): T[] => rows.some((row) => row.iso2 === extra.iso2) ? rows : [...rows, extra];
+const discovery = appendIfMissing(
+  JSON.parse(readFileSync(path.join(research, "authority-publication-discovery.json"), "utf8")).rows as DiscoveryRow[],
+  usviFixture.discovery,
+);
 const discoveryByAuthority = new Map(discovery.map((row) => [`${row.iso2}|${row.authority}|${row.website ?? ""}`, row]));
-const cadenceByCandidate = new Map((cadenceSnapshot.rows as Array<Record<string, any>>).map((row) => [
+const cadenceByCandidate = new Map(appendIfMissing(
+  cadenceSnapshot.rows as Array<Record<string, any>>,
+  usviFixture.cadence,
+).map((row) => [
   `${row.iso2}|${row.authority}|${row.candidate_url ?? ""}`,
   row,
 ]));
 const qualificationByCandidate = new Map<string, Record<string, any>>(
-  qualificationLedger.rows.map((row: Record<string, any>) => [
+  appendIfMissing(qualificationLedger.rows, usviFixture.qualification).map((row: Record<string, any>) => [
     `${row.iso2}|${row.authority}|${row.evidence_url ?? ""}`,
     row,
   ]),
 );
 
-const rows = baseline.rows.map((row: Record<string, any>) => ({
+const rows = appendIfMissing(baseline.rows, usviFixture.baseline).map((row: Record<string, any>) => ({
   i: row.iso2,
   c: row.iso3,
   n: row.country,
@@ -56,9 +64,9 @@ const rows = baseline.rows.map((row: Record<string, any>) => ({
   v: row.live_regulator_codes,
   h: row.pipeline_regulator_codes,
   k: row.research_priority,
-  q2: authorities.filter((authority: Record<string, any>) => authority.iso2 === row.iso2).map((authority: Record<string, any>) => {
+  q2: appendIfMissing(authorities, usviFixture.authority).filter((authority: Record<string, any>) => authority.iso2 === row.iso2).map((authority: Record<string, any>) => {
     const found = discoveryByAuthority.get(`${authority.iso2}|${authority.authority}|${authority.website ?? ""}`);
-    const candidates = (found?.candidates ?? []).filter((candidate) => candidate.url).map((candidate) => {
+    const candidates: Array<{ l: string | null; u: string; m: string[]; n: number; z: string | null; s: string; r: string | null; t: string | null; p: string | null; q: string | null; a: string | null }> = (found?.candidates ?? []).filter((candidate: { url?: string }) => candidate.url).map((candidate: { label?: string; url?: string }) => {
       const candidateUrl = candidate.url!;
       const key = `${authority.iso2}|${authority.authority}|${candidateUrl}`;
       const cadence = cadenceByCandidate.get(key);
@@ -80,6 +88,9 @@ const rows = baseline.rows.map((row: Record<string, any>) => ({
     const primary = candidates.find((candidate) => candidate.q === "approved-for-human-contract" && candidate.p === "authority-owned")
       ?? candidates.find((candidate) => candidate.q)
       ?? candidates[0];
+    const primaryQualification = primary?.u
+      ? qualificationByCandidate.get(`${authority.iso2}|${authority.authority}|${primary.u}`)
+      : undefined;
     return {
       n: authority.authority,
       w: authority.website,
@@ -89,9 +100,9 @@ const rows = baseline.rows.map((row: Record<string, any>) => ({
       y: candidates,
       d: authority.directory_sources ?? [],
       e: authority.evidence_urls ?? [],
-      f: baseline.generatedAt,
-      v: discoverySnapshot.generatedAt,
-      c: primary?.q ? qualificationLedger.sourceCheckedAt : discoverySnapshot.generatedAt,
+      f: authority.iso2 === "VI" ? usviFixture.generatedAt : baseline.generatedAt,
+      v: authority.iso2 === "VI" ? usviFixture.generatedAt : discoverySnapshot.generatedAt,
+      c: primary?.q ? (primaryQualification?.source_checked_at ?? qualificationLedger.sourceCheckedAt) : discoverySnapshot.generatedAt,
       m: primary?.m ?? [],
       n2: primary?.n ?? 0,
       z2: primary?.z ?? null,

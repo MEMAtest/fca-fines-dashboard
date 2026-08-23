@@ -18,13 +18,13 @@
   },
   "summary": {
     "regulator_count": 54,
-    "country_count": 213,
+    "country_count": 214,
     "regulator_complete": 17,
     "regulator_provisional": 1,
     "regulator_not_assessed": 36,
     "country_complete": 2,
     "country_provisional": 10,
-    "country_not_assessed": 201
+    "country_not_assessed": 202
   },
   "regulator_results": [
     {
@@ -10894,6 +10894,36 @@
         "docs/research/regulatory-signal/country-regulatory-ecosystem-baseline.json",
         "regulator-shadow-results.json"
       ]
+    },
+    {
+      "iso2": "VI",
+      "country": "US Virgin Islands",
+      "region": "Offshore / IFC",
+      "applicableRoles": [
+        "insurance",
+        "prudential_supervision",
+        "securities"
+      ],
+      "assessedRoles": [],
+      "roleScores": {
+        "insurance": null,
+        "prudential_supervision": null,
+        "securities": null
+      },
+      "roleAuthorityCounts": {
+        "insurance": 0,
+        "prudential_supervision": 0,
+        "securities": 0
+      },
+      "roleCoveragePct": 0,
+      "score": null,
+      "band": null,
+      "status": "not-assessed",
+      "blocker": "Fewer than two assessed mandate roles (0/3).",
+      "provenance": [
+        "docs/research/regulatory-signal/country-regulatory-ecosystem-baseline.json",
+        "regulator-shadow-results.json"
+      ]
     }
   ],
   "counts": {
@@ -10901,10 +10931,10 @@
     "regulator_complete": 17,
     "regulator_provisional": 1,
     "regulator_not_assessed": 36,
-    "countries": 213,
+    "countries": 214,
     "country_complete": 2,
     "country_provisional": 10,
-    "country_not_assessed": 201
+    "country_not_assessed": 202
   },
   "provenance": [
     "regulator-shadow-measures.csv",

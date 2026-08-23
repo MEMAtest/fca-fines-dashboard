@@ -1,14 +1,16 @@
 # RegActions regulatory-signal research
 
-Research snapshot: 20 August 2026. This directory is deliberately separate from product code. It establishes the evidence and interpretation needed before a regulator or country-level regulatory signal is designed.
+Research snapshot: 20 August 2026, with a deterministic USVI coverage overlay checked on 23 August 2026. This directory is deliberately separate from product code. It establishes the evidence and interpretation needed before a regulator or country-level regulatory signal is designed.
+
+The original network snapshot remains byte-stable for its 213 jurisdictions. `usvi-regulatory-signal-fixture.json` adds the independently checked USVI local authority and authority-owned route; the overlay and deterministic exports bring the published research manifest to 214 jurisdictions without laundering a new global network run into the release.
 
 ## What is complete
 
-- All 213 RegActions jurisdictions have an evidence disposition.
-- 642 official authority records have been mapped across six mandate families.
+- All 214 RegActions jurisdictions have an evidence disposition, including the USVI overlay.
+- 643 official authority records have been mapped across six mandate families.
 - Every mapped authority website has been checked for access and first-page enforcement/publication routes.
 - Current production observations have been captured for all 54 live RegActions regulators.
-- A 213-row coverage and research register joins ecosystem, FATF-network, RegActions coverage and publication-discovery evidence.
+- A 214-row coverage and research register joins ecosystem, FATF-network, RegActions coverage and publication-discovery evidence.
 - Candidate measures and explicit anti-bias controls have been documented.
 
 ## Primary outputs
@@ -21,7 +23,7 @@ Research snapshot: 20 August 2026. This directory is deliberately separate from 
 - `authority-publication-discovery.csv` — website accessibility and candidate-route results.
 - `authority-publication-cadence-observations.csv` — provisional first-page date signals.
 - `publication-qualification-ledger.csv` — stable IDs, official route scope, access state, route type, language hints and conservative qualification state for all 264 candidate authorities.
-- `country-publication-build-gate.csv` — one explicit source-qualification gate and next action for each of the 213 jurisdictions.
+- `country-publication-build-gate.csv` — one explicit source-qualification gate and next action for each of the 214 jurisdictions.
 - `source-qualification-report.md` — exact totals, build-gate interpretation and unresolved browser-only cases.
 - `publication-qualification-manifest.json` — report SHA-256 and snapshot totals.
 - `coverage-by-region.csv` — geographic coverage comparison.
@@ -31,7 +33,7 @@ Research snapshot: 20 August 2026. This directory is deliberately separate from 
 
 `regulatory-fallback-evidence.json`, `regulatory-fallback-evidence.csv` and
 `regulatory-fallback-evidence.sha256.json` are deterministic, research-only
-exports over the same 213-country/642-authority manifest. They are intended to
+exports over the same 214-country/643-authority manifest. They are intended to
 keep a regulator profile useful when an enforcement archive is blocked or not
 yet qualified:
 
@@ -84,4 +86,4 @@ The scripts read official global directories and national authority sites. A cha
 
 The qualification script is deliberately fail-closed. A strong candidate is only approved for the next human source-contract step when its direct HTTP evidence is reachable and on the authority-owned host. Plausible, generic or external links remain manual-review states. Challenge-protected candidates remain browser-review states; HTTP errors and timeouts remain transport follow-up states. First-page dates are provisional signals only, and low-frequency or no-date states never become scraper failures or zero scores.
 
-The 264-row candidate universe is locked by invariant checks at 115 strong, 12 plausible, 88 generic/ambiguous and 49 obstructed/not observable. The 213-row country gate is descriptive and does not assign a quality or risk value to missing publication routes.
+The 265-row candidate universe is locked by invariant checks at 115 strong, 12 plausible, 89 generic/ambiguous and 49 obstructed/not observable. The 214-row country gate is descriptive and does not assign a quality or risk value to missing publication routes. The USVI candidate is deliberately generic/manual-review: an undated Orders and bulletins route is not a cadence or enforcement score.

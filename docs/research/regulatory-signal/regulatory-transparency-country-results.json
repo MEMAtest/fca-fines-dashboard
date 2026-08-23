@@ -6750,6 +6750,36 @@
         "docs/research/regulatory-signal/country-regulatory-ecosystem-baseline.json",
         "regulator-shadow-results.json"
       ]
+    },
+    {
+      "iso2": "VI",
+      "country": "US Virgin Islands",
+      "region": "Offshore / IFC",
+      "applicableRoles": [
+        "insurance",
+        "prudential_supervision",
+        "securities"
+      ],
+      "assessedRoles": [],
+      "roleScores": {
+        "insurance": null,
+        "prudential_supervision": null,
+        "securities": null
+      },
+      "roleAuthorityCounts": {
+        "insurance": 0,
+        "prudential_supervision": 0,
+        "securities": 0
+      },
+      "roleCoveragePct": 0,
+      "score": null,
+      "band": null,
+      "status": "not-assessed",
+      "blocker": "Fewer than two assessed mandate roles (0/3).",
+      "provenance": [
+        "docs/research/regulatory-signal/country-regulatory-ecosystem-baseline.json",
+        "regulator-shadow-results.json"
+      ]
     }
   ]
 }

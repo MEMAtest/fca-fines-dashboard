@@ -10,14 +10,33 @@ import {
 
 describe("regulatory signal evidence manifest", () => {
   const evidenceStates = new Set(["local-authority-evidence", "parent-context-only", "external-evidence-only", "structural-absence", "unobservable"]);
-  it("covers all 213 country-page jurisdictions with an explicit disposition", () => {
+  it("covers all 214 country-page jurisdictions with an explicit disposition", () => {
     const countries = listRegulatorySignalCountries();
-    expect(countries).toHaveLength(213);
-    expect(new Set(countries.map((country) => country.iso2)).size).toBe(213);
+    expect(countries).toHaveLength(214);
+    expect(new Set(countries.map((country) => country.iso2)).size).toBe(214);
     expect(countries.every((country) => evidenceStates.has(country.authorityEvidenceState))).toBe(true);
     expect(countries.flatMap((country) => country.authorities).every((authority) =>
       authority.researchEffectiveAt && authority.retrievedAt && authority.sourceCheckedAt,
     )).toBe(true);
+  });
+
+  it("keeps USVI local authority evidence separate from US parent context", () => {
+    const vi = buildRegulatorySignalEvidence("VI")!;
+    expect(vi.country).toMatchObject({ iso2: "VI", parentJurisdiction: "US" });
+    expect(vi.evidenceDisposition.state).toBe("local-authority-evidence");
+    expect(vi.ecosystem.authorityCount).toBe(1);
+    expect(vi.ecosystem.authorities[0]).toMatchObject({
+      name: expect.stringContaining("Division of Banking, Insurance and Financial Regulation"),
+      website: "https://ltg.gov.vi/departments/banking-insurance-and-financial-regulation/",
+      accessState: "reachable",
+      researchEffectiveAt: "2026-08-23T22:46:25.021Z",
+      retrievedAt: "2026-08-23T22:46:25.021Z",
+      researchPublicationSnapshotCheckedAt: "2026-08-23T22:46:25.021Z",
+    });
+    expect(vi.transparencyIndex).toBeNull();
+    expect(vi.activitySignal.label).toBe("not assessed");
+    expect(vi.ecosystem.authorities[0].activity.signal).toBe("unknown");
+    expect(vi.ecosystem.authorities[0].activity.observedMonthCount).toBe(0);
   });
 
   it("keeps the public index null during research-only operation", () => {

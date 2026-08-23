@@ -98,10 +98,10 @@ export const DEVELOPER_ENDPOINTS: ApiEndpoint[] = [
     path: "/api/regulatory-signal/list",
     title: "Regulatory ecosystem list",
     summary:
-      "Evidence-first ecosystem summaries for all 213 jurisdictions. The transparency index is null in this research-only release; authority publication states and RegActions coverage remain separate from Country Risk v3.",
+      "Evidence-first ecosystem summaries for all 214 jurisdictions. The transparency index is null in this research-only release; authority publication states and RegActions coverage remain separate from Country Risk v3.",
     example: "curl https://regactions.com/api/regulatory-signal/list",
     fields: [
-      { name: "count", type: "number", description: "Number of jurisdictions returned (213 unless filtered by ?region=)." },
+      { name: "count", type: "number", description: "Number of jurisdictions returned (214 unless filtered by ?region=)." },
       { name: "rows[].country", type: "object", description: "Jurisdiction identity and region." },
       { name: "rows[].ecosystem", type: "object", description: "Mapped authority count, mandate-family counts and research depth." },
       { name: "rows[].evidenceDisposition", type: "object", description: "Explicit local, parent-context, structural or unobservable evidence state." },
