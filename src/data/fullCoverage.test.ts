@@ -76,3 +76,30 @@ describe("full country coverage", () => {
     );
   });
 });
+
+/**
+ * The page must not contradict itself. Iran's report said "FATF treatment
+ * overlay: call for action requiring countermeasures (not a score input)"
+ * while that same determination was what produced its 8.5.
+ */
+describe("overlay wording where the determination is scored", () => {
+  it("says the determination is scored for Iran and North Korea", async () => {
+    const { getCountryByIso2 } = await import("./countries.js");
+    const { buildCountryView } = await import("./countryView.js");
+    for (const iso2 of ["IR", "KP"]) {
+      const overlays = buildCountryView(getCountryByIso2(iso2)!).decision.treatmentOverlays;
+      const line = overlays.find((o: string) => o.startsWith("FATF"));
+      expect(line, iso2).toContain("scored in place of mutual-evaluation ratings");
+      expect(line, iso2).not.toContain("not a score input");
+    }
+  });
+
+  it("still calls it an overlay for an assessed listed country", async () => {
+    const { getCountryByIso2 } = await import("./countries.js");
+    const { buildCountryView } = await import("./countryView.js");
+    // Assessed and grey-listed, so the listing genuinely is an overlay there.
+    const overlays = buildCountryView(getCountryByIso2("VN")!).decision.treatmentOverlays;
+    const line = overlays.find((o: string) => o.startsWith("FATF"));
+    if (line) expect(line).toContain("not a score input");
+  });
+});

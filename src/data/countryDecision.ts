@@ -70,8 +70,15 @@ export interface DecisionInput {
     band: RiskBand | null;
     status: CountryRiskPublicationStatus;
   };
-  /** False when fewer than two current v3 pillars are available. */
+  /** False when no current v3 evidence is available at all. */
   scoreAvailable: boolean;
+  /**
+   * True when the country has no mutual evaluation and FATF's public
+   * determination is standing in for the assessment ratings. In that case the
+   * listing IS a score input, so it must not also be described as an overlay
+   * that never affects the score.
+   */
+  fatfDeterminationScored?: boolean;
   breakdown: ScoreBreakdown;
   /** Current methodology pillars used for narrative drivers; v2 breakdown is historical compatibility only. */
   currentPillars?: Array<{
@@ -242,7 +249,11 @@ function treatmentOverlays(input: DecisionInput): string[] {
       : input.fatf.requiredAction === "countermeasures"
         ? "call for action requiring countermeasures"
         : "call for action requiring enhanced due diligence";
-    out.push(`FATF treatment overlay: ${action} (not a score input)`);
+    out.push(
+      input.fatfDeterminationScored
+        ? `FATF ${action} — scored in place of mutual-evaluation ratings, which do not exist for this jurisdiction`
+        : `FATF treatment overlay: ${action} (not a score input)`,
+    );
   }
   if (input.sanctionsCoverageComplete && input.sanctionsTier)
     out.push(

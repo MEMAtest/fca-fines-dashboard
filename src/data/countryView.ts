@@ -536,6 +536,7 @@ export function buildCountryView(country: Country): CountryView {
       status: riskV3.status,
     },
     scoreAvailable: riskV3.score !== null,
+    fatfDeterminationScored: riskV3.pillars.icrg.score !== null,
     breakdown,
     currentPillars: [
       { key: "effectiveness", label: "Financial-crime effectiveness", risk: riskV3.pillars.effectiveness.score, appliedWeight: riskV3.pillars.effectiveness.appliedWeight, contribution: riskV3.pillars.effectiveness.contribution },
