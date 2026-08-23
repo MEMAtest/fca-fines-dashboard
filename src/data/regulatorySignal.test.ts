@@ -1,4 +1,6 @@
 import { describe, expect, it } from "vitest";
+import { readFileSync } from "node:fs";
+import path from "node:path";
 import {
   getRegulatorySignalCountry,
   listRegulatorySignalCountries,
@@ -37,6 +39,27 @@ describe("regulatory signal evidence manifest", () => {
     expect(vi.activitySignal.label).toBe("not assessed");
     expect(vi.ecosystem.authorities[0].activity.signal).toBe("unknown");
     expect(vi.ecosystem.authorities[0].activity.observedMonthCount).toBe(0);
+  });
+
+  it("keeps overlay summaries derived from unique source rows", () => {
+    const researchRoot = path.resolve("docs/research/regulatory-signal");
+    const readJson = (file: string) => JSON.parse(readFileSync(path.join(researchRoot, file), "utf8"));
+    const baseline = readJson("country-regulatory-ecosystem-baseline.json").rows;
+    const directory = readJson("official-authority-directory.json").rows;
+    const discovery = readJson("authority-publication-discovery.json");
+    const cadence = readJson("authority-publication-cadence-observations.json");
+    const baselineSummary = readJson("baseline-summary.json");
+
+    expect(baseline).toHaveLength(214);
+    expect(baseline.filter((row: { iso2: string }) => row.iso2 === "VI")).toHaveLength(1);
+    expect(directory).toHaveLength(643);
+    expect(directory.filter((row: { iso2: string }) => row.iso2 === "VI")).toHaveLength(1);
+    expect(discovery.rows).toHaveLength(discovery.authoritiesInspected);
+    expect(cadence.rows).toHaveLength(cadence.candidateAuthoritiesInspected);
+    expect(baselineSummary).toMatchObject({
+      countryUniverse: baseline.length,
+      officialAuthorityRows: directory.length,
+    });
   });
 
   it("keeps the public index null during research-only operation", () => {
