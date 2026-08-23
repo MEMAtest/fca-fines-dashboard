@@ -296,6 +296,11 @@ const Roadmap = lazyPage(() =>
     default: module.Roadmap,
   })),
 );
+const Contact = lazyPage(() =>
+  import("./pages/Contact.js").then((module) => ({
+    default: module.Contact,
+  })),
+);
 const Features = lazyPage(() =>
   import("./pages/Features.js").then((module) => ({
     default: module.Features,
@@ -409,6 +414,27 @@ const router = createBrowserRouter([
       {
         path: "/board-intelligence",
         element: <Navigate to="/board-pack" replace />,
+      },
+      {
+        path: "/contact",
+        element: (
+          <Suspense
+            fallback={
+              <div
+                style={{
+                  minHeight: "100vh",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                }}
+              >
+                Loading contact...
+              </div>
+            }
+          >
+            <Contact />
+          </Suspense>
+        ),
       },
       {
         path: "/roadmap",

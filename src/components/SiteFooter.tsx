@@ -31,9 +31,9 @@ const COMPANY_LINKS: Array<[string, string]> = [
   ["Roadmap", "/roadmap"],
   ["Features", "/features"],
   ["Privacy", "/privacy"],
+  ["Contact", "/contact"],
 ];
 
-const CONTACT_EMAIL = "contact@memaconsultants.com";
 
 function footerCountries() {
   return FOOTER_COUNTRY_ISO2.map((iso2) => {
@@ -86,9 +86,6 @@ export function SiteFooter() {
                 <Link to={href}>{label}</Link>
               </li>
             ))}
-            <li>
-              <a href={`mailto:${CONTACT_EMAIL}`}>Contact</a>
-            </li>
           </ul>
         </nav>
       </div>

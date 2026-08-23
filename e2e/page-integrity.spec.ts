@@ -48,6 +48,7 @@ const ROUTES = [
   "/breaches",
   "/roadmap",
   "/about",
+  "/contact",
 ] as const;
 
 /** Screaming snake case: three or more capitals, then at least one _WORD. */
