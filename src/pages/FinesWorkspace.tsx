@@ -468,8 +468,47 @@ export function FinesWorkspace({ view }: FinesWorkspaceProps) {
   const metricLargestFirm = exact?.largestFirm || sampleMetrics.largest?.firm_individual || "No matching action";
   const metricAffectedFirms = exact?.affectedFirms ?? sampleMetrics.affectedFirms;
 
-  if (loading) return <ProductWorkspaceShell scope="fines"><div className="workspace-loading">Loading the enforcement workspace...</div></ProductWorkspaceShell>;
-  if (error) return <ProductWorkspaceShell scope="fines"><div className="workspace-error">{error}</div></ProductWorkspaceShell>;
+  // Rendered by the loading and error branches too. The whole page used to be
+  // replaced by "Loading the enforcement workspace..." until 5,000 records had
+  // arrived, so the <h1> and the page's identity did not exist for the first
+  // few seconds. The heading depends on the route, not on the data, so there is
+  // no reason to withhold it.
+  //
+  // The two actions that consume records ARE withheld while loading: exporting
+  // an empty CSV or entering compare mode with nothing to compare would both be
+  // worse than a disabled button.
+  const pageHeading = (
+    <header className="workspace-page__heading">
+      <div>
+        <h1>{view === "overview" ? "Fines Command Centre" : view === "actions" ? "Enforcement actions" : view === "analytics" ? "Fines analytics" : "Guided comparison"}</h1>
+        <p>{view === "compare" ? "Select up to three years and five regulators or themes. Normal views open the underlying evidence on click." : "Global enforcement intelligence, financial penalties and source-linked actions in one working view."}</p>
+      </div>
+      <div className="workspace-page__heading-actions">
+        <Link className="workspace-button workspace-button--primary" to={`/board-pack?from=${encodeURIComponent(`/fines${searchParams.toString() ? `?${searchParams.toString()}` : ""}`)}&fromLabel=Fines%20workspace`}><Sparkles size={15} /> Create board pack</Link>
+        <button type="button" className={`workspace-button${compareMode ? " workspace-button--active" : ""}`} disabled={loading} onClick={() => setCompareMode((value) => !value)}><SlidersHorizontal size={15} /> {compareMode ? "Exit compare mode" : "Compare selections"}</button>
+        <button type="button" className="workspace-button" disabled={loading} onClick={() => exportData({ filename: "regactions-fines-evidence", format: "csv", records: filtered })}><Download size={15} /> Export evidence</button>
+      </div>
+    </header>
+  );
+
+  if (loading)
+    return (
+      <ProductWorkspaceShell scope="fines" title="Fines">
+        <div className="workspace-page">
+          {pageHeading}
+          <div className="workspace-loading">Loading the enforcement workspace...</div>
+        </div>
+      </ProductWorkspaceShell>
+    );
+  if (error)
+    return (
+      <ProductWorkspaceShell scope="fines" title="Fines">
+        <div className="workspace-page">
+          {pageHeading}
+          <div className="workspace-error">{error}</div>
+        </div>
+      </ProductWorkspaceShell>
+    );
 
   const recent = filtered.slice().sort((left, right) => right.date_issued.localeCompare(left.date_issued));
   const top = filtered.slice().sort((left, right) => right.amount - left.amount);
@@ -479,17 +518,7 @@ export function FinesWorkspace({ view }: FinesWorkspaceProps) {
       <div className="workspace-page">
         {/* Breadcrumbs come from SiteHeader (which also emits the BreadcrumbList
             JSON-LD). This page used to render a second, near-identical trail. */}
-        <header className="workspace-page__heading">
-          <div>
-            <h1>{view === "overview" ? "Fines Command Centre" : view === "actions" ? "Enforcement actions" : view === "analytics" ? "Fines analytics" : "Guided comparison"}</h1>
-            <p>{view === "compare" ? "Select up to three years and five regulators or themes. Normal views open the underlying evidence on click." : "Global enforcement intelligence, financial penalties and source-linked actions in one working view."}</p>
-          </div>
-          <div className="workspace-page__heading-actions">
-            <Link className="workspace-button workspace-button--primary" to={`/board-pack?from=${encodeURIComponent(`/fines${searchParams.toString() ? `?${searchParams.toString()}` : ""}`)}&fromLabel=Fines%20workspace`}><Sparkles size={15} /> Create board pack</Link>
-            <button type="button" className={`workspace-button${compareMode ? " workspace-button--active" : ""}`} onClick={() => setCompareMode((value) => !value)}><SlidersHorizontal size={15} /> {compareMode ? "Exit compare mode" : "Compare selections"}</button>
-            <button type="button" className="workspace-button" onClick={() => exportData({ filename: "regactions-fines-evidence", format: "csv", records: filtered })}><Download size={15} /> Export evidence</button>
-          </div>
-        </header>
+        {pageHeading}
 
         <nav className="workspace-scope-summary" aria-label="Enforcement research shortcuts">
           <strong>Start with global enforcement</strong>
