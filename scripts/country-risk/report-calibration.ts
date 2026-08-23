@@ -38,7 +38,13 @@ export async function buildCalibrationReport(baselPath?: string) {
     indicativeProxyUnranked: countryResults.filter(({ result }) => result.resultKind === "indicative-governance-proxy").length,
   };
   const thresholds = [3, 5, 7];
-  const nearThreshold = (distance: number) => countryResults.filter(({ result }) => result.score !== null && thresholds.some((threshold) => Math.abs(result.score! - threshold) <= distance)).length;
+  const nearThreshold = (distance: number) => countryResults.filter(({ result }) => result.score !== null && thresholds.some((threshold) => {
+    // Published scores use one decimal place. Compare in published precision so
+    // binary floating-point artefacts do not exclude values such as 7.2 from a
+    // 0.2 boundary window.
+    const publishedDistance = Math.round(Math.abs(result.score! - threshold) * 10) / 10;
+    return publishedDistance <= distance;
+  })).length;
   const sensitivity = countryResults.map(({ result }) => result.sensitivity).filter((item) => item.scoreRange !== null);
   const kyc = buildPublicBenchmarkReport();
   let basel: { status: "not-loaded" | "loaded"; source?: string; sampleSize: number; pearson: number | null } = {
@@ -64,7 +70,7 @@ export async function buildCalibrationReport(baselPath?: string) {
       sensitivity: {
         availableResults: sensitivity.length,
         meanSpan: sensitivity.length ? Math.round((sensitivity.reduce((sum, item) => sum + (item.scoreRange!.high - item.scoreRange!.low), 0) / sensitivity.length) * 10) / 10 : null,
-        maxSpan: sensitivity.length ? Math.max(...sensitivity.map((item) => item.scoreRange!.high - item.scoreRange!.low)) : null,
+        maxSpan: sensitivity.length ? Math.round(Math.max(...sensitivity.map((item) => item.scoreRange!.high - item.scoreRange!.low)) * 10) / 10 : null,
         maxWeightShift: sensitivity.length ? Math.max(...sensitivity.map((item) => item.maxWeightShift)) : null,
         bandCrossingCount: countryResults.filter(({ result }) => result.resultKind !== "indicative-governance-proxy" && result.sensitivity.scoreRange !== null && thresholds.some((threshold) => result.sensitivity.scoreRange!.low < threshold && result.sensitivity.scoreRange!.high >= threshold)).length,
         onePillarRangeNotApplicable: countryResults.filter(({ result }) => result.resultKind === "indicative-governance-proxy").length,
