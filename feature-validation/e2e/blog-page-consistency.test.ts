@@ -289,7 +289,7 @@ test.describe('Blog Page - Global Messaging Consistency', () => {
       .first()
       .waitFor({ state: 'attached', timeout: 15000 });
 
-    const sectionHeadings = await page.locator('.blog-section-header h2').allTextContents();
+    const sectionHeadings = await page.locator('.insights-results-heading h2').allTextContents();
     const combinedHeadings = sectionHeadings.join(' ').toLowerCase();
 
     expect(combinedHeadings).toContain('all enforcement intelligence');
