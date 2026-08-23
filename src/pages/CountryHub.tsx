@@ -140,12 +140,12 @@ function controlTiles(band: RiskBand | null): { name: string; blurb: string; pri
   ];
 }
 
-function DomainBar({ label, weightPct, risk, explanation }: { label: string; weightPct: number; risk: number | null; explanation?: string }) {
+function DomainBar({ label, weightPct, risk, explanation, contribution, source }: { label: string; weightPct: number; risk: number | null; explanation?: string; contribution?: number | null; source?: { name: string; url: string; effectiveAt?: string; checkedAt?: string; confidence?: string; note?: string } }) {
   const band = risk === null ? null : bandFor(risk);
   return (
     <li className="cx-domain">
       <span className="cx-domain__label">
-        {label} <span className="cx-domain__wt">{weightPct}%</span>{explanation && <CountryRiskEvidencePopover compact label={label} description={explanation} value={risk === null ? null : `${risk.toFixed(1)} / 10`} weight={`${weightPct}%`} />}
+        {label} <span className="cx-domain__wt">{weightPct}%</span>{explanation && <CountryRiskEvidencePopover compact label={label} description={explanation} value={risk === null ? null : `${risk.toFixed(1)} / 10`} weight={`${weightPct}%`} contribution={contribution === null || contribution === undefined ? null : `${contribution.toFixed(1)} / 10`} source={source} />}
       </span>
       <span className="cx-domain__track">
         <span
@@ -717,6 +717,8 @@ export function CountryHub() {
                   </p>
                   <p className="cx-osc__avg">Global average: {globalAverage.toFixed(1)}</p>
                   <p className="cx-osc__avg">{publicExplanation.statusLabel}</p>
+                  <p className="cx-osc__avg"><strong>{publicExplanation.resultKindLabel}</strong>{publicExplanation.nearThreshold ? " · near a band threshold" : ""}</p>
+                  {publicExplanation.sensitivityLabel && <p className="cx-osc__avg">{publicExplanation.sensitivityLabel}</p>}
                 </div>
                 <div className="cx-osc__cell">
                   <span className="cx-osc__k">Risk band <Info size={11} className="cx-osc__info" /></span>
@@ -898,7 +900,7 @@ export function CountryHub() {
                   <summary>Why this changed</summary>
                   <p className="cx-card__note">
                     {runChange === null
-                      ? "The current score is calculated from the v3 underlying-risk pillars; sanctions and FATF status are shown as legal treatment overlays."
+                      ? "The current score is calculated from the v3.1 underlying-risk pillars; sanctions and FATF status are shown as legal treatment overlays, except for the labelled FATF ICRG substitute used where no mutual evaluation exists."
                       : `The latest persisted source run moved the score by ${runChange > 0 ? "+" : ""}${runChange.toFixed(1)}; the exact current arithmetic is shown above.`}
                   </p>
                 </details>
@@ -1159,7 +1161,8 @@ export function CountryHub() {
             </span>
             <p className="cx-meth__intro">
               Three current v3 pillars; higher means greater underlying country risk. Missing
-              information is never treated as zero risk. FATF status and sanctions are legal overlays.
+              information is never treated as zero risk. FATF status and sanctions are legal overlays,
+              except for the labelled FATF ICRG substitute used where no mutual evaluation exists.
             </p>
             <ul className="cx-domains">
               {publicExplanation.pillars.map((pillar) => (
@@ -1169,6 +1172,14 @@ export function CountryHub() {
                   weightPct={Math.round(pillar.appliedWeight * 100)}
                   risk={pillar.score}
                   explanation={pillar.explanation}
+                  contribution={pillar.contribution}
+                  source={{
+                    name: pillar.key === "governance" ? "World Bank Worldwide Governance Indicators (WGI)" : "FATF mutual-evaluation evidence",
+                    url: pillar.key === "governance" ? "https://www.worldbank.org/en/publication/worldwide-governance-indicators" : "https://www.fatf-gafi.org/en/publications/Mutualevaluations/Fatf-methodology.html",
+                    effectiveAt: pillar.key === "governance" ? GOVERNANCE_VINTAGE : view.lastPlenary,
+                    confidence: riskV3.confidence,
+                    note: pillar.key === "governance" ? "Higher published percentile means stronger governance; the score inverts it into risk direction." : pillar.explanation,
+                  }}
                 />
               ))}
             </ul>

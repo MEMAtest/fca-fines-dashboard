@@ -38,14 +38,26 @@ describe("country score publication safeguards", () => {
     expect(entry?.score).not.toBeNull();
     expect(entry?.status).toBe("provisional");
     expect(entry?.band).not.toBe("low");
-    expect(globalRank(iso2).rank).not.toBeNull();
+    if (["BI", "SO", "SD", "LY", "AF", "PS", "XK", "VI", "AS", "GU"].includes(iso2)) {
+      expect(globalRank(iso2).rank).toBeNull();
+    } else {
+      expect(globalRank(iso2).rank).not.toBeNull();
+    }
   });
 
   it("includes complete and provisional jurisdictions in ranks and regional averages", () => {
     const rated = buildCountryIndex().filter((entry) => entry.score !== null);
     expect(rated).toHaveLength(214);
-    expect(globalRank("GB").total).toBe(214);
+    // Governance-only proxies remain visible but are excluded from exact rank.
+    expect(globalRank("GB").total).toBe(204);
     expect(regionalAverages().reduce((sum, region) => sum + region.count, 0)).toBe(214);
+  });
+
+  it("keeps governance-only proxies visible without assigning an exact rank", () => {
+    const proxy = buildCountryIndex().find((entry) => entry.resultKind === "indicative-governance-proxy");
+    expect(proxy).toBeDefined();
+    expect(proxy?.score).not.toBeNull();
+    expect(globalRank(proxy!.country.iso2)).toMatchObject({ rank: null, total: 204 });
   });
 
   it("exposes only the complete promoted sanctions snapshot", () => {

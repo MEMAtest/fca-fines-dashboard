@@ -63,7 +63,7 @@ describe("country-risk public API contract", () => {
   it("defaults to the active v3 methodology", async () => {
     const response = await invoke(countryHandler, { iso2: "GB" });
     expect(response.code).toBe(200);
-    expect(response.payload.methodologyVersion).toBe("3.0.0");
+    expect(response.payload.methodologyVersion).toBe("3.1.0");
     expect(response.payload.result).toEqual(expect.objectContaining({
       status: expect.stringMatching(/complete|provisional|insufficient-data/),
       pillars: expect.objectContaining({

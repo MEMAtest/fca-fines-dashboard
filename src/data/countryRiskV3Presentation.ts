@@ -12,9 +12,21 @@ export function countryRiskV3StatusLabel(status: CountryRiskV3Result["status"]):
   return "Not enough information to score";
 }
 
+export function countryRiskV3ResultKindLabel(kind: CountryRiskV3Result["resultKind"]): string {
+  if (kind === "complete") return "Composite score"
+  if (kind === "indicative-governance-proxy") return "Indicative governance proxy";
+  return "Provisional composite score";
+}
+
+export function countryRiskV3ResultKindExplanation(kind: CountryRiskV3Result["resultKind"]): string {
+  if (kind === "complete") return "All three underlying risk pillars are available and weighted using the published formula.";
+  if (kind === "indicative-governance-proxy") return "Only World Bank governance evidence is available. This remains visible for discovery but is excluded from exact global ranking.";
+  return "Some underlying evidence is unavailable; the available pillars are reweighted transparently and the result should not be treated as equally certain as a composite score.";
+}
+
 export function countryRiskV3StatusExplanation(status: CountryRiskV3Result["status"]): string {
   if (status === "complete") return "All three underlying risk pillars are available.";
-  if (status === "provisional") return "Two underlying pillars are available and their weights have been rebalanced. Missing evidence is not treated as low risk.";
+  if (status === "provisional") return "Some underlying pillars are unavailable. Available weights are rebalanced; missing evidence is not treated as low risk.";
   return "Fewer than two underlying pillars are available, so no headline score is published.";
 }
 
@@ -36,7 +48,11 @@ export function countryRiskV3OverlayLabel(treatment: CountryRiskV3Result["overla
 export interface CountryRiskV3PublicExplanation {
   statusLabel: string;
   statusExplanation: string;
+  resultKindLabel: string;
+  resultKindExplanation: string;
   confidenceLabel: string;
+  nearThreshold: boolean;
+  sensitivityLabel: string | null;
   pillars: Array<{
     key: keyof typeof COUNTRY_RISK_V3_PILLAR_LABELS;
     label: string;
@@ -55,7 +71,13 @@ export function buildCountryRiskV3PublicExplanation(result: CountryRiskV3Result)
   return {
     statusLabel: countryRiskV3StatusLabel(result.status),
     statusExplanation: countryRiskV3StatusExplanation(result.status),
+    resultKindLabel: countryRiskV3ResultKindLabel(result.resultKind),
+    resultKindExplanation: countryRiskV3ResultKindExplanation(result.resultKind),
     confidenceLabel: countryRiskV3ConfidenceLabel(result.confidence),
+    nearThreshold: result.sensitivity.nearThreshold,
+    sensitivityLabel: result.sensitivity.scoreRange
+      ? `Weight sensitivity ${result.sensitivity.scoreRange.low.toFixed(1)}–${result.sensitivity.scoreRange.high.toFixed(1)}/10`
+      : null,
     pillars: keys.map((key) => ({
       key,
       label: COUNTRY_RISK_V3_PILLAR_LABELS[key],

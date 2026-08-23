@@ -142,6 +142,28 @@ export function countryRiskEvidenceRows(bundle: CountryRiskEvidenceBundle): Coun
       retrievedAt: bundle.exportedAt,
       sourceUrl: "https://regactions.com/countries/methodology",
     };
+    rows.push({
+      section: "score",
+      key: "result-kind",
+      value: bundle.v3.resultKind,
+      status: bundle.v3.status,
+      scored: "true",
+      effectiveAt: bundle.v3.asOf,
+      retrievedAt: bundle.exportedAt,
+      sourceUrl: "https://regactions.com/countries/methodology",
+    });
+    rows.push({
+      section: "score",
+      key: "sensitivity",
+      value: bundle.v3.sensitivity.scoreRange
+        ? `${bundle.v3.sensitivity.scoreRange.low.toFixed(1)}-${bundle.v3.sensitivity.scoreRange.high.toFixed(1)}/10; nearThreshold=${bundle.v3.sensitivity.nearThreshold}`
+        : "unavailable",
+      status: bundle.v3.status,
+      scored: "context",
+      effectiveAt: bundle.v3.asOf,
+      retrievedAt: bundle.exportedAt,
+      sourceUrl: "https://regactions.com/countries/methodology",
+    });
     rows[1] = {
       section: "score",
       key: "confidence",

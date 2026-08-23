@@ -22,6 +22,9 @@ export const COUNTRY_CSV_COLUMNS = [
   "Sanctions tier",
   "Control strength",
   "Enforcement exposure",
+  "Result kind",
+  "Near threshold",
+  "Weight sensitivity range",
 ] as const;
 
 /**
@@ -72,6 +75,9 @@ export function buildCountryCsv(rows: CountryIndexEntry[]): string {
       entry.sanctionsTier ? sanctionsTierLabel(entry.sanctionsTier) : "None",
       entry.controlStrength === null ? "" : entry.controlStrength.toFixed(1),
       entry.enforcementExposure.toFixed(1),
+      entry.resultKind ?? "",
+      entry.nearThreshold ? "Yes" : "No",
+      entry.sensitivityRange ? `${entry.sensitivityRange.low.toFixed(1)}-${entry.sensitivityRange.high.toFixed(1)}` : "",
     ]
       .map(escapeCsvValue)
       .join(","),

@@ -131,6 +131,7 @@ describe("country risk v3", () => {
     // missing evidence is never scored as zero.
     const result = computeCountryRiskV3("LY", { asOf: new Date("2026-08-20T00:00:00Z") });
     expect(result.status).toBe("provisional");
+    expect(result.resultKind).toBe("indicative-governance-proxy");
     expect(result.score).toBe(7.3);
     expect(result.confidence).toBe("low");
     expect(result.pillars.governance.score).toBe(7.3);
@@ -143,5 +144,19 @@ describe("country risk v3", () => {
     expect(result.pillars.effectiveness.contribution).toBeNull();
     expect(result.pillars.safeguards.score).toBeNull();
     expect(result.pillars.safeguards.contribution).toBeNull();
+  });
+
+  it("publishes sensitivity and near-threshold metadata without changing the score", () => {
+    const result = computeCountryRiskV3("GB", {
+      assessment,
+      governance: { cc: 80, rl: 80, rq: 80, ge: 80, pv: 80, va: 80 },
+      sourceStates: { aml: "current", governance: "current", fatfLists: "current", sanctions: "current" },
+      asOf: new Date("2026-01-01T00:00:00Z"),
+    });
+    expect(result.resultKind).toBe("complete");
+    expect(result.sensitivity.scoreRange).not.toBeNull();
+    expect(result.sensitivity.scoreRange?.low).toBeLessThanOrEqual(result.score!);
+    expect(result.sensitivity.scoreRange?.high).toBeGreaterThanOrEqual(result.score!);
+    expect(result.sensitivity.nearThreshold).toBe(true);
   });
 });

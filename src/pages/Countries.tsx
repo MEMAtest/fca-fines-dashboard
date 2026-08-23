@@ -54,6 +54,7 @@ import {
 import { computeCountryRiskCurrent } from "../data/countryRiskMethodology.js";
 import { buildCountryCsv, countryCsvFilename } from "../utils/countryCsv.js";
 import { publicCountryRiskStatusLabel } from "../data/countryRiskPresentation.js";
+import { countryRiskV3ResultKindLabel } from "../data/countryRiskV3Presentation.js";
 import {
   buildCountryIndex,
   regionalAverages,
@@ -97,6 +98,10 @@ function isRatedEntry(entry: CountryIndexEntry): entry is RatedCountryIndexEntry
   return entry.score !== null && entry.band !== null;
 }
 
+function isPreciselyRankedEntry(entry: CountryIndexEntry): entry is RatedCountryIndexEntry {
+  return isRatedEntry(entry) && entry.resultKind !== "indicative-governance-proxy";
+}
+
 const PILLAR_FILL: Record<string, string> = {
   effectiveness: "#dc2626",
   safeguards: "#ea580c",
@@ -107,6 +112,7 @@ const DRIVER_LABEL: Record<string, string> = {
   effectiveness: "Financial-crime effectiveness gaps",
   safeguards: "Technical safeguards gaps",
   governance: "Governance and institutional weakness",
+  icrg: "FATF public determination (no mutual evaluation)",
 };
 
 function keyDrivers(iso2: string): string[] {
@@ -219,6 +225,7 @@ function DetailPanel({
         FATF: <strong>{entry.fatf ? fatfLabel(entry.fatf.listing) : "Not listed"}</strong>
       </div>
       <p className="cx-detail__status">{publicCountryRiskStatusLabel(entry.status)}</p>
+      <p className="cx-detail__status"><strong>{countryRiskV3ResultKindLabel(entry.resultKind)}</strong>{entry.nearThreshold ? " · close to a band threshold" : ""}</p>
       <div className="cx-detail__drivers">
         <span className="cx-detail__drivers-title">Key drivers</span>
         <ul>
@@ -720,7 +727,7 @@ function OverviewTab({
   const added = FATF_RECENT_CHANGES.filter((c) => c.change === "added");
   const removed = FATF_RECENT_CHANGES.filter((c) => c.change === "removed");
   const nameOf = (iso2: string) => getCountryByIso2(iso2)?.name ?? iso2;
-  const top = useMemo(() => index.filter(isRatedEntry).slice(0, 8), [index]);
+  const top = useMemo(() => index.filter(isPreciselyRankedEntry).slice(0, 8), [index]);
   const pct = (n: number) => (total ? Math.round((n / total) * 100) : 0);
   const regionDonut = useMemo(
     () => [...regionStats].map((r) => ({ name: r.region, value: r.count, avg: r.avg })).sort((a, b) => b.value - a.value),
@@ -1113,7 +1120,7 @@ function GlobalIndex() {
   // Stable global risk rank (index is sorted score-desc) for the ratings "#".
   const rankOf = useMemo(() => {
     const m = new Map<string, number>();
-    index.filter(isRatedEntry).forEach((e, i) => m.set(e.country.iso2, i + 1));
+    index.filter((entry) => isRatedEntry(entry) && entry.resultKind !== "indicative-governance-proxy").forEach((e, i) => m.set(e.country.iso2, i + 1));
     return m;
   }, [index]);
 
@@ -1123,7 +1130,7 @@ function GlobalIndex() {
     [index, selectedIso],
   );
 
-  const top = useMemo(() => index.filter(isRatedEntry).slice(0, 12), [index]);
+  const top = useMemo(() => index.filter(isPreciselyRankedEntry).slice(0, 12), [index]);
   const regional = useMemo(() => regionalAverages(), []);
   const pillars = useMemo(() => pillarAverages(), []);
   const overall = useMemo(
@@ -1491,7 +1498,7 @@ function GlobalIndex() {
                       {e.score === null ? "—" : e.score.toFixed(1)}
                     </span>
                   </td>
-                  <td>{e.band ? `${bandLabel(e.band)}${e.status === "provisional" ? " · some information missing" : ""}` : unscoredStatusLabel(e.country.iso2)}</td>
+                    <td>{e.band ? `${bandLabel(e.band)} · ${countryRiskV3ResultKindLabel(e.resultKind)}${e.nearThreshold ? " · near threshold" : ""}` : unscoredStatusLabel(e.country.iso2)}</td>
                   <td className="country-ratings__region">{e.country.region}</td>
                   <td>{e.fatf ? fatfLabel(e.fatf.listing) : <span className="cx-fatf-none">Not listed</span>}</td>
                   <td>{e.sanctionsCoverageComplete

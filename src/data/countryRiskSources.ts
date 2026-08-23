@@ -130,8 +130,10 @@ export function countryRiskSourcesAsOf(asOf: Date): CountryRiskSourceStatus[] {
  * Return source metadata for a published methodology. The registry retains
  * the historical v2 classification, while v3 treats FATF listing status and
  * geographic sanctions as legal treatment overlays rather than numeric score
- * inputs. Keeping the transformation at the response boundary preserves the
- * explicit v2 API contract without mislabelling current v3 evidence.
+ * inputs. The v3 ICRG exception is explicit: a FATF public determination can
+ * substitute for missing FATF pillars only where no mutual evaluation exists.
+ * Keeping the transformation at the response boundary preserves the explicit
+ * v2 API contract without mislabelling current v3 evidence.
  */
 export function countryRiskSourcesForMethodology(
   methodology: CountryRiskSourceMethodology,
@@ -144,7 +146,7 @@ export function countryRiskSourcesForMethodology(
     return {
       ...source,
       scored: false,
-      note: `${source.note} In v3 this source is a legal/regulatory overlay and does not contribute to the numeric country-risk score.`,
+      note: `${source.note} In v3 this source is normally a legal/regulatory overlay and does not contribute to the numeric country-risk score; a public FATF determination is used as a labelled ICRG substitute only where no mutual evaluation exists.`,
     };
   });
 }

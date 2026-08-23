@@ -3,7 +3,8 @@ import type { CountryRiskSourceStatus } from "./countryRiskSources.js";
 type CountryRiskReadinessResult = Pick<{
   status: "complete" | "provisional" | "insufficient-data";
   score: number | null;
-}, "status" | "score">;
+  resultKind?: "complete" | "provisional" | "indicative-governance-proxy";
+}, "status" | "score" | "resultKind">;
 
 export interface CountryRiskReadiness {
   readyForDefault: boolean;
@@ -12,6 +13,7 @@ export interface CountryRiskReadiness {
     total: number;
     complete: number;
     provisional: number;
+    indicativeGovernanceProxy: number;
     insufficientData: number;
   };
 }
@@ -29,6 +31,7 @@ export function assessCountryRiskReadiness(
     total: results.length,
     complete: results.filter((result) => result.status === "complete").length,
     provisional: results.filter((result) => result.status === "provisional").length,
+    indicativeGovernanceProxy: results.filter((result) => result.resultKind === "indicative-governance-proxy").length,
     insufficientData: results.filter((result) => result.status === "insufficient-data").length,
   };
   const unhealthy = sources.filter((source) => source.scored && source.state !== "current");

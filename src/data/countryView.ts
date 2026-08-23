@@ -694,6 +694,9 @@ export interface CountryIndexEntry {
   score: number | null;
   band: ScoreBand | null;
   status: CountryScorePublicationStatus;
+  resultKind: CountryRiskCurrentResult["resultKind"];
+  nearThreshold: boolean;
+  sensitivityRange: CountryRiskCurrentResult["sensitivity"]["scoreRange"];
   fatf?: FatfStatus;
   sanctionsTier?: SanctionsTier;
   sanctionsCoverageComplete: boolean;
@@ -721,6 +724,9 @@ export function buildCountryIndex(): CountryIndexEntry[] {
         score: result.score,
         band: result.band,
         status: result.status,
+        resultKind: result.resultKind,
+        nearThreshold: result.sensitivity.nearThreshold,
+        sensitivityRange: result.sensitivity.scoreRange,
         fatf: getFatfStatus(country.iso2),
         sanctionsTier,
         sanctionsCoverageComplete,
@@ -761,9 +767,10 @@ export function globalAverageRiskScoreCurrent(): number {
     : 0;
 }
 
-/** Global rank (1 = highest risk) and total, from the sorted index. */
+/** Global rank (1 = highest risk) and total, from complete/provisional composites.
+ * Governance-only proxies remain discoverable but are deliberately not ranked. */
 export function globalRank(iso2: string): { rank: number | null; total: number } {
-  const idx = buildCountryIndex().filter((entry) => entry.score !== null);
+  const idx = buildCountryIndex().filter((entry) => entry.score !== null && entry.resultKind !== "indicative-governance-proxy");
   const pos = idx.findIndex((e) => e.country.iso2 === iso2);
   return { rank: pos < 0 ? null : pos + 1, total: idx.length };
 }
@@ -774,7 +781,7 @@ export function regionRank(
   region: string,
 ): { rank: number | null; total: number } {
   const inRegion = buildCountryIndex().filter(
-    (e) => e.country.region === region && e.score !== null,
+    (e) => e.country.region === region && e.score !== null && e.resultKind !== "indicative-governance-proxy",
   );
   const pos = inRegion.findIndex((e) => e.country.iso2 === iso2);
   return { rank: pos < 0 ? null : pos + 1, total: inRegion.length };
