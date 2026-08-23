@@ -2,7 +2,7 @@
 import { writeFile } from "node:fs/promises";
 import { pageCountries } from "../../src/data/countryView.js";
 import { computeCountryRiskV2 } from "../../src/data/countryRiskV2.js";
-import { computeCountryRiskV3 } from "../../src/data/countryRiskV3.js";
+import { computeCountryRiskV3, COUNTRY_RISK_V3_METHODOLOGY_VERSION } from "../../src/data/countryRiskV3.js";
 import { getApprovedSanctions } from "../../src/data/sanctionsApprovedData.js";
 import { getSanctionsRegimeCandidates } from "../../src/data/sanctionsRegimeCandidates.js";
 
@@ -16,7 +16,7 @@ const rows = pageCountries().map((country) => {
     iso2: country.iso2,
     country: country.name,
     v2: { score: v2.score, band: v2.band, status: v2.status },
-    v3: { score: v3.score, band: v3.band, status: v3.status, confidence: v3.confidence },
+    v3: { score: v3.score, band: v3.band, status: v3.status, resultKind: v3.resultKind, confidence: v3.confidence, sensitivity: v3.sensitivity },
     scoreDelta: v2.score !== null && v3.score !== null ? Math.round((v3.score - v2.score) * 10) / 10 : null,
     bandChanged: v2.band !== v3.band,
     statusChanged: v2.status !== v3.status,
@@ -47,7 +47,7 @@ const candidateReviewQueue = getSanctionsRegimeCandidates("VE")
   });
 const report = {
   generatedAt: asOf.toISOString(),
-  methodology: { baseline: "2.0.0", candidate: "3.0.0" },
+  methodology: { baseline: "2.0.0", candidate: COUNTRY_RISK_V3_METHODOLOGY_VERSION },
   summary: {
     jurisdictions: rows.length,
     v2: {

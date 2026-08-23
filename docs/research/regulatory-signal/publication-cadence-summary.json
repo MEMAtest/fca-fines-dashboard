@@ -1,14 +1,14 @@
 {
   "generatedAt": "2026-08-20T12:11:07.553Z",
-  "candidateAuthoritiesInspected": 264,
+  "candidateAuthoritiesInspected": 265,
   "accessStates": {
-    "reachable": 215,
+    "reachable": 216,
     "challenge-protected": 44,
     "http-404": 4,
     "timeout": 1
   },
   "provisionalCadenceSignals": {
-    "no-dated-first-page-signal": 145,
+    "no-dated-first-page-signal": 146,
     "not-observable": 49,
     "low-frequency-first-page-signal": 40,
     "active-first-page-signal": 4,
@@ -16,7 +16,7 @@
     "frequent-first-page-signal": 5
   },
   "publicationRelevance": {
-    "generic-or-ambiguous-link": 88,
+    "generic-or-ambiguous-link": 89,
     "strong-official-publication-candidate": 115,
     "not-observable": 49,
     "plausible-official-publication-candidate": 12

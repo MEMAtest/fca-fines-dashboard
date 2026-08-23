@@ -11,7 +11,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { geoMercator, geoPath, geoCentroid, geoDistance, geoArea } from "d3-geo";
 import { getCountryByIso2, resolveCountry, countrySlug } from "../data/countries.js";
-import { bandLabel } from "../data/countryRiskScore.js";
+import { countryRiskV3BandLabel } from "../data/countryRiskV3Presentation.js";
 import {
   BAND_COLOUR,
   useRiskTopology,
@@ -181,7 +181,7 @@ export function CountryRegionalMap({ iso2, region }: Props) {
                 onClick={() => fm.iso2 && !isFocus && go(fm.iso2)}
               >
                 {fm.band && (
-                  <title>{`${fm.name} — ${fm.score?.toFixed(1)}/10 (${bandLabel(fm.band)})`}</title>
+                  <title>{`${fm.name} — ${fm.score?.toFixed(1)}/10 (${countryRiskV3BandLabel(fm.band)})`}</title>
                 )}
               </path>
             );
@@ -248,7 +248,7 @@ export function CountryRegionalMap({ iso2, region }: Props) {
         >
           <span className="cx-rmap__pop-name">{hover.meta.name}</span>
           <span className={`cx-rmap__pop-score cx-rmap__pop-score--${hover.meta.band}`}>
-            {hover.meta.score?.toFixed(1)} · {bandLabel(hover.meta.band)}
+            {hover.meta.score?.toFixed(1)} · {countryRiskV3BandLabel(hover.meta.band)}
           </span>
         </div>
       )}

@@ -11585,6 +11585,28 @@
         "https://egmontgroup.org/members-by-region/"
       ],
       "notes": []
+    },
+    {
+      "iso2": "VI",
+      "country": "US Virgin Islands",
+      "authority": "Office of the Lieutenant Governor — Division of Banking, Insurance and Financial Regulation",
+      "website": "https://ltg.gov.vi/departments/banking-insurance-and-financial-regulation/",
+      "roles": [
+        "prudential_supervision",
+        "securities",
+        "insurance"
+      ],
+      "directory_sources": [
+        "OFFICIAL_NATIONAL"
+      ],
+      "evidence_urls": [
+        "https://ltg.gov.vi/departments/banking-insurance-and-financial-regulation/"
+      ],
+      "notes": [
+        "Official USVI authority page identifies the local Division as responsible for banking, financial services, securities and insurance regulation.",
+        "Applicable United States federal parent authorities remain represented under parent jurisdiction US; they are not counted as local VI authorities.",
+        "Orders and bulletins are visible from the authority-owned page, but the snapshot does not infer a cadence, enforcement volume or score from undated material."
+      ]
     }
   ]
 }

@@ -23,7 +23,9 @@ import {
   buildCountryView,
   type CountryView,
 } from "./countryView.js";
-import { bandLabel, type RiskBand as ScoreBand } from "./countryRiskScore.js";
+import { type RiskBand as ScoreBand } from "./countryRiskScore.js";
+import { countryRiskV3BandLabel } from "./countryRiskV3Presentation.js";
+import { CURRENT_COUNTRY_RISK_METHODOLOGY_VERSION } from "./countryRiskMethodology.js";
 import { isEuTaxListed } from "./euTaxList.js";
 import { getEgmontMember } from "./egmontMembership.js";
 import { getFatfAssessmentLink } from "./fatfAssessmentLinks.js";
@@ -167,7 +169,7 @@ function buildSide(country: Country): CompareSide {
     slug: countrySlug(country),
     score,
     band,
-    bandLabel: band ? bandLabel(band) : "Insufficient data",
+    bandLabel: band ? countryRiskV3BandLabel(band) : "Insufficient data",
     scoreWithheld: score === null,
     methodologyVersion: risk.methodologyVersion,
     scoreStatus: risk.status,
@@ -204,7 +206,7 @@ export function activeRiskFor(view: CountryView): ActiveComparableRisk {
   };
   const candidate = transitional.riskActive ?? transitional.riskCurrent ?? transitional.riskV3 ?? view.riskV3;
   return {
-    methodologyVersion: candidate.methodologyVersion ?? "3.0.0",
+    methodologyVersion: candidate.methodologyVersion ?? CURRENT_COUNTRY_RISK_METHODOLOGY_VERSION,
     score: candidate.score ?? null,
     band: candidate.band ?? null,
     status: candidate.status ?? "insufficient-data",

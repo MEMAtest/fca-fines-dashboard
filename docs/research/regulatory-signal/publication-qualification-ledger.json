@@ -5,35 +5,35 @@
     "discoveryGeneratedAt": "2026-08-20T12:10:41.904Z",
     "cadenceGeneratedAt": "2026-08-20T12:11:07.553Z"
   },
-  "candidateAuthorities": 264,
-  "uniqueAuthorities": 263,
-  "countries": 213,
+  "candidateAuthorities": 265,
+  "uniqueAuthorities": 264,
+  "countries": 214,
   "publicationRelevance": {
-    "generic-or-ambiguous-link": 88,
+    "generic-or-ambiguous-link": 89,
     "strong-official-publication-candidate": 115,
     "not-observable": 49,
     "plausible-official-publication-candidate": 12
   },
   "accessStates": {
-    "reachable": 215,
+    "reachable": 216,
     "challenge-protected": 44,
     "http-404": 4,
     "timeout": 1
   },
   "qualificationStates": {
-    "manual-review-required": 110,
+    "manual-review-required": 111,
     "approved-for-human-contract": 105,
     "browser-review-required": 44,
     "transport-follow-up-required": 5
   },
   "sourceHostScopes": {
-    "authority-owned": 196,
+    "authority-owned": 197,
     "not-observable": 49,
     "external-unqualified": 13,
     "official-external": 6
   },
   "scopeEvidenceStates": {
-    "manual-scope-review": 104,
+    "manual-scope-review": 105,
     "direct-http-scope-observed": 105,
     "browser-clearance-required": 44,
     "official-external-scope": 6,
@@ -45,31 +45,31 @@
     "not-observable": 49,
     "decision_register": 31,
     "enforcement_archive": 53,
-    "news_or_notice": 40,
+    "news_or_notice": 41,
     "generic_or_ambiguous": 14,
     "disciplinary_notice": 5,
     "publication_or_report": 1
   },
   "languageEvidenceStates": {
-    "not-determined": 34,
+    "not-determined": 35,
     "explicit-url-or-label-hint": 230
   },
   "cadenceContractRecommendations": {
-    "manual-review": 150,
+    "manual-review": 151,
     "browser-review": 44,
     "semiannual": 40,
     "monthly": 9,
     "quarterly": 21
   },
   "countryBuildGates": {
-    "human-qualification-required": 56,
+    "human-qualification-required": 57,
     "source-contract-candidate": 73,
     "deeper-research-required": 64,
     "browser-review-required": 18,
     "transport-follow-up-required": 2
   },
   "countryCompleteness": {
-    "reachable-but-unqualified": 56,
+    "reachable-but-unqualified": 57,
     "direct-and-reachable": 73,
     "no-candidate-route": 64,
     "obstructed": 20
@@ -10761,6 +10761,43 @@
       "evidence_notes": [
         "Approved from the official-source snapshot only; no scraper promotion is implied.",
         "Direct observation was not available; preserve the transport/browser state and do not infer publication absence.",
+        "No dated first-page signal is not evidence of no publication activity."
+      ]
+    },
+    {
+      "authority_id": "ra-auth-vi-6d0bcaf28bff9bc7",
+      "publication_route_id": "ra-route-f4a4d561467898bfe208",
+      "iso2": "VI",
+      "country": "US Virgin Islands",
+      "authority": "Office of the Lieutenant Governor — Division of Banking, Insurance and Financial Regulation",
+      "roles": [
+        "prudential_supervision",
+        "securities",
+        "insurance"
+      ],
+      "authority_website": "https://ltg.gov.vi/departments/banking-insurance-and-financial-regulation/",
+      "evidence_url": "https://ltg.gov.vi/departments/banking-insurance-and-financial-regulation/",
+      "observed_final_url": "https://ltg.gov.vi/departments/banking-insurance-and-financial-regulation/",
+      "source_host_scope": "authority-owned",
+      "publication_route_type": "news_or_notice",
+      "access_state": "reachable",
+      "archive_access_state": "first-page-observed-no-date",
+      "publication_relevance": "generic-or-ambiguous-link",
+      "scope_evidence_state": "manual-scope-review",
+      "qualification_state": "manual-review-required",
+      "source_route_state": "candidate-needs-validation",
+      "language_hints": [],
+      "language_evidence_state": "not-determined",
+      "observed_months_2024_2026": [],
+      "latest_observed_month": null,
+      "provisional_cadence_signal": "no-dated-first-page-signal",
+      "cadence_contract_recommendation": "manual-review",
+      "archive_boundary": "first-page-only-unvalidated",
+      "source_checked_at": "2026-08-23T22:46:25.021Z",
+      "snapshot_generated_at": "2026-08-23T22:46:25.021Z",
+      "evidence_notes": [
+        "Approved from the official-source snapshot only; no scraper promotion is implied.",
+        "First-page observation only; pagination, archive depth and field completeness remain to be human-qualified.",
         "No dated first-page signal is not evidence of no publication activity."
       ]
     }

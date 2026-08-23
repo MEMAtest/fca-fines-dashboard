@@ -29,14 +29,14 @@
       "mean_score": null
     },
     "Offshore / IFC": {
-      "countries": 18,
+      "countries": 19,
       "assessed": 1,
       "mean_score": 84.1111
     }
   },
   "architecture_cohorts": {
     "integrated": {
-      "countries": 78,
+      "countries": 79,
       "assessed": 6,
       "mean_score": 86.878
     },

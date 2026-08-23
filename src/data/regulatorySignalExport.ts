@@ -239,7 +239,7 @@ export function regulatorySignalEvidenceCsv(evidence: RegulatorySignalEvidence):
     evidence.generatedAt,
   ]);
   if (rows.length === 0) {
-    const dispositionOnly: Record<string, unknown> = {
+    const dispositionOnly: Record<string, string | number | null> = {
       iso2: evidence.country.iso2,
       country: evidence.country.name,
       authority: "No local authority entry",

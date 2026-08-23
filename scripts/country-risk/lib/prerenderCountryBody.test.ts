@@ -167,4 +167,16 @@ describe("prerender country body: crawler-visible narrative prose", () => {
     expect(html).not.toContain("Targeted sanctions exposure");
     expect(html).not.toContain("Comprehensive country sanctions: none identified");
   });
+
+  it("keeps the conditional ICRG pillar in parity with the SPA", () => {
+    const assessed = renderCountryFatfBody(buildCountryView(getCountryByIso2("GB")!));
+    const venezuela = renderCountryFatfBody(buildCountryView(getCountryByIso2("VE")!));
+    const proxy = renderCountryFatfBody(buildCountryView(getCountryByIso2("LY")!));
+    const usvi = renderCountryFatfBody(buildCountryView(getCountryByIso2("VI")!));
+    const iran = renderCountryFatfBody(buildCountryView(getCountryByIso2("IR")!));
+    for (const html of [assessed, venezuela, proxy, usvi]) {
+      expect(html).not.toContain("<li>FATF public determination (ICRG substitute):");
+    }
+    expect(iran).toContain("<li>FATF public determination (ICRG substitute): 9.5/10 — 65% of this score</li>");
+  });
 });

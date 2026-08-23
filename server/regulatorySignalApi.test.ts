@@ -30,8 +30,8 @@ describe("regulatory signal read-only APIs", () => {
     listHandler({ method: "GET", query: {} } as unknown as VercelRequest, response as unknown as VercelResponse);
     const payload = response.payload as { count: number; totalJurisdictions: number; rows: Array<{ ecosystem: { authorityCount: number }; transparencyIndex: null; activitySummary: { scanContract: { startMonth: string; datePrecision: string } | null }; evidenceLevels: Record<string, number> }> };
     expect(response.statusCode).toBe(200);
-    expect(payload.count).toBe(213);
-    expect(payload.totalJurisdictions).toBe(213);
+    expect(payload.count).toBe(214);
+    expect(payload.totalJurisdictions).toBe(214);
     expect((payload as unknown as { configuredRegulatorCount: number }).configuredRegulatorCount).toBe(54);
     expect(payload.rows.every((row) => row.transparencyIndex === null)).toBe(true);
     expect(payload.rows.every((row) => row.ecosystem.authorityCount === 0

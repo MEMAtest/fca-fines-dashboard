@@ -12,20 +12,20 @@ This is an evidence and build-gate report only. It does not promote a regulator,
 
 ## Exact totals
 
-  - Candidate authority-route records classified: **264**
-  - Unique stable authority IDs represented: **263**
+  - Candidate authority-route records classified: **265**
+  - Unique stable authority IDs represented: **264**
 - Strong official-publication candidates: **115**
 - Plausible official-publication candidates: **12**
-- Generic or ambiguous links: **88**
+- Generic or ambiguous links: **89**
   - Obstructed/not observable: **49**
-  - Countries covered by the build gate: **213**
+  - Countries covered by the build gate: **214**
 
 Obstructed transport breakdown: **44** browser challenges, **4** HTTP 404 responses and **1** timeout.
 
 Qualification disposition:
 
 - Approved for human source-contract work after direct HTTP scope observation: **105**
-- Manual scope or semantics review required: **110**
+- Manual scope or semantics review required: **111**
 - Browser clearance/manual review required: **44**
 - Transport follow-up required: **5**
 
@@ -33,7 +33,7 @@ Scope evidence disposition:
 
 - Direct HTTP scope observed on the authority-owned host: **105**
 - Official external source route: **6**
-- Manual scope review: **104**
+- Manual scope review: **105**
 - Browser clearance required: **44**
 - Transport review required: **5**
 
@@ -41,7 +41,7 @@ Scope evidence disposition:
 
 Cadence labels are provisional first-page signals. They are contract recommendations for the next human qualification step, not publication-frequency claims. A low-frequency signal is a watch/review state; no dated signal is not evidence of no publication.
 
-- manual-review: **150**
+- manual-review: **151**
 - browser-review: **44**
 - semiannual: **40**
 - monthly: **9**
@@ -49,7 +49,7 @@ Cadence labels are provisional first-page signals. They are contract recommendat
 
 ## Country build gate
 
-- human-qualification-required: **56**
+- human-qualification-required: **57**
 - source-contract-candidate: **73**
 - deeper-research-required: **64**
 - browser-review-required: **18**

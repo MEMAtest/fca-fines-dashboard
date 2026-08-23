@@ -1,4 +1,6 @@
 import { describe, expect, it } from "vitest";
+import { readFileSync } from "node:fs";
+import path from "node:path";
 import {
   getRegulatorySignalCountry,
   listRegulatorySignalCountries,
@@ -10,14 +12,54 @@ import {
 
 describe("regulatory signal evidence manifest", () => {
   const evidenceStates = new Set(["local-authority-evidence", "parent-context-only", "external-evidence-only", "structural-absence", "unobservable"]);
-  it("covers all 213 country-page jurisdictions with an explicit disposition", () => {
+  it("covers all 214 country-page jurisdictions with an explicit disposition", () => {
     const countries = listRegulatorySignalCountries();
-    expect(countries).toHaveLength(213);
-    expect(new Set(countries.map((country) => country.iso2)).size).toBe(213);
+    expect(countries).toHaveLength(214);
+    expect(new Set(countries.map((country) => country.iso2)).size).toBe(214);
     expect(countries.every((country) => evidenceStates.has(country.authorityEvidenceState))).toBe(true);
     expect(countries.flatMap((country) => country.authorities).every((authority) =>
       authority.researchEffectiveAt && authority.retrievedAt && authority.sourceCheckedAt,
     )).toBe(true);
+  });
+
+  it("keeps USVI local authority evidence separate from US parent context", () => {
+    const vi = buildRegulatorySignalEvidence("VI")!;
+    expect(vi.country).toMatchObject({ iso2: "VI", parentJurisdiction: "US" });
+    expect(vi.evidenceDisposition.state).toBe("local-authority-evidence");
+    expect(vi.ecosystem.authorityCount).toBe(1);
+    expect(vi.ecosystem.authorities[0]).toMatchObject({
+      name: expect.stringContaining("Division of Banking, Insurance and Financial Regulation"),
+      website: "https://ltg.gov.vi/departments/banking-insurance-and-financial-regulation/",
+      accessState: "reachable",
+      researchEffectiveAt: "2026-08-23T22:46:25.021Z",
+      retrievedAt: "2026-08-23T22:46:25.021Z",
+      researchPublicationSnapshotCheckedAt: "2026-08-23T22:46:25.021Z",
+    });
+    expect(vi.transparencyIndex).toBeNull();
+    expect(vi.activitySignal.label).toBe("not assessed");
+    expect(vi.ecosystem.authorities[0].activity.signal).toBe("unknown");
+    expect(vi.ecosystem.authorities[0].activity.observedMonthCount).toBe(0);
+  });
+
+  it("keeps overlay summaries derived from unique source rows", () => {
+    const researchRoot = path.resolve("docs/research/regulatory-signal");
+    const readJson = (file: string) => JSON.parse(readFileSync(path.join(researchRoot, file), "utf8"));
+    const baseline = readJson("country-regulatory-ecosystem-baseline.json").rows;
+    const directory = readJson("official-authority-directory.json").rows;
+    const discovery = readJson("authority-publication-discovery.json");
+    const cadence = readJson("authority-publication-cadence-observations.json");
+    const baselineSummary = readJson("baseline-summary.json");
+
+    expect(baseline).toHaveLength(214);
+    expect(baseline.filter((row: { iso2: string }) => row.iso2 === "VI")).toHaveLength(1);
+    expect(directory).toHaveLength(643);
+    expect(directory.filter((row: { iso2: string }) => row.iso2 === "VI")).toHaveLength(1);
+    expect(discovery.rows).toHaveLength(discovery.authoritiesInspected);
+    expect(cadence.rows).toHaveLength(cadence.candidateAuthoritiesInspected);
+    expect(baselineSummary).toMatchObject({
+      countryUniverse: baseline.length,
+      officialAuthorityRows: directory.length,
+    });
   });
 
   it("keeps the public index null during research-only operation", () => {

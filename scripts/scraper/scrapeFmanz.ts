@@ -232,7 +232,7 @@ async function enrichFmanzEntry(
 
 export async function loadFmanzLiveRecords() {
   const flags = getCliFlags();
-  let flareSolverr: FlareSolverrClient | null = null;
+  const flareSolverr = { current: null as FlareSolverrClient | null };
 
   const loadOfficialHtml: FmanzHtmlLoader = async (url) => {
     try {
@@ -252,8 +252,8 @@ export async function loadFmanzLiveRecords() {
       );
     }
 
-    flareSolverr ??= await createFlareSolverrClient({ maxTimeoutMs: 120_000 });
-    const solvedHtml = await flareSolverr.get(url);
+    flareSolverr.current ??= await createFlareSolverrClient({ maxTimeoutMs: 120_000 });
+    const solvedHtml = await flareSolverr.current.get(url);
     if (isFmanzChallengeHtml(solvedHtml)) {
       throw new Error(`FlareSolverr did not clear the FMANZ challenge for ${url}`);
     }
@@ -270,7 +270,7 @@ export async function loadFmanzLiveRecords() {
     );
     return records.filter((record) => record !== null);
   } finally {
-    await flareSolverr?.destroy();
+    await flareSolverr.current?.destroy();
   }
 }
 

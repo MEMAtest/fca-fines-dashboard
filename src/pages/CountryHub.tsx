@@ -44,7 +44,7 @@ import {
   type ChangeKind,
 } from "../data/countryChanges.js";
 import { comparePairSlug } from "../data/countryCompare.js";
-import { bandLabel, bandFor, type RiskBand } from "../data/countryRiskScore.js";
+import { bandFor, type RiskBand } from "../data/countryRiskScore.js";
 import { CountryRiskV3Panel, countryRiskV3PanelPayload } from "../components/CountryRiskV3Panel.js";
 import { CountryRiskEvidencePopover } from "../components/CountryRiskEvidencePopover.js";
 import { RegulatoryEvidenceLadder } from "../components/RegulatoryEvidenceLadder.js";
@@ -54,7 +54,9 @@ import { COUNTRY_RISK_SOURCES } from "../data/countryRiskSources.js";
 import {
   latestCountryRiskSourceCheck,
 } from "../data/countryRiskPresentation.js";
-import { buildCountryRiskV3PublicExplanation } from "../data/countryRiskV3Presentation.js";
+import { buildCountryRiskV3PublicExplanation, countryRiskV3BandLabel } from "../data/countryRiskV3Presentation.js";
+import { buildCountryRiskContext } from "../data/countryRiskContext.js";
+import { CountryRiskContextPanel } from "../components/CountryRiskContextPanel.js";
 import { buildCountryRiskGovernanceEvidenceRows } from "../data/countryRiskGovernancePresentation.js";
 import {
   getRegulatorySignalCountry,
@@ -140,12 +142,12 @@ function controlTiles(band: RiskBand | null): { name: string; blurb: string; pri
   ];
 }
 
-function DomainBar({ label, weightPct, risk, explanation }: { label: string; weightPct: number; risk: number | null; explanation?: string }) {
+function DomainBar({ label, weightPct, risk, explanation, contribution, source }: { label: string; weightPct: number; risk: number | null; explanation?: string; contribution?: number | null; source?: { name: string; url: string; effectiveAt?: string; checkedAt?: string; confidence?: string; note?: string } }) {
   const band = risk === null ? null : bandFor(risk);
   return (
     <li className="cx-domain">
       <span className="cx-domain__label">
-        {label} <span className="cx-domain__wt">{weightPct}%</span>{explanation && <CountryRiskEvidencePopover compact label={label} description={explanation} value={risk === null ? null : `${risk.toFixed(1)} / 10`} weight={`${weightPct}%`} />}
+        {label} <span className="cx-domain__wt">{weightPct}%</span>{explanation && <CountryRiskEvidencePopover compact label={label} description={explanation} value={risk === null ? null : `${risk.toFixed(1)} / 10`} weight={`${weightPct}%`} contribution={contribution === null || contribution === undefined ? null : `${contribution.toFixed(1)} / 10`} source={source} />}
       </span>
       <span className="cx-domain__track">
         <span
@@ -239,6 +241,7 @@ export function CountryHub() {
 
   const rank = globalRank(country.iso2);
   const publicExplanation = buildCountryRiskV3PublicExplanation(riskV3);
+  const countryRiskContext = buildCountryRiskContext(country.iso2);
   const governanceEvidenceRows = buildCountryRiskGovernanceEvidenceRows(country.iso2);
   const latestSourceCheck = latestCountryRiskSourceCheck(COUNTRY_RISK_SOURCES);
   const scoreAvailable = riskV3.score !== null && riskV3.band !== null;
@@ -463,7 +466,7 @@ export function CountryHub() {
                   p.band ?? (hasLegalStatus(p.iso2) ? "legal" : "insufficient")
                 }`}
               >
-                {p.band ? bandLabel(p.band) : unscoredStatusLabel(p.iso2)}
+                {p.band ? countryRiskV3BandLabel(p.band) : unscoredStatusLabel(p.iso2)}
               </span>
             </Link>
             {!p.current && "compareSlug" in p && p.compareSlug && (
@@ -713,10 +716,12 @@ export function CountryHub() {
                     <span className="cx-gauge__marker" style={{ left: `${markerPct}%` }} />
                   </div>
                   <p className="cx-osc__band-txt">
-                    {publishedBand ? `${bandLabel(publishedBand)} risk` : unscoredStatusLabel(country.iso2)}
+                    {publishedBand ? `${countryRiskV3BandLabel(publishedBand)} risk` : unscoredStatusLabel(country.iso2)}
                   </p>
                   <p className="cx-osc__avg">Global average: {globalAverage.toFixed(1)}</p>
                   <p className="cx-osc__avg">{publicExplanation.statusLabel}</p>
+                  <p className="cx-osc__avg"><strong>{publicExplanation.resultKindLabel}</strong>{publicExplanation.nearThreshold ? " · near a band threshold" : ""}</p>
+                  {publicExplanation.sensitivityLabel && <p className="cx-osc__avg">{publicExplanation.sensitivityLabel}</p>}
                 </div>
                 <div className="cx-osc__cell">
                   <span className="cx-osc__k">Risk band <Info size={11} className="cx-osc__info" /></span>
@@ -725,7 +730,7 @@ export function CountryHub() {
                       publishedBand ?? (hasLegalStatus(country.iso2) ? "legal" : "insufficient")
                     }`}
                   >
-                    {publishedBand ? bandLabel(publishedBand) : unscoredStatusLabel(country.iso2)}
+                    {publishedBand ? countryRiskV3BandLabel(publishedBand) : unscoredStatusLabel(country.iso2)}
                   </span>
                 </div>
                 <div className="cx-osc__cell">
@@ -788,6 +793,8 @@ export function CountryHub() {
             })}
             showHeadline={false}
           />
+
+          {countryRiskContext && <CountryRiskContextPanel context={countryRiskContext} />}
 
           {regulatorySignal && (
             <section className="cx-card cx-regsignal" aria-labelledby="regulatory-signal-heading">
@@ -898,7 +905,7 @@ export function CountryHub() {
                   <summary>Why this changed</summary>
                   <p className="cx-card__note">
                     {runChange === null
-                      ? "The current score is calculated from the v3 underlying-risk pillars; sanctions and FATF status are shown as legal treatment overlays."
+                      ? "The current score is calculated from the v3.1 underlying-risk pillars; sanctions and FATF status are shown as legal treatment overlays, except for the labelled FATF ICRG substitute used where no mutual evaluation exists."
                       : `The latest persisted source run moved the score by ${runChange > 0 ? "+" : ""}${runChange.toFixed(1)}; the exact current arithmetic is shown above.`}
                   </p>
                 </details>
@@ -1159,7 +1166,8 @@ export function CountryHub() {
             </span>
             <p className="cx-meth__intro">
               Three current v3 pillars; higher means greater underlying country risk. Missing
-              information is never treated as zero risk. FATF status and sanctions are legal overlays.
+              information is never treated as zero risk. FATF status and sanctions are legal overlays,
+              except for the labelled FATF ICRG substitute used where no mutual evaluation exists.
             </p>
             <ul className="cx-domains">
               {publicExplanation.pillars.map((pillar) => (
@@ -1169,6 +1177,14 @@ export function CountryHub() {
                   weightPct={Math.round(pillar.appliedWeight * 100)}
                   risk={pillar.score}
                   explanation={pillar.explanation}
+                  contribution={pillar.contribution}
+                  source={{
+                    name: pillar.key === "governance" ? "World Bank Worldwide Governance Indicators (WGI)" : "FATF mutual-evaluation evidence",
+                    url: pillar.key === "governance" ? "https://www.worldbank.org/en/publication/worldwide-governance-indicators" : "https://www.fatf-gafi.org/en/publications/Mutualevaluations/Fatf-methodology.html",
+                    effectiveAt: pillar.key === "governance" ? GOVERNANCE_VINTAGE : view.lastPlenary,
+                    confidence: riskV3.confidence,
+                    note: pillar.key === "governance" ? "Higher published percentile means stronger governance; the score inverts it into risk direction." : pillar.explanation,
+                  }}
                 />
               ))}
             </ul>

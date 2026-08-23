@@ -17,6 +17,7 @@ import {
   SANCTIONS_APPROVED_SNAPSHOT,
 } from "../../src/data/sanctionsApprovedData.js";
 import { getSqlClient } from "../../server/db.js";
+import { buildCountryRiskContext } from "../../src/data/countryRiskContext.js";
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   res.setHeader("Access-Control-Allow-Origin", "*");
@@ -68,6 +69,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         sanctions: sanctions?.programs ?? [],
       },
       context: { transparencyInternationalCpi: getCpi(iso2) ?? null, scored: false },
+      contextualEvidence: buildCountryRiskContext(iso2),
     });
   }
   const result = computeCountryRiskV2(iso2, { asOf });
@@ -209,6 +211,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       cpiLicence: CPI_LICENCE,
       scored: false,
     },
+    contextualEvidence: buildCountryRiskContext(iso2),
     methodologyVersion: COUNTRY_RISK_METHODOLOGY_VERSION,
     sources,
     sanctionsEvidenceCandidates: sanctionsCandidates,

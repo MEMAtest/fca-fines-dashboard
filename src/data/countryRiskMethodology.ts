@@ -43,6 +43,12 @@ export const COUNTRY_RISK_METHODOLOGIES: Record<CountryRiskMethodology, CountryR
 /** Resolve an explicit API/history selector; no unknown version silently falls back. */
 export function resolveCountryRiskMethodology(value: string | null | undefined): CountryRiskMethodology {
   if (!value || value === "current" || value === "latest" || value === "v3" || value === COUNTRY_RISK_V3_METHODOLOGY_VERSION) return "v3";
+  // v3.0.0 was the pre-release label used while the same v3 formula was being
+  // finalised. Keep it as an explicit compatibility alias so saved links and
+  // API clients do not fail after the v3.1 metadata/assurance release. It is
+  // served by the current v3.1 result and is never presented as a frozen
+  // historical score-run.
+  if (value === "3.0.0") return "v3";
   if (value === "v2" || value === COUNTRY_RISK_V2_METHODOLOGY_VERSION) return "v2";
   throw new Error(`Unsupported country-risk methodology: ${value}`);
 }

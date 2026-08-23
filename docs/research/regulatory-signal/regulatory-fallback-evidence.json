@@ -3,10 +3,10 @@
   "methodologyVersion": "fallback-evidence-1.0.0",
   "status": "research-only",
   "generatedAt": "2026-08-20T12:09:41.497Z",
-  "totalJurisdictions": 213,
-  "totalAuthorities": 642,
+  "totalJurisdictions": 214,
+  "totalAuthorities": 643,
   "evidenceLevelCounts": {
-    "identity-confirmed": 611,
+    "identity-confirmed": 612,
     "enforcement-visible": 31
   },
   "transparencyIndex": null,
@@ -88283,6 +88283,206 @@
         "unknownAuthorities": 1,
         "latestObservedMonth": "2026-06",
         "latestObservedPrecision": "month"
+      },
+      "secondaryReporting": null,
+      "sources": [
+        "https://www.bis.org/cbanks.htm",
+        "https://www.bis.org/regauth.htm",
+        "https://www.iosco.org/v2/about/?subsection=membership&memid=1",
+        "https://www.iais.org/about-the-iais/iais-members/",
+        "https://www.iopsweb.org/en/membership/iops-members-and-observers.html",
+        "https://egmontgroup.org/members-by-region/"
+      ],
+      "limitations": [
+        "This release is an evidence map only. The Regulatory Transparency Index is intentionally null pending source qualification and shadow calibration.",
+        "Official directory membership identifies mandate evidence; it does not establish supervisory effectiveness.",
+        "Reachability and publication candidates are research observations, not a validated regulator-specific cadence score.",
+        "RegActions coverage is separate from the country-risk v3 score, FATF status, sanctions and beneficial-ownership context."
+      ]
+    },
+    {
+      "schemaVersion": "1.0.0",
+      "methodologyVersion": "research-only-1.0.0",
+      "status": "research-only",
+      "transparencyIndex": null,
+      "generatedAt": "2026-08-20T12:09:41.497Z",
+      "country": {
+        "iso2": "VI",
+        "iso3": "VIR",
+        "name": "US Virgin Islands",
+        "region": "Offshore / IFC",
+        "subregion": "US Caribbean Territory",
+        "parentJurisdiction": "US"
+      },
+      "evidenceDisposition": {
+        "state": "local-authority-evidence",
+        "label": "Local authority evidence",
+        "note": "Local USVI authority evidence is distinct from applicable United States federal parent context; no parent authority is reclassified as local.",
+        "externalEvidenceUrl": null
+      },
+      "ecosystem": {
+        "researchDepth": "moderate",
+        "authorityCount": 1,
+        "roleFamilies": [
+          {
+            "key": "centralBanking",
+            "label": "Central banking",
+            "authorityCount": 0
+          },
+          {
+            "key": "prudential",
+            "label": "Prudential supervision",
+            "authorityCount": 1
+          },
+          {
+            "key": "securities",
+            "label": "Securities",
+            "authorityCount": 1
+          },
+          {
+            "key": "insurance",
+            "label": "Insurance",
+            "authorityCount": 1
+          },
+          {
+            "key": "pensions",
+            "label": "Pensions",
+            "authorityCount": 0
+          },
+          {
+            "key": "financialIntelligence",
+            "label": "Financial intelligence",
+            "authorityCount": 0
+          }
+        ],
+        "authorities": [
+          {
+            "name": "Office of the Lieutenant Governor — Division of Banking, Insurance and Financial Regulation",
+            "website": "https://ltg.gov.vi/departments/banking-insurance-and-financial-regulation/",
+            "roles": [
+              {
+                "key": "prudential_supervision",
+                "label": "Prudential supervision"
+              },
+              {
+                "key": "securities",
+                "label": "Securities"
+              },
+              {
+                "key": "insurance",
+                "label": "Insurance"
+              }
+            ],
+            "accessState": "reachable",
+            "accessLabel": "Official site reachable",
+            "publicationUrl": "https://ltg.gov.vi/departments/banking-insurance-and-financial-regulation/",
+            "directorySources": [
+              "OFFICIAL_NATIONAL"
+            ],
+            "directoryEvidenceUrls": [
+              "https://ltg.gov.vi/departments/banking-insurance-and-financial-regulation/"
+            ],
+            "researchEffectiveAt": "2026-08-23T22:46:25.021Z",
+            "retrievedAt": "2026-08-23T22:46:25.021Z",
+            "researchPublicationSnapshotCheckedAt": "2026-08-23T22:46:25.021Z",
+            "evidenceLevel": "identity-confirmed",
+            "mandate": [
+              {
+                "key": "prudential_supervision",
+                "label": "Prudential supervision"
+              },
+              {
+                "key": "securities",
+                "label": "Securities"
+              },
+              {
+                "key": "insurance",
+                "label": "Insurance"
+              }
+            ],
+            "identityProvenance": {
+              "directorySources": [
+                "OFFICIAL_NATIONAL"
+              ],
+              "evidenceUrls": [
+                "https://ltg.gov.vi/departments/banking-insurance-and-financial-regulation/"
+              ]
+            },
+            "publicationCandidates": [
+              {
+                "label": "Orders and bulletins — official authority page",
+                "url": "https://ltg.gov.vi/departments/banking-insurance-and-financial-regulation/",
+                "publicationKind": "regulatory-update",
+                "publicationRouteType": "news_or_notice",
+                "sourceHostScope": "authority-owned",
+                "qualificationState": "manual-review-required",
+                "archiveBoundary": "first-page-only-unvalidated",
+                "publicationRelevance": "generic-or-ambiguous-link",
+                "provisionalSignal": "no-dated-first-page-signal",
+                "observedMonths": [],
+                "observedMonthCount": 0,
+                "latestObservedMonth": null,
+                "contextLabel": "unqualified-candidate"
+              }
+            ],
+            "activity": {
+              "signal": "unknown",
+              "status": "provisional-first-page-scan",
+              "scanContract": {
+                "scanType": "automated-first-page-date-scan",
+                "startMonth": "2024-01",
+                "endMonth": "2026-08",
+                "asOf": "2026-08-20",
+                "datePrecision": "month",
+                "archiveBoundary": "first-page-only-unvalidated"
+              },
+              "observedMonthCount": 0,
+              "observedMonths": [],
+              "latestObservedMonth": null,
+              "latestObservedPrecision": null,
+              "source": "not-qualified-or-not-observable",
+              "evidenceUrl": null,
+              "note": "No qualified authority-owned dated route supports an activity signal. This is not evidence of inactivity; blocked, external-context, low-frequency and unvalidated sources remain unknown."
+            },
+            "publicationRelevance": "generic-or-ambiguous-link",
+            "publicationRouteType": "news_or_notice",
+            "sourceHostScope": "authority-owned",
+            "publicationKind": "regulatory-update",
+            "regulatoryUpdates": [],
+            "enforcementCandidates": [],
+            "externalContextCandidates": []
+          }
+        ]
+      },
+      "regActionsCoverage": {
+        "configuredRegulators": 0,
+        "liveRegulators": 0,
+        "liveRegulatorCodes": [],
+        "pipelineRegulatorCodes": [],
+        "observedRecords": 0,
+        "latestObservedAction": null,
+        "state": "ecosystem-mapped-no-validated-feed"
+      },
+      "activitySignal": {
+        "label": "not assessed",
+        "neutral": true,
+        "note": "No recent RegActions observation is not evidence that no enforcement exists. Publication cadence, access and coverage may explain the absence."
+      },
+      "activitySummary": {
+        "scanContract": {
+          "scanType": "automated-first-page-date-scan",
+          "startMonth": "2024-01",
+          "endMonth": "2026-08",
+          "asOf": "2026-08-20",
+          "datePrecision": "month",
+          "archiveBoundary": "first-page-only-unvalidated"
+        },
+        "recentAuthorities": 0,
+        "periodicAuthorities": 0,
+        "lowFrequencyAuthorities": 0,
+        "unknownAuthorities": 1,
+        "latestObservedMonth": null,
+        "latestObservedPrecision": null
       },
       "secondaryReporting": null,
       "sources": [

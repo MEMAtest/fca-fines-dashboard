@@ -1,5 +1,6 @@
 {
   "benchmarkVersion": "1.0.0",
+  "baselineMethodologyVersion": "3.0.0",
   "observedAt": "2026-08-06T13:28:14.832Z",
   "competitor": {
     "name": "KnowYourCountry",

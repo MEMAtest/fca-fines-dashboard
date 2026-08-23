@@ -24,5 +24,8 @@ describe("public competitor benchmark", () => {
     expect(markdown).toContain("KYC numeric scores are not public and are not inferred");
     expect(markdown).toContain("| Myanmar | 7.8 very-high");
     expect(markdown).toContain("| Russia | 4.6 moderate");
+    const russia = report.rows.find((row) => row.iso2 === "RU");
+    expect(russia?.note).toContain("Current evidence:");
+    expect(russia?.note).toContain("Historical observation note (not current):");
   });
 });

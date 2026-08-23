@@ -28,6 +28,8 @@ jobs:
           node-version: 22
           cache: npm
       - run: npm ci
+      - name: Verify country-risk contextual evidence contract
+        run: npm run country-risk:verify-context
       - run: npm run country-risk:check-sanctions
       - if: always()
         env:

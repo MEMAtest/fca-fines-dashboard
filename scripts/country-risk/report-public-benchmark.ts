@@ -15,6 +15,7 @@ interface BenchmarkRow {
 }
 interface BenchmarkFile {
   benchmarkVersion: string;
+  baselineMethodologyVersion?: string;
   observedAt: string;
   competitor: { name: string; publicCoverageClaim: number; methodologyUrl: string; scoreAccess: string };
   rows: BenchmarkRow[];
@@ -22,6 +23,7 @@ interface BenchmarkFile {
 
 export interface PublicBenchmarkReport {
   benchmarkVersion: string;
+  baselineMethodologyVersion: string;
   observedAt: string;
   generatedAt: string;
   regActionsCoverage: number;
@@ -30,6 +32,7 @@ export interface PublicBenchmarkReport {
   sampleSize: number;
   comparisonCounts: Record<Comparison, number>;
   unavailableCount: number;
+  comparisonBasis: "current-band-directional-v1";
   changedSinceObservation: Array<{
     iso2: string;
     observed: BenchmarkRow["regActions"];
@@ -64,13 +67,32 @@ export function buildPublicBenchmarkReport(
     if (JSON.stringify(current) !== JSON.stringify(row.regActions)) {
       changedSinceObservation.push({ iso2: row.iso2, observed: row.regActions, current });
     }
-    const comparison = result.score === null || result.band === null ? "unavailable" : row.comparison;
+    // Recompute the directional comparison from today's RegActions result.
+    // The stored comparison field is a historical observation and must not
+    // silently survive a methodology release. KYC publishes bands rather than
+    // numeric scores, so this remains directional evidence, not calibration.
+    const kycOrder = row.kycBand.toLowerCase().includes("higher")
+      ? 4
+      : row.kycBand.toLowerCase().includes("medium-high") ? 3
+        : row.kycBand.toLowerCase().includes("medium-low") ? 1 : 2;
+    const regActionsOrder = result.band === "very-high" ? 4
+      : result.band === "high" ? 3
+        : result.band === "moderate" ? 2 : 1;
+    const comparison: Comparison = result.score === null || result.band === null ? "unavailable"
+      : regActionsOrder === kycOrder ? "aligned"
+        : regActionsOrder > kycOrder ? "regactions-higher" : "kyc-higher";
     comparisonCounts[comparison] += 1;
-    return { ...row, country: country.name, comparison, current };
+    const currentNote = result.resultKind === "indicative-governance-proxy"
+      ? "Current v3.1 result is an indicative governance proxy; it is visible for discovery but excluded from exact ranking."
+      : result.pillars.icrg.score !== null
+        ? "Current v3.1 uses the labelled FATF ICRG substitute because no mutual evaluation is available; listing and sanctions treatment remain separate overlays."
+        : "Current v3.1 is calculated from the available headline pillars; FATF listing and sanctions are treatment overlays, not added points.";
+    return { ...row, country: country.name, comparison, note: `Current evidence: ${currentNote} Historical observation note (not current): ${row.note}`, current };
   });
   const regActionsCoverage = pageCountries().length;
   return {
     benchmarkVersion: data.benchmarkVersion,
+    baselineMethodologyVersion: data.baselineMethodologyVersion ?? "3.0.0",
     observedAt: data.observedAt,
     generatedAt: asOf.toISOString(),
     regActionsCoverage,
@@ -79,6 +101,7 @@ export function buildPublicBenchmarkReport(
     sampleSize: rows.length,
     comparisonCounts,
     unavailableCount: comparisonCounts.unavailable,
+    comparisonBasis: "current-band-directional-v1",
     changedSinceObservation,
     rows,
   };
@@ -90,6 +113,7 @@ export function renderPublicBenchmarkMarkdown(report: PublicBenchmarkReport): st
     "",
     `Generated: ${report.generatedAt}`,
     `Observed competitor bands: ${report.observedAt}`,
+    `RegActions baseline captured: ${report.baselineMethodologyVersion}`,
     "",
     `- Sample: ${report.sampleSize} jurisdictions`,
     `- RegActions public coverage: ${report.regActionsCoverage}`,

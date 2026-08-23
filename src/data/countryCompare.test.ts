@@ -90,8 +90,8 @@ describe("compare view model", () => {
 
   it("explains numeric differences with v3 pillars, not sanctions or FATF overlays", () => {
     const view = buildCompareView(getCountryByIso2("CO")!, VE);
-    expect(view.a.methodologyVersion).toBe("3.0.0");
-    expect(view.b.methodologyVersion).toBe("3.0.0");
+    expect(view.a.methodologyVersion).toBe("3.1.0");
+    expect(view.b.methodologyVersion).toBe("3.1.0");
     expect(view.verdict).toMatch(/financial-crime effectiveness|legal and supervisory safeguards|governance and institutional integrity/);
     expect(view.verdict).not.toMatch(/sanctions exposure|FATF|CPI|corruption-control/i);
   });

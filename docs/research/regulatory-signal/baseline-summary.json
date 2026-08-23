@@ -1,15 +1,15 @@
 {
   "generatedAt": "2026-08-20T12:09:41.497Z",
-  "countryUniverse": 213,
-  "officialAuthorityRows": 642,
-  "countriesWithAnyOfficialAuthority": 212,
+  "countryUniverse": 214,
+  "officialAuthorityRows": 643,
+  "countriesWithAnyOfficialAuthority": 213,
   "countriesWithBroadRoleEvidence": 117,
   "countriesWithNoResolvedAuthority": 0,
   "roleCoverage": {
     "centralBanking": 191,
-    "prudentialSupervision": 188,
-    "securities": 138,
-    "insurance": 148,
+    "prudentialSupervision": 189,
+    "securities": 139,
+    "insurance": 149,
     "pensions": 81,
     "financialIntelligence": 187
   },

@@ -206,6 +206,36 @@ function resolveIso2(label: string, explicit?: string): string | null {
  */
 const MANUAL_OFFICIAL_AUTHORITIES: RawAuthority[] = [
   {
+    countryLabel: "US Virgin Islands",
+    iso2: "VI",
+    authority: "Office of the Lieutenant Governor — Division of Banking, Insurance and Financial Regulation",
+    website: "https://ltg.gov.vi/departments/banking-insurance-and-financial-regulation/",
+    role: "prudential_supervision",
+    source: "OFFICIAL_NATIONAL",
+    sourceUrl: "https://ltg.gov.vi/departments/banking-insurance-and-financial-regulation/",
+    note: "Official USVI authority page identifies the Division as the local regulator for banks, financial institutions and related financial services; federal parent context remains separate under the United States directory.",
+  },
+  {
+    countryLabel: "US Virgin Islands",
+    iso2: "VI",
+    authority: "Office of the Lieutenant Governor — Division of Banking, Insurance and Financial Regulation",
+    website: "https://ltg.gov.vi/departments/banking-insurance-and-financial-regulation/",
+    role: "securities",
+    source: "OFFICIAL_NATIONAL",
+    sourceUrl: "https://ltg.gov.vi/departments/banking-insurance-and-financial-regulation/",
+    note: "The same official USVI page states that the Division regulates securities and security salespersons; this is local-territory evidence, not a reclassification of SEC/FINRA parent coverage.",
+  },
+  {
+    countryLabel: "US Virgin Islands",
+    iso2: "VI",
+    authority: "Office of the Lieutenant Governor — Division of Banking, Insurance and Financial Regulation",
+    website: "https://ltg.gov.vi/departments/banking-insurance-and-financial-regulation/",
+    role: "insurance",
+    source: "OFFICIAL_NATIONAL",
+    sourceUrl: "https://ltg.gov.vi/departments/banking-insurance-and-financial-regulation/",
+    note: "The official USVI authority page identifies banking, insurance and financial regulation as a local mandate; no activity or cadence is inferred from the mandate evidence.",
+  },
+  {
     countryLabel: "Comoros",
     iso2: "KM",
     authority: "Banque Centrale des Comores",
@@ -845,8 +875,12 @@ async function main() {
       country_risk_v3_status: risk.status,
       official_directory_authorities: official.length,
       official_directory_roles: roles,
-      parent_directory_authorities: official.length === 0 ? parentOfficial.length : 0,
-      parent_directory_roles: official.length === 0 ? [...new Set(parentOfficial.flatMap((entry) => entry.roles))].sort() : [],
+      // Keep the existing parent-context contract for the 213-row snapshot.
+      // VI is the explicit exception: its fixture carries both local evidence
+      // and separate applicable US federal context without adding that context
+      // to local mandate counts or activity signals.
+      parent_directory_authorities: official.length === 0 || country.iso2 === "VI" ? parentOfficial.length : 0,
+      parent_directory_roles: official.length === 0 || country.iso2 === "VI" ? [...new Set(parentOfficial.flatMap((entry) => entry.roles))].sort() : [],
       authority_evidence_state: evidenceState,
       authority_evidence_note: isExternallyObservableOnly
         ? "No credible public domestic regulator source located; FATF currently calls for countermeasures and this must not be represented as a zero-regulator or zero-risk state."

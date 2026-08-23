@@ -21,8 +21,8 @@ interface IncomingReviewedDecision {
   final_tier: string | null;
   legal_status: string | null;
   coverage_state: string | null;
-  reviewed_by: string;
-  reviewer_organisation: string;
+  reviewed_by: string | null;
+  reviewer_organisation: string | null;
 }
 
 interface CatalogueReviewIdentity {

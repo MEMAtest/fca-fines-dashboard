@@ -239,6 +239,7 @@ export function qualifyRows(
           : "external-unqualified";
     const q = qualification(row, sourceScope);
     const langs = languageHints(row);
+    const rowSourceCheckedAt = row.iso2 === "VI" ? "2026-08-23T22:46:25.021Z" : sourceCheckedAt;
     return {
       authority_id: stableAuthorityId(row, authorityWebsite),
       publication_route_id: `ra-route-${sha256(`${stableAuthorityId(row, authorityWebsite)}|${row.candidate_url}`.toLowerCase()).slice(0, 20)}`,
@@ -264,8 +265,8 @@ export function qualifyRows(
       provisional_cadence_signal: row.provisional_cadence_signal,
       cadence_contract_recommendation: contractFor(row),
       archive_boundary: row.access_state !== "reachable" ? "not-observable" : "first-page-only-unvalidated",
-      source_checked_at: sourceCheckedAt,
-      snapshot_generated_at: sourceCheckedAt,
+      source_checked_at: rowSourceCheckedAt,
+      snapshot_generated_at: rowSourceCheckedAt,
       evidence_notes: [
         "Approved from the official-source snapshot only; no scraper promotion is implied.",
         row.access_state === "reachable" ? "First-page observation only; pagination, archive depth and field completeness remain to be human-qualified." : "Direct observation was not available; preserve the transport/browser state and do not infer publication absence.",
@@ -453,10 +454,10 @@ async function main() {
   const countryPayload = JSON.parse(await readFile(path.join(ROOT, "country-regulatory-ecosystem-baseline.json"), "utf8")) as { rows: CountryRow[] };
   const ledger = qualifyRows(cadencePayload.rows, discoveryPayload.rows, directoryPayload.rows);
   const gates = buildCountryGates(countryPayload.rows, ledger);
-  if (ledger.length !== 264) throw new Error(`Expected 264 candidate authorities, received ${ledger.length}`);
-  if (gates.length !== 213) throw new Error(`Expected 213 country gates, received ${gates.length}`);
+  if (ledger.length !== 265) throw new Error(`Expected 265 candidate authorities, received ${ledger.length}`);
+  if (gates.length !== 214) throw new Error(`Expected 214 country gates, received ${gates.length}`);
   const relevance = countBy(ledger, (row) => row.publication_relevance);
-  const expected = { "strong-official-publication-candidate": 115, "plausible-official-publication-candidate": 12, "generic-or-ambiguous-link": 88, "not-observable": 49 };
+  const expected = { "strong-official-publication-candidate": 115, "plausible-official-publication-candidate": 12, "generic-or-ambiguous-link": 89, "not-observable": 49 };
   for (const [key, value] of Object.entries(expected)) if ((relevance[key] ?? 0) !== value) throw new Error(`Snapshot total drift for ${key}: expected ${value}, got ${relevance[key] ?? 0}`);
   const generatedAt = cadencePayload.generatedAt;
   const report = reportMarkdown(generatedAt, ledger, gates, discoveryPayload.generatedAt, cadencePayload.generatedAt);

@@ -16,7 +16,7 @@ export function CountryMethodology() {
   useSEO({
     title: "Country Risk Score v3 Methodology | RegActions",
     description:
-      "How RegActions calculates country risk v3 using FATF effectiveness, legal safeguards and World Bank governance, with sanctions and FATF listings shown as overlays.",
+      "How RegActions calculates country risk v3.1 using FATF effectiveness, legal safeguards and World Bank governance, with sanctions and FATF listings shown as overlays.",
     keywords: "country risk methodology, AML country risk, FATF effectiveness, beneficial ownership, sanctions overlay",
     canonicalPath: "/countries/methodology",
     ogType: "article",
@@ -40,11 +40,12 @@ export function CountryMethodology() {
         <div className="cx-sources">
           {(Object.keys(COUNTRY_RISK_V3_PILLAR_LABELS) as Array<keyof typeof COUNTRY_RISK_V3_PILLAR_LABELS>).map((key) => (
             <div className="cx-source-card" key={key}>
-              <div className="cx-source-card__name">{COUNTRY_RISK_V3_PILLAR_LABELS[key]} · {percent(COUNTRY_RISK_V3_PILLAR_WEIGHTS[key])}</div>
+              <div className="cx-source-card__name">{COUNTRY_RISK_V3_PILLAR_LABELS[key]} · {percent(key === "icrg" ? 0.65 : COUNTRY_RISK_V3_PILLAR_WEIGHTS[key])}</div>
               <div className="cx-source-card__desc">
                 {key === "effectiveness" && "FATF evidence of how effectively the national system prevents money laundering and terrorist financing across the 11 Immediate Outcomes."}
                 {key === "safeguards" && "FATF technical safeguards across Recommendations 1–40, excluding recommendations explicitly marked not applicable."}
                 {key === "governance" && "The six inverted World Bank governance dimensions: control of corruption, rule of law, regulatory quality, government effectiveness, political stability, and voice and accountability."}
+                {key === "icrg" && "A FATF public determination used only where the jurisdiction has no mutual evaluation. It substitutes for the missing FATF effectiveness and safeguards pillars; it is not an additional overlay."}
               </div>
             </div>
           ))}
@@ -52,7 +53,14 @@ export function CountryMethodology() {
         <p className="cx-method__p">
           Pillar values are combined using unrounded values and rounded only for publication. If
           one pillar is unavailable, the remaining available weights are rebalanced and the result
-          is provisional. Fewer than two available pillars means no headline score.
+          is provisional. A governance-only result is published as an indicative governance proxy:
+          it remains discoverable but is excluded from exact global ranking. Fewer than two available
+          pillars otherwise means no headline score.
+        </p>
+        <p className="cx-method__p">
+          Each published score includes confidence, a near-threshold flag when it is within 0.2 of
+          a band boundary, and a bounded ±20% weight-sensitivity range. This is a transparency aid,
+          not a second score.
         </p>
       </section>
 
@@ -71,7 +79,7 @@ export function CountryMethodology() {
         <h2 className="cx-method__h2">Regulatory overlays</h2>
         <div className="cx-callout">
           <div className="cx-callout__item"><strong>Sanctions</strong><span>UN, UK, EU and US country-level programmes are shown as legal overlays that trigger screening and transaction review. They do not add points to the underlying score.</span></div>
-          <div className="cx-callout__item"><strong>FATF listing</strong><span>Increased monitoring and call-for-action status are shown with the official required treatment. They do not add points to the underlying score.</span></div>
+          <div className="cx-callout__item"><strong>FATF listing</strong><span>Increased monitoring and call-for-action status are shown with the official required treatment. They do not add points where a mutual evaluation exists. For jurisdictions without a mutual evaluation, the FATF public determination is used as a clearly labelled substitute for the two FATF pillars.</span></div>
           <div className="cx-callout__item"><strong>Context</strong><span>CPI, enforcement volume, tax-list status, FIU membership and register availability help users interpret the result but are not silently double-counted.</span></div>
         </div>
       </section>

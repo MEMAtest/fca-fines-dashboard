@@ -10,19 +10,19 @@
     ]
   },
   "countryUniverse": {
-    "jurisdictions": 213,
+    "jurisdictions": 214,
     "authorityEvidenceStates": {
-      "local-authority-evidence": 212,
+      "local-authority-evidence": 213,
       "external-risk-evidence-only": 1
     },
     "ecosystemDepth": {
-      "moderate": 66,
+      "moderate": 67,
       "broad": 117,
       "limited": 29,
       "externally-observable-unpublished": 1
     },
     "regActionsCoverageStates": {
-      "ecosystem-mapped-no-validated-feed": 165,
+      "ecosystem-mapped-no-validated-feed": 166,
       "live": 40,
       "official-enforcement-source-validated": 7,
       "domestic-publication-unobservable": 1
@@ -75,10 +75,10 @@
       },
       {
         "region": "Offshore / IFC",
-        "jurisdictions": 18,
+        "jurisdictions": 19,
         "live_countries": 4,
         "validated_pipeline_countries": 1,
-        "mapped_without_validated_feed": 13,
+        "mapped_without_validated_feed": 14,
         "domestic_publication_unobservable": 0,
         "broad_ecosystem_evidence": 5
       }

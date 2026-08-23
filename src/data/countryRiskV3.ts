@@ -16,9 +16,13 @@ import { bandFor, type RiskBand } from "./countryRiskScore.js";
 /**
  * Country Risk v3 deliberately separates intrinsic country risk from legal
  * restrictions. Sanctions and FATF list status are overlays: they affect the
- * recommended treatment, but never add points to the country score.
+ * recommended treatment, but never add points to the country score. The one
+ * explicit exception is a FATF public ICRG determination for a jurisdiction
+ * with no mutual evaluation, where it substitutes for the two missing FATF
+ * pillars and is labelled as such in the result.
  */
-export const COUNTRY_RISK_V3_METHODOLOGY_VERSION = "3.0.0" as const;
+/** v3.1 adds publication/result-kind and sensitivity metadata; headline weights remain unchanged. */
+export const COUNTRY_RISK_V3_METHODOLOGY_VERSION = "3.1.0" as const;
 export const COUNTRY_RISK_V3_PILLAR_WEIGHTS = {
   effectiveness: 0.45,
   safeguards: 0.20,
@@ -26,6 +30,8 @@ export const COUNTRY_RISK_V3_PILLAR_WEIGHTS = {
 } as const;
 
 export type CountryRiskPublicationStatus = "complete" | "provisional" | "insufficient-data";
+/** A plain-language publication class. `status` remains for API compatibility. */
+export type CountryRiskResultKind = "complete" | "provisional" | "indicative-governance-proxy";
 export type CountryRiskConfidence = "high" | "medium" | "low";
 export type CountryRiskCoverageStatus = "available" | "unavailable";
 
@@ -88,7 +94,16 @@ export interface CountryRiskV3Result {
   score: number | null;
   band: RiskBand | null;
   status: CountryRiskPublicationStatus;
+  /** Explicitly distinguishes a one-pillar governance proxy from a composite provisional score. */
+  resultKind: CountryRiskResultKind;
   confidence: CountryRiskConfidence;
+  /** Boundary and weight sensitivity metadata for responsible interpretation. */
+  sensitivity: {
+    nearThreshold: boolean;
+    nearestThreshold: number | null;
+    scoreRange: { low: number; high: number } | null;
+    maxWeightShift: number;
+  };
   pillars: {
     effectiveness: CountryRiskV3Pillar;
     safeguards: CountryRiskV3Pillar;
@@ -310,6 +325,51 @@ function confidenceFor(states: CountryRiskSourceState[], status: CountryRiskPubl
   return "high";
 }
 
+const BAND_THRESHOLDS = [3, 5, 7] as const;
+
+function sensitivityFor(
+  score: number | null,
+  available: ReadonlyArray<readonly [string, number | null, number]>,
+): CountryRiskV3Result["sensitivity"] {
+  if (score === null || available.length === 0) {
+    return { nearThreshold: false, nearestThreshold: null, scoreRange: null, maxWeightShift: 0 };
+  }
+  const baseline = available.filter(([, value]) => value !== null) as Array<[string, number, number]>;
+  const nearestThreshold = BAND_THRESHOLDS.reduce<number | null>((nearest, threshold) =>
+    nearest === null || Math.abs(score - threshold) < Math.abs(score - nearest) ? threshold : nearest, null);
+  // A one-pillar result is intentionally published as an indicative proxy.
+  // There is no meaningful weight perturbation to perform when only one input
+  // exists, so do not present a degenerate `x–x` sensitivity range as if it
+  // were a robustness interval.
+  if (baseline.length < 2) {
+    return {
+      nearThreshold: BAND_THRESHOLDS.some((threshold) => Math.abs(score - threshold) <= 0.2),
+      nearestThreshold,
+      scoreRange: null,
+      maxWeightShift: 0,
+    };
+  }
+  const candidateScores = [score];
+  // A bounded ±20% relative perturbation is a display sensitivity check, not a
+  // new score. It tells the reader whether the headline is robust to reasonable
+  // weighting choices without silently changing the approved formula.
+  baseline.forEach(([, , weight], index) => {
+    for (const direction of [-1, 1]) {
+      const weights = baseline.map(([, , current], i) => current * (i === index ? 1 + direction * 0.2 : 1));
+      const weightSum = weights.reduce((sum, current) => sum + current, 0);
+      candidateScores.push(round1(baseline.reduce((sum, [, current], i) => sum + current * (weights[i] / weightSum), 0)));
+    }
+  });
+  const low = Math.min(...candidateScores);
+  const high = Math.max(...candidateScores);
+  return {
+    nearThreshold: BAND_THRESHOLDS.some((threshold) => Math.abs(score - threshold) <= 0.2),
+    nearestThreshold,
+    scoreRange: { low, high },
+    maxWeightShift: round1(high - low),
+  };
+}
+
 function highestTier(sanctions: CountrySanctions | undefined): SanctionsTier | undefined {
   const rank: Record<SanctionsTier, number> = { targeted: 1, sectoral: 2, comprehensive: 3 };
   return sanctions?.programs.reduce<SanctionsTier | undefined>((top, program) =>
@@ -362,6 +422,9 @@ export function computeCountryRiskV3(iso2: string, supplied: CountryRiskV3Inputs
   const status: CountryRiskPublicationStatus = available.length >= 3
     ? "complete"
     : available.length === 0 ? "insufficient-data" : "provisional";
+  const resultKind: CountryRiskResultKind = available.length === 1 && governanceValue.score !== null
+    ? "indicative-governance-proxy"
+    : status === "complete" ? "complete" : "provisional";
   const availableWeight = available.reduce((sum, [, , weight]) => sum + weight, 0);
   const appliedWeight = (key: (typeof values)[number][0]) => {
     if (status === "insufficient-data") return 0;
@@ -373,6 +436,7 @@ export function computeCountryRiskV3(iso2: string, supplied: CountryRiskV3Inputs
     : round1(available.reduce((sum, [key, value]) => sum + (value as number) * appliedWeight(key), 0));
   let band = score === null ? null : bandFor(score);
   if (status === "provisional" && band === "low") band = "moderate";
+  const sensitivity = sensitivityFor(score, values);
 
   const fatf = getFatfStatus(code);
   const sanctionsTier = highestTier(sanctions);
@@ -433,7 +497,9 @@ export function computeCountryRiskV3(iso2: string, supplied: CountryRiskV3Inputs
     score,
     band,
     status,
+    resultKind,
     confidence: confidenceFor([fatfListState, assessmentState, governanceState], status, assessmentAgeYears(assessment, asOf)),
+    sensitivity,
     pillars: {
       effectiveness: buildPillar(effectiveness.score, COUNTRY_RISK_V3_PILLAR_WEIGHTS.effectiveness, effectiveness.evidenceCount, assessmentState, "FATF effectiveness across the 11 Immediate Outcomes.", "effectiveness"),
       safeguards: buildPillar(safeguards.score, COUNTRY_RISK_V3_PILLAR_WEIGHTS.safeguards, safeguards.evidenceCount, assessmentState, "FATF technical safeguards across Recommendations 1-40, excluding explicit not-applicable ratings.", "safeguards"),
@@ -453,6 +519,6 @@ export function computeCountryRiskV3(iso2: string, supplied: CountryRiskV3Inputs
     limitingReasons,
     arithmetic: score === null
       ? "Score withheld: no scored evidence is available for this jurisdiction."
-      : `${available.map(([key, value]) => `${key} ${value} × ${round1(appliedWeight(key) * 100)}%`).join(" + ")} = ${score}; sanctions and FATF listing are overlays, not score inputs`,
+      : `${available.map(([key, value]) => `${key} ${value} × ${round1(appliedWeight(key) * 100)}%`).join(" + ")} = ${score}; sanctions and FATF listing are overlays except a labelled ICRG substitute where no mutual evaluation exists`,
   };
 }

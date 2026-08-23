@@ -46,14 +46,11 @@ import {
 } from "../data/fatfStatus.js";
 import { sanctionsTierLabel, type SanctionsTier } from "../data/sanctionsStatus.js";
 import { unscoredStatusLabel, hasLegalStatus } from "../data/unscoredStatus.js";
-import {
-  bandLabel,
-  bandFor,
-  type RiskBand,
-} from "../data/countryRiskScore.js";
+import { bandFor, type RiskBand } from "../data/countryRiskScore.js";
 import { computeCountryRiskCurrent } from "../data/countryRiskMethodology.js";
 import { buildCountryCsv, countryCsvFilename } from "../utils/countryCsv.js";
 import { publicCountryRiskStatusLabel } from "../data/countryRiskPresentation.js";
+import { countryRiskV3BandLabel, countryRiskV3ResultKindLabel } from "../data/countryRiskV3Presentation.js";
 import {
   buildCountryIndex,
   regionalAverages,
@@ -97,6 +94,10 @@ function isRatedEntry(entry: CountryIndexEntry): entry is RatedCountryIndexEntry
   return entry.score !== null && entry.band !== null;
 }
 
+function isPreciselyRankedEntry(entry: CountryIndexEntry): entry is RatedCountryIndexEntry {
+  return isRatedEntry(entry) && entry.resultKind !== "indicative-governance-proxy";
+}
+
 const PILLAR_FILL: Record<string, string> = {
   effectiveness: "#dc2626",
   safeguards: "#ea580c",
@@ -107,6 +108,7 @@ const DRIVER_LABEL: Record<string, string> = {
   effectiveness: "Financial-crime effectiveness gaps",
   safeguards: "Technical safeguards gaps",
   governance: "Governance and institutional weakness",
+  icrg: "FATF public determination (no mutual evaluation)",
 };
 
 function keyDrivers(iso2: string): string[] {
@@ -180,7 +182,7 @@ function DetailPanel({
               entry.band ?? (hasLegalStatus(iso2) ? "legal" : "insufficient")
             }`}
           >
-            {hasScore ? `${bandLabel(entry.band!)} risk` : unscoredStatusLabel(iso2)}
+            {hasScore ? `${countryRiskV3BandLabel(entry.band!)} risk` : unscoredStatusLabel(iso2)}
           </span>
         </div>
         {onClose && (
@@ -219,6 +221,7 @@ function DetailPanel({
         FATF: <strong>{entry.fatf ? fatfLabel(entry.fatf.listing) : "Not listed"}</strong>
       </div>
       <p className="cx-detail__status">{publicCountryRiskStatusLabel(entry.status)}</p>
+      <p className="cx-detail__status"><strong>{countryRiskV3ResultKindLabel(entry.resultKind)}</strong>{entry.nearThreshold ? " · close to a band threshold" : ""}</p>
       <div className="cx-detail__drivers">
         <span className="cx-detail__drivers-title">Key drivers</span>
         <ul>
@@ -355,7 +358,7 @@ function FilterBar({
               className={`cx-chip cx-chip--${b}${band === b ? " cx-chip--on" : ""}`}
               onClick={() => setBand(band === b ? "All" : b)}
             >
-              {bandLabel(b)}
+              {countryRiskV3BandLabel(b)}
             </button>
           ))}
         </div>
@@ -457,7 +460,7 @@ function BandKpiCards({
     { key: "very-high", label: "Very high risk", value: counts["very-high"], note: "Score 7.0–10 on the composite index.", icon: ShieldAlert, color: BAND_COLOUR["very-high"], onClick: () => onBand("very-high") },
     { key: "high", label: "High risk", value: counts.high, note: "Score 5.0–6.9. Enhanced diligence is the default tier.", icon: AlertTriangle, color: BAND_COLOUR.high, onClick: () => onBand("high") },
     { key: "moderate", label: "Moderate risk", value: counts.moderate, note: "Score 3.0–4.9. Standard diligence with periodic review.", icon: AlertCircle, color: BAND_COLOUR.moderate, onClick: () => onBand("moderate") },
-    { key: "low", label: "Low risk", value: counts.low, note: "Score 0–2.9. No country-risk overlay required.", icon: Shield, color: BAND_COLOUR.low, onClick: () => onBand("low") },
+    { key: "low", label: "Lower risk", value: counts.low, note: "Score 0–2.9. Country risk is one input; apply relevant legal and customer-level controls.", icon: Shield, color: BAND_COLOUR.low, onClick: () => onBand("low") },
     { key: "insufficient", label: "Not enough information", value: insufficientCount, note: "Missing governance evidence — never scored as zero risk.", icon: HelpCircle, color: "#64748b" },
   ];
   return (
@@ -578,7 +581,7 @@ function RecentHighlightsTable({ index }: { index: CountryIndexEntry[] }) {
                     "—"
                   )}
                 </td>
-                <td>{entry.band ? bandLabel(entry.band) : unscoredStatusLabel(entry.country.iso2)}</td>
+                <td>{entry.band ? countryRiskV3BandLabel(entry.band) : unscoredStatusLabel(entry.country.iso2)}</td>
                 <td className="cx-recent-table__change">{event.title}</td>
                 <td className="country-ratings__num cx-recent-table__date">{formatDate(event.date)}</td>
               </tr>
@@ -595,7 +598,7 @@ const BAND_DEFS: Array<{ band: RiskBand; range: string; note: string }> = [
   { band: "very-high", range: "7.0–10", note: "Enhanced due diligence as a baseline; senior sign-off for new relationships." },
   { band: "high", range: "5.0–6.9", note: "Enhanced due diligence and source-of-funds checks are the default tier." },
   { band: "moderate", range: "3.0–4.9", note: "Standard due diligence with periodic review." },
-  { band: "low", range: "0–2.9", note: "No country-risk overlay required beyond standard diligence." },
+  { band: "low", range: "0–2.9", note: "Lower underlying country risk; sanctions, customer, product and transaction controls still apply independently." },
 ];
 
 function BandDefinitionsCard() {
@@ -607,7 +610,7 @@ function BandDefinitionsCard() {
           <div key={d.band} className="cx-banddefs__row">
             <span className="cx-banddefs__label">
               <span className={`cx-dist__dot cx-dist__dot--${d.band}`} aria-hidden="true" />
-              {bandLabel(d.band)}
+              {countryRiskV3BandLabel(d.band)}
             </span>
             <span className="cx-banddefs__range">{d.range}</span>
             <span className="cx-banddefs__note">{d.note}</span>
@@ -720,7 +723,7 @@ function OverviewTab({
   const added = FATF_RECENT_CHANGES.filter((c) => c.change === "added");
   const removed = FATF_RECENT_CHANGES.filter((c) => c.change === "removed");
   const nameOf = (iso2: string) => getCountryByIso2(iso2)?.name ?? iso2;
-  const top = useMemo(() => index.filter(isRatedEntry).slice(0, 8), [index]);
+  const top = useMemo(() => index.filter(isPreciselyRankedEntry).slice(0, 8), [index]);
   const pct = (n: number) => (total ? Math.round((n / total) * 100) : 0);
   const regionDonut = useMemo(
     () => [...regionStats].map((r) => ({ name: r.region, value: r.count, avg: r.avg })).sort((a, b) => b.value - a.value),
@@ -762,7 +765,7 @@ function OverviewTab({
             <div className="cx-dist__bar">
               {dist.map((d) =>
                 d.n > 0 ? (
-                  <button type="button" key={d.band} className={`cx-dist__seg cx-dist__seg--${d.band}`} style={{ flexGrow: d.n }} onClick={() => onBand(d.band)} aria-label={`Show ${bandLabel(d.band)} risk countries`} title={`${bandLabel(d.band)}: ${d.n}`} />
+                  <button type="button" key={d.band} className={`cx-dist__seg cx-dist__seg--${d.band}`} style={{ flexGrow: d.n }} onClick={() => onBand(d.band)} aria-label={`Show ${countryRiskV3BandLabel(d.band)} risk countries`} title={`${countryRiskV3BandLabel(d.band)}: ${d.n}`} />
                 ) : null,
               )}
             </div>
@@ -771,7 +774,7 @@ function OverviewTab({
                 <li key={d.band}>
                   <button type="button" className="cx-drill" onClick={() => onBand(d.band)}>
                     <span className={`cx-dist__dot cx-dist__dot--${d.band}`} />
-                    {bandLabel(d.band)}
+                    {countryRiskV3BandLabel(d.band)}
                     <span className="cx-dist__n">{d.n} ({pct(d.n)}%)</span>
                   </button>
                 </li>
@@ -953,7 +956,7 @@ function OverviewTab({
                   <td className="country-ratings__num">
                     <span className={`country-ratings__score country-ratings__score--${e.band}`}>{e.score.toFixed(1)}</span>
                   </td>
-                  <td>{bandLabel(e.band)}</td>
+                  <td>{countryRiskV3BandLabel(e.band)}</td>
                   <td className="country-ratings__region">{e.country.region}</td>
                   <td>{e.fatf ? fatfLabel(e.fatf.listing) : <span className="cx-fatf-none">Not listed</span>}</td>
                 </tr>
@@ -1113,7 +1116,7 @@ function GlobalIndex() {
   // Stable global risk rank (index is sorted score-desc) for the ratings "#".
   const rankOf = useMemo(() => {
     const m = new Map<string, number>();
-    index.filter(isRatedEntry).forEach((e, i) => m.set(e.country.iso2, i + 1));
+    index.filter((entry) => isRatedEntry(entry) && entry.resultKind !== "indicative-governance-proxy").forEach((e, i) => m.set(e.country.iso2, i + 1));
     return m;
   }, [index]);
 
@@ -1123,7 +1126,7 @@ function GlobalIndex() {
     [index, selectedIso],
   );
 
-  const top = useMemo(() => index.filter(isRatedEntry).slice(0, 12), [index]);
+  const top = useMemo(() => index.filter(isPreciselyRankedEntry).slice(0, 12), [index]);
   const regional = useMemo(() => regionalAverages(), []);
   const pillars = useMemo(() => pillarAverages(), []);
   const overall = useMemo(
@@ -1267,7 +1270,7 @@ function GlobalIndex() {
                   <button type="button" aria-pressed={band === "All"} className={`cx-chip${band === "All" ? " cx-chip--on" : ""}`} onClick={() => setBand("All")}>All</button>
                   {(["low", "moderate", "high", "very-high"] as RiskBand[]).map((b) => (
                     <button key={b} type="button" aria-pressed={band === b} className={`cx-chip cx-chip--${b}${band === b ? " cx-chip--on" : ""}`} onClick={() => setBand(band === b ? "All" : b)}>
-                      {bandLabel(b)}
+                      {countryRiskV3BandLabel(b)}
                     </button>
                   ))}
                 </div>
@@ -1491,7 +1494,7 @@ function GlobalIndex() {
                       {e.score === null ? "—" : e.score.toFixed(1)}
                     </span>
                   </td>
-                  <td>{e.band ? `${bandLabel(e.band)}${e.status === "provisional" ? " · some information missing" : ""}` : unscoredStatusLabel(e.country.iso2)}</td>
+                    <td>{e.band ? `${countryRiskV3BandLabel(e.band)} · ${countryRiskV3ResultKindLabel(e.resultKind)}${e.nearThreshold ? " · near threshold" : ""}` : unscoredStatusLabel(e.country.iso2)}</td>
                   <td className="country-ratings__region">{e.country.region}</td>
                   <td>{e.fatf ? fatfLabel(e.fatf.listing) : <span className="cx-fatf-none">Not listed</span>}</td>
                   <td>{e.sanctionsCoverageComplete

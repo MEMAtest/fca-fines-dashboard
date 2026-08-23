@@ -105,7 +105,8 @@ import {
   buildCountryRiskPublicExplanation,
   COUNTRY_RISK_PILLAR_LABELS,
 } from "../src/data/countryRiskPresentation.js";
-import { buildCountryRiskV3PublicExplanation, COUNTRY_RISK_V3_PILLAR_LABELS } from "../src/data/countryRiskV3Presentation.js";
+import { buildCountryRiskV3PublicExplanation, countryRiskV3BandLabel } from "../src/data/countryRiskV3Presentation.js";
+import { buildCountryRiskContext } from "../src/data/countryRiskContext.js";
 import {
   GOVERNANCE_SOURCE,
   GOVERNANCE_VINTAGE,
@@ -833,16 +834,16 @@ function renderCountryFatfBody(view: CountryView): string {
   const scoreAvailable = riskV3.score !== null && riskV3.band !== null;
   const publicExplanation = buildCountryRiskV3PublicExplanation(riskV3);
   const title = `${country.name} — Country Risk Report`;
-  const pillarLis = Object.entries(riskV3.pillars)
-    .map(([name, pillar]) => `<li>${escapeHtml(`${COUNTRY_RISK_V3_PILLAR_LABELS[name as keyof typeof COUNTRY_RISK_V3_PILLAR_LABELS]}: ${pillar.score === null ? "information unavailable" : `${pillar.score.toFixed(1)}/10`} — ${Math.round(pillar.appliedWeight * 100)}% of this score`)}</li>`)
+  const pillarLis = publicExplanation.pillars
+    .map((pillar) => `<li>${escapeHtml(`${pillar.label}: ${pillar.score === null ? "information unavailable" : `${pillar.score.toFixed(1)}/10`} — ${Math.round(pillar.appliedWeight * 100)}% of this score`)}</li>`)
     .join("");
   const missingLis = publicExplanation.missingInformation.map((message) => `<li>${escapeHtml(message)}</li>`).join("");
   const scoreHtml = scoreAvailable
     ? `<h2>Country Risk Score: ${escapeHtml(
-        `${riskV3.score!.toFixed(1)}/10 (${bandLabel(riskV3.band!)})`,
+        `${riskV3.score!.toFixed(1)}/10 (${countryRiskV3BandLabel(riskV3.band!)})`,
       )}</h2><p>${escapeHtml(
-        `Higher score means higher country risk (global average ${globalAverage.toFixed(1)}). ${publicExplanation.statusLabel}. ${publicExplanation.confidenceLabel}. Enforcement activity and CPI are context only; FATF listing and sanctions are regulatory overlays.`,
-      )}</p><p>${escapeHtml(publicExplanation.statusExplanation)}</p><h3>How this score was calculated</h3><ul>${pillarLis}${missingLis}</ul><p>Sanctions treatment: ${escapeHtml(publicExplanation.overlayLabels.sanctions)}. FATF treatment: ${escapeHtml(publicExplanation.overlayLabels.fatf)}.</p><details><summary>Show the exact calculation</summary><p>${escapeHtml(riskV3.arithmetic)}</p></details>`
+        `Higher score means higher country risk (global average ${globalAverage.toFixed(1)}). ${publicExplanation.statusLabel}. ${publicExplanation.resultKindLabel}. ${publicExplanation.confidenceLabel}. Enforcement activity and CPI are context only; FATF listing and sanctions are regulatory overlays except the labelled ICRG substitute used where no mutual evaluation exists.`,
+      )}</p><p>${escapeHtml(publicExplanation.statusExplanation)} ${escapeHtml(publicExplanation.resultKindExplanation)}${publicExplanation.sensitivityLabel ? ` ${escapeHtml(publicExplanation.sensitivityLabel)}.` : ""}</p><h3>How this score was calculated</h3><ul>${pillarLis}${missingLis}</ul><p>Sanctions treatment: ${escapeHtml(publicExplanation.overlayLabels.sanctions)}. FATF treatment: ${escapeHtml(publicExplanation.overlayLabels.fatf)}.</p><details><summary>Show the exact calculation</summary><p>${escapeHtml(riskV3.arithmetic)}</p></details>`
     : `<h2>Country Risk Score: not published</h2><p>${escapeHtml(
         publicExplanation.statusExplanation,
       )}</p><h3>Information available</h3><ul>${pillarLis}${missingLis}<li>Headline score: not published</li></ul>`;
@@ -1059,7 +1060,7 @@ function renderCountryFatfBody(view: CountryView): string {
               )}</a>: ${escapeHtml(
                 p.score === null || p.band === null
                   ? "score withheld (insufficient data)"
-                  : `${p.score.toFixed(1)}/10 (${bandLabel(p.band)})`,
+                  : `${p.score.toFixed(1)}/10 (${countryRiskV3BandLabel(p.band)})`,
               )}</li>`,
           )
           .join("")}</ul>`
@@ -1081,6 +1082,12 @@ function renderCountryFatfBody(view: CountryView): string {
     .join("")}</ul><h3>Evidence freshness</h3><ul>${publicSurface.freshness
     .map((item) => `<li>${escapeHtml(`${item.label}: ${item.sourceState}; data ${item.underlyingDataEffectiveAt ?? "not available"}${item.ratingsDate ? `; follow-up ${item.ratingsDate}` : ""}${item.assessmentDate ? `; base assessment ${item.assessmentDate}` : ""}`)}</li>`)
     .join("")}</ul><p>${escapeHtml(publicSurface.note)}</p><p><a href="/api/country-risk/evidence/${country.iso2}?format=pdf">Download evidence PDF</a> · <a href="/api/country-risk/evidence/${country.iso2}?format=csv">CSV</a> · <a href="/api/country-risk/evidence/${country.iso2}?format=json">JSON</a></p>`;
+  const context = buildCountryRiskContext(country.iso2);
+  const contextHtml = context
+    ? `<h2>Contextual risk evidence (not scored)</h2><p>These eight evidence families provide context only. They do not change the v3.1 headline score. Unavailable means no reviewed, country-comparable evidence is currently ingested; it does not mean the risk is absent.</p><ul>${context.factors
+        .map((item) => `<li><strong>${escapeHtml(item.label)}:</strong> ${escapeHtml(item.value?.label ?? "Not available")}. ${escapeHtml(item.availability === "available" ? item.limitation : `${item.limitation} Candidate sources are research leads only; they have not been ingested as evidence.`)}${item.source ? ` <a href="${escapeHtml(item.source.url)}" rel="noopener">Source</a>` : ""}</li>`)
+        .join("")}</ul>`
+    : "";
   // Visible FAQ block — answers MUST match the FAQPage JSON-LD verbatim (Google
   // requirement). Both derive from buildCountryFaqs(view), so they cannot drift.
   const faqHtml = renderCountryFaqBlock(buildCountryFaqs(view));
@@ -1090,7 +1097,7 @@ function renderCountryFatfBody(view: CountryView): string {
     statusHeading,
   )}</h2><p>${escapeHtml(
     statusDetail,
-  )}</p>${sanctionsHtml}${attrHtml}${historyHtml}${enforcementHtml}${regulatoryHtml}${regulatorySignalHtml}${sectorHtml}${analysisHtml}${whatChangedHtml}${publicEvidenceHtml}${peersHtml}${faqHtml}${sourcesHtml}</div></article></div></div>`;
+  )}</p>${sanctionsHtml}${attrHtml}${historyHtml}${enforcementHtml}${regulatoryHtml}${regulatorySignalHtml}${sectorHtml}${analysisHtml}${whatChangedHtml}${publicEvidenceHtml}${contextHtml}${peersHtml}${faqHtml}${sourcesHtml}</div></article></div></div>`;
 }
 
 /**
@@ -1255,10 +1262,13 @@ function renderGlobalIndexBody(): string {
   const provisional = index.filter((entry) => entry.status === "provisional").length;
   const insufficient = index.filter((entry) => entry.status === "insufficient-data").length;
   const bandName = { "very-high": "Very high", high: "High", moderate: "Moderate", low: "Low" };
+  const ranked = index.filter((entry) => entry.score !== null && entry.resultKind !== "indicative-governance-proxy");
+  const rankMap = new Map(ranked.map((entry, i) => [entry.country.iso2, i + 1]));
+  const proxyCount = index.filter((entry) => entry.resultKind === "indicative-governance-proxy").length;
   const rowsHtml = index
     .map(
-      (e, i) =>
-        `<tr><td>${e.score === null ? "—" : i + 1}</td><td><a href="/countries/${countrySlug(e.country)}">${escapeHtml(
+      (e) =>
+        `<tr><td>${e.score === null || e.resultKind === "indicative-governance-proxy" ? "—" : rankMap.get(e.country.iso2)}</td><td><a href="/countries/${countrySlug(e.country)}">${escapeHtml(
           e.country.name,
         )}</a></td><td>${e.score === null ? "Withheld" : e.score.toFixed(1)}</td><td>${e.band ? escapeHtml(bandName[e.band]) : "Insufficient data"}</td><td>${escapeHtml(
           e.country.region,
@@ -1270,7 +1280,7 @@ function renderGlobalIndexBody(): string {
     )
     .join("");
   return `<div class="seo-doc"><div class="seo-doc__container"><article class="seo-doc__article"><h1 class="seo-doc__title">Global Country Risk Ratings</h1><div class="seo-doc__body"><p>${escapeHtml(
-    `Compare financial-crime and country risk across ${index.length} jurisdictions. Full information is available for ${complete}; ${provisional} have some information missing; ${insufficient} do not have enough information for a score. Missing information is never treated as zero risk. Enforcement activity and CPI are shown for context but do not change the score.`,
+    `Compare financial-crime and country risk across ${index.length} jurisdictions. Full information is available for ${complete}; ${provisional} have some information missing; ${proxyCount} are indicative governance proxies and are discoverable but excluded from exact ranking; ${insufficient} do not have enough information for a score. Missing information is never treated as zero risk. Enforcement activity and CPI are shown for context but do not change the score.`,
   )}</p><p>${escapeHtml(
     `Very high: ${counts["very-high"]} · High: ${counts.high} · Moderate: ${counts.moderate} · Low: ${counts.low} · Insufficient data: ${insufficient}.`,
   )} <a href="/countries/fatf-grey-list">See the FATF grey list &amp; black list</a>.</p><table><thead><tr><th>#</th><th>Country</th><th>Risk score</th><th>Risk</th><th>Region</th><th>FATF</th><th>International sanctions</th></tr></thead><tbody>${rowsHtml}</tbody></table></div></article></div></div>`;
@@ -1278,7 +1288,7 @@ function renderGlobalIndexBody(): string {
 
 /** Crawlable methodology page — mirrors CountryMethodology.tsx. */
 function renderMethodologyBody(): string {
-  return `<div class="seo-doc"><div class="seo-doc__container"><article class="seo-doc__article"><h1 class="seo-doc__title">Country Risk Score</h1><div class="seo-doc__body"><p>The current RegActions v3 score estimates underlying jurisdiction risk on a 0-10 scale. Higher means greater risk. Sanctions and FATF listings are legal and regulatory overlays, not extra points in the underlying score.</p><h2>What the score considers</h2><ul><li>Financial-crime effectiveness (45%): FATF evidence across the 11 Immediate Outcomes.</li><li>Legal and supervisory safeguards (20%): FATF Recommendations 1-40, excluding explicit not-applicable ratings.</li><li>Governance and institutional integrity (35%): six inverted World Bank governance dimensions.</li></ul><h2>Beneficial ownership</h2><p>Beneficial ownership is a visible breakout using FATF IO5 (60%), Recommendation 24 on companies (20%), and Recommendation 25 on trusts and arrangements (20%). A public register alone does not prove current, accurate and promptly available ownership information.</p><h2>Regulatory overlays</h2><p>UN, UK, EU and US sanctions trigger screening and transaction review. FATF increased monitoring or call-for-action status is shown with its required treatment. Neither overlay changes the underlying numeric score.</p><h2>Missing information</h2><p>If one pillar is unavailable, available weights are rebalanced and the result is provisional. Fewer than two available pillars means no headline score. Missing information is never treated as zero risk.</p><h2>Historical v2</h2><p>The previous sanctions-weighted model remains available at <a href="/countries/methodology/v2">the v2 methodology page</a> and through explicit API requests using <code>?methodology=v2</code>.</p></div></article></div></div>`;
+  return `<div class="seo-doc"><div class="seo-doc__container"><article class="seo-doc__article"><h1 class="seo-doc__title">Country Risk Score</h1><div class="seo-doc__body"><p>The current RegActions v3.1 score estimates underlying jurisdiction risk on a 0-10 scale. Higher means greater risk. Sanctions and FATF listings are legal and regulatory overlays, not extra points in the underlying score.</p><h2>What the score considers</h2><ul><li>Financial-crime effectiveness (45%): FATF evidence across the 11 Immediate Outcomes.</li><li>Legal and supervisory safeguards (20%): FATF Recommendations 1-40, excluding explicit not-applicable ratings.</li><li>Governance and institutional integrity (35%): six inverted World Bank governance dimensions.</li></ul><h2>Beneficial ownership</h2><p>Beneficial ownership is a visible breakout using FATF IO5 (60%), Recommendation 24 on companies (20%), and Recommendation 25 on trusts and arrangements (20%). A public register alone does not prove current, accurate and promptly available ownership information.</p><h2>Regulatory overlays</h2><p>UN, UK, EU and US sanctions trigger screening and transaction review. FATF increased monitoring or call-for-action status is shown with its required treatment. Neither overlay changes the underlying numeric score where a mutual evaluation exists; a FATF public determination is an explicit substitute only where no mutual evaluation exists.</p><h2>Missing information</h2><p>If one pillar is unavailable, available weights are rebalanced and the result is provisional. Governance-only results are indicative proxies, remain discoverable, and are excluded from exact global ranking. Each score includes confidence and a bounded weight-sensitivity range. Missing information is never treated as zero risk.</p><h2>Historical v2</h2><p>The previous sanctions-weighted model remains available at <a href="/countries/methodology/v2">the v2 methodology page</a> and through explicit API requests using <code>?methodology=v2</code>.</p></div></article></div></div>`;
 }
 
 function renderMethodologyV2Body(): string {

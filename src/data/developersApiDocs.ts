@@ -49,12 +49,12 @@ export const DEVELOPER_ENDPOINTS: ApiEndpoint[] = [
       "Every profiled jurisdiction with the current v3 country-risk result and source provenance. Use ?methodology=v2 only when you need the historical sanctions-weighted compatibility result. Cached for 5 minutes.",
     example: "curl https://regactions.com/api/country-risk/list",
     fields: [
-      { name: "methodologyVersion", type: "string", description: "Scoring methodology version (current default: \"3.0.0\")." },
+      { name: "methodologyVersion", type: "string", description: "Scoring methodology version (current default: \"3.1.0\")." },
       { name: "calculatedAt", type: "string (ISO 8601)", description: "When the response was computed (deterministic at request time)." },
       { name: "count", type: "number", description: "Number of jurisdictions in results." },
       { name: "sources[]", type: "object[]", description: "Per-source provenance: id, name, sourceUrl, scored, cadence, state, effectiveAt, retrievedAt, sha256, note. In the current v3 response FATF listing and geographic sanctions sources have scored=false because they are legal treatment overlays; explicit v2 responses retain historical metadata." },
       { name: "results[].country", type: "object", description: "Country identity: iso2, iso3, name, region, subregion, unMember, aliases[]." },
-      { name: "results[].result", type: "object", description: "Current composite result: score, band, status, confidence, effectiveness/safeguards/governance pillars, beneficial ownership, sanctions and FATF overlays, limitingReasons and arithmetic." },
+      { name: "results[].result", type: "object", description: "Current result: score, band, status, resultKind (complete/provisional/indicative-governance-proxy), confidence, sensitivity, pillars, beneficial ownership, sanctions and FATF overlays, limitingReasons and arithmetic." },
     ],
   },
   {
@@ -98,10 +98,10 @@ export const DEVELOPER_ENDPOINTS: ApiEndpoint[] = [
     path: "/api/regulatory-signal/list",
     title: "Regulatory ecosystem list",
     summary:
-      "Evidence-first ecosystem summaries for all 213 jurisdictions. The transparency index is null in this research-only release; authority publication states and RegActions coverage remain separate from Country Risk v3.",
+      "Evidence-first ecosystem summaries for all 214 jurisdictions. The transparency index is null in this research-only release; authority publication states and RegActions coverage remain separate from Country Risk v3.",
     example: "curl https://regactions.com/api/regulatory-signal/list",
     fields: [
-      { name: "count", type: "number", description: "Number of jurisdictions returned (213 unless filtered by ?region=)." },
+      { name: "count", type: "number", description: "Number of jurisdictions returned (214 unless filtered by ?region=)." },
       { name: "rows[].country", type: "object", description: "Jurisdiction identity and region." },
       { name: "rows[].ecosystem", type: "object", description: "Mapped authority count, mandate-family counts and research depth." },
       { name: "rows[].evidenceDisposition", type: "object", description: "Explicit local, parent-context, structural or unobservable evidence state." },
