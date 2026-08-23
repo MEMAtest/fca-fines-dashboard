@@ -2536,18 +2536,20 @@ button.cx-kpi:hover {
   position: relative;
   border-radius: 14px;
   overflow: hidden;
-  background: #0f172a;
+  /* Light, per the country-report mock. The map used to sit on #0f172a, which
+     made one dark panel of an otherwise white report. */
+  background: #f1f5f9;
 }
 .cx-rmap__svg {
   display: block;
   width: 100%;
   height: auto;
-  background: #0f172a;
+  background: #f1f5f9;
 }
 .cx-rmap__ph {
   width: 100%;
   border-radius: 14px;
-  background: linear-gradient(90deg, #0f172a, #1e293b, #0f172a);
+  background: linear-gradient(90deg, #eef2f6, #f8fafc, #eef2f6);
   background-size: 200% 100%;
   animation: cx-shimmer 1.4s ease-in-out infinite;
 }
@@ -2561,14 +2563,14 @@ button.cx-kpi:hover {
   fill-opacity: 0.9;
 }
 .cx-rmap__label {
-  fill: #cbd5e1;
+  fill: #64748b;
   font-size: 8px;
   text-transform: uppercase;
   letter-spacing: 0.04em;
   pointer-events: none;
 }
 .cx-rmap__label--focus {
-  fill: #ffffff;
+  fill: #0b1f2a;
   font-weight: 700;
   font-size: 10px;
 }
@@ -2601,7 +2603,7 @@ button.cx-kpi:hover {
   bottom: 0.5rem;
   left: 0.6rem;
   font-size: 0.68rem;
-  color: #cbd5e1;
+  color: #475569;
 }
 .cx-rmap__legend-bar {
   width: 90px;
@@ -3570,7 +3572,7 @@ button.cx-ovband--btn:hover {
      text once the flag and gap were taken out. "Cuba" fit; the region chips
      wrapped onto two lines, which pushed the stack to 103px, and since
      .cx-ident centres its row the flag then floated 26px below the name. */
-  grid-template-columns: minmax(250px, 0.95fr) minmax(0, 1.9fr) minmax(180px, 0.85fr);
+  grid-template-columns: minmax(0, 3fr) minmax(200px, 0.95fr);
   gap: 1rem;
   align-items: stretch;
 }
@@ -3618,7 +3620,8 @@ button.cx-ovband--btn:hover {
 /* Overall risk score card */
 .cx-osc__grid {
   display: grid;
-  grid-template-columns: 1.15fr 0.7fr 0.7fr 1.5fr;
+  /* Rank needs enough width for "Risk rank" to stay on one line. */
+  grid-template-columns: minmax(0, 1fr) minmax(96px, 0.62fr) minmax(104px, 0.62fr) minmax(0, 1.45fr);
   gap: 0.9rem;
   align-items: start;
 }
@@ -4413,3 +4416,112 @@ button.cx-dist__seg:hover { opacity: 0.85; }
 /* "Not listed" in a FATF column is a finding, not missing data, but it should
    not shout as loudly as an actual listing. */
 .cx-fatf-none { color: #64748b; }
+
+/* ── Country report hero ──────────────────────────────────────────────────
+   One card: identity, then the four metrics as columns divided by hairlines,
+   then a provenance strip along the bottom. Previously the identity block
+   floated outside the card and the metrics sat in a second one, so the hero
+   read as two unrelated panels. */
+.cx-hero {
+  display: grid;
+  grid-template-columns: minmax(272px, 0.82fr) minmax(0, 2.4fr);
+  gap: 0;
+  align-items: stretch;
+  padding: 0;
+  overflow: hidden;
+}
+
+.cx-hero .cx-ident {
+  align-self: center;
+  min-width: 0;
+  padding: 1.35rem 1.4rem;
+  border-right: 1px solid #eef2f7;
+}
+
+.cx-hero .cx-osc {
+  padding: 1.35rem 1.4rem;
+  min-width: 0;
+}
+
+/* The score column owns the heading, so its own cell needs no left rule. */
+.cx-hero .cx-osc > .cx-card__eyebrow {
+  margin-bottom: 0.7rem;
+}
+
+.cx-osc__info {
+  color: #cbd5e1;
+  flex: 0 0 auto;
+}
+
+/* Provenance, spanning the full card width beneath both columns. */
+.cx-hero__foot {
+  grid-column: 1 / -1;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+  padding: 0.6rem 1.4rem;
+  border-top: 1px solid #eef2f7;
+  background: #f8fafc;
+  font-size: 0.72rem;
+  color: #64748b;
+}
+
+.cx-hero__foot span {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.cx-hero__foot-sep {
+  width: 1px;
+  height: 0.85rem;
+  background: #e2e8f0;
+}
+
+@media (max-width: 900px) {
+  .cx-hero {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  /* Stacked, the two facts sit on their own lines and the divider between them
+     was left dangling at the end of the first. */
+  .cx-hero__foot { flex-direction: column; align-items: flex-start; gap: 0.3rem; }
+  .cx-hero__foot-sep { display: none; }
+  .cx-hero .cx-ident {
+    border-right: none;
+    border-bottom: 1px solid #eef2f7;
+    padding-bottom: 1rem;
+  }
+}
+
+/* The region line and the two chips each sit on one line, as the mock has them.
+   In a narrower column the subtitle wrapped and the chip labels broke mid-pill. */
+.cx-hero .cx-ident__sub { white-space: nowrap; }
+.cx-hero .cx-ident__chips { flex-wrap: nowrap; }
+.cx-hero .cx-ident__chips .cx-wchip { white-space: nowrap; }
+
+/* A long name (Democratic Republic of the Congo) has to wrap inside its column
+   rather than run over the divider into the score. `anywhere` did stop the
+   overrun but hyphen-free mid-word breaks read badly ("Democra / tic"), so
+   break only where a single word genuinely cannot fit, and size the name so
+   the longest one does. */
+.cx-hero .cx-ident > div { min-width: 0; }
+.cx-hero .cx-ident__name {
+  overflow-wrap: break-word;
+  font-size: clamp(1.35rem, 1.6vw, 1.8rem);
+}
+
+/* Circular flag, per the mock. */
+.cx-hero .cx-ident__flag {
+  border-radius: 50%;
+  width: 3.1rem;
+  height: 3.1rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  overflow: hidden;
+  font-size: 2.4rem;
+  line-height: 1;
+  flex: 0 0 auto;
+}
