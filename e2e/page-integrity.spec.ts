@@ -64,6 +64,19 @@ const HTML_ENTITY = /&(copy|amp|nbsp|quot|apos);?/i;
  * Rather than weaken the assertions until a data-less run goes green, the spec
  * declares itself a live gate and skips when it is not pointed at one.
  */
+/**
+ * These pages are slow enough that a cold or contended API makes the spec
+ * report a defect that is not there. /fines pages through 5,000 rows and
+ * /regulators/fca through 10,000, in sequential 500-row fetches, before the
+ * heading appears — around 3s warm and over 45s when the API is cold and six
+ * workers are hitting it at once.
+ *
+ * A real failure (a duplicate footer, a raw enum) is deterministic and fails
+ * every attempt; only the load-related flake passes on retry. Without this the
+ * gate cries wolf, and a gate nobody trusts is worse than no gate.
+ */
+test.describe.configure({ retries: 2 });
+
 const LIVE_BASE_URL = process.env.PLAYWRIGHT_BASE_URL;
 const IS_LIVE = Boolean(LIVE_BASE_URL && !/127\.0\.0\.1|localhost/.test(LIVE_BASE_URL));
 
@@ -73,8 +86,15 @@ for (const route of ROUTES) {
       !IS_LIVE,
       "Needs a live API. Run with PLAYWRIGHT_BASE_URL=https://regactions.com",
     );
-    await page.goto(route, { waitUntil: "networkidle" });
-    await page.waitForTimeout(1200);
+    await page.goto(route, { waitUntil: "domcontentloaded" });
+
+    // Wait for the heading rather than a fixed pause. /fines, /fines/actions
+    // and /regulators/fca page through 5,000-10,000 rows in sequential
+    // 500-row fetches before their <h1> appears — around 4s unloaded, longer
+    // when several workers hit the API at once. A fixed 1.2s wait made this
+    // spec fail on exactly those three routes under parallel load, which is
+    // how a gate gets a reputation for crying wolf and stops being read.
+    await page.waitForSelector("h1", { timeout: 45000 });
 
     // Several sections reveal on scroll and only lay out once seen.
     await page.evaluate(async () => {
