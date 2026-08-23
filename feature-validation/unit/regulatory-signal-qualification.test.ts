@@ -84,18 +84,18 @@ describe("regulatory publication qualification", () => {
 
   it("locks the research snapshot totals and all-country gate coverage", () => {
     const summary = JSON.parse(readFileSync("docs/research/regulatory-signal/publication-qualification-summary.json", "utf8"));
-    expect(summary.candidateAuthorities).toBe(264);
-    expect(summary.countries).toBe(213);
+    expect(summary.candidateAuthorities).toBe(265);
+    expect(summary.countries).toBe(214);
     expect(summary.publicationRelevance).toMatchObject({
       "strong-official-publication-candidate": 115,
       "plausible-official-publication-candidate": 12,
-      "generic-or-ambiguous-link": 88,
+      "generic-or-ambiguous-link": 89,
       "not-observable": 49,
     });
     const ledger = JSON.parse(readFileSync("docs/research/regulatory-signal/publication-qualification-ledger.json", "utf8"));
     const gates = JSON.parse(readFileSync("docs/research/regulatory-signal/country-publication-build-gate.json", "utf8"));
-    expect(new Set(ledger.rows.map((row: { publication_route_id: string }) => row.publication_route_id)).size).toBe(264);
-    expect(new Set(ledger.rows.map((row: { authority_id: string }) => row.authority_id)).size).toBe(263);
-    expect(gates.rows).toHaveLength(213);
+    expect(new Set(ledger.rows.map((row: { publication_route_id: string }) => row.publication_route_id)).size).toBe(265);
+    expect(new Set(ledger.rows.map((row: { authority_id: string }) => row.authority_id)).size).toBe(264);
+    expect(gates.rows).toHaveLength(214);
   });
 });
