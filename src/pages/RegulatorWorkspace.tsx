@@ -163,7 +163,42 @@ export function RegulatorWorkspace({ view }: RegulatorWorkspaceProps) {
   // regulator↔country cluster). Resolved from coverage.countryCode; null if the
   // country has no report so we render no dead link.
   const reportCountry = coverage.countryCode ? getCountryByIso2(coverage.countryCode) : undefined;
-  if (primary.loading) return <ProductWorkspaceShell scope="regulator" regulatorCode={regulatorCode}><div className="workspace-loading">Loading {code} enforcement intelligence...</div></ProductWorkspaceShell>;
+  // Every value in this hero comes from the static regulator coverage record,
+  // not from the fetched actions, so it can paint immediately. The page used to
+  // be replaced wholesale by "Loading {code} enforcement intelligence..." until
+  // both the primary and comparison regulators had finished paging — over four
+  // seconds warm — leaving the page with no <h1> and no identity until then.
+  const regulatorHero = (
+        <section className="regulator-workspace__hero">
+          <div className="regulator-workspace__identity">
+            <div className="regulator-workspace__mark"><RegulatorMark regulator={code} label={coverage.fullName} size="large" surface="dark" decorative /></div>
+            <div>
+              <span className="regulator-workspace__kicker">{coverage.country} · {coverage.sourceType === "sro" ? "Self-regulatory organisation" : "Conduct regulator"}</span>
+              <h1>{isFcaOverview ? "FCA Fines and Enforcement Actions" : `${coverage.fullName} (${code})`}</h1>
+              <p><ShieldCheck size={13} /> {isFcaOverview ? `${coverage.fullName} enforcement activity and official-source evidence for the United Kingdom.` : `All data on this page reflects ${code} enforcement activity in ${coverage.country}.`}</p>
+              <div className="regulator-workspace__lane">
+                {coverage.feedContract.cadence === "daily" ? "Daily lane" : "Fragile lane"}
+                <span />
+                {coverage.operationalConfidence === "standard" ? "Standard confidence" : "Directional confidence"}
+              </div>
+            </div>
+          </div>
+          <div className="regulator-workspace__context">
+            <div className="regulator-workspace__country"><span>{coverage.flag}</span><div><strong>{coverage.country}</strong><small>Jurisdiction</small></div></div>
+            <div className="regulator-workspace__scope"><ShieldCheck size={18}/><div><small>You are viewing data for</small><strong>{code} · {coverage.country}</strong><span>Charts and tables are restricted to this regulator.</span></div></div>
+          </div>
+        </section>
+  );
+
+  if (primary.loading)
+    return (
+      <ProductWorkspaceShell scope="regulator" regulatorCode={regulatorCode} title={code}>
+        <div className="workspace-page">
+          {regulatorHero}
+          <div className="workspace-loading">Loading {code} enforcement intelligence...</div>
+        </div>
+      </ProductWorkspaceShell>
+    );
   if (primary.error) return <ProductWorkspaceShell scope="regulator" regulatorCode={regulatorCode}><div className="workspace-error">{primary.error}</div></ProductWorkspaceShell>;
 
   const openSelection = async (selection: {year?: number; theme?: string}, title: string) => {
@@ -217,25 +252,7 @@ export function RegulatorWorkspace({ view }: RegulatorWorkspaceProps) {
         {/* Breadcrumbs come from SiteHeader (which also emits the BreadcrumbList
             JSON-LD). This page used to render a second, near-identical trail. */}
 
-        <section className="regulator-workspace__hero">
-          <div className="regulator-workspace__identity">
-            <div className="regulator-workspace__mark"><RegulatorMark regulator={code} label={coverage.fullName} size="large" surface="dark" decorative /></div>
-            <div>
-              <span className="regulator-workspace__kicker">{coverage.country} · {coverage.sourceType === "sro" ? "Self-regulatory organisation" : "Conduct regulator"}</span>
-              <h1>{isFcaOverview ? "FCA Fines and Enforcement Actions" : `${coverage.fullName} (${code})`}</h1>
-              <p><ShieldCheck size={13} /> {isFcaOverview ? `${coverage.fullName} enforcement activity and official-source evidence for the United Kingdom.` : `All data on this page reflects ${code} enforcement activity in ${coverage.country}.`}</p>
-              <div className="regulator-workspace__lane">
-                {coverage.feedContract.cadence === "daily" ? "Daily lane" : "Fragile lane"}
-                <span />
-                {coverage.operationalConfidence === "standard" ? "Standard confidence" : "Directional confidence"}
-              </div>
-            </div>
-          </div>
-          <div className="regulator-workspace__context">
-            <div className="regulator-workspace__country"><span>{coverage.flag}</span><div><strong>{coverage.country}</strong><small>Jurisdiction</small></div></div>
-            <div className="regulator-workspace__scope"><ShieldCheck size={18}/><div><small>You are viewing data for</small><strong>{code} · {coverage.country}</strong><span>Charts and tables are restricted to this regulator.</span></div></div>
-          </div>
-        </section>
+        {regulatorHero}
 
         {showFcaAnswer && (
           <section className="regulator-workspace__answer" aria-labelledby="fca-fines-current-year">
