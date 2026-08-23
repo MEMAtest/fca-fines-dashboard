@@ -14,7 +14,7 @@
  * - Coverage rail: scrolling regulator logo strip (live regulator list)
  * - Quick links (existing, kept — internal links to /roadmap, /features, /blog)
  * - FAQ (existing content, restyled to match "Before you ask")
- * - Contact (existing ContactForm, kept)
+ * - Contact (a strip linking to /contact; the form moved to its own page)
  * - Footer (existing homepage-specific footer, kept)
  *
  * All figures are fetched live from /api/unified/overview (unfiltered — the
@@ -25,12 +25,11 @@
 import { motion, useReducedMotion } from 'framer-motion';
 import { useEffect, useMemo, useState, Suspense, lazy, type FormEvent, type KeyboardEvent } from 'react';
 import { useSearchParams, useNavigate, Link } from 'react-router-dom';
-import { Map, Zap, FileText, Search as SearchIcon } from 'lucide-react';
+import { ArrowRight, Search as SearchIcon } from 'lucide-react';
 import { useHomepageVisit } from '../hooks/useHomepageVisit.js';
 import { useWorkspaceOverview } from '../hooks/useWorkspaceOverview.js';
 import { fetchUnifiedSearch, type UnifiedSearchResponse } from '../api.js';
 import { Toast } from '../components/Toast.js';
-import { ContactForm } from '../components/ContactForm.js';
 import { DigestSubscribeForm } from '../components/DigestSubscribeForm.js';
 import { RegulatorMark } from '../components/RegulatorMark.js';
 import { trackOwnedEvent } from '../utils/ownedAnalytics.js';
@@ -216,46 +215,6 @@ export function Homepage() {
       <ResearchSection />
       <CoverageRailSection />
 
-      {/* Quick Links Section */}
-      <section className="homepage-quicklinks">
-        <div className="homepage-quicklinks__container">
-          <span className="ra-eyebrow">Go deeper</span>
-          <motion.h2
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.6 }}
-            className="homepage-quicklinks__title"
-          >
-            Explore the Platform
-          </motion.h2>
-
-          <div className="quicklinks-grid">
-            <QuickLinkCard
-              to="/roadmap"
-              title="Platform Roadmap"
-              description="See what's next: upcoming regulators, features, and data expansions"
-              icon={<Map size={32} />}
-              index={0}
-            />
-            <QuickLinkCard
-              to="/features"
-              title="Platform Features"
-              description="Explore analytics, exports, alerts, and embeddable widgets"
-              icon={<Zap size={32} />}
-              index={1}
-            />
-            <QuickLinkCard
-              to="/blog"
-              title="Insights & Analysis"
-              description="Monthly enforcement trends, regulatory updates, and commentary"
-              icon={<FileText size={32} />}
-              index={2}
-            />
-          </div>
-        </div>
-      </section>
-
       {/* FAQ Section */}
       <section className="homepage-faq">
         <div className="homepage-faq__container">
@@ -278,25 +237,22 @@ export function Homepage() {
         </div>
       </section>
 
-      {/* Contact Section */}
       <section className="homepage-contact">
         <div className="homepage-contact__container">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.6 }}
-            className="homepage-contact__header"
-          >
-            <span className="ra-eyebrow">Talk to us</span>
-            <h2>Get in Touch</h2>
-            <p>
-              Questions about coverage, data access, or custom solutions? Reach
-              out to our team.
-            </p>
-          </motion.div>
-
-          <ContactForm />
+          <span className="ra-eyebrow">Talk to us</span>
+          <h2>Something you need that is not here?</h2>
+          <p>
+            Coverage requests, data access, API use, or anything that does not
+            fit the standard product.
+          </p>
+          <div className="homepage-contact__actions">
+            <Link className="homepage-contact__cta" to="/contact">
+              Contact the team <ArrowRight size={15} />
+            </Link>
+            <a href="mailto:contact@memaconsultants.com">
+              contact@memaconsultants.com
+            </a>
+          </div>
         </div>
       </section>
 
@@ -886,65 +842,6 @@ function CoverageRailSection() {
         </div>
       </div>
     </section>
-  );
-}
-
-/**
- * QuickLinkCard - Navigational card with 3D hover effects
- */
-function QuickLinkCard({
-  to,
-  title,
-  description,
-  icon,
-  index,
-}: {
-  to: string;
-  title: string;
-  description: string;
-  icon: React.ReactNode;
-  index: number;
-}) {
-  const shouldReduceMotion = useReducedMotion();
-
-  const cardVariants = {
-    initial: { opacity: 0, y: 20 },
-    animate: {
-      opacity: 1,
-      y: 0,
-      transition: {
-        duration: 0.6,
-        delay: index * 0.15,
-      }
-    },
-    hover: shouldReduceMotion ? {} : {
-      scale: 1.02,
-      rotateX: -2,
-      rotateY: 5,
-      z: 20,
-      transition: { duration: 0.3 }
-    }
-  };
-
-  return (
-    <div className="quicklink-card-wrapper">
-      <motion.div
-        custom={index}
-        variants={cardVariants}
-        initial="initial"
-        whileInView="animate"
-        whileHover="hover"
-        viewport={{ once: true }}
-        className="quicklink-card"
-      >
-        <Link to={to} className="quicklink-card__link">
-          <div className="quicklink-card__icon">{icon}</div>
-          <h3 className="quicklink-card__title">{title}</h3>
-          <p className="quicklink-card__description">{description}</p>
-          <div className="quicklink-card__arrow">→</div>
-        </Link>
-      </motion.div>
-    </div>
   );
 }
 

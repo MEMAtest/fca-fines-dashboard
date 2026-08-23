@@ -156,3 +156,100 @@
     padding: 1.5rem;
   }
 }
+
+/* ── /contact page ───────────────────────────────────────────────────────
+   The form used to sit two-thirds down the homepage. It now has a page, so it
+   needs a page shell: heading, the form, and a column explaining what to send
+   and what happens to it. */
+.contact-page {
+  background: var(--ra-canvas, #f8fafb);
+}
+
+.contact-page__inner {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 3rem 2rem 4rem;
+}
+
+/* .ra-eyebrow is defined in homepage.css, which this page does not import, so
+   the label rendered as plain body text. Scoped copy rather than pulling in the
+   whole homepage stylesheet for one rule. */
+.contact-page__head .ra-eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--ra-accent-text);
+}
+
+.contact-page__head {
+  max-width: 62ch;
+  margin-bottom: 2rem;
+}
+
+.contact-page__head h1 {
+  font-family: var(--ra-font-serif);
+  font-size: clamp(1.9rem, 3.2vw, 2.5rem);
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  color: var(--ra-ink);
+  margin: 0.5rem 0 0.7rem;
+}
+
+.contact-page__head p {
+  font-size: 1.05rem;
+  line-height: 1.65;
+  color: #526071;
+  margin: 0;
+}
+
+.contact-page__grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.5fr) minmax(260px, 0.85fr);
+  gap: 2.5rem;
+  align-items: start;
+}
+
+.contact-page__aside {
+  display: flex;
+  flex-direction: column;
+  gap: 1.4rem;
+}
+
+.contact-page__aside-item {
+  display: flex;
+  gap: 0.75rem;
+  align-items: flex-start;
+  color: var(--ra-accent-text);
+}
+
+.contact-page__aside-item strong {
+  display: block;
+  font-size: 0.9rem;
+  color: var(--ra-ink);
+  margin-bottom: 0.2rem;
+}
+
+.contact-page__aside-item p {
+  margin: 0;
+  font-size: 0.88rem;
+  line-height: 1.6;
+  color: #64748b;
+}
+
+.contact-page__aside-item a {
+  color: var(--ra-accent-text);
+}
+
+@media (max-width: 900px) {
+  .contact-page__grid {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 2rem;
+  }
+  .contact-page__inner {
+    padding: 2.2rem 1.25rem 3rem;
+  }
+}

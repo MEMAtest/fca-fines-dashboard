@@ -490,6 +490,7 @@ const FOOTER_COMPANY_LINKS: Array<[string, string]> = [
   ["Roadmap", "/roadmap"],
   ["Features", "/features"],
   ["Privacy", "/privacy"],
+  ["Contact", "/contact"],
 ];
 
 const FOOTER_CONTACT_EMAIL = "contact@memaconsultants.com";
@@ -503,7 +504,7 @@ function renderFooterLinkList(links: Array<[string, string]>): string {
 function renderSiteFooter(): string {
   const exploreHtml = renderFooterLinkList(FOOTER_EXPLORE_LINKS);
   const dataHtml = renderFooterLinkList(FOOTER_DATA_LINKS);
-  const companyHtml = `${renderFooterLinkList(FOOTER_COMPANY_LINKS)}<li><a href="mailto:${FOOTER_CONTACT_EMAIL}">Contact</a></li>`;
+  const companyHtml = renderFooterLinkList(FOOTER_COMPANY_LINKS);
   const countryHtml = footerCountryLinks()
     .map(
       (c) =>
@@ -1947,6 +1948,30 @@ async function buildPageMetas(): Promise<PageMeta[]> {
         {
           heading: "Product Direction",
           body: "Near-term work prioritises alert precision, board-pack persistence, branded export quality, and reusable API or embedded surfaces.",
+        },
+      ],
+    ),
+  });
+
+  pages.push({
+    path: "/contact",
+    title: "Contact RegActions | Coverage, Data Access and Custom Requests",
+    description:
+      "Contact the RegActions team about regulator coverage, data access, API use, or a custom enforcement intelligence requirement.",
+    keywords:
+      "contact RegActions, regulatory enforcement data access, enforcement intelligence enquiry, compliance data API contact",
+    ogType: "website",
+    bodyContent: renderStaticPageBody(
+      "Contact RegActions",
+      "Questions about regulator coverage, data access, or a requirement that does not fit the standard product.",
+      [
+        {
+          heading: "What to include",
+          body: "The regulators or jurisdictions you care about, and whether you need the data in the product, as an export, or over the API.",
+        },
+        {
+          heading: "What happens to your message",
+          body: "Your message reaches the team directly. Contacting RegActions does not add you to a mailing list; the enforcement digest is a separate, one-click subscription.",
         },
       ],
     ),
