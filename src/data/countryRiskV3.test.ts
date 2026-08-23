@@ -35,13 +35,28 @@ describe("country risk v3", () => {
     expect(fatfSafeguardsRisk({ ...assessment, technicalCompliance: { ...assessment.technicalCompliance, R40: undefined } })).toMatchObject({ score: null, evidenceCount: 39 });
   });
 
-  it("derives beneficial ownership as 60% IO5 + 20% R24 + 20% R25", () => {
-    const bo = beneficialOwnershipRisk({
+  it("derives beneficial ownership as 80% FATF + 20% register access", () => {
+    const weak = {
       ...assessment,
-      effectiveness: { ...assessment.effectiveness, IO5: "LE" },
-      technicalCompliance: { ...assessment.technicalCompliance, R24: "NC", R25: "PC" },
+      effectiveness: { ...assessment.effectiveness, IO5: "LE" as const },
+      technicalCompliance: { ...assessment.technicalCompliance, R24: "NC" as const, R25: "PC" as const },
+    };
+    // The FATF half is unchanged: 60% IO5 + 20% R24 + 20% R25 = 9.3.
+    expect(beneficialOwnershipRisk(weak, "ZZ")).toMatchObject({
+      effectiveness: 10,
+      companies: 10,
+      trustsAndArrangements: 6.67,
+      // ZZ has no register in the snapshot, so absence scores 9.0. The FATF
+      // half is carried unrounded: 9.334 x 0.8 + 9.0 x 0.2 = 9.267 -> 9.3.
+      score: 9.3,
+      evidenceCount: 3,
     });
-    expect(bo).toMatchObject({ effectiveness: 10, companies: 10, trustsAndArrangements: 6.67, score: 9.3, availability: "available", evidenceCount: 3 });
+    // The United Kingdom runs a whole-economy register a firm can read, which
+    // pulls the same FATF ratings down: 9.334 x 0.8 + 2.0 x 0.2 = 7.867 -> 7.9.
+    const gb = beneficialOwnershipRisk(weak, "GB");
+    expect(gb.score).toBe(7.9);
+    expect(gb.register.tier).toBe("cdd-accessible");
+    expect(gb.formula).toBe("80% FATF (60% IO5 + 20% R24 + 20% R25) + 20% register access");
   });
 
   it("uses inverted WGI dimensions and withholds governance below five of six", () => {
