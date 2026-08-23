@@ -93,6 +93,6 @@ describe("Board Pack persistence contract", () => {
     expect(queries.some((query) => (
       query.includes("CREATE TABLE IF NOT EXISTS public.board_pack_request_limits")
     ))).toBe(true);
-    expect(queries.at(-1)).toContain("INSERT INTO public.board_pack_request_limits");
+    expect(queries[queries.length - 1]).toContain("INSERT INTO public.board_pack_request_limits");
   });
 });
