@@ -1162,7 +1162,7 @@
 .ra-briefing__inner {
   max-width: 1200px;
   margin: 0 auto;
-  padding: 3.4rem 2rem;
+  padding: 2.4rem 2rem;
   display: grid;
   grid-template-columns: 1fr 0.85fr;
   gap: 3.5rem;
@@ -1192,12 +1192,18 @@
 .ra-briefing__form {
   background: #fff;
   border-radius: var(--ra-radius-xl);
-  padding: 1.4rem;
+  padding: 1.1rem;
   box-shadow: 0 24px 55px rgba(0, 0, 0, 0.3);
 }
 
 .ra-briefing__form .digest-subscribe-form {
+  /* The component carries its own tinted background, border and radius. Inside
+     the briefing's white card that produced a card within a card, visible as a
+     faint outline a few pixels in from the real edge. */
   padding: 0;
+  background: none;
+  border: none;
+  border-radius: 0;
 }
 
 @media (max-width: 1024px) {
@@ -1612,4 +1618,24 @@
    Figure component in Homepage.tsx for why. */
 .figure-decimal {
   margin: 0 -0.11em;
+}
+
+/* The briefing band was 572px tall for 136px of copy. The height came entirely
+   from the form, which was spacing its rows twice: the form is a flex column
+   with `gap: 1.25rem` AND each .form-group carried a 1.5rem bottom margin, so
+   every row sat 44px from the next instead of 20px.
+
+   Scoped to the homepage on purpose. The same component appears on the blog and
+   the subscriptions page, where the roomier spacing is fine and the section is
+   not competing for fold space. */
+.ra-briefing .digest-header {
+  margin-bottom: 0.9rem;
+}
+
+.ra-briefing .form-group {
+  margin-bottom: 0;
+}
+
+.ra-briefing .frequency-toggle button {
+  padding: 0.7rem;
 }
