@@ -19,7 +19,9 @@ import {
   type FeatureMeta,
 } from "./mapShared.js";
 
-const DARK_NO_DATA = "#334155";
+// Unscored neighbours on a light map. Was #334155, which only worked against
+// the dark panel the map used to sit on.
+const NO_DATA = "#e2e8f0";
 /** focus + ~13 nearest → a readable 8-14 country neighbourhood. */
 const NEIGHBOURHOOD = 14;
 /** Skip labels on polygons smaller than this projected area (px²) to avoid clutter. */
@@ -163,14 +165,14 @@ export function CountryRegionalMap({ iso2, region }: Props) {
             const fm = meta.get(f)!;
             const d = pathGen(f) ?? undefined;
             const isFocus = fm.iso2 === iso2;
-            const fill = fm.band ? BAND_COLOUR[fm.band] : DARK_NO_DATA;
+            const fill = fm.band ? BAND_COLOUR[fm.band] : NO_DATA;
             return (
               <path
                 key={fm.iso2 ?? `x-${i}`}
                 d={d}
                 fill={fill}
-                fillOpacity={isFocus ? 1 : 0.55}
-                stroke={isFocus ? "#ffffff" : "#0b1f2a"}
+                fillOpacity={isFocus ? 1 : 0.72}
+                stroke="#ffffff"
                 strokeWidth={isFocus ? 1.8 : 0.5}
                 className={`cx-rmap__country${fm.iso2 && !isFocus ? " cx-rmap__country--live" : ""}`}
                 onMouseEnter={(e) => onEnterMove(e, fm)}

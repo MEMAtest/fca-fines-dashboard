@@ -16,6 +16,7 @@ import {
   ExternalLink,
   Flag,
   Gavel,
+  CalendarDays,
   Globe2,
   Info,
   Landmark,
@@ -34,6 +35,9 @@ import { getEgmontMember } from "../data/egmontMembership.js";
 import { getFatfAssessmentLink } from "../data/fatfAssessmentLinks.js";
 import { beneficialOwnershipRegisterRisk } from "../data/beneficialOwnershipRegisters.js";
 import { BO_REGISTERS_REVIEWED, BO_REGISTERS_SOURCE_URL, getBoRegister, boRegisterSignal } from "../data/boRegisters.js";
+import { FATF_VERIFIED_AT, FATF_NEXT_PLENARY, FATF_NEXT_PLENARY_START } from "../data/fatfStatus.js";
+import { FATF_ASSESSMENT_EFFECTIVE_AT } from "../data/fatfAssessmentData.js";
+import { SANCTIONS_APPROVED_SNAPSHOT } from "../data/sanctionsApprovedData.js";
 import {
   recentChangesForCountry,
   CHANGE_KIND_LABELS,
@@ -326,6 +330,23 @@ export function CountryHub() {
   const meLink = getFatfAssessmentLink(country.iso2);
   // Beneficial-ownership register availability (Open Ownership, CC BY 4.0) —
   // a Framework-signals line, only where the source confirms a live register.
+  const sourcesLastUpdated = [
+    FATF_VERIFIED_AT,
+    FATF_ASSESSMENT_EFFECTIVE_AT,
+    SANCTIONS_APPROVED_SNAPSHOT.effectiveAt,
+    BO_REGISTERS_REVIEWED,
+  ]
+    .filter((value): value is string => Boolean(value))
+    .sort()
+    .slice(-1)[0];
+  const daysToPlenary = Math.ceil(
+    (new Date(`${FATF_NEXT_PLENARY_START}T00:00:00Z`).getTime() - Date.now()) / 86_400_000,
+  );
+  // "expected", because a plenary runs over several days and the start can move.
+  const nextPlenaryLabel = daysToPlenary > 1
+    ? `Next FATF plenary expected ${formatDate(FATF_NEXT_PLENARY)} · in ${daysToPlenary} days`
+    : `Next FATF plenary expected ${formatDate(FATF_NEXT_PLENARY)}`;
+
   const boReg = getBoRegister(country.iso2);
   const boRegisterAccess = beneficialOwnershipRegisterRisk(country.iso2);
   const frameworkSignals: { label: string; value: string }[] = [
@@ -646,6 +667,7 @@ export function CountryHub() {
         <div className="cx-ws__main">
           {/* ── Header: identity | overall risk score ── */}
           <div className="cx-ws__head">
+            <div className="cx-card cx-hero">
             <div className="cx-ident">
               <span className={`cx-ident__flag cx-ident__flag--${publishedBand ?? "insufficient"}`} aria-hidden="true">
                 {view.flag}
@@ -663,9 +685,9 @@ export function CountryHub() {
               </div>
             </div>
 
-            <div className="cx-card cx-osc">
+            <div className="cx-osc">
               <span className="cx-card__eyebrow">
-                <Info size={12} /> Overall risk score
+                Overall risk score <Info size={12} className="cx-osc__info" />
               </span>
               <div className="cx-osc__grid">
                 <div className="cx-osc__main">
@@ -676,7 +698,7 @@ export function CountryHub() {
                     {publishedScore !== null && <span className="cx-score__of">/ 10</span>}
                   </div>
                   <div className="cx-gauge" aria-hidden="true">
-                    <div className="country-score__bar">
+                    <div className={`country-score__bar country-score--${publishedBand ?? "insufficient"}`}>
                       {Array.from({ length: 10 }).map((_, i) => (
                         <span
                           key={i}
@@ -693,16 +715,11 @@ export function CountryHub() {
                   <p className="cx-osc__band-txt">
                     {publishedBand ? `${bandLabel(publishedBand)} risk` : unscoredStatusLabel(country.iso2)}
                   </p>
-                  <p className="cx-osc__avg">
-                    {publicExplanation.statusLabel} · {publicExplanation.confidenceLabel}
-                  </p>
-                  {riskV3.status !== "complete" && (
-                    <p className="cx-osc__status-note">{publicExplanation.statusExplanation}</p>
-                  )}
                   <p className="cx-osc__avg">Global average: {globalAverage.toFixed(1)}</p>
+                  <p className="cx-osc__avg">{publicExplanation.statusLabel}</p>
                 </div>
                 <div className="cx-osc__cell">
-                  <span className="cx-osc__k">Risk band</span>
+                  <span className="cx-osc__k">Risk band <Info size={11} className="cx-osc__info" /></span>
                   <span
                     className={`cx-band-pill cx-band-pill--${
                       publishedBand ?? (hasLegalStatus(country.iso2) ? "legal" : "insufficient")
@@ -712,17 +729,23 @@ export function CountryHub() {
                   </span>
                 </div>
                 <div className="cx-osc__cell">
-                  <span className="cx-osc__k">Risk rank</span>
+                  <span className="cx-osc__k">Risk rank <Info size={11} className="cx-osc__info" /></span>
                   <span className="cx-osc__big">{rank.rank === null ? "—" : ordinal(rank.rank)}</span>
                   <span className="cx-osc__sub">of {rank.total} by risk</span>
                 </div>
                 <div className="cx-osc__cell cx-osc__cell--verdict">
                   <span className="cx-osc__k">
-                    <ShieldCheck size={13} /> One-line verdict
+                    One-line verdict <Info size={11} className="cx-osc__info" />
                   </span>
                   <p className="cx-osc__verdict">{decision.verdictHeadline}.</p>
                 </div>
               </div>
+            </div>
+            <div className="cx-hero__foot">
+              <span><Clock size={12} /> Sources last updated {formatDate(sourcesLastUpdated)}</span>
+              <span aria-hidden="true" className="cx-hero__foot-sep" />
+              <span><CalendarDays size={12} /> {nextPlenaryLabel}</span>
+            </div>
             </div>
             <div className="cx-card cx-mapw">
               <span className="cx-card__eyebrow">
