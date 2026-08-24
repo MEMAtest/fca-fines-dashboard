@@ -181,6 +181,37 @@ function buildStats(records: FineRecord[]): StatsResponse["data"] {
   };
 }
 
+/**
+ * One page of the paged search, retried before it is allowed to fail.
+ *
+ * The pages are requested with `Promise.all`, so a single transient failure
+ * rejected the whole batch and the page rendered "Unable to load regulatory
+ * data" with nothing on it, even though every other page had arrived. There was
+ * no retry at all, so one dropped request in a burst lost the entire view.
+ *
+ * Two retries with a short backoff. Failing after that still surfaces the
+ * error: a partial record set must not be presented as a complete one, because
+ * the totals and charts built from it would silently understate.
+ */
+export async function fetchPage(
+  offset: number,
+  limit: number,
+  searchParams: Parameters<typeof fetchUnifiedSearch>[0],
+): Promise<UnifiedSearchResponse> {
+  let lastError: unknown;
+  for (let attempt = 0; attempt < 3; attempt += 1) {
+    try {
+      return await fetchUnifiedSearch({ ...searchParams, limit, offset });
+    } catch (error) {
+      lastError = error;
+      if (attempt < 2) {
+        await new Promise((resolve) => setTimeout(resolve, 250 * 2 ** attempt));
+      }
+    }
+  }
+  throw lastError;
+}
+
 export function useUnifiedData({
   regulator,
   country,
@@ -229,11 +260,7 @@ export function useUnifiedData({
         // The first response carries `pagination.total`, so after one round-trip
         // we know exactly how many more pages exist and can ask for them at
         // once. Same requests, same records, same order: measured 4.9s -> 1.6s.
-        const firstPage = await fetchUnifiedSearch({
-          ...searchParams,
-          limit: pageLimit,
-          offset: 0,
-        });
+        const firstPage = await fetchPage(0, pageLimit, searchParams);
 
         const wanted = Math.min(maximumRecords, firstPage.pagination.total);
         const remainingOffsets: number[] = [];
@@ -242,9 +269,7 @@ export function useUnifiedData({
         }
 
         const remainingPages = await Promise.all(
-          remainingOffsets.map((offset) =>
-            fetchUnifiedSearch({ ...searchParams, limit: pageLimit, offset }),
-          ),
+          remainingOffsets.map((offset) => fetchPage(offset, pageLimit, searchParams)),
         );
 
         // Concatenated by offset, not by completion order, so the date_issued
