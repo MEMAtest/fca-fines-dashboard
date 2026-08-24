@@ -53,14 +53,27 @@ export function EnforcementExplorer() {
   const page = Math.max(1, Number(searchParams.get("page") || 1));
   const overview = useWorkspaceOverview({ currency: "GBP" });
 
+  /**
+   * Apply filter changes to the URL, which is the single source of truth here.
+   *
+   * This built `next` from the `searchParams` captured in the render closure.
+   * Two changes made before React re-rendered therefore both started from the
+   * same snapshot, and the second silently dropped the first: setting a year
+   * and then picking a theme could leave the URL holding only the theme, while
+   * the year control still showed 2025. On a search tool that means results
+   * that do not match the filters the user can see, which is worse than a
+   * visible failure. The updater form reads the live params instead.
+   */
   const update = (changes: Record<string, string | number | null | undefined>) => {
-    const next = new URLSearchParams(searchParams);
-    for (const [key, value] of Object.entries(changes)) {
-      if (value == null || value === "" || value === 0) next.delete(key);
-      else next.set(key, String(value));
-    }
-    if (!("page" in changes)) next.delete("page");
-    setSearchParams(next, { replace: true });
+    setSearchParams((current) => {
+      const next = new URLSearchParams(current);
+      for (const [key, value] of Object.entries(changes)) {
+        if (value == null || value === "" || value === 0) next.delete(key);
+        else next.set(key, String(value));
+      }
+      if (!("page" in changes)) next.delete("page");
+      return next;
+    }, { replace: true });
   };
 
   useEffect(() => setQueryDraft(q), [q]);

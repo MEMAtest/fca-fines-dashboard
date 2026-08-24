@@ -83,11 +83,16 @@ export function RegulatorWorkspace({ view }: RegulatorWorkspaceProps) {
   const sector = searchParams.get("sector") || "All";
   const query = searchParams.get("q") || "";
   const comparisonRegulator = searchParams.get("compare") || (code === "SEC" ? "FCA" : "SEC");
+  // Reads the live params rather than the render closure's snapshot, so two
+  // scope changes made before a re-render cannot drop one another. Same defect
+  // as the Enforcement Explorer's filter updater.
   const updateScope = (key: string, value: string | number, emptyValue: string | number) => {
-    const next = new URLSearchParams(searchParams);
-    if (value === emptyValue || value === "") next.delete(key);
-    else next.set(key, String(value));
-    setSearchParams(next, { replace: true });
+    setSearchParams((current) => {
+      const next = new URLSearchParams(current);
+      if (value === emptyValue || value === "") next.delete(key);
+      else next.set(key, String(value));
+      return next;
+    }, { replace: true });
   };
 
   const primary = useUnifiedData({ regulator: code, country: "All", year, currency: "GBP" });
