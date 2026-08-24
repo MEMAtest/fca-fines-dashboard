@@ -1826,6 +1826,12 @@ button.cx-kpi:hover {
 }
 .cx-domain__label { line-height: 1.25; }
 .cx-domain__wt { color: #94a3b8; font-weight: 700; white-space: nowrap; }
+/* The unavailable note has to wrap — it is a phrase, not a percentage — and the
+   empty track gets a dashed edge so a bar at zero width reads as "no evidence"
+   rather than as a measured zero. */
+.cx-domain__wt--none { display: block; white-space: normal; font-weight: 600; font-size: 0.66rem; color: #94a3b8; }
+.cx-domain--unavailable .cx-domain__track { background: transparent; border: 1px dashed #cbd5e1; }
+.cx-domain--unavailable .cx-domain__val { color: #94a3b8; font-weight: 500; }
 .cx-domain__track {
   height: 7px;
   background: #eef2f7;
@@ -3765,7 +3771,12 @@ button.cx-ovband--btn:hover {
 .cx-attr__stat { display: flex; flex-direction: column; gap: 0.1rem; min-width: 0; }
 .cx-attr__stat-k { display: inline-flex; align-items: center; gap: 0.2rem; font-size: 0.58rem; text-transform: uppercase; letter-spacing: 0.04em; color: #94a3b8; font-weight: 800; }
 .cx-attr__stat-k svg { flex: 0 0 auto; color: #94a3b8; }
-.cx-attr__stat-v { font-size: 0.82rem; font-weight: 800; color: #0b1f2a; line-height: 1.15; overflow-wrap: anywhere; font-family: var(--ra-font-mono); }
+/* `overflow-wrap: anywhere` broke at every character in a 1fr column of a
+   271px rail: "23/100" measured 8px wide by 91px tall, one glyph per line.
+   `break-word` only breaks a token that cannot fit on a line of its own, and
+   the numeric value is additionally pinned so a slash is never a break point. */
+.cx-attr__stat-v { font-size: 0.82rem; font-weight: 800; color: #0b1f2a; line-height: 1.15; overflow-wrap: break-word; font-family: var(--ra-font-mono); }
+.cx-attr__stat-v--num { white-space: nowrap; }
 .cx-attr__stat-v small { font-size: 0.6rem; font-weight: 600; color: #94a3b8; }
 .cx-attr__stat-d { font-size: 0.6rem; color: #94a3b8; line-height: 1.25; }
 .cx-attr__muted { font-size: 0.72rem; font-weight: 700; color: #94a3b8; }
@@ -3958,7 +3969,6 @@ button.cx-ovband--btn:hover {
 }
 .cx-onreport__list a:hover { background: var(--ra-rail); color: var(--ra-accent-text); }
 .cx-meth__intro { font-size: 0.74rem; color: #475569; margin: 0 0 0.5rem; line-height: 1.4; }
-.cx-meth__base { font-size: 0.8rem; color: #334155; margin: 0.5rem 0 0; }
 .cx-meth__plain-note {
   display: flex;
   flex-direction: column;
@@ -3973,6 +3983,17 @@ button.cx-ovband--btn:hover {
 }
 .cx-meth__details { margin-top: 0.5rem; font-size: 0.72rem; color: #475569; }
 .cx-meth__details summary { cursor: pointer; color: #0b7f66; font-weight: 700; }
+/* The calculation as a table: the pillar names are long and the rail is narrow,
+   so the label column wraps and the three numeric columns stay on one line. */
+.cx-meth__calc { width: 100%; margin-top: 0.5rem; border-collapse: collapse; font-size: 0.68rem; }
+.cx-meth__calc th, .cx-meth__calc td { padding: 0.28rem 0.2rem; text-align: right; vertical-align: top; }
+.cx-meth__calc thead th { font-size: 0.58rem; text-transform: uppercase; letter-spacing: 0.04em; color: #94a3b8; font-weight: 800; border-bottom: 1px solid #eef2f7; }
+.cx-meth__calc th[scope="row"] { text-align: left; font-weight: 600; color: #475569; line-height: 1.25; }
+.cx-meth__calc thead th:first-child { text-align: left; }
+.cx-meth__calc tbody td { font-family: var(--ra-font-mono); font-variant-numeric: tabular-nums; white-space: nowrap; color: #0b1f2a; }
+.cx-meth__calc tfoot th, .cx-meth__calc tfoot td { border-top: 1px solid #cbd5e1; font-weight: 800; color: #0b1f2a; }
+.cx-meth__calc tfoot td { font-family: var(--ra-font-mono); font-variant-numeric: tabular-nums; white-space: nowrap; }
+.cx-meth__calc-none { margin: 0.5rem 0 0; color: #475569; }
 
 /* Peer bars (rail) */
 .cx-peerc__list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 0.25rem; }
@@ -4560,6 +4581,8 @@ button.cx-dist__seg:hover { opacity: 0.85; }
 }
 
 .cx-regsignal__answer > li {
+  display: flex;
+  flex-direction: column;
   border: 1px solid var(--ra-border, #e5e7eb);
   border-left: 3px solid var(--ra-accent, #0fa77d);
   border-radius: 10px;
@@ -4567,17 +4590,22 @@ button.cx-dist__seg:hover { opacity: 0.85; }
   background: #fff;
 }
 
+/* Mark and name are one unit. The official-site link used to sit in this row
+   opposite the name, which put it top-right on short names and wrapped it onto
+   its own line on long ones — the same link in two places down one column. It
+   now closes every card instead, in one fixed position. */
 .cx-regsignal__answer-head {
   display: flex;
-  align-items: baseline;
-  justify-content: space-between;
-  gap: 0.75rem;
-  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.55rem;
 }
 
-.cx-regsignal__answer-head strong { font-size: 0.95rem; color: var(--ra-ink, #0b1f2a); }
+.cx-regsignal__answer-head strong { min-width: 0; font-size: 0.95rem; color: var(--ra-ink, #0b1f2a); }
 
-.cx-regsignal__answer-head a {
+.cx-regsignal__answer-site {
+  margin-top: auto;
+  padding-top: 0.5rem;
+  align-self: flex-start;
   display: inline-flex;
   align-items: center;
   gap: 0.25rem;
@@ -4593,10 +4621,13 @@ button.cx-dist__seg:hover { opacity: 0.85; }
   color: #334155;
 }
 
+/* This line now carries the site status as well as the identification source,
+   so it is real content rather than a footnote and needs readable contrast. */
 .cx-regsignal__answer-prov {
   margin: 0.3rem 0 0;
   font-size: 0.74rem;
-  color: #94a3b8;
+  line-height: 1.4;
+  color: #64748b;
 }
 
 .cx-regsignal__answer-empty {

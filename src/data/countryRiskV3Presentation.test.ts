@@ -24,4 +24,31 @@ describe("country-risk v3 public presentation", () => {
     });
     expect(buildCountryRiskV3PublicExplanation(computeCountryRiskV3("GB")).pillars.some((pillar) => pillar.key === "icrg")).toBe(false);
   });
+
+  it("states the calculation under the pillar labels, never the internal keys", () => {
+    const explanation = buildCountryRiskV3PublicExplanation(computeCountryRiskV3("IR", { asOf: new Date("2026-08-20T00:00:00Z") }));
+    const calculation = explanation.calculation!;
+    expect(calculation.rows.map((row) => row.label)).toEqual([
+      "Governance and institutional integrity",
+      "FATF public determination (ICRG substitute)",
+    ]);
+    // The bug this replaces: the rail printed "icrg 9.5 × 65%".
+    expect(calculation.rows.some((row) => /^(icrg|governance|effectiveness|safeguards)$/.test(row.label))).toBe(false);
+  });
+
+  it("omits pillars it holds no evidence for rather than crediting them zero", () => {
+    const result = computeCountryRiskV3("IR", { asOf: new Date("2026-08-20T00:00:00Z") });
+    const calculation = buildCountryRiskV3PublicExplanation(result).calculation!;
+    expect(calculation.rows.every((row) => row.weightPct > 0)).toBe(true);
+    expect(calculation.rows.some((row) => row.key === "safeguards")).toBe(false);
+    expect(result.pillars.safeguards.score).toBeNull();
+    // The published weights still have to account for the whole score.
+    expect(calculation.rows.reduce((sum, row) => sum + row.weightPct, 0)).toBeCloseTo(100, 1);
+    expect(calculation.total).toBe(result.score);
+  });
+
+  it("publishes no calculation where no score is published", () => {
+    const withheld = computeCountryRiskV3("IR", { asOf: new Date("2026-08-20T00:00:00Z") });
+    expect(buildCountryRiskV3PublicExplanation({ ...withheld, score: null }).calculation).toBeNull();
+  });
 });
