@@ -11,6 +11,20 @@ export const COUNTRY_RISK_V3_PILLAR_LABELS = {
   icrg: "FATF public determination (ICRG substitute)",
 } as const;
 
+/**
+ * What each pillar means, for a reader who does not know the methodology.
+ *
+ * The labels alone ("Legal and supervisory safeguards") name a category without
+ * saying what was measured or by whom. These sit under the labels on the report
+ * so the section can explain the score without printing the arithmetic.
+ */
+export const COUNTRY_RISK_V3_PILLAR_PLAIN: Record<keyof typeof COUNTRY_RISK_V3_PILLAR_LABELS, string> = {
+  effectiveness: "How well financial-crime controls work in practice, as assessed by FATF across its eleven Immediate Outcomes.",
+  safeguards: "Whether the laws, powers and supervisory framework meet the FATF Recommendations.",
+  governance: "Strength of public institutions, rule of law and transparency, from the World Bank governance indicators.",
+  icrg: "FATF's own published determination, used in place of assessment ratings where a country has never been evaluated.",
+};
+
 export function countryRiskV3StatusLabel(status: CountryRiskV3Result["status"]): string {
   if (status === "complete") return "Full information available";
   if (status === "provisional") return "Some information unavailable";
