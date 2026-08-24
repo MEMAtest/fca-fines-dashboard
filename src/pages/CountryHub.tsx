@@ -58,9 +58,7 @@ import { buildCountryRiskV3PublicExplanation, countryRiskV3BandLabel } from "../
 import { buildCountryRiskContext } from "../data/countryRiskContext.js";
 import { CountryRiskContextPanel } from "../components/CountryRiskContextPanel.js";
 import { buildCountryRiskGovernanceEvidenceRows } from "../data/countryRiskGovernancePresentation.js";
-import {
-  getRegulatorySignalCountry,
-} from "../data/regulatorySignal.js";
+import { getRegulatorySignalCountry, roleLabel, authorityAccessLabel } from "../data/regulatorySignal.js";
 import {
   buildCountryView,
   formatDate,
@@ -801,9 +799,9 @@ export function CountryHub() {
               <div className="cx-regsignal__head">
                 <div>
                   <span className="cx-card__eyebrow"><Landmark size={12} /> Regulatory ecosystem and enforcement visibility</span>
-                  <h2 id="regulatory-signal-heading" className="cx-regsignal__title">Who regulates {country.name}, and what can be observed publicly?</h2>
+                  <h2 id="regulatory-signal-heading" className="cx-regsignal__title">Who regulates {country.name}?</h2>
                   <p className="cx-regsignal__intro">
-                    This evidence map is separate from Country Risk v3. It describes official mandates, publication access and RegActions coverage; it does not judge regulatory strength or add points to country risk.
+                    Official mandates and publication access. Separate from Country Risk v3: it does not judge regulatory strength or add points to the score.
                   </p>
                 </div>
                 <div className="cx-regsignal__actions">
@@ -812,6 +810,35 @@ export function CountryHub() {
                   <a className="cx-btn" href={`/api/regulatory-signal/evidence/${country.iso2}?format=json`}>JSON</a>
                 </div>
               </div>
+              {regulatorySignal.authorities.length > 0 ? (
+                <ul className="cx-regsignal__answer" aria-label={`Authorities regulating ${country.name}`}>
+                  {regulatorySignal.authorities.map((authority) => (
+                    <li key={`${authority.name}-${authority.website ?? ""}`}>
+                      <div className="cx-regsignal__answer-head">
+                        <strong>{authority.name}</strong>
+                        {authority.website && (
+                          <a href={authority.website} target="_blank" rel="noopener noreferrer">
+                            Official site <ExternalLink size={11} />
+                          </a>
+                        )}
+                      </div>
+                      <p className="cx-regsignal__answer-roles">
+                        {(authority.mandate.length ? authority.mandate : authority.roles).map(roleLabel).join(" · ")
+                          || "Mandate family not classified"}
+                      </p>
+                      <p className="cx-regsignal__answer-prov">
+                        Identified from {authority.directorySources.join(", ") || "the official directory snapshot"}
+                        {authority.accessState !== "reachable" ? ` · ${authorityAccessLabel(authority.accessState)}` : ""}
+                      </p>
+                    </li>
+                  ))}
+                </ul>
+              ) : (
+                <p className="cx-regsignal__answer-empty">
+                  No authority was resolved in the directory snapshot. That is an absence of evidence, not a finding that {country.name} has no regulator.
+                </p>
+              )}
+
               <div className="cx-regsignal__summary" aria-label="Regulatory ecosystem summary">
                 <div><b>{regulatorySignal.officialDirectoryAuthorities}</b><span>official authorities mapped</span></div>
                 <div><b>{regulatorySignal.officialDirectoryRoles.length}</b><span>mandate families evidenced</span></div>
