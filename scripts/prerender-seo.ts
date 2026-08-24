@@ -842,7 +842,7 @@ function renderCountryFatfBody(view: CountryView): string {
     ? `<h2>Country Risk Score: ${escapeHtml(
         `${riskV3.score!.toFixed(1)}/10 (${countryRiskV3BandLabel(riskV3.band!)})`,
       )}</h2><p>${escapeHtml(
-        `Higher score means higher country risk (global average ${globalAverage.toFixed(1)}). ${publicExplanation.statusLabel}. ${publicExplanation.resultKindLabel}. ${publicExplanation.confidenceLabel}. Enforcement activity and CPI are context only; FATF listing and sanctions are regulatory overlays except the labelled ICRG substitute used where no mutual evaluation exists.`,
+        `Higher score means higher country risk (global average ${globalAverage.toFixed(1)}). ${publicExplanation.statusLabel}. ${publicExplanation.resultKindLabel}. ${publicExplanation.confidenceLabel}. Enforcement activity and CPI are context only; FATF listing and sanctions are regulatory overlays except the labelled FATF listing status used where no mutual evaluation exists.`,
       )}</p><p>${escapeHtml(publicExplanation.statusExplanation)} ${escapeHtml(publicExplanation.resultKindExplanation)}${publicExplanation.sensitivityLabel ? ` ${escapeHtml(publicExplanation.sensitivityLabel)}.` : ""}</p><h3>How this score was calculated</h3><ul>${pillarLis}${missingLis}</ul><p>Sanctions treatment: ${escapeHtml(publicExplanation.overlayLabels.sanctions)}. FATF treatment: ${escapeHtml(publicExplanation.overlayLabels.fatf)}.</p><details><summary>Show the exact calculation</summary><p>${escapeHtml(riskV3.arithmetic)}</p></details>`
     : `<h2>Country Risk Score: not published</h2><p>${escapeHtml(
         publicExplanation.statusExplanation,
@@ -856,7 +856,7 @@ function renderCountryFatfBody(view: CountryView): string {
     `FATF status: ${statusHeading} (one indicator only; it does not set the overall country risk rating by itself)`,
   )}</li><li>${escapeHtml(
     sanctionsGlance,
-  )}</li><li>${escapeHtml(riskV3.pillars.governance.score === null ? "Governance and institutional integrity: information unavailable" : `Governance and institutional integrity: ${riskV3.pillars.governance.score.toFixed(1)}/10`)}</li><li>${escapeHtml(
+  )}</li><li>${escapeHtml(riskV3.pillars.governance.score === null ? "Governance and institutions: information unavailable" : `Governance and institutions: ${riskV3.pillars.governance.score.toFixed(1)}/10`)}</li><li>${escapeHtml(
     cpi
       ? `Corruption (CPI ${CPI_YEAR}): ${cpi.score}/100, rank #${cpi.rank} of ${CPI_TOTAL}`
       : "Corruption (CPI): no score",
@@ -1288,7 +1288,7 @@ function renderGlobalIndexBody(): string {
 
 /** Crawlable methodology page — mirrors CountryMethodology.tsx. */
 function renderMethodologyBody(): string {
-  return `<div class="seo-doc"><div class="seo-doc__container"><article class="seo-doc__article"><h1 class="seo-doc__title">Country Risk Score</h1><div class="seo-doc__body"><p>The current RegActions v3.1 score estimates underlying jurisdiction risk on a 0-10 scale. Higher means greater risk. Sanctions and FATF listings are legal and regulatory overlays, not extra points in the underlying score.</p><h2>What the score considers</h2><ul><li>Financial-crime effectiveness (45%): FATF evidence across the 11 Immediate Outcomes.</li><li>Legal and supervisory safeguards (20%): FATF Recommendations 1-40, excluding explicit not-applicable ratings.</li><li>Governance and institutional integrity (35%): six inverted World Bank governance dimensions.</li></ul><h2>Beneficial ownership</h2><p>Beneficial ownership is a visible breakout using FATF IO5 (60%), Recommendation 24 on companies (20%), and Recommendation 25 on trusts and arrangements (20%). A public register alone does not prove current, accurate and promptly available ownership information.</p><h2>Regulatory overlays</h2><p>UN, UK, EU and US sanctions trigger screening and transaction review. FATF increased monitoring or call-for-action status is shown with its required treatment. Neither overlay changes the underlying numeric score where a mutual evaluation exists; a FATF public determination is an explicit substitute only where no mutual evaluation exists.</p><h2>Missing information</h2><p>If one pillar is unavailable, available weights are rebalanced and the result is provisional. Governance-only results are indicative proxies, remain discoverable, and are excluded from exact global ranking. Each score includes confidence and a bounded weight-sensitivity range. Missing information is never treated as zero risk.</p><h2>Historical v2</h2><p>The previous sanctions-weighted model remains available at <a href="/countries/methodology/v2">the v2 methodology page</a> and through explicit API requests using <code>?methodology=v2</code>.</p></div></article></div></div>`;
+  return `<div class="seo-doc"><div class="seo-doc__container"><article class="seo-doc__article"><h1 class="seo-doc__title">Country Risk Score</h1><div class="seo-doc__body"><p>The current RegActions v3.1 score estimates underlying jurisdiction risk on a 0-10 scale. Higher means greater risk. Sanctions and FATF listings are legal and regulatory overlays, not extra points in the underlying score.</p><h2>What the score considers</h2><ul><li>AML/CFT effectiveness (45%): FATF evidence across the 11 Immediate Outcomes.</li><li>Technical compliance (20%): FATF Recommendations 1-40, excluding explicit not-applicable ratings.</li><li>Governance and institutions (35%): six inverted World Bank governance dimensions.</li></ul><h2>Beneficial ownership</h2><p>Beneficial ownership is a visible breakout using FATF IO5 (60%), Recommendation 24 on companies (20%), and Recommendation 25 on trusts and arrangements (20%). A public register alone does not prove current, accurate and promptly available ownership information.</p><h2>Regulatory overlays</h2><p>UN, UK, EU and US sanctions trigger screening and transaction review. FATF increased monitoring or call-for-action status is shown with its required treatment. Neither overlay changes the underlying numeric score where a mutual evaluation exists; a FATF public determination is an explicit substitute only where no mutual evaluation exists.</p><h2>Missing information</h2><p>If one pillar is unavailable, available weights are rebalanced and the result is provisional. Governance-only results are indicative proxies, remain discoverable, and are excluded from exact global ranking. Each score includes confidence and a bounded weight-sensitivity range. Missing information is never treated as zero risk.</p><h2>Historical v2</h2><p>The previous sanctions-weighted model remains available at <a href="/countries/methodology/v2">the v2 methodology page</a> and through explicit API requests using <code>?methodology=v2</code>.</p></div></article></div></div>`;
 }
 
 function renderMethodologyV2Body(): string {
@@ -2405,7 +2405,7 @@ async function buildPageMetas(): Promise<PageMeta[]> {
         "@context": "https://schema.org",
         "@type": "Dataset",
         name: "RegActions Country AML Risk Ratings",
-        description: `Country-level AML/financial-crime risk ratings for ${globalIndexCount} jurisdictions under methodology v3. The headline score combines FATF financial-crime effectiveness, FATF legal and supervisory safeguards, and six inverted World Bank governance dimensions. Beneficial ownership is a visible breakout; FATF listings and sanctions are regulatory treatment overlays, not extra score inputs. ${globalIndexComplete} are complete, ${globalIndexProvisional} provisional and ${globalIndexInsufficient} insufficient-data. Transparency International CPI is context only.`,
+        description: `Country-level AML/financial-crime risk ratings for ${globalIndexCount} jurisdictions under methodology v3. The headline score combines FATF AML/CFT effectiveness, FATF technical compliance, and six inverted World Bank governance dimensions. Beneficial ownership is a visible breakout; FATF listings and sanctions are regulatory treatment overlays, not extra score inputs. ${globalIndexComplete} are complete, ${globalIndexProvisional} provisional and ${globalIndexInsufficient} insufficient-data. Transparency International CPI is context only.`,
         url: `${BASE_URL}/countries`,
         keywords: [
           "country risk ratings",
@@ -2417,9 +2417,9 @@ async function buildPageMetas(): Promise<PageMeta[]> {
         ],
         creator: { "@id": `${BASE_URL}/#organization` },
         variableMeasured: [
-          { "@type": "PropertyValue", name: "FATF financial-crime effectiveness pillar" },
-          { "@type": "PropertyValue", name: "FATF legal and supervisory safeguards pillar" },
-          { "@type": "PropertyValue", name: "World Bank governance and institutional integrity pillar" },
+          { "@type": "PropertyValue", name: "FATF AML/CFT effectiveness pillar" },
+          { "@type": "PropertyValue", name: "FATF technical compliance pillar" },
+          { "@type": "PropertyValue", name: "World Bank governance and institutions pillar" },
           { "@type": "PropertyValue", name: "Beneficial-ownership breakout" },
           { "@type": "PropertyValue", name: "FATF listing treatment overlay" },
           { "@type": "PropertyValue", name: "Sanctions treatment overlay" },
@@ -2592,7 +2592,7 @@ async function buildPageMetas(): Promise<PageMeta[]> {
       status ? `FATF ${listLabel} status` : "FATF listing status"
     }, ${
       sanctionsClassificationPublished ? `${sanctionsLabel || "no direct"} sanctions programmes shown as a treatment overlay` : "sanctions evidence incomplete"
-    }. The headline score combines financial-crime effectiveness, legal and supervisory safeguards, and governance and institutional integrity; beneficial ownership is a breakout and FATF/sanctions are not score inputs. Regulatory ecosystem and enforcement visibility are separate evidence signals.`;
+    }. The headline score combines AML/CFT effectiveness, technical compliance, and governance and institutions; beneficial ownership is a breakout and FATF/sanctions are not score inputs. Regulatory ecosystem and enforcement visibility are separate evidence signals.`;
     pages.push({
       path,
       title,
@@ -2625,9 +2625,9 @@ async function buildPageMetas(): Promise<PageMeta[]> {
           license: "https://creativecommons.org/licenses/by-nc/4.0/",
           isAccessibleForFree: true,
           variableMeasured: [
-            { "@type": "PropertyValue", name: "FATF financial-crime effectiveness pillar" },
-            { "@type": "PropertyValue", name: "FATF legal and supervisory safeguards pillar" },
-            { "@type": "PropertyValue", name: "Governance and institutional integrity pillar" },
+            { "@type": "PropertyValue", name: "FATF AML/CFT effectiveness pillar" },
+            { "@type": "PropertyValue", name: "FATF technical compliance pillar" },
+            { "@type": "PropertyValue", name: "Governance and institutions pillar" },
             { "@type": "PropertyValue", name: "Beneficial-ownership breakout" },
             { "@type": "PropertyValue", name: "FATF listing treatment overlay" },
             { "@type": "PropertyValue", name: "Sanctions treatment overlay" },

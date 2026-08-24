@@ -46,13 +46,13 @@ describe("country decision missing-evidence handling", () => {
 describe("v3 score-driver explainability", () => {
   it("orders Venezuela's scored pillars by contribution and separates overlays", () => {
     const decision = decisionFor("VE");
-    expect(decision.scoreDrivers[0]).toMatch(/^Financial-crime effectiveness:/);
+    expect(decision.scoreDrivers[0]).toMatch(/^AML\/CFT effectiveness:/);
     expect(decision.scoreDrivers[0]).toContain("= 4.4 points");
     expect(decision.scoreDrivers.join(" ")).not.toMatch(/FATF|sanctions/i);
     expect(decision.treatmentOverlays.join(" ")).toMatch(/FATF treatment overlay/i);
     expect(decision.treatmentOverlays.join(" ")).toMatch(/sanctions treatment overlay/i);
     expect(decision.treatmentOverlays.every((item) => /not a score input/.test(item))).toBe(true);
-    expect(decision.verdictParagraph).toContain("principal score driver is financial-crime effectiveness");
+    expect(decision.verdictParagraph).toContain("principal score driver is AML/CFT effectiveness");
     expect(decision.verdictParagraph).toContain("Venezuela has a sectoral sanctions programme");
     expect(decision.verdictParagraph).not.toContain("principal driver is weak corruption");
     expect(decision.whatChanged.find((item) => item.label === "Sanctions exposure")?.value).toBe("Sectoral programme in place");
@@ -238,6 +238,28 @@ describe("treatment headline agrees with the activities beneath it", () => {
       const decision = decisionFor(iso2);
       const normalise = (value: string) => value.toLowerCase().replace(/[^a-z]/g, "");
       expect(normalise(decision.treatment), iso2).not.toBe(normalise(decision.treatmentHeadline));
+    }
+  });
+});
+
+describe("pillar names in running prose", () => {
+  it("never lower-cases the AML/CFT acronym", () => {
+    // `label.toLowerCase()` rendered the verdict as "aml/cft effectiveness".
+    for (const iso2 of ["VE", "IR", "NG", "GB", "SG", "CU"]) {
+      const decision = decisionFor(iso2);
+      const prose = [decision.verdictParagraph, decision.verdictHeadline, ...decision.mitigatingFactors].join(" ");
+      expect(prose, iso2).not.toMatch(/aml\/cft/);
+      expect(prose, iso2).not.toMatch(/AML\/cft|aml\/CFT/);
+    }
+  });
+
+  it("uses the FATF and World Bank terms, not the retired coinages", () => {
+    for (const iso2 of ["VE", "IR", "GB"]) {
+      const decision = decisionFor(iso2);
+      const prose = [decision.verdictParagraph, ...decision.scoreDrivers, ...decision.mitigatingFactors].join(" ");
+      expect(prose, iso2).not.toMatch(/legal and supervisory safeguards/i);
+      expect(prose, iso2).not.toMatch(/financial-crime effectiveness/i);
+      expect(prose, iso2).not.toMatch(/institutional integrity/i);
     }
   });
 });

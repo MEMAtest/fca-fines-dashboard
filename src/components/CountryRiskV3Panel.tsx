@@ -65,7 +65,7 @@ export function countryRiskV3PanelPayload(
     confidence: result.confidence,
   };
   const icrgSource: CountryRiskEvidenceSource = {
-    name: "FATF public ICRG determination",
+    name: "FATF high-risk and monitored jurisdictions listing",
     url: "https://www.fatf-gafi.org/en/publications/High-risk-and-other-monitored-jurisdictions.html",
     checkedAt: result.asOf.slice(0, 10),
     confidence: result.confidence,
@@ -105,10 +105,10 @@ export function countryRiskV3PanelPayload(
     confidence: result.confidence,
     arithmetic: result.arithmetic,
     pillars: [
-      pillar("effectiveness", "Financial-crime effectiveness"),
-      pillar("safeguards", "Legal and supervisory safeguards"),
-      pillar("governance", "Governance and institutional integrity"),
-      ...(result.pillars.icrg.score === null ? [] : [pillar("icrg", "FATF public determination (ICRG substitute)")]),
+      pillar("effectiveness", "AML/CFT effectiveness"),
+      pillar("safeguards", "Technical compliance"),
+      pillar("governance", "Governance and institutions"),
+      ...(result.pillars.icrg.score === null ? [] : [pillar("icrg", "FATF listing status")]),
     ],
     domains: [
       ownershipDomain("beneficial-ownership", "Beneficial ownership (breakout)", ownership.score),
@@ -235,7 +235,7 @@ export function CountryRiskV3Panel({ payload, showHeadline = true }: { payload: 
           ))}
         </div>
       )}
-      <p className="cx-v3__note"><ShieldCheck size={13} aria-hidden="true" /> Sanctions and FATF listing status are shown as treatment overlays. They do not silently increase or reduce the underlying country-risk score. Where shown, the labelled ICRG substitute is the exception for jurisdictions without a mutual evaluation. {payload.note}</p>
+      <p className="cx-v3__note"><ShieldCheck size={13} aria-hidden="true" /> Sanctions and FATF listing status are shown as treatment overlays. They do not silently increase or reduce the underlying country-risk score. Where shown, the labelled FATF listing status is the exception for jurisdictions without a mutual evaluation. {payload.note}</p>
     </section>
   );
 }

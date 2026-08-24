@@ -43,7 +43,7 @@ export function CountryMethodology() {
               <div className="cx-source-card__name">{COUNTRY_RISK_V3_PILLAR_LABELS[key]} · {percent(key === "icrg" ? 0.65 : COUNTRY_RISK_V3_PILLAR_WEIGHTS[key])}</div>
               <div className="cx-source-card__desc">
                 {key === "effectiveness" && "FATF evidence of how effectively the national system prevents money laundering and terrorist financing across the 11 Immediate Outcomes."}
-                {key === "safeguards" && "FATF technical safeguards across Recommendations 1–40, excluding recommendations explicitly marked not applicable."}
+                {key === "safeguards" && "FATF technical compliance across Recommendations 1–40, excluding recommendations explicitly marked not applicable."}
                 {key === "governance" && "The six inverted World Bank governance dimensions: control of corruption, rule of law, regulatory quality, government effectiveness, political stability, and voice and accountability."}
                 {key === "icrg" && "A FATF public determination used only where the jurisdiction has no mutual evaluation. It substitutes for the missing FATF effectiveness and safeguards pillars; it is not an additional overlay."}
               </div>

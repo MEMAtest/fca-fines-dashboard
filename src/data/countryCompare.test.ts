@@ -92,7 +92,7 @@ describe("compare view model", () => {
     const view = buildCompareView(getCountryByIso2("CO")!, VE);
     expect(view.a.methodologyVersion).toBe("3.1.0");
     expect(view.b.methodologyVersion).toBe("3.1.0");
-    expect(view.verdict).toMatch(/financial-crime effectiveness|legal and supervisory safeguards|governance and institutional integrity/);
+    expect(view.verdict).toMatch(/AML\/CFT effectiveness|technical compliance|governance and institutions/i);
     expect(view.verdict).not.toMatch(/sanctions exposure|FATF|CPI|corruption-control/i);
   });
 

@@ -540,9 +540,9 @@ export function buildCountryView(country: Country): CountryView {
     fatfDeterminationScored: riskV3.pillars.icrg.score !== null,
     breakdown,
     currentPillars: [
-      { key: "effectiveness", label: "Financial-crime effectiveness", risk: riskV3.pillars.effectiveness.score, appliedWeight: riskV3.pillars.effectiveness.appliedWeight, contribution: riskV3.pillars.effectiveness.contribution },
-      { key: "safeguards", label: "Legal and supervisory safeguards", risk: riskV3.pillars.safeguards.score, appliedWeight: riskV3.pillars.safeguards.appliedWeight, contribution: riskV3.pillars.safeguards.contribution },
-      { key: "governance", label: "Governance and institutional integrity", risk: riskV3.pillars.governance.score, appliedWeight: riskV3.pillars.governance.appliedWeight, contribution: riskV3.pillars.governance.contribution },
+      { key: "effectiveness", label: "AML/CFT effectiveness", risk: riskV3.pillars.effectiveness.score, appliedWeight: riskV3.pillars.effectiveness.appliedWeight, contribution: riskV3.pillars.effectiveness.contribution },
+      { key: "safeguards", label: "Technical compliance", risk: riskV3.pillars.safeguards.score, appliedWeight: riskV3.pillars.safeguards.appliedWeight, contribution: riskV3.pillars.safeguards.contribution },
+      { key: "governance", label: "Governance and institutions", risk: riskV3.pillars.governance.score, appliedWeight: riskV3.pillars.governance.appliedWeight, contribution: riskV3.pillars.governance.contribution },
     ],
     currentGovernanceDomains: [
       { key: "corruption", label: "Corruption and integrity", risk: governanceRisk(country.iso2, "cc") },
@@ -819,7 +819,7 @@ export function regionalAverages(): RegionalAverage[] {
 export interface PillarAverages {
   /** Mean current v3 contribution from FATF effectiveness. */
   effectiveness: number;
-  /** Mean current v3 contribution from technical safeguards. */
+  /** Mean current v3 contribution from technical compliance. */
   safeguards: number;
   /** Mean current v3 contribution from governance. */
   governance: number;

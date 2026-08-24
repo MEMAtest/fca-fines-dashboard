@@ -50,12 +50,12 @@ export function buildCountryFaqs(view: CountryView): CountryFaq[] {
 
   // 3. Country risk rating — score/band; honest wording when withheld.
   const riskMethodText = riskV3.pillars.icrg.score !== null
-    ? "FATF listing and sanctions are shown as overlays; for this jurisdiction without a mutual evaluation, the labelled FATF ICRG public determination substitutes for the two missing FATF pillars."
+    ? "FATF listing and sanctions are shown as overlays; for this jurisdiction without a mutual evaluation, the labelled FATF listing status substitutes for the two missing FATF pillars."
     : "FATF listing and sanctions are shown as overlays and do not add points.";
   faqs.push({
     question: `What is ${name}'s country risk rating?`,
     answer: riskV3.score !== null && riskV3.band !== null
-      ? `RegActions rates ${name} at ${riskV3.score.toFixed(1)}/10 (${countryRiskV3BandLabel(riskV3.band)} risk), where a higher score means higher country risk. The v3 score combines financial-crime effectiveness, legal and supervisory safeguards, and governance and institutional integrity. ${riskMethodText}${riskV3.status === "provisional" ? " Some information is unavailable, so the available pillars are rebalanced and the result is provisional." : ""}${cpi ? ` Transparency International's ${CPI_YEAR} Corruption Perceptions Index scores ${name} ${cpi.score}/100 (rank #${cpi.rank} of ${CPI_TOTAL}) as context only.` : ""}`
+      ? `RegActions rates ${name} at ${riskV3.score.toFixed(1)}/10 (${countryRiskV3BandLabel(riskV3.band)} risk), where a higher score means higher country risk. The v3 score combines AML/CFT effectiveness, technical compliance, and governance and institutions. ${riskMethodText}${riskV3.status === "provisional" ? " Some information is unavailable, so the available pillars are rebalanced and the result is provisional." : ""}${cpi ? ` Transparency International's ${CPI_YEAR} Corruption Perceptions Index scores ${name} ${cpi.score}/100 (rank #${cpi.rank} of ${CPI_TOTAL}) as context only.` : ""}`
       : `RegActions does not publish a headline country risk score for ${name}. Fewer than two underlying v3 pillars are available, so missing information is not converted into a 0.0 or a lower-risk label.${cpi ? ` Transparency International's ${CPI_YEAR} Corruption Perceptions Index scores ${name} ${cpi.score}/100 (rank #${cpi.rank} of ${CPI_TOTAL}) as context only.` : ""}`,
   });
 

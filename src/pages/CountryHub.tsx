@@ -1099,7 +1099,7 @@ export function CountryHub() {
                   <summary>Why this changed</summary>
                   <p className="cx-card__note">
                     {runChange === null
-                      ? "The current score is calculated from the v3.1 underlying-risk pillars; sanctions and FATF status are shown as legal treatment overlays, except for the labelled FATF ICRG substitute used where no mutual evaluation exists."
+                      ? "The current score is calculated from the v3.1 underlying-risk pillars; sanctions and FATF status are shown as legal treatment overlays, except for the labelled FATF listing status used where no mutual evaluation exists."
                       : `The latest persisted source run moved the score by ${runChange > 0 ? "+" : ""}${runChange.toFixed(1)}; the exact current arithmetic is shown above.`}
                   </p>
                 </details>
@@ -1362,7 +1362,7 @@ export function CountryHub() {
             <p className="cx-meth__intro">
               Three current v3 pillars; higher means greater underlying country risk. Missing
               information is never treated as zero risk. FATF status and sanctions are legal overlays,
-              except for the labelled FATF ICRG substitute used where no mutual evaluation exists.
+              except for the labelled FATF listing status used where no mutual evaluation exists.
             </p>
             <ul className="cx-domains">
               {publicExplanation.pillars.map((pillar) => (
