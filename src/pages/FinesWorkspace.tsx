@@ -42,7 +42,7 @@ import {
   recordsForSelection,
 } from "../utils/workspaceAnalytics.js";
 import { fetchWorkspaceRecords } from "../utils/fetchWorkspaceRecords.js";
-import { formatBreachCategory, splitBreachCategories } from "../utils/labelConversion.js";
+import { formatBreachCategory, splitBreachCategories, isActionTypeCategory } from "../utils/labelConversion.js";
 import { EnforcementTrendChart, type TrendPoint } from "../components/EnforcementTrendChart.js";
 import { exportData } from "../utils/export.js";
 import { getFcaFineCasePath } from "../utils/fcaFineCasePath.js";
@@ -357,6 +357,10 @@ export function FinesWorkspace({ view }: FinesWorkspaceProps) {
     return counts;
   }, [filtered]);
 
+  const allThemes = useMemo(
+    () => overview.data?.themes ?? buildBreakdown(filtered, getRecordThemes, 40),
+    [filtered, overview.data?.themes],
+  );
   const themes = useMemo(() => (overview.data?.themes ?? buildBreakdown(filtered, getRecordThemes, 9)).slice(0, 9), [filtered, overview.data?.themes]);
   const regulators = useMemo(() => (overview.data?.regulators ?? buildBreakdown(filtered, (record) => [record.regulator], 9)).slice(0, 9), [filtered, overview.data?.regulators]);
   const sectors = useMemo(() => (overview.data?.sectors ?? buildBreakdown(filtered, (record) => [record.firm_category || "Sector not recorded"], 8)).slice(0, 8), [filtered, overview.data?.sectors]);
@@ -374,7 +378,20 @@ export function FinesWorkspace({ view }: FinesWorkspaceProps) {
       width: max > 0 ? Math.max(4, (item.count / max) * 100) : 4,
     }));
   };
-  const topThemes = useMemo(() => byActionVolume(themes), [themes]);
+  // Two corrections here, both visible on the page before this.
+  //
+  // `themes` is sliced to 9 for the other views, and it arrives sorted by
+  // penalty value, so ranking by count within that slice was really "the
+  // busiest of the nine most valuable" — SUPERVISORY_SANCTION sat 12th by value
+  // with 14,001 actions and never appeared at all. Rank across everything the
+  // API returns instead.
+  //
+  // And the field mixes action types with subject matter, so "Top themes" led
+  // with "Monetary Sanction", which is not a theme. Action types are excluded.
+  const topThemes = useMemo(
+    () => byActionVolume(allThemes.filter((item) => !isActionTypeCategory(item.label))),
+    [allThemes],
+  );
   const topRegulators = useMemo(() => byActionVolume(regulators), [regulators]);
 
   const firms = useMemo(() => (overview.data?.firms ?? buildBreakdown(filtered, (record) => [record.firm_individual], 10)).slice(0, 10), [filtered, overview.data?.firms]);

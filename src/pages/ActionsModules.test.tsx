@@ -48,11 +48,52 @@ describe("intelligence module bars", () => {
   it("fills the largest bar and keeps the smallest visible", () => {
     const ranked = byActionVolume(regulators);
     expect(ranked[0].width).toBe(100);
-    expect(ranked.at(-1)!.width).toBeGreaterThanOrEqual(4);
+    expect(ranked[ranked.length - 1].width).toBeGreaterThanOrEqual(4);
   });
 
   it("does not divide by zero when nothing matches the filters", () => {
     expect(byActionVolume([])).toEqual([]);
     expect(byActionVolume([{ label: "None", count: 0 }])[0].width).toBe(4);
+  });
+});
+
+/**
+ * "Top themes" led with "Monetary Sanction", which is not a theme.
+ * breach_categories mixes the regulator's instrument with the subject matter,
+ * so the module has to exclude the former or it ranks the wrong thing.
+ */
+describe("theme module excludes action types", () => {
+  it("drops instruments and keeps subject matter", async () => {
+    const { isActionTypeCategory } = await import("../utils/labelConversion.js");
+    // The live top of the list, by penalty value, at the time of the fix.
+    const live = [
+      "FRAUD", "BOOKS_AND_RECORDS", "BRIBERY", "ACCOUNTING", "AML",
+      "DISCLOSURE", "MONETARY_SANCTION", "SUPERVISORY_SANCTION", "CEASE_AND_DESIST",
+      "GOVERNANCE", "CONDUCT",
+    ];
+    const kept = live.filter((label) => !isActionTypeCategory(label));
+    expect(kept).not.toContain("MONETARY_SANCTION");
+    expect(kept).not.toContain("SUPERVISORY_SANCTION");
+    expect(kept).not.toContain("CEASE_AND_DESIST");
+    expect(kept).toContain("AML");
+    expect(kept).toContain("GOVERNANCE");
+    expect(kept).toContain("CONDUCT");
+  });
+
+  it("ranks across the whole list, not the nine most valuable", () => {
+    // SUPERVISORY_SANCTION sat 12th by value with 14,001 actions, so slicing to
+    // nine before ranking by count hid the busiest category on the site.
+    const byValue = [
+      { label: "FRAUD", count: 1227 },
+      { label: "DISCLOSURE", count: 1888 },
+      { label: "AML", count: 974 },
+      { label: "CONDUCT", count: 1051 },
+    ];
+    const slicedFirst = byActionVolume(byValue.slice(0, 2));
+    const rankedAcrossAll = byActionVolume(byValue);
+    expect(slicedFirst[0].label).toBe("DISCLOSURE");
+    expect(rankedAcrossAll.map((item) => item.label)).toEqual([
+      "DISCLOSURE", "FRAUD", "CONDUCT", "AML",
+    ]);
   });
 });
