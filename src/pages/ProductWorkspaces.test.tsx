@@ -109,13 +109,13 @@ describe("product workspaces", () => {
     expect(drawer).toBeInTheDocument();
   });
 
-  it("leads with global research shortcuts while retaining FCA routes", () => {
+  it("no longer leads with a shortcut row", () => {
+    // Removed on purpose. Seven links sat between the heading and any data, and
+    // three of them were FCA-specific on a page of global enforcement. They
+    // belong on the FCA regulator page, which still carries them.
     render(<MemoryRouter initialEntries={["/fines"]}><EvidenceModalProvider><FinesWorkspace view="overview" /></EvidenceModalProvider></MemoryRouter>);
-    expect(screen.getByRole("navigation", { name: "Enforcement research shortcuts" })).toBeInTheDocument();
-    expect(screen.getByRole("link", { name: "Browse all enforcement actions" })).toHaveAttribute("href", "/fines/actions");
-    expect(screen.getByRole("link", { name: "Compare regulator coverage" })).toHaveAttribute("href", "/regulators");
-    expect(screen.getByRole("link", { name: "Explore AML enforcement" })).toHaveAttribute("href", "/topics/aml-enforcement");
-    expect(screen.getByRole("link", { name: "FCA fines database" })).toHaveAttribute("href", "/regulators/fca");
+    expect(screen.queryByRole("navigation", { name: "Enforcement research shortcuts" })).toBeNull();
+    expect(screen.queryByRole("link", { name: "FCA fines database" })).toBeNull();
   });
 
   it("supports guided multi-selection with exact server-side summaries", async () => {
@@ -136,13 +136,29 @@ describe("product workspaces", () => {
     expect(fetchWorkspaceRecords).toHaveBeenCalledWith(expect.objectContaining({ sector: "Banking" }));
   });
 
-  it("shows a contiguous monthly breakdown and opens the selected month's evidence", async () => {
+  it("charts enforcement activity and summarises the latest month", () => {
+    // Was twelve identical month cards, which had to be compared by eye. The
+    // chart replaces them; the click-through to a month's evidence now happens
+    // on a bar, which jsdom cannot dispatch, so it is covered by the live gate
+    // rather than asserted here.
     render(<MemoryRouter initialEntries={["/fines/actions"]}><EvidenceModalProvider><FinesWorkspace view="actions" /></EvidenceModalProvider></MemoryRouter>);
 
-    expect(screen.getByRole("heading", { name: "Monthly breakdown" })).toBeInTheDocument();
-    fireEvent.click(screen.getByRole("button", { name: /Apr 25: £12m, 1 action\. Open matching actions/i }));
-    expect(fetchWorkspaceRecords).toHaveBeenCalledWith(expect.objectContaining({ year: 2025, month: 4 }));
-    expect(screen.getByRole("dialog", { name: /Apr 25 actions/i })).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "Enforcement activity" })).toBeInTheDocument();
+    expect(screen.queryByRole("heading", { name: "Monthly breakdown" })).toBeNull();
+    expect(screen.getByRole("group", { name: "Chart series" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Penalties" })).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "What changed?" })).toBeInTheDocument();
+  });
+
+  it("splits the regulator's action from the subject matter in the table", () => {
+    // breach_type holds the raw notice headline, so both columns come from
+    // breach_categories via splitBreachCategories.
+    render(<MemoryRouter initialEntries={["/fines/actions"]}><EvidenceModalProvider><FinesWorkspace view="actions" /></EvidenceModalProvider></MemoryRouter>);
+    const table = screen.getByRole("table", { name: "" }) ?? screen.getAllByRole("table")[0];
+    expect(table).toBeInTheDocument();
+    expect(screen.getByRole("columnheader", { name: "Entity" })).toBeInTheDocument();
+    expect(screen.getByRole("columnheader", { name: "Action" })).toBeInTheDocument();
+    expect(screen.getByRole("columnheader", { name: "Outcome" })).toBeInTheDocument();
   });
 
   it("uses the canonical regulator executive-summary layout", () => {
