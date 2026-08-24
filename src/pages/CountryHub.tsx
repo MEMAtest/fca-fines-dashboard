@@ -47,7 +47,7 @@ import { comparePairSlug } from "../data/countryCompare.js";
 import { bandFor, type RiskBand } from "../data/countryRiskScore.js";
 import { CountryRiskV3Panel, countryRiskV3PanelPayload } from "../components/CountryRiskV3Panel.js";
 import { CountryRiskEvidencePopover } from "../components/CountryRiskEvidencePopover.js";
-import { RegulatoryEvidenceLadder } from "../components/RegulatoryEvidenceLadder.js";
+import { AuthorityMark } from "../components/AuthorityMark.js";
 import { GOVERNANCE_VINTAGE } from "../data/governanceData.js";
 import { CPI_YEAR, CPI_TOTAL } from "../data/cpiData.js";
 import { COUNTRY_RISK_SOURCES } from "../data/countryRiskSources.js";
@@ -140,12 +140,42 @@ function controlTiles(band: RiskBand | null): { name: string; blurb: string; pri
   ];
 }
 
+/**
+ * What we could see of an authority's own site when we last looked.
+ *
+ * Two of the states are not access failures and must not be described as one:
+ * an authority with no public website has nothing to fail, and an unobserved
+ * one was never checked. Everything else is a limit on our check — the wording
+ * says the publications could not be read, never that there were none.
+ */
+function authoritySiteStatus(state: Parameters<typeof authorityAccessLabel>[0]): string {
+  if (state === "reachable") return "official site reachable when checked";
+  if (state === "no-public-website") return "no public official website identified";
+  if (state === "not-observed") return "official site not checked in this snapshot";
+  return `${authorityAccessLabel(state).toLowerCase()} when checked, so its publications could not be read`;
+}
+
+/**
+ * A pillar we hold no evidence for used to render as "0%" beside "n/a".
+ *
+ * The weight is zero because the pillar was rebalanced out of the formula, not
+ * because safeguards or governance stopped mattering — but "Legal and
+ * supervisory safeguards 0%" reads as a judgement that they count for nothing.
+ * An unavailable pillar now says so, and says the other weights absorbed its
+ * share. The popover still carries the score, weight and contribution for
+ * anyone auditing the arithmetic.
+ */
 function DomainBar({ label, weightPct, risk, explanation, contribution, source }: { label: string; weightPct: number; risk: number | null; explanation?: string; contribution?: number | null; source?: { name: string; url: string; effectiveAt?: string; checkedAt?: string; confidence?: string; note?: string } }) {
   const band = risk === null ? null : bandFor(risk);
+  const unavailable = risk === null;
   return (
-    <li className="cx-domain">
+    <li className={`cx-domain${unavailable ? " cx-domain--unavailable" : ""}`}>
       <span className="cx-domain__label">
-        {label} <span className="cx-domain__wt">{weightPct}%</span>{explanation && <CountryRiskEvidencePopover compact label={label} description={explanation} value={risk === null ? null : `${risk.toFixed(1)} / 10`} weight={`${weightPct}%`} contribution={contribution === null || contribution === undefined ? null : `${contribution.toFixed(1)} / 10`} source={source} />}
+        {label}{" "}
+        {unavailable
+          ? <span className="cx-domain__wt cx-domain__wt--none">not available &middot; weights rebalanced</span>
+          : <span className="cx-domain__wt">{weightPct}%</span>}
+        {explanation && <CountryRiskEvidencePopover compact label={label} description={explanation} value={risk === null ? null : `${risk.toFixed(1)} / 10`} weight={`${weightPct}%`} contribution={contribution === null || contribution === undefined ? null : `${contribution.toFixed(1)} / 10`} source={source} />}
       </span>
       <span className="cx-domain__track">
         <span
@@ -595,7 +625,7 @@ export function CountryHub() {
                 </span>
                 {attribution.corruption ? (
                   <>
-                    <b className="cx-attr__stat-v">{attribution.corruption.score}<small>/100</small></b>
+                    <b className="cx-attr__stat-v cx-attr__stat-v--num">{attribution.corruption.score}<small>/100</small></b>
                     <span className="cx-attr__stat-d">
                       rank {attribution.corruption.rank}/{attribution.corruption.total} · CPI {attribution.corruption.year} · context only
                     </span>
@@ -815,12 +845,8 @@ export function CountryHub() {
                   {regulatorySignal.authorities.map((authority) => (
                     <li key={`${authority.name}-${authority.website ?? ""}`}>
                       <div className="cx-regsignal__answer-head">
+                        <AuthorityMark authority={authority} />
                         <strong>{authority.name}</strong>
-                        {authority.website && (
-                          <a href={authority.website} target="_blank" rel="noopener noreferrer">
-                            Official site <ExternalLink size={11} />
-                          </a>
-                        )}
                       </div>
                       <p className="cx-regsignal__answer-roles">
                         {(authority.mandate.length ? authority.mandate : authority.roles).map(roleLabel).join(" · ")
@@ -828,8 +854,22 @@ export function CountryHub() {
                       </p>
                       <p className="cx-regsignal__answer-prov">
                         Identified from {authority.directorySources.join(", ") || "the official directory snapshot"}
-                        {authority.accessState !== "reachable" ? ` · ${authorityAccessLabel(authority.accessState)}` : ""}
+                        {" · "}
+                        {authoritySiteStatus(authority.accessState)}
+                        {authority.evidenceLevel === "enforcement-visible" || authority.evidenceLevel === "score-eligible"
+                          ? " · publishes enforcement outcomes"
+                          : ""}
                       </p>
+                      {authority.website && (
+                        <a
+                          className="cx-regsignal__answer-site"
+                          href={authority.website}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                        >
+                          Official site <ExternalLink size={11} />
+                        </a>
+                      )}
                     </li>
                   ))}
                 </ul>
@@ -846,10 +886,13 @@ export function CountryHub() {
                 <div><b>{regulatorySignal.liveObservedRecords ? regulatorySignal.liveObservedRecords.toLocaleString("en-GB") : "—"}</b><span>observed actions in snapshot</span></div>
               </div>
               <div className="cx-regsignal__status">
-                <span>{regulatorySignal.authorityEvidenceState === "external-evidence-only" ? "Domestic authority publication is not observable in this evidence set; external risk evidence is preserved separately." : regulatorySignal.authorityEvidenceState === "unobservable" ? "Domestic authority publication is not publicly observable." : "Publication access and evidence level are shown authority by authority below."}</span>
+                <span>{regulatorySignal.authorityEvidenceState === "external-evidence-only" ? "Domestic authority publication is not observable in this evidence set; external risk evidence is preserved separately." : regulatorySignal.authorityEvidenceState === "unobservable" ? "Domestic authority publication is not publicly observable." : "Where a site could not be read, that is a limit on this check, not a finding that the authority takes no enforcement action."}</span>
               </div>
               {regulatorySignal.authorityEvidenceNote && <p className="cx-regsignal__note">{regulatorySignal.authorityEvidenceNote}{regulatorySignal.externalAuthorityEvidenceUrl && <> <a href={regulatorySignal.externalAuthorityEvidenceUrl} target="_blank" rel="noopener noreferrer">Review external evidence <ExternalLink size={10} /></a></>}</p>}
-              <RegulatoryEvidenceLadder country={regulatorySignal} />
+              <p className="cx-card__note">
+                Route-by-route provenance — directory evidence, publication candidates, scan dates and
+                qualification state — is in the PDF, CSV and JSON above.
+              </p>
             </section>
           )}
 
@@ -1222,7 +1265,33 @@ export function CountryHub() {
             )}
             <details className="cx-meth__details">
               <summary>Show the exact calculation</summary>
-              <div className="cx-meth__base"><b>{riskV3.arithmetic}</b></div>
+              {publicExplanation.calculation ? (
+                <table className="cx-meth__calc">
+                  <thead>
+                    <tr><th scope="col">Pillar</th><th scope="col">Score</th><th scope="col">Weight</th><th scope="col">Adds</th></tr>
+                  </thead>
+                  <tbody>
+                    {publicExplanation.calculation.rows.map((row) => (
+                      <tr key={row.key}>
+                        <th scope="row">{row.label}</th>
+                        <td>{row.score.toFixed(1)}</td>
+                        <td>{row.weightPct}%</td>
+                        <td>{row.contribution.toFixed(1)}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                  <tfoot>
+                    <tr>
+                      <th scope="row">Underlying risk score</th>
+                      <td colSpan={3}>{publicExplanation.calculation.total.toFixed(1)} / 10</td>
+                    </tr>
+                  </tfoot>
+                </table>
+              ) : (
+                <p className="cx-meth__calc-none">
+                  No headline score is published for this jurisdiction, so there is no calculation to show.
+                </p>
+              )}
             </details>
             <p className="cx-card__note">
               World Bank {GOVERNANCE_VINTAGE} · FATF {formatDate(view.lastPlenary)}. Enforcement

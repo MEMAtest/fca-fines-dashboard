@@ -69,6 +69,22 @@ export interface CountryRiskV3PublicExplanation {
   overlayLabels: { sanctions: string; fatf: string };
   beneficialOwnershipNote: string;
   missingInformation: string[];
+  calculation: CountryRiskV3Calculation | null;
+}
+
+/**
+ * The calculation as rows, not as a sentence.
+ *
+ * `result.arithmetic` is the machine-facing string served over the API. It is
+ * built from the pillar KEYS, so the page rendered "icrg 9.5 × 65% +
+ * governance 6.7 × 35% = 8.5" — an internal identifier, truncated by the rail,
+ * with the overlay caveat jammed on after a semicolon even though the panel
+ * states that caveat directly above. Rows carry the same numbers under the
+ * labels the reader has already seen on the bars.
+ */
+export interface CountryRiskV3Calculation {
+  rows: Array<{ key: string; label: string; score: number; weightPct: number; contribution: number }>;
+  total: number;
 }
 
 export function buildCountryRiskV3PublicExplanation(result: CountryRiskV3Result): CountryRiskV3PublicExplanation {
@@ -100,7 +116,27 @@ export function buildCountryRiskV3PublicExplanation(result: CountryRiskV3Result)
     },
     beneficialOwnershipNote: result.beneficialOwnership.note,
     missingInformation: result.limitingReasons,
+    calculation: buildCountryRiskV3Calculation(result, keys),
   };
+}
+
+function buildCountryRiskV3Calculation(
+  result: CountryRiskV3Result,
+  keys: Array<keyof typeof COUNTRY_RISK_V3_PILLAR_LABELS>,
+): CountryRiskV3Calculation | null {
+  if (result.score === null) return null;
+  const rows = keys
+    .map((key) => ({ key, pillar: result.pillars[key] }))
+    .filter(({ pillar }) => pillar.score !== null && pillar.contribution !== null)
+    .map(({ key, pillar }) => ({
+      key,
+      label: COUNTRY_RISK_V3_PILLAR_LABELS[key],
+      score: pillar.score as number,
+      weightPct: Math.round(pillar.appliedWeight * 1000) / 10,
+      contribution: pillar.contribution as number,
+    }));
+  if (rows.length === 0) return null;
+  return { rows, total: result.score };
 }
 
 /** Pillars that are part of the public v3 explanation contract. The ICRG

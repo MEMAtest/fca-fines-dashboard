@@ -1,0 +1,22 @@
+/* The mandate icon. Deliberately quiet: it is a signifier that tells you at a
+   glance what kind of body this is, not a badge competing with the name. */
+.authority-mark {
+  flex: 0 0 auto;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  height: 26px;
+  border-radius: 7px;
+  background: #f1f5f9;
+  border: 1px solid #e2e8f0;
+  color: #0b7f66;
+}
+
+/* Official logos arrive at their own intrinsic sizes; the box keeps a column of
+   authority rows aligned whichever branch drew the mark. */
+.authority-mark__logo {
+  flex: 0 0 auto;
+  width: 26px;
+  height: 26px;
+}
