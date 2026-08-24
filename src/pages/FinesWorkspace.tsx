@@ -360,6 +360,23 @@ export function FinesWorkspace({ view }: FinesWorkspaceProps) {
   const themes = useMemo(() => (overview.data?.themes ?? buildBreakdown(filtered, getRecordThemes, 9)).slice(0, 9), [filtered, overview.data?.themes]);
   const regulators = useMemo(() => (overview.data?.regulators ?? buildBreakdown(filtered, (record) => [record.regulator], 9)).slice(0, 9), [filtered, overview.data?.regulators]);
   const sectors = useMemo(() => (overview.data?.sectors ?? buildBreakdown(filtered, (record) => [record.firm_category || "Sector not recorded"], 8)).slice(0, 8), [filtered, overview.data?.sectors]);
+
+  // Rank by the same measure the module claims to show, and size each bar
+  // against the largest count rather than against `share`, which is share of
+  // penalty VALUE. Using it made the bar disagree with the number printed
+  // beside it: OCC's 5,598 actions rendered shorter than SEC's 1,803 because
+  // the OCC's monetary total is smaller.
+  const byActionVolume = <T extends { label: string; count: number }>(items: T[]) => {
+    const ranked = items.slice().sort((left, right) => right.count - left.count).slice(0, 5);
+    const max = ranked[0]?.count ?? 0;
+    return ranked.map((item) => ({
+      ...item,
+      width: max > 0 ? Math.max(4, (item.count / max) * 100) : 4,
+    }));
+  };
+  const topThemes = useMemo(() => byActionVolume(themes), [themes]);
+  const topRegulators = useMemo(() => byActionVolume(regulators), [regulators]);
+
   const firms = useMemo(() => (overview.data?.firms ?? buildBreakdown(filtered, (record) => [record.firm_individual], 10)).slice(0, 10), [filtered, overview.data?.firms]);
   const availableThemes = useMemo(() => buildBreakdown(fines, getRecordThemes, 50).map((entry) => entry.label), [fines]);
   const availableSectors = useMemo(() => Array.from(new Set(fines.map((record) => record.firm_category).filter(Boolean) as string[])).sort(), [fines]);
@@ -840,10 +857,10 @@ export function FinesWorkspace({ view }: FinesWorkspaceProps) {
               <section className="workspace-card">
                 <div className="workspace-card__heading"><h2>Top themes</h2><span>By action volume</span></div>
                 <div className="workspace-bars">
-                  {themes.slice(0, 5).map((item) => (
+                  {topThemes.map((item) => (
                     <button className="workspace-bar" type="button" key={item.label} onClick={() => handleThemeClick(item.label)}>
                       <span>{formatBreachCategory(item.label)}</span>
-                      <div className="workspace-bar__track"><div className="workspace-bar__fill" style={{ width: `${Math.max(4, item.share)}%` }} /></div>
+                      <div className="workspace-bar__track"><div className="workspace-bar__fill" style={{ width: `${item.width}%` }} /></div>
                       <strong>{item.count.toLocaleString("en-GB")}</strong>
                     </button>
                   ))}
@@ -852,10 +869,10 @@ export function FinesWorkspace({ view }: FinesWorkspaceProps) {
               <section className="workspace-card">
                 <div className="workspace-card__heading"><h2>Most active regulators</h2><span>By action volume</span></div>
                 <div className="workspace-bars">
-                  {regulators.slice(0, 5).map((item) => (
+                  {topRegulators.map((item) => (
                     <button className="workspace-bar" type="button" key={item.label} onClick={() => handleRegulatorClick(item.label)}>
                       <span>{item.label}</span>
-                      <div className="workspace-bar__track"><div className="workspace-bar__fill" style={{ width: `${Math.max(4, item.share)}%` }} /></div>
+                      <div className="workspace-bar__track"><div className="workspace-bar__fill" style={{ width: `${item.width}%` }} /></div>
                       <strong>{item.count.toLocaleString("en-GB")}</strong>
                     </button>
                   ))}
