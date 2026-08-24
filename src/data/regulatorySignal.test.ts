@@ -192,3 +192,30 @@ describe("regulatory signal evidence manifest", () => {
     expect(boe.enforcementCandidates).not.toContainEqual(monetaryPolicy);
   });
 });
+
+describe("directory name hygiene", () => {
+  const authorities = listRegulatorySignalCountries().flatMap((country) => country.authorities);
+
+  it("does not carry IOSCO's board footnote into the authority name", () => {
+    // IOSCO footnotes board members with a trailing asterisk, which the scrape
+    // captured as part of the name: "Securities and Exchange Commission*".
+    expect(authorities.length).toBeGreaterThan(600);
+    expect(authorities.filter((authority) => /\*/.test(authority.name))).toEqual([]);
+    expect(getRegulatorySignalCountry("NG")!.authorities.map((a) => a.name))
+      .toContain("Securities and Exchange Commission");
+  });
+
+  it("leaves no doubled whitespace from the source markup", () => {
+    expect(authorities.filter((authority) => /\s{2,}/.test(authority.name))).toEqual([]);
+    expect(getRegulatorySignalCountry("JP")!.authorities.map((a) => a.name))
+      .toContain("Japan Financial Intelligence Center (JAFIC)");
+  });
+
+  it("does not invent an IOSCO board signal from an incomplete marker", () => {
+    // Only 27 of the 35 board members carry the asterisk, because the rest were
+    // named from BIS or IAIS first. Promoting it to a badge would tell a reader
+    // the FCA is not on the IOSCO Board.
+    const uk = getRegulatorySignalCountry("GB")!.authorities;
+    expect(uk.some((authority) => /board/i.test(authority.name))).toBe(false);
+  });
+});

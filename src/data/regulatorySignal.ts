@@ -268,7 +268,7 @@ function mapRow(row: ManifestRow): RegulatorySignalCountry {
         ? "regulatory-activity-visible"
         : "identity-confirmed";
     return {
-      name: authority.n,
+      name: cleanDirectoryName(authority.n),
       website: authority.w,
       roles: authority.r,
       mandate: authority.r,
@@ -387,6 +387,28 @@ export function countryEvidenceLabel(state: string): string {
     "structural-absence": "Legitimate structural absence",
     unobservable: "Domestic authority not publicly observable",
   }[state] ?? "Evidence disposition recorded";
+}
+
+/**
+ * IOSCO's ordinary-members list footnotes board members with a trailing
+ * asterisk ("* Member of the IOSCO Board"). The scrape captured that marker as
+ * part of the name, so the report rendered "Securities and Exchange
+ * Commission*" with nothing on the page to explain the star.
+ *
+ * It is stripped rather than promoted to a badge. The marker only survives on
+ * the 27 authorities whose name IOSCO supplied; the other eight board members
+ * we map (the FCA, BaFin, the Japanese FSA, MAS, FINMA, the Central Bank of
+ * Ireland, Finansinspektionen and the Bermuda Monetary Authority) were named
+ * from BIS or IAIS first and carry no asterisk. Badging on that basis would
+ * tell a reader the UK is not on the IOSCO Board, which is false. An
+ * incomplete signal is worse than none.
+ *
+ * The same pass collapses the doubled spaces the scrape left in twelve Egmont
+ * names ("Japan  Financial Intelligence Center"), which came from line breaks
+ * in the source markup.
+ */
+function cleanDirectoryName(name: string): string {
+  return name.replace(/\s*\*+\s*$/, "").replace(/\s+/g, " ").trim();
 }
 
 export function roleLabel(role: RegulatorySignalRole): string {
