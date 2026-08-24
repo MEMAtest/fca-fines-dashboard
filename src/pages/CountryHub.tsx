@@ -846,7 +846,6 @@ export function CountryHub() {
                 <div><b>{regulatorySignal.liveObservedRecords ? regulatorySignal.liveObservedRecords.toLocaleString("en-GB") : "—"}</b><span>observed actions in snapshot</span></div>
               </div>
               <div className="cx-regsignal__status">
-                <span className="cx-regsignal__pill">Transparency Index: not scored</span>
                 <span>{regulatorySignal.authorityEvidenceState === "external-evidence-only" ? "Domestic authority publication is not observable in this evidence set; external risk evidence is preserved separately." : regulatorySignal.authorityEvidenceState === "unobservable" ? "Domestic authority publication is not publicly observable." : "Publication access and evidence level are shown authority by authority below."}</span>
               </div>
               {regulatorySignal.authorityEvidenceNote && <p className="cx-regsignal__note">{regulatorySignal.authorityEvidenceNote}{regulatorySignal.externalAuthorityEvidenceUrl && <> <a href={regulatorySignal.externalAuthorityEvidenceUrl} target="_blank" rel="noopener noreferrer">Review external evidence <ExternalLink size={10} /></a></>}</p>}

@@ -226,7 +226,7 @@ export function RegulatoryEvidenceLadder({ country, compact = false, fullEvidenc
         <p>Regulatory activity and enforcement visibility are separate authority-level evidence states. Only qualified authority-owned routes can support Level 2 or Level 3. External official context and unqualified candidates do not promote the evidence level. Blocked and unavailable sources remain unknown.</p>
       </details>
       <div className="reg-evidence-enforcement"><strong>Enforcement visibility:</strong> {enforcementCopy}</div>
-      <div className="reg-evidence-authorities" aria-label={`Authorities regulating ${country.name}`}><h3>Authorities and mandate evidence</h3>{country.authorities.length > 0 ? country.authorities.map((authority, authorityIndex) => <AuthorityEvidence key={`${authority.name}-${authority.website ?? ""}-${authorityIndex}`} authority={authority} />) : <p>No authority entry was resolved in the directory snapshot. This is not evidence that no regulator exists.</p>}</div>
+      <div className="reg-evidence-authorities" aria-label={`Authorities regulating ${country.name}`}><h3>Evidence behind each authority</h3>{country.authorities.length > 0 ? country.authorities.map((authority, authorityIndex) => <AuthorityEvidence key={`${authority.name}-${authority.website ?? ""}-${authorityIndex}`} authority={authority} />) : <p>No authority entry was resolved in the directory snapshot. This is not evidence that no regulator exists.</p>}</div>
     </div>
   );
 }
