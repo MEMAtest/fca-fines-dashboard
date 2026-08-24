@@ -14,8 +14,10 @@ import {
 import {
   ArrowRight,
   CheckCircle2,
+  ChevronRight,
   Clipboard,
   Download,
+  ExternalLink,
   Info,
   Search,
   SlidersHorizontal,
@@ -40,7 +42,8 @@ import {
   recordsForSelection,
 } from "../utils/workspaceAnalytics.js";
 import { fetchWorkspaceRecords } from "../utils/fetchWorkspaceRecords.js";
-import { formatBreachCategory } from "../utils/labelConversion.js";
+import { formatBreachCategory, splitBreachCategories } from "../utils/labelConversion.js";
+import { EnforcementTrendChart, type TrendPoint } from "../components/EnforcementTrendChart.js";
 import { exportData } from "../utils/export.js";
 import { getFcaFineCasePath } from "../utils/fcaFineCasePath.js";
 import { displayFirmName } from "../utils/firmName.js";
@@ -99,6 +102,143 @@ function ZoneHeader({ index, title }: { index: string; title: string }) {
   );
 }
 
+/**
+ * The enforcement table, with rows that open in place.
+ *
+ * The plain five-column table was the weakest part of the most important page:
+ * it showed what happened but never why it mattered, and the only way to see
+ * more was a side drawer that covered the list you were reading. Expanding
+ * inline keeps the row in context, which is what you want when you are working
+ * down a list looking for the one that matters.
+ *
+ * Action and Theme come from splitBreachCategories, not from breach_type —
+ * that field holds the raw notice headline and parsing it would be guesswork.
+ * Either column shows an em dash when the record carries no value of that kind.
+ */
+function EnforcementRow({
+  record,
+  peerCount,
+  expanded,
+  onToggle,
+  onCompare,
+}: {
+  record: FineRecord;
+  peerCount: number;
+  expanded: boolean;
+  onToggle: () => void;
+  onCompare: (theme: string) => void;
+}) {
+  const { action, theme } = splitBreachCategories(record.breach_categories);
+  const casePath = getFcaFineCasePath(record);
+  const sourceUrl = record.official_publication_url || record.final_notice_url || record.source_url || null;
+  const outcome = record.requires_amount_review
+    ? "Under review"
+    : record.amount_disclosed === false
+      ? "Not disclosed"
+      : formatWorkspaceAmount(record.amount);
+
+  return (
+    <>
+      <tr
+        className={`workspace-table__row${expanded ? " workspace-table__row--open" : ""}`}
+        onClick={onToggle}
+        tabIndex={0}
+        aria-expanded={expanded}
+        onKeyDown={(event) => {
+          if (event.key === "Enter" || event.key === " ") {
+            event.preventDefault();
+            onToggle();
+          }
+        }}
+      >
+        <td>
+          <ChevronRight size={13} className={`workspace-table__chevron${expanded ? " workspace-table__chevron--open" : ""}`} aria-hidden="true" />
+          <strong>{displayFirmName(record.firm_individual)}</strong>
+        </td>
+        <td>{action ? formatBreachCategory(action) : "—"}</td>
+        <td><span className="workspace-tag">{record.regulator}</span></td>
+        <td>{theme ? formatBreachCategory(theme) : "—"}</td>
+        <td><strong>{outcome}</strong></td>
+        <td className="workspace-table__date">{formatDate(record.date_issued)}</td>
+      </tr>
+      {expanded && (
+        <tr className="workspace-table__detail-row">
+          <td colSpan={6}>
+            <div className="workspace-detail">
+              <p className="workspace-detail__summary">
+                {record.summary?.trim() || "No case summary is recorded for this action. Open the official source below for the regulator's own account."}
+              </p>
+              <div className="workspace-detail__chips">
+                {getRecordThemes(record).slice(0, 4).map((value) => (
+                  <span className="workspace-tag" key={value}>{formatBreachCategory(value)}</span>
+                ))}
+              </div>
+              {theme && peerCount > 0 && (
+                <p className="workspace-detail__peers">
+                  {peerCount.toLocaleString("en-GB")} other {peerCount === 1 ? "action" : "actions"} in this view {peerCount === 1 ? "shares" : "share"} the {formatBreachCategory(theme)} theme.
+                </p>
+              )}
+              <div className="workspace-detail__actions">
+                {casePath && <Link to={casePath} onClick={(event) => event.stopPropagation()}>View action</Link>}
+                {sourceUrl && (
+                  <a href={sourceUrl} target="_blank" rel="noopener noreferrer" onClick={(event) => event.stopPropagation()}>
+                    Official source <ExternalLink size={11} />
+                  </a>
+                )}
+                {theme && (
+                  <button type="button" onClick={(event) => { event.stopPropagation(); onCompare(theme); }}>
+                    Compare similar cases
+                  </button>
+                )}
+              </div>
+            </div>
+          </td>
+        </tr>
+      )}
+    </>
+  );
+}
+
+function EnforcementTable({
+  records,
+  limit = 100,
+  themeCounts,
+  onCompare,
+}: {
+  records: FineRecord[];
+  limit?: number;
+  themeCounts: Map<string, number>;
+  onCompare: (theme: string) => void;
+}) {
+  const [openId, setOpenId] = useState<string | null>(null);
+  return (
+    <table className="workspace-table workspace-table--enforcement">
+      <thead>
+        <tr><th>Entity</th><th>Action</th><th>Regulator</th><th>Theme</th><th>Outcome</th><th>Date</th></tr>
+      </thead>
+      <tbody>
+        {records.slice(0, limit).map((record) => {
+          const rowId = `${record.id ?? record.fine_reference}-${record.date_issued}`;
+          const { theme } = splitBreachCategories(record.breach_categories);
+          // Peers exclude the record itself, and are only ever counted across
+          // what this view has loaded — never presented as a global figure.
+          const peerCount = theme ? Math.max(0, (themeCounts.get(theme) ?? 0) - 1) : 0;
+          return (
+            <EnforcementRow
+              key={rowId}
+              record={record}
+              peerCount={peerCount}
+              expanded={openId === rowId}
+              onToggle={() => setOpenId(openId === rowId ? null : rowId)}
+              onCompare={onCompare}
+            />
+          );
+        })}
+      </tbody>
+    </table>
+  );
+}
+
 function RecordTable({ records, onOpen, limit = 8 }: { records: FineRecord[]; onOpen: (record: FineRecord) => void; limit?: number }) {
   return (
     <table className="workspace-table">
@@ -122,6 +262,7 @@ export function FinesWorkspace({ view }: FinesWorkspaceProps) {
   const [searchParams, setSearchParams] = useSearchParams();
   const [drawer, setDrawer] = useState<DrawerState | null>(null);
   const [compareMode, setCompareMode] = useState(view === "compare");
+  const [moreFilters, setMoreFilters] = useState(false);
   const [selectedYears, setSelectedYears] = useState<number[]>(() =>
     searchParams.get("years")?.split(",").map(Number).filter(Boolean).slice(0, 3) ?? [],
   );
@@ -177,6 +318,45 @@ export function FinesWorkspace({ view }: FinesWorkspaceProps) {
     () => buildContiguousMonthlyWindow(monthly, year || undefined),
     [monthly, year],
   );
+  // The newest month in the window, and how it moved against the one before.
+  // Note this reads the END of the series: the monthly data opens with a
+  // 1900-01 bucket for records whose date failed to parse.
+  const latestMonth = useMemo(() => actionMonths[actionMonths.length - 1] ?? null, [actionMonths]);
+  const monthOverMonth = useMemo(() => {
+    const prior = actionMonths[actionMonths.length - 2];
+    if (!latestMonth || !prior) {
+      return { penalties: null as number | null, actions: null as number | null, priorLabel: "" };
+    }
+    const pct = (now: number, before: number) => (before > 0 ? ((now - before) / before) * 100 : null);
+    return {
+      penalties: pct(latestMonth.amount, prior.amount),
+      actions: pct(latestMonth.count, prior.count),
+      priorLabel: prior.label,
+    };
+  }, [actionMonths, latestMonth]);
+
+  // How many loaded records share each theme, for the "N other actions in this
+  // view" line on an expanded row. Scoped to what is loaded, never global.
+  const activeFilters = useMemo(() => {
+    const chips: Array<{ key: string; label: string; clear: () => void }> = [];
+    if (year) chips.push({ key: "year", label: String(year), clear: () => setYear(0) });
+    if (country !== "All") chips.push({ key: "country", label: country, clear: () => setCountry("All") });
+    if (regulator !== "All") chips.push({ key: "regulator", label: regulator, clear: () => setRegulator("All") });
+    if (theme !== "All") chips.push({ key: "theme", label: formatBreachCategory(theme), clear: () => setTheme("All") });
+    if (sector !== "All") chips.push({ key: "sector", label: sector, clear: () => setSector("All") });
+    if (query.trim()) chips.push({ key: "query", label: `"${query.trim()}"`, clear: () => setQuery("") });
+    return chips;
+  }, [year, country, regulator, theme, sector, query]);
+
+  const themeCounts = useMemo(() => {
+    const counts = new Map<string, number>();
+    for (const record of filtered) {
+      const { theme } = splitBreachCategories(record.breach_categories);
+      if (theme) counts.set(theme, (counts.get(theme) ?? 0) + 1);
+    }
+    return counts;
+  }, [filtered]);
+
   const themes = useMemo(() => (overview.data?.themes ?? buildBreakdown(filtered, getRecordThemes, 9)).slice(0, 9), [filtered, overview.data?.themes]);
   const regulators = useMemo(() => (overview.data?.regulators ?? buildBreakdown(filtered, (record) => [record.regulator], 9)).slice(0, 9), [filtered, overview.data?.regulators]);
   const sectors = useMemo(() => (overview.data?.sectors ?? buildBreakdown(filtered, (record) => [record.firm_category || "Sector not recorded"], 8)).slice(0, 8), [filtered, overview.data?.sectors]);
@@ -478,7 +658,7 @@ export function FinesWorkspace({ view }: FinesWorkspaceProps) {
   // an empty CSV or entering compare mode with nothing to compare would both be
   // worse than a disabled button.
   const pageHeading = (
-    <header className="workspace-page__heading">
+    <header className={`workspace-page__heading${view === "actions" ? " workspace-page__heading--band" : ""}`}>
       <div>
         <h1>{view === "overview" ? "Fines Command Centre" : view === "actions" ? "Enforcement actions" : view === "analytics" ? "Fines analytics" : "Guided comparison"}</h1>
         <p>{view === "compare" ? "Select up to three years and five regulators or themes. Normal views open the underlying evidence on click." : "Global enforcement intelligence, financial penalties and source-linked actions in one working view."}</p>
@@ -520,26 +700,80 @@ export function FinesWorkspace({ view }: FinesWorkspaceProps) {
             JSON-LD). This page used to render a second, near-identical trail. */}
         {pageHeading}
 
-        <nav className="workspace-scope-summary" aria-label="Enforcement research shortcuts">
-          <strong>Start with global enforcement</strong>
-          <Link to="/fines/actions">Browse all enforcement actions</Link>
-          <Link to="/regulators">Compare regulator coverage</Link>
-          <Link to="/topics/aml-enforcement">Explore AML enforcement</Link>
-          <span>FCA research:</span>
-          <Link to="/regulators/fca">FCA fines database</Link>
-          <Link to="/topics/fca-fines-2026">FCA fines 2026 report</Link>
-        </nav>
 
+        {/* Search first, then the four filters people actually reach for.
+            Sector sits behind the disclosure: one long row of six gave a rarely
+            used control the same prominence as Regulator. */}
         <section className="workspace-filterbar" aria-label="Fines filters">
-          <label>Year<select value={year} onChange={(event) => setYear(Number(event.target.value))}><option value={0}>All years</option>{YEARS.map((value) => <option value={value} key={value}>{value}</option>)}</select></label>
+          <label className="workspace-filterbar__search">
+            <span className="sr-only">Search enforcement actions</span>
+            <Search size={14} aria-hidden="true" />
+            <input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Search firm, person or keyword..." />
+          </label>
           <label>Jurisdiction<select value={country} onChange={(event) => setCountry(event.target.value)}><option>All</option>{countries.map((value) => <option value={value} key={value}>{value}</option>)}</select></label>
           <label>Regulator<select value={regulator} onChange={(event) => setRegulator(event.target.value)}><option>All</option>{LIVE_REGULATOR_NAV_ITEMS.filter((item) => item.dashboardEnabled).map((item) => <option value={item.code} key={item.code}>{item.code}</option>)}</select></label>
-          <label>Breach theme<select value={theme} onChange={(event) => setTheme(event.target.value)}><option>All</option>{availableThemes.map((value) => <option value={value} key={value}>{formatBreachCategory(value)}</option>)}</select></label>
-          <label>Sector<select value={sector} onChange={(event) => setSector(event.target.value)}><option>All</option>{availableSectors.map((value) => <option value={value} key={value}>{value}</option>)}</select></label>
-          <label>Search<input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Firm, person, keyword..." /></label>
+          <label>Year<select value={year} onChange={(event) => setYear(Number(event.target.value))}><option value={0}>All years</option>{YEARS.map((value) => <option value={value} key={value}>{value}</option>)}</select></label>
+          <label>Theme<select value={theme} onChange={(event) => setTheme(event.target.value)}><option>All</option>{availableThemes.map((value) => <option value={value} key={value}>{formatBreachCategory(value)}</option>)}</select></label>
+          <button
+            type="button"
+            className={`workspace-filterbar__more${moreFilters ? " is-open" : ""}`}
+            aria-expanded={moreFilters}
+            onClick={() => setMoreFilters((open: boolean) => !open)}
+          >
+            {moreFilters ? "Fewer filters" : "More filters"}
+          </button>
+          {moreFilters && (
+            <label className="workspace-filterbar__extra">Sector<select value={sector} onChange={(event) => setSector(event.target.value)}><option>All</option>{availableSectors.map((value) => <option value={value} key={value}>{value}</option>)}</select></label>
+          )}
         </section>
 
-        {view !== "overview" && (
+        {activeFilters.length > 0 && (
+          <div className="workspace-chips" aria-label="Active filters">
+            {activeFilters.map((chip) => (
+              <button type="button" key={chip.key} onClick={chip.clear}>
+                {chip.label} <span aria-hidden="true">×</span>
+                <span className="sr-only">Remove filter</span>
+              </button>
+            ))}
+            <button type="button" className="workspace-chips__clear" onClick={() => { setYear(0); setCountry("All"); setRegulator("All"); setTheme("All"); setSector("All"); setQuery(""); }}>
+              Clear all
+            </button>
+          </div>
+        )}
+
+        {view === "actions" ? (
+          <>
+            {/* Anchor metric first, then four supporting ones. Six equal boxes
+                gave a £55bn total the same weight as a median, so nothing led. */}
+            <section className="workspace-metric-strip" aria-label="Key figures">
+              <div className="workspace-metric-strip__anchor">
+                <span>Total penalties</span>
+                <strong>{formatWorkspaceAmount(metricTotal)}</strong>
+                {annualMovement.change !== null && (
+                  <small className={annualMovement.change < 0 ? "is-down" : "is-up"}>
+                    {annualMovement.change >= 0 ? "▲" : "▼"} {Math.abs(annualMovement.change).toFixed(0)}% vs {annualMovement.previous?.year}
+                  </small>
+                )}
+              </div>
+              <div className="workspace-metric-strip__rest">
+                <div><strong>{metricCount.toLocaleString("en-GB")}</strong><span>Actions</span></div>
+                <div><strong>{formatWorkspaceAmount(metricMedian)}</strong><span>Median fine</span></div>
+                <div><strong>{metricAffectedFirms.toLocaleString("en-GB")}</strong><span>Firms affected</span></div>
+                <div><strong>{formatWorkspaceAmount(metricLargest)}</strong><span>Largest fine</span></div>
+              </div>
+            </section>
+            {/* One sentence that reads the numbers, rather than leaving the user
+                to. Rendered only when there is a real year-on-year comparison. */}
+            {annualMovement.change !== null && annualMovement.previous && (
+              <p className="workspace-insight">
+                <Info size={14} aria-hidden="true" />
+                {metricCount.toLocaleString("en-GB")} actions are recorded, while aggregate penalties are{" "}
+                {Math.abs(annualMovement.change).toFixed(0)}%{" "}
+                {annualMovement.change < 0 ? "below" : "above"} the {annualMovement.previous.year} comparison period.
+              </p>
+            )}
+          </>
+        ) : view !== "overview" ? (
           <section className="workspace-kpis" aria-label="Current view key figures">
             <article className="workspace-kpi"><span>Total fines</span><strong>{formatWorkspaceAmount(metricTotal)}</strong><small>{overview.error ? "Loaded working set" : "Exact current public view"}</small></article>
             <article className="workspace-kpi"><span>Number of actions</span><strong>{metricCount.toLocaleString("en-GB")}</strong><small>Click any chart mark to inspect</small></article>
@@ -548,7 +782,7 @@ export function FinesWorkspace({ view }: FinesWorkspaceProps) {
             <article className="workspace-kpi"><span>Firms affected</span><strong>{metricAffectedFirms.toLocaleString("en-GB")}</strong><small>Distinct firms and individuals</small></article>
             <article className="workspace-kpi"><span>Year-over-year change</span><strong><em>{annualMovement.change === null ? "Not available" : `${annualMovement.change >= 0 ? "+" : ""}${annualMovement.change.toFixed(1)}%`}</em></strong><small>{annualMovement.latest && annualMovement.previous ? `${annualMovement.latest.year} vs ${annualMovement.previous.year}` : "Insufficient annual history"}</small></article>
           </section>
-        )}
+        ) : null}
 
         {compareMode && (
           <div className="workspace-selection-tray">
@@ -569,26 +803,81 @@ export function FinesWorkspace({ view }: FinesWorkspaceProps) {
         {view === "actions" ? (
           <div className="workspace-actions-layout">
             <section className="workspace-card workspace-card--full">
-              <div className="workspace-card__heading"><h2>Monthly breakdown</h2><span>{year ? `${year} monthly totals` : "Latest 12 months in this view"}</span></div>
-              <div className="workspace-month-breakdown">
-                {actionMonths.map((item) => (
-                  <button
-                    type="button"
-                    key={item.key}
-                    disabled={!item.count}
-                    aria-label={`${item.label}: ${formatWorkspaceAmount(item.amount)}, ${formatWorkspaceActionCount(item.count)}${item.count ? ". Open matching actions" : ""}`}
-                    onClick={() => openSelection({ year: item.year, month: item.month }, `${item.label} actions`)}
-                  >
-                    <span>{item.label}</span>
-                    <strong>{formatWorkspaceAmount(item.amount)}</strong>
-                    <small>{item.count ? formatWorkspaceActionCount(item.count) : "No actions"}</small>
-                  </button>
-                ))}
+              <div className="workspace-card__heading">
+                <h2>Enforcement activity</h2>
+                <span>{year ? `${year} by month` : "Last 12 months in this view"}</span>
+              </div>
+              <div className="workspace-trend-layout">
+                <EnforcementTrendChart
+                  data={actionMonths}
+                  onSelectMonth={(point: TrendPoint) => openSelection({ year: point.year, month: point.month ?? 0 }, `${point.label} actions`)}
+                />
+                {latestMonth && (
+                  <aside className="workspace-whatchanged" aria-label="Latest month">
+                    <div className="workspace-whatchanged__head">
+                      <h3>What changed?</h3>
+                      <span>{latestMonth.label}</span>
+                    </div>
+                    <p><strong>{formatWorkspaceActionCount(latestMonth.count)}</strong></p>
+                    <p><strong>{formatWorkspaceAmount(latestMonth.amount)}</strong> in penalties</p>
+                    {monthOverMonth.penalties !== null && (
+                      <p className={`workspace-whatchanged__delta${monthOverMonth.penalties < 0 ? " workspace-whatchanged__delta--down" : ""}`}>
+                        {monthOverMonth.penalties >= 0 ? "▲" : "▼"} {Math.abs(monthOverMonth.penalties).toFixed(0)}% penalties vs {monthOverMonth.priorLabel}
+                      </p>
+                    )}
+                    {monthOverMonth.actions !== null && (
+                      <p className={`workspace-whatchanged__delta${monthOverMonth.actions < 0 ? " workspace-whatchanged__delta--down" : ""}`}>
+                        {monthOverMonth.actions >= 0 ? "▲" : "▼"} {Math.abs(monthOverMonth.actions).toFixed(0)}% actions vs {monthOverMonth.priorLabel}
+                      </p>
+                    )}
+                    <small>The most recent month is often incomplete; regulators publish on a lag.</small>
+                  </aside>
+                )}
               </div>
             </section>
+
+            <div className="workspace-modules">
+              <section className="workspace-card">
+                <div className="workspace-card__heading"><h2>Top themes</h2><span>By action volume</span></div>
+                <div className="workspace-bars">
+                  {themes.slice(0, 5).map((item) => (
+                    <button className="workspace-bar" type="button" key={item.label} onClick={() => handleThemeClick(item.label)}>
+                      <span>{formatBreachCategory(item.label)}</span>
+                      <div className="workspace-bar__track"><div className="workspace-bar__fill" style={{ width: `${Math.max(4, item.share)}%` }} /></div>
+                      <strong>{item.count.toLocaleString("en-GB")}</strong>
+                    </button>
+                  ))}
+                </div>
+              </section>
+              <section className="workspace-card">
+                <div className="workspace-card__heading"><h2>Most active regulators</h2><span>By action volume</span></div>
+                <div className="workspace-bars">
+                  {regulators.slice(0, 5).map((item) => (
+                    <button className="workspace-bar" type="button" key={item.label} onClick={() => handleRegulatorClick(item.label)}>
+                      <span>{item.label}</span>
+                      <div className="workspace-bar__track"><div className="workspace-bar__fill" style={{ width: `${Math.max(4, item.share)}%` }} /></div>
+                      <strong>{item.count.toLocaleString("en-GB")}</strong>
+                    </button>
+                  ))}
+                </div>
+              </section>
+              <section className="workspace-card">
+                <div className="workspace-card__heading"><h2>Largest actions</h2><span>By disclosed value</span></div>
+                <ol className="workspace-largest">
+                  {top.slice(0, 3).map((record, index) => (
+                    <li key={`${record.id ?? record.fine_reference}-${index}`}>
+                      <span className="workspace-largest__rank">{index + 1}</span>
+                      <span className="workspace-largest__name">{displayFirmName(record.firm_individual)}</span>
+                      <strong>{formatWorkspaceAmount(record.amount)}</strong>
+                    </li>
+                  ))}
+                </ol>
+              </section>
+            </div>
+
             <section className="workspace-card workspace-card--full">
-              <div className="workspace-card__heading"><h2>Matching enforcement actions</h2><span>First {Math.min(100, filtered.length).toLocaleString("en-GB")} shown | {metricCount.toLocaleString("en-GB")} total</span></div>
-              <RecordTable records={recent} limit={100} onOpen={(record) => setDrawer({ title: record.firm_individual, records: [record], description: record.summary })} />
+              <div className="workspace-card__heading"><h2>{metricCount.toLocaleString("en-GB")} enforcement actions</h2><span>First {Math.min(100, filtered.length).toLocaleString("en-GB")} shown</span></div>
+              <EnforcementTable records={recent} limit={100} themeCounts={themeCounts} onCompare={handleThemeClick} />
             </section>
           </div>
         ) : view === "compare" ? (

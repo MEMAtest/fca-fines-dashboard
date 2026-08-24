@@ -492,3 +492,295 @@
     -webkit-overflow-scrolling: touch;
   }
 }
+
+/* ── Enforcement actions ─────────────────────────────────────────────────
+   Rebuilt from a wall of controls above a plain table into something that
+   answers what is happening, what matters and where to look. The counts that
+   drove it: 3 buttons, a 7-link shortcut row, 6 filters, 6 KPI boxes and 12
+   month cards — 18 containers before the first record. */
+
+/* Heading band. The skyline sits at low opacity behind ink so it reads as
+   texture, not as a photograph of London fronting a global dataset. */
+.workspace-page__heading--band {
+  position: relative;
+  isolation: isolate;
+  padding: 1.5rem 1.6rem;
+  border-radius: var(--ra-radius-xl, 16px);
+  background-color: var(--ra-ink, #0b1f2a);
+  overflow: hidden;
+}
+
+.workspace-page__heading--band::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background-image: url("/images/london-skyline-band.webp");
+  background-size: cover;
+  background-position: center 62%;
+  opacity: 0.12;
+}
+
+.workspace-page__heading--band h1,
+.workspace-page__heading--band p {
+  color: #fff;
+}
+
+.workspace-page__heading--band p {
+  color: rgba(226, 232, 240, 0.76);
+}
+
+/* Metric strip: one anchor, four supporting. */
+.workspace-metric-strip {
+  display: grid;
+  grid-template-columns: minmax(210px, 0.85fr) minmax(0, 2.4fr);
+  gap: 1.5rem;
+  align-items: center;
+  padding: 1.1rem 1.3rem;
+  border: 1px solid var(--ra-border, #e5e7eb);
+  border-radius: var(--ra-radius-xl, 16px);
+  background: #fff;
+}
+
+.workspace-metric-strip__anchor span {
+  display: block;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: #64748b;
+}
+
+.workspace-metric-strip__anchor strong {
+  display: block;
+  font-family: var(--ra-font-mono);
+  font-size: clamp(1.7rem, 2.6vw, 2.2rem);
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  color: var(--ra-ink, #0b1f2a);
+  font-variant-numeric: tabular-nums;
+}
+
+.workspace-metric-strip__anchor small {
+  font-size: 0.78rem;
+  font-weight: 700;
+}
+
+.workspace-metric-strip__anchor small.is-down { color: #b42318; }
+.workspace-metric-strip__anchor small.is-up { color: var(--ra-accent-text, #0a6b50); }
+
+.workspace-metric-strip__rest {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+  gap: 1rem 1.5rem;
+  border-left: 1px solid #eef2f7;
+  padding-left: 1.5rem;
+}
+
+.workspace-metric-strip__rest strong {
+  display: block;
+  font-family: var(--ra-font-mono);
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: var(--ra-ink, #0b1f2a);
+  font-variant-numeric: tabular-nums;
+}
+
+.workspace-metric-strip__rest span {
+  font-size: 0.76rem;
+  color: #64748b;
+}
+
+/* The sentence that reads the numbers back. */
+.workspace-insight {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.5rem;
+  margin: 0;
+  padding: 0.7rem 1rem;
+  border: 1px solid rgba(15, 167, 125, 0.22);
+  border-radius: 10px;
+  background: var(--ra-accent-wash, #eaf7f3);
+  color: #0f3b30;
+  font-size: 0.9rem;
+  line-height: 1.5;
+}
+
+.workspace-insight svg { flex: 0 0 auto; margin-top: 0.15rem; }
+
+/* Progressive filters. */
+.workspace-filterbar__search {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  flex: 1 1 260px;
+  padding: 0 0.65rem;
+  border: 1px solid var(--ra-border, #e5e7eb);
+  border-radius: 8px;
+  background: #fff;
+  color: #64748b;
+}
+
+.workspace-filterbar__search input {
+  border: none;
+  background: none;
+  padding: 0.5rem 0;
+  flex: 1;
+  font: inherit;
+  color: var(--ra-ink, #0b1f2a);
+}
+
+.workspace-filterbar__search input:focus { outline: none; }
+
+.workspace-filterbar__more {
+  align-self: flex-end;
+  padding: 0.45rem 0.75rem;
+  border: 1px dashed var(--ra-border, #e5e7eb);
+  border-radius: 8px;
+  background: #fff;
+  font: inherit;
+  font-size: 0.82rem;
+  color: var(--ra-accent-text, #0a6b50);
+  cursor: pointer;
+}
+
+.workspace-filterbar__more.is-open { border-style: solid; }
+
+.workspace-chips {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.workspace-chips button {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.22rem 0.6rem;
+  border: 1px solid var(--ra-border, #e5e7eb);
+  border-radius: 999px;
+  background: #f8fafc;
+  font: inherit;
+  font-size: 0.78rem;
+  color: var(--ra-ink, #0b1f2a);
+  cursor: pointer;
+}
+
+.workspace-chips button:hover { border-color: var(--ra-accent, #0fa77d); }
+.workspace-chips__clear { border-style: dashed !important; color: #64748b !important; }
+
+/* Trend chart and the month summary beside it. */
+.workspace-trend-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 2.5fr) minmax(210px, 0.9fr);
+  gap: 1.2rem;
+  align-items: start;
+}
+
+.trend-chart__controls { display: flex; gap: 0.3rem; justify-content: flex-end; margin-bottom: 0.4rem; }
+
+.trend-chart__toggle {
+  padding: 0.25rem 0.7rem;
+  border: 1px solid var(--ra-border, #e5e7eb);
+  border-radius: 999px;
+  background: #fff;
+  font: inherit;
+  font-size: 0.76rem;
+  color: #64748b;
+  cursor: pointer;
+}
+
+.trend-chart__toggle--on {
+  background: var(--ra-accent-wash, #eaf7f3);
+  border-color: var(--ra-accent, #0fa77d);
+  color: var(--ra-accent-text, #0a6b50);
+  font-weight: 700;
+}
+
+.trend-chart__bar--clickable { cursor: pointer; }
+
+.trend-chart__tooltip {
+  display: grid;
+  gap: 0.15rem;
+  padding: 0.55rem 0.7rem;
+  border-radius: 8px;
+  background: var(--ra-ink, #0b1f2a);
+  color: #fff;
+  font-size: 0.78rem;
+}
+
+.trend-chart__legend {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  margin: 0.4rem 0 0;
+  font-size: 0.74rem;
+  color: #64748b;
+}
+
+.trend-chart__key { width: 12px; height: 3px; border-radius: 2px; display: inline-block; }
+.trend-chart__key--bar { background: #0fa77d; height: 9px; width: 9px; border-radius: 2px; }
+.trend-chart__key--line { background: #0b1f2a; margin-left: 0.7rem; }
+
+.workspace-whatchanged {
+  display: grid;
+  gap: 0.3rem;
+  padding: 1rem 1.1rem;
+  border: 1px solid var(--ra-border, #e5e7eb);
+  border-radius: 12px;
+  background: #f8fafc;
+}
+
+.workspace-whatchanged__head { display: flex; align-items: baseline; justify-content: space-between; gap: 0.5rem; }
+.workspace-whatchanged__head h3 { margin: 0; font-size: 0.95rem; }
+.workspace-whatchanged__head span { font-size: 0.76rem; color: #64748b; }
+.workspace-whatchanged p { margin: 0; font-size: 0.86rem; color: #475569; }
+.workspace-whatchanged p strong { font-family: var(--ra-font-mono); color: var(--ra-ink, #0b1f2a); }
+.workspace-whatchanged__delta { font-weight: 700; color: var(--ra-accent-text, #0a6b50); }
+.workspace-whatchanged__delta--down { color: #b42318; }
+.workspace-whatchanged small { font-size: 0.72rem; color: #94a3b8; line-height: 1.4; margin-top: 0.25rem; }
+
+/* Three intelligence modules. */
+.workspace-modules { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; }
+
+.workspace-largest { list-style: none; margin: 0; padding: 0; display: grid; gap: 0.55rem; }
+.workspace-largest li { display: grid; grid-template-columns: 1.2rem minmax(0, 1fr) auto; align-items: center; gap: 0.6rem; font-size: 0.86rem; }
+.workspace-largest__rank { font-family: var(--ra-font-mono); color: #94a3b8; font-size: 0.78rem; }
+.workspace-largest__name { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--ra-ink, #0b1f2a); }
+.workspace-largest strong { font-family: var(--ra-font-mono); font-variant-numeric: tabular-nums; }
+
+/* Rows that open in place. */
+.workspace-table--enforcement td:first-child { display: flex; align-items: center; gap: 0.4rem; }
+.workspace-table__chevron { color: #94a3b8; transition: transform 0.15s ease; flex: 0 0 auto; }
+.workspace-table__chevron--open { transform: rotate(90deg); }
+.workspace-table__row { cursor: pointer; }
+.workspace-table__row--open { background: #f8fafc; }
+.workspace-table__date { white-space: nowrap; color: #64748b; }
+.workspace-table__detail-row td { background: #f8fafc; }
+
+.workspace-detail { display: grid; gap: 0.6rem; padding: 0.4rem 0.2rem 0.8rem 1.6rem; }
+.workspace-detail__summary { margin: 0; font-size: 0.88rem; line-height: 1.6; color: #334155; max-width: 78ch; }
+.workspace-detail__chips { display: flex; flex-wrap: wrap; gap: 0.3rem; }
+.workspace-detail__peers { margin: 0; font-size: 0.8rem; color: #64748b; }
+.workspace-detail__actions { display: flex; flex-wrap: wrap; align-items: center; gap: 1rem; font-size: 0.84rem; }
+.workspace-detail__actions a,
+.workspace-detail__actions button {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  border: none;
+  background: none;
+  padding: 0;
+  font: inherit;
+  font-weight: 600;
+  color: var(--ra-accent-text, #0a6b50);
+  cursor: pointer;
+}
+
+@media (max-width: 1024px) {
+  .workspace-metric-strip { grid-template-columns: minmax(0, 1fr); gap: 1rem; }
+  .workspace-metric-strip__rest { border-left: none; padding-left: 0; border-top: 1px solid #eef2f7; padding-top: 1rem; }
+  .workspace-trend-layout { grid-template-columns: minmax(0, 1fr); }
+  .workspace-modules { grid-template-columns: minmax(0, 1fr); }
+}

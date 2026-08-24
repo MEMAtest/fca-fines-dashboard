@@ -57,3 +57,82 @@ export function formatBreachCategory(raw: string): string {
 export function formatBreachCategories(categories: string[]): string[] {
   return categories.map(formatBreachCategory);
 }
+
+/**
+ * `breach_categories` mixes two different kinds of value in one field.
+ *
+ * Some describe WHAT THE REGULATOR DID — the instrument or outcome:
+ * SUPERVISORY_SANCTION, NON_MONETARY_ORDER, PROHIBITION, CEASE_AND_DESIST.
+ * Others describe WHAT IT WAS ABOUT — the subject matter: AML, GOVERNANCE,
+ * MARKET_ABUSE, DISCLOSURE.
+ *
+ * The enforcement table wants those in separate columns. `breach_type` cannot
+ * supply the first: it holds the raw notice headline, e.g. "Announcement: FMA
+ * imposes sanction on Raiffeisenverband Salzburg eGen for breaches of
+ * organisational rules". Parsing that prose would be guesswork.
+ *
+ * So the action types are enumerated explicitly below and everything else is
+ * treated as subject matter. A value we have not seen therefore shows up as a
+ * theme rather than being silently dropped or mislabelled as an action, which
+ * is the safe direction to fail: 88 distinct values are live today and the
+ * scrapers add more.
+ */
+const ACTION_TYPE_CATEGORIES = new Set([
+  "SUPERVISORY_SANCTION",
+  "MONETARY_PENALTY",
+  "MONETARY_SANCTION",
+  "NON_MONETARY_ORDER",
+  "ENFORCEMENT_ORDER",
+  "ENFORCEMENT_ACTION",
+  "ENFORCEMENT",
+  "PROHIBITION",
+  "INDIVIDUAL_PROHIBITION",
+  "CEASE_AND_DESIST",
+  "DECISION_NOTICE",
+  "SETTLEMENT_NOTICE",
+  "WRITTEN_AGREEMENT",
+  "DISCIPLINARY_ACTION",
+  "DISCIPLINARY_OUTCOME",
+  "DISCIPLINARY_SANCTION",
+  "HEARING_PANEL",
+  "SRO_ENFORCEMENT",
+  "PUBLIC_CENSURE",
+  "PUBLIC_STATEMENT",
+  "CRIMINAL_ACTION",
+  "APPEAL_OUTCOME",
+  "INJUNCTION",
+  "RESTITUTION",
+  "FINDING",
+]);
+
+/**
+ * Severity markers. Neither an action nor a subject, and a table cell reading
+ * "Very Serious" under a Theme heading is noise, so they are excluded from
+ * both columns rather than given a third.
+ */
+const SEVERITY_CATEGORIES = new Set(["SERIOUS", "VERY_SERIOUS", "OTHER"]);
+
+function normaliseCategory(value: string): string {
+  return value.trim().toUpperCase().replace(/[\s-]+/g, "_");
+}
+
+export function isActionTypeCategory(value: string): boolean {
+  return ACTION_TYPE_CATEGORIES.has(normaliseCategory(value));
+}
+
+/**
+ * Split a record's categories into the regulator's action and the subject
+ * matter. Either may be null; the caller shows an em dash rather than guessing.
+ */
+export function splitBreachCategories(categories: readonly string[] | null | undefined): {
+  action: string | null;
+  theme: string | null;
+} {
+  const values = (categories ?? []).map((value) => String(value)).filter(Boolean);
+  const action = values.find((value) => isActionTypeCategory(value)) ?? null;
+  const theme = values.find(
+    (value) =>
+      !isActionTypeCategory(value) && !SEVERITY_CATEGORIES.has(normaliseCategory(value)),
+  ) ?? null;
+  return { action, theme };
+}
