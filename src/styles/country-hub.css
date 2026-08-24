@@ -4544,3 +4544,112 @@ button.cx-dist__seg:hover { opacity: 0.85; }
   line-height: 1;
   flex: 0 0 auto;
 }
+
+/* ── Who regulates: the answer, before the evidence machinery ────────────
+   The section is titled "Who regulates X?" but opened with four counters, a
+   Transparency Index pill and an evidence-ladder explainer, with the
+   authorities themselves collapsed behind "Level 1 · Identity confirmed"
+   further down. It never actually named them. */
+.cx-regsignal__answer {
+  list-style: none;
+  margin: 0 0 1rem;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 0.75rem;
+}
+
+.cx-regsignal__answer > li {
+  border: 1px solid var(--ra-border, #e5e7eb);
+  border-left: 3px solid var(--ra-accent, #0fa77d);
+  border-radius: 10px;
+  padding: 0.85rem 1rem;
+  background: #fff;
+}
+
+.cx-regsignal__answer-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.cx-regsignal__answer-head strong { font-size: 0.95rem; color: var(--ra-ink, #0b1f2a); }
+
+.cx-regsignal__answer-head a {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--ra-accent-text, #0a6b50);
+  white-space: nowrap;
+}
+
+.cx-regsignal__answer-roles {
+  margin: 0.35rem 0 0;
+  font-size: 0.84rem;
+  color: #334155;
+}
+
+.cx-regsignal__answer-prov {
+  margin: 0.3rem 0 0;
+  font-size: 0.74rem;
+  color: #94a3b8;
+}
+
+.cx-regsignal__answer-empty {
+  margin: 0 0 1rem;
+  font-size: 0.88rem;
+  color: #64748b;
+}
+
+/* ── Contextual evidence: hold the blanks back ──────────────────────────── */
+.cx-context__empty {
+  margin: 0;
+  font-size: 0.88rem;
+  color: #64748b;
+}
+
+.cx-context__missing {
+  margin-top: 0.9rem;
+  border-top: 1px solid #eef2f7;
+  padding-top: 0.8rem;
+}
+
+.cx-context__missing > summary {
+  cursor: pointer;
+  display: flex;
+  gap: 0.5rem;
+  align-items: baseline;
+  flex-wrap: wrap;
+  font-size: 0.82rem;
+  color: #64748b;
+}
+
+.cx-context__missing > summary > span:first-child {
+  font-weight: 700;
+  color: var(--ra-ink, #0b1f2a);
+}
+
+.cx-context__missing-list { color: #94a3b8; }
+
+.cx-context__missing p {
+  margin: 0.6rem 0 0.5rem;
+  font-size: 0.82rem;
+  line-height: 1.6;
+  color: #64748b;
+  max-width: 80ch;
+}
+
+.cx-context__missing ul {
+  margin: 0;
+  padding-left: 1.1rem;
+  display: grid;
+  gap: 0.35rem;
+  font-size: 0.8rem;
+  color: #64748b;
+}
+
+.cx-context__missing ul strong { color: var(--ra-ink, #0b1f2a); }

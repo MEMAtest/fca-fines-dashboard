@@ -190,7 +190,13 @@ export function CountryRiskV3Panel({ payload, showHeadline = true }: { payload: 
                     ? "Not included until evidence is available"
                     : calculationWithheld
                       ? "Evidence available; not included until at least two pillars are available"
-                      : `${number(pillar.score)} × ${percent(pillar.weight)} = ${number(contribution)} points`}
+                      // Was "6.7 × 35% = 2.3 points". The arithmetic is real and
+                      // an auditor wants it, but on the face of a card it reads
+                      // as a formula rather than a fact, and most readers are
+                      // not auditing the weighting. The working is unchanged in
+                      // the evidence popover beside the label, which already
+                      // carries score, weight and contribution.
+                      : `${percent(pillar.weight)} of the score`}
                 </span>
               </div>
             );
