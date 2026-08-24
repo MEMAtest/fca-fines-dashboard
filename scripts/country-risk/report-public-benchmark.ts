@@ -85,7 +85,7 @@ export function buildPublicBenchmarkReport(
     const currentNote = result.resultKind === "indicative-governance-proxy"
       ? "Current v3.1 result is an indicative governance proxy; it is visible for discovery but excluded from exact ranking."
       : result.pillars.icrg.score !== null
-        ? "Current v3.1 uses the labelled FATF ICRG substitute because no mutual evaluation is available; listing and sanctions treatment remain separate overlays."
+        ? "Current v3.1 uses the labelled FATF listing status because no mutual evaluation is available; listing and sanctions treatment remain separate overlays."
         : "Current v3.1 is calculated from the available headline pillars; FATF listing and sanctions are treatment overlays, not added points.";
     return { ...row, country: country.name, comparison, note: `Current evidence: ${currentNote} Historical observation note (not current): ${row.note}`, current };
   });

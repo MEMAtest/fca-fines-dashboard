@@ -436,9 +436,9 @@ export function buildVerdict(a: CompareSide, b: CompareSide): string {
  */
 function topDriver(hi: CountryView, lo: CountryView): string | undefined {
   const labels = {
-    effectiveness: "financial-crime effectiveness",
-    safeguards: "legal and supervisory safeguards",
-    governance: "governance and institutional integrity",
+    effectiveness: "AML/CFT effectiveness",
+    safeguards: "technical compliance",
+    governance: "governance and institutions",
   } as const;
   const keys = Object.keys(labels) as Array<keyof typeof labels>;
   const candidates = keys

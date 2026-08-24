@@ -502,7 +502,7 @@ export function computeCountryRiskV3(iso2: string, supplied: CountryRiskV3Inputs
     sensitivity,
     pillars: {
       effectiveness: buildPillar(effectiveness.score, COUNTRY_RISK_V3_PILLAR_WEIGHTS.effectiveness, effectiveness.evidenceCount, assessmentState, "FATF effectiveness across the 11 Immediate Outcomes.", "effectiveness"),
-      safeguards: buildPillar(safeguards.score, COUNTRY_RISK_V3_PILLAR_WEIGHTS.safeguards, safeguards.evidenceCount, assessmentState, "FATF technical safeguards across Recommendations 1-40, excluding explicit not-applicable ratings.", "safeguards"),
+      safeguards: buildPillar(safeguards.score, COUNTRY_RISK_V3_PILLAR_WEIGHTS.safeguards, safeguards.evidenceCount, assessmentState, "FATF technical compliance across Recommendations 1-40, excluding explicit not-applicable ratings.", "safeguards"),
       governance: buildPillar(governanceValue.score, COUNTRY_RISK_V3_PILLAR_WEIGHTS.governance, governanceValue.evidenceCount, governanceState, "Equal-weight mean of the six inverted World Bank governance dimensions.", "governance"),
       icrg: buildPillar(
         icrg.score,
@@ -519,6 +519,6 @@ export function computeCountryRiskV3(iso2: string, supplied: CountryRiskV3Inputs
     limitingReasons,
     arithmetic: score === null
       ? "Score withheld: no scored evidence is available for this jurisdiction."
-      : `${available.map(([key, value]) => `${key} ${value} × ${round1(appliedWeight(key) * 100)}%`).join(" + ")} = ${score}; sanctions and FATF listing are overlays except a labelled ICRG substitute where no mutual evaluation exists`,
+      : `${available.map(([key, value]) => `${key} ${value} × ${round1(appliedWeight(key) * 100)}%`).join(" + ")} = ${score}; sanctions and FATF listing are overlays except a labelled FATF listing substitute where no mutual evaluation exists`,
   };
 }

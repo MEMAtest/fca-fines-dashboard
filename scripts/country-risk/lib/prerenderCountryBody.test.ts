@@ -175,8 +175,8 @@ describe("prerender country body: crawler-visible narrative prose", () => {
     const usvi = renderCountryFatfBody(buildCountryView(getCountryByIso2("VI")!));
     const iran = renderCountryFatfBody(buildCountryView(getCountryByIso2("IR")!));
     for (const html of [assessed, venezuela, proxy, usvi]) {
-      expect(html).not.toContain("<li>FATF public determination (ICRG substitute):");
+      expect(html).not.toContain("<li>FATF listing status:");
     }
-    expect(iran).toContain("<li>FATF public determination (ICRG substitute): 9.5/10 — 65% of this score</li>");
+    expect(iran).toContain("<li>FATF listing status: 9.5/10 — 65% of this score</li>");
   });
 });

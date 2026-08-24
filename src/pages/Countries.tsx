@@ -105,7 +105,7 @@ const PILLAR_FILL: Record<string, string> = {
 };
 
 const DRIVER_LABEL: Record<string, string> = {
-  effectiveness: "Financial-crime effectiveness gaps",
+  effectiveness: "AML/CFT effectiveness gaps",
   safeguards: "Technical safeguards gaps",
   governance: "Governance and institutional weakness",
   icrg: "FATF public determination (no mutual evaluation)",

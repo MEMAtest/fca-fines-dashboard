@@ -19,7 +19,7 @@ describe("country-risk v3 public presentation", () => {
   it("shows the ICRG substitute only when it actually drives the score", () => {
     const explanation = buildCountryRiskV3PublicExplanation(computeCountryRiskV3("IR", { asOf: new Date("2026-08-20T00:00:00Z") }));
     expect(explanation.pillars.find((pillar) => pillar.key === "icrg")).toMatchObject({
-      label: "FATF public determination (ICRG substitute)",
+      label: "FATF listing status",
       appliedWeight: 0.65,
     });
     expect(buildCountryRiskV3PublicExplanation(computeCountryRiskV3("GB")).pillars.some((pillar) => pillar.key === "icrg")).toBe(false);
@@ -29,8 +29,8 @@ describe("country-risk v3 public presentation", () => {
     const explanation = buildCountryRiskV3PublicExplanation(computeCountryRiskV3("IR", { asOf: new Date("2026-08-20T00:00:00Z") }));
     const calculation = explanation.calculation!;
     expect(calculation.rows.map((row) => row.label)).toEqual([
-      "Governance and institutional integrity",
-      "FATF public determination (ICRG substitute)",
+      "Governance and institutions",
+      "FATF listing status",
     ]);
     // The bug this replaces: the rail printed "icrg 9.5 × 65%".
     expect(calculation.rows.some((row) => /^(icrg|governance|effectiveness|safeguards)$/.test(row.label))).toBe(false);

@@ -133,8 +133,8 @@ const DOMAIN_QUALIFIER: Record<string, string> = {
   ruleOfLaw: "rule-of-law and institutional weakness",
   politicalStability: "political-instability risk",
   accountability: "governance and transparency concerns",
-  effectiveness: "financial-crime effectiveness gaps",
-  safeguards: "technical safeguards gaps",
+  effectiveness: "AML/CFT effectiveness gaps",
+  safeguards: "technical compliance gaps",
   governance: "governance and institutional weakness",
 };
 const DOMAIN_NOUN: Record<string, string> = {
@@ -142,8 +142,8 @@ const DOMAIN_NOUN: Record<string, string> = {
   ruleOfLaw: "rule of law and institutions",
   politicalStability: "political stability",
   accountability: "voice and accountability",
-  effectiveness: "financial-crime effectiveness",
-  safeguards: "technical safeguards",
+  effectiveness: "AML/CFT effectiveness",
+  safeguards: "technical compliance",
   governance: "governance and institutions",
 };
 
@@ -252,7 +252,10 @@ function verdict(input: DecisionInput): { headline: string; paragraph: string } 
 
   const bandLower = bandLabel(input.riskResult.band).toLowerCase();
   const driverPhrase = top
-    ? `${top.label.toLowerCase()}, contributing ${(top.contribution as number).toFixed(1)} of ${input.riskResult.score.toFixed(1)} points`
+    // Not `label.toLowerCase()`: that renders "AML/CFT effectiveness" as
+    // "aml/cft effectiveness". DOMAIN_NOUN carries the running-prose form with
+    // its acronyms intact.
+    ? `${DOMAIN_NOUN[top.key] ?? top.label.toLowerCase()}, contributing ${(top.contribution as number).toFixed(1)} of ${input.riskResult.score.toFixed(1)} points`
     : "the available scored pillars";
   const fatfPhrase = input.fatf
     ? input.fatf.listing === "call-for-action"
@@ -550,7 +553,7 @@ function considerations(input: DecisionInput): ConsiderationRow[] {
       ? `FATF applies a call for action requiring ${input.fatf.requiredAction === "countermeasures" ? "countermeasures" : "enhanced due diligence"}, last reviewed ${fmt(input.lastPlenary)}.`
       : `FATF applies increased monitoring, last reviewed ${fmt(input.lastPlenary)}.`
     : effectiveness?.risk != null
-      ? `Not FATF grey- or black-listed. Mutual-evaluation effectiveness sits at ${effectiveness.risk.toFixed(1)}/10 risk${safeguards?.risk != null ? ` and technical safeguards at ${safeguards.risk.toFixed(1)}/10` : ""}.`
+      ? `Not FATF grey- or black-listed. Mutual-evaluation effectiveness sits at ${effectiveness.risk.toFixed(1)}/10 risk${safeguards?.risk != null ? ` and technical compliance at ${safeguards.risk.toFixed(1)}/10` : ""}.`
       : "Not FATF grey- or black-listed, and no current mutual-evaluation ratings are available for this jurisdiction.";
 
   const governanceWhy = worstGovernance && worstGovernance.risk !== null

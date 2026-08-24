@@ -4,25 +4,43 @@ export function countryRiskV3BandLabel(band: NonNullable<CountryRiskV3Result["ba
   return band === "low" ? "Lower" : band === "moderate" ? "Moderate" : band === "high" ? "High" : "Very high";
 }
 
+/**
+ * Pillar names, in the vocabulary the audience already reads.
+ *
+ * A FATF mutual evaluation has exactly two axes and they have settled names:
+ * technical compliance (Recommendations 1-40) and effectiveness (the 11
+ * Immediate Outcomes). The report used FATF's word for one and a coinage,
+ * "Legal and supervisory safeguards", for the other, so half of a well-known
+ * pair appeared under a name nobody outside this codebase uses.
+ *
+ * "ICRG" was worse than unfamiliar, it was ambiguous: on a country-risk page it
+ * reads as the PRS Group's International Country Risk Guide, a commercial
+ * country-risk rating, where we mean FATF's International Co-operation Review
+ * Group. Readers recognise the lists that group publishes, not the group, so
+ * the pillar is named for the listing.
+ *
+ * "Integrity" narrowed governance toward corruption, which is one of the six
+ * World Bank dimensions behind it, not the whole of them.
+ */
 export const COUNTRY_RISK_V3_PILLAR_LABELS = {
-  effectiveness: "Financial-crime effectiveness",
-  safeguards: "Legal and supervisory safeguards",
-  governance: "Governance and institutional integrity",
-  icrg: "FATF public determination (ICRG substitute)",
+  effectiveness: "AML/CFT effectiveness",
+  safeguards: "Technical compliance",
+  governance: "Governance and institutions",
+  icrg: "FATF listing status",
 } as const;
 
 /**
  * What each pillar means, for a reader who does not know the methodology.
  *
- * The labels alone ("Legal and supervisory safeguards") name a category without
+ * The labels alone ("Technical compliance") name a category without
  * saying what was measured or by whom. These sit under the labels on the report
  * so the section can explain the score without printing the arithmetic.
  */
 export const COUNTRY_RISK_V3_PILLAR_PLAIN: Record<keyof typeof COUNTRY_RISK_V3_PILLAR_LABELS, string> = {
-  effectiveness: "How well financial-crime controls work in practice, as assessed by FATF across its eleven Immediate Outcomes.",
-  safeguards: "Whether the laws, powers and supervisory framework meet the FATF Recommendations.",
-  governance: "Strength of public institutions, rule of law and transparency, from the World Bank governance indicators.",
-  icrg: "FATF's own published determination, used in place of assessment ratings where a country has never been evaluated.",
+  effectiveness: "How well AML/CFT controls work in practice, as assessed by FATF across its eleven Immediate Outcomes.",
+  safeguards: "Whether the laws, powers and supervisory framework meet FATF Recommendations 1-40.",
+  governance: "Strength of public institutions, rule of law and transparency, across the six World Bank governance dimensions.",
+  icrg: "FATF's own published listing, used in place of evaluation ratings where a country has never been evaluated.",
 };
 
 export function countryRiskV3StatusLabel(status: CountryRiskV3Result["status"]): string {

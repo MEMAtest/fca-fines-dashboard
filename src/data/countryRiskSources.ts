@@ -146,7 +146,7 @@ export function countryRiskSourcesForMethodology(
     return {
       ...source,
       scored: false,
-      note: `${source.note} In v3 this source is normally a legal/regulatory overlay and does not contribute to the numeric country-risk score; a public FATF determination is used as a labelled ICRG substitute only where no mutual evaluation exists.`,
+      note: `${source.note} In v3 this source is normally a legal/regulatory overlay and does not contribute to the numeric country-risk score; a public FATF listing is used as a labelled substitute only where no mutual evaluation exists.`,
     };
   });
 }
