@@ -142,3 +142,102 @@ describe("treatmentChecklist derivation", () => {
     expect(china.some((i) => /adverse-media|transparency/i.test(i))).toBe(true);
   });
 });
+
+describe("business impact varies by activity", () => {
+  it("only a sanctions programme can restrict an activity", () => {
+    const iran = decisionFor("IR");
+    const restricted = iran.businessImpact.filter((row) => row.level === "Restricted");
+    expect(restricted.length).toBeGreaterThan(0);
+    for (const row of restricted) {
+      expect(row.driver.toLowerCase()).toMatch(/sanctions|programme/);
+    }
+    // A score alone must never produce "Restricted": Nigeria is very-high risk
+    // with no country-level programme.
+    const nigeria = decisionFor("NG");
+    expect(nigeria.businessImpact.some((row) => row.level === "Restricted")).toBe(false);
+  });
+
+  it("states a driver for every activity, and never one that argues against its level", () => {
+    for (const iso2 of ["IR", "NG", "SG", "GB", "KP"]) {
+      for (const row of decisionFor(iso2).businessImpact) {
+        expect(row.driver, `${iso2} ${row.activity}`).not.toBe("");
+        // The old rows read "Enhanced / no measures identified", which states a
+        // level and then gives a reason against it. A driver that opens by
+        // reporting an absence has to go on to say what did set the level.
+        if (/^No /.test(row.driver)) {
+          expect(row.driver, `${iso2} ${row.activity}`).toMatch(/band applies|under review/);
+        }
+      }
+    }
+  });
+
+  it("reads a low-risk jurisdiction as standard rather than enhanced", () => {
+    const levels = decisionFor("GB").businessImpact.map((row) => row.level);
+    expect(levels.every((level) => level === "Standard")).toBe(true);
+  });
+
+  it("does not describe low corruption as raising risk", () => {
+    const singapore = decisionFor("SG").businessImpact.find((row) => row.activity === "Corporate clients")!;
+    expect(singapore.driver).not.toMatch(/raises the chance/);
+    const iran = decisionFor("IR");
+    expect(iran.businessImpact.length).toBe(5);
+  });
+});
+
+describe("what firms should consider", () => {
+  it("gives every country the same four factors with country-specific evidence", () => {
+    const iran = decisionFor("IR").considerations;
+    const uk = decisionFor("GB").considerations;
+    expect(iran.map((row) => row.key)).toEqual(["sanctions", "fatf", "governance", "beneficial-ownership"]);
+    expect(uk.map((row) => row.key)).toEqual(iran.map((row) => row.key));
+    for (const [index, row] of iran.entries()) {
+      expect(row.why, row.key).not.toBe(uk[index].why);
+      expect(row.mitigants.length).toBeGreaterThan(0);
+    }
+  });
+
+  it("never reads missing sanctions evidence as an absence of sanctions", () => {
+    for (const iso2 of ["IR", "NG", "SG", "GB"]) {
+      const sanctions = decisionFor(iso2).considerations.find((row) => row.key === "sanctions")!;
+      expect(sanctions.why, iso2).not.toMatch(/no sanctions apply|is not sanctioned/i);
+    }
+  });
+
+  it("holds to house style", () => {
+    for (const iso2 of ["IR", "NG", "SG", "GB", "KP"]) {
+      const decision = decisionFor(iso2);
+      for (const row of decision.considerations) {
+        expect(row.why, `${iso2} ${row.key}`).not.toMatch(EM_DASH);
+        for (const item of row.mitigants) expect(item, `${iso2} ${row.key}`).not.toMatch(EM_DASH);
+      }
+      for (const row of decision.businessImpact) {
+        expect(row.driver, `${iso2} ${row.activity}`).not.toMatch(EM_DASH);
+      }
+    }
+  });
+});
+
+describe("treatment headline agrees with the activities beneath it", () => {
+  it("does not put a standard heading over restricted activities", () => {
+    // Cuba sits in the moderate band under a comprehensive embargo. Deriving
+    // the heading from the band alone read "Standard + Enhanced Checks" above
+    // five restricted activities.
+    for (const iso2 of ["CU", "IR", "KP", "SG", "GB", "NG"]) {
+      const decision = decisionFor(iso2);
+      const restricted = decision.businessImpact.some((row) => row.level === "Restricted");
+      if (restricted) {
+        expect(decision.treatmentHeadline, iso2).toMatch(/Restrictions/);
+      } else {
+        expect(decision.treatmentHeadline, iso2).not.toMatch(/Restrictions/);
+      }
+    }
+  });
+
+  it("never repeats the headline as the sentence beneath it", () => {
+    for (const iso2 of ["CU", "IR", "KP", "SG", "GB", "NG"]) {
+      const decision = decisionFor(iso2);
+      const normalise = (value: string) => value.toLowerCase().replace(/[^a-z]/g, "");
+      expect(normalise(decision.treatment), iso2).not.toBe(normalise(decision.treatmentHeadline));
+    }
+  });
+});

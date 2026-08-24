@@ -4684,3 +4684,188 @@ button.cx-dist__seg:hover { opacity: 0.85; }
 }
 
 .cx-context__missing ul strong { color: var(--ra-ink, #0b1f2a); }
+
+/* ─────────────────────────────────────────────────────────────
+   Report v2: the score explained, what to consider, what to do.
+
+   Replaces a three-card row that put score arithmetic, a
+   one-bullet mitigants card and a column of identical badges
+   side by side without relating them to one another.
+   ───────────────────────────────────────────────────────────── */
+
+/* 01 — the pillars, in plain language */
+.cx-howscore { padding: 1.15rem 1.25rem; }
+.cx-howscore__grid {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+  gap: 1rem 1.5rem;
+}
+.cx-howscore__item { display: flex; gap: 0.7rem; align-items: flex-start; min-width: 0; }
+.cx-howscore__ico { flex: 0 0 auto; color: #0b7f66; margin-top: 0.1rem; }
+.cx-howscore__item--none .cx-howscore__ico { color: #cbd5e1; }
+.cx-howscore__label { display: block; font-size: 0.9rem; font-weight: 700; color: #0b1f2a; line-height: 1.3; }
+.cx-howscore__weight { display: block; margin-top: 0.15rem; font-size: 0.68rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em; color: #0b7f66; }
+.cx-howscore__item--none .cx-howscore__weight { color: #94a3b8; text-transform: none; letter-spacing: 0; font-weight: 600; }
+.cx-howscore__plain { margin: 0.4rem 0 0; font-size: 0.78rem; line-height: 1.45; color: #64748b; }
+.cx-howscore__note {
+  display: flex;
+  gap: 0.4rem;
+  align-items: flex-start;
+  margin: 1rem 0 0;
+  padding-top: 0.85rem;
+  border-top: 1px solid #eef2f7;
+  font-size: 0.76rem;
+  line-height: 1.5;
+  color: #64748b;
+}
+.cx-howscore__note svg { flex: 0 0 auto; margin-top: 0.15rem; color: #94a3b8; }
+.cx-howscore__calc { margin-top: 0.75rem; }
+
+/* 02 — risk factor / why it matters / mitigants */
+.cx-consider { padding: 1.15rem 1.25rem; }
+.cx-consider__table { width: 100%; border-collapse: collapse; font-size: 0.82rem; }
+.cx-consider__table thead th {
+  text-align: left;
+  padding: 0 0.75rem 0.55rem;
+  font-size: 0.66rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: #94a3b8;
+  border-bottom: 1px solid #e5e7eb;
+}
+.cx-consider__table tbody tr + tr th, .cx-consider__table tbody tr + tr td { border-top: 1px solid #eef2f7; }
+/* `display: flex` on the cell itself took it out of the table layout and the
+   column collapsed to the width of its longest word. The cell stays a table
+   cell; an inner span does the icon alignment. */
+.cx-consider__table { table-layout: fixed; }
+.cx-consider__table th[scope="row"] {
+  width: 23%;
+  padding: 0.8rem 0.75rem;
+  text-align: left;
+  font-weight: 700;
+  color: #0b1f2a;
+  line-height: 1.35;
+  vertical-align: top;
+}
+.cx-consider__table td:nth-child(2) { width: 45%; }
+.cx-consider__factor { display: flex; gap: 0.45rem; align-items: flex-start; }
+.cx-consider__factor svg { flex: 0 0 auto; margin-top: 0.1rem; color: #0b7f66; }
+.cx-consider__table td { padding: 0.8rem 0.75rem; vertical-align: top; line-height: 1.5; color: #475569; }
+.cx-consider__table td ul { margin: 0; padding-left: 1rem; }
+.cx-consider__table td li + li { margin-top: 0.3rem; }
+
+/* 03 — treatment, key controls, and the per-activity read */
+.cx-treatment { padding: 1.15rem 1.25rem; }
+.cx-treatment__head {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1.3fr) minmax(0, 1fr);
+  gap: 1.25rem;
+  align-items: start;
+}
+.cx-treatment__mark {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 52px;
+  height: 52px;
+  border-radius: 13px;
+  background: #f1f5f9;
+  color: #64748b;
+}
+.cx-treatment__mark--very-high, .cx-treatment__mark--high { background: #fef2f2; color: #dc2626; }
+.cx-treatment__mark--moderate { background: #fffbeb; color: #d97706; }
+.cx-treatment__mark--low { background: #ecfdf5; color: #0b7f66; }
+.cx-treatment__lead h3 { margin: 0; font-size: 1.15rem; font-weight: 800; color: #0b1f2a; line-height: 1.3; }
+.cx-treatment__lead p { margin: 0.4rem 0 0; font-size: 0.85rem; line-height: 1.55; color: #475569; }
+.cx-treatment__controls ul { list-style: none; margin: 0.5rem 0 0; padding: 0; display: grid; gap: 0.4rem; }
+.cx-treatment__controls li { display: flex; gap: 0.45rem; align-items: flex-start; font-size: 0.8rem; line-height: 1.45; color: #334155; }
+.cx-treatment__controls li svg { flex: 0 0 auto; margin-top: 0.18rem; color: #0b7f66; }
+
+.cx-treatment__impact { margin-top: 1.25rem; padding-top: 1.1rem; border-top: 1px solid #eef2f7; }
+.cx-impact__rows {
+  list-style: none;
+  margin: 0.65rem 0 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+  gap: 0.75rem;
+}
+.cx-impact__rows > li { border: 1px solid #e5e7eb; border-radius: 9px; padding: 0.7rem 0.85rem; background: #fff; }
+.cx-impact__head { display: flex; align-items: baseline; justify-content: space-between; gap: 0.5rem; }
+.cx-impact__activity { font-size: 0.84rem; font-weight: 700; color: #0b1f2a; }
+.cx-impact__level {
+  flex: 0 0 auto;
+  font-size: 0.6rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  padding: 0.16rem 0.42rem;
+  border-radius: 999px;
+  white-space: nowrap;
+}
+/* Restricted reads as a legal state, not the top of a severity ramp. */
+.cx-impact__level--restricted { background: #0b1f2a; color: #fff; }
+.cx-impact__level--enhanced { background: #fef2f2; color: #b91c1c; }
+.cx-impact__level--elevated { background: #fffbeb; color: #b45309; }
+.cx-impact__level--standard { background: #ecfdf5; color: #0a6b50; }
+.cx-impact__level--review { background: #f1f5f9; color: #475569; }
+.cx-impact__implication { margin: 0.35rem 0 0; font-size: 0.78rem; line-height: 1.45; color: #475569; }
+.cx-impact__driver { margin: 0.35rem 0 0; font-size: 0.72rem; line-height: 1.45; color: #94a3b8; }
+
+/* Watchpoints rail */
+.cx-watchpoints__list { list-style: none; margin: 0.6rem 0 0; padding: 0; display: grid; gap: 0.85rem; }
+.cx-watchpoints__list > li { display: flex; gap: 0.6rem; align-items: flex-start; font-size: 0.8rem; line-height: 1.5; color: #334155; }
+.cx-watchpoints__ico {
+  flex: 0 0 auto;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 999px;
+  background: #ecfdf5;
+  color: #0b7f66;
+}
+.cx-watchpoints__list--more { margin-top: 0.75rem; }
+
+/* The fold. Everything the report still holds, one step away. */
+.cx-fold { margin-top: 1.5rem; }
+.cx-fold__summary {
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.5rem 0.9rem;
+  border: 1px solid var(--ra-border, #e5e7eb);
+  border-radius: 999px;
+  background: #fff;
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: var(--ra-accent-text, #0a6b50);
+}
+.cx-fold__summary:hover { border-color: #cbd5e1; }
+.cx-fold__body { display: grid; gap: 1rem; margin-top: 1rem; }
+.cx-fold--rail { margin-top: 1rem; }
+
+@media (max-width: 900px) {
+  .cx-treatment__head { grid-template-columns: 1fr; gap: 0.9rem; }
+  /* The considerations table becomes stacked blocks; three columns of prose
+     do not survive a phone, and a horizontal scroll would hide the mitigants. */
+  /* `table-layout: fixed` and the desktop column widths survive `display:
+     block`, which left the prose in a narrow ribbon beside full-width bullets.
+     Both have to be unset for the stacked layout. */
+  .cx-consider__table { table-layout: auto; }
+  .cx-consider__table, .cx-consider__table tbody, .cx-consider__table tr, .cx-consider__table td { display: block; width: auto; }
+  .cx-consider__table td:nth-child(2), .cx-consider__table th[scope="row"] { width: auto; }
+  .cx-consider__table thead { display: none; }
+  .cx-consider__table tbody tr { padding: 0.85rem 0; }
+  .cx-consider__table tbody tr + tr { border-top: 1px solid #eef2f7; }
+  .cx-consider__table tbody tr + tr th, .cx-consider__table tbody tr + tr td { border-top: 0; }
+  .cx-consider__table th[scope="row"] { width: auto; padding: 0 0 0.4rem; }
+  .cx-consider__table td { padding: 0 0 0.4rem; }
+  .cx-consider__table td:last-child { padding-bottom: 0; }
+}

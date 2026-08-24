@@ -530,6 +530,7 @@ export function buildCountryView(country: Country): CountryView {
 
   const decision = buildDecision({
     name: country.name,
+    iso2: country.iso2,
     riskResult: {
       score: riskV3.score,
       band: riskV3.band,

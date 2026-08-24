@@ -17,6 +17,7 @@ import {
 } from "./sanctionsStatus.js";
 import { SANCTIONS_CATALOGUE_REVIEWED_AS_OF } from "./sanctionsRegimeCandidates.js";
 import { GOVERNANCE_VINTAGE } from "./governanceData.js";
+import { boRegisterLabel, boRegisterSignal, getBoRegister } from "./boRegisters.js";
 import { CPI_YEAR, type CpiEntry } from "./cpiData.js";
 import type { FatfStatus } from "./fatfStatus.js";
 
@@ -29,10 +30,30 @@ function fmt(iso: string): string {
   return y;
 }
 
+/**
+ * How far a firm has to go on a given activity.
+ *
+ * "Restricted" is not a severity step above "Enhanced" — it is a different
+ * statement. It means a legal instrument reaches the activity directly, so the
+ * question is permission rather than diligence, and it is only ever set from a
+ * sanctions programme we hold, never from a modelled score.
+ */
+export type ImpactLevel = "Restricted" | "Enhanced" | "Elevated" | "Standard" | "Review";
+
 export interface BusinessImpactRow {
   activity: string;
-  level: string;
+  level: ImpactLevel;
   implication: string;
+  /** The specific evidence that put this activity at this level. */
+  driver: string;
+}
+
+/** One row of "what firms should consider": the factor, why it matters, what to do. */
+export interface ConsiderationRow {
+  key: string;
+  factor: string;
+  why: string;
+  mitigants: string[];
 }
 export interface WhatChangedItem {
   label: string;
@@ -43,6 +64,8 @@ export interface CountryDecision {
   verdictHeadline: string;
   verdictParagraph: string;
   treatment: string;
+  /** Short label for the treatment card. Same rules as `treatment`. */
+  treatmentHeadline: string;
   /**
    * 4-5 deterministic, profile-derived checklist items for the recommended
    * treatment card. Same country always yields the same list; different risk
@@ -56,6 +79,8 @@ export interface CountryDecision {
   /** @deprecated Historical alias. Contains score drivers only, never overlays. */
   riskDrivers: string[];
   mitigatingFactors: string[];
+  /** The report's "what firms should consider" table. */
+  considerations: ConsiderationRow[];
   businessImpact: BusinessImpactRow[];
   eddTriggers: string[];
   recommendedControls: string[];
@@ -65,6 +90,7 @@ export interface CountryDecision {
 
 export interface DecisionInput {
   name: string;
+  iso2: string;
   riskResult: {
     score: number | null;
     band: RiskBand | null;
@@ -147,6 +173,25 @@ export function hasComprehensiveSanctions(sanctions?: CountrySanctions): boolean
   return !!sanctions?.programs.some((p) => p.tier === "comprehensive");
 }
 
+/**
+ * The short label above the treatment sentence.
+ *
+ * This used to be derived from the risk band alone, which put "Standard +
+ * Enhanced Checks" above a card stating that every activity is restricted:
+ * Cuba sits in the moderate band and is under a comprehensive embargo. A legal
+ * instrument outranks the band here exactly as it does in `treatmentFor`.
+ */
+export function treatmentHeadline(input: DecisionInput): string {
+  const comprehensive = input.sanctionsCoverageComplete && hasComprehensiveSanctions(input.sanctions);
+  if (input.fatf?.requiredAction === "countermeasures" || comprehensive) return "Enhanced DD + Restrictions";
+  if (input.fatf?.requiredAction === "enhanced-due-diligence") return "Enhanced Due Diligence";
+  if (!input.scoreAvailable) return "More Information Needed";
+  const band = input.riskResult.band;
+  if (band === "very-high" || band === "high") return "Enhanced Due Diligence";
+  if (band === "moderate") return "Standard + Enhanced Checks";
+  return "Standard Due Diligence";
+}
+
 function treatmentFor(input: DecisionInput): string {
   const countermeasures = input.fatf?.requiredAction === "countermeasures";
   const enhancedDueDiligence = input.fatf?.requiredAction === "enhanced-due-diligence";
@@ -160,13 +205,16 @@ function treatmentFor(input: DecisionInput): string {
     return input.fatf
       ? "Enhanced due diligence while the missing country-risk evidence is resolved."
       : "Do not assign a low-risk treatment until an approved alternative country-risk assessment closes the evidence gap.";
+  // These used to be bare restatements of the heading above them ("Standard
+  // due diligence." under "Standard Due Diligence"), which spent a line saying
+  // nothing. Each now says what the treatment covers and where it stops.
   if (band === "very-high" || (input.sanctionsCoverageComplete && input.sanctionsTier) || input.fatf)
-    return "Enhanced due diligence.";
+    return "Enhanced due diligence on every relationship, with senior approval and enhanced ongoing monitoring.";
   if (band === "high")
-    return "Enhanced due diligence for defined risk triggers.";
+    return "Enhanced due diligence where defined risk triggers are present, and documented justification for accepting the relationship.";
   if (band === "moderate")
-    return "Standard due diligence, with enhanced checks for defined risk triggers.";
-  return "Standard due diligence.";
+    return "Standard due diligence for most relationships, with enhanced checks where defined risk triggers are present.";
+  return "Standard due diligence is appropriate for most relationships, with enhanced review where ownership, sector exposure or transaction patterns raise the risk.";
 }
 
 function verdict(input: DecisionInput): { headline: string; paragraph: string } {
@@ -283,23 +331,273 @@ function mitigatingFactors(input: DecisionInput): string[] {
   return out;
 }
 
+/** The band's own level, used where nothing more specific bears on an activity. */
+function baselineLevel(input: DecisionInput): ImpactLevel {
+  if (!input.scoreAvailable) return "Review";
+  const band = input.riskResult.band;
+  if (band === "very-high" || band === "high") return "Enhanced";
+  if (band === "moderate") return "Elevated";
+  return "Standard";
+}
+
+/**
+ * Why an activity sits where it does when no instrument reaches it directly.
+ *
+ * Without this the row read "Enhanced — no sectoral or comprehensive trade
+ * measures identified", which states a level and then gives a reason that
+ * argues against it. Where the level comes from the band, the band is the
+ * reason and the row has to say so.
+ */
+function bandClause(input: DecisionInput): string {
+  if (!input.scoreAvailable || input.riskResult.band === null) {
+    return "no country-risk score is published, so the activity stays under review";
+  }
+  return `the ${bandLabel(input.riskResult.band).toLowerCase()} country-risk band applies`;
+}
+
+/** One step down, floored at Standard. A mitigant can relax an activity, not clear it. */
+function softer(level: ImpactLevel): ImpactLevel {
+  if (level === "Enhanced") return "Elevated";
+  if (level === "Elevated") return "Standard";
+  return level;
+}
+
+function governanceRiskFor(input: DecisionInput, key: string): number | null {
+  const domain = input.currentGovernanceDomains?.find((item) => item.key === key);
+  return domain?.risk ?? null;
+}
+
+function sanctionsImposers(input: DecisionInput): string {
+  const imposers = [...new Set((input.sanctions?.programs ?? []).map((programme) => programme.imposer))];
+  return imposers.length ? imposers.join(", ") : "";
+}
+
+/**
+ * What the country's profile means for each line of business.
+ *
+ * Every row used to carry the same level, because the level was derived from
+ * the band and nothing else — five identical "ENHANCED" badges down a column,
+ * which is a column that cannot tell you anything. Each activity is now read
+ * against the evidence that actually bears on it, and the row states which
+ * evidence that was, so a level can be checked rather than taken on trust.
+ *
+ * A sanctions programme is the only thing that can produce "Restricted": that
+ * is a legal fact about the activity, not an inference from a score. Where the
+ * sanctions evidence is incomplete we say so rather than reading silence as
+ * permission.
+ */
 function businessImpact(input: DecisionInput): BusinessImpactRow[] {
-  const level =
-    !input.scoreAvailable
-      ? "Review"
-      : input.riskResult.band === "low"
-      ? "Low"
-      : input.riskResult.band === "moderate"
-        ? "Medium"
-        : input.riskResult.band === "high"
-          ? "High"
-          : "Enhanced";
+  const base = baselineLevel(input);
+  const comprehensive = input.sanctionsCoverageComplete && hasComprehensiveSanctions(input.sanctions);
+  const tier = input.sanctionsCoverageComplete ? input.sanctionsTier : undefined;
+  const imposers = sanctionsImposers(input);
+  const countermeasures = input.fatf?.requiredAction === "countermeasures";
+  const fatfListed = Boolean(input.fatf);
+  const corruption = governanceRiskFor(input, "corruption");
+  const stability = governanceRiskFor(input, "politicalStability");
+  const boRegister = getBoRegister(input.iso2);
+
+  const sanctionsGap = !input.sanctionsCoverageComplete;
+  const sanctionsGapDriver = "Sanctions evidence is incomplete for this jurisdiction; absence of a programme is not assumed.";
+
+  // A public register is a genuine mitigant, so it can pull onboarding back a
+  // step; no register at all pushes it up. Neither ever crosses "Restricted",
+  // which only a legal instrument can set.
+  const publicRegister = boRegister?.status === "live-public";
+  const onboarding: BusinessImpactRow = comprehensive
+    ? {
+        activity: "Customer onboarding",
+        level: "Restricted",
+        implication: "Most new relationships cannot be established without a licence or exemption.",
+        driver: `Comprehensive ${imposers || "country-wide"} sanctions programme.`,
+      }
+    : {
+        activity: "Customer onboarding",
+        level: !boRegister
+          ? "Enhanced"
+          : corruption !== null && corruption >= 6
+            ? "Enhanced"
+            : publicRegister
+              ? softer(base)
+              : base,
+        implication: "Verify ultimate beneficial ownership and control from more than one source.",
+        driver: !boRegister
+          ? "No beneficial-ownership register is recorded, so ownership cannot be corroborated against an official register."
+          : corruption !== null && corruption >= 6
+            ? `Corruption and integrity risk ${corruption.toFixed(1)}/10, so the ${boRegisterLabel(boRegister.status).toLowerCase()} register needs independent corroboration.`
+            : publicRegister
+              ? `A public beneficial-ownership register${boRegister.since ? `, live since ${boRegister.since},` : ""} allows ownership to be checked directly.`
+              : `Beneficial-ownership register: ${boRegisterSignal(input.iso2).toLowerCase()}.`,
+      };
+
+  const payments: BusinessImpactRow = comprehensive
+    ? {
+        activity: "Payments and transactions",
+        level: "Restricted",
+        implication: "Payments are prohibited except under a licence or a recognised exemption.",
+        driver: `Comprehensive ${imposers || "country-wide"} sanctions programme.`,
+      }
+    : {
+        activity: "Payments and transactions",
+        level: sanctionsGap ? "Review" : tier || fatfListed ? "Enhanced" : base,
+        implication: "Review transaction purpose, counterparties and the full payment routing.",
+        driver: sanctionsGap
+          ? sanctionsGapDriver
+          : tier
+            ? `${tier.charAt(0).toUpperCase()}${tier.slice(1)} ${imposers} measures reach named parties in the payment chain.`
+            : fatfListed
+              ? `FATF ${input.fatf!.listing === "call-for-action" ? "call for action" : "increased monitoring"} applies to this jurisdiction.`
+              : `No direct country-level programme is identified, so ${bandClause(input)}; counterparties can still be designated individually.`,
+      };
+
+  const trade: BusinessImpactRow = comprehensive
+    ? {
+        activity: "Trade and export activity",
+        level: "Restricted",
+        implication: "Goods, services and end users need licence checks before any commitment.",
+        driver: `Comprehensive ${imposers || "country-wide"} sanctions programme reaches most goods and end users.`,
+      }
+    : {
+        activity: "Trade and export activity",
+        level: sanctionsGap
+          ? "Review"
+          : tier === "sectoral" || countermeasures
+            ? "Enhanced"
+            : tier
+              ? "Elevated"
+              : base,
+        implication: "Screen goods, end users and potential dual-use exposure.",
+        driver: sanctionsGap
+          ? sanctionsGapDriver
+          : tier === "sectoral"
+            ? `Sectoral ${imposers} measures restrict defined goods and sectors.`
+            : countermeasures
+              ? "FATF countermeasures apply, which reach trade finance and correspondent routing."
+              : tier
+                ? `Targeted ${imposers} measures apply to named parties rather than to sectors.`
+                : `No sectoral or comprehensive trade measures are identified, so ${bandClause(input)}.`,
+      };
+
+  const corporate: BusinessImpactRow = {
+    activity: "Corporate clients",
+    level: comprehensive
+      ? "Restricted"
+      : corruption === null
+        ? "Review"
+        : corruption >= 6.5
+          ? "Enhanced"
+          : corruption <= 3
+            ? softer(base)
+            : base,
+    implication: "Assess state ownership, government links and political exposure.",
+    driver: comprehensive
+      ? "State-linked entities are within the scope of the comprehensive programme."
+      : corruption === null
+        ? "Governance evidence is unavailable for this jurisdiction, so state linkage cannot be discounted."
+        : corruption >= 6.5
+          ? `Corruption and integrity risk ${corruption.toFixed(1)}/10 raises the chance of undisclosed state or political interest.`
+          : corruption <= 3
+            ? `Corruption and integrity risk ${corruption.toFixed(1)}/10; declared ownership and control are more likely to be complete.`
+            : `Corruption and integrity risk ${corruption.toFixed(1)}/10, and ${bandClause(input)}.`,
+  };
+
+  const monitoring: BusinessImpactRow = {
+    activity: "Ongoing monitoring",
+    level: countermeasures || comprehensive ? "Enhanced" : fatfListed ? "Enhanced" : base,
+    implication: "Alert on ownership changes, new designations and status changes.",
+    driver: countermeasures
+      ? "FATF countermeasures are in force and are reviewed at each plenary."
+      : fatfListed
+        ? `FATF status was last reviewed ${fmt(input.lastPlenary)} and can change at any plenary.`
+        : stability !== null && stability >= 6
+          ? `Political stability risk ${stability.toFixed(1)}/10 makes the picture liable to change.`
+          : `No listing or instability signal applies, so ${bandClause(input)}; status changes still follow designations and FATF plenary outcomes.`,
+  };
+
+  return [onboarding, payments, trade, corporate, monitoring];
+}
+
+/**
+ * The four factors a firm has to form a view on, with the evidence for each.
+ *
+ * The report previously split this across a "score drivers" list, a
+ * "mitigating factors" list and a treatment-overlay list, none of which
+ * referred to one another — so the reader had to assemble the connection
+ * between a weakness and what to do about it themselves. The same four factors
+ * appear for every country; only the evidence and the response change, which is
+ * what makes two countries comparable.
+ */
+function considerations(input: DecisionInput): ConsiderationRow[] {
+  const comprehensive = input.sanctionsCoverageComplete && hasComprehensiveSanctions(input.sanctions);
+  const tier = input.sanctionsCoverageComplete ? input.sanctionsTier : undefined;
+  const imposers = sanctionsImposers(input);
+  const programmes = [...new Set((input.sanctions?.programs ?? []).map((programme) => programme.program))];
+  const boRegister = getBoRegister(input.iso2);
+  const effectiveness = input.currentPillars?.find((pillar) => pillar.key === "effectiveness");
+  const safeguards = input.currentPillars?.find((pillar) => pillar.key === "safeguards");
+  const worstGovernance = topDomains(input.breakdown, input.currentPillars, input.currentGovernanceDomains)[0];
+
+  const sanctionsWhy = !input.sanctionsCoverageComplete
+    ? "Sanctions evidence is incomplete for this jurisdiction, so the absence of a programme cannot be relied on."
+    : comprehensive
+      ? `A comprehensive ${imposers} programme applies${programmes.length ? ` (${programmes.slice(0, 2).join("; ")})` : ""}, reaching most dealings rather than named parties alone.`
+      : tier
+        ? `${tier.charAt(0).toUpperCase()}${tier.slice(1)} ${imposers} measures are in force, so exposure depends on the specific parties and sectors involved.`
+        : "No direct country-level programme is identified, but counterparties and their ownership chains can still be designated.";
+
+  const fatfWhy = input.fatf
+    ? input.fatf.listing === "call-for-action"
+      ? `FATF applies a call for action requiring ${input.fatf.requiredAction === "countermeasures" ? "countermeasures" : "enhanced due diligence"}, last reviewed ${fmt(input.lastPlenary)}.`
+      : `FATF applies increased monitoring, last reviewed ${fmt(input.lastPlenary)}.`
+    : effectiveness?.risk != null
+      ? `Not FATF grey- or black-listed. Mutual-evaluation effectiveness sits at ${effectiveness.risk.toFixed(1)}/10 risk${safeguards?.risk != null ? ` and technical safeguards at ${safeguards.risk.toFixed(1)}/10` : ""}.`
+      : "Not FATF grey- or black-listed, and no current mutual-evaluation ratings are available for this jurisdiction.";
+
+  const governanceWhy = worstGovernance && worstGovernance.risk !== null
+    ? (worstGovernance.risk as number) >= 5
+      ? `${worstGovernance.label} is the weakest measure at ${(worstGovernance.risk as number).toFixed(1)}/10 risk, which raises the chance of undisclosed control and unreliable public records.`
+      : `${worstGovernance.label} is the weakest measure at ${(worstGovernance.risk as number).toFixed(1)}/10 risk, which is comparatively strong; public records are more likely to be reliable.`
+    : "World Bank governance evidence is unavailable for this jurisdiction, so institutional quality cannot be assessed.";
+
+  const boWhy = boRegister
+    ? `A beneficial-ownership register exists and is ${boRegisterLabel(boRegister.status).toLowerCase()}${boRegister.since ? `, live since ${boRegister.since}` : ""}.`
+    : "No beneficial-ownership register is recorded for this jurisdiction, so ownership cannot be checked against an official source.";
+
   return [
-    { activity: "Customer onboarding", level, implication: "Additional ownership and control verification may be required." },
-    { activity: "Payments and transactions", level, implication: "Review transaction purpose, counterparties and geographic routing." },
-    { activity: "Trade and export activity", level, implication: "Screen goods, end users and potential dual-use exposure." },
-    { activity: "Corporate clients", level, implication: "Assess state ownership, government links and political exposure." },
-    { activity: "Ongoing monitoring", level, implication: "Apply alerts for ownership changes, sanctions and geopolitical developments." },
+    {
+      key: "sanctions",
+      factor: "Sanctions and regulatory exposure",
+      why: sanctionsWhy,
+      mitigants: !input.sanctionsCoverageComplete
+        ? ["Treat the gap as unresolved and screen against all applicable lists.", "Obtain legal advice before committing to exposure."]
+        : comprehensive
+          ? ["Screen every party and check for an applicable licence or exemption.", "Take legal advice before any commitment."]
+          : ["Screen customers, counterparties and transactions against current lists.", "Re-screen when designations change."],
+    },
+    {
+      key: "fatf",
+      factor: "AML/CFT effectiveness",
+      why: fatfWhy,
+      mitigants: input.fatf
+        ? ["Apply enhanced due diligence proportionate to the listing.", "Monitor plenary outcomes for status changes."]
+        : ["Maintain risk-based AML/CFT controls and independent testing.", "Apply enhanced review where transaction patterns warrant it."],
+    },
+    {
+      key: "governance",
+      factor: "Governance and institutions",
+      why: governanceWhy,
+      mitigants: worstGovernance && (worstGovernance.risk as number) >= 5
+        ? ["Corroborate ownership and source of wealth independently of local records.", "Verify politically exposed connections before onboarding."]
+        : ["Use official registries as the primary corroboration.", "Apply standard politically-exposed-person screening."],
+    },
+    {
+      key: "beneficial-ownership",
+      factor: "Beneficial ownership transparency",
+      why: boWhy,
+      mitigants: boRegister
+        ? ["Check the register and reconcile it against what the customer declares.", "Escalate any unexplained difference."]
+        : ["Verify ownership from at least two independent sources.", "Escalate unresolved opacity to Compliance."],
+    },
   ];
 }
 
@@ -458,11 +756,13 @@ export function buildDecision(input: DecisionInput): CountryDecision {
     verdictHeadline: v.headline,
     verdictParagraph: v.paragraph,
     treatment: treatmentFor(input),
+    treatmentHeadline: treatmentHeadline(input),
     treatmentChecklist: treatmentChecklist(input),
     scoreDrivers: drivers,
     treatmentOverlays: treatmentOverlays(input),
     riskDrivers: drivers,
     mitigatingFactors: mitigatingFactors(input),
+    considerations: considerations(input),
     businessImpact: businessImpact(input),
     eddTriggers: EDD_TRIGGERS,
     recommendedControls: RECOMMENDED_CONTROLS,

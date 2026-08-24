@@ -54,7 +54,7 @@ import { COUNTRY_RISK_SOURCES } from "../data/countryRiskSources.js";
 import {
   latestCountryRiskSourceCheck,
 } from "../data/countryRiskPresentation.js";
-import { buildCountryRiskV3PublicExplanation, countryRiskV3BandLabel } from "../data/countryRiskV3Presentation.js";
+import { buildCountryRiskV3PublicExplanation, countryRiskV3BandLabel, COUNTRY_RISK_V3_PILLAR_PLAIN } from "../data/countryRiskV3Presentation.js";
 import { buildCountryRiskContext } from "../data/countryRiskContext.js";
 import { CountryRiskContextPanel } from "../components/CountryRiskContextPanel.js";
 import { buildCountryRiskGovernanceEvidenceRows } from "../data/countryRiskGovernancePresentation.js";
@@ -83,24 +83,26 @@ const BAND_COLOUR: Record<RiskBand, string> = {
 
 const LEVEL_RANK: Record<string, number> = { low: 1, medium: 2, high: 3, enhanced: 4 };
 
+/** Pillar → the kind of thing it measures. Institutions, law, practice, determination. */
+const PILLAR_ICON: Record<string, typeof Scale> = {
+  effectiveness: ShieldCheck,
+  safeguards: Scale,
+  governance: Landmark,
+  icrg: Flag,
+};
+
+/** Consideration row → its subject, so the table can be scanned by eye. */
+const CONSIDER_ICON: Record<string, typeof Scale> = {
+  sanctions: Scale,
+  fatf: ShieldCheck,
+  governance: Landmark,
+  "beneficial-ownership": Layers,
+};
+
 function ordinal(n: number): string {
   const s = ["th", "st", "nd", "rd"];
   const v = n % 100;
   return `${n}${s[(v - 20) % 10] || s[v] || s[0]}`;
-}
-
-function treatmentLabel(band: RiskBand | null): string {
-  if (band === null) return "More information needed";
-  switch (band) {
-    case "very-high":
-      return "Enhanced DD + Restrictions";
-    case "high":
-      return "Enhanced Due Diligence";
-    case "moderate":
-      return "Standard + Enhanced Checks";
-    default:
-      return "Standard Due Diligence";
-  }
 }
 
 function controlTiles(band: RiskBand | null): { name: string; blurb: string; priority: string }[] {
@@ -285,7 +287,7 @@ export function CountryHub() {
   const baseline = latestHistory;
   const tiles = controlTiles(publishedBand);
   // Country-specific monitoring items from the grounded narrative (unique per country).
-  const watchpointItems = (getNarrative(country.iso2)?.keyWatchpoints ?? []).slice(0, 2);
+  const watchpointsAll = getNarrative(country.iso2)?.keyWatchpoints ?? [];
   const regulatorySignal = getRegulatorySignalCountry(country.iso2);
 
   const overallImpact = decision.businessImpact.reduce(
@@ -793,6 +795,152 @@ export function CountryHub() {
             </div>
           </div>
 
+
+          {/* ── 01 How the score is calculated ── */}
+          <div className="cx-secnum-row" id="cx-sec-score">
+            <span className="cx-secnum">01</span>
+            <h2 className="cx-secnum-title">How the score is calculated</h2>
+            <span className="cx-secnum-rule" aria-hidden="true" />
+          </div>
+          <div className="cx-card cx-howscore">
+            <ul className="cx-howscore__grid">
+              {publicExplanation.pillars.map((pillar) => {
+                const PillarIcon = PILLAR_ICON[pillar.key] ?? Scale;
+                return (
+                  <li key={pillar.key} className={`cx-howscore__item${pillar.score === null ? " cx-howscore__item--none" : ""}`}>
+                    <PillarIcon size={20} className="cx-howscore__ico" aria-hidden="true" />
+                    <div>
+                      <span className="cx-howscore__label">{pillar.label}</span>
+                      <span className="cx-howscore__weight">
+                        {pillar.score === null ? "Not available · weights rebalanced" : `${Math.round(pillar.appliedWeight * 100)}% of the score`}
+                      </span>
+                      <p className="cx-howscore__plain">{COUNTRY_RISK_V3_PILLAR_PLAIN[pillar.key]}</p>
+                    </div>
+                  </li>
+                );
+              })}
+            </ul>
+            <p className="cx-howscore__note">
+              <Info size={12} aria-hidden="true" /> This score combines published external
+              assessments with RegActions analysis. Missing information is never treated as low
+              risk. Sanctions and FATF status are legal overlays shown separately, except the
+              labelled FATF determination used where no mutual evaluation exists.
+            </p>
+            {publicExplanation.calculation && (
+              <details className="cx-meth__details cx-howscore__calc">
+                <summary>Show the exact calculation</summary>
+                <table className="cx-meth__calc">
+                  <thead>
+                    <tr><th scope="col">Pillar</th><th scope="col">Score</th><th scope="col">Weight</th><th scope="col">Adds</th></tr>
+                  </thead>
+                  <tbody>
+                    {publicExplanation.calculation.rows.map((row) => (
+                      <tr key={row.key}>
+                        <th scope="row">{row.label}</th>
+                        <td>{row.score.toFixed(1)}</td>
+                        <td>{row.weightPct}%</td>
+                        <td>{row.contribution.toFixed(1)}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                  <tfoot>
+                    <tr>
+                      <th scope="row">Underlying risk score</th>
+                      <td colSpan={3}>{publicExplanation.calculation.total.toFixed(1)} / 10</td>
+                    </tr>
+                  </tfoot>
+                </table>
+              </details>
+            )}
+          </div>
+
+          {/* ── 02 What firms should consider ── */}
+          <div className="cx-secnum-row" id="cx-sec-consider">
+            <span className="cx-secnum">02</span>
+            <h2 className="cx-secnum-title">What firms should consider</h2>
+            <span className="cx-secnum-rule" aria-hidden="true" />
+          </div>
+          <div className="cx-card cx-consider">
+            <table className="cx-consider__table">
+              <thead>
+                <tr>
+                  <th scope="col">Risk factor</th>
+                  <th scope="col">Why it matters</th>
+                  <th scope="col">Mitigants</th>
+                </tr>
+              </thead>
+              <tbody>
+                {decision.considerations.map((row) => {
+                  const RowIcon = CONSIDER_ICON[row.key] ?? ShieldCheck;
+                  return (
+                    <tr key={row.key}>
+                      <th scope="row">
+                        <span className="cx-consider__factor">
+                          <RowIcon size={15} aria-hidden="true" /> <span>{row.factor}</span>
+                        </span>
+                      </th>
+                      <td>{row.why}</td>
+                      <td>
+                        <ul>{row.mitigants.map((item) => <li key={item}>{item}</li>)}</ul>
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+
+          {/* ── 03 Recommended treatment ── */}
+          <div className="cx-secnum-row" id="cx-sec-treatment">
+            <span className="cx-secnum">03</span>
+            <h2 className="cx-secnum-title">Recommended treatment</h2>
+            <span className="cx-secnum-rule" aria-hidden="true" />
+          </div>
+          <div className="cx-card cx-treatment">
+            <div className="cx-treatment__head">
+              <div className={`cx-treatment__mark cx-treatment__mark--${publishedBand ?? "insufficient"}`} aria-hidden="true">
+                <ShieldCheck size={26} />
+              </div>
+              <div className="cx-treatment__lead">
+                <h3>{decision.treatmentHeadline}</h3>
+                <p>{decision.treatment}</p>
+              </div>
+              <div className="cx-treatment__controls">
+                <span className="cx-card__eyebrow">Key controls</span>
+                <ul>
+                  {decision.treatmentChecklist.slice(0, 4).map((item) => (
+                    <li key={item}><CheckCircle2 size={13} aria-hidden="true" /> {item}</li>
+                  ))}
+                </ul>
+              </div>
+            </div>
+            <div className="cx-treatment__impact">
+              <span className="cx-card__eyebrow"><Briefcase size={12} /> What this means for each activity</span>
+              <ul className="cx-impact__rows">
+                {decision.businessImpact.map((row) => (
+                  <li key={row.activity}>
+                    <div className="cx-impact__head">
+                      <span className="cx-impact__activity">{row.activity}</span>
+                      <span className={`cx-impact__level cx-impact__level--${row.level.toLowerCase()}`}>{row.level}</span>
+                    </div>
+                    <p className="cx-impact__implication">{row.implication}</p>
+                    <p className="cx-impact__driver">{row.driver}</p>
+                  </li>
+                ))}
+              </ul>
+              <p className="cx-card__note">
+                Each level is set from the evidence named beneath it. Only a sanctions programme we
+                hold can set &ldquo;Restricted&rdquo;; the rest follow the assessed risk. Generic
+                guidance, not legal advice.
+              </p>
+            </div>
+          </div>
+
+
+          <details className="cx-fold">
+            <summary className="cx-fold__summary">Full analysis and evidence</summary>
+            <div className="cx-fold__body">
+
           <CountryRiskV3Panel
             payload={countryRiskV3PanelPayload(riskV3, {
               label: "Register status",
@@ -898,33 +1046,10 @@ export function CountryHub() {
 
           {/* ── Row 2: treatment | trend | map (attribution lives in the rail) ── */}
           <div className="cx-secnum-row" id="cx-sec-decision">
-            <span className="cx-secnum">01</span>
             <h2 className="cx-secnum-title">The decision this drives</h2>
             <span className="cx-secnum-rule" aria-hidden="true" />
           </div>
           <div className="cx-ws__row2">
-            <div className="cx-card cx-treatw">
-              <span className="cx-card__eyebrow cx-treatw__eyebrow">
-                <ClipboardCheck size={12} /> Recommended treatment
-              </span>
-              <p className="cx-treatw__title">{treatmentLabel(publishedBand)}</p>
-              <p className="cx-treatw__desc">{decision.treatment}</p>
-              <ul className="cx-checklist">
-                {decision.treatmentChecklist.slice(0, 4).map((c) => (
-                  <li key={c}>
-                    <CheckCircle2 size={13} /> {c}
-                  </li>
-                ))}
-                {watchpointItems.map((w) => (
-                  <li key={w} className="cx-checklist__wp">
-                    <Flag size={13} /> {w}
-                  </li>
-                ))}
-              </ul>
-              <a href="#controls" className="cx-treatw__btn">
-                View recommended controls →
-              </a>
-            </div>
 
             <div className="cx-card cx-trend">
               <span className="cx-card__eyebrow">
@@ -985,27 +1110,23 @@ export function CountryHub() {
 
           {/* ── Row 3: score drivers + overlays | mitigating factors | business impact ── */}
           <div className="cx-secnum-row" id="cx-sec-drivers">
-            <span className="cx-secnum">02</span>
-            <h2 className="cx-secnum-title">Score drivers and mitigants</h2>
+            <h2 className="cx-secnum-title">Score detail and treatment overlays</h2>
             <span className="cx-secnum-rule" aria-hidden="true" />
           </div>
           <div className="cx-ws__row3">
             <div className="cx-card cx-drivers">
               <span className="cx-card__eyebrow">
-                <BarChart3 size={12} /> Score drivers
+                <BarChart3 size={12} /> Supporting evidence and overlays
               </span>
-              <ul className="cx-drivers__list">
-                {decision.scoreDrivers.map((driver) => (
-                  <li key={driver} className="cx-drivers__plain">
-                    <BarChart3 size={13} /> <span>{driver}</span>
-                  </li>
-                ))}
-                {publicExplanation.missingInformation.map((message) => (
-                  <li key={message} className="cx-drivers__plain cx-drivers__plain--missing">
-                    <Info size={13} /> <span>{message}</span>
-                  </li>
-                ))}
-              </ul>
+              {publicExplanation.missingInformation.length > 0 && (
+                <ul className="cx-drivers__list">
+                  {publicExplanation.missingInformation.map((message) => (
+                    <li key={message} className="cx-drivers__plain cx-drivers__plain--missing">
+                      <Info size={13} /> <span>{message}</span>
+                    </li>
+                  ))}
+                </ul>
+              )}
               {governanceEvidenceRows.length > 0 && (
                 <>
                   <span className="cx-card__eyebrow cx-drivers__evidence-heading">
@@ -1050,26 +1171,11 @@ export function CountryHub() {
               </ul>
             </div>
 
-            <div className="cx-card cx-mitig">
-              <span className="cx-card__eyebrow">
-                <ShieldCheck size={12} /> Mitigating factors
-              </span>
-              <ul className="cx-mitig__list">
-                {decision.mitigatingFactors.map((m, i) => (
-                  <li key={i}>
-                    <CheckCircle2 size={14} className="cx-mitig__ico" />
-                    <span>{m}</span>
-                  </li>
-                ))}
-              </ul>
-            </div>
 
-            {impactCard}
           </div>
 
           {/* ── Row 4: recommended controls | EDD triggers ── */}
           <div className="cx-secnum-row" id="cx-sec-controls">
-            <span className="cx-secnum">03</span>
             <h2 className="cx-secnum-title">Recommended controls</h2>
             <span className="cx-secnum-rule" aria-hidden="true" />
           </div>
@@ -1113,7 +1219,6 @@ export function CountryHub() {
 
           {/* ── Row 5: sector exposure | regulators & legal framework ── */}
           <div className="cx-secnum-row" id="cx-sec-sector">
-            <span className="cx-secnum">04</span>
             <h2 className="cx-secnum-title">Sector and regulatory exposure</h2>
             <span className="cx-secnum-rule" aria-hidden="true" />
           </div>
@@ -1215,20 +1320,41 @@ export function CountryHub() {
             </div>
           </div>
           </div>
+            </div>
+          </details>
+
 
         </div>
 
         {/* ── Right rail: methodology | peers | sources ── */}
         <aside className="cx-ws__rail">
-          <nav className="cx-card cx-onreport" aria-label="On this report">
-            <span className="cx-card__eyebrow">On this report</span>
-            <ul className="cx-onreport__list">
-              <li><a href="#cx-sec-decision">The decision this drives</a></li>
-              <li><a href="#cx-sec-drivers">Score drivers and mitigants</a></li>
-              <li><a href="#cx-sec-controls">Recommended controls</a></li>
-              <li><a href="#cx-sec-sector">Sector and regulatory exposure</a></li>
-            </ul>
-          </nav>
+          <div className="cx-card cx-watchpoints">
+            <span className="cx-card__eyebrow"><Flag size={12} /> Watchpoints</span>
+            {watchpointsAll.length > 0 ? (
+              <ul className="cx-watchpoints__list">
+                {watchpointsAll.slice(0, 3).map((item) => (
+                  <li key={item}><span className="cx-watchpoints__ico" aria-hidden="true"><Flag size={13} /></span><span>{item}</span></li>
+                ))}
+              </ul>
+            ) : (
+              <p className="cx-card__note">No specific watchpoint is recorded for this jurisdiction.</p>
+            )}
+            {watchpointsAll.length > 3 && (
+              <details className="cx-meth__details">
+                <summary>View all watchpoints</summary>
+                <ul className="cx-watchpoints__list cx-watchpoints__list--more">
+                  {watchpointsAll.slice(3).map((item) => (
+                    <li key={item}><span className="cx-watchpoints__ico" aria-hidden="true"><Flag size={13} /></span><span>{item}</span></li>
+                  ))}
+                </ul>
+              </details>
+            )}
+          </div>
+
+          <details className="cx-fold cx-fold--rail">
+            <summary className="cx-fold__summary">More evidence</summary>
+            <div className="cx-fold__body">
+
           <div className="cx-card cx-meth">
             <span className="cx-card__eyebrow">
               <Info size={12} /> How this score was calculated
@@ -1343,6 +1469,9 @@ export function CountryHub() {
           </div>
 
           {peersCard}
+            </div>
+          </details>
+
 
           <div className="cx-card cx-srcs">
             <span className="cx-card__eyebrow">
