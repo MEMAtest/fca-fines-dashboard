@@ -284,9 +284,34 @@ export function FinesWorkspace({ view }: FinesWorkspaceProps) {
   const [comparisonLoading, setComparisonLoading] = useState(false);
   const [comparisonSummaries, setComparisonSummaries] = useState<ComparisonSummary[]>([]);
 
+  const seo = view === "overview"
+    ? {
+        title: "Regulatory Fines Database | Global Enforcement Actions | RegActions",
+        description: "Search the RegActions regulatory fines database: compare financial penalties, enforcement actions, breach themes and official source evidence across global regulators.",
+        keywords: "regulatory fines, regulatory fines database, financial regulatory penalties, enforcement actions, fines tracker",
+      }
+    : view === "actions"
+      ? {
+          title: "Regulatory Enforcement Actions | Search Fines by Regulator | RegActions",
+          description: "Search source-linked regulatory enforcement actions by regulator, jurisdiction, year, firm and breach theme across the RegActions evidence base.",
+          keywords: "regulatory enforcement actions, enforcement fines, regulator penalties, financial enforcement database",
+        }
+      : view === "analytics"
+        ? {
+            title: "Regulatory Fines Analytics | Trends, Themes and Penalties | RegActions",
+            description: "Analyse regulatory fines by year, regulator, sector and breach theme, with transparent totals and source-linked enforcement evidence.",
+            keywords: "regulatory fines analytics, enforcement trends, regulatory penalty analysis, fines by regulator",
+          }
+        : {
+            title: "Compare Regulatory Fines | Enforcement Benchmarks | RegActions",
+            description: "Compare regulatory fines and enforcement activity across years, regulators and breach themes using the RegActions public evidence base.",
+            keywords: "compare regulatory fines, regulatory enforcement comparison, regulator benchmarks, penalty comparison",
+          };
+
   useSEO({
-    title: `${view === "overview" ? "Fines Command Centre" : view[0].toUpperCase() + view.slice(1)} | RegActions`,
-    description: "Explore regulatory fines, enforcement actions, themes and comparisons across the RegActions public evidence base.",
+    ...seo,
+    canonicalPath: `/fines${view === "overview" ? "" : `/${view}`}`,
+    ogType: "website",
   });
 
   const { fines, loading, error } = useUnifiedData({ regulator, country, year, currency: "GBP" });
@@ -694,8 +719,8 @@ export function FinesWorkspace({ view }: FinesWorkspaceProps) {
   const pageHeading = (
     <header className={`workspace-page__heading${view === "actions" ? " workspace-page__heading--band" : ""}`}>
       <div>
-        <h1>{view === "overview" ? "Fines Command Centre" : view === "actions" ? "Enforcement actions" : view === "analytics" ? "Fines analytics" : "Guided comparison"}</h1>
-        <p>{view === "compare" ? "Select up to three years and five regulators or themes. Normal views open the underlying evidence on click." : "Global enforcement intelligence, financial penalties and source-linked actions in one working view."}</p>
+        <h1>{view === "overview" ? "Regulatory Fines Database" : view === "actions" ? "Regulatory enforcement actions" : view === "analytics" ? "Regulatory fines analytics" : "Compare regulatory fines"}</h1>
+        <p>{view === "compare" ? "Select up to three years and five regulators or themes. Normal views open the underlying evidence on click." : "Search global regulatory fines, financial penalties and source-linked enforcement actions in one working view."}</p>
       </div>
       <div className="workspace-page__heading-actions">
         <Link className="workspace-button workspace-button--primary" to={`/board-pack?from=${encodeURIComponent(`/fines${searchParams.toString() ? `?${searchParams.toString()}` : ""}`)}&fromLabel=Fines%20workspace`}><Sparkles size={15} /> Create board pack</Link>

@@ -1572,6 +1572,7 @@ function generateBreadcrumbItems(
 // Pages that describe or provide access to the dataset get Dataset schema
 const DATASET_PAGES = new Set([
   "/",
+  "/fines",
   "/regulators",
   "/search",
   "/topics",
@@ -1650,12 +1651,17 @@ function generatePageGraph(meta: PageMeta): object {
 
   // Only include Dataset schema on pages that describe or provide access to the data
   if (DATASET_PAGES.has(meta.path)) {
+    const isGlobalFinesPage = meta.path === "/fines";
+    const datasetUrl = isGlobalFinesPage ? `${BASE_URL}/fines` : `${BASE_URL}/regulators`;
     graph.push({
       "@type": "Dataset",
-      name: "RegActions Regulatory Fines Database",
+      "@id": `${datasetUrl}#dataset`,
+      name: isGlobalFinesPage ? "Global Regulatory Fines Database" : "RegActions Regulatory Fines Database",
       description:
-        `Comprehensive database of regulatory fines and enforcement actions from ${PUBLIC_REGULATOR_COUNT} configured live financial regulators. Includes penalty amounts, breach categories, and firm details.`,
-      url: `${BASE_URL}/regulators`,
+        isGlobalFinesPage
+          ? "Searchable evidence of financial penalties and regulatory enforcement actions across global financial regulators."
+          : `Comprehensive database of regulatory fines and enforcement actions from ${PUBLIC_REGULATOR_COUNT} configured live financial regulators. Includes penalty amounts, breach categories, and firm details.`,
+      url: datasetUrl,
       keywords: [
         "regulatory fines",
         "BaFin fines",
@@ -1809,19 +1815,25 @@ async function buildPageMetas(): Promise<PageMeta[]> {
   });
 
   for (const workspace of [
-    { path: "/fines", title: "Fines Command Centre", description: "Explore regulatory fines, recent actions, enforcement trends and source-linked evidence across the RegActions public dataset." },
-    { path: "/fines/actions", title: "Enforcement Actions", description: "Review public enforcement actions by firm, regulator, theme, sector and date with links to official evidence." },
-    { path: "/fines/analytics", title: "Fines Analytics", description: "Analyse regulatory fines over time, compare breach themes and inspect the actions behind each chart mark." },
-    { path: "/fines/compare", title: "Regulatory Fines Comparison", description: "Compare up to three years and five regulators or enforcement themes in a guided public workspace." },
+    { path: "/fines", title: "Regulatory Fines Database | Global Enforcement Actions", description: "Search the RegActions regulatory fines database: compare financial penalties, enforcement actions, breach themes and official source evidence across global regulators." },
+    { path: "/fines/actions", title: "Regulatory Enforcement Actions | Search Fines by Regulator", description: "Search source-linked regulatory enforcement actions by regulator, jurisdiction, year, firm and breach theme across the RegActions evidence base." },
+    { path: "/fines/analytics", title: "Regulatory Fines Analytics | Trends, Themes and Penalties", description: "Analyse regulatory fines by year, regulator, sector and breach theme, with transparent totals and source-linked enforcement evidence." },
+    { path: "/fines/compare", title: "Compare Regulatory Fines | Enforcement Benchmarks", description: "Compare regulatory fines and enforcement activity across years, regulators and breach themes using the RegActions public evidence base." },
   ]) {
     pages.push({
       path: workspace.path,
       title: `${workspace.title} | RegActions`,
       description: workspace.description,
-      keywords: "regulatory fines, enforcement actions, fines analytics, regulator comparison, official enforcement evidence",
+      keywords: workspace.path === "/fines"
+        ? "regulatory fines, regulatory fines database, financial regulatory penalties, enforcement actions, fines tracker"
+        : workspace.path === "/fines/actions"
+          ? "regulatory enforcement actions, enforcement fines, regulator penalties, financial enforcement database"
+          : workspace.path === "/fines/analytics"
+            ? "regulatory fines analytics, enforcement trends, regulatory penalty analysis, fines by regulator"
+            : "compare regulatory fines, regulatory enforcement comparison, regulator benchmarks, penalty comparison",
       ogType: "website",
       bodyContent: renderStaticPageBody(
-        workspace.title,
+        workspace.path === "/fines" ? "Regulatory Fines Database" : workspace.title,
         workspace.description,
         [
           { heading: "Evidence-first analysis", body: "Open the actions behind every chart, table and comparison, then follow the available links to official regulator evidence." },
@@ -2310,7 +2322,7 @@ async function buildPageMetas(): Promise<PageMeta[]> {
       breadcrumbLabel: code,
       ogImage: `${BASE_URL}/og/${code.toLowerCase()}-hub.png`,
       bodyContent: renderRegulatorHubBody(
-        code === "FCA" ? "FCA Fines and Enforcement Actions" : title,
+        code === "FCA" ? "FCA Fines Database and Enforcement Actions" : title,
         description,
         [
           { label: "Regulator", value: coverage.fullName },
@@ -2339,8 +2351,11 @@ async function buildPageMetas(): Promise<PageMeta[]> {
         {
           "@context": "https://schema.org",
           "@type": "Dataset",
-          name: `${code} Fines Database`,
-          description: `${coverage.fullName} enforcement actions and financial penalties from ${coverage.years}`,
+          "@id": `${BASE_URL}${path}#dataset`,
+          name: code === "FCA" ? "FCA Fines and Enforcement Database" : `${code} Fines Database`,
+          description: code === "FCA"
+            ? "Source-linked Financial Conduct Authority enforcement actions and financial penalties recorded by RegActions for the United Kingdom."
+            : `${coverage.fullName} enforcement actions and financial penalties from ${coverage.years}`,
           url: `${BASE_URL}${path}`,
           keywords: [
             `${code} fines`,
@@ -2735,28 +2750,28 @@ async function buildPageMetas(): Promise<PageMeta[]> {
     bodyContent: '<main class="content-page"><h1>RegActions sitemap</h1><p>Browse the main enforcement, regulator, country-risk, research and methodology pages.</p></main>',
   });
 
-  // 5c. Pillar page: Complete Guide to FCA Enforcement
+  // 5c. Pillar page: FCA enforcement process guide
   pages.push({
     path: "/guide/fca-enforcement",
     title:
-      "Complete Guide to FCA Enforcement & Fines | From Investigation to Penalty",
+      "How FCA Enforcement Works: Investigation, Final Notices and Penalties | RegActions",
     description:
-      "Comprehensive guide covering how the FCA enforces financial regulation, how fines are calculated, the biggest penalties of all time, enforcement by year, sector, and breach type.",
+      "Learn how the FCA enforcement process works, including investigations, Warning and Decision Notices, Final Notices and financial penalty calculations.",
     keywords:
-      "FCA enforcement guide, FCA fines guide, FCA fines explained, how FCA fines work, FCA enforcement process, FCA penalties guide",
+      "FCA enforcement process, FCA investigation, FCA Final Notices, FCA Decision Notices, FCA penalty calculation, how FCA enforcement works",
     ogType: "article",
-    bodyContent: '<main class="content-page"><h1>Complete guide to FCA enforcement and fines</h1><p>Understand the FCA enforcement process, penalty decisions and the official evidence behind RegActions records.</p></main>',
+    bodyContent: '<main class="content-page"><h1>How FCA Enforcement Works: Investigation to Penalty</h1><p>Understand the FCA enforcement process, penalty decisions and the official evidence behind RegActions records.</p><p><a href="/regulators/fca">Open the live FCA fines database</a> · <a href="/fines">Compare global regulatory fines</a></p></main>',
     datePublished: "2026-02-01",
     dateModified: todayISO(),
     articleSection: "Guide",
-    breadcrumbLabel: "Complete Guide to FCA Enforcement",
+    breadcrumbLabel: "How FCA Enforcement Works",
     jsonLd: {
       "@context": "https://schema.org",
       "@type": "Article",
       headline:
-        "Complete Guide to FCA Enforcement & Fines | From Investigation to Penalty",
+        "How FCA Enforcement Works: Investigation, Final Notices and Penalties",
       description:
-        "Comprehensive guide covering how the FCA enforces financial regulation, how fines are calculated, the biggest penalties of all time, enforcement by year, sector, and breach type.",
+        "An evergreen guide to the FCA enforcement process, from investigation and notices through to penalty calculation and published final decisions.",
       datePublished: "2026-02-01",
       dateModified: todayISO(),
       author: {
@@ -2776,7 +2791,7 @@ async function buildPageMetas(): Promise<PageMeta[]> {
         "@id": `${BASE_URL}/guide/fca-enforcement`,
       },
       keywords:
-        "FCA enforcement guide, FCA fines guide, FCA fines explained, how FCA fines work, FCA enforcement process",
+        "FCA enforcement process, FCA investigation, FCA Final Notices, FCA Decision Notices, FCA penalty calculation",
       articleSection: "Guide",
       image: {
         "@type": "ImageObject",

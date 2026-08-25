@@ -349,6 +349,11 @@ function FcaFinesPathways({ currentSlug, annual = false }: { currentSlug: string
           <span className="related-articles__headline">FCA fines in 2026 monthly report</span>
           <span className="related-articles__meta">Monthly totals and case-level evidence</span>
         </Link>
+        <Link to="/fines" className="related-articles__card">
+          <span className="related-articles__category">Global evidence</span>
+          <span className="related-articles__headline">Regulatory fines database</span>
+          <span className="related-articles__meta">Compare penalties across regulators and jurisdictions</span>
+        </Link>
       </div>
     </nav>
   );

@@ -26,6 +26,32 @@ jobs:
           GSC_REPORT_JSON_PATH: /tmp/search-console-weekly.json
           GSC_REPORT_MARKDOWN_PATH: /tmp/search-console-weekly.md
         run: npm run seo:report:weekly
+      - name: Add concise SEO digest to workflow summary
+        if: always()
+        run: |
+          if [ ! -s /tmp/search-console-weekly.json ]; then
+            echo "Search Console report was not produced." >> "$GITHUB_STEP_SUMMARY"
+            exit 0
+          fi
+          node - <<'NODE' >> "$GITHUB_STEP_SUMMARY"
+          const fs = require('node:fs');
+          const report = JSON.parse(fs.readFileSync('/tmp/search-console-weekly.json', 'utf8'));
+          const current = report.totals.current;
+          const change = report.totals.change;
+          const clusters = report.targetClusters || [];
+          const exits = report.topTwenty?.exits || [];
+          const exitCount = report.topTwenty?.exitCount ?? exits.length;
+          const notReturnedCount = report.topTwenty?.notReturnedCount ?? 0;
+          const opportunities = report.highImpressionLowCtrPages || [];
+          const alerts = report.alerts || [];
+          console.log('## SEO weekly digest');
+          console.log(`- ${current.clicks} clicks, ${current.impressions} impressions, ${(current.ctr * 100).toFixed(2)}% CTR, average position ${current.position.toFixed(2)}`);
+          console.log(`- Change: clicks ${change.clicksPct === null ? 'n/a' : change.clicksPct.toFixed(1) + '%'}, impressions ${change.impressionsPct === null ? 'n/a' : change.impressionsPct.toFixed(1) + '%'}, confirmed Top-20 exits ${exitCount}, not observable ${notReturnedCount}`);
+          for (const cluster of clusters) console.log(`- ${cluster.label}: ${cluster.metrics.clicks} clicks / ${cluster.metrics.impressions} impressions / ${(cluster.metrics.ctr * 100).toFixed(2)}% CTR → ${cluster.ownerPage}`);
+          console.log(`- High-impression low-CTR pages: ${opportunities.length}`);
+          console.log(`- Alerts: ${alerts.length ? alerts.map((alert) => alert.message).join(' | ') : 'none'}`);
+          console.log('- Delivery: one weekly artifact and workflow summary; no page-level emails.');
+          NODE
       - name: Upload weekly report
         uses: actions/upload-artifact@v7
         with:

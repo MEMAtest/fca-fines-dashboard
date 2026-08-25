@@ -1,3 +1,6 @@
+import { resolve } from "node:path";
+import { pathToFileURL } from "node:url";
+
 const baseUrl = (process.argv[2] || "https://regactions.com").replace(/\/$/, "");
 
 type CheckResult = {
@@ -34,25 +37,66 @@ function robotsFor(html: string) {
   return html.match(/<meta\s+name="robots"\s+content="([^"]+)"/)?.[1] || "";
 }
 
-function xmlLocations(xml: string) {
-  return Array.from(xml.matchAll(/<loc>([^<]+)<\/loc>/g), (match) => match[1]);
+export function xmlLocations(xml: string) {
+  return Array.from(xml.matchAll(/<loc\b[^>]*>([^<]+)<\/loc>/gi), (match) =>
+    decodeXmlEntities(match[1].trim()),
+  ).filter(Boolean);
 }
 
-async function loadSitemapDocuments(rootXml: string) {
-  const childUrls = rootXml.includes("<sitemapindex") ? xmlLocations(rootXml) : [];
-  if (childUrls.length === 0) {
-    return [rootXml];
+function decodeXmlEntities(value: string) {
+  return value.replace(
+    /&(#x[0-9a-f]+|#\d+|amp|lt|gt|quot|apos);/gi,
+    (entity, name) => {
+      const normalized = name.toLowerCase();
+      if (normalized === "amp") return "&";
+      if (normalized === "lt") return "<";
+      if (normalized === "gt") return ">";
+      if (normalized === "quot") return '"';
+      if (normalized === "apos") return "'";
+      const codePoint = normalized.startsWith("#x")
+        ? Number.parseInt(normalized.slice(2), 16)
+        : Number.parseInt(normalized.slice(1), 10);
+      return Number.isFinite(codePoint) ? String.fromCodePoint(codePoint) : entity;
+    },
+  );
+}
+
+function isSitemapIndex(xml: string) {
+  return /<sitemapindex\b/i.test(xml);
+}
+
+export async function loadSitemapDocuments(rootXml: string, fetcher: typeof fetch = fetch) {
+  const visitedUrls = new Set<string>();
+
+  async function loadDocument(xml: string): Promise<string[]> {
+    if (!isSitemapIndex(xml)) {
+      return [xml];
+    }
+
+    const childUrls = [...new Set(xmlLocations(xml))].filter((url) => {
+      if (visitedUrls.has(url)) return false;
+      visitedUrls.add(url);
+      return true;
+    });
+
+    if (childUrls.length === 0) {
+      return [];
+    }
+
+    const documents = await Promise.all(
+      childUrls.map(async (url) => {
+        const response = await fetcher(url, {
+          headers: { "user-agent": "RegActionsSeoAudit/1.0" },
+        });
+        record(`child sitemap ${url} returns 200`, response.status === 200, `status=${response.status}`);
+        return loadDocument(await response.text());
+      }),
+    );
+
+    return documents.flat();
   }
 
-  return Promise.all(
-    childUrls.map(async (url) => {
-      const response = await fetch(url, {
-        headers: { "user-agent": "RegActionsSeoAudit/1.0" },
-      });
-      record(`child sitemap ${url} returns 200`, response.status === 200, `status=${response.status}`);
-      return response.text();
-    }),
-  );
+  return loadDocument(rootXml);
 }
 
 async function auditHtmlPage(path: string, expectedCanonical: string, requiredText: string) {
@@ -139,7 +183,13 @@ async function main() {
   console.log(`\nSEO audit passed for ${baseUrl}.`);
 }
 
-main().catch((error) => {
-  console.error("SEO audit failed:", error);
-  process.exit(1);
-});
+const invokedScript = process.argv[1]
+  ? pathToFileURL(resolve(process.argv[1])).href === import.meta.url
+  : false;
+
+if (invokedScript) {
+  main().catch((error) => {
+    console.error("SEO audit failed:", error);
+    process.exit(1);
+  });
+}

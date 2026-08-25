@@ -11,9 +11,9 @@ function generatePillarSchema() {
     "@context": "https://schema.org",
     "@type": "Article",
     headline:
-      "Complete Guide to FCA Enforcement & Fines | From Investigation to Penalty",
+      "How FCA Enforcement Works: Investigation, Final Notices and Penalties",
     description:
-      "Comprehensive guide covering how the FCA enforces financial regulation, how fines are calculated, the biggest penalties of all time, enforcement by year, sector, and breach type.",
+      "An evergreen guide to the FCA enforcement process, from investigation and notices through to penalty calculation and published final decisions.",
     datePublished: "2026-02-01",
     dateModified: new Date().toISOString().slice(0, 10),
     author: {
@@ -51,11 +51,11 @@ function generatePillarSchema() {
 export function PillarPage() {
   useSEO({
     title:
-      "Complete Guide to FCA Enforcement & Fines | From Investigation to Penalty",
+      "How FCA Enforcement Works: Investigation, Final Notices and Penalties | RegActions",
     description:
-      "Comprehensive guide covering how the FCA enforces financial regulation, how fines are calculated, the biggest penalties of all time, enforcement by year, sector, and breach type.",
+      "Learn how the FCA enforcement process works, including investigations, Warning and Decision Notices, Final Notices and financial penalty calculations.",
     keywords:
-      "FCA enforcement guide, FCA fines guide, FCA fines explained, how FCA fines work, FCA enforcement process, FCA penalties guide",
+      "FCA enforcement process, FCA investigation, FCA Final Notices, FCA Decision Notices, FCA penalty calculation, how FCA enforcement works",
     canonicalPath: "/guide/fca-enforcement",
     ogType: "article",
     articlePublishedTime: "2026-02-01",
@@ -83,7 +83,7 @@ export function PillarPage() {
           itemType="https://schema.org/Article"
         >
           <h1 className="blog-post-title" itemProp="headline">
-            Complete Guide to FCA Enforcement & Fines
+            How FCA Enforcement Works: Investigation to Penalty
           </h1>
 
           <div className="blog-article-modal-header">
@@ -100,8 +100,9 @@ export function PillarPage() {
           <div className="blog-article-content" itemProp="articleBody">
             <p>
               <strong>
-                This guide is your single reference for understanding how the
-                Financial Conduct Authority enforces UK financial regulation.
+                This guide explains how the Financial Conduct Authority enforces
+                UK financial regulation, from investigation through to a
+                published final decision.
               </strong>{" "}
               From the investigation process to penalty calculation, from the
               biggest fines of all time to the latest monthly enforcement data,
@@ -330,16 +331,22 @@ export function PillarPage() {
           {/* Bottom CTA */}
           <div className="blog-article-modal-footer">
             <p className="blog-article-keywords">
-              <strong>Related searches:</strong> FCA enforcement guide, how FCA
-              fines work, FCA penalties explained, FCA enforcement process, FCA
-              fines database
+              <strong>Related searches:</strong> FCA enforcement process, FCA
+              Final Notices, FCA penalty calculation, FCA investigation guide
             </p>
             <Link
-              to="/regulators"
+              to="/regulators/fca"
               className="blog-cta-button"
               style={{ display: "inline-flex" }}
             >
-              Explore the RegActions Dashboard
+              Open the live FCA fines database
+            </Link>
+            <Link
+              to="/fines"
+              className="blog-cta-button"
+              style={{ display: "inline-flex", marginLeft: "0.75rem" }}
+            >
+              Compare global regulatory fines
             </Link>
           </div>
         </article>
