@@ -139,15 +139,14 @@ async function applyRemediation(sql: SqlClient, auditBeforeApply: FinraCaseCover
         AND source_url = ${FINRA_LEGACY_SOURCE_URL}
       RETURNING id
     `;
+    if (deleted.length !== auditBeforeApply.legacyRows) {
+      throw new Error(
+        `FINRA remediation delete count changed inside the transaction (${auditBeforeApply.legacyRows} expected, ${deleted.length} selected); backup and deletion were rolled back.`,
+      );
+    }
     await txSql`REFRESH MATERIALIZED VIEW public.all_regulatory_fines`;
     return { deleted: deleted.length, verifiedAudit };
   });
-
-  if (result.deleted !== auditBeforeApply.legacyRows) {
-    throw new Error(
-      `FINRA remediation deleted ${result.deleted} rows but the pre-apply audit found ${auditBeforeApply.legacyRows}; review the backup ${remediationId} before proceeding.`,
-    );
-  }
   console.log(`Remediated ${result.deleted} FINRA legacy rows under remediation ${remediationId}.`);
   console.log(`Restore with: npm run data-trust:remediate-finra-legacy -- --restore`);
   return remediationId;
