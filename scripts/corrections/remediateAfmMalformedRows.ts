@@ -10,12 +10,11 @@ import "dotenv/config";
 import postgres from "postgres";
 import crypto from "node:crypto";
 import { resolveConnectionString } from "../../server/db.js";
+import { AFM_MALFORMED_ENTITY_PATTERN } from "./afmQuality.js";
 
 const databaseUrl = resolveConnectionString();
 if (!databaseUrl) throw new Error("A supported database connection string is required");
 const sql = postgres(databaseUrl, { max: 1, ssl: databaseUrl.includes("sslmode=") ? { rejectUnauthorized: false } : undefined });
-
-const MALFORMED_ENTITY = "consumenten|digitalisering|duurzaamheid|marktmisbru";
 
 async function main() {
   const rows = await sql`
@@ -23,8 +22,7 @@ async function main() {
     WHERE regulator = 'AFM'
       AND (
         amount::text = 'NaN'
-        OR firm_individual ~* ${MALFORMED_ENTITY}
-        OR firm_individual ~* '<[^>]+>'
+        OR TRIM(firm_individual) ~* ${AFM_MALFORMED_ENTITY_PATTERN}
       )
     ORDER BY date_issued DESC NULLS LAST, id
   `;
@@ -81,12 +79,12 @@ async function main() {
       SELECT ${remediationId}::uuid, to_jsonb(eu_fines)
       FROM public.eu_fines
       WHERE regulator = 'AFM'
-        AND (amount::text = 'NaN' OR firm_individual ~* ${MALFORMED_ENTITY} OR firm_individual ~* '<[^>]+>')
+        AND (amount::text = 'NaN' OR TRIM(firm_individual) ~* ${AFM_MALFORMED_ENTITY_PATTERN})
     `;
     await txSql`
       DELETE FROM public.eu_fines
       WHERE regulator = 'AFM'
-        AND (amount::text = 'NaN' OR firm_individual ~* ${MALFORMED_ENTITY} OR firm_individual ~* '<[^>]+>')
+        AND (amount::text = 'NaN' OR TRIM(firm_individual) ~* ${AFM_MALFORMED_ENTITY_PATTERN})
     `;
     await txSql`REFRESH MATERIALIZED VIEW public.all_regulatory_fines`;
   });

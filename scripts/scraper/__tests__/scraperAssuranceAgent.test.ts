@@ -53,6 +53,9 @@ describe("scraperAssuranceAgent", () => {
     expect(shouldSendQuietAlert({ status: "critical", fingerprint: "escalated", previousStatus: "warning", previousFingerprint: "changed" })).toBe(true);
     expect(shouldSendQuietAlert({ status: "ok", fingerprint: "recovered", previousStatus: "action_required", previousFingerprint: "same" })).toBe(true);
     expect(shouldSendQuietAlert({ status: "ok", fingerprint: "recovered", previousStatus: "healthy", previousFingerprint: "recovered" })).toBe(false);
+    expect(shouldSendQuietAlert({ status: "watch", fingerprint: "watch|same", previousStatus: "warning", previousFingerprint: "watch|same" })).toBe(false);
+    expect(shouldSendQuietAlert({ status: "watch", fingerprint: "watch|recovered", previousStatus: "warning", previousFingerprint: "action_required|same" })).toBe(true);
+    expect(shouldSendQuietAlert({ status: "watch", fingerprint: "watch|recovered", previousStatus: "warning", previousFingerprint: "watch|recovered" })).toBe(false);
   });
   it("does not call AI for healthy or watch-only findings by default", () => {
     expect(

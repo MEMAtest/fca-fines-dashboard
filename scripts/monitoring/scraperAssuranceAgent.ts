@@ -204,9 +204,12 @@ export function shouldSendQuietAlert(input: {
   previousStatus: string | null;
   previousFingerprint: string | null;
 }) {
+  const previousFromFingerprint = input.previousFingerprint?.split("|", 1)[0];
   const normalisePrevious = (status: string | null) =>
     status === "warning" ? "action_required" : status === "healthy" ? "ok" : status;
-  const previousStatus = normalisePrevious(input.previousStatus);
+  const previousStatus = ["critical", "action_required", "watch", "ok"].includes(previousFromFingerprint || "")
+    ? previousFromFingerprint
+    : normalisePrevious(input.previousStatus);
   const actionable = input.status === "critical" || input.status === "action_required";
   if (!actionable) return previousStatus === "critical" || previousStatus === "action_required";
   return input.fingerprint !== input.previousFingerprint || input.status !== previousStatus;
