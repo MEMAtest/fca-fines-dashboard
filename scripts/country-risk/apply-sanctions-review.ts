@@ -130,7 +130,21 @@ async function main() {
         }
         refreshAutomatedDecision = canRefreshAutomatedSanctionsDecision(existing, row);
         if (!refreshAutomatedDecision) {
-          throw new Error(`${rowKey}: refusing to overwrite an existing reviewed decision`);
+          // The refusal itself is correct, but naming no field made it
+          // undiagnosable without direct database access: the published values
+          // for the record that stopped the 25 August run were identical to the
+          // ones the classifier produced, so the difference was somewhere
+          // nobody could see. Report which fields actually differ.
+          const differing = ([
+            "status", "relationship", "proposed_tier", "final_tier", "legal_status",
+            "coverage_state", "reviewed_by", "reviewer_organisation",
+          ] as const)
+            .filter((field) => existing[field] !== row[field])
+            .map((field) => `${field}: stored=${JSON.stringify(existing[field])} incoming=${JSON.stringify(row[field])}`);
+          throw new Error(
+            `${rowKey}: refusing to overwrite an existing reviewed decision`
+            + (differing.length ? ` (${differing.join("; ")})` : " (no scoring or ownership field differs; the stored decision is not owned by the automated classifier)"),
+          );
         }
       }
       const update = await client.query(
