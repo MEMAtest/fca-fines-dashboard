@@ -263,6 +263,7 @@ export function extractFcaSubjectFromNoticeUrl(url: string) {
 
   const words = decodeURIComponent(match[1])
     .replace(/-(?:19|20)\d{2}$/i, "")
+    .replace(/-(?:final|decision|warning|supervisory)-notice$/i, "")
     .replace(/[-_]+/g, " ")
     .trim()
     .split(/\s+/)
@@ -515,6 +516,42 @@ function dedupeActions(records: FcaAction[]) {
   return deduped;
 }
 
+function normaliseSubjectWords(value: string) {
+  return value
+    .toLowerCase()
+    .split(/\s+/)
+    .map((word) => word.replace(/[^a-z0-9]/g, ""))
+    .filter(Boolean);
+}
+
+/**
+ * Search listings occasionally use a short title label (for example
+ * "Equity") while the linked official PDF identifies the full subject. Use
+ * the URL-derived subject only for a strict, shorter prefix match. This keeps
+ * genuinely separate people named in one shared notice (such as Paul Taylor
+ * and Esmeralda Toni) as separate entities.
+ */
+function canonicaliseWeakNoticeSubjects(records: FcaAction[]) {
+  return records.map((record) => {
+    const urlSubject = extractFcaSubjectFromNoticeUrl(record.noticeUrl);
+    if (!urlSubject) return record;
+
+    const subjectWords = normaliseSubjectWords(record.firmIndividual);
+    const urlWords = normaliseSubjectWords(urlSubject);
+    const isStrictPrefix =
+      subjectWords.length > 0 &&
+      subjectWords.length < urlWords.length &&
+      subjectWords.every((word, index) => word === urlWords[index]);
+    const looksLikeTruncatedLabel =
+      isStrictPrefix &&
+      (subjectWords.length === 1 || urlWords.length - subjectWords.length >= 2);
+
+    return looksLikeTruncatedLabel
+      ? { ...record, firmIndividual: urlSubject }
+      : record;
+  });
+}
+
 export async function scrapeFcaEnforcement(): Promise<UKEnforcementSeedRecord[]> {
   if (flareSolverrEnabled()) {
     flareClient = await createFlareSolverrClient();
@@ -575,13 +612,15 @@ export function mergeFcaEnforcementActions(
   pressRecords: FcaAction[],
   finalNoticeActions: FcaAction[],
 ): UKEnforcementSeedRecord[] {
+  const canonicalPressRecords = canonicaliseWeakNoticeSubjects(pressRecords);
+  const canonicalFinalNoticeActions = canonicaliseWeakNoticeSubjects(finalNoticeActions);
   const pressNoticeIdentities = new Set(
-    pressRecords.map((record) => buildEnforcementIdentityKey(record)),
+    canonicalPressRecords.map((record) => buildEnforcementIdentityKey(record)),
   );
 
   return dedupeActions([
-    ...pressRecords,
-    ...finalNoticeActions.filter(
+    ...canonicalPressRecords,
+    ...canonicalFinalNoticeActions.filter(
       (record) => !pressNoticeIdentities.has(buildEnforcementIdentityKey(record)),
     ),
   ]).map(({ rawAmountType: _rawAmountType, ...record }) => record);

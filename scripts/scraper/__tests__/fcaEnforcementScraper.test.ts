@@ -168,6 +168,43 @@ describe("FCA enforcement scraper", () => {
     expect(record?.firmIndividual).toBe("Equity for Growth Securities Limited");
   });
 
+  it("removes notice-label suffixes from official filename subjects", () => {
+    expect(
+      extractFcaSubjectFromNoticeUrl(
+        "https://www.fca.org.uk/publication/final-notices/howard-roland-duckett-final-notice-2026.pdf",
+      ),
+    ).toBe("Howard Roland Duckett");
+  });
+
+  it("canonicalises a weak subject label against the official notice URL during merge", () => {
+    const noticeUrl =
+      "https://www.fca.org.uk/publication/final-notices/equity-for-growth-securities-limited-july-2026.pdf";
+    const press = parseFcaPressReleaseDetail(
+      `<main><h1>FCA fines Equity £386,467</h1><p>The FCA fined Equity £386,467.</p><a href="${noticeUrl}">Final Notice</a></main>`,
+      {
+        title: "FCA fines Equity £386,467",
+        type: "Press Releases",
+        dateIssued: "2026-07-30",
+        description: "FCA fine",
+        url: "https://www.fca.org.uk/news/press-releases/equity",
+      },
+    );
+    const finalNotice = parseFcaFinalNoticeResult({
+      title: "Equity 2026",
+      type: "Final notices",
+      dateIssued: "2026-07-30",
+      description: "FCA final notice",
+      url: noticeUrl,
+    });
+
+    // Model the live press-release parser's weak title label before the
+    // notice URL reconciliation guard runs.
+    const weakPress = { ...press!, firmIndividual: "Equity" };
+    const merged = mergeFcaEnforcementActions([weakPress], [finalNotice!]);
+    expect(merged).toHaveLength(1);
+    expect(merged[0].firmIndividual).toBe("Equity for Growth Securities Limited");
+  });
+
   it("strips the trailing listing year from final-notice titles", () => {
     // FCA final-notice listings render as "<firm/person> <year>"; the year must
     // not leak into the name or it forks the content_hash from the
