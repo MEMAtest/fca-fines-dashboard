@@ -43,20 +43,21 @@ async function main() {
   if (!rows.length) return;
 
   await sql.begin(async (tx) => {
+    const txSql = tx as unknown as typeof sql;
     for (const row of rows) {
-      await tx`
+      await txSql`
         INSERT INTO public.coverage_discovery_quarantine (
           regulator, source_url, fingerprint, reason_codes, reasons, payload,
           status, reviewed_at, review_note
         ) VALUES (
           ${row.regulator}, ${row.source_url}, ${row.content_hash},
-          ${tx.json(["invalid_amount", "legacy_remediation"])},
-          ${tx.json(["Legacy numeric NaN is invalid; normalised to null while preserving the original row payload."])},
-          ${tx.json(row)}, 'reviewed', now(),
+          ${txSql.json(["invalid_amount", "legacy_remediation"])},
+          ${txSql.json(["Legacy numeric NaN is invalid; normalised to null while preserving the original row payload."])},
+          ${txSql.json(row)}, 'reviewed', now(),
           'Production ingestion-safety v2 legacy numeric remediation'
         )
       `;
-      await tx`
+      await txSql`
         UPDATE public.eu_fines
         SET amount = CASE WHEN amount::text = 'NaN' THEN NULL ELSE amount END,
             amount_eur = CASE WHEN amount_eur::text = 'NaN' THEN NULL ELSE amount_eur END,
@@ -65,7 +66,7 @@ async function main() {
         WHERE id = ${row.id}
       `;
     }
-    await tx`REFRESH MATERIALIZED VIEW public.all_regulatory_fines`;
+    await txSql`REFRESH MATERIALIZED VIEW public.all_regulatory_fines`;
   });
 
   const remaining = await loadCandidates(sql);
