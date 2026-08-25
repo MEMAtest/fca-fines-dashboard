@@ -277,7 +277,7 @@ describe("regulatorCoverage", () => {
     expect(getRegulatorCoverage("CMVM")?.count).toBe(133);
     expect(getRegulatorCoverage("OCC")?.count).toBe(5579);
     expect(getRegulatorCoverage("FINCEN")?.count).toBe(118);
-    expect(getRegulatorCoverage("FINRA")?.count).toBe(3987);
+    expect(getRegulatorCoverage("FINRA")?.count).toBe(20151);
     expect(getRegulatorCoverage("OSC")?.count).toBe(653);
     expect(getRegulatorCoverage("SC")?.count).toBe(88);
     expect(getRegulatorCoverage("ASIC")?.count).toBe(112);
