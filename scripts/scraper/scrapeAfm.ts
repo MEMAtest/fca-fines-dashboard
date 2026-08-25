@@ -172,31 +172,50 @@ export function isLikelyAfmEntityName(value: string) {
   const normalized = value.trim();
   if (!normalized || /^(?:afm|instruction|decision|notice|warning|measure)\b/i.test(normalized)) return false;
   if (/\b(?:issued to|for breach|for failure|for violating|sanction(?:ed)?|fined|boete|boetes|enforcement action)\b/i.test(normalized)) return false;
-  return validateExtractedName(normalized) !== null;
+  return validateAfmCandidate(normalized) !== null;
+}
+
+function validateAfmCandidate(value: string) {
+  const normalized = value.trim();
+  const candidate = validateExtractedName(normalized);
+  if (candidate) return candidate;
+
+  // The shared validator treats any name ending in "financial services" as
+  // generic page furniture. AFM also publishes genuine entities with that
+  // suffix, so retain validation for the identifying prefix before accepting
+  // this narrowly bounded legal-name form.
+  if (/^.+\s+financial services$/i.test(normalized)) {
+    const prefix = normalized.replace(/\s+financial services$/i, "").trim();
+    if (validateExtractedName(prefix)) return normalized;
+  }
+
+  return null;
 }
 
 export function extractFirmName(title: string, html?: string): string {
-  // Pattern 1: "AFM fines [Firm] for..."
-  const pattern1 = /AFM (?:fines?|sancties|sanctions?) ([^for]+) (?:for|wegens)/i;
-  const match1 = title.match(pattern1);
-  if (match1) {
-    const candidate = validateExtractedName(match1[1].trim());
+  // Prefer explicit headline grammar over body/fallback extraction. The
+  // capture must be non-greedy: a character class such as [^for] rejects any
+  // firm containing the letters f, o, or r and broke normal AFM headlines.
+  const titlePatterns: RegExp[] = [
+    /AFM\s+(?:fines?|sancties|sanctions?)\s+(.+?)\s+(?:for|wegens)\b/i,
+    /^(.+?)\s+krijgt\s+(?:een\s+)?boete\s+(?:voor|wegens)\b/i,
+    /^Boete\s+van\s+€?\s*[\d.,]+\s+(?:voor|for)\s+(.+?)\s+(?:wegens|for)\b/i,
+    /^Instruction\s+issued\s+to\s+(.+?)\s+for\s+(?:breach|failure|violating)\b/i,
+    /^(.+?)\s+(?:fined|sanctioned)\b/i,
+  ];
+
+  for (const pattern of titlePatterns) {
+    const match = title.match(pattern);
+    if (!match?.[1]) continue;
+    const candidate = validateAfmCandidate(match[1]);
     if (candidate && isLikelyAfmEntityName(candidate)) return candidate;
   }
 
-  // Pattern 2: "[Firm] fined..."
-  const pattern2 = /^([A-Z][^\s]+(?:\s+[A-Z][^\s]+)*)\s+(?:fined|sanctioned)/i;
-  const match2 = title.match(pattern2);
-  if (match2) {
-    const candidate = validateExtractedName(match2[1].trim());
-    if (candidate && isLikelyAfmEntityName(candidate)) return candidate;
-  }
-
-  // Pattern 3: Company names (B.V., N.V., etc.)
+  // Company names (B.V., N.V., etc.)
   const pattern3 = /([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*\s+(?:B\.V\.|N\.V\.|Ltd\.|Inc\.|AG|GmbH))/;
   const match3 = title.match(pattern3);
   if (match3) {
-    const candidate = validateExtractedName(match3[1].trim());
+    const candidate = validateAfmCandidate(match3[1]);
     if (candidate && isLikelyAfmEntityName(candidate)) return candidate;
   }
 
@@ -212,7 +231,7 @@ export function extractFirmName(title: string, html?: string): string {
   // Do not promote a headline or page furniture as the regulated party. An
   // unrecognisable extraction is deliberately blank and will be quarantined by
   // the common ingestion validator with the source payload retained.
-  const fallback = validateExtractedName(title.slice(0, 60)) || '';
+  const fallback = validateAfmCandidate(title.slice(0, 60)) || '';
   return fallback && isLikelyAfmEntityName(fallback) ? fallback : '';
 }
 

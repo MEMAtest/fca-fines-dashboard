@@ -1,10 +1,32 @@
 import { describe, expect, it } from "vitest";
 import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
-import { transformRecord } from "../scrapeAfm.js";
+import { extractFirmName, transformRecord } from "../scrapeAfm.js";
 import { validatePreparedRecords } from "../lib/runScraper.js";
 
 describe("AFM ingestion safety regression", () => {
+  it("extracts exact entities from Dutch and English AFM fine headlines", () => {
+    expect(
+      extractFirmName(
+        "Vodafone Financial Services krijgt boete voor onverantwoorde kredietverstrekking",
+      ),
+    ).toBe("Vodafone Financial Services");
+    expect(
+      extractFirmName(
+        "Boete van €625.000 voor M. van Wettum wegens marktmanipulatie",
+      ),
+    ).toBe("M. van Wettum");
+    expect(
+      extractFirmName(
+        "Instruction issued to Euronext Amsterdam for breach of open access rules",
+      ),
+    ).toBe("Euronext Amsterdam");
+  });
+
+  it("retains the existing English AFM fines headline behaviour", () => {
+    expect(extractFirmName("AFM fines BDO for exam fraud")).toBe("BDO");
+  });
+
   it("converts NaN amounts to undisclosed instead of persisting a database NaN", () => {
     const record = transformRecord({
       firm: "consumenten Digitalisering Duurzaamheid Marktmisbru",
