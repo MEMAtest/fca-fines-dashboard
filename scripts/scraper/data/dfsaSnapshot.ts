@@ -20,6 +20,20 @@ export type SnapshotSeedRecord = ArchiveSeedRecord;
 
 export const DFSA_SNAPSHOT_RECORDS: ArchiveSeedRecord[] = [
   {
+    dateIssued: "2026-05-12",
+    firmIndividual: "Mr Wael Abdelmohsen Abdellatif Mohamed Emara",
+    amount: 139722,
+    currency: "USD",
+    title:
+      "The DFSA prohibits reinsurance broker Mr Mohsen and fines him USD 139,722 for misleading and deceptive conduct",
+    summary:
+      "The DFSA imposed a fine of USD 139,722 on Mr Wael Abdelmohsen Abdellatif Mohamed Emara (Mr Mohsen) for misleading and deceptive conduct, and prohibited him from holding office or working for a DFSA Authorised Firm.",
+    sourceUrl:
+      "https://www.dfsa.ae/news/dfsa-prohibits-reinsurance-broker-mr-mohsen-and-fines-him-usd-139722-misleading-and-deceptive-conduct",
+    breachType: "Misleading and deceptive conduct in reinsurance broking",
+    breachCategories: ["MISLEADING_CONDUCT", "INDIVIDUAL_ACCOUNTABILITY", "CONTROLS"],
+  },
+  {
     dateIssued: "2026-02-06",
     firmIndividual: "Ark Capital Management (Dubai) Limited",
     amount: 504000,

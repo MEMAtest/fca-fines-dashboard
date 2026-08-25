@@ -5,6 +5,8 @@ import {
   buildDeepSeekMessages,
   buildScraperRunIssues,
   buildSesEmailInput,
+  isStaleRunningRun,
+  shouldSendQuietAlert,
   estimateDeepSeekCost,
   redactText,
   type AssuranceReport,
@@ -38,6 +40,17 @@ function healthResult(
 }
 
 describe("scraperAssuranceAgent", () => {
+  it("marks a killed run stale from its last heartbeat", () => {
+    const now = Date.parse("2026-08-25T12:00:00Z");
+    expect(isStaleRunningRun({ status: "running", startedAt: "2026-08-25T08:00:00Z", heartbeatAt: "2026-08-25T08:30:00Z" }, now)).toBe(true);
+    expect(isStaleRunningRun({ status: "running", startedAt: "2026-08-25T11:00:00Z", heartbeatAt: "2026-08-25T11:45:00Z" }, now)).toBe(false);
+  });
+
+  it("suppresses unchanged alert fingerprints but sends transitions", () => {
+    expect(shouldSendQuietAlert({ status: "action_required", fingerprint: "same", previousStatus: "action_required", previousFingerprint: "same" })).toBe(false);
+    expect(shouldSendQuietAlert({ status: "action_required", fingerprint: "changed", previousStatus: "action_required", previousFingerprint: "same" })).toBe(true);
+    expect(shouldSendQuietAlert({ status: "ok", fingerprint: "recovered", previousStatus: "action_required", previousFingerprint: "same" })).toBe(true);
+  });
   it("does not call AI for healthy or watch-only findings by default", () => {
     expect(
       buildAssuranceDecision([healthResult("FCA", "ok")], []).shouldCallAi,

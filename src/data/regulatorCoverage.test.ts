@@ -72,6 +72,18 @@ describe("regulatorCoverage", () => {
     expect(coverage?.stage).toBe("live");
   });
 
+  it("records secondary source provenance for fragile regulator feeds", () => {
+    expect(getRegulatorCoverage("DFSA")?.officialSources).toEqual(expect.arrayContaining([
+      expect.objectContaining({ role: "document_storage", pathPrefix: "/files/" }),
+    ]));
+    expect(getRegulatorCoverage("MAS")?.officialSources).toEqual(expect.arrayContaining([
+      expect.objectContaining({ role: "press_service", url: "https://www.sgpc.gov.sg/" }),
+    ]));
+    expect(getRegulatorCoverage("OCC")?.officialSources).toEqual(expect.arrayContaining([
+      expect.objectContaining({ role: "api", url: "https://apps.occ.gov/EASearch" }),
+    ]));
+  });
+
   it("keeps AMF public coverage metadata aligned with the live 2026 corpus", () => {
     expect(getRegulatorCoverage("AMF")).toMatchObject({
       stage: "live",

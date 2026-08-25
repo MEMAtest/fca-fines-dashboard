@@ -621,11 +621,9 @@ export function buildEuFineRecord(record: ParsedEnforcementRecord): DbReadyRecor
 }
 
 export async function upsertEuFines(sql: Sql, records: DbReadyRecord[]) {
-  let inserted = 0;
-  let updated = 0;
-  let errors = 0;
-
-  for (const record of records) {
+  // Keep the queue bounded for large browser-export feeds (notably FDIC) while
+  // allowing independent rows to use the database connection efficiently.
+  const outcomes = await mapWithConcurrency(records, 8, async (record) => {
     try {
       const result = await sql`
         INSERT INTO eu_fines (
@@ -674,18 +672,18 @@ export async function upsertEuFines(sql: Sql, records: DbReadyRecord[]) {
         RETURNING (xmax = 0) AS inserted
       `;
 
-      if (result[0]?.inserted) {
-        inserted += 1;
-      } else {
-        updated += 1;
-      }
+      return result[0]?.inserted ? "inserted" : "updated";
     } catch (error) {
-      errors += 1;
       console.error(`Failed to upsert ${record.regulator} :: ${record.firmIndividual}`, error);
+      return "error";
     }
-  }
+  });
 
-  return { inserted, updated, errors };
+  return {
+    inserted: outcomes.filter((outcome) => outcome === "inserted").length,
+    updated: outcomes.filter((outcome) => outcome === "updated").length,
+    errors: outcomes.filter((outcome) => outcome === "error").length,
+  };
 }
 
 export function printDryRunSummary(records: DbReadyRecord[]) {

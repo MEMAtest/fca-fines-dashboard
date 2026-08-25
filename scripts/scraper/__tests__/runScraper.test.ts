@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { assertPreparedBatch, extractRegulatorCode } from "../lib/runScraper.js";
+import { assessPreparedBatchValidation, assertPreparedBatch, extractRegulatorCode } from "../lib/runScraper.js";
 import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
 import type { CliFlags, DbReadyRecord } from "../lib/euFineHelpers.js";
@@ -76,5 +76,11 @@ describe("runScraper promotion gate", () => {
     const source = readFileSync(resolve(process.cwd(), "scripts/scraper/lib/runScraper.ts"), "utf8");
     expect(source.indexOf("persistPreparedDiscoveryCandidates")).toBeGreaterThan(-1);
     expect(source.indexOf("persistPreparedDiscoveryCandidates(sql, records, scraperRunId)")).toBeLessThan(source.indexOf("upsertEuFines(sql, records)"));
+  });
+
+  it("holds a materially corrupted batch while allowing an isolated quarantined row", () => {
+    expect(assessPreparedBatchValidation(100, 1, { maximumInvalidRecordCount: 5, maximumInvalidRecordFraction: 0.01 }).hold).toBe(false);
+    expect(assessPreparedBatchValidation(100, 2, { maximumInvalidRecordCount: 5, maximumInvalidRecordFraction: 0.01 }).hold).toBe(true);
+    expect(assessPreparedBatchValidation(4, 6, { maximumInvalidRecordCount: 5, maximumInvalidRecordFraction: 0.01 }).hold).toBe(true);
   });
 });

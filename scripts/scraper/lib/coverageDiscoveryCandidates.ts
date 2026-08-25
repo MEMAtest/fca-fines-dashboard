@@ -16,6 +16,25 @@ export interface DiscoveryCandidateRow {
   scraperRunId: string | number;
 }
 
+export interface DiscoveryValidationIssue {
+  code:
+  | "missing_required_field"
+  | "invalid_source_url"
+  | "unapproved_source"
+  | "invalid_entity"
+  | "invalid_date"
+  | "future_date"
+  | "invalid_amount"
+  | "invalid_summary";
+  field: string;
+  message: string;
+}
+
+export interface DiscoveryValidationResult {
+  row: DiscoveryCandidateRow | null;
+  issues: DiscoveryValidationIssue[];
+}
+
 function normaliseUrl(value: string) {
   const url = new URL(value);
   url.hash = "";
@@ -31,37 +50,123 @@ function hostname(value: string) {
 }
 
 function isOfficialDomain(regulator: string, sourceUrl: string) {
-  const host = hostname(sourceUrl);
+  const parsed = new URL(sourceUrl);
+  const host = parsed.hostname.toLowerCase().replace(/^www\./, "");
   const sources = getRegulatorCoverage(regulator)?.officialSources ?? [];
   return sources.some((source) => {
     const configured = hostname(source.url);
-    return host === configured || host.endsWith(`.${configured}`);
+    const hostMatches = host === configured || host.endsWith(`.${configured}`);
+    if (!hostMatches) return false;
+    if (!source.pathPrefix) return true;
+    return parsed.pathname.startsWith(source.pathPrefix);
   });
 }
 
-export function buildDiscoveryCandidateRow(record: DbReadyRecord, scraperRunId: string | number): DiscoveryCandidateRow {
-  const sourceUrl = normaliseUrl(record.sourceUrl);
-  if (!isOfficialDomain(record.regulator, sourceUrl)) {
-    throw new Error(`${record.regulator} prepared record has a source URL outside configured official regulator domains.`);
+function isValidDate(value: string) {
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(value)) return false;
+  const parsed = new Date(`${value}T00:00:00Z`);
+  return !Number.isNaN(parsed.getTime()) && parsed.toISOString().slice(0, 10) === value;
+}
+
+function isInvalidEntity(value: string) {
+  const entity = value.trim();
+  if (entity.length < 3 || entity.length > 180) return true;
+  return /<[^>]+>|\b(?:navigation|press release|read more|cookie policy|page title)\b/i.test(entity)
+    || /\bconsumenten\b.*\b(?:digitalisering|duurzaamheid|marktmisbru)/i.test(entity)
+    || /^(?:a|an|the)\s+(?:company|firm|entity|individual|person)$/i.test(entity);
+}
+
+function isInvalidSummary(value: string) {
+  const summary = value.trim();
+  return summary.length < 10 || /<\/?(?:html|body|nav|script|style)[^>]*>/i.test(summary);
+}
+
+export function validateDiscoveryCandidate(
+  record: DbReadyRecord,
+  scraperRunId: string | number,
+): DiscoveryValidationResult {
+  const issues: DiscoveryValidationIssue[] = [];
+  const required: Array<[keyof DbReadyRecord, string]> = [
+    ["contentHash", "content hash"],
+    ["regulator", "regulator"],
+    ["firmIndividual", "entity"],
+    ["dateIssued", "issued date"],
+    ["sourceUrl", "source URL"],
+  ];
+  for (const [field, label] of required) {
+    const value = record[field];
+    if (value === null || value === undefined || String(value).trim() === "") {
+      issues.push({ code: "missing_required_field", field: String(field), message: `${label} is required.` });
+    }
   }
-  // Intentionally excludes content hash, summary and monetary amount. The
-  // fingerprint identifies the source action over time while those fields may
-  // be corrected by a regulator or scraper rerun.
+
+  let sourceUrl: string | null = null;
+  if (record.sourceUrl) {
+    try {
+      sourceUrl = normaliseUrl(record.sourceUrl);
+      const parsed = new URL(sourceUrl);
+      if (!["http:", "https:"].includes(parsed.protocol)) {
+        issues.push({ code: "invalid_source_url", field: "sourceUrl", message: "Source URL must use HTTP or HTTPS." });
+      } else if (!isOfficialDomain(record.regulator, sourceUrl)) {
+        issues.push({ code: "unapproved_source", field: "sourceUrl", message: "Source URL is outside the configured official source contract." });
+      }
+    } catch {
+      issues.push({ code: "invalid_source_url", field: "sourceUrl", message: "Source URL is not a valid URL." });
+    }
+  }
+  if (record.firmIndividual && isInvalidEntity(record.firmIndividual)) {
+    issues.push({ code: "invalid_entity", field: "firmIndividual", message: "Entity name is empty, contaminated or page furniture." });
+  }
+  if (record.dateIssued && !isValidDate(record.dateIssued)) {
+    issues.push({ code: "invalid_date", field: "dateIssued", message: "Issued date must be a real ISO date (YYYY-MM-DD)." });
+  } else if (record.dateIssued && record.dateIssued > new Date().toISOString().slice(0, 10)) {
+    issues.push({ code: "future_date", field: "dateIssued", message: "Issued date is in the future." });
+  }
+  if (record.amount !== null && (!Number.isFinite(record.amount) || record.amount < 0)) {
+    issues.push({ code: "invalid_amount", field: "amount", message: "Amount must be finite and non-negative, or null when undisclosed." });
+  }
+  for (const [field, value] of [["amountEur", record.amountEur], ["amountGbp", record.amountGbp]] as const) {
+    if (value !== null && (!Number.isFinite(value) || value < 0)) {
+      issues.push({ code: "invalid_amount", field, message: `${field} must be finite and non-negative, or null when undisclosed.` });
+    }
+  }
+  if (record.amount !== null && !record.currency?.trim()) {
+    issues.push({ code: "invalid_amount", field: "currency", message: "A disclosed amount requires a currency." });
+  }
+  if (record.summary && isInvalidSummary(record.summary)) {
+    issues.push({ code: "invalid_summary", field: "summary", message: "Summary is empty or contains HTML/page furniture." });
+  }
+  if (issues.length > 0 || !sourceUrl) return { row: null, issues };
+
   const fingerprint = createHash("sha256")
     .update([record.regulator.toUpperCase(), sourceUrl, record.firmIndividual.trim().toLowerCase(), record.dateIssued].join("|"))
     .digest("hex");
   return {
-    fingerprint,
-    regulator: record.regulator,
-    sourceUrl,
-    sourceContentHash: record.contentHash,
-    entity: record.firmIndividual,
-    issuedDate: record.dateIssued,
-    amount: record.amount,
-    currency: record.currency || null,
-    summary: record.summary,
-    scraperRunId,
+    issues,
+    row: {
+      fingerprint,
+      regulator: record.regulator,
+      sourceUrl,
+      sourceContentHash: record.contentHash,
+      entity: record.firmIndividual,
+      issuedDate: record.dateIssued,
+      amount: record.amount,
+      currency: record.currency || null,
+      summary: record.summary,
+      scraperRunId,
+    },
   };
+}
+
+export function buildDiscoveryCandidateRow(record: DbReadyRecord, scraperRunId: string | number): DiscoveryCandidateRow {
+  const result = validateDiscoveryCandidate(record, scraperRunId);
+  if (!result.row) {
+    const detail = result.issues.map((issue) => issue.message).join(" ");
+    throw new Error(
+      `${record.regulator || "unknown"} prepared record failed validation: ${detail}${result.issues.some((issue) => issue.code === "unapproved_source") ? " (outside configured official regulator domains)" : ""}`,
+    );
+  }
+  return result.row;
 }
 
 /**
@@ -74,9 +179,33 @@ export async function persistPreparedDiscoveryCandidates(
   records: DbReadyRecord[],
   scraperRunId: string | number,
 ) {
+  const results = records.map((record) => ({ record, result: validateDiscoveryCandidate(record, scraperRunId) }));
+  const invalid = results.filter(({ result }) => result.issues.length > 0);
+  if (invalid.length > 0) {
+    const quarantinePayload = invalid.map(({ record, result }) => ({
+      regulator: record.regulator || "UNKNOWN",
+      scraper_run_id: scraperRunId,
+      source_url: record.sourceUrl || null,
+      fingerprint: record.contentHash || null,
+      reason_codes: result.issues.map((issue) => issue.code),
+      reasons: result.issues.map((issue) => issue.message),
+      payload: record,
+    }));
+    await sql.unsafe(`
+      INSERT INTO public.coverage_discovery_quarantine (
+        regulator, scraper_run_id, source_url, fingerprint, reason_codes, reasons, payload
+      )
+      SELECT item.regulator, item.scraper_run_id::bigint, item.source_url, item.fingerprint,
+             item.reason_codes::jsonb, item.reasons::jsonb, item.payload::jsonb
+      FROM jsonb_to_recordset($1::jsonb) AS item(
+        regulator text, scraper_run_id bigint, source_url text, fingerprint text,
+        reason_codes jsonb, reasons jsonb, payload jsonb
+      )
+    `, [quarantinePayload.map((item) => ({ ...item, reason_codes: item.reason_codes, reasons: item.reasons, payload: item.payload })) as never]);
+  }
   const rows = [...new Map(
-    records
-      .map((record) => buildDiscoveryCandidateRow(record, scraperRunId))
+    results
+      .flatMap(({ result }) => result.row ? [result.row] : [])
       .map((row) => [row.fingerprint, row] as const),
   ).values()];
   if (!rows.length) return 0;

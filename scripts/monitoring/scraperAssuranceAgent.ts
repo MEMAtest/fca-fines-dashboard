@@ -34,6 +34,7 @@ export interface RecentScraperRun {
   errorMessage: string | null;
   runUrl: string | null;
   recordsPrepared: number | null;
+  heartbeatAt?: string | null;
 }
 
 export interface ScraperRunIssue {
@@ -129,6 +130,17 @@ export async function loadRecentScraperRuns(
   const sql = createSqlClient();
 
   try {
+    // A killed GitHub/browser process cannot run its finally block. Convert
+    // stale leases to an explicit terminal error so the assurance feed never
+    // leaves a regulator looking permanently `running`.
+    await sql`
+      UPDATE scraper_runs
+      SET status = 'error', quality_status = 'quarantined',
+          finished_at = NOW(),
+          error_message = COALESCE(error_message, 'Scraper run timed out without a heartbeat.')
+      WHERE status = 'running'
+        AND COALESCE(heartbeat_at, started_at) < NOW() - INTERVAL '180 minutes'
+    `;
     const rows = await sql`
       SELECT
         regulator,
@@ -136,7 +148,8 @@ export async function loadRecentScraperRuns(
         started_at::text AS "startedAt",
         error_message AS "errorMessage",
         run_url AS "runUrl",
-        records_prepared::int AS "recordsPrepared"
+        records_prepared::int AS "recordsPrepared",
+        heartbeat_at::text AS "heartbeatAt"
       FROM scraper_runs
       WHERE started_at > NOW() - make_interval(days => ${windowDays})
       ORDER BY regulator ASC, started_at DESC
@@ -152,6 +165,7 @@ export async function loadRecentScraperRuns(
         row.recordsPrepared === null || row.recordsPrepared === undefined
           ? null
           : Number(row.recordsPrepared),
+      heartbeatAt: row.heartbeatAt ? String(row.heartbeatAt) : null,
     }));
   } catch (error) {
     console.warn(
@@ -161,6 +175,38 @@ export async function loadRecentScraperRuns(
   } finally {
     await sql.end();
   }
+}
+
+export function isStaleRunningRun(
+  run: Pick<RecentScraperRun, "status" | "startedAt" | "heartbeatAt">,
+  now = Date.now(),
+  timeoutMinutes = 180,
+) {
+  if (run.status !== "running") return false;
+  const timestamp = run.heartbeatAt || run.startedAt;
+  return now - new Date(timestamp).getTime() > timeoutMinutes * 60_000;
+}
+
+export function buildAlertFingerprint(report: Pick<AssuranceReport, "status" | "health" | "scraperRunIssues">) {
+  const health = report.health
+    .filter((result) => result.severity !== "ok")
+    .map((result) => `${result.regulator}:${result.severity}:${result.message}`)
+    .sort();
+  const runs = report.scraperRunIssues
+    .map((issue) => `${issue.regulator}:${issue.severity}:${issue.latestErrorMessage || issue.message}`)
+    .sort();
+  return `${report.status}|${[...health, ...runs].join("|")}`;
+}
+
+export function shouldSendQuietAlert(input: {
+  status: AssuranceStatus;
+  fingerprint: string;
+  previousStatus: string | null;
+  previousFingerprint: string | null;
+}) {
+  const actionable = input.status === "critical" || input.status === "action_required";
+  if (!actionable) return input.previousStatus === "critical" || input.previousStatus === "action_required";
+  return input.fingerprint !== input.previousFingerprint || input.status !== input.previousStatus;
 }
 
 export function buildScraperRunIssues(
@@ -618,9 +664,18 @@ export async function main() {
     workflowUrl,
   };
 
+  const alertFingerprint = buildAlertFingerprint(report);
+  const previousAlertState = await loadAlertState();
+  const sendAlert = decision.alertRequired && shouldSendQuietAlert({
+    status: report.status,
+    fingerprint: alertFingerprint,
+    previousStatus: previousAlertState?.lastStatus ?? null,
+    previousFingerprint: previousAlertState?.lastFingerprint ?? null,
+  });
+
   await writeJsonFile(options.outputFile, report);
 
-  if (decision.alertRequired && options.sesOutputFile) {
+  if (sendAlert && options.sesOutputFile) {
     await writeJsonFile(
       options.sesOutputFile,
       buildSesEmailInput(
@@ -629,6 +684,7 @@ export async function main() {
       ),
     );
   }
+  await persistAlertState(report.status, alertFingerprint, sendAlert);
 
   if (options.json) {
     console.log(JSON.stringify(report, null, 2));
@@ -642,6 +698,47 @@ export async function main() {
 
   if (options.exitCode && decision.alertRequired) {
     process.exitCode = 1;
+  }
+}
+
+async function loadAlertState() {
+  if (!process.env.DATABASE_URL?.trim()) return null;
+  const sql = createSqlClient();
+  try {
+    const [row] = await sql`
+      SELECT last_status AS "lastStatus", last_fingerprint AS "lastFingerprint"
+      FROM public.ops_alert_state WHERE singleton = true
+    `;
+    return row ? { lastStatus: String(row.lastStatus), lastFingerprint: row.lastFingerprint ? String(row.lastFingerprint) : null } : null;
+  } catch {
+    return null;
+  } finally {
+    await sql.end();
+  }
+}
+
+async function persistAlertState(status: AssuranceStatus, fingerprint: string, sent: boolean) {
+  if (!process.env.DATABASE_URL?.trim()) return;
+  const sql = createSqlClient();
+  try {
+    const state = status === "critical" ? "critical" : status === "action_required" || status === "watch" ? "warning" : "healthy";
+    await sql`
+      INSERT INTO public.ops_alert_state (singleton, last_status, last_fingerprint, last_alerted_at, last_checked_at, last_recovered_at, last_delivery_status)
+      VALUES (true, ${state}, ${fingerprint}, ${sent ? new Date().toISOString() : null}, now(), ${state === "healthy" ? new Date().toISOString() : null}, ${sent ? "sent" : "skipped"})
+      ON CONFLICT (singleton) DO UPDATE SET
+        last_status = EXCLUDED.last_status,
+        last_fingerprint = EXCLUDED.last_fingerprint,
+        last_alerted_at = COALESCE(EXCLUDED.last_alerted_at, ops_alert_state.last_alerted_at),
+        last_checked_at = now(),
+        last_recovered_at = CASE WHEN EXCLUDED.last_status = 'healthy' THEN now() ELSE ops_alert_state.last_recovered_at END,
+        last_delivery_status = EXCLUDED.last_delivery_status,
+        updated_at = now()
+    `;
+  } catch {
+    // Monitoring must remain usable when the optional state table has not yet
+    // been migrated; the report and SES artifact still provide evidence.
+  } finally {
+    await sql.end();
   }
 }
 

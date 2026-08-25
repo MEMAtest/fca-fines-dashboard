@@ -9,6 +9,10 @@ export interface ScraperQualityContractOverride {
   /** A current-window feed adds or updates recent records but is not a
    * complete replacement for the stored historical archive. */
   preparedBatchScope?: "complete_archive" | "incremental";
+  /** Maximum number/fraction of candidate rows that may be quarantined while
+   * the remainder of a batch is promoted. Material drift still holds the run. */
+  maximumInvalidRecordFraction?: number;
+  maximumInvalidRecordCount?: number;
 }
 
 export interface ResolvedScraperQualityContract {
@@ -22,6 +26,8 @@ export interface ResolvedScraperQualityContract {
   preparedBatchScope: "complete_archive" | "incremental";
   staleAfterDays: number;
   operatorAction: string;
+  maximumInvalidRecordFraction: number;
+  maximumInvalidRecordCount: number;
 }
 
 function defaultMinimum(coverage: RegulatorCoverage) {
@@ -62,12 +68,20 @@ export function resolveScraperQualityContract(
     preparedBatchScope: override.preparedBatchScope ?? "complete_archive",
     staleAfterDays: coverage.feedContract.staleAfterDays,
     operatorAction: coverage.feedContract.operatorAction,
+    maximumInvalidRecordFraction: override.maximumInvalidRecordFraction ?? 0.01,
+    maximumInvalidRecordCount: override.maximumInvalidRecordCount ?? 5,
   };
   if (!Number.isInteger(contract.minimumPreparedRecords) || contract.minimumPreparedRecords < 0) {
     throw new Error("minimumPreparedRecords must be a non-negative integer.");
   }
   if (contract.maximumPreparedCountDropFraction < 0 || contract.maximumPreparedCountDropFraction >= 1) {
     throw new Error("maximumPreparedCountDropFraction must be at least 0 and below 1.");
+  }
+  if (contract.maximumInvalidRecordFraction < 0 || contract.maximumInvalidRecordFraction >= 1) {
+    throw new Error("maximumInvalidRecordFraction must be at least 0 and below 1.");
+  }
+  if (!Number.isInteger(contract.maximumInvalidRecordCount) || contract.maximumInvalidRecordCount < 0) {
+    throw new Error("maximumInvalidRecordCount must be a non-negative integer.");
   }
   if (contract.allowZeroRecords && contract.minimumPreparedRecords > 0) {
     throw new Error("A zero-record contract cannot require a positive minimumPreparedRecords value.");

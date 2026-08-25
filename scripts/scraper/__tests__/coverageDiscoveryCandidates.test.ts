@@ -52,4 +52,10 @@ describe("prepared official-source discovery persistence", () => {
       amount: 120000,
     });
   });
+
+  it("applies path constraints to shared DFSA document storage hosts", () => {
+    const dfsaRecord = { ...record, regulator: "DFSA", sourceUrl: "https://365343652932-web-server-storage.s3.eu-west-2.amazonaws.com/files/notice.pdf" };
+    expect(() => buildDiscoveryCandidateRow(dfsaRecord, 12)).not.toThrow();
+    expect(() => buildDiscoveryCandidateRow({ ...dfsaRecord, sourceUrl: "https://365343652932-web-server-storage.s3.eu-west-2.amazonaws.com/private/notice.pdf" }, 12)).toThrow(/validation/);
+  });
 });

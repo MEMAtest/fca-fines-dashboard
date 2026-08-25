@@ -8,17 +8,11 @@
  */
 
 import 'dotenv/config';
-import postgres from 'postgres';
 import { parseStringPromise } from 'xml2js';
-import crypto from 'crypto';
 import { extractNameFromBodyText } from './lib/bodyTextExtractor.js';
 import { validateExtractedName } from './lib/nameValidation.js';
-
-const sql = postgres(process.env.DATABASE_URL?.trim() || '', {
-  ssl: process.env.DATABASE_URL?.includes('sslmode=')
-    ? { rejectUnauthorized: false }
-    : false
-});
+import { buildEuFineRecord, type DbReadyRecord } from './lib/euFineHelpers.js';
+import { runScraper } from './lib/runScraper.js';
 
 const AFM_CONFIG = {
   baseUrl: 'https://www.afm.nl',
@@ -41,59 +35,17 @@ async function main() {
   console.log('Target: Netherlands Authority for the Financial Markets');
   console.log('Method: Decision page scraping\n');
 
-  // Check for command-line flags
-  const useTestData = process.argv.includes('--test-data');
-  const dryRun = process.argv.includes('--dry-run');
+  await runScraper({
+    name: '🇳🇱 AFM Enforcement Actions Scraper',
+    regulatorCode: 'AFM',
+    liveLoader: loadAfmLiveRecords,
+    testLoader: async () => getTestData().map(transformRecord),
+  });
+}
 
-  if (useTestData) {
-    console.log('⚠️  Using test data (--test-data flag detected)\n');
-  }
-  if (dryRun) {
-    console.log('🔍 Dry run mode - no database writes (--dry-run flag detected)\n');
-  }
-
-  try {
-    // Scrape real AFM page or use test data
-    const records = useTestData ? getTestData() : await scrapeAfmPage();
-
-    console.log(`📊 Extracted ${records.length} enforcement actions`);
-
-    // Transform to database format
-    const transformed = records.map(r => transformRecord(r));
-
-    // Insert into database (skip if dry-run)
-    if (dryRun) {
-      console.log('\n🔍 Dry run - skipping database insert');
-      console.log('Records that would be inserted:');
-      transformed.forEach((r, i) => {
-        console.log(`   ${i + 1}. ${r.firmIndividual} - €${(r.amount || 0).toLocaleString()} (${r.dateIssued})`);
-      });
-    } else {
-      await upsertRecords(transformed);
-
-      // Refresh materialized view
-      console.log('\n🔄 Refreshing unified regulatory fines view...');
-      await sql`SELECT refresh_all_fines()`;
-      console.log('✅ View refreshed');
-    }
-
-    // Summary
-    const totalAfm = await sql`SELECT COUNT(*) as count FROM eu_fines WHERE regulator = 'AFM'`;
-    const totalAll = await sql`SELECT COUNT(*) as count FROM all_regulatory_fines`;
-
-    console.log('\n📈 Database Summary:');
-    console.log(`   - AFM enforcement actions: ${totalAfm[0].count}`);
-    console.log(`   - Total regulatory fines (FCA + EU): ${totalAll[0].count}`);
-
-    console.log('\n✅ AFM scraper completed successfully!');
-    await sql.end();
-    process.exit(0);
-
-  } catch (error) {
-    console.error('❌ AFM scraper failed:', error);
-    await sql.end();
-    process.exit(1);
-  }
+export async function loadAfmLiveRecords(): Promise<DbReadyRecord[]> {
+  const records = await scrapeAfmPage();
+  return records.map(transformRecord);
 }
 
 function getTestData(): AFMRecord[] {
@@ -250,7 +202,10 @@ function extractFirmName(title: string, html?: string): string {
   }
 
   // PHASE 3 FIX: Reduce fallback length from 100 to 60
-  return title.slice(0, 60);
+  // Do not promote a headline or page furniture as the regulated party. An
+  // unrecognisable extraction is deliberately blank and will be quarantined by
+  // the common ingestion validator with the source payload retained.
+  return validateExtractedName(title.slice(0, 60)) || '';
 }
 
 function extractFineAmount(title: string, html: string): number | null {
@@ -276,7 +231,7 @@ function extractFineAmount(title: string, html: string): number | null {
         numAmount *= 1_000_000;
       }
 
-      return numAmount;
+      return Number.isFinite(numAmount) ? numAmount : null;
     }
   }
 
@@ -298,51 +253,24 @@ function classifyBreachType(title: string, html: string): string {
   return 'OTHER';
 }
 
-function transformRecord(record: AFMRecord) {
-  const dateIssued = new Date(record.date);
-  const yearIssued = dateIssued.getFullYear();
-  const monthIssued = dateIssued.getMonth() + 1;
-
-  // Currency conversion
-  const amountEur = record.amount;
-  const amountGbp = amountEur ? Math.round(amountEur * 0.85 * 100) / 100 : null;
-
-  // Generate content hash
-  const contentHash = crypto
-    .createHash('sha256')
-    .update(JSON.stringify({
-      regulator: 'AFM',
-      firm: record.firm,
-      date: record.date,
-      amount: record.amount
-    }))
-    .digest('hex');
-
-  // Categorize breach
-  const breachCategories = categorizeBreachType(record.breach);
-
-  return {
-    contentHash,
+export function transformRecord(record: AFMRecord): DbReadyRecord {
+  return buildEuFineRecord({
     regulator: 'AFM',
     regulatorFullName: 'Netherlands Authority for the Financial Markets',
     countryCode: 'NL',
     countryName: 'Netherlands',
     firmIndividual: record.firm,
     firmCategory: determineFirmCategory(record.firm),
-    amount: record.amount,
+    amount: Number.isFinite(record.amount) ? record.amount : null,
     currency: record.currency,
-    amountEur,
-    amountGbp,
-    dateIssued: dateIssued.toISOString().split('T')[0],
-    yearIssued,
-    monthIssued,
+    dateIssued: record.date,
     breachType: extractBreachType(record.breach),
-    breachCategories: breachCategories,
-    summary: `${record.firm} fined €${(record.amount || 0).toLocaleString()} by AFM for ${record.summary}`,
+    breachCategories: categorizeBreachType(record.breach),
+    summary: `${record.firm} fined ${record.amount === null ? 'an undisclosed amount' : `€${record.amount.toLocaleString()}`} by AFM for ${record.summary}`,
     finalNoticeUrl: record.link,
-    sourceUrl: AFM_CONFIG.rssUrl,
-    rawPayload: JSON.stringify(record)
-  };
+    sourceUrl: record.link || AFM_CONFIG.rssUrl,
+    rawPayload: record,
+  });
 }
 
 function determineFirmCategory(firmName: string): string {
@@ -429,71 +357,9 @@ function categorizeBreachType(description: string): string[] {
   return categories.length > 0 ? categories : ['OTHER'];
 }
 
-async function upsertRecords(records: any[]) {
-  console.log(`\n💾 Inserting ${records.length} records into database...`);
-
-  let inserted = 0;
-  let updated = 0;
-  let errors = 0;
-
-  for (const record of records) {
-    try {
-      const result = await sql`
-        INSERT INTO eu_fines (
-          content_hash, regulator, regulator_full_name,
-          country_code, country_name, firm_individual, firm_category,
-          amount, currency, amount_eur, amount_gbp,
-          date_issued, year_issued, month_issued,
-          breach_type, breach_categories, summary,
-          final_notice_url, source_url, raw_payload,
-          scraped_at
-        ) VALUES (
-          ${record.contentHash},
-          ${record.regulator},
-          ${record.regulatorFullName},
-          ${record.countryCode},
-          ${record.countryName},
-          ${record.firmIndividual},
-          ${record.firmCategory},
-          ${record.amount},
-          ${record.currency},
-          ${record.amountEur},
-          ${record.amountGbp},
-          ${record.dateIssued},
-          ${record.yearIssued},
-          ${record.monthIssued},
-          ${record.breachType},
-          ${sql.json(record.breachCategories)},
-          ${record.summary},
-          ${record.finalNoticeUrl},
-          ${record.sourceUrl},
-          ${record.rawPayload},
-          NOW()
-        )
-        ON CONFLICT (content_hash) DO UPDATE SET
-          summary = EXCLUDED.summary,
-          updated_at = NOW()
-        RETURNING (xmax = 0) AS inserted
-      `;
-
-      if (result[0].inserted) {
-        inserted++;
-        console.log(`   ✅ Inserted: ${record.firmIndividual} (€${(record.amount || 0).toLocaleString()})`);
-      } else {
-        updated++;
-        console.log(`   🔄 Updated: ${record.firmIndividual}`);
-      }
-    } catch (error) {
-      errors++;
-      console.error(`   ❌ Error inserting ${record.firmIndividual}:`, error);
-    }
-  }
-
-  console.log(`\n📊 Insert summary:`);
-  console.log(`   - Inserted: ${inserted}`);
-  console.log(`   - Updated: ${updated}`);
-  console.log(`   - Errors: ${errors}`);
+if (process.argv[1] && new URL(import.meta.url).pathname === process.argv[1]) {
+  main().catch((error) => {
+    console.error('❌ AFM scraper failed:', error);
+    process.exit(1);
+  });
 }
-
-// Run scraper
-main();

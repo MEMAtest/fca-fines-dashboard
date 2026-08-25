@@ -53,7 +53,8 @@ describe("next-eight regulator coverage", () => {
     const records = loadDfsaArchiveRecords();
     expect(records.length).toBeGreaterThanOrEqual(19);
     expect(records[0].regulator).toBe("DFSA");
-    expect(records[0].amount).toBe(504000);
+    expect(records[0].dateIssued).toBe("2026-05-12");
+    expect(records[0].amount).toBe(139722);
     expect(records.some((record) => record.amount === 3022500)).toBe(true);
     expect(records.some((record) => record.amount === 191100)).toBe(true);
   });

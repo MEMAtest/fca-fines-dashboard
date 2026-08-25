@@ -84,6 +84,10 @@ export interface RegulatorOfficialSource {
   label: string;
   url: string;
   description: string;
+  /** How the source participates in the regulator's evidence contract. */
+  role?: "archive" | "api" | "document_storage" | "press_service" | "official_pdf";
+  /** Optional path constraint for shared hosts (for example an S3 bucket). */
+  pathPrefix?: string;
 }
 
 type RegulatorCoverageSeed = Omit<
@@ -628,7 +632,7 @@ const REGULATOR_COVERAGE_SEED: Record<string, RegulatorCoverageSeed> = {
     navOrder: 11,
     overviewPath: "/regulators/dfsa",
     years: "2016-2026",
-    count: 19,
+    count: 20,
     dataQuality: "Official archive manifest",
     note: "Curated from the official DFSA regulatory-actions archive and verified decision notices. The public index is challenge-protected in this environment, so archive discovery is maintained via official document manifests.",
     earliestYear: 2016,
@@ -644,6 +648,15 @@ const REGULATOR_COVERAGE_SEED: Record<string, RegulatorCoverageSeed> = {
         url: "https://www.dfsa.ae/what-we-do/enforcement/regulatory-actions",
         description:
           "Official DFSA enforcement and regulatory actions archive.",
+        role: "archive",
+      },
+      {
+        label: "DFSA official decision-document storage",
+        url: "https://365343652932-web-server-storage.s3.eu-west-2.amazonaws.com/files/",
+        description:
+          "DFSA-linked official decision notices hosted in the authority's document storage bucket.",
+        role: "document_storage",
+        pathPrefix: "/files/",
       },
     ],
   },
@@ -1212,6 +1225,14 @@ const REGULATOR_COVERAGE_SEED: Record<string, RegulatorCoverageSeed> = {
         url: "https://www.mas.gov.sg/regulation/enforcement/enforcement-actions",
         description:
           "Official MAS enforcement actions and regulatory outcomes archive.",
+        role: "archive",
+      },
+      {
+        label: "Singapore Government Press Centre",
+        url: "https://www.sgpc.gov.sg/",
+        description:
+          "Official Singapore Government Press Centre distribution channel used for MAS enforcement releases.",
+        role: "press_service",
       },
     ],
   },
@@ -1247,6 +1268,13 @@ const REGULATOR_COVERAGE_SEED: Record<string, RegulatorCoverageSeed> = {
         label: "OCC enforcement actions",
         url: "https://www.occ.treas.gov/topics/laws-and-regulations/enforcement-actions/index-enforcement-actions.html",
         description: "Official OCC enforcement-actions index and search tool.",
+        role: "archive",
+      },
+      {
+        label: "OCC enforcement search application",
+        url: "https://apps.occ.gov/EASearch",
+        description: "Official OCC enforcement-actions search application and JSON export surface.",
+        role: "api",
       },
     ],
   },
