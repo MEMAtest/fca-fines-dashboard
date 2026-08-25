@@ -196,9 +196,10 @@ async function restoreLatest(sql: SqlClient) {
 }
 
 export function parseFinraRemediationArgs(args: string[]) {
-  const apply = args.includes("--apply");
-  const restore = args.includes("--restore");
-  const unknown = args.filter((arg) => arg !== "--apply" && arg !== "--restore");
+  const normalizedArgs = args.filter((arg) => arg !== "--");
+  const apply = normalizedArgs.includes("--apply");
+  const restore = normalizedArgs.includes("--restore");
+  const unknown = normalizedArgs.filter((arg) => arg !== "--apply" && arg !== "--restore");
   if (unknown.length > 0 || (apply && restore)) {
     throw new Error("Usage: --apply, --restore, or no flag for read-only audit (flags are mutually exclusive).");
   }

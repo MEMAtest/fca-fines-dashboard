@@ -36,6 +36,7 @@ describe("FINRA legacy-source remediation", () => {
 
   it("keeps remediation dry-run by default and flags mutually exclusive", () => {
     expect(parseFinraRemediationArgs([])).toEqual({ apply: false, restore: false });
+    expect(parseFinraRemediationArgs(["--"])).toEqual({ apply: false, restore: false });
     expect(parseFinraRemediationArgs(["--apply"])).toEqual({ apply: true, restore: false });
     expect(parseFinraRemediationArgs(["--restore"])).toEqual({ apply: false, restore: true });
     expect(() => parseFinraRemediationArgs(["--apply", "--restore"])).toThrow(/mutually exclusive/);
