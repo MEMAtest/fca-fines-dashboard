@@ -49,7 +49,7 @@ describe("FINRA legacy-source remediation", () => {
     expect(script).toContain(FINRA_LEGACY_SOURCE_URL);
     expect(script).toContain(FINRA_EXPORT_SOURCE_URL);
     expect(script).toContain("to_jsonb(eu_fines)");
-    expect(script).toContain("REFRESH MATERIALIZED VIEW public.all_regulatory_fines");
+    expect(script).toContain("SELECT public.refresh_all_fines()");
   });
 
   it("has a migration backup and explicit NaN-safe restore path", () => {

@@ -144,7 +144,7 @@ async function applyRemediation(sql: SqlClient, auditBeforeApply: FinraCaseCover
         `FINRA remediation delete count changed inside the transaction (${auditBeforeApply.legacyRows} expected, ${deleted.length} selected); backup and deletion were rolled back.`,
       );
     }
-    await txSql`REFRESH MATERIALIZED VIEW public.all_regulatory_fines`;
+    await txSql`SELECT public.refresh_all_fines()`;
     return { deleted: deleted.length, verifiedAudit };
   });
   console.log(`Remediated ${result.deleted} FINRA legacy rows under remediation ${remediationId}.`);
@@ -188,7 +188,7 @@ async function restoreLatest(sql: SqlClient) {
       ON CONFLICT (id) DO NOTHING
       RETURNING id
     `;
-    await txSql`REFRESH MATERIALIZED VIEW public.all_regulatory_fines`;
+    await txSql`SELECT public.refresh_all_fines()`;
     return restored.length;
   });
   console.log(`Restored ${result} FINRA rows from remediation ${backup.remediation_id}.`);
