@@ -43,6 +43,8 @@ async function main() {
     "migrations/20260813_coverage_discovery_candidates.sql",
     "migrations/20260813_registry_alias_reconciliation.sql",
     "migrations/20260813_email_digest_outbox.sql",
+    "migrations/20260624_notice_url_unique_index.sql",
+    "migrations/20260825_uk_enforcement_entity_identity.sql",
   ].map((file) => path.resolve(process.cwd(), file));
 
   for (const migrationPath of migrationPaths) {

@@ -1,6 +1,7 @@
 CREATE TABLE IF NOT EXISTS uk_enforcement_actions (
   id TEXT PRIMARY KEY,
   content_hash TEXT NOT NULL UNIQUE,
+  source_identity_key TEXT,
   regulator TEXT NOT NULL,
   regulator_full_name TEXT NOT NULL,
   source_domain TEXT NOT NULL,

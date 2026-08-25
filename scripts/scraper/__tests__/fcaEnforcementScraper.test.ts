@@ -1,6 +1,8 @@
 import { describe, expect, it } from "vitest";
 import {
   extractFcaFirmName,
+  extractFcaSubjectFromNoticeUrl,
+  mergeFcaEnforcementActions,
   parseFcaFinalNoticeResult,
   parseFcaPressReleaseDetail,
   parseFcaSearchResults,
@@ -119,6 +121,53 @@ describe("FCA enforcement scraper", () => {
     );
   });
 
+  it("uses the official notice filename when a live press-release link is labelled only by role", () => {
+    const record = parseFcaPressReleaseDetail(
+      `
+        <main>
+          <h1>CEO banned for false and misleading statements made in attempt to buy bank and football club</h1>
+          <p>Paul Taylor, former CEO of Blue Horizon Asset Management (BHAM) has been fined £489,000 and banned from working in financial services by the FCA. The former managing director of the firm, Esmeralda Toni, has also been fined £121,200 for serious misconduct and banned by the FCA.</p>
+          <a href="/publication/final-notices/paul-vincent-taylor-2026.pdf">final notice for Paul Taylor</a>
+          <a href="/publication/final-notices/esmeralda-toni-2026.pdf">final notice for Esmeralda Toni</a>
+        </main>
+      `,
+      {
+        title: "CEO banned for false and misleading statements made in attempt to buy bank and football club",
+        type: "Press Releases",
+        dateIssued: "2026-08-14",
+        description: "FCA enforcement press release",
+        url: "https://www.fca.org.uk/news/press-releases/ceo-banned-false-misleading-statements-attempt-buy-bank-football-club",
+      },
+    );
+
+    expect(record?.firmIndividual).toBe("Paul Vincent Taylor");
+    expect(record?.firmIndividual).not.toBe("CEO");
+
+    const finalNotice = parseFcaFinalNoticeResult({
+      title: "CEO 2026",
+      type: "Final notices",
+      dateIssued: "2026-08-14",
+      description: "FCA final notice publication.",
+      url: "https://www.fca.org.uk/publication/final-notices/paul-vincent-taylor-2026.pdf",
+    });
+    expect(finalNotice?.firmIndividual).toBe("Paul Vincent Taylor");
+    expect(mergeFcaEnforcementActions([record!], [finalNotice!])).toHaveLength(1);
+  });
+
+  it("recovers the full Equity for Growth Securities subject from a truncated live title", () => {
+    const noticeUrl = "https://www.fca.org.uk/publication/final-notices/equity-for-growth-securities-limited-july-2026.pdf";
+    expect(extractFcaSubjectFromNoticeUrl(noticeUrl)).toBe("Equity for Growth Securities Limited");
+
+    const record = parseFcaFinalNoticeResult({
+      title: "Equity 2026",
+      type: "Final notices",
+      dateIssued: "2026-08-14",
+      description: "FCA final notice publication.",
+      url: noticeUrl,
+    });
+    expect(record?.firmIndividual).toBe("Equity for Growth Securities Limited");
+  });
+
   it("strips the trailing listing year from final-notice titles", () => {
     // FCA final-notice listings render as "<firm/person> <year>"; the year must
     // not leak into the name or it forks the content_hash from the
@@ -152,7 +201,7 @@ describe("FCA enforcement scraper", () => {
     // Simulates the drifting-date bug: the FCA listing changes a notice's date
     // between cron runs. The in-process dedupeActions step (keyed on noticeUrl)
     // should collapse these to a single record before they reach the DB.
-    // The DB upsert then uses ON CONFLICT (notice_url) as the idempotency key.
+    // The DB upsert uses the entity-aware content_hash as the idempotency key.
     const url = "https://www.fca.org.uk/publication/final-notices/kasim-garipoglu-2026.pdf";
     const a = parseFcaFinalNoticeResult({
       title: "Kasim Garipoglu 2026",
@@ -171,7 +220,37 @@ describe("FCA enforcement scraper", () => {
 
     expect(a?.noticeUrl).toBe(url);
     expect(b?.noticeUrl).toBe(url);
-    // Both parse successfully and share the same noticeUrl — the DB upsert's
-    // ON CONFLICT (notice_url) collapses them to a single row.
+    // Both parse successfully and share the same noticeUrl. The entity-aware
+    // content hash keeps distinct subjects separate while repeated parses of
+    // the same subject remain idempotent.
+  });
+
+  it("keeps two subjects when a press release and final notice share one official URL", () => {
+    const sharedUrl = "https://www.fca.org.uk/publication/final-notices/shared-2026.pdf";
+    const press = parseFcaPressReleaseDetail(
+      `<main><h1>FCA fines Paul Vincent Taylor £489,000</h1><p>The FCA fined Paul Vincent Taylor £489,000.</p><a href="${sharedUrl}">Final Notice</a></main>`,
+      {
+        title: "FCA fines Paul Vincent Taylor £489,000",
+        type: "Press Releases",
+        dateIssued: "2026-08-12",
+        description: "FCA fine",
+        url: "https://www.fca.org.uk/news/press-releases/shared",
+      },
+    );
+    const finalNotice = parseFcaFinalNoticeResult({
+      title: "Esmeralda Toni 2026",
+      type: "Final notices",
+      dateIssued: "2026-08-12",
+      description: "FCA final notice",
+      url: sharedUrl,
+    });
+
+    expect(press).not.toBeNull();
+    expect(finalNotice).not.toBeNull();
+    const merged = mergeFcaEnforcementActions([press!], [finalNotice!]);
+    expect(merged.map((record) => record.firmIndividual)).toEqual([
+      "Paul Vincent Taylor",
+      "Esmeralda Toni",
+    ]);
   });
 });

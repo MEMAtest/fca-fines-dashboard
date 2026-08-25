@@ -18,6 +18,11 @@ import {
   flareSolverrEnabled,
   type FlareSolverrClient,
 } from "./lib/flaresolverr.js";
+import {
+  buildEnforcementContentHash,
+  buildEnforcementIdentityKey,
+  buildEnforcementSourceIdentityKey,
+} from "./lib/ukEnforcementIdentity.js";
 
 const FCA_BASE_URL = "https://www.fca.org.uk";
 const PRESS_RELEASES_URL =
@@ -236,6 +241,44 @@ export function extractFcaFirmName(title: string, body = "") {
   return stripTrailingContext(normalizedTitle);
 }
 
+const NOTICE_SUBJECT_STOP_WORDS = new Set(["for", "of", "and", "the", "to"]);
+const NOTICE_FILENAME_MONTHS = new Set([
+  "january", "february", "march", "april", "may", "june",
+  "july", "august", "september", "october", "november", "december",
+]);
+
+/** Derive the subject from the regulator's official notice filename when the link label is generic. */
+export function extractFcaSubjectFromNoticeUrl(url: string) {
+  let pathname: string;
+  try {
+    pathname = new URL(url).pathname;
+  } catch {
+    return null;
+  }
+
+  const match = pathname.match(
+    /\/(?:final-notices|decision-notices|supervisory-notices|warning-notices)\/([^/]+)\.pdf$/i,
+  );
+  if (!match?.[1]) return null;
+
+  const words = decodeURIComponent(match[1])
+    .replace(/-(?:19|20)\d{2}$/i, "")
+    .replace(/[-_]+/g, " ")
+    .trim()
+    .split(/\s+/)
+    .filter(Boolean);
+  if (NOTICE_FILENAME_MONTHS.has(words[words.length - 1]?.toLowerCase() ?? "")) words.pop();
+  if (words.length < 2) return null;
+
+  return words
+    .map((word) => {
+      const lower = word.toLowerCase();
+      if (NOTICE_SUBJECT_STOP_WORDS.has(lower)) return lower;
+      return lower.charAt(0).toUpperCase() + lower.slice(1);
+    })
+    .join(" ");
+}
+
 function detectBreachType(text: string) {
   const lower = text.toLowerCase();
   if (lower.includes("client money")) return "Client money and safeguarding";
@@ -300,28 +343,32 @@ function getFinalNoticeUrl($: cheerio.CheerioAPI, fallbackUrl: string) {
 }
 
 function getFinalNoticeFirm($: cheerio.CheerioAPI) {
-  const text = normalizeWhitespace(
-    $(
-      [
-        'a[href*="/publication/final-notices/"]',
-        'a[href*="/publication/decision-notices/"]',
-        'a[href*="/publication/supervisory-notices/"]',
-        'a[href*="/publication/warning-notices/"]',
-      ].join(", "),
-    )
-      .first()
-      .text(),
-  );
-  if (!text) return null;
-  const firm = extractFcaFirmName(text);
-  return firm && !/^(final|decision|warning|supervisory) notice(?: statement)?$/i.test(firm)
-    ? firm
+  const anchor = $(
+    [
+      'a[href*="/publication/final-notices/"]',
+      'a[href*="/publication/decision-notices/"]',
+      'a[href*="/publication/supervisory-notices/"]',
+      'a[href*="/publication/warning-notices/"]',
+    ].join(", "),
+  ).first();
+  const href = anchor.attr("href");
+  const fromUrl = href
+    ? extractFcaSubjectFromNoticeUrl(makeAbsoluteUrl(FCA_BASE_URL, href))
     : null;
+
+  const text = normalizeWhitespace(anchor.text());
+  if (text) {
+    const firm = extractFcaFirmName(text);
+    if (firm && !isGenericFirmLabel(firm)) return firm;
+  }
+  return fromUrl;
 }
 
 function isGenericFirmLabel(value: string) {
-  return /^(final|decision|warning|supervisory) notice(?: statement)?$/i.test(value) ||
+  return /^(?:final|decision|warning|supervisory)(?: notice(?: statement)?)?$/i.test(value) ||
+    /^(?:final|decision|warning|supervisory) notice\s+(?:for|of)\b/i.test(value) ||
     /^(influencers?|firms?|individuals?|consumers?)$/i.test(value) ||
+    /^(?:ceo|cfo|coo|cto|cio|director|managing director|chief executive officer)$/i.test(value) ||
     /^tribunal\b/i.test(value) ||
     /firms told/i.test(value) ||
     /regulatory priorities/i.test(value);
@@ -389,7 +436,12 @@ export function parseFcaFinalNoticeResult(result: FcaSearchResult): FcaAction | 
   }
 
   const title = result.title.replace(/\s+\[pdf\]$/i, "");
-  const firm = extractFcaFirmName(title);
+  const titleFirm = extractFcaFirmName(title);
+  const urlFirm = extractFcaSubjectFromNoticeUrl(result.url);
+  const firm = titleFirm && !isGenericFirmLabel(titleFirm) &&
+    (titleFirm.split(/\s+/).length > 1 || !urlFirm || urlFirm.split(/\s+/).length <= 1)
+    ? titleFirm
+    : urlFirm;
   if (!firm || isGenericFirmLabel(firm) || /annulment/i.test(title)) return null;
 
   const combined = `${title}. ${result.description}`;
@@ -516,11 +568,22 @@ async function scrapeFcaEnforcementInner(): Promise<UKEnforcementSeedRecord[]> {
     .filter((record): record is FcaAction => record !== null);
 
   const pressRecords = pressActions.filter((record): record is FcaAction => record !== null);
-  const pressNoticeUrls = new Set(pressRecords.map((record) => record.noticeUrl));
+  return mergeFcaEnforcementActions(pressRecords, finalNoticeActions);
+}
+
+export function mergeFcaEnforcementActions(
+  pressRecords: FcaAction[],
+  finalNoticeActions: FcaAction[],
+): UKEnforcementSeedRecord[] {
+  const pressNoticeIdentities = new Set(
+    pressRecords.map((record) => buildEnforcementIdentityKey(record)),
+  );
 
   return dedupeActions([
     ...pressRecords,
-    ...finalNoticeActions.filter((record) => !pressNoticeUrls.has(record.noticeUrl)),
+    ...finalNoticeActions.filter(
+      (record) => !pressNoticeIdentities.has(buildEnforcementIdentityKey(record)),
+    ),
   ]).map(({ rawAmountType: _rawAmountType, ...record }) => record);
 }
 
@@ -539,35 +602,28 @@ async function upsertStandalone(records: UKEnforcementSeedRecord[]) {
     const existingFcaFineRows =
       noticeUrls.length > 0
         ? await sql`
-            SELECT final_notice_url
+            SELECT final_notice_url, firm_individual
             FROM fca_fines
             WHERE final_notice_url = ANY(${noticeUrls})
           `
         : [];
-    const existingFcaFineUrls = new Set(
-      existingFcaFineRows.map((row) => String(row.final_notice_url)),
+    const existingFcaFineIdentities = new Set(
+      existingFcaFineRows.map((row) =>
+        buildEnforcementIdentityKey({
+          noticeUrl: String(row.final_notice_url),
+          firmIndividual: String(row.firm_individual),
+        }),
+      ),
     );
 
     for (const record of records) {
-      if (existingFcaFineUrls.has(record.noticeUrl)) {
+      if (existingFcaFineIdentities.has(buildEnforcementIdentityKey(record))) {
         console.log(`Skipping FCA fine already present in fca_fines: ${record.firmIndividual}`);
         continue;
       }
 
       const issuedAt = new Date(`${record.dateIssued}T00:00:00Z`);
-      const contentHash = crypto
-        .createHash("sha256")
-        .update(
-          JSON.stringify({
-            regulator: record.regulator,
-            firmIndividual: record.firmIndividual,
-            amount: record.amount,
-            currency: record.currency,
-            dateIssued: record.dateIssued,
-            noticeUrl: record.noticeUrl,
-          }),
-        )
-        .digest("hex");
+      const contentHash = buildEnforcementContentHash(record);
       const id = `${record.regulator}-${record.dateIssued}-${record.firmIndividual
         .toLowerCase()
         .replace(/[^a-z0-9]+/g, "-")
@@ -577,13 +633,13 @@ async function upsertStandalone(records: UKEnforcementSeedRecord[]) {
       const amountEur = convertToEur(record.amount, record.currency);
       const result = await sql`
         INSERT INTO uk_enforcement_actions (
-          id, content_hash, regulator, regulator_full_name, source_domain,
+          id, content_hash, source_identity_key, regulator, regulator_full_name, source_domain,
           country_code, country_name, firm_individual, firm_category,
           amount_original, currency, amount_gbp, amount_eur, date_issued,
           year_issued, month_issued, breach_type, breach_categories, summary,
           notice_url, source_url, source_window_note, aliases, raw_payload
         ) VALUES (
-          ${id}, ${contentHash}, ${record.regulator}, ${record.regulatorFullName},
+          ${id}, ${contentHash}, ${buildEnforcementSourceIdentityKey(record)}, ${record.regulator}, ${record.regulatorFullName},
           ${record.sourceDomain}, ${"GB"}, ${"United Kingdom"}, ${record.firmIndividual},
           ${record.firmCategory}, ${record.amount}, ${record.currency}, ${record.amount},
           ${amountEur}, ${record.dateIssued}, ${issuedAt.getUTCFullYear()},
@@ -592,7 +648,7 @@ async function upsertStandalone(records: UKEnforcementSeedRecord[]) {
           ${record.sourceUrl}, ${record.sourceWindowNote}, ${record.aliases ?? []},
           ${sql.json(JSON.parse(JSON.stringify(record)))}
         )
-        ON CONFLICT (notice_url) WHERE notice_url IS NOT NULL AND notice_url <> ''
+        ON CONFLICT (source_identity_key)
         DO UPDATE SET
           id = EXCLUDED.id,
           content_hash = EXCLUDED.content_hash,

@@ -2,6 +2,7 @@ import 'dotenv/config';
 import axios from 'axios';
 import { load } from 'cheerio';
 import crypto from 'node:crypto';
+import { fileURLToPath } from 'node:url';
 import postgres from 'postgres';
 import {
   createFlareSolverrClient,
@@ -88,15 +89,11 @@ const yearsToScrape = yearEnv
       return years;
     })();
 
-if (!neonUrl && !dryRun) {
-  throw new Error('DATABASE_URL is required unless running in --dry-run mode');
-}
-
 if (!horizonUrl && !dryRun) {
   console.warn('⚠️  HORIZON_DB_URL not set - skipping sync to horizon_scanning database');
 }
 
-interface FcaFineRecord {
+export interface FcaFineRecord {
   contentHash: string;
   fineReference: string | null;
   firm: string;
@@ -111,67 +108,73 @@ interface FcaFineRecord {
   rawPayload: Record<string, any>;
 }
 
+const PRIMARY_RUN_REGULATOR = 'FCA_FINES';
+
+/** Parse one official FCA annual fines table without network or database side effects. */
+export function parseFcaFineTable(
+  body: string,
+  year: number,
+  since: Date | null = null,
+): FcaFineRecord[] {
+  const sourceUrl = `${BASE_URL}/${FINES_PATH}/${year}-fines`;
+  const $ = load(body);
+  const rows = $('table tbody tr').length ? $('table tbody tr') : $('table tr').slice(1);
+  const records: FcaFineRecord[] = [];
+
+  rows.each((_, row) => {
+    const cells = $(row).find('td');
+    if (cells.length < 4) return;
+    const firmCell = cells.eq(0);
+    const dateCell = cells.eq(1);
+    const amountCell = cells.eq(2);
+    const reasonCell = cells.eq(3);
+    const firm = firmCell.text().replace(/\s+/g, ' ').trim();
+    if (!firm) return;
+
+    const link = firmCell.find('a').attr('href');
+    const finalNoticeUrl = link ? new URL(link, BASE_URL).href : sourceUrl;
+    const dateIssued = parseDate(dateCell.text().trim());
+    if (!dateIssued || (since && dateIssued < since)) return;
+
+    const amount = parseCurrency(amountCell.text().trim());
+    if (amount <= 0) return;
+
+    const reason = reasonCell.text().replace(/\s+/g, ' ').trim();
+    const summary = reason || `Fine issued in ${year}`;
+    records.push({
+      contentHash: hashRecord(firm, amount, dateIssued.toISOString().slice(0, 10)),
+      fineReference: generateReference(firm, dateIssued, amount),
+      firm,
+      firmCategory: detectFirmCategory(summary),
+      amount,
+      dateIssued,
+      breachType: detectPrimaryBreach(summary),
+      breachCategories: detectBreachCategories(summary),
+      summary,
+      regulator: 'FCA',
+      finalNoticeUrl,
+      rawPayload: {
+        source: sourceUrl,
+        firm,
+        dateText: dateCell.text().trim(),
+        amountText: amountCell.text().trim(),
+        reason,
+      },
+    });
+  });
+
+  return records;
+}
+
 async function scrapeYear(year: number): Promise<FcaFineRecord[]> {
   const url = `${BASE_URL}/${FINES_PATH}/${year}-fines`;
   console.log(`   ➤ Fetching ${url}`);
   try {
     const body = await fetchWithRetry(url);
-    const $ = load(body);
-    const rows = $('table tbody tr').length ? $('table tbody tr') : $('table tr').slice(1);
-    if (!rows.length) {
+    const records = parseFcaFineTable(body, year, sinceCutoff);
+    if (!records.length) {
       console.warn(`   ⚠️ No table rows found for ${year}`);
-      return [];
     }
-    const records: FcaFineRecord[] = [];
-    rows.each((_, row) => {
-      const cells = $(row).find('td');
-      if (cells.length < 4) return;
-      const firmCell = cells.eq(0);
-      const dateCell = cells.eq(1);
-      const amountCell = cells.eq(2);
-      const reasonCell = cells.eq(3);
-
-      const firm = firmCell.text().replace(/\s+/g, ' ').trim();
-      if (!firm) return;
-
-      const link = firmCell.find('a').attr('href');
-      const finalNoticeUrl = link ? new URL(link, BASE_URL).href : url;
-      const dateIssued = parseDate(dateCell.text().trim());
-      if (!dateIssued) return;
-      if (sinceCutoff && dateIssued < sinceCutoff) return;
-
-      const amount = parseCurrency(amountCell.text().trim());
-      if (amount <= 0) return;
-
-      const reason = reasonCell.text().replace(/\s+/g, ' ').trim();
-      const summary = reason || `Fine issued in ${year}`;
-      const breachType = detectPrimaryBreach(summary);
-      const breachCategories = detectBreachCategories(summary);
-      const firmCategory = detectFirmCategory(summary);
-      const fineReference = generateReference(firm, dateIssued, amount);
-      const contentHash = hashRecord(firm, amount, dateIssued.toISOString().slice(0, 10));
-
-      records.push({
-        contentHash,
-        fineReference,
-        firm,
-        firmCategory,
-        amount,
-        dateIssued,
-        breachType,
-        breachCategories,
-        summary,
-        regulator: 'FCA',
-        finalNoticeUrl,
-        rawPayload: {
-          source: url,
-          firm,
-          dateText: dateCell.text().trim(),
-          amountText: amountCell.text().trim(),
-          reason,
-        },
-      });
-    });
     return records;
   } catch (error: any) {
     if (error?.response?.status === 404) {
@@ -344,15 +347,21 @@ async function upsertRecords(records: FcaFineRecord[]) {
   });
 
   // Connect to horizon_scanning database (if configured)
-  const horizonSql = horizonUrl
-    ? postgres(horizonUrl, {
+  let horizonSql: postgres.Sql | null = null;
+  if (horizonUrl) {
+    try {
+      horizonSql = postgres(horizonUrl, {
         ssl: horizonUrl.includes('sslmode=') ? { rejectUnauthorized: false } : false,
-      })
-    : null;
+      });
+    } catch (error) {
+      console.warn(
+        `⚠️ Could not initialise Horizon dual-write client; primary FCA publication will continue: ${error instanceof Error ? error.message : String(error)}`,
+      );
+    }
+  }
 
   try {
     let fcaSuccess = 0;
-    let horizonSuccess = 0;
 
     for (const record of records) {
       // Write to fcafines.fca_fines (source of truth)
@@ -403,9 +412,17 @@ async function upsertRecords(records: FcaFineRecord[]) {
           raw_payload = EXCLUDED.raw_payload;
       `;
       fcaSuccess++;
+    }
 
-      // Write to horizon_scanning.fca_fines (for RegCanary/MEMA consumption)
-      if (horizonSql) {
+    // Complete all primary writes and refresh public views before touching the
+    // secondary Horizon consumer. Horizon must not delay primary promotion.
+    await sql`SELECT refresh_fca_fine_trends();`;
+    await sql`SELECT refresh_all_fines();`;
+
+    // Horizon is a secondary consumer. Its credential or schema must never
+    // prevent the primary FCA dataset from completing and refreshing.
+    if (horizonSql) {
+      const horizonResult = await syncHorizonRecords(records, async (record) => {
         await horizonSql`
           INSERT INTO fca_fines (
             fine_reference,
@@ -445,24 +462,67 @@ async function upsertRecords(records: FcaFineRecord[]) {
             date_issued = EXCLUDED.date_issued,
             year_issued = EXCLUDED.year_issued,
             month_issued = EXCLUDED.month_issued,
-            source_url = EXCLUDED.source_url;
+          source_url = EXCLUDED.source_url;
         `;
-        horizonSuccess++;
+      });
+      console.log(`   ✓ Wrote ${horizonResult.succeeded} fines to horizon_scanning.fca_fines`);
+      if (horizonResult.failed > 0) {
+        console.warn(
+          `   ⚠️ Horizon dual-write unavailable for ${horizonResult.failed}/${horizonResult.attempted} fines; primary FCA publication completed.`,
+        );
       }
     }
 
-    await sql`SELECT refresh_fca_fine_trends();`;
-
     console.log(`   ✓ Wrote ${fcaSuccess} fines to fcafines.fca_fines`);
-    if (horizonSql) {
-      console.log(`   ✓ Wrote ${horizonSuccess} fines to horizon_scanning.fca_fines`);
-    }
   } finally {
     await sql.end();
     if (horizonSql) {
-      await horizonSql.end();
+      await horizonSql.end().catch((error) => {
+        console.warn(
+          `⚠️ Could not close Horizon dual-write client: ${error instanceof Error ? error.message : String(error)}`,
+        );
+      });
     }
   }
+}
+
+export interface HorizonSyncResult {
+  attempted: number;
+  succeeded: number;
+  failed: number;
+}
+
+export type HorizonRecordWriter = (record: FcaFineRecord) => Promise<void>;
+
+/** Best-effort secondary sync with per-record isolation and observable errors. */
+export async function syncHorizonRecords(
+  records: FcaFineRecord[],
+  writeRecord: HorizonRecordWriter,
+): Promise<HorizonSyncResult> {
+  let succeeded = 0;
+  let failed = 0;
+  let attempted = 0;
+
+  for (const [index, record] of records.entries()) {
+    attempted += 1;
+    try {
+      await writeRecord(record);
+      succeeded += 1;
+    } catch (error) {
+      failed += 1;
+      const message = error instanceof Error ? error.message : String(error);
+      console.warn(`   ⚠️ Horizon dual-write failed: ${message}`);
+      if (/28p01|28p02|password authentication failed|authentication failed/i.test(message)) {
+        const skipped = records.length - index - 1;
+        if (skipped > 0) {
+          console.warn(`   ⚠️ Horizon dual-write circuit opened; skipped ${skipped} remaining secondary writes.`);
+        }
+        break;
+      }
+    }
+  }
+
+  return { attempted, succeeded, failed };
 }
 
 async function main() {
@@ -470,7 +530,22 @@ async function main() {
     flareClient = await createFlareSolverrClient();
     console.log('[FCA fines] Routing fetches through FlareSolverr to clear the Cloudflare challenge');
   }
+  let runSql: postgres.Sql | null = null;
+  let runId: string | number | null = null;
+  let recordsPrepared = 0;
   try {
+    if (!dryRun) {
+      if (!neonUrl) {
+        throw new Error('DATABASE_URL is required unless running in --dry-run mode');
+      }
+      // Open and identify the monetary-fines run before fetching. A source
+      // fetch, parser, view, or database failure must be visible as an error
+      // run rather than leaving health checks to infer failure from old data.
+      runSql = postgres(neonUrl, {
+        ssl: neonUrl.includes('sslmode=') ? { rejectUnauthorized: false } : false,
+      });
+      runId = await insertPrimaryFcaRun(runSql);
+    }
     console.log(`Starting FCA fines scrape for years: ${yearsToScrape.join(', ')} (dryRun=${dryRun})`);
     const allRecords: FcaFineRecord[] = [];
     for (const year of yearsToScrape) {
@@ -481,6 +556,7 @@ async function main() {
     }
 
     console.log(`Collected ${allRecords.length} records.`);
+    recordsPrepared = allRecords.length;
     if (dryRun) {
       console.table(
         allRecords.slice(0, 10).map((record) => ({
@@ -494,18 +570,84 @@ async function main() {
     }
 
     await upsertRecords(allRecords);
+    if (runId !== null) {
+      await updatePrimaryFcaRun(runSql!, runId, {
+        status: 'success',
+        recordsPrepared,
+        errorMessage: null,
+      });
+    }
     console.log('Upsert complete.');
+  } catch (error) {
+    if (runSql && runId !== null) {
+      await updatePrimaryFcaRun(runSql, runId, {
+        status: 'error',
+        recordsPrepared,
+        errorMessage: error instanceof Error ? error.message : String(error),
+      }).catch((trackingError) => {
+        console.warn(
+          `⚠️ Could not close FCA monetary scraper run ${runId}: ${trackingError instanceof Error ? trackingError.message : String(trackingError)}`,
+        );
+      });
+    }
+    throw error;
   } finally {
     if (flareClient) {
       await flareClient.destroy();
       flareClient = null;
     }
+    if (runSql) await runSql.end();
   }
 }
 
-main()
-  .then(() => process.exit(0))
-  .catch((error) => {
-    console.error('Scraper failed:', error);
-    process.exit(1);
-  });
+async function insertPrimaryFcaRun(sql: postgres.Sql): Promise<string | number | null> {
+  try {
+    const rows = await sql`
+      INSERT INTO scraper_runs (
+        regulator, region, started_at, status, source, run_url
+      ) VALUES (
+        ${PRIMARY_RUN_REGULATOR}, ${'UK'}, ${new Date().toISOString()}, ${'running'},
+        ${process.env.GITHUB_ACTIONS ? 'github-actions' : 'manual'}, ${null}
+      )
+      RETURNING id
+    `;
+    return rows[0]?.id ?? null;
+  } catch (error) {
+    console.warn(
+      `⚠️ Could not create ${PRIMARY_RUN_REGULATOR} scraper run: ${error instanceof Error ? error.message : String(error)}`,
+    );
+    return null;
+  }
+}
+
+async function updatePrimaryFcaRun(
+  sql: postgres.Sql,
+  runId: string | number,
+  summary: {
+    status: 'success' | 'error';
+    recordsPrepared: number;
+    errorMessage: string | null;
+  },
+) {
+  await sql`
+    UPDATE scraper_runs
+    SET
+      finished_at = ${new Date().toISOString()},
+      status = ${summary.status},
+      records_prepared = ${summary.recordsPrepared},
+      records_inserted = ${summary.status === 'success' ? summary.recordsPrepared : 0},
+      errors = ${summary.status === 'error' ? 1 : 0},
+      error_message = ${summary.errorMessage},
+      duration_ms = EXTRACT(EPOCH FROM (NOW() - started_at))::bigint * 1000
+    WHERE id = ${runId} AND regulator = ${PRIMARY_RUN_REGULATOR}
+  `;
+}
+
+if (process.argv[1] && fileURLToPath(import.meta.url) === process.argv[1]) {
+  main()
+    .then(() => process.exit(0))
+    .catch((error) => {
+      console.error('Scraper failed:', error);
+      process.exit(1);
+    });
+}

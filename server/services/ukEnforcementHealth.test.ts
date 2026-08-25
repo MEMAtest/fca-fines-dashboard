@@ -99,7 +99,7 @@ describe("ukEnforcementHealth", () => {
     expect(isFailingUKEnforcementHealth(result)).toBe(true);
   });
 
-  it("warns when a scraper run errored but stored records remain fresh", () => {
+  it("fails a daily FCA source when a scraper run errored even if stored records remain fresh", () => {
     const result = evaluateUKEnforcementSourceHealth({
       regulator: regulator("FCA"),
       stats: {
@@ -118,8 +118,102 @@ describe("ukEnforcementHealth", () => {
       referenceDate: new Date("2026-05-14T00:00:00Z"),
     });
 
-    expect(result.status).toBe("warning");
+    expect(result.status).toBe("error");
     expect(result.message).toContain("403");
+    expect(isFailingUKEnforcementHealth(result)).toBe(true);
+  });
+
+  it("fails a stuck daily FCA run instead of treating old records as healthy", () => {
+    const result = evaluateUKEnforcementSourceHealth({
+      regulator: regulator("FCA"),
+      stats: {
+        regulator: "FCA",
+        recordCount: 393,
+        earliestRecordDate: "2021-05-25",
+        latestRecordDate: "2026-05-12",
+      },
+      run: {
+        regulator: "FCA",
+        lastRunAt: "2026-05-12T00:00:00.000Z",
+        lastStatus: "running",
+        lastErrorMessage: null,
+        lastSuccessfulRunAt: "2026-05-12T00:00:00.000Z",
+      },
+      referenceDate: new Date("2026-05-14T00:00:00Z"),
+    });
+
+    expect(result.status).toBe("error");
+    expect(result.message).toContain("still marked running");
+  });
+
+  it("fails when the separate monetary-fines run is missing", () => {
+    const result = evaluateUKEnforcementSourceHealth({
+      regulator: regulator("FCA"),
+      stats: {
+        regulator: "FCA",
+        recordCount: 393,
+        earliestRecordDate: "2021-05-25",
+        latestRecordDate: "2026-05-12",
+      },
+      run: {
+        regulator: "FCA",
+        lastRunAt: "2026-05-14T00:00:00.000Z",
+        lastStatus: "success",
+        lastErrorMessage: null,
+        lastSuccessfulRunAt: "2026-05-14T00:00:00.000Z",
+      },
+      referenceDate: new Date("2026-05-14T00:00:00Z"),
+    });
+
+    expect(result.status).toBe("error");
+    expect(result.message).toContain("FCA_FINES");
+    expect(isFailingUKEnforcementHealth(result)).toBe(true);
+  });
+
+  it("fails when either required FCA run has gone stale", () => {
+    const result = evaluateUKEnforcementSourceHealth({
+      regulator: regulator("FCA"),
+      stats: {
+        regulator: "FCA",
+        recordCount: 393,
+        earliestRecordDate: "2021-05-25",
+        latestRecordDate: "2026-05-12",
+      },
+      run: {
+        regulator: "FCA",
+        lastRunAt: "2026-05-14T00:00:00.000Z",
+        lastStatus: "success",
+        lastErrorMessage: null,
+        lastSuccessfulRunAt: "2026-05-14T00:00:00.000Z",
+      },
+      primaryFinesRun: {
+        regulator: "FCA_FINES",
+        lastRunAt: "2026-05-01T00:00:00.000Z",
+        lastStatus: "success",
+        lastErrorMessage: null,
+        lastSuccessfulRunAt: "2026-05-01T00:00:00.000Z",
+      },
+      referenceDate: new Date("2026-05-14T00:00:00Z"),
+    });
+
+    expect(result.status).toBe("error");
+    expect(result.message).toContain("FCA_FINES");
+    expect(isFailingUKEnforcementHealth(result)).toBe(true);
+  });
+
+  it("keeps a low-frequency regulator's missing run as a non-failing watch", () => {
+    const result = evaluateUKEnforcementSourceHealth({
+      regulator: regulator("TPR"),
+      stats: {
+        regulator: "TPR",
+        recordCount: 50,
+        earliestRecordDate: "2024-12-31",
+        latestRecordDate: "2026-05-12",
+      },
+      referenceDate: new Date("2026-05-14T00:00:00Z"),
+    });
+
+    expect(result.status).toBe("warning");
     expect(isFailingUKEnforcementHealth(result)).toBe(false);
   });
 
@@ -174,7 +268,7 @@ describe("ukEnforcementHealth", () => {
         latestRecordDate: "2026-04-20",
       },
     ];
-    const runRows = ["PRA", "PSR", "OFSI", "ICO", "CMA", "FRC", "TPR"].map(
+    const runRows = ["FCA", "FCA_FINES", "PRA", "PSR", "OFSI", "ICO", "CMA", "FRC", "TPR"].map(
       (code) => ({
         regulator: code,
         lastRunAt: "2026-04-24T00:00:00.000Z",

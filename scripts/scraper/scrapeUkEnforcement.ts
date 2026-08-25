@@ -1,5 +1,4 @@
 import "dotenv/config";
-import crypto from "node:crypto";
 import { fileURLToPath } from "node:url";
 import postgres from "postgres";
 import {
@@ -18,10 +17,16 @@ import {
   scrapePsrEnforcement,
   scrapeTprEnforcement,
 } from "./ukEnforcementScrapers.js";
+import {
+  buildEnforcementContentHash,
+  buildEnforcementIdentityKey,
+  buildEnforcementSourceIdentityKey,
+} from "./lib/ukEnforcementIdentity.js";
 
 interface DbUKEnforcementRecord extends UKEnforcementSeedRecord {
   id: string;
   contentHash: string;
+  sourceIdentityKey: string;
   amountGbp: number | null;
   amountEur: number | null;
   yearIssued: number;
@@ -82,22 +87,6 @@ function slugify(value: string) {
     .slice(0, 72);
 }
 
-function buildContentHash(record: UKEnforcementSeedRecord) {
-  return crypto
-    .createHash("sha256")
-    .update(
-      JSON.stringify({
-        regulator: record.regulator,
-        firmIndividual: record.firmIndividual,
-        amount: record.amount,
-        currency: record.currency,
-        dateIssued: record.dateIssued,
-        noticeUrl: record.noticeUrl,
-      }),
-    )
-    .digest("hex");
-}
-
 export function buildUKEnforcementRecords(
   seeds: UKEnforcementSeedRecord[] = UK_ENFORCEMENT_SEED_RECORDS,
 ): DbUKEnforcementRecord[] {
@@ -107,11 +96,12 @@ export function buildUKEnforcementRecords(
       throw new Error(`Invalid UK enforcement date: ${record.dateIssued}`);
     }
 
-    const contentHash = buildContentHash(record);
+    const contentHash = buildEnforcementContentHash(record);
     return {
       ...record,
       id: `${record.regulator}-${record.dateIssued}-${slugify(record.firmIndividual)}-${contentHash.slice(0, 8)}`,
       contentHash,
+      sourceIdentityKey: buildEnforcementSourceIdentityKey(record),
       amountGbp: convertToGbp(record.amount, record.currency),
       amountEur: convertToEur(record.amount, record.currency),
       yearIssued: issuedAt.getUTCFullYear(),
@@ -156,6 +146,7 @@ async function upsertUKEnforcementRecords(
       INSERT INTO uk_enforcement_actions (
         id,
         content_hash,
+        source_identity_key,
         regulator,
         regulator_full_name,
         source_domain,
@@ -181,6 +172,7 @@ async function upsertUKEnforcementRecords(
       ) VALUES (
         ${record.id},
         ${record.contentHash},
+        ${record.sourceIdentityKey},
         ${record.regulator},
         ${record.regulatorFullName},
         ${record.sourceDomain},
@@ -204,7 +196,7 @@ async function upsertUKEnforcementRecords(
         ${record.aliases ?? []},
         ${sql.json(JSON.parse(JSON.stringify(record)))}
       )
-      ON CONFLICT (notice_url) WHERE notice_url IS NOT NULL AND notice_url <> ''
+      ON CONFLICT (source_identity_key)
       DO UPDATE SET
         id = EXCLUDED.id,
         content_hash = EXCLUDED.content_hash,
@@ -413,18 +405,23 @@ async function removeExistingFcaFineDuplicates(
   const existingByNoticeUrl =
     noticeUrls.length > 0
       ? await sql`
-          SELECT final_notice_url
+          SELECT final_notice_url, firm_individual
           FROM fca_fines
           WHERE final_notice_url = ANY(${noticeUrls})
         `
       : [];
-  const existingNoticeUrls = new Set(
-    existingByNoticeUrl.map((row) => String(row.final_notice_url)),
+  const existingIdentities = new Set(
+    existingByNoticeUrl.map((row) =>
+      buildEnforcementIdentityKey({
+        noticeUrl: String(row.final_notice_url),
+        firmIndividual: String(row.firm_individual),
+      }),
+    ),
   );
 
   return records.filter((record) => {
     if (record.regulator !== "FCA") return true;
-    return !existingNoticeUrls.has(record.noticeUrl);
+    return !existingIdentities.has(buildEnforcementIdentityKey(record));
   });
 }
 
@@ -433,13 +430,15 @@ export async function main() {
   let sql: postgres.Sql | null = null;
   let successfulRuns: SuccessfulSourceRun[] = [];
   let failures: FailedSourceRun[] = [];
+  const completedRunRegulators = new Set<string>();
   let sourceRecords: UKEnforcementSeedRecord[];
 
-  console.log(
-    flags.seedOnly
-      ? `UK Enforcement official-source seed loader`
-      : `UK Enforcement official-source scraper`,
-  );
+  try {
+    console.log(
+      flags.seedOnly
+        ? `UK Enforcement official-source seed loader`
+        : `UK Enforcement official-source scraper`,
+    );
 
   if (flags.seedOnly) {
     sourceRecords = UK_ENFORCEMENT_SEED_RECORDS;
@@ -463,10 +462,13 @@ export async function main() {
     const scrapeResult = await scrapeUKEnforcementSourcesWithTracking(sql);
     successfulRuns = scrapeResult.successful;
     failures = scrapeResult.failures;
-    sourceRecords = await removeExistingFcaFineDuplicates(
-      sql,
-      successfulRuns.flatMap((run) => run.records),
-    );
+    sourceRecords = successfulRuns.flatMap((run) => run.records);
+  }
+
+  // Keep every post-source step inside the lifecycle try/catch. A cleanup or
+  // parser failure must close the source rows as error, not leave them running.
+  if (!flags.seedOnly && !flags.dryRun && sql) {
+    sourceRecords = await removeExistingFcaFineDuplicates(sql, sourceRecords);
   }
 
   const records = limitRecords(buildUKEnforcementRecords(sourceRecords), flags.limit);
@@ -485,7 +487,6 @@ export async function main() {
     return;
   }
 
-  try {
     if (!sql) {
       const databaseUrl = process.env.DATABASE_URL?.trim();
       if (!databaseUrl) {
@@ -507,14 +508,18 @@ export async function main() {
     console.log(`Inserted: ${result.inserted}`);
     console.log(`Updated: ${result.updated}`);
 
+    console.log("Refreshing unified regulatory fines view...");
+    await sql`SELECT refresh_all_fines()`;
+    console.log("Unified regulatory fines view refreshed");
+
     await Promise.all(
-      successfulRuns.map((run) => {
+      successfulRuns.map(async (run) => {
         const outcome = result.byRegulator.get(run.regulator) ?? {
           inserted: 0,
           updated: 0,
         };
 
-        return updateScraperRun(sql!, run.runId, {
+        await updateScraperRun(sql!, run.runId, {
           status: "success",
           recordsPrepared: run.records.length,
           inserted: outcome.inserted,
@@ -522,12 +527,9 @@ export async function main() {
           errorMessage: null,
           startedAt: run.startedAt,
         });
+        completedRunRegulators.add(run.regulator);
       }),
     );
-
-    console.log("Refreshing unified regulatory fines view...");
-    await sql`SELECT refresh_all_fines()`;
-    console.log("Unified regulatory fines view refreshed");
 
     if (failures.length > 0) {
       throw new Error(
@@ -536,6 +538,26 @@ export async function main() {
           .join("; ")}`,
       );
     }
+  } catch (error) {
+    const errorMessage = error instanceof Error ? error.message : String(error);
+    // A database/upsert/view failure can happen after source loading has
+    // succeeded. Close every still-running operational row as an error so
+    // health checks cannot mistake an interrupted loader for a live run.
+    await Promise.all(
+      successfulRuns
+        .filter((run) => !completedRunRegulators.has(run.regulator))
+        .map((run) =>
+          updateScraperRun(sql!, run.runId, {
+            status: "error",
+            recordsPrepared: run.records.length,
+            inserted: 0,
+            updated: 0,
+            errorMessage,
+            startedAt: run.startedAt,
+          }),
+        ),
+    );
+    throw error;
   } finally {
     if (sql) {
       await sql.end();

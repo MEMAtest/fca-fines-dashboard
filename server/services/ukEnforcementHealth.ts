@@ -49,6 +49,7 @@ export interface UKEnforcementHealthResult {
 }
 
 const ADJACENT_RUN_RECENCY_DAYS = 7;
+const DAILY_RUNNING_TIMEOUT_DAYS = 1;
 
 const UK_HEALTH_CONTRACTS: Record<
   string,
@@ -62,8 +63,8 @@ const UK_HEALTH_CONTRACTS: Record<
   FCA: {
     sourceLayer: "uk_enforcement_actions",
     minimumHealthyRecords: 20,
-    freshnessWindowDays: 120,
-    requireRunRecency: false,
+    freshnessWindowDays: 14,
+    requireRunRecency: true,
   },
   PRA: {
     sourceLayer: "uk_enforcement_actions",
@@ -155,17 +156,91 @@ export function evaluateUKEnforcementSourceHealth({
   regulator,
   stats,
   run,
+  primaryFinesRun,
   referenceDate = new Date(),
 }: {
   regulator: UKEnforcementRegulator;
   stats: UKEnforcementHealthStatsRow | undefined;
   run?: UKEnforcementHealthRunRow;
+  primaryFinesRun?: UKEnforcementHealthRunRow;
   referenceDate?: Date;
 }): UKEnforcementHealthResult {
   const contract = UK_HEALTH_CONTRACTS[regulator.code];
 
   if (!contract) {
     throw new Error(`Missing UK enforcement health contract for ${regulator.code}`);
+  }
+
+  const missingRequiredRunRegulator = contract.requireRunRecency
+    ? !run
+      ? regulator.code
+      : regulator.code === "FCA" && !primaryFinesRun
+        ? "FCA_FINES"
+        : null
+    : null;
+  const requiredRuns = contract.requireRunRecency
+    ? [run, ...(regulator.code === "FCA" ? [primaryFinesRun] : [])].filter(
+        (requiredRun): requiredRun is UKEnforcementHealthRunRow => Boolean(requiredRun),
+      )
+    : [];
+  const displayRun = run ?? primaryFinesRun;
+  const failedRun = requiredRuns.find((requiredRun) => requiredRun?.lastStatus === "error");
+  const stuckRun = requiredRuns.find((requiredRun) => {
+    if (requiredRun?.lastStatus !== "running") return false;
+    const runAgeDays = requiredRun.lastRunAt
+      ? differenceInUtcDays(requiredRun.lastRunAt, referenceDate)
+      : null;
+    return runAgeDays === null || runAgeDays > DAILY_RUNNING_TIMEOUT_DAYS;
+  });
+
+  if (stuckRun) {
+    const runAgeDays = stuckRun.lastRunAt
+      ? differenceInUtcDays(stuckRun.lastRunAt, referenceDate)
+      : null;
+    return {
+      ...buildMissingResult(regulator, displayRun),
+      recordCount: stats?.recordCount ?? 0,
+      earliestDate: stats?.earliestRecordDate ?? null,
+      latestDate: stats?.latestRecordDate ?? null,
+      ageDays: stats?.latestRecordDate
+        ? differenceInUtcDays(stats.latestRecordDate, referenceDate)
+        : null,
+      status: "error",
+      message: `${stuckRun.regulator} scraper run is still marked running after ${runAgeDays ?? "an unknown number of"} days; investigate the interrupted loader.`,
+    };
+  }
+
+  if (failedRun) {
+    return {
+      ...buildMissingResult(regulator, displayRun),
+      recordCount: stats?.recordCount ?? 0,
+      earliestDate: stats?.earliestRecordDate ?? null,
+      latestDate: stats?.latestRecordDate ?? null,
+      ageDays: stats?.latestRecordDate
+        ? differenceInUtcDays(stats.latestRecordDate, referenceDate)
+        : null,
+      status: "error",
+      message: `${failedRun.regulator} scraper run failed: ${failedRun.lastErrorMessage ?? "unknown error"}.`,
+    };
+  }
+
+  if (run?.lastStatus === "running" && contract.requireRunRecency) {
+    const runAgeDays = run.lastRunAt
+      ? differenceInUtcDays(run.lastRunAt, referenceDate)
+      : null;
+    if (runAgeDays === null || runAgeDays > DAILY_RUNNING_TIMEOUT_DAYS) {
+      return {
+        ...buildMissingResult(regulator, displayRun),
+        recordCount: stats?.recordCount ?? 0,
+        earliestDate: stats?.earliestRecordDate ?? null,
+        latestDate: stats?.latestRecordDate ?? null,
+        ageDays: stats?.latestRecordDate
+          ? differenceInUtcDays(stats.latestRecordDate, referenceDate)
+          : null,
+        status: "error",
+        message: `Latest scraper run is still marked running after ${runAgeDays ?? "an unknown number of"} days; investigate the interrupted loader.`,
+      };
+    }
   }
 
   if (
@@ -175,6 +250,7 @@ export function evaluateUKEnforcementSourceHealth({
   ) {
     const ageDays = differenceInUtcDays(stats.latestRecordDate, referenceDate);
     if (
+      !contract.requireRunRecency &&
       stats.recordCount >= contract.minimumHealthyRecords &&
       ageDays !== null &&
       ageDays <= contract.freshnessWindowDays
@@ -234,6 +310,43 @@ export function evaluateUKEnforcementSourceHealth({
     lastSuccessfulRunAt: run?.lastSuccessfulRunAt ?? null,
   };
 
+  if (contract.requireRunRecency) {
+    const runIssueStatus = regulator.code === "FCA" ? "error" : "warning";
+
+    if (missingRequiredRunRegulator) {
+      return {
+        ...base,
+        status: runIssueStatus,
+        message: `No ${missingRequiredRunRegulator} scraper run has been recorded yet.`,
+      };
+    }
+
+    const missingSuccessfulRun = requiredRuns.find(
+      (requiredRun) => !requiredRun.lastSuccessfulRunAt,
+    );
+    if (missingSuccessfulRun) {
+      return {
+        ...base,
+        status: runIssueStatus,
+        message: `No successful ${missingSuccessfulRun.regulator} scraper run has been recorded yet.`,
+      };
+    }
+
+    const staleRun = requiredRuns
+      .map((requiredRun) => ({
+        regulator: requiredRun.regulator,
+        ageDays: differenceInUtcDays(requiredRun.lastSuccessfulRunAt!, referenceDate),
+      }))
+      .find((requiredRun) => requiredRun.ageDays !== null && requiredRun.ageDays > ADJACENT_RUN_RECENCY_DAYS);
+    if (staleRun) {
+      return {
+        ...base,
+        status: runIssueStatus,
+        message: `Latest successful ${staleRun.regulator} scraper run is ${staleRun.ageDays} days old, outside the ${ADJACENT_RUN_RECENCY_DAYS}-day monitoring window.`,
+      };
+    }
+  }
+
   if (stats.recordCount < contract.minimumHealthyRecords) {
     return {
       ...base,
@@ -248,25 +361,6 @@ export function evaluateUKEnforcementSourceHealth({
       status: "stale",
       message: `Latest action is ${ageDays} days old, outside the ${contract.freshnessWindowDays}-day window.`,
     };
-  }
-
-  if (contract.requireRunRecency) {
-    if (!run?.lastSuccessfulRunAt) {
-      return {
-        ...base,
-        status: "warning",
-        message: "No successful scraper run has been recorded yet.",
-      };
-    }
-
-    const runAgeDays = differenceInUtcDays(run.lastSuccessfulRunAt, referenceDate);
-    if (runAgeDays !== null && runAgeDays > ADJACENT_RUN_RECENCY_DAYS) {
-      return {
-        ...base,
-        status: "warning",
-        message: `Latest successful scraper run is ${runAgeDays} days old, outside the ${ADJACENT_RUN_RECENCY_DAYS}-day monitoring window.`,
-      };
-    }
   }
 
   return {
@@ -296,6 +390,8 @@ export function buildUKEnforcementHealthReport({
       regulator,
       stats: statsByRegulator.get(regulator.code),
       run: runsByRegulator.get(regulator.code),
+      primaryFinesRun:
+        regulator.code === "FCA" ? runsByRegulator.get("FCA_FINES") : undefined,
       referenceDate,
     }),
   );
@@ -367,7 +463,7 @@ export async function loadUKEnforcementScraperRuns(sql: SqlClient) {
   try {
     const regulatorCodes = UK_ENFORCEMENT_REGULATORS.map(
       (regulator) => regulator.code,
-    );
+    ).concat("FCA_FINES");
     const regulatorPlaceholders = regulatorCodes
       .map((_, index) => `$${index + 1}`)
       .join(", ");

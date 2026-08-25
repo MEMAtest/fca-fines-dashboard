@@ -20,6 +20,8 @@ async function main() {
   const migrationPaths = [
     "migrations/20260423_uk_enforcement_actions.sql",
     "migrations/20260511_unify_uk_enforcement_view.sql",
+    "migrations/20260624_notice_url_unique_index.sql",
+    "migrations/20260825_uk_enforcement_entity_identity.sql",
   ].map((migration) => path.resolve(process.cwd(), migration));
 
   console.log("Running UK enforcement migration...");
