@@ -84,6 +84,20 @@ describe("regulatorCoverage", () => {
     ]));
   });
 
+  it("records the FINRA full export as the live source contract", () => {
+    expect(getRegulatorCoverage("FINRA")?.officialSources).toEqual(expect.arrayContaining([
+      expect.objectContaining({
+        role: "export",
+        url: "https://data-portal.finra.org/exports/fda_export_all.xlsx",
+        pathPrefix: "/exports/",
+      }),
+      expect.objectContaining({
+        role: "document_storage",
+        pathPrefix: "/fda_documents/",
+      }),
+    ]));
+  });
+
   it("keeps AMF public coverage metadata aligned with the live 2026 corpus", () => {
     expect(getRegulatorCoverage("AMF")).toMatchObject({
       stage: "live",

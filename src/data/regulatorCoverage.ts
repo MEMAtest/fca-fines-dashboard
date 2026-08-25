@@ -85,7 +85,7 @@ export interface RegulatorOfficialSource {
   url: string;
   description: string;
   /** How the source participates in the regulator's evidence contract. */
-  role?: "archive" | "api" | "document_storage" | "press_service" | "official_pdf";
+  role?: "archive" | "api" | "document_storage" | "press_service" | "official_pdf" | "export";
   /** Optional path constraint for shared hosts (for example an S3 bucket). */
   pathPrefix?: string;
 }
@@ -2470,9 +2470,9 @@ const REGULATOR_COVERAGE_SEED: Record<string, RegulatorCoverageSeed> = {
     navOrder: 52,
     overviewPath: "/regulators/finra",
     years: "2005-2026",
-    count: 3987,
-    dataQuality: "Tested live loader",
-    note: "Live FINRA disciplinary-actions archive built from the official monthly filtered search results, with respondent-level case extraction across published AWCs, complaints, and decisions.",
+    count: 20151,
+    dataQuality: "Official FINRA Data Portal full XLSX export",
+    note: "Live FINRA disciplinary actions are loaded from the official full XLSX export, preserving respondent-level case rows across published AWCs, complaints, and decisions.",
     earliestYear: 2005,
     latestYear: 2026,
     nativeCurrency: "USD",
@@ -2492,6 +2492,22 @@ const REGULATOR_COVERAGE_SEED: Record<string, RegulatorCoverageSeed> = {
         url: "https://www.finra.org/rules-guidance/oversight-enforcement/disciplinary-actions",
         description:
           "Monthly PDF reports of all FINRA disciplinary actions and settlements.",
+      },
+      {
+        label: "FINRA full disciplinary actions XLSX export",
+        url: "https://data-portal.finra.org/exports/fda_export_all.xlsx",
+        description:
+          "Official FINRA Data Portal export used by the live respondent-level loader.",
+        role: "export",
+        pathPrefix: "/exports/",
+      },
+      {
+        label: "FINRA disciplinary action documents",
+        url: "https://data-portal.finra.org/fda_documents/",
+        description:
+          "Official FINRA Data Portal document endpoint for the action link retained on each record.",
+        role: "document_storage",
+        pathPrefix: "/fda_documents/",
       },
     ],
   },
