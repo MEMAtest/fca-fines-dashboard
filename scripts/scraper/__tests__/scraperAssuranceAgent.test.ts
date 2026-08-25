@@ -47,9 +47,12 @@ describe("scraperAssuranceAgent", () => {
   });
 
   it("suppresses unchanged alert fingerprints but sends transitions", () => {
+    expect(shouldSendQuietAlert({ status: "action_required", fingerprint: "first", previousStatus: null, previousFingerprint: null })).toBe(true);
     expect(shouldSendQuietAlert({ status: "action_required", fingerprint: "same", previousStatus: "action_required", previousFingerprint: "same" })).toBe(false);
     expect(shouldSendQuietAlert({ status: "action_required", fingerprint: "changed", previousStatus: "action_required", previousFingerprint: "same" })).toBe(true);
+    expect(shouldSendQuietAlert({ status: "critical", fingerprint: "escalated", previousStatus: "warning", previousFingerprint: "changed" })).toBe(true);
     expect(shouldSendQuietAlert({ status: "ok", fingerprint: "recovered", previousStatus: "action_required", previousFingerprint: "same" })).toBe(true);
+    expect(shouldSendQuietAlert({ status: "ok", fingerprint: "recovered", previousStatus: "healthy", previousFingerprint: "recovered" })).toBe(false);
   });
   it("does not call AI for healthy or watch-only findings by default", () => {
     expect(
@@ -94,6 +97,15 @@ describe("scraperAssuranceAgent", () => {
     expect(issues).toHaveLength(1);
     expect(issues[0].severity).toBe("action_required");
     expect(issues[0].message).toContain("two most recent");
+  });
+
+  it("treats terminal timed-out leases as scraper failures", () => {
+    const issues = buildScraperRunIssues([
+      { regulator: "SEC", status: "timed_out", startedAt: "2026-04-26T12:00:00Z", errorMessage: "Timed out", runUrl: null, recordsPrepared: 0 },
+      { regulator: "SEC", status: "timed_out", startedAt: "2026-04-25T12:00:00Z", errorMessage: "Timed out", runUrl: null, recordsPrepared: 0 },
+    ]);
+    expect(issues[0]?.severity).toBe("action_required");
+    expect(issues[0]?.consecutiveErrors).toBe(2);
   });
 
   it("downgrades consecutive scraper failures when live data is healthy", () => {
@@ -189,6 +201,22 @@ describe("scraperAssuranceAgent", () => {
     expect(email.Destination.ToAddresses).toEqual(["alerts@example.com"]);
     expect(email.Message.Subject.Data).toContain("SCRAPER ALERT");
     expect(email.Message.Body.Text.Data).toContain("SEC");
+  });
+
+  it("writes a correctly worded recovery notification", () => {
+    const report = {
+      ...({} as AssuranceReport),
+      generatedAt: "2026-04-26T12:00:00Z",
+      status: "ok" as const,
+      cadence: "all" as const,
+      totals: { checked: 1, ok: 1, watch: 0, actionRequired: 0, critical: 0, scraperRunIssues: 0 },
+      health: [healthResult("SEC", "ok")], scraperRunIssues: [],
+      aiTriage: { status: "skipped" as const, provider: "deepseek", model: "deepseek-v4-flash", summary: "ok", likelyCause: null, impactedRegulators: [], nextAction: null, confidence: null, usage: null, costEstimateUsd: 0, errorMessage: null },
+      costEstimate: { provider: "deepseek", model: "deepseek-v4-flash", usd: 0 }, workflowUrl: null,
+    };
+    const email = buildSesEmailInput(report, "alerts@example.com", { recovered: true });
+    expect(email.Message.Subject.Data).toContain("RECOVERED");
+    expect(email.Message.Body.Text.Data).toContain("previously actionable scraper findings have recovered");
   });
 
   it("estimates DeepSeek v4 flash cost using official per-token rates", () => {

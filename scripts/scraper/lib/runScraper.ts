@@ -140,6 +140,7 @@ async function runScraperAttempt(
   };
   let sql: ReturnType<typeof createSqlClient> | null = null;
   let scraperRunId: string | number | null = null;
+  let heartbeatTimer: NodeJS.Timeout | null = null;
 
   if (attempt === 0) {
     console.log(`${options.name}\n`);
@@ -152,6 +153,13 @@ async function runScraperAttempt(
       requireDatabaseUrl();
       sql = createSqlClient();
       scraperRunId = await insertScraperRun(sql, options, contract, startedAt);
+      const heartbeatIntervalMs = Math.min(60_000, Math.max(15_000, Math.floor(contract.runningTimeoutMinutes * 60_000 / 3)));
+      heartbeatTimer = setInterval(() => {
+        void heartbeatScraperRun(sql, scraperRunId).catch((error) => {
+          console.warn(`⚠️ ${options.name} heartbeat failed: ${error instanceof Error ? error.message : String(error)}`);
+        });
+      }, heartbeatIntervalMs);
+      heartbeatTimer.unref?.();
     }
 
     let records =
@@ -248,6 +256,7 @@ async function runScraperAttempt(
 
     throw error;
   } finally {
+    if (heartbeatTimer) clearInterval(heartbeatTimer);
     if (sql) {
       await sql.end();
     }
@@ -369,12 +378,12 @@ async function insertScraperRun(
         regulator, region, started_at, status, source, run_url,
         contract_version, source_class, feed_cadence, allow_zero_records,
         minimum_prepared_records, maximum_count_drop_fraction, stale_after_days,
-        quality_status, heartbeat_at
+        quality_status, heartbeat_at, running_timeout_minutes
       ) VALUES (
         ${contract.regulatorCode}, ${region}, ${startedAt.toISOString()}, 'running', 'github-actions', ${runUrl},
         ${contract.version}, ${contract.sourceClass}, ${contract.cadence}, ${contract.allowZeroRecords},
         ${contract.minimumPreparedRecords}, ${contract.maximumPreparedCountDropFraction}, ${contract.staleAfterDays},
-        'unknown', ${startedAt.toISOString()}
+        'unknown', ${startedAt.toISOString()}, ${contract.runningTimeoutMinutes}
       )
       RETURNING id
     `;
@@ -383,6 +392,18 @@ async function insertScraperRun(
       throw new Error(`${options.name} cannot promote because scraper run tracking did not return an id.`);
     }
     return result[0].id as string | number;
+}
+
+async function heartbeatScraperRun(
+  sql: ReturnType<typeof createSqlClient> | null,
+  runId: string | number | null,
+) {
+  if (!sql || runId === null) return;
+  await sql`
+    UPDATE scraper_runs
+    SET heartbeat_at = now()
+    WHERE id = ${runId} AND status = 'running'
+  `;
 }
 
 async function updateScraperRun(

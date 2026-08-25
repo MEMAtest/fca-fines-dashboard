@@ -83,4 +83,12 @@ describe("runScraper promotion gate", () => {
     expect(assessPreparedBatchValidation(100, 2, { maximumInvalidRecordCount: 5, maximumInvalidRecordFraction: 0.01 }).hold).toBe(true);
     expect(assessPreparedBatchValidation(4, 6, { maximumInvalidRecordCount: 5, maximumInvalidRecordFraction: 0.01 }).hold).toBe(true);
   });
+
+  it("renews the database lease during long loaders and cleans the timer", () => {
+    const source = readFileSync(resolve(process.cwd(), "scripts/scraper/lib/runScraper.ts"), "utf8");
+    expect(source).toContain("setInterval(() =>");
+    expect(source).toContain("heartbeatScraperRun");
+    expect(source).toContain("clearInterval(heartbeatTimer)");
+    expect(source).toContain("running_timeout_minutes");
+  });
 });

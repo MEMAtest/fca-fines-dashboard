@@ -135,11 +135,11 @@ export async function loadRecentScraperRuns(
     // leaves a regulator looking permanently `running`.
     await sql`
       UPDATE scraper_runs
-      SET status = 'error', quality_status = 'quarantined',
+      SET status = 'timed_out', quality_status = 'quarantined',
           finished_at = NOW(),
-          error_message = COALESCE(error_message, 'Scraper run timed out without a heartbeat.')
+          error_message = COALESCE(error_message, 'Scraper run timed out after ' || COALESCE(running_timeout_minutes, 180)::text || ' minutes without a heartbeat.')
       WHERE status = 'running'
-        AND COALESCE(heartbeat_at, started_at) < NOW() - INTERVAL '180 minutes'
+        AND COALESCE(heartbeat_at, started_at) < NOW() - make_interval(mins => COALESCE(running_timeout_minutes, 180))
     `;
     const rows = await sql`
       SELECT
@@ -204,9 +204,12 @@ export function shouldSendQuietAlert(input: {
   previousStatus: string | null;
   previousFingerprint: string | null;
 }) {
+  const normalisePrevious = (status: string | null) =>
+    status === "warning" ? "action_required" : status === "healthy" ? "ok" : status;
+  const previousStatus = normalisePrevious(input.previousStatus);
   const actionable = input.status === "critical" || input.status === "action_required";
-  if (!actionable) return input.previousStatus === "critical" || input.previousStatus === "action_required";
-  return input.fingerprint !== input.previousFingerprint || input.status !== input.previousStatus;
+  if (!actionable) return previousStatus === "critical" || previousStatus === "action_required";
+  return input.fingerprint !== input.previousFingerprint || input.status !== previousStatus;
 }
 
 export function buildScraperRunIssues(
@@ -233,16 +236,16 @@ export function buildScraperRunIssues(
     const latest = ordered[0];
     const recentTwo = ordered.slice(0, 2);
     const consecutiveErrors = recentTwo.filter(
-      (run) => run.status === "error",
+      (run) => ["error", "timed_out"].includes(run.status),
     ).length;
 
-    if (!latest || latest.status !== "error") {
+    if (!latest || !["error", "timed_out"].includes(latest.status)) {
       continue;
     }
 
     const isConsecutiveFailure =
       recentTwo.length >= 2 &&
-      recentTwo.every((run) => run.status === "error");
+      recentTwo.every((run) => ["error", "timed_out"].includes(run.status));
     const liveHealth = healthByRegulator.get(regulator);
     const liveDataIsHealthy = liveHealth?.severity === "ok";
     const severity =
@@ -518,9 +521,10 @@ export function estimateDeepSeekCost(inputTokens: number, outputTokens: number) 
   );
 }
 
-export function buildSesEmailInput(report: AssuranceReport, toAddress: string) {
+export function buildSesEmailInput(report: AssuranceReport, toAddress: string, options: { recovered?: boolean } = {}) {
+  const recovered = options.recovered === true;
   const subjectPrefix =
-    report.status === "critical" ? "CRITICAL" : "SCRAPER ALERT";
+    recovered ? "RECOVERED" : report.status === "critical" ? "CRITICAL" : "SCRAPER ALERT";
   const findings = [
     ...report.health
       .filter((result) =>
@@ -547,7 +551,7 @@ export function buildSesEmailInput(report: AssuranceReport, toAddress: string) {
     `Watch-only: ${report.totals.watch}`,
     "",
     "Deterministic findings:",
-    findings.length > 0 ? findings.join("\n") : "- None",
+    recovered ? "- All previously actionable scraper findings have recovered." : findings.length > 0 ? findings.join("\n") : "- None",
     "",
     "AI triage:",
     `- Status: ${report.aiTriage.status}`,
@@ -576,7 +580,9 @@ export function buildSesEmailInput(report: AssuranceReport, toAddress: string) {
     },
     Message: {
       Subject: {
-        Data: `${subjectPrefix}: RegActions scraper assurance requires action`,
+        Data: recovered
+          ? "RECOVERED: RegActions scraper assurance findings cleared"
+          : `${subjectPrefix}: RegActions scraper assurance requires action`,
       },
       Body: {
         Text: {
@@ -666,7 +672,7 @@ export async function main() {
 
   const alertFingerprint = buildAlertFingerprint(report);
   const previousAlertState = await loadAlertState();
-  const sendAlert = decision.alertRequired && shouldSendQuietAlert({
+  const sendAlert = shouldSendQuietAlert({
     status: report.status,
     fingerprint: alertFingerprint,
     previousStatus: previousAlertState?.lastStatus ?? null,
@@ -675,12 +681,14 @@ export async function main() {
 
   await writeJsonFile(options.outputFile, report);
 
+  const recovered = !decision.alertRequired && sendAlert;
   if (sendAlert && options.sesOutputFile) {
     await writeJsonFile(
       options.sesOutputFile,
       buildSesEmailInput(
         report,
         process.env.ALERT_EMAIL?.trim() || "ademola@memaconsultants.com",
+        { recovered },
       ),
     );
   }

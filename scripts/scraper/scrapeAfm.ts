@@ -168,13 +168,20 @@ async function scrapeAfmPage(): Promise<AFMRecord[]> {
   return records;
 }
 
-function extractFirmName(title: string, html?: string): string {
+export function isLikelyAfmEntityName(value: string) {
+  const normalized = value.trim();
+  if (!normalized || /^(?:afm|instruction|decision|notice|warning|measure)\b/i.test(normalized)) return false;
+  if (/\b(?:issued to|for breach|for failure|for violating|sanction(?:ed)?|fined|boete|boetes|enforcement action)\b/i.test(normalized)) return false;
+  return validateExtractedName(normalized) !== null;
+}
+
+export function extractFirmName(title: string, html?: string): string {
   // Pattern 1: "AFM fines [Firm] for..."
   const pattern1 = /AFM (?:fines?|sancties|sanctions?) ([^for]+) (?:for|wegens)/i;
   const match1 = title.match(pattern1);
   if (match1) {
     const candidate = validateExtractedName(match1[1].trim());
-    if (candidate) return candidate;
+    if (candidate && isLikelyAfmEntityName(candidate)) return candidate;
   }
 
   // Pattern 2: "[Firm] fined..."
@@ -182,7 +189,7 @@ function extractFirmName(title: string, html?: string): string {
   const match2 = title.match(pattern2);
   if (match2) {
     const candidate = validateExtractedName(match2[1].trim());
-    if (candidate) return candidate;
+    if (candidate && isLikelyAfmEntityName(candidate)) return candidate;
   }
 
   // Pattern 3: Company names (B.V., N.V., etc.)
@@ -190,13 +197,13 @@ function extractFirmName(title: string, html?: string): string {
   const match3 = title.match(pattern3);
   if (match3) {
     const candidate = validateExtractedName(match3[1].trim());
-    if (candidate) return candidate;
+    if (candidate && isLikelyAfmEntityName(candidate)) return candidate;
   }
 
   // PHASE 3 FIX: Try body text extraction if HTML provided
   if (html) {
     const bodyExtraction = extractNameFromBodyText(html, 'nl');
-    if (bodyExtraction) {
+    if (bodyExtraction && isLikelyAfmEntityName(bodyExtraction)) {
       return bodyExtraction;
     }
   }
@@ -205,7 +212,8 @@ function extractFirmName(title: string, html?: string): string {
   // Do not promote a headline or page furniture as the regulated party. An
   // unrecognisable extraction is deliberately blank and will be quarantined by
   // the common ingestion validator with the source payload retained.
-  return validateExtractedName(title.slice(0, 60)) || '';
+  const fallback = validateExtractedName(title.slice(0, 60)) || '';
+  return fallback && isLikelyAfmEntityName(fallback) ? fallback : '';
 }
 
 function extractFineAmount(title: string, html: string): number | null {

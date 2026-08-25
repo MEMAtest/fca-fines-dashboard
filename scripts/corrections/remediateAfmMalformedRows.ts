@@ -18,14 +18,6 @@ const sql = postgres(databaseUrl, { max: 1, ssl: databaseUrl.includes("sslmode="
 const MALFORMED_ENTITY = "consumenten|digitalisering|duurzaamheid|marktmisbru";
 
 async function main() {
-  await sql`
-    CREATE TABLE IF NOT EXISTS public.afm_malformed_row_backup (
-      remediation_id uuid NOT NULL,
-      backed_up_at timestamptz NOT NULL DEFAULT now(),
-      row_data jsonb NOT NULL
-    )
-  `;
-
   const rows = await sql`
     SELECT * FROM public.eu_fines
     WHERE regulator = 'AFM'
@@ -50,7 +42,12 @@ async function main() {
     await sql.begin(async (tx) => {
       const txSql = tx as unknown as typeof sql;
       await txSql`
-        INSERT INTO public.eu_fines
+        INSERT INTO public.eu_fines (
+          id, content_hash, regulator, regulator_full_name, country_code, country_name,
+          firm_individual, firm_category, amount, currency, amount_eur, amount_gbp,
+          date_issued, year_issued, month_issued, breach_type, breach_categories, summary,
+          final_notice_url, source_url, raw_payload, scraped_at, created_at, updated_at
+        )
         SELECT (row_data->>'id')::uuid, row_data->>'content_hash', row_data->>'regulator',
           row_data->>'regulator_full_name', row_data->>'country_code', row_data->>'country_name',
           row_data->>'firm_individual', row_data->>'firm_category', NULLIF(row_data->>'amount','')::numeric,

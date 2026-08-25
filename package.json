@@ -33,6 +33,7 @@
     "data-trust:assess-amounts": "node --import tsx/esm scripts/backfill-regulatory-amount-assessments.ts",
     "data-trust:check-sources": "node --import tsx/esm scripts/check-regulatory-source-evidence.ts",
     "data-trust:audit-enforcement": "node --import tsx/esm scripts/corrections/auditEnforcementDataQuality.ts",
+    "data-trust:validate-ingestion": "node --import tsx/esm scripts/corrections/validateIngestionSafetyConstraints.ts",
     "email-digests:dispatch": "node --import tsx/esm scripts/jobs/dispatchEmailDigests.ts",
     "data-trust:backfill-sources": "node --import tsx/esm scripts/check-regulatory-source-evidence.ts --all --limit=100 --concurrency=6",
     "delivery:certify": "node --import tsx/esm scripts/certify-delivery-journeys.ts",

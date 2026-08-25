@@ -13,6 +13,7 @@ export interface ScraperQualityContractOverride {
    * the remainder of a batch is promoted. Material drift still holds the run. */
   maximumInvalidRecordFraction?: number;
   maximumInvalidRecordCount?: number;
+  runningTimeoutMinutes?: number;
 }
 
 export interface ResolvedScraperQualityContract {
@@ -28,6 +29,7 @@ export interface ResolvedScraperQualityContract {
   operatorAction: string;
   maximumInvalidRecordFraction: number;
   maximumInvalidRecordCount: number;
+  runningTimeoutMinutes: number;
 }
 
 function defaultMinimum(coverage: RegulatorCoverage) {
@@ -70,6 +72,7 @@ export function resolveScraperQualityContract(
     operatorAction: coverage.feedContract.operatorAction,
     maximumInvalidRecordFraction: override.maximumInvalidRecordFraction ?? 0.01,
     maximumInvalidRecordCount: override.maximumInvalidRecordCount ?? 5,
+    runningTimeoutMinutes: override.runningTimeoutMinutes ?? (coverage.feedContract.cadence === "fragile" ? 180 : 90),
   };
   if (!Number.isInteger(contract.minimumPreparedRecords) || contract.minimumPreparedRecords < 0) {
     throw new Error("minimumPreparedRecords must be a non-negative integer.");
@@ -82,6 +85,9 @@ export function resolveScraperQualityContract(
   }
   if (!Number.isInteger(contract.maximumInvalidRecordCount) || contract.maximumInvalidRecordCount < 0) {
     throw new Error("maximumInvalidRecordCount must be a non-negative integer.");
+  }
+  if (!Number.isInteger(contract.runningTimeoutMinutes) || contract.runningTimeoutMinutes < 1) {
+    throw new Error("runningTimeoutMinutes must be a positive integer.");
   }
   if (contract.allowZeroRecords && contract.minimumPreparedRecords > 0) {
     throw new Error("A zero-record contract cannot require a positive minimumPreparedRecords value.");
