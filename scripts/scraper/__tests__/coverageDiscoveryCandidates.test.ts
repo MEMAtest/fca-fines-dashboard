@@ -58,4 +58,13 @@ describe("prepared official-source discovery persistence", () => {
     expect(() => buildDiscoveryCandidateRow(dfsaRecord, 12)).not.toThrow();
     expect(() => buildDiscoveryCandidateRow({ ...dfsaRecord, sourceUrl: "https://365343652932-web-server-storage.s3.eu-west-2.amazonaws.com/private/notice.pdf" }, 12)).toThrow(/validation/);
   });
+
+  it("quarantines the confirmed AFM title/page-furniture entities", () => {
+    for (const entity of [
+      "AFM fines BDO for exam fraud",
+      "duurzaam financieel welzijn in Nederland. &copy",
+    ]) {
+      expect(() => buildDiscoveryCandidateRow({ ...record, regulator: "AFM", firmIndividual: entity, sourceUrl: "https://www.afm.nl/en/news/example" }, 12)).toThrow(/invalid_entity|validation/);
+    }
+  });
 });

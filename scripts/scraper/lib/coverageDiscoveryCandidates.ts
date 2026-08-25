@@ -2,6 +2,7 @@ import { createHash } from "node:crypto";
 import type { Sql } from "postgres";
 import type { DbReadyRecord } from "./euFineHelpers.js";
 import { getRegulatorCoverage } from "../../../src/data/regulatorCoverage.js";
+import { isKnownMalformedAfmEntity } from "../../corrections/afmQuality.js";
 
 export interface DiscoveryCandidateRow {
   fingerprint: string;
@@ -71,7 +72,8 @@ function isValidDate(value: string) {
 function isInvalidEntity(value: string) {
   const entity = value.trim();
   if (entity.length < 3 || entity.length > 180) return true;
-  return /<[^>]+>|\b(?:navigation|press release|read more|cookie policy|page title)\b/i.test(entity)
+  return isKnownMalformedAfmEntity(entity)
+    || /<[^>]+>|\b(?:navigation|press release|read more|cookie policy|page title)\b/i.test(entity)
     || /^(?:instruction|decision|notice|warning|measure)\b/i.test(entity)
     || /\b(?:issued to|for breach|for failure|for violating|enforcement action)\b/i.test(entity)
     || /\bconsumenten\b.*\b(?:digitalisering|duurzaamheid|marktmisbru)/i.test(entity)

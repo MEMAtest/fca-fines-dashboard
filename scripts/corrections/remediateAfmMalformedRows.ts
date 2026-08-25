@@ -48,8 +48,13 @@ async function main() {
         )
         SELECT (row_data->>'id')::uuid, row_data->>'content_hash', row_data->>'regulator',
           row_data->>'regulator_full_name', row_data->>'country_code', row_data->>'country_name',
-          row_data->>'firm_individual', row_data->>'firm_category', NULLIF(row_data->>'amount','')::numeric,
-          row_data->>'currency', NULLIF(row_data->>'amount_eur','')::numeric, NULLIF(row_data->>'amount_gbp','')::numeric,
+          row_data->>'firm_individual', row_data->>'firm_category',
+          -- Restore preserves the evidence row but sanitises legacy numeric NaN
+          -- values to NULL so the post-remediation NOT VALID checks permit it.
+          NULLIF(NULLIF(row_data->>'amount',''),'NaN')::numeric,
+          row_data->>'currency',
+          NULLIF(NULLIF(row_data->>'amount_eur',''),'NaN')::numeric,
+          NULLIF(NULLIF(row_data->>'amount_gbp',''),'NaN')::numeric,
           NULLIF(row_data->>'date_issued','')::date, NULLIF(row_data->>'year_issued','')::int,
           NULLIF(row_data->>'month_issued','')::int, row_data->>'breach_type', row_data->'breach_categories',
           row_data->>'summary', row_data->>'final_notice_url', row_data->>'source_url', row_data->'raw_payload',

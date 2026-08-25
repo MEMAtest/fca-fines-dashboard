@@ -54,7 +54,7 @@ describe("liveRegulatorHealth", () => {
     expect(result.automationLevel).toBe("curated_archive");
     expect(result.ageDays).toBe(396);
     expect(result.message).toContain("365-day fragile source-contract window");
-    expect(result.minimumHealthyRecords).toBe(9);
+    expect(result.minimumHealthyRecords).toBe(10);
     expect(result.sourceContractSummary).toContain("challenge-protected");
   });
 

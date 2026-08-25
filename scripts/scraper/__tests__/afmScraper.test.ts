@@ -39,6 +39,9 @@ describe("AFM ingestion safety regression", () => {
     const remediation = readFileSync(resolve(process.cwd(), "scripts/corrections/remediateAfmMalformedRows.ts"), "utf8");
     expect(remediation).toContain("INSERT INTO public.eu_fines (");
     expect(remediation).toContain("id, content_hash, regulator");
+    expect(remediation).toContain("NULLIF(NULLIF(row_data->>'amount',''),'NaN')::numeric");
+    expect(remediation).toContain("NULLIF(NULLIF(row_data->>'amount_eur',''),'NaN')::numeric");
+    expect(remediation).toContain("NULLIF(NULLIF(row_data->>'amount_gbp',''),'NaN')::numeric");
     expect(remediation).not.toMatch(/async function main\(\)\s*\{\s*await sql`\s*CREATE TABLE/);
     const migration = readFileSync(resolve(process.cwd(), "migrations/20260825_ingestion_safety_v2.sql"), "utf8");
     expect(migration).toContain("CREATE TABLE IF NOT EXISTS public.afm_malformed_row_backup");
