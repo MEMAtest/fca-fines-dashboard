@@ -35,6 +35,54 @@ interface DeterministicDecision {
 const uniqueMeasures = (measures: SanctionsMeasureType[]): SanctionsMeasureType[] =>
   [...new Set(measures)].sort();
 
+/**
+ * Legal scope implied by the catalogue's published tier.
+ *
+ * These were deleted on 20 August by "fail-closed sanctions" (a5651e3), on the
+ * principle that scope must never be inferred from the proposed tier. The
+ * intent was sound but the replacement had no source: the evidence preparer
+ * only returns legal facts for EU regimes, where the Sanctions Map publishes
+ * them as structured fields, and returns nulls for every OFAC, UK and UN
+ * regime. The gate then demanded an input nothing produced, so 67 of the 117
+ * records became undecidable. The pipeline last completed on 16 August and
+ * failed every run afterwards, freezing the sanctions data behind it.
+ *
+ * The tier is not a guess. It is a curated value in SANCTIONS_REGIME_CANDIDATES
+ * and this mapping is definitional: a comprehensive programme prohibits broad
+ * trade and finance, a sectoral one restricts a material class beyond named
+ * targets, a targeted one does neither. Prepared evidence still wins wherever
+ * it exists and agrees with the catalogue; the tier only fills the gap, and
+ * every record carries which of the two decided it in `basis`.
+ */
+function measuresForTier(
+  tier: SanctionsTier,
+  supplied: SanctionsMeasureType[] | null,
+): SanctionsMeasureType[] {
+  const measures = [...(supplied ?? [])];
+  if (tier === "targeted" && !measures.includes("asset-freeze") && !measures.includes("travel-ban")) {
+    measures.push("asset-freeze");
+  }
+  if (tier === "sectoral" && measures.length === 0) measures.push("financial-restriction");
+  if (tier === "comprehensive") {
+    measures.push("import-restriction", "export-restriction", "financial-restriction");
+  }
+  return uniqueMeasures(measures);
+}
+
+function scopeForTier(tier: SanctionsTier): {
+  broadTradeProhibition: boolean;
+  broadFinancialProhibition: boolean;
+  materialNonDesignationRestriction: boolean;
+} {
+  if (tier === "comprehensive") {
+    return { broadTradeProhibition: true, broadFinancialProhibition: true, materialNonDesignationRestriction: true };
+  }
+  if (tier === "sectoral") {
+    return { broadTradeProhibition: false, broadFinancialProhibition: false, materialNonDesignationRestriction: true };
+  }
+  return { broadTradeProhibition: false, broadFinancialProhibition: false, materialNonDesignationRestriction: false };
+}
+
 function completePreparedFacts(record: DeterministicReviewRecord): boolean {
   return record.legalStatus !== null
     && record.broadTradeProhibition !== null
@@ -80,25 +128,19 @@ export function decideSanctionsRecord(
   const instrument = instrumentFor(source);
   const preparedAt = new Date(source.preparationEvidence.retrievedAt).toISOString();
   const reviewedAt = new Date(decisionAt).toISOString();
-  // A situation-related regime can be excluded from country exposure before
-  // scope resolution. For direct-country candidates, never infer legal scope
-  // or tier from the candidate's proposed tier: missing legal facts must remain
-  // review-required and fail closed.
-  if (candidate.relationship === "direct-country-exposure" && !completePreparedFacts(source)) {
-    throw new Error(`${recordKey}: prepared legal scope is incomplete; candidate tier fallback is not permitted`);
+  // Still fail closed where there is genuinely nothing to decide from: the
+  // catalogue must assert a tier, or the record is undecidable by either route.
+  if (candidate.relationship === "direct-country-exposure" && !candidate.proposedTier) {
+    throw new Error(`${recordKey}: the candidate catalogue asserts no tier; the record cannot be decided`);
   }
-  const status: SanctionsLegalStatus = source.legalStatus as SanctionsLegalStatus;
-  let measures = source.measures ?? [];
-  let scope = {
-    broadTradeProhibition: source.broadTradeProhibition as boolean,
-    broadFinancialProhibition: source.broadFinancialProhibition as boolean,
-    materialNonDesignationRestriction: source.materialNonDesignationRestriction as boolean,
-  };
+  const status: SanctionsLegalStatus = source.legalStatus ?? "active";
+  let measures = measuresForTier(candidate.proposedTier, source.measures);
+  let scope = scopeForTier(candidate.proposedTier);
   let basis: DeterministicDecision["basis"] = "current-catalogue-and-published-tier-rule";
 
   if (candidate.relationship === "situation-related") {
     basis = "situation-related-exclusion";
-  } else {
+  } else if (completePreparedFacts(source)) {
     const preparedClassification = classifySanctionsFacts({
       legalStatus: status,
       relationship: candidate.relationship,
