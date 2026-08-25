@@ -151,10 +151,10 @@ export function RegulatorWorkspace({ view }: RegulatorWorkspaceProps) {
 
   useSEO({
     title: isFcaOverview
-      ? "FCA Fines: Latest Penalties, Totals and Enforcement Actions | RegActions"
+      ? "FCA Fines Database: Latest Penalties & Final Notices | RegActions"
       : `${coverage?.fullName ?? code} ${view === "overview" ? "Executive Summary" : view} | RegActions`,
     description: isFcaOverview
-      ? `Search FCA fines and enforcement actions, inspect official source evidence, and review ${CURRENT_YEAR} totals, trends, firms and breach themes.`
+      ? `Search the live FCA fines database for penalties, enforcement actions and Final Notices. Review ${CURRENT_YEAR} totals, firms, breach themes and official FCA evidence.`
       : `Public enforcement intelligence, penalties and official evidence for ${coverage?.fullName ?? code}.`,
     keywords: isFcaOverview
       ? `FCA fines, FCA fines ${CURRENT_YEAR}, FCA penalties, Financial Conduct Authority fines, FCA enforcement actions`
@@ -179,7 +179,7 @@ export function RegulatorWorkspace({ view }: RegulatorWorkspaceProps) {
             <div className="regulator-workspace__mark"><RegulatorMark regulator={code} label={coverage.fullName} size="large" surface="dark" decorative /></div>
             <div>
               <span className="regulator-workspace__kicker">{coverage.country} · {coverage.sourceType === "sro" ? "Self-regulatory organisation" : "Conduct regulator"}</span>
-              <h1>{isFcaOverview ? "FCA Fines and Enforcement Actions" : `${coverage.fullName} (${code})`}</h1>
+              <h1>{isFcaOverview ? "FCA Fines Database and Enforcement Actions" : `${coverage.fullName} (${code})`}</h1>
               <p><ShieldCheck size={13} /> {isFcaOverview ? `${coverage.fullName} enforcement activity and official-source evidence for the United Kingdom.` : `All data on this page reflects ${code} enforcement activity in ${coverage.country}.`}</p>
               <div className="regulator-workspace__lane">
                 {coverage.feedContract.cadence === "daily" ? "Daily lane" : "Fragile lane"}

@@ -483,11 +483,11 @@ Use search for deeper case analysis, digest subscriptions for recurring monitori
   {
     id: "fca-fines-database-guide",
     slug: "fca-fines-database-how-to-search",
-    title: "FCA Fines Database: How to Search & Track All Penalties",
+    title: "How to Search the FCA Fines Database: A Practical Guide",
     seoTitle:
-      "FCA Fines Database | Search All Financial Conduct Authority Penalties",
+      "How to Search the FCA Fines Database | RegActions Guide",
     excerpt:
-      "Learn how to use the FCA fines database to search enforcement actions, track penalties by firm, and analyse regulatory trends from 2013-2025.",
+      "A practical guide to searching FCA enforcement actions by firm, year, breach and amount, with links to the live database and official final notices.",
     content: `
 ## FCA Fines Database Guide
 
@@ -587,11 +587,11 @@ The FCA publishes enforcement information through several official channels. Fin
     dateISO: "2025-01-10",
     featured: true,
     keywords: [
-      "FCA fines database",
-      "FCA fines search",
-      "FCA enforcement database",
-      "FCA fines tracker",
-      "FCA penalty database",
+      "how to search FCA fines database",
+      "FCA fines database guide",
+      "search FCA enforcement actions",
+      "FCA final notices search",
+      "FCA fines by firm",
     ],
   },
   {

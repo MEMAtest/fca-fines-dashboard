@@ -216,8 +216,8 @@ const REGULATOR_COVERAGE_SEED: Record<string, RegulatorCoverageSeed> = {
     coverageStatus: "anchor",
     maturity: "anchor",
     dashboardEnabled: true,
-    seoTitle: "FCA Fines: Latest Penalties, Totals and Enforcement Actions | RegActions",
-    seoDescription: "Search FCA fines and enforcement actions, inspect official source evidence, and review 2026 totals, monthly trends, firms and breach themes.",
+    seoTitle: "FCA Fines Database: Latest Penalties & Final Notices | RegActions",
+    seoDescription: "Search the live FCA fines database for penalties, enforcement actions and Final Notices. Review 2026 totals, firms, breach themes and official FCA evidence.",
     officialSources: [
       {
         label: "FCA news search",

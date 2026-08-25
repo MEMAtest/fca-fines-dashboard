@@ -5,8 +5,12 @@ import { FinesWorkspace } from "./FinesWorkspace.js";
 import { RegulatorWorkspace } from "./RegulatorWorkspace.js";
 import { fetchWorkspaceRecords } from "../utils/fetchWorkspaceRecords.js";
 import { EvidenceModalProvider } from "../components/EvidenceModalProvider.js";
+import { useSEO } from "../hooks/useSEO.js";
 
-vi.mock("../hooks/useSEO.js", () => ({ useSEO: vi.fn() }));
+vi.mock("../hooks/useSEO.js", () => ({
+  useSEO: vi.fn(),
+  injectStructuredData: vi.fn(() => () => undefined),
+}));
 vi.mock("../hooks/useWorkspaceOverview.js", () => ({
   useWorkspaceOverview: vi.fn(() => ({ data: null, loading: false, error: null })),
 }));
@@ -86,9 +90,20 @@ vi.mock("../hooks/useUnifiedData.js", () => ({
 }));
 
 describe("product workspaces", () => {
+  it("assigns the broad regulatory-fines intent to the global database route", () => {
+    render(<MemoryRouter initialEntries={["/fines"]}><EvidenceModalProvider><FinesWorkspace view="overview" /></EvidenceModalProvider></MemoryRouter>);
+
+    expect(screen.getByRole("heading", { name: "Regulatory Fines Database" })).toBeInTheDocument();
+    expect(useSEO).toHaveBeenCalledWith(expect.objectContaining({
+      title: "Regulatory Fines Database | Global Enforcement Actions | RegActions",
+      canonicalPath: "/fines",
+      keywords: expect.stringContaining("regulatory fines database"),
+    }));
+  });
+
   it("opens the underlying data when a Command Centre table row is selected", () => {
     render(<MemoryRouter initialEntries={["/fines"]}><EvidenceModalProvider><FinesWorkspace view="overview" /></EvidenceModalProvider></MemoryRouter>);
-    expect(screen.getByRole("heading", { name: /Fines Command Centre/i })).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: /Regulatory Fines Database/i })).toBeInTheDocument();
     expect(screen.getByRole("link", { name: "Open Alpha Bank FCA fine case" })).toHaveAttribute(
       "href",
       "/fca-fines/2025/alpha-bank/b40e17fe-6592-450e-934c-80b4a427f87a",
@@ -120,7 +135,7 @@ describe("product workspaces", () => {
 
   it("supports guided multi-selection with exact server-side summaries", async () => {
     render(<MemoryRouter initialEntries={["/fines/compare"]}><EvidenceModalProvider><FinesWorkspace view="compare" /></EvidenceModalProvider></MemoryRouter>);
-    expect(screen.getByRole("heading", { name: /Guided comparison/i })).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: /Compare regulatory fines/i })).toBeInTheDocument();
     fireEvent.click(screen.getByRole("button", { name: /2025/i }));
     fireEvent.click(screen.getByRole("button", { name: /2024/i }));
     expect(screen.getByRole("button", { name: "Remove year 2025" })).toBeInTheDocument();
@@ -163,7 +178,11 @@ describe("product workspaces", () => {
 
   it("uses the canonical regulator executive-summary layout", () => {
     render(<MemoryRouter initialEntries={["/regulators/fca"]}><EvidenceModalProvider><Routes><Route path="/regulators/:regulatorCode" element={<RegulatorWorkspace view="overview" />} /></Routes></EvidenceModalProvider></MemoryRouter>);
-    expect(screen.getByRole("heading", { name: "FCA Fines and Enforcement Actions" })).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "FCA Fines Database and Enforcement Actions" })).toBeInTheDocument();
+    expect(useSEO).toHaveBeenCalledWith(expect.objectContaining({
+      title: "FCA Fines Database: Latest Penalties & Final Notices | RegActions",
+      canonicalPath: "/regulators/fca",
+    }));
     expect(screen.getByText(/Financial Conduct Authority enforcement activity and official-source evidence/i)).toBeInTheDocument();
     expect(screen.getByRole("heading", { name: "FCA fines in 2026" })).toBeInTheDocument();
     expect(screen.getByRole("link", { name: /View the 2026 monthly report/i })).toHaveAttribute("href", "/topics/fca-fines-2026");
