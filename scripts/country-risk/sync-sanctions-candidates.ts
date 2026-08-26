@@ -2,7 +2,10 @@
 import "dotenv/config";
 import pg from "pg";
 import { buildPgPoolConfig, resolveConnectionString } from "../../server/db.js";
-import { SANCTIONS_REGIME_CANDIDATES } from "../../src/data/sanctionsRegimeCandidates.js";
+import {
+  SANCTIONS_REGIME_CANDIDATES,
+  type SanctionsRegimeCandidate,
+} from "../../src/data/sanctionsRegimeCandidates.js";
 
 const dryRun = process.argv.includes("--dry-run");
 
@@ -33,7 +36,9 @@ try {
     imposer: string;
     regime_name: string;
     status: "pending" | "approved" | "rejected";
-  }>(`SELECT iso2, imposer, regime_name, status FROM country_risk_sanctions_regimes`);
+    relationship: SanctionsRegimeCandidate["relationship"];
+    proposed_tier: SanctionsRegimeCandidate["proposedTier"];
+  }>(`SELECT iso2, imposer, regime_name, status, relationship, proposed_tier FROM country_risk_sanctions_regimes`);
   const candidateKeys = new Set(SANCTIONS_REGIME_CANDIDATES.map((candidate) =>
     `${candidate.iso2}|${candidate.imposer}|${candidate.regime}`));
   const stale = existing.rows.filter((row) =>
@@ -41,6 +46,41 @@ try {
   const staleReviewed = stale.filter((row) => row.status !== "pending");
   if (staleReviewed.length) {
     throw new Error(`Refusing candidate sync: ${staleReviewed.length} reviewed records are absent from the current catalogue`);
+  }
+
+  /**
+   * Return a reviewed record to pending when the curated catalogue has
+   * reclassified it.
+   *
+   * The upsert below only writes `WHERE status = 'pending'`, so a tier or
+   * relationship edit in SANCTIONS_REGIME_CANDIDATES could never reach an
+   * already-approved row. The row kept its old classification, the classifier
+   * kept producing the new one, and apply then refused to reconcile them and
+   * aborted the whole promotion. Venezuela's UK regime was reclassified from
+   * targeted to sectoral on 20 August and deadlocked the lane in exactly this
+   * way; the catalogue edit could not take effect by any route.
+   *
+   * Sync already treats a reviewed record vanishing from the catalogue as an
+   * event that must be handled rather than ignored. A reviewed record being
+   * reclassified is the same kind of event. Reopening it approves nothing: it
+   * routes the record back through the normal decide-and-review path on this
+   * run, with the catalogue entry as the human decision of record.
+   */
+  const byKey = new Map(SANCTIONS_REGIME_CANDIDATES.map((candidate) =>
+    [`${candidate.iso2}|${candidate.imposer}|${candidate.regime}`, candidate]));
+  const reclassified = existing.rows.filter((row) => {
+    if (row.status === "pending") return false;
+    const candidate = byKey.get(`${row.iso2.trim()}|${row.imposer}|${row.regime_name}`);
+    if (!candidate) return false;
+    return candidate.proposedTier !== row.proposed_tier
+      || candidate.relationship !== row.relationship;
+  });
+  for (const row of reclassified) {
+    await client.query(
+      `UPDATE country_risk_sanctions_regimes SET status='pending', updated_at=NOW()
+       WHERE iso2=$1 AND imposer=$2 AND regime_name=$3`,
+      [row.iso2.trim(), row.imposer, row.regime_name],
+    );
   }
   let written = 0;
   for (const candidate of SANCTIONS_REGIME_CANDIDATES) {
@@ -93,6 +133,9 @@ try {
     candidates: SANCTIONS_REGIME_CANDIDATES.length,
     written,
     removedStalePending,
+    // Named, not just counted: reopening a reviewed record is an audit event.
+    reopenedForReclassification: reclassified.map((row) =>
+      `${row.iso2.trim()}|${row.imposer}|${row.regime_name}: ${row.proposed_tier} -> ${byKey.get(`${row.iso2.trim()}|${row.imposer}|${row.regime_name}`)?.proposedTier}`),
     coverage: coverage.rows,
     productionScoresChanged: false,
   }, null, 2));
