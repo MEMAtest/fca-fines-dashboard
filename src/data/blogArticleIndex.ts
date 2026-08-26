@@ -16,6 +16,14 @@ export interface BlogArticleCard {
 /** Published articles, newest first. */
 export const BLOG_ARTICLE_INDEX: BlogArticleCard[] = [
   {
+    "slug": "market-abuse-insider-dealing-analysis",
+    "title": "Market Abuse and Insider Dealing: A Cross-Jurisdictional Analysis",
+    "excerpt": "An analysis of 30 recent enforcement actions reveals a global regulatory focus on market abuse, targeting individuals and firms for insider dealing, disclosure failures, and inadequate controls.",
+    "category": "Enforcement Analysis",
+    "date": "26 August 2026",
+    "dateISO": "2026-08-26"
+  },
+  {
     "slug": "bafin-vs-fca-uk-german-firms",
     "title": "BaFin vs FCA: What UK Firms with German Subsidiaries Need to Know",
     "excerpt": "The FCA and BaFin enforce financial regulation in almost opposite ways. The FCA runs a low-volume, high-value, conduct-and-AML model with personal accountability built in. BaFin runs a high-volume, lower-value, disclosure-and-market-abuse model that is largely administrative. A UK firm that is FCA-ready is not automatically BaFin-ready — and for a German subsidiary, the risk profile inverts.",
@@ -586,4 +594,4 @@ export const BLOG_ARTICLE_INDEX: BlogArticleCard[] = [
 ];
 
 /** Total published articles, for "all N insights" style counts. */
-export const BLOG_ARTICLE_COUNT = 71;
+export const BLOG_ARTICLE_COUNT = 72;
