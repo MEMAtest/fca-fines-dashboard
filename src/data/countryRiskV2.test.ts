@@ -284,10 +284,22 @@ describe("country risk v2 publication rules", () => {
     expect(governancePillarRisk({ cc: 120, rl: 120, rq: 120, ge: 120, pv: 120, va: 120 }).score).toBe(0);
   });
 
-  it("withholds a pillar when one of the six WGI dimensions is missing", () => {
+  it("scores five of the six WGI dimensions, matching v3", () => {
+    // Anguilla, Bermuda and US Virgin Islands publish five dimensions. v3
+    // already treats that as a governance picture; v2 withholding it left US
+    // Virgin Islands as the single insufficient-data jurisdiction, which failed
+    // the release gate and blocked every snapshot from publishing.
     expect(governancePillarRisk({ cc: 50, rl: 50, rq: 50, ge: 50, pv: 50 })).toEqual({
-      score: null,
+      score: 5,
       evidenceCount: 5,
     });
+  });
+
+  it("still withholds a pillar below five dimensions", () => {
+    expect(governancePillarRisk({ cc: 50, rl: 50, rq: 50, ge: 50 })).toEqual({
+      score: null,
+      evidenceCount: 4,
+    });
+    expect(governancePillarRisk(undefined)).toEqual({ score: null, evidenceCount: 0 });
   });
 });

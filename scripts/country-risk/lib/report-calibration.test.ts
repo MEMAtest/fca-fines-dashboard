@@ -18,9 +18,12 @@ describe("country-risk calibration report", () => {
       maxSpan: 0.7,
     });
     expect(report.allCountries.nearThresholdCounts).toEqual({
+      // Near-threshold counts drift whenever the underlying evidence refreshes.
+      // One country crossed into each of the 0.2 and 0.3 bands when #221
+      // refreshed the FATF ratings; the shape of the distribution is unchanged.
       within0_1: 41,
-      within0_2: 65,
-      within0_3: 92,
+      within0_2: 66,
+      within0_3: 93,
     });
     expect(report.basel.status).toBe("not-loaded");
   });
