@@ -136,8 +136,18 @@ export function governancePillarRisk(dimensions: Partial<WgiDimensions> | undefi
   if (!dimensions) return { score: null, evidenceCount: 0 };
   const percentiles = [dimensions.cc, dimensions.rl, dimensions.rq, dimensions.ge, dimensions.pv, dimensions.va]
     .filter((value): value is number => value !== undefined);
+  // Five of the six dimensions is still a governance picture, which v3 already
+  // concluded in governanceSafeguardsRisk. v2 never got the same change, so it
+  // alone still scored US Virgin Islands as insufficient-data for want of one
+  // series (Voice and Accountability). That mattered beyond the historical
+  // model: the release gate runs the v2 run, so a legacy quirk about one
+  // territory blocked every country-risk snapshot from publishing.
+  //
+  // Exactly three jurisdictions have five dimensions (Anguilla, Bermuda and US
+  // Virgin Islands) and none has between one and four, so this admits those
+  // three and changes nothing else.
   return {
-    score: percentiles.length === 6
+    score: percentiles.length >= 5
       ? round1(mean(percentiles.map((value) => (100 - Math.max(0, Math.min(100, value))) / 10)) as number)
       : null,
     evidenceCount: percentiles.length,
