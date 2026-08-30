@@ -37,11 +37,11 @@ export interface EuSanctionsRegimeRecord {
 
 export const EU_SANCTIONS_REGIME_SNAPSHOT = {
   "sourceUrl": "https://sanctionsmap.eu/api/v1/regime?lang=en",
-  "sourceFingerprint": "e84c2b6e2cfda113017b01d2313aa1d14d5ba19a9bb64d8a8caa891d7c557c72",
-  "sourceRawSha256": "bf838cb5000e692e88599955769a21e0cac943f2c7c01d384a52d42aef003f58",
-  "sourceReportSha256": "09bf90f3b13aeaf6a5afb836a42d6b18dc278c3cf15926667ac8966c3c4d7b24",
-  "retrievedAt": "2026-08-27T14:59:34.990Z",
-  "dataSha256": "91f2405f34981384ed056e37ac5fdddccbeaf8a0f78661da13258f8dd03b7693",
+  "sourceFingerprint": "caaf9c3067d99f9489b82ce142cf8a1097cb851aa7da75024db7111439bd5e2a",
+  "sourceRawSha256": "fafe2abb9a9c499b9f5de29112e4d066ba19bf5cd5dd74298d99693b9bad4ee7",
+  "sourceReportSha256": "a81c8b7deeae6feb0c061139acba304bdaa1fcd49c4b788743d4a3502ad16bdd",
+  "retrievedAt": "2026-08-30T12:13:37.022Z",
+  "dataSha256": "e50c030cf50145f00040a0f9629fc4ba29beb6374a6fdb193b1f23d6ec05b9cb",
   "recordCount": 49
 } as const;
 
@@ -3727,8 +3727,8 @@ export const EU_SANCTIONS_REGIMES: EuSanctionsRegimeRecord[] = [
       {
         "id": 49,
         "title": "Council Regulation concerning restrictive measures in view of Russia's actions destabilising the situation in Ukraine",
-        "number": "17.07.2026 consolidated basic legal act - (EU) No 833/2014",
-        "url": "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX%3A02014R0833-20260717",
+        "number": "24.07.2026 consolidated basic legal act - (EU) No 833/2014",
+        "url": "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX%3A02014R0833-20260724",
         "type": "EU Council Regulation"
       },
       {
@@ -3763,8 +3763,8 @@ export const EU_SANCTIONS_REGIMES: EuSanctionsRegimeRecord[] = [
     "primaryLegalAct": {
       "id": 49,
       "title": "Council Regulation concerning restrictive measures in view of Russia's actions destabilising the situation in Ukraine",
-      "number": "17.07.2026 consolidated basic legal act - (EU) No 833/2014",
-      "url": "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX%3A02014R0833-20260717",
+      "number": "24.07.2026 consolidated basic legal act - (EU) No 833/2014",
+      "url": "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX%3A02014R0833-20260724",
       "type": "EU Council Regulation"
     },
     "apiUrl": "https://sanctionsmap.eu/api/v1/regime/26?lang=en"
@@ -4870,72 +4870,23 @@ export const EU_SANCTIONS_REGIMES: EuSanctionsRegimeRecord[] = [
       {
         "id": 566,
         "title": "Council Decision concerning restrictive measures in respect of actions undermining or threatening the territorial integrity, sovereignty and independence of Ukraine",
-        "number": "17.07.2026 consolidated basic legal act - 2014/145/CFSP",
-        "url": "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX%3A02014D0145-20260717&qid=1786537732417",
+        "number": "07.08.2026 consolidated basic legal act - 2014/145/CFSP",
+        "url": "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX%3A02014D0145-20260807",
         "type": "EU Council Decision"
       },
       {
         "id": 567,
         "title": "Council Regulation concerning restrictive measures in respect of actions undermining or threatening the territorial integrity, sovereignty and independence of Ukraine",
-        "number": "17.07.2026 consolidated legal act - (EU) No 269/2014",
-        "url": "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX%3A02014R0269-20260717",
+        "number": "07.08.2026 consolidated legal act - (EU) No 269/2014",
+        "url": "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX%3A02014R0269-20260807",
         "type": "EU Council Regulation"
-      },
-      {
-        "id": 1776,
-        "title": "Council Implementing Regulation concerning restrictive measures in respect of actions undermining or threatening the territorial integrity, sovereignty and independence of Ukraine",
-        "number": "23.07.2026 amendments not yet included in the consolidated legal act - (CFSP) 2026/1843",
-        "url": "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=OJ:L_202601847",
-        "type": "EU Council Implementing Regulation"
-      },
-      {
-        "id": 1791,
-        "title": "Council Decision concerning restrictive measures in respect of actions undermining or threatening the territorial integrity, sovereignty and independence of Ukraine",
-        "number": "23.07.2026 amendments not yet included in the consolidated legal act - (CFSP) 2026/1845",
-        "url": "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=OJ:L_202601845",
-        "type": "EC Council Decision"
-      },
-      {
-        "id": 1792,
-        "title": "Council Decision concerning restrictive measures in respect of actions undermining or threatening the territorial integrity, sovereignty and independence of Ukraine",
-        "number": "23.07.2026 amendments not yet included in the consolidated legal act - (CFSP) 2026/1844",
-        "url": "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=OJ:L_202601844",
-        "type": "EC Council Regulation"
-      },
-      {
-        "id": 1793,
-        "title": "Council Decision concerning restrictive measures in respect of actions undermining or threatening the territorial integrity, sovereignty and independence of Ukraine",
-        "number": "07.08.2026 amendments not yet included in the consolidated legal act - 2026/1939",
-        "url": "https://eur-lex.europa.eu/eli/dec/2026/1939/oj?eliuri=eli%3Adec%3A2026%3A1939%3Aoj&locale=en",
-        "type": "EC Council Decision"
-      },
-      {
-        "id": 1794,
-        "title": "Council Implementing Regulation concerning restrictive measures in respect of actions undermining or threatening the territorial integrity, sovereignty and independence of Ukraine",
-        "number": "2026/1940 amendments not yet included in the consolidated legal act - 07.08.2026",
-        "url": "https://eur-lex.europa.eu/eli/reg_impl/2026/1940/oj",
-        "type": "EU Council Implementing Regulation"
-      },
-      {
-        "id": 1797,
-        "title": "Council Decision concerning restrictive measures in respect of actions undermining or threatening the territorial integrity, sovereignty and independence of Ukraine",
-        "number": "07.08.2026 amendments not yet included in the consolidated legal act",
-        "url": "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX%3A32026D1939&qid=1786537732417",
-        "type": "EC Council Decision"
-      },
-      {
-        "id": 1798,
-        "title": "Council Regulation concerning restrictive measures in respect of actions undermining or threatening the territorial integrity, sovereignty and independence of Ukraine",
-        "number": "06.08.2026 amendments not yet included in the consolidated legal act - (CFSP) 2026/1844",
-        "url": "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX%3A32026R1844R%2801%29&qid=1786537732417",
-        "type": "EC Council Regulation"
       }
     ],
     "primaryLegalAct": {
       "id": 567,
       "title": "Council Regulation concerning restrictive measures in respect of actions undermining or threatening the territorial integrity, sovereignty and independence of Ukraine",
-      "number": "17.07.2026 consolidated legal act - (EU) No 269/2014",
-      "url": "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX%3A02014R0269-20260717",
+      "number": "07.08.2026 consolidated legal act - (EU) No 269/2014",
+      "url": "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX%3A02014R0269-20260807",
       "type": "EU Council Regulation"
     },
     "apiUrl": "https://sanctionsmap.eu/api/v1/regime/36?lang=en"
