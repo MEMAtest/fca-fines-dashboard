@@ -108,5 +108,15 @@
     "qualityScore": 100,
     "qualityPassed": true,
     "wordCount": 1297
+  },
+  {
+    "timestamp": "2026-08-31T09:15:10.469Z",
+    "topic": "Global Enforcement Weekly: 17 Aug – 31 Aug",
+    "slug": "enforcement-weekly-2026-w36",
+    "track": "timely",
+    "outcome": "draft_saved",
+    "qualityScore": 100,
+    "qualityPassed": true,
+    "wordCount": 1224
   }
 ]
