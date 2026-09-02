@@ -118,5 +118,15 @@
     "qualityScore": 100,
     "qualityPassed": true,
     "wordCount": 1224
+  },
+  {
+    "timestamp": "2026-09-02T07:32:47.625Z",
+    "topic": "Consumer Protection Enforcement: Conduct Risk in Focus",
+    "slug": "consumer-protection-conduct-risk",
+    "track": "evergreen-thematic",
+    "outcome": "draft_saved",
+    "qualityScore": 100,
+    "qualityPassed": true,
+    "wordCount": 1204
   }
 ]

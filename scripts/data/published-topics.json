@@ -40,5 +40,11 @@
     "title": "Global Enforcement: Reporting Failures and Individual Accountability",
     "track": "timely",
     "publishedAt": "2026-08-31"
+  },
+  {
+    "slug": "consumer-protection-conduct-risk",
+    "title": "Consumer Protection Enforcement: Persistent Conduct Risk Identified",
+    "track": "evergreen-thematic",
+    "publishedAt": "2026-09-02"
   }
 ]
