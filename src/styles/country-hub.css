@@ -4869,3 +4869,70 @@ button.cx-dist__seg:hover { opacity: 0.85; }
   .cx-consider__table td { padding: 0 0 0.4rem; }
   .cx-consider__table td:last-child { padding-bottom: 0; }
 }
+
+/* ─────────────────────────────────────────────────────────────
+   Phone layout.
+
+   These surfaces were laid out for a wide viewport and a 271px
+   rail, then handed to a 390px screen with only a column-count
+   change. Three consequences, all visible on a real phone.
+   ───────────────────────────────────────────────────────────── */
+@media (max-width: 620px) {
+  /* The score block kept two equal columns down to 390px, so a
+     single "Very high" pill sat beside the four-line metadata
+     stack and left roughly a third of the card empty. The score
+     and the verdict take the full width; the two short cells,
+     band and rank, pair up. */
+  .cx-osc__grid { grid-template-columns: 1fr 1fr; gap: 0.75rem 0.9rem; }
+  .cx-osc__main,
+  .cx-osc__cell--verdict { grid-column: 1 / -1; }
+  .cx-osc__verdict { font-size: 0.9rem; line-height: 1.45; }
+
+  /* The recent-changes table is five columns. At 390px it rendered
+     560px wide with no horizontal scroll, so "Latest change" and
+     "Reviewed" were cut off mid-word and unreachable: the content
+     was not merely cramped, it was gone. Each row becomes a block. */
+  .cx-recent-table,
+  .cx-recent-table tbody,
+  .cx-recent-table tr,
+  .cx-recent-table td { display: block; width: auto; }
+  .cx-recent-table thead { display: none; }
+  .cx-recent-table tr {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 0.2rem 0.6rem;
+    padding: 0.7rem 0.1rem;
+    border-bottom: 1px solid #f1f5f9;
+  }
+  /* `.cx-ov__recent table` sets min-width: 560px so the desktop columns keep
+     their shape inside a scrolling panel. Once the rows are stacked there are
+     no columns to protect, and leaving it forces a phone to scroll sideways
+     through a layout that now fits. */
+  .cx-ov__recent table.cx-recent-table { min-width: 0; }
+  .cx-recent-table td { padding: 0; border-bottom: 0; }
+  .cx-recent-table td:nth-child(1) { grid-column: 1; grid-row: 1; font-weight: 600; }
+  .cx-recent-table td:nth-child(2) { grid-column: 2; grid-row: 1; text-align: right; }
+  .cx-recent-table td:nth-child(3) { grid-column: 1 / -1; grid-row: 2; font-size: 0.78rem; color: #64748b; }
+  .cx-recent-table td:nth-child(4) { grid-column: 1 / -1; grid-row: 3; }
+  .cx-recent-table td:nth-child(5) { grid-column: 1 / -1; grid-row: 4; text-align: left; font-size: 0.72rem; }
+  /* The desktop truncation has to be undone, or the row still ends in an
+     ellipsis with nothing to reveal it. */
+  .cx-recent-table__change {
+    white-space: normal;
+    max-width: none;
+    overflow: visible;
+    text-overflow: clip;
+    font-size: 0.82rem;
+    line-height: 1.45;
+  }
+
+  /* Rail labels are sized for a 271px column. The rail goes full
+     width on a phone, where 9.6px is simply small: there is room
+     to read them properly. */
+  .cx-attr__stat-d,
+  .cx-osc__k,
+  .cx-osc__sub,
+  .cx-domain__wt--none { font-size: 0.72rem; }
+  .cx-context__limitation,
+  .cx-card__note { font-size: 0.76rem; line-height: 1.5; }
+}
