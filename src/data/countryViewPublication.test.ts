@@ -1,3 +1,5 @@
+import { readFileSync } from "node:fs";
+import path from "node:path";
 import { describe, expect, it } from "vitest";
 import { getCountryByIso2 } from "./countries.js";
 import {
@@ -86,5 +88,34 @@ describe("country score publication safeguards", () => {
     expect(view.riskV2.band).not.toBe("low");
     expect(view.decision.verdictParagraph).toContain("Some information is unavailable");
     expect(view.decision.verdictParagraph).toContain("will not be labelled Low risk");
+  });
+});
+
+describe("the WGI generator cannot silently drop a jurisdiction", () => {
+  it("emits a hasGovernanceData that accepts a partial dimension series", () => {
+    // scripts/ingest-wgi.ts rewrites governanceData.ts wholesale, and its
+    // template still carried the original percentile-only check long after the
+    // committed file had been corrected by hand. Every monthly ingest therefore
+    // reverted the fix, dropped US Virgin Islands from 214 to 213 jurisdictions
+    // and failed the release gate, so the monthly source update never landed.
+    const template = readFileSync(path.resolve("scripts/ingest-wgi.ts"), "utf8");
+    const body = template.slice(template.indexOf("export function hasGovernanceData"));
+    expect(body).toContain("GOVERNANCE_DIMENSIONS");
+    expect(body.slice(0, body.indexOf("}"))).not.toMatch(
+      /return iso2\.toUpperCase\(\) in GOVERNANCE_PERCENTILE;/,
+    );
+  });
+
+  it("keeps the committed file and the generator template in agreement", () => {
+    const template = readFileSync(path.resolve("scripts/ingest-wgi.ts"), "utf8");
+    const committed = readFileSync(path.resolve("src/data/governanceData.ts"), "utf8");
+    const logic = (source: string) => {
+      const start = source.indexOf("export function hasGovernanceData");
+      return source.slice(start, source.indexOf("}", start))
+        .replace(/\/\/[^\n]*/g, "")
+        .replace(/\s+/g, " ")
+        .trim();
+    };
+    expect(logic(template)).toBe(logic(committed));
   });
 });
