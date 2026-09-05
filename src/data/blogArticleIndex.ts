@@ -16,6 +16,22 @@ export interface BlogArticleCard {
 /** Published articles, newest first. */
 export const BLOG_ARTICLE_INDEX: BlogArticleCard[] = [
   {
+    "slug": "consumer-protection-conduct-risk",
+    "title": "Consumer Protection Enforcement: Persistent Conduct Risk Identified",
+    "excerpt": "Regulatory enforcement data reveals persistent conduct risk across banking, insurance, and brokerage sectors. Failures in fee transparency, suitability, and customer communications trigger penalties, cancellations.",
+    "category": "Enforcement Analysis",
+    "date": "2 September 2026",
+    "dateISO": "2026-09-02"
+  },
+  {
+    "slug": "enforcement-weekly-2026-w36",
+    "title": "Global Enforcement: Reporting Failures and Individual Accountability",
+    "excerpt": "Analysis of 23 enforcement actions from seven regulators reveals a focus on reporting failures, cross-border conduct, and individual accountability.",
+    "category": "Enforcement Roundup",
+    "date": "31 August 2026",
+    "dateISO": "2026-08-31"
+  },
+  {
     "slug": "market-abuse-insider-dealing-analysis",
     "title": "Market Abuse and Insider Dealing: A Cross-Jurisdictional Analysis",
     "excerpt": "An analysis of 30 recent enforcement actions reveals a global regulatory focus on market abuse, targeting individuals and firms for insider dealing, disclosure failures, and inadequate controls.",
@@ -594,4 +610,4 @@ export const BLOG_ARTICLE_INDEX: BlogArticleCard[] = [
 ];
 
 /** Total published articles, for "all N insights" style counts. */
-export const BLOG_ARTICLE_COUNT = 72;
+export const BLOG_ARTICLE_COUNT = 74;
