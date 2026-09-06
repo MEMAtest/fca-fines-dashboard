@@ -13,7 +13,7 @@
 export const GOVERNANCE_SOURCE =
   "https://www.worldbank.org/en/publication/worldwide-governance-indicators";
 export const GOVERNANCE_VINTAGE = "2024";
-export const GOVERNANCE_RETRIEVED_AT = "2026-08-13T11:45:25.085Z";
+export const GOVERNANCE_RETRIEVED_AT = "2026-09-06T09:07:26.739Z";
 export const GOVERNANCE_SHA256 = "be3d4838a7a3babcdfb24f1b1caa79663e131c6158186ed09d37f316bf741d23";
 export const GOVERNANCE_LICENCE = "CC BY 4.0 — World Bank WGI";
 
@@ -461,9 +461,9 @@ export function getGovernanceDimensions(
 export function hasGovernanceData(iso2: string): boolean {
   // GOVERNANCE_PERCENTILE holds only jurisdictions with a complete six-dimension
   // series; GOVERNANCE_DIMENSIONS holds whatever the World Bank publishes. The
-  // two disagreed for US Virgin Islands, which has five of the six dimensions:
-  // the risk model could score it while pageCountries() dropped it from the site
-  // entirely, so it was the one country in the list with no page at all.
+  // two disagree for US Virgin Islands, which has five of the six dimensions:
+  // the risk model scores it while a percentile-only check drops it from the
+  // site entirely, leaving the one country in the list with no page at all.
   const code = iso2.toUpperCase();
   return code in GOVERNANCE_PERCENTILE || code in GOVERNANCE_DIMENSIONS;
 }
