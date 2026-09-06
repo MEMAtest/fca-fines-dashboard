@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { Download, FileSearch, Search, ShoppingBasket, X } from "lucide-react";
 import { useSearchParams } from "react-router-dom";
 import { fetchUnifiedSearch } from "../api.js";
@@ -53,25 +53,39 @@ export function EnforcementExplorer() {
   const page = Math.max(1, Number(searchParams.get("page") || 1));
   const overview = useWorkspaceOverview({ currency: "GBP" });
 
+  const pendingParamsRef = useRef(searchParams);
+  useEffect(() => {
+    pendingParamsRef.current = searchParams;
+  }, [searchParams]);
+
   /**
    * Apply filter changes to the URL, which is the single source of truth here.
    *
-   * This built `next` from the `searchParams` captured in the render closure.
-   * Two changes made before React re-rendered therefore both started from the
-   * same snapshot, and the second silently dropped the first: setting a year
-   * and then picking a theme could leave the URL holding only the theme, while
-   * the year control still showed 2025. On a search tool that means results
-   * that do not match the filters the user can see, which is worse than a
-   * visible failure. The updater form reads the live params instead.
+   * Two earlier versions of this both lost filters. The first built `next` from
+   * the `searchParams` captured in the render closure, so two changes made
+   * before a re-render started from the same snapshot and the second dropped
+   * the first. Switching to setSearchParams' updater form fixed that between
+   * renders but not within one: unlike a useState reducer, the updater is
+   * handed the params parsed from the current location, and the location does
+   * not change until the navigation commits. Two calls in the same tick are
+   * therefore still handed the same base, which is why setting a minimum and a
+   * maximum amount in quick succession could leave only the minimum while the
+   * maximum input still showed its value.
+   *
+   * The accumulator closes that: each call starts from the last value this
+   * component produced, so a burst composes instead of competing. It is
+   * re-seeded from the real params whenever they change, so a back button or
+   * an external navigation is never overwritten by a stale local copy.
    */
   const update = (changes: Record<string, string | number | null | undefined>) => {
-    setSearchParams((current) => {
-      const next = new URLSearchParams(current);
+    setSearchParams(() => {
+      const next = new URLSearchParams(pendingParamsRef.current);
       for (const [key, value] of Object.entries(changes)) {
         if (value == null || value === "" || value === 0) next.delete(key);
         else next.set(key, String(value));
       }
       if (!("page" in changes)) next.delete("page");
+      pendingParamsRef.current = next;
       return next;
     }, { replace: true });
   };
