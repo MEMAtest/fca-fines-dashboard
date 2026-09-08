@@ -86,11 +86,12 @@ export function Developers() {
             <pre><code>{`{
   "country": "Cyprus",
   "result": {
-    "score": 3.3,
+    "score": 4.2,
     "band": "moderate"
   },
   "methodologyVersion": "3.1.0"
 }`}</code></pre>
+            <p className="developers-hero__code-note">Example response. Country-risk results can change as source evidence is refreshed.</p>
           </div>
         </section>
 
@@ -160,7 +161,7 @@ export function Developers() {
             <span className="developers-section__eyebrow">Access and terms</span>
             <h2>Open for non-commercial use</h2>
             <p>The public API needs no registration or token. It is provided under <a href={DEVELOPERS_LICENCE_URL} rel="noopener">{DEVELOPERS_LICENCE_NAME}</a>, with visible attribution.</p>
-            <p>Using data in a paid client assessment, commercial service or internal business workflow needs separate written permission. This preserves the free public API while allowing a clear, proportionate route for firms such as Veravant.</p>
+            <p>Using data in a paid client assessment, commercial service or internal business workflow needs separate written permission. This preserves the free public API while giving commercial users a clear, proportionate route to permission.</p>
             <a className="developers-text-link" href="mailto:contact@memaconsultants.com">Discuss internal commercial use <ArrowUpRight aria-hidden="true" /></a>
           </div>
           <div className="developers-attribution">
