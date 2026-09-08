@@ -12,6 +12,8 @@ describe("Developers", () => {
     expect(screen.getByRole("heading", { name: "RegActions Data API" })).toBeInTheDocument();
     expect(screen.getByRole("heading", { name: "Make a country-risk request" })).toBeInTheDocument();
     expect(screen.getByText(/paid client assessment, commercial service or internal business workflow/i)).toBeInTheDocument();
+    expect(screen.getByText(/country-risk results can change as source evidence is refreshed/i)).toBeInTheDocument();
+    expect(screen.queryByText(/Veravant/i)).not.toBeInTheDocument();
     expect(screen.getByRole("link", { name: /start with the api/i })).toHaveAttribute("href", "#quickstart");
   });
 });

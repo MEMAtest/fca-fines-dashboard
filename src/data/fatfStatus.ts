@@ -11,7 +11,7 @@
  * FATF page each plenary and alerts on drift rather than auto-writing.
  *
  * Provenance: official FATF black/grey-list publication for the Paris plenary,
- * 17–19 June 2026, directly reverified through a browser on 16 July 2026.
+ * 17–19 June 2026, directly reverified through a browser on 8 September 2026.
  * Keyed by ISO 3166-1 alpha-2 (see countries.ts).
  */
 
@@ -39,9 +39,9 @@ export interface FatfChange {
 /** Last plenary reflected in this data, and the next scheduled review. */
 export const FATF_LAST_PLENARY = "2026-06-19";
 /** Last direct verification of both official list pages (Playwright browser check). */
-export const FATF_VERIFIED_AT = "2026-08-25";
+export const FATF_VERIFIED_AT = "2026-09-08";
 /** SHA-256 of the official page HTML retained by the latest verification run. */
-export const FATF_LIST_SHA256 = "5fd3d782931f132d2a63f290fc0596d0162612656213a9e5ff92eb1d389f622c";
+export const FATF_LIST_SHA256 = "304b245c67a180c8492036c670115c97f49ee0ecc8a68f150d7f15ffe98cb250";
 export const FATF_NEXT_PLENARY = "2026-10"; // October 2026 plenary (month precision)
 /**
  * Scheduled start of the next FATF plenary, for the live countdown. The October

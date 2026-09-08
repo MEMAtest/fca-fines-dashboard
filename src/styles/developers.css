@@ -7,3 +7,4 @@
 @media(max-width:520px){.developers-hero{padding:23px}.developers-hero h1{font-size:2.35rem}.developers-hero__code{display:none}.developers-facts{grid-template-columns:1fr}.developers-section{padding:38px 0}.developers-endpoint summary{grid-template-columns:auto minmax(0,1fr)}.developers-endpoint__expand{display:none}.developers-section--two-column{gap:22px}}
 @media(prefers-reduced-motion:reduce){.developers-button:hover{transform:none}}
 .developers-docs__sidebar{align-self:start}
+.developers-hero .developers-hero__code-note{margin:0;padding:0 18px 16px;color:#a9cbbd;font-size:.68rem;line-height:1.45}
