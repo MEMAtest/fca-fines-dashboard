@@ -16,7 +16,7 @@
 - [Country risk ratings](https://regactions.com/countries): global country AML risk ratings and bands.
 - [FATF grey list](https://regactions.com/countries/fatf-grey-list): FATF grey and black lists, current as of the latest plenary.
 - [Country risk methodology (v1)](https://regactions.com/countries/methodology) and [v2](https://regactions.com/countries/methodology/v2).
-- [Developer API docs](https://regactions.com/developers): free, keyless, CORS-open endpoints.
+- [Developer API docs](https://regactions.com/developers): registered, key-authenticated endpoints with per-key usage limits.
 - [Blog / insights](https://regactions.com/blog): analysis of enforcement trends.
 - [About](https://regactions.com/about) and [Privacy](https://regactions.com/privacy).
 
@@ -25,15 +25,15 @@
 - RegActions Regulatory Fines Database: enforcement actions and penalties from 45+ regulators (2013 onward).
 - RegActions Country AML Risk Ratings: FATF status, WGI governance base, sanctions exposure, CPI and a composite risk band per jurisdiction.
 
-## API endpoints (free, keyless, CORS-open, JSON)
+## API endpoints (registration and RegActions-issued key required)
 
 - Country risk list: https://regactions.com/api/country-risk/list
 - Country risk detail (by ISO 3166-1 alpha-2): https://regactions.com/api/country-risk/{iso2} (e.g. .../api/country-risk/GB)
 - Enforcement search: https://regactions.com/api/unified/search?q={query}
 - Full documentation: https://regactions.com/developers
 
-## Licence and attribution
+## Access and attribution
 
-- Data licence: CC BY-NC 4.0 (https://creativecommons.org/licenses/by-nc/4.0/). Non-commercial reuse permitted with attribution.
+- API access, permitted use and term are approved for each registered organisation.
 - Required attribution (visible, clickable link): Data: RegActions — regactions.com
 - Contact: contact@memaconsultants.com

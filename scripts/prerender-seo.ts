@@ -133,8 +133,6 @@ import {
   DEVELOPER_ENDPOINTS,
   DEVELOPERS_ATTRIBUTION_HTML,
   DEVELOPERS_ATTRIBUTION_TEXT,
-  DEVELOPERS_LICENCE_NAME,
-  DEVELOPERS_LICENCE_URL,
 } from "../src/data/developersApiDocs.js";
 // Type-only import (erased at build) — the value-level `getRegulatorTopFines` is
 // imported lazily/best-effort at runtime so a DB-less build still succeeds.
@@ -481,7 +479,7 @@ const FOOTER_EXPLORE_LINKS: Array<[string, string]> = [
 const FOOTER_DATA_LINKS: Array<[string, string]> = [
   ["Scoring methodology", "/countries/methodology"],
   ["Country risk changes", "/countries/changes"],
-  ["Free data API", "/developers"],
+  ["Registered data API", "/developers"],
   ["FATF grey list", "/countries/fatf-grey-list"],
   ["Sitemap", "/sitemap"],
 ];
@@ -1385,11 +1383,7 @@ function renderTopicsLandingBody(): string {
 
 /** Crawlable body for the /developers API docs page — mirrors Developers.tsx. */
 function renderDevelopersBody(): string {
-  const termsHtml = `<h2>Access and terms</h2><ul><li><strong>Keyless.</strong> No registration, token or API key is required.</li><li><strong>CORS-open.</strong> Every endpoint returns Access-Control-Allow-Origin: *, so browser clients can call it directly.</li><li><strong>Update cadence.</strong> Responses are computed deterministically at request time and edge-cached for about five minutes. Underlying data changes when its source does: FATF lists per plenary (three times a year), sanctions on review, World Bank WGI annually, and enforcement records as new official notices are published.</li><li><strong>Licence and attribution.</strong> Data is provided under <a href="${escapeHtml(
-    DEVELOPERS_LICENCE_URL,
-  )}" rel="noopener">${escapeHtml(
-    DEVELOPERS_LICENCE_NAME,
-  )}</a>. Non-commercial reuse is permitted with a visible, clickable credit link back to RegActions.</li></ul>`;
+  const termsHtml = `<h2>Registered access and terms</h2><ul><li><strong>Approval required.</strong> External API access is registered to an organisation and no key is issued until RegActions approves the intended use and access term.</li><li><strong>Server-side authentication.</strong> Approved integrations send their issued key in the X-API-Key header and must not expose it in browser JavaScript.</li><li><strong>Measured usage.</strong> Accepted requests are associated with the registered key and organisation. RegActions records endpoint, request time, outcome and a pseudonymised network fingerprint, not response contents.</li><li><strong>Standard limits.</strong> The standard allowance is 60 requests per minute and 10,000 requests per day per key; approved limits can vary by integration.</li></ul>`;
   const attributionHtml = `<h2>Required attribution</h2><p>Show this visible link wherever you display the data:</p><p><a href="https://regactions.com">${escapeHtml(
     DEVELOPERS_ATTRIBUTION_TEXT,
   )}</a></p><p>Copy-paste HTML:</p><pre><code>${escapeHtml(
@@ -1412,9 +1406,9 @@ function renderDevelopersBody(): string {
       endpoint.example,
     )}</code></pre><h3>Response fields</h3><table><thead><tr><th>Field</th><th>Type</th><th>Description</th></tr></thead><tbody>${rows}</tbody></table></section>`;
   }).join("");
-  const intro = `<p>Use explainable country-risk evidence and official-source enforcement data in internal compliance tools, research and audit workpapers. Public endpoints are read-only, keyless and CORS-enabled.</p>`;
-  const quickstartHtml = `<h2>Quickstart</h2><p>Make a country-risk request using an ISO 3166-1 alpha-2 code, such as CY for Cyprus or GB for the United Kingdom.</p><pre><code>curl https://regactions.com/api/country-risk/CY</code></pre><p>Retain the response date and source links with your own assessment rationale. Country-risk responses are cached for around five minutes.</p>`;
-  const commercialUseHtml = `<h2>Internal AML and commercial use</h2><p>The public API is licensed under ${escapeHtml(DEVELOPERS_LICENCE_NAME)} for non-commercial reuse with attribution. Using data in a paid client assessment, commercial service or internal business workflow needs separate written permission.</p><p>For a data question or to discuss internal commercial use, email <a href="mailto:contact@memaconsultants.com">contact@memaconsultants.com</a>.</p>`;
+  const intro = `<p>Use explainable country-risk evidence, regulatory ecosystem research, evidence exports and official-source enforcement data in internal compliance tools, research and audit workpapers. External access is read-only, registered and authenticated with a RegActions-issued key.</p>`;
+  const quickstartHtml = `<h2>Quickstart</h2><ol><li>Register the organisation, responsible contact, intended use and expected request volume.</li><li>Wait for RegActions to approve the access term and issue the key.</li><li>Call the API from a server or protected internal application.</li></ol><pre><code>curl https://regactions.com/api/country-risk/list -H &quot;X-API-Key: $REGACTIONS_API_KEY&quot;</code></pre><p>Retain response provenance with your own assessment rationale.</p>`;
+  const commercialUseHtml = `<h2>Register for access</h2><p>Submitting the application on this page creates a pending record; it does not automatically issue a key. Permitted use, term, attribution and any commercial conditions are confirmed by RegActions for the registered organisation.</p><p>For an access question, email <a href="mailto:contact@memaconsultants.com">contact@memaconsultants.com</a>.</p>`;
   const badgeHtml = `<section><h2>Embed a country risk badge</h2><p>The badge endpoint returns a small SVG you can drop into any page with a plain &lt;img&gt; tag. It shows the jurisdiction's AML risk band and 0-10 score, coloured by band, and reads its number from the same scoring path as the country report. Withheld jurisdictions render an honest "Not rated" badge, and unknown codes return a 404 badge. Swap GB for any ISO 3166-1 alpha-2 code; the .svg suffix is optional.</p><h3>Live preview</h3><p><a href="https://regactions.com/countries" title="AML country risk rating by RegActions"><img src="/api/badge/GB.svg" alt="United Kingdom AML risk rating by RegActions" height="20" /></a> <a href="https://regactions.com/countries" title="AML country risk rating by RegActions"><img src="/api/badge/IR.svg" alt="Iran AML risk rating by RegActions" height="20" /></a></p><h3>Copy-paste embed</h3><p>Keep the surrounding link: it is the visible, clickable credit the licence requires.</p><pre><code>${escapeHtml(
     BADGE_EMBED_HTML,
   )}</code></pre></section>`;
@@ -1448,7 +1442,7 @@ function renderHomepageBody(): string {
     )
     .join("");
 
-  return `<div class="seo-doc"><div class="seo-doc__container"><article class="seo-doc__article"><h1 class="seo-doc__title">Global Regulatory Fines & Enforcement Intelligence</h1><div class="seo-doc__body"><p>RegActions tracks enforcement actions, penalties, breach categories, firms, and regulator activity across ${PUBLIC_REGULATOR_COUNT} configured live global financial regulators.</p><h2>What RegActions Covers</h2><ul><li><strong>Regulators:</strong> ${PUBLIC_REGULATOR_COUNT} configured live financial regulators across the UK, Europe, North America, APAC, the Middle East, Africa, and offshore markets.</li><li><strong>Dataset:</strong> searchable enforcement actions, monetary penalties, breach themes, dates, sectors, and source links.</li><li><strong>Use cases:</strong> compliance monitoring, board packs, regulator benchmarking, control reviews, and trend analysis.</li></ul><h2>Start With The Data</h2><p><a href="/regulators">Open the regulator data hub</a>, <a href="/search">search enforcement actions</a>, <a href="/board-pack">create a board pack</a>, or use the <a href="/developers">free data API</a>.</p><h2>Latest Insights</h2><ul>${articleLinks}</ul><h2>Frequently Asked Questions</h2><p>RegActions combines official-source enforcement monitoring with practical analysis so compliance teams can understand what changed, why it matters, and what action to take next.</p></div></article></div></div>`;
+  return `<div class="seo-doc"><div class="seo-doc__container"><article class="seo-doc__article"><h1 class="seo-doc__title">Global Regulatory Fines & Enforcement Intelligence</h1><div class="seo-doc__body"><p>RegActions tracks enforcement actions, penalties, breach categories, firms, and regulator activity across ${PUBLIC_REGULATOR_COUNT} configured live global financial regulators.</p><h2>What RegActions Covers</h2><ul><li><strong>Regulators:</strong> ${PUBLIC_REGULATOR_COUNT} configured live financial regulators across the UK, Europe, North America, APAC, the Middle East, Africa, and offshore markets.</li><li><strong>Dataset:</strong> searchable enforcement actions, monetary penalties, breach themes, dates, sectors, and source links.</li><li><strong>Use cases:</strong> compliance monitoring, board packs, regulator benchmarking, control reviews, and trend analysis.</li></ul><h2>Start With The Data</h2><p><a href="/regulators">Open the regulator data hub</a>, <a href="/search">search enforcement actions</a>, <a href="/board-pack">create a board pack</a>, or apply for the <a href="/developers">registered data API</a>.</p><h2>Latest Insights</h2><ul>${articleLinks}</ul><h2>Frequently Asked Questions</h2><p>RegActions combines official-source enforcement monitoring with practical analysis so compliance teams can understand what changed, why it matters, and what action to take next.</p></div></article></div></div>`;
 }
 
 function renderEnforcementMethodologyBody(): string {
@@ -1852,37 +1846,39 @@ async function buildPageMetas(): Promise<PageMeta[]> {
   pages.push({
     path: "/privacy",
     title: "Privacy Notice | RegActions",
-    description: "How RegActions and MEMA Consultants use personal information, including Board Pack download details.",
+    description: "How RegActions and MEMA Consultants use personal information, including API registrations and Board Pack requests.",
     keywords: "RegActions privacy, Board Pack privacy, MEMA Consultants",
     ogType: "website",
     bodyContent: renderStaticPageBody(
       "Privacy Notice",
       "How RegActions and MEMA Consultants use and protect personal information.",
-      [{ heading: "Board Pack downloads", body: "Board Pack request details are used to provide the requested service, protect it from abuse and record consent choices." }],
+      [
+        { heading: "Board Pack downloads", body: "Board Pack request details are used to provide the requested service, protect it from abuse and record consent choices." },
+        { heading: "Developer API registration and use", body: "API applications record the organisation, responsible contact, work email, intended use, requested term, expected volume, submission time and a pseudonymised network fingerprint. Registered API usage records the key and organisation identifiers, endpoint, request time, outcome and proportionate technical information for metering and security; response contents are not written to the usage log." },
+      ],
     ),
   });
 
-  // Developer API docs — free/keyless/CORS-open endpoints, fields, attribution.
+  // Developer API docs — registered endpoints, fields, limits and attribution.
   pages.push({
     path: "/developers",
-    title: "Developer API | Free Country-Risk & Enforcement Data | RegActions",
+    title: "Registered Data API | Country-Risk & Enforcement | RegActions",
     description:
-      "Free, keyless, CORS-open RegActions APIs: country AML risk ratings, per-country risk detail, and global enforcement search. Fields, curl examples, cadence and attribution terms.",
+      "Apply for registered RegActions API access to country-risk, regulatory ecosystem and global enforcement data, with per-key usage controls and source provenance.",
     keywords:
-      "RegActions API, country risk API, AML risk API, enforcement data API, free financial regulator API, CORS open API",
+      "RegActions API, registered country risk API, AML risk API, enforcement data API, regulatory data API",
     ogType: "website",
     breadcrumbLabel: "Developers",
     bodyContent: renderDevelopersBody(),
     jsonLd: {
       "@context": "https://schema.org",
       "@type": "TechArticle",
-      headline: "Free RegActions data APIs",
+      headline: "Registered RegActions Data API",
       description:
-        "Documentation for the free, keyless, CORS-open RegActions country-risk and enforcement search APIs, including response fields, curl examples, update cadence and attribution terms.",
+        "Documentation and registration for RegActions country-risk, regulatory ecosystem, evidence export and enforcement search APIs, including authentication and per-key limits.",
       url: `${BASE_URL}/developers`,
       author: { "@id": `${BASE_URL}/#organization` },
       publisher: { "@id": `${BASE_URL}/#organization` },
-      license: DEVELOPERS_LICENCE_URL,
     },
     extraJsonLd: [
       {
@@ -1890,11 +1886,11 @@ async function buildPageMetas(): Promise<PageMeta[]> {
         "@type": "WebAPI",
         name: "RegActions Country Risk & Enforcement API",
         description:
-          "Free, keyless, CORS-open JSON API for country AML risk ratings and global regulatory enforcement search.",
+          "Registered JSON API for country AML risk ratings, regulatory ecosystem evidence and global regulatory enforcement search.",
         documentation: `${BASE_URL}/developers`,
-        termsOfService: DEVELOPERS_LICENCE_URL,
+        termsOfService: `${BASE_URL}/developers#access`,
         provider: { "@id": `${BASE_URL}/#organization` },
-        isAccessibleForFree: true,
+        isAccessibleForFree: false,
         endpointDescription: DEVELOPER_ENDPOINTS.map((e) => ({
           "@type": "EntryPoint",
           urlTemplate: `${BASE_URL}${e.path}`,

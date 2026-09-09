@@ -15,9 +15,9 @@ function responseDouble() {
 }
 
 describe("country-risk public benchmark API", () => {
-  it("publishes the 30-country directional comparison and its limitations", () => {
+  it("publishes the 30-country directional comparison and its limitations", async () => {
     const response = responseDouble();
-    handler({ method: "GET" } as never, response as never);
+    await handler({ method: "GET", headers: { host: "regactions.com", "sec-fetch-site": "same-origin" } } as never, response as never);
     const payload = response.payload as {
       limitations: string[];
       report: { sampleSize: number; regActionsCoverage: number; changedSinceObservation: unknown[] };

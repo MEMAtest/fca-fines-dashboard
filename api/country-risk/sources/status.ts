@@ -15,11 +15,13 @@ import {
   SANCTIONS_REGIME_CANDIDATES,
   SANCTIONS_TIER_RULES,
 } from "../../../src/data/sanctionsRegimeCandidates.js";
+import { authoriseDeveloperApiRequest, setDeveloperApiCache } from "../../../server/services/developerApiAccess.js";
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
-  res.setHeader("Access-Control-Allow-Origin", "*");
   if (req.method !== "GET") return res.status(405).json({ error: "Method not allowed" });
-  res.setHeader("Cache-Control", "public, max-age=300, s-maxage=3600");
+  const access = await authoriseDeveloperApiRequest(req, res, "/api/country-risk/sources/status");
+  if (!access) return;
+  setDeveloperApiCache(res, access);
   const asOf = new Date();
   const sources = countryRiskSourcesForMethodology("v3", asOf);
   const results = pageCountries().map((country) => computeCountryRiskV3(country.iso2, { asOf }));

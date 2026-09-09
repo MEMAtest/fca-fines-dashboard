@@ -15,6 +15,7 @@ import {
   normaliseFcaFineEntityName,
 } from '../../server/services/fcaFineCases.js';
 import { PUBLIC_REGULATOR_CODES } from '../../src/data/regulatorCoverage.js';
+import { authoriseDeveloperApiRequest, setDeveloperApiCache } from '../../server/services/developerApiAccess.js';
 
 const databaseUrl = resolveConnectionString() || '';
 const sql = postgres(databaseUrl, {
@@ -24,18 +25,12 @@ const sql = postgres(databaseUrl, {
 });
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
-  // CORS headers
-  res.setHeader('Access-Control-Allow-Origin', '*');
-  res.setHeader('Access-Control-Allow-Methods', 'GET, OPTIONS');
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
-
-  if (req.method === 'OPTIONS') {
-    return res.status(200).end();
-  }
-
   if (req.method !== 'GET') {
     return res.status(405).json({ error: 'Method not allowed' });
   }
+  const access = await authoriseDeveloperApiRequest(req, res, '/api/unified/search');
+  if (!access) return;
+  setDeveloperApiCache(res, access);
 
   try {
     // Parse query parameters

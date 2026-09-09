@@ -8,10 +8,13 @@ import { countryRiskSourcesForMethodology } from "../../src/data/countryRiskSour
 import { assessCountryRiskReadiness } from "../../src/data/countryRiskReadiness.js";
 import { buildCountryRiskPublicSurface } from "../../src/data/countryRiskSurface.js";
 import { getCountryRiskOperationalHealth } from "../../server/services/countryRiskOperationalHealth.js";
+import { authoriseDeveloperApiRequest, setDeveloperApiCache } from "../../server/services/developerApiAccess.js";
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
-  res.setHeader("Access-Control-Allow-Origin", "*");
   if (req.method !== "GET") return res.status(405).json({ error: "Method not allowed" });
+  const access = await authoriseDeveloperApiRequest(req, res, "/api/country-risk/list");
+  if (!access) return;
+  setDeveloperApiCache(res, access);
   const requested = req.query.methodology == null ? null : String(req.query.methodology);
   let methodology: "v2" | "v3";
   try {
@@ -50,7 +53,6 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       };
     })
     .sort((a, b) => (b.result.score ?? -1) - (a.result.score ?? -1) || a.country.name.localeCompare(b.country.name));
-  res.setHeader("Cache-Control", "public, max-age=300, s-maxage=3600");
   const readiness = assessCountryRiskReadiness(results.map(({ result }) => result), sources);
   const { sourceHealth } = await getCountryRiskOperationalHealth(asOf, sources);
   return res.status(200).json({
