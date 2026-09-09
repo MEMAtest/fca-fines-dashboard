@@ -30,7 +30,7 @@ describe("unified search theme filtering", () => {
 
   it("passes breach categories as a JSON array rather than a JSON-encoded string", async () => {
     unsafe.mockResolvedValueOnce([]).mockResolvedValueOnce([{ count: "0" }]);
-    const req = { method: "GET", query: { breachCategory: "FRAUD" } } as any;
+    const req = { method: "GET", query: { breachCategory: "FRAUD" }, headers: { host: "regactions.com", "sec-fetch-site": "same-origin" } } as any;
     const res = response();
 
     await handler(req, res);
@@ -43,7 +43,7 @@ describe("unified search theme filtering", () => {
 
   it("constrains monthly chart drill-downs to the selected year and month", async () => {
     unsafe.mockResolvedValueOnce([]).mockResolvedValueOnce([{ count: "0" }]);
-    const req = { method: "GET", query: { year: "2025", month: "8" } } as any;
+    const req = { method: "GET", query: { year: "2025", month: "8" }, headers: { host: "regactions.com", "sec-fetch-site": "same-origin" } } as any;
     const res = response();
 
     await handler(req, res);

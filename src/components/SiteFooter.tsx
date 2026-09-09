@@ -21,7 +21,7 @@ const EXPLORE_LINKS: Array<[string, string]> = [
 const DATA_LINKS: Array<[string, string]> = [
   ["Scoring methodology", "/countries/methodology"],
   ["Country risk changes", "/countries/changes"],
-  ["Free data API", "/developers"],
+  ["Registered data API", "/developers"],
   ["FATF grey list", "/countries/fatf-grey-list"],
   ["Sitemap", "/sitemap"],
 ];

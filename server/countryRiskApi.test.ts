@@ -13,7 +13,7 @@ vi.mock("./db.js", () => ({
 async function invoke(handler: (req: VercelRequest, res: VercelResponse) => unknown, query: Record<string, string> = {}) {
   let code = 200;
   let payload: unknown;
-  const req = { method: "GET", query } as unknown as VercelRequest;
+  const req = { method: "GET", query, headers: { host: "regactions.com", "sec-fetch-site": "same-origin" } } as unknown as VercelRequest;
   const res = {
     setHeader: () => undefined,
     status(value: number) { code = value; return this; },
@@ -24,6 +24,20 @@ async function invoke(handler: (req: VercelRequest, res: VercelResponse) => unkn
 }
 
 describe("country-risk public API contract", () => {
+  it("requires registration for an external request", async () => {
+    let code = 200;
+    let payload: unknown;
+    const req = { method: "GET", query: { iso2: "GB" }, headers: { host: "regactions.com" } } as unknown as VercelRequest;
+    const res = {
+      setHeader: () => undefined,
+      status(value: number) { code = value; return this; },
+      json(value: unknown) { payload = value; return this; },
+    } as unknown as VercelResponse;
+    await countryHandler(req, res);
+    expect(code).toBe(401);
+    expect(payload).toMatchObject({ error: "registration_required" });
+  });
+
   it("returns complete country evidence and non-binding floor explanations for Iraq", async () => {
     const response = await invoke(countryHandler, { iso2: "IQ", methodology: "v2" });
     expect(response.code).toBe(200);

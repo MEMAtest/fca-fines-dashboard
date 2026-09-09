@@ -12,11 +12,13 @@ import {
   SANCTIONS_REGIME_CANDIDATES,
   SANCTIONS_TIER_RULES,
 } from "../../../src/data/sanctionsRegimeCandidates.js";
+import { authoriseDeveloperApiRequest, setDeveloperApiCache } from "../../../server/services/developerApiAccess.js";
 
-export default function handler(req: VercelRequest, res: VercelResponse) {
-  res.setHeader("Access-Control-Allow-Origin", "*");
+export default async function handler(req: VercelRequest, res: VercelResponse) {
   if (req.method !== "GET") return res.status(405).json({ error: "Method not allowed" });
-  res.setHeader("Cache-Control", "public, max-age=300, s-maxage=86400");
+  const access = await authoriseDeveloperApiRequest(req, res, "/api/country-risk/methodology/v2");
+  if (!access) return;
+  setDeveloperApiCache(res, access);
   return res.status(200).json({
     version: COUNTRY_RISK_METHODOLOGY_VERSION,
     status: "production",

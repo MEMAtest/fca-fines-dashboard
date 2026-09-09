@@ -5,13 +5,13 @@ import {
 } from "../../src/data/regulatorySignalExport.js";
 import { listRegulatorySignalCountries, REGULATORY_SIGNAL_COUNTRY_COUNT, REGULATORY_SIGNAL_GENERATED_AT } from "../../src/data/regulatorySignal.js";
 import { PUBLIC_REGULATOR_CODES } from "../../src/data/regulatorCoverage.js";
+import { authoriseDeveloperApiRequest, setDeveloperApiCache } from "../../server/services/developerApiAccess.js";
 
-export default function handler(req: VercelRequest, res: VercelResponse) {
-  res.setHeader("Access-Control-Allow-Origin", "*");
-  res.setHeader("Access-Control-Allow-Methods", "GET, OPTIONS");
-  res.setHeader("Cache-Control", "public, max-age=300, s-maxage=3600, stale-while-revalidate=86400");
-  if (req.method === "OPTIONS") return res.status(204).end();
+export default async function handler(req: VercelRequest, res: VercelResponse) {
   if (req.method !== "GET") return res.status(405).json({ error: "Method not allowed" });
+  const access = await authoriseDeveloperApiRequest(req, res, "/api/regulatory-signal/list");
+  if (!access) return;
+  setDeveloperApiCache(res, access);
 
   const region = typeof req.query.region === "string" ? req.query.region.trim().toLowerCase() : "";
   const rows = listRegulatorySignalCountries()
