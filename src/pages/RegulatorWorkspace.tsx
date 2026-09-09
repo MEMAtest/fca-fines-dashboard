@@ -204,7 +204,27 @@ export function RegulatorWorkspace({ view }: RegulatorWorkspaceProps) {
         </div>
       </ProductWorkspaceShell>
     );
-  if (primary.error) return <ProductWorkspaceShell scope="regulator" regulatorCode={regulatorCode}><div className="workspace-error">{primary.error}</div></ProductWorkspaceShell>;
+  // The loading branch above already paints the hero, for the reason given
+  // there; the error branch did not, so a failed fetch replaced the whole page
+  // with a bare message. The reader lost every clue about which regulator they
+  // were looking at, and the page-integrity gate, which waits for an <h1>, timed
+  // out and reported a rendering failure rather than the data failure that had
+  // actually happened. The hero comes from the static coverage record, so it can
+  // paint whether or not the actions arrive.
+  if (primary.error)
+    return (
+      <ProductWorkspaceShell scope="regulator" regulatorCode={regulatorCode} title={code}>
+        <div className="workspace-page">
+          {regulatorHero}
+          <div className="workspace-error" role="alert">
+            <p>{primary.error}</p>
+            <button type="button" className="workspace-button" onClick={() => window.location.reload()}>
+              Try again
+            </button>
+          </div>
+        </div>
+      </ProductWorkspaceShell>
+    );
 
   const openSelection = async (selection: {year?: number; theme?: string}, title: string) => {
     setDrawer({ title, records: recordsForSelection(records, selection), description: "Loading the complete matching evidence set..." });
