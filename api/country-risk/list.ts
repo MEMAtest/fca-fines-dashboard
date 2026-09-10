@@ -55,6 +55,9 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     .sort((a, b) => (b.result.score ?? -1) - (a.result.score ?? -1) || a.country.name.localeCompare(b.country.name));
   const readiness = assessCountryRiskReadiness(results.map(({ result }) => result), sources);
   const { sourceHealth } = await getCountryRiskOperationalHealth(asOf, sources);
+  const sourceWarnings = sourceHealth.issues
+    .filter((issue) => issue.severity === "warning")
+    .map((issue) => issue.message);
   return res.status(200).json({
     methodologyVersion: methodology === "v3" ? CURRENT_COUNTRY_RISK_METHODOLOGY_VERSION : COUNTRY_RISK_METHODOLOGY_VERSION,
     calculatedAt: asOf.toISOString(),
@@ -65,7 +68,11 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     readyForDefault: readiness.readyForDefault && sourceHealth.readyForScoring,
     snapshotReady: readiness.readyForDefault,
     sourcesCurrent: sourceHealth.readyForScoring,
-    readinessReasons: [...readiness.reasons, ...sourceHealth.issues.map((issue) => issue.message)],
+    readinessReasons: [
+      ...readiness.reasons,
+      ...sourceHealth.issues.filter((issue) => issue.severity === "critical").map((issue) => issue.message),
+    ],
+    sourceWarnings,
     coverage: readiness.coverage,
     sources,
     results,

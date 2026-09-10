@@ -202,11 +202,30 @@ jobs:
       - run: npx playwright install --with-deps chromium
       - name: Verify FATF official black and grey lists
         id: fatf_lists
-        continue-on-error: true
-        run: xvfb-run -a npm run country-risk:verify-fatf -- --write
+        run: |
+          set +e
+          xvfb-run -a npm run country-risk:verify-fatf -- --write
+          exit_code=$?
+          set -e
+          case "$exit_code" in
+            0) outcome=verified ;;
+            1) outcome=drift ;;
+            2) outcome=unavailable ;;
+            3) outcome=error ;;
+            *) outcome=error ;;
+          esac
+          echo "outcome=$outcome" >> "$GITHUB_OUTPUT"
+          echo "exit_code=$exit_code" >> "$GITHUB_OUTPUT"
+          echo "FATF list verification outcome: $outcome (exit $exit_code)"
       - name: Retain current FATF list evidence as a watch
-        if: steps.fatf_lists.outcome == 'failure'
+        if: steps.fatf_lists.outputs.outcome == 'unavailable'
         run: node --import tsx/esm scripts/country-risk/check-fatf-list-watch.ts
+      - name: Persist the unsuccessful FATF verification attempt
+        if: always() && steps.fatf_lists.outputs.outcome != 'verified'
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          FATF_LIST_OUTCOME: ${{ steps.fatf_lists.outputs.outcome }}
+        run: npm run country-risk:persist-fatf-attempt
       - name: Ingest the latest FATF consolidated ratings
         id: fatf_assessments
         continue-on-error: true
@@ -215,6 +234,7 @@ jobs:
         if: steps.fatf_assessments.outcome == 'failure'
         run: node --import tsx/esm scripts/country-risk/check-fatf-assessment-watch.ts
       - name: Validate the FATF evidence update
+        if: steps.fatf_lists.outputs.outcome == 'verified' || steps.fatf_lists.outputs.outcome == 'unavailable'
         run: |
           npm run country-risk:validate
           npm test -- --run \
@@ -225,6 +245,7 @@ jobs:
           npm run build
       - name: Open the FATF ratings update
         id: fatf_pr
+        if: steps.fatf_lists.outputs.outcome == 'verified' || steps.fatf_lists.outputs.outcome == 'unavailable'
         uses: peter-evans/create-pull-request@v7
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
@@ -235,7 +256,7 @@ jobs:
           body: |
             Automated FATF ratings ingestion, focused tests, validation and build passed.
 
-            Live black/grey-list verification outcome: `${{ steps.fatf_lists.outcome }}`.
+            Live black/grey-list verification outcome: `${{ steps.fatf_lists.outputs.outcome }}`.
             Consolidated-ratings workbook ingestion outcome: `${{ steps.fatf_assessments.outcome }}`.
             When the protected page was unavailable, the job retained the last verified list only after confirming that its dated, hashed evidence remained inside the operational freshness threshold; the outage is recorded as a watch artifact.
             When the protected workbooks were unavailable, the job retained the last schema-validated ratings only after confirming at least 100 records and a dated hash inside the 45-day freshness threshold.
@@ -255,6 +276,11 @@ jobs:
             /tmp/country-risk-fatf-list-review.json
             /tmp/country-risk-fatf-list-watch.json
             /tmp/country-risk-fatf-assessment-watch.json
+      - name: Block promotion when FATF drift or an unexpected verifier error is detected
+        if: always() && (steps.fatf_lists.outputs.outcome == 'drift' || steps.fatf_lists.outputs.outcome == 'error')
+        run: |
+          echo "FATF list verification requires intervention: ${{ steps.fatf_lists.outputs.outcome }}"
+          exit 1
 
   monthly-release-detection:
     if: (github.event_name == 'schedule' && github.event.schedule == '31 7 1 * *') || inputs.lane == 'monthly' || inputs.lane == 'all'

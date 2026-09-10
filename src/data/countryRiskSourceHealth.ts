@@ -22,6 +22,7 @@ export interface CountryRiskSourceHealthIssue {
     | "database-unavailable"
     | "declared-source-unhealthy"
     | "missing-operational-run"
+    | "operational-run-unavailable"
     | "operational-run-failed"
     | "operational-run-review-required"
     | "operational-run-stale"
@@ -99,6 +100,17 @@ function isKnownUnchangedCatalogueRun(run: CountryRiskOperationalSourceRun): boo
     && !run.error_message;
 }
 
+function isSuccessfulRun(run: CountryRiskOperationalSourceRun): boolean {
+  return run.status === "succeeded" || isKnownUnchangedCatalogueRun(run);
+}
+
+function isRetainedEvidenceUnavailableRun(run: CountryRiskOperationalSourceRun): boolean {
+  const metadata = sourceRunMetadata(run);
+  return run.status === "failed"
+    && metadata?.outcome === "unavailable"
+    && metadata?.retainedEvidence === true;
+}
+
 export function assessCountryRiskSourceHealth(input: {
   asOf: Date;
   declaredSources: CountryRiskSourceStatus[];
@@ -131,14 +143,35 @@ export function assessCountryRiskSourceHealth(input: {
   }
 
   const latest = latestRuns(input.operationalRuns);
+  const latestSuccessful = latestRuns(input.operationalRuns.filter(isSuccessfulRun));
   for (const rule of COUNTRY_RISK_OPERATIONAL_SOURCE_RULES) {
-    const run = latest.get(rule.id);
-    if (!run) {
+    const latestAttempt = latest.get(rule.id);
+    if (!latestAttempt) {
       issues.push({
         sourceId: rule.id,
         severity: "critical",
         code: "missing-operational-run",
         message: `No operational source run is recorded for ${rule.id}.`,
+      });
+      continue;
+    }
+
+    const retainedUnavailable = isRetainedEvidenceUnavailableRun(latestAttempt);
+    const run = retainedUnavailable ? latestSuccessful.get(rule.id) : latestAttempt;
+    if (retainedUnavailable) {
+      issues.push({
+        sourceId: rule.id,
+        severity: "warning",
+        code: "operational-run-unavailable",
+        message: `${rule.id} could not be verified in its latest attempt; current retained evidence is still inside its freshness threshold.`,
+      });
+    }
+    if (!run) {
+      issues.push({
+        sourceId: rule.id,
+        severity: "critical",
+        code: "missing-operational-run",
+        message: `No successful retained source run is recorded for ${rule.id}.`,
       });
       continue;
     }
@@ -160,7 +193,7 @@ export function assessCountryRiskSourceHealth(input: {
       });
     }
 
-    if (run.status !== "succeeded" && !isKnownUnchangedCatalogueRun(run)) {
+    if (!isSuccessfulRun(run)) {
       issues.push({
         sourceId: rule.id,
         severity: "critical",
@@ -188,8 +221,7 @@ export function assessCountryRiskSourceHealth(input: {
     }
   }
 
-  const successfulTimes = [...latest.values()]
-    .filter((run) => run.status === "succeeded" || isKnownUnchangedCatalogueRun(run))
+  const successfulTimes = [...latestSuccessful.values()]
     .map((run) => asTime(run.retrieved_at))
     .filter(Number.isFinite);
   const lastSuccessfulTime = successfulTimes.length ? Math.max(...successfulTimes) : null;
