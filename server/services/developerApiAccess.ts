@@ -5,8 +5,19 @@ import { getSqlClient, type SqlClient } from "../db.js";
 export const DEFAULT_API_MINUTE_LIMIT = 60;
 export const DEFAULT_API_DAILY_LIMIT = 10_000;
 
+/**
+ * What the website's own pages need, and no more.
+ *
+ * A country report issues a handful of calls; the explorer pages a few more.
+ * These are generous for a person browsing and mean nothing to a bulk reader,
+ * which is the point: the anonymous lane must serve the site without being a
+ * free replacement for registration.
+ */
+export const ANONYMOUS_MINUTE_LIMIT = 30;
+export const ANONYMOUS_DAILY_LIMIT = 1_000;
+
 export interface DeveloperApiAccess {
-  mode: "first-party" | "registered";
+  mode: "first-party" | "anonymous" | "registered";
   apiKeyId?: number;
   clientId?: number;
   minuteRemaining?: number;
@@ -35,7 +46,15 @@ export function readDeveloperApiKey(req: VercelRequest): string | null {
   return bearer || null;
 }
 
-export function isFirstPartyBrowserRequest(req: VercelRequest): boolean {
+/**
+ * Whether the request carries the shape a same-origin browser call has.
+ *
+ * Deliberately not named "isFirstParty": every header here is set by the
+ * caller, so this cannot authenticate anything. It is a cheap filter that keeps
+ * unrelated traffic out of the anonymous lane, and the lane it admits to is
+ * metered rather than trusted.
+ */
+export function looksLikeFirstPartyBrowserRequest(req: VercelRequest): boolean {
   const headers = req.headers ?? {};
   const host = firstHeader(headers["x-forwarded-host"] || headers.host)
     .split(":")[0]
@@ -60,7 +79,7 @@ async function logUsage(
   sql: SqlClient,
   req: VercelRequest,
   route: string,
-  outcome: "allowed" | "rate_limited" | "invalid_key" | "expired_key" | "suspended_client",
+  outcome: "allowed" | "anonymous" | "rate_limited" | "invalid_key" | "expired_key" | "suspended_client",
   identifiers: { apiKeyId?: number; clientId?: number; keyPrefix?: string } = {},
 ) {
   await sql(
@@ -90,14 +109,104 @@ function registrationRequired(res: VercelResponse, code: string, message: string
   });
 }
 
+/**
+ * The website's own lane: served without a key, but counted.
+ *
+ * Everything here is best-effort. The data behind these routes is public and
+ * already rendered on the page, so the goal is metering and attribution, not
+ * confidentiality, and no failure in the metering path may take the website
+ * down with it. A missing salt, an unreachable counter or an unwritable audit
+ * row all serve the request uncounted. Registered keys are the opposite: an
+ * invalid or over-limit key is never waved through.
+ */
+async function authoriseAnonymousRequest(
+  req: VercelRequest,
+  res: VercelResponse,
+  route: string,
+  resolveSql: () => SqlClient,
+  now: Date,
+): Promise<DeveloperApiAccess | null> {
+  const fingerprint = developerApiNetworkFingerprint(req);
+  if (!fingerprint) {
+    // Only reachable when API_USAGE_HASH_SALT is unset, which is a deployment
+    // misconfiguration rather than a caller problem. Refusing here would fail
+    // every page on the site, so it is logged and served.
+    console.warn("developer-api: API_USAGE_HASH_SALT is not set; the website lane is unmetered");
+    return { mode: "anonymous" };
+  }
+
+  let rows: Array<Record<string, unknown>>;
+  let sql: SqlClient;
+  try {
+    sql = resolveSql();
+    rows = await sql(
+    `WITH increments AS (
+       INSERT INTO developer_api_anonymous_buckets (network_fingerprint, window_kind, window_start, request_count)
+       VALUES
+         ($1, 'minute', date_trunc('minute', $2::timestamptz), 1),
+         ($1, 'day', date_trunc('day', $2::timestamptz), 1)
+       ON CONFLICT (network_fingerprint, window_kind, window_start)
+       DO UPDATE SET request_count = developer_api_anonymous_buckets.request_count + 1
+       RETURNING window_kind, request_count
+     )
+     SELECT
+       MAX(CASE WHEN window_kind = 'minute' THEN request_count END) AS minute_count,
+       MAX(CASE WHEN window_kind = 'day' THEN request_count END) AS day_count
+     FROM increments`,
+    [fingerprint, now.toISOString()],
+    );
+  } catch {
+    // Metering is best-effort for this lane and the data behind it is public
+    // and already on the page. Failing closed here would take the website down
+    // with the metering store, so an unreachable counter serves the request
+    // uncounted rather than refusing it. Registered keys still fail closed: an
+    // invalid or over-limit key is never waved through on a database error.
+    return { mode: "anonymous" };
+  }
+  const minuteCount = Number(rows[0]?.minute_count ?? 1);
+  const dayCount = Number(rows[0]?.day_count ?? 1);
+  const minuteRemaining = Math.max(0, ANONYMOUS_MINUTE_LIMIT - minuteCount);
+  const dailyRemaining = Math.max(0, ANONYMOUS_DAILY_LIMIT - dayCount);
+  const resetSeconds = Math.max(1, 60 - now.getUTCSeconds());
+  res.setHeader("RateLimit-Limit", String(ANONYMOUS_MINUTE_LIMIT));
+  res.setHeader("RateLimit-Remaining", String(minuteRemaining));
+  res.setHeader("RateLimit-Reset", String(resetSeconds));
+  res.setHeader("X-RateLimit-Daily-Limit", String(ANONYMOUS_DAILY_LIMIT));
+  res.setHeader("X-RateLimit-Daily-Remaining", String(dailyRemaining));
+
+  if (minuteCount > ANONYMOUS_MINUTE_LIMIT || dayCount > ANONYMOUS_DAILY_LIMIT) {
+    await logUsage(sql, req, route, "rate_limited");
+    res.setHeader("Retry-After", String(minuteCount > ANONYMOUS_MINUTE_LIMIT ? resetSeconds : 86_400));
+    res.setHeader("Cache-Control", "no-store");
+    res.status(429).json({
+      error: "rate_limit_exceeded",
+      message: "This request exceeded the unregistered browsing allowance. Register for an API key for programmatic access.",
+      registrationUrl: "https://regactions.com/developers#access",
+    });
+    return null;
+  }
+
+  try {
+    await logUsage(sql, req, route, "anonymous");
+  } catch {
+    // Same reasoning: an unwritable audit row must not fail a public page load.
+  }
+  return { mode: "anonymous", minuteRemaining, dailyRemaining };
+}
+
 export async function authoriseDeveloperApiRequest(
   req: VercelRequest,
   res: VercelResponse,
   route: string,
   options: AccessOptions = {},
 ): Promise<DeveloperApiAccess | null> {
-  if (isFirstPartyBrowserRequest(req)) {
-    return { mode: "first-party" };
+  const now = options.now ?? new Date();
+  // Resolved only once a database is actually needed: an unregistered request
+  // with no key is refused without opening a connection.
+  const resolveSql = () => options.sql ?? getSqlClient();
+  const apiKeyPresent = readDeveloperApiKey(req);
+  if (!apiKeyPresent && looksLikeFirstPartyBrowserRequest(req)) {
+    return authoriseAnonymousRequest(req, res, route, resolveSql, now);
   }
 
   const apiKey = readDeveloperApiKey(req);
@@ -106,10 +215,9 @@ export async function authoriseDeveloperApiRequest(
     return null;
   }
 
-  const sql = options.sql ?? getSqlClient();
+  const sql = resolveSql();
   const keyHash = hashDeveloperApiKey(apiKey);
   const keyPrefix = apiKey.slice(0, 16);
-  const now = options.now ?? new Date();
   const rows = await sql(
     `SELECT k.id AS api_key_id, k.client_id, k.status AS key_status,
             k.minute_limit, k.daily_limit, k.expires_at,

@@ -2,9 +2,10 @@ import { describe, expect, it, vi } from "vitest";
 import type { VercelRequest, VercelResponse } from "@vercel/node";
 import type { SqlClient } from "../db.js";
 import {
+  ANONYMOUS_MINUTE_LIMIT,
   authoriseDeveloperApiRequest,
   hashDeveloperApiKey,
-  isFirstPartyBrowserRequest,
+  looksLikeFirstPartyBrowserRequest,
   readDeveloperApiKey,
 } from "./developerApiAccess.js";
 
@@ -44,10 +45,10 @@ function sqlClient(minuteCount = 1, dayCount = 1): SqlClient {
 }
 
 describe("developer API access", () => {
-  it("recognises only a same-origin browser request as the website lane", () => {
-    expect(isFirstPartyBrowserRequest(request({ host: "regactions.com", "sec-fetch-site": "same-origin" }))).toBe(true);
-    expect(isFirstPartyBrowserRequest(request({ host: "regactions.com", "sec-fetch-site": "cross-site" }))).toBe(false);
-    expect(isFirstPartyBrowserRequest(request({ host: "example.com", "sec-fetch-site": "same-origin" }))).toBe(false);
+  it("recognises the shape of a same-origin browser call, and claims nothing more", () => {
+    expect(looksLikeFirstPartyBrowserRequest(request({ host: "regactions.com", "sec-fetch-site": "same-origin" }))).toBe(true);
+    expect(looksLikeFirstPartyBrowserRequest(request({ host: "regactions.com", "sec-fetch-site": "cross-site" }))).toBe(false);
+    expect(looksLikeFirstPartyBrowserRequest(request({ host: "example.com", "sec-fetch-site": "same-origin" }))).toBe(false);
   });
 
   it("reads either supported key header and hashes without retaining the secret", () => {
@@ -92,5 +93,63 @@ describe("developer API access", () => {
     expect(state.status).toBe(429);
     expect(state.body).toMatchObject({ error: "rate_limit_exceeded" });
     expect(headers.get("Retry-After")).toBe("48");
+  });
+});
+
+describe("the website lane is metered, not exempt", () => {
+  const browserish = () => request({ host: "regactions.com", "sec-fetch-site": "same-origin" });
+
+  it("serves an unregistered same-origin request but counts it", async () => {
+    process.env.API_USAGE_HASH_SALT = "test-salt";
+    const sql = sqlClient(3, 40);
+    const { res, headers } = response();
+    const access = await authoriseDeveloperApiRequest(browserish(), res, "/api/test", { sql });
+    expect(access).toMatchObject({ mode: "anonymous" });
+    expect(headers.get("RateLimit-Limit")).toBe(String(ANONYMOUS_MINUTE_LIMIT));
+    expect(headers.get("RateLimit-Remaining")).toBe(String(ANONYMOUS_MINUTE_LIMIT - 3));
+    // The spoofable header used to buy an unlimited exemption. It now buys the
+    // browsing allowance, and the request is recorded like any other.
+    const queries = (sql as unknown as { mock: { calls: string[][] } }).mock.calls.map((call) => call[0]);
+    expect(queries.some((q) => q.includes("developer_api_anonymous_buckets"))).toBe(true);
+    expect(queries.some((q) => q.includes("developer_api_usage_events"))).toBe(true);
+  });
+
+  it("refuses the same-origin lane past its allowance", async () => {
+    process.env.API_USAGE_HASH_SALT = "test-salt";
+    const { res, state, headers } = response();
+    const access = await authoriseDeveloperApiRequest(
+      browserish(), res, "/api/test", { sql: sqlClient(ANONYMOUS_MINUTE_LIMIT + 1, 5) },
+    );
+    expect(access).toBeNull();
+    expect(state.status).toBe(429);
+    expect(state.body).toMatchObject({ error: "rate_limit_exceeded" });
+    expect(headers.get("Retry-After")).toBeTruthy();
+  });
+
+  it("keeps serving, uncounted, when the metering store or its salt is missing", async () => {
+    // A misconfigured or unreachable counter is a deployment problem. Refusing
+    // here would fail every page on the site, which is worse than the metering
+    // gap it would be protecting.
+    delete process.env.API_USAGE_HASH_SALT;
+    const { res, state } = response();
+    const access = await authoriseDeveloperApiRequest(browserish(), res, "/api/test", { sql: sqlClient() });
+    expect(access).toMatchObject({ mode: "anonymous" });
+    expect(state.status).toBeUndefined();
+
+    process.env.API_USAGE_HASH_SALT = "test-salt";
+    const broken = (() => { throw new Error("counter unavailable"); }) as unknown as SqlClient;
+    const second = response();
+    const stillServed = await authoriseDeveloperApiRequest(browserish(), second.res, "/api/test", { sql: broken });
+    expect(stillServed).toMatchObject({ mode: "anonymous" });
+  });
+
+  it("still prefers a supplied key over the anonymous lane", async () => {
+    process.env.API_USAGE_HASH_SALT = "test-salt";
+    const { res } = response();
+    const access = await authoriseDeveloperApiRequest(
+      request({ host: "regactions.com", "sec-fetch-site": "same-origin", "x-api-key": "ra_live_example" }),
+      res, "/api/test", { sql: sqlClient(2, 9) },
+    );
+    expect(access).toMatchObject({ mode: "registered", apiKeyId: 7 });
   });
 });
