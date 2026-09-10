@@ -102,4 +102,74 @@ describe("country-risk source health", () => {
     expect(report.status).toBe("critical");
     expect(report.issues[0]).toMatchObject({ code: "database-unavailable" });
   });
+
+  it("warns immediately when a FATF attempt is unavailable but retained evidence is current", () => {
+    const runs = healthyRuns();
+    runs.push({
+      source_id: "fatf-lists",
+      status: "failed",
+      retrieved_at: "2026-07-17T10:00:00.000Z",
+      sha256: null,
+      parser_version: "fatf-list-assurance/1.0",
+      record_count: 0,
+      error_message: "protected page unavailable",
+      metadata: { outcome: "unavailable", retainedEvidence: true },
+    });
+
+    const report = assessCountryRiskSourceHealth({ asOf, declaredSources, operationalRuns: runs });
+    expect(report.status).toBe("warning");
+    expect(report.readyForScoring).toBe(true);
+    expect(report.issues).toEqual([
+      expect.objectContaining({
+        sourceId: "fatf-lists",
+        severity: "warning",
+        code: "operational-run-unavailable",
+      }),
+    ]);
+  });
+
+  it("turns retained FATF evidence critical when the last success exceeds 14 days", () => {
+    const runs = healthyRuns();
+    const fatfSuccess = runs.find((run) => run.source_id === "fatf-lists")!;
+    fatfSuccess.retrieved_at = "2026-07-01T08:00:00.000Z";
+    runs.push({
+      source_id: "fatf-lists",
+      status: "failed",
+      retrieved_at: "2026-07-17T10:00:00.000Z",
+      sha256: null,
+      parser_version: "fatf-list-assurance/1.0",
+      record_count: 0,
+      metadata: { outcome: "unavailable", retainedEvidence: true },
+    });
+
+    const report = assessCountryRiskSourceHealth({ asOf, declaredSources, operationalRuns: runs });
+    expect(report.status).toBe("critical");
+    expect(report.readyForScoring).toBe(false);
+    expect(report.issues).toEqual(expect.arrayContaining([
+      expect.objectContaining({ code: "operational-run-unavailable", severity: "warning" }),
+      expect.objectContaining({ code: "operational-run-stale", severity: "critical" }),
+    ]));
+  });
+
+  it("treats FATF list drift as review-required rather than source unavailability", () => {
+    const runs = healthyRuns();
+    runs.push({
+      source_id: "fatf-lists",
+      status: "review_required",
+      retrieved_at: "2026-07-17T10:00:00.000Z",
+      sha256: "live-fatf-hash",
+      parser_version: "fatf-list-assurance/1.0",
+      record_count: 25,
+      metadata: { outcome: "drift", retainedEvidence: false },
+    });
+
+    const report = assessCountryRiskSourceHealth({ asOf, declaredSources, operationalRuns: runs });
+    expect(report.status).toBe("critical");
+    expect(report.readyForScoring).toBe(false);
+    expect(report.issues).toContainEqual(expect.objectContaining({
+      sourceId: "fatf-lists",
+      code: "operational-run-review-required",
+    }));
+    expect(report.issues.some((issue) => issue.code === "operational-run-unavailable")).toBe(false);
+  });
 });

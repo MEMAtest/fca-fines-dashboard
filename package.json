@@ -43,6 +43,7 @@
     "country-risk:ingest-fatf": "node --import tsx/esm scripts/country-risk/ingest-fatf-assessments.ts",
     "country-risk:ingest-cpi": "node --import tsx/esm scripts/ingest-cpi.ts",
     "country-risk:verify-fatf": "node --import tsx/esm scripts/verify-fatf-status.ts",
+    "country-risk:persist-fatf-attempt": "node --import tsx/esm scripts/country-risk/persist-fatf-list-attempt.ts",
     "country-risk:check-sanctions": "node --import tsx/esm scripts/country-risk/check-sanctions-sources.ts",
     "country-risk:persist-sanctions-source-run": "node --import tsx/esm scripts/country-risk/persist-sanctions-source-run.ts",
     "country-risk:sanctions-census": "node --import tsx/esm scripts/country-risk/generate-sanctions-census.ts",
