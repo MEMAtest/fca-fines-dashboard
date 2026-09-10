@@ -42,9 +42,18 @@ const BUDGETS: Array<[route: string, kb: number]> = [
 const LIVE_BASE_URL = process.env.PLAYWRIGHT_BASE_URL;
 const IS_LIVE = Boolean(LIVE_BASE_URL && !/127\.0\.0\.1|localhost/.test(LIVE_BASE_URL));
 
+// This gate waits up to 45s for an <h1>, then for networkidle, then a further
+// 2.5s, and reads the body of every JavaScript response to weigh it. All of
+// that sat inside Playwright's 30s default, so it could never survive a slow
+// fetch: it failed with "Target page has been closed" mid-wait, which reads
+// like a broken page rather than an exhausted budget. Its sibling
+// page-integrity already retries; this had neither its own budget nor a retry.
+test.describe.configure({ retries: 2 });
+
 for (const [route, budgetKb] of BUDGETS) {
   test(`${route} stays under ${budgetKb} KB of JavaScript`, async ({ page }) => {
     test.skip(!IS_LIVE, "Needs the live site. Run with PLAYWRIGHT_BASE_URL=https://regactions.com");
+    test.setTimeout(90_000);
 
     const files: Array<[string, number]> = [];
     page.on("response", async (response) => {
