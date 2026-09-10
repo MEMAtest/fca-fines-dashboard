@@ -6,15 +6,25 @@ export const DEFAULT_API_MINUTE_LIMIT = 60;
 export const DEFAULT_API_DAILY_LIMIT = 10_000;
 
 /**
- * What the website's own pages need, and no more.
+ * Headroom for a whole network, not for one reader.
  *
- * A country report issues a handful of calls; the explorer pages a few more.
- * These are generous for a person browsing and mean nothing to a bulk reader,
- * which is the point: the anonymous lane must serve the site without being a
- * free replacement for registration.
+ * These count per pseudonymised network, so everyone behind one address shares
+ * them: an office, a university or a mobile carrier is a single bucket. The
+ * first attempt at this used 30 a minute, which is generous for one person and
+ * hopeless for a shared address, and it failed 28 of the production gates from
+ * a single CI runner within minutes of going live. Anything that can break a
+ * monitoring run from one IP will break a customer behind NAT.
+ *
+ * The burst limit is the control that matters: it stops sustained automated
+ * hammering. The daily figure is deliberately high, because exhausting it locks
+ * out an entire network for the rest of the day, which is a far worse failure
+ * than the metering gap it would be closing.
+ *
+ * Note these are not comparable to the registered limits. Those are per key,
+ * for one integration; these are per network, for everyone sharing an address.
  */
-export const ANONYMOUS_MINUTE_LIMIT = 30;
-export const ANONYMOUS_DAILY_LIMIT = 1_000;
+export const ANONYMOUS_MINUTE_LIMIT = 240;
+export const ANONYMOUS_DAILY_LIMIT = 20_000;
 
 export interface DeveloperApiAccess {
   mode: "first-party" | "anonymous" | "registered";

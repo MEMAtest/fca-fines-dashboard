@@ -219,7 +219,7 @@ export function Developers() {
             <span className="developers-section__eyebrow">Usage and limits</span>
             <h2>Identifiable, measurable access</h2>
             <p>Every accepted external request is associated with the issued key and organisation. RegActions records the endpoint, request time, outcome and a pseudonymised network fingerprint. Response contents are not written to the usage log.</p>
-            <p>The standard allowance is <strong>60 requests per minute</strong> and <strong>10,000 requests per day</strong> per key. Approved limits can be adjusted for a specific integration. Requests made by the RegActions website itself are served without a key under a much smaller browsing allowance, so programmatic use needs a key well before it becomes useful.</p>
+            <p>The standard allowance is <strong>60 requests per minute</strong> and <strong>10,000 requests per day</strong> per key. Approved limits can be adjusted for a specific integration. Requests made by the RegActions website itself are served without a key under a shared browsing allowance, counted per network rather than per organisation, so sustained programmatic use needs a key.</p>
           </div>
           <div className="developers-attribution">
             <ShieldCheck aria-hidden="true" />
