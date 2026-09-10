@@ -6,34 +6,25 @@ export const DEFAULT_API_MINUTE_LIMIT = 60;
 export const DEFAULT_API_DAILY_LIMIT = 10_000;
 
 /**
- * Headroom for a whole network, not for one reader.
+ * The website's own lane is served without touching the database.
  *
- * These count per pseudonymised network, so everyone behind one address shares
- * them: an office, a university or a mobile carrier is a single bucket. The
- * first attempt at this used 30 a minute, which is generous for one person and
- * hopeless for a shared address, and it failed 28 of the production gates from
- * a single CI runner within minutes of going live. Anything that can break a
- * monitoring run from one IP will break a customer behind NAT.
+ * It was briefly metered per network, and that was a mistake on this path. The
+ * site fans out several API calls per page, /fines alone issues six paged
+ * searches, and adding a counter upsert plus an audit insert to each one
+ * exhausted the connection pool under ordinary parallel load: eight concurrent
+ * page loads produced eleven HTTP 500s from /api/unified/search. Metering the
+ * hot path cost more than the control was worth, and the control was only ever
+ * a backstop, because the same-origin signals it keys off are set by the caller
+ * and cannot authenticate anything.
  *
- * Set as a backstop against egregious hammering rather than as a meaningful
- * cap, after two attempts to tune it lower failed. 30 a minute broke 28
- * production gates from one CI runner; 240 still broke 24, because a full
- * monitoring pass is dozens of pages making several calls each in a burst. A
- * legitimate shared network is not distinguishable from abuse by volume alone,
- * so a limit tight enough to constrain a scraper is also tight enough to lock
- * out an office.
- *
- * The valuable half of this lane is the usage record, not the ceiling: every
- * anonymous request is logged with its route, time, outcome and pseudonymised
- * network, which is what makes abuse visible and attributable. The ceiling only
- * has to stop someone holding the API open at ten requests a second.
- *
- * Note these are not comparable to the registered limits. Those are per key,
- * for one integration; these are per network, for everyone sharing an address.
+ * What remains is the part that always did the work: any request without the
+ * shape of a same-origin browser call needs a registered key, and registered
+ * traffic is metered and attributed per key. The gap this leaves is a caller
+ * who imitates the website, reading data that is public and already rendered on
+ * the page. Closing that properly means sampling the usage log rather than
+ * writing on every request, which is a change to make deliberately and measure,
+ * not one to leave running while it returns 500s.
  */
-export const ANONYMOUS_MINUTE_LIMIT = 1_200;
-export const ANONYMOUS_DAILY_LIMIT = 100_000;
-
 export interface DeveloperApiAccess {
   mode: "first-party" | "anonymous" | "registered";
   apiKeyId?: number;
@@ -127,91 +118,6 @@ function registrationRequired(res: VercelResponse, code: string, message: string
   });
 }
 
-/**
- * The website's own lane: served without a key, but counted.
- *
- * Everything here is best-effort. The data behind these routes is public and
- * already rendered on the page, so the goal is metering and attribution, not
- * confidentiality, and no failure in the metering path may take the website
- * down with it. A missing salt, an unreachable counter or an unwritable audit
- * row all serve the request uncounted. Registered keys are the opposite: an
- * invalid or over-limit key is never waved through.
- */
-async function authoriseAnonymousRequest(
-  req: VercelRequest,
-  res: VercelResponse,
-  route: string,
-  resolveSql: () => SqlClient,
-  now: Date,
-): Promise<DeveloperApiAccess | null> {
-  const fingerprint = developerApiNetworkFingerprint(req);
-  if (!fingerprint) {
-    // Only reachable when API_USAGE_HASH_SALT is unset, which is a deployment
-    // misconfiguration rather than a caller problem. Refusing here would fail
-    // every page on the site, so it is logged and served.
-    console.warn("developer-api: API_USAGE_HASH_SALT is not set; the website lane is unmetered");
-    return { mode: "anonymous" };
-  }
-
-  let rows: Array<Record<string, unknown>>;
-  let sql: SqlClient;
-  try {
-    sql = resolveSql();
-    rows = await sql(
-    `WITH increments AS (
-       INSERT INTO developer_api_anonymous_buckets (network_fingerprint, window_kind, window_start, request_count)
-       VALUES
-         ($1, 'minute', date_trunc('minute', $2::timestamptz), 1),
-         ($1, 'day', date_trunc('day', $2::timestamptz), 1)
-       ON CONFLICT (network_fingerprint, window_kind, window_start)
-       DO UPDATE SET request_count = developer_api_anonymous_buckets.request_count + 1
-       RETURNING window_kind, request_count
-     )
-     SELECT
-       MAX(CASE WHEN window_kind = 'minute' THEN request_count END) AS minute_count,
-       MAX(CASE WHEN window_kind = 'day' THEN request_count END) AS day_count
-     FROM increments`,
-    [fingerprint, now.toISOString()],
-    );
-  } catch {
-    // Metering is best-effort for this lane and the data behind it is public
-    // and already on the page. Failing closed here would take the website down
-    // with the metering store, so an unreachable counter serves the request
-    // uncounted rather than refusing it. Registered keys still fail closed: an
-    // invalid or over-limit key is never waved through on a database error.
-    return { mode: "anonymous" };
-  }
-  const minuteCount = Number(rows[0]?.minute_count ?? 1);
-  const dayCount = Number(rows[0]?.day_count ?? 1);
-  const minuteRemaining = Math.max(0, ANONYMOUS_MINUTE_LIMIT - minuteCount);
-  const dailyRemaining = Math.max(0, ANONYMOUS_DAILY_LIMIT - dayCount);
-  const resetSeconds = Math.max(1, 60 - now.getUTCSeconds());
-  res.setHeader("RateLimit-Limit", String(ANONYMOUS_MINUTE_LIMIT));
-  res.setHeader("RateLimit-Remaining", String(minuteRemaining));
-  res.setHeader("RateLimit-Reset", String(resetSeconds));
-  res.setHeader("X-RateLimit-Daily-Limit", String(ANONYMOUS_DAILY_LIMIT));
-  res.setHeader("X-RateLimit-Daily-Remaining", String(dailyRemaining));
-
-  if (minuteCount > ANONYMOUS_MINUTE_LIMIT || dayCount > ANONYMOUS_DAILY_LIMIT) {
-    await logUsage(sql, req, route, "rate_limited");
-    res.setHeader("Retry-After", String(minuteCount > ANONYMOUS_MINUTE_LIMIT ? resetSeconds : 86_400));
-    res.setHeader("Cache-Control", "no-store");
-    res.status(429).json({
-      error: "rate_limit_exceeded",
-      message: "This request exceeded the unregistered browsing allowance. Register for an API key for programmatic access.",
-      registrationUrl: "https://regactions.com/developers#access",
-    });
-    return null;
-  }
-
-  try {
-    await logUsage(sql, req, route, "anonymous");
-  } catch {
-    // Same reasoning: an unwritable audit row must not fail a public page load.
-  }
-  return { mode: "anonymous", minuteRemaining, dailyRemaining };
-}
-
 export async function authoriseDeveloperApiRequest(
   req: VercelRequest,
   res: VercelResponse,
@@ -219,12 +125,12 @@ export async function authoriseDeveloperApiRequest(
   options: AccessOptions = {},
 ): Promise<DeveloperApiAccess | null> {
   const now = options.now ?? new Date();
-  // Resolved only once a database is actually needed: an unregistered request
-  // with no key is refused without opening a connection.
+  // Resolved only once a database is actually needed: neither an unregistered
+  // request nor a website request opens a connection.
   const resolveSql = () => options.sql ?? getSqlClient();
   const apiKeyPresent = readDeveloperApiKey(req);
   if (!apiKeyPresent && looksLikeFirstPartyBrowserRequest(req)) {
-    return authoriseAnonymousRequest(req, res, route, resolveSql, now);
+    return { mode: "anonymous" };
   }
 
   const apiKey = readDeveloperApiKey(req);
