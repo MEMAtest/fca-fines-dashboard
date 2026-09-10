@@ -15,16 +15,24 @@ export const DEFAULT_API_DAILY_LIMIT = 10_000;
  * a single CI runner within minutes of going live. Anything that can break a
  * monitoring run from one IP will break a customer behind NAT.
  *
- * The burst limit is the control that matters: it stops sustained automated
- * hammering. The daily figure is deliberately high, because exhausting it locks
- * out an entire network for the rest of the day, which is a far worse failure
- * than the metering gap it would be closing.
+ * Set as a backstop against egregious hammering rather than as a meaningful
+ * cap, after two attempts to tune it lower failed. 30 a minute broke 28
+ * production gates from one CI runner; 240 still broke 24, because a full
+ * monitoring pass is dozens of pages making several calls each in a burst. A
+ * legitimate shared network is not distinguishable from abuse by volume alone,
+ * so a limit tight enough to constrain a scraper is also tight enough to lock
+ * out an office.
+ *
+ * The valuable half of this lane is the usage record, not the ceiling: every
+ * anonymous request is logged with its route, time, outcome and pseudonymised
+ * network, which is what makes abuse visible and attributable. The ceiling only
+ * has to stop someone holding the API open at ten requests a second.
  *
  * Note these are not comparable to the registered limits. Those are per key,
  * for one integration; these are per network, for everyone sharing an address.
  */
-export const ANONYMOUS_MINUTE_LIMIT = 240;
-export const ANONYMOUS_DAILY_LIMIT = 20_000;
+export const ANONYMOUS_MINUTE_LIMIT = 1_200;
+export const ANONYMOUS_DAILY_LIMIT = 100_000;
 
 export interface DeveloperApiAccess {
   mode: "first-party" | "anonymous" | "registered";
