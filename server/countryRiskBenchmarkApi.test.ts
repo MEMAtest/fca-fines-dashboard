@@ -1,5 +1,6 @@
 import { describe, expect, it, vi } from "vitest";
 import handler from "../api/country-risk/benchmark.js";
+import { allowWebsiteDataRequest } from "./services/developerApiAccess.js";
 
 function responseDouble() {
   const response = {
@@ -17,7 +18,9 @@ function responseDouble() {
 describe("country-risk public benchmark API", () => {
   it("publishes the 30-country directional comparison and its limitations", async () => {
     const response = responseDouble();
-    await handler({ method: "GET", headers: { host: "regactions.com", "sec-fetch-site": "same-origin" } } as never, response as never);
+    const request = { method: "GET", headers: { host: "regactions.com", "sec-fetch-site": "same-origin" } } as never;
+    allowWebsiteDataRequest(request);
+    await handler(request, response as never);
     const payload = response.payload as {
       limitations: string[];
       report: { sampleSize: number; regActionsCoverage: number; changedSinceObservation: unknown[] };

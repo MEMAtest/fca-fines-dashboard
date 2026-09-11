@@ -9,7 +9,7 @@ import { test, expect } from '@playwright/test';
  * and reported a rendering failure rather than the data failure that happened.
  */
 test('the regulator workspace keeps its identity when the data fails', async ({ page }) => {
-  await page.route('**/api/unified/search**', (route) => route.abort());
+  await page.route('**/api/site/unified/search**', (route) => route.abort());
 
   await page.goto('/regulators/fca');
 

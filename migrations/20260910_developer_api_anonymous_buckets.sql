@@ -1,19 +1,14 @@
--- Metering for the website's own unauthenticated API traffic.
+-- Reserved storage for a future durable public-site browsing throttle.
 --
--- The first-party lane was decided solely by request headers, and one of them,
--- Sec-Fetch-Site, is set by the caller. Any client could therefore skip
--- registration, rate limiting and usage accounting entirely:
+-- The public website and registered developer API are now separate route
+-- families. Browser headers are caller-controlled and therefore never unlock
+-- an endpoint in the published developer reference. Those endpoints require a
+-- registered key and use developer_api_rate_buckets above.
 --
---   curl https://regactions.com/api/country-risk/list                        -> 401
---   curl -H "Sec-Fetch-Site: same-origin" https://regactions.com/api/...     -> 200
---
--- No header check can fix that, because every header a browser sends a script
--- can send too. What can be fixed is the consequence: the website lane is now a
--- metered anonymous tier rather than an unlimited exemption, counted per
--- pseudonymised network the same way a registered key is counted per key. A
--- caller impersonating the site gets the browsing allowance, not the run of the
--- API, and registration becomes what it should always have been: higher limits
--- and attribution.
+-- Public webpage data is deliberately not represented as authenticated or
+-- per-client metered. This table remains available if a durable public-site
+-- abuse throttle is introduced later; it is not an authentication control and
+-- is not currently used by the registered API access service.
 --
 -- Separate from developer_api_rate_buckets because that table's primary key is
 -- an api_key_id foreign key, and anonymous traffic has no key to reference.

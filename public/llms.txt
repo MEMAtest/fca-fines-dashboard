@@ -27,6 +27,8 @@
 
 ## API endpoints (registration and RegActions-issued key required)
 
+The standard tier is free for approved organisations for six months. Every endpoint listed below requires the issued key. Data visible on public web pages is a separate browsing service, not anonymous developer API access.
+
 - Country risk list: https://regactions.com/api/country-risk/list
 - Country risk detail (by ISO 3166-1 alpha-2): https://regactions.com/api/country-risk/{iso2} (e.g. .../api/country-risk/GB)
 - Enforcement search: https://regactions.com/api/unified/search?q={query}

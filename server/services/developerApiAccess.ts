@@ -6,27 +6,13 @@ export const DEFAULT_API_MINUTE_LIMIT = 60;
 export const DEFAULT_API_DAILY_LIMIT = 10_000;
 
 /**
- * The website's own lane is served without touching the database.
- *
- * It was briefly metered per network, and that was a mistake on this path. The
- * site fans out several API calls per page, /fines alone issues six paged
- * searches, and adding a counter upsert plus an audit insert to each one
- * exhausted the connection pool under ordinary parallel load: eight concurrent
- * page loads produced eleven HTTP 500s from /api/unified/search. Metering the
- * hot path cost more than the control was worth, and the control was only ever
- * a backstop, because the same-origin signals it keys off are set by the caller
- * and cannot authenticate anything.
- *
- * What remains is the part that always did the work: any request without the
- * shape of a same-origin browser call needs a registered key, and registered
- * traffic is metered and attributed per key. The gap this leaves is a caller
- * who imitates the website, reading data that is public and already rendered on
- * the page. Closing that properly means sampling the usage log rather than
- * writing on every request, which is a change to make deliberately and measure,
- * not one to leave running while it returns 500s.
+ * Public website calls and the registered integration API intentionally use
+ * different route families. Only thin handlers under /api/site may opt into
+ * the database-free website lane. The documented integration routes never
+ * trust request headers as authentication: every external request needs a key.
  */
 export interface DeveloperApiAccess {
-  mode: "first-party" | "anonymous" | "registered";
+  mode: "public-site" | "registered";
   apiKeyId?: number;
   clientId?: number;
   minuteRemaining?: number;
@@ -36,6 +22,18 @@ export interface DeveloperApiAccess {
 interface AccessOptions {
   sql?: SqlClient;
   now?: Date;
+}
+
+const WEBSITE_ROUTE = Symbol.for("regactions.developer-api.website-route");
+type WebsiteRequest = VercelRequest & { [WEBSITE_ROUTE]?: true };
+
+/** Mark a request inside a dedicated /api/site wrapper before delegating. */
+export function allowWebsiteDataRequest(req: VercelRequest): void {
+  (req as WebsiteRequest)[WEBSITE_ROUTE] = true;
+}
+
+function isWebsiteDataRequest(req: VercelRequest): boolean {
+  return (req as WebsiteRequest)[WEBSITE_ROUTE] === true;
 }
 
 function firstHeader(value: string | string[] | undefined): string {
@@ -59,9 +57,9 @@ export function readDeveloperApiKey(req: VercelRequest): string | null {
  * Whether the request carries the shape a same-origin browser call has.
  *
  * Deliberately not named "isFirstParty": every header here is set by the
- * caller, so this cannot authenticate anything. It is a cheap filter that keeps
- * unrelated traffic out of the anonymous lane, and the lane it admits to is
- * metered rather than trusted.
+ * caller, so this cannot authenticate anything. It is only a secondary check
+ * on the explicitly marked public-website route family, never an API-key
+ * substitute on the documented integration routes.
  */
 export function looksLikeFirstPartyBrowserRequest(req: VercelRequest): boolean {
   const headers = req.headers ?? {};
@@ -88,7 +86,7 @@ async function logUsage(
   sql: SqlClient,
   req: VercelRequest,
   route: string,
-  outcome: "allowed" | "anonymous" | "rate_limited" | "invalid_key" | "expired_key" | "suspended_client",
+  outcome: "allowed" | "rate_limited" | "invalid_key" | "expired_key" | "suspended_client",
   identifiers: { apiKeyId?: number; clientId?: number; keyPrefix?: string } = {},
 ) {
   await sql(
@@ -129,8 +127,8 @@ export async function authoriseDeveloperApiRequest(
   // request nor a website request opens a connection.
   const resolveSql = () => options.sql ?? getSqlClient();
   const apiKeyPresent = readDeveloperApiKey(req);
-  if (!apiKeyPresent && looksLikeFirstPartyBrowserRequest(req)) {
-    return { mode: "anonymous" };
+  if (!apiKeyPresent && isWebsiteDataRequest(req) && looksLikeFirstPartyBrowserRequest(req)) {
+    return { mode: "public-site" };
   }
 
   const apiKey = readDeveloperApiKey(req);
@@ -219,7 +217,7 @@ export async function authoriseDeveloperApiRequest(
   return { mode: "registered", apiKeyId, clientId, minuteRemaining, dailyRemaining };
 }
 
-export function setDeveloperApiCache(res: VercelResponse, access: DeveloperApiAccess) {
+export function setDeveloperApiCache(res: VercelResponse, _access: DeveloperApiAccess) {
   // Never place a first-party response in a shared cache: a cached website
   // response must not become an unauthenticated external API response.
   res.setHeader("Cache-Control", "private, no-store");

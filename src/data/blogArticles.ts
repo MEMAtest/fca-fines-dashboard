@@ -237,7 +237,7 @@ Each figure in this study was retrieved from the following endpoints on 17 July 
 | [/api/fca-fines/trends](https://regactions.com/api/fca-fines/trends) | Month-level FCA series used for the H1 2026 vs H1 2025 comparison. |
 | [/api/country-risk/list](https://regactions.com/api/country-risk/list) | Band distribution, scored-jurisdiction count, FATF list status. |
 
-Explore the data yourself through the [free RegActions APIs](https://regactions.com/developers), the [country risk hub](https://regactions.com/countries), or the [regulator data hub](https://regactions.com/regulators).
+Explore the data yourself through the [free registered RegActions API](https://regactions.com/developers), the [country risk hub](https://regactions.com/countries), or the [regulator data hub](https://regactions.com/regulators).
     `,
     category: "Data Studies",
     readTime: "8 min read",

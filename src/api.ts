@@ -282,7 +282,7 @@ export function fetchUnifiedSearch(params: UnifiedSearchParams = {}) {
 
   const queryString = queryParams.toString();
   return fetchJSON<UnifiedSearchResponse>(
-    `/api/unified/search${queryString ? `?${queryString}` : ""}`,
+    `/api/site/unified/search${queryString ? `?${queryString}` : ""}`,
   );
 }
 

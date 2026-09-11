@@ -1,12 +1,14 @@
 import { describe, expect, it } from "vitest";
 import type { VercelRequest, VercelResponse } from "@vercel/node";
 import evidenceHandler from "../api/country-risk/evidence/[iso2].js";
+import { allowWebsiteDataRequest } from "./services/developerApiAccess.js";
 
 async function invoke(query: Record<string, string>) {
   let code = 200;
   let payload: unknown;
   const headers: Record<string, string> = {};
   const req = { method: "GET", query, headers: { host: "regactions.com", "sec-fetch-site": "same-origin" } } as unknown as VercelRequest;
+  allowWebsiteDataRequest(req);
   const res = {
     setHeader(name: string, value: string) { headers[name] = value; },
     status(value: number) { code = value; return this; },

@@ -3,6 +3,7 @@ import type { VercelRequest, VercelResponse } from "@vercel/node";
 import countryHandler from "../api/country-risk/[iso2].js";
 import listHandler from "../api/country-risk/list.js";
 import sourcesHandler from "../api/country-risk/sources/status.js";
+import { allowWebsiteDataRequest } from "./services/developerApiAccess.js";
 
 vi.mock("./db.js", () => ({
   getSqlClient: () => {
@@ -14,6 +15,7 @@ async function invoke(handler: (req: VercelRequest, res: VercelResponse) => unkn
   let code = 200;
   let payload: unknown;
   const req = { method: "GET", query, headers: { host: "regactions.com", "sec-fetch-site": "same-origin" } } as unknown as VercelRequest;
+  allowWebsiteDataRequest(req);
   const res = {
     setHeader: () => undefined,
     status(value: number) { code = value; return this; },

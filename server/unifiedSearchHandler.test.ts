@@ -9,7 +9,7 @@ vi.mock("./db.js", () => ({
   resolveConnectionString: () => "postgres://test.invalid/regactions",
 }));
 
-import handler from "../api/unified/search.js";
+import handler from "../api/site/unified/search.js";
 
 function response() {
   const res: any = {
