@@ -1031,7 +1031,8 @@ export function CountryHub() {
               {regulatorySignal.authorityEvidenceNote && <p className="cx-regsignal__note">{regulatorySignal.authorityEvidenceNote}{regulatorySignal.externalAuthorityEvidenceUrl && <> <a href={regulatorySignal.externalAuthorityEvidenceUrl} target="_blank" rel="noopener noreferrer">Review external evidence <ExternalLink size={10} /></a></>}</p>}
               <p className="cx-card__note">
                 Route-by-route provenance — directory evidence, publication candidates, scan dates and
-                qualification state — is in the PDF, CSV and JSON above.
+                qualification state — is available as PDF, CSV and JSON through the{" "}
+                <Link to="/developers#access">registered API</Link>.
               </p>
             </section>
           )}
