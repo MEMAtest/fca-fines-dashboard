@@ -291,3 +291,54 @@ describe("FCA enforcement scraper", () => {
     ]);
   });
 });
+
+describe("FCA enforcement scraper — round-up and label rejection", () => {
+  // Regression: a round-up press release with an aggregate figure and no
+  // per-firm final-notice link fell through to returning the whole headline as
+  // the firm ("FCA cracks down on illegal promotions and market abuse in first
+  // year of new strategy") carrying the aggregate £1.77m. It appeared 3x in the
+  // 2026 FCA fines, inflating the published total. These must yield no row.
+  const roundup = (title: string, amountText: string) =>
+    parseFcaPressReleaseDetail(
+      `<main><h1>${title}</h1><p>${title}. ${amountText}</p></main>`,
+      { title, type: "Press Releases", dateIssued: "2026-07-09", description: title,
+        url: "https://www.fca.org.uk/news/press-releases/some-roundup" },
+    );
+
+  it("drops a round-up headline carrying an aggregate figure", () => {
+    expect(roundup(
+      "FCA cracks down on illegal promotions and market abuse in first year of new strategy",
+      "The FCA imposed fines totalling £1.77 million across multiple cases.",
+    )).toBeNull();
+  });
+
+  it("drops 'FCA publishes decisions' aggregate headlines", () => {
+    expect(roundup(
+      "FCA publishes decisions against three bond traders",
+      "The FCA fined the traders a total of £395,000.",
+    )).toBeNull();
+  });
+
+  it("drops a bare 'Notice of Decision' label as a firm", () => {
+    expect(parseFcaFinalNoticeResult({
+      title: "Notice of Decision 2026",
+      type: "Final Notices",
+      dateIssued: "2026-07-23",
+      description: "Notice of Decision.",
+      url: "https://www.fca.org.uk/publication/decision-notices/notice-of-decision-2026.pdf",
+    })).toBeNull();
+  });
+
+  it("still keeps a genuine single-firm fine press release (guard does not over-reject)", () => {
+    const record = parseFcaPressReleaseDetail(
+      `<main><h1>FCA fines Example Bank £2.5m for financial crime failings</h1>
+       <p>The FCA has fined Example Bank £2.5 million for financial crime and AML control failings.</p>
+       <a href="/publication/final-notices/example-bank-2026.pdf">Final Notice</a></main>`,
+      { title: "FCA fines Example Bank £2.5m for financial crime failings",
+        type: "Press Releases", dateIssued: "2026-04-20", description: "The FCA has fined Example Bank.",
+        url: "https://www.fca.org.uk/news/press-releases/fca-fines-example-bank" },
+    );
+    expect(record?.firmIndividual).toBe("Example Bank");
+    expect(record?.amount).toBe(2500000);
+  });
+});
