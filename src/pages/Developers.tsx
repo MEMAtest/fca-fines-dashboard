@@ -102,7 +102,7 @@ export function Developers() {
       <main className="developers-docs__main">
         <section className="developers-hero" id="overview">
           <div className="developers-hero__copy">
-            <span className="developers-hero__eyebrow">Developer platform</span>
+            <span className="developers-hero__eyebrow">Free registered access</span>
             <h1>RegActions Data API</h1>
             <p>
               Use explainable country-risk evidence and official-source
@@ -134,7 +134,7 @@ export function Developers() {
           <div className="developers-section__heading">
             <span>Overview</span>
             <h2>Built for cited, explainable use</h2>
-            <p>External API access is registered to an approved organisation and authenticated with a RegActions-issued key. Responses remain read-only and retain source provenance.</p>
+            <p>The standard API tier is free for approved organisations for six months. Every endpoint in this developer reference requires a RegActions-issued key; responses remain read-only and retain source provenance.</p>
           </div>
           <div className="developers-facts" aria-label="API characteristics">
             <article><Globe2 aria-hidden="true" /><strong>214 jurisdictions</strong><span>Country and territory coverage</span></article>
@@ -148,7 +148,7 @@ export function Developers() {
           <div className="developers-section__heading">
             <span>Quickstart</span>
             <h2>Register once, then use the full API</h2>
-            <p>Keys are issued after RegActions reviews the organisation, intended use and expected request volume. Keep the key on your server, not in browser JavaScript.</p>
+            <p>Keys are issued after RegActions reviews the organisation, intended use and expected request volume. Data visible through the public website is a separate browsing service and does not make the developer endpoints below anonymous. Keep the key on your server, not in browser JavaScript.</p>
           </div>
           <div className="developers-quickstart">
             <ol>
@@ -196,14 +196,14 @@ export function Developers() {
           <div className="developers-section__heading">
             <span>Register for access</span>
             <h2>Tell RegActions who will use the API</h2>
-            <p>Submitting this form creates a pending application. It does not automatically issue a key. RegActions reviews the intended use, term and appropriate limits first.</p>
+            <p>Submitting this form creates a pending application for the free six-month tier. It does not automatically issue a key. RegActions reviews the intended use and appropriate limits first.</p>
           </div>
           <form className="developers-application" onSubmit={submitApplication}>
             <label><span>Organisation</span><input name="organisationName" required maxLength={200} autoComplete="organization" /></label>
             <label><span>Responsible contact</span><input name="contactName" required maxLength={120} autoComplete="name" /></label>
             <label><span>Work email</span><input name="contactEmail" type="email" required maxLength={254} autoComplete="email" /></label>
             <label><span>Expected requests per day</span><input name="expectedDailyRequests" type="number" min="1" max="10000000" defaultValue="100" required /></label>
-            <label><span>Requested access term</span><select name="requestedTermMonths" defaultValue="6"><option value="3">3 months</option><option value="6">6 months</option><option value="12">12 months</option></select></label>
+            <label><span>Access term</span><input value="6 months" readOnly aria-readonly="true" /><input name="requestedTermMonths" type="hidden" value="6" /></label>
             <label className="developers-application__wide"><span>How will the data be used?</span><textarea name="intendedUse" required minLength={20} maxLength={2000} rows={5} placeholder="Describe the system, users, client-facing outputs and whether responses will be stored." /></label>
             <label className="developers-application__honeypot" aria-hidden="true"><span>Website</span><input name="website" tabIndex={-1} autoComplete="off" /></label>
             <label className="developers-application__consent developers-application__wide"><input name="termsAccepted" type="checkbox" required /><span>I confirm that the information is accurate and understand that access is subject to RegActions’ written approval and API terms.</span></label>

@@ -213,7 +213,7 @@ export function CountryHub() {
       return;
     }
     const controller = new AbortController();
-    fetch(`/api/country-risk/${country.iso2}?methodology=v3`, { signal: controller.signal })
+    fetch(`/api/site/country-risk/${country.iso2}?methodology=v3`, { signal: controller.signal })
       .then((response) => response.ok ? response.json() : Promise.reject(new Error(`HTTP ${response.status}`)))
       .then((payload: { history?: Array<{ completed_at?: string; score?: string | number; arithmetic?: string }> }) => {
         const history = (payload.history ?? [])
@@ -676,15 +676,9 @@ export function CountryHub() {
           wraps. */}
       <div className="cx-ws__topbar">
         <div className="cx-ws__actions">
-          <a className="cx-btn" href={`/api/country-risk/evidence/${country.iso2}?format=pdf`}>
-            <Download size={14} /> PDF
-          </a>
-          <a className="cx-btn" href={`/api/country-risk/evidence/${country.iso2}?format=csv`}>
-            CSV
-          </a>
-          <a className="cx-btn" href={`/api/country-risk/evidence/${country.iso2}?format=json`}>
-            JSON
-          </a>
+          <Link className="cx-btn" to="/developers#access">
+            <Download size={14} /> API evidence exports
+          </Link>
           <button
             type="button"
             className={`cx-btn${watched ? " cx-btn--on" : ""}`}
@@ -983,9 +977,7 @@ export function CountryHub() {
                   </p>
                 </div>
                 <div className="cx-regsignal__actions">
-                  <a className="cx-btn" href={`/api/regulatory-signal/evidence/${country.iso2}?format=pdf`}>PDF</a>
-                  <a className="cx-btn" href={`/api/regulatory-signal/evidence/${country.iso2}?format=csv`}>CSV</a>
-                  <a className="cx-btn" href={`/api/regulatory-signal/evidence/${country.iso2}?format=json`}>JSON</a>
+                  <Link className="cx-btn" to="/developers#access">Registered API exports</Link>
                 </div>
               </div>
               {regulatorySignal.authorities.length > 0 ? (

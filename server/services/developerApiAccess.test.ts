@@ -2,6 +2,7 @@ import { describe, expect, it, vi } from "vitest";
 import type { VercelRequest, VercelResponse } from "@vercel/node";
 import type { SqlClient } from "../db.js";
 import {
+  allowWebsiteDataRequest,
   authoriseDeveloperApiRequest,
   hashDeveloperApiKey,
   looksLikeFirstPartyBrowserRequest,
@@ -95,36 +96,49 @@ describe("developer API access", () => {
   });
 });
 
-describe("the website lane is served without a database round-trip", () => {
+describe("the website lane is explicit and separate from the registered API", () => {
   const browserish = () => request({ host: "regactions.com", "sec-fetch-site": "same-origin" });
 
-  it("serves a same-origin request without querying anything", async () => {
+  it("does not let forged browser headers unlock a registered endpoint", async () => {
+    const sql = sqlClient();
+    const { res, state } = response();
+    const access = await authoriseDeveloperApiRequest(browserish(), res, "/api/test", { sql });
+    expect(access).toBeNull();
+    expect(state.status).toBe(401);
+    expect(state.body).toMatchObject({ error: "registration_required" });
+    expect((sql as unknown as { mock: { calls: unknown[] } }).mock.calls).toHaveLength(0);
+  });
+
+  it("serves an explicitly marked website route without querying anything", async () => {
     // Metering this path exhausted the connection pool under ordinary parallel
     // load: /fines alone fans out six paged searches, and eight concurrent page
     // loads produced eleven 500s. The site's own calls must not depend on the
     // metering store being reachable, or on it having a spare connection.
     const sql = sqlClient();
     const { res, state } = response();
-    const access = await authoriseDeveloperApiRequest(browserish(), res, "/api/test", { sql });
-    expect(access).toMatchObject({ mode: "anonymous" });
+    const req = browserish();
+    allowWebsiteDataRequest(req);
+    const access = await authoriseDeveloperApiRequest(req, res, "/api/test", { sql });
+    expect(access).toMatchObject({ mode: "public-site" });
     expect(state.status).toBeUndefined();
     expect((sql as unknown as { mock: { calls: unknown[] } }).mock.calls).toHaveLength(0);
   });
 
   it("still prefers a supplied key over the website lane", async () => {
     const { res } = response();
+    const req = request({ host: "regactions.com", "sec-fetch-site": "same-origin", "x-api-key": "ra_live_example" });
+    allowWebsiteDataRequest(req);
     const access = await authoriseDeveloperApiRequest(
-      request({ host: "regactions.com", "sec-fetch-site": "same-origin", "x-api-key": "ra_live_example" }),
-      res, "/api/test", { sql: sqlClient(2, 9) },
+      req, res, "/api/test", { sql: sqlClient(2, 9) },
     );
     expect(access).toMatchObject({ mode: "registered", apiKeyId: 7 });
   });
 
   it("still refuses a request that does not look like the website", async () => {
     const { res, state } = response();
-    const access = await authoriseDeveloperApiRequest(
-      request({ host: "regactions.com", "sec-fetch-site": "cross-site" }), res, "/api/test", { sql: sqlClient() },
-    );
+    const req = request({ host: "regactions.com", "sec-fetch-site": "cross-site" });
+    allowWebsiteDataRequest(req);
+    const access = await authoriseDeveloperApiRequest(req, res, "/api/test", { sql: sqlClient() });
     expect(access).toBeNull();
     expect(state.status).toBe(401);
   });

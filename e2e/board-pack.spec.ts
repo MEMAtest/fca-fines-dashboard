@@ -119,7 +119,7 @@ async function fulfillBoardPackSearch(route: Route) {
 
 test.describe("Quick Board Pack", () => {
   test.beforeEach(async ({ page }) => {
-    await page.route("**/api/unified/search**", fulfillBoardPackSearch);
+    await page.route("**/api/site/unified/search**", fulfillBoardPackSearch);
     await page.goto("/board-pack");
   });
 

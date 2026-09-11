@@ -159,7 +159,7 @@ async function openExplorer(page: Page, path = '/search') {
       ],
     }),
   }));
-  await page.route('**/api/unified/search**', fulfilSearch);
+  await page.route('**/api/site/unified/search**', fulfilSearch);
   await page.goto(path);
   await expect(page.getByRole('heading', { level: 1, name: 'Enforcement Explorer' })).toBeVisible();
   await expect(page.getByText('Loading enforcement evidence...')).toHaveCount(0);
@@ -267,7 +267,7 @@ test.describe('Enforcement Explorer', () => {
 
   test('shows a clear error when the evidence service fails', async ({ page }) => {
     await page.route('**/api/unified/overview**', (route) => route.fulfill({ status: 200, body: JSON.stringify({ themes: [], sectors: [] }) }));
-    await page.route('**/api/unified/search**', (route) => route.fulfill({ status: 500, body: 'failed' }));
+    await page.route('**/api/site/unified/search**', (route) => route.fulfill({ status: 500, body: 'failed' }));
     await page.goto('/search');
 
     await expect(page.getByText('The enforcement evidence set could not be loaded.')).toBeVisible();
