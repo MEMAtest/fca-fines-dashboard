@@ -368,11 +368,22 @@ function getFinalNoticeFirm($: cheerio.CheerioAPI) {
 function isGenericFirmLabel(value: string) {
   return /^(?:final|decision|warning|supervisory)(?: notice(?: statement)?)?$/i.test(value) ||
     /^(?:final|decision|warning|supervisory) notice\s+(?:for|of)\b/i.test(value) ||
+    /^(?:notice of decision)\b/i.test(value) ||
     /^(influencers?|firms?|individuals?|consumers?)$/i.test(value) ||
     /^(?:ceo|cfo|coo|cto|cio|director|managing director|chief executive officer)$/i.test(value) ||
     /^tribunal\b/i.test(value) ||
     /firms told/i.test(value) ||
-    /regulatory priorities/i.test(value);
+    /regulatory priorities/i.test(value) ||
+    // A firm is never named "FCA ...". When extractFcaFirmName falls back to a
+    // whole round-up headline (no firm pattern matched), it surfaces the
+    // regulator's own name as the "firm" — e.g. "FCA cracks down on illegal
+    // promotions..." carrying the round-up's aggregate figure. These, and other
+    // round-up/aggregate headlines, must never become a fine row.
+    /^(?:the\s+)?fca\b/i.test(value) ||
+    /\b(?:cracks down|publishes decisions?|publishes final notices?|issues final notice to|takes action against|first year of|annual (?:enforcement|report)|round-?up)\b/i.test(value) ||
+    // Anything long enough to be a sentence rather than a name is a headline
+    // that slipped through; real firm/person names are well under this.
+    value.split(/\s+/).length > 12;
 }
 
 export function parseFcaPressReleaseDetail(
