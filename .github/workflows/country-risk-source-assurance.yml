@@ -354,6 +354,12 @@ jobs:
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
         run: npm run country-risk:source-health
+      - name: Publish source-health summary
+        if: always()
+        run: |
+          if [ -f /tmp/country-risk-source-health.md ]; then
+            cat /tmp/country-risk-source-health.md >> "$GITHUB_STEP_SUMMARY"
+          fi
       - if: always()
         uses: actions/upload-artifact@v4
         with:
@@ -397,7 +403,7 @@ jobs:
                 labels: ['country-risk'],
               });
             }
-      - name: Close a resolved source-health alert
+      - name: Close a resolved blocking source-health alert
         if: steps.health.outcome == 'success'
         uses: actions/github-script@v7
         with:
@@ -416,7 +422,7 @@ jobs:
                 owner: context.repo.owner,
                 repo: context.repo.repo,
                 issue_number: existing.number,
-                body: `Source health returned to normal in workflow run ${context.runId}.`,
+                body: `Source health is ready for scoring again in workflow run ${context.runId}. Any non-blocking watches remain visible in the workflow summary and evidence artifact.`,
               });
               await github.rest.issues.update({
                 owner: context.repo.owner,
