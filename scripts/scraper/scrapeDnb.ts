@@ -27,6 +27,11 @@ const DNB_CONFIG = {
   rateLimit: 1000,  // 1 second between requests
 };
 
+const DNB_FETCH_HEADERS = {
+  Accept: 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
+  'User-Agent': 'RegActions/1.0 (+https://regactions.com/contact)',
+};
+
 interface DNBRecord {
   firm: string;
   amount: number | null;
@@ -87,13 +92,16 @@ export async function scrapeDnbPage(): Promise<DNBRecord[]> {
   console.log('📡 Fetching DNB English sitemap...');
   console.log(`   URL: ${DNB_CONFIG.sitemapUrl}`);
 
-  const response = await fetch(DNB_CONFIG.sitemapUrl);
-  if (!response.ok) {
-    throw new Error(`DNB sitemap request failed with status ${response.status}`);
-  }
+  // DNB returns the complete XML body with a 301 to identified research
+  // clients, but its redirect target blocks common automation user agents.
+  // Read that official response body without following the redundant redirect.
+  const response = await fetch(DNB_CONFIG.sitemapUrl, {
+    headers: DNB_FETCH_HEADERS,
+    redirect: 'manual',
+  });
   const xmlText = await response.text();
-  if (!xmlText.trim()) {
-    throw new Error('DNB sitemap response was empty');
+  if ((!response.ok && response.status !== 301) || !/<urlset\b/i.test(xmlText)) {
+    throw new Error(`DNB sitemap request failed with status ${response.status}`);
   }
 
   // DNB's sitemap mixes absolute and relative locations. Parsing each URL
@@ -144,7 +152,7 @@ export async function scrapeDnbPage(): Promise<DNBRecord[]> {
     await new Promise(resolve => setTimeout(resolve, DNB_CONFIG.rateLimit));
 
     try {
-      const detailResponse = await fetch(link);
+      const detailResponse = await fetch(link, { headers: DNB_FETCH_HEADERS });
       if (!detailResponse.ok) {
         throw new Error(`DNB detail request failed with status ${detailResponse.status}`);
       }

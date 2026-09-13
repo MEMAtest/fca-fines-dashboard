@@ -1,5 +1,14 @@
-import { describe, expect, it } from "vitest";
-import { extractFineAmount, extractFirmName, transformRecord } from "../scrapeDnb.js";
+import { afterEach, describe, expect, it, vi } from "vitest";
+import {
+  extractFineAmount,
+  extractFirmName,
+  scrapeDnbPage,
+  transformRecord,
+} from "../scrapeDnb.js";
+
+afterEach(() => {
+  vi.unstubAllGlobals();
+});
 
 describe("DNB scraper", () => {
   it("extracts current sitemap-page entities and decoded euro amounts", () => {
@@ -58,5 +67,48 @@ describe("DNB scraper", () => {
     expect(corrected.contentHash).toBe(original.contentHash);
     expect(corrected.amountEur).toBe(1_250_000);
     expect(corrected.firmIndividual).toBe("Example Bank Nederland N.V.");
+  });
+
+  it("reads DNB's official 301 sitemap body with an identified client", async () => {
+    const noticeUrl = "https://www.dnb.nl/en/general-news/enforcement-measures-2026/fine-imposed-on-example-bank-for-capital-shortfalls/";
+    const fetchMock = vi.fn()
+      .mockResolvedValueOnce(new Response(
+        `<urlset><url><loc>${noticeUrl}</loc><lastmod>2026-09-07</lastmod></url></urlset>`,
+        { status: 301 },
+      ))
+      .mockResolvedValueOnce(new Response(`
+        <script type="application/ld+json">{
+          "headline":"Fine imposed on Example Bank N.V. for capital shortfalls",
+          "datePublished":"2026-09-07"
+        }</script>
+        <main id="rs-content">DNB imposed an administrative fine of €59,770.</main>
+      `, { status: 200 }));
+    vi.stubGlobal("fetch", fetchMock);
+
+    const records = await scrapeDnbPage();
+
+    expect(fetchMock).toHaveBeenNthCalledWith(
+      1,
+      "https://www.dnb.nl/en/sitemap.xml",
+      expect.objectContaining({
+        redirect: "manual",
+        headers: expect.objectContaining({ "User-Agent": expect.stringContaining("RegActions/") }),
+      }),
+    );
+    expect(fetchMock).toHaveBeenNthCalledWith(
+      2,
+      noticeUrl,
+      expect.objectContaining({
+        headers: expect.objectContaining({ "User-Agent": expect.stringContaining("RegActions/") }),
+      }),
+    );
+    expect(records).toEqual([
+      expect.objectContaining({
+        firm: "Example Bank N.V.",
+        amount: 59_770,
+        date: "2026-09-07",
+        link: noticeUrl,
+      }),
+    ]);
   });
 });
