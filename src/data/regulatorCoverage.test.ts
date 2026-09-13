@@ -289,6 +289,7 @@ describe("regulatorCoverage", () => {
 
   it("flags lower-confidence live regulators separately from the stable daily set", () => {
     expect(LOWER_CONFIDENCE_LIVE_REGULATOR_CODES).toEqual([
+      "DNB",
       "DFSA",
       "CBUAE",
       "JFSC",

@@ -1,28 +1,29 @@
 /**
  * DNB (De Nederlandsche Bank - Dutch Central Bank) Scraper
  *
- * Strategy: RSS feed parsing with enforcement keyword filtering
- * URL: https://www.dnb.nl/en/rss/16451/6882 (General news RSS feed)
+ * Strategy: official English sitemap discovery plus enforcement-page parsing.
+ * The legacy RSS endpoint is Akamai-blocked for unattended clients, while the
+ * official sitemap and linked enforcement pages remain publicly retrievable.
  *
  * Run: npx tsx scripts/scraper/scrapeDnb.ts
  */
 
 import 'dotenv/config';
-import postgres from 'postgres';
-import { parseStringPromise } from 'xml2js';
-import crypto from 'crypto';
+import crypto from 'node:crypto';
+import { load } from 'cheerio';
+import { fileURLToPath } from 'node:url';
 import { extractNameFromBodyText } from './lib/bodyTextExtractor.js';
 import { validateExtractedName } from './lib/nameValidation.js';
-
-const sql = postgres(process.env.DATABASE_URL?.trim() || '', {
-  ssl: process.env.DATABASE_URL?.includes('sslmode=')
-    ? { rejectUnauthorized: false }
-    : false
-});
+import {
+  buildEuFineRecord,
+  parseScaledAmount,
+  type DbReadyRecord,
+} from './lib/euFineHelpers.js';
+import { runScraper } from './lib/runScraper.js';
 
 const DNB_CONFIG = {
   baseUrl: 'https://www.dnb.nl',
-  rssUrl: 'https://www.dnb.nl/en/rss/16451/6882',  // General news RSS feed
+  sitemapUrl: 'https://www.dnb.nl/en/sitemap.xml',
   rateLimit: 1000,  // 1 second between requests
 };
 
@@ -37,63 +38,16 @@ interface DNBRecord {
 }
 
 async function main() {
-  console.log('🇳🇱 DNB Enforcement Actions Scraper\n');
-  console.log('Target: De Nederlandsche Bank (Dutch Central Bank)');
-  console.log('Method: Press release parsing\n');
-
-  // Check for command-line flags
-  const useTestData = process.argv.includes('--test-data');
-  const dryRun = process.argv.includes('--dry-run');
-
-  if (useTestData) {
-    console.log('⚠️  Using test data (--test-data flag detected)\n');
-  }
-  if (dryRun) {
-    console.log('🔍 Dry run mode - no database writes (--dry-run flag detected)\n');
-  }
-
-  try {
-    // Scrape real DNB page or use test data
-    const records = useTestData ? getTestData() : await scrapeDnbPage();
-
-    console.log(`📊 Extracted ${records.length} enforcement actions`);
-
-    // Transform to database format
-    const transformed = records.map(r => transformRecord(r));
-
-    // Insert into database (skip if dry-run)
-    if (dryRun) {
-      console.log('\n🔍 Dry run - skipping database insert');
-      console.log('Records that would be inserted:');
-      transformed.forEach((r, i) => {
-        console.log(`   ${i + 1}. ${r.firmIndividual} - €${(r.amount || 0).toLocaleString()} (${r.dateIssued})`);
-      });
-    } else {
-      await upsertRecords(transformed);
-
-      // Refresh materialized view
-      console.log('\n🔄 Refreshing unified regulatory fines view...');
-      await sql`SELECT refresh_all_fines()`;
-      console.log('✅ View refreshed');
-    }
-
-    // Summary
-    const totalDnb = await sql`SELECT COUNT(*) as count FROM eu_fines WHERE regulator = 'DNB'`;
-    const totalAll = await sql`SELECT COUNT(*) as count FROM all_regulatory_fines`;
-
-    console.log('\n📈 Database Summary:');
-    console.log(`   - DNB enforcement actions: ${totalDnb[0].count}`);
-    console.log(`   - Total regulatory fines (FCA + EU): ${totalAll[0].count}`);
-
-    console.log('\n✅ DNB scraper completed successfully!');
-    await sql.end();
-    process.exit(0);
-
-  } catch (error) {
-    console.error('❌ DNB scraper failed:', error);
-    await sql.end();
-    process.exit(1);
-  }
+  await runScraper({
+    name: '🇳🇱 DNB Enforcement Actions Scraper',
+    regulatorCode: 'DNB',
+    liveLoader: loadDnbLiveRecords,
+    testLoader: async () => getTestData().map(transformRecord),
+    // The RSS endpoint is known to return a deterministic Akamai 403 from
+    // unattended runners. Do not spend another minute retrying that same
+    // blocked source; quarantine the run and preserve the stored archive.
+    retryOnTransientFailure: false,
+  });
 }
 
 function getTestData(): DNBRecord[] {
@@ -129,47 +83,33 @@ function getTestData(): DNBRecord[] {
   ];
 }
 
-async function scrapeDnbPage(): Promise<DNBRecord[]> {
-  console.log('📡 Fetching DNB RSS feed...');
-  console.log(`   URL: ${DNB_CONFIG.rssUrl}`);
+export async function scrapeDnbPage(): Promise<DNBRecord[]> {
+  console.log('📡 Fetching DNB English sitemap...');
+  console.log(`   URL: ${DNB_CONFIG.sitemapUrl}`);
 
-  const response = await fetch(DNB_CONFIG.rssUrl);
+  const response = await fetch(DNB_CONFIG.sitemapUrl);
+  if (!response.ok) {
+    throw new Error(`DNB sitemap request failed with status ${response.status}`);
+  }
   const xmlText = await response.text();
-
-  let parsed;
-  try {
-    parsed = await parseStringPromise(xmlText, {
-      trim: true,
-      normalize: true,
-      normalizeTags: false,
-      explicitArray: true,
-      // Add error tolerance for malformed XML
-      strict: false,
-      // Ignore attributes that might cause issues
-      ignoreAttrs: false,
-    });
-  } catch (parseError) {
-    console.error('❌ XML parsing failed. Saving raw XML for debugging...');
-    console.error(`   Error: ${parseError instanceof Error ? parseError.message : String(parseError)}`);
-    console.error(`   XML preview (first 500 chars): ${xmlText.substring(0, 500)}`);
-
-    // Try to salvage data with more lenient parsing
-    try {
-      parsed = await parseStringPromise(xmlText, {
-        strict: false,
-        async: false,
-        attrkey: 'attributes',
-        charkey: 'value',
-      });
-    } catch (secondError) {
-      console.error('❌ Even lenient parsing failed. Giving up on this RSS feed.');
-      throw parseError; // Throw original error
-    }
+  if (!xmlText.trim()) {
+    throw new Error('DNB sitemap response was empty');
   }
 
-  const items = parsed?.rss?.channel?.[0]?.item || [];
+  // DNB's sitemap mixes absolute and relative locations. Parsing each URL
+  // block directly avoids namespace/case differences between XML parsers.
+  const items = Array.from(xmlText.matchAll(/<url>([\s\S]*?)<\/url>/gi))
+    .map(([, block]) => ({
+      title: [''],
+      link: [new URL(block.match(/<loc>([\s\S]*?)<\/loc>/i)?.[1]?.trim() || '', DNB_CONFIG.baseUrl).href],
+      pubDate: [block.match(/<lastmod>([\s\S]*?)<\/lastmod>/i)?.[1]?.trim() || ''],
+    }))
+    .filter((item: { link: string[] }) => item.link[0].includes('/en/general-news/enforcement-measures-'));
 
-  console.log(`✅ Fetched ${items.length} items from RSS feed`);
+  if (items.length === 0) {
+    throw new Error('DNB sitemap contained no English enforcement-measure pages');
+  }
+  console.log(`✅ Discovered ${items.length} enforcement pages from the official sitemap`);
 
   // Filter for enforcement-related items
   const enforcementKeywords = [
@@ -186,8 +126,8 @@ async function scrapeDnbPage(): Promise<DNBRecord[]> {
   for (const item of items) {
     const title = item.title?.[0] || '';
     const link = item.link?.[0] || '';
-    const pubDateStr = item.pubDate?.[0] || '';
-    const pubDate = new Date(pubDateStr);
+    const sitemapDate = new Date(item.pubDate?.[0] || '');
+    if (!link) continue;
 
     const titleLower = title.toLowerCase();
     const linkLower = link.toLowerCase();
@@ -205,14 +145,31 @@ async function scrapeDnbPage(): Promise<DNBRecord[]> {
 
     try {
       const detailResponse = await fetch(link);
+      if (!detailResponse.ok) {
+        throw new Error(`DNB detail request failed with status ${detailResponse.status}`);
+      }
       const html = await detailResponse.text();
+
+      const structuredTitle = html.match(/"headline"\s*:\s*"([^"]+)"/i)?.[1]
+        ?.replace(/\\u([0-9a-f]{4})/gi, (_match, code) => String.fromCharCode(Number.parseInt(code, 16)));
+      const pageTitle = structuredTitle || html.match(/<h1[^>]*>([\s\S]*?)<\/h1>/i)?.[1]
+        ?.replace(/<[^>]+>/g, ' ')
+        .replace(/\s+/g, ' ')
+        .trim()
+        || title;
+      const publishedValue = html.match(/"datePublished"\s*:\s*"([^"]+)"/i)?.[1];
+      const publishedDate = new Date(publishedValue || '');
+      const recordDate = Number.isNaN(publishedDate.getTime()) ? sitemapDate : publishedDate;
+      if (Number.isNaN(recordDate.getTime())) {
+        throw new Error('DNB detail page did not expose a valid publication date');
+      }
 
       // Extract metadata
       const metaDescMatch = html.match(/<meta name="description" content="([^"]+)"/i);
       const description = metaDescMatch ? metaDescMatch[1] : '';
 
       // PHASE 3 FIX: Extract firm name with body text fallback
-      const firm = extractFirmName(title, html);
+      const firm = extractFirmName(pageTitle, html);
 
       // Log when firm name extraction fails for manual review
       if (firm === 'Unknown') {
@@ -220,26 +177,31 @@ async function scrapeDnbPage(): Promise<DNBRecord[]> {
       }
 
       // Extract fine amount
-      const amount = extractFineAmount(title, html);
+      const amount = extractFineAmount(pageTitle, html);
 
       // Extract breach type
-      const breach = classifyBreachType(title, html);
+      const breach = classifyBreachType(pageTitle, html);
 
       records.push({
         firm,
         amount,
         currency: 'EUR',
-        date: pubDate.toISOString().split('T')[0],
+        date: recordDate.toISOString().split('T')[0],
         breach,
         link,
-        summary: description || title
+        summary: description || pageTitle
       });
 
       console.log(`   👤 Firm: ${firm}`);
       console.log(`   💰 Amount: ${amount ? `€${amount.toLocaleString()}` : 'Not specified'}`);
       console.log(`   ⚖️  Breach: ${breach}`);
     } catch (error) {
-      console.error(`   ⚠️  Failed to fetch ${link}:`, error);
+      // A partially parsed feed is not safe to promote: the runner must
+      // quarantine the whole batch and leave the previously stored archive
+      // untouched when any official detail page cannot be retrieved.
+      throw new Error(
+        `DNB detail page failed for ${link}: ${error instanceof Error ? error.message : String(error)}`,
+      );
     }
   }
 
@@ -247,12 +209,20 @@ async function scrapeDnbPage(): Promise<DNBRecord[]> {
   return records;
 }
 
-function extractFirmName(title: string, html?: string): string {
-  // Pattern 1: "DNB fines [Firm]" or "Fine imposed on [Firm]"
-  const pattern1 = /(?:DNB fines?|Fine imposed on|Boete opgelegd aan)\s+([^for]+?)(?:\s+for|\s+wegens|$)/i;
-  const match1 = title.match(pattern1);
-  if (match1) {
-    const candidate = validateExtractedName(match1[1].trim());
+export function extractFirmName(title: string, html?: string): string {
+  const titlePatterns = [
+    /^(?:administrative\s+)?fine(?:s\s+totalling[^\s]+)?(?:\s+imposed)?\s+on\s+(.+?)(?:\s+for\b|$)/i,
+    /^fines?.*?\s+imposed on\s+(.+?)(?:\s+for\b|$)/i,
+    /^fine\s+for\s+(?:trust office\s+)?(.+?)(?:\s+for\b|$)/i,
+    /^order subject to penalty(?:\s+imposed)?\s+on\s+(.+?)(?:\s+for\b|$)/i,
+    /^instruction\s+for\s+(.+?)(?:\s+for\b|$)/i,
+    /^DNB imposes instruction on\s+(.+?)(?:\s+for\b|$)/i,
+    /^(.+?)(?:[’']s)? licences? withdrawn\b/i,
+    /^DNB issued an instruction to\s+(.+?)(?:\s+in\b|\s+for\b|$)/i,
+    /^ban on value transfer for pension fund\s+(.+?)(?:\s+due\b|$)/i,
+  ];
+  for (const pattern of titlePatterns) {
+    const candidate = validateExtractedName(title.match(pattern)?.[1]?.trim() || '');
     if (candidate) return candidate;
   }
 
@@ -285,37 +255,16 @@ function extractFirmName(title: string, html?: string): string {
 }
 
 function extractBodyText(html: string): string {
-  // Extract main article content, excluding navigation, headers, footers
-  // Common DNB article selectors
-  const articlePatterns = [
-    /<article[^>]*>([\s\S]*?)<\/article>/i,
-    /<main[^>]*>([\s\S]*?)<\/main>/i,
-    /<div[^>]*class="[^"]*content[^"]*"[^>]*>([\s\S]*?)<\/div>/i,
-  ];
-
-  for (const pattern of articlePatterns) {
-    const match = html.match(pattern);
-    if (match && match[1]) {
-      // Strip HTML tags and normalize whitespace
-      return match[1]
-        .replace(/<[^>]+>/g, ' ')
-        .replace(/\s+/g, ' ')
-        .trim()
-        .substring(0, 5000); // Limit to 5000 chars for performance
-    }
-  }
-
-  // Fallback: strip all HTML tags from full page (less ideal but works)
-  return html
-    .replace(/<script[\s\S]*?<\/script>/gi, '')
-    .replace(/<style[\s\S]*?<\/style>/gi, '')
-    .replace(/<[^>]+>/g, ' ')
-    .replace(/\s+/g, ' ')
-    .trim()
-    .substring(0, 5000);
+  const $ = load(html);
+  $('script, style, nav, footer').remove();
+  const scoped = $('#rs-content').first().text()
+    || $('.main-grid-layout__content').first().text()
+    || $('main').first().text()
+    || $.root().text();
+  return scoped.replace(/\s+/g, ' ').trim().substring(0, 20_000);
 }
 
-function extractFineAmount(title: string, html: string): number | null {
+export function extractFineAmount(title: string, html: string): number | null {
   const bodyText = extractBodyText(html);
   const text = `${title} ${bodyText}`;
 
@@ -330,18 +279,7 @@ function extractFineAmount(title: string, html: string): number | null {
   for (const pattern of patterns) {
     const match = text.match(pattern);
     if (match) {
-      // Handle Dutch number format (periods as thousand separators, commas as decimals)
-      let amount = match[1].replace(/\./g, '').replace(/,/g, '.');
-      let numAmount = parseFloat(amount);
-
-      // Use captured scale word (group 2) if present and number is small
-      // This is more precise than searching the entire text
-      const scaleWord = match[2]?.toLowerCase();
-      if (scaleWord && numAmount < 1000) {
-        numAmount *= 1_000_000;
-      }
-
-      return numAmount;
+      return parseScaledAmount(match[1], match[2]);
     }
   }
 
@@ -364,51 +302,36 @@ function classifyBreachType(title: string, html: string): string {
   return 'OTHER';
 }
 
-function transformRecord(record: DNBRecord) {
-  const dateIssued = new Date(record.date);
-  const yearIssued = dateIssued.getFullYear();
-  const monthIssued = dateIssued.getMonth() + 1;
-
-  // Currency conversion
-  const amountEur = record.amount;
-  const amountGbp = amountEur ? Math.round(amountEur * 0.85 * 100) / 100 : null;
-
-  // Generate content hash using link instead of firm name to avoid collisions
-  // when multiple records have 'Unknown' as firm name on the same date
-  const contentHash = crypto
-    .createHash('sha256')
-    .update(JSON.stringify({
-      regulator: 'DNB',
-      link: record.link,
-      date: record.date
-    }))
-    .digest('hex');
-
-  // Categorize breach
-  const breachCategories = categorizeBreachType(record.breach);
-
-  return {
-    contentHash,
+export function transformRecord(record: DNBRecord): DbReadyRecord {
+  const transformed = buildEuFineRecord({
     regulator: 'DNB',
     regulatorFullName: 'De Nederlandsche Bank',
     countryCode: 'NL',
     countryName: 'Netherlands',
     firmIndividual: record.firm,
-    firmCategory: 'Bank',  // DNB supervises banks primarily
+    firmCategory: 'Bank',
     amount: record.amount,
     currency: record.currency,
-    amountEur,
-    amountGbp,
-    dateIssued: dateIssued.toISOString().split('T')[0],
-    yearIssued,
-    monthIssued,
+    dateIssued: record.date,
     breachType: extractBreachType(record.breach),
-    breachCategories: breachCategories,
-    summary: `${record.firm} fined €${(record.amount || 0).toLocaleString()} by DNB for ${record.summary}`,
+    breachCategories: categorizeBreachType(record.breach),
+    summary: `${record.firm} fined by DNB for ${record.summary}`,
     finalNoticeUrl: record.link,
-    sourceUrl: DNB_CONFIG.rssUrl,
-    rawPayload: JSON.stringify(record)
+    sourceUrl: record.link || DNB_CONFIG.baseUrl,
+    rawPayload: record,
+  });
+  // DNB has corrected amounts and titles after publication. Keep identity tied
+  // to the canonical official notice URL so those corrections update one row
+  // instead of creating duplicates when parsed fields change.
+  const canonicalPath = new URL(record.link || DNB_CONFIG.baseUrl).pathname.replace(/\/+$/, '');
+  return {
+    ...transformed,
+    contentHash: crypto.createHash('sha256').update(`DNB|${canonicalPath}`).digest('hex'),
   };
+}
+
+export async function loadDnbLiveRecords(): Promise<DbReadyRecord[]> {
+  return (await scrapeDnbPage()).map(transformRecord);
 }
 
 function extractBreachType(description: string): string {
@@ -476,71 +399,9 @@ function categorizeBreachType(description: string): string[] {
   return categories.length > 0 ? categories : ['OTHER'];
 }
 
-async function upsertRecords(records: any[]) {
-  console.log(`\n💾 Inserting ${records.length} records into database...`);
-
-  let inserted = 0;
-  let updated = 0;
-  let errors = 0;
-
-  for (const record of records) {
-    try {
-      const result = await sql`
-        INSERT INTO eu_fines (
-          content_hash, regulator, regulator_full_name,
-          country_code, country_name, firm_individual, firm_category,
-          amount, currency, amount_eur, amount_gbp,
-          date_issued, year_issued, month_issued,
-          breach_type, breach_categories, summary,
-          final_notice_url, source_url, raw_payload,
-          scraped_at
-        ) VALUES (
-          ${record.contentHash},
-          ${record.regulator},
-          ${record.regulatorFullName},
-          ${record.countryCode},
-          ${record.countryName},
-          ${record.firmIndividual},
-          ${record.firmCategory},
-          ${record.amount},
-          ${record.currency},
-          ${record.amountEur},
-          ${record.amountGbp},
-          ${record.dateIssued},
-          ${record.yearIssued},
-          ${record.monthIssued},
-          ${record.breachType},
-          ${sql.json(record.breachCategories)},
-          ${record.summary},
-          ${record.finalNoticeUrl},
-          ${record.sourceUrl},
-          ${record.rawPayload},
-          NOW()
-        )
-        ON CONFLICT (content_hash) DO UPDATE SET
-          summary = EXCLUDED.summary,
-          updated_at = NOW()
-        RETURNING (xmax = 0) AS inserted
-      `;
-
-      if (result[0].inserted) {
-        inserted++;
-        console.log(`   ✅ Inserted: ${record.firmIndividual} (€${(record.amount || 0).toLocaleString()})`);
-      } else {
-        updated++;
-        console.log(`   🔄 Updated: ${record.firmIndividual}`);
-      }
-    } catch (error) {
-      errors++;
-      console.error(`   ❌ Error inserting ${record.firmIndividual}:`, error);
-    }
-  }
-
-  console.log(`\n📊 Insert summary:`);
-  console.log(`   - Inserted: ${inserted}`);
-  console.log(`   - Updated: ${updated}`);
-  console.log(`   - Errors: ${errors}`);
+if (process.argv[1] && fileURLToPath(import.meta.url) === process.argv[1]) {
+  main().catch((error) => {
+    console.error('❌ DNB scraper failed:', error);
+    process.exit(1);
+  });
 }
-
-// Run scraper
-main();

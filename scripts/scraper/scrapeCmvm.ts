@@ -16,6 +16,12 @@ const CMVM_USER_AGENT =
   "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/135.0.0.0 Safari/537.36";
 
 const CMVM_QUERIES = ["contraordenacao", "coima"];
+// Bound the nested browser process as well as each network wait. A CMVM
+// request that never produces its search response must quarantine this run,
+// not leave a GitHub job running until its outer timeout.
+export const CMVM_RESPONSE_TIMEOUT_MS = 45_000;
+export const CMVM_NAVIGATION_TIMEOUT_MS = 90_000;
+export const CMVM_PROCESS_TIMEOUT_MS = 6 * 60_000;
 const CMVM_GENERIC_TITLE_PATTERN =
   /^(CMVM divulgou hoje|Contraordenações graves e muito graves)/i;
 const CMVM_CATEGORY_LABELS = [
@@ -345,7 +351,7 @@ async function collectCmvmSearchResults(query: string, limit: number | null) {
     async function waitForElasticResponse(page) {
       const response = await page.waitForResponse(
         (candidate) => candidate.url().includes("DataActionGetElastic"),
-        { timeout: 90000 },
+        { timeout: ${CMVM_RESPONSE_TIMEOUT_MS} },
       );
       return response.text();
     }
@@ -405,8 +411,8 @@ async function collectCmvmSearchResults(query: string, limit: number | null) {
         const page = await browser.newPage();
         await page.setUserAgent(userAgent);
         await page.setExtraHTTPHeaders({ "accept-language": "pt-PT,pt;q=0.9,en;q=0.8" });
-        await page.goto(portalUrl, { waitUntil: "domcontentloaded", timeout: 120000 });
-        await page.waitForSelector("#b2-Search", { visible: true, timeout: 60000 });
+        await page.goto(portalUrl, { waitUntil: "domcontentloaded", timeout: ${CMVM_NAVIGATION_TIMEOUT_MS} });
+        await page.waitForSelector("#b2-Search", { visible: true, timeout: ${CMVM_RESPONSE_TIMEOUT_MS} });
         await new Promise((resolve) => setTimeout(resolve, 2000));
 
         const payloads = [];
@@ -446,6 +452,8 @@ async function collectCmvmSearchResults(query: string, limit: number | null) {
   const { stdout } = await execFileAsync(process.execPath, args, {
     cwd: process.cwd(),
     maxBuffer: 20 * 1024 * 1024,
+    timeout: CMVM_PROCESS_TIMEOUT_MS,
+    killSignal: "SIGTERM",
   });
 
   const payloads = JSON.parse(stdout) as string[];
@@ -523,8 +531,9 @@ export async function main() {
     name: "🇵🇹 CMVM Sanctions Search Scraper",
     liveLoader: loadCmvmLiveRecords,
     testLoader: loadCmvmLiveRecords,
-    retryOnTransientFailure: true,
-    maxRetries: 1,
+    // The browser worker has its own bounded retry and process timeout. An
+    // additional runner retry only repeats a multi-minute browser hang.
+    retryOnTransientFailure: false,
   });
 }
 

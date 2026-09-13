@@ -6,6 +6,7 @@ import type { Browser } from "playwright";
 import { EU_SANCTIONS_REGIMES, EU_SANCTIONS_REGIME_SNAPSHOT } from "../../src/data/euSanctionsRegimeData.js";
 import { SANCTIONS_REGIME_CANDIDATES } from "../../src/data/sanctionsRegimeCandidates.js";
 import type { SanctionsMeasureType } from "../../src/data/sanctionsEvidence.js";
+import { shouldUseBrowserFallback } from "./lib/sanctionsEvidenceTransport.js";
 
 const OUTPUT_PATH = process.env.COUNTRY_RISK_SANCTIONS_LEGAL_EVIDENCE_JSON
   ?? "/tmp/country-risk-sanctions-legal-evidence.json";
@@ -160,7 +161,14 @@ async function prepare(candidate: (typeof SANCTIONS_REGIME_CANDIDATES)[number]) 
   if (response.ok) {
     buffer = Buffer.from(await response.arrayBuffer());
     finalUrl = response.url;
-  } else if (candidate.imposer === "UN" && (response.status === 403 || response.status === 429)) {
+    // The UN front end returns an asynchronous 202 with an empty body to
+    // non-browser clients. Treat that as an unavailable evidence response,
+    // not as a successful fetch or an empty legal page, and retry through the
+    // official browser-rendered page below.
+    if (shouldUseBrowserFallback(candidate.imposer, response.status, buffer.length)) {
+      ({ buffer, finalUrl } = await fetchWithBrowser(url.toString()));
+    }
+  } else if (candidate.imposer === "UN" && (response.status === 403 || response.status === 429 || response.status === 202)) {
     ({ buffer, finalUrl } = await fetchWithBrowser(url.toString()));
   } else {
     throw new Error(`${key(candidate)}: HTTP ${response.status} for ${url}`);

@@ -367,6 +367,46 @@ export function buildDeepSeekMessages(input: {
   ];
 }
 
+/**
+ * DeepSeek can reject otherwise harmless regulator text when a source error or
+ * enforcement title trips its content-risk filter.  A retry must therefore
+ * contain only typed monitoring facts, never the rejected free-form strings.
+ */
+export function buildDeepSeekSafeRetryMessages(input: {
+  status: AssuranceStatus;
+  health: LiveRegulatorHealthResult[];
+  scraperRunIssues: ScraperRunIssue[];
+}) {
+  const payload = {
+    status: input.status,
+    health: input.health
+      .filter((result) => result.severity !== "ok")
+      .slice(0, 25)
+      .map((result) => ({
+        regulator: result.regulator,
+        severity: result.severity,
+        cadence: result.cadence,
+        records: result.recordCount,
+        ageDays: result.ageDays,
+        staleAfterDays: result.freshnessWindowDays,
+      })),
+    scraperRuns: input.scraperRunIssues.slice(0, 25).map((issue) => ({
+      regulator: issue.regulator,
+      severity: issue.severity,
+      consecutiveErrors: issue.consecutiveErrors,
+    })),
+  };
+
+  return [
+    {
+      role: "system",
+      content:
+        "Summarise these typed scraper-health metrics. Return JSON only with keys: summary, likelyCause, impactedRegulators, nextAction, confidence. Do not infer enforcement content.",
+    },
+    { role: "user", content: JSON.stringify(payload) },
+  ];
+}
+
 function compactHealthResult(result: LiveRegulatorHealthResult) {
   return {
     regulator: result.regulator,
@@ -408,26 +448,40 @@ export async function runAiTriage(input: {
   const maxOutputTokens = getNumberEnv("AI_TRIAGE_MAX_OUTPUT_TOKENS", 1200);
 
   try {
-    const response = await fetch(`${DEEPSEEK_BASE_URL}/chat/completions`, {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${apiKey}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        model,
-        messages,
-        response_format: { type: "json_object" },
-        temperature: 0.1,
-        max_tokens: maxOutputTokens,
-      }),
-      signal: AbortSignal.timeout(30_000),
-    });
+    const request = (requestMessages: ReturnType<typeof buildDeepSeekMessages>) =>
+      fetch(`${DEEPSEEK_BASE_URL}/chat/completions`, {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${apiKey}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          model,
+          messages: requestMessages,
+          response_format: { type: "json_object" },
+          temperature: 0.1,
+          max_tokens: maxOutputTokens,
+        }),
+        signal: AbortSignal.timeout(30_000),
+      });
+
+    let response = await request(messages);
+
+    if (!response.ok) {
+      const body = await response.text();
+      if (response.status === 400 && /content exists risk/i.test(body)) {
+        response = await request(buildDeepSeekSafeRetryMessages(input));
+      } else {
+        throw new Error(
+          `DeepSeek request failed with HTTP ${response.status}: ${redactText(body).slice(0, 500)}`,
+        );
+      }
+    }
 
     if (!response.ok) {
       const body = await response.text();
       throw new Error(
-        `DeepSeek request failed with HTTP ${response.status}: ${redactText(body).slice(0, 500)}`,
+        `DeepSeek safe retry failed with HTTP ${response.status}: ${redactText(body).slice(0, 500)}`,
       );
     }
 

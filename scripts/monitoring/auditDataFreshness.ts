@@ -1,28 +1,33 @@
 import "dotenv/config";
 import { writeFileSync } from "node:fs";
-import { LIVE_REGULATOR_NAV_ITEMS } from "../../src/data/regulatorCoverage.js";
+import { fileURLToPath } from "node:url";
+import {
+  LIVE_REGULATOR_NAV_ITEMS,
+  getRegulatorCoverage,
+} from "../../src/data/regulatorCoverage.js";
 import {
   createSqlClient,
   requireDatabaseUrl,
 } from "../scraper/lib/euFineHelpers.js";
+import { evaluateLiveRegulatorHealth } from "../scraper/lib/liveRegulatorHealth.js";
+import type { LiveRegulatorStatsRow } from "../scraper/lib/liveRegulatorHealth.js";
 
-interface FreshnessRow {
+export interface FreshnessRow {
   regulator: string;
   latestRecord: string | null;
   daysSinceLatest: number | null;
   totalRecords: number;
   recordsLast90Days: number;
   recordsLast12mPerMonth: number;
+  futureRecordCount?: number;
+  latestFutureRecordDate?: string | null;
 }
 
-interface FlaggedRegulator extends FreshnessRow {
+export interface FlaggedRegulator extends FreshnessRow {
   reason: string;
   thresholdDays: number;
 }
 
-const ACTIVE_AVG_THRESHOLD = 1.5;
-const STALE_DAYS_FOR_ACTIVE = 30;
-const STALE_DAYS_FOR_SPARSE = 90;
 const ALERT_FILE = process.env.DATA_FRESHNESS_ALERT_FILE ?? "/tmp/data-freshness-alert.json";
 
 async function loadFreshness(): Promise<FreshnessRow[]> {
@@ -38,7 +43,9 @@ async function loadFreshness(): Promise<FreshnessRow[]> {
         ROUND(
           (COUNT(*) FILTER (WHERE date_issued >= CURRENT_DATE - INTERVAL '12 months'))::numeric / 12,
           2
-        )::float8 AS "recordsLast12mPerMonth"
+        )::float8 AS "recordsLast12mPerMonth",
+        COUNT(*) FILTER (WHERE date_issued > CURRENT_DATE + INTERVAL '30 days')::int AS "futureRecordCount",
+        MAX(date_issued) FILTER (WHERE date_issued > CURRENT_DATE + INTERVAL '30 days')::text AS "latestFutureRecordDate"
       FROM all_regulatory_fines
       GROUP BY regulator
     `;
@@ -48,7 +55,15 @@ async function loadFreshness(): Promise<FreshnessRow[]> {
   }
 }
 
-function evaluate(rows: FreshnessRow[]): FlaggedRegulator[] {
+/**
+ * Keep this legacy audit useful as an evidence report without allowing its
+ * historical 30/90-day heuristics to become a second scraper alerting path.
+ * The source-contract-aware assurance agent owns scraper-health severity.
+ */
+export function evaluate(
+  rows: FreshnessRow[],
+  referenceDate = new Date(),
+): FlaggedRegulator[] {
   const liveCodes = new Set(
     LIVE_REGULATOR_NAV_ITEMS.map((coverage) => coverage.code.toUpperCase()),
   );
@@ -59,22 +74,36 @@ function evaluate(rows: FreshnessRow[]): FlaggedRegulator[] {
     if (!liveCodes.has(regUpper)) continue;
     if (row.daysSinceLatest === null) continue;
 
-    const isActive = row.recordsLast12mPerMonth >= ACTIVE_AVG_THRESHOLD;
-    const thresholdDays = isActive ? STALE_DAYS_FOR_ACTIVE : STALE_DAYS_FOR_SPARSE;
-    if (row.daysSinceLatest <= thresholdDays) continue;
+    const coverage = getRegulatorCoverage(regUpper);
+    if (!coverage || coverage.stage !== "live") continue;
 
-    const reason = isActive
-      ? `${row.regulator} historically averages ${row.recordsLast12mPerMonth}/month but no records in ${row.daysSinceLatest} days (latest ${row.latestRecord})`
-      : `${row.regulator} has not received a record in ${row.daysSinceLatest} days (latest ${row.latestRecord}, sparse regulator)`;
+    const healthStats: LiveRegulatorStatsRow = {
+      regulator: regUpper,
+      recordCount: row.totalRecords,
+      earliestRecordDate: null,
+      latestRecordDate: row.latestRecord,
+      futureRecordCount: row.futureRecordCount ?? 0,
+      latestFutureRecordDate: row.latestFutureRecordDate ?? null,
+    };
+    const health = evaluateLiveRegulatorHealth(coverage, healthStats, referenceDate);
 
-    flagged.push({ ...row, reason, thresholdDays });
+    // Watch-only stale states (including low-frequency, sparse and curated
+    // feeds) remain visible in the canonical assurance report, but must not
+    // produce a second email from this broad historical audit.
+    if (!["action_required", "critical"].includes(health.severity)) continue;
+
+    flagged.push({
+      ...row,
+      reason: `${row.regulator} source-contract health is ${health.severity}: ${health.message}`,
+      thresholdDays: health.freshnessWindowDays,
+    });
   }
 
   flagged.sort((a, b) => (b.daysSinceLatest ?? 0) - (a.daysSinceLatest ?? 0));
   return flagged;
 }
 
-async function main() {
+export async function main() {
   requireDatabaseUrl();
   const rows = await loadFreshness();
   const flagged = evaluate(rows);
@@ -103,7 +132,9 @@ async function main() {
   console.warn(`Wrote alert detail to ${ALERT_FILE}`);
 }
 
-main().catch((err) => {
-  console.error("Data freshness audit failed:", err);
-  process.exit(1);
-});
+if (process.argv[1] && fileURLToPath(import.meta.url) === process.argv[1]) {
+  main().catch((err) => {
+    console.error("Data freshness audit failed:", err);
+    process.exit(1);
+  });
+}

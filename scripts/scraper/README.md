@@ -61,7 +61,7 @@ The repository ships with three live-regulator monitoring workflows:
 - `.github/workflows/fragile-live-regulator-scrapers.yml` for lower-confidence live feeds on `Monday` and `Thursday` at `06:15 UTC`
 - `.github/workflows/scraper-assurance-agent.yml` every 3 hours for deterministic health checks plus failure-triggered DeepSeek triage
 
-Each batch is followed by `npm run check:live-freshness` so missing or action-required live feeds fail visibly in Actions. The assurance agent only calls DeepSeek when deterministic checks find an action-required or critical issue. To enable the workflows:
+Each batch is followed by `npm run check:live-freshness` so missing or action-required live feeds fail visibly in Actions. Scraper-health notifications are owned by `scraper-assurance-agent.yml`: it applies the source contract, consecutive-run context and quiet fingerprinting, so low-frequency/watch states do not generate duplicate email or digest items. The batch freshness reports, legacy data-freshness audit and infrastructure reachability check remain evidence-only for scraper health. Genuine `action_required` and `critical` findings still alert through the assurance workflow, and the regular customer digest jobs are unchanged. The assurance agent only calls DeepSeek when deterministic checks find an action-required or critical issue. To enable the workflows:
 
 1. In GitHub ➜ **Settings ➜ Secrets and variables ➜ Actions**, add the following secrets:
    - `DATABASE_URL` – database connection string (required).
