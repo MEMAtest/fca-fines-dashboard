@@ -29,4 +29,28 @@ describe("production acceptance workflow", () => {
     expect(workflow).not.toContain("--since 5m");
     expect(workflow).not.toContain("--since 30m");
   });
+
+  it("maps Vercel secrets into job env before using them in step conditions", () => {
+    expect(workflow).toContain("      VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}");
+    expect(workflow).toContain("      VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}");
+    expect(workflow).toContain("      VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}");
+    expect(workflow).toContain("if: always() && env.VERCEL_TOKEN != '' && env.VERCEL_PROJECT_ID != '' && env.VERCEL_ORG_ID != ''");
+    expect(workflow).toContain("if: always() && (env.VERCEL_TOKEN == '' || env.VERCEL_PROJECT_ID == '' || env.VERCEL_ORG_ID == '')");
+
+    const lines = workflow.split("\n");
+    const ifExpressions: string[] = [];
+    for (let index = 0; index < lines.length; index += 1) {
+      const match = lines[index].match(/^(\s*)if:\s*(.*)$/);
+      if (!match) continue;
+      const indent = match[1].length;
+      let expression = match[2];
+      for (let next = index + 1; next < lines.length; next += 1) {
+        const line = lines[next];
+        if (line.trim() && line.match(/^\s*/)?.[0].length <= indent) break;
+        expression += `\n${line}`;
+      }
+      ifExpressions.push(expression);
+    }
+    expect(ifExpressions.join("\n")).not.toContain("secrets.");
+  });
 });
