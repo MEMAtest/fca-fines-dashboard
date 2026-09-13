@@ -94,7 +94,8 @@ test("JFSC API evidence is exactly the six verified notices and official links a
 });
 
 test("FCA official source links resolve", async ({ page }) => {
-  await page.goto("/regulators/fca", { waitUntil: "domcontentloaded" });
+  await assertPublicPage(page, "/regulators/fca", /FCA Fines Database and Enforcement Actions/i);
+  await expect(page.locator('a[href^="https://www.fca.org.uk/"]').first()).toBeVisible({ timeout: 30_000 });
   const sources = await page.locator('a[href^="https://www.fca.org.uk/"]').evaluateAll((links) =>
     links.map((link) => (link as HTMLAnchorElement).href),
   );
@@ -111,6 +112,10 @@ test("fines evidence drawer, comparison and monthly chart marks remain interacti
   await page.getByRole("button", { name: "Close", exact: true }).click();
 
   await page.goto("/fines/compare", { waitUntil: "domcontentloaded" });
+  const enterComparison = page.getByRole("button", { name: "Compare selections" });
+  await expect(page.getByRole("button", { name: /Compare selections|Exit compare mode/ })).toBeVisible({ timeout: 30_000 });
+  if (await enterComparison.isVisible()) await enterComparison.click();
+  await expect(page.getByRole("button", { name: "Exit compare mode" })).toBeVisible({ timeout: 30_000 });
   const yearButtons = page.locator("section", {
     has: page.getByRole("heading", { name: "Select years" }),
   }).getByRole("button");
@@ -119,7 +124,7 @@ test("fines evidence drawer, comparison and monthly chart marks remain interacti
   await yearButtons.nth(1).click();
   await expect(page.getByRole("heading", { name: "Comparison summary" })).toBeVisible();
   const openSelected = page.getByRole("button", { name: "Open selected data" });
-  await expect(openSelected).toBeEnabled();
+  await expect(openSelected).toBeEnabled({ timeout: 30_000 });
   await openSelected.click();
   await expect(page.getByRole("dialog", { name: /Selected comparison data/i })).toBeVisible();
   await saveScreenshot(page, "fines-comparison-drawer");
@@ -134,8 +139,11 @@ test("fines evidence drawer, comparison and monthly chart marks remain interacti
 });
 
 test("regulator comparator applies a new regulator and year", async ({ page }) => {
-  await page.goto("/regulators/fca/compare", { waitUntil: "domcontentloaded" });
+  await assertPublicPage(page, "/regulators/fca", /FCA Fines Database and Enforcement Actions/i);
+  await page.getByRole("complementary", { name: "Workspace navigation" }).getByRole("link", { name: "Compare" }).click();
+  await expect(page.getByLabel("Comparator")).toBeVisible({ timeout: 30_000 });
   await page.getByLabel("Comparator").selectOption("JFSC");
+  await expect(page.getByLabel("Comparator")).toHaveValue("JFSC");
   await page.getByLabel("Year").selectOption("2025");
   await expect(page.getByRole("status", { name: /Comparison scope/i })).toContainText("2025");
   await expect(page.getByRole("heading", { name: "JFSC" })).toBeVisible();

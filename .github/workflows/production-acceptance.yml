@@ -37,6 +37,17 @@ jobs:
         with:
           node-version: 22
           cache: npm
+      - name: Validate production alias
+        env:
+          BASE_URL: ${{ env.PLAYWRIGHT_BASE_URL }}
+        run: |
+          case "$BASE_URL" in
+            https://regactions.com|https://www.regactions.com) ;;
+            *)
+              echo "Production acceptance may run only against a RegActions production alias." >&2
+              exit 1
+              ;;
+          esac
       - run: npm ci
       - name: Install Chromium and PDF renderer
         run: |
