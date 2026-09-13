@@ -97,6 +97,7 @@
     }
   ],
   "rewrites": [
+    { "source": "/regulators/:regulatorCode/compare", "destination": "/index.html" },
     { "source": "/((?!api/).*)", "destination": "/api/not-found" }
   ],
   "crons": [

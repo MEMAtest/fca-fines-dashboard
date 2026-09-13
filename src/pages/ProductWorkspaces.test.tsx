@@ -195,6 +195,16 @@ describe("product workspaces", () => {
     expect(screen.getByRole("heading", { name: /Top breach themes/i })).toBeInTheDocument();
   });
 
+  it("renders a regulator-scoped comparison deep link with its canonical path", () => {
+    render(<MemoryRouter initialEntries={["/regulators/fca/compare"]}><EvidenceModalProvider><Routes><Route path="/regulators/:regulatorCode/compare" element={<RegulatorWorkspace view="compare" />} /></Routes></EvidenceModalProvider></MemoryRouter>);
+
+    expect(screen.getByRole("heading", { name: "Compare FCA with another regulator" })).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "FCA top penalties" })).toBeInTheDocument();
+    expect(useSEO).toHaveBeenCalledWith(expect.objectContaining({
+      canonicalPath: "/regulators/fca/compare",
+    }));
+  });
+
   it("labels secondary destinations accurately and preserves a return path", () => {
     render(<MemoryRouter initialEntries={["/fines/analytics?year=2025"]}><EvidenceModalProvider><FinesWorkspace view="analytics" /></EvidenceModalProvider></MemoryRouter>);
 
