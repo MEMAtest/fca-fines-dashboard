@@ -116,7 +116,7 @@ test("fines evidence drawer, comparison and monthly chart marks remain interacti
   await expect(page.getByRole("button", { name: /Compare selections|Exit compare mode/ })).toBeVisible({ timeout: 30_000 });
   if (await enterComparison.isVisible()) await enterComparison.click();
   await expect(page.getByRole("button", { name: "Exit compare mode" })).toBeVisible({ timeout: 30_000 });
-  const yearButtons = page.locator("section", {
+  const yearButtons = page.locator("section.workspace-card", {
     has: page.getByRole("heading", { name: "Select years" }),
   }).getByRole("button");
   await expect(yearButtons.nth(0)).toBeVisible({ timeout: 30_000 });
