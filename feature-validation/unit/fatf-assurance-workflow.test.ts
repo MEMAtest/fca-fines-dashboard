@@ -32,4 +32,19 @@ describe("FATF source-assurance workflow", () => {
     );
     expect(workflow).toMatch(/source-health:\n    name: Country risk source health and alerting\n    if: always\(\)/);
   });
+
+  it("closes the weekly sanctions promotion alert after a recovered run", () => {
+    const artifact = workflow.indexOf("name: sanctions-legal-evidence-review");
+    const openAlert = workflow.indexOf("name: Open or update the sanctions promotion alert");
+    const closeAlert = workflow.indexOf("name: Close a resolved sanctions promotion alert");
+    expect(artifact).toBeGreaterThan(-1);
+    expect(openAlert).toBeGreaterThan(artifact);
+    expect(closeAlert).toBeGreaterThan(openAlert);
+    expect(workflow).toContain("name: Close a resolved sanctions promotion alert\n        if: success()");
+    expect(workflow).toContain("Weekly sanctions promotion recovered in workflow run");
+    expect(workflow).toContain("state: 'closed'");
+    expect(workflow).toContain("country-risk-sanctions-promotion");
+    expect(workflow).toContain("country-risk-weekly-sanctions-promotion-alert");
+    expect(workflow).toContain("!issue.pull_request");
+  });
 });

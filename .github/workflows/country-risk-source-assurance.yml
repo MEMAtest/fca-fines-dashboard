@@ -133,21 +133,35 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: gh pr merge --squash "${{ steps.snapshot_pr.outputs.pull-request-number }}"
+      - if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: sanctions-legal-evidence-review
+          path: |
+            /tmp/country-risk-sanctions-review.json
+            /tmp/country-risk-sanctions-census.json
+            /tmp/country-risk-sanctions-census.md
+            /tmp/country-risk-sanctions-legal-evidence.json
+            /tmp/country-risk-sanctions-taxonomy-review.json
+            /tmp/country-risk-sanctions-taxonomy-review.md
+            /tmp/country-risk-sanctions-deterministic-review.json
+            /tmp/country-risk-v2-score-run.json
+            /tmp/country-risk-v2-validation.json
       # The weekly promotion is the only lane that publishes a sanctions
-      # snapshot, and until now its failure was silent: the daily lane keeps
-      # passing because it only checks catalogue health, and the source-health
-      # alert below fires on that check rather than on this job. When this broke
-      # on 23 August 2026 nothing raised it — the snapshot simply aged out, and
-      # the only symptom eight days later was a unit test tripping the 8-day
-      # freshness threshold. That is far too indirect for sanctions data.
+      # snapshot. Alert only after the artifact step so close/update decisions
+      # reflect the terminal state of the whole promotion job.
       - name: Open or update the sanctions promotion alert
         if: failure()
         uses: actions/github-script@v7
         with:
           script: |
             const title = '[Country Risk] Weekly sanctions promotion failed';
+            const alertLabel = 'country-risk-sanctions-promotion';
+            const marker = '<!-- country-risk-weekly-sanctions-promotion-alert -->';
+            const legacyMarker = 'The weekly sanctions promotion lane failed, so the published snapshot is not being refreshed.';
             const body = [
-              'The weekly sanctions promotion lane failed, so the published snapshot is not being refreshed.',
+              marker,
+              legacyMarker,
               '',
               'Until it is fixed the snapshot ages, and `countryRiskSources` marks `sanctions-regimes`',
               'stale once it passes the 8-day threshold. **Do not suppress that** — it is the control working.',
@@ -166,7 +180,12 @@ jobs:
               labels: 'country-risk',
               per_page: 100,
             });
-            const existing = issues.find((issue) => !issue.pull_request && issue.title === title);
+            const isPromotionAlert = (issue) => !issue.pull_request
+              && issue.title === title
+              && (issue.labels.some((label) => label.name === alertLabel)
+                || issue.body?.includes(marker)
+                || issue.body?.includes(legacyMarker));
+            const existing = issues.find(isPromotionAlert);
             if (existing) {
               await github.rest.issues.update({
                 owner: context.repo.owner,
@@ -174,29 +193,58 @@ jobs:
                 issue_number: existing.number,
                 body,
               });
+              if (!existing.labels.some((label) => label.name === alertLabel)) {
+                await github.rest.issues.addLabels({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  issue_number: existing.number,
+                  labels: [alertLabel],
+                });
+              }
             } else {
               await github.rest.issues.create({
                 owner: context.repo.owner,
                 repo: context.repo.repo,
                 title,
                 body,
-                labels: ['country-risk'],
+                labels: ['country-risk', alertLabel],
               });
             }
-      - if: always()
-        uses: actions/upload-artifact@v4
+      - name: Close a resolved sanctions promotion alert
+        if: success()
+        uses: actions/github-script@v7
         with:
-          name: sanctions-legal-evidence-review
-          path: |
-            /tmp/country-risk-sanctions-review.json
-            /tmp/country-risk-sanctions-census.json
-            /tmp/country-risk-sanctions-census.md
-            /tmp/country-risk-sanctions-legal-evidence.json
-            /tmp/country-risk-sanctions-taxonomy-review.json
-            /tmp/country-risk-sanctions-taxonomy-review.md
-            /tmp/country-risk-sanctions-deterministic-review.json
-            /tmp/country-risk-v2-score-run.json
-            /tmp/country-risk-v2-validation.json
+          script: |
+            const title = '[Country Risk] Weekly sanctions promotion failed';
+            const alertLabel = 'country-risk-sanctions-promotion';
+            const marker = '<!-- country-risk-weekly-sanctions-promotion-alert -->';
+            const legacyMarker = 'The weekly sanctions promotion lane failed, so the published snapshot is not being refreshed.';
+            const { data: issues } = await github.rest.issues.listForRepo({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              state: 'open',
+              labels: 'country-risk',
+              per_page: 100,
+            });
+            const existing = issues.find((issue) => !issue.pull_request
+              && issue.title === title
+              && (issue.labels.some((label) => label.name === alertLabel)
+                || issue.body?.includes(marker)
+                || issue.body?.includes(legacyMarker)));
+            if (existing) {
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: existing.number,
+                body: `Weekly sanctions promotion recovered in workflow run ${context.runId}; source persistence, deterministic classification, score verification, tests and build passed.`,
+              });
+              await github.rest.issues.update({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: existing.number,
+                state: 'closed',
+              });
+            }
 
   fatf-weekly-fragile:
     if: (github.event_name == 'schedule' && github.event.schedule == '23 6 * * 0') || inputs.lane == 'weekly' || inputs.lane == 'all'
