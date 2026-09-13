@@ -1,3 +1,4 @@
+import { timingSafeEqual } from 'node:crypto';
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 import { getDailySummary } from '../server/services/analytics.js';
 
@@ -31,7 +32,33 @@ function formatCurrency(amount: number) {
   return new Intl.NumberFormat('en-GB', { style: 'currency', currency: 'GBP', maximumFractionDigits: 0 }).format(amount);
 }
 
-export default async function handler(_req: VercelRequest, res: VercelResponse) {
+export function isDailyDigestAuthorised(
+  authorization: string | string[] | undefined,
+  cronSecret: string | undefined,
+) {
+  const expected = cronSecret?.trim();
+  const suppliedHeader = Array.isArray(authorization) ? authorization[0] : authorization;
+  const match = suppliedHeader?.match(/^Bearer\s+(.+)$/i);
+  const supplied = match?.[1]?.trim();
+
+  if (!expected || !supplied) return false;
+
+  const expectedBytes = Buffer.from(expected, 'utf8');
+  const suppliedBytes = Buffer.from(supplied, 'utf8');
+  return expectedBytes.length === suppliedBytes.length
+    && timingSafeEqual(expectedBytes, suppliedBytes);
+}
+
+export default async function handler(req: VercelRequest, res: VercelResponse) {
+  if (req.method !== 'GET') {
+    res.setHeader('Allow', 'GET');
+    return res.status(405).json({ success: false, error: 'Method not allowed' });
+  }
+
+  if (!isDailyDigestAuthorised(req.headers.authorization, process.env.CRON_SECRET)) {
+    return res.status(401).json({ success: false, error: 'Unauthorized' });
+  }
+
   try {
     const since = new Date(Date.now() - 24 * 60 * 60 * 1000);
     const summary = await getDailySummary(since);
