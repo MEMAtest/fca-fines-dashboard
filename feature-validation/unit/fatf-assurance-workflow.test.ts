@@ -18,4 +18,18 @@ describe("FATF source-assurance workflow", () => {
     expect(workflow).toContain("steps.fatf_lists.outputs.outcome == 'drift'");
     expect(workflow).toContain("Block promotion when FATF drift or an unexpected verifier error is detected");
   });
+
+  it("avoids concurrent database writers in weekly and all-lanes runs", () => {
+    expect(workflow).toContain("group: country-risk-source-assurance-writers");
+    expect(workflow).toContain("cancel-in-progress: false");
+    expect(workflow).toContain("queue: max");
+    expect(workflow).toContain(
+      "if: (github.event_name == 'schedule' && github.event.schedule == '17 5 * * *') || inputs.lane == 'daily'",
+    );
+    expect(workflow).toContain("needs: sanctions-weekly-fragile-evidence");
+    expect(workflow).toContain(
+      "if: always() && ((github.event_name == 'schedule' && github.event.schedule == '31 7 1 * *') || inputs.lane == 'monthly' || inputs.lane == 'all')",
+    );
+    expect(workflow).toMatch(/source-health:\n    name: Country risk source health and alerting\n    if: always\(\)/);
+  });
 });

@@ -17,9 +17,18 @@ permissions:
   issues: write
   pull-requests: write
 
+# Cron entries create separate workflow runs. Keep their database-writing lanes
+# mutually exclusive as well as serializing jobs within a manual all-lanes run.
+concurrency:
+  group: country-risk-source-assurance-writers
+  cancel-in-progress: false
+  queue: max
+
 jobs:
   sanctions-daily:
-    if: github.event_name == 'schedule' || inputs.lane == 'daily' || inputs.lane == 'all'
+    # Weekly/all runs already perform the same sanctions catalogue check in the
+    # fragile-evidence lane. Avoid opening two simultaneous database writers.
+    if: (github.event_name == 'schedule' && github.event.schedule == '17 5 * * *') || inputs.lane == 'daily'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -283,7 +292,12 @@ jobs:
           exit 1
 
   monthly-release-detection:
-    if: (github.event_name == 'schedule' && github.event.schedule == '31 7 1 * *') || inputs.lane == 'monthly' || inputs.lane == 'all'
+    # In an explicit all-lanes run, wait for the weekly evidence promotion so
+    # the external database is never contended by independent writers. The
+    # monthly schedule still runs after the skipped dependency because of
+    # always().
+    needs: sanctions-weekly-fragile-evidence
+    if: always() && ((github.event_name == 'schedule' && github.event.schedule == '31 7 1 * *') || inputs.lane == 'monthly' || inputs.lane == 'all')
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
