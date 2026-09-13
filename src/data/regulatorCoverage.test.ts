@@ -355,13 +355,14 @@ describe("regulatorCoverage", () => {
     expect(getRegulatorCoverage("JFSC")?.feedContract.zeroResultPolicy).toBe(
       "sparse_source",
     );
-    for (const code of ["AMMC", "IOMFSA", "HKMA"]) {
+    for (const code of ["AMMC", "GFSC", "IOMFSA", "HKMA"]) {
       expect(getRegulatorCoverage(code)?.automationLevel).toBe("low_frequency");
       expect(getRegulatorCoverage(code)?.feedContract.zeroResultPolicy).toBe(
         "investigate",
       );
     }
     expect(getRegulatorCoverage("AMMC")?.feedContract.staleAfterDays).toBe(180);
+    expect(getRegulatorCoverage("GFSC")?.feedContract.staleAfterDays).toBe(180);
     expect(getRegulatorCoverage("IOMFSA")?.feedContract.staleAfterDays).toBe(365);
     expect(getRegulatorCoverage("HKMA")?.feedContract.staleAfterDays).toBe(365);
     expect(getRegulatorCoverage("SEC")?.operationalConfidence).toBe("standard");

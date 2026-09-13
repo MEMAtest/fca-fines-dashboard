@@ -144,6 +144,33 @@ export function evaluateLiveRegulatorHealth(
     };
   }
 
+  if (
+    coverage.feedContract.minimumHealthyRecords > 0
+    && stats.recordCount < coverage.feedContract.minimumHealthyRecords
+  ) {
+    return {
+      regulator: coverage.code,
+      fullName: coverage.fullName,
+      cadence,
+      confidence: coverage.operationalConfidence,
+      automationLevel: coverage.automationLevel,
+      recordCount: stats.recordCount,
+      earliestRecordDate: stats.earliestRecordDate,
+      latestRecordDate: stats.latestRecordDate,
+      futureRecordCount,
+      latestFutureRecordDate,
+      ageDays,
+      freshnessWindowDays,
+      minimumHealthyRecords: coverage.feedContract.minimumHealthyRecords,
+      zeroResultPolicy: coverage.feedContract.zeroResultPolicy,
+      sourceContractSummary: coverage.feedContract.sourceContractSummary,
+      operatorAction: coverage.feedContract.operatorAction,
+      status: "warning",
+      severity: "action_required",
+      message: `Record count is ${stats.recordCount}, below the healthy floor of ${coverage.feedContract.minimumHealthyRecords} for this feed contract.`,
+    };
+  }
+
   if (ageDays > freshnessWindowDays) {
     return {
       regulator: coverage.code,
@@ -170,33 +197,6 @@ export function evaluateLiveRegulatorHealth(
           ? "watch"
           : "action_required",
       message: `Latest record is ${ageDays} days old, outside the ${freshnessWindowDays}-day ${cadence} source-contract window.`,
-    };
-  }
-
-  if (
-    coverage.feedContract.minimumHealthyRecords > 0
-    && stats.recordCount < coverage.feedContract.minimumHealthyRecords
-  ) {
-    return {
-      regulator: coverage.code,
-      fullName: coverage.fullName,
-      cadence,
-      confidence: coverage.operationalConfidence,
-      automationLevel: coverage.automationLevel,
-      recordCount: stats.recordCount,
-      earliestRecordDate: stats.earliestRecordDate,
-      latestRecordDate: stats.latestRecordDate,
-      futureRecordCount,
-      latestFutureRecordDate,
-      ageDays,
-      freshnessWindowDays,
-      minimumHealthyRecords: coverage.feedContract.minimumHealthyRecords,
-      zeroResultPolicy: coverage.feedContract.zeroResultPolicy,
-      sourceContractSummary: coverage.feedContract.sourceContractSummary,
-      operatorAction: coverage.feedContract.operatorAction,
-      status: "warning",
-      severity: "action_required",
-      message: `Record count is ${stats.recordCount}, below the healthy floor of ${coverage.feedContract.minimumHealthyRecords} for this feed contract.`,
     };
   }
 
