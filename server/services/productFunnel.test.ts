@@ -108,7 +108,14 @@ describe("privacy-safe product funnel events", () => {
     }, eventId)!;
     await expect(recordProductFunnelEvent(event, sql)).resolves.toEqual({ recorded: true, eventName: "board_pack_downloaded" });
     expect(sql).toHaveBeenCalledTimes(1);
-    const parameters = (sql as unknown as ReturnType<typeof vi.fn>).mock.calls[0]?.[1] as unknown[];
+    const [query, parameters] = (sql as unknown as ReturnType<typeof vi.fn>).mock.calls[0] as [string, unknown[]];
+    const columnList = query.match(/INSERT INTO public\.product_funnel_events \(\s*([\s\S]*?)\s*\)\s*VALUES/);
+    const valuesList = query.match(/VALUES \(\s*([\s\S]*?)\s*\)\s*ON CONFLICT/);
+    const columns = columnList?.[1].split(",").map((column) => column.trim()).filter(Boolean) ?? [];
+    const placeholders = [...(valuesList?.[1].matchAll(/\$(\d+)/g) ?? [])].map((match) => Number(match[1]));
+
+    expect(columns).toHaveLength(parameters.length);
+    expect(placeholders).toEqual(parameters.map((_, index) => index + 1));
     expect(parameters).toContain("retail_bank");
     expect(parameters).not.toContain("Private Bank");
   });
