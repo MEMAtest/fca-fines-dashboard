@@ -62,6 +62,9 @@ jobs:
           npx playwright install --with-deps chromium
           sudo apt-get update
           sudo apt-get install --yes poppler-utils
+      - name: Record acceptance window
+        id: acceptance_window
+        run: echo "started_at=$(date -u '+%Y-%m-%dT%H:%M:%SZ')" >> "$GITHUB_OUTPUT"
       - name: Run production acceptance
         id: browser_acceptance
         continue-on-error: true
@@ -89,8 +92,8 @@ jobs:
           VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
         run: |
           mkdir -p artifacts/production-acceptance
-          npx --yes vercel@latest logs --project "$VERCEL_PROJECT_ID" --scope "$VERCEL_ORG_ID" --environment production --level error --level warning --since 5m --no-branch --no-follow --json --token "$VERCEL_TOKEN" > artifacts/production-acceptance/vercel-warnings-errors.jsonl
-          npx --yes vercel@latest logs --project "$VERCEL_PROJECT_ID" --scope "$VERCEL_ORG_ID" --environment production --status-code 5xx --since 5m --no-branch --no-follow --json --token "$VERCEL_TOKEN" > artifacts/production-acceptance/vercel-5xx.jsonl
+          npx --yes vercel@latest logs --project "$VERCEL_PROJECT_ID" --scope "$VERCEL_ORG_ID" --environment production --level error --level warning --since "${{ steps.acceptance_window.outputs.started_at }}" --no-branch --no-follow --json --token "$VERCEL_TOKEN" > artifacts/production-acceptance/vercel-warnings-errors.jsonl
+          npx --yes vercel@latest logs --project "$VERCEL_PROJECT_ID" --scope "$VERCEL_ORG_ID" --environment production --status-code 5xx --since "${{ steps.acceptance_window.outputs.started_at }}" --no-branch --no-follow --json --token "$VERCEL_TOKEN" > artifacts/production-acceptance/vercel-5xx.jsonl
           if [ -s artifacts/production-acceptance/vercel-warnings-errors.jsonl ] || [ -s artifacts/production-acceptance/vercel-5xx.jsonl ]; then
             echo "Vercel reported a warning, error, or 5xx during the acceptance window." >&2
             exit 1

@@ -23,8 +23,10 @@ describe("production acceptance workflow", () => {
     );
   });
 
-  it("limits both Vercel log queries to the current acceptance window", () => {
-    expect(workflow.match(/--since 5m/g)).toHaveLength(2);
+  it("limits both Vercel log queries to the full current acceptance window", () => {
+    expect(workflow).toContain('id: acceptance_window');
+    expect(workflow.match(/--since "\$\{\{ steps\.acceptance_window\.outputs\.started_at \}\}"/g)).toHaveLength(2);
+    expect(workflow).not.toContain("--since 5m");
     expect(workflow).not.toContain("--since 30m");
   });
 });
