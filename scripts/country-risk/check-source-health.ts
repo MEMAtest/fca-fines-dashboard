@@ -4,6 +4,7 @@ import { writeFile } from "node:fs/promises";
 import { countryRiskSourcesAsOf } from "../../src/data/countryRiskSources.js";
 import {
   assessCountryRiskSourceHealth,
+  shouldFailCountryRiskSourceHealth,
   type CountryRiskOperationalSourceRun,
   type CountryRiskSourceHealthReport,
 } from "../../src/data/countryRiskSourceHealth.js";
@@ -29,7 +30,7 @@ function markdown(report: CountryRiskSourceHealthReport): string {
     "",
     issueLines,
     "",
-    "Source failures, empty responses, missing hashes, stale runs and review-required states fail closed.",
+    "Critical source failures, empty responses, missing hashes, stale runs and review-required states fail closed. Current retained-evidence unavailability remains a visible watch.",
     "",
   ].join("\n");
 }
@@ -102,7 +103,7 @@ async function main() {
     jsonReport: JSON_OUTPUT,
     markdownReport: MARKDOWN_OUTPUT,
   }, null, 2));
-  if (!report.readyForScoring || report.status !== "healthy") process.exitCode = 1;
+  if (shouldFailCountryRiskSourceHealth(report)) process.exitCode = 1;
 }
 
 main().catch(async (error) => {

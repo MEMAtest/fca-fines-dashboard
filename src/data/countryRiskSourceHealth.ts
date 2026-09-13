@@ -43,6 +43,15 @@ export interface CountryRiskSourceHealthReport {
   issues: CountryRiskSourceHealthIssue[];
 }
 
+/**
+ * A warning is an operator watch backed by current retained evidence. It must
+ * remain visible in the report without turning the assurance workflow red.
+ * Critical findings still fail closed and block scoring.
+ */
+export function shouldFailCountryRiskSourceHealth(report: CountryRiskSourceHealthReport): boolean {
+  return !report.readyForScoring || report.status === "critical";
+}
+
 interface OperationalRule {
   id: string;
   maximumAgeDays: number;

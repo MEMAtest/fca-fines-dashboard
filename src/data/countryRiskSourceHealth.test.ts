@@ -3,6 +3,7 @@ import type { CountryRiskSourceStatus } from "./countryRiskSources.js";
 import {
   assessCountryRiskSourceHealth,
   COUNTRY_RISK_OPERATIONAL_SOURCE_RULES,
+  shouldFailCountryRiskSourceHealth,
   type CountryRiskOperationalSourceRun,
 } from "./countryRiskSourceHealth.js";
 
@@ -78,6 +79,7 @@ describe("country-risk source health", () => {
         code: "operational-run-review-required",
       }),
     ]);
+    expect(shouldFailCountryRiskSourceHealth(report)).toBe(true);
   });
 
   it("flags stale operational evidence and unhealthy declared scored sources", () => {
@@ -126,6 +128,7 @@ describe("country-risk source health", () => {
         code: "operational-run-unavailable",
       }),
     ]);
+    expect(shouldFailCountryRiskSourceHealth(report)).toBe(false);
   });
 
   it("turns retained FATF evidence critical when the last success exceeds 14 days", () => {
@@ -145,6 +148,7 @@ describe("country-risk source health", () => {
     const report = assessCountryRiskSourceHealth({ asOf, declaredSources, operationalRuns: runs });
     expect(report.status).toBe("critical");
     expect(report.readyForScoring).toBe(false);
+    expect(shouldFailCountryRiskSourceHealth(report)).toBe(true);
     expect(report.issues).toEqual(expect.arrayContaining([
       expect.objectContaining({ code: "operational-run-unavailable", severity: "warning" }),
       expect.objectContaining({ code: "operational-run-stale", severity: "critical" }),
