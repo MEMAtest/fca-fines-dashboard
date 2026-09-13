@@ -16,6 +16,62 @@ const retainedSource: CountryRiskSourceStatus = {
 };
 
 describe("FATF list attempt persistence", () => {
+  it("records a successful live verification so an earlier unavailable watch clears", () => {
+    const attempt = buildFatfListAttempt({
+      outcome: "verified",
+      retainedSource,
+      report: {
+        checkedAt: "2026-07-20T06:23:00.000Z",
+        sourceUrl: retainedSource.sourceUrl,
+        sha256: "live-hash",
+        liveBlack: ["IR", "MM", "KP"],
+        liveGrey: ["AE", "BG"],
+        diff: { inSync: true },
+      },
+    });
+
+    expect(attempt).toMatchObject({
+      status: "succeeded",
+      attemptedAt: "2026-07-20T06:23:00.000Z",
+      sha256: "live-hash",
+      recordCount: 5,
+      errorMessage: null,
+      metadata: {
+        outcome: "verified",
+        retainedEvidence: false,
+        liveBlackCount: 3,
+        liveGreyCount: 2,
+      },
+    });
+  });
+
+  it("rejects a verified attempt without complete live evidence", () => {
+    expect(() => buildFatfListAttempt({
+      outcome: "verified",
+      retainedSource,
+      report: {
+        checkedAt: "2026-07-20T06:23:00.000Z",
+        sourceUrl: retainedSource.sourceUrl,
+        diff: { inSync: true },
+      },
+    })).toThrow("requires a source hash, an in-sync comparison and at least one listed jurisdiction");
+  });
+
+  it("rejects an alleged verified attempt whose live comparison shows drift", () => {
+    expect(() => buildFatfListAttempt({
+      outcome: "verified",
+      retainedSource,
+      report: {
+        checkedAt: "2026-07-20T06:23:00.000Z",
+        sourceUrl: retainedSource.sourceUrl,
+        sha256: "live-hash",
+        liveBlack: ["IR", "MM", "KP"],
+        liveGrey: ["AE", "BG"],
+        diff: { inSync: false },
+      },
+    })).toThrow("requires a source hash, an in-sync comparison and at least one listed jurisdiction");
+  });
+
   it("records transport unavailability without pretending retained evidence was retrieved again", () => {
     const attempt = buildFatfListAttempt({
       outcome: "unavailable",
@@ -66,6 +122,22 @@ describe("FATF list attempt persistence", () => {
         liveBlackCount: 3,
         liveGreyCount: 2,
       },
+    });
+  });
+
+  it("records verifier errors as failed attempts without claiming retained evidence", () => {
+    const attempt = buildFatfListAttempt({
+      outcome: "error",
+      retainedSource,
+      report: { error: "browser process crashed" },
+    });
+
+    expect(attempt).toMatchObject({
+      status: "failed",
+      sha256: null,
+      recordCount: 0,
+      errorMessage: "browser process crashed",
+      metadata: { outcome: "error", retainedEvidence: false },
     });
   });
 });
