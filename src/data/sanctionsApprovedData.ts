@@ -69,12 +69,12 @@ export interface ApprovedSanctionsCoverageCell {
 }
 
 export const SANCTIONS_APPROVED_SNAPSHOT: ApprovedSanctionsSnapshotMetadata = {
-  "version": "sanctions-2026-09-10-9662dc302601",
+  "version": "sanctions-2026-09-13-944d65bdef22",
   "coverageComplete": true,
-  "effectiveAt": "2026-09-10",
-  "generatedAt": "2026-09-10T13:47:26.005Z",
-  "sha256": "9662dc302601dd1ff78ca929ce3fe02060c46c21b367ef2dbc2c429abdc536c0",
-  "sourceReportSha256": "158d5dda1c93a6434f1d205571afb6ba1a9f0c9e66f7d3ace6281eb8b3efd9fa",
+  "effectiveAt": "2026-09-13",
+  "generatedAt": "2026-09-13T20:00:54.644Z",
+  "sha256": "944d65bdef22fc1a1c57a84681ee3ed76282698e4fd22419758d68789456c261",
+  "sourceReportSha256": "5a8a0b2c3e697f90f6cae94eb68b4c41cbdb75783a13309d0c11f439ebc1d312",
   "candidateCount": 117,
   "approvedCount": 107,
   "rejectedCount": 10,
@@ -83,29 +83,29 @@ export const SANCTIONS_APPROVED_SNAPSHOT: ApprovedSanctionsSnapshotMetadata = {
     {
       "id": "eu-resources",
       "url": "https://sanctionsmap.eu/api/v1/regime?lang=en",
-      "retrievedAt": "2026-09-10T13:46:02.346Z",
+      "retrievedAt": "2026-09-13T19:59:23.342Z",
       "rawSha256": "fafe2abb9a9c499b9f5de29112e4d066ba19bf5cd5dd74298d99693b9bad4ee7",
       "fingerprint": "caaf9c3067d99f9489b82ce142cf8a1097cb851aa7da75024db7111439bd5e2a"
     },
     {
       "id": "ofac-programmes",
       "url": "https://ofac.treasury.gov/sanctions-programs-and-country-information",
-      "retrievedAt": "2026-09-10T13:46:01.127Z",
-      "rawSha256": "0d15a18b34dfe581e8852e55dcba4c525ce13df4025cba2755ed9e27a93ffa90",
+      "retrievedAt": "2026-09-13T19:59:21.749Z",
+      "rawSha256": "72202cb22422a2540f71128b3d7a5054bc5e791ca147500c9b23caa75f15aca7",
       "fingerprint": "d3df79aa9536697ce70eb3b597823e034cbe465ab3d6264cf55a420e69cfaeef"
     },
     {
       "id": "uk-regimes",
       "url": "https://www.gov.uk/government/collections/uk-sanctions-regimes-under-the-sanctions-act",
-      "retrievedAt": "2026-09-10T13:46:01.100Z",
-      "rawSha256": "5a6e9d4be0610c5bee8edfb462f9a0760f2583beda41c53f5b8aca329b3c90bf",
+      "retrievedAt": "2026-09-13T19:59:22.791Z",
+      "rawSha256": "982e528b81e09732013e89206b32ba0f81fd57501cc54530303810630cc827fe",
       "fingerprint": "99c593f83bad903a3f31beaab0783ba46ff49a4a8998ec43f7a046e2010717d3"
     },
     {
       "id": "un-consolidated-list",
       "url": "https://scsanctions.un.org/resources/xml/en/name/consolidated.xml",
-      "retrievedAt": "2026-09-10T13:46:01.433Z",
-      "rawSha256": "1e77475d55ac49fa8b7832798f6d9c7c5663060957eb2491332ed7aa19917d68",
+      "retrievedAt": "2026-09-13T19:59:23.148Z",
+      "rawSha256": "61d014b34e5176564eb2b863c8511d0440e7e0b236f7acaa690438a7caf7194d",
       "fingerprint": "293d47ec8abcf223a380298c33afa4bd0dc55b68d323edae28a3f492ee6ca41a"
     }
   ],
@@ -129,7 +129,7 @@ export const SANCTIONS_APPROVED_STATUS: ApprovedCountrySanctions[] = [
         "evidenceUrl": "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX%3A02011R0753-20240913&qid=1751294529505",
         "reviewedBy": "RegActions deterministic sanctions classifier v2",
         "reviewerOrganisation": "RegActions automated evidence system",
-        "reviewedAt": "2026-09-10T13:46:16.668Z",
+        "reviewedAt": "2026-09-13T19:59:38.396Z",
         "reviewNote": "Prepared measure-specific legal facts reproduce the published deterministic tier. Classification: A material class of ordinary transactions is restricted beyond named targets. External practitioner validation is not claimed.",
         "legalStatus": "active",
         "legalInstrumentId": "13.09.2024 consolidated basic legal act - (EU) No 753/2011",
@@ -156,7 +156,7 @@ export const SANCTIONS_APPROVED_STATUS: ApprovedCountrySanctions[] = [
         "evidenceUrl": "https://ofac.treasury.gov/recent-actions/20220211",
         "reviewedBy": "RegActions deterministic sanctions classifier v2",
         "reviewerOrganisation": "RegActions automated evidence system",
-        "reviewedAt": "2026-09-10T13:46:16.668Z",
+        "reviewedAt": "2026-09-13T19:59:38.396Z",
         "reviewNote": "The programme is present in the current official catalogue and the versioned scope rule reproduces the published tier from the linked measure-specific evidence. Classification: The active direct programme is principally designation-led. External practitioner validation is not claimed.",
         "legalStatus": "active",
         "legalInstrumentId": "Issuance of Executive Order Protecting Certain Property of Da Afghanistan Bank for the Benefit of the People of Afghanistan",
@@ -171,7 +171,7 @@ export const SANCTIONS_APPROVED_STATUS: ApprovedCountrySanctions[] = [
           "financial-restriction",
           "import-restriction"
         ],
-        "evidenceLocator": "Afghanistan-Related Sanctions; official evidence page and linked legal-source inventory; source SHA-256 d1527ea09991005842353d0be06fbf84cffab954c16dceb199cc8c8d38e1c127"
+        "evidenceLocator": "Afghanistan-Related Sanctions; official evidence page and linked legal-source inventory; source SHA-256 e496c686b528ece89b9803906219f3e44fbbf8990db6cb8dfb0f6644fde706d2"
       },
       {
         "imposer": "UK",
@@ -184,7 +184,7 @@ export const SANCTIONS_APPROVED_STATUS: ApprovedCountrySanctions[] = [
         "evidenceUrl": "https://www.legislation.gov.uk/uksi/2020/948",
         "reviewedBy": "RegActions deterministic sanctions classifier v2",
         "reviewerOrganisation": "RegActions automated evidence system",
-        "reviewedAt": "2026-09-10T13:46:16.668Z",
+        "reviewedAt": "2026-09-13T19:59:38.396Z",
         "reviewNote": "The programme is present in the current official catalogue and the versioned scope rule reproduces the published tier from the linked measure-specific evidence. Classification: The active direct programme is principally designation-led. External practitioner validation is not claimed.",
         "legalStatus": "active",
         "legalInstrumentId": "Afghanistan (Sanctions) (EU Exit) Regulations 2020",
@@ -201,7 +201,7 @@ export const SANCTIONS_APPROVED_STATUS: ApprovedCountrySanctions[] = [
           "services-restriction",
           "travel-ban"
         ],
-        "evidenceLocator": "Afghanistan sanctions: guidance; official evidence page and linked legal-source inventory; source SHA-256 cf0ddee2a2cfb0aaf0cdd71cfe176e5610f139b9dde2db2eaff39b0b9ac755c7"
+        "evidenceLocator": "Afghanistan sanctions: guidance; official evidence page and linked legal-source inventory; source SHA-256 3a253e85282a044113aac80f184edf9863f947d6b4b3f2790c92af782fcbeda4"
       },
       {
         "imposer": "UN",
@@ -214,7 +214,7 @@ export const SANCTIONS_APPROVED_STATUS: ApprovedCountrySanctions[] = [
         "evidenceUrl": "https://main.un.org/securitycouncil/en/content/resolutions-0",
         "reviewedBy": "RegActions deterministic sanctions classifier v2",
         "reviewerOrganisation": "RegActions automated evidence system",
-        "reviewedAt": "2026-09-10T13:46:16.668Z",
+        "reviewedAt": "2026-09-13T19:59:38.396Z",
         "reviewNote": "The programme is present in the current official catalogue and the versioned scope rule reproduces the published tier from the linked measure-specific evidence. Classification: The active direct programme is principally designation-led. External practitioner validation is not claimed.",
         "legalStatus": "active",
         "legalInstrumentId": "Resolutions",
@@ -229,7 +229,7 @@ export const SANCTIONS_APPROVED_STATUS: ApprovedCountrySanctions[] = [
           "transport-restriction",
           "travel-ban"
         ],
-        "evidenceLocator": "Security Council Committee established pursuant to resolution 1988 (2011); official evidence page and linked legal-source inventory; source SHA-256 4f75008e35998e737aa2b65a4b9b8780691a0117cd49f1969c381eae7cb035b8"
+        "evidenceLocator": "Security Council Committee established pursuant to resolution 1988 (2011); official evidence page and linked legal-source inventory; source SHA-256 7ecc5e8e16fbe7fa65269ee4e77043a7e74ba4996579024f716ca0fd76aadf7b"
       }
     ]
   },
@@ -247,7 +247,7 @@ export const SANCTIONS_APPROVED_STATUS: ApprovedCountrySanctions[] = [
         "evidenceUrl": "https://data.europa.eu/eli/dec/2011/173/2026-03-31",
         "reviewedBy": "RegActions deterministic sanctions classifier v2",
         "reviewerOrganisation": "RegActions automated evidence system",
-        "reviewedAt": "2026-09-10T13:46:16.668Z",
+        "reviewedAt": "2026-09-13T19:59:38.396Z",
         "reviewNote": "Prepared measure-specific legal facts reproduce the published deterministic tier. Classification: The active direct programme is principally designation-led. External practitioner validation is not claimed.",
         "legalStatus": "active",
         "legalInstrumentId": "31.03.2026 consolidated basic legal act - 2011/173/CFSP",
@@ -272,7 +272,7 @@ export const SANCTIONS_APPROVED_STATUS: ApprovedCountrySanctions[] = [
         "evidenceUrl": "https://www.legislation.gov.uk/uksi/2020/608/contents",
         "reviewedBy": "RegActions deterministic sanctions classifier v2",
         "reviewerOrganisation": "RegActions automated evidence system",
-        "reviewedAt": "2026-09-10T13:46:16.668Z",
+        "reviewedAt": "2026-09-13T19:59:38.396Z",
         "reviewNote": "The programme is present in the current official catalogue and the versioned scope rule reproduces the published tier from the linked measure-specific evidence. Classification: The active direct programme is principally designation-led. External practitioner validation is not claimed.",
         "legalStatus": "active",
         "legalInstrumentId": "Bosnia and Herzegovina (Sanctions) (EU Exit) Regulations 2020",
@@ -287,7 +287,7 @@ export const SANCTIONS_APPROVED_STATUS: ApprovedCountrySanctions[] = [
           "financial-restriction",
           "travel-ban"
         ],
-        "evidenceLocator": "Bosnia and Herzegovina sanctions: guidance; official evidence page and linked legal-source inventory; source SHA-256 197b5e53f8d7a5a8cbca77828097c115f450bbf1773ad7b49a4791afdfbfabae"
+        "evidenceLocator": "Bosnia and Herzegovina sanctions: guidance; official evidence page and linked legal-source inventory; source SHA-256 d61f34d2c0de37324df3a681f2dd9bd49079e3667a43ed62bc96bff4c0392df9"
       }
     ]
   },
@@ -305,7 +305,7 @@ export const SANCTIONS_APPROVED_STATUS: ApprovedCountrySanctions[] = [
         "evidenceUrl": "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX%3A02015R1755-20250924",
         "reviewedBy": "RegActions deterministic sanctions classifier v2",
         "reviewerOrganisation": "RegActions automated evidence system",
-        "reviewedAt": "2026-09-10T13:46:16.668Z",
+        "reviewedAt": "2026-09-13T19:59:38.396Z",
         "reviewNote": "Prepared measure-specific legal facts reproduce the published deterministic tier. Classification: A material class of ordinary transactions is restricted beyond named targets. External practitioner validation is not claimed.",
         "legalStatus": "active",
         "legalInstrumentId": "24.09.2025 consolidated basic legal act - (EU) 2015/1755",
@@ -336,7 +336,7 @@ export const SANCTIONS_APPROVED_STATUS: ApprovedCountrySanctions[] = [
         "evidenceUrl": "https://data.europa.eu/eli/reg/2006/765/2026-04-24",
         "reviewedBy": "RegActions deterministic sanctions classifier v2",
         "reviewerOrganisation": "RegActions automated evidence system",
-        "reviewedAt": "2026-09-10T13:46:16.668Z",
+        "reviewedAt": "2026-09-13T19:59:38.396Z",
         "reviewNote": "Prepared measure-specific legal facts reproduce the published deterministic tier. Classification: A material class of ordinary transactions is restricted beyond named targets. External practitioner validation is not claimed.",
         "legalStatus": "active",
         "legalInstrumentId": "24.04.2026 consolidated basic legal act - (EC) No 765/2006",
@@ -368,7 +368,7 @@ export const SANCTIONS_APPROVED_STATUS: ApprovedCountrySanctions[] = [
         "evidenceUrl": "https://www.ecfr.gov/cgi-bin/text-idx?SID=5eae22affe2e3675b6deaa3fb796eb7a&tpl=/ecfrbrowse/Title31/31cfr548_main_02.tpl",
         "reviewedBy": "RegActions deterministic sanctions classifier v2",
         "reviewerOrganisation": "RegActions automated evidence system",
-        "reviewedAt": "2026-09-10T13:46:16.668Z",
+        "reviewedAt": "2026-09-13T19:59:38.396Z",
         "reviewNote": "The programme is present in the current official catalogue and the versioned scope rule reproduces the published tier from the linked measure-specific evidence. Classification: A material class of ordinary transactions is restricted beyond named targets. External practitioner validation is not claimed.",
         "legalStatus": "active",
         "legalInstrumentId": "31 CFR Part 548",
@@ -380,7 +380,7 @@ export const SANCTIONS_APPROVED_STATUS: ApprovedCountrySanctions[] = [
           "commodity-restriction",
           "transport-restriction"
         ],
-        "evidenceLocator": "Belarus Sanctions; official evidence page and linked legal-source inventory; source SHA-256 8998034ef170727bceb409c1fba17afb51011ab2bf19eeff1ab5e75de50c3bd3"
+        "evidenceLocator": "Belarus Sanctions; official evidence page and linked legal-source inventory; source SHA-256 692f162162b0b5b2589d1bfc5990d8f36c6ea03155666cbb38fca421030abe0a"
       },
       {
         "imposer": "UK",
@@ -393,7 +393,7 @@ export const SANCTIONS_APPROVED_STATUS: ApprovedCountrySanctions[] = [
         "evidenceUrl": "https://www.legislation.gov.uk/uksi/2019/600/contents",
         "reviewedBy": "RegActions deterministic sanctions classifier v2",
         "reviewerOrganisation": "RegActions automated evidence system",
-        "reviewedAt": "2026-09-10T13:46:16.668Z",
+        "reviewedAt": "2026-09-13T19:59:38.396Z",
         "reviewNote": "The programme is present in the current official catalogue and the versioned scope rule reproduces the published tier from the linked measure-specific evidence. Classification: A material class of ordinary transactions is restricted beyond named targets. External practitioner validation is not claimed.",
         "legalStatus": "active",
         "legalInstrumentId": "Republic of Belarus (Sanctions) (EU Exit) Regulations 2019",
@@ -412,7 +412,7 @@ export const SANCTIONS_APPROVED_STATUS: ApprovedCountrySanctions[] = [
           "transport-restriction",
           "travel-ban"
         ],
-        "evidenceLocator": "Republic of Belarus sanctions: guidance; official evidence page and linked legal-source inventory; source SHA-256 a5b2bda53eb5d068d49e33045d2d35dc6a26868a4405e6257a8282c67117dc05"
+        "evidenceLocator": "Republic of Belarus sanctions: guidance; official evidence page and linked legal-source inventory; source SHA-256 fb673ea0c8d27706bf5ad065a2d0fc67d76c5eaf1a390bf46bde456ebba6f12c"
       }
     ]
   },
@@ -430,7 +430,7 @@ export const SANCTIONS_APPROVED_STATUS: ApprovedCountrySanctions[] = [
         "evidenceUrl": "https://data.europa.eu/eli/reg/2005/1183/2025-12-10",
         "reviewedBy": "RegActions deterministic sanctions classifier v2",
         "reviewerOrganisation": "RegActions automated evidence system",
-        "reviewedAt": "2026-09-10T13:46:16.668Z",
+        "reviewedAt": "2026-09-13T19:59:38.396Z",
         "reviewNote": "Prepared measure-specific legal facts reproduce the published deterministic tier. Classification: A material class of ordinary transactions is restricted beyond named targets. External practitioner validation is not claimed.",
         "legalStatus": "active",
         "legalInstrumentId": "10.12.2025 consolidated basic legal act - (EC) No 1183/2005",
@@ -459,7 +459,7 @@ export const SANCTIONS_APPROVED_STATUS: ApprovedCountrySanctions[] = [
         "evidenceUrl": "https://www.ecfr.gov/cgi-bin/text-idx?SID=5eae22affe2e3675b6deaa3fb796eb7a&tpl=/ecfrbrowse/Title31/31cfr547_main_02.tpl",
         "reviewedBy": "RegActions deterministic sanctions classifier v2",
         "reviewerOrganisation": "RegActions automated evidence system",
-        "reviewedAt": "2026-09-10T13:46:16.668Z",
+        "reviewedAt": "2026-09-13T19:59:38.396Z",
         "reviewNote": "The programme is present in the current official catalogue and the versioned scope rule reproduces the published tier from the linked measure-specific evidence. Classification: The active direct programme is principally designation-led. External practitioner validation is not claimed.",
         "legalStatus": "active",
         "legalInstrumentId": "31 CFR Part 547",
@@ -472,7 +472,7 @@ export const SANCTIONS_APPROVED_STATUS: ApprovedCountrySanctions[] = [
           "commodity-restriction",
           "financial-restriction"
         ],
-        "evidenceLocator": "Democratic Republic of the Congo-Related Sanctions; official evidence page and linked legal-source inventory; source SHA-256 4e393b40ed461a86dcbf5663a30c6bca508afe44245509bf42b5bde89a90f8f1"
+        "evidenceLocator": "Democratic Republic of the Congo-Related Sanctions; official evidence page and linked legal-source inventory; source SHA-256 65a7c00f5b96aaacbf570ea9dce709df9f026aefd93029084d330cfdcc285f2b"
       },
       {
         "imposer": "UK",
@@ -485,7 +485,7 @@ export const SANCTIONS_APPROVED_STATUS: ApprovedCountrySanctions[] = [
         "evidenceUrl": "https://www.legislation.gov.uk/uksi/2019/433/contents",
         "reviewedBy": "RegActions deterministic sanctions classifier v2",
         "reviewerOrganisation": "RegActions automated evidence system",
-        "reviewedAt": "2026-09-10T13:46:16.668Z",
+        "reviewedAt": "2026-09-13T19:59:38.396Z",
         "reviewNote": "The programme is present in the current official catalogue and the versioned scope rule reproduces the published tier from the linked measure-specific evidence. Classification: A material class of ordinary transactions is restricted beyond named targets. External practitioner validation is not claimed.",
         "legalStatus": "active",
         "legalInstrumentId": "Democratic Republic of the Congo (Sanctions) (EU Exit) Regulations 2019",
@@ -502,7 +502,7 @@ export const SANCTIONS_APPROVED_STATUS: ApprovedCountrySanctions[] = [
           "services-restriction",
           "travel-ban"
         ],
-        "evidenceLocator": "Democratic Republic of the Congo sanctions: guidance; official evidence page and linked legal-source inventory; source SHA-256 6f6c510263a02ea2932ca354f25895c4b29a14625241762e0ef65eb8e41e9f73"
+        "evidenceLocator": "Democratic Republic of the Congo sanctions: guidance; official evidence page and linked legal-source inventory; source SHA-256 db500e073f9b676dc2d1f631315db825fbfedc1a9c29eb1e600eb311fd43ffa0"
       },
       {
         "imposer": "UN",
@@ -515,7 +515,7 @@ export const SANCTIONS_APPROVED_STATUS: ApprovedCountrySanctions[] = [
         "evidenceUrl": "https://main.un.org/securitycouncil/en/content/resolutions-0",
         "reviewedBy": "RegActions deterministic sanctions classifier v2",
         "reviewerOrganisation": "RegActions automated evidence system",
-        "reviewedAt": "2026-09-10T13:46:16.668Z",
+        "reviewedAt": "2026-09-13T19:59:38.396Z",
         "reviewNote": "The programme is present in the current official catalogue and the versioned scope rule reproduces the published tier from the linked measure-specific evidence. Classification: A material class of ordinary transactions is restricted beyond named targets. External practitioner validation is not claimed.",
         "legalStatus": "active",
         "legalInstrumentId": "Resolutions",
@@ -532,7 +532,7 @@ export const SANCTIONS_APPROVED_STATUS: ApprovedCountrySanctions[] = [
           "transport-restriction",
           "travel-ban"
         ],
-        "evidenceLocator": "Security Council Committee established pursuant to resolution 1533 (2004) concerning the Democratic Republic of the Congo; official evidence page and linked legal-source inventory; source SHA-256 406d51cc9142d4c852761e45c774a10e87f8dc3389c3c46d6789e4ca08d44c18"
+        "evidenceLocator": "Security Council Committee established pursuant to resolution 1533 (2004) concerning the Democratic Republic of the Congo; official evidence page and linked legal-source inventory; source SHA-256 8e01a3acaa75504506f8510a82c8d55e930a4fd458da2944f1959f92d8e7ca8f"
       }
     ]
   },
@@ -550,7 +550,7 @@ export const SANCTIONS_APPROVED_STATUS: ApprovedCountrySanctions[] = [
         "evidenceUrl": "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX%3A02014R0224-20250326",
         "reviewedBy": "RegActions deterministic sanctions classifier v2",
         "reviewerOrganisation": "RegActions automated evidence system",
-        "reviewedAt": "2026-09-10T13:46:16.668Z",
+        "reviewedAt": "2026-09-13T19:59:38.396Z",
         "reviewNote": "Prepared measure-specific legal facts reproduce the published deterministic tier. Classification: A material class of ordinary transactions is restricted beyond named targets. External practitioner validation is not claimed.",
         "legalStatus": "active",
         "legalInstrumentId": "26.03.2025 consolidated basic legal act - (EU) No 224/2014",
@@ -579,7 +579,7 @@ export const SANCTIONS_APPROVED_STATUS: ApprovedCountrySanctions[] = [
         "evidenceUrl": "https://ofac.treasury.gov/recent-actions/20220928_33",
         "reviewedBy": "RegActions deterministic sanctions classifier v2",
         "reviewerOrganisation": "RegActions automated evidence system",
-        "reviewedAt": "2026-09-10T13:46:16.668Z",
+        "reviewedAt": "2026-09-13T19:59:38.396Z",
         "reviewNote": "The programme is present in the current official catalogue and the versioned scope rule reproduces the published tier from the linked measure-specific evidence. Classification: The active direct programme is principally designation-led. External practitioner validation is not claimed.",
         "legalStatus": "active",
         "legalInstrumentId": "Issuance of Central African Republic Sanctions Regulations and Western Balkans Stabilization Regulations",
@@ -591,7 +591,7 @@ export const SANCTIONS_APPROVED_STATUS: ApprovedCountrySanctions[] = [
           "asset-freeze",
           "commodity-restriction"
         ],
-        "evidenceLocator": "Central African Republic Sanctions; official evidence page and linked legal-source inventory; source SHA-256 889b3a3a07cd65f1b6c17b5644239b8357aa88b611cb16c64414ed027d17bb4d"
+        "evidenceLocator": "Central African Republic Sanctions; official evidence page and linked legal-source inventory; source SHA-256 4147cb22685c0694f9f182d10f88d21764585f06e7206225c929574ee34aa09e"
       },
       {
         "imposer": "UK",
@@ -604,7 +604,7 @@ export const SANCTIONS_APPROVED_STATUS: ApprovedCountrySanctions[] = [
         "evidenceUrl": "https://www.legislation.gov.uk/uksi/2020/616/contents",
         "reviewedBy": "RegActions deterministic sanctions classifier v2",
         "reviewerOrganisation": "RegActions automated evidence system",
-        "reviewedAt": "2026-09-10T13:46:16.668Z",
+        "reviewedAt": "2026-09-13T19:59:38.396Z",
         "reviewNote": "The programme is present in the current official catalogue and the versioned scope rule reproduces the published tier from the linked measure-specific evidence. Classification: A material class of ordinary transactions is restricted beyond named targets. External practitioner validation is not claimed.",
         "legalStatus": "active",
         "legalInstrumentId": "Central African Republic (Sanctions) (EU Exit) Regulations 2020",
@@ -622,7 +622,7 @@ export const SANCTIONS_APPROVED_STATUS: ApprovedCountrySanctions[] = [
           "services-restriction",
           "travel-ban"
         ],
-        "evidenceLocator": "Central African Republic sanctions: guidance; official evidence page and linked legal-source inventory; source SHA-256 36f7626b6a81409be376a9a86d05b05cd03846d4af64beef3eb0ea3b11a3addc"
+        "evidenceLocator": "Central African Republic sanctions: guidance; official evidence page and linked legal-source inventory; source SHA-256 59245b93e972180c1c07e42c999e933a088415872b7ecdcfb07381eba5c7e693"
       },
       {
         "imposer": "UN",
@@ -635,7 +635,7 @@ export const SANCTIONS_APPROVED_STATUS: ApprovedCountrySanctions[] = [
         "evidenceUrl": "https://main.un.org/securitycouncil/en/content/resolutions-0",
         "reviewedBy": "RegActions deterministic sanctions classifier v2",
         "reviewerOrganisation": "RegActions automated evidence system",
-        "reviewedAt": "2026-09-10T13:46:16.668Z",
+        "reviewedAt": "2026-09-13T19:59:38.396Z",
         "reviewNote": "The programme is present in the current official catalogue and the versioned scope rule reproduces the published tier from the linked measure-specific evidence. Classification: A material class of ordinary transactions is restricted beyond named targets. External practitioner validation is not claimed.",
         "legalStatus": "active",
         "legalInstrumentId": "Resolutions",
@@ -653,7 +653,7 @@ export const SANCTIONS_APPROVED_STATUS: ApprovedCountrySanctions[] = [
           "transport-restriction",
           "travel-ban"
         ],
-        "evidenceLocator": "Security Council Committee pursuant to resolution 2745 (2024); official evidence page and linked legal-source inventory; source SHA-256 2b0b228390d1ff363a025f07ccffb089b58a6415f6483579eb951f0739809b1e"
+        "evidenceLocator": "Security Council Committee pursuant to resolution 2745 (2024); official evidence page and linked legal-source inventory; source SHA-256 f93b79a6421a48a32cff93d118318296f45d28c632c36e9c8633415e70303e57"
       }
     ]
   },
@@ -671,7 +671,7 @@ export const SANCTIONS_APPROVED_STATUS: ApprovedCountrySanctions[] = [
         "evidenceUrl": "https://sanctionsmap.eu/api/v1/regime/10?lang=en",
         "reviewedBy": "RegActions deterministic sanctions classifier v2",
         "reviewerOrganisation": "RegActions automated evidence system",
-        "reviewedAt": "2026-09-10T13:46:16.668Z",
+        "reviewedAt": "2026-09-13T19:59:38.396Z",
         "reviewNote": "Prepared measure-specific legal facts reproduce the published deterministic tier. Classification: A material class of ordinary transactions is restricted beyond named targets. External practitioner validation is not claimed.",
         "legalStatus": "active",
         "legalInstrumentId": "Official EU programme guidance: Specific restrictive measures in relation to the events at the Tiananmen Square protests of 1989",
@@ -695,7 +695,7 @@ export const SANCTIONS_APPROVED_STATUS: ApprovedCountrySanctions[] = [
         "evidenceUrl": "https://ofac.treasury.gov/recent-actions/20220215",
         "reviewedBy": "RegActions deterministic sanctions classifier v2",
         "reviewerOrganisation": "RegActions automated evidence system",
-        "reviewedAt": "2026-09-10T13:46:16.668Z",
+        "reviewedAt": "2026-09-13T19:59:38.396Z",
         "reviewNote": "The programme is present in the current official catalogue and the versioned scope rule reproduces the published tier from the linked measure-specific evidence. Classification: The active direct programme is principally designation-led. External practitioner validation is not claimed.",
         "legalStatus": "active",
         "legalInstrumentId": "Issuance of Chinese Military-Industrial Complex Sanctions Regulations; Amendment of the Weapons of Mass Destruction Proliferators Sanctions Regulations",
@@ -708,7 +708,7 @@ export const SANCTIONS_APPROVED_STATUS: ApprovedCountrySanctions[] = [
           "commodity-restriction",
           "financial-restriction"
         ],
-        "evidenceLocator": "Chinese Military Companies Sanctions; official evidence page and linked legal-source inventory; source SHA-256 bbed74b72239eb6ed9857ff5aada947a46004b958eda900aab6491a3a872caf9"
+        "evidenceLocator": "Chinese Military Companies Sanctions; official evidence page and linked legal-source inventory; source SHA-256 1708ea1c0473a124d4046a902b50f376dec3c118e5a7970f29db4bc508e55566"
       },
       {
         "imposer": "UK",
@@ -721,7 +721,7 @@ export const SANCTIONS_APPROVED_STATUS: ApprovedCountrySanctions[] = [
         "evidenceUrl": "https://www.legislation.gov.uk/uksi/2008/3231/schedule/4/part/4/made",
         "reviewedBy": "RegActions deterministic sanctions classifier v2",
         "reviewerOrganisation": "RegActions automated evidence system",
-        "reviewedAt": "2026-09-10T13:46:16.668Z",
+        "reviewedAt": "2026-09-13T19:59:38.396Z",
         "reviewNote": "The programme is present in the current official catalogue and the versioned scope rule reproduces the published tier from the linked measure-specific evidence. Classification: A material class of ordinary transactions is restricted beyond named targets. External practitioner validation is not claimed.",
         "legalStatus": "active",
         "legalInstrumentId": "Schedule 4 Part 4 of the Export Control Order 2008",
@@ -735,7 +735,7 @@ export const SANCTIONS_APPROVED_STATUS: ApprovedCountrySanctions[] = [
           "financial-restriction",
           "transport-restriction"
         ],
-        "evidenceLocator": "UK arms embargo on mainland China and Hong Kong; official evidence page and linked legal-source inventory; source SHA-256 0671738e7aaccfd8bbf3654f2f6b76f1cf982c189ac18c3b5b4c947a7b360c6e"
+        "evidenceLocator": "UK arms embargo on mainland China and Hong Kong; official evidence page and linked legal-source inventory; source SHA-256 167fa42aee2f62c84cb95486d767734f39d5fdc424986e051d9096aff1a02e0c"
       }
     ]
   },
@@ -753,7 +753,7 @@ export const SANCTIONS_APPROVED_STATUS: ApprovedCountrySanctions[] = [
         "evidenceUrl": "https://ofac.treasury.gov/media/48826/download?inline",
         "reviewedBy": "RegActions deterministic sanctions classifier v2",
         "reviewerOrganisation": "RegActions automated evidence system",
-        "reviewedAt": "2026-09-10T13:46:16.668Z",
+        "reviewedAt": "2026-09-13T19:59:38.396Z",
         "reviewNote": "The programme is present in the current official catalogue and the versioned scope rule reproduces the published tier from the linked measure-specific evidence. Classification: Broad ordinary trade and financial dealings are restricted. External practitioner validation is not claimed.",
         "legalStatus": "active",
         "legalInstrumentId": "September 2020 FACT SHEET: Treasury Amends Regulations to Restrict Revenue Sources to the Cuban Regime",
@@ -767,7 +767,7 @@ export const SANCTIONS_APPROVED_STATUS: ApprovedCountrySanctions[] = [
           "financial-restriction",
           "import-restriction"
         ],
-        "evidenceLocator": "Cuba Sanctions; official evidence page and linked legal-source inventory; source SHA-256 4ca2eaab68cc5c4199e2b19096a39c53ad1388f4766354fdebb985ae07ab5538"
+        "evidenceLocator": "Cuba Sanctions; official evidence page and linked legal-source inventory; source SHA-256 4e76549cddcf1e8de25976f06fed91e85fd4d99dc7bb428e336b510f5bebf778"
       }
     ]
   },
@@ -785,7 +785,7 @@ export const SANCTIONS_APPROVED_STATUS: ApprovedCountrySanctions[] = [
         "evidenceUrl": "https://ofac.treasury.gov/recent-actions/20220208",
         "reviewedBy": "RegActions deterministic sanctions classifier v2",
         "reviewerOrganisation": "RegActions automated evidence system",
-        "reviewedAt": "2026-09-10T13:46:16.668Z",
+        "reviewedAt": "2026-09-13T19:59:38.396Z",
         "reviewNote": "The programme is present in the current official catalogue and the versioned scope rule reproduces the published tier from the linked measure-specific evidence. Classification: The active direct programme is principally designation-led. External practitioner validation is not claimed.",
         "legalStatus": "active",
         "legalInstrumentId": "Issuance of Ethiopia Sanctions Regulations; Implementation of the Federal Civil Penalties Inflation Adjustment Act",
@@ -798,7 +798,7 @@ export const SANCTIONS_APPROVED_STATUS: ApprovedCountrySanctions[] = [
           "commodity-restriction",
           "financial-restriction"
         ],
-        "evidenceLocator": "Ethiopia-Related Sanctions; official evidence page and linked legal-source inventory; source SHA-256 faac8a9c8610036ad0336b4d72fbb2c392265c742808a6678657c9b5460d89d0"
+        "evidenceLocator": "Ethiopia-Related Sanctions; official evidence page and linked legal-source inventory; source SHA-256 2095e2bca9ad9ad77444490ed4539efc0a4f10b375739ccae3474a765d67682f"
       }
     ]
   },
@@ -816,7 +816,7 @@ export const SANCTIONS_APPROVED_STATUS: ApprovedCountrySanctions[] = [
         "evidenceUrl": "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX%3A02009R1284-20240913",
         "reviewedBy": "RegActions deterministic sanctions classifier v2",
         "reviewerOrganisation": "RegActions automated evidence system",
-        "reviewedAt": "2026-09-10T13:46:16.668Z",
+        "reviewedAt": "2026-09-13T19:59:38.396Z",
         "reviewNote": "Prepared measure-specific legal facts reproduce the published deterministic tier. Classification: The active direct programme is principally designation-led. External practitioner validation is not claimed.",
         "legalStatus": "active",
         "legalInstrumentId": "13.09.2024 consolidated basic legal act - (EU) No 1284/2009",
@@ -841,7 +841,7 @@ export const SANCTIONS_APPROVED_STATUS: ApprovedCountrySanctions[] = [
         "evidenceUrl": "https://www.legislation.gov.uk/uksi/2019/1145/contents",
         "reviewedBy": "RegActions deterministic sanctions classifier v2",
         "reviewerOrganisation": "RegActions automated evidence system",
-        "reviewedAt": "2026-09-10T13:46:16.668Z",
+        "reviewedAt": "2026-09-13T19:59:38.396Z",
         "reviewNote": "The programme is present in the current official catalogue and the versioned scope rule reproduces the published tier from the linked measure-specific evidence. Classification: The active direct programme is principally designation-led. External practitioner validation is not claimed.",
         "legalStatus": "active",
         "legalInstrumentId": "Guinea (Sanctions) (EU Exit) Regulations 2019",
@@ -856,7 +856,7 @@ export const SANCTIONS_APPROVED_STATUS: ApprovedCountrySanctions[] = [
           "financial-restriction",
           "travel-ban"
         ],
-        "evidenceLocator": "Guinea sanctions: guidance; official evidence page and linked legal-source inventory; source SHA-256 f3338fcb92f3c7c28d54ff686bb418953a3607f9569cd3b73c72664433333fea"
+        "evidenceLocator": "Guinea sanctions: guidance; official evidence page and linked legal-source inventory; source SHA-256 882b2fd3f9124e2e66f3d30096b000d16b0dfdde9a9c4eba0ea2bd4ac9d56e5d"
       }
     ]
   },
@@ -874,7 +874,7 @@ export const SANCTIONS_APPROVED_STATUS: ApprovedCountrySanctions[] = [
         "evidenceUrl": "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX%3A02012R0377-20250924",
         "reviewedBy": "RegActions deterministic sanctions classifier v2",
         "reviewerOrganisation": "RegActions automated evidence system",
-        "reviewedAt": "2026-09-10T13:46:16.668Z",
+        "reviewedAt": "2026-09-13T19:59:38.396Z",
         "reviewNote": "Prepared measure-specific legal facts reproduce the published deterministic tier. Classification: The active direct programme is principally designation-led. External practitioner validation is not claimed.",
         "legalStatus": "active",
         "legalInstrumentId": "24.09.2025 consolidated basic legal act - (EU) No 377/2012",
@@ -899,7 +899,7 @@ export const SANCTIONS_APPROVED_STATUS: ApprovedCountrySanctions[] = [
         "evidenceUrl": "https://www.legislation.gov.uk/uksi/2019/554/contents",
         "reviewedBy": "RegActions deterministic sanctions classifier v2",
         "reviewerOrganisation": "RegActions automated evidence system",
-        "reviewedAt": "2026-09-10T13:46:16.668Z",
+        "reviewedAt": "2026-09-13T19:59:38.396Z",
         "reviewNote": "The programme is present in the current official catalogue and the versioned scope rule reproduces the published tier from the linked measure-specific evidence. Classification: The active direct programme is principally designation-led. External practitioner validation is not claimed.",
         "legalStatus": "active",
         "legalInstrumentId": "Republic of Guinea-Bissau (Sanctions) (EU Exit) Regulations 2019",
@@ -915,7 +915,7 @@ export const SANCTIONS_APPROVED_STATUS: ApprovedCountrySanctions[] = [
           "financial-restriction",
           "travel-ban"
         ],
-        "evidenceLocator": "Republic of Guinea-Bissau sanctions: guidance; official evidence page and linked legal-source inventory; source SHA-256 acd3913808ba8fbd65a52f55aa00f5180bd2e194d52839b948f889650b280279"
+        "evidenceLocator": "Republic of Guinea-Bissau sanctions: guidance; official evidence page and linked legal-source inventory; source SHA-256 2c1851d06e810534c73b4b7e15052d69927306207ee1143758bddd0277fe0346"
       },
       {
         "imposer": "UN",
@@ -928,7 +928,7 @@ export const SANCTIONS_APPROVED_STATUS: ApprovedCountrySanctions[] = [
         "evidenceUrl": "https://main.un.org/securitycouncil/en/content/resolutions-0",
         "reviewedBy": "RegActions deterministic sanctions classifier v2",
         "reviewerOrganisation": "RegActions automated evidence system",
-        "reviewedAt": "2026-09-10T13:46:16.668Z",
+        "reviewedAt": "2026-09-13T19:59:38.396Z",
         "reviewNote": "The programme is present in the current official catalogue and the versioned scope rule reproduces the published tier from the linked measure-specific evidence. Classification: The active direct programme is principally designation-led. External practitioner validation is not claimed.",
         "legalStatus": "active",
         "legalInstrumentId": "Resolutions",
@@ -940,7 +940,7 @@ export const SANCTIONS_APPROVED_STATUS: ApprovedCountrySanctions[] = [
           "financial-restriction",
           "travel-ban"
         ],
-        "evidenceLocator": "Security Council Committee established pursuant to resolution 2048 (2012) concerning Guinea-Bissau; official evidence page and linked legal-source inventory; source SHA-256 7e1840c292421b86075134ccdb35a883b52dcb28e538e09d3b79989aec447f27"
+        "evidenceLocator": "Security Council Committee established pursuant to resolution 2048 (2012) concerning Guinea-Bissau; official evidence page and linked legal-source inventory; source SHA-256 0a3377fee4f6b0311b837c5e0cd095c336eec609e15ff2f90ab80b2a333b7d87"
       }
     ]
   },
@@ -958,7 +958,7 @@ export const SANCTIONS_APPROVED_STATUS: ApprovedCountrySanctions[] = [
         "evidenceUrl": "https://ofac.treasury.gov/media/44966/download?inline",
         "reviewedBy": "RegActions deterministic sanctions classifier v2",
         "reviewerOrganisation": "RegActions automated evidence system",
-        "reviewedAt": "2026-09-10T13:46:16.668Z",
+        "reviewedAt": "2026-09-13T19:59:38.396Z",
         "reviewNote": "The programme is present in the current official catalogue and the versioned scope rule reproduces the published tier from the linked measure-specific evidence. Classification: The active direct programme is principally designation-led. External practitioner validation is not claimed.",
         "legalStatus": "active",
         "legalInstrumentId": "Hong Kong Autonomy Act, H.R. 7440 (Public Law No. 116-149) (HKAA)",
@@ -971,7 +971,7 @@ export const SANCTIONS_APPROVED_STATUS: ApprovedCountrySanctions[] = [
           "commodity-restriction",
           "import-restriction"
         ],
-        "evidenceLocator": "Hong Kong-Related Sanctions; official evidence page and linked legal-source inventory; source SHA-256 978cf44ee6325357eb7c070efe656423611f2b0423fd1942713c25289ed61a78"
+        "evidenceLocator": "Hong Kong-Related Sanctions; official evidence page and linked legal-source inventory; source SHA-256 ffe6342065c8361429bcf6bace31d0c85f68b848f0f4c8fb85c0aca437374d15"
       },
       {
         "imposer": "UK",
@@ -984,7 +984,7 @@ export const SANCTIONS_APPROVED_STATUS: ApprovedCountrySanctions[] = [
         "evidenceUrl": "https://www.legislation.gov.uk/uksi/2008/3231/schedule/4/part/4/made",
         "reviewedBy": "RegActions deterministic sanctions classifier v2",
         "reviewerOrganisation": "RegActions automated evidence system",
-        "reviewedAt": "2026-09-10T13:46:16.668Z",
+        "reviewedAt": "2026-09-13T19:59:38.396Z",
         "reviewNote": "The programme is present in the current official catalogue and the versioned scope rule reproduces the published tier from the linked measure-specific evidence. Classification: A material class of ordinary transactions is restricted beyond named targets. External practitioner validation is not claimed.",
         "legalStatus": "active",
         "legalInstrumentId": "Schedule 4 Part 4 of the Export Control Order 2008",
@@ -998,7 +998,7 @@ export const SANCTIONS_APPROVED_STATUS: ApprovedCountrySanctions[] = [
           "financial-restriction",
           "transport-restriction"
         ],
-        "evidenceLocator": "UK arms embargo on mainland China and Hong Kong; official evidence page and linked legal-source inventory; source SHA-256 0671738e7aaccfd8bbf3654f2f6b76f1cf982c189ac18c3b5b4c947a7b360c6e"
+        "evidenceLocator": "UK arms embargo on mainland China and Hong Kong; official evidence page and linked legal-source inventory; source SHA-256 167fa42aee2f62c84cb95486d767734f39d5fdc424986e051d9096aff1a02e0c"
       }
     ]
   },
@@ -1016,7 +1016,7 @@ export const SANCTIONS_APPROVED_STATUS: ApprovedCountrySanctions[] = [
         "evidenceUrl": "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX:31994R1264",
         "reviewedBy": "RegActions deterministic sanctions classifier v2",
         "reviewerOrganisation": "RegActions automated evidence system",
-        "reviewedAt": "2026-09-10T13:46:16.668Z",
+        "reviewedAt": "2026-09-13T19:59:38.396Z",
         "reviewNote": "Prepared measure-specific legal facts reproduce the published deterministic tier. Classification: A material class of ordinary transactions is restricted beyond named targets. External practitioner validation is not claimed.",
         "legalStatus": "active",
         "legalInstrumentId": "30.05.1994 consolidated basic legal act - (EC) No 1264/94",
@@ -1040,7 +1040,7 @@ export const SANCTIONS_APPROVED_STATUS: ApprovedCountrySanctions[] = [
         "evidenceUrl": "https://data.europa.eu/eli/reg/2022/2309/2025-12-15",
         "reviewedBy": "RegActions deterministic sanctions classifier v2",
         "reviewerOrganisation": "RegActions automated evidence system",
-        "reviewedAt": "2026-09-10T13:46:16.668Z",
+        "reviewedAt": "2026-09-13T19:59:38.396Z",
         "reviewNote": "Prepared measure-specific legal facts reproduce the published deterministic tier. Classification: A material class of ordinary transactions is restricted beyond named targets. External practitioner validation is not claimed.",
         "legalStatus": "active",
         "legalInstrumentId": "15.12.2025 consolidated basic legal act - (EU) 2022/2309",
@@ -1068,7 +1068,7 @@ export const SANCTIONS_APPROVED_STATUS: ApprovedCountrySanctions[] = [
         "evidenceUrl": "https://www.legislation.gov.uk/uksi/2022/1281/contents",
         "reviewedBy": "RegActions deterministic sanctions classifier v2",
         "reviewerOrganisation": "RegActions automated evidence system",
-        "reviewedAt": "2026-09-10T13:46:16.668Z",
+        "reviewedAt": "2026-09-13T19:59:38.396Z",
         "reviewNote": "The programme is present in the current official catalogue and the versioned scope rule reproduces the published tier from the linked measure-specific evidence. Classification: The active direct programme is principally designation-led. External practitioner validation is not claimed.",
         "legalStatus": "active",
         "legalInstrumentId": "Haiti (Sanctions) Regulations 2022",
@@ -1085,7 +1085,7 @@ export const SANCTIONS_APPROVED_STATUS: ApprovedCountrySanctions[] = [
           "services-restriction",
           "travel-ban"
         ],
-        "evidenceLocator": "Haiti Sanctions: guidance; official evidence page and linked legal-source inventory; source SHA-256 6e419b9a34bd80121ebc5faf68094702e03b27257aff645193ceb3213ac5e0e5"
+        "evidenceLocator": "Haiti Sanctions: guidance; official evidence page and linked legal-source inventory; source SHA-256 474c73d57a1710fb4054defe6d8c631df907b1bdc5458f4af3129ec406b868de"
       },
       {
         "imposer": "UN",
@@ -1098,7 +1098,7 @@ export const SANCTIONS_APPROVED_STATUS: ApprovedCountrySanctions[] = [
         "evidenceUrl": "https://main.un.org/securitycouncil/en/content/resolutions-0",
         "reviewedBy": "RegActions deterministic sanctions classifier v2",
         "reviewerOrganisation": "RegActions automated evidence system",
-        "reviewedAt": "2026-09-10T13:46:16.668Z",
+        "reviewedAt": "2026-09-13T19:59:38.396Z",
         "reviewNote": "The programme is present in the current official catalogue and the versioned scope rule reproduces the published tier from the linked measure-specific evidence. Classification: The active direct programme is principally designation-led. External practitioner validation is not claimed.",
         "legalStatus": "active",
         "legalInstrumentId": "Resolutions",
@@ -1115,7 +1115,7 @@ export const SANCTIONS_APPROVED_STATUS: ApprovedCountrySanctions[] = [
           "transport-restriction",
           "travel-ban"
         ],
-        "evidenceLocator": "Security Council Committee established pursuant to resolution 2653 (2022) concerning Haiti; official evidence page and linked legal-source inventory; source SHA-256 7b1963ed5c3cc9c19695b0116b75f8b4638106c5fb6eeadacd3f17ac04349c19"
+        "evidenceLocator": "Security Council Committee established pursuant to resolution 2653 (2022) concerning Haiti; official evidence page and linked legal-source inventory; source SHA-256 12e563089d1666c73b53e0dcc6cfc8b5b6410f5b886663eff07d2512a90062ff"
       }
     ]
   },
@@ -1133,7 +1133,7 @@ export const SANCTIONS_APPROVED_STATUS: ApprovedCountrySanctions[] = [
         "evidenceUrl": "https://data.europa.eu/eli/reg/2003/1210/2025-12-24",
         "reviewedBy": "RegActions deterministic sanctions classifier v2",
         "reviewerOrganisation": "RegActions automated evidence system",
-        "reviewedAt": "2026-09-10T13:46:16.668Z",
+        "reviewedAt": "2026-09-13T19:59:38.396Z",
         "reviewNote": "Prepared measure-specific legal facts reproduce the published deterministic tier. Classification: A material class of ordinary transactions is restricted beyond named targets. External practitioner validation is not claimed.",
         "legalStatus": "active",
         "legalInstrumentId": "24.12.2025 consolidated basic legal act - (EC) No 1210/2003",
@@ -1162,7 +1162,7 @@ export const SANCTIONS_APPROVED_STATUS: ApprovedCountrySanctions[] = [
         "evidenceUrl": "https://www.ecfr.gov/cgi-bin/text-idx?SID=5eae22affe2e3675b6deaa3fb796eb7a&tpl=/ecfrbrowse/Title31/31cfr576_main_02.tpl",
         "reviewedBy": "RegActions deterministic sanctions classifier v2",
         "reviewerOrganisation": "RegActions automated evidence system",
-        "reviewedAt": "2026-09-10T13:46:16.668Z",
+        "reviewedAt": "2026-09-13T19:59:38.396Z",
         "reviewNote": "The programme is present in the current official catalogue and the versioned scope rule reproduces the published tier from the linked measure-specific evidence. Classification: The active direct programme is principally designation-led. External practitioner validation is not claimed.",
         "legalStatus": "active",
         "legalInstrumentId": "31 CFR Part 576",
@@ -1177,7 +1177,7 @@ export const SANCTIONS_APPROVED_STATUS: ApprovedCountrySanctions[] = [
           "financial-restriction",
           "import-restriction"
         ],
-        "evidenceLocator": "Iraq-Related Sanctions; official evidence page and linked legal-source inventory; source SHA-256 cd53fc370cab66782884e0d80116f3cbe8ec007ce5ae4b294bfb30b9035b9cb6"
+        "evidenceLocator": "Iraq-Related Sanctions; official evidence page and linked legal-source inventory; source SHA-256 5d51b7fc960a19f6926e2cfed25d4cf91266e7346116456b5ccc6a3a0bdbb643"
       },
       {
         "imposer": "UK",
@@ -1190,7 +1190,7 @@ export const SANCTIONS_APPROVED_STATUS: ApprovedCountrySanctions[] = [
         "evidenceUrl": "https://www.legislation.gov.uk/uksi/2020/707/contents",
         "reviewedBy": "RegActions deterministic sanctions classifier v2",
         "reviewerOrganisation": "RegActions automated evidence system",
-        "reviewedAt": "2026-09-10T13:46:16.668Z",
+        "reviewedAt": "2026-09-13T19:59:38.396Z",
         "reviewNote": "The programme is present in the current official catalogue and the versioned scope rule reproduces the published tier from the linked measure-specific evidence. Classification: The active direct programme is principally designation-led. External practitioner validation is not claimed.",
         "legalStatus": "active",
         "legalInstrumentId": "Iraq (Sanctions) (EU Exit) Regulations 2020",
@@ -1207,7 +1207,7 @@ export const SANCTIONS_APPROVED_STATUS: ApprovedCountrySanctions[] = [
           "import-restriction",
           "services-restriction"
         ],
-        "evidenceLocator": "Iraq sanctions: guidance; official evidence page and linked legal-source inventory; source SHA-256 93717e812e37d45176ab2e8e1fac88f58c30224cdb272f57fff1c459004dc042"
+        "evidenceLocator": "Iraq sanctions: guidance; official evidence page and linked legal-source inventory; source SHA-256 02efeeee2b08dd93f31cb0f232df974825ae47ff2ef8644ffcded5822a8ebaf3"
       },
       {
         "imposer": "UN",
@@ -1220,7 +1220,7 @@ export const SANCTIONS_APPROVED_STATUS: ApprovedCountrySanctions[] = [
         "evidenceUrl": "https://main.un.org/securitycouncil/en/content/resolutions-0",
         "reviewedBy": "RegActions deterministic sanctions classifier v2",
         "reviewerOrganisation": "RegActions automated evidence system",
-        "reviewedAt": "2026-09-10T13:46:16.668Z",
+        "reviewedAt": "2026-09-13T19:59:38.396Z",
         "reviewNote": "The programme is present in the current official catalogue and the versioned scope rule reproduces the published tier from the linked measure-specific evidence. Classification: The active direct programme is principally designation-led. External practitioner validation is not claimed.",
         "legalStatus": "active",
         "legalInstrumentId": "Resolutions",
@@ -1234,7 +1234,7 @@ export const SANCTIONS_APPROVED_STATUS: ApprovedCountrySanctions[] = [
           "export-restriction",
           "financial-restriction"
         ],
-        "evidenceLocator": "Security Council Committee established pursuant to resolution 1518 (2003); official evidence page and linked legal-source inventory; source SHA-256 b9099bb5efdd944997d34c0868a0176d5334ae677a14e0fbc483900f9d0bff4c"
+        "evidenceLocator": "Security Council Committee established pursuant to resolution 1518 (2003); official evidence page and linked legal-source inventory; source SHA-256 eef03d4908b6acf6ba316878f363bd24205269ff409d4e5bcf53be6cae12e557"
       }
     ]
   },
@@ -1252,7 +1252,7 @@ export const SANCTIONS_APPROVED_STATUS: ApprovedCountrySanctions[] = [
         "evidenceUrl": "https://data.europa.eu/eli/reg/2011/359/2026-04-01",
         "reviewedBy": "RegActions deterministic sanctions classifier v2",
         "reviewerOrganisation": "RegActions automated evidence system",
-        "reviewedAt": "2026-09-10T13:46:16.668Z",
+        "reviewedAt": "2026-09-13T19:59:38.396Z",
         "reviewNote": "Prepared measure-specific legal facts reproduce the published deterministic tier. Classification: A material class of ordinary transactions is restricted beyond named targets. External practitioner validation is not claimed.",
         "legalStatus": "active",
         "legalInstrumentId": "01.04.2026 consolidated basic legal act - (EU) No 359/2011",
@@ -1280,7 +1280,7 @@ export const SANCTIONS_APPROVED_STATUS: ApprovedCountrySanctions[] = [
         "evidenceUrl": "https://data.europa.eu/eli/reg/2012/267/2026-04-01",
         "reviewedBy": "RegActions deterministic sanctions classifier v2",
         "reviewerOrganisation": "RegActions automated evidence system",
-        "reviewedAt": "2026-09-10T13:46:16.668Z",
+        "reviewedAt": "2026-09-13T19:59:38.396Z",
         "reviewNote": "Prepared measure-specific legal facts reproduce the published deterministic tier. Classification: A material class of ordinary transactions is restricted beyond named targets. External practitioner validation is not claimed.",
         "legalStatus": "active",
         "legalInstrumentId": "01.04.2026 consolidated basic legal act - (EU) No 267/2012",
@@ -1309,7 +1309,7 @@ export const SANCTIONS_APPROVED_STATUS: ApprovedCountrySanctions[] = [
         "evidenceUrl": "https://data.europa.eu/eli/reg/2023/1529/2026-06-08",
         "reviewedBy": "RegActions deterministic sanctions classifier v2",
         "reviewerOrganisation": "RegActions automated evidence system",
-        "reviewedAt": "2026-09-10T13:46:16.668Z",
+        "reviewedAt": "2026-09-13T19:59:38.396Z",
         "reviewNote": "Prepared measure-specific legal facts reproduce the published deterministic tier. Classification: A material class of ordinary transactions is restricted beyond named targets. External practitioner validation is not claimed.",
         "legalStatus": "active",
         "legalInstrumentId": "08.06.2026 consolidated basic legal act - (EU) 2023/1529",
@@ -1338,7 +1338,7 @@ export const SANCTIONS_APPROVED_STATUS: ApprovedCountrySanctions[] = [
         "evidenceUrl": "https://ofac.treasury.gov/media/5691/download?inline",
         "reviewedBy": "RegActions deterministic sanctions classifier v2",
         "reviewerOrganisation": "RegActions automated evidence system",
-        "reviewedAt": "2026-09-10T13:46:16.668Z",
+        "reviewedAt": "2026-09-13T19:59:38.396Z",
         "reviewNote": "The programme is present in the current official catalogue and the versioned scope rule reproduces the published tier from the linked measure-specific evidence. Classification: Broad ordinary trade and financial dealings are restricted. External practitioner validation is not claimed.",
         "legalStatus": "active",
         "legalInstrumentId": "Comprehensive Iran Sanctions, Accountability, and Divestment Act of 2010, Public Law 111-195, As Amended Through Public Law 112-239, Enacted January 2, 2013",
@@ -1353,7 +1353,7 @@ export const SANCTIONS_APPROVED_STATUS: ApprovedCountrySanctions[] = [
           "import-restriction",
           "transport-restriction"
         ],
-        "evidenceLocator": "Iran Sanctions; official evidence page and linked legal-source inventory; source SHA-256 58cd3109622a2270d428769c9ca4fe4e06124f1b3e25e4325ddc59467f60cf42"
+        "evidenceLocator": "Iran Sanctions; official evidence page and linked legal-source inventory; source SHA-256 2bce6896f3ed2d01ff68b4a21b5e152f70214f53643352d517b9d1ff44d08856"
       },
       {
         "imposer": "UK",
@@ -1366,7 +1366,7 @@ export const SANCTIONS_APPROVED_STATUS: ApprovedCountrySanctions[] = [
         "evidenceUrl": "https://www.legislation.gov.uk/uksi/2019/461/contents",
         "reviewedBy": "RegActions deterministic sanctions classifier v2",
         "reviewerOrganisation": "RegActions automated evidence system",
-        "reviewedAt": "2026-09-10T13:46:16.668Z",
+        "reviewedAt": "2026-09-13T19:59:38.396Z",
         "reviewNote": "The programme is present in the current official catalogue and the versioned scope rule reproduces the published tier from the linked measure-specific evidence. Classification: A material class of ordinary transactions is restricted beyond named targets. External practitioner validation is not claimed.",
         "legalStatus": "active",
         "legalInstrumentId": "Iran (Sanctions) (Nuclear) (EU Exit) Regulations 2019",
@@ -1385,7 +1385,7 @@ export const SANCTIONS_APPROVED_STATUS: ApprovedCountrySanctions[] = [
           "transport-restriction",
           "travel-ban"
         ],
-        "evidenceLocator": "Iran nuclear sanctions: guidance; official evidence page and linked legal-source inventory; source SHA-256 427d74496064d441932575b934c9ead4b66c03b1768cb8d162085f74b20d68be"
+        "evidenceLocator": "Iran nuclear sanctions: guidance; official evidence page and linked legal-source inventory; source SHA-256 408cef24a458567eee3ca268d48845eeef1cdff16f608dd5524c366d5cba4cca"
       },
       {
         "imposer": "UK",
@@ -1398,7 +1398,7 @@ export const SANCTIONS_APPROVED_STATUS: ApprovedCountrySanctions[] = [
         "evidenceUrl": "https://www.legislation.gov.uk/uksi/2023/1314/contents",
         "reviewedBy": "RegActions deterministic sanctions classifier v2",
         "reviewerOrganisation": "RegActions automated evidence system",
-        "reviewedAt": "2026-09-10T13:46:16.668Z",
+        "reviewedAt": "2026-09-13T19:59:38.396Z",
         "reviewNote": "The programme is present in the current official catalogue and the versioned scope rule reproduces the published tier from the linked measure-specific evidence. Classification: A material class of ordinary transactions is restricted beyond named targets. External practitioner validation is not claimed.",
         "legalStatus": "active",
         "legalInstrumentId": "Iran (Sanctions) Regulations 2023",
@@ -1414,7 +1414,7 @@ export const SANCTIONS_APPROVED_STATUS: ApprovedCountrySanctions[] = [
           "services-restriction",
           "travel-ban"
         ],
-        "evidenceLocator": "Iran sanctions: guidance; official evidence page and linked legal-source inventory; source SHA-256 2e3c433f951e8cb1b44b3ad9fa252fed3bc216225d3fa4a6660e125eb69c577f"
+        "evidenceLocator": "Iran sanctions: guidance; official evidence page and linked legal-source inventory; source SHA-256 3ace70feb29541c774f3ed6cd2be7fc80f33bf3e69c2951f16d0be131ae767be"
       },
       {
         "imposer": "UN",
@@ -1427,7 +1427,7 @@ export const SANCTIONS_APPROVED_STATUS: ApprovedCountrySanctions[] = [
         "evidenceUrl": "https://docs.un.org/S/RES/1696(2006)",
         "reviewedBy": "RegActions deterministic sanctions classifier v2",
         "reviewerOrganisation": "RegActions automated evidence system",
-        "reviewedAt": "2026-09-10T13:46:16.668Z",
+        "reviewedAt": "2026-09-13T19:59:38.396Z",
         "reviewNote": "The programme is present in the current official catalogue and the versioned scope rule reproduces the published tier from the linked measure-specific evidence. Classification: A material class of ordinary transactions is restricted beyond named targets. External practitioner validation is not claimed.",
         "legalStatus": "active",
         "legalInstrumentId": "1696 (2006)",
@@ -1444,7 +1444,7 @@ export const SANCTIONS_APPROVED_STATUS: ApprovedCountrySanctions[] = [
           "transport-restriction",
           "travel-ban"
         ],
-        "evidenceLocator": "Security Council Committee established pursuant to resolution 1737 (2006); official evidence page and linked legal-source inventory; source SHA-256 556ede11edd8c1c926aa8e261a2761757c9c4f45d3cf9ccd3b8d22f639b30938"
+        "evidenceLocator": "Security Council Committee established pursuant to resolution 1737 (2006); official evidence page and linked legal-source inventory; source SHA-256 86cb503b519331be3dcaf279b150de284130d15bd167688d2054c68915aab111"
       }
     ]
   },
@@ -1462,7 +1462,7 @@ export const SANCTIONS_APPROVED_STATUS: ApprovedCountrySanctions[] = [
         "evidenceUrl": "https://data.europa.eu/eli/reg/2017/1509/2025-12-17",
         "reviewedBy": "RegActions deterministic sanctions classifier v2",
         "reviewerOrganisation": "RegActions automated evidence system",
-        "reviewedAt": "2026-09-10T13:46:16.668Z",
+        "reviewedAt": "2026-09-13T19:59:38.396Z",
         "reviewNote": "Prepared measure-specific legal facts reproduce the published deterministic tier. Classification: A material class of ordinary transactions is restricted beyond named targets. External practitioner validation is not claimed.",
         "legalStatus": "active",
         "legalInstrumentId": "17.12.2025 consolidated basic legal act - (EU) 2017/1509",
@@ -1494,7 +1494,7 @@ export const SANCTIONS_APPROVED_STATUS: ApprovedCountrySanctions[] = [
         "evidenceUrl": "https://ofac.treasury.gov/media/5696/download?inline",
         "reviewedBy": "RegActions deterministic sanctions classifier v2",
         "reviewerOrganisation": "RegActions automated evidence system",
-        "reviewedAt": "2026-09-10T13:46:16.668Z",
+        "reviewedAt": "2026-09-13T19:59:38.396Z",
         "reviewNote": "The programme is present in the current official catalogue and the versioned scope rule reproduces the published tier from the linked measure-specific evidence. Classification: Broad ordinary trade and financial dealings are restricted. External practitioner validation is not claimed.",
         "legalStatus": "active",
         "legalInstrumentId": "Countering America's Adversaries Through Sanctions Act (CAATSA), Public Law 115-44",
@@ -1509,7 +1509,7 @@ export const SANCTIONS_APPROVED_STATUS: ApprovedCountrySanctions[] = [
           "import-restriction",
           "transport-restriction"
         ],
-        "evidenceLocator": "North Korea Sanctions; official evidence page and linked legal-source inventory; source SHA-256 f377ef6b8592fd89db25d4d95c9ad6a85c447bbb7888a79078d0a4dcf19a59ab"
+        "evidenceLocator": "North Korea Sanctions; official evidence page and linked legal-source inventory; source SHA-256 02e687c03de8c28a706665aca5ba4be82d807820eac929212a09f9f7842c22c1"
       },
       {
         "imposer": "UK",
@@ -1522,7 +1522,7 @@ export const SANCTIONS_APPROVED_STATUS: ApprovedCountrySanctions[] = [
         "evidenceUrl": "https://www.legislation.gov.uk/uksi/2019/411/contents",
         "reviewedBy": "RegActions deterministic sanctions classifier v2",
         "reviewerOrganisation": "RegActions automated evidence system",
-        "reviewedAt": "2026-09-10T13:46:16.668Z",
+        "reviewedAt": "2026-09-13T19:59:38.396Z",
         "reviewNote": "The programme is present in the current official catalogue and the versioned scope rule reproduces the published tier from the linked measure-specific evidence. Classification: A material class of ordinary transactions is restricted beyond named targets. External practitioner validation is not claimed.",
         "legalStatus": "active",
         "legalInstrumentId": "Democratic People’s Republic of Korea (Sanctions) (EU Exit) Regulations 2019",
@@ -1541,7 +1541,7 @@ export const SANCTIONS_APPROVED_STATUS: ApprovedCountrySanctions[] = [
           "transport-restriction",
           "travel-ban"
         ],
-        "evidenceLocator": "Democratic People's Republic of Korea sanctions: guidance; official evidence page and linked legal-source inventory; source SHA-256 b0c0c6febbebc83889dfa63c8690f452e6496279a00a03664fffb8950ded70c2"
+        "evidenceLocator": "Democratic People's Republic of Korea sanctions: guidance; official evidence page and linked legal-source inventory; source SHA-256 35b6456c4b6023d80b1c96e59ed3fd820464220beae8125aef0537d55c6176f6"
       },
       {
         "imposer": "UN",
@@ -1554,7 +1554,7 @@ export const SANCTIONS_APPROVED_STATUS: ApprovedCountrySanctions[] = [
         "evidenceUrl": "https://main.un.org/securitycouncil/en/content/resolutions-0",
         "reviewedBy": "RegActions deterministic sanctions classifier v2",
         "reviewerOrganisation": "RegActions automated evidence system",
-        "reviewedAt": "2026-09-10T13:46:16.668Z",
+        "reviewedAt": "2026-09-13T19:59:38.396Z",
         "reviewNote": "The programme is present in the current official catalogue and the versioned scope rule reproduces the published tier from the linked measure-specific evidence. Classification: A material class of ordinary transactions is restricted beyond named targets. External practitioner validation is not claimed.",
         "legalStatus": "active",
         "legalInstrumentId": "Resolutions",
@@ -1570,7 +1570,7 @@ export const SANCTIONS_APPROVED_STATUS: ApprovedCountrySanctions[] = [
           "transport-restriction",
           "travel-ban"
         ],
-        "evidenceLocator": "Security Council Committee established pursuant to resolution 1718 (2006); official evidence page and linked legal-source inventory; source SHA-256 8f1a51564c6c960a107ab2e4b6f2eac16db373d05c46343cd8eee9b49b4e1149"
+        "evidenceLocator": "Security Council Committee established pursuant to resolution 1718 (2006); official evidence page and linked legal-source inventory; source SHA-256 98af14d31a5b1e9d65a5163c0017c842e34b341e7aaa206df2187096c86d5928"
       }
     ]
   },
@@ -1588,7 +1588,7 @@ export const SANCTIONS_APPROVED_STATUS: ApprovedCountrySanctions[] = [
         "evidenceUrl": "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX%3A02006R0305-20240913",
         "reviewedBy": "RegActions deterministic sanctions classifier v2",
         "reviewerOrganisation": "RegActions automated evidence system",
-        "reviewedAt": "2026-09-10T13:46:16.668Z",
+        "reviewedAt": "2026-09-13T19:59:38.396Z",
         "reviewNote": "Prepared measure-specific legal facts reproduce the published deterministic tier. Classification: The active direct programme is principally designation-led. External practitioner validation is not claimed.",
         "legalStatus": "active",
         "legalInstrumentId": "13.09.2024 consolidated basic legal act - (EC) No 305/2006",
@@ -1613,7 +1613,7 @@ export const SANCTIONS_APPROVED_STATUS: ApprovedCountrySanctions[] = [
         "evidenceUrl": "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX%3A02006R1412-20240913",
         "reviewedBy": "RegActions deterministic sanctions classifier v2",
         "reviewerOrganisation": "RegActions automated evidence system",
-        "reviewedAt": "2026-09-10T13:46:16.668Z",
+        "reviewedAt": "2026-09-13T19:59:38.396Z",
         "reviewNote": "Prepared measure-specific legal facts reproduce the published deterministic tier. Classification: A material class of ordinary transactions is restricted beyond named targets. External practitioner validation is not claimed.",
         "legalStatus": "active",
         "legalInstrumentId": "13.09.2024 consolidated basic legal act - (EC) No 1412/2006",
@@ -1640,7 +1640,7 @@ export const SANCTIONS_APPROVED_STATUS: ApprovedCountrySanctions[] = [
         "evidenceUrl": "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX%3A02021R1275-20240913",
         "reviewedBy": "RegActions deterministic sanctions classifier v2",
         "reviewerOrganisation": "RegActions automated evidence system",
-        "reviewedAt": "2026-09-10T13:46:16.668Z",
+        "reviewedAt": "2026-09-13T19:59:38.396Z",
         "reviewNote": "Prepared measure-specific legal facts reproduce the published deterministic tier. Classification: The active direct programme is principally designation-led. External practitioner validation is not claimed.",
         "legalStatus": "active",
         "legalInstrumentId": "13.09.2024 consolidated basic legal act - (EU) 2021/1275",
@@ -1665,7 +1665,7 @@ export const SANCTIONS_APPROVED_STATUS: ApprovedCountrySanctions[] = [
         "evidenceUrl": "https://www.ecfr.gov/cgi-bin/text-idx?SID=5eae22affe2e3675b6deaa3fb796eb7a&tpl=/ecfrbrowse/Title31/31cfr549_main_02.tpl",
         "reviewedBy": "RegActions deterministic sanctions classifier v2",
         "reviewerOrganisation": "RegActions automated evidence system",
-        "reviewedAt": "2026-09-10T13:46:16.668Z",
+        "reviewedAt": "2026-09-13T19:59:38.396Z",
         "reviewNote": "The programme is present in the current official catalogue and the versioned scope rule reproduces the published tier from the linked measure-specific evidence. Classification: The active direct programme is principally designation-led. External practitioner validation is not claimed.",
         "legalStatus": "active",
         "legalInstrumentId": "31 CFR Part 549",
@@ -1677,7 +1677,7 @@ export const SANCTIONS_APPROVED_STATUS: ApprovedCountrySanctions[] = [
           "asset-freeze",
           "commodity-restriction"
         ],
-        "evidenceLocator": "Lebanon-Related Sanctions; official evidence page and linked legal-source inventory; source SHA-256 709461ccf3a751e866ce3fafde3620b08f125966301bc215219e6002efea1c04"
+        "evidenceLocator": "Lebanon-Related Sanctions; official evidence page and linked legal-source inventory; source SHA-256 8ea8405d38907d6be0b3e649f5e40dcae9c5ec640000a3354395804352a77a8b"
       },
       {
         "imposer": "UK",
@@ -1690,7 +1690,7 @@ export const SANCTIONS_APPROVED_STATUS: ApprovedCountrySanctions[] = [
         "evidenceUrl": "https://www.legislation.gov.uk/uksi/2020/612/contents",
         "reviewedBy": "RegActions deterministic sanctions classifier v2",
         "reviewerOrganisation": "RegActions automated evidence system",
-        "reviewedAt": "2026-09-10T13:46:16.668Z",
+        "reviewedAt": "2026-09-13T19:59:38.396Z",
         "reviewNote": "The programme is present in the current official catalogue and the versioned scope rule reproduces the published tier from the linked measure-specific evidence. Classification: The active direct programme is principally designation-led. External practitioner validation is not claimed.",
         "legalStatus": "active",
         "legalInstrumentId": "Lebanon (Sanctions) (EU Exit) Regulations 2020",
@@ -1706,7 +1706,7 @@ export const SANCTIONS_APPROVED_STATUS: ApprovedCountrySanctions[] = [
           "financial-restriction",
           "services-restriction"
         ],
-        "evidenceLocator": "Lebanon sanctions: guidance; official evidence page and linked legal-source inventory; source SHA-256 8b7049b09f6ff79869ff77a4867650aae292aa81f071cbe29addbbea3a3ddcdc"
+        "evidenceLocator": "Lebanon sanctions: guidance; official evidence page and linked legal-source inventory; source SHA-256 04a2c7c11e87112334c07578884c6a7abbb0688e54125d839e75a5e5afc76230"
       },
       {
         "imposer": "UN",
@@ -1719,7 +1719,7 @@ export const SANCTIONS_APPROVED_STATUS: ApprovedCountrySanctions[] = [
         "evidenceUrl": "https://main.un.org/securitycouncil/en/content/resolutions-0",
         "reviewedBy": "RegActions deterministic sanctions classifier v2",
         "reviewerOrganisation": "RegActions automated evidence system",
-        "reviewedAt": "2026-09-10T13:46:16.668Z",
+        "reviewedAt": "2026-09-13T19:59:38.396Z",
         "reviewNote": "The programme is present in the current official catalogue and the versioned scope rule reproduces the published tier from the linked measure-specific evidence. Classification: The active direct programme is principally designation-led. External practitioner validation is not claimed.",
         "legalStatus": "active",
         "legalInstrumentId": "Resolutions",
@@ -1732,7 +1732,7 @@ export const SANCTIONS_APPROVED_STATUS: ApprovedCountrySanctions[] = [
           "financial-restriction",
           "travel-ban"
         ],
-        "evidenceLocator": "Security Council Committee established pursuant to resolution 1636 (2005); official evidence page and linked legal-source inventory; source SHA-256 d7a064ab3174acad736131c21a3acc063a8c51a1255415940c076f8db8c64e11"
+        "evidenceLocator": "Security Council Committee established pursuant to resolution 1636 (2005); official evidence page and linked legal-source inventory; source SHA-256 94fee0a5fb274301c0e220ee51f234a65090ba72e1663ea887750d437cc54e40"
       }
     ]
   },
@@ -1750,7 +1750,7 @@ export const SANCTIONS_APPROVED_STATUS: ApprovedCountrySanctions[] = [
         "evidenceUrl": "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX:31993R3275",
         "reviewedBy": "RegActions deterministic sanctions classifier v2",
         "reviewerOrganisation": "RegActions automated evidence system",
-        "reviewedAt": "2026-09-10T13:46:16.668Z",
+        "reviewedAt": "2026-09-13T19:59:38.396Z",
         "reviewNote": "Prepared measure-specific legal facts reproduce the published deterministic tier. Classification: A material class of ordinary transactions is restricted beyond named targets. External practitioner validation is not claimed.",
         "legalStatus": "active",
         "legalInstrumentId": "29.11.1993 consolidated basic legal act - (EC) No 3275/93",
@@ -1774,7 +1774,7 @@ export const SANCTIONS_APPROVED_STATUS: ApprovedCountrySanctions[] = [
         "evidenceUrl": "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX%3A02016R0044-20250731",
         "reviewedBy": "RegActions deterministic sanctions classifier v2",
         "reviewerOrganisation": "RegActions automated evidence system",
-        "reviewedAt": "2026-09-10T13:46:16.668Z",
+        "reviewedAt": "2026-09-13T19:59:38.396Z",
         "reviewNote": "Prepared measure-specific legal facts reproduce the published deterministic tier. Classification: A material class of ordinary transactions is restricted beyond named targets. External practitioner validation is not claimed.",
         "legalStatus": "active",
         "legalInstrumentId": "31.07.2025 consolidated basic legal act - (EU) 2016/44",
@@ -1805,7 +1805,7 @@ export const SANCTIONS_APPROVED_STATUS: ApprovedCountrySanctions[] = [
         "evidenceUrl": "https://www.ecfr.gov/cgi-bin/text-idx?c=ecfr&SID=536d46786b2cf91e15af320ee7f1008a&tpl=/ecfrbrowse/Title31/31cfr570_main_02.tpl",
         "reviewedBy": "RegActions deterministic sanctions classifier v2",
         "reviewerOrganisation": "RegActions automated evidence system",
-        "reviewedAt": "2026-09-10T13:46:16.668Z",
+        "reviewedAt": "2026-09-13T19:59:38.396Z",
         "reviewNote": "The programme is present in the current official catalogue and the versioned scope rule reproduces the published tier from the linked measure-specific evidence. Classification: The active direct programme is principally designation-led. External practitioner validation is not claimed.",
         "legalStatus": "active",
         "legalInstrumentId": "31 CFR Part 570",
@@ -1817,7 +1817,7 @@ export const SANCTIONS_APPROVED_STATUS: ApprovedCountrySanctions[] = [
           "asset-freeze",
           "commodity-restriction"
         ],
-        "evidenceLocator": "Libya Sanctions; official evidence page and linked legal-source inventory; source SHA-256 407420fb813a54a465c6214cb5bceb739a337afa8e38eeef117d671dadebc2ff"
+        "evidenceLocator": "Libya Sanctions; official evidence page and linked legal-source inventory; source SHA-256 71d50c757f71a88508a15d268b3608949d6b2784921edcb18dc39155da3e59e4"
       },
       {
         "imposer": "UK",
@@ -1830,7 +1830,7 @@ export const SANCTIONS_APPROVED_STATUS: ApprovedCountrySanctions[] = [
         "evidenceUrl": "https://www.legislation.gov.uk/uksi/2020/1665/contents",
         "reviewedBy": "RegActions deterministic sanctions classifier v2",
         "reviewerOrganisation": "RegActions automated evidence system",
-        "reviewedAt": "2026-09-10T13:46:16.668Z",
+        "reviewedAt": "2026-09-13T19:59:38.396Z",
         "reviewNote": "The programme is present in the current official catalogue and the versioned scope rule reproduces the published tier from the linked measure-specific evidence. Classification: A material class of ordinary transactions is restricted beyond named targets. External practitioner validation is not claimed.",
         "legalStatus": "active",
         "legalInstrumentId": "Libya (Sanctions) (EU Exit) Regulations 2020",
@@ -1849,7 +1849,7 @@ export const SANCTIONS_APPROVED_STATUS: ApprovedCountrySanctions[] = [
           "transport-restriction",
           "travel-ban"
         ],
-        "evidenceLocator": "Libya sanctions: guidance; official evidence page and linked legal-source inventory; source SHA-256 dcdfc72dcb298dd32de2a5dddb6a0aa62d1a7b2002a218d7a2664742dca23a41"
+        "evidenceLocator": "Libya sanctions: guidance; official evidence page and linked legal-source inventory; source SHA-256 6c996e2fa820effff7162fb178dcfdd606170296925c82c99496ee6fd32e3b98"
       },
       {
         "imposer": "UN",
@@ -1862,7 +1862,7 @@ export const SANCTIONS_APPROVED_STATUS: ApprovedCountrySanctions[] = [
         "evidenceUrl": "https://main.un.org/securitycouncil/en/content/resolutions-0",
         "reviewedBy": "RegActions deterministic sanctions classifier v2",
         "reviewerOrganisation": "RegActions automated evidence system",
-        "reviewedAt": "2026-09-10T13:46:16.668Z",
+        "reviewedAt": "2026-09-13T19:59:38.396Z",
         "reviewNote": "The programme is present in the current official catalogue and the versioned scope rule reproduces the published tier from the linked measure-specific evidence. Classification: A material class of ordinary transactions is restricted beyond named targets. External practitioner validation is not claimed.",
         "legalStatus": "active",
         "legalInstrumentId": "Resolutions",
@@ -1880,7 +1880,7 @@ export const SANCTIONS_APPROVED_STATUS: ApprovedCountrySanctions[] = [
           "transport-restriction",
           "travel-ban"
         ],
-        "evidenceLocator": "Security Council Committee established pursuant to resolution 1970 (2011) concerning Libya; official evidence page and linked legal-source inventory; source SHA-256 9e614afc54adfdde663e803eabe74dc3a75f2a47935f340bb3a88457622aada2"
+        "evidenceLocator": "Security Council Committee established pursuant to resolution 1970 (2011) concerning Libya; official evidence page and linked legal-source inventory; source SHA-256 951848199dacce55204ae612bc810e0adbbe7b6fb63a7aa745319aac73e0d259"
       }
     ]
   },
@@ -1898,7 +1898,7 @@ export const SANCTIONS_APPROVED_STATUS: ApprovedCountrySanctions[] = [
         "evidenceUrl": "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX:31994R1733",
         "reviewedBy": "RegActions deterministic sanctions classifier v2",
         "reviewerOrganisation": "RegActions automated evidence system",
-        "reviewedAt": "2026-09-10T13:46:16.668Z",
+        "reviewedAt": "2026-09-13T19:59:38.396Z",
         "reviewNote": "Prepared measure-specific legal facts reproduce the published deterministic tier. Classification: A material class of ordinary transactions is restricted beyond named targets. External practitioner validation is not claimed.",
         "legalStatus": "active",
         "legalInstrumentId": "11.07.1994 consolidated basic legal act - (EC) No 1733/94",
@@ -1927,7 +1927,7 @@ export const SANCTIONS_APPROVED_STATUS: ApprovedCountrySanctions[] = [
         "evidenceUrl": "https://data.europa.eu/eli/reg/2017/1770/2025-12-03",
         "reviewedBy": "RegActions deterministic sanctions classifier v2",
         "reviewerOrganisation": "RegActions automated evidence system",
-        "reviewedAt": "2026-09-10T13:46:16.668Z",
+        "reviewedAt": "2026-09-13T19:59:38.396Z",
         "reviewNote": "Prepared measure-specific legal facts reproduce the published deterministic tier. Classification: The active direct programme is principally designation-led. External practitioner validation is not claimed.",
         "legalStatus": "active",
         "legalInstrumentId": "03.12.2025 consolidated basic legal act - (EU) 2017/1770",
@@ -1952,7 +1952,7 @@ export const SANCTIONS_APPROVED_STATUS: ApprovedCountrySanctions[] = [
         "evidenceUrl": "https://ofac.treasury.gov/recent-actions/20200206",
         "reviewedBy": "RegActions deterministic sanctions classifier v2",
         "reviewerOrganisation": "RegActions automated evidence system",
-        "reviewedAt": "2026-09-10T13:46:16.668Z",
+        "reviewedAt": "2026-09-13T19:59:38.396Z",
         "reviewNote": "The programme is present in the current official catalogue and the versioned scope rule reproduces the published tier from the linked measure-specific evidence. Classification: The active direct programme is principally designation-led. External practitioner validation is not claimed.",
         "legalStatus": "active",
         "legalInstrumentId": "Publication of Mali Sanctions Regulations",
@@ -1964,7 +1964,7 @@ export const SANCTIONS_APPROVED_STATUS: ApprovedCountrySanctions[] = [
           "asset-freeze",
           "commodity-restriction"
         ],
-        "evidenceLocator": "Mali-Related Sanctions; official evidence page and linked legal-source inventory; source SHA-256 75eb79b30afaeb77d40e5ba3995392a8cfc3a8c440554aad8036a39ed955b09e"
+        "evidenceLocator": "Mali-Related Sanctions; official evidence page and linked legal-source inventory; source SHA-256 897f40aad033d180d354c7dc02211a2d17d681a756fabeff9c8157bdfe62e370"
       },
       {
         "imposer": "UK",
@@ -1977,7 +1977,7 @@ export const SANCTIONS_APPROVED_STATUS: ApprovedCountrySanctions[] = [
         "evidenceUrl": "https://www.legislation.gov.uk/uksi/2020/705/contents",
         "reviewedBy": "RegActions deterministic sanctions classifier v2",
         "reviewerOrganisation": "RegActions automated evidence system",
-        "reviewedAt": "2026-09-10T13:46:16.668Z",
+        "reviewedAt": "2026-09-13T19:59:38.396Z",
         "reviewNote": "The programme is present in the current official catalogue and the versioned scope rule reproduces the published tier from the linked measure-specific evidence. Classification: The active direct programme is principally designation-led. External practitioner validation is not claimed.",
         "legalStatus": "active",
         "legalInstrumentId": "Mali (Sanctions) (EU Exit) Regulations 2020",
@@ -1992,7 +1992,7 @@ export const SANCTIONS_APPROVED_STATUS: ApprovedCountrySanctions[] = [
           "financial-restriction",
           "travel-ban"
         ],
-        "evidenceLocator": "Mali sanctions: guidance; official evidence page and linked legal-source inventory; source SHA-256 42fefc2d62922251369b4274dddc7daa05df83ae479738a10e2edcbef9b69c10"
+        "evidenceLocator": "Mali sanctions: guidance; official evidence page and linked legal-source inventory; source SHA-256 a8a7dad763a9f8c3ee758bb17ab79fd76aa789cb706b01da8f1e2761d064c1c8"
       }
     ]
   },
@@ -2010,7 +2010,7 @@ export const SANCTIONS_APPROVED_STATUS: ApprovedCountrySanctions[] = [
         "evidenceUrl": "https://data.europa.eu/eli/reg/2013/401/2026-04-29",
         "reviewedBy": "RegActions deterministic sanctions classifier v2",
         "reviewerOrganisation": "RegActions automated evidence system",
-        "reviewedAt": "2026-09-10T13:46:16.668Z",
+        "reviewedAt": "2026-09-13T19:59:38.396Z",
         "reviewNote": "Prepared measure-specific legal facts reproduce the published deterministic tier. Classification: A material class of ordinary transactions is restricted beyond named targets. External practitioner validation is not claimed.",
         "legalStatus": "active",
         "legalInstrumentId": "29.04.2026 consolidated basic legal act - (EU) No 401/2013",
@@ -2039,7 +2039,7 @@ export const SANCTIONS_APPROVED_STATUS: ApprovedCountrySanctions[] = [
         "evidenceUrl": "https://ofac.treasury.gov/media/54046/download?inline",
         "reviewedBy": "RegActions deterministic sanctions classifier v2",
         "reviewerOrganisation": "RegActions automated evidence system",
-        "reviewedAt": "2026-09-10T13:46:16.668Z",
+        "reviewedAt": "2026-09-13T19:59:38.396Z",
         "reviewNote": "The programme is present in the current official catalogue and the versioned scope rule reproduces the published tier from the linked measure-specific evidence. Classification: The active direct programme is principally designation-led. External practitioner validation is not claimed.",
         "legalStatus": "active",
         "legalInstrumentId": "Executive Order 14014",
@@ -2053,7 +2053,7 @@ export const SANCTIONS_APPROVED_STATUS: ApprovedCountrySanctions[] = [
           "financial-restriction",
           "import-restriction"
         ],
-        "evidenceLocator": "Burma-Related Sanctions; official evidence page and linked legal-source inventory; source SHA-256 9072ec683abc4f76575a81b7d6fdcd43659db838dbbee9cabc3df3f981d29589"
+        "evidenceLocator": "Burma-Related Sanctions; official evidence page and linked legal-source inventory; source SHA-256 ad7d3276c8c9cf996d90a3953c6aaf9e08a06b34bdf1c4ffb526f4e909dfc9bd"
       },
       {
         "imposer": "UK",
@@ -2066,7 +2066,7 @@ export const SANCTIONS_APPROVED_STATUS: ApprovedCountrySanctions[] = [
         "evidenceUrl": "https://www.legislation.gov.uk/uksi/2021/496/contents",
         "reviewedBy": "RegActions deterministic sanctions classifier v2",
         "reviewerOrganisation": "RegActions automated evidence system",
-        "reviewedAt": "2026-09-10T13:46:16.668Z",
+        "reviewedAt": "2026-09-13T19:59:38.396Z",
         "reviewNote": "The programme is present in the current official catalogue and the versioned scope rule reproduces the published tier from the linked measure-specific evidence. Classification: A material class of ordinary transactions is restricted beyond named targets. External practitioner validation is not claimed.",
         "legalStatus": "active",
         "legalInstrumentId": "Myanmar (Sanctions) Regulations 2021",
@@ -2083,7 +2083,7 @@ export const SANCTIONS_APPROVED_STATUS: ApprovedCountrySanctions[] = [
           "services-restriction",
           "travel-ban"
         ],
-        "evidenceLocator": "Myanmar sanctions: guidance; official evidence page and linked legal-source inventory; source SHA-256 ec48c5ce659b2a75e29b5b02276c83349b6581b59caf630e4111ccb079a381ac"
+        "evidenceLocator": "Myanmar sanctions: guidance; official evidence page and linked legal-source inventory; source SHA-256 d90f381acbb2915faba4ce3114280c2afc73c7a53d9e534c06b5acbb4bbccdee"
       }
     ]
   },
@@ -2101,7 +2101,7 @@ export const SANCTIONS_APPROVED_STATUS: ApprovedCountrySanctions[] = [
         "evidenceUrl": "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX%3A02023R2406-20240913",
         "reviewedBy": "RegActions deterministic sanctions classifier v2",
         "reviewerOrganisation": "RegActions automated evidence system",
-        "reviewedAt": "2026-09-10T13:46:16.668Z",
+        "reviewedAt": "2026-09-13T19:59:38.396Z",
         "reviewNote": "Prepared measure-specific legal facts reproduce the published deterministic tier. Classification: The active direct programme is principally designation-led. External practitioner validation is not claimed.",
         "legalStatus": "active",
         "legalInstrumentId": "13.09.2024 consolidated basic legal act - (EU) 2023/2406",
@@ -2131,7 +2131,7 @@ export const SANCTIONS_APPROVED_STATUS: ApprovedCountrySanctions[] = [
         "evidenceUrl": "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX%3A02019R1716-20251001",
         "reviewedBy": "RegActions deterministic sanctions classifier v2",
         "reviewerOrganisation": "RegActions automated evidence system",
-        "reviewedAt": "2026-09-10T13:46:16.668Z",
+        "reviewedAt": "2026-09-13T19:59:38.396Z",
         "reviewNote": "Prepared measure-specific legal facts reproduce the published deterministic tier. Classification: The active direct programme is principally designation-led. External practitioner validation is not claimed.",
         "legalStatus": "active",
         "legalInstrumentId": "01.10.2025 consolidated basic legal act - (EU) 2019/1716",
@@ -2156,7 +2156,7 @@ export const SANCTIONS_APPROVED_STATUS: ApprovedCountrySanctions[] = [
         "evidenceUrl": "https://ofac.treasury.gov/media/918051/download?inline",
         "reviewedBy": "RegActions deterministic sanctions classifier v2",
         "reviewerOrganisation": "RegActions automated evidence system",
-        "reviewedAt": "2026-09-10T13:46:16.668Z",
+        "reviewedAt": "2026-09-13T19:59:38.396Z",
         "reviewNote": "The programme is present in the current official catalogue and the versioned scope rule reproduces the published tier from the linked measure-specific evidence. Classification: The active direct programme is principally designation-led. External practitioner validation is not claimed.",
         "legalStatus": "active",
         "legalInstrumentId": "Reinforcing Nicaragua's Adherence to Conditions for Electoral Reform Act of 2021, Public Law 117-54",
@@ -2168,7 +2168,7 @@ export const SANCTIONS_APPROVED_STATUS: ApprovedCountrySanctions[] = [
           "asset-freeze",
           "commodity-restriction"
         ],
-        "evidenceLocator": "Nicaragua-related Sanctions; official evidence page and linked legal-source inventory; source SHA-256 e748b56f3e16853897f059d70f818782f767a1788e654c5d9f87b9657f320343"
+        "evidenceLocator": "Nicaragua-related Sanctions; official evidence page and linked legal-source inventory; source SHA-256 545bb8a2506ce4686f4b01dd0fb24ed26de0270fd38749f59d95ac42c01cbafe"
       },
       {
         "imposer": "UK",
@@ -2181,7 +2181,7 @@ export const SANCTIONS_APPROVED_STATUS: ApprovedCountrySanctions[] = [
         "evidenceUrl": "https://www.legislation.gov.uk/uksi/2020/610/contents",
         "reviewedBy": "RegActions deterministic sanctions classifier v2",
         "reviewerOrganisation": "RegActions automated evidence system",
-        "reviewedAt": "2026-09-10T13:46:16.668Z",
+        "reviewedAt": "2026-09-13T19:59:38.396Z",
         "reviewNote": "The programme is present in the current official catalogue and the versioned scope rule reproduces the published tier from the linked measure-specific evidence. Classification: The active direct programme is principally designation-led. External practitioner validation is not claimed.",
         "legalStatus": "active",
         "legalInstrumentId": "Nicaragua (Sanctions) (EU Exit) Regulations 2020",
@@ -2196,7 +2196,7 @@ export const SANCTIONS_APPROVED_STATUS: ApprovedCountrySanctions[] = [
           "financial-restriction",
           "travel-ban"
         ],
-        "evidenceLocator": "Nicaragua sanctions: guidance; official evidence page and linked legal-source inventory; source SHA-256 b7159ec09fd59d51a87a4a5232c4fe36ca2af28e5185b8598e20bd7ce457e6c3"
+        "evidenceLocator": "Nicaragua sanctions: guidance; official evidence page and linked legal-source inventory; source SHA-256 14cbc33caeb95f02af35af04a7f14b231d92e84454587b6ef3c547f93b336ee2"
       }
     ]
   },
@@ -2214,7 +2214,7 @@ export const SANCTIONS_APPROVED_STATUS: ApprovedCountrySanctions[] = [
         "evidenceUrl": "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX:31994R1733",
         "reviewedBy": "RegActions deterministic sanctions classifier v2",
         "reviewerOrganisation": "RegActions automated evidence system",
-        "reviewedAt": "2026-09-10T13:46:16.668Z",
+        "reviewedAt": "2026-09-13T19:59:38.396Z",
         "reviewNote": "Prepared measure-specific legal facts reproduce the published deterministic tier. Classification: A material class of ordinary transactions is restricted beyond named targets. External practitioner validation is not claimed.",
         "legalStatus": "active",
         "legalInstrumentId": "11.07.1994 consolidated basic legal act - (EC) No 1733/94",
@@ -2243,7 +2243,7 @@ export const SANCTIONS_APPROVED_STATUS: ApprovedCountrySanctions[] = [
         "evidenceUrl": "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX%3A02014R0833-20260724",
         "reviewedBy": "RegActions deterministic sanctions classifier v2",
         "reviewerOrganisation": "RegActions automated evidence system",
-        "reviewedAt": "2026-09-10T13:46:16.668Z",
+        "reviewedAt": "2026-09-13T19:59:38.396Z",
         "reviewNote": "Prepared measure-specific legal facts reproduce the published deterministic tier. Classification: A material class of ordinary transactions is restricted beyond named targets. External practitioner validation is not claimed.",
         "legalStatus": "active",
         "legalInstrumentId": "24.07.2026 consolidated basic legal act - (EU) No 833/2014",
@@ -2274,7 +2274,7 @@ export const SANCTIONS_APPROVED_STATUS: ApprovedCountrySanctions[] = [
         "evidenceUrl": "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX%3A02024R2642-20260615",
         "reviewedBy": "RegActions deterministic sanctions classifier v2",
         "reviewerOrganisation": "RegActions automated evidence system",
-        "reviewedAt": "2026-09-10T13:46:16.668Z",
+        "reviewedAt": "2026-09-13T19:59:38.396Z",
         "reviewNote": "Prepared measure-specific legal facts reproduce the published deterministic tier. Classification: The active direct programme is principally designation-led. External practitioner validation is not claimed.",
         "legalStatus": "active",
         "legalInstrumentId": "15.06.2026 consolidated basic legal act - (EU) 2024/2642",
@@ -2299,7 +2299,7 @@ export const SANCTIONS_APPROVED_STATUS: ApprovedCountrySanctions[] = [
         "evidenceUrl": "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX%3A02024R1485-20260615",
         "reviewedBy": "RegActions deterministic sanctions classifier v2",
         "reviewerOrganisation": "RegActions automated evidence system",
-        "reviewedAt": "2026-09-10T13:46:16.668Z",
+        "reviewedAt": "2026-09-13T19:59:38.396Z",
         "reviewNote": "Prepared measure-specific legal facts reproduce the published deterministic tier. Classification: A material class of ordinary transactions is restricted beyond named targets. External practitioner validation is not claimed.",
         "legalStatus": "active",
         "legalInstrumentId": "15.06.2026 - consolidated basic legal act - 2024/1485",
@@ -2327,7 +2327,7 @@ export const SANCTIONS_APPROVED_STATUS: ApprovedCountrySanctions[] = [
         "evidenceUrl": "https://congress.gov/115/plaws/publ44/PLAW-115publ44.pdf",
         "reviewedBy": "RegActions deterministic sanctions classifier v2",
         "reviewerOrganisation": "RegActions automated evidence system",
-        "reviewedAt": "2026-09-10T13:46:16.668Z",
+        "reviewedAt": "2026-09-13T19:59:38.396Z",
         "reviewNote": "The programme is present in the current official catalogue and the versioned scope rule reproduces the published tier from the linked measure-specific evidence. Classification: A material class of ordinary transactions is restricted beyond named targets. External practitioner validation is not claimed.",
         "legalStatus": "active",
         "legalInstrumentId": "Public Law 115-44",
@@ -2338,7 +2338,7 @@ export const SANCTIONS_APPROVED_STATUS: ApprovedCountrySanctions[] = [
         "measures": [
           "commodity-restriction"
         ],
-        "evidenceLocator": "Russia-related Sanctions Programs; official evidence page and linked legal-source inventory; source SHA-256 04939c4fb1f7ad2e3c2bf9dd034cba259aee9910c346a3d148ab804480036135"
+        "evidenceLocator": "Russia-related Sanctions Programs; official evidence page and linked legal-source inventory; source SHA-256 b322cd871dc96ae6eb64882471d6f25118dd9dcb073747fa64a26ae829fb132c"
       },
       {
         "imposer": "OFAC",
@@ -2351,7 +2351,7 @@ export const SANCTIONS_APPROVED_STATUS: ApprovedCountrySanctions[] = [
         "evidenceUrl": "https://ofac.treasury.gov/media/918726/download?inline",
         "reviewedBy": "RegActions deterministic sanctions classifier v2",
         "reviewerOrganisation": "RegActions automated evidence system",
-        "reviewedAt": "2026-09-10T13:46:16.668Z",
+        "reviewedAt": "2026-09-13T19:59:38.396Z",
         "reviewNote": "The programme is present in the current official catalogue and the versioned scope rule reproduces the published tier from the linked measure-specific evidence. Classification: A material class of ordinary transactions is restricted beyond named targets. External practitioner validation is not claimed.",
         "legalStatus": "active",
         "legalInstrumentId": "Determination Pursuant to Section 1(a)(i) of Executive Order 14024",
@@ -2366,7 +2366,7 @@ export const SANCTIONS_APPROVED_STATUS: ApprovedCountrySanctions[] = [
           "import-restriction",
           "transport-restriction"
         ],
-        "evidenceLocator": "Russian Harmful Foreign Activities Sanctions; official evidence page and linked legal-source inventory; source SHA-256 f6125e17b6a2f0052d0c519bee52aba093d70476e08b8ee4c54681be8e411e6c"
+        "evidenceLocator": "Russian Harmful Foreign Activities Sanctions; official evidence page and linked legal-source inventory; source SHA-256 5044cbeed4e287dcfd2c60d6d7225d241cf163d5115c90d1be0aa7de5b24ef7d"
       },
       {
         "imposer": "OFAC",
@@ -2379,7 +2379,7 @@ export const SANCTIONS_APPROVED_STATUS: ApprovedCountrySanctions[] = [
         "evidenceUrl": "https://ofac.treasury.gov/media/43246/download?inline",
         "reviewedBy": "RegActions deterministic sanctions classifier v2",
         "reviewerOrganisation": "RegActions automated evidence system",
-        "reviewedAt": "2026-09-10T13:46:16.668Z",
+        "reviewedAt": "2026-09-13T19:59:38.396Z",
         "reviewNote": "The programme is present in the current official catalogue and the versioned scope rule reproduces the published tier from the linked measure-specific evidence. Classification: A material class of ordinary transactions is restricted beyond named targets. External practitioner validation is not claimed.",
         "legalStatus": "active",
         "legalInstrumentId": "Determination Pursuant to Executive Order 13662 of March 20, 2014 (Effective date - July 16, 2014) - Financial Services and Energy Sectors",
@@ -2394,7 +2394,7 @@ export const SANCTIONS_APPROVED_STATUS: ApprovedCountrySanctions[] = [
           "import-restriction",
           "transport-restriction"
         ],
-        "evidenceLocator": "Ukraine-/Russia-related Sanctions; official evidence page and linked legal-source inventory; source SHA-256 83f71473cfb5c2da786038e0f16f1b721a3994a77a3bd0521366ec6c0b59e73b"
+        "evidenceLocator": "Ukraine-/Russia-related Sanctions; official evidence page and linked legal-source inventory; source SHA-256 288f2806ac5e2fab86b3afbc64c92f4c753b5614265fa8b8ef16574d7a30a5b8"
       },
       {
         "imposer": "UK",
@@ -2407,7 +2407,7 @@ export const SANCTIONS_APPROVED_STATUS: ApprovedCountrySanctions[] = [
         "evidenceUrl": "https://www.legislation.gov.uk/uksi/2019/855/contents",
         "reviewedBy": "RegActions deterministic sanctions classifier v2",
         "reviewerOrganisation": "RegActions automated evidence system",
-        "reviewedAt": "2026-09-10T13:46:16.668Z",
+        "reviewedAt": "2026-09-13T19:59:38.396Z",
         "reviewNote": "The programme is present in the current official catalogue and the versioned scope rule reproduces the published tier from the linked measure-specific evidence. Classification: A material class of ordinary transactions is restricted beyond named targets. External practitioner validation is not claimed.",
         "legalStatus": "active",
         "legalInstrumentId": "Russia (Sanctions) (EU Exit) Regulations 2019",
@@ -2426,7 +2426,7 @@ export const SANCTIONS_APPROVED_STATUS: ApprovedCountrySanctions[] = [
           "transport-restriction",
           "travel-ban"
         ],
-        "evidenceLocator": "Russia sanctions: guidance; official evidence page and linked legal-source inventory; source SHA-256 11ecdc6a5d9dc2f6a4a98723f6b3c54219563d70ff44e44430bcc330c58add72"
+        "evidenceLocator": "Russia sanctions: guidance; official evidence page and linked legal-source inventory; source SHA-256 3b67db6aa2b21bc7950e88e9f87a0ccaacf9f9e80cb9b39aed92f1798673976b"
       }
     ]
   },
@@ -2444,7 +2444,7 @@ export const SANCTIONS_APPROVED_STATUS: ApprovedCountrySanctions[] = [
         "evidenceUrl": "https://data.europa.eu/eli/reg/2023/2147/2026-06-23",
         "reviewedBy": "RegActions deterministic sanctions classifier v2",
         "reviewerOrganisation": "RegActions automated evidence system",
-        "reviewedAt": "2026-09-10T13:46:16.668Z",
+        "reviewedAt": "2026-09-13T19:59:38.396Z",
         "reviewNote": "Prepared measure-specific legal facts reproduce the published deterministic tier. Classification: The active direct programme is principally designation-led. External practitioner validation is not claimed.",
         "legalStatus": "active",
         "legalInstrumentId": "23.06.2026 consolidated basic legal act (EU) 2023/2147",
@@ -2469,7 +2469,7 @@ export const SANCTIONS_APPROVED_STATUS: ApprovedCountrySanctions[] = [
         "evidenceUrl": "https://data.europa.eu/eli/reg/2014/747/2026-05-07",
         "reviewedBy": "RegActions deterministic sanctions classifier v2",
         "reviewerOrganisation": "RegActions automated evidence system",
-        "reviewedAt": "2026-09-10T13:46:16.668Z",
+        "reviewedAt": "2026-09-13T19:59:38.396Z",
         "reviewNote": "Prepared measure-specific legal facts reproduce the published deterministic tier. Classification: A material class of ordinary transactions is restricted beyond named targets. External practitioner validation is not claimed.",
         "legalStatus": "active",
         "legalInstrumentId": "07.05.2026 consolidated basic legal act - (EU) No 747/2014",
@@ -2498,7 +2498,7 @@ export const SANCTIONS_APPROVED_STATUS: ApprovedCountrySanctions[] = [
         "evidenceUrl": "https://www.ecfr.gov/cgi-bin/text-idx?SID=5eae22affe2e3675b6deaa3fb796eb7a&tpl=/ecfrbrowse/Title31/31cfr546_main_02.tpl",
         "reviewedBy": "RegActions deterministic sanctions classifier v2",
         "reviewerOrganisation": "RegActions automated evidence system",
-        "reviewedAt": "2026-09-10T13:46:16.668Z",
+        "reviewedAt": "2026-09-13T19:59:38.396Z",
         "reviewNote": "The programme is present in the current official catalogue and the versioned scope rule reproduces the published tier from the linked measure-specific evidence. Classification: The active direct programme is principally designation-led. External practitioner validation is not claimed.",
         "legalStatus": "active",
         "legalInstrumentId": "31 CFR Part 546",
@@ -2514,7 +2514,7 @@ export const SANCTIONS_APPROVED_STATUS: ApprovedCountrySanctions[] = [
           "import-restriction",
           "transport-restriction"
         ],
-        "evidenceLocator": "Sudan and Darfur Sanctions; official evidence page and linked legal-source inventory; source SHA-256 2ed646602f133e17acd27795a4e41956162de47cdc079554b78c82afeec095ae"
+        "evidenceLocator": "Sudan and Darfur Sanctions; official evidence page and linked legal-source inventory; source SHA-256 625ae01473d3fa32cdf7e3051574f8944d0ac04691454f3a3f0d57a6cf6343b8"
       },
       {
         "imposer": "UK",
@@ -2527,7 +2527,7 @@ export const SANCTIONS_APPROVED_STATUS: ApprovedCountrySanctions[] = [
         "evidenceUrl": "https://www.legislation.gov.uk/uksi/2020/753/contents",
         "reviewedBy": "RegActions deterministic sanctions classifier v2",
         "reviewerOrganisation": "RegActions automated evidence system",
-        "reviewedAt": "2026-09-10T13:46:16.668Z",
+        "reviewedAt": "2026-09-13T19:59:38.396Z",
         "reviewNote": "The programme is present in the current official catalogue and the versioned scope rule reproduces the published tier from the linked measure-specific evidence. Classification: A material class of ordinary transactions is restricted beyond named targets. External practitioner validation is not claimed.",
         "legalStatus": "active",
         "legalInstrumentId": "Sudan (Sanctions) (EU Exit) Regulations 2020",
@@ -2544,7 +2544,7 @@ export const SANCTIONS_APPROVED_STATUS: ApprovedCountrySanctions[] = [
           "services-restriction",
           "travel-ban"
         ],
-        "evidenceLocator": "Sudan sanctions: guidance; official evidence page and linked legal-source inventory; source SHA-256 4a3b4ebb6873ea475f5bbb763867a821194e47bdf0d2bfa3d1c7de809165bd52"
+        "evidenceLocator": "Sudan sanctions: guidance; official evidence page and linked legal-source inventory; source SHA-256 312fb9c53dbfb94f45d908951a8231a9c3301601fd0ff2304960d556cf6e49a6"
       },
       {
         "imposer": "UN",
@@ -2557,7 +2557,7 @@ export const SANCTIONS_APPROVED_STATUS: ApprovedCountrySanctions[] = [
         "evidenceUrl": "https://main.un.org/securitycouncil/en/content/resolutions-0",
         "reviewedBy": "RegActions deterministic sanctions classifier v2",
         "reviewerOrganisation": "RegActions automated evidence system",
-        "reviewedAt": "2026-09-10T13:46:16.668Z",
+        "reviewedAt": "2026-09-13T19:59:38.396Z",
         "reviewNote": "The programme is present in the current official catalogue and the versioned scope rule reproduces the published tier from the linked measure-specific evidence. Classification: A material class of ordinary transactions is restricted beyond named targets. External practitioner validation is not claimed.",
         "legalStatus": "active",
         "legalInstrumentId": "Resolutions",
@@ -2572,7 +2572,7 @@ export const SANCTIONS_APPROVED_STATUS: ApprovedCountrySanctions[] = [
           "transport-restriction",
           "travel-ban"
         ],
-        "evidenceLocator": "Security Council Committee established pursuant to resolution 1591 (2005) concerning the Sudan; official evidence page and linked legal-source inventory; source SHA-256 02f92ad1637085acce6c58e5620956c1821a6c625ff0eb7f1229820a75a1cb22"
+        "evidenceLocator": "Security Council Committee established pursuant to resolution 1591 (2005) concerning the Sudan; official evidence page and linked legal-source inventory; source SHA-256 dd765f7bd3c95f71e8759a470e5e06a139c1524d7e403e0663ba894e028596f4"
       }
     ]
   },
@@ -2590,7 +2590,7 @@ export const SANCTIONS_APPROVED_STATUS: ApprovedCountrySanctions[] = [
         "evidenceUrl": "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX%3A02010R0356-20240913",
         "reviewedBy": "RegActions deterministic sanctions classifier v2",
         "reviewerOrganisation": "RegActions automated evidence system",
-        "reviewedAt": "2026-09-10T13:46:16.668Z",
+        "reviewedAt": "2026-09-13T19:59:38.396Z",
         "reviewNote": "Prepared measure-specific legal facts reproduce the published deterministic tier. Classification: A material class of ordinary transactions is restricted beyond named targets. External practitioner validation is not claimed.",
         "legalStatus": "active",
         "legalInstrumentId": "13.09.2024 consolidated basic legal act - (EU) No 356/2010",
@@ -2620,7 +2620,7 @@ export const SANCTIONS_APPROVED_STATUS: ApprovedCountrySanctions[] = [
         "evidenceUrl": "https://ofac.treasury.gov/recent-actions/20210427",
         "reviewedBy": "RegActions deterministic sanctions classifier v2",
         "reviewerOrganisation": "RegActions automated evidence system",
-        "reviewedAt": "2026-09-10T13:46:16.668Z",
+        "reviewedAt": "2026-09-13T19:59:38.396Z",
         "reviewNote": "The programme is present in the current official catalogue and the versioned scope rule reproduces the published tier from the linked measure-specific evidence. Classification: The active direct programme is principally designation-led. External practitioner validation is not claimed.",
         "legalStatus": "active",
         "legalInstrumentId": "Issuance of Amended Somalia Sanctions Regulations",
@@ -2633,7 +2633,7 @@ export const SANCTIONS_APPROVED_STATUS: ApprovedCountrySanctions[] = [
           "commodity-restriction",
           "financial-restriction"
         ],
-        "evidenceLocator": "Somalia Sanctions; official evidence page and linked legal-source inventory; source SHA-256 a19fcbe523d95f3fbbe74ac0df80600e9f55decfbd058d50227a0cf8f90b699a"
+        "evidenceLocator": "Somalia Sanctions; official evidence page and linked legal-source inventory; source SHA-256 e37e102bf8fb01f282e53173d04a47b729f927e2352178e4ceef281a70a0e9bc"
       },
       {
         "imposer": "UK",
@@ -2646,7 +2646,7 @@ export const SANCTIONS_APPROVED_STATUS: ApprovedCountrySanctions[] = [
         "evidenceUrl": "https://www.legislation.gov.uk/uksi/2020/642/contents",
         "reviewedBy": "RegActions deterministic sanctions classifier v2",
         "reviewerOrganisation": "RegActions automated evidence system",
-        "reviewedAt": "2026-09-10T13:46:16.668Z",
+        "reviewedAt": "2026-09-13T19:59:38.396Z",
         "reviewNote": "The programme is present in the current official catalogue and the versioned scope rule reproduces the published tier from the linked measure-specific evidence. Classification: A material class of ordinary transactions is restricted beyond named targets. External practitioner validation is not claimed.",
         "legalStatus": "active",
         "legalInstrumentId": "Somalia (Sanctions) (EU Exit) Regulations 2020",
@@ -2665,7 +2665,7 @@ export const SANCTIONS_APPROVED_STATUS: ApprovedCountrySanctions[] = [
           "transport-restriction",
           "travel-ban"
         ],
-        "evidenceLocator": "Somalia sanctions: guidance; official evidence page and linked legal-source inventory; source SHA-256 589a619896bbc6eb27b596242adf8712644e7aa2a14b7c3519d36820a54ce77b"
+        "evidenceLocator": "Somalia sanctions: guidance; official evidence page and linked legal-source inventory; source SHA-256 cd30085353d798cee6b8c01012b9b0fd5750c3a96e2ef31bbfc05cb75f1ded87"
       },
       {
         "imposer": "UN",
@@ -2678,7 +2678,7 @@ export const SANCTIONS_APPROVED_STATUS: ApprovedCountrySanctions[] = [
         "evidenceUrl": "https://main.un.org/securitycouncil/en/content/resolutions-0",
         "reviewedBy": "RegActions deterministic sanctions classifier v2",
         "reviewerOrganisation": "RegActions automated evidence system",
-        "reviewedAt": "2026-09-10T13:46:16.668Z",
+        "reviewedAt": "2026-09-13T19:59:38.396Z",
         "reviewNote": "The programme is present in the current official catalogue and the versioned scope rule reproduces the published tier from the linked measure-specific evidence. Classification: A material class of ordinary transactions is restricted beyond named targets. External practitioner validation is not claimed.",
         "legalStatus": "active",
         "legalInstrumentId": "Resolutions",
@@ -2697,7 +2697,7 @@ export const SANCTIONS_APPROVED_STATUS: ApprovedCountrySanctions[] = [
           "transport-restriction",
           "travel-ban"
         ],
-        "evidenceLocator": "Security Council Committee pursuant to resolution 2713 (2023) concerning Al-Shabaab; official evidence page and linked legal-source inventory; source SHA-256 68b96df892589852d849438ec8cddeabbadbc5588eb2626b1d6c9cfab00a60cc"
+        "evidenceLocator": "Security Council Committee pursuant to resolution 2713 (2023) concerning Al-Shabaab; official evidence page and linked legal-source inventory; source SHA-256 801ff4764c79ba846636bd6c2858c851af40de7b9dd824ed021ad49e08c689da"
       }
     ]
   },
@@ -2715,7 +2715,7 @@ export const SANCTIONS_APPROVED_STATUS: ApprovedCountrySanctions[] = [
         "evidenceUrl": "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX%3A02015R0735-20250710",
         "reviewedBy": "RegActions deterministic sanctions classifier v2",
         "reviewerOrganisation": "RegActions automated evidence system",
-        "reviewedAt": "2026-09-10T13:46:16.668Z",
+        "reviewedAt": "2026-09-13T19:59:38.396Z",
         "reviewNote": "Prepared measure-specific legal facts reproduce the published deterministic tier. Classification: A material class of ordinary transactions is restricted beyond named targets. External practitioner validation is not claimed.",
         "legalStatus": "active",
         "legalInstrumentId": "10.07.25 consolidated basic legal act - (EU) 2015/735",
@@ -2744,7 +2744,7 @@ export const SANCTIONS_APPROVED_STATUS: ApprovedCountrySanctions[] = [
         "evidenceUrl": "https://ofac.treasury.gov/faqs/topic/1566",
         "reviewedBy": "RegActions deterministic sanctions classifier v2",
         "reviewerOrganisation": "RegActions automated evidence system",
-        "reviewedAt": "2026-09-10T13:46:16.668Z",
+        "reviewedAt": "2026-09-13T19:59:38.396Z",
         "reviewNote": "The programme is present in the current official catalogue and the versioned scope rule reproduces the published tier from the linked measure-specific evidence. Classification: The active direct programme is principally designation-led. External practitioner validation is not claimed.",
         "legalStatus": "active",
         "legalInstrumentId": "Question on Executive Order 13664",
@@ -2756,7 +2756,7 @@ export const SANCTIONS_APPROVED_STATUS: ApprovedCountrySanctions[] = [
           "asset-freeze",
           "commodity-restriction"
         ],
-        "evidenceLocator": "South Sudan-Related Sanctions; official evidence page and linked legal-source inventory; source SHA-256 1225b5771c44dbb52aa342a64e9034e49f2f1d5822241c5edf96bf1dbe7e87fb"
+        "evidenceLocator": "South Sudan-Related Sanctions; official evidence page and linked legal-source inventory; source SHA-256 ec36c752c1cb5cdba92c78480fa28e9454f00021c007aefafb454e5dfe426fd6"
       },
       {
         "imposer": "UK",
@@ -2769,7 +2769,7 @@ export const SANCTIONS_APPROVED_STATUS: ApprovedCountrySanctions[] = [
         "evidenceUrl": "https://www.legislation.gov.uk/uksi/2019/438/contents",
         "reviewedBy": "RegActions deterministic sanctions classifier v2",
         "reviewerOrganisation": "RegActions automated evidence system",
-        "reviewedAt": "2026-09-10T13:46:16.668Z",
+        "reviewedAt": "2026-09-13T19:59:38.396Z",
         "reviewNote": "The programme is present in the current official catalogue and the versioned scope rule reproduces the published tier from the linked measure-specific evidence. Classification: A material class of ordinary transactions is restricted beyond named targets. External practitioner validation is not claimed.",
         "legalStatus": "active",
         "legalInstrumentId": "South Sudan (Sanctions) (EU Exit) Regulations 2019",
@@ -2786,7 +2786,7 @@ export const SANCTIONS_APPROVED_STATUS: ApprovedCountrySanctions[] = [
           "services-restriction",
           "travel-ban"
         ],
-        "evidenceLocator": "South Sudan sanctions: guidance; official evidence page and linked legal-source inventory; source SHA-256 1b57d72d613a1f0d905218f14710ec2bab527b852959d56df935d0b58817d3ef"
+        "evidenceLocator": "South Sudan sanctions: guidance; official evidence page and linked legal-source inventory; source SHA-256 010cc20ca6afcb2fdb0bb7d5c1ad17fa1db5850b6a55765fd527f0366d526ca7"
       },
       {
         "imposer": "UN",
@@ -2799,7 +2799,7 @@ export const SANCTIONS_APPROVED_STATUS: ApprovedCountrySanctions[] = [
         "evidenceUrl": "https://main.un.org/securitycouncil/en/content/resolutions-0",
         "reviewedBy": "RegActions deterministic sanctions classifier v2",
         "reviewerOrganisation": "RegActions automated evidence system",
-        "reviewedAt": "2026-09-10T13:46:16.668Z",
+        "reviewedAt": "2026-09-13T19:59:38.396Z",
         "reviewNote": "The programme is present in the current official catalogue and the versioned scope rule reproduces the published tier from the linked measure-specific evidence. Classification: A material class of ordinary transactions is restricted beyond named targets. External practitioner validation is not claimed.",
         "legalStatus": "active",
         "legalInstrumentId": "Resolutions",
@@ -2817,7 +2817,7 @@ export const SANCTIONS_APPROVED_STATUS: ApprovedCountrySanctions[] = [
           "transport-restriction",
           "travel-ban"
         ],
-        "evidenceLocator": "Security Council Committee established pursuant to resolution 2206 (2015) concerning South Sudan; official evidence page and linked legal-source inventory; source SHA-256 5bed2a5b13325825c0093f598089c2cd15924c633ab0989c4e1a22f988563b24"
+        "evidenceLocator": "Security Council Committee established pursuant to resolution 2206 (2015) concerning South Sudan; official evidence page and linked legal-source inventory; source SHA-256 2fc139c89a832ac4ffa58bed25929954a760340599df185fa7f315fe233dca28"
       }
     ]
   },
@@ -2835,7 +2835,7 @@ export const SANCTIONS_APPROVED_STATUS: ApprovedCountrySanctions[] = [
         "evidenceUrl": "https://data.europa.eu/eli/reg/2012/36/2025-09-24",
         "reviewedBy": "RegActions deterministic sanctions classifier v2",
         "reviewerOrganisation": "RegActions automated evidence system",
-        "reviewedAt": "2026-09-10T13:46:16.668Z",
+        "reviewedAt": "2026-09-13T19:59:38.396Z",
         "reviewNote": "Prepared measure-specific legal facts reproduce the published deterministic tier. Classification: A material class of ordinary transactions is restricted beyond named targets. External practitioner validation is not claimed.",
         "legalStatus": "active",
         "legalInstrumentId": "24.9.2025 consolidated basic legal act - (EU) No 36/2012",
@@ -2867,7 +2867,7 @@ export const SANCTIONS_APPROVED_STATUS: ApprovedCountrySanctions[] = [
         "evidenceUrl": "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX%3A02006R0305-20240913",
         "reviewedBy": "RegActions deterministic sanctions classifier v2",
         "reviewerOrganisation": "RegActions automated evidence system",
-        "reviewedAt": "2026-09-10T13:46:16.668Z",
+        "reviewedAt": "2026-09-13T19:59:38.396Z",
         "reviewNote": "Prepared measure-specific legal facts reproduce the published deterministic tier. Classification: The active direct programme is principally designation-led. External practitioner validation is not claimed.",
         "legalStatus": "active",
         "legalInstrumentId": "13.09.2024 consolidated basic legal act - (EC) No 305/2006",
@@ -2892,7 +2892,7 @@ export const SANCTIONS_APPROVED_STATUS: ApprovedCountrySanctions[] = [
         "evidenceUrl": "https://ofac.treasury.gov/media/934021/download?inline",
         "reviewedBy": "RegActions deterministic sanctions classifier v2",
         "reviewerOrganisation": "RegActions automated evidence system",
-        "reviewedAt": "2026-09-10T13:46:16.668Z",
+        "reviewedAt": "2026-09-13T19:59:38.396Z",
         "reviewNote": "The programme is present in the current official catalogue and the versioned scope rule reproduces the published tier from the linked measure-specific evidence. Classification: The active direct programme is principally designation-led. External practitioner validation is not claimed.",
         "legalStatus": "active",
         "legalInstrumentId": "Illicit Captagon Trafficking Suppression Act, Public Law No: 118-50, 138 Stat. 992",
@@ -2907,7 +2907,7 @@ export const SANCTIONS_APPROVED_STATUS: ApprovedCountrySanctions[] = [
           "import-restriction",
           "transport-restriction"
         ],
-        "evidenceLocator": "Promoting Accountability for Assad and Regional Stabilization Sanctions (PAARSS); official evidence page and linked legal-source inventory; source SHA-256 9eae41d43452f7552a54030d6fc065e5aa5691ce3d3d3d3bc3cb197b4024cca0"
+        "evidenceLocator": "Promoting Accountability for Assad and Regional Stabilization Sanctions (PAARSS); official evidence page and linked legal-source inventory; source SHA-256 490398d3804e9b5154529ac749093a96d18ca76e356fa4a11d634976b60896c1"
       },
       {
         "imposer": "UK",
@@ -2920,7 +2920,7 @@ export const SANCTIONS_APPROVED_STATUS: ApprovedCountrySanctions[] = [
         "evidenceUrl": "https://www.legislation.gov.uk/uksi/2020/1233/contents",
         "reviewedBy": "RegActions deterministic sanctions classifier v2",
         "reviewerOrganisation": "RegActions automated evidence system",
-        "reviewedAt": "2026-09-10T13:46:16.668Z",
+        "reviewedAt": "2026-09-13T19:59:38.396Z",
         "reviewNote": "The programme is present in the current official catalogue and the versioned scope rule reproduces the published tier from the linked measure-specific evidence. Classification: A material class of ordinary transactions is restricted beyond named targets. External practitioner validation is not claimed.",
         "legalStatus": "active",
         "legalInstrumentId": "Syria (United Nations Sanctions) (Cultural Property) (EU Exit) Regulations 2020",
@@ -2936,7 +2936,7 @@ export const SANCTIONS_APPROVED_STATUS: ApprovedCountrySanctions[] = [
           "import-restriction",
           "services-restriction"
         ],
-        "evidenceLocator": "Syria cultural property sanctions: guidance; official evidence page and linked legal-source inventory; source SHA-256 e4a8effd2f33d82f155c643e0cf1d1aa7c4bf2e5dc8ab5122e4ff60ee22a5b8b"
+        "evidenceLocator": "Syria cultural property sanctions: guidance; official evidence page and linked legal-source inventory; source SHA-256 58e341251211eeb1c042024e187f98c5ce5adc54287c049964063351b44c3727"
       },
       {
         "imposer": "UK",
@@ -2949,7 +2949,7 @@ export const SANCTIONS_APPROVED_STATUS: ApprovedCountrySanctions[] = [
         "evidenceUrl": "https://www.legislation.gov.uk/uksi/2019/792/contents",
         "reviewedBy": "RegActions deterministic sanctions classifier v2",
         "reviewerOrganisation": "RegActions automated evidence system",
-        "reviewedAt": "2026-09-10T13:46:16.668Z",
+        "reviewedAt": "2026-09-13T19:59:38.396Z",
         "reviewNote": "The programme is present in the current official catalogue and the versioned scope rule reproduces the published tier from the linked measure-specific evidence. Classification: A material class of ordinary transactions is restricted beyond named targets. External practitioner validation is not claimed.",
         "legalStatus": "active",
         "legalInstrumentId": "Syria (Sanctions) (EU Exit) Regulations 2019",
@@ -2968,7 +2968,7 @@ export const SANCTIONS_APPROVED_STATUS: ApprovedCountrySanctions[] = [
           "transport-restriction",
           "travel-ban"
         ],
-        "evidenceLocator": "Syria sanctions: guidance; official evidence page and linked legal-source inventory; source SHA-256 7d7b9501877e8a4d41b49320c53717b5c3ab124c4ad2e968f00c6b5153a6eaa4"
+        "evidenceLocator": "Syria sanctions: guidance; official evidence page and linked legal-source inventory; source SHA-256 a676c8aa42a16035d5439106c6dc3d6ff564c8a5ad572bed4b1c0d00442c7a36"
       }
     ]
   },
@@ -2986,7 +2986,7 @@ export const SANCTIONS_APPROVED_STATUS: ApprovedCountrySanctions[] = [
         "evidenceUrl": "https://data.europa.eu/eli/reg/2011/101/2026-01-31",
         "reviewedBy": "RegActions deterministic sanctions classifier v2",
         "reviewerOrganisation": "RegActions automated evidence system",
-        "reviewedAt": "2026-09-10T13:46:16.668Z",
+        "reviewedAt": "2026-09-13T19:59:38.396Z",
         "reviewNote": "Prepared measure-specific legal facts reproduce the published deterministic tier. Classification: The active direct programme is principally designation-led. External practitioner validation is not claimed.",
         "legalStatus": "active",
         "legalInstrumentId": "31.01.2026 consolidated basic legal act - (EU) No 101/2011",
@@ -3015,7 +3015,7 @@ export const SANCTIONS_APPROVED_STATUS: ApprovedCountrySanctions[] = [
         "evidenceUrl": "https://data.europa.eu/eli/reg/2017/2063/2025-12-17",
         "reviewedBy": "RegActions deterministic sanctions classifier v2",
         "reviewerOrganisation": "RegActions automated evidence system",
-        "reviewedAt": "2026-09-10T13:46:16.668Z",
+        "reviewedAt": "2026-09-13T19:59:38.396Z",
         "reviewNote": "Prepared measure-specific legal facts reproduce the published deterministic tier. Classification: A material class of ordinary transactions is restricted beyond named targets. External practitioner validation is not claimed.",
         "legalStatus": "active",
         "legalInstrumentId": "17.12.2025 consolidated basic legal act - (EU) 2017/2063",
@@ -3044,7 +3044,7 @@ export const SANCTIONS_APPROVED_STATUS: ApprovedCountrySanctions[] = [
         "evidenceUrl": "https://ofac.treasury.gov/media/34141/download?inline",
         "reviewedBy": "RegActions deterministic sanctions classifier v2",
         "reviewerOrganisation": "RegActions automated evidence system",
-        "reviewedAt": "2026-09-10T13:46:16.668Z",
+        "reviewedAt": "2026-09-13T19:59:38.396Z",
         "reviewNote": "The programme is present in the current official catalogue and the versioned scope rule reproduces the published tier from the linked measure-specific evidence. Classification: A material class of ordinary transactions is restricted beyond named targets. External practitioner validation is not claimed.",
         "legalStatus": "active",
         "legalInstrumentId": "Determination Pursuant to Executive Order 13850 of November 1, 2018, as Amended",
@@ -3060,7 +3060,7 @@ export const SANCTIONS_APPROVED_STATUS: ApprovedCountrySanctions[] = [
           "import-restriction",
           "transport-restriction"
         ],
-        "evidenceLocator": "Venezuela-Related Sanctions; official evidence page and linked legal-source inventory; source SHA-256 0fdc8e0fdd89c7ac396b2f598d9922a23364078a0beccc4606b073d962422d81"
+        "evidenceLocator": "Venezuela-Related Sanctions; official evidence page and linked legal-source inventory; source SHA-256 d0bea8d12c5e800bcfd5d102ce1063c0881b26571d4d6243f742673a5d1943d9"
       },
       {
         "imposer": "UK",
@@ -3073,7 +3073,7 @@ export const SANCTIONS_APPROVED_STATUS: ApprovedCountrySanctions[] = [
         "evidenceUrl": "https://www.legislation.gov.uk/uksi/2019/135/contents",
         "reviewedBy": "RegActions deterministic sanctions classifier v2",
         "reviewerOrganisation": "RegActions automated evidence system",
-        "reviewedAt": "2026-09-10T13:46:16.668Z",
+        "reviewedAt": "2026-09-13T19:59:38.396Z",
         "reviewNote": "The programme is present in the current official catalogue and the versioned scope rule reproduces the published tier from the linked measure-specific evidence. Classification: A material class of ordinary transactions is restricted beyond named targets. External practitioner validation is not claimed.",
         "legalStatus": "active",
         "legalInstrumentId": "Venezuela (Sanctions) (EU Exit) Regulations 2019",
@@ -3090,7 +3090,7 @@ export const SANCTIONS_APPROVED_STATUS: ApprovedCountrySanctions[] = [
           "services-restriction",
           "travel-ban"
         ],
-        "evidenceLocator": "Venezuela sanctions: guidance; official evidence page and linked legal-source inventory; source SHA-256 df10215c4010b1deea0d622a7d83150b9f4dfcf8420a87b9bfa2dc8260ca967c"
+        "evidenceLocator": "Venezuela sanctions: guidance; official evidence page and linked legal-source inventory; source SHA-256 25d25ed88c06c165f971cc62451775b344743ccd7ff35eaa5a87b34214768c60"
       }
     ]
   },
@@ -3108,7 +3108,7 @@ export const SANCTIONS_APPROVED_STATUS: ApprovedCountrySanctions[] = [
         "evidenceUrl": "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX%3A02014R1352-20240913",
         "reviewedBy": "RegActions deterministic sanctions classifier v2",
         "reviewerOrganisation": "RegActions automated evidence system",
-        "reviewedAt": "2026-09-10T13:46:16.668Z",
+        "reviewedAt": "2026-09-13T19:59:38.396Z",
         "reviewNote": "Prepared measure-specific legal facts reproduce the published deterministic tier. Classification: A material class of ordinary transactions is restricted beyond named targets. External practitioner validation is not claimed.",
         "legalStatus": "active",
         "legalInstrumentId": "13.09.2024 consolidated basic legal act - (EU) No 1352/2014",
@@ -3136,7 +3136,7 @@ export const SANCTIONS_APPROVED_STATUS: ApprovedCountrySanctions[] = [
         "evidenceUrl": "https://www.ecfr.gov/cgi-bin/text-idx?SID=5eae22affe2e3675b6deaa3fb796eb7a&tpl=/ecfrbrowse/Title31/31cfr552_main_02.tpl",
         "reviewedBy": "RegActions deterministic sanctions classifier v2",
         "reviewerOrganisation": "RegActions automated evidence system",
-        "reviewedAt": "2026-09-10T13:46:16.668Z",
+        "reviewedAt": "2026-09-13T19:59:38.396Z",
         "reviewNote": "The programme is present in the current official catalogue and the versioned scope rule reproduces the published tier from the linked measure-specific evidence. Classification: The active direct programme is principally designation-led. External practitioner validation is not claimed.",
         "legalStatus": "active",
         "legalInstrumentId": "31 CFR Part 552",
@@ -3149,7 +3149,7 @@ export const SANCTIONS_APPROVED_STATUS: ApprovedCountrySanctions[] = [
           "commodity-restriction",
           "financial-restriction"
         ],
-        "evidenceLocator": "Yemen-related Sanctions; official evidence page and linked legal-source inventory; source SHA-256 46a3039526c97ab7cb559070cd805452eb387b08ca8bfda77c5a0ae3060845fc"
+        "evidenceLocator": "Yemen-related Sanctions; official evidence page and linked legal-source inventory; source SHA-256 a7bdc4f8c2687680a67689d9e643ae89c2efb817c7a5e814ec475d47679de21d"
       },
       {
         "imposer": "UK",
@@ -3162,7 +3162,7 @@ export const SANCTIONS_APPROVED_STATUS: ApprovedCountrySanctions[] = [
         "evidenceUrl": "https://www.legislation.gov.uk/uksi/2020/1278/contents",
         "reviewedBy": "RegActions deterministic sanctions classifier v2",
         "reviewerOrganisation": "RegActions automated evidence system",
-        "reviewedAt": "2026-09-10T13:46:16.668Z",
+        "reviewedAt": "2026-09-13T19:59:38.396Z",
         "reviewNote": "The programme is present in the current official catalogue and the versioned scope rule reproduces the published tier from the linked measure-specific evidence. Classification: The active direct programme is principally designation-led. External practitioner validation is not claimed.",
         "legalStatus": "active",
         "legalInstrumentId": "Yemen (Sanctions) (EU Exit) (No. 2) Regulations 2020",
@@ -3180,7 +3180,7 @@ export const SANCTIONS_APPROVED_STATUS: ApprovedCountrySanctions[] = [
           "transport-restriction",
           "travel-ban"
         ],
-        "evidenceLocator": "Yemen sanctions: guidance; official evidence page and linked legal-source inventory; source SHA-256 6ca20904ba20743537eb209c82705f9796144d980aaa4ae0cde6cb6dd903b2a9"
+        "evidenceLocator": "Yemen sanctions: guidance; official evidence page and linked legal-source inventory; source SHA-256 61a5a7a267de2456c7b2ab6a524f9534c07f80e3b6f5d8f63f38eb35ef8a787e"
       },
       {
         "imposer": "UN",
@@ -3193,7 +3193,7 @@ export const SANCTIONS_APPROVED_STATUS: ApprovedCountrySanctions[] = [
         "evidenceUrl": "https://main.un.org/securitycouncil/en/content/resolutions-0",
         "reviewedBy": "RegActions deterministic sanctions classifier v2",
         "reviewerOrganisation": "RegActions automated evidence system",
-        "reviewedAt": "2026-09-10T13:46:16.668Z",
+        "reviewedAt": "2026-09-13T19:59:38.396Z",
         "reviewNote": "The programme is present in the current official catalogue and the versioned scope rule reproduces the published tier from the linked measure-specific evidence. Classification: The active direct programme is principally designation-led. External practitioner validation is not claimed.",
         "legalStatus": "active",
         "legalInstrumentId": "Resolutions",
@@ -3211,7 +3211,7 @@ export const SANCTIONS_APPROVED_STATUS: ApprovedCountrySanctions[] = [
           "transport-restriction",
           "travel-ban"
         ],
-        "evidenceLocator": "Security Council Committee established pursuant to resolution 2140 (2014); official evidence page and linked legal-source inventory; source SHA-256 4697e8f03a954dc8f0ae8f955f965284f424021433a028d397154b1dabea28dd"
+        "evidenceLocator": "Security Council Committee established pursuant to resolution 2140 (2014); official evidence page and linked legal-source inventory; source SHA-256 a7f91b6fda9e2ef483f59da02e9dd43062f1378ded7cea6640ed102bc405faad"
       }
     ]
   },
@@ -3229,7 +3229,7 @@ export const SANCTIONS_APPROVED_STATUS: ApprovedCountrySanctions[] = [
         "evidenceUrl": "https://data.europa.eu/eli/reg/2004/314/2026-02-19",
         "reviewedBy": "RegActions deterministic sanctions classifier v2",
         "reviewerOrganisation": "RegActions automated evidence system",
-        "reviewedAt": "2026-09-10T13:46:16.668Z",
+        "reviewedAt": "2026-09-13T19:59:38.396Z",
         "reviewNote": "Prepared measure-specific legal facts reproduce the published deterministic tier. Classification: A material class of ordinary transactions is restricted beyond named targets. External practitioner validation is not claimed.",
         "legalStatus": "active",
         "legalInstrumentId": "19.02.2026 consolidated basic legal act - (EC) No 314/2004",
@@ -3256,7 +3256,7 @@ export const SANCTIONS_APPROVED_STATUS: ApprovedCountrySanctions[] = [
         "evidenceUrl": "https://www.legislation.gov.uk/uksi/2019/604/contents",
         "reviewedBy": "RegActions deterministic sanctions classifier v2",
         "reviewerOrganisation": "RegActions automated evidence system",
-        "reviewedAt": "2026-09-10T13:46:16.668Z",
+        "reviewedAt": "2026-09-13T19:59:38.396Z",
         "reviewNote": "The programme is present in the current official catalogue and the versioned scope rule reproduces the published tier from the linked measure-specific evidence. Classification: A material class of ordinary transactions is restricted beyond named targets. External practitioner validation is not claimed.",
         "legalStatus": "active",
         "legalInstrumentId": "Zimbabwe (Sanctions) (EU Exit) Regulations 2019",
@@ -3273,7 +3273,7 @@ export const SANCTIONS_APPROVED_STATUS: ApprovedCountrySanctions[] = [
           "services-restriction",
           "travel-ban"
         ],
-        "evidenceLocator": "Zimbabwe sanctions: guidance; official evidence page and linked legal-source inventory; source SHA-256 173db597e382538f48689ecaf13c8b424e32550a0758340dfd842234bb38a42e"
+        "evidenceLocator": "Zimbabwe sanctions: guidance; official evidence page and linked legal-source inventory; source SHA-256 8b7926d18ddf64ee1df88de7387bc174db36fb0e8248c9830bce6ba4e6b66ed0"
       }
     ]
   }
