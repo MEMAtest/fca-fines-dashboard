@@ -362,7 +362,7 @@ export const BLOG_ARTICLE_INDEX: BlogArticleCard[] = [
   {
     "slug": "dnb-fines-enforcement-guide",
     "title": "De Nederlandsche Bank (DNB) Fines & Enforcement Guide",
-    "excerpt": "De Nederlandsche Bank (DNB) enforcement analysis covering 48 tracked actions across 2022-2026. Includes candid coverage notes on source shape, dataset strength, and how to use the feed in compliance monitoring.",
+    "excerpt": "De Nederlandsche Bank (DNB) enforcement analysis covering 48 tracked actions across 2023-2026. Includes candid coverage notes on source shape, dataset strength, and how to use the feed in compliance monitoring.",
     "category": "Regulatory Intelligence",
     "date": "March 2026",
     "dateISO": "2026-03-27T00:00:00.000Z"

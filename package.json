@@ -188,7 +188,7 @@
     "recharts": "^3.5.1",
     "resend": "^6.27.0",
     "topojson-client": "^3.1.0",
-    "xlsx": "^0.18.5",
+    "xlsx": "https://cdn.sheetjs.com/xlsx-0.20.3/xlsx-0.20.3.tgz",
     "xml2js": "^0.6.2",
     "zod": "^4.4.3"
   },
@@ -209,7 +209,7 @@
     "@vitejs/plugin-react": "^5.1.1",
     "@vitest/coverage-v8": "^4.0.16",
     "jsdom": "^27.3.0",
-    "puppeteer": "^24.35.0",
+    "puppeteer": "^25.10.0",
     "satori": "^0.19.2",
     "ts-node": "^10.9.2",
     "tsx": "^4.21.0",
@@ -218,6 +218,9 @@
     "vitest": "^4.0.16"
   },
   "overrides": {
+    "@vercel/node": {
+      "undici": "^6.28.0"
+    },
     "body-parser": "^2.3.0",
     "path-to-regexp": "^8.4.2",
     "qs": "^6.16.0",
