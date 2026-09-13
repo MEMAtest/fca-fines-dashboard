@@ -13,8 +13,8 @@ import {
 const REPORT_PATH = process.env.FATF_LIST_REVIEW_PATH
   ?? "/tmp/country-risk-fatf-list-review.json";
 const outcome = process.env.FATF_LIST_OUTCOME as FatfListAttemptOutcome | undefined;
-if (!outcome || !["drift", "unavailable", "error"].includes(outcome)) {
-  throw new Error(`FATF_LIST_OUTCOME must be drift, unavailable or error; received ${outcome ?? "nothing"}`);
+if (!outcome || !["verified", "drift", "unavailable", "error"].includes(outcome)) {
+  throw new Error(`FATF_LIST_OUTCOME must be verified, drift, unavailable or error; received ${outcome ?? "nothing"}`);
 }
 
 let report: FatfListReviewReport = {};

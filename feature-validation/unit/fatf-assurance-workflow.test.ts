@@ -12,9 +12,9 @@ describe("FATF source-assurance workflow", () => {
     expect(workflow).not.toContain("if: steps.fatf_lists.outcome == 'failure'");
   });
 
-  it("persists every unsuccessful attempt and blocks drift promotion", () => {
+  it("persists every verification attempt and blocks drift promotion", () => {
     expect(workflow).toContain("npm run country-risk:persist-fatf-attempt");
-    expect(workflow).toContain("always() && steps.fatf_lists.outputs.outcome != 'verified'");
+    expect(workflow).toContain("name: Persist the FATF verification attempt\n        if: always()");
     expect(workflow).toContain("steps.fatf_lists.outputs.outcome == 'drift'");
     expect(workflow).toContain("Block promotion when FATF drift or an unexpected verifier error is detected");
   });

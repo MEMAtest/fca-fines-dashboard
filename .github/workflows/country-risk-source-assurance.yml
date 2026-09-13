@@ -229,8 +229,8 @@ jobs:
       - name: Retain current FATF list evidence as a watch
         if: steps.fatf_lists.outputs.outcome == 'unavailable'
         run: node --import tsx/esm scripts/country-risk/check-fatf-list-watch.ts
-      - name: Persist the unsuccessful FATF verification attempt
-        if: always() && steps.fatf_lists.outputs.outcome != 'verified'
+      - name: Persist the FATF verification attempt
+        if: always()
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
           FATF_LIST_OUTCOME: ${{ steps.fatf_lists.outputs.outcome }}

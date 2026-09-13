@@ -1,7 +1,7 @@
 import { createHash } from "node:crypto";
 import type { CountryRiskSourceStatus } from "../../../src/data/countryRiskSources.js";
 
-export type FatfListAttemptOutcome = "drift" | "unavailable" | "error";
+export type FatfListAttemptOutcome = "verified" | "drift" | "unavailable" | "error";
 
 export interface FatfListReviewReport {
   checkedAt?: string;
@@ -15,13 +15,13 @@ export interface FatfListReviewReport {
 
 export interface PersistableFatfListAttempt {
   attemptKey: string;
-  status: "failed" | "review_required";
+  status: "succeeded" | "failed" | "review_required";
   sourceUrl: string;
   attemptedAt: string;
   effectiveAt: string | null;
   sha256: string | null;
   recordCount: number;
-  errorMessage: string;
+  errorMessage: string | null;
   metadata: Record<string, unknown>;
 }
 
@@ -38,10 +38,20 @@ export function buildFatfListAttempt(input: {
   }
 
   const isDrift = outcome === "drift";
-  const recordCount = isDrift
+  const isVerified = outcome === "verified";
+  const recordCount = isDrift || isVerified
     ? (report.liveBlack?.length ?? 0) + (report.liveGrey?.length ?? 0)
     : 0;
-  const errorMessage = isDrift
+  const hasInSyncDiff = typeof report.diff === "object"
+    && report.diff !== null
+    && "inSync" in report.diff
+    && report.diff.inSync === true;
+  if (isVerified && (!report.sha256 || recordCount <= 0 || !hasInSyncDiff)) {
+    throw new Error("A verified FATF list attempt requires a source hash, an in-sync comparison and at least one listed jurisdiction");
+  }
+  const errorMessage = isVerified
+    ? null
+    : isDrift
     ? "The live FATF black or grey list differs from the approved snapshot."
     : outcome === "unavailable"
       ? report.error ?? "The live FATF list could not be obtained automatically."
@@ -57,11 +67,11 @@ export function buildFatfListAttempt(input: {
 
   return {
     attemptKey,
-    status: isDrift ? "review_required" : "failed",
+    status: isVerified ? "succeeded" : isDrift ? "review_required" : "failed",
     sourceUrl: report.sourceUrl ?? retainedSource.sourceUrl,
     attemptedAt,
     effectiveAt: retainedSource.effectiveAt,
-    sha256: isDrift ? report.sha256 ?? null : null,
+    sha256: isDrift || isVerified ? report.sha256 ?? null : null,
     recordCount,
     errorMessage,
     metadata: {

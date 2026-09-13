@@ -131,6 +131,33 @@ describe("country-risk source health", () => {
     expect(shouldFailCountryRiskSourceHealth(report)).toBe(false);
   });
 
+  it("clears an unavailable FATF watch after a later verified current attempt", () => {
+    const runs = healthyRuns();
+    runs.push({
+      source_id: "fatf-lists",
+      status: "failed",
+      retrieved_at: "2026-07-17T10:00:00.000Z",
+      sha256: null,
+      parser_version: "fatf-list-assurance/1.0",
+      record_count: 0,
+      metadata: { outcome: "unavailable", retainedEvidence: true },
+    });
+    runs.push({
+      source_id: "fatf-lists",
+      status: "succeeded",
+      retrieved_at: "2026-07-17T11:00:00.000Z",
+      sha256: "verified-live-hash",
+      parser_version: "fatf-list-assurance/1.0",
+      record_count: 25,
+      metadata: { outcome: "verified", retainedEvidence: false },
+    });
+
+    const report = assessCountryRiskSourceHealth({ asOf, declaredSources, operationalRuns: runs });
+    expect(report.status).toBe("healthy");
+    expect(report.readyForScoring).toBe(true);
+    expect(report.issues).toEqual([]);
+  });
+
   it("turns retained FATF evidence critical when the last success exceeds 14 days", () => {
     const runs = healthyRuns();
     const fatfSuccess = runs.find((run) => run.source_id === "fatf-lists")!;
