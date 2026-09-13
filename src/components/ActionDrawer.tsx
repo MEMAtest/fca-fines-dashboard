@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import {
   ArrowDown,
   ArrowUp,
@@ -19,6 +19,7 @@ import { buildFineRecordEvidence } from "../utils/evidenceCase.js";
 import { useEvidenceModal } from "./EvidenceModalProvider.js";
 import { formatBreachCategory } from "../utils/labelConversion.js";
 import { displayFirmName } from "../utils/firmName.js";
+import { trackEvent } from "../utils/analytics.js";
 
 interface ActionDrawerProps {
   open: boolean;
@@ -26,6 +27,8 @@ interface ActionDrawerProps {
   description?: string;
   records: FineRecord[];
   currency?: string;
+  surface?: string;
+  regulator?: string;
   onClose: () => void;
   onApplyFilter?: () => void;
 }
@@ -37,7 +40,7 @@ function escapeCsv(value: string | number) {
   return /[",\n]/.test(text) ? `"${text.replaceAll('"', '""')}"` : text;
 }
 
-function downloadCsv(records: FineRecord[]) {
+function downloadCsv(records: FineRecord[], surface: string, regulator?: string) {
   const rows = [
     ["Date", "Firm or individual", "Regulator", "Breach type", "Amount GBP", "Source"],
     ...records.map((record) => [
@@ -59,6 +62,7 @@ function downloadCsv(records: FineRecord[]) {
   anchor.download = `regactions-${new Date().toISOString().slice(0, 10)}.csv`;
   anchor.click();
   URL.revokeObjectURL(url);
+  trackEvent("evidence_export_completed", { format: "csv", surface, regulator });
 }
 
 export function ActionDrawer({
@@ -67,6 +71,8 @@ export function ActionDrawer({
   description,
   records,
   currency = "GBP",
+  surface = "workspace_drawer",
+  regulator,
   onClose,
   onApplyFilter,
 }: ActionDrawerProps) {
@@ -74,6 +80,7 @@ export function ActionDrawer({
   const [sortKey, setSortKey] = useState<SortKey>("date");
   const [descending, setDescending] = useState(true);
   const [page, setPage] = useState(1);
+  const previousOpen = useRef(false);
   const { openEvidence } = useEvidenceModal();
   const pageSize = 12;
 
@@ -92,6 +99,17 @@ export function ActionDrawer({
   }, [onClose, open]);
 
   useEffect(() => setPage(1), [query, records]);
+
+  useEffect(() => {
+    if (open && !previousOpen.current) {
+      trackEvent("evidence_drawer_opened", {
+        surface,
+        regulator,
+        source: "action_drawer",
+      });
+    }
+    previousOpen.current = open;
+  }, [open, regulator, surface]);
 
   const visible = useMemo(() => {
     const normalized = query.trim().toLowerCase();
@@ -158,7 +176,7 @@ export function ActionDrawer({
             <Search size={16} />
             <input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Search these actions" />
           </label>
-          <button type="button" onClick={() => downloadCsv(visible)}>
+          <button type="button" onClick={() => downloadCsv(visible, surface, regulator)}>
             <Download size={16} /> Export CSV
           </button>
           {onApplyFilter && (

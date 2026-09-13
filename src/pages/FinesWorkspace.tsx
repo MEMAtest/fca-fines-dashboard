@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState, type CSSProperties } from "react";
+import { useEffect, useMemo, useRef, useState, type CSSProperties } from "react";
 import { Link, useSearchParams } from "react-router-dom";
 import {
   Area,
@@ -47,6 +47,7 @@ import { EnforcementTrendChart, type TrendPoint } from "../components/Enforcemen
 import { exportData } from "../utils/export.js";
 import { getFcaFineCasePath } from "../utils/fcaFineCasePath.js";
 import { displayFirmName } from "../utils/firmName.js";
+import { trackEvent } from "../utils/analytics.js";
 import {
   fetchUnifiedOverview,
   type UnifiedOverviewParams,
@@ -181,7 +182,7 @@ function EnforcementRow({
               <div className="workspace-detail__actions">
                 {casePath && <Link to={casePath} onClick={(event) => event.stopPropagation()}>View action</Link>}
                 {sourceUrl && (
-                  <a href={sourceUrl} target="_blank" rel="noopener noreferrer" onClick={(event) => event.stopPropagation()}>
+                  <a href={sourceUrl} target="_blank" rel="noopener noreferrer" onClick={(event) => { event.stopPropagation(); trackEvent("official_source_opened", { surface: "fines_workspace", regulator: record.regulator, source_status: record.source_link_status ?? "official_unverified" }); }}>
                     Official source <ExternalLink size={11} />
                   </a>
                 )}
@@ -283,6 +284,38 @@ export function FinesWorkspace({ view }: FinesWorkspaceProps) {
   const [comparisonTruncated, setComparisonTruncated] = useState(false);
   const [comparisonLoading, setComparisonLoading] = useState(false);
   const [comparisonSummaries, setComparisonSummaries] = useState<ComparisonSummary[]>([]);
+  const filterSnapshot = useRef<Record<string, string> | null>(null);
+
+  useEffect(() => {
+    trackEvent("fines_workspace_opened", { surface: "fines_workspace", view });
+    if (view === "compare") {
+      trackEvent("comparison_mode_entered", { surface: "fines_workspace" });
+    }
+  }, [view]);
+
+  useEffect(() => {
+    const next: Record<string, string> = {
+      country: country === "All" ? "" : "set",
+      regulator: regulator === "All" ? "" : "set",
+      year: year ? "set" : "",
+      theme: theme === "All" ? "" : "set",
+      sector: sector === "All" ? "" : "set",
+      query: query.trim() ? "set" : "",
+    };
+    const previous = filterSnapshot.current;
+    filterSnapshot.current = next;
+    if (!previous) return;
+    const activeCount = Object.values(next).filter(Boolean).length;
+    for (const dimension of Object.keys(next)) {
+      if (previous[dimension] === next[dimension]) continue;
+      trackEvent("workspace_filter_changed", {
+        surface: "fines_workspace",
+        filter_dimension: dimension,
+        filter_action: next[dimension] ? "applied" : "cleared",
+        filter_count: activeCount,
+      });
+    }
+  }, [country, query, regulator, sector, theme, year]);
 
   const seo = view === "overview"
     ? {
@@ -478,22 +511,52 @@ export function FinesWorkspace({ view }: FinesWorkspaceProps) {
     }
   };
 
-  const toggleLimited = <T,>(items: T[], value: T, maximum: number, setter: (items: T[]) => void) => {
-    if (items.includes(value)) setter(items.filter((item) => item !== value));
-    else if (items.length < maximum) setter([...items, value]);
+  const toggleLimited = <T,>(items: T[], value: T, maximum: number, setter: (items: T[]) => void, dimension: string) => {
+    if (items.includes(value)) {
+      const next = items.filter((item) => item !== value);
+      setter(next);
+      trackEvent("comparison_selection_changed", { surface: "fines_workspace", selection_dimension: dimension, selection_action: "removed", selection_count: next.length });
+    } else if (items.length < maximum) {
+      const next = [...items, value];
+      setter(next);
+      trackEvent("comparison_selection_changed", { surface: "fines_workspace", selection_dimension: dimension, selection_action: "added", selection_count: next.length });
+    }
   };
 
   const handleThemeClick = (label: string) => {
-    if (compareMode) toggleLimited(selectedThemes, label, 5, setSelectedThemes);
+    if (compareMode) toggleLimited(selectedThemes, label, 5, setSelectedThemes, "theme");
     else openSelection({ theme: label }, label);
   };
   const handleRegulatorClick = (code: string) => {
-    if (compareMode) toggleLimited(selectedRegulators, code, 5, setSelectedRegulators);
+    if (compareMode) toggleLimited(selectedRegulators, code, 5, setSelectedRegulators, "regulator");
     else openSelection({ regulator: code }, `${code} actions`);
   };
   const handleYearClick = (value: number) => {
-    if (compareMode) toggleLimited(selectedYears, value, 3, setSelectedYears);
+    if (compareMode) toggleLimited(selectedYears, value, 3, setSelectedYears, "year");
     else openSelection({ year: value }, `${value} enforcement actions`);
+  };
+
+  const clearComparisonSelections = () => {
+    if (selectedYears.length) trackEvent("comparison_selection_changed", { surface: "fines_workspace", selection_dimension: "year", selection_action: "removed", selection_count: 0 });
+    if (selectedRegulators.length) trackEvent("comparison_selection_changed", { surface: "fines_workspace", selection_dimension: "regulator", selection_action: "removed", selection_count: 0 });
+    if (selectedThemes.length) trackEvent("comparison_selection_changed", { surface: "fines_workspace", selection_dimension: "theme", selection_action: "removed", selection_count: 0 });
+    setSelectedYears([]);
+    setSelectedRegulators([]);
+    setSelectedThemes([]);
+  };
+
+  const openComparisonData = () => {
+    trackEvent("comparison_data_opened", { surface: "fines_workspace" });
+    setDrawer({ title: "Selected comparison data", records: comparisonRecords, description: comparisonTruncated ? `Showing the first ${comparisonRecords.length.toLocaleString("en-GB")} of ${comparisonTotal.toLocaleString("en-GB")} selected actions.` : `${formatWorkspaceActionCount(comparisonTotal)} in the selected comparison, with source evidence where available.` });
+  };
+
+  const copyComparisonLink = async () => {
+    try {
+      await navigator.clipboard.writeText(window.location.href);
+      trackEvent("comparison_link_copied", { surface: "fines_workspace" });
+    } catch {
+      // Copy is a convenience; do not interrupt the comparison journey.
+    }
   };
 
   const loadedComparisonFallback = useMemo(() => filtered.filter((record) => {
@@ -724,7 +787,7 @@ export function FinesWorkspace({ view }: FinesWorkspaceProps) {
       </div>
       <div className="workspace-page__heading-actions">
         <Link className="workspace-button workspace-button--primary" to={`/board-pack?from=${encodeURIComponent(`/fines${searchParams.toString() ? `?${searchParams.toString()}` : ""}`)}&fromLabel=Fines%20workspace`}><Sparkles size={15} /> Create board pack</Link>
-        <button type="button" className={`workspace-button${compareMode ? " workspace-button--active" : ""}`} disabled={loading} onClick={() => setCompareMode((value) => !value)}><SlidersHorizontal size={15} /> {compareMode ? "Exit compare mode" : "Compare selections"}</button>
+        <button type="button" className={`workspace-button${compareMode ? " workspace-button--active" : ""}`} disabled={loading} onClick={() => { const next = !compareMode; setCompareMode(next); if (next) trackEvent("comparison_mode_entered", { surface: "fines_workspace" }); }}><SlidersHorizontal size={15} /> {compareMode ? "Exit compare mode" : "Compare selections"}</button>
         <button type="button" className="workspace-button" disabled={loading} onClick={() => exportData({ filename: "regactions-fines-evidence", format: "csv", records: filtered })}><Download size={15} /> Export evidence</button>
       </div>
     </header>
@@ -846,15 +909,15 @@ export function FinesWorkspace({ view }: FinesWorkspaceProps) {
         {compareMode && (
           <div className="workspace-selection-tray">
             <div className="workspace-selection-tray__chips">
-              {selectedYears.map((item) => <button type="button" key={item} onClick={() => toggleLimited(selectedYears, item, 3, setSelectedYears)} aria-label={`Remove year ${item}`}>{item} ×</button>)}
-              {selectedRegulators.map((item) => <button type="button" key={item} onClick={() => toggleLimited(selectedRegulators, item, 5, setSelectedRegulators)} aria-label={`Remove regulator ${item}`}>{item} ×</button>)}
-              {selectedThemes.map((item) => <button type="button" key={item} onClick={() => toggleLimited(selectedThemes, item, 5, setSelectedThemes)} aria-label={`Remove theme ${item}`}>{item} ×</button>)}
+              {selectedYears.map((item) => <button type="button" key={item} onClick={() => toggleLimited(selectedYears, item, 3, setSelectedYears, "year")} aria-label={`Remove year ${item}`}>{item} ×</button>)}
+              {selectedRegulators.map((item) => <button type="button" key={item} onClick={() => toggleLimited(selectedRegulators, item, 5, setSelectedRegulators, "regulator")} aria-label={`Remove regulator ${item}`}>{item} ×</button>)}
+              {selectedThemes.map((item) => <button type="button" key={item} onClick={() => toggleLimited(selectedThemes, item, 5, setSelectedThemes, "theme")} aria-label={`Remove theme ${item}`}>{item} ×</button>)}
               {!selectedYears.length && !selectedRegulators.length && !selectedThemes.length && <span>Select years, regulators or themes below</span>}
             </div>
             <div className="workspace-selection-tray__actions">
-              {(selectedYears.length > 0 || selectedRegulators.length > 0 || selectedThemes.length > 0) && <button type="button" className="workspace-button" onClick={() => { setSelectedYears([]); setSelectedRegulators([]); setSelectedThemes([]); }}>Clear</button>}
-              <button type="button" className="workspace-button" disabled={comparisonLoading || !comparisonTotal} onClick={() => setDrawer({ title: "Selected comparison data", records: comparisonRecords, description: comparisonTruncated ? `Showing the first ${comparisonRecords.length.toLocaleString("en-GB")} of ${comparisonTotal.toLocaleString("en-GB")} selected actions.` : `${formatWorkspaceActionCount(comparisonTotal)} in the selected comparison, with source evidence where available.` })}>{comparisonLoading ? "Loading comparison..." : "Open selected data"}</button>
-              <button type="button" className="workspace-button workspace-button--primary" onClick={() => navigator.clipboard.writeText(window.location.href)}><Clipboard size={14} /> Copy comparison link</button>
+              {(selectedYears.length > 0 || selectedRegulators.length > 0 || selectedThemes.length > 0) && <button type="button" className="workspace-button" onClick={clearComparisonSelections}>Clear</button>}
+              <button type="button" className="workspace-button" disabled={comparisonLoading || !comparisonTotal} onClick={openComparisonData}>{comparisonLoading ? "Loading comparison..." : "Open selected data"}</button>
+              <button type="button" className="workspace-button workspace-button--primary" onClick={copyComparisonLink}><Clipboard size={14} /> Copy comparison link</button>
             </div>
           </div>
         )}
@@ -1044,7 +1107,7 @@ export function FinesWorkspace({ view }: FinesWorkspaceProps) {
         )}
       </div>
 
-      <ActionDrawer open={Boolean(drawer)} title={drawer?.title ?? "Actions"} description={drawer?.description} records={drawer?.records ?? []} onClose={() => setDrawer(null)} onApplyFilter={drawer?.apply} />
+      <ActionDrawer open={Boolean(drawer)} title={drawer?.title ?? "Actions"} description={drawer?.description} records={drawer?.records ?? []} surface="fines_workspace" regulator={regulator === "All" ? undefined : regulator} onClose={() => setDrawer(null)} onApplyFilter={drawer?.apply} />
     </ProductWorkspaceShell>
   );
 }
