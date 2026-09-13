@@ -1,8 +1,9 @@
 name: Production acceptance
 
 on:
-  # A deployment webhook or a trusted deployment job can dispatch this event
-  # after the production alias points to the new deployment.
+  # A Vercel deployment status, deployment webhook or trusted deployment job
+  # can start this after the production alias points to the new deployment.
+  deployment_status:
   repository_dispatch:
     types: [production-deployment-ready]
   schedule:
@@ -25,6 +26,13 @@ concurrency:
 jobs:
   accept-production:
     name: Browser and Board Pack acceptance
+    if: >
+      github.event_name != 'deployment_status' ||
+      (
+        github.event.deployment_status.state == 'success' &&
+        github.event.deployment.environment == 'Production' &&
+        github.event.deployment.creator.login == 'vercel[bot]'
+      )
     runs-on: ubuntu-latest
     timeout-minutes: 25
     env:
@@ -81,8 +89,8 @@ jobs:
           VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
         run: |
           mkdir -p artifacts/production-acceptance
-          npx --yes vercel@latest logs --project "$VERCEL_PROJECT_ID" --scope "$VERCEL_ORG_ID" --environment production --level error --level warning --since 30m --no-branch --no-follow --json --token "$VERCEL_TOKEN" > artifacts/production-acceptance/vercel-warnings-errors.jsonl
-          npx --yes vercel@latest logs --project "$VERCEL_PROJECT_ID" --scope "$VERCEL_ORG_ID" --environment production --status-code 5xx --since 30m --no-branch --no-follow --json --token "$VERCEL_TOKEN" > artifacts/production-acceptance/vercel-5xx.jsonl
+          npx --yes vercel@latest logs --project "$VERCEL_PROJECT_ID" --scope "$VERCEL_ORG_ID" --environment production --level error --level warning --since 5m --no-branch --no-follow --json --token "$VERCEL_TOKEN" > artifacts/production-acceptance/vercel-warnings-errors.jsonl
+          npx --yes vercel@latest logs --project "$VERCEL_PROJECT_ID" --scope "$VERCEL_ORG_ID" --environment production --status-code 5xx --since 5m --no-branch --no-follow --json --token "$VERCEL_TOKEN" > artifacts/production-acceptance/vercel-5xx.jsonl
           if [ -s artifacts/production-acceptance/vercel-warnings-errors.jsonl ] || [ -s artifacts/production-acceptance/vercel-5xx.jsonl ]; then
             echo "Vercel reported a warning, error, or 5xx during the acceptance window." >&2
             exit 1
