@@ -37,6 +37,7 @@ async function main() {
     "migrations/20260718_delivery_journey_operations.sql",
     "migrations/20260718_scraper_quality_operations.sql",
     "migrations/20260718_product_funnel_events.sql",
+    "migrations/20260913_issue20_workspace_funnel.sql",
     "migrations/20260718_ops_alert_state.sql",
     "migrations/20260724_board_pack_persistence.sql",
     "migrations/20260813_enforcement_evidence_quality_guard.sql",

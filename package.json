@@ -142,6 +142,7 @@
     "coverage:agent": "node --import tsx/esm scripts/coverage-agent/runCoverageAgent.ts --",
     "coverage:current-state": "node --import tsx/esm scripts/coverage-agent/auditCurrentState.ts --",
     "check:data-freshness": "node --import tsx/esm scripts/monitoring/auditDataFreshness.ts",
+    "product-funnel:report": "node --import tsx/esm scripts/reportProductFunnel.ts",
     "verify:setup": "bash scripts/verify-setup.sh",
     "blog:monthly": "node --import tsx/esm scripts/generate-blog.ts monthly",
     "blog:topical": "node --import tsx/esm scripts/generate-blog.ts topical",

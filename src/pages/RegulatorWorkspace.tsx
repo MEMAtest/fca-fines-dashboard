@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { Link, Navigate, useNavigate, useParams, useSearchParams } from "react-router-dom";
 import {
   Area,
@@ -42,6 +42,7 @@ import {
 import { fetchWorkspaceRecords } from "../utils/fetchWorkspaceRecords.js";
 import { getFcaFineCasePath } from "../utils/fcaFineCasePath.js";
 import { formatBreachCategory } from "../utils/labelConversion.js";
+import { trackEvent } from "../utils/analytics.js";
 
 export type RegulatorWorkspaceView = "overview" | "actions" | "analytics" | "compare";
 
@@ -83,10 +84,42 @@ export function RegulatorWorkspace({ view }: RegulatorWorkspaceProps) {
   const sector = searchParams.get("sector") || "All";
   const query = searchParams.get("q") || "";
   const comparisonRegulator = searchParams.get("compare") || (code === "SEC" ? "FCA" : "SEC");
+  const filterSnapshot = useRef<Record<string, string> | null>(null);
+
+  useEffect(() => {
+    trackEvent("regulator_workspace_opened", { surface: "regulator_workspace", regulator: code, view });
+  }, [code, view]);
+
+  useEffect(() => {
+    const next: Record<string, string> = {
+      year: year ? "set" : "",
+      theme: theme === "All" ? "" : "set",
+      sector: sector === "All" ? "" : "set",
+      query: query.trim() ? "set" : "",
+    };
+    const previous = filterSnapshot.current;
+    filterSnapshot.current = next;
+    if (!previous) return;
+    const activeCount = Object.values(next).filter(Boolean).length;
+    for (const dimension of Object.keys(next)) {
+      if (previous[dimension] === next[dimension]) continue;
+      trackEvent("workspace_filter_changed", {
+        surface: "regulator_workspace",
+        filter_dimension: dimension,
+        filter_action: next[dimension] ? "applied" : "cleared",
+        filter_count: activeCount,
+      });
+    }
+  }, [code, query, sector, theme, year]);
   // Reads the live params rather than the render closure's snapshot, so two
   // scope changes made before a re-render cannot drop one another. Same defect
   // as the Enforcement Explorer's filter updater.
   const updateScope = (key: string, value: string | number, emptyValue: string | number) => {
+    if (key === "compare" && value !== "") {
+      trackEvent("regulator_comparator_changed", { surface: "regulator_workspace", regulator: code, comparator: value });
+    } else if (key === "year") {
+      trackEvent("regulator_year_changed", { surface: "regulator_workspace", regulator: code, year: value === emptyValue ? undefined : value });
+    }
     setSearchParams((current) => {
       const next = new URLSearchParams(current);
       if (value === emptyValue || value === "") next.delete(key);
@@ -289,7 +322,7 @@ export function RegulatorWorkspace({ view }: RegulatorWorkspaceProps) {
               </p>
               <div className="regulator-workspace__answer-links">
                 <Link to={`/topics/fca-fines-${CURRENT_YEAR}`}>View the {CURRENT_YEAR} monthly report <ArrowRight size={13} /></Link>
-                <a href={`https://www.fca.org.uk/news/news-stories/${CURRENT_YEAR}-fines`} target="_blank" rel="noopener noreferrer">Check the FCA&apos;s official fines page <ExternalLink size={13} /></a>
+              <a href={`https://www.fca.org.uk/news/news-stories/${CURRENT_YEAR}-fines`} target="_blank" rel="noopener noreferrer" onClick={() => trackEvent("official_source_opened", { surface: "regulator_workspace", regulator: code, source_status: "official_unverified" })}>Check the FCA&apos;s official fines page <ExternalLink size={13} /></a>
               </div>
             </div>
             <div className="regulator-workspace__answer-metrics">
@@ -380,7 +413,7 @@ export function RegulatorWorkspace({ view }: RegulatorWorkspaceProps) {
                   <p className="reg-hub-sources__intro">Open the regulator&apos;s own publication pages to check sanctions, decisions and official records at source.</p>
                   <div className="reg-hub-sources__grid">
                     {coverage.officialSources.map((source) => (
-                      <a key={source.url} href={source.url} target="_blank" rel="noreferrer" className="reg-hub-sources__card">
+                      <a key={source.url} href={source.url} target="_blank" rel="noreferrer" className="reg-hub-sources__card" onClick={() => trackEvent("official_source_opened", { surface: "regulator_workspace", regulator: code, source_status: "official_unverified" })}>
                         <div><span>{source.label}</span><small>{source.description}</small></div>
                         <ExternalLink size={18} />
                       </a>
@@ -392,7 +425,7 @@ export function RegulatorWorkspace({ view }: RegulatorWorkspaceProps) {
           </>
         )}
       </div>
-      <ActionDrawer open={Boolean(drawer)} title={drawer?.title ?? `${code} actions`} description={drawer?.description} records={drawer?.records ?? []} onClose={()=>setDrawer(null)}/>
+      <ActionDrawer open={Boolean(drawer)} title={drawer?.title ?? `${code} actions`} description={drawer?.description} records={drawer?.records ?? []} surface="regulator_workspace" regulator={code} onClose={()=>setDrawer(null)}/>
     </ProductWorkspaceShell>
   );
 }
