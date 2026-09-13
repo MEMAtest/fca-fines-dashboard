@@ -18,6 +18,7 @@
     "test:e2e:search": "npm run build && playwright test e2e/search-experience.spec.ts --project=chromium",
     "test:e2e:ops": "playwright test e2e/ops-dashboard.spec.ts --project=chromium",
     "test:e2e:search:live": "PLAYWRIGHT_BASE_URL=https://regactions.com playwright test e2e/search-live-smoke.spec.ts --project=chromium",
+    "test:e2e:production-acceptance": "PRODUCTION_ACCEPTANCE=1 PLAYWRIGHT_BASE_URL=${PLAYWRIGHT_BASE_URL:-https://regactions.com} playwright test e2e/production-acceptance.spec.ts --project=chromium --workers=1",
     "search:eval": "npx tsx scripts/evaluateSearchRelevance.ts",
     "search:eval:core": "npx tsx scripts/evaluateSearchRelevance.ts https://regactions.com research/search-relevance-eval-set.json",
     "search:eval:natural": "npx tsx scripts/evaluateSearchRelevance.ts https://regactions.com research/search-natural-language-eval-set.json",

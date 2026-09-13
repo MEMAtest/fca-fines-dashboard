@@ -1,0 +1,186 @@
+name: Production acceptance
+
+on:
+  # A deployment webhook or a trusted deployment job can dispatch this event
+  # after the production alias points to the new deployment.
+  repository_dispatch:
+    types: [production-deployment-ready]
+  schedule:
+    - cron: "43 7 * * *"
+  workflow_dispatch:
+    inputs:
+      base_url:
+        description: "Production URL to accept"
+        required: false
+        default: "https://regactions.com"
+
+permissions:
+  contents: read
+  issues: write
+
+concurrency:
+  group: production-acceptance-${{ github.event.client_payload.base_url || inputs.base_url || 'https://regactions.com' }}
+  cancel-in-progress: false
+
+jobs:
+  accept-production:
+    name: Browser and Board Pack acceptance
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    env:
+      PLAYWRIGHT_BASE_URL: ${{ github.event.client_payload.base_url || inputs.base_url || 'https://regactions.com' }}
+      PRODUCTION_ACCEPTANCE: "1"
+      PRODUCTION_ACCEPTANCE_ARTIFACT_DIR: artifacts/production-acceptance
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - name: Validate production alias
+        env:
+          BASE_URL: ${{ env.PLAYWRIGHT_BASE_URL }}
+        run: |
+          case "$BASE_URL" in
+            https://regactions.com|https://www.regactions.com) ;;
+            *)
+              echo "Production acceptance may run only against a RegActions production alias." >&2
+              exit 1
+              ;;
+          esac
+      - run: npm ci
+      - name: Install Chromium and PDF renderer
+        run: |
+          npx playwright install --with-deps chromium
+          sudo apt-get update
+          sudo apt-get install --yes poppler-utils
+      - name: Run production acceptance
+        id: browser_acceptance
+        continue-on-error: true
+        run: npm run test:e2e:production-acceptance
+      - name: Verify Board Pack PDF metadata, text and render
+        id: board_pack_pdf
+        if: always() && hashFiles('artifacts/production-acceptance/board-pack.pdf') != ''
+        continue-on-error: true
+        env:
+          BOARD_PACK_PDF_PATH: artifacts/production-acceptance/board-pack.pdf
+        run: node scripts/production-acceptance/verify-board-pack-pdf.mjs
+      - name: Record missing Board Pack download
+        id: board_pack_missing
+        if: always() && hashFiles('artifacts/production-acceptance/board-pack.pdf') == ''
+        run: |
+          mkdir -p artifacts/production-acceptance
+          printf '%s\n' 'Board Pack PDF was not downloaded; the browser acceptance run did not reach a valid PDF.' > artifacts/production-acceptance/board-pack-pdf-verification.txt
+          exit 1
+      - name: Check Vercel production warnings, errors and 5xx responses
+        id: vercel_logs
+        if: always() && secrets.VERCEL_TOKEN != '' && secrets.VERCEL_PROJECT_ID != '' && secrets.VERCEL_ORG_ID != ''
+        env:
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+          VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+          VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+        run: |
+          mkdir -p artifacts/production-acceptance
+          npx --yes vercel@latest logs --project "$VERCEL_PROJECT_ID" --scope "$VERCEL_ORG_ID" --environment production --level error --level warning --since 30m --no-branch --no-follow --json --token "$VERCEL_TOKEN" > artifacts/production-acceptance/vercel-warnings-errors.jsonl
+          npx --yes vercel@latest logs --project "$VERCEL_PROJECT_ID" --scope "$VERCEL_ORG_ID" --environment production --status-code 5xx --since 30m --no-branch --no-follow --json --token "$VERCEL_TOKEN" > artifacts/production-acceptance/vercel-5xx.jsonl
+          if [ -s artifacts/production-acceptance/vercel-warnings-errors.jsonl ] || [ -s artifacts/production-acceptance/vercel-5xx.jsonl ]; then
+            echo "Vercel reported a warning, error, or 5xx during the acceptance window." >&2
+            exit 1
+          fi
+      - name: Record unavailable Vercel production log check
+        id: vercel_logs_missing
+        if: always() && (secrets.VERCEL_TOKEN == '' || secrets.VERCEL_PROJECT_ID == '' || secrets.VERCEL_ORG_ID == '')
+        run: |
+          mkdir -p artifacts/production-acceptance
+          printf '%s\n' 'Vercel runtime log check requires VERCEL_TOKEN, VERCEL_PROJECT_ID and VERCEL_ORG_ID secrets.' > artifacts/production-acceptance/vercel-log-check.txt
+          exit 1
+      - name: Write acceptance result
+        id: result
+        if: always()
+        env:
+          BROWSER_OUTCOME: ${{ steps.browser_acceptance.outcome }}
+          PDF_OUTCOME: ${{ steps.board_pack_pdf.outcome }}
+          PDF_MISSING_OUTCOME: ${{ steps.board_pack_missing.outcome }}
+          VERCEL_LOGS_OUTCOME: ${{ steps.vercel_logs.outcome }}
+          VERCEL_LOGS_MISSING_OUTCOME: ${{ steps.vercel_logs_missing.outcome }}
+          BASE_URL: ${{ env.PLAYWRIGHT_BASE_URL }}
+        run: |
+          mkdir -p artifacts/production-acceptance
+          cat > artifacts/production-acceptance/acceptance-summary.md <<EOF
+          <!-- regactions-production-acceptance-alert -->
+          # Production acceptance result
+
+          - URL: ${BASE_URL}
+          - Browser suite: ${BROWSER_OUTCOME}
+          - Board Pack PDF verification: ${PDF_OUTCOME:-skipped}
+          - Board Pack PDF missing check: ${PDF_MISSING_OUTCOME:-skipped}
+          - Vercel runtime logs: ${VERCEL_LOGS_OUTCOME:-skipped}
+          - Vercel log credential check: ${VERCEL_LOGS_MISSING_OUTCOME:-skipped}
+          - Workflow run: ${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}
+
+          The browser suite checks public route responses and identity markers, JFSC's six official notices, FCA official links, public workspaces, Board Pack download, and 390px viewport smoke. JerseyFSC Cloudflare challenge responses are recorded separately rather than misreported as absent notices. The PDF verifier checks signature, size, pages, required headings, extractability and a Poppler render. The generated image is retained for human visual clipping review.
+          EOF
+          if [ "$BROWSER_OUTCOME" != success ] || [ "$PDF_OUTCOME" != success ] || [ "$PDF_MISSING_OUTCOME" = failure ] || [ "$VERCEL_LOGS_OUTCOME" != success ] || [ "$VERCEL_LOGS_MISSING_OUTCOME" = failure ]; then
+            exit 1
+          fi
+      - name: Upload production acceptance evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: production-acceptance-${{ github.run_id }}
+          path: |
+            artifacts/production-acceptance/
+            playwright-report/
+            test-results/
+          if-no-files-found: warn
+          retention-days: 30
+      - name: Open or update failed production acceptance alert
+        if: failure()
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const title = '[Production Acceptance] RegActions public release failed';
+            const marker = '<!-- regactions-production-acceptance-alert -->';
+            const runUrl = `${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`;
+            const body = [
+              marker,
+              'The automated public production acceptance suite failed. Treat this release as unaccepted until a later full run passes.',
+              '',
+              `Workflow run: ${runUrl}`,
+              'Download the production-acceptance artifact for browser screenshots, API response, Board Pack PDF metadata and renderer output.',
+            ].join('\n');
+            const issues = await github.paginate(github.rest.issues.listForRepo, {
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              state: 'open',
+              per_page: 100,
+            });
+            const existing = issues.find((issue) => !issue.pull_request && issue.title === title && issue.body?.includes(marker));
+            if (existing) {
+              await github.rest.issues.update({ owner: context.repo.owner, repo: context.repo.repo, issue_number: existing.number, body });
+            } else {
+              await github.rest.issues.create({ owner: context.repo.owner, repo: context.repo.repo, title, body });
+            }
+      - name: Close only the matching recovered production acceptance alert
+        if: success()
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const title = '[Production Acceptance] RegActions public release failed';
+            const marker = '<!-- regactions-production-acceptance-alert -->';
+            const issues = await github.paginate(github.rest.issues.listForRepo, {
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              state: 'open',
+              per_page: 100,
+            });
+            const existing = issues.find((issue) => !issue.pull_request && issue.title === title && issue.body?.includes(marker));
+            if (existing) {
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: existing.number,
+                body: `Production acceptance recovered in workflow run ${context.runId}; all browser and Board Pack PDF checks passed.`,
+              });
+              await github.rest.issues.update({ owner: context.repo.owner, repo: context.repo.repo, issue_number: existing.number, state: 'closed' });
+            }
