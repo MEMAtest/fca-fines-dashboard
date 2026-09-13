@@ -30,12 +30,13 @@ describe("production acceptance workflow", () => {
     expect(workflow).not.toContain("--since 30m");
   });
 
-  it("maps Vercel secrets into job env before using them in step conditions", () => {
-    expect(workflow).toContain("      VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}");
-    expect(workflow).toContain("      VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}");
-    expect(workflow).toContain("      VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}");
-    expect(workflow).toContain("if: always() && env.VERCEL_TOKEN != '' && env.VERCEL_PROJECT_ID != '' && env.VERCEL_ORG_ID != ''");
-    expect(workflow).toContain("if: always() && (env.VERCEL_TOKEN == '' || env.VERCEL_PROJECT_ID == '' || env.VERCEL_ORG_ID == '')");
+  it("uses a non-secret availability flag for conditions and scopes credentials to the log step", () => {
+    expect(workflow).toContain("      VERCEL_LOGS_AVAILABLE: ${{ secrets.VERCEL_TOKEN != '' && secrets.VERCEL_PROJECT_ID != '' && secrets.VERCEL_ORG_ID != '' }}");
+    expect(workflow).toContain("if: always() && env.VERCEL_LOGS_AVAILABLE == 'true'");
+    expect(workflow).toContain("if: always() && env.VERCEL_LOGS_AVAILABLE != 'true'");
+    expect(workflow).toContain("          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}");
+    expect(workflow).toContain("          VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}");
+    expect(workflow).toContain("          VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}");
 
     const lines = workflow.split("\n");
     const ifExpressions: string[] = [];
