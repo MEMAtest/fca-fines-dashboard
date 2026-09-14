@@ -26,4 +26,16 @@ describe("regulator comparison deep-link contract", () => {
     });
     expect(vercel.rewrites.indexOf(compareRewrite!)).toBeLessThan(notFoundRewriteIndex);
   });
+
+  it("serves the protected operations SPA before the intentional 404 fallback", () => {
+    const routerSource = fs.readFileSync(path.join(root, "src/router.tsx"), "utf8");
+    const vercel = JSON.parse(fs.readFileSync(path.join(root, "vercel.json"), "utf8")) as {
+      rewrites: Array<{ source: string; destination: string }>;
+    };
+    expect(routerSource).toContain('path: "/ops"');
+    const opsRewrite = vercel.rewrites.find((rewrite) => rewrite.source === "/ops");
+    const notFoundRewriteIndex = vercel.rewrites.findIndex((rewrite) => rewrite.destination === "/api/not-found");
+    expect(opsRewrite).toEqual({ source: "/ops", destination: "/index.html" });
+    expect(vercel.rewrites.indexOf(opsRewrite!)).toBeLessThan(notFoundRewriteIndex);
+  });
 });
