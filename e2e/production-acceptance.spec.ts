@@ -149,7 +149,7 @@ test("regulator comparator applies a new regulator and year", async ({ page }) =
   });
   await expect(regulatorComparator).toBeVisible();
   await regulatorComparator.getByLabel("Year").selectOption("2025");
-  await expect(page.getByRole("status", { name: /Comparison scope/i })).toContainText("2025");
+  await expect(regulatorComparator.getByRole("status")).toContainText("2025");
   await expect(page.getByRole("heading", { name: "JFSC" })).toBeVisible();
   await saveScreenshot(page, "regulator-comparison");
 });

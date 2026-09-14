@@ -39,7 +39,7 @@ jobs:
       PLAYWRIGHT_BASE_URL: ${{ github.event.client_payload.base_url || inputs.base_url || 'https://regactions.com' }}
       PRODUCTION_ACCEPTANCE: "1"
       PRODUCTION_ACCEPTANCE_ARTIFACT_DIR: artifacts/production-acceptance
-      VERCEL_LOGS_AVAILABLE: ${{ secrets.VERCEL_TOKEN != '' && secrets.VERCEL_PROJECT_ID != '' && secrets.VERCEL_ORG_ID != '' }}
+      VERCEL_LOGS_AVAILABLE: ${{ secrets.VERCEL_TOKEN != '' && secrets.VERCEL_PROJECT_ID != '' }}
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -90,11 +90,10 @@ jobs:
         env:
           VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
           VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
-          VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
         run: |
           mkdir -p artifacts/production-acceptance
-          npx --yes vercel@latest logs --project "$VERCEL_PROJECT_ID" --scope "$VERCEL_ORG_ID" --environment production --level error --level warning --since "${{ steps.acceptance_window.outputs.started_at }}" --no-branch --no-follow --json --token "$VERCEL_TOKEN" > artifacts/production-acceptance/vercel-warnings-errors.jsonl
-          npx --yes vercel@latest logs --project "$VERCEL_PROJECT_ID" --scope "$VERCEL_ORG_ID" --environment production --status-code 5xx --since "${{ steps.acceptance_window.outputs.started_at }}" --no-branch --no-follow --json --token "$VERCEL_TOKEN" > artifacts/production-acceptance/vercel-5xx.jsonl
+          npx --yes vercel@latest logs --project "$VERCEL_PROJECT_ID" --environment production --level error --level warning --since "${{ steps.acceptance_window.outputs.started_at }}" --no-branch --no-follow --json --token "$VERCEL_TOKEN" > artifacts/production-acceptance/vercel-warnings-errors.jsonl
+          npx --yes vercel@latest logs --project "$VERCEL_PROJECT_ID" --environment production --status-code 5xx --since "${{ steps.acceptance_window.outputs.started_at }}" --no-branch --no-follow --json --token "$VERCEL_TOKEN" > artifacts/production-acceptance/vercel-5xx.jsonl
           if [ -s artifacts/production-acceptance/vercel-warnings-errors.jsonl ] || [ -s artifacts/production-acceptance/vercel-5xx.jsonl ]; then
             echo "Vercel reported a warning, error, or 5xx during the acceptance window." >&2
             exit 1
@@ -104,7 +103,7 @@ jobs:
         if: always() && env.VERCEL_LOGS_AVAILABLE != 'true'
         run: |
           mkdir -p artifacts/production-acceptance
-          printf '%s\n' 'Vercel runtime log check requires VERCEL_TOKEN, VERCEL_PROJECT_ID and VERCEL_ORG_ID secrets.' > artifacts/production-acceptance/vercel-log-check.txt
+          printf '%s\n' 'Vercel runtime log check requires VERCEL_TOKEN and VERCEL_PROJECT_ID secrets.' > artifacts/production-acceptance/vercel-log-check.txt
           exit 1
       - name: Write acceptance result
         id: result
