@@ -3,10 +3,14 @@ import type { VercelRequest, VercelResponse } from '@vercel/node';
 import handler, { isDailyDigestAuthorised } from './daily-digest.js';
 import { getDailySummary } from '../server/services/analytics.js';
 
-const { send } = vi.hoisted(() => ({ send: vi.fn() }));
+const { send, clientOptions } = vi.hoisted(() => ({ send: vi.fn(), clientOptions: vi.fn() }));
 
 vi.mock('@aws-sdk/client-ses', () => ({
   SESClient: class {
+    constructor(options: unknown) {
+      clientOptions(options);
+    }
+
     send = send;
   },
   SendEmailCommand: class {
@@ -63,6 +67,7 @@ describe('daily digest endpoint controls', () => {
     });
     send.mockReset();
     send.mockResolvedValue({ MessageId: 'ses-message-1' });
+    clientOptions.mockReset();
   });
 
   afterEach(() => {
@@ -77,6 +82,11 @@ describe('daily digest endpoint controls', () => {
     expect(res.status).toHaveBeenCalledWith(200);
     expect(mockedGetDailySummary).toHaveBeenCalledTimes(1);
     expect(send).toHaveBeenCalledTimes(1);
+    expect(clientOptions).toHaveBeenCalledWith(expect.objectContaining({
+      region: 'eu-west-2',
+      maxAttempts: 1,
+      credentials: { accessKeyId: 'test-access-key', secretAccessKey: 'test-secret-key' },
+    }));
     expect(send.mock.calls[0]?.[0]).toMatchObject({
       input: {
         Source: 'alerts@example.com',

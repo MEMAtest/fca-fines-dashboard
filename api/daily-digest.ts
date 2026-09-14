@@ -15,6 +15,9 @@ async function sendEmail(subject: string, text: string) {
   const ses = new SESClient({
     region: process.env.AWS_SES_REGION?.trim() || 'eu-west-2',
     credentials: { accessKeyId, secretAccessKey },
+    // A scheduled digest must not turn a transient transport uncertainty into
+    // several delivery attempts. The scheduler owns the next run.
+    maxAttempts: 1,
   });
   await ses.send(new SendEmailCommand({
     Source: process.env.SES_FROM_EMAIL?.trim() || 'alerts@memaconsultants.com',
