@@ -184,10 +184,9 @@ function buildStats(records: FineRecord[]): StatsResponse["data"] {
 /**
  * One page of the paged search, retried before it is allowed to fail.
  *
- * The pages are requested with `Promise.all`, so a single transient failure
- * rejected the whole batch and the page rendered "Unable to load regulatory
- * data" with nothing on it, even though every other page had arrived. There was
- * no retry at all, so one dropped request in a burst lost the entire view.
+ * Each page is retried before it is allowed to fail, and callers use a bounded
+ * worker pool so a large result set does not create a request burst that
+ * exhausts the database behind the serverless search endpoint.
  *
  * Two retries with a short backoff. Failing after that still surfaces the
  * error: a partial record set must not be presented as a complete one, because
@@ -210,6 +209,29 @@ export async function fetchPage(
     }
   }
   throw lastError;
+}
+
+export async function fetchPages(
+  offsets: number[],
+  limit: number,
+  searchParams: Parameters<typeof fetchUnifiedSearch>[0],
+  concurrency = 2,
+): Promise<UnifiedSearchResponse[]> {
+  if (!offsets.length) return [];
+
+  const pages = new Array<UnifiedSearchResponse>(offsets.length);
+  let nextIndex = 0;
+  const workerCount = Math.min(Math.max(1, Math.floor(concurrency)), offsets.length);
+
+  await Promise.all(Array.from({ length: workerCount }, async () => {
+    while (nextIndex < offsets.length) {
+      const index = nextIndex;
+      nextIndex += 1;
+      pages[index] = await fetchPage(offsets[index], limit, searchParams);
+    }
+  }));
+
+  return pages;
 }
 
 export function useUnifiedData({
@@ -259,7 +281,8 @@ export function useUnifiedData({
         //
         // The first response carries `pagination.total`, so after one round-trip
         // we know exactly how many more pages exist and can ask for them at
-        // once. Same requests, same records, same order: measured 4.9s -> 1.6s.
+        // once. A two-worker pool preserves the faster load without opening a
+        // connection-sized request burst when several pages are mounted at once.
         const firstPage = await fetchPage(0, pageLimit, searchParams);
 
         const wanted = Math.min(maximumRecords, firstPage.pagination.total);
@@ -268,9 +291,7 @@ export function useUnifiedData({
           remainingOffsets.push(offset);
         }
 
-        const remainingPages = await Promise.all(
-          remainingOffsets.map((offset) => fetchPage(offset, pageLimit, searchParams)),
-        );
+        const remainingPages = await fetchPages(remainingOffsets, pageLimit, searchParams);
 
         // Concatenated by offset, not by completion order, so the date_issued
         // sort the API applied survives the parallelism.

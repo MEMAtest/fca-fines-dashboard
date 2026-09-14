@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it } from "vitest";
-import { buildPgPoolConfig, resolveConnectionString } from "./db.js";
+import { buildPgPoolConfig, buildServerlessPostgresOptions, resolveConnectionString } from "./db.js";
 
 const CONNECTION_ENV_KEYS = [
   "DATABASE_URL",
@@ -72,5 +72,16 @@ describe("buildPgPoolConfig", () => {
 
     expect(config.connectionString).toBe("postgresql://user:pass@example.com/app");
     expect(config.ssl).toBeUndefined();
+  });
+});
+
+describe("buildServerlessPostgresOptions", () => {
+  it("reuses at most one idle connection per Vercel isolate", () => {
+    expect(buildServerlessPostgresOptions("postgresql://user:pass@example.com/app?sslmode=require")).toEqual({
+      max: 1,
+      idle_timeout: 5,
+      connect_timeout: 10,
+      ssl: { rejectUnauthorized: false },
+    });
   });
 });
