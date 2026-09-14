@@ -16,6 +16,14 @@ export interface BlogArticleCard {
 /** Published articles, newest first. */
 export const BLOG_ARTICLE_INDEX: BlogArticleCard[] = [
   {
+    "slug": "regulatory-roundup-september-2026",
+    "title": "Regulatory Roundup: September 2026 Enforcement Actions Analysed",
+    "excerpt": "An analysis of 19 global enforcement actions from September 2026 reveals a focus on organisational failures, disclosure breaches, and supervisory defiance.",
+    "category": "Enforcement Roundup",
+    "date": "14 September 2026",
+    "dateISO": "2026-09-14"
+  },
+  {
     "slug": "consumer-protection-conduct-risk",
     "title": "Consumer Protection Enforcement: Persistent Conduct Risk Identified",
     "excerpt": "Regulatory enforcement data reveals persistent conduct risk across banking, insurance, and brokerage sectors. Failures in fee transparency, suitability, and customer communications trigger penalties, cancellations.",
@@ -610,4 +618,4 @@ export const BLOG_ARTICLE_INDEX: BlogArticleCard[] = [
 ];
 
 /** Total published articles, for "all N insights" style counts. */
-export const BLOG_ARTICLE_COUNT = 74;
+export const BLOG_ARTICLE_COUNT = 75;

@@ -6,13 +6,16 @@ import {
   CheckCircle2,
   Database,
   FileText,
+  KeyRound,
   LockKeyhole,
   LogOut,
   MailCheck,
   RefreshCw,
   ShieldCheck,
+  Users,
 } from "lucide-react";
 import "../styles/ops-dashboard.css";
+import "../styles/ops-api-dashboard.css";
 
 type OpsStatus = "healthy" | "warning" | "critical";
 type NumericMap = Record<string, number>;
@@ -47,6 +50,17 @@ interface OpsSummary {
   configuration: Record<string, boolean>;
 }
 
+interface DeveloperApiOperations {
+  generatedAt: string;
+  days: number;
+  configuration: Record<string, boolean>;
+  metrics: NumericMap;
+  applications: Array<{ id: number; organisationName: string; contactName: string; contactEmail: string; intendedUse: string; expectedDailyRequests: number | null; requestedTermMonths: number; status: string; termsAccepted: boolean; createdAt: string }>;
+  keys: Array<{ id: number; label: string; keyPrefix: string; keyStatus: string; minuteLimit: number; dailyLimit: number; expiresAt: string | null; lastUsedAt: string | null; createdAt: string; clientId: number; organisationName: string; contactName: string; contactEmail: string; clientStatus: string; requests: number; denied: number }>;
+  endpoints: Array<{ path: string; requests: number; accepted: number; denied: number }>;
+  notifications: Array<{ id: number; kind: string; status: string; subject: string; attemptedAt: string; sentAt: string | null; error: string | null }>;
+}
+
 const STATUS_COPY: Record<OpsStatus, string> = {
   healthy: "Operational",
   warning: "Review required",
@@ -69,6 +83,8 @@ function formatTime(value: string | null) {
 export function OpsDashboard() {
   const [state, setState] = useState<"loading" | "locked" | "ready" | "error">("loading");
   const [summary, setSummary] = useState<OpsSummary | null>(null);
+  const [apiOperations, setApiOperations] = useState<DeveloperApiOperations | null>(null);
+  const [apiMessage, setApiMessage] = useState("");
   const [secret, setSecret] = useState("");
   const [message, setMessage] = useState("");
   const [refreshing, setRefreshing] = useState(false);
@@ -84,6 +100,20 @@ export function OpsDashboard() {
       }
       if (!response.ok) throw new Error("Operations data is unavailable");
       setSummary(await response.json() as OpsSummary);
+      const apiResponse = await fetch("/api/ops/developer-api?days=7", { credentials: "include" });
+      if (apiResponse.status === 401) {
+        setSummary(null);
+        setApiOperations(null);
+        setState("locked");
+        return;
+      }
+      if (apiResponse.ok) {
+        setApiOperations(await apiResponse.json() as DeveloperApiOperations);
+        setApiMessage("");
+      } else {
+        setApiOperations(null);
+        setApiMessage("Registered API operations are temporarily unavailable.");
+      }
       setState("ready");
       setMessage("");
     } catch (error) {
@@ -133,6 +163,7 @@ export function OpsDashboard() {
   const signOut = async () => {
     await fetch("/api/ops/session", { method: "DELETE", credentials: "include" }).catch(() => undefined);
     setSummary(null);
+    setApiOperations(null);
     setState("locked");
   };
 
@@ -146,7 +177,7 @@ export function OpsDashboard() {
 
   return <main className="ops-page">
     <header className="ops-header">
-      <div><span className="ops-eyebrow">RegActions internal operations</span><h1>Control room</h1><p>Trust, ingestion, delivery and product signals. No customer identities are shown.</p></div>
+      <div><span className="ops-eyebrow">RegActions internal operations</span><h1>Control room</h1><p>Trust, ingestion, delivery and registered API signals. Client records below are restricted to this protected session.</p></div>
       <div className="ops-header__actions"><StatusBadge status={summary.status}/><button type="button" onClick={() => void loadSummary(true)} disabled={refreshing}><RefreshCw className={refreshing ? "ops-spin" : ""} size={15}/> Refresh</button><button type="button" onClick={() => void signOut()}><LogOut size={15}/> Sign out</button></div>
     </header>
 
@@ -157,6 +188,30 @@ export function OpsDashboard() {
       <article className="ops-card"><header><Activity/><div><span>Ingestion layer</span><h2>Scraper contracts</h2></div><StatusBadge status={summary.sections.scrapers.status}/></header><div className="ops-metrics"><Metric label="Quarantined" value={summary.sections.scrapers.metrics.quarantined}/><Metric label="Stale" value={summary.sections.scrapers.metrics.stale}/><Metric label="Uncontracted" value={summary.sections.scrapers.metrics.uncontracted}/><Metric label="Missing runs" value={summary.sections.scrapers.metrics.missingRuns}/></div></article>
       <article className="ops-card"><header><MailCheck/><div><span>Delivery layer</span><h2>Evidence monitors</h2></div><StatusBadge status={summary.sections.monitors.status}/></header><div className="ops-metrics"><Metric label="Active" value={summary.sections.monitors.metrics.active}/><Metric label="Pending verification" value={summary.sections.monitors.metrics.pending_verification}/><Metric label="Failures, 24h" value={summary.sections.monitors.metrics.recent_failures}/><Metric label="No baseline" value={summary.sections.monitors.metrics.active_without_baseline}/></div></article>
       <article className="ops-card"><header><FileText/><div><span>Delivery layer</span><h2>Board Pack</h2></div><StatusBadge status={summary.sections.boardPack.status}/></header><div className="ops-metrics"><Metric label="Sent, 24h" value={summary.sections.boardPack.metrics.sent_last_24_hours}/><Metric label="Pending" value={summary.sections.boardPack.metrics.pending}/><Metric label="Overdue" value={summary.sections.boardPack.metrics.overdue}/><Metric label="Failed" value={summary.sections.boardPack.metrics.failed}/></div></article>
+    </section>
+
+    <section className="ops-api" aria-labelledby="ops-api-title">
+      <header className="ops-section-heading"><div><span>Registered developer service</span><h2 id="ops-api-title">Applications, keys and usage</h2><p>Seven-day activity. Secrets and raw network identifiers are never displayed.</p></div><KeyRound/></header>
+      {apiMessage ? <div className="ops-api-error" role="alert"><AlertTriangle/>{apiMessage}</div> : null}
+      {apiOperations ? <>
+        <div className="ops-api-readiness" aria-label="API notification readiness">{Object.entries(apiOperations.configuration).map(([key, ready]) => <span key={key} className={ready ? "is-ready" : "is-missing"}>{ready ? <CheckCircle2/> : <AlertTriangle/>}{key.replace(/([A-Z])/g, " $1")}: {ready ? "ready" : "missing"}</span>)}</div>
+        <div className="ops-grid ops-grid--api-summary">
+          <article className="ops-card"><header><Users/><div><span>Access</span><h2>Registrations</h2></div></header><div className="ops-metrics"><Metric label="Pending applications" value={apiOperations.metrics.pending_applications}/><Metric label="Active clients" value={apiOperations.metrics.active_clients}/></div></article>
+          <article className="ops-card"><header><KeyRound/><div><span>Credentials</span><h2>API keys</h2></div></header><div className="ops-metrics"><Metric label="Active keys" value={apiOperations.metrics.active_keys}/><Metric label="Used this week" value={apiOperations.metrics.used_keys}/></div></article>
+          <article className="ops-card"><header><Activity/><div><span>Traffic</span><h2>Requests</h2></div></header><div className="ops-metrics"><Metric label="Accepted" value={apiOperations.metrics.accepted_requests}/><Metric label="Denied" value={apiOperations.metrics.denied_requests}/></div></article>
+          <article className="ops-card"><header><AlertTriangle/><div><span>Protection</span><h2>Limits</h2></div></header><div className="ops-metrics"><Metric label="Rate limited" value={apiOperations.metrics.rate_limited_requests}/><Metric label="Alert failures" value={apiOperations.notifications.filter((item) => item.status === "failed").length}/></div></article>
+        </div>
+
+        <div className="ops-grid ops-grid--detail">
+          <article className="ops-panel"><header><div><span>Registration queue</span><h2>Developer applications</h2></div><Users/></header>{apiOperations.applications.length ? <div className="ops-table-wrap"><table><thead><tr><th>Organisation</th><th>Contact</th><th>Request</th><th>Status</th></tr></thead><tbody>{apiOperations.applications.map((application) => <tr key={application.id}><td><strong>{application.organisationName}</strong><small>#{application.id} · {formatTime(application.createdAt)}</small></td><td>{application.contactName}<small>{application.contactEmail}</small></td><td>{application.requestedTermMonths} months<small>{application.expectedDailyRequests ? `${application.expectedDailyRequests.toLocaleString("en-GB")} / day` : "Volume not supplied"}</small></td><td><span className={`ops-pill ops-pill--${application.status}`}>{application.status}</span></td></tr>)}</tbody></table></div> : <div className="ops-empty"><CheckCircle2/>No API applications have been received.</div>}</article>
+          <article className="ops-panel"><header><div><span>Issued access</span><h2>Clients and keys</h2></div><KeyRound/></header>{apiOperations.keys.length ? <div className="ops-table-wrap"><table><thead><tr><th>Client</th><th>Key</th><th>Usage</th><th>Status</th></tr></thead><tbody>{apiOperations.keys.map((key) => <tr key={key.id}><td><strong>{key.organisationName}</strong><small>{key.contactEmail}</small></td><td>{key.label}<small>{key.keyPrefix}… · {key.minuteLimit}/min · {key.dailyLimit.toLocaleString("en-GB")}/day</small></td><td>{key.requests.toLocaleString("en-GB")}<small>{key.lastUsedAt ? `Last ${formatTime(key.lastUsedAt)}` : "Never used"}</small></td><td><span className={`ops-pill ops-pill--${key.keyStatus === "active" && key.clientStatus === "active" ? "approved" : "critical"}`}>{key.clientStatus}/{key.keyStatus}</span></td></tr>)}</tbody></table></div> : <div className="ops-empty"><KeyRound/>No API keys have been issued.</div>}</article>
+        </div>
+
+        <div className="ops-grid ops-grid--detail">
+          <article className="ops-panel"><header><div><span>Traffic distribution</span><h2>Endpoints</h2></div><Activity/></header>{apiOperations.endpoints.length ? <div className="ops-table-wrap"><table><thead><tr><th>Path</th><th>Requests</th><th>Accepted</th><th>Denied</th></tr></thead><tbody>{apiOperations.endpoints.map((endpoint) => <tr key={endpoint.path}><td><code>{endpoint.path}</code></td><td>{endpoint.requests}</td><td>{endpoint.accepted}</td><td>{endpoint.denied}</td></tr>)}</tbody></table></div> : <div className="ops-empty"><Activity/>No registered API traffic in this period.</div>}</article>
+          <article className="ops-panel"><header><div><span>Notification ledger</span><h2>Operator alerts</h2></div><MailCheck/></header>{apiOperations.notifications.length ? <div className="ops-table-wrap"><table><thead><tr><th>Alert</th><th>Status</th><th>Attempted</th></tr></thead><tbody>{apiOperations.notifications.map((notification) => <tr key={notification.id}><td><strong>{notification.subject}</strong><small>{notification.kind.replaceAll("_", " ")}{notification.error ? ` · ${notification.error}` : ""}</small></td><td><span className={`ops-pill ops-pill--${notification.status === "sent" ? "approved" : notification.status}`}>{notification.status}</span></td><td>{formatTime(notification.attemptedAt)}</td></tr>)}</tbody></table></div> : <div className="ops-empty"><MailCheck/>No API operator alerts have been recorded.</div>}</article>
+        </div>
+      </> : null}
     </section>
 
     <section className="ops-grid ops-grid--detail">
