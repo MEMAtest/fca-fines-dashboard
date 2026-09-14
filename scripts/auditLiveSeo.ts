@@ -2,6 +2,8 @@ import { resolve } from "node:path";
 import { pathToFileURL } from "node:url";
 
 const baseUrl = (process.argv[2] || "https://regactions.com").replace(/\/$/, "");
+const MAX_SITEMAP_INDEX_DEPTH = 8;
+const MAX_SITEMAP_DOCUMENTS = 100;
 
 type CheckResult = {
   label: string;
@@ -65,31 +67,67 @@ function isSitemapIndex(xml: string) {
   return /<sitemapindex\b/i.test(xml);
 }
 
-export async function loadSitemapDocuments(rootXml: string, fetcher: typeof fetch = fetch) {
+export async function loadSitemapDocuments(
+  rootXml: string,
+  fetcher: typeof fetch = fetch,
+  allowedOrigin = new URL(baseUrl).origin,
+) {
   const visitedUrls = new Set<string>();
 
-  async function loadDocument(xml: string): Promise<string[]> {
+  function assertSameOrigin(url: string): void {
+    let parsed: URL;
+    try {
+      parsed = new URL(url);
+    } catch {
+      throw new Error(`Invalid sitemap child URL: ${url}`);
+    }
+    if (parsed.origin !== allowedOrigin) {
+      throw new Error(`Rejected cross-origin sitemap child: ${url}`);
+    }
+  }
+
+  async function loadDocument(xml: string, depth = 0): Promise<string[]> {
     if (!isSitemapIndex(xml)) {
       return [xml];
     }
 
-    const childUrls = [...new Set(xmlLocations(xml))].filter((url) => {
-      if (visitedUrls.has(url)) return false;
-      visitedUrls.add(url);
-      return true;
-    });
+    if (depth >= MAX_SITEMAP_INDEX_DEPTH) {
+      throw new Error(`Sitemap index nesting exceeds maximum depth (${MAX_SITEMAP_INDEX_DEPTH})`);
+    }
+
+    const childUrls = [...new Set(xmlLocations(xml))]
+      .filter((url) => !visitedUrls.has(url));
 
     if (childUrls.length === 0) {
       return [];
     }
 
+    if (visitedUrls.size + childUrls.length > MAX_SITEMAP_DOCUMENTS) {
+      throw new Error(`Sitemap index exceeds maximum documents (${MAX_SITEMAP_DOCUMENTS})`);
+    }
+
+    // Validate every child before beginning any fetch, so an untrusted index
+    // cannot cause even a partial cross-origin crawl.
+    childUrls.forEach(assertSameOrigin);
+    childUrls.forEach((url) => visitedUrls.add(url));
+
     const documents = await Promise.all(
       childUrls.map(async (url) => {
-        const response = await fetcher(url, {
-          headers: { "user-agent": "RegActionsSeoAudit/1.0" },
-        });
-        record(`child sitemap ${url} returns 200`, response.status === 200, `status=${response.status}`);
-        return loadDocument(await response.text());
+        let response: Response;
+        try {
+          response = await fetcher(url, {
+            headers: { "user-agent": "RegActionsSeoAudit/1.0" },
+          });
+        } catch (error) {
+          record(`child sitemap ${url} returns 200`, false, "fetch failed");
+          throw error;
+        }
+        const ok = response.status === 200;
+        record(`child sitemap ${url} returns 200`, ok, `status=${response.status}`);
+        if (!ok) {
+          throw new Error(`Child sitemap fetch failed (${response.status}): ${url}`);
+        }
+        return loadDocument(await response.text(), depth + 1);
       }),
     );
 
@@ -121,7 +159,11 @@ async function main() {
 
   const sitemap = await fetchText("/sitemap.xml");
   record("sitemap returns 200", sitemap.response.status === 200, `status=${sitemap.response.status}`);
-  const sitemapDocuments = await loadSitemapDocuments(sitemap.text);
+  const sitemapDocuments = await loadSitemapDocuments(
+    sitemap.text,
+    fetch,
+    new URL(baseUrl).origin,
+  );
   const sitemapContent = sitemapDocuments.join("\n");
   const urlCount = countMatches(sitemapContent, /<url>/g);
   record("sitemap has at least 100 URLs", urlCount >= 100, `urls=${urlCount}`);
