@@ -25,7 +25,20 @@ describe("Editorial Engine publish workflow", () => {
     expect(workflow).toContain("scripts/data/drafts/${{ steps.article.outputs.slug }}.json");
     expect(workflow).toContain("scripts/data/published/${{ steps.article.outputs.slug }}.json");
     expect(workflow).toContain("if-no-files-found: ignore");
-    expect(workflow).toContain("steps.publish_commit.outcome == 'success'");
+    expect(workflow).toContain("id: publish_commit");
+  });
+
+  test("uses the single main push as the production deployment trigger", () => {
+    expect(workflow).toContain("git push origin HEAD:main");
+    expect(workflow).not.toContain("VERCEL_DEPLOY_HOOK_URL");
+    expect(workflow).not.toContain("Trigger production deploy");
+    expect(workflow).not.toContain("curl -fsS -X POST");
+  });
+
+  test("never pushes a blocked review to deployable main", () => {
+    expect(workflow).toContain('if [ "${{ steps.review.outcome }}" != "success" ]; then');
+    expect(workflow).toContain("retaining the draft without pushing to main");
+    expect(workflow).not.toContain("chore(blog): retain blocked draft");
   });
 
   test("keeps duplicate reruns from appending an uncommitted duplicate", () => {
