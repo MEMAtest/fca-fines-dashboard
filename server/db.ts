@@ -38,6 +38,23 @@ export function buildPgPoolConfig(connectionString: string) {
   };
 }
 
+/**
+ * Keep Vercel's per-isolate Postgres.js clients bounded and short-lived. The
+ * public unified endpoints can be invoked by several browser pages at once;
+ * the default Postgres.js pool of ten connections per isolate multiplies
+ * quickly against the small shared production database.
+ */
+export function buildServerlessPostgresOptions(connectionString: string) {
+  return {
+    max: 1,
+    idle_timeout: 5,
+    connect_timeout: 10,
+    ssl: connectionString.includes("sslmode=")
+      ? { rejectUnauthorized: false }
+      : false,
+  };
+}
+
 export interface SqlClient {
   (strings: TemplateStringsArray, ...values: unknown[]): Promise<Record<string, unknown>[]>;
   (query: string, params?: unknown[]): Promise<Record<string, unknown>[]>;
