@@ -3,6 +3,21 @@ import type { VercelRequest, VercelResponse } from '@vercel/node';
 import handler, { isDailyDigestAuthorised } from './daily-digest.js';
 import { getDailySummary } from '../server/services/analytics.js';
 
+const { send } = vi.hoisted(() => ({ send: vi.fn() }));
+
+vi.mock('@aws-sdk/client-ses', () => ({
+  SESClient: class {
+    send = send;
+  },
+  SendEmailCommand: class {
+    input: unknown;
+
+    constructor(input: unknown) {
+      this.input = input;
+    }
+  },
+}));
+
 vi.mock('../server/services/analytics.js', () => ({
   getDailySummary: vi.fn(),
 }));
@@ -35,7 +50,10 @@ describe('daily digest endpoint controls', () => {
 
   beforeEach(() => {
     process.env.CRON_SECRET = 'test-cron-secret';
-    process.env.RESEND_API_KEY = 'test-resend-key';
+    process.env.AWS_ACCESS_KEY_ID = 'test-access-key';
+    process.env.AWS_SECRET_ACCESS_KEY = 'test-secret-key';
+    process.env.AWS_SES_REGION = 'eu-west-2';
+    process.env.SES_FROM_EMAIL = 'alerts@example.com';
     process.env.DAILY_DIGEST_TO = 'owner@example.com';
     mockedGetDailySummary.mockReset();
     mockedGetDailySummary.mockResolvedValue({
@@ -43,22 +61,43 @@ describe('daily digest endpoint controls', () => {
       topPaths: [{ path: '/fines', hits: 8 }],
       latestNotice: null,
     });
-    vi.stubGlobal('fetch', vi.fn().mockResolvedValue(new Response('{}', { status: 200 })));
+    send.mockReset();
+    send.mockResolvedValue({ MessageId: 'ses-message-1' });
   });
 
   afterEach(() => {
     process.env = { ...originalEnv };
-    vi.unstubAllGlobals();
   });
 
-  it('accepts the configured Bearer secret', async () => {
+  it('sends one SES message with the configured digest recipient', async () => {
     const res = response();
 
     await handler(request('GET', 'Bearer test-cron-secret'), res);
 
     expect(res.status).toHaveBeenCalledWith(200);
     expect(mockedGetDailySummary).toHaveBeenCalledTimes(1);
-    expect(fetch).toHaveBeenCalledTimes(1);
+    expect(send).toHaveBeenCalledTimes(1);
+    expect(send.mock.calls[0]?.[0]).toMatchObject({
+      input: {
+        Source: 'alerts@example.com',
+        Destination: { ToAddresses: ['owner@example.com'] },
+        Message: {
+          Subject: { Data: 'RegActions – daily summary', Charset: 'UTF-8' },
+        },
+      },
+    });
+  });
+
+  it('returns a provider failure without retrying or sending a duplicate', async () => {
+    send.mockRejectedValueOnce(new Error('SES unavailable'));
+    const res = response();
+
+    await handler(request('GET', 'Bearer test-cron-secret'), res);
+
+    expect(res.status).toHaveBeenCalledWith(500);
+    expect(res.json).toHaveBeenCalledWith({ success: false, error: 'SES unavailable' });
+    expect(mockedGetDailySummary).toHaveBeenCalledTimes(1);
+    expect(send).toHaveBeenCalledTimes(1);
   });
 
   it.each([
@@ -71,7 +110,7 @@ describe('daily digest endpoint controls', () => {
 
     expect(res.status).toHaveBeenCalledWith(401);
     expect(mockedGetDailySummary).not.toHaveBeenCalled();
-    expect(fetch).not.toHaveBeenCalled();
+    expect(send).not.toHaveBeenCalled();
   });
 
   it('fails closed when CRON_SECRET is unset without side effects', async () => {
@@ -82,7 +121,7 @@ describe('daily digest endpoint controls', () => {
 
     expect(res.status).toHaveBeenCalledWith(401);
     expect(mockedGetDailySummary).not.toHaveBeenCalled();
-    expect(fetch).not.toHaveBeenCalled();
+    expect(send).not.toHaveBeenCalled();
   });
 
   it('rejects non-GET methods before authentication or email work', async () => {
@@ -93,7 +132,7 @@ describe('daily digest endpoint controls', () => {
     expect(res.setHeader).toHaveBeenCalledWith('Allow', 'GET');
     expect(res.status).toHaveBeenCalledWith(405);
     expect(mockedGetDailySummary).not.toHaveBeenCalled();
-    expect(fetch).not.toHaveBeenCalled();
+    expect(send).not.toHaveBeenCalled();
   });
 });
 
