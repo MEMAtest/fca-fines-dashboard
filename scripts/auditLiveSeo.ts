@@ -65,8 +65,24 @@ function isSitemapIndex(xml: string) {
   return /<sitemapindex\b/i.test(xml);
 }
 
-export async function loadSitemapDocuments(rootXml: string, fetcher: typeof fetch = fetch) {
+export async function loadSitemapDocuments(
+  rootXml: string,
+  fetcher: typeof fetch = fetch,
+  allowedOrigin = new URL(baseUrl).origin,
+) {
   const visitedUrls = new Set<string>();
+
+  function assertSameOrigin(url: string): void {
+    let parsed: URL;
+    try {
+      parsed = new URL(url);
+    } catch {
+      throw new Error(`Invalid sitemap child URL: ${url}`);
+    }
+    if (parsed.origin !== allowedOrigin) {
+      throw new Error(`Rejected cross-origin sitemap child: ${url}`);
+    }
+  }
 
   async function loadDocument(xml: string): Promise<string[]> {
     if (!isSitemapIndex(xml)) {
@@ -85,10 +101,21 @@ export async function loadSitemapDocuments(rootXml: string, fetcher: typeof fetc
 
     const documents = await Promise.all(
       childUrls.map(async (url) => {
-        const response = await fetcher(url, {
-          headers: { "user-agent": "RegActionsSeoAudit/1.0" },
-        });
-        record(`child sitemap ${url} returns 200`, response.status === 200, `status=${response.status}`);
+        assertSameOrigin(url);
+        let response: Response;
+        try {
+          response = await fetcher(url, {
+            headers: { "user-agent": "RegActionsSeoAudit/1.0" },
+          });
+        } catch (error) {
+          record(`child sitemap ${url} returns 200`, false, "fetch failed");
+          throw error;
+        }
+        const ok = response.status === 200;
+        record(`child sitemap ${url} returns 200`, ok, `status=${response.status}`);
+        if (!ok) {
+          throw new Error(`Child sitemap fetch failed (${response.status}): ${url}`);
+        }
         return loadDocument(await response.text());
       }),
     );
@@ -121,7 +148,11 @@ async function main() {
 
   const sitemap = await fetchText("/sitemap.xml");
   record("sitemap returns 200", sitemap.response.status === 200, `status=${sitemap.response.status}`);
-  const sitemapDocuments = await loadSitemapDocuments(sitemap.text);
+  const sitemapDocuments = await loadSitemapDocuments(
+    sitemap.text,
+    fetch,
+    new URL(baseUrl).origin,
+  );
   const sitemapContent = sitemapDocuments.join("\n");
   const urlCount = countMatches(sitemapContent, /<url>/g);
   record("sitemap has at least 100 URLs", urlCount >= 100, `urls=${urlCount}`);
