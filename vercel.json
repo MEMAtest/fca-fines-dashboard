@@ -97,6 +97,7 @@
     }
   ],
   "rewrites": [
+    { "source": "/ops", "destination": "/index.html" },
     { "source": "/regulators/:regulatorCode/compare", "destination": "/index.html" },
     { "source": "/((?!api/).*)", "destination": "/api/not-found" }
   ],
