@@ -19,6 +19,7 @@ try {
   const migrations = [
     "migrations/20260909_developer_api_access.sql",
     "migrations/20260910_developer_api_anonymous_buckets.sql",
+    "migrations/20260914_developer_api_operator_notifications.sql",
   ];
   for (const file of migrations) {
     await pool.query(await readFile(resolve(file), "utf8"));

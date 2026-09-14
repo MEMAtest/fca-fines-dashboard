@@ -79,20 +79,23 @@ describe("developer API access", () => {
     expect(headers.get("RateLimit-Remaining")).toBe("57");
     expect(headers.get("X-RateLimit-Daily-Remaining")).toBe("9979");
     expect(sql).toHaveBeenCalledWith(expect.stringContaining("developer_api_usage_events"), expect.any(Array));
+    expect(sql).toHaveBeenCalledWith(expect.stringContaining("developer_api_operator_notifications"), expect.arrayContaining(["first_use", "7"]));
   });
 
   it("returns 429 after the registered minute allowance", async () => {
     const { res, state, headers } = response();
+    const sql = sqlClient(61, 61);
     const access = await authoriseDeveloperApiRequest(
       request({ host: "regactions.com", "x-api-key": "ra_live_example" }),
       res,
       "/api/test",
-      { sql: sqlClient(61, 61), now: new Date("2026-09-09T10:00:12.000Z") },
+      { sql, now: new Date("2026-09-09T10:00:12.000Z") },
     );
     expect(access).toBeNull();
     expect(state.status).toBe(429);
     expect(state.body).toMatchObject({ error: "rate_limit_exceeded" });
     expect(headers.get("Retry-After")).toBe("48");
+    expect(sql).toHaveBeenCalledWith(expect.stringContaining("developer_api_operator_notifications"), expect.arrayContaining(["rate_limited", "7:2026-09-09T10"]));
   });
 });
 

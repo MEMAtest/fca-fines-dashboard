@@ -32,7 +32,10 @@ async function notifyTeam(applicationId: number, application: z.infer<typeof app
     region: process.env.AWS_SES_REGION?.trim() || "eu-west-2",
     credentials: { accessKeyId, secretAccessKey },
   });
-  const contactEmail = process.env.CONTACT_EMAIL?.trim() || "contact@memaconsultants.com";
+  const contactEmail = process.env.API_OPERATIONS_EMAIL?.trim()
+    || process.env.OPS_ALERT_EMAIL?.trim()
+    || process.env.CONTACT_EMAIL?.trim()
+    || "contact@memaconsultants.com";
   const fromEmail = process.env.SES_FROM_EMAIL?.trim() || "alerts@memaconsultants.com";
   const text = [
     `New RegActions API application #${applicationId}`,

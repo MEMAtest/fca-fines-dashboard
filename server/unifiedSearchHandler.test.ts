@@ -7,6 +7,7 @@ vi.mock("postgres", () => ({
 }));
 vi.mock("./db.js", () => ({
   resolveConnectionString: () => "postgres://test.invalid/regactions",
+  buildServerlessPostgresOptions: () => ({ max: 1 }),
 }));
 
 import handler from "../api/site/unified/search.js";

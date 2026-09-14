@@ -1,6 +1,13 @@
 import { createHash, createHmac } from "node:crypto";
 import type { VercelRequest, VercelResponse } from "@vercel/node";
 import { getSqlClient, type SqlClient } from "../db.js";
+import {
+  escapeDeveloperApiHtml,
+  notifyDeveloperApiOperator,
+  utcDayKey,
+  utcHourKey,
+  type DeveloperApiNotification,
+} from "./developerApiNotifications.js";
 
 export const DEFAULT_API_MINUTE_LIMIT = 60;
 export const DEFAULT_API_DAILY_LIMIT = 10_000;
@@ -22,6 +29,20 @@ export interface DeveloperApiAccess {
 interface AccessOptions {
   sql?: SqlClient;
   now?: Date;
+}
+
+async function alertOperator(sql: SqlClient, notification: DeveloperApiNotification) {
+  try {
+    await notifyDeveloperApiOperator(sql, notification);
+  } catch (error) {
+    console.warn("Developer API alert could not be recorded", notification.kind, error instanceof Error ? error.message : error);
+  }
+}
+
+function operatorMessage(title: string, lines: string[]) {
+  const text = [title, "", ...lines, "", "Open https://regactions.com/ops for the protected usage record."].join("\n");
+  const html = `<div style="font-family:Arial,sans-serif;max-width:640px;color:#102536"><h1>${escapeDeveloperApiHtml(title)}</h1>${lines.map((line) => `<p>${escapeDeveloperApiHtml(line)}</p>`).join("")}<p><a href="https://regactions.com/ops">Open the protected operations dashboard</a></p></div>`;
+  return { text, html };
 }
 
 const WEBSITE_ROUTE = Symbol.for("regactions.developer-api.website-route");
@@ -142,8 +163,8 @@ export async function authoriseDeveloperApiRequest(
   const keyPrefix = apiKey.slice(0, 16);
   const rows = await sql(
     `SELECT k.id AS api_key_id, k.client_id, k.status AS key_status,
-            k.minute_limit, k.daily_limit, k.expires_at,
-            c.status AS client_status
+            k.minute_limit, k.daily_limit, k.expires_at, k.last_used_at, k.label,
+            c.status AS client_status, c.organisation_name
        FROM developer_api_keys k
        JOIN developer_api_clients c ON c.id = k.client_id
       WHERE k.key_hash = $1
@@ -153,6 +174,29 @@ export async function authoriseDeveloperApiRequest(
   const row = rows[0];
   if (!row) {
     await logUsage(sql, req, route, "invalid_key", { keyPrefix });
+    const fingerprint = developerApiNetworkFingerprint(req);
+    if (fingerprint) {
+      const attempts = await sql(
+        `SELECT COUNT(*)::int AS count FROM developer_api_usage_events
+         WHERE outcome = 'invalid_key' AND network_fingerprint = $1
+           AND occurred_at >= $2::timestamptz - INTERVAL '15 minutes'`,
+        [fingerprint, now.toISOString()],
+      );
+      const attemptCount = Number(attempts[0]?.count ?? 0);
+      if (attemptCount >= 10) {
+        const message = operatorMessage("RegActions API: invalid-key spike", [
+          `${attemptCount} invalid-key attempts were recorded from one network during the last 15 minutes.`,
+          `Latest route: ${route}`,
+          `Observed: ${now.toISOString()}`,
+          "No raw API key or network address has been retained.",
+        ]);
+        await alertOperator(sql, {
+          kind: "invalid_key_spike", dedupeKey: `${fingerprint}:${utcHourKey(now)}`,
+          subject: "RegActions API: invalid-key spike", ...message,
+          detail: { attemptCount, route, observedAt: now.toISOString() },
+        });
+      }
+    }
     registrationRequired(res, "invalid_api_key", "The supplied RegActions API key is not valid.");
     return null;
   }
@@ -162,12 +206,35 @@ export async function authoriseDeveloperApiRequest(
   const identifiers = { apiKeyId, clientId, keyPrefix };
   if (row.client_status !== "active") {
     await logUsage(sql, req, route, "suspended_client", identifiers);
+    const message = operatorMessage("RegActions API: suspended client attempted access", [
+      `Organisation: ${String(row.organisation_name)}`,
+      `Key: ${String(row.label)} (${keyPrefix})`,
+      `Route: ${route}`,
+      `Observed: ${now.toISOString()}`,
+    ]);
+    await alertOperator(sql, {
+      kind: "suspended_client", dedupeKey: `${apiKeyId}:${utcDayKey(now)}`,
+      subject: "RegActions API: suspended client attempted access", ...message,
+      apiKeyId, clientId, detail: { route, observedAt: now.toISOString() },
+    });
     registrationRequired(res, "client_suspended", "This RegActions API registration is not active.", 403);
     return null;
   }
   const expiresAt = row.expires_at ? new Date(String(row.expires_at)) : null;
   if (row.key_status !== "active" || (expiresAt && expiresAt <= now)) {
     await logUsage(sql, req, route, "expired_key", identifiers);
+    const message = operatorMessage("RegActions API: inactive key attempted access", [
+      `Organisation: ${String(row.organisation_name)}`,
+      `Key: ${String(row.label)} (${keyPrefix})`,
+      `Key status: ${String(row.key_status)}`,
+      `Route: ${route}`,
+      `Observed: ${now.toISOString()}`,
+    ]);
+    await alertOperator(sql, {
+      kind: "expired_key", dedupeKey: `${apiKeyId}:${utcDayKey(now)}`,
+      subject: "RegActions API: inactive key attempted access", ...message,
+      apiKeyId, clientId, detail: { route, keyStatus: row.key_status, observedAt: now.toISOString() },
+    });
     registrationRequired(res, "api_key_expired", "This RegActions API key has expired or been revoked.", 403);
     return null;
   }
@@ -203,6 +270,19 @@ export async function authoriseDeveloperApiRequest(
 
   if (minuteCount > minuteLimit || dayCount > dailyLimit) {
     await logUsage(sql, req, route, "rate_limited", identifiers);
+    const message = operatorMessage("RegActions API: rate limit reached", [
+      `Organisation: ${String(row.organisation_name)}`,
+      `Key: ${String(row.label)} (${keyPrefix})`,
+      `Minute usage: ${minuteCount}/${minuteLimit}`,
+      `Daily usage: ${dayCount}/${dailyLimit}`,
+      `Route: ${route}`,
+      `Observed: ${now.toISOString()}`,
+    ]);
+    await alertOperator(sql, {
+      kind: "rate_limited", dedupeKey: `${apiKeyId}:${utcHourKey(now)}`,
+      subject: "RegActions API: rate limit reached", ...message,
+      apiKeyId, clientId, detail: { route, minuteCount, minuteLimit, dayCount, dailyLimit, observedAt: now.toISOString() },
+    });
     res.setHeader("Retry-After", String(minuteCount > minuteLimit ? resetSeconds : 86_400));
     res.setHeader("Cache-Control", "no-store");
     res.status(429).json({
@@ -214,6 +294,19 @@ export async function authoriseDeveloperApiRequest(
 
   await sql("UPDATE developer_api_keys SET last_used_at = $2 WHERE id = $1", [apiKeyId, now.toISOString()]);
   await logUsage(sql, req, route, "allowed", identifiers);
+  if (!row.last_used_at) {
+    const message = operatorMessage("RegActions API: key used for the first time", [
+      `Organisation: ${String(row.organisation_name)}`,
+      `Key: ${String(row.label)} (${keyPrefix})`,
+      `First route: ${route}`,
+      `First use: ${now.toISOString()}`,
+    ]);
+    await alertOperator(sql, {
+      kind: "first_use", dedupeKey: String(apiKeyId),
+      subject: "RegActions API: key used for the first time", ...message,
+      apiKeyId, clientId, detail: { route, firstUsedAt: now.toISOString() },
+    });
+  }
   return { mode: "registered", apiKeyId, clientId, minuteRemaining, dailyRemaining };
 }
 
