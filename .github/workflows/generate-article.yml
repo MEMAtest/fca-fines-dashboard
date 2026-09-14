@@ -86,12 +86,16 @@ jobs:
         run: |
           git config user.name "RegActions Bot"
           git config user.email "bot@regactions.com"
-          git add -A src/data/blogArticles.ts scripts/data public
-          if [ "${{ steps.review.outcome }}" = "success" ]; then
-            git diff --staged --quiet || git commit -m "feat(blog): publish ${{ steps.article.outputs.slug }}"
-          else
-            git diff --staged --quiet || git commit -m "chore(blog): retain blocked draft ${{ steps.article.outputs.slug }}"
+
+          # A blocked review is retained by the upload step below, but must not
+          # become a main commit because Vercel deploys successful main pushes.
+          if [ "${{ steps.review.outcome }}" != "success" ]; then
+            echo "Editorial review blocked; retaining the draft without pushing to main."
+            exit 0
           fi
+
+          git add -A src/data/blogArticles.ts scripts/data public
+          git diff --staged --quiet || git commit -m "feat(blog): publish ${{ steps.article.outputs.slug }}"
 
           # A release can land on main while the editorial agents are running.
           # Rebase the immutable generated commit onto the latest main and retry
@@ -122,15 +126,6 @@ jobs:
             scripts/data/drafts/${{ steps.article.outputs.slug }}.json
             scripts/data/published/${{ steps.article.outputs.slug }}.json
             public/blog/charts/${{ steps.article.outputs.slug }}-*
-
-      - name: Trigger production deploy
-        if: steps.publish.outcome == 'success' && steps.publish_commit.outcome == 'success'
-        env:
-          VERCEL_DEPLOY_HOOK_URL: ${{ secrets.VERCEL_DEPLOY_HOOK_URL }}
-        run: |
-          if [ -n "$VERCEL_DEPLOY_HOOK_URL" ]; then
-            curl -fsS -X POST "$VERCEL_DEPLOY_HOOK_URL"
-          fi
 
       - name: Report blocked editorial review
         if: steps.review.outcome != 'success'
