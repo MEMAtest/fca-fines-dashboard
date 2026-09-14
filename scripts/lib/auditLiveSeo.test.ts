@@ -116,4 +116,40 @@ describe("live SEO sitemap loader", () => {
     ).rejects.toThrow("Rejected cross-origin sitemap child");
     expect(fetched).toBe(false);
   });
+
+  it("fails closed before any fetch when an index includes a cross-origin child", async () => {
+    const requested: string[] = [];
+    const fetcher: typeof fetch = async (input) => {
+      requested.push(String(input));
+      return new Response("should not fetch", { status: 200 });
+    };
+
+    await expect(
+      loadSitemapDocuments(
+        `<sitemapindex>
+          <sitemap><loc>https://regactions.com/valid.xml</loc></sitemap>
+          <sitemap><loc>https://evil.example/steal.xml</loc></sitemap>
+        </sitemapindex>`,
+        fetcher,
+      ),
+    ).rejects.toThrow("Rejected cross-origin sitemap child");
+    expect(requested).toEqual([]);
+  });
+
+  it("fails closed when sitemap-index nesting exceeds the finite limit", async () => {
+    const fetcher: typeof fetch = async (input) => {
+      const index = Number(new URL(String(input)).searchParams.get("index"));
+      return new Response(
+        `<sitemapindex><sitemap><loc>https://regactions.com/nested.xml?index=${index + 1}</loc></sitemap></sitemapindex>`,
+        { status: 200 },
+      );
+    };
+
+    await expect(
+      loadSitemapDocuments(
+        `<sitemapindex><sitemap><loc>https://regactions.com/nested.xml?index=0</loc></sitemap></sitemapindex>`,
+        fetcher,
+      ),
+    ).rejects.toThrow("Sitemap index nesting exceeds maximum depth");
+  });
 });

@@ -2,6 +2,8 @@ import { resolve } from "node:path";
 import { pathToFileURL } from "node:url";
 
 const baseUrl = (process.argv[2] || "https://regactions.com").replace(/\/$/, "");
+const MAX_SITEMAP_INDEX_DEPTH = 8;
+const MAX_SITEMAP_DOCUMENTS = 100;
 
 type CheckResult = {
   label: string;
@@ -84,24 +86,33 @@ export async function loadSitemapDocuments(
     }
   }
 
-  async function loadDocument(xml: string): Promise<string[]> {
+  async function loadDocument(xml: string, depth = 0): Promise<string[]> {
     if (!isSitemapIndex(xml)) {
       return [xml];
     }
 
-    const childUrls = [...new Set(xmlLocations(xml))].filter((url) => {
-      if (visitedUrls.has(url)) return false;
-      visitedUrls.add(url);
-      return true;
-    });
+    if (depth >= MAX_SITEMAP_INDEX_DEPTH) {
+      throw new Error(`Sitemap index nesting exceeds maximum depth (${MAX_SITEMAP_INDEX_DEPTH})`);
+    }
+
+    const childUrls = [...new Set(xmlLocations(xml))]
+      .filter((url) => !visitedUrls.has(url));
 
     if (childUrls.length === 0) {
       return [];
     }
 
+    if (visitedUrls.size + childUrls.length > MAX_SITEMAP_DOCUMENTS) {
+      throw new Error(`Sitemap index exceeds maximum documents (${MAX_SITEMAP_DOCUMENTS})`);
+    }
+
+    // Validate every child before beginning any fetch, so an untrusted index
+    // cannot cause even a partial cross-origin crawl.
+    childUrls.forEach(assertSameOrigin);
+    childUrls.forEach((url) => visitedUrls.add(url));
+
     const documents = await Promise.all(
       childUrls.map(async (url) => {
-        assertSameOrigin(url);
         let response: Response;
         try {
           response = await fetcher(url, {
@@ -116,7 +127,7 @@ export async function loadSitemapDocuments(
         if (!ok) {
           throw new Error(`Child sitemap fetch failed (${response.status}): ${url}`);
         }
-        return loadDocument(await response.text());
+        return loadDocument(await response.text(), depth + 1);
       }),
     );
 
