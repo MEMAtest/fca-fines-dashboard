@@ -144,9 +144,13 @@ test("regulator comparator applies a new regulator and year", async ({ page }) =
   await expect(page.getByLabel("Comparator")).toBeVisible({ timeout: 30_000 });
   await page.getByLabel("Comparator").selectOption("JFSC");
   await expect(page.getByLabel("Comparator")).toHaveValue("JFSC");
-  await page.getByLabel("Year").selectOption("2025");
-  await expect(page.getByRole("status", { name: /Comparison scope/i })).toContainText("2025");
-  await expect(page.getByRole("heading", { name: "JFSC" })).toBeVisible();
+  const regulatorComparator = page.locator("section.workspace-card").filter({
+    has: page.getByRole("heading", { name: /Compare .* with another regulator/i }),
+  });
+  await expect(regulatorComparator).toBeVisible();
+  await regulatorComparator.getByLabel("Year").selectOption("2025");
+  await expect(regulatorComparator.getByRole("status")).toContainText("2025");
+  await expect(page.getByRole("heading", { name: "JFSC", exact: true })).toBeVisible();
   await saveScreenshot(page, "regulator-comparison");
 });
 
