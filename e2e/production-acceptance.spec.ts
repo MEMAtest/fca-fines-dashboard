@@ -150,7 +150,7 @@ test("regulator comparator applies a new regulator and year", async ({ page }) =
   await expect(regulatorComparator).toBeVisible();
   await regulatorComparator.getByLabel("Year").selectOption("2025");
   await expect(regulatorComparator.getByRole("status")).toContainText("2025");
-  await expect(page.getByRole("heading", { name: "JFSC" })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "JFSC", exact: true })).toBeVisible();
   await saveScreenshot(page, "regulator-comparison");
 });
 
