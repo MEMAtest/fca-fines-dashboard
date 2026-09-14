@@ -1,0 +1,25 @@
+name: Submit production sitemap to Search Console
+
+on:
+  workflow_dispatch: {}
+
+permissions:
+  contents: read
+
+jobs:
+  submit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: Submit and verify production sitemap
+        env:
+          SC_PROPERTY: ${{ secrets.SC_PROPERTY }}
+          SC_CREDENTIALS_JSON: ${{ secrets.SC_CREDENTIALS_JSON }}
+          SITEMAP_URL: https://regactions.com/sitemap.xml
+        run: npm run seo:submit:sitemap

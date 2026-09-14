@@ -36,8 +36,10 @@ export interface SearchConsoleQueryBody {
   }>;
 }
 
-const SEARCH_CONSOLE_SCOPE =
+export const SEARCH_CONSOLE_SCOPE_READONLY =
   "https://www.googleapis.com/auth/webmasters.readonly";
+export const SEARCH_CONSOLE_SCOPE_WEBMASTERS =
+  "https://www.googleapis.com/auth/webmasters";
 const TOKEN_URL = "https://oauth2.googleapis.com/token";
 
 function encode(value: string | Buffer) {
@@ -46,13 +48,14 @@ function encode(value: string | Buffer) {
 
 export async function accessToken(
   credentials: SearchConsoleCredentials,
+  scope = SEARCH_CONSOLE_SCOPE_READONLY,
 ): Promise<string> {
   const now = Math.floor(Date.now() / 1000);
   const header = encode(JSON.stringify({ alg: "RS256", typ: "JWT" }));
   const claims = encode(
     JSON.stringify({
       iss: credentials.client_email,
-      scope: SEARCH_CONSOLE_SCOPE,
+      scope,
       aud: TOKEN_URL,
       iat: now,
       exp: now + 3600,
@@ -103,8 +106,10 @@ export async function query(
   return payload.rows ?? [];
 }
 
-export function readCredentialsFromEnv(): SearchConsoleCredentials {
-  const raw = process.env.SC_CREDENTIALS_JSON?.trim();
+export function readCredentialsFromEnv(
+  env: NodeJS.ProcessEnv = process.env,
+): SearchConsoleCredentials {
+  const raw = env.SC_CREDENTIALS_JSON?.trim();
   if (!raw) throw new Error("SC_CREDENTIALS_JSON is required");
   const parsed = JSON.parse(raw) as SearchConsoleCredentials;
   if (!parsed.client_email || !parsed.private_key) {
