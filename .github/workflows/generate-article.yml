@@ -82,6 +82,7 @@ jobs:
         run: npx tsx scripts/approve-article.ts "${{ steps.article.outputs.slug }}"
 
       - name: Commit editorial artifact
+        id: publish_commit
         run: |
           git config user.name "RegActions Bot"
           git config user.email "bot@regactions.com"
@@ -91,10 +92,39 @@ jobs:
           else
             git diff --staged --quiet || git commit -m "chore(blog): retain blocked draft ${{ steps.article.outputs.slug }}"
           fi
-          git push
+
+          # A release can land on main while the editorial agents are running.
+          # Rebase the immutable generated commit onto the latest main and retry
+          # a small, bounded number of times; never overwrite another release.
+          for attempt in 1 2 3; do
+            git fetch origin main
+            if ! git rebase origin/main; then
+              git rebase --abort || true
+              echo "Unable to rebase editorial artifact onto origin/main."
+              exit 1
+            fi
+            if git push origin HEAD:main; then
+              echo "Editorial artifact pushed on attempt ${attempt}."
+              exit 0
+            fi
+            echo "main advanced during push attempt ${attempt}; retrying."
+          done
+          echo "Editorial artifact could not be pushed after 3 attempts."
+          exit 1
+
+      - name: Retain generated editorial artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: editorial-${{ github.run_id }}-${{ github.run_attempt }}
+          if-no-files-found: ignore
+          path: |
+            scripts/data/drafts/${{ steps.article.outputs.slug }}.json
+            scripts/data/published/${{ steps.article.outputs.slug }}.json
+            public/blog/charts/${{ steps.article.outputs.slug }}-*
 
       - name: Trigger production deploy
-        if: steps.publish.outcome == 'success'
+        if: steps.publish.outcome == 'success' && steps.publish_commit.outcome == 'success'
         env:
           VERCEL_DEPLOY_HOOK_URL: ${{ secrets.VERCEL_DEPLOY_HOOK_URL }}
         run: |
