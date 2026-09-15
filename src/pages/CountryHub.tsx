@@ -175,7 +175,7 @@ function DomainBar({ label, weightPct, risk, explanation, contribution, source }
       <span className="cx-domain__label">
         {label}{" "}
         {unavailable
-          ? <span className="cx-domain__wt cx-domain__wt--none">not available &middot; weights rebalanced</span>
+          ? <span className="cx-domain__wt cx-domain__wt--none">not available &mdash; remaining weights rebalanced</span>
           : <span className="cx-domain__wt">{weightPct}%</span>}
         {explanation && <CountryRiskEvidencePopover compact label={label} description={explanation} value={risk === null ? null : `${risk.toFixed(1)} / 10`} weight={`${weightPct}%`} contribution={contribution === null || contribution === undefined ? null : `${contribution.toFixed(1)} / 10`} source={source} />}
       </span>
@@ -806,7 +806,7 @@ export function CountryHub() {
                     <div>
                       <span className="cx-howscore__label">{pillar.label}</span>
                       <span className="cx-howscore__weight">
-                        {pillar.score === null ? "Not available · weights rebalanced" : `${Math.round(pillar.appliedWeight * 100)}% of the score`}
+                        {pillar.score === null ? "Not available — remaining weights rebalanced" : `${Math.round(pillar.appliedWeight * 100)}% of the score`}
                       </span>
                       <p className="cx-howscore__plain">{COUNTRY_RISK_V3_PILLAR_PLAIN[pillar.key]}</p>
                     </div>
