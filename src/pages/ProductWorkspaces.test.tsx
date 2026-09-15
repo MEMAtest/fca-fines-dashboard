@@ -193,6 +193,8 @@ describe("product workspaces", () => {
     expect(screen.getByText("2025 vs 2024")).toBeInTheDocument();
     expect(screen.getByRole("heading", { name: /What matters now/i })).toBeInTheDocument();
     expect(screen.getByRole("heading", { name: /Top breach themes/i })).toBeInTheDocument();
+    expect(screen.getAllByLabelText("Disclosed fine: £12m")[0]).toHaveClass("workspace-fine--disclosed");
+    expect(screen.getAllByLabelText("Disclosed fine: £4m")[0]).toHaveClass("workspace-fine--disclosed");
   });
 
   it("renders a regulator-scoped comparison deep link with its canonical path", () => {

@@ -260,6 +260,33 @@
 .workspace-table tbody tr:hover { background: #f7faff; }
 .workspace-table tbody tr:last-child td { border-bottom: 0; }
 .workspace-table strong { color: var(--ra-ink); }
+.workspace-fine {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  white-space: nowrap;
+}
+.workspace-fine--disclosed {
+  padding: 3px 7px;
+  border: 1px solid rgba(15, 132, 99, .16);
+  border-radius: 999px;
+  background: #edf8f4;
+  color: #096b52;
+  font-weight: 750;
+}
+.workspace-fine--disclosed::before {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: #0f8463;
+  content: "";
+  flex: 0 0 auto;
+}
+.workspace-fine--undisclosed,
+.workspace-fine--review {
+  color: var(--ra-text-secondary);
+  font-weight: 600;
+}
 .workspace-tag { display: inline-flex; padding: 3px 6px; border-radius: 5px; background: #ecf3ff; color: var(--ra-accent-text); font-size: 9px; font-weight: 650; }
 
 .workspace-bars { display: grid; gap: 9px; }

@@ -19,6 +19,7 @@ import {
   TrendingUp,
 } from "lucide-react";
 import { ActionDrawer } from "../components/ActionDrawer.js";
+import { FineAmount } from "../components/FineAmount.js";
 import { ProductWorkspaceShell } from "../components/ProductWorkspaceShell.js";
 import RegulatorMark from "../components/RegulatorMark.js";
 import {
@@ -68,7 +69,7 @@ function ZoneHeader({ index, title }: { index: string; title: string }) {
 function RegulatorTable({ records, onOpen, limit = 8 }: { records: FineRecord[]; onOpen: (record: FineRecord) => void; limit?: number }) {
   return <table className="workspace-table"><thead><tr><th>Date</th><th>Firm / individual</th><th>Theme</th><th>Breach type</th><th>Fine</th></tr></thead><tbody>{records.slice(0, limit).map((record) => {
     const casePath = getFcaFineCasePath(record);
-  return <tr key={`${record.id ?? record.fine_reference}-${record.date_issued}`} onClick={() => onOpen(record)} tabIndex={0} onKeyDown={(event) => { if (event.key === "Enter") onOpen(record); }}><td>{formatDate(record.date_issued)}</td><td><strong>{record.firm_individual}</strong>{casePath ? <> <Link to={casePath} onClick={(event) => event.stopPropagation()} aria-label={`Open ${record.firm_individual} FCA fine case`}>Case page</Link></> : null}</td><td><span className="workspace-tag">{formatBreachCategory(getRecordThemes(record)[0] ?? "")}</span></td><td>{record.breach_type ? formatBreachCategory(record.breach_type) : "Not classified"}</td><td><strong>{record.requires_amount_review ? "Amount under review" : record.amount_disclosed === false ? "Not disclosed" : formatWorkspaceAmount(record.amount)}</strong></td></tr>;
+  return <tr key={`${record.id ?? record.fine_reference}-${record.date_issued}`} onClick={() => onOpen(record)} tabIndex={0} onKeyDown={(event) => { if (event.key === "Enter") onOpen(record); }}><td>{formatDate(record.date_issued)}</td><td><strong>{record.firm_individual}</strong>{casePath ? <> <Link to={casePath} onClick={(event) => event.stopPropagation()} aria-label={`Open ${record.firm_individual} FCA fine case`}>Case page</Link></> : null}</td><td><span className="workspace-tag">{formatBreachCategory(getRecordThemes(record)[0] ?? "")}</span></td><td>{record.breach_type ? formatBreachCategory(record.breach_type) : "Not classified"}</td><td><FineAmount record={record} /></td></tr>;
   })}</tbody></table>;
 }
 

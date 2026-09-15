@@ -24,6 +24,7 @@ import {
   Sparkles,
 } from "lucide-react";
 import { ActionDrawer } from "../components/ActionDrawer.js";
+import { FineAmount } from "../components/FineAmount.js";
 import { ProductWorkspaceShell } from "../components/ProductWorkspaceShell.js";
 import { LIVE_REGULATOR_NAV_ITEMS } from "../data/regulatorCoverage.js";
 import { useSEO } from "../hooks/useSEO.js";
@@ -132,12 +133,6 @@ function EnforcementRow({
   const { action, theme } = splitBreachCategories(record.breach_categories);
   const casePath = getFcaFineCasePath(record);
   const sourceUrl = record.official_publication_url || record.final_notice_url || record.source_url || null;
-  const outcome = record.requires_amount_review
-    ? "Under review"
-    : record.amount_disclosed === false
-      ? "Not disclosed"
-      : formatWorkspaceAmount(record.amount);
-
   return (
     <>
       <tr
@@ -159,7 +154,7 @@ function EnforcementRow({
         <td>{action ? formatBreachCategory(action) : "—"}</td>
         <td><span className="workspace-tag">{record.regulator}</span></td>
         <td>{theme ? formatBreachCategory(theme) : "—"}</td>
-        <td><strong>{outcome}</strong></td>
+        <td><FineAmount record={record} /></td>
         <td className="workspace-table__date">{formatDate(record.date_issued)}</td>
       </tr>
       {expanded && (
@@ -251,7 +246,7 @@ function RecordTable({ records, onOpen, limit = 8 }: { records: FineRecord[]; on
             <td><strong>{displayFirmName(record.firm_individual)}</strong>{getFcaFineCasePath(record) ? <> <Link to={getFcaFineCasePath(record)!} onClick={(event) => event.stopPropagation()} aria-label={`Open ${record.firm_individual} FCA fine case`}>Case page</Link></> : null}</td>
             <td><span className="workspace-tag">{record.regulator}</span></td>
             <td>{formatBreachCategory(getRecordThemes(record)[0] ?? "")}</td>
-            <td><strong>{record.requires_amount_review ? "Amount under review" : record.amount_disclosed === false ? "Not disclosed" : formatWorkspaceAmount(record.amount)}</strong></td>
+            <td><FineAmount record={record} /></td>
           </tr>
         ))}
       </tbody>
