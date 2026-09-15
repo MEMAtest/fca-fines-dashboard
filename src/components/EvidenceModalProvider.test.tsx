@@ -92,6 +92,20 @@ describe("EvidenceModalProvider", () => {
     );
   });
 
+  it("does not render a full notice narrative as a breach-theme badge", () => {
+    const narrative = "Breach of paragraph 7.21 of the Guidelines on Technology Risk Management; failure to implement effective measures and procedures across the complete control framework.";
+    renderEvidence({
+      ...verifiedEvidence,
+      breachType: narrative,
+      categories: ["SUPERVISORY_SANCTION"],
+    });
+
+    fireEvent.click(screen.getByRole("button", { name: "Open Alpha evidence" }));
+
+    expect(screen.queryByText(narrative)).not.toBeInTheDocument();
+    expect(screen.getByLabelText("Breach themes")).toHaveTextContent("Supervisory Sanction");
+  });
+
   it("closes with Escape and restores focus to the trigger", async () => {
     renderEvidence();
     const trigger = screen.getByRole("button", { name: "Open Alpha evidence" });
