@@ -1478,9 +1478,16 @@
 
 @media (max-width: 1024px) {
   /* Below the hero's two-column split the globe would dominate the fold. */
+  .ra-hero__side .globe-container {
+    height: auto;
+    grid-template-rows: auto auto;
+  }
+
   .ra-hero__side .globe-legend {
     position: static;
-    margin-top: 0.6rem;
+    width: max-content;
+    max-width: 100%;
+    margin: 0.75rem auto 0;
   }
 }
 
@@ -1512,6 +1519,23 @@
 
 /* Below 640 the .ra-* sections drop to a 1.25rem gutter; match them. */
 @media (max-width: 640px) {
+  .ra-hero__inner {
+    gap: 1.5rem;
+    padding-top: 1.25rem;
+  }
+
+  .ra-hero__side .globe-container {
+    height: auto;
+  }
+
+  .ra-hero__side .globe-container canvas {
+    width: min(100%, 330px);
+  }
+
+  .ra-hero__side .globe-legend {
+    font-size: 0.72rem;
+  }
+
   .homepage-faq__container,
   .homepage-contact__container {
     padding: 2.4rem 1.25rem;
