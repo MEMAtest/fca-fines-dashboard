@@ -158,5 +158,15 @@
     "qualityScore": 100,
     "qualityPassed": true,
     "wordCount": 1319
+  },
+  {
+    "timestamp": "2026-09-16T08:13:45.973Z",
+    "topic": "Cyber and Operational Resilience: Enforcement Actions Rising",
+    "slug": "cyber-operational-resilience-enforcement",
+    "track": "evergreen-thematic",
+    "outcome": "draft_saved",
+    "qualityScore": 100,
+    "qualityPassed": true,
+    "wordCount": 1134
   }
 ]
