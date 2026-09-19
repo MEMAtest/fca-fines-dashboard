@@ -1168,7 +1168,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         WHERE
           (COALESCE(array_length($19::text[], 1), 0) = 0 OR concept_match_score > 0)
           AND (
-          regulator_hint_score > 0
+          concept_match_score > 0
+          OR regulator_hint_score > 0
           OR firm_match_score > 0
           OR firm_token_match_score > 0
           OR fuzzy_firm_match_score > 0

@@ -240,8 +240,7 @@ export async function listBreachCategories(): Promise<CategorySummary[]> {
     SELECT COUNT(*)::int AS fine_count,
            COALESCE(SUM(trusted_amount_gbp), 0)::float8 AS total_amount
     FROM public.all_regulatory_fines_trusted
-    WHERE upper(regulator) = 'FCA'
-      AND (
+    WHERE (
         COALESCE(summary, '') ILIKE ANY($1::text[])
         OR COALESCE(breach_type, '') ILIKE ANY($1::text[])
         OR COALESCE(breach_categories::text, '') ILIKE ANY($1::text[])
@@ -671,6 +670,7 @@ export async function getBreachDetailsBySlug(
       )`;
   const categoryParams = [isCyberConcept ? cyberPatterns : categoryName];
   const amountWhere = isCyberConcept ? "" : "AND trusted_amount_gbp > 0";
+  const regulatorWhere = isCyberConcept ? "" : "upper(regulator) = 'FCA' AND";
 
   const summaryRows = (await sql(
     `SELECT
@@ -680,8 +680,8 @@ export async function getBreachDetailsBySlug(
       MIN(date_issued)::text AS earliest_date,
       MAX(date_issued)::text AS latest_date
     FROM public.all_regulatory_fines_trusted
-    WHERE upper(regulator) = 'FCA'
-      ${amountWhere}
+    WHERE ${regulatorWhere}
+      1 = 1 ${amountWhere}
       AND ${categoryWhere}`,
     categoryParams,
   )) as any[];
@@ -699,8 +699,8 @@ export async function getBreachDetailsBySlug(
         ORDER BY date_issued DESC
       ))[1] AS case_source_url
     FROM public.all_regulatory_fines_trusted
-    WHERE upper(regulator) = 'FCA'
-      ${amountWhere}
+    WHERE ${regulatorWhere}
+      1 = 1 ${amountWhere}
       AND ${categoryWhere}
     GROUP BY firm_individual
     ORDER BY total_amount DESC, fine_count DESC, firm_individual ASC
@@ -724,8 +724,8 @@ export async function getBreachDetailsBySlug(
             duplicate_count, created_at,
             COALESCE(NULLIF(notice_url, ''), NULLIF(source_resolved_url, '')) AS case_source_url
       FROM public.all_regulatory_fines_trusted
-      WHERE upper(regulator) = 'FCA'
-        ${amountWhere}
+      WHERE ${regulatorWhere}
+        1 = 1 ${amountWhere}
         AND ${categoryWhere}
       ORDER BY trusted_amount_gbp DESC, date_issued DESC
       LIMIT $2`,
@@ -740,14 +740,18 @@ export async function getBreachDetailsBySlug(
   };
 
   const topFirms: FirmSummary[] = topFirmRows.map((row: any) => ({
-    name: normaliseFcaFineEntityName(
-      row.firm_individual,
-      row.case_source_url ? String(row.case_source_url) : null,
-    ),
-    slug: firmSlug(normaliseFcaFineEntityName(
-      row.firm_individual,
-      row.case_source_url ? String(row.case_source_url) : null,
-    )),
+    name: isCyberConcept
+      ? String(row.firm_individual)
+      : normaliseFcaFineEntityName(
+          row.firm_individual,
+          row.case_source_url ? String(row.case_source_url) : null,
+        ),
+    slug: firmSlug(isCyberConcept
+      ? String(row.firm_individual)
+      : normaliseFcaFineEntityName(
+          row.firm_individual,
+          row.case_source_url ? String(row.case_source_url) : null,
+        )),
     fineCount: Number(row.fine_count) || 0,
     totalAmount: Number(row.total_amount) || 0,
     latestDate: row.latest_date ? String(row.latest_date) : null,

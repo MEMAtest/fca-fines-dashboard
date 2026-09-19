@@ -35,6 +35,7 @@
     "data-trust:assess-amounts": "node --import tsx/esm scripts/backfill-regulatory-amount-assessments.ts",
     "data-trust:check-sources": "node --import tsx/esm scripts/check-regulatory-source-evidence.ts",
     "data-trust:audit-enforcement": "node --import tsx/esm scripts/corrections/auditEnforcementDataQuality.ts",
+    "data-trust:refresh-concepts": "node --import tsx/esm scripts/refresh-enforcement-concepts.ts",
     "data-trust:validate-ingestion": "node --import tsx/esm scripts/corrections/validateIngestionSafetyConstraints.ts",
     "data-trust:remediate-nan": "node --import tsx/esm scripts/corrections/remediateLegacyNanAmounts.ts --",
     "data-trust:remediate-finra-legacy": "node --import tsx/esm scripts/corrections/remediateFinraLegacyRows.ts",

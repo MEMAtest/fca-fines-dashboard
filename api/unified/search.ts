@@ -155,18 +155,11 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     }
 
     if (q?.trim()) {
-      conditions.push(`(
-        firm_individual ILIKE $${paramIndex}
-        OR summary ILIKE $${paramIndex}
-        OR breach_type ILIKE $${paramIndex}
-        OR regulator ILIKE $${paramIndex}
-      )`);
-      params.push(`%${q.trim()}%`);
-      paramIndex++;
-
       // Concept searches require evidence in enforcement text. This prevents
       // entity names such as "Cyberstar" or "C5 Haven Cyber" from being
-      // promoted solely because they contain a cyber-looking token.
+      // promoted solely because they contain a cyber-looking token. Concept
+      // aliases are alternatives to the original phrase, so a search for
+      // "data breach" can also find a ransomware or ICT-risk action.
       const concept = resolveEnforcementConcept(q.trim());
       if (concept === CYBER_OPERATIONAL_RESILIENCE) {
         const conceptPatterns = CYBER_OPERATIONAL_RESILIENCE_ALIASES.map((alias) => `%${alias}%`);
@@ -176,6 +169,15 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
           OR breach_categories::text ILIKE ANY($${paramIndex}::text[])
         )`);
         params.push(conceptPatterns);
+        paramIndex++;
+      } else {
+        conditions.push(`(
+          firm_individual ILIKE $${paramIndex}
+          OR summary ILIKE $${paramIndex}
+          OR breach_type ILIKE $${paramIndex}
+          OR regulator ILIKE $${paramIndex}
+        )`);
+        params.push(`%${q.trim()}%`);
         paramIndex++;
       }
     }
@@ -227,16 +229,18 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
     const results = await sql.unsafe(query, params);
     const normalizedResults = results.map((row) => {
-      if (String(row.regulator || '').toUpperCase() !== 'FCA') return row;
-      const firm = normaliseFcaFineEntityName(
-        row.firm_individual,
-        row.notice_url ? String(row.notice_url) : null,
-      );
+      const isFca = String(row.regulator || '').toUpperCase() === 'FCA';
+      const firm = isFca
+        ? normaliseFcaFineEntityName(
+            row.firm_individual,
+            row.notice_url ? String(row.notice_url) : null,
+          )
+        : row.firm_individual;
       const caseId = row.canonical_case_id
         ? String(row.canonical_case_id).toLowerCase()
         : '';
       const casePath =
-        isValidFcaFineCaseId(caseId) &&
+        isFca && isValidFcaFineCaseId(caseId) &&
         Number(row.amount_gbp) > 0 &&
         row.requires_amount_review !== true
           ? buildFcaFineCasePath({

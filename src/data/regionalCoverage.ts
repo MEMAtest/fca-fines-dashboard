@@ -36,4 +36,3 @@ export function getRegionalCoverageSummary(region: RegulatorCoverage["region"]):
 }
 
 export const HONEST_REGIONAL_COVERAGE = (["Europe", "Latin America"] as const).map(getRegionalCoverageSummary);
-

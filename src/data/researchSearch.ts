@@ -8,7 +8,6 @@ export interface ResearchSearchHit<T extends BlogArticleMeta = BlogArticleMeta> 
   kind: ResearchMatchKind;
   matchReasons: string[];
 }
-
 const normalise = (value: string) => value.toLowerCase().replace(/[^a-z0-9]+/g, " ").trim();
 
 /** Weighted, deterministic research search. Title/keywords/category are the
@@ -49,4 +48,3 @@ export function searchResearchArticles<T extends BlogArticleMeta>(
     .filter((hit) => hit.score > 0)
     .sort((left, right) => right.score - left.score || right.article.dateISO.localeCompare(left.article.dateISO));
 }
-

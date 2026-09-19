@@ -11,11 +11,21 @@ export const CYBER_OPERATIONAL_RESILIENCE_ALIASES = [
   "data breach",
   "cyber incident",
   "ransomware",
+  "cybersecurity",
   "cybersecurity disclosure",
   "ict risk",
   "information security",
   "technology risk",
   "operational resilience",
+] as const;
+
+/** Short user phrases which resolve to the concept but are not used as loose
+ * evidence patterns. Keeping `cyber` out of the evidence list prevents names
+ * such as Cyberstar from becoming evidence by substring alone. */
+export const CYBER_OPERATIONAL_RESILIENCE_QUERY_ALIASES = [
+  ...CYBER_OPERATIONAL_RESILIENCE_ALIASES,
+  "cyber",
+  "ict",
 ] as const;
 
 export type EnforcementConcept = typeof CYBER_OPERATIONAL_RESILIENCE;
@@ -26,7 +36,7 @@ function normalise(value: string) {
 
 export function resolveEnforcementConcept(query: string): EnforcementConcept | null {
   const haystack = ` ${normalise(query)} `;
-  return CYBER_OPERATIONAL_RESILIENCE_ALIASES.some((alias) =>
+  return CYBER_OPERATIONAL_RESILIENCE_QUERY_ALIASES.some((alias) =>
     haystack.includes(` ${normalise(alias)} `),
   )
     ? CYBER_OPERATIONAL_RESILIENCE
@@ -46,13 +56,12 @@ export function conceptEvidenceReasons(input: {
     ["summary", input.summary],
   ] as const;
   const reasons = fields.flatMap(([field, value]) => {
-    const haystack = normalise(value ?? "");
+    const haystack = ` ${normalise(value ?? "")} `;
     return CYBER_OPERATIONAL_RESILIENCE_ALIASES.some((alias) =>
-      haystack.includes(normalise(alias)),
+      haystack.includes(` ${normalise(alias)} `),
     )
       ? [field]
       : [];
   });
   return Array.from(new Set(reasons));
 }
-

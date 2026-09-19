@@ -104,6 +104,7 @@ const REGULATOR_PALETTES: Record<string, RegulatorPalette> = {
   CIMA: { ink: "#7c2d12", surface: "#ffedd5", ring: "#fdba74" },
   BMA: { ink: "#1d4ed8", surface: "#dbeafe", ring: "#93c5fd" },
   CBN: { ink: "#166534", surface: "#dcfce7", ring: "#86efac" },
+  NGSEC: { ink: "#0f5132", surface: "#dcfce7", ring: "#86efac" },
   SPK: { ink: "#991b1b", surface: "#fee2e2", ring: "#fca5a5" },
   GHSEC: { ink: "#166534", surface: "#dcfce7", ring: "#86efac" },
   IOMFSA: { ink: "#1e3a8a", surface: "#dbeafe", ring: "#93c5fd" },
@@ -856,6 +857,15 @@ export const OFFICIAL_REGULATOR_LOGOS: Partial<
     approvedForDarkUi: true,
     approvedForPrint: true,
     lastReviewedAt: "2026-04-07",
+  },
+  NGSEC: {
+    assetPath: "/regulator-logos/ngsec.svg",
+    sourceUrl: "https://www.sec.gov.ng/",
+    sourceType: "local-source-mark",
+    backgroundMode: "transparent",
+    approvedForDarkUi: true,
+    approvedForPrint: true,
+    lastReviewedAt: "2026-09-19",
   },
 };
 

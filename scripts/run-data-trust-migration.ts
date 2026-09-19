@@ -48,6 +48,7 @@ async function main() {
     "migrations/20260825_uk_enforcement_entity_identity.sql",
     "migrations/20260825_ingestion_safety_v2.sql",
     "migrations/20260825_finra_legacy_row_backup.sql",
+    "migrations/20260919_enforcement_concept_classifications.sql",
   ].map((file) => path.resolve(process.cwd(), file));
 
   for (const migrationPath of migrationPaths) {

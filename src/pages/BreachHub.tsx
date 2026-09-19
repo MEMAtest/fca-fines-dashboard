@@ -70,6 +70,7 @@ export function BreachHub() {
   };
   const topPenalties = data?.topPenalties ?? [];
   const topFirms = data?.topFirms ?? [];
+  const isCyberConcept = slug === "cyber-operational-resilience";
 
   if (!slug) {
     return (
@@ -97,7 +98,9 @@ export function BreachHub() {
           <div className="hub-hero__actions">
             {category && (
               <Link
-                to={`/dashboard?year=0&breaches=${encodeURIComponent(category.name)}`}
+                to={isCyberConcept
+                  ? "/search?q=cyber"
+                  : `/dashboard?year=0&breaches=${encodeURIComponent(category.name)}`}
                 className="btn btn-primary"
               >
                 View in Dashboard
@@ -147,7 +150,9 @@ export function BreachHub() {
                       <td>
                         <Link
                           className="hub-link"
-                          to={`/dashboard?search=${encodeURIComponent(row.name)}&scope=firm&year=0&breaches=${encodeURIComponent(category.name)}`}
+                          to={isCyberConcept
+                            ? `/search?q=${encodeURIComponent(`${row.name} cyber`)}`
+                            : `/dashboard?search=${encodeURIComponent(row.name)}&scope=firm&year=0&breaches=${encodeURIComponent(category.name)}`}
                         >
                           {row.name}
                         </Link>

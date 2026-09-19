@@ -586,7 +586,6 @@ function expandThemePhrases(tokens: string[]) {
     tokens.includes('cyber')
     || tokens.includes('cybersecurity')
     || tokens.includes('ransomware')
-    || tokens.includes('breach')
     || tokens.includes('resilience')
     || (tokens.includes('data') && tokens.includes('breach'))
     || (tokens.includes('operational') && tokens.includes('resilience'))

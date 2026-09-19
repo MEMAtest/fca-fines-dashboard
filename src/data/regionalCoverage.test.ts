@@ -12,4 +12,3 @@ describe("honest regional coverage", () => {
     expect(getRegionalCoverageSummary("Latin America").gaps).toEqual(["Chile", "Mexico"]);
   });
 });
-

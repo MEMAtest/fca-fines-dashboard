@@ -557,6 +557,7 @@ export function Blog() {
   const filteredArticles = useMemo(() => {
     const searchHits = query ? searchResearchArticles(blogArticles, query) : [];
     const searchIds = new Set(searchHits.map((hit) => hit.article.id));
+    const searchHitById = new Map(searchHits.map((hit) => [hit.article.id, hit]));
     const filtered = blogArticles.filter((article) => {
       if (query && !searchIds.has(article.id)) return false;
       const corpus = articleCorpus(article);
@@ -569,18 +570,39 @@ export function Blog() {
       if (selectedType !== ALL_VALUE && inferContentType(article) !== selectedType) return false;
       return true;
     });
-    return filtered.sort(sortMode === "oldest" ? byOldestArticle : byNewestArticle);
+    return filtered.sort((left, right) => {
+      if (query) {
+        const leftHit = searchHitById.get(left.id);
+        const rightHit = searchHitById.get(right.id);
+        if (leftHit?.kind !== rightHit?.kind) return leftHit?.kind === "focused" ? -1 : 1;
+        if ((leftHit?.score ?? 0) !== (rightHit?.score ?? 0)) {
+          return (rightHit?.score ?? 0) - (leftHit?.score ?? 0);
+        }
+      }
+      return sortMode === "oldest" ? byOldestArticle(left, right) : byNewestArticle(left, right);
+    });
   }, [query, selectedMonth, selectedYear, selectedCategory, selectedRegulator, selectedType, sortMode]);
 
   const researchSearchHits = useMemo(
     () => (query ? searchResearchArticles(blogArticles, query) : []),
     [query],
   );
-  const focusedResearchCount = researchSearchHits.filter((hit) => hit.kind === "focused").length;
-  const relatedResearchCount = researchSearchHits.filter((hit) => hit.kind === "related").length;
+  const researchKindById = useMemo(
+    () => new Map(researchSearchHits.map((hit) => [hit.article.id, hit.kind])),
+    [researchSearchHits],
+  );
+  const focusedResearchCount = filteredArticles.filter(
+    (article) => researchKindById.get(article.id) === "focused",
+  ).length;
+  const relatedResearchCount = filteredArticles.filter(
+    (article) => researchKindById.get(article.id) === "related",
+  ).length;
 
-  const leadArticle = filteredArticles[0];
-  const gridArticles = filteredArticles.slice(1);
+  // Search results are an evidence list rather than a promotional feed. Keep
+  // every result in the labelled groups; the featured treatment is reserved
+  // for the normal browse view.
+  const leadArticle = query ? undefined : filteredArticles[0];
+  const gridArticles = query ? filteredArticles : filteredArticles.slice(1);
   const totalPages = Math.max(1, Math.ceil(gridArticles.length / ITEMS_PER_PAGE));
   const safePage = Math.min(currentPage, totalPages);
   const paginatedArticles = gridArticles.slice(
@@ -895,14 +917,31 @@ export function Blog() {
           </div>
 
           <div className={`blog-grid insights-grid insights-grid--${viewMode}`}>
-            {paginatedArticles.map((article, index) => (
-              <ArticleCard
-                key={article.id}
-                article={article}
-                index={index}
-                viewMode={viewMode}
-              />
-            ))}
+            {paginatedArticles.map((article, index) => {
+              const kind = query ? researchKindById.get(article.id) : undefined;
+              const previous = index > 0 && query
+                ? researchKindById.get(paginatedArticles[index - 1].id)
+                : undefined;
+              return (
+                <div className="insights-search-result" key={article.id}>
+                  {kind && kind !== previous && (
+                    <div className="insights-search-group-heading">
+                      <h3>{kind === "focused" ? "Focused analysis" : "Related mentions"}</h3>
+                      <p>
+                        {kind === "focused"
+                          ? "Direct title, topic or keyword matches."
+                          : "Useful context where the topic appears in the analysis."}
+                      </p>
+                    </div>
+                  )}
+                  <ArticleCard
+                    article={article}
+                    index={index}
+                    viewMode={viewMode}
+                  />
+                </div>
+              );
+            })}
           </div>
 
           {totalPages > 1 && (
