@@ -20,7 +20,10 @@ import {
 import { runScraper } from "./lib/runScraper.js";
 
 const FMANZ_BASE_URL = "https://www.fma.govt.nz";
-const FMANZ_LIST_URL = "https://www.fma.govt.nz/about-us/enforcement/cases/0/";
+// The final path segment is the official archive page-size selector. The
+// legacy `/0/` route can return a partial/stale slice; requesting the bounded
+// full archive prevents the latest-date regression seen in scheduled runs.
+export const FMANZ_LIST_URL = "https://www.fma.govt.nz/about-us/enforcement/cases/0/299/";
 const execFileAsync = promisify(execFile);
 
 export interface FmanzListEntry {

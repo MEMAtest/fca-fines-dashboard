@@ -4,6 +4,7 @@ import { fileURLToPath } from "node:url";
 import XLSX from "xlsx";
 import {
   buildEuFineRecord,
+  getCliFlags,
   makeAbsoluteUrl,
   normalizeWhitespace,
   parseScaledAmount,
@@ -349,23 +350,67 @@ export function buildFinraRecords(entries: FinraActionEntry[]) {
       breachCategories: categorizeFinraRecord(entry.documentType, summary),
       summary,
       finalNoticeUrl: entry.actionUrl,
-      sourceUrl: FINRA_EXPORT_URL,
+      sourceUrl: entry.actionUrl,
       rawPayload: entry,
     });
   });
 }
 
 export async function loadFinraLiveRecords() {
+  const flags = getCliFlags();
   const response = await fetch(FINRA_EXPORT_URL, {
     signal: AbortSignal.timeout(120_000),
+    headers: {
+      "User-Agent": process.env.FINRA_USER_AGENT || "RegActions official-source monitor research@memaconsultants.com",
+      Accept: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/octet-stream;q=0.9,*/*;q=0.8",
+    },
   });
-  if (!response.ok) {
+  if (response.ok) {
+    const entries = parseFinraExportWorkbook(Buffer.from(await response.arrayBuffer()));
+    console.log(`📊 FINRA official XLSX export yielded ${entries.length} respondent-level rows`);
+    return buildFinraRecords(entries);
+  }
+
+  if (![401, 403, 429].includes(response.status)) {
     throw new Error(`FINRA official XLSX export failed with HTTP ${response.status}.`);
   }
 
-  const entries = parseFinraExportWorkbook(Buffer.from(await response.arrayBuffer()));
-  console.log(`📊 FINRA official XLSX export yielded ${entries.length} respondent-level rows`);
-  return buildFinraRecords(entries);
+  console.warn(`⚠️ FINRA export returned HTTP ${response.status}; reconciling through the official disciplinary-actions archive.`);
+  const limit = flags.limit && flags.limit > 0 ? flags.limit : null;
+  const entries = new Map<string, FinraActionEntry>();
+  const headers = {
+    "User-Agent": process.env.FINRA_USER_AGENT || "RegActions official-source monitor research@memaconsultants.com",
+    Accept: "text/html,application/xhtml+xml",
+  };
+
+  for (const window of buildFinraMonthWindows()) {
+    const firstResponse = await fetch(window.url, { headers, signal: AbortSignal.timeout(60_000) });
+    if (!firstResponse.ok) {
+      throw new Error(`FINRA official archive failed with HTTP ${firstResponse.status} for ${window.label}.`);
+    }
+    const first = parseFinraArchiveHtml(await firstResponse.text(), window.url);
+    const pages = [first];
+    for (let page = 1; page < first.totalPages; page += 1) {
+      const pageUrl = new URL(window.url);
+      pageUrl.searchParams.set("page", String(page));
+      const pageResponse = await fetch(pageUrl, { headers, signal: AbortSignal.timeout(60_000) });
+      if (!pageResponse.ok) {
+        throw new Error(`FINRA official archive page failed with HTTP ${pageResponse.status} for ${window.label}.`);
+      }
+      pages.push(parseFinraArchiveHtml(await pageResponse.text(), pageUrl.toString()));
+    }
+    for (const parsed of pages) {
+      for (const entry of parsed.entries) {
+        entries.set(`${entry.caseNumber}::${entry.respondent}::${entry.actionUrl}`, entry);
+        if (limit && entries.size >= limit) break;
+      }
+      if (limit && entries.size >= limit) break;
+    }
+    if (limit && entries.size >= limit) break;
+  }
+
+  console.log(`📊 FINRA official HTML archive yielded ${entries.size} respondent-level rows`);
+  return buildFinraRecords([...entries.values()]);
 }
 
 export async function main() {

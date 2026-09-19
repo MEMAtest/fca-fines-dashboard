@@ -3,10 +3,11 @@ import { parseSearchParams, buildSearchParams } from './EnforcementSearch.js';
 
 describe('parseSearchParams', () => {
   it('parses a full URL search string', () => {
-    const params = new URLSearchParams('q=AML&regulator=SEC&country=US&year=2025&minAmount=1000&maxAmount=50000&currency=EUR&page=3');
+    const params = new URLSearchParams('q=AML&firmName=Example%20Bank&regulator=SEC&country=US&year=2025&minAmount=1000&maxAmount=50000&currency=EUR&page=3');
     const result = parseSearchParams(params);
     expect(result).toEqual({
       query: 'AML',
+      firmName: 'Example Bank',
       regulator: 'SEC',
       country: 'US',
       year: '2025',
@@ -21,6 +22,7 @@ describe('parseSearchParams', () => {
     const result = parseSearchParams(new URLSearchParams());
     expect(result).toEqual({
       query: '',
+      firmName: '',
       regulator: '',
       country: '',
       year: '',
@@ -50,7 +52,7 @@ describe('parseSearchParams', () => {
 describe('buildSearchParams', () => {
   it('only includes non-default values', () => {
     const params = buildSearchParams({
-      query: 'AML', regulator: '', country: '', year: '',
+      query: 'AML', firmName: '', regulator: '', country: '', year: '',
       minAmount: '', maxAmount: '', currency: 'GBP', page: 1,
     });
     expect(params.toString()).toBe('q=AML');
@@ -58,7 +60,7 @@ describe('buildSearchParams', () => {
 
   it('includes page when > 1', () => {
     const params = buildSearchParams({
-      query: 'AML', regulator: '', country: '', year: '',
+      query: 'AML', firmName: '', regulator: '', country: '', year: '',
       minAmount: '', maxAmount: '', currency: 'GBP', page: 3,
     });
     expect(params.get('page')).toBe('3');
@@ -66,9 +68,17 @@ describe('buildSearchParams', () => {
 
   it('includes currency only when EUR', () => {
     const params = buildSearchParams({
-      query: 'test', regulator: '', country: '', year: '',
+      query: 'test', firmName: '', regulator: '', country: '', year: '',
       minAmount: '', maxAmount: '', currency: 'EUR', page: 1,
     });
     expect(params.get('currency')).toBe('EUR');
+  });
+
+  it('preserves an explicit firm constraint for concept searches', () => {
+    const params = buildSearchParams({
+      query: 'cyber', firmName: 'Example Bank', regulator: '', country: '', year: '',
+      minAmount: '', maxAmount: '', currency: 'GBP', page: 1,
+    });
+    expect(params.toString()).toBe('q=cyber&firmName=Example+Bank');
   });
 });

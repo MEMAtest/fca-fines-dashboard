@@ -27,6 +27,61 @@ export interface TopicCluster {
 
 export const topicClusters: TopicCluster[] = [
   {
+    slug: "cyber-operational-resilience",
+    title: "Cyber and Operational Resilience",
+    eyebrow: "Cyber, data-breach and ICT risk",
+    seoTitle: "Cyber and Operational Resilience | Enforcement and Board Questions",
+    description:
+      "A source-led view of cyber incidents, data-breach disclosure, information security, ICT risk and operational-resilience enforcement.",
+    keywords:
+      "cyber enforcement, data breach enforcement, ransomware, ICT risk, information security, operational resilience, DORA",
+    summary:
+      "This cluster connects published analysis to source-linked enforcement evidence. It treats cyber and operational resilience as one control theme while preserving each regulator's original category and official notice.",
+    evidenceFocus: [
+      "Cyber-incident and data-breach disclosure duties.",
+      "Information security, technology risk and ICT third-party controls.",
+      "Operational-resilience governance, client-asset protection and outage response.",
+      "Official-source case evidence rather than entity-name keyword matches.",
+    ],
+    boardQuestions: [
+      "Could we evidence detection, escalation and regulator notification for a material cyber incident?",
+      "Which critical services and ICT dependencies have tested recovery tolerances?",
+      "Do board papers show control effectiveness, not only cyber spend and policy completion?",
+      "Where would a data-breach case expose a gap in third-party oversight or incident governance?",
+    ],
+    primaryArticles: [
+      {
+        title: "Cyber and Operational Resilience: Escalating Enforcement Actions",
+        slug: "cyber-operational-resilience-enforcement",
+        role: "Published source-led analysis",
+      },
+    ],
+    supportingLinks: [
+      {
+        label: "Cyber enforcement evidence",
+        href: "/breaches/cyber-operational-resilience",
+        description: "Review reconciled source-linked cases in the canonical cyber concept.",
+      },
+      {
+        label: "Search cyber actions",
+        href: "/search?q=data%20breach",
+        description: "Search cyber and operational-resilience enforcement evidence.",
+      },
+    ],
+    nextActions: [
+      {
+        label: "Open cyber evidence",
+        href: "/breaches/cyber-operational-resilience",
+        description: "Move from the analysis into the reconciled case set.",
+      },
+      {
+        label: "Build a board pack",
+        href: "/board-pack",
+        description: "Turn cyber cases into board questions and evidence prompts.",
+      },
+    ],
+  },
+  {
     slug: "fca-fines-2026",
     title: "FCA Fines 2026",
     eyebrow: "Monthly FCA enforcement",

@@ -382,12 +382,20 @@ async function collectCmvmSearchResults(query: string, limit: number | null) {
     }
 
     async function advancePage(page) {
+      const canAdvance = await page.evaluate(() => {
+        const nextButton = document.querySelector(
+          '#b2-b13-PaginationContainer button[aria-label*="seguinte"]',
+        );
+        return Boolean(nextButton && !nextButton.disabled && nextButton.getAttribute("aria-disabled") !== "true");
+      });
+      if (!canAdvance) return null;
+
       const responseTextPromise = waitForElasticResponse(page);
       await page.evaluate(() => {
         const nextButton = document.querySelector(
           '#b2-b13-PaginationContainer button[aria-label*="seguinte"]',
         );
-        if (nextButton) {
+        if (nextButton && !nextButton.disabled) {
           nextButton.click();
         }
       });
@@ -418,20 +426,13 @@ async function collectCmvmSearchResults(query: string, limit: number | null) {
         const payloads = [];
         payloads.push(await submitSearch(page, query));
 
-        const totalPages = await page.evaluate(() => {
-          return Math.max(
-            1,
-            ...[...document.querySelectorAll("#b2-b13-PaginationContainer button span")]
-              .map((node) => Number.parseInt((node.textContent || "").trim(), 10))
-              .filter((value) => Number.isFinite(value)),
-          );
-        });
-
-        for (let currentPage = 2; currentPage <= totalPages; currentPage += 1) {
-          payloads.push(await advancePage(page));
+        while (true) {
           if (limit && payloads.length * 10 >= limit) {
             break;
           }
+          const nextPayload = await advancePage(page);
+          if (!nextPayload) break;
+          payloads.push(nextPayload);
         }
 
         process.stdout.write(JSON.stringify(payloads));

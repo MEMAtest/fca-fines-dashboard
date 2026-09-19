@@ -56,22 +56,6 @@ export const BLOG_ARTICLE_INDEX: BlogArticleCard[] = [
     "dateISO": "2026-08-26"
   },
   {
-    "slug": "bafin-vs-fca-uk-german-firms",
-    "title": "BaFin vs FCA: What UK Firms with German Subsidiaries Need to Know",
-    "excerpt": "The FCA and BaFin enforce financial regulation in almost opposite ways. The FCA runs a low-volume, high-value, conduct-and-AML model with personal accountability built in. BaFin runs a high-volume, lower-value, disclosure-and-market-abuse model that is largely administrative. A UK firm that is FCA-ready is not automatically BaFin-ready — and for a German subsidiary, the risk profile inverts.",
-    "category": "Regional Benchmark",
-    "date": "August 2026",
-    "dateISO": "2026-08-25"
-  },
-  {
-    "slug": "crypto-firms-global-enforcement-mica-fca-mas",
-    "title": "Crypto Firms Under MiCA, FCA and MAS: What Enforcement Looks Like Now",
-    "excerpt": "If you read the headlines, crypto enforcement looks like nine-figure fines. Look at the three frameworks built specifically for crypto — the EU's MiCA, the FCA's registration regime, and MAS's licensing regime — and the picture is completely different. None of them is primarily a fining machine. All three are gatekeeping machines. For a crypto firm, the enforcement risk that should keep you up at night is not a penalty — it's losing, or never getting, permission to operate.",
-    "category": "Sector Analysis",
-    "date": "August 2026",
-    "dateISO": "2026-08-18"
-  },
-  {
     "slug": "enforcement-spotlight-2026-w34",
     "title": "Enforcement Spotlight: Individual Accountability and Fraud Prevention",
     "excerpt": "Recent regulatory actions highlight a persistent focus on individual accountability, fraud in opaque markets, and procedural enforcement across multiple jurisdictions.",
@@ -86,22 +70,6 @@ export const BLOG_ARTICLE_INDEX: BlogArticleCard[] = [
     "category": "Enforcement Analysis",
     "date": "12 August 2026",
     "dateISO": "2026-08-12"
-  },
-  {
-    "slug": "sanctions-enforcement-ofsi-ofac-eu",
-    "title": "OFSI, OFAC and EU Sanctions: A Side-by-Side Enforcement Map",
-    "excerpt": "Three regulators, three operating models. OFAC has the deepest enforcement history; OFSI has rebuilt its toolkit dramatically since 2022; the EU's enforcement architecture remains the most fragmented of the three. For any firm with cross-border activity, knowing how the three differ in scale, mechanics, and recent direction is no longer optional.",
-    "category": "Thematic Analysis",
-    "date": "August 2026",
-    "dateISO": "2026-08-11"
-  },
-  {
-    "slug": "h1-2026-enforcement-halftime",
-    "title": "H1 2026 FCA Enforcement Halftime: 10 Things We Learned",
-    "excerpt": "The FCA issued 9 monetary fines worth £16,842,723 in H1 2026 — up 41% in value over H1 2025 — but one action accounts for 77% of that total. Our halftime review extracts ten data-grounded lessons on where enforcement is concentrated, where the supervisory pipeline is building, and what H2 2026 is likely to bring.",
-    "category": "Trends Analysis",
-    "date": "August 2026",
-    "dateISO": "2026-08-11"
   },
   {
     "slug": "enforcement-weekly-2026-w33",
@@ -158,166 +126,6 @@ export const BLOG_ARTICLE_INDEX: BlogArticleCard[] = [
     "category": "Thematic Analysis",
     "date": "July 2026",
     "dateISO": "2026-07-03"
-  },
-  {
-    "slug": "fca-fines-may-2026",
-    "title": "FCA Fines May 2026: Individual Accountability and Pensions Advice",
-    "excerpt": "May 2026 FCA fines guide covering Frank Breuer, pension transfer advice, individual accountability, permission cancellations, owner-manager risk and board evidence.",
-    "category": "FCA Fines 2026",
-    "date": "May 2026",
-    "dateISO": "2026-07-01"
-  },
-  {
-    "slug": "fca-vs-sec-enforcement-differences",
-    "title": "FCA vs SEC Enforcement: 5 Differences That Actually Matter",
-    "excerpt": "Compliance teams that operate on both sides of the Atlantic often benchmark FCA actions against SEC actions and reach the wrong conclusions. The two regulators differ on five structural points — scale, what counts as a 'fine', whistleblower incentives, individual accountability, and how political cycles bend the curve. Here's what each looks like, with the data.",
-    "category": "Thematic Analysis",
-    "date": "June 2026",
-    "dateISO": "2026-06-23"
-  },
-  {
-    "slug": "payments-firms-fca-aml-enforcement",
-    "title": "FCA Payments Enforcement: Why It's Permissions, Not Fines",
-    "excerpt": "Payments firms read AML-fine headlines and prepare for a Final Notice that never comes. The FCA's enforcement tool against this sector is overwhelmingly permissions cancellation — and the volume has grown nearly 10x in five years. Here's what the data shows, why the regulator favours this route, and what payments-firm compliance teams should be doing about it.",
-    "category": "Sector Analysis",
-    "date": "June 2026",
-    "dateISO": "2026-06-16"
-  },
-  {
-    "slug": "latin-america-enforcement-cvm-cnbv-cmf",
-    "title": "CVM, CNBV and CMF: Latin America Enforcement Guide",
-    "excerpt": "Brazil, Mexico and Chile enforcement guide covering CVM, CNBV and CMF supervisory priorities, market conduct risk, financial crime controls and board reporting.",
-    "category": "Regional Benchmark",
-    "date": "10 June 2026",
-    "dateISO": "2026-06-10"
-  },
-  {
-    "slug": "dora-enforcement-18-months",
-    "title": "DORA at 18 Months: Why Enforcement Hasn't Started — and What's Coming",
-    "excerpt": "Eighteen months after the Digital Operational Resilience Act went into application, public enforcement actions remain effectively zero. The reason isn't regulatory inertia — it's that the supervisory architecture is still being built. Here's what's happened, why fines have not yet appeared, and what compliance teams should be doing before they do.",
-    "category": "Thematic Analysis",
-    "date": "June 2026",
-    "dateISO": "2026-06-09"
-  },
-  {
-    "slug": "middle-east-enforcement-dfsa-fsra-cbuae",
-    "title": "DFSA, FSRA, CBUAE and Saudi CMA Enforcement Guide",
-    "excerpt": "Middle East financial enforcement guide covering DIFC DFSA, ADGM FSRA, CBUAE and Saudi CMA supervisory themes for AML, governance, markets and conduct.",
-    "category": "Regional Benchmark",
-    "date": "8 June 2026",
-    "dateISO": "2026-06-08"
-  },
-  {
-    "slug": "systems-controls-enforcement-global",
-    "title": "Systems and Controls Enforcement: Global Regulator Guide",
-    "excerpt": "Global systems and controls enforcement guide covering operational resilience, technology failure, management information, risk ownership and board evidence across major regulators.",
-    "category": "Thematic Analysis",
-    "date": "5 June 2026",
-    "dateISO": "2026-06-05"
-  },
-  {
-    "slug": "fincen-bsa-enforcement-guide",
-    "title": "FinCEN Enforcement Actions: BSA/AML Penalties Guide",
-    "excerpt": "FinCEN enforcement guide covering BSA/AML civil money penalties, SAR and CTR failures, MSB registration, beneficial ownership, correspondent banking and board reporting.",
-    "category": "Regulatory Guide",
-    "date": "3 June 2026",
-    "dateISO": "2026-06-03"
-  },
-  {
-    "slug": "fca-fines-april-2026",
-    "title": "FCA Enforcement April 2026: No Fines, 11 Supervisory Actions",
-    "excerpt": "For the first time in five years the FCA closed an April with zero financial penalties — but issued its busiest run of supervisory actions in that span, with motor finance suitability and pension transfers dominating the docket.",
-    "category": "FCA Fines 2026",
-    "date": "April 2026",
-    "dateISO": "2026-06-01"
-  },
-  {
-    "slug": "board-guide-governance-accountability-enforcement",
-    "title": "Board Guide: Senior Manager Accountability Across Regulators",
-    "excerpt": "Board guide to senior manager accountability across FCA, CBI, ASIC, MAS, HKMA, FINMA, OCC and SEC expectations, with practical governance evidence and committee questions.",
-    "category": "Board Guide",
-    "date": "1 June 2026",
-    "dateISO": "2026-06-01"
-  },
-  {
-    "slug": "switzerland-offshore-enforcement-finma-jfsc-gfsc",
-    "title": "FINMA, JFSC and GFSC Offshore Enforcement Guide",
-    "excerpt": "Offshore and wealth centre enforcement guide covering FINMA, Jersey JFSC, Guernsey GFSC and DFSA themes for AML, governance, funds and private wealth controls.",
-    "category": "Regional Benchmark",
-    "date": "29 May 2026",
-    "dateISO": "2026-05-29"
-  },
-  {
-    "slug": "market-abuse-enforcement-global-comparison",
-    "title": "Market Abuse Enforcement: Global Regulator Comparison",
-    "excerpt": "Global market abuse enforcement guide covering insider dealing, unlawful disclosure, market manipulation, surveillance, information barriers and cross-border regulator coordination.",
-    "category": "Thematic Analysis",
-    "date": "27 May 2026",
-    "dateISO": "2026-05-27"
-  },
-  {
-    "slug": "finra-ciro-sro-enforcement-comparison",
-    "title": "FINRA vs CIRO: North American SRO Enforcement Compared",
-    "excerpt": "Detailed FINRA and CIRO enforcement comparison for broker-dealers, investment dealers, supervision teams and compliance leaders managing US and Canadian SRO obligations.",
-    "category": "Thematic Analysis",
-    "date": "25 May 2026",
-    "dateISO": "2026-05-25"
-  },
-  {
-    "slug": "cbi-ireland-enforcement-guide",
-    "title": "Central Bank of Ireland Enforcement Guide for UK Firms",
-    "excerpt": "Practical guide to Central Bank of Ireland enforcement, the Administrative Sanctions Procedure, post-Brexit substance expectations, governance evidence, AML controls and board reporting.",
-    "category": "Regulatory Guide",
-    "date": "22 May 2026",
-    "dateISO": "2026-05-22"
-  },
-  {
-    "slug": "board-guide-aml-controls-global-enforcement",
-    "title": "Board Guide: Global AML Controls and Enforcement Data",
-    "excerpt": "Board-level AML controls guide using global enforcement data to test transaction monitoring, customer due diligence, SAR governance, remediation and senior manager evidence.",
-    "category": "Board Guide",
-    "date": "20 May 2026",
-    "dateISO": "2026-05-20"
-  },
-  {
-    "slug": "apac-financial-enforcement-comparison",
-    "title": "APAC Financial Enforcement: ASIC, MAS, SEBI, HKMA and SFC",
-    "excerpt": "APAC enforcement comparison covering ASIC, MAS, SEBI, HKMA, SFC and SESC themes for AML, market abuse, operational risk, governance and consumer protection.",
-    "category": "Regional Benchmark",
-    "date": "18 May 2026",
-    "dateISO": "2026-05-18"
-  },
-  {
-    "slug": "eu-financial-regulators-enforcement-guide",
-    "title": "EU Financial Enforcement: BaFin, AMF, CNMV and CBI",
-    "excerpt": "EU financial enforcement guide comparing BaFin, AMF, CNMV, CBI and the EU supervisory architecture for banks, markets, AML, governance and cross-border compliance.",
-    "category": "Regional Benchmark",
-    "date": "15 May 2026",
-    "dateISO": "2026-05-15"
-  },
-  {
-    "slug": "global-aml-enforcement-comparison-2026",
-    "title": "Global AML Enforcement Comparison 2026: FCA, FinCEN, AUSTRAC and MAS",
-    "excerpt": "Global AML enforcement comparison for 2026 covering CDD, transaction monitoring, SAR governance, sanctions screening, board evidence and remediation across major regulators.",
-    "category": "Thematic Analysis",
-    "date": "13 May 2026",
-    "dateISO": "2026-05-13"
-  },
-  {
-    "slug": "occ-enforcement-actions-complete-guide",
-    "title": "OCC Enforcement Actions: Banking Penalties Guide",
-    "excerpt": "OCC enforcement guide for national banks, federal savings associations, federal branches, unsafe practices, BSA/AML, fiduciary breaches and board reporting.",
-    "category": "Regulatory Guide",
-    "date": "11 May 2026",
-    "dateISO": "2026-05-11"
-  },
-  {
-    "slug": "sec-enforcement-guide-fines-data",
-    "title": "SEC Enforcement Actions: Data and Compliance Guide",
-    "excerpt": "SEC enforcement guide covering civil enforcement, litigation releases, administrative proceedings, trading suspensions, harmed investor distributions and compliance monitoring.",
-    "category": "Regulatory Guide",
-    "date": "8 May 2026",
-    "dateISO": "2026-05-08"
   },
   {
     "slug": "fca-fines-enforcement-guide",
@@ -626,4 +434,4 @@ export const BLOG_ARTICLE_INDEX: BlogArticleCard[] = [
 ];
 
 /** Total published articles, for "all N insights" style counts. */
-export const BLOG_ARTICLE_COUNT = 76;
+export const BLOG_ARTICLE_COUNT = 52;

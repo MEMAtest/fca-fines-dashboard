@@ -22,7 +22,7 @@
 import { readFile, writeFile } from "node:fs/promises";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
-import { getPublishedBlogArticles } from "../src/data/blogArticles.js";
+import { getPublicBlogArticles } from "../src/data/blogArticles.js";
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..");
 const OUT = join(ROOT, "src", "data", "blogArticleIndex.ts");
@@ -37,7 +37,7 @@ export interface BlogArticleCard {
 }
 
 export function buildBlogIndexSource(): string {
-  const published = getPublishedBlogArticles();
+  const published = getPublicBlogArticles();
   const cards: BlogArticleCard[] = published
     .map((article) => ({
       slug: article.slug,

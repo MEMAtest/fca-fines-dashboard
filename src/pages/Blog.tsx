@@ -27,11 +27,12 @@ import {
 import { DigestSubscribeForm } from "../components/DigestSubscribeForm.js";
 import { yearlyFCAData } from "../components/YearlyArticleCharts.js";
 import {
-  getPublishedBlogArticles,
-  getPublishedYearlyArticles,
+  getPublicBlogArticles,
+  getPublicYearlyArticles,
 } from "../data/blogArticles.js";
 import type { BlogArticleMeta } from "../data/blogArticles.js";
 import { LIVE_REGULATOR_NAV_ITEMS } from "../data/regulatorCoverage.js";
+import { searchResearchArticles } from "../data/researchSearch.js";
 import { injectStructuredData, useSEO } from "../hooks/useSEO.js";
 import { REGULATOR_COUNT } from "../constants/site.js";
 import "../styles/blog.css";
@@ -65,8 +66,8 @@ interface FilterOption {
 
 const MotionLink = motion.create(Link);
 const LIVE_REGULATOR_COUNT = LIVE_REGULATOR_NAV_ITEMS.length;
-const blogArticlesMeta = getPublishedBlogArticles();
-const yearlyArticlesMeta = getPublishedYearlyArticles();
+const blogArticlesMeta = getPublicBlogArticles();
+const yearlyArticlesMeta = getPublicYearlyArticles();
 
 const iconMap: Record<string, React.ReactNode> = {
   "largest-fca-fines-history": <Scale className="blog-card-icon" />,
@@ -554,12 +555,12 @@ export function Blog() {
   const featuredCount = countMatches(blogArticles, (article) => Boolean(article.featured));
 
   const filteredArticles = useMemo(() => {
-    const terms = normalize(query)
-      .split(/\s+/)
-      .filter(Boolean);
+    const searchHits = query ? searchResearchArticles(blogArticles, query) : [];
+    const searchIds = new Set(searchHits.map((hit) => hit.article.id));
+    const searchHitById = new Map(searchHits.map((hit) => [hit.article.id, hit]));
     const filtered = blogArticles.filter((article) => {
+      if (query && !searchIds.has(article.id)) return false;
       const corpus = articleCorpus(article);
-      if (terms.length && !terms.every((term) => corpus.includes(term))) return false;
       if (selectedMonth !== ALL_VALUE && !article.dateISO.startsWith(selectedMonth)) return false;
       if (selectedYear !== ALL_VALUE && !article.dateISO.startsWith(selectedYear)) return false;
       if (selectedCategory !== ALL_VALUE && article.category !== selectedCategory) return false;
@@ -569,11 +570,39 @@ export function Blog() {
       if (selectedType !== ALL_VALUE && inferContentType(article) !== selectedType) return false;
       return true;
     });
-    return filtered.sort(sortMode === "oldest" ? byOldestArticle : byNewestArticle);
+    return filtered.sort((left, right) => {
+      if (query) {
+        const leftHit = searchHitById.get(left.id);
+        const rightHit = searchHitById.get(right.id);
+        if (leftHit?.kind !== rightHit?.kind) return leftHit?.kind === "focused" ? -1 : 1;
+        if ((leftHit?.score ?? 0) !== (rightHit?.score ?? 0)) {
+          return (rightHit?.score ?? 0) - (leftHit?.score ?? 0);
+        }
+      }
+      return sortMode === "oldest" ? byOldestArticle(left, right) : byNewestArticle(left, right);
+    });
   }, [query, selectedMonth, selectedYear, selectedCategory, selectedRegulator, selectedType, sortMode]);
 
-  const leadArticle = filteredArticles[0];
-  const gridArticles = filteredArticles.slice(1);
+  const researchSearchHits = useMemo(
+    () => (query ? searchResearchArticles(blogArticles, query) : []),
+    [query],
+  );
+  const researchKindById = useMemo(
+    () => new Map(researchSearchHits.map((hit) => [hit.article.id, hit.kind])),
+    [researchSearchHits],
+  );
+  const focusedResearchCount = filteredArticles.filter(
+    (article) => researchKindById.get(article.id) === "focused",
+  ).length;
+  const relatedResearchCount = filteredArticles.filter(
+    (article) => researchKindById.get(article.id) === "related",
+  ).length;
+
+  // Search results are an evidence list rather than a promotional feed. Keep
+  // every result in the labelled groups; the featured treatment is reserved
+  // for the normal browse view.
+  const leadArticle = query ? undefined : filteredArticles[0];
+  const gridArticles = query ? filteredArticles : filteredArticles.slice(1);
   const totalPages = Math.max(1, Math.ceil(gridArticles.length / ITEMS_PER_PAGE));
   const safePage = Math.min(currentPage, totalPages);
   const paginatedArticles = gridArticles.slice(
@@ -844,6 +873,11 @@ export function Blog() {
               Browse source-led analysis across regulators, sectors, themes,
               jurisdictions and enforcement outcomes.
             </p>
+            {query && (
+              <p aria-live="polite">
+                <strong>Focused analysis:</strong> {focusedResearchCount} · <strong>Related mentions:</strong> {relatedResearchCount}
+              </p>
+            )}
           </div>
 
           <div className="insights-results-bar">
@@ -883,14 +917,31 @@ export function Blog() {
           </div>
 
           <div className={`blog-grid insights-grid insights-grid--${viewMode}`}>
-            {paginatedArticles.map((article, index) => (
-              <ArticleCard
-                key={article.id}
-                article={article}
-                index={index}
-                viewMode={viewMode}
-              />
-            ))}
+            {paginatedArticles.map((article, index) => {
+              const kind = query ? researchKindById.get(article.id) : undefined;
+              const previous = index > 0 && query
+                ? researchKindById.get(paginatedArticles[index - 1].id)
+                : undefined;
+              return (
+                <div className="insights-search-result" key={article.id}>
+                  {kind && kind !== previous && (
+                    <div className="insights-search-group-heading">
+                      <h3>{kind === "focused" ? "Focused analysis" : "Related mentions"}</h3>
+                      <p>
+                        {kind === "focused"
+                          ? "Direct title, topic or keyword matches."
+                          : "Useful context where the topic appears in the analysis."}
+                      </p>
+                    </div>
+                  )}
+                  <ArticleCard
+                    article={article}
+                    index={index}
+                    viewMode={viewMode}
+                  />
+                </div>
+              );
+            })}
           </div>
 
           {totalPages > 1 && (

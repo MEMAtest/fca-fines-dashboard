@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { readFileSync } from "node:fs";
 import { BLOG_ARTICLE_INDEX, BLOG_ARTICLE_COUNT } from "./blogArticleIndex.js";
-import { getPublishedBlogArticles } from "./blogArticles.js";
+import { getPublicBlogArticles } from "./blogArticles.js";
 import { buildBlogIndexSource } from "../../scripts/generate-blog-index.js";
 
 /**
@@ -18,13 +18,19 @@ describe("blog article index", () => {
     ).toBe(true);
   });
 
-  it("covers every published article, newest first", () => {
-    const published = getPublishedBlogArticles();
+  it("covers every explicitly public article, newest first", () => {
+    const published = getPublicBlogArticles();
     expect(BLOG_ARTICLE_COUNT).toBe(published.length);
     expect(BLOG_ARTICLE_INDEX).toHaveLength(published.length);
     for (let i = 1; i < BLOG_ARTICLE_INDEX.length; i += 1) {
       expect(BLOG_ARTICLE_INDEX[i - 1].dateISO >= BLOG_ARTICLE_INDEX[i].dateISO).toBe(true);
     }
+  });
+
+  it("does not expose draft or scheduled editorial material", () => {
+    expect(getPublicBlogArticles().every((article) =>
+      article.status !== "draft" && article.status !== "scheduled"
+    )).toBe(true);
   });
 
   it("carries only the fields the cards render", () => {

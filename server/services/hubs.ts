@@ -3,6 +3,10 @@ import { getSqlClient } from "../db.js";
 import { normaliseFcaFineEntityName } from "./fcaFineCases.js";
 import { firmSlug, hubSlug } from "../utils/slugify.js";
 import { isGarbageFirmName } from "../../src/utils/firmName.js";
+import {
+  CYBER_OPERATIONAL_RESILIENCE,
+  CYBER_OPERATIONAL_RESILIENCE_ALIASES,
+} from "../../src/data/enforcementConcepts.js";
 
 export interface CategorySummary {
   name: string;
@@ -231,12 +235,33 @@ export async function listBreachCategories(): Promise<CategorySummary[]> {
     ORDER BY total_amount DESC, fine_count DESC, category ASC
   `)) as any[];
 
-  return rows.map((row: any) => ({
+  const cyberPatterns = CYBER_OPERATIONAL_RESILIENCE_ALIASES.map((alias) => `%${alias}%`);
+  const cyberRows = (await sql(`
+    SELECT COUNT(*)::int AS fine_count,
+           COALESCE(SUM(trusted_amount_gbp), 0)::float8 AS total_amount
+    FROM public.all_regulatory_fines_trusted
+    WHERE (
+        COALESCE(summary, '') ILIKE ANY($1::text[])
+        OR COALESCE(breach_type, '') ILIKE ANY($1::text[])
+        OR COALESCE(breach_categories::text, '') ILIKE ANY($1::text[])
+      )
+  `, [cyberPatterns])) as any[];
+  const cyber = cyberRows[0];
+  const mapped = rows.map((row: any) => ({
     name: String(row.category),
     slug: hubSlug(String(row.category)),
     fineCount: Number(row.fine_count) || 0,
     totalAmount: Number(row.total_amount) || 0,
   }));
+  if (Number(cyber?.fine_count) > 0 && !mapped.some((item) => item.slug === "cyber-operational-resilience")) {
+    mapped.push({
+      name: CYBER_OPERATIONAL_RESILIENCE,
+      slug: "cyber-operational-resilience",
+      fineCount: Number(cyber.fine_count) || 0,
+      totalAmount: Number(cyber.total_amount) || 0,
+    });
+  }
+  return mapped;
 }
 
 export async function listYears(): Promise<YearSummary[]> {
@@ -620,12 +645,32 @@ export async function getBreachDetailsBySlug(
 ): Promise<BreachDetails | null> {
   const sql = getSqlClient();
   const categorySlugMap = await getCategorySlugMap();
-  const categoryName = categorySlugMap.get(slug) ?? null;
+  const isCyberConcept = slug === "cyber-operational-resilience";
+  const categoryName = isCyberConcept
+    ? CYBER_OPERATIONAL_RESILIENCE
+    : categorySlugMap.get(slug) ?? null;
   if (!categoryName) return null;
 
   // Handle double-encoded breach_categories: 312/316 rows store a JSON string
   // instead of a native array, so the ? operator won't match them directly.
   const catFilter = FCA_CATEGORY_EXPRESSION;
+  const cyberPatterns = CYBER_OPERATIONAL_RESILIENCE_ALIASES.map((alias) => `%${alias}%`);
+  const categoryWhere = isCyberConcept
+    ? `(
+        COALESCE(summary, '') ILIKE ANY($1::text[])
+        OR COALESCE(breach_type, '') ILIKE ANY($1::text[])
+        OR COALESCE(${catFilter}, '[]'::jsonb)::text ILIKE ANY($1::text[])
+      )`
+    : `(
+        EXISTS (
+          SELECT 1 FROM jsonb_array_elements_text(${catFilter}) AS label
+          WHERE ${CANONICAL_CATEGORY_SQL("label")} = ${CANONICAL_CATEGORY_SQL("$1::text")}
+        )
+        OR ${CANONICAL_CATEGORY_SQL("breach_type")} = ${CANONICAL_CATEGORY_SQL("$1::text")}
+      )`;
+  const categoryParams = [isCyberConcept ? cyberPatterns : categoryName];
+  const amountWhere = isCyberConcept ? "" : "AND trusted_amount_gbp > 0";
+  const regulatorWhere = isCyberConcept ? "" : "upper(regulator) = 'FCA' AND";
 
   const summaryRows = (await sql(
     `SELECT
@@ -635,16 +680,10 @@ export async function getBreachDetailsBySlug(
       MIN(date_issued)::text AS earliest_date,
       MAX(date_issued)::text AS latest_date
     FROM public.all_regulatory_fines_trusted
-    WHERE upper(regulator) = 'FCA'
-      AND trusted_amount_gbp > 0
-      AND (
-        EXISTS (
-          SELECT 1 FROM jsonb_array_elements_text(${catFilter}) AS label
-          WHERE ${CANONICAL_CATEGORY_SQL("label")} = ${CANONICAL_CATEGORY_SQL("$1::text")}
-        )
-        OR ${CANONICAL_CATEGORY_SQL("breach_type")} = ${CANONICAL_CATEGORY_SQL("$1::text")}
-      )`,
-    [categoryName],
+    WHERE ${regulatorWhere}
+      1 = 1 ${amountWhere}
+      AND ${categoryWhere}`,
+    categoryParams,
   )) as any[];
   const summary = summaryRows[0];
 
@@ -660,19 +699,13 @@ export async function getBreachDetailsBySlug(
         ORDER BY date_issued DESC
       ))[1] AS case_source_url
     FROM public.all_regulatory_fines_trusted
-    WHERE upper(regulator) = 'FCA'
-      AND trusted_amount_gbp > 0
-      AND (
-        EXISTS (
-          SELECT 1 FROM jsonb_array_elements_text(${catFilter}) AS label
-          WHERE ${CANONICAL_CATEGORY_SQL("label")} = ${CANONICAL_CATEGORY_SQL("$1::text")}
-        )
-        OR ${CANONICAL_CATEGORY_SQL("breach_type")} = ${CANONICAL_CATEGORY_SQL("$1::text")}
-      )
+    WHERE ${regulatorWhere}
+      1 = 1 ${amountWhere}
+      AND ${categoryWhere}
     GROUP BY firm_individual
     ORDER BY total_amount DESC, fine_count DESC, firm_individual ASC
     LIMIT $2`,
-    [categoryName, firmsLimit],
+    [...categoryParams, firmsLimit],
   )) as any[];
 
   const penaltiesLimit = Math.max(1, Math.min(limitPenalties, 50));
@@ -691,18 +724,12 @@ export async function getBreachDetailsBySlug(
             duplicate_count, created_at,
             COALESCE(NULLIF(notice_url, ''), NULLIF(source_resolved_url, '')) AS case_source_url
       FROM public.all_regulatory_fines_trusted
-      WHERE upper(regulator) = 'FCA'
-        AND trusted_amount_gbp > 0
-        AND (
-          EXISTS (
-            SELECT 1 FROM jsonb_array_elements_text(${catFilter}) AS label
-            WHERE ${CANONICAL_CATEGORY_SQL("label")} = ${CANONICAL_CATEGORY_SQL("$1::text")}
-          )
-          OR ${CANONICAL_CATEGORY_SQL("breach_type")} = ${CANONICAL_CATEGORY_SQL("$1::text")}
-        )
+      WHERE ${regulatorWhere}
+        1 = 1 ${amountWhere}
+        AND ${categoryWhere}
       ORDER BY trusted_amount_gbp DESC, date_issued DESC
       LIMIT $2`,
-    [categoryName, penaltiesLimit],
+    [...categoryParams, penaltiesLimit],
   )) as unknown as Array<Record<string, unknown>>;
 
   const category: CategorySummary = {
@@ -713,14 +740,18 @@ export async function getBreachDetailsBySlug(
   };
 
   const topFirms: FirmSummary[] = topFirmRows.map((row: any) => ({
-    name: normaliseFcaFineEntityName(
-      row.firm_individual,
-      row.case_source_url ? String(row.case_source_url) : null,
-    ),
-    slug: firmSlug(normaliseFcaFineEntityName(
-      row.firm_individual,
-      row.case_source_url ? String(row.case_source_url) : null,
-    )),
+    name: isCyberConcept
+      ? String(row.firm_individual)
+      : normaliseFcaFineEntityName(
+          row.firm_individual,
+          row.case_source_url ? String(row.case_source_url) : null,
+        ),
+    slug: firmSlug(isCyberConcept
+      ? String(row.firm_individual)
+      : normaliseFcaFineEntityName(
+          row.firm_individual,
+          row.case_source_url ? String(row.case_source_url) : null,
+        )),
     fineCount: Number(row.fine_count) || 0,
     totalAmount: Number(row.total_amount) || 0,
     latestDate: row.latest_date ? String(row.latest_date) : null,

@@ -1,0 +1,22 @@
+name: Enforcement concept classification
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "20 7 * * *"
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: Refresh versioned concept classifications
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+        run: npm run data-trust:refresh-concepts
