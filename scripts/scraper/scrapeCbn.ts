@@ -3,6 +3,7 @@ import * as cheerio from "cheerio";
 import { fileURLToPath } from "node:url";
 import {
   buildEuFineRecord,
+  extractPdfLayoutTextFromUrl,
   fetchText,
   makeAbsoluteUrl,
   normalizeWhitespace,
@@ -23,6 +24,7 @@ export interface CbnActionRow {
   actionUrl: string;
   description: string;
   actionType: "license_revocation" | "sanction" | "penalty";
+  evidenceText?: string;
 }
 
 export interface CbnNotice {
@@ -43,24 +45,49 @@ function parseCbnDate(input: string) {
 }
 
 export function isCbnEnforcementNotice(notice: Pick<CbnNotice, "title" | "description" | "keywords">) {
-  return /revok|licen[cs]|sanction|penalt|fine|suspend|closed\s+shop|failed\s+to\s+render|unlicensed|delist/i.test(
-    `${notice.title} ${notice.description} ${notice.keywords}`,
-  );
+  const title = normalizeWhitespace(notice.title).toLowerCase();
+  const corpus = `${title} ${notice.description} ${notice.keywords}`;
+  // Routine licence, conversion, renewal, and brand-display notices are not
+  // enforcement actions. Require an explicit adverse action after exclusions.
+  if (/renewal|conversion|converted|brand\s+name|display\s+of\s+licen[cs]e|deadline|meeting|workshop|invitation|modalit(?:y|ies)/i.test(title)) {
+    return false;
+  }
+  return /revoc|revok|sanction|penalt|fine|suspend|closed\s+shop|failed\s+to\s+render|non[-\s]?rendition|unlicensed|delist/i.test(corpus);
+}
+
+function classifyCbnNotice(notice: CbnNotice): CbnActionRow["actionType"] {
+  const titleLower = notice.title.toLowerCase();
+  return /revoc|revok|closed\s+shop|delist/.test(titleLower)
+    ? "license_revocation"
+    : /penalt|fine/.test(titleLower) ? "penalty" : "sanction";
+}
+
+export function parseCbnNoticeCandidates(json: string): CbnNotice[] {
+  const notices = JSON.parse(json) as CbnNotice[];
+  return notices.filter((notice) => isCbnEnforcementNotice(notice) && notice.title && notice.documentDate);
+}
+
+/** Extract named affected institutions from official notice/PDF evidence. */
+export function extractCbnEntities(text: string): string[] {
+  // Only accept names introduced by a numbered/lettered list marker. This
+  // deliberately excludes prose such as "the CBN ... Corporation" and
+  // aggregate labels such as "14 Banks".
+  const candidates = text.match(/(?:^|[\n;])\s*(?:\d+\)|[A-Z]\.)\s*([A-Z][A-Za-z0-9&.'-]*(?:\s+[A-Z][A-Za-z0-9&.'-]*){1,8}?\s+(?:(?:Bank|BANK|Banks|BANKS)(?:\s+(?:Limited|LIMITED|Ltd|LTD|Plc|PLC))?|Limited|LIMITED|Ltd|LTD|Plc|PLC|Society|SOCIETY|Company|COMPANY|Corporation|CORPORATION|Holdings|HOLDINGS))\b/gm) || [];
+  const generic = /(?:notice|public|central|operating|revocation|licen[cs]e|payment|private|sector|depositors?|microfinance|community|failed|minimum|conversion|managing|directors?|ceos?|institutions?|debtors?)/i;
+  return [...new Set(candidates.map((candidate) => {
+    const marker = candidate.match(/(?:\d+\)|[A-Z]\.)\s*/);
+    return normalizeWhitespace(marker ? candidate.slice((marker.index || 0) + marker[0].length) : candidate);
+  }).filter((candidate) => !/\bBanks\b$/i.test(candidate) && !generic.test(candidate)))];
 }
 
 export function parseCbnNoticesJson(json: string, pageUrl = CBN_NOTICES_URL): CbnActionRow[] {
-  const notices = JSON.parse(json) as CbnNotice[];
   const rows = new Map<string, CbnActionRow>();
-  for (const notice of notices) {
-    if (!isCbnEnforcementNotice(notice) || !notice.title || !notice.documentDate) continue;
+  for (const notice of parseCbnNoticeCandidates(json)) {
     const date = parseCbnDate(notice.documentDate);
     if (!date) continue;
-    const titleLower = notice.title.toLowerCase();
-    const actionType: CbnActionRow["actionType"] = /revok|closed\s+shop|delist/.test(titleLower)
-      ? "license_revocation"
-      : /penalt|fine/.test(titleLower) ? "penalty" : "sanction";
+    const actionType = classifyCbnNotice(notice);
     const actionUrl = notice.link ? makeAbsoluteUrl(pageUrl, notice.link) : pageUrl;
-    const entities = extractCbnEntities(notice.title);
+    const entities = extractCbnEntities(`${notice.title} ${notice.description} ${notice.keywords}`);
     for (const entity of entities) {
       const row = { date, entity, title: notice.title, actionUrl, description: normalizeWhitespace(notice.description.replace(/<[^>]+>/g, " ")), actionType };
       rows.set(`${notice.id}::${entity}`, row);
@@ -151,38 +178,6 @@ export function parseCbnPressReleasesHtml(html: string, pageUrl = CBN_PRESS_RELE
   return rows;
 }
 
-function extractCbnEntities(title: string): string[] {
-  // CBN press releases often list multiple entities
-  // Examples:
-  // "CBN Revokes Licences of 179 Microfinance Banks"
-  // "CBN Sanctions XYZ Bank Limited"
-
-  const entities: string[] = [];
-
-  // Look for specific bank names
-  const bankNamePattern = /([A-Z][A-Za-z\s&]+(?:Bank|Limited|Ltd|Plc))/g;
-  const matches = title.match(bankNamePattern);
-
-  if (matches) {
-    entities.push(...matches.map((m) => normalizeWhitespace(m)));
-  }
-
-  // If no specific names found but it's a bulk action, use a generic entry
-  if (entities.length === 0) {
-    const bulkMatch = title.match(/(\d+)\s+(Microfinance Banks?|Primary Mortgage Banks?|Finance Companies|Bureau de Change)/i);
-    if (bulkMatch) {
-      entities.push(`${bulkMatch[1]} ${bulkMatch[2]}`);
-    }
-  }
-
-  // Fallback: use title as entity
-  if (entities.length === 0) {
-    entities.push(title);
-  }
-
-  return entities;
-}
-
 function categorizeCbnRecord(title: string, actionType: string) {
   const corpus = `${title}`.toLowerCase();
   const categories: string[] = [];
@@ -215,7 +210,7 @@ export function buildCbnRecords(rows: CbnActionRow[]) {
       countryName: "Nigeria",
       firmIndividual: row.entity,
       firmCategory: "Financial Entity",
-      amount: parseCbnAmount(`${row.title} ${row.description}`),
+      amount: row.actionType === "license_revocation" ? null : parseCbnAmount(`${row.title} ${row.description}`),
       currency: "NGN",
       dateIssued: row.date,
       breachType,
@@ -230,7 +225,32 @@ export function buildCbnRecords(rows: CbnActionRow[]) {
 
 export async function loadCbnLiveRecords() {
   const json = await fetchText(CBN_NOTICES_API_URL, { timeout: 60_000, headers: { Accept: "application/json" } });
-  const rows = parseCbnNoticesJson(json);
+  const rows: CbnActionRow[] = [];
+  for (const notice of parseCbnNoticeCandidates(json)) {
+    const date = parseCbnDate(notice.documentDate);
+    if (!date) continue;
+    const actionUrl = notice.link ? makeAbsoluteUrl(CBN_NOTICES_URL, notice.link) : CBN_NOTICES_URL;
+    let evidenceText = "";
+    if (/\.pdf(?:$|[?#])/i.test(actionUrl)) {
+      try {
+        evidenceText = await extractPdfLayoutTextFromUrl(actionUrl);
+      } catch (error) {
+        console.warn(`CBN: unable to extract affected-entity evidence from ${actionUrl}: ${error instanceof Error ? error.message : String(error)}`);
+      }
+    }
+    const entities = extractCbnEntities(`${notice.title} ${notice.description} ${notice.keywords} ${evidenceText}`);
+    for (const entity of entities) {
+      rows.push({
+        date,
+        entity,
+        title: notice.title,
+        actionUrl,
+        description: normalizeWhitespace(`${notice.description} ${evidenceText}`).slice(0, 4000),
+        actionType: classifyCbnNotice(notice),
+        evidenceText: evidenceText.slice(0, 12000),
+      });
+    }
+  }
   if (!rows.length) throw new Error("CBN official notices API returned no enforcement-related notices");
   return buildCbnRecords(rows);
 }

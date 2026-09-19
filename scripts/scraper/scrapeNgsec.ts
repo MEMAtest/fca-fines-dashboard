@@ -26,7 +26,7 @@ const NGSEC_CATEGORIES = [
 export interface NgsecArchiveEntry {
   title: string;
   summary: string;
-  dateIssued: string;
+  dateIssued: string | null;
   detailUrl: string;
 }
 
@@ -42,6 +42,11 @@ function parseNgsecDate(input: string): string | null {
   return parseMonthNameDate(cleaned);
 }
 
+function parseNgsecDateFromText(input: string): string | null {
+  const candidate = normalizeWhitespace(input).match(/\b(?:\d{1,2}\s+[A-Za-z]+\.?\s+\d{4}|[A-Za-z]+\.?\s+\d{1,2},?\s+\d{4})\b/);
+  return candidate ? parseNgsecDate(candidate[0]) : null;
+}
+
 export function parseNgsecArchiveHtml(html: string, pageUrl: string): NgsecArchiveEntry[] {
   const $ = cheerio.load(html);
   const entries = new Map<string, NgsecArchiveEntry>();
@@ -49,10 +54,16 @@ export function parseNgsecArchiveHtml(html: string, pageUrl: string): NgsecArchi
     const link = $(element);
     const href = normalizeWhitespace(link.attr("href") || "");
     if (!href.startsWith("/enforcements/") || href.endsWith("/enforcements/")) return;
-    const title = normalizeWhitespace(link.find("span").first().text() || link.text());
-    const summary = normalizeWhitespace(link.find("span").eq(1).text());
-    const dateIssued = parseNgsecDate(link.find("span").last().text());
-    if (!title || !dateIssued) return;
+    const spanTexts = link.find("span").map((_, span) => normalizeWhitespace($(span).text())).get().filter(Boolean);
+    // The category archive cards use a decorative first span and put the
+    // human title in the final text span. Older update cards may also include
+    // a date; category pages themselves are intentionally undated and the
+    // linked official detail page is the date authority.
+    const contentSpans = spanTexts.filter((value) => !parseNgsecDate(value));
+    const title = contentSpans[0] || normalizeWhitespace(link.text());
+    const summary = contentSpans.slice(1).join(" ");
+    const dateIssued = parseNgsecDateFromText(`${link.text()} ${link.parent().text()}`);
+    if (!title) return;
     const detailUrl = makeAbsoluteUrl(pageUrl, href);
     entries.set(detailUrl, { title, summary, dateIssued, detailUrl });
   });
@@ -65,8 +76,10 @@ export function parseNgsecDetailHtml(html: string, detailUrl: string): NgsecDeta
   const published = heading.match(/published:\s*(.+)$/i)?.[1] || "";
   const title = normalizeWhitespace(heading.replace(/published:\s*.+$/i, ""));
   const dateIssued = parseNgsecDate(published);
-  const body = normalizeWhitespace($("main section").find("p").map((_, el) => $(el).text()).get().join(" "));
-  const summary = normalizeWhitespace($("main section p").first().text());
+  const content = $("main").clone();
+  content.find("h1, nav, script, style").remove();
+  const body = normalizeWhitespace(content.text());
+  const summary = normalizeWhitespace(content.find("p").first().text());
   if (!title || !dateIssued) return null;
   return { title, dateIssued, summary, body };
 }
@@ -92,7 +105,7 @@ export function buildNgsecRecord(entry: NgsecArchiveEntry, detail: NgsecDetail):
     regulator: "NGSEC", regulatorFullName: "Securities and Exchange Commission, Nigeria",
     countryCode: "NG", countryName: "Nigeria", firmIndividual: detail.title || entry.title,
     firmCategory: "Capital Market Entity", amount: parseNgsecAmount(evidence), currency: "NGN",
-    dateIssued: detail.dateIssued || entry.dateIssued, breachType: entry.title,
+    dateIssued: detail.dateIssued || entry.dateIssued || "", breachType: entry.title,
     breachCategories: categorizeNgsec(evidence), summary: (detail.summary || entry.summary || detail.body).slice(0, 500),
     finalNoticeUrl: entry.detailUrl, sourceUrl: entry.detailUrl,
     dedupeKey: entry.detailUrl, rawPayload: { entry, detail },
