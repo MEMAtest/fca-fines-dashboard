@@ -1,5 +1,6 @@
 import "dotenv/config";
 import * as cheerio from "cheerio";
+import { createHash } from "node:crypto";
 import { fileURLToPath } from "node:url";
 import {
   buildEuFineRecord,
@@ -11,9 +12,15 @@ import {
   parseMonthNameDate,
 } from "./lib/euFineHelpers.js";
 import { runScraper } from "./lib/runScraper.js";
+import {
+  persistBlockedSourceDiscoveries,
+  type BlockedSourceDiscovery,
+} from "./lib/coverageDiscoveryCandidates.js";
 
 const CBN_BASE_URL = "https://www.cbn.gov.ng";
 const CBN_PRESS_RELEASES_URL = `${CBN_BASE_URL}/Out/PressRelease/PressRelease.asp`;
+export const CBN_PRESS_RELEASES_PAGE_URL = `${CBN_BASE_URL}/Documents/PressReleases.html`;
+const CBN_PRESS_RELEASES_API_URL = `${CBN_BASE_URL}/api/GetAllPressReleases?format=json`;
 export const CBN_NOTICES_URL = `${CBN_BASE_URL}/Documents/Notices.html`;
 const CBN_NOTICES_API_URL = `${CBN_BASE_URL}/api/GetAllNotices?format=json`;
 
@@ -25,6 +32,7 @@ export interface CbnActionRow {
   description: string;
   actionType: "license_revocation" | "sanction" | "penalty";
   evidenceText?: string;
+  catalogueUrl?: string;
 }
 
 export interface CbnNotice {
@@ -53,6 +61,24 @@ export function isCbnEnforcementNotice(notice: Pick<CbnNotice, "title" | "descri
     return false;
   }
   return /revoc|revok|sanction|penalt|fine|suspend|closed\s+shop|failed\s+to\s+render|non[-\s]?rendition|unlicensed|delist/i.test(corpus);
+}
+
+export function isCbnEnforcementPressRelease(
+  notice: Pick<CbnNotice, "title" | "description" | "keywords">,
+) {
+  const title = normalizeWhitespace(notice.title).toLowerCase();
+  const corpus = `${title} ${notice.keywords || ""}`;
+  if (/false allegations?|guidelines?|framework|draft|licensed under|licenses new|licences new|launch|legal tender|court of appeal|court decision|suspend lay-?offs?/i.test(title)) {
+    return false;
+  }
+  return /revoc|revok|sanction|penalt|\bfine\b|suspend/i.test(corpus);
+}
+
+export function parseCbnPressReleaseCandidates(json: string): CbnNotice[] {
+  const notices = JSON.parse(json) as CbnNotice[];
+  return notices.filter((notice) =>
+    Boolean(notice.title && notice.documentDate && notice.link)
+    && isCbnEnforcementPressRelease(notice));
 }
 
 function classifyCbnNotice(notice: CbnNotice): CbnActionRow["actionType"] {
@@ -97,6 +123,7 @@ export function buildCbnRowsFromEvidence(notice: CbnNotice, evidenceText: string
     description: normalizeWhitespace(evidenceText).slice(0, 4000),
     actionType,
     evidenceText: evidenceText.slice(0, 12000),
+    catalogueUrl: pageUrl,
   }));
 }
 
@@ -236,34 +263,64 @@ export function buildCbnRecords(rows: CbnActionRow[]) {
       breachCategories: categorizeCbnRecord(row.title, row.actionType),
       summary,
       finalNoticeUrl: row.actionUrl || null,
-      sourceUrl: CBN_NOTICES_URL,
+      sourceUrl: row.catalogueUrl || CBN_NOTICES_URL,
       rawPayload: row,
     });
   });
 }
 
 export async function loadCbnLiveRecords() {
-  const json = await fetchText(CBN_NOTICES_API_URL, { timeout: 60_000, headers: { Accept: "application/json" } });
+  cbnBlockedDiscoveries = [];
+  const [json, pressJson] = await Promise.all([
+    fetchText(CBN_NOTICES_API_URL, { timeout: 60_000, headers: { Accept: "application/json" } }),
+    fetchText(CBN_PRESS_RELEASES_API_URL, { timeout: 60_000, headers: { Accept: "application/json" } }),
+  ]);
   const rows: CbnActionRow[] = [];
-  for (const notice of parseCbnNoticeCandidates(json)) {
+  const lanes = [
+    { notices: parseCbnNoticeCandidates(json), catalogueUrl: CBN_NOTICES_URL },
+    { notices: parseCbnPressReleaseCandidates(pressJson), catalogueUrl: CBN_PRESS_RELEASES_PAGE_URL },
+  ];
+  for (const lane of lanes) for (const notice of lane.notices) {
     const date = parseCbnDate(notice.documentDate);
     if (!date) continue;
-    const actionUrl = notice.link ? makeAbsoluteUrl(CBN_NOTICES_URL, notice.link) : CBN_NOTICES_URL;
+    const actionUrl = notice.link ? makeAbsoluteUrl(lane.catalogueUrl, notice.link) : lane.catalogueUrl;
     let evidenceText = "";
+    let accessError: string | null = null;
     if (/\.pdf(?:$|[?#])/i.test(actionUrl)) {
       try {
         evidenceText = await extractPdfLayoutTextFromUrl(actionUrl);
       } catch (error) {
-        console.warn(`CBN: unable to extract affected-entity evidence from ${actionUrl}: ${error instanceof Error ? error.message : String(error)}`);
+        accessError = error instanceof Error ? error.message : String(error);
+        console.warn(`CBN: unable to extract affected-entity evidence from ${actionUrl}: ${accessError}`);
       }
     }
     // A bulk action is publishable only when the affected institutions are
     // named in the linked official document itself. API metadata and aggregate
     // titles are discovery hints, not entity evidence.
-    rows.push(...buildCbnRowsFromEvidence(notice, evidenceText));
+    const extracted = buildCbnRowsFromEvidence(notice, evidenceText, lane.catalogueUrl);
+    rows.push(...extracted);
+    if (extracted.length === 0 && lane.catalogueUrl === CBN_PRESS_RELEASES_PAGE_URL) {
+      const aggregate = /\b\d+[\s-]*(?:microfinance\s+)?banks?\b/i.test(notice.title);
+      cbnBlockedDiscoveries.push({
+        regulator: "CBN",
+        sourceUrl: actionUrl,
+        fingerprint: createHash("sha256").update(`CBN|${notice.id}|${actionUrl}`).digest("hex"),
+        reasonCode: accessError ? "source_access_blocked" : aggregate ? "aggregate_entity_evidence_missing" : "affected_entity_evidence_missing",
+        reason: accessError
+          ? "The official press-release document could not be retrieved, so no entity was promoted."
+          : aggregate
+            ? "The official release is aggregate and did not yield a named affected-entity list."
+            : "The official release did not yield document-backed affected entities.",
+        payload: { notice, actionUrl, accessError },
+      });
+    }
   }
   if (!rows.length) throw new Error("CBN official notices API returned no enforcement-related notices");
-  return buildCbnRecords(rows);
+  const deduplicated = [...new Map(rows.map((row) => [
+    `${row.date}::${row.entity.toLowerCase()}::${row.actionUrl.toLowerCase()}`,
+    row,
+  ] as const)).values()];
+  return buildCbnRecords(deduplicated);
 }
 
 export async function main() {
@@ -273,7 +330,16 @@ export async function main() {
     regulatorCode: "CBN",
     liveLoader: loadCbnLiveRecords,
     testLoader: loadCbnLiveRecords,
+    afterUpsert: async (sql, _records, scraperRunId) => {
+      await persistBlockedSourceDiscoveries(sql, cbnBlockedDiscoveries, scraperRunId);
+    },
   });
+}
+
+let cbnBlockedDiscoveries: BlockedSourceDiscovery[] = [];
+
+export function getCbnBlockedDiscoveries() {
+  return [...cbnBlockedDiscoveries];
 }
 
 if (process.argv[1] && fileURLToPath(import.meta.url) === process.argv[1]) {

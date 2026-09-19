@@ -36,6 +36,46 @@ export interface DiscoveryValidationResult {
   issues: DiscoveryValidationIssue[];
 }
 
+export interface BlockedSourceDiscovery {
+  regulator: string;
+  sourceUrl: string;
+  fingerprint: string;
+  reasonCode: string;
+  reason: string;
+  payload: unknown;
+}
+
+/**
+ * Keep official-source discoveries visible without allowing incomplete or
+ * inaccessible evidence to enter the enforcement dataset.
+ */
+export async function persistBlockedSourceDiscoveries(
+  sql: Sql,
+  discoveries: BlockedSourceDiscovery[],
+  scraperRunId: string | number,
+) {
+  for (const discovery of discoveries) {
+    await sql`
+      INSERT INTO public.coverage_discovery_quarantine (
+        regulator, scraper_run_id, source_url, fingerprint,
+        reason_codes, reasons, payload
+      )
+      SELECT
+        ${discovery.regulator}, ${scraperRunId}, ${discovery.sourceUrl},
+        ${discovery.fingerprint}, ${sql.json([discovery.reasonCode])},
+        ${sql.json([discovery.reason])}, ${sql.json(discovery.payload as never)}
+      WHERE NOT EXISTS (
+        SELECT 1
+        FROM public.coverage_discovery_quarantine
+        WHERE regulator = ${discovery.regulator}
+          AND fingerprint = ${discovery.fingerprint}
+          AND status = 'pending'
+      )
+    `;
+  }
+  return discoveries.length;
+}
+
 function normaliseUrl(value: string) {
   const url = new URL(value);
   url.hash = "";

@@ -28,6 +28,7 @@ export interface RunnerOptions {
   afterUpsert?: (
     sql: ReturnType<typeof createSqlClient>,
     records: DbReadyRecord[],
+    scraperRunId: string | number,
   ) => Promise<void>;
   retryOnTransientFailure?: boolean;
   maxRetries?: number;
@@ -231,7 +232,7 @@ async function runScraperAttempt(
     }
 
     if (options.afterUpsert) {
-      await options.afterUpsert(sql, records);
+      await options.afterUpsert(sql, records, scraperRunId);
     }
 
     console.log("\n🔄 Refreshing unified regulatory fines view...");

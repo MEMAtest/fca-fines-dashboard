@@ -2,7 +2,15 @@ import { readFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { dirname, join } from "node:path";
 import { describe, expect, it } from "vitest";
-import { buildCbnRecords, buildCbnRowsFromEvidence, extractCbnEntities, isCbnEnforcementNotice, parseCbnNoticesJson } from "../scrapeCbn.js";
+import {
+  buildCbnRecords,
+  buildCbnRowsFromEvidence,
+  extractCbnEntities,
+  isCbnEnforcementNotice,
+  isCbnEnforcementPressRelease,
+  parseCbnNoticesJson,
+  parseCbnPressReleaseCandidates,
+} from "../scrapeCbn.js";
 
 const fixture = readFileSync(join(dirname(fileURLToPath(import.meta.url)), "fixtures/cbn-notices-sample.json"), "utf8");
 const fourteenBanksEvidence = readFileSync(join(dirname(fileURLToPath(import.meta.url)), "fixtures/cbn-14-banks-evidence.txt"), "utf8");
@@ -53,5 +61,29 @@ describe("CBN official notices parser", () => {
     expect(records.every((record) => record.regulator === "CBN" && record.countryCode === "NG")).toBe(true);
     expect(records.every((record) => record.sourceUrl === "https://www.cbn.gov.ng/Documents/Notices.html")).toBe(true);
     expect(records.every((record) => record.finalNoticeUrl?.startsWith("https://"))).toBe(true);
+  });
+});
+
+describe("CBN official press-release discovery", () => {
+  it("finds actual adverse actions without treating policy or rebuttal releases as cases", () => {
+    const releases = [
+      { id: 1, refNo: "A", title: "CBN Revokes the Banking Licence of Heritage Bank Plc", description: "", keywords: "revocation", link: "/Out/heritage.pdf", documentDate: "03/06/2024" },
+      { id: 2, refNo: "B", title: "CBN Revokes Licenses of 46 Microfinance Banks", description: "", keywords: "revocation", link: "/Out/46.pdf", documentDate: "01/07/2026" },
+      { id: 3, refNo: "C", title: "Press Release: CBN Response to False Allegations of License Withdrawals", description: "", keywords: "licence", link: "/Out/rebuttal.pdf", documentDate: "04/06/2024" },
+      { id: 4, refNo: "D", title: "CBN Updates Cheque Sanctions Framework", description: "", keywords: "sanctions", link: "/Out/framework.pdf", documentDate: "10/02/2026" },
+    ];
+    expect(parseCbnPressReleaseCandidates(JSON.stringify(releases)).map((item) => item.id)).toEqual([1, 2]);
+    expect(isCbnEnforcementPressRelease(releases[0]!)).toBe(true);
+    expect(isCbnEnforcementPressRelease(releases[2]!)).toBe(false);
+    expect(isCbnEnforcementPressRelease(releases[3]!)).toBe(false);
+  });
+
+  it("does not turn an aggregate title or metadata-only name into an entity", () => {
+    const aggregate = {
+      id: 2, refNo: "B", title: "CBN Revokes Licenses of 46 Microfinance Banks",
+      description: "46 institutions were affected", keywords: "revocation",
+      link: "/Out/46.pdf", documentDate: "01/07/2026",
+    };
+    expect(buildCbnRowsFromEvidence(aggregate, "", "https://www.cbn.gov.ng/Documents/PressReleases.html")).toEqual([]);
   });
 });
