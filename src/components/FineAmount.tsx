@@ -6,16 +6,30 @@ interface FineAmountProps {
 }
 
 export function FineAmount({ record }: FineAmountProps) {
-  const state = record.requires_amount_review
-    ? "review"
-    : record.amount_disclosed === false
-      ? "undisclosed"
-      : "disclosed";
-  const value = state === "review"
-    ? "Amount under review"
-    : state === "undisclosed"
-      ? "Not disclosed"
-      : formatWorkspaceAmount(record.amount);
+  const status = record.monetary_penalty_status ??
+    (record.requires_amount_review ? "undisclosed" : record.amount_disclosed === false ? "undisclosed" : "disclosed");
+  const state = status === "none"
+    ? "non-monetary"
+    : status === "unknown"
+      ? record.record_class === "proceeding"
+        ? "pending"
+        : record.record_class === "regulatory_alert"
+          ? "alert"
+          : "unknown"
+      : status;
+  const value = status === "disclosed"
+    ? formatWorkspaceAmount(record.amount)
+    : status === "undisclosed"
+      ? record.requires_amount_review ? "Fine amount under review" : "Amount not disclosed"
+      : status === "none"
+        ? "Non-monetary"
+        : record.record_class === "proceeding"
+          ? "Outcome pending"
+          : record.record_class === "regulatory_alert"
+            ? "Alert only"
+            : record.record_class === "informational_notice"
+              ? "Notice only"
+              : "Outcome not confirmed";
 
   return (
     <strong

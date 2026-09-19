@@ -22,6 +22,7 @@ import {
   conceptEvidenceReasons,
   resolveEnforcementConcept,
 } from '../../src/data/enforcementConcepts.js';
+import { classifyEnforcementOutcome } from '../../src/data/enforcementOutcomes.js';
 
 const databaseUrl = resolveConnectionString() || '';
 const sql = postgres(databaseUrl, buildServerlessPostgresOptions(databaseUrl));
@@ -257,10 +258,30 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
             breachCategories: Array.isArray(row.breach_categories) ? row.breach_categories.map(String) : [],
           })
         : [];
+      const outcome = classifyEnforcementOutcome({
+        amountOriginal: row.amount_original,
+        amountGbp: row.amount_gbp,
+        amountEur: row.amount_eur,
+        requiresAmountReview: row.requires_amount_review,
+        amountQuality: row.amount_quality,
+        breachType: row.breach_type,
+        breachCategories: row.breach_categories,
+        summary: row.summary,
+        noticeUrl: row.notice_url,
+        sourceUrl: row.source_url,
+      });
       return {
         ...row,
         firm_individual: firm,
         canonical_case_path: casePath,
+        recordClass: outcome.recordClass,
+        outcomeTypes: outcome.outcomeTypes,
+        primaryOutcome: outcome.primaryOutcome,
+        monetaryPenaltyStatus: outcome.monetaryPenaltyStatus,
+        publicationType: outcome.publicationType,
+        proceduralStatus: outcome.proceduralStatus,
+        classificationVersion: outcome.classificationVersion,
+        outcomeMatchReasons: outcome.matchReasons,
         ...(concept === CYBER_OPERATIONAL_RESILIENCE && matchReasons.length > 0
           ? { matchedConcept: concept, matchReasons }
           : {}),
