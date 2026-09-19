@@ -18,8 +18,8 @@ import { DigestSubscribeForm } from "../components/DigestSubscribeForm.js";
 import { GeneratedArticleCharts } from "../components/GeneratedArticleCharts.js";
 import { trackEvent } from "../utils/analytics.js";
 import {
-  getPublishedBlogArticles,
-  getPublishedYearlyArticles,
+  getPublicBlogArticles,
+  getPublicYearlyArticles,
 } from "../data/blogArticles.js";
 import type {
   BlogArticleMeta,
@@ -72,8 +72,8 @@ import {
 } from "../components/MainArticleCharts.js";
 import "../styles/blog.css";
 
-const blogArticles = getPublishedBlogArticles();
-const yearlyArticles = getPublishedYearlyArticles();
+const blogArticles = getPublicBlogArticles();
+const yearlyArticles = getPublicYearlyArticles();
 
 function ArticleHero({ article }: { article: BlogArticleMeta }) {
   return (

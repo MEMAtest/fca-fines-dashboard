@@ -42,8 +42,8 @@ const BING_SITE_VERIFICATION =
 // However since the project uses "type": "module" and ts-node/esm, the import
 // resolves the .ts source directly.
 import {
-  getPublishedBlogArticles,
-  getPublishedYearlyArticles,
+  getPublicBlogArticles,
+  getPublicYearlyArticles,
 } from "../src/data/blogArticles.js";
 import {
   faqItems,
@@ -53,8 +53,8 @@ import {
   generateFaqSchema,
 } from "../src/data/faqData.js";
 
-const blogArticles = getPublishedBlogArticles();
-const yearlyArticles = getPublishedYearlyArticles();
+const blogArticles = getPublicBlogArticles();
+const yearlyArticles = getPublicYearlyArticles();
 import {
   REGULATOR_COVERAGE,
   PUBLIC_REGULATOR_CODES,
@@ -2195,6 +2195,25 @@ async function buildPageMetas(): Promise<PageMeta[]> {
       "regulatory fines by breach, market abuse enforcement, AML fines, regulatory principles fines, breach category fines",
     ogType: "website",
     bodyContent: '<main class="content-page"><h1>Enforcement actions by breach category</h1><p>Browse enforcement evidence by breach theme, then open the Fines workspace for the complete filtered record.</p></main>',
+  });
+
+  // Canonical cyber concept hub is static/prerendered even when the optional
+  // database-backed breach index is unavailable during a build.
+  pages.push({
+    path: "/breaches/cyber-operational-resilience",
+    title: "Cyber and Operational Resilience Enforcement | RegActions",
+    description: "Source-linked enforcement cases covering data breach, cyber incident, ransomware, ICT risk, information security, technology risk and operational resilience.",
+    keywords: "data breach enforcement, cyber incident enforcement, ransomware, ICT risk, operational resilience",
+    ogType: "website",
+    bodyContent: renderHubBody(
+      "Cyber and Operational Resilience Enforcement",
+      "Source-linked enforcement cases covering data breach, cyber incident, ransomware, ICT risk, information security, technology risk and operational resilience.",
+      [
+        { label: "Canonical concept", value: "CYBER_OPERATIONAL_RESILIENCE" },
+        { label: "Evidence rule", value: "Official-source text match; entity names alone are excluded" },
+      ],
+      "/breaches/cyber-operational-resilience",
+    ),
   });
   pages.push({
     path: "/years",

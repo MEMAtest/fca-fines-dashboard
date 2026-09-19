@@ -1,6 +1,12 @@
 import { PUBLIC_REGULATOR_NAV_ITEMS } from '../../src/data/regulatorCoverage.js';
 import { UK_ENFORCEMENT_REGULATORS } from '../../src/data/ukEnforcement.js';
 import { expandFirmAliasTerms } from './firmAliases.js';
+import {
+  CYBER_OPERATIONAL_RESILIENCE,
+  CYBER_OPERATIONAL_RESILIENCE_ALIASES,
+  resolveEnforcementConcept,
+  type EnforcementConcept,
+} from '../../src/data/enforcementConcepts.js';
 
 const ACRONYM_EXPANSIONS: Record<string, string[]> = {
   aml: ['anti money laundering'],
@@ -322,6 +328,8 @@ export interface PreparedEnforcementSearch {
   regulatorHints: string[];
   countryHints: string[];
   categoryHints: string[];
+  concept: EnforcementConcept | null;
+  conceptAliases: string[];
   hasSearchIntent: boolean;
 }
 
@@ -574,6 +582,21 @@ function expandThemePhrases(tokens: string[]) {
       && (tokens.includes('asset') || tokens.includes('assets'))
     );
 
+  const hasCyberIntent =
+    tokens.includes('cyber')
+    || tokens.includes('cybersecurity')
+    || tokens.includes('ransomware')
+    || tokens.includes('breach')
+    || tokens.includes('resilience')
+    || (tokens.includes('data') && tokens.includes('breach'))
+    || (tokens.includes('operational') && tokens.includes('resilience'))
+    || (tokens.includes('technology') && tokens.includes('risk'))
+    || (tokens.includes('information') && tokens.includes('security'));
+
+  if (hasCyberIntent) {
+    expanded.push(...CYBER_OPERATIONAL_RESILIENCE_ALIASES);
+  }
+
   if (tokens.includes('transaction') && tokens.includes('monitoring')) {
     expanded.push(
       'transaction monitoring',
@@ -801,6 +824,19 @@ function deriveCategoryHints(tokens: string[], themePhrases: string[]) {
     push('DISCLOSURE', 'REPORTING', 'BOOKS_AND_RECORDS');
   }
 
+  if (
+    haystack.has('data breach')
+    || haystack.has('cyber incident')
+    || haystack.has('ransomware')
+    || haystack.has('cybersecurity disclosure')
+    || haystack.has('ict risk')
+    || haystack.has('information security')
+    || haystack.has('technology risk')
+    || haystack.has('operational resilience')
+  ) {
+    push('CYBER_OPERATIONAL_RESILIENCE', 'CYBER', 'OPERATIONAL_RESILIENCE', 'ICT_RISK', 'DATA_BREACH');
+  }
+
   return Array.from(categoryHints);
 }
 
@@ -1017,6 +1053,10 @@ export function prepareEnforcementSearch(query: string): PreparedEnforcementSear
   const hasSearchIntent =
     meaningfulTokens.length > 0 || regulatorHints.length > 0 || countryHints.length > 0;
   const categoryHints = deriveCategoryHints(baseTokens, themePhrases);
+  const concept = resolveEnforcementConcept(normalizedQuery);
+  const conceptAliases = concept === CYBER_OPERATIONAL_RESILIENCE
+    ? [...CYBER_OPERATIONAL_RESILIENCE_ALIASES]
+    : [];
 
   return {
     normalizedQuery,
@@ -1036,6 +1076,8 @@ export function prepareEnforcementSearch(query: string): PreparedEnforcementSear
     regulatorHints,
     countryHints,
     categoryHints,
+    concept,
+    conceptAliases,
     hasSearchIntent,
   };
 }

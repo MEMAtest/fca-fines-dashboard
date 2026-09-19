@@ -16,6 +16,12 @@ import {
 } from '../../server/services/fcaFineCases.js';
 import { PUBLIC_REGULATOR_CODES } from '../../src/data/regulatorCoverage.js';
 import { authoriseDeveloperApiRequest, setDeveloperApiCache } from '../../server/services/developerApiAccess.js';
+import {
+  CYBER_OPERATIONAL_RESILIENCE,
+  CYBER_OPERATIONAL_RESILIENCE_ALIASES,
+  conceptEvidenceReasons,
+  resolveEnforcementConcept,
+} from '../../src/data/enforcementConcepts.js';
 
 const databaseUrl = resolveConnectionString() || '';
 const sql = postgres(databaseUrl, buildServerlessPostgresOptions(databaseUrl));
@@ -157,6 +163,21 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       )`);
       params.push(`%${q.trim()}%`);
       paramIndex++;
+
+      // Concept searches require evidence in enforcement text. This prevents
+      // entity names such as "Cyberstar" or "C5 Haven Cyber" from being
+      // promoted solely because they contain a cyber-looking token.
+      const concept = resolveEnforcementConcept(q.trim());
+      if (concept === CYBER_OPERATIONAL_RESILIENCE) {
+        const conceptPatterns = CYBER_OPERATIONAL_RESILIENCE_ALIASES.map((alias) => `%${alias}%`);
+        conditions.push(`(
+          summary ILIKE ANY($${paramIndex}::text[])
+          OR breach_type ILIKE ANY($${paramIndex}::text[])
+          OR breach_categories::text ILIKE ANY($${paramIndex}::text[])
+        )`);
+        params.push(conceptPatterns);
+        paramIndex++;
+      }
     }
 
     const whereClause = conditions.length > 0 ? `WHERE ${conditions.join(' AND ')}` : '';
@@ -224,10 +245,21 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
               year: Number(row.year_issued),
             })
           : null;
+      const concept = q?.trim() ? resolveEnforcementConcept(q.trim()) : null;
+      const matchReasons = concept === CYBER_OPERATIONAL_RESILIENCE
+        ? conceptEvidenceReasons({
+            breachType: row.breach_type,
+            summary: row.summary,
+            breachCategories: Array.isArray(row.breach_categories) ? row.breach_categories.map(String) : [],
+          })
+        : [];
       return {
         ...row,
         firm_individual: firm,
         canonical_case_path: casePath,
+        ...(concept === CYBER_OPERATIONAL_RESILIENCE && matchReasons.length > 0
+          ? { matchedConcept: concept, matchReasons }
+          : {}),
       };
     });
 

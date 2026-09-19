@@ -74,6 +74,8 @@ interface SearchRow {
   created_at: string;
   relevance_score: string | number;
   snippet: string | null;
+  concept_match_score: string | number;
+  concept_match_reasons: string[] | null;
   total_count: number;
 }
 
@@ -822,6 +824,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       prepared.firmIntentQuery,
       prepared.firmIntentQueryWithoutLegalSuffix,
       prepared.isShortFirmLikeQuery,
+      prepared.conceptAliases.map((alias) => `%${alias}%`),
     ];
 
     if (regulator) {
@@ -955,6 +958,32 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
               THEN ts_rank_cd(search_vector, websearch_to_tsquery('english', $8))
             ELSE 0
           END AS fuzzy_full_text_rank,
+          CASE
+            WHEN COALESCE(array_length($19::text[], 1), 0) > 0
+              AND (
+                COALESCE(summary, '') ILIKE ANY($19::text[])
+                OR COALESCE(breach_type, '') ILIKE ANY($19::text[])
+                OR COALESCE(
+                  CASE WHEN jsonb_typeof(breach_categories) = 'string'
+                    THEN (breach_categories #>> '{}')
+                    ELSE breach_categories::text
+                  END,
+                  ''
+                ) ILIKE ANY($19::text[])
+              )
+              THEN 170
+            ELSE 0
+          END AS concept_match_score,
+          ARRAY_REMOVE(ARRAY[
+            CASE WHEN COALESCE(array_length($19::text[], 1), 0) > 0 AND COALESCE(breach_type, '') ILIKE ANY($19::text[]) THEN 'breachType' END,
+            CASE WHEN COALESCE(array_length($19::text[], 1), 0) > 0 AND COALESCE(summary, '') ILIKE ANY($19::text[]) THEN 'summary' END,
+            CASE WHEN COALESCE(array_length($19::text[], 1), 0) > 0 AND COALESCE(
+              CASE WHEN jsonb_typeof(breach_categories) = 'string'
+                THEN (breach_categories #>> '{}')
+                ELSE breach_categories::text
+              END, ''
+            ) ILIKE ANY($19::text[]) THEN 'breachCategory' END
+          ], NULL)::text[] AS concept_match_reasons,
           CASE
             WHEN $2 <> ''
               AND (
@@ -1137,6 +1166,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
           END AS category_theme_synergy_score
         FROM filtered_results
         WHERE
+          (COALESCE(array_length($19::text[], 1), 0) = 0 OR concept_match_score > 0)
+          AND (
           regulator_hint_score > 0
           OR firm_match_score > 0
           OR firm_token_match_score > 0
@@ -1202,6 +1233,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
             + fuzzy_token_match_score
             + (full_text_rank * 100)
             + (fuzzy_full_text_rank * 60)
+            + concept_match_score
           ) AS combined_score
         FROM ranked_results
       )
@@ -1228,6 +1260,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         created_at,
         combined_score AS relevance_score,
         highlighted_snippet AS snippet,
+        concept_match_score,
+        concept_match_reasons,
         COUNT(*) OVER() AS total_count
       FROM scored_results
       ORDER BY
@@ -1291,6 +1325,12 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
           toFiniteNumber(row.relevance_score) / 300,
         ).toFixed(4),
         createdAt: row.created_at,
+        ...(Number(row.concept_match_score) > 0
+          ? {
+              matchedConcept: 'CYBER_OPERATIONAL_RESILIENCE',
+              matchReasons: row.concept_match_reasons ?? [],
+            }
+          : {}),
       })),
       pagination: {
         total: totalCount,

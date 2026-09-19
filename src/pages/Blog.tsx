@@ -27,11 +27,12 @@ import {
 import { DigestSubscribeForm } from "../components/DigestSubscribeForm.js";
 import { yearlyFCAData } from "../components/YearlyArticleCharts.js";
 import {
-  getPublishedBlogArticles,
-  getPublishedYearlyArticles,
+  getPublicBlogArticles,
+  getPublicYearlyArticles,
 } from "../data/blogArticles.js";
 import type { BlogArticleMeta } from "../data/blogArticles.js";
 import { LIVE_REGULATOR_NAV_ITEMS } from "../data/regulatorCoverage.js";
+import { searchResearchArticles } from "../data/researchSearch.js";
 import { injectStructuredData, useSEO } from "../hooks/useSEO.js";
 import { REGULATOR_COUNT } from "../constants/site.js";
 import "../styles/blog.css";
@@ -65,8 +66,8 @@ interface FilterOption {
 
 const MotionLink = motion.create(Link);
 const LIVE_REGULATOR_COUNT = LIVE_REGULATOR_NAV_ITEMS.length;
-const blogArticlesMeta = getPublishedBlogArticles();
-const yearlyArticlesMeta = getPublishedYearlyArticles();
+const blogArticlesMeta = getPublicBlogArticles();
+const yearlyArticlesMeta = getPublicYearlyArticles();
 
 const iconMap: Record<string, React.ReactNode> = {
   "largest-fca-fines-history": <Scale className="blog-card-icon" />,
@@ -554,12 +555,11 @@ export function Blog() {
   const featuredCount = countMatches(blogArticles, (article) => Boolean(article.featured));
 
   const filteredArticles = useMemo(() => {
-    const terms = normalize(query)
-      .split(/\s+/)
-      .filter(Boolean);
+    const searchHits = query ? searchResearchArticles(blogArticles, query) : [];
+    const searchIds = new Set(searchHits.map((hit) => hit.article.id));
     const filtered = blogArticles.filter((article) => {
+      if (query && !searchIds.has(article.id)) return false;
       const corpus = articleCorpus(article);
-      if (terms.length && !terms.every((term) => corpus.includes(term))) return false;
       if (selectedMonth !== ALL_VALUE && !article.dateISO.startsWith(selectedMonth)) return false;
       if (selectedYear !== ALL_VALUE && !article.dateISO.startsWith(selectedYear)) return false;
       if (selectedCategory !== ALL_VALUE && article.category !== selectedCategory) return false;
@@ -571,6 +571,13 @@ export function Blog() {
     });
     return filtered.sort(sortMode === "oldest" ? byOldestArticle : byNewestArticle);
   }, [query, selectedMonth, selectedYear, selectedCategory, selectedRegulator, selectedType, sortMode]);
+
+  const researchSearchHits = useMemo(
+    () => (query ? searchResearchArticles(blogArticles, query) : []),
+    [query],
+  );
+  const focusedResearchCount = researchSearchHits.filter((hit) => hit.kind === "focused").length;
+  const relatedResearchCount = researchSearchHits.filter((hit) => hit.kind === "related").length;
 
   const leadArticle = filteredArticles[0];
   const gridArticles = filteredArticles.slice(1);
@@ -844,6 +851,11 @@ export function Blog() {
               Browse source-led analysis across regulators, sectors, themes,
               jurisdictions and enforcement outcomes.
             </p>
+            {query && (
+              <p aria-live="polite">
+                <strong>Focused analysis:</strong> {focusedResearchCount} · <strong>Related mentions:</strong> {relatedResearchCount}
+              </p>
+            )}
           </div>
 
           <div className="insights-results-bar">

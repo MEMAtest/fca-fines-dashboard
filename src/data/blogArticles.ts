@@ -5826,10 +5826,26 @@ export function getPublishedBlogArticles(todayISO?: string): BlogArticleMeta[] {
   return allBlogArticles.filter((article) => isPublished(article, todayISO));
 }
 
+/** Public editorial surfaces must never promote scheduled or draft material.
+ * Legacy entries without a status remain public for backwards compatibility;
+ * explicit publication is required once a status is present. */
+export function isPubliclyPublished(article: BlogArticleMeta): boolean {
+  if (article.status === "scheduled" || article.status === "draft") return false;
+  return isPublished(article);
+}
+
+export function getPublicBlogArticles(): BlogArticleMeta[] {
+  return allBlogArticles.filter(isPubliclyPublished);
+}
+
 export function getPublishedYearlyArticles(
   todayISO?: string,
 ): YearlyArticleMeta[] {
   return yearlyArticles.filter((article) => isPublished(article, todayISO));
+}
+
+export function getPublicYearlyArticles(): YearlyArticleMeta[] {
+  return yearlyArticles.filter(isPubliclyPublished);
 }
 
 export function getPublishedAllArticles(

@@ -11,6 +11,13 @@ const DATA_HUBS = [
     to: "/breaches",
   },
   {
+    tag: "Cyber and resilience",
+    title: "Cyber enforcement",
+    body: "Explore source-linked cyber, data-breach, ICT-risk and operational-resilience cases.",
+    meta: "Concept evidence hub",
+    to: "/breaches/cyber-operational-resilience",
+  },
+  {
     tag: "Yearly view",
     title: "Fines By Year",
     body: "Compare enforcement volumes and totals across years with one click to the dashboard.",
