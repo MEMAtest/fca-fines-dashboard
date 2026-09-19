@@ -3,6 +3,7 @@ import type { DbReadyRecord } from "../lib/euFineHelpers.js";
 import {
   buildDiscoveryCandidateRow,
   persistPreparedDiscoveryCandidates,
+  validateDiscoveryCandidate,
 } from "../lib/coverageDiscoveryCandidates.js";
 
 const record: DbReadyRecord = {
@@ -66,5 +67,18 @@ describe("prepared official-source discovery persistence", () => {
     ]) {
       expect(() => buildDiscoveryCandidateRow({ ...record, regulator: "AFM", firmIndividual: entity, sourceUrl: "https://www.afm.nl/en/news/example" }, 12)).toThrow(/invalid_entity|validation/);
     }
+  });
+
+  it("quarantines source-system minimum-date sentinels", () => {
+    const result = validateDiscoveryCandidate({
+      ...record,
+      dateIssued: "0001-01-01",
+      yearIssued: 1,
+      monthIssued: 1,
+    }, 12);
+    expect(result.row).toBeNull();
+    expect(result.issues).toEqual(expect.arrayContaining([
+      expect.objectContaining({ code: "invalid_date" }),
+    ]));
   });
 });

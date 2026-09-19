@@ -151,7 +151,7 @@ export function BreachHub() {
                         <Link
                           className="hub-link"
                           to={isCyberConcept
-                            ? `/search?q=${encodeURIComponent(`${row.name} cyber`)}`
+                            ? `/search?q=cyber&firmName=${encodeURIComponent(row.name)}`
                             : `/dashboard?search=${encodeURIComponent(row.name)}&scope=firm&year=0&breaches=${encodeURIComponent(category.name)}`}
                         >
                           {row.name}

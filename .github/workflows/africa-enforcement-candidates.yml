@@ -16,10 +16,16 @@ jobs:
         include:
           - code: FSCA
             script: scrape:fsca
+            browser: true
+            pdf: false
           - code: CBN
             script: scrape:cbn
+            browser: false
+            pdf: true
           - code: NGSEC
             script: scrape:ngsec
+            browser: false
+            pdf: false
     concurrency:
       group: africa-enforcement-candidate-${{ matrix.code }}
       cancel-in-progress: false
@@ -30,6 +36,12 @@ jobs:
           node-version: 22
           cache: npm
       - run: npm ci
+      - name: Install Chromium for official archive export
+        if: matrix.browser
+        run: npx playwright install --with-deps chromium
+      - name: Install PDF evidence extractor
+        if: matrix.pdf
+        run: sudo apt-get update && sudo apt-get install -y poppler-utils
       - name: Load and reconcile official archive
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}

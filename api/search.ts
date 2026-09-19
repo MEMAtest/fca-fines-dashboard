@@ -646,6 +646,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     const q = resolveFirstString(req.query.q) ?? '';
     const regulator = resolveFirstString(req.query.regulator);
     const country = resolveFirstString(req.query.country);
+    const firmName = resolveFirstString(req.query.firmName);
     const year = resolveFirstString(req.query.year);
     const minAmount = resolveFirstString(req.query.minAmount);
     const maxAmount = resolveFirstString(req.query.maxAmount);
@@ -838,6 +839,11 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     if (country) {
       params.push(normalizedCountryCode);
       conditions.push(`country_code = $${params.length}`);
+    }
+
+    if (firmName?.trim()) {
+      params.push(`%${firmName.trim()}%`);
+      conditions.push(`firm_individual ILIKE $${params.length}`);
     }
 
     if (year) {
@@ -1343,6 +1349,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       },
       filters: {
         query: q,
+        firmName: firmName?.trim() || null,
         regulator: regulator || null,
         country: normalizedCountryCode || null,
         year: year ? Number.parseInt(year, 10) : null,

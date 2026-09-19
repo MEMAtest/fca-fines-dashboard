@@ -122,6 +122,7 @@ type SearchCurrency = "GBP" | "EUR";
 
 interface SearchUrlState {
   query: string;
+  firmName: string;
   regulator: string;
   country: string;
   year: string;
@@ -137,6 +138,7 @@ export function parseSearchParams(params: URLSearchParams): SearchUrlState {
 
   return {
     query: params.get("q")?.trim() ?? "",
+    firmName: params.get("firmName")?.trim() ?? "",
     regulator: params.get("regulator") ?? "",
     country: params.get("country") ?? "",
     year: params.get("year") ?? "",
@@ -150,6 +152,7 @@ export function parseSearchParams(params: URLSearchParams): SearchUrlState {
 export function buildSearchParams(state: SearchUrlState) {
   const params = new URLSearchParams();
   if (state.query.trim()) params.set("q", state.query.trim());
+  if (state.firmName.trim()) params.set("firmName", state.firmName.trim());
   if (state.regulator) params.set("regulator", state.regulator);
   if (state.country) params.set("country", state.country);
   if (state.year) params.set("year", state.year);
@@ -266,6 +269,7 @@ export function EnforcementSearch() {
   const commitSearch = (overrides: Partial<SearchUrlState> = {}) => {
     const nextState: SearchUrlState = {
       query,
+      firmName: activeSearchState.firmName,
       regulator: selectedRegulator,
       country: selectedCountry,
       year: selectedYear,
@@ -319,6 +323,7 @@ export function EnforcementSearch() {
     });
 
     if (state.regulator) params.append("regulator", state.regulator);
+    if (state.firmName) params.append("firmName", state.firmName);
     if (state.country) params.append("country", state.country);
     if (state.year) params.append("year", state.year);
     if (state.minAmount) params.append("minAmount", state.minAmount);
@@ -426,6 +431,7 @@ export function EnforcementSearch() {
     setSearchParams(
       buildSearchParams({
         query,
+        firmName: activeSearchState.firmName,
         regulator: "",
         country: "",
         year: "",

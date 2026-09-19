@@ -2,6 +2,7 @@
 import "dotenv/config";
 import * as cheerio from "cheerio";
 import { fileURLToPath } from "node:url";
+import XLSX from "xlsx";
 import {
   buildEuFineRecord,
   fetchText,
@@ -27,7 +28,51 @@ export interface FscaActionRow {
 
 export function parseFscaDate(input: string): string | null {
   const match = normalizeWhitespace(input).match(/(?:^|\D)(\d{1,2})\/(\d{1,2})\/(\d{4})(?:\D|$)/);
-  return match ? `${match[3]}-${match[1].padStart(2, "0")}-${match[2].padStart(2, "0")}` : null;
+  if (!match || Number(match[3]) < 1900) return null;
+  return `${match[3]}-${match[1].padStart(2, "0")}-${match[2].padStart(2, "0")}`;
+}
+
+type FscaExportRow = {
+  Date?: unknown;
+  Contravention?: unknown;
+  "Respondents/Defendants"?: unknown;
+  Outcome?: unknown;
+  "Copy of Order"?: unknown;
+  "Press Release"?: unknown;
+};
+
+/** Parse the archive's official full-workbook export (currently 600+ actions). */
+export function parseFscaWorkbook(input: Buffer | Uint8Array, archiveUrl = FSCA_ARCHIVE_URL): FscaActionRow[] {
+  const workbook = XLSX.read(input, { type: "buffer" });
+  const sheet = workbook.Sheets[workbook.SheetNames[0]];
+  if (!sheet) return [];
+  const rows = XLSX.utils.sheet_to_json<FscaExportRow>(sheet, { defval: "" });
+  const parsed = new Map<string, FscaActionRow>();
+  for (const row of rows) {
+    const rawDate = String(row.Date || "");
+    // The official export currently carries a bounded set of rows with its
+    // .NET minimum-date sentinel. Retain them in the prepared batch so the
+    // shared discovery validator records them as quarantined evidence rather
+    // than silently dropping official source rows.
+    const dateIssued = parseFscaDate(rawDate) || (/\b0*1\/0*1\/0*001\b/.test(rawDate) ? "0001-01-01" : null);
+    const contravention = normalizeWhitespace(String(row.Contravention || ""));
+    const respondent = normalizeWhitespace(String(row["Respondents/Defendants"] || ""));
+    const outcome = normalizeWhitespace(String(row.Outcome || ""));
+    if (!dateIssued || !respondent || !outcome) continue;
+    const orderHref = normalizeWhitespace(String(row["Copy of Order"] || ""));
+    const pressHref = normalizeWhitespace(String(row["Press Release"] || ""));
+    const key = `${dateIssued}::${respondent}::${outcome}::${contravention}`;
+    parsed.set(key, {
+      dateIssued,
+      contravention,
+      respondent,
+      outcome,
+      orderUrl: orderHref ? makeAbsoluteUrl(archiveUrl, orderHref) : null,
+      pressReleaseUrl: pressHref ? makeAbsoluteUrl(archiveUrl, pressHref) : null,
+      archiveUrl,
+    });
+  }
+  return [...parsed.values()];
 }
 
 /** Parses a server-rendered archive page and removes repeated Blazor SSR rows. */
@@ -113,13 +158,55 @@ export async function loadFscaPages(loadHtml: HtmlLoader = (url) => fetchText(ur
 }
 
 export async function loadFscaLiveRecords(): Promise<DbReadyRecord[]> {
-  const rows = await loadFscaPages();
+  // Query-string pagination on this Blazor grid returns page one repeatedly.
+  // Its official Download control exposes the complete reconciled archive and
+  // direct order URLs, so use that first-class export instead of partial HTML.
+  const { chromium } = await import("playwright");
+  const browser = await chromium.launch({ headless: true });
+  const reconciledRows = new Map<string, FscaActionRow>();
+  try {
+    // The source is served by several application instances whose export
+    // caches can briefly differ during publication. Reconcile three official
+    // exports and take their union; stable canonical keys keep this idempotent.
+    for (let attempt = 0; attempt < 3; attempt += 1) {
+      const page = await browser.newPage({ acceptDownloads: true });
+      try {
+        await page.goto(FSCA_ARCHIVE_URL, { waitUntil: "domcontentloaded", timeout: 120_000 });
+        await page.waitForSelector("table tbody tr", { timeout: 120_000 });
+        await page.waitForTimeout(1_500);
+        const downloadPromise = page.waitForEvent("download", { timeout: 60_000 });
+        await page.getByRole("button", { name: "Download", exact: true }).click({ timeout: 60_000 });
+        const download = await downloadPromise;
+        const stream = await download.createReadStream();
+        const chunks: Buffer[] = [];
+        for await (const chunk of stream) chunks.push(Buffer.isBuffer(chunk) ? chunk : Buffer.from(chunk));
+        for (const row of parseFscaWorkbook(Buffer.concat(chunks))) {
+          reconciledRows.set(`${row.dateIssued}::${row.respondent}::${row.outcome}::${row.contravention}`, row);
+        }
+      } finally {
+        await page.close();
+      }
+    }
+  } finally {
+    await browser.close();
+  }
+  const rows = [...reconciledRows.values()];
   if (!rows.length) throw new Error("FSCA official enforcement archive returned zero parseable rows");
   return buildFscaRecords(rows);
 }
 
 export async function main() {
-  await runScraper({ name: "🇿🇦 FSCA Enforcement Actions Scraper", region: "Africa", regulatorCode: "FSCA", liveLoader: loadFscaLiveRecords, testLoader: loadFscaLiveRecords });
+  await runScraper({
+    name: "🇿🇦 FSCA Enforcement Actions Scraper",
+    region: "Africa",
+    regulatorCode: "FSCA",
+    liveLoader: loadFscaLiveRecords,
+    testLoader: loadFscaLiveRecords,
+    // A complete archive should remain comfortably above this floor. The
+    // export's rare .NET minimum-date sentinels still flow through the shared
+    // validator and remain reviewable quarantines.
+    qualityContract: { minimumPreparedRecords: 500 },
+  });
 }
 
 if (process.argv[1] && fileURLToPath(import.meta.url) === process.argv[1]) {
