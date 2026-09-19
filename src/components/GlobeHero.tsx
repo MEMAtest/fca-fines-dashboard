@@ -6,7 +6,14 @@
 import { useRef, useEffect, useState, useMemo, useCallback } from 'react';
 import { motion } from 'framer-motion';
 import { Gavel, Users, Calendar, Activity, Flag } from 'lucide-react';
-import { getRegulatorsForCountry, getCoveredCountries, getAllCountryInfo } from '../data/countryRegulatorMapping.js';
+import {
+  getRegulatorsForCountry,
+  getCoveredCountries,
+  getAllCountryInfo,
+  getPipelineRegulatorsForCountry,
+  getPipelineCountries,
+  getAllPipelineCountryInfo,
+} from '../data/countryRegulatorMapping.js';
 import { FloatingStats, type FloatingStat } from './FloatingStats.js';
 import { RegulatorMark } from './RegulatorMark.js';
 import { LIVE_REGULATOR_NAV_ITEMS } from '../data/regulatorCoverage.js';
@@ -57,6 +64,7 @@ interface Point {
   size: number;
   color: string;
   label: string;
+  status: 'live' | 'pipeline';
 }
 
 
@@ -200,6 +208,7 @@ export function GlobeHero({ onCountryClick, visualOnly = false, figures }: Globe
   }, [stats, visualOnly, figures]);
 
   const coveredCountries = useMemo(() => new Set(getCoveredCountries()), []);
+  const pipelineCountries = useMemo(() => new Set(getPipelineCountries()), []);
 
   const arcsData = useMemo(() => {
     const allCountries = getAllCountryInfo();
@@ -238,11 +247,25 @@ export function GlobeHero({ onCountryClick, visualOnly = false, figures }: Globe
           size: Math.max(0.15, Math.min(country.totalRecords / 100, 1.5)),
           color: '#06b6d4',
           label: country.countryName,
+          status: 'live',
         });
       }
     });
+    getAllPipelineCountryInfo().forEach(country => {
+      if (coveredCountries.has(country.countryCode)) return;
+      const coords = COUNTRY_COORDS[country.countryCode];
+      if (!coords) return;
+      points.push({
+        lat: coords.lat,
+        lng: coords.lng,
+        size: 0.2,
+        color: '#A8B6C2',
+        label: `${country.countryName} — pipeline`,
+        status: 'pipeline',
+      });
+    });
     return points;
-  }, []);
+  }, [coveredCountries]);
 
   useEffect(() => {
     const loadCountries = async () => {
@@ -272,7 +295,9 @@ export function GlobeHero({ onCountryClick, visualOnly = false, figures }: Globe
   const handlePolygonHover = useCallback((polygon: any) => {
     if (polygon) {
       const countryCode = getGlobeAlpha2(polygon);
-      const info = countryCode ? getRegulatorsForCountry(countryCode) : null;
+      const info = countryCode
+        ? getRegulatorsForCountry(countryCode) ?? getPipelineRegulatorsForCountry(countryCode)
+        : null;
       if (info && countryCode) setHoveredCountry(countryCode);
     } else {
       setHoveredCountry(null);
@@ -393,6 +418,7 @@ export function GlobeHero({ onCountryClick, visualOnly = false, figures }: Globe
             features={countries.features}
             size={globeSize}
             covered={coveredCountries}
+            pipeline={pipelineCountries}
             hovered={hoveredCountry}
             arcs={arcsData}
             points={pointsData}
@@ -412,12 +438,16 @@ export function GlobeHero({ onCountryClick, visualOnly = false, figures }: Globe
               <div className="globe-legend__row">
                 <span className="globe-legend__swatch globe-legend__swatch--covered" aria-hidden="true" />
                 {typeof figures?.countries === 'number'
-                  ? `${figures.countries} countries covered`
-                  : 'countries covered'}
+                  ? `${figures.countries} countries with live feeds`
+                  : 'countries with live feeds'}
+              </div>
+              <div className="globe-legend__row globe-legend__row--pipeline">
+                <span className="globe-legend__swatch globe-legend__swatch--pipeline" aria-hidden="true" />
+                source validation pipeline
               </div>
               <div className="globe-legend__row globe-legend__row--muted">
                 <span className="globe-legend__swatch globe-legend__swatch--uncovered" aria-hidden="true" />
-                not yet monitored
+                no enforcement feed
               </div>
               <div className="globe-legend__row">
                 <span className="globe-legend__dot" aria-hidden="true" />
@@ -435,8 +465,10 @@ export function GlobeHero({ onCountryClick, visualOnly = false, figures }: Globe
 }
 
 function HoverTooltip({ countryCode }: { countryCode: string }) {
-  const info = getRegulatorsForCountry(countryCode);
+  const liveInfo = getRegulatorsForCountry(countryCode);
+  const info = liveInfo ?? getPipelineRegulatorsForCountry(countryCode);
   if (!info) return null;
+  const isPipeline = !liveInfo;
 
   return (
     <motion.div
@@ -448,16 +480,24 @@ function HoverTooltip({ countryCode }: { countryCode: string }) {
     >
       <div className="globe-tooltip__header">
         <h4>{info.countryName}</h4>
-        <span className="globe-tooltip__count">{info.totalRecords.toLocaleString()} actions</span>
+        <span className={`globe-tooltip__count${isPipeline ? ' globe-tooltip__count--pipeline' : ''}`}>
+          {isPipeline ? 'Source validation pipeline' : `${info.totalRecords.toLocaleString()} actions`}
+        </span>
       </div>
       <div className="globe-tooltip__regulators">
         {info.regulators.map((reg: any) => (
-          <a key={reg.code} href={`/regulators/${reg.code.toLowerCase()}`} className="regulator-badge regulator-badge--clickable">
-            {reg.code}
-          </a>
+          isPipeline ? (
+            <span key={reg.code} className="regulator-badge regulator-badge--pipeline">{reg.code}</span>
+          ) : (
+            <a key={reg.code} href={`/regulators/${reg.code.toLowerCase()}`} className="regulator-badge regulator-badge--clickable">
+              {reg.code}
+            </a>
+          )
         ))}
       </div>
-      <p className="globe-tooltip__hint">Click for regulator details</p>
+      <p className="globe-tooltip__hint">
+        {isPipeline ? 'Not counted as live until production gates pass' : 'Click for regulator details'}
+      </p>
     </motion.div>
   );
 }

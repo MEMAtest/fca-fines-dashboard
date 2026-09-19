@@ -25,7 +25,8 @@ export const ISO_NUMERIC_TO_ALPHA2: Readonly<Record<string, string>> = {
   '196': 'CY', '203': 'CZ', '208': 'DK', '246': 'FI', '250': 'FR',
   '276': 'DE', '288': 'GH', '344': 'HK', '356': 'IN', '372': 'IE',
   '380': 'IT', '392': 'JP', '410': 'KR', '442': 'LU', '458': 'MY',
-  '470': 'MT', '484': 'MX', '504': 'MA', '528': 'NL', '554': 'NZ',
+  '060': 'BM', '470': 'MT', '484': 'MX', '504': 'MA', '528': 'NL',
+  '554': 'NZ', '566': 'NG',
   '578': 'NO', '620': 'PT', '682': 'SA', '702': 'SG', '710': 'ZA',
   '724': 'ES', '752': 'SE', '756': 'CH', '784': 'AE', '792': 'TR',
   '826': 'GB', '831': 'GG', '832': 'JE', '833': 'IM', '840': 'US',
@@ -47,6 +48,7 @@ export const COUNTRY_COORDS: Readonly<Record<string, GlobeCoordinates>> = {
   AT: { lat: 48.2082, lng: 16.3738 },
   AU: { lat: -33.8688, lng: 151.2093 },
   BE: { lat: 50.8503, lng: 4.3517 },
+  BM: { lat: 32.2948, lng: -64.7814 },
   BR: { lat: -23.5505, lng: -46.6333 },
   CA: { lat: 43.6532, lng: -79.3832 },
   CH: { lat: 46.9480, lng: 7.4474 },
@@ -77,6 +79,7 @@ export const COUNTRY_COORDS: Readonly<Record<string, GlobeCoordinates>> = {
   MX: { lat: 19.4326, lng: -99.1332 },
   MY: { lat: 3.1390, lng: 101.6869 },
   NL: { lat: 52.3676, lng: 4.9041 },
+  NG: { lat: 9.0765, lng: 7.3986 },
   NO: { lat: 59.9139, lng: 10.7522 },
   NZ: { lat: -41.2865, lng: 174.7762 },
   PT: { lat: 38.7223, lng: -9.1393 },
@@ -88,4 +91,3 @@ export const COUNTRY_COORDS: Readonly<Record<string, GlobeCoordinates>> = {
   US: { lat: 38.9072, lng: -77.0369 },
   ZA: { lat: -33.9249, lng: 18.4241 },
 };
-

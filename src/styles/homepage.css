@@ -1450,6 +1450,10 @@
   color: rgba(255, 255, 255, 0.45);
 }
 
+.globe-legend__row--pipeline {
+  color: rgba(255, 255, 255, 0.66);
+}
+
 .globe-legend__swatch {
   width: 11px;
   height: 11px;
@@ -1458,6 +1462,11 @@
 
 .globe-legend__swatch--covered {
   background: #7fd4b4;
+}
+
+.globe-legend__swatch--pipeline {
+  background: rgba(168, 182, 194, 0.24);
+  border: 1px dashed rgba(200, 211, 220, 0.85);
 }
 
 .globe-legend__swatch--uncovered {
