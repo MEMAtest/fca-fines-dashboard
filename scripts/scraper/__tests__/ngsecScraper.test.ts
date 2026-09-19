@@ -2,7 +2,13 @@ import { readFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { dirname, join } from "node:path";
 import { describe, expect, it } from "vitest";
-import { buildNgsecRecord, parseNgsecArchiveHtml, parseNgsecDetailHtml } from "../scrapeNgsec.js";
+import {
+  buildNgsecRecord,
+  isNgsecCompendium,
+  normalizeNgsecEntity,
+  parseNgsecArchiveHtml,
+  parseNgsecDetailHtml,
+} from "../scrapeNgsec.js";
 
 const directory = join(dirname(fileURLToPath(import.meta.url)), "fixtures");
 const archive = readFileSync(join(directory, "ngsec-archive-sample.html"), "utf8");
@@ -43,5 +49,37 @@ describe("NGSEC official enforcement archive parser", () => {
       const html = `<main><section><div class="group"><a href="${href}"><span class="h-1"></span><span>${title}</span></a></div></section></main>`;
       expect(parseNgsecArchiveHtml(html, `https://www.sec.gov.ng/enforcements/${category}/`)).toMatchObject([{ title, dateIssued: null }]);
     }
+  });
+
+  it("splits named ordered-list evidence and cleans page-title prefixes", () => {
+    const html = `<main>
+      <h1>Blacklisting Of Six Unregulated Platforms <span>Published: April 27, 2023</span></h1>
+      <section><div class="block-paragraph_block"><p>Unregistered platforms:</p><ol>
+        <li>Prime Invest and Primeinv.co</li><li>FXBoxed</li><li>New Finance LLC and New Fx Limited</li>
+      </ol></div></section>
+    </main>`;
+    const parsed = parseNgsecDetailHtml(html, "https://www.sec.gov.ng/enforcements/example/");
+    expect(parsed?.affectedEntities).toEqual([
+      "Prime Invest and Primeinv.co",
+      "FXBoxed",
+      "New Finance LLC and New Fx Limited",
+    ]);
+    expect(normalizeNgsecEntity("Illegal Operator Alert – Pocket Option")).toBe("Pocket Option");
+    expect(normalizeNgsecEntity("Public Notice - Tofro.com")).toBe("Tofro.com");
+  });
+
+  it("identifies archive compendia so they cannot be published as firms", () => {
+    const entry = {
+      title: "Recent Litigation Cases (September, 2009 to Present Day)",
+      summary: "",
+      dateIssued: null,
+      detailUrl: "https://www.sec.gov.ng/enforcements/litigation/recent-litigation-cases-0909-present-day/",
+    };
+    const parsed = parseNgsecDetailHtml(
+      `<main><h1>Recent Litigation Cases <span>Published: June 2, 2025</span></h1><section><p>Twenty historical cases.</p></section></main>`,
+      entry.detailUrl,
+    );
+    expect(parsed).not.toBeNull();
+    expect(isNgsecCompendium(entry, parsed!)).toBe(true);
   });
 });

@@ -1,6 +1,7 @@
 /** Nigerian Securities and Exchange Commission official enforcement archive. */
 import "dotenv/config";
 import * as cheerio from "cheerio";
+import { createHash } from "node:crypto";
 import { fileURLToPath } from "node:url";
 import {
   buildEuFineRecord,
@@ -12,6 +13,10 @@ import {
   type DbReadyRecord,
 } from "./lib/euFineHelpers.js";
 import { runScraper } from "./lib/runScraper.js";
+import {
+  persistBlockedSourceDiscoveries,
+  type BlockedSourceDiscovery,
+} from "./lib/coverageDiscoveryCandidates.js";
 
 export const NGSEC_ENFORCEMENT_URL = "https://www.sec.gov.ng/enforcements/";
 export const NGSEC_UPDATE_URL = "https://www.sec.gov.ng/enforcements/keep-track-of-enforcement-updates/";
@@ -35,6 +40,7 @@ export interface NgsecDetail {
   dateIssued: string;
   summary: string;
   body: string;
+  affectedEntities: string[];
 }
 
 function parseNgsecDate(input: string): string | null {
@@ -80,8 +86,37 @@ export function parseNgsecDetailHtml(html: string, detailUrl: string): NgsecDeta
   content.find("h1, nav, script, style").remove();
   const body = normalizeWhitespace(content.text());
   const summary = normalizeWhitespace(content.find("p").first().text());
+  // Numbered lists on decisions often contain remedies, penalties or product
+  // options rather than respondent names. Split only pages whose title says
+  // the list itself is the set of affected operators.
+  const listNamesAffectedOperators = /blacklisting|activities of some unregistered|scammer alert/i.test(title);
+  const affectedEntities = listNamesAffectedOperators
+    ? content.find(".block-paragraph_block ol > li, ol > li")
+      .map((_, item) => normalizeNgsecEntity($(item).text()))
+      .get()
+      .filter((entity) => isSpecificNgsecEntity(entity))
+    : [];
   if (!title || !dateIssued) return null;
-  return { title, dateIssued, summary, body };
+  return { title, dateIssued, summary, body, affectedEntities: [...new Set(affectedEntities)] };
+}
+
+export function normalizeNgsecEntity(input: string) {
+  return normalizeWhitespace(input)
+    .replace(/^(?:illegal\s+operator(?:\s+alert)?|public\s+notice|notice\s+of\s+cancellation\s+of\s+registration\s+of|disclaimer\s+(?:on|of)\s+(?:the\s+)?activit(?:y|ies)\s+of|activit(?:y|ies)\s+of)\s*[-–—:]?\s*/i, "")
+    .replace(/^[\dA-Z]+[.)]\s*/, "")
+    .trim();
+}
+
+function isSpecificNgsecEntity(entity: string) {
+  return entity.length >= 3
+    && !/^(?:scammer alert|management|signed|members? of the public)$/i.test(entity)
+    && !/^(?:cases?|recent|legacy|c\.?f\.?e\.?a\.?|c\.?r\.?e\.?a\.?)\b/i.test(entity)
+    && !/\b(?:to present day|to september|to march|to may|to january)\b/i.test(entity);
+}
+
+export function isNgsecCompendium(entry: NgsecArchiveEntry, detail: NgsecDetail) {
+  const title = `${entry.title} ${detail.title}`;
+  return /^(?:cases? before|recent (?:litigation )?cases?|legacy litigation cases?|c\.?f\.?e\.?a\.?|c\.?r\.?e\.?a\.?)\b/i.test(normalizeWhitespace(title));
 }
 
 export function parseNgsecAmount(text: string): number | null {
@@ -99,20 +134,22 @@ function categorizeNgsec(text: string): string[] {
   return categories.length ? [...new Set(categories)] : ["MARKETS_SUPERVISION"];
 }
 
-export function buildNgsecRecord(entry: NgsecArchiveEntry, detail: NgsecDetail): DbReadyRecord {
+export function buildNgsecRecord(entry: NgsecArchiveEntry, detail: NgsecDetail, entityOverride?: string): DbReadyRecord {
   const evidence = `${entry.title} ${entry.summary} ${detail.title} ${detail.summary} ${detail.body}`;
+  const entity = normalizeNgsecEntity(entityOverride || detail.title || entry.title);
   return buildEuFineRecord({
     regulator: "NGSEC", regulatorFullName: "Securities and Exchange Commission, Nigeria",
-    countryCode: "NG", countryName: "Nigeria", firmIndividual: detail.title || entry.title,
+    countryCode: "NG", countryName: "Nigeria", firmIndividual: entity,
     firmCategory: "Capital Market Entity", amount: parseNgsecAmount(evidence), currency: "NGN",
     dateIssued: detail.dateIssued || entry.dateIssued || "", breachType: entry.title,
     breachCategories: categorizeNgsec(evidence), summary: (detail.summary || entry.summary || detail.body).slice(0, 500),
     finalNoticeUrl: entry.detailUrl, sourceUrl: entry.detailUrl,
-    dedupeKey: entry.detailUrl, rawPayload: { entry, detail },
+    dedupeKey: `${entry.detailUrl}::${entity.toLowerCase()}`, rawPayload: { entry, detail, entity },
   });
 }
 
 export async function loadNgsecLiveRecords(): Promise<DbReadyRecord[]> {
+  ngsecBlockedDiscoveries = [];
   const archiveEntries = new Map<string, NgsecArchiveEntry>();
   for (const categoryUrl of NGSEC_CATEGORIES) {
     const html = await fetchText(categoryUrl, { timeout: 60_000 });
@@ -122,14 +159,55 @@ export async function loadNgsecLiveRecords(): Promise<DbReadyRecord[]> {
   for (const entry of archiveEntries.values()) {
     const html = await fetchText(entry.detailUrl, { timeout: 60_000 });
     const detail = parseNgsecDetailHtml(html, entry.detailUrl);
-    if (detail) records.push(buildNgsecRecord(entry, detail));
+    if (!detail) continue;
+    if (isNgsecCompendium(entry, detail)) {
+      ngsecBlockedDiscoveries.push({
+        regulator: "NGSEC",
+        sourceUrl: entry.detailUrl,
+        fingerprint: createHash("sha256").update(`NGSEC|compendium|${entry.detailUrl}`).digest("hex"),
+        reasonCode: "case_level_date_required",
+        reason: "The official page is a multi-case compendium and cannot be represented as one firm without row-level action dates.",
+        payload: { entry, detail: { ...detail, body: detail.body.slice(0, 4000) } },
+      });
+      continue;
+    }
+    const entities = detail.affectedEntities.length > 0
+      ? detail.affectedEntities
+      : [normalizeNgsecEntity(detail.title || entry.title)].filter(isSpecificNgsecEntity);
+    if (entities.length === 0) {
+      ngsecBlockedDiscoveries.push({
+        regulator: "NGSEC",
+        sourceUrl: entry.detailUrl,
+        fingerprint: createHash("sha256").update(`NGSEC|entity-missing|${entry.detailUrl}`).digest("hex"),
+        reasonCode: "affected_entity_evidence_missing",
+        reason: "The official enforcement page did not identify a specific affected entity.",
+        payload: { entry, detail: { ...detail, body: detail.body.slice(0, 4000) } },
+      });
+      continue;
+    }
+    records.push(...entities.map((entity) => buildNgsecRecord(entry, detail, entity)));
   }
   if (!records.length) throw new Error("NGSEC official enforcement archive returned zero parseable records");
   return records.sort((left, right) => right.dateIssued.localeCompare(left.dateIssued));
 }
 
 export async function main() {
-  await runScraper({ name: "🇳🇬 Nigerian SEC Enforcement Actions Scraper", region: "Africa", regulatorCode: "NGSEC", liveLoader: loadNgsecLiveRecords, testLoader: loadNgsecLiveRecords });
+  await runScraper({
+    name: "🇳🇬 Nigerian SEC Enforcement Actions Scraper",
+    region: "Africa",
+    regulatorCode: "NGSEC",
+    liveLoader: loadNgsecLiveRecords,
+    testLoader: loadNgsecLiveRecords,
+    afterUpsert: async (sql, _records, scraperRunId) => {
+      await persistBlockedSourceDiscoveries(sql, ngsecBlockedDiscoveries, scraperRunId);
+    },
+  });
+}
+
+let ngsecBlockedDiscoveries: BlockedSourceDiscovery[] = [];
+
+export function getNgsecBlockedDiscoveries() {
+  return [...ngsecBlockedDiscoveries];
 }
 
 if (process.argv[1] && fileURLToPath(import.meta.url) === process.argv[1]) {
