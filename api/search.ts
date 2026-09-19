@@ -1217,6 +1217,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
               OR fuzzy_full_text_rank > 0
             )
           )
+          )
       ),
       scored_results AS (
         SELECT
