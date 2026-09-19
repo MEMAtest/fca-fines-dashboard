@@ -72,25 +72,44 @@ export function extractCbnEntities(text: string): string[] {
   // Only accept names introduced by a numbered/lettered list marker. This
   // deliberately excludes prose such as "the CBN ... Corporation" and
   // aggregate labels such as "14 Banks".
-  const candidates = text.match(/(?:^|[\n;])\s*(?:\d+\)|[A-Z]\.)\s*([A-Z][A-Za-z0-9&.'-]*(?:\s+[A-Z][A-Za-z0-9&.'-]*){1,8}?\s+(?:(?:Bank|BANK|Banks|BANKS)(?:\s+(?:Limited|LIMITED|Ltd|LTD|Plc|PLC))?|Limited|LIMITED|Ltd|LTD|Plc|PLC|Society|SOCIETY|Company|COMPANY|Corporation|CORPORATION|Holdings|HOLDINGS))\b/gm) || [];
-  const generic = /(?:notice|public|central|operating|revocation|licen[cs]e|payment|private|sector|depositors?|microfinance|community|failed|minimum|conversion|managing|directors?|ceos?|institutions?|debtors?)/i;
-  return [...new Set(candidates.map((candidate) => {
-    const marker = candidate.match(/(?:\d+\)|[A-Z]\.)\s*/);
+  const listedCandidates = text.match(/(?:^|[\n;])\s*(?:\d+\)?|[A-Z]\.)\s*([A-Z][A-Za-z0-9&().'-]*(?:\s+[A-Za-z0-9&().'-]+){1,8}?\s+(?:(?:Bank|BANK|Banks|BANKS)(?:\s+(?:Limited|LIMITED|Ltd|LTD|Plc|PLC))?|Limited|LIMITED|Ltd|LTD|Plc|PLC|Society|SOCIETY|Company|COMPANY|Corporation|CORPORATION|Holdings|HOLDINGS))\b/gm) || [];
+  // Some CBN tables flatten their final row into prose after a subsection
+  // marker (for example "Societe Generale Bank Nig Ltd"). Accept only a
+  // proper-name bank phrase with a legal suffix in this secondary lane.
+  const suffixedBankCandidates = text.match(/\b[A-Z][A-Za-z.'-]+(?:\s+[A-Z][A-Za-z.'-]+){0,5}\s+Bank\s+(?:Nig\s+)?(?:Limited|Ltd|Plc|PLC)\b/g) || [];
+  const generic = /(?:notice|public|central|operating|revocation|licen[cs]e|payment|private|sector|depositors?|microfinance|failed|minimum|conversion|managing|directors?|ceos?|institutions?|debtors?)/i;
+  return [...new Set([...listedCandidates, ...suffixedBankCandidates].map((candidate) => {
+    const marker = candidate.match(/(?:\d+\)?|[A-Z]\.)\s*/);
     return normalizeWhitespace(marker ? candidate.slice((marker.index || 0) + marker[0].length) : candidate);
   }).filter((candidate) => !/\bBanks\b$/i.test(candidate) && !generic.test(candidate)))];
 }
 
-export function parseCbnNoticesJson(json: string, pageUrl = CBN_NOTICES_URL): CbnActionRow[] {
+export function buildCbnRowsFromEvidence(notice: CbnNotice, evidenceText: string, pageUrl = CBN_NOTICES_URL): CbnActionRow[] {
+  const date = parseCbnDate(notice.documentDate);
+  if (!date || !evidenceText.trim()) return [];
+  const actionType = classifyCbnNotice(notice);
+  const actionUrl = notice.link ? makeAbsoluteUrl(pageUrl, notice.link) : pageUrl;
+  return extractCbnEntities(evidenceText).map((entity) => ({
+    date,
+    entity,
+    title: notice.title,
+    actionUrl,
+    description: normalizeWhitespace(evidenceText).slice(0, 4000),
+    actionType,
+    evidenceText: evidenceText.slice(0, 12000),
+  }));
+}
+
+export function parseCbnNoticesJson(
+  json: string,
+  pageUrl = CBN_NOTICES_URL,
+  linkedEvidence: ReadonlyMap<string, string> = new Map(),
+): CbnActionRow[] {
   const rows = new Map<string, CbnActionRow>();
   for (const notice of parseCbnNoticeCandidates(json)) {
-    const date = parseCbnDate(notice.documentDate);
-    if (!date) continue;
-    const actionType = classifyCbnNotice(notice);
     const actionUrl = notice.link ? makeAbsoluteUrl(pageUrl, notice.link) : pageUrl;
-    const entities = extractCbnEntities(`${notice.title} ${notice.description} ${notice.keywords}`);
-    for (const entity of entities) {
-      const row = { date, entity, title: notice.title, actionUrl, description: normalizeWhitespace(notice.description.replace(/<[^>]+>/g, " ")), actionType };
-      rows.set(`${notice.id}::${entity}`, row);
+    for (const row of buildCbnRowsFromEvidence(notice, linkedEvidence.get(actionUrl) || "", pageUrl)) {
+      rows.set(`${notice.id}::${row.entity}`, row);
     }
   }
   return [...rows.values()];
@@ -238,18 +257,10 @@ export async function loadCbnLiveRecords() {
         console.warn(`CBN: unable to extract affected-entity evidence from ${actionUrl}: ${error instanceof Error ? error.message : String(error)}`);
       }
     }
-    const entities = extractCbnEntities(`${notice.title} ${notice.description} ${notice.keywords} ${evidenceText}`);
-    for (const entity of entities) {
-      rows.push({
-        date,
-        entity,
-        title: notice.title,
-        actionUrl,
-        description: normalizeWhitespace(`${notice.description} ${evidenceText}`).slice(0, 4000),
-        actionType: classifyCbnNotice(notice),
-        evidenceText: evidenceText.slice(0, 12000),
-      });
-    }
+    // A bulk action is publishable only when the affected institutions are
+    // named in the linked official document itself. API metadata and aggregate
+    // titles are discovery hints, not entity evidence.
+    rows.push(...buildCbnRowsFromEvidence(notice, evidenceText));
   }
   if (!rows.length) throw new Error("CBN official notices API returned no enforcement-related notices");
   return buildCbnRecords(rows);
