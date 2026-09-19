@@ -69,6 +69,8 @@ describe("canonical regulatory evidence layer", () => {
       "scripts/lib/articleData.ts",
       "scripts/jobs/processAlerts.ts",
       "scripts/jobs/sendWeeklyDigest.ts",
+      "scripts/monitoring/auditDataFreshness.ts",
+      "scripts/scraper/checkLiveRegulatorFreshness.ts",
     ];
 
     for (const file of applicationFiles) {
