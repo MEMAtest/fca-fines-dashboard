@@ -14,7 +14,9 @@ import {
   parseFmanzListingHtml,
 } from "../scrapeFmanz.js";
 import {
+  HKMA_LIST_PAGE_SIZE,
   extractHkmaActionFragments,
+  isRetryableHkmaApiFailure,
   isHkmaEnforcementTitle,
   parseHkmaAmount,
   parseHkmaApiPayload,
@@ -396,6 +398,14 @@ describe("apac wave scrapers", () => {
     const detail = parseHkmaDetailHtml(html);
     expect(detail.summary).toContain("China CITIC Bank International Limited");
     expect(parseHkmaAmount(detail.body)).toBe(7_500_000);
+  });
+
+  it("fetches the HKMA archive in large pages and retries API timeouts", () => {
+    expect(HKMA_LIST_PAGE_SIZE).toBeGreaterThanOrEqual(10_000);
+    expect(isRetryableHkmaApiFailure(undefined, "ECONNABORTED")).toBe(true);
+    expect(isRetryableHkmaApiFailure(429, undefined)).toBe(true);
+    expect(isRetryableHkmaApiFailure(503, undefined)).toBe(true);
+    expect(isRetryableHkmaApiFailure(404, undefined)).toBe(false);
   });
 
   it("parses the official HKMA enforcement listing used for API availability fallback", () => {

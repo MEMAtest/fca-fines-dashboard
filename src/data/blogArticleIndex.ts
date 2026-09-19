@@ -16,6 +16,14 @@ export interface BlogArticleCard {
 /** Published articles, newest first. */
 export const BLOG_ARTICLE_INDEX: BlogArticleCard[] = [
   {
+    "slug": "cyber-operational-resilience-enforcement",
+    "title": "Cyber and Operational Resilience: Escalating Enforcement Actions",
+    "excerpt": "Regulators are increasingly imposing penalties for failures in cyber controls, operational integrity, and financial reporting.",
+    "category": "Enforcement Analysis",
+    "date": "16 September 2026",
+    "dateISO": "2026-09-16"
+  },
+  {
     "slug": "regulatory-roundup-september-2026",
     "title": "Regulatory Roundup: September 2026 Enforcement Actions Analysed",
     "excerpt": "An analysis of 19 global enforcement actions from September 2026 reveals a focus on organisational failures, disclosure breaches, and supervisory defiance.",
@@ -618,4 +626,4 @@ export const BLOG_ARTICLE_INDEX: BlogArticleCard[] = [
 ];
 
 /** Total published articles, for "all N insights" style counts. */
-export const BLOG_ARTICLE_COUNT = 75;
+export const BLOG_ARTICLE_COUNT = 76;
