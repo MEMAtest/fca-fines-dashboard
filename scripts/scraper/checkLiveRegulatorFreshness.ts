@@ -28,7 +28,7 @@ export async function loadLiveRegulatorStats() {
         MAX(date_issued)::text AS "latestRecordDate",
         COUNT(*) FILTER (WHERE date_issued > CURRENT_DATE + INTERVAL '30 days')::int AS "futureRecordCount",
         MAX(date_issued) FILTER (WHERE date_issued > CURRENT_DATE + INTERVAL '30 days')::text AS "latestFutureRecordDate"
-      FROM all_regulatory_fines
+      FROM public.all_regulatory_fines_canonical
       GROUP BY regulator
     `;
 
