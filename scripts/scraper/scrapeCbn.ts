@@ -13,6 +13,8 @@ import { runScraper } from "./lib/runScraper.js";
 
 const CBN_BASE_URL = "https://www.cbn.gov.ng";
 const CBN_PRESS_RELEASES_URL = `${CBN_BASE_URL}/Out/PressRelease/PressRelease.asp`;
+export const CBN_NOTICES_URL = `${CBN_BASE_URL}/Documents/Notices.html`;
+const CBN_NOTICES_API_URL = `${CBN_BASE_URL}/api/GetAllNotices?format=json`;
 
 export interface CbnActionRow {
   date: string;
@@ -23,14 +25,58 @@ export interface CbnActionRow {
   actionType: "license_revocation" | "sanction" | "penalty";
 }
 
+export interface CbnNotice {
+  id: number;
+  refNo: string;
+  title: string;
+  description: string;
+  keywords: string;
+  link: string;
+  documentDate: string;
+}
+
 function parseCbnDate(input: string) {
-  return parseMonthNameDate(normalizeWhitespace(input));
+  const cleaned = normalizeWhitespace(input);
+  const numeric = cleaned.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/);
+  if (numeric) return `${numeric[3]}-${numeric[2].padStart(2, "0")}-${numeric[1].padStart(2, "0")}`;
+  return parseMonthNameDate(cleaned);
+}
+
+export function isCbnEnforcementNotice(notice: Pick<CbnNotice, "title" | "description" | "keywords">) {
+  return /revok|licen[cs]|sanction|penalt|fine|suspend|closed\s+shop|failed\s+to\s+render|unlicensed|delist/i.test(
+    `${notice.title} ${notice.description} ${notice.keywords}`,
+  );
+}
+
+export function parseCbnNoticesJson(json: string, pageUrl = CBN_NOTICES_URL): CbnActionRow[] {
+  const notices = JSON.parse(json) as CbnNotice[];
+  const rows = new Map<string, CbnActionRow>();
+  for (const notice of notices) {
+    if (!isCbnEnforcementNotice(notice) || !notice.title || !notice.documentDate) continue;
+    const date = parseCbnDate(notice.documentDate);
+    if (!date) continue;
+    const titleLower = notice.title.toLowerCase();
+    const actionType: CbnActionRow["actionType"] = /revok|closed\s+shop|delist/.test(titleLower)
+      ? "license_revocation"
+      : /penalt|fine/.test(titleLower) ? "penalty" : "sanction";
+    const actionUrl = notice.link ? makeAbsoluteUrl(pageUrl, notice.link) : pageUrl;
+    const entities = extractCbnEntities(notice.title);
+    for (const entity of entities) {
+      const row = { date, entity, title: notice.title, actionUrl, description: normalizeWhitespace(notice.description.replace(/<[^>]+>/g, " ")), actionType };
+      rows.set(`${notice.id}::${entity}`, row);
+    }
+  }
+  return [...rows.values()];
 }
 
 export function parseCbnAmount(text: string) {
-  return parseLargestAmountFromText(text, {
+  // The helper's symbol matcher is intentionally permissive; a bare `N`
+  // would also match the first letter of words such as "Notice". Normalize
+  // only a word-boundary Naira marker before delegating to it.
+  const normalized = text.replace(/\bN(?=\s*[\d,])/g, "₦");
+  return parseLargestAmountFromText(normalized, {
     currency: "NGN",
-    symbols: ["₦", "N"],
+    symbols: ["₦"],
     keywords: ["fine", "penalty", "sanction"],
   });
 }
@@ -157,7 +203,7 @@ function categorizeCbnRecord(title: string, actionType: string) {
   return categories.length > 0 ? categories : ["SUPERVISORY_SANCTION"];
 }
 
-function buildCbnRecords(rows: CbnActionRow[]) {
+export function buildCbnRecords(rows: CbnActionRow[]) {
   return rows.map((row) => {
     const summary = row.description || row.title;
     const breachType = row.title || "CBN Enforcement Action";
@@ -176,42 +222,24 @@ function buildCbnRecords(rows: CbnActionRow[]) {
       breachCategories: categorizeCbnRecord(row.title, row.actionType),
       summary,
       finalNoticeUrl: row.actionUrl || null,
-      sourceUrl: CBN_PRESS_RELEASES_URL,
+      sourceUrl: CBN_NOTICES_URL,
       rawPayload: row,
     });
   });
 }
 
 export async function loadCbnLiveRecords() {
-  console.log("📄 Fetching CBN enforcement data...");
-  console.log("");
-  console.log("⚠️ LIMITATION: CBN does not maintain a structured enforcement database");
-  console.log("   License revocations and sanctions are published via press releases");
-  console.log("   and require manual tracking or alternative data sources.");
-  console.log("   This scraper is a placeholder pending alternative implementation.");
-  console.log("");
-
-  // CBN enforcement data is typically announced via:
-  // 1. Press releases (no structured archive)
-  // 2. Annual reports
-  // 3. Banking supervision reports
-  //
-  // A production implementation would need to:
-  // - Monitor press releases manually
-  // - Parse annual supervision reports
-  // - Use third-party aggregators
-  // - Or maintain a curated dataset
-
-  console.log("ℹ️ Returning empty dataset - CBN requires manual curation");
-  console.log("   See CBN Banking Supervision Annual Reports for historical data");
-
-  return [];
+  const json = await fetchText(CBN_NOTICES_API_URL, { timeout: 60_000, headers: { Accept: "application/json" } });
+  const rows = parseCbnNoticesJson(json);
+  if (!rows.length) throw new Error("CBN official notices API returned no enforcement-related notices");
+  return buildCbnRecords(rows);
 }
 
 export async function main() {
   await runScraper({
     name: "🇳🇬 CBN Enforcement Actions Scraper",
     region: "Africa",
+    regulatorCode: "CBN",
     liveLoader: loadCbnLiveRecords,
     testLoader: loadCbnLiveRecords,
   });

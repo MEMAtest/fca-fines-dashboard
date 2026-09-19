@@ -129,6 +129,8 @@
     "scrape:cima": "node --import tsx/esm scripts/scraper/scrapeCima.ts --",
     "scrape:bma": "node --import tsx/esm scripts/scraper/scrapeBma.ts --",
     "scrape:cbn": "node --import tsx/esm scripts/scraper/scrapeCbn.ts --",
+    "scrape:fsca": "node --import tsx/esm scripts/scraper/scrapeFsca.ts --",
+    "scrape:ngsec": "node --import tsx/esm scripts/scraper/scrapeNgsec.ts --",
     "scrape:next-eight": "node --import tsx/esm scripts/scraper/scrapeNextEight.ts --",
     "scrape:spk": "node --import tsx/esm scripts/scraper/scrapeSpk.ts --",
     "scrape:frb": "node --import tsx/esm scripts/scraper/scrapeFrb.ts --",

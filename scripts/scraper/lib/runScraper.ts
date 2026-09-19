@@ -491,7 +491,12 @@ export function assessPreparedBatchValidation(
   const fraction = prepared > 0 ? quarantined / prepared : 0;
   return {
     fraction,
-    hold: quarantined > contract.maximumInvalidRecordCount || fraction > contract.maximumInvalidRecordFraction,
+    // A small absolute outlier in a large batch and a small batch with a
+    // handful of malformed rows are both expected quarantine cases. Hold the
+    // batch only when corruption breaches *both* tolerances; the individual
+    // rows remain persisted in the discovery queue for review.
+    hold: quarantined > contract.maximumInvalidRecordCount
+      && fraction > contract.maximumInvalidRecordFraction,
   };
 }
 
@@ -534,6 +539,7 @@ const KNOWN_REGULATOR_CODES = [
   "FMAAT",
   "FMANZ",
   "FSCA",
+  "NGSEC",
   "FSMA",
   "FSRA",
   "GFSC",

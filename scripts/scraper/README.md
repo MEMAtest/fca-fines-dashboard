@@ -132,6 +132,27 @@ The remaining core Europe targets stay outside the live batch until their offici
 - `CONSOB` and `Banco de Portugal` are challenge-protected from this environment
 - `MFSA` runs in the fragile live lane because the official current pages and archive require browser challenge clearance before extraction
 
+### Africa enforcement loaders
+
+The South Africa and Nigeria loaders use official sources and remain `pipeline`
+until the production promotion gates are evidenced (non-zero reconciled archive,
+stable canonical IDs, production load, and two clean scheduled runs):
+
+- `npm run scrape:fsca -- --dry-run` — FSCA's official Power Pages/Blazor archive
+  returned 30 current case rows in the read-only probe. The direct HTTP page
+  exposes the first server-rendered archive slice; full paginator/browser
+  evidence is still required before promotion.
+- `npm run scrape:cbn -- --dry-run` — CBN's official notices JSON endpoint
+  returned 7 licence/supervision/closure notices with linked source documents.
+  CBN publication is irregular and bulk notices are retained as aggregate
+  affected-entity evidence from the official title/document.
+- `npm run scrape:ngsec -- --dry-run` — the official Nigerian SEC enforcement
+  archive returned 27 dated detail-page records across enforcement updates,
+  referred cases, company actions, APC matters, and litigation.
+
+These are read-only loader probes; no database write or workflow dispatch is
+implied by the counts above.
+
 ## How upserts work
 
 1. Each row generates `content_hash = sha256(firm + amount + date_issued)` to dedupe.

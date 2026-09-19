@@ -1,161 +1,127 @@
-/**
- * FSCA (Financial Sector Conduct Authority - South Africa) Scraper
- *
- * Strategy: Scrape enforcement actions archive (possibly SharePoint)
- * URL: https://www.fsca.co.za/Enforcement/Pages/default.aspx
- *
- * Difficulty: 8/10 (High) - Archive structure, possibly SharePoint-based
- * Expected: 50-100 enforcement actions
- *
- * Run: npx tsx scripts/scraper/scrapeFsca.ts
- */
-
-import 'dotenv/config';
+/** Official FSCA (South Africa) enforcement archive loader. */
+import "dotenv/config";
+import * as cheerio from "cheerio";
+import { fileURLToPath } from "node:url";
 import {
-  type ParsedEnforcementRecord,
   buildEuFineRecord,
-  createSqlClient,
-  upsertEuFines,
-  printDryRunSummary,
-} from './lib/euFineHelpers.js';
+  fetchText,
+  makeAbsoluteUrl,
+  normalizeWhitespace,
+  parseLargestAmountFromText,
+  type DbReadyRecord,
+} from "./lib/euFineHelpers.js";
+import { runScraper } from "./lib/runScraper.js";
 
-const FSCA_CONFIG = {
-  baseUrl: 'https://www.fsca.co.za',
-  enforcementUrl: 'https://www.fsca.co.za/Enforcement/Pages/default.aspx',
-};
+export const FSCA_PAGE_URL = "https://www.fsca.co.za/Enforcement-Actions";
+export const FSCA_ARCHIVE_URL = "https://prod-entitysearchwebapplication.azurewebsites.net/enforcement-actions";
 
-const sql = createSqlClient();
-
-interface FSCARecord {
-  firm: string;
-  amount: number | null;
-  currency: string;
-  date: string;
-  actionType: string;
-  breach: string;
-  link: string | null;
-  summary: string;
+export interface FscaActionRow {
+  dateIssued: string;
+  contravention: string;
+  respondent: string;
+  outcome: string;
+  orderUrl: string | null;
+  pressReleaseUrl: string | null;
+  archiveUrl: string;
 }
 
-async function main() {
-  console.log('🇿🇦 FSCA Enforcement Actions Scraper\n');
-  console.log('Target: Financial Sector Conduct Authority (South Africa)');
-  console.log('Method: Enforcement archive scraping\n');
-
-  const useTestData = process.argv.includes('--test-data');
-  const dryRun = process.argv.includes('--dry-run');
-
-  if (useTestData) console.log('⚠️  Using test data (--test-data flag detected)\n');
-  if (dryRun) console.log('🔍 Dry run mode - no database writes (--dry-run flag detected)\n');
-
-  try {
-    const records = useTestData ? getTestData() : await scrapeFscaData();
-
-    console.log(`\n📊 Extracted ${records.length} enforcement actions`);
-
-    const parsedRecords = records.map((r) => transformToEnforcementRecord(r));
-    const dbRecords = parsedRecords.map((r) => buildEuFineRecord(r));
-
-    if (dryRun) {
-      printDryRunSummary(dbRecords);
-    } else {
-      await upsertEuFines(sql, dbRecords);
-      console.log('\n🔄 Refreshing unified regulatory fines view...');
-      await sql`SELECT refresh_all_fines()`;
-      console.log('✅ View refreshed');
-    }
-
-    const totalFsca = await sql`SELECT COUNT(*) as count FROM eu_fines WHERE regulator = 'FSCA'`;
-    const totalAll = await sql`SELECT COUNT(*) as count FROM all_regulatory_fines`;
-
-    console.log('\n📈 Database Summary:');
-    console.log(`   - FSCA enforcement actions: ${totalFsca[0].count}`);
-    console.log(`   - Total regulatory fines (FCA + EU): ${totalAll[0].count}`);
-
-    console.log('\n✅ FSCA scraper completed successfully!');
-    await sql.end();
-    process.exit(0);
-  } catch (error) {
-    console.error('❌ FSCA scraper failed:', error);
-    await sql.end();
-    process.exit(1);
-  }
+export function parseFscaDate(input: string): string | null {
+  const match = normalizeWhitespace(input).match(/(?:^|\D)(\d{1,2})\/(\d{1,2})\/(\d{4})(?:\D|$)/);
+  return match ? `${match[3]}-${match[1].padStart(2, "0")}-${match[2].padStart(2, "0")}` : null;
 }
 
-function getTestData(): FSCARecord[] {
-  return [
-    {
-      firm: 'Standard Bank of South Africa Limited',
-      amount: 25000000,
-      currency: 'ZAR',
-      date: '2024-04-18',
-      actionType: 'Administrative Penalty',
-      breach: 'Market conduct violations',
-      link: null,
-      summary: 'Market conduct failures',
-    },
-    {
-      firm: 'FirstRand Bank Limited',
-      amount: 18000000,
-      currency: 'ZAR',
-      date: '2023-11-05',
-      actionType: 'Administrative Penalty',
-      breach: 'Customer treatment failures',
-      link: null,
-      summary: 'Customer treatment violations',
-    },
-    {
-      firm: 'Absa Bank Limited',
-      amount: 15000000,
-      currency: 'ZAR',
-      date: '2023-08-22',
-      actionType: 'Administrative Penalty',
-      breach: 'Disclosure and reporting violations',
-      link: null,
-      summary: 'Disclosure failures',
-    },
-  ];
+/** Parses a server-rendered archive page and removes repeated Blazor SSR rows. */
+export function parseFscaArchiveHtml(html: string, archiveUrl = FSCA_ARCHIVE_URL): FscaActionRow[] {
+  const $ = cheerio.load(html);
+  const rows = new Map<string, FscaActionRow>();
+  $("table tbody tr").each((_, element) => {
+    const cells = $(element).find("td");
+    if (cells.length < 4) return;
+    const dateIssued = parseFscaDate(cells.eq(0).text());
+    const contravention = normalizeWhitespace(cells.eq(1).text());
+    const respondent = normalizeWhitespace(cells.eq(2).text());
+    const outcome = normalizeWhitespace(cells.eq(3).text());
+    if (!dateIssued || !respondent || !outcome) return;
+    const orderHref = normalizeWhitespace(cells.eq(4).find("a[href]").first().attr("href") || "");
+    const pressHref = normalizeWhitespace(cells.eq(5).find("a[href]").first().attr("href") || "");
+    const key = `${dateIssued}::${respondent}::${outcome}::${contravention}`;
+    rows.set(key, {
+      dateIssued, contravention, respondent, outcome,
+      orderUrl: orderHref ? makeAbsoluteUrl(archiveUrl, orderHref) : null,
+      pressReleaseUrl: pressHref ? makeAbsoluteUrl(archiveUrl, pressHref) : null,
+      archiveUrl,
+    });
+  });
+  return [...rows.values()];
 }
 
-async function scrapeFscaData(): Promise<FSCARecord[]> {
-  throw new Error('FSCA live scraping is not implemented yet. Use --test-data flag for now.');
+export function parseFscaArchivePageCount(html: string): number {
+  const total = Number.parseInt(normalizeWhitespace(html).match(/of\s+(\d+)\s+items/i)?.[1] || "0", 10);
+  return total > 0 ? Math.ceil(total / 10) : 1;
 }
 
-function transformToEnforcementRecord(record: FSCARecord): ParsedEnforcementRecord {
-  return {
-    regulator: 'FSCA',
-    regulatorFullName: 'Financial Sector Conduct Authority',
-    countryCode: 'ZA',
-    countryName: 'South Africa',
-    firmIndividual: record.firm,
-    firmCategory: null,
-    amount: record.amount,
-    currency: record.currency,
-    dateIssued: record.date,
-    breachType: extractBreachType(record.breach),
-    breachCategories: categorizeBreachType(record.breach),
-    summary: `${record.firm} fined R${(record.amount || 0).toLocaleString('en-ZA')} by FSCA. ${record.summary}`,
-    finalNoticeUrl: record.link,
-    sourceUrl: FSCA_CONFIG.enforcementUrl,
-    rawPayload: record,
-  };
+export function parseFscaAmount(text: string): number | null {
+  return parseLargestAmountFromText(text, { currency: "ZAR", symbols: ["R", "ZAR"], keywords: ["penalty", "fine", "administrative penalty", "amount"] });
 }
 
-function extractBreachType(breach: string): string {
-  const lower = breach.toLowerCase();
-  if (lower.includes('market conduct')) return 'Market Conduct Violations';
-  if (lower.includes('customer treatment')) return 'Customer Treatment';
-  if (lower.includes('disclosure')) return 'Disclosure Violations';
-  return 'Regulatory Breach';
-}
-
-function categorizeBreachType(breach: string): string[] {
+function categorizeFscaAction(text: string): string[] {
+  const corpus = text.toLowerCase();
   const categories: string[] = [];
-  const lower = breach.toLowerCase();
-  if (lower.includes('market')) categories.push('MARKET_CONDUCT');
-  if (lower.includes('customer')) categories.push('CUSTOMER_TREATMENT');
-  if (lower.includes('disclosure')) categories.push('DISCLOSURE');
-  return categories.length > 0 ? categories : ['OTHER'];
+  if (/debar|fit and proper|section 153/.test(corpus)) categories.push("LICENSING");
+  if (/fica|money laundering|terrorist financing|aml|cft/.test(corpus)) categories.push("AML");
+  if (/market abuse|insider|manipulat|disclosure|listing/.test(corpus)) categories.push("MARKET_CONDUCT");
+  if (/penalty|fine|administrative/.test(corpus)) categories.push("MONETARY_SANCTION");
+  return categories.length ? [...new Set(categories)] : ["SUPERVISORY_SANCTION"];
 }
 
-main();
+export function buildFscaRecord(row: FscaActionRow): DbReadyRecord {
+  const evidence = `${row.contravention} ${row.outcome}`;
+  return buildEuFineRecord({
+    regulator: "FSCA", regulatorFullName: "Financial Sector Conduct Authority",
+    countryCode: "ZA", countryName: "South Africa", firmIndividual: row.respondent,
+    firmCategory: "Regulated Entity or Individual", amount: parseFscaAmount(evidence), currency: "ZAR",
+    dateIssued: row.dateIssued, breachType: row.contravention || row.outcome,
+    breachCategories: categorizeFscaAction(evidence),
+    summary: `${row.respondent}: ${row.outcome}. ${row.contravention}`.slice(0, 500),
+    finalNoticeUrl: row.orderUrl || row.pressReleaseUrl || row.archiveUrl, sourceUrl: row.archiveUrl,
+    dedupeKey: `${row.dateIssued}::${row.respondent}::${row.outcome}::${row.contravention}`, rawPayload: row,
+  });
+}
+
+export function buildFscaRecords(rows: FscaActionRow[]): DbReadyRecord[] {
+  return rows.map(buildFscaRecord).sort((left, right) => right.dateIssued.localeCompare(left.dateIssued));
+}
+
+type HtmlLoader = (url: string) => Promise<string>;
+
+/** Fetch archive pages; injected loaders make pagination and dedupe testable. */
+export async function loadFscaPages(loadHtml: HtmlLoader = (url) => fetchText(url, { timeout: 60_000 }), maxPages = 100) {
+  const rows = new Map<string, FscaActionRow>();
+  let pageCount = 1;
+  for (let page = 1; page <= Math.min(pageCount, maxPages); page += 1) {
+    const url = page === 1 ? FSCA_ARCHIVE_URL : `${FSCA_ARCHIVE_URL}?page=${page}`;
+    const html = await loadHtml(url);
+    const pageRows = parseFscaArchiveHtml(html, url);
+    pageCount = Math.max(pageCount, parseFscaArchivePageCount(html));
+    if (page > 1 && pageRows.length === 0) break;
+    const keys = pageRows.map((row) => `${row.dateIssued}::${row.respondent}::${row.outcome}::${row.contravention}`);
+    const allRepeated = page > 1 && keys.length > 0 && keys.every((key) => rows.has(key));
+    for (const row of pageRows) rows.set(`${row.dateIssued}::${row.respondent}::${row.outcome}::${row.contravention}`, row);
+    if (allRepeated) break;
+  }
+  return [...rows.values()];
+}
+
+export async function loadFscaLiveRecords(): Promise<DbReadyRecord[]> {
+  const rows = await loadFscaPages();
+  if (!rows.length) throw new Error("FSCA official enforcement archive returned zero parseable rows");
+  return buildFscaRecords(rows);
+}
+
+export async function main() {
+  await runScraper({ name: "🇿🇦 FSCA Enforcement Actions Scraper", region: "Africa", regulatorCode: "FSCA", liveLoader: loadFscaLiveRecords, testLoader: loadFscaLiveRecords });
+}
+
+if (process.argv[1] && fileURLToPath(import.meta.url) === process.argv[1]) {
+  main().catch((error) => { console.error("❌ FSCA scraper failed:", error); process.exit(1); });
+}
