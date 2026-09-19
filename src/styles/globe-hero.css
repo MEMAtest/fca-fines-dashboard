@@ -328,6 +328,12 @@
   font-variant-numeric: tabular-nums;
 }
 
+.globe-tooltip__count--pipeline {
+  color: #d7e0e7;
+  background: rgba(168, 182, 194, 0.12);
+  border: 1px dashed rgba(168, 182, 194, 0.42);
+}
+
 .globe-tooltip__regulators {
   display: flex;
   flex-wrap: wrap;
@@ -359,6 +365,12 @@
   background: rgba(6, 182, 212, 0.3);
   border-color: #06b6d4;
   transform: translateY(-1px);
+}
+
+.regulator-badge--pipeline {
+  color: #d7e0e7;
+  background: rgba(168, 182, 194, 0.1);
+  border-color: rgba(168, 182, 194, 0.35);
 }
 
 .globe-tooltip__hint {
