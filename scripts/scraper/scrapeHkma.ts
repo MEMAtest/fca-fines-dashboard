@@ -19,8 +19,13 @@ const HKMA_API_URL = "https://api.hkma.gov.hk/public/press-releases";
 // only as a fail-closed availability fallback when the API is unavailable.
 const HKMA_ENFORCEMENT_PAGE_URL =
   "https://www.hkma.gov.hk/eng/news-and-media/press-releases/enforcement/";
-const HKMA_LIST_PAGE_SIZE =
-  Number.parseInt(process.env.HKMA_LIST_PAGE_SIZE || "", 10) || 100;
+// HKMA's API contains every press release, not only enforcement notices. A
+// 100-row page therefore requires more than 60 sequential requests to reach
+// the complete enforcement archive and makes a transient timeout capable of
+// producing a recent-only subset. The API supports archive-sized pages, so
+// fetch 10,000 rows at a time and retain pagination for future growth.
+export const HKMA_LIST_PAGE_SIZE =
+  Number.parseInt(process.env.HKMA_LIST_PAGE_SIZE || "", 10) || 10_000;
 const HKMA_API_RETRY_ATTEMPTS =
   Number.parseInt(process.env.HKMA_API_RETRY_ATTEMPTS || "", 10) || 4;
 
@@ -452,13 +457,10 @@ async function fetchHkmaApiPage(offset: number) {
     } catch (error) {
       lastError = error;
       const status = axios.isAxiosError(error) ? error.response?.status : null;
-      const retryable =
-        status === 429 ||
-        (typeof status === "number" && status >= 500) ||
-        (axios.isAxiosError(error) &&
-          ["ECONNRESET", "ETIMEDOUT", "EAI_AGAIN", "ENOTFOUND"].includes(
-            error.code || "",
-          ));
+      const retryable = isRetryableHkmaApiFailure(
+        status,
+        axios.isAxiosError(error) ? error.code : null,
+      );
 
       if (!retryable || attempt === HKMA_API_RETRY_ATTEMPTS) {
         throw error;
@@ -473,6 +475,19 @@ async function fetchHkmaApiPage(offset: number) {
   }
 
   throw lastError;
+}
+
+export function isRetryableHkmaApiFailure(
+  status: number | null | undefined,
+  code: string | null | undefined,
+) {
+  return (
+    status === 429 ||
+    (typeof status === "number" && status >= 500) ||
+    ["ECONNABORTED", "ECONNRESET", "ETIMEDOUT", "EAI_AGAIN", "ENOTFOUND"].includes(
+      code || "",
+    )
+  );
 }
 
 async function enrichHkmaEntry(entry: HkmaEntry): Promise<DbReadyRecord[]> {
