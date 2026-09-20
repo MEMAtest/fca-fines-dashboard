@@ -7,7 +7,7 @@ import {
 } from "../data/regulatorySignal.js";
 import { listRegulatorySignalCountries } from "../data/regulatorySignal.js";
 import { getCountryByIso2, countrySlug } from "../data/countries.js";
-import { EvidenceLadderLegend, RegulatoryEvidenceLadder } from "../components/RegulatoryEvidenceLadder.js";
+import { RegulatoryEvidenceLadder } from "../components/RegulatoryEvidenceLadder.js";
 import "../styles/about.css";
 
 export function RegulatoryTransparency() {
@@ -40,11 +40,6 @@ export function RegulatoryTransparency() {
           <li>RegActions live and pipeline coverage shown separately from observed activity.</li>
         </ul>
         <p>Observed enforcement is neutral: strong publication activity can reflect either effective supervision or higher misconduct, while no observation can reflect low-frequency reporting or access constraints. A blocked source is never described as no enforcement.</p>
-      </section>
-      <section className="about-section about-section--evidence-ladder" aria-labelledby="evidence-ladder-heading">
-        <h2 id="evidence-ladder-heading">How to read the evidence ladder</h2>
-        <p className="about-section__intro">This four-level ladder describes what can be evidenced publicly. It is not a regulatory-quality score, and the Transparency Index remains not scored.</p>
-        <EvidenceLadderLegend />
       </section>
       <section className="about-section">
         <h2>Browse jurisdiction evidence</h2>

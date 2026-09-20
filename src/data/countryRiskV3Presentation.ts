@@ -1,33 +1,18 @@
 import type { CountryRiskV3Result } from "./countryRiskV3.js";
+import { COUNTRY_RISK_V3_PILLAR_LABELS } from "./countryRiskV3.js";
+
+export { COUNTRY_RISK_V3_PILLAR_LABELS };
 
 export function countryRiskV3BandLabel(band: NonNullable<CountryRiskV3Result["band"]>): string {
   return band === "low" ? "Lower" : band === "moderate" ? "Moderate" : band === "high" ? "High" : "Very high";
 }
 
 /**
- * Pillar names, in the vocabulary the audience already reads.
- *
- * A FATF mutual evaluation has exactly two axes and they have settled names:
- * technical compliance (Recommendations 1-40) and effectiveness (the 11
- * Immediate Outcomes). The report used FATF's word for one and a coinage,
- * "Legal and supervisory safeguards", for the other, so half of a well-known
- * pair appeared under a name nobody outside this codebase uses.
- *
- * "ICRG" was worse than unfamiliar, it was ambiguous: on a country-risk page it
- * reads as the PRS Group's International Country Risk Guide, a commercial
- * country-risk rating, where we mean FATF's International Co-operation Review
- * Group. Readers recognise the lists that group publishes, not the group, so
- * the pillar is named for the listing.
- *
- * "Integrity" narrowed governance toward corruption, which is one of the six
- * World Bank dimensions behind it, not the whole of them.
+ * `COUNTRY_RISK_V3_PILLAR_LABELS` — the reader-facing pillar names — lives in
+ * countryRiskV3.ts (re-exported above) because the raw arithmetic string
+ * built there needs the same labels; importing this module from there would
+ * be circular since this module already imports types from countryRiskV3.ts.
  */
-export const COUNTRY_RISK_V3_PILLAR_LABELS = {
-  effectiveness: "AML/CFT effectiveness",
-  safeguards: "Technical compliance",
-  governance: "Governance and institutions",
-  icrg: "FATF listing status",
-} as const;
 
 /**
  * What each pillar means, for a reader who does not know the methodology.
