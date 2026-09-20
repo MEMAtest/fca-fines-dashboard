@@ -481,6 +481,51 @@ export async function getRegulatorTopFines(
   }));
 }
 
+export interface RegulatorFirmTotal {
+  firm: string;
+  totalAmount: number;
+  fineCount: number;
+}
+
+/**
+ * Firms/individuals ranked by total disclosed penalty amount for one
+ * regulator, largest total first — powers "which firm has been fined most"
+ * FAQ/leaderboard copy. Same garbage-name filtering and
+ * `requires_amount_review` exclusion as {@link getRegulatorTopFines}, but
+ * grouped by firm rather than by individual fine. Returns [] on any error so
+ * callers omit the derived copy rather than fabricate it.
+ */
+export async function getRegulatorFirmTotals(
+  regulatorCode: string,
+  limit = 1,
+): Promise<RegulatorFirmTotal[]> {
+  const sql = getSqlClient();
+  const clamped = Math.max(1, Math.min(limit, 50));
+  const fetchLimit = Math.min(clamped * 3, 100);
+  const rows = (await sql(
+    `
+      SELECT firm_individual,
+             SUM(amount_gbp)::float8 AS total_amount,
+             COUNT(*)::int AS fine_count
+      FROM all_regulatory_fines_canonical
+      WHERE regulator = $1 AND amount_gbp IS NOT NULL AND requires_amount_review IS NOT TRUE
+      GROUP BY firm_individual
+      ORDER BY total_amount DESC
+      LIMIT $2
+    `,
+    [regulatorCode, fetchLimit],
+  )) as any[];
+
+  return rows
+    .filter((row: any) => !isGarbageFirmName(String(row.firm_individual ?? "")))
+    .slice(0, clamped)
+    .map((row: any) => ({
+      firm: String(row.firm_individual ?? ""),
+      totalAmount: Number(row.total_amount) || 0,
+      fineCount: Number(row.fine_count) || 0,
+    }));
+}
+
 export interface GlobalTopFine extends RegulatorTopFine {
   regulator: string;
 }

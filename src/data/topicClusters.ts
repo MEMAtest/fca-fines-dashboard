@@ -466,3 +466,66 @@ export const topicClusters: TopicCluster[] = [
 export function getTopicCluster(slug: string): TopicCluster | undefined {
   return topicClusters.find((cluster) => cluster.slug === slug);
 }
+
+/**
+ * FCA fines cluster: the per-year page (/topics/fca-fines-{year}) and the
+ * all-time leaderboard (/topics/largest-fca-fines). 2026 keeps its own
+ * curated `topicClusters` entry above (richer editorial content); every
+ * other in-range year is a lighter, generated page — both the prerender
+ * script and the client `TopicCluster` route use these SAME slug helpers so
+ * they can never disagree on which slugs are valid.
+ */
+export const FCA_FINES_FIRST_YEAR = 2013;
+export const LARGEST_FCA_FINES_SLUG = "largest-fca-fines";
+
+const FCA_FINES_YEAR_SLUG_RE = /^fca-fines-(\d{4})$/;
+
+/**
+ * Returns the year for a `fca-fines-{year}` slug when it is a real, in-range
+ * FCA fines year (2013..current calendar year); otherwise null. Shared by
+ * the prerender script and the client route so a slug is either valid (and
+ * renders identically-scoped data) everywhere, or not found anywhere.
+ */
+export function isFcaFinesYearSlug(slug: string): number | null {
+  const match = FCA_FINES_YEAR_SLUG_RE.exec(slug);
+  if (!match) return null;
+  const year = Number(match[1]);
+  const currentYear = new Date().getUTCFullYear();
+  if (year < FCA_FINES_FIRST_YEAR || year > currentYear) return null;
+  return year;
+}
+
+export interface FcaFinesPageMeta {
+  slug: string;
+  title: string;
+  eyebrow: string;
+  seoTitle: string;
+  description: string;
+  keywords: string;
+}
+
+/**
+ * Header/meta content for a GENERATED (non-2026) FCA fines year page. The
+ * 2026 page keeps its own curated `topicClusters` entry above instead of
+ * this template.
+ */
+export function fcaFinesYearMeta(year: number): FcaFinesPageMeta {
+  return {
+    slug: `fca-fines-${year}`,
+    title: `FCA Fines ${year}`,
+    eyebrow: "FCA enforcement",
+    seoTitle: `FCA Fines ${year}: Penalties, Totals & Analysis | RegActions`,
+    description: `FCA fines issued in ${year}: totals, monthly breakdown, the largest penalty and the full source-linked list of Financial Conduct Authority monetary penalties.`,
+    keywords: `FCA fines ${year}, FCA penalties ${year}, FCA enforcement ${year}, FCA final notices ${year}`,
+  };
+}
+
+export const largestFcaFinesMeta: FcaFinesPageMeta = {
+  slug: LARGEST_FCA_FINES_SLUG,
+  title: "Largest FCA Fines",
+  eyebrow: "FCA enforcement",
+  seoTitle: "Largest FCA Fines: The Biggest FCA Penalties Ranked | RegActions",
+  description:
+    "The largest FCA fines ever issued, ranked by amount, with firm, date, breach and official source links for every top penalty.",
+  keywords: "largest FCA fines, biggest FCA fine, FCA fines ranked, most fined firm FCA",
+};

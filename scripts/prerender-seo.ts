@@ -60,7 +60,13 @@ import {
   PUBLIC_REGULATOR_CODES,
 } from "../src/data/regulatorCoverage.js";
 const PUBLIC_REGULATOR_COUNT = PUBLIC_REGULATOR_CODES.length;
-import { topicClusters } from "../src/data/topicClusters.js";
+import {
+  topicClusters,
+  FCA_FINES_FIRST_YEAR,
+  LARGEST_FCA_FINES_SLUG,
+  fcaFinesYearMeta,
+  largestFcaFinesMeta,
+} from "../src/data/topicClusters.js";
 import { buildFcaFineCasePath as buildSharedFcaFineCasePath } from "../src/utils/fcaFineCasePath.js";
 import {
   getCountryByIso2,
@@ -139,6 +145,7 @@ import {
 import type {
   RegulatorTopFine,
   RegulatorYearReport,
+  RegulatorFirmTotal,
   GlobalTopFine,
   GlobalFinesSummary,
   CountryFinesSummary,
@@ -322,8 +329,8 @@ function renderFcaFineCaseBody(
   const status = indexability.indexable
     ? "This page meets the public case-page evidence threshold."
     : "This route is available for navigation but is excluded from search indexing until its evidence coverage meets the public case-page threshold.";
-  const topicLink = record.year === 2026
-    ? `<li><a href="/topics/fca-fines-2026">FCA fines 2026 monthly report</a></li>`
+  const topicLink = record.year >= FCA_FINES_FIRST_YEAR && record.year <= new Date().getUTCFullYear()
+    ? `<li><a href="/topics/fca-fines-${record.year}">FCA fines ${record.year} report</a></li>`
     : "";
 
   return `<div class="seo-doc"><div class="seo-doc__container"><article class="seo-doc__article"><p><a href="/regulators/fca">FCA fines</a> / <a href="/years/${record.year}">${record.year}</a> / ${escapeHtml(record.firm)}</p><h1 class="seo-doc__title">${escapeHtml(record.firm)} FCA fine</h1><div class="seo-doc__body"><p>RegActions records a disclosed FCA monetary penalty of <strong>${escapeHtml(amount)}</strong> dated <strong>${escapeHtml(date)}</strong> for ${escapeHtml(record.firm)}.</p><h2>Case facts</h2><table><tbody><tr><th>Firm or individual</th><td>${escapeHtml(record.firm)}</td></tr><tr><th>Regulator</th><td>Financial Conduct Authority (FCA)</td></tr><tr><th>Date</th><td>${escapeHtml(date)}</td></tr><tr><th>Penalty</th><td>${escapeHtml(amount)}</td></tr><tr><th>RegActions breach classification</th><td>${escapeHtml(breach)}</td></tr><tr><th>Public case ID</th><td>${escapeHtml(record.caseId)}</td></tr></tbody></table><h2>Case summary</h2><p>${escapeHtml(summary)}</p><h2>Official evidence</h2><p>${source}</p><p>${escapeHtml(status)}</p><h2>Continue your research</h2><ul><li><a href="/regulators/fca">Search the complete FCA fines database</a></li><li><a href="/fines/actions?regulator=FCA&amp;year=${record.year}">View FCA actions from ${record.year}</a></li><li><a href="/years/${record.year}">Compare enforcement actions in ${record.year}</a></li>${topicLink}<li><a href="/methodology/enforcement">Read the enforcement data methodology</a></li></ul><h2>Scope</h2><p>This page describes one source-linked monetary record. RegActions excludes non-monetary outcomes and amounts awaiting review from FCA fine totals. The FCA publication remains the authoritative source.</p></div></article></div></div>`;
@@ -631,12 +638,16 @@ function buildRegulatorFaqItems(
   fullName: string,
   report: RegulatorYearReport | null | undefined,
   largestFine: RegulatorTopFine | null | undefined,
+  options?: { scopeYear?: number },
 ): Array<{ question: string; answer: string }> {
   const items: Array<{ question: string; answer: string }> = [];
+  const scopeYear = options?.scopeYear;
   if (largestFine && largestFine.amount > 0) {
     items.push({
-      question: `What is the largest ${code} fine?`,
-      answer: `The largest ${code} fine currently recorded by RegActions is ${formatMoney(largestFine.amount, "GBP")}, issued to ${largestFine.firm}${largestFine.dateIssued ? ` on ${formatDate(largestFine.dateIssued)}` : ""} by the ${fullName}. This reflects amounts that have passed RegActions' amount-review gate; see the ${code} fines database below for the complete, source-linked list.`,
+      question: scopeYear ? `What is the largest ${code} fine in ${scopeYear}?` : `What is the largest ${code} fine?`,
+      answer: scopeYear
+        ? `The largest ${code} fine issued in ${scopeYear} and currently recorded by RegActions is ${formatMoney(largestFine.amount, "GBP")}, issued to ${largestFine.firm}${largestFine.dateIssued ? ` on ${formatDate(largestFine.dateIssued)}` : ""} by the ${fullName}. This reflects amounts that have passed RegActions' amount-review gate; see the fines table below for the complete, source-linked list.`
+        : `The largest ${code} fine currently recorded by RegActions is ${formatMoney(largestFine.amount, "GBP")}, issued to ${largestFine.firm}${largestFine.dateIssued ? ` on ${formatDate(largestFine.dateIssued)}` : ""} by the ${fullName}. This reflects amounts that have passed RegActions' amount-review gate; see the ${code} fines database below for the complete, source-linked list.`,
     });
   }
   if (report && report.totalAmount > 0) {
@@ -719,17 +730,38 @@ function renderRegulatorHubBody(
   // FAQ below, driven by `yearReport` (this regulator's current-year report).
   const yearReportHtml =
     code === "FCA" ? renderFcaYearReport(fcaDetailedYearReport, casePaths, lastUpdatedDate) : "";
+  // Deliverable 3 (year-cluster + leaderboard internal linking): a compact
+  // browse-by-year list, FCA only. Does not disturb the shipped FCA hub
+  // content/FAQ above/below it.
+  const fcaYearBrowseHtml = code === "FCA" ? renderFcaYearBrowseListHtml() : "";
   const finesTable = renderRegulatorFinesTable(fines, currency, casePaths);
   const faqItems = buildRegulatorFaqItems(code, fullName, yearReport, fines[0] ?? null);
   const faqHtml = renderFaqBlock(faqItems);
   // Splice the extra crawlable content in just before the closing wrappers so it
   // sits inside .blog-article-content alongside the coverage snapshot.
   const closing = "</div></article></div></div>";
-  const injected = `${yearReportHtml}${countryLink}${finesTable}${faqHtml}`;
+  const injected = `${yearReportHtml}${fcaYearBrowseHtml}${countryLink}${finesTable}${faqHtml}`;
   if (!injected) return base;
   return base.endsWith(closing)
     ? `${base.slice(0, -closing.length)}${injected}${closing}`
     : `${base}${injected}`;
+}
+
+/**
+ * Compact "Browse FCA fines by year" list plus the leaderboard link, injected
+ * into the FCA regulator hub only (Deliverable 3). Every year is a real
+ * prerendered page (`/topics/fca-fines-{year}`, 2013..current), generated
+ * above; this list is pure navigation and needs no live data of its own.
+ */
+function renderFcaYearBrowseListHtml(): string {
+  const currentYear = new Date().getUTCFullYear();
+  const yearLinks = Array.from(
+    { length: currentYear - FCA_FINES_FIRST_YEAR + 1 },
+    (_, index) => currentYear - index,
+  )
+    .map((year) => `<li><a href="/topics/fca-fines-${year}">${year}</a></li>`)
+    .join("");
+  return `<section class="hub-fca-year-browse"><h3>Browse FCA fines by year</h3><ul class="hub-fca-year-browse__list">${yearLinks}</ul><p><a href="/topics/${LARGEST_FCA_FINES_SLUG}">See the largest FCA fines of all time →</a></p></section>`;
 }
 
 function renderFcaYearReport(
@@ -772,6 +804,146 @@ function renderFcaYearReport(
     ? `<h3>FCA fines issued in ${year}</h3><table><thead><tr><th>Firm or individual</th><th>Date</th><th>Amount</th><th>Breach</th><th>Evidence</th></tr></thead><tbody>${fineRows}</tbody></table>`
     : "";
   return `<section class="fca-year-report"><h2>How much has the FCA fined firms and individuals in ${year}?</h2>${headlineTotals}${lastUpdatedStamp}${summary}<p>The total includes positive monetary penalties with amounts that have passed the RegActions amount-review gate. It excludes non-monetary actions and records whose amounts require review.</p><p><a href="${officialUrl}" rel="noopener">Check the FCA's official ${year} fines page</a> · <a href="/regulators/fca">Explore the complete FCA fines database</a> · <a href="/topics/fca-fines-${year}">Read the FCA fines ${year} monthly report</a> · <a href="/fines/actions?regulator=FCA&amp;year=${year}">Open the ${year} actions workspace</a></p><h3>What counts as an FCA fine?</h3><p>An FCA fine is a financial penalty imposed by the Financial Conduct Authority and disclosed through an official notice or annual fines page. RegActions keeps monetary penalties separate from prohibitions, cancellations, public censures and other non-monetary enforcement outcomes. This prevents action counts from being mistaken for fine counts and makes the published total easier to audit.</p><h3>How to verify an FCA penalty</h3><p>Start with the firm or individual, penalty date and disclosed amount, then open the linked FCA notice. The notice explains the rule breaches, affected period and sanction. RegActions provides the comparison and monthly analysis layer, while the regulator publication remains the authoritative source for the decision.</p>${monthlyTable}${finesTable}</section>`;
+}
+
+/**
+ * Prev/next-year navigation plus the leaderboard and regulator-hub cross
+ * links appended to every FCA fines year page (both the curated 2026 page
+ * and every generated year). Kept as one shared block so the link set can't
+ * drift between the two rendering paths.
+ */
+function renderFcaYearAdjacentLinksHtml(year: number, currentYear: number): string {
+  const prev = year - 1 >= FCA_FINES_FIRST_YEAR
+    ? `<li><a href="/topics/fca-fines-${year - 1}">FCA fines ${year - 1}</a></li>`
+    : "";
+  const next = year + 1 <= currentYear
+    ? `<li><a href="/topics/fca-fines-${year + 1}">FCA fines ${year + 1}</a></li>`
+    : "";
+  return `<h3>More FCA fines reports</h3><ul>${prev}${next}<li><a href="/topics/${LARGEST_FCA_FINES_SLUG}">Largest FCA fines of all time</a></li><li><a href="/regulators/fca">FCA fines database</a></li></ul>`;
+}
+
+/**
+ * FAQ block for a single FCA fines year page: reuses `buildRegulatorFaqItems`
+ * (year-scoped) so the visible copy and the FAQPage JSON-LD can never drift,
+ * and so the wording matches the FCA regulator hub's FAQ convention.
+ */
+function buildFcaYearFaqItems(year: number, report: RegulatorYearReport | null | undefined) {
+  return buildRegulatorFaqItems("FCA", "Financial Conduct Authority", report, report?.largestFine ?? null, {
+    scopeYear: year,
+  });
+}
+
+/**
+ * Full crawlable body for a GENERATED (non-2026) FCA fines year page —
+ * `/topics/fca-fines-{year}`. Mirrors the shape of the curated 2026 page
+ * (report + FAQ + cross-links) inside the same `.seo-doc` wrapper used by
+ * every other topic/hub page, but does not require a full editorial
+ * `TopicCluster` entry (evidenceFocus/boardQuestions/primaryArticles), which
+ * would otherwise have to be fabricated for years with no matching blog
+ * content.
+ */
+function renderGeneratedFcaYearPageBody(
+  meta: { title: string },
+  year: number,
+  report: RegulatorYearReport | null | undefined,
+  casePaths: ReadonlyMap<string, string>,
+  lastUpdatedDate: string | null | undefined,
+  currentYear: number,
+): string {
+  const report_ = renderFcaYearReport(report, casePaths, lastUpdatedDate);
+  const faqHtml = renderFaqBlock(buildFcaYearFaqItems(year, report));
+  const crossLinks = renderFcaYearAdjacentLinksHtml(year, currentYear);
+  return `<div class="seo-doc"><div class="seo-doc__container"><article class="seo-doc__article"><h1 class="seo-doc__title">${escapeHtml(meta.title)}</h1><div class="seo-doc__body">${report_}${faqHtml}${crossLinks}</div></article></div></div>`;
+}
+
+/**
+ * FAQ items for the all-time "largest FCA fines" leaderboard. Answers are
+ * derived entirely from the ranked/aggregated data passed in — a question is
+ * omitted when its underlying figure is unavailable.
+ */
+function buildLargestFcaFinesFaqItems(
+  topFines: RegulatorTopFine[],
+  mostFinedFirm: RegulatorFirmTotal | null,
+): Array<{ question: string; answer: string }> {
+  const items: Array<{ question: string; answer: string }> = [];
+  const largest = topFines[0] ?? null;
+  if (largest && largest.amount > 0) {
+    items.push({
+      question: "What is the biggest FCA fine ever?",
+      answer: `The biggest FCA fine RegActions has recorded is ${formatMoney(largest.amount, "GBP")}, issued to ${largest.firm}${largest.dateIssued ? ` on ${formatDate(largest.dateIssued)}` : ""}. This reflects amounts that have passed RegActions' amount-review gate; see the ranked table below for the complete list.`,
+    });
+  }
+  if (topFines.length > 0) {
+    const top5 = topFines
+      .slice(0, 5)
+      .map((f) => `${f.firm} (${formatMoney(f.amount, "GBP")})`)
+      .join(", ");
+    items.push({
+      question: "What are the largest FCA fines?",
+      answer: `The largest FCA fines recorded by RegActions, by amount, are ${top5}. See the full ranked table below for all ${topFines.length} entries, each with an official source link.`,
+    });
+  }
+  if (mostFinedFirm && mostFinedFirm.totalAmount > 0) {
+    items.push({
+      question: "Which firm has been fined most by the FCA?",
+      answer: `Based on disclosed monetary penalties recorded by RegActions, ${mostFinedFirm.firm} has paid the most in total FCA fines: ${formatMoney(mostFinedFirm.totalAmount, "GBP")} across ${mostFinedFirm.fineCount.toLocaleString("en-GB")} penalties. This reflects amounts that have passed RegActions' amount-review gate.`,
+    });
+  }
+  return items;
+}
+
+/**
+ * Full crawlable body for `/topics/largest-fca-fines` — the all-time ranked
+ * leaderboard. `topFines` must already be amount-desc ordered (as returned
+ * by `getRegulatorTopFines`); this function does not re-sort.
+ */
+function renderLargestFcaFinesPageBody(
+  meta: { title: string },
+  topFines: RegulatorTopFine[],
+  mostFinedFirm: RegulatorFirmTotal | null,
+  casePaths: ReadonlyMap<string, string>,
+  lastUpdatedDate: string | null | undefined,
+  currentYear: number,
+): string {
+  const lastUpdatedStamp = lastUpdatedDate
+    ? `<p class="hub-last-updated">Last updated ${escapeHtml(formatDate(lastUpdatedDate))}</p>`
+    : "";
+  const intro = `<p>RegActions tracks every disclosed Financial Conduct Authority monetary penalty with a source-linked official notice. This page ranks the largest FCA fines by amount across the whole tracked period (${FCA_FINES_FIRST_YEAR} to date), excluding amounts still awaiting RegActions' amount-review gate.</p>`;
+  const rows = topFines
+    .map((fine, index) => {
+      const year = fine.dateIssued ? fine.dateIssued.slice(0, 4) : null;
+      const officialUrl = year
+        ? `https://www.fca.org.uk/news/news-stories/${year}-fines`
+        : "https://www.fca.org.uk/news/enforcement-notices";
+      const source = fine.sourceUrl && /^https?:\/\//i.test(fine.sourceUrl)
+        ? `<a href="${escapeHtml(fine.sourceUrl)}" rel="noopener">Official notice</a>`
+        : `<a href="${officialUrl}" rel="noopener">FCA fines page</a>`;
+      const casePath = casePaths.get(fcaCaseLookupKey(fine.firm, fine.dateIssued, fine.amount));
+      const entity = casePath
+        ? `<a href="${escapeHtml(casePath)}">${escapeHtml(fine.firm)}</a>`
+        : escapeHtml(fine.firm);
+      return `<tr><td>${index + 1}</td><td>${entity}</td><td>${escapeHtml(formatMoney(fine.amount, "GBP"))}</td><td>${year ? escapeHtml(year) : "Not recorded"}</td><td>${escapeHtml(fine.breach || "Not categorised")}</td><td>${source}</td></tr>`;
+    })
+    .join("");
+  const table = rows
+    ? `<h2>Top ${topFines.length} largest FCA fines</h2><table><thead><tr><th>Rank</th><th>Firm or individual</th><th>Amount</th><th>Year</th><th>Breach</th><th>Source</th></tr></thead><tbody>${rows}</tbody></table>`
+    : `<h2>Largest FCA fines</h2><p>The ranked table is temporarily unavailable while the live evidence set reloads.</p>`;
+  const narrative = topFines
+    .slice(0, 10)
+    .map((fine, index) => {
+      const dateText = fine.dateIssued ? formatDate(fine.dateIssued) : null;
+      const yearText = fine.dateIssued ? fine.dateIssued.slice(0, 4) : null;
+      const breachText = fine.breach ? ` for ${fine.breach.toLowerCase()}` : "";
+      const when = dateText ? ` on ${dateText}` : yearText ? ` in ${yearText}` : "";
+      return `<h3>${index + 1}. ${escapeHtml(fine.firm)} — ${escapeHtml(formatMoney(fine.amount, "GBP"))}</h3><p>${escapeHtml(`The FCA fined ${fine.firm} ${formatMoney(fine.amount, "GBP")}${when}${breachText}.`)}</p>`;
+    })
+    .join("");
+  const mostFinedHtml = mostFinedFirm && mostFinedFirm.totalAmount > 0
+    ? `<h2>Which firm has paid the most in FCA fines?</h2><p>${escapeHtml(`Based on disclosed monetary penalties recorded by RegActions, ${mostFinedFirm.firm} has paid the most in total FCA fines: ${formatMoney(mostFinedFirm.totalAmount, "GBP")} across ${mostFinedFirm.fineCount.toLocaleString("en-GB")} penalties.`)}</p>`
+    : "";
+  const faqHtml = renderFaqBlock(buildLargestFcaFinesFaqItems(topFines, mostFinedFirm));
+  const crossLinks = `<h3>More FCA fines reports</h3><ul><li><a href="/topics/fca-fines-${currentYear}">FCA fines ${currentYear}</a></li><li><a href="/regulators/fca">Explore the complete FCA fines database</a></li></ul>`;
+  return `<div class="seo-doc"><div class="seo-doc__container"><article class="seo-doc__article"><h1 class="seo-doc__title">${escapeHtml(meta.title)}</h1><div class="seo-doc__body">${lastUpdatedStamp}${intro}${table}<h2>The 10 largest FCA fines explained</h2>${narrative}${mostFinedHtml}${faqHtml}${crossLinks}</div></article></div></div>`;
 }
 
 /**
@@ -855,6 +1027,7 @@ function renderBlogRelatedLinks(slug: string): string {
   if (isFcaArticle) {
     items.set("/regulators/fca", "FCA fines database and enforcement actions");
     items.set("/topics/fca-fines-2026", "FCA fines in 2026 monthly report");
+    items.set(`/topics/${LARGEST_FCA_FINES_SLUG}`, "Largest FCA fines ranked");
   }
   const list = Array.from(items, ([href, label]) => `<li><a href="${href}">${escapeHtml(label)}</a></li>`).join("");
   return `<section class="seo-doc__related"><h2>Related on RegActions</h2><ul>${list}</ul></section>`;
@@ -933,8 +1106,6 @@ function regulatoryCandidateHtml(candidate: RegulatoryPublicationCandidate, acce
 }
 
 function regulatoryAuthorityHtml(authority: RegulatorySignalAuthority): string {
-  const level = regulatoryAuthorityEvidenceLevel(authority);
-  const levelLabel = REGULATORY_EVIDENCE_LEVELS[level - 1][0];
   const accessLimited = REGULATORY_LIMITED_ACCESS.has(authority.accessState);
   const activitySignal = accessLimited ? "unknown" : authority.activity.signal;
   const observedCount = accessLimited ? "unknown" : String(authority.activity.observedMonthCount);
@@ -946,19 +1117,16 @@ function regulatoryAuthorityHtml(authority: RegulatorySignalAuthority): string {
     ? `<h4>Publication candidates and qualification</h4><ul>${authority.publicationCandidates.map((candidate) => regulatoryCandidateHtml(candidate, accessLimited)).join("")}</ul>`
     : `<p>No publication candidate is qualified. Regulatory activity and enforcement visibility remain unknown.</p>`;
   const accessCaveat = accessLimited ? `<p>Activity and enforcement visibility remain unknown; this access limitation does not establish that the authority has no enforcement activity.</p>` : "";
-  return `<li><details><summary><strong>${escapeHtml(authority.name)}</strong> — Level ${level}: ${escapeHtml(levelLabel)} · ${escapeHtml(authorityAccessLabel(authority.accessState))}</summary><p><strong>Mandates:</strong> ${escapeHtml(authority.mandate.map(roleLabel).join(", ") || "Mandate family not classified")} · <strong>Access status:</strong> ${escapeHtml(authorityAccessLabel(authority.accessState))} · <strong>Research/publication snapshot checked:</strong> ${escapeHtml(authority.sourceCheckedAt.slice(0, 10))}</p>${authority.website ? `<p><a href="${escapeHtml(authority.website)}" rel="noopener">Official authority site</a></p>` : ""}<h4>Provisional first-page scan signal</h4><p>Signal: ${escapeHtml(activitySignal)} · Observed month count: ${observedCount} · Latest observed month: ${escapeHtml(latestMonth)}.</p><p>${escapeHtml(activityNote)}</p><details><summary>Scan contract and precision</summary><p>${escapeHtml(authority.activity.scanContract.scanType)} · ${escapeHtml(authority.activity.scanContract.startMonth)} to ${escapeHtml(authority.activity.scanContract.endMonth)} · as of ${escapeHtml(authority.activity.scanContract.asOf)} · ${escapeHtml(authority.activity.scanContract.datePrecision)} precision · ${escapeHtml(authority.activity.scanContract.archiveBoundary)}. This is not a validated engagement frequency.</p></details>${candidates}${accessCaveat}</details></li>`;
+  return `<li><details><summary><strong>${escapeHtml(authority.name)}</strong> — ${escapeHtml(authorityAccessLabel(authority.accessState))}</summary><p><strong>Mandates:</strong> ${escapeHtml(authority.mandate.map(roleLabel).join(", ") || "Mandate family not classified")} · <strong>Access status:</strong> ${escapeHtml(authorityAccessLabel(authority.accessState))} · <strong>Research/publication snapshot checked:</strong> ${escapeHtml(authority.sourceCheckedAt.slice(0, 10))}</p>${authority.website ? `<p><a href="${escapeHtml(authority.website)}" rel="noopener">Official authority site</a></p>` : ""}<h4>Provisional first-page scan signal</h4><p>Signal: ${escapeHtml(activitySignal)} · Observed month count: ${observedCount} · Latest observed month: ${escapeHtml(latestMonth)}.</p><p>${escapeHtml(activityNote)}</p><details><summary>Scan contract and precision</summary><p>${escapeHtml(authority.activity.scanContract.scanType)} · ${escapeHtml(authority.activity.scanContract.startMonth)} to ${escapeHtml(authority.activity.scanContract.endMonth)} · as of ${escapeHtml(authority.activity.scanContract.asOf)} · ${escapeHtml(authority.activity.scanContract.datePrecision)} precision · ${escapeHtml(authority.activity.scanContract.archiveBoundary)}. This is not a validated engagement frequency.</p></details>${candidates}${accessCaveat}</details></li>`;
 }
 
 function regulatoryLadderHtml(signal: NonNullable<ReturnType<typeof getRegulatorySignalCountry>>): string {
-  const level = regulatorySignalEvidenceLevel(signal);
   const enforcementCount = signal.authorities.filter((authority) => authority.evidenceLevel === "enforcement-visible" || authority.evidenceLevel === "score-eligible").length;
   const enforcement = enforcementCount > 0
     ? `${enforcementCount} authorities are classified enforcement-visible by the authority evidence schema, based on qualified authority-owned route evidence and provisional first-page month observations. This is not a validated engagement frequency.`
     : "No authority is classified enforcement-visible or score-eligible in the authority evidence schema. Enforcement visibility remains unknown or limited to identity/activity evidence; this is not evidence of no enforcement.";
-  const levels = REGULATORY_EVIDENCE_LEVELS.map(([label, description], index) => `<li><strong>${index + 1}. ${escapeHtml(label)}</strong> — ${escapeHtml(description)}</li>`).join("");
   const authorities = signal.authorities.length ? `<ul>${signal.authorities.map(regulatoryAuthorityHtml).join("")}</ul>` : `<p>No authority entry was resolved in the directory snapshot. This is not evidence that no regulator exists.</p>`;
-  const levelSummary = level === null ? "No local authority evidence level." : `Level ${level}: ${REGULATORY_EVIDENCE_LEVELS[level - 1][0]}.`;
-  return `<p><strong>Evidence level:</strong> ${escapeHtml(levelSummary)} The ladder uses the authority evidenceLevel schema directly and does not infer a level from a URL, site access or RegActions feed count.</p><ol>${levels}</ol><details><summary>How to read activity and enforcement visibility</summary><p>Only qualified authority-owned routes can support Level 2 or Level 3. External official context and unqualified candidates do not promote the evidence level. Blocked and unavailable sources remain unknown.</p></details><p><strong>Enforcement visibility:</strong> ${escapeHtml(enforcement)}</p><h3>Authorities and mandate evidence</h3>${authorities}`;
+  return `<p><strong>Local authority evidence:</strong> ${escapeHtml(signal.authorityEvidenceState)}. This describes evidence availability, not regulatory quality or enforcement effectiveness. A source we could not reach is an access limitation, never evidence of no enforcement.</p><p><strong>Enforcement visibility:</strong> ${escapeHtml(enforcement)}</p><h3>Authorities and mandate evidence</h3>${authorities}`;
 }
 
 /**
@@ -1442,22 +1610,18 @@ function renderMethodologyV2Body(): string {
 }
 
 function renderRegulatoryTransparencyBody(): string {
-  const levels = REGULATORY_EVIDENCE_LEVELS.map(([label, description], index) => `<li><strong>${index + 1}. ${escapeHtml(label)}</strong> — ${escapeHtml(description)}</li>`).join("");
   const countries = listRegulatorySignalCountries().map((signal) => {
-    const level = regulatorySignalEvidenceLevel(signal);
-    const levelLabel = level === null ? "No local authority evidence level" : `Level ${level}: ${REGULATORY_EVIDENCE_LEVELS[level - 1][0]}`;
     const enforcementCount = signal.authorities.filter((authority) => authority.evidenceLevel === "enforcement-visible" || authority.evidenceLevel === "score-eligible").length;
     const country = getCountryByIso2(signal.iso2);
     const countryHref = country ? `/countries/${countrySlug(country)}` : "/countries";
     const authorityItems = signal.authorities.length
       ? `<ul>${signal.authorities.slice(0, 2).map((authority) => {
-          const authorityLevel = regulatoryAuthorityEvidenceLevel(authority);
-          return `<li><strong>${escapeHtml(authority.name)}</strong><br>Level ${authorityLevel}: ${escapeHtml(REGULATORY_EVIDENCE_LEVELS[authorityLevel - 1][0])} · ${escapeHtml(authority.mandate.map(roleLabel).join(", ") || "Mandate family not classified")} · ${escapeHtml(authorityAccessLabel(authority.accessState))}</li>`;
+          return `<li><strong>${escapeHtml(authority.name)}</strong><br>${escapeHtml(authority.mandate.map(roleLabel).join(", ") || "Mandate family not classified")} · ${escapeHtml(authorityAccessLabel(authority.accessState))}</li>`;
         }).join("")}</ul>${signal.authorities.length > 2 ? `<p>+ ${signal.authorities.length - 2} more mapped authorities.</p>` : ""}`
       : `<p>No authority entry was resolved in the directory snapshot. This is not evidence that no regulator exists.</p>`;
-    return `<article><h3>${escapeHtml(signal.name)} (${signal.iso2})</h3><p><strong>${escapeHtml(levelLabel)}</strong> · Transparency Index: not scored</p><p>${escapeHtml(signal.authorityEvidenceState)} · ${signal.officialDirectoryAuthorities} mapped official authorities. ${enforcementCount > 0 ? `${enforcementCount} authority evidence records are enforcement-visible.` : "Enforcement visibility remains unknown or limited to identity/activity evidence."} A blocked source is not described as no enforcement.</p>${authorityItems}<p><a href="${escapeHtml(countryHref)}">View full country evidence</a></p></article>`;
+    return `<article><h3>${escapeHtml(signal.name)} (${signal.iso2})</h3><p><strong>Transparency Index:</strong> not scored</p><p>${escapeHtml(signal.authorityEvidenceState)} · ${signal.officialDirectoryAuthorities} mapped official authorities. ${enforcementCount > 0 ? `${enforcementCount} authority evidence records are enforcement-visible.` : "Enforcement visibility remains unknown or limited to identity/activity evidence."} A blocked source is not described as no enforcement.</p>${authorityItems}<p><a href="${escapeHtml(countryHref)}">View full country evidence</a></p></article>`;
   }).join("");
-  return `<main class="content-page"><h1>Regulatory ecosystem and enforcement visibility</h1><p>RegActions maps official authorities, mandate families, publication access states and RegActions feed coverage across 213 jurisdictions. This evidence layer is separate from Country Risk v3 and does not judge regulatory strength.</p><p><strong>Transparency Index:</strong> not scored while source qualification and shadow calibration continue.</p><h2>How to read the evidence ladder</h2><p>This four-level ladder uses each authority evidenceLevel directly. It is not a regulatory-quality score. Only qualified authority-owned routes can support activity or enforcement visibility; external context and unqualified candidates do not. Access failure remains unknown and is never treated as no enforcement.</p><ol>${levels}</ol><h2>Evidence states</h2><p>Reachable, challenge-protected, access-blocked, timeout, HTTP 404, no-public-website and unobservable states remain visible. Provisional first-page month observations are not a validated engagement frequency.</p><h2>Browse jurisdiction evidence</h2>${countries}<p><a href="/developers#access">Register for the read-only regulatory signal API</a> · <a href="/countries">Browse country profiles</a></p><h2>Official directory sources</h2><ul><li><a href="https://www.bis.org/regauth.htm" rel="noopener">BIS regulatory authorities</a></li><li><a href="https://www.iosco.org/v2/about/?subsection=membership&amp;memid=1" rel="noopener">IOSCO members</a></li><li><a href="https://www.iais.org/about-the-iais/iais-members/" rel="noopener">IAIS members</a></li><li><a href="https://www.iopsweb.org/en/membership/iops-members-and-observers.html" rel="noopener">IOPS members and observers</a></li><li><a href="https://egmontgroup.org/members-by-region/" rel="noopener">Egmont Group FIUs</a></li></ul></main>`;
+  return `<main class="content-page"><h1>Regulatory ecosystem and enforcement visibility</h1><p>RegActions maps official authorities, mandate families, publication access states and RegActions feed coverage across 213 jurisdictions. This evidence layer is separate from Country Risk v3 and does not judge regulatory strength.</p><p><strong>Transparency Index:</strong> not scored while source qualification and shadow calibration continue.</p><h2>Evidence states</h2><p>Reachable, challenge-protected, access-blocked, timeout, HTTP 404, no-public-website and unobservable states remain visible. Provisional first-page month observations are not a validated engagement frequency.</p><h2>Browse jurisdiction evidence</h2>${countries}<p><a href="/developers#access">Register for the read-only regulatory signal API</a> · <a href="/countries">Browse country profiles</a></p><h2>Official directory sources</h2><ul><li><a href="https://www.bis.org/regauth.htm" rel="noopener">BIS regulatory authorities</a></li><li><a href="https://www.iosco.org/v2/about/?subsection=membership&amp;memid=1" rel="noopener">IOSCO members</a></li><li><a href="https://www.iais.org/about-the-iais/iais-members/" rel="noopener">IAIS members</a></li><li><a href="https://www.iopsweb.org/en/membership/iops-members-and-observers.html" rel="noopener">IOPS members and observers</a></li><li><a href="https://egmontgroup.org/members-by-region/" rel="noopener">Egmont Group FIUs</a></li></ul></main>`;
 }
 
 /**
@@ -1493,6 +1657,7 @@ function renderTopicClusterBody(
   slug: string,
   fcaYearReport?: RegulatorYearReport | null,
   casePaths: ReadonlyMap<string, string> = new Map(),
+  lastUpdatedDate?: string | null,
 ): string {
   const cluster = topicClusters.find((item) => item.slug === slug);
   if (!cluster) return "";
@@ -1515,8 +1680,13 @@ function renderTopicClusterBody(
     )
     .join("");
 
-  const report = slug === "fca-fines-2026" ? renderFcaYearReport(fcaYearReport, casePaths) : "";
-  return `<div class="seo-doc"><div class="seo-doc__container"><article class="seo-doc__article"><h1 class="seo-doc__title">${escapeHtml(cluster.title)}</h1><div class="seo-doc__body"><p>${escapeHtml(cluster.summary)}</p>${report}<h2>Core Articles</h2><ul>${articles}</ul><h2>Evidence Focus</h2><ul>${evidence}</ul><h2>Board Questions</h2><ul>${questions}</ul><h2>Search, Data and Advisory Paths</h2><ul>${links}</ul></div></article></div></div>`;
+  const yearMatch = /^fca-fines-(\d{4})$/.exec(slug);
+  const year = yearMatch ? Number(yearMatch[1]) : null;
+  const report = year ? renderFcaYearReport(fcaYearReport, casePaths, lastUpdatedDate) : "";
+  const yearFaqAndLinks = year
+    ? `${renderFaqBlock(buildFcaYearFaqItems(year, fcaYearReport))}${renderFcaYearAdjacentLinksHtml(year, new Date().getUTCFullYear())}`
+    : "";
+  return `<div class="seo-doc"><div class="seo-doc__container"><article class="seo-doc__article"><h1 class="seo-doc__title">${escapeHtml(cluster.title)}</h1><div class="seo-doc__body"><p>${escapeHtml(cluster.summary)}</p>${report}<h2>Core Articles</h2><ul>${articles}</ul><h2>Evidence Focus</h2><ul>${evidence}</ul><h2>Board Questions</h2><ul>${questions}</ul><h2>Search, Data and Advisory Paths</h2><ul>${links}</ul>${yearFaqAndLinks}</div></article></div></div>`;
 }
 
 function renderTopicsLandingBody(): string {
@@ -2341,28 +2511,77 @@ async function buildPageMetas(): Promise<PageMeta[]> {
     );
   }
 
-  let fcaYearReport: RegulatorYearReport | null = null;
+  // FCA year reports for EVERY year with fines (2013..current), for the
+  // per-year cluster pages (Deliverable 1) plus the leaderboard's "this
+  // year" cross-link. Best-effort per year, same pattern used everywhere
+  // else in this script: a DB-less build just omits the numeric content.
+  const currentYear = new Date().getUTCFullYear();
+  const fcaYearReportsByYear = new Map<number, RegulatorYearReport>();
   try {
     const { getRegulatorYearReport } = await import("../server/services/hubs.js");
-    fcaYearReport = await getRegulatorYearReport("FCA", 2026);
-    console.log(`  FCA 2026 report: fetched ${fcaYearReport.fineCount} monetary penalties.`);
+    const years = Array.from(
+      { length: currentYear - FCA_FINES_FIRST_YEAR + 1 },
+      (_, index) => FCA_FINES_FIRST_YEAR + index,
+    );
+    const results = await Promise.all(
+      years.map(async (year) => {
+        try {
+          return [year, await getRegulatorYearReport("FCA", year)] as const;
+        } catch {
+          return [year, null] as const;
+        }
+      }),
+    );
+    for (const [year, report] of results) {
+      if (report) fcaYearReportsByYear.set(year, report);
+    }
+    console.log(
+      `  FCA year reports: fetched ${fcaYearReportsByYear.size}/${years.length} years (${FCA_FINES_FIRST_YEAR}-${currentYear}).`,
+    );
   } catch (error) {
     console.warn(
-      "WARN: DB unreachable for the FCA 2026 report; rendering the source-linked fallback:",
+      "WARN: DB unreachable for FCA year reports; year pages render the source-linked fallback:",
       error instanceof Error ? error.message : String(error),
     );
   }
+  const fcaYearReport = fcaYearReportsByYear.get(2026) ?? null;
+
+  // All-time largest FCA fines + the most-fined firm, for the leaderboard
+  // (Deliverable 2). Independent best-effort fetch so a failure here does not
+  // block the per-year pages above.
+  let fcaAllTimeTopFines: RegulatorTopFine[] = [];
+  let fcaMostFinedFirm: RegulatorFirmTotal | null = null;
+  try {
+    const { getRegulatorTopFines, getRegulatorFirmTotals } = await import(
+      "../server/services/hubs.js"
+    );
+    [fcaAllTimeTopFines, fcaMostFinedFirm] = await Promise.all([
+      getRegulatorTopFines("FCA", 30),
+      getRegulatorFirmTotals("FCA", 1).then((rows) => rows[0] ?? null),
+    ]);
+    console.log(
+      `  FCA leaderboard: fetched top ${fcaAllTimeTopFines.length} all-time fines; most-fined firm ${fcaMostFinedFirm ? "resolved" : "unavailable"}.`,
+    );
+  } catch (error) {
+    console.warn(
+      "WARN: DB unreachable for the FCA leaderboard; rendering the source-linked fallback:",
+      error instanceof Error ? error.message : String(error),
+    );
+  }
+  const fcaLeaderboardLastUpdated = fcaAllTimeTopFines[0]?.dateIssued ?? fcaYearReport?.latestDate ?? null;
 
   topicClusters.forEach((cluster) => {
     const isFcaYearReport = cluster.slug === "fca-fines-2026";
+    const clusterYearReport = isFcaYearReport ? fcaYearReport : null;
+    const clusterFaqItems = isFcaYearReport ? buildFcaYearFaqItems(2026, clusterYearReport) : [];
     pages.push({
       path: `/topics/${cluster.slug}`,
       title: cluster.seoTitle,
       description: cluster.description,
       keywords: cluster.keywords,
       ogType: "website",
-      dateModified: isFcaYearReport ? fcaYearReport?.latestDate ?? undefined : undefined,
-      bodyContent: renderTopicClusterBody(cluster.slug, fcaYearReport, fcaCasePaths),
+      dateModified: isFcaYearReport ? clusterYearReport?.latestDate ?? undefined : undefined,
+      bodyContent: renderTopicClusterBody(cluster.slug, clusterYearReport, fcaCasePaths, clusterYearReport?.latestDate),
       extraJsonLd: [
         {
           "@context": "https://schema.org",
@@ -2390,14 +2609,111 @@ async function buildPageMetas(): Promise<PageMeta[]> {
           spatialCoverage: { "@type": "Place", name: "United Kingdom" },
           creator: { "@type": "Organization", name: SITE_NAME, url: BASE_URL },
           isBasedOn: "https://www.fca.org.uk/news/news-stories/2026-fines",
-          ...(fcaYearReport ? {
-            dateModified: fcaYearReport.latestDate ?? undefined,
-            size: fcaYearReport.fineCount,
+          ...(clusterYearReport ? {
+            dateModified: clusterYearReport.latestDate ?? undefined,
+            size: clusterYearReport.fineCount,
           } : {}),
         }] : []),
+        ...(clusterFaqItems.length > 0 ? [generateFaqSchema(clusterFaqItems as any)] : []),
       ],
     });
   });
+
+  // Generated FCA fines year pages (every year 2013..current EXCEPT 2026,
+  // which keeps its own curated `topicClusters` entry handled above).
+  for (const [year, report] of fcaYearReportsByYear) {
+    if (year === 2026) continue;
+    const meta = fcaFinesYearMeta(year);
+    const faqItems = buildFcaYearFaqItems(year, report);
+    pages.push({
+      path: `/topics/${meta.slug}`,
+      title: meta.seoTitle,
+      description: meta.description,
+      keywords: meta.keywords,
+      ogType: "website",
+      dateModified: report.latestDate ?? undefined,
+      bodyContent: renderGeneratedFcaYearPageBody(meta, year, report, fcaCasePaths, report.latestDate, currentYear),
+      extraJsonLd: [
+        {
+          "@context": "https://schema.org",
+          "@type": "Dataset",
+          name: `FCA fines issued in ${year}`,
+          description: `Source-linked Financial Conduct Authority monetary penalties issued in ${year}, with monthly totals and case-level evidence.`,
+          url: `${BASE_URL}/topics/${meta.slug}`,
+          temporalCoverage: String(year),
+          spatialCoverage: { "@type": "Place", name: "United Kingdom" },
+          creator: { "@type": "Organization", name: SITE_NAME, url: BASE_URL },
+          isBasedOn: `https://www.fca.org.uk/news/news-stories/${year}-fines`,
+          dateModified: report.latestDate ?? undefined,
+          size: report.fineCount,
+        },
+        ...(faqItems.length > 0 ? [generateFaqSchema(faqItems as any)] : []),
+      ],
+    });
+  }
+  // Years the live DB failed to return a report for still exist in principle
+  // (every FCA year 2013..current has fines) — render the source-linked
+  // fallback instead of silently dropping the page from the sitemap.
+  for (let year = FCA_FINES_FIRST_YEAR; year <= currentYear; year += 1) {
+    if (year === 2026 || fcaYearReportsByYear.has(year)) continue;
+    const meta = fcaFinesYearMeta(year);
+    pages.push({
+      path: `/topics/${meta.slug}`,
+      title: meta.seoTitle,
+      description: meta.description,
+      keywords: meta.keywords,
+      ogType: "website",
+      bodyContent: renderGeneratedFcaYearPageBody(meta, year, null, fcaCasePaths, null, currentYear),
+    });
+  }
+
+  // Largest FCA fines leaderboard (Deliverable 2).
+  {
+    const faqItems = buildLargestFcaFinesFaqItems(fcaAllTimeTopFines, fcaMostFinedFirm);
+    pages.push({
+      path: `/topics/${LARGEST_FCA_FINES_SLUG}`,
+      title: largestFcaFinesMeta.seoTitle,
+      description: largestFcaFinesMeta.description,
+      keywords: largestFcaFinesMeta.keywords,
+      ogType: "website",
+      dateModified: fcaLeaderboardLastUpdated ?? undefined,
+      bodyContent: renderLargestFcaFinesPageBody(
+        largestFcaFinesMeta,
+        fcaAllTimeTopFines,
+        fcaMostFinedFirm,
+        fcaCasePaths,
+        fcaLeaderboardLastUpdated,
+        currentYear,
+      ),
+      extraJsonLd: [
+        {
+          "@context": "https://schema.org",
+          "@type": "Dataset",
+          name: "Largest FCA fines",
+          description: "Source-linked ranking of the largest Financial Conduct Authority monetary penalties, all time.",
+          url: `${BASE_URL}/topics/${LARGEST_FCA_FINES_SLUG}`,
+          spatialCoverage: { "@type": "Place", name: "United Kingdom" },
+          creator: { "@type": "Organization", name: SITE_NAME, url: BASE_URL },
+          isBasedOn: "https://www.fca.org.uk/news/enforcement-notices",
+          ...(fcaLeaderboardLastUpdated ? { dateModified: fcaLeaderboardLastUpdated } : {}),
+          size: fcaAllTimeTopFines.length,
+        },
+        ...(fcaAllTimeTopFines.length > 0 ? [{
+          "@context": "https://schema.org",
+          "@type": "ItemList",
+          name: "Largest FCA fines",
+          url: `${BASE_URL}/topics/${LARGEST_FCA_FINES_SLUG}`,
+          itemListElement: fcaAllTimeTopFines.map((fine, index) => ({
+            "@type": "ListItem",
+            position: index + 1,
+            name: `${fine.firm} — ${formatMoney(fine.amount, "GBP")}`,
+            url: `${BASE_URL}/topics/${LARGEST_FCA_FINES_SLUG}`,
+          })),
+        }] : []),
+        ...(faqItems.length > 0 ? [generateFaqSchema(faqItems as any)] : []),
+      ],
+    });
+  }
 
   // 4. Hub list pages
   pages.push({
