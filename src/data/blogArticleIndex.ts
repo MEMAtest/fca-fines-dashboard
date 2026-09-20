@@ -232,6 +232,14 @@ export const BLOG_ARTICLE_INDEX: BlogArticleCard[] = [
     "dateISO": "2026-03-27T00:00:00.000Z"
   },
   {
+    "slug": "cnbv-fines-enforcement-guide",
+    "title": "Comisión Nacional Bancaria y de Valores (CNBV) Fines & Enforcement Guide",
+    "excerpt": "Comisión Nacional Bancaria y de Valores (CNBV) enforcement analysis covering 11206 tracked actions across 2017-2026. Includes candid coverage notes on source shape, dataset strength, and how to use the feed in compliance monitoring.",
+    "category": "Regulatory Intelligence",
+    "date": "March 2026",
+    "dateISO": "2026-03-27T00:00:00.000Z"
+  },
+  {
     "slug": "hkma-fines-enforcement-guide",
     "title": "Hong Kong Monetary Authority (HKMA) Fines & Enforcement Guide",
     "excerpt": "Hong Kong Monetary Authority (HKMA) enforcement analysis covering 23 tracked actions across 2015-2025. Includes candid coverage notes on source shape, dataset strength, and how to use the feed in compliance monitoring.",
@@ -283,6 +291,14 @@ export const BLOG_ARTICLE_INDEX: BlogArticleCard[] = [
     "slug": "sesc-fines-enforcement-guide",
     "title": "Securities and Exchange Surveillance Commission (SESC) Fines & Enforcement Guide",
     "excerpt": "Securities and Exchange Surveillance Commission (SESC) enforcement analysis covering 66 tracked actions across 2023-2026. Includes candid coverage notes on source shape, dataset strength, and how to use the feed in compliance monitoring.",
+    "category": "Regulatory Intelligence",
+    "date": "March 2026",
+    "dateISO": "2026-03-27T00:00:00.000Z"
+  },
+  {
+    "slug": "fsca-fines-enforcement-guide",
+    "title": "Financial Sector Conduct Authority (FSCA) Fines & Enforcement Guide",
+    "excerpt": "Financial Sector Conduct Authority (FSCA) enforcement analysis covering 576 tracked actions across 2006-2026. Includes candid coverage notes on source shape, dataset strength, and how to use the feed in compliance monitoring.",
     "category": "Regulatory Intelligence",
     "date": "March 2026",
     "dateISO": "2026-03-27T00:00:00.000Z"
@@ -434,4 +450,4 @@ export const BLOG_ARTICLE_INDEX: BlogArticleCard[] = [
 ];
 
 /** Total published articles, for "all N insights" style counts. */
-export const BLOG_ARTICLE_COUNT = 52;
+export const BLOG_ARTICLE_COUNT = 54;

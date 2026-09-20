@@ -39,7 +39,7 @@ describe("regulatory signal read-only APIs", () => {
     expect(response.statusCode).toBe(200);
     expect(payload.count).toBe(214);
     expect(payload.totalJurisdictions).toBe(214);
-    expect((payload as unknown as { configuredRegulatorCount: number }).configuredRegulatorCount).toBe(54);
+    expect((payload as unknown as { configuredRegulatorCount: number }).configuredRegulatorCount).toBe(57);
     expect(payload.rows.every((row) => row.transparencyIndex === null)).toBe(true);
     expect(payload.rows.every((row) => row.ecosystem.authorityCount === 0
       ? row.activitySummary.scanContract === null
