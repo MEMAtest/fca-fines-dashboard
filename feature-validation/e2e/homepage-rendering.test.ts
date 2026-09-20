@@ -41,7 +41,7 @@ test.describe('Homepage Hero - Global Messaging Rendering', () => {
     expect(titleText?.toLowerCase()).not.toContain('flagship');
   });
 
-  test('MUST render hero description with the configured 54-regulator coverage', async ({ page }) => {
+  test('MUST render hero description with the configured 57-regulator coverage', async ({ page }) => {
     // Wait for description paragraph
     const heroDesc = page.locator('p.ra-hero__lede').first();
     await heroDesc.waitFor({ timeout: 8000 });
@@ -51,7 +51,7 @@ test.describe('Homepage Hero - Global Messaging Rendering', () => {
 
     // The lede must state the multi-regulator scope, not an FCA-only one.
     expect(descText).toMatch(/live regulators/i);
-    expect(descText).toContain('54');
+    expect(descText).toContain('57');
 
     // MUST NOT contain FCA-centric language
     expect(descText?.toLowerCase()).not.toContain('fca benchmark');
@@ -64,13 +64,13 @@ test.describe('Homepage Hero - Global Messaging Rendering', () => {
     expect(pageText?.toLowerCase()).not.toContain('historical fca depth');
   });
 
-  test('MUST render REGULATOR_COUNT constant (54) on hero stats', async ({ page }) => {
+  test('MUST render REGULATOR_COUNT constant (57) on hero stats', async ({ page }) => {
     // Wait for hero stats cards
     const statsSection = page.locator('.ra-stat-tile, [class*="stat-card"]');
     await statsSection.first().waitFor({ timeout: 5000 });
 
     const pageText = await page.textContent('body');
-    expect(pageText).toContain('54');
+    expect(pageText).toContain('57');
   });
 
   test('Hero CTA button MUST open the UK-first FCA evidence view', async ({ page }) => {
@@ -113,7 +113,7 @@ test.describe('Homepage Hero - Global Messaging Rendering', () => {
     const rail = page.locator('.ra-rail-section');
     await rail.first().waitFor({ timeout: 8000 });
 
-    // The heading states the region spread, e.g. "54 live regulators across 8 regions".
+    // The heading states the region spread, e.g. "57 live regulators across 8 regions".
     const heading = await page.locator('.ra-rail-section__title').first().textContent();
     expect(heading).toMatch(/regulators/i);
     expect(heading).toMatch(/regions/i);
@@ -163,7 +163,7 @@ test.describe('Homepage Hero - Global Messaging Rendering', () => {
   test('Hero stats MUST load dynamically from API without fallback showing FCA-only data', async ({ page }) => {
     // Stats should be present (either from API or fallback)
     // The hero's own stat tiles. The globe's separate stat cards were removed —
-    // they read from a different endpoint and contradicted these (61 vs 54).
+    // they read from a different endpoint and contradicted these (61 vs 57).
     const statsText = await page.locator('.ra-hero__stats, [class*="stat-card"], [class*="hero-stat"]').allTextContents();
     const combinedStats = statsText.join(' ');
 
@@ -217,8 +217,8 @@ test.describe('Homepage Hero - Global Messaging Rendering', () => {
     const heroDesc = page.locator('p.ra-hero__lede').first();
     const text = await heroDesc.textContent();
 
-    // Should contain "54" which comes from REGULATOR_COUNT constant
-    expect(text).toContain('54');
+    // Should contain "57" which comes from REGULATOR_COUNT constant
+    expect(text).toContain('57');
 
     // MUST NOT have hardcoded alternative counts like "30+" or "5 more"
     expect(text?.toLowerCase()).not.toContain('30+');
