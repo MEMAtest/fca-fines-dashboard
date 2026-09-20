@@ -10,6 +10,7 @@ import { fetchUnifiedSearch, type UnifiedSearchResponse } from "../api.js";
 import type { FineRecord, StatsResponse } from "../types.js";
 import { getRecordSourceStatus } from "../utils/sourceLinks.js";
 import { cleanDisplayText } from "../utils/firmName.js";
+import { classifyEnforcementOutcome } from "../data/enforcementOutcomes.js";
 
 interface UseUnifiedDataParams {
   regulator: string;
@@ -70,6 +71,29 @@ export function transformUnifiedRecord(
   const amountRequiresReview = Boolean(record.requires_amount_review);
   const safeAmountGbp = amountRequiresReview ? 0 : amountGbp;
   const safeAmountEur = amountRequiresReview ? 0 : amountEur;
+  const outcome = record.recordClass
+    ? {
+        recordClass: record.recordClass,
+        outcomeTypes: record.outcomeTypes ?? [],
+        primaryOutcome: record.primaryOutcome ?? null,
+        monetaryPenaltyStatus: record.monetaryPenaltyStatus ?? "unknown" as const,
+        publicationType: record.publicationType ?? "other" as const,
+        proceduralStatus: record.proceduralStatus ?? "unknown" as const,
+        classificationVersion: record.classificationVersion ?? "unknown",
+        matchReasons: record.outcomeMatchReasons ?? [],
+      }
+    : classifyEnforcementOutcome({
+        amountOriginal: record.amount_original,
+        amountGbp: record.amount_gbp,
+        amountEur: record.amount_eur,
+        requiresAmountReview: amountRequiresReview,
+        amountQuality: record.amount_quality,
+        breachType: record.breach_type,
+        breachCategories: record.breach_categories,
+        summary: record.summary,
+        noticeUrl: record.notice_url,
+        sourceUrl: record.source_url,
+      });
 
   return {
     id: record.id,
@@ -111,8 +135,15 @@ export function transformUnifiedRecord(
     amount_quality: record.amount_quality || "reported",
     requires_amount_review: amountRequiresReview,
     amount_disclosed:
-      !amountRequiresReview &&
-      (currency === "EUR" ? record.amount_eur != null : record.amount_gbp != null),
+      outcome.monetaryPenaltyStatus === "disclosed",
+    record_class: outcome.recordClass,
+    outcome_types: outcome.outcomeTypes,
+    primary_outcome: outcome.primaryOutcome,
+    monetary_penalty_status: outcome.monetaryPenaltyStatus,
+    publication_type: outcome.publicationType,
+    procedural_status: outcome.proceduralStatus,
+    outcome_classification_version: outcome.classificationVersion,
+    outcome_match_reasons: outcome.matchReasons,
     amount_verification_url: record.amount_verification_url || null,
     amount_override_reason: record.amount_override_reason || null,
     source_checked_at: record.source_checked_at || null,
@@ -149,8 +180,10 @@ function buildStats(records: FineRecord[]): StatsResponse["data"] {
   let maxFirmName: string | null = null;
   const breachCounts = new Map<string, number>();
 
+  let disclosedMonetaryCount = 0;
   records.forEach((record) => {
     totalAmount += record.amount;
+    if (record.monetary_penalty_status === "disclosed") disclosedMonetaryCount += 1;
 
     if (record.amount > maxFine) {
       maxFine = record.amount;
@@ -174,7 +207,7 @@ function buildStats(records: FineRecord[]): StatsResponse["data"] {
   return {
     totalFines: records.length,
     totalAmount,
-    avgAmount: totalAmount / records.length,
+    avgAmount: disclosedMonetaryCount > 0 ? totalAmount / disclosedMonetaryCount : 0,
     maxFine,
     maxFirmName,
     dominantBreach,

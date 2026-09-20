@@ -24,6 +24,7 @@ import {
   type SearchAnalyticsRecord,
 } from '../server/services/searchAnalytics.js';
 import { FIRM_ALIAS_GROUPS } from '../server/services/firmAliases.js';
+import { classifyEnforcementOutcome } from '../src/data/enforcementOutcomes.js';
 
 const SEARCHABLE_REGULATOR_CODES = [
   ...new Set([...PUBLIC_REGULATOR_CODES, ...UK_ENFORCEMENT_REGULATOR_CODES]),
@@ -63,6 +64,8 @@ interface SearchRow {
   currency: string;
   amount_gbp: string | number | null;
   amount_eur: string | number | null;
+  amount_quality: string | null;
+  requires_amount_review: boolean | null;
   date_issued: string;
   year_issued: number;
   month_issued: number;
@@ -1257,6 +1260,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         currency,
         amount_gbp,
         amount_eur,
+        amount_quality,
+        requires_amount_review,
         date_issued,
         year_issued,
         month_issued,
@@ -1305,7 +1310,20 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
     const payload = {
       query: q,
-      results: results.map((row) => ({
+      results: results.map((row) => {
+        const outcome = classifyEnforcementOutcome({
+          amountOriginal: row.amount_original,
+          amountGbp: row.amount_gbp,
+          amountEur: row.amount_eur,
+          requiresAmountReview: row.requires_amount_review,
+          amountQuality: row.amount_quality,
+          breachType: row.breach_type,
+          breachCategories: row.breach_categories,
+          summary: row.summary,
+          noticeUrl: row.notice_url,
+          sourceUrl: row.source_url,
+        });
+        return ({
         id: row.id,
         regulator: row.regulator,
         regulatorFullName: row.regulator_full_name,
@@ -1333,13 +1351,22 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
           toFiniteNumber(row.relevance_score) / 300,
         ).toFixed(4),
         createdAt: row.created_at,
+        recordClass: outcome.recordClass,
+        outcomeTypes: outcome.outcomeTypes,
+        primaryOutcome: outcome.primaryOutcome,
+        monetaryPenaltyStatus: outcome.monetaryPenaltyStatus,
+        publicationType: outcome.publicationType,
+        proceduralStatus: outcome.proceduralStatus,
+        classificationVersion: outcome.classificationVersion,
+        outcomeMatchReasons: outcome.matchReasons,
         ...(Number(row.concept_match_score) > 0
           ? {
               matchedConcept: 'CYBER_OPERATIONAL_RESILIENCE',
               matchReasons: row.concept_match_reasons ?? [],
             }
           : {}),
-      })),
+        });
+      }),
       pagination: {
         total: totalCount,
         limit: limitNum,

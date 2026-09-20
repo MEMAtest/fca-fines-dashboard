@@ -29,12 +29,24 @@ describe("FineAmount", () => {
   it("keeps a non-disclosed amount visually secondary", () => {
     render(<FineAmount record={{ ...baseRecord, amount: 0, amount_disclosed: false }} />);
 
-    expect(screen.getByLabelText("Not disclosed")).toHaveClass("workspace-fine--undisclosed");
+    expect(screen.getByLabelText("Amount not disclosed")).toHaveClass("workspace-fine--undisclosed");
   });
 
   it("does not present an amount under review as a disclosed fine", () => {
     render(<FineAmount record={{ ...baseRecord, requires_amount_review: true }} />);
 
-    expect(screen.getByLabelText("Amount under review")).toHaveClass("workspace-fine--review");
+    expect(screen.getByLabelText("Fine amount under review")).toHaveClass("workspace-fine--undisclosed");
+  });
+
+  it("labels a concluded non-monetary sanction without implying a zero fine", () => {
+    render(<FineAmount record={{ ...baseRecord, amount: 0, monetary_penalty_status: "none" }} />);
+
+    expect(screen.getByLabelText("Non-monetary")).toHaveClass("workspace-fine--non-monetary");
+  });
+
+  it("labels pending proceedings separately from fines", () => {
+    render(<FineAmount record={{ ...baseRecord, amount: 0, monetary_penalty_status: "unknown", record_class: "proceeding" }} />);
+
+    expect(screen.getByLabelText("Outcome pending")).toHaveClass("workspace-fine--pending");
   });
 });
