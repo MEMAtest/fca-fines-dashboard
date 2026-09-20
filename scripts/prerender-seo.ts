@@ -136,7 +136,13 @@ import {
 } from "../src/data/developersApiDocs.js";
 // Type-only import (erased at build) — the value-level `getRegulatorTopFines` is
 // imported lazily/best-effort at runtime so a DB-less build still succeeds.
-import type { RegulatorTopFine, RegulatorYearReport } from "../server/services/hubs.js";
+import type {
+  RegulatorTopFine,
+  RegulatorYearReport,
+  GlobalTopFine,
+  GlobalFinesSummary,
+  CountryFinesSummary,
+} from "../server/services/hubs.js";
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -571,9 +577,126 @@ function renderRegulatorFinesTable(
 }
 
 /**
+ * Static, crawlable top-N table across EVERY regulator for the /fines
+ * database page (the item-1 fix: the served page was previously an <h1> plus
+ * one sentence). Same shape as {@link renderRegulatorFinesTable} but adds a
+ * Regulator column linking to the per-regulator hub. `fines` is fetched
+ * best-effort at build time; [] renders "" so the caller can fall back.
+ */
+function renderGlobalFinesTable(fines: GlobalTopFine[]): string {
+  if (fines.length === 0) return "";
+  const rows = fines
+    .map((f) => {
+      const firm = escapeHtml(f.firm || "Undisclosed");
+      const date = escapeHtml(f.dateIssued ? formatDate(f.dateIssued) : "—");
+      const amount = escapeHtml(f.amount > 0 ? formatMoney(f.amount, "GBP") : "—");
+      const regulatorCode = f.regulator.toUpperCase();
+      const regulator = `<a href="/regulators/${escapeHtml(f.regulator.toLowerCase())}">${escapeHtml(regulatorCode)}</a>`;
+      const source =
+        f.sourceUrl && /^https?:\/\//i.test(f.sourceUrl)
+          ? `<a href="${escapeHtml(f.sourceUrl)}" rel="noopener">Notice</a>`
+          : "—";
+      return `<tr><td>${firm}</td><td>${regulator}</td><td>${date}</td><td>${amount}</td><td>${source}</td></tr>`;
+    })
+    .join("");
+  return `<h2>Largest fines in the database</h2><table class="hub-fines-table"><thead><tr><th>Firm or individual</th><th>Regulator</th><th>Date</th><th>Amount</th><th>Source</th></tr></thead><tbody>${rows}</tbody></table><p>Amounts are normalised to GBP for comparison.</p>`;
+}
+
+/**
+ * Visible FAQ block, same shape as `renderCountryFaqBlock` — reused across
+ * every regulator hub. The answers here MUST equal the FAQPage JSON-LD
+ * verbatim (Google requirement), so both are always built from the same
+ * `items` array by the caller.
+ */
+function renderFaqBlock(items: Array<{ question: string; answer: string }>): string {
+  if (items.length === 0) return "";
+  const inner = items
+    .map(
+      (item) =>
+        `<div class="country-faq__item"><h3>${escapeHtml(item.question)}</h3><p>${escapeHtml(item.answer)}</p></div>`,
+    )
+    .join("");
+  return `<section class="country-faq"><h2>Frequently asked questions</h2>${inner}</section>`;
+}
+
+/**
+ * Build-time FAQ items for a regulator hub's PAA-targeting questions.
+ * Generalised across every live regulator (not just FCA). Numeric answers
+ * are always derived from real data passed in by the caller — a question is
+ * omitted entirely (never fabricated) when its underlying figure is
+ * unavailable.
+ */
+function buildRegulatorFaqItems(
+  code: string,
+  fullName: string,
+  report: RegulatorYearReport | null | undefined,
+  largestFine: RegulatorTopFine | null | undefined,
+): Array<{ question: string; answer: string }> {
+  const items: Array<{ question: string; answer: string }> = [];
+  if (largestFine && largestFine.amount > 0) {
+    items.push({
+      question: `What is the largest ${code} fine?`,
+      answer: `The largest ${code} fine currently recorded by RegActions is ${formatMoney(largestFine.amount, "GBP")}, issued to ${largestFine.firm}${largestFine.dateIssued ? ` on ${formatDate(largestFine.dateIssued)}` : ""} by the ${fullName}. This reflects amounts that have passed RegActions' amount-review gate; see the ${code} fines database below for the complete, source-linked list.`,
+    });
+  }
+  if (report && report.totalAmount > 0) {
+    items.push({
+      question: `How much has ${code} fined in ${report.year}?`,
+      answer: `RegActions records ${formatMoney(report.totalAmount, "GBP")} in disclosed ${fullName} (${code}) monetary penalties in ${report.year}, based on source-linked notices that have passed the amount-review gate. This excludes non-monetary actions such as prohibitions and public censures.`,
+    });
+  }
+  if (report && report.fineCount > 0) {
+    items.push({
+      question: `How many ${code} penalties were issued in ${report.year}?`,
+      answer: `RegActions has recorded ${report.fineCount.toLocaleString("en-GB")} disclosed ${fullName} (${code}) monetary penalties in ${report.year} so far. This counts individual penalty notices, not firms, since some are fined more than once in a year.`,
+    });
+  }
+  items.push({
+    question: `How can I verify a ${code} fine?`,
+    answer: `Start with the firm or individual name, the penalty date and the disclosed amount, then open the linked ${fullName} notice. The notice sets out the rule breaches, the affected period and the sanction. RegActions links every record to its official source; the regulator's own publication remains the authoritative record.`,
+  });
+  return items;
+}
+
+/**
+ * Build-time FAQ items for a country's enforcement-fines page. CRITICAL: the
+ * caller must not invoke this for a country with no fines rows at all — pass
+ * only when `summary` is present and `summary.actionCount > 0`. Individual
+ * numeric questions (largest fine, total amount) are still independently
+ * omitted when their own figure is unavailable/zero.
+ */
+function buildCountryFinesFaqItems(
+  countryName: string,
+  summary: CountryFinesSummary,
+): Array<{ question: string; answer: string }> {
+  const items: Array<{ question: string; answer: string }> = [];
+  if (summary.largestFine && summary.largestFine.amount > 0) {
+    const lf = summary.largestFine;
+    items.push({
+      question: `What is the largest regulatory fine in ${countryName}?`,
+      answer: `The largest regulatory fine recorded by RegActions for ${countryName} is ${formatMoney(lf.amount, "GBP")}, issued to ${lf.firm} by the ${lf.regulator}${lf.dateIssued ? ` on ${formatDate(lf.dateIssued)}` : ""}. This reflects amounts that have passed RegActions' amount-review gate.`,
+    });
+  }
+  if (summary.totalAmount > 0) {
+    items.push({
+      question: `How much have regulators fined firms in ${countryName}?`,
+      answer: `RegActions records ${formatMoney(summary.totalAmount, "GBP")} in disclosed regulatory fines for ${countryName} across the regulators it tracks, based on source-linked notices that have passed the amount-review gate.`,
+    });
+  }
+  if (summary.actionCount > 0) {
+    items.push({
+      question: `How many enforcement fines have been recorded in ${countryName}?`,
+      answer: `RegActions has recorded ${summary.actionCount.toLocaleString("en-GB")} enforcement fines for ${countryName} from the regulators it tracks. This counts individual penalty notices, not firms, since some firms are fined more than once.`,
+    });
+  }
+  return items;
+}
+
+/**
  * Regulator hub SSG body = base hub body + a country cross-link + a static
- * top-N fines table (when data is available at build time). Keeps the shared
- * renderHubBody untouched for the breach/year/sector/firm hubs.
+ * top-N fines table + a build-time FAQ block (when data is available at
+ * build time). Keeps the shared renderHubBody untouched for the
+ * breach/year/sector/firm hubs.
  */
 function renderRegulatorHubBody(
   title: string,
@@ -581,19 +704,28 @@ function renderRegulatorHubBody(
   metrics: Array<{ label: string; value: string }>,
   path: string,
   code: string,
+  fullName: string,
   fines: RegulatorTopFine[],
   currency: string,
   yearReport?: RegulatorYearReport | null,
   casePaths: ReadonlyMap<string, string> = new Map(),
+  lastUpdatedDate?: string | null,
+  fcaDetailedYearReport?: RegulatorYearReport | null,
 ): string {
   const base = renderHubBody(title, description, metrics, path);
   const countryLink = regulatorCountryLinkHtml(code);
-  const yearReportHtml = code === "FCA" ? renderFcaYearReport(yearReport, casePaths) : "";
+  // The FCA hub keeps its own richer monthly/fines-list report (fixed to the
+  // current published year); every other hub gets only the generic totals +
+  // FAQ below, driven by `yearReport` (this regulator's current-year report).
+  const yearReportHtml =
+    code === "FCA" ? renderFcaYearReport(fcaDetailedYearReport, casePaths, lastUpdatedDate) : "";
   const finesTable = renderRegulatorFinesTable(fines, currency, casePaths);
+  const faqItems = buildRegulatorFaqItems(code, fullName, yearReport, fines[0] ?? null);
+  const faqHtml = renderFaqBlock(faqItems);
   // Splice the extra crawlable content in just before the closing wrappers so it
   // sits inside .blog-article-content alongside the coverage snapshot.
   const closing = "</div></article></div></div>";
-  const injected = `${yearReportHtml}${countryLink}${finesTable}`;
+  const injected = `${yearReportHtml}${countryLink}${finesTable}${faqHtml}`;
   if (!injected) return base;
   return base.endsWith(closing)
     ? `${base.slice(0, -closing.length)}${injected}${closing}`
@@ -603,9 +735,19 @@ function renderRegulatorHubBody(
 function renderFcaYearReport(
   report?: RegulatorYearReport | null,
   casePaths: ReadonlyMap<string, string> = new Map(),
+  lastUpdatedDate?: string | null,
 ): string {
   const year = report?.year ?? 2026;
   const officialUrl = `https://www.fca.org.uk/news/news-stories/${year}-fines`;
+  // Prominent, crawlable running-totals sentence near the top of the hub —
+  // deliberately terse (one sentence) so it reads well as a standalone
+  // snippet/PAA answer, distinct from the fuller `summary` paragraph below.
+  const headlineTotals = report
+    ? `<p class="hub-fines-totals">The FCA has issued <strong>${report.fineCount.toLocaleString("en-GB")}</strong> monetary penalties totalling <strong>${escapeHtml(formatMoney(report.totalAmount, "GBP"))}</strong> in ${year}${lastUpdatedDate ? ` (last updated ${escapeHtml(formatDate(lastUpdatedDate))})` : ""}.</p>`
+    : "";
+  const lastUpdatedStamp = lastUpdatedDate
+    ? `<p class="hub-last-updated">Last updated ${escapeHtml(formatDate(lastUpdatedDate))}</p>`
+    : "";
   const summary = report
     ? `<p>RegActions records <strong>${escapeHtml(formatMoney(report.totalAmount, "GBP"))}</strong> across <strong>${report.fineCount.toLocaleString("en-GB")}</strong> disclosed monetary penalties in ${year}. The latest included penalty is dated ${escapeHtml(formatDate(report.latestDate ?? `${year}-01-01`))}.</p>`
     : `<p>This report tracks disclosed FCA monetary penalties in ${year}, month by month. Current totals are loaded from the source-linked RegActions evidence set in the interactive view.</p>`;
@@ -629,7 +771,7 @@ function renderFcaYearReport(
   const finesTable = fineRows
     ? `<h3>FCA fines issued in ${year}</h3><table><thead><tr><th>Firm or individual</th><th>Date</th><th>Amount</th><th>Breach</th><th>Evidence</th></tr></thead><tbody>${fineRows}</tbody></table>`
     : "";
-  return `<section class="fca-year-report"><h2>How much has the FCA fined firms and individuals in ${year}?</h2>${summary}<p>The total includes positive monetary penalties with amounts that have passed the RegActions amount-review gate. It excludes non-monetary actions and records whose amounts require review.</p><p><a href="${officialUrl}" rel="noopener">Check the FCA's official ${year} fines page</a> · <a href="/regulators/fca">Explore the complete FCA fines database</a> · <a href="/topics/fca-fines-${year}">Read the FCA fines ${year} monthly report</a> · <a href="/fines/actions?regulator=FCA&amp;year=${year}">Open the ${year} actions workspace</a></p><h3>What counts as an FCA fine?</h3><p>An FCA fine is a financial penalty imposed by the Financial Conduct Authority and disclosed through an official notice or annual fines page. RegActions keeps monetary penalties separate from prohibitions, cancellations, public censures and other non-monetary enforcement outcomes. This prevents action counts from being mistaken for fine counts and makes the published total easier to audit.</p><h3>How to verify an FCA penalty</h3><p>Start with the firm or individual, penalty date and disclosed amount, then open the linked FCA notice. The notice explains the rule breaches, affected period and sanction. RegActions provides the comparison and monthly analysis layer, while the regulator publication remains the authoritative source for the decision.</p>${monthlyTable}${finesTable}</section>`;
+  return `<section class="fca-year-report"><h2>How much has the FCA fined firms and individuals in ${year}?</h2>${headlineTotals}${lastUpdatedStamp}${summary}<p>The total includes positive monetary penalties with amounts that have passed the RegActions amount-review gate. It excludes non-monetary actions and records whose amounts require review.</p><p><a href="${officialUrl}" rel="noopener">Check the FCA's official ${year} fines page</a> · <a href="/regulators/fca">Explore the complete FCA fines database</a> · <a href="/topics/fca-fines-${year}">Read the FCA fines ${year} monthly report</a> · <a href="/fines/actions?regulator=FCA&amp;year=${year}">Open the ${year} actions workspace</a></p><h3>What counts as an FCA fine?</h3><p>An FCA fine is a financial penalty imposed by the Financial Conduct Authority and disclosed through an official notice or annual fines page. RegActions keeps monetary penalties separate from prohibitions, cancellations, public censures and other non-monetary enforcement outcomes. This prevents action counts from being mistaken for fine counts and makes the published total easier to audit.</p><h3>How to verify an FCA penalty</h3><p>Start with the firm or individual, penalty date and disclosed amount, then open the linked FCA notice. The notice explains the rule breaches, affected period and sanction. RegActions provides the comparison and monthly analysis layer, while the regulator publication remains the authoritative source for the decision.</p>${monthlyTable}${finesTable}</section>`;
 }
 
 /**
@@ -824,7 +966,10 @@ function regulatoryLadderHtml(signal: NonNullable<ReturnType<typeof getRegulator
  * `CountryView` the React page uses (`src/data/countryView.ts`), so the
  * prerendered HTML and the SPA can't drift apart in copy/logic.
  */
-function renderCountryFatfBody(view: CountryView): string {
+function renderCountryFatfBody(
+  view: CountryView,
+  financeFaqItems: Array<{ question: string; answer: string }> = [],
+): string {
   const { country, statusHeading, statusDetail, history, enforcement, sanctions, riskV3, publicSurface, breakdown, globalAverage, cpi, decision, enforcementAssessed, regulatory, regionalPeers, attribution } = view;
   const sanctionsOverlay = riskV3.overlays.sanctions;
   const sanctionsTier = sanctionsOverlay.highestTier;
@@ -1087,8 +1232,11 @@ function renderCountryFatfBody(view: CountryView): string {
         .join("")}</ul>`
     : "";
   // Visible FAQ block — answers MUST match the FAQPage JSON-LD verbatim (Google
-  // requirement). Both derive from buildCountryFaqs(view), so they cannot drift.
-  const faqHtml = renderCountryFaqBlock(buildCountryFaqs(view));
+  // requirement). Both derive from the SAME combined array (the caller passes
+  // the identical `financeFaqItems` into `generateCountryFaqSchema`), merging
+  // the existing country-risk FAQ with the (possibly empty) fines FAQ so the
+  // page has one FAQ section rather than two competing ones.
+  const faqHtml = renderCountryFaqBlock([...buildCountryFaqs(view), ...financeFaqItems]);
   return `<div class="seo-doc"><div class="seo-doc__container"><article class="seo-doc__article"><h1 class="seo-doc__title">${escapeHtml(
     title,
   )}</h1><div class="seo-doc__body">${introHtml}${treatmentHtml}${glanceHtml}${scoreHtml}${decisionHtml}<h2>FATF status: ${escapeHtml(
@@ -1810,12 +1958,64 @@ async function buildPageMetas(): Promise<PageMeta[]> {
     ),
   });
 
+  // /fines is the highest-intent URL in the site ("fines database" searchers
+  // land here) but previously prerendered as an <h1> + one sentence. Fetch
+  // real, build-time figures for a running-totals line + a baked top-fines
+  // table, best-effort like every other DB read in this script: on failure
+  // the page falls back to the original thin body rather than a fabricated
+  // number.
+  let globalFinesSummary: GlobalFinesSummary | null = null;
+  let globalTopFines: GlobalTopFine[] = [];
+  let fcaYearSummaryForFines: RegulatorYearReport | null = null;
+  try {
+    const { getGlobalFinesSummary, getGlobalTopFines, getRegulatorYearReport } =
+      await import("../server/services/hubs.js");
+    const currentYear = new Date().getUTCFullYear();
+    [globalFinesSummary, globalTopFines, fcaYearSummaryForFines] = await Promise.all([
+      getGlobalFinesSummary(),
+      getGlobalTopFines(50),
+      getRegulatorYearReport("FCA", currentYear),
+    ]);
+    console.log(
+      `  /fines: ${globalFinesSummary.actionCount} actions across ${globalFinesSummary.regulatorCount} regulators; ${globalTopFines.length} rows for the top-fines table.`,
+    );
+  } catch (error) {
+    console.warn(
+      "WARN: DB unreachable for the /fines running totals; page falls back to the thin body:",
+      error instanceof Error ? error.message : String(error),
+    );
+  }
+  const finesLastUpdated = clampISODate(
+    globalFinesSummary?.latestDate ?? todayISO(),
+    todayISO(),
+  );
+
   for (const workspace of [
     { path: "/fines", title: "Regulatory Fines Database | Global Enforcement Actions", description: "Search the RegActions regulatory fines database: compare financial penalties, enforcement actions, breach themes and official source evidence across global regulators." },
     { path: "/fines/actions", title: "Regulatory Enforcement Actions | Search Fines by Regulator", description: "Search source-linked regulatory enforcement actions by regulator, jurisdiction, year, firm and breach theme across the RegActions evidence base." },
     { path: "/fines/analytics", title: "Regulatory Fines Analytics | Trends, Themes and Penalties", description: "Analyse regulatory fines by year, regulator, sector and breach theme, with transparent totals and source-linked enforcement evidence." },
     { path: "/fines/compare", title: "Compare Regulatory Fines | Enforcement Benchmarks", description: "Compare regulatory fines and enforcement activity across years, regulators and breach themes using the RegActions public evidence base." },
   ]) {
+    const isFinesRoot = workspace.path === "/fines";
+    const totalsSentence =
+      isFinesRoot && globalFinesSummary
+        ? `<p class="hub-fines-totals">As of ${escapeHtml(formatDate(finesLastUpdated))}: <strong>${globalFinesSummary.actionCount.toLocaleString("en-GB")}</strong> enforcement actions from <strong>${globalFinesSummary.regulatorCount.toLocaleString("en-GB")}</strong> regulators totalling <strong>${escapeHtml(formatMoney(globalFinesSummary.totalAmount, "GBP"))}</strong>${
+            fcaYearSummaryForFines
+              ? `; FCA: <strong>${fcaYearSummaryForFines.fineCount.toLocaleString("en-GB")}</strong> penalties totalling <strong>${escapeHtml(formatMoney(fcaYearSummaryForFines.totalAmount, "GBP"))}</strong> in ${fcaYearSummaryForFines.year}`
+              : ""
+          }.</p>`
+        : "";
+    const lastUpdatedStamp = isFinesRoot
+      ? `<p class="hub-last-updated">Last updated ${escapeHtml(formatDate(finesLastUpdated))}</p>`
+      : "";
+    // fcaCasePaths (FCA case detail page routes) is only built later in this
+    // function, once the FCA case-page loop runs — this block deliberately
+    // does not depend on it. Every row still links out via the Regulator hub
+    // and, where available, the official source notice.
+    const finesTableHtml = isFinesRoot ? renderGlobalFinesTable(globalTopFines) : "";
+    const introParagraph = isFinesRoot
+      ? `<p>The RegActions fines database collects source-linked monetary penalties and enforcement actions published by financial regulators worldwide, from the FCA and SEC to BaFin, AMF and MAS. Every record links back to the regulator's own notice or fines page, so a total can always be traced to its official source. Use the live workspace below to filter by regulator, year, firm or breach theme.</p>`
+      : "";
     pages.push({
       path: workspace.path,
       title: `${workspace.title} | RegActions`,
@@ -1828,18 +2028,32 @@ async function buildPageMetas(): Promise<PageMeta[]> {
             ? "regulatory fines analytics, enforcement trends, regulatory penalty analysis, fines by regulator"
             : "compare regulatory fines, regulatory enforcement comparison, regulator benchmarks, penalty comparison",
       ogType: "website",
-      bodyContent: renderStaticPageBody(
-        workspace.path === "/fines" ? "Regulatory Fines Database" : workspace.title,
-        workspace.description,
-        [
-          { heading: "Evidence-first analysis", body: "Open the actions behind every chart, table and comparison, then follow the available links to official regulator evidence." },
-          { heading: "Public working views", body: "Filters and guided comparisons are available without an account. Saved views remain on the user's device." },
-          ...(workspace.path === "/fines" ? [
-            { heading: "FCA fines database", body: "Use the regulator page for the broad Financial Conduct Authority enforcement view, totals and official evidence.", href: "/regulators/fca", linkLabel: "Open the FCA fines database" },
-            { heading: "FCA fines 2026", body: "Open the current-year report for monthly totals and source-linked monetary penalties.", href: "/topics/fca-fines-2026", linkLabel: "Read the FCA fines 2026 report" },
-          ] : []),
-        ],
-      ),
+      dateModified: isFinesRoot ? finesLastUpdated : undefined,
+      bodyContent: (() => {
+        const base = renderStaticPageBody(
+          workspace.path === "/fines" ? "Regulatory Fines Database" : workspace.title,
+          workspace.description,
+          [
+            { heading: "Evidence-first analysis", body: "Open the actions behind every chart, table and comparison, then follow the available links to official regulator evidence." },
+            { heading: "Public working views", body: "Filters and guided comparisons are available without an account. Saved views remain on the user's device." },
+            ...(workspace.path === "/fines" ? [
+              { heading: "FCA fines database", body: "Use the regulator page for the broad Financial Conduct Authority enforcement view, totals and official evidence.", href: "/regulators/fca", linkLabel: "Open the FCA fines database" },
+              { heading: "FCA fines 2026", body: "Open the current-year report for monthly totals and source-linked monetary penalties.", href: "/topics/fca-fines-2026", linkLabel: "Read the FCA fines 2026 report" },
+            ] : []),
+          ],
+        );
+        if (!isFinesRoot) return base;
+        // Splice the /fines-only enrichment (intro + running totals + baked
+        // top-fines table + freshness stamp) in just before the closing
+        // wrappers, same pattern as renderRegulatorHubBody. The page already
+        // gets a Dataset block from the shared @graph builder (DATASET_PAGES
+        // includes "/fines"), so no extra Dataset schema is added here.
+        const closing = "</div></article></div></div>";
+        const injected = `${introParagraph}${totalsSentence}${lastUpdatedStamp}${finesTableHtml}`;
+        return base.endsWith(closing)
+          ? `${base.slice(0, -closing.length)}${injected}${closing}`
+          : `${base}${injected}`;
+      })(),
     });
   }
 
@@ -2302,6 +2516,36 @@ async function buildPageMetas(): Promise<PageMeta[]> {
     );
   }
 
+  // Per-regulator current-year report for EVERY live regulator (not just
+  // FCA) — drives the generic hub FAQ ("How much has {REG} fined in
+  // {year}?" etc.) added to every regulator hub below. Best-effort per
+  // regulator, same pattern as the top-fines fetch above.
+  const regulatorYearReports = new Map<string, RegulatorYearReport>();
+  try {
+    const { getRegulatorYearReport } = await import("../server/services/hubs.js");
+    const currentYear = new Date().getUTCFullYear();
+    const results = await Promise.all(
+      PUBLIC_REGULATOR_CODES.map(async (code) => {
+        try {
+          return [code, await getRegulatorYearReport(code, currentYear)] as const;
+        } catch {
+          return [code, null] as const;
+        }
+      }),
+    );
+    for (const [code, report] of results) {
+      if (report) regulatorYearReports.set(code, report);
+    }
+    console.log(
+      `  Regulator hubs: fetched current-year reports for ${regulatorYearReports.size}/${PUBLIC_REGULATOR_CODES.length} regulators (FAQ totals).`,
+    );
+  } catch (error) {
+    console.warn(
+      "WARN: DB unreachable for regulator hub FAQ totals; hubs omit the numeric FAQ answers:",
+      error instanceof Error ? error.message : String(error),
+    );
+  }
+
   PUBLIC_REGULATOR_CODES.forEach((code) => {
     const coverage = REGULATOR_COVERAGE[code];
     const path = `/regulators/${code.toLowerCase()}`;
@@ -2321,6 +2565,14 @@ async function buildPageMetas(): Promise<PageMeta[]> {
     const description = coverage.seoDescription
       ?? `Track ${coverage.fullName} (${code}) fines and enforcement actions from ${coverage.years}. Current totals are loaded from the live evidence view. Complete database with stats, trends, and analysis.`;
     const keywords = `${code} fines, ${coverage.fullName}, regulatory enforcement, financial penalties, ${coverage.country}, compliance data, ${code} enforcement`;
+    // Same pure inputs feed both the visible FAQ block (inside
+    // renderRegulatorHubBody) and this JSON-LD, so they cannot drift.
+    const regulatorFaqItems = buildRegulatorFaqItems(
+      code,
+      coverage.fullName,
+      regulatorYearReports.get(code) ?? null,
+      regulatorTopFines.get(code)?.[0] ?? null,
+    );
 
     pages.push({
       path,
@@ -2356,15 +2608,19 @@ async function buildPageMetas(): Promise<PageMeta[]> {
         ],
         path,
         code,
+        coverage.fullName,
         regulatorTopFines.get(code) ?? [],
         // fca_fines.amount is normalised to GBP house-wide (the interactive view
         // says "Normalised to GBP for comparison") — never label it with the
         // regulator's native currency.
         "GBP",
-        code === "FCA" ? fcaYearReport : null,
+        regulatorYearReports.get(code) ?? null,
         code === "FCA" ? fcaCasePaths : new Map(),
+        (code === "FCA" ? fcaYearReport?.latestDate : null) ?? latestActionDate ?? null,
+        code === "FCA" ? fcaYearReport : null,
       ),
       extraJsonLd: [
+        ...(regulatorFaqItems.length > 0 ? [generateFaqSchema(regulatorFaqItems as any)] : []),
         {
           "@context": "https://schema.org",
           "@type": "Dataset",
@@ -2590,6 +2846,24 @@ async function buildPageMetas(): Promise<PageMeta[]> {
       author: { "@type": "Organization", name: SITE_NAME, url: BASE_URL },
     },
   });
+  // Per-country enforcement-fines totals + largest fine, for the country-page
+  // fines FAQ. Best-effort like every other DB read here: on failure the map
+  // stays empty and every country page simply omits the fines FAQ (never a
+  // fabricated "0 fines" or "£0").
+  let countryFinesSummaries = new Map<string, CountryFinesSummary>();
+  try {
+    const { getCountryFinesSummaries } = await import("../server/services/hubs.js");
+    countryFinesSummaries = await getCountryFinesSummaries();
+    console.log(
+      `  Country pages: fines summaries for ${countryFinesSummaries.size} countries.`,
+    );
+  } catch (error) {
+    console.warn(
+      "WARN: DB unreachable for country fines summaries; country pages omit the fines FAQ:",
+      error instanceof Error ? error.message : String(error),
+    );
+  }
+
   // Every country with a risk signal (governance / FATF / sanctions / enforcement)
   // gets a page — the near-complete world, not just the FATF-listed few.
   const countryPageIso2 = pageCountries().map((c) => c.iso2);
@@ -2597,6 +2871,13 @@ async function buildPageMetas(): Promise<PageMeta[]> {
     const country = getCountryByIso2(iso2);
     if (!country) continue;
     const view = buildCountryView(country);
+    // Present + non-empty only — a missing/zero-action entry means NO fines
+    // FAQ for this country, never a "largest fine: —" placeholder.
+    const finesSummary = countryFinesSummaries.get(country.iso2.toUpperCase());
+    const countryFinesFaqItems =
+      finesSummary && finesSummary.actionCount > 0
+        ? buildCountryFinesFaqItems(country.name, finesSummary)
+        : [];
     const { fatf: status, enforcement } = view;
     const slug = countrySlug(country);
     const path = `/countries/${slug}`;
@@ -2632,7 +2913,7 @@ async function buildPageMetas(): Promise<PageMeta[]> {
       keywords,
       ogType: "website",
       dateModified: COUNTRY_PAGE_DATE,
-      bodyContent: renderCountryFatfBody(view),
+      bodyContent: renderCountryFatfBody(view, countryFinesFaqItems),
       breadcrumbLabel: country.name,
       jsonLd: {
         "@context": "https://schema.org",
@@ -2675,7 +2956,7 @@ async function buildPageMetas(): Promise<PageMeta[]> {
           ],
           isBasedOn: FATF_SOURCE_URL,
         },
-        generateCountryFaqSchema(buildCountryFaqs(view)),
+        generateCountryFaqSchema([...buildCountryFaqs(view), ...countryFinesFaqItems]),
       ],
     });
   }
