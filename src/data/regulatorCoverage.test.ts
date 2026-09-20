@@ -15,6 +15,11 @@ import {
   hasPublicRegulatorHub,
   isValidRegulatorCode,
 } from "./regulatorCoverage.js";
+import {
+  getCoveredCountries,
+  getPipelineCountries,
+  getRegulatorsForCountry,
+} from "./countryRegulatorMapping.js";
 
 describe("regulatorCoverage", () => {
   it("includes published regulators in live public navigation", () => {
@@ -221,7 +226,7 @@ describe("regulatorCoverage", () => {
     );
     expect(getRegulatorCoverage("ESMA")?.stage).toBe("internal");
     expect(getRegulatorCoverage("CVM")?.stage).toBe("live");
-    expect(getRegulatorCoverage("CNBV")?.stage).toBe("pipeline");
+    expect(getRegulatorCoverage("CNBV")?.stage).toBe("live");
     expect(getRegulatorCoverage("CMF")?.stage).toBe("pipeline");
     expect(getRegulatorCoverage("FINMA")?.stage).toBe("live");
     expect(getRegulatorCoverage("SESC")?.stage).toBe("live");
@@ -370,10 +375,12 @@ describe("regulatorCoverage", () => {
   });
 
   it("keeps global targets in pipeline until their datasets are genuinely live", () => {
-    ["CMASA", "FSCA", "CSRC"].forEach((code) => {
+    ["CMASA", "CSRC"].forEach((code) => {
       expect(PUBLIC_REGULATOR_CODES).not.toContain(code);
       expect(getRegulatorCoverage(code)?.stage).toBe("pipeline");
     });
+    expect(PUBLIC_REGULATOR_CODES).toContain("FSCA");
+    expect(getRegulatorCoverage("FSCA")?.stage).toBe("live");
     expect(PUBLIC_REGULATOR_CODES).toContain("OCC");
     expect(PUBLIC_REGULATOR_CODES).toContain("FINCEN");
     expect(PUBLIC_REGULATOR_CODES).toContain("FINRA");
@@ -399,11 +406,14 @@ describe("regulatorCoverage", () => {
   });
 
   it("keeps the wider global set queued alongside the new Canada regulator", () => {
-    ["CNBV", "CMF"].forEach((code) => {
+    ["CMF"].forEach((code) => {
       expect(PUBLIC_REGULATOR_CODES).not.toContain(code);
       expect(getRegulatorCoverage(code)?.stage).toBe("pipeline");
     });
 
+    expect(PUBLIC_REGULATOR_CODES).toContain("CNBV");
+    expect(getRegulatorCoverage("CNBV")?.stage).toBe("live");
+    expect(getRegulatorCoverage("CNBV")?.count).toBe(11206);
     expect(PUBLIC_REGULATOR_CODES).toContain("CVM");
     expect(getRegulatorCoverage("CVM")?.stage).toBe("live");
     expect(getRegulatorCoverage("CVM")?.count).toBe(557);
@@ -417,6 +427,20 @@ describe("regulatorCoverage", () => {
     expect(getRegulatorCoverage("cmf")?.country).toBe("Chile");
     expect(getRegulatorCoverage("osc")?.country).toBe("Canada");
     expect(getRegulatorCoverage("osc")?.count).toBe(653);
+  });
+
+  it("publishes verified African country coverage without promoting the stale CBN lane", () => {
+    expect(PUBLIC_REGULATOR_CODES).toContain("FSCA");
+    expect(PUBLIC_REGULATOR_CODES).toContain("NGSEC");
+    expect(PUBLIC_REGULATOR_CODES).not.toContain("CBN");
+    expect(getRegulatorCoverage("FSCA")?.count).toBe(576);
+    expect(getRegulatorCoverage("NGSEC")?.count).toBe(41);
+    expect(getRegulatorCoverage("NGSEC")?.automationLevel).toBe("low_frequency");
+    expect(getRegulatorCoverage("NGSEC")?.feedContract.staleAfterDays).toBe(730);
+    expect(getRegulatorCoverage("CBN")?.stage).toBe("pipeline");
+    expect(getCoveredCountries()).toEqual(expect.arrayContaining(["ZA", "NG", "MX"]));
+    expect(getRegulatorsForCountry("NG")?.regulators.map((item) => item.code)).toEqual(["NGSEC"]);
+    expect(getPipelineCountries()).toContain("NG");
   });
 
   it("groups the Europe and EEA rollout into three explicit phases", () => {

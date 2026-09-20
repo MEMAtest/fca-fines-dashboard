@@ -134,24 +134,25 @@ The remaining core Europe targets stay outside the live batch until their offici
 
 ### Africa enforcement loaders
 
-The South Africa and Nigeria loaders use official sources and remain `pipeline`
-until the production promotion gates are evidenced (non-zero reconciled archive,
-stable canonical IDs, production load, and two clean scheduled runs):
+South Africa is live through FSCA and Nigeria is live through the Nigerian SEC.
+Their loaders use official archives and keep malformed source rows quarantined:
 
-- `npm run scrape:fsca -- --dry-run` — FSCA's official Power Pages/Blazor archive
-  returned 30 current case rows in the read-only probe. The direct HTTP page
-  exposes the first server-rendered archive slice; full paginator/browser
-  evidence is still required before promotion.
-- `npm run scrape:cbn -- --dry-run` — CBN's official notices JSON endpoint
-  returned 7 licence/supervision/closure notices with linked source documents.
-  CBN publication is irregular and bulk notices are retained as aggregate
-  affected-entity evidence from the official title/document.
+- `npm run scrape:fsca -- --dry-run` — FSCA's official Power Pages/Blazor archive;
+  576 canonical records are reconciled in production.
 - `npm run scrape:ngsec -- --dry-run` — the official Nigerian SEC enforcement
-  archive returned 27 dated detail-page records across enforcement updates,
-  referred cases, company actions, APC matters, and litigation.
+  archive; 41 canonical records cover enforcement updates, referred cases,
+  company actions, APC matters, and litigation.
+- `npm run scrape:cbn -- --dry-run` — CBN's official notices JSON endpoint. Its
+  40 named licence, closure and sanction records currently end in 2008, so CBN
+  remains a visible pipeline source until modern publication continuity is
+  evidenced. This does not prevent Nigeria being live through NGSEC.
 
-These are read-only loader probes; no database write or workflow dispatch is
-implied by the counts above.
+### Mexico enforcement loader
+
+- `npm run scrape:cnbv -- --dry-run` — the official CNBV sanctions API. The
+  loader paginates the full register, preserves monetary and non-monetary
+  outcomes, and removes obsolete fixture rows after a successful production
+  reconciliation. CNBV is included in the stable daily live-regulator workflow.
 
 ## How upserts work
 
