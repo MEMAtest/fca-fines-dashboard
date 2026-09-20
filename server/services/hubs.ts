@@ -481,6 +481,168 @@ export async function getRegulatorTopFines(
   }));
 }
 
+export interface GlobalTopFine extends RegulatorTopFine {
+  regulator: string;
+}
+
+export interface GlobalFinesSummary {
+  actionCount: number;
+  regulatorCount: number;
+  totalAmount: number;
+  latestDate: string | null;
+}
+
+/**
+ * Site-wide totals across every live regulator, for the /fines database page
+ * running-totals line. `totalAmount` only sums rows with a reviewed GBP
+ * amount (mirrors the "normalised to GBP" convention used elsewhere), so it
+ * is directly comparable to the regulator hub totals. Returns null fields
+ * are never fabricated — callers must degrade gracefully if this throws.
+ */
+export async function getGlobalFinesSummary(): Promise<GlobalFinesSummary> {
+  const sql = getSqlClient();
+  const rows = (await sql(`
+    SELECT
+      COUNT(*)::int AS action_count,
+      COUNT(DISTINCT regulator)::int AS regulator_count,
+      COALESCE(SUM(amount_gbp) FILTER (
+        WHERE amount_gbp IS NOT NULL AND requires_amount_review IS NOT TRUE
+      ), 0)::float8 AS total_amount,
+      MAX(date_issued)::text AS latest_date
+    FROM all_regulatory_fines_canonical
+    WHERE regulator IS NOT NULL
+  `)) as any[];
+  const row = rows[0] ?? {};
+  return {
+    actionCount: Number(row.action_count) || 0,
+    regulatorCount: Number(row.regulator_count) || 0,
+    totalAmount: Number(row.total_amount) || 0,
+    latestDate: row.latest_date ? String(row.latest_date) : null,
+  };
+}
+
+/**
+ * Top enforcement actions across every regulator, largest-first. Same
+ * filtering rules as {@link getRegulatorTopFines} but not scoped to a single
+ * regulator — powers the baked top-fines table on the /fines database page.
+ */
+export async function getGlobalTopFines(limit = 50): Promise<GlobalTopFine[]> {
+  const sql = getSqlClient();
+  const clamped = Math.max(1, Math.min(limit, 100));
+  const fetchLimit = Math.min(clamped * 3, 200);
+  const rows = (await sql(
+    `
+      SELECT firm_individual, regulator,
+             COALESCE(NULLIF(notice_url, ''), NULLIF(source_url, '')) AS notice_url,
+             breach_type,
+             amount_gbp AS amount, date_issued::text AS date_issued
+      FROM all_regulatory_fines_canonical
+      WHERE regulator IS NOT NULL AND amount_gbp IS NOT NULL AND requires_amount_review IS NOT TRUE
+      ORDER BY amount_gbp DESC, date_issued DESC
+      LIMIT $1
+    `,
+    [fetchLimit],
+  )) as any[];
+
+  const clean = rows
+    .filter((row: any) => !isGarbageFirmName(String(row.firm_individual ?? "")))
+    .slice(0, clamped);
+
+  return clean.map((row: any) => ({
+    firm: String(row.firm_individual ?? ""),
+    regulator: String(row.regulator ?? ""),
+    dateIssued: row.date_issued ? String(row.date_issued) : null,
+    amount: Number(row.amount) || 0,
+    currency: "",
+    breach: row.breach_type ? String(row.breach_type) : null,
+    sourceUrl: row.notice_url ? String(row.notice_url) : null,
+  }));
+}
+
+export interface CountryFinesLargest {
+  firm: string;
+  regulator: string;
+  amount: number;
+  dateIssued: string | null;
+}
+
+export interface CountryFinesSummary {
+  actionCount: number;
+  totalAmount: number;
+  latestDate: string | null;
+  largestFine: CountryFinesLargest | null;
+}
+
+/**
+ * Per-country enforcement-fines totals + largest fine, for the country-page
+ * fines FAQ. Grouped by `country_code` (ISO2, matches `Country.iso2`) on the
+ * same canonical evidence view used everywhere else in this file. Countries
+ * with zero rows are simply absent from the returned map — callers MUST treat
+ * a missing entry as "no fines FAQ", never as a zero to display.
+ */
+export async function getCountryFinesSummaries(): Promise<
+  Map<string, CountryFinesSummary>
+> {
+  const sql = getSqlClient();
+  const totals = (await sql(`
+    SELECT country_code,
+           COUNT(*)::int AS action_count,
+           COALESCE(SUM(amount_gbp) FILTER (
+             WHERE amount_gbp IS NOT NULL AND requires_amount_review IS NOT TRUE
+           ), 0)::float8 AS total_amount,
+           MAX(date_issued)::text AS latest_date
+    FROM all_regulatory_fines_canonical
+    WHERE country_code IS NOT NULL
+    GROUP BY country_code
+  `)) as any[];
+
+  // Largest CLEAN (non-garbage-name) fine per country. Over-fetch rn<=10 per
+  // country so a garbage top row doesn't blank out the whole country.
+  const largestRows = (await sql(`
+    SELECT country_code, firm_individual, regulator, amount_gbp AS amount, date_issued::text AS date_issued
+    FROM (
+      SELECT country_code, firm_individual, regulator, amount_gbp, date_issued,
+             ROW_NUMBER() OVER (
+               PARTITION BY country_code
+               ORDER BY amount_gbp DESC, date_issued DESC
+             ) AS rn
+      FROM all_regulatory_fines_canonical
+      WHERE country_code IS NOT NULL
+        AND amount_gbp IS NOT NULL
+        AND requires_amount_review IS NOT TRUE
+    ) ranked
+    WHERE rn <= 10
+    ORDER BY country_code, rn
+  `)) as any[];
+
+  const largestByCountry = new Map<string, CountryFinesLargest>();
+  for (const row of largestRows) {
+    const cc = String(row.country_code ?? "").toUpperCase();
+    if (!cc || largestByCountry.has(cc)) continue;
+    const firmName = String(row.firm_individual ?? "");
+    if (isGarbageFirmName(firmName)) continue; // keep scanning this country's rn 2..10
+    largestByCountry.set(cc, {
+      firm: firmName,
+      regulator: String(row.regulator ?? ""),
+      amount: Number(row.amount) || 0,
+      dateIssued: row.date_issued ? String(row.date_issued) : null,
+    });
+  }
+
+  const map = new Map<string, CountryFinesSummary>();
+  for (const row of totals) {
+    const cc = String(row.country_code ?? "").toUpperCase();
+    if (!cc) continue;
+    map.set(cc, {
+      actionCount: Number(row.action_count) || 0,
+      totalAmount: Number(row.total_amount) || 0,
+      latestDate: row.latest_date ? String(row.latest_date) : null,
+      largestFine: largestByCountry.get(cc) ?? null,
+    });
+  }
+  return map;
+}
+
 /**
  * Exact monetary-fine report for a regulator and calendar year. This powers
  * the crawlable FCA answer pages, so it deliberately excludes non-monetary

@@ -99,6 +99,11 @@
   "rewrites": [
     { "source": "/ops", "destination": "/index.html" },
     { "source": "/regulators/:regulatorCode/compare", "destination": "/index.html" },
+    { "source": "/regulators/:regulatorCode/actions", "destination": "/index.html" },
+    { "source": "/regulators/:regulatorCode/analytics", "destination": "/index.html" },
+    { "source": "/fines/actions", "destination": "/index.html" },
+    { "source": "/fines/analytics", "destination": "/index.html" },
+    { "source": "/fines/compare", "destination": "/index.html" },
     { "source": "/((?!api/).*)", "destination": "/api/not-found" }
   ],
   "crons": [
