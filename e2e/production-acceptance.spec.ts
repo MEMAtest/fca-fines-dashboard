@@ -12,9 +12,19 @@ type UnifiedSearchResponse = {
     notice_url?: string | null;
     source_url?: string | null;
   }>;
+  pagination?: {
+    total?: number;
+  };
   error?: string;
   message?: string;
 };
+
+const CANONICAL_REGULATOR_FLOORS = {
+  FSCA: 576,
+  NGSEC: 41,
+  CBN: 40,
+  CNBV: 11_206,
+} as const;
 
 test.skip(!enabled, "This suite deliberately runs only against an explicitly enabled production URL.");
 // The workflow is intentionally one worker, but individual checks must all run
@@ -91,6 +101,36 @@ test("JFSC API evidence is exactly the six verified notices and official links a
     checks.push(await expectReachable(page, noticeUrl));
   }
   await writeArtifact("jfsc-notice-link-checks.json", checks);
+});
+
+test("production reads the reconciled South Africa, Nigeria and Mexico datastore", async ({ page }) => {
+  await page.goto("/", { waitUntil: "domcontentloaded" });
+  const evidence: Record<string, { status: number; total: number | null }> = {};
+
+  for (const [regulator, minimum] of Object.entries(CANONICAL_REGULATOR_FLOORS)) {
+    const response = await page.evaluate(async (code) => {
+      const result = await fetch(`/api/site/unified/search?regulator=${encodeURIComponent(code)}&limit=1`, {
+        credentials: "same-origin",
+      });
+      return {
+        status: result.status,
+        body: await result.json().catch(() => ({})),
+      };
+    }, regulator) as { status: number; body: UnifiedSearchResponse };
+
+    const total = response.body.pagination?.total;
+    evidence[regulator] = {
+      status: response.status,
+      total: typeof total === "number" ? total : null,
+    };
+    expect(response.status, response.body.message ?? response.body.error ?? `${regulator} API request failed`).toBe(200);
+    expect(total, `${regulator} fell below its reconciled production floor`).toBeGreaterThanOrEqual(minimum);
+  }
+
+  await writeArtifact("canonical-regulator-counts.json", evidence);
+  await assertPublicPage(page, "/regulators/fsca", /Financial Sector Conduct Authority/i);
+  await assertPublicPage(page, "/regulators/ngsec", /Securities and Exchange Commission Nigeria/i);
+  await assertPublicPage(page, "/regulators/cnbv", /Comisi.n Nacional Bancaria y de Valores/i);
 });
 
 test("FCA official source links resolve", async ({ page }) => {

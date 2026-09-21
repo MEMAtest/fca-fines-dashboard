@@ -129,7 +129,7 @@ jobs:
           - Vercel log credential check: ${VERCEL_LOGS_MISSING_OUTCOME:-skipped}
           - Workflow run: ${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}
 
-          The browser suite checks public route responses and identity markers, JFSC's six official notices, FCA official links, public workspaces, Board Pack download, and 390px viewport smoke. JerseyFSC Cloudflare challenge responses are recorded separately rather than misreported as absent notices. The PDF verifier checks signature, size, pages, required headings, extractability and a Poppler render. The generated image is retained for human visual clipping review.
+          The browser suite checks public route responses and identity markers, JFSC's six official notices, FCA official links, reconciled production record floors for South Africa, Nigeria and Mexico, public workspaces, Board Pack download, and 390px viewport smoke. JerseyFSC Cloudflare challenge responses are recorded separately rather than misreported as absent notices. The PDF verifier checks signature, size, pages, required headings, extractability and a Poppler render. The generated image is retained for human visual clipping review.
           EOF
           if [ "$BROWSER_OUTCOME" != success ] || [ "$PDF_OUTCOME" != success ] || [ "$PDF_MISSING_OUTCOME" = failure ] || [ "$VERCEL_LOGS_OUTCOME" != success ] || [ "$VERCEL_LOGS_MISSING_OUTCOME" = failure ]; then
             exit 1

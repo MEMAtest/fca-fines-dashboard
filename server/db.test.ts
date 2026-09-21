@@ -2,6 +2,7 @@ import { afterEach, describe, expect, it } from "vitest";
 import { buildPgPoolConfig, buildServerlessPostgresOptions, resolveConnectionString } from "./db.js";
 
 const CONNECTION_ENV_KEYS = [
+  "REGACTIONS_DATABASE_URL",
   "DATABASE_URL",
   "POSTGRES_URL",
   "NEON_FCA_FINES_URL",
@@ -27,6 +28,17 @@ describe("resolveConnectionString", () => {
         process.env[key] = value;
       }
     }
+  });
+
+  it("uses the explicit RegActions datastore before generic platform variables", () => {
+    clearConnectionEnv();
+
+    process.env.REGACTIONS_DATABASE_URL = "postgres://regactions-canonical";
+    process.env.DATABASE_URL = "postgres://hetzner-primary";
+    process.env.NEON_FCA_FINES_URL = "postgres://legacy-neon";
+    process.env.HORIZON_DB_URL = "postgres://horizon";
+
+    expect(resolveConnectionString()).toBe("postgres://regactions-canonical");
   });
 
   it("uses DATABASE_URL before legacy Neon fallback variables", () => {
