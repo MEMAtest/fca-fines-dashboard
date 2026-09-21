@@ -1,6 +1,10 @@
 import pg from 'pg';
 
 const CONNECTION_ENV_KEYS = [
+  // Production must be able to pin the public application to the reconciled
+  // RegActions datastore even when a platform integration injects a generic
+  // DATABASE_URL for another Postgres project.
+  'REGACTIONS_DATABASE_URL',
   'DATABASE_URL',
   'POSTGRES_URL',
   'NEON_FCA_FINES_URL',
