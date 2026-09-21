@@ -129,7 +129,7 @@ test("production reads the reconciled South Africa, Nigeria and Mexico datastore
 
   await writeArtifact("canonical-regulator-counts.json", evidence);
   await assertPublicPage(page, "/regulators/fsca", /Financial Sector Conduct Authority/i);
-  await assertPublicPage(page, "/regulators/ngsec", /Securities and Exchange Commission Nigeria/i);
+  await assertPublicPage(page, "/regulators/ngsec", /Securities and Exchange Commission.*Nigeria/i);
   await assertPublicPage(page, "/regulators/cnbv", /Comisi.n Nacional Bancaria y de Valores/i);
 });
 
