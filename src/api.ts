@@ -4,6 +4,7 @@ import type {
   FirmResponse,
   FirmsResponse,
   FcaFineCaseResponse,
+  FcaFirmHubResponse,
   ListResponse,
   NotificationsResponse,
   SectorResponse,
@@ -85,6 +86,12 @@ export function fetchFirms(limit = 100) {
 export function fetchFirm(slug: string, limit = 200) {
   return fetchJSON<FirmResponse>(
     `/api/fca-fines/firm?slug=${encodeURIComponent(slug)}&limit=${encodeURIComponent(String(limit))}`,
+  );
+}
+
+export function fetchFcaFirmHub(slug: string) {
+  return fetchJSON<FcaFirmHubResponse>(
+    `/api/fca-fines/firm-hub?slug=${encodeURIComponent(slug)}`,
   );
 }
 

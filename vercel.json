@@ -104,6 +104,11 @@
     { "source": "/fines/actions", "destination": "/index.html" },
     { "source": "/fines/analytics", "destination": "/index.html" },
     { "source": "/fines/compare", "destination": "/index.html" },
+    { "source": "/firms/:slug", "destination": "/index.html" },
+    { "source": "/years/:year", "destination": "/index.html" },
+    { "source": "/sectors/:slug", "destination": "/index.html" },
+    { "source": "/breaches/:slug", "destination": "/index.html" },
+    { "source": "/fca-fines/firms/:slug", "destination": "/index.html" },
     { "source": "/((?!api/).*)", "destination": "/api/not-found" }
   ],
   "crons": [

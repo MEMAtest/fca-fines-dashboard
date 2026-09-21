@@ -255,6 +255,11 @@ const FcaFineCase = lazyPage(() =>
     default: module.FcaFineCase,
   })),
 );
+const FcaFirmHub = lazyPage(() =>
+  import("./pages/FcaFirmHub.js").then((module) => ({
+    default: module.FcaFirmHub,
+  })),
+);
 const RegulatorWorkspace = lazyPage(() =>
   import("./pages/RegulatorWorkspace.js").then((module) => ({
     default: module.RegulatorWorkspace,
@@ -381,6 +386,10 @@ const router = createBrowserRouter([
       {
         path: "/fines/compare",
         element: <Suspense fallback={<DashboardSkeleton />}><FinesWorkspace view="compare" /></Suspense>,
+      },
+      {
+        path: "/fca-fines/firms/:slug",
+        element: <Suspense fallback={<DashboardSkeleton />}><FcaFirmHub /></Suspense>,
       },
       {
         path: "/fca-fines/:year/:firmSlug/:caseId",

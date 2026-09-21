@@ -20,6 +20,7 @@ import {
   getFirmDetailsBySlug,
   getBreachDetailsBySlug,
   getSectorDetailsBySlug,
+  getFcaFirmFines,
 } from "./server/services/hubs.js";
 import {
   getUKEnforcementStats,
@@ -154,6 +155,27 @@ app.get("/api/fca-fines/firm", async (req, res) => {
   } catch (error) {
     console.error("Firm endpoint error:", error);
     res.status(500).json({ success: false, error: "Failed to fetch firm" });
+  }
+});
+
+app.get("/api/fca-fines/firm-hub", async (req, res) => {
+  try {
+    const slug = String(req.query.slug || "").trim();
+    if (!slug) {
+      return res.status(400).json({ success: false, error: "Missing slug" });
+    }
+    const data = await getFcaFirmFines(slug);
+    if (!data) {
+      return res
+        .status(404)
+        .json({ success: false, error: "FCA firm not found" });
+    }
+    res.json({ success: true, data });
+  } catch (error) {
+    console.error("FCA firm hub endpoint error:", error);
+    res
+      .status(500)
+      .json({ success: false, error: "Failed to fetch FCA firm hub" });
   }
 });
 
