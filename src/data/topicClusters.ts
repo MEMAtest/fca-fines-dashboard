@@ -529,3 +529,22 @@ export const largestFcaFinesMeta: FcaFinesPageMeta = {
     "The largest FCA fines ever issued, ranked by amount, with firm, date, breach and official source links for every top penalty.",
   keywords: "largest FCA fines, biggest FCA fine, FCA fines ranked, most fined firm FCA",
 };
+
+/**
+ * `/topics/state-of-fca-enforcement` — the data-journalism report: all-time
+ * totals, the yearly trend, the breach-theme breakdown and the most-fined
+ * firms, built entirely from live data at build time. The linkable/citable
+ * asset for the FCA fines cluster.
+ */
+export const STATE_OF_FCA_ENFORCEMENT_SLUG = "state-of-fca-enforcement";
+
+export const stateOfFcaEnforcementMeta: FcaFinesPageMeta = {
+  slug: STATE_OF_FCA_ENFORCEMENT_SLUG,
+  title: "The State of FCA Enforcement",
+  eyebrow: "FCA enforcement report",
+  seoTitle: "The State of FCA Enforcement: Fines Data & Trends | RegActions",
+  description:
+    "A data-led report on FCA enforcement: the all-time fines total, the year-by-year trend since 2013, the breach themes behind the penalties, and the most-fined firms, built from source-linked evidence.",
+  keywords:
+    "FCA enforcement data, FCA fines trends, FCA fines statistics, FCA enforcement report, state of FCA enforcement",
+};

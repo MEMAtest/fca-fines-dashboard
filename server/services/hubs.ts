@@ -8,6 +8,7 @@ import {
 } from "./fcaFineCases.js";
 import { firmSlug, hubSlug } from "../utils/slugify.js";
 import { isGarbageFirmName } from "../../src/utils/firmName.js";
+import { formatBreachCategory } from "../../src/utils/labelConversion.js";
 import {
   CYBER_OPERATIONAL_RESILIENCE,
   CYBER_OPERATIONAL_RESILIENCE_ALIASES,
@@ -775,6 +776,138 @@ export async function getRegulatorYearReport(
       totalAmount: monthlyMap.get(index + 1)?.totalAmount ?? 0,
     })),
     fines,
+  };
+}
+
+// ---------------------------------------------------------------------------
+// "State of FCA Enforcement" report (/topics/state-of-fca-enforcement)
+// ---------------------------------------------------------------------------
+
+export interface FcaEnforcementYearRow {
+  year: number;
+  fineCount: number;
+  totalAmount: number;
+  averageAmount: number;
+}
+
+export interface FcaEnforcementBreachRow {
+  name: string;
+  slug: string;
+  count: number;
+  totalAmount: number;
+  averageAmount: number;
+  /** Share of the all-time qualifying total. Fines may carry more than one
+   * breach category, so these shares do not sum to 100%. */
+  shareOfTotal: number;
+}
+
+export interface FcaEnforcementReport {
+  firstYear: number;
+  currentYear: number;
+  yearsCovered: number;
+  allTimeTotal: number;
+  allTimeCount: number;
+  averageFine: number;
+  largestFine: RegulatorTopFine | null;
+  mostFinedFirm: RegulatorFirmTotal | null;
+  currentYearTotal: number;
+  currentYearCount: number;
+  lastUpdatedDate: string | null;
+  yearly: FcaEnforcementYearRow[];
+  breachBreakdown: FcaEnforcementBreachRow[];
+  topFirms: RegulatorFirmTotal[];
+}
+
+/**
+ * Build-time data source for the "State of FCA Enforcement" data-journalism
+ * report. Every figure here is derived from the live evidence set — nothing
+ * hardcoded. Yearly totals use the same canonical-view / `requires_amount_review`
+ * exclusion convention as {@link getRegulatorYearReport} (one grouped query
+ * instead of one call per year). Breach totals reuse {@link listBreachCategories},
+ * which already unwraps the double-encoded `breach_categories` JSONB and
+ * canonicalises enum vs free-text spellings — so this function does not
+ * duplicate that logic. The synthetic "Cyber and Operational Resilience"
+ * concept row (a keyword-matched overlay, not a real breach category) is
+ * excluded here to keep the breakdown to genuine, non-overlapping-by-construction
+ * categories as far as the source data allows.
+ */
+export async function getFcaEnforcementReport(
+  firstYear = 2013,
+): Promise<FcaEnforcementReport> {
+  const sql = getSqlClient();
+  const currentYear = new Date().getUTCFullYear();
+
+  const yearRows = (await sql(
+    `
+      SELECT year_issued::int AS year,
+             COUNT(*)::int AS fine_count,
+             COALESCE(SUM(amount_gbp), 0)::float8 AS total_amount,
+             MAX(date_issued)::text AS latest_date
+      FROM all_regulatory_fines_canonical
+      WHERE regulator = 'FCA'
+        AND year_issued BETWEEN $1 AND $2
+        AND amount_gbp > 0
+        AND requires_amount_review IS NOT TRUE
+      GROUP BY year_issued
+      ORDER BY year_issued ASC
+    `,
+    [firstYear, currentYear],
+  )) as any[];
+
+  const yearly: FcaEnforcementYearRow[] = yearRows.map((row: any) => {
+    const fineCount = Number(row.fine_count) || 0;
+    const totalAmount = Number(row.total_amount) || 0;
+    return {
+      year: Number(row.year) || 0,
+      fineCount,
+      totalAmount,
+      averageAmount: fineCount > 0 ? totalAmount / fineCount : 0,
+    };
+  });
+
+  const allTimeCount = yearly.reduce((sum, row) => sum + row.fineCount, 0);
+  const allTimeTotal = yearly.reduce((sum, row) => sum + row.totalAmount, 0);
+  const lastUpdatedDate = yearRows.reduce<string | null>((latest, row: any) => {
+    const value = row.latest_date ? String(row.latest_date) : null;
+    if (!value) return latest;
+    return !latest || value > latest ? value : latest;
+  }, null);
+
+  const currentYearRow = yearly.find((row) => row.year === currentYear) ?? null;
+
+  const [largestFineRows, topFirms, breachCategories] = await Promise.all([
+    getRegulatorTopFines("FCA", 1),
+    getRegulatorFirmTotals("FCA", 10),
+    listBreachCategories(),
+  ]);
+
+  const breachBreakdown: FcaEnforcementBreachRow[] = breachCategories
+    .filter((category) => category.slug !== "cyber-operational-resilience")
+    .map((category) => ({
+      name: formatBreachCategory(category.name),
+      slug: category.slug,
+      count: category.fineCount,
+      totalAmount: category.totalAmount,
+      averageAmount: category.fineCount > 0 ? category.totalAmount / category.fineCount : 0,
+      shareOfTotal: allTimeTotal > 0 ? category.totalAmount / allTimeTotal : 0,
+    }))
+    .sort((a, b) => b.totalAmount - a.totalAmount);
+
+  return {
+    firstYear,
+    currentYear,
+    yearsCovered: yearly.filter((row) => row.fineCount > 0).length,
+    allTimeTotal,
+    allTimeCount,
+    averageFine: allTimeCount > 0 ? allTimeTotal / allTimeCount : 0,
+    largestFine: largestFineRows[0] ?? null,
+    mostFinedFirm: topFirms[0] ?? null,
+    currentYearTotal: currentYearRow?.totalAmount ?? 0,
+    currentYearCount: currentYearRow?.fineCount ?? 0,
+    lastUpdatedDate,
+    yearly,
+    breachBreakdown,
+    topFirms,
   };
 }
 

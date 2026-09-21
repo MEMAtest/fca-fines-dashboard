@@ -64,8 +64,10 @@ import {
   topicClusters,
   FCA_FINES_FIRST_YEAR,
   LARGEST_FCA_FINES_SLUG,
+  STATE_OF_FCA_ENFORCEMENT_SLUG,
   fcaFinesYearMeta,
   largestFcaFinesMeta,
+  stateOfFcaEnforcementMeta,
 } from "../src/data/topicClusters.js";
 import {
   buildFcaFineCasePath as buildSharedFcaFineCasePath,
@@ -153,6 +155,7 @@ import type {
   GlobalFinesSummary,
   CountryFinesSummary,
   FcaFirmHubDetails,
+  FcaEnforcementReport,
 } from "../server/services/hubs.js";
 
 // ---------------------------------------------------------------------------
@@ -767,7 +770,7 @@ function renderFcaYearBrowseListHtml(): string {
   )
     .map((year) => `<li><a href="/topics/fca-fines-${year}">${year}</a></li>`)
     .join("");
-  return `<section class="hub-fca-year-browse"><h3>Browse FCA fines by year</h3><ul class="hub-fca-year-browse__list">${yearLinks}</ul><p><a href="/topics/${LARGEST_FCA_FINES_SLUG}">See the largest FCA fines of all time →</a></p></section>`;
+  return `<section class="hub-fca-year-browse"><h3>Browse FCA fines by year</h3><ul class="hub-fca-year-browse__list">${yearLinks}</ul><p><a href="/topics/${LARGEST_FCA_FINES_SLUG}">See the largest FCA fines of all time →</a> · <a href="/topics/${STATE_OF_FCA_ENFORCEMENT_SLUG}">Read the State of FCA Enforcement report →</a></p></section>`;
 }
 
 function renderFcaYearReport(
@@ -825,7 +828,7 @@ function renderFcaYearAdjacentLinksHtml(year: number, currentYear: number): stri
   const next = year + 1 <= currentYear
     ? `<li><a href="/topics/fca-fines-${year + 1}">FCA fines ${year + 1}</a></li>`
     : "";
-  return `<h3>More FCA fines reports</h3><ul>${prev}${next}<li><a href="/topics/${LARGEST_FCA_FINES_SLUG}">Largest FCA fines of all time</a></li><li><a href="/regulators/fca">FCA fines database</a></li></ul>`;
+  return `<h3>More FCA fines reports</h3><ul>${prev}${next}<li><a href="/topics/${LARGEST_FCA_FINES_SLUG}">Largest FCA fines of all time</a></li><li><a href="/topics/${STATE_OF_FCA_ENFORCEMENT_SLUG}">The State of FCA Enforcement report</a></li><li><a href="/regulators/fca">FCA fines database</a></li></ul>`;
 }
 
 /**
@@ -947,8 +950,140 @@ function renderLargestFcaFinesPageBody(
     ? `<h2>Which firm has paid the most in FCA fines?</h2><p>${escapeHtml(`Based on disclosed monetary penalties recorded by RegActions, ${mostFinedFirm.firm} has paid the most in total FCA fines: ${formatMoney(mostFinedFirm.totalAmount, "GBP")} across ${mostFinedFirm.fineCount.toLocaleString("en-GB")} penalties.`)}</p>`
     : "";
   const faqHtml = renderFaqBlock(buildLargestFcaFinesFaqItems(topFines, mostFinedFirm));
-  const crossLinks = `<h3>More FCA fines reports</h3><ul><li><a href="/topics/fca-fines-${currentYear}">FCA fines ${currentYear}</a></li><li><a href="/regulators/fca">Explore the complete FCA fines database</a></li></ul>`;
+  const crossLinks = `<h3>More FCA fines reports</h3><ul><li><a href="/topics/fca-fines-${currentYear}">FCA fines ${currentYear}</a></li><li><a href="/topics/${STATE_OF_FCA_ENFORCEMENT_SLUG}">The State of FCA Enforcement report</a></li><li><a href="/regulators/fca">Explore the complete FCA fines database</a></li></ul>`;
   return `<div class="seo-doc"><div class="seo-doc__container"><article class="seo-doc__article"><h1 class="seo-doc__title">${escapeHtml(meta.title)}</h1><div class="seo-doc__body">${lastUpdatedStamp}${intro}${table}<h2>The 10 largest FCA fines explained</h2>${narrative}${mostFinedHtml}${faqHtml}${crossLinks}</div></article></div></div>`;
+}
+
+/**
+ * FAQ items for the "State of FCA Enforcement" report. Every answer is
+ * derived from {@link FcaEnforcementReport}; a question is omitted entirely
+ * when its underlying figure is unavailable, never fabricated.
+ */
+function buildStateOfFcaEnforcementFaqItems(
+  report: FcaEnforcementReport | null,
+): Array<{ question: string; answer: string }> {
+  if (!report) return [];
+  const items: Array<{ question: string; answer: string }> = [];
+  if (report.allTimeTotal > 0) {
+    items.push({
+      question: "What is the total value of all FCA fines?",
+      answer: `Since ${report.firstYear}, RegActions records ${formatMoney(report.allTimeTotal, "GBP")} in disclosed FCA monetary penalties across ${report.allTimeCount.toLocaleString("en-GB")} penalties, based on source-linked notices that have passed the amount-review gate.`,
+    });
+  }
+  if (report.averageFine > 0) {
+    items.push({
+      question: "What is the average FCA fine?",
+      answer: `The average disclosed FCA monetary penalty recorded by RegActions since ${report.firstYear} is ${formatMoney(report.averageFine, "GBP")}, across ${report.allTimeCount.toLocaleString("en-GB")} penalties.`,
+    });
+  }
+  const highestYear = report.yearly.slice().sort((a, b) => b.totalAmount - a.totalAmount)[0];
+  if (highestYear && highestYear.totalAmount > 0) {
+    items.push({
+      question: "Which year had the most FCA fines?",
+      answer: `By total disclosed value, ${highestYear.year} was the highest year on record, with ${formatMoney(highestYear.totalAmount, "GBP")} across ${highestYear.fineCount.toLocaleString("en-GB")} penalties.`,
+    });
+  }
+  if (report.mostFinedFirm && report.mostFinedFirm.totalAmount > 0) {
+    items.push({
+      question: "Which firm has been fined most by the FCA?",
+      answer: `Based on disclosed monetary penalties recorded by RegActions, ${report.mostFinedFirm.firm} has paid the most in total FCA fines: ${formatMoney(report.mostFinedFirm.totalAmount, "GBP")} across ${report.mostFinedFirm.fineCount.toLocaleString("en-GB")} penalties.`,
+    });
+  }
+  return items;
+}
+
+/**
+ * Full crawlable body for `/topics/state-of-fca-enforcement` — the
+ * data-journalism report: headline stats, the yearly trend, the breach-theme
+ * breakdown and the most-fined firms, all computed at build time from live
+ * data. Recharts visualisations are a client-side enhancement only; every
+ * number here is already in a crawlable table or sentence.
+ */
+function renderStateOfFcaEnforcementBody(
+  report: FcaEnforcementReport | null,
+  currentYear: number,
+): string {
+  if (!report) {
+    return `<div class="seo-doc"><div class="seo-doc__container"><article class="seo-doc__article"><h1 class="seo-doc__title">${escapeHtml(stateOfFcaEnforcementMeta.title)}</h1><div class="seo-doc__body"><p>This report is temporarily unavailable while the live evidence set reloads. The FCA's own enforcement page remains available.</p><p><a href="https://www.fca.org.uk/news/enforcement-notices" rel="noopener">FCA enforcement notices</a> · <a href="/regulators/fca">FCA fines database</a></p></div></article></div></div>`;
+  }
+  const lastUpdatedStamp = report.lastUpdatedDate
+    ? `<p class="hub-last-updated">Last updated ${escapeHtml(formatDate(report.lastUpdatedDate))}</p>`
+    : "";
+  const intro = `<p>RegActions tracks every disclosed Financial Conduct Authority monetary penalty with a source-linked official notice. This report covers ${report.firstYear} to ${report.currentYear} (${report.yearsCovered} years with recorded fines), excluding amounts still awaiting RegActions' amount-review gate.</p>`;
+
+  const highestYear = report.yearly.slice().sort((a, b) => b.totalAmount - a.totalAmount)[0] ?? null;
+  const headlineStats = `<h2>Headline figures</h2><table class="hub-fines-table"><tbody>
+    <tr><th>All-time total (${report.firstYear}–${report.currentYear})</th><td>${escapeHtml(formatMoney(report.allTimeTotal, "GBP"))}</td></tr>
+    <tr><th>All-time penalties</th><td>${report.allTimeCount.toLocaleString("en-GB")}</td></tr>
+    <tr><th>Average fine</th><td>${report.averageFine > 0 ? escapeHtml(formatMoney(report.averageFine, "GBP")) : "Not available"}</td></tr>
+    <tr><th>Largest fine</th><td>${report.largestFine ? `${escapeHtml(formatMoney(report.largestFine.amount, "GBP"))} — ${escapeHtml(report.largestFine.firm)}${report.largestFine.dateIssued ? ` (${escapeHtml(formatDate(report.largestFine.dateIssued))})` : ""}` : "Not available"}</td></tr>
+    <tr><th>Most-fined firm</th><td>${report.mostFinedFirm ? `${escapeHtml(report.mostFinedFirm.firm)} — ${escapeHtml(formatMoney(report.mostFinedFirm.totalAmount, "GBP"))} across ${report.mostFinedFirm.fineCount.toLocaleString("en-GB")} penalties` : "Not available"}</td></tr>
+    <tr><th>${report.currentYear} so far</th><td>${escapeHtml(formatMoney(report.currentYearTotal, "GBP"))} across ${report.currentYearCount.toLocaleString("en-GB")} penalties</td></tr>
+    <tr><th>Years covered</th><td>${report.yearsCovered}</td></tr>
+  </tbody></table>`;
+
+  const yearRows = report.yearly
+    .map(
+      (row) =>
+        `<tr><td><a href="/topics/fca-fines-${row.year}">${row.year}</a></td><td>${row.fineCount ? row.fineCount.toLocaleString("en-GB") : "No monetary fine"}</td><td>${escapeHtml(formatMoney(row.totalAmount, "GBP"))}</td><td>${row.fineCount ? escapeHtml(formatMoney(row.averageAmount, "GBP")) : "—"}</td></tr>`,
+    )
+    .join("");
+  const yearlyTable = `<h2>FCA fines by year, ${report.firstYear}–${report.currentYear}</h2><table class="hub-fines-table"><thead><tr><th>Year</th><th>Penalties</th><th>Total</th><th>Average</th></tr></thead><tbody>${yearRows}</tbody></table>`;
+
+  const breachRows = report.breachBreakdown
+    .map(
+      (row) =>
+        `<tr><td>${escapeHtml(row.name)}</td><td>${row.count.toLocaleString("en-GB")}</td><td>${escapeHtml(formatMoney(row.totalAmount, "GBP"))}</td><td>${escapeHtml(formatMoney(row.averageAmount, "GBP"))}</td><td>${(row.shareOfTotal * 100).toFixed(1)}%</td></tr>`,
+    )
+    .join("");
+  const breachTable = breachRows
+    ? `<h2>FCA fines by breach theme</h2><p>Fines can span more than one breach theme, so these totals may exceed the all-time total above.</p><table class="hub-fines-table"><thead><tr><th>Breach theme</th><th>Penalties</th><th>Total</th><th>Average</th><th>Share of total</th></tr></thead><tbody>${breachRows}</tbody></table>`
+    : "";
+
+  const firmRows = report.topFirms
+    .map((firm, index) => {
+      const firmHubPath = `/fca-fines/firms/${normaliseFcaFineFirmSlug(firm.firm)}`;
+      return `<tr><td>${index + 1}</td><td><a href="${escapeHtml(firmHubPath)}">${escapeHtml(firm.firm)}</a></td><td>${firm.fineCount.toLocaleString("en-GB")}</td><td>${escapeHtml(formatMoney(firm.totalAmount, "GBP"))}</td></tr>`;
+    })
+    .join("");
+  const firmsTable = firmRows
+    ? `<h2>Top ${report.topFirms.length} most-fined firms</h2><p>Ranked by total disclosed FCA monetary penalties, all time.</p><table class="hub-fines-table"><thead><tr><th>Rank</th><th>Firm or individual</th><th>Penalties</th><th>Total</th></tr></thead><tbody>${firmRows}</tbody></table>`
+    : "";
+
+  const narrativeParts: string[] = [];
+  if (highestYear && highestYear.totalAmount > 0) {
+    narrativeParts.push(
+      `<p>${escapeHtml(`${highestYear.year} was the highest year on record by total disclosed value, with ${formatMoney(highestYear.totalAmount, "GBP")} across ${highestYear.fineCount.toLocaleString("en-GB")} penalties.`)}</p>`,
+    );
+  }
+  if (report.largestFine) {
+    narrativeParts.push(
+      `<p>${escapeHtml(`The single largest disclosed FCA fine RegActions records is ${formatMoney(report.largestFine.amount, "GBP")}, issued to ${report.largestFine.firm}${report.largestFine.dateIssued ? ` on ${formatDate(report.largestFine.dateIssued)}` : ""}.`)}</p>`,
+    );
+  }
+  if (report.mostFinedFirm && report.mostFinedFirm.totalAmount > 0) {
+    narrativeParts.push(
+      `<p>${escapeHtml(`${report.mostFinedFirm.firm} has paid the most in total FCA fines of any firm or individual currently recorded: ${formatMoney(report.mostFinedFirm.totalAmount, "GBP")} across ${report.mostFinedFirm.fineCount.toLocaleString("en-GB")} penalties.`)}</p>`,
+    );
+  }
+  if (report.breachBreakdown[0]) {
+    narrativeParts.push(
+      `<p>${escapeHtml(`By disclosed value, ${report.breachBreakdown[0].name.toLowerCase()} is the largest breach theme in the FCA's enforcement record, accounting for ${formatMoney(report.breachBreakdown[0].totalAmount, "GBP")} across ${report.breachBreakdown[0].count.toLocaleString("en-GB")} penalties.`)}</p>`,
+    );
+  }
+  if (report.averageFine > 0) {
+    narrativeParts.push(
+      `<p>${escapeHtml(`The average disclosed FCA monetary penalty since ${report.firstYear} is ${formatMoney(report.averageFine, "GBP")}, across ${report.allTimeCount.toLocaleString("en-GB")} penalties.`)}</p>`,
+    );
+  }
+  const narrative = narrativeParts.length
+    ? `<h2>What the data shows</h2>${narrativeParts.join("")}`
+    : "";
+
+  const faqHtml = renderFaqBlock(buildStateOfFcaEnforcementFaqItems(report));
+  const crossLinks = `<h3>More FCA fines reports</h3><ul><li><a href="/topics/fca-fines-${currentYear}">FCA fines ${currentYear}</a></li><li><a href="/topics/${LARGEST_FCA_FINES_SLUG}">Largest FCA fines of all time</a></li><li><a href="/regulators/fca">Explore the complete FCA fines database</a></li><li><a href="/methodology/enforcement">Read the enforcement data methodology</a></li></ul>`;
+
+  return `<div class="seo-doc"><div class="seo-doc__container"><article class="seo-doc__article"><h1 class="seo-doc__title">${escapeHtml(stateOfFcaEnforcementMeta.title)}</h1><div class="seo-doc__body">${lastUpdatedStamp}${intro}${headlineStats}${yearlyTable}${breachTable}${firmsTable}${narrative}${faqHtml}${crossLinks}</div></article></div></div>`;
 }
 
 /**
@@ -2717,6 +2852,23 @@ async function buildPageMetas(): Promise<PageMeta[]> {
   }
   const fcaLeaderboardLastUpdated = fcaAllTimeTopFines[0]?.dateIssued ?? fcaYearReport?.latestDate ?? null;
 
+  // "State of FCA Enforcement" data-journalism report (headline stats, yearly
+  // trend, breach-theme breakdown, top firms). Independent best-effort fetch
+  // so a failure here does not block any of the pages above.
+  let fcaEnforcementReport: FcaEnforcementReport | null = null;
+  try {
+    const { getFcaEnforcementReport } = await import("../server/services/hubs.js");
+    fcaEnforcementReport = await getFcaEnforcementReport(FCA_FINES_FIRST_YEAR);
+    console.log(
+      `  State of FCA Enforcement report: fetched ${fcaEnforcementReport.yearsCovered} years, ${fcaEnforcementReport.breachBreakdown.length} breach themes, ${fcaEnforcementReport.topFirms.length} top firms.`,
+    );
+  } catch (error) {
+    console.warn(
+      "WARN: DB unreachable for the State of FCA Enforcement report; rendering the source-linked fallback:",
+      error instanceof Error ? error.message : String(error),
+    );
+  }
+
   topicClusters.forEach((cluster) => {
     const isFcaYearReport = cluster.slug === "fca-fines-2026";
     const clusterYearReport = isFcaYearReport ? fcaYearReport : null;
@@ -2857,6 +3009,79 @@ async function buildPageMetas(): Promise<PageMeta[]> {
             url: `${BASE_URL}/topics/${LARGEST_FCA_FINES_SLUG}`,
           })),
         }] : []),
+        ...(faqItems.length > 0 ? [generateFaqSchema(faqItems as any)] : []),
+      ],
+    });
+  }
+
+  // "State of FCA Enforcement" data-journalism report — the linkable/citable
+  // backlink asset. Article + Dataset + FAQPage JSON-LD, built entirely from
+  // the live evidence set at build time.
+  {
+    const faqItems = buildStateOfFcaEnforcementFaqItems(fcaEnforcementReport);
+    const reportDatePublished = "2026-09-21";
+    const reportDateModified = fcaEnforcementReport?.lastUpdatedDate ?? todayISO();
+    pages.push({
+      path: `/topics/${STATE_OF_FCA_ENFORCEMENT_SLUG}`,
+      title: stateOfFcaEnforcementMeta.seoTitle,
+      description: stateOfFcaEnforcementMeta.description,
+      keywords: stateOfFcaEnforcementMeta.keywords,
+      ogType: "article",
+      datePublished: reportDatePublished,
+      dateModified: reportDateModified,
+      articleSection: "Data report",
+      breadcrumbLabel: stateOfFcaEnforcementMeta.title,
+      bodyContent: renderStateOfFcaEnforcementBody(fcaEnforcementReport, currentYear),
+      jsonLd: {
+        "@context": "https://schema.org",
+        "@type": "Article",
+        headline: stateOfFcaEnforcementMeta.title,
+        description: stateOfFcaEnforcementMeta.description,
+        datePublished: reportDatePublished,
+        dateModified: reportDateModified,
+        author: {
+          "@type": "Organization",
+          name: SITE_NAME,
+          url: "https://regactions.com",
+          description: "Regulatory enforcement intelligence platform",
+        },
+        publisher: {
+          "@type": "Organization",
+          name: SITE_NAME,
+          logo: { "@type": "ImageObject", url: `${BASE_URL}/regactions-mark.png` },
+        },
+        mainEntityOfPage: {
+          "@type": "WebPage",
+          "@id": `${BASE_URL}/topics/${STATE_OF_FCA_ENFORCEMENT_SLUG}`,
+        },
+        keywords: stateOfFcaEnforcementMeta.keywords,
+        articleSection: "Data report",
+        image: {
+          "@type": "ImageObject",
+          url: OG_IMAGE,
+          width: 1200,
+          height: 630,
+          caption: "RegActions - The State of FCA Enforcement",
+        },
+      },
+      extraJsonLd: [
+        {
+          "@context": "https://schema.org",
+          "@type": "Dataset",
+          name: "The State of FCA Enforcement",
+          description: "Source-linked yearly totals, breach-theme breakdown and most-fined firms across the Financial Conduct Authority's disclosed monetary penalties.",
+          url: `${BASE_URL}/topics/${STATE_OF_FCA_ENFORCEMENT_SLUG}`,
+          temporalCoverage: fcaEnforcementReport
+            ? `${fcaEnforcementReport.firstYear}/${fcaEnforcementReport.currentYear}`
+            : undefined,
+          spatialCoverage: { "@type": "Place", name: "United Kingdom" },
+          creator: { "@type": "Organization", name: SITE_NAME, url: BASE_URL },
+          isBasedOn: "https://www.fca.org.uk/news/enforcement-notices",
+          ...(fcaEnforcementReport ? {
+            dateModified: fcaEnforcementReport.lastUpdatedDate ?? undefined,
+            size: fcaEnforcementReport.allTimeCount,
+          } : {}),
+        },
         ...(faqItems.length > 0 ? [generateFaqSchema(faqItems as any)] : []),
       ],
     });
