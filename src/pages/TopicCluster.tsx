@@ -1,13 +1,26 @@
 import { useEffect, useMemo } from "react";
 import { Link, Navigate, useParams } from "react-router-dom";
 import { ExternalLink } from "lucide-react";
+import {
+  ResponsiveContainer,
+  LineChart,
+  Line,
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+} from "recharts";
 import { useEvidenceModal } from "../components/EvidenceModalProvider.js";
 import {
   getTopicCluster,
   isFcaFinesYearSlug,
   fcaFinesYearMeta,
   largestFcaFinesMeta,
+  stateOfFcaEnforcementMeta,
   LARGEST_FCA_FINES_SLUG,
+  STATE_OF_FCA_ENFORCEMENT_SLUG,
   FCA_FINES_FIRST_YEAR,
 } from "../data/topicClusters.js";
 import { injectStructuredData, useSEO } from "../hooks/useSEO.js";
@@ -15,6 +28,7 @@ import { useUnifiedData } from "../hooks/useUnifiedData.js";
 import type { FineRecord } from "../types.js";
 import { buildFineRecordEvidence } from "../utils/evidenceCase.js";
 import { getFcaFineCasePath } from "../utils/fcaFineCasePath.js";
+import { normaliseFcaFineFirmSlug } from "../utils/fcaFineCasePath.js";
 import { formatBreachCategory } from "../utils/labelConversion.js";
 import {
   buildContiguousMonthlyWindow,
@@ -187,6 +201,9 @@ function FcaFinesYearCrossLinks({ year }: { year: number }) {
         <Link className="topic-link-row" to={`/topics/${LARGEST_FCA_FINES_SLUG}`}>
           <span><strong>Largest FCA fines of all time</strong></span>
         </Link>
+        <Link className="topic-link-row" to={`/topics/${STATE_OF_FCA_ENFORCEMENT_SLUG}`}>
+          <span><strong>The State of FCA Enforcement report</strong></span>
+        </Link>
         <Link className="topic-link-row" to="/regulators/fca">
           <span><strong>FCA fines database</strong></span>
         </Link>
@@ -260,6 +277,7 @@ function LargestFcaFinesLeaderboard() {
           <a href={FCA_ENFORCEMENT_URL} target="_blank" rel="noreferrer">FCA enforcement notices <ExternalLink size={14} /></a>
           <Link to="/regulators/fca">Complete FCA fines database</Link>
           <Link to={`/topics/fca-fines-${new Date().getUTCFullYear()}`}>This year's FCA fines report</Link>
+          <Link to={`/topics/${STATE_OF_FCA_ENFORCEMENT_SLUG}`}>The State of FCA Enforcement report</Link>
         </div>
       </section>
 
@@ -305,6 +323,277 @@ function LargestFcaFinesLeaderboard() {
               </article>
             </section>
           )}
+        </>
+      )}
+    </>
+  );
+}
+
+function formatCompactGbp(value: number): string {
+  if (value >= 1_000_000_000) return `£${(value / 1_000_000_000).toFixed(1)}bn`;
+  if (value >= 1_000_000) return `£${(value / 1_000_000).toFixed(1)}m`;
+  if (value >= 1_000) return `£${(value / 1_000).toFixed(0)}k`;
+  return `£${value.toFixed(0)}`;
+}
+
+/**
+ * `/topics/state-of-fca-enforcement` — the data-journalism report. Fetches
+ * every FCA record client-side (`year: 0`) and aggregates it the same way the
+ * prerender script does server-side, so a real visitor sees the same figures
+ * a crawler already read in the baked HTML. Charts here are a client-side
+ * enhancement only; every number they visualise is also in a crawlable table
+ * above it.
+ */
+function StateOfFcaEnforcementReport() {
+  const all = useUnifiedData({ regulator: "FCA", country: "All", year: 0, currency: "GBP" });
+  const { openEvidence } = useEvidenceModal();
+  const currentYear = new Date().getUTCFullYear();
+  const fines = useMemo(() => monetaryFines(all.fines), [all.fines]);
+
+  const yearly = useMemo(() => {
+    const byYear = new Map<number, { count: number; total: number }>();
+    fines.forEach((record) => {
+      const year = record.year_issued || Number(record.date_issued?.slice(0, 4));
+      if (!year || year < FCA_FINES_FIRST_YEAR || year > currentYear) return;
+      const entry = byYear.get(year) ?? { count: 0, total: 0 };
+      entry.count += 1;
+      entry.total += record.amount;
+      byYear.set(year, entry);
+    });
+    return Array.from({ length: currentYear - FCA_FINES_FIRST_YEAR + 1 }, (_, index) => {
+      const year = FCA_FINES_FIRST_YEAR + index;
+      const entry = byYear.get(year) ?? { count: 0, total: 0 };
+      return { year, count: entry.count, total: entry.total, average: entry.count > 0 ? entry.total / entry.count : 0 };
+    });
+  }, [fines, currentYear]);
+
+  const allTimeTotal = useMemo(() => yearly.reduce((sum, row) => sum + row.total, 0), [yearly]);
+  const allTimeCount = useMemo(() => yearly.reduce((sum, row) => sum + row.count, 0), [yearly]);
+  const averageFine = allTimeCount > 0 ? allTimeTotal / allTimeCount : 0;
+  const yearsCovered = yearly.filter((row) => row.count > 0).length;
+  const currentYearRow = yearly.find((row) => row.year === currentYear) ?? null;
+  const highestYear = useMemo(
+    () => yearly.slice().sort((a, b) => b.total - a.total)[0] ?? null,
+    [yearly],
+  );
+
+  const largest = useMemo(
+    () => fines.slice().sort((left, right) => right.amount - left.amount)[0] ?? null,
+    [fines],
+  );
+
+  type FirmTotal = { firm: string; total: number; count: number };
+  const topFirms = useMemo<FirmTotal[]>(() => {
+    const totals = new Map<string, { total: number; count: number }>();
+    fines.forEach((record) => {
+      const entry = totals.get(record.firm_individual) ?? { total: 0, count: 0 };
+      entry.total += record.amount;
+      entry.count += 1;
+      totals.set(record.firm_individual, entry);
+    });
+    return Array.from(totals, ([firm, value]) => ({ firm, ...value }))
+      .sort((a, b) => b.total - a.total)
+      .slice(0, 10);
+  }, [fines]);
+  const mostFinedFirm = topFirms[0] ?? null;
+
+  type BreachTotal = { name: string; count: number; total: number };
+  const breachBreakdown = useMemo<BreachTotal[]>(() => {
+    const totals = new Map<string, { count: number; total: number }>();
+    fines.forEach((record) => {
+      const label = formatBreachCategory(
+        record.breach_type || record.breach_categories?.[0] || "Not classified",
+      );
+      const entry = totals.get(label) ?? { count: 0, total: 0 };
+      entry.count += 1;
+      entry.total += record.amount;
+      totals.set(label, entry);
+    });
+    return Array.from(totals, ([name, value]) => ({ name, ...value })).sort(
+      (a, b) => b.total - a.total,
+    );
+  }, [fines]);
+
+  const loading = all.loading;
+  const error = all.error;
+
+  return (
+    <>
+      <section className="fca-report-answer" aria-labelledby="state-of-fca-enforcement-heading">
+        <div>
+          <span className="hub-chip">Data report</span>
+          <h2 id="state-of-fca-enforcement-heading">What does the FCA enforcement record show?</h2>
+          {loading ? (
+            <p>Loading the full source-linked FCA enforcement record.</p>
+          ) : error ? (
+            <p>The live report is temporarily unavailable. The FCA's own enforcement page remains available below.</p>
+          ) : (
+            <p>
+              Since {FCA_FINES_FIRST_YEAR}, RegActions records <strong>{formatWorkspaceAmount(allTimeTotal)}</strong> in
+              disclosed FCA monetary penalties across <strong>{formatWorkspaceActionCount(allTimeCount)}</strong> in{" "}
+              {yearsCovered} years, averaging {formatWorkspaceAmount(averageFine)} per penalty.
+            </p>
+          )}
+          <p className="fca-report-answer__scope">
+            Figures exclude non-monetary outcomes, undisclosed amounts and records still awaiting RegActions' amount-review gate.
+          </p>
+        </div>
+        <div className="fca-report-answer__links">
+          <a href={FCA_ENFORCEMENT_URL} target="_blank" rel="noreferrer">FCA enforcement notices <ExternalLink size={14} /></a>
+          <Link to="/regulators/fca">Complete FCA fines database</Link>
+          <Link to={`/topics/${LARGEST_FCA_FINES_SLUG}`}>Largest FCA fines ranked</Link>
+        </div>
+      </section>
+
+      {!loading && !error && (
+        <>
+          <section className="fca-report-metrics" aria-label="State of FCA enforcement headline figures">
+            <article><span>All-time total</span><strong>{formatWorkspaceAmount(allTimeTotal)}</strong><small>{FCA_FINES_FIRST_YEAR}–{currentYear}</small></article>
+            <article><span>Average fine</span><strong>{formatWorkspaceAmount(averageFine)}</strong><small>Across {formatWorkspaceActionCount(allTimeCount)}</small></article>
+            <article><span>Largest fine</span><strong>{formatWorkspaceAmount(largest?.amount ?? 0)}</strong><small>{largest?.firm_individual ?? "Not available"}</small></article>
+            <article><span>Most-fined firm</span><strong>{mostFinedFirm ? formatWorkspaceAmount(mostFinedFirm.total) : "Not available"}</strong><small>{mostFinedFirm?.firm ?? ""}</small></article>
+            <article><span>{currentYear} so far</span><strong>{formatWorkspaceAmount(currentYearRow?.total ?? 0)}</strong><small>{formatWorkspaceActionCount(currentYearRow?.count ?? 0)}</small></article>
+            <article><span>Highest year</span><strong>{highestYear ? formatWorkspaceAmount(highestYear.total) : "Not available"}</strong><small>{highestYear?.year ?? ""}</small></article>
+          </section>
+
+          <section className="hub-section" aria-labelledby="state-yearly-heading">
+            <div className="fca-report-section-heading">
+              <div><h2 id="state-yearly-heading">FCA fines by year, {FCA_FINES_FIRST_YEAR}–{currentYear}</h2><p>Disclosed monetary penalties, totalled and averaged per calendar year.</p></div>
+            </div>
+            <div className="panel__chart panel__chart--compact">
+              <ResponsiveContainer width="100%" height={260}>
+                <LineChart data={yearly} margin={{ top: 8, right: 12, left: 0, bottom: 0 }}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="rgba(148,163,184,0.3)" />
+                  <XAxis dataKey="year" tick={{ fill: "#94a3b8", fontSize: 12 }} />
+                  <YAxis tick={{ fill: "#94a3b8", fontSize: 12 }} tickFormatter={formatCompactGbp} width={64} />
+                  <Tooltip formatter={(value: any) => formatWorkspaceAmount(Number(value))} labelFormatter={(label) => `${label}`} />
+                  <Line type="monotone" dataKey="total" stroke="#3b82f6" strokeWidth={2} dot={false} name="Total fines" />
+                </LineChart>
+              </ResponsiveContainer>
+            </div>
+            <div className="fca-report-table-wrap">
+              <table className="hub-table">
+                <thead><tr><th>Year</th><th>Penalties</th><th>Total</th><th>Average</th></tr></thead>
+                <tbody>
+                  {yearly.map((row) => (
+                    <tr key={row.year}>
+                      <td><Link className="hub-link" to={`/topics/fca-fines-${row.year}`}>{row.year}</Link></td>
+                      <td>{row.count ? formatWorkspaceActionCount(row.count) : "No monetary fine"}</td>
+                      <td><strong>{formatWorkspaceAmount(row.total)}</strong></td>
+                      <td>{row.count ? formatWorkspaceAmount(row.average) : "—"}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </section>
+
+          <section className="hub-section" aria-labelledby="state-breach-heading">
+            <div className="fca-report-section-heading">
+              <div><h2 id="state-breach-heading">FCA fines by breach theme</h2><p>Fines can span more than one breach theme, so these totals may exceed the all-time total above.</p></div>
+            </div>
+            <div className="panel__chart panel__chart--compact">
+              <ResponsiveContainer width="100%" height={Math.max(200, breachBreakdown.length * 32)}>
+                <BarChart data={breachBreakdown} layout="vertical" margin={{ top: 8, right: 24, left: 8, bottom: 0 }}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="rgba(148,163,184,0.3)" />
+                  <XAxis type="number" tick={{ fill: "#94a3b8", fontSize: 12 }} tickFormatter={formatCompactGbp} />
+                  <YAxis type="category" dataKey="name" width={160} tick={{ fill: "#475467", fontSize: 12 }} axisLine={false} tickLine={false} />
+                  <Tooltip formatter={(value: any) => formatWorkspaceAmount(Number(value))} />
+                  <Bar dataKey="total" fill="#0ea5e9" radius={[0, 6, 6, 0]} name="Total fines" />
+                </BarChart>
+              </ResponsiveContainer>
+            </div>
+            <div className="fca-report-table-wrap">
+              <table className="hub-table">
+                <thead><tr><th>Breach theme</th><th>Penalties</th><th>Total</th><th>Average</th><th>Share of total</th></tr></thead>
+                <tbody>
+                  {breachBreakdown.map((row) => (
+                    <tr key={row.name}>
+                      <td>{row.name}</td>
+                      <td>{formatWorkspaceActionCount(row.count)}</td>
+                      <td><strong>{formatWorkspaceAmount(row.total)}</strong></td>
+                      <td>{formatWorkspaceAmount(row.total / row.count)}</td>
+                      <td>{allTimeTotal > 0 ? `${((row.total / allTimeTotal) * 100).toFixed(1)}%` : "—"}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </section>
+
+          <section className="hub-section" aria-labelledby="state-firms-heading">
+            <div className="fca-report-section-heading">
+              <div><h2 id="state-firms-heading">Top {topFirms.length} most-fined firms</h2><p>Ranked by total disclosed FCA monetary penalties, all time.</p></div>
+            </div>
+            <div className="fca-report-table-wrap">
+              <table className="hub-table">
+                <thead><tr><th>Rank</th><th>Firm or individual</th><th>Penalties</th><th>Total</th></tr></thead>
+                <tbody>
+                  {topFirms.map((firm, index) => (
+                    <tr key={firm.firm}>
+                      <td>{index + 1}</td>
+                      <td><Link className="hub-link" to={`/fca-fines/firms/${normaliseFcaFineFirmSlug(firm.firm)}`}>{firm.firm}</Link></td>
+                      <td>{formatWorkspaceActionCount(firm.count)}</td>
+                      <td><strong>{formatWorkspaceAmount(firm.total)}</strong></td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </section>
+
+          <section className="topic-cluster-layout" aria-label="State of FCA enforcement narrative and methodology">
+            <article className="hub-card">
+              <h2>What the data shows</h2>
+              {highestYear && highestYear.total > 0 && (
+                <p>
+                  {highestYear.year} was the highest year on record, with {formatWorkspaceAmount(highestYear.total)} in
+                  disclosed monetary penalties across {formatWorkspaceActionCount(highestYear.count)}.
+                </p>
+              )}
+              {largest && (
+                <p>
+                  The single largest disclosed FCA fine RegActions records is {formatWorkspaceAmount(largest.amount)},
+                  issued to {largest.firm_individual}
+                  {largest.date_issued ? ` on ${formatReportDate(largest.date_issued)}` : ""}.
+                </p>
+              )}
+              {mostFinedFirm && mostFinedFirm.total > 0 && (
+                <p>
+                  {mostFinedFirm.firm} has paid the most in total FCA fines of any firm or individual currently recorded:{" "}
+                  {formatWorkspaceAmount(mostFinedFirm.total)} across {formatWorkspaceActionCount(mostFinedFirm.count)}.
+                </p>
+              )}
+              {breachBreakdown[0] && (
+                <p>
+                  By disclosed value, {breachBreakdown[0].name.toLowerCase()} is the largest breach theme in the FCA's
+                  enforcement record, accounting for {formatWorkspaceAmount(breachBreakdown[0].total)} across{" "}
+                  {formatWorkspaceActionCount(breachBreakdown[0].count)}.
+                </p>
+              )}
+              <p><Link className="hub-link" to="/methodology/enforcement">Read the enforcement data methodology</Link></p>
+            </article>
+            <article className="hub-card">
+              <h2>How this report is built</h2>
+              <p>Every figure on this page is calculated at build time from RegActions' source-linked FCA fines evidence. Totals include only positive, disclosed monetary penalties that have passed the amount-review gate; non-monetary outcomes and undisclosed amounts are excluded.</p>
+              <p><Link className="hub-link" to="/about">About RegActions and MEMA Consultants</Link></p>
+            </article>
+          </section>
+
+          <aside className="hub-card topic-cluster-actions">
+            <h2>More FCA fines reports</h2>
+            <div className="topic-link-list">
+              <Link className="topic-link-row" to={`/topics/fca-fines-${currentYear}`}>
+                <span><strong>FCA fines {currentYear}</strong></span>
+              </Link>
+              <Link className="topic-link-row" to={`/topics/${LARGEST_FCA_FINES_SLUG}`}>
+                <span><strong>Largest FCA fines of all time</strong></span>
+              </Link>
+              <Link className="topic-link-row" to="/regulators/fca">
+                <span><strong>FCA fines database</strong></span>
+              </Link>
+            </div>
+          </aside>
         </>
       )}
     </>
@@ -366,15 +655,18 @@ export function TopicCluster() {
   // year lookup is independent of whether an editorial cluster exists.
   const yearFromSlug = isFcaFinesYearSlug(slug);
   const isLeaderboard = slug === LARGEST_FCA_FINES_SLUG;
+  const isStateOfEnforcement = slug === STATE_OF_FCA_ENFORCEMENT_SLUG;
   // Generated (non-editorial) page meta — only used when there is no
   // curated `topicClusters` entry for this slug (i.e. every FCA fines year
-  // except 2026, and the leaderboard).
+  // except 2026, the leaderboard and the state-of-enforcement report).
   const generatedMeta = !cluster
     ? yearFromSlug !== null
       ? fcaFinesYearMeta(yearFromSlug)
       : isLeaderboard
         ? largestFcaFinesMeta
-        : null
+        : isStateOfEnforcement
+          ? stateOfFcaEnforcementMeta
+          : null
     : null;
 
   useSEO({
@@ -422,6 +714,7 @@ export function TopicCluster() {
 
           {yearFromSlug !== null && <FcaFinesYearReport year={yearFromSlug} />}
           {isLeaderboard && <LargestFcaFinesLeaderboard />}
+          {isStateOfEnforcement && <StateOfFcaEnforcementReport />}
 
           <section className="topic-cluster-layout" aria-label="More FCA fines reports">
             {yearFromSlug !== null && <FcaFinesYearCrossLinks year={yearFromSlug} />}
@@ -431,6 +724,9 @@ export function TopicCluster() {
                 <div className="topic-link-list">
                   <Link className="topic-link-row" to={`/topics/fca-fines-${new Date().getUTCFullYear()}`}>
                     <span><strong>FCA fines {new Date().getUTCFullYear()}</strong></span>
+                  </Link>
+                  <Link className="topic-link-row" to={`/topics/${STATE_OF_FCA_ENFORCEMENT_SLUG}`}>
+                    <span><strong>The State of FCA Enforcement report</strong></span>
                   </Link>
                   <Link className="topic-link-row" to="/regulators/fca">
                     <span><strong>FCA fines database</strong></span>
