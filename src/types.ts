@@ -293,6 +293,41 @@ export interface BreachResponse {
   data: BreachDetails;
 }
 
+export interface FcaFirmHubFine {
+  caseId: string;
+  dateIssued: string | null;
+  year: number;
+  amount: number;
+  breach: string | null;
+  sourceUrl: string | null;
+  casePath: string;
+  qualifiesForTotal: boolean;
+}
+
+export interface FcaFirmHubBreachBreakdown {
+  name: string;
+  count: number;
+  totalAmount: number;
+}
+
+export interface FcaFirmHubDetails {
+  slug: string;
+  firm: string;
+  fineCount: number;
+  totalAmount: number;
+  maxFine: number;
+  earliestDate: string | null;
+  latestDate: string | null;
+  fines: FcaFirmHubFine[];
+  breachBreakdown: FcaFirmHubBreachBreakdown[];
+  indexable: boolean;
+}
+
+export interface FcaFirmHubResponse {
+  success: boolean;
+  data: FcaFirmHubDetails;
+}
+
 export interface SectorResponse {
   success: boolean;
   data: SectorDetails;

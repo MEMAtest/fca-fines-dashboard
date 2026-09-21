@@ -1,6 +1,11 @@
 import type { FineRecord } from "../../src/types.js";
 import { getSqlClient } from "../db.js";
-import { normaliseFcaFineEntityName } from "./fcaFineCases.js";
+import {
+  normaliseFcaFineEntityName,
+  listFcaMonetaryCasesForSeo,
+  buildFcaFineCasePath,
+  type FcaFineCaseSeoRow,
+} from "./fcaFineCases.js";
 import { firmSlug, hubSlug } from "../utils/slugify.js";
 import { isGarbageFirmName } from "../../src/utils/firmName.js";
 import {
@@ -1068,4 +1073,177 @@ export async function getSectorDetailsBySlug(
     topBreaches,
     topPenalties: penalties.map(mapTrustedFineRecord),
   };
+}
+
+// ---------------------------------------------------------------------------
+// FCA-scoped firm hubs (`/fca-fines/firms/:slug`)
+// ---------------------------------------------------------------------------
+
+/**
+ * Same indexability gate used for the cross-regulator `/firms/:slug` hub
+ * (`MIN_FIRM_ACTIONS_FOR_INDEX` / `MIN_FIRM_TOTAL_FOR_INDEX_GBP` in
+ * `scripts/prerender-seo.ts`). Kept here too so the FCA-scoped hub's gate
+ * lives next to the data it gates, rather than only in the SSG script.
+ */
+export const FCA_FIRM_HUB_MIN_ACTIONS_FOR_INDEX = 2;
+export const FCA_FIRM_HUB_MIN_TOTAL_FOR_INDEX_GBP = 10_000_000;
+
+export interface FcaFirmHubFine {
+  caseId: string;
+  dateIssued: string | null;
+  year: number;
+  amount: number;
+  breach: string | null;
+  sourceUrl: string | null;
+  casePath: string;
+  /** false for amounts still awaiting RegActions' amount-review gate. */
+  qualifiesForTotal: boolean;
+}
+
+export interface FcaFirmHubBreachBreakdown {
+  name: string;
+  count: number;
+  totalAmount: number;
+}
+
+export interface FcaFirmHubDetails {
+  slug: string;
+  firm: string;
+  /** Count of QUALIFYING fines only (excludes amount-review-pending rows). */
+  fineCount: number;
+  /** Sum of QUALIFYING fines only. */
+  totalAmount: number;
+  maxFine: number;
+  earliestDate: string | null;
+  latestDate: string | null;
+  /** Every fine for this firm, newest first, including non-qualifying rows. */
+  fines: FcaFirmHubFine[];
+  breachBreakdown: FcaFirmHubBreachBreakdown[];
+  indexable: boolean;
+}
+
+/**
+ * Group already-fetched FCA monetary-case SEO rows into one hub per firm,
+ * keyed by the SAME slug function the FCA case pages use
+ * (`normaliseFcaFineFirmSlug`, applied upstream by
+ * `mapFcaFineCaseRow`/`listFcaMonetaryCasesForSeo`) so `/fca-fines/firms/{slug}`
+ * always matches the `{firmSlug}` segment in `/fca-fines/:year/:firmSlug/:caseId`.
+ *
+ * Pure and synchronous so both the API route (single slug) and the SSG script
+ * (every firm, once) can share one grouping pass over one DB fetch.
+ *
+ * A firm with zero QUALIFYING fines (all rows pending amount review, or all
+ * rows filtered out as a garbage/placeholder name) is omitted entirely — no
+ * hub is emitted for it.
+ */
+export function groupFcaFirmHubs(
+  cases: FcaFineCaseSeoRow[],
+): Map<string, FcaFirmHubDetails> {
+  const byFirm = new Map<string, { firm: string; fines: FcaFirmHubFine[] }>();
+
+  for (const row of cases) {
+    if (!row.firm || isGarbageFirmName(row.firm)) continue;
+    const slug = row.firmSlug;
+    if (!slug) continue;
+    const qualifiesForTotal =
+      row.amount > 0 && !row.indexabilityReasons.includes("amount_review_required");
+    let casePath: string;
+    try {
+      casePath = buildFcaFineCasePath(row);
+    } catch {
+      continue; // Case ID/year did not pass the shared route contract; skip.
+    }
+    const entry = byFirm.get(slug) ?? { firm: row.firm, fines: [] };
+    entry.fines.push({
+      caseId: row.caseId,
+      dateIssued: row.dateIssued || null,
+      year: row.year,
+      amount: row.amount,
+      breach: row.breach,
+      sourceUrl: row.sourceUrl,
+      casePath,
+      qualifiesForTotal,
+    });
+    byFirm.set(slug, entry);
+  }
+
+  const result = new Map<string, FcaFirmHubDetails>();
+  for (const [slug, entry] of byFirm) {
+    const qualifying = entry.fines.filter((f) => f.qualifiesForTotal);
+    if (qualifying.length === 0) continue;
+
+    const fines = [...entry.fines].sort((a, b) =>
+      (b.dateIssued || "").localeCompare(a.dateIssued || ""),
+    );
+    const totalAmount = qualifying.reduce((sum, f) => sum + f.amount, 0);
+    const maxFine = qualifying.reduce((max, f) => Math.max(max, f.amount), 0);
+    const dates = qualifying
+      .map((f) => f.dateIssued)
+      .filter((d): d is string => Boolean(d))
+      .sort();
+    const earliestDate = dates[0] ?? null;
+    const latestDate = dates[dates.length - 1] ?? null;
+
+    const breachMap = new Map<string, { count: number; totalAmount: number }>();
+    for (const f of qualifying) {
+      const key = f.breach?.trim() || "Not classified";
+      const current = breachMap.get(key) ?? { count: 0, totalAmount: 0 };
+      current.count += 1;
+      current.totalAmount += f.amount;
+      breachMap.set(key, current);
+    }
+    const breachBreakdown = Array.from(breachMap.entries())
+      .map(([name, v]) => ({ name, count: v.count, totalAmount: v.totalAmount }))
+      .sort((a, b) => b.totalAmount - a.totalAmount);
+
+    const indexable =
+      qualifying.length >= FCA_FIRM_HUB_MIN_ACTIONS_FOR_INDEX ||
+      totalAmount >= FCA_FIRM_HUB_MIN_TOTAL_FOR_INDEX_GBP;
+
+    result.set(slug, {
+      slug,
+      firm: entry.firm,
+      fineCount: qualifying.length,
+      totalAmount,
+      maxFine,
+      earliestDate,
+      latestDate,
+      fines,
+      breachBreakdown,
+      indexable,
+    });
+  }
+  return result;
+}
+
+let cachedFcaFirmHubs: { builtAt: number; map: Map<string, FcaFirmHubDetails> } | null = null;
+
+/**
+ * Every FCA firm hub, largest total first. Cached for `HUB_INDEX_TTL_MS` so a
+ * single build (or a burst of API requests) doesn't refetch the whole FCA
+ * monetary-case inventory per firm.
+ */
+export async function listFcaFirmHubs(): Promise<FcaFirmHubDetails[]> {
+  const now = Date.now();
+  if (cachedFcaFirmHubs && now - cachedFcaFirmHubs.builtAt < HUB_INDEX_TTL_MS) {
+    return Array.from(cachedFcaFirmHubs.map.values()).sort(
+      (a, b) => b.totalAmount - a.totalAmount,
+    );
+  }
+  const cases = await listFcaMonetaryCasesForSeo();
+  const map = groupFcaFirmHubs(cases);
+  cachedFcaFirmHubs = { builtAt: now, map };
+  return Array.from(map.values()).sort((a, b) => b.totalAmount - a.totalAmount);
+}
+
+/** Single FCA firm hub by its `/fca-fines/firms/:slug` slug, or null if unknown. */
+export async function getFcaFirmFines(slug: string): Promise<FcaFirmHubDetails | null> {
+  const trimmed = String(slug ?? "").trim();
+  if (!trimmed) return null;
+  const now = Date.now();
+  if (cachedFcaFirmHubs && now - cachedFcaFirmHubs.builtAt < HUB_INDEX_TTL_MS) {
+    return cachedFcaFirmHubs.map.get(trimmed) ?? null;
+  }
+  const all = await listFcaFirmHubs();
+  return all.find((firm) => firm.slug === trimmed) ?? null;
 }
