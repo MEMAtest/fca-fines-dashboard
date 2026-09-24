@@ -19,13 +19,9 @@ const HKMA_API_URL = "https://api.hkma.gov.hk/public/press-releases";
 // only as a fail-closed availability fallback when the API is unavailable.
 const HKMA_ENFORCEMENT_PAGE_URL =
   "https://www.hkma.gov.hk/eng/news-and-media/press-releases/enforcement/";
-// HKMA's API contains every press release, not only enforcement notices. A
-// 100-row page therefore requires more than 60 sequential requests to reach
-// the complete enforcement archive and makes a transient timeout capable of
-// producing a recent-only subset. The API supports archive-sized pages, so
-// fetch 10,000 rows at a time and retain pagination for future growth.
-export const HKMA_LIST_PAGE_SIZE =
-  Number.parseInt(process.env.HKMA_LIST_PAGE_SIZE || "", 10) || 10_000;
+// Keep the request at HKMA's validated 100-row response size; larger requests
+// were silently capped and made the first page look like the whole archive.
+export const HKMA_LIST_PAGE_SIZE = 100;
 const HKMA_API_RETRY_ATTEMPTS =
   Number.parseInt(process.env.HKMA_API_RETRY_ATTEMPTS || "", 10) || 4;
 
@@ -370,6 +366,7 @@ function categorizeHkmaRecord(text: string) {
 async function loadHkmaEntries(limit: number | null) {
   const entries = new Map<string, HkmaEntry>();
   let apiUnavailable = false;
+  const seenPageSignatures = new Set<string>();
 
   for (let offset = 0; ; offset += HKMA_LIST_PAGE_SIZE) {
     console.log(`📡 Fetching HKMA API page (offset: ${offset})...`);
@@ -395,7 +392,7 @@ async function loadHkmaEntries(limit: number | null) {
       }
     }
 
-    if (records.length < HKMA_LIST_PAGE_SIZE) {
+    if (!shouldFetchNextHkmaPage(records, HKMA_LIST_PAGE_SIZE, seenPageSignatures)) {
       break;
     }
   }
@@ -429,6 +426,24 @@ async function loadHkmaEntries(limit: number | null) {
   }
 
   return [...entries.values()];
+}
+
+export function shouldFetchNextHkmaPage(
+  records: HkmaApiRecord[],
+  requestedPageSize: number,
+  seenPageSignatures: Set<string>,
+) {
+  if (records.length < requestedPageSize) {
+    return false;
+  }
+
+  const signature = records.map((record) => `${record.date || ""}|${record.link || ""}`).join("\n");
+  if (seenPageSignatures.has(signature)) {
+    return false;
+  }
+
+  seenPageSignatures.add(signature);
+  return true;
 }
 
 async function fetchHkmaApiPage(offset: number) {

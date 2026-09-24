@@ -15,6 +15,7 @@ import {
 } from "../scrapeFmanz.js";
 import {
   HKMA_LIST_PAGE_SIZE,
+  shouldFetchNextHkmaPage,
   extractHkmaActionFragments,
   isRetryableHkmaApiFailure,
   isHkmaEnforcementTitle,
@@ -400,8 +401,23 @@ describe("apac wave scrapers", () => {
     expect(parseHkmaAmount(detail.body)).toBe(7_500_000);
   });
 
-  it("fetches the HKMA archive in large pages and retries API timeouts", () => {
-    expect(HKMA_LIST_PAGE_SIZE).toBeGreaterThanOrEqual(10_000);
+  it("continues after HKMA-capped pages and guards repeated pages", () => {
+    expect(HKMA_LIST_PAGE_SIZE).toBe(100);
+    const cappedPage = {
+      datasize: 250,
+      records: Array.from({ length: HKMA_LIST_PAGE_SIZE }, (_, index) => ({
+        date: String(index),
+        link: "https://www.hkma.gov.hk/press-releases/" + index,
+      })),
+    };
+    const seenPages = new Set<string>();
+
+    expect(cappedPage.records.length).toBeLessThan(cappedPage.datasize);
+    expect(shouldFetchNextHkmaPage(cappedPage.records, HKMA_LIST_PAGE_SIZE, seenPages)).toBe(true);
+    expect(shouldFetchNextHkmaPage(cappedPage.records, HKMA_LIST_PAGE_SIZE, seenPages)).toBe(false);
+    expect(
+      shouldFetchNextHkmaPage(cappedPage.records.slice(0, 9), HKMA_LIST_PAGE_SIZE, seenPages),
+    ).toBe(false);
     expect(isRetryableHkmaApiFailure(undefined, "ECONNABORTED")).toBe(true);
     expect(isRetryableHkmaApiFailure(429, undefined)).toBe(true);
     expect(isRetryableHkmaApiFailure(503, undefined)).toBe(true);
