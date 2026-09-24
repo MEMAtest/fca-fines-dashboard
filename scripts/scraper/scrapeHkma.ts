@@ -21,6 +21,8 @@ const HKMA_ENFORCEMENT_PAGE_URL =
   "https://www.hkma.gov.hk/eng/news-and-media/press-releases/enforcement/";
 const HKMA_ENFORCEMENT_LISTING_API_URL =
   "https://www.hkma.gov.hk/eng/news-and-media/press-releases/api";
+const HKMA_OFFICIAL_ORIGIN = "https://www.hkma.gov.hk";
+const HKMA_PRESS_RELEASE_PATH = "/eng/news-and-media/press-releases/";
 // Keep the request at HKMA's validated 100-row response size; larger requests
 // were silently capped and made the first page look like the whole archive.
 export const HKMA_LIST_PAGE_SIZE = 100;
@@ -283,7 +285,7 @@ function parseHkmaEnforcementListingRecords(html: string) {
       return;
     }
 
-    const detailUrl = new URL(href, HKMA_ENFORCEMENT_PAGE_URL).toString();
+    const detailUrl = canonicalizeHkmaDetailUrl(href);
     entries.set(detailUrl, { title, detailUrl, dateIssued });
   });
 
@@ -297,6 +299,19 @@ function getHkmaInitialListingSize(html: string, entries: HkmaEntry[]) {
     throw new Error("HKMA enforcement listing contained missing, malformed, or duplicate initial records");
   }
   return rowCount;
+}
+
+function canonicalizeHkmaDetailUrl(input: string) {
+  let url: URL;
+  try {
+    url = new URL(input, HKMA_ENFORCEMENT_PAGE_URL);
+  } catch {
+    throw new Error("HKMA listing returned an invalid record URL");
+  }
+  if (url.origin !== HKMA_OFFICIAL_ORIGIN || !url.pathname.startsWith(HKMA_PRESS_RELEASE_PATH)) {
+    throw new Error("HKMA listing returned a non-official press release URL");
+  }
+  return url.toString();
 }
 
 export function parseHkmaOfficialListingPayload(
@@ -322,15 +337,7 @@ export function parseHkmaOfficialListingPayload(
       throw new Error("HKMA official listing API returned a malformed archive record");
     }
 
-    let detailUrl: string;
-    try {
-      detailUrl = new URL(url, HKMA_ENFORCEMENT_PAGE_URL).toString();
-    } catch {
-      throw new Error("HKMA official listing API returned an invalid record URL");
-    }
-    if (new URL(detailUrl).hostname !== "www.hkma.gov.hk") {
-      throw new Error("HKMA official listing API returned a non-official record URL");
-    }
+    const detailUrl = canonicalizeHkmaDetailUrl(url);
     if (entries.has(detailUrl)) {
       throw new Error("HKMA official listing API repeated an archive record");
     }
