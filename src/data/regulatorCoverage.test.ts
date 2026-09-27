@@ -275,7 +275,7 @@ describe("regulatorCoverage", () => {
     expect(getRegulatorCoverage("IVASS")?.count).toBe(111);
     expect(getRegulatorCoverage("FISE")?.count).toBe(39);
     expect(getRegulatorCoverage("FTDK")?.count).toBe(51);
-    expect(getRegulatorCoverage("CYSEC")?.count).toBe(1116);
+    expect(getRegulatorCoverage("CYSEC")?.count).toBe(1146);
     expect(getRegulatorCoverage("FINFSA")?.count).toBe(44);
     expect(getRegulatorCoverage("FTNO")?.count).toBe(40);
     expect(getRegulatorCoverage("CNBCZ")?.count).toBe(1742);
@@ -429,18 +429,20 @@ describe("regulatorCoverage", () => {
     expect(getRegulatorCoverage("osc")?.count).toBe(653);
   });
 
-  it("publishes verified African country coverage without promoting the stale CBN lane", () => {
+  it("publishes verified African country coverage including current CBN evidence", () => {
     expect(PUBLIC_REGULATOR_CODES).toContain("FSCA");
     expect(PUBLIC_REGULATOR_CODES).toContain("NGSEC");
-    expect(PUBLIC_REGULATOR_CODES).not.toContain("CBN");
+    expect(PUBLIC_REGULATOR_CODES).toContain("CBN");
     expect(getRegulatorCoverage("FSCA")?.count).toBe(576);
     expect(getRegulatorCoverage("NGSEC")?.count).toBe(41);
     expect(getRegulatorCoverage("NGSEC")?.automationLevel).toBe("low_frequency");
     expect(getRegulatorCoverage("NGSEC")?.feedContract.staleAfterDays).toBe(730);
-    expect(getRegulatorCoverage("CBN")?.stage).toBe("pipeline");
+    expect(getRegulatorCoverage("CBN")?.stage).toBe("live");
+    expect(getRegulatorCoverage("CBN")?.count).toBe(90);
+    expect(getRegulatorCoverage("CBN")?.latestYear).toBe(2026);
+    expect(getRegulatorCoverage("CBN")?.automationLevel).toBe("low_frequency");
     expect(getCoveredCountries()).toEqual(expect.arrayContaining(["ZA", "NG", "MX"]));
-    expect(getRegulatorsForCountry("NG")?.regulators.map((item) => item.code)).toEqual(["NGSEC"]);
-    expect(getPipelineCountries()).toContain("NG");
+    expect(getRegulatorsForCountry("NG")?.regulators.map((item) => item.code)).toEqual(["CBN", "NGSEC"]);
   });
 
   it("groups the Europe and EEA rollout into three explicit phases", () => {

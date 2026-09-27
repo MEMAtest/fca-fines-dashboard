@@ -23,6 +23,7 @@ export const CBN_PRESS_RELEASES_PAGE_URL = `${CBN_BASE_URL}/Documents/PressRelea
 const CBN_PRESS_RELEASES_API_URL = `${CBN_BASE_URL}/api/GetAllPressReleases?format=json`;
 export const CBN_NOTICES_URL = `${CBN_BASE_URL}/Documents/Notices.html`;
 const CBN_NOTICES_API_URL = `${CBN_BASE_URL}/api/GetAllNotices?format=json`;
+export const CBN_NDIC_46_MFB_EVIDENCE_URL = "https://ndic.gov.ng/article?id=21";
 
 export interface CbnActionRow {
   date: string;
@@ -33,6 +34,7 @@ export interface CbnActionRow {
   actionType: "license_revocation" | "sanction" | "penalty";
   evidenceText?: string;
   catalogueUrl?: string;
+  evidenceUrl?: string;
 }
 
 export interface CbnNotice {
@@ -124,6 +126,61 @@ export function buildCbnRowsFromEvidence(notice: CbnNotice, evidenceText: string
     actionType,
     evidenceText: evidenceText.slice(0, 12000),
     catalogueUrl: pageUrl,
+  }));
+}
+
+/**
+ * A non-aggregate CBN release title can itself be first-party entity evidence
+ * (for example, the Heritage Bank revocation). Aggregate titles still require
+ * a named list from the linked document or another official public authority.
+ */
+export function extractCbnEntitiesFromNamedReleaseTitle(title: string): string[] {
+  const normalized = normalizeWhitespace(title);
+  const marker = normalized.match(/\b(?:licen[cs]e|licen[cs]es)\s+of\s+(.+)$/i);
+  if (!marker?.[1] || /^\d+\b/.test(marker[1])) return [];
+  return marker[1]
+    .replace(/\b(Plc|Ltd|Limited)\s+and\s+/gi, "$1||| ")
+    .split("|||")
+    .map(normalizeWhitespace)
+    .filter((candidate) =>
+      candidate.length >= 3
+      && candidate.length <= 180
+      && /\b(?:Bank|Savings(?:\s+and\s+Loans)?|Plc|Ltd|Limited)\b/i.test(candidate),
+    );
+}
+
+/** Parse the official NDIC liquidation notice which names all 46 institutions
+ * affected by CBN's 1 July 2026 licence-revocation action. */
+export function buildCbnRowsFromNdicEvidence(
+  notice: CbnNotice,
+  html: string,
+  evidenceUrl = CBN_NDIC_46_MFB_EVIDENCE_URL,
+): CbnActionRow[] {
+  const date = parseCbnDate(notice.documentDate);
+  if (!date) return [];
+  const $ = cheerio.load(html);
+  const articleText = normalizeWhitespace($(".art-body").text());
+  if (!/revocation.+46\s+micro-?finance banks?.+central bank of nigeria/i.test(
+    `${$(".ax-title").text()} ${articleText}`,
+  )) return [];
+
+  const entities = $(".art-body ul li")
+    .map((_, element) => normalizeWhitespace($(element).text()).replace(/,\s*[^,]+$/, ""))
+    .get()
+    .filter((entity) => /\bMicrofinance Bank(?:\s+Limited)?$/i.test(entity));
+  if (entities.length !== 46) return [];
+
+  const actionUrl = makeAbsoluteUrl(CBN_PRESS_RELEASES_PAGE_URL, notice.link);
+  return entities.map((entity) => ({
+    date,
+    entity,
+    title: notice.title,
+    actionUrl,
+    description: articleText.slice(0, 4000),
+    actionType: "license_revocation",
+    evidenceText: articleText.slice(0, 12000),
+    catalogueUrl: evidenceUrl,
+    evidenceUrl,
   }));
 }
 
@@ -276,6 +333,7 @@ export async function loadCbnLiveRecords() {
     fetchText(CBN_PRESS_RELEASES_API_URL, { timeout: 60_000, headers: { Accept: "application/json" } }),
   ]);
   const rows: CbnActionRow[] = [];
+  let ndicEvidenceHtml: string | null = null;
   const lanes = [
     { notices: parseCbnNoticeCandidates(json), catalogueUrl: CBN_NOTICES_URL },
     { notices: parseCbnPressReleaseCandidates(pressJson), catalogueUrl: CBN_PRESS_RELEASES_PAGE_URL },
@@ -301,6 +359,28 @@ export async function loadCbnLiveRecords() {
     rows.push(...extracted);
     if (extracted.length === 0 && lane.catalogueUrl === CBN_PRESS_RELEASES_PAGE_URL) {
       const aggregate = /\b\d+[\s-]*(?:microfinance\s+)?banks?\b/i.test(notice.title);
+      let officialFallbackRows: CbnActionRow[] = [];
+      if (/\b46[\s-]+microfinance\s+banks?\b/i.test(notice.title)) {
+        try {
+          ndicEvidenceHtml ??= await fetchText(CBN_NDIC_46_MFB_EVIDENCE_URL, { timeout: 60_000 });
+          officialFallbackRows = buildCbnRowsFromNdicEvidence(notice, ndicEvidenceHtml);
+        } catch (error) {
+          console.warn(`CBN: unable to retrieve official NDIC entity evidence: ${error instanceof Error ? error.message : String(error)}`);
+        }
+      } else if (!aggregate) {
+        officialFallbackRows = extractCbnEntitiesFromNamedReleaseTitle(notice.title).map((entity) => ({
+          date,
+          entity,
+          title: notice.title,
+          actionUrl,
+          description: normalizeWhitespace(notice.description || notice.title),
+          actionType: classifyCbnNotice(notice),
+          evidenceText: notice.title,
+          catalogueUrl: lane.catalogueUrl,
+        }));
+      }
+      rows.push(...officialFallbackRows);
+      if (officialFallbackRows.length > 0) continue;
       cbnBlockedDiscoveries.push({
         regulator: "CBN",
         sourceUrl: actionUrl,

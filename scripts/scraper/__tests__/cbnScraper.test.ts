@@ -5,7 +5,9 @@ import { describe, expect, it } from "vitest";
 import {
   buildCbnRecords,
   buildCbnRowsFromEvidence,
+  buildCbnRowsFromNdicEvidence,
   extractCbnEntities,
+  extractCbnEntitiesFromNamedReleaseTitle,
   isCbnEnforcementNotice,
   isCbnEnforcementPressRelease,
   parseCbnNoticesJson,
@@ -14,6 +16,13 @@ import {
 
 const fixture = readFileSync(join(dirname(fileURLToPath(import.meta.url)), "fixtures/cbn-notices-sample.json"), "utf8");
 const fourteenBanksEvidence = readFileSync(join(dirname(fileURLToPath(import.meta.url)), "fixtures/cbn-14-banks-evidence.txt"), "utf8");
+
+const ndicEvidence = `
+  <h1 class="ax-title">Update on the Revocation of the Operating Licenses of 46 Micro-Finance Banks by the Central Bank of Nigeria</h1>
+  <div class="art-body">
+    <p>Further to the CBN revocation of 46 Microfinance Banks.</p>
+    <ul>${Array.from({ length: 46 }, (_, index) => `<li><p>Evidence ${index + 1} Microfinance Bank, State</p></li>`).join("")}</ul>
+  </div>`;
 
 describe("CBN official notices parser", () => {
   it("filters enforcement notices and preserves linked official documents", () => {
@@ -85,5 +94,23 @@ describe("CBN official press-release discovery", () => {
       link: "/Out/46.pdf", documentDate: "01/07/2026",
     };
     expect(buildCbnRowsFromEvidence(aggregate, "", "https://www.cbn.gov.ng/Documents/PressReleases.html")).toEqual([]);
+    const officialRows = buildCbnRowsFromNdicEvidence(aggregate, ndicEvidence);
+    expect(officialRows).toHaveLength(46);
+    expect(officialRows[0]).toMatchObject({
+      entity: "Evidence 1 Microfinance Bank",
+      actionUrl: "https://www.cbn.gov.ng/Out/46.pdf",
+      catalogueUrl: "https://ndic.gov.ng/article?id=21",
+    });
+  });
+
+  it("accepts named first-party release titles but rejects aggregate titles", () => {
+    expect(extractCbnEntitiesFromNamedReleaseTitle("CBN Revokes the Banking Licence of Heritage Bank Plc")).toEqual([
+      "Heritage Bank Plc",
+    ]);
+    expect(extractCbnEntitiesFromNamedReleaseTitle("Revocation of the Operational Licenses of Aso Savings and Loans Plc and Union Homes Savings and Loans Plc")).toEqual([
+      "Aso Savings and Loans Plc",
+      "Union Homes Savings and Loans Plc",
+    ]);
+    expect(extractCbnEntitiesFromNamedReleaseTitle("CBN Revokes Licenses of 46 Microfinance Banks")).toEqual([]);
   });
 });

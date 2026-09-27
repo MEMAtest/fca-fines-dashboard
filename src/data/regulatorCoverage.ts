@@ -134,7 +134,7 @@ const LOW_CONFIDENCE_LIVE_REGULATOR_SET = new Set([
 
 const CURATED_ARCHIVE_REGULATOR_SET = new Set(["DFSA", "CBUAE"]);
 const SPARSE_SOURCE_REGULATOR_SET = new Set(["JFSC"]);
-const LOW_FREQUENCY_REGULATOR_SET = new Set(["AMMC", "GFSC", "IOMFSA", "HKMA", "NGSEC"]);
+const LOW_FREQUENCY_REGULATOR_SET = new Set(["AMMC", "GFSC", "IOMFSA", "HKMA", "CBN", "NGSEC"]);
 
 const DEFAULT_AUTOMATED_STALE_AFTER_DAYS = 180;
 const DEFAULT_FRAGILE_STALE_AFTER_DAYS = 365;
@@ -157,6 +157,7 @@ const REGULATOR_STALE_AFTER_DAYS: Partial<Record<string, number>> = {
   AMMC: 180,
   IOMFSA: 365,
   NGSEC: 730,
+  CBN: 730,
   CNBV: 62,
   OSC: 365,
   IVASS: 760,
@@ -2225,7 +2226,7 @@ const REGULATOR_COVERAGE_SEED: Record<string, RegulatorCoverageSeed> = {
     navOrder: 45,
     overviewPath: "/regulators/cysec",
     years: "2013-2026",
-    count: 1116,
+    count: 1146,
     dataQuality: "Tested live loader",
     note: "Live CySEC board-decisions loader tested against the official decisions archive and linked first-party PDF notices. Public coverage excludes Greek-language duplicate listings when an English equivalent decision is already published.",
     earliestYear: 2013,
@@ -2692,17 +2693,17 @@ const REGULATOR_COVERAGE_SEED: Record<string, RegulatorCoverageSeed> = {
     sourceType: "regulator",
     scrapeMode: "detail_pages",
     priorityTier: 1,
-    stage: "pipeline",
+    stage: "live",
     blogEnabled: false,
     flag: "🇳🇬",
     navOrder: 57,
     overviewPath: "/regulators/cbn",
-    years: "2002-2008",
-    count: 40,
-    dataQuality: "Official notices archive reconciled; current-period continuity under review",
-    note: "The official CBN loader has 40 named licence revocation, closure and sanction records, but the current reconciled archive ends in 2008. CBN remains pipeline until current-period publication continuity is proven; Nigeria is live through the independently verified Nigerian SEC feed.",
+    years: "2002-2026",
+    count: 90,
+    dataQuality: "Official CBN actions reconciled with named first-party and NDIC evidence",
+    note: "Live CBN coverage combines the official notices and press-release feeds with named affected-entity evidence. Where CBN's document host blocks unattended retrieval, the official NDIC liquidation notice supplies the affected-institution list while the record retains CBN's source document URL.",
     earliestYear: 2002,
-    latestYear: 2008,
+    latestYear: 2026,
     nativeCurrency: "NGN",
     defaultCurrency: "EUR",
     coverageStatus: "emerging",
@@ -2721,6 +2722,12 @@ const REGULATOR_COVERAGE_SEED: Record<string, RegulatorCoverageSeed> = {
         url: "https://www.cbn.gov.ng/api/GetAllNotices?format=json",
         description: "Official CBN endpoint used to enumerate notices and linked source documents.",
         role: "api",
+      },
+      {
+        label: "NDIC CBN revocation evidence",
+        url: "https://ndic.gov.ng/article?id=21",
+        description: "Official NDIC notice naming the institutions affected by CBN's 1 July 2026 licence-revocation action.",
+        role: "press_service",
       },
     ],
   },
