@@ -112,7 +112,11 @@ function isValidDate(value: string) {
 
 function isInvalidEntity(value: string) {
   const entity = value.trim();
-  if (entity.length < 3 || entity.length > 180) return true;
+  // Some official decisions name a long, finite group of respondents in one
+  // action (CySEC is the clearest example). Those names are evidence, not page
+  // furniture, and the database column is text. Keep a defensive ceiling for
+  // accidental page-body capture without discarding genuine joint actions.
+  if (entity.length < 3 || entity.length > 1_000) return true;
   return isKnownMalformedAfmEntity(entity)
     || /<[^>]+>|\b(?:navigation|press release|read more|cookie policy|page title)\b/i.test(entity)
     || /^(?:instruction|decision|notice|warning|measure)\b/i.test(entity)
