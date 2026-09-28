@@ -168,5 +168,15 @@
     "qualityScore": 100,
     "qualityPassed": true,
     "wordCount": 1134
+  },
+  {
+    "timestamp": "2026-09-28T09:20:35.806Z",
+    "topic": "Enforcement Spotlight: Top Actions This Week",
+    "slug": "enforcement-spotlight-2026-w40",
+    "track": "timely",
+    "outcome": "draft_saved",
+    "qualityScore": 100,
+    "qualityPassed": true,
+    "wordCount": 1360
   }
 ]
