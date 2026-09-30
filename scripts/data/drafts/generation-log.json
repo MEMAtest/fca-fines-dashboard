@@ -178,5 +178,15 @@
     "qualityScore": 100,
     "qualityPassed": true,
     "wordCount": 1360
+  },
+  {
+    "timestamp": "2026-09-30T09:16:01.239Z",
+    "topic": "Sanctions Compliance Failures and Enforcement Outcomes",
+    "slug": "sanctions-compliance-enforcement",
+    "track": "evergreen-thematic",
+    "outcome": "draft_saved",
+    "qualityScore": 100,
+    "qualityPassed": true,
+    "wordCount": 1199
   }
 ]

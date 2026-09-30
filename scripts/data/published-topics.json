@@ -64,5 +64,11 @@
     "title": "Regulatory Enforcement: Reporting Failures and AML Oversight",
     "track": "timely",
     "publishedAt": "2026-09-28"
+  },
+  {
+    "slug": "sanctions-compliance-enforcement",
+    "title": "Sanctions Compliance Failures: A Cross-Regulator Enforcement Analysis",
+    "track": "evergreen-thematic",
+    "publishedAt": "2026-09-30"
   }
 ]
