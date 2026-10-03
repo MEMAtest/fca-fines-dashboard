@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import { readFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
+import { vi } from "vitest";
 import {
   aggregateByCountry,
   diffAggregate,
@@ -9,6 +10,7 @@ import {
   parseOfacSanctionsXml,
   parseUkSanctionsXml,
   parseUnSanctionsXml,
+  resolveEuSanctionsXmlUrl,
 } from "../connectors.js";
 
 const here = dirname(fileURLToPath(import.meta.url));
@@ -50,20 +52,57 @@ describe("sanctions connectors — fixture parsing", () => {
     expect(agg).toEqual([{ regimeCode: "uk", iso2: "BY", designationCount: 2, programmes: ["Belarus"] }]);
   });
 
-  it("parses the EU financial sanctions dataset sample (1 person + 1 enterprise, both Russia)", () => {
+  it("parses the EU financial sanctions dataset sample (1 person + 1 enterprise, both Russia) — real attribute-based schema", () => {
     const entries = parseEuSanctionsXml(fixture("eu-sample.xml"));
     expect(entries).toHaveLength(2);
+    expect(entries[0].name).toBe("Sergei Ivanovich");
     expect(entries[0].type).toBe("individual");
+    expect(entries[0].aliases).toEqual(["S. Ivanov"]);
+    expect(entries[1].name).toBe("Volga Shipping JSC");
     expect(entries[1].type).toBe("company");
 
     const agg = aggregateByCountry("eu", entries);
-    expect(agg).toEqual([
-      { regimeCode: "eu", iso2: "RU", designationCount: 2, programmes: ["Council Regulation 269/2014"] },
-    ]);
+    expect(agg).toEqual([{ regimeCode: "eu", iso2: "RU", designationCount: 2, programmes: ["RUS"] }]);
   });
 
   it("returns [] for EU XML with no sanctionEntity blocks (never fabricates entries)", () => {
     expect(parseEuSanctionsXml("<export></export>")).toEqual([]);
+  });
+});
+
+describe("resolveEuSanctionsXmlUrl — runtime catalogue resolution", () => {
+  it("picks the XML distribution's download_url from the catalogue API response", async () => {
+    const fakeFetch = vi.fn().mockResolvedValue({
+      ok: true,
+      json: async () => ({
+        result: {
+          distributions: [
+            { format: { id: "CSV" }, download_url: ["https://example.com/list.csv"] },
+            { format: { id: "XML" }, download_url: ["https://example.com/list.xml?token=abc"] },
+          ],
+        },
+      }),
+    });
+    const resolution = await resolveEuSanctionsXmlUrl(fakeFetch as unknown as typeof fetch);
+    expect(resolution.url).toBe("https://example.com/list.xml?token=abc");
+  });
+
+  it("returns null with evidence when the catalogue has no XML distribution (never guesses a URL)", async () => {
+    const fakeFetch = vi.fn().mockResolvedValue({
+      ok: true,
+      json: async () => ({ result: { distributions: [{ format: { id: "CSV" }, download_url: ["https://example.com/list.csv"] }] } }),
+    });
+    const resolution = await resolveEuSanctionsXmlUrl(fakeFetch as unknown as typeof fetch);
+    expect(resolution.url).toBeNull();
+    expect(resolution.evidence).toContain("No XML distribution found");
+    expect(resolution.evidence).toContain("CSV");
+  });
+
+  it("returns null with evidence when the catalogue API itself fails", async () => {
+    const fakeFetch = vi.fn().mockResolvedValue({ ok: false, status: 503, statusText: "Service Unavailable" });
+    const resolution = await resolveEuSanctionsXmlUrl(fakeFetch as unknown as typeof fetch);
+    expect(resolution.url).toBeNull();
+    expect(resolution.evidence).toContain("503");
   });
 });
 

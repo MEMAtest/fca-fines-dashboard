@@ -25,6 +25,7 @@ export interface RawSanctionsEntry {
   type: "individual" | "company";
   countries: string[]; // raw country tokens as they appear in the source feed
   programmes: string[];
+  aliases?: string[];
 }
 
 export interface CountryRegimeAggregate {
@@ -223,21 +224,160 @@ export function parseUkSanctionsXml(xml: string): RawSanctionsEntry[] {
   return entries.filter((e): e is RawSanctionsEntry => e !== null);
 }
 
+// The EU Financial Sanctions Dataset's real export schema (confirmed against
+// the live data.europa.eu-resolved XML, 2026-10) carries its data in XML
+// ATTRIBUTES on mostly self-closing elements, not element text content —
+// e.g. <nameAlias wholeName="..." .../>, <citizenship countryDescription="..."
+// countryIso2Code=".../>, <subjectType code="person"/>, <regulation
+// programme="IRQ" .../>. This is a different shape to the UN/OFAC/UK feeds
+// (which ARE text-content based), so it needs its own attribute reader
+// rather than getTagValues()/getFirstTagValue().
+function getOpeningTags(block: string, tag: string): string[] {
+  const pattern = new RegExp(`<${tag}\\b[^>]*/?>`, "gi");
+  return block.match(pattern) ?? [];
+}
+
+function getAttr(tagMarkup: string, attr: string): string | null {
+  const match = new RegExp(`\\b${attr}="([^"]*)"`, "i").exec(tagMarkup);
+  return match && match[1] ? decodeXmlValue(match[1]) : null;
+}
+
+function getAttrValues(block: string, tag: string, attr: string): string[] {
+  return getOpeningTags(block, tag)
+    .map((markup) => getAttr(markup, attr))
+    .filter((v): v is string => Boolean(v));
+}
+
 export function parseEuSanctionsXml(xml: string): RawSanctionsEntry[] {
   if (!xml.includes("<sanctionEntity")) return [];
-  const entries = getBlocks(xml, "sanctionEntity").map((block) => {
-    const primaryName = getFirstTagValue(block, "subjectName") ?? getFirstTagValue(block, "nameAlias");
+  const fullBlockPattern = /<sanctionEntity\b[^>]*>[\s\S]*?<\/sanctionEntity>/gi;
+  const fullBlocks = xml.match(fullBlockPattern) ?? [];
+  const entries = fullBlocks.map((fullBlock): RawSanctionsEntry | null => {
+    const openingTag = fullBlock.match(/^<sanctionEntity\b[^>]*>/i)?.[0] ?? "";
+    const euReferenceNumber = getAttr(openingTag, "euReferenceNumber");
+    const block = fullBlock.replace(/^<sanctionEntity\b[^>]*>/i, "").replace(/<\/sanctionEntity>$/i, "");
+    const nameMarkups = getOpeningTags(block, "nameAlias");
+    const primaryMarkup =
+      nameMarkups.find((m) => getAttr(m, "strong") === "true") ?? nameMarkups[0];
+    const primaryName = primaryMarkup ? getAttr(primaryMarkup, "wholeName") : null;
     if (!primaryName) return null;
-    const designationType = (getFirstTagValue(block, "subjectType") ?? "enterprise").toLowerCase();
+
+    const aliases = uniqueValues(
+      nameMarkups.filter((m) => m !== primaryMarkup).map((m) => getAttr(m, "wholeName")),
+    );
+    const subjectTypeMarkup = getOpeningTags(block, "subjectType")[0];
+    const subjectCode = (subjectTypeMarkup ? getAttr(subjectTypeMarkup, "code") : null) ?? "enterprise";
+
+    // Country nexus: citizenship (persons) falling back to address (entities
+    // and persons alike carry registered/listed addresses).
+    const countries = uniqueValues([
+      ...getAttrValues(block, "citizenship", "countryDescription"),
+      ...getAttrValues(block, "address", "countryDescription"),
+    ]);
+
+    const programmes = uniqueValues(getAttrValues(block, "regulation", "programme"));
+
     return {
-      id: `eu-${getFirstTagValue(block, "euReferenceNumber") ?? primaryName.toLowerCase().replace(/\s+/g, "-")}`,
+      id: `eu-${euReferenceNumber || primaryName.toLowerCase().replace(/\s+/g, "-")}`,
       name: primaryName,
-      type: designationType.includes("person") ? "individual" : ("company" as const),
-      countries: uniqueValues(getTagValues(block, "countryDescription")),
-      programmes: uniqueValues([getFirstTagValue(block, "regulationType")]),
+      type: subjectCode.toLowerCase().includes("person") ? "individual" : ("company" as const),
+      countries,
+      aliases,
+      programmes,
     };
   });
   return entries.filter((e): e is RawSanctionsEntry => e !== null);
+}
+
+// ---------------------------------------------------------------------------
+// EU machine-readable URL resolution — read from the data.europa.eu catalogue
+// API at runtime rather than hard-coding the dataset's tokenised distribution
+// URL (the token is part of the published catalogue metadata, not a secret
+// we mint, but it can rotate, so we re-resolve it every run).
+// ---------------------------------------------------------------------------
+
+export const EU_CATALOGUE_DATASET_URL =
+  "https://data.europa.eu/api/hub/search/datasets/consolidated-list-of-persons-groups-and-entities-subject-to-eu-financial-sanctions?locale=en";
+
+interface EuCatalogueDistribution {
+  format?: { id?: string };
+  download_url?: string[] | string;
+  access_url?: string[] | string;
+}
+
+function firstString(value: unknown): string | null {
+  if (typeof value === "string" && value.trim()) return value.trim();
+  if (Array.isArray(value)) {
+    const found = value.find((v): v is string => typeof v === "string" && v.trim().length > 0);
+    return found?.trim() ?? null;
+  }
+  return null;
+}
+
+export interface EuCatalogueResolution {
+  url: string | null;
+  evidence: string; // human-readable note on how/why resolution succeeded or failed
+}
+
+/**
+ * Resolves the EU Financial Sanctions Dataset's current XML distribution URL
+ * from the data.europa.eu catalogue API. Returns { url: null, evidence } with
+ * the raw evidence when no XML distribution is published — callers must show
+ * that evidence and skip ingestion, never guess a URL.
+ */
+export async function resolveEuSanctionsXmlUrl(
+  fetchImpl: typeof fetch = fetch,
+): Promise<EuCatalogueResolution> {
+  let metadata: unknown;
+  try {
+    const response = await fetchImpl(EU_CATALOGUE_DATASET_URL, {
+      headers: { "User-Agent": "RegActions-Atlas/1.0", Accept: "application/json" },
+      signal: AbortSignal.timeout(20_000),
+    });
+    if (!response.ok) {
+      return { url: null, evidence: `Catalogue API returned HTTP ${response.status} ${response.statusText}` };
+    }
+    metadata = await response.json();
+  } catch (error) {
+    return {
+      url: null,
+      evidence: `Catalogue API request failed: ${error instanceof Error ? error.message : String(error)}`,
+    };
+  }
+
+  const distributions = findEuDistributions(metadata);
+  if (!distributions) {
+    return { url: null, evidence: "Catalogue API response did not contain a result.distributions array" };
+  }
+
+  const xmlDistribution = distributions.find(
+    (d) => (d.format?.id ?? "").trim().toUpperCase() === "XML",
+  );
+  if (!xmlDistribution) {
+    const formats = distributions.map((d) => d.format?.id ?? "unknown").join(", ");
+    return { url: null, evidence: `No XML distribution found; available formats: ${formats}` };
+  }
+
+  const url = firstString(xmlDistribution.download_url) ?? firstString(xmlDistribution.access_url);
+  if (!url) {
+    return { url: null, evidence: "XML distribution entry had no download_url or access_url" };
+  }
+  return { url, evidence: `Resolved from catalogue distribution (format=XML)` };
+}
+
+function findEuDistributions(metadata: unknown): EuCatalogueDistribution[] | null {
+  if (
+    metadata &&
+    typeof metadata === "object" &&
+    "result" in metadata &&
+    metadata.result &&
+    typeof metadata.result === "object" &&
+    "distributions" in metadata.result &&
+    Array.isArray((metadata.result as Record<string, unknown>).distributions)
+  ) {
+    return (metadata.result as Record<string, unknown>).distributions as EuCatalogueDistribution[];
+  }
+  return null;
 }
 
 export function parseSanctionsFeed(code: SanctionsRegimeCode, xml: string): RawSanctionsEntry[] {

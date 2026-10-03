@@ -8,6 +8,7 @@
  */
 import { FATF_CHANGE_LOG, FATF_SOURCE_URL, type FatfChange } from "../../../src/data/fatfStatus.js";
 import { getSqlClient } from "../../../server/db.js";
+import { recordRun } from "./registerStaleness.js";
 
 // Plenary outcome page per cycle, as cited in the fatfStatus.ts comment block above
 // FATF_CHANGE_LOG. Falls back to the general black/grey-list page if a cycle isn't
@@ -55,11 +56,19 @@ async function main() {
     inserted += 1;
   }
   console.log(`FATF change-log seed: ${inserted} new row(s) inserted (of ${rows.length} total events).`);
+  // Record the check regardless of whether anything new was found — a quiet
+  // plenary cycle is a successful check, not a stale one.
+  await recordRun("fatf", "success");
 }
 
 if (import.meta.url === `file://${process.argv[1]}`) {
-  main().catch((error) => {
+  main().catch(async (error) => {
     console.error(error);
+    try {
+      await recordRun("fatf", "error", error instanceof Error ? error.message : String(error));
+    } catch {
+      // DB unreachable too; the exit code below still signals failure.
+    }
     process.exitCode = 1;
   });
 }

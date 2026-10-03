@@ -4,6 +4,7 @@ import {
   changeKindsPresent,
   changesByDate,
   recentChangesForCountry,
+  registerSanctionsChangeEvents,
   scoreDeltaEvents,
   currentMethodologyChangeEvents,
   CHANGE_KIND_LABELS,
@@ -32,6 +33,35 @@ describe("country changes surface", () => {
     const iraq = fatf.find((e) => e.iso2 === "IQ");
     expect(iraq).toBeTruthy();
     expect(iraq!.title.toLowerCase()).toContain("added to the fatf grey list");
+  });
+
+  it("register_change_log sanctions-category rows merge into a sanctions ChangeEvent, dated and sourced", () => {
+    const merged = registerSanctionsChangeEvents([
+      {
+        iso2: "RU",
+        eventDate: "2026-10-02",
+        summary: "OFAC: +3 designations linked to RU, programme RUSSIA-EO14024",
+        sourceUrl: "https://ofac.treasury.gov/sanctions-list-service",
+      },
+    ]);
+    expect(merged).toHaveLength(1);
+    expect(merged[0]).toMatchObject({
+      iso2: "RU",
+      date: "2026-10-02",
+      kind: "sanctions",
+      href: "https://ofac.treasury.gov/sanctions-list-service",
+    });
+    expect(merged[0].detail).toContain("OFAC");
+  });
+
+  it("never duplicates a FATF event even if register_change_log carried a 'fatf' category row — by construction, registerSanctionsChangeEvents() only ever receives 'sanctions' rows", () => {
+    // generateSanctionsChangeLog.ts filters category = 'sanctions' at the SQL
+    // level, so a 'fatf' row can never reach this merge point. Guard that the
+    // full feed's FATF count still matches FATF_CHANGE_LOG exactly (the
+    // dedupe invariant), independent of whatever register sanctions data
+    // exists.
+    const fatfCount = buildCountryChanges().filter((e) => e.kind === "fatf").length;
+    expect(fatfCount).toBe(FATF_CHANGE_LOG.length);
   });
 
   it("emits a global sanctions promotion plus per-country comprehensive events", () => {

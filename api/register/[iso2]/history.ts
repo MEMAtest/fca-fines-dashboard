@@ -1,6 +1,8 @@
 import type { VercelRequest, VercelResponse } from "@vercel/node";
 import { getCountryByIso2 } from "../../../src/data/countries.js";
 import { getSqlClient } from "../../../server/db.js";
+import { toIsoDateString } from "../../../scripts/register/sanctions/pgDate.js";
+import { evaluateRegisterStaleness, getLatestRun, type LaneStaleness } from "../../../scripts/register/sanctions/registerStaleness.js";
 
 export interface RegisterChangeEvent {
   id: number;
@@ -40,15 +42,27 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       id: Number(row.id),
       iso2: String(row.iso2),
       category: String(row.category),
-      eventDate: String(row.event_date),
+      eventDate: toIsoDateString(row.event_date),
       summary: String(row.summary),
       sourceUrl: String(row.source_url),
     }));
-    return res.status(200).json({ iso2, country, events });
+    let staleness: LaneStaleness[] = [];
+    let euNotIngested: { evidence: string } | null = null;
+    try {
+      staleness = await evaluateRegisterStaleness();
+      const euRun = await getLatestRun("sanctions-eu");
+      if (!euRun || euRun.status !== "success") {
+        euNotIngested = { evidence: euRun?.detail ?? "EU sanctions ingest has not run successfully yet" };
+      }
+    } catch (statusError) {
+      console.warn("register staleness/EU status unavailable", statusError instanceof Error ? statusError.message : statusError);
+    }
+
+    return res.status(200).json({ iso2, country, events, staleness, euNotIngested });
   } catch (error) {
     console.warn("register history unavailable", error instanceof Error ? error.message : error);
     // DB unreachable: return an explicit empty-with-error shape, never a
     // fabricated empty-history "all clear" with 200/ok semantics hidden.
-    return res.status(200).json({ iso2, country, events: [], unavailable: true });
+    return res.status(200).json({ iso2, country, events: [], staleness: [], euNotIngested: null, unavailable: true });
   }
 }

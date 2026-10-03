@@ -7,6 +7,17 @@ export interface AtlasSanctionsTabBodyProps {
   iso2: string;
 }
 
+interface LaneStalenessView {
+  lane: "sanctions" | "fatf";
+  isStale: boolean;
+  staleSince: string | null;
+  lastSuccessAt: string | null;
+}
+
+interface EuNotIngested {
+  evidence: string;
+}
+
 /**
  * Sanctions & FATF history tab body (Phase 2). Shows:
  *   1. current FATF status + sanctions regimes (existing, already-verified data)
@@ -24,25 +35,33 @@ export function AtlasSanctionsTabBody({ iso2 }: AtlasSanctionsTabBodyProps) {
   const snapshotEvents = REGISTER_HISTORY_SNAPSHOT[upperIso2] ?? [];
   const [events, setEvents] = useState<RegisterHistorySnapshotEvent[]>(snapshotEvents);
   const [loaded, setLoaded] = useState(false);
+  const [staleness, setStaleness] = useState<LaneStalenessView[]>([]);
+  const [euNotIngested, setEuNotIngested] = useState<EuNotIngested | null>(null);
 
   useEffect(() => {
     let cancelled = false;
     setEvents(REGISTER_HISTORY_SNAPSHOT[upperIso2] ?? []);
     setLoaded(false);
+    setStaleness([]);
+    setEuNotIngested(null);
     fetch(`/api/register/${upperIso2}/history`)
       .then((res) => (res.ok ? res.json() : null))
       .then((data) => {
-        if (cancelled || !data?.events) return;
-        setEvents(
-          data.events.map((e: any) => ({
-            iso2: e.iso2,
-            category: e.category,
-            eventDate: e.eventDate,
-            summary: e.summary,
-            sourceUrl: e.sourceUrl,
-          })),
-        );
-        setLoaded(true);
+        if (cancelled || !data) return;
+        if (Array.isArray(data.events)) {
+          setEvents(
+            data.events.map((e: any) => ({
+              iso2: e.iso2,
+              category: e.category,
+              eventDate: e.eventDate,
+              summary: e.summary,
+              sourceUrl: e.sourceUrl,
+            })),
+          );
+          setLoaded(true);
+        }
+        if (Array.isArray(data.staleness)) setStaleness(data.staleness);
+        if (data.euNotIngested) setEuNotIngested(data.euNotIngested);
       })
       .catch(() => {
         // Network/API unavailable: keep the committed snapshot, no fabricated fallback.
@@ -54,8 +73,41 @@ export function AtlasSanctionsTabBody({ iso2 }: AtlasSanctionsTabBodyProps) {
 
   const firstRunDate = "2026-10-03"; // date the sanctions/FATF change-log pipeline first shipped
 
+  const staleLanes = staleness.filter((lane) => lane.isStale);
+
   return (
     <div className="atlas-sanctions-tab" data-testid="atlas-sanctions-tab">
+      {staleLanes.length > 0 && (
+        <div className="atlas-sanctions-tab__stale-banner" role="status" data-testid="atlas-sanctions-stale-banner">
+          {staleLanes.map((lane) => (
+            <p key={lane.lane}>
+              {lane.lane === "sanctions" ? "Sanctions data" : "FATF data"}
+              {" "}
+              stale since{" "}
+              <time dateTime={lane.staleSince ?? undefined}>
+                {lane.staleSince ? lane.staleSince.slice(0, 10) : "the pipeline has not run yet"}
+              </time>
+              . Showing the last successfully checked snapshot.
+            </p>
+          ))}
+        </div>
+      )}
+
+      {euNotIngested && (
+        <p className="atlas-sanctions-tab__eu-note" data-testid="atlas-sanctions-eu-note">
+          EU list not ingested ({euNotIngested.evidence}). This does not mean the country has no EU sanctions —
+          check the{" "}
+          <a
+            href="https://data.europa.eu/data/datasets/consolidated-list-of-persons-groups-and-entities-subject-to-eu-financial-sanctions?locale=en"
+            target="_blank"
+            rel="noreferrer"
+          >
+            EU Financial Sanctions Dataset
+          </a>{" "}
+          directly.
+        </p>
+      )}
+
       <section className="atlas-sanctions-tab__status" aria-label="Current FATF and sanctions status">
         <h3>FATF status</h3>
         {fatf ? (

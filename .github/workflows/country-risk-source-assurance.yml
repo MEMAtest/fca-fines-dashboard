@@ -51,11 +51,81 @@ jobs:
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
         run: npx tsx scripts/register/sanctions/seedFatfChangeLog.ts
-      # TODO (left for follow-up, see PR description): a dedicated staleness
-      # check (sanctions 48h / FATF 7d budgets) wired into
-      # api/cron/ops-health.ts + countryRiskSourceHealth.ts, with the
-      # deduped-GitHub-issue pattern, is NOT implemented in this PR. Do not
-      # add a step here that calls a script/flags that don't exist.
+      - name: Regenerate the committed history + sanctions change-log snapshots
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+        run: |
+          npx tsx scripts/register/sanctions/generateHistorySnapshot.ts
+          npx tsx scripts/register/sanctions/generateSanctionsChangeLog.ts
+      - name: Commit the regenerated snapshots if they changed
+        run: |
+          git config user.name "regactions-bot"
+          git config user.email "actions@users.noreply.github.com"
+          if ! git diff --quiet -- src/data/registerHistorySnapshot.ts src/data/registerSanctionsChangeLog.ts; then
+            git add src/data/registerHistorySnapshot.ts src/data/registerSanctionsChangeLog.ts
+            git commit -m "chore(atlas): refresh sanctions/FATF change-log snapshot [skip ci]"
+            git push
+          else
+            echo "No change to the committed snapshots."
+          fi
+      - name: Check sanctions (48h) and FATF (7d) staleness budgets
+        id: register_staleness
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+        run: npx tsx scripts/register/sanctions/checkStaleness.ts
+        continue-on-error: true
+      # Mirrors the weekly sanctions-promotion alert pattern below: an
+      # open/update/close issue keyed by a marker + label, so a stale lane
+      # gets exactly one tracked issue, not one per day.
+      - name: Open or update the register staleness alert
+        if: steps.register_staleness.outcome == 'failure'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const title = '[Atlas] Sanctions/FATF register staleness budget breached';
+            const alertLabel = 'register-staleness';
+            const marker = '<!-- atlas-register-staleness-alert -->';
+            const body = [
+              marker,
+              'The sanctions (48h) or FATF (7d) check-recency budget has been breached.',
+              '',
+              'Check the `register-sanctions-daily` job log for the specific lane and',
+              '`register_ingest_runs` for its last successful run. The atlas Sanctions &',
+              'FATF tab shows "stale since <date>" rather than hiding the section — that',
+              'is the control working, not a bug to suppress.',
+              '',
+              `Workflow run: ${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`,
+            ].join('\n');
+            const { data: issues } = await github.rest.issues.listForRepo({
+              owner: context.repo.owner, repo: context.repo.repo, state: 'open', labels: 'country-risk', per_page: 100,
+            });
+            const existing = issues.find((issue) => !issue.pull_request && issue.title === title
+              && (issue.labels.some((label) => label.name === alertLabel) || issue.body?.includes(marker)));
+            if (existing) {
+              await github.rest.issues.update({ owner: context.repo.owner, repo: context.repo.repo, issue_number: existing.number, body });
+              if (!existing.labels.some((label) => label.name === alertLabel)) {
+                await github.rest.issues.addLabels({ owner: context.repo.owner, repo: context.repo.repo, issue_number: existing.number, labels: [alertLabel] });
+              }
+            } else {
+              await github.rest.issues.create({ owner: context.repo.owner, repo: context.repo.repo, title, body, labels: ['country-risk', alertLabel] });
+            }
+      - name: Close a resolved register staleness alert
+        if: steps.register_staleness.outcome == 'success'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const title = '[Atlas] Sanctions/FATF register staleness budget breached';
+            const alertLabel = 'register-staleness';
+            const marker = '<!-- atlas-register-staleness-alert -->';
+            const { data: issues } = await github.rest.issues.listForRepo({
+              owner: context.repo.owner, repo: context.repo.repo, state: 'open', labels: 'country-risk', per_page: 100,
+            });
+            const existing = issues.find((issue) => !issue.pull_request && issue.title === title
+              && (issue.labels.some((label) => label.name === alertLabel) || issue.body?.includes(marker)));
+            if (existing) {
+              await github.rest.issues.update({ owner: context.repo.owner, repo: context.repo.repo, issue_number: existing.number, state: 'closed' });
+              await github.rest.issues.createComment({ owner: context.repo.owner, repo: context.repo.repo, issue_number: existing.number, body: 'Resolved: both lanes are back within their staleness budget.' });
+            }
 
   sanctions-daily:
     # Weekly/all runs already perform the same sanctions catalogue check in the

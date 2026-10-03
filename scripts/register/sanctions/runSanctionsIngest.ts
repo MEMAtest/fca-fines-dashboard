@@ -17,9 +17,11 @@ import {
   aggregateByCountry,
   diffAggregate,
   parseSanctionsFeed,
+  resolveEuSanctionsXmlUrl,
   type CountryRegimeAggregate,
   type SanctionsRegimeCode,
 } from "./connectors.js";
+import { recordRun } from "./registerStaleness.js";
 
 async function fetchFeedText(url: string): Promise<string> {
   const response = await fetch(url, {
@@ -49,14 +51,31 @@ async function getPreviousAggregate(
   };
 }
 
-export async function ingestRegime(regimeCode: SanctionsRegimeCode) {
+export interface IngestResult {
+  regimeCode: SanctionsRegimeCode;
+  skipped: boolean;
+  evidence?: string;
+  entryCount?: number;
+  countryCount?: number;
+  changeLogRows?: number;
+}
+
+export async function ingestRegime(regimeCode: SanctionsRegimeCode): Promise<IngestResult> {
   const feed = SANCTIONS_FEEDS[regimeCode];
-  const url = feed.defaultMachineReadableUrl;
+  let url = feed.defaultMachineReadableUrl;
   if (url === "builtin:eu-financial-sanctions") {
-    // EU dataset resolution (data.europa.eu metadata -> XML distribution) is
-    // out of scope for this pass; skip rather than guess a URL.
-    console.warn(`Skipping ${regimeCode}: builtin EU URL resolution not implemented in this script`);
-    return;
+    const resolution = await resolveEuSanctionsXmlUrl();
+    if (!resolution.url) {
+      // The catalogue genuinely gave no machine-readable URL this run: show
+      // the evidence and skip, rather than guessing or hard-coding a stale
+      // tokenised link. The tab must say "EU list not ingested", never imply
+      // "no EU sanctions".
+      console.warn(`EU list not ingested — ${resolution.evidence}`);
+      await recordRun("sanctions-eu", "skipped", resolution.evidence);
+      return { regimeCode, skipped: true, evidence: resolution.evidence };
+    }
+    url = resolution.url;
+    console.log(`EU XML resolved at runtime from the catalogue: ${resolution.evidence}`);
   }
 
   const xml = await fetchFeedText(url);
@@ -97,17 +116,41 @@ export async function ingestRegime(regimeCode: SanctionsRegimeCode) {
   console.log(
     `${regimeCode}: parsed ${entries.length} entries, ${aggregates.length} countries, ${changeLogRows} change-log row(s) written.`,
   );
+  if (regimeCode === "eu") {
+    await recordRun("sanctions-eu", "success", `${entries.length} entries, ${aggregates.length} countries`);
+  }
+  return {
+    regimeCode,
+    skipped: false,
+    entryCount: entries.length,
+    countryCount: aggregates.length,
+    changeLogRows,
+  };
 }
 
 async function main() {
   const codes: SanctionsRegimeCode[] = ["un", "ofac", "uk", "eu"];
+  let anySucceeded = false;
+  const errors: string[] = [];
   for (const code of codes) {
     try {
-      await ingestRegime(code);
+      const result = await ingestRegime(code);
+      if (!result.skipped) anySucceeded = true;
     } catch (error) {
-      console.error(`${code} ingest failed:`, error instanceof Error ? error.message : error);
+      const message = error instanceof Error ? error.message : String(error);
+      console.error(`${code} ingest failed:`, message);
+      errors.push(`${code}: ${message}`);
+      if (code === "eu") await recordRun("sanctions-eu", "error", message);
       process.exitCode = 1;
     }
+  }
+  // Staleness is about the pipeline running successfully, not about every
+  // regime succeeding every day (EU can be legitimately skipped on a given
+  // run if the catalogue has no XML distribution that day).
+  if (anySucceeded) {
+    await recordRun("sanctions", "success", errors.length > 0 ? errors.join("; ") : undefined);
+  } else {
+    await recordRun("sanctions", "error", errors.join("; ") || "No regime ingested successfully");
   }
 }
 
