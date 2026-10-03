@@ -1034,6 +1034,10 @@ export function CountryHub() {
                 qualification state — is available as PDF, CSV and JSON through the{" "}
                 <Link to="/developers#access">registered API</Link>.
               </p>
+              <p className="cx-card__note">
+                Full authority directory, laws and sanctions/FATF history for {country.name}: see the{" "}
+                <Link to={`/atlas/countries/${countrySlug(country)}`}>global register profile</Link>.
+              </p>
             </section>
           )}
 

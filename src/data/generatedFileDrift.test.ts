@@ -31,6 +31,7 @@ const PAIRS: Array<{ output: string; generator: string }> = [
   { output: "src/data/euSanctionsRegimeData.ts", generator: "scripts/country-risk/ingest-eu-sanctions-regimes.ts" },
   { output: "src/data/beneficialOwnershipRegisterData.ts", generator: "scripts/country-risk/ingest-open-ownership.ts" },
   { output: "src/data/sanctionsApprovedData.ts", generator: "scripts/country-risk/promote-sanctions-snapshot.ts" },
+  { output: "src/data/globalRegister.ts", generator: "scripts/register/generateSnapshot.ts" },
 ];
 
 /** Every `export function NAME(...) { ... }` block, by name, brace-matched. */

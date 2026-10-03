@@ -1,0 +1,21 @@
+<export xmlns="http://eu.europa.ec/fpi/fsd/export" generationDate="2026-09-22T20:01:34.799+02:00" globalFileId="185564">
+    <sanctionEntity designationDetails="" unitedNationId="" euReferenceNumber="EU.1.1" logicalId="13">
+        <remark>SAMPLE REGULATION</remark>
+        <regulation regulationType="regulation" organisationType="commission" publicationDate="2022-02-25" entryIntoForceDate="2022-02-25" numberTitle="269/2014" programme="RUS" logicalId="348">
+            <publicationUrl>https://eur-lex.europa.eu/sample</publicationUrl>
+        </regulation>
+        <subjectType code="person" classificationCode="P"/>
+        <nameAlias firstName="Sergei" middleName="" lastName="Ivanovich" wholeName="Sergei Ivanovich" function="" gender="M" title="" nameLanguage="" strong="true" regulationLanguage="en" logicalId="17"/>
+        <nameAlias firstName="" middleName="" lastName="" wholeName="S. Ivanov" function="" title="" nameLanguage="" strong="false" regulationLanguage="en" logicalId="19"/>
+        <citizenship region="" countryIso2Code="RU" countryDescription="RUSSIAN FEDERATION" regulationLanguage="en" logicalId="1"/>
+    </sanctionEntity>
+    <sanctionEntity designationDetails="" unitedNationId="" euReferenceNumber="EU.1.2" logicalId="14">
+        <remark>SAMPLE REGULATION</remark>
+        <regulation regulationType="regulation" organisationType="commission" publicationDate="2022-02-25" numberTitle="269/2014" programme="RUS" logicalId="349">
+            <publicationUrl>https://eur-lex.europa.eu/sample</publicationUrl>
+        </regulation>
+        <subjectType code="enterprise" classificationCode="E"/>
+        <nameAlias firstName="" middleName="" lastName="" wholeName="Volga Shipping JSC" function="" title="" nameLanguage="" strong="true" regulationLanguage="en" logicalId="20"/>
+        <address city="" street="" poBox="" zipCode="" region="" place="" asAtListingTime="false" countryIso2Code="RU" countryDescription="RUSSIAN FEDERATION" regulationLanguage="en" logicalId="50"/>
+    </sanctionEntity>
+</export>

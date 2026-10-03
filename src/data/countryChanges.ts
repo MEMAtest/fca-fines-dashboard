@@ -40,6 +40,7 @@ import {
   BO_REGISTERS_SOURCE_URL,
 } from "./boRegisters.js";
 import { CURRENT_COUNTRY_RISK_METHODOLOGY_VERSION } from "./countryRiskMethodology.js";
+import { REGISTER_SANCTIONS_CHANGE_LOG } from "./registerSanctionsChangeLog.js";
 import scoreSnapshotsRaw from "./scoreSnapshots.json" with { type: "json" };
 
 /** The kinds of change event this surface tracks (all derived, none invented). */
@@ -163,6 +164,31 @@ function sanctionsEvents(): ChangeEvent[] {
     });
   }
   return events;
+}
+
+// ── Global register — sanctions-regime deltas (Phase 2) ─────────────────────
+
+/**
+ * Per-country sanctions designation-count deltas from the atlas register's
+ * daily UN/OFAC/UK/EU ingest (register_change_log, category = 'sanctions').
+ * REGISTER_SANCTIONS_CHANGE_LOG is generated excluding category = 'fatf' by
+ * construction (see generateSanctionsChangeLog.ts), so FATF plenary events
+ * are never duplicated here — fatfEvents() above is their only source.
+ */
+export function registerSanctionsChangeEvents(
+  rows: typeof REGISTER_SANCTIONS_CHANGE_LOG = REGISTER_SANCTIONS_CHANGE_LOG,
+): ChangeEvent[] {
+  return rows
+    .filter((event) => Boolean(getCountryByIso2(event.iso2)))
+    .map((event): ChangeEvent => ({
+      date: event.eventDate,
+      iso2: event.iso2,
+      scope: "country",
+      kind: "sanctions",
+      title: `${countryName(event.iso2)}: sanctions designation count changed`,
+      detail: event.summary,
+      href: event.sourceUrl,
+    }));
 }
 
 // ── EU tax list ──────────────────────────────────────────────────────────────
@@ -308,6 +334,7 @@ export function buildCountryChanges(): ChangeEvent[] {
   const all = [
     ...fatfEvents(),
     ...sanctionsEvents(),
+    ...registerSanctionsChangeEvents(),
     ...euTaxListEvents(),
     ...scoreDeltaEvents(),
     // Coarse dataset-"reviewed" events are deliberately excluded: they assert

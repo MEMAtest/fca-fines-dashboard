@@ -170,6 +170,56 @@ const CountryCompare = lazyPage(() =>
     default: module.CountryCompare,
   })),
 );
+const CountriesRegister = lazyPage(() =>
+  import("./pages/CountriesRegister.js").then((module) => ({
+    default: module.CountriesRegister,
+  })),
+);
+const AtlasLayout = lazyPage(() =>
+  import("./pages/atlas/AtlasLayout.js").then((module) => ({
+    default: module.AtlasLayout,
+  })),
+);
+const AtlasIndex = lazyPage(() =>
+  import("./pages/atlas/AtlasIndex.js").then((module) => ({
+    default: module.AtlasIndex,
+  })),
+);
+const AtlasCountry = lazyPage(() =>
+  import("./pages/atlas/AtlasCountry.js").then((module) => ({
+    default: module.AtlasCountry,
+  })),
+);
+const AtlasOverviewTab = lazyPage(() =>
+  import("./pages/atlas/tabs/AtlasOverviewTab.js").then((module) => ({
+    default: module.AtlasOverviewTab,
+  })),
+);
+const AtlasLawsTab = lazyPage(() =>
+  import("./pages/atlas/tabs/AtlasLawsTab.js").then((module) => ({
+    default: module.AtlasLawsTab,
+  })),
+);
+const AtlasAuthoritiesTab = lazyPage(() =>
+  import("./pages/atlas/tabs/AtlasAuthoritiesTab.js").then((module) => ({
+    default: module.AtlasAuthoritiesTab,
+  })),
+);
+const AtlasEnforcementTab = lazyPage(() =>
+  import("./pages/atlas/tabs/AtlasEnforcementTab.js").then((module) => ({
+    default: module.AtlasEnforcementTab,
+  })),
+);
+const AtlasSanctionsTab = lazyPage(() =>
+  import("./pages/atlas/tabs/AtlasSanctionsTab.js").then((module) => ({
+    default: module.AtlasSanctionsTab,
+  })),
+);
+const AtlasUpdatesTab = lazyPage(() =>
+  import("./pages/atlas/tabs/AtlasUpdatesTab.js").then((module) => ({
+    default: module.AtlasUpdatesTab,
+  })),
+);
 const CountryMethodology = lazyPage(() =>
   import("./pages/CountryMethodology.js").then((module) => ({
     default: module.CountryMethodology,
@@ -741,12 +791,96 @@ const router = createBrowserRouter([
         ),
       },
       {
+        path: "/countries/register",
+        element: (
+          <Suspense fallback={ROUTE_FALLBACK}>
+            <CountriesRegister />
+          </Suspense>
+        ),
+      },
+      {
         path: "/countries/:slug",
         element: (
           <Suspense fallback={ROUTE_FALLBACK}>
             <CountryHub />
           </Suspense>
         ),
+      },
+      {
+        path: "/atlas",
+        element: (
+          <Suspense fallback={ROUTE_FALLBACK}>
+            <AtlasLayout />
+          </Suspense>
+        ),
+        children: [
+          {
+            index: true,
+            element: (
+              <Suspense fallback={ROUTE_FALLBACK}>
+                <AtlasIndex />
+              </Suspense>
+            ),
+          },
+          {
+            path: "countries/:slug",
+            element: (
+              <Suspense fallback={ROUTE_FALLBACK}>
+                <AtlasCountry />
+              </Suspense>
+            ),
+            children: [
+              {
+                index: true,
+                element: (
+                  <Suspense fallback={ROUTE_FALLBACK}>
+                    <AtlasOverviewTab />
+                  </Suspense>
+                ),
+              },
+              {
+                path: "laws",
+                element: (
+                  <Suspense fallback={ROUTE_FALLBACK}>
+                    <AtlasLawsTab />
+                  </Suspense>
+                ),
+              },
+              {
+                path: "authorities",
+                element: (
+                  <Suspense fallback={ROUTE_FALLBACK}>
+                    <AtlasAuthoritiesTab />
+                  </Suspense>
+                ),
+              },
+              {
+                path: "enforcement",
+                element: (
+                  <Suspense fallback={ROUTE_FALLBACK}>
+                    <AtlasEnforcementTab />
+                  </Suspense>
+                ),
+              },
+              {
+                path: "sanctions",
+                element: (
+                  <Suspense fallback={ROUTE_FALLBACK}>
+                    <AtlasSanctionsTab />
+                  </Suspense>
+                ),
+              },
+              {
+                path: "updates",
+                element: (
+                  <Suspense fallback={ROUTE_FALLBACK}>
+                    <AtlasUpdatesTab />
+                  </Suspense>
+                ),
+              },
+            ],
+          },
+        ],
       },
       {
         path: "/years",
