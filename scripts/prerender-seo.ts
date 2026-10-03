@@ -92,6 +92,9 @@ import { sanctionsTierLabel, SANCTIONS_REVIEWED } from "../src/data/sanctionsSta
 import { SANCTIONS_APPROVED_SNAPSHOT } from "../src/data/sanctionsApprovedData.js";
 import { isEuTaxListed } from "../src/data/euTaxList.js";
 import { getEgmontMember } from "../src/data/egmontMembership.js";
+import { getAuthoritiesForCountry, getInstrumentsForCountry, REGISTER_COVERED_ISO2, GLOBAL_REGISTER_AUTHORITIES } from "../src/data/globalRegister.js";
+import { AUTHORITY_ROLE_DESCRIPTIONS, AUTHORITY_ROLE_LABELS } from "../src/data/authorityRoles.js";
+import { getCountryEnforcementSummary, hasEnforcementCoverage } from "../src/data/countryEnforcement.js";
 import { getFatfAssessmentLink } from "../src/data/fatfAssessmentLinks.js";
 import { getBoRegister, boRegisterSignal } from "../src/data/boRegisters.js";
 import { getRegulatorySignalCountry, listRegulatorySignalCountries, authorityAccessLabel, roleLabel, type RegulatoryPublicationCandidate, type RegulatorySignalAuthority } from "../src/data/regulatorySignal.js";
@@ -1355,6 +1358,76 @@ function regulatoryLadderHtml(signal: NonNullable<ReturnType<typeof getRegulator
  * `CountryView` the React page uses (`src/data/countryView.ts`), so the
  * prerendered HTML and the SPA can't drift apart in copy/logic.
  */
+type AtlasTab = "overview" | "laws" | "authorities" | "enforcement" | "sanctions" | "updates";
+
+/**
+ * Prerendered body for an atlas country page/tab, modelled on
+ * renderCountryFatfBody but reading only the published (grade A/B) global
+ * register rows — never a placeholder phrase, never a fabricated count.
+ */
+function renderAtlasCountryBody(country: Country, tab: AtlasTab): string {
+  const authorities = getAuthoritiesForCountry(country.iso2);
+  const instruments = getInstrumentsForCountry(country.iso2);
+
+  if (tab === "overview") {
+    const facts = `<ul><li>${escapeHtml(`${authorities.length} published authorities`)}</li><li>${escapeHtml(
+      `${instruments.length} published laws & instruments`,
+    )}</li><li>${escapeHtml(`Region: ${country.region}`)}</li></ul>`;
+    const cards = authorities
+      .slice(0, 6)
+      .map(
+        (a) =>
+          `<li><strong>${escapeHtml(a.name)}</strong> — ${escapeHtml(AUTHORITY_ROLE_LABELS[a.role])}. ${escapeHtml(
+            AUTHORITY_ROLE_DESCRIPTIONS[a.role],
+          )} <a href="${escapeHtml(a.url)}">Official site</a></li>`,
+      )
+      .join("");
+    const cardsHtml = authorities.length
+      ? `<ul>${cards}</ul>`
+      : `<p>Not yet mapped — source check pending.</p>`;
+    return `<h2>${escapeHtml(country.name)}: global register overview</h2>${facts}<h3>Key authorities</h3>${cardsHtml}`;
+  }
+
+  if (tab === "laws") {
+    if (!instruments.length) return `<h2>Laws & regulations</h2><p>Not yet mapped — source check pending.</p>`;
+    const rows = instruments
+      .map((i) => `<li>${escapeHtml(i.title)} — ${escapeHtml(i.status ?? "status not recorded")} (grade ${i.grade})</li>`)
+      .join("");
+    return `<h2>Laws & regulations</h2><ul>${rows}</ul>`;
+  }
+
+  if (tab === "authorities") {
+    if (!authorities.length) return `<h2>Authorities</h2><p>Not yet mapped — source check pending.</p>`;
+    const rows = authorities
+      .map(
+        (a) =>
+          `<li>${escapeHtml(a.name)} — ${escapeHtml(AUTHORITY_ROLE_LABELS[a.role])}. ${escapeHtml(
+            AUTHORITY_ROLE_DESCRIPTIONS[a.role],
+          )}</li>`,
+      )
+      .join("");
+    return `<h2>Authorities</h2><ul>${rows}</ul>`;
+  }
+
+  if (tab === "enforcement") {
+    const covered = hasEnforcementCoverage(country.iso2);
+    const summary = covered ? getCountryEnforcementSummary(country.iso2) : undefined;
+    if (!summary || !summary.regulators.length) {
+      return `<h2>Enforcement</h2><p>No systematic enforcement-data source covered for ${escapeHtml(country.name)} yet.</p>`;
+    }
+    const rows = summary.regulators
+      .map((r) => `<li>${escapeHtml(r.fullName)}: ${r.count} tracked action(s)</li>`)
+      .join("");
+    return `<h2>Enforcement</h2><p>${summary.trackedActions} tracked action(s) across ${summary.regulatorCount} regulator(s).</p><ul>${rows}</ul>`;
+  }
+
+  if (tab === "sanctions") {
+    return `<h2>Sanctions & FATF</h2><p>Dated sanctions-list and FATF-plenary history is not yet built for this tab (Phase 2, in progress on a separate branch). This is a coverage gap, not a finding that nothing has changed.</p>`;
+  }
+
+  return `<h2>Updates</h2><p>No change-log entries have been recorded for ${escapeHtml(country.name)} yet. This is not a claim that nothing has changed.</p>`;
+}
+
 function renderCountryFatfBody(
   view: CountryView,
   financeFaqItems: Array<{ question: string; answer: string }> = [],
@@ -3648,6 +3721,63 @@ async function buildPageMetas(): Promise<PageMeta[]> {
       ],
     });
   }
+
+  // 4a2. Global register ("atlas") pages — the overview tab plus each tab's
+  // own crawlable URL, for every country with at least one published
+  // authority row, so the catch-all does not 404 them.
+  const ATLAS_TABS: Array<{ tab: AtlasTab; slugSuffix: string; title: string }> = [
+    { tab: "overview", slugSuffix: "", title: "Global register profile" },
+    { tab: "laws", slugSuffix: "/laws", title: "Laws & regulations" },
+    { tab: "authorities", slugSuffix: "/authorities", title: "Authorities" },
+    { tab: "enforcement", slugSuffix: "/enforcement", title: "Enforcement" },
+    { tab: "sanctions", slugSuffix: "/sanctions", title: "Sanctions & FATF" },
+    { tab: "updates", slugSuffix: "/updates", title: "Updates" },
+  ];
+  for (const iso2 of REGISTER_COVERED_ISO2) {
+    const country = getCountryByIso2(iso2);
+    if (!country) continue;
+    const slug = countrySlug(country);
+    for (const { tab, slugSuffix, title } of ATLAS_TABS) {
+      const path = `/atlas/countries/${slug}${slugSuffix}`;
+      pages.push({
+        path,
+        title: `${country.name} — ${title} | RegActions Atlas`,
+        description: `${country.name} ${title.toLowerCase()} from the RegActions global AML/financial-crime register. Published, sourced rows only.`,
+        keywords: `${country.name} authorities, ${country.name} AML law, ${country.name} regulators`,
+        ogType: "website",
+        dateModified: COUNTRY_PAGE_DATE,
+        bodyContent: renderAtlasCountryBody(country, tab),
+        breadcrumbLabel: title,
+        jsonLd: {
+          "@context": "https://schema.org",
+          "@type": "Country",
+          name: country.name,
+          url: `${BASE_URL}${path}`,
+          identifier: country.iso2,
+        },
+      });
+    }
+  }
+  pages.push({
+    path: "/atlas",
+    title: "Global AML / financial-crime register | RegActions Atlas",
+    description: "A directory of AML/financial-crime authorities, laws, enforcement and sanctions/FATF status by jurisdiction — sourced, published rows only.",
+    keywords: "global AML register, financial crime authorities directory, AML regulators by country",
+    ogType: "website",
+    dateModified: COUNTRY_PAGE_DATE,
+    bodyContent: `<h1>Global AML / financial-crime register</h1><p>${REGISTER_COVERED_ISO2.length} jurisdictions have at least one published authority.</p>`,
+    breadcrumbLabel: "Atlas",
+  });
+  pages.push({
+    path: "/countries/register",
+    title: "Global authority register | RegActions",
+    description: "Every published AML/financial-crime authority on RegActions, filterable by role.",
+    keywords: "AML supervisors list, financial intelligence units list, sanctions authorities list",
+    ogType: "website",
+    dateModified: COUNTRY_PAGE_DATE,
+    bodyContent: `<h1>Global authority register</h1><p>${GLOBAL_REGISTER_AUTHORITIES.length} published authority rows across ${REGISTER_COVERED_ISO2.length} countries.</p>`,
+    breadcrumbLabel: "Register",
+  });
 
   // 4b. Country-vs-country compare pages. The React route handles any valid
   // pair client-side, but every comparison URL emitted by a country page is

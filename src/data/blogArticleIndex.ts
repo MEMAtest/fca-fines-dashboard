@@ -16,6 +16,22 @@ export interface BlogArticleCard {
 /** Published articles, newest first. */
 export const BLOG_ARTICLE_INDEX: BlogArticleCard[] = [
   {
+    "slug": "sanctions-compliance-enforcement",
+    "title": "Sanctions Compliance Failures: A Cross-Regulator Enforcement Analysis",
+    "excerpt": "An analysis of 30 enforcement actions reveals a global focus on sanctions compliance failures, with significant activity from CIRO and ACPR targeting firms and individuals.",
+    "category": "Enforcement Analysis",
+    "date": "30 September 2026",
+    "dateISO": "2026-09-30"
+  },
+  {
+    "slug": "enforcement-spotlight-2026-w40",
+    "title": "Regulatory Enforcement: Reporting Failures and AML Oversight",
+    "excerpt": "Global enforcement actions from 14–23 September 2026 highlight regulatory focus on reporting failures, anti-money laundering (AML) control outsourcing, and investment fraud.",
+    "category": "Enforcement Roundup",
+    "date": "28 September 2026",
+    "dateISO": "2026-09-28"
+  },
+  {
     "slug": "cyber-operational-resilience-enforcement",
     "title": "Cyber and Operational Resilience: Escalating Enforcement Actions",
     "excerpt": "Regulators are increasingly imposing penalties for failures in cyber controls, operational integrity, and financial reporting.",
@@ -450,4 +466,4 @@ export const BLOG_ARTICLE_INDEX: BlogArticleCard[] = [
 ];
 
 /** Total published articles, for "all N insights" style counts. */
-export const BLOG_ARTICLE_COUNT = 54;
+export const BLOG_ARTICLE_COUNT = 56;
